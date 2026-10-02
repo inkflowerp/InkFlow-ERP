@@ -7,24 +7,15 @@ import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
 import { Plus } from 'lucide-react'
 
 export default function NewWorkPage() {
-  return (
+ return (
     <PanelAccessGuard
-      module="orders"
-      action="create"
-      panelTitle="New Work POS"
-      panelTitleBn="নতুন কাজ"
-    >
+ module="orders"action="create"panelTitle="New Work POS"panelTitleBn="নতুন কাজ">
       <div className="space-y-6 max-w-4xl mx-auto pb-16">
         <PageHeader
-          titleEn="New Work"
-          titleBn="নতুন কাজ"
-          descriptionEn="Frictionless order intake: select customer, dimensions, material, and send straight to the floor."
-          descriptionBn="সহজ ও দ্রুত কাজের এন্ট্রি: কাস্টমার, সাইজ, মিডিয়া নির্বাচন করুন এবং সরাসরি প্রোডাকশনে পাঠান।"
-          icon={Plus}
-          iconColor="text-blue-600"
-        />
+ titleEn="New Work"titleBn="নতুন কাজ"descriptionEn="Frictionless order intake: select customer, dimensions, material, and send straight to the floor."descriptionBn="সহজ ও দ্রুত কাজের এন্ট্রি: কাস্টমার, সাইজ, মিডিয়া নির্বাচন করুন এবং সরাসরি প্রোডাকশনে পাঠান।"icon={Plus}
+ iconColor="text-blue-600"/>
 
-        <div className="bg-card border border-border rounded-2xl p-4 sm:p-6 shadow-xs">
+        <div className="bg-card border border-border rounded-xl p-4 sm:p-6 shadow-xs">
           <NewWorkWizard isInlineModal={false} />
         </div>
       </div>

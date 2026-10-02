@@ -2,15 +2,15 @@
 
 import React, { useState, useEffect, useCallback } from 'react'
 import {
-  ShoppingBag,
-  Calendar,
-  ArrowUpDown,
-  Filter,
-  TrendingUp,
-  Package,
-  Layers,
-  ChevronDown,
-  Loader2,
+ ShoppingBag,
+ Calendar,
+ ArrowUpDown,
+ Filter,
+ TrendingUp,
+ Package,
+ Layers,
+ ChevronDown,
+ Loader2,
 } from 'lucide-react'
 import { CustomerProductPurchaseStat } from '@/types/crm.types'
 import { formatBDT } from '@/lib/formatters'
@@ -22,62 +22,62 @@ import { getCustomerProductAnalyticsAction } from '@/actions/customer.actions'
 import { cn } from '@/lib/utils'
 
 interface CustomerProductAnalyticsProps {
-  customerId: string
-  companyId?: string
-  initialStats?: CustomerProductPurchaseStat[]
+ customerId: string
+ companyId?: string
+ initialStats?: CustomerProductPurchaseStat[]
 }
 
 type TimeframeOption = 'week' | 'month' | 'year' | 'all' | 'custom'
 type SortByOption = 'amount' | 'quantity' | 'recent' | 'name'
 
 export function CustomerProductAnalytics({
-  customerId,
-  companyId,
-  initialStats = [],
+ customerId,
+ companyId,
+ initialStats = [],
 }: CustomerProductAnalyticsProps) {
-  const [stats, setStats] = useState<CustomerProductPurchaseStat[]>(initialStats)
-  const [timeframe, setTimeframe] = useState<TimeframeOption>('all')
-  const [startDate, setStartDate] = useState<string>('')
-  const [endDate, setEndDate] = useState<string>('')
-  const [sortBy, setSortBy] = useState<SortByOption>('amount')
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
-  const [isLoading, setIsLoading] = useState<boolean>(false)
+ const [stats, setStats] = useState<CustomerProductPurchaseStat[]>(initialStats)
+ const [timeframe, setTimeframe] = useState<TimeframeOption>('all')
+ const [startDate, setStartDate] = useState<string>('')
+ const [endDate, setEndDate] = useState<string>('')
+ const [sortBy, setSortBy] = useState<SortByOption>('amount')
+ const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
+ const [isLoading, setIsLoading] = useState<boolean>(false)
 
-  const fetchStats = useCallback(async () => {
-    setIsLoading(true)
-    try {
-      const res = await getCustomerProductAnalyticsAction(
-        customerId,
+ const fetchStats = useCallback(async () => {
+ setIsLoading(true)
+ try {
+ const res = await getCustomerProductAnalyticsAction(
+ customerId,
         {
-          timeframe,
-          startDate: timeframe === 'custom' ? startDate : undefined,
-          endDate: timeframe === 'custom' ? endDate : undefined,
-          sortBy,
-          sortOrder,
+ timeframe,
+ startDate: timeframe === 'custom' ? startDate : undefined,
+ endDate: timeframe === 'custom' ? endDate : undefined,
+ sortBy,
+ sortOrder,
         },
-        companyId
+ companyId
       )
-      if (res.success && res.data) {
-        setStats(res.data)
+ if (res.success && res.data) {
+ setStats(res.data)
       }
     } catch {
       // Non-blocking
     } finally {
-      setIsLoading(false)
+ setIsLoading(false)
     }
   }, [customerId, companyId, timeframe, startDate, endDate, sortBy, sortOrder])
 
-  useEffect(() => {
-    fetchStats()
+ useEffect(() => {
+ fetchStats()
   }, [fetchStats])
 
-  const totalVolume = stats.reduce((sum, s) => sum + s.totalQuantity, 0)
-  const totalSpend = stats.reduce((sum, s) => sum + s.totalAmount, 0)
+ const totalVolume = stats.reduce((sum, s) => sum + s.totalQuantity, 0)
+ const totalSpend = stats.reduce((sum, s) => sum + s.totalAmount, 0)
 
-  return (
+ return (
     <div className="space-y-4">
       {/* Top Filter & Metrics Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded-xl border border-border bg-card dark:bg-background">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded-xl border border-border bg-card">
         {/* Timeframe Buttons */}
         <div className="flex flex-wrap items-center gap-1.5 text-xs">
           {(
@@ -90,13 +90,12 @@ export function CustomerProductAnalytics({
             ] as const
           ).map((t) => (
             <Button
-              key={t.key}
-              size="sm"
-              variant={timeframe === t.key ? 'default' : 'outline'}
-              onClick={() => setTimeframe(t.key)}
-              className={cn(
+ key={t.key}
+ size="sm"variant={timeframe === t.key ? 'default' : 'outline'}
+ onClick={() => setTimeframe(t.key)}
+ className={cn(
                 'h-7 px-2.5 text-xs rounded-lg',
-                timeframe === t.key && 'bg-primary hover:bg-primary/90 text-primary-foreground font-semibold'
+ timeframe === t.key && 'bg-primary hover:bg-primary/90 text-primary-foreground font-semibold'
               )}
             >
               {t.label}
@@ -107,11 +106,11 @@ export function CustomerProductAnalytics({
         {/* Aggregate KPI Badges */}
         <div className="flex items-center gap-3 text-xs shrink-0">
           <div className="flex items-center gap-1.5 text-muted-foreground">
-            <Package className="h-3.5 w-3.5 text-blue-500" />
-            <span>Products: <strong className="text-foreground dark:text-white">{stats.length}</strong></span>
+            <Package className="h-3.5 w-3.5 text-blue-500"/>
+            <span>Products: <strong className="text-foreground">{stats.length}</strong></span>
           </div>
           <div className="flex items-center gap-1.5 text-muted-foreground">
-            <TrendingUp className="h-3.5 w-3.5 text-emerald-500" />
+            <TrendingUp className="h-3.5 w-3.5 text-emerald-500"/>
             <span>Spend: <strong className="text-emerald-600 dark:text-emerald-400">৳{totalSpend.toLocaleString('en-IN')}</strong></span>
           </div>
         </div>
@@ -120,26 +119,20 @@ export function CustomerProductAnalytics({
       {/* Custom Date Range Picker */}
       {timeframe === 'custom' && (
         <div className="flex flex-wrap items-center gap-2 p-3 rounded-lg border border-border bg-muted text-xs animate-in fade-in duration-150">
-          <span className="font-semibold text-foreground dark:text-muted-foreground">From:</span>
+          <span className="font-semibold text-foreground">From:</span>
           <Input
-            type="date"
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-            className="h-8 w-36 text-xs bg-card dark:bg-background"
-          />
-          <span className="font-semibold text-foreground dark:text-muted-foreground">To:</span>
+ type="date"value={startDate}
+ onChange={(e) => setStartDate(e.target.value)}
+ className="h-8 w-36 text-xs bg-card"/>
+          <span className="font-semibold text-foreground">To:</span>
           <Input
-            type="date"
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
-            className="h-8 w-36 text-xs bg-card dark:bg-background"
-          />
+ type="date"value={endDate}
+ onChange={(e) => setEndDate(e.target.value)}
+ className="h-8 w-36 text-xs bg-card"/>
           <Button
-            size="sm"
-            onClick={fetchStats}
-            className="h-8 text-xs bg-blue-600 hover:bg-blue-700 ml-auto"
-          >
-            Apply Range
+ size="sm"onClick={fetchStats}
+ className="h-8 text-xs bg-blue-600 hover:bg-blue-700 ml-auto">
+ Apply Range
           </Button>
         </div>
       )}
@@ -149,30 +142,25 @@ export function CustomerProductAnalytics({
         <div className="flex items-center gap-2">
           <span>Sort By:</span>
           <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as SortByOption)}
-            className="h-7 px-2 text-xs rounded-md border border-border bg-card font-medium"
-          >
+ value={sortBy}
+ onChange={(e) => setSortBy(e.target.value as SortByOption)}
+ className="h-7 px-2 text-xs rounded-md border border-border bg-card font-medium">
             <option value="amount">Total Amount (৳)</option>
             <option value="quantity">Total Quantity</option>
             <option value="recent">Most Recent Purchase</option>
             <option value="name">Product Name</option>
           </select>
           <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-            className="h-7 px-2 text-xs"
-            title="Toggle Ascending/Descending"
-          >
-            <ArrowUpDown className="h-3 w-3 mr-1" />
+ size="sm"variant="ghost"onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+ className="h-7 px-2 text-xs"title="Toggle Ascending/Descending">
+            <ArrowUpDown className="h-3 w-3 mr-1"/>
             {sortOrder.toUpperCase()}
           </Button>
         </div>
 
         {isLoading && (
           <div className="flex items-center gap-1.5 text-blue-600">
-            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            <Loader2 className="h-3.5 w-3.5 animate-spin"/>
             <span>Updating...</span>
           </div>
         )}
@@ -194,15 +182,15 @@ export function CustomerProductAnalytics({
             {stats.length === 0 ? (
               <tr>
                 <td colSpan={5} className="py-10 text-center text-muted-foreground">
-                  <ShoppingBag className="h-8 w-8 mx-auto mb-2 opacity-30" />
+                  <ShoppingBag className="h-8 w-8 mx-auto mb-2 opacity-30"/>
                   <div>No purchase records found for this timeframe.</div>
                 </td>
               </tr>
             ) : (
-              stats.map((item, idx) => (
+ stats.map((item, idx) => (
                 <tr key={item.productId || idx} className="hover:bg-muted dark:hover:bg-muted/40 transition-colors">
                   <td className="py-3 px-4">
-                    <div className="font-semibold text-foreground dark:text-white">
+                    <div className="font-semibold text-foreground">
                       {item.productName}
                     </div>
                     {item.productNameBn && (
@@ -212,10 +200,10 @@ export function CustomerProductAnalytics({
                       {item.invoiceCount} {item.invoiceCount === 1 ? 'invoice' : 'invoices'}
                     </div>
                   </td>
-                  <td className="py-3 px-3 text-right font-semibold text-foreground dark:text-white">
+                  <td className="py-3 px-3 text-right font-semibold text-foreground">
                     {item.totalQuantity.toLocaleString()} <span className="text-2xs text-muted-foreground font-normal uppercase">{item.unit}</span>
                   </td>
-                  <td className="py-3 px-3 text-right font-medium text-muted-foreground dark:text-muted-foreground">
+                  <td className="py-3 px-3 text-right font-medium text-muted-foreground">
                     {formatBDT(item.lastRate)}
                   </td>
                   <td className="py-3 px-3 text-right font-bold text-sm text-emerald-600 dark:text-emerald-400">
@@ -235,14 +223,14 @@ export function CustomerProductAnalytics({
       <div className="block md:hidden space-y-2.5">
         {stats.length === 0 ? (
           <div className="py-8 text-center text-muted-foreground text-xs bg-card rounded-xl border p-4">
-            No product purchases recorded.
+ No product purchases recorded.
           </div>
         ) : (
-          stats.map((item, idx) => (
+ stats.map((item, idx) => (
             <Card key={item.productId || idx} className="border-border shadow-sm p-3.5 space-y-2.5">
               <div className="flex items-start justify-between gap-2">
                 <div>
-                  <div className="font-bold text-sm text-foreground dark:text-white">
+                  <div className="font-bold text-sm text-foreground">
                     {item.productName}
                   </div>
                   {item.productNameBn && (
@@ -253,7 +241,7 @@ export function CustomerProductAnalytics({
                   </div>
                 </div>
 
-                <Badge variant="outline" className="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50/50 dark:bg-emerald-950/30">
+                <Badge variant="outline"className="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50/50 dark:bg-emerald-950/30">
                   {formatBDT(item.totalAmount)}
                 </Badge>
               </div>
@@ -261,13 +249,13 @@ export function CustomerProductAnalytics({
               <div className="grid grid-cols-3 gap-2 p-2 rounded-lg bg-muted text-xs">
                 <div>
                   <div className="text-2xs text-muted-foreground">Total Qty</div>
-                  <div className="font-semibold text-foreground dark:text-white">
+                  <div className="font-semibold text-foreground">
                     {item.totalQuantity} <span className="uppercase text-2xs text-muted-foreground">{item.unit}</span>
                   </div>
                 </div>
                 <div>
                   <div className="text-2xs text-muted-foreground">Last Rate</div>
-                  <div className="font-semibold text-foreground dark:text-muted-foreground">
+                  <div className="font-semibold text-foreground">
                     {formatBDT(item.lastRate)}
                   </div>
                 </div>

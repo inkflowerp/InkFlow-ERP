@@ -6,46 +6,46 @@ import { useRealtimeSync, RealtimeSyncState } from '@/hooks/use-realtime-sync'
 import { realtimeManager, RealtimeConnectionStatus } from '@/lib/realtime/subscription-manager'
 
 interface RealtimeContextValue extends RealtimeSyncState {
-  reconnect: () => void
-  broadcastSyncEvent: (event: {
-    table: string
-    eventType: 'INSERT' | 'UPDATE' | 'DELETE'
-    record: any
-    oldRecord?: any
+ reconnect: () => void
+ broadcastSyncEvent: (event: {
+ table: string
+ eventType: 'INSERT' | 'UPDATE' | 'DELETE'
+ record: any
+ oldRecord?: any
   }) => void
 }
 
 const RealtimeContext = createContext<RealtimeContextValue>({
-  isLive: false,
-  status: 'disconnected',
-  lastEventTime: null,
-  reconnect: () => {},
-  broadcastSyncEvent: () => {},
+ isLive: false,
+ status: 'disconnected',
+ lastEventTime: null,
+ reconnect: () => {},
+ broadcastSyncEvent: () => {},
 })
 
 export function RealtimeProvider({ children }: { children: React.ReactNode }) {
-  const { company } = useTenant()
-  const companyId = company?.id
-  const syncState = useRealtimeSync(companyId)
+ const { company } = useTenant()
+ const companyId = company?.id
+ const syncState = useRealtimeSync(companyId)
 
-  const value = useMemo(
+ const value = useMemo(
     () => ({
       ...syncState,
-      broadcastSyncEvent: (event: {
-        table: string
-        eventType: 'INSERT' | 'UPDATE' | 'DELETE'
-        record: any
-        oldRecord?: any
+ broadcastSyncEvent: (event: {
+ table: string
+ eventType: 'INSERT' | 'UPDATE' | 'DELETE'
+ record: any
+ oldRecord?: any
       }) => {
-        if (companyId) {
-          realtimeManager.broadcastSyncEvent(companyId, event)
+ if (companyId) {
+ realtimeManager.broadcastSyncEvent(companyId, event)
         }
       },
     }),
     [syncState, companyId]
   )
 
-  return (
+ return (
     <RealtimeContext.Provider value={value}>
       {children}
     </RealtimeContext.Provider>
@@ -53,5 +53,5 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
 }
 
 export function useRealtime() {
-  return useContext(RealtimeContext)
+ return useContext(RealtimeContext)
 }

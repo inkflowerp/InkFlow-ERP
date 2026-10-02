@@ -5,53 +5,53 @@ import Link from 'next/link'
 import { useParams, useRouter, usePathname } from 'next/navigation'
 import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import {
-  Package,
-  Plus,
-  Search,
-  Tag,
-  DollarSign,
-  TrendingUp,
-  Sliders,
-  CheckCircle2,
-  ExternalLink,
-  Edit3,
-  Layers,
-  Calculator,
-  ShieldAlert,
-  AlertTriangle,
-  RefreshCw,
-  Archive,
-  Trash2,
-  MoreHorizontal,
-  MoreVertical,
-  FileSpreadsheet,
-  Check,
-  Building2,
-  Clock,
-  Wrench,
-  Truck,
-  Scissors,
-  Sparkles,
-  Share2,
-  ArrowRight,
-  Filter,
-  Percent,
-  Coins,
-  Scale,
-  Boxes,
-  HelpCircle,
-  ShieldCheck,
-  Building,
-  UserCheck,
-  ListPlus,
-  PlusCircle,
-  X,
-  ChevronDown,
-  ChevronUp,
-  Hammer,
-  Palette,
-  Printer,
-  Info,
+ Package,
+ Plus,
+ Search,
+ Tag,
+ DollarSign,
+ TrendingUp,
+ Sliders,
+ CheckCircle2,
+ ExternalLink,
+ Edit3,
+ Layers,
+ Calculator,
+ ShieldAlert,
+ AlertTriangle,
+ RefreshCw,
+ Archive,
+ Trash2,
+ MoreHorizontal,
+ MoreVertical,
+ FileSpreadsheet,
+ Check,
+ Building2,
+ Clock,
+ Wrench,
+ Truck,
+ Scissors,
+ Sparkles,
+ Share2,
+ ArrowRight,
+ Filter,
+ Percent,
+ Coins,
+ Scale,
+ Boxes,
+ HelpCircle,
+ ShieldCheck,
+ Building,
+ UserCheck,
+ ListPlus,
+ PlusCircle,
+ X,
+ ChevronDown,
+ ChevronUp,
+ Hammer,
+ Palette,
+ Printer,
+ Info,
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
 import { useSubscription } from '@/hooks/use-subscription'
@@ -66,32 +66,32 @@ import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
 import { CurrencyDisplay } from '@/components/shared/currency-display'
 import { PageHeader } from '@/components/shared/page-header'
 import type {
-  ProductRecord,
-  ProductType,
-  UnitOfMeasure,
-  PricingMethod,
-  ResolvedProductPrice,
-  CommercialProductType,
-  MeasurementType,
-  ProductComponent,
-  ProductPriceTiers,
-  ProductCostBreakdown,
-  ProductSupplierPriceRecord,
-  CostBasisType,
+ ProductRecord,
+ ProductType,
+ UnitOfMeasure,
+ PricingMethod,
+ ResolvedProductPrice,
+ CommercialProductType,
+ MeasurementType,
+ ProductComponent,
+ ProductPriceTiers,
+ ProductCostBreakdown,
+ ProductSupplierPriceRecord,
+ CostBasisType,
 } from '@/types/product.types'
 import {
-  getProductsAction,
-  createProductAction,
-  updateProductAction,
-  updateProductPriceAction,
-  archiveProductAction,
-  deleteProductAction,
-  checkProductDeletionSafetyAction,
-  resolveProductCustomerPriceAction,
-  getProductSupplierPricesAction,
-  saveProductSupplierPriceAction,
-  deleteProductSupplierPriceAction,
-  getPriceOverridesAction,
+ getProductsAction,
+ createProductAction,
+ updateProductAction,
+ updateProductPriceAction,
+ archiveProductAction,
+ deleteProductAction,
+ checkProductDeletionSafetyAction,
+ resolveProductCustomerPriceAction,
+ getProductSupplierPricesAction,
+ saveProductSupplierPriceAction,
+ deleteProductSupplierPriceAction,
+ getPriceOverridesAction,
 } from '@/actions/product.actions'
 import { getCategoriesAction } from '@/actions/category.actions'
 import { CategoryModal } from '@/components/categories/category-modal'
@@ -105,515 +105,515 @@ import { FinishingOptionModal } from '@/components/products/finishing-option-mod
 import { AdditionalOptionModal } from '@/components/products/additional-option-modal'
 import { InstallationOptionModal } from '@/components/products/installation-option-modal'
 import {
-  getPrintingMethodsAction,
-  savePrintingMethodAction,
-  deletePrintingMethodAction,
-  getFinishingOptionsAction,
-  saveFinishingOptionAction,
-  deleteFinishingOptionAction,
-  getAdditionalOptionsAction,
-  saveAdditionalOptionAction,
-  deleteAdditionalOptionAction,
-  getInstallationOptionsAction,
-  saveInstallationOptionAction,
-  deleteInstallationOptionAction,
+ getPrintingMethodsAction,
+ savePrintingMethodAction,
+ deletePrintingMethodAction,
+ getFinishingOptionsAction,
+ saveFinishingOptionAction,
+ deleteFinishingOptionAction,
+ getAdditionalOptionsAction,
+ saveAdditionalOptionAction,
+ deleteAdditionalOptionAction,
+ getInstallationOptionsAction,
+ saveInstallationOptionAction,
+ deleteInstallationOptionAction,
 } from '@/actions/configuration-masters.actions'
 import { getMachineriesAction } from '@/actions/machinery.actions'
 import type {
-  PrintingMethod,
-  FinishingOptionRecord,
-  AdditionalOptionRecord,
-  InstallationOptionRecord,
+ PrintingMethod,
+ FinishingOptionRecord,
+ AdditionalOptionRecord,
+ InstallationOptionRecord,
 } from '@/types/product.types'
 import type { MachineryRecord } from '@/types/machinery.types'
 import type { ProductCategoryRecord } from '@/types/category.types'
 import { createQuotationAction } from '@/actions/quotation.actions'
 import { convertToFeet } from '@/lib/pricing-engine'
 import {
-  calculateEffectiveUnitCost,
-  calculateGrossMargin,
-  calculateSuggestedSellingPrice,
-  applyMinimumCharge,
-  calculateCommercialPricing,
-  normalizePricingMethod,
-  COMMERCIAL_PRODUCT_TYPES,
-  MEASUREMENT_TYPES,
-  COMMON_PURCHASE_UNITS,
-  COMMON_SELLING_UNITS,
-  PRICING_METHODS,
-  PRICING_METHOD_OPTIONS,
-  isServiceProduct,
-  isReadyProduct,
-  isMaterialProduct,
-  isOutsourceProduct,
-  getProductEntityKind,
-  getProductEntityKindLabel,
-  getProductConversionRatio,
+ calculateEffectiveUnitCost,
+ calculateGrossMargin,
+ calculateSuggestedSellingPrice,
+ applyMinimumCharge,
+ calculateCommercialPricing,
+ normalizePricingMethod,
+ COMMERCIAL_PRODUCT_TYPES,
+ MEASUREMENT_TYPES,
+ COMMON_PURCHASE_UNITS,
+ COMMON_SELLING_UNITS,
+ PRICING_METHODS,
+ PRICING_METHOD_OPTIONS,
+ isServiceProduct,
+ isReadyProduct,
+ isMaterialProduct,
+ isOutsourceProduct,
+ getProductEntityKind,
+ getProductEntityKindLabel,
+ getProductConversionRatio,
 } from '@/lib/units'
 import { cn } from '@/lib/utils'
 
 export default function ProductsCatalogPage() {
-  const params = useParams()
-  const router = useRouter()
-  const pathname = usePathname()
-  const { company } = useTenant()
-  const { checkCanCreate, openLimitExceededModal, refreshUsage } = useSubscription()
-  const { locale, tBilingual } = useI18n()
-  const slug = (params?.tenantSlug as string) || company?.slug || 'my-company'
-  const companyId = company?.id
+ const params = useParams()
+ const router = useRouter()
+ const pathname = usePathname()
+ const { company } = useTenant()
+ const { checkCanCreate, openLimitExceededModal, refreshUsage } = useSubscription()
+ const { locale, tBilingual } = useI18n()
+ const slug = (params?.tenantSlug as string) || company?.slug || 'my-company'
+ const companyId = company?.id
 
   // Hydration state
-  const [mounted, setMounted] = useState(false)
-  useEffect(() => {
-    setMounted(true)
+ const [mounted, setMounted] = useState(false)
+ useEffect(() => {
+ setMounted(true)
   }, [])
 
   // Data state
-  const [products, setProducts] = useState<ProductRecord[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [fetchError, setFetchError] = useState<string | null>(null)
-  const [isPending, startTransition] = useTransition()
+ const [products, setProducts] = useState<ProductRecord[]>([])
+ const [isLoading, setIsLoading] = useState(true)
+ const [fetchError, setFetchError] = useState<string | null>(null)
+ const [isPending, startTransition] = useTransition()
 
   // Filter & Search
-  const [search, setSearch] = useState('')
-  const [selectedCategory, setSelectedCategory] = useState<string>('all')
-  const [selectedType, setSelectedType] = useState<string>('all')
-  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'low_margin' | 'archived'>('active')
-  const [entityTypeFilter, setEntityTypeFilter] = useState<'all' | 'product' | 'service' | 'material' | 'outsource' | 'finishing' | 'additional' | 'installation' | 'printing_methods'>('all')
+ const [search, setSearch] = useState('')
+ const [selectedCategory, setSelectedCategory] = useState<string>('all')
+ const [selectedType, setSelectedType] = useState<string>('all')
+ const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'low_margin' | 'archived'>('active')
+ const [entityTypeFilter, setEntityTypeFilter] = useState<'all' | 'product' | 'service' | 'material' | 'outsource' | 'finishing' | 'additional' | 'installation' | 'printing_methods'>('all')
 
   // Notification alert
-  const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
+ const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
 
   // Configuration Masters State
-  const [printingMethods, setPrintingMethods] = useState<PrintingMethod[]>([])
-  const [finishingOptions, setFinishingOptions] = useState<FinishingOptionRecord[]>([])
-  const [additionalOptions, setAdditionalOptions] = useState<AdditionalOptionRecord[]>([])
-  const [installationOptions, setInstallationOptions] = useState<InstallationOptionRecord[]>([])
-  const [machineries, setMachineries] = useState<MachineryRecord[]>([])
+ const [printingMethods, setPrintingMethods] = useState<PrintingMethod[]>([])
+ const [finishingOptions, setFinishingOptions] = useState<FinishingOptionRecord[]>([])
+ const [additionalOptions, setAdditionalOptions] = useState<AdditionalOptionRecord[]>([])
+ const [installationOptions, setInstallationOptions] = useState<InstallationOptionRecord[]>([])
+ const [machineries, setMachineries] = useState<MachineryRecord[]>([])
 
   // Rebuilt V3 Modals State
-  const [isTypeSelectorOpen, setIsTypeSelectorOpen] = useState(false)
-  const [isReadyProductModalOpen, setIsReadyProductModalOpen] = useState(false)
-  const [isServiceModalOpen, setIsServiceModalOpen] = useState(false)
-  const [isMaterialModalOpen, setIsMaterialModalOpen] = useState(false)
-  const [isOutsourceModalOpen, setIsOutsourceModalOpen] = useState(false)
+ const [isTypeSelectorOpen, setIsTypeSelectorOpen] = useState(false)
+ const [isReadyProductModalOpen, setIsReadyProductModalOpen] = useState(false)
+ const [isServiceModalOpen, setIsServiceModalOpen] = useState(false)
+ const [isMaterialModalOpen, setIsMaterialModalOpen] = useState(false)
+ const [isOutsourceModalOpen, setIsOutsourceModalOpen] = useState(false)
 
   // Configuration Master Modals State
-  const [isPrintingMethodModalOpen, setIsPrintingMethodModalOpen] = useState(false)
-  const [editingPrintingMethod, setEditingPrintingMethod] = useState<PrintingMethod | null>(null)
-  const [isFinishingModalOpen, setIsFinishingModalOpen] = useState(false)
-  const [editingFinishing, setEditingFinishing] = useState<FinishingOptionRecord | null>(null)
-  const [isAdditionalModalOpen, setIsAdditionalModalOpen] = useState(false)
-  const [editingAdditional, setEditingAdditional] = useState<AdditionalOptionRecord | null>(null)
-  const [isInstallationModalOpen, setIsInstallationModalOpen] = useState(false)
-  const [editingInstallation, setEditingInstallation] = useState<InstallationOptionRecord | null>(null)
+ const [isPrintingMethodModalOpen, setIsPrintingMethodModalOpen] = useState(false)
+ const [editingPrintingMethod, setEditingPrintingMethod] = useState<PrintingMethod | null>(null)
+ const [isFinishingModalOpen, setIsFinishingModalOpen] = useState(false)
+ const [editingFinishing, setEditingFinishing] = useState<FinishingOptionRecord | null>(null)
+ const [isAdditionalModalOpen, setIsAdditionalModalOpen] = useState(false)
+ const [editingAdditional, setEditingAdditional] = useState<AdditionalOptionRecord | null>(null)
+ const [isInstallationModalOpen, setIsInstallationModalOpen] = useState(false)
+ const [editingInstallation, setEditingInstallation] = useState<InstallationOptionRecord | null>(null)
 
   // Legacy modal state fallback
-  const [isCreateOpen, setIsCreateOpen] = useState(false)
-  const [formTab, setFormTab] = useState<'basic' | 'units' | 'pricing' | 'costing' | 'components' | 'suppliers' | 'production' | 'advanced'>('basic')
-  const [expandedSections, setExpandedSections] = useState<{
-    purchasing?: boolean
-    production?: boolean
-    minimums?: boolean
-    costing?: boolean
-    components?: boolean
+ const [isCreateOpen, setIsCreateOpen] = useState(false)
+ const [formTab, setFormTab] = useState<'basic' | 'units' | 'pricing' | 'costing' | 'components' | 'suppliers' | 'production' | 'advanced'>('basic')
+ const [expandedSections, setExpandedSections] = useState<{
+ purchasing?: boolean
+ production?: boolean
+ minimums?: boolean
+ costing?: boolean
+ components?: boolean
   }>({})
 
-  const toggleSection = (key: 'purchasing' | 'production' | 'minimums' | 'costing' | 'components') => {
-    setExpandedSections((prev) => ({ ...prev, [key]: !prev[key] }))
+ const toggleSection = (key: 'purchasing' | 'production' | 'minimums' | 'costing' | 'components') => {
+ setExpandedSections((prev) => ({ ...prev, [key]: !prev[key] }))
   }
 
-  const [editingProduct, setEditingProduct] = useState<ProductRecord | null>(null)
-  const [pricingProduct, setPricingProduct] = useState<ProductRecord | null>(null)
-  const [newPrice, setNewPrice] = useState<number>(0)
-  const [newPurchasePrice, setNewPurchasePrice] = useState<number>(0)
-  const [newTargetMargin, setNewTargetMargin] = useState<number>(35)
-  const [newWastage, setNewWastage] = useState<number>(0)
-  const [priceReason, setPriceReason] = useState<string>('')
-  const [deletingProduct, setDeletingProduct] = useState<ProductRecord | null>(null)
-  const [deletionSafety, setDeletionSafety] = useState<{ isSafe: boolean; references: any; reason?: string } | null>(null)
+ const [editingProduct, setEditingProduct] = useState<ProductRecord | null>(null)
+ const [pricingProduct, setPricingProduct] = useState<ProductRecord | null>(null)
+ const [newPrice, setNewPrice] = useState<number>(0)
+ const [newPurchasePrice, setNewPurchasePrice] = useState<number>(0)
+ const [newTargetMargin, setNewTargetMargin] = useState<number>(35)
+ const [newWastage, setNewWastage] = useState<number>(0)
+ const [priceReason, setPriceReason] = useState<string>('')
+ const [deletingProduct, setDeletingProduct] = useState<ProductRecord | null>(null)
+ const [deletionSafety, setDeletionSafety] = useState<{ isSafe: boolean; references: any; reason?: string } | null>(null)
 
   // Supplier quote state
-  const [supplierPrices, setSupplierPrices] = useState<ProductSupplierPriceRecord[]>([])
-  const [newSupplier, setNewSupplier] = useState({
-    supplier_name: '',
-    supplier_sku: '',
-    purchase_unit: 'roll',
-    conversion_ratio: 1640,
-    purchase_price: 8500,
-    moq: 1,
-    lead_time_days: 2,
-    notes: '',
+ const [supplierPrices, setSupplierPrices] = useState<ProductSupplierPriceRecord[]>([])
+ const [newSupplier, setNewSupplier] = useState({
+ supplier_name: '',
+ supplier_sku: '',
+ purchase_unit: 'roll',
+ conversion_ratio: 1640,
+ purchase_price: 8500,
+ moq: 1,
+ lead_time_days: 2,
+ notes: '',
   })
 
   // 3-dot dropdown menu state for catalog tables
-  const [activeMenuProductId, setActiveMenuProductId] = useState<string | null>(null)
+ const [activeMenuProductId, setActiveMenuProductId] = useState<string | null>(null)
 
   // Component recipe state
-  const [newComponent, setNewComponent] = useState<ProductComponent>({
-    component_product_id: '',
-    name: '',
-    quantity: 1,
-    unit: 'pcs',
-    waste_percent: 0,
-    cost_contribution: 0,
-    is_required: true,
-    production_role: 'material',
+ const [newComponent, setNewComponent] = useState<ProductComponent>({
+ component_product_id: '',
+ name: '',
+ quantity: 1,
+ unit: 'pcs',
+ waste_percent: 0,
+ cost_contribution: 0,
+ is_required: true,
+ production_role: 'material',
   })
 
   // Fast Quote Modal State
-  const [fastQuoteProduct, setFastQuoteProduct] = useState<ProductRecord | null>(null)
-  const [quoteCustomerName, setQuoteCustomerName] = useState('')
-  const [quoteCustomerPhone, setQuoteCustomerPhone] = useState('')
-  const [quoteWidth, setQuoteWidth] = useState<number>(10)
-  const [quoteHeight, setQuoteHeight] = useState<number>(4)
-  const [quoteDimUnit, setQuoteDimUnit] = useState<'ft' | 'inch' | 'm'>('ft')
-  const [quoteQuantity, setQuoteQuantity] = useState<number>(1)
-  const [quoteIncludeHemming, setQuoteIncludeHemming] = useState(true)
-  const [quoteIncludeEyelets, setQuoteIncludeEyelets] = useState(true)
-  const [quoteIncludeLamination, setQuoteIncludeLamination] = useState(false)
-  const [quoteIncludeInstallation, setQuoteIncludeInstallation] = useState(false)
-  const [quoteIncludeDelivery, setQuoteIncludeDelivery] = useState(false)
-  const [quoteDiscountFlat, setQuoteDiscountFlat] = useState<number>(0)
-  const [quoteDiscountPercent, setQuoteDiscountPercent] = useState<number>(0)
-  const [quoteRateOverride, setQuoteRateOverride] = useState<number | null>(null)
-  const [resolvedPriceInfo, setResolvedPriceInfo] = useState<ResolvedProductPrice | null>(null)
-  const [createdQuoteNumber, setCreatedQuoteNumber] = useState<string | null>(null)
+ const [fastQuoteProduct, setFastQuoteProduct] = useState<ProductRecord | null>(null)
+ const [quoteCustomerName, setQuoteCustomerName] = useState('')
+ const [quoteCustomerPhone, setQuoteCustomerPhone] = useState('')
+ const [quoteWidth, setQuoteWidth] = useState<number>(10)
+ const [quoteHeight, setQuoteHeight] = useState<number>(4)
+ const [quoteDimUnit, setQuoteDimUnit] = useState<'ft' | 'inch' | 'm'>('ft')
+ const [quoteQuantity, setQuoteQuantity] = useState<number>(1)
+ const [quoteIncludeHemming, setQuoteIncludeHemming] = useState(true)
+ const [quoteIncludeEyelets, setQuoteIncludeEyelets] = useState(true)
+ const [quoteIncludeLamination, setQuoteIncludeLamination] = useState(false)
+ const [quoteIncludeInstallation, setQuoteIncludeInstallation] = useState(false)
+ const [quoteIncludeDelivery, setQuoteIncludeDelivery] = useState(false)
+ const [quoteDiscountFlat, setQuoteDiscountFlat] = useState<number>(0)
+ const [quoteDiscountPercent, setQuoteDiscountPercent] = useState<number>(0)
+ const [quoteRateOverride, setQuoteRateOverride] = useState<number | null>(null)
+ const [resolvedPriceInfo, setResolvedPriceInfo] = useState<ResolvedProductPrice | null>(null)
+ const [createdQuoteNumber, setCreatedQuoteNumber] = useState<string | null>(null)
 
   // Form State for Create/Edit Modal
-  const [formData, setFormData] = useState({
-    name: '',
-    name_bn: '',
-    sku: '',
-    category: 'flex_banner',
-    product_type: 'print_service' as ProductType,
-    commercial_type: 'production_product' as CommercialProductType,
-    measurement_type: 'area' as MeasurementType,
-    pricing_method: 'per_area' as PricingMethod,
-    purchase_unit: 'roll',
-    purchase_price: 8500,
-    selling_unit: 'sft',
-    conversion_ratio: 1640,
-    production_unit: 'sft',
-    default_wastage_percentage: 5.0,
-    target_margin_percentage: 40.0,
-    minimum_charge: 0,
-    min_order_quantity: 1.0,
-    min_billable_quantity: 0,
-    allow_manual_override: true,
-    min_allowed_margin_percent: 15.0,
-    price_tiers: {
-      retail: 28,
-      corporate: 26,
-      dealer: 24,
-      wholesale: 22,
-      custom: 0,
+ const [formData, setFormData] = useState({
+ name: '',
+ name_bn: '',
+ sku: '',
+ category: 'flex_banner',
+ product_type: 'print_service' as ProductType,
+ commercial_type: 'production_product' as CommercialProductType,
+ measurement_type: 'area' as MeasurementType,
+ pricing_method: 'per_area' as PricingMethod,
+ purchase_unit: 'roll',
+ purchase_price: 8500,
+ selling_unit: 'sft',
+ conversion_ratio: 1640,
+ production_unit: 'sft',
+ default_wastage_percentage: 5.0,
+ target_margin_percentage: 40.0,
+ minimum_charge: 0,
+ min_order_quantity: 1.0,
+ min_billable_quantity: 0,
+ allow_manual_override: true,
+ min_allowed_margin_percent: 15.0,
+ price_tiers: {
+ retail: 28,
+ corporate: 26,
+ dealer: 24,
+ wholesale: 22,
+ custom: 0,
     } as ProductPriceTiers,
-    cost_breakdown: {
-      material: 5.46,
-      ink: 0,
-      labor: 0,
-      machine: 0,
-      finishing: 0,
-      fabrication: 0,
-      installation: 0,
-      delivery: 0,
-      other_direct_cost: 0,
+ cost_breakdown: {
+ material: 5.46,
+ ink: 0,
+ labor: 0,
+ machine: 0,
+ finishing: 0,
+ fabrication: 0,
+ installation: 0,
+ delivery: 0,
+ other_direct_cost: 0,
     } as ProductCostBreakdown,
-    components: [] as ProductComponent[],
-    vat_applicable: false,
-    is_tax_inclusive: false,
-    roll_width_ft: null as number | null,
-    roll_length_ft: null as number | null,
-    sheet_width_ft: null as number | null,
-    sheet_length_ft: null as number | null,
-    unit: 'sft' as UnitOfMeasure,
-    material_spec: '',
-    dimensions_spec: '',
-    description: '',
-    description_bn: '',
-    base_cost: 5.46,
-    selling_price: 28.0,
-    min_price: 22.0,
-    tax_rate: 7.5,
-    requires_design: false,
-    requires_approval: false,
-    requires_production: true,
-    requires_fabrication: false,
-    requires_finishing: false,
-    requires_installation: false,
-    requires_delivery: false,
-    default_department: 'printing',
-    estimated_production_time_hours: 4.0,
-    default_finishing: '',
-    production_instructions: '',
-    internal_notes: '',
+ components: [] as ProductComponent[],
+ vat_applicable: false,
+ is_tax_inclusive: false,
+ roll_width_ft: null as number | null,
+ roll_length_ft: null as number | null,
+ sheet_width_ft: null as number | null,
+ sheet_length_ft: null as number | null,
+ unit: 'sft' as UnitOfMeasure,
+ material_spec: '',
+ dimensions_spec: '',
+ description: '',
+ description_bn: '',
+ base_cost: 5.46,
+ selling_price: 28.0,
+ min_price: 22.0,
+ tax_rate: 7.5,
+ requires_design: false,
+ requires_approval: false,
+ requires_production: true,
+ requires_fabrication: false,
+ requires_finishing: false,
+ requires_installation: false,
+ requires_delivery: false,
+ default_department: 'printing',
+ estimated_production_time_hours: 4.0,
+ default_finishing: '',
+ production_instructions: '',
+ internal_notes: '',
   })
 
-  const showNotification = (message: string, type: 'success' | 'error' = 'success') => {
-    setNotification({ message, type })
-    setTimeout(() => setNotification(null), 4500)
+ const showNotification = (message: string, type: 'success' | 'error' = 'success') => {
+ setNotification({ message, type })
+ setTimeout(() => setNotification(null), 4500)
   }
 
   // Load products authoritatively
-  const loadProducts = async () => {
-    setIsLoading(true)
-    setFetchError(null)
-    try {
-      const res = await getProductsAction(companyId, false)
-      if (res.success && res.data) {
-        setProducts(res.data)
+ const loadProducts = async () => {
+ setIsLoading(true)
+ setFetchError(null)
+ try {
+ const res = await getProductsAction(companyId, false)
+ if (res.success && res.data) {
+ setProducts(res.data)
       } else {
-        setFetchError(res.error || 'Failed to load catalog items from database.')
+ setFetchError(res.error || 'Failed to load catalog items from database.')
       }
     } catch (err: any) {
-      setFetchError(err.message || 'Network error fetching products.')
+ setFetchError(err.message || 'Network error fetching products.')
     } finally {
-      setIsLoading(false)
+ setIsLoading(false)
     }
   }
 
   // Category State
-  const [categories, setCategories] = useState<ProductCategoryRecord[]>([])
-  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false)
-  const [editingCategory, setEditingCategory] = useState<ProductCategoryRecord | null>(null)
+ const [categories, setCategories] = useState<ProductCategoryRecord[]>([])
+ const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false)
+ const [editingCategory, setEditingCategory] = useState<ProductCategoryRecord | null>(null)
 
-  const loadCategories = async () => {
-    try {
-      const res = await getCategoriesAction(companyId, false)
-      if (res && res.success && Array.isArray(res.data)) {
-        setCategories(res.data)
+ const loadCategories = async () => {
+ try {
+ const res = await getCategoriesAction(companyId, false)
+ if (res && res.success && Array.isArray(res.data)) {
+ setCategories(res.data)
       }
     } catch (err) {
-      console.error('Failed to load categories', err)
+ console.error('Failed to load categories', err)
     }
   }
 
   // Load configuration masters
-  const loadPrintingMethods = async () => {
-    try {
-      const data = await getPrintingMethodsAction()
-      if (Array.isArray(data)) setPrintingMethods(data)
+ const loadPrintingMethods = async () => {
+ try {
+ const data = await getPrintingMethodsAction()
+ if (Array.isArray(data)) setPrintingMethods(data)
     } catch (err) {
-      console.error('Failed to load printing methods', err)
+ console.error('Failed to load printing methods', err)
     }
   }
 
-  const loadFinishingOptions = async () => {
-    try {
-      const data = await getFinishingOptionsAction()
-      if (Array.isArray(data)) setFinishingOptions(data)
+ const loadFinishingOptions = async () => {
+ try {
+ const data = await getFinishingOptionsAction()
+ if (Array.isArray(data)) setFinishingOptions(data)
     } catch (err) {
-      console.error('Failed to load finishing options', err)
+ console.error('Failed to load finishing options', err)
     }
   }
 
-  const loadAdditionalOptions = async () => {
-    try {
-      const data = await getAdditionalOptionsAction()
-      if (Array.isArray(data)) setAdditionalOptions(data)
+ const loadAdditionalOptions = async () => {
+ try {
+ const data = await getAdditionalOptionsAction()
+ if (Array.isArray(data)) setAdditionalOptions(data)
     } catch (err) {
-      console.error('Failed to load additional options', err)
+ console.error('Failed to load additional options', err)
     }
   }
 
-  const loadInstallationOptions = async () => {
-    try {
-      const data = await getInstallationOptionsAction()
-      if (Array.isArray(data)) setInstallationOptions(data)
+ const loadInstallationOptions = async () => {
+ try {
+ const data = await getInstallationOptionsAction()
+ if (Array.isArray(data)) setInstallationOptions(data)
     } catch (err) {
-      console.error('Failed to load installation options', err)
+ console.error('Failed to load installation options', err)
     }
   }
 
-  const loadMachineries = async () => {
-    try {
-      const res = await getMachineriesAction()
-      if (res && res.success && Array.isArray(res.data)) {
-        setMachineries(res.data)
+ const loadMachineries = async () => {
+ try {
+ const res = await getMachineriesAction()
+ if (res && res.success && Array.isArray(res.data)) {
+ setMachineries(res.data)
       }
     } catch (err) {
-      console.error('Failed to load machineries', err)
+ console.error('Failed to load machineries', err)
     }
   }
 
-  useEffect(() => {
-    loadProducts()
-    loadCategories()
-    loadPrintingMethods()
-    loadFinishingOptions()
-    loadAdditionalOptions()
-    loadInstallationOptions()
-    loadMachineries()
+ useEffect(() => {
+ loadProducts()
+ loadCategories()
+ loadPrintingMethods()
+ loadFinishingOptions()
+ loadAdditionalOptions()
+ loadInstallationOptions()
+ loadMachineries()
 
-    const handleRealtimeSync = () => {
-      loadProducts()
-      loadCategories()
-      loadPrintingMethods()
-      loadFinishingOptions()
-      loadAdditionalOptions()
-      loadInstallationOptions()
-      loadMachineries()
+ const handleRealtimeSync = () => {
+ loadProducts()
+ loadCategories()
+ loadPrintingMethods()
+ loadFinishingOptions()
+ loadAdditionalOptions()
+ loadInstallationOptions()
+ loadMachineries()
     }
 
-    if (typeof window !== 'undefined') {
-      window.addEventListener('printerp_table_synced:products', handleRealtimeSync)
-      window.addEventListener('printerp_table_synced:product_categories', handleRealtimeSync)
-      window.addEventListener('printerp_table_synced:machines', handleRealtimeSync)
-      window.addEventListener('printerp_table_synced', handleRealtimeSync)
-      window.addEventListener('printerp_data_sync', handleRealtimeSync)
-      window.addEventListener('storage', handleRealtimeSync)
+ if (typeof window !== 'undefined') {
+ window.addEventListener('printerp_table_synced:products', handleRealtimeSync)
+ window.addEventListener('printerp_table_synced:product_categories', handleRealtimeSync)
+ window.addEventListener('printerp_table_synced:machines', handleRealtimeSync)
+ window.addEventListener('printerp_table_synced', handleRealtimeSync)
+ window.addEventListener('printerp_data_sync', handleRealtimeSync)
+ window.addEventListener('storage', handleRealtimeSync)
     }
 
-    return () => {
-      if (typeof window !== 'undefined') {
-        window.removeEventListener('printerp_table_synced:products', handleRealtimeSync)
-        window.removeEventListener('printerp_table_synced:product_categories', handleRealtimeSync)
-        window.removeEventListener('printerp_table_synced:machines', handleRealtimeSync)
-        window.removeEventListener('printerp_table_synced', handleRealtimeSync)
-        window.removeEventListener('printerp_data_sync', handleRealtimeSync)
-        window.removeEventListener('storage', handleRealtimeSync)
+ return () => {
+ if (typeof window !== 'undefined') {
+ window.removeEventListener('printerp_table_synced:products', handleRealtimeSync)
+ window.removeEventListener('printerp_table_synced:product_categories', handleRealtimeSync)
+ window.removeEventListener('printerp_table_synced:machines', handleRealtimeSync)
+ window.removeEventListener('printerp_table_synced', handleRealtimeSync)
+ window.removeEventListener('printerp_data_sync', handleRealtimeSync)
+ window.removeEventListener('storage', handleRealtimeSync)
       }
     }
   }, [companyId])
 
   // Close 3-dot dropdown menu on outside click
-  useEffect(() => {
-    const handleDocumentClick = (e: MouseEvent) => {
-      const target = e.target as HTMLElement | null
-      if (!target?.closest('[data-product-menu]')) {
-        setActiveMenuProductId(null)
+ useEffect(() => {
+ const handleDocumentClick = (e: MouseEvent) => {
+ const target = e.target as HTMLElement | null
+ if (!target?.closest('[data-product-menu]')) {
+ setActiveMenuProductId(null)
       }
     }
-    if (typeof window !== 'undefined') {
-      window.addEventListener('click', handleDocumentClick)
+ if (typeof window !== 'undefined') {
+ window.addEventListener('click', handleDocumentClick)
     }
-    return () => {
-      if (typeof window !== 'undefined') {
-        window.removeEventListener('click', handleDocumentClick)
+ return () => {
+ if (typeof window !== 'undefined') {
+ window.removeEventListener('click', handleDocumentClick)
       }
     }
   }, [])
 
   // Handlers for Configuration Masters
-  const handleSavePrintingMethod = async (data: Partial<PrintingMethod>) => {
-    const res = await savePrintingMethodAction({ ...data, id: editingPrintingMethod?.id })
-    if (res) {
-      showNotification(`Printing method '${data.name}' saved successfully.`)
-      await loadPrintingMethods()
+ const handleSavePrintingMethod = async (data: Partial<PrintingMethod>) => {
+ const res = await savePrintingMethodAction({ ...data, id: editingPrintingMethod?.id })
+ if (res) {
+ showNotification(`Printing method '${data.name}' saved successfully.`)
+ await loadPrintingMethods()
     }
   }
 
-  const handleDeletePrintingMethod = async (id: string) => {
-    const res = await deletePrintingMethodAction(id)
-    if (res) {
-      showNotification('Printing method deleted.')
-      await loadPrintingMethods()
+ const handleDeletePrintingMethod = async (id: string) => {
+ const res = await deletePrintingMethodAction(id)
+ if (res) {
+ showNotification('Printing method deleted.')
+ await loadPrintingMethods()
     }
   }
 
-  const handleSaveFinishingOption = async (data: Partial<FinishingOptionRecord>) => {
-    const res = await saveFinishingOptionAction({ ...data, id: editingFinishing?.id })
-    if (res) {
-      showNotification(`Finishing option '${data.name}' saved.`)
-      await loadFinishingOptions()
+ const handleSaveFinishingOption = async (data: Partial<FinishingOptionRecord>) => {
+ const res = await saveFinishingOptionAction({ ...data, id: editingFinishing?.id })
+ if (res) {
+ showNotification(`Finishing option '${data.name}' saved.`)
+ await loadFinishingOptions()
     }
   }
 
-  const handleDeleteFinishingOption = async (id: string) => {
-    const res = await deleteFinishingOptionAction(id)
-    if (res) {
-      showNotification('Finishing option deleted.')
-      await loadFinishingOptions()
+ const handleDeleteFinishingOption = async (id: string) => {
+ const res = await deleteFinishingOptionAction(id)
+ if (res) {
+ showNotification('Finishing option deleted.')
+ await loadFinishingOptions()
     }
   }
 
-  const handleSaveAdditionalOption = async (data: Partial<AdditionalOptionRecord>) => {
-    const res = await saveAdditionalOptionAction({ ...data, id: editingAdditional?.id })
-    if (res) {
-      showNotification(`Additional option '${data.name}' saved.`)
-      await loadAdditionalOptions()
+ const handleSaveAdditionalOption = async (data: Partial<AdditionalOptionRecord>) => {
+ const res = await saveAdditionalOptionAction({ ...data, id: editingAdditional?.id })
+ if (res) {
+ showNotification(`Additional option '${data.name}' saved.`)
+ await loadAdditionalOptions()
     }
   }
 
-  const handleDeleteAdditionalOption = async (id: string) => {
-    const res = await deleteAdditionalOptionAction(id)
-    if (res) {
-      showNotification('Additional option deleted.')
-      await loadAdditionalOptions()
+ const handleDeleteAdditionalOption = async (id: string) => {
+ const res = await deleteAdditionalOptionAction(id)
+ if (res) {
+ showNotification('Additional option deleted.')
+ await loadAdditionalOptions()
     }
   }
 
-  const handleSaveInstallationOption = async (data: Partial<InstallationOptionRecord>) => {
-    const res = await saveInstallationOptionAction({ ...data, id: editingInstallation?.id })
-    if (res) {
-      showNotification(`Installation option '${data.name}' saved.`)
-      await loadInstallationOptions()
+ const handleSaveInstallationOption = async (data: Partial<InstallationOptionRecord>) => {
+ const res = await saveInstallationOptionAction({ ...data, id: editingInstallation?.id })
+ if (res) {
+ showNotification(`Installation option '${data.name}' saved.`)
+ await loadInstallationOptions()
     }
   }
 
-  const handleDeleteInstallationOption = async (id: string) => {
-    const res = await deleteInstallationOptionAction(id)
-    if (res) {
-      showNotification('Installation option deleted.')
-      await loadInstallationOptions()
+ const handleDeleteInstallationOption = async (id: string) => {
+ const res = await deleteInstallationOptionAction(id)
+ if (res) {
+ showNotification('Installation option deleted.')
+ await loadInstallationOptions()
     }
   }
 
-  const handleSelectEntityType = (type: 'product' | 'service' | 'material' | 'outsource' | 'finishing' | 'additional' | 'installation' | 'printing_method') => {
-    setEditingProduct(null)
-    if (type === 'product') {
-      setIsReadyProductModalOpen(true)
+ const handleSelectEntityType = (type: 'product' | 'service' | 'material' | 'outsource' | 'finishing' | 'additional' | 'installation' | 'printing_method') => {
+ setEditingProduct(null)
+ if (type === 'product') {
+ setIsReadyProductModalOpen(true)
     } else if (type === 'service') {
-      setIsServiceModalOpen(true)
+ setIsServiceModalOpen(true)
     } else if (type === 'material') {
-      setIsMaterialModalOpen(true)
+ setIsMaterialModalOpen(true)
     } else if (type === 'outsource') {
-      setIsOutsourceModalOpen(true)
+ setIsOutsourceModalOpen(true)
     } else if (type === 'printing_method') {
-      setEditingPrintingMethod(null)
-      setIsPrintingMethodModalOpen(true)
+ setEditingPrintingMethod(null)
+ setIsPrintingMethodModalOpen(true)
     } else if (type === 'finishing') {
-      setEditingFinishing(null)
-      setIsFinishingModalOpen(true)
+ setEditingFinishing(null)
+ setIsFinishingModalOpen(true)
     } else if (type === 'additional') {
-      setEditingAdditional(null)
-      setIsAdditionalModalOpen(true)
+ setEditingAdditional(null)
+ setIsAdditionalModalOpen(true)
     } else if (type === 'installation') {
-      setEditingInstallation(null)
-      setIsInstallationModalOpen(true)
+ setEditingInstallation(null)
+ setIsInstallationModalOpen(true)
     }
   }
 
   // Computed live commercial numbers for create/edit modal
-  const liveCommercialMath = useMemo(() => {
-    const isService =
-      formData.commercial_type === 'service' ||
-      formData.commercial_type === 'installation' ||
-      formData.commercial_type === 'delivery' ||
-      formData.measurement_type === 'job'
+ const liveCommercialMath = useMemo(() => {
+ const isService =
+ formData.commercial_type === 'service' ||
+ formData.commercial_type === 'installation' ||
+ formData.commercial_type === 'delivery' ||
+ formData.measurement_type === 'job'
 
-    const purchasePrice = isService ? 0 : Number(formData.purchase_price) || 0
-    const conversionRatio = getProductConversionRatio(formData)
-    const wastage = isService ? 0 : Math.max(0, Number(formData.default_wastage_percentage) || 0)
-    const targetMargin = Number(formData.target_margin_percentage) || 35.0
-    const currentSellingPrice = Number(formData.selling_price) || 0
+ const purchasePrice = isService ? 0 : Number(formData.purchase_price) || 0
+ const conversionRatio = getProductConversionRatio(formData)
+ const wastage = isService ? 0 : Math.max(0, Number(formData.default_wastage_percentage) || 0)
+ const targetMargin = Number(formData.target_margin_percentage) || 35.0
+ const currentSellingPrice = Number(formData.selling_price) || 0
 
-    let effectiveMaterialCost = Number(formData.base_cost) || 0
-    let usableUnits = conversionRatio
-    if (!isService && purchasePrice > 0) {
-      const calc = calculateEffectiveUnitCost({
-        purchasePrice,
-        conversionRatio,
-        defaultWastagePercent: wastage,
+ let effectiveMaterialCost = Number(formData.base_cost) || 0
+ let usableUnits = conversionRatio
+ if (!isService && purchasePrice > 0) {
+ const calc = calculateEffectiveUnitCost({
+ purchasePrice,
+ conversionRatio,
+ defaultWastagePercent: wastage,
       })
-      effectiveMaterialCost = calc.effectiveCostPerSellingUnit
-      usableUnits = calc.expectedUsableUnits
+ effectiveMaterialCost = calc.effectiveCostPerSellingUnit
+ usableUnits = calc.expectedUsableUnits
     }
 
     // Direct cost breakdown sum
-    const cb = formData.cost_breakdown || {}
-    const extraDirectCost =
+ const cb = formData.cost_breakdown || {}
+ const extraDirectCost =
       (Number(cb.ink) || 0) +
       (Number(cb.labor) || 0) +
       (Number(cb.machine) || 0) +
@@ -624,121 +624,121 @@ export default function ProductsCatalogPage() {
       (Number(cb.other_direct_cost) || 0)
 
     // Components cost rollup (if any)
-    const componentsCost = (formData.components || []).reduce((acc, c) => {
-      const cCost = Number(c.cost_contribution) || 0
-      const cQty = Number(c.quantity) || 1
-      const cWaste = Number(c.waste_percent) || 0
-      return acc + (cCost * cQty * (1 + cWaste / 100))
+ const componentsCost = (formData.components || []).reduce((acc, c) => {
+ const cCost = Number(c.cost_contribution) || 0
+ const cQty = Number(c.quantity) || 1
+ const cWaste = Number(c.waste_percent) || 0
+ return acc + (cCost * cQty * (1 + cWaste / 100))
     }, 0)
 
-    const totalDirectCost = effectiveMaterialCost + extraDirectCost + componentsCost
-    const costBasisType: CostBasisType = (extraDirectCost > 0 || componentsCost > 0) ? 'direct_cost' : 'material'
-    const costBasis = costBasisType === 'direct_cost' ? totalDirectCost : effectiveMaterialCost
+ const totalDirectCost = effectiveMaterialCost + extraDirectCost + componentsCost
+ const costBasisType: CostBasisType = (extraDirectCost > 0 || componentsCost > 0) ? 'direct_cost' : 'material'
+ const costBasis = costBasisType === 'direct_cost' ? totalDirectCost : effectiveMaterialCost
 
-    const suggestedSellingPrice = calculateSuggestedSellingPrice(costBasis, targetMargin)
-    const marginCalc = calculateGrossMargin(costBasis, currentSellingPrice)
+ const suggestedSellingPrice = calculateSuggestedSellingPrice(costBasis, targetMargin)
+ const marginCalc = calculateGrossMargin(costBasis, currentSellingPrice)
 
-    return {
-      isService,
-      usableUnits: Math.round(usableUnits * 100) / 100,
-      effectiveMaterialCost: Math.round(effectiveMaterialCost * 100) / 100,
-      extraDirectCost: Math.round(extraDirectCost * 100) / 100,
-      componentsCost: Math.round(componentsCost * 100) / 100,
-      totalDirectCost: Math.round(totalDirectCost * 100) / 100,
-      costBasisType,
-      costBasis: Math.round(costBasis * 100) / 100,
-      suggestedSellingPrice,
-      grossProfit: marginCalc.grossProfit,
-      grossMarginPercent: marginCalc.grossMarginPercent,
+ return {
+ isService,
+ usableUnits: Math.round(usableUnits * 100) / 100,
+ effectiveMaterialCost: Math.round(effectiveMaterialCost * 100) / 100,
+ extraDirectCost: Math.round(extraDirectCost * 100) / 100,
+ componentsCost: Math.round(componentsCost * 100) / 100,
+ totalDirectCost: Math.round(totalDirectCost * 100) / 100,
+ costBasisType,
+ costBasis: Math.round(costBasis * 100) / 100,
+ suggestedSellingPrice,
+ grossProfit: marginCalc.grossProfit,
+ grossMarginPercent: marginCalc.grossMarginPercent,
     }
   }, [
-    formData.commercial_type,
-    formData.measurement_type,
-    formData.purchase_price,
-    formData.conversion_ratio,
-    formData.default_wastage_percentage,
-    formData.target_margin_percentage,
-    formData.selling_price,
-    formData.base_cost,
-    formData.cost_breakdown,
-    formData.components,
+ formData.commercial_type,
+ formData.measurement_type,
+ formData.purchase_price,
+ formData.conversion_ratio,
+ formData.default_wastage_percentage,
+ formData.target_margin_percentage,
+ formData.selling_price,
+ formData.base_cost,
+ formData.cost_breakdown,
+ formData.components,
   ])
 
   // Load supplier prices when editing
-  const loadSupplierPrices = async (prodId: string) => {
-    try {
-      const res = await getProductSupplierPricesAction(prodId, companyId)
-      if (res.success && res.data) {
-        setSupplierPrices(res.data)
+ const loadSupplierPrices = async (prodId: string) => {
+ try {
+ const res = await getProductSupplierPricesAction(prodId, companyId)
+ if (res.success && res.data) {
+ setSupplierPrices(res.data)
       } else {
-        setSupplierPrices([])
+ setSupplierPrices([])
       }
     } catch {
-      setSupplierPrices([])
+ setSupplierPrices([])
     }
   }
 
   // Product Type and Pricing Definition Cards
-  const PRODUCT_TYPE_CARDS = [
+ const PRODUCT_TYPE_CARDS = [
     {
-      type: 'production_product' as CommercialProductType,
-      label: 'Product',
-      label_bn: 'পণ্য',
-      description: 'Physical item that you sell or produce',
-      icon: Package,
+ type: 'production_product' as CommercialProductType,
+ label: 'Product',
+ label_bn: 'পণ্য',
+ description: 'Physical item that you sell or produce',
+ icon: Package,
     },
     {
-      type: 'service' as CommercialProductType,
-      label: 'Service',
-      label_bn: 'সেবা',
-      description: 'A service such as design, installation, delivery, etc.',
-      icon: Sparkles,
+ type: 'service' as CommercialProductType,
+ label: 'Service',
+ label_bn: 'সেবা',
+ description: 'A service such as design, installation, delivery, etc.',
+ icon: Sparkles,
     },
     {
-      type: 'material' as CommercialProductType,
-      label: 'Material',
-      label_bn: 'কাঁচামাল',
-      description: 'Raw material or substrate stock item',
-      icon: Layers,
+ type: 'material' as CommercialProductType,
+ label: 'Material',
+ label_bn: 'কাঁচামাল',
+ description: 'Raw material or substrate stock item',
+ icon: Layers,
     },
     {
-      type: 'finishing' as CommercialProductType,
-      label: 'Finishing',
-      label_bn: 'ফিনিশিং',
-      description: 'Lamination, eyelet, binding, cutting, etc.',
-      icon: Scissors,
+ type: 'finishing' as CommercialProductType,
+ label: 'Finishing',
+ label_bn: 'ফিনিশিং',
+ description: 'Lamination, eyelet, binding, cutting, etc.',
+ icon: Scissors,
     },
     {
-      type: 'fabrication' as CommercialProductType,
-      label: 'Fabrication',
-      label_bn: 'ফেব্রিকেশন',
-      description: 'Fabrication work such as acrylic, metal, ACP',
-      icon: Wrench,
+ type: 'fabrication' as CommercialProductType,
+ label: 'Fabrication',
+ label_bn: 'ফেব্রিকেশন',
+ description: 'Fabrication work such as acrylic, metal, ACP',
+ icon: Wrench,
     },
     {
-      type: 'installation' as CommercialProductType,
-      label: 'Installation',
-      label_bn: 'ইনস্টলেশন',
-      description: 'Installation or fitting service',
-      icon: Building2,
+ type: 'installation' as CommercialProductType,
+ label: 'Installation',
+ label_bn: 'ইনস্টলেশন',
+ description: 'Installation or fitting service',
+ icon: Building2,
     },
     {
-      type: 'delivery' as CommercialProductType,
-      label: 'Delivery',
-      label_bn: 'ডেলিভারি',
-      description: 'Delivery / transport service',
-      icon: Truck,
+ type: 'delivery' as CommercialProductType,
+ label: 'Delivery',
+ label_bn: 'ডেলিভারি',
+ description: 'Delivery / transport service',
+ icon: Truck,
     },
     {
-      type: 'package' as CommercialProductType,
-      label: 'Package',
-      label_bn: 'প্যাকেজ',
-      description: 'Combination of products/services',
-      icon: Boxes,
+ type: 'package' as CommercialProductType,
+ label: 'Package',
+ label_bn: 'প্যাকেজ',
+ description: 'Combination of products/services',
+ icon: Boxes,
     },
   ]
 
-  const PRICING_PILLS: { id: PricingMethod; label: string; unit: string; symbol: string }[] = [
+ const PRICING_PILLS: { id: PricingMethod; label: string; unit: string; symbol: string }[] = [
     { id: 'per_area', label: 'Per Sqft', unit: 'sft', symbol: '৳ / sqft' },
     { id: 'per_piece', label: 'Per Piece', unit: 'pcs', symbol: '৳ / piece' },
     { id: 'per_job', label: 'Per Job', unit: 'job', symbol: '৳ / job' },
@@ -749,96 +749,96 @@ export default function ProductsCatalogPage() {
     { id: 'formula', label: 'Formula', unit: 'sft', symbol: 'Formula' },
   ]
 
-  const handleSelectProductType = (type: CommercialProductType) => {
-    let defaultSellingUnit = formData.selling_unit || 'sft'
-    let defaultPurchaseUnit = formData.purchase_unit || 'roll'
-    let defaultPricingMethod: PricingMethod = formData.pricing_method || 'per_area'
-    let defaultMeasurementType: MeasurementType = formData.measurement_type || 'area'
-    let defaultDepartment = formData.default_department || 'printing'
-    let requiresProduction = formData.requires_production
-    let requiresFinishing = formData.requires_finishing
-    let requiresFabrication = formData.requires_fabrication
-    let requiresInstallation = formData.requires_installation
-    let requiresDelivery = formData.requires_delivery
+ const handleSelectProductType = (type: CommercialProductType) => {
+ let defaultSellingUnit = formData.selling_unit || 'sft'
+ let defaultPurchaseUnit = formData.purchase_unit || 'roll'
+ let defaultPricingMethod: PricingMethod = formData.pricing_method || 'per_area'
+ let defaultMeasurementType: MeasurementType = formData.measurement_type || 'area'
+ let defaultDepartment = formData.default_department || 'printing'
+ let requiresProduction = formData.requires_production
+ let requiresFinishing = formData.requires_finishing
+ let requiresFabrication = formData.requires_fabrication
+ let requiresInstallation = formData.requires_installation
+ let requiresDelivery = formData.requires_delivery
 
-    if (type === 'ready_product') {
-      defaultSellingUnit = 'pcs'
-      defaultPurchaseUnit = 'pcs'
-      defaultPricingMethod = 'per_piece'
-      defaultMeasurementType = 'piece'
-      defaultDepartment = 'printing'
-      requiresProduction = false
+ if (type === 'ready_product') {
+ defaultSellingUnit = 'pcs'
+ defaultPurchaseUnit = 'pcs'
+ defaultPricingMethod = 'per_piece'
+ defaultMeasurementType = 'piece'
+ defaultDepartment = 'printing'
+ requiresProduction = false
     } else if (type === 'service') {
-      defaultSellingUnit = 'job'
-      defaultPurchaseUnit = 'pcs'
-      defaultPricingMethod = 'per_job'
-      defaultMeasurementType = 'job'
-      defaultDepartment = 'design'
-      requiresProduction = false
-      requiresFinishing = false
-      requiresFabrication = false
-      requiresInstallation = false
-      requiresDelivery = false
+ defaultSellingUnit = 'job'
+ defaultPurchaseUnit = 'pcs'
+ defaultPricingMethod = 'per_job'
+ defaultMeasurementType = 'job'
+ defaultDepartment = 'design'
+ requiresProduction = false
+ requiresFinishing = false
+ requiresFabrication = false
+ requiresInstallation = false
+ requiresDelivery = false
     } else if (type === 'material') {
-      defaultSellingUnit = 'sft'
-      defaultPurchaseUnit = 'roll'
-      defaultPricingMethod = 'per_area'
-      defaultMeasurementType = 'area'
-      defaultDepartment = 'printing'
-      requiresProduction = false
+ defaultSellingUnit = 'sft'
+ defaultPurchaseUnit = 'roll'
+ defaultPricingMethod = 'per_area'
+ defaultMeasurementType = 'area'
+ defaultDepartment = 'printing'
+ requiresProduction = false
     } else if (type === 'finishing') {
-      defaultSellingUnit = 'sft'
-      defaultPurchaseUnit = 'roll'
-      defaultPricingMethod = 'per_area'
-      defaultMeasurementType = 'area'
-      defaultDepartment = 'finishing'
-      requiresProduction = false
-      requiresFinishing = true
+ defaultSellingUnit = 'sft'
+ defaultPurchaseUnit = 'roll'
+ defaultPricingMethod = 'per_area'
+ defaultMeasurementType = 'area'
+ defaultDepartment = 'finishing'
+ requiresProduction = false
+ requiresFinishing = true
     } else if (type === 'fabrication') {
-      defaultSellingUnit = 'sft'
-      defaultPurchaseUnit = 'sheet'
-      defaultPricingMethod = 'per_area'
-      defaultMeasurementType = 'area'
-      defaultDepartment = 'fabrication'
-      requiresProduction = true
-      requiresFabrication = true
+ defaultSellingUnit = 'sft'
+ defaultPurchaseUnit = 'sheet'
+ defaultPricingMethod = 'per_area'
+ defaultMeasurementType = 'area'
+ defaultDepartment = 'fabrication'
+ requiresProduction = true
+ requiresFabrication = true
     } else if (type === 'installation') {
-      defaultSellingUnit = 'sft'
-      defaultPurchaseUnit = 'pcs'
-      defaultPricingMethod = 'per_area'
-      defaultMeasurementType = 'area'
-      defaultDepartment = 'installation'
-      requiresProduction = false
-      requiresInstallation = true
+ defaultSellingUnit = 'sft'
+ defaultPurchaseUnit = 'pcs'
+ defaultPricingMethod = 'per_area'
+ defaultMeasurementType = 'area'
+ defaultDepartment = 'installation'
+ requiresProduction = false
+ requiresInstallation = true
     } else if (type === 'delivery') {
-      defaultSellingUnit = 'job'
-      defaultPurchaseUnit = 'pcs'
-      defaultPricingMethod = 'per_job'
-      defaultMeasurementType = 'job'
-      defaultDepartment = 'printing'
-      requiresProduction = false
-      requiresDelivery = true
+ defaultSellingUnit = 'job'
+ defaultPurchaseUnit = 'pcs'
+ defaultPricingMethod = 'per_job'
+ defaultMeasurementType = 'job'
+ defaultDepartment = 'printing'
+ requiresProduction = false
+ requiresDelivery = true
     } else if (type === 'package') {
-      defaultSellingUnit = 'pcs'
-      defaultPurchaseUnit = 'pcs'
-      defaultPricingMethod = 'per_piece'
-      defaultMeasurementType = 'piece'
-      defaultDepartment = 'printing'
-      requiresProduction = true
+ defaultSellingUnit = 'pcs'
+ defaultPurchaseUnit = 'pcs'
+ defaultPricingMethod = 'per_piece'
+ defaultMeasurementType = 'piece'
+ defaultDepartment = 'printing'
+ requiresProduction = true
     } else if (type === 'production_product') {
-      defaultSellingUnit = 'sft'
-      defaultPurchaseUnit = 'roll'
-      defaultPricingMethod = 'per_area'
-      defaultMeasurementType = 'area'
-      defaultDepartment = 'printing'
-      requiresProduction = true
+ defaultSellingUnit = 'sft'
+ defaultPurchaseUnit = 'roll'
+ defaultPricingMethod = 'per_area'
+ defaultMeasurementType = 'area'
+ defaultDepartment = 'printing'
+ requiresProduction = true
     }
 
-    setFormData((prev) => ({
+ setFormData((prev) => ({
       ...prev,
-      commercial_type: type,
-      product_type:
-        type === 'ready_product'
+ commercial_type: type,
+ product_type:
+ type === 'ready_product'
           ? 'ready_product'
           : type === 'service'
           ? 'service'
@@ -855,28 +855,28 @@ export default function ProductsCatalogPage() {
           : type === 'package'
           ? 'package_bundle'
           : 'print_service',
-      selling_unit: defaultSellingUnit,
-      purchase_unit: defaultPurchaseUnit,
-      unit: defaultSellingUnit as UnitOfMeasure,
-      pricing_method: defaultPricingMethod,
-      measurement_type: defaultMeasurementType,
-      default_department: defaultDepartment,
-      requires_production: requiresProduction,
-      requires_finishing: requiresFinishing,
-      requires_fabrication: requiresFabrication,
-      requires_installation: requiresInstallation,
-      requires_delivery: requiresDelivery,
+ selling_unit: defaultSellingUnit,
+ purchase_unit: defaultPurchaseUnit,
+ unit: defaultSellingUnit as UnitOfMeasure,
+ pricing_method: defaultPricingMethod,
+ measurement_type: defaultMeasurementType,
+ default_department: defaultDepartment,
+ requires_production: requiresProduction,
+ requires_finishing: requiresFinishing,
+ requires_fabrication: requiresFabrication,
+ requires_installation: requiresInstallation,
+ requires_delivery: requiresDelivery,
     }))
   }
 
-  const handlePricingMethodSelect = (opt: typeof PRICING_PILLS[0]) => {
-    setFormData((prev) => ({
+ const handlePricingMethodSelect = (opt: typeof PRICING_PILLS[0]) => {
+ setFormData((prev) => ({
       ...prev,
-      pricing_method: opt.id,
-      selling_unit: opt.unit,
-      unit: opt.unit as UnitOfMeasure,
-      measurement_type:
-        opt.id === 'per_area'
+ pricing_method: opt.id,
+ selling_unit: opt.unit,
+ unit: opt.unit as UnitOfMeasure,
+ measurement_type:
+ opt.id === 'per_area'
           ? 'area'
           : opt.id === 'per_piece'
           ? 'piece'
@@ -893,968 +893,952 @@ export default function ProductsCatalogPage() {
   }
 
   // Rebuilt V3 Modal Handlers
-  const handleOpenCreate = () => {
-    const check = checkCanCreate('max_products')
-    if (!check.allowed) {
-      openLimitExceededModal('max_products')
-      return
+ const handleOpenCreate = () => {
+ const check = checkCanCreate('max_products')
+ if (!check.allowed) {
+ openLimitExceededModal('max_products')
+ return
     }
-    setEditingProduct(null)
-    setIsTypeSelectorOpen(true)
+ setEditingProduct(null)
+ setIsTypeSelectorOpen(true)
   }
 
-  const handleOpenEdit = (p: ProductRecord) => {
-    setEditingProduct(p)
-    if (isOutsourceProduct(p)) {
-      setIsOutsourceModalOpen(true)
+ const handleOpenEdit = (p: ProductRecord) => {
+ setEditingProduct(p)
+ if (isOutsourceProduct(p)) {
+ setIsOutsourceModalOpen(true)
     } else if (isServiceProduct(p)) {
-      setIsServiceModalOpen(true)
+ setIsServiceModalOpen(true)
     } else if (isMaterialProduct(p)) {
-      setIsMaterialModalOpen(true)
+ setIsMaterialModalOpen(true)
     } else {
-      setIsReadyProductModalOpen(true)
+ setIsReadyProductModalOpen(true)
     }
   }
 
-  const handleSaveRebuiltProduct = async (productData: Partial<ProductRecord>) => {
-    if (editingProduct) {
-      const res = await updateProductAction(editingProduct.id, productData, companyId)
-      if (!res.success) throw new Error(res.error || 'Failed to update item.')
-      showNotification(`Updated '${productData.name || editingProduct.name}' successfully.`)
+ const handleSaveRebuiltProduct = async (productData: Partial<ProductRecord>) => {
+ if (editingProduct) {
+ const res = await updateProductAction(editingProduct.id, productData, companyId)
+ if (!res.success) throw new Error(res.error || 'Failed to update item.')
+ showNotification(`Updated '${productData.name || editingProduct.name}' successfully.`)
     } else {
-      const res = await createProductAction(productData as any, companyId)
-      if (!res.success) throw new Error(res.error || 'Failed to create item.')
-      refreshUsage()
-      showNotification(`Registered new item '${productData.name}' into catalog.`)
+ const res = await createProductAction(productData as any, companyId)
+ if (!res.success) throw new Error(res.error || 'Failed to create item.')
+ refreshUsage()
+ showNotification(`Registered new item '${productData.name}' into catalog.`)
     }
-    await loadProducts()
+ await loadProducts()
   }
 
   // Legacy open modal fallback
-  const handleOpenLegacyCreate = () => {
-    const check = checkCanCreate('max_products')
-    if (!check.allowed) {
-      openLimitExceededModal('max_products')
-      return
+ const handleOpenLegacyCreate = () => {
+ const check = checkCanCreate('max_products')
+ if (!check.allowed) {
+ openLimitExceededModal('max_products')
+ return
     }
-    setEditingProduct(null)
-    setSupplierPrices([])
-    setFormTab('basic')
-    setExpandedSections({})
-    setFormData({
-      name: '',
-      name_bn: '',
-      sku: `PRD-${Date.now().toString().slice(-4)}`,
-      category: 'flex_banner',
-      product_type: 'print_service',
-      commercial_type: 'production_product',
-      measurement_type: 'area',
-      pricing_method: 'per_area',
-      purchase_unit: 'roll',
-      purchase_price: 8500,
-      selling_unit: 'sft',
-      conversion_ratio: 1640,
-      production_unit: 'sft',
-      default_wastage_percentage: 5.0,
-      target_margin_percentage: 40.0,
-      minimum_charge: 0,
-      min_order_quantity: 1.0,
-      min_billable_quantity: 0,
-      allow_manual_override: true,
-      min_allowed_margin_percent: 15.0,
-      price_tiers: {
-        retail: 28,
-        corporate: 26,
-        dealer: 24,
-        wholesale: 22,
-        custom: 0,
+ setEditingProduct(null)
+ setSupplierPrices([])
+ setFormTab('basic')
+ setExpandedSections({})
+ setFormData({
+ name: '',
+ name_bn: '',
+ sku: `PRD-${Date.now().toString().slice(-4)}`,
+ category: 'flex_banner',
+ product_type: 'print_service',
+ commercial_type: 'production_product',
+ measurement_type: 'area',
+ pricing_method: 'per_area',
+ purchase_unit: 'roll',
+ purchase_price: 8500,
+ selling_unit: 'sft',
+ conversion_ratio: 1640,
+ production_unit: 'sft',
+ default_wastage_percentage: 5.0,
+ target_margin_percentage: 40.0,
+ minimum_charge: 0,
+ min_order_quantity: 1.0,
+ min_billable_quantity: 0,
+ allow_manual_override: true,
+ min_allowed_margin_percent: 15.0,
+ price_tiers: {
+ retail: 28,
+ corporate: 26,
+ dealer: 24,
+ wholesale: 22,
+ custom: 0,
       },
-      cost_breakdown: {
-        material: 5.46,
-        ink: 0,
-        labor: 0,
-        machine: 0,
-        finishing: 0,
-        fabrication: 0,
-        installation: 0,
-        delivery: 0,
-        other_direct_cost: 0,
+ cost_breakdown: {
+ material: 5.46,
+ ink: 0,
+ labor: 0,
+ machine: 0,
+ finishing: 0,
+ fabrication: 0,
+ installation: 0,
+ delivery: 0,
+ other_direct_cost: 0,
       },
-      components: [],
-      vat_applicable: false,
-      is_tax_inclusive: false,
-      roll_width_ft: null,
-      roll_length_ft: null,
-      sheet_width_ft: null,
-      sheet_length_ft: null,
-      unit: 'sft',
-      material_spec: '',
-      dimensions_spec: '',
-      description: '',
-      description_bn: '',
-      base_cost: 5.46,
-      selling_price: 28.0,
-      min_price: 22.0,
-      tax_rate: 7.5,
-      requires_design: false,
-      requires_approval: false,
-      requires_production: true,
-      requires_fabrication: false,
-      requires_finishing: true,
-      requires_installation: false,
-      requires_delivery: false,
-      default_department: 'printing',
-      estimated_production_time_hours: 4.0,
-      default_finishing: 'Standard Hemming & Eyelets',
-      production_instructions: '',
-      internal_notes: '',
+ components: [],
+ vat_applicable: false,
+ is_tax_inclusive: false,
+ roll_width_ft: null,
+ roll_length_ft: null,
+ sheet_width_ft: null,
+ sheet_length_ft: null,
+ unit: 'sft',
+ material_spec: '',
+ dimensions_spec: '',
+ description: '',
+ description_bn: '',
+ base_cost: 5.46,
+ selling_price: 28.0,
+ min_price: 22.0,
+ tax_rate: 7.5,
+ requires_design: false,
+ requires_approval: false,
+ requires_production: true,
+ requires_fabrication: false,
+ requires_finishing: true,
+ requires_installation: false,
+ requires_delivery: false,
+ default_department: 'printing',
+ estimated_production_time_hours: 4.0,
+ default_finishing: 'Standard Hemming & Eyelets',
+ production_instructions: '',
+ internal_notes: '',
     })
-    setIsCreateOpen(true)
+ setIsCreateOpen(true)
   }
 
-  const handleOpenLegacyEdit = (p: ProductRecord) => {
-    setEditingProduct(p)
-    setFormData({
-      name: p.name,
-      name_bn: p.name_bn || '',
-      sku: p.sku,
-      category: p.category || 'flex_banner',
-      product_type: p.product_type || 'print_service',
-      commercial_type: p.commercial_type || 'production_product',
-      measurement_type: p.measurement_type || 'area',
-      pricing_method: p.pricing_method || 'per_area',
-      purchase_unit: p.purchase_unit || 'roll',
-      purchase_price: Number(p.purchase_price) || 0,
-      selling_unit: p.selling_unit || p.unit || 'sft',
-      conversion_ratio: getProductConversionRatio(p),
-      production_unit: p.production_unit || p.unit || 'sft',
-      default_wastage_percentage: Number(p.default_wastage_percentage) || 0,
-      target_margin_percentage: Number(p.target_margin_percentage) || 35.0,
-      minimum_charge: Number(p.minimum_charge) || 0,
-      min_order_quantity: Number(p.min_order_quantity) || 1.0,
-      min_billable_quantity: Number(p.min_billable_quantity) || 0,
-      allow_manual_override: p.allow_manual_override !== false,
-      min_allowed_margin_percent: Number(p.min_allowed_margin_percent) || 15.0,
-      price_tiers: p.price_tiers || {
-        retail: Number(p.selling_price) || 0,
-        corporate: Number(p.selling_price) || 0,
-        dealer: Number(p.selling_price) || 0,
-        wholesale: Number(p.selling_price) || 0,
-        custom: 0,
+ const handleOpenLegacyEdit = (p: ProductRecord) => {
+ setEditingProduct(p)
+ setFormData({
+ name: p.name,
+ name_bn: p.name_bn || '',
+ sku: p.sku,
+ category: p.category || 'flex_banner',
+ product_type: p.product_type || 'print_service',
+ commercial_type: p.commercial_type || 'production_product',
+ measurement_type: p.measurement_type || 'area',
+ pricing_method: p.pricing_method || 'per_area',
+ purchase_unit: p.purchase_unit || 'roll',
+ purchase_price: Number(p.purchase_price) || 0,
+ selling_unit: p.selling_unit || p.unit || 'sft',
+ conversion_ratio: getProductConversionRatio(p),
+ production_unit: p.production_unit || p.unit || 'sft',
+ default_wastage_percentage: Number(p.default_wastage_percentage) || 0,
+ target_margin_percentage: Number(p.target_margin_percentage) || 35.0,
+ minimum_charge: Number(p.minimum_charge) || 0,
+ min_order_quantity: Number(p.min_order_quantity) || 1.0,
+ min_billable_quantity: Number(p.min_billable_quantity) || 0,
+ allow_manual_override: p.allow_manual_override !== false,
+ min_allowed_margin_percent: Number(p.min_allowed_margin_percent) || 15.0,
+ price_tiers: p.price_tiers || {
+ retail: Number(p.selling_price) || 0,
+ corporate: Number(p.selling_price) || 0,
+ dealer: Number(p.selling_price) || 0,
+ wholesale: Number(p.selling_price) || 0,
+ custom: 0,
       },
-      cost_breakdown: p.cost_breakdown || {
-        material: Number(p.base_cost) || 0,
-        ink: 0,
-        labor: 0,
-        machine: 0,
-        finishing: 0,
-        fabrication: 0,
-        installation: 0,
-        delivery: 0,
-        other_direct_cost: 0,
+ cost_breakdown: p.cost_breakdown || {
+ material: Number(p.base_cost) || 0,
+ ink: 0,
+ labor: 0,
+ machine: 0,
+ finishing: 0,
+ fabrication: 0,
+ installation: 0,
+ delivery: 0,
+ other_direct_cost: 0,
       },
-      components: p.components || [],
-      vat_applicable: Boolean(p.vat_applicable),
-      is_tax_inclusive: Boolean(p.is_tax_inclusive),
-      roll_width_ft: Number(p.roll_width_ft) || 10,
-      roll_length_ft: Number(p.roll_length_ft) || 164,
-      sheet_width_ft: Number(p.sheet_width_ft) || 4,
-      sheet_length_ft: Number(p.sheet_length_ft) || 8,
-      unit: p.unit || 'sft',
-      material_spec: p.material_spec || '',
-      dimensions_spec: p.dimensions_spec || '',
-      description: p.description || '',
-      description_bn: p.description_bn || '',
-      base_cost: Number(p.base_cost) || 0,
-      selling_price: Number(p.selling_price) || 0,
-      min_price: Number(p.min_price) || 0,
-      tax_rate: p.tax_rate !== undefined && p.tax_rate !== null && !isNaN(Number(p.tax_rate)) ? Number(p.tax_rate) : 7.5,
-      requires_design: Boolean(p.requires_design),
-      requires_approval: Boolean(p.requires_approval),
-      requires_production: p.requires_production !== undefined ? Boolean(p.requires_production) : true,
-      requires_fabrication: Boolean(p.requires_fabrication),
-      requires_finishing: Boolean(p.requires_finishing),
-      requires_installation: Boolean(p.requires_installation),
-      requires_delivery: Boolean(p.requires_delivery),
-      default_department: p.default_department || 'printing',
-      estimated_production_time_hours: Number(p.estimated_production_time_hours) || 4.0,
-      default_finishing: p.default_finishing || '',
-      production_instructions: p.production_instructions || '',
-      internal_notes: p.internal_notes || '',
+ components: p.components || [],
+ vat_applicable: Boolean(p.vat_applicable),
+ is_tax_inclusive: Boolean(p.is_tax_inclusive),
+ roll_width_ft: Number(p.roll_width_ft) || 10,
+ roll_length_ft: Number(p.roll_length_ft) || 164,
+ sheet_width_ft: Number(p.sheet_width_ft) || 4,
+ sheet_length_ft: Number(p.sheet_length_ft) || 8,
+ unit: p.unit || 'sft',
+ material_spec: p.material_spec || '',
+ dimensions_spec: p.dimensions_spec || '',
+ description: p.description || '',
+ description_bn: p.description_bn || '',
+ base_cost: Number(p.base_cost) || 0,
+ selling_price: Number(p.selling_price) || 0,
+ min_price: Number(p.min_price) || 0,
+ tax_rate: p.tax_rate !== undefined && p.tax_rate !== null && !isNaN(Number(p.tax_rate)) ? Number(p.tax_rate) : 7.5,
+ requires_design: Boolean(p.requires_design),
+ requires_approval: Boolean(p.requires_approval),
+ requires_production: p.requires_production !== undefined ? Boolean(p.requires_production) : true,
+ requires_fabrication: Boolean(p.requires_fabrication),
+ requires_finishing: Boolean(p.requires_finishing),
+ requires_installation: Boolean(p.requires_installation),
+ requires_delivery: Boolean(p.requires_delivery),
+ default_department: p.default_department || 'printing',
+ estimated_production_time_hours: Number(p.estimated_production_time_hours) || 4.0,
+ default_finishing: p.default_finishing || '',
+ production_instructions: p.production_instructions || '',
+ internal_notes: p.internal_notes || '',
     })
-    setIsCreateOpen(true)
+ setIsCreateOpen(true)
   }
 
   // Handle Save Product (Create or Update)
-  const handleSaveProduct = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!formData.name.trim() || !formData.sku.trim()) {
-      showNotification('Product Name and SKU are required.', 'error')
-      return
+ const handleSaveProduct = async (e: React.FormEvent) => {
+ e.preventDefault()
+ if (!formData.name.trim() || !formData.sku.trim()) {
+ showNotification('Product Name and SKU are required.', 'error')
+ return
     }
 
-    startTransition(async () => {
-      try {
-        const payload: any = {
-          name: formData.name.trim(),
-          name_bn: formData.name_bn.trim() || null,
-          sku: formData.sku.trim().toUpperCase(),
-          category: formData.category,
-          product_type: formData.product_type,
-          commercial_type: formData.commercial_type,
-          measurement_type: formData.measurement_type,
-          pricing_method: formData.pricing_method || 'per_area',
-          purchase_unit: formData.purchase_unit,
-          purchase_price: Number(formData.purchase_price) || 0,
-          selling_unit: formData.selling_unit || formData.unit,
-          conversion_ratio: getProductConversionRatio(formData),
-          production_unit: formData.production_unit || formData.unit,
-          default_wastage_percentage: Number(formData.default_wastage_percentage) || 0,
-          target_margin_percentage: Number(formData.target_margin_percentage) || 35.0,
-          minimum_charge: Number(formData.minimum_charge) || 0,
-          min_order_quantity: Number(formData.min_order_quantity) || 1.0,
-          min_billable_quantity: Number(formData.min_billable_quantity) || 0,
-          allow_manual_override: formData.allow_manual_override,
-          min_allowed_margin_percent: Number(formData.min_allowed_margin_percent) || 15.0,
-          price_tiers: formData.price_tiers,
-          cost_breakdown: formData.cost_breakdown,
-          components: formData.components,
-          vat_applicable: formData.vat_applicable,
-          is_tax_inclusive: formData.is_tax_inclusive,
-          roll_width_ft: Number(formData.roll_width_ft) || null,
-          roll_length_ft: Number(formData.roll_length_ft) || null,
-          sheet_width_ft: Number(formData.sheet_width_ft) || null,
-          sheet_length_ft: Number(formData.sheet_length_ft) || null,
-          unit: formData.selling_unit || formData.unit,
-          material_spec: formData.material_spec.trim() || null,
-          dimensions_spec: formData.dimensions_spec.trim() || null,
-          description: formData.description.trim() || null,
-          description_bn: formData.description_bn.trim() || null,
-          base_cost: liveCommercialMath.effectiveMaterialCost || Number(formData.base_cost) || 0,
-          selling_price: Number(formData.selling_price) || 0,
-          min_price: Number(formData.min_price) || 0,
-          tax_rate: Number(formData.tax_rate) || 7.5,
-          requires_design: formData.requires_design,
-          requires_approval: formData.requires_approval,
-          requires_production: formData.requires_production,
-          requires_fabrication: formData.requires_fabrication,
-          requires_finishing: formData.requires_finishing,
-          requires_installation: formData.requires_installation,
-          requires_delivery: formData.requires_delivery,
-          default_department: formData.default_department,
-          estimated_production_time_hours: Number(formData.estimated_production_time_hours) || 4,
-          default_finishing: formData.default_finishing.trim() || null,
-          production_instructions: formData.production_instructions.trim() || null,
-          internal_notes: formData.internal_notes.trim() || null,
-          pricing_formula: {
-            model: 'dimensional_area',
-            material_rate: (liveCommercialMath.effectiveMaterialCost || Number(formData.base_cost)) * 0.6,
-            print_rate: (liveCommercialMath.effectiveMaterialCost || Number(formData.base_cost)) * 0.4,
-            finishing_rate: 3,
-            waste_factor_percent: Number(formData.default_wastage_percentage) || 0,
-            default_margin_percent: Number(formData.target_margin_percentage) || 35.0,
+ startTransition(async () => {
+ try {
+ const payload: any = {
+ name: formData.name.trim(),
+ name_bn: formData.name_bn.trim() || null,
+ sku: formData.sku.trim().toUpperCase(),
+ category: formData.category,
+ product_type: formData.product_type,
+ commercial_type: formData.commercial_type,
+ measurement_type: formData.measurement_type,
+ pricing_method: formData.pricing_method || 'per_area',
+ purchase_unit: formData.purchase_unit,
+ purchase_price: Number(formData.purchase_price) || 0,
+ selling_unit: formData.selling_unit || formData.unit,
+ conversion_ratio: getProductConversionRatio(formData),
+ production_unit: formData.production_unit || formData.unit,
+ default_wastage_percentage: Number(formData.default_wastage_percentage) || 0,
+ target_margin_percentage: Number(formData.target_margin_percentage) || 35.0,
+ minimum_charge: Number(formData.minimum_charge) || 0,
+ min_order_quantity: Number(formData.min_order_quantity) || 1.0,
+ min_billable_quantity: Number(formData.min_billable_quantity) || 0,
+ allow_manual_override: formData.allow_manual_override,
+ min_allowed_margin_percent: Number(formData.min_allowed_margin_percent) || 15.0,
+ price_tiers: formData.price_tiers,
+ cost_breakdown: formData.cost_breakdown,
+ components: formData.components,
+ vat_applicable: formData.vat_applicable,
+ is_tax_inclusive: formData.is_tax_inclusive,
+ roll_width_ft: Number(formData.roll_width_ft) || null,
+ roll_length_ft: Number(formData.roll_length_ft) || null,
+ sheet_width_ft: Number(formData.sheet_width_ft) || null,
+ sheet_length_ft: Number(formData.sheet_length_ft) || null,
+ unit: formData.selling_unit || formData.unit,
+ material_spec: formData.material_spec.trim() || null,
+ dimensions_spec: formData.dimensions_spec.trim() || null,
+ description: formData.description.trim() || null,
+ description_bn: formData.description_bn.trim() || null,
+ base_cost: liveCommercialMath.effectiveMaterialCost || Number(formData.base_cost) || 0,
+ selling_price: Number(formData.selling_price) || 0,
+ min_price: Number(formData.min_price) || 0,
+ tax_rate: Number(formData.tax_rate) || 7.5,
+ requires_design: formData.requires_design,
+ requires_approval: formData.requires_approval,
+ requires_production: formData.requires_production,
+ requires_fabrication: formData.requires_fabrication,
+ requires_finishing: formData.requires_finishing,
+ requires_installation: formData.requires_installation,
+ requires_delivery: formData.requires_delivery,
+ default_department: formData.default_department,
+ estimated_production_time_hours: Number(formData.estimated_production_time_hours) || 4,
+ default_finishing: formData.default_finishing.trim() || null,
+ production_instructions: formData.production_instructions.trim() || null,
+ internal_notes: formData.internal_notes.trim() || null,
+ pricing_formula: {
+ model: 'dimensional_area',
+ material_rate: (liveCommercialMath.effectiveMaterialCost || Number(formData.base_cost)) * 0.6,
+ print_rate: (liveCommercialMath.effectiveMaterialCost || Number(formData.base_cost)) * 0.4,
+ finishing_rate: 3,
+ waste_factor_percent: Number(formData.default_wastage_percentage) || 0,
+ default_margin_percent: Number(formData.target_margin_percentage) || 35.0,
           },
         }
 
-        if (editingProduct) {
-          const res = await updateProductAction(editingProduct.id, payload, companyId)
-          if (!res.success) {
-            showNotification(res.error || 'Failed to update product.', 'error')
-            return
+ if (editingProduct) {
+ const res = await updateProductAction(editingProduct.id, payload, companyId)
+ if (!res.success) {
+ showNotification(res.error || 'Failed to update product.', 'error')
+ return
           }
-          showNotification(`Updated product '${res.data?.name}'.`)
+ showNotification(`Updated product '${res.data?.name}'.`)
         } else {
-          const res = await createProductAction(payload, companyId)
-          if (!res.success) {
-            showNotification(res.error || 'Failed to create product.', 'error')
-            return
+ const res = await createProductAction(payload, companyId)
+ if (!res.success) {
+ showNotification(res.error || 'Failed to create product.', 'error')
+ return
           }
-          refreshUsage()
-          showNotification(`Registered new product '${res.data?.name}' into catalog.`)
+ refreshUsage()
+ showNotification(`Registered new product '${res.data?.name}' into catalog.`)
         }
 
-        setIsCreateOpen(false)
-        loadProducts()
+ setIsCreateOpen(false)
+ loadProducts()
       } catch (err: any) {
-        showNotification(err.message || 'Database mutation failed.', 'error')
+ showNotification(err.message || 'Database mutation failed.', 'error')
       }
     })
   }
 
   // Handle Price Adjustment with Commercial Audit
-  const handleUpdatePrice = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!pricingProduct) return
-    if (!priceReason.trim()) {
-      showNotification('Please provide an audit reason for this price change.', 'error')
-      return
+ const handleUpdatePrice = async (e: React.FormEvent) => {
+ e.preventDefault()
+ if (!pricingProduct) return
+ if (!priceReason.trim()) {
+ showNotification('Please provide an audit reason for this price change.', 'error')
+ return
     }
 
-    startTransition(async () => {
-      try {
-        const res = await updateProductPriceAction(
-          pricingProduct.id,
-          newPrice,
-          priceReason,
-          companyId,
+ startTransition(async () => {
+ try {
+ const res = await updateProductPriceAction(
+ pricingProduct.id,
+ newPrice,
+ priceReason,
+ companyId,
           {
-            newPurchasePrice,
-            newTargetMarginPercent: newTargetMargin,
-            newWastagePercent: newWastage,
+ newPurchasePrice,
+ newTargetMarginPercent: newTargetMargin,
+ newWastagePercent: newWastage,
           }
         )
-        if (!res.success) {
-          showNotification(res.error || 'Failed to update price.', 'error')
-          return
+ if (!res.success) {
+ showNotification(res.error || 'Failed to update price.', 'error')
+ return
         }
-        showNotification(`Price for '${pricingProduct.name}' updated to ৳${newPrice} with full audit log.`)
-        setPricingProduct(null)
-        setPriceReason('')
-        loadProducts()
+ showNotification(`Price for '${pricingProduct.name}' updated to ৳${newPrice} with full audit log.`)
+ setPricingProduct(null)
+ setPriceReason('')
+ loadProducts()
       } catch (err: any) {
-        showNotification(err.message || 'Price update failed.', 'error')
+ showNotification(err.message || 'Price update failed.', 'error')
       }
     })
   }
 
   // Handle Archive / Restore
-  const handleToggleArchive = async (p: ProductRecord) => {
-    const isCurrentlyActive = p.is_active !== false
-    startTransition(async () => {
-      try {
-        const res = await archiveProductAction(p.id, isCurrentlyActive, companyId)
-        if (!res.success) {
-          showNotification(res.error || 'Failed to toggle archive status.', 'error')
-          return
+ const handleToggleArchive = async (p: ProductRecord) => {
+ const isCurrentlyActive = p.is_active !== false
+ startTransition(async () => {
+ try {
+ const res = await archiveProductAction(p.id, isCurrentlyActive, companyId)
+ if (!res.success) {
+ showNotification(res.error || 'Failed to toggle archive status.', 'error')
+ return
         }
-        showNotification(`${isCurrentlyActive ? 'Archived' : 'Restored'} '${p.name}'.`)
-        loadProducts()
+ showNotification(`${isCurrentlyActive ? 'Archived' : 'Restored'} '${p.name}'.`)
+ loadProducts()
       } catch (err: any) {
-        showNotification(err.message || 'Failed to update status.', 'error')
+ showNotification(err.message || 'Failed to update status.', 'error')
       }
     })
   }
 
   // Check Deletion Safety & Open Delete Dialog
-  const handleInitiateDelete = async (p: ProductRecord) => {
-    setDeletingProduct(p)
-    const safetyRes = await checkProductDeletionSafetyAction(p.id, companyId)
-    if (safetyRes.success && safetyRes.data) {
-      setDeletionSafety(safetyRes.data)
+ const handleInitiateDelete = async (p: ProductRecord) => {
+ setDeletingProduct(p)
+ const safetyRes = await checkProductDeletionSafetyAction(p.id, companyId)
+ if (safetyRes.success && safetyRes.data) {
+ setDeletionSafety(safetyRes.data)
     } else {
-      setDeletionSafety({
-        isSafe: false,
-        references: { quotations: 1, invoices: 0, jobs: 0, customerRates: 0 },
-        reason: 'Could not verify references. Archiving is recommended.',
+ setDeletionSafety({
+ isSafe: false,
+ references: { quotations: 1, invoices: 0, jobs: 0, customerRates: 0 },
+ reason: 'Could not verify references. Archiving is recommended.',
       })
     }
   }
 
   // Confirm Delete / Archive
-  const handleConfirmDelete = async () => {
-    if (!deletingProduct) return
-    startTransition(async () => {
-      try {
-        const res = await deleteProductAction(deletingProduct.id, companyId)
-        if (!res.success) {
-          showNotification(res.error || 'Failed to delete product.', 'error')
-          return
+ const handleConfirmDelete = async () => {
+ if (!deletingProduct) return
+ startTransition(async () => {
+ try {
+ const res = await deleteProductAction(deletingProduct.id, companyId)
+ if (!res.success) {
+ showNotification(res.error || 'Failed to delete product.', 'error')
+ return
         }
-        if (res.deletionResult?.archived) {
-          showNotification(`Product archived safely because historical references exist.`)
+ if (res.deletionResult?.archived) {
+ showNotification(`Product archived safely because historical references exist.`)
         } else {
-          showNotification(`Product '${deletingProduct.name}' permanently deleted.`)
+ showNotification(`Product '${deletingProduct.name}' permanently deleted.`)
         }
-        setDeletingProduct(null)
-        setDeletionSafety(null)
-        loadProducts()
+ setDeletingProduct(null)
+ setDeletionSafety(null)
+ loadProducts()
       } catch (err: any) {
-        showNotification(err.message || 'Delete operation failed.', 'error')
+ showNotification(err.message || 'Delete operation failed.', 'error')
       }
     })
   }
 
   // Open Fast Quote Modal
-  const handleOpenFastQuote = async (p: ProductRecord) => {
-    setFastQuoteProduct(p)
-    setQuoteCustomerName('')
-    setQuoteCustomerPhone('')
-    setQuoteWidth(10)
-    setQuoteHeight(4)
-    setQuoteDimUnit('ft')
-    setQuoteQuantity(1)
-    setQuoteIncludeHemming(true)
-    setQuoteIncludeEyelets(true)
-    setQuoteIncludeLamination(false)
-    setQuoteIncludeInstallation(false)
-    setQuoteIncludeDelivery(false)
-    setQuoteDiscountFlat(0)
-    setQuoteDiscountPercent(0)
-    setQuoteRateOverride(null)
-    setCreatedQuoteNumber(null)
+ const handleOpenFastQuote = async (p: ProductRecord) => {
+ setFastQuoteProduct(p)
+ setQuoteCustomerName('')
+ setQuoteCustomerPhone('')
+ setQuoteWidth(10)
+ setQuoteHeight(4)
+ setQuoteDimUnit('ft')
+ setQuoteQuantity(1)
+ setQuoteIncludeHemming(true)
+ setQuoteIncludeEyelets(true)
+ setQuoteIncludeLamination(false)
+ setQuoteIncludeInstallation(false)
+ setQuoteIncludeDelivery(false)
+ setQuoteDiscountFlat(0)
+ setQuoteDiscountPercent(0)
+ setQuoteRateOverride(null)
+ setCreatedQuoteNumber(null)
 
     // Resolve base price
-    try {
-      const priceRes = await resolveProductCustomerPriceAction(p.id, undefined, undefined, companyId)
-      if (priceRes.success && priceRes.data) {
-        setResolvedPriceInfo(priceRes.data)
+ try {
+ const priceRes = await resolveProductCustomerPriceAction(p.id, undefined, undefined, companyId)
+ if (priceRes.success && priceRes.data) {
+ setResolvedPriceInfo(priceRes.data)
       }
     } catch {}
   }
 
   // Fast Quote Live Calculation with Pricing Method, Min Billable Qty, Minimum Charge & Direct Cost Breakdown
-  const fastQuoteCalculation = useMemo(() => {
-    if (!fastQuoteProduct) return null
+ const fastQuoteCalculation = useMemo(() => {
+ if (!fastQuoteProduct) return null
 
-    const effectiveRate =
-      quoteRateOverride !== null
+ const effectiveRate =
+ quoteRateOverride !== null
         ? quoteRateOverride
         : resolvedPriceInfo?.effectiveRate || fastQuoteProduct.selling_price || 0
 
-    const commercialCalc = calculateCommercialPricing({
-      pricingMethod: fastQuoteProduct.pricing_method || 'per_area',
-      quantity: quoteQuantity,
-      width: quoteWidth,
-      height: quoteHeight,
-      dimensionUnit: quoteDimUnit,
-      catalogSellingPrice: effectiveRate,
-      unitPrice: effectiveRate,
-      effectiveMaterialCost: Number(fastQuoteProduct.base_cost) || 0,
-      costBreakdown: fastQuoteProduct.cost_breakdown,
-      components: fastQuoteProduct.components,
-      minBillableQuantity: Number(fastQuoteProduct.min_billable_quantity) || 0,
-      minOrderQuantity: Number(fastQuoteProduct.min_order_quantity) || 1,
-      minimumCharge: Number(fastQuoteProduct.minimum_charge) || 0,
-      defaultWastagePercent: Number(fastQuoteProduct.default_wastage_percentage) || 0,
-      minAllowedMarginPercent: Number(fastQuoteProduct.min_allowed_margin_percent) || 15,
+ const commercialCalc = calculateCommercialPricing({
+ pricingMethod: fastQuoteProduct.pricing_method || 'per_area',
+ quantity: quoteQuantity,
+ width: quoteWidth,
+ height: quoteHeight,
+ dimensionUnit: quoteDimUnit,
+ catalogSellingPrice: effectiveRate,
+ unitPrice: effectiveRate,
+ effectiveMaterialCost: Number(fastQuoteProduct.base_cost) || 0,
+ costBreakdown: fastQuoteProduct.cost_breakdown,
+ components: fastQuoteProduct.components,
+ minBillableQuantity: Number(fastQuoteProduct.min_billable_quantity) || 0,
+ minOrderQuantity: Number(fastQuoteProduct.min_order_quantity) || 1,
+ minimumCharge: Number(fastQuoteProduct.minimum_charge) || 0,
+ defaultWastagePercent: Number(fastQuoteProduct.default_wastage_percentage) || 0,
+ minAllowedMarginPercent: Number(fastQuoteProduct.min_allowed_margin_percent) || 15,
     })
 
-    const wFt = convertToFeet(quoteWidth, quoteDimUnit)
-    const hFt = convertToFeet(quoteHeight, quoteDimUnit)
-    const perimeterFt = 2 * (wFt + hFt) * quoteQuantity
+ const wFt = convertToFeet(quoteWidth, quoteDimUnit)
+ const hFt = convertToFeet(quoteHeight, quoteDimUnit)
+ const perimeterFt = 2 * (wFt + hFt) * quoteQuantity
 
-    const printSubtotal = commercialCalc.baseLineTotal
-    const hemmingCharge = quoteIncludeHemming ? Math.round(perimeterFt * 2.5) : 0
-    const eyeletCount = quoteIncludeEyelets ? Math.max(4, Math.round(perimeterFt / 2.5)) : 0
-    const eyeletCharge = quoteIncludeEyelets ? eyeletCount * 5 : 0
-    const laminationCharge = quoteIncludeLamination ? Math.round(commercialCalc.calculatedQuantity * 8) : 0
-    const installationCharge = quoteIncludeInstallation ? Math.max(500, Math.round(commercialCalc.calculatedQuantity * 12)) : 0
-    const deliveryCharge = quoteIncludeDelivery ? 350 : 0
+ const printSubtotal = commercialCalc.baseLineTotal
+ const hemmingCharge = quoteIncludeHemming ? Math.round(perimeterFt * 2.5) : 0
+ const eyeletCount = quoteIncludeEyelets ? Math.max(4, Math.round(perimeterFt / 2.5)) : 0
+ const eyeletCharge = quoteIncludeEyelets ? eyeletCount * 5 : 0
+ const laminationCharge = quoteIncludeLamination ? Math.round(commercialCalc.calculatedQuantity * 8) : 0
+ const installationCharge = quoteIncludeInstallation ? Math.max(500, Math.round(commercialCalc.calculatedQuantity * 12)) : 0
+ const deliveryCharge = quoteIncludeDelivery ? 350 : 0
 
-    const addonsTotal = hemmingCharge + eyeletCharge + laminationCharge + installationCharge + deliveryCharge
-    const calculatedSubtotal = printSubtotal + addonsTotal
+ const addonsTotal = hemmingCharge + eyeletCharge + laminationCharge + installationCharge + deliveryCharge
+ const calculatedSubtotal = printSubtotal + addonsTotal
 
     // Minimum Charge Floor Enforcement
-    const minCharge = Number(fastQuoteProduct.minimum_charge) || 0
-    const minChargeResult = applyMinimumCharge(calculatedSubtotal, minCharge)
-    const subtotal = minChargeResult.finalAmount
-    const isMinChargeApplied = minChargeResult.isMinimumApplied || commercialCalc.isMinimumChargeApplied
+ const minCharge = Number(fastQuoteProduct.minimum_charge) || 0
+ const minChargeResult = applyMinimumCharge(calculatedSubtotal, minCharge)
+ const subtotal = minChargeResult.finalAmount
+ const isMinChargeApplied = minChargeResult.isMinimumApplied || commercialCalc.isMinimumChargeApplied
 
-    const discountAmount = Math.min(subtotal, quoteDiscountFlat + Math.round((subtotal * quoteDiscountPercent) / 100))
-    const subtotalAfterDiscount = Math.max(0, subtotal - discountAmount)
-    const vatAmount = Math.round((subtotalAfterDiscount * (fastQuoteProduct.tax_rate || 7.5)) / 100)
-    const grandTotal = subtotalAfterDiscount + vatAmount
+ const discountAmount = Math.min(subtotal, quoteDiscountFlat + Math.round((subtotal * quoteDiscountPercent) / 100))
+ const subtotalAfterDiscount = Math.max(0, subtotal - discountAmount)
+ const vatAmount = Math.round((subtotalAfterDiscount * (fastQuoteProduct.tax_rate || 7.5)) / 100)
+ const grandTotal = subtotalAfterDiscount + vatAmount
 
     // Internal Cost & Profit breakdown
-    const estMaterialCost = commercialCalc.estimatedMaterialCost
-    const estAddonsCost =
+ const estMaterialCost = commercialCalc.estimatedMaterialCost
+ const estAddonsCost =
       (hemmingCharge * 0.4) + (eyeletCharge * 0.4) + (laminationCharge * 0.5) + (installationCharge * 0.4) + (deliveryCharge * 0.6)
-    const estTotalCost = Math.round((commercialCalc.estimatedDirectCost + estAddonsCost) * 100) / 100
-    const estGrossProfit = Math.max(0, subtotalAfterDiscount - estTotalCost)
-    const estMargin = subtotalAfterDiscount > 0 ? Math.round(((subtotalAfterDiscount - estTotalCost) / subtotalAfterDiscount) * 1000) / 10 : 0
+ const estTotalCost = Math.round((commercialCalc.estimatedDirectCost + estAddonsCost) * 100) / 100
+ const estGrossProfit = Math.max(0, subtotalAfterDiscount - estTotalCost)
+ const estMargin = subtotalAfterDiscount > 0 ? Math.round(((subtotalAfterDiscount - estTotalCost) / subtotalAfterDiscount) * 1000) / 10 : 0
 
-    return {
-      singleAreaSft: commercialCalc.singleAreaSqft || (Math.round(wFt * hFt * 100) / 100),
-      totalAreaSft: commercialCalc.calculatedQuantity,
-      actualQuantity: commercialCalc.actualQuantity,
-      billableQuantity: commercialCalc.billableQuantity,
-      isMinBillableApplied: commercialCalc.isMinBillableApplied,
-      pricingMethod: commercialCalc.pricingMethod,
-      costBasisType: commercialCalc.costBasisType,
-      perimeterFt,
-      effectiveRate,
-      printSubtotal,
-      hemmingCharge,
-      eyeletCharge,
-      eyeletCount,
-      laminationCharge,
-      installationCharge,
-      deliveryCharge,
-      addonsTotal,
-      calculatedSubtotal,
-      minCharge,
-      isMinChargeApplied,
-      subtotal,
-      discountAmount,
-      subtotalAfterDiscount,
-      vatAmount,
-      grandTotal,
-      expectedConsumption: commercialCalc.expectedConsumption,
-      estMaterialCost,
-      estTotalCost,
-      estGrossProfit,
-      estMargin,
-      isBelowFloor: effectiveRate < (fastQuoteProduct.min_price || 0),
-      belowMinMargin: commercialCalc.isBelowMinAllowedMargin,
+ return {
+ singleAreaSft: commercialCalc.singleAreaSqft || (Math.round(wFt * hFt * 100) / 100),
+ totalAreaSft: commercialCalc.calculatedQuantity,
+ actualQuantity: commercialCalc.actualQuantity,
+ billableQuantity: commercialCalc.billableQuantity,
+ isMinBillableApplied: commercialCalc.isMinBillableApplied,
+ pricingMethod: commercialCalc.pricingMethod,
+ costBasisType: commercialCalc.costBasisType,
+ perimeterFt,
+ effectiveRate,
+ printSubtotal,
+ hemmingCharge,
+ eyeletCharge,
+ eyeletCount,
+ laminationCharge,
+ installationCharge,
+ deliveryCharge,
+ addonsTotal,
+ calculatedSubtotal,
+ minCharge,
+ isMinChargeApplied,
+ subtotal,
+ discountAmount,
+ subtotalAfterDiscount,
+ vatAmount,
+ grandTotal,
+ expectedConsumption: commercialCalc.expectedConsumption,
+ estMaterialCost,
+ estTotalCost,
+ estGrossProfit,
+ estMargin,
+ isBelowFloor: effectiveRate < (fastQuoteProduct.min_price || 0),
+ belowMinMargin: commercialCalc.isBelowMinAllowedMargin,
     }
   }, [
-    fastQuoteProduct,
-    quoteWidth,
-    quoteHeight,
-    quoteDimUnit,
-    quoteQuantity,
-    quoteRateOverride,
-    resolvedPriceInfo,
-    quoteIncludeHemming,
-    quoteIncludeEyelets,
-    quoteIncludeLamination,
-    quoteIncludeInstallation,
-    quoteIncludeDelivery,
-    quoteDiscountFlat,
-    quoteDiscountPercent,
+ fastQuoteProduct,
+ quoteWidth,
+ quoteHeight,
+ quoteDimUnit,
+ quoteQuantity,
+ quoteRateOverride,
+ resolvedPriceInfo,
+ quoteIncludeHemming,
+ quoteIncludeEyelets,
+ quoteIncludeLamination,
+ quoteIncludeInstallation,
+ quoteIncludeDelivery,
+ quoteDiscountFlat,
+ quoteDiscountPercent,
   ])
 
   // Execute Quotation Creation from Fast Quote Modal
-  const handleGenerateFastQuotation = async () => {
-    if (!fastQuoteProduct || !fastQuoteCalculation) return
-    if (!quoteCustomerName.trim() || !quoteCustomerPhone.trim()) {
-      showNotification('Customer Name and Mobile Number are required to create a formal quotation.', 'error')
-      return
+ const handleGenerateFastQuotation = async () => {
+ if (!fastQuoteProduct || !fastQuoteCalculation) return
+ if (!quoteCustomerName.trim() || !quoteCustomerPhone.trim()) {
+ showNotification('Customer Name and Mobile Number are required to create a formal quotation.', 'error')
+ return
     }
 
-    startTransition(async () => {
-      try {
-        const finishingList: string[] = []
-        if (quoteIncludeHemming) finishingList.push('Hemming & Tape')
-        if (quoteIncludeEyelets) finishingList.push(`${fastQuoteCalculation.eyeletCount} Eyelets`)
-        if (quoteIncludeLamination) finishingList.push('Thermal Lamination')
-        if (quoteIncludeInstallation) finishingList.push('Site Installation')
-        if (quoteIncludeDelivery) finishingList.push('Delivery Dispatch')
+ startTransition(async () => {
+ try {
+ const finishingList: string[] = []
+ if (quoteIncludeHemming) finishingList.push('Hemming & Tape')
+ if (quoteIncludeEyelets) finishingList.push(`${fastQuoteCalculation.eyeletCount} Eyelets`)
+ if (quoteIncludeLamination) finishingList.push('Thermal Lamination')
+ if (quoteIncludeInstallation) finishingList.push('Site Installation')
+ if (quoteIncludeDelivery) finishingList.push('Delivery Dispatch')
 
-        const res = await createQuotationAction({
-          customer_name: quoteCustomerName.trim(),
-          customer_phone: quoteCustomerPhone.trim(),
-          new_customer: {
-            name: quoteCustomerName.trim(),
-            mobile: quoteCustomerPhone.trim(),
-            address: '',
-            save_customer: true,
+ const res = await createQuotationAction({
+ customer_name: quoteCustomerName.trim(),
+ customer_phone: quoteCustomerPhone.trim(),
+ new_customer: {
+ name: quoteCustomerName.trim(),
+ mobile: quoteCustomerPhone.trim(),
+ address: '',
+ save_customer: true,
           },
-          items: [
+ items: [
             {
-              id: `item-${Date.now()}`,
-              product_id: fastQuoteProduct.id,
-              description: `${fastQuoteProduct.name} (${quoteWidth}${quoteDimUnit} x ${quoteHeight}${quoteDimUnit})`,
-              description_bn: fastQuoteProduct.name_bn || null,
-              material_spec: fastQuoteProduct.material_spec || null,
-              width: quoteWidth,
-              height: quoteHeight,
-              dimension_unit: quoteDimUnit,
-              area_sft: fastQuoteCalculation.totalAreaSft,
-              quantity: quoteQuantity,
-              unit: fastQuoteProduct.selling_unit || fastQuoteProduct.unit || 'sft',
-              unit_rate: fastQuoteCalculation.effectiveRate,
-              rate_source: resolvedPriceInfo?.source === 'custom' ? 'custom' : 'default',
-              finishing: finishingList.join(', ') || null,
-              installation_required: quoteIncludeInstallation,
-              material_cost: fastQuoteCalculation.estMaterialCost,
-              item_total: fastQuoteCalculation.subtotal,
+ id: `item-${Date.now()}`,
+ product_id: fastQuoteProduct.id,
+ description: `${fastQuoteProduct.name} (${quoteWidth}${quoteDimUnit} x ${quoteHeight}${quoteDimUnit})`,
+ description_bn: fastQuoteProduct.name_bn || null,
+ material_spec: fastQuoteProduct.material_spec || null,
+ width: quoteWidth,
+ height: quoteHeight,
+ dimension_unit: quoteDimUnit,
+ area_sft: fastQuoteCalculation.totalAreaSft,
+ quantity: quoteQuantity,
+ unit: fastQuoteProduct.selling_unit || fastQuoteProduct.unit || 'sft',
+ unit_rate: fastQuoteCalculation.effectiveRate,
+ rate_source: resolvedPriceInfo?.source === 'custom' ? 'custom' : 'default',
+ finishing: finishingList.join(', ') || null,
+ installation_required: quoteIncludeInstallation,
+ material_cost: fastQuoteCalculation.estMaterialCost,
+ item_total: fastQuoteCalculation.subtotal,
             },
           ],
-          discount_amount: fastQuoteCalculation.discountAmount,
-          vat_rate: fastQuoteProduct.tax_rate || 7.5,
-          installation_required: quoteIncludeInstallation,
-          notes: `Instant Fast Quote generated from Product Master 2.1 for ${fastQuoteProduct.name}.`,
-          language_mode: 'bilingual',
+ discount_amount: fastQuoteCalculation.discountAmount,
+ vat_rate: fastQuoteProduct.tax_rate || 7.5,
+ installation_required: quoteIncludeInstallation,
+ notes: `Instant Fast Quote generated from Product Master 2.1 for ${fastQuoteProduct.name}.`,
+ language_mode: 'bilingual',
         }, companyId)
 
-        if (!res.success || !res.data) {
-          showNotification(res.error || 'Failed to generate quotation.', 'error')
-          return
+ if (!res.success || !res.data) {
+ showNotification(res.error || 'Failed to generate quotation.', 'error')
+ return
         }
 
-        setCreatedQuoteNumber(res.data.quotation_number)
-        showNotification(`Formal Quotation ${res.data.quotation_number} generated successfully!`)
+ setCreatedQuoteNumber(res.data.quotation_number)
+ showNotification(`Formal Quotation ${res.data.quotation_number} generated successfully!`)
       } catch (err: any) {
-        showNotification(err.message || 'Error generating quotation.', 'error')
+ showNotification(err.message || 'Error generating quotation.', 'error')
       }
     })
   }
 
   // Refresh all catalog & configuration masters
-  const handleRefreshAll = async () => {
-    setIsLoading(true)
-    setFetchError(null)
-    try {
-      await Promise.all([
-        loadProducts(),
-        loadCategories(),
-        loadPrintingMethods(),
-        loadFinishingOptions(),
-        loadAdditionalOptions(),
-        loadInstallationOptions(),
+ const handleRefreshAll = async () => {
+ setIsLoading(true)
+ setFetchError(null)
+ try {
+ await Promise.all([
+ loadProducts(),
+ loadCategories(),
+ loadPrintingMethods(),
+ loadFinishingOptions(),
+ loadAdditionalOptions(),
+ loadInstallationOptions(),
       ])
-      showNotification('Catalog & Configuration Masters refreshed successfully.', 'success')
+ showNotification('Catalog & Configuration Masters refreshed successfully.', 'success')
     } catch (err: any) {
-      setFetchError(err.message || 'Error refreshing catalog data.')
-      showNotification(err.message || 'Error refreshing catalog data.', 'error')
+ setFetchError(err.message || 'Error refreshing catalog data.')
+ showNotification(err.message || 'Error refreshing catalog data.', 'error')
     } finally {
-      setIsLoading(false)
+ setIsLoading(false)
     }
   }
 
   // Direct entity creation launchers
-  const handleOpenCreateService = () => {
-    const check = checkCanCreate('max_products')
-    if (!check.allowed) {
-      openLimitExceededModal('max_products')
-      return
+ const handleOpenCreateService = () => {
+ const check = checkCanCreate('max_products')
+ if (!check.allowed) {
+ openLimitExceededModal('max_products')
+ return
     }
-    setEditingProduct(null)
-    setIsServiceModalOpen(true)
+ setEditingProduct(null)
+ setIsServiceModalOpen(true)
   }
 
-  const handleOpenCreateProduct = () => {
-    const check = checkCanCreate('max_products')
-    if (!check.allowed) {
-      openLimitExceededModal('max_products')
-      return
+ const handleOpenCreateProduct = () => {
+ const check = checkCanCreate('max_products')
+ if (!check.allowed) {
+ openLimitExceededModal('max_products')
+ return
     }
-    setEditingProduct(null)
-    setIsReadyProductModalOpen(true)
+ setEditingProduct(null)
+ setIsReadyProductModalOpen(true)
   }
 
-  const handleOpenCreateMaterial = () => {
-    const check = checkCanCreate('max_products')
-    if (!check.allowed) {
-      openLimitExceededModal('max_products')
-      return
+ const handleOpenCreateMaterial = () => {
+ const check = checkCanCreate('max_products')
+ if (!check.allowed) {
+ openLimitExceededModal('max_products')
+ return
     }
-    setEditingProduct(null)
-    setIsMaterialModalOpen(true)
+ setEditingProduct(null)
+ setIsMaterialModalOpen(true)
   }
 
-  const handleOpenCreateOutsource = () => {
-    const check = checkCanCreate('max_products')
-    if (!check.allowed) {
-      openLimitExceededModal('max_products')
-      return
+ const handleOpenCreateOutsource = () => {
+ const check = checkCanCreate('max_products')
+ if (!check.allowed) {
+ openLimitExceededModal('max_products')
+ return
     }
-    setEditingProduct(null)
-    setIsOutsourceModalOpen(true)
+ setEditingProduct(null)
+ setIsOutsourceModalOpen(true)
   }
 
   // Entity Type Helpers
-  const isServiceItem = isServiceProduct
-  const isMaterialItem = isMaterialProduct
-  const isReadyProductItem = isReadyProduct
-  const isOutsourceItem = isOutsourceProduct
+ const isServiceItem = isServiceProduct
+ const isMaterialItem = isMaterialProduct
+ const isReadyProductItem = isReadyProduct
+ const isOutsourceItem = isOutsourceProduct
 
   // Live Tab Counts Memo
-  const tabCounts = useMemo(() => {
-    const serviceCount = products.filter(isServiceItem).length
-    const materialCount = products.filter(isMaterialItem).length
-    const productCount = products.filter(isReadyProductItem).length
-    const outsourceCount = products.filter(isOutsourceItem).length
+ const tabCounts = useMemo(() => {
+ const serviceCount = products.filter(isServiceItem).length
+ const materialCount = products.filter(isMaterialItem).length
+ const productCount = products.filter(isReadyProductItem).length
+ const outsourceCount = products.filter(isOutsourceItem).length
 
-    return {
-      all: products.length,
-      service: serviceCount,
-      product: productCount,
-      material: materialCount,
-      outsource: outsourceCount,
-      finishing: finishingOptions.length,
-      additional: additionalOptions.length,
-      installation: installationOptions.length,
-      printing_methods: printingMethods.length,
+ return {
+ all: products.length,
+ service: serviceCount,
+ product: productCount,
+ material: materialCount,
+ outsource: outsourceCount,
+ finishing: finishingOptions.length,
+ additional: additionalOptions.length,
+ installation: installationOptions.length,
+ printing_methods: printingMethods.length,
     }
   }, [products, finishingOptions, additionalOptions, installationOptions, printingMethods])
 
   // Filtered Products (Catalog Items)
-  const filteredProducts = useMemo(() => {
-    return products.filter((p) => {
-      const q = search.toLowerCase().trim()
-      const matchSearch =
+ const filteredProducts = useMemo(() => {
+ return products.filter((p) => {
+ const q = search.toLowerCase().trim()
+ const matchSearch =
         !q ||
-        p.name.toLowerCase().includes(q) ||
+ p.name.toLowerCase().includes(q) ||
         (p.name_bn && p.name_bn.includes(q)) ||
-        p.sku.toLowerCase().includes(q) ||
+ p.sku.toLowerCase().includes(q) ||
         (p.material_spec && p.material_spec.toLowerCase().includes(q)) ||
         (p.category && p.category.toLowerCase().includes(q)) ||
         (p.dimensions_spec && p.dimensions_spec.toLowerCase().includes(q)) ||
         (p.vendor_name && p.vendor_name.toLowerCase().includes(q))
 
-      const matchCategory =
-        selectedCategory === 'all' ||
-        p.category === selectedCategory ||
-        p.product_type === selectedCategory
+ const matchCategory =
+ selectedCategory === 'all' ||
+ p.category === selectedCategory ||
+ p.product_type === selectedCategory
 
-      const matchType =
-        selectedType === 'all' ||
-        p.commercial_type === selectedType ||
-        p.product_type === selectedType
+ const matchType =
+ selectedType === 'all' ||
+ p.commercial_type === selectedType ||
+ p.product_type === selectedType
 
-      let matchEntityType = true
-      if (entityTypeFilter === 'product') {
-        matchEntityType = isReadyProductItem(p)
+ let matchEntityType = true
+ if (entityTypeFilter === 'product') {
+ matchEntityType = isReadyProductItem(p)
       } else if (entityTypeFilter === 'service') {
-        matchEntityType = isServiceItem(p)
+ matchEntityType = isServiceItem(p)
       } else if (entityTypeFilter === 'material') {
-        matchEntityType = isMaterialItem(p)
+ matchEntityType = isMaterialItem(p)
       } else if (entityTypeFilter === 'outsource') {
-        matchEntityType = isOutsourceItem(p)
+ matchEntityType = isOutsourceItem(p)
       } else if (
-        entityTypeFilter === 'finishing' ||
-        entityTypeFilter === 'additional' ||
-        entityTypeFilter === 'installation' ||
-        entityTypeFilter === 'printing_methods'
+ entityTypeFilter === 'finishing' ||
+ entityTypeFilter === 'additional' ||
+ entityTypeFilter === 'installation' ||
+ entityTypeFilter === 'printing_methods'
       ) {
-        matchEntityType = false
+ matchEntityType = false
       }
 
-      const margin =
-        p.selling_price > 0
+ const margin =
+ p.selling_price > 0
           ? ((p.selling_price - p.base_cost) / p.selling_price) * 100
           : 0
 
-      let matchStatus = true
-      if (statusFilter === 'active') matchStatus = p.is_active !== false
-      else if (statusFilter === 'archived') matchStatus = p.is_active === false
-      else if (statusFilter === 'low_margin') matchStatus = margin < 20 && p.is_active !== false
+ let matchStatus = true
+ if (statusFilter === 'active') matchStatus = p.is_active !== false
+ else if (statusFilter === 'archived') matchStatus = p.is_active === false
+ else if (statusFilter === 'low_margin') matchStatus = margin < 20 && p.is_active !== false
 
-      return matchSearch && matchCategory && matchType && matchEntityType && matchStatus
+ return matchSearch && matchCategory && matchType && matchEntityType && matchStatus
     })
   }, [products, search, selectedCategory, selectedType, entityTypeFilter, statusFilter])
 
   // Filtered Finishing Options
-  const filteredFinishingOptions = useMemo(() => {
-    const q = search.toLowerCase().trim()
-    return finishingOptions.filter((f) => {
-      const matchSearch =
+ const filteredFinishingOptions = useMemo(() => {
+ const q = search.toLowerCase().trim()
+ return finishingOptions.filter((f) => {
+ const matchSearch =
         !q ||
-        f.name.toLowerCase().includes(q) ||
+ f.name.toLowerCase().includes(q) ||
         (f.name_bn && f.name_bn.includes(q)) ||
         (f.category && f.category.toLowerCase().includes(q)) ||
         (f.pricing_method && f.pricing_method.toLowerCase().includes(q))
 
-      let matchStatus = true
-      if (statusFilter === 'active') matchStatus = f.is_active !== false
-      else if (statusFilter === 'archived') matchStatus = f.is_active === false
+ let matchStatus = true
+ if (statusFilter === 'active') matchStatus = f.is_active !== false
+ else if (statusFilter === 'archived') matchStatus = f.is_active === false
 
-      return matchSearch && matchStatus
+ return matchSearch && matchStatus
     })
   }, [finishingOptions, search, statusFilter])
 
   // Filtered Additional Options
-  const filteredAdditionalOptions = useMemo(() => {
-    const q = search.toLowerCase().trim()
-    return additionalOptions.filter((a) => {
-      const matchSearch =
+ const filteredAdditionalOptions = useMemo(() => {
+ const q = search.toLowerCase().trim()
+ return additionalOptions.filter((a) => {
+ const matchSearch =
         !q ||
-        a.name.toLowerCase().includes(q) ||
+ a.name.toLowerCase().includes(q) ||
         (a.name_bn && a.name_bn.includes(q)) ||
         (a.pricing_method && a.pricing_method.toLowerCase().includes(q))
 
-      let matchStatus = true
-      if (statusFilter === 'active') matchStatus = a.is_active !== false
-      else if (statusFilter === 'archived') matchStatus = a.is_active === false
+ let matchStatus = true
+ if (statusFilter === 'active') matchStatus = a.is_active !== false
+ else if (statusFilter === 'archived') matchStatus = a.is_active === false
 
-      return matchSearch && matchStatus
+ return matchSearch && matchStatus
     })
   }, [additionalOptions, search, statusFilter])
 
   // Filtered Installation Options
-  const filteredInstallationOptions = useMemo(() => {
-    const q = search.toLowerCase().trim()
-    return installationOptions.filter((i) => {
-      const matchSearch =
+ const filteredInstallationOptions = useMemo(() => {
+ const q = search.toLowerCase().trim()
+ return installationOptions.filter((i) => {
+ const matchSearch =
         !q ||
-        i.name.toLowerCase().includes(q) ||
+ i.name.toLowerCase().includes(q) ||
         (i.name_bn && i.name_bn.includes(q)) ||
         (i.fulfillment_type && i.fulfillment_type.toLowerCase().includes(q)) ||
         (i.pricing_method && i.pricing_method.toLowerCase().includes(q))
 
-      let matchStatus = true
-      if (statusFilter === 'active') matchStatus = i.is_active !== false
-      else if (statusFilter === 'archived') matchStatus = i.is_active === false
+ let matchStatus = true
+ if (statusFilter === 'active') matchStatus = i.is_active !== false
+ else if (statusFilter === 'archived') matchStatus = i.is_active === false
 
-      return matchSearch && matchStatus
+ return matchSearch && matchStatus
     })
   }, [installationOptions, search, statusFilter])
 
   // Filtered Printing Methods
-  const filteredPrintingMethods = useMemo(() => {
-    const q = search.toLowerCase().trim()
-    return printingMethods.filter((pm) => {
-      const matchSearch =
+ const filteredPrintingMethods = useMemo(() => {
+ const q = search.toLowerCase().trim()
+ return printingMethods.filter((pm) => {
+ const matchSearch =
         !q ||
-        pm.name.toLowerCase().includes(q) ||
+ pm.name.toLowerCase().includes(q) ||
         (pm.name_bn && pm.name_bn.includes(q)) ||
         (pm.code && pm.code.toLowerCase().includes(q)) ||
         (pm.description && pm.description.toLowerCase().includes(q)) ||
         (pm.default_ink_type && pm.default_ink_type.toLowerCase().includes(q))
 
-      let matchStatus = true
-      if (statusFilter === 'active') matchStatus = pm.is_active !== false
-      else if (statusFilter === 'archived') matchStatus = pm.is_active === false
+ let matchStatus = true
+ if (statusFilter === 'active') matchStatus = pm.is_active !== false
+ else if (statusFilter === 'archived') matchStatus = pm.is_active === false
 
-      return matchSearch && matchStatus
+ return matchSearch && matchStatus
     })
   }, [printingMethods, search, statusFilter])
 
   // Business Owner Signal Metrics
-  const metrics = useMemo(() => {
-    const active = products.filter((p) => p.is_active !== false)
-    const archived = products.filter((p) => p.is_active === false)
-    const lowMargin = active.filter((p) => {
-      const m = p.selling_price > 0 ? ((p.selling_price - p.base_cost) / p.selling_price) * 100 : 0
-      return m < 20
+ const metrics = useMemo(() => {
+ const active = products.filter((p) => p.is_active !== false)
+ const archived = products.filter((p) => p.is_active === false)
+ const lowMargin = active.filter((p) => {
+ const m = p.selling_price > 0 ? ((p.selling_price - p.base_cost) / p.selling_price) * 100 : 0
+ return m < 20
     })
-    const avgMargin =
-      active.length > 0
+ const avgMargin =
+ active.length > 0
         ? Math.round(
-            active.reduce((acc, p) => {
-              const m = p.selling_price > 0 ? ((p.selling_price - p.base_cost) / p.selling_price) * 100 : 0
-              return acc + m
+ active.reduce((acc, p) => {
+ const m = p.selling_price > 0 ? ((p.selling_price - p.base_cost) / p.selling_price) * 100 : 0
+ return acc + m
             }, 0) / active.length
           )
         : 0
 
-    return {
-      totalActive: active.length,
-      totalArchived: archived.length,
-      lowMarginCount: lowMargin.length,
-      avgMargin,
+ return {
+ totalActive: active.length,
+ totalArchived: archived.length,
+ lowMarginCount: lowMargin.length,
+ avgMargin,
     }
   }, [products])
 
-  const renderProductActionMenu = (item: ProductRecord, idx: number, totalCount: number) => {
-    const isOpen = activeMenuProductId === item.id
-    return (
+ const renderProductActionMenu = (item: ProductRecord, idx: number, totalCount: number) => {
+ const isOpen = activeMenuProductId === item.id
+ return (
       <td className="py-3.5 px-4 text-center whitespace-nowrap w-[70px] min-w-[70px]">
-        <div className="relative inline-block text-left" data-product-menu>
+        <div className="relative inline-block text-left"data-product-menu>
           <Button
-            size="sm"
-            variant="ghost"
-            onClick={(e) => {
-              e.stopPropagation()
-              setActiveMenuProductId(isOpen ? null : item.id)
+ size="sm"variant="ghost"onClick={(e) => {
+ e.stopPropagation()
+ setActiveMenuProductId(isOpen ? null : item.id)
             }}
-            className={cn(
+ className={cn(
               'h-8 w-8 p-0 rounded-lg transition-colors cursor-pointer mx-auto flex items-center justify-center',
-              isOpen
-                ? 'bg-muted text-foreground dark:text-white'
+ isOpen
+                ? 'bg-muted text-foreground'
                 : 'text-muted-foreground hover:text-foreground hover:bg-muted dark:hover:bg-muted'
             )}
-            title={tBilingual('Actions', 'অ্যাকশন')}
-            aria-label="Product Actions"
-            aria-expanded={isOpen}
+ title={tBilingual('Actions', 'অ্যাকশন')}
+ aria-label="Product Actions"aria-expanded={isOpen}
           >
-            <MoreVertical className="h-4 w-4" />
+            <MoreVertical className="h-4 w-4"/>
           </Button>
 
           {isOpen && (
             <div
-              className={cn(
-                'absolute right-0 w-56 bg-card border border-border rounded-xl shadow-xl z-50 py-1.5 text-xs animate-in fade-in-0 zoom-in-95 duration-100',
-                idx >= totalCount - 2 && totalCount >= 3
+ className={cn(
+                'absolute right-0 w-56 bg-card border border-border rounded-xl shadow-xs z-50 py-1.5 text-xs animate-in fade-in-0 zoom-in-95 duration-100',
+ idx >= totalCount - 2 && totalCount >= 3
                   ? 'bottom-full mb-1'
                   : 'top-full mt-1'
               )}
             >
               {/* 1. Fast Quote */}
               <button
-                type="button"
-                onClick={() => {
-                  setActiveMenuProductId(null)
-                  handleOpenFastQuote(item)
+ type="button"onClick={() => {
+ setActiveMenuProductId(null)
+ handleOpenFastQuote(item)
                 }}
-                className="w-full text-left px-3 py-2 hover:bg-blue-50 dark:hover:bg-blue-950/40 flex items-center gap-2.5 text-foreground hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer"
-              >
-                <Calculator className="h-3.5 w-3.5 text-blue-500 shrink-0" />
+ className="w-full text-left px-3 py-2 hover:bg-blue-50 dark:hover:bg-blue-950/40 flex items-center gap-2.5 text-foreground hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer">
+                <Calculator className="h-3.5 w-3.5 text-blue-500 shrink-0"/>
                 <span className="font-medium">{tBilingual('Fast Quote Calculator', 'কোটেশন ক্যালকুলেটর')}</span>
               </button>
 
               {/* 2. Adjust Commercial Price / Tariff */}
               <button
-                type="button"
-                onClick={() => {
-                  setActiveMenuProductId(null)
-                  setPricingProduct(item)
-                  setNewPrice(item.selling_price)
-                  setNewPurchasePrice(item.purchase_price || 0)
-                  setNewTargetMargin(item.target_margin_percentage || 35)
-                  setNewWastage(item.default_wastage_percentage || 0)
+ type="button"onClick={() => {
+ setActiveMenuProductId(null)
+ setPricingProduct(item)
+ setNewPrice(item.selling_price)
+ setNewPurchasePrice(item.purchase_price || 0)
+ setNewTargetMargin(item.target_margin_percentage || 35)
+ setNewWastage(item.default_wastage_percentage || 0)
                 }}
-                className="w-full text-left px-3 py-2 hover:bg-amber-50 dark:hover:bg-amber-950/40 flex items-center gap-2.5 text-foreground hover:text-amber-700 dark:hover:text-amber-400 transition-colors cursor-pointer"
-              >
-                <Edit3 className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+ className="w-full text-left px-3 py-2 hover:bg-amber-50 dark:hover:bg-amber-950/40 flex items-center gap-2.5 text-foreground hover:text-amber-700 dark:hover:text-amber-400 transition-colors cursor-pointer">
+                <Edit3 className="h-3.5 w-3.5 text-amber-500 shrink-0"/>
                 <span>{tBilingual('Adjust Price & Margin', 'মূল্য ও মার্জিন নির্ধারণ')}</span>
               </button>
 
               {/* 3. Edit Item Specs */}
               <button
-                type="button"
-                onClick={() => {
-                  setActiveMenuProductId(null)
-                  handleOpenEdit(item)
+ type="button"onClick={() => {
+ setActiveMenuProductId(null)
+ handleOpenEdit(item)
                 }}
-                className="w-full text-left px-3 py-2 hover:bg-muted flex items-center gap-2.5 text-foreground transition-colors cursor-pointer"
-              >
-                <Sliders className="h-3.5 w-3.5 text-indigo-500 shrink-0" />
+ className="w-full text-left px-3 py-2 hover:bg-muted flex items-center gap-2.5 text-foreground transition-colors cursor-pointer">
+                <Sliders className="h-3.5 w-3.5 text-indigo-500 shrink-0"/>
                 <span>{tBilingual('Edit Details & Specs', 'তথ্য ও স্পেসিফিকেশন')}</span>
               </button>
 
               {/* 4. View Detail Cockpit */}
               <Link
-                href={getTenantNavHref(`/products/${item.id}`, pathname, slug)}
-                onClick={() => setActiveMenuProductId(null)}
-                className="w-full text-left px-3 py-2 hover:bg-muted flex items-center gap-2.5 text-foreground transition-colors"
-              >
-                <ExternalLink className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+ href={getTenantNavHref(`/products/${item.id}`, pathname, slug)}
+ onClick={() => setActiveMenuProductId(null)}
+ className="w-full text-left px-3 py-2 hover:bg-muted flex items-center gap-2.5 text-foreground transition-colors">
+                <ExternalLink className="h-3.5 w-3.5 text-muted-foreground shrink-0"/>
                 <span>{tBilingual('Open Product Cockpit', 'প্রোডাক্ট ককপিট')}</span>
               </Link>
 
               {/* Divider */}
-              <div className="my-1 border-t border-border dark:border-border" />
+              <div className="my-1 border-t border-border"/>
 
               {/* 5. Archive / Restore */}
               {item.is_active !== false ? (
                 <button
-                  type="button"
-                  onClick={() => {
-                    setActiveMenuProductId(null)
-                    handleToggleArchive(item)
+ type="button"onClick={() => {
+ setActiveMenuProductId(null)
+ handleToggleArchive(item)
                   }}
-                  className="w-full text-left px-3 py-2 hover:bg-muted flex items-center gap-2.5 text-muted-foreground transition-colors cursor-pointer"
-                >
-                  <Archive className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+ className="w-full text-left px-3 py-2 hover:bg-muted flex items-center gap-2.5 text-muted-foreground transition-colors cursor-pointer">
+                  <Archive className="h-3.5 w-3.5 text-muted-foreground shrink-0"/>
                   <span>{tBilingual('Archive Item', 'আইটেম আর্কাইভ করুন')}</span>
                 </button>
               ) : (
                 <button
-                  type="button"
-                  onClick={() => {
-                    setActiveMenuProductId(null)
-                    handleToggleArchive(item)
+ type="button"onClick={() => {
+ setActiveMenuProductId(null)
+ handleToggleArchive(item)
                   }}
-                  className="w-full text-left px-3 py-2 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 flex items-center gap-2.5 text-emerald-600 dark:text-emerald-400 transition-colors cursor-pointer"
-                >
-                  <RefreshCw className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+ className="w-full text-left px-3 py-2 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 flex items-center gap-2.5 text-emerald-600 dark:text-emerald-400 transition-colors cursor-pointer">
+                  <RefreshCw className="h-3.5 w-3.5 text-emerald-500 shrink-0"/>
                   <span>{tBilingual('Restore Item', 'আইটেম পুনরুদ্ধার করুন')}</span>
                 </button>
               )}
 
               {/* 6. Delete */}
               <button
-                type="button"
-                onClick={() => {
-                  setActiveMenuProductId(null)
-                  handleInitiateDelete(item)
+ type="button"onClick={() => {
+ setActiveMenuProductId(null)
+ handleInitiateDelete(item)
                 }}
-                className="w-full text-left px-3 py-2 hover:bg-rose-50 dark:hover:bg-rose-950/40 flex items-center gap-2.5 text-rose-600 dark:text-rose-400 transition-colors cursor-pointer"
-              >
-                <Trash2 className="h-3.5 w-3.5 text-rose-500 shrink-0" />
+ className="w-full text-left px-3 py-2 hover:bg-rose-50 dark:hover:bg-rose-950/40 flex items-center gap-2.5 text-rose-600 dark:text-rose-400 transition-colors cursor-pointer">
+                <Trash2 className="h-3.5 w-3.5 text-rose-500 shrink-0"/>
                 <span>{tBilingual('Delete Item', 'আইটেম মুছে ফেলুন')}</span>
               </button>
             </div>
@@ -1864,56 +1848,40 @@ export default function ProductsCatalogPage() {
     )
   }
 
-  if (!mounted) {
-    return (
+ if (!mounted) {
+ return (
       <div className="space-y-6 max-w-7xl pb-12 animate-pulse">
-        <div className="h-10 bg-muted rounded-xl w-1/3" />
+        <div className="h-10 bg-muted rounded-xl w-1/3"/>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-24 bg-muted rounded-xl" />
+            <div key={i} className="h-24 bg-muted rounded-xl"/>
           ))}
         </div>
-        <div className="h-96 bg-muted rounded-xl" />
+        <div className="h-96 bg-muted rounded-xl"/>
       </div>
     )
   }
 
-  return (
+ return (
     <PanelAccessGuard
-      module="products"
-      action="view"
-      panelTitle="Products & Commercial Masters"
-      panelTitleBn="পণ্য ও বাণিজ্যিক মাস্টার্স"
-    >
+ module="products"action="view"panelTitle="Products & Commercial Masters"panelTitleBn="পণ্য ও বাণিজ্যিক মাস্টার্স">
       <div className="space-y-6 max-w-7xl pb-12">
       {/* Page Header with Direct Action Launchers */}
       <PageHeader
-        titleEn="Products & Commercial Masters"
-        titleBn="পণ্য ও বাণিজ্যিক মাস্টার্স"
-        descriptionEn="Unified commercial catalog • Print services, ready products, raw materials, finishing & logistics tariffs"
-        descriptionBn="প্রিন্টিং সার্ভিস, রেডি প্রোডাক্ট, কাঁচামাল, ফিনিশিং ও ডেলিভারি ট্যারিফ নিয়ন্ত্রণ কেন্দ্র"
-        icon={Package}
-        iconColor="text-blue-600"
-        actions={
+ titleEn="Products & Commercial Masters"titleBn="পণ্য ও বাণিজ্যিক মাস্টার্স"descriptionEn="Unified commercial catalog • Print services, ready products, raw materials, finishing & logistics tariffs"descriptionBn="প্রিন্টিং সার্ভিস, রেডি প্রোডাক্ট, কাঁচামাল, ফিনিশিং ও ডেলিভারি ট্যারিফ নিয়ন্ত্রণ কেন্দ্র"icon={Package}
+ iconColor="text-blue-600"actions={
           <div className="flex flex-wrap items-center gap-2.5">
             <Button
-              size="sm"
-              onClick={handleOpenCreate}
-              className="gap-1.5"
-            >
-              <Plus className="h-4 w-4" />
+ size="sm"onClick={handleOpenCreate}
+ className="gap-1.5">
+              <Plus className="h-4 w-4"/>
               <span>{tBilingual('New Product / Service', 'নতুন পণ্য / সেবা')}</span>
             </Button>
 
             <Button
-              variant="outline"
-              size="sm"
-              onClick={handleRefreshAll}
-              disabled={isLoading}
-              className="h-9 w-9 p-0"
-              title="Refresh all catalog and master records"
-              aria-label="Refresh all catalog and master records"
-            >
+ variant="outline"size="sm"onClick={handleRefreshAll}
+ disabled={isLoading}
+ className="h-9 w-9 p-0"title="Refresh all catalog and master records"aria-label="Refresh all catalog and master records">
               <RefreshCw className={cn('h-3.5 w-3.5', isLoading && 'animate-spin')} />
             </Button>
           </div>
@@ -1923,17 +1891,17 @@ export default function ProductsCatalogPage() {
       {/* Notification Toast */}
       {notification && (
         <div
-          className={cn(
+ className={cn(
             'p-3.5 rounded-xl text-xs font-semibold flex items-center gap-2.5 border shadow-xs transition-all animate-in fade-in-0',
-            notification.type === 'success'
+ notification.type === 'success'
               ? 'bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800'
               : 'bg-rose-50 text-rose-800 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800'
           )}
         >
           {notification.type === 'success' ? (
-            <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+            <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0"/>
           ) : (
-            <AlertTriangle className="h-4 w-4 text-rose-600 shrink-0" />
+            <AlertTriangle className="h-4 w-4 text-rose-600 shrink-0"/>
           )}
           <span>{notification.message}</span>
         </div>
@@ -1943,11 +1911,11 @@ export default function ProductsCatalogPage() {
       {fetchError && (
         <div className="p-4 bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-800 rounded-xl flex items-center justify-between gap-3 text-xs text-rose-800 dark:text-rose-300">
           <div className="flex items-center gap-2">
-            <ShieldAlert className="h-5 w-5 text-rose-600 shrink-0" />
+            <ShieldAlert className="h-5 w-5 text-rose-600 shrink-0"/>
             <span>{fetchError}</span>
           </div>
-          <Button size="sm" variant="outline" onClick={handleRefreshAll} className="text-xs shrink-0">
-            <RefreshCw className="mr-1.5 h-3 w-3" /> Retry Connection
+          <Button size="sm"variant="outline"onClick={handleRefreshAll} className="text-xs shrink-0">
+            <RefreshCw className="mr-1.5 h-3 w-3"/> Retry Connection
           </Button>
         </div>
       )}
@@ -1957,9 +1925,9 @@ export default function ProductsCatalogPage() {
         {/* 1. Total Active Catalog Items */}
         <Card className="p-3.5 bg-card border-border shadow-xs">
           <div className="text-2xs font-bold text-muted-foreground uppercase tracking-wider">
-            Active Catalog Items
+ Active Catalog Items
           </div>
-          <div className="text-lg sm:text-xl font-bold font-numeric tabular-nums text-foreground dark:text-white mt-1">
+          <div className="text-lg sm:text-xl font-bold font-numeric tabular-nums text-foreground mt-1">
             {metrics.totalActive}
           </div>
           <div className="text-xs text-muted-foreground font-numeric tabular-nums mt-0.5">
@@ -1970,39 +1938,39 @@ export default function ProductsCatalogPage() {
         {/* 2. Average Gross Margin */}
         <Card className="p-3.5 bg-card border-emerald-200 dark:border-emerald-900/60 shadow-xs">
           <div className="text-2xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">
-            Average Gross Margin
+ Average Gross Margin
           </div>
           <div className="text-lg sm:text-xl font-bold font-numeric tabular-nums text-emerald-600 dark:text-emerald-400 mt-1">
             {metrics.avgMargin}%
           </div>
           <div className="text-xs text-emerald-600/90 font-numeric tabular-nums mt-0.5">
-            Yield-Adjusted Profitability
+ Yield-Adjusted Profitability
           </div>
         </Card>
 
         {/* 3. Low Margin Alert */}
         <Card className="p-3.5 bg-card border-amber-200 dark:border-amber-900/60 shadow-xs">
           <div className="text-2xs font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider">
-            Low Margin Alert (&lt;20%)
+ Low Margin Alert (&lt;20%)
           </div>
           <div className="text-lg sm:text-xl font-bold font-numeric tabular-nums text-amber-600 dark:text-amber-400 mt-1">
             {metrics.lowMarginCount}
           </div>
           <div className="text-xs text-amber-600/90 font-numeric tabular-nums mt-0.5">
-            Review Raw Purchase Tariffs
+ Review Raw Purchase Tariffs
           </div>
         </Card>
 
         {/* 4. Configuration Masters */}
         <Card className="p-3.5 bg-card border-border shadow-xs">
           <div className="text-2xs font-bold text-muted-foreground uppercase tracking-wider">
-            Configuration Masters
+ Configuration Masters
           </div>
-          <div className="text-lg sm:text-xl font-bold font-numeric tabular-nums text-foreground dark:text-white mt-1">
+          <div className="text-lg sm:text-xl font-bold font-numeric tabular-nums text-foreground mt-1">
             {tabCounts.finishing + tabCounts.additional + tabCounts.installation + tabCounts.printing_methods}
           </div>
           <div className="text-xs text-muted-foreground font-numeric tabular-nums mt-0.5">
-            Finishing, Addons, Logistics & Inks
+ Finishing, Addons, Logistics & Inks
           </div>
         </Card>
       </div>
@@ -2020,28 +1988,27 @@ export default function ProductsCatalogPage() {
           { id: 'installation', label: 'Installation & Delivery', count: tabCounts.installation, icon: Truck },
           { id: 'printing_methods', label: 'Printing Methods', count: tabCounts.printing_methods, icon: Palette },
         ].map((tab) => {
-          const Icon = tab.icon
-          const isActive = entityTypeFilter === tab.id
-          return (
+ const Icon = tab.icon
+ const isActive = entityTypeFilter === tab.id
+ return (
             <button
-              key={tab.id}
-              type="button"
-              onClick={() => setEntityTypeFilter(tab.id as any)}
-              className={cn(
+ key={tab.id}
+ type="button"onClick={() => setEntityTypeFilter(tab.id as any)}
+ className={cn(
                 'px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shrink-0 border',
-                isActive
-                  ? 'bg-slate-900 text-white border-slate-900 dark:border-white shadow-xs'
+ isActive
+                  ? 'bg-surface-inset text-foreground border-border dark:border-white shadow-xs'
                   : 'bg-card text-muted-foreground border-border hover:bg-muted dark:hover:bg-muted'
               )}
             >
-              <Icon className="h-3.5 w-3.5 shrink-0" />
+              <Icon className="h-3.5 w-3.5 shrink-0"/>
               <span>{tab.label}</span>
               <span
-                className={cn(
+ className={cn(
                   'px-1.5 py-0.5 text-2xs rounded-full tabular-nums font-bold',
-                  isActive
-                    ? 'bg-card/20 text-white dark:text-foreground'
-                    : 'bg-muted text-muted-foreground dark:text-muted-foreground'
+ isActive
+                    ? 'bg-card/20 text-white '
+                    : 'bg-muted text-muted-foreground '
                 )}
               >
                 {tab.count}
@@ -2055,26 +2022,23 @@ export default function ProductsCatalogPage() {
       <div className="p-3 bg-card rounded-xl border border-border shadow-xs flex flex-wrap items-center justify-between gap-3">
         {/* Search */}
         <div className="relative flex-1 min-w-[220px]">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground"/>
           <Input
-            placeholder="Search by English name, বাংলা নাম, SKU, specs, pricing..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-8 text-xs h-9"
-          />
+ placeholder="Search by English name, বাংলা নাম, SKU, specs, pricing..."value={search}
+ onChange={(e) => setSearch(e.target.value)}
+ className="pl-8 text-xs h-9"/>
         </div>
 
         {/* Category Dropdown & Quick Add (Catalog Tabs only) */}
         {entityTypeFilter !== 'printing_methods' && entityTypeFilter !== 'installation' && (
           <div className="flex items-center gap-1.5">
             <select
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              className="h-9 px-3 rounded-lg border border-input bg-card text-xs font-semibold"
-            >
+ value={selectedCategory}
+ onChange={(e) => setSelectedCategory(e.target.value)}
+ className="h-9 px-3 rounded-lg border border-input bg-card text-xs font-semibold">
               <option value="all">All Categories (সকল ক্যাটাগরি)</option>
               {categories.length > 0 ? (
-                categories.map((cat) => (
+ categories.map((cat) => (
                   <option key={cat.id} value={cat.slug || cat.name}>
                     {cat.name} {cat.name_bn ? `(${cat.name_bn})` : ''}
                   </option>
@@ -2096,18 +2060,13 @@ export default function ProductsCatalogPage() {
               )}
             </select>
             <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                setEditingCategory(null)
-                setIsCategoryModalOpen(true)
+ type="button"variant="outline"size="sm"onClick={() => {
+ setEditingCategory(null)
+ setIsCategoryModalOpen(true)
               }}
-              title="Add New Category"
-              className="h-9 px-2.5 text-xs text-muted-foreground border-input hover:border-blue-500 hover:text-blue-600 shrink-0"
-            >
-              <Plus className="h-3.5 w-3.5 mr-1" />
-              Category
+ title="Add New Category"className="h-9 px-2.5 text-xs text-muted-foreground border-input hover:border-blue-500 hover:text-blue-600 shrink-0">
+              <Plus className="h-3.5 w-3.5 mr-1"/>
+ Category
             </Button>
           </div>
         )}
@@ -2116,10 +2075,9 @@ export default function ProductsCatalogPage() {
         {(entityTypeFilter === 'all' || entityTypeFilter === 'product' || entityTypeFilter === 'service' || entityTypeFilter === 'material' || entityTypeFilter === 'outsource') && (
           <div>
             <select
-              value={selectedType}
-              onChange={(e) => setSelectedType(e.target.value)}
-              className="h-9 px-3 rounded-lg border border-input bg-card text-xs font-semibold"
-            >
+ value={selectedType}
+ onChange={(e) => setSelectedType(e.target.value)}
+ className="h-9 px-3 rounded-lg border border-input bg-card text-xs font-semibold">
               <option value="all">All Commercial Types</option>
               {COMMERCIAL_PRODUCT_TYPES.map((t) => (
                 <option key={t.id} value={t.id}>
@@ -2133,40 +2091,40 @@ export default function ProductsCatalogPage() {
         {/* Status Tabs */}
         <div className="flex items-center gap-1 bg-muted p-1 rounded-lg text-xs font-bold">
           <button
-            onClick={() => setStatusFilter('active')}
-            className={cn(
+ onClick={() => setStatusFilter('active')}
+ className={cn(
               'px-3 py-1.5 rounded-md transition-all cursor-pointer',
-              statusFilter === 'active' ? 'bg-card text-blue-600 dark:text-blue-400 shadow-xs font-bold' : 'text-muted-foreground hover:text-foreground dark:hover:text-white'
+ statusFilter === 'active' ? 'bg-card text-blue-600 dark:text-blue-400 shadow-xs font-bold' : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
             )}
           >
-            Active
+ Active
           </button>
           <button
-            onClick={() => setStatusFilter('low_margin')}
-            className={cn(
+ onClick={() => setStatusFilter('low_margin')}
+ className={cn(
               'px-3 py-1.5 rounded-md transition-all cursor-pointer',
-              statusFilter === 'low_margin' ? 'bg-card text-amber-600 dark:text-amber-400 shadow-xs font-bold' : 'text-muted-foreground hover:text-foreground dark:hover:text-white'
+ statusFilter === 'low_margin' ? 'bg-card text-amber-600 dark:text-amber-400 shadow-xs font-bold' : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
             )}
           >
-            Low Margin
+ Low Margin
           </button>
           <button
-            onClick={() => setStatusFilter('archived')}
-            className={cn(
+ onClick={() => setStatusFilter('archived')}
+ className={cn(
               'px-3 py-1.5 rounded-md transition-all cursor-pointer',
-              statusFilter === 'archived' ? 'bg-card text-foreground dark:text-white shadow-xs font-bold' : 'text-muted-foreground hover:text-foreground dark:hover:text-white'
+ statusFilter === 'archived' ? 'bg-card text-foreground shadow-xs font-bold' : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
             )}
           >
-            Archived
+ Archived
           </button>
           <button
-            onClick={() => setStatusFilter('all')}
-            className={cn(
+ onClick={() => setStatusFilter('all')}
+ className={cn(
               'px-3 py-1.5 rounded-md transition-all cursor-pointer',
-              statusFilter === 'all' ? 'bg-card text-foreground dark:text-white shadow-xs font-bold' : 'text-muted-foreground hover:text-foreground dark:hover:text-white'
+ statusFilter === 'all' ? 'bg-card text-foreground shadow-xs font-bold' : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
             )}
           >
-            All
+ All
           </button>
         </div>
       </div>
@@ -2178,51 +2136,47 @@ export default function ProductsCatalogPage() {
         <Card className="shadow-xs overflow-hidden">
           <CardHeader className="py-3.5 px-4 border-b border-border bg-muted flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
-              <CardTitle className="text-sm font-bold text-foreground dark:text-white flex items-center gap-2">
+              <CardTitle className="text-sm font-bold text-foreground flex items-center gap-2">
                 <span>Printing Technologies & Methods</span>
-                <Badge variant="outline" className="text-xs tabular-nums font-bold">
+                <Badge variant="outline"className="text-xs tabular-nums font-bold">
                   {filteredPrintingMethods.length}
                 </Badge>
               </CardTitle>
               <CardDescription className="text-xs">
-                Configurable printing methods (Eco-Solvent, UV Flatbed, UV Roll, DTF, Sublimation, Latex, etc.) usable across all Print Services.
+ Configurable printing methods (Eco-Solvent, UV Flatbed, UV Roll, DTF, Sublimation, Latex, etc.) usable across all Print Services.
               </CardDescription>
             </div>
             <Button
-              size="sm"
-              onClick={() => {
-                setEditingPrintingMethod(null)
-                setIsPrintingMethodModalOpen(true)
+ size="sm"onClick={() => {
+ setEditingPrintingMethod(null)
+ setIsPrintingMethodModalOpen(true)
               }}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs shrink-0"
-            >
-              <Plus className="mr-1.5 h-3.5 w-3.5" />
-              Add Printing Method
+ className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs shrink-0">
+              <Plus className="mr-1.5 h-3.5 w-3.5"/>
+ Add Printing Method
             </Button>
           </CardHeader>
           <CardContent className="p-0">
             {filteredPrintingMethods.length === 0 ? (
               <div className="p-12 text-center space-y-3">
-                <Palette className="h-10 w-10 text-muted-foreground mx-auto" />
-                <h3 className="text-sm font-bold text-foreground dark:text-foreground">No Printing Methods Found</h3>
+                <Palette className="h-10 w-10 text-muted-foreground mx-auto"/>
+                <h3 className="text-sm font-bold text-foreground">No Printing Methods Found</h3>
                 <p className="text-xs text-muted-foreground max-w-sm mx-auto">
-                  Add printing technologies to bind compatible raw media, ink rates, and production speeds.
+ Add printing technologies to bind compatible raw media, ink rates, and production speeds.
                 </p>
                 <Button
-                  size="sm"
-                  onClick={() => {
-                    setEditingPrintingMethod(null)
-                    setIsPrintingMethodModalOpen(true)
+ size="sm"onClick={() => {
+ setEditingPrintingMethod(null)
+ setIsPrintingMethodModalOpen(true)
                   }}
-                  className="mt-2 text-xs bg-primary hover:bg-primary/90 text-primary-foreground"
-                >
-                  <Plus className="h-3.5 w-3.5 mr-1" /> Add Printing Method
+ className="mt-2 text-xs bg-primary hover:bg-primary/90 text-primary-foreground">
+                  <Plus className="h-3.5 w-3.5 mr-1"/> Add Printing Method
                 </Button>
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-sm">
-                  <thead className="bg-muted text-xs font-semibold text-muted-foreground border-b border-border dark:border-border">
+                  <thead className="bg-muted text-xs font-semibold text-muted-foreground border-b border-border">
                     <tr>
                       <th className="py-3 px-4">Method Name & Description</th>
                       <th className="py-3 px-3">Code</th>
@@ -2236,61 +2190,54 @@ export default function ProductsCatalogPage() {
                   <tbody className="divide-y divide-border dark:divide-border">
                     {filteredPrintingMethods.map((pm) => (
                       <tr key={pm.id} className="hover:bg-muted dark:hover:bg-muted/50 transition-colors">
-                        <td className="py-3.5 px-4 font-bold text-foreground dark:text-white">
+                        <td className="py-3.5 px-4 font-bold text-foreground">
                           <div>{pm.name}</div>
                           {pm.name_bn && <div className="text-xs text-muted-foreground font-medium font-bengali">{pm.name_bn}</div>}
                           {pm.description && <div className="text-2xs text-muted-foreground font-normal">{pm.description}</div>}
                         </td>
-                        <td className="py-3.5 px-3 tabular-nums text-xs text-muted-foreground dark:text-muted-foreground">
-                          {pm.code ? <Badge variant="secondary" className="tabular-nums text-xs">{pm.code}</Badge> : '—'}
+                        <td className="py-3.5 px-3 tabular-nums text-xs text-muted-foreground">
+                          {pm.code ? <Badge variant="secondary"className="tabular-nums text-xs">{pm.code}</Badge> : '—'}
                         </td>
                         <td className="py-3.5 px-3">
                           <div className="flex flex-wrap gap-1">
                             {(pm.compatible_material_types || []).map((t) => (
-                              <Badge key={t} variant="secondary" className="text-2xs uppercase tabular-nums">
+                              <Badge key={t} variant="secondary"className="text-2xs uppercase tabular-nums">
                                 {t}
                               </Badge>
                             ))}
                           </div>
                         </td>
-                        <td className="py-3.5 px-3 text-xs text-muted-foreground dark:text-muted-foreground">
+                        <td className="py-3.5 px-3 text-xs text-muted-foreground">
                           {pm.default_ink_type || 'Standard CMYK'}
                         </td>
-                        <td className="py-3.5 px-3 tabular-nums font-semibold text-xs text-foreground dark:text-foreground">
+                        <td className="py-3.5 px-3 tabular-nums font-semibold text-xs text-foreground">
                           ৳{pm.cost_per_sqft || 0}/sft
                         </td>
                         <td className="py-3.5 px-3">
                           {pm.is_active !== false ? (
                             <span className="inline-flex items-center gap-1 text-2xs font-semibold text-emerald-600">
-                              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Active
+                              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"/> Active
                             </span>
                           ) : (
                             <span className="inline-flex items-center gap-1 text-2xs font-semibold text-muted-foreground">
-                              <span className="h-1.5 w-1.5 rounded-full bg-slate-400" /> Inactive
+                              <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground"/> Inactive
                             </span>
                           )}
                         </td>
                         <td className="py-3.5 px-4 text-right">
                           <div className="flex items-center justify-end gap-1.5">
                             <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => {
-                                setEditingPrintingMethod(pm)
-                                setIsPrintingMethodModalOpen(true)
+ size="sm"variant="outline"onClick={() => {
+ setEditingPrintingMethod(pm)
+ setIsPrintingMethodModalOpen(true)
                               }}
-                              className="h-7 text-xs px-2"
-                            >
-                              Edit
+ className="h-7 text-xs px-2">
+ Edit
                             </Button>
                             <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => handleDeletePrintingMethod(pm.id)}
-                              className="h-7 w-7 p-0 text-rose-500 hover:text-rose-700 hover:bg-rose-50"
-                              title="Delete Method"
-                            >
-                              <Trash2 className="h-3.5 w-3.5" />
+ size="sm"variant="ghost"onClick={() => handleDeletePrintingMethod(pm.id)}
+ className="h-7 w-7 p-0 text-rose-500 hover:text-rose-700 hover:bg-rose-50"title="Delete Method">
+                              <Trash2 className="h-3.5 w-3.5"/>
                             </Button>
                           </div>
                         </td>
@@ -2311,51 +2258,47 @@ export default function ProductsCatalogPage() {
         <Card className="shadow-xs overflow-hidden">
           <CardHeader className="py-3.5 px-4 border-b border-border bg-muted flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
-              <CardTitle className="text-sm font-bold text-foreground dark:text-white flex items-center gap-2">
+              <CardTitle className="text-sm font-bold text-foreground flex items-center gap-2">
                 <span>Post-Press Finishing & Fabrication Masters</span>
-                <Badge variant="outline" className="text-xs tabular-nums font-bold">
+                <Badge variant="outline"className="text-xs tabular-nums font-bold">
                   {filteredFinishingOptions.length}
                 </Badge>
               </CardTitle>
               <CardDescription className="text-xs">
-                Configurable finishing operations (Hemming, Eyelets, Lamination, Binding, Seaming, Foam Mounts, Framing) selectable inside services and quotations.
+ Configurable finishing operations (Hemming, Eyelets, Lamination, Binding, Seaming, Foam Mounts, Framing) selectable inside services and quotations.
               </CardDescription>
             </div>
             <Button
-              size="sm"
-              onClick={() => {
-                setEditingFinishing(null)
-                setIsFinishingModalOpen(true)
+ size="sm"onClick={() => {
+ setEditingFinishing(null)
+ setIsFinishingModalOpen(true)
               }}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs shrink-0"
-            >
-              <Plus className="mr-1.5 h-3.5 w-3.5" />
-              Add Finishing Option
+ className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs shrink-0">
+              <Plus className="mr-1.5 h-3.5 w-3.5"/>
+ Add Finishing Option
             </Button>
           </CardHeader>
           <CardContent className="p-0">
             {filteredFinishingOptions.length === 0 ? (
               <div className="p-12 text-center space-y-3">
-                <Scissors className="h-10 w-10 text-muted-foreground mx-auto" />
-                <h3 className="text-sm font-bold text-foreground dark:text-foreground">No Finishing Options Configured</h3>
+                <Scissors className="h-10 w-10 text-muted-foreground mx-auto"/>
+                <h3 className="text-sm font-bold text-foreground">No Finishing Options Configured</h3>
                 <p className="text-xs text-muted-foreground max-w-sm mx-auto">
-                  Add finishing operations with custom pricing methods (per sqft, per linear ft, per piece, or fixed) to attach them to services.
+ Add finishing operations with custom pricing methods (per sqft, per linear ft, per piece, or fixed) to attach them to services.
                 </p>
                 <Button
-                  size="sm"
-                  onClick={() => {
-                    setEditingFinishing(null)
-                    setIsFinishingModalOpen(true)
+ size="sm"onClick={() => {
+ setEditingFinishing(null)
+ setIsFinishingModalOpen(true)
                   }}
-                  className="mt-2 text-xs bg-primary hover:bg-primary/90 text-primary-foreground"
-                >
-                  <Plus className="h-3.5 w-3.5 mr-1" /> Add Finishing Option
+ className="mt-2 text-xs bg-primary hover:bg-primary/90 text-primary-foreground">
+                  <Plus className="h-3.5 w-3.5 mr-1"/> Add Finishing Option
                 </Button>
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-sm">
-                  <thead className="bg-muted text-xs font-semibold text-muted-foreground border-b border-border dark:border-border">
+                  <thead className="bg-muted text-xs font-semibold text-muted-foreground border-b border-border">
                     <tr>
                       <th className="py-3 px-4">Finishing Name</th>
                       <th className="py-3 px-3">Category</th>
@@ -2370,39 +2313,39 @@ export default function ProductsCatalogPage() {
                   </thead>
                   <tbody className="divide-y divide-border dark:divide-border">
                     {filteredFinishingOptions.map((f) => {
-                      const margin =
-                        f.selling_price > 0
+ const margin =
+ f.selling_price > 0
                           ? Math.round(((f.selling_price - (f.cost || 0)) / f.selling_price) * 100)
                           : 0
-                      const linkedMat = products.find((p) => p.id === f.material_id)
+ const linkedMat = products.find((p) => p.id === f.material_id)
 
-                      return (
+ return (
                         <tr key={f.id} className="hover:bg-muted dark:hover:bg-muted/50 transition-colors">
-                          <td className="py-3.5 px-4 font-bold text-foreground dark:text-white">
+                          <td className="py-3.5 px-4 font-bold text-foreground">
                             <div>{f.name}</div>
                             {f.name_bn && <div className="text-xs text-muted-foreground font-medium font-bengali">{f.name_bn}</div>}
                           </td>
                           <td className="py-3.5 px-3">
-                            <span className="capitalize px-2 py-0.5 rounded text-2xs font-semibold bg-muted text-foreground dark:text-muted-foreground">
+                            <span className="capitalize px-2 py-0.5 rounded text-2xs font-semibold bg-muted text-foreground">
                               {f.category?.replace('_', ' ') || 'General'}
                             </span>
                           </td>
-                          <td className="py-3.5 px-3 tabular-nums text-xs text-foreground dark:text-muted-foreground">
-                            <Badge variant="outline" className="text-2xs uppercase">
+                          <td className="py-3.5 px-3 tabular-nums text-xs text-foreground">
+                            <Badge variant="outline"className="text-2xs uppercase">
                               {f.pricing_method?.replace('_', ' ')}
                             </Badge>
                           </td>
-                          <td className="py-3.5 px-3 tabular-nums text-xs text-muted-foreground dark:text-muted-foreground">
+                          <td className="py-3.5 px-3 tabular-nums text-xs text-muted-foreground">
                             ৳{f.cost || 0}
                           </td>
-                          <td className="py-3.5 px-3 tabular-nums font-bold text-xs text-foreground dark:text-white">
+                          <td className="py-3.5 px-3 tabular-nums font-bold text-xs text-foreground">
                             ৳{f.selling_price || 0}
                           </td>
                           <td className="py-3.5 px-3 tabular-nums text-xs">
                             <span
-                              className={cn(
+ className={cn(
                                 'inline-flex items-center px-1.5 py-0.5 rounded text-2xs font-bold border',
-                                margin >= 35
+ margin >= 35
                                   ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300'
                                   : 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300'
                               )}
@@ -2410,7 +2353,7 @@ export default function ProductsCatalogPage() {
                               {margin}%
                             </span>
                           </td>
-                          <td className="py-3.5 px-3 text-xs text-muted-foreground dark:text-muted-foreground">
+                          <td className="py-3.5 px-3 text-xs text-muted-foreground">
                             {linkedMat ? (
                               <span className="text-blue-600 font-semibold">{linkedMat.name}</span>
                             ) : (
@@ -2420,35 +2363,28 @@ export default function ProductsCatalogPage() {
                           <td className="py-3.5 px-3">
                             {f.is_active !== false ? (
                               <span className="inline-flex items-center gap-1 text-2xs font-semibold text-emerald-600">
-                                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Active
+                                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"/> Active
                               </span>
                             ) : (
                               <span className="inline-flex items-center gap-1 text-2xs font-semibold text-muted-foreground">
-                                <span className="h-1.5 w-1.5 rounded-full bg-slate-400" /> Inactive
+                                <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground"/> Inactive
                               </span>
                             )}
                           </td>
                           <td className="py-3.5 px-4 text-right">
                             <div className="flex items-center justify-end gap-1.5">
                               <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => {
-                                  setEditingFinishing(f)
-                                  setIsFinishingModalOpen(true)
+ size="sm"variant="outline"onClick={() => {
+ setEditingFinishing(f)
+ setIsFinishingModalOpen(true)
                                 }}
-                                className="h-7 text-xs px-2"
-                              >
-                                Edit
+ className="h-7 text-xs px-2">
+ Edit
                               </Button>
                               <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => handleDeleteFinishingOption(f.id)}
-                                className="h-7 w-7 p-0 text-rose-500 hover:text-rose-700 hover:bg-rose-50"
-                                title="Delete Finishing Option"
-                              >
-                                <Trash2 className="h-3.5 w-3.5" />
+ size="sm"variant="ghost"onClick={() => handleDeleteFinishingOption(f.id)}
+ className="h-7 w-7 p-0 text-rose-500 hover:text-rose-700 hover:bg-rose-50"title="Delete Finishing Option">
+                                <Trash2 className="h-3.5 w-3.5"/>
                               </Button>
                             </div>
                           </td>
@@ -2470,51 +2406,47 @@ export default function ProductsCatalogPage() {
         <Card className="shadow-xs overflow-hidden">
           <CardHeader className="py-3.5 px-4 border-b border-border bg-muted flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
-              <CardTitle className="text-sm font-bold text-foreground dark:text-white flex items-center gap-2">
+              <CardTitle className="text-sm font-bold text-foreground flex items-center gap-2">
                 <span>Additional Work & Catalog Addons</span>
-                <Badge variant="outline" className="text-xs tabular-nums font-bold">
+                <Badge variant="outline"className="text-xs tabular-nums font-bold">
                   {filteredAdditionalOptions.length}
                 </Badge>
               </CardTitle>
               <CardDescription className="text-xs">
-                Reusable hardware items, stand accessories, framing, and add-on charges linked to catalog products.
+ Reusable hardware items, stand accessories, framing, and add-on charges linked to catalog products.
               </CardDescription>
             </div>
             <Button
-              size="sm"
-              onClick={() => {
-                setEditingAdditional(null)
-                setIsAdditionalModalOpen(true)
+ size="sm"onClick={() => {
+ setEditingAdditional(null)
+ setIsAdditionalModalOpen(true)
               }}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs shrink-0"
-            >
-              <Plus className="mr-1.5 h-3.5 w-3.5" />
-              Add Additional Option
+ className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs shrink-0">
+              <Plus className="mr-1.5 h-3.5 w-3.5"/>
+ Add Additional Option
             </Button>
           </CardHeader>
           <CardContent className="p-0">
             {filteredAdditionalOptions.length === 0 ? (
               <div className="p-12 text-center space-y-3">
-                <PlusCircle className="h-10 w-10 text-muted-foreground mx-auto" />
-                <h3 className="text-sm font-bold text-foreground dark:text-foreground">No Additional Options Configured</h3>
+                <PlusCircle className="h-10 w-10 text-muted-foreground mx-auto"/>
+                <h3 className="text-sm font-bold text-foreground">No Additional Options Configured</h3>
                 <p className="text-xs text-muted-foreground max-w-sm mx-auto">
-                  Add hardware accessories, stands, or extra charges to attach them seamlessly to jobs and quotes.
+ Add hardware accessories, stands, or extra charges to attach them seamlessly to jobs and quotes.
                 </p>
                 <Button
-                  size="sm"
-                  onClick={() => {
-                    setEditingAdditional(null)
-                    setIsAdditionalModalOpen(true)
+ size="sm"onClick={() => {
+ setEditingAdditional(null)
+ setIsAdditionalModalOpen(true)
                   }}
-                  className="mt-2 text-xs bg-primary hover:bg-primary/90 text-primary-foreground"
-                >
-                  <Plus className="h-3.5 w-3.5 mr-1" /> Add Additional Option
+ className="mt-2 text-xs bg-primary hover:bg-primary/90 text-primary-foreground">
+                  <Plus className="h-3.5 w-3.5 mr-1"/> Add Additional Option
                 </Button>
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-sm">
-                  <thead className="bg-muted text-xs font-semibold text-muted-foreground border-b border-border dark:border-border">
+                  <thead className="bg-muted text-xs font-semibold text-muted-foreground border-b border-border">
                     <tr>
                       <th className="py-3 px-4">Option Name</th>
                       <th className="py-3 px-3">Linked Catalog Item</th>
@@ -2528,19 +2460,19 @@ export default function ProductsCatalogPage() {
                   </thead>
                   <tbody className="divide-y divide-border dark:divide-border">
                     {filteredAdditionalOptions.map((a) => {
-                      const margin =
-                        a.selling_price > 0
+ const margin =
+ a.selling_price > 0
                           ? Math.round(((a.selling_price - (a.cost || 0)) / a.selling_price) * 100)
                           : 0
-                      const linkedProduct = products.find((p) => p.id === a.product_id)
+ const linkedProduct = products.find((p) => p.id === a.product_id)
 
-                      return (
+ return (
                         <tr key={a.id} className="hover:bg-muted dark:hover:bg-muted/50 transition-colors">
-                          <td className="py-3.5 px-4 font-bold text-foreground dark:text-white">
+                          <td className="py-3.5 px-4 font-bold text-foreground">
                             <div>{a.name}</div>
                             {a.name_bn && <div className="text-xs text-muted-foreground font-medium font-bengali">{a.name_bn}</div>}
                           </td>
-                          <td className="py-3.5 px-3 text-xs text-muted-foreground dark:text-muted-foreground">
+                          <td className="py-3.5 px-3 text-xs text-muted-foreground">
                             {linkedProduct ? (
                               <span className="text-blue-600 font-semibold">{linkedProduct.name}</span>
                             ) : (
@@ -2548,21 +2480,21 @@ export default function ProductsCatalogPage() {
                             )}
                           </td>
                           <td className="py-3.5 px-3 tabular-nums text-xs">
-                            <Badge variant="outline" className="text-2xs uppercase">
+                            <Badge variant="outline"className="text-2xs uppercase">
                               {a.pricing_method?.replace('_', ' ')}
                             </Badge>
                           </td>
-                          <td className="py-3.5 px-3 tabular-nums text-xs text-muted-foreground dark:text-muted-foreground">
+                          <td className="py-3.5 px-3 tabular-nums text-xs text-muted-foreground">
                             ৳{a.cost || 0}
                           </td>
-                          <td className="py-3.5 px-3 tabular-nums font-bold text-xs text-foreground dark:text-white">
+                          <td className="py-3.5 px-3 tabular-nums font-bold text-xs text-foreground">
                             ৳{a.selling_price || 0}
                           </td>
                           <td className="py-3.5 px-3 tabular-nums text-xs">
                             <span
-                              className={cn(
+ className={cn(
                                 'inline-flex items-center px-1.5 py-0.5 rounded text-2xs font-bold border',
-                                margin >= 35
+ margin >= 35
                                   ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300'
                                   : 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300'
                               )}
@@ -2573,35 +2505,28 @@ export default function ProductsCatalogPage() {
                           <td className="py-3.5 px-3">
                             {a.is_active !== false ? (
                               <span className="inline-flex items-center gap-1 text-2xs font-semibold text-emerald-600">
-                                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Active
+                                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"/> Active
                               </span>
                             ) : (
                               <span className="inline-flex items-center gap-1 text-2xs font-semibold text-muted-foreground">
-                                <span className="h-1.5 w-1.5 rounded-full bg-slate-400" /> Inactive
+                                <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground"/> Inactive
                               </span>
                             )}
                           </td>
                           <td className="py-3.5 px-4 text-right">
                             <div className="flex items-center justify-end gap-1.5">
                               <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => {
-                                  setEditingAdditional(a)
-                                  setIsAdditionalModalOpen(true)
+ size="sm"variant="outline"onClick={() => {
+ setEditingAdditional(a)
+ setIsAdditionalModalOpen(true)
                                 }}
-                                className="h-7 text-xs px-2"
-                              >
-                                Edit
+ className="h-7 text-xs px-2">
+ Edit
                               </Button>
                               <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => handleDeleteAdditionalOption(a.id)}
-                                className="h-7 w-7 p-0 text-rose-500 hover:text-rose-700 hover:bg-rose-50"
-                                title="Delete Additional Option"
-                              >
-                                <Trash2 className="h-3.5 w-3.5" />
+ size="sm"variant="ghost"onClick={() => handleDeleteAdditionalOption(a.id)}
+ className="h-7 w-7 p-0 text-rose-500 hover:text-rose-700 hover:bg-rose-50"title="Delete Additional Option">
+                                <Trash2 className="h-3.5 w-3.5"/>
                               </Button>
                             </div>
                           </td>
@@ -2623,51 +2548,47 @@ export default function ProductsCatalogPage() {
         <Card className="shadow-xs overflow-hidden">
           <CardHeader className="py-3.5 px-4 border-b border-border bg-muted flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
-              <CardTitle className="text-sm font-bold text-foreground dark:text-white flex items-center gap-2">
+              <CardTitle className="text-sm font-bold text-foreground flex items-center gap-2">
                 <span>Installation, Logistics & Dispatch Masters</span>
-                <Badge variant="outline" className="text-xs tabular-nums font-bold">
+                <Badge variant="outline"className="text-xs tabular-nums font-bold">
                   {filteredInstallationOptions.length}
                 </Badge>
               </CardTitle>
               <CardDescription className="text-xs">
-                Configurable site installations, height tiers, delivery dispatches, and logistics tariffs with automated production task integration.
+ Configurable site installations, height tiers, delivery dispatches, and logistics tariffs with automated production task integration.
               </CardDescription>
             </div>
             <Button
-              size="sm"
-              onClick={() => {
-                setEditingInstallation(null)
-                setIsInstallationModalOpen(true)
+ size="sm"onClick={() => {
+ setEditingInstallation(null)
+ setIsInstallationModalOpen(true)
               }}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs shrink-0"
-            >
-              <Plus className="mr-1.5 h-3.5 w-3.5" />
-              Add Installation Option
+ className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs shrink-0">
+              <Plus className="mr-1.5 h-3.5 w-3.5"/>
+ Add Installation Option
             </Button>
           </CardHeader>
           <CardContent className="p-0">
             {filteredInstallationOptions.length === 0 ? (
               <div className="p-12 text-center space-y-3">
-                <Truck className="h-10 w-10 text-muted-foreground mx-auto" />
-                <h3 className="text-sm font-bold text-foreground dark:text-foreground">No Installation & Delivery Options Configured</h3>
+                <Truck className="h-10 w-10 text-muted-foreground mx-auto"/>
+                <h3 className="text-sm font-bold text-foreground">No Installation & Delivery Options Configured</h3>
                 <p className="text-xs text-muted-foreground max-w-sm mx-auto">
-                  Add installation tariffs or delivery zones with automatic shop-floor task generation upon order confirmation.
+ Add installation tariffs or delivery zones with automatic shop-floor task generation upon order confirmation.
                 </p>
                 <Button
-                  size="sm"
-                  onClick={() => {
-                    setEditingInstallation(null)
-                    setIsInstallationModalOpen(true)
+ size="sm"onClick={() => {
+ setEditingInstallation(null)
+ setIsInstallationModalOpen(true)
                   }}
-                  className="mt-2 text-xs bg-primary hover:bg-primary/90 text-primary-foreground"
-                >
-                  <Plus className="h-3.5 w-3.5 mr-1" /> Add Installation Option
+ className="mt-2 text-xs bg-primary hover:bg-primary/90 text-primary-foreground">
+                  <Plus className="h-3.5 w-3.5 mr-1"/> Add Installation Option
                 </Button>
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-sm">
-                  <thead className="bg-muted text-xs font-semibold text-muted-foreground border-b border-border dark:border-border">
+                  <thead className="bg-muted text-xs font-semibold text-muted-foreground border-b border-border">
                     <tr>
                       <th className="py-3 px-4">Scope Name</th>
                       <th className="py-3 px-3">Fulfillment Scope</th>
@@ -2682,14 +2603,14 @@ export default function ProductsCatalogPage() {
                   </thead>
                   <tbody className="divide-y divide-border dark:divide-border">
                     {filteredInstallationOptions.map((i) => {
-                      const margin =
-                        i.selling_price > 0
+ const margin =
+ i.selling_price > 0
                           ? Math.round(((i.selling_price - (i.cost || 0)) / i.selling_price) * 100)
                           : 0
 
-                      return (
+ return (
                         <tr key={i.id} className="hover:bg-muted dark:hover:bg-muted/50 transition-colors">
-                          <td className="py-3.5 px-4 font-bold text-foreground dark:text-white">
+                          <td className="py-3.5 px-4 font-bold text-foreground">
                             <div>{i.name}</div>
                             {i.name_bn && <div className="text-xs text-muted-foreground font-medium font-bengali">{i.name_bn}</div>}
                           </td>
@@ -2708,21 +2629,21 @@ export default function ProductsCatalogPage() {
                             )}
                           </td>
                           <td className="py-3.5 px-3 tabular-nums text-xs">
-                            <Badge variant="outline" className="text-2xs uppercase">
+                            <Badge variant="outline"className="text-2xs uppercase">
                               {i.pricing_method?.replace('_', ' ')}
                             </Badge>
                           </td>
-                          <td className="py-3.5 px-3 tabular-nums text-xs text-muted-foreground dark:text-muted-foreground">
+                          <td className="py-3.5 px-3 tabular-nums text-xs text-muted-foreground">
                             ৳{i.cost || 0}
                           </td>
-                          <td className="py-3.5 px-3 tabular-nums font-bold text-xs text-foreground dark:text-white">
+                          <td className="py-3.5 px-3 tabular-nums font-bold text-xs text-foreground">
                             ৳{i.selling_price || 0}
                           </td>
                           <td className="py-3.5 px-3 tabular-nums text-xs">
                             <span
-                              className={cn(
+ className={cn(
                                 'inline-flex items-center px-1.5 py-0.5 rounded text-2xs font-bold border',
-                                margin >= 35
+ margin >= 35
                                   ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300'
                                   : 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300'
                               )}
@@ -2733,35 +2654,28 @@ export default function ProductsCatalogPage() {
                           <td className="py-3.5 px-3">
                             {i.is_active !== false ? (
                               <span className="inline-flex items-center gap-1 text-2xs font-semibold text-emerald-600">
-                                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Active
+                                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"/> Active
                               </span>
                             ) : (
                               <span className="inline-flex items-center gap-1 text-2xs font-semibold text-muted-foreground">
-                                <span className="h-1.5 w-1.5 rounded-full bg-slate-400" /> Inactive
+                                <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground"/> Inactive
                               </span>
                             )}
                           </td>
                           <td className="py-3.5 px-4 text-right">
                             <div className="flex items-center justify-end gap-1.5">
                               <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => {
-                                  setEditingInstallation(i)
-                                  setIsInstallationModalOpen(true)
+ size="sm"variant="outline"onClick={() => {
+ setEditingInstallation(i)
+ setIsInstallationModalOpen(true)
                                 }}
-                                className="h-7 text-xs px-2"
-                              >
-                                Edit
+ className="h-7 text-xs px-2">
+ Edit
                               </Button>
                               <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => handleDeleteInstallationOption(i.id)}
-                                className="h-7 w-7 p-0 text-rose-500 hover:text-rose-700 hover:bg-rose-50"
-                                title="Delete Installation Option"
-                              >
-                                <Trash2 className="h-3.5 w-3.5" />
+ size="sm"variant="ghost"onClick={() => handleDeleteInstallationOption(i.id)}
+ className="h-7 w-7 p-0 text-rose-500 hover:text-rose-700 hover:bg-rose-50"title="Delete Installation Option">
+                                <Trash2 className="h-3.5 w-3.5"/>
                               </Button>
                             </div>
                           </td>
@@ -2783,47 +2697,45 @@ export default function ProductsCatalogPage() {
         <Card className="shadow-xs overflow-hidden">
           <CardHeader className="py-3.5 px-4 border-b border-border bg-muted flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
-              <CardTitle className="text-sm font-bold text-foreground dark:text-white flex items-center gap-2">
+              <CardTitle className="text-sm font-bold text-foreground flex items-center gap-2">
                 <span>Printing & Fabrication Services Master</span>
-                <Badge variant="outline" className="text-xs tabular-nums font-bold">
+                <Badge variant="outline"className="text-xs tabular-nums font-bold">
                   {filteredProducts.length}
                 </Badge>
               </CardTitle>
               <CardDescription className="text-xs">
-                Large format, signage, offset, and fabrication services configured with substrate dimensions, allowances, and finishing options.
+ Large format, signage, offset, and fabrication services configured with substrate dimensions, allowances, and finishing options.
               </CardDescription>
             </div>
             <Button
-              size="sm"
-              onClick={handleOpenCreateService}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs shrink-0"
-            >
-              <Plus className="mr-1.5 h-3.5 w-3.5" />
-              New Service
+ size="sm"onClick={handleOpenCreateService}
+ className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs shrink-0">
+              <Plus className="mr-1.5 h-3.5 w-3.5"/>
+ New Service
             </Button>
           </CardHeader>
           <CardContent className="p-0">
             {isLoading ? (
               <div className="p-8 space-y-3">
                 {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="h-12 bg-muted rounded-lg animate-pulse" />
+                  <div key={i} className="h-12 bg-muted rounded-lg animate-pulse"/>
                 ))}
               </div>
             ) : filteredProducts.length === 0 ? (
               <div className="p-12 text-center space-y-3">
-                <Printer className="h-10 w-10 text-muted-foreground mx-auto" />
-                <h3 className="text-sm font-bold text-foreground dark:text-foreground">No Services Found</h3>
+                <Printer className="h-10 w-10 text-muted-foreground mx-auto"/>
+                <h3 className="text-sm font-bold text-foreground">No Services Found</h3>
                 <p className="text-xs text-muted-foreground max-w-sm mx-auto">
-                  Create high-performance printing services with substrate allowances, dimension presets, and finishing tariffs.
+ Create high-performance printing services with substrate allowances, dimension presets, and finishing tariffs.
                 </p>
-                <Button size="sm" onClick={handleOpenCreateService} className="mt-2 text-xs bg-primary hover:bg-primary/90 text-primary-foreground">
-                  <Plus className="h-3.5 w-3.5 mr-1" /> Add Service
+                <Button size="sm"onClick={handleOpenCreateService} className="mt-2 text-xs bg-primary hover:bg-primary/90 text-primary-foreground">
+                  <Plus className="h-3.5 w-3.5 mr-1"/> Add Service
                 </Button>
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-sm">
-                  <thead className="bg-muted text-xs font-semibold text-muted-foreground border-b border-border dark:border-border">
+                  <thead className="bg-muted text-xs font-semibold text-muted-foreground border-b border-border">
                     <tr>
                       <th className="py-3 px-4 min-w-[200px]">Service & SKU</th>
                       <th className="py-3 px-3 whitespace-nowrap">Printable Substrate</th>
@@ -2840,22 +2752,21 @@ export default function ProductsCatalogPage() {
                   </thead>
                   <tbody className="divide-y divide-border dark:divide-border">
                     {filteredProducts.map((item, idx) => {
-                      const marginPercent =
-                        item.selling_price > 0
+ const marginPercent =
+ item.selling_price > 0
                           ? Math.round(((item.selling_price - item.base_cost) / item.selling_price) * 1000) / 10
                           : 0
-                      const presets = item.service_config?.dimension_presets || item.service_config?.presets || []
-                      const finishings = item.service_config?.finishing_options || []
+ const presets = item.service_config?.dimension_presets || item.service_config?.presets || []
+ const finishings = item.service_config?.finishing_options || []
 
-                      return (
+ return (
                         <tr key={item.id} className="hover:bg-muted dark:hover:bg-muted/50 transition-colors">
                           <td className="py-3.5 px-4 min-w-[200px]">
                             <Link
-                              href={getTenantNavHref(`/products/${item.id}`, pathname, slug)}
-                              className="font-bold text-foreground dark:text-white hover:text-blue-600 flex items-center gap-1.5 group"
-                            >
+ href={getTenantNavHref(`/products/${item.id}`, pathname, slug)}
+ className="font-bold text-foreground hover:text-blue-600 flex items-center gap-1.5 group">
                               <span>{item.name}</span>
-                              <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 text-blue-600 transition-opacity" />
+                              <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 text-blue-600 transition-opacity"/>
                             </Link>
                             {item.name_bn && (
                               <div className="text-xs text-muted-foreground font-medium font-bengali">{item.name_bn}</div>
@@ -2865,12 +2776,12 @@ export default function ProductsCatalogPage() {
                             </div>
                           </td>
                           <td className="py-3.5 px-3 whitespace-nowrap">
-                            <Badge variant="outline" className="text-xs font-medium whitespace-nowrap">
+                            <Badge variant="outline"className="text-xs font-medium whitespace-nowrap">
                               {item.service_config?.printable_material_name || item.material_spec || 'Standard Media'}
                             </Badge>
                           </td>
-                          <td className="py-3.5 px-3 whitespace-nowrap tabular-nums text-xs text-foreground dark:text-muted-foreground">
-                            <Badge variant="secondary" className="text-2xs uppercase whitespace-nowrap">
+                          <td className="py-3.5 px-3 whitespace-nowrap tabular-nums text-xs text-foreground">
+                            <Badge variant="secondary"className="text-2xs uppercase whitespace-nowrap">
                               {(item.pricing_method || item.service_config?.pricing_method || 'per_area').replace('_', ' ')}
                             </Badge>
                           </td>
@@ -2892,20 +2803,20 @@ export default function ProductsCatalogPage() {
                           </td>
                           <td className="py-3.5 px-3 whitespace-nowrap">
                             {finishings.length > 0 ? (
-                              <Badge variant="secondary" className="text-2xs whitespace-nowrap">
+                              <Badge variant="secondary"className="text-2xs whitespace-nowrap">
                                 {finishings.length} options
                               </Badge>
                             ) : (
                               <span className="text-xs text-muted-foreground italic whitespace-nowrap">—</span>
                             )}
                           </td>
-                          <td className="py-3.5 px-3 whitespace-nowrap tabular-nums text-xs text-muted-foreground dark:text-muted-foreground">
+                          <td className="py-3.5 px-3 whitespace-nowrap tabular-nums text-xs text-muted-foreground">
                             <span className="inline-flex items-baseline gap-0.5 whitespace-nowrap">
                               <CurrencyDisplay amount={item.base_cost} />
                               <span className="text-2xs text-muted-foreground">/{item.selling_unit || item.unit}</span>
                             </span>
                           </td>
-                          <td className="py-3.5 px-3 whitespace-nowrap tabular-nums font-bold text-xs text-foreground dark:text-white">
+                          <td className="py-3.5 px-3 whitespace-nowrap tabular-nums font-bold text-xs text-foreground">
                             <span className="inline-flex items-baseline gap-0.5 whitespace-nowrap">
                               <CurrencyDisplay amount={item.selling_price} />
                               <span className="text-2xs font-normal text-muted-foreground">/{item.selling_unit || item.unit}</span>
@@ -2913,9 +2824,9 @@ export default function ProductsCatalogPage() {
                           </td>
                           <td className="py-3.5 px-3 whitespace-nowrap text-center tabular-nums text-xs">
                             <span
-                              className={cn(
+ className={cn(
                                 'inline-flex items-center whitespace-nowrap px-2 py-0.5 rounded text-xs font-bold border',
-                                marginPercent >= 35
+ marginPercent >= 35
                                   ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300'
                                   : marginPercent >= 20
                                   ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300'
@@ -2931,11 +2842,11 @@ export default function ProductsCatalogPage() {
                           <td className="py-3.5 px-3 whitespace-nowrap text-center">
                             {item.is_active !== false ? (
                               <span className="inline-flex items-center gap-1 text-2xs font-semibold text-emerald-600">
-                                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Active
+                                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"/> Active
                               </span>
                             ) : (
                               <span className="inline-flex items-center gap-1 text-2xs font-semibold text-muted-foreground">
-                                <span className="h-1.5 w-1.5 rounded-full bg-slate-400" /> Archived
+                                <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground"/> Archived
                               </span>
                             )}
                           </td>
@@ -2958,47 +2869,45 @@ export default function ProductsCatalogPage() {
         <Card className="shadow-xs overflow-hidden">
           <CardHeader className="py-3.5 px-4 border-b border-border bg-muted flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
-              <CardTitle className="text-sm font-bold text-foreground dark:text-white flex items-center gap-2">
+              <CardTitle className="text-sm font-bold text-foreground flex items-center gap-2">
                 <span>Ready Products & Display Hardware</span>
-                <Badge variant="outline" className="text-xs tabular-nums font-bold">
+                <Badge variant="outline"className="text-xs tabular-nums font-bold">
                   {filteredProducts.length}
                 </Badge>
               </CardTitle>
               <CardDescription className="text-xs">
-                Finished physical units (Rollup standees, X-banners, POP displays, acrylic stands, frames) with dimensions and tiered pricing.
+ Finished physical units (Rollup standees, X-banners, POP displays, acrylic stands, frames) with dimensions and tiered pricing.
               </CardDescription>
             </div>
             <Button
-              size="sm"
-              onClick={handleOpenCreateProduct}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs shrink-0"
-            >
-              <Plus className="mr-1.5 h-3.5 w-3.5" />
-              New Ready Product
+ size="sm"onClick={handleOpenCreateProduct}
+ className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs shrink-0">
+              <Plus className="mr-1.5 h-3.5 w-3.5"/>
+ New Ready Product
             </Button>
           </CardHeader>
           <CardContent className="p-0">
             {isLoading ? (
               <div className="p-8 space-y-3">
                 {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="h-12 bg-muted rounded-lg animate-pulse" />
+                  <div key={i} className="h-12 bg-muted rounded-lg animate-pulse"/>
                 ))}
               </div>
             ) : filteredProducts.length === 0 ? (
               <div className="p-12 text-center space-y-3">
-                <Package className="h-10 w-10 text-muted-foreground mx-auto" />
-                <h3 className="text-sm font-bold text-foreground dark:text-foreground">No Ready Products Found</h3>
+                <Package className="h-10 w-10 text-muted-foreground mx-auto"/>
+                <h3 className="text-sm font-bold text-foreground">No Ready Products Found</h3>
                 <p className="text-xs text-muted-foreground max-w-sm mx-auto">
-                  Add finished display hardware or stock products with packaging specifications and tiered dealer pricing.
+ Add finished display hardware or stock products with packaging specifications and tiered dealer pricing.
                 </p>
-                <Button size="sm" onClick={handleOpenCreateProduct} className="mt-2 text-xs bg-indigo-600 hover:bg-indigo-700 text-white">
-                  <Plus className="h-3.5 w-3.5 mr-1" /> Add Ready Product
+                <Button size="sm"onClick={handleOpenCreateProduct} className="mt-2 text-xs bg-indigo-600 hover:bg-indigo-700 text-white">
+                  <Plus className="h-3.5 w-3.5 mr-1"/> Add Ready Product
                 </Button>
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-sm">
-                  <thead className="bg-muted text-xs font-semibold text-muted-foreground border-b border-border dark:border-border">
+                  <thead className="bg-muted text-xs font-semibold text-muted-foreground border-b border-border">
                     <tr>
                       <th className="py-3 px-4 min-w-[200px]">Product & SKU</th>
                       <th className="py-3 px-3 whitespace-nowrap">Physical Dimensions & Spec</th>
@@ -3013,21 +2922,20 @@ export default function ProductsCatalogPage() {
                   </thead>
                   <tbody className="divide-y divide-border dark:divide-border">
                     {filteredProducts.map((item, idx) => {
-                      const marginPercent =
-                        item.selling_price > 0
+ const marginPercent =
+ item.selling_price > 0
                           ? Math.round(((item.selling_price - item.base_cost) / item.selling_price) * 1000) / 10
                           : 0
-                      const tiers = item.price_tiers || {}
+ const tiers = item.price_tiers || {}
 
-                      return (
+ return (
                         <tr key={item.id} className="hover:bg-muted dark:hover:bg-muted/50 transition-colors">
                           <td className="py-3.5 px-4 min-w-[200px]">
                             <Link
-                              href={getTenantNavHref(`/products/${item.id}`, pathname, slug)}
-                              className="font-bold text-foreground dark:text-white hover:text-blue-600 flex items-center gap-1.5 group"
-                            >
+ href={getTenantNavHref(`/products/${item.id}`, pathname, slug)}
+ className="font-bold text-foreground hover:text-blue-600 flex items-center gap-1.5 group">
                               <span>{item.name}</span>
-                              <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 text-blue-600 transition-opacity" />
+                              <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 text-blue-600 transition-opacity"/>
                             </Link>
                             {item.name_bn && (
                               <div className="text-xs text-muted-foreground font-medium font-bengali">{item.name_bn}</div>
@@ -3041,24 +2949,24 @@ export default function ProductsCatalogPage() {
                               {item.dimensions_spec || item.material_spec || 'Standard Dimension'}
                             </div>
                           </td>
-                          <td className="py-3.5 px-3 whitespace-nowrap tabular-nums text-xs text-muted-foreground dark:text-muted-foreground">
+                          <td className="py-3.5 px-3 whitespace-nowrap tabular-nums text-xs text-muted-foreground">
                             <span className="whitespace-nowrap">📦 MOQ: {item.min_order_quantity || 1} {item.unit || 'pcs'}</span>
                           </td>
                           <td className="py-3.5 px-3 whitespace-nowrap">
                             <div className="flex flex-wrap gap-1 text-2xs tabular-nums">
                               {tiers.corporate ? (
                                 <span className="px-1.5 py-0.5 bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300 rounded border border-blue-200 whitespace-nowrap">
-                                  Corp: ৳{tiers.corporate}
+ Corp: ৳{tiers.corporate}
                                 </span>
                               ) : null}
                               {tiers.dealer ? (
                                 <span className="px-1.5 py-0.5 bg-purple-50 text-purple-700 dark:bg-purple-950/40 dark:text-purple-300 rounded border border-purple-200 whitespace-nowrap">
-                                  Dealer: ৳{tiers.dealer}
+ Dealer: ৳{tiers.dealer}
                                 </span>
                               ) : null}
                               {tiers.wholesale ? (
                                 <span className="px-1.5 py-0.5 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 rounded border border-emerald-200 whitespace-nowrap">
-                                  WS: ৳{tiers.wholesale}
+ WS: ৳{tiers.wholesale}
                                 </span>
                               ) : null}
                               {!tiers.corporate && !tiers.dealer && !tiers.wholesale && (
@@ -3066,13 +2974,13 @@ export default function ProductsCatalogPage() {
                               )}
                             </div>
                           </td>
-                          <td className="py-3.5 px-3 whitespace-nowrap tabular-nums text-xs text-muted-foreground dark:text-muted-foreground">
+                          <td className="py-3.5 px-3 whitespace-nowrap tabular-nums text-xs text-muted-foreground">
                             <span className="inline-flex items-baseline gap-0.5 whitespace-nowrap">
                               <CurrencyDisplay amount={item.base_cost} />
                               <span className="text-2xs text-muted-foreground">/{item.selling_unit || item.unit}</span>
                             </span>
                           </td>
-                          <td className="py-3.5 px-3 whitespace-nowrap tabular-nums font-bold text-xs text-foreground dark:text-white">
+                          <td className="py-3.5 px-3 whitespace-nowrap tabular-nums font-bold text-xs text-foreground">
                             <span className="inline-flex items-baseline gap-0.5 whitespace-nowrap">
                               <CurrencyDisplay amount={item.selling_price} />
                               <span className="text-2xs font-normal text-muted-foreground">/{item.selling_unit || item.unit}</span>
@@ -3080,9 +2988,9 @@ export default function ProductsCatalogPage() {
                           </td>
                           <td className="py-3.5 px-3 whitespace-nowrap text-center tabular-nums text-xs">
                             <span
-                              className={cn(
+ className={cn(
                                 'inline-flex items-center whitespace-nowrap px-2 py-0.5 rounded text-xs font-bold border',
-                                marginPercent >= 35
+ marginPercent >= 35
                                   ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300'
                                   : marginPercent >= 20
                                   ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300'
@@ -3095,11 +3003,11 @@ export default function ProductsCatalogPage() {
                           <td className="py-3.5 px-3 whitespace-nowrap text-center">
                             {item.is_active !== false ? (
                               <span className="inline-flex items-center gap-1 text-2xs font-semibold text-emerald-600">
-                                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Active
+                                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"/> Active
                               </span>
                             ) : (
                               <span className="inline-flex items-center gap-1 text-2xs font-semibold text-muted-foreground">
-                                <span className="h-1.5 w-1.5 rounded-full bg-slate-400" /> Archived
+                                <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground"/> Archived
                               </span>
                             )}
                           </td>
@@ -3122,47 +3030,45 @@ export default function ProductsCatalogPage() {
         <Card className="shadow-xs overflow-hidden">
           <CardHeader className="py-3.5 px-4 border-b border-border bg-muted flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
-              <CardTitle className="text-sm font-bold text-foreground dark:text-white flex items-center gap-2">
+              <CardTitle className="text-sm font-bold text-foreground flex items-center gap-2">
                 <span>Raw Materials & Media Master</span>
-                <Badge variant="outline" className="text-xs tabular-nums font-bold">
+                <Badge variant="outline"className="text-xs tabular-nums font-bold">
                   {filteredProducts.length}
                 </Badge>
               </CardTitle>
               <CardDescription className="text-xs">
-                Roll media, rigid substrate boards, ink stocks, and hardware materials with dimensional conversion ratios and yield costing.
+ Roll media, rigid substrate boards, ink stocks, and hardware materials with dimensional conversion ratios and yield costing.
               </CardDescription>
             </div>
             <Button
-              size="sm"
-              onClick={handleOpenCreateMaterial}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs shrink-0"
-            >
-              <Plus className="mr-1.5 h-3.5 w-3.5" />
-              New Raw Material
+ size="sm"onClick={handleOpenCreateMaterial}
+ className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs shrink-0">
+              <Plus className="mr-1.5 h-3.5 w-3.5"/>
+ New Raw Material
             </Button>
           </CardHeader>
           <CardContent className="p-0">
             {isLoading ? (
               <div className="p-8 space-y-3">
                 {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="h-12 bg-muted rounded-lg animate-pulse" />
+                  <div key={i} className="h-12 bg-muted rounded-lg animate-pulse"/>
                 ))}
               </div>
             ) : filteredProducts.length === 0 ? (
               <div className="p-12 text-center space-y-3">
-                <Layers className="h-10 w-10 text-muted-foreground mx-auto" />
-                <h3 className="text-sm font-bold text-foreground dark:text-foreground">No Raw Materials Found</h3>
+                <Layers className="h-10 w-10 text-muted-foreground mx-auto"/>
+                <h3 className="text-sm font-bold text-foreground">No Raw Materials Found</h3>
                 <p className="text-xs text-muted-foreground max-w-sm mx-auto">
-                  Add substrates (rolls, sheets, inks) with bulk procurement rates, dimensional conversion ratios, and wastage factors.
+ Add substrates (rolls, sheets, inks) with bulk procurement rates, dimensional conversion ratios, and wastage factors.
                 </p>
-                <Button size="sm" onClick={handleOpenCreateMaterial} className="mt-2 text-xs bg-emerald-600 hover:bg-emerald-700 text-white">
-                  <Plus className="h-3.5 w-3.5 mr-1" /> Add Raw Material
+                <Button size="sm"onClick={handleOpenCreateMaterial} className="mt-2 text-xs bg-emerald-600 hover:bg-emerald-700 text-white">
+                  <Plus className="h-3.5 w-3.5 mr-1"/> Add Raw Material
                 </Button>
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-sm">
-                  <thead className="bg-muted text-xs font-semibold text-muted-foreground border-b border-border dark:border-border">
+                  <thead className="bg-muted text-xs font-semibold text-muted-foreground border-b border-border">
                     <tr>
                       <th className="py-3 px-4 min-w-[200px]">Material Name & SKU</th>
                       <th className="py-3 px-3 whitespace-nowrap">Media Form & Geometry</th>
@@ -3176,17 +3082,16 @@ export default function ProductsCatalogPage() {
                   </thead>
                   <tbody className="divide-y divide-border dark:divide-border">
                     {filteredProducts.map((item, idx) => {
-                      const printingList = item.material_config?.compatible_printing_methods || item.printing_methods || []
+ const printingList = item.material_config?.compatible_printing_methods || item.printing_methods || []
 
-                      return (
+ return (
                         <tr key={item.id} className="hover:bg-muted dark:hover:bg-muted/50 transition-colors">
                           <td className="py-3.5 px-4 min-w-[200px]">
                             <Link
-                              href={getTenantNavHref(`/products/${item.id}`, pathname, slug)}
-                              className="font-bold text-foreground dark:text-white hover:text-blue-600 flex items-center gap-1.5 group"
-                            >
+ href={getTenantNavHref(`/products/${item.id}`, pathname, slug)}
+ className="font-bold text-foreground hover:text-blue-600 flex items-center gap-1.5 group">
                               <span>{item.name}</span>
-                              <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 text-blue-600 transition-opacity" />
+                              <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 text-blue-600 transition-opacity"/>
                             </Link>
                             {item.name_bn && (
                               <div className="text-xs text-muted-foreground font-medium font-bengali">{item.name_bn}</div>
@@ -3197,16 +3102,16 @@ export default function ProductsCatalogPage() {
                           </td>
                           <td className="py-3.5 px-3 whitespace-nowrap">
                             {item.roll_width_ft && item.roll_length_ft ? (
-                              <Badge variant="outline" className="text-2xs tabular-nums bg-blue-50/50 whitespace-nowrap">
-                                Roll: {item.roll_width_ft}&apos; × {item.roll_length_ft}&apos;
+                              <Badge variant="outline"className="text-2xs tabular-nums bg-blue-50/50 whitespace-nowrap">
+ Roll: {item.roll_width_ft}&apos; × {item.roll_length_ft}&apos;
                               </Badge>
                             ) : item.sheet_width_ft && item.sheet_length_ft ? (
-                              <Badge variant="outline" className="text-2xs tabular-nums bg-emerald-50/50 whitespace-nowrap">
-                                Sheet: {item.sheet_width_ft}&apos; × {item.sheet_length_ft}&apos;
+                              <Badge variant="outline"className="text-2xs tabular-nums bg-emerald-50/50 whitespace-nowrap">
+ Sheet: {item.sheet_width_ft}&apos; × {item.sheet_length_ft}&apos;
                               </Badge>
                             ) : (
-                              <Badge variant="outline" className="text-2xs tabular-nums whitespace-nowrap">
-                                Unit ({item.unit})
+                              <Badge variant="outline"className="text-2xs tabular-nums whitespace-nowrap">
+ Unit ({item.unit})
                               </Badge>
                             )}
                           </td>
@@ -3221,7 +3126,7 @@ export default function ProductsCatalogPage() {
                               <span className="text-xs text-muted-foreground italic whitespace-nowrap">No Purchase Tariff</span>
                             )}
                           </td>
-                          <td className="py-3.5 px-3 whitespace-nowrap tabular-nums text-xs text-muted-foreground dark:text-muted-foreground">
+                          <td className="py-3.5 px-3 whitespace-nowrap tabular-nums text-xs text-muted-foreground">
                             <div className="whitespace-nowrap">1 {item.purchase_unit || 'roll'} = {getProductConversionRatio(item)} {item.selling_unit || item.unit}</div>
                             {item.default_wastage_percentage ? (
                               <div className="text-2xs text-amber-600 whitespace-nowrap">({item.default_wastage_percentage}% waste allowance)</div>
@@ -3231,7 +3136,7 @@ export default function ProductsCatalogPage() {
                             {printingList.length > 0 ? (
                               <div className="flex flex-wrap gap-1">
                                 {printingList.map((m, idx) => (
-                                  <Badge key={idx} variant="secondary" className="text-2xs uppercase tabular-nums whitespace-nowrap">
+                                  <Badge key={idx} variant="secondary"className="text-2xs uppercase tabular-nums whitespace-nowrap">
                                     {m}
                                   </Badge>
                                 ))}
@@ -3240,7 +3145,7 @@ export default function ProductsCatalogPage() {
                               <span className="text-xs text-muted-foreground italic whitespace-nowrap">Universal Media</span>
                             )}
                           </td>
-                          <td className="py-3.5 px-3 whitespace-nowrap tabular-nums font-bold text-xs text-foreground dark:text-white">
+                          <td className="py-3.5 px-3 whitespace-nowrap tabular-nums font-bold text-xs text-foreground">
                             <span className="inline-flex items-baseline gap-0.5 whitespace-nowrap">
                               <span>৳{item.base_cost}</span>
                               <span className="text-2xs font-normal text-muted-foreground">/{item.selling_unit || item.unit}</span>
@@ -3249,11 +3154,11 @@ export default function ProductsCatalogPage() {
                           <td className="py-3.5 px-3 whitespace-nowrap text-center">
                             {item.is_active !== false ? (
                               <span className="inline-flex items-center gap-1 text-2xs font-semibold text-emerald-600">
-                                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Active
+                                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"/> Active
                               </span>
                             ) : (
                               <span className="inline-flex items-center gap-1 text-2xs font-semibold text-muted-foreground">
-                                <span className="h-1.5 w-1.5 rounded-full bg-slate-400" /> Archived
+                                <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground"/> Archived
                               </span>
                             )}
                           </td>
@@ -3276,47 +3181,45 @@ export default function ProductsCatalogPage() {
         <Card className="shadow-xs overflow-hidden">
           <CardHeader className="py-3.5 px-4 border-b border-border bg-muted flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
-              <CardTitle className="text-sm font-bold text-foreground dark:text-white flex items-center gap-2">
+              <CardTitle className="text-sm font-bold text-foreground flex items-center gap-2">
                 <span>Outsource Products & Subcontract Services (Non-Inventory)</span>
-                <Badge variant="outline" className="text-xs tabular-nums font-bold text-purple-600 border-purple-300">
+                <Badge variant="outline"className="text-xs tabular-nums font-bold text-purple-600 border-purple-300">
                   {filteredProducts.length}
                 </Badge>
               </CardTitle>
               <CardDescription className="text-xs">
-                Subcontracted non-inventory products (Offset leaflets, neon flex signs, computer embroidery, special foil/die-cut, 3D channel letters) routed directly to third-party vendors.
+ Subcontracted non-inventory products (Offset leaflets, neon flex signs, computer embroidery, special foil/die-cut, 3D channel letters) routed directly to third-party vendors.
               </CardDescription>
             </div>
             <Button
-              size="sm"
-              onClick={handleOpenCreateOutsource}
-              className="bg-purple-600 hover:bg-purple-700 text-white text-xs shrink-0 font-bold"
-            >
-              <Plus className="mr-1.5 h-3.5 w-3.5" />
-              New Outsource Product
+ size="sm"onClick={handleOpenCreateOutsource}
+ className="bg-purple-600 hover:bg-purple-700 text-white text-xs shrink-0 font-bold">
+              <Plus className="mr-1.5 h-3.5 w-3.5"/>
+ New Outsource Product
             </Button>
           </CardHeader>
           <CardContent className="p-0">
             {isLoading ? (
               <div className="p-8 space-y-3">
                 {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="h-12 bg-muted rounded-lg animate-pulse" />
+                  <div key={i} className="h-12 bg-muted rounded-lg animate-pulse"/>
                 ))}
               </div>
             ) : filteredProducts.length === 0 ? (
               <div className="p-12 text-center space-y-3">
-                <Share2 className="h-10 w-10 text-purple-300 mx-auto" />
-                <h3 className="text-sm font-bold text-foreground dark:text-foreground">No Outsource Products Found</h3>
+                <Share2 className="h-10 w-10 text-purple-300 mx-auto"/>
+                <h3 className="text-sm font-bold text-foreground">No Outsource Products Found</h3>
                 <p className="text-xs text-muted-foreground max-w-sm mx-auto">
-                  Add non-inventory outsource items with third-party vendor cost, turnaround lead time, and multi-tier pricing.
+ Add non-inventory outsource items with third-party vendor cost, turnaround lead time, and multi-tier pricing.
                 </p>
-                <Button size="sm" onClick={handleOpenCreateOutsource} className="mt-2 text-xs bg-purple-600 hover:bg-purple-700 text-white">
-                  <Plus className="h-3.5 w-3.5 mr-1" /> Add Outsource Product
+                <Button size="sm"onClick={handleOpenCreateOutsource} className="mt-2 text-xs bg-purple-600 hover:bg-purple-700 text-white">
+                  <Plus className="h-3.5 w-3.5 mr-1"/> Add Outsource Product
                 </Button>
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-sm">
-                  <thead className="bg-muted text-xs font-semibold text-muted-foreground border-b border-border dark:border-border">
+                  <thead className="bg-muted text-xs font-semibold text-muted-foreground border-b border-border">
                     <tr>
                       <th className="py-3 px-4 min-w-[200px]">Product & SKU</th>
                       <th className="py-3 px-3 whitespace-nowrap">Subcontract Vendor</th>
@@ -3331,24 +3234,23 @@ export default function ProductsCatalogPage() {
                   </thead>
                   <tbody className="divide-y divide-border dark:divide-border">
                     {filteredProducts.map((item, idx) => {
-                      const marginPercent =
-                        item.selling_price > 0
+ const marginPercent =
+ item.selling_price > 0
                           ? Math.round(((item.selling_price - item.base_cost) / item.selling_price) * 1000) / 10
                           : 0
-                      const tiers = item.price_tiers || {}
-                      const vendorName = item.vendor_name || item.outsource_config?.vendor_name || 'Vendor Subcontract'
-                      const vendorPhone = item.vendor_phone || item.outsource_config?.vendor_phone
-                      const turnaround = item.turnaround_days ?? item.outsource_config?.turnaround_days ?? 3
+ const tiers = item.price_tiers || {}
+ const vendorName = item.vendor_name || item.outsource_config?.vendor_name || 'Vendor Subcontract'
+ const vendorPhone = item.vendor_phone || item.outsource_config?.vendor_phone
+ const turnaround = item.turnaround_days ?? item.outsource_config?.turnaround_days ?? 3
 
-                      return (
+ return (
                         <tr key={item.id} className="hover:bg-muted dark:hover:bg-muted/50 transition-colors">
                           <td className="py-3.5 px-4 min-w-[200px]">
                             <Link
-                              href={getTenantNavHref(`/products/${item.id}`, pathname, slug)}
-                              className="font-bold text-foreground dark:text-white hover:text-purple-600 flex items-center gap-1.5 group"
-                            >
+ href={getTenantNavHref(`/products/${item.id}`, pathname, slug)}
+ className="font-bold text-foreground hover:text-purple-600 flex items-center gap-1.5 group">
                               <span>{item.name}</span>
-                              <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 text-purple-600 transition-opacity" />
+                              <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 text-purple-600 transition-opacity"/>
                             </Link>
                             {item.name_bn && (
                               <div className="text-xs text-muted-foreground font-medium font-bengali">{item.name_bn}</div>
@@ -3359,7 +3261,7 @@ export default function ProductsCatalogPage() {
                           </td>
                           <td className="py-3.5 px-3 whitespace-nowrap">
                             <div className="font-semibold text-xs text-foreground flex items-center gap-1 whitespace-nowrap">
-                              <Building2 className="h-3 w-3 text-purple-500" />
+                              <Building2 className="h-3 w-3 text-purple-500"/>
                               <span>{vendorName}</span>
                             </div>
                             {vendorPhone && (
@@ -3372,11 +3274,11 @@ export default function ProductsCatalogPage() {
                           <td className="py-3.5 px-3 whitespace-nowrap">
                             <div className="flex flex-col gap-1">
                               <span className="inline-flex items-center gap-1 text-xs font-semibold text-foreground whitespace-nowrap">
-                                <Clock className="h-3 w-3 text-amber-500" />
+                                <Clock className="h-3 w-3 text-amber-500"/>
                                 {turnaround} {turnaround === 1 ? 'day' : 'days'}
                               </span>
-                              <Badge variant="outline" className="text-2xs bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300 w-fit whitespace-nowrap">
-                                Non-Inventory
+                              <Badge variant="outline"className="text-2xs bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300 w-fit whitespace-nowrap">
+ Non-Inventory
                               </Badge>
                             </div>
                           </td>
@@ -3384,17 +3286,17 @@ export default function ProductsCatalogPage() {
                             <div className="flex flex-wrap gap-1 text-2xs tabular-nums">
                               {tiers.corporate ? (
                                 <span className="px-1.5 py-0.5 bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300 rounded border border-blue-200 whitespace-nowrap">
-                                  Corp: ৳{tiers.corporate}
+ Corp: ৳{tiers.corporate}
                                 </span>
                               ) : null}
                               {tiers.dealer ? (
                                 <span className="px-1.5 py-0.5 bg-purple-50 text-purple-700 dark:bg-purple-950/40 dark:text-purple-300 rounded border border-purple-200 whitespace-nowrap">
-                                  Dealer: ৳{tiers.dealer}
+ Dealer: ৳{tiers.dealer}
                                 </span>
                               ) : null}
                               {tiers.wholesale ? (
                                 <span className="px-1.5 py-0.5 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 rounded border border-emerald-200 whitespace-nowrap">
-                                  WS: ৳{tiers.wholesale}
+ WS: ৳{tiers.wholesale}
                                 </span>
                               ) : null}
                               {!tiers.corporate && !tiers.dealer && !tiers.wholesale && (
@@ -3402,13 +3304,13 @@ export default function ProductsCatalogPage() {
                               )}
                             </div>
                           </td>
-                          <td className="py-3.5 px-3 whitespace-nowrap tabular-nums text-xs text-muted-foreground dark:text-muted-foreground">
+                          <td className="py-3.5 px-3 whitespace-nowrap tabular-nums text-xs text-muted-foreground">
                             <span className="inline-flex items-baseline gap-0.5 whitespace-nowrap">
                               <CurrencyDisplay amount={item.base_cost} />
                               <span className="text-2xs text-muted-foreground">/{item.selling_unit || item.unit}</span>
                             </span>
                           </td>
-                          <td className="py-3.5 px-3 whitespace-nowrap tabular-nums font-bold text-xs text-foreground dark:text-white">
+                          <td className="py-3.5 px-3 whitespace-nowrap tabular-nums font-bold text-xs text-foreground">
                             <span className="inline-flex items-baseline gap-0.5 whitespace-nowrap">
                               <CurrencyDisplay amount={item.selling_price} />
                               <span className="text-2xs font-normal text-muted-foreground">/{item.selling_unit || item.unit}</span>
@@ -3416,9 +3318,9 @@ export default function ProductsCatalogPage() {
                           </td>
                           <td className="py-3.5 px-3 whitespace-nowrap text-center tabular-nums text-xs">
                             <span
-                              className={cn(
+ className={cn(
                                 'inline-flex items-center whitespace-nowrap px-2 py-0.5 rounded text-xs font-bold border',
-                                marginPercent >= 35
+ marginPercent >= 35
                                   ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300'
                                   : marginPercent >= 20
                                   ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300'
@@ -3431,11 +3333,11 @@ export default function ProductsCatalogPage() {
                           <td className="py-3.5 px-3 whitespace-nowrap text-center">
                             {item.is_active !== false ? (
                               <span className="inline-flex items-center gap-1 text-2xs font-semibold text-emerald-600">
-                                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Active
+                                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"/> Active
                               </span>
                             ) : (
                               <span className="inline-flex items-center gap-1 text-2xs font-semibold text-muted-foreground">
-                                <span className="h-1.5 w-1.5 rounded-full bg-slate-400" /> Archived
+                                <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground"/> Archived
                               </span>
                             )}
                           </td>
@@ -3456,11 +3358,11 @@ export default function ProductsCatalogPage() {
       {/* ======================================================== */}
       {entityTypeFilter === 'all' && (
         <Card className="shadow-xs overflow-hidden">
-          <CardHeader className="py-3.5 px-4 border-b border-border bg-muted dark:bg-card">
+          <CardHeader className="py-3.5 px-4 border-b border-border bg-muted">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-              <CardTitle className="text-sm font-bold text-foreground dark:text-white flex items-center gap-2">
+              <CardTitle className="text-sm font-bold text-foreground flex items-center gap-2">
                 <span>Commercial Master Catalog</span>
-                <Badge variant="outline" className="text-xs tabular-nums font-bold">
+                <Badge variant="outline"className="text-xs tabular-nums font-bold">
                   {filteredProducts.length}
                 </Badge>
               </CardTitle>
@@ -3472,7 +3374,7 @@ export default function ProductsCatalogPage() {
             {isLoading && (
               <div className="p-8 space-y-3">
                 {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="h-12 bg-muted rounded-lg animate-pulse" />
+                  <div key={i} className="h-12 bg-muted rounded-lg animate-pulse"/>
                 ))}
               </div>
             )}
@@ -3480,13 +3382,13 @@ export default function ProductsCatalogPage() {
             {/* Empty State */}
             {!isLoading && filteredProducts.length === 0 && (
               <div className="p-12 text-center space-y-3">
-                <Package className="h-10 w-10 text-muted-foreground mx-auto" />
-                <h3 className="text-sm font-bold text-foreground dark:text-foreground">No Products Found</h3>
+                <Package className="h-10 w-10 text-muted-foreground mx-auto"/>
+                <h3 className="text-sm font-bold text-foreground">No Products Found</h3>
                 <p className="text-xs text-muted-foreground max-w-sm mx-auto">
-                  No catalog items matched your current filter criteria. Create a new product or reset your search.
+ No catalog items matched your current filter criteria. Create a new product or reset your search.
                 </p>
-                <Button size="sm" onClick={handleOpenCreate} className="mt-2 text-xs bg-blue-600 hover:bg-blue-700">
-                  <Plus className="h-3.5 w-3.5 mr-1" /> Add New Item
+                <Button size="sm"onClick={handleOpenCreate} className="mt-2 text-xs bg-blue-600 hover:bg-blue-700">
+                  <Plus className="h-3.5 w-3.5 mr-1"/> Add New Item
                 </Button>
               </div>
             )}
@@ -3495,7 +3397,7 @@ export default function ProductsCatalogPage() {
             {!isLoading && filteredProducts.length > 0 && (
               <div className="hidden md:block overflow-x-auto">
                 <table className="w-full text-left text-sm">
-                  <thead className="bg-muted text-xs font-semibold text-muted-foreground border-b border-border dark:border-border">
+                  <thead className="bg-muted text-xs font-semibold text-muted-foreground border-b border-border">
                     <tr>
                       <th className="py-3 px-4 min-w-[200px]">Item & SKU</th>
                       <th className="py-3 px-3 whitespace-nowrap">Entity Kind</th>
@@ -3510,24 +3412,23 @@ export default function ProductsCatalogPage() {
                   </thead>
                   <tbody className="divide-y divide-border dark:divide-border">
                     {filteredProducts.map((item, idx) => {
-                      const marginPercent =
-                        item.selling_price > 0
+ const marginPercent =
+ item.selling_price > 0
                           ? Math.round(((item.selling_price - item.base_cost) / item.selling_price) * 1000) / 10
                           : 0
 
-                      const isService = isServiceItem(item)
-                      const isMaterial = isMaterialItem(item)
+ const isService = isServiceItem(item)
+ const isMaterial = isMaterialItem(item)
 
-                      return (
+ return (
                         <tr key={item.id} className="hover:bg-muted dark:hover:bg-muted/50 transition-colors">
                           {/* Item & SKU */}
                           <td className="py-3.5 px-4 min-w-[200px]">
                             <Link
-                              href={getTenantNavHref(`/products/${item.id}`, pathname, slug)}
-                              className="font-bold text-foreground dark:text-white hover:text-blue-600 flex items-center gap-1.5 group"
-                            >
+ href={getTenantNavHref(`/products/${item.id}`, pathname, slug)}
+ className="font-bold text-foreground hover:text-blue-600 flex items-center gap-1.5 group">
                               <span>{item.name}</span>
-                              <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 text-blue-600 transition-opacity" />
+                              <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 text-blue-600 transition-opacity"/>
                             </Link>
                             {item.name_bn && (
                               <div className="text-xs text-muted-foreground font-medium font-bengali">{item.name_bn}</div>
@@ -3540,9 +3441,9 @@ export default function ProductsCatalogPage() {
                           {/* Entity Kind Badge */}
                           <td className="py-3.5 px-3 whitespace-nowrap">
                             <span
-                              className={cn(
+ className={cn(
                                 'inline-flex items-center whitespace-nowrap capitalize px-2 py-0.5 rounded text-2xs font-semibold border',
-                                isOutsourceProduct(item)
+ isOutsourceProduct(item)
                                   ? 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300'
                                   : isServiceProduct(item)
                                   ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300'
@@ -3581,7 +3482,7 @@ export default function ProductsCatalogPage() {
                           </td>
 
                           {/* Selling Rate */}
-                          <td className="py-3.5 px-3 whitespace-nowrap font-bold text-foreground dark:text-white tabular-nums">
+                          <td className="py-3.5 px-3 whitespace-nowrap font-bold text-foreground tabular-nums">
                             <span className="inline-flex items-baseline gap-0.5 whitespace-nowrap">
                               <CurrencyDisplay amount={item.selling_price} />
                               <span className="text-xs font-normal text-muted-foreground">/{item.selling_unit || item.unit}</span>
@@ -3591,9 +3492,9 @@ export default function ProductsCatalogPage() {
                           {/* Gross Margin % */}
                           <td className="py-3.5 px-3 whitespace-nowrap text-center">
                             <span
-                              className={cn(
+ className={cn(
                                 'inline-flex items-center whitespace-nowrap px-2 py-0.5 rounded text-xs font-bold border tabular-nums',
-                                marginPercent >= 35
+ marginPercent >= 35
                                   ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900'
                                   : marginPercent >= 20
                                   ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-900'
@@ -3605,7 +3506,7 @@ export default function ProductsCatalogPage() {
                           </td>
 
                           {/* Minimum Charge */}
-                          <td className="py-3.5 px-3 whitespace-nowrap text-center text-xs tabular-nums font-medium text-muted-foreground dark:text-muted-foreground">
+                          <td className="py-3.5 px-3 whitespace-nowrap text-center text-xs tabular-nums font-medium text-muted-foreground">
                             {item.minimum_charge && item.minimum_charge > 0 ? (
                               <span className="text-blue-600 font-bold">৳{item.minimum_charge}</span>
                             ) : (
@@ -3617,11 +3518,11 @@ export default function ProductsCatalogPage() {
                           <td className="py-3.5 px-3 whitespace-nowrap text-center">
                             {item.is_active !== false ? (
                               <span className="inline-flex items-center gap-1 text-2xs font-semibold text-emerald-600 dark:text-emerald-400">
-                                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Active
+                                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"/> Active
                               </span>
                             ) : (
                               <span className="inline-flex items-center gap-1 text-2xs font-semibold text-muted-foreground">
-                                <span className="h-1.5 w-1.5 rounded-full bg-slate-400" /> Archived
+                                <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground"/> Archived
                               </span>
                             )}
                           </td>
@@ -3640,19 +3541,18 @@ export default function ProductsCatalogPage() {
             {!isLoading && filteredProducts.length > 0 && (
               <div className="md:hidden divide-y divide-border dark:divide-border">
                 {filteredProducts.map((item) => {
-                  const marginPercent =
-                    item.selling_price > 0
+ const marginPercent =
+ item.selling_price > 0
                       ? Math.round(((item.selling_price - item.base_cost) / item.selling_price) * 1000) / 10
                       : 0
 
-                  return (
+ return (
                     <div key={item.id} className="p-4 space-y-3">
                       <div className="flex items-start justify-between gap-2">
                         <div>
                           <Link
-                            href={getTenantNavHref(`/products/${item.id}`, pathname, slug)}
-                            className="font-bold text-sm text-foreground dark:text-white hover:text-blue-600"
-                          >
+ href={getTenantNavHref(`/products/${item.id}`, pathname, slug)}
+ className="font-bold text-sm text-foreground hover:text-blue-600">
                             {item.name}
                           </Link>
                           {item.name_bn && (
@@ -3663,9 +3563,9 @@ export default function ProductsCatalogPage() {
                           </div>
                         </div>
                         <span
-                          className={cn(
+ className={cn(
                             'capitalize px-2 py-0.5 rounded text-2xs font-semibold border shrink-0',
-                            isOutsourceProduct(item)
+ isOutsourceProduct(item)
                               ? 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300'
                               : isServiceProduct(item)
                               ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300'
@@ -3680,13 +3580,13 @@ export default function ProductsCatalogPage() {
 
                       {/* Commercial Economics Badges */}
                       {item.purchase_price && item.purchase_price > 0 ? (
-                        <div className="text-xs tabular-nums text-muted-foreground bg-muted p-2 rounded-lg border border-border dark:border-border">
-                          Buy: <strong>৳{item.purchase_price}/{item.purchase_unit || 'roll'}</strong> (1 {item.purchase_unit || 'roll'} = {getProductConversionRatio(item)} {item.selling_unit || item.unit})
+                        <div className="text-xs tabular-nums text-muted-foreground bg-muted p-2 rounded-lg border border-border">
+ Buy: <strong>৳{item.purchase_price}/{item.purchase_unit || 'roll'}</strong> (1 {item.purchase_unit || 'roll'} = {getProductConversionRatio(item)} {item.selling_unit || item.unit})
                         </div>
                       ) : null}
 
                       {/* Metrics Grid */}
-                      <div className="grid grid-cols-3 gap-2 p-2.5 bg-muted rounded-lg text-center border border-border dark:border-border">
+                      <div className="grid grid-cols-3 gap-2 p-2.5 bg-muted rounded-lg text-center border border-border">
                         <div>
                           <span className="text-2xs text-muted-foreground uppercase block">Selling Rate</span>
                           <div className="tabular-nums font-bold text-xs text-blue-600 dark:text-blue-400">
@@ -3695,7 +3595,7 @@ export default function ProductsCatalogPage() {
                         </div>
                         <div>
                           <span className="text-2xs text-muted-foreground uppercase block">Eff. Cost</span>
-                          <div className="tabular-nums text-xs text-muted-foreground dark:text-muted-foreground">
+                          <div className="tabular-nums text-xs text-muted-foreground">
                             ৳{item.base_cost}
                           </div>
                         </div>
@@ -3711,48 +3611,37 @@ export default function ProductsCatalogPage() {
                       <div className="flex items-center gap-2 pt-1">
                         {item.is_active !== false ? (
                           <Button
-                            size="sm"
-                            onClick={() => handleOpenFastQuote(item)}
-                            className="flex-1 h-9 text-xs font-bold bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs"
-                          >
-                            <Calculator className="h-3.5 w-3.5 mr-1" /> Fast Quote
+ size="sm"onClick={() => handleOpenFastQuote(item)}
+ className="flex-1 h-9 text-xs font-bold bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs">
+                            <Calculator className="h-3.5 w-3.5 mr-1"/> Fast Quote
                           </Button>
                         ) : (
                           <Button
-                            size="sm"
-                            onClick={() => handleToggleArchive(item)}
-                            className="flex-1 h-9 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs"
-                          >
-                            <RefreshCw className="h-3.5 w-3.5 mr-1" /> Restore Item
+ size="sm"onClick={() => handleToggleArchive(item)}
+ className="flex-1 h-9 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs">
+                            <RefreshCw className="h-3.5 w-3.5 mr-1"/> Restore Item
                           </Button>
                         )}
                         <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => {
-                            setPricingProduct(item)
-                            setNewPrice(item.selling_price)
-                            setNewPurchasePrice(item.purchase_price || 0)
-                            setNewTargetMargin(item.target_margin_percentage || 35)
-                            setNewWastage(item.default_wastage_percentage || 0)
+ size="sm"variant="outline"onClick={() => {
+ setPricingProduct(item)
+ setNewPrice(item.selling_price)
+ setNewPurchasePrice(item.purchase_price || 0)
+ setNewTargetMargin(item.target_margin_percentage || 35)
+ setNewWastage(item.default_wastage_percentage || 0)
                           }}
-                          className="h-9 px-2.5 text-xs"
-                        >
-                          <Edit3 className="h-3.5 w-3.5 mr-1" /> Price
+ className="h-9 px-2.5 text-xs">
+                          <Edit3 className="h-3.5 w-3.5 mr-1"/> Price
                         </Button>
                         <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleOpenEdit(item)}
-                          className="h-9 px-2.5 text-xs"
-                        >
-                          Edit
+ size="sm"variant="outline"onClick={() => handleOpenEdit(item)}
+ className="h-9 px-2.5 text-xs">
+ Edit
                         </Button>
                         <Link
-                          href={getTenantNavHref(`/products/${item.id}`, pathname, slug)}
-                          className="inline-flex items-center justify-center h-9 px-2.5 rounded-md text-xs font-semibold border border-input text-foreground hover:bg-muted"
-                        >
-                          Detail
+ href={getTenantNavHref(`/products/${item.id}`, pathname, slug)}
+ className="inline-flex items-center justify-center h-9 px-2.5 rounded-md text-xs font-semibold border border-input text-foreground hover:bg-muted">
+ Detail
                         </Link>
                       </div>
                     </div>
@@ -3768,22 +3657,21 @@ export default function ProductsCatalogPage() {
       {/* MODAL 1: FAST QUOTE WITH MINIMUM CHARGE & COST ESTIMATOR */}
       {/* ======================================================== */}
       <ModalDialog
-        open={Boolean(fastQuoteProduct)}
-        onOpenChange={(open) => !open && setFastQuoteProduct(null)}
-        size="2xl"
-        hideFooter={true}
-        title={
+ open={Boolean(fastQuoteProduct)}
+ onOpenChange={(open) => !open && setFastQuoteProduct(null)}
+ size="2xl"hideFooter={true}
+ title={
           <div className="flex items-center gap-2.5">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 font-bold shrink-0">
-              <Calculator className="h-5 w-5" />
+              <Calculator className="h-5 w-5"/>
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-base font-black text-foreground dark:text-white">
-                  Fast Estimate & Quotation
+                <span className="text-base font-black text-foreground">
+ Fast Estimate & Quotation
                 </span>
-                <Badge variant="outline" className="text-2xs uppercase tabular-nums py-0.5 px-1.5 bg-blue-50 text-blue-700 border-blue-200">
-                  Instant Quote
+                <Badge variant="outline"className="text-2xs uppercase tabular-nums py-0.5 px-1.5 bg-blue-50 text-blue-700 border-blue-200">
+ Instant Quote
                 </Badge>
               </div>
               <p className="text-2xs text-muted-foreground">
@@ -3799,20 +3687,20 @@ export default function ProductsCatalogPage() {
             {createdQuoteNumber && (
               <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl space-y-2 text-emerald-900">
                 <div className="flex items-center gap-2 font-bold text-sm">
-                  <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+                  <CheckCircle2 className="h-5 w-5 text-emerald-600"/>
                   <span>Quotation Created: {createdQuoteNumber}</span>
                 </div>
                 <p className="text-xs text-emerald-800">
-                  The quotation has been saved authoritatively in PostgreSQL and can now be dispatched to the client.
+ The quotation has been saved authoritatively in PostgreSQL and can now be dispatched to the client.
                 </p>
                 <div className="flex items-center gap-2 pt-1">
                   <Link href={getTenantNavHref('/quotations', pathname, slug)}>
-                    <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs">
-                      View in Quotations Module
+                    <Button size="sm"className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs">
+ View in Quotations Module
                     </Button>
                   </Link>
-                  <Button size="sm" variant="outline" onClick={() => setCreatedQuoteNumber(null)} className="text-xs">
-                    Create Another
+                  <Button size="sm"variant="outline"onClick={() => setCreatedQuoteNumber(null)} className="text-xs">
+ Create Another
                   </Button>
                 </div>
               </div>
@@ -3822,32 +3710,28 @@ export default function ProductsCatalogPage() {
               <>
                 {/* Customer Details */}
                 <div className="rounded-xl border border-border bg-card p-3.5 space-y-3">
-                  <span className="text-xs font-bold text-foreground dark:text-white uppercase tracking-wider block">
+                  <span className="text-xs font-bold text-foreground uppercase tracking-wider block">
                     1. Customer Information
                   </span>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <Label className="text-xs font-semibold mb-1 block">
-                        Customer / Company Name <span className="text-rose-500">*</span>
+ Customer / Company Name <span className="text-rose-500">*</span>
                       </Label>
                       <Input
-                        placeholder="e.g. ABC Advertising Ltd"
-                        value={quoteCustomerName}
-                        onChange={(e) => setQuoteCustomerName(e.target.value)}
-                        className="text-xs h-9"
-                        required
+ placeholder="e.g. ABC Advertising Ltd"value={quoteCustomerName}
+ onChange={(e) => setQuoteCustomerName(e.target.value)}
+ className="text-xs h-9"required
                       />
                     </div>
                     <div>
                       <Label className="text-xs font-semibold mb-1 block">
-                        Mobile Number (WhatsApp) <span className="text-rose-500">*</span>
+ Mobile Number (WhatsApp) <span className="text-rose-500">*</span>
                       </Label>
                       <Input
-                        placeholder="e.g. 01711223344"
-                        value={quoteCustomerPhone}
-                        onChange={(e) => setQuoteCustomerPhone(e.target.value)}
-                        className="text-xs h-9"
-                        required
+ placeholder="e.g. 01711223344"value={quoteCustomerPhone}
+ onChange={(e) => setQuoteCustomerPhone(e.target.value)}
+ className="text-xs h-9"required
                       />
                     </div>
                   </div>
@@ -3855,37 +3739,30 @@ export default function ProductsCatalogPage() {
 
                 {/* Dimensions & Quantity */}
                 <div className="rounded-xl border border-border bg-card p-3.5 space-y-3">
-                  <span className="text-xs font-bold text-foreground dark:text-white uppercase tracking-wider block">
+                  <span className="text-xs font-bold text-foreground uppercase tracking-wider block">
                     2. Dimensions & Quantity
                   </span>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                     <div>
                       <Label className="text-xs font-semibold mb-1 block">Width</Label>
                       <Input
-                        type="number"
-                        step="0.1"
-                        value={quoteWidth}
-                        onChange={(e) => setQuoteWidth(Math.max(0.1, Number(e.target.value)))}
-                        className="text-xs h-9 tabular-nums font-bold"
-                      />
+ type="number"step="0.1"value={quoteWidth}
+ onChange={(e) => setQuoteWidth(Math.max(0.1, Number(e.target.value)))}
+ className="text-xs h-9 tabular-nums font-bold"/>
                     </div>
                     <div>
                       <Label className="text-xs font-semibold mb-1 block">Height</Label>
                       <Input
-                        type="number"
-                        step="0.1"
-                        value={quoteHeight}
-                        onChange={(e) => setQuoteHeight(Math.max(0.1, Number(e.target.value)))}
-                        className="text-xs h-9 tabular-nums font-bold"
-                      />
+ type="number"step="0.1"value={quoteHeight}
+ onChange={(e) => setQuoteHeight(Math.max(0.1, Number(e.target.value)))}
+ className="text-xs h-9 tabular-nums font-bold"/>
                     </div>
                     <div>
                       <Label className="text-xs font-semibold mb-1 block">Unit</Label>
                       <select
-                        value={quoteDimUnit}
-                        onChange={(e) => setQuoteDimUnit(e.target.value as any)}
-                        className="w-full h-9 rounded-lg border border-input bg-card px-2.5 text-xs font-medium"
-                      >
+ value={quoteDimUnit}
+ onChange={(e) => setQuoteDimUnit(e.target.value as any)}
+ className="w-full h-9 rounded-lg border border-input bg-card px-2.5 text-xs font-medium">
                         <option value="ft">Feet (ft)</option>
                         <option value="inch">Inches (in)</option>
                         <option value="m">Meters (m)</option>
@@ -3894,17 +3771,14 @@ export default function ProductsCatalogPage() {
                     <div>
                       <Label className="text-xs font-semibold mb-1 block">Quantity (Pcs)</Label>
                       <Input
-                        type="number"
-                        min="1"
-                        value={quoteQuantity}
-                        onChange={(e) => setQuoteQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-                        className="text-xs h-9 tabular-nums font-bold"
-                      />
+ type="number"min="1"value={quoteQuantity}
+ onChange={(e) => setQuoteQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+ className="text-xs h-9 tabular-nums font-bold"/>
                     </div>
                   </div>
 
                   <div className="flex items-center justify-between p-2.5 bg-blue-50/60 dark:bg-blue-950/30 rounded-lg text-xs">
-                    <span className="text-muted-foreground dark:text-muted-foreground">Calculated Billable Area:</span>
+                    <span className="text-muted-foreground">Calculated Billable Area:</span>
                     <span className="tabular-nums font-bold text-blue-700 dark:text-blue-300">
                       {fastQuoteCalculation.singleAreaSft} SFT × {quoteQuantity} pcs = {fastQuoteCalculation.totalAreaSft} SFT
                     </span>
@@ -3913,57 +3787,47 @@ export default function ProductsCatalogPage() {
 
                 {/* Add-ons & Finishing */}
                 <div className="rounded-xl border border-border bg-card p-3.5 space-y-2.5">
-                  <span className="text-xs font-bold text-foreground dark:text-white uppercase tracking-wider block">
+                  <span className="text-xs font-bold text-foreground uppercase tracking-wider block">
                     3. Finishing & Reusable Add-ons
                   </span>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
                     <label className="flex items-center gap-2 p-2 rounded-lg border border-border cursor-pointer hover:bg-muted">
                       <input
-                        type="checkbox"
-                        checked={quoteIncludeHemming}
-                        onChange={(e) => setQuoteIncludeHemming(e.target.checked)}
-                        className="rounded"
-                      />
+ type="checkbox"checked={quoteIncludeHemming}
+ onChange={(e) => setQuoteIncludeHemming(e.target.checked)}
+ className="rounded"/>
                       <span>Hemming (৳{fastQuoteCalculation.hemmingCharge})</span>
                     </label>
 
                     <label className="flex items-center gap-2 p-2 rounded-lg border border-border cursor-pointer hover:bg-muted">
                       <input
-                        type="checkbox"
-                        checked={quoteIncludeEyelets}
-                        onChange={(e) => setQuoteIncludeEyelets(e.target.checked)}
-                        className="rounded"
-                      />
+ type="checkbox"checked={quoteIncludeEyelets}
+ onChange={(e) => setQuoteIncludeEyelets(e.target.checked)}
+ className="rounded"/>
                       <span>Eyelets ({fastQuoteCalculation.eyeletCount} pcs - ৳{fastQuoteCalculation.eyeletCharge})</span>
                     </label>
 
                     <label className="flex items-center gap-2 p-2 rounded-lg border border-border cursor-pointer hover:bg-muted">
                       <input
-                        type="checkbox"
-                        checked={quoteIncludeLamination}
-                        onChange={(e) => setQuoteIncludeLamination(e.target.checked)}
-                        className="rounded"
-                      />
+ type="checkbox"checked={quoteIncludeLamination}
+ onChange={(e) => setQuoteIncludeLamination(e.target.checked)}
+ className="rounded"/>
                       <span>Lamination (৳{fastQuoteCalculation.laminationCharge})</span>
                     </label>
 
                     <label className="flex items-center gap-2 p-2 rounded-lg border border-border cursor-pointer hover:bg-muted">
                       <input
-                        type="checkbox"
-                        checked={quoteIncludeInstallation}
-                        onChange={(e) => setQuoteIncludeInstallation(e.target.checked)}
-                        className="rounded"
-                      />
+ type="checkbox"checked={quoteIncludeInstallation}
+ onChange={(e) => setQuoteIncludeInstallation(e.target.checked)}
+ className="rounded"/>
                       <span>Installation (৳{fastQuoteCalculation.installationCharge})</span>
                     </label>
 
                     <label className="flex items-center gap-2 p-2 rounded-lg border border-border cursor-pointer hover:bg-muted">
                       <input
-                        type="checkbox"
-                        checked={quoteIncludeDelivery}
-                        onChange={(e) => setQuoteIncludeDelivery(e.target.checked)}
-                        className="rounded"
-                      />
+ type="checkbox"checked={quoteIncludeDelivery}
+ onChange={(e) => setQuoteIncludeDelivery(e.target.checked)}
+ className="rounded"/>
                       <span>Delivery (৳{fastQuoteCalculation.deliveryCharge})</span>
                     </label>
                   </div>
@@ -3973,10 +3837,10 @@ export default function ProductsCatalogPage() {
                 <div className="rounded-xl border border-border bg-muted p-4 space-y-2.5">
                   <div className="flex justify-between items-center text-xs">
                     <div className="flex items-center gap-2">
-                      <span className="text-muted-foreground dark:text-muted-foreground">
-                        Print Subtotal ({fastQuoteCalculation.totalAreaSft} {fastQuoteProduct.selling_unit || 'SFT'} @ ৳{fastQuoteCalculation.effectiveRate}):
+                      <span className="text-muted-foreground">
+ Print Subtotal ({fastQuoteCalculation.totalAreaSft} {fastQuoteProduct.selling_unit || 'SFT'} @ ৳{fastQuoteCalculation.effectiveRate}):
                       </span>
-                      <Badge variant="outline" className="text-2xs capitalize tabular-nums">
+                      <Badge variant="outline"className="text-2xs capitalize tabular-nums">
                         {fastQuoteCalculation.pricingMethod?.replace('_', ' ')}
                       </Badge>
                     </div>
@@ -3987,14 +3851,14 @@ export default function ProductsCatalogPage() {
                     <div className="flex justify-between text-xs text-amber-800 dark:text-amber-300 font-semibold bg-amber-50 dark:bg-amber-950/40 p-2 rounded-md border border-amber-200 dark:border-amber-800">
                       <span>Minimum Billable Quantity Rule Applied:</span>
                       <span className="tabular-nums">
-                        Actual {fastQuoteCalculation.actualQuantity} → Billed as {fastQuoteCalculation.billableQuantity} {fastQuoteProduct.selling_unit || 'sqft'}
+ Actual {fastQuoteCalculation.actualQuantity} → Billed as {fastQuoteCalculation.billableQuantity} {fastQuoteProduct.selling_unit || 'sqft'}
                       </span>
                     </div>
                   )}
 
                   {fastQuoteCalculation.addonsTotal > 0 && (
                     <div className="flex justify-between text-xs">
-                      <span className="text-muted-foreground dark:text-muted-foreground">Finishing & Service Add-ons:</span>
+                      <span className="text-muted-foreground">Finishing & Service Add-ons:</span>
                       <span className="tabular-nums font-semibold">৳{fastQuoteCalculation.addonsTotal}</span>
                     </div>
                   )}
@@ -4007,18 +3871,18 @@ export default function ProductsCatalogPage() {
                   )}
 
                   <div className="flex justify-between text-xs">
-                    <span className="text-muted-foreground dark:text-muted-foreground">VAT ({fastQuoteProduct.tax_rate || 7.5}%):</span>
+                    <span className="text-muted-foreground">VAT ({fastQuoteProduct.tax_rate || 7.5}%):</span>
                     <span className="tabular-nums">৳{fastQuoteCalculation.vatAmount}</span>
                   </div>
 
                   <div className="pt-2 border-t border-border flex justify-between items-center">
                     <div>
-                      <span className="text-xs font-bold text-foreground dark:text-white block">Quotation Total:</span>
+                      <span className="text-xs font-bold text-foreground block">Quotation Total:</span>
                       <span className="text-2xs text-emerald-600 font-semibold">
-                        Est. Cost: ৳{fastQuoteCalculation.estTotalCost} • Gross Profit: ৳{fastQuoteCalculation.estGrossProfit} ({fastQuoteCalculation.estMargin}%)
+ Est. Cost: ৳{fastQuoteCalculation.estTotalCost} • Gross Profit: ৳{fastQuoteCalculation.estGrossProfit} ({fastQuoteCalculation.estMargin}%)
                       </span>
                       <span className="text-2xs text-muted-foreground block">
-                        Margin Based On: {fastQuoteCalculation.costBasisType === 'direct_cost' ? 'Estimated Direct Job Cost' : 'Material Cost'}
+ Margin Based On: {fastQuoteCalculation.costBasisType === 'direct_cost' ? 'Estimated Direct Job Cost' : 'Material Cost'}
                       </span>
                     </div>
                     <div className="text-xl font-black text-blue-600 dark:text-blue-400 tabular-nums">
@@ -4041,21 +3905,16 @@ export default function ProductsCatalogPage() {
                 </div>
 
                 {/* Footer Action */}
-                <div className="pt-2 flex flex-col-reverse sm:flex-row items-center justify-between gap-3 border-t border-border dark:border-border">
+                <div className="pt-2 flex flex-col-reverse sm:flex-row items-center justify-between gap-3 border-t border-border">
                   <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setFastQuoteProduct(null)}
-                    className="w-full sm:w-auto text-xs"
-                  >
-                    Cancel
+ type="button"variant="outline"onClick={() => setFastQuoteProduct(null)}
+ className="w-full sm:w-auto text-xs">
+ Cancel
                   </Button>
                   <Button
-                    type="button"
-                    onClick={handleGenerateFastQuotation}
-                    disabled={isPending}
-                    className="w-full sm:w-auto text-xs bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-6 shadow-sm"
-                  >
+ type="button"onClick={handleGenerateFastQuotation}
+ disabled={isPending}
+ className="w-full sm:w-auto text-xs bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-6 shadow-sm">
                     {isPending ? 'Generating Quotation...' : 'Create Formal Quotation'}
                   </Button>
                 </div>
@@ -4069,18 +3928,17 @@ export default function ProductsCatalogPage() {
       {/* MODAL 2: CREATE / EDIT PRODUCT (SIMPLIFIED & PROGRESSIVE) */}
       {/* ======================================================== */}
       <ModalDialog
-        open={isCreateOpen}
-        onOpenChange={setIsCreateOpen}
-        size="3xl"
-        hideFooter={true}
-        title={
+ open={isCreateOpen}
+ onOpenChange={setIsCreateOpen}
+ size="3xl"hideFooter={true}
+ title={
           <div className="flex items-center gap-2.5">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 font-bold shrink-0">
-              <Package className="h-5 w-5" />
+              <Package className="h-5 w-5"/>
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-base font-bold text-foreground dark:text-white">
+                <span className="text-base font-bold text-foreground">
                   {editingProduct ? 'Edit Product' : 'Add Product'}
                 </span>
               </div>
@@ -4099,29 +3957,28 @@ export default function ProductsCatalogPage() {
             </Label>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               {PRODUCT_TYPE_CARDS.map((card) => {
-                const Icon = card.icon
-                const isSelected = formData.commercial_type === card.type
-                return (
+ const Icon = card.icon
+ const isSelected = formData.commercial_type === card.type
+ return (
                   <button
-                    key={card.type}
-                    type="button"
-                    onClick={() => handleSelectProductType(card.type)}
-                    className={cn(
+ key={card.type}
+ type="button"onClick={() => handleSelectProductType(card.type)}
+ className={cn(
                       'flex flex-col items-start p-2.5 rounded-xl border text-left transition-all relative overflow-hidden',
-                      isSelected
+ isSelected
                         ? 'border-blue-600 bg-blue-50/70 dark:bg-blue-950/40 text-blue-950 dark:text-blue-100 shadow-xs ring-1 ring-blue-500'
-                        : 'border-border bg-card hover:border-input text-foreground dark:text-muted-foreground'
+                        : 'border-border bg-card hover:border-input text-foreground '
                     )}
                   >
                     <div className="flex items-center justify-between w-full mb-1">
                       <div className={cn(
                         'flex h-7 w-7 items-center justify-center rounded-lg',
-                        isSelected ? 'bg-blue-600 text-white' : 'bg-muted text-muted-foreground dark:text-muted-foreground'
+ isSelected ? 'bg-blue-600 text-white' : 'bg-muted text-muted-foreground '
                       )}>
-                        <Icon className="h-4 w-4" />
+                        <Icon className="h-4 w-4"/>
                       </div>
                       {isSelected && (
-                        <CheckCircle2 className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                        <CheckCircle2 className="h-4 w-4 text-blue-600 dark:text-blue-400"/>
                       )}
                     </div>
                     <span className="text-xs font-bold block">{card.label}</span>
@@ -4143,43 +4000,38 @@ export default function ProductsCatalogPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="sm:col-span-2">
                 <Label className="text-xs font-semibold mb-1 block">
-                  Product Name <span className="text-rose-500">*</span>
+ Product Name <span className="text-rose-500">*</span>
                 </Label>
                 <Input
-                  placeholder="e.g. Star Flex Banner 320 GSM, Vinyl Sticker, Graphic Design..."
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="text-sm font-medium h-9"
-                  required
-                  autoFocus
+ placeholder="e.g. Star Flex Banner 320 GSM, Vinyl Sticker, Graphic Design..."value={formData.name}
+ onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+ className="text-sm font-medium h-9"required
+ autoFocus
                 />
               </div>
 
               <div>
                 <div className="flex items-center justify-between mb-1">
                   <Label className="text-xs font-semibold block">
-                    Category <span className="text-rose-500">*</span>
+ Category <span className="text-rose-500">*</span>
                   </Label>
                   <button
-                    type="button"
-                    onClick={() => {
-                      setEditingCategory(null)
-                      setIsCategoryModalOpen(true)
+ type="button"onClick={() => {
+ setEditingCategory(null)
+ setIsCategoryModalOpen(true)
                     }}
-                    className="text-2xs text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 font-semibold flex items-center gap-1 hover:underline"
-                  >
-                    <Plus className="h-3 w-3" /> New Category
+ className="text-2xs text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 font-semibold flex items-center gap-1 hover:underline">
+                    <Plus className="h-3 w-3"/> New Category
                   </button>
                 </div>
                 <select
-                  value={formData.category}
-                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                  className="w-full h-9 rounded-lg border border-input bg-card px-3 text-xs font-medium text-foreground dark:text-white focus:border-blue-500 focus:outline-none"
-                  required
+ value={formData.category}
+ onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+ className="w-full h-9 rounded-lg border border-input bg-card px-3 text-xs font-medium text-foreground focus:border-blue-500 focus:outline-none"required
                 >
-                  <option value="" disabled>Select category...</option>
+                  <option value=""disabled>Select category...</option>
                   {categories.length > 0 ? (
-                    categories.map((cat) => (
+ categories.map((cat) => (
                       <option key={cat.id} value={cat.slug || cat.name}>
                         {cat.parent_name ? `${cat.parent_name} → ` : ''}{cat.name} {cat.name_bn ? `(${cat.name_bn})` : ''}
                       </option>
@@ -4199,36 +4051,30 @@ export default function ProductsCatalogPage() {
 
               <div>
                 <Label className="text-xs font-semibold mb-1 block">
-                  Bengali Name (Optional)
+ Bengali Name (Optional)
                 </Label>
                 <Input
-                  placeholder="যেমন: স্টার ফ্লেক্স ব্যানার"
-                  value={formData.name_bn}
-                  onChange={(e) => setFormData({ ...formData, name_bn: e.target.value })}
-                  className="text-xs h-9 font-bengali"
-                />
+ placeholder="যেমন: স্টার ফ্লেক্স ব্যানার"value={formData.name_bn}
+ onChange={(e) => setFormData({ ...formData, name_bn: e.target.value })}
+ className="text-xs h-9 font-bengali"/>
               </div>
 
               <div>
                 <Label className="text-xs font-semibold mb-1 block">
-                  SKU / Item Code (Optional)
+ SKU / Item Code (Optional)
                 </Label>
                 <Input
-                  placeholder="PRD-FLX-01"
-                  value={formData.sku}
-                  onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
-                  className="text-xs h-9 tabular-nums uppercase text-muted-foreground dark:text-muted-foreground"
-                />
+ placeholder="PRD-FLX-01"value={formData.sku}
+ onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
+ className="text-xs h-9 tabular-nums uppercase text-muted-foreground"/>
               </div>
 
               <div>
                 <Label className="text-xs font-semibold mb-1 block">Description (Optional)</Label>
                 <Input
-                  placeholder="Customer-facing notes or specifications..."
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="text-xs h-9"
-                />
+ placeholder="Customer-facing notes or specifications..."value={formData.description}
+ onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+ className="text-xs h-9"/>
               </div>
             </div>
           </div>
@@ -4241,19 +4087,18 @@ export default function ProductsCatalogPage() {
 
             <div>
               <Label className="text-xs font-medium text-muted-foreground mb-1.5 block">
-                Pricing Method
+ Pricing Method
               </Label>
               <div className="flex flex-wrap gap-1.5">
                 {PRICING_PILLS.map((opt) => {
-                  const isSelected = formData.pricing_method === opt.id
-                  return (
+ const isSelected = formData.pricing_method === opt.id
+ return (
                     <button
-                      key={opt.id}
-                      type="button"
-                      onClick={() => handlePricingMethodSelect(opt)}
-                      className={cn(
+ key={opt.id}
+ type="button"onClick={() => handlePricingMethodSelect(opt)}
+ className={cn(
                         'px-3 py-1.5 rounded-lg text-xs font-semibold transition-all border',
-                        isSelected
+ isSelected
                           ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
                           : 'bg-muted text-foreground border-border hover:border-input'
                       )}
@@ -4268,18 +4113,14 @@ export default function ProductsCatalogPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
               <div>
                 <Label className="text-xs font-semibold mb-1 block">
-                  Selling Price <span className="text-rose-500">*</span>
+ Selling Price <span className="text-rose-500">*</span>
                 </Label>
                 <div className="relative">
                   <span className="absolute left-3 top-2 text-sm font-bold text-muted-foreground">৳</span>
                   <Input
-                    type="number"
-                    step="0.1"
-                    placeholder="0.00"
-                    value={formData.selling_price || ''}
-                    onChange={(e) => setFormData({ ...formData, selling_price: Number(e.target.value) })}
-                    className="pl-7 pr-16 text-sm font-bold tabular-nums h-9 text-blue-600 dark:text-blue-400"
-                    required
+ type="number"step="0.1"placeholder="0.00"value={formData.selling_price || ''}
+ onChange={(e) => setFormData({ ...formData, selling_price: Number(e.target.value) })}
+ className="pl-7 pr-16 text-sm font-bold tabular-nums h-9 text-blue-600 dark:text-blue-400"required
                   />
                   <span className="absolute right-3 top-2.5 text-xs text-muted-foreground font-medium">
                     / {formData.selling_unit || 'unit'}
@@ -4289,13 +4130,12 @@ export default function ProductsCatalogPage() {
 
               <div>
                 <Label className="text-xs font-semibold mb-1 block">
-                  Sell By (Selling Unit)
+ Sell By (Selling Unit)
                 </Label>
                 <select
-                  value={formData.selling_unit}
-                  onChange={(e) => setFormData({ ...formData, selling_unit: e.target.value, unit: e.target.value as UnitOfMeasure })}
-                  className="w-full h-9 rounded-lg border border-input bg-card px-3 text-xs font-medium uppercase tabular-nums"
-                >
+ value={formData.selling_unit}
+ onChange={(e) => setFormData({ ...formData, selling_unit: e.target.value, unit: e.target.value as UnitOfMeasure })}
+ className="w-full h-9 rounded-lg border border-input bg-card px-3 text-xs font-medium uppercase tabular-nums">
                   {COMMON_SELLING_UNITS.map((u) => (
                     <option key={u.code} value={u.code}>
                       {u.name} ({u.code})
@@ -4311,10 +4151,10 @@ export default function ProductsCatalogPage() {
             <div className="flex items-center justify-between pt-1">
               <div>
                 <h4 className="text-xs font-bold text-foreground uppercase tracking-wider">
-                  Advanced Settings (Optional)
+ Advanced Settings (Optional)
                 </h4>
                 <p className="text-2xs text-muted-foreground">
-                  Optional settings for purchasing, production allowances, minimums, costing and components.
+ Optional settings for purchasing, production allowances, minimums, costing and components.
                 </p>
               </div>
             </div>
@@ -4322,76 +4162,71 @@ export default function ProductsCatalogPage() {
             <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
               {!liveCommercialMath.isService && (
                 <button
-                  type="button"
-                  onClick={() => toggleSection('purchasing')}
-                  className={cn(
+ type="button"onClick={() => toggleSection('purchasing')}
+ className={cn(
                     'py-2 px-3 rounded-xl border text-xs font-semibold flex items-center justify-between transition-all',
-                    expandedSections.purchasing
+ expandedSections.purchasing
                       ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 shadow-xs'
                       : 'border-border bg-card text-foreground hover:border-input'
                   )}
                 >
                   <span>Purchasing</span>
-                  {expandedSections.purchasing ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+                  {expandedSections.purchasing ? <ChevronUp className="h-3.5 w-3.5"/> : <ChevronDown className="h-3.5 w-3.5"/>}
                 </button>
               )}
 
               {(formData.requires_production || formData.commercial_type === 'production_product' || formData.commercial_type === 'fabrication' || formData.commercial_type === 'material') && (
                 <button
-                  type="button"
-                  onClick={() => toggleSection('production')}
-                  className={cn(
+ type="button"onClick={() => toggleSection('production')}
+ className={cn(
                     'py-2 px-3 rounded-xl border text-xs font-semibold flex items-center justify-between transition-all',
-                    expandedSections.production
+ expandedSections.production
                       ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 shadow-xs'
                       : 'border-border bg-card text-foreground hover:border-input'
                   )}
                 >
                   <span>Production</span>
-                  {expandedSections.production ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+                  {expandedSections.production ? <ChevronUp className="h-3.5 w-3.5"/> : <ChevronDown className="h-3.5 w-3.5"/>}
                 </button>
               )}
 
               <button
-                type="button"
-                onClick={() => toggleSection('minimums')}
-                className={cn(
+ type="button"onClick={() => toggleSection('minimums')}
+ className={cn(
                   'py-2 px-3 rounded-xl border text-xs font-semibold flex items-center justify-between transition-all',
-                  expandedSections.minimums
+ expandedSections.minimums
                     ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 shadow-xs'
                     : 'border-border bg-card text-foreground hover:border-input'
                 )}
               >
                 <span>Minimums</span>
-                {expandedSections.minimums ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+                {expandedSections.minimums ? <ChevronUp className="h-3.5 w-3.5"/> : <ChevronDown className="h-3.5 w-3.5"/>}
               </button>
 
               <button
-                type="button"
-                onClick={() => toggleSection('costing')}
-                className={cn(
+ type="button"onClick={() => toggleSection('costing')}
+ className={cn(
                   'py-2 px-3 rounded-xl border text-xs font-semibold flex items-center justify-between transition-all',
-                  expandedSections.costing
+ expandedSections.costing
                     ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 shadow-xs'
                     : 'border-border bg-card text-foreground hover:border-input'
                   )}
               >
                 <span>Costing</span>
-                {expandedSections.costing ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+                {expandedSections.costing ? <ChevronUp className="h-3.5 w-3.5"/> : <ChevronDown className="h-3.5 w-3.5"/>}
               </button>
 
               <button
-                type="button"
-                onClick={() => toggleSection('components')}
-                className={cn(
+ type="button"onClick={() => toggleSection('components')}
+ className={cn(
                   'py-2 px-3 rounded-xl border text-xs font-semibold flex items-center justify-between transition-all',
-                  expandedSections.components
+ expandedSections.components
                     ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 shadow-xs'
                     : 'border-border bg-card text-foreground hover:border-input'
                 )}
               >
                 <span>Components ({formData.components?.length || 0})</span>
-                {expandedSections.components ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+                {expandedSections.components ? <ChevronUp className="h-3.5 w-3.5"/> : <ChevronDown className="h-3.5 w-3.5"/>}
               </button>
             </div>
 
@@ -4399,8 +4234,8 @@ export default function ProductsCatalogPage() {
             {expandedSections.purchasing && !liveCommercialMath.isService && (
               <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs animate-in fade-in">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-foreground dark:text-white uppercase tracking-wider">
-                    Purchasing & Material Conversion
+                  <span className="text-xs font-bold text-foreground uppercase tracking-wider">
+ Purchasing & Material Conversion
                   </span>
                   <span className="text-2xs text-muted-foreground">How you buy raw materials</span>
                 </div>
@@ -4409,10 +4244,9 @@ export default function ProductsCatalogPage() {
                   <div>
                     <Label className="text-xs font-semibold mb-1 block">Purchase Unit</Label>
                     <select
-                      value={formData.purchase_unit}
-                      onChange={(e) => setFormData({ ...formData, purchase_unit: e.target.value })}
-                      className="w-full h-9 rounded-lg border border-input bg-card px-3 text-xs font-medium uppercase tabular-nums"
-                    >
+ value={formData.purchase_unit}
+ onChange={(e) => setFormData({ ...formData, purchase_unit: e.target.value })}
+ className="w-full h-9 rounded-lg border border-input bg-card px-3 text-xs font-medium uppercase tabular-nums">
                       {COMMON_PURCHASE_UNITS.map((u) => (
                         <option key={u.code} value={u.code}>
                           {u.name} ({u.code})
@@ -4424,26 +4258,20 @@ export default function ProductsCatalogPage() {
                   <div>
                     <Label className="text-xs font-semibold mb-1 block">Purchase Price (৳ BDT)</Label>
                     <Input
-                      type="number"
-                      step="1"
-                      value={formData.purchase_price || ''}
-                      onChange={(e) => setFormData({ ...formData, purchase_price: Number(e.target.value) })}
-                      className="text-xs h-9 tabular-nums font-bold"
-                    />
+ type="number"step="1"value={formData.purchase_price || ''}
+ onChange={(e) => setFormData({ ...formData, purchase_price: Number(e.target.value) })}
+ className="text-xs h-9 tabular-nums font-bold"/>
                     <span className="text-2xs text-muted-foreground">per 1 {formData.purchase_unit}</span>
                   </div>
 
                   <div>
                     <Label className="text-xs font-semibold mb-1 block">
-                      Conversion Ratio
+ Conversion Ratio
                     </Label>
                     <Input
-                      type="number"
-                      step="0.01"
-                      value={formData.conversion_ratio || ''}
-                      onChange={(e) => setFormData({ ...formData, conversion_ratio: Number(e.target.value) })}
-                      className="text-xs h-9 tabular-nums font-bold"
-                    />
+ type="number"step="0.01"value={formData.conversion_ratio || ''}
+ onChange={(e) => setFormData({ ...formData, conversion_ratio: Number(e.target.value) })}
+ className="text-xs h-9 tabular-nums font-bold"/>
                     <span className="text-2xs text-muted-foreground">
                       1 {formData.purchase_unit} = {formData.conversion_ratio} {formData.selling_unit}
                     </span>
@@ -4455,9 +4283,9 @@ export default function ProductsCatalogPage() {
                   <div className="p-3 bg-blue-50/60 dark:bg-blue-950/30 rounded-xl border border-blue-200 dark:border-blue-900/50 space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-bold text-blue-900 dark:text-blue-200">
-                        Roll Dimension Helper (1 Roll Area)
+ Roll Dimension Helper (1 Roll Area)
                       </span>
-                      <Badge variant="outline" className="text-2xs tabular-nums bg-card">
+                      <Badge variant="outline"className="text-2xs tabular-nums bg-card">
                         {formData.roll_width_ft}ft × {formData.roll_length_ft}ft = {Math.round((formData.roll_width_ft || 0) * (formData.roll_length_ft || 0))} sqft
                       </Badge>
                     </div>
@@ -4465,32 +4293,26 @@ export default function ProductsCatalogPage() {
                       <div>
                         <Label className="text-2xs font-semibold mb-1 block">Roll Width (Feet)</Label>
                         <Input
-                          type="number"
-                          step="0.5"
-                          value={formData.roll_width_ft || ''}
-                          onChange={(e) => {
-                            const w = Number(e.target.value) || 0
-                            const l = formData.roll_length_ft || 0
-                            const ratio = Math.round(w * l)
-                            setFormData({ ...formData, roll_width_ft: w, conversion_ratio: ratio > 0 ? ratio : formData.conversion_ratio })
+ type="number"step="0.5"value={formData.roll_width_ft || ''}
+ onChange={(e) => {
+ const w = Number(e.target.value) || 0
+ const l = formData.roll_length_ft || 0
+ const ratio = Math.round(w * l)
+ setFormData({ ...formData, roll_width_ft: w, conversion_ratio: ratio > 0 ? ratio : formData.conversion_ratio })
                           }}
-                          className="text-xs h-8 tabular-nums"
-                        />
+ className="text-xs h-8 tabular-nums"/>
                       </div>
                       <div>
                         <Label className="text-2xs font-semibold mb-1 block">Roll Length (Feet)</Label>
                         <Input
-                          type="number"
-                          step="1"
-                          value={formData.roll_length_ft || ''}
-                          onChange={(e) => {
-                            const l = Number(e.target.value) || 0
-                            const w = formData.roll_width_ft || 0
-                            const ratio = Math.round(w * l)
-                            setFormData({ ...formData, roll_length_ft: l, conversion_ratio: ratio > 0 ? ratio : formData.conversion_ratio })
+ type="number"step="1"value={formData.roll_length_ft || ''}
+ onChange={(e) => {
+ const l = Number(e.target.value) || 0
+ const w = formData.roll_width_ft || 0
+ const ratio = Math.round(w * l)
+ setFormData({ ...formData, roll_length_ft: l, conversion_ratio: ratio > 0 ? ratio : formData.conversion_ratio })
                           }}
-                          className="text-xs h-8 tabular-nums"
-                        />
+ className="text-xs h-8 tabular-nums"/>
                       </div>
                       <div className="col-span-2 sm:col-span-1">
                         <Label className="text-2xs font-semibold mb-1 block">Derived Ratio</Label>
@@ -4507,60 +4329,49 @@ export default function ProductsCatalogPage() {
             {/* SUBSECTION B: PRODUCTION DETAILS */}
             {expandedSections.production && (
               <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs animate-in fade-in">
-                <span className="text-xs font-bold text-foreground dark:text-white uppercase tracking-wider block">
-                  Production Rules & Geometric Allowances
+                <span className="text-xs font-bold text-foreground uppercase tracking-wider block">
+ Production Rules & Geometric Allowances
                 </span>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
                     <Label className="text-xs font-semibold mb-1 block">
-                      Extra Width Needed for Production (Allowance)
+ Extra Width Needed for Production (Allowance)
                     </Label>
                     <Input
-                      type="number"
-                      step="0.05"
-                      placeholder="e.g. 0.25 ft"
-                      value={formData.dimensions_spec ? (formData.dimensions_spec.includes('x') ? formData.dimensions_spec.split('x')[0] : '') : '0.25'}
-                      onChange={(e) => {
-                        const w = e.target.value
-                        const l = formData.dimensions_spec?.includes('x') ? formData.dimensions_spec.split('x')[1] : '0.25'
-                        setFormData({ ...formData, dimensions_spec: `${w}x${l}` })
+ type="number"step="0.05"placeholder="e.g. 0.25 ft"value={formData.dimensions_spec ? (formData.dimensions_spec.includes('x') ? formData.dimensions_spec.split('x')[0] : '') : '0.25'}
+ onChange={(e) => {
+ const w = e.target.value
+ const l = formData.dimensions_spec?.includes('x') ? formData.dimensions_spec.split('x')[1] : '0.25'
+ setFormData({ ...formData, dimensions_spec: `${w}x${l}` })
                       }}
-                      className="text-xs h-9 tabular-nums"
-                    />
+ className="text-xs h-9 tabular-nums"/>
                     <span className="text-2xs text-muted-foreground">Bleed / grip allowance (feet)</span>
                   </div>
 
                   <div>
                     <Label className="text-xs font-semibold mb-1 block">
-                      Extra Length Needed for Production (Allowance)
+ Extra Length Needed for Production (Allowance)
                     </Label>
                     <Input
-                      type="number"
-                      step="0.05"
-                      placeholder="e.g. 0.25 ft"
-                      value={formData.dimensions_spec ? (formData.dimensions_spec.includes('x') ? formData.dimensions_spec.split('x')[1] : '') : '0.25'}
-                      onChange={(e) => {
-                        const l = e.target.value
-                        const w = formData.dimensions_spec?.includes('x') ? formData.dimensions_spec.split('x')[0] : '0.25'
-                        setFormData({ ...formData, dimensions_spec: `${w}x${l}` })
+ type="number"step="0.05"placeholder="e.g. 0.25 ft"value={formData.dimensions_spec ? (formData.dimensions_spec.includes('x') ? formData.dimensions_spec.split('x')[1] : '') : '0.25'}
+ onChange={(e) => {
+ const l = e.target.value
+ const w = formData.dimensions_spec?.includes('x') ? formData.dimensions_spec.split('x')[0] : '0.25'
+ setFormData({ ...formData, dimensions_spec: `${w}x${l}` })
                       }}
-                      className="text-xs h-9 tabular-nums"
-                    />
+ className="text-xs h-9 tabular-nums"/>
                     <span className="text-2xs text-muted-foreground">Lead / tail allowance (feet)</span>
                   </div>
 
                   <div>
                     <Label className="text-xs font-semibold mb-1 block">
-                      Expected Production Wastage (%)
+ Expected Production Wastage (%)
                     </Label>
                     <Input
-                      type="number"
-                      step="0.5"
-                      value={formData.default_wastage_percentage || ''}
-                      onChange={(e) => setFormData({ ...formData, default_wastage_percentage: Number(e.target.value) })}
-                      className="text-xs h-9 tabular-nums font-bold"
-                    />
+ type="number"step="0.5"value={formData.default_wastage_percentage || ''}
+ onChange={(e) => setFormData({ ...formData, default_wastage_percentage: Number(e.target.value) })}
+ className="text-xs h-9 tabular-nums font-bold"/>
                     <span className="text-2xs text-muted-foreground">Statistical scrap (e.g. 5%)</span>
                   </div>
                 </div>
@@ -4568,61 +4379,49 @@ export default function ProductsCatalogPage() {
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 pt-1 text-xs">
                   <label className="flex items-center gap-2 p-2 rounded-lg border border-border cursor-pointer hover:bg-muted">
                     <input
-                      type="checkbox"
-                      checked={formData.requires_design}
-                      onChange={(e) => setFormData({ ...formData, requires_design: e.target.checked })}
-                      className="rounded"
-                    />
+ type="checkbox"checked={formData.requires_design}
+ onChange={(e) => setFormData({ ...formData, requires_design: e.target.checked })}
+ className="rounded"/>
                     <span>Requires Design</span>
                   </label>
 
                   <label className="flex items-center gap-2 p-2 rounded-lg border border-border cursor-pointer hover:bg-muted">
                     <input
-                      type="checkbox"
-                      checked={formData.requires_approval}
-                      onChange={(e) => setFormData({ ...formData, requires_approval: e.target.checked })}
-                      className="rounded"
-                    />
+ type="checkbox"checked={formData.requires_approval}
+ onChange={(e) => setFormData({ ...formData, requires_approval: e.target.checked })}
+ className="rounded"/>
                     <span>Requires Approval</span>
                   </label>
 
                   <label className="flex items-center gap-2 p-2 rounded-lg border border-border cursor-pointer hover:bg-muted">
                     <input
-                      type="checkbox"
-                      checked={formData.requires_production}
-                      onChange={(e) => setFormData({ ...formData, requires_production: e.target.checked })}
-                      className="rounded"
-                    />
+ type="checkbox"checked={formData.requires_production}
+ onChange={(e) => setFormData({ ...formData, requires_production: e.target.checked })}
+ className="rounded"/>
                     <span>Requires Production</span>
                   </label>
 
                   <label className="flex items-center gap-2 p-2 rounded-lg border border-border cursor-pointer hover:bg-muted">
                     <input
-                      type="checkbox"
-                      checked={formData.requires_fabrication}
-                      onChange={(e) => setFormData({ ...formData, requires_fabrication: e.target.checked })}
-                      className="rounded"
-                    />
+ type="checkbox"checked={formData.requires_fabrication}
+ onChange={(e) => setFormData({ ...formData, requires_fabrication: e.target.checked })}
+ className="rounded"/>
                     <span>Requires Fabrication</span>
                   </label>
 
                   <label className="flex items-center gap-2 p-2 rounded-lg border border-border cursor-pointer hover:bg-muted">
                     <input
-                      type="checkbox"
-                      checked={formData.requires_finishing}
-                      onChange={(e) => setFormData({ ...formData, requires_finishing: e.target.checked })}
-                      className="rounded"
-                    />
+ type="checkbox"checked={formData.requires_finishing}
+ onChange={(e) => setFormData({ ...formData, requires_finishing: e.target.checked })}
+ className="rounded"/>
                     <span>Requires Finishing</span>
                   </label>
 
                   <label className="flex items-center gap-2 p-2 rounded-lg border border-border cursor-pointer hover:bg-muted">
                     <input
-                      type="checkbox"
-                      checked={formData.requires_installation}
-                      onChange={(e) => setFormData({ ...formData, requires_installation: e.target.checked })}
-                      className="rounded"
-                    />
+ type="checkbox"checked={formData.requires_installation}
+ onChange={(e) => setFormData({ ...formData, requires_installation: e.target.checked })}
+ className="rounded"/>
                     <span>Requires Installation</span>
                   </label>
                 </div>
@@ -4632,43 +4431,34 @@ export default function ProductsCatalogPage() {
             {/* SUBSECTION C: MINIMUM CHARGES */}
             {expandedSections.minimums && (
               <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs animate-in fade-in">
-                <span className="text-xs font-bold text-foreground dark:text-white uppercase tracking-wider block">
+                <span className="text-xs font-bold text-foreground uppercase tracking-wider block">
                   3-Way Minimum Separation (MOQ vs Min Billable Qty vs Min Charge)
                 </span>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
                     <Label className="text-xs font-semibold mb-1 block">1. Minimum Order Qty (MOQ)</Label>
                     <Input
-                      type="number"
-                      step="1"
-                      value={formData.min_order_quantity || ''}
-                      onChange={(e) => setFormData({ ...formData, min_order_quantity: Number(e.target.value) })}
-                      className="text-xs h-9 tabular-nums"
-                    />
+ type="number"step="1"value={formData.min_order_quantity || ''}
+ onChange={(e) => setFormData({ ...formData, min_order_quantity: Number(e.target.value) })}
+ className="text-xs h-9 tabular-nums"/>
                     <span className="text-2xs text-muted-foreground">Order cutoff (e.g. 1 pc)</span>
                   </div>
 
                   <div>
                     <Label className="text-xs font-semibold mb-1 block">2. Minimum Quantity You Charge For</Label>
                     <Input
-                      type="number"
-                      step="1"
-                      value={formData.min_billable_quantity || ''}
-                      onChange={(e) => setFormData({ ...formData, min_billable_quantity: Number(e.target.value) })}
-                      className="text-xs h-9 tabular-nums text-amber-600 font-bold"
-                    />
+ type="number"step="1"value={formData.min_billable_quantity || ''}
+ onChange={(e) => setFormData({ ...formData, min_billable_quantity: Number(e.target.value) })}
+ className="text-xs h-9 tabular-nums text-amber-600 font-bold"/>
                     <span className="text-2xs text-muted-foreground">Billing floor (e.g. 20 sqft min)</span>
                   </div>
 
                   <div>
                     <Label className="text-xs font-semibold mb-1 block">3. Minimum Charge (৳ BDT)</Label>
                     <Input
-                      type="number"
-                      step="1"
-                      value={formData.minimum_charge || ''}
-                      onChange={(e) => setFormData({ ...formData, minimum_charge: Number(e.target.value) })}
-                      className="text-xs h-9 tabular-nums font-bold text-blue-600"
-                    />
+ type="number"step="1"value={formData.minimum_charge || ''}
+ onChange={(e) => setFormData({ ...formData, minimum_charge: Number(e.target.value) })}
+ className="text-xs h-9 tabular-nums font-bold text-blue-600"/>
                     <span className="text-2xs text-muted-foreground">Money floor (e.g. ৳500 min)</span>
                   </div>
                 </div>
@@ -4679,11 +4469,11 @@ export default function ProductsCatalogPage() {
             {expandedSections.costing && (
               <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs animate-in fade-in">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-foreground dark:text-white uppercase tracking-wider block">
-                    Direct Cost Breakdown & Target Margins
+                  <span className="text-xs font-bold text-foreground uppercase tracking-wider block">
+ Direct Cost Breakdown & Target Margins
                   </span>
-                  <Badge variant="outline" className="text-2xs tabular-nums">
-                    Total Cost: ৳{liveCommercialMath.totalDirectCost} / {formData.selling_unit}
+                  <Badge variant="outline"className="text-2xs tabular-nums">
+ Total Cost: ৳{liveCommercialMath.totalDirectCost} / {formData.selling_unit}
                   </Badge>
                 </div>
 
@@ -4691,117 +4481,93 @@ export default function ProductsCatalogPage() {
                   <div>
                     <Label className="text-2xs font-semibold mb-1 block">Ink Cost</Label>
                     <Input
-                      type="number"
-                      step="0.1"
-                      value={formData.cost_breakdown?.ink || ''}
-                      onChange={(e) =>
-                        setFormData({
+ type="number"step="0.1"value={formData.cost_breakdown?.ink || ''}
+ onChange={(e) =>
+ setFormData({
                           ...formData,
-                          cost_breakdown: { ...formData.cost_breakdown, ink: Number(e.target.value) },
+ cost_breakdown: { ...formData.cost_breakdown, ink: Number(e.target.value) },
                         })
                       }
-                      className="text-xs h-8 tabular-nums"
-                    />
+ className="text-xs h-8 tabular-nums"/>
                   </div>
                   <div>
                     <Label className="text-2xs font-semibold mb-1 block">Labor Cost</Label>
                     <Input
-                      type="number"
-                      step="0.1"
-                      value={formData.cost_breakdown?.labor || ''}
-                      onChange={(e) =>
-                        setFormData({
+ type="number"step="0.1"value={formData.cost_breakdown?.labor || ''}
+ onChange={(e) =>
+ setFormData({
                           ...formData,
-                          cost_breakdown: { ...formData.cost_breakdown, labor: Number(e.target.value) },
+ cost_breakdown: { ...formData.cost_breakdown, labor: Number(e.target.value) },
                         })
                       }
-                      className="text-xs h-8 tabular-nums"
-                    />
+ className="text-xs h-8 tabular-nums"/>
                   </div>
                   <div>
                     <Label className="text-2xs font-semibold mb-1 block">Machine Depr.</Label>
                     <Input
-                      type="number"
-                      step="0.1"
-                      value={formData.cost_breakdown?.machine || ''}
-                      onChange={(e) =>
-                        setFormData({
+ type="number"step="0.1"value={formData.cost_breakdown?.machine || ''}
+ onChange={(e) =>
+ setFormData({
                           ...formData,
-                          cost_breakdown: { ...formData.cost_breakdown, machine: Number(e.target.value) },
+ cost_breakdown: { ...formData.cost_breakdown, machine: Number(e.target.value) },
                         })
                       }
-                      className="text-xs h-8 tabular-nums"
-                    />
+ className="text-xs h-8 tabular-nums"/>
                   </div>
                   <div>
                     <Label className="text-2xs font-semibold mb-1 block">Finishing</Label>
                     <Input
-                      type="number"
-                      step="0.1"
-                      value={formData.cost_breakdown?.finishing || ''}
-                      onChange={(e) =>
-                        setFormData({
+ type="number"step="0.1"value={formData.cost_breakdown?.finishing || ''}
+ onChange={(e) =>
+ setFormData({
                           ...formData,
-                          cost_breakdown: { ...formData.cost_breakdown, finishing: Number(e.target.value) },
+ cost_breakdown: { ...formData.cost_breakdown, finishing: Number(e.target.value) },
                         })
                       }
-                      className="text-xs h-8 tabular-nums"
-                    />
+ className="text-xs h-8 tabular-nums"/>
                   </div>
                   <div>
                     <Label className="text-2xs font-semibold mb-1 block">Fabrication</Label>
                     <Input
-                      type="number"
-                      step="0.1"
-                      value={formData.cost_breakdown?.fabrication || ''}
-                      onChange={(e) =>
-                        setFormData({
+ type="number"step="0.1"value={formData.cost_breakdown?.fabrication || ''}
+ onChange={(e) =>
+ setFormData({
                           ...formData,
-                          cost_breakdown: { ...formData.cost_breakdown, fabrication: Number(e.target.value) },
+ cost_breakdown: { ...formData.cost_breakdown, fabrication: Number(e.target.value) },
                         })
                       }
-                      className="text-xs h-8 tabular-nums"
-                    />
+ className="text-xs h-8 tabular-nums"/>
                   </div>
                   <div>
                     <Label className="text-2xs font-semibold mb-1 block">Installation</Label>
                     <Input
-                      type="number"
-                      step="0.1"
-                      value={formData.cost_breakdown?.installation || ''}
-                      onChange={(e) =>
-                        setFormData({
+ type="number"step="0.1"value={formData.cost_breakdown?.installation || ''}
+ onChange={(e) =>
+ setFormData({
                           ...formData,
-                          cost_breakdown: { ...formData.cost_breakdown, installation: Number(e.target.value) },
+ cost_breakdown: { ...formData.cost_breakdown, installation: Number(e.target.value) },
                         })
                       }
-                      className="text-xs h-8 tabular-nums"
-                    />
+ className="text-xs h-8 tabular-nums"/>
                   </div>
                   <div>
                     <Label className="text-2xs font-semibold mb-1 block">Delivery</Label>
                     <Input
-                      type="number"
-                      step="0.1"
-                      value={formData.cost_breakdown?.delivery || ''}
-                      onChange={(e) =>
-                        setFormData({
+ type="number"step="0.1"value={formData.cost_breakdown?.delivery || ''}
+ onChange={(e) =>
+ setFormData({
                           ...formData,
-                          cost_breakdown: { ...formData.cost_breakdown, delivery: Number(e.target.value) },
+ cost_breakdown: { ...formData.cost_breakdown, delivery: Number(e.target.value) },
                         })
                       }
-                      className="text-xs h-8 tabular-nums"
-                    />
+ className="text-xs h-8 tabular-nums"/>
                   </div>
                   <div>
                     <Label className="text-2xs font-semibold mb-1 block">Target Margin %</Label>
                     <Input
-                      type="number"
-                      step="1"
-                      value={formData.target_margin_percentage || ''}
-                      onChange={(e) => setFormData({ ...formData, target_margin_percentage: Number(e.target.value) })}
-                      className="text-xs h-8 tabular-nums font-bold"
-                    />
+ type="number"step="1"value={formData.target_margin_percentage || ''}
+ onChange={(e) => setFormData({ ...formData, target_margin_percentage: Number(e.target.value) })}
+ className="text-xs h-8 tabular-nums font-bold"/>
                   </div>
                 </div>
 
@@ -4809,21 +4575,17 @@ export default function ProductsCatalogPage() {
                 <div className="p-3 bg-emerald-50/60 dark:bg-emerald-950/30 rounded-xl border border-emerald-200 dark:border-emerald-900/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                   <div>
                     <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-900 dark:text-emerald-200">
-                      <Sparkles className="h-4 w-4 text-emerald-600" />
+                      <Sparkles className="h-4 w-4 text-emerald-600"/>
                       <span>Suggested Selling Price: ৳{liveCommercialMath.suggestedSellingPrice} / {formData.selling_unit}</span>
                     </div>
                     <p className="text-2xs text-emerald-700/80 dark:text-emerald-300/80 mt-0.5">
-                      Based on cost ৳{liveCommercialMath.costBasis} @ {formData.target_margin_percentage}% margin.
+ Based on cost ৳{liveCommercialMath.costBasis} @ {formData.target_margin_percentage}% margin.
                     </p>
                   </div>
                   <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onClick={() => setFormData({ ...formData, selling_price: liveCommercialMath.suggestedSellingPrice })}
-                    className="text-xs bg-card hover:bg-emerald-50 text-emerald-700 border-emerald-300 shadow-xs shrink-0"
-                  >
-                    Apply Suggested Price
+ type="button"size="sm"variant="outline"onClick={() => setFormData({ ...formData, selling_price: liveCommercialMath.suggestedSellingPrice })}
+ className="text-xs bg-card hover:bg-emerald-50 text-emerald-700 border-emerald-300 shadow-xs shrink-0">
+ Apply Suggested Price
                   </Button>
                 </div>
               </div>
@@ -4833,19 +4595,19 @@ export default function ProductsCatalogPage() {
             {expandedSections.components && (
               <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs animate-in fade-in">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-foreground dark:text-white uppercase tracking-wider">
-                    Materials & Components (Recipe / BOM)
+                  <span className="text-xs font-bold text-foreground uppercase tracking-wider">
+ Materials & Components (Recipe / BOM)
                   </span>
-                  <Badge variant="outline" className="tabular-nums text-xs">
-                    Rollup: ৳{liveCommercialMath.componentsCost}
+                  <Badge variant="outline"className="tabular-nums text-xs">
+ Rollup: ৳{liveCommercialMath.componentsCost}
                   </Badge>
                 </div>
 
                 {/* Components Table */}
                 {formData.components && formData.components.length > 0 ? (
-                  <div className="overflow-x-auto rounded-lg border border-border dark:border-border">
+                  <div className="overflow-x-auto rounded-lg border border-border">
                     <table className="w-full text-xs text-left">
-                      <thead className="bg-muted font-semibold text-muted-foreground dark:text-muted-foreground">
+                      <thead className="bg-muted font-semibold text-muted-foreground">
                         <tr>
                           <th className="py-2 px-3">Item Name</th>
                           <th className="py-2 px-2">Qty</th>
@@ -4858,7 +4620,7 @@ export default function ProductsCatalogPage() {
                       <tbody className="divide-y divide-border tabular-nums">
                         {formData.components.map((comp, idx) => (
                           <tr key={idx} className="hover:bg-muted">
-                            <td className="py-2 px-3 font-sans font-semibold text-foreground dark:text-white">
+                            <td className="py-2 px-3 font-sans font-semibold text-foreground">
                               {comp.name || 'Component'}
                             </td>
                             <td className="py-2 px-2">{comp.quantity}</td>
@@ -4867,15 +4629,13 @@ export default function ProductsCatalogPage() {
                             <td className="py-2 px-2 font-sans capitalize">{comp.production_role || 'material'}</td>
                             <td className="py-2 px-3 text-right font-sans">
                               <button
-                                type="button"
-                                onClick={() => {
-                                  const next = [...formData.components]
-                                  next.splice(idx, 1)
-                                  setFormData({ ...formData, components: next })
+ type="button"onClick={() => {
+ const next = [...formData.components]
+ next.splice(idx, 1)
+ setFormData({ ...formData, components: next })
                                 }}
-                                className="text-rose-600 hover:text-rose-800 p-1"
-                              >
-                                <X className="h-3.5 w-3.5" />
+ className="text-rose-600 hover:text-rose-800 p-1">
+                                <X className="h-3.5 w-3.5"/>
                               </button>
                             </td>
                           </tr>
@@ -4885,79 +4645,66 @@ export default function ProductsCatalogPage() {
                   </div>
                 ) : (
                   <div className="p-3 text-center border border-dashed rounded-lg text-xs text-muted-foreground">
-                    No child components added. Simple products do not require components.
+ No child components added. Simple products do not require components.
                   </div>
                 )}
 
                 {/* Add Component Subform */}
                 <div className="p-3 bg-muted rounded-xl border border-border space-y-2">
                   <span className="text-2xs font-bold text-foreground block uppercase">
-                    Add Component Item
+ Add Component Item
                   </span>
                   <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs">
                     <div className="col-span-2 sm:col-span-2">
                       <Label className="text-2xs mb-0.5 block">Item Name</Label>
                       <Input
-                        placeholder="e.g. X-Stand Hardware"
-                        value={newComponent.name}
-                        onChange={(e) => setNewComponent({ ...newComponent, name: e.target.value })}
-                        className="text-xs h-8"
-                      />
+ placeholder="e.g. X-Stand Hardware"value={newComponent.name}
+ onChange={(e) => setNewComponent({ ...newComponent, name: e.target.value })}
+ className="text-xs h-8"/>
                     </div>
                     <div>
                       <Label className="text-2xs mb-0.5 block">Qty</Label>
                       <Input
-                        type="number"
-                        step="0.1"
-                        value={newComponent.quantity}
-                        onChange={(e) => setNewComponent({ ...newComponent, quantity: Number(e.target.value) })}
-                        className="text-xs h-8 tabular-nums"
-                      />
+ type="number"step="0.1"value={newComponent.quantity}
+ onChange={(e) => setNewComponent({ ...newComponent, quantity: Number(e.target.value) })}
+ className="text-xs h-8 tabular-nums"/>
                     </div>
                     <div>
                       <Label className="text-2xs mb-0.5 block">Unit</Label>
                       <Input
-                        placeholder="pcs"
-                        value={newComponent.unit}
-                        onChange={(e) => setNewComponent({ ...newComponent, unit: e.target.value })}
-                        className="text-xs h-8 uppercase tabular-nums"
-                      />
+ placeholder="pcs"value={newComponent.unit}
+ onChange={(e) => setNewComponent({ ...newComponent, unit: e.target.value })}
+ className="text-xs h-8 uppercase tabular-nums"/>
                     </div>
                     <div>
                       <Label className="text-2xs mb-0.5 block">Cost (৳)</Label>
                       <Input
-                        type="number"
-                        step="1"
-                        value={newComponent.cost_contribution}
-                        onChange={(e) => setNewComponent({ ...newComponent, cost_contribution: Number(e.target.value) })}
-                        className="text-xs h-8 tabular-nums"
-                      />
+ type="number"step="1"value={newComponent.cost_contribution}
+ onChange={(e) => setNewComponent({ ...newComponent, cost_contribution: Number(e.target.value) })}
+ className="text-xs h-8 tabular-nums"/>
                     </div>
                   </div>
                   <div className="flex justify-end pt-1">
                     <Button
-                      type="button"
-                      size="sm"
-                      onClick={() => {
-                        if (!newComponent.name?.trim()) return
-                        setFormData({
+ type="button"size="sm"onClick={() => {
+ if (!newComponent.name?.trim()) return
+ setFormData({
                           ...formData,
-                          components: [...(formData.components || []), { ...newComponent }],
+ components: [...(formData.components || []), { ...newComponent }],
                         })
-                        setNewComponent({
-                          component_product_id: '',
-                          name: '',
-                          quantity: 1,
-                          unit: 'pcs',
-                          waste_percent: 0,
-                          cost_contribution: 0,
-                          is_required: true,
-                          production_role: 'material',
+ setNewComponent({
+ component_product_id: '',
+ name: '',
+ quantity: 1,
+ unit: 'pcs',
+ waste_percent: 0,
+ cost_contribution: 0,
+ is_required: true,
+ production_role: 'material',
                         })
                       }}
-                      className="text-xs h-8 bg-primary hover:bg-primary/90 text-primary-foreground"
-                    >
-                      <Plus className="h-3 w-3 mr-1" /> Add Component
+ className="text-xs h-8 bg-primary hover:bg-primary/90 text-primary-foreground">
+                      <Plus className="h-3 w-3 mr-1"/> Add Component
                     </Button>
                   </div>
                 </div>
@@ -4966,20 +4713,15 @@ export default function ProductsCatalogPage() {
           </div>
 
           {/* Footer Action */}
-          <div className="pt-2 flex flex-col-reverse sm:flex-row items-center justify-between gap-3 border-t border-border dark:border-border">
+          <div className="pt-2 flex flex-col-reverse sm:flex-row items-center justify-between gap-3 border-t border-border">
             <Button
-              type="button"
-              variant="outline"
-              onClick={() => setIsCreateOpen(false)}
-              className="w-full sm:w-auto text-xs font-semibold"
-            >
-              Cancel
+ type="button"variant="outline"onClick={() => setIsCreateOpen(false)}
+ className="w-full sm:w-auto text-xs font-semibold">
+ Cancel
             </Button>
             <Button
-              type="submit"
-              disabled={isPending}
-              className="w-full sm:w-auto text-xs bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-6 shadow-sm"
-            >
+ type="submit"disabled={isPending}
+ className="w-full sm:w-auto text-xs bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-6 shadow-sm">
               {isPending ? 'Saving...' : editingProduct ? 'Update Product' : 'Save Product'}
             </Button>
           </div>
@@ -4990,22 +4732,21 @@ export default function ProductsCatalogPage() {
       {/* MODAL 3: ADJUST PRICE WITH COMMERCIAL AUDIT TRAIL */}
       {/* ======================================================== */}
       <ModalDialog
-        open={Boolean(pricingProduct)}
-        onOpenChange={(open) => !open && setPricingProduct(null)}
-        size="lg"
-        hideFooter={true}
-        title={
+ open={Boolean(pricingProduct)}
+ onOpenChange={(open) => !open && setPricingProduct(null)}
+ size="lg"hideFooter={true}
+ title={
           <div className="flex items-center gap-2.5">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 font-bold shrink-0">
-              <Tag className="h-5 w-5" />
+              <Tag className="h-5 w-5"/>
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-base font-black text-foreground dark:text-white">
-                  Adjust Commercial Price & Tariffs
+                <span className="text-base font-black text-foreground">
+ Adjust Commercial Price & Tariffs
                 </span>
-                <Badge variant="outline" className="text-2xs uppercase tabular-nums py-0.5 px-1.5 bg-blue-50 text-blue-700 border-blue-200">
-                  Audit Logged
+                <Badge variant="outline"className="text-2xs uppercase tabular-nums py-0.5 px-1.5 bg-blue-50 text-blue-700 border-blue-200">
+ Audit Logged
                 </Badge>
               </div>
               <p className="text-2xs text-muted-foreground">
@@ -5018,15 +4759,15 @@ export default function ProductsCatalogPage() {
         <form onSubmit={handleUpdatePrice} className="space-y-4 pt-1">
           <div className="rounded-xl border border-blue-200 dark:border-blue-800/60 bg-blue-50/50 dark:bg-blue-950/30 p-3.5 space-y-2 text-xs">
             <div className="flex justify-between">
-              <span className="text-muted-foreground dark:text-muted-foreground">Current Purchase Price:</span>
+              <span className="text-muted-foreground">Current Purchase Price:</span>
               <span className="tabular-nums font-bold">৳{pricingProduct?.purchase_price} / {pricingProduct?.purchase_unit}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground dark:text-muted-foreground">Current Effective Unit Cost:</span>
+              <span className="text-muted-foreground">Current Effective Unit Cost:</span>
               <span className="tabular-nums font-bold">৳{pricingProduct?.base_cost} / {pricingProduct?.selling_unit || pricingProduct?.unit}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground dark:text-muted-foreground">Current Selling Rate:</span>
+              <span className="text-muted-foreground">Current Selling Rate:</span>
               <span className="tabular-nums font-bold text-blue-600 dark:text-blue-400">
                 ৳{pricingProduct?.selling_price} / {pricingProduct?.selling_unit || pricingProduct?.unit}
               </span>
@@ -5037,61 +4778,48 @@ export default function ProductsCatalogPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <Label className="text-xs font-semibold mb-1 block">
-                  New Purchase Price (৳ / {pricingProduct?.purchase_unit || 'Unit'})
+ New Purchase Price (৳ / {pricingProduct?.purchase_unit || 'Unit'})
                 </Label>
                 <Input
-                  type="number"
-                  step="1"
-                  value={newPurchasePrice}
-                  onChange={(e) => setNewPurchasePrice(Number(e.target.value))}
-                  className="text-xs h-9 tabular-nums"
-                />
+ type="number"step="1"value={newPurchasePrice}
+ onChange={(e) => setNewPurchasePrice(Number(e.target.value))}
+ className="text-xs h-9 tabular-nums"/>
               </div>
 
               <div>
                 <Label className="text-xs font-semibold mb-1 block">
-                  New Selling Rate (৳ / {pricingProduct?.selling_unit || pricingProduct?.unit}) <span className="text-rose-500">*</span>
+ New Selling Rate (৳ / {pricingProduct?.selling_unit || pricingProduct?.unit}) <span className="text-rose-500">*</span>
                 </Label>
                 <Input
-                  type="number"
-                  step="0.1"
-                  value={newPrice}
-                  onChange={(e) => setNewPrice(Number(e.target.value))}
-                  className="text-xs h-9 tabular-nums font-bold text-blue-600 dark:text-blue-400"
-                  required
+ type="number"step="0.1"value={newPrice}
+ onChange={(e) => setNewPrice(Number(e.target.value))}
+ className="text-xs h-9 tabular-nums font-bold text-blue-600 dark:text-blue-400"required
                 />
               </div>
             </div>
 
             <div>
               <Label className="text-xs font-semibold mb-1 block">
-                Reason for Price Adjustment (Audit Trail) <span className="text-rose-500">*</span>
+ Reason for Price Adjustment (Audit Trail) <span className="text-rose-500">*</span>
               </Label>
               <Input
-                placeholder="e.g. Raw solvent media and ink import duty increase"
-                value={priceReason}
-                onChange={(e) => setPriceReason(e.target.value)}
-                className="text-xs h-9"
-                required
+ placeholder="e.g. Raw solvent media and ink import duty increase"value={priceReason}
+ onChange={(e) => setPriceReason(e.target.value)}
+ className="text-xs h-9"required
               />
             </div>
           </div>
 
           {/* Footer */}
-          <div className="pt-2 flex flex-col-reverse sm:flex-row items-center justify-between gap-3 border-t border-border dark:border-border">
+          <div className="pt-2 flex flex-col-reverse sm:flex-row items-center justify-between gap-3 border-t border-border">
             <Button
-              type="button"
-              variant="outline"
-              onClick={() => setPricingProduct(null)}
-              className="w-full sm:w-auto text-xs"
-            >
-              Cancel
+ type="button"variant="outline"onClick={() => setPricingProduct(null)}
+ className="w-full sm:w-auto text-xs">
+ Cancel
             </Button>
             <Button
-              type="submit"
-              disabled={isPending}
-              className="w-full sm:w-auto text-xs bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-5"
-            >
+ type="submit"disabled={isPending}
+ className="w-full sm:w-auto text-xs bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-5">
               {isPending ? 'Logging Price...' : 'Save & Log Audit History'}
             </Button>
           </div>
@@ -5102,20 +4830,19 @@ export default function ProductsCatalogPage() {
       {/* MODAL 4: DELETE / ARCHIVE SAFETY CONFIRMATION */}
       {/* ======================================================== */}
       <ModalDialog
-        open={Boolean(deletingProduct)}
-        onOpenChange={(open) => !open && setDeletingProduct(null)}
-        size="md"
-        hideFooter={true}
-        title={
+ open={Boolean(deletingProduct)}
+ onOpenChange={(open) => !open && setDeletingProduct(null)}
+ size="md"hideFooter={true}
+ title={
           <div className="flex items-center gap-2 text-rose-600 font-bold text-base">
-            <AlertTriangle className="h-5 w-5" />
+            <AlertTriangle className="h-5 w-5"/>
             <span>Confirm Deletion / Archive</span>
           </div>
         }
       >
         <div className="space-y-4 pt-1 text-xs">
-          <p className="text-foreground dark:text-muted-foreground">
-            Are you sure you want to remove <strong>{deletingProduct?.name}</strong> ({deletingProduct?.sku})?
+          <p className="text-foreground">
+ Are you sure you want to remove <strong>{deletingProduct?.name}</strong> ({deletingProduct?.sku})?
           </p>
 
           {deletionSafety && !deletionSafety.isSafe && (
@@ -5123,29 +4850,24 @@ export default function ProductsCatalogPage() {
               <strong className="block">Protected Historical Record</strong>
               <p>{deletionSafety.reason}</p>
               <p className="text-2xs text-amber-700 dark:text-amber-400 pt-1">
-                Clicking confirm will safely <strong>Archive / Deactivate</strong> this item instead of deleting it.
+ Clicking confirm will safely <strong>Archive / Deactivate</strong> this item instead of deleting it.
               </p>
             </div>
           )}
 
-          <div className="flex items-center justify-end gap-2 pt-2 border-t border-border dark:border-border">
+          <div className="flex items-center justify-end gap-2 pt-2 border-t border-border">
             <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                setDeletingProduct(null)
-                setDeletionSafety(null)
+ variant="outline"size="sm"onClick={() => {
+ setDeletingProduct(null)
+ setDeletionSafety(null)
               }}
-              className="text-xs"
-            >
-              Cancel
+ className="text-xs">
+ Cancel
             </Button>
             <Button
-              size="sm"
-              onClick={handleConfirmDelete}
-              disabled={isPending}
-              className="text-xs bg-rose-600 hover:bg-rose-700 text-white font-bold"
-            >
+ size="sm"onClick={handleConfirmDelete}
+ disabled={isPending}
+ className="text-xs bg-rose-600 hover:bg-rose-700 text-white font-bold">
               {isPending ? 'Processing...' : deletionSafety?.isSafe ? 'Permanently Delete' : 'Archive Product'}
             </Button>
           </div>
@@ -5156,108 +4878,108 @@ export default function ProductsCatalogPage() {
       {/* MODAL 5: CATEGORY CREATION / EDITING MODAL */}
       {/* ======================================================== */}
       <CategoryModal
-        isOpen={isCategoryModalOpen}
-        onClose={() => setIsCategoryModalOpen(false)}
-        onSuccess={(cat) => {
-          loadCategories()
-          setFormData((prev) => ({ ...prev, category: cat.slug || cat.name }))
-          showNotification(`Category "${cat.name}" saved successfully.`, 'success')
+ isOpen={isCategoryModalOpen}
+ onClose={() => setIsCategoryModalOpen(false)}
+ onSuccess={(cat) => {
+ loadCategories()
+ setFormData((prev) => ({ ...prev, category: cat.slug || cat.name }))
+ showNotification(`Category"${cat.name}"saved successfully.`, 'success')
         }}
-        existingCategories={categories}
-        editingCategory={editingCategory}
+ existingCategories={categories}
+ editingCategory={editingCategory}
       />
 
       {/* ======================================================== */}
       {/* REBUILT V3 ARCHITECTURAL MODALS */}
       {/* ======================================================== */}
       <EntityTypeSelectorModal
-        isOpen={isTypeSelectorOpen}
-        onClose={() => setIsTypeSelectorOpen(false)}
-        onSelect={handleSelectEntityType}
+ isOpen={isTypeSelectorOpen}
+ onClose={() => setIsTypeSelectorOpen(false)}
+ onSelect={handleSelectEntityType}
       />
 
       <ReadyProductModal
-        isOpen={isReadyProductModalOpen}
-        onClose={() => {
-          setIsReadyProductModalOpen(false)
-          setEditingProduct(null)
+ isOpen={isReadyProductModalOpen}
+ onClose={() => {
+ setIsReadyProductModalOpen(false)
+ setEditingProduct(null)
         }}
-        onSave={handleSaveRebuiltProduct}
-        initialData={editingProduct}
-        categories={categories}
+ onSave={handleSaveRebuiltProduct}
+ initialData={editingProduct}
+ categories={categories}
       />
 
       <ServiceConfigModal
-        isOpen={isServiceModalOpen}
-        onClose={() => {
-          setIsServiceModalOpen(false)
-          setEditingProduct(null)
+ isOpen={isServiceModalOpen}
+ onClose={() => {
+ setIsServiceModalOpen(false)
+ setEditingProduct(null)
         }}
-        onSave={handleSaveRebuiltProduct}
-        initialData={editingProduct}
-        categories={categories}
-        availableMaterials={products.filter((p) => p.entity_type === 'material' || p.product_type === 'material') as any}
-        machineries={machineries}
-        printingMethods={printingMethods}
-        finishingMasterOptions={finishingOptions}
-        additionalMasterOptions={additionalOptions}
-        installationMasterOptions={installationOptions}
+ onSave={handleSaveRebuiltProduct}
+ initialData={editingProduct}
+ categories={categories}
+ availableMaterials={products.filter((p) => p.entity_type === 'material' || p.product_type === 'material') as any}
+ machineries={machineries}
+ printingMethods={printingMethods}
+ finishingMasterOptions={finishingOptions}
+ additionalMasterOptions={additionalOptions}
+ installationMasterOptions={installationOptions}
       />
 
       <MaterialConfigModal
-        isOpen={isMaterialModalOpen}
-        onClose={() => {
-          setIsMaterialModalOpen(false)
-          setEditingProduct(null)
+ isOpen={isMaterialModalOpen}
+ onClose={() => {
+ setIsMaterialModalOpen(false)
+ setEditingProduct(null)
         }}
-        onSave={handleSaveRebuiltProduct}
-        initialData={editingProduct}
-        categories={categories}
-        printingMethods={printingMethods}
+ onSave={handleSaveRebuiltProduct}
+ initialData={editingProduct}
+ categories={categories}
+ printingMethods={printingMethods}
       />
 
       <OutsourceProductModal
-        isOpen={isOutsourceModalOpen}
-        onClose={() => {
-          setIsOutsourceModalOpen(false)
-          setEditingProduct(null)
+ isOpen={isOutsourceModalOpen}
+ onClose={() => {
+ setIsOutsourceModalOpen(false)
+ setEditingProduct(null)
         }}
-        onSave={handleSaveRebuiltProduct}
-        initialData={editingProduct}
-        categories={categories}
+ onSave={handleSaveRebuiltProduct}
+ initialData={editingProduct}
+ categories={categories}
       />
 
       {/* Standalone Configuration Master Modals */}
       <PrintingMethodModal
-        open={isPrintingMethodModalOpen}
-        onOpenChange={setIsPrintingMethodModalOpen}
-        method={editingPrintingMethod}
-        machineries={machineries}
-        onSave={handleSavePrintingMethod}
+ open={isPrintingMethodModalOpen}
+ onOpenChange={setIsPrintingMethodModalOpen}
+ method={editingPrintingMethod}
+ machineries={machineries}
+ onSave={handleSavePrintingMethod}
       />
 
       <FinishingOptionModal
-        open={isFinishingModalOpen}
-        onOpenChange={setIsFinishingModalOpen}
-        finishing={editingFinishing}
-        materials={products.filter((p) => p.product_type === 'material' || (p as any).entity_type === 'material')}
-        machineries={machineries}
-        onSave={handleSaveFinishingOption}
+ open={isFinishingModalOpen}
+ onOpenChange={setIsFinishingModalOpen}
+ finishing={editingFinishing}
+ materials={products.filter((p) => p.product_type === 'material' || (p as any).entity_type === 'material')}
+ machineries={machineries}
+ onSave={handleSaveFinishingOption}
       />
 
       <AdditionalOptionModal
-        open={isAdditionalModalOpen}
-        onOpenChange={setIsAdditionalModalOpen}
-        additional={editingAdditional}
-        products={products}
-        onSave={handleSaveAdditionalOption}
+ open={isAdditionalModalOpen}
+ onOpenChange={setIsAdditionalModalOpen}
+ additional={editingAdditional}
+ products={products}
+ onSave={handleSaveAdditionalOption}
       />
 
       <InstallationOptionModal
-        open={isInstallationModalOpen}
-        onOpenChange={setIsInstallationModalOpen}
-        installation={editingInstallation}
-        onSave={handleSaveInstallationOption}
+ open={isInstallationModalOpen}
+ onOpenChange={setIsInstallationModalOpen}
+ installation={editingInstallation}
+ onSave={handleSaveInstallationOption}
       />
     </div>
     </PanelAccessGuard>

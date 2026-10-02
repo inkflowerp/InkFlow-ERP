@@ -1,55 +1,51 @@
-import { Watermark as FormeWatermark } from "@formepdf/react";
-import { usePdfcnTheme } from "./theme-provider";
-import { mergeFormeStyles } from "./pdf-primitives";
-import { resolveColor } from "./resolve-color";
-import type { PDFComponentProps } from "../themes/types";
+import { Watermark as FormeWatermark } from"@formepdf/react";
+import { usePdfcnTheme } from"./theme-provider";
+import { mergeFormeStyles } from"./pdf-primitives";
+import { resolveColor } from"./resolve-color";
+import type { PDFComponentProps } from"../themes/types";
 
 export type WatermarkPosition =
-  | "center"
-  | "top-left"
-  | "top-right"
-  | "bottom-left"
-  | "bottom-right";
+  |"center"|"top-left"|"top-right"|"bottom-left"|"bottom-right";
 
-export interface PdfWatermarkProps extends Omit<PDFComponentProps, "children"> {
-  text: string;
-  opacity?: number;
-  fontSize?: number;
-  color?: string;
-  angle?: number;
-  position?: WatermarkPosition;
-  fixed?: boolean;
-  children?: never;
+export interface PdfWatermarkProps extends Omit<PDFComponentProps,"children"> {
+ text: string;
+ opacity?: number;
+ fontSize?: number;
+ color?: string;
+ angle?: number;
+ position?: WatermarkPosition;
+ fixed?: boolean;
+ children?: never;
 }
 
 const withOpacity = (color: string, opacity: number): string => {
-  const match = color.match(/^#([\da-f]{2})([\da-f]{2})([\da-f]{2})$/i);
-  if (!match) {
-    return color;
+ const match = color.match(/^#([\da-f]{2})([\da-f]{2})([\da-f]{2})$/i);
+ if (!match) {
+ return color;
   }
 
-  const [, red, green, blue] = match;
-  return `rgba(${Number.parseInt(red, 16)}, ${Number.parseInt(green, 16)}, ${Number.parseInt(blue, 16)}, ${opacity})`;
+ const [, red, green, blue] = match;
+ return `rgba(${Number.parseInt(red, 16)}, ${Number.parseInt(green, 16)}, ${Number.parseInt(blue, 16)}, ${opacity})`;
 };
 
 export const PdfWatermark = ({
-  text,
-  opacity = 0.15,
-  fontSize = 60,
-  color = "mutedForeground",
-  angle = -45,
-  style,
+ text,
+ opacity = 0.15,
+ fontSize = 60,
+ color ="mutedForeground",
+ angle = -45,
+ style,
 }: PdfWatermarkProps) => {
-  const theme = usePdfcnTheme();
-  const resolvedColor = resolveColor(color, theme.colors);
+ const theme = usePdfcnTheme();
+ const resolvedColor = resolveColor(color, theme.colors);
 
-  return (
+ return (
     <FormeWatermark
-      text={text}
-      angle={angle}
-      color={withOpacity(resolvedColor, opacity)}
-      fontSize={fontSize}
-      style={mergeFormeStyles(style)}
+ text={text}
+ angle={angle}
+ color={withOpacity(resolvedColor, opacity)}
+ fontSize={fontSize}
+ style={mergeFormeStyles(style)}
     />
   );
 };

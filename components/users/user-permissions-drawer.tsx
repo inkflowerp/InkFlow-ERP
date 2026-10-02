@@ -2,42 +2,42 @@
 
 import React, { useState, useEffect, useMemo } from 'react'
 import {
-  Shield,
-  CheckCircle2,
-  AlertCircle,
-  Search,
-  RotateCcw,
-  Save,
-  Building,
-  Briefcase,
-  User,
-  History,
-  Lock,
-  ChevronDown,
-  ChevronUp,
-  X,
-  Layers,
-  Sparkles,
-  Info,
-  Check,
-  Ban,
-  Plus,
+ Shield,
+ CheckCircle2,
+ AlertCircle,
+ Search,
+ RotateCcw,
+ Save,
+ Building,
+ Briefcase,
+ User,
+ History,
+ Lock,
+ ChevronDown,
+ ChevronUp,
+ X,
+ Layers,
+ Sparkles,
+ Info,
+ Check,
+ Ban,
+ Plus,
 } from 'lucide-react'
 import { CompanyUserWithProfile, RoleRow, BranchRow } from '@/types/tenant.types'
 import {
-  PermissionModule,
-  PermissionAction,
-  DataScope,
-  MODULE_ACTION_SPECS,
-  ACTION_LABELS,
-  ResponsibilitySlug,
-  AuditLogRecord,
+ PermissionModule,
+ PermissionAction,
+ DataScope,
+ MODULE_ACTION_SPECS,
+ ACTION_LABELS,
+ ResponsibilitySlug,
+ AuditLogRecord,
 } from '@/types/rbac.types'
 import {
-  DEFAULT_RESPONSIBILITY_MATRICES,
-  getPermissionDetail,
-  extractResponsibilities,
-  normalizeResponsibilitySlug,
+ DEFAULT_RESPONSIBILITY_MATRICES,
+ getPermissionDetail,
+ extractResponsibilities,
+ normalizeResponsibilitySlug,
 } from '@/lib/auth/rbac.client'
 import { updateUserAccessAndPermissionsAction } from '@/actions/company-users.actions'
 import { getAuditLogsAction } from '@/actions/audit.actions'
@@ -63,313 +63,313 @@ const BASE_RESPONSIBILITIES: { slug: ResponsibilitySlug; name: string; nameBn: s
 type ModuleCategoryFilter = 'all' | 'sales' | 'production' | 'inventory' | 'hr' | 'system'
 
 const MODULE_DRAWER_CATEGORIES: Record<ModuleCategoryFilter, { label: string; modules: PermissionModule[] }> = {
-  all: {
-    label: 'All (20)',
-    modules: Object.keys(MODULE_ACTION_SPECS) as PermissionModule[],
+ all: {
+ label: 'All (20)',
+ modules: Object.keys(MODULE_ACTION_SPECS) as PermissionModule[],
   },
-  sales: {
-    label: 'Sales & Billing (8)',
-    modules: ['products', 'pricing', 'customers', 'quotations', 'orders', 'design', 'invoices', 'payments'],
+ sales: {
+ label: 'Sales & Billing (8)',
+ modules: ['products', 'pricing', 'customers', 'quotations', 'orders', 'design', 'invoices', 'payments'],
   },
-  production: {
-    label: 'Production (3)',
-    modules: ['production', 'machineries', 'tasks'],
+ production: {
+ label: 'Production (3)',
+ modules: ['production', 'machineries', 'tasks'],
   },
-  inventory: {
-    label: 'Inventory (2)',
-    modules: ['inventory', 'delivery'],
+ inventory: {
+ label: 'Inventory (2)',
+ modules: ['inventory', 'delivery'],
   },
-  hr: {
-    label: 'HR (1)',
-    modules: ['hr'],
+ hr: {
+ label: 'HR (1)',
+ modules: ['hr'],
   },
-  system: {
-    label: 'System (6)',
-    modules: ['settings', 'branches', 'users', 'notifications', 'support', 'reports'],
+ system: {
+ label: 'System (6)',
+ modules: ['settings', 'branches', 'users', 'notifications', 'support', 'reports'],
   },
 }
 
 interface UserPermissionsDrawerProps {
-  user: CompanyUserWithProfile | null
-  isOpen: boolean
-  onClose: () => void
-  onSaved: () => void
-  companyId: string
-  allBranches: BranchRow[]
-  allRoles: RoleRow[]
+ user: CompanyUserWithProfile | null
+ isOpen: boolean
+ onClose: () => void
+ onSaved: () => void
+ companyId: string
+ allBranches: BranchRow[]
+ allRoles: RoleRow[]
 }
 
 export function UserPermissionsDrawer({
-  user,
-  isOpen,
-  onClose,
-  onSaved,
-  companyId,
-  allBranches = [],
-  allRoles = [],
+ user,
+ isOpen,
+ onClose,
+ onSaved,
+ companyId,
+ allBranches = [],
+ allRoles = [],
 }: UserPermissionsDrawerProps) {
-  const [searchQuery, setSearchQuery] = useState('')
-  const [selectedResponsibilities, setSelectedResponsibilities] = useState<string[]>([])
-  const [overrides, setOverrides] = useState<Record<string, boolean>>({})
-  const [dataScopes, setDataScopes] = useState<Record<string, DataScope>>({})
-  const [authorizedBranchIds, setAuthorizedBranchIds] = useState<string[]>([])
-  const [department, setDepartment] = useState<string>('')
-  const [branchId, setBranchId] = useState<string | null>(null)
-  const [expandedModules, setExpandedModules] = useState<Record<string, boolean>>({})
-  const [isAuditModalOpen, setIsAuditModalOpen] = useState(false)
-  const [auditLogs, setAuditLogs] = useState<any[]>([])
-  const [isAuditLoading, setIsAuditLoading] = useState(false)
-  const [isSaving, setIsSaving] = useState(false)
-  const [successMsg, setSuccessMsg] = useState<string | null>(null)
-  const [errorMsg, setErrorMsg] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState<'summary' | 'permissions' | 'responsibilities' | 'branches'>('summary')
-  const [moduleCategory, setModuleCategory] = useState<ModuleCategoryFilter>('all')
+ const [searchQuery, setSearchQuery] = useState('')
+ const [selectedResponsibilities, setSelectedResponsibilities] = useState<string[]>([])
+ const [overrides, setOverrides] = useState<Record<string, boolean>>({})
+ const [dataScopes, setDataScopes] = useState<Record<string, DataScope>>({})
+ const [authorizedBranchIds, setAuthorizedBranchIds] = useState<string[]>([])
+ const [department, setDepartment] = useState<string>('')
+ const [branchId, setBranchId] = useState<string | null>(null)
+ const [expandedModules, setExpandedModules] = useState<Record<string, boolean>>({})
+ const [isAuditModalOpen, setIsAuditModalOpen] = useState(false)
+ const [auditLogs, setAuditLogs] = useState<any[]>([])
+ const [isAuditLoading, setIsAuditLoading] = useState(false)
+ const [isSaving, setIsSaving] = useState(false)
+ const [successMsg, setSuccessMsg] = useState<string | null>(null)
+ const [errorMsg, setErrorMsg] = useState<string | null>(null)
+ const [activeTab, setActiveTab] = useState<'summary' | 'permissions' | 'responsibilities' | 'branches'>('summary')
+ const [moduleCategory, setModuleCategory] = useState<ModuleCategoryFilter>('all')
 
   // Combine standard responsibilities with custom company roles
-  const availableResponsibilities = useMemo(() => {
-    const list = [...BASE_RESPONSIBILITIES]
-    if (Array.isArray(allRoles) && allRoles.length > 0) {
-      allRoles.forEach((r) => {
-        if (!r.is_system && !list.some((item) => item.slug === r.slug)) {
-          list.push({
-            slug: r.slug as ResponsibilitySlug,
-            name: r.name,
-            nameBn: r.name_bn || r.name,
-            desc: r.description || 'Custom company role template',
+ const availableResponsibilities = useMemo(() => {
+ const list = [...BASE_RESPONSIBILITIES]
+ if (Array.isArray(allRoles) && allRoles.length > 0) {
+ allRoles.forEach((r) => {
+ if (!r.is_system && !list.some((item) => item.slug === r.slug)) {
+ list.push({
+ slug: r.slug as ResponsibilitySlug,
+ name: r.name,
+ nameBn: r.name_bn || r.name,
+ desc: r.description || 'Custom company role template',
           })
         }
       })
     }
-    return list
+ return list
   }, [allRoles])
 
   // Initial load when user opens
-  useEffect(() => {
-    if (!user) return
+ useEffect(() => {
+ if (!user) return
 
-    const initialResp =
-      Array.isArray(user.responsibilities) && user.responsibilities.length > 0
+ const initialResp =
+ Array.isArray(user.responsibilities) && user.responsibilities.length > 0
         ? user.responsibilities
         : (Array.isArray(user.roles) ? user.roles.map((r) => r.slug || 'general_staff') : ['general_staff'])
 
-    setSelectedResponsibilities(initialResp)
-    setOverrides(user.overrides || {})
-    setDataScopes(user.data_scopes || {})
-    setDepartment(user.department || '')
-    setBranchId(user.branch_id || null)
-    setAuthorizedBranchIds(user.authorized_branch_ids || (user.branch_id ? [user.branch_id] : []))
+ setSelectedResponsibilities(initialResp)
+ setOverrides(user.overrides || {})
+ setDataScopes(user.data_scopes || {})
+ setDepartment(user.department || '')
+ setBranchId(user.branch_id || null)
+ setAuthorizedBranchIds(user.authorized_branch_ids || (user.branch_id ? [user.branch_id] : []))
 
     // Expand all modules by default
-    const allExpanded: Record<string, boolean> = {}
-    Object.keys(MODULE_ACTION_SPECS).forEach((k) => {
-      allExpanded[k] = true
+ const allExpanded: Record<string, boolean> = {}
+ Object.keys(MODULE_ACTION_SPECS).forEach((k) => {
+ allExpanded[k] = true
     })
-    setExpandedModules(allExpanded)
-    setSuccessMsg(null)
-    setErrorMsg(null)
+ setExpandedModules(allExpanded)
+ setSuccessMsg(null)
+ setErrorMsg(null)
   }, [user, isOpen])
 
   // Check if dirty (unsaved changes)
-  const isDirty = useMemo(() => {
-    if (!user) return false
-    const origResp = JSON.stringify(user.responsibilities || [user.roles?.[0]?.slug || 'general_staff'])
-    const curResp = JSON.stringify(selectedResponsibilities)
-    const origOverrides = JSON.stringify(user.overrides || {})
-    const curOverrides = JSON.stringify(overrides)
-    const origScopes = JSON.stringify(user.data_scopes || {})
-    const curScopes = JSON.stringify(dataScopes)
-    const origDept = user.department || ''
-    const origBranch = user.branch_id || null
-    const origAuthBranches = JSON.stringify(user.authorized_branch_ids || (user.branch_id ? [user.branch_id] : []))
-    const curAuthBranches = JSON.stringify(authorizedBranchIds)
+ const isDirty = useMemo(() => {
+ if (!user) return false
+ const origResp = JSON.stringify(user.responsibilities || [user.roles?.[0]?.slug || 'general_staff'])
+ const curResp = JSON.stringify(selectedResponsibilities)
+ const origOverrides = JSON.stringify(user.overrides || {})
+ const curOverrides = JSON.stringify(overrides)
+ const origScopes = JSON.stringify(user.data_scopes || {})
+ const curScopes = JSON.stringify(dataScopes)
+ const origDept = user.department || ''
+ const origBranch = user.branch_id || null
+ const origAuthBranches = JSON.stringify(user.authorized_branch_ids || (user.branch_id ? [user.branch_id] : []))
+ const curAuthBranches = JSON.stringify(authorizedBranchIds)
 
-    return (
-      origResp !== curResp ||
-      origOverrides !== curOverrides ||
-      origScopes !== curScopes ||
-      origDept !== department ||
-      origBranch !== branchId ||
-      origAuthBranches !== curAuthBranches
+ return (
+ origResp !== curResp ||
+ origOverrides !== curOverrides ||
+ origScopes !== curScopes ||
+ origDept !== department ||
+ origBranch !== branchId ||
+ origAuthBranches !== curAuthBranches
     )
   }, [user, selectedResponsibilities, overrides, dataScopes, department, branchId, authorizedBranchIds])
 
-  if (!isOpen || !user) return null
+ if (!isOpen || !user) return null
 
   // User context for real-time permission evaluation
-  const simulatedUserCtx = {
-    userId: user.user_id,
-    role: user.roles?.[0]?.slug,
-    responsibilities: selectedResponsibilities,
-    overrides,
-    data_scopes: dataScopes,
+ const simulatedUserCtx = {
+ userId: user.user_id,
+ role: user.roles?.[0]?.slug,
+ responsibilities: selectedResponsibilities,
+ overrides,
+ data_scopes: dataScopes,
   }
 
   // Filter modules
-  const filteredModuleEntries = Object.entries(MODULE_ACTION_SPECS).filter(([modKey, spec]) => {
-    const categoryModules = new Set(MODULE_DRAWER_CATEGORIES[moduleCategory].modules)
-    if (!categoryModules.has(modKey as PermissionModule)) return false
+ const filteredModuleEntries = Object.entries(MODULE_ACTION_SPECS).filter(([modKey, spec]) => {
+ const categoryModules = new Set(MODULE_DRAWER_CATEGORIES[moduleCategory].modules)
+ if (!categoryModules.has(modKey as PermissionModule)) return false
 
-    const q = searchQuery.toLowerCase().trim()
-    if (!q) return true
-    return (
-      modKey.toLowerCase().includes(q) ||
-      spec.label.toLowerCase().includes(q) ||
-      spec.labelBn.toLowerCase().includes(q) ||
-      spec.description.toLowerCase().includes(q) ||
-      spec.actions.some((a) => a.toLowerCase().includes(q) || ACTION_LABELS[a]?.label.toLowerCase().includes(q))
+ const q = searchQuery.toLowerCase().trim()
+ if (!q) return true
+ return (
+ modKey.toLowerCase().includes(q) ||
+ spec.label.toLowerCase().includes(q) ||
+ spec.labelBn.toLowerCase().includes(q) ||
+ spec.description.toLowerCase().includes(q) ||
+ spec.actions.some((a) => a.toLowerCase().includes(q) || ACTION_LABELS[a]?.label.toLowerCase().includes(q))
     )
   })
 
   // Handlers
-  const toggleAction = (module: PermissionModule, action: PermissionAction) => {
-    const code = `${module}.${action}`
-    const detail = getPermissionDetail(simulatedUserCtx, module, action)
-    const currentlyGranted = detail.isGranted
+ const toggleAction = (module: PermissionModule, action: PermissionAction) => {
+ const code = `${module}.${action}`
+ const detail = getPermissionDetail(simulatedUserCtx, module, action)
+ const currentlyGranted = detail.isGranted
 
-    const nextOverrides = { ...overrides }
+ const nextOverrides = { ...overrides }
 
-    if (detail.source === 'inherited') {
-      nextOverrides[code] = false
+ if (detail.source === 'inherited') {
+ nextOverrides[code] = false
     } else if (detail.source === 'override_deny') {
-      delete nextOverrides[code]
+ delete nextOverrides[code]
     } else if (detail.source === 'override_allow') {
-      delete nextOverrides[code]
+ delete nextOverrides[code]
     } else if (detail.source === 'default_deny') {
-      nextOverrides[code] = true
+ nextOverrides[code] = true
     } else {
-      nextOverrides[code] = !currentlyGranted
+ nextOverrides[code] = !currentlyGranted
     }
 
-    setOverrides(nextOverrides)
+ setOverrides(nextOverrides)
   }
 
-  const grantAllModuleActions = (module: PermissionModule) => {
-    const spec = MODULE_ACTION_SPECS[module]
-    const nextOverrides = { ...overrides }
-    spec.actions.forEach((a) => {
-      nextOverrides[`${module}.${a}`] = true
+ const grantAllModuleActions = (module: PermissionModule) => {
+ const spec = MODULE_ACTION_SPECS[module]
+ const nextOverrides = { ...overrides }
+ spec.actions.forEach((a) => {
+ nextOverrides[`${module}.${a}`] = true
     })
-    setOverrides(nextOverrides)
+ setOverrides(nextOverrides)
   }
 
-  const denyAllModuleActions = (module: PermissionModule) => {
-    const spec = MODULE_ACTION_SPECS[module]
-    const nextOverrides = { ...overrides }
-    spec.actions.forEach((a) => {
-      nextOverrides[`${module}.${a}`] = false
+ const denyAllModuleActions = (module: PermissionModule) => {
+ const spec = MODULE_ACTION_SPECS[module]
+ const nextOverrides = { ...overrides }
+ spec.actions.forEach((a) => {
+ nextOverrides[`${module}.${a}`] = false
     })
-    setOverrides(nextOverrides)
+ setOverrides(nextOverrides)
   }
 
-  const resetModuleOverrides = (module: PermissionModule) => {
-    const spec = MODULE_ACTION_SPECS[module]
-    const nextOverrides = { ...overrides }
-    spec.actions.forEach((a) => {
-      delete nextOverrides[`${module}.${a}`]
+ const resetModuleOverrides = (module: PermissionModule) => {
+ const spec = MODULE_ACTION_SPECS[module]
+ const nextOverrides = { ...overrides }
+ spec.actions.forEach((a) => {
+ delete nextOverrides[`${module}.${a}`]
     })
-    delete nextOverrides[`${module}.full_control`]
-    setOverrides(nextOverrides)
+ delete nextOverrides[`${module}.full_control`]
+ setOverrides(nextOverrides)
 
-    const nextScopes = { ...dataScopes }
-    delete nextScopes[module]
-    setDataScopes(nextScopes)
+ const nextScopes = { ...dataScopes }
+ delete nextScopes[module]
+ setDataScopes(nextScopes)
   }
 
-  const toggleResponsibility = (slug: string) => {
-    let next: string[]
-    if (selectedResponsibilities.includes(slug)) {
-      next = selectedResponsibilities.filter((s) => s !== slug)
-      if (next.length === 0) next = ['general_staff']
+ const toggleResponsibility = (slug: string) => {
+ let next: string[]
+ if (selectedResponsibilities.includes(slug)) {
+ next = selectedResponsibilities.filter((s) => s !== slug)
+ if (next.length === 0) next = ['general_staff']
     } else {
-      next = [...selectedResponsibilities, slug]
+ next = [...selectedResponsibilities, slug]
     }
-    setSelectedResponsibilities(next)
+ setSelectedResponsibilities(next)
   }
 
-  const toggleAuthorizedBranch = (bId: string) => {
-    let next: string[]
-    if (authorizedBranchIds.includes(bId)) {
-      next = authorizedBranchIds.filter((id) => id !== bId)
+ const toggleAuthorizedBranch = (bId: string) => {
+ let next: string[]
+ if (authorizedBranchIds.includes(bId)) {
+ next = authorizedBranchIds.filter((id) => id !== bId)
     } else {
-      next = [...authorizedBranchIds, bId]
+ next = [...authorizedBranchIds, bId]
     }
-    setAuthorizedBranchIds(next)
+ setAuthorizedBranchIds(next)
   }
 
-  const handleSave = async () => {
-    if (!user) return
-    setIsSaving(true)
-    setErrorMsg(null)
-    setSuccessMsg(null)
+ const handleSave = async () => {
+ if (!user) return
+ setIsSaving(true)
+ setErrorMsg(null)
+ setSuccessMsg(null)
 
-    try {
-      const res = await updateUserAccessAndPermissionsAction({
-        companyUserId: user.id,
-        companyId,
-        responsibilities: selectedResponsibilities,
-        overrides,
-        dataScopes,
-        authorizedBranchIds,
-        department: department || null,
-        branchId,
-        actorName: 'Admin',
+ try {
+ const res = await updateUserAccessAndPermissionsAction({
+ companyUserId: user.id,
+ companyId,
+ responsibilities: selectedResponsibilities,
+ overrides,
+ dataScopes,
+ authorizedBranchIds,
+ department: department || null,
+ branchId,
+ actorName: 'Admin',
       })
 
-      if (res.success) {
-        setSuccessMsg(res.message || 'Permissions and access scopes updated successfully.')
-        setTimeout(() => {
-          onSaved()
-          setSuccessMsg(null)
+ if (res.success) {
+ setSuccessMsg(res.message || 'Permissions and access scopes updated successfully.')
+ setTimeout(() => {
+ onSaved()
+ setSuccessMsg(null)
         }, 1200)
       } else {
-        setErrorMsg(res.message || 'Failed to update permissions.')
+ setErrorMsg(res.message || 'Failed to update permissions.')
       }
     } catch {
-      setErrorMsg('An unexpected error occurred while saving permissions.')
+ setErrorMsg('An unexpected error occurred while saving permissions.')
     } finally {
-      setIsSaving(false)
+ setIsSaving(false)
     }
   }
 
-  const handleOpenAudit = async () => {
-    setIsAuditModalOpen(true)
-    setIsAuditLoading(true)
-    try {
-      const email = user.profile?.email || user.invited_email || user.id
-      const res = await getAuditLogsAction(email)
-      if (res && res.success && res.data) {
-        setAuditLogs(res.data)
+ const handleOpenAudit = async () => {
+ setIsAuditModalOpen(true)
+ setIsAuditLoading(true)
+ try {
+ const email = user.profile?.email || user.invited_email || user.id
+ const res = await getAuditLogsAction(email)
+ if (res && res.success && res.data) {
+ setAuditLogs(res.data)
       } else {
-        setAuditLogs([])
+ setAuditLogs([])
       }
     } catch (err) {
-      console.error('Error fetching audit logs for user:', err)
-      setAuditLogs([])
+ console.error('Error fetching audit logs for user:', err)
+ setAuditLogs([])
     } finally {
-      setIsAuditLoading(false)
+ setIsAuditLoading(false)
     }
   }
 
-  const handleResetToUserInitial = () => {
-    const initialResp =
-      Array.isArray(user.responsibilities) && user.responsibilities.length > 0
+ const handleResetToUserInitial = () => {
+ const initialResp =
+ Array.isArray(user.responsibilities) && user.responsibilities.length > 0
         ? user.responsibilities
         : (Array.isArray(user.roles) ? user.roles.map((r) => r.slug || 'general_staff') : ['general_staff'])
 
-    setSelectedResponsibilities(initialResp)
-    setOverrides(user.overrides || {})
-    setDataScopes(user.data_scopes || {})
-    setDepartment(user.department || '')
-    setBranchId(user.branch_id || null)
-    setAuthorizedBranchIds(user.authorized_branch_ids || (user.branch_id ? [user.branch_id] : []))
+ setSelectedResponsibilities(initialResp)
+ setOverrides(user.overrides || {})
+ setDataScopes(user.data_scopes || {})
+ setDepartment(user.department || '')
+ setBranchId(user.branch_id || null)
+ setAuthorizedBranchIds(user.authorized_branch_ids || (user.branch_id ? [user.branch_id] : []))
   }
 
-  return (
+ return (
     <>
       <div className="fixed inset-0 z-50 flex justify-end bg-black/60 backdrop-blur-sm transition-opacity animate-in fade-in-0">
-        <div className="w-full max-w-2xl bg-card h-full shadow-2xl flex flex-col border-l border-border animate-in slide-in-from-right duration-200">
+        <div className="w-full max-w-2xl bg-card h-full shadow-xs flex flex-col border-l border-border animate-in slide-in-from-right duration-200">
           {/* Header */}
-          <div className="p-4 sm:p-5 border-b border-border bg-slate-50/80 shrink-0">
+          <div className="p-4 sm:p-5 border-b border-border bg-muted/80 shrink-0">
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-center gap-3">
                 <div className="h-11 w-11 rounded-lg bg-primary text-primary-foreground flex items-center justify-center font-bold text-base shadow-xs">
@@ -377,15 +377,15 @@ export function UserPermissionsDrawer({
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <h2 className="text-base font-bold text-foreground dark:text-white leading-tight">
+                    <h2 className="text-base font-bold text-foreground leading-tight">
                       {user.profile?.full_name || user.invited_email}
                     </h2>
                     {user.status === 'active' ? (
                       <Badge className="bg-emerald-500 text-white text-2xs px-1.5 py-0 h-4">
-                        Active
+ Active
                       </Badge>
                     ) : (
-                      <Badge variant="destructive" className="text-2xs px-1.5 py-0 h-4">
+                      <Badge variant="destructive"className="text-2xs px-1.5 py-0 h-4">
                         {user.status}
                       </Badge>
                     )}
@@ -398,21 +398,15 @@ export function UserPermissionsDrawer({
 
               <div className="flex items-center gap-1.5">
                 <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleOpenAudit}
-                  className="h-8 text-xs text-muted-foreground dark:text-muted-foreground"
-                  title="View Permission Audit Log"
-                >
-                  <History className="mr-1 h-3.5 w-3.5" />
-                  Audit
+ variant="outline"size="sm"onClick={handleOpenAudit}
+ className="h-8 text-xs text-muted-foreground"title="View Permission Audit Log">
+                  <History className="mr-1 h-3.5 w-3.5"/>
+ Audit
                 </Button>
                 <button
-                  type="button"
-                  onClick={onClose}
-                  className="p-1.5 rounded-lg text-muted-foreground hover:text-muted-foreground hover:bg-muted cursor-pointer"
-                >
-                  <X className="h-5 w-5" />
+ type="button"onClick={onClose}
+ className="p-1.5 rounded-lg text-muted-foreground hover:text-muted-foreground hover:bg-muted cursor-pointer">
+                  <X className="h-5 w-5"/>
                 </button>
               </div>
             </div>
@@ -421,25 +415,22 @@ export function UserPermissionsDrawer({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mt-3.5 pt-3 border-t border-border text-xs">
               <div>
                 <label className="text-2xs font-semibold text-muted-foreground block mb-1">
-                  Department / Floor
+ Department / Floor
                 </label>
                 <Input
-                  value={department}
-                  onChange={(e) => setDepartment(e.target.value)}
-                  placeholder="e.g. Pre-Press & Design"
-                  className="h-8 text-xs"
-                />
+ value={department}
+ onChange={(e) => setDepartment(e.target.value)}
+ placeholder="e.g. Pre-Press & Design"className="h-8 text-xs"/>
               </div>
 
               <div>
                 <label className="text-2xs font-semibold text-muted-foreground block mb-1">
-                  Assigned Primary Branch
+ Assigned Primary Branch
                 </label>
                 <select
-                  value={branchId || ''}
-                  onChange={(e) => setBranchId(e.target.value || null)}
-                  className="w-full h-8 px-2.5 text-xs bg-card border border-border rounded-md text-foreground dark:text-foreground"
-                >
+ value={branchId || ''}
+ onChange={(e) => setBranchId(e.target.value || null)}
+ className="w-full h-8 px-2.5 text-xs bg-card border border-border rounded-md text-foreground">
                   <option value="">All Branches / Central HQ</option>
                   {(Array.isArray(allBranches) ? allBranches : []).map((b) => (
                     <option key={b.id} value={b.id}>
@@ -453,36 +444,33 @@ export function UserPermissionsDrawer({
             {/* Tab Navigation */}
             <div className="flex items-center gap-2 mt-4 overflow-x-auto pb-1">
               <button
-                type="button"
-                onClick={() => setActiveTab('summary')}
-                className={cn(
+ type="button"onClick={() => setActiveTab('summary')}
+ className={cn(
                   'px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 whitespace-nowrap',
-                  activeTab === 'summary'
+ activeTab === 'summary'
                     ? 'bg-primary text-white shadow-xs'
                     : 'bg-muted/70 text-foreground hover:bg-muted'
                 )}
               >
-                <Shield className="h-3.5 w-3.5" />
+                <Shield className="h-3.5 w-3.5"/>
                 <span>Access Summary</span>
               </button>
               <button
-                type="button"
-                onClick={() => setActiveTab('permissions')}
-                className={cn(
+ type="button"onClick={() => setActiveTab('permissions')}
+ className={cn(
                   'px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors cursor-pointer whitespace-nowrap',
-                  activeTab === 'permissions'
+ activeTab === 'permissions'
                     ? 'bg-primary text-white shadow-xs'
                     : 'bg-muted/70 text-foreground hover:bg-muted'
                 )}
               >
-                Module Permissions & Scopes
+ Module Permissions & Scopes
               </button>
               <button
-                type="button"
-                onClick={() => setActiveTab('responsibilities')}
-                className={cn(
+ type="button"onClick={() => setActiveTab('responsibilities')}
+ className={cn(
                   'px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 whitespace-nowrap',
-                  activeTab === 'responsibilities'
+ activeTab === 'responsibilities'
                     ? 'bg-primary text-white shadow-xs'
                     : 'bg-muted/70 text-foreground hover:bg-muted'
                 )}
@@ -493,16 +481,15 @@ export function UserPermissionsDrawer({
                 </span>
               </button>
               <button
-                type="button"
-                onClick={() => setActiveTab('branches')}
-                className={cn(
+ type="button"onClick={() => setActiveTab('branches')}
+ className={cn(
                   'px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 whitespace-nowrap',
-                  activeTab === 'branches'
+ activeTab === 'branches'
                     ? 'bg-primary text-white shadow-xs'
                     : 'bg-muted/70 text-foreground hover:bg-muted'
                 )}
               >
-                <Building className="h-3.5 w-3.5" />
+                <Building className="h-3.5 w-3.5"/>
                 <span>Branch Scopes</span>
                 {authorizedBranchIds.length > 0 && (
                   <span className="px-1.5 py-0.2 bg-card/20 rounded-full text-2xs">
@@ -518,14 +505,14 @@ export function UserPermissionsDrawer({
             {/* Feedback Banners */}
             {successMsg && (
               <div className="flex items-center gap-2 p-3 text-xs font-medium text-emerald-800 bg-emerald-50 dark:bg-emerald-950/40 dark:text-emerald-300 rounded-lg border border-emerald-200 dark:border-emerald-800 animate-in fade-in-0">
-                <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+                <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0"/>
                 <span>{successMsg}</span>
               </div>
             )}
 
             {errorMsg && (
               <div className="flex items-center gap-2 p-3 text-xs font-medium text-red-800 bg-red-50 dark:bg-red-950/40 dark:text-red-300 rounded-lg border border-red-200 dark:border-red-800 animate-in fade-in-0">
-                <AlertCircle className="h-4 w-4 text-red-600 shrink-0" />
+                <AlertCircle className="h-4 w-4 text-red-600 shrink-0"/>
                 <span>{errorMsg}</span>
               </div>
             )}
@@ -537,37 +524,33 @@ export function UserPermissionsDrawer({
                 <div className="p-4 rounded-xl border border-border bg-muted/50 space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold text-foreground uppercase tracking-wide">
-                      Assigned Responsibilities
+ Assigned Responsibilities
                     </span>
                     <button
-                      type="button"
-                      onClick={() => setActiveTab('responsibilities')}
-                      className="text-xs text-primary hover:underline font-semibold"
-                    >
-                      Change
+ type="button"onClick={() => setActiveTab('responsibilities')}
+ className="text-xs text-primary hover:underline font-semibold">
+ Change
                     </button>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {(Array.isArray(selectedResponsibilities) ? selectedResponsibilities : []).map((slug) => {
-                      const r = availableResponsibilities.find((item) => item.slug === slug)
-                      return (
+ const r = availableResponsibilities.find((item) => item.slug === slug)
+ return (
                         <Badge
-                          key={slug}
-                          variant="outline"
-                          className="bg-sky-50/80 text-sky-700 border-sky-200 dark:bg-sky-950/40 dark:border-sky-800 dark:text-sky-300 py-1 px-2.5 text-xs font-semibold"
-                        >
-                          <Briefcase className="h-3 w-3 mr-1.5" />
+ key={slug}
+ variant="outline"className="bg-sky-50/80 text-sky-700 border-sky-200 dark:bg-sky-950/40 dark:border-sky-800 dark:text-sky-300 py-1 px-2.5 text-xs font-semibold">
+                          <Briefcase className="h-3 w-3 mr-1.5"/>
                           {r?.name || slug} {r?.nameBn ? `(${r.nameBn})` : ''}
                         </Badge>
                       )
                     })}
                   </div>
-                  <div className="pt-2 border-t border-border flex items-center justify-between text-xs text-muted-foreground dark:text-muted-foreground">
+                  <div className="pt-2 border-t border-border flex items-center justify-between text-xs text-muted-foreground">
                     <span className="flex items-center gap-1.5">
-                      <Building className="h-3.5 w-3.5 text-muted-foreground" />
-                      Primary Branch:
+                      <Building className="h-3.5 w-3.5 text-muted-foreground"/>
+ Primary Branch:
                     </span>
-                    <span className="font-semibold text-foreground dark:text-white">
+                    <span className="font-semibold text-foreground">
                       {branchId ? allBranches.find((b) => b.id === branchId)?.name || 'Branch' : 'All Branches (Company-Wide)'}
                     </span>
                   </div>
@@ -577,14 +560,12 @@ export function UserPermissionsDrawer({
                 <div className="p-4 rounded-xl border border-border bg-card space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold text-foreground uppercase tracking-wide">
-                      Data Scope per Module
+ Data Scope per Module
                     </span>
                     <button
-                      type="button"
-                      onClick={() => setActiveTab('permissions')}
-                      className="text-xs text-primary hover:underline font-semibold"
-                    >
-                      Configure Scopes
+ type="button"onClick={() => setActiveTab('permissions')}
+ className="text-xs text-primary hover:underline font-semibold">
+ Configure Scopes
                     </button>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
@@ -598,9 +579,9 @@ export function UserPermissionsDrawer({
                       { mod: 'inventory', label: 'Inventory' },
                       { mod: 'reports', label: 'Reports' },
                     ].map(({ mod, label }) => {
-                      const scope = dataScopes[mod] || MODULE_ACTION_SPECS[mod as PermissionModule]?.defaultScope || 'own'
-                      const scopeColor =
-                        scope === 'company'
+ const scope = dataScopes[mod] || MODULE_ACTION_SPECS[mod as PermissionModule]?.defaultScope || 'own'
+ const scopeColor =
+ scope === 'company'
                           ? 'bg-purple-100 text-purple-800 dark:bg-purple-950/60 dark:text-purple-300'
                           : scope === 'branch'
                           ? 'bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-300'
@@ -608,13 +589,12 @@ export function UserPermissionsDrawer({
                           ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
                           : scope === 'assigned'
                           ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
-                          : 'bg-muted text-foreground dark:text-muted-foreground'
+                          : 'bg-muted text-foreground '
 
-                      return (
+ return (
                         <div
-                          key={mod}
-                          className="flex items-center justify-between p-2 rounded-lg bg-muted border border-border dark:border-border"
-                        >
+ key={mod}
+ className="flex items-center justify-between p-2 rounded-lg bg-muted border border-border">
                           <span className="text-foreground font-medium">{label}</span>
                           <span className={cn('text-2xs font-bold px-2 py-0.5 rounded capitalize', scopeColor)}>
                             {scope}
@@ -628,7 +608,7 @@ export function UserPermissionsDrawer({
                 {/* 3. High-Risk Security & Dangerous Actions */}
                 <div className="p-4 rounded-xl border border-border bg-card space-y-3">
                   <span className="text-xs font-bold text-foreground uppercase tracking-wide">
-                    Security & Sensitive Action Capabilities
+ Security & Sensitive Action Capabilities
                   </span>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                     {[
@@ -643,38 +623,38 @@ export function UserPermissionsDrawer({
                       { code: 'users.permission_manage', label: 'Manage Roles/Access' },
                       { code: 'machineries.delete', label: 'Delete Machinery' },
                     ].map(({ code, label }) => {
-                      const [mod, act] = code.split('.')
-                      const detail = getPermissionDetail(
-                        simulatedUserCtx,
-                        mod as PermissionModule,
-                        act as PermissionAction
+ const [mod, act] = code.split('.')
+ const detail = getPermissionDetail(
+ simulatedUserCtx,
+ mod as PermissionModule,
+ act as PermissionAction
                       )
-                      const isGranted = detail.isGranted
+ const isGranted = detail.isGranted
 
-                      return (
+ return (
                         <div
-                          key={code}
-                          className={cn(
+ key={code}
+ className={cn(
                             'flex items-center justify-between p-2.5 rounded-lg border text-xs',
-                            isGranted
+ isGranted
                               ? 'bg-emerald-50/50 border-emerald-200 dark:bg-emerald-950/20 dark:border-emerald-900/50'
-                              : 'bg-slate-50/30 border-border opacity-80'
+                              : 'bg-muted/30 border-border opacity-80'
                           )}
                         >
                           <div className="flex items-center gap-1.5">
                             {isGranted ? (
-                              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+                              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0"/>
                             ) : (
-                              <X className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                              <X className="h-3.5 w-3.5 text-muted-foreground shrink-0"/>
                             )}
-                            <span className="font-medium text-foreground dark:text-foreground">{label}</span>
+                            <span className="font-medium text-foreground">{label}</span>
                           </div>
                           <span
-                            className={cn(
+ className={cn(
                               'text-2xs font-bold px-1.5 py-0.5 rounded',
-                              isGranted
+ isGranted
                                 ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-300'
-                                : 'bg-muted text-muted-foreground dark:text-muted-foreground'
+                                : 'bg-muted text-muted-foreground '
                             )}
                           >
                             {isGranted ? 'Allowed' : 'Denied'}
@@ -689,44 +669,44 @@ export function UserPermissionsDrawer({
               /* TAB 1: RESPONSIBILITIES ASSIGNMENT */
               <div className="space-y-3">
                 <div className="bg-sky-50/60 dark:bg-sky-950/30 border border-sky-200 dark:border-sky-900 rounded-xl p-3 text-xs text-sky-900 dark:text-sky-200 flex items-start gap-2.5">
-                  <Info className="h-4 w-4 text-sky-600 shrink-0 mt-0.5" />
+                  <Info className="h-4 w-4 text-sky-600 shrink-0 mt-0.5"/>
                   <div>
                     <p className="font-semibold">Multi-Responsibility Role System</p>
                     <p className="text-2xs text-sky-800/80 dark:text-sky-300/80 mt-0.5">
-                      Users receive the merged permissions of all selected roles. You can also define specific permission overrides per module.
+ Users receive the merged permissions of all selected roles. You can also define specific permission overrides per module.
                     </p>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 gap-2.5">
                   {(Array.isArray(availableResponsibilities) ? availableResponsibilities : []).map((r) => {
-                    const isSelected = Array.isArray(selectedResponsibilities) && selectedResponsibilities.includes(r.slug)
+ const isSelected = Array.isArray(selectedResponsibilities) && selectedResponsibilities.includes(r.slug)
 
-                    return (
+ return (
                       <div
-                        key={r.slug}
-                        onClick={() => toggleResponsibility(r.slug)}
-                        className={cn(
+ key={r.slug}
+ onClick={() => toggleResponsibility(r.slug)}
+ className={cn(
                           'p-3.5 rounded-xl border transition-all cursor-pointer flex items-start justify-between gap-3',
-                          isSelected
+ isSelected
                             ? 'border-primary bg-sky-50/40 dark:bg-sky-950/30 shadow-xs'
                             : 'border-border hover:border-input dark:hover:border-border'
                         )}
                       >
                         <div className="flex items-start gap-3">
                           <div
-                            className={cn(
+ className={cn(
                               'mt-0.5 h-4 w-4 rounded border flex items-center justify-center transition-colors',
-                              isSelected
+ isSelected
                                 ? 'bg-primary border-primary text-white'
-                                : 'border-input bg-card dark:bg-muted'
+                                : 'border-input bg-card '
                             )}
                           >
-                            {isSelected && <CheckCircle2 className="h-3 w-3" />}
+                            {isSelected && <CheckCircle2 className="h-3 w-3"/>}
                           </div>
                           <div>
                             <div className="flex items-center gap-2">
-                              <span className="font-semibold text-xs text-foreground dark:text-white">
+                              <span className="font-semibold text-xs text-foreground">
                                 {r.name}
                               </span>
                               <span className="text-2xs text-muted-foreground">
@@ -741,7 +721,7 @@ export function UserPermissionsDrawer({
 
                         {isSelected && (
                           <Badge className="bg-sky-100 text-sky-800 dark:bg-sky-900/50 dark:text-sky-300 text-2xs">
-                            Assigned
+ Assigned
                           </Badge>
                         )}
                       </div>
@@ -753,49 +733,47 @@ export function UserPermissionsDrawer({
               /* TAB 3: AUTHORIZED BRANCHES */
               <div className="space-y-3">
                 <div className="bg-muted border border-border rounded-xl p-3 text-xs text-foreground flex items-start gap-2.5">
-                  <Building className="h-4 w-4 text-sky-600 shrink-0 mt-0.5" />
+                  <Building className="h-4 w-4 text-sky-600 shrink-0 mt-0.5"/>
                   <div>
                     <p className="font-semibold">Multi-Branch Scoping</p>
                     <p className="text-2xs text-muted-foreground mt-0.5">
-                      Select which operational branches this team member is authorized to access when branch-scoped data rules apply.
+ Select which operational branches this team member is authorized to access when branch-scoped data rules apply.
                     </p>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 gap-2">
                   {(Array.isArray(allBranches) ? allBranches : []).map((b) => {
-                    const isChecked = Array.isArray(authorizedBranchIds) && authorizedBranchIds.includes(b.id)
-                    const isPrimary = branchId === b.id
+ const isChecked = Array.isArray(authorizedBranchIds) && authorizedBranchIds.includes(b.id)
+ const isPrimary = branchId === b.id
 
-                    return (
+ return (
                       <div
-                        key={b.id}
-                        onClick={() => toggleAuthorizedBranch(b.id)}
-                        className={cn(
+ key={b.id}
+ onClick={() => toggleAuthorizedBranch(b.id)}
+ className={cn(
                           'p-3 rounded-xl border transition-all cursor-pointer flex items-center justify-between',
-                          isChecked
+ isChecked
                             ? 'border-sky-300 bg-sky-50/40 dark:border-sky-800 dark:bg-sky-950/30'
-                            : 'border-border dark:border-border'
+                            : 'border-border '
                         )}
                       >
                         <div className="flex items-center gap-2.5">
                           <input
-                            type="checkbox"
-                            checked={isChecked}
-                            onChange={() => {}}
-                            className="h-4 w-4 rounded border-input text-primary focus:ring-primary cursor-pointer"
-                          />
+ type="checkbox"checked={isChecked}
+ onChange={() => {}}
+ className="h-4 w-4 rounded border-input text-primary focus:ring-primary cursor-pointer"/>
                           <div>
                             <div className="flex items-center gap-1.5">
-                              <span className="font-semibold text-xs text-foreground dark:text-white">
+                              <span className="font-semibold text-xs text-foreground">
                                 {b.name}
                               </span>
-                              <Badge variant="outline" className="text-2xs tabular-nums py-0 px-1.5">
+                              <Badge variant="outline"className="text-2xs tabular-nums py-0 px-1.5">
                                 {b.code}
                               </Badge>
                               {isPrimary && (
                                 <Badge className="bg-primary text-white text-2xs px-1 py-0">
-                                  Primary
+ Primary
                                 </Badge>
                               )}
                             </div>
@@ -813,27 +791,24 @@ export function UserPermissionsDrawer({
                 {/* Search Bar & Category Filter */}
                 <div className="space-y-2">
                   <div className="relative">
-                    <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground pointer-events-none" />
+                    <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground pointer-events-none"/>
                     <Input
-                      placeholder="Search module (e.g. Customers, Invoices, Production)..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-9 h-9 text-xs"
-                    />
+ placeholder="Search module (e.g. Customers, Invoices, Production)..."value={searchQuery}
+ onChange={(e) => setSearchQuery(e.target.value)}
+ className="pl-9 h-9 text-xs"/>
                   </div>
 
                   <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
                     {(Object.keys(MODULE_DRAWER_CATEGORIES) as ModuleCategoryFilter[]).map((catKey) => {
-                      const cat = MODULE_DRAWER_CATEGORIES[catKey]
-                      const isCatSelected = moduleCategory === catKey
-                      return (
+ const cat = MODULE_DRAWER_CATEGORIES[catKey]
+ const isCatSelected = moduleCategory === catKey
+ return (
                         <button
-                          key={catKey}
-                          type="button"
-                          onClick={() => setModuleCategory(catKey)}
-                          className={cn(
+ key={catKey}
+ type="button"onClick={() => setModuleCategory(catKey)}
+ className={cn(
                             'px-2.5 py-1 text-xs font-semibold rounded-lg transition-colors cursor-pointer whitespace-nowrap',
-                            isCatSelected
+ isCatSelected
                               ? 'bg-primary text-white shadow-2xs'
                               : 'bg-muted text-muted-foreground hover:bg-muted'
                           )}
@@ -846,62 +821,60 @@ export function UserPermissionsDrawer({
                 </div>
 
                 {/* Precedence Legend */}
-                <div className="flex flex-wrap items-center gap-2.5 p-2.5 bg-muted rounded-lg text-2xs text-muted-foreground border border-border dark:border-border">
-                  <span className="font-bold text-foreground dark:text-muted-foreground">Legend:</span>
+                <div className="flex flex-wrap items-center gap-2.5 p-2.5 bg-muted rounded-lg text-2xs text-muted-foreground border border-border">
+                  <span className="font-bold text-foreground">Legend:</span>
                   <span className="inline-flex items-center gap-1">
-                    <span className="h-2 w-2 rounded-full bg-emerald-500" />
-                    Inherited Allowed
+                    <span className="h-2 w-2 rounded-full bg-emerald-500"/>
+ Inherited Allowed
                   </span>
                   <span className="inline-flex items-center gap-1">
-                    <span className="h-2 w-2 rounded-full bg-primary" />
-                    Override (Allow)
+                    <span className="h-2 w-2 rounded-full bg-primary"/>
+ Override (Allow)
                   </span>
                   <span className="inline-flex items-center gap-1">
-                    <span className="h-2 w-2 rounded-full bg-red-500" />
-                    Override (Deny)
+                    <span className="h-2 w-2 rounded-full bg-red-500"/>
+ Override (Deny)
                   </span>
                 </div>
 
                 {/* Module Cards */}
                 <div className="space-y-3">
                   {filteredModuleEntries.map(([_modKey, spec]) => {
-                    const modName = spec.module
-                    const isExpanded = Boolean(expandedModules[modName])
-                    const currentScope = dataScopes[modName] || spec.defaultScope
+ const modName = spec.module
+ const isExpanded = Boolean(expandedModules[modName])
+ const currentScope = dataScopes[modName] || spec.defaultScope
 
                     // Calculate active granted permissions count
-                    const grantedCount = spec.actions.filter((act) => {
-                      const detail = getPermissionDetail(simulatedUserCtx, modName, act)
-                      return detail.isGranted
+ const grantedCount = spec.actions.filter((act) => {
+ const detail = getPermissionDetail(simulatedUserCtx, modName, act)
+ return detail.isGranted
                     }).length
 
-                    return (
+ return (
                       <div
-                        key={modName}
-                        className="rounded-xl border border-border overflow-hidden bg-card shadow-xs"
-                      >
+ key={modName}
+ className="rounded-xl border border-border overflow-hidden bg-card shadow-xs">
                         {/* Module Card Header */}
                         <div
-                          onClick={() =>
-                            setExpandedModules({
+ onClick={() =>
+ setExpandedModules({
                               ...expandedModules,
                               [modName]: !isExpanded,
                             })
                           }
-                          className="p-3.5 bg-slate-50/70 flex items-center justify-between gap-3 cursor-pointer hover:bg-muted/70 dark:hover:bg-muted/80 transition-colors"
-                        >
+ className="p-3.5 bg-muted/70 flex items-center justify-between gap-3 cursor-pointer hover:bg-muted/70 dark:hover:bg-muted/80 transition-colors">
                           <div className="flex items-center gap-2.5">
-                            <Layers className="h-4 w-4 text-primary shrink-0" />
+                            <Layers className="h-4 w-4 text-primary shrink-0"/>
                             <div>
                               <div className="flex items-center gap-2">
-                                <span className="font-bold text-xs text-foreground dark:text-white">
+                                <span className="font-bold text-xs text-foreground">
                                   {spec.label}
                                 </span>
                                 <span className="text-2xs text-muted-foreground">
                                   ({spec.labelBn})
                                 </span>
                               </div>
-                              <p className="text-2xs text-muted-foreground dark:text-muted-foreground">
+                              <p className="text-2xs text-muted-foreground">
                                 {spec.description}
                               </p>
                             </div>
@@ -909,10 +882,9 @@ export function UserPermissionsDrawer({
 
                           <div className="flex items-center gap-2.5 shrink-0">
                             <Badge
-                              variant="outline"
-                              className={cn(
+ variant="outline"className={cn(
                                 'text-2xs px-2 py-0 h-5 font-semibold',
-                                grantedCount > 0
+ grantedCount > 0
                                   ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300'
                                   : 'bg-muted text-muted-foreground'
                               )}
@@ -921,38 +893,37 @@ export function UserPermissionsDrawer({
                             </Badge>
 
                             {isExpanded ? (
-                              <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                              <ChevronUp className="h-4 w-4 text-muted-foreground"/>
                             ) : (
-                              <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                              <ChevronDown className="h-4 w-4 text-muted-foreground"/>
                             )}
                           </div>
                         </div>
 
                         {/* Module Expanded Settings */}
                         {isExpanded && (
-                          <div className="p-4 space-y-4 border-t border-border dark:border-border/80">
+                          <div className="p-4 space-y-4 border-t border-border /80">
                             {/* Data Scope Selector & Quick Overrides Bar */}
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-2.5 rounded-lg bg-muted border border-border text-xs">
                               <div>
-                                <span className="font-semibold text-foreground dark:text-foreground">
-                                  Data Scope for {spec.label}:
+                                <span className="font-semibold text-foreground">
+ Data Scope for {spec.label}:
                                 </span>
                                 <p className="text-2xs text-muted-foreground">
-                                  Controls record visibility within this module.
+ Controls record visibility within this module.
                                 </p>
                               </div>
 
                               <div className="flex items-center gap-2">
                                 <select
-                                  value={currentScope}
-                                  onChange={(e) =>
-                                    setDataScopes({
+ value={currentScope}
+ onChange={(e) =>
+ setDataScopes({
                                       ...dataScopes,
                                       [modName]: e.target.value as DataScope,
                                     })
                                   }
-                                  className="h-7 px-2 text-xs font-semibold bg-card border border-border rounded-md text-foreground dark:text-foreground"
-                                >
+ className="h-7 px-2 text-xs font-semibold bg-card border border-border rounded-md text-foreground">
                                   <option value="own">Own (Created by user)</option>
                                   <option value="assigned">Assigned (Assigned or own)</option>
                                   <option value="department">Department</option>
@@ -964,32 +935,26 @@ export function UserPermissionsDrawer({
 
                             {/* Quick Action Overrides */}
                             <div className="flex items-center justify-between pt-1 text-xs">
-                              <span className="font-semibold text-foreground dark:text-muted-foreground">
-                                Specific Action Overrides:
+                              <span className="font-semibold text-foreground">
+ Specific Action Overrides:
                               </span>
                               <div className="flex items-center gap-1.5">
                                 <button
-                                  type="button"
-                                  onClick={() => grantAllModuleActions(modName)}
-                                  className="text-2xs text-primary hover:underline font-semibold"
-                                >
-                                  Allow All
+ type="button"onClick={() => grantAllModuleActions(modName)}
+ className="text-2xs text-primary hover:underline font-semibold">
+ Allow All
                                 </button>
                                 <span className="text-muted-foreground">|</span>
                                 <button
-                                  type="button"
-                                  onClick={() => denyAllModuleActions(modName)}
-                                  className="text-2xs text-red-600 hover:underline font-semibold"
-                                >
-                                  Deny All
+ type="button"onClick={() => denyAllModuleActions(modName)}
+ className="text-2xs text-red-600 hover:underline font-semibold">
+ Deny All
                                 </button>
                                 <span className="text-muted-foreground">|</span>
                                 <button
-                                  type="button"
-                                  onClick={() => resetModuleOverrides(modName)}
-                                  className="text-2xs text-muted-foreground hover:underline font-semibold"
-                                >
-                                  Reset
+ type="button"onClick={() => resetModuleOverrides(modName)}
+ className="text-2xs text-muted-foreground hover:underline font-semibold">
+ Reset
                                 </button>
                               </div>
                             </div>
@@ -997,56 +962,54 @@ export function UserPermissionsDrawer({
                             {/* Actions Grid */}
                             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
                               {spec.actions.map((act) => {
-                                const detail = getPermissionDetail(simulatedUserCtx, modName, act)
-                                const isGranted = detail.isGranted
+ const detail = getPermissionDetail(simulatedUserCtx, modName, act)
+ const isGranted = detail.isGranted
 
-                                let sourceBadge: React.ReactNode = null
-                                if (detail.source === 'override_allow') {
-                                  sourceBadge = (
+ let sourceBadge: React.ReactNode = null
+ if (detail.source === 'override_allow') {
+ sourceBadge = (
                                     <span className="text-2xs font-bold px-1.5 py-0.5 rounded bg-sky-100 text-sky-700 dark:bg-sky-950/60 dark:text-sky-300">
-                                      Override (Allow)
+ Override (Allow)
                                     </span>
                                   )
                                 } else if (detail.source === 'override_deny') {
-                                  sourceBadge = (
+ sourceBadge = (
                                     <span className="text-2xs font-bold px-1.5 py-0.5 rounded bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-300">
-                                      Override (Deny)
+ Override (Deny)
                                     </span>
                                   )
                                 } else if (detail.source === 'inherited') {
-                                  sourceBadge = (
+ sourceBadge = (
                                     <span className="text-2xs font-semibold px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300">
-                                      Inherited
+ Inherited
                                     </span>
                                   )
                                 } else {
-                                  sourceBadge = (
+ sourceBadge = (
                                     <span className="text-2xs text-muted-foreground">
-                                      Denied
+ Denied
                                     </span>
                                   )
                                 }
 
-                                return (
+ return (
                                   <div
-                                    key={act}
-                                    onClick={() => toggleAction(modName, act)}
-                                    className={cn(
+ key={act}
+ onClick={() => toggleAction(modName, act)}
+ className={cn(
                                       'p-2.5 rounded-lg border transition-all cursor-pointer flex items-center justify-between gap-2',
-                                      isGranted
+ isGranted
                                         ? 'border-sky-200 dark:border-sky-900/60 bg-sky-50/20 dark:bg-sky-950/20'
-                                        : 'border-border bg-slate-50/30'
+                                        : 'border-border bg-muted/30'
                                     )}
                                   >
                                     <div className="flex items-center gap-2">
                                       <input
-                                        type="checkbox"
-                                        checked={isGranted}
-                                        onChange={() => {}}
-                                        className="h-4 w-4 rounded border-input text-primary focus:ring-primary cursor-pointer"
-                                      />
+ type="checkbox"checked={isGranted}
+ onChange={() => {}}
+ className="h-4 w-4 rounded border-input text-primary focus:ring-primary cursor-pointer"/>
                                       <div>
-                                        <div className="text-xs font-semibold text-foreground dark:text-foreground">
+                                        <div className="text-xs font-semibold text-foreground">
                                           {ACTION_LABELS[act]?.label || act}
                                         </div>
                                         <div className="text-2xs text-muted-foreground">
@@ -1071,16 +1034,16 @@ export function UserPermissionsDrawer({
           </div>
 
           {/* Sticky Bottom Save / Action Bar */}
-          <div className="p-3.5 sm:p-4 border-t border-border bg-slate-50/95 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 shrink-0 pb-[calc(1rem+env(safe-area-inset-bottom,0px))]">
+          <div className="p-3.5 sm:p-4 border-t border-border bg-muted/95 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 shrink-0 pb-[calc(1rem+env(safe-area-inset-bottom,0px))]">
             <div>
               {isDirty ? (
                 <div className="flex items-center gap-1.5 text-xs text-amber-700 dark:text-amber-400 font-semibold animate-pulse">
-                  <AlertCircle className="h-4 w-4 shrink-0" />
+                  <AlertCircle className="h-4 w-4 shrink-0"/>
                   <span>Unsaved permission changes</span>
                 </div>
               ) : (
                 <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
+                  <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0"/>
                   <span>All permissions synced</span>
                 </div>
               )}
@@ -1089,32 +1052,27 @@ export function UserPermissionsDrawer({
             <div className="flex items-center justify-end gap-2 w-full sm:w-auto">
               {isDirty && (
                 <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleResetToUserInitial}
-                  disabled={isSaving}
-                  className="h-10 sm:h-9 text-xs flex-1 sm:flex-initial"
-                >
-                  <RotateCcw className="mr-1 h-3.5 w-3.5" />
-                  Reset
+ variant="outline"size="sm"onClick={handleResetToUserInitial}
+ disabled={isSaving}
+ className="h-10 sm:h-9 text-xs flex-1 sm:flex-initial">
+                  <RotateCcw className="mr-1 h-3.5 w-3.5"/>
+ Reset
                 </Button>
               )}
 
               <Button
-                size="sm"
-                onClick={handleSave}
-                disabled={isSaving || !isDirty}
-                className="h-10 sm:h-9 bg-primary hover:bg-primary/90 text-white text-xs px-4 shadow-sm font-semibold flex-1 sm:flex-initial"
-              >
+ size="sm"onClick={handleSave}
+ disabled={isSaving || !isDirty}
+ className="h-10 sm:h-9 bg-primary hover:bg-primary/90 text-white text-xs px-4 shadow-sm font-semibold flex-1 sm:flex-initial">
                 {isSaving ? (
                   <>
-                    <Sparkles className="mr-1.5 h-4 w-4 animate-spin" />
-                    Saving...
+                    <Sparkles className="mr-1.5 h-4 w-4 animate-spin"/>
+ Saving...
                   </>
                 ) : (
                   <>
-                    <Save className="mr-1.5 h-4 w-4" />
-                    Save Access & Permissions
+                    <Save className="mr-1.5 h-4 w-4"/>
+ Save Access & Permissions
                   </>
                 )}
               </Button>
@@ -1125,39 +1083,37 @@ export function UserPermissionsDrawer({
 
       {/* Audit Log Modal */}
       <ModalDialog
-        open={isAuditModalOpen}
-        onOpenChange={setIsAuditModalOpen}
-        title={`Audit Trail: ${user.profile?.full_name || user.invited_email || 'User'}`}
-        description="Chronological record of responsibility and permission changes for this user."
-      >
+ open={isAuditModalOpen}
+ onOpenChange={setIsAuditModalOpen}
+ title={`Audit Trail: ${user.profile?.full_name || user.invited_email || 'User'}`}
+ description="Chronological record of responsibility and permission changes for this user.">
         <div className="max-h-96 overflow-y-auto space-y-3 pt-2">
           {isAuditLoading ? (
             <div className="p-8 text-center text-xs text-muted-foreground flex flex-col items-center justify-center gap-2">
-              <RotateCcw className="w-4 h-4 animate-spin text-primary" />
-              Loading user audit trail...
+              <RotateCcw className="w-4 h-4 animate-spin text-primary"/>
+ Loading user audit trail...
             </div>
           ) : !Array.isArray(auditLogs) || auditLogs.length === 0 ? (
             <div className="p-6 text-center text-xs text-muted-foreground italic">
-              No previous security or permission modifications recorded for this user.
+ No previous security or permission modifications recorded for this user.
             </div>
           ) : (
             (Array.isArray(auditLogs) ? auditLogs : []).map((log) => (
               <div
-                key={log.id}
-                className="p-3 rounded-xl border border-border bg-muted/50 text-xs space-y-1"
-              >
+ key={log.id}
+ className="p-3 rounded-xl border border-border bg-muted/50 text-xs space-y-1">
                 <div className="flex items-center justify-between text-muted-foreground text-2xs">
-                  <span>Actor: <strong className="text-foreground dark:text-muted-foreground">{log.user_email || 'System'}</strong></span>
+                  <span>Actor: <strong className="text-foreground">{log.user_email || 'System'}</strong></span>
                   <span>{formatDateTime(log.timestamp || log.created_at)}</span>
                 </div>
-                <div className="font-semibold text-foreground dark:text-white tabular-nums">
+                <div className="font-semibold text-foreground tabular-nums">
                   {log.action}
                 </div>
                 {log.description && (
                   <p className="text-muted-foreground text-2xs">{log.description}</p>
                 )}
                 {(log.previous_value || log.new_value) && (
-                  <pre className="text-2xs bg-slate-900 p-2 rounded border border-border overflow-x-auto text-muted-foreground tabular-nums">
+                  <pre className="text-2xs bg-surface-inset p-2 rounded border border-border overflow-x-auto text-muted-foreground tabular-nums">
                     {JSON.stringify({ previous: log.previous_value, next: log.new_value }, null, 2)}
                   </pre>
                 )}

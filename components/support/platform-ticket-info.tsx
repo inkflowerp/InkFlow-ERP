@@ -9,97 +9,94 @@
 import React from 'react'
 import Link from 'next/link'
 import {
-  Building2,
-  User,
-  Clock,
-  ExternalLink,
-  ShieldCheck,
-  Zap,
-  Tag,
-  Calendar,
-  Layers,
-  Sparkles,
-  AlertCircle,
-  FileText,
-  Mail,
-  Smartphone,
-  Timer,
-  CheckCircle2,
-  X,
-  Copy,
-  Hash,
-  Globe,
+ Building2,
+ User,
+ Clock,
+ ExternalLink,
+ ShieldCheck,
+ Zap,
+ Tag,
+ Calendar,
+ Layers,
+ Sparkles,
+ AlertCircle,
+ FileText,
+ Mail,
+ Smartphone,
+ Timer,
+ CheckCircle2,
+ X,
+ Copy,
+ Hash,
+ Globe,
 } from 'lucide-react'
 import {
-  SupportConversationRecord,
-  SUPPORT_STATUS_CONFIG,
-  SUPPORT_PRIORITY_CONFIG,
-  SUPPORT_CATEGORIES,
+ SupportConversationRecord,
+ SUPPORT_STATUS_CONFIG,
+ SUPPORT_PRIORITY_CONFIG,
+ SUPPORT_CATEGORIES,
 } from '@/types/support.types'
 import { formatDate, formatTime, formatDateTime } from '@/lib/formatters'
 import { cn } from '@/lib/utils'
 
 interface PlatformTicketInfoProps {
-  conversation: SupportConversationRecord | null
-  onOpenImpersonationModal?: (companyId: string, companyName: string) => void
-  onClose?: () => void
-  isDrawer?: boolean
+ conversation: SupportConversationRecord | null
+ onOpenImpersonationModal?: (companyId: string, companyName: string) => void
+ onClose?: () => void
+ isDrawer?: boolean
 }
 
 export function PlatformTicketInfo({
-  conversation,
-  onOpenImpersonationModal,
-  onClose,
-  isDrawer = false,
+ conversation,
+ onOpenImpersonationModal,
+ onClose,
+ isDrawer = false,
 }: PlatformTicketInfoProps) {
-  if (!conversation) return null
+ if (!conversation) return null
 
-  const categoryMeta = SUPPORT_CATEGORIES.find((c) => c.key === conversation.category)
-  const statusConfig = SUPPORT_STATUS_CONFIG[conversation.status]
-  const priorityConfig = SUPPORT_PRIORITY_CONFIG[conversation.priority]
+ const categoryMeta = SUPPORT_CATEGORIES.find((c) => c.key === conversation.category)
+ const statusConfig = SUPPORT_STATUS_CONFIG[conversation.status]
+ const priorityConfig = SUPPORT_PRIORITY_CONFIG[conversation.priority]
 
   // Calculate First Response SLA elapsed
-  const slaFirstResponse = conversation.first_response_at
+ const slaFirstResponse = conversation.first_response_at
     ? `${Math.round(
-        Math.max(
+ Math.max(
           0,
-          new Date(conversation.first_response_at).getTime() -
-            new Date(conversation.created_at).getTime()
+ new Date(conversation.first_response_at).getTime() -
+ new Date(conversation.created_at).getTime()
         ) / 60000
       )} mins`
     : 'Pending First Response'
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text)
+ const copyToClipboard = (text: string) => {
+ navigator.clipboard.writeText(text)
   }
 
-  return (
+ return (
     <div
-      className={cn(
-        'w-80 shrink-0 h-full overflow-y-auto bg-slate-900 p-4 border-l border-border space-y-4 text-xs select-text font-sans scrollbar-thin scrollbar-thumb-slate-800',
-        isDrawer && 'w-full max-w-md shadow-2xl z-50'
+ className={cn(
+        'w-80 shrink-0 h-full overflow-y-auto bg-surface-inset p-4 border-l border-border space-y-4 text-xs select-text font-sans scrollbar-thin scrollbar-thumb-slate-800',
+ isDrawer && 'w-full max-w-md shadow-lg z-50'
       )}
     >
       {/* 1. Ticket Overview Header */}
       <div className="flex items-center justify-between pb-2 border-b border-border">
         <div className="flex items-center gap-1.5 font-bold uppercase tracking-wider text-2xs text-indigo-400">
-          <Tag className="w-3.5 h-3.5 text-indigo-400" />
+          <Tag className="w-3.5 h-3.5 text-indigo-400"/>
           <span>Ticket Inspector</span>
         </div>
         {onClose && (
           <button
-            type="button"
-            onClick={onClose}
-            className="p-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-slate-800 transition-colors cursor-pointer"
-            title="Close Details"
-          >
-            <X className="w-4 h-4" />
+ type="button"onClick={onClose}
+ className="p-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-card-elevated transition-colors cursor-pointer"title="Close Details">
+            <X className="w-4 h-4"/>
           </button>
         )}
       </div>
 
       {/* 2. Ticket Core Attributes Card */}
-      <div className="p-3.5 rounded-2xl bg-slate-900 border border-border space-y-2.5 shadow-xs">
+      <div className="p-3.5 rounded-xl bg-surface-inset border border-border space-y-2.5 shadow-xs">
         <div className="flex items-center justify-between">
           <span className="text-muted-foreground font-medium">Ticket #</span>
           <span className="tabular-nums font-bold text-indigo-400 text-xs">{conversation.ticket_number}</span>
@@ -127,47 +124,44 @@ export function PlatformTicketInfo({
         <div className="flex items-center justify-between">
           <span className="text-muted-foreground font-medium">Assigned Agent</span>
           <span className="font-medium text-indigo-300 flex items-center gap-1">
-            <User className="w-3 h-3 text-indigo-400" />
+            <User className="w-3 h-3 text-indigo-400"/>
             {conversation.assigned_to_name || 'Unassigned'}
           </span>
         </div>
       </div>
 
       {/* 3. Tenant Context Card */}
-      <div className="p-3.5 rounded-2xl bg-slate-900 border border-border space-y-3 shadow-xs">
+      <div className="p-3.5 rounded-xl bg-surface-inset border border-border space-y-3 shadow-xs">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5 text-2xs font-bold text-muted-foreground uppercase tracking-wider">
-            <Building2 className="w-3.5 h-3.5 text-blue-400" />
+            <Building2 className="w-3.5 h-3.5 text-blue-400"/>
             <span>Tenant Workspace</span>
           </div>
-          <span className="text-2xs tabular-nums px-1.5 py-0.5 rounded-md bg-slate-900 border border-border text-muted-foreground">
+          <span className="text-2xs tabular-nums px-1.5 py-0.5 rounded-md bg-surface-inset border border-border text-muted-foreground">
             /{conversation.company_slug || 'tenant'}
           </span>
         </div>
 
         <div>
-          <div className="font-bold text-slate-100 text-sm truncate">{conversation.company_name || 'Organization'}</div>
+          <div className="font-bold text-foreground text-sm truncate">{conversation.company_name || 'Organization'}</div>
           <div className="text-2xs text-muted-foreground tabular-nums flex items-center gap-1 mt-0.5">
             <span>ID: {conversation.company_id.slice(0, 8)}...</span>
             <button
-              type="button"
-              onClick={() => copyToClipboard(conversation.company_id)}
-              className="text-muted-foreground hover:text-muted-foreground p-0.5"
-              title="Copy Full Company ID"
-            >
-              <Copy className="w-3 h-3" />
+ type="button"onClick={() => copyToClipboard(conversation.company_id)}
+ className="text-muted-foreground hover:text-muted-foreground p-0.5"title="Copy Full Company ID">
+              <Copy className="w-3 h-3"/>
             </button>
           </div>
         </div>
 
         <div className="pt-2 border-t border-border space-y-2 text-muted-foreground text-xs">
           <div className="flex items-center gap-2">
-            <User className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+            <User className="w-3.5 h-3.5 text-muted-foreground shrink-0"/>
             <span className="font-semibold text-foreground truncate">{conversation.created_by_name}</span>
           </div>
           {conversation.created_by_email && (
             <div className="flex items-center gap-2 text-muted-foreground">
-              <Mail className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+              <Mail className="w-3.5 h-3.5 text-muted-foreground shrink-0"/>
               <span className="truncate text-2xs">{conversation.created_by_email}</span>
             </div>
           )}
@@ -177,16 +171,14 @@ export function PlatformTicketInfo({
         {onOpenImpersonationModal && (
           <div className="pt-2 border-t border-border">
             <button
-              type="button"
-              onClick={() =>
-                onOpenImpersonationModal(
-                  conversation.company_id,
-                  conversation.company_name || 'Tenant'
+ type="button"onClick={() =>
+ onOpenImpersonationModal(
+ conversation.company_id,
+ conversation.company_name || 'Tenant'
                 )
               }
-              className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-bold text-amber-950 bg-amber-500 hover:bg-amber-400 transition-all shadow-md shadow-amber-500/20 cursor-pointer"
-            >
-              <Zap className="w-3.5 h-3.5 text-amber-950 fill-amber-950" />
+ className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-bold text-amber-950 bg-amber-500 hover:bg-amber-400 transition-all shadow-xs shadow-amber-500/20 cursor-pointer">
+              <Zap className="w-3.5 h-3.5 text-amber-950 fill-amber-950"/>
               <span>Launch Support Session</span>
             </button>
           </div>
@@ -194,9 +186,9 @@ export function PlatformTicketInfo({
       </div>
 
       {/* 4. SLA & Timestamps */}
-      <div className="p-3.5 rounded-2xl bg-slate-900 border border-border space-y-2.5 shadow-xs">
+      <div className="p-3.5 rounded-xl bg-surface-inset border border-border space-y-2.5 shadow-xs">
         <div className="flex items-center gap-1.5 text-2xs font-bold text-muted-foreground uppercase tracking-wider">
-          <Timer className="w-3.5 h-3.5 text-purple-400" />
+          <Timer className="w-3.5 h-3.5 text-purple-400"/>
           <span>SLA &amp; Timestamps</span>
         </div>
 
@@ -231,17 +223,17 @@ export function PlatformTicketInfo({
 
       {/* 5. Attached Context Metadata (if any) */}
       {conversation.context_metadata && Object.keys(conversation.context_metadata).length > 0 && (
-        <div className="p-3.5 rounded-2xl bg-slate-900 border border-border space-y-2.5 shadow-xs">
+        <div className="p-3.5 rounded-xl bg-surface-inset border border-border space-y-2.5 shadow-xs">
           <div className="flex items-center gap-1.5 text-2xs font-bold text-muted-foreground uppercase tracking-wider">
-            <FileText className="w-3.5 h-3.5 text-cyan-400" />
+            <FileText className="w-3.5 h-3.5 text-cyan-400"/>
             <span>Attached Context</span>
           </div>
 
-          <div className="space-y-1.5 text-muted-foreground tabular-nums text-2xs bg-slate-900 p-2.5 rounded-xl border border-border">
+          <div className="space-y-1.5 text-muted-foreground tabular-nums text-2xs bg-surface-inset p-2.5 rounded-xl border border-border">
             {Object.entries(conversation.context_metadata).map(([key, val]) => (
               <div key={key} className="flex justify-between gap-2">
                 <span className="text-muted-foreground shrink-0">{key}:</span>
-                <span className="text-foreground truncate" title={String(val)}>
+                <span className="text-foreground truncate"title={String(val)}>
                   {String(val)}
                 </span>
               </div>

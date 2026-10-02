@@ -4,24 +4,24 @@ import React, { useState } from 'react'
 import Link from 'next/link'
 import { useParams, usePathname } from 'next/navigation'
 import {
-  ShoppingBag,
-  ArrowLeft,
-  Printer,
-  CheckCircle2,
-  AlertCircle,
-  Clock,
-  ArrowDownLeft,
-  DollarSign,
-  TrendingUp,
-  Receipt,
-  FileCheck2,
-  Layers,
-  Building,
-  Calendar,
-  AlertTriangle,
-  CreditCard,
-  History,
-  Truck,
+ ShoppingBag,
+ ArrowLeft,
+ Printer,
+ CheckCircle2,
+ AlertCircle,
+ Clock,
+ ArrowDownLeft,
+ DollarSign,
+ TrendingUp,
+ Receipt,
+ FileCheck2,
+ Layers,
+ Building,
+ Calendar,
+ AlertTriangle,
+ CreditCard,
+ History,
+ Truck,
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
@@ -33,12 +33,12 @@ import { Label } from '@/components/ui/label'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import { CurrencyDisplay } from '@/components/shared/currency-display'
 import {
-  PurchaseOrderRecord,
-  PurchaseOrderStatus,
-  GoodsReceivedNoteRecord,
-  SupplierPaymentRecord,
-  SupplierPaymentMethod,
-  getSupplierPriceBenchmark,
+ PurchaseOrderRecord,
+ PurchaseOrderStatus,
+ GoodsReceivedNoteRecord,
+ SupplierPaymentRecord,
+ SupplierPaymentMethod,
+ getSupplierPriceBenchmark,
 } from '@/types/purchase.types'
 import { formatBDT } from '@/lib/formatters'
 import { useDataStore } from '@/hooks/use-data-store'
@@ -48,56 +48,55 @@ import { CashBookEntryRecord } from '@/types/accounting.types'
 import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 
 export default function PurchaseOrderDetailPage() {
-  const params = useParams()
-  const pathname = usePathname()
-  const poId = (params?.id as string) || ''
-  const { company } = useTenant()
-  const { locale, tBilingual } = useI18n()
-  const slug = (params?.tenantSlug as string) || company?.slug || 'my-company'
+ const params = useParams()
+ const pathname = usePathname()
+ const poId = (params?.id as string) || ''
+ const { company } = useTenant()
+ const { locale, tBilingual } = useI18n()
+ const slug = (params?.tenantSlug as string) || company?.slug || 'my-company'
 
-  const [orders, setOrders] = useDataStore<PurchaseOrderRecord[]>(STORAGE_KEYS.PURCHASE_ORDERS, [])
-  const po = orders.find((p) => p.id === poId || p.po_number === poId)
+ const [orders, setOrders] = useDataStore<PurchaseOrderRecord[]>(STORAGE_KEYS.PURCHASE_ORDERS, [])
+ const po = orders.find((p) => p.id === poId || p.po_number === poId)
 
   // Modals
-  const [isReceiveOpen, setIsReceiveOpen] = useState(false)
-  const [isPayOpen, setIsPayOpen] = useState(false)
-  const [notification, setNotification] = useState<string | null>(null)
+ const [isReceiveOpen, setIsReceiveOpen] = useState(false)
+ const [isPayOpen, setIsPayOpen] = useState(false)
+ const [notification, setNotification] = useState<string | null>(null)
 
   // Partial Receiving State
-  const [receivingQty, setReceivingQty] = useState<number>(0)
-  const [challanNo, setChallanNo] = useState('')
-  const [receivingNotes, setReceivingNotes] = useState('')
+ const [receivingQty, setReceivingQty] = useState<number>(0)
+ const [challanNo, setChallanNo] = useState('')
+ const [receivingNotes, setReceivingNotes] = useState('')
 
   // Payment Form State
-  const [payAmount, setPayAmount] = useState<number>(po?.due_amount || 0)
-  const [payMethod, setPayMethod] = useState<SupplierPaymentMethod>('bank')
-  const [bankName, setBankName] = useState('')
-  const [chequeNo, setChequeNo] = useState('')
-  const [mfsTrxId, setMfsTrxId] = useState('')
-  const [paymentNotes, setPaymentNotes] = useState('')
+ const [payAmount, setPayAmount] = useState<number>(po?.due_amount || 0)
+ const [payMethod, setPayMethod] = useState<SupplierPaymentMethod>('bank')
+ const [bankName, setBankName] = useState('')
+ const [chequeNo, setChequeNo] = useState('')
+ const [mfsTrxId, setMfsTrxId] = useState('')
+ const [paymentNotes, setPaymentNotes] = useState('')
 
-  const showNotification = (msg: string) => {
-    setNotification(msg)
-    setTimeout(() => setNotification(null), 3500)
+ const showNotification = (msg: string) => {
+ setNotification(msg)
+ setTimeout(() => setNotification(null), 3500)
   }
 
-  if (!po) {
-    return (
+ if (!po) {
+ return (
       <div className="space-y-6 max-w-7xl">
         <Link
-          href={getTenantNavHref('/inventory?view=purchases', pathname, slug)}
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground dark:hover:text-white"
-        >
-          <ArrowLeft className="h-3.5 w-3.5" />
-          Back to Purchase Orders
+ href={getTenantNavHref('/inventory?view=purchases', pathname, slug)}
+ className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground dark:hover:text-foreground">
+          <ArrowLeft className="h-3.5 w-3.5"/>
+ Back to Purchase Orders
         </Link>
         <Card className="p-12 text-center border-dashed">
-          <Truck className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-          <h2 className="text-base font-bold text-foreground dark:text-foreground">Purchase Order Not Found</h2>
+          <Truck className="h-10 w-10 text-muted-foreground mx-auto mb-3"/>
+          <h2 className="text-base font-bold text-foreground">Purchase Order Not Found</h2>
           <p className="text-xs text-muted-foreground mt-1 max-w-md mx-auto">
-            The purchase order record you are looking for does not exist in your organization.
+ The purchase order record you are looking for does not exist in your organization.
           </p>
-          <Button asChild className="mt-4" size="sm">
+          <Button asChild className="mt-4"size="sm">
             <Link href={getTenantNavHref('/inventory?view=purchases', pathname, slug)}>View All Purchase Orders</Link>
           </Button>
         </Card>
@@ -106,165 +105,164 @@ export default function PurchaseOrderDetailPage() {
   }
 
   // Price benchmark for the primary item
-  const primaryItem = po.items[0]
-  const benchmark = primaryItem
+ const primaryItem = po.items[0]
+ const benchmark = primaryItem
     ? getSupplierPriceBenchmark(primaryItem.material_id, primaryItem.material_name)
     : null
 
   // Handle Partial Receiving (Core User Requirement)
-  const handleApplyReceiving = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!primaryItem) return
+ const handleApplyReceiving = (e: React.FormEvent) => {
+ e.preventDefault()
+ if (!primaryItem) return
 
-    const newReceived = primaryItem.quantity_received + receivingQty
-    const newRemaining = Math.max(0, primaryItem.quantity_ordered - newReceived)
-    const isFullyReceived = newRemaining === 0
+ const newReceived = primaryItem.quantity_received + receivingQty
+ const newRemaining = Math.max(0, primaryItem.quantity_ordered - newReceived)
+ const isFullyReceived = newRemaining === 0
 
-    const updatedItems = po.items.map((item, idx) =>
-      idx === 0
+ const updatedItems = po.items.map((item, idx) =>
+ idx === 0
         ? {
             ...item,
-            quantity_received: newReceived,
-            quantity_remaining: newRemaining,
+ quantity_received: newReceived,
+ quantity_remaining: newRemaining,
           }
         : item
     )
 
-    const newGrn: GoodsReceivedNoteRecord = {
-      id: `grn-${Date.now()}`,
-      company_id: 'c-01',
-      grn_number: `GRN-2024-00${(po.grns?.length || 0) + 1}`,
-      purchase_order_id: po.id,
-      supplier_name: po.supplier_name,
-      received_date: 'Just now',
-      challan_number: challanNo,
-      received_by_name: 'Warehouse Incharge (Aminul)',
-      notes: receivingNotes,
-      items_received: [
+ const newGrn: GoodsReceivedNoteRecord = {
+ id: `grn-${Date.now()}`,
+ company_id: 'c-01',
+ grn_number: `GRN-2024-00${(po.grns?.length || 0) + 1}`,
+ purchase_order_id: po.id,
+ supplier_name: po.supplier_name,
+ received_date: 'Just now',
+ challan_number: challanNo,
+ received_by_name: 'Warehouse Incharge (Aminul)',
+ notes: receivingNotes,
+ items_received: [
         {
-          material_name: primaryItem.material_name,
-          quantity_received: receivingQty,
-          unit: primaryItem.unit,
+ material_name: primaryItem.material_name,
+ quantity_received: receivingQty,
+ unit: primaryItem.unit,
         },
       ],
-      created_at: new Date().toISOString(),
+ created_at: new Date().toISOString(),
     }
 
-    const updatedPO: PurchaseOrderRecord = {
+ const updatedPO: PurchaseOrderRecord = {
       ...po,
-      items: updatedItems,
-      status: isFullyReceived ? 'received' : 'partially_received',
-      grns: [newGrn, ...(po.grns || [])],
-      updated_at: new Date().toISOString(),
+ items: updatedItems,
+ status: isFullyReceived ? 'received' : 'partially_received',
+ grns: [newGrn, ...(po.grns || [])],
+ updated_at: new Date().toISOString(),
     }
 
-    PrintERPDataStore.updateItem<PurchaseOrderRecord>(STORAGE_KEYS.PURCHASE_ORDERS, po.id, updatedPO)
+ PrintERPDataStore.updateItem<PurchaseOrderRecord>(STORAGE_KEYS.PURCHASE_ORDERS, po.id, updatedPO)
 
     // Update raw materials stock in inventory & stock ledger
-    const material = PrintERPDataStore.findItem<MaterialRecord>(STORAGE_KEYS.MATERIALS, (m) => m.id === primaryItem.material_id || m.name === primaryItem.material_name)
-    if (material) {
-      const newStock = material.current_stock + receivingQty
-      PrintERPDataStore.updateItem<MaterialRecord>(STORAGE_KEYS.MATERIALS, material.id, {
-        current_stock: newStock,
-        last_purchase_price: primaryItem.unit_cost,
-        updated_at: new Date().toISOString(),
+ const material = PrintERPDataStore.findItem<MaterialRecord>(STORAGE_KEYS.MATERIALS, (m) => m.id === primaryItem.material_id || m.name === primaryItem.material_name)
+ if (material) {
+ const newStock = material.current_stock + receivingQty
+ PrintERPDataStore.updateItem<MaterialRecord>(STORAGE_KEYS.MATERIALS, material.id, {
+ current_stock: newStock,
+ last_purchase_price: primaryItem.unit_cost,
+ updated_at: new Date().toISOString(),
       })
 
-      const ledgerEntry: StockLedgerRecord = {
-        id: `stl-${Date.now()}`,
-        company_id: 'c-01',
-        material_id: material.id,
-        material_name: material.name,
-        transaction_type: 'purchase',
-        quantity_change: receivingQty,
-        balance_after: newStock,
-        unit: primaryItem.unit as MaterialUnit,
-        unit_cost: primaryItem.unit_cost,
-        total_cost: primaryItem.unit_cost * receivingQty,
-        reference_id: po.po_number,
-        performed_by_name: 'Warehouse Receiving',
-        notes: `GRN from ${po.supplier_name} under challan ${challanNo}`,
-        created_at: new Date().toISOString(),
+ const ledgerEntry: StockLedgerRecord = {
+ id: `stl-${Date.now()}`,
+ company_id: 'c-01',
+ material_id: material.id,
+ material_name: material.name,
+ transaction_type: 'purchase',
+ quantity_change: receivingQty,
+ balance_after: newStock,
+ unit: primaryItem.unit as MaterialUnit,
+ unit_cost: primaryItem.unit_cost,
+ total_cost: primaryItem.unit_cost * receivingQty,
+ reference_id: po.po_number,
+ performed_by_name: 'Warehouse Receiving',
+ notes: `GRN from ${po.supplier_name} under challan ${challanNo}`,
+ created_at: new Date().toISOString(),
       }
-      PrintERPDataStore.addItem<StockLedgerRecord>(STORAGE_KEYS.STOCK_LEDGER, ledgerEntry)
+ PrintERPDataStore.addItem<StockLedgerRecord>(STORAGE_KEYS.STOCK_LEDGER, ledgerEntry)
     }
 
-    setIsReceiveOpen(false)
-    showNotification(
+ setIsReceiveOpen(false)
+ showNotification(
       `Partial receiving recorded! ${receivingQty} ${primaryItem.unit} received. Remaining: ${newRemaining} ${primaryItem.unit}. Inventory synced!`
     )
   }
 
   // Handle Record Payment
-  const handleRecordPayment = (e: React.FormEvent) => {
-    e.preventDefault()
-    const newPaid = po.paid_amount + payAmount
-    const newDue = Math.max(0, po.grand_total - newPaid)
+ const handleRecordPayment = (e: React.FormEvent) => {
+ e.preventDefault()
+ const newPaid = po.paid_amount + payAmount
+ const newDue = Math.max(0, po.grand_total - newPaid)
 
-    const newPayment: SupplierPaymentRecord = {
-      id: `sp-${Date.now()}`,
-      company_id: 'c-01',
-      purchase_order_id: po.id,
-      supplier_id: po.supplier_id,
-      supplier_name: po.supplier_name,
-      payment_method: payMethod,
-      amount: payAmount,
-      payment_date: new Date().toISOString().split('T')[0],
-      bank_name: payMethod === 'bank' || payMethod === 'cheque' ? bankName : undefined,
-      cheque_number: payMethod === 'cheque' ? chequeNo : undefined,
-      mfs_transaction_id: payMethod === 'mfs' ? mfsTrxId : undefined,
-      notes: paymentNotes || 'Supplier bill payment voucher issued.',
-      recorded_by_name: 'Accounts Executive',
-      created_at: new Date().toISOString(),
+ const newPayment: SupplierPaymentRecord = {
+ id: `sp-${Date.now()}`,
+ company_id: 'c-01',
+ purchase_order_id: po.id,
+ supplier_id: po.supplier_id,
+ supplier_name: po.supplier_name,
+ payment_method: payMethod,
+ amount: payAmount,
+ payment_date: new Date().toISOString().split('T')[0],
+ bank_name: payMethod === 'bank' || payMethod === 'cheque' ? bankName : undefined,
+ cheque_number: payMethod === 'cheque' ? chequeNo : undefined,
+ mfs_transaction_id: payMethod === 'mfs' ? mfsTrxId : undefined,
+ notes: paymentNotes || 'Supplier bill payment voucher issued.',
+ recorded_by_name: 'Accounts Executive',
+ created_at: new Date().toISOString(),
     }
 
-    const updatedPO: PurchaseOrderRecord = {
+ const updatedPO: PurchaseOrderRecord = {
       ...po,
-      paid_amount: newPaid,
-      due_amount: newDue,
-      status: newDue === 0 ? 'paid' : po.status,
-      payments: [newPayment, ...(po.payments || [])],
-      updated_at: new Date().toISOString(),
+ paid_amount: newPaid,
+ due_amount: newDue,
+ status: newDue === 0 ? 'paid' : po.status,
+ payments: [newPayment, ...(po.payments || [])],
+ updated_at: new Date().toISOString(),
     }
 
-    PrintERPDataStore.updateItem<PurchaseOrderRecord>(STORAGE_KEYS.PURCHASE_ORDERS, po.id, updatedPO)
+ PrintERPDataStore.updateItem<PurchaseOrderRecord>(STORAGE_KEYS.PURCHASE_ORDERS, po.id, updatedPO)
 
-    if (payMethod === 'cash') {
-      const cashEntry: CashBookEntryRecord = {
-        id: `cbe-${Date.now()}`,
-        company_id: 'c-01',
-        entry_date: new Date().toISOString().split('T')[0],
-        entry_type: 'cash_out',
-        amount: payAmount,
-        category: 'Supplier Payment',
-        description: `Paid ${po.supplier_name} for ${po.po_number}`,
-        reference_id: po.po_number,
-        performed_by_name: 'Accounts Executive',
-        created_at: 'Just now',
+ if (payMethod === 'cash') {
+ const cashEntry: CashBookEntryRecord = {
+ id: `cbe-${Date.now()}`,
+ company_id: 'c-01',
+ entry_date: new Date().toISOString().split('T')[0],
+ entry_type: 'cash_out',
+ amount: payAmount,
+ category: 'Supplier Payment',
+ description: `Paid ${po.supplier_name} for ${po.po_number}`,
+ reference_id: po.po_number,
+ performed_by_name: 'Accounts Executive',
+ created_at: 'Just now',
       }
-      PrintERPDataStore.addItem<CashBookEntryRecord>(STORAGE_KEYS.CASH_BOOK, cashEntry)
+ PrintERPDataStore.addItem<CashBookEntryRecord>(STORAGE_KEYS.CASH_BOOK, cashEntry)
     }
 
-    setIsPayOpen(false)
-    showNotification(`Supplier payment of ${formatBDT(payAmount)} via ${payMethod.toUpperCase()} registered.`)
+ setIsPayOpen(false)
+ showNotification(`Supplier payment of ${formatBDT(payAmount)} via ${payMethod.toUpperCase()} registered.`)
   }
 
-  return (
-    <div className="space-y-6 max-w-6xl print:max-w-none print:w-full print:bg-white print:text-foreground print:dark:bg-card print:dark:text-foreground print:m-0 print:p-0">
+ return (
+    <div className="space-y-6 max-w-6xl print:max-w-none print:w-full print:bg-white print:text-foreground print: print: print:m-0 print:p-0">
       {/* Back Link & Header */}
       <div>
         <Link
-          href={getTenantNavHref('/inventory?view=purchases', pathname, slug)}
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground dark:hover:text-white mb-3 print:hidden"
-        >
-          <ArrowLeft className="h-3.5 w-3.5" />
-          Back to Purchases
+ href={getTenantNavHref('/inventory?view=purchases', pathname, slug)}
+ className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground dark:hover:text-foreground mb-3 print:hidden">
+          <ArrowLeft className="h-3.5 w-3.5"/>
+ Back to Purchases
         </Link>
 
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="space-y-1">
             <div className="flex items-center gap-2.5">
-              <h1 className="text-2xl font-black tracking-tight text-foreground dark:text-white tabular-nums print:text-foreground">
+              <h1 className="text-2xl font-black tracking-tight text-foreground tabular-nums print:text-foreground">
                 {po.po_number}
               </h1>
               <span className="capitalize px-2 py-0.5 rounded text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200 dark:bg-indigo-950/40 dark:text-indigo-300 print:border-input print:text-foreground print:bg-muted">
@@ -272,7 +270,7 @@ export default function PurchaseOrderDetailPage() {
               </span>
             </div>
             <div className="text-sm font-bold text-foreground print:text-foreground">
-              Supplier: {po.supplier_name}
+ Supplier: {po.supplier_name}
             </div>
             <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground pt-0.5 print:text-foreground">
               <span>Date Issued: <strong>{po.po_date}</strong></span>
@@ -287,41 +285,34 @@ export default function PurchaseOrderDetailPage() {
             {/* Receive Material Button */}
             {po.status !== 'received' && po.status !== 'paid' && (
               <Button
-                size="sm"
-                onClick={() => {
-                  setReceivingQty(primaryItem?.quantity_remaining || 1)
-                  setIsReceiveOpen(true)
+ size="sm"onClick={() => {
+ setReceivingQty(primaryItem?.quantity_remaining || 1)
+ setIsReceiveOpen(true)
                 }}
-                className="bg-blue-600 hover:bg-blue-700 text-xs text-white h-9 px-3"
-              >
-                <ArrowDownLeft className="mr-1.5 h-3.5 w-3.5" />
-                Receive Material (GRN)
+ className="bg-blue-600 hover:bg-blue-700 text-xs text-white h-9 px-3">
+                <ArrowDownLeft className="mr-1.5 h-3.5 w-3.5"/>
+ Receive Material (GRN)
               </Button>
             )}
 
             {/* Settle Bill Button */}
             {po.due_amount > 0 && (
               <Button
-                size="sm"
-                onClick={() => {
-                  setPayAmount(po.due_amount)
-                  setIsPayOpen(true)
+ size="sm"onClick={() => {
+ setPayAmount(po.due_amount)
+ setIsPayOpen(true)
                 }}
-                className="bg-emerald-600 hover:bg-emerald-700 text-xs text-white h-9 px-3"
-              >
-                <DollarSign className="mr-1.5 h-3.5 w-3.5" />
-                Record Payment
+ className="bg-emerald-600 hover:bg-emerald-700 text-xs text-white h-9 px-3">
+                <DollarSign className="mr-1.5 h-3.5 w-3.5"/>
+ Record Payment
               </Button>
             )}
 
             <Button
-              size="sm"
-              variant="outline"
-              onClick={() => window.print()}
-              className="text-xs h-9 px-3"
-            >
-              <Printer className="mr-1.5 h-3.5 w-3.5" />
-              Print PO
+ size="sm"variant="outline"onClick={() => window.print()}
+ className="text-xs h-9 px-3">
+              <Printer className="mr-1.5 h-3.5 w-3.5"/>
+ Print PO
             </Button>
           </div>
         </div>
@@ -330,7 +321,7 @@ export default function PurchaseOrderDetailPage() {
       {/* Notification */}
       {notification && (
         <div className="p-3 bg-emerald-50 text-emerald-800 rounded-lg text-xs font-semibold flex items-center gap-2 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800 animate-in fade-in-0">
-          <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+          <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0"/>
           <span>{notification}</span>
         </div>
       )}
@@ -339,7 +330,7 @@ export default function PurchaseOrderDetailPage() {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Card className="p-4 border-l-4 border-l-indigo-600">
           <span className="text-xs font-semibold text-muted-foreground">Total Purchase Commitment</span>
-          <div className="text-2xl font-black text-foreground dark:text-white mt-1">
+          <div className="text-2xl font-black text-foreground mt-1">
             <CurrencyDisplay amount={po.grand_total} />
           </div>
           <span className="text-2xs text-muted-foreground tabular-nums">Agreed Contract Rate</span>
@@ -365,14 +356,14 @@ export default function PurchaseOrderDetailPage() {
       </div>
 
       {/* =========================================================================
-          ORDERED VS RECEIVED VS REMAINING (The Core Phase 11 Requirement)
+ ORDERED VS RECEIVED VS REMAINING (The Core Phase 11 Requirement)
          ========================================================================= */}
       <Card>
-        <CardHeader className="pb-3 border-b border-border dark:border-border">
+        <CardHeader className="pb-3 border-b border-border">
           <div className="flex items-center justify-between">
             <CardTitle className="text-base font-bold flex items-center gap-2">
-              <Layers className="h-4 w-4 text-indigo-600" />
-              Line Items & Partial Receiving Ledger
+              <Layers className="h-4 w-4 text-indigo-600"/>
+ Line Items & Partial Receiving Ledger
             </CardTitle>
             <span className="text-xs text-muted-foreground">Stock updates strictly for received units</span>
           </div>
@@ -395,11 +386,11 @@ export default function PurchaseOrderDetailPage() {
                 {po.items.map((item) => (
                   <tr key={item.id} className="hover:bg-muted">
                     <td className="py-3.5 px-4">
-                      <strong className="text-foreground dark:text-white text-xs print:text-foreground">{item.material_name}</strong>
+                      <strong className="text-foreground text-xs print:text-foreground">{item.material_name}</strong>
                     </td>
 
                     {/* Ordered */}
-                    <td className="py-3.5 px-4 text-center tabular-nums font-bold text-foreground dark:text-white print:text-foreground">
+                    <td className="py-3.5 px-4 text-center tabular-nums font-bold text-foreground print:text-foreground">
                       {item.quantity_ordered} {item.unit}
                     </td>
 
@@ -419,7 +410,7 @@ export default function PurchaseOrderDetailPage() {
                     </td>
 
                     {/* Total */}
-                    <td className="py-3.5 px-4 text-right tabular-nums font-bold text-foreground dark:text-white print:text-foreground">
+                    <td className="py-3.5 px-4 text-right tabular-nums font-bold text-foreground print:text-foreground">
                       {formatBDT(item.total_cost)}
                     </td>
                   </tr>
@@ -433,15 +424,15 @@ export default function PurchaseOrderDetailPage() {
             {po.items.map((item) => (
               <div key={item.id} className="p-3 bg-muted rounded-lg space-y-2 text-xs">
                 <div className="flex items-center justify-between">
-                  <strong className="text-foreground dark:text-white font-bold text-sm">{item.material_name}</strong>
+                  <strong className="text-foreground font-bold text-sm">{item.material_name}</strong>
                   <span className="tabular-nums font-bold text-indigo-600 dark:text-indigo-400">
                     {formatBDT(item.total_cost)}
                   </span>
                 </div>
-                <div className="grid grid-cols-3 gap-2 text-center pt-1 border-t border-border dark:border-border">
-                  <div className="p-1.5 rounded bg-card border border-border dark:border-border">
+                <div className="grid grid-cols-3 gap-2 text-center pt-1 border-t border-border">
+                  <div className="p-1.5 rounded bg-card border border-border">
                     <div className="text-2xs text-muted-foreground">Ordered</div>
-                    <div className="tabular-nums font-bold text-foreground dark:text-white">{item.quantity_ordered} {item.unit}</div>
+                    <div className="tabular-nums font-bold text-foreground">{item.quantity_ordered} {item.unit}</div>
                   </div>
                   <div className="p-1.5 rounded bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800">
                     <div className="text-2xs text-emerald-600">Received</div>
@@ -453,7 +444,7 @@ export default function PurchaseOrderDetailPage() {
                   </div>
                 </div>
                 <div className="text-2xs text-muted-foreground text-right tabular-nums">
-                  Unit Cost: {formatBDT(item.unit_cost)} / {item.unit}
+ Unit Cost: {formatBDT(item.unit_cost)} / {item.unit}
                 </div>
               </div>
             ))}
@@ -462,29 +453,29 @@ export default function PurchaseOrderDetailPage() {
       </Card>
 
       {/* =========================================================================
-          SUPPLIER PRICE HISTORY & BENCHMARKS (Core Requirement)
+ SUPPLIER PRICE HISTORY & BENCHMARKS (Core Requirement)
          ========================================================================= */}
       {benchmark && (
         <Card className="border-blue-200 dark:border-blue-900 shadow-xs">
           <CardHeader className="pb-3 border-b border-border bg-blue-50/30 dark:bg-blue-950/20">
             <div className="flex items-center justify-between">
               <CardTitle className="text-sm font-bold flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-blue-600" />
-                Procurement Price Benchmarks: {benchmark.material_name}
+                <TrendingUp className="h-4 w-4 text-blue-600"/>
+ Procurement Price Benchmarks: {benchmark.material_name}
               </CardTitle>
-              <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-300 text-2xs">
-                Procurement Intelligence
+              <Badge variant="outline"className="bg-blue-100 text-blue-800 border-blue-300 text-2xs">
+ Procurement Intelligence
               </Badge>
             </div>
             <CardDescription className="text-xs">
-              Historical purchase cost comparisons across previous vendor POs.
+ Historical purchase cost comparisons across previous vendor POs.
             </CardDescription>
           </CardHeader>
           <CardContent className="p-4">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <div className="p-3 rounded-lg border border-border text-xs">
                 <span className="text-muted-foreground">Last PO Price</span>
-                <div className="text-lg font-black text-foreground dark:text-white mt-0.5">
+                <div className="text-lg font-black text-foreground mt-0.5">
                   {formatBDT(benchmark.last_price)}
                 </div>
                 <span className="text-2xs text-muted-foreground">Most recent order</span>
@@ -522,22 +513,22 @@ export default function PurchaseOrderDetailPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* GRN Receipts */}
         <Card>
-          <CardHeader className="pb-3 border-b border-border dark:border-border">
+          <CardHeader className="pb-3 border-b border-border">
             <CardTitle className="text-sm font-bold flex items-center gap-2">
-              <FileCheck2 className="h-4 w-4 text-emerald-600" />
-              Goods Received Notes (GRN Batches)
+              <FileCheck2 className="h-4 w-4 text-emerald-600"/>
+ Goods Received Notes (GRN Batches)
             </CardTitle>
           </CardHeader>
           <CardContent className="p-4 space-y-3 text-xs">
             {po.grns && po.grns.length > 0 ? (
-              po.grns.map((grn) => (
+ po.grns.map((grn) => (
                 <div key={grn.id} className="p-3 rounded-lg border border-border bg-muted space-y-1">
                   <div className="flex justify-between font-bold">
                     <span className="tabular-nums text-emerald-600">{grn.grn_number}</span>
                     <span className="text-muted-foreground">{grn.received_date}</span>
                   </div>
                   <div className="text-foreground font-medium">
-                    Challan: <strong>{grn.challan_number || 'N/A'}</strong> • Receiver: {grn.received_by_name}
+ Challan: <strong>{grn.challan_number || 'N/A'}</strong> • Receiver: {grn.received_by_name}
                   </div>
                   {grn.notes && <p className="text-2xs text-muted-foreground">{grn.notes}</p>}
                 </div>
@@ -550,19 +541,19 @@ export default function PurchaseOrderDetailPage() {
 
         {/* Payment Vouchers */}
         <Card>
-          <CardHeader className="pb-3 border-b border-border dark:border-border">
+          <CardHeader className="pb-3 border-b border-border">
             <CardTitle className="text-sm font-bold flex items-center gap-2">
-              <Receipt className="h-4 w-4 text-purple-600" />
-              Supplier Payment Vouchers
+              <Receipt className="h-4 w-4 text-purple-600"/>
+ Supplier Payment Vouchers
             </CardTitle>
           </CardHeader>
           <CardContent className="p-4 space-y-3 text-xs">
             {po.payments && po.payments.length > 0 ? (
-              po.payments.map((p) => (
+ po.payments.map((p) => (
                 <div key={p.id} className="p-3 rounded-lg border border-border bg-muted space-y-1">
                   <div className="flex justify-between font-bold">
                     <span className="text-emerald-600 tabular-nums">{formatBDT(p.amount)}</span>
-                    <span className="uppercase text-2xs px-1.5 py-0.5 rounded bg-muted dark:bg-muted">
+                    <span className="uppercase text-2xs px-1.5 py-0.5 rounded bg-muted">
                       {p.payment_method}
                     </span>
                   </div>
@@ -581,11 +572,9 @@ export default function PurchaseOrderDetailPage() {
 
       {/* MODAL: RECEIVE MATERIAL (PARTIAL RECEIVING) */}
       <ModalDialog
-        open={isReceiveOpen}
-        onOpenChange={setIsReceiveOpen}
-        title="Receive Goods & Partial Shipment (GRN)"
-        description="Records incoming material arrival. Inventory stock is updated ONLY for the received quantity."
-      >
+ open={isReceiveOpen}
+ onOpenChange={setIsReceiveOpen}
+ title="Receive Goods & Partial Shipment (GRN)"description="Records incoming material arrival. Inventory stock is updated ONLY for the received quantity.">
         <form onSubmit={handleApplyReceiving} className="space-y-4 pt-1 max-h-[75vh] overflow-y-auto px-1">
           {primaryItem && (
             <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 text-xs space-y-1">
@@ -610,26 +599,21 @@ export default function PurchaseOrderDetailPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label htmlFor="rcvQty" required>Quantity Received Today</Label>
+              <Label htmlFor="rcvQty"required>Quantity Received Today</Label>
               <Input
-                id="rcvQty"
-                type="number"
-                min="0.01"
-                step="any"
-                value={receivingQty === 0 ? '' : receivingQty}
-                onChange={(e) => setReceivingQty(e.target.value === '' ? 0 : Number(e.target.value))}
-                placeholder={String(primaryItem?.quantity_remaining || 0)}
-                required
+ id="rcvQty"type="number"min="0.01"step="any"value={receivingQty === 0 ? '' : receivingQty}
+ onChange={(e) => setReceivingQty(e.target.value === '' ? 0 : Number(e.target.value))}
+ placeholder={String(primaryItem?.quantity_remaining || 0)}
+ required
               />
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="chNo" required>Supplier Delivery Challan #</Label>
+              <Label htmlFor="chNo"required>Supplier Delivery Challan #</Label>
               <Input
-                id="chNo"
-                value={challanNo}
-                onChange={(e) => setChallanNo(e.target.value)}
-                required
+ id="chNo"value={challanNo}
+ onChange={(e) => setChallanNo(e.target.value)}
+ required
               />
             </div>
           </div>
@@ -637,20 +621,18 @@ export default function PurchaseOrderDetailPage() {
           <div className="space-y-1.5">
             <Label htmlFor="rcvNotes">Inspection & Warehouse Notes</Label>
             <textarea
-              id="rcvNotes"
-              rows={2}
-              value={receivingNotes}
-              onChange={(e) => setReceivingNotes(e.target.value)}
-              className="w-full p-2 rounded-md border border-input bg-card text-xs"
-            />
+ id="rcvNotes"rows={2}
+ value={receivingNotes}
+ onChange={(e) => setReceivingNotes(e.target.value)}
+ className="w-full p-2 rounded-md border border-input bg-card text-xs"/>
           </div>
 
-          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-3 border-t border-border dark:border-border">
-            <Button type="button" variant="outline" onClick={() => setIsReceiveOpen(false)} className="w-full sm:w-auto h-10 sm:h-9">
-              Cancel
+          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-3 border-t border-border">
+            <Button type="button"variant="outline"onClick={() => setIsReceiveOpen(false)} className="w-full sm:w-auto h-10 sm:h-9">
+ Cancel
             </Button>
-            <Button type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold w-full sm:w-auto h-10 sm:h-9">
-              Confirm Receipt & Update Inventory
+            <Button type="submit"className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold w-full sm:w-auto h-10 sm:h-9">
+ Confirm Receipt & Update Inventory
             </Button>
           </div>
         </form>
@@ -658,33 +640,28 @@ export default function PurchaseOrderDetailPage() {
 
       {/* MODAL: RECORD SUPPLIER PAYMENT */}
       <ModalDialog
-        open={isPayOpen}
-        onOpenChange={setIsPayOpen}
-        title="Record Supplier Bill Settlement"
-        description={`Settle outstanding payables for ${po.supplier_name} (Current Due: ৳ ${po.due_amount}).`}
+ open={isPayOpen}
+ onOpenChange={setIsPayOpen}
+ title="Record Supplier Bill Settlement"description={`Settle outstanding payables for ${po.supplier_name} (Current Due: ৳ ${po.due_amount}).`}
       >
         <form onSubmit={handleRecordPayment} className="space-y-4 pt-1 max-h-[75vh] overflow-y-auto px-1">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label htmlFor="spAmt" required>Payment Amount (৳ BDT)</Label>
+              <Label htmlFor="spAmt"required>Payment Amount (৳ BDT)</Label>
               <Input
-                id="spAmt"
-                type="number"
-                max={po.due_amount}
-                value={payAmount}
-                onChange={(e) => setPayAmount(Number(e.target.value))}
-                required
+ id="spAmt"type="number"max={po.due_amount}
+ value={payAmount}
+ onChange={(e) => setPayAmount(Number(e.target.value))}
+ required
               />
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="spMeth" required>Payment Method</Label>
+              <Label htmlFor="spMeth"required>Payment Method</Label>
               <select
-                id="spMeth"
-                value={payMethod}
-                onChange={(e) => setPayMethod(e.target.value as SupplierPaymentMethod)}
-                className="w-full h-10 px-3 rounded-md border border-input bg-card text-xs font-semibold capitalize"
-              >
+ id="spMeth"value={payMethod}
+ onChange={(e) => setPayMethod(e.target.value as SupplierPaymentMethod)}
+ className="w-full h-10 px-3 rounded-md border border-input bg-card text-xs font-semibold capitalize">
                 <option value="bank">Bank Transfer (EFT)</option>
                 <option value="cheque">Bank Cheque</option>
                 <option value="cash">Cash Counter</option>
@@ -698,20 +675,17 @@ export default function PurchaseOrderDetailPage() {
               <div className="space-y-1.5">
                 <Label htmlFor="bName">Bank Name</Label>
                 <Input
-                  id="bName"
-                  value={bankName}
-                  onChange={(e) => setBankName(e.target.value)}
+ id="bName"value={bankName}
+ onChange={(e) => setBankName(e.target.value)}
                 />
               </div>
               {payMethod === 'cheque' && (
                 <div className="space-y-1.5">
-                  <Label htmlFor="cqNo" required>Cheque Number</Label>
+                  <Label htmlFor="cqNo"required>Cheque Number</Label>
                   <Input
-                    id="cqNo"
-                    placeholder="e.g. CQ-904812"
-                    value={chequeNo}
-                    onChange={(e) => setChequeNo(e.target.value)}
-                    required
+ id="cqNo"placeholder="e.g. CQ-904812"value={chequeNo}
+ onChange={(e) => setChequeNo(e.target.value)}
+ required
                   />
                 </div>
               )}
@@ -720,23 +694,21 @@ export default function PurchaseOrderDetailPage() {
 
           {payMethod === 'mfs' && (
             <div className="space-y-1.5">
-              <Label htmlFor="mfsTrx" required>bKash / Nagad Transaction ID</Label>
+              <Label htmlFor="mfsTrx"required>bKash / Nagad Transaction ID</Label>
               <Input
-                id="mfsTrx"
-                placeholder="e.g. BK-994819284"
-                value={mfsTrxId}
-                onChange={(e) => setMfsTrxId(e.target.value)}
-                required
+ id="mfsTrx"placeholder="e.g. BK-994819284"value={mfsTrxId}
+ onChange={(e) => setMfsTrxId(e.target.value)}
+ required
               />
             </div>
           )}
 
-          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-3 border-t border-border dark:border-border">
-            <Button type="button" variant="outline" onClick={() => setIsPayOpen(false)} className="w-full sm:w-auto h-10 sm:h-9">
-              Cancel
+          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-3 border-t border-border">
+            <Button type="button"variant="outline"onClick={() => setIsPayOpen(false)} className="w-full sm:w-auto h-10 sm:h-9">
+ Cancel
             </Button>
-            <Button type="submit" className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold w-full sm:w-auto h-10 sm:h-9">
-              Issue Payment Voucher
+            <Button type="submit"className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold w-full sm:w-auto h-10 sm:h-9">
+ Issue Payment Voucher
             </Button>
           </div>
         </form>

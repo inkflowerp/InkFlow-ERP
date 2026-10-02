@@ -2,18 +2,18 @@
 
 import React from 'react'
 import {
-  AlertTriangle,
-  Lock,
-  ArrowRight,
-  Sparkles,
-  Users,
-  Building,
-  HardDrive,
-  ShoppingCart,
-  Layers,
-  Package,
-  Crown,
-  Zap,
+ AlertTriangle,
+ Lock,
+ ArrowRight,
+ Sparkles,
+ Users,
+ Building,
+ HardDrive,
+ ShoppingCart,
+ Layers,
+ Package,
+ Crown,
+ Zap,
 } from 'lucide-react'
 import { useSubscription } from '@/hooks/use-subscription'
 import { useI18n } from '@/i18n/context'
@@ -25,70 +25,69 @@ import { ConfigurableLimitType } from '@/types/subscription.types'
 import { getNextTierPlan } from '@/lib/subscription/subscription-constants'
 
 const LIMIT_LABELS: Record<ConfigurableLimitType, { en: string; bn: string; resourceNameEn: string; resourceNameBn: string; icon: React.ElementType }> = {
-  max_users: { en: 'Team Users Limit Reached', bn: 'সর্বোচ্চ ইউজার অ্যাকাউন্টের সীমা পূর্ণ', resourceNameEn: 'Users', resourceNameBn: 'ইউজার', icon: Users },
-  max_branches: { en: 'Branches & Hubs Limit Reached', bn: 'সর্বোচ্চ শাখা/কারখানার সীমা পূর্ণ', resourceNameEn: 'Branches', resourceNameBn: 'শাখা', icon: Building },
-  monthly_orders: { en: 'Monthly Order Quota Exhausted', bn: 'চলতি মাসের সর্বোচ্চ অর্ডার কোটা পূর্ণ', resourceNameEn: 'Monthly Orders', resourceNameBn: 'মাসিক অর্ডার', icon: ShoppingCart },
-  max_customers: { en: 'Customer Directory Limit Reached', bn: 'গ্রাহক তালিকার সর্বোচ্চ সীমা পূর্ণ', resourceNameEn: 'Customers', resourceNameBn: 'কাস্টমার', icon: Users },
-  max_products: { en: 'Inventory & Materials Limit Reached', bn: 'ইনভেন্টরি ও প্রোডাক্টের সর্বোচ্চ সীমা পূর্ণ', resourceNameEn: 'Products & Materials', resourceNameBn: 'প্রোডাক্ট ও মেটেরিয়াল', icon: Package },
-  storage_gb: { en: 'Cloud Storage Capacity Reached', bn: 'ক্লাউড স্টোরেজ ধারণক্ষমতা পূর্ণ', resourceNameEn: 'Cloud Storage (GB)', resourceNameBn: 'ক্লাউড স্টোরেজ (জিবি)', icon: HardDrive },
+ max_users: { en: 'Team Users Limit Reached', bn: 'সর্বোচ্চ ইউজার অ্যাকাউন্টের সীমা পূর্ণ', resourceNameEn: 'Users', resourceNameBn: 'ইউজার', icon: Users },
+ max_branches: { en: 'Branches & Hubs Limit Reached', bn: 'সর্বোচ্চ শাখা/কারখানার সীমা পূর্ণ', resourceNameEn: 'Branches', resourceNameBn: 'শাখা', icon: Building },
+ monthly_orders: { en: 'Monthly Order Quota Exhausted', bn: 'চলতি মাসের সর্বোচ্চ অর্ডার কোটা পূর্ণ', resourceNameEn: 'Monthly Orders', resourceNameBn: 'মাসিক অর্ডার', icon: ShoppingCart },
+ max_customers: { en: 'Customer Directory Limit Reached', bn: 'গ্রাহক তালিকার সর্বোচ্চ সীমা পূর্ণ', resourceNameEn: 'Customers', resourceNameBn: 'কাস্টমার', icon: Users },
+ max_products: { en: 'Inventory & Materials Limit Reached', bn: 'ইনভেন্টরি ও প্রোডাক্টের সর্বোচ্চ সীমা পূর্ণ', resourceNameEn: 'Products & Materials', resourceNameBn: 'প্রোডাক্ট ও মেটেরিয়াল', icon: Package },
+ storage_gb: { en: 'Cloud Storage Capacity Reached', bn: 'ক্লাউড স্টোরেজ ধারণক্ষমতা পূর্ণ', resourceNameEn: 'Cloud Storage (GB)', resourceNameBn: 'ক্লাউড স্টোরেজ (জিবি)', icon: HardDrive },
 }
 
 export function LimitExceededModal() {
-  const {
-    isLimitExceededModalOpen,
-    closeLimitExceededModal,
-    limitModalType,
-    currentPlan,
-    currentPlanCode,
-    allPlans,
-    getLimitStatus,
-    openUpgradeModal,
+ const {
+ isLimitExceededModalOpen,
+ closeLimitExceededModal,
+ limitModalType,
+ currentPlan,
+ currentPlanCode,
+ allPlans,
+ getLimitStatus,
+ openUpgradeModal,
   } = useSubscription()
-  const { locale, tBilingual } = useI18n()
+ const { locale, tBilingual } = useI18n()
 
-  if (!isLimitExceededModalOpen || !limitModalType) return null
+ if (!isLimitExceededModalOpen || !limitModalType) return null
 
-  const meta = LIMIT_LABELS[limitModalType] || {
-    en: 'Resource Limit Reached',
-    bn: 'রিসোর্স লিমিট পূর্ণ',
-    resourceNameEn: 'Resources',
-    resourceNameBn: 'রিসোর্স',
-    icon: Lock,
+ const meta = LIMIT_LABELS[limitModalType] || {
+ en: 'Resource Limit Reached',
+ bn: 'রিসোর্স লিমিট পূর্ণ',
+ resourceNameEn: 'Resources',
+ resourceNameBn: 'রিসোর্স',
+ icon: Lock,
   }
-  const Icon = meta.icon
-  const status = getLimitStatus(limitModalType)
-  const nextPlan = getNextTierPlan(currentPlanCode, allPlans)
-  const nextPlanLimit = nextPlan[limitModalType]
+ const Icon = meta.icon
+ const status = getLimitStatus(limitModalType)
+ const nextPlan = getNextTierPlan(currentPlanCode, allPlans)
+ const nextPlanLimit = nextPlan[limitModalType]
 
-  const isNextUnlimited = nextPlanLimit <= 0 || nextPlanLimit >= 99999
-  const nextLimitLabelEn = isNextUnlimited ? 'Unlimited' : String(nextPlanLimit)
-  const nextLimitLabelBn = isNextUnlimited ? 'আনলিমিটেড' : toBengaliDigits(nextPlanLimit)
+ const isNextUnlimited = nextPlanLimit <= 0 || nextPlanLimit >= 99999
+ const nextLimitLabelEn = isNextUnlimited ? 'Unlimited' : String(nextPlanLimit)
+ const nextLimitLabelBn = isNextUnlimited ? 'আনলিমিটেড' : toBengaliDigits(nextPlanLimit)
 
-  const currentDisplay = locale === 'bn' ? toBengaliDigits(status.current) : status.current
-  const limitDisplay = status.limit <= 0 || status.limit >= 99999
+ const currentDisplay = locale === 'bn' ? toBengaliDigits(status.current) : status.current
+ const limitDisplay = status.limit <= 0 || status.limit >= 99999
     ? tBilingual('Unlimited', 'আনলিমিটেড')
     : locale === 'bn'
     ? toBengaliDigits(status.limit)
     : status.limit
 
-  const handleUpgradeClick = () => {
-    closeLimitExceededModal()
-    openUpgradeModal(nextPlan.code)
+ const handleUpgradeClick = () => {
+ closeLimitExceededModal()
+ openUpgradeModal(nextPlan.code)
   }
 
-  return (
+ return (
     <ModalDialog
-      open={isLimitExceededModalOpen}
-      onOpenChange={(open) => !open && closeLimitExceededModal()}
-      size="md"
-      hideFooter
-      title={
+ open={isLimitExceededModalOpen}
+ onOpenChange={(open) => !open && closeLimitExceededModal()}
+ size="md"hideFooter
+ title={
         <div className="flex items-center gap-3 text-amber-600 dark:text-amber-400">
-          <div className="p-2.5 rounded-2xl bg-amber-500/10 dark:bg-amber-950/60 border border-amber-500/20 text-amber-600 dark:text-amber-400 shadow-sm shrink-0">
-            <Lock className="h-5 w-5" />
+          <div className="p-2.5 rounded-xl bg-amber-500/10 dark:bg-amber-950/60 border border-amber-500/20 text-amber-600 dark:text-amber-400 shadow-sm shrink-0">
+            <Lock className="h-5 w-5"/>
           </div>
           <div>
-            <h3 className="font-bold text-base text-foreground dark:text-white bangla-text leading-snug">
+            <h3 className="font-bold text-base text-foreground bangla-text leading-snug">
               {tBilingual(meta.en, meta.bn)}
             </h3>
             <p className="text-xs text-muted-foreground font-medium">
@@ -103,11 +102,11 @@ export function LimitExceededModal() {
     >
       <div className="space-y-4 pt-1">
         {/* Quota Gauge */}
-        <div className="rounded-2xl bg-gradient-to-b from-amber-50/80 to-amber-100/40 dark:from-amber-950/30 dark:to-amber-900/10 border border-amber-200/80 dark:border-amber-800/60 p-4 space-y-3 shadow-sm">
+        <div className="rounded-xl bg-gradient-to-b from-amber-50/80 to-amber-100/40 dark:from-amber-950/30 dark:to-amber-900/10 border border-amber-200/80 dark:border-amber-800/60 p-4 space-y-3 shadow-sm">
           <div className="flex items-center justify-between text-xs font-semibold text-foreground bangla-text">
             <span className="flex items-center gap-1.5">
-              <Icon className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
-              {tBilingual('Current Quota Usage:', 'বর্তমান ব্যবহারের পরিমাণ:')}
+              <Icon className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400"/>
+              {tBilingual('Current Usage:', 'বর্তমান ব্যবহারের পরিমাণ:')}
             </span>
             <Badge className="bg-amber-500 hover:bg-amber-500 text-foreground font-bold px-2.5 py-0.5 shadow-sm text-xs">
               {currentDisplay} / {limitDisplay} ({status.percentage}%)
@@ -115,7 +114,7 @@ export function LimitExceededModal() {
           </div>
 
           <div className="w-full bg-amber-200/80 dark:bg-amber-950/80 rounded-full h-2.5 overflow-hidden p-0.5 border border-amber-300/40 dark:border-amber-800/40">
-            <div className="bg-gradient-to-r from-amber-500 to-orange-500 h-1.5 rounded-full w-full transition-all duration-500 shadow-sm" />
+            <div className="bg-gradient-to-r from-amber-500 to-orange-500 h-1.5 rounded-full w-full transition-all duration-500 shadow-sm"/>
           </div>
 
           <p className="text-xs font-medium text-foreground bangla-text leading-relaxed">
@@ -127,11 +126,11 @@ export function LimitExceededModal() {
         </div>
 
         {/* Upgrade Suggestion Box */}
-        <div className="rounded-2xl bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-950 text-white p-4 space-y-2.5 shadow-md border border-indigo-500/20 relative overflow-hidden">
+        <div className="rounded-xl bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-950 text-white p-4 space-y-2.5 shadow-xs border border-indigo-500/20 relative overflow-hidden">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="p-1 rounded-lg bg-amber-400/20 text-amber-400">
-                <Sparkles className="h-3.5 w-3.5" />
+                <Sparkles className="h-3.5 w-3.5"/>
               </div>
               <span className="text-xs font-bold uppercase tracking-wider text-foreground bangla-text">
                 {tBilingual('Recommended Upgrade', 'প্রস্তাবিত আপগ্রেড')}
@@ -155,24 +154,17 @@ export function LimitExceededModal() {
         {/* Actions */}
         <div className="flex items-center justify-end gap-2.5 pt-2">
           <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={closeLimitExceededModal}
-            className="h-9 px-4 text-xs font-semibold bangla-text rounded-xl"
-          >
+ type="button"variant="outline"size="sm"onClick={closeLimitExceededModal}
+ className="h-9 px-4 text-xs font-semibold bangla-text rounded-xl">
             {tBilingual('Close', 'বন্ধ করুন')}
           </Button>
 
           <Button
-            type="button"
-            size="sm"
-            onClick={handleUpgradeClick}
-            className="h-9 px-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs bangla-text shadow-md shadow-blue-600/20 rounded-xl transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
-          >
-            <Zap className="mr-1.5 h-3.5 w-3.5 text-amber-300 fill-amber-300" />
+ type="button"size="sm"onClick={handleUpgradeClick}
+ className="h-9 px-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs bangla-text shadow-xs shadow-blue-600/20 rounded-xl transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] cursor-pointer">
+            <Zap className="mr-1.5 h-3.5 w-3.5 text-amber-300 fill-amber-300"/>
             {tBilingual(`Upgrade to ${nextPlan.name}`, `${nextPlan.name_bn} এ আপগ্রেড করুন`)}
-            <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+            <ArrowRight className="ml-1.5 h-3.5 w-3.5"/>
           </Button>
         </div>
       </div>

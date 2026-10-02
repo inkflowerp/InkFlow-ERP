@@ -2,20 +2,20 @@
 
 import React from 'react'
 import {
-  Printer,
-  FileCheck2,
-  Calendar,
-  Clock,
-  Cpu,
-  User,
-  MapPin,
-  Phone,
-  ShieldCheck,
-  CheckCircle2,
-  AlertTriangle,
-  Scissors,
-  Layers,
-  Sparkles,
+ Printer,
+ FileCheck2,
+ Calendar,
+ Clock,
+ Cpu,
+ User,
+ MapPin,
+ Phone,
+ ShieldCheck,
+ CheckCircle2,
+ AlertTriangle,
+ Scissors,
+ Layers,
+ Sparkles,
 } from 'lucide-react'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import { Button } from '@/components/ui/button'
@@ -25,38 +25,37 @@ import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
 
 export interface JobTicketPrintModalProps {
-  isOpen: boolean
-  onClose: () => void
-  task: ProductionTaskRecord | null
+ isOpen: boolean
+ onClose: () => void
+ task: ProductionTaskRecord | null
 }
 
 export function JobTicketPrintModal({
-  isOpen,
-  onClose,
-  task,
+ isOpen,
+ onClose,
+ task,
 }: JobTicketPrintModalProps) {
-  const { company } = useTenant()
-  const { locale, tBilingual } = useI18n()
-  const isBn = locale === 'bn'
+ const { company } = useTenant()
+ const { locale, tBilingual } = useI18n()
+ const isBn = locale === 'bn'
 
-  if (!task) return null
+ if (!task) return null
 
-  const handlePrint = () => {
-    window.print()
+ const handlePrint = () => {
+ window.print()
   }
 
-  const sftArea = task.width && task.height
+ const sftArea = task.width && task.height
     ? ((task.width * task.height) / (task.dimension_unit === 'inch' ? 144 : 1)).toFixed(2)
     : null
 
-  return (
+ return (
     <ModalDialog
-      open={isOpen}
-      onOpenChange={(open) => !open && onClose()}
-      size="2xl"
-      title={
+ open={isOpen}
+ onOpenChange={(open) => !open && onClose()}
+ size="2xl"title={
         <div className="flex items-center gap-2">
-          <FileCheck2 className="h-5 w-5 text-blue-600" />
+          <FileCheck2 className="h-5 w-5 text-blue-600"/>
           <span className="text-base font-bold">
             {isBn ? 'প্রেস ফ্লোর জব কার্ড / কাজের নির্দেশিকা' : 'Press Floor Job Ticket / Work Order'}
           </span>
@@ -65,30 +64,28 @@ export function JobTicketPrintModal({
     >
       <div className="space-y-4 pt-1">
         {/* Print Toolbar */}
-        <div className="print:hidden flex items-center justify-between p-3 rounded-lg bg-muted border border-border dark:border-border">
+        <div className="print:hidden flex items-center justify-between p-3 rounded-lg bg-muted border border-border">
           <div className="text-xs text-muted-foreground">
             {isBn
               ? 'মেশিন অপারেটরের ক্লিপবোর্ডে যুক্ত করার জন্য প্রিন্ট করুন'
               : 'Print official 1-page shop floor routing card for machine operator'}
           </div>
           <Button
-            size="sm"
-            onClick={handlePrint}
-            className="bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs h-8 gap-1.5 shadow-xs"
-          >
-            <Printer className="h-3.5 w-3.5" />
+ size="sm"onClick={handlePrint}
+ className="bg-surface-inset hover:bg-card-elevated text-foreground font-bold text-xs h-8 gap-1.5 shadow-xs">
+            <Printer className="h-3.5 w-3.5"/>
             <span>{isBn ? 'জব কার্ড প্রিন্ট' : 'Print Job Card'}</span>
           </Button>
         </div>
 
         {/* =========================================================================
-            OFFICIAL PRINTABLE PRESS JOB TICKET (জব কার্ড)
+ OFFICIAL PRINTABLE PRESS JOB TICKET (জব কার্ড)
            ========================================================================= */}
         <div className="bg-card text-foreground p-6 sm:p-8 rounded-xl border border-input text-xs space-y-4 shadow-xs print:border-none print:shadow-none print:p-0">
           {/* Header */}
-          <div className="text-center space-y-1 pb-3 border-b-2 border-slate-900 relative">
+          <div className="text-center space-y-1 pb-3 border-b-2 border-border relative">
             <div className="absolute right-0 top-0 text-2xs tabular-nums px-2 py-0.5 rounded bg-muted font-bold border border-input">
-              TASK: {task.task_number}
+ TASK: {task.task_number}
             </div>
             <h1 className="text-lg font-black tracking-tight uppercase">
               {company?.name || 'InkFlow Digital Printing & Signage'}
@@ -96,8 +93,8 @@ export function JobTicketPrintModal({
             {company?.address && (
               <p className="text-muted-foreground text-2xs">{company.address}</p>
             )}
-            <div className="inline-block mt-1 px-4 py-0.5 rounded-full bg-slate-900 text-white font-black text-xs tracking-wider uppercase">
-              PRODUCTION JOB TICKET • কারখানা কাজের নির্দেশিকা
+            <div className="inline-block mt-1 px-4 py-0.5 rounded-full bg-surface-inset text-foreground font-black text-xs tracking-wider uppercase">
+ PRODUCTION JOB TICKET • কারখানা কাজের নির্দেশিকা
             </div>
           </div>
 
@@ -156,23 +153,23 @@ export function JobTicketPrintModal({
           {/* Quality Assurance & Finishing Checklist */}
           <div className="p-3 bg-muted rounded-lg border border-input space-y-2">
             <span className="font-bold text-2xs uppercase tracking-wider text-foreground block">
-              Quality Assurance & Finishing Checklist (কোয়ালিটি চেক):
+ Quality Assurance & Finishing Checklist (কোয়ালিটি চেক):
             </span>
             <div className="grid grid-cols-2 gap-2 text-2xs">
               <div className="flex items-center gap-1.5">
-                <span className="h-3.5 w-3.5 rounded border border-input bg-card inline-block" />
+                <span className="h-3.5 w-3.5 rounded border border-input bg-card inline-block"/>
                 <span>মিডিয়া ও সারফেস কোয়ালিটি চেক (No scratches/banding)</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="h-3.5 w-3.5 rounded border border-input bg-card inline-block" />
+                <span className="h-3.5 w-3.5 rounded border border-input bg-card inline-block"/>
                 <span>সাইজ ও কাটিং ডাইমেনশন সঠিকতা (Exact Cut Check)</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="h-3.5 w-3.5 rounded border border-input bg-card inline-block" />
+                <span className="h-3.5 w-3.5 rounded border border-input bg-card inline-block"/>
                 <span>লেমিনেশন / ফিনিশিং নিখুঁত (No bubble/crease)</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="h-3.5 w-3.5 rounded border border-input bg-card inline-block" />
+                <span className="h-3.5 w-3.5 rounded border border-input bg-card inline-block"/>
                 <span>প্যাকেজিং ও চালান হস্তান্তর রেডি (Packaged & Sealed)</span>
               </div>
             </div>

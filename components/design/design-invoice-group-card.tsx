@@ -6,25 +6,25 @@ import { usePathname } from 'next/navigation'
 import { useTenant } from '@/hooks/use-tenant'
 import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import {
-  Phone,
-  Calendar,
-  ChevronDown,
-  ChevronRight,
-  ChevronUp,
-  FileText,
-  Play,
-  Check,
-  Send,
-  MoreVertical,
-  ExternalLink,
-  MessageSquare,
-  Eye,
-  Sliders,
-  Sparkles,
-  Layers,
-  AlertCircle,
-  Clock,
-  CheckCircle2,
+ Phone,
+ Calendar,
+ ChevronDown,
+ ChevronRight,
+ ChevronUp,
+ FileText,
+ Play,
+ Check,
+ Send,
+ MoreVertical,
+ ExternalLink,
+ MessageSquare,
+ Eye,
+ Sliders,
+ Sparkles,
+ Layers,
+ AlertCircle,
+ Clock,
+ CheckCircle2,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -35,109 +35,97 @@ import { useI18n } from '@/i18n/context'
 import { DesignTimerBadge } from './design-timer-badge'
 
 export interface InvoiceGroup {
-  invoiceId: string
-  invoiceNumber: string
-  customerName: string
-  customerPhone?: string | null
-  invoiceDate?: string | null
-  jobs: DesignJobRecord[]
-  allInvoiceItems?: any[]
-  overallStatus?: string
-  completedCount?: number
-  dueText?: string | null
-  leftBorderColor?: string
+ invoiceId: string
+ invoiceNumber: string
+ customerName: string
+ customerPhone?: string | null
+ invoiceDate?: string | null
+ jobs: DesignJobRecord[]
+ allInvoiceItems?: any[]
+ overallStatus?: string
+ completedCount?: number
+ dueText?: string | null
+ leftBorderColor?: string
 }
 
 interface DesignInvoiceGroupCardProps {
-  group: InvoiceGroup
-  activeTab: string
-  getPreflightStatus: (jobId: string, status?: string) => PreflightState
-  onTogglePreflight: (jobId: string, key: keyof PreflightState, designNumber?: string) => void
-  onOpenWhatsApp: (job: DesignJobRecord, tpl?: 'proof' | 'reminder' | 'production' | 'revision') => void
-  onOpenLightbox: (job: DesignJobRecord, versionIndex?: number) => void
-  onOpenCompare: (job: DesignJobRecord) => void
-  onOpenPreflightModal: (job: DesignJobRecord) => void
-  onStartDesign: (job: DesignJobRecord) => void
-  onCompleteDesign: (job: DesignJobRecord) => void
-  onConfirmToProduction: (job: DesignJobRecord) => void
-  onPauseProduction?: (job: DesignJobRecord) => void
-  onResumeProduction?: (job: DesignJobRecord) => void
-  onRequestRevision: (job: DesignJobRecord) => void
+ group: InvoiceGroup
+ activeTab: string
+ getPreflightStatus: (jobId: string, status?: string) => PreflightState
+ onTogglePreflight: (jobId: string, key: keyof PreflightState, designNumber?: string) => void
+ onOpenWhatsApp: (job: DesignJobRecord, tpl?: 'proof' | 'reminder' | 'production' | 'revision') => void
+ onOpenLightbox: (job: DesignJobRecord, versionIndex?: number) => void
+ onOpenCompare: (job: DesignJobRecord) => void
+ onOpenPreflightModal: (job: DesignJobRecord) => void
+ onStartDesign: (job: DesignJobRecord) => void
+ onCompleteDesign: (job: DesignJobRecord) => void
+ onConfirmToProduction: (job: DesignJobRecord) => void
+ onPauseProduction?: (job: DesignJobRecord) => void
+ onResumeProduction?: (job: DesignJobRecord) => void
+ onRequestRevision: (job: DesignJobRecord) => void
 }
 
 function getDesignerInitials(name?: string): string {
-  if (!name) return 'DS'
-  const trimmed = name.trim()
-  const lower = trimmed.toLowerCase()
-  if (lower === 'rahim') return 'R'
-  if (lower === 'shamol') return 'SH'
-  if (lower === 'sadia') return 'SA'
-  const parts = trimmed.split(/\s+/)
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase()
-  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+ if (!name) return 'DS'
+ const trimmed = name.trim()
+ const lower = trimmed.toLowerCase()
+ if (lower === 'rahim') return 'R'
+ if (lower === 'shamol') return 'SH'
+ if (lower === 'sadia') return 'SA'
+ const parts = trimmed.split(/\s+/)
+ if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase()
+ return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
 }
 
 function renderStatusBadge(status?: string) {
-  switch (status) {
-    case 'received':
-    case 'new':
-      return (
+ switch (status) {
+ case 'received':
+ case 'new':
+ return (
         <Badge
-          variant="outline"
-          className="bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/80 dark:text-blue-300 font-semibold px-2.5 py-0.5 rounded-full text-xs flex items-center gap-1.5"
-        >
-          <span className="w-1.5 h-1.5 rounded-full bg-blue-600 inline-block" />
+ variant="outline"className="bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/80 dark:text-blue-300 font-semibold px-2.5 py-0.5 rounded-full text-xs flex items-center gap-1.5">
+          <span className="w-1.5 h-1.5 rounded-full bg-blue-600 inline-block"/>
           <span>New</span>
         </Badge>
       )
-    case 'designing':
-    case 'in_progress':
-      return (
+ case 'designing':
+ case 'in_progress':
+ return (
         <Badge
-          variant="outline"
-          className="bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/80 dark:text-purple-300 font-semibold px-2.5 py-0.5 rounded-full text-xs flex items-center gap-1.5"
-        >
-          <span className="w-1.5 h-1.5 rounded-full bg-purple-600 inline-block" />
+ variant="outline"className="bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/80 dark:text-purple-300 font-semibold px-2.5 py-0.5 rounded-full text-xs flex items-center gap-1.5">
+          <span className="w-1.5 h-1.5 rounded-full bg-purple-600 inline-block"/>
           <span>Designing</span>
         </Badge>
       )
-    case 'customer_approval':
-    case 'waiting_approval':
-      return (
+ case 'customer_approval':
+ case 'waiting_approval':
+ return (
         <Badge
-          variant="outline"
-          className="bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/80 dark:text-amber-300 font-semibold px-2.5 py-0.5 rounded-full text-xs flex items-center gap-1.5"
-        >
-          <span className="w-1.5 h-1.5 rounded-full bg-amber-500 inline-block" />
+ variant="outline"className="bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/80 dark:text-amber-300 font-semibold px-2.5 py-0.5 rounded-full text-xs flex items-center gap-1.5">
+          <span className="w-1.5 h-1.5 rounded-full bg-amber-500 inline-block"/>
           <span>Waiting Approval</span>
         </Badge>
       )
-    case 'revision':
-      return (
+ case 'revision':
+ return (
         <Badge
-          variant="outline"
-          className="bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/80 dark:text-rose-300 font-semibold px-2.5 py-0.5 rounded-full text-xs flex items-center gap-1.5"
-        >
-          <span className="w-1.5 h-1.5 rounded-full bg-rose-600 inline-block" />
+ variant="outline"className="bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/80 dark:text-rose-300 font-semibold px-2.5 py-0.5 rounded-full text-xs flex items-center gap-1.5">
+          <span className="w-1.5 h-1.5 rounded-full bg-rose-600 inline-block"/>
           <span>Revision Required</span>
         </Badge>
       )
-    case 'approved':
-      return (
+ case 'approved':
+ return (
         <Badge
-          variant="outline"
-          className="bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/80 dark:text-emerald-300 font-semibold px-2.5 py-0.5 rounded-full text-xs flex items-center gap-1.5"
-        >
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 inline-block" />
+ variant="outline"className="bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/80 dark:text-emerald-300 font-semibold px-2.5 py-0.5 rounded-full text-xs flex items-center gap-1.5">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 inline-block"/>
           <span>Approved</span>
         </Badge>
       )
-    default:
-      return (
+ default:
+ return (
         <Badge
-          variant="outline"
-          className="bg-muted text-foreground border-border font-semibold px-2.5 py-0.5 rounded-full text-xs"
-        >
+ variant="outline"className="bg-muted text-foreground border-border font-semibold px-2.5 py-0.5 rounded-full text-xs">
           {status || 'Unknown'}
         </Badge>
       )
@@ -145,83 +133,83 @@ function renderStatusBadge(status?: string) {
 }
 
 export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard({
-  group,
-  activeTab,
-  getPreflightStatus,
-  onTogglePreflight,
-  onOpenWhatsApp,
-  onOpenLightbox,
-  onOpenCompare,
-  onOpenPreflightModal,
-  onStartDesign,
-  onCompleteDesign,
-  onConfirmToProduction,
-  onPauseProduction,
-  onResumeProduction,
-  onRequestRevision,
+ group,
+ activeTab,
+ getPreflightStatus,
+ onTogglePreflight,
+ onOpenWhatsApp,
+ onOpenLightbox,
+ onOpenCompare,
+ onOpenPreflightModal,
+ onStartDesign,
+ onCompleteDesign,
+ onConfirmToProduction,
+ onPauseProduction,
+ onResumeProduction,
+ onRequestRevision,
 }: DesignInvoiceGroupCardProps) {
-  const [isExpanded, setIsExpanded] = useState(true)
-  const [activeMenuJobId, setActiveMenuJobId] = useState<string | null>(null)
-  const pathname = usePathname() || ''
-  const { company } = useTenant()
-  const tenantSlug = company?.slug || 'my-company'
+ const [isExpanded, setIsExpanded] = useState(true)
+ const [activeMenuJobId, setActiveMenuJobId] = useState<string | null>(null)
+ const pathname = usePathname() || ''
+ const { company } = useTenant()
+ const tenantSlug = company?.slug || 'my-company'
 
-  const { invoiceId, invoiceNumber, customerName, customerPhone, invoiceDate, jobs } = group
-  const invoiceHref = getTenantNavHref(`/billing/${invoiceId || invoiceNumber}`, pathname, tenantSlug)
+ const { invoiceId, invoiceNumber, customerName, customerPhone, invoiceDate, jobs } = group
+ const invoiceHref = getTenantNavHref(`/billing/${invoiceId || invoiceNumber}`, pathname, tenantSlug)
 
-  const { tBilingual } = useI18n()
-  const isSingleJob = jobs.length === 1
-  const singleJob = isSingleJob ? jobs[0] : null
-  const singleJobSpecs = singleJob ? resolveDesignJobSpecs(singleJob, group.allInvoiceItems, tBilingual) : null
+ const { tBilingual } = useI18n()
+ const isSingleJob = jobs.length === 1
+ const singleJob = isSingleJob ? jobs[0] : null
+ const singleJobSpecs = singleJob ? resolveDesignJobSpecs(singleJob, group.allInvoiceItems, tBilingual) : null
 
   // Calculate completed count for multi-job invoices
-  const completedJobsCount =
-    group.completedCount !== undefined
+ const completedJobsCount =
+ group.completedCount !== undefined
       ? group.completedCount
       : jobs.filter((j) => j.status === 'approved').length
-  const totalJobsCount = jobs.length
-  const progressPercent = totalJobsCount > 0 ? Math.round((completedJobsCount / totalJobsCount) * 100) : 0
+ const totalJobsCount = jobs.length
+ const progressPercent = totalJobsCount > 0 ? Math.round((completedJobsCount / totalJobsCount) * 100) : 0
 
   // Determine overall status for multi-job card header
-  const overallStatus = React.useMemo(() => {
-    if (group.overallStatus) return group.overallStatus
-    if (jobs.some((j) => j.status === 'revision')) return 'revision'
-    if (jobs.some((j) => j.status === 'customer_approval')) return 'customer_approval'
-    if (jobs.some((j) => j.status === 'designing' || j.status === 'in_progress')) return 'designing'
-    if (jobs.every((j) => j.status === 'approved')) return 'approved'
-    return 'received'
+ const overallStatus = React.useMemo(() => {
+ if (group.overallStatus) return group.overallStatus
+ if (jobs.some((j) => j.status === 'revision')) return 'revision'
+ if (jobs.some((j) => j.status === 'customer_approval')) return 'customer_approval'
+ if (jobs.some((j) => j.status === 'designing' || j.status === 'in_progress')) return 'designing'
+ if (jobs.every((j) => j.status === 'approved')) return 'approved'
+ return 'received'
   }, [group.overallStatus, jobs])
 
   // Determine left border color accent
-  const leftBorderClass = React.useMemo(() => {
-    if (group.leftBorderColor) return group.leftBorderColor
-    const sStatus: string = singleJob?.status || ''
-    if (isSingleJob && sStatus === 'revision') return 'border-l-4 border-l-rose-500'
-    if (isSingleJob && sStatus === 'approved') return 'border-l-4 border-l-indigo-600'
-    if (isSingleJob && (sStatus === 'received' || sStatus === 'new')) return 'border-l-4 border-l-indigo-600'
-    if (isSingleJob && (sStatus === 'designing' || sStatus === 'in_progress')) return 'border-l-4 border-l-indigo-600'
-    return 'border-l-4 border-l-blue-600'
+ const leftBorderClass = React.useMemo(() => {
+ if (group.leftBorderColor) return group.leftBorderColor
+ const sStatus: string = singleJob?.status || ''
+ if (isSingleJob && sStatus === 'revision') return 'border-l-4 border-l-rose-500'
+ if (isSingleJob && sStatus === 'approved') return 'border-l-4 border-l-indigo-600'
+ if (isSingleJob && (sStatus === 'received' || sStatus === 'new')) return 'border-l-4 border-l-indigo-600'
+ if (isSingleJob && (sStatus === 'designing' || sStatus === 'in_progress')) return 'border-l-4 border-l-indigo-600'
+ return 'border-l-4 border-l-blue-600'
   }, [group.leftBorderColor, isSingleJob, singleJob?.status])
 
   // Formatting date display
-  const primaryJob = jobs[0]
-  const displayDueDate = primaryJob?.deadline
+ const primaryJob = jobs[0]
+ const displayDueDate = primaryJob?.deadline
     ? (primaryJob.deadline.includes('T') || primaryJob.deadline.includes('-')
         ? new Date(primaryJob.deadline).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
         : primaryJob.deadline)
     : '—'
-  const isDueToday = primaryJob?.deadline ? new Date(primaryJob.deadline).toDateString() === new Date().toDateString() : false
-  const dueText = group.dueText !== undefined ? group.dueText : (isDueToday ? 'Today' : null)
+ const isDueToday = primaryJob?.deadline ? new Date(primaryJob.deadline).toDateString() === new Date().toDateString() : false
+ const dueText = group.dueText !== undefined ? group.dueText : (isDueToday ? 'Today' : null)
 
-  return (
+ return (
     <div
-      className={cn(
-        'rounded-2xl border border-border dark:border-border/90 bg-card shadow-2xs hover:shadow-xs transition-all relative overflow-hidden',
-        leftBorderClass
+ className={cn(
+        'rounded-xl border border-border /90 bg-card shadow-2xs hover:shadow-xs transition-all relative overflow-hidden',
+ leftBorderClass
       )}
     >
       {/* =========================================================================
-          CASE A: SINGLE-JOB INVOICE CARD
+ CASE A: SINGLE-JOB INVOICE CARD
          ========================================================================= */}
       {isSingleJob && singleJob ? (
         <div>
@@ -230,62 +218,57 @@ export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard
             {/* Left Column: Chevron, Icon, Invoice & Customer */}
             <div className="flex items-center gap-3 shrink-0">
               <button
-                type="button"
-                onClick={() => setIsExpanded(!isExpanded)}
-                className="text-blue-600 hover:text-blue-700 transition-colors cursor-pointer p-1 -ml-1 rounded-md hover:bg-muted dark:hover:bg-muted"
-                title={isExpanded ? 'Collapse Specifications' : 'Expand Specifications'}
+ type="button"onClick={() => setIsExpanded(!isExpanded)}
+ className="text-blue-600 hover:text-blue-700 transition-colors cursor-pointer p-1 -ml-1 rounded-md hover:bg-muted dark:hover:bg-muted"title={isExpanded ? 'Collapse Specifications' : 'Expand Specifications'}
               >
                 {isExpanded ? (
-                  <ChevronDown className="w-5 h-5 text-blue-600" />
+                  <ChevronDown className="w-5 h-5 text-blue-600"/>
                 ) : (
-                  <ChevronRight className="w-5 h-5 text-blue-600" />
+                  <ChevronRight className="w-5 h-5 text-blue-600"/>
                 )}
               </button>
 
               <div className="w-10 h-10 rounded-xl bg-violet-100 dark:bg-violet-950/60 text-violet-600 dark:text-violet-400 flex items-center justify-center shrink-0">
-                <FileText className="w-5 h-5" />
+                <FileText className="w-5 h-5"/>
               </div>
 
               <div className="min-w-0">
                 <Link
-                  href={invoiceHref}
-                  className="tabular-nums text-sm font-bold text-foreground dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center gap-1.5 whitespace-nowrap"
-                >
+ href={invoiceHref}
+ className="tabular-nums text-sm font-bold text-foreground hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center gap-1.5 whitespace-nowrap">
                   <span>{invoiceNumber}</span>
                 </Link>
-                <div className="font-bold text-xs text-foreground truncate mt-0.5 max-w-[170px]" title={customerName}>
+                <div className="font-bold text-xs text-foreground truncate mt-0.5 max-w-[170px]"title={customerName}>
                   {customerName}
                 </div>
                 <div className="flex items-center gap-2.5 text-2xs text-muted-foreground mt-0.5 whitespace-nowrap">
                   {customerPhone && (
                     <span className="flex items-center gap-1 tabular-nums">
-                      <Phone className="w-3 h-3 text-muted-foreground" />
+                      <Phone className="w-3 h-3 text-muted-foreground"/>
                       {customerPhone}
                     </span>
                   )}
                   <span className="flex items-center gap-1">
-                    <Calendar className="w-3 h-3 text-muted-foreground" />
+                    <Calendar className="w-3 h-3 text-muted-foreground"/>
                     {invoiceDate || '—'}
                   </span>
                 </div>
               </div>
 
               <Badge
-                variant="outline"
-                className="ml-2 bg-muted text-foreground font-bold text-xs px-2.5 py-0.5 rounded-full border-none whitespace-nowrap shrink-0"
-              >
+ variant="outline"className="ml-2 bg-muted text-foreground font-bold text-xs px-2.5 py-0.5 rounded-full border-none whitespace-nowrap shrink-0">
                 1 Job
               </Badge>
             </div>
 
             {/* Middle Column: Product Title & Specs */}
             <div className="flex-1 lg:px-4 min-w-0">
-              <div className="font-bold text-sm text-foreground dark:text-white truncate">
+              <div className="font-bold text-sm text-foreground truncate">
                 {singleJobSpecs?.serviceName || singleJob.title || singleJob.product_name || 'Design Product'}
               </div>
               <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground mt-1 tabular-nums">
-                <span className="inline-flex items-center gap-1 text-foreground font-semibold whitespace-nowrap" title={singleJobSpecs?.material}>
-                  <Layers className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                <span className="inline-flex items-center gap-1 text-foreground font-semibold whitespace-nowrap"title={singleJobSpecs?.material}>
+                  <Layers className="w-3.5 h-3.5 text-muted-foreground shrink-0"/>
                   <span className="truncate max-w-[220px]">{singleJobSpecs?.material}</span>
                 </span>
                 <span className="text-muted-foreground select-none">·</span>
@@ -299,7 +282,7 @@ export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard
                 {singleJobSpecs?.finishing && singleJobSpecs.finishing !== 'None' && (
                   <>
                     <span className="text-muted-foreground select-none">·</span>
-                    <span className="text-amber-700 dark:text-amber-400 font-semibold whitespace-nowrap truncate max-w-[150px]" title={singleJobSpecs?.finishing}>
+                    <span className="text-amber-700 dark:text-amber-400 font-semibold whitespace-nowrap truncate max-w-[150px]"title={singleJobSpecs?.finishing}>
                       ✨ {singleJobSpecs.finishing}
                     </span>
                   </>
@@ -307,7 +290,7 @@ export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard
                 {singleJobSpecs?.addOn && singleJobSpecs.addOn !== 'None' && (
                   <>
                     <span className="text-muted-foreground select-none">·</span>
-                    <span className="text-indigo-700 dark:text-indigo-400 font-semibold whitespace-nowrap truncate max-w-[150px]" title={singleJobSpecs?.addOn}>
+                    <span className="text-indigo-700 dark:text-indigo-400 font-semibold whitespace-nowrap truncate max-w-[150px]"title={singleJobSpecs?.addOn}>
                       ➕ {singleJobSpecs.addOn}
                     </span>
                   </>
@@ -320,7 +303,7 @@ export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard
               <div className="text-right whitespace-nowrap">
                 <div className="flex justify-end">{renderStatusBadge(singleJob.status)}</div>
                 <div className="flex items-center justify-end gap-1 text-xs text-foreground mt-1 tabular-nums whitespace-nowrap">
-                  <Calendar className="w-3 h-3 text-muted-foreground" />
+                  <Calendar className="w-3 h-3 text-muted-foreground"/>
                   <span>{displayDueDate}</span>
                 </div>
                 {dueText ? (
@@ -335,59 +318,51 @@ export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard
                 {singleJob.status === 'approved' || (singleJob.status as string) === 'sent_to_production' || (singleJob.status as string) === 'completed' ? (
                   <>
                     <DesignTimerBadge
-                      startedAt={singleJob.started_at}
-                      completedAt={singleJob.completed_at}
-                      durationSeconds={singleJob.duration_seconds}
-                      isRunning={false}
+ startedAt={singleJob.started_at}
+ completedAt={singleJob.completed_at}
+ durationSeconds={singleJob.duration_seconds}
+ isRunning={false}
                     />
                     <Button
-                      size="sm"
-                      disabled
-                      className="h-8 px-3.5 text-xs bg-emerald-600/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 font-semibold rounded-lg flex items-center gap-1.5 cursor-default"
-                    >
-                      <Check className="w-3.5 h-3.5 stroke-[2.5]" />
+ size="sm"disabled
+ className="h-8 px-3.5 text-xs bg-emerald-600/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 font-semibold rounded-lg flex items-center gap-1.5 cursor-default">
+                      <Check className="w-3.5 h-3.5 stroke-[2.5]"/>
                       <span>Sent to Production</span>
                     </Button>
                   </>
                 ) : singleJob.status === 'customer_approval' || (singleJob as any).is_design_completed ? (
                   <>
                     <DesignTimerBadge
-                      startedAt={singleJob.started_at}
-                      completedAt={singleJob.completed_at}
-                      durationSeconds={singleJob.duration_seconds}
-                      isRunning={false}
+ startedAt={singleJob.started_at}
+ completedAt={singleJob.completed_at}
+ durationSeconds={singleJob.duration_seconds}
+ isRunning={false}
                     />
                     <Button
-                      size="sm"
-                      onClick={() => onConfirmToProduction(singleJob)}
-                      className="h-8 px-3.5 text-xs bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg shadow-xs flex items-center gap-1.5 transition-transform active:scale-[0.98] cursor-pointer"
-                    >
-                      <Send className="w-3.5 h-3.5" />
+ size="sm"onClick={() => onConfirmToProduction(singleJob)}
+ className="h-8 px-3.5 text-xs bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg shadow-xs flex items-center gap-1.5 transition-transform active:scale-[0.98] cursor-pointer">
+                      <Send className="w-3.5 h-3.5"/>
                       <span>Send to Production</span>
                     </Button>
                   </>
                 ) : singleJob.status === 'designing' || (singleJob.status as string) === 'in_progress' ? (
                   <>
                     <DesignTimerBadge
-                      startedAt={singleJob.started_at}
-                      isRunning={true}
+ startedAt={singleJob.started_at}
+ isRunning={true}
                     />
                     <Button
-                      size="sm"
-                      onClick={() => onCompleteDesign(singleJob)}
-                      className="h-8 px-3.5 text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg shadow-xs flex items-center gap-1.5 transition-transform active:scale-[0.98] cursor-pointer"
-                    >
-                      <Check className="w-3.5 h-3.5 stroke-[2.5]" />
+ size="sm"onClick={() => onCompleteDesign(singleJob)}
+ className="h-8 px-3.5 text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg shadow-xs flex items-center gap-1.5 transition-transform active:scale-[0.98] cursor-pointer">
+                      <Check className="w-3.5 h-3.5 stroke-[2.5]"/>
                       <span>Design Complete</span>
                     </Button>
                   </>
                 ) : (
                   <Button
-                    size="sm"
-                    onClick={() => onStartDesign(singleJob)}
-                    className="h-8 px-3.5 text-xs bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-lg shadow-xs flex items-center gap-1.5 transition-transform active:scale-[0.98] cursor-pointer"
-                  >
-                    <Play className="w-3 h-3 fill-current" />
+ size="sm"onClick={() => onStartDesign(singleJob)}
+ className="h-8 px-3.5 text-xs bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-lg shadow-xs flex items-center gap-1.5 transition-transform active:scale-[0.98] cursor-pointer">
+                    <Play className="w-3 h-3 fill-current"/>
                     <span>Start Design</span>
                   </Button>
                 )}
@@ -395,70 +370,57 @@ export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard
                 {/* 3-dots Menu Button */}
                 <div className="relative">
                   <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() =>
-                      setActiveMenuJobId(activeMenuJobId === singleJob.id ? null : singleJob.id)
+ size="sm"variant="ghost"onClick={() =>
+ setActiveMenuJobId(activeMenuJobId === singleJob.id ? null : singleJob.id)
                     }
-                    className="h-8 w-8 p-0 text-muted-foreground hover:text-muted-foreground"
-                  >
-                    <MoreVertical className="w-4 h-4" />
+ className="h-8 w-8 p-0 text-muted-foreground hover:text-muted-foreground">
+                    <MoreVertical className="w-4 h-4"/>
                   </Button>
 
                   {activeMenuJobId === singleJob.id && (
                     <div
-                      className="absolute right-0 top-9 w-48 bg-card border border-border rounded-xl shadow-lg z-30 py-1 text-xs"
-                      onMouseLeave={() => setActiveMenuJobId(null)}
+ className="absolute right-0 top-9 w-48 bg-card border border-border rounded-xl shadow-lg z-30 py-1 text-xs"onMouseLeave={() => setActiveMenuJobId(null)}
                     >
                       <Link
-                        href={getTenantNavHref(`/design/${singleJob.id}`, pathname, tenantSlug)}
-                        className="w-full text-left px-3 py-1.5 hover:bg-muted flex items-center gap-2 text-foreground dark:text-muted-foreground"
-                      >
-                        <ExternalLink className="w-3.5 h-3.5 text-blue-500" />
+ href={getTenantNavHref(`/design/${singleJob.id}`, pathname, tenantSlug)}
+ className="w-full text-left px-3 py-1.5 hover:bg-muted flex items-center gap-2 text-foreground">
+                        <ExternalLink className="w-3.5 h-3.5 text-blue-500"/>
                         <span>Open Studio Workbench</span>
                       </Link>
                       <button
-                        type="button"
-                        onClick={() => {
-                          setActiveMenuJobId(null)
-                          onOpenWhatsApp(singleJob, 'proof')
+ type="button"onClick={() => {
+ setActiveMenuJobId(null)
+ onOpenWhatsApp(singleJob, 'proof')
                         }}
-                        className="w-full text-left px-3 py-1.5 hover:bg-muted flex items-center gap-2 text-emerald-600"
-                      >
-                        <MessageSquare className="w-3.5 h-3.5" />
+ className="w-full text-left px-3 py-1.5 hover:bg-muted flex items-center gap-2 text-emerald-600">
+                        <MessageSquare className="w-3.5 h-3.5"/>
                         <span>Send WhatsApp Proof</span>
                       </button>
                       <button
-                        type="button"
-                        onClick={() => {
-                          setActiveMenuJobId(null)
-                          onOpenLightbox(singleJob)
+ type="button"onClick={() => {
+ setActiveMenuJobId(null)
+ onOpenLightbox(singleJob)
                         }}
-                        className="w-full text-left px-3 py-1.5 hover:bg-muted flex items-center gap-2 text-foreground dark:text-muted-foreground"
-                      >
-                        <Eye className="w-3.5 h-3.5" />
+ className="w-full text-left px-3 py-1.5 hover:bg-muted flex items-center gap-2 text-foreground">
+                        <Eye className="w-3.5 h-3.5"/>
                         <span>View Full Artwork</span>
                       </button>
                       <button
-                        type="button"
-                        onClick={() => {
-                          setActiveMenuJobId(null)
-                          onRequestRevision(singleJob)
+ type="button"onClick={() => {
+ setActiveMenuJobId(null)
+ onRequestRevision(singleJob)
                         }}
-                        className="w-full text-left px-3 py-1.5 hover:bg-muted flex items-center gap-2 text-rose-600"
-                      >
-                        <AlertCircle className="w-3.5 h-3.5" />
+ className="w-full text-left px-3 py-1.5 hover:bg-muted flex items-center gap-2 text-rose-600">
+                        <AlertCircle className="w-3.5 h-3.5"/>
                         <span>Request Revision</span>
                       </button>
                       <button
-                        type="button"
-                        onClick={() => {
-                          setActiveMenuJobId(null)
-                          onOpenPreflightModal(singleJob)
+ type="button"onClick={() => {
+ setActiveMenuJobId(null)
+ onOpenPreflightModal(singleJob)
                         }}
-                        className="w-full text-left px-3 py-1.5 hover:bg-muted flex items-center gap-2 text-purple-600"
-                      >
-                        <Sliders className="w-3.5 h-3.5" />
+ className="w-full text-left px-3 py-1.5 hover:bg-muted flex items-center gap-2 text-purple-600">
+                        <Sliders className="w-3.5 h-3.5"/>
                         <span>Preflight Quality Check</span>
                       </button>
                     </div>
@@ -470,11 +432,11 @@ export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard
 
           {/* Technical Specifications (6-Field Specs) Panel - Rendered full width BELOW the row */}
           {isExpanded && singleJobSpecs && (
-            <div className="px-5 pb-5 pt-0 border-t border-border dark:border-border/80 bg-muted dark:bg-card">
+            <div className="px-5 pb-5 pt-0 border-t border-border /80 bg-muted">
               <div className="rounded-xl bg-card border border-border p-4 text-xs tabular-nums space-y-3 mt-3 shadow-2xs">
                 <div className="flex items-center justify-between border-b border-border pb-2">
                   <div className="text-2xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                    <Sliders className="w-3.5 h-3.5 text-blue-500" />
+                    <Sliders className="w-3.5 h-3.5 text-blue-500"/>
                     <span>{tBilingual('Technical Specifications (6-Field Specs)', 'টেকনিক্যাল স্পেসিফিকেশন (৬-ফিল্ড স্পেক্স)')}:</span>
                   </div>
                   <span className="text-2xs text-muted-foreground font-sans">
@@ -508,7 +470,7 @@ export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard
                   </div>
                 </div>
                 {singleJob.instructions && (
-                  <div className="pt-2.5 border-t border-border text-2xs text-muted-foreground dark:text-muted-foreground">
+                  <div className="pt-2.5 border-t border-border text-2xs text-muted-foreground">
                     <span className="font-semibold text-muted-foreground">{tBilingual('Instructions / Notes:', 'নির্দেশনা / নোট:')}</span> {singleJob.instructions}
                   </div>
                 )}
@@ -518,57 +480,52 @@ export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard
         </div>
       ) : (
         /* =========================================================================
-            CASE B: MULTI-JOB INVOICE CARD (e.g. INV-000125, INV-000127, INV-000130)
+ CASE B: MULTI-JOB INVOICE CARD (e.g. INV-000125, INV-000127, INV-000130)
            ========================================================================= */
         <div>
           {/* Header Row */}
-          <div className="p-4 sm:p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-border dark:border-border/80">
+          <div className="p-4 sm:p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-border /80">
             {/* Left: Chevron, Icon, Invoice & Customer */}
             <div className="flex items-center gap-3 shrink-0">
               <button
-                type="button"
-                onClick={() => setIsExpanded(!isExpanded)}
-                className="text-blue-600 hover:text-blue-700 transition-colors cursor-pointer p-1 -ml-1 rounded-md hover:bg-muted dark:hover:bg-muted"
-              >
+ type="button"onClick={() => setIsExpanded(!isExpanded)}
+ className="text-blue-600 hover:text-blue-700 transition-colors cursor-pointer p-1 -ml-1 rounded-md hover:bg-muted dark:hover:bg-muted">
                 {isExpanded ? (
-                  <ChevronDown className="w-5 h-5 text-blue-600" />
+                  <ChevronDown className="w-5 h-5 text-blue-600"/>
                 ) : (
-                  <ChevronRight className="w-5 h-5 text-blue-600" />
+                  <ChevronRight className="w-5 h-5 text-blue-600"/>
                 )}
               </button>
 
               <div className="w-10 h-10 rounded-xl bg-violet-100 dark:bg-violet-950/60 text-violet-600 dark:text-violet-400 flex items-center justify-center shrink-0">
-                <FileText className="w-5 h-5" />
+                <FileText className="w-5 h-5"/>
               </div>
 
               <div className="min-w-0">
                 <Link
-                  href={invoiceHref}
-                  className="tabular-nums text-sm font-bold text-foreground dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center gap-1.5 whitespace-nowrap"
-                >
+ href={invoiceHref}
+ className="tabular-nums text-sm font-bold text-foreground hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center gap-1.5 whitespace-nowrap">
                   <span>{invoiceNumber}</span>
                 </Link>
-                <div className="font-bold text-xs text-foreground truncate mt-0.5 max-w-[170px]" title={customerName}>
+                <div className="font-bold text-xs text-foreground truncate mt-0.5 max-w-[170px]"title={customerName}>
                   {customerName}
                 </div>
                 <div className="flex items-center gap-2.5 text-2xs text-muted-foreground mt-0.5 whitespace-nowrap">
                   {customerPhone && (
                     <span className="flex items-center gap-1 tabular-nums">
-                      <Phone className="w-3 h-3 text-muted-foreground" />
+                      <Phone className="w-3 h-3 text-muted-foreground"/>
                       {customerPhone}
                     </span>
                   )}
                   <span className="flex items-center gap-1">
-                    <Calendar className="w-3 h-3 text-muted-foreground" />
+                    <Calendar className="w-3 h-3 text-muted-foreground"/>
                     {invoiceDate || '—'}
                   </span>
                 </div>
               </div>
 
               <Badge
-                variant="outline"
-                className="ml-2 bg-muted text-foreground font-bold text-xs px-2.5 py-0.5 rounded-full border-none whitespace-nowrap shrink-0"
-              >
+ variant="outline"className="ml-2 bg-muted text-foreground font-bold text-xs px-2.5 py-0.5 rounded-full border-none whitespace-nowrap shrink-0">
                 {jobs.length} Jobs
               </Badge>
             </div>
@@ -578,7 +535,7 @@ export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard
               <div className="text-right min-w-[130px]">
                 <div className="flex justify-end">{renderStatusBadge(overallStatus)}</div>
                 <div className="flex items-center justify-end gap-1 text-xs text-foreground mt-1 tabular-nums">
-                  <Calendar className="w-3 h-3 text-muted-foreground" />
+                  <Calendar className="w-3 h-3 text-muted-foreground"/>
                   <span>{displayDueDate}</span>
                 </div>
                 {dueText ? (
@@ -595,22 +552,19 @@ export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard
                 </div>
                 <div className="w-full h-2 bg-muted rounded-full overflow-hidden mt-1.5">
                   <div
-                    className="bg-blue-600 h-full rounded-full transition-all duration-300"
-                    style={{ width: `${progressPercent}%` }}
+ className="bg-blue-600 h-full rounded-full transition-all duration-300"style={{ width: `${progressPercent}%` }}
                   />
                 </div>
               </div>
 
               {/* Collapse/Expand Toggle Button */}
               <button
-                type="button"
-                onClick={() => setIsExpanded(!isExpanded)}
-                className="w-8 h-8 rounded-xl border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer shrink-0"
-              >
+ type="button"onClick={() => setIsExpanded(!isExpanded)}
+ className="w-8 h-8 rounded-xl border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer shrink-0">
                 {isExpanded ? (
-                  <ChevronUp className="w-4 h-4" />
+                  <ChevronUp className="w-4 h-4"/>
                 ) : (
-                  <ChevronDown className="w-4 h-4" />
+                  <ChevronDown className="w-4 h-4"/>
                 )}
               </button>
             </div>
@@ -621,7 +575,7 @@ export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
                 <thead>
-                  <tr className="border-b border-border dark:border-border/80 bg-muted text-muted-foreground text-2xs font-semibold">
+                  <tr className="border-b border-border /80 bg-muted text-muted-foreground text-2xs font-semibold">
                     <th className="py-2.5 px-4 w-10 text-center">#</th>
                     <th className="py-2.5 px-3 w-24">Job</th>
                     <th className="py-2.5 px-3">Product / Service</th>
@@ -634,43 +588,41 @@ export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard
                 </thead>
                 <tbody className="divide-y divide-border dark:divide-border/60">
                   {jobs.map((job, idx) => {
-                    const jobCode = job.design_number || `JOB-00${idx + 1}`
-                    const designerName = job.designer_name || 'Design Team'
-                    const designerInitials = getDesignerInitials(designerName)
-                    const jobDueDate = job.deadline
+ const jobCode = job.design_number || `JOB-00${idx + 1}`
+ const designerName = job.designer_name || 'Design Team'
+ const designerInitials = getDesignerInitials(designerName)
+ const jobDueDate = job.deadline
                       ? (job.deadline.includes('T') || job.deadline.includes('-')
                           ? new Date(job.deadline).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
                           : job.deadline)
                       : '—'
 
-                    const jobSpecs = resolveDesignJobSpecs(job, group.allInvoiceItems, tBilingual)
+ const jobSpecs = resolveDesignJobSpecs(job, group.allInvoiceItems, tBilingual)
 
-                    return (
+ return (
                       <tr
-                        key={job.id || `job-${idx}`}
-                        className="hover:bg-muted dark:hover:bg-muted/40 transition-colors"
-                      >
+ key={job.id || `job-${idx}`}
+ className="hover:bg-muted dark:hover:bg-muted/40 transition-colors">
                         {/* 1. # */}
                         <td className="py-3 px-4 text-center tabular-nums text-muted-foreground text-xs">
                           {idx + 1}
                         </td>
 
                         {/* 2. Job Code */}
-                        <td className="py-3 px-3 tabular-nums font-bold text-foreground dark:text-white text-xs">
+                        <td className="py-3 px-3 tabular-nums font-bold text-foreground text-xs">
                           <Link
-                            href={getTenantNavHref(`/design/${job.id}`, pathname, tenantSlug)}
-                            className="hover:underline hover:text-blue-600"
-                          >
+ href={getTenantNavHref(`/design/${job.id}`, pathname, tenantSlug)}
+ className="hover:underline hover:text-blue-600">
                             {jobCode}
                           </Link>
                         </td>
 
                         {/* 3. Product / Service */}
                         <td className="py-3 px-3 text-xs">
-                          <div className="font-bold text-foreground dark:text-white">
+                          <div className="font-bold text-foreground">
                             {jobSpecs.serviceName}
                           </div>
-                          <div className="text-2xs text-muted-foreground truncate max-w-[200px]" title={jobSpecs.material}>
+                          <div className="text-2xs text-muted-foreground truncate max-w-[200px]"title={jobSpecs.material}>
                             📄 {jobSpecs.material}
                           </div>
                         </td>
@@ -715,59 +667,51 @@ export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard
                             {job.status === 'approved' || (job.status as string) === 'sent_to_production' || (job.status as string) === 'completed' ? (
                               <>
                                 <DesignTimerBadge
-                                  startedAt={job.started_at}
-                                  completedAt={job.completed_at}
-                                  durationSeconds={job.duration_seconds}
-                                  isRunning={false}
+ startedAt={job.started_at}
+ completedAt={job.completed_at}
+ durationSeconds={job.duration_seconds}
+ isRunning={false}
                                 />
                                 <Button
-                                  size="sm"
-                                  disabled
-                                  className="h-7 px-2.5 text-2xs bg-emerald-600/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 font-semibold rounded-md flex items-center gap-1 cursor-default"
-                                >
-                                  <Check className="w-3 h-3 stroke-[2.5]" />
+ size="sm"disabled
+ className="h-7 px-2.5 text-2xs bg-emerald-600/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 font-semibold rounded-md flex items-center gap-1 cursor-default">
+                                  <Check className="w-3 h-3 stroke-[2.5]"/>
                                   <span>Sent to Production</span>
                                 </Button>
                               </>
                             ) : job.status === 'customer_approval' || (job as any).is_design_completed ? (
                               <>
                                 <DesignTimerBadge
-                                  startedAt={job.started_at}
-                                  completedAt={job.completed_at}
-                                  durationSeconds={job.duration_seconds}
-                                  isRunning={false}
+ startedAt={job.started_at}
+ completedAt={job.completed_at}
+ durationSeconds={job.duration_seconds}
+ isRunning={false}
                                 />
                                 <Button
-                                  size="sm"
-                                  onClick={() => onConfirmToProduction(job)}
-                                  className="h-7 px-2.5 text-2xs bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-md shadow-xs flex items-center gap-1 cursor-pointer"
-                                >
-                                  <Send className="w-3 h-3" />
+ size="sm"onClick={() => onConfirmToProduction(job)}
+ className="h-7 px-2.5 text-2xs bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-md shadow-xs flex items-center gap-1 cursor-pointer">
+                                  <Send className="w-3 h-3"/>
                                   <span>Send to Production</span>
                                 </Button>
                               </>
                             ) : job.status === 'designing' || (job.status as string) === 'in_progress' ? (
                               <>
                                 <DesignTimerBadge
-                                  startedAt={job.started_at}
-                                  isRunning={true}
+ startedAt={job.started_at}
+ isRunning={true}
                                 />
                                 <Button
-                                  size="sm"
-                                  onClick={() => onCompleteDesign(job)}
-                                  className="h-7 px-2.5 text-2xs bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-md shadow-xs flex items-center gap-1 cursor-pointer"
-                                >
-                                  <Check className="w-3 h-3 stroke-[2.5]" />
+ size="sm"onClick={() => onCompleteDesign(job)}
+ className="h-7 px-2.5 text-2xs bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-md shadow-xs flex items-center gap-1 cursor-pointer">
+                                  <Check className="w-3 h-3 stroke-[2.5]"/>
                                   <span>Design Complete</span>
                                 </Button>
                               </>
                             ) : (
                               <Button
-                                size="sm"
-                                onClick={() => onStartDesign(job)}
-                                className="h-7 px-2.5 text-2xs bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-md shadow-xs flex items-center gap-1 cursor-pointer"
-                              >
-                                <Play className="w-2.5 h-2.5 fill-current" />
+ size="sm"onClick={() => onStartDesign(job)}
+ className="h-7 px-2.5 text-2xs bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-md shadow-xs flex items-center gap-1 cursor-pointer">
+                                <Play className="w-2.5 h-2.5 fill-current"/>
                                 <span>Start Design</span>
                               </Button>
                             )}
@@ -775,59 +719,48 @@ export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard
                             {/* Row 3-dots Menu */}
                             <div className="relative">
                               <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() =>
-                                  setActiveMenuJobId(activeMenuJobId === job.id ? null : job.id)
+ size="sm"variant="ghost"onClick={() =>
+ setActiveMenuJobId(activeMenuJobId === job.id ? null : job.id)
                                 }
-                                className="h-7 w-7 p-0 text-muted-foreground hover:text-muted-foreground"
-                              >
-                                <MoreVertical className="w-3.5 h-3.5" />
+ className="h-7 w-7 p-0 text-muted-foreground hover:text-muted-foreground">
+                                <MoreVertical className="w-3.5 h-3.5"/>
                               </Button>
 
                               {activeMenuJobId === job.id && (
                                 <div
-                                  className="absolute right-0 top-8 w-44 bg-card border border-border rounded-xl shadow-lg z-30 py-1 text-xs text-left"
-                                  onMouseLeave={() => setActiveMenuJobId(null)}
+ className="absolute right-0 top-8 w-44 bg-card border border-border rounded-xl shadow-lg z-30 py-1 text-xs text-left"onMouseLeave={() => setActiveMenuJobId(null)}
                                 >
                                   <Link
-                                    href={getTenantNavHref(`/design/${job.id}`, pathname, tenantSlug)}
-                                    className="w-full text-left px-3 py-1.5 hover:bg-muted flex items-center gap-2 text-foreground dark:text-muted-foreground"
-                                  >
-                                    <ExternalLink className="w-3.5 h-3.5 text-blue-500" />
+ href={getTenantNavHref(`/design/${job.id}`, pathname, tenantSlug)}
+ className="w-full text-left px-3 py-1.5 hover:bg-muted flex items-center gap-2 text-foreground">
+                                    <ExternalLink className="w-3.5 h-3.5 text-blue-500"/>
                                     <span>Open Workbench</span>
                                   </Link>
                                   <button
-                                    type="button"
-                                    onClick={() => {
-                                      setActiveMenuJobId(null)
-                                      onOpenWhatsApp(job, 'proof')
+ type="button"onClick={() => {
+ setActiveMenuJobId(null)
+ onOpenWhatsApp(job, 'proof')
                                     }}
-                                    className="w-full text-left px-3 py-1.5 hover:bg-muted flex items-center gap-2 text-emerald-600"
-                                  >
-                                    <MessageSquare className="w-3.5 h-3.5" />
+ className="w-full text-left px-3 py-1.5 hover:bg-muted flex items-center gap-2 text-emerald-600">
+                                    <MessageSquare className="w-3.5 h-3.5"/>
                                     <span>WhatsApp Proof</span>
                                   </button>
                                   <button
-                                    type="button"
-                                    onClick={() => {
-                                      setActiveMenuJobId(null)
-                                      onOpenLightbox(job)
+ type="button"onClick={() => {
+ setActiveMenuJobId(null)
+ onOpenLightbox(job)
                                     }}
-                                    className="w-full text-left px-3 py-1.5 hover:bg-muted flex items-center gap-2 text-foreground dark:text-muted-foreground"
-                                  >
-                                    <Eye className="w-3.5 h-3.5" />
+ className="w-full text-left px-3 py-1.5 hover:bg-muted flex items-center gap-2 text-foreground">
+                                    <Eye className="w-3.5 h-3.5"/>
                                     <span>View Artwork</span>
                                   </button>
                                   <button
-                                    type="button"
-                                    onClick={() => {
-                                      setActiveMenuJobId(null)
-                                      onRequestRevision(job)
+ type="button"onClick={() => {
+ setActiveMenuJobId(null)
+ onRequestRevision(job)
                                     }}
-                                    className="w-full text-left px-3 py-1.5 hover:bg-muted flex items-center gap-2 text-rose-600"
-                                  >
-                                    <AlertCircle className="w-3.5 h-3.5" />
+ className="w-full text-left px-3 py-1.5 hover:bg-muted flex items-center gap-2 text-rose-600">
+                                    <AlertCircle className="w-3.5 h-3.5"/>
                                     <span>Request Revision</span>
                                   </button>
                                 </div>

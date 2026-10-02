@@ -6,32 +6,32 @@ import { useI18n } from '@/i18n/context'
 import { cn } from '@/lib/utils'
 
 export interface DateDisplayProps {
-  date: string | Date | null | undefined
-  className?: string
-  options?: Intl.DateTimeFormatOptions
-  timeZone?: string
-  fallback?: string
+ date: string | Date | null | undefined
+ className?: string
+ options?: Intl.DateTimeFormatOptions
+ timeZone?: string
+ fallback?: string
 }
 
 export function DateDisplay({
-  date,
-  className,
-  options,
-  timeZone = APP_TIMEZONE,
-  fallback = '—',
+ date,
+ className,
+ options,
+ timeZone = APP_TIMEZONE,
+ fallback = '—',
 }: DateDisplayProps) {
-  const { locale } = useI18n()
+ const { locale } = useI18n()
 
-  if (!date) {
-    return <span className="text-muted-foreground">{fallback}</span>
+ if (!date) {
+ return <span className="text-muted-foreground">{fallback}</span>
   }
 
-  const formatted = formatDate(date, locale, options, timeZone)
+ const formatted = formatDate(date, locale, options, timeZone)
 
-  return (
+ return (
     <span
-      suppressHydrationWarning
-      className={cn('text-sm text-foreground font-numeric', className)}
+ suppressHydrationWarning
+ className={cn('text-sm text-foreground font-numeric', className)}
     >
       {formatted}
     </span>
@@ -39,24 +39,24 @@ export function DateDisplay({
 }
 
 export function TimeDisplay({
-  date,
-  className,
-  options,
-  timeZone = APP_TIMEZONE,
-  fallback = '—',
+ date,
+ className,
+ options,
+ timeZone = APP_TIMEZONE,
+ fallback = '—',
 }: DateDisplayProps) {
-  const { locale } = useI18n()
+ const { locale } = useI18n()
 
-  if (!date) {
-    return <span className="text-muted-foreground">{fallback}</span>
+ if (!date) {
+ return <span className="text-muted-foreground">{fallback}</span>
   }
 
-  const formatted = formatTime(date, locale, options, timeZone)
+ const formatted = formatTime(date, locale, options, timeZone)
 
-  return (
+ return (
     <span
-      suppressHydrationWarning
-      className={cn('text-sm text-foreground font-numeric tabular-nums', className)}
+ suppressHydrationWarning
+ className={cn('text-sm text-foreground font-numeric tabular-nums', className)}
     >
       {formatted}
     </span>
@@ -64,24 +64,24 @@ export function TimeDisplay({
 }
 
 export function DateTimeDisplay({
-  date,
-  className,
-  options,
-  timeZone = APP_TIMEZONE,
-  fallback = '—',
+ date,
+ className,
+ options,
+ timeZone = APP_TIMEZONE,
+ fallback = '—',
 }: DateDisplayProps) {
-  const { locale } = useI18n()
+ const { locale } = useI18n()
 
-  if (!date) {
-    return <span className="text-muted-foreground">{fallback}</span>
+ if (!date) {
+ return <span className="text-muted-foreground">{fallback}</span>
   }
 
-  const formatted = formatDateTime(date, locale, options, timeZone)
+ const formatted = formatDateTime(date, locale, options, timeZone)
 
-  return (
+ return (
     <span
-      suppressHydrationWarning
-      className={cn('text-sm text-foreground font-numeric', className)}
+ suppressHydrationWarning
+ className={cn('text-sm text-foreground font-numeric', className)}
     >
       {formatted}
     </span>

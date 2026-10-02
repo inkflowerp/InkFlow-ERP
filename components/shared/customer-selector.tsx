@@ -10,82 +10,80 @@ import { CustomerRecord } from '@/types/crm.types'
 import { cn } from '@/lib/utils'
 
 export interface CustomerOption {
-  id: string
-  name: string
-  nameBn?: string
-  phone: string
-  company?: string
-  outstandingDue?: number
+ id: string
+ name: string
+ nameBn?: string
+ phone: string
+ company?: string
+ outstandingDue?: number
 }
 
 interface CustomerSelectorProps {
-  customers: CustomerOption[]
-  selectedId?: string
-  onSelect: (customer: CustomerOption) => void
-  label?: string
-  placeholder?: string
-  error?: string
-  showAddNew?: boolean
-  onAddNew?: () => void
-  companyId?: string
+ customers: CustomerOption[]
+ selectedId?: string
+ onSelect: (customer: CustomerOption) => void
+ label?: string
+ placeholder?: string
+ error?: string
+ showAddNew?: boolean
+ onAddNew?: () => void
+ companyId?: string
 }
 
 export function CustomerSelector({
-  customers,
-  selectedId,
-  onSelect,
-  placeholder,
-  error,
-  showAddNew = true,
-  onAddNew,
-  companyId,
+ customers,
+ selectedId,
+ onSelect,
+ placeholder,
+ error,
+ showAddNew = true,
+ onAddNew,
+ companyId,
 }: CustomerSelectorProps) {
-  const [open, setOpen] = useState(false)
-  const [searchTerm, setSearchTerm] = useState('')
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const { t, locale, tBilingual } = useI18n()
+ const [open, setOpen] = useState(false)
+ const [searchTerm, setSearchTerm] = useState('')
+ const [isModalOpen, setIsModalOpen] = useState(false)
+ const { t, locale, tBilingual } = useI18n()
 
-  const selected = customers.find((c) => c.id === selectedId)
+ const selected = customers.find((c) => c.id === selectedId)
 
-  const filtered = customers.filter(
+ const filtered = customers.filter(
     (c) =>
-      c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+ c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (c.nameBn && c.nameBn.includes(searchTerm)) ||
-      c.phone.includes(searchTerm) ||
+ c.phone.includes(searchTerm) ||
       (c.company && c.company.toLowerCase().includes(searchTerm.toLowerCase()))
   )
 
-  const handleCustomerCreated = (newCust: CustomerRecord) => {
-    const opt: CustomerOption = {
-      id: newCust.id,
-      name: newCust.name,
-      nameBn: newCust.name_bn || undefined,
-      phone: newCust.mobile,
-      company: newCust.company_name || undefined,
-      outstandingDue: newCust.total_due_balance || 0,
+ const handleCustomerCreated = (newCust: CustomerRecord) => {
+ const opt: CustomerOption = {
+ id: newCust.id,
+ name: newCust.name,
+ nameBn: newCust.name_bn || undefined,
+ phone: newCust.mobile,
+ company: newCust.company_name || undefined,
+ outstandingDue: newCust.total_due_balance || 0,
     }
-    onSelect(opt)
-    setIsModalOpen(false)
-    setOpen(false)
+ onSelect(opt)
+ setIsModalOpen(false)
+ setOpen(false)
   }
 
-  return (
+ return (
     <div className="relative w-full">
       <div className="flex gap-1.5">
         <Button
-          type="button"
-          variant="outline"
-          onClick={() => setOpen(!open)}
-          className={cn(
+ type="button"variant="outline"onClick={() => setOpen(!open)}
+ className={cn(
             'w-full justify-between font-normal text-left h-10 px-3 rounded-xl',
             !selected && 'text-muted-foreground',
-            error && 'border-red-500'
+ error && 'border-red-500'
           )}
         >
           <div className="flex items-center gap-2 truncate">
-            <User className="h-4 w-4 text-muted-foreground shrink-0" />
+            <User className="h-4 w-4 text-muted-foreground shrink-0"/>
             {selected ? (
-              <span className="truncate font-medium text-foreground dark:text-foreground">
+              <span className="truncate font-medium text-foreground">
                 {tBilingual(selected.name, selected.nameBn || selected.name)} (
                 {selected.phone})
               </span>
@@ -93,21 +91,17 @@ export function CustomerSelector({
               <span>{placeholder || t('common.select_option')}</span>
             )}
           </div>
-          <ChevronsUpDown className="h-4 w-4 shrink-0 text-muted-foreground" />
+          <ChevronsUpDown className="h-4 w-4 shrink-0 text-muted-foreground"/>
         </Button>
 
         {showAddNew && (
           <Button
-            type="button"
-            variant="outline"
-            onClick={() => {
-              if (onAddNew) onAddNew()
-              else setIsModalOpen(true)
+ type="button"variant="outline"onClick={() => {
+ if (onAddNew) onAddNew()
+ else setIsModalOpen(true)
             }}
-            title="Add New Customer"
-            className="h-10 px-3 shrink-0 rounded-xl border-dashed border-blue-300 dark:border-blue-700/60 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/40 hover:border-blue-500"
-          >
-            <Plus className="h-4 w-4 mr-1" />
+ title="Add New Customer"className="h-10 px-3 shrink-0 rounded-xl border-dashed border-blue-300 dark:border-blue-700/60 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/40 hover:border-blue-500">
+            <Plus className="h-4 w-4 mr-1"/>
             <span className="text-xs font-bold hidden sm:inline">New</span>
           </Button>
         )}
@@ -115,29 +109,25 @@ export function CustomerSelector({
 
       {open && (
         <>
-          <div className="fixed inset-0 z-30" onClick={() => setOpen(false)} />
-          <div className="absolute left-0 top-11 z-40 w-full rounded-2xl border border-border bg-card p-2 shadow-2xl animate-in fade-in-0 zoom-in-95">
+          <div className="fixed inset-0 z-30"onClick={() => setOpen(false)} />
+          <div className="absolute left-0 top-11 z-40 w-full rounded-xl border border-border bg-card p-2 shadow-xs animate-in fade-in-0 zoom-in-95">
             <div className="flex items-center gap-2 pb-1">
               <input
-                type="text"
-                className="w-full rounded-xl border border-border bg-muted px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                placeholder={t('common.type_to_search')}
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                autoFocus
+ type="text"className="w-full rounded-xl border border-border bg-muted px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"placeholder={t('common.type_to_search')}
+ value={searchTerm}
+ onChange={(e) => setSearchTerm(e.target.value)}
+ autoFocus
               />
 
               {showAddNew && (
                 <button
-                  type="button"
-                  onClick={() => {
-                    setOpen(false)
-                    if (onAddNew) onAddNew()
-                    else setIsModalOpen(true)
+ type="button"onClick={() => {
+ setOpen(false)
+ if (onAddNew) onAddNew()
+ else setIsModalOpen(true)
                   }}
-                  className="flex items-center gap-1 shrink-0 h-8 px-2.5 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold shadow-xs transition-colors"
-                >
-                  <Plus className="h-3.5 w-3.5" />
+ className="flex items-center gap-1 shrink-0 h-8 px-2.5 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold shadow-xs transition-colors">
+                  <Plus className="h-3.5 w-3.5"/>
                   <span>New</span>
                 </button>
               )}
@@ -151,33 +141,30 @@ export function CustomerSelector({
                   </div>
                   {showAddNew && (
                     <Button
-                      type="button"
-                      size="sm"
-                      onClick={() => {
-                        setOpen(false)
-                        if (onAddNew) onAddNew()
-                        else setIsModalOpen(true)
+ type="button"size="sm"onClick={() => {
+ setOpen(false)
+ if (onAddNew) onAddNew()
+ else setIsModalOpen(true)
                       }}
-                      className="h-8 text-xs bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg"
-                    >
-                      <Plus className="h-3.5 w-3.5 mr-1" />
-                      Create &quot;{searchTerm}&quot; as New Customer
+ className="h-8 text-xs bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg">
+                      <Plus className="h-3.5 w-3.5 mr-1"/>
+ Create &quot;{searchTerm}&quot; as New Customer
                     </Button>
                   )}
                 </div>
               ) : (
-                filtered.map((cust) => {
-                  const isSelected = cust.id === selectedId
-                  return (
+ filtered.map((cust) => {
+ const isSelected = cust.id === selectedId
+ return (
                     <div
-                      key={cust.id}
-                      onClick={() => {
-                        onSelect(cust)
-                        setOpen(false)
+ key={cust.id}
+ onClick={() => {
+ onSelect(cust)
+ setOpen(false)
                       }}
-                      className={cn(
+ className={cn(
                         'flex items-center justify-between rounded-xl p-2.5 text-xs cursor-pointer hover:bg-muted transition-colors',
-                        isSelected && 'bg-blue-50 text-blue-900 dark:bg-blue-950/50'
+ isSelected && 'bg-blue-50 text-blue-900 dark:bg-blue-950/50'
                       )}
                     >
                       <div className="flex flex-col min-w-0">
@@ -186,7 +173,7 @@ export function CustomerSelector({
                           {cust.company ? ` (${cust.company})` : ''}
                         </span>
                         <span className="flex items-center gap-1 text-muted-foreground text-2xs">
-                          <Phone className="h-3 w-3 shrink-0" />
+                          <Phone className="h-3 w-3 shrink-0"/>
                           {cust.phone}
                         </span>
                       </div>
@@ -196,13 +183,11 @@ export function CustomerSelector({
                           <div className="text-right">
                             <span className="text-2xs text-red-500 block">Due</span>
                             <CurrencyDisplay
-                              amount={cust.outstandingDue}
-                              colorVariant="danger"
-                              className="text-xs font-bold"
-                            />
+ amount={cust.outstandingDue}
+ colorVariant="danger"className="text-xs font-bold"/>
                           </div>
                         ) : null}
-                        {isSelected && <Check className="h-4 w-4 text-blue-600" />}
+                        {isSelected && <Check className="h-4 w-4 text-blue-600"/>}
                       </div>
                     </div>
                   )
@@ -216,13 +201,12 @@ export function CustomerSelector({
 
       {/* Built-in New Customer Modal */}
       <NewCustomerModal
-        open={isModalOpen}
-        onOpenChange={setIsModalOpen}
-        onCustomerCreated={handleCustomerCreated}
-        initialName={searchTerm}
-        companyId={companyId}
+ open={isModalOpen}
+ onOpenChange={setIsModalOpen}
+ onCustomerCreated={handleCustomerCreated}
+ initialName={searchTerm}
+ companyId={companyId}
       />
     </div>
   )
 }
-

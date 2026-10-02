@@ -2,14 +2,14 @@
 
 import React, { useState, useEffect } from 'react'
 import {
-  Clock,
-  Crown,
-  ArrowRight,
-  AlertTriangle,
-  X,
-  ChevronUp,
-  ChevronDown,
-  Flame,
+ Clock,
+ Crown,
+ ArrowRight,
+ AlertTriangle,
+ X,
+ ChevronUp,
+ ChevronDown,
+ Flame,
 } from 'lucide-react'
 import { useSubscription } from '@/hooks/use-subscription'
 import { useTenant } from '@/hooks/use-tenant'
@@ -22,124 +22,121 @@ import { cn } from '@/lib/utils'
 const SNOOZE_STORAGE_KEY = 'printerp_trial_popup_snooze'
 
 export function TrialNotificationPopup() {
-  const {
-    isLoading,
-    isTrial,
-    isTrialExpired,
-    daysRemainingInTrial,
-    timeRemainingInTrial,
-    trialProgressPercent,
-    currentPlan,
-    openUpgradeModal,
+ const {
+ isLoading,
+ isTrial,
+ isTrialExpired,
+ daysRemainingInTrial,
+ timeRemainingInTrial,
+ trialProgressPercent,
+ currentPlan,
+ openUpgradeModal,
   } = useSubscription()
-  const { company } = useTenant()
-  const { locale, tBilingual } = useI18n()
+ const { company } = useTenant()
+ const { locale, tBilingual } = useI18n()
 
-  const [isDismissed, setIsDismissed] = useState(true)
-  const [isMinimized, setIsMinimized] = useState(false)
+ const [isDismissed, setIsDismissed] = useState(true)
+ const [isMinimized, setIsMinimized] = useState(false)
 
   // Determine if snooze has passed
-  useEffect(() => {
-    if (isLoading || !isTrial) {
-      setIsDismissed(true)
-      return
+ useEffect(() => {
+ if (isLoading || !isTrial) {
+ setIsDismissed(true)
+ return
     }
 
-    try {
-      const snoozedUntil = sessionStorage.getItem(SNOOZE_STORAGE_KEY)
-      if (snoozedUntil) {
-        const snoozeTime = parseInt(snoozedUntil, 10)
-        if (Date.now() < snoozeTime) {
-          setIsDismissed(true)
-          return
+ try {
+ const snoozedUntil = sessionStorage.getItem(SNOOZE_STORAGE_KEY)
+ if (snoozedUntil) {
+ const snoozeTime = parseInt(snoozedUntil, 10)
+ if (Date.now() < snoozeTime) {
+ setIsDismissed(true)
+ return
         }
       }
     } catch {}
 
     // Show popup if trial is expired or ending soon (<= 7 days)
-    if (isTrialExpired || daysRemainingInTrial <= 7) {
+ if (isTrialExpired || daysRemainingInTrial <= 7) {
       // Delay popup appearance slightly for smooth load
-      const timer = setTimeout(() => {
-        setIsDismissed(false)
+ const timer = setTimeout(() => {
+ setIsDismissed(false)
       }, 1200)
-      return () => clearTimeout(timer)
+ return () => clearTimeout(timer)
     }
   }, [isLoading, isTrial, isTrialExpired, daysRemainingInTrial])
 
-  const handleDismiss = (durationHours: number = 2) => {
-    setIsDismissed(true)
-    try {
-      const snoozeUntil = Date.now() + durationHours * 60 * 60 * 1000
-      sessionStorage.setItem(SNOOZE_STORAGE_KEY, snoozeUntil.toString())
+ const handleDismiss = (durationHours: number = 2) => {
+ setIsDismissed(true)
+ try {
+ const snoozeUntil = Date.now() + durationHours * 60 * 60 * 1000
+ sessionStorage.setItem(SNOOZE_STORAGE_KEY, snoozeUntil.toString())
     } catch {}
   }
 
-  if (isLoading || !isTrial || isDismissed) {
-    return null
+ if (isLoading || !isTrial || isDismissed) {
+ return null
   }
 
-  const trialDaysTotal = currentPlan?.trial_days || 14
-  const trialDaysBn = toBengaliDigits(trialDaysTotal)
-  const daysRemBn = toBengaliDigits(daysRemainingInTrial)
-  const isUrgent = isTrialExpired || daysRemainingInTrial <= 3
+ const trialDaysTotal = currentPlan?.trial_days || 14
+ const trialDaysBn = toBengaliDigits(trialDaysTotal)
+ const daysRemBn = toBengaliDigits(daysRemainingInTrial)
+ const isUrgent = isTrialExpired || daysRemainingInTrial <= 3
 
   // Minimized Pill View
-  if (isMinimized) {
-    return (
+ if (isMinimized) {
+ return (
       <aside
-        aria-label="Trial Notification"
-        className="fixed bottom-20 md:bottom-5 right-4 z-[99990] animate-in fade-in slide-in-from-bottom-3 duration-300"
-      >
+ aria-label="Trial Notification"className="fixed bottom-20 md:bottom-5 right-4 z-[99990] animate-in fade-in slide-in-from-bottom-3 duration-300">
         <button
-          onClick={() => setIsMinimized(false)}
-          className={cn(
-            'flex items-center gap-2.5 px-3.5 py-2 rounded-full shadow-xl border text-xs font-semibold backdrop-blur-md transition-all cursor-pointer hover:scale-105',
-            isTrialExpired
+ onClick={() => setIsMinimized(false)}
+ className={cn(
+            'flex items-center gap-2.5 px-3.5 py-2 rounded-full shadow-xs border text-xs font-semibold backdrop-blur-md transition-all cursor-pointer hover:scale-105',
+ isTrialExpired
               ? 'bg-red-950/90 text-red-200 border-red-500/50 shadow-red-950/50'
               : isUrgent
               ? 'bg-amber-950/90 text-amber-200 border-amber-500/50 shadow-amber-950/50'
-              : 'bg-slate-900 text-indigo-200 border-indigo-500/50 shadow-slate-950/50'
+              : 'bg-surface-inset text-indigo-200 border-indigo-500/50 shadow-slate-950/50'
           )}
         >
           {isTrialExpired ? (
-            <AlertTriangle className="h-4 w-4 text-red-400 animate-pulse" />
+            <AlertTriangle className="h-4 w-4 text-red-400 animate-pulse"/>
           ) : (
-            <Flame className="h-4 w-4 text-amber-400 animate-pulse" />
+            <Flame className="h-4 w-4 text-amber-400 animate-pulse"/>
           )}
           <span className="bangla-text">
             {isTrialExpired
               ? tBilingual('Trial Expired', 'ট্রায়াল শেষ')
               : tBilingual(
-                  timeRemainingInTrial ? timeRemainingInTrial.statusBadgeEn : `${daysRemainingInTrial}d Trial Left`,
-                  timeRemainingInTrial ? timeRemainingInTrial.statusBadgeBn : `${daysRemBn} দিন বাকি`
+ timeRemainingInTrial ? timeRemainingInTrial.statusBadgeEn : `${daysRemainingInTrial}d Trial Left`,
+ timeRemainingInTrial ? timeRemainingInTrial.statusBadgeBn : `${daysRemBn} দিন বাকি`
                 )}
           </span>
-          <ChevronUp className="h-3.5 w-3.5 opacity-70" />
+          <ChevronUp className="h-3.5 w-3.5 opacity-70"/>
         </button>
       </aside>
     )
   }
 
   // Expanded Floating Notification Card
-  return (
+ return (
     <aside
-      aria-label="Trial Notification"
-      className={cn(
+ aria-label="Trial Notification"className={cn(
         'fixed bottom-20 md:bottom-5 right-4 left-4 sm:left-auto sm:w-[380px] z-[99990]',
-        'rounded-2xl border shadow-2xl backdrop-blur-xl p-4 transition-all duration-300',
+        'rounded-xl border shadow-lg backdrop-blur-xl p-4 transition-all duration-300',
         'animate-in fade-in slide-in-from-bottom-4',
-        isTrialExpired
-          ? 'bg-slate-900 text-slate-100 border-red-500/40 shadow-red-950/40'
+ isTrialExpired
+          ? 'bg-surface-inset text-foreground border-red-500/40 shadow-red-950/40'
           : isUrgent
-          ? 'bg-slate-900 text-slate-100 border-amber-500/40 shadow-amber-950/40'
-          : 'bg-slate-900 text-slate-100 border-indigo-500/40 shadow-indigo-950/40'
+          ? 'bg-surface-inset text-foreground border-amber-500/40 shadow-amber-950/40'
+          : 'bg-surface-inset text-foreground border-indigo-500/40 shadow-indigo-950/40'
       )}
     >
       {/* Background Accent Glow */}
       <div
-        className={cn(
+ className={cn(
           'absolute -top-10 -right-10 w-32 h-32 rounded-full blur-3xl pointer-events-none opacity-20',
-          isTrialExpired ? 'bg-red-500' : isUrgent ? 'bg-amber-500' : 'bg-indigo-500'
+ isTrialExpired ? 'bg-red-500' : isUrgent ? 'bg-amber-500' : 'bg-indigo-500'
         )}
       />
 
@@ -147,9 +144,9 @@ export function TrialNotificationPopup() {
       <div className="flex items-start justify-between gap-3 relative z-10">
         <div className="flex items-center gap-2">
           <Badge
-            className={cn(
+ className={cn(
               'text-2xs font-black uppercase tracking-wider px-2 py-0.5 border-0',
-              isTrialExpired
+ isTrialExpired
                 ? 'bg-red-600 text-white'
                 : isUrgent
                 ? 'bg-amber-600 text-white'
@@ -158,12 +155,12 @@ export function TrialNotificationPopup() {
           >
             {isTrialExpired ? (
               <span className="flex items-center gap-1">
-                <AlertTriangle className="h-3 w-3" />
+                <AlertTriangle className="h-3 w-3"/>
                 {tBilingual('Trial Expired', 'ট্রায়াল শেষ')}
               </span>
             ) : (
               <span className="flex items-center gap-1">
-                <Clock className="h-3 w-3" />
+                <Clock className="h-3 w-3"/>
                 {tBilingual(`${trialDaysTotal}-Day Trial`, `${trialDaysBn} দিনের ট্রায়াল`)}
               </span>
             )}
@@ -184,20 +181,16 @@ export function TrialNotificationPopup() {
         {/* Action Controls (Minimize & Dismiss) */}
         <div className="flex items-center gap-1">
           <button
-            onClick={() => setIsMinimized(true)}
-            className="p-1 text-muted-foreground hover:text-white rounded-lg hover:bg-slate-800 transition-colors cursor-pointer"
-            title={tBilingual('Minimize', 'ছোট করুন')}
-            aria-label="Minimize popup"
-          >
-            <ChevronDown className="h-4 w-4" />
+ onClick={() => setIsMinimized(true)}
+ className="p-1 text-muted-foreground hover:text-foreground rounded-lg hover:bg-card-elevated transition-colors cursor-pointer"title={tBilingual('Minimize', 'ছোট করুন')}
+ aria-label="Minimize popup">
+            <ChevronDown className="h-4 w-4"/>
           </button>
           <button
-            onClick={() => handleDismiss(4)}
-            className="p-1 text-muted-foreground hover:text-white rounded-lg hover:bg-slate-800 transition-colors cursor-pointer"
-            title={tBilingual('Dismiss for 4 hours', 'বন্ধ করুন')}
-            aria-label="Close popup"
-          >
-            <X className="h-4 w-4" />
+ onClick={() => handleDismiss(4)}
+ className="p-1 text-muted-foreground hover:text-foreground rounded-lg hover:bg-card-elevated transition-colors cursor-pointer"title={tBilingual('Dismiss for 4 hours', 'বন্ধ করুন')}
+ aria-label="Close popup">
+            <X className="h-4 w-4"/>
           </button>
         </div>
       </div>
@@ -247,13 +240,13 @@ export function TrialNotificationPopup() {
                 {locale === 'bn' ? toBengaliDigits(trialProgressPercent) : trialProgressPercent}%
               </span>
             </div>
-            <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+            <div className="w-full h-1.5 bg-card-elevated rounded-full overflow-hidden">
               <div
-                className={cn(
+ className={cn(
                   'h-full rounded-full transition-all duration-500',
-                  isUrgent ? 'bg-amber-500' : 'bg-gradient-to-r from-indigo-500 to-purple-500'
+ isUrgent ? 'bg-amber-500' : 'bg-gradient-to-r from-indigo-500 to-purple-500'
                 )}
-                style={{ width: `${trialProgressPercent}%` }}
+ style={{ width: `${trialProgressPercent}%` }}
               />
             </div>
           </div>
@@ -263,29 +256,27 @@ export function TrialNotificationPopup() {
       {/* Footer Actions */}
       <div className="mt-3.5 pt-3 border-t border-border flex items-center justify-between gap-2 relative z-10">
         <button
-          onClick={() => handleDismiss(12)}
-          className="text-2xs text-muted-foreground hover:text-foreground bangla-text cursor-pointer transition-colors"
-        >
+ onClick={() => handleDismiss(12)}
+ className="text-2xs text-muted-foreground hover:text-foreground bangla-text cursor-pointer transition-colors">
           {tBilingual('Remind me later', 'পরে মনে করান')}
         </button>
 
         <div className="flex items-center gap-2">
           <Button
-            size="sm"
-            onClick={() => {
-              openUpgradeModal()
-              setIsMinimized(true)
+ size="sm"onClick={() => {
+ openUpgradeModal()
+ setIsMinimized(true)
             }}
-            className={cn(
+ className={cn(
               'h-8 text-xs font-bold bangla-text cursor-pointer shadow-lg px-3.5',
-              isTrialExpired
+ isTrialExpired
                 ? 'bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white'
                 : 'bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 hover:opacity-95 text-white'
             )}
           >
-            <Crown className="mr-1.5 h-3.5 w-3.5" />
+            <Crown className="mr-1.5 h-3.5 w-3.5"/>
             {tBilingual('Upgrade Plan', 'প্ল্যান আপগ্রেড করুন')}
-            <ArrowRight className="ml-1 h-3 w-3" />
+            <ArrowRight className="ml-1 h-3 w-3"/>
           </Button>
         </div>
       </div>

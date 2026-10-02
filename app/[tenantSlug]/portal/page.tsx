@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation'
 import { getCurrentTenant } from '@/lib/auth/tenant-auth'
 
 interface PortalPageProps {
-  params: Promise<{ tenantSlug: string }>
+ params: Promise<{ tenantSlug: string }>
 }
 
 /**
@@ -11,24 +11,24 @@ interface PortalPageProps {
  * If unauthenticated, smoothly redirects to the tenant-scoped login page with return URL.
  */
 export default async function TenantPortalRedirect({ params }: PortalPageProps) {
-  const { tenantSlug } = await params
+ const { tenantSlug } = await params
 
-  try {
-    const tenant = await getCurrentTenant(tenantSlug)
-    if (tenant?.userId) {
-      redirect(`/${tenantSlug}/dashboard`)
+ try {
+ const tenant = await getCurrentTenant(tenantSlug)
+ if (tenant?.userId) {
+ redirect(`/${tenantSlug}/dashboard`)
     }
   } catch (error: any) {
-    if (
-      typeof error === 'object' &&
-      error !== null &&
+ if (
+ typeof error === 'object' &&
+ error !== null &&
       'digest' in error &&
-      typeof error.digest === 'string' &&
-      error.digest.startsWith('NEXT_REDIRECT')
+ typeof error.digest === 'string' &&
+ error.digest.startsWith('NEXT_REDIRECT')
     ) {
-      throw error
+ throw error
     }
   }
 
-  redirect(`/login?tenant=${tenantSlug}&redirectTo=/${tenantSlug}/dashboard`)
+ redirect(`/login?tenant=${tenantSlug}&redirectTo=/${tenantSlug}/dashboard`)
 }

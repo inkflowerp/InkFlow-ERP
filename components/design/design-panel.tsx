@@ -3,11 +3,11 @@
 import React, { useState, useEffect, useMemo, useCallback, useTransition } from 'react'
 import { useParams } from 'next/navigation'
 import {
-  Edit3,
-  Plus,
-  RefreshCw,
-  Sparkles,
-  X,
+ Edit3,
+ Plus,
+ RefreshCw,
+ Sparkles,
+ X,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/hooks/use-auth'
@@ -23,9 +23,9 @@ import { WorkOrderModal } from '@/components/shared/work-order-modal'
 import { PageHeader } from '@/components/shared/page-header'
 
 import {
-  type PreflightState,
-  type WhatsAppTemplateKey,
-  PRINT_MACHINERY_LIST,
+ type PreflightState,
+ type WhatsAppTemplateKey,
+ PRINT_MACHINERY_LIST,
 } from './types'
 
 import { DesignMetricsBar, type DesignMetrics } from './design-metrics-bar'
@@ -40,593 +40,588 @@ import { DesignCompareModal } from './modals/design-compare-modal'
 import { DesignNewJobModal } from './modals/design-new-job-modal'
 
 export interface DesignPanelProps {
-  defaultTab?: 'new_tasks' | 'completed' | 'all' | string
+ defaultTab?: 'new_tasks' | 'completed' | 'all' | string
 }
 
 function getDueText(deadline?: string | null, priority?: string): string | null {
-  if (priority === 'urgent') return 'Urgent'
-  if (!deadline) return null
-  const d = new Date(deadline)
-  if (isNaN(d.getTime())) return null
+ if (priority === 'urgent') return 'Urgent'
+ if (!deadline) return null
+ const d = new Date(deadline)
+ if (isNaN(d.getTime())) return null
 
-  const now = new Date()
-  const dMidnight = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime()
-  const nowMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
-  const diffDays = Math.round((dMidnight - nowMidnight) / (1000 * 60 * 60 * 24))
+ const now = new Date()
+ const dMidnight = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime()
+ const nowMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
+ const diffDays = Math.round((dMidnight - nowMidnight) / (1000 * 60 * 60 * 24))
 
-  if (diffDays < 0) return 'Overdue'
-  if (diffDays === 0) return 'Today'
-  if (diffDays === 1) return 'Tomorrow'
-  if (diffDays > 1 && diffDays <= 7) return `${diffDays} days left`
-  return null
+ if (diffDays < 0) return 'Overdue'
+ if (diffDays === 0) return 'Today'
+ if (diffDays === 1) return 'Tomorrow'
+ if (diffDays > 1 && diffDays <= 7) return `${diffDays} days left`
+ return null
 }
 
 export function DesignPanel({ defaultTab = 'new_tasks' }: DesignPanelProps) {
-  const params = useParams()
-  const { company } = useTenant()
-  const { tBilingual } = useI18n()
-  const tenantSlug = (params?.tenantSlug as string) || company?.slug || 'default'
-  const { user } = useAuth()
-  const companyId = company?.id || tenantSlug
+ const params = useParams()
+ const { company } = useTenant()
+ const { tBilingual } = useI18n()
+ const tenantSlug = (params?.tenantSlug as string) || company?.slug || 'default'
+ const { user } = useAuth()
+ const companyId = company?.id || tenantSlug
 
   // Work Order Modal State
-  const [isWorkOrderModalOpen, setIsWorkOrderModalOpen] = useState(false)
+ const [isWorkOrderModalOpen, setIsWorkOrderModalOpen] = useState(false)
 
   // Data States
-  const [jobs, setJobs] = useState<DesignJobRecord[]>([])
-  const [, setProductionJobs] = useState<ProductionJobRecord[]>([])
-  const [customers, setCustomers] = useState<Array<{ id: string; name: string; mobile?: string }>>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [isRefreshing, setIsRefreshing] = useState(false)
-  const [, startTransition] = useTransition()
+ const [jobs, setJobs] = useState<DesignJobRecord[]>([])
+ const [, setProductionJobs] = useState<ProductionJobRecord[]>([])
+ const [customers, setCustomers] = useState<Array<{ id: string; name: string; mobile?: string }>>([])
+ const [isLoading, setIsLoading] = useState(true)
+ const [isRefreshing, setIsRefreshing] = useState(false)
+ const [, startTransition] = useTransition()
 
   // Global Toast
-  const { showToast } = useToast()
-  const showNotification = useCallback((msg: string, type: 'success' | 'warning' | 'info' = 'success') => {
-    showToast({ type: type === 'warning' ? 'warning' : type === 'info' ? 'info' : 'success', title: msg, titleBn: msg })
+ const { showToast } = useToast()
+ const showNotification = useCallback((msg: string, type: 'success' | 'warning' | 'info' = 'success') => {
+ showToast({ type: type === 'warning' ? 'warning' : type === 'info' ? 'info' : 'success', title: msg, titleBn: msg })
   }, [showToast])
 
   // Active Tab - Default is New
-  const [activeTab, setActiveTab] = useState<string>(() => {
-    if (defaultTab && defaultTab !== 'all' && defaultTab !== 'pipeline') return defaultTab
-    return 'new_tasks'
+ const [activeTab, setActiveTab] = useState<string>(() => {
+ if (defaultTab && defaultTab !== 'all' && defaultTab !== 'pipeline') return defaultTab
+ return 'new_tasks'
   })
 
   // Filter Toolbar State
-  const [filters, setFilters] = useState<FilterState>({
-    searchQuery: '',
-    quickFilter: 'all',
-    selectedDesigner: 'all',
-    selectedPriority: 'all',
-    selectedDate: 'all',
-    viewMode: 'cards',
+ const [filters, setFilters] = useState<FilterState>({
+ searchQuery: '',
+ quickFilter: 'all',
+ selectedDesigner: 'all',
+ selectedPriority: 'all',
+ selectedDate: 'all',
+ viewMode: 'cards',
   })
 
   // Preflight Health States Map
-  const [preflightState, setPreflightState] = useState<Record<string, PreflightState>>({})
+ const [preflightState, setPreflightState] = useState<Record<string, PreflightState>>({})
 
   // Modal States
-  const [whatsAppModalState, setWhatsAppModalState] = useState<{
-    isOpen: boolean
-    job: DesignJobRecord | null
-    template: WhatsAppTemplateKey
+ const [whatsAppModalState, setWhatsAppModalState] = useState<{
+ isOpen: boolean
+ job: DesignJobRecord | null
+ template: WhatsAppTemplateKey
   }>({ isOpen: false, job: null, template: 'proof' })
 
-  const [preflightModalState, setPreflightModalState] = useState<{
-    isOpen: boolean
-    job: DesignJobRecord | null
+ const [preflightModalState, setPreflightModalState] = useState<{
+ isOpen: boolean
+ job: DesignJobRecord | null
   }>({ isOpen: false, job: null })
 
-  const [lightboxModalState, setLightboxModalState] = useState<{
-    isOpen: boolean
-    job: DesignJobRecord | null
-    versionIndex: number
+ const [lightboxModalState, setLightboxModalState] = useState<{
+ isOpen: boolean
+ job: DesignJobRecord | null
+ versionIndex: number
   }>({ isOpen: false, job: null, versionIndex: -1 })
 
-  const [compareModalState, setCompareModalState] = useState<{
-    isOpen: boolean
-    job: DesignJobRecord | null
+ const [compareModalState, setCompareModalState] = useState<{
+ isOpen: boolean
+ job: DesignJobRecord | null
   }>({ isOpen: false, job: null })
 
-  const [isNewJobModalOpen, setIsNewJobModalOpen] = useState(false)
+ const [isNewJobModalOpen, setIsNewJobModalOpen] = useState(false)
 
   // 1. Data Loader
-  const loadData = useCallback(async () => {
-    try {
-      let designList = await DesignRepository.getDesignJobs(companyId)
+ const loadData = useCallback(async () => {
+ try {
+ let designList = await DesignRepository.getDesignJobs(companyId)
 
       // Purge any legacy demo jobs starting with 'dsn-ref-'
-      const rawStored = PrintERPDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []
-      const cleanedStored = rawStored.filter((j) => !j?.id?.startsWith('dsn-ref-'))
-      if (cleanedStored.length !== rawStored.length) {
-        PrintERPDataStore.set(STORAGE_KEYS.DESIGN_JOBS, cleanedStored)
+ const rawStored = PrintERPDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []
+ const cleanedStored = rawStored.filter((j) => !j?.id?.startsWith('dsn-ref-'))
+ if (cleanedStored.length !== rawStored.length) {
+ PrintERPDataStore.set(STORAGE_KEYS.DESIGN_JOBS, cleanedStored)
       }
 
-      const cleanList = (designList || []).filter((j) => !j?.id?.startsWith('dsn-ref-'))
-      setJobs(cleanList)
+ const cleanList = (designList || []).filter((j) => !j?.id?.startsWith('dsn-ref-'))
+ setJobs(cleanList)
 
-      const prodList = PrintERPDataStore.get<ProductionJobRecord[]>(STORAGE_KEYS.PRODUCTION_JOBS) || []
-      setProductionJobs(prodList)
+ const prodList = PrintERPDataStore.get<ProductionJobRecord[]>(STORAGE_KEYS.PRODUCTION_JOBS) || []
+ setProductionJobs(prodList)
 
-      const custList = PrintERPDataStore.get<any[]>(STORAGE_KEYS.CUSTOMERS) || []
-      setCustomers(
-        custList.map((c) => ({
-          id: c.id,
-          name: c.name || c.customer_name || 'Customer',
-          mobile: c.mobile || c.phone,
+ const custList = PrintERPDataStore.get<any[]>(STORAGE_KEYS.CUSTOMERS) || []
+ setCustomers(
+ custList.map((c) => ({
+ id: c.id,
+ name: c.name || c.customer_name || 'Customer',
+ mobile: c.mobile || c.phone,
         }))
       )
     } catch (err: any) {
-      showNotification(err.message || 'Error loading design data', 'warning')
+ showNotification(err.message || 'Error loading design data', 'warning')
     } finally {
-      setIsLoading(false)
-      setIsRefreshing(false)
+ setIsLoading(false)
+ setIsRefreshing(false)
     }
   }, [companyId, showNotification])
 
-  useEffect(() => {
-    loadData()
+ useEffect(() => {
+ loadData()
 
-    let debounceTimer: ReturnType<typeof setTimeout> | null = null
-    const handleDataChange = () => {
-      if (debounceTimer) clearTimeout(debounceTimer)
-      debounceTimer = setTimeout(() => {
-        loadData()
+ let debounceTimer: ReturnType<typeof setTimeout> | null = null
+ const handleDataChange = () => {
+ if (debounceTimer) clearTimeout(debounceTimer)
+ debounceTimer = setTimeout(() => {
+ loadData()
       }, 150)
     }
 
-    if (typeof window !== 'undefined') {
-      window.addEventListener('printerp_data_sync', handleDataChange)
-      window.addEventListener('printerp_table_synced', handleDataChange)
-      window.addEventListener('printerp_table_synced:design_jobs', handleDataChange)
-      window.addEventListener('printerp_table_synced:invoices', handleDataChange)
-      window.addEventListener('storage', handleDataChange)
+ if (typeof window !== 'undefined') {
+ window.addEventListener('printerp_data_sync', handleDataChange)
+ window.addEventListener('printerp_table_synced', handleDataChange)
+ window.addEventListener('printerp_table_synced:design_jobs', handleDataChange)
+ window.addEventListener('printerp_table_synced:invoices', handleDataChange)
+ window.addEventListener('storage', handleDataChange)
     }
 
-    return () => {
-      if (debounceTimer) clearTimeout(debounceTimer)
-      if (typeof window !== 'undefined') {
-        window.removeEventListener('printerp_data_sync', handleDataChange)
-        window.removeEventListener('printerp_table_synced', handleDataChange)
-        window.removeEventListener('printerp_table_synced:design_jobs', handleDataChange)
-        window.removeEventListener('printerp_table_synced:invoices', handleDataChange)
-        window.removeEventListener('storage', handleDataChange)
+ return () => {
+ if (debounceTimer) clearTimeout(debounceTimer)
+ if (typeof window !== 'undefined') {
+ window.removeEventListener('printerp_data_sync', handleDataChange)
+ window.removeEventListener('printerp_table_synced', handleDataChange)
+ window.removeEventListener('printerp_table_synced:design_jobs', handleDataChange)
+ window.removeEventListener('printerp_table_synced:invoices', handleDataChange)
+ window.removeEventListener('storage', handleDataChange)
       }
     }
   }, [loadData])
 
-  const handleRefresh = useCallback(() => {
-    setIsRefreshing(true)
-    loadData()
+ const handleRefresh = useCallback(() => {
+ setIsRefreshing(true)
+ loadData()
   }, [loadData])
 
   // 2. Preflight State Helpers
-  const getPreflightStatus = useCallback(
+ const getPreflightStatus = useCallback(
     (jobId: string, status?: string): PreflightState => {
-      if (preflightState[jobId]) {
-        return preflightState[jobId]
+ if (preflightState[jobId]) {
+ return preflightState[jobId]
       }
-      const isApprovedOrInProd = status === 'approved'
-      return {
-        cmyk: isApprovedOrInProd,
-        dpi300: isApprovedOrInProd,
-        bleed: isApprovedOrInProd,
-        curves: isApprovedOrInProd,
+ const isApprovedOrInProd = status === 'approved'
+ return {
+ cmyk: isApprovedOrInProd,
+ dpi300: isApprovedOrInProd,
+ bleed: isApprovedOrInProd,
+ curves: isApprovedOrInProd,
       }
     },
     [preflightState]
   )
 
-  const handleTogglePreflight = useCallback(
+ const handleTogglePreflight = useCallback(
     (jobId: string, key: keyof PreflightState, designNumber?: string) => {
-      setPreflightState((prev) => {
-        const current = prev[jobId] || { cmyk: false, dpi300: false, bleed: false, curves: false }
-        const nextVal = !current[key]
-        const updated = { ...current, [key]: nextVal }
-        return { ...prev, [jobId]: updated }
+ setPreflightState((prev) => {
+ const current = prev[jobId] || { cmyk: false, dpi300: false, bleed: false, curves: false }
+ const nextVal = !current[key]
+ const updated = { ...current, [key]: nextVal }
+ return { ...prev, [jobId]: updated }
       })
-      showNotification(`Pre-Press ${key.toUpperCase()} check toggled for #${designNumber || jobId}`)
+ showNotification(`Pre-Press ${key.toUpperCase()} check toggled for #${designNumber || jobId}`)
     },
     [showNotification]
   )
 
   // 3. Unique Designers List for Filter
-  const designersList = useMemo(() => {
-    const set = new Set<string>()
-    jobs.forEach((j) => {
-      if (j.designer_name) set.add(j.designer_name)
+ const designersList = useMemo(() => {
+ const set = new Set<string>()
+ jobs.forEach((j) => {
+ if (j.designer_name) set.add(j.designer_name)
     })
-    return Array.from(set)
+ return Array.from(set)
   }, [jobs])
 
   // 4. Metrics KPI Calculations
-  const metrics: DesignMetrics = useMemo(() => {
-    let total = jobs.length
-    let newTasks = 0
-    let designRunning = 0
-    let waitingApproval = 0
-    let revision = 0
-    let inProduction = 0
+ const metrics: DesignMetrics = useMemo(() => {
+ let total = jobs.length
+ let newTasks = 0
+ let designRunning = 0
+ let waitingApproval = 0
+ let revision = 0
+ let inProduction = 0
 
-    jobs.forEach((j) => {
-      const status: string = j.status
-      if (status === 'approved' || (status as string) === 'sent_to_production' || (status as string) === 'completed') {
-        inProduction++
+ jobs.forEach((j) => {
+ const status: string = j.status
+ if (status === 'approved' || (status as string) === 'sent_to_production' || (status as string) === 'completed') {
+ inProduction++
       } else {
-        newTasks++
-        if (status === 'designing' || status === 'in_progress') designRunning++
-        else if (status === 'customer_approval' || status === 'waiting_approval') waitingApproval++
-        else if (status === 'revision') revision++
+ newTasks++
+ if (status === 'designing' || status === 'in_progress') designRunning++
+ else if (status === 'customer_approval' || status === 'waiting_approval') waitingApproval++
+ else if (status === 'revision') revision++
       }
     })
 
-    return {
-      total,
-      newTasks,
-      designRunning,
-      waitingApproval,
-      revision,
-      inProduction,
+ return {
+ total,
+ newTasks,
+ designRunning,
+ waitingApproval,
+ revision,
+ inProduction,
     }
   }, [jobs])
 
   // 5. Stage & Search Filtering
-  const filteredJobs = useMemo(() => {
-    const query = filters.searchQuery.toLowerCase().trim()
+ const filteredJobs = useMemo(() => {
+ const query = filters.searchQuery.toLowerCase().trim()
 
-    return jobs.filter((job) => {
-      const status: string = job.status
+ return jobs.filter((job) => {
+ const status: string = job.status
       // Tab Filtering
-      if (activeTab === 'new_tasks') {
-        if (status === 'approved' || (status as string) === 'sent_to_production' || (status as string) === 'completed') {
-          return false
+ if (activeTab === 'new_tasks') {
+ if (status === 'approved' || (status as string) === 'sent_to_production' || (status as string) === 'completed') {
+ return false
         }
       } else if (activeTab === 'completed' || activeTab === 'in_production') {
-        if (status !== 'approved' && (status as string) !== 'sent_to_production' && (status as string) !== 'completed') {
-          return false
+ if (status !== 'approved' && (status as string) !== 'sent_to_production' && (status as string) !== 'completed') {
+ return false
         }
       } else if (activeTab === 'design_running') {
-        if (status !== 'designing' && status !== 'in_progress') return false
+ if (status !== 'designing' && status !== 'in_progress') return false
       } else if (activeTab === 'waiting_approval') {
-        if (status !== 'customer_approval' && status !== 'waiting_approval') return false
+ if (status !== 'customer_approval' && status !== 'waiting_approval') return false
       } else if (activeTab === 'revision') {
-        if (status !== 'revision') return false
+ if (status !== 'revision') return false
       }
 
       // Designer Dropdown Filter
-      if (filters.selectedDesigner !== 'all' && job.designer_name !== filters.selectedDesigner) {
-        return false
+ if (filters.selectedDesigner !== 'all' && job.designer_name !== filters.selectedDesigner) {
+ return false
       }
 
       // Priority Dropdown Filter
-      if (filters.selectedPriority && filters.selectedPriority !== 'all') {
-        if (job.priority !== filters.selectedPriority) return false
+ if (filters.selectedPriority && filters.selectedPriority !== 'all') {
+ if (job.priority !== filters.selectedPriority) return false
       }
 
       // Date Filter
-      if (filters.selectedDate && filters.selectedDate !== 'all') {
-        if (filters.selectedDate === 'today' && !job.deadline?.includes('28 Sep 2026')) return false
-        if (filters.selectedDate === '2_days' && !job.deadline?.includes('28 Sep') && !job.deadline?.includes('29 Sep')) return false
+ if (filters.selectedDate && filters.selectedDate !== 'all') {
+ if (filters.selectedDate === 'today' && !job.deadline?.includes('28 Sep 2026')) return false
+ if (filters.selectedDate === '2_days' && !job.deadline?.includes('28 Sep') && !job.deadline?.includes('29 Sep')) return false
       }
 
       // Search Query
-      if (query) {
-        const matchTitle = job.title?.toLowerCase().includes(query)
-        const matchCust = job.customer_name?.toLowerCase().includes(query)
-        const matchDsn = job.design_number?.toLowerCase().includes(query)
-        const matchInv = job.invoice_number?.toLowerCase().includes(query)
-        const matchPhone = (job.customer_phone || (job as any).mobile || '')
+ if (query) {
+ const matchTitle = job.title?.toLowerCase().includes(query)
+ const matchCust = job.customer_name?.toLowerCase().includes(query)
+ const matchDsn = job.design_number?.toLowerCase().includes(query)
+ const matchInv = job.invoice_number?.toLowerCase().includes(query)
+ const matchPhone = (job.customer_phone || (job as any).mobile || '')
           .toLowerCase()
           .includes(query)
-        if (!matchTitle && !matchCust && !matchDsn && !matchInv && !matchPhone) return false
+ if (!matchTitle && !matchCust && !matchDsn && !matchInv && !matchPhone) return false
       }
 
-      return true
+ return true
     })
   }, [jobs, activeTab, filters])
 
   // 6. Group by Invoices for Accordion View
-  const { invoiceGroups, standaloneJobs } = useMemo(() => {
-    const invMap = new Map<string, InvoiceGroup>()
-    const standalones: DesignJobRecord[] = []
+ const { invoiceGroups, standaloneJobs } = useMemo(() => {
+ const invMap = new Map<string, InvoiceGroup>()
+ const standalones: DesignJobRecord[] = []
 
-    filteredJobs.forEach((job) => {
-      if (job.invoice_id || job.invoice_number) {
-        const invKey = job.invoice_id || job.invoice_number || 'inv-unknown'
-        if (!invMap.has(invKey)) {
-          invMap.set(invKey, {
-            invoiceId: job.invoice_id || invKey,
-            invoiceNumber: job.invoice_number || 'N/A',
-            customerName: job.customer_name,
-            customerPhone: job.customer_phone,
-            invoiceDate: (job as any).created_at
+ filteredJobs.forEach((job) => {
+ if (job.invoice_id || job.invoice_number) {
+ const invKey = job.invoice_id || job.invoice_number || 'inv-unknown'
+ if (!invMap.has(invKey)) {
+ invMap.set(invKey, {
+ invoiceId: job.invoice_id || invKey,
+ invoiceNumber: job.invoice_number || 'N/A',
+ customerName: job.customer_name,
+ customerPhone: job.customer_phone,
+ invoiceDate: (job as any).created_at
               ? new Date((job as any).created_at).toLocaleDateString('en-GB', {
-                  day: '2-digit',
-                  month: 'short',
-                  year: 'numeric',
+ day: '2-digit',
+ month: 'short',
+ year: 'numeric',
                 })
               : new Date().toLocaleDateString('en-GB', {
-                  day: '2-digit',
-                  month: 'short',
-                  year: 'numeric',
+ day: '2-digit',
+ month: 'short',
+ year: 'numeric',
                 }),
-            jobs: [job],
-            allInvoiceItems: job.all_invoice_items || [],
+ jobs: [job],
+ allInvoiceItems: job.all_invoice_items || [],
           })
         } else {
-          const entry = invMap.get(invKey)!
-          entry.jobs.push(job)
-          if ((!entry.allInvoiceItems || entry.allInvoiceItems.length === 0) && job.all_invoice_items) {
-            entry.allInvoiceItems = job.all_invoice_items
+ const entry = invMap.get(invKey)!
+ entry.jobs.push(job)
+ if ((!entry.allInvoiceItems || entry.allInvoiceItems.length === 0) && job.all_invoice_items) {
+ entry.allInvoiceItems = job.all_invoice_items
           }
         }
       } else {
-        standalones.push(job)
+ standalones.push(job)
       }
     })
 
     // Compute dynamic aggregate metrics for each invoice group
-    const groups = Array.from(invMap.values()).map((group) => {
-      const gJobs = group.jobs
-      const completedCount = gJobs.filter(
+ const groups = Array.from(invMap.values()).map((group) => {
+ const gJobs = group.jobs
+ const completedCount = gJobs.filter(
         (j) => j.status === 'approved' || (j.status as string) === 'sent_to_production' || (j.status as string) === 'completed'
       ).length
 
       // Determine overall group status based on lifecycle
-      let overallStatus: 'designing' | 'waiting_approval' | 'revision' | 'in_production' | 'approved' | 'new' = 'new'
-      if (gJobs.length > 0 && completedCount === gJobs.length) {
-        overallStatus = 'approved'
+ let overallStatus: 'designing' | 'waiting_approval' | 'revision' | 'in_production' | 'approved' | 'new' = 'new'
+ if (gJobs.length > 0 && completedCount === gJobs.length) {
+ overallStatus = 'approved'
       } else if (gJobs.some((j) => j.status === 'revision')) {
-        overallStatus = 'revision'
+ overallStatus = 'revision'
       } else if (gJobs.some((j) => (j.status as string) === 'waiting_approval' || j.status === 'customer_approval')) {
-        overallStatus = 'waiting_approval'
+ overallStatus = 'waiting_approval'
       } else if (gJobs.some((j) => (j.status as string) === 'sent_to_production')) {
-        overallStatus = 'in_production'
+ overallStatus = 'in_production'
       } else if (gJobs.some((j) => j.status === 'designing' || j.status === 'in_progress')) {
-        overallStatus = 'designing'
+ overallStatus = 'designing'
       } else {
-        overallStatus = 'new'
+ overallStatus = 'new'
       }
 
       // Compute group due text from earliest deadline
-      const sortedByDeadline = [...gJobs].filter((j) => j.deadline).sort((a, b) => {
-        return new Date(a.deadline!).getTime() - new Date(b.deadline!).getTime()
+ const sortedByDeadline = [...gJobs].filter((j) => j.deadline).sort((a, b) => {
+ return new Date(a.deadline!).getTime() - new Date(b.deadline!).getTime()
       })
-      const earliestDeadlineJob = sortedByDeadline[0] || gJobs[0]
-      const dueText = getDueText(earliestDeadlineJob?.deadline, earliestDeadlineJob?.priority)
+ const earliestDeadlineJob = sortedByDeadline[0] || gJobs[0]
+ const dueText = getDueText(earliestDeadlineJob?.deadline, earliestDeadlineJob?.priority)
 
-      return {
+ return {
         ...group,
-        completedCount,
-        overallStatus,
-        dueText,
+ completedCount,
+ overallStatus,
+ dueText,
       }
     })
 
     // Sort by invoice number (e.g. INV-000009, INV-000010)
-    const sortedGroups = groups.sort((a, b) =>
-      a.invoiceNumber.localeCompare(b.invoiceNumber, undefined, { numeric: true })
+ const sortedGroups = groups.sort((a, b) =>
+ a.invoiceNumber.localeCompare(b.invoiceNumber, undefined, { numeric: true })
     )
 
-    return {
-      invoiceGroups: sortedGroups,
-      standaloneJobs: standalones,
+ return {
+ invoiceGroups: sortedGroups,
+ standaloneJobs: standalones,
     }
   }, [filteredJobs])
 
   // 7. Workflow Action Handlers
-  const handleStartDesign = useCallback(
+ const handleStartDesign = useCallback(
     (job: DesignJobRecord) => {
-      startTransition(() => {
-        const now = new Date().toISOString()
-        const updated: DesignJobRecord = {
+ startTransition(() => {
+ const now = new Date().toISOString()
+ const updated: DesignJobRecord = {
           ...job,
-          status: 'designing',
-          started_at: now,
-          completed_at: null,
-          duration_seconds: null,
-          is_design_completed: false,
-          designer_name: user?.profile?.full_name || job.designer_name || 'Design Team',
-          updated_at: now,
+ status: 'designing',
+ started_at: now,
+ completed_at: null,
+ duration_seconds: null,
+ is_design_completed: false,
+ designer_name: user?.profile?.full_name || job.designer_name || 'Design Team',
+ updated_at: now,
         }
-        PrintERPDataStore.updateItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, job.id, updated)
-        setJobs((prev) => prev.map((j) => (j.id === job.id ? updated : j)))
-        showNotification(`Timer started! Job #${job.design_number || job.title} is now in design.`, 'success')
+ PrintERPDataStore.updateItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, job.id, updated)
+ setJobs((prev) => prev.map((j) => (j.id === job.id ? updated : j)))
+ showNotification(`Timer started! Job #${job.design_number || job.title} is now in design.`, 'success')
       })
     },
     [user, showNotification]
   )
 
-  const handleCompleteDesign = useCallback(
+ const handleCompleteDesign = useCallback(
     (job: DesignJobRecord) => {
-      startTransition(() => {
-        const now = new Date()
-        const startTime = job.started_at ? new Date(job.started_at).getTime() : now.getTime()
-        const durSec = Math.max(1, Math.round((now.getTime() - startTime) / 1000))
-        const updated: DesignJobRecord = {
+ startTransition(() => {
+ const now = new Date()
+ const startTime = job.started_at ? new Date(job.started_at).getTime() : now.getTime()
+ const durSec = Math.max(1, Math.round((now.getTime() - startTime) / 1000))
+ const updated: DesignJobRecord = {
           ...job,
-          status: 'customer_approval',
-          completed_at: now.toISOString(),
-          duration_seconds: durSec,
-          is_design_completed: true,
-          updated_at: now.toISOString(),
+ status: 'customer_approval',
+ completed_at: now.toISOString(),
+ duration_seconds: durSec,
+ is_design_completed: true,
+ updated_at: now.toISOString(),
         }
-        PrintERPDataStore.updateItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, job.id, updated)
-        setJobs((prev) => prev.map((j) => (j.id === job.id ? updated : j)))
-        showNotification(`Timer stopped! Design completed (${Math.floor(durSec / 60)}m ${durSec % 60}s). Ready to send to production!`, 'success')
+ PrintERPDataStore.updateItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, job.id, updated)
+ setJobs((prev) => prev.map((j) => (j.id === job.id ? updated : j)))
+ showNotification(`Timer stopped! Design completed (${Math.floor(durSec / 60)}m ${durSec % 60}s). Ready to send to production!`, 'success')
       })
     },
     [showNotification]
   )
 
-  const handlePreflightConfirmAndRoute = useCallback(
-    async (job: DesignJobRecord, targetMachineId: string) => {
-      const machineObj = PRINT_MACHINERY_LIST.find((m) => m.id === targetMachineId)
-      const now = new Date().toISOString()
-      const hasInvoice = Boolean(job.invoice_id) || Boolean(job.invoice_number)
-      const updated: DesignJobRecord = {
+ const handlePreflightConfirmAndRoute = useCallback(
+ async (job: DesignJobRecord, targetMachineId: string) => {
+ const machineObj = PRINT_MACHINERY_LIST.find((m) => m.id === targetMachineId)
+ const now = new Date().toISOString()
+ const hasInvoice = Boolean(job.invoice_id) || Boolean(job.invoice_number)
+ const updated: DesignJobRecord = {
         ...job,
-        status: 'approved',
-        workflow_routing: 'ready_production',
-        commercial_status: hasInvoice ? 'invoice_created' : (job.commercial_status || 'invoice_required'),
-        is_locked: true,
-        updated_at: now,
+ status: 'approved',
+ workflow_routing: 'ready_production',
+ commercial_status: hasInvoice ? 'invoice_created' : (job.commercial_status || 'invoice_required'),
+ is_locked: true,
+ updated_at: now,
       }
-      PrintERPDataStore.updateItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, job.id, updated)
-      setJobs((prev) => prev.map((j) => (j.id === job.id ? updated : j)))
+ PrintERPDataStore.updateItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, job.id, updated)
+ setJobs((prev) => prev.map((j) => (j.id === job.id ? updated : j)))
 
       // Ensure local production queue has the job for Production Floor Panel
-      const prodJob = {
-        id: `prod-${job.id}`,
-        company_id: companyId,
-        production_job_number: job.design_number || `JOB-${Date.now().toString().slice(-4)}`,
-        job_order_id: job.job_order_id || null,
-        customer_name: job.customer_name || 'Customer',
-        product_name: job.product_name || job.title || 'Print Product',
-        department: 'printing' as const,
-        stage: 'queued',
-        status: 'queued' as const,
-        priority: (job.priority as any) || 'normal',
-        assigned_machine_id: machineObj?.id || 'heidelberg_sm74',
-        assigned_machine_name: machineObj?.name || 'Heidelberg Speedmaster',
-        created_at: now,
-        updated_at: now,
+ const prodJob = {
+ id: `prod-${job.id}`,
+ company_id: companyId,
+ production_job_number: job.design_number || `JOB-${Date.now().toString().slice(-4)}`,
+ job_order_id: job.job_order_id || null,
+ customer_name: job.customer_name || 'Customer',
+ product_name: job.product_name || job.title || 'Print Product',
+ department: 'printing' as const,
+ stage: 'queued',
+ status: 'queued' as const,
+ priority: (job.priority as any) || 'normal',
+ assigned_machine_id: machineObj?.id || 'heidelberg_sm74',
+ assigned_machine_name: machineObj?.name || 'Heidelberg Speedmaster',
+ created_at: now,
+ updated_at: now,
       }
-      PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCTION_JOBS, prodJob as any)
+ PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCTION_JOBS, prodJob as any)
 
-      try {
-        await sendToPrintOperatorAction(job.id, companyId, updated, {
-          assignedMachineId: machineObj?.id,
-          assignedMachineName: machineObj?.name,
-          actorName: user?.profile?.full_name || 'Prepress Designer',
+ try {
+ await sendToPrintOperatorAction(job.id, companyId, updated, {
+ assignedMachineId: machineObj?.id,
+ assignedMachineName: machineObj?.name,
+ actorName: user?.profile?.full_name || 'Prepress Designer',
         })
       } catch {}
 
-      showNotification(`Job #${job.design_number || job.title} sent to Production Panel successfully! Moved to Completed tab.`, 'success')
+ showNotification(`Job #${job.design_number || job.title} sent to Production Panel successfully! Moved to Completed tab.`, 'success')
     },
     [companyId, user, showNotification]
   )
 
-  const handleConfirmToProduction = useCallback(
-    async (job: DesignJobRecord) => {
+ const handleConfirmToProduction = useCallback(
+ async (job: DesignJobRecord) => {
       // Intelligently select machine
-      const titleLower = ((job.title || '') + ' ' + (job.material || '') + ' ' + (job.product_name || '')).toLowerCase()
-      let machineId = 'heidelberg_sm74'
-      if (titleLower.includes('banner') || titleLower.includes('flex') || titleLower.includes('vinyl') || titleLower.includes('eco')) {
-        machineId = 'roland_truevis'
+ const titleLower = ((job.title || '') + ' ' + (job.material || '') + ' ' + (job.product_name || '')).toLowerCase()
+ let machineId = 'heidelberg_sm74'
+ if (titleLower.includes('banner') || titleLower.includes('flex') || titleLower.includes('vinyl') || titleLower.includes('eco')) {
+ machineId = 'roland_truevis'
       } else if (titleLower.includes('uv') || titleLower.includes('board') || titleLower.includes('acrylic')) {
-        machineId = 'docan_uv_flatbed'
+ machineId = 'docan_uv_flatbed'
       } else if (titleLower.includes('sticker') || titleLower.includes('cut') || titleLower.includes('plotter')) {
-        machineId = 'graphtec_cutter'
+ machineId = 'graphtec_cutter'
       } else if (titleLower.includes('card') || titleLower.includes('digital') || titleLower.includes('flyer')) {
-        machineId = 'konica_c1085'
+ machineId = 'konica_c1085'
       }
 
-      await handlePreflightConfirmAndRoute(job, machineId)
+ await handlePreflightConfirmAndRoute(job, machineId)
     },
     [handlePreflightConfirmAndRoute]
   )
 
-  const handlePauseProduction = useCallback(
+ const handlePauseProduction = useCallback(
     (job: DesignJobRecord) => {
-      startTransition(() => {
-        const updated = {
+ startTransition(() => {
+ const updated = {
           ...job,
-          is_production_paused: true,
-          updated_at: new Date().toISOString(),
+ is_production_paused: true,
+ updated_at: new Date().toISOString(),
         }
-        PrintERPDataStore.updateItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, job.id, updated as any)
-        setJobs((prev) => prev.map((j) => (j.id === job.id ? (updated as any) : j)))
-        showNotification('Production paused for correction', 'warning')
+ PrintERPDataStore.updateItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, job.id, updated as any)
+ setJobs((prev) => prev.map((j) => (j.id === job.id ? (updated as any) : j)))
+ showNotification('Production paused for correction', 'warning')
       })
     },
     [showNotification]
   )
 
-  const handleResumeProduction = useCallback(
+ const handleResumeProduction = useCallback(
     (job: DesignJobRecord) => {
-      startTransition(() => {
-        const updated = {
+ startTransition(() => {
+ const updated = {
           ...job,
-          is_production_paused: false,
-          updated_at: new Date().toISOString(),
+ is_production_paused: false,
+ updated_at: new Date().toISOString(),
         }
-        PrintERPDataStore.updateItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, job.id, updated as any)
-        setJobs((prev) => prev.map((j) => (j.id === job.id ? (updated as any) : j)))
-        showNotification('Production resumed', 'success')
+ PrintERPDataStore.updateItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, job.id, updated as any)
+ setJobs((prev) => prev.map((j) => (j.id === job.id ? (updated as any) : j)))
+ showNotification('Production resumed', 'success')
       })
     },
     [showNotification]
   )
 
-  const handleRequestRevision = useCallback(
+ const handleRequestRevision = useCallback(
     (job: DesignJobRecord) => {
-      startTransition(() => {
-        const updated: DesignJobRecord = {
+ startTransition(() => {
+ const updated: DesignJobRecord = {
           ...job,
-          status: 'revision',
-          revision_count: (job.revision_count || 0) + 1,
-          updated_at: new Date().toISOString(),
+ status: 'revision',
+ revision_count: (job.revision_count || 0) + 1,
+ updated_at: new Date().toISOString(),
         }
-        PrintERPDataStore.updateItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, job.id, updated)
-        setJobs((prev) => prev.map((j) => (j.id === job.id ? updated : j)))
-        showNotification(`Revision requested for #${job.design_number || job.title}`, 'info')
+ PrintERPDataStore.updateItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, job.id, updated)
+ setJobs((prev) => prev.map((j) => (j.id === job.id ? updated : j)))
+ showNotification(`Revision requested for #${job.design_number || job.title}`, 'info')
       })
     },
     [showNotification]
   )
 
-  const handleCreateNewJob = useCallback(
-    async (newJob: DesignJobRecord) => {
-      PrintERPDataStore.addItem(STORAGE_KEYS.DESIGN_JOBS, newJob)
-      setJobs((prev) => [newJob, ...prev])
-      showNotification('New design job created successfully!', 'success')
-      try {
-        await DesignRepository.createDesignJob(newJob)
+ const handleCreateNewJob = useCallback(
+ async (newJob: DesignJobRecord) => {
+ PrintERPDataStore.addItem(STORAGE_KEYS.DESIGN_JOBS, newJob)
+ setJobs((prev) => [newJob, ...prev])
+ showNotification('New design job created successfully!', 'success')
+ try {
+ await DesignRepository.createDesignJob(newJob)
       } catch (e) {
-        console.error('Failed to sync design job to DB:', e)
+ console.error('Failed to sync design job to DB:', e)
       }
     },
     [showNotification]
   )
 
   // Modal Callbacks
-  const handleOpenWhatsApp = useCallback(
+ const handleOpenWhatsApp = useCallback(
     (job: DesignJobRecord, tpl: WhatsAppTemplateKey = 'proof') => {
-      setWhatsAppModalState({ isOpen: true, job, template: tpl })
+ setWhatsAppModalState({ isOpen: true, job, template: tpl })
     },
     []
   )
 
-  const handleOpenLightbox = useCallback((job: DesignJobRecord, versionIndex = -1) => {
-    setLightboxModalState({ isOpen: true, job, versionIndex })
+ const handleOpenLightbox = useCallback((job: DesignJobRecord, versionIndex = -1) => {
+ setLightboxModalState({ isOpen: true, job, versionIndex })
   }, [])
 
-  const handleOpenCompare = useCallback((job: DesignJobRecord) => {
-    setCompareModalState({ isOpen: true, job })
+ const handleOpenCompare = useCallback((job: DesignJobRecord) => {
+ setCompareModalState({ isOpen: true, job })
   }, [])
 
-  const handleOpenPreflightModal = useCallback((job: DesignJobRecord) => {
-    setPreflightModalState({ isOpen: true, job })
+ const handleOpenPreflightModal = useCallback((job: DesignJobRecord) => {
+ setPreflightModalState({ isOpen: true, job })
   }, [])
 
-  return (
+ return (
     <div className="space-y-4 pb-16 max-w-7xl mx-auto">
       {/* =========================================================================
           1. HEADER: Standardized PageHeader matching Quotations & Billing
          ========================================================================= */}
       <PageHeader
-        titleEn="Design Panel"
-        titleBn="ডিজাইন প্যানেল ও প্রুফিং হাব"
-        descriptionEn="Manage design jobs, create proofs, handle revisions and send to production."
-        descriptionBn="ডিজাইন জব, প্রুফ তৈরি, রিভিশন কন্ট্রোল ও প্রোডাকশনে প্রেরণের সমন্বিত কেন্দ্র।"
-        icon={Edit3}
-        actions={
+ titleEn="Design Panel"titleBn="ডিজাইন প্যানেল ও প্রুফিং হাব"descriptionEn="Manage design jobs, create proofs, handle revisions and send to production."descriptionBn="ডিজাইন জব, প্রুফ তৈরি, রিভিশন কন্ট্রোল ও প্রোডাকশনে প্রেরণের সমন্বিত কেন্দ্র।"icon={Edit3}
+ actions={
           <Button
-            onClick={() => setIsWorkOrderModalOpen(true)}
-            className="bg-gradient-to-r from-blue-600 via-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs h-9 px-4 rounded-xl shadow-sm shadow-blue-500/20 flex items-center gap-1.5 cursor-pointer transition-transform active:scale-[0.98]"
-          >
-            <Plus className="w-4 h-4 stroke-[2.5]" />
+ onClick={() => setIsWorkOrderModalOpen(true)}
+ className="bg-gradient-to-r from-blue-600 via-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs h-9 px-4 rounded-xl shadow-sm shadow-blue-500/20 flex items-center gap-1.5 cursor-pointer transition-transform active:scale-[0.98]">
+            <Plus className="w-4 h-4 stroke-[2.5]"/>
             <span>{tBilingual('Add Work Order', 'নতুন ওয়ার্ক অর্ডার')}</span>
           </Button>
         }
@@ -634,73 +629,73 @@ export function DesignPanel({ defaultTab = 'new_tasks' }: DesignPanelProps) {
 
       {/* 2. Top Metrics KPI Bar (6 Cards matching reference) */}
       <DesignMetricsBar
-        metrics={metrics}
-        activeFilter={activeTab}
-        onSelectFilter={(tabId) => setActiveTab(tabId)}
+ metrics={metrics}
+ activeFilter={activeTab}
+ onSelectFilter={(tabId) => setActiveTab(tabId)}
       />
 
       {/* 3. Status Filter Tabs & Search / Dropdown Filter Bar */}
       <DesignFilterToolbar
-        filters={filters}
-        activeTab={activeTab}
-        tabCounts={{
-          all: metrics.total,
-          new_tasks: metrics.newTasks,
-          completed: metrics.inProduction,
-          design_running: metrics.designRunning,
-          waiting_approval: metrics.waitingApproval,
-          revision: metrics.revision || 0,
-          in_production: metrics.inProduction,
+ filters={filters}
+ activeTab={activeTab}
+ tabCounts={{
+ all: metrics.total,
+ new_tasks: metrics.newTasks,
+ completed: metrics.inProduction,
+ design_running: metrics.designRunning,
+ waiting_approval: metrics.waitingApproval,
+ revision: metrics.revision || 0,
+ in_production: metrics.inProduction,
         }}
-        designers={designersList}
-        onTabChange={(tabId) => setActiveTab(tabId)}
-        onFilterChange={(newF) => setFilters((prev) => ({ ...prev, ...newF }))}
-        onRefresh={handleRefresh}
-        isRefreshing={isRefreshing}
+ designers={designersList}
+ onTabChange={(tabId) => setActiveTab(tabId)}
+ onFilterChange={(newF) => setFilters((prev) => ({ ...prev, ...newF }))}
+ onRefresh={handleRefresh}
+ isRefreshing={isRefreshing}
       />
 
       {/* 4. Content Rendering: Invoice Accordion Cards */}
       {isLoading ? (
         <div className="p-16 text-center text-muted-foreground text-xs flex items-center justify-center gap-2">
-          <RefreshCw className="h-4 w-4 animate-spin text-indigo-600" />
+          <RefreshCw className="h-4 w-4 animate-spin text-indigo-600"/>
           <span>Loading design panel...</span>
         </div>
       ) : filters.viewMode === 'table' ? (
         <DesignTableView
-          jobs={filteredJobs}
-          activeTab={activeTab}
-          getPreflightStatus={getPreflightStatus}
-          onTogglePreflight={handleTogglePreflight}
-          onOpenWhatsApp={handleOpenWhatsApp}
-          onOpenLightbox={handleOpenLightbox}
-          onOpenPreflightModal={handleOpenPreflightModal}
-          onStartDesign={handleStartDesign}
-          onCompleteDesign={handleCompleteDesign}
-          onConfirmToProduction={handleConfirmToProduction}
-          onPauseProduction={handlePauseProduction}
-          onResumeProduction={handleResumeProduction}
-          onRequestRevision={handleRequestRevision}
+ jobs={filteredJobs}
+ activeTab={activeTab}
+ getPreflightStatus={getPreflightStatus}
+ onTogglePreflight={handleTogglePreflight}
+ onOpenWhatsApp={handleOpenWhatsApp}
+ onOpenLightbox={handleOpenLightbox}
+ onOpenPreflightModal={handleOpenPreflightModal}
+ onStartDesign={handleStartDesign}
+ onCompleteDesign={handleCompleteDesign}
+ onConfirmToProduction={handleConfirmToProduction}
+ onPauseProduction={handlePauseProduction}
+ onResumeProduction={handleResumeProduction}
+ onRequestRevision={handleRequestRevision}
         />
       ) : (
         <div className="space-y-3.5">
           {/* Grouped Accordion Cards */}
           {invoiceGroups.map((group) => (
             <DesignInvoiceGroupCard
-              key={group.invoiceId}
-              group={group}
-              activeTab={activeTab}
-              getPreflightStatus={getPreflightStatus}
-              onTogglePreflight={handleTogglePreflight}
-              onOpenWhatsApp={handleOpenWhatsApp}
-              onOpenLightbox={handleOpenLightbox}
-              onOpenCompare={handleOpenCompare}
-              onOpenPreflightModal={handleOpenPreflightModal}
-              onStartDesign={handleStartDesign}
-              onCompleteDesign={handleCompleteDesign}
-              onConfirmToProduction={handleConfirmToProduction}
-              onPauseProduction={handlePauseProduction}
-              onResumeProduction={handleResumeProduction}
-              onRequestRevision={handleRequestRevision}
+ key={group.invoiceId}
+ group={group}
+ activeTab={activeTab}
+ getPreflightStatus={getPreflightStatus}
+ onTogglePreflight={handleTogglePreflight}
+ onOpenWhatsApp={handleOpenWhatsApp}
+ onOpenLightbox={handleOpenLightbox}
+ onOpenCompare={handleOpenCompare}
+ onOpenPreflightModal={handleOpenPreflightModal}
+ onStartDesign={handleStartDesign}
+ onCompleteDesign={handleCompleteDesign}
+ onConfirmToProduction={handleConfirmToProduction}
+ onPauseProduction={handlePauseProduction}
+ onResumeProduction={handleResumeProduction}
+ onRequestRevision={handleRequestRevision}
             />
           ))}
 
@@ -708,53 +703,53 @@ export function DesignPanel({ defaultTab = 'new_tasks' }: DesignPanelProps) {
           {standaloneJobs.length > 0 && (
             <div className="space-y-3 pt-2">
               <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                Direct Work / Non-Invoiced Items
+ Direct Work / Non-Invoiced Items
               </div>
               {standaloneJobs.map((job) => (
                 <DesignInvoiceGroupCard
-                  key={job.id}
-                  group={{
-                    invoiceId: job.id,
-                    invoiceNumber: job.design_number || 'JOB-001',
-                    customerName: job.customer_name,
-                    customerPhone: job.customer_phone,
-                    invoiceDate: (job as any).created_at
+ key={job.id}
+ group={{
+ invoiceId: job.id,
+ invoiceNumber: job.design_number || 'JOB-001',
+ customerName: job.customer_name,
+ customerPhone: job.customer_phone,
+ invoiceDate: (job as any).created_at
                       ? new Date((job as any).created_at).toLocaleDateString('en-GB', {
-                          day: '2-digit',
-                          month: 'short',
-                          year: 'numeric',
+ day: '2-digit',
+ month: 'short',
+ year: 'numeric',
                         })
                       : new Date().toLocaleDateString('en-GB', {
-                          day: '2-digit',
-                          month: 'short',
-                          year: 'numeric',
+ day: '2-digit',
+ month: 'short',
+ year: 'numeric',
                         }),
-                    jobs: [job],
+ jobs: [job],
                   }}
-                  activeTab={activeTab}
-                  getPreflightStatus={getPreflightStatus}
-                  onTogglePreflight={handleTogglePreflight}
-                  onOpenWhatsApp={handleOpenWhatsApp}
-                  onOpenLightbox={handleOpenLightbox}
-                  onOpenCompare={handleOpenCompare}
-                  onOpenPreflightModal={handleOpenPreflightModal}
-                  onStartDesign={handleStartDesign}
-                  onCompleteDesign={handleCompleteDesign}
-                  onConfirmToProduction={handleConfirmToProduction}
-                  onPauseProduction={handlePauseProduction}
-                  onResumeProduction={handleResumeProduction}
-                  onRequestRevision={handleRequestRevision}
+ activeTab={activeTab}
+ getPreflightStatus={getPreflightStatus}
+ onTogglePreflight={handleTogglePreflight}
+ onOpenWhatsApp={handleOpenWhatsApp}
+ onOpenLightbox={handleOpenLightbox}
+ onOpenCompare={handleOpenCompare}
+ onOpenPreflightModal={handleOpenPreflightModal}
+ onStartDesign={handleStartDesign}
+ onCompleteDesign={handleCompleteDesign}
+ onConfirmToProduction={handleConfirmToProduction}
+ onPauseProduction={handlePauseProduction}
+ onResumeProduction={handleResumeProduction}
+ onRequestRevision={handleRequestRevision}
                 />
               ))}
             </div>
           )}
 
           {filteredJobs.length === 0 && (
-            <div className="bg-card rounded-2xl border border-border p-12 text-center text-muted-foreground shadow-2xs">
-              <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mx-auto mb-3">
-                <Edit3 className="w-6 h-6 stroke-[2]" />
+            <div className="bg-card rounded-xl border border-border p-12 text-center text-muted-foreground shadow-2xs">
+              <div className="w-12 h-12 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mx-auto mb-3">
+                <Edit3 className="w-6 h-6 stroke-[2]"/>
               </div>
-              <div className="text-base font-bold text-foreground dark:text-foreground">
+              <div className="text-base font-bold text-foreground">
                 {activeTab === 'all' ? 'No design jobs yet' : 'No jobs found in this tab'}
               </div>
               <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
@@ -765,10 +760,9 @@ export function DesignPanel({ defaultTab = 'new_tasks' }: DesignPanelProps) {
               {activeTab === 'all' && (
                 <div className="mt-4">
                   <Button
-                    onClick={() => setIsWorkOrderModalOpen(true)}
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs rounded-xl px-4 py-2 cursor-pointer shadow-xs inline-flex items-center gap-1.5"
-                  >
-                    <Plus className="w-4 h-4 stroke-[2.5]" />
+ onClick={() => setIsWorkOrderModalOpen(true)}
+ className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs rounded-xl px-4 py-2 cursor-pointer shadow-xs inline-flex items-center gap-1.5">
+                    <Plus className="w-4 h-4 stroke-[2.5]"/>
                     <span>Add Work Order</span>
                   </Button>
                 </div>
@@ -781,72 +775,72 @@ export function DesignPanel({ defaultTab = 'new_tasks' }: DesignPanelProps) {
       {/* 5. Modals Layer */}
       {whatsAppModalState.isOpen && (
         <DesignWhatsAppModal
-          isOpen={whatsAppModalState.isOpen}
-          onClose={() => setWhatsAppModalState({ isOpen: false, job: null, template: 'proof' })}
-          job={whatsAppModalState.job}
-          companyName={company?.name || 'InkFlow ERP'}
-          initialTemplate={whatsAppModalState.template}
-          onShowNotification={showNotification}
+ isOpen={whatsAppModalState.isOpen}
+ onClose={() => setWhatsAppModalState({ isOpen: false, job: null, template: 'proof' })}
+ job={whatsAppModalState.job}
+ companyName={company?.name || 'InkFlow ERP'}
+ initialTemplate={whatsAppModalState.template}
+ onShowNotification={showNotification}
         />
       )}
 
       {preflightModalState.isOpen && (
         <DesignPreflightModal
-          isOpen={preflightModalState.isOpen}
-          onClose={() => setPreflightModalState({ isOpen: false, job: null })}
-          job={preflightModalState.job}
-          currentPreflight={getPreflightStatus(
-            preflightModalState.job?.id || '',
-            preflightModalState.job?.status
+ isOpen={preflightModalState.isOpen}
+ onClose={() => setPreflightModalState({ isOpen: false, job: null })}
+ job={preflightModalState.job}
+ currentPreflight={getPreflightStatus(
+ preflightModalState.job?.id || '',
+ preflightModalState.job?.status
           )}
-          onToggleCheck={handleTogglePreflight}
-          onConfirmAndRoute={handlePreflightConfirmAndRoute}
-          onShowNotification={showNotification}
+ onToggleCheck={handleTogglePreflight}
+ onConfirmAndRoute={handlePreflightConfirmAndRoute}
+ onShowNotification={showNotification}
         />
       )}
 
       {lightboxModalState.isOpen && (
         <DesignLightboxModal
-          isOpen={lightboxModalState.isOpen}
-          onClose={() => setLightboxModalState({ isOpen: false, job: null, versionIndex: -1 })}
-          job={lightboxModalState.job}
-          versionIndex={lightboxModalState.versionIndex}
+ isOpen={lightboxModalState.isOpen}
+ onClose={() => setLightboxModalState({ isOpen: false, job: null, versionIndex: -1 })}
+ job={lightboxModalState.job}
+ versionIndex={lightboxModalState.versionIndex}
         />
       )}
 
       {compareModalState.isOpen && (
         <DesignCompareModal
-          isOpen={compareModalState.isOpen}
-          onClose={() => setCompareModalState({ isOpen: false, job: null })}
-          job={compareModalState.job}
+ isOpen={compareModalState.isOpen}
+ onClose={() => setCompareModalState({ isOpen: false, job: null })}
+ job={compareModalState.job}
         />
       )}
 
       {isNewJobModalOpen && (
         <DesignNewJobModal
-          isOpen={isNewJobModalOpen}
-          onClose={() => setIsNewJobModalOpen(false)}
-          companyId={companyId}
-          customers={customers}
-          currentUserName={user?.profile?.full_name}
-          onCreateJob={handleCreateNewJob}
-          onShowNotification={showNotification}
+ isOpen={isNewJobModalOpen}
+ onClose={() => setIsNewJobModalOpen(false)}
+ companyId={companyId}
+ customers={customers}
+ currentUserName={user?.profile?.full_name}
+ onCreateJob={handleCreateNewJob}
+ onShowNotification={showNotification}
         />
       )}
 
       {isWorkOrderModalOpen && (
         <WorkOrderModal
-          isOpen={isWorkOrderModalOpen}
-          onClose={() => {
-            setIsWorkOrderModalOpen(false)
-            loadData()
+ isOpen={isWorkOrderModalOpen}
+ onClose={() => {
+ setIsWorkOrderModalOpen(false)
+ loadData()
           }}
-          onSuccess={() => {
-            setIsWorkOrderModalOpen(false)
-            loadData()
-            showNotification('Work Order created successfully and added to Design Studio.', 'success')
+ onSuccess={() => {
+ setIsWorkOrderModalOpen(false)
+ loadData()
+ showNotification('Work Order created successfully and added to Design Studio.', 'success')
           }}
-          companyId={companyId}
+ companyId={companyId}
         />
       )}
 

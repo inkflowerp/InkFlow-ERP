@@ -1,0 +1,261 @@
+{
+  "$schema": "InkFlow ERP Design System Specification v1.0",
+  "philosophy": "Minimal, clean, professional, modern. Flat solid colors, 1px borders, no gradients, no glow, no decorative shadows.",
+  
+  "colors": {
+    "light": {
+      "background": "#F8FAFC",
+      "surface": "#FFFFFF",
+      "surface-elevated": "#FFFFFF",
+      "surface-muted": "#F1F5F9",
+      "surface-inset": "#F1F5F9",
+      "border": "#E2E8F0",
+      "border-input": "#CBD5E1",
+      "text-primary": "#0F172A",
+      "text-secondary": "#64748B",
+      "text-muted": "#64748B",
+      "primary": "#2563EB",
+      "primary-hover": "#1D4ED8",
+      "primary-foreground": "#FFFFFF",
+      "primary-surface": "#EFF6FF",
+      "destructive": "#EF4444",
+      "destructive-foreground": "#FFFFFF",
+      "success": "#16A34A",
+      "success-surface": "#ECFDF5",
+      "warning": "#F59E0B",
+      "warning-surface": "#FFFBEB",
+      "danger-surface": "#FEF2F2",
+      "info": "#0EA5E9",
+      "info-surface": "#EFF6FF",
+      "ring": "#2563EB"
+    },
+    "dark": {
+      "background": "#0F172A",
+      "surface": "#111827",
+      "surface-elevated": "#1E293B",
+      "surface-muted": "#1E293B",
+      "surface-inset": "#0B1120",
+      "border": "#334155",
+      "border-input": "#334155",
+      "text-primary": "#F8FAFC",
+      "text-secondary": "#CBD5E1",
+      "text-muted": "#CBD5E1",
+      "primary": "#60A5FA",
+      "primary-hover": "#2563EB",
+      "primary-foreground": "#0F172A",
+      "primary-surface": "#1E293B",
+      "destructive": "#EF4444",
+      "destructive-foreground": "#F8FAFC",
+      "success": "#4ADE80",
+      "success-surface": "hsl(144,61%,10%)",
+      "warning": "#FBBF24",
+      "warning-surface": "hsl(32,80%,10%)",
+      "danger-surface": "hsl(0,62%,12%)",
+      "info": "#38BDF8",
+      "info-surface": "hsl(217,33%,17.5%)",
+      "ring": "#60A5FA"
+    },
+    "semantic-accent-allowed": [
+      "emerald-{50,100,500,600,700,800,900,950}",
+      "amber-{50,100,500,600,700,800,900,950}",
+      "rose-{50,100,500,600,700,800,900,950}",
+      "blue-{50,100,500,600,700,800,900,950}",
+      "sky-{50,100,500,600,700,800,900,950}",
+      "indigo-{50,100,500,600,700,800,900,950}",
+      "purple-{50,100,500,600,700,800,900,950}",
+      "violet-{50,100,500,600,700,800,900,950}",
+      "cyan-{50,100,500,600,700,800,900,950}",
+      "teal-{50,100,500,600,700,800,900,950}",
+      "orange-{50,100,500,600,700,800,900,950}"
+    ],
+    "forbidden": [
+      "bg-white (use bg-card or bg-background)",
+      "bg-black (use bg-foreground)",
+      "bg-slate-* (use bg-muted, bg-card, bg-background, bg-surface-inset)",
+      "text-slate-* (use text-foreground, text-muted-foreground, text-card-foreground)",
+      "border-slate-* (use border-border, border-input)",
+      "bg-gray-* (use semantic tokens)",
+      "text-gray-* (use semantic tokens)",
+      "border-gray-* (use semantic tokens)",
+      "Any raw hex in className or inline style color",
+      "Any gradient (linear-gradient, radial-gradient, bg-gradient-to-*)"
+    ]
+  },
+
+  "typography": {
+    "font-family": "Inter, Hind Siliguri, system-ui, sans-serif",
+    "scale": {
+      "3xs": { "size": "11px", "line-height": "15px", "usage": "Dense compact tags, hashes" },
+      "2xs": { "size": "11px", "line-height": "15px", "usage": "Dense compact tags, hashes" },
+      "xs": { "size": "12px", "line-height": "17px", "usage": "Metadata, timestamps, badges" },
+      "sm": { "size": "14px", "line-height": "20px", "usage": "Standard UI base (inputs, buttons, table cells, nav)" },
+      "base": { "size": "16px", "line-height": "24px", "usage": "Body text, modal content, cards" },
+      "lg": { "size": "18px", "line-height": "26px", "usage": "Section titles, card headers" },
+      "xl": { "size": "20px", "line-height": "28px", "usage": "Modal titles, KPI values" },
+      "2xl": { "size": "24px", "line-height": "30px", "usage": "Page headers, major stats" },
+      "3xl": { "size": "30px", "line-height": "36px", "usage": "Dashboard headlines" }
+    },
+    "weights": {
+      "normal": { "value": 400, "usage": "Body text, descriptions" },
+      "medium": { "value": 500, "usage": "Labels, table headers, subtle emphasis" },
+      "semibold": { "value": 600, "usage": "Card titles, section headers, nav items" },
+      "bold": { "value": 700, "usage": "Page titles, primary CTAs, KPI values" }
+    },
+    "forbidden-sizes": "Any arbitrary font-size like text-[13px], text-[15px], text-[11px] etc."
+  },
+
+  "spacing": {
+    "base": "4px",
+    "scale": [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 60, 64, 72, 80, 96],
+    "units": "Tailwind default spacing scale (0.5 = 2px, 1 = 4px, 2 = 8px, 3 = 12px, 4 = 16px, etc.)",
+    "forbidden": "Arbitrary values like p-[17px], m-[13px], gap-[7px]",
+    "page-padding": "p-4 sm:p-5 lg:p-6",
+    "card-padding": "p-3 sm:p-4 (CardContent: p-4 sm:p-5 pt-0)",
+    "section-gap": "space-y-4 sm:space-y-6",
+    "grid-gap": "gap-2.5 sm:gap-3 (KPI), gap-3 sm:gap-4 (cards)"
+  },
+
+  "radius": {
+    "control": "rounded-lg (8px) — buttons, inputs, selects, badges",
+    "card": "rounded-xl (12px) — cards, modals, page headers",
+    "pill": "rounded-full — avatar, status dots, toggle pills",
+    "forbidden": "Any arbitrary like rounded-[14px], rounded-[10px]"
+  },
+
+  "shadows": {
+    "none": "shadow-none — ghost buttons, flat elements",
+    "2xs": "shadow-2xs — subtle search bar, KBD elements",
+    "xs": "shadow-xs — cards, buttons, elevated surfaces",
+    "subtle": "shadow-xs — standard card shadow",
+    "overlay": "shadow-lg — modals, popovers, dropdowns only",
+    "forbidden": [
+      "shadow-md (use shadow-xs)",
+      "shadow-lg (only for modals/popovers)",
+      "shadow-xl (forbidden)",
+      "shadow-2xl (forbidden)",
+      "Colored shadows",
+      "Glow effects",
+      "Any box-shadow with spread > 6px except overlays"
+    ]
+  },
+
+  "component-sizes": {
+    "button": {
+      "xs": "h-7.5 (30px)",
+      "sm": "h-9 (36px)",
+      "md": "h-9.5 (38px)",
+      "default": "h-10 (40px)",
+      "lg": "h-11 (44px)",
+      "icon": "h-9 w-9 (36px)",
+      "icon-sm": "h-8 w-8 (32px)",
+      "icon-xs": "h-7 w-7 (28px)"
+    },
+    "input": {
+      "height": "h-10 (40px)",
+      "font-size": "text-sm (14px)"
+    },
+    "table": {
+      "header-font": "text-xs (12px) font-bold uppercase tracking-wider",
+      "cell-font": "text-sm (14px)",
+      "row-padding": "py-2.5 px-3"
+    },
+    "kpi-card": {
+      "height": "min-h-24 (96px)",
+      "padding": "py-2 px-3 sm:py-2.5 sm:px-3.5",
+      "radius": "rounded-xl",
+      "border": "1px solid border-border",
+      "label": "text-2xs font-semibold uppercase tracking-wider text-muted-foreground",
+      "value": "text-xl font-bold font-numeric tabular-nums text-foreground"
+    },
+    "status-badges": {
+      "typography": "text-2xs font-semibold px-2 py-0.5 rounded-full border",
+      "active": "bg-success-surface text-success border-success/30",
+      "trial": "bg-info-surface text-info border-info/30",
+      "suspended": "bg-destructive/10 text-destructive border-destructive/30",
+      "overdue": "bg-warning-surface text-warning border-warning/30",
+      "paid": "bg-success-surface text-success border-success/30",
+      "failed": "bg-destructive/10 text-destructive border-destructive/30"
+    },
+    "plan-card": {
+      "radius": "rounded-xl",
+      "border": "1px solid border-border",
+      "padding": "p-5 sm:p-6",
+      "surface": "bg-card shadow-xs",
+      "header": "flex justify-between items-start gap-4",
+      "price": "text-2xl sm:text-3xl font-bold font-numeric tabular-nums",
+      "features": "space-y-2 text-xs text-muted-foreground",
+      "actions": "dropdown menu with edit, duplicate, assign, archive, delete"
+    },
+    "usage-meter": {
+      "height": "h-2 (8px)",
+      "radius": "rounded-full",
+      "background": "bg-muted",
+      "thresholds": {
+        "normal": "<80% bg-primary",
+        "warning": "80-94% bg-warning",
+        "destructive": "95%+ bg-destructive"
+      }
+    },
+    "impersonation-banner": {
+      "position": "sticky top-0 z-50",
+      "surface": "bg-warning-surface border-b border-warning/30 text-warning-foreground",
+      "typography": "text-xs font-medium px-4 py-2",
+      "action": "button variant=outline size=xs with Exit Impersonation"
+    },
+    "danger-zone": {
+      "surface": "bg-destructive/5 border border-destructive/30 rounded-xl p-5 sm:p-6",
+      "button": "bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-xs",
+      "dialog": "confirmation challenge dialog requiring typed confirmation"
+    },
+    "formatting": {
+      "currency-symbol": "৳",
+      "currency-decimals": "2 for fractional, 0 for integer",
+      "numeric-font": "font-numeric tabular-nums",
+      "date-format": "YYYY-MM-DD or standard localized date"
+    },
+    "page-header": {
+      "padding": "p-5 sm:p-6",
+      "radius": "rounded-xl",
+      "border": "1px solid border-border"
+    },
+    "sidebar": {
+      "width": "w-60 (240px) collapsed: w-16 (64px)"
+    },
+    "topbar": {
+      "height": "h-16 (64px)"
+    },
+    "page-container": {
+      "max-width": "max-w-7xl",
+      "padding": "p-4 sm:p-5 lg:p-6"
+    },
+    "icon-sizes": [16, 18, 20],
+    "icon-tile": {
+      "size": "h-10 w-10",
+      "radius": "rounded-lg"
+    }
+  },
+
+  "borders": {
+    "width": "1px only",
+    "focus-ring": "2px solid ring color, offset 2px",
+    "forbidden": "Borders thicker than 1px except focus ring"
+  },
+
+  "token-mapping": {
+    "bg-white": "bg-card",
+    "bg-slate-50": "bg-muted or bg-surface-inset",
+    "bg-slate-100": "bg-muted",
+    "bg-slate-200": "bg-muted",
+    "bg-slate-800": "dark only: bg-card-elevated",
+    "bg-slate-900": "dark only: bg-card",
+    "bg-slate-950": "dark only: bg-background",
+    "text-slate-500": "text-muted-foreground",
+    "text-slate-600": "text-muted-foreground",
+    "text-slate-700": "text-foreground",
+    "text-slate-800": "text-foreground",
+    "text-slate-900": "text-foreground",
+    "border-slate-200": "border-border",
+    "border-slate-300": "border-input or border-border",
+    "border-slate-700": "dark: border-border"
+  }
+}

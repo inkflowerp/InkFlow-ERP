@@ -2,20 +2,20 @@
 
 import React, { useState, useMemo } from 'react'
 import {
-  Clock,
-  CheckCircle2,
-  AlertTriangle,
-  Lock,
-  Calendar,
-  Wallet,
-  Coins,
-  FileCheck2,
-  RotateCcw,
-  Search,
-  ShieldCheck,
-  ArrowRight,
-  TrendingDown,
-  TrendingUp,
+ Clock,
+ CheckCircle2,
+ AlertTriangle,
+ Lock,
+ Calendar,
+ Wallet,
+ Coins,
+ FileCheck2,
+ RotateCcw,
+ Search,
+ ShieldCheck,
+ ArrowRight,
+ TrendingDown,
+ TrendingUp,
 } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -28,54 +28,54 @@ import type { CashClosingRecord, AccountRecord } from '@/types/finance.types'
 import { submitCashClosingAction } from '@/actions/finance.actions'
 
 export interface CashClosingViewProps {
-  cashClosings: CashClosingRecord[]
-  accounts: AccountRecord[]
-  todayOpeningCash?: number
-  todayCashReceived?: number
-  todayCashExpenses?: number
-  todayCashTransfers?: number
-  onSuccessClosing: () => void
-  isLoading?: boolean
+ cashClosings: CashClosingRecord[]
+ accounts: AccountRecord[]
+ todayOpeningCash?: number
+ todayCashReceived?: number
+ todayCashExpenses?: number
+ todayCashTransfers?: number
+ onSuccessClosing: () => void
+ isLoading?: boolean
 }
 
 export function CashClosingView({
-  cashClosings = [],
-  accounts = [],
-  todayOpeningCash = 0,
-  todayCashReceived = 0,
-  todayCashExpenses = 0,
-  todayCashTransfers = 0,
-  onSuccessClosing,
-  isLoading = false,
+ cashClosings = [],
+ accounts = [],
+ todayOpeningCash = 0,
+ todayCashReceived = 0,
+ todayCashExpenses = 0,
+ todayCashTransfers = 0,
+ onSuccessClosing,
+ isLoading = false,
 }: CashClosingViewProps) {
-  const { tBilingual } = useI18n()
-  const [activeSubTab, setActiveSubTab] = useState<'daily' | 'history' | 'variance'>('daily')
+ const { tBilingual } = useI18n()
+ const [activeSubTab, setActiveSubTab] = useState<'daily' | 'history' | 'variance'>('daily')
 
   // Find primary cash drawer account
-  const cashAccount = accounts.find((a) => a.account_subtype === 'CASH' || a.code === '1010') || accounts[0]
-  const todayStr = new Date().toISOString().split('T')[0]
+ const cashAccount = accounts.find((a) => a.account_subtype === 'CASH' || a.code === '1010') || accounts[0]
+ const todayStr = new Date().toISOString().split('T')[0]
 
   // Check if today's closing is already recorded & locked
-  const todayClosing = cashClosings.find((c) => c.closing_date === todayStr)
+ const todayClosing = cashClosings.find((c) => c.closing_date === todayStr)
 
   // Live closing formula values
-  const openingCash = todayClosing ? Number(todayClosing.opening_cash) : todayOpeningCash
-  const cashReceived = todayClosing ? Number(todayClosing.cash_inflows) : todayCashReceived
-  const cashExpenses = todayClosing ? Number(todayClosing.cash_outflows) : todayCashExpenses
-  const cashTransfers = todayCashTransfers
-  const expectedCash = openingCash + cashReceived - cashExpenses - cashTransfers
+ const openingCash = todayClosing ? Number(todayClosing.opening_cash) : todayOpeningCash
+ const cashReceived = todayClosing ? Number(todayClosing.cash_inflows) : todayCashReceived
+ const cashExpenses = todayClosing ? Number(todayClosing.cash_outflows) : todayCashExpenses
+ const cashTransfers = todayCashTransfers
+ const expectedCash = openingCash + cashReceived - cashExpenses - cashTransfers
 
   // Input state
-  const [countedCash, setCountedCash] = useState<string>(
-    todayClosing ? String(todayClosing.counted_cash) : ''
+ const [countedCash, setCountedCash] = useState<string>(
+ todayClosing ? String(todayClosing.counted_cash) : ''
   )
-  const [varianceReason, setVarianceReason] = useState<string>(todayClosing?.variance_reason || '')
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [feedbackMsg, setFeedbackMsg] = useState<string | null>(null)
-  const [useDenominations, setUseDenominations] = useState(false)
+ const [varianceReason, setVarianceReason] = useState<string>(todayClosing?.variance_reason || '')
+ const [isSubmitting, setIsSubmitting] = useState(false)
+ const [feedbackMsg, setFeedbackMsg] = useState<string | null>(null)
+ const [useDenominations, setUseDenominations] = useState(false)
 
   // Denominations counter
-  const [notes, setNotes] = useState<Record<string, string>>({
+ const [notes, setNotes] = useState<Record<string, string>>({
     1000: '',
     500: '',
     200: '',
@@ -84,51 +84,51 @@ export function CashClosingView({
     20: '',
   })
 
-  const handleDenominationChange = (denom: number, rawVal: string) => {
-    const updated = { ...notes, [denom]: rawVal }
-    setNotes(updated)
-    const sum = Object.entries(updated).reduce((s, [d, c]) => s + Number(d) * (parseInt(String(c), 10) || 0), 0)
-    setCountedCash(sum > 0 ? String(sum) : '')
+ const handleDenominationChange = (denom: number, rawVal: string) => {
+ const updated = { ...notes, [denom]: rawVal }
+ setNotes(updated)
+ const sum = Object.entries(updated).reduce((s, [d, c]) => s + Number(d) * (parseInt(String(c), 10) || 0), 0)
+ setCountedCash(sum > 0 ? String(sum) : '')
   }
 
-  const actualCounted = parseFloat(countedCash) || 0
-  const variance = actualCounted - expectedCash
-  const isBalanced = Math.abs(variance) < 0.01
+ const actualCounted = parseFloat(countedCash) || 0
+ const variance = actualCounted - expectedCash
+ const isBalanced = Math.abs(variance) < 0.01
 
-  const handleLockClosing = async () => {
-    if (!cashAccount) return
-    setIsSubmitting(true)
-    setFeedbackMsg(null)
+ const handleLockClosing = async () => {
+ if (!cashAccount) return
+ setIsSubmitting(true)
+ setFeedbackMsg(null)
 
-    try {
-      const res = await submitCashClosingAction({
-        accountId: cashAccount.id,
-        closingDate: todayStr,
-        countedCash: actualCounted,
-        varianceReason: varianceReason.trim() || undefined,
+ try {
+ const res = await submitCashClosingAction({
+ accountId: cashAccount.id,
+ closingDate: todayStr,
+ countedCash: actualCounted,
+ varianceReason: varianceReason.trim() || undefined,
       })
 
-      if (res.success) {
-        setFeedbackMsg(tBilingual("Today's cash closing confirmed & locked successfully! ✓", 'আজকের ক্যাশ ক্লোজিং সম্পন্ন ও লক করা হয়েছে! ✓'))
-        onSuccessClosing()
+ if (res.success) {
+ setFeedbackMsg(tBilingual("Today's cash closing confirmed & locked successfully! ✓", 'আজকের ক্যাশ ক্লোজিং সম্পন্ন ও লক করা হয়েছে! ✓'))
+ onSuccessClosing()
       } else {
-        setFeedbackMsg(res.error || 'Failed to submit closing')
+ setFeedbackMsg(res.error || 'Failed to submit closing')
       }
     } catch (err: any) {
-      setFeedbackMsg(err.message || 'Error locking closing')
+ setFeedbackMsg(err.message || 'Error locking closing')
     } finally {
-      setIsSubmitting(false)
+ setIsSubmitting(false)
     }
   }
 
-  return (
+ return (
     <div className="space-y-6">
       {/* 1. TOP HEADER STRIP */}
-      <div className="p-5 rounded-2xl bg-card shadow-xs border border-border flex flex-col md:flex-row md:items-center justify-between gap-5">
+      <div className="p-5 rounded-xl bg-card shadow-xs border border-border flex flex-col md:flex-row md:items-center justify-between gap-5">
         <div>
           <div className="flex items-center gap-2 mb-1">
             <Badge className="bg-purple-500/20 text-purple-300 border-none text-2xs uppercase tracking-wider flex items-center gap-1">
-              <Clock className="w-3.5 h-3.5" />
+              <Clock className="w-3.5 h-3.5"/>
               <span>{tBilingual('Print Shop Day Closing', 'দৈনিক ক্যাশ ক্লোজিং ও ড্রয়ার অডিট')}</span>
             </Badge>
           </div>
@@ -144,8 +144,8 @@ export function CashClosingView({
         </div>
 
         {todayClosing ? (
-          <div className="flex items-center gap-2 p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300">
-            <Lock className="w-5 h-5 text-emerald-400" />
+          <div className="flex items-center gap-2 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300">
+            <Lock className="w-5 h-5 text-emerald-400"/>
             <div className="text-xs">
               <span className="font-bold block">{tBilingual('Register Locked', 'ক্লোজিং লক করা আছে')}</span>
               <span className="text-3xs text-muted-foreground tabular-nums">Closed by: {todayClosing.closed_by_name}</span>
@@ -153,11 +153,10 @@ export function CashClosingView({
           </div>
         ) : (
           <Button
-            onClick={handleLockClosing}
-            disabled={isSubmitting}
-            variant="default" className="text-xs h-9 px-4 gap-2 self-start md:self-auto"
-          >
-            <Lock className="w-4 h-4" />
+ onClick={handleLockClosing}
+ disabled={isSubmitting}
+ variant="default"className="text-xs h-9 px-4 gap-2 self-start md:self-auto">
+            <Lock className="w-4 h-4"/>
             <span>{isSubmitting ? tBilingual('Locking...', 'লক হচ্ছে...') : tBilingual('Confirm & Lock Closing', 'নিশ্চিত করুন ও লক করুন')}</span>
           </Button>
         )}
@@ -165,18 +164,17 @@ export function CashClosingView({
 
       {feedbackMsg && (
         <div className="p-3 text-xs bg-emerald-50 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 rounded-xl border border-emerald-200 dark:border-emerald-800 flex items-center gap-2">
-          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0"/>
           <span>{feedbackMsg}</span>
         </div>
       )}
 
       {/* 2. SUB-NAVIGATION TABS */}
-      <div className="flex items-center gap-1.5 bg-muted p-1 rounded-2xl w-fit">
+      <div className="flex items-center gap-1.5 bg-muted p-1 rounded-xl w-fit">
         <button
-          type="button"
-          onClick={() => setActiveSubTab('daily')}
-          className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-            activeSubTab === 'daily'
+ type="button"onClick={() => setActiveSubTab('daily')}
+ className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+ activeSubTab === 'daily'
               ? 'bg-card text-purple-600 dark:text-purple-400 shadow-xs'
               : 'text-muted-foreground hover:text-foreground'
           }`}
@@ -185,10 +183,9 @@ export function CashClosingView({
         </button>
 
         <button
-          type="button"
-          onClick={() => setActiveSubTab('history')}
-          className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-            activeSubTab === 'history'
+ type="button"onClick={() => setActiveSubTab('history')}
+ className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+ activeSubTab === 'history'
               ? 'bg-card text-blue-600 dark:text-blue-400 shadow-xs'
               : 'text-muted-foreground hover:text-foreground'
           }`}
@@ -197,10 +194,9 @@ export function CashClosingView({
         </button>
 
         <button
-          type="button"
-          onClick={() => setActiveSubTab('variance')}
-          className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-            activeSubTab === 'variance'
+ type="button"onClick={() => setActiveSubTab('variance')}
+ className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+ activeSubTab === 'variance'
               ? 'bg-card text-amber-600 dark:text-amber-400 shadow-xs'
               : 'text-muted-foreground hover:text-foreground'
           }`}
@@ -215,9 +211,9 @@ export function CashClosingView({
       {activeSubTab === 'daily' && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Left Column: Interactive Formula Breakdown (7 Cols) */}
-          <Card className="lg:col-span-7 rounded-2xl border-border shadow-xs p-6 bg-card dark:bg-card">
-            <CardHeader className="p-0 pb-4 border-b border-border dark:border-border">
-              <CardTitle className="text-sm font-bold text-foreground dark:text-white flex items-center justify-between">
+          <Card className="lg:col-span-7 rounded-xl border-border shadow-xs p-6 bg-card">
+            <CardHeader className="p-0 pb-4 border-b border-border">
+              <CardTitle className="text-sm font-bold text-foreground flex items-center justify-between">
                 <span>{tBilingual('Cash Register Breakdown (আজকের ক্যাশ হিসাব)', 'ক্যাশ রেজিস্টার হিসাব')}</span>
                 <span className="tabular-nums text-xs text-muted-foreground">{todayStr}</span>
               </CardTitle>
@@ -234,7 +230,7 @@ export function CashClosingView({
                     {tBilingual('Carried forward from yesterday', 'পূর্ববর্তী দিনের অবশিষ্ট নগদ')}
                   </span>
                 </div>
-                <span className="tabular-nums font-bold text-foreground dark:text-white text-sm">
+                <span className="tabular-nums font-bold text-foreground text-sm">
                   ৳{openingCash.toLocaleString()}
                 </span>
               </div>
@@ -285,9 +281,9 @@ export function CashClosingView({
               </div>
 
               {/* Expected Cash in Hand */}
-              <div className="py-4 flex items-center justify-between bg-muted dark:bg-slate-850 p-3 rounded-xl mt-3">
+              <div className="py-4 flex items-center justify-between bg-muted dark:bg-muted p-3 rounded-xl mt-3">
                 <div>
-                  <span className="font-bold text-foreground dark:text-white text-sm block">
+                  <span className="font-bold text-foreground text-sm block">
                     {tBilingual('Expected Cash in Drawer', 'হিসাবমতে ড্রয়ারে থাকা উচিত (Expected)')}
                   </span>
                   <span className="text-3xs text-muted-foreground">
@@ -303,36 +299,30 @@ export function CashClosingView({
 
           {/* Right Column: Counted Cash & Variance Lock (5 Cols) */}
           <div className="lg:col-span-5 space-y-4">
-            <Card className="rounded-2xl border-border shadow-xs p-5 bg-card dark:bg-card">
+            <Card className="rounded-xl border-border shadow-xs p-5 bg-card">
               <div className="flex items-center justify-between mb-3">
-                <span className="font-bold text-xs text-foreground dark:text-foreground">
+                <span className="font-bold text-xs text-foreground">
                   {tBilingual('Actual Counted Cash', 'গোনা নগদ টাকা (Actual Cash)')}
                 </span>
                 <button
-                  type="button"
-                  onClick={() => setUseDenominations(!useDenominations)}
-                  className="text-3xs text-blue-600 dark:text-blue-400 font-semibold hover:underline cursor-pointer"
-                >
+ type="button"onClick={() => setUseDenominations(!useDenominations)}
+ className="text-3xs text-blue-600 dark:text-blue-400 font-semibold hover:underline cursor-pointer">
                   {useDenominations ? tBilingual('Direct Input', 'সরাসরি লিখুন') : tBilingual('Use Note Counter', 'নোট গুনে লিখুন')}
                 </button>
               </div>
 
               {/* Denomination Counter (Optional) */}
               {useDenominations ? (
-                <div className="space-y-2 p-3 rounded-xl bg-muted dark:bg-slate-850 mb-3 border border-border dark:border-border">
+                <div className="space-y-2 p-3 rounded-xl bg-muted dark:bg-muted mb-3 border border-border">
                   {[1000, 500, 200, 100, 50, 20].map((denom) => (
                     <div key={denom} className="flex items-center justify-between text-2xs">
                       <span className="tabular-nums font-bold text-muted-foreground w-16">
                         ৳{denom} ×
                       </span>
                       <Input
-                        type="number"
-                        min="0"
-                        value={notes[denom] ?? ''}
-                        onChange={(e) => handleDenominationChange(denom, e.target.value)}
-                        placeholder="0"
-                        className="h-7 w-20 text-xs text-center tabular-nums rounded-lg"
-                      />
+ type="number"min="0"value={notes[denom] ?? ''}
+ onChange={(e) => handleDenominationChange(denom, e.target.value)}
+ placeholder="0"className="h-7 w-20 text-xs text-center tabular-nums rounded-lg"/>
                       <span className="tabular-nums text-foreground w-20 text-right font-semibold">
                         ৳{((parseInt(notes[denom] || '0', 10) || 0) * denom).toLocaleString()}
                       </span>
@@ -343,20 +333,17 @@ export function CashClosingView({
                 <div className="relative mb-3">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-bold pointer-events-none">৳</span>
                   <Input
-                    type="number"
-                    value={countedCash}
-                    onChange={(e) => setCountedCash(e.target.value)}
-                    disabled={Boolean(todayClosing)}
-                    placeholder="0.00"
-                    className="h-11 pl-8 text-lg tabular-nums font-black rounded-xl text-foreground dark:text-white"
-                  />
+ type="number"value={countedCash}
+ onChange={(e) => setCountedCash(e.target.value)}
+ disabled={Boolean(todayClosing)}
+ placeholder="0.00"className="h-11 pl-8 text-lg tabular-nums font-black rounded-xl text-foreground"/>
                 </div>
               )}
 
               {/* Variance Card */}
               <div
-                className={`p-4 rounded-xl border flex items-center justify-between mb-4 ${
-                  isBalanced
+ className={`p-4 rounded-xl border flex items-center justify-between mb-4 ${
+ isBalanced
                     ? 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 text-emerald-800 dark:text-emerald-300'
                     : variance < 0
                     ? 'bg-rose-50 dark:bg-rose-950/30 border-rose-200 text-rose-800 dark:text-rose-300'
@@ -388,27 +375,24 @@ export function CashClosingView({
                   {tBilingual('Variance Reason / Closing Note', 'অমিলে কারণ বা সমাপনী নোট')}
                 </Label>
                 <Input
-                  value={varianceReason}
-                  onChange={(e) => setVarianceReason(e.target.value)}
-                  disabled={Boolean(todayClosing)}
-                  placeholder="e.g. ৳500 paid for delivery fare pending voucher"
-                  className="h-8.5 text-xs rounded-xl"
-                />
+ value={varianceReason}
+ onChange={(e) => setVarianceReason(e.target.value)}
+ disabled={Boolean(todayClosing)}
+ placeholder="e.g. ৳500 paid for delivery fare pending voucher"className="h-8.5 text-xs rounded-xl"/>
               </div>
 
               {/* Lock Button */}
               {!todayClosing ? (
                 <Button
-                  onClick={handleLockClosing}
-                  disabled={isSubmitting}
-                  variant="default" className="w-full text-xs h-10 gap-2"
-                >
-                  <Lock className="w-4 h-4" />
+ onClick={handleLockClosing}
+ disabled={isSubmitting}
+ variant="default"className="w-full text-xs h-10 gap-2">
+                  <Lock className="w-4 h-4"/>
                   <span>{isSubmitting ? tBilingual('Locking...', 'লক হচ্ছে...') : tBilingual('Confirm & Lock Today Closing', 'ক্লোজিং নিশ্চিত করুন ও লক করুন')}</span>
                 </Button>
               ) : (
                 <div className="p-3 text-center rounded-xl bg-muted text-muted-foreground text-xs font-semibold flex items-center justify-center gap-2">
-                  <ShieldCheck className="w-4 h-4 text-emerald-500" />
+                  <ShieldCheck className="w-4 h-4 text-emerald-500"/>
                   <span>{tBilingual('Day records locked by Cashier', 'ক্যাশিয়ার কর্তৃক এই দিনের হিসাব লক করা আছে')}</span>
                 </div>
               )}
@@ -419,11 +403,11 @@ export function CashClosingView({
 
       {/* Sub-tab B: Closing History */}
       {activeSubTab === 'history' && (
-        <Card className="rounded-2xl border-border shadow-xs overflow-hidden">
+        <Card className="rounded-xl border-border shadow-xs overflow-hidden">
           <CardContent className="p-0">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-muted text-foreground font-semibold border-b border-border dark:border-border">
+                <thead className="bg-muted text-foreground font-semibold border-b border-border">
                   <tr>
                     <th className="p-3">{tBilingual('Date', 'তারিখ')}</th>
                     <th className="p-3">{tBilingual('Closing #', 'ক্লোজিং নং')}</th>
@@ -446,7 +430,7 @@ export function CashClosingView({
                       <td className="p-3 tabular-nums font-medium text-purple-600 dark:text-purple-400">
                         {c.closing_number}
                       </td>
-                      <td className="p-3 text-right tabular-nums text-muted-foreground dark:text-muted-foreground">
+                      <td className="p-3 text-right tabular-nums text-muted-foreground">
                         ৳{Number(c.opening_cash || 0).toLocaleString()}
                       </td>
                       <td className="p-3 text-right tabular-nums text-emerald-600">
@@ -455,21 +439,21 @@ export function CashClosingView({
                       <td className="p-3 text-right tabular-nums text-rose-600">
                         -৳{Number(c.cash_outflows || 0).toLocaleString()}
                       </td>
-                      <td className="p-3 text-right tabular-nums font-bold text-foreground dark:text-foreground">
+                      <td className="p-3 text-right tabular-nums font-bold text-foreground">
                         ৳{Number(c.expected_cash || 0).toLocaleString()}
                       </td>
-                      <td className="p-3 text-right tabular-nums font-bold text-foreground dark:text-white">
+                      <td className="p-3 text-right tabular-nums font-bold text-foreground">
                         ৳{Number(c.counted_cash || 0).toLocaleString()}
                       </td>
                       <td className={`p-3 text-right tabular-nums font-bold ${Math.abs(c.variance) <= 0.01 ? 'text-emerald-600' : 'text-rose-600'}`}>
                         {c.variance > 0 ? `+৳${c.variance}` : `৳${c.variance}`}
                       </td>
-                      <td className="p-3 text-muted-foreground dark:text-muted-foreground">
+                      <td className="p-3 text-muted-foreground">
                         {c.closed_by_name}
                       </td>
                       <td className="p-3 text-center">
                         <Badge className="bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 text-3xs font-semibold">
-                          Locked ✓
+ Locked ✓
                         </Badge>
                       </td>
                     </tr>
@@ -492,17 +476,17 @@ export function CashClosingView({
       {/* Sub-tab C: Variance Analysis */}
       {activeSubTab === 'variance' && (
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <Card className="rounded-2xl border-border p-5 bg-card dark:bg-card">
+          <Card className="rounded-xl border-border p-5 bg-card">
             <span className="text-3xs uppercase font-semibold text-muted-foreground block">
               {tBilingual('Total Days Audited', 'মোট অডিটকৃত দিন')}
             </span>
-            <span className="text-3xl font-black tabular-nums text-foreground dark:text-white mt-1 block">
+            <span className="text-3xl font-black tabular-nums text-foreground mt-1 block">
               {cashClosings.length} {tBilingual('Days', 'দিন')}
             </span>
             <p className="text-3xs text-muted-foreground mt-1">{tBilingual('100% daily register compliance', 'শতভাগ দৈনিক রেজিস্টার সম্পন্নের রেকর্ড')}</p>
           </Card>
 
-          <Card className="rounded-2xl border-border p-5 bg-card dark:bg-card">
+          <Card className="rounded-xl border-border p-5 bg-card">
             <span className="text-3xs uppercase font-semibold text-muted-foreground block">
               {tBilingual('Perfect Closings', 'নিখুঁত মিল')}
             </span>
@@ -512,7 +496,7 @@ export function CashClosingView({
             <p className="text-3xs text-emerald-600 mt-1">{tBilingual('Zero variance audit days', 'কোনো অমিল ছাড়া দিন')}</p>
           </Card>
 
-          <Card className="rounded-2xl border-border p-5 bg-card dark:bg-card">
+          <Card className="rounded-xl border-border p-5 bg-card">
             <span className="text-3xs uppercase font-semibold text-muted-foreground block">
               {tBilingual('Net Monthly Variance', 'নিট মাসিক অমিল')}
             </span>

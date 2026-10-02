@@ -9,29 +9,29 @@ import { UpgradePrompt } from '@/components/subscriptions/upgrade-prompt'
 export { useFeatureGate, UpgradePrompt }
 
 interface FeatureGateProps {
-  feature: FeatureCode
-  children: React.ReactNode
-  fallback?: React.ReactNode
-  hideIfForbidden?: boolean
-  compact?: boolean
-  className?: string
+ feature: FeatureCode
+ children: React.ReactNode
+ fallback?: React.ReactNode
+ hideIfForbidden?: boolean
+ compact?: boolean
+ className?: string
 }
 
 export function FeatureGate({
-  feature,
-  children,
-  fallback,
-  hideIfForbidden = false,
-  compact = false,
-  className = '',
+ feature,
+ children,
+ fallback,
+ hideIfForbidden = false,
+ compact = false,
+ className = '',
 }: FeatureGateProps) {
-  return (
+ return (
     <SubscriptionFeatureGate
-      feature={feature}
-      fallback={fallback}
-      hideIfForbidden={hideIfForbidden}
-      compact={compact}
-      className={className}
+ feature={feature}
+ fallback={fallback}
+ hideIfForbidden={hideIfForbidden}
+ compact={compact}
+ className={className}
     >
       {children}
     </SubscriptionFeatureGate>

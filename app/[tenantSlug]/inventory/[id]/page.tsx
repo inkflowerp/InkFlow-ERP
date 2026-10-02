@@ -4,19 +4,19 @@ import React, { useState, useEffect } from 'react'
 import { useParams, useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import {
-  Package,
-  ArrowLeft,
-  Plus,
-  ArrowDownUp,
-  MapPin,
-  History,
-  Scissors,
-  AlertTriangle,
-  Layers,
-  Sparkles,
-  ExternalLink,
-  SlidersHorizontal,
-  RefreshCw,
+ Package,
+ ArrowLeft,
+ Plus,
+ ArrowDownUp,
+ MapPin,
+ History,
+ Scissors,
+ AlertTriangle,
+ Layers,
+ Sparkles,
+ ExternalLink,
+ SlidersHorizontal,
+ RefreshCw,
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
@@ -28,11 +28,11 @@ import { Badge } from '@/components/ui/badge'
 import { CurrencyDisplay } from '@/components/shared/currency-display'
 import { PageHeader } from '@/components/shared/page-header'
 import {
-  MaterialRecord,
-  InventoryLocationRecord,
-  InventoryStockBalanceRecord,
-  InventoryRemnantRecord,
-  StockLedgerRecord,
+ MaterialRecord,
+ InventoryLocationRecord,
+ InventoryStockBalanceRecord,
+ InventoryRemnantRecord,
+ StockLedgerRecord,
 } from '@/types/inventory.types'
 import { getMaterialDetailsAction } from '@/actions/inventory.actions'
 import { ReceiveStockModal } from '@/components/inventory/receive-stock-modal'
@@ -41,104 +41,104 @@ import { getMaterialWarehouseStockBreakdown } from '@/lib/units'
 import { cn } from '@/lib/utils'
 
 export default function MaterialDetailPage() {
-  const params = useParams()
-  const router = useRouter()
-  const pathname = usePathname()
-  const { company } = useTenant()
-  const { locale, tBilingual } = useI18n()
-  const slug = company?.slug || 'my-company'
-  const companyId = company?.id || 'default'
-  const materialId = params.id as string
+ const params = useParams()
+ const router = useRouter()
+ const pathname = usePathname()
+ const { company } = useTenant()
+ const { locale, tBilingual } = useI18n()
+ const slug = company?.slug || 'my-company'
+ const companyId = company?.id || 'default'
+ const materialId = params.id as string
 
-  const [mounted, setMounted] = useState(false)
-  useEffect(() => {
-    setMounted(true)
+ const [mounted, setMounted] = useState(false)
+ useEffect(() => {
+ setMounted(true)
   }, [])
 
-  const [material, setMaterial] = useState<MaterialRecord | null>(null)
-  const [locations, setLocations] = useState<InventoryLocationRecord[]>([])
-  const [balances, setBalances] = useState<InventoryStockBalanceRecord[]>([])
-  const [remnants, setRemnants] = useState<InventoryRemnantRecord[]>([])
-  const [ledger, setLedger] = useState<StockLedgerRecord[]>([])
-  const [loading, setLoading] = useState(true)
+ const [material, setMaterial] = useState<MaterialRecord | null>(null)
+ const [locations, setLocations] = useState<InventoryLocationRecord[]>([])
+ const [balances, setBalances] = useState<InventoryStockBalanceRecord[]>([])
+ const [remnants, setRemnants] = useState<InventoryRemnantRecord[]>([])
+ const [ledger, setLedger] = useState<StockLedgerRecord[]>([])
+ const [loading, setLoading] = useState(true)
 
-  const [isReceiveOpen, setIsReceiveOpen] = useState(false)
-  const [isAdjustmentOpen, setIsAdjustmentOpen] = useState(false)
+ const [isReceiveOpen, setIsReceiveOpen] = useState(false)
+ const [isAdjustmentOpen, setIsAdjustmentOpen] = useState(false)
 
-  const loadData = async () => {
-    if (!materialId || !companyId) return
-    setLoading(true)
-    try {
-      const res = await getMaterialDetailsAction(materialId, companyId)
-      if (res.success && res.data) {
-        const { material: mat, locations: locs, balances: bals, remnants: rems, ledger: led } = res.data
-        setMaterial(mat)
-        setLocations(locs)
-        setBalances(bals)
-        setRemnants(rems)
-        setLedger(led)
+ const loadData = async () => {
+ if (!materialId || !companyId) return
+ setLoading(true)
+ try {
+ const res = await getMaterialDetailsAction(materialId, companyId)
+ if (res.success && res.data) {
+ const { material: mat, locations: locs, balances: bals, remnants: rems, ledger: led } = res.data
+ setMaterial(mat)
+ setLocations(locs)
+ setBalances(bals)
+ setRemnants(rems)
+ setLedger(led)
       }
     } catch (err) {
-      console.error('Error loading material details:', err)
+ console.error('Error loading material details:', err)
     } finally {
-      setLoading(false)
+ setLoading(false)
     }
   }
 
-  useEffect(() => {
-    loadData()
+ useEffect(() => {
+ loadData()
   }, [materialId, companyId])
 
-  if (!mounted || loading) {
-    return (
+ if (!mounted || loading) {
+ return (
       <div className="space-y-6 max-w-6xl p-6 animate-pulse">
-        <div className="h-8 bg-muted rounded w-1/3" />
+        <div className="h-8 bg-muted rounded w-1/3"/>
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-24 bg-muted rounded-xl" />
+            <div key={i} className="h-24 bg-muted rounded-xl"/>
           ))}
         </div>
-        <div className="h-48 bg-muted rounded-xl" />
+        <div className="h-48 bg-muted rounded-xl"/>
       </div>
     )
   }
 
-  if (!material) {
-    return (
+ if (!material) {
+ return (
       <div className="p-8 text-center space-y-3">
         <p className="text-sm font-bold text-foreground">Material not found.</p>
         <Link href={getTenantNavHref('/inventory', pathname, slug)}>
-          <Button size="sm" variant="outline">
-            <ArrowLeft className="h-4 w-4 mr-1" /> Back to Inventory Hub
+          <Button size="sm"variant="outline">
+            <ArrowLeft className="h-4 w-4 mr-1"/> Back to Inventory Hub
           </Button>
         </Link>
       </div>
     )
   }
 
-  const isLowStock =
-    Number(material.reorder_level || material.min_stock_level || 0) > 0 &&
-    Number(material.current_stock || 0) <= Number(material.reorder_level || material.min_stock_level || 0)
+ const isLowStock =
+ Number(material.reorder_level || material.min_stock_level || 0) > 0 &&
+ Number(material.current_stock || 0) <= Number(material.reorder_level || material.min_stock_level || 0)
   
-  const breakdown = getMaterialWarehouseStockBreakdown(material)
+ const breakdown = getMaterialWarehouseStockBreakdown(material)
 
-  return (
+ return (
     <FeatureGate feature="inventory">
       <div className="space-y-6 max-w-6xl">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <Link href={getTenantNavHref('/inventory', pathname, slug)}>
-              <Button size="sm" variant="outline" className="h-9 w-9 p-0">
-                <ArrowLeft className="h-4 w-4" />
+              <Button size="sm"variant="outline"className="h-9 w-9 p-0">
+                <ArrowLeft className="h-4 w-4"/>
               </Button>
             </Link>
             <div>
-              <h1 className="text-xl font-black text-foreground dark:text-white">{material.name}</h1>
+              <h1 className="text-xl font-black text-foreground">{material.name}</h1>
               {material.name_bn && <p className="text-xs text-muted-foreground font-normal">{material.name_bn}</p>}
               <div className="flex items-center gap-2 mt-1">
                 <span className="tabular-nums text-2xs text-muted-foreground font-medium">SKU: {material.sku}</span>
-                <Badge variant="outline" className="capitalize text-2xs">
+                <Badge variant="outline"className="capitalize text-2xs">
                   {material.category.replace('_', ' ')}
                 </Badge>
                 {isLowStock && (
@@ -150,21 +150,16 @@ export default function MaterialDetailPage() {
 
           <div className="flex items-center gap-2">
             <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setIsAdjustmentOpen(true)}
-              className="text-xs"
-            >
-              <SlidersHorizontal className="h-3.5 w-3.5 mr-1 text-amber-600" />
-              Reconcile
+ size="sm"variant="outline"onClick={() => setIsAdjustmentOpen(true)}
+ className="text-xs">
+              <SlidersHorizontal className="h-3.5 w-3.5 mr-1 text-amber-600"/>
+ Reconcile
             </Button>
             <Button
-              size="sm"
-              onClick={() => setIsReceiveOpen(true)}
-              className="bg-emerald-600 hover:bg-emerald-700 text-xs text-white"
-            >
-              <Plus className="h-3.5 w-3.5 mr-1" />
-              Receive Stock
+ size="sm"onClick={() => setIsReceiveOpen(true)}
+ className="bg-emerald-600 hover:bg-emerald-700 text-xs text-white">
+              <Plus className="h-3.5 w-3.5 mr-1"/>
+ Receive Stock
             </Button>
           </div>
         </div>
@@ -173,7 +168,7 @@ export default function MaterialDetailPage() {
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
           <Card className="p-4 border-l-4 border-l-emerald-600">
             <span className="text-xs text-muted-foreground font-semibold">Total Stock Available</span>
-            <div className="text-2xl font-black text-foreground dark:text-white mt-1">
+            <div className="text-2xl font-black text-foreground mt-1">
               {breakdown.purchase_unit_display || `${material.current_stock} ${material.unit}`}
             </div>
             {breakdown.consumption_unit_display && breakdown.purchase_unit_display !== breakdown.consumption_unit_display && (
@@ -182,7 +177,7 @@ export default function MaterialDetailPage() {
               </span>
             )}
             <span className="text-2xs text-muted-foreground block mt-0.5">
-              Reorder threshold: {material.reorder_level || material.min_stock_level || 0} {material.unit}
+ Reorder threshold: {material.reorder_level || material.min_stock_level || 0} {material.unit}
             </span>
           </Card>
 
@@ -209,7 +204,7 @@ export default function MaterialDetailPage() {
 
           <Card className="p-4 border-l-4 border-l-amber-600">
             <span className="text-xs text-muted-foreground font-semibold">Specifications</span>
-            <div className="text-sm font-bold text-foreground dark:text-white mt-1">
+            <div className="text-sm font-bold text-foreground mt-1">
               {material.thickness || 'Standard'} {material.color ? `(${material.color})` : ''}
             </div>
             <span className="text-2xs text-muted-foreground">
@@ -222,20 +217,20 @@ export default function MaterialDetailPage() {
         <Card>
           <CardHeader className="pb-3 border-b">
             <CardTitle className="text-sm font-bold flex items-center gap-2">
-              <MapPin className="h-4 w-4 text-emerald-600" /> Location-wise Stock Distribution
+              <MapPin className="h-4 w-4 text-emerald-600"/> Location-wise Stock Distribution
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             {balances.length === 0 ? (
               <div className="p-6 text-center text-xs text-muted-foreground">
-                No specific location balances recorded. Stock is currently tracked globally.
+ No specific location balances recorded. Stock is currently tracked globally.
               </div>
             ) : (
               <div className="divide-y divide-border dark:divide-border">
                 {balances.map((bal) => (
                   <div key={bal.id} className="p-3.5 flex items-center justify-between text-xs">
                     <div>
-                      <strong className="text-foreground dark:text-white">
+                      <strong className="text-foreground">
                         {bal.location?.location_name || 'Warehouse Location'}
                       </strong>
                       <div className="text-2xs text-muted-foreground tabular-nums">{bal.location?.location_code}</div>
@@ -255,7 +250,7 @@ export default function MaterialDetailPage() {
           <Card className="border-purple-200 dark:border-purple-900">
             <CardHeader className="pb-3 border-b">
               <CardTitle className="text-sm font-bold text-purple-900 dark:text-purple-200 flex items-center gap-2">
-                <Scissors className="h-4 w-4 text-purple-600" /> Reusable Remnants for this Substrate ({remnants.length})
+                <Scissors className="h-4 w-4 text-purple-600"/> Reusable Remnants for this Substrate ({remnants.length})
               </CardTitle>
             </CardHeader>
             <CardContent className="p-0">
@@ -266,12 +261,12 @@ export default function MaterialDetailPage() {
                       <span className="tabular-nums text-purple-700 dark:text-purple-300 font-bold">
                         {rem.remnant_code}
                       </span>
-                      <div className="font-medium text-foreground dark:text-foreground">
+                      <div className="font-medium text-foreground">
                         {rem.width} × {rem.length} {rem.dimension_unit} ({rem.area_sft || rem.width * rem.length} SFT)
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Badge variant="outline" className="capitalize text-2xs">
+                      <Badge variant="outline"className="capitalize text-2xs">
                         {rem.condition}
                       </Badge>
                       <Badge className="bg-emerald-600 text-white text-2xs uppercase">{rem.status}</Badge>
@@ -287,7 +282,7 @@ export default function MaterialDetailPage() {
         <Card>
           <CardHeader className="pb-3 border-b">
             <CardTitle className="text-sm font-bold flex items-center gap-2">
-              <History className="h-4 w-4 text-muted-foreground" /> Stock Movement History ({ledger.length})
+              <History className="h-4 w-4 text-muted-foreground"/> Stock Movement History ({ledger.length})
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
@@ -315,7 +310,7 @@ export default function MaterialDetailPage() {
                             {l.quantity_change >= 0 ? `+${l.quantity_change}` : l.quantity_change} {l.unit}
                           </span>
                         </td>
-                        <td className="py-2.5 px-4 tabular-nums font-bold text-foreground dark:text-white">
+                        <td className="py-2.5 px-4 tabular-nums font-bold text-foreground">
                           {l.balance_after} {l.unit}
                         </td>
                         <td className="py-2.5 px-4 text-muted-foreground">
@@ -333,23 +328,23 @@ export default function MaterialDetailPage() {
 
         {/* Modals */}
         <ReceiveStockModal
-          open={isReceiveOpen}
-          onOpenChange={setIsReceiveOpen}
-          materials={[material]}
-          locations={locations}
-          selectedMaterialId={material.id}
-          onSuccess={loadData}
-          companyId={companyId}
+ open={isReceiveOpen}
+ onOpenChange={setIsReceiveOpen}
+ materials={[material]}
+ locations={locations}
+ selectedMaterialId={material.id}
+ onSuccess={loadData}
+ companyId={companyId}
         />
 
         <StockAdjustmentModal
-          open={isAdjustmentOpen}
-          onOpenChange={setIsAdjustmentOpen}
-          materials={[material]}
-          locations={locations}
-          selectedMaterial={material}
-          onSuccess={loadData}
-          companyId={companyId}
+ open={isAdjustmentOpen}
+ onOpenChange={setIsAdjustmentOpen}
+ materials={[material]}
+ locations={locations}
+ selectedMaterial={material}
+ onSuccess={loadData}
+ companyId={companyId}
         />
       </div>
     </FeatureGate>

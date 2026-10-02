@@ -3,20 +3,20 @@
 import React, { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import {
-  FileClock,
-  Search,
-  RefreshCw,
-  Eye,
-  X,
-  User,
-  Globe,
-  ArrowDownToLine,
-  ShieldCheck,
-  Building2,
-  Calendar,
-  Filter,
-  CheckCircle2,
-  Lock,
+ FileClock,
+ Search,
+ RefreshCw,
+ Eye,
+ X,
+ User,
+ Globe,
+ ArrowDownToLine,
+ ShieldCheck,
+ Building2,
+ Calendar,
+ Filter,
+ CheckCircle2,
+ Lock,
 } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -29,103 +29,88 @@ import { AuditLogEntry, AUDIT_ACTIONS } from '@/types/audit.types'
 import { formatDate, formatTime, formatDateTime } from '@/lib/formatters'
 
 const CATEGORY_GROUPS: Record<string, { label: string; actions: string[] }> = {
-  all: { label: 'All Event Categories', actions: [] },
-  auth: { label: 'Authentication (Login/Logout)', actions: [AUDIT_ACTIONS.AUTH_LOGIN, AUDIT_ACTIONS.AUTH_LOGOUT] },
-  users_rbac: { label: 'Users & Permissions', actions: [AUDIT_ACTIONS.USER_CREATE, AUDIT_ACTIONS.PERMISSION_CHANGE] },
-  sales: { label: 'Customers & Quotations', actions: [AUDIT_ACTIONS.CUSTOMER_EDIT, AUDIT_ACTIONS.QUOTATION_EDIT, AUDIT_ACTIONS.PRICE_OVERRIDE, AUDIT_ACTIONS.ORDER_CANCEL] },
-  billing: { label: 'Invoices & Payments', actions: [AUDIT_ACTIONS.INVOICE_CREATE, AUDIT_ACTIONS.PAYMENT_RECORD] },
-  inventory: { label: 'Inventory & Wastage', actions: [AUDIT_ACTIONS.INVENTORY_ADJUSTMENT] },
-  finance: { label: 'Expenses & Payroll', actions: [AUDIT_ACTIONS.EXPENSE_RECORD, AUDIT_ACTIONS.PAYROLL_APPROVE] },
-  settings: { label: 'Settings & Subscription', actions: [AUDIT_ACTIONS.SETTINGS_CHANGE, AUDIT_ACTIONS.SUBSCRIPTION_CHANGE] },
+ all: { label: 'All Event Categories', actions: [] },
+ auth: { label: 'Authentication (Login/Logout)', actions: [AUDIT_ACTIONS.AUTH_LOGIN, AUDIT_ACTIONS.AUTH_LOGOUT] },
+ users_rbac: { label: 'Users & Permissions', actions: [AUDIT_ACTIONS.USER_CREATE, AUDIT_ACTIONS.PERMISSION_CHANGE] },
+ sales: { label: 'Customers & Quotations', actions: [AUDIT_ACTIONS.CUSTOMER_EDIT, AUDIT_ACTIONS.QUOTATION_EDIT, AUDIT_ACTIONS.PRICE_OVERRIDE, AUDIT_ACTIONS.ORDER_CANCEL] },
+ billing: { label: 'Invoices & Payments', actions: [AUDIT_ACTIONS.INVOICE_CREATE, AUDIT_ACTIONS.PAYMENT_RECORD] },
+ inventory: { label: 'Inventory & Wastage', actions: [AUDIT_ACTIONS.INVENTORY_ADJUSTMENT] },
+ finance: { label: 'Expenses & Payroll', actions: [AUDIT_ACTIONS.EXPENSE_RECORD, AUDIT_ACTIONS.PAYROLL_APPROVE] },
+ settings: { label: 'Settings & Subscription', actions: [AUDIT_ACTIONS.SETTINGS_CHANGE, AUDIT_ACTIONS.SUBSCRIPTION_CHANGE] },
 }
 
 export default function TenantAuditLogsPage() {
-  const params = useParams()
-  const { tBilingual } = useI18n()
-  const tenantSlug = (params?.tenantSlug as string) || 'my-company'
+ const params = useParams()
+ const { tBilingual } = useI18n()
+ const tenantSlug = (params?.tenantSlug as string) || 'my-company'
 
-  const [logs, setLogs] = useState<AuditLogEntry[]>([])
-  const [search, setSearch] = useState('')
-  const [category, setCategory] = useState<string>('all')
-  const [selectedLog, setSelectedLog] = useState<AuditLogEntry | null>(null)
-  const [loading, setLoading] = useState(true)
+ const [logs, setLogs] = useState<AuditLogEntry[]>([])
+ const [search, setSearch] = useState('')
+ const [category, setCategory] = useState<string>('all')
+ const [selectedLog, setSelectedLog] = useState<AuditLogEntry | null>(null)
+ const [loading, setLoading] = useState(true)
 
-  const loadLogs = async () => {
-    setLoading(true)
-    const res = await getAuditLogsAction(search)
-    if (res.success && res.data) {
-      let filtered = res.data
-      if (category !== 'all') {
-        const allowedActions = CATEGORY_GROUPS[category]?.actions || []
-        filtered = filtered.filter((l) => allowedActions.includes(l.action as any))
+ const loadLogs = async () => {
+ setLoading(true)
+ const res = await getAuditLogsAction(search)
+ if (res.success && res.data) {
+ let filtered = res.data
+ if (category !== 'all') {
+ const allowedActions = CATEGORY_GROUPS[category]?.actions || []
+ filtered = filtered.filter((l) => allowedActions.includes(l.action as any))
       }
-      setLogs(filtered)
+ setLogs(filtered)
     }
-    setLoading(false)
+ setLoading(false)
   }
 
-  useEffect(() => {
-    loadLogs()
+ useEffect(() => {
+ loadLogs()
 
-    const handleAuditRealtime = () => {
-      loadLogs()
+ const handleAuditRealtime = () => {
+ loadLogs()
     }
 
-    window.addEventListener('printerp_table_synced:audit_logs', handleAuditRealtime)
-    window.addEventListener('printerp_table_synced', handleAuditRealtime)
+ window.addEventListener('printerp_table_synced:audit_logs', handleAuditRealtime)
+ window.addEventListener('printerp_table_synced', handleAuditRealtime)
 
-    return () => {
-      window.removeEventListener('printerp_table_synced:audit_logs', handleAuditRealtime)
-      window.removeEventListener('printerp_table_synced', handleAuditRealtime)
+ return () => {
+ window.removeEventListener('printerp_table_synced:audit_logs', handleAuditRealtime)
+ window.removeEventListener('printerp_table_synced', handleAuditRealtime)
     }
   }, [search, category])
 
-  const handleExportJSON = () => {
-    const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(logs, null, 2))
-    const downloadAnchor = document.createElement('a')
-    downloadAnchor.setAttribute('href', dataStr)
-    downloadAnchor.setAttribute('download', `${tenantSlug}_audit_trail_${Date.now()}.json`)
-    document.body.appendChild(downloadAnchor)
-    downloadAnchor.click()
-    downloadAnchor.remove()
+ const handleExportJSON = () => {
+ const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(logs, null, 2))
+ const downloadAnchor = document.createElement('a')
+ downloadAnchor.setAttribute('href', dataStr)
+ downloadAnchor.setAttribute('download', `${tenantSlug}_audit_trail_${Date.now()}.json`)
+ document.body.appendChild(downloadAnchor)
+ downloadAnchor.click()
+ downloadAnchor.remove()
   }
 
-  return (
+ return (
     <PanelAccessGuard
-      module="settings"
-      action="manage"
-      panelTitle="Audit Trail & Security Logs"
-      panelTitleBn="অডিট ট্রেইল ও নিরাপত্তা লগ"
-    >
-      <div className="space-y-6 max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 font-sans">
+ module="settings"action="manage"panelTitle="Audit Trail & Security Logs"panelTitleBn="অডিট ট্রেইল ও নিরাপত্তা লগ">
+      <div className="space-y-6 max-w-7xl mx-auto font-sans">
       {/* Page Header */}
       <PageHeader
-        titleEn="Audit Trail & Security Event Logs"
-        titleBn="অডিট ট্রেইল ও নিরাপত্তা লগ"
-        descriptionEn="Immutable organizational activity records capturing pricing overrides, order cancellations, financial modifications, and user logins."
-        descriptionBn="মূল্য পরিবর্তন, অর্ডার বাতিল, আর্থিক ট্রানজাকশন ও ইউজার লগইন সংক্রান্ত অপরিবর্তনীয় ডিজিটাল প্রমাণপত্র।"
-        icon={FileClock}
-        iconColor="text-indigo-600 dark:text-indigo-400"
-        actions={
+ titleEn="Audit Logs"titleBn="অডিট ট্রেইল ও নিরাপত্তা লগ"descriptionEn="Immutable organizational activity records capturing pricing overrides, order cancellations, financial modifications, and user logins."descriptionBn="মূল্য পরিবর্তন, অর্ডার বাতিল, আর্থিক ট্রানজাকশন ও ইউজার লগইন সংক্রান্ত অপরিবর্তনীয় ডিজিটাল প্রমাণপত্র।"icon={FileClock}
+ iconColor="text-indigo-600 dark:text-indigo-400"actions={
           <div className="flex flex-wrap items-center gap-2">
             <Button
-              size="sm"
-              variant="outline"
-              onClick={handleExportJSON}
-              className="h-9 text-xs"
-            >
-              <ArrowDownToLine className="h-3.5 w-3.5 mr-1.5 text-indigo-500" />
+ size="sm"variant="outline"onClick={handleExportJSON}
+ className="h-9 text-xs">
+              <ArrowDownToLine className="h-3.5 w-3.5 mr-1.5 text-indigo-500"/>
               <span>{tBilingual('Export JSON', 'এক্সপোর্ট লগ')}</span>
             </Button>
             <Button
-              size="sm"
-              variant="outline"
-              onClick={loadLogs}
-              className="h-9 w-9 p-0 flex items-center justify-center shrink-0 cursor-pointer"
-              title={tBilingual('Refresh', 'রিফ্রেশ')}
-              aria-label={tBilingual('Refresh', 'রিফ্রেশ')}
+ size="sm"variant="outline"onClick={loadLogs}
+ className="h-9 w-9 p-0 flex items-center justify-center shrink-0 cursor-pointer"title={tBilingual('Refresh', 'রিফ্রেশ')}
+ aria-label={tBilingual('Refresh', 'রিফ্রেশ')}
             >
-              <RefreshCw className="h-3.5 w-3.5" />
+              <RefreshCw className="h-3.5 w-3.5"/>
             </Button>
           </div>
         }
@@ -134,41 +119,38 @@ export default function TenantAuditLogsPage() {
       {/* Security Architecture Compliance Banner */}
       <div className="p-4 rounded-xl bg-card border border-border flex items-start gap-3.5 shadow-xs">
         <div className="h-9 w-9 rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400 flex items-center justify-center shrink-0 mt-0.5">
-          <Lock className="h-5 w-5" />
+          <Lock className="h-5 w-5"/>
         </div>
         <div className="text-xs space-y-1">
           <div className="font-bold text-foreground text-sm flex flex-wrap items-center gap-2">
             <span>Immutable Append-Only Audit Integrity Active</span>
             <span className="text-2xs tabular-nums px-2 py-0.5 rounded bg-muted text-muted-foreground border border-border">
-              ANTI-DELETION ENFORCED
+ ANTI-DELETION ENFORCED
             </span>
           </div>
           <p className="text-muted-foreground leading-relaxed">
-            Audit log entries cannot be modified or deleted by company users or administrators. Invoices and historical payment records strictly adhere to non-destructive void, cancel, reverse, and adjustment patterns.
+ Audit log entries cannot be modified or deleted by company users or administrators. Invoices and historical payment records strictly adhere to non-destructive void, cancel, reverse, and adjustment patterns.
           </p>
         </div>
       </div>
 
       {/* Filter and Search Controls */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-slate-900 p-3.5 rounded-2xl border border-border">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-surface-inset p-3.5 rounded-xl border border-border">
         <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground"/>
           <Input
-            placeholder="Search action, actor email, entity ID, or details..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 h-10 sm:h-9 text-xs bg-slate-900 border-border text-slate-100 placeholder:text-muted-foreground rounded-xl"
-          />
+ placeholder="Search action, actor email, entity ID, or details..."value={search}
+ onChange={(e) => setSearch(e.target.value)}
+ className="pl-9 h-10 sm:h-9 text-xs bg-card border-border text-foreground placeholder:text-muted-foreground rounded-lg"/>
         </div>
 
         <div className="flex items-center gap-2 text-xs text-muted-foreground w-full sm:w-auto">
-          <Filter className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+          <Filter className="h-3.5 w-3.5 text-muted-foreground shrink-0"/>
           <span className="shrink-0">Category:</span>
           <select
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            className="bg-slate-900 border border-border text-foreground rounded-xl px-3 py-2 sm:py-1.5 text-xs font-semibold focus:outline-hidden w-full sm:w-auto"
-          >
+ value={category}
+ onChange={(e) => setCategory(e.target.value)}
+ className="bg-card border border-border text-foreground rounded-lg px-3 py-2 sm:py-1.5 text-xs font-semibold focus:outline-hidden w-full sm:w-auto">
             {Object.entries(CATEGORY_GROUPS).map(([key, item]) => (
               <option key={key} value={key}>
                 {item.label}
@@ -179,18 +161,18 @@ export default function TenantAuditLogsPage() {
       </div>
 
       {/* Audit Logs Table & Mobile Cards */}
-      <Card className="bg-slate-900 border-border rounded-2xl shadow-xl overflow-hidden">
-        <CardHeader className="border-b border-border pb-3.5 bg-slate-900">
+      <Card className="border-border rounded-xl shadow-xs overflow-hidden">
+        <CardHeader className="border-b border-border pb-3.5 bg-surface-inset">
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-base font-bold text-white flex items-center gap-2">
+              <CardTitle className="text-base font-bold text-foreground flex items-center gap-2">
                 <span>Company Audit Stream</span>
-                <span className="text-xs tabular-nums px-2 py-0.5 rounded-full bg-slate-800 text-muted-foreground">
+                <span className="text-xs tabular-nums px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
                   {logs.length} Records
                 </span>
               </CardTitle>
               <CardDescription className="text-xs text-muted-foreground mt-0.5">
-                Timestamped records with IP attribution, device fingerprinting, and before/after value diffs.
+ Timestamped records with IP attribution, device fingerprinting, and before/after value diffs.
               </CardDescription>
             </div>
           </div>
@@ -200,7 +182,7 @@ export default function TenantAuditLogsPage() {
           {/* Desktop Table View */}
           <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-900 text-muted-foreground border-b border-border font-semibold uppercase tracking-wider text-2xs">
+              <thead className="bg-surface-inset text-muted-foreground border-b border-border font-semibold uppercase tracking-wider text-2xs">
                 <tr>
                   <th className="py-3.5 px-4">Timestamp & Device</th>
                   <th className="py-3.5 px-4">Operator / Actor</th>
@@ -213,29 +195,29 @@ export default function TenantAuditLogsPage() {
                 {loading ? (
                   <tr>
                     <td colSpan={5} className="py-12 text-center text-muted-foreground">
-                      <RefreshCw className="h-6 w-6 animate-spin mx-auto mb-2 text-indigo-400" />
+                      <RefreshCw className="h-6 w-6 animate-spin mx-auto mb-2 text-indigo-400"/>
                       <span>Loading audit records...</span>
                     </td>
                   </tr>
                 ) : logs.length === 0 ? (
                   <tr>
                     <td colSpan={5} className="py-12 text-center text-muted-foreground">
-                      No audit records matched your filter criteria.
+ No audit records matched your filter criteria.
                     </td>
                   </tr>
                 ) : (
-                  logs.map((log) => (
-                    <tr key={log.id} className="hover:bg-slate-850/50 transition-colors">
+ logs.map((log) => (
+                    <tr key={log.id} className="hover:bg-muted/50 transition-colors">
                       {/* Timestamp */}
                       <td className="py-3.5 px-4">
-                        <div className="font-semibold text-white">
+                        <div className="font-semibold text-foreground">
                           {formatDate(log.timestamp)}
                           <span className="text-muted-foreground tabular-nums ml-1">
                             {formatTime(log.timestamp)}
                           </span>
                         </div>
                         <div className="text-2xs tabular-nums text-muted-foreground flex items-center gap-1 mt-0.5">
-                          <Globe className="h-2.5 w-2.5 text-muted-foreground" />
+                          <Globe className="h-2.5 w-2.5 text-muted-foreground"/>
                           <span>{log.ip_address || 'unavailable'}</span>
                           {log.device_metadata?.browser && (
                             <span className="text-muted-foreground">• {log.device_metadata.browser}</span>
@@ -246,11 +228,11 @@ export default function TenantAuditLogsPage() {
                       {/* Operator */}
                       <td className="py-3.5 px-4">
                         <div className="font-bold text-foreground flex items-center gap-1.5">
-                          <User className="h-3 w-3 text-indigo-400" />
+                          <User className="h-3 w-3 text-indigo-400"/>
                           <span>{log.user_email}</span>
                         </div>
                         <div className="text-2xs text-muted-foreground tabular-nums">
-                          ID: {log.user_id || 'System'}
+ ID: {log.user_id || 'System'}
                         </div>
                       </td>
 
@@ -258,8 +240,8 @@ export default function TenantAuditLogsPage() {
                       <td className="py-3.5 px-4">
                         <div className="space-y-1">
                           <span
-                            className={`inline-block tabular-nums text-2xs font-bold px-2 py-0.5 rounded-lg border ${
-                              log.action.includes('cancel') || log.action.includes('logout')
+ className={`inline-block tabular-nums text-2xs font-bold px-2 py-0.5 rounded-lg border ${
+ log.action.includes('cancel') || log.action.includes('logout')
                                 ? 'bg-red-500/10 text-red-400 border-red-500/30'
                                 : log.action.includes('login') || log.action.includes('approve') || log.action.includes('create')
                                 ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
@@ -271,7 +253,7 @@ export default function TenantAuditLogsPage() {
                             {log.action}
                           </span>
                           <div className="text-2xs text-muted-foreground tabular-nums">
-                            Entity: {log.entity} {log.entity_id ? `(${log.entity_id})` : ''}
+ Entity: {log.entity} {log.entity_id ? `(${log.entity_id})` : ''}
                           </div>
                         </div>
                       </td>
@@ -286,12 +268,9 @@ export default function TenantAuditLogsPage() {
                       {/* Diff button */}
                       <td className="py-3.5 px-4 text-right">
                         <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => setSelectedLog(log)}
-                          className="h-8 px-2.5 text-xs text-indigo-400 hover:text-indigo-300 bg-indigo-950/30 hover:bg-indigo-900/50 border border-indigo-800/40 rounded-lg"
-                        >
-                          <Eye className="h-3.5 w-3.5 mr-1" />
+ size="sm"variant="ghost"onClick={() => setSelectedLog(log)}
+ className="h-8 px-2.5 text-xs text-indigo-400 hover:text-indigo-300 bg-indigo-950/30 hover:bg-indigo-900/50 border border-indigo-800/40 rounded-lg">
+                          <Eye className="h-3.5 w-3.5 mr-1"/>
                           <span>View Diff</span>
                         </Button>
                       </td>
@@ -306,20 +285,20 @@ export default function TenantAuditLogsPage() {
           <div className="md:hidden divide-y divide-border/80">
             {loading ? (
               <div className="py-12 text-center text-muted-foreground">
-                <RefreshCw className="h-6 w-6 animate-spin mx-auto mb-2 text-indigo-400" />
+                <RefreshCw className="h-6 w-6 animate-spin mx-auto mb-2 text-indigo-400"/>
                 <span className="text-xs">Loading audit records...</span>
               </div>
             ) : logs.length === 0 ? (
               <div className="py-12 text-center text-muted-foreground text-xs">
-                No audit records matched your filter criteria.
+ No audit records matched your filter criteria.
               </div>
             ) : (
-              logs.map((log) => (
-                <div key={log.id} className="p-4 space-y-2.5 hover:bg-slate-850/40 transition-colors">
+ logs.map((log) => (
+                <div key={log.id} className="p-4 space-y-2.5 hover:bg-muted/40 transition-colors">
                   <div className="flex items-start justify-between gap-2">
                     <span
-                      className={`inline-block tabular-nums text-2xs font-bold px-2 py-0.5 rounded-lg border ${
-                        log.action.includes('cancel') || log.action.includes('logout')
+ className={`inline-block tabular-nums text-2xs font-bold px-2 py-0.5 rounded-lg border ${
+ log.action.includes('cancel') || log.action.includes('logout')
                           ? 'bg-red-500/10 text-red-400 border-red-500/30'
                           : log.action.includes('login') || log.action.includes('approve') || log.action.includes('create')
                           ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
@@ -339,7 +318,7 @@ export default function TenantAuditLogsPage() {
                     {log.description || `Action performed on ${log.entity}`}
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2 text-2xs bg-slate-900 p-2.5 rounded-xl border border-border">
+                  <div className="grid grid-cols-2 gap-2 text-2xs bg-surface-inset p-2.5 rounded-lg border border-border">
                     <div>
                       <span className="text-muted-foreground block text-2xs">Actor:</span>
                       <span className="text-muted-foreground font-bold truncate block">{log.user_email}</span>
@@ -363,12 +342,9 @@ export default function TenantAuditLogsPage() {
                   </div>
 
                   <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => setSelectedLog(log)}
-                    className="w-full h-10 text-xs font-semibold text-indigo-400 bg-indigo-950/30 hover:bg-indigo-900/50 border border-indigo-800/40 rounded-xl"
-                  >
-                    <Eye className="h-4 w-4 mr-1.5" />
+ size="sm"variant="outline"onClick={() => setSelectedLog(log)}
+ className="w-full h-10 text-xs font-semibold text-indigo-400 bg-indigo-950/30 hover:bg-indigo-900/50 border border-indigo-800/40 rounded-xl">
+                    <Eye className="h-4 w-4 mr-1.5"/>
                     <span>Inspect Value Diff</span>
                   </Button>
                 </div>
@@ -381,20 +357,19 @@ export default function TenantAuditLogsPage() {
       {/* DETAIL MODAL: BEFORE / AFTER VALUE DIFF INSPECTOR */}
       {selectedLog && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 animate-in fade-in-0">
-          <div className="bg-slate-900 border border-border rounded-2xl max-w-2xl w-full p-4 sm:p-6 space-y-4 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+          <div className="bg-card border border-border rounded-xl max-w-2xl w-full p-4 sm:p-6 space-y-4 shadow-xs relative max-h-[90vh] overflow-y-auto">
             <button
-              onClick={() => setSelectedLog(null)}
-              className="absolute top-4 right-4 text-muted-foreground hover:text-white p-1 rounded-lg hover:bg-slate-800"
-            >
-              <X className="h-5 w-5" />
+ onClick={() => setSelectedLog(null)}
+ className="absolute top-4 right-4 text-muted-foreground hover:text-foreground p-1 rounded-lg hover:bg-muted">
+              <X className="h-5 w-5"/>
             </button>
 
             <div className="flex items-center gap-3 pr-8">
               <div className="h-10 w-10 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 flex items-center justify-center shrink-0">
-                <FileClock className="h-5 w-5" />
+                <FileClock className="h-5 w-5"/>
               </div>
               <div>
-                <h3 className="text-sm sm:text-base font-bold text-white">Audit Event Value Diff</h3>
+                <h3 className="text-sm sm:text-base font-bold text-foreground">Audit Event Value Diff</h3>
                 <p className="text-2xs sm:text-xs tabular-nums text-muted-foreground break-all">
                   {selectedLog.action} • {selectedLog.id}
                 </p>
@@ -402,10 +377,10 @@ export default function TenantAuditLogsPage() {
             </div>
 
             {/* Metadata Bar */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs bg-slate-900 p-3 rounded-xl border border-border">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs bg-surface-inset p-3 rounded-lg border border-border">
               <div>
                 <span className="text-muted-foreground text-2xs block">Operator:</span>
-                <div className="font-bold text-white mt-0.5 truncate">{selectedLog.user_email}</div>
+                <div className="font-bold text-foreground mt-0.5 truncate">{selectedLog.user_email}</div>
               </div>
               <div>
                 <span className="text-muted-foreground text-2xs block">Target Entity:</span>
@@ -432,10 +407,10 @@ export default function TenantAuditLogsPage() {
               {/* Previous Value */}
               <div className="space-y-1">
                 <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-                  <span className="h-2 w-2 rounded-full bg-red-400" />
+                  <span className="h-2 w-2 rounded-full bg-red-400"/>
                   <span>Previous State (Before)</span>
                 </div>
-                <div className="p-3 rounded-xl bg-slate-900 border border-border tabular-nums text-2xs text-red-300/90 max-h-48 sm:h-52 overflow-y-auto">
+                <div className="p-3 rounded-lg bg-surface-inset border border-border tabular-nums text-2xs text-destructive max-h-48 sm:h-52 overflow-y-auto">
                   {selectedLog.previous_value ? (
                     <pre className="whitespace-pre-wrap break-all">{JSON.stringify(selectedLog.previous_value, null, 2)}</pre>
                   ) : (
@@ -447,10 +422,10 @@ export default function TenantAuditLogsPage() {
               {/* New Value */}
               <div className="space-y-1">
                 <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-                  <span className="h-2 w-2 rounded-full bg-emerald-400" />
+                  <span className="h-2 w-2 rounded-full bg-emerald-400"/>
                   <span>Modified State (After)</span>
                 </div>
-                <div className="p-3 rounded-xl bg-slate-900 border border-border tabular-nums text-2xs text-emerald-300/90 max-h-48 sm:h-52 overflow-y-auto">
+                <div className="p-3 rounded-lg bg-surface-inset border border-border tabular-nums text-2xs text-success max-h-48 sm:h-52 overflow-y-auto">
                   {selectedLog.new_value ? (
                     <pre className="whitespace-pre-wrap break-all">{JSON.stringify(selectedLog.new_value, null, 2)}</pre>
                   ) : (
@@ -462,7 +437,7 @@ export default function TenantAuditLogsPage() {
 
             {/* Device Metadata */}
             {selectedLog.device_metadata && (
-              <div className="p-2.5 rounded-xl bg-slate-900 border border-border text-2xs text-muted-foreground tabular-nums flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1">
+              <div className="p-2.5 rounded-lg bg-surface-inset border border-border text-2xs text-muted-foreground tabular-nums flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1">
                 <span>Device: {selectedLog.device_metadata.browser || 'Browser'} on {selectedLog.device_metadata.os || 'OS'}</span>
                 <span>{selectedLog.device_metadata.geo_city || 'Dhaka'}, {selectedLog.device_metadata.geo_country || 'BD'}</span>
               </div>
@@ -470,11 +445,9 @@ export default function TenantAuditLogsPage() {
 
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2 pt-3 border-t border-border">
               <Button
-                size="sm"
-                onClick={() => setSelectedLog(null)}
-                className="w-full sm:w-auto h-10 sm:h-9 bg-slate-800 hover:bg-slate-700 text-xs text-white"
-              >
-                Close Inspector
+ size="sm"onClick={() => setSelectedLog(null)}
+ className="w-full sm:w-auto h-10 sm:h-9 text-xs">
+ Close Inspector
               </Button>
             </div>
           </div>

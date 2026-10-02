@@ -5,21 +5,21 @@ import Link from 'next/link'
 import { useParams, usePathname } from 'next/navigation'
 import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import {
-  Printer,
-  ArrowLeft,
-  Clock,
-  CheckCircle2,
-  AlertTriangle,
-  Flame,
-  Users,
-  Layers,
-  Wrench,
-  RotateCcw,
-  Scissors,
-  CheckSquare,
-  Square,
-  AlertOctagon,
-  FileSpreadsheet,
+ Printer,
+ ArrowLeft,
+ Clock,
+ CheckCircle2,
+ AlertTriangle,
+ Flame,
+ Users,
+ Layers,
+ Wrench,
+ RotateCcw,
+ Scissors,
+ CheckSquare,
+ Square,
+ AlertOctagon,
+ FileSpreadsheet,
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
@@ -49,67 +49,66 @@ const ALL_FABRICATION_TASKS: FabricationTask[] = [
 ]
 
 export default function ProductionJobDetailPage() {
-  const params = useParams()
-  const pathname = usePathname() || ''
-  const jobId = (params?.id as string) || ''
-  const { company } = useTenant()
-  const { locale, tBilingual } = useI18n()
-  const slug = (params?.tenantSlug as string) || company?.slug || 'my-company'
+ const params = useParams()
+ const pathname = usePathname() || ''
+ const jobId = (params?.id as string) || ''
+ const { company } = useTenant()
+ const { locale, tBilingual } = useI18n()
+ const slug = (params?.tenantSlug as string) || company?.slug || 'my-company'
 
-  const [jobs] = useDataStore<ProductionJobRecord[]>(STORAGE_KEYS.PRODUCTION_JOBS, [])
-  const [tasks] = useDataStore<any[]>(STORAGE_KEYS.PRODUCTION_TASKS, [])
-  const [jobOrders] = useDataStore<any[]>(STORAGE_KEYS.JOB_ORDERS, [])
+ const [jobs] = useDataStore<ProductionJobRecord[]>(STORAGE_KEYS.PRODUCTION_JOBS, [])
+ const [tasks] = useDataStore<any[]>(STORAGE_KEYS.PRODUCTION_TASKS, [])
+ const [jobOrders] = useDataStore<any[]>(STORAGE_KEYS.JOB_ORDERS, [])
 
-  const job = jobs.find((j) => j.id === jobId || j.production_job_number === jobId) ||
-    tasks.find((t) => t.id === jobId || t.task_number === jobId || t.job_number === jobId) ? {
-      id: jobId,
-      production_job_number: tasks.find((t) => t.id === jobId || t.task_number === jobId)?.task_number || jobId,
-      customer_name: tasks.find((t) => t.id === jobId || t.task_number === jobId)?.customer_name || 'Customer',
-      product_name: tasks.find((t) => t.id === jobId || t.task_number === jobId)?.product_name || 'Print Production',
-      department: (tasks.find((t) => t.id === jobId || t.task_number === jobId)?.department || 'printing') as any,
-      status: (tasks.find((t) => t.id === jobId || t.task_number === jobId)?.status || 'queued') as any,
-      deadline: tasks.find((t) => t.id === jobId || t.task_number === jobId)?.job_deadline || 'Today',
-      dimensions_spec: `${tasks.find((t) => t.id === jobId || t.task_number === jobId)?.width || 48} × ${tasks.find((t) => t.id === jobId || t.task_number === jobId)?.height || 36} in`,
-      quantity: tasks.find((t) => t.id === jobId || t.task_number === jobId)?.quantity || 1,
-      material_spec: tasks.find((t) => t.id === jobId || t.task_number === jobId)?.required_material || 'Vinyl / Media',
-      assigned_workers: [tasks.find((t) => t.id === jobId || t.task_number === jobId)?.assigned_operator_name || 'Unassigned'],
-      has_rework: false,
-      rework_count: 0,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      stage: 'Printing',
-      company_id: company?.id || '',
+ const job = jobs.find((j) => j.id === jobId || j.production_job_number === jobId) ||
+ tasks.find((t) => t.id === jobId || t.task_number === jobId || t.job_number === jobId) ? {
+ id: jobId,
+ production_job_number: tasks.find((t) => t.id === jobId || t.task_number === jobId)?.task_number || jobId,
+ customer_name: tasks.find((t) => t.id === jobId || t.task_number === jobId)?.customer_name || 'Customer',
+ product_name: tasks.find((t) => t.id === jobId || t.task_number === jobId)?.product_name || 'Print Production',
+ department: (tasks.find((t) => t.id === jobId || t.task_number === jobId)?.department || 'printing') as any,
+ status: (tasks.find((t) => t.id === jobId || t.task_number === jobId)?.status || 'queued') as any,
+ deadline: tasks.find((t) => t.id === jobId || t.task_number === jobId)?.job_deadline || 'Today',
+ dimensions_spec: `${tasks.find((t) => t.id === jobId || t.task_number === jobId)?.width || 48} × ${tasks.find((t) => t.id === jobId || t.task_number === jobId)?.height || 36} in`,
+ quantity: tasks.find((t) => t.id === jobId || t.task_number === jobId)?.quantity || 1,
+ material_spec: tasks.find((t) => t.id === jobId || t.task_number === jobId)?.required_material || 'Vinyl / Media',
+ assigned_workers: [tasks.find((t) => t.id === jobId || t.task_number === jobId)?.assigned_operator_name || 'Unassigned'],
+ has_rework: false,
+ rework_count: 0,
+ created_at: new Date().toISOString(),
+ updated_at: new Date().toISOString(),
+ stage: 'Printing',
+ company_id: company?.id || '',
     } as ProductionJobRecord : null
 
-  const [completedTasks, setCompletedTasks] = useState<string[]>([])
+ const [completedTasks, setCompletedTasks] = useState<string[]>([])
 
-  const toggleTask = (task: string) => {
-    if (completedTasks.includes(task)) {
-      setCompletedTasks(completedTasks.filter((t) => t !== task))
+ const toggleTask = (task: string) => {
+ if (completedTasks.includes(task)) {
+ setCompletedTasks(completedTasks.filter((t) => t !== task))
     } else {
-      setCompletedTasks([...completedTasks, task])
+ setCompletedTasks([...completedTasks, task])
     }
   }
 
-  if (!job) {
-    const backHref = getTenantNavHref('/production', pathname, slug)
+ if (!job) {
+ const backHref = getTenantNavHref('/production', pathname, slug)
 
-    return (
+ return (
       <div className="space-y-6 max-w-6xl">
         <Link
-          href={backHref}
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground dark:hover:text-white mb-3"
-        >
-          <ArrowLeft className="h-3.5 w-3.5" />
-          Back to Production Terminal
+ href={backHref}
+ className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground dark:hover:text-foreground mb-3">
+          <ArrowLeft className="h-3.5 w-3.5"/>
+ Back to Production Terminal
         </Link>
         <Card className="p-12 text-center border-dashed">
-          <Printer className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-          <h2 className="text-base font-bold text-foreground dark:text-foreground">Production Job Not Found</h2>
+          <Printer className="h-10 w-10 text-muted-foreground mx-auto mb-3"/>
+          <h2 className="text-base font-bold text-foreground">Production Job Not Found</h2>
           <p className="text-xs text-muted-foreground mt-1 max-w-md mx-auto">
-            The production job record you are looking for does not exist in your queue.
+ The production job record you are looking for does not exist in your queue.
           </p>
-          <Button asChild className="mt-4" size="sm">
+          <Button asChild className="mt-4"size="sm">
             <Link href={backHref}>View All Production Jobs</Link>
           </Button>
         </Card>
@@ -117,24 +116,23 @@ export default function ProductionJobDetailPage() {
     )
   }
 
-  const backHref = getTenantNavHref('/production', pathname, slug)
+ const backHref = getTenantNavHref('/production', pathname, slug)
 
-  return (
-    <div className="space-y-6 max-w-6xl print:max-w-none print:w-full print:bg-white print:text-foreground print:dark:bg-card print:dark:text-foreground print:m-0 print:p-0">
+ return (
+    <div className="space-y-6 max-w-6xl print:max-w-none print:w-full print:bg-white print:text-foreground print: print: print:m-0 print:p-0">
       {/* Header & Back Link */}
       <div>
         <Link
-          href={backHref}
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground dark:hover:text-white mb-3 print:hidden"
-        >
-          <ArrowLeft className="h-3.5 w-3.5" />
-          Back to Production Terminal
+ href={backHref}
+ className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground dark:hover:text-foreground mb-3 print:hidden">
+          <ArrowLeft className="h-3.5 w-3.5"/>
+ Back to Production Terminal
         </Link>
 
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="space-y-1">
             <div className="flex items-center gap-2.5">
-              <h1 className="text-2xl font-black tracking-tight text-foreground dark:text-white tabular-nums print:text-foreground">
+              <h1 className="text-2xl font-black tracking-tight text-foreground tabular-nums print:text-foreground">
                 {job.production_job_number}
               </h1>
               <span className="capitalize px-2.5 py-0.5 rounded text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 print:border-input print:text-foreground print:bg-muted">
@@ -158,12 +156,10 @@ export default function ProductionJobDetailPage() {
 
           <div className="flex items-center gap-2 print:hidden">
             <Button
-              size="sm"
-              onClick={() => window.print()}
-              className="bg-slate-900 hover:bg-slate-800 text-xs text-white"
-            >
-              <Printer className="h-3.5 w-3.5 mr-1" />
-              Print Traveler Bag
+ size="sm"onClick={() => window.print()}
+ className="bg-surface-inset hover:bg-card-elevated text-xs text-white">
+              <Printer className="h-3.5 w-3.5 mr-1"/>
+ Print Traveler Bag
             </Button>
           </div>
         </div>
@@ -172,16 +168,16 @@ export default function ProductionJobDetailPage() {
       {/* Rework Alert if active */}
       {job.has_rework && (
         <div className="p-4 rounded-xl bg-red-50 border-2 border-red-500 dark:bg-red-950/40 dark:border-red-600 text-red-950 dark:text-red-100 flex items-start gap-3">
-          <AlertOctagon className="h-6 w-6 text-red-600 shrink-0 mt-0.5" />
+          <AlertOctagon className="h-6 w-6 text-red-600 shrink-0 mt-0.5"/>
           <div className="space-y-1">
             <h3 className="font-bold text-sm text-red-900 dark:text-red-200">
-              Active Rework Ticket Logged ({job.reworks?.[0]?.rework_number})
+ Active Rework Ticket Logged ({job.reworks?.[0]?.rework_number})
             </h3>
             <p className="text-xs text-red-800 dark:text-red-300">
-              Reason: <strong>{job.reworks?.[0]?.reason}</strong>
+ Reason: <strong>{job.reworks?.[0]?.reason}</strong>
             </p>
             <div className="text-2xs text-red-700 dark:text-red-400 tabular-nums">
-              Wastage: {job.reworks?.[0]?.material_wastage} • Extra Labor: {job.reworks?.[0]?.extra_labor_hours} hrs • Delay: +{job.reworks?.[0]?.additional_time_hours} hrs
+ Wastage: {job.reworks?.[0]?.material_wastage} • Extra Labor: {job.reworks?.[0]?.extra_labor_hours} hrs • Delay: +{job.reworks?.[0]?.additional_time_hours} hrs
             </div>
           </div>
         </div>
@@ -191,7 +187,7 @@ export default function ProductionJobDetailPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="p-4">
           <span className="text-xs font-semibold text-muted-foreground">Dimensions & Specs</span>
-          <div className="text-lg font-bold text-foreground dark:text-white mt-1">
+          <div className="text-lg font-bold text-foreground mt-1">
             {job.dimensions_spec}
           </div>
           <span className="text-xs text-muted-foreground mt-1 block">Substrate: {job.material_spec}</span>
@@ -199,7 +195,7 @@ export default function ProductionJobDetailPage() {
 
         <Card className="p-4">
           <span className="text-xs font-semibold text-muted-foreground">Assigned Machine Crew</span>
-          <div className="text-base font-bold text-foreground dark:text-white mt-1">
+          <div className="text-base font-bold text-foreground mt-1">
             {job.assigned_workers.join(', ')}
           </div>
           <span className="text-xs text-muted-foreground mt-1 block">Department: {job.department}</span>
@@ -217,34 +213,34 @@ export default function ProductionJobDetailPage() {
       {/* Department Checklists */}
       {job.department === 'finishing' && (
         <Card>
-          <CardHeader className="pb-3 border-b border-border dark:border-border">
+          <CardHeader className="pb-3 border-b border-border">
             <CardTitle className="text-sm font-bold flex items-center gap-2">
-              <Scissors className="h-4 w-4 text-blue-600" />
-              Post-Print Finishing Tasks Checklist
+              <Scissors className="h-4 w-4 text-blue-600"/>
+ Post-Print Finishing Tasks Checklist
             </CardTitle>
           </CardHeader>
           <CardContent className="p-4">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {ALL_FINISHING_TASKS.map((task) => {
-                const isChecked = completedTasks.includes(task)
-                const isApplicable = job.finishing_tasks?.includes(task)
+ const isChecked = completedTasks.includes(task)
+ const isApplicable = job.finishing_tasks?.includes(task)
 
-                return (
+ return (
                   <button
-                    key={task}
-                    onClick={() => toggleTask(task)}
-                    className={`flex items-center gap-2.5 p-3 rounded-lg border text-left transition-all ${
-                      isChecked
+ key={task}
+ onClick={() => toggleTask(task)}
+ className={`flex items-center gap-2.5 p-3 rounded-lg border text-left transition-all ${
+ isChecked
                         ? 'bg-emerald-50 border-emerald-300 text-emerald-800 dark:bg-emerald-950/40 dark:border-emerald-800'
                         : isApplicable
-                        ? 'bg-blue-50/50 border-blue-200 text-foreground dark:bg-blue-950/20 dark:text-white'
+                        ? 'bg-blue-50/50 border-blue-200 text-foreground dark:bg-blue-950/20 '
                         : 'border-border text-muted-foreground opacity-60'
                     }`}
                   >
                     {isChecked ? (
-                      <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+                      <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0"/>
                     ) : (
-                      <Square className="h-4 w-4 text-muted-foreground shrink-0" />
+                      <Square className="h-4 w-4 text-muted-foreground shrink-0"/>
                     )}
                     <div className="text-xs">
                       <div className="font-bold capitalize">{task}</div>
@@ -260,34 +256,34 @@ export default function ProductionJobDetailPage() {
 
       {job.department === 'fabrication' && (
         <Card>
-          <CardHeader className="pb-3 border-b border-border dark:border-border">
+          <CardHeader className="pb-3 border-b border-border">
             <CardTitle className="text-sm font-bold flex items-center gap-2">
-              <Wrench className="h-4 w-4 text-purple-600" />
-              Workshop Fabrication & Assembly Checklist
+              <Wrench className="h-4 w-4 text-purple-600"/>
+ Workshop Fabrication & Assembly Checklist
             </CardTitle>
           </CardHeader>
           <CardContent className="p-4">
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {ALL_FABRICATION_TASKS.map((task) => {
-                const isChecked = completedTasks.includes(task)
-                const isApplicable = job.fabrication_tasks?.includes(task)
+ const isChecked = completedTasks.includes(task)
+ const isApplicable = job.fabrication_tasks?.includes(task)
 
-                return (
+ return (
                   <button
-                    key={task}
-                    onClick={() => toggleTask(task)}
-                    className={`flex items-center gap-2.5 p-3 rounded-lg border text-left transition-all ${
-                      isChecked
+ key={task}
+ onClick={() => toggleTask(task)}
+ className={`flex items-center gap-2.5 p-3 rounded-lg border text-left transition-all ${
+ isChecked
                         ? 'bg-emerald-50 border-emerald-300 text-emerald-800 dark:bg-emerald-950/40 dark:border-emerald-800'
                         : isApplicable
-                        ? 'bg-purple-50/50 border-purple-200 text-foreground dark:bg-purple-950/20 dark:text-white'
+                        ? 'bg-purple-50/50 border-purple-200 text-foreground dark:bg-purple-950/20 '
                         : 'border-border text-muted-foreground opacity-60'
                     }`}
                   >
                     {isChecked ? (
-                      <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+                      <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0"/>
                     ) : (
-                      <Square className="h-4 w-4 text-muted-foreground shrink-0" />
+                      <Square className="h-4 w-4 text-muted-foreground shrink-0"/>
                     )}
                     <div className="text-xs">
                       <div className="font-bold capitalize">{task.replace('_', ' ')}</div>
@@ -303,9 +299,9 @@ export default function ProductionJobDetailPage() {
 
       {/* Instructions */}
       {job.production_instructions && (
-        <Card className="p-4 bg-muted border-border dark:border-border">
+        <Card className="p-4 bg-muted border-border">
           <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-            Machine Operator & Shop Floor Instructions
+ Machine Operator & Shop Floor Instructions
           </span>
           <p className="text-xs text-foreground mt-1 leading-relaxed font-medium">
             {job.production_instructions}
@@ -316,15 +312,15 @@ export default function ProductionJobDetailPage() {
       {/* Rework History Log */}
       {job.reworks && job.reworks.length > 0 && (
         <Card>
-          <CardHeader className="pb-3 border-b border-border dark:border-border">
+          <CardHeader className="pb-3 border-b border-border">
             <CardTitle className="text-sm font-bold flex items-center gap-2">
-              <RotateCcw className="h-4 w-4 text-red-600" />
-              Rework & Material Wastage Audit Log
+              <RotateCcw className="h-4 w-4 text-red-600"/>
+ Rework & Material Wastage Audit Log
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0 overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-muted font-semibold text-muted-foreground border-b border-border dark:border-border">
+              <thead className="bg-muted font-semibold text-muted-foreground border-b border-border">
                 <tr>
                   <th className="py-2.5 px-3">Rework #</th>
                   <th className="py-2.5 px-3">Defect Reason</th>
@@ -338,7 +334,7 @@ export default function ProductionJobDetailPage() {
                 {job.reworks.map((r) => (
                   <tr key={r.id}>
                     <td className="py-3 px-3 tabular-nums font-bold text-red-600">{r.rework_number}</td>
-                    <td className="py-3 px-3 font-medium text-foreground dark:text-foreground">{r.reason}</td>
+                    <td className="py-3 px-3 font-medium text-foreground">{r.reason}</td>
                     <td className="py-3 px-3 capitalize">{r.responsible_department}</td>
                     <td className="py-3 px-3 tabular-nums">{r.material_wastage}</td>
                     <td className="py-3 px-3 tabular-nums">+{r.extra_labor_hours} hrs</td>

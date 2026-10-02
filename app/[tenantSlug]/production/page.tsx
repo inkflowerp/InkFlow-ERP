@@ -5,37 +5,37 @@ import Link from 'next/link'
 import { useParams, usePathname } from 'next/navigation'
 import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import {
-  Printer,
-  Play,
-  Pause,
-  CheckCircle2,
-  AlertTriangle,
-  Clock,
-  Layers,
-  Wrench,
-  Truck,
-  RotateCcw,
-  Sparkles,
-  Search,
-  ExternalLink,
-  Users,
-  AlertOctagon,
-  TrendingUp,
-  Scissors,
-  Check,
-  FileCheck2,
-  Cpu,
-  Calendar,
-  LayoutGrid,
-  ListFilter,
-  Plus,
-  ArrowRight,
-  ShieldAlert,
-  MessageSquare,
-  Trash2,
-  RefreshCw,
-  X,
-  Package,
+ Printer,
+ Play,
+ Pause,
+ CheckCircle2,
+ AlertTriangle,
+ Clock,
+ Layers,
+ Wrench,
+ Truck,
+ RotateCcw,
+ Sparkles,
+ Search,
+ ExternalLink,
+ Users,
+ AlertOctagon,
+ TrendingUp,
+ Scissors,
+ Check,
+ FileCheck2,
+ Cpu,
+ Calendar,
+ LayoutGrid,
+ ListFilter,
+ Plus,
+ ArrowRight,
+ ShieldAlert,
+ MessageSquare,
+ Trash2,
+ RefreshCw,
+ X,
+ Package,
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
@@ -50,26 +50,26 @@ import { WorkOrderModal } from '@/components/shared/work-order-modal'
 import { PageHeader } from '@/components/shared/page-header'
 import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
 import {
-  ProductionTaskRecord,
-  UnifiedProductionJob,
-  MachineQueueGroup,
-  ProductionDepartment,
-  ProductionTaskStatus,
+ ProductionTaskRecord,
+ UnifiedProductionJob,
+ MachineQueueGroup,
+ ProductionDepartment,
+ ProductionTaskStatus,
 } from '@/types/production.types'
 import {
-  getProductionTasksAction,
-  getMachineQueuesAction,
-  startProductionTaskAction,
-  pauseProductionTaskAction,
-  completeProductionTaskAction,
-  resumeProductionTaskAction,
+ getProductionTasksAction,
+ getMachineQueuesAction,
+ startProductionTaskAction,
+ pauseProductionTaskAction,
+ completeProductionTaskAction,
+ resumeProductionTaskAction,
 } from '@/actions/production-planning.actions'
 import { PromptDialog } from '@/components/shared/prompt-dialog'
 import { dispatchToast } from '@/components/shared/toast-feedback'
 import { ProductionJobCard } from '@/components/production/production-job-card'
 import {
-  ProductionInvoiceGroupCard,
-  ProductionInvoiceGroup,
+ ProductionInvoiceGroupCard,
+ ProductionInvoiceGroup,
 } from '@/components/production/production-invoice-group-card'
 import { ProductionBoardCard } from '@/components/production/production-board-card'
 import { MachineQueueView } from '@/components/production/machine-queue-view'
@@ -79,8 +79,8 @@ import { ReworkTaskModal } from '@/components/production/rework-task-modal'
 import { CompleteTaskModal } from '@/components/production/complete-task-modal'
 import { ProductionKpiBar } from '@/components/production/production-kpi-bar'
 import {
-  ProductionFilterToolbar,
-  ProductionViewMode,
+ ProductionFilterToolbar,
+ ProductionViewMode,
 } from '@/components/production/production-filter-toolbar'
 import { ProductionTaskTable } from '@/components/production/production-task-table'
 import { JobTicketPrintModal } from '@/components/production/production-job-ticket-modal'
@@ -88,287 +88,287 @@ import { ProductionService } from '@/services/production.service'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 
 export default function AdvancedProductionPage() {
-  const params = useParams()
-  const pathname = usePathname() || ''
-  const { company } = useTenant()
-  const { locale, tBilingual } = useI18n()
-  const slug = (params?.tenantSlug as string) || company?.slug || 'my-company'
-  const isBn = locale === 'bn'
+ const params = useParams()
+ const pathname = usePathname() || ''
+ const { company } = useTenant()
+ const { locale, tBilingual } = useI18n()
+ const slug = (params?.tenantSlug as string) || company?.slug || 'my-company'
+ const isBn = locale === 'bn'
 
-  const [mounted, setMounted] = useState(false)
-  const [viewMode, setViewMode] = useState<ProductionViewMode>('board')
-  const [activeTab, setActiveTab] = useState<string>('queued')
-  const [tasks, setTasks] = useState<ProductionTaskRecord[]>([])
-  const [machineQueues, setMachineQueues] = useState<MachineQueueGroup[]>([])
-  const [selectedDept, setSelectedDept] = useState<string>('all')
-  const [selectedKpiFilter, setSelectedKpiFilter] = useState<string>('all')
-  const [quickFilter, setQuickFilter] = useState<string>('all')
-  const [urgentOnly, setUrgentOnly] = useState(false)
-  const [search, setSearch] = useState('')
-  const [loading, setLoading] = useState(true)
-  const [isRefreshing, setIsRefreshing] = useState(false)
-  const [notification, setNotification] = useState<{
-    msg: string
-    type: 'success' | 'warning' | 'info' | 'error'
+ const [mounted, setMounted] = useState(false)
+ const [viewMode, setViewMode] = useState<ProductionViewMode>('board')
+ const [activeTab, setActiveTab] = useState<string>('queued')
+ const [tasks, setTasks] = useState<ProductionTaskRecord[]>([])
+ const [machineQueues, setMachineQueues] = useState<MachineQueueGroup[]>([])
+ const [selectedDept, setSelectedDept] = useState<string>('all')
+ const [selectedKpiFilter, setSelectedKpiFilter] = useState<string>('all')
+ const [quickFilter, setQuickFilter] = useState<string>('all')
+ const [urgentOnly, setUrgentOnly] = useState(false)
+ const [search, setSearch] = useState('')
+ const [loading, setLoading] = useState(true)
+ const [isRefreshing, setIsRefreshing] = useState(false)
+ const [notification, setNotification] = useState<{
+ msg: string
+ type: 'success' | 'warning' | 'info' | 'error'
   } | null>(null)
 
   // Work Order Modal State (same as Design Studio & Commercial Orders Hub)
-  const [isWorkOrderModalOpen, setIsWorkOrderModalOpen] = useState(false)
+ const [isWorkOrderModalOpen, setIsWorkOrderModalOpen] = useState(false)
 
   // Interactive Modals State
-  const [scheduleTaskTarget, setScheduleTaskTarget] = useState<ProductionTaskRecord | null>(null)
-  const [holdTaskTarget, setHoldTaskTarget] = useState<ProductionTaskRecord | null>(null)
-  const [reworkTaskTarget, setReworkTaskTarget] = useState<ProductionTaskRecord | null>(null)
-  const [completeTaskTarget, setCompleteTaskTarget] = useState<ProductionTaskRecord | null>(null)
-  const [jobTicketTarget, setJobTicketTarget] = useState<ProductionTaskRecord | null>(null)
-  const [taskToPause, setTaskToPause] = useState<ProductionTaskRecord | null>(null)
-  const [isPausePromptOpen, setIsPausePromptOpen] = useState(false)
-  const [isPausing, setIsPausing] = useState(false)
+ const [scheduleTaskTarget, setScheduleTaskTarget] = useState<ProductionTaskRecord | null>(null)
+ const [holdTaskTarget, setHoldTaskTarget] = useState<ProductionTaskRecord | null>(null)
+ const [reworkTaskTarget, setReworkTaskTarget] = useState<ProductionTaskRecord | null>(null)
+ const [completeTaskTarget, setCompleteTaskTarget] = useState<ProductionTaskRecord | null>(null)
+ const [jobTicketTarget, setJobTicketTarget] = useState<ProductionTaskRecord | null>(null)
+ const [taskToPause, setTaskToPause] = useState<ProductionTaskRecord | null>(null)
+ const [isPausePromptOpen, setIsPausePromptOpen] = useState(false)
+ const [isPausing, setIsPausing] = useState(false)
 
   // Auto-Generate Tasks Modal
-  const [isGenerateModalOpen, setIsGenerateModalOpen] = useState(false)
-  const [selectedOrderForGen, setSelectedOrderForGen] = useState<string>('')
-  const [isGenerating, setIsGenerating] = useState(false)
+ const [isGenerateModalOpen, setIsGenerateModalOpen] = useState(false)
+ const [selectedOrderForGen, setSelectedOrderForGen] = useState<string>('')
+ const [isGenerating, setIsGenerating] = useState(false)
 
-  useEffect(() => {
-    setMounted(true)
+ useEffect(() => {
+ setMounted(true)
   }, [])
 
-  const showNotification = useCallback(
+ const showNotification = useCallback(
     (msg: string, type: 'success' | 'warning' | 'info' | 'error' = 'success') => {
-      setNotification({ msg, type })
-      dispatchToast({
-        type: type === 'warning' ? 'error' : type,
-        title: type === 'error' ? 'Error' : type === 'info' ? 'Notice' : 'Success',
-        titleBn: type === 'error' ? 'ত্রুটি' : type === 'info' ? 'বিজ্ঞপ্তি' : 'সফল হয়েছে',
-        message: msg,
+ setNotification({ msg, type })
+ dispatchToast({
+ type: type === 'warning' ? 'error' : type,
+ title: type === 'error' ? 'Error' : type === 'info' ? 'Notice' : 'Success',
+ titleBn: type === 'error' ? 'ত্রুটি' : type === 'info' ? 'বিজ্ঞপ্তি' : 'সফল হয়েছে',
+ message: msg,
       })
-      setTimeout(() => setNotification(null), 4000)
+ setTimeout(() => setNotification(null), 4000)
     },
     []
   )
 
-  const loadData = useCallback(
-    async (isBackground = false) => {
-      if (!isBackground && tasks.length === 0) {
-        setLoading(true)
+ const loadData = useCallback(
+ async (isBackground = false) => {
+ if (!isBackground && tasks.length === 0) {
+ setLoading(true)
       }
-      try {
-        const effCompany = company?.id || (slug !== 'my-company' ? slug : 'default')
-        const [taskRes, queueRes] = await Promise.all([
-          getProductionTasksAction({ department: selectedDept }, effCompany),
-          getMachineQueuesAction(undefined, effCompany),
+ try {
+ const effCompany = company?.id || (slug !== 'my-company' ? slug : 'default')
+ const [taskRes, queueRes] = await Promise.all([
+ getProductionTasksAction({ department: selectedDept }, effCompany),
+ getMachineQueuesAction(undefined, effCompany),
         ])
 
         // Get local tasks from store
-        const localStoreTasks =
-          PrintERPDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
-        const taskMap = new Map<string, ProductionTaskRecord>()
+ const localStoreTasks =
+ PrintERPDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
+ const taskMap = new Map<string, ProductionTaskRecord>()
 
         // 1. Populate from local datastore
-        for (const t of localStoreTasks) {
-          if (t?.id) taskMap.set(t.id, t)
+ for (const t of localStoreTasks) {
+ if (t?.id) taskMap.set(t.id, t)
         }
 
         // 2. Merge server-resolved tasks
-        if (taskRes.success && taskRes.data) {
-          for (const t of taskRes.data) {
-            if (t?.id) taskMap.set(t.id, t)
+ if (taskRes.success && taskRes.data) {
+ for (const t of taskRes.data) {
+ if (t?.id) taskMap.set(t.id, t)
           }
         }
 
         // 3. Scan local approved design jobs to auto-materialize production tasks if missing
-        const localDesignJobs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.DESIGN_JOBS) || []
-        const now = new Date().toISOString()
-        let addedAnyLocal = false
+ const localDesignJobs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.DESIGN_JOBS) || []
+ const now = new Date().toISOString()
+ let addedAnyLocal = false
 
-        for (const dj of localDesignJobs) {
-          const isApproved =
-            dj.status === 'approved' ||
-            dj.is_locked ||
-            dj.workflow_routing === 'ready_production' ||
-            dj.workflow_routing === 'design_ok' ||
+ for (const dj of localDesignJobs) {
+ const isApproved =
+ dj.status === 'approved' ||
+ dj.is_locked ||
+ dj.workflow_routing === 'ready_production' ||
+ dj.workflow_routing === 'design_ok' ||
             (dj.versions && dj.versions.some((v: any) => v.is_approved)) ||
-            dj.customer_approval_required === false
+ dj.customer_approval_required === false
 
-          if (isApproved && dj.workflow_routing !== 'ready_product') {
-            const baseNum = (dj.design_number || '001').replace('DSN-', '')
-            const taskNum1 = `TSK-${baseNum}-1`
-            const taskNum2 = `TSK-${baseNum}-2`
+ if (isApproved && dj.workflow_routing !== 'ready_product') {
+ const baseNum = (dj.design_number || '001').replace('DSN-', '')
+ const taskNum1 = `TSK-${baseNum}-1`
+ const taskNum2 = `TSK-${baseNum}-2`
 
-            const hasExisting = Array.from(taskMap.values()).some(
+ const hasExisting = Array.from(taskMap.values()).some(
               (t) =>
                 (dj.job_order_id && t.job_order_id === dj.job_order_id) ||
-                t.task_number === taskNum1 ||
-                t.task_number === taskNum2 ||
+ t.task_number === taskNum1 ||
+ t.task_number === taskNum2 ||
                 (t.customer_name === dj.customer_name &&
                   (t.product_name === dj.title || t.task_name?.includes(dj.title)))
             )
 
-            if (!hasExisting) {
-              const hasInvoice =
-                Boolean(dj.invoice_id) ||
-                Boolean(dj.invoice_number) ||
-                dj.commercial_status === 'invoice_created'
+ if (!hasExisting) {
+ const hasInvoice =
+ Boolean(dj.invoice_id) ||
+ Boolean(dj.invoice_number) ||
+ dj.commercial_status === 'invoice_created'
 
-              const hasFinishing = Boolean(
+ const hasFinishing = Boolean(
                 (dj.finishing &&
-                  dj.finishing.toLowerCase().trim() !== 'none' &&
-                  dj.finishing.trim() !== 'কোন ফিনিশিং নেই' &&
-                  dj.finishing.trim() !== 'no' &&
-                  dj.finishing.trim() !== '') ||
+ dj.finishing.toLowerCase().trim() !== 'none' &&
+ dj.finishing.trim() !== 'কোন ফিনিশিং নেই' &&
+ dj.finishing.trim() !== 'no' &&
+ dj.finishing.trim() !== '') ||
                 (dj.selected_finishing && dj.selected_finishing.length > 0)
               )
 
-              const finishingStr =
-                dj.finishing ||
+ const finishingStr =
+ dj.finishing ||
                 (dj.selected_finishing?.length
                   ? dj.selected_finishing.map((f: any) => f.name).join(', ')
                   : null)
-              const addOnsStr =
+ const addOnsStr =
                 (dj as any).add_ons ||
                 (dj.selected_add_ons?.length
                   ? dj.selected_add_ons.map((a: any) => a.name).join(', ')
                   : null)
-              const serviceNameStr =
+ const serviceNameStr =
                 (dj as any).service_name ||
                 (dj as any).category_preset ||
                 (dj as any).category ||
                 'Commercial Printing'
 
-              const dimensionsStr =
-                dj.dimensions_spec ||
+ const dimensionsStr =
+ dj.dimensions_spec ||
                 (dj.width && dj.height
                   ? `${dj.width} × ${dj.height} ${dj.unit || 'in'}`
                   : null)
 
-              const task1: any = {
-                id: crypto.randomUUID(),
-                company_id: effCompany,
-                job_order_id: dj.job_order_id || crypto.randomUUID(),
-                task_number: taskNum1,
-                task_name: `Print: ${dj.title}`,
-                customer_name: dj.customer_name,
-                customer_phone: dj.customer_phone || dj.mobile,
-                product_name: dj.product_name || dj.title,
-                service_name: serviceNameStr,
-                dimensions_spec: dimensionsStr,
-                job_number: dj.invoice_number || dj.design_number,
-                invoice_number: dj.invoice_number,
-                invoice_id: dj.invoice_id,
-                job_deadline: dj.deadline,
-                task_type: 'printing',
-                department: 'printing',
-                sequence_order: 1,
-                quantity: dj.quantity || 1,
-                unit: dj.unit || 'pcs',
-                priority: dj.priority || 'normal',
-                required_material: dj.material || 'Star Flex (320 GSM)',
-                finishing: finishingStr,
-                selected_finishing: dj.selected_finishing || null,
-                add_ons: addOnsStr,
-                selected_add_ons: dj.selected_add_ons || null,
-                status: 'queued',
-                is_blocked_by_commercial_gate: !hasInvoice,
-                is_blocked_by_design_gate: false,
-                created_at: now,
-                updated_at: now,
+ const task1: any = {
+ id: crypto.randomUUID(),
+ company_id: effCompany,
+ job_order_id: dj.job_order_id || crypto.randomUUID(),
+ task_number: taskNum1,
+ task_name: `Print: ${dj.title}`,
+ customer_name: dj.customer_name,
+ customer_phone: dj.customer_phone || dj.mobile,
+ product_name: dj.product_name || dj.title,
+ service_name: serviceNameStr,
+ dimensions_spec: dimensionsStr,
+ job_number: dj.invoice_number || dj.design_number,
+ invoice_number: dj.invoice_number,
+ invoice_id: dj.invoice_id,
+ job_deadline: dj.deadline,
+ task_type: 'printing',
+ department: 'printing',
+ sequence_order: 1,
+ quantity: dj.quantity || 1,
+ unit: dj.unit || 'pcs',
+ priority: dj.priority || 'normal',
+ required_material: dj.material || 'Star Flex (320 GSM)',
+ finishing: finishingStr,
+ selected_finishing: dj.selected_finishing || null,
+ add_ons: addOnsStr,
+ selected_add_ons: dj.selected_add_ons || null,
+ status: 'queued',
+ is_blocked_by_commercial_gate: !hasInvoice,
+ is_blocked_by_design_gate: false,
+ created_at: now,
+ updated_at: now,
               }
-              taskMap.set(task1.id, task1)
-              addedAnyLocal = true
+ taskMap.set(task1.id, task1)
+ addedAnyLocal = true
 
-              if (hasFinishing) {
-                const task2: any = {
-                  id: crypto.randomUUID(),
-                  company_id: effCompany,
-                  job_order_id: task1.job_order_id,
-                  task_number: taskNum2,
-                  task_name: `Finishing & QC: ${dj.title}`,
-                  customer_name: dj.customer_name,
-                  customer_phone: dj.customer_phone || dj.mobile,
-                  product_name: dj.product_name || dj.title,
-                  service_name: serviceNameStr,
-                  dimensions_spec: dimensionsStr,
-                  job_number: dj.invoice_number || dj.design_number,
-                  invoice_number: dj.invoice_number,
-                  invoice_id: dj.invoice_id,
-                  job_deadline: dj.deadline,
-                  task_type: 'finishing',
-                  department: 'finishing',
-                  sequence_order: 2,
-                  quantity: dj.quantity || 1,
-                  unit: dj.unit || 'pcs',
-                  priority: dj.priority || 'normal',
-                  required_material: dj.material,
-                  finishing: finishingStr,
-                  selected_finishing: dj.selected_finishing || null,
-                  add_ons: addOnsStr,
-                  selected_add_ons: dj.selected_add_ons || null,
-                  status: 'queued',
-                  is_blocked_by_commercial_gate: !hasInvoice,
-                  is_blocked_by_design_gate: false,
-                  created_at: now,
-                  updated_at: now,
+ if (hasFinishing) {
+ const task2: any = {
+ id: crypto.randomUUID(),
+ company_id: effCompany,
+ job_order_id: task1.job_order_id,
+ task_number: taskNum2,
+ task_name: `Finishing & QC: ${dj.title}`,
+ customer_name: dj.customer_name,
+ customer_phone: dj.customer_phone || dj.mobile,
+ product_name: dj.product_name || dj.title,
+ service_name: serviceNameStr,
+ dimensions_spec: dimensionsStr,
+ job_number: dj.invoice_number || dj.design_number,
+ invoice_number: dj.invoice_number,
+ invoice_id: dj.invoice_id,
+ job_deadline: dj.deadline,
+ task_type: 'finishing',
+ department: 'finishing',
+ sequence_order: 2,
+ quantity: dj.quantity || 1,
+ unit: dj.unit || 'pcs',
+ priority: dj.priority || 'normal',
+ required_material: dj.material,
+ finishing: finishingStr,
+ selected_finishing: dj.selected_finishing || null,
+ add_ons: addOnsStr,
+ selected_add_ons: dj.selected_add_ons || null,
+ status: 'queued',
+ is_blocked_by_commercial_gate: !hasInvoice,
+ is_blocked_by_design_gate: false,
+ created_at: now,
+ updated_at: now,
                 }
-                taskMap.set(task2.id, task2)
+ taskMap.set(task2.id, task2)
               }
             } else {
               // Enrich existing tasks with design job metadata if missing
-              const finishingStr =
-                dj.finishing ||
+ const finishingStr =
+ dj.finishing ||
                 (dj.selected_finishing?.length
                   ? dj.selected_finishing.map((f: any) => f.name).join(', ')
                   : null)
-              const addOnsStr =
+ const addOnsStr =
                 (dj as any).add_ons ||
                 (dj.selected_add_ons?.length
                   ? dj.selected_add_ons.map((a: any) => a.name).join(', ')
                   : null)
-              const serviceNameStr =
+ const serviceNameStr =
                 (dj as any).service_name ||
                 (dj as any).category_preset ||
                 (dj as any).category ||
                 'Commercial Printing'
-              const dimensionsStr =
-                dj.dimensions_spec ||
+ const dimensionsStr =
+ dj.dimensions_spec ||
                 (dj.width && dj.height
                   ? `${dj.width} × ${dj.height} ${dj.unit || 'in'}`
                   : null)
 
-              for (const [id, t] of taskMap.entries()) {
-                const isMatch =
+ for (const [id, t] of taskMap.entries()) {
+ const isMatch =
                   (dj.job_order_id && t.job_order_id === dj.job_order_id) ||
-                  t.task_number === taskNum1 ||
-                  t.task_number === taskNum2 ||
+ t.task_number === taskNum1 ||
+ t.task_number === taskNum2 ||
                   (t.customer_name === dj.customer_name &&
                     (t.product_name === dj.title || t.task_name?.includes(dj.title)))
-                if (isMatch) {
-                  let updated = false
-                  if (!t.service_name && serviceNameStr) {
-                    t.service_name = serviceNameStr
-                    updated = true
+ if (isMatch) {
+ let updated = false
+ if (!t.service_name && serviceNameStr) {
+ t.service_name = serviceNameStr
+ updated = true
                   }
-                  if (!t.finishing && finishingStr) {
-                    t.finishing = finishingStr
-                    t.selected_finishing = dj.selected_finishing || null
-                    updated = true
+ if (!t.finishing && finishingStr) {
+ t.finishing = finishingStr
+ t.selected_finishing = dj.selected_finishing || null
+ updated = true
                   }
-                  if (!t.add_ons && addOnsStr) {
-                    t.add_ons = addOnsStr
-                    t.selected_add_ons = dj.selected_add_ons || null
-                    updated = true
+ if (!t.add_ons && addOnsStr) {
+ t.add_ons = addOnsStr
+ t.selected_add_ons = dj.selected_add_ons || null
+ updated = true
                   }
-                  if (!(t as any).dimensions_spec && dimensionsStr) {
+ if (!(t as any).dimensions_spec && dimensionsStr) {
                     (t as any).dimensions_spec = dimensionsStr
-                    updated = true
+ updated = true
                   }
-                  if (!t.required_material && dj.material) {
-                    t.required_material = dj.material
-                    updated = true
+ if (!t.required_material && dj.material) {
+ t.required_material = dj.material
+ updated = true
                   }
-                  if (updated) {
-                    taskMap.set(id, t)
-                    addedAnyLocal = true
+ if (updated) {
+ taskMap.set(id, t)
+ addedAnyLocal = true
                   }
                 }
               }
@@ -377,58 +377,58 @@ export default function AdvancedProductionPage() {
         }
 
         // 4. Scan local invoices to enrich any tasks missing specs/services/finishing
-        const localInvoices = PrintERPDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || []
-        for (const inv of localInvoices) {
-          if (inv.items && Array.isArray(inv.items)) {
-            for (const item of inv.items) {
-              for (const [id, t] of taskMap.entries()) {
-                const matchesInvoice =
+ const localInvoices = PrintERPDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || []
+ for (const inv of localInvoices) {
+ if (inv.items && Array.isArray(inv.items)) {
+ for (const item of inv.items) {
+ for (const [id, t] of taskMap.entries()) {
+ const matchesInvoice =
                   (t.invoice_number && t.invoice_number === inv.invoice_number) ||
                   (t.invoice_id && t.invoice_id === inv.id) ||
                   (t.job_number && (t.job_number === inv.invoice_number || t.job_number === inv.id))
-                if (matchesInvoice) {
-                  let updated = false
-                  const itemService = item.service_name || item.category || item.category_preset
-                  if (!t.service_name && itemService) {
-                    t.service_name = itemService
-                    updated = true
+ if (matchesInvoice) {
+ let updated = false
+ const itemService = item.service_name || item.category || item.category_preset
+ if (!t.service_name && itemService) {
+ t.service_name = itemService
+ updated = true
                   }
-                  const itemFinishing =
-                    item.finishing ||
+ const itemFinishing =
+ item.finishing ||
                     (item.selected_finishing?.length
                       ? item.selected_finishing.map((f: any) => f.name).join(', ')
                       : null)
-                  if (!t.finishing && itemFinishing) {
-                    t.finishing = itemFinishing
-                    t.selected_finishing = item.selected_finishing || null
-                    updated = true
+ if (!t.finishing && itemFinishing) {
+ t.finishing = itemFinishing
+ t.selected_finishing = item.selected_finishing || null
+ updated = true
                   }
-                  const itemAddOns =
-                    item.add_ons ||
+ const itemAddOns =
+ item.add_ons ||
                     (item.selected_add_ons?.length
                       ? item.selected_add_ons.map((a: any) => a.name).join(', ')
                       : null)
-                  if (!t.add_ons && itemAddOns) {
-                    t.add_ons = itemAddOns
-                    t.selected_add_ons = item.selected_add_ons || null
-                    updated = true
+ if (!t.add_ons && itemAddOns) {
+ t.add_ons = itemAddOns
+ t.selected_add_ons = item.selected_add_ons || null
+ updated = true
                   }
-                  const itemDim =
-                    item.dimensions_spec ||
+ const itemDim =
+ item.dimensions_spec ||
                     (item.width && item.height
                       ? `${item.width} × ${item.height} ${item.unit || 'in'}`
                       : null)
-                  if (!(t as any).dimensions_spec && itemDim) {
+ if (!(t as any).dimensions_spec && itemDim) {
                     (t as any).dimensions_spec = itemDim
-                    updated = true
+ updated = true
                   }
-                  if (!t.required_material && (item.material || item.material_spec)) {
-                    t.required_material = item.material || item.material_spec
-                    updated = true
+ if (!t.required_material && (item.material || item.material_spec)) {
+ t.required_material = item.material || item.material_spec
+ updated = true
                   }
-                  if (updated) {
-                    taskMap.set(id, t)
-                    addedAnyLocal = true
+ if (updated) {
+ taskMap.set(id, t)
+ addedAnyLocal = true
                   }
                 }
               }
@@ -436,141 +436,141 @@ export default function AdvancedProductionPage() {
           }
         }
 
-        const mergedTasks = Array.from(taskMap.values())
-        setTasks(mergedTasks)
+ const mergedTasks = Array.from(taskMap.values())
+ setTasks(mergedTasks)
 
-        if (addedAnyLocal || taskRes.success) {
-          try {
-            PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, mergedTasks, false)
+ if (addedAnyLocal || taskRes.success) {
+ try {
+ PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, mergedTasks, false)
           } catch {}
         }
 
-        if (queueRes.success && queueRes.data) {
-          setMachineQueues(queueRes.data)
+ if (queueRes.success && queueRes.data) {
+ setMachineQueues(queueRes.data)
         }
       } catch (_) {
       } finally {
-        setLoading(false)
-        setIsRefreshing(false)
+ setLoading(false)
+ setIsRefreshing(false)
       }
     },
     [company?.id, slug, selectedDept, tasks.length]
   )
 
-  useEffect(() => {
-    loadData(false)
+ useEffect(() => {
+ loadData(false)
 
-    const handleRealtimeSync = () => {
-      loadData(true)
+ const handleRealtimeSync = () => {
+ loadData(true)
     }
 
-    if (typeof window !== 'undefined') {
-      window.addEventListener('printerp_table_synced:production_tasks', handleRealtimeSync)
-      window.addEventListener('printerp_table_synced:production_jobs', handleRealtimeSync)
-      window.addEventListener('printerp_table_synced:machines', handleRealtimeSync)
-      window.addEventListener('printerp_table_synced:design_jobs', handleRealtimeSync)
-      window.addEventListener('printerp_table_synced', handleRealtimeSync)
-      window.addEventListener('printerp_data_sync', handleRealtimeSync)
-      window.addEventListener('storage', handleRealtimeSync)
+ if (typeof window !== 'undefined') {
+ window.addEventListener('printerp_table_synced:production_tasks', handleRealtimeSync)
+ window.addEventListener('printerp_table_synced:production_jobs', handleRealtimeSync)
+ window.addEventListener('printerp_table_synced:machines', handleRealtimeSync)
+ window.addEventListener('printerp_table_synced:design_jobs', handleRealtimeSync)
+ window.addEventListener('printerp_table_synced', handleRealtimeSync)
+ window.addEventListener('printerp_data_sync', handleRealtimeSync)
+ window.addEventListener('storage', handleRealtimeSync)
 
-      return () => {
-        window.removeEventListener('printerp_table_synced:production_tasks', handleRealtimeSync)
-        window.removeEventListener('printerp_table_synced:production_jobs', handleRealtimeSync)
-        window.removeEventListener('printerp_table_synced:machines', handleRealtimeSync)
-        window.removeEventListener('printerp_table_synced:design_jobs', handleRealtimeSync)
-        window.removeEventListener('printerp_table_synced', handleRealtimeSync)
-        window.removeEventListener('printerp_data_sync', handleRealtimeSync)
-        window.removeEventListener('storage', handleRealtimeSync)
+ return () => {
+ window.removeEventListener('printerp_table_synced:production_tasks', handleRealtimeSync)
+ window.removeEventListener('printerp_table_synced:production_jobs', handleRealtimeSync)
+ window.removeEventListener('printerp_table_synced:machines', handleRealtimeSync)
+ window.removeEventListener('printerp_table_synced:design_jobs', handleRealtimeSync)
+ window.removeEventListener('printerp_table_synced', handleRealtimeSync)
+ window.removeEventListener('printerp_data_sync', handleRealtimeSync)
+ window.removeEventListener('storage', handleRealtimeSync)
       }
     }
   }, [loadData])
 
-  const handleRefresh = useCallback(() => {
-    setIsRefreshing(true)
-    loadData(false)
+ const handleRefresh = useCallback(() => {
+ setIsRefreshing(true)
+ loadData(false)
   }, [loadData])
 
   // Filter Tasks by Search, Dept, Urgent, KPI, Quick Filter
-  const filteredTasks = useMemo(() => {
-    const todayStr = new Date().toISOString().split('T')[0]
+ const filteredTasks = useMemo(() => {
+ const todayStr = new Date().toISOString().split('T')[0]
 
-    return tasks.filter((task) => {
+ return tasks.filter((task) => {
       // 1. Department match
-      if (selectedDept !== 'all' && task.department !== selectedDept) {
-        return false
+ if (selectedDept !== 'all' && task.department !== selectedDept) {
+ return false
       }
 
       // 2. Urgent priority toggle
-      if (urgentOnly && task.priority !== 'urgent' && task.priority !== 'very_urgent') {
-        return false
+ if (urgentOnly && task.priority !== 'urgent' && task.priority !== 'very_urgent') {
+ return false
       }
 
       // 3. Search query
-      if (search.trim()) {
-        const q = search.toLowerCase()
-        const matches =
-          task.task_number.toLowerCase().includes(q) ||
-          task.task_name.toLowerCase().includes(q) ||
+ if (search.trim()) {
+ const q = search.toLowerCase()
+ const matches =
+ task.task_number.toLowerCase().includes(q) ||
+ task.task_name.toLowerCase().includes(q) ||
           (task.customer_name && task.customer_name.toLowerCase().includes(q)) ||
           (task.job_number && task.job_number.toLowerCase().includes(q)) ||
           (task.invoice_number && task.invoice_number.toLowerCase().includes(q)) ||
           (task.required_material && task.required_material.toLowerCase().includes(q)) ||
           (task.assigned_machine_name && task.assigned_machine_name.toLowerCase().includes(q))
-        if (!matches) return false
+ if (!matches) return false
       }
 
       // 4. Quick filter chips
-      if (quickFilter === 'due_today') {
-        if (!task.job_deadline?.includes(todayStr) && !task.scheduled_start?.includes(todayStr)) {
-          return false
+ if (quickFilter === 'due_today') {
+ if (!task.job_deadline?.includes(todayStr) && !task.scheduled_start?.includes(todayStr)) {
+ return false
         }
       } else if (quickFilter === 'running') {
-        if (task.status !== 'in_progress' && task.status !== 'paused') return false
+ if (task.status !== 'in_progress' && task.status !== 'paused') return false
       } else if (quickFilter === 'walk_in') {
-        const isWalk =
-          task.customer_name?.toLowerCase().includes('walk') ||
-          task.customer_name?.toLowerCase().includes('counter') ||
-          task.customer_name?.toLowerCase().includes('দোকান')
-        if (!isWalk) return false
+ const isWalk =
+ task.customer_name?.toLowerCase().includes('walk') ||
+ task.customer_name?.toLowerCase().includes('counter') ||
+ task.customer_name?.toLowerCase().includes('দোকান')
+ if (!isWalk) return false
       } else if (quickFilter === 'on_hold') {
-        if (task.status !== 'on_hold' && task.status !== 'rework' && !task.hold_reason) return false
+ if (task.status !== 'on_hold' && task.status !== 'rework' && !task.hold_reason) return false
       }
 
       // 5. KPI Bar filter
-      if (selectedKpiFilter === 'running' && task.status !== 'in_progress') {
-        return false
+ if (selectedKpiFilter === 'running' && task.status !== 'in_progress') {
+ return false
       }
-      if (
-        selectedKpiFilter === 'queued' &&
-        task.status !== 'queued' &&
-        task.status !== 'scheduled' &&
-        task.status !== 'ready'
+ if (
+ selectedKpiFilter === 'queued' &&
+ task.status !== 'queued' &&
+ task.status !== 'scheduled' &&
+ task.status !== 'ready'
       ) {
-        return false
+ return false
       }
-      if (selectedKpiFilter === 'finishing' && task.department !== 'finishing') {
-        return false
+ if (selectedKpiFilter === 'finishing' && task.department !== 'finishing') {
+ return false
       }
-      if (
-        selectedKpiFilter === 'urgent' &&
-        task.priority !== 'urgent' &&
-        task.priority !== 'very_urgent'
+ if (
+ selectedKpiFilter === 'urgent' &&
+ task.priority !== 'urgent' &&
+ task.priority !== 'very_urgent'
       ) {
-        return false
+ return false
       }
-      if (
-        selectedKpiFilter === 'on_hold' &&
-        task.status !== 'on_hold' &&
+ if (
+ selectedKpiFilter === 'on_hold' &&
+ task.status !== 'on_hold' &&
         !task.hold_reason &&
-        task.status !== 'rework'
+ task.status !== 'rework'
       ) {
-        return false
+ return false
       }
-      if (selectedKpiFilter === 'completed' && task.status !== 'completed') {
-        return false
+ if (selectedKpiFilter === 'completed' && task.status !== 'completed') {
+ return false
       }
 
-      return true
+ return true
     })
   }, [tasks, selectedDept, urgentOnly, search, quickFilter, selectedKpiFilter])
 
@@ -579,833 +579,815 @@ export default function AdvancedProductionPage() {
   // Instead of showing separate cards for Print & Finishing for the same job,
   // consolidate them into ONE card with sequential stages and specs!
   // ==============================================================================
-  const unifiedJobs = useMemo(() => {
-    const jobMap = new Map<string, UnifiedProductionJob>()
-    const localDesignJobs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.DESIGN_JOBS) || []
-    const localInvoices = PrintERPDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || []
-    const localProductionJobs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_JOBS) || []
+ const unifiedJobs = useMemo(() => {
+ const jobMap = new Map<string, UnifiedProductionJob>()
+ const localDesignJobs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.DESIGN_JOBS) || []
+ const localInvoices = PrintERPDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || []
+ const localProductionJobs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_JOBS) || []
 
-    for (const t of filteredTasks) {
+ for (const t of filteredTasks) {
       // Grouping key: by job_order_id OR (job_number + customer + product)
-      const cleanJobNum = t.job_number || t.task_number.replace(/-[0-9]+$/, '')
-      const groupKey =
-        t.job_order_id ||
-        t.production_job_id ||
+ const cleanJobNum = t.job_number || t.task_number.replace(/-[0-9]+$/, '')
+ const groupKey =
+ t.job_order_id ||
+ t.production_job_id ||
         `${cleanJobNum}___${t.customer_name || 'anon'}___${t.product_name || t.task_name.replace(/^(Print|Finishing & QC|Printing):\s*/, '')}`
 
       // Match design job & invoice for metadata enrichment
-      const matchedDj = localDesignJobs.find(
+ const matchedDj = localDesignJobs.find(
         (dj) =>
           (dj.invoice_number && (dj.invoice_number === cleanJobNum || dj.invoice_number === t.invoice_number)) ||
           (dj.design_number && (dj.design_number === cleanJobNum || dj.design_number === t.job_number)) ||
           (dj.job_order_id && dj.job_order_id === t.job_order_id) ||
           (dj.customer_name === t.customer_name && (dj.title === t.product_name || t.task_name?.includes(dj.title)))
       )
-      const matchedInv = localInvoices.find(
+ const matchedInv = localInvoices.find(
         (inv) =>
-          inv.invoice_number === cleanJobNum ||
-          inv.invoice_number === t.invoice_number ||
-          inv.id === t.invoice_id
+ inv.invoice_number === cleanJobNum ||
+ inv.invoice_number === t.invoice_number ||
+ inv.id === t.invoice_id
       )
-      const matchedInvItem =
-        matchedInv?.items?.find(
+ const matchedInvItem =
+ matchedInv?.items?.find(
           (it: any) =>
             (t.product_name && (it.product_name === t.product_name || it.description?.includes(t.product_name))) ||
-            it.category ||
-            it.category_preset
+ it.category ||
+ it.category_preset
         ) || matchedInv?.items?.[0]
 
-      const serviceNameStr =
-        t.service_name ||
-        matchedDj?.service_name ||
-        matchedDj?.category_preset ||
-        matchedDj?.category ||
-        matchedInvItem?.service_name ||
-        matchedInvItem?.category ||
-        matchedInvItem?.category_preset ||
+ const serviceNameStr =
+ t.service_name ||
+ matchedDj?.service_name ||
+ matchedDj?.category_preset ||
+ matchedDj?.category ||
+ matchedInvItem?.service_name ||
+ matchedInvItem?.category ||
+ matchedInvItem?.category_preset ||
         'Commercial Printing'
 
-      const dimensionsStr =
+ const dimensionsStr =
         (t as any).dimensions_spec ||
         (t.width && t.height ? `${t.width} × ${t.height} ${t.dimension_unit || t.unit || 'in'}` : null) ||
-        matchedDj?.dimensions_spec ||
+ matchedDj?.dimensions_spec ||
         (matchedDj?.width && matchedDj?.height ? `${matchedDj.width} × ${matchedDj.height} ${matchedDj.unit || 'in'}` : null) ||
-        matchedInvItem?.dimensions_spec ||
+ matchedInvItem?.dimensions_spec ||
         (matchedInvItem?.width && matchedInvItem?.height ? `${matchedInvItem.width} × ${matchedInvItem.height} ${matchedInvItem.unit || 'in'}` : null) ||
         'Standard Spec'
 
-      const finishingStr =
-        t.finishing ||
+ const finishingStr =
+ t.finishing ||
         (t.selected_finishing?.length ? t.selected_finishing.map((f: any) => f.name).join(', ') : null) ||
-        matchedDj?.finishing ||
+ matchedDj?.finishing ||
         (matchedDj?.selected_finishing?.length ? matchedDj.selected_finishing.map((f: any) => f.name).join(', ') : null) ||
-        matchedInvItem?.finishing ||
+ matchedInvItem?.finishing ||
         (matchedInvItem?.selected_finishing?.length ? matchedInvItem.selected_finishing.map((f: any) => f.name).join(', ') : null) ||
-        null
+ null
 
-      const selectedFinishingArr =
-        t.selected_finishing ||
-        matchedDj?.selected_finishing ||
-        matchedInvItem?.selected_finishing ||
-        null
+ const selectedFinishingArr =
+ t.selected_finishing ||
+ matchedDj?.selected_finishing ||
+ matchedInvItem?.selected_finishing ||
+ null
 
-      const addOnsStr =
-        t.add_ons ||
+ const addOnsStr =
+ t.add_ons ||
         (t.selected_add_ons?.length ? t.selected_add_ons.map((a: any) => a.name).join(', ') : null) ||
         (matchedDj as any)?.add_ons ||
         (matchedDj?.selected_add_ons?.length ? matchedDj.selected_add_ons.map((a: any) => a.name).join(', ') : null) ||
         (matchedInvItem as any)?.add_ons ||
         (matchedInvItem?.selected_add_ons?.length ? matchedInvItem.selected_add_ons.map((a: any) => a.name).join(', ') : null) ||
-        null
+ null
 
-      const selectedAddOnsArr =
-        t.selected_add_ons ||
-        matchedDj?.selected_add_ons ||
-        matchedInvItem?.selected_add_ons ||
-        null
+ const selectedAddOnsArr =
+ t.selected_add_ons ||
+ matchedDj?.selected_add_ons ||
+ matchedInvItem?.selected_add_ons ||
+ null
 
-      const materialStr =
-        t.required_material ||
-        matchedDj?.material ||
-        matchedInvItem?.material ||
-        matchedInvItem?.material_spec ||
+ const materialStr =
+ t.required_material ||
+ matchedDj?.material ||
+ matchedInvItem?.material ||
+ matchedInvItem?.material_spec ||
         'Star Flex (320 GSM)'
 
-      if (!jobMap.has(groupKey)) {
-        const title =
-          t.product_name ||
-          t.task_name.replace(/^(Print|Finishing & QC|Printing):\s*/, '') ||
+ if (!jobMap.has(groupKey)) {
+ const title =
+ t.product_name ||
+ t.task_name.replace(/^(Print|Finishing & QC|Printing):\s*/, '') ||
           'Commercial Print Job'
 
-        jobMap.set(groupKey, {
-          id: groupKey,
-          jobNumber: cleanJobNum,
-          orderNumber: (t as any).order_number || (cleanJobNum.startsWith('ORD-') ? cleanJobNum : null),
-          invoiceNumber: t.invoice_number || (cleanJobNum.startsWith('INV-') ? cleanJobNum : null),
-          invoiceId: t.invoice_id,
-          salesOrderId: (t as any).sales_order_id,
-          title,
-          productName: t.product_name || title,
-          serviceName: serviceNameStr,
-          customerName: t.customer_name || 'Direct Client',
-          customerPhone: t.customer_phone,
-          priority: t.priority,
-          deadline: t.job_deadline,
-          dimensions: dimensionsStr,
-          quantity: t.quantity || 1,
-          unit: t.unit || 'pcs',
-          material: materialStr,
-          finishing: finishingStr,
-          selectedFinishing: selectedFinishingArr,
-          addOns: addOnsStr,
-          selectedAddOns: selectedAddOnsArr,
-          instructions: t.description || t.notes,
-          status: t.status,
-          tasks: [t],
-          assignedMachineName: t.assigned_machine_name,
-          assignedOperatorName: t.assigned_operator_name,
-          isBlockedByCommercialGate: t.is_blocked_by_commercial_gate,
-          commercialGateReason: t.commercial_gate_reason,
-          isBlockedByDesignGate: t.is_blocked_by_design_gate,
-          designGateReason: t.design_gate_reason,
-          isBlockedByDependency: t.is_blocked_by_dependency,
-          blockingDependencyTaskName: t.blocking_dependency_task_name,
-          created_at: t.created_at,
+ jobMap.set(groupKey, {
+ id: groupKey,
+ jobNumber: cleanJobNum,
+ orderNumber: (t as any).order_number || (cleanJobNum.startsWith('ORD-') ? cleanJobNum : null),
+ invoiceNumber: t.invoice_number || (cleanJobNum.startsWith('INV-') ? cleanJobNum : null),
+ invoiceId: t.invoice_id,
+ salesOrderId: (t as any).sales_order_id,
+ title,
+ productName: t.product_name || title,
+ serviceName: serviceNameStr,
+ customerName: t.customer_name || 'Direct Client',
+ customerPhone: t.customer_phone,
+ priority: t.priority,
+ deadline: t.job_deadline,
+ dimensions: dimensionsStr,
+ quantity: t.quantity || 1,
+ unit: t.unit || 'pcs',
+ material: materialStr,
+ finishing: finishingStr,
+ selectedFinishing: selectedFinishingArr,
+ addOns: addOnsStr,
+ selectedAddOns: selectedAddOnsArr,
+ instructions: t.description || t.notes,
+ status: t.status,
+ tasks: [t],
+ assignedMachineName: t.assigned_machine_name,
+ assignedOperatorName: t.assigned_operator_name,
+ isBlockedByCommercialGate: t.is_blocked_by_commercial_gate,
+ commercialGateReason: t.commercial_gate_reason,
+ isBlockedByDesignGate: t.is_blocked_by_design_gate,
+ designGateReason: t.design_gate_reason,
+ isBlockedByDependency: t.is_blocked_by_dependency,
+ blockingDependencyTaskName: t.blocking_dependency_task_name,
+ created_at: t.created_at,
         })
       } else {
-        const existing = jobMap.get(groupKey)!
-        existing.tasks.push(t)
+ const existing = jobMap.get(groupKey)!
+ existing.tasks.push(t)
         // Keep earliest deadline and highest priority
-        if (t.priority === 'very_urgent' || t.priority === 'urgent') {
-          existing.priority = t.priority
+ if (t.priority === 'very_urgent' || t.priority === 'urgent') {
+ existing.priority = t.priority
         }
-        if (t.customer_phone && !existing.customerPhone) {
-          existing.customerPhone = t.customer_phone
+ if (t.customer_phone && !existing.customerPhone) {
+ existing.customerPhone = t.customer_phone
         }
-        if (t.required_material && !existing.material) {
-          existing.material = t.required_material
+ if (t.required_material && !existing.material) {
+ existing.material = t.required_material
         }
-        if (t.invoice_number && !existing.invoiceNumber) {
-          existing.invoiceNumber = t.invoice_number
-          existing.invoiceId = t.invoice_id
+ if (t.invoice_number && !existing.invoiceNumber) {
+ existing.invoiceNumber = t.invoice_number
+ existing.invoiceId = t.invoice_id
         }
-        if (!existing.serviceName && serviceNameStr) {
-          existing.serviceName = serviceNameStr
+ if (!existing.serviceName && serviceNameStr) {
+ existing.serviceName = serviceNameStr
         }
-        if ((!existing.dimensions || existing.dimensions === 'Standard Spec') && dimensionsStr) {
-          existing.dimensions = dimensionsStr
+ if ((!existing.dimensions || existing.dimensions === 'Standard Spec') && dimensionsStr) {
+ existing.dimensions = dimensionsStr
         }
-        if (!existing.finishing && finishingStr) {
-          existing.finishing = finishingStr
-          existing.selectedFinishing = selectedFinishingArr
+ if (!existing.finishing && finishingStr) {
+ existing.finishing = finishingStr
+ existing.selectedFinishing = selectedFinishingArr
         }
-        if (!existing.addOns && addOnsStr) {
-          existing.addOns = addOnsStr
-          existing.selectedAddOns = selectedAddOnsArr
+ if (!existing.addOns && addOnsStr) {
+ existing.addOns = addOnsStr
+ existing.selectedAddOns = selectedAddOnsArr
         }
       }
     }
 
     // Sort tasks in each job by sequence order and determine overall job status & active task
-    return Array.from(jobMap.values()).map((job) => {
+ return Array.from(jobMap.values()).map((job) => {
       // Filter out Finishing & QC task if no finishing was requested for this job
-      const hasFinishingForJob = Boolean(
+ const hasFinishingForJob = Boolean(
         (job.finishing &&
-          job.finishing.toLowerCase().trim() !== 'none' &&
-          job.finishing.trim() !== 'কোন ফিনিশিং নেই' &&
-          job.finishing.trim() !== 'no' &&
-          job.finishing.trim() !== '') ||
+ job.finishing.toLowerCase().trim() !== 'none' &&
+ job.finishing.trim() !== 'কোন ফিনিশিং নেই' &&
+ job.finishing.trim() !== 'no' &&
+ job.finishing.trim() !== '') ||
         (job.selectedFinishing && job.selectedFinishing.length > 0)
       )
 
-      if (!hasFinishingForJob) {
-        const nonFinishingTasks = job.tasks.filter(
+ if (!hasFinishingForJob) {
+ const nonFinishingTasks = job.tasks.filter(
           (t) =>
-            t.department !== 'finishing' &&
-            t.task_type !== 'finishing' &&
+ t.department !== 'finishing' &&
+ t.task_type !== 'finishing' &&
             !t.task_name?.toLowerCase().includes('finishing')
         )
-        if (nonFinishingTasks.length > 0) {
-          job.tasks = nonFinishingTasks
+ if (nonFinishingTasks.length > 0) {
+ job.tasks = nonFinishingTasks
         }
       }
 
-      job.tasks.sort((a, b) => (a.sequence_order || 0) - (b.sequence_order || 0))
+ job.tasks.sort((a, b) => (a.sequence_order || 0) - (b.sequence_order || 0))
 
-      const matchedPj = localProductionJobs.find(
+ const matchedPj = localProductionJobs.find(
         (pj) =>
-          pj.id === job.id ||
-          pj.job_number === job.jobNumber ||
+ pj.id === job.id ||
+ pj.job_number === job.jobNumber ||
           (job.tasks && job.tasks.some((t) => t.job_order_id && pj.job_order_id === t.job_order_id))
       )
 
-      const isSentDelivery = Boolean(
+ const isSentDelivery = Boolean(
         (job as any).sent_to_delivery ||
-        job.tasks.some((t: any) => t.sent_to_delivery) ||
-        matchedPj?.sent_to_delivery ||
+ job.tasks.some((t: any) => t.sent_to_delivery) ||
+ matchedPj?.sent_to_delivery ||
         (matchedPj?.status === 'ready_delivery' && matchedPj?.is_print_completed) ||
-        job.status === 'sent_to_delivery'
+ job.status === 'sent_to_delivery'
       )
 
-      const isSentFinishing = Boolean(
+ const isSentFinishing = Boolean(
         (job as any).sent_to_finishing ||
-        job.tasks.some((t: any) => t.sent_to_finishing) ||
-        matchedPj?.sent_to_finishing ||
+ job.tasks.some((t: any) => t.sent_to_finishing) ||
+ matchedPj?.sent_to_finishing ||
         (matchedPj?.status === 'finishing' && matchedPj?.is_print_completed) ||
-        job.status === 'sent_to_finishing'
+ job.status === 'sent_to_finishing'
       )
 
-      const allCompleted = job.tasks.length > 0 && job.tasks.every((t) => t.status === 'completed')
-      const runningTask = job.tasks.find((t) => t.status === 'in_progress')
-      const pausedTask = job.tasks.find((t) => t.status === 'paused')
-      const holdTask = job.tasks.find((t) => t.status === 'on_hold')
-      const reworkTask = job.tasks.find((t) => t.status === 'rework')
-      const scheduledTask = job.tasks.find((t) => t.status === 'scheduled')
+ const allCompleted = job.tasks.length > 0 && job.tasks.every((t) => t.status === 'completed')
+ const runningTask = job.tasks.find((t) => t.status === 'in_progress')
+ const pausedTask = job.tasks.find((t) => t.status === 'paused')
+ const holdTask = job.tasks.find((t) => t.status === 'on_hold')
+ const reworkTask = job.tasks.find((t) => t.status === 'rework')
+ const scheduledTask = job.tasks.find((t) => t.status === 'scheduled')
 
       // Check if print is done and finishing is active/queued
-      const hasPrintDone = job.tasks.some(
+ const hasPrintDone = job.tasks.some(
         (t) => (t.department === 'printing' || t.task_type === 'printing') && t.status === 'completed'
       )
-      const hasFinishingTask = job.tasks.some(
+ const hasFinishingTask = job.tasks.some(
         (t) => t.department === 'finishing' || t.task_type === 'finishing'
       )
 
-      let overallStatus: any = 'queued'
-      if (isSentDelivery) {
-        overallStatus = 'ready_delivery'
+ let overallStatus: any = 'queued'
+ if (isSentDelivery) {
+ overallStatus = 'ready_delivery'
       } else if (isSentFinishing) {
-        overallStatus = 'finishing'
+ overallStatus = 'finishing'
       } else if (allCompleted) {
-        overallStatus = hasFinishingTask ? 'completed' : 'ready_delivery'
+ overallStatus = hasFinishingTask ? 'completed' : 'ready_delivery'
       } else if (runningTask) {
-        overallStatus = 'in_progress'
+ overallStatus = 'in_progress'
       } else if (pausedTask) {
-        overallStatus = 'paused'
+ overallStatus = 'paused'
       } else if (holdTask) {
-        overallStatus = 'on_hold'
+ overallStatus = 'on_hold'
       } else if (reworkTask) {
-        overallStatus = 'rework'
+ overallStatus = 'rework'
       } else if (hasPrintDone) {
-        overallStatus = 'print_completed'
+ overallStatus = 'print_completed'
       } else if (scheduledTask) {
-        overallStatus = 'scheduled'
+ overallStatus = 'scheduled'
       }
 
       // Active task is the running/paused task, or first uncompleted task
-      const activeTask =
-        runningTask ||
-        pausedTask ||
-        job.tasks.find((t) => t.status !== 'completed' && t.status !== 'cancelled') ||
-        job.tasks[0]
+ const activeTask =
+ runningTask ||
+ pausedTask ||
+ job.tasks.find((t) => t.status !== 'completed' && t.status !== 'cancelled') ||
+ job.tasks[0]
 
-      return {
+ return {
         ...job,
-        status: overallStatus,
-        sent_to_delivery: isSentDelivery,
-        sent_to_finishing: isSentFinishing,
-        is_print_completed: Boolean(hasPrintDone || matchedPj?.is_print_completed),
-        activeTask,
-        assignedMachineName: activeTask?.assigned_machine_name || job.assignedMachineName,
-        assignedOperatorName: activeTask?.assigned_operator_name || job.assignedOperatorName,
-        isBlockedByCommercialGate: job.tasks.some((t) => t.is_blocked_by_commercial_gate),
-        isBlockedByDesignGate: job.tasks.some((t) => t.is_blocked_by_design_gate),
+ status: overallStatus,
+ sent_to_delivery: isSentDelivery,
+ sent_to_finishing: isSentFinishing,
+ is_print_completed: Boolean(hasPrintDone || matchedPj?.is_print_completed),
+ activeTask,
+ assignedMachineName: activeTask?.assigned_machine_name || job.assignedMachineName,
+ assignedOperatorName: activeTask?.assigned_operator_name || job.assignedOperatorName,
+ isBlockedByCommercialGate: job.tasks.some((t) => t.is_blocked_by_commercial_gate),
+ isBlockedByDesignGate: job.tasks.some((t) => t.is_blocked_by_design_gate),
       }
     })
   }, [filteredTasks])
 
   // Filter Unified Jobs by the 4 Practical Tabs
-  const tabFilteredJobs = useMemo(() => {
-    return unifiedJobs.filter((job) => {
-      const isJobSentToDelivery =
-        job.status === 'ready_delivery' ||
-        job.status === 'sent_to_delivery' ||
-        Boolean((job as any).sent_to_delivery)
+ const tabFilteredJobs = useMemo(() => {
+ return unifiedJobs.filter((job) => {
+ const isJobSentToDelivery =
+ job.status === 'ready_delivery' ||
+ job.status === 'sent_to_delivery' ||
+ Boolean((job as any).sent_to_delivery)
 
-      const isJobSentToFinishing =
-        job.status === 'sent_to_finishing' ||
-        Boolean((job as any).sent_to_finishing)
+ const isJobSentToFinishing =
+ job.status === 'sent_to_finishing' ||
+ Boolean((job as any).sent_to_finishing)
 
-      const isJobCompletedAndSent =
-        isJobSentToDelivery ||
-        isJobSentToFinishing ||
-        job.status === 'completed'
+ const isJobCompletedAndSent =
+ isJobSentToDelivery ||
+ isJobSentToFinishing ||
+ job.status === 'completed'
 
-      if (activeTab === 'queued') {
+ if (activeTab === 'queued') {
         // Queued & Ready: Show active floor jobs that haven't been sent to Delivery or Finishing yet
-        return !isJobSentToDelivery && !isJobSentToFinishing && job.status !== 'completed'
+ return !isJobSentToDelivery && !isJobSentToFinishing && job.status !== 'completed'
       }
-      if (activeTab === 'running') {
-        if (isJobSentToDelivery || isJobSentToFinishing || job.status === 'completed') return false
-        return job.status === 'in_progress' || job.status === 'paused'
+ if (activeTab === 'running') {
+ if (isJobSentToDelivery || isJobSentToFinishing || job.status === 'completed') return false
+ return job.status === 'in_progress' || job.status === 'paused'
       }
-      if (activeTab === 'finishing') {
-        return (
-          isJobSentToFinishing ||
-          job.activeTask?.department === 'finishing' ||
-          job.activeTask?.task_type === 'finishing'
+ if (activeTab === 'finishing') {
+ return (
+ isJobSentToFinishing ||
+ job.activeTask?.department === 'finishing' ||
+ job.activeTask?.task_type === 'finishing'
         )
       }
-      if (activeTab === 'completed') {
-        return isJobCompletedAndSent
+ if (activeTab === 'completed') {
+ return isJobCompletedAndSent
       }
-      return true
+ return true
     })
   }, [unifiedJobs, activeTab])
 
   // Group by Invoices for Clean Card View (Matching Design Studio & Pre-Press Panel)
-  const { invoiceGroups, standaloneJobs } = useMemo(() => {
-    const invMap = new Map<string, ProductionInvoiceGroup>()
-    const standalones: UnifiedProductionJob[] = []
+ const { invoiceGroups, standaloneJobs } = useMemo(() => {
+ const invMap = new Map<string, ProductionInvoiceGroup>()
+ const standalones: UnifiedProductionJob[] = []
 
-    tabFilteredJobs.forEach((job) => {
-      if (job.invoiceNumber || job.invoiceId) {
-        const invKey = job.invoiceId || job.invoiceNumber || 'inv-unknown'
-        if (!invMap.has(invKey)) {
-          invMap.set(invKey, {
-            invoiceId: job.invoiceId || invKey,
-            invoiceNumber: job.invoiceNumber || 'N/A',
-            customerName: job.customerName,
-            customerPhone: job.customerPhone,
-            jobs: [job],
-            allInvoiceItems: job.allInvoiceItems || [],
+ tabFilteredJobs.forEach((job) => {
+ if (job.invoiceNumber || job.invoiceId) {
+ const invKey = job.invoiceId || job.invoiceNumber || 'inv-unknown'
+ if (!invMap.has(invKey)) {
+ invMap.set(invKey, {
+ invoiceId: job.invoiceId || invKey,
+ invoiceNumber: job.invoiceNumber || 'N/A',
+ customerName: job.customerName,
+ customerPhone: job.customerPhone,
+ jobs: [job],
+ allInvoiceItems: job.allInvoiceItems || [],
           })
         } else {
-          invMap.get(invKey)!.jobs.push(job)
+ invMap.get(invKey)!.jobs.push(job)
         }
       } else {
-        standalones.push(job)
+ standalones.push(job)
       }
     })
 
-    return {
-      invoiceGroups: Array.from(invMap.values()),
-      standaloneJobs: standalones,
+ return {
+ invoiceGroups: Array.from(invMap.values()),
+ standaloneJobs: standalones,
     }
   }, [tabFilteredJobs])
 
   // Practical Tabs Counter Metrics
-  const tabMetrics = useMemo(() => {
-    let queued = 0
-    let running = 0
-    let finishing = 0
-    let completed = 0
+ const tabMetrics = useMemo(() => {
+ let queued = 0
+ let running = 0
+ let finishing = 0
+ let completed = 0
 
-    unifiedJobs.forEach((j) => {
-      const isJobSentToDelivery =
-        j.status === 'ready_delivery' ||
-        j.status === 'sent_to_delivery' ||
-        Boolean((j as any).sent_to_delivery)
+ unifiedJobs.forEach((j) => {
+ const isJobSentToDelivery =
+ j.status === 'ready_delivery' ||
+ j.status === 'sent_to_delivery' ||
+ Boolean((j as any).sent_to_delivery)
 
-      const isJobSentToFinishing =
-        j.status === 'sent_to_finishing' ||
-        Boolean((j as any).sent_to_finishing)
+ const isJobSentToFinishing =
+ j.status === 'sent_to_finishing' ||
+ Boolean((j as any).sent_to_finishing)
 
-      const isJobCompletedAndSent =
-        isJobSentToDelivery ||
-        isJobSentToFinishing ||
-        j.status === 'completed'
+ const isJobCompletedAndSent =
+ isJobSentToDelivery ||
+ isJobSentToFinishing ||
+ j.status === 'completed'
 
-      if (isJobCompletedAndSent) {
-        completed++
-        if (isJobSentToFinishing) {
-          finishing++
+ if (isJobCompletedAndSent) {
+ completed++
+ if (isJobSentToFinishing) {
+ finishing++
         }
       } else {
-        queued++
-        if (j.status === 'in_progress' || j.status === 'paused') {
-          running++
+ queued++
+ if (j.status === 'in_progress' || j.status === 'paused') {
+ running++
         }
-        if (
-          j.activeTask?.department === 'finishing' ||
-          j.activeTask?.task_type === 'finishing'
+ if (
+ j.activeTask?.department === 'finishing' ||
+ j.activeTask?.task_type === 'finishing'
         ) {
-          finishing++
+ finishing++
         }
       }
     })
 
-    return { queued, running, finishing, completed }
+ return { queued, running, finishing, completed }
   }, [unifiedJobs])
 
   // Executive KPI Counts
-  const kpiMetrics = useMemo(() => {
-    const base = ProductionService.calculateProductionKpis(tasks, machineQueues)
-    const finishingCount = tasks.filter(
+ const kpiMetrics = useMemo(() => {
+ const base = ProductionService.calculateProductionKpis(tasks, machineQueues)
+ const finishingCount = tasks.filter(
       (t) => (t.department === 'finishing' || t.task_type === 'finishing') && t.status !== 'completed'
     ).length
-    return {
+ return {
       ...base,
-      finishingCount,
+ finishingCount,
     }
   }, [tasks, machineQueues])
 
   // Quick Card Handlers
-  const handleStartTask = async (task: ProductionTaskRecord) => {
-    try {
-      const res = await startProductionTaskAction(task.id, false, undefined, task)
-      if (res.success) {
-        const isPrint = task.department === 'printing' || task.task_type === 'printing'
-        showNotification(
-          isBn
+ const handleStartTask = async (task: ProductionTaskRecord) => {
+ try {
+ const res = await startProductionTaskAction(task.id, false, undefined, task)
+ if (res.success) {
+ const isPrint = task.department === 'printing' || task.task_type === 'printing'
+ showNotification(
+ isBn
             ? `${isPrint ? 'প্রিন্ট' : 'কাজ'} শুরু হয়েছে: ${task.task_name}`
             : `Started ${isPrint ? 'printing' : 'task'}: ${task.task_name}`,
           'success'
         )
-        loadData(true)
+ loadData(true)
       } else {
-        showNotification(`Error: ${res.error}`, 'error')
+ showNotification(`Error: ${res.error}`, 'error')
       }
     } catch (err: any) {
-      showNotification(`Error: ${err.message}`, 'error')
+ showNotification(`Error: ${err.message}`, 'error')
     }
   }
 
-  const handlePauseTask = (task: ProductionTaskRecord) => {
-    setTaskToPause(task)
-    setIsPausePromptOpen(true)
+ const handlePauseTask = (task: ProductionTaskRecord) => {
+ setTaskToPause(task)
+ setIsPausePromptOpen(true)
   }
 
-  const confirmPauseTask = async (reason: string) => {
-    if (!taskToPause) return
-    setIsPausing(true)
-    try {
-      const res = await pauseProductionTaskAction(
-        taskToPause.id,
-        reason || 'Operator paused',
-        undefined,
-        taskToPause
+ const confirmPauseTask = async (reason: string) => {
+ if (!taskToPause) return
+ setIsPausing(true)
+ try {
+ const res = await pauseProductionTaskAction(
+ taskToPause.id,
+ reason || 'Operator paused',
+ undefined,
+ taskToPause
       )
-      if (res.success) {
-        showNotification(
-          isBn
+ if (res.success) {
+ showNotification(
+ isBn
             ? `কাজ সাময়িক স্থগিত: ${taskToPause.task_name}`
             : `Paused task: ${taskToPause.task_name}`,
           'info'
         )
-        setIsPausePromptOpen(false)
-        setTaskToPause(null)
-        loadData(true)
+ setIsPausePromptOpen(false)
+ setTaskToPause(null)
+ loadData(true)
       } else {
-        showNotification(`Error: ${res.error}`, 'error')
+ showNotification(`Error: ${res.error}`, 'error')
       }
     } catch (err: any) {
-      showNotification(`Error: ${err.message}`, 'error')
+ showNotification(`Error: ${err.message}`, 'error')
     } finally {
-      setIsPausing(false)
+ setIsPausing(false)
     }
   }
 
-  const handleCompleteTask = async (task: ProductionTaskRecord) => {
-    setCompleteTaskTarget(task)
+ const handleCompleteTask = async (task: ProductionTaskRecord) => {
+ setCompleteTaskTarget(task)
   }
 
-  const handleCompleteModalSubmit = async (taskId: string, completionData: any) => {
-    try {
-      const res = await completeProductionTaskAction(
-        taskId,
-        completionData,
-        undefined,
-        completeTaskTarget || undefined
+ const handleCompleteModalSubmit = async (taskId: string, completionData: any) => {
+ try {
+ const res = await completeProductionTaskAction(
+ taskId,
+ completionData,
+ undefined,
+ completeTaskTarget || undefined
       )
-      if (res.success) {
-        const nextTask = res.data?.nextReadyTask
-        if (nextTask && (nextTask.department === 'finishing' || nextTask.task_type === 'finishing')) {
-          showNotification(
-            isBn
+ if (res.success) {
+ const nextTask = res.data?.nextReadyTask
+ if (nextTask && (nextTask.department === 'finishing' || nextTask.task_type === 'finishing')) {
+ showNotification(
+ isBn
               ? `প্রিন্ট সম্পন্ন! কাজটি সফলভাবে ফিনিশিং ও ফেব্রিকেশন ফ্লোরে প্রেরিত হয়েছে (Sent to Finishing & Fabrication Floor)।`
               : `Printing completed! Sent to Finishing & Fabrication Floor.`,
             'success'
           )
         } else {
-          showNotification(
-            isBn
+ showNotification(
+ isBn
               ? `প্রিন্ট সম্পন্ন! ফিনিশিং প্রয়োজন না থাকায় সরাসরি ডেলিভারি ও ডিসপ্যাচে প্রেরিত হয়েছে (Sent to Delivery & Dispatch)।`
               : `Printing completed! Sent directly to Delivery and Dispatch.`,
             'success'
           )
         }
-        setCompleteTaskTarget(null)
-        loadData(true)
+ setCompleteTaskTarget(null)
+ loadData(true)
       } else {
-        showNotification(`Error: ${res.error}`, 'error')
-        throw new Error(res.error || 'Failed to complete task.')
+ showNotification(`Error: ${res.error}`, 'error')
+ throw new Error(res.error || 'Failed to complete task.')
       }
     } catch (err: any) {
-      showNotification(`Error: ${err.message}`, 'error')
-      throw err
+ showNotification(`Error: ${err.message}`, 'error')
+ throw err
     }
   }
 
-  const handleResumeTask = async (task: ProductionTaskRecord) => {
-    try {
-      const res = await resumeProductionTaskAction(task.id, undefined, task)
-      if (res.success) {
-        showNotification(
-          isBn
+ const handleResumeTask = async (task: ProductionTaskRecord) => {
+ try {
+ const res = await resumeProductionTaskAction(task.id, undefined, task)
+ if (res.success) {
+ showNotification(
+ isBn
             ? `টাস্ক ${task.task_number} পুনরায় চালু করা হয়েছে।`
             : `Task ${task.task_number} resumed from hold.`,
           'success'
         )
-        loadData(true)
+ loadData(true)
       } else {
-        showNotification(`Error: ${res.error}`, 'error')
+ showNotification(`Error: ${res.error}`, 'error')
       }
     } catch (err: any) {
-      showNotification(`Error: ${err.message}`, 'error')
+ showNotification(`Error: ${err.message}`, 'error')
     }
   }
 
-  const handleSendToFinishing = (job: UnifiedProductionJob) => {
-    const now = new Date().toISOString()
-    try {
-      const allTasks =
-        PrintERPDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
-      const taskIds = new Set(job.tasks.map((t) => t.id))
-      let updated = false
-      const nextTasks = allTasks.map((t) => {
-        if (taskIds.has(t.id)) {
-          if (t.department === 'printing' || t.task_type === 'printing') {
-            updated = true
-            return {
+ const handleSendToFinishing = (job: UnifiedProductionJob) => {
+ const now = new Date().toISOString()
+ try {
+ const allTasks =
+ PrintERPDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
+ const taskIds = new Set(job.tasks.map((t) => t.id))
+ let updated = false
+ const nextTasks = allTasks.map((t) => {
+ if (taskIds.has(t.id)) {
+ if (t.department === 'printing' || t.task_type === 'printing') {
+ updated = true
+ return {
               ...t,
-              status: 'completed' as const,
-              sent_to_finishing: true,
-              completed_at: t.completed_at || now,
-              updated_at: now,
+ status: 'completed' as const,
+ sent_to_finishing: true,
+ completed_at: t.completed_at || now,
+ updated_at: now,
             }
           }
-          if (t.department === 'finishing' || t.task_type === 'finishing') {
-            updated = true
-            return {
+ if (t.department === 'finishing' || t.task_type === 'finishing') {
+ updated = true
+ return {
               ...t,
-              status: 'queued' as const,
-              updated_at: now,
+ status: 'queued' as const,
+ updated_at: now,
             }
           }
         }
-        return t
+ return t
       })
 
-      if (updated) {
-        PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, nextTasks)
+ if (updated) {
+ PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, nextTasks)
       }
 
-      const allJobs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_JOBS) || []
-      const jobIdx = allJobs.findIndex((j) => j.id === job.id || j.job_number === job.jobNumber)
-      if (jobIdx !== -1) {
-        allJobs[jobIdx] = {
+ const allJobs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_JOBS) || []
+ const jobIdx = allJobs.findIndex((j) => j.id === job.id || j.job_number === job.jobNumber)
+ if (jobIdx !== -1) {
+ allJobs[jobIdx] = {
           ...allJobs[jobIdx],
-          status: 'finishing',
-          sent_to_finishing: true,
-          is_print_completed: true,
-          updated_at: now,
+ status: 'finishing',
+ sent_to_finishing: true,
+ is_print_completed: true,
+ updated_at: now,
         }
       } else {
-        allJobs.push({
-          id: job.id,
-          job_number: job.jobNumber,
-          invoice_number: job.invoiceNumber,
-          status: 'finishing',
-          sent_to_finishing: true,
-          is_print_completed: true,
-          created_at: now,
-          updated_at: now,
+ allJobs.push({
+ id: job.id,
+ job_number: job.jobNumber,
+ invoice_number: job.invoiceNumber,
+ status: 'finishing',
+ sent_to_finishing: true,
+ is_print_completed: true,
+ created_at: now,
+ updated_at: now,
         })
       }
-      PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_JOBS, allJobs)
+ PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_JOBS, allJobs)
     } catch (_) {}
 
-    showNotification(
-      isBn
+ showNotification(
+ isBn
         ? `জব #${job.jobNumber} সফলভাবে সম্পন্ন ট্যাবে স্থানান্তরিত হয়েছে (ফিনিশিং ফ্লোরে প্রেরিত)।`
         : `Job #${job.jobNumber} moved to Completed tab! Sent to Finishing & Fabrication Floor.`,
       'success'
     )
-    loadData(true)
+ loadData(true)
   }
 
-  const handleSendToDelivery = (job: UnifiedProductionJob) => {
-    const now = new Date().toISOString()
-    try {
-      const allTasks =
-        PrintERPDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
-      const taskIds = new Set(job.tasks.map((t) => t.id))
-      let updated = false
-      const nextTasks = allTasks.map((t) => {
-        if (taskIds.has(t.id)) {
-          updated = true
-          return {
+ const handleSendToDelivery = (job: UnifiedProductionJob) => {
+ const now = new Date().toISOString()
+ try {
+ const allTasks =
+ PrintERPDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
+ const taskIds = new Set(job.tasks.map((t) => t.id))
+ let updated = false
+ const nextTasks = allTasks.map((t) => {
+ if (taskIds.has(t.id)) {
+ updated = true
+ return {
             ...t,
-            status: 'completed' as const,
-            sent_to_delivery: true,
-            completed_at: t.completed_at || now,
-            updated_at: now,
+ status: 'completed' as const,
+ sent_to_delivery: true,
+ completed_at: t.completed_at || now,
+ updated_at: now,
           }
         }
-        return t
+ return t
       })
 
-      if (updated) {
-        PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, nextTasks)
+ if (updated) {
+ PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, nextTasks)
       }
 
-      const allJobs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_JOBS) || []
-      const jobIdx = allJobs.findIndex((j) => j.id === job.id || j.job_number === job.jobNumber)
-      if (jobIdx !== -1) {
-        allJobs[jobIdx] = {
+ const allJobs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_JOBS) || []
+ const jobIdx = allJobs.findIndex((j) => j.id === job.id || j.job_number === job.jobNumber)
+ if (jobIdx !== -1) {
+ allJobs[jobIdx] = {
           ...allJobs[jobIdx],
-          status: 'ready_delivery',
-          sent_to_delivery: true,
-          is_print_completed: true,
-          updated_at: now,
+ status: 'ready_delivery',
+ sent_to_delivery: true,
+ is_print_completed: true,
+ updated_at: now,
         }
       } else {
-        allJobs.push({
-          id: job.id,
-          job_number: job.jobNumber,
-          invoice_number: job.invoiceNumber,
-          status: 'ready_delivery',
-          sent_to_delivery: true,
-          is_print_completed: true,
-          created_at: now,
-          updated_at: now,
+ allJobs.push({
+ id: job.id,
+ job_number: job.jobNumber,
+ invoice_number: job.invoiceNumber,
+ status: 'ready_delivery',
+ sent_to_delivery: true,
+ is_print_completed: true,
+ created_at: now,
+ updated_at: now,
         })
       }
-      PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_JOBS, allJobs)
+ PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_JOBS, allJobs)
     } catch (_) {}
 
-    showNotification(
-      isBn
+ showNotification(
+ isBn
         ? `জব #${job.jobNumber} সফলভাবে সম্পন্ন ট্যাবে স্থানান্তরিত হয়েছে (ডেলিভারিতে প্রেরিত)।`
         : `Job #${job.jobNumber} moved to Completed tab! Sent to Delivery & Dispatch.`,
       'success'
     )
-    loadData(true)
+ loadData(true)
   }
 
-  const handleSendWhatsAppNotice = (task: ProductionTaskRecord) => {
-    const rawMsg = ProductionService.generateBangladeshiFloorWhatsAppMessage(
-      task,
-      company?.name || 'InkFlow Digital & Offset Press'
+ const handleSendWhatsAppNotice = (task: ProductionTaskRecord) => {
+ const rawMsg = ProductionService.generateBangladeshiFloorWhatsAppMessage(
+ task,
+ company?.name || 'InkFlow Digital & Offset Press'
     )
-    const encoded = encodeURIComponent(rawMsg)
-    const phone = task.customer_phone?.replace(/[^0-9]/g, '') || ''
-    const targetUrl = phone
+ const encoded = encodeURIComponent(rawMsg)
+ const phone = task.customer_phone?.replace(/[^0-9]/g, '') || ''
+ const targetUrl = phone
       ? `https://api.whatsapp.com/send?phone=${phone.startsWith('88') ? phone : '88' + phone}&text=${encoded}`
       : `https://api.whatsapp.com/send?text=${encoded}`
-    window.open(targetUrl, '_blank')
+ window.open(targetUrl, '_blank')
   }
 
-  const activeOrders = useMemo(() => {
-    try {
-      const orders = PrintERPDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []
-      const jobOrders = PrintERPDataStore.get<any[]>(STORAGE_KEYS.JOB_ORDERS) || []
-      return [...orders, ...jobOrders]
+ const activeOrders = useMemo(() => {
+ try {
+ const orders = PrintERPDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []
+ const jobOrders = PrintERPDataStore.get<any[]>(STORAGE_KEYS.JOB_ORDERS) || []
+ return [...orders, ...jobOrders]
     } catch {
-      return []
+ return []
     }
   }, [tasks])
 
-  const handleGenerateTasksFromOrder = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!selectedOrderForGen) return
+ const handleGenerateTasksFromOrder = async (e: React.FormEvent) => {
+ e.preventDefault()
+ if (!selectedOrderForGen) return
 
-    const order = activeOrders.find(
+ const order = activeOrders.find(
       (o) =>
-        o.id === selectedOrderForGen ||
-        o.order_number === selectedOrderForGen ||
-        o.job_number === selectedOrderForGen
+ o.id === selectedOrderForGen ||
+ o.order_number === selectedOrderForGen ||
+ o.job_number === selectedOrderForGen
     )
-    if (!order) return
+ if (!order) return
 
-    setIsGenerating(true)
-    try {
-      const { generateProductionTasksFromOrderAction } = await import(
+ setIsGenerating(true)
+ try {
+ const { generateProductionTasksFromOrderAction } = await import(
         '@/actions/production-planning.actions'
       )
-      const lineItem = (order.items && order.items[0]) || {}
+ const lineItem = (order.items && order.items[0]) || {}
 
-      const res = await generateProductionTasksFromOrderAction({
-        job_order_id: order.id,
-        production_job_id: order.id,
-        product_name: lineItem.item_name || order.product_name || 'Commercial Print Job',
-        customer_name: order.customer_name || 'Direct Client',
-        quantity: lineItem.quantity || order.quantity || 1,
-        unit: lineItem.unit || order.unit || 'pcs',
-        width: lineItem.width || order.width || 48,
-        height: lineItem.height || order.height || 36,
-        dimension_unit: lineItem.dimension_unit || 'inch',
-        material_spec:
-          lineItem.media_type || order.material_spec || 'Vinyl Sticker with Gloss Finish',
-        printing_method: 'Eco-Solvent',
-        finishing_tasks: ['Lamination', 'Edge Trimming'],
+ const res = await generateProductionTasksFromOrderAction({
+ job_order_id: order.id,
+ production_job_id: order.id,
+ product_name: lineItem.item_name || order.product_name || 'Commercial Print Job',
+ customer_name: order.customer_name || 'Direct Client',
+ quantity: lineItem.quantity || order.quantity || 1,
+ unit: lineItem.unit || order.unit || 'pcs',
+ width: lineItem.width || order.width || 48,
+ height: lineItem.height || order.height || 36,
+ dimension_unit: lineItem.dimension_unit || 'inch',
+ material_spec:
+ lineItem.media_type || order.material_spec || 'Vinyl Sticker with Gloss Finish',
+ printing_method: 'Eco-Solvent',
+ finishing_tasks: ['Lamination', 'Edge Trimming'],
       })
 
-      if (res.success) {
-        showNotification(
-          isBn
+ if (res.success) {
+ showNotification(
+ isBn
             ? `${order.order_number || order.job_number || 'অর্ডার'} এর জন্য ${res.data?.length || 0} টি প্রোডাকশন টাস্ক তৈরি হয়েছে!`
             : `Auto-generated ${res.data?.length || 0} sequential production tasks for ${order.order_number || order.job_number || 'Order'}!`,
           'success'
         )
-        setIsGenerateModalOpen(false)
-        setSelectedOrderForGen('')
-        loadData(true)
+ setIsGenerateModalOpen(false)
+ setSelectedOrderForGen('')
+ loadData(true)
       } else {
-        showNotification(`Error: ${res.error}`, 'error')
+ showNotification(`Error: ${res.error}`, 'error')
       }
     } catch (err: any) {
-      showNotification(`Error: ${err.message}`, 'error')
+ showNotification(`Error: ${err.message}`, 'error')
     } finally {
-      setIsGenerating(false)
+ setIsGenerating(false)
     }
   }
 
   // Active Running and Scheduled Tasks for Terminal
-  const terminalRunningTasks = filteredTasks.filter(
+ const terminalRunningTasks = filteredTasks.filter(
     (t) => t.status === 'in_progress' || t.status === 'paused'
   )
-  const terminalQueueTasks = filteredTasks.filter(
+ const terminalQueueTasks = filteredTasks.filter(
     (t) => t.status === 'scheduled' || t.status === 'ready' || t.status === 'queued'
   )
 
-  const tabsConfig = [
+ const tabsConfig = [
     {
-      id: 'queued',
-      label: isBn ? '১. অপেক্ষমাণ কিউ' : '1. Queued & Ready',
-      count: tabMetrics.queued,
-      icon: Clock,
+ id: 'queued',
+ label: isBn ? '১. অপেক্ষমাণ কিউ' : '1. Queued & Ready',
+ count: tabMetrics.queued,
+ icon: Clock,
     },
     {
-      id: 'running',
-      label: isBn ? '২. মেশিনে প্রিন্টিং চলমান' : '2. Printing & Running',
-      count: tabMetrics.running,
-      icon: Printer,
+ id: 'running',
+ label: isBn ? '২. মেশিনে প্রিন্টিং চলমান' : '2. Printing & Running',
+ count: tabMetrics.running,
+ icon: Printer,
     },
     {
-      id: 'finishing',
-      label: isBn ? '৩. ফিনিশিং ও কোয়ালিটি' : '3. Finishing & QC',
-      count: tabMetrics.finishing,
-      icon: Scissors,
+ id: 'finishing',
+ label: isBn ? '৩. ফিনিশিং ও কোয়ালিটি' : '3. Finishing & QC',
+ count: tabMetrics.finishing,
+ icon: Scissors,
     },
     {
-      id: 'completed',
-      label: isBn ? '৪. সম্পন্ন কাজ' : '4. Completed Jobs',
-      count: tabMetrics.completed,
-      icon: CheckCircle2,
+ id: 'completed',
+ label: isBn ? '৪. সম্পন্ন কাজ' : '4. Completed Jobs',
+ count: tabMetrics.completed,
+ icon: CheckCircle2,
     },
     {
-      id: 'all',
-      label: isBn ? 'সকল প্রোডাকশন জব' : 'All Production Jobs',
-      count: unifiedJobs.length,
-      icon: Layers,
+ id: 'all',
+ label: isBn ? 'সকল প্রোডাকশন জব' : 'All Production Jobs',
+ count: unifiedJobs.length,
+ icon: Layers,
     },
   ]
 
-  if (!mounted) {
-    return (
+ if (!mounted) {
+ return (
       <div className="space-y-4 max-w-7xl pb-16 mx-auto animate-pulse p-4">
-        <div className="h-28 bg-muted rounded-2xl w-full" />
+        <div className="h-28 bg-muted rounded-xl w-full"/>
         <div className="grid grid-cols-2 sm:grid-cols-6 gap-3">
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="h-24 bg-muted rounded-2xl" />
+            <div key={i} className="h-24 bg-muted rounded-xl"/>
           ))}
         </div>
-        <div className="h-14 bg-muted rounded-2xl w-full" />
-        <div className="h-64 bg-muted rounded-2xl w-full" />
+        <div className="h-14 bg-muted rounded-xl w-full"/>
+        <div className="h-64 bg-muted rounded-xl w-full"/>
       </div>
     )
   }
 
-  return (
+ return (
     <PanelAccessGuard
-      module="production"
-      action="view"
-      panelTitle="Printing Floor & Production"
-      panelTitleBn="প্রিন্টিং ফ্লোর ও প্রডাকশন"
-    >
+ module="production"action="view"panelTitle="Printing Floor & Production"panelTitleBn="প্রিন্টিং ফ্লোর ও প্রডাকশন">
       <FeatureGate feature="production">
         <div className="space-y-4 pb-16 max-w-7xl mx-auto">
         {/* =========================================================================
             1. HEADER: Standardized PageHeader matching Quotations & Billing
            ========================================================================= */}
         <PageHeader
-          titleEn="Printing Floor & Production"
-          titleBn="প্রোডাকশন প্ল্যানিং ও প্রিন্টিং ফ্লোর"
-          descriptionEn="Live machine dispatching, multi-stage task progression, shop floor execution, and operator tracking."
-          descriptionBn="টাস্ক শিডিউলিং, মেশিনে রানিং কাজের পর্যবেক্ষণ, ফ্লোর এক্সিকিউশন ও অপারেটর ট্র্যাকিং।"
-          icon={Printer}
-          actions={
+ titleEn="Printing Floor & Production"titleBn="প্রোডাকশন প্ল্যানিং ও প্রিন্টিং ফ্লোর"descriptionEn="Live machine dispatching, multi-stage task progression, shop floor execution, and operator tracking."descriptionBn="টাস্ক শিডিউলিং, মেশিনে রানিং কাজের পর্যবেক্ষণ, ফ্লোর এক্সিকিউশন ও অপারেটর ট্র্যাকিং।"icon={Printer}
+ actions={
             <>
               <Link href={getTenantNavHref('/production/machineries', pathname, slug)}>
                 <Button
-                  variant="outline"
-                  size="sm"
-                  className="text-xs font-semibold h-9 px-3.5 gap-1.5 border-border bg-card hover:bg-muted text-foreground rounded-xl cursor-pointer shadow-2xs"
-                >
-                  <Cpu className="h-4 w-4 text-blue-600" />
+ variant="outline"size="sm"className="text-xs font-semibold h-9 px-3.5 gap-1.5 border-border bg-card hover:bg-muted text-foreground rounded-xl cursor-pointer shadow-2xs">
+                  <Cpu className="h-4 w-4 text-blue-600"/>
                   <span>{isBn ? 'মেশিন বহর' : 'Machinery Fleet'}</span>
                 </Button>
               </Link>
 
               <Button
-                variant="outline"
-                size="sm"
-                onClick={handleRefresh}
-                disabled={isRefreshing}
-                className="h-9 w-9 p-0"
-                title="Refresh Production Jobs"
-                aria-label="Refresh Production Jobs"
-              >
+ variant="outline"size="sm"onClick={handleRefresh}
+ disabled={isRefreshing}
+ className="h-9 w-9 p-0"title="Refresh Production Jobs"aria-label="Refresh Production Jobs">
                 <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin text-primary' : ''}`} />
               </Button>
 
               <Button
-                size="sm"
-                onClick={() => setIsWorkOrderModalOpen(true)}
-                className="gap-1.5"
-              >
-                <Plus className="w-4 h-4" />
+ size="sm"onClick={() => setIsWorkOrderModalOpen(true)}
+ className="gap-1.5">
+                <Plus className="w-4 h-4"/>
                 <span>{tBilingual('New Work Order', 'নতুন ওয়ার্ক অর্ডার')}</span>
               </Button>
             </>
@@ -1416,15 +1398,15 @@ export default function AdvancedProductionPage() {
             2. TOP METRICS KPI BAR (Modernized matching DesignMetricsBar)
            ========================================================================= */}
         <ProductionKpiBar
-          metrics={kpiMetrics}
-          selectedFilter={selectedKpiFilter}
-          onSelectFilter={(filterId) => {
-            setSelectedKpiFilter(filterId)
-            if (filterId === 'queued') setActiveTab('queued')
-            else if (filterId === 'running') setActiveTab('running')
-            else if (filterId === 'finishing') setActiveTab('finishing')
-            else if (filterId === 'completed') setActiveTab('completed')
-            else setActiveTab('all')
+ metrics={kpiMetrics}
+ selectedFilter={selectedKpiFilter}
+ onSelectFilter={(filterId) => {
+ setSelectedKpiFilter(filterId)
+ if (filterId === 'queued') setActiveTab('queued')
+ else if (filterId === 'running') setActiveTab('running')
+ else if (filterId === 'finishing') setActiveTab('finishing')
+ else if (filterId === 'completed') setActiveTab('completed')
+ else setActiveTab('all')
           }}
         />
 
@@ -1433,27 +1415,26 @@ export default function AdvancedProductionPage() {
            ========================================================================= */}
         <div className="flex flex-wrap items-center gap-2">
           {tabsConfig.map((t) => {
-            const isActive = activeTab === t.id
-            return (
+ const isActive = activeTab === t.id
+ return (
               <button
-                key={t.id}
-                type="button"
-                onClick={() => {
-                  setActiveTab(t.id)
-                  setSelectedKpiFilter('all')
+ key={t.id}
+ type="button"onClick={() => {
+ setActiveTab(t.id)
+ setSelectedKpiFilter('all')
                 }}
-                className={`px-4 py-1.5 rounded-full text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer shadow-2xs ${
-                  isActive
+ className={`px-4 py-1.5 rounded-full text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer shadow-2xs ${
+ isActive
                     ? 'bg-blue-600 dark:bg-blue-600 text-white shadow-xs'
-                    : 'bg-card border border-border dark:border-border/80 text-foreground hover:bg-muted dark:hover:bg-muted/80'
+                    : 'bg-card border border-border /80 text-foreground hover:bg-muted dark:hover:bg-muted/80'
                 }`}
               >
                 <span>{t.label}</span>
                 <span
-                  className={`text-2xs px-2 py-0.5 rounded-full font-bold tabular-nums ${
-                    isActive
+ className={`text-2xs px-2 py-0.5 rounded-full font-bold tabular-nums ${
+ isActive
                       ? 'bg-card text-blue-600 dark:text-blue-600'
-                      : 'bg-muted text-muted-foreground dark:text-muted-foreground'
+                      : 'bg-muted text-muted-foreground '
                   }`}
                 >
                   {t.count}
@@ -1467,19 +1448,19 @@ export default function AdvancedProductionPage() {
             4. SEARCH & FILTER TOOLBAR (Modernized matching DesignFilterToolbar)
            ========================================================================= */}
         <ProductionFilterToolbar
-          viewMode={viewMode}
-          onViewModeChange={setViewMode}
-          selectedDept={selectedDept}
-          onSelectDept={setSelectedDept}
-          search={search}
-          onSearchChange={setSearch}
-          urgentOnly={urgentOnly}
-          onToggleUrgentOnly={setUrgentOnly}
-          quickFilter={quickFilter}
-          onSelectQuickFilter={setQuickFilter}
-          onAutoGenerateClick={() => setIsGenerateModalOpen(true)}
-          onRefresh={handleRefresh}
-          isRefreshing={isRefreshing}
+ viewMode={viewMode}
+ onViewModeChange={setViewMode}
+ selectedDept={selectedDept}
+ onSelectDept={setSelectedDept}
+ search={search}
+ onSearchChange={setSearch}
+ urgentOnly={urgentOnly}
+ onToggleUrgentOnly={setUrgentOnly}
+ quickFilter={quickFilter}
+ onSelectQuickFilter={setQuickFilter}
+ onAutoGenerateClick={() => setIsGenerateModalOpen(true)}
+ onRefresh={handleRefresh}
+ isRefreshing={isRefreshing}
         />
 
         {/* =========================================================================
@@ -1487,32 +1468,32 @@ export default function AdvancedProductionPage() {
            ========================================================================= */}
         {loading ? (
           <div className="p-16 text-center text-muted-foreground text-xs flex items-center justify-center gap-2">
-            <RefreshCw className="h-4 w-4 animate-spin text-blue-600" />
+            <RefreshCw className="h-4 w-4 animate-spin text-blue-600"/>
             <span>{isBn ? 'প্রোডাকশন ডেটা লোড হচ্ছে...' : 'Loading production data...'}</span>
           </div>
         ) : viewMode === 'board' ? (
           /* =======================================================================
-             VIEW 1: SINGLE JOB CARDS (MATCHING DESIGN STUDIO JOB CARDS)
-             Shows each job as a SINGLE consolidated card (No fragmented duplicates!)
+ VIEW 1: SINGLE JOB CARDS (MATCHING DESIGN STUDIO JOB CARDS)
+ Shows each job as a SINGLE consolidated card (No fragmented duplicates!)
              ======================================================================= */
           <div className="space-y-4">
             {/* Invoice Group Cards */}
             {invoiceGroups.map((group) => (
               <ProductionInvoiceGroupCard
-                key={group.invoiceId}
-                group={group}
-                activeTab={activeTab}
-                onStartTask={handleStartTask}
-                onPauseTask={handlePauseTask}
-                onCompleteTask={handleCompleteTask}
-                onHoldTask={(t) => setHoldTaskTarget(t)}
-                onResumeTask={handleResumeTask}
-                onScheduleTask={(t) => setScheduleTaskTarget(t)}
-                onReworkTask={(t) => setReworkTaskTarget(t)}
-                onPrintTicket={(t) => setJobTicketTarget(t)}
-                onSendWhatsApp={handleSendWhatsAppNotice}
-                onSendToFinishing={handleSendToFinishing}
-                onSendToDelivery={handleSendToDelivery}
+ key={group.invoiceId}
+ group={group}
+ activeTab={activeTab}
+ onStartTask={handleStartTask}
+ onPauseTask={handlePauseTask}
+ onCompleteTask={handleCompleteTask}
+ onHoldTask={(t) => setHoldTaskTarget(t)}
+ onResumeTask={handleResumeTask}
+ onScheduleTask={(t) => setScheduleTaskTarget(t)}
+ onReworkTask={(t) => setReworkTaskTarget(t)}
+ onPrintTicket={(t) => setJobTicketTarget(t)}
+ onSendWhatsApp={handleSendWhatsAppNotice}
+ onSendToFinishing={handleSendToFinishing}
+ onSendToDelivery={handleSendToDelivery}
               />
             ))}
 
@@ -1521,42 +1502,40 @@ export default function AdvancedProductionPage() {
               <div className="space-y-3">
                 {standaloneJobs.map((job) => (
                   <ProductionJobCard
-                    key={job.id}
-                    job={job}
-                    activeTab={activeTab}
-                    onStartTask={handleStartTask}
-                    onPauseTask={handlePauseTask}
-                    onCompleteTask={handleCompleteTask}
-                    onHoldTask={(t) => setHoldTaskTarget(t)}
-                    onResumeTask={handleResumeTask}
-                    onScheduleTask={(t) => setScheduleTaskTarget(t)}
-                    onReworkTask={(t) => setReworkTaskTarget(t)}
-                    onPrintTicket={(t) => setJobTicketTarget(t)}
-                    onSendWhatsApp={handleSendWhatsAppNotice}
-                    onSendToFinishing={handleSendToFinishing}
-                    onSendToDelivery={handleSendToDelivery}
+ key={job.id}
+ job={job}
+ activeTab={activeTab}
+ onStartTask={handleStartTask}
+ onPauseTask={handlePauseTask}
+ onCompleteTask={handleCompleteTask}
+ onHoldTask={(t) => setHoldTaskTarget(t)}
+ onResumeTask={handleResumeTask}
+ onScheduleTask={(t) => setScheduleTaskTarget(t)}
+ onReworkTask={(t) => setReworkTaskTarget(t)}
+ onPrintTicket={(t) => setJobTicketTarget(t)}
+ onSendWhatsApp={handleSendWhatsAppNotice}
+ onSendToFinishing={handleSendToFinishing}
+ onSendToDelivery={handleSendToDelivery}
                   />
                 ))}
               </div>
             )}
 
             {invoiceGroups.length === 0 && standaloneJobs.length === 0 && (
-              <div className="p-16 text-center bg-card border border-dashed border-border rounded-2xl">
-                <Printer className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-                <h3 className="text-sm font-bold text-foreground dark:text-foreground">
+              <div className="p-16 text-center bg-card border border-dashed border-border rounded-xl">
+                <Printer className="h-10 w-10 text-muted-foreground mx-auto mb-3"/>
+                <h3 className="text-sm font-bold text-foreground">
                   {isBn ? 'এই ফিল্টারে কোন কাজ পাওয়া যায়নি।' : 'No production jobs found in this view.'}
                 </h3>
                 <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
                   {isBn
-                    ? 'নতুন কাজ শুরু করতে উপরের "ওয়ার্ক অর্ডার" বাটনে ক্লিক করুন অথবা ফিল্টার পরিবর্তন করুন।'
-                    : 'Click "Work Order" above to dispatch a new production job or reset your active filters.'}
+                    ? 'নতুন কাজ শুরু করতে উপরের"ওয়ার্ক অর্ডার"বাটনে ক্লিক করুন অথবা ফিল্টার পরিবর্তন করুন।'
+                    : 'Click"Work Order"above to dispatch a new production job or reset your active filters.'}
                 </p>
                 <Button
-                  size="sm"
-                  onClick={() => setIsWorkOrderModalOpen(true)}
-                  className="mt-4 text-xs bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl"
-                >
-                  <Plus className="h-3.5 w-3.5 mr-1" />
+ size="sm"onClick={() => setIsWorkOrderModalOpen(true)}
+ className="mt-4 text-xs bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl">
+                  <Plus className="h-3.5 w-3.5 mr-1"/>
                   <span>{tBilingual('Add Work Order', 'ওয়ার্ক অর্ডার তৈরি করুন')}</span>
                 </Button>
               </div>
@@ -1564,15 +1543,15 @@ export default function AdvancedProductionPage() {
           </div>
         ) : viewMode === 'terminal' ? (
           /* =======================================================================
-             VIEW 2: SHOP FLOOR OPERATOR TERMINAL (TOUCH-FRIENDLY MACHINE DISPATCH)
+ VIEW 2: SHOP FLOOR OPERATOR TERMINAL (TOUCH-FRIENDLY MACHINE DISPATCH)
              ======================================================================= */
           <div className="space-y-6">
             {/* Active Floor Overview & In-Progress Tasks */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="h-3 w-3 rounded-full bg-emerald-500 animate-ping" />
-                  <h3 className="text-sm font-black uppercase tracking-wider text-foreground dark:text-white">
+                  <div className="h-3 w-3 rounded-full bg-emerald-500 animate-ping"/>
+                  <h3 className="text-sm font-black uppercase tracking-wider text-foreground">
                     {isBn
                       ? `লাইভ কারখানা অপারেশন • চলমান মেশিনারি টাস্ক (${terminalRunningTasks.length})`
                       : `Live Floor Operations • Active Machine Tasks (${terminalRunningTasks.length})`}
@@ -1586,9 +1565,9 @@ export default function AdvancedProductionPage() {
               </div>
 
               {terminalRunningTasks.length === 0 ? (
-                <Card className="p-8 text-center border-dashed border-border rounded-2xl">
-                  <Printer className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                  <p className="text-xs font-bold text-foreground dark:text-muted-foreground">
+                <Card className="p-8 text-center border-dashed border-border rounded-xl">
+                  <Printer className="h-8 w-8 text-muted-foreground mx-auto mb-2"/>
+                  <p className="text-xs font-bold text-foreground">
                     {isBn ? 'এই মুহূর্তে মেশিনে কোন কাজ চলমান নেই।' : 'No active running jobs on floor right now.'}
                   </p>
                   <p className="text-2xs text-muted-foreground mt-0.5">
@@ -1601,9 +1580,8 @@ export default function AdvancedProductionPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {terminalRunningTasks.map((task) => (
                     <Card
-                      key={task.id}
-                      className="p-4 bg-card border-2 border-blue-500 dark:border-blue-600 rounded-2xl shadow-md space-y-3"
-                    >
+ key={task.id}
+ className="p-4 bg-card border-2 border-blue-500 dark:border-blue-600 rounded-xl shadow-xs space-y-3">
                       <div className="flex items-center justify-between">
                         <Badge className="bg-blue-600 text-white tabular-nums text-2xs">
                           {task.task_number}
@@ -1614,11 +1592,11 @@ export default function AdvancedProductionPage() {
                       </div>
 
                       <div>
-                        <h4 className="font-black text-sm text-foreground dark:text-white">
+                        <h4 className="font-black text-sm text-foreground">
                           {task.task_name}
                         </h4>
                         <div className="text-xs text-muted-foreground tabular-nums mt-0.5">
-                          Job: <strong>{task.job_number}</strong> • Client: {task.customer_name}
+ Job: <strong>{task.job_number}</strong> • Client: {task.customer_name}
                         </div>
                       </div>
 
@@ -1633,7 +1611,7 @@ export default function AdvancedProductionPage() {
                         {task.width && task.height && (
                           <div className="flex justify-between">
                             <span className="text-muted-foreground">{isBn ? 'সাইজ:' : 'Dimensions:'}</span>
-                            <span className="font-bold text-foreground dark:text-foreground">
+                            <span className="font-bold text-foreground">
                               {task.width} × {task.height} {task.unit || 'ft'} ({task.width * task.height * task.quantity} SFT)
                             </span>
                           </div>
@@ -1651,20 +1629,15 @@ export default function AdvancedProductionPage() {
                       {/* Action buttons */}
                       <div className="grid grid-cols-2 gap-2 pt-1">
                         <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handlePauseTask(task)}
-                          className="h-10 text-xs font-bold border-amber-300 text-amber-800 dark:text-amber-300 hover:bg-amber-50 rounded-xl cursor-pointer gap-1.5"
-                        >
-                          <Pause className="h-4 w-4" />
+ size="sm"variant="outline"onClick={() => handlePauseTask(task)}
+ className="h-10 text-xs font-bold border-amber-300 text-amber-800 dark:text-amber-300 hover:bg-amber-50 rounded-xl cursor-pointer gap-1.5">
+                          <Pause className="h-4 w-4"/>
                           <span>{isBn ? 'পজ করুন' : 'Pause'}</span>
                         </Button>
                         <Button
-                          size="sm"
-                          onClick={() => handleCompleteTask(task)}
-                          className="h-10 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-xs cursor-pointer gap-1.5"
-                        >
-                          <CheckCircle2 className="h-4 w-4" />
+ size="sm"onClick={() => handleCompleteTask(task)}
+ className="h-10 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-xs cursor-pointer gap-1.5">
+                          <CheckCircle2 className="h-4 w-4"/>
                           <span>{isBn ? 'সম্পন্ন ও কর্তন' : 'Complete & Deduct'}</span>
                         </Button>
                       </div>
@@ -1675,8 +1648,8 @@ export default function AdvancedProductionPage() {
             </div>
 
             {/* Scheduled Queue Ready for Start */}
-            <div className="space-y-3 pt-4 border-t border-border dark:border-border">
-              <h3 className="text-sm font-black uppercase tracking-wider text-foreground dark:text-white">
+            <div className="space-y-3 pt-4 border-t border-border">
+              <h3 className="text-sm font-black uppercase tracking-wider text-foreground">
                 {isBn
                   ? `মাউন্টিং ও স্টার্ট প্রস্তুত কিউ (${terminalQueueTasks.length})`
                   : `Queue Ready to Dispatch (${terminalQueueTasks.length})`}
@@ -1685,20 +1658,19 @@ export default function AdvancedProductionPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
                 {terminalQueueTasks.map((task) => (
                   <Card
-                    key={task.id}
-                    className="p-3.5 bg-card border-border rounded-2xl space-y-2.5"
-                  >
+ key={task.id}
+ className="p-3.5 bg-card border-border rounded-xl space-y-2.5">
                     <div className="flex items-center justify-between">
                       <span className="tabular-nums text-xs font-bold text-muted-foreground">
                         {task.task_number}
                       </span>
-                      <Badge variant="outline" className="text-2xs capitalize">
+                      <Badge variant="outline"className="text-2xs capitalize">
                         {task.department}
                       </Badge>
                     </div>
 
                     <div>
-                      <h4 className="font-bold text-xs text-foreground dark:text-white">
+                      <h4 className="font-bold text-xs text-foreground">
                         {task.task_name}
                       </h4>
                       <p className="text-2xs text-muted-foreground tabular-nums">
@@ -1711,11 +1683,9 @@ export default function AdvancedProductionPage() {
                         {task.assigned_machine_name || 'Unassigned Machine'}
                       </span>
                       <Button
-                        size="sm"
-                        onClick={() => handleStartTask(task)}
-                        className="h-8 text-xs font-bold bg-primary hover:bg-primary/90 text-primary-foreground px-3.5 rounded-xl cursor-pointer gap-1"
-                      >
-                        <Play className="h-3.5 w-3.5 fill-white" />
+ size="sm"onClick={() => handleStartTask(task)}
+ className="h-8 text-xs font-bold bg-primary hover:bg-primary/90 text-primary-foreground px-3.5 rounded-xl cursor-pointer gap-1">
+                        <Play className="h-3.5 w-3.5 fill-white"/>
                         <span>{isBn ? 'কাজ শুরু করুন' : 'Start Floor Job'}</span>
                       </Button>
                     </div>
@@ -1726,30 +1696,28 @@ export default function AdvancedProductionPage() {
           </div>
         ) : viewMode === 'machine_queues' ? (
           /* =======================================================================
-             VIEW 3: MACHINE QUEUES TIMELINE (NOW / NEXT / LATER)
+ VIEW 3: MACHINE QUEUES TIMELINE (NOW / NEXT / LATER)
              ======================================================================= */
           <MachineQueueView
-            queues={machineQueues}
-            tenantSlug={slug}
-            onScheduleClick={(mId) => {
-              if (tasks.length > 0) {
-                setScheduleTaskTarget(tasks[0])
+ queues={machineQueues}
+ tenantSlug={slug}
+ onScheduleClick={(mId) => {
+ if (tasks.length > 0) {
+ setScheduleTaskTarget(tasks[0])
               }
             }}
           />
         ) : (
           /* =======================================================================
-             VIEW 4: HIGH-DENSITY TASK TABLE LIST
+ VIEW 4: HIGH-DENSITY TASK TABLE LIST
              ======================================================================= */
-          <Card className="border-border rounded-2xl shadow-xs overflow-hidden">
-            <CardHeader className="py-3.5 px-4 border-b border-border bg-muted dark:bg-card">
+          <Card className="border-border rounded-xl shadow-xs overflow-hidden">
+            <CardHeader className="py-3.5 px-4 border-b border-border bg-muted">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-bold text-foreground dark:text-white flex items-center gap-2">
+                <CardTitle className="text-sm font-bold text-foreground flex items-center gap-2">
                   <span>{isBn ? 'প্রোডাকশন টাস্ক তালিকা' : 'Production Work Order Tasks'}</span>
                   <Badge
-                    variant="secondary"
-                    className="text-2xs tabular-nums font-bold bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300"
-                  >
+ variant="secondary"className="text-2xs tabular-nums font-bold bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300">
                     {filteredTasks.length}
                   </Badge>
                 </CardTitle>
@@ -1760,14 +1728,14 @@ export default function AdvancedProductionPage() {
             </CardHeader>
             <CardContent className="p-0">
               <ProductionTaskTable
-                tasks={filteredTasks}
-                onStart={handleStartTask}
-                onPause={handlePauseTask}
-                onComplete={handleCompleteTask}
-                onHold={(t) => setHoldTaskTarget(t)}
-                onResume={handleResumeTask}
-                onPrintTicket={(t) => setJobTicketTarget(t)}
-                companyName={company?.name || 'InkFlow Digital & Offset Press'}
+ tasks={filteredTasks}
+ onStart={handleStartTask}
+ onPause={handlePauseTask}
+ onComplete={handleCompleteTask}
+ onHold={(t) => setHoldTaskTarget(t)}
+ onResume={handleResumeTask}
+ onPrintTicket={(t) => setJobTicketTarget(t)}
+ companyName={company?.name || 'InkFlow Digital & Offset Press'}
               />
             </CardContent>
           </Card>
@@ -1779,24 +1747,24 @@ export default function AdvancedProductionPage() {
 
         {/* MODAL: Work Order Modal (Unified shared component) */}
         <WorkOrderModal
-          isOpen={isWorkOrderModalOpen}
-          onClose={() => setIsWorkOrderModalOpen(false)}
-          companyId={company?.id || slug}
-          onSuccess={() => {
-            showNotification(
-              isBn ? 'ওয়ার্ক অর্ডার সফলভাবে তৈরি হয়েছে!' : 'Work order created successfully!',
+ isOpen={isWorkOrderModalOpen}
+ onClose={() => setIsWorkOrderModalOpen(false)}
+ companyId={company?.id || slug}
+ onSuccess={() => {
+ showNotification(
+ isBn ? 'ওয়ার্ক অর্ডার সফলভাবে তৈরি হয়েছে!' : 'Work order created successfully!',
               'success'
             )
-            loadData(true)
+ loadData(true)
           }}
         />
 
         {/* MODAL: Auto-Generate Tasks from Order */}
         <ModalDialog
-          open={isGenerateModalOpen}
-          onOpenChange={(open) => !open && setIsGenerateModalOpen(false)}
-          title={isBn ? 'অর্ডার থেকে স্বয়ংক্রিয় টাস্ক জেনারেটর' : 'Auto-Generate Sequential Production Tasks'}
-          hideFooter={true}
+ open={isGenerateModalOpen}
+ onOpenChange={(open) => !open && setIsGenerateModalOpen(false)}
+ title={isBn ? 'অর্ডার থেকে স্বয়ংক্রিয় টাস্ক জেনারেটর' : 'Auto-Generate Sequential Production Tasks'}
+ hideFooter={true}
         >
           <form onSubmit={handleGenerateTasksFromOrder} className="space-y-4">
             <div className="p-3 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-xl text-xs text-blue-900 dark:text-blue-200 space-y-1">
@@ -1815,11 +1783,10 @@ export default function AdvancedProductionPage() {
                 {isBn ? 'সেলস অর্ডার / জব অর্ডার নির্বাচন করুন' : 'Select Sales Order / Job Order'}
               </Label>
               <select
-                required
-                value={selectedOrderForGen}
-                onChange={(e) => setSelectedOrderForGen(e.target.value)}
-                className="w-full text-xs rounded-xl border border-input bg-card px-3 py-2 text-foreground shadow-xs focus:border-blue-500 focus:outline-hidden dark:text-foreground"
-              >
+ required
+ value={selectedOrderForGen}
+ onChange={(e) => setSelectedOrderForGen(e.target.value)}
+ className="w-full text-xs rounded-xl border border-input bg-card px-3 py-2 text-foreground shadow-xs focus:border-blue-500 focus:outline-hidden">
                 <option value="">-- Choose Order / Job --</option>
                 {activeOrders.map((o) => (
                   <option key={o.id} value={o.id}>
@@ -1830,25 +1797,17 @@ export default function AdvancedProductionPage() {
               </select>
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-border dark:border-border">
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-border">
               <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => setIsGenerateModalOpen(false)}
-                disabled={isGenerating}
-                className="text-xs rounded-xl"
-              >
+ type="button"variant="outline"size="sm"onClick={() => setIsGenerateModalOpen(false)}
+ disabled={isGenerating}
+ className="text-xs rounded-xl">
                 {isBn ? 'বাতিল' : 'Cancel'}
               </Button>
               <Button
-                type="submit"
-                variant="default"
-                size="sm"
-                disabled={isGenerating || !selectedOrderForGen}
-                className="text-xs bg-primary hover:bg-primary/90 text-primary-foreground font-semibold flex items-center gap-1.5 rounded-xl"
-              >
-                <Sparkles className="h-3.5 w-3.5" />
+ type="submit"variant="default"size="sm"disabled={isGenerating || !selectedOrderForGen}
+ className="text-xs bg-primary hover:bg-primary/90 text-primary-foreground font-semibold flex items-center gap-1.5 rounded-xl">
+                <Sparkles className="h-3.5 w-3.5"/>
                 {isGenerating
                   ? isBn
                     ? 'জেনারেট হচ্ছে...'
@@ -1863,75 +1822,70 @@ export default function AdvancedProductionPage() {
 
         {/* MODAL: Job Work Order Ticket Print Slip */}
         <JobTicketPrintModal
-          isOpen={!!jobTicketTarget}
-          onClose={() => setJobTicketTarget(null)}
-          task={jobTicketTarget}
+ isOpen={!!jobTicketTarget}
+ onClose={() => setJobTicketTarget(null)}
+ task={jobTicketTarget}
         />
 
         {/* MODAL: Complete Task Modal with Scrap Logging */}
         <CompleteTaskModal
-          isOpen={!!completeTaskTarget}
-          onClose={() => setCompleteTaskTarget(null)}
-          task={completeTaskTarget}
-          onComplete={handleCompleteModalSubmit}
+ isOpen={!!completeTaskTarget}
+ onClose={() => setCompleteTaskTarget(null)}
+ task={completeTaskTarget}
+ onComplete={handleCompleteModalSubmit}
         />
 
         {/* MODAL: Hold Task */}
         <HoldTaskModal
-          isOpen={!!holdTaskTarget}
-          onClose={() => setHoldTaskTarget(null)}
-          task={holdTaskTarget}
-          onSuccess={() => {
-            showNotification(isBn ? 'টাস্ক স্থগিতাদেশে রাখা হয়েছে।' : 'Task placed on hold.', 'info')
-            loadData(true)
+ isOpen={!!holdTaskTarget}
+ onClose={() => setHoldTaskTarget(null)}
+ task={holdTaskTarget}
+ onSuccess={() => {
+ showNotification(isBn ? 'টাস্ক স্থগিতাদেশে রাখা হয়েছে।' : 'Task placed on hold.', 'info')
+ loadData(true)
           }}
         />
 
         {/* MODAL: Rework Task */}
         <ReworkTaskModal
-          isOpen={!!reworkTaskTarget}
-          onClose={() => setReworkTaskTarget(null)}
-          task={reworkTaskTarget}
-          onSuccess={() => {
-            showNotification(
-              isBn ? 'রি-ওয়ার্ক টিকেট লগ করা হয়েছে!' : 'Rework ticket logged and queued!',
+ isOpen={!!reworkTaskTarget}
+ onClose={() => setReworkTaskTarget(null)}
+ task={reworkTaskTarget}
+ onSuccess={() => {
+ showNotification(
+ isBn ? 'রি-ওয়ার্ক টিকেট লগ করা হয়েছে!' : 'Rework ticket logged and queued!',
               'info'
             )
-            loadData(true)
+ loadData(true)
           }}
         />
 
         {/* MODAL: Schedule Task Target */}
         {scheduleTaskTarget && (
           <ScheduleTaskModal
-            isOpen={!!scheduleTaskTarget}
-            onClose={() => setScheduleTaskTarget(null)}
-            task={scheduleTaskTarget}
-            onSuccess={() => {
-              showNotification(isBn ? 'শিডিউল আপডেট হয়েছে।' : 'Schedule updated.', 'success')
-              loadData(true)
+ isOpen={!!scheduleTaskTarget}
+ onClose={() => setScheduleTaskTarget(null)}
+ task={scheduleTaskTarget}
+ onSuccess={() => {
+ showNotification(isBn ? 'শিডিউল আপডেট হয়েছে।' : 'Schedule updated.', 'success')
+ loadData(true)
             }}
           />
         )}
 
         {/* Pause Task Prompt Modal */}
         <PromptDialog
-          open={isPausePromptOpen}
-          onOpenChange={setIsPausePromptOpen}
-          title={isBn ? `কাজ সাময়িক স্থগিত (Pause)` : `Pause Task: ${taskToPause?.task_name || ''}`}
-          titleBn={`কাজ সাময়িক স্থগিত (Pause)`}
-          message={
-            isBn
+ open={isPausePromptOpen}
+ onOpenChange={setIsPausePromptOpen}
+ title={isBn ? `কাজ সাময়িক স্থগিত (Pause)` : `Pause Task: ${taskToPause?.task_name || ''}`}
+ titleBn={`কাজ সাময়িক স্থগিত (Pause)`}
+ message={
+ isBn
               ? 'পজ করার কারণ লিখুন (যেমনঃ শিফট পরিবর্তন / মিডিয়া চেঞ্জ / লাঞ্চ ব্রেক):'
               : 'Enter pause reason (e.g. Break / Shift change / QC inspection / Media reloading):'
           }
-          messageBn="পজ করার কারণ লিখুন (যেমনঃ শিফট পরিবর্তন / মিডিয়া চেঞ্জ / লাঞ্চ ব্রেক):"
-          placeholder="e.g. Shift change, break, loading roll..."
-          placeholderBn="যেমনঃ শিফট পরিবর্তন, মিডিয়া লোডিং ইত্যাদি..."
-          confirmText="Pause Task"
-          confirmTextBn="স্থগিত করুন"
-          isLoading={isPausing}
-          onConfirm={confirmPauseTask}
+ messageBn="পজ করার কারণ লিখুন (যেমনঃ শিফট পরিবর্তন / মিডিয়া চেঞ্জ / লাঞ্চ ব্রেক):"placeholder="e.g. Shift change, break, loading roll..."placeholderBn="যেমনঃ শিফট পরিবর্তন, মিডিয়া লোডিং ইত্যাদি..."confirmText="Pause Task"confirmTextBn="স্থগিত করুন"isLoading={isPausing}
+ onConfirm={confirmPauseTask}
         />
 
         {/* =========================================================================
@@ -1939,8 +1893,8 @@ export default function AdvancedProductionPage() {
            ========================================================================= */}
         {notification && (
           <div
-            className={`fixed bottom-6 right-6 z-50 p-4 rounded-2xl shadow-xl border flex items-center gap-3 backdrop-blur-md transition-all animate-in slide-in-from-bottom-5 duration-300 max-w-md ${
-              notification.type === 'error'
+ className={`fixed bottom-6 right-6 z-50 p-4 rounded-xl shadow-xs border flex items-center gap-3 backdrop-blur-md transition-all animate-in slide-in-from-bottom-5 duration-300 max-w-md ${
+ notification.type === 'error'
                 ? 'bg-rose-50/95 border-rose-300 text-rose-900 dark:bg-rose-950/90 dark:border-rose-800 dark:text-rose-200'
                 : notification.type === 'warning'
                 ? 'bg-amber-50/95 border-amber-300 text-amber-900 dark:bg-amber-950/90 dark:border-amber-800 dark:text-amber-200'
@@ -1950,21 +1904,19 @@ export default function AdvancedProductionPage() {
             }`}
           >
             {notification.type === 'error' ? (
-              <AlertTriangle className="h-5 w-5 text-rose-600 shrink-0" />
+              <AlertTriangle className="h-5 w-5 text-rose-600 shrink-0"/>
             ) : notification.type === 'warning' ? (
-              <AlertOctagon className="h-5 w-5 text-amber-600 shrink-0" />
+              <AlertOctagon className="h-5 w-5 text-amber-600 shrink-0"/>
             ) : notification.type === 'info' ? (
-              <Clock className="h-5 w-5 text-blue-600 shrink-0" />
+              <Clock className="h-5 w-5 text-blue-600 shrink-0"/>
             ) : (
-              <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0" />
+              <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0"/>
             )}
             <p className="text-xs font-semibold leading-relaxed">{notification.msg}</p>
             <button
-              type="button"
-              onClick={() => setNotification(null)}
-              className="ml-auto text-muted-foreground hover:text-muted-foreground dark:hover:text-foreground"
-            >
-              <X className="h-4 w-4" />
+ type="button"onClick={() => setNotification(null)}
+ className="ml-auto text-muted-foreground hover:text-muted-foreground dark:hover:text-foreground">
+              <X className="h-4 w-4"/>
             </button>
           </div>
         )}

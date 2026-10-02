@@ -2,27 +2,27 @@
 
 import React, { useState } from 'react'
 import {
-  FileText,
-  Layers,
-  Printer,
-  Truck,
-  CreditCard,
-  CheckCircle2,
-  GitFork,
-  ArrowRight,
-  ShieldCheck,
-  ChevronRight,
-  Sparkles,
+ FileText,
+ Layers,
+ Printer,
+ Truck,
+ CreditCard,
+ CheckCircle2,
+ GitFork,
+ ArrowRight,
+ ShieldCheck,
+ ChevronRight,
+ Sparkles,
 } from 'lucide-react'
 import { useI18n } from '@/i18n/context'
 import { CORE_WORKFLOW_LIFECYCLE } from '@/lib/marketing/marketing-data'
 
 export function CoreWorkflowSection() {
-  const { tBilingual } = useI18n()
-  const [selectedStage, setSelectedStage] = useState(0)
+ const { tBilingual } = useI18n()
+ const [selectedStage, setSelectedStage] = useState(0)
 
-  return (
-    <section className="py-16 sm:py-24 bg-card border-t border-border dark:border-border">
+ return (
+    <section className="py-16 sm:py-24 bg-card border-t border-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12 sm:space-y-16">
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto space-y-3 sm:space-y-4">
@@ -30,7 +30,7 @@ export function CoreWorkflowSection() {
             <span>{tBilingual('End-to-End Lifecycle', 'সম্পূর্ণ কাজের চক্র')}</span>
           </div>
 
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-foreground dark:text-white tracking-tight leading-tight bangla-text">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-foreground tracking-tight leading-tight bangla-text">
             {tBilingual(
               'From Customer Request to Delivery — One System.',
               'কাস্টমার অনুসন্ধান থেকে চালান ডেলিভারি — একটি সম্পূর্ণ সিস্টেমে।'
@@ -47,9 +47,9 @@ export function CoreWorkflowSection() {
 
         {/* 2 Crucial Real-World Highlights (Flexible Gates & Multi-Job Fan-Out) */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 max-w-5xl mx-auto">
-          <div className="p-5 sm:p-6 rounded-2xl border border-blue-200/80 dark:border-blue-900/60 bg-blue-50/40 dark:bg-blue-950/20 space-y-2">
+          <div className="p-5 sm:p-6 rounded-xl border border-blue-200/80 dark:border-blue-900/60 bg-blue-50/40 dark:bg-blue-950/20 space-y-2">
             <div className="flex items-center gap-2 text-blue-700 dark:text-blue-300 font-bold text-sm">
-              <CheckCircle2 className="h-4 w-4" />
+              <CheckCircle2 className="h-4 w-4"/>
               <span>{tBilingual('Not Every Job Needs Every Stage', 'সব কাজে সব ধাপের প্রয়োজন নেই')}</span>
             </div>
             <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed bangla-text">
@@ -60,9 +60,9 @@ export function CoreWorkflowSection() {
             </p>
           </div>
 
-          <div className="p-5 sm:p-6 rounded-2xl border border-indigo-200/80 dark:border-indigo-900/60 bg-indigo-50/40 dark:bg-indigo-950/20 space-y-2">
+          <div className="p-5 sm:p-6 rounded-xl border border-indigo-200/80 dark:border-indigo-900/60 bg-indigo-50/40 dark:bg-indigo-950/20 space-y-2">
             <div className="flex items-center gap-2 text-indigo-700 dark:text-indigo-300 font-bold text-sm">
-              <GitFork className="h-4 w-4" />
+              <GitFork className="h-4 w-4"/>
               <span>{tBilingual('1 Invoice → Multiple Production Jobs', '১টি ইনভয়েস থেকে একাধিক প্রোডাকশন জব')}</span>
             </div>
             <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed bangla-text">
@@ -77,23 +77,23 @@ export function CoreWorkflowSection() {
         {/* Vertical/Horizontal Interactive Lifecycle Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           {CORE_WORKFLOW_LIFECYCLE.map((stage, idx) => {
-            const isSelected = selectedStage === idx
-            return (
+ const isSelected = selectedStage === idx
+ return (
               <div
-                key={stage.id}
-                onClick={() => setSelectedStage(idx)}
-                className={`p-4 sm:p-5 rounded-xl border text-left cursor-pointer transition-all ${
-                  isSelected
+ key={stage.id}
+ onClick={() => setSelectedStage(idx)}
+ className={`p-4 sm:p-5 rounded-xl border text-left cursor-pointer transition-all ${
+ isSelected
                     ? 'border-blue-600 bg-blue-50/60 dark:bg-blue-950/40 shadow-sm ring-1 ring-blue-500/30'
                     : 'border-border bg-muted hover:border-input dark:hover:border-border'
                 }`}
               >
                 <div className="flex items-center justify-between mb-2">
                   <span
-                    className={`h-6 w-6 rounded-full flex items-center justify-center text-xs font-bold ${
-                      isSelected
+ className={`h-6 w-6 rounded-full flex items-center justify-center text-xs font-bold ${
+ isSelected
                         ? 'bg-blue-600 text-white'
-                        : 'bg-muted text-muted-foreground dark:text-muted-foreground'
+                        : 'bg-muted text-muted-foreground '
                     }`}
                   >
                     {idx + 1}
@@ -101,7 +101,7 @@ export function CoreWorkflowSection() {
                   <span className="text-2xs text-muted-foreground uppercase font-semibold">STAGE</span>
                 </div>
 
-                <h3 className="text-xs sm:text-sm font-bold text-foreground dark:text-white bangla-text mb-1">
+                <h3 className="text-xs sm:text-sm font-bold text-foreground bangla-text mb-1">
                   {tBilingual(stage.titleEn, stage.titleBn)}
                 </h3>
 

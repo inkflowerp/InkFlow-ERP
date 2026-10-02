@@ -4,14 +4,14 @@ import React, { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
-  LayoutDashboard,
-  Clock,
-  Printer,
-  Plus,
-  MessageSquare,
-  Menu,
-  WifiOff,
-  Cloud,
+ LayoutDashboard,
+ Clock,
+ Printer,
+ Plus,
+ MessageSquare,
+ Menu,
+ WifiOff,
+ Cloud,
 } from 'lucide-react'
 import { useOfflineQueue } from '@/hooks/use-offline-queue'
 import { useNetworkStatus } from '@/hooks/use-network-status'
@@ -22,43 +22,41 @@ import { NewWorkWizard } from '@/components/orders/new-work-wizard'
 import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 
 export function MobileBottomNav() {
-  const pathname = usePathname()
-  const { company } = useTenant()
-  const { tBilingual } = useI18n()
-  const pathSlug = pathname ? pathname.split('/')[1] : null
-  const tenantSlug = (pathSlug && pathSlug !== 'platform-admin' && pathSlug !== 'login' && pathSlug !== 'onboarding' ? pathSlug : company?.slug) || 'app'
+ const pathname = usePathname()
+ const { company } = useTenant()
+ const { tBilingual } = useI18n()
+ const pathSlug = pathname ? pathname.split('/')[1] : null
+ const tenantSlug = (pathSlug && pathSlug !== 'platform-admin' && pathSlug !== 'login' && pathSlug !== 'onboarding' ? pathSlug : company?.slug) || 'app'
 
-  const { isOnline } = useNetworkStatus()
-  const { pendingCount } = useOfflineQueue()
+ const { isOnline } = useNetworkStatus()
+ const { pendingCount } = useOfflineQueue()
 
-  const [newWorkOpen, setNewWorkOpen] = useState(false)
-  const [syncOpen, setSyncOpen] = useState(false)
+ const [newWorkOpen, setNewWorkOpen] = useState(false)
+ const [syncOpen, setSyncOpen] = useState(false)
 
-  const isDashboardActive = pathname === '/dashboard' || pathname === `/${tenantSlug}/dashboard` || pathname === `/${tenantSlug}` || pathname === '/'
-  const isOperatorActive = pathname?.includes('/operator')
-  const isMessagesActive = pathname?.includes('/communications')
+ const isDashboardActive = pathname === '/dashboard' || pathname === `/${tenantSlug}/dashboard` || pathname === `/${tenantSlug}` || pathname === '/'
+ const isOperatorActive = pathname?.includes('/operator')
+ const isMessagesActive = pathname?.includes('/communications')
 
-  const handleOpenMobileDrawer = () => {
-    window.dispatchEvent(new Event('printerp_open_mobile_nav'))
+ const handleOpenMobileDrawer = () => {
+ window.dispatchEvent(new Event('printerp_open_mobile_nav'))
   }
 
-  return (
+ return (
     <>
       <nav
-        aria-label="Mobile Bottom Navigation"
-        className="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-card/95 backdrop-blur-md border-t border-border pb-[env(safe-area-inset-bottom)] select-none shadow-lg"
-      >
+ aria-label="Mobile Bottom Navigation"className="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-card/95 backdrop-blur-md border-t border-border pb-[env(safe-area-inset-bottom)] select-none shadow-lg">
         <div className="grid grid-cols-5 h-16 items-center px-1">
           {/* 1. Dashboard */}
           <Link
-            href={getTenantNavHref('/dashboard', pathname, tenantSlug)}
-            className={`flex flex-col items-center justify-center h-full min-h-[48px] py-1 transition-colors bangla-text ${
-              isDashboardActive
+ href={getTenantNavHref('/dashboard', pathname, tenantSlug)}
+ className={`flex flex-col items-center justify-center h-full min-h-[48px] py-1 transition-colors bangla-text ${
+ isDashboardActive
                 ? 'text-primary font-bold'
                 : 'text-muted-foreground hover:text-foreground'
             }`}
           >
-            <LayoutDashboard className="h-5 w-5 shrink-0" />
+            <LayoutDashboard className="h-5 w-5 shrink-0"/>
             <span className="text-2xs font-semibold mt-1 truncate max-w-[60px]">
               {tBilingual('Dashboard', 'ড্যাশবোর্ড')}
             </span>
@@ -66,14 +64,14 @@ export function MobileBottomNav() {
 
           {/* 2. My Work / Operator Terminal */}
           <Link
-            href={getTenantNavHref('/operator', pathname, tenantSlug)}
-            className={`flex flex-col items-center justify-center h-full min-h-[48px] py-1 transition-colors bangla-text ${
-              isOperatorActive
+ href={getTenantNavHref('/operator', pathname, tenantSlug)}
+ className={`flex flex-col items-center justify-center h-full min-h-[48px] py-1 transition-colors bangla-text ${
+ isOperatorActive
                 ? 'text-primary font-bold'
                 : 'text-muted-foreground hover:text-foreground'
             }`}
           >
-            <Printer className="h-5 w-5 shrink-0" />
+            <Printer className="h-5 w-5 shrink-0"/>
             <span className="text-2xs font-semibold mt-1 truncate max-w-[60px]">
               {tBilingual('My Work', 'আমার কাজ')}
             </span>
@@ -81,13 +79,10 @@ export function MobileBottomNav() {
 
           {/* 3. Center New Work Floating Action */}
           <button
-            type="button"
-            onClick={() => setNewWorkOpen(true)}
-            className="flex flex-col items-center justify-center -mt-5 min-h-[48px] min-w-[48px] cursor-pointer focus:outline-none"
-            aria-label="Create New Work"
-          >
-            <div className="h-12 w-12 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shadow-md border-2 border-background active:scale-95 transition-transform">
-              <Plus className="h-6 w-6 stroke-[3]" />
+ type="button"onClick={() => setNewWorkOpen(true)}
+ className="flex flex-col items-center justify-center -mt-5 min-h-[48px] min-w-[48px] cursor-pointer focus:outline-none"aria-label="Create New Work">
+            <div className="h-12 w-12 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shadow-xs border-2 border-background active:scale-95 transition-transform">
+              <Plus className="h-6 w-6 stroke-[3]"/>
             </div>
             <span className="text-2xs font-bold text-foreground mt-1 bangla-text whitespace-nowrap">
               {tBilingual('New Work', 'নতুন কাজ')}
@@ -96,14 +91,14 @@ export function MobileBottomNav() {
 
           {/* 4. Messages / Notifications */}
           <Link
-            href={getTenantNavHref('/communications', pathname, tenantSlug)}
-            className={`flex flex-col items-center justify-center h-full min-h-[48px] py-1 transition-colors bangla-text ${
-              isMessagesActive
+ href={getTenantNavHref('/communications', pathname, tenantSlug)}
+ className={`flex flex-col items-center justify-center h-full min-h-[48px] py-1 transition-colors bangla-text ${
+ isMessagesActive
                 ? 'text-primary font-bold'
                 : 'text-muted-foreground hover:text-foreground'
             }`}
           >
-            <MessageSquare className="h-5 w-5 shrink-0" />
+            <MessageSquare className="h-5 w-5 shrink-0"/>
             <span className="text-2xs font-semibold mt-1 truncate max-w-[60px]">
               {tBilingual('Messages', 'মেসেজ')}
             </span>
@@ -111,17 +106,14 @@ export function MobileBottomNav() {
 
           {/* 5. More (Open Drawer with All Modules & Search) */}
           <button
-            type="button"
-            onClick={handleOpenMobileDrawer}
-            className="flex flex-col items-center justify-center h-full min-h-[48px] py-1 text-muted-foreground hover:text-foreground relative cursor-pointer focus:outline-none bangla-text"
-            aria-label="Open Full Menu and Modules"
-          >
-            <Menu className="h-5 w-5 shrink-0" />
+ type="button"onClick={handleOpenMobileDrawer}
+ className="flex flex-col items-center justify-center h-full min-h-[48px] py-1 text-muted-foreground hover:text-foreground relative cursor-pointer focus:outline-none bangla-text"aria-label="Open Full Menu and Modules">
+            <Menu className="h-5 w-5 shrink-0"/>
             <span className="text-2xs font-semibold mt-1 truncate max-w-[60px]">
               {tBilingual('More', 'আরও')}
             </span>
             {(!isOnline || pendingCount > 0) && (
-              <span className="absolute top-2 right-3.5 h-2 w-2 rounded-full bg-amber-500 ring-2 ring-background animate-pulse" />
+              <span className="absolute top-2 right-3.5 h-2 w-2 rounded-full bg-amber-500 ring-2 ring-background animate-pulse"/>
             )}
           </button>
         </div>
@@ -130,17 +122,17 @@ export function MobileBottomNav() {
       {/* New Work Modal */}
       {newWorkOpen && (
         <NewWorkWizard
-          isOpen={true}
-          isInlineModal={true}
-          onClose={() => setNewWorkOpen(false)}
-          onSuccess={() => setNewWorkOpen(false)}
+ isOpen={true}
+ isInlineModal={true}
+ onClose={() => setNewWorkOpen(false)}
+ onSuccess={() => setNewWorkOpen(false)}
         />
       )}
 
       {/* Offline Sync Drawer */}
       <OfflineSyncDrawer
-        open={syncOpen}
-        onClose={() => setSyncOpen(false)}
+ open={syncOpen}
+ onClose={() => setSyncOpen(false)}
       />
     </>
   )

@@ -5,72 +5,72 @@ import { Download, X, Smartphone, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 export function PWAInstaller() {
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null)
-  const [showBanner, setShowBanner] = useState(false)
-  const [isIOS, setIsIOS] = useState(false)
-  const [installed, setInstalled] = useState(false)
+ const [deferredPrompt, setDeferredPrompt] = useState<any>(null)
+ const [showBanner, setShowBanner] = useState(false)
+ const [isIOS, setIsIOS] = useState(false)
+ const [installed, setInstalled] = useState(false)
 
-  useEffect(() => {
+ useEffect(() => {
     // Check if already installed
-    if (window.matchMedia('(display-mode: standalone)').matches) {
-      setInstalled(true)
-      return
+ if (window.matchMedia('(display-mode: standalone)').matches) {
+ setInstalled(true)
+ return
     }
 
     // Detect iOS
-    const userAgent = window.navigator.userAgent.toLowerCase()
-    const ios = /iphone|ipad|ipod/.test(userAgent)
-    setIsIOS(ios)
+ const userAgent = window.navigator.userAgent.toLowerCase()
+ const ios = /iphone|ipad|ipod/.test(userAgent)
+ setIsIOS(ios)
 
     // Android/Desktop Chrome install prompt handler
-    const handleBeforeInstallPrompt = (e: Event) => {
-      e.preventDefault()
-      setDeferredPrompt(e)
-      setShowBanner(true)
+ const handleBeforeInstallPrompt = (e: Event) => {
+ e.preventDefault()
+ setDeferredPrompt(e)
+ setShowBanner(true)
     }
 
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
+ window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
 
     // Ensure all stale service workers and caches are un-registered to prevent 503 intercepts on Next.js Server Actions
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistrations().then((registrations) => {
-        for (const registration of registrations) {
-          registration.unregister()
+ if ('serviceWorker' in navigator) {
+ navigator.serviceWorker.getRegistrations().then((registrations) => {
+ for (const registration of registrations) {
+ registration.unregister()
         }
       }).catch(() => {})
-      if (typeof window !== 'undefined' && 'caches' in window) {
-        caches.keys().then((keys) => {
-          keys.forEach((key) => caches.delete(key))
+ if (typeof window !== 'undefined' && 'caches' in window) {
+ caches.keys().then((keys) => {
+ keys.forEach((key) => caches.delete(key))
         }).catch(() => {})
       }
     }
 
-    return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
+ return () => {
+ window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
     }
   }, [])
 
-  const handleInstallClick = async () => {
-    if (!deferredPrompt) return
-    deferredPrompt.prompt()
-    const { outcome } = await deferredPrompt.userChoice
-    if (outcome === 'accepted') {
-      setShowBanner(false)
-      setInstalled(true)
+ const handleInstallClick = async () => {
+ if (!deferredPrompt) return
+ deferredPrompt.prompt()
+ const { outcome } = await deferredPrompt.userChoice
+ if (outcome === 'accepted') {
+ setShowBanner(false)
+ setInstalled(true)
     }
-    setDeferredPrompt(null)
+ setDeferredPrompt(null)
   }
 
-  if (installed || !showBanner) {
-    return null
+ if (installed || !showBanner) {
+ return null
   }
 
-  return (
+ return (
     <div className="fixed bottom-20 md:bottom-6 left-4 right-4 md:left-auto md:right-6 md:max-w-sm z-50 animate-in slide-in-from-bottom-5">
-      <div className="bg-slate-900 border border-border text-white p-3.5 rounded-2xl shadow-2xl flex items-center justify-between gap-3">
+      <div className="bg-surface-inset border border-border text-white p-3.5 rounded-xl shadow-xs flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center shrink-0 shadow-md">
-            <Smartphone className="h-5 w-5 text-white" />
+          <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center shrink-0 shadow-xs">
+            <Smartphone className="h-5 w-5 text-white"/>
           </div>
           <div className="text-xs">
             <p className="font-bold text-white">Install PrintERP App</p>
@@ -83,20 +83,16 @@ export function PWAInstaller() {
         <div className="flex items-center gap-1.5 shrink-0">
           {!isIOS && (
             <Button
-              size="sm"
-              onClick={handleInstallClick}
-              className="h-8 text-xs bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl px-3 font-semibold"
-            >
-              <Download className="h-3 w-3 mr-1" />
-              Install
+ size="sm"onClick={handleInstallClick}
+ className="h-8 text-xs bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl px-3 font-semibold">
+              <Download className="h-3 w-3 mr-1"/>
+ Install
             </Button>
           )}
           <button
-            onClick={() => setShowBanner(false)}
-            className="text-muted-foreground hover:text-white p-1 rounded-lg"
-            aria-label="Dismiss"
-          >
-            <X className="h-4 w-4" />
+ onClick={() => setShowBanner(false)}
+ className="text-muted-foreground hover:text-foreground p-1 rounded-lg"aria-label="Dismiss">
+            <X className="h-4 w-4"/>
           </button>
         </div>
       </div>

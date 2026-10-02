@@ -2,13 +2,13 @@
 
 import React from 'react'
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogBody,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
+ Dialog,
+ DialogContent,
+ DialogHeader,
+ DialogBody,
+ DialogTitle,
+ DialogDescription,
+ DialogFooter,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { useI18n } from '@/i18n/context'
@@ -28,88 +28,88 @@ export type ModalDialogSize =
   | 'full'
 
 interface ModalDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  title: React.ReactNode
-  description?: React.ReactNode
-  children: React.ReactNode
-  confirmText?: string
-  cancelText?: string
-  onConfirm?: () => void
-  onSubmit?: (e: React.FormEvent) => void
-  isConfirmLoading?: boolean
-  confirmVariant?: 'default' | 'destructive'
-  hideFooter?: boolean
-  footer?: React.ReactNode
-  maxWidth?: string
-  size?: ModalDialogSize
-  style?: React.CSSProperties
-  className?: string
-  bodyClassName?: string
-  headerClassName?: string
-  footerClassName?: string
+ open: boolean
+ onOpenChange: (open: boolean) => void
+ title: React.ReactNode
+ description?: React.ReactNode
+ children: React.ReactNode
+ confirmText?: string
+ cancelText?: string
+ onConfirm?: () => void
+ onSubmit?: (e: React.FormEvent) => void
+ isConfirmLoading?: boolean
+ confirmVariant?: 'default' | 'destructive'
+ hideFooter?: boolean
+ footer?: React.ReactNode
+ maxWidth?: string
+ size?: ModalDialogSize
+ style?: React.CSSProperties
+ className?: string
+ bodyClassName?: string
+ headerClassName?: string
+ footerClassName?: string
 }
 
 const SIZE_MAP: Record<ModalDialogSize, string> = {
-  sm: 'w-[95vw] max-w-sm',
-  md: 'w-[95vw] max-w-md',
-  lg: 'w-[95vw] max-w-lg',
-  xl: 'w-[95vw] max-w-xl',
+ sm: 'w-[95vw] max-w-sm',
+ md: 'w-[95vw] max-w-md',
+ lg: 'w-[95vw] max-w-lg',
+ xl: 'w-[95vw] max-w-xl',
   '2xl': 'w-[95vw] max-w-2xl',
   '3xl': 'w-[95vw] max-w-3xl',
   '4xl': 'w-[95vw] max-w-4xl',
   '5xl': 'w-[95vw] max-w-5xl',
   '6xl': 'w-[95vw] max-w-6xl',
   '7xl': 'w-[95vw] max-w-7xl',
-  full: 'w-[95vw] max-w-[95vw]',
+ full: 'w-[95vw] max-w-[95vw]',
 }
 
 const SIZE_STYLE_MAP: Record<ModalDialogSize, React.CSSProperties> = {
-  sm: { width: '95vw', maxWidth: '384px' },
-  md: { width: '95vw', maxWidth: '448px' },
-  lg: { width: '95vw', maxWidth: '512px' },
-  xl: { width: '95vw', maxWidth: '576px' },
+ sm: { width: '95vw', maxWidth: '384px' },
+ md: { width: '95vw', maxWidth: '448px' },
+ lg: { width: '95vw', maxWidth: '512px' },
+ xl: { width: '95vw', maxWidth: '576px' },
   '2xl': { width: '95vw', maxWidth: '672px' },
   '3xl': { width: '95vw', maxWidth: '768px' },
   '4xl': { width: '95vw', maxWidth: '896px' },
   '5xl': { width: '95vw', maxWidth: '1024px' },
   '6xl': { width: '95vw', maxWidth: '1152px' },
   '7xl': { width: '95vw', maxWidth: '1280px' },
-  full: { width: '95vw', maxWidth: '95vw' },
+ full: { width: '95vw', maxWidth: '95vw' },
 }
 
 export function ModalDialog({
-  open,
-  onOpenChange,
-  title,
-  description,
-  children,
-  confirmText,
-  cancelText,
-  onConfirm,
-  onSubmit,
-  isConfirmLoading = false,
-  confirmVariant = 'default',
-  hideFooter = false,
-  footer,
-  maxWidth,
-  size,
-  style,
-  className,
-  bodyClassName,
-  headerClassName,
-  footerClassName,
+ open,
+ onOpenChange,
+ title,
+ description,
+ children,
+ confirmText,
+ cancelText,
+ onConfirm,
+ onSubmit,
+ isConfirmLoading = false,
+ confirmVariant = 'default',
+ hideFooter = false,
+ footer,
+ maxWidth,
+ size,
+ style,
+ className,
+ bodyClassName,
+ headerClassName,
+ footerClassName,
 }: ModalDialogProps) {
-  const { t } = useI18n()
+ const { t } = useI18n()
 
-  const resolvedMaxWidth = maxWidth || (size ? SIZE_MAP[size] : undefined)
-  const resolvedStyle = size ? { ...SIZE_STYLE_MAP[size], ...style } : style
+ const resolvedMaxWidth = maxWidth || (size ? SIZE_MAP[size] : undefined)
+ const resolvedStyle = size ? { ...SIZE_STYLE_MAP[size], ...style } : style
 
-  const handleClose = React.useCallback(() => {
-    onOpenChange(false)
+ const handleClose = React.useCallback(() => {
+ onOpenChange(false)
   }, [onOpenChange])
 
-  const dialogInner = (
+ const dialogInner = (
     <>
       {/* FIXED HEADER */}
       <DialogHeader className={headerClassName}>
@@ -130,22 +130,18 @@ export function ModalDialog({
       ) : !hideFooter ? (
         <DialogFooter className={footerClassName}>
           <Button
-            type="button"
-            variant="secondary"
-            onClick={handleClose}
-            disabled={isConfirmLoading}
-            className="cursor-pointer"
-          >
+ type="button"variant="secondary"onClick={handleClose}
+ disabled={isConfirmLoading}
+ className="cursor-pointer">
             {cancelText || t('common.cancel')}
           </Button>
           {(onConfirm || onSubmit) && (
             <Button
-              type={onSubmit ? 'submit' : 'button'}
-              variant={confirmVariant}
-              onClick={onConfirm}
-              isLoading={isConfirmLoading}
-              className="cursor-pointer"
-            >
+ type={onSubmit ? 'submit' : 'button'}
+ variant={confirmVariant}
+ onClick={onConfirm}
+ isLoading={isConfirmLoading}
+ className="cursor-pointer">
               {confirmText || t('common.confirm')}
             </Button>
           )}
@@ -154,19 +150,19 @@ export function ModalDialog({
     </>
   )
 
-  return (
+ return (
     <Dialog open={open} onOpenChange={onOpenChange} maxWidth={resolvedMaxWidth} style={resolvedStyle}>
       <DialogContent
-        onClose={handleClose}
-        className={cn('flex flex-col max-h-[90vh] overflow-hidden p-0', resolvedMaxWidth, className)}
-        style={resolvedStyle}
+ onClose={handleClose}
+ className={cn('flex flex-col max-h-[90vh] overflow-hidden p-0', resolvedMaxWidth, className)}
+ style={resolvedStyle}
       >
         {onSubmit ? (
           <form onSubmit={onSubmit} className="flex flex-col h-full min-h-0 flex-1 overflow-hidden">
             {dialogInner}
           </form>
         ) : (
-          dialogInner
+ dialogInner
         )}
       </DialogContent>
     </Dialog>

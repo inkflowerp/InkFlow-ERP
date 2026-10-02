@@ -61,7 +61,7 @@ export function PlatformSettingsNav() {
   ]
 
   return (
-    <div className="flex border-b border-slate-700/80 overflow-x-auto gap-2 pb-px scrollbar-none mb-6">
+    <div className="flex border-b border-border overflow-x-auto gap-2 pb-px scrollbar-none mb-6">
       {tabs.map((tab) => {
         const Icon = tab.icon
         const isActive = tab.matches
@@ -75,26 +75,26 @@ export function PlatformSettingsNav() {
             key={tab.href}
             href={tab.href}
             className={cn(
-              'flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all border shrink-0',
+              'flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-all border shrink-0',
               isActive
-                ? 'bg-gradient-to-r from-indigo-600/90 to-violet-600/90 text-white border-indigo-500/60 shadow-md shadow-indigo-600/25 font-bold'
-                : 'bg-slate-900 border-border text-foreground hover:text-white hover:bg-slate-800 hover:border-slate-600 shadow-xs'
+                ? 'bg-primary text-primary-foreground border-primary font-semibold shadow-xs'
+                : 'bg-muted/50 border-border text-muted-foreground hover:text-foreground hover:bg-muted'
             )}
           >
             <Icon
               className={cn(
                 'h-3.5 w-3.5 shrink-0',
-                isActive ? 'text-white' : 'text-muted-foreground group-hover:text-indigo-400'
+                isActive ? 'text-primary-foreground' : 'text-muted-foreground'
               )}
             />
             <span>{tab.title}</span>
             {tab.badge && (
               <span
                 className={cn(
-                  'text-2xs px-1.5 py-0.2 rounded tabular-nums font-bold shrink-0',
+                  'text-2xs px-1.5 py-0.5 rounded font-semibold shrink-0',
                   isActive
-                    ? 'bg-card/20 text-white'
-                    : 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/40'
+                    ? 'bg-primary-foreground/20 text-primary-foreground'
+                    : 'bg-primary/10 text-primary border border-primary/20'
                 )}
               >
                 {tab.badge}

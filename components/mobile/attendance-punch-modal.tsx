@@ -2,20 +2,20 @@
 
 import React, { useState, useEffect } from 'react'
 import {
-  QrCode,
-  MapPin,
-  CheckCircle2,
-  AlertCircle,
-  Clock,
-  UserCheck,
-  ShieldCheck,
-  RefreshCw,
-  LogOut,
-  Sparkles,
-  ArrowRight,
-  ShieldAlert,
-  HelpCircle,
-  Compass,
+ QrCode,
+ MapPin,
+ CheckCircle2,
+ AlertCircle,
+ Clock,
+ UserCheck,
+ ShieldCheck,
+ RefreshCw,
+ LogOut,
+ Sparkles,
+ ArrowRight,
+ ShieldAlert,
+ HelpCircle,
+ Compass,
 } from 'lucide-react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
@@ -27,134 +27,134 @@ import { recordAttendanceAction } from '@/actions/attendance.actions'
 import { AttendanceRecord, AttendanceType } from '@/types/attendance.types'
 
 interface AttendancePunchModalProps {
-  open: boolean
-  onClose: () => void
-  onAttendanceRecorded?: (record: AttendanceRecord) => void
-  defaultType?: 'CHECK_IN' | 'CHECK_OUT'
-  tenantSlug?: string
+ open: boolean
+ onClose: () => void
+ onAttendanceRecorded?: (record: AttendanceRecord) => void
+ defaultType?: 'CHECK_IN' | 'CHECK_OUT'
+ tenantSlug?: string
 }
 
 export function AttendancePunchModal({
-  open,
-  onClose,
-  onAttendanceRecorded,
-  defaultType = 'CHECK_IN',
-  tenantSlug = 'app',
+ open,
+ onClose,
+ onAttendanceRecorded,
+ defaultType = 'CHECK_IN',
+ tenantSlug = 'app',
 }: AttendancePunchModalProps) {
-  const { company } = useTenant()
-  const { tBilingual } = useI18n()
+ const { company } = useTenant()
+ const { tBilingual } = useI18n()
 
-  const [punchType, setPunchType] = useState<AttendanceType>(defaultType)
-  const [stage, setStage] = useState<'scan' | 'verifying' | 'success' | 'failure'>('scan')
+ const [punchType, setPunchType] = useState<AttendanceType>(defaultType)
+ const [stage, setStage] = useState<'scan' | 'verifying' | 'success' | 'failure'>('scan')
 
   // Scanned QR code
-  const [scannedCode, setScannedCode] = useState<string | null>(null)
+ const [scannedCode, setScannedCode] = useState<string | null>(null)
 
   // Geolocation state
-  const [gpsLocation, setGpsLocation] = useState<{ lat: number; lng: number; accuracy: number } | null>(null)
-  const [gpsError, setGpsError] = useState<string | null>(null)
+ const [gpsLocation, setGpsLocation] = useState<{ lat: number; lng: number; accuracy: number } | null>(null)
+ const [gpsError, setGpsError] = useState<string | null>(null)
 
   // Result state
-  const [successRecord, setSuccessRecord] = useState<AttendanceRecord | null>(null)
-  const [verificationDetails, setVerificationDetails] = useState<any>(null)
-  const [failureReason, setFailureReason] = useState<string | null>(null)
+ const [successRecord, setSuccessRecord] = useState<AttendanceRecord | null>(null)
+ const [verificationDetails, setVerificationDetails] = useState<any>(null)
+ const [failureReason, setFailureReason] = useState<string | null>(null)
 
-  useEffect(() => {
-    if (open) {
-      setStage('scan')
-      setScannedCode(null)
-      setGpsLocation(null)
-      setGpsError(null)
-      setSuccessRecord(null)
-      setFailureReason(null)
-      setPunchType(defaultType)
+ useEffect(() => {
+ if (open) {
+ setStage('scan')
+ setScannedCode(null)
+ setGpsLocation(null)
+ setGpsError(null)
+ setSuccessRecord(null)
+ setFailureReason(null)
+ setPunchType(defaultType)
     }
   }, [open, defaultType])
 
   // When QR code is scanned, immediately acquire GPS and submit to server
-  const handleQrScanned = async (scannedValue: string) => {
-    setScannedCode(scannedValue)
-    setStage('verifying')
+ const handleQrScanned = async (scannedValue: string) => {
+ setScannedCode(scannedValue)
+ setStage('verifying')
 
     // Acquire GPS location
-    if (typeof navigator === 'undefined' || !navigator.geolocation) {
-      setStage('failure')
-      setFailureReason('Geolocation is not supported by your browser.')
-      return
+ if (typeof navigator === 'undefined' || !navigator.geolocation) {
+ setStage('failure')
+ setFailureReason('Geolocation is not supported by your browser.')
+ return
     }
 
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        const lat = position.coords.latitude
-        const lng = position.coords.longitude
-        const accuracy = position.coords.accuracy
+ navigator.geolocation.getCurrentPosition(
+ async (position) => {
+ const lat = position.coords.latitude
+ const lng = position.coords.longitude
+ const accuracy = position.coords.accuracy
 
-        setGpsLocation({ lat, lng, accuracy })
+ setGpsLocation({ lat, lng, accuracy })
 
         // Send to Server Action
-        try {
-          const targetCompany = company?.id || tenantSlug
-          const res = await recordAttendanceAction({
-            company_id: targetCompany,
-            qr_token: scannedValue,
-            latitude: lat,
-            longitude: lng,
-            accuracy,
-            attendance_type: punchType,
-            device_metadata: {
-              userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : '',
-              platform: typeof navigator !== 'undefined' ? navigator.platform : '',
-              screenResolution: typeof window !== 'undefined' ? `${window.innerWidth}x${window.innerHeight}` : '',
+ try {
+ const targetCompany = company?.id || tenantSlug
+ const res = await recordAttendanceAction({
+ company_id: targetCompany,
+ qr_token: scannedValue,
+ latitude: lat,
+ longitude: lng,
+ accuracy,
+ attendance_type: punchType,
+ device_metadata: {
+ userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : '',
+ platform: typeof navigator !== 'undefined' ? navigator.platform : '',
+ screenResolution: typeof window !== 'undefined' ? `${window.innerWidth}x${window.innerHeight}` : '',
             },
           })
 
-          if (res.success && res.data) {
-            setSuccessRecord(res.data)
-            setVerificationDetails(res.details)
-            setStage('success')
-            if (onAttendanceRecorded) {
-              onAttendanceRecorded(res.data)
+ if (res.success && res.data) {
+ setSuccessRecord(res.data)
+ setVerificationDetails(res.details)
+ setStage('success')
+ if (onAttendanceRecorded) {
+ onAttendanceRecorded(res.data)
             }
           } else {
-            setStage('failure')
-            setFailureReason(res.error || 'Attendance verification failed.')
-            setVerificationDetails(res.details)
+ setStage('failure')
+ setFailureReason(res.error || 'Attendance verification failed.')
+ setVerificationDetails(res.details)
           }
         } catch (serverErr: any) {
-          setStage('failure')
-          setFailureReason(serverErr.message || 'Server error occurred during verification.')
+ setStage('failure')
+ setFailureReason(serverErr.message || 'Server error occurred during verification.')
         }
       },
       (geoErr) => {
-        setStage('failure')
-        if (geoErr.code === geoErr.PERMISSION_DENIED) {
-          setFailureReason('Location permission denied. InkFlow requires device GPS to verify workplace attendance.')
+ setStage('failure')
+ if (geoErr.code === geoErr.PERMISSION_DENIED) {
+ setFailureReason('Location permission denied. InkFlow requires device GPS to verify workplace attendance.')
         } else if (geoErr.code === geoErr.POSITION_UNAVAILABLE) {
-          setFailureReason('GPS position unavailable. Please ensure location services are enabled on your device.')
+ setFailureReason('GPS position unavailable. Please ensure location services are enabled on your device.')
         } else if (geoErr.code === geoErr.TIMEOUT) {
-          setFailureReason('GPS location request timed out. Please try again.')
+ setFailureReason('GPS location request timed out. Please try again.')
         } else {
-          setFailureReason('Unable to acquire GPS coordinates.')
+ setFailureReason('Unable to acquire GPS coordinates.')
         }
       },
       {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 0,
+ enableHighAccuracy: true,
+ timeout: 10000,
+ maximumAge: 0,
       }
     )
   }
 
-  return (
+ return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent onClose={onClose} className="max-w-md p-5 bg-card border-border text-foreground rounded-3xl shadow-2xl">
+      <DialogContent onClose={onClose} className="max-w-md p-5 bg-card border-border text-foreground rounded-3xl shadow-lg">
         <DialogHeader className="mb-2">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-2xl bg-indigo-50 dark:bg-indigo-600/20 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-500/30">
-              <QrCode className="h-5 w-5" />
+            <div className="p-2.5 rounded-xl bg-indigo-50 dark:bg-indigo-600/20 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-500/30">
+              <QrCode className="h-5 w-5"/>
             </div>
             <div>
-              <DialogTitle className="text-foreground dark:text-white text-base font-bold">
+              <DialogTitle className="text-foreground text-base font-bold">
                 {tBilingual('Employee Attendance & Shift Punch', 'কর্মচারী উপস্থিতি ও শিফট পাঞ্চ')}
               </DialogTitle>
               <DialogDescription className="text-muted-foreground text-xs">
@@ -168,30 +168,28 @@ export function AttendancePunchModal({
         {stage === 'scan' && (
           <div className="space-y-4">
             {/* Punch Type Selector */}
-            <div className="grid grid-cols-2 gap-1.5 p-1 bg-muted rounded-2xl border border-border dark:border-border">
+            <div className="grid grid-cols-2 gap-1.5 p-1 bg-muted rounded-xl border border-border">
               <button
-                type="button"
-                onClick={() => setPunchType('CHECK_IN')}
-                className={`flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                  punchType === 'CHECK_IN'
-                    ? 'bg-emerald-600 text-white shadow-md'
+ type="button"onClick={() => setPunchType('CHECK_IN')}
+ className={`flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+ punchType === 'CHECK_IN'
+                    ? 'bg-emerald-600 text-white shadow-xs'
                     : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
                 }`}
               >
-                <Clock className="h-4 w-4" />
+                <Clock className="h-4 w-4"/>
                 <span>{tBilingual('Check-In', 'প্রবেশ')}</span>
               </button>
 
               <button
-                type="button"
-                onClick={() => setPunchType('CHECK_OUT')}
-                className={`flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                  punchType === 'CHECK_OUT'
-                    ? 'bg-amber-600 text-white shadow-md'
+ type="button"onClick={() => setPunchType('CHECK_OUT')}
+ className={`flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+ punchType === 'CHECK_OUT'
+                    ? 'bg-amber-600 text-white shadow-xs'
                     : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
                 }`}
               >
-                <LogOut className="h-4 w-4" />
+                <LogOut className="h-4 w-4"/>
                 <span>{tBilingual('Check-Out', 'প্রস্থান')}</span>
               </button>
             </div>
@@ -200,8 +198,8 @@ export function AttendancePunchModal({
             <CameraQrScanner onScanSuccess={handleQrScanned} />
 
             {/* Geofence Notice */}
-            <div className="p-3.5 rounded-2xl bg-muted border border-border text-2xs text-muted-foreground flex items-start gap-2.5">
-              <ShieldCheck className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+            <div className="p-3.5 rounded-xl bg-muted border border-border text-2xs text-muted-foreground flex items-start gap-2.5">
+              <ShieldCheck className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5"/>
               <span>
                 {tBilingual(
                   'Point camera at the printed InkFlow QR poster at your workplace. Your GPS location will be verified securely.',
@@ -216,12 +214,12 @@ export function AttendancePunchModal({
         {stage === 'verifying' && (
           <div className="py-12 space-y-6 text-center animate-in fade-in duration-300">
             <div className="relative mx-auto w-20 h-20 flex items-center justify-center">
-              <RefreshCw className="h-12 w-12 text-indigo-600 dark:text-indigo-400 animate-spin" />
-              <MapPin className="h-6 w-6 text-emerald-600 dark:text-emerald-400 absolute" />
+              <RefreshCw className="h-12 w-12 text-indigo-600 dark:text-indigo-400 animate-spin"/>
+              <MapPin className="h-6 w-6 text-emerald-600 dark:text-emerald-400 absolute"/>
             </div>
 
             <div className="space-y-1">
-              <h3 className="text-base font-bold text-foreground dark:text-white">
+              <h3 className="text-base font-bold text-foreground">
                 {tBilingual('Verifying Attendance...', 'হাজিরা যাচাই হচ্ছে...')}
               </h3>
               <p className="text-xs text-muted-foreground max-w-xs mx-auto">
@@ -234,12 +232,12 @@ export function AttendancePunchModal({
 
             {/* Multi-step pipeline pills */}
             <div className="space-y-2 max-w-xs mx-auto text-left text-xs tabular-nums">
-              <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400 bg-emerald-50 p-2.5 rounded-xl border border-emerald-200 dark:border-border">
-                <CheckCircle2 className="h-4 w-4 shrink-0" />
+              <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400 bg-emerald-50 p-2.5 rounded-xl border border-emerald-200">
+                <CheckCircle2 className="h-4 w-4 shrink-0"/>
                 <span>QR Token Captured</span>
               </div>
-              <div className="flex items-center gap-2 text-indigo-700 dark:text-indigo-300 bg-indigo-50 p-2.5 rounded-xl border border-indigo-200 dark:border-border">
-                <RefreshCw className="h-4 w-4 shrink-0 animate-spin" />
+              <div className="flex items-center gap-2 text-indigo-700 dark:text-indigo-300 bg-indigo-50 p-2.5 rounded-xl border border-indigo-200">
+                <RefreshCw className="h-4 w-4 shrink-0 animate-spin"/>
                 <span>Acquiring GPS & Calculating Geofence</span>
               </div>
             </div>
@@ -249,58 +247,56 @@ export function AttendancePunchModal({
         {/* 3. SUCCESS STAGE */}
         {stage === 'success' && successRecord && (
           <div className="py-6 space-y-5 text-center animate-in zoom-in-95">
-            <div className="h-16 w-16 mx-auto rounded-full bg-emerald-50 dark:bg-emerald-500/20 border-2 border-emerald-300 dark:border-emerald-500/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shadow-lg shadow-emerald-500/10">
-              <CheckCircle2 className="h-8 w-8" />
+            <div className="h-16 w-16 mx-auto rounded-full bg-emerald-50 dark:bg-emerald-500/20 border-2 border-emerald-300 dark:border-emerald-500/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shadow-xs shadow-emerald-500/10">
+              <CheckCircle2 className="h-8 w-8"/>
             </div>
 
             <div className="space-y-1">
               <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800 text-xs px-2.5 py-0.5 font-bold">
                 {punchType === 'CHECK_IN' ? 'Check-In Accepted' : 'Check-Out Accepted'}
               </Badge>
-              <h3 className="text-xl font-black text-foreground dark:text-white tracking-tight">
+              <h3 className="text-xl font-black text-foreground tracking-tight">
                 {punchType === 'CHECK_IN' ? 'হাজিরা সফল হয়েছে!' : 'প্রস্থান সফল হয়েছে!'}
               </h3>
-              <p className="text-xs text-muted-foreground dark:text-muted-foreground">
-                Timestamp:{' '}
-                <strong className="text-foreground dark:text-white tabular-nums">
+              <p className="text-xs text-muted-foreground">
+ Timestamp:{' '}
+                <strong className="text-foreground tabular-nums">
                   {new Date(successRecord.checked_at).toLocaleTimeString('en-US', {
-                    timeZone: 'Asia/Dhaka',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    hour12: true,
+ timeZone: 'Asia/Dhaka',
+ hour: '2-digit',
+ minute: '2-digit',
+ hour12: true,
                   })}
                 </strong>
               </p>
             </div>
 
             {/* Verification Detail Card */}
-            <div className="p-4 rounded-2xl bg-muted border border-border space-y-2 text-left text-xs">
-              <div className="flex justify-between items-center py-1 border-b border-border dark:border-border">
-                <span className="text-muted-foreground dark:text-muted-foreground">Location:</span>
-                <span className="font-bold text-foreground dark:text-white">
+            <div className="p-4 rounded-xl bg-muted border border-border space-y-2 text-left text-xs">
+              <div className="flex justify-between items-center py-1 border-b border-border">
+                <span className="text-muted-foreground">Location:</span>
+                <span className="font-bold text-foreground">
                   {successRecord.location_name || 'Verified Workplace'}
                 </span>
               </div>
-              <div className="flex justify-between items-center py-1 border-b border-border dark:border-border">
-                <span className="text-muted-foreground dark:text-muted-foreground">Distance from Center:</span>
+              <div className="flex justify-between items-center py-1 border-b border-border">
+                <span className="text-muted-foreground">Distance from Center:</span>
                 <span className="tabular-nums text-emerald-600 dark:text-emerald-400 font-bold">
                   {Math.round(successRecord.distance_from_location_meters)}m
                 </span>
               </div>
               <div className="flex justify-between items-center py-1">
-                <span className="text-muted-foreground dark:text-muted-foreground">GPS Accuracy:</span>
-                <span className="tabular-nums text-foreground dark:text-muted-foreground">
+                <span className="text-muted-foreground">GPS Accuracy:</span>
+                <span className="tabular-nums text-foreground">
                   ±{Math.round(successRecord.gps_accuracy_meters)}m
                 </span>
               </div>
             </div>
 
             <Button
-              type="button"
-              onClick={onClose}
-              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold h-11 rounded-2xl shadow-sm cursor-pointer"
-            >
-              Done (সম্পন্ন)
+ type="button"onClick={onClose}
+ className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold h-11 rounded-xl shadow-sm cursor-pointer">
+ Done (সম্পন্ন)
             </Button>
           </div>
         )}
@@ -309,11 +305,11 @@ export function AttendancePunchModal({
         {stage === 'failure' && (
           <div className="py-6 space-y-5 text-center animate-in zoom-in-95">
             <div className="h-16 w-16 mx-auto rounded-full bg-rose-50 dark:bg-rose-500/20 border-2 border-rose-300 dark:border-rose-500/40 text-rose-600 dark:text-rose-400 flex items-center justify-center">
-              <AlertCircle className="h-8 w-8" />
+              <AlertCircle className="h-8 w-8"/>
             </div>
 
             <div className="space-y-1">
-              <h3 className="text-lg font-bold text-foreground dark:text-white">
+              <h3 className="text-lg font-bold text-foreground">
                 {tBilingual('Attendance Could Not Be Recorded', 'হাজিরা রেকর্ড করা সম্ভব হয়নি')}
               </h3>
               <p className="text-xs text-rose-600 dark:text-rose-300 font-medium max-w-xs mx-auto">
@@ -322,9 +318,9 @@ export function AttendancePunchModal({
             </div>
 
             {verificationDetails && (
-              <div className="p-3.5 rounded-2xl bg-muted border border-border space-y-1.5 text-xs text-left">
+              <div className="p-3.5 rounded-xl bg-muted border border-border space-y-1.5 text-xs text-left">
                 {verificationDetails.distanceMeters !== undefined && (
-                  <div className="flex justify-between text-muted-foreground dark:text-muted-foreground">
+                  <div className="flex justify-between text-muted-foreground">
                     <span>Calculated Distance:</span>
                     <span className="tabular-nums text-rose-600 dark:text-rose-400 font-bold">
                       {verificationDetails.distanceMeters}m (Allowed: {verificationDetails.allowedRadiusMeters}m)
@@ -332,9 +328,9 @@ export function AttendancePunchModal({
                   </div>
                 )}
                 {verificationDetails.accuracyMeters !== undefined && (
-                  <div className="flex justify-between text-muted-foreground dark:text-muted-foreground">
+                  <div className="flex justify-between text-muted-foreground">
                     <span>GPS Accuracy:</span>
-                    <span className="tabular-nums text-foreground dark:text-muted-foreground">±{verificationDetails.accuracyMeters}m</span>
+                    <span className="tabular-nums text-foreground">±{verificationDetails.accuracyMeters}m</span>
                   </div>
                 )}
               </div>
@@ -342,18 +338,13 @@ export function AttendancePunchModal({
 
             <div className="flex gap-2">
               <Button
-                type="button"
-                variant="outline"
-                onClick={onClose}
-                className="flex-1 border-border text-foreground text-xs h-11 rounded-2xl"
-              >
+ type="button"variant="outline"onClick={onClose}
+ className="flex-1 border-border text-foreground text-xs h-11 rounded-xl">
                 {tBilingual('Cancel', 'বাতিল')}
               </Button>
               <Button
-                type="button"
-                onClick={() => setStage('scan')}
-                className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs h-11 rounded-2xl shadow-sm cursor-pointer"
-              >
+ type="button"onClick={() => setStage('scan')}
+ className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs h-11 rounded-xl shadow-sm cursor-pointer">
                 {tBilingual('Try Again', 'আবার চেষ্টা করুন')}
               </Button>
             </div>

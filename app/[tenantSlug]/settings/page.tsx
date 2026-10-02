@@ -6,34 +6,34 @@ import { useParams, usePathname, useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import {
-  Building2,
-  FileText,
-  ShieldCheck,
-  CheckCircle2,
-  Save,
-  Globe,
-  Percent,
-  Clock,
-  Calendar,
-  Phone,
-  Mail,
-  MapPin,
-  Image as ImageIcon,
-  Landmark,
-  Sparkles,
-  Palette,
-  GitBranch,
-  QrCode,
-  Bell,
-  Users,
-  Workflow,
-  Crown,
-  ArrowRight,
-  Hash,
-  Globe2,
-  RefreshCw,
-  Trash2,
-  AlertCircle,
+ Building2,
+ FileText,
+ ShieldCheck,
+ CheckCircle2,
+ Save,
+ Globe,
+ Percent,
+ Clock,
+ Calendar,
+ Phone,
+ Mail,
+ MapPin,
+ Image as ImageIcon,
+ Landmark,
+ Sparkles,
+ Palette,
+ GitBranch,
+ QrCode,
+ Bell,
+ Users,
+ Workflow,
+ Crown,
+ ArrowRight,
+ Hash,
+ Globe2,
+ RefreshCw,
+ Trash2,
+ AlertCircle,
 } from 'lucide-react'
 import { companySettingsSchema, CompanySettingsFormData } from '@/features/tenant/tenant.schemas'
 import { updateCompanyAction, updateCompanySettingsAction } from '@/actions/tenant.actions'
@@ -65,273 +65,264 @@ const HOLIDAY_PRESETS = [
 ]
 
 function cleanField(val?: string | null): string {
-  if (!val) return ''
-  return val.trim()
+ if (!val) return ''
+ return val.trim()
 }
 
 function cleanCorporateNameBn(nameBn?: string | null, name?: string): string {
-  const val = cleanField(nameBn)
-  if (!val) return ''
-  if (name && val.toLowerCase() === name.trim().toLowerCase()) return ''
-  return val
+ const val = cleanField(nameBn)
+ if (!val) return ''
+ if (name && val.toLowerCase() === name.trim().toLowerCase()) return ''
+ return val
 }
 
 function cleanLegalName(legalName?: string | null, name?: string): string {
-  const val = cleanField(legalName)
-  if (!val) return ''
-  if (name) {
-    const valLower = val.toLowerCase()
-    const nameLower = name.trim().toLowerCase()
-    if (valLower === nameLower || valLower === `${nameLower} ltd.` || valLower === `${nameLower} ltd`) {
-      return ''
+ const val = cleanField(legalName)
+ if (!val) return ''
+ if (name) {
+ const valLower = val.toLowerCase()
+ const nameLower = name.trim().toLowerCase()
+ if (valLower === nameLower || valLower === `${nameLower} ltd.` || valLower === `${nameLower} ltd`) {
+ return ''
     }
   }
-  return val
+ return val
 }
 
 function cleanAddress(address?: string | null): string {
-  const val = cleanField(address)
-  if (!val || val.toLowerCase() === 'dhaka, bangladesh') return ''
-  return val
+ const val = cleanField(address)
+ if (!val || val.toLowerCase() === 'dhaka, bangladesh') return ''
+ return val
 }
 
 export default function CompanySettingsPage() {
-  const { company, settings, refreshTenant } = useTenant()
-  const { locale, tBilingual } = useI18n()
-  const params = useParams()
-  const pathname = usePathname()
-  const router = useRouter()
-  const tenantSlug = (params?.tenantSlug as string) || company?.slug || ''
+ const { company, settings, refreshTenant } = useTenant()
+ const { locale, tBilingual } = useI18n()
+ const params = useParams()
+ const pathname = usePathname()
+ const router = useRouter()
+ const tenantSlug = (params?.tenantSlug as string) || company?.slug || ''
 
-  const [mounted, setMounted] = useState(false)
-  const [isSaved, setIsSaved] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const [errorMessage, setErrorMessage] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState<'general' | 'schedule' | 'tax' | 'prefixes' | 'regional'>('general')
+ const [mounted, setMounted] = useState(false)
+ const [isSaved, setIsSaved] = useState(false)
+ const [isLoading, setIsLoading] = useState(false)
+ const [errorMessage, setErrorMessage] = useState<string | null>(null)
+ const [activeTab, setActiveTab] = useState<'general' | 'schedule' | 'tax' | 'prefixes' | 'regional'>('general')
 
-  const lastLoadedKeyRef = React.useRef<string | null>(null)
+ const lastLoadedKeyRef = React.useRef<string | null>(null)
 
-  const coName = company?.name || ''
-  const {
-    register,
-    handleSubmit,
-    watch,
-    setValue,
-    reset,
-    formState: { errors, isDirty },
+ const coName = company?.name || ''
+ const {
+ register,
+ handleSubmit,
+ watch,
+ setValue,
+ reset,
+ formState: { errors, isDirty },
   } = useForm<CompanySettingsFormData>({
-    resolver: zodResolver(companySettingsSchema),
-    defaultValues: {
-      name: coName,
-      name_bn: cleanCorporateNameBn(company?.name_bn, coName),
-      legal_name: cleanLegalName(company?.legal_name || (settings as any)?.legal_name, coName),
-      logo_url: company?.logo_url || settings?.logo_url || '',
-      phone: company?.phone || settings?.phone || '',
-      whatsapp: company?.whatsapp || settings?.whatsapp || '',
-      email: company?.email || settings?.email || '',
-      address: cleanAddress(company?.address),
-      address_bn: cleanField(company?.address_bn),
-      area: cleanField(company?.area),
-      office_hours: company?.office_hours || (settings as any)?.office_hours || '9:00 AM - 8:00 PM (Sat - Thu)',
-      holidays: company?.holidays || (settings as any)?.holidays || 'Friday',
-      bin_no: company?.bin_no || '',
-      tin_no: company?.tin_no || '',
-      trade_license_no: company?.trade_license_no || '',
-      invoice_prefix: settings?.invoice_prefix || 'INV',
-      quotation_prefix: settings?.quotation_prefix || 'QT',
-      challan_prefix: settings?.challan_prefix || 'CH',
-      default_currency: settings?.default_currency || 'BDT',
-      default_language: (settings?.default_language === 'en' ? 'en' : 'bn'),
-      vat_enabled: settings?.vat_enabled ?? true,
-      vat_rate: Number(settings?.vat_rate ?? 7.5),
+ resolver: zodResolver(companySettingsSchema),
+ defaultValues: {
+ name: coName,
+ name_bn: cleanCorporateNameBn(company?.name_bn, coName),
+ legal_name: cleanLegalName(company?.legal_name || (settings as any)?.legal_name, coName),
+ logo_url: company?.logo_url || settings?.logo_url || '',
+ phone: company?.phone || settings?.phone || '',
+ whatsapp: company?.whatsapp || settings?.whatsapp || '',
+ email: company?.email || settings?.email || '',
+ address: cleanAddress(company?.address),
+ address_bn: cleanField(company?.address_bn),
+ area: cleanField(company?.area),
+ office_hours: company?.office_hours || (settings as any)?.office_hours || '9:00 AM - 8:00 PM (Sat - Thu)',
+ holidays: company?.holidays || (settings as any)?.holidays || 'Friday',
+ bin_no: company?.bin_no || '',
+ tin_no: company?.tin_no || '',
+ trade_license_no: company?.trade_license_no || '',
+ invoice_prefix: settings?.invoice_prefix || 'INV',
+ quotation_prefix: settings?.quotation_prefix || 'QT',
+ challan_prefix: settings?.challan_prefix || 'CH',
+ default_currency: settings?.default_currency || 'BDT',
+ default_language: (settings?.default_language === 'en' ? 'en' : 'bn'),
+ vat_enabled: settings?.vat_enabled ?? true,
+ vat_rate: Number(settings?.vat_rate ?? 7.5),
     },
   })
 
-  useEffect(() => {
-    setMounted(true)
+ useEffect(() => {
+ setMounted(true)
   }, [])
 
   // Synchronize form when company data loads asynchronously from database
-  useEffect(() => {
-    if (company) {
-      const syncKey = `${company.id}-${company.updated_at || ''}-${settings?.updated_at || (settings ? 'loaded' : 'pending')}`
-      if (lastLoadedKeyRef.current !== syncKey && !isDirty) {
-        lastLoadedKeyRef.current = syncKey
-        const currentCoName = company.name || ''
-        reset({
-          name: currentCoName,
-          name_bn: cleanCorporateNameBn(company.name_bn, currentCoName),
-          legal_name: cleanLegalName(company.legal_name || (settings as any)?.legal_name, currentCoName),
-          logo_url: company.logo_url || settings?.logo_url || '',
-          phone: company.phone || settings?.phone || '',
-          whatsapp: company.whatsapp || settings?.whatsapp || '',
-          email: company.email || settings?.email || '',
-          address: cleanAddress(company.address),
-          address_bn: cleanField(company.address_bn),
-          area: cleanField(company.area),
-          office_hours: company.office_hours || (settings as any)?.office_hours || '9:00 AM - 8:00 PM (Sat - Thu)',
-          holidays: company.holidays || (settings as any)?.holidays || 'Friday',
-          bin_no: company.bin_no || '',
-          tin_no: company.tin_no || '',
-          trade_license_no: company.trade_license_no || '',
-          invoice_prefix: settings?.invoice_prefix || 'INV',
-          quotation_prefix: settings?.quotation_prefix || 'QT',
-          challan_prefix: settings?.challan_prefix || 'CH',
-          default_currency: settings?.default_currency || 'BDT',
-          default_language: (settings?.default_language === 'en' ? 'en' : 'bn'),
-          vat_enabled: settings?.vat_enabled ?? true,
-          vat_rate: Number(settings?.vat_rate ?? 7.5),
+ useEffect(() => {
+ if (company) {
+ const syncKey = `${company.id}-${company.updated_at || ''}-${settings?.updated_at || (settings ? 'loaded' : 'pending')}`
+ if (lastLoadedKeyRef.current !== syncKey && !isDirty) {
+ lastLoadedKeyRef.current = syncKey
+ const currentCoName = company.name || ''
+ reset({
+ name: currentCoName,
+ name_bn: cleanCorporateNameBn(company.name_bn, currentCoName),
+ legal_name: cleanLegalName(company.legal_name || (settings as any)?.legal_name, currentCoName),
+ logo_url: company.logo_url || settings?.logo_url || '',
+ phone: company.phone || settings?.phone || '',
+ whatsapp: company.whatsapp || settings?.whatsapp || '',
+ email: company.email || settings?.email || '',
+ address: cleanAddress(company.address),
+ address_bn: cleanField(company.address_bn),
+ area: cleanField(company.area),
+ office_hours: company.office_hours || (settings as any)?.office_hours || '9:00 AM - 8:00 PM (Sat - Thu)',
+ holidays: company.holidays || (settings as any)?.holidays || 'Friday',
+ bin_no: company.bin_no || '',
+ tin_no: company.tin_no || '',
+ trade_license_no: company.trade_license_no || '',
+ invoice_prefix: settings?.invoice_prefix || 'INV',
+ quotation_prefix: settings?.quotation_prefix || 'QT',
+ challan_prefix: settings?.challan_prefix || 'CH',
+ default_currency: settings?.default_currency || 'BDT',
+ default_language: (settings?.default_language === 'en' ? 'en' : 'bn'),
+ vat_enabled: settings?.vat_enabled ?? true,
+ vat_rate: Number(settings?.vat_rate ?? 7.5),
         })
       }
     }
   }, [company, settings, reset, isDirty])
 
   // Real-time synchronization listeners
-  useEffect(() => {
-    if (typeof window === 'undefined') return
+ useEffect(() => {
+ if (typeof window === 'undefined') return
 
-    const handleSync = () => {
-      refreshTenant?.()
+ const handleSync = () => {
+ refreshTenant?.()
     }
 
-    window.addEventListener('printerp_table_synced:company', handleSync)
-    window.addEventListener('printerp_table_synced:settings', handleSync)
-    window.addEventListener('printerp_data_sync', handleSync)
+ window.addEventListener('printerp_table_synced:company', handleSync)
+ window.addEventListener('printerp_table_synced:settings', handleSync)
+ window.addEventListener('printerp_data_sync', handleSync)
 
-    return () => {
-      window.removeEventListener('printerp_table_synced:company', handleSync)
-      window.removeEventListener('printerp_table_synced:settings', handleSync)
-      window.removeEventListener('printerp_data_sync', handleSync)
+ return () => {
+ window.removeEventListener('printerp_table_synced:company', handleSync)
+ window.removeEventListener('printerp_table_synced:settings', handleSync)
+ window.removeEventListener('printerp_data_sync', handleSync)
     }
   }, [refreshTenant])
 
-  const watchedVatEnabled = watch('vat_enabled')
-  const watchedLogoUrl = watch('logo_url')
+ const watchedVatEnabled = watch('vat_enabled')
+ const watchedLogoUrl = watch('logo_url')
 
-  const onInvalid = (formErrors: any) => {
-    console.warn('[Settings] Validation failed:', formErrors)
-    const firstKey = Object.keys(formErrors)[0]
-    const firstMsg = formErrors[firstKey]?.message || 'Please check the highlighted settings fields'
-    setErrorMessage(firstMsg)
+ const onInvalid = (formErrors: any) => {
+ console.warn('[Settings] Validation failed:', formErrors)
+ const firstKey = Object.keys(formErrors)[0]
+ const firstMsg = formErrors[firstKey]?.message || 'Please check the highlighted settings fields'
+ setErrorMessage(firstMsg)
 
     // Automatically switch to the tab containing the error so the user sees the field
-    if (['name', 'name_bn', 'legal_name', 'logo_url', 'phone', 'whatsapp', 'email', 'area', 'address', 'address_bn'].includes(firstKey)) {
-      setActiveTab('general')
+ if (['name', 'name_bn', 'legal_name', 'logo_url', 'phone', 'whatsapp', 'email', 'area', 'address', 'address_bn'].includes(firstKey)) {
+ setActiveTab('general')
     } else if (['office_hours', 'holidays'].includes(firstKey)) {
-      setActiveTab('schedule')
+ setActiveTab('schedule')
     } else if (['bin_no', 'tin_no', 'trade_license_no', 'vat_enabled', 'vat_rate'].includes(firstKey)) {
-      setActiveTab('tax')
+ setActiveTab('tax')
     } else if (['invoice_prefix', 'quotation_prefix', 'challan_prefix'].includes(firstKey)) {
-      setActiveTab('prefixes')
+ setActiveTab('prefixes')
     } else if (['default_currency', 'default_language'].includes(firstKey)) {
-      setActiveTab('regional')
+ setActiveTab('regional')
     }
   }
 
-  const onSubmit = async (data: CompanySettingsFormData) => {
-    if (!company) return
-    setIsLoading(true)
-    setIsSaved(false)
-    setErrorMessage(null)
+ const onSubmit = async (data: CompanySettingsFormData) => {
+ if (!company) return
+ setIsLoading(true)
+ setIsSaved(false)
+ setErrorMessage(null)
 
-    try {
+ try {
       // 1. Update company record with all company fields
-      const resCompany = await updateCompanyAction(company.id, {
-        name: data.name,
-        name_bn: data.name_bn || null,
-        legal_name: data.legal_name || null,
-        logo_url: data.logo_url || null,
-        phone: data.phone,
-        whatsapp: data.whatsapp || null,
-        email: data.email,
-        address: data.address,
-        address_bn: data.address_bn || null,
-        area: data.area || null,
-        office_hours: data.office_hours || null,
-        holidays: data.holidays || null,
-        bin_no: data.bin_no || null,
-        tin_no: data.tin_no || null,
-        trade_license_no: data.trade_license_no || null,
+ const resCompany = await updateCompanyAction(company.id, {
+ name: data.name,
+ name_bn: data.name_bn || null,
+ legal_name: data.legal_name || null,
+ logo_url: data.logo_url || null,
+ phone: data.phone,
+ whatsapp: data.whatsapp || null,
+ email: data.email,
+ address: data.address,
+ address_bn: data.address_bn || null,
+ area: data.area || null,
+ office_hours: data.office_hours || null,
+ holidays: data.holidays || null,
+ bin_no: data.bin_no || null,
+ tin_no: data.tin_no || null,
+ trade_license_no: data.trade_license_no || null,
       })
 
-      if (resCompany && !resCompany.success) {
-        throw new Error(resCompany.error || 'Failed to update company information.')
+ if (resCompany && !resCompany.success) {
+ throw new Error(resCompany.error || 'Failed to update company information.')
       }
 
       // 2. Update company settings record
-      const resSettings = await updateCompanySettingsAction(company.id, {
-        invoice_prefix: data.invoice_prefix,
-        quotation_prefix: data.quotation_prefix,
-        challan_prefix: data.challan_prefix,
-        vat_enabled: data.vat_enabled,
-        vat_rate: data.vat_rate,
-        default_currency: data.default_currency,
-        default_language: data.default_language,
-        whatsapp: data.whatsapp || null,
-        phone: data.phone,
-        email: data.email,
-        logo_url: data.logo_url || null,
-        office_hours: data.office_hours || null,
-        holidays: data.holidays || null,
+ const resSettings = await updateCompanySettingsAction(company.id, {
+ invoice_prefix: data.invoice_prefix,
+ quotation_prefix: data.quotation_prefix,
+ challan_prefix: data.challan_prefix,
+ vat_enabled: data.vat_enabled,
+ vat_rate: data.vat_rate,
+ default_currency: data.default_currency,
+ default_language: data.default_language,
+ whatsapp: data.whatsapp || null,
+ phone: data.phone,
+ email: data.email,
+ logo_url: data.logo_url || null,
+ office_hours: data.office_hours || null,
+ holidays: data.holidays || null,
       })
 
-      if (resSettings && !resSettings.success) {
-        throw new Error(resSettings.error || 'Failed to update company settings.')
+ if (resSettings && !resSettings.success) {
+ throw new Error(resSettings.error || 'Failed to update company settings.')
       }
 
-      await refreshTenant?.()
-      reset(data) // Establish saved data as clean form state
-      setIsSaved(true)
+ await refreshTenant?.()
+ reset(data) // Establish saved data as clean form state
+ setIsSaved(true)
 
       // Broadcast update across windows
-      if (typeof window !== 'undefined') {
-        window.dispatchEvent(new CustomEvent('printerp_table_synced:settings', { detail: { companyId: company.id } }))
-        window.dispatchEvent(new CustomEvent('printerp_table_synced:company', { detail: { companyId: company.id } }))
+ if (typeof window !== 'undefined') {
+ window.dispatchEvent(new CustomEvent('printerp_table_synced:settings', { detail: { companyId: company.id } }))
+ window.dispatchEvent(new CustomEvent('printerp_table_synced:company', { detail: { companyId: company.id } }))
       }
 
-      setTimeout(() => setIsSaved(false), 4000)
+ setTimeout(() => setIsSaved(false), 4000)
     } catch (err: any) {
-      console.error('[Settings] Save error:', err)
-      setErrorMessage(err.message || 'Failed to save settings. Please try again.')
+ console.error('[Settings] Save error:', err)
+ setErrorMessage(err.message || 'Failed to save settings. Please try again.')
     } finally {
-      setIsLoading(false)
+ setIsLoading(false)
     }
   }
 
-  if (!mounted) {
-    return (
+ if (!mounted) {
+ return (
       <div className="space-y-6 max-w-5xl animate-pulse">
-        <div className="h-20 bg-muted rounded-2xl w-full" />
-        <div className="h-12 bg-muted rounded-xl w-3/4" />
+        <div className="h-20 bg-muted rounded-xl w-full"/>
+        <div className="h-12 bg-muted rounded-xl w-3/4"/>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
           {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-            <div key={i} className="h-28 bg-muted rounded-2xl" />
+            <div key={i} className="h-28 bg-muted rounded-xl"/>
           ))}
         </div>
       </div>
     )
   }
 
-  return (
+ return (
     <PanelAccessGuard
-      module="settings"
-      action="view"
-      panelTitle="Company Profile & Settings"
-      panelTitleBn="প্রতিষ্ঠান পরিচিতি ও সেটিংস"
-    >
+ module="settings"action="view"panelTitle="Company Profile & Settings"panelTitleBn="প্রতিষ্ঠান পরিচিতি ও সেটিংস">
       <div className="space-y-6 max-w-5xl">
       {/* Title & Actions */}
       <PageHeader
-        titleEn="Company Profile & Settings"
-        titleBn="প্রতিষ্ঠান পরিচিতি ও সেটিংস"
-        descriptionEn="Manage corporate identity, legal entity details, NBR tax registrations, office hours, and official contact channels."
-        descriptionBn="প্রাতিষ্ঠানিক তথ্য, আইনি সত্তা, এনবিআর ট্যাক্স নিবন্ধন, অফিস সময়সূচি এবং যোগাযোগের তথ্য পরিচালনা করুন।"
-        icon={Building2}
-        iconColor="text-blue-600"
-        actions={
-          isSaved ? (
+ titleEn="Company Profile & Settings"titleBn="প্রতিষ্ঠান পরিচিতি ও সেটিংস"descriptionEn="Manage corporate identity, legal entity details, NBR tax registrations, office hours, and official contact channels."descriptionBn="প্রাতিষ্ঠানিক তথ্য, আইনি সত্তা, এনবিআর ট্যাক্স নিবন্ধন, অফিস সময়সূচি এবং যোগাযোগের তথ্য পরিচালনা করুন।"icon={Building2}
+ iconColor="text-blue-600"actions={
+ isSaved ? (
             <div className="flex items-center gap-2 text-xs font-semibold text-emerald-700 bg-emerald-50 dark:bg-emerald-950/40 dark:text-emerald-300 px-3 py-1.5 rounded-lg border border-emerald-200 dark:border-emerald-800 bangla-text">
-              <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+              <CheckCircle2 className="h-4 w-4 text-emerald-600"/>
               {tBilingual('Settings saved successfully!', 'সেটিংস সফলভাবে সংরক্ষিত হয়েছে!')}
             </div>
           ) : undefined
@@ -342,135 +333,134 @@ export default function CompanySettingsPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
         {[
           {
-            title: 'Company Profile',
-            titleBn: 'প্রতিষ্ঠান পরিচিতি',
-            desc: 'Legal entity, office hours, contacts & trade license',
-            path: '/settings/company',
-            icon: Building2,
-            color: 'text-blue-600 bg-blue-50 dark:bg-blue-950/50',
-            badge: company?.name ? 'Configured' : 'Setup Required',
+ title: 'Company Profile',
+ titleBn: 'প্রতিষ্ঠান পরিচিতি',
+ desc: 'Legal entity, office hours, contacts & trade license',
+ path: '/settings/company',
+ icon: Building2,
+ color: 'text-blue-600 bg-blue-50 dark:bg-blue-950/50',
+ badge: company?.name ? 'Configured' : 'Setup Required',
           },
           {
-            title: 'Branding & Theme',
-            titleBn: 'ব্র্যান্ডিং ও লোগো',
-            desc: 'Custom colors, header logos, and bill footer terms',
-            path: '/settings/branding',
-            icon: Palette,
-            color: 'text-purple-600 bg-purple-50 dark:bg-purple-950/50',
-            badge: 'Theme Active',
+ title: 'Branding & Theme',
+ titleBn: 'ব্র্যান্ডিং ও লোগো',
+ desc: 'Custom colors, header logos, and bill footer terms',
+ path: '/settings/branding',
+ icon: Palette,
+ color: 'text-purple-600 bg-purple-50 dark:bg-purple-950/50',
+ badge: 'Theme Active',
           },
           {
-            title: 'Language & Formats',
-            titleBn: 'ভাষা ও মুদ্রা',
-            desc: 'BDT / USD, DD/MM/YYYY, Bengali/English UI',
-            path: '/settings/localization',
-            icon: Globe2,
-            color: 'text-emerald-600 bg-emerald-50 dark:bg-emerald-950/50',
-            badge: `${company?.currency || 'BDT'} / ${company?.default_locale === 'en' ? 'EN' : 'BN'}`,
+ title: 'Language & Formats',
+ titleBn: 'ভাষা ও মুদ্রা',
+ desc: 'BDT / USD, DD/MM/YYYY, Bengali/English UI',
+ path: '/settings/localization',
+ icon: Globe2,
+ color: 'text-emerald-600 bg-emerald-50 dark:bg-emerald-950/50',
+ badge: `${company?.currency || 'BDT'} / ${company?.default_locale === 'en' ? 'EN' : 'BN'}`,
           },
           {
-            title: 'Document Numbering',
-            titleBn: 'ডকুমেন্ট নাম্বারিং',
-            desc: 'INV, QUO, CHL sequence prefixes and padding',
-            path: '/settings/document-numbering',
-            icon: Hash,
-            color: 'text-indigo-600 bg-indigo-50 dark:bg-indigo-950/50',
-            badge: 'PostgreSQL Safe',
+ title: 'Document Numbering',
+ titleBn: 'ডকুমেন্ট নাম্বারিং',
+ desc: 'INV, QUO, CHL sequence prefixes and padding',
+ path: '/settings/document-numbering',
+ icon: Hash,
+ color: 'text-indigo-600 bg-indigo-50 dark:bg-indigo-950/50',
+ badge: 'PostgreSQL Safe',
           },
           {
-            title: 'Document Templates',
-            titleBn: 'ডকুমেন্ট টেমপ্লেট',
-            desc: 'PDF invoice, quotation designer & WhatsApp variables',
-            path: '/settings/documents',
-            icon: FileText,
-            color: 'text-cyan-600 bg-cyan-50 dark:bg-cyan-950/50',
-            badge: 'Live Preview',
+ title: 'Document Templates',
+ titleBn: 'ডকুমেন্ট টেমপ্লেট',
+ desc: 'PDF invoice, quotation designer & WhatsApp variables',
+ path: '/settings/documents',
+ icon: FileText,
+ color: 'text-cyan-600 bg-cyan-50 dark:bg-cyan-950/50',
+ badge: 'Live Preview',
           },
           {
-            title: 'Workflow Automations',
-            titleBn: 'কাজের অটোমেশন',
-            desc: 'Auto-convert quotations, trigger jobs & status alerts',
-            path: '/settings/automations',
-            icon: Workflow,
-            color: 'text-pink-600 bg-pink-50 dark:bg-pink-950/50',
-            badge: 'Pipelines Active',
+ title: 'Workflow Automations',
+ titleBn: 'কাজের অটোমেশন',
+ desc: 'Auto-convert quotations, trigger jobs & status alerts',
+ path: '/settings/automations',
+ icon: Workflow,
+ color: 'text-pink-600 bg-pink-50 dark:bg-pink-950/50',
+ badge: 'Pipelines Active',
           },
           {
-            title: 'Branches & Factories',
-            titleBn: 'শাখা ও কারখানা',
-            desc: 'Showrooms, print floors & regional fabrication hubs',
-            path: '/settings/branches',
-            icon: GitBranch,
-            color: 'text-teal-600 bg-teal-50 dark:bg-teal-950/50',
-            badge: 'Hubs Managed',
+ title: 'Branches & Factories',
+ titleBn: 'শাখা ও কারখানা',
+ desc: 'Showrooms, print floors & regional fabrication hubs',
+ path: '/settings/branches',
+ icon: GitBranch,
+ color: 'text-teal-600 bg-teal-50 dark:bg-teal-950/50',
+ badge: 'Hubs Managed',
           },
           {
-            title: 'Attendance & QR',
-            titleBn: 'হাজিরা ও কিউআর',
-            desc: 'Workplace geofence GPS and cryptographic QR tokens',
-            path: '/settings/attendance',
-            icon: QrCode,
-            color: 'text-indigo-600 bg-indigo-50 dark:bg-indigo-950/50',
-            badge: 'Geofence Active',
+ title: 'Attendance & QR',
+ titleBn: 'হাজিরা ও কিউআর',
+ desc: 'Workplace geofence GPS and cryptographic QR tokens',
+ path: '/settings/attendance',
+ icon: QrCode,
+ color: 'text-indigo-600 bg-indigo-50 dark:bg-indigo-950/50',
+ badge: 'Geofence Active',
           },
           {
-            title: 'Notifications & SMS',
-            titleBn: 'নোটিফিকেশন ও এসএমএস',
-            desc: 'Bangladeshi masked SMS, WhatsApp & audio chimes',
-            path: '/settings/notifications',
-            icon: Bell,
-            color: 'text-amber-600 bg-amber-50 dark:bg-amber-950/50',
-            badge: 'Audio & SMS',
+ title: 'Notifications & SMS',
+ titleBn: 'নোটিফিকেশন ও এসএমএস',
+ desc: 'Bangladeshi masked SMS, WhatsApp & audio chimes',
+ path: '/settings/notifications',
+ icon: Bell,
+ color: 'text-amber-600 bg-amber-50 dark:bg-amber-950/50',
+ badge: 'Audio & SMS',
           },
           {
-            title: 'Email Gateway',
-            titleBn: 'ইমেইল গেটওয়ে',
-            desc: 'Gmail OAuth 2.0 and custom authenticated SMTP server',
-            path: '/settings/email',
-            icon: Mail,
-            color: 'text-blue-600 bg-blue-50 dark:bg-blue-950/50',
-            badge: 'Gmail / SMTP',
+ title: 'Email Gateway',
+ titleBn: 'ইমেইল গেটওয়ে',
+ desc: 'Gmail OAuth 2.0 and custom authenticated SMTP server',
+ path: '/settings/email',
+ icon: Mail,
+ color: 'text-blue-600 bg-blue-50 dark:bg-blue-950/50',
+ badge: 'Gmail / SMTP',
           },
           {
-            title: 'Users & Permissions',
-            titleBn: 'টিম সদস্য ও অনুমতি',
-            desc: 'Manage staff accounts, departments, custom roles & permission matrix',
-            path: '/settings/users',
-            icon: ShieldCheck,
-            color: 'text-violet-600 bg-violet-50 dark:bg-violet-950/50',
-            badge: 'RBAC Studio',
+ title: 'Users & Permissions',
+ titleBn: 'টিম সদস্য ও অনুমতি',
+ desc: 'Manage staff accounts, departments, custom roles & permission matrix',
+ path: '/settings/users',
+ icon: ShieldCheck,
+ color: 'text-violet-600 bg-violet-50 dark:bg-violet-950/50',
+ badge: 'RBAC Studio',
           },
           {
-            title: 'Subscription & Quotas',
-            titleBn: 'সাবস্ক্রিপশন ও কোটা',
-            desc: 'Plan tier, 6 resource limit meters & billing statements',
-            path: '/settings/subscription',
-            icon: Crown,
-            color: 'text-amber-600 bg-amber-50 dark:bg-amber-950/50',
-            badge: 'Tier Status',
+ title: 'Subscription & Quotas',
+ titleBn: 'সাবস্ক্রিপশন ও কোটা',
+ desc: 'Plan tier, 6 resource limit meters & billing statements',
+ path: '/settings/subscription',
+ icon: Crown,
+ color: 'text-amber-600 bg-amber-50 dark:bg-amber-950/50',
+ badge: 'Tier Status',
           },
         ].map((item) => {
-          const Icon = item.icon
-          const targetHref = getTenantNavHref(item.path, pathname, tenantSlug)
-          return (
+ const Icon = item.icon
+ const targetHref = getTenantNavHref(item.path, pathname, tenantSlug)
+ return (
             <Link
-              key={item.path}
-              href={targetHref}
-              className="p-4 rounded-2xl bg-card border border-border shadow-xs hover:shadow-md hover:border-blue-400 dark:hover:border-blue-600 transition-all flex flex-col justify-between group min-h-[120px]"
-            >
+ key={item.path}
+ href={targetHref}
+ className="p-4 rounded-xl bg-card border border-border shadow-xs hover:shadow-xs hover:border-blue-400 dark:hover:border-blue-600 transition-all flex flex-col justify-between group min-h-[120px]">
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <div className={`h-9 w-9 rounded-xl flex items-center justify-center ${item.color} shrink-0`}>
-                    <Icon className="h-4.5 w-4.5" />
+                    <Icon className="h-4.5 w-4.5"/>
                   </div>
-                  <Badge variant="outline" className="text-2xs tabular-nums font-semibold px-2 py-0.5">
+                  <Badge variant="outline"className="text-2xs tabular-nums font-semibold px-2 py-0.5">
                     {item.badge}
                   </Badge>
                 </div>
                 <div>
-                  <div className="font-bold text-sm text-foreground dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors flex items-center gap-1.5">
+                  <div className="font-bold text-sm text-foreground group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors flex items-center gap-1.5">
                     <span>{item.title}</span>
-                    <ArrowRight className="h-3 w-3 opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all text-blue-600" />
+                    <ArrowRight className="h-3 w-3 opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all text-blue-600"/>
                   </div>
                   <div className="text-2xs text-muted-foreground mt-0.5">{item.titleBn}</div>
                   <p className="text-xs text-muted-foreground mt-1 leading-relaxed line-clamp-2">{item.desc}</p>
@@ -482,10 +472,10 @@ export default function CompanySettingsPage() {
       </div>
 
       {/* Quick Settings Tabs */}
-      <div className="pt-4 border-t border-border dark:border-border">
+      <div className="pt-4 border-t border-border">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-sm font-bold text-foreground dark:text-white uppercase tracking-wider flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-blue-600" />
+          <h2 className="text-sm font-bold text-foreground uppercase tracking-wider flex items-center gap-2">
+            <Sparkles className="h-4 w-4 text-blue-600"/>
             <span>{tBilingual('Quick Settings Editor', 'কুইক সেটিংস এডিটর')}</span>
           </h2>
           <span className="text-xs text-muted-foreground">
@@ -501,20 +491,19 @@ export default function CompanySettingsPage() {
             { id: 'prefixes', labelEn: 'Document Prefixes', labelBn: 'ডকুমেন্ট প্রিফিক্স', icon: FileText },
             { id: 'regional', labelEn: 'Regional & Language', labelBn: 'ভাষা ও অঞ্চল', icon: Globe },
           ].map((tab) => {
-            const Icon = tab.icon
-            const isActive = activeTab === tab.id
-            return (
+ const Icon = tab.icon
+ const isActive = activeTab === tab.id
+ return (
               <button
-                key={tab.id}
-                type="button"
-                onClick={() => setActiveTab(tab.id as typeof activeTab)}
-                className={`flex items-center gap-2 px-4 py-2.5 text-xs font-semibold border-b-2 -mb-px transition-colors whitespace-nowrap h-10 sm:h-9 shrink-0 ${
-                  isActive
+ key={tab.id}
+ type="button"onClick={() => setActiveTab(tab.id as typeof activeTab)}
+ className={`flex items-center gap-2 px-4 py-2.5 text-xs font-semibold border-b-2 -mb-px transition-colors whitespace-nowrap h-10 sm:h-9 shrink-0 ${
+ isActive
                     ? 'border-blue-600 text-blue-600 dark:border-blue-500 dark:text-blue-400 font-bold'
                     : 'border-transparent text-muted-foreground hover:text-foreground dark:hover:text-foreground'
                 }`}
               >
-                <Icon className="h-4 w-4 shrink-0" />
+                <Icon className="h-4 w-4 shrink-0"/>
                 <span>{tBilingual(tab.labelEn, tab.labelBn)}</span>
               </button>
             )
@@ -525,7 +514,7 @@ export default function CompanySettingsPage() {
       <form onSubmit={handleSubmit(onSubmit, onInvalid)}>
         {errorMessage && (
           <div className="flex items-center gap-2 p-3.5 text-xs font-semibold text-rose-700 bg-rose-50 dark:bg-rose-950/50 dark:text-rose-300 rounded-xl border border-rose-200 dark:border-rose-800 bangla-text mb-4 shadow-xs">
-            <AlertCircle className="h-4 w-4 shrink-0 text-rose-600" />
+            <AlertCircle className="h-4 w-4 shrink-0 text-rose-600"/>
             <span>{errorMessage}</span>
           </div>
         )}
@@ -535,7 +524,7 @@ export default function CompanySettingsPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-base">
-                  <Building2 className="h-4 w-4 text-blue-600" />
+                  <Building2 className="h-4 w-4 text-blue-600"/>
                   {tBilingual('Corporate Identity & Branding', 'প্রাতিষ্ঠানিক পরিচয় ও ব্র্যান্ডিং')}
                 </CardTitle>
                 <CardDescription>
@@ -548,17 +537,17 @@ export default function CompanySettingsPage() {
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <Label htmlFor="name" required>
+                    <Label htmlFor="name"required>
                       {tBilingual('Display Name (English)', 'প্রদর্শনী নাম (ইংরেজি)')}
                     </Label>
-                    <Input id="name" {...register('name')} error={errors.name?.message} placeholder="e.g. Rapid Print & Media" />
+                    <Input id="name"{...register('name')} error={errors.name?.message} placeholder="e.g. Rapid Print & Media"/>
                   </div>
 
                   <div className="space-y-1.5">
                     <Label htmlFor="name_bn">
                       {tBilingual('Display Name (Bengali)', 'প্রদর্শনী নাম (বাংলা)')}
                     </Label>
-                    <Input id="name_bn" {...register('name_bn')} error={errors.name_bn?.message} placeholder="উদা: র‍্যাপিড প্রিন্ট অ্যান্ড মিডিয়া" />
+                    <Input id="name_bn"{...register('name_bn')} error={errors.name_bn?.message} placeholder="উদা: র‍্যাপিড প্রিন্ট অ্যান্ড মিডিয়া"/>
                   </div>
                 </div>
 
@@ -572,9 +561,7 @@ export default function CompanySettingsPage() {
                     </span>
                   </div>
                   <Input
-                    id="legal_name"
-                    placeholder="e.g. Rapid Print Solutions Limited"
-                    {...register('legal_name')}
+ id="legal_name"placeholder="e.g. Rapid Print Solutions Limited"{...register('legal_name')}
                   />
                   <p className="text-2xs text-muted-foreground">
                     {tBilingual(
@@ -585,7 +572,7 @@ export default function CompanySettingsPage() {
                 </div>
 
                 {/* Company Logo with Live Preview */}
-                <div className="space-y-2 pt-2 border-t border-border dark:border-border">
+                <div className="space-y-2 pt-2 border-t border-border">
                   <Label htmlFor="logo_url">
                     {tBilingual('Company Logo URL', 'কোম্পানির লোগোর লিংক')}
                   </Label>
@@ -594,16 +581,14 @@ export default function CompanySettingsPage() {
                       {watchedLogoUrl ? (
                         /* eslint-disable-next-line @next/next/no-img-element */
                         <img
-                          src={watchedLogoUrl}
-                          alt="Company Logo Preview"
-                          className="h-full w-full object-contain p-1"
-                          onError={(e) => {
+ src={watchedLogoUrl}
+ alt="Company Logo Preview"className="h-full w-full object-contain p-1"onError={(e) => {
                             ;(e.target as HTMLElement).style.display = 'none'
                           }}
                         />
                       ) : (
                         <div className="text-center p-2">
-                          <ImageIcon className="h-5 w-5 mx-auto text-muted-foreground" />
+                          <ImageIcon className="h-5 w-5 mx-auto text-muted-foreground"/>
                           <span className="text-2xs text-muted-foreground block mt-0.5">
                             {tBilingual('No Logo', 'লোগো নেই')}
                           </span>
@@ -612,9 +597,7 @@ export default function CompanySettingsPage() {
                     </div>
                     <div className="flex-1 w-full space-y-1">
                       <Input
-                        id="logo_url"
-                        placeholder="https://example.com/logo.png"
-                        {...register('logo_url')}
+ id="logo_url"placeholder="https://example.com/logo.png"{...register('logo_url')}
                       />
                       <span className="text-2xs text-muted-foreground block">
                         {tBilingual(
@@ -631,7 +614,7 @@ export default function CompanySettingsPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-base">
-                  <Phone className="h-4 w-4 text-emerald-600" />
+                  <Phone className="h-4 w-4 text-emerald-600"/>
                   {tBilingual('Official Contact Channels', 'অফিশিয়াল যোগাযোগের মাধ্যম')}
                 </CardTitle>
                 <CardDescription>
@@ -644,24 +627,24 @@ export default function CompanySettingsPage() {
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div className="space-y-1.5">
-                    <Label htmlFor="phone" required>
+                    <Label htmlFor="phone"required>
                       {tBilingual('Office Phone Number', 'অফিস ফোন নম্বর')}
                     </Label>
-                    <Input id="phone" placeholder="+880 1711-000000" {...register('phone')} error={errors.phone?.message} />
+                    <Input id="phone"placeholder="+880 1711-000000"{...register('phone')} error={errors.phone?.message} />
                   </div>
 
                   <div className="space-y-1.5">
                     <Label htmlFor="whatsapp">
                       {tBilingual('Business WhatsApp Number', 'বিজনেস হোয়াটসঅ্যাপ নম্বর')}
                     </Label>
-                    <Input id="whatsapp" placeholder="+880 1811-000000" {...register('whatsapp')} />
+                    <Input id="whatsapp"placeholder="+880 1811-000000"{...register('whatsapp')} />
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label htmlFor="email" required>
+                    <Label htmlFor="email"required>
                       {tBilingual('Official Billing Email', 'অফিসিয়াল বিলিং ইমেইল')}
                     </Label>
-                    <Input id="email" type="email" placeholder="billing@company.com" {...register('email')} error={errors.email?.message} />
+                    <Input id="email"type="email"placeholder="billing@company.com"{...register('email')} error={errors.email?.message} />
                   </div>
                 </div>
               </CardContent>
@@ -670,7 +653,7 @@ export default function CompanySettingsPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-base">
-                  <MapPin className="h-4 w-4 text-rose-600" />
+                  <MapPin className="h-4 w-4 text-rose-600"/>
                   {tBilingual('Address & Production Hub', 'ঠিকানা ও উৎপাদন হাব')}
                 </CardTitle>
                 <CardDescription>
@@ -685,22 +668,22 @@ export default function CompanySettingsPage() {
                   <Label htmlFor="area">
                     {tBilingual('Commercial Area / Printing Hub', 'মার্কেট বা বাণিজ্যিক এলাকা')}
                   </Label>
-                  <Input id="area" placeholder="e.g. Fakirapool, Arambagh, Banglabazar, Nilkhet" {...register('area')} />
+                  <Input id="area"placeholder="e.g. Fakirapool, Arambagh, Banglabazar, Nilkhet"{...register('area')} />
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <Label htmlFor="address" required>
+                    <Label htmlFor="address"required>
                       {tBilingual('Full Address (English)', 'পূর্ণাঙ্গ ঠিকানা (ইংরেজি)')}
                     </Label>
-                    <Input id="address" placeholder="e.g. 14/A Toyenbee Circular Road, Motijheel" {...register('address')} error={errors.address?.message} />
+                    <Input id="address"placeholder="e.g. 14/A Toyenbee Circular Road, Motijheel"{...register('address')} error={errors.address?.message} />
                   </div>
 
                   <div className="space-y-1.5">
                     <Label htmlFor="address_bn">
                       {tBilingual('Full Address (Bengali)', 'পূর্ণাঙ্গ ঠিকানা (বাংলা)')}
                     </Label>
-                    <Input id="address_bn" placeholder="উদা: ১৪/এ তোয়েনবি সার্কুলার রোড, মতিঝিল" {...register('address_bn')} />
+                    <Input id="address_bn"placeholder="উদা: ১৪/এ তোয়েনবি সার্কুলার রোড, মতিঝিল"{...register('address_bn')} />
                   </div>
                 </div>
               </CardContent>
@@ -712,7 +695,7 @@ export default function CompanySettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
-                <Clock className="h-4 w-4 text-blue-600" />
+                <Clock className="h-4 w-4 text-blue-600"/>
                 {tBilingual('Office Hours & Operational Holiday Schedule', 'অফিস সময়সূচি ও সাপ্তাহিক ছুটি')}
               </CardTitle>
               <CardDescription>
@@ -724,47 +707,40 @@ export default function CompanySettingsPage() {
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-3">
-                <Label htmlFor="office_hours" className="text-sm font-semibold">
+                <Label htmlFor="office_hours"className="text-sm font-semibold">
                   {tBilingual('Office Hours / Business Hours', 'অফিস সময়সূচী')}
                 </Label>
                 <Input
-                  id="office_hours"
-                  placeholder="e.g. 9:00 AM - 8:00 PM (Sat - Thu)"
-                  {...register('office_hours')}
+ id="office_hours"placeholder="e.g. 9:00 AM - 8:00 PM (Sat - Thu)"{...register('office_hours')}
                 />
                 <div className="flex flex-wrap items-center gap-2 pt-1">
                   <span className="text-xs text-muted-foreground">{tBilingual('Quick Presets:', 'কুইক প্রিসেট:')}</span>
                   {OFFICE_HOURS_PRESETS.map((preset) => (
                     <button
-                      key={preset}
-                      type="button"
-                      onClick={() => setValue('office_hours', preset, { shouldDirty: true })}
-                      className="text-2xs px-2.5 py-1 rounded-md bg-muted text-foreground hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-slate-700 transition-colors border border-border min-h-[32px]"
-                    >
+ key={preset}
+ type="button"onClick={() => setValue('office_hours', preset, { shouldDirty: true })}
+ className="text-2xs px-2.5 py-1 rounded-md bg-muted text-foreground hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-card-elevated transition-colors border border-border min-h-[32px]">
                       {preset}
                     </button>
                   ))}
                 </div>
               </div>
 
-              <div className="space-y-3 pt-4 border-t border-border dark:border-border">
-                <Label htmlFor="holidays" className="text-sm font-semibold">
+              <div className="space-y-3 pt-4 border-t border-border">
+                <Label htmlFor="holidays"className="text-sm font-semibold">
                   {tBilingual('Weekly Holiday & Closed Days', 'সাপ্তাহিক ছুটি ও বন্ধের দিন')}
                 </Label>
                 <Input
-                  id="holidays"
-                  placeholder={tBilingual('e.g. Friday', 'যেমন: শুক্রবার')}
+ id="holidays"placeholder={tBilingual('e.g. Friday', 'যেমন: শুক্রবার')}
                   {...register('holidays')}
                 />
                 <div className="flex flex-wrap items-center gap-2 pt-1">
                   <span className="text-xs text-muted-foreground">{tBilingual('Quick Presets:', 'কুইক প্রিসেট:')}</span>
                   {HOLIDAY_PRESETS.map((preset) => (
                     <button
-                      key={preset}
-                      type="button"
-                      onClick={() => setValue('holidays', preset, { shouldDirty: true })}
-                      className="text-2xs px-2.5 py-1 rounded-md bg-muted text-foreground hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-slate-700 transition-colors border border-border min-h-[32px]"
-                    >
+ key={preset}
+ type="button"onClick={() => setValue('holidays', preset, { shouldDirty: true })}
+ className="text-2xs px-2.5 py-1 rounded-md bg-muted text-foreground hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-card-elevated transition-colors border border-border min-h-[32px]">
                       {preset}
                     </button>
                   ))}
@@ -779,7 +755,7 @@ export default function CompanySettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
-                <ShieldCheck className="h-4 w-4 text-emerald-600" />
+                <ShieldCheck className="h-4 w-4 text-emerald-600"/>
                 {tBilingual('Government & Tax Registrations', 'সরকারি ও ট্যাক্স নিবন্ধন')}
               </CardTitle>
               <CardDescription>
@@ -795,14 +771,14 @@ export default function CompanySettingsPage() {
                   <Label htmlFor="trade_license_no">
                     {tBilingual('Trade License Number', 'ট্রেড লাইসেন্স নং')}
                   </Label>
-                  <Input id="trade_license_no" placeholder="TRAD/DNCC/..." {...register('trade_license_no')} />
+                  <Input id="trade_license_no"placeholder="TRAD/DNCC/..."{...register('trade_license_no')} />
                 </div>
 
                 <div className="space-y-1.5">
                   <Label htmlFor="bin_no">
                     {tBilingual('BIN (Business Identification Number)', 'ভ্যাট নিবন্ধন নম্বর (বিআইএন)')}
                   </Label>
-                  <Input id="bin_no" placeholder="e.g. 004819284-0101" {...register('bin_no')} />
+                  <Input id="bin_no"placeholder="e.g. 004819284-0101"{...register('bin_no')} />
                   <span className="text-2xs text-muted-foreground">
                     {tBilingual('NBR 9 or 13-digit registration', 'এনবিআর ৯ বা ১৩ ডিজিট নিবন্ধন')}
                   </span>
@@ -812,14 +788,14 @@ export default function CompanySettingsPage() {
                   <Label htmlFor="tin_no">
                     {tBilingual('TIN (Tax Identification Number)', 'ই-টিন নম্বর')}
                   </Label>
-                  <Input id="tin_no" placeholder="e.g. 8492049182" {...register('tin_no')} />
+                  <Input id="tin_no"placeholder="e.g. 8492049182"{...register('tin_no')} />
                 </div>
               </div>
 
-              <div className="rounded-xl border border-border p-4 space-y-4 bg-muted dark:bg-card">
+              <div className="rounded-xl border border-border p-4 space-y-4 bg-muted">
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="font-semibold text-sm text-foreground dark:text-white">
+                    <div className="font-semibold text-sm text-foreground">
                       {tBilingual('Automated VAT Calculation', 'স্বয়ংক্রিয় ভ্যাট গণনা')}
                     </div>
                     <p className="text-xs text-muted-foreground">
@@ -830,10 +806,7 @@ export default function CompanySettingsPage() {
                     </p>
                   </div>
                   <input
-                    type="checkbox"
-                    id="vat_enabled"
-                    className="h-5 w-5 rounded border-input text-blue-600 focus:ring-ring"
-                    {...register('vat_enabled')}
+ type="checkbox"id="vat_enabled"className="h-5 w-5 rounded border-input text-blue-600 focus:ring-ring"{...register('vat_enabled')}
                   />
                 </div>
 
@@ -845,12 +818,9 @@ export default function CompanySettingsPage() {
                       </Label>
                       <div className="relative">
                         <Input
-                          id="vat_rate"
-                          type="number"
-                          step="0.1"
-                          {...register('vat_rate', { valueAsNumber: true })}
+ id="vat_rate"type="number"step="0.1"{...register('vat_rate', { valueAsNumber: true })}
                         />
-                        <Percent className="absolute right-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                        <Percent className="absolute right-3 top-2.5 h-4 w-4 text-muted-foreground"/>
                       </div>
                     </div>
                     <p className="text-xs text-muted-foreground sm:mt-5">
@@ -871,7 +841,7 @@ export default function CompanySettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
-                <FileText className="h-4 w-4 text-blue-600" />
+                <FileText className="h-4 w-4 text-blue-600"/>
                 {tBilingual('Document Numbering & Sequences', 'ডকুমেন্ট নাম্বারিং ও সিকোয়েন্স')}
               </CardTitle>
               <CardDescription>
@@ -884,26 +854,26 @@ export default function CompanySettingsPage() {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="space-y-1.5">
-                  <Label htmlFor="quotation_prefix" required>
+                  <Label htmlFor="quotation_prefix"required>
                     {tBilingual('Quotation Prefix', 'কোটেশন প্রিফিক্স')}
                   </Label>
-                  <Input id="quotation_prefix" placeholder="QT" {...register('quotation_prefix')} />
+                  <Input id="quotation_prefix"placeholder="QT"{...register('quotation_prefix')} />
                   <span className="text-2xs text-muted-foreground">Example: QT-2026-0012</span>
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label htmlFor="invoice_prefix" required>
+                  <Label htmlFor="invoice_prefix"required>
                     {tBilingual('Invoice Prefix', 'ইনভয়েস প্রিফিক্স')}
                   </Label>
-                  <Input id="invoice_prefix" placeholder="INV" {...register('invoice_prefix')} />
+                  <Input id="invoice_prefix"placeholder="INV"{...register('invoice_prefix')} />
                   <span className="text-2xs text-muted-foreground">Example: INV-2026-0482</span>
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label htmlFor="challan_prefix" required>
+                  <Label htmlFor="challan_prefix"required>
                     {tBilingual('Challan Prefix', 'চালান প্রিফিক্স')}
                   </Label>
-                  <Input id="challan_prefix" placeholder="CH" {...register('challan_prefix')} />
+                  <Input id="challan_prefix"placeholder="CH"{...register('challan_prefix')} />
                   <span className="text-2xs text-muted-foreground">Example: CH-2026-0091</span>
                 </div>
               </div>
@@ -916,7 +886,7 @@ export default function CompanySettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
-                <Globe className="h-4 w-4 text-purple-600" />
+                <Globe className="h-4 w-4 text-purple-600"/>
                 {tBilingual('Regional & Language Preferences', 'আঞ্চলিক ও ভাষা পছন্দসমূহ')}
               </CardTitle>
               <CardDescription>
@@ -932,7 +902,7 @@ export default function CompanySettingsPage() {
                   <Label htmlFor="default_currency">
                     {tBilingual('Default Currency', 'ডিফল্ট কারেন্সি')}
                   </Label>
-                  <Input id="default_currency" value="BDT (৳)" readOnly className="bg-muted dark:bg-card" />
+                  <Input id="default_currency"value="BDT (৳)"readOnly className="bg-muted"/>
                 </div>
 
                 <div className="space-y-1.5">
@@ -940,9 +910,7 @@ export default function CompanySettingsPage() {
                     {tBilingual('Default Interface Language', 'ইন্টারফেসের ডিফল্ট ভাষা')}
                   </Label>
                   <select
-                    id="default_language"
-                    className="w-full h-10 px-3 rounded-md border border-input bg-card text-sm focus:ring-2 focus:ring-ring"
-                    {...register('default_language')}
+ id="default_language"className="w-full h-10 px-3 rounded-md border border-input bg-card text-sm focus:ring-2 focus:ring-ring"{...register('default_language')}
                   >
                     <option value="bn">বাংলা (Bengali)</option>
                     <option value="en">English</option>
@@ -956,11 +924,9 @@ export default function CompanySettingsPage() {
         {/* Action Buttons */}
         <div className="mt-6 flex items-center justify-end gap-3">
           <Button
-            type="submit"
-            isLoading={isLoading}
-            className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto h-11 sm:h-9 text-xs font-semibold shadow-sm"
-          >
-            <Save className="mr-1.5 h-4 w-4" />
+ type="submit"isLoading={isLoading}
+ className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto h-11 sm:h-9 text-xs font-semibold shadow-sm">
+            <Save className="mr-1.5 h-4 w-4"/>
             {tBilingual('Save Settings', 'সেটিংস সংরক্ষণ করুন')}
           </Button>
         </div>

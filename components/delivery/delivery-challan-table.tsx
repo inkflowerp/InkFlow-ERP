@@ -4,20 +4,20 @@ import React from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
-  Truck,
-  MapPin,
-  ExternalLink,
-  Phone,
-  MessageSquare,
-  Printer,
-  CheckCircle2,
-  AlertCircle,
-  Package,
-  Sparkles,
-  Clock,
-  Wrench,
-  Layers,
-  FileCheck2,
+ Truck,
+ MapPin,
+ ExternalLink,
+ Phone,
+ MessageSquare,
+ Printer,
+ CheckCircle2,
+ AlertCircle,
+ Package,
+ Sparkles,
+ Clock,
+ Wrench,
+ Layers,
+ FileCheck2,
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -29,109 +29,109 @@ import { cn } from '@/lib/utils'
 import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 
 export interface DeliveryChallanTableProps {
-  challans: DeliveryChallanRecord[]
-  tenantSlug: string
-  companyName?: string
-  onOpenDeliveryModal: (challan: DeliveryChallanRecord) => void
-  onMarkOutForDelivery?: (challanId: string) => void
-  getLiveItemStatus: (item: any, challan?: DeliveryChallanRecord | null) => string
+ challans: DeliveryChallanRecord[]
+ tenantSlug: string
+ companyName?: string
+ onOpenDeliveryModal: (challan: DeliveryChallanRecord) => void
+ onMarkOutForDelivery?: (challanId: string) => void
+ getLiveItemStatus: (item: any, challan?: DeliveryChallanRecord | null) => string
 }
 
 export function DeliveryChallanTable({
-  challans,
-  tenantSlug,
-  companyName = 'InkFlow Printing & Signage',
-  onOpenDeliveryModal,
-  onMarkOutForDelivery,
-  getLiveItemStatus,
+ challans,
+ tenantSlug,
+ companyName = 'InkFlow Printing & Signage',
+ onOpenDeliveryModal,
+ onMarkOutForDelivery,
+ getLiveItemStatus,
 }: DeliveryChallanTableProps) {
-  const pathname = usePathname()
-  const { locale, tBilingual } = useI18n()
-  const isBn = locale === 'bn'
+ const pathname = usePathname()
+ const { locale, tBilingual } = useI18n()
+ const isBn = locale === 'bn'
 
-  const getMethodBadge = (method: DeliveryMethod) => {
-    switch (method) {
-      case 'company_vehicle':
-        return (
+ const getMethodBadge = (method: DeliveryMethod) => {
+ switch (method) {
+ case 'company_vehicle':
+ return (
           <span className="px-2 py-0.5 rounded text-2xs font-bold bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800">
             {isBn ? 'কোম্পানির গাড়ি/পিকআপ' : 'Company Vehicle'}
           </span>
         )
-      case 'courier':
-        return (
+ case 'courier':
+ return (
           <span className="px-2 py-0.5 rounded text-2xs font-bold bg-purple-50 text-purple-700 border border-purple-200 dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-800">
             {isBn ? 'কুরিয়ার সার্ভিস' : 'Courier Service'}
           </span>
         )
-      case 'local_transport':
-        return (
+ case 'local_transport':
+ return (
           <span className="px-2 py-0.5 rounded text-2xs font-bold bg-amber-50 text-amber-800 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800">
             {isBn ? 'লোকাল ভ্যান/সিএনজি' : 'Local Transport'}
           </span>
         )
-      case 'customer_pickup':
-        return (
-          <span className="px-2 py-0.5 rounded text-2xs font-bold bg-muted text-foreground dark:text-muted-foreground">
+ case 'customer_pickup':
+ return (
+          <span className="px-2 py-0.5 rounded text-2xs font-bold bg-muted text-foreground">
             {isBn ? 'দোকান/কাউন্টার গ্রহণ' : 'Customer Pickup'}
           </span>
         )
-      default:
-        return <span className="px-2 py-0.5 rounded text-2xs font-bold bg-muted">{method}</span>
+ default:
+ return <span className="px-2 py-0.5 rounded text-2xs font-bold bg-muted">{method}</span>
     }
   }
 
-  const getDeliveryStatusBadge = (status: DeliveryStatus) => {
-    switch (status) {
-      case 'delivered':
-        return (
-          <Badge variant="outline" className="bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800 font-bold gap-1">
-            <CheckCircle2 className="h-3 w-3 text-emerald-600" />
+ const getDeliveryStatusBadge = (status: DeliveryStatus) => {
+ switch (status) {
+ case 'delivered':
+ return (
+          <Badge variant="outline"className="bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800 font-bold gap-1">
+            <CheckCircle2 className="h-3 w-3 text-emerald-600"/>
             <span>{isBn ? 'ডেলিভারি সম্পন্ন' : 'Delivered'}</span>
           </Badge>
         )
-      case 'partially_delivered':
-        return (
-          <Badge variant="outline" className="bg-amber-50 text-amber-900 border-amber-300 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800 font-bold gap-1">
-            <Package className="h-3 w-3 text-amber-600" />
+ case 'partially_delivered':
+ return (
+          <Badge variant="outline"className="bg-amber-50 text-amber-900 border-amber-300 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800 font-bold gap-1">
+            <Package className="h-3 w-3 text-amber-600"/>
             <span>{isBn ? 'আংশিক ডেলিভারি' : 'Partially Delivered'}</span>
           </Badge>
         )
-      case 'out_for_delivery':
-        return (
-          <Badge variant="outline" className="bg-blue-50 text-blue-800 border-blue-300 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800 font-bold gap-1 animate-pulse">
-            <Truck className="h-3 w-3 text-blue-600" />
+ case 'out_for_delivery':
+ return (
+          <Badge variant="outline"className="bg-blue-50 text-blue-800 border-blue-300 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800 font-bold gap-1 animate-pulse">
+            <Truck className="h-3 w-3 text-blue-600"/>
             <span>{isBn ? 'গাড়িতে চলমান' : 'Out for Delivery'}</span>
           </Badge>
         )
-      case 'pending_dispatch':
-        return (
-          <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 font-bold gap-1">
-            <Sparkles className="h-3 w-3 text-emerald-500" />
+ case 'pending_dispatch':
+ return (
+          <Badge variant="outline"className="bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 font-bold gap-1">
+            <Sparkles className="h-3 w-3 text-emerald-500"/>
             <span>{isBn ? 'ডেলিভারি প্রস্তুত' : 'Ready to Dispatch'}</span>
           </Badge>
         )
-      case 'assigned':
-        return (
-          <Badge variant="outline" className="bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300">
+ case 'assigned':
+ return (
+          <Badge variant="outline"className="bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300">
             <span>{isBn ? 'গাড়ি বরাদ্দকৃত' : 'Vehicle Assigned'}</span>
           </Badge>
         )
-      case 'scheduled':
-      default:
-        return (
-          <Badge variant="outline" className="bg-muted text-foreground border-border dark:text-muted-foreground">
+ case 'scheduled':
+ default:
+ return (
+          <Badge variant="outline"className="bg-muted text-foreground border-border">
             <span>{isBn ? 'শিডিউল করা' : 'Scheduled'}</span>
           </Badge>
         )
     }
   }
 
-  return (
+ return (
     <div>
       {/* Desktop Table View */}
       <div className="hidden md:block overflow-x-auto">
         <table className="w-full text-left text-sm">
-          <thead className="bg-muted text-xs font-semibold text-muted-foreground border-b border-border dark:border-border">
+          <thead className="bg-muted text-xs font-semibold text-muted-foreground border-b border-border">
             <tr>
               <th className="py-3 px-4">{isBn ? 'চালান ও ইনভয়েস' : 'Challan & Invoice'}</th>
               <th className="py-3 px-4">{isBn ? 'কাস্টমার ও গন্তব্য' : 'Customer & Destination'}</th>
@@ -144,44 +144,43 @@ export function DeliveryChallanTable({
           </thead>
           <tbody className="divide-y divide-border dark:divide-border">
             {challans.map((ch) => {
-              const items = ch.items || []
-              const readyCount = items.filter(
+ const items = ch.items || []
+ const readyCount = items.filter(
                 (it) => !it.is_delivered && (getLiveItemStatus(it, ch) === 'ready_for_delivery' || it.item_kind === 'ready_product')
               ).length
-              const pendingCount = items.filter(
+ const pendingCount = items.filter(
                 (it) => !it.is_delivered && getLiveItemStatus(it, ch) !== 'ready_for_delivery'
               ).length
-              const deliveredCount = items.filter((it) => it.is_delivered).length
+ const deliveredCount = items.filter((it) => it.is_delivered).length
 
-              const rawPhone = ch.customer_phone || ''
-              const cleanPhone = rawPhone.replace(/\D/g, '')
-              const formattedPhone = cleanPhone.startsWith('880')
+ const rawPhone = ch.customer_phone || ''
+ const cleanPhone = rawPhone.replace(/\D/g, '')
+ const formattedPhone = cleanPhone.startsWith('880')
                 ? cleanPhone
                 : cleanPhone.startsWith('0')
                 ? `88${cleanPhone}`
                 : `880${cleanPhone}`
 
-              const waMessage = LogisticsService.generateBangladeshiChallanWhatsAppMessage(ch, companyName)
-              const waUrl = cleanPhone ? `https://wa.me/${formattedPhone}?text=${encodeURIComponent(waMessage)}` : '#'
+ const waMessage = LogisticsService.generateBangladeshiChallanWhatsAppMessage(ch, companyName)
+ const waUrl = cleanPhone ? `https://wa.me/${formattedPhone}?text=${encodeURIComponent(waMessage)}` : '#'
 
-              const dueAmt = Number(ch.due_amount) || 0
+ const dueAmt = Number(ch.due_amount) || 0
 
-              return (
+ return (
                 <tr key={ch.id} className="hover:bg-muted dark:hover:bg-muted/50 transition-colors">
                   {/* Challan & Invoice # */}
                   <td className="py-3.5 px-4">
                     <div className="flex items-center gap-1.5">
                       <Link
-                        href={getTenantNavHref(`/delivery/${ch.id}`, pathname, tenantSlug)}
-                        className="tabular-nums font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 group"
-                      >
+ href={getTenantNavHref(`/delivery/${ch.id}`, pathname, tenantSlug)}
+ className="tabular-nums font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 group">
                         <span>{ch.challan_number}</span>
-                        <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity"/>
                       </Link>
                     </div>
 
                     <div className="flex items-center gap-1.5 mt-1 flex-wrap tabular-nums">
-                      <Badge variant="outline" className="text-2xs py-0 px-1 font-semibold text-blue-700 dark:text-blue-300 bg-blue-50/50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800">
+                      <Badge variant="outline"className="text-2xs py-0 px-1 font-semibold text-blue-700 dark:text-blue-300 bg-blue-50/50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800">
                         {ch.invoice_number || `INV-${ch.challan_number.replace('CHL-', '').replace('CH-', '')}`}
                       </Badge>
                       {ch.order_number && (
@@ -201,11 +200,11 @@ export function DeliveryChallanTable({
 
                   {/* Customer & Destination */}
                   <td className="py-3.5 px-4 max-w-[240px]">
-                    <div className="font-semibold text-foreground dark:text-white text-xs truncate">
+                    <div className="font-semibold text-foreground text-xs truncate">
                       {ch.customer_name}
                     </div>
                     <div className="text-2xs text-muted-foreground flex items-center gap-1 mt-0.5 truncate">
-                      <MapPin className="h-3 w-3 shrink-0 text-muted-foreground" />
+                      <MapPin className="h-3 w-3 shrink-0 text-muted-foreground"/>
                       <span className="truncate">{ch.delivery_address || 'Factory Pickup'}</span>
                     </div>
 
@@ -250,7 +249,7 @@ export function DeliveryChallanTable({
                   </td>
 
                   {/* Scheduled Date */}
-                  <td className="py-3.5 px-4 text-xs tabular-nums text-muted-foreground dark:text-muted-foreground">
+                  <td className="py-3.5 px-4 text-xs tabular-nums text-muted-foreground">
                     {ch.scheduled_date}
                   </td>
 
@@ -264,42 +263,34 @@ export function DeliveryChallanTable({
                     <div className="flex items-center justify-end gap-1.5 flex-wrap">
                       {cleanPhone ? (
                         <a
-                          href={waUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center justify-center h-7 px-2 text-xs font-bold text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 rounded-lg transition-colors border border-emerald-200 dark:border-emerald-800"
-                          title="Share Challan on WhatsApp"
-                        >
-                          <MessageSquare className="h-3.5 w-3.5 mr-1 text-emerald-600" />
+ href={waUrl}
+ target="_blank"rel="noopener noreferrer"className="inline-flex items-center justify-center h-7 px-2 text-xs font-bold text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 rounded-lg transition-colors border border-emerald-200 dark:border-emerald-800"title="Share Challan on WhatsApp">
+                          <MessageSquare className="h-3.5 w-3.5 mr-1 text-emerald-600"/>
                           <span>WA</span>
                         </a>
                       ) : null}
 
                       {ch.customer_phone ? (
                         <a
-                          href={`tel:${ch.customer_phone}`}
-                          className="inline-flex items-center justify-center h-7 px-2 text-xs text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors border border-border dark:border-border"
-                          title="Call Customer"
-                        >
-                          <Phone className="h-3 w-3" />
+ href={`tel:${ch.customer_phone}`}
+ className="inline-flex items-center justify-center h-7 px-2 text-xs text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors border border-border"title="Call Customer">
+                          <Phone className="h-3 w-3"/>
                         </a>
                       ) : null}
 
                       <Link
-                        href={getTenantNavHref(`/delivery/${ch.id}`, pathname, tenantSlug)}
-                        className="inline-flex items-center px-2 py-1 rounded-lg text-xs font-semibold border border-input text-foreground hover:bg-muted dark:text-muted-foreground"
-                      >
-                        <Printer className="h-3 w-3 mr-1" />
+ href={getTenantNavHref(`/delivery/${ch.id}`, pathname, tenantSlug)}
+ className="inline-flex items-center px-2 py-1 rounded-lg text-xs font-semibold border border-input text-foreground hover:bg-muted">
+                        <Printer className="h-3 w-3 mr-1"/>
                         <span>PDF</span>
                       </Link>
 
                       <Button
-                        size="sm"
-                        onClick={() => onOpenDeliveryModal(ch)}
-                        className={cn(
+ size="sm"onClick={() => onOpenDeliveryModal(ch)}
+ className={cn(
                           'h-7 text-2xs px-2.5 font-bold shadow-xs cursor-pointer',
-                          ch.status === 'delivered'
-                            ? 'bg-muted text-foreground hover:bg-muted dark:text-foreground'
+ ch.status === 'delivered'
+                            ? 'bg-muted text-foreground hover:bg-muted '
                             : ch.status === 'partially_delivered'
                             ? 'bg-amber-600 hover:bg-amber-700 text-white'
                             : readyCount > 0
@@ -325,44 +316,43 @@ export function DeliveryChallanTable({
       {/* Mobile Card List View */}
       <div className="md:hidden divide-y divide-border dark:divide-border">
         {challans.map((ch) => {
-          const items = ch.items || []
-          const readyCount = items.filter(
+ const items = ch.items || []
+ const readyCount = items.filter(
             (it) => !it.is_delivered && (getLiveItemStatus(it, ch) === 'ready_for_delivery' || it.item_kind === 'ready_product')
           ).length
-          const pendingCount = items.filter(
+ const pendingCount = items.filter(
             (it) => !it.is_delivered && getLiveItemStatus(it, ch) !== 'ready_for_delivery'
           ).length
-          const deliveredCount = items.filter((it) => it.is_delivered).length
+ const deliveredCount = items.filter((it) => it.is_delivered).length
 
-          const rawPhone = ch.customer_phone || ''
-          const cleanPhone = rawPhone.replace(/\D/g, '')
-          const formattedPhone = cleanPhone.startsWith('880')
+ const rawPhone = ch.customer_phone || ''
+ const cleanPhone = rawPhone.replace(/\D/g, '')
+ const formattedPhone = cleanPhone.startsWith('880')
             ? cleanPhone
             : cleanPhone.startsWith('0')
             ? `88${cleanPhone}`
             : `880${cleanPhone}`
 
-          const waMessage = LogisticsService.generateBangladeshiChallanWhatsAppMessage(ch, companyName)
-          const waUrl = cleanPhone ? `https://wa.me/${formattedPhone}?text=${encodeURIComponent(waMessage)}` : '#'
-          const dueAmt = Number(ch.due_amount) || 0
+ const waMessage = LogisticsService.generateBangladeshiChallanWhatsAppMessage(ch, companyName)
+ const waUrl = cleanPhone ? `https://wa.me/${formattedPhone}?text=${encodeURIComponent(waMessage)}` : '#'
+ const dueAmt = Number(ch.due_amount) || 0
 
-          return (
+ return (
             <div key={ch.id} className="p-4 space-y-3 hover:bg-muted dark:hover:bg-muted/50 transition-colors">
               {/* Header: Challan # & Status */}
               <div className="flex items-center justify-between gap-2">
                 <Link
-                  href={getTenantNavHref(`/delivery/${ch.id}`, pathname, tenantSlug)}
-                  className="tabular-nums font-bold text-sm text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
-                >
+ href={getTenantNavHref(`/delivery/${ch.id}`, pathname, tenantSlug)}
+ className="tabular-nums font-bold text-sm text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1">
                   <span>{ch.challan_number}</span>
-                  <ExternalLink className="h-3.5 w-3.5 opacity-70" />
+                  <ExternalLink className="h-3.5 w-3.5 opacity-70"/>
                 </Link>
                 {getDeliveryStatusBadge(ch.status)}
               </div>
 
               {/* Invoice & Due Alert Bar */}
               <div className="flex items-center gap-2 tabular-nums flex-wrap">
-                <Badge variant="outline" className="text-2xs py-0 px-1 font-semibold text-blue-700 dark:text-blue-300 bg-blue-50/50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800">
+                <Badge variant="outline"className="text-2xs py-0 px-1 font-semibold text-blue-700 dark:text-blue-300 bg-blue-50/50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800">
                   {ch.invoice_number || `INV-${ch.challan_number.replace('CHL-', '').replace('CH-', '')}`}
                 </Badge>
                 {ch.order_number && (
@@ -381,7 +371,7 @@ export function DeliveryChallanTable({
 
               {/* Customer & Address */}
               <div>
-                <div className="font-semibold text-sm text-foreground dark:text-white flex items-center justify-between">
+                <div className="font-semibold text-sm text-foreground flex items-center justify-between">
                   <span>{ch.customer_name}</span>
                   {ch.customer_phone && (
                     <a href={`tel:${ch.customer_phone}`} className="text-xs tabular-nums text-blue-600 hover:underline">
@@ -390,7 +380,7 @@ export function DeliveryChallanTable({
                   )}
                 </div>
                 <div className="text-xs text-muted-foreground flex items-start gap-1 mt-0.5">
-                  <MapPin className="h-3.5 w-3.5 shrink-0 text-muted-foreground mt-0.5" />
+                  <MapPin className="h-3.5 w-3.5 shrink-0 text-muted-foreground mt-0.5"/>
                   <span>{ch.delivery_address || 'Factory Pickup'}</span>
                 </div>
                 {items.length > 0 && (
@@ -416,57 +406,51 @@ export function DeliveryChallanTable({
               </div>
 
               {/* Meta Grid */}
-              <div className="grid grid-cols-2 gap-2 p-2.5 rounded-lg bg-muted text-xs border border-border dark:border-border">
+              <div className="grid grid-cols-2 gap-2 p-2.5 rounded-lg bg-muted text-xs border border-border">
                 <div>
                   <span className="text-2xs uppercase font-semibold text-muted-foreground block">{isBn ? 'মাধ্যম' : 'Method'}</span>
                   <div className="mt-0.5">{getMethodBadge(ch.delivery_method)}</div>
                 </div>
                 <div>
                   <span className="text-2xs uppercase font-semibold text-muted-foreground block">{isBn ? 'ডেলিভারি তারিখ' : 'Scheduled Date'}</span>
-                  <span className="tabular-nums text-foreground dark:text-muted-foreground">{ch.scheduled_date}</span>
+                  <span className="tabular-nums text-foreground">{ch.scheduled_date}</span>
                 </div>
                 {ch.vehicle_info && (
-                  <div className="col-span-2 text-2xs text-muted-foreground pt-1 border-t border-border dark:border-border">
-                    {isBn ? 'গাড়ি:' : 'Vehicle:'} <strong className="tabular-nums text-foreground dark:text-foreground">{ch.vehicle_info}</strong>
+                  <div className="col-span-2 text-2xs text-muted-foreground pt-1 border-t border-border">
+                    {isBn ? 'গাড়ি:' : 'Vehicle:'} <strong className="tabular-nums text-foreground">{ch.vehicle_info}</strong>
                     {ch.delivery_person_name && <span> ({ch.delivery_person_name})</span>}
                   </div>
                 )}
               </div>
 
               {/* Actions Grid */}
-              <div className="grid grid-cols-3 gap-1.5 pt-1 border-t border-border dark:border-border">
+              <div className="grid grid-cols-3 gap-1.5 pt-1 border-t border-border">
                 {cleanPhone ? (
                   <a
-                    href={waUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center gap-1 h-9 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800"
-                    title="Send WhatsApp Challan"
-                  >
-                    <MessageSquare className="h-3.5 w-3.5" />
+ href={waUrl}
+ target="_blank"rel="noopener noreferrer"className="inline-flex items-center justify-center gap-1 h-9 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800"title="Send WhatsApp Challan">
+                    <MessageSquare className="h-3.5 w-3.5"/>
                     <span>WA</span>
                   </a>
                 ) : (
-                  <Button size="sm" variant="outline" disabled className="h-9 text-xs opacity-40">
-                    WA
+                  <Button size="sm"variant="outline"disabled className="h-9 text-xs opacity-40">
+ WA
                   </Button>
                 )}
 
                 <Link
-                  href={getTenantNavHref(`/delivery/${ch.id}`, pathname, tenantSlug)}
-                  className="inline-flex items-center justify-center h-9 rounded-lg text-xs font-semibold border border-input text-foreground hover:bg-muted dark:text-muted-foreground"
-                >
-                  <Printer className="h-3.5 w-3.5 mr-1" />
-                  PDF
+ href={getTenantNavHref(`/delivery/${ch.id}`, pathname, tenantSlug)}
+ className="inline-flex items-center justify-center h-9 rounded-lg text-xs font-semibold border border-input text-foreground hover:bg-muted">
+                  <Printer className="h-3.5 w-3.5 mr-1"/>
+ PDF
                 </Link>
 
                 <Button
-                  size="sm"
-                  onClick={() => onOpenDeliveryModal(ch)}
-                  className={cn(
+ size="sm"onClick={() => onOpenDeliveryModal(ch)}
+ className={cn(
                     'h-9 text-xs font-bold shadow-xs',
-                    ch.status === 'delivered'
-                      ? 'bg-muted text-foreground hover:bg-muted dark:text-foreground'
+ ch.status === 'delivered'
+                      ? 'bg-muted text-foreground hover:bg-muted '
                       : ch.status === 'partially_delivered'
                       ? 'bg-amber-600 hover:bg-amber-700 text-white'
                       : readyCount > 0

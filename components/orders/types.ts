@@ -17,24 +17,24 @@ export type OrderStage =
   | 'ready_delivery'
 
 export interface OrderItemSpec {
-  id: string
-  serviceName?: string
-  itemName: string
-  dimensions?: string
-  width?: number
-  height?: number
-  dimensionUnit?: string
-  quantity: number
-  unit: string
-  unitPrice?: number
-  totalPrice?: number
-  materialSpec?: string
-  finishing?: string
-  addOn?: string
-  itemKind?: 'service' | 'ready_product' | 'material' | 'outsource' | 'custom' | 'custom_manufacturing'
-  workflowRouting?: 'ready_product' | 'design_required' | 'design_ok' | 'ready_production' | 'custom' | 'outsource' | string
-  designRequired?: boolean
-  notes?: string
+ id: string
+ serviceName?: string
+ itemName: string
+ dimensions?: string
+ width?: number
+ height?: number
+ dimensionUnit?: string
+ quantity: number
+ unit: string
+ unitPrice?: number
+ totalPrice?: number
+ materialSpec?: string
+ finishing?: string
+ addOn?: string
+ itemKind?: 'service' | 'ready_product' | 'material' | 'outsource' | 'custom' | 'custom_manufacturing'
+ workflowRouting?: 'ready_product' | 'design_required' | 'design_ok' | 'ready_production' | 'custom' | 'outsource' | string
+ designRequired?: boolean
+ notes?: string
 }
 
 export type OrderLiveStatus =
@@ -48,395 +48,395 @@ export type OrderLiveStatus =
   | 'delivered'
 
 export interface OrderLiveStatusConfig {
-  id: OrderLiveStatus
-  labelEn: string
-  labelBn: string
-  stage: OrderStage
-  color: string
-  dotColor: string
+ id: OrderLiveStatus
+ labelEn: string
+ labelBn: string
+ stage: OrderStage
+ color: string
+ dotColor: string
 }
 
 export const ORDER_LIVE_STATUSES: OrderLiveStatusConfig[] = [
   {
-    id: 'design_queue',
-    labelEn: 'Design Queue',
-    labelBn: 'ডিজাইন কিউ',
-    stage: 'in_design',
-    color: 'bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800',
-    dotColor: 'bg-amber-500',
+ id: 'design_queue',
+ labelEn: 'Design Queue',
+ labelBn: 'ডিজাইন কিউ',
+ stage: 'in_design',
+ color: 'bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800',
+ dotColor: 'bg-amber-500',
   },
   {
-    id: 'design_running',
-    labelEn: 'Design Running',
-    labelBn: 'ডিজাইন চলমান',
-    stage: 'in_design',
-    color: 'bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800',
-    dotColor: 'bg-blue-500',
+ id: 'design_running',
+ labelEn: 'Design Running',
+ labelBn: 'ডিজাইন চলমান',
+ stage: 'in_design',
+ color: 'bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800',
+ dotColor: 'bg-blue-500',
   },
   {
-    id: 'waiting_approval',
-    labelEn: 'Waiting for Design Approval',
-    labelBn: 'ডিজাইন অনুমোদনের অপেক্ষায়',
-    stage: 'in_design',
-    color: 'bg-indigo-100 text-indigo-800 border-indigo-300 dark:bg-indigo-950/60 dark:text-indigo-300 dark:border-indigo-800',
-    dotColor: 'bg-indigo-500',
+ id: 'waiting_approval',
+ labelEn: 'Waiting for Design Approval',
+ labelBn: 'ডিজাইন অনুমোদনের অপেক্ষায়',
+ stage: 'in_design',
+ color: 'bg-indigo-100 text-indigo-800 border-indigo-300 dark:bg-indigo-950/60 dark:text-indigo-300 dark:border-indigo-800',
+ dotColor: 'bg-indigo-500',
   },
   {
-    id: 'print_queue',
-    labelEn: 'Print Queue',
-    labelBn: 'প্রিন্ট কিউ',
-    stage: 'in_production',
-    color: 'bg-cyan-100 text-cyan-800 border-cyan-300 dark:bg-cyan-950/60 dark:text-cyan-300 dark:border-cyan-800',
-    dotColor: 'bg-cyan-500',
+ id: 'print_queue',
+ labelEn: 'Print Queue',
+ labelBn: 'প্রিন্ট কিউ',
+ stage: 'in_production',
+ color: 'bg-cyan-100 text-cyan-800 border-cyan-300 dark:bg-cyan-950/60 dark:text-cyan-300 dark:border-cyan-800',
+ dotColor: 'bg-cyan-500',
   },
   {
-    id: 'printing',
-    labelEn: 'Printing',
-    labelBn: 'প্রিন্টিং চলমান',
-    stage: 'in_production',
-    color: 'bg-violet-100 text-violet-800 border-violet-300 dark:bg-violet-950/60 dark:text-violet-300 dark:border-violet-800',
-    dotColor: 'bg-violet-500',
+ id: 'printing',
+ labelEn: 'Printing',
+ labelBn: 'প্রিন্টিং চলমান',
+ stage: 'in_production',
+ color: 'bg-violet-100 text-violet-800 border-violet-300 dark:bg-violet-950/60 dark:text-violet-300 dark:border-violet-800',
+ dotColor: 'bg-violet-500',
   },
   {
-    id: 'finishing_pending',
-    labelEn: 'Finishing Pending',
-    labelBn: 'ফিনিশিং পেন্ডিং',
-    stage: 'in_production',
-    color: 'bg-orange-100 text-orange-800 border-orange-300 dark:bg-orange-950/60 dark:text-orange-300 dark:border-orange-800',
-    dotColor: 'bg-orange-500',
+ id: 'finishing_pending',
+ labelEn: 'Finishing Pending',
+ labelBn: 'ফিনিশিং পেন্ডিং',
+ stage: 'in_production',
+ color: 'bg-orange-100 text-orange-800 border-orange-300 dark:bg-orange-950/60 dark:text-orange-300 dark:border-orange-800',
+ dotColor: 'bg-orange-500',
   },
   {
-    id: 'ready_delivery',
-    labelEn: 'Ready for Delivery',
-    labelBn: 'ডেলিভারির জন্য প্রস্তুত',
-    stage: 'ready_delivery',
-    color: 'bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800',
-    dotColor: 'bg-emerald-500',
+ id: 'ready_delivery',
+ labelEn: 'Ready for Delivery',
+ labelBn: 'ডেলিভারির জন্য প্রস্তুত',
+ stage: 'ready_delivery',
+ color: 'bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800',
+ dotColor: 'bg-emerald-500',
   },
   {
-    id: 'delivered',
-    labelEn: 'Delivered',
-    labelBn: 'ডেলিভারি সম্পন্ন',
-    stage: 'delivered',
-    color: 'bg-slate-200 text-slate-800 border-slate-300 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700',
-    dotColor: 'bg-slate-500',
+ id: 'delivered',
+ labelEn: 'Delivered',
+ labelBn: 'ডেলিভারি সম্পন্ন',
+ stage: 'delivered',
+ color: 'bg-muted text-foreground border-input -elevated ',
+ dotColor: 'bg-muted0',
   },
 ]
 
 function toEnglishDigits(str: string): string {
-  const bnToEn: Record<string, string> = {
+ const bnToEn: Record<string, string> = {
     '০': '0', '১': '1', '২': '2', '৩': '3', '৪': '4',
     '৫': '5', '৬': '6', '৭': '7', '৮': '8', '৯': '9',
   }
-  return str.replace(/[০-৯]/g, (d) => bnToEn[d] || d)
+ return str.replace(/[০-৯]/g, (d) => bnToEn[d] || d)
 }
 
 export function formatOrderItemQuantityAndUnit(
-  item: OrderItemSpec,
-  tBilingual: (en: string, bn: string) => string
+ item: OrderItemSpec,
+ tBilingual: (en: string, bn: string) => string
 ): string {
-  let width = Number(item.width) || 0
-  let height = Number(item.height) || 0
-  let dimUnit = (item.dimensionUnit || 'ft').toLowerCase()
-  const qty = Number(item.quantity) || 1
+ let width = Number(item.width) || 0
+ let height = Number(item.height) || 0
+ let dimUnit = (item.dimensionUnit || 'ft').toLowerCase()
+ const qty = Number(item.quantity) || 1
 
-  // Parse if width/height missing but dimensions string is like "30 × 5 sft" or "30x5"
+  // Parse if width/height missing
   if ((!width || !height) && item.dimensions) {
-    const normalized = toEnglishDigits(item.dimensions)
-    const match = normalized.match(/([\d.]+)\s*(?:×|x|\*)\s*([\d.]+)(?:\s*([a-zA-Z]+))?/i)
-    if (match) {
-      width = parseFloat(match[1]) || 0
-      height = parseFloat(match[2]) || 0
-      if (match[3]) dimUnit = match[3].toLowerCase()
+ const normalized = toEnglishDigits(item.dimensions)
+ const match = normalized.match(/([\d.]+)\s*(?:×|x|\*)\s*([\d.]+)(?:\s*([a-zA-Z]+))?/i)
+ if (match) {
+ width = parseFloat(match[1]) || 0
+ height = parseFloat(match[2]) || 0
+ if (match[3]) dimUnit = match[3].toLowerCase()
     } else {
-      const singleAreaMatch = normalized.match(/^([\d.]+)\s*(?:sft|sqft|বর্গফুট)/i)
-      if (singleAreaMatch) {
-        const areaVal = parseFloat(singleAreaMatch[1]) || 0
-        if (areaVal > 0) {
-          const areaFormatted = Number.isInteger(areaVal) ? areaVal.toString() : areaVal.toFixed(1)
-          const areaUnitStr = tBilingual('sft', 'বর্গফুট')
-          const pcsStr = tBilingual('pcs', 'টি')
-          return `${areaFormatted} ${areaUnitStr} (${qty} ${pcsStr})`
+ const singleAreaMatch = normalized.match(/^([\d.]+)\s*(?:sft|sqft|বর্গফুট)/i)
+ if (singleAreaMatch) {
+ const areaVal = parseFloat(singleAreaMatch[1]) || 0
+ if (areaVal > 0) {
+ const areaFormatted = Number.isInteger(areaVal) ? areaVal.toString() : areaVal.toFixed(1)
+ const areaUnitStr = tBilingual('sft', 'বর্গফুট')
+ const pcsStr = tBilingual('pcs', 'টি')
+ return `${areaFormatted} ${areaUnitStr} (${qty} ${pcsStr})`
         }
       }
     }
   }
 
-  if (width > 0 && height > 0) {
+ if (width > 0 && height > 0) {
     // Dimensional area item (wide format banner, vinyl, sticker, pvc, etc.)
-    let totalArea = 0
-    if (dimUnit === 'inch' || dimUnit === 'in') {
-      totalArea = (width * height * qty) / 144
+ let totalArea = 0
+ if (dimUnit === 'inch' || dimUnit === 'in') {
+ totalArea = (width * height * qty) / 144
     } else {
-      totalArea = width * height * qty
+ totalArea = width * height * qty
     }
 
-    const areaFormatted = Number.isInteger(totalArea) ? totalArea.toString() : totalArea.toFixed(1)
-    const areaUnitStr = tBilingual('sft', 'বর্গফুট')
-    const pcsStr = tBilingual('pcs', 'টি')
+ const areaFormatted = Number.isInteger(totalArea) ? totalArea.toString() : totalArea.toFixed(1)
+ const areaUnitStr = tBilingual('sft', 'বর্গফুট')
+ const pcsStr = tBilingual('pcs', 'টি')
 
-    return `${areaFormatted} ${areaUnitStr} (${qty} ${pcsStr})`
+ return `${areaFormatted} ${areaUnitStr} (${qty} ${pcsStr})`
   }
 
   // Non-dimensional items (ready product, cards, books, etc.)
-  let unitDisplay = item.unit || 'pcs'
-  if (unitDisplay.toLowerCase() === 'pcs') unitDisplay = tBilingual('pcs', 'পিস')
-  else if (unitDisplay.toLowerCase() === 'sft') unitDisplay = tBilingual('sft', 'বর্গফুট')
-  else if (unitDisplay.toLowerCase() === 'sq.inch' || unitDisplay.toLowerCase() === 'sqinch' || unitDisplay.toLowerCase() === 'sqin') unitDisplay = tBilingual('Sq. Inch', 'বর্গ ইঞ্চি')
-  else if (unitDisplay.toLowerCase() === 'set') unitDisplay = tBilingual('set', 'সেট')
-  else if (unitDisplay.toLowerCase() === 'pack') unitDisplay = tBilingual('pack', 'প্যাক')
-  else if (unitDisplay.toLowerCase() === 'box') unitDisplay = tBilingual('box', 'বক্স')
+ let unitDisplay = item.unit || 'pcs'
+ if (unitDisplay.toLowerCase() === 'pcs') unitDisplay = tBilingual('pcs', 'পিস')
+ else if (unitDisplay.toLowerCase() === 'sft') unitDisplay = tBilingual('sft', 'বর্গফুট')
+ else if (unitDisplay.toLowerCase() === 'sq.inch' || unitDisplay.toLowerCase() === 'sqinch' || unitDisplay.toLowerCase() === 'sqin') unitDisplay = tBilingual('Sq. Inch', 'বর্গ ইঞ্চি')
+ else if (unitDisplay.toLowerCase() === 'set') unitDisplay = tBilingual('set', 'সেট')
+ else if (unitDisplay.toLowerCase() === 'pack') unitDisplay = tBilingual('pack', 'প্যাক')
+ else if (unitDisplay.toLowerCase() === 'box') unitDisplay = tBilingual('box', 'বক্স')
 
-  return `${qty} ${unitDisplay}`
+ return `${qty} ${unitDisplay}`
 }
 
 export function inferMaterialFromItemName(name?: string, fallback?: string): string | undefined {
-  if (!name) return fallback || undefined
-  const lower = name.toLowerCase()
-  if (lower.includes('eco vinyl') || lower.includes('eco-vinyl')) return 'Eco Vinyl (ইকো ভিনাইল)'
-  if (lower.includes('vinyl') || lower.includes('ভিনাইল')) return 'Vinyl Sticker (ভিনাইল স্টিকার)'
-  if (lower.includes('star flex') || lower.includes('স্টার ফ্লেক্স')) return 'Star Flex Media (স্টার ফ্লেক্স)'
-  if (lower.includes('flex') || lower.includes('ফ্লেক্স')) return 'Flex Banner (ফ্লেক্স ব্যানার)'
-  if (lower.includes('backlit') || lower.includes('ব্যাকলিট')) return 'Backlit Film (ব্যাকলিট)'
-  if (lower.includes('one way vision') || lower.includes('one-way') || lower.includes('ওয়ান ওয়ে')) return 'One Way Vision (ওয়ান ওয়ে ভিশন)'
-  if (lower.includes('pvc') || lower.includes('foam')) return 'PVC Foam Board (পিভিসি বোর্ড)'
-  if (lower.includes('canvas') || lower.includes('ক্যানভাস')) return 'Cotton Canvas (ক্যানভাস)'
-  if (lower.includes('satin') || lower.includes('সিল্ক')) return 'Satin Fabric (সাটিন ফেব্রিক)'
-  if (lower.includes('frost') || lower.includes('ফ্রস্টেড')) return 'Frosted Glass Film (ফ্রস্টেড ফিল্ম)'
-  if (lower.includes('reflective') || lower.includes('রেডিয়াম')) return 'Reflective Vinyl (রেডিয়াম ভিনাইল)'
-  if (lower.includes('cloth') || lower.includes('কাপড়')) return 'Cloth Media (কাপড় ব্যানার)'
-  if (lower.includes('art card') || lower.includes('artcard')) return '300gsm Art Card'
-  if (lower.includes('art paper') || lower.includes('artpaper')) return '150gsm Art Paper'
-  if (lower.includes('visiting card') || lower.includes('business card') || lower.includes('ভিজিটিং কার্ড')) return '300gsm Matt Art Card'
-  if (lower.includes('cash memo') || lower.includes('bill') || lower.includes('মেমো') || lower.includes('ক্যাশ মেমো')) return 'NCR Carbonless Paper (এনসিআর)'
-  if (lower.includes('letterhead') || lower.includes('লেটারহেড')) return '100gsm Executive Bond Paper'
-  if (lower.includes('envelope') || lower.includes('খাম')) return '100gsm Offset Paper'
-  if (lower.includes('sticker') || lower.includes('স্টিকার')) return 'Vinyl Sticker (স্টিকার)'
-  if (lower.includes('banner') || lower.includes('ব্যানার')) return 'Flex Banner (ব্যানার)'
-  if (lower.includes('poster') || lower.includes('পোস্টার')) return '170gsm Art Paper'
-  if (lower.includes('flyer') || lower.includes('leaflet') || lower.includes('লিফলেট')) return '120gsm Art Paper'
-  if (lower.includes('brochure') || lower.includes('ব্রোশিউর')) return '150gsm Gloss Art Paper'
-  if (lower.includes('id card') || lower.includes('আইডি কার্ড')) return 'PVC Card (পিভিসি কার্ড)'
-  if (lower.includes('crest') || lower.includes('ক্রেস্ট')) return 'Acrylic & Wood Crest (ক্রেস্ট)'
-  if (lower.includes('mug') || lower.includes('মগ')) return 'Ceramic Sublimation (সিরামিক মগ)'
-  if (lower.includes('t-shirt') || lower.includes('tshirt') || lower.includes('টি-শার্ট')) return '100% Cotton Fabric (টি-শার্ট)'
-  if (lower.includes('x-banner') || lower.includes('x banner')) return 'Star Flex Media (এক্স-ব্যানার)'
-  if (lower.includes('rollup') || lower.includes('roll-up') || lower.includes('রোলআপ')) return 'Satin Media (রোলআপ ব্যানার)'
-  return fallback || undefined
+ if (!name) return fallback || undefined
+ const lower = name.toLowerCase()
+ if (lower.includes('eco vinyl') || lower.includes('eco-vinyl')) return 'Eco Vinyl (ইকো ভিনাইল)'
+ if (lower.includes('vinyl') || lower.includes('ভিনাইল')) return 'Vinyl Sticker (ভিনাইল স্টিকার)'
+ if (lower.includes('star flex') || lower.includes('স্টার ফ্লেক্স')) return 'Star Flex Media (স্টার ফ্লেক্স)'
+ if (lower.includes('flex') || lower.includes('ফ্লেক্স')) return 'Flex Banner (ফ্লেক্স ব্যানার)'
+ if (lower.includes('backlit') || lower.includes('ব্যাকলিট')) return 'Backlit Film (ব্যাকলিট)'
+ if (lower.includes('one way vision') || lower.includes('one-way') || lower.includes('ওয়ান ওয়ে')) return 'One Way Vision (ওয়ান ওয়ে ভিশন)'
+ if (lower.includes('pvc') || lower.includes('foam')) return 'PVC Foam Board (পিভিসি বোর্ড)'
+ if (lower.includes('canvas') || lower.includes('ক্যানভাস')) return 'Cotton Canvas (ক্যানভাস)'
+ if (lower.includes('satin') || lower.includes('সিল্ক')) return 'Satin Fabric (সাটিন ফেব্রিক)'
+ if (lower.includes('frost') || lower.includes('ফ্রস্টেড')) return 'Frosted Glass Film (ফ্রস্টেড ফিল্ম)'
+ if (lower.includes('reflective') || lower.includes('রেডিয়াম')) return 'Reflective Vinyl (রেডিয়াম ভিনাইল)'
+ if (lower.includes('cloth') || lower.includes('কাপড়')) return 'Cloth Media (কাপড় ব্যানার)'
+ if (lower.includes('art card') || lower.includes('artcard')) return '300gsm Art Card'
+ if (lower.includes('art paper') || lower.includes('artpaper')) return '150gsm Art Paper'
+ if (lower.includes('visiting card') || lower.includes('business card') || lower.includes('ভিজিটিং কার্ড')) return '300gsm Matt Art Card'
+ if (lower.includes('cash memo') || lower.includes('bill') || lower.includes('মেমো') || lower.includes('ক্যাশ মেমো')) return 'NCR Carbonless Paper (এনসিআর)'
+ if (lower.includes('letterhead') || lower.includes('লেটারহেড')) return '100gsm Executive Bond Paper'
+ if (lower.includes('envelope') || lower.includes('খাম')) return '100gsm Offset Paper'
+ if (lower.includes('sticker') || lower.includes('স্টিকার')) return 'Vinyl Sticker (স্টিকার)'
+ if (lower.includes('banner') || lower.includes('ব্যানার')) return 'Flex Banner (ব্যানার)'
+ if (lower.includes('poster') || lower.includes('পোস্টার')) return '170gsm Art Paper'
+ if (lower.includes('flyer') || lower.includes('leaflet') || lower.includes('লিফলেট')) return '120gsm Art Paper'
+ if (lower.includes('brochure') || lower.includes('ব্রোশিউর')) return '150gsm Gloss Art Paper'
+ if (lower.includes('id card') || lower.includes('আইডি কার্ড')) return 'PVC Card (পিভিসি কার্ড)'
+ if (lower.includes('crest') || lower.includes('ক্রেস্ট')) return 'Acrylic & Wood Crest (ক্রেস্ট)'
+ if (lower.includes('mug') || lower.includes('মগ')) return 'Ceramic Sublimation (সিরামিক মগ)'
+ if (lower.includes('t-shirt') || lower.includes('tshirt') || lower.includes('টি-শার্ট')) return '100% Cotton Fabric (টি-শার্ট)'
+ if (lower.includes('x-banner') || lower.includes('x banner')) return 'Star Flex Media (এক্স-ব্যানার)'
+ if (lower.includes('rollup') || lower.includes('roll-up') || lower.includes('রোলআপ')) return 'Satin Media (রোলআপ ব্যানার)'
+ return fallback || undefined
 }
 
 export interface ResolvedItemSpecs {
-  serviceName: string
-  material: string
-  size: string
-  quantity: string
-  finishing: string
-  addOn: string
+ serviceName: string
+ material: string
+ size: string
+ quantity: string
+ finishing: string
+ addOn: string
 }
 
 export function resolveOrderItemSpecs(
-  item: OrderItemSpec,
-  fallbackJob?: JobOrderRecord,
-  fallbackInvoice?: InvoiceRecord,
-  tBilingual: (en: string, bn: string) => string = (en, _bn) => en
+ item: OrderItemSpec,
+ fallbackJob?: JobOrderRecord,
+ fallbackInvoice?: InvoiceRecord,
+ tBilingual: (en: string, bn: string) => string = (en, _bn) => en
 ): ResolvedItemSpecs {
   // 1. Service Name Resolution
-  const rawServiceName = (item.serviceName || item.itemName || '').trim()
-  const serviceName =
-    rawServiceName ||
-    fallbackJob?.product_name ||
+ const rawServiceName = (item.serviceName || item.itemName || '').trim()
+ const serviceName =
+ rawServiceName ||
+ fallbackJob?.product_name ||
     (fallbackInvoice?.items?.[0] as any)?.item_description ||
-    tBilingual('Custom Printing Work', 'কাস্টম প্রিন্টিং কাজ')
+ tBilingual('Custom Printing Work', 'কাস্টম প্রিন্টিং কাজ')
 
   // 2. Material Name Resolution
-  let material = item.materialSpec?.trim()
-  if (!material) {
-    material = inferMaterialFromItemName(serviceName)
+ let material = item.materialSpec?.trim()
+ if (!material) {
+ material = inferMaterialFromItemName(serviceName)
   }
-  if (!material && fallbackJob?.material_spec) {
-    material = fallbackJob.material_spec
+ if (!material && fallbackJob?.material_spec) {
+ material = fallbackJob.material_spec
   }
-  if (!material && fallbackInvoice?.items) {
-    const matched = (fallbackInvoice.items as any[]).find((invIt: any) =>
-      invIt.item_description === item.itemName || invIt.item_name === item.itemName || invIt.description === item.itemName
+ if (!material && fallbackInvoice?.items) {
+ const matched = (fallbackInvoice.items as any[]).find((invIt: any) =>
+ invIt.item_description === item.itemName || invIt.item_name === item.itemName || invIt.description === item.itemName
     )
-    material = matched?.material_spec || matched?.material || inferMaterialFromItemName(matched?.item_description || matched?.item_name || undefined)
+ material = matched?.material_spec || matched?.material || inferMaterialFromItemName(matched?.item_description || matched?.item_name || undefined)
   }
-  if (!material) {
-    if (item.itemKind === 'ready_product' || item.workflowRouting === 'ready_product') {
-      material = tBilingual('Ready Product (In Stock)', 'রেডি পণ্য (ইন-স্টক)')
+ if (!material) {
+ if (item.itemKind === 'ready_product' || item.workflowRouting === 'ready_product') {
+ material = tBilingual('Ready Product (In Stock)', 'রেডি পণ্য (ইন-স্টক)')
     } else if (item.itemKind === 'outsource' || item.workflowRouting === 'outsource') {
-      material = tBilingual('Outsourced Media', 'আউটসোর্স মিডিয়া')
+ material = tBilingual('Outsourced Media', 'আউটসোর্স মিডিয়া')
     } else {
-      material = inferMaterialFromItemName(serviceName, tBilingual('Standard Media', 'স্ট্যান্ডার্ড মিডিয়া')) || tBilingual('Standard Media', 'স্ট্যান্ডার্ড মিডিয়া')
+ material = inferMaterialFromItemName(serviceName, tBilingual('Standard Media', 'স্ট্যান্ডার্ড মিডিয়া')) || tBilingual('Standard Media', 'স্ট্যান্ডার্ড মিডিয়া')
     }
   }
 
   // 3. Size / Dimensions Resolution
-  let w = Number(item.width) || 0
-  let h = Number(item.height) || 0
-  let dimUnit = (item.dimensionUnit || '').toLowerCase()
-  if (!dimUnit || dimUnit === 'sft' || dimUnit === 'sqft' || dimUnit === 'বর্গফুট') {
-    dimUnit = 'ft'
+ let w = Number(item.width) || 0
+ let h = Number(item.height) || 0
+ let dimUnit = (item.dimensionUnit || '').toLowerCase()
+ if (!dimUnit || dimUnit === 'sft' || dimUnit === 'sqft' || dimUnit === 'বর্গফুট') {
+ dimUnit = 'ft'
   }
 
-  let size = ''
-  if (item.dimensions && item.dimensions.trim()) {
-    // If dimensions string contains "sft" as dimension unit (e.g. "100 × 100 sft"), normalize it to "ft"
-    let cleaned = item.dimensions.replace(/([\d.]+)\s*(?:×|x|\*)\s*([\d.]+)\s*(?:sft|sqft|বর্গফুট)/gi, '$1 × $2 ft')
-    if (/^[\d.]+\s*(?:×|x|\*)\s*[\d.]+$/.test(cleaned.trim())) {
-      cleaned = `${cleaned.trim()} ${dimUnit}`
+ let size = ''
+ if (item.dimensions && item.dimensions.trim()) {
+    // If dimensions string contains sft as dimension unit, normalize it
+    let cleaned = item.dimensions.replace(/([\d.]+)\s*(?:×|x|\*)\s*([\d.]+)\s*(?:sft|sqft|বর্গফুট)/gi, '$1 × $2 ft');
+ if (/^[\d.]+\s*(?:×|x|\*)\s*[\d.]+$/.test(cleaned.trim())) {
+ cleaned = `${cleaned.trim()} ${dimUnit}`
     }
-    size = cleaned
-    const match = cleaned.match(/([\d.]+)\s*(?:×|x|\*)\s*([\d.]+)/i)
-    if (match && (!w || !h)) {
-      w = parseFloat(match[1]) || 0
-      h = parseFloat(match[2]) || 0
+ size = cleaned
+ const match = cleaned.match(/([\d.]+)\s*(?:×|x|\*)\s*([\d.]+)/i)
+ if (match && (!w || !h)) {
+ w = parseFloat(match[1]) || 0
+ h = parseFloat(match[2]) || 0
     }
   } else if (w > 0 && h > 0) {
-    size = `${w} × ${h} ${dimUnit}`
+ size = `${w} × ${h} ${dimUnit}`
   } else if (fallbackJob?.size_spec) {
-    let rawJobSpec = fallbackJob.size_spec.replace(/([\d.]+)\s*(?:×|x|\*)\s*([\d.]+)\s*(?:sft|sqft|বর্গফুট)/gi, '$1 × $2 ft')
-    if (/^[\d.]+\s*(?:×|x|\*)\s*[\d.]+$/.test(rawJobSpec.trim())) {
-      rawJobSpec = `${rawJobSpec.trim()} ft`
+ let rawJobSpec = fallbackJob.size_spec.replace(/([\d.]+)\s*(?:×|x|\*)\s*([\d.]+)\s*(?:sft|sqft|বর্গফুট)/gi, '$1 × $2 ft')
+ if (/^[\d.]+\s*(?:×|x|\*)\s*[\d.]+$/.test(rawJobSpec.trim())) {
+ rawJobSpec = `${rawJobSpec.trim()} ft`
     }
-    size = rawJobSpec
+ size = rawJobSpec
   } else if (fallbackInvoice?.items) {
-    const matched = (fallbackInvoice.items as any[]).find((invIt: any) =>
-      invIt.item_description === item.itemName || invIt.item_name === item.itemName || invIt.description === item.itemName
+ const matched = (fallbackInvoice.items as any[]).find((invIt: any) =>
+ invIt.item_description === item.itemName || invIt.item_name === item.itemName || invIt.description === item.itemName
     )
-    if (matched?.dimensions_spec) {
-      size = matched.dimensions_spec.replace(/([\d.]+)\s*(?:×|x|\*)\s*([\d.]+)\s*(?:sft|sqft|বর্গফুট)/gi, '$1 × $2 ft')
-      if (/^[\d.]+\s*(?:×|x|\*)\s*[\d.]+$/.test(size.trim())) {
-        size = `${size.trim()} ft`
+ if (matched?.dimensions_spec) {
+ size = matched.dimensions_spec.replace(/([\d.]+)\s*(?:×|x|\*)\s*([\d.]+)\s*(?:sft|sqft|বর্গফুট)/gi, '$1 × $2 ft')
+ if (/^[\d.]+\s*(?:×|x|\*)\s*[\d.]+$/.test(size.trim())) {
+ size = `${size.trim()} ft`
       }
     } else if (matched?.width && matched?.height) {
-      const u = (matched.unit === 'sft' || matched.unit === 'sqft') ? 'ft' : (matched.unit || 'ft')
-      size = `${matched.width} × ${matched.height} ${u}`
+ const u = (matched.unit === 'sft' || matched.unit === 'sqft') ? 'ft' : (matched.unit || 'ft')
+ size = `${matched.width} × ${matched.height} ${u}`
     }
   }
 
-  if (!size) {
-    const unitLower = (item.unit || '').toLowerCase()
-    if ((unitLower === 'sft' || unitLower === 'sqft') && item.quantity) {
-      size = `${item.quantity} ${tBilingual('sft', 'বর্গফুট')}`
+ if (!size) {
+ const unitLower = (item.unit || '').toLowerCase()
+ if ((unitLower === 'sft' || unitLower === 'sqft') && item.quantity) {
+ size = `${item.quantity} ${tBilingual('sft', 'বর্গফুট')}`
     } else {
-      size = item.itemKind === 'ready_product' || item.workflowRouting === 'ready_product'
+ size = item.itemKind === 'ready_product' || item.workflowRouting === 'ready_product'
         ? tBilingual('Standard Unit', 'স্ট্যান্ডার্ড মাপ')
         : tBilingual('Standard Size', 'মানসম্মত সাইজ')
     }
   }
 
   // 4. Quantity Resolution
-  let quantity = formatOrderItemQuantityAndUnit(item, tBilingual)
-  const unitLower = (item.unit || '').toLowerCase()
-  if ((unitLower === 'sft' || unitLower === 'sqft') && !quantity.includes('(')) {
-    const pcsStr = tBilingual('1 pc', '১টি')
-    quantity = `${quantity} (${pcsStr})`
+ let quantity = formatOrderItemQuantityAndUnit(item, tBilingual)
+ const unitLower = (item.unit || '').toLowerCase()
+ if ((unitLower === 'sft' || unitLower === 'sqft') && !quantity.includes('(')) {
+ const pcsStr = tBilingual('1 pc', '১টি')
+ quantity = `${quantity} (${pcsStr})`
   }
 
   // 5. Finishing Resolution
-  let finishing = item.finishing?.trim() || (Array.isArray((item as any).selected_finishing) ? (item as any).selected_finishing.map((f: any) => f.name || f).join(', ') : undefined)
-  if (!finishing && (fallbackJob as any)?.finishing) {
-    finishing = (fallbackJob as any).finishing
+ let finishing = item.finishing?.trim() || (Array.isArray((item as any).selected_finishing) ? (item as any).selected_finishing.map((f: any) => f.name || f).join(', ') : undefined)
+ if (!finishing && (fallbackJob as any)?.finishing) {
+ finishing = (fallbackJob as any).finishing
   }
-  if (!finishing && Array.isArray((fallbackJob as any)?.selected_finishing) && (fallbackJob as any).selected_finishing.length > 0) {
-    finishing = (fallbackJob as any).selected_finishing.map((f: any) => f.name || f.label || f.id || f).join(', ')
+ if (!finishing && Array.isArray((fallbackJob as any)?.selected_finishing) && (fallbackJob as any).selected_finishing.length > 0) {
+ finishing = (fallbackJob as any).selected_finishing.map((f: any) => f.name || f.label || f.id || f).join(', ')
   }
-  if (!finishing && fallbackJob?.production_instructions) {
-    const match = fallbackJob.production_instructions.match(/Finishing:\s*([^|;]+)/i)
-    if (match) {
-      finishing = match[1].trim()
+ if (!finishing && fallbackJob?.production_instructions) {
+ const match = fallbackJob.production_instructions.match(/Finishing:\s*([^|;]+)/i)
+ if (match) {
+ finishing = match[1].trim()
     } else if (fallbackJob.production_instructions.startsWith('Finishing:')) {
-      finishing = fallbackJob.production_instructions.replace(/^Finishing:\s*/, '').split('|')[0].trim()
+ finishing = fallbackJob.production_instructions.replace(/^Finishing:\s*/, '').split('|')[0].trim()
     }
   }
-  if (!finishing && fallbackInvoice?.items) {
-    const matched = (fallbackInvoice.items as any[]).find((invIt: any) =>
-      invIt.item_description === item.itemName || invIt.item_name === item.itemName || invIt.description === item.itemName
+ if (!finishing && fallbackInvoice?.items) {
+ const matched = (fallbackInvoice.items as any[]).find((invIt: any) =>
+ invIt.item_description === item.itemName || invIt.item_name === item.itemName || invIt.description === item.itemName
     )
-    if (matched?.finishing) finishing = matched.finishing
-    else if (Array.isArray(matched?.selected_finishing) && matched.selected_finishing.length > 0) {
-      finishing = matched.selected_finishing.map((f: any) => f.name || f.label || f).join(', ')
+ if (matched?.finishing) finishing = matched.finishing
+ else if (Array.isArray(matched?.selected_finishing) && matched.selected_finishing.length > 0) {
+ finishing = matched.selected_finishing.map((f: any) => f.name || f.label || f).join(', ')
     }
   }
-  if (!finishing || finishing.toLowerCase() === 'none' || finishing.toLowerCase() === 'null') {
-    finishing = 'None'
+ if (!finishing || finishing.toLowerCase() === 'none' || finishing.toLowerCase() === 'null') {
+ finishing = 'None'
   }
 
   // 6. Add-on Resolution
-  let addOn = item.addOn?.trim() || (item as any).add_on?.trim() || (item as any).add_ons?.trim() || (item as any).addon?.trim()
-  if (!addOn && Array.isArray((item as any).selected_add_ons) && (item as any).selected_add_ons.length > 0) {
-    addOn = (item as any).selected_add_ons.map((a: any) => a.name || a.label || a.id || a).join(', ')
+ let addOn = item.addOn?.trim() || (item as any).add_on?.trim() || (item as any).add_ons?.trim() || (item as any).addon?.trim()
+ if (!addOn && Array.isArray((item as any).selected_add_ons) && (item as any).selected_add_ons.length > 0) {
+ addOn = (item as any).selected_add_ons.map((a: any) => a.name || a.label || a.id || a).join(', ')
   }
-  if (!addOn && (fallbackJob as any)?.add_ons) {
-    addOn = (fallbackJob as any).add_ons
+ if (!addOn && (fallbackJob as any)?.add_ons) {
+ addOn = (fallbackJob as any).add_ons
   }
-  if (!addOn && Array.isArray((fallbackJob as any)?.selected_add_ons) && (fallbackJob as any).selected_add_ons.length > 0) {
-    addOn = (fallbackJob as any).selected_add_ons.map((a: any) => a.name || a.label || a.id || a).join(', ')
+ if (!addOn && Array.isArray((fallbackJob as any)?.selected_add_ons) && (fallbackJob as any).selected_add_ons.length > 0) {
+ addOn = (fallbackJob as any).selected_add_ons.map((a: any) => a.name || a.label || a.id || a).join(', ')
   }
-  if (!addOn && fallbackJob?.production_instructions) {
-    const match = fallbackJob.production_instructions.match(/Add-?on:\s*([^|;]+)/i)
-    if (match) addOn = match[1].trim()
+ if (!addOn && fallbackJob?.production_instructions) {
+ const match = fallbackJob.production_instructions.match(/Add-?on:\s*([^|;]+)/i)
+ if (match) addOn = match[1].trim()
   }
-  if (!addOn && fallbackInvoice?.items) {
-    const matched = (fallbackInvoice.items as any[]).find((invIt: any) =>
-      invIt.item_description === item.itemName || invIt.item_name === item.itemName || invIt.description === item.itemName
+ if (!addOn && fallbackInvoice?.items) {
+ const matched = (fallbackInvoice.items as any[]).find((invIt: any) =>
+ invIt.item_description === item.itemName || invIt.item_name === item.itemName || invIt.description === item.itemName
     )
-    if (matched?.add_on) addOn = matched.add_on
-    else if (matched?.add_ons) addOn = matched.add_ons
-    else if (Array.isArray(matched?.selected_add_ons) && matched.selected_add_ons.length > 0) {
-      addOn = matched.selected_add_ons.map((a: any) => a.name || a.label || a).join(', ')
+ if (matched?.add_on) addOn = matched.add_on
+ else if (matched?.add_ons) addOn = matched.add_ons
+ else if (Array.isArray(matched?.selected_add_ons) && matched.selected_add_ons.length > 0) {
+ addOn = matched.selected_add_ons.map((a: any) => a.name || a.label || a).join(', ')
     }
   }
-  if (!addOn || addOn.toLowerCase() === 'none' || addOn.toLowerCase() === 'null') {
-    addOn = 'None'
+ if (!addOn || addOn.toLowerCase() === 'none' || addOn.toLowerCase() === 'null') {
+ addOn = 'None'
   }
 
-  return {
-    serviceName,
-    material,
-    size,
-    quantity,
-    finishing,
-    addOn,
+ return {
+ serviceName,
+ material,
+ size,
+ quantity,
+ finishing,
+ addOn,
   }
 }
 
 
 export interface UnifiedOrderRecord {
-  id: string
-  orderNumber: string
-  invoiceNumber?: string
-  invoiceId?: string
-  jobNumber?: string
-  jobOrderId?: string
-  origin: 'invoice_created' | 'sales_order' | 'work_order' | 'quotation' | 'job_order'
-  customerId?: string
-  customerName: string
-  customerNameBn?: string | null
-  customerPhone?: string | null
-  customerAddress?: string | null
-  customerType?: string
-  isWalkIn?: boolean
-  items: OrderItemSpec[]
-  itemsCount: number
-  priority: OrderPriority
-  orderDate: string
-  deliveryDate: string
-  createdAt: string
-  stage: OrderStage
-  currentStatus?: OrderLiveStatus
-  paymentStatus: 'paid' | 'partial' | 'unpaid'
-  totalAmount: number
-  advanceAmount: number
-  dueAmount: number
-  salespersonName?: string
-  notes?: string
-  rawOrder?: SalesOrderRecord
-  rawInvoice?: InvoiceRecord
-  rawJob?: JobOrderRecord
-  workflowResolution?: import('@/lib/workflow/workflow-engine').OrderWorkflowResolution
+ id: string
+ orderNumber: string
+ invoiceNumber?: string
+ invoiceId?: string
+ jobNumber?: string
+ jobOrderId?: string
+ origin: 'invoice_created' | 'sales_order' | 'work_order' | 'quotation' | 'job_order'
+ customerId?: string
+ customerName: string
+ customerNameBn?: string | null
+ customerPhone?: string | null
+ customerAddress?: string | null
+ customerType?: string
+ isWalkIn?: boolean
+ items: OrderItemSpec[]
+ itemsCount: number
+ priority: OrderPriority
+ orderDate: string
+ deliveryDate: string
+ createdAt: string
+ stage: OrderStage
+ currentStatus?: OrderLiveStatus
+ paymentStatus: 'paid' | 'partial' | 'unpaid'
+ totalAmount: number
+ advanceAmount: number
+ dueAmount: number
+ salespersonName?: string
+ notes?: string
+ rawOrder?: SalesOrderRecord
+ rawInvoice?: InvoiceRecord
+ rawJob?: JobOrderRecord
+ workflowResolution?: import('@/lib/workflow/workflow-engine').OrderWorkflowResolution
 }
 
 export type OrderWhatsAppTemplateKey =
@@ -446,95 +446,95 @@ export type OrderWhatsAppTemplateKey =
   | 'payment_reminder'
 
 export interface OrderWhatsAppTemplate {
-  key: OrderWhatsAppTemplateKey
-  title: string
-  badge: string
-  titleEn: string
-  titleBn: string
-  badgeEn: string
-  badgeBn: string
+ key: OrderWhatsAppTemplateKey
+ title: string
+ badge: string
+ titleEn: string
+ titleBn: string
+ badgeEn: string
+ badgeBn: string
 }
 
 export const ORDER_WHATSAPP_TEMPLATES: OrderWhatsAppTemplate[] = [
   {
-    key: 'order_confirmed',
-    title: '১. অর্ডার নিশ্চিতকরণ ও রসিদ',
-    badge: 'অগ্রিম গ্রহণ',
-    titleEn: '1. Order Intake & Confirmation',
-    titleBn: '১. অর্ডার নিশ্চিতকরণ ও রসিদ',
-    badgeEn: 'Advance Received',
-    badgeBn: 'অগ্রিম গ্রহণ',
+ key: 'order_confirmed',
+ title: '১. অর্ডার নিশ্চিতকরণ ও রসিদ',
+ badge: 'অগ্রিম গ্রহণ',
+ titleEn: '1. Order Intake & Confirmation',
+ titleBn: '১. অর্ডার নিশ্চিতকরণ ও রসিদ',
+ badgeEn: 'Advance Received',
+ badgeBn: 'অগ্রিম গ্রহণ',
   },
   {
-    key: 'design_proof',
-    title: '২. ডিজাইন প্রুফ প্রস্তুত',
-    badge: 'অনুমোদন',
-    titleEn: '2. Design Proof Ready',
-    titleBn: '২. ডিজাইন প্রুফ প্রস্তুত',
-    badgeEn: 'Proof Approval',
-    badgeBn: 'অনুমোদন',
+ key: 'design_proof',
+ title: '২. ডিজাইন প্রুফ প্রস্তুত',
+ badge: 'অনুমোদন',
+ titleEn: '2. Design Proof Ready',
+ titleBn: '২. ডিজাইন প্রুফ প্রস্তুত',
+ badgeEn: 'Proof Approval',
+ badgeBn: 'অনুমোদন',
   },
   {
-    key: 'ready_pickup',
-    title: '৩. প্রিন্ট সম্পন্ন ও ডেলিভারি রেডি',
-    badge: 'ডেলিভারি চালান',
-    titleEn: '3. Print Complete & Delivery Ready',
-    titleBn: '৩. প্রিন্ট সম্পন্ন ও ডেলিভারি রেডি',
-    badgeEn: 'Ready for Dispatch',
-    badgeBn: 'ডেলিভারি চালান',
+ key: 'ready_pickup',
+ title: '৩. প্রিন্ট সম্পন্ন ও ডেলিভারি রেডি',
+ badge: 'ডেলিভারি চালান',
+ titleEn: '3. Print Complete & Delivery Ready',
+ titleBn: '৩. প্রিন্ট সম্পন্ন ও ডেলিভারি রেডি',
+ badgeEn: 'Ready for Dispatch',
+ badgeBn: 'ডেলিভারি চালান',
   },
   {
-    key: 'payment_reminder',
-    title: '৪. বাকি টাকা ও ডেলিভারি নোটিশ',
-    badge: 'বাকি আদায়',
-    titleEn: '4. Due Balance & Delivery Notice',
-    titleBn: '৪. বাকি টাকা ও ডেলিভারি নোটিশ',
-    badgeEn: 'Due Recovery',
-    badgeBn: 'বাকি আদায়',
+ key: 'payment_reminder',
+ title: '৪. বাকি টাকা ও ডেলিভারি নোটিশ',
+ badge: 'বাকি আদায়',
+ titleEn: '4. Due Balance & Delivery Notice',
+ titleBn: '৪. বাকি টাকা ও ডেলিভারি নোটিশ',
+ badgeEn: 'Due Recovery',
+ badgeBn: 'বাকি আদায়',
   },
 ]
 
 export function sanitizeBangladeshiPhone(rawPhone?: string | null): string {
-  if (!rawPhone) return '8801700000000'
-  let cleaned = rawPhone.replace(/[^0-9]/g, '')
-  if (cleaned.startsWith('0')) {
-    cleaned = `88${cleaned}`
+ if (!rawPhone) return '8801700000000'
+ let cleaned = rawPhone.replace(/[^0-9]/g, '')
+ if (cleaned.startsWith('0')) {
+ cleaned = `88${cleaned}`
   } else if (!cleaned.startsWith('88') && cleaned.length > 0) {
-    cleaned = `880${cleaned}`
+ cleaned = `880${cleaned}`
   }
-  return cleaned || '8801700000000'
+ return cleaned || '8801700000000'
 }
 
 export function buildBangladeshiOrderWhatsAppMessage({
-  template,
-  customerName,
-  companyName,
-  orderNumber,
-  invoiceNumber,
-  totalAmount,
-  advanceAmount,
-  dueAmount,
-  deliveryDate,
-  itemsSummary,
+ template,
+ customerName,
+ companyName,
+ orderNumber,
+ invoiceNumber,
+ totalAmount,
+ advanceAmount,
+ dueAmount,
+ deliveryDate,
+ itemsSummary,
 }: {
-  template: OrderWhatsAppTemplateKey
-  customerName: string
-  companyName: string
-  orderNumber: string
-  invoiceNumber?: string | null
-  totalAmount: number
-  advanceAmount: number
-  dueAmount: number
-  deliveryDate?: string
-  itemsSummary: string
+ template: OrderWhatsAppTemplateKey
+ customerName: string
+ companyName: string
+ orderNumber: string
+ invoiceNumber?: string | null
+ totalAmount: number
+ advanceAmount: number
+ dueAmount: number
+ deliveryDate?: string
+ itemsSummary: string
 }): string {
-  const custName = customerName || 'সম্মানিত গ্রাহক'
-  const comp = companyName || 'PrintERP Press Studio'
-  const docNum = orderNumber || (invoiceNumber ? `#${invoiceNumber}` : 'ORD-001')
-  const invStr = invoiceNumber ? ` (ইনভয়েস: #${invoiceNumber})` : ''
+ const custName = customerName || 'সম্মানিত গ্রাহক'
+ const comp = companyName || 'PrintERP Press Studio'
+ const docNum = orderNumber || (invoiceNumber ? `#${invoiceNumber}` : 'ORD-001')
+ const invStr = invoiceNumber ? ` (ইনভয়েস: #${invoiceNumber})` : ''
 
-  if (template === 'design_proof') {
-    return (
+ if (template === 'design_proof') {
+ return (
       `আসসালামু আলাইকুম / নমস্কার ${custName},\n\n` +
       `আপনার অর্ডার *${docNum}*${invStr}-এর কাজের ডিজাইন ড্রাফট প্রুফ প্রস্তুত হয়েছে।\n\n` +
       `📋 কাজের বিবরণ: ${itemsSummary}\n\n` +
@@ -543,8 +543,8 @@ export function buildBangladeshiOrderWhatsAppMessage({
     )
   }
 
-  if (template === 'ready_pickup') {
-    return (
+ if (template === 'ready_pickup') {
+ return (
       `আসসালামু আলাইকুম / নমস্কার ${custName},\n\n` +
       `খুশির সংবাদ! আপনার অর্ডার *${docNum}*${invStr}-এর প্রিন্টিং ও ফিনিশিং সম্পন্ন হয়েছে এবং ডেলিভারির জন্য প্রস্তুত রয়েছে।\n\n` +
       `📦 কাজের বিবরণ: ${itemsSummary}\n` +
@@ -556,8 +556,8 @@ export function buildBangladeshiOrderWhatsAppMessage({
     )
   }
 
-  if (template === 'payment_reminder') {
-    return (
+ if (template === 'payment_reminder') {
+ return (
       `আসসালামু আলাইকুম / নমস্কার ${custName},\n\n` +
       `আপনার অর্ডার *${docNum}*${invStr}-এর কাজ প্রস্তুত রয়েছে।\n\n` +
       `💰 মোট বিল: ৳${totalAmount.toLocaleString()}\n` +
@@ -569,7 +569,7 @@ export function buildBangladeshiOrderWhatsAppMessage({
   }
 
   // Default: 'order_confirmed'
-  return (
+ return (
     `আসসালামু আলাইকুম / নমস্কার ${custName},\n\n` +
     `${comp}-এ আপনার প্রিন্ট অর্ডার *${docNum}*${invStr} সফলভাবে বুকিং ও গ্রহণ করা হয়েছে।\n\n` +
     `📋 কাজের বিবরণ: ${itemsSummary}\n` +

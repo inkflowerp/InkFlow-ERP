@@ -6,120 +6,119 @@ import { usePathname } from 'next/navigation'
 import { useTenant } from '@/hooks/use-tenant'
 import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import {
-  Calendar,
-  Clock,
-  Cpu,
-  User,
-  AlertTriangle,
-  Play,
-  Pause,
-  CheckCircle2,
-  RotateCcw,
-  AlertOctagon,
-  Lock,
-  MoreVertical,
-  ExternalLink,
-  FileCheck2,
-  MessageSquare,
+ Calendar,
+ Clock,
+ Cpu,
+ User,
+ AlertTriangle,
+ Play,
+ Pause,
+ CheckCircle2,
+ RotateCcw,
+ AlertOctagon,
+ Lock,
+ MoreVertical,
+ ExternalLink,
+ FileCheck2,
+ MessageSquare,
 } from 'lucide-react'
 import { useI18n } from '@/i18n/context'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import {
-  ProductionTaskRecord,
-  HOLD_REASON_LABELS,
+ ProductionTaskRecord,
+ HOLD_REASON_LABELS,
 } from '@/types/production.types'
 
 interface ProductionBoardCardProps {
-  task: ProductionTaskRecord
-  onSchedule?: (task: ProductionTaskRecord) => void
-  onStart?: (task: ProductionTaskRecord) => void
-  onPause?: (task: ProductionTaskRecord) => void
-  onComplete?: (task: ProductionTaskRecord) => void
-  onHold?: (task: ProductionTaskRecord) => void
-  onResume?: (task: ProductionTaskRecord) => void
-  onRework?: (task: ProductionTaskRecord) => void
-  onPrintTicket?: (task: ProductionTaskRecord) => void
-  onSendWhatsApp?: (task: ProductionTaskRecord) => void
+ task: ProductionTaskRecord
+ onSchedule?: (task: ProductionTaskRecord) => void
+ onStart?: (task: ProductionTaskRecord) => void
+ onPause?: (task: ProductionTaskRecord) => void
+ onComplete?: (task: ProductionTaskRecord) => void
+ onHold?: (task: ProductionTaskRecord) => void
+ onResume?: (task: ProductionTaskRecord) => void
+ onRework?: (task: ProductionTaskRecord) => void
+ onPrintTicket?: (task: ProductionTaskRecord) => void
+ onSendWhatsApp?: (task: ProductionTaskRecord) => void
 }
 
 export function ProductionBoardCard({
-  task,
-  onSchedule,
-  onStart,
-  onPause,
-  onComplete,
-  onHold,
-  onResume,
-  onRework,
-  onPrintTicket,
-  onSendWhatsApp,
+ task,
+ onSchedule,
+ onStart,
+ onPause,
+ onComplete,
+ onHold,
+ onResume,
+ onRework,
+ onPrintTicket,
+ onSendWhatsApp,
 }: ProductionBoardCardProps) {
-  const pathname = usePathname() || ''
-  const { company } = useTenant()
-  const tenantSlug = company?.slug || 'my-company'
-  const { tBilingual } = useI18n()
+ const pathname = usePathname() || ''
+ const { company } = useTenant()
+ const tenantSlug = company?.slug || 'my-company'
+ const { tBilingual } = useI18n()
 
-  const jobTargetId = task.job_order_id || task.production_job_id || task.job_number || task.id
-  const jobHref = getTenantNavHref(`/production/${jobTargetId}`, pathname, tenantSlug)
+ const jobTargetId = task.job_order_id || task.production_job_id || task.job_number || task.id
+ const jobHref = getTenantNavHref(`/production/${jobTargetId}`, pathname, tenantSlug)
 
-  const getPriorityBadge = (priority: string) => {
-    switch (priority) {
-      case 'urgent':
-      case 'very_urgent':
-        return (
+ const getPriorityBadge = (priority: string) => {
+ switch (priority) {
+ case 'urgent':
+ case 'very_urgent':
+ return (
           <Badge className="bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300 border-rose-300 text-2xs font-bold">
-            URGENT
+ URGENT
           </Badge>
         )
-      case 'low':
-        return (
-          <Badge variant="outline" className="text-muted-foreground text-2xs">
-            Low
+ case 'low':
+ return (
+          <Badge variant="outline"className="text-muted-foreground text-2xs">
+ Low
           </Badge>
         )
-      default:
-        return (
-          <Badge variant="outline" className="text-blue-600 border-blue-200 text-2xs">
-            Normal
+ default:
+ return (
+          <Badge variant="outline"className="text-blue-600 border-blue-200 text-2xs">
+ Normal
           </Badge>
         )
     }
   }
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'in_progress':
-        return <Badge className="bg-blue-600 text-white text-2xs animate-pulse">Running</Badge>
-      case 'ready':
-        return <Badge className="bg-emerald-600 text-white text-2xs">Ready</Badge>
-      case 'scheduled':
-        return <Badge className="bg-purple-100 text-purple-800 dark:bg-purple-950/50 dark:text-purple-300 border-purple-300 text-2xs">Scheduled</Badge>
-      case 'on_hold':
-        return <Badge className="bg-amber-100 text-amber-900 dark:bg-amber-950/60 dark:text-amber-300 border-amber-300 text-2xs">On Hold</Badge>
-      case 'rework':
-        return <Badge className="bg-rose-600 text-white text-2xs">Rework</Badge>
-      case 'completed':
-        return <Badge className="bg-emerald-100 text-emerald-800 border-emerald-300 text-2xs">Completed</Badge>
-      default:
-        return <Badge variant="outline" className="text-2xs capitalize">{status}</Badge>
+ const getStatusBadge = (status: string) => {
+ switch (status) {
+ case 'in_progress':
+ return <Badge className="bg-blue-600 text-white text-2xs animate-pulse">Running</Badge>
+ case 'ready':
+ return <Badge className="bg-emerald-600 text-white text-2xs">Ready</Badge>
+ case 'scheduled':
+ return <Badge className="bg-purple-100 text-purple-800 dark:bg-purple-950/50 dark:text-purple-300 border-purple-300 text-2xs">Scheduled</Badge>
+ case 'on_hold':
+ return <Badge className="bg-amber-100 text-amber-900 dark:bg-amber-950/60 dark:text-amber-300 border-amber-300 text-2xs">On Hold</Badge>
+ case 'rework':
+ return <Badge className="bg-rose-600 text-white text-2xs">Rework</Badge>
+ case 'completed':
+ return <Badge className="bg-emerald-100 text-emerald-800 border-emerald-300 text-2xs">Completed</Badge>
+ default:
+ return <Badge variant="outline"className="text-2xs capitalize">{status}</Badge>
     }
   }
 
-  return (
-    <Card className="border border-border bg-card shadow-xs hover:shadow-md transition-shadow">
+ return (
+    <Card className="border border-border bg-card shadow-xs hover:shadow-xs transition-shadow">
       <CardContent className="p-3.5 space-y-2.5">
         {/* Top Header: Priority & Job ID */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5">
             {getPriorityBadge(task.priority)}
             <Link
-              href={jobHref}
-              className="text-2xs font-bold text-foreground hover:text-blue-600 dark:hover:text-blue-400 hover:underline inline-flex items-center gap-0.5"
-            >
+ href={jobHref}
+ className="text-2xs font-bold text-foreground hover:text-blue-600 dark:hover:text-blue-400 hover:underline inline-flex items-center gap-0.5">
               <span>Job #{task.job_number || 'N/A'}</span>
-              <ExternalLink className="h-2.5 w-2.5 opacity-60" />
+              <ExternalLink className="h-2.5 w-2.5 opacity-60"/>
             </Link>
           </div>
           {getStatusBadge(task.status)}
@@ -140,7 +139,7 @@ export function ProductionBoardCard({
         {/* Blocking Warning Banners */}
         {task.is_blocked_by_commercial_gate && task.status !== 'completed' && (
           <div className="p-2 bg-rose-50 dark:bg-rose-950/40 border border-rose-300 dark:border-rose-800 rounded text-2xs text-rose-900 dark:text-rose-200 flex items-start gap-1.5">
-            <Lock className="h-3.5 w-3.5 text-rose-600 shrink-0 mt-0.5" />
+            <Lock className="h-3.5 w-3.5 text-rose-600 shrink-0 mt-0.5"/>
             <div>
               <span className="font-bold">COMMERCIAL HOLD:</span>{' '}
               {task.commercial_gate_reason || 'Invoice required before production can start.'}
@@ -150,7 +149,7 @@ export function ProductionBoardCard({
 
         {task.is_blocked_by_design_gate && !task.is_blocked_by_commercial_gate && task.status !== 'completed' && (
           <div className="p-2 bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800 rounded text-2xs text-amber-900 dark:text-amber-200 flex items-start gap-1.5">
-            <Lock className="h-3.5 w-3.5 text-amber-600 shrink-0 mt-0.5" />
+            <Lock className="h-3.5 w-3.5 text-amber-600 shrink-0 mt-0.5"/>
             <div>
               <span className="font-bold">DESIGN HOLD:</span>{' '}
               {task.design_gate_reason || 'Customer design approval required.'}
@@ -160,16 +159,16 @@ export function ProductionBoardCard({
 
         {task.is_blocked_by_dependency && task.status !== 'completed' && (
           <div className="p-2 bg-muted border border-input rounded text-2xs text-foreground flex items-center gap-1.5">
-            <Lock className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+            <Lock className="h-3.5 w-3.5 text-muted-foreground shrink-0"/>
             <span className="truncate">
-              Waiting for <strong className="font-semibold">{task.blocking_dependency_task_name}</strong> to complete.
+ Waiting for <strong className="font-semibold">{task.blocking_dependency_task_name}</strong> to complete.
             </span>
           </div>
         )}
 
         {task.status === 'on_hold' && task.hold_reason && (
           <div className="p-2 bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800 rounded text-2xs text-amber-900 dark:text-amber-200 flex items-start gap-1.5">
-            <AlertOctagon className="h-3.5 w-3.5 text-amber-600 shrink-0 mt-0.5" />
+            <AlertOctagon className="h-3.5 w-3.5 text-amber-600 shrink-0 mt-0.5"/>
             <div>
               <span className="font-bold">ON HOLD:</span>{' '}
               {HOLD_REASON_LABELS[task.hold_reason]?.labelEn || task.hold_reason}
@@ -179,16 +178,16 @@ export function ProductionBoardCard({
         )}
 
         {/* Machine & Operator Details */}
-        <div className="pt-1.5 border-t border-border flex items-center justify-between text-2xs text-muted-foreground dark:text-muted-foreground">
+        <div className="pt-1.5 border-t border-border flex items-center justify-between text-2xs text-muted-foreground">
           <div className="flex items-center gap-1 truncate max-w-[130px]">
-            <Cpu className="h-3 w-3 text-muted-foreground shrink-0" />
+            <Cpu className="h-3 w-3 text-muted-foreground shrink-0"/>
             <span className="truncate font-medium">
               {task.assigned_machine_name || 'Manual (No Machine)'}
             </span>
           </div>
 
           <div className="flex items-center gap-1 truncate max-w-[110px]">
-            <User className="h-3 w-3 text-muted-foreground shrink-0" />
+            <User className="h-3 w-3 text-muted-foreground shrink-0"/>
             <span className="truncate">
               {task.assigned_operator_name || 'Unassigned'}
             </span>
@@ -198,13 +197,13 @@ export function ProductionBoardCard({
         {/* Schedule & Quantity Footer */}
         <div className="flex items-center justify-between text-2xs text-muted-foreground">
           <div className="flex items-center gap-1">
-            <Clock className="h-3 w-3 text-muted-foreground" />
+            <Clock className="h-3 w-3 text-muted-foreground"/>
             <span>{task.estimated_duration_minutes || 30}m</span>
             {task.scheduled_start && (
               <span>• {new Date(task.scheduled_start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
             )}
           </div>
-          <span className="font-semibold text-foreground dark:text-muted-foreground">
+          <span className="font-semibold text-foreground">
             {task.quantity} {task.unit}
           </span>
         </div>
@@ -214,24 +213,16 @@ export function ProductionBoardCard({
           <div className="flex items-center gap-1">
             {onPrintTicket && (
               <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => onPrintTicket(task)}
-                title="Print Job Ticket"
-                className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground shrink-0"
-              >
-                <FileCheck2 className="h-3.5 w-3.5" />
+ size="sm"variant="ghost"onClick={() => onPrintTicket(task)}
+ title="Print Job Ticket"className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground shrink-0">
+                <FileCheck2 className="h-3.5 w-3.5"/>
               </Button>
             )}
             {onSendWhatsApp && (
               <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => onSendWhatsApp(task)}
-                title="Send WhatsApp Update"
-                className="h-7 w-7 p-0 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 shrink-0"
-              >
-                <MessageSquare className="h-3.5 w-3.5" />
+ size="sm"variant="ghost"onClick={() => onSendWhatsApp(task)}
+ title="Send WhatsApp Update"className="h-7 w-7 p-0 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 shrink-0">
+                <MessageSquare className="h-3.5 w-3.5"/>
               </Button>
             )}
           </div>
@@ -239,46 +230,34 @@ export function ProductionBoardCard({
           <div className="flex flex-wrap items-center gap-1 ml-auto">
           {task.status === 'on_hold' && onResume && (
             <Button
-              size="sm"
-              variant="outline"
-              onClick={() => onResume(task)}
-              className="h-7 text-2xs px-2 text-amber-700 border-amber-300 hover:bg-amber-50 dark:border-amber-700 rounded-lg shrink-0"
-            >
-              Resume
+ size="sm"variant="outline"onClick={() => onResume(task)}
+ className="h-7 text-2xs px-2 text-amber-700 border-amber-300 hover:bg-amber-50 dark:border-amber-700 rounded-lg shrink-0">
+ Resume
             </Button>
           )}
 
           {task.status !== 'completed' && task.status !== 'cancelled' && task.status !== 'on_hold' && onHold && (
             <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => onHold(task)}
-              className="h-7 text-2xs px-1.5 text-muted-foreground hover:text-amber-600 rounded-lg shrink-0"
-            >
-              Hold
+ size="sm"variant="ghost"onClick={() => onHold(task)}
+ className="h-7 text-2xs px-1.5 text-muted-foreground hover:text-amber-600 rounded-lg shrink-0">
+ Hold
             </Button>
           )}
 
           {task.status === 'queued' && onSchedule && (
             <Button
-              size="sm"
-              variant="outline"
-              onClick={() => onSchedule(task)}
-              className="h-7 text-2xs px-2 text-blue-600 border-blue-200 hover:bg-blue-50 rounded-lg shrink-0"
-            >
-              Schedule
+ size="sm"variant="outline"onClick={() => onSchedule(task)}
+ className="h-7 text-2xs px-2 text-blue-600 border-blue-200 hover:bg-blue-50 rounded-lg shrink-0">
+ Schedule
             </Button>
           )}
 
           {(task.status === 'scheduled' || task.status === 'ready' || task.status === 'queued') && onStart && (
             <Button
-              size="sm"
-              variant="default"
-              onClick={() => onStart(task)}
-              disabled={task.is_blocked_by_dependency || task.is_blocked_by_commercial_gate || task.is_blocked_by_design_gate}
-              className="h-7 text-2xs px-2.5 bg-primary hover:bg-primary/90 text-primary-foreground flex items-center gap-1 font-semibold rounded-lg shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Play className="h-3 w-3 fill-current" />
+ size="sm"variant="default"onClick={() => onStart(task)}
+ disabled={task.is_blocked_by_dependency || task.is_blocked_by_commercial_gate || task.is_blocked_by_design_gate}
+ className="h-7 text-2xs px-2.5 bg-primary hover:bg-primary/90 text-primary-foreground flex items-center gap-1 font-semibold rounded-lg shrink-0 disabled:opacity-50 disabled:cursor-not-allowed">
+              <Play className="h-3 w-3 fill-current"/>
               <span>Start</span>
             </Button>
           )}
@@ -287,24 +266,18 @@ export function ProductionBoardCard({
             <>
               {onPause && (
                 <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => onPause(task)}
-                  className="h-7 text-2xs px-2 text-amber-700 border-amber-200"
-                >
-                  <Pause className="h-3 w-3" />
-                  Pause
+ size="sm"variant="outline"onClick={() => onPause(task)}
+ className="h-7 text-2xs px-2 text-amber-700 border-amber-200">
+                  <Pause className="h-3 w-3"/>
+ Pause
                 </Button>
               )}
               {onComplete && (
                 <Button
-                  size="sm"
-                  variant="default"
-                  onClick={() => onComplete(task)}
-                  className="h-7 text-2xs px-2 bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-1 font-semibold"
-                >
-                  <CheckCircle2 className="h-3 w-3" />
-                  Complete
+ size="sm"variant="default"onClick={() => onComplete(task)}
+ className="h-7 text-2xs px-2 bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-1 font-semibold">
+                  <CheckCircle2 className="h-3 w-3"/>
+ Complete
                 </Button>
               )}
             </>
@@ -312,13 +285,10 @@ export function ProductionBoardCard({
 
           {task.status === 'completed' && onRework && (
             <Button
-              size="sm"
-              variant="outline"
-              onClick={() => onRework(task)}
-              className="h-7 text-2xs px-2 text-rose-600 border-rose-200 hover:bg-rose-50 flex items-center gap-1"
-            >
-              <RotateCcw className="h-3 w-3" />
-              Rework
+ size="sm"variant="outline"onClick={() => onRework(task)}
+ className="h-7 text-2xs px-2 text-rose-600 border-rose-200 hover:bg-rose-50 flex items-center gap-1">
+              <RotateCcw className="h-3 w-3"/>
+ Rework
             </Button>
           )}
           </div>

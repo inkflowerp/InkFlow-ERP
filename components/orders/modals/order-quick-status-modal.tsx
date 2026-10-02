@@ -2,83 +2,83 @@
 
 import React, { useState } from 'react'
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
+ Dialog,
+ DialogContent,
+ DialogHeader,
+ DialogTitle,
+ DialogDescription,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { CheckCircle2, ArrowRight } from 'lucide-react'
 import { useI18n } from '@/i18n/context'
 import {
-  type UnifiedOrderRecord,
-  type OrderStage,
-  type OrderLiveStatus,
-  ORDER_LIVE_STATUSES,
+ type UnifiedOrderRecord,
+ type OrderStage,
+ type OrderLiveStatus,
+ ORDER_LIVE_STATUSES,
 } from '../types'
 
 interface OrderQuickStatusModalProps {
-  isOpen: boolean
-  onClose: () => void
-  order: UnifiedOrderRecord | null
-  onUpdateStage: (orderId: string, newStage: OrderStage, note?: string) => Promise<void>
-  onUpdateLiveStatus?: (orderId: string, newStatus: OrderLiveStatus, note?: string) => Promise<void>
-  onShowNotification?: (msg: string, type?: 'success' | 'warning' | 'info') => void
+ isOpen: boolean
+ onClose: () => void
+ order: UnifiedOrderRecord | null
+ onUpdateStage: (orderId: string, newStage: OrderStage, note?: string) => Promise<void>
+ onUpdateLiveStatus?: (orderId: string, newStatus: OrderLiveStatus, note?: string) => Promise<void>
+ onShowNotification?: (msg: string, type?: 'success' | 'warning' | 'info') => void
 }
 
 export const OrderQuickStatusModal = React.memo(function OrderQuickStatusModal({
-  isOpen,
-  onClose,
-  order,
-  onUpdateStage,
-  onUpdateLiveStatus,
-  onShowNotification,
+ isOpen,
+ onClose,
+ order,
+ onUpdateStage,
+ onUpdateLiveStatus,
+ onShowNotification,
 }: OrderQuickStatusModalProps) {
-  const { tBilingual } = useI18n()
-  const initialStatus: OrderLiveStatus =
-    order?.currentStatus ||
-    ORDER_LIVE_STATUSES.find((s) => s.stage === order?.stage)?.id ||
+ const { tBilingual } = useI18n()
+ const initialStatus: OrderLiveStatus =
+ order?.currentStatus ||
+ ORDER_LIVE_STATUSES.find((s) => s.stage === order?.stage)?.id ||
     'print_queue'
 
-  const [selectedStatus, setSelectedStatus] = useState<OrderLiveStatus>(initialStatus)
-  const [stageNote, setStageNote] = useState('')
-  const [isSubmitting, setIsSubmitting] = useState(false)
+ const [selectedStatus, setSelectedStatus] = useState<OrderLiveStatus>(initialStatus)
+ const [stageNote, setStageNote] = useState('')
+ const [isSubmitting, setIsSubmitting] = useState(false)
 
-  if (!order) return null
+ if (!order) return null
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSubmitting(true)
-    try {
-      const cfg = ORDER_LIVE_STATUSES.find((s) => s.id === selectedStatus)
-      if (onUpdateLiveStatus) {
-        await onUpdateLiveStatus(order.id, selectedStatus, stageNote)
+ const handleSubmit = async (e: React.FormEvent) => {
+ e.preventDefault()
+ setIsSubmitting(true)
+ try {
+ const cfg = ORDER_LIVE_STATUSES.find((s) => s.id === selectedStatus)
+ if (onUpdateLiveStatus) {
+ await onUpdateLiveStatus(order.id, selectedStatus, stageNote)
       } else if (cfg) {
-        await onUpdateStage(order.id, cfg.stage, stageNote)
+ await onUpdateStage(order.id, cfg.stage, stageNote)
       }
-      onShowNotification?.(
-        tBilingual(
+ onShowNotification?.(
+ tBilingual(
           `Order #${order.orderNumber} status updated to ${cfg ? cfg.labelEn : selectedStatus}!`,
           `অর্ডার #${order.orderNumber}-এর স্ট্যাটাস সফলভাবে আপডেট হয়েছে!`
         ),
         'success'
       )
-      onClose()
+ onClose()
     } catch (err: any) {
-      onShowNotification?.(err.message || tBilingual('Failed to update status', 'স্ট্যাটাস আপডেট ব্যর্থ হয়েছে'), 'warning')
+ onShowNotification?.(err.message || tBilingual('Failed to update status', 'স্ট্যাটাস আপডেট ব্যর্থ হয়েছে'), 'warning')
     } finally {
-      setIsSubmitting(false)
+ setIsSubmitting(false)
     }
   }
 
-  return (
+ return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-xl bg-card border border-border text-foreground p-6 shadow-2xl">
+      <DialogContent className="max-w-xl bg-card border border-border text-foreground p-6 shadow-lg">
         <DialogHeader className="border-b border-border pb-3">
           <DialogTitle className="text-base font-bold flex items-center gap-2 text-indigo-700 dark:text-indigo-400">
-            <ArrowRight className="h-5 w-5" />
+            <ArrowRight className="h-5 w-5"/>
             <span>{tBilingual('Update Order Live Status', 'অর্ডারের লাইভ স্ট্যাটাস আপডেট করুন')}</span>
           </DialogTitle>
           <DialogDescription className="text-xs text-muted-foreground">
@@ -95,14 +95,13 @@ export const OrderQuickStatusModal = React.memo(function OrderQuickStatusModal({
             </Label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {ORDER_LIVE_STATUSES.map((opt) => {
-                const isSelected = selectedStatus === opt.id
-                return (
+ const isSelected = selectedStatus === opt.id
+ return (
                   <button
-                    key={opt.id}
-                    type="button"
-                    onClick={() => setSelectedStatus(opt.id)}
-                    className={`p-2.5 rounded-lg border text-left transition-all flex items-center justify-between ${
-                      isSelected
+ key={opt.id}
+ type="button"onClick={() => setSelectedStatus(opt.id)}
+ className={`p-2.5 rounded-lg border text-left transition-all flex items-center justify-between ${
+ isSelected
                         ? 'bg-indigo-50 border-indigo-500 text-indigo-950 dark:bg-indigo-950/40 dark:text-indigo-200 shadow-sm ring-1 ring-indigo-400/30'
                         : 'bg-muted border-border text-foreground hover:border-input'
                     }`}
@@ -113,7 +112,7 @@ export const OrderQuickStatusModal = React.memo(function OrderQuickStatusModal({
                         {tBilingual(opt.labelEn, opt.labelBn)}
                       </div>
                     </div>
-                    {isSelected && <CheckCircle2 className="h-4 w-4 text-indigo-600 dark:text-indigo-400 shrink-0" />}
+                    {isSelected && <CheckCircle2 className="h-4 w-4 text-indigo-600 dark:text-indigo-400 shrink-0"/>}
                   </button>
                 )
               })}
@@ -122,20 +121,13 @@ export const OrderQuickStatusModal = React.memo(function OrderQuickStatusModal({
 
           <div className="flex items-center justify-between border-t border-border pt-3">
             <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={onClose}
-              className="text-xs text-muted-foreground dark:text-muted-foreground"
-            >
+ type="button"variant="outline"size="sm"onClick={onClose}
+ className="text-xs text-muted-foreground">
               {tBilingual('Cancel', 'বাতিল')}
             </Button>
             <Button
-              type="submit"
-              size="sm"
-              disabled={isSubmitting}
-              className="text-xs bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-md"
-            >
+ type="submit"size="sm"disabled={isSubmitting}
+ className="text-xs bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-xs">
               <span>{isSubmitting ? tBilingual('Updating...', 'আপডেট হচ্ছে...') : tBilingual('Save Status', 'স্ট্যাটাস সংরক্ষণ করুন')}</span>
             </Button>
           </div>

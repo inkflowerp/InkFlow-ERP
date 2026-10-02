@@ -2,23 +2,23 @@
 
 import React from 'react'
 import {
-  CheckCircle2,
-  DollarSign,
-  Languages,
-  MapPin,
-  FileCheck,
-  CreditCard,
-  MessageSquare,
-  Smartphone,
-  ShieldCheck,
+ CheckCircle2,
+ DollarSign,
+ Languages,
+ MapPin,
+ FileCheck,
+ CreditCard,
+ MessageSquare,
+ Smartphone,
+ ShieldCheck,
 } from 'lucide-react'
 import { useI18n } from '@/i18n/context'
 import { BANGLADESH_SPECIFIC_FEATURES } from '@/lib/marketing/marketing-data'
 
 export function BangladeshFeaturesSection() {
-  const { tBilingual } = useI18n()
+ const { tBilingual } = useI18n()
 
-  const FEATURE_ICONS: Record<number, React.ElementType> = {
+ const FEATURE_ICONS: Record<number, React.ElementType> = {
     0: DollarSign,
     1: Languages,
     2: MapPin,
@@ -29,8 +29,8 @@ export function BangladeshFeaturesSection() {
     7: Smartphone,
   }
 
-  return (
-    <section className="py-16 sm:py-24 bg-card border-t border-border dark:border-border">
+ return (
+    <section className="py-16 sm:py-24 bg-card border-t border-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12 sm:space-y-16">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto space-y-3 sm:space-y-4">
@@ -38,7 +38,7 @@ export function BangladeshFeaturesSection() {
             <span>{tBilingual('Bangladesh First', 'বাংলাদেশ ফার্স্ট')}</span>
           </div>
 
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-foreground dark:text-white tracking-tight leading-tight bangla-text">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-foreground tracking-tight leading-tight bangla-text">
             {tBilingual('Built for Businesses in Bangladesh.', 'বাংলাদেশের প্রেস ও কারখানার বাস্তব উপযোগী করে নির্মিত।')}
           </h2>
 
@@ -53,23 +53,22 @@ export function BangladeshFeaturesSection() {
         {/* 8 Feature Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           {BANGLADESH_SPECIFIC_FEATURES.map((feat, idx) => {
-            const Icon = FEATURE_ICONS[idx] || CheckCircle2
-            return (
+ const Icon = FEATURE_ICONS[idx] || CheckCircle2
+ return (
               <div
-                key={idx}
-                className="p-5 sm:p-6 rounded-2xl border border-border bg-muted hover:bg-card hover:border-input transition-all shadow-2xs flex flex-col justify-between"
-              >
+ key={idx}
+ className="p-5 sm:p-6 rounded-xl border border-border bg-muted hover:bg-card hover:border-input transition-all shadow-2xs flex flex-col justify-between">
                 <div>
                   <div className="flex items-center justify-between mb-3.5">
                     <div className="h-9 w-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-100 dark:border-emerald-900/60">
-                      <Icon className="h-4.5 w-4.5" />
+                      <Icon className="h-4.5 w-4.5"/>
                     </div>
                     <span className="px-2 py-0.5 rounded-full text-2xs font-bold uppercase tracking-wider bg-emerald-100/80 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-300/40">
                       {feat.status}
                     </span>
                   </div>
 
-                  <h3 className="text-sm font-bold text-foreground dark:text-white bangla-text mb-1.5">
+                  <h3 className="text-sm font-bold text-foreground bangla-text mb-1.5">
                     {tBilingual(feat.titleEn, feat.titleBn)}
                   </h3>
 

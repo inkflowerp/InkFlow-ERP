@@ -3,26 +3,26 @@ import { headers } from 'next/headers'
 import { resolveHostname } from '@/lib/tenant/tenant-resolution'
 
 interface PageProps {
-  params: Promise<{ tenantSlug: string }>
+ params: Promise<{ tenantSlug: string }>
 }
 
 export default async function LegacyInventoryLedgerPage({ params }: PageProps) {
-  const { tenantSlug } = await params
-  let isSubdomain = false
-  try {
-    const headerStore = await headers()
-    const host = headerStore.get('x-tenant-hostname') || headerStore.get('host')
-    if (host) {
-      isSubdomain = resolveHostname(host).hostType === 'tenant'
+ const { tenantSlug } = await params
+ let isSubdomain = false
+ try {
+ const headerStore = await headers()
+ const host = headerStore.get('x-tenant-hostname') || headerStore.get('host')
+ if (host) {
+ isSubdomain = resolveHostname(host).hostType === 'tenant'
     }
   } catch {}
 
-  if (isSubdomain) {
-    redirect('/inventory?view=ledger')
+ if (isSubdomain) {
+ redirect('/inventory?view=ledger')
   }
 
-  if (tenantSlug) {
-    redirect(`/${tenantSlug}/inventory?view=ledger`)
+ if (tenantSlug) {
+ redirect(`/${tenantSlug}/inventory?view=ledger`)
   }
-  redirect('/inventory?view=ledger')
+ redirect('/inventory?view=ledger')
 }

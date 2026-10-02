@@ -3,35 +3,35 @@
 import React, { useState, useMemo } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import {
-  Building2,
-  Store,
-  MapPin,
-  Phone,
-  Plus,
-  CreditCard,
-  Receipt,
-  Users,
-  CheckCircle2,
-  AlertCircle,
-  Clock,
-  TrendingUp,
-  DollarSign,
-  Layers,
-  FileText,
-  Printer,
-  Share2,
-  Search,
-  RefreshCw,
-  ShieldCheck,
-  Lock,
-  Eye,
-  ExternalLink,
-  Coins,
-  PackageCheck,
-  Sparkles,
-  Info,
-  Calendar,
-  AlertTriangle,
+ Building2,
+ Store,
+ MapPin,
+ Phone,
+ Plus,
+ CreditCard,
+ Receipt,
+ Users,
+ CheckCircle2,
+ AlertCircle,
+ Clock,
+ TrendingUp,
+ DollarSign,
+ Layers,
+ FileText,
+ Printer,
+ Share2,
+ Search,
+ RefreshCw,
+ ShieldCheck,
+ Lock,
+ Eye,
+ ExternalLink,
+ Coins,
+ PackageCheck,
+ Sparkles,
+ Info,
+ Calendar,
+ AlertTriangle,
 } from 'lucide-react'
 import { useI18n } from '@/i18n/context'
 import { useTenant } from '@/hooks/use-tenant'
@@ -47,163 +47,163 @@ import { InvoiceRecord, PaymentRecord } from '@/types/billing.types'
 import { ProductionTaskRecord } from '@/types/production.types'
 
 interface BranchManagerDashboardProps {
-  branch?: {
-    id: string
-    name: string
-    name_bn?: string | null
-    code?: string
-    address?: string | null
-    phone?: string | null
-    is_main_branch?: boolean
+ branch?: {
+ id: string
+ name: string
+ name_bn?: string | null
+ code?: string
+ address?: string | null
+ phone?: string | null
+ is_main_branch?: boolean
   } | null
-  orders: SalesOrderRecord[]
-  invoices: InvoiceRecord[]
-  payments: PaymentRecord[]
-  tasks: ProductionTaskRecord[]
-  onOpenNewWork: () => void
-  onOpenPaymentModal: () => void
-  onRefresh: () => void
+ orders: SalesOrderRecord[]
+ invoices: InvoiceRecord[]
+ payments: PaymentRecord[]
+ tasks: ProductionTaskRecord[]
+ onOpenNewWork: () => void
+ onOpenPaymentModal: () => void
+ onRefresh: () => void
 }
 
 export function BranchManagerDashboard({
-  branch,
-  orders,
-  invoices,
-  payments,
-  tasks,
-  onOpenNewWork,
-  onOpenPaymentModal,
-  onRefresh,
+ branch,
+ orders,
+ invoices,
+ payments,
+ tasks,
+ onOpenNewWork,
+ onOpenPaymentModal,
+ onRefresh,
 }: BranchManagerDashboardProps) {
-  const { tBilingual } = useI18n()
-  const router = useRouter()
-  const pathname = usePathname()
-  const { company } = useTenant()
-  const { user } = useAuth()
+ const { tBilingual } = useI18n()
+ const router = useRouter()
+ const pathname = usePathname()
+ const { company } = useTenant()
+ const { user } = useAuth()
 
-  const tenantSlug = company?.slug || 'workspace'
-  const currentBranchId = branch?.id || null
-  const branchName = branch?.name || company?.name || 'Main Branch & Outlet'
-  const branchNameBn = branch?.name_bn || 'মূল ব্রাঞ্চ ও আউটলেট'
-  const userDisplayName = user?.profile?.full_name || user?.email || 'Branch Manager'
+ const tenantSlug = company?.slug || 'workspace'
+ const currentBranchId = branch?.id || null
+ const branchName = branch?.name || company?.name || 'Main Branch & Outlet'
+ const branchNameBn = branch?.name_bn || 'মূল ব্রাঞ্চ ও আউটলেট'
+ const userDisplayName = user?.profile?.full_name || user?.email || 'Branch Manager'
 
-  const [searchQuery, setSearchQuery] = useState('')
-  const [activeFilterTab, setActiveFilterTab] = useState<'all' | 'pending' | 'in_production' | 'ready' | 'delivered'>('all')
-  const [showRestrictionsDetail, setShowRestrictionsDetail] = useState(false)
-  const [isRefreshing, setIsRefreshing] = useState(false)
+ const [searchQuery, setSearchQuery] = useState('')
+ const [activeFilterTab, setActiveFilterTab] = useState<'all' | 'pending' | 'in_production' | 'ready' | 'delivered'>('all')
+ const [showRestrictionsDetail, setShowRestrictionsDetail] = useState(false)
+ const [isRefreshing, setIsRefreshing] = useState(false)
 
-  const handleRefresh = async () => {
-    setIsRefreshing(true)
-    onRefresh()
-    setTimeout(() => setIsRefreshing(false), 800)
+ const handleRefresh = async () => {
+ setIsRefreshing(true)
+ onRefresh()
+ setTimeout(() => setIsRefreshing(false), 800)
   }
 
   // 1. Strict Branch Data Scoping:
   // Branch Managers ONLY see orders, invoices, and payments belonging to their assigned branch.
-  const branchOrders = useMemo(() => {
-    if (!currentBranchId) return orders || []
-    return (orders || []).filter((o) => !o.branch_id || o.branch_id === currentBranchId)
+ const branchOrders = useMemo(() => {
+ if (!currentBranchId) return orders || []
+ return (orders || []).filter((o) => !o.branch_id || o.branch_id === currentBranchId)
   }, [orders, currentBranchId])
 
-  const branchInvoices = useMemo(() => {
-    if (!currentBranchId) return invoices || []
-    return (invoices || []).filter((i) => !i.branch_id || i.branch_id === currentBranchId)
+ const branchInvoices = useMemo(() => {
+ if (!currentBranchId) return invoices || []
+ return (invoices || []).filter((i) => !i.branch_id || i.branch_id === currentBranchId)
   }, [invoices, currentBranchId])
 
-  const branchPayments = useMemo(() => {
-    if (!currentBranchId) return payments || []
-    return (payments || []).filter((p) => !p.branch_id || p.branch_id === currentBranchId)
+ const branchPayments = useMemo(() => {
+ if (!currentBranchId) return payments || []
+ return (payments || []).filter((p) => !p.branch_id || p.branch_id === currentBranchId)
   }, [payments, currentBranchId])
 
   // 2. Branch-Scoped Financial Metrics
-  const metrics = useMemo(() => {
-    const todayStr = new Date().toISOString().slice(0, 10)
+ const metrics = useMemo(() => {
+ const todayStr = new Date().toISOString().slice(0, 10)
 
     // Today's Sales created at this branch
-    const todaySalesTotal = branchInvoices
+ const todaySalesTotal = branchInvoices
       .filter((inv) => inv.created_at && inv.created_at.slice(0, 10) === todayStr)
       .reduce((sum, inv) => sum + (Number(inv.grand_total) || 0), 0)
 
     // Today's Payments collected at this branch
-    const todayCollectionsTotal = branchPayments
+ const todayCollectionsTotal = branchPayments
       .filter((p) => (p.created_at && p.created_at.slice(0, 10) === todayStr) || (p.payment_date && p.payment_date.slice(0, 10) === todayStr))
       .reduce((sum, p) => sum + (Number(p.amount) || 0), 0)
 
     // Active Orders in Pipeline for this branch
-    const activeOrdersCount = branchOrders.filter((o) =>
-      o.status === 'confirmed' || o.status === 'in_production' || o.status === 'finishing' || (o.status as any) === 'processing'
+ const activeOrdersCount = branchOrders.filter((o) =>
+ o.status === 'confirmed' || o.status === 'in_production' || o.status === 'finishing' || (o.status as any) === 'processing'
     ).length
 
     // Ready for Delivery / Counter Pickup at this branch
-    const readyForPickupCount = branchOrders.filter((o) =>
-      o.status === 'ready_for_delivery' || o.status === 'partially_delivered' || (o as any).status === 'ready_for_pickup'
+ const readyForPickupCount = branchOrders.filter((o) =>
+ o.status === 'ready_for_delivery' || o.status === 'partially_delivered' || (o as any).status === 'ready_for_pickup'
     ).length
 
     // Unpaid Branch Dues
-    const totalBranchDue = branchInvoices
+ const totalBranchDue = branchInvoices
       .filter((inv) => inv.status === 'unpaid' || inv.status === 'partially_paid')
       .reduce((sum, inv) => sum + (Number(inv.due_amount || (Number(inv.grand_total) - Number(inv.paid_amount || 0))) || 0), 0)
 
-    return {
-      todaySalesTotal,
-      todayCollectionsTotal,
-      activeOrdersCount,
-      readyForPickupCount,
-      totalBranchDue,
+ return {
+ todaySalesTotal,
+ todayCollectionsTotal,
+ activeOrdersCount,
+ readyForPickupCount,
+ totalBranchDue,
     }
   }, [branchInvoices, branchPayments, branchOrders])
 
   // 3. Filtered Orders Table
-  const filteredOrders = useMemo(() => {
-    return branchOrders.filter((order) => {
-      if (activeFilterTab === 'pending') {
-        if (order.status !== 'draft' && order.status !== 'confirmed') return false
+ const filteredOrders = useMemo(() => {
+ return branchOrders.filter((order) => {
+ if (activeFilterTab === 'pending') {
+ if (order.status !== 'draft' && order.status !== 'confirmed') return false
       } else if (activeFilterTab === 'in_production') {
-        if (order.status !== 'in_production' && order.status !== 'finishing') return false
+ if (order.status !== 'in_production' && order.status !== 'finishing') return false
       } else if (activeFilterTab === 'ready') {
-        if (order.status !== 'ready_for_delivery' && (order as any).status !== 'ready_for_pickup') return false
+ if (order.status !== 'ready_for_delivery' && (order as any).status !== 'ready_for_pickup') return false
       } else if (activeFilterTab === 'delivered') {
-        if (order.status !== 'delivered' && order.status !== 'completed') return false
+ if (order.status !== 'delivered' && order.status !== 'completed') return false
       }
 
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase()
-        const matchesNum = (order.order_number || order.id || '')?.toLowerCase().includes(q)
-        const matchesCust = (order.customer_name || '')?.toLowerCase().includes(q)
-        const itemSummary = order.items?.map((i) => i.item_name).join(', ') || ''
-        const matchesDesc = (itemSummary || (order as any).description || '')?.toLowerCase().includes(q)
-        if (!matchesNum && !matchesCust && !matchesDesc) return false
+ if (searchQuery.trim()) {
+ const q = searchQuery.toLowerCase()
+ const matchesNum = (order.order_number || order.id || '')?.toLowerCase().includes(q)
+ const matchesCust = (order.customer_name || '')?.toLowerCase().includes(q)
+ const itemSummary = order.items?.map((i) => i.item_name).join(', ') || ''
+ const matchesDesc = (itemSummary || (order as any).description || '')?.toLowerCase().includes(q)
+ if (!matchesNum && !matchesCust && !matchesDesc) return false
       }
 
-      return true
+ return true
     })
   }, [branchOrders, activeFilterTab, searchQuery])
 
-  const formatBDT = (amount: number) => `৳${Number(amount || 0).toLocaleString('en-IN')}`
+ const formatBDT = (amount: number) => `৳${Number(amount || 0).toLocaleString('en-IN')}`
 
-  return (
+ return (
     <div className="space-y-6">
       {/* Hero Banner: Branch Identity & Quick Actions */}
-      <div className="rounded-2xl bg-card border border-border shadow-xs p-5 sm:p-6">
-        <div className="absolute -right-8 -top-8 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="rounded-xl bg-card border border-border shadow-xs p-5 sm:p-6">
+        <div className="absolute -right-8 -top-8 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"/>
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-5">
           <div className="space-y-2 max-w-2xl">
             <div className="flex flex-wrap items-center gap-2">
               <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/30 text-xs font-semibold backdrop-blur-sm flex items-center gap-1.5 px-2.5 py-0.5">
-                <Store className="h-3.5 w-3.5 text-emerald-400" />
-                <span>{tBilingual('Branch Command Center', 'ব্রাঞ্চ কমান্ড সেন্টার')}</span>
+                <Store className="h-3.5 w-3.5 text-emerald-400"/>
+                <span>{tBilingual('Branch Home', 'ব্রাঞ্চ কমান্ড সেন্টার')}</span>
               </Badge>
               <Badge className="bg-card/10 text-white border-border text-xs tabular-nums font-medium">
                 {branch?.code || 'BR-01'}
               </Badge>
               <Badge className="bg-emerald-400/20 text-muted-foreground border-emerald-400/30 text-xs font-bold flex items-center gap-1">
-                <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"/>
                 {tBilingual('Branch Operational', 'ব্রাঞ্চ সক্রিয়')}
               </Badge>
             </div>
 
             <h1 className="text-xl sm:text-2xl md:text-3xl font-black tracking-tight text-white flex items-center gap-2.5">
-              <Building2 className="h-7 w-7 text-emerald-300 shrink-0" />
+              <Building2 className="h-7 w-7 text-emerald-300 shrink-0"/>
               <span>{tBilingual(`${branchName} — Overview`, `${branchNameBn} — ড্যাশবোর্ড`)}</span>
             </h1>
 
@@ -211,13 +211,13 @@ export function BranchManagerDashboard({
               <span><strong>Manager:</strong> {userDisplayName}</span>
               {branch?.address && (
                 <span className="flex items-center gap-1">
-                  <MapPin className="h-3.5 w-3.5 text-emerald-300" />
+                  <MapPin className="h-3.5 w-3.5 text-emerald-300"/>
                   {branch.address}
                 </span>
               )}
               {branch?.phone && (
                 <span className="flex items-center gap-1">
-                  <Phone className="h-3.5 w-3.5 text-emerald-300" />
+                  <Phone className="h-3.5 w-3.5 text-emerald-300"/>
                   {branch.phone}
                 </span>
               )}
@@ -227,38 +227,30 @@ export function BranchManagerDashboard({
           {/* Quick Counter Action Buttons */}
           <div className="flex flex-wrap items-center gap-2.5 shrink-0">
             <Button
-              onClick={onOpenNewWork}
-              className="bg-card text-emerald-950 hover:bg-emerald-50 font-bold text-xs sm:text-sm shadow-md transition-all flex items-center gap-2 h-10 px-4"
-            >
-              <Plus className="h-4 w-4 text-emerald-700" />
+ onClick={onOpenNewWork}
+ className="bg-card text-emerald-950 hover:bg-emerald-50 font-bold text-xs sm:text-sm shadow-xs transition-all flex items-center gap-2 h-10 px-4">
+              <Plus className="h-4 w-4 text-emerald-700"/>
               <span>{tBilingual('New Counter Order', 'নতুন কাউন্টার অর্ডার')}</span>
             </Button>
 
             <Button
-              onClick={onOpenPaymentModal}
-              variant="outline"
-              className="bg-emerald-900/60 hover:bg-emerald-800/80 text-white border-emerald-400/30 font-bold text-xs sm:text-sm transition-all flex items-center gap-2 h-10 px-4"
-            >
-              <CreditCard className="h-4 w-4 text-emerald-300" />
+ onClick={onOpenPaymentModal}
+ variant="outline"className="bg-emerald-900/60 hover:bg-emerald-800/80 text-white border-emerald-400/30 font-bold text-xs sm:text-sm transition-all flex items-center gap-2 h-10 px-4">
+              <CreditCard className="h-4 w-4 text-emerald-300"/>
               <span>{tBilingual('Collect Payment', 'টাকা জমা নিন')}</span>
             </Button>
 
             <Button
-              onClick={() => router.push(getTenantNavHref('/attendance', pathname, tenantSlug))}
-              variant="outline"
-              className="bg-emerald-900/60 hover:bg-emerald-800/80 text-white border-emerald-400/30 font-bold text-xs sm:text-sm transition-all flex items-center gap-2 h-10 px-4"
-            >
-              <Users className="h-4 w-4 text-emerald-300" />
+ onClick={() => router.push(getTenantNavHref('/attendance', pathname, tenantSlug))}
+ variant="outline"className="bg-emerald-900/60 hover:bg-emerald-800/80 text-white border-emerald-400/30 font-bold text-xs sm:text-sm transition-all flex items-center gap-2 h-10 px-4">
+              <Users className="h-4 w-4 text-emerald-300"/>
               <span>{tBilingual('Staff Attendance', 'স্টাফ হাজিরা')}</span>
             </Button>
 
             <Button
-              onClick={handleRefresh}
-              variant="ghost"
-              disabled={isRefreshing}
-              className="h-10 w-10 p-0 text-muted-foreground hover:text-white hover:bg-card/10 rounded-xl"
-              title="Refresh Queue"
-            >
+ onClick={handleRefresh}
+ variant="ghost"disabled={isRefreshing}
+ className="h-10 w-10 p-0 text-muted-foreground hover:text-foreground hover:bg-card/10 rounded-xl"title="Refresh Queue">
               <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
             </Button>
           </div>
@@ -268,35 +260,23 @@ export function BranchManagerDashboard({
       {/* KPI Cards: Strictly Branch-Scoped Metrics */}
       <KpiGrid columns={4}>
         <KpiCard
-          titleEn="Today's Branch Sales"
-          titleBn="আজকের ব্রাঞ্চ সেলস"
-          value={metrics.todaySalesTotal}
-          isCurrency={true}
-          icon={TrendingUp}
-          colorVariant="success"
-        />
+ titleEn="Today's Branch Sales"titleBn="আজকের ব্রাঞ্চ সেলস"value={metrics.todaySalesTotal}
+ isCurrency={true}
+ icon={TrendingUp}
+ colorVariant="success"/>
         <KpiCard
-          titleEn="Today's Cash Collection"
-          titleBn="আজকের নগদ কালেকশন"
-          value={metrics.todayCollectionsTotal}
-          isCurrency={true}
-          icon={DollarSign}
-          colorVariant="cyan"
-        />
+ titleEn="Today's Cash Collection"titleBn="আজকের নগদ কালেকশন"value={metrics.todayCollectionsTotal}
+ isCurrency={true}
+ icon={DollarSign}
+ colorVariant="cyan"/>
         <KpiCard
-          titleEn="Branch Orders in Pipeline"
-          titleBn="চলমান ব্রাঞ্চ অর্ডার"
-          value={metrics.activeOrdersCount}
-          icon={Layers}
-          colorVariant="purple"
-        />
+ titleEn="Branch Orders in Pipeline"titleBn="চলমান ব্রাঞ্চ অর্ডার"value={metrics.activeOrdersCount}
+ icon={Layers}
+ colorVariant="purple"/>
         <KpiCard
-          titleEn="Ready for Counter Pickup"
-          titleBn="কাউন্টারে ডেলিভারি প্রস্তুত"
-          value={metrics.readyForPickupCount}
-          icon={PackageCheck}
-          colorVariant="warning"
-        />
+ titleEn="Ready for Counter Pickup"titleBn="কাউন্টারে ডেলিভারি প্রস্তুত"value={metrics.readyForPickupCount}
+ icon={PackageCheck}
+ colorVariant="warning"/>
       </KpiGrid>
 
       {/* Roles, Permissions, Restrictions & Limitations Callout Card */}
@@ -304,12 +284,12 @@ export function BranchManagerDashboard({
         <div className="p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-start gap-3">
             <div className="h-10 w-10 rounded-xl bg-emerald-600/10 text-emerald-700 dark:text-emerald-300 flex items-center justify-center shrink-0">
-              <ShieldCheck className="h-5 w-5" />
+              <ShieldCheck className="h-5 w-5"/>
             </div>
             <div>
               <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
                 <span>{tBilingual('Branch Scope & Security Governance', 'ব্রাঞ্চ এক্সেস সীমা ও নিরাপত্তা পলিসি')}</span>
-                <Badge variant="outline" className="text-2xs uppercase font-bold text-emerald-700 dark:text-emerald-400 border-emerald-300">
+                <Badge variant="outline"className="text-2xs uppercase font-bold text-emerald-700 dark:text-emerald-400 border-emerald-300">
                   {branch?.name || 'Branch-Scoped'}
                 </Badge>
               </h2>
@@ -323,11 +303,8 @@ export function BranchManagerDashboard({
           </div>
 
           <Button
-            size="sm"
-            variant="outline"
-            onClick={() => setShowRestrictionsDetail(!showRestrictionsDetail)}
-            className="text-xs font-bold text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-700 hover:bg-emerald-100/50 shrink-0"
-          >
+ size="sm"variant="outline"onClick={() => setShowRestrictionsDetail(!showRestrictionsDetail)}
+ className="text-xs font-bold text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-700 hover:bg-emerald-100/50 shrink-0">
             {showRestrictionsDetail ? tBilingual('Hide Details', 'বিবরণ লুকান') : tBilingual('View Permissions & Limits', 'অনুমোদন ও সীমাবদ্ধতা দেখুন')}
           </Button>
         </div>
@@ -337,11 +314,11 @@ export function BranchManagerDashboard({
           <div className="border-t border-emerald-100 dark:border-emerald-900/40 p-4 sm:p-5 bg-card/70 grid grid-cols-1 md:grid-cols-2 gap-4 text-xs animate-in fade-in-50 duration-200">
             {/* Granted Authorities */}
             <div className="p-3.5 rounded-xl border border-emerald-200 dark:border-emerald-900/60 bg-emerald-50/40 dark:bg-emerald-950/20 space-y-2">
-              <div className="flex items-center gap-2 font-bold text-emerald-900 dark:text-muted-foreground">
-                <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+              <div className="flex items-center gap-2 font-bold text-emerald-900">
+                <CheckCircle2 className="h-4 w-4 text-emerald-600"/>
                 <span>{tBilingual('Branch Manager Permissions & Authorities', 'অনুমোদিত দায়িত্ব ও ক্ষমতা')}</span>
               </div>
-              <ul className="space-y-1.5 text-foreground dark:text-muted-foreground">
+              <ul className="space-y-1.5 text-foreground">
                 <li className="flex items-start gap-1.5">
                   <span className="text-emerald-600 font-bold">✓</span>
                   <span><strong>Counter Sales & Quotes:</strong> Create and approve walk-in client quotations and work orders for {branchName}.</span>
@@ -368,10 +345,10 @@ export function BranchManagerDashboard({
             {/* Strict Restrictions & Limitations */}
             <div className="p-3.5 rounded-xl border border-rose-200 dark:border-rose-900/60 bg-rose-50/40 dark:bg-rose-950/20 space-y-2">
               <div className="flex items-center gap-2 font-bold text-rose-900 dark:text-rose-200">
-                <Lock className="h-4 w-4 text-rose-600" />
+                <Lock className="h-4 w-4 text-rose-600"/>
                 <span>{tBilingual('Security Safeguards & Governance Limitations', 'নিরাপত্তা নিয়ন্ত্রণ ও সিস্টেম সীমাবদ্ধতা')}</span>
               </div>
-              <ul className="space-y-1.5 text-foreground dark:text-muted-foreground">
+              <ul className="space-y-1.5 text-foreground">
                 <li className="flex items-start gap-1.5">
                   <span className="text-rose-600 font-bold">🚫</span>
                   <span><strong>Cross-Branch Isolation:</strong> Cannot access or query customers, sales orders, invoices, or staff from other branches.</span>
@@ -404,55 +381,55 @@ export function BranchManagerDashboard({
           {/* Filter Tabs */}
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
             <button
-              onClick={() => setActiveFilterTab('all')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
-                activeFilterTab === 'all'
+ onClick={() => setActiveFilterTab('all')}
+ className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
+ activeFilterTab === 'all'
                   ? 'bg-emerald-700 text-white shadow-sm'
-                  : 'bg-muted hover:bg-muted text-foreground dark:text-muted-foreground'
+                  : 'bg-muted hover:bg-muted text-foreground '
               }`}
             >
               {tBilingual('All Branch Orders', 'সকল অর্ডার')} ({branchOrders.length})
             </button>
 
             <button
-              onClick={() => setActiveFilterTab('pending')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
-                activeFilterTab === 'pending'
+ onClick={() => setActiveFilterTab('pending')}
+ className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
+ activeFilterTab === 'pending'
                   ? 'bg-amber-600 text-white shadow-sm'
-                  : 'bg-muted hover:bg-muted text-foreground dark:text-muted-foreground'
+                  : 'bg-muted hover:bg-muted text-foreground '
               }`}
             >
               {tBilingual('Pending Confirmation', 'অনুমোদন বাকি')}
             </button>
 
             <button
-              onClick={() => setActiveFilterTab('in_production')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
-                activeFilterTab === 'in_production'
+ onClick={() => setActiveFilterTab('in_production')}
+ className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
+ activeFilterTab === 'in_production'
                   ? 'bg-purple-700 text-white shadow-sm'
-                  : 'bg-muted hover:bg-muted text-foreground dark:text-muted-foreground'
+                  : 'bg-muted hover:bg-muted text-foreground '
               }`}
             >
               {tBilingual('In Production', 'প্রিন্টিং চলছে')}
             </button>
 
             <button
-              onClick={() => setActiveFilterTab('ready')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
-                activeFilterTab === 'ready'
+ onClick={() => setActiveFilterTab('ready')}
+ className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
+ activeFilterTab === 'ready'
                   ? 'bg-teal-600 text-white shadow-sm'
-                  : 'bg-muted hover:bg-muted text-foreground dark:text-muted-foreground'
+                  : 'bg-muted hover:bg-muted text-foreground '
               }`}
             >
               {tBilingual('Ready for Pickup', 'কাউন্টারে প্রস্তুত')} ({metrics.readyForPickupCount})
             </button>
 
             <button
-              onClick={() => setActiveFilterTab('delivered')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
-                activeFilterTab === 'delivered'
-                  ? 'bg-slate-700 text-white shadow-sm'
-                  : 'bg-muted hover:bg-muted text-foreground dark:text-muted-foreground'
+ onClick={() => setActiveFilterTab('delivered')}
+ className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
+ activeFilterTab === 'delivered'
+                  ? 'bg-card-elevated text-foreground shadow-sm'
+                  : 'bg-muted hover:bg-muted text-foreground '
               }`}
             >
               {tBilingual('Completed & Delivered', 'সম্পন্ন ও ডেলিভার্ড')}
@@ -461,25 +438,23 @@ export function BranchManagerDashboard({
 
           {/* Search Input */}
           <div className="relative w-full sm:w-64">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground"/>
             <Input
-              type="text"
-              placeholder={tBilingual('Search orders, customers...', 'অর্ডার খুঁজুন...')}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-8 h-9 text-xs bg-card border-border dark:border-border"
-            />
+ type="text"placeholder={tBilingual('Search orders, customers...', 'অর্ডার খুঁজুন...')}
+ value={searchQuery}
+ onChange={(e) => setSearchQuery(e.target.value)}
+ className="pl-8 h-9 text-xs bg-card border-border"/>
           </div>
         </div>
 
         {/* Orders Table */}
         {filteredOrders.length === 0 ? (
-          <Card className="border border-dashed border-input p-10 text-center bg-muted dark:bg-card">
+          <Card className="border border-dashed border-input p-10 text-center bg-muted">
             <div className="flex flex-col items-center justify-center space-y-3 max-w-sm mx-auto">
-              <div className="h-12 w-12 rounded-2xl bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300 flex items-center justify-center">
-                <FileText className="h-6 w-6" />
+              <div className="h-12 w-12 rounded-xl bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300 flex items-center justify-center">
+                <FileText className="h-6 w-6"/>
               </div>
-              <h3 className="text-sm font-bold text-foreground dark:text-foreground">
+              <h3 className="text-sm font-bold text-foreground">
                 {tBilingual('No orders found for this branch', 'এই ব্রাঞ্চে কোনো অর্ডার পাওয়া যায়নি')}
               </h3>
               <p className="text-xs text-muted-foreground">
@@ -489,16 +464,15 @@ export function BranchManagerDashboard({
                 )}
               </p>
               <Button
-                onClick={onOpenNewWork}
-                className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs mt-2"
-              >
-                <Plus className="h-3.5 w-3.5 mr-1.5" />
+ onClick={onOpenNewWork}
+ className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs mt-2">
+                <Plus className="h-3.5 w-3.5 mr-1.5"/>
                 {tBilingual('Create First Branch Order', 'নতুন অর্ডার তৈরি করুন')}
               </Button>
             </div>
           </Card>
         ) : (
-          <Card className="border border-border overflow-hidden shadow-xs bg-card dark:bg-card">
+          <Card className="border border-border overflow-hidden shadow-xs bg-card">
             <div className="overflow-x-auto">
               <table className="w-full text-xs text-left">
                 <thead className="bg-muted text-muted-foreground border-b border-border uppercase text-2xs font-bold">
@@ -514,20 +488,20 @@ export function BranchManagerDashboard({
                 </thead>
                 <tbody className="divide-y divide-border font-medium">
                   {filteredOrders.map((ord) => {
-                    const dueAmt = ord.due_amount !== undefined ? Number(ord.due_amount) : Math.max(0, Number(ord.final_price || 0) - Number(ord.advance_amount || 0))
-                    const isDue = dueAmt > 0
-                    const itemSummary = ord.items?.map((i) => i.item_name).join(', ') || 'Print Job'
+ const dueAmt = ord.due_amount !== undefined ? Number(ord.due_amount) : Math.max(0, Number(ord.final_price || 0) - Number(ord.advance_amount || 0))
+ const isDue = dueAmt > 0
+ const itemSummary = ord.items?.map((i) => i.item_name).join(', ') || 'Print Job'
 
-                    return (
+ return (
                       <tr key={ord.id} className="hover:bg-muted dark:hover:bg-muted/40 transition-colors">
                         <td className="px-4 py-3 tabular-nums font-bold text-emerald-700 dark:text-emerald-400 whitespace-nowrap">
                           #{ord.order_number || ord.id.slice(0, 8)}
                         </td>
                         <td className="px-4 py-3">
-                          <div className="font-bold text-foreground dark:text-foreground">{ord.customer_name || 'Walk-in Client'}</div>
+                          <div className="font-bold text-foreground">{ord.customer_name || 'Walk-in Client'}</div>
                           <div className="text-2xs text-muted-foreground tabular-nums">{ord.customer_phone || '—'}</div>
                         </td>
-                        <td className="px-4 py-3 max-w-xs truncate text-foreground dark:text-muted-foreground">
+                        <td className="px-4 py-3 max-w-xs truncate text-foreground">
                           {itemSummary}
                         </td>
                         <td className="px-4 py-3 text-right tabular-nums font-bold text-foreground whitespace-nowrap">
@@ -542,13 +516,13 @@ export function BranchManagerDashboard({
                         </td>
                         <td className="px-4 py-3 text-center whitespace-nowrap">
                           <Badge
-                            className={`text-2xs uppercase font-bold ${
-                              ord.status === 'ready_for_delivery' || (ord as any).status === 'ready_for_pickup'
+ className={`text-2xs uppercase font-bold ${
+ ord.status === 'ready_for_delivery' || (ord as any).status === 'ready_for_pickup'
                                 ? 'bg-teal-100 text-teal-800 dark:bg-teal-950 dark:text-teal-300 border-teal-300'
                                 : ord.status === 'in_production' || ord.status === 'finishing'
                                 ? 'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 border-purple-300'
                                 : ord.status === 'delivered' || ord.status === 'completed'
-                                ? 'bg-muted text-foreground dark:text-muted-foreground'
+                                ? 'bg-muted text-foreground '
                                 : 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border-amber-300'
                             }`}
                           >
@@ -558,28 +532,20 @@ export function BranchManagerDashboard({
                         <td className="px-4 py-3 text-right whitespace-nowrap">
                           <div className="flex items-center justify-end gap-1.5">
                             <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => router.push(getTenantNavHref(`/orders/${ord.id}`, pathname, tenantSlug))}
-                              className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground dark:hover:text-slate-100"
-                              title="View Order"
-                            >
-                              <Eye className="h-3.5 w-3.5" />
+ size="sm"variant="ghost"onClick={() => router.push(getTenantNavHref(`/orders/${ord.id}`, pathname, tenantSlug))}
+ className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground dark:hover:text-foreground"title="View Order">
+                              <Eye className="h-3.5 w-3.5"/>
                             </Button>
 
                             <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => {
-                                const phone = (ord.customer_phone || '').replace(/\D/g, '')
-                                const clean = phone.startsWith('88') ? phone : phone.startsWith('0') ? `88${phone}` : `880${phone}`
-                                const msg = `সম্মানিত গ্রাহক, আপনার অর্ডার #${ord.order_number || ord.id.slice(0, 8)} (${branchName}) এ প্রক্রিয়াধীন রয়েছে। বর্তমান স্ট্যাটাস: ${ord.status}। ধন্যবাদ!`
-                                window.open(`https://wa.me/${clean}?text=${encodeURIComponent(msg)}`, '_blank')
+ size="sm"variant="ghost"onClick={() => {
+ const phone = (ord.customer_phone || '').replace(/\D/g, '')
+ const clean = phone.startsWith('88') ? phone : phone.startsWith('0') ? `88${phone}` : `880${phone}`
+ const msg = `সম্মানিত গ্রাহক, আপনার অর্ডার #${ord.order_number || ord.id.slice(0, 8)} (${branchName}) এ প্রক্রিয়াধীন রয়েছে। বর্তমান স্ট্যাটাস: ${ord.status}। ধন্যবাদ!`
+ window.open(`https://wa.me/${clean}?text=${encodeURIComponent(msg)}`, '_blank')
                               }}
-                              className="h-8 w-8 p-0 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/40"
-                              title="WhatsApp Client"
-                            >
-                              <Share2 className="h-3.5 w-3.5" />
+ className="h-8 w-8 p-0 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/40"title="WhatsApp Client">
+                              <Share2 className="h-3.5 w-3.5"/>
                             </Button>
                           </div>
                         </td>

@@ -2,22 +2,22 @@
 
 import React, { useState, useEffect } from 'react'
 import {
-  ShieldAlert,
-  Search,
-  RotateCcw,
-  Download,
-  Filter,
-  Calendar,
-  User,
-  Clock,
-  Key,
-  ShieldCheck,
-  Building,
-  CheckCircle2,
-  XCircle,
-  FileText,
-  ChevronDown,
-  ChevronUp,
+ ShieldAlert,
+ Search,
+ RotateCcw,
+ Download,
+ Filter,
+ Calendar,
+ User,
+ Clock,
+ Key,
+ ShieldCheck,
+ Building,
+ CheckCircle2,
+ XCircle,
+ FileText,
+ ChevronDown,
+ ChevronUp,
 } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -29,59 +29,59 @@ import { formatDateTime } from '@/lib/formatters'
 import { cn } from '@/lib/utils'
 
 interface SecurityAuditTabProps {
-  companyId: string
-  companySlug: string
+ companyId: string
+ companySlug: string
 }
 
 export function SecurityAuditTab({ companyId, companySlug }: SecurityAuditTabProps) {
-  const [logs, setLogs] = useState<AuditLogEntry[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [searchQuery, setSearchQuery] = useState('')
-  const [entityFilter, setEntityFilter] = useState<string>('all')
-  const [expandedLogId, setExpandedLogId] = useState<string | null>(null)
+ const [logs, setLogs] = useState<AuditLogEntry[]>([])
+ const [isLoading, setIsLoading] = useState(true)
+ const [searchQuery, setSearchQuery] = useState('')
+ const [entityFilter, setEntityFilter] = useState<string>('all')
+ const [expandedLogId, setExpandedLogId] = useState<string | null>(null)
 
-  const fetchLogs = async () => {
-    setIsLoading(true)
-    try {
-      const res = await getAuditLogsAction(searchQuery)
-      if (res && res.success && res.data) {
-        setLogs(res.data)
+ const fetchLogs = async () => {
+ setIsLoading(true)
+ try {
+ const res = await getAuditLogsAction(searchQuery)
+ if (res && res.success && res.data) {
+ setLogs(res.data)
       } else {
-        setLogs([])
+ setLogs([])
       }
     } catch (err) {
-      console.error('Failed to load audit trail:', err)
-      setLogs([])
+ console.error('Failed to load audit trail:', err)
+ setLogs([])
     } finally {
-      setIsLoading(false)
+ setIsLoading(false)
     }
   }
 
-  useEffect(() => {
-    fetchLogs()
+ useEffect(() => {
+ fetchLogs()
   }, [])
 
-  const filteredLogs = logs.filter((log) => {
-    if (entityFilter !== 'all' && log.entity !== entityFilter) return false
-    if (!searchQuery.trim()) return true
+ const filteredLogs = logs.filter((log) => {
+ if (entityFilter !== 'all' && log.entity !== entityFilter) return false
+ if (!searchQuery.trim()) return true
 
-    const q = searchQuery.toLowerCase()
-    return (
-      log.action.toLowerCase().includes(q) ||
-      log.entity.toLowerCase().includes(q) ||
+ const q = searchQuery.toLowerCase()
+ return (
+ log.action.toLowerCase().includes(q) ||
+ log.entity.toLowerCase().includes(q) ||
       (log.user_email && log.user_email.toLowerCase().includes(q)) ||
       (log.description && log.description.toLowerCase().includes(q)) ||
       (log.entity_id && log.entity_id.toLowerCase().includes(q))
     )
   })
 
-  const getLogTimestamp = (l: AuditLogEntry) => {
-    return l.timestamp || (l as any).created_at || new Date().toISOString()
+ const getLogTimestamp = (l: AuditLogEntry) => {
+ return l.timestamp || (l as any).created_at || new Date().toISOString()
   }
 
-  const handleExportCSV = () => {
-    const headers = ['Timestamp', 'Action Code', 'Entity', 'Actor Email', 'Target Entity ID', 'Description']
-    const rows = filteredLogs.map((l) => [
+ const handleExportCSV = () => {
+ const headers = ['Timestamp', 'Action Code', 'Entity', 'Actor Email', 'Target Entity ID', 'Description']
+ const rows = filteredLogs.map((l) => [
       `"${getLogTimestamp(l)}"`,
       `"${l.action || ''}"`,
       `"${l.entity || ''}"`,
@@ -90,51 +90,44 @@ export function SecurityAuditTab({ companyId, companySlug }: SecurityAuditTabPro
       `"${(l.description || '').replace(/"/g, '""')}"`,
     ])
 
-    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map((e) => e.join(','))].join('\n')
-    const encodedUri = encodeURI(csvContent)
-    const link = document.createElement('a')
-    link.setAttribute('href', encodedUri)
-    link.setAttribute('download', `InkFlow_Security_Trail_${companySlug}_${new Date().toISOString().slice(0, 10)}.csv`)
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
+ const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map((e) => e.join(','))].join('\n')
+ const encodedUri = encodeURI(csvContent)
+ const link = document.createElement('a')
+ link.setAttribute('href', encodedUri)
+ link.setAttribute('download', `InkFlow_Security_Trail_${companySlug}_${new Date().toISOString().slice(0, 10)}.csv`)
+ document.body.appendChild(link)
+ link.click()
+ document.body.removeChild(link)
   }
 
-  return (
+ return (
     <div className="space-y-4">
       <Card className="border-border bg-card backdrop-blur-md shadow-xs">
         <CardHeader className="pb-4">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
             <div>
-              <CardTitle className="text-base font-semibold text-foreground dark:text-white flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                Security & Access Audit Trail (নিরাপত্তা ও কার্যকলাপের লগ)
+              <CardTitle className="text-base font-semibold text-foreground flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400"/>
+ Security & Access Audit Trail (নিরাপত্তা ও কার্যকলাপের লগ)
               </CardTitle>
-              <CardDescription className="text-xs text-muted-foreground dark:text-muted-foreground">
-                Immutable chronological log of authentication, role modifications, and privilege adjustments.
+              <CardDescription className="text-xs text-muted-foreground">
+ Immutable chronological log of authentication, role modifications, and privilege adjustments.
               </CardDescription>
             </div>
 
             <div className="flex items-center gap-2">
               <Button
-                variant="outline"
-                size="sm"
-                onClick={fetchLogs}
-                disabled={isLoading}
-                title="Refresh audit logs"
-                className="h-8 w-8 p-0 border-border text-xs text-foreground hover:bg-muted cursor-pointer"
-              >
+ variant="outline"size="sm"onClick={fetchLogs}
+ disabled={isLoading}
+ title="Refresh audit logs"className="h-8 w-8 p-0 border-border text-xs text-foreground hover:bg-muted cursor-pointer">
                 <RotateCcw className={cn('w-3.5 h-3.5', isLoading && 'animate-spin')} />
               </Button>
 
               <Button
-                variant="outline"
-                size="sm"
-                onClick={handleExportCSV}
-                className="border-border text-xs text-foreground hover:bg-muted gap-1.5 cursor-pointer"
-              >
-                <Download className="w-3.5 h-3.5 text-primary" />
-                Export CSV
+ variant="outline"size="sm"onClick={handleExportCSV}
+ className="border-border text-xs text-foreground hover:bg-muted gap-1.5 cursor-pointer">
+                <Download className="w-3.5 h-3.5 text-primary"/>
+ Export CSV
               </Button>
             </div>
           </div>
@@ -144,23 +137,19 @@ export function SecurityAuditTab({ companyId, companySlug }: SecurityAuditTabPro
           {/* Filters */}
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
             <div className="relative flex-1 w-full max-w-sm">
-              <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-muted-foreground dark:text-muted-foreground" />
+              <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-muted-foreground"/>
               <Input
-                type="text"
-                placeholder="Search audit trail by actor, action or description..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 h-8 text-xs bg-card border-border text-foreground dark:text-foreground"
-              />
+ type="text"placeholder="Search audit trail by actor, action or description..."value={searchQuery}
+ onChange={(e) => setSearchQuery(e.target.value)}
+ className="pl-9 h-8 text-xs bg-card border-border text-foreground"/>
             </div>
 
             <div className="flex items-center gap-2 w-full sm:w-auto">
               <span className="text-xs text-muted-foreground font-medium">Domain:</span>
               <select
-                value={entityFilter}
-                onChange={(e) => setEntityFilter(e.target.value)}
-                className="bg-card border border-border rounded-lg px-2.5 py-1 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-              >
+ value={entityFilter}
+ onChange={(e) => setEntityFilter(e.target.value)}
+ className="bg-card border border-border rounded-lg px-2.5 py-1 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary">
                 <option value="all">All Domains (সকল)</option>
                 <option value="user">User & Roles</option>
                 <option value="auth">Authentication & Logins</option>
@@ -176,30 +165,30 @@ export function SecurityAuditTab({ companyId, companySlug }: SecurityAuditTabPro
           <div className="rounded-xl border border-border overflow-hidden bg-card shadow-xs">
             {isLoading ? (
               <div className="p-12 text-center text-xs text-muted-foreground flex flex-col items-center justify-center gap-2">
-                <RotateCcw className="w-5 h-5 animate-spin text-primary" />
-                Loading security logs...
+                <RotateCcw className="w-5 h-5 animate-spin text-primary"/>
+ Loading security logs...
               </div>
             ) : filteredLogs.length === 0 ? (
               <div className="p-12 text-center text-xs text-muted-foreground">
-                No audit records found matching your filter criteria.
+ No audit records found matching your filter criteria.
               </div>
             ) : (
               <div className="divide-y divide-border dark:divide-border/60">
                 {filteredLogs.map((log) => {
-                  const isExpanded = expandedLogId === log.id
-                  const hasDiff = log.previous_value || log.new_value
+ const isExpanded = expandedLogId === log.id
+ const hasDiff = log.previous_value || log.new_value
 
-                  return (
+ return (
                     <div key={log.id} className="p-3.5 hover:bg-muted dark:hover:bg-muted/30 transition-colors">
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex items-start gap-3">
                           <div className="p-1.5 rounded-lg bg-muted text-foreground border border-border mt-0.5">
                             {log.entity === 'auth' ? (
-                              <Key className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" />
+                              <Key className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400"/>
                             ) : log.entity === 'user' ? (
-                              <User className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
+                              <User className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400"/>
                             ) : (
-                              <FileText className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                              <FileText className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400"/>
                             )}
                           </div>
 
@@ -208,20 +197,20 @@ export function SecurityAuditTab({ companyId, companySlug }: SecurityAuditTabPro
                               <span className="font-semibold text-xs text-foreground tabular-nums">
                                 {log.action}
                               </span>
-                              <Badge variant="outline" className="text-2xs px-1.5 py-0 uppercase bg-muted border-border text-muted-foreground dark:text-muted-foreground">
+                              <Badge variant="outline"className="text-2xs px-1.5 py-0 uppercase bg-muted border-border text-muted-foreground">
                                 {log.entity}
                               </Badge>
                             </div>
 
-                            <div className="text-xs text-foreground dark:text-muted-foreground">{log.description || 'Action recorded'}</div>
+                            <div className="text-xs text-foreground">{log.description || 'Action recorded'}</div>
 
                             <div className="flex items-center gap-3 text-2xs text-muted-foreground pt-0.5">
                               <span>
-                                Actor: <span className="text-foreground font-medium">{log.user_email || 'System Agent'}</span>
+ Actor: <span className="text-foreground font-medium">{log.user_email || 'System Agent'}</span>
                               </span>
                               {log.entity_id && (
                                 <span>
-                                  Target: <span className="tabular-nums text-muted-foreground dark:text-muted-foreground">{log.entity_id.slice(0, 8)}...</span>
+ Target: <span className="tabular-nums text-muted-foreground">{log.entity_id.slice(0, 8)}...</span>
                                 </span>
                               )}
                             </div>
@@ -235,12 +224,9 @@ export function SecurityAuditTab({ companyId, companySlug }: SecurityAuditTabPro
 
                           {hasDiff && (
                             <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => setExpandedLogId(isExpanded ? null : log.id)}
-                              className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground dark:hover:text-white cursor-pointer"
-                            >
-                              {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+ variant="ghost"size="sm"onClick={() => setExpandedLogId(isExpanded ? null : log.id)}
+ className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground dark:hover:text-foreground cursor-pointer">
+                              {isExpanded ? <ChevronUp className="w-3.5 h-3.5"/> : <ChevronDown className="w-3.5 h-3.5"/>}
                             </Button>
                           )}
                         </div>
@@ -251,7 +237,7 @@ export function SecurityAuditTab({ companyId, companySlug }: SecurityAuditTabPro
                         <div className="mt-3 p-3 rounded-lg bg-muted border border-border text-2xs tabular-nums grid grid-cols-1 md:grid-cols-2 gap-3">
                           <div>
                             <div className="text-rose-600 dark:text-rose-400 font-semibold mb-1 flex items-center gap-1">
-                              <XCircle className="w-3 h-3" /> Previous State:
+                              <XCircle className="w-3 h-3"/> Previous State:
                             </div>
                             <pre className="p-2 rounded bg-card border border-border text-foreground overflow-x-auto">
                               {JSON.stringify(log.previous_value || {}, null, 2)}
@@ -260,7 +246,7 @@ export function SecurityAuditTab({ companyId, companySlug }: SecurityAuditTabPro
 
                           <div>
                             <div className="text-emerald-600 dark:text-emerald-400 font-semibold mb-1 flex items-center gap-1">
-                              <CheckCircle2 className="w-3 h-3" /> New State:
+                              <CheckCircle2 className="w-3 h-3"/> New State:
                             </div>
                             <pre className="p-2 rounded bg-card border border-border text-foreground overflow-x-auto">
                               {JSON.stringify(log.new_value || {}, null, 2)}

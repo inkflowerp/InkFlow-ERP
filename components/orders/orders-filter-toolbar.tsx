@@ -4,44 +4,44 @@ import React from 'react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import {
-  Search,
-  LayoutGrid,
-  List,
-  Sparkles,
-  Zap,
-  UserCheck,
-  Calendar,
-  Layers,
-  RefreshCw,
-  Wallet,
-  AlertTriangle,
-  AlertOctagon,
+ Search,
+ LayoutGrid,
+ List,
+ Sparkles,
+ Zap,
+ UserCheck,
+ Calendar,
+ Layers,
+ RefreshCw,
+ Wallet,
+ AlertTriangle,
+ AlertOctagon,
 } from 'lucide-react'
 import { useI18n } from '@/i18n/context'
 
 export interface OrderFilterState {
-  searchQuery: string
-  quickFilter: 'all' | 'due_today' | 'blocked' | 'overdue' | 'payment_due' | 'urgent' | 'walk_in' | 'unpaid_due'
-  selectedPriority: string
-  viewMode: 'cards' | 'table'
+ searchQuery: string
+ quickFilter: 'all' | 'due_today' | 'blocked' | 'overdue' | 'payment_due' | 'urgent' | 'walk_in' | 'unpaid_due'
+ selectedPriority: string
+ viewMode: 'cards' | 'table'
 }
 
 interface OrdersFilterToolbarProps {
-  filters: OrderFilterState
-  onFilterChange: (newFilters: Partial<OrderFilterState>) => void
-  onRefresh: () => void
-  isRefreshing?: boolean
+ filters: OrderFilterState
+ onFilterChange: (newFilters: Partial<OrderFilterState>) => void
+ onRefresh: () => void
+ isRefreshing?: boolean
 }
 
 export const OrdersFilterToolbar = React.memo(function OrdersFilterToolbar({
-  filters,
-  onFilterChange,
-  onRefresh,
-  isRefreshing,
+ filters,
+ onFilterChange,
+ onRefresh,
+ isRefreshing,
 }: OrdersFilterToolbarProps) {
-  const { tBilingual } = useI18n()
+ const { tBilingual } = useI18n()
 
-  const filterChips = [
+ const filterChips = [
     { id: 'all', label: tBilingual('All', 'সব'), icon: Layers },
     { id: 'due_today', label: tBilingual('Due Today', 'আজকের ডেলিভারি'), icon: Calendar },
     { id: 'blocked', label: tBilingual('Blocked', 'স্থগিত'), icon: AlertTriangle },
@@ -50,31 +50,29 @@ export const OrdersFilterToolbar = React.memo(function OrdersFilterToolbar({
     { id: 'urgent', label: tBilingual('Urgent', 'জরুরী'), icon: Zap },
   ] as const
 
-  return (
-    <div className="bg-card p-3 sm:p-3.5 rounded-2xl border border-border dark:border-border/80 shadow-2xs space-y-3">
+ return (
+    <div className="bg-card p-3 sm:p-3.5 rounded-xl border border-border /80 shadow-2xs space-y-3">
       <div className="flex flex-col md:flex-row items-center justify-between gap-3">
         {/* Search Input: Order #, Job #, Customer, Phone, Invoice #, Product, Operator, Machine */}
         <div className="relative w-full md:flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none"/>
           <Input
-            value={filters.searchQuery}
-            onChange={(e) => onFilterChange({ searchQuery: e.target.value })}
-            placeholder={tBilingual(
+ value={filters.searchQuery}
+ onChange={(e) => onFilterChange({ searchQuery: e.target.value })}
+ placeholder={tBilingual(
               'Search order #, job #, customer, phone, invoice #, product, operator, machine...',
               'অর্ডার #, জব #, কাস্টমার, ফোন, ইনভয়েস #, পণ্য, অপারেটর, মেশিন খুঁজুন...'
             )}
-            className="pl-9 text-xs bg-muted border border-border rounded-xl h-8 text-foreground placeholder:text-muted-foreground shadow-none focus-visible:ring-0"
-          />
+ className="pl-9 text-xs bg-muted border border-border rounded-xl h-8 text-foreground placeholder:text-muted-foreground shadow-none focus-visible:ring-0"/>
         </div>
 
         {/* Right Tools: Priority Dropdown, Refresh & View Mode Switcher */}
         <div className="flex items-center gap-2 w-full md:w-auto justify-end flex-wrap">
           {/* Priority Filter */}
           <select
-            value={filters.selectedPriority}
-            onChange={(e) => onFilterChange({ selectedPriority: e.target.value })}
-            className="text-xs font-medium rounded-lg border border-border bg-card px-3 h-8 text-foreground outline-none cursor-pointer hover:border-input transition-colors"
-          >
+ value={filters.selectedPriority}
+ onChange={(e) => onFilterChange({ selectedPriority: e.target.value })}
+ className="text-xs font-medium rounded-lg border border-border bg-card px-3 h-8 text-foreground outline-none cursor-pointer hover:border-input transition-colors">
             <option value="all">{tBilingual('All Priority', 'সকল প্রায়োরিটি')}</option>
             <option value="normal">{tBilingual('Normal', 'সাধারণ')}</option>
             <option value="urgent">{tBilingual('Urgent', 'জরুরী')}</option>
@@ -83,41 +81,35 @@ export const OrdersFilterToolbar = React.memo(function OrdersFilterToolbar({
 
           {/* Refresh Button */}
           <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={onRefresh}
-            disabled={isRefreshing}
-            title={tBilingual('Refresh Orders', 'অর্ডার রিফ্রেশ করুন')}
-            className="h-8 px-2.5 text-xs text-muted-foreground border-border rounded-lg hover:bg-muted cursor-pointer shadow-2xs"
-          >
+ type="button"variant="outline"size="sm"onClick={onRefresh}
+ disabled={isRefreshing}
+ title={tBilingual('Refresh Orders', 'অর্ডার রিফ্রেশ করুন')}
+ className="h-8 px-2.5 text-xs text-muted-foreground border-border rounded-lg hover:bg-muted cursor-pointer shadow-2xs">
             <RefreshCw className={`h-3.5 w-3.5 ${isRefreshing ? 'animate-spin text-indigo-600' : ''}`} />
           </Button>
 
           {/* View Switcher */}
-          <div className="flex items-center p-0.5 rounded-lg border border-border bg-muted dark:bg-muted">
+          <div className="flex items-center p-0.5 rounded-lg border border-border bg-muted">
             <button
-              type="button"
-              onClick={() => onFilterChange({ viewMode: 'cards' })}
-              className={`px-2.5 py-1 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
-                filters.viewMode === 'cards'
+ type="button"onClick={() => onFilterChange({ viewMode: 'cards' })}
+ className={`px-2.5 py-1 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
+ filters.viewMode === 'cards'
                   ? 'bg-card text-indigo-600 dark:text-indigo-400 shadow-2xs font-bold'
                   : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
               }`}
             >
-              <LayoutGrid className="h-3.5 w-3.5" />
+              <LayoutGrid className="h-3.5 w-3.5"/>
               <span>{tBilingual('Cards', 'কার্ড')}</span>
             </button>
             <button
-              type="button"
-              onClick={() => onFilterChange({ viewMode: 'table' })}
-              className={`px-2.5 py-1 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
-                filters.viewMode === 'table'
+ type="button"onClick={() => onFilterChange({ viewMode: 'table' })}
+ className={`px-2.5 py-1 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
+ filters.viewMode === 'table'
                   ? 'bg-card text-indigo-600 dark:text-indigo-400 shadow-2xs font-bold'
                   : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
               }`}
             >
-              <List className="h-3.5 w-3.5" />
+              <List className="h-3.5 w-3.5"/>
               <span>{tBilingual('Table', 'টেবিল')}</span>
             </button>
           </div>
@@ -125,22 +117,21 @@ export const OrdersFilterToolbar = React.memo(function OrdersFilterToolbar({
       </div>
 
       {/* Quick Filter Chips */}
-      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar pt-2 border-t border-border dark:border-border">
+      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar pt-2 border-t border-border">
         {filterChips.map((chip) => {
-          const Icon = chip.icon
-          const isActive = filters.quickFilter === chip.id
-          return (
+ const Icon = chip.icon
+ const isActive = filters.quickFilter === chip.id
+ return (
             <button
-              key={chip.id}
-              type="button"
-              onClick={() => onFilterChange({ quickFilter: chip.id })}
-              className={`px-3.5 py-1 rounded-full text-xs font-semibold shrink-0 flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs ${
-                isActive
-                  ? 'bg-slate-900 text-white font-bold shadow-xs'
-                  : 'bg-card border border-border dark:border-border/80 text-muted-foreground hover:bg-muted dark:hover:bg-muted/80'
+ key={chip.id}
+ type="button"onClick={() => onFilterChange({ quickFilter: chip.id })}
+ className={`px-3.5 py-1 rounded-full text-xs font-semibold shrink-0 flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs ${
+ isActive
+                  ? 'bg-surface-inset text-foreground font-bold shadow-xs'
+                  : 'bg-card border border-border /80 text-muted-foreground hover:bg-muted dark:hover:bg-muted/80'
               }`}
             >
-              <Icon className="h-3.5 w-3.5" />
+              <Icon className="h-3.5 w-3.5"/>
               <span>{chip.label}</span>
             </button>
           )

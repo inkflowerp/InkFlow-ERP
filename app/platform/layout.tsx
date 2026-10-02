@@ -9,27 +9,32 @@ import { ToastProvider } from '@/components/shared/toast-feedback'
 import { usePathname, useRouter } from 'next/navigation'
 import { getPlatformSessionUserAction } from '@/actions/platform-auth.actions'
 
+import { useI18n } from '@/lib/i18n'
+
 export default function PlatformLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const { tBilingual } = useI18n()
   const pathname = usePathname()
   const router = useRouter()
-  const [isAuthorized, setIsAuthorized] = useState(false)
-  const [isChecking, setIsChecking] = useState(true)
-  const hasVerifiedRef = useRef(false)
-
   const isAuthPage =
     pathname === '/platform/login' ||
     pathname === '/platform/forgot-password' ||
     pathname === '/platform/reset-password'
 
-  // Ensure documentElement has dark class so all modal portals and overlays inherit dark theme
-  useEffect(() => {
-    document.documentElement.classList.add('dark')
-    document.documentElement.style.colorScheme = 'dark'
-  }, [])
+  const [isAuthorized, setIsAuthorized] = useState(() => {
+    if (typeof window === 'undefined') return true
+    if (isAuthPage) return true
+    return document.cookie.includes('printerp_platform_session=')
+  })
+  const [isChecking, setIsChecking] = useState(() => {
+    if (typeof window === 'undefined') return false
+    if (isAuthPage) return false
+    return !document.cookie.includes('printerp_platform_session=')
+  })
+  const hasVerifiedRef = useRef(false)
 
   useEffect(() => {
     if (isAuthPage) {
@@ -78,11 +83,11 @@ export default function PlatformLayout({
 
   if (isChecking && !isAuthorized) {
     return (
-      <div className="dark h-screen max-h-screen bg-slate-900 text-muted-foreground flex items-center justify-center font-sans">
+      <div className="h-screen max-h-screen bg-background text-foreground flex items-center justify-center font-sans">
         <div className="flex flex-col items-center gap-3">
-          <div className="h-6 w-6 rounded-full border-2 border-indigo-500 border-t-transparent animate-spin" />
+          <div className="h-6 w-6 rounded-full border border-primary border-t-transparent animate-spin" />
           <span className="text-xs tabular-nums uppercase tracking-wider text-muted-foreground">
-            Verifying Platform Clearance...
+            {tBilingual('Checking access...', 'অনুমতি পরীক্ষা হচ্ছে...')}
           </span>
         </div>
       </div>
@@ -91,7 +96,7 @@ export default function PlatformLayout({
 
   return (
     <ToastProvider>
-      <div className="dark h-screen max-h-screen bg-slate-900 text-slate-100 flex flex-col font-sans selection:bg-indigo-500 selection:text-white overflow-hidden print:h-auto print:max-h-none print:overflow-visible print:bg-white print:text-foreground">
+      <div className="h-screen max-h-screen bg-background text-foreground flex flex-col font-sans selection:bg-primary selection:text-primary-foreground overflow-hidden print:h-auto print:max-h-none print:overflow-visible print:bg-white print:text-foreground">
         {/* Global Header */}
         <div className="print:hidden">
           <PlatformHeader />
@@ -105,7 +110,7 @@ export default function PlatformLayout({
           </div>
 
           {/* Page Content Container */}
-          <main className="flex-1 min-h-0 min-w-0 p-3 sm:p-5 lg:p-8 overflow-y-auto max-w-[1700px] pb-24 lg:pb-8 print:p-0 print:m-0 print:overflow-visible print:h-auto print:max-w-none">
+          <main className="flex-1 min-h-0 min-w-0 p-3 sm:p-5 lg:p-6 overflow-y-auto max-w-7xl pb-24 lg:pb-8 print:p-0 print:m-0 print:overflow-visible print:h-auto print:max-w-none">
             {children}
           </main>
         </div>

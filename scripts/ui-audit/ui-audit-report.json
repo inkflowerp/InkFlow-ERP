@@ -1,0 +1,2488 @@
+{
+  "timestamp": "2026-10-02T06:05:28.247Z",
+  "summary": {
+    "totalRoutesScanned": 38,
+    "totalViewports": 4,
+    "totalThemes": 2,
+    "totalScreenshots": 238,
+    "totalViolations": 0,
+    "blockers": 0,
+    "majors": 0,
+    "minors": 0
+  },
+  "results": [
+    {
+      "route": "/platform/health",
+      "theme": "light",
+      "viewport": 375,
+      "screenshotPath": "screenshots/platform-health_light_375.png",
+      "violations": [],
+      "totalElementsScanned": 331,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/health",
+      "theme": "dark",
+      "viewport": 375,
+      "screenshotPath": "screenshots/platform-health_dark_375.png",
+      "violations": [],
+      "totalElementsScanned": 331,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/health",
+      "theme": "light",
+      "viewport": 768,
+      "screenshotPath": "screenshots/platform-health_light_768.png",
+      "violations": [],
+      "totalElementsScanned": 339,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/health",
+      "theme": "dark",
+      "viewport": 768,
+      "screenshotPath": "screenshots/platform-health_dark_768.png",
+      "violations": [],
+      "totalElementsScanned": 339,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/health",
+      "theme": "light",
+      "viewport": 1280,
+      "screenshotPath": "screenshots/platform-health_light_1280.png",
+      "violations": [],
+      "totalElementsScanned": 515,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/health",
+      "theme": "dark",
+      "viewport": 1280,
+      "screenshotPath": "screenshots/platform-health_dark_1280.png",
+      "violations": [],
+      "totalElementsScanned": 515,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/health",
+      "theme": "light",
+      "viewport": 1920,
+      "screenshotPath": "screenshots/platform-health_light_1920.png",
+      "violations": [],
+      "totalElementsScanned": 515,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/health",
+      "theme": "dark",
+      "viewport": 1920,
+      "screenshotPath": "screenshots/platform-health_dark_1920.png",
+      "violations": [],
+      "totalElementsScanned": 515,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/jobs",
+      "theme": "light",
+      "viewport": 375,
+      "screenshotPath": "screenshots/platform-jobs_light_375.png",
+      "violations": [],
+      "totalElementsScanned": 121,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/jobs",
+      "theme": "dark",
+      "viewport": 375,
+      "screenshotPath": "screenshots/platform-jobs_dark_375.png",
+      "violations": [],
+      "totalElementsScanned": 121,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/jobs",
+      "theme": "light",
+      "viewport": 768,
+      "screenshotPath": "screenshots/platform-jobs_light_768.png",
+      "violations": [],
+      "totalElementsScanned": 129,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/jobs",
+      "theme": "dark",
+      "viewport": 768,
+      "screenshotPath": "screenshots/platform-jobs_dark_768.png",
+      "violations": [],
+      "totalElementsScanned": 129,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/jobs",
+      "theme": "light",
+      "viewport": 1280,
+      "screenshotPath": "screenshots/platform-jobs_light_1280.png",
+      "violations": [],
+      "totalElementsScanned": 305,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/jobs",
+      "theme": "dark",
+      "viewport": 1280,
+      "screenshotPath": "screenshots/platform-jobs_dark_1280.png",
+      "violations": [],
+      "totalElementsScanned": 305,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/jobs",
+      "theme": "light",
+      "viewport": 1920,
+      "screenshotPath": "screenshots/platform-jobs_light_1920.png",
+      "violations": [],
+      "totalElementsScanned": 305,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/jobs",
+      "theme": "dark",
+      "viewport": 1920,
+      "screenshotPath": "screenshots/platform-jobs_dark_1920.png",
+      "violations": [],
+      "totalElementsScanned": 305,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/notifications",
+      "theme": "light",
+      "viewport": 375,
+      "screenshotPath": "screenshots/platform-notifications_light_375.png",
+      "violations": [],
+      "totalElementsScanned": 182,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/notifications",
+      "theme": "dark",
+      "viewport": 375,
+      "screenshotPath": "screenshots/platform-notifications_dark_375.png",
+      "violations": [],
+      "totalElementsScanned": 182,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/notifications",
+      "theme": "light",
+      "viewport": 768,
+      "screenshotPath": "screenshots/platform-notifications_light_768.png",
+      "violations": [],
+      "totalElementsScanned": 190,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/notifications",
+      "theme": "dark",
+      "viewport": 768,
+      "screenshotPath": "screenshots/platform-notifications_dark_768.png",
+      "violations": [],
+      "totalElementsScanned": 190,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/notifications",
+      "theme": "light",
+      "viewport": 1280,
+      "screenshotPath": "screenshots/platform-notifications_light_1280.png",
+      "violations": [],
+      "totalElementsScanned": 366,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/notifications",
+      "theme": "dark",
+      "viewport": 1280,
+      "screenshotPath": "screenshots/platform-notifications_dark_1280.png",
+      "violations": [],
+      "totalElementsScanned": 366,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/notifications",
+      "theme": "light",
+      "viewport": 1920,
+      "screenshotPath": "screenshots/platform-notifications_light_1920.png",
+      "violations": [],
+      "totalElementsScanned": 366,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/notifications",
+      "theme": "dark",
+      "viewport": 1920,
+      "screenshotPath": "screenshots/platform-notifications_dark_1920.png",
+      "violations": [],
+      "totalElementsScanned": 366,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/security",
+      "theme": "light",
+      "viewport": 375,
+      "screenshotPath": "screenshots/platform-security_light_375.png",
+      "violations": [],
+      "totalElementsScanned": 137,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/security",
+      "theme": "dark",
+      "viewport": 375,
+      "screenshotPath": "screenshots/platform-security_dark_375.png",
+      "violations": [],
+      "totalElementsScanned": 137,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/security",
+      "theme": "light",
+      "viewport": 768,
+      "screenshotPath": "screenshots/platform-security_light_768.png",
+      "violations": [],
+      "totalElementsScanned": 145,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/security",
+      "theme": "dark",
+      "viewport": 768,
+      "screenshotPath": "screenshots/platform-security_dark_768.png",
+      "violations": [],
+      "totalElementsScanned": 145,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/security",
+      "theme": "light",
+      "viewport": 1280,
+      "screenshotPath": "screenshots/platform-security_light_1280.png",
+      "violations": [],
+      "totalElementsScanned": 321,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/security",
+      "theme": "dark",
+      "viewport": 1280,
+      "screenshotPath": "screenshots/platform-security_dark_1280.png",
+      "violations": [],
+      "totalElementsScanned": 321,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/security",
+      "theme": "light",
+      "viewport": 1920,
+      "screenshotPath": "screenshots/platform-security_light_1920.png",
+      "violations": [],
+      "totalElementsScanned": 321,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/security",
+      "theme": "dark",
+      "viewport": 1920,
+      "screenshotPath": "screenshots/platform-security_dark_1920.png",
+      "violations": [],
+      "totalElementsScanned": 321,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/admins",
+      "theme": "light",
+      "viewport": 375,
+      "screenshotPath": "screenshots/platform-admins_light_375.png",
+      "violations": [],
+      "totalElementsScanned": 222,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/admins",
+      "theme": "dark",
+      "viewport": 375,
+      "screenshotPath": "screenshots/platform-admins_dark_375.png",
+      "violations": [],
+      "totalElementsScanned": 222,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/admins",
+      "theme": "light",
+      "viewport": 768,
+      "screenshotPath": "screenshots/platform-admins_light_768.png",
+      "violations": [],
+      "totalElementsScanned": 230,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/admins",
+      "theme": "dark",
+      "viewport": 768,
+      "screenshotPath": "screenshots/platform-admins_dark_768.png",
+      "violations": [],
+      "totalElementsScanned": 230,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/admins",
+      "theme": "light",
+      "viewport": 1280,
+      "screenshotPath": "screenshots/platform-admins_light_1280.png",
+      "violations": [],
+      "totalElementsScanned": 406,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/admins",
+      "theme": "dark",
+      "viewport": 1280,
+      "screenshotPath": "screenshots/platform-admins_dark_1280.png",
+      "violations": [],
+      "totalElementsScanned": 406,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/admins",
+      "theme": "light",
+      "viewport": 1920,
+      "screenshotPath": "screenshots/platform-admins_light_1920.png",
+      "violations": [],
+      "totalElementsScanned": 406,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/admins",
+      "theme": "dark",
+      "viewport": 1920,
+      "screenshotPath": "screenshots/platform-admins_dark_1920.png",
+      "violations": [],
+      "totalElementsScanned": 406,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/permissions",
+      "theme": "light",
+      "viewport": 375,
+      "screenshotPath": "screenshots/platform-permissions_light_375.png",
+      "violations": [],
+      "totalElementsScanned": 235,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/permissions",
+      "theme": "dark",
+      "viewport": 375,
+      "screenshotPath": "screenshots/platform-permissions_dark_375.png",
+      "violations": [],
+      "totalElementsScanned": 235,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/permissions",
+      "theme": "light",
+      "viewport": 768,
+      "screenshotPath": "screenshots/platform-permissions_light_768.png",
+      "violations": [],
+      "totalElementsScanned": 243,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/permissions",
+      "theme": "dark",
+      "viewport": 768,
+      "screenshotPath": "screenshots/platform-permissions_dark_768.png",
+      "violations": [],
+      "totalElementsScanned": 243,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/permissions",
+      "theme": "light",
+      "viewport": 1280,
+      "screenshotPath": "screenshots/platform-permissions_light_1280.png",
+      "violations": [],
+      "totalElementsScanned": 419,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/permissions",
+      "theme": "dark",
+      "viewport": 1280,
+      "screenshotPath": "screenshots/platform-permissions_dark_1280.png",
+      "violations": [],
+      "totalElementsScanned": 419,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/permissions",
+      "theme": "light",
+      "viewport": 1920,
+      "screenshotPath": "screenshots/platform-permissions_light_1920.png",
+      "violations": [],
+      "totalElementsScanned": 419,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/permissions",
+      "theme": "dark",
+      "viewport": 1920,
+      "screenshotPath": "screenshots/platform-permissions_dark_1920.png",
+      "violations": [],
+      "totalElementsScanned": 419,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/sessions",
+      "theme": "light",
+      "viewport": 375,
+      "screenshotPath": "screenshots/platform-sessions_light_375.png",
+      "violations": [],
+      "totalElementsScanned": 130,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/sessions",
+      "theme": "dark",
+      "viewport": 375,
+      "screenshotPath": "screenshots/platform-sessions_dark_375.png",
+      "violations": [],
+      "totalElementsScanned": 130,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/sessions",
+      "theme": "light",
+      "viewport": 768,
+      "screenshotPath": "screenshots/platform-sessions_light_768.png",
+      "violations": [],
+      "totalElementsScanned": 138,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/sessions",
+      "theme": "dark",
+      "viewport": 768,
+      "screenshotPath": "screenshots/platform-sessions_dark_768.png",
+      "violations": [],
+      "totalElementsScanned": 138,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/sessions",
+      "theme": "light",
+      "viewport": 1280,
+      "screenshotPath": "screenshots/platform-sessions_light_1280.png",
+      "violations": [],
+      "totalElementsScanned": 314,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/sessions",
+      "theme": "dark",
+      "viewport": 1280,
+      "screenshotPath": "screenshots/platform-sessions_dark_1280.png",
+      "violations": [],
+      "totalElementsScanned": 314,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/sessions",
+      "theme": "light",
+      "viewport": 1920,
+      "screenshotPath": "screenshots/platform-sessions_light_1920.png",
+      "violations": [],
+      "totalElementsScanned": 314,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/sessions",
+      "theme": "dark",
+      "viewport": 1920,
+      "screenshotPath": "screenshots/platform-sessions_dark_1920.png",
+      "violations": [],
+      "totalElementsScanned": 314,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/audit",
+      "theme": "light",
+      "viewport": 375,
+      "screenshotPath": "screenshots/platform-audit_light_375.png",
+      "violations": [],
+      "totalElementsScanned": 232,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/audit",
+      "theme": "dark",
+      "viewport": 375,
+      "screenshotPath": "screenshots/platform-audit_dark_375.png",
+      "violations": [],
+      "totalElementsScanned": 232,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/audit",
+      "theme": "light",
+      "viewport": 768,
+      "screenshotPath": "screenshots/platform-audit_light_768.png",
+      "violations": [],
+      "totalElementsScanned": 240,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/audit",
+      "theme": "dark",
+      "viewport": 768,
+      "screenshotPath": "screenshots/platform-audit_dark_768.png",
+      "violations": [],
+      "totalElementsScanned": 240,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/audit",
+      "theme": "light",
+      "viewport": 1280,
+      "screenshotPath": "screenshots/platform-audit_light_1280.png",
+      "violations": [],
+      "totalElementsScanned": 416,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/audit",
+      "theme": "dark",
+      "viewport": 1280,
+      "screenshotPath": "screenshots/platform-audit_dark_1280.png",
+      "violations": [],
+      "totalElementsScanned": 416,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/audit",
+      "theme": "light",
+      "viewport": 1920,
+      "screenshotPath": "screenshots/platform-audit_light_1920.png",
+      "violations": [],
+      "totalElementsScanned": 416,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/audit",
+      "theme": "dark",
+      "viewport": 1920,
+      "screenshotPath": "screenshots/platform-audit_dark_1920.png",
+      "violations": [],
+      "totalElementsScanned": 416,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/emergency",
+      "theme": "light",
+      "viewport": 375,
+      "screenshotPath": "screenshots/platform-emergency_light_375.png",
+      "violations": [],
+      "totalElementsScanned": 99,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/emergency",
+      "theme": "dark",
+      "viewport": 375,
+      "screenshotPath": "screenshots/platform-emergency_dark_375.png",
+      "violations": [],
+      "totalElementsScanned": 99,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/emergency",
+      "theme": "light",
+      "viewport": 768,
+      "screenshotPath": "screenshots/platform-emergency_light_768.png",
+      "violations": [],
+      "totalElementsScanned": 107,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/emergency",
+      "theme": "dark",
+      "viewport": 768,
+      "screenshotPath": "screenshots/platform-emergency_dark_768.png",
+      "violations": [],
+      "totalElementsScanned": 107,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/emergency",
+      "theme": "light",
+      "viewport": 1280,
+      "screenshotPath": "screenshots/platform-emergency_light_1280.png",
+      "violations": [],
+      "totalElementsScanned": 283,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/emergency",
+      "theme": "dark",
+      "viewport": 1280,
+      "screenshotPath": "screenshots/platform-emergency_dark_1280.png",
+      "violations": [],
+      "totalElementsScanned": 283,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/emergency",
+      "theme": "light",
+      "viewport": 1920,
+      "screenshotPath": "screenshots/platform-emergency_light_1920.png",
+      "violations": [],
+      "totalElementsScanned": 283,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/emergency",
+      "theme": "dark",
+      "viewport": 1920,
+      "screenshotPath": "screenshots/platform-emergency_dark_1920.png",
+      "violations": [],
+      "totalElementsScanned": 283,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/settings",
+      "theme": "light",
+      "viewport": 375,
+      "screenshotPath": "screenshots/platform-settings_light_375.png",
+      "violations": [],
+      "totalElementsScanned": 324,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/settings",
+      "theme": "dark",
+      "viewport": 375,
+      "screenshotPath": "screenshots/platform-settings_dark_375.png",
+      "violations": [],
+      "totalElementsScanned": 323,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/settings",
+      "theme": "light",
+      "viewport": 768,
+      "screenshotPath": "screenshots/platform-settings_light_768.png",
+      "violations": [],
+      "totalElementsScanned": 331,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/settings",
+      "theme": "dark",
+      "viewport": 768,
+      "screenshotPath": "screenshots/platform-settings_dark_768.png",
+      "violations": [],
+      "totalElementsScanned": 332,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/settings",
+      "theme": "light",
+      "viewport": 1280,
+      "screenshotPath": "screenshots/platform-settings_light_1280.png",
+      "violations": [],
+      "totalElementsScanned": 508,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/settings",
+      "theme": "dark",
+      "viewport": 1280,
+      "screenshotPath": "screenshots/platform-settings_dark_1280.png",
+      "violations": [],
+      "totalElementsScanned": 508,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/settings",
+      "theme": "light",
+      "viewport": 1920,
+      "screenshotPath": "screenshots/platform-settings_light_1920.png",
+      "violations": [],
+      "totalElementsScanned": 508,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/settings",
+      "theme": "dark",
+      "viewport": 1920,
+      "screenshotPath": "screenshots/platform-settings_dark_1920.png",
+      "violations": [],
+      "totalElementsScanned": 508,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/settings/communication",
+      "theme": "light",
+      "viewport": 375,
+      "screenshotPath": "screenshots/platform-settings-comm_light_375.png",
+      "violations": [],
+      "totalElementsScanned": 236,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/settings/communication",
+      "theme": "dark",
+      "viewport": 375,
+      "screenshotPath": "screenshots/platform-settings-comm_dark_375.png",
+      "violations": [],
+      "totalElementsScanned": 236,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/settings/communication",
+      "theme": "light",
+      "viewport": 768,
+      "screenshotPath": "screenshots/platform-settings-comm_light_768.png",
+      "violations": [],
+      "totalElementsScanned": 244,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/settings/communication",
+      "theme": "dark",
+      "viewport": 768,
+      "screenshotPath": "screenshots/platform-settings-comm_dark_768.png",
+      "violations": [],
+      "totalElementsScanned": 244,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/settings/communication",
+      "theme": "light",
+      "viewport": 1280,
+      "screenshotPath": "screenshots/platform-settings-comm_light_1280.png",
+      "violations": [],
+      "totalElementsScanned": 420,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/settings/communication",
+      "theme": "dark",
+      "viewport": 1280,
+      "screenshotPath": "screenshots/platform-settings-comm_dark_1280.png",
+      "violations": [],
+      "totalElementsScanned": 420,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/settings/communication",
+      "theme": "light",
+      "viewport": 1920,
+      "screenshotPath": "screenshots/platform-settings-comm_light_1920.png",
+      "violations": [],
+      "totalElementsScanned": 420,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/settings/communication",
+      "theme": "dark",
+      "viewport": 1920,
+      "screenshotPath": "screenshots/platform-settings-comm_dark_1920.png",
+      "violations": [],
+      "totalElementsScanned": 420,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/communications/whatsapp",
+      "theme": "light",
+      "viewport": 375,
+      "screenshotPath": "screenshots/platform-comm-whatsapp_light_375.png",
+      "violations": [],
+      "totalElementsScanned": 182,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/communications/whatsapp",
+      "theme": "dark",
+      "viewport": 375,
+      "screenshotPath": "screenshots/platform-comm-whatsapp_dark_375.png",
+      "violations": [],
+      "totalElementsScanned": 182,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/communications/whatsapp",
+      "theme": "light",
+      "viewport": 768,
+      "screenshotPath": "screenshots/platform-comm-whatsapp_light_768.png",
+      "violations": [],
+      "totalElementsScanned": 190,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/communications/whatsapp",
+      "theme": "dark",
+      "viewport": 768,
+      "screenshotPath": "screenshots/platform-comm-whatsapp_dark_768.png",
+      "violations": [],
+      "totalElementsScanned": 190,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/communications/whatsapp",
+      "theme": "light",
+      "viewport": 1280,
+      "screenshotPath": "screenshots/platform-comm-whatsapp_light_1280.png",
+      "violations": [],
+      "totalElementsScanned": 366,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/communications/whatsapp",
+      "theme": "dark",
+      "viewport": 1280,
+      "screenshotPath": "screenshots/platform-comm-whatsapp_dark_1280.png",
+      "violations": [],
+      "totalElementsScanned": 366,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/communications/whatsapp",
+      "theme": "light",
+      "viewport": 1920,
+      "screenshotPath": "screenshots/platform-comm-whatsapp_light_1920.png",
+      "violations": [],
+      "totalElementsScanned": 366,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/communications/whatsapp",
+      "theme": "dark",
+      "viewport": 1920,
+      "screenshotPath": "screenshots/platform-comm-whatsapp_dark_1920.png",
+      "violations": [],
+      "totalElementsScanned": 366,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/integrations",
+      "theme": "light",
+      "viewport": 375,
+      "screenshotPath": "screenshots/platform-integrations_light_375.png",
+      "violations": [],
+      "totalElementsScanned": 275,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/integrations",
+      "theme": "dark",
+      "viewport": 375,
+      "screenshotPath": "screenshots/platform-integrations_dark_375.png",
+      "violations": [],
+      "totalElementsScanned": 275,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/integrations",
+      "theme": "light",
+      "viewport": 768,
+      "screenshotPath": "screenshots/platform-integrations_light_768.png",
+      "violations": [],
+      "totalElementsScanned": 283,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/integrations",
+      "theme": "dark",
+      "viewport": 768,
+      "screenshotPath": "screenshots/platform-integrations_dark_768.png",
+      "violations": [],
+      "totalElementsScanned": 283,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/integrations",
+      "theme": "light",
+      "viewport": 1280,
+      "screenshotPath": "screenshots/platform-integrations_light_1280.png",
+      "violations": [],
+      "totalElementsScanned": 459,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/integrations",
+      "theme": "dark",
+      "viewport": 1280,
+      "screenshotPath": "screenshots/platform-integrations_dark_1280.png",
+      "violations": [],
+      "totalElementsScanned": 459,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/integrations",
+      "theme": "light",
+      "viewport": 1920,
+      "screenshotPath": "screenshots/platform-integrations_light_1920.png",
+      "violations": [],
+      "totalElementsScanned": 459,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/integrations",
+      "theme": "dark",
+      "viewport": 1920,
+      "screenshotPath": "screenshots/platform-integrations_dark_1920.png",
+      "violations": [],
+      "totalElementsScanned": 459,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/login",
+      "theme": "light",
+      "viewport": 375,
+      "screenshotPath": "screenshots/platform-login_light_375.png",
+      "violations": [],
+      "totalElementsScanned": 97,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/login",
+      "theme": "dark",
+      "viewport": 375,
+      "screenshotPath": "screenshots/platform-login_dark_375.png",
+      "violations": [],
+      "totalElementsScanned": 97,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/login",
+      "theme": "light",
+      "viewport": 768,
+      "screenshotPath": "screenshots/platform-login_light_768.png",
+      "violations": [],
+      "totalElementsScanned": 102,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/login",
+      "theme": "dark",
+      "viewport": 768,
+      "screenshotPath": "screenshots/platform-login_dark_768.png",
+      "violations": [],
+      "totalElementsScanned": 101,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/login",
+      "theme": "light",
+      "viewport": 1280,
+      "screenshotPath": "screenshots/platform-login_light_1280.png",
+      "violations": [],
+      "totalElementsScanned": 136,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/login",
+      "theme": "dark",
+      "viewport": 1280,
+      "screenshotPath": "screenshots/platform-login_dark_1280.png",
+      "violations": [],
+      "totalElementsScanned": 136,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/login",
+      "theme": "light",
+      "viewport": 1920,
+      "screenshotPath": "screenshots/platform-login_light_1920.png",
+      "violations": [],
+      "totalElementsScanned": 136,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/login",
+      "theme": "dark",
+      "viewport": 1920,
+      "screenshotPath": "screenshots/platform-login_dark_1920.png",
+      "violations": [],
+      "totalElementsScanned": 136,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/forgot-password",
+      "theme": "light",
+      "viewport": 375,
+      "screenshotPath": "screenshots/platform-forgot-password_light_375.png",
+      "violations": [],
+      "totalElementsScanned": 40,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/forgot-password",
+      "theme": "dark",
+      "viewport": 375,
+      "screenshotPath": "screenshots/platform-forgot-password_dark_375.png",
+      "violations": [],
+      "totalElementsScanned": 40,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/forgot-password",
+      "theme": "light",
+      "viewport": 768,
+      "screenshotPath": "screenshots/platform-forgot-password_light_768.png",
+      "violations": [],
+      "totalElementsScanned": 40,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/forgot-password",
+      "theme": "dark",
+      "viewport": 768,
+      "screenshotPath": "screenshots/platform-forgot-password_dark_768.png",
+      "violations": [],
+      "totalElementsScanned": 40,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/forgot-password",
+      "theme": "light",
+      "viewport": 1280,
+      "screenshotPath": "screenshots/platform-forgot-password_light_1280.png",
+      "violations": [],
+      "totalElementsScanned": 40,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/forgot-password",
+      "theme": "dark",
+      "viewport": 1280,
+      "screenshotPath": "screenshots/platform-forgot-password_dark_1280.png",
+      "violations": [],
+      "totalElementsScanned": 40,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/forgot-password",
+      "theme": "light",
+      "viewport": 1920,
+      "screenshotPath": "screenshots/platform-forgot-password_light_1920.png",
+      "violations": [],
+      "totalElementsScanned": 40,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/forgot-password",
+      "theme": "dark",
+      "viewport": 1920,
+      "screenshotPath": "screenshots/platform-forgot-password_dark_1920.png",
+      "violations": [],
+      "totalElementsScanned": 40,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/reset-password",
+      "theme": "light",
+      "viewport": 375,
+      "screenshotPath": "screenshots/platform-reset-password_light_375.png",
+      "violations": [],
+      "totalElementsScanned": 75,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/reset-password",
+      "theme": "dark",
+      "viewport": 375,
+      "screenshotPath": "screenshots/platform-reset-password_dark_375.png",
+      "violations": [],
+      "totalElementsScanned": 75,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/reset-password",
+      "theme": "light",
+      "viewport": 768,
+      "screenshotPath": "screenshots/platform-reset-password_light_768.png",
+      "violations": [],
+      "totalElementsScanned": 75,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/reset-password",
+      "theme": "dark",
+      "viewport": 768,
+      "screenshotPath": "screenshots/platform-reset-password_dark_768.png",
+      "violations": [],
+      "totalElementsScanned": 75,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/reset-password",
+      "theme": "light",
+      "viewport": 1280,
+      "screenshotPath": "screenshots/platform-reset-password_light_1280.png",
+      "violations": [],
+      "totalElementsScanned": 75,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/reset-password",
+      "theme": "dark",
+      "viewport": 1280,
+      "screenshotPath": "screenshots/platform-reset-password_dark_1280.png",
+      "violations": [],
+      "totalElementsScanned": 75,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/reset-password",
+      "theme": "light",
+      "viewport": 1920,
+      "screenshotPath": "screenshots/platform-reset-password_light_1920.png",
+      "violations": [],
+      "totalElementsScanned": 75,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/reset-password",
+      "theme": "dark",
+      "viewport": 1920,
+      "screenshotPath": "screenshots/platform-reset-password_dark_1920.png",
+      "violations": [],
+      "totalElementsScanned": 75,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/profile",
+      "theme": "light",
+      "viewport": 375,
+      "screenshotPath": "screenshots/platform-profile_light_375.png",
+      "violations": [],
+      "totalElementsScanned": 81,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/profile",
+      "theme": "dark",
+      "viewport": 375,
+      "screenshotPath": "screenshots/platform-profile_dark_375.png",
+      "violations": [],
+      "totalElementsScanned": 81,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/profile",
+      "theme": "light",
+      "viewport": 768,
+      "screenshotPath": "screenshots/platform-profile_light_768.png",
+      "violations": [],
+      "totalElementsScanned": 89,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/profile",
+      "theme": "dark",
+      "viewport": 768,
+      "screenshotPath": "screenshots/platform-profile_dark_768.png",
+      "violations": [],
+      "totalElementsScanned": 89,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/profile",
+      "theme": "light",
+      "viewport": 1280,
+      "screenshotPath": "screenshots/platform-profile_light_1280.png",
+      "violations": [],
+      "totalElementsScanned": 265,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/profile",
+      "theme": "dark",
+      "viewport": 1280,
+      "screenshotPath": "screenshots/platform-profile_dark_1280.png",
+      "violations": [],
+      "totalElementsScanned": 265,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/profile",
+      "theme": "light",
+      "viewport": 1920,
+      "screenshotPath": "screenshots/platform-profile_light_1920.png",
+      "violations": [],
+      "totalElementsScanned": 265,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/profile",
+      "theme": "dark",
+      "viewport": 1920,
+      "screenshotPath": "screenshots/platform-profile_dark_1920.png",
+      "violations": [],
+      "totalElementsScanned": 265,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/users",
+      "theme": "light",
+      "viewport": 375,
+      "screenshotPath": "screenshots/platform-users_light_375.png",
+      "violations": [],
+      "totalElementsScanned": 172,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/users",
+      "theme": "dark",
+      "viewport": 375,
+      "screenshotPath": "screenshots/platform-users_dark_375.png",
+      "violations": [],
+      "totalElementsScanned": 172,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/users",
+      "theme": "light",
+      "viewport": 768,
+      "screenshotPath": "screenshots/platform-users_light_768.png",
+      "violations": [],
+      "totalElementsScanned": 180,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/users",
+      "theme": "dark",
+      "viewport": 768,
+      "screenshotPath": "screenshots/platform-users_dark_768.png",
+      "violations": [],
+      "totalElementsScanned": 180,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/users",
+      "theme": "light",
+      "viewport": 1280,
+      "screenshotPath": "screenshots/platform-users_light_1280.png",
+      "violations": [],
+      "totalElementsScanned": 356,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/users",
+      "theme": "dark",
+      "viewport": 1280,
+      "screenshotPath": "screenshots/platform-users_dark_1280.png",
+      "violations": [],
+      "totalElementsScanned": 356,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/users",
+      "theme": "light",
+      "viewport": 1920,
+      "screenshotPath": "screenshots/platform-users_light_1920.png",
+      "violations": [],
+      "totalElementsScanned": 356,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/users",
+      "theme": "dark",
+      "viewport": 1920,
+      "screenshotPath": "screenshots/platform-users_dark_1920.png",
+      "violations": [],
+      "totalElementsScanned": 356,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/companies",
+      "theme": "light",
+      "viewport": 375,
+      "screenshotPath": "screenshots/platform-companies-alias_light_375.png",
+      "violations": [],
+      "totalElementsScanned": 207,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/companies",
+      "theme": "dark",
+      "viewport": 375,
+      "screenshotPath": "screenshots/platform-companies-alias_dark_375.png",
+      "violations": [],
+      "totalElementsScanned": 207,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/companies",
+      "theme": "light",
+      "viewport": 768,
+      "screenshotPath": "screenshots/platform-companies-alias_light_768.png",
+      "violations": [],
+      "totalElementsScanned": 215,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/companies",
+      "theme": "dark",
+      "viewport": 768,
+      "screenshotPath": "screenshots/platform-companies-alias_dark_768.png",
+      "violations": [],
+      "totalElementsScanned": 215,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/companies",
+      "theme": "light",
+      "viewport": 1280,
+      "screenshotPath": "screenshots/platform-companies-alias_light_1280.png",
+      "violations": [],
+      "totalElementsScanned": 391,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/companies",
+      "theme": "dark",
+      "viewport": 1280,
+      "screenshotPath": "screenshots/platform-companies-alias_dark_1280.png",
+      "violations": [],
+      "totalElementsScanned": 391,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/companies",
+      "theme": "light",
+      "viewport": 1920,
+      "screenshotPath": "screenshots/platform-companies-alias_light_1920.png",
+      "violations": [],
+      "totalElementsScanned": 391,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/companies",
+      "theme": "dark",
+      "viewport": 1920,
+      "screenshotPath": "screenshots/platform-companies-alias_dark_1920.png",
+      "violations": [],
+      "totalElementsScanned": 391,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/tenants/test-company-id",
+      "theme": "light",
+      "viewport": 375,
+      "screenshotPath": "screenshots/platform-tenants-detail_light_375.png",
+      "violations": [],
+      "totalElementsScanned": 84,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/tenants/test-company-id",
+      "theme": "dark",
+      "viewport": 375,
+      "screenshotPath": "screenshots/platform-tenants-detail_dark_375.png",
+      "violations": [],
+      "totalElementsScanned": 84,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/tenants/test-company-id",
+      "theme": "light",
+      "viewport": 768,
+      "screenshotPath": "screenshots/platform-tenants-detail_light_768.png",
+      "violations": [],
+      "totalElementsScanned": 92,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/tenants/test-company-id",
+      "theme": "dark",
+      "viewport": 768,
+      "screenshotPath": "screenshots/platform-tenants-detail_dark_768.png",
+      "violations": [],
+      "totalElementsScanned": 92,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/tenants/test-company-id",
+      "theme": "light",
+      "viewport": 1280,
+      "screenshotPath": "screenshots/platform-tenants-detail_light_1280.png",
+      "violations": [],
+      "totalElementsScanned": 268,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/tenants/test-company-id",
+      "theme": "dark",
+      "viewport": 1280,
+      "screenshotPath": "screenshots/platform-tenants-detail_dark_1280.png",
+      "violations": [],
+      "totalElementsScanned": 268,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/tenants/test-company-id",
+      "theme": "light",
+      "viewport": 1920,
+      "screenshotPath": "screenshots/platform-tenants-detail_light_1920.png",
+      "violations": [],
+      "totalElementsScanned": 268,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/tenants/test-company-id",
+      "theme": "dark",
+      "viewport": 1920,
+      "screenshotPath": "screenshots/platform-tenants-detail_dark_1920.png",
+      "violations": [],
+      "totalElementsScanned": 268,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/activity",
+      "theme": "light",
+      "viewport": 375,
+      "screenshotPath": "screenshots/platform-activity_light_375.png",
+      "violations": [],
+      "totalElementsScanned": 232,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/activity",
+      "theme": "dark",
+      "viewport": 375,
+      "screenshotPath": "screenshots/platform-activity_dark_375.png",
+      "violations": [],
+      "totalElementsScanned": 232,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/activity",
+      "theme": "light",
+      "viewport": 768,
+      "screenshotPath": "screenshots/platform-activity_light_768.png",
+      "violations": [],
+      "totalElementsScanned": 240,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/activity",
+      "theme": "dark",
+      "viewport": 768,
+      "screenshotPath": "screenshots/platform-activity_dark_768.png",
+      "violations": [],
+      "totalElementsScanned": 240,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/activity",
+      "theme": "light",
+      "viewport": 1280,
+      "screenshotPath": "screenshots/platform-activity_light_1280.png",
+      "violations": [],
+      "totalElementsScanned": 416,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/activity",
+      "theme": "dark",
+      "viewport": 1280,
+      "screenshotPath": "screenshots/platform-activity_dark_1280.png",
+      "violations": [],
+      "totalElementsScanned": 416,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/activity",
+      "theme": "light",
+      "viewport": 1920,
+      "screenshotPath": "screenshots/platform-activity_light_1920.png",
+      "violations": [],
+      "totalElementsScanned": 416,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/activity",
+      "theme": "dark",
+      "viewport": 1920,
+      "screenshotPath": "screenshots/platform-activity_dark_1920.png",
+      "violations": [],
+      "totalElementsScanned": 416,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/rbac",
+      "theme": "light",
+      "viewport": 375,
+      "screenshotPath": "screenshots/platform-rbac_light_375.png",
+      "violations": [],
+      "totalElementsScanned": 235,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/rbac",
+      "theme": "dark",
+      "viewport": 375,
+      "screenshotPath": "screenshots/platform-rbac_dark_375.png",
+      "violations": [],
+      "totalElementsScanned": 235,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/rbac",
+      "theme": "light",
+      "viewport": 768,
+      "screenshotPath": "screenshots/platform-rbac_light_768.png",
+      "violations": [],
+      "totalElementsScanned": 243,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/rbac",
+      "theme": "dark",
+      "viewport": 768,
+      "screenshotPath": "screenshots/platform-rbac_dark_768.png",
+      "violations": [],
+      "totalElementsScanned": 243,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/rbac",
+      "theme": "light",
+      "viewport": 1280,
+      "screenshotPath": "screenshots/platform-rbac_light_1280.png",
+      "violations": [],
+      "totalElementsScanned": 419,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/rbac",
+      "theme": "dark",
+      "viewport": 1280,
+      "screenshotPath": "screenshots/platform-rbac_dark_1280.png",
+      "violations": [],
+      "totalElementsScanned": 419,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/rbac",
+      "theme": "light",
+      "viewport": 1920,
+      "screenshotPath": "screenshots/platform-rbac_light_1920.png",
+      "violations": [],
+      "totalElementsScanned": 419,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/rbac",
+      "theme": "dark",
+      "viewport": 1920,
+      "screenshotPath": "screenshots/platform-rbac_dark_1920.png",
+      "violations": [],
+      "totalElementsScanned": 419,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/feature-flags",
+      "theme": "light",
+      "viewport": 375,
+      "screenshotPath": "screenshots/platform-feature-flags_light_375.png",
+      "violations": [],
+      "totalElementsScanned": 198,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/feature-flags",
+      "theme": "dark",
+      "viewport": 375,
+      "screenshotPath": "screenshots/platform-feature-flags_dark_375.png",
+      "violations": [],
+      "totalElementsScanned": 198,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/feature-flags",
+      "theme": "light",
+      "viewport": 768,
+      "screenshotPath": "screenshots/platform-feature-flags_light_768.png",
+      "violations": [],
+      "totalElementsScanned": 206,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/feature-flags",
+      "theme": "dark",
+      "viewport": 768,
+      "screenshotPath": "screenshots/platform-feature-flags_dark_768.png",
+      "violations": [],
+      "totalElementsScanned": 206,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/feature-flags",
+      "theme": "light",
+      "viewport": 1280,
+      "screenshotPath": "screenshots/platform-feature-flags_light_1280.png",
+      "violations": [],
+      "totalElementsScanned": 382,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/feature-flags",
+      "theme": "dark",
+      "viewport": 1280,
+      "screenshotPath": "screenshots/platform-feature-flags_dark_1280.png",
+      "violations": [],
+      "totalElementsScanned": 382,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/feature-flags",
+      "theme": "light",
+      "viewport": 1920,
+      "screenshotPath": "screenshots/platform-feature-flags_light_1920.png",
+      "violations": [],
+      "totalElementsScanned": 382,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/feature-flags",
+      "theme": "dark",
+      "viewport": 1920,
+      "screenshotPath": "screenshots/platform-feature-flags_dark_1920.png",
+      "violations": [],
+      "totalElementsScanned": 382,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/settings/email",
+      "theme": "light",
+      "viewport": 375,
+      "screenshotPath": "screenshots/platform-settings-email_light_375.png",
+      "violations": [],
+      "totalElementsScanned": 121,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/settings/email",
+      "theme": "dark",
+      "viewport": 375,
+      "screenshotPath": "screenshots/platform-settings-email_dark_375.png",
+      "violations": [],
+      "totalElementsScanned": 121,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/settings/email",
+      "theme": "light",
+      "viewport": 768,
+      "screenshotPath": "screenshots/platform-settings-email_light_768.png",
+      "violations": [],
+      "totalElementsScanned": 129,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/settings/email",
+      "theme": "light",
+      "viewport": 1280,
+      "screenshotPath": "screenshots/platform-settings-email_light_1280.png",
+      "violations": [],
+      "totalElementsScanned": 420,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/settings/email",
+      "theme": "dark",
+      "viewport": 1280,
+      "screenshotPath": "screenshots/platform-settings-email_dark_1280.png",
+      "violations": [],
+      "totalElementsScanned": 420,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/settings/email",
+      "theme": "light",
+      "viewport": 1920,
+      "screenshotPath": "screenshots/platform-settings-email_light_1920.png",
+      "violations": [],
+      "totalElementsScanned": 420,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/settings/email",
+      "theme": "dark",
+      "viewport": 1920,
+      "screenshotPath": "screenshots/platform-settings-email_dark_1920.png",
+      "violations": [],
+      "totalElementsScanned": 420,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/email",
+      "theme": "light",
+      "viewport": 375,
+      "screenshotPath": "screenshots/platform-email_light_375.png",
+      "violations": [],
+      "totalElementsScanned": 121,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/email",
+      "theme": "dark",
+      "viewport": 375,
+      "screenshotPath": "screenshots/platform-email_dark_375.png",
+      "violations": [],
+      "totalElementsScanned": 121,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/email",
+      "theme": "light",
+      "viewport": 768,
+      "screenshotPath": "screenshots/platform-email_light_768.png",
+      "violations": [],
+      "totalElementsScanned": 129,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/email",
+      "theme": "light",
+      "viewport": 1280,
+      "screenshotPath": "screenshots/platform-email_light_1280.png",
+      "violations": [],
+      "totalElementsScanned": 420,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/email",
+      "theme": "dark",
+      "viewport": 1280,
+      "screenshotPath": "screenshots/platform-email_dark_1280.png",
+      "violations": [],
+      "totalElementsScanned": 420,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/email",
+      "theme": "light",
+      "viewport": 1920,
+      "screenshotPath": "screenshots/platform-email_light_1920.png",
+      "violations": [],
+      "totalElementsScanned": 420,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/email",
+      "theme": "dark",
+      "viewport": 1920,
+      "screenshotPath": "screenshots/platform-email_dark_1920.png",
+      "violations": [],
+      "totalElementsScanned": 420,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/tenant",
+      "theme": "light",
+      "viewport": 375,
+      "screenshotPath": "screenshots/platform-tenant-alias_light_375.png",
+      "violations": [],
+      "totalElementsScanned": 207,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/tenant",
+      "theme": "dark",
+      "viewport": 375,
+      "screenshotPath": "screenshots/platform-tenant-alias_dark_375.png",
+      "violations": [],
+      "totalElementsScanned": 207,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/tenant",
+      "theme": "light",
+      "viewport": 768,
+      "screenshotPath": "screenshots/platform-tenant-alias_light_768.png",
+      "violations": [],
+      "totalElementsScanned": 215,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/tenant",
+      "theme": "dark",
+      "viewport": 768,
+      "screenshotPath": "screenshots/platform-tenant-alias_dark_768.png",
+      "violations": [],
+      "totalElementsScanned": 215,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/tenant",
+      "theme": "light",
+      "viewport": 1280,
+      "screenshotPath": "screenshots/platform-tenant-alias_light_1280.png",
+      "violations": [],
+      "totalElementsScanned": 391,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/tenant",
+      "theme": "dark",
+      "viewport": 1280,
+      "screenshotPath": "screenshots/platform-tenant-alias_dark_1280.png",
+      "violations": [],
+      "totalElementsScanned": 391,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/tenant",
+      "theme": "light",
+      "viewport": 1920,
+      "screenshotPath": "screenshots/platform-tenant-alias_light_1920.png",
+      "violations": [],
+      "totalElementsScanned": 391,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/tenant",
+      "theme": "dark",
+      "viewport": 1920,
+      "screenshotPath": "screenshots/platform-tenant-alias_dark_1920.png",
+      "violations": [],
+      "totalElementsScanned": 391,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/dashboard",
+      "theme": "light",
+      "viewport": 375,
+      "screenshotPath": "screenshots/platform-dashboard-alias_light_375.png",
+      "violations": [],
+      "totalElementsScanned": 121,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/dashboard",
+      "theme": "dark",
+      "viewport": 375,
+      "screenshotPath": "screenshots/platform-dashboard-alias_dark_375.png",
+      "violations": [],
+      "totalElementsScanned": 121,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/dashboard",
+      "theme": "light",
+      "viewport": 768,
+      "screenshotPath": "screenshots/platform-dashboard-alias_light_768.png",
+      "violations": [],
+      "totalElementsScanned": 129,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/dashboard",
+      "theme": "dark",
+      "viewport": 768,
+      "screenshotPath": "screenshots/platform-dashboard-alias_dark_768.png",
+      "violations": [],
+      "totalElementsScanned": 129,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/dashboard",
+      "theme": "light",
+      "viewport": 1280,
+      "screenshotPath": "screenshots/platform-dashboard-alias_light_1280.png",
+      "violations": [],
+      "totalElementsScanned": 305,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/dashboard",
+      "theme": "dark",
+      "viewport": 1280,
+      "screenshotPath": "screenshots/platform-dashboard-alias_dark_1280.png",
+      "violations": [],
+      "totalElementsScanned": 305,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/dashboard",
+      "theme": "light",
+      "viewport": 1920,
+      "screenshotPath": "screenshots/platform-dashboard-alias_light_1920.png",
+      "violations": [],
+      "totalElementsScanned": 305,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/platform/dashboard",
+      "theme": "dark",
+      "viewport": 1920,
+      "screenshotPath": "screenshots/platform-dashboard-alias_dark_1920.png",
+      "violations": [],
+      "totalElementsScanned": 305,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/demo/dashboard",
+      "theme": "light",
+      "viewport": 375,
+      "screenshotPath": "screenshots/tenant-dashboard_light_375.png",
+      "violations": [],
+      "totalElementsScanned": 6,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/demo/dashboard",
+      "theme": "dark",
+      "viewport": 375,
+      "screenshotPath": "screenshots/tenant-dashboard_dark_375.png",
+      "violations": [],
+      "totalElementsScanned": 6,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/demo/dashboard",
+      "theme": "light",
+      "viewport": 768,
+      "screenshotPath": "screenshots/tenant-dashboard_light_768.png",
+      "violations": [],
+      "totalElementsScanned": 6,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/demo/dashboard",
+      "theme": "dark",
+      "viewport": 768,
+      "screenshotPath": "screenshots/tenant-dashboard_dark_768.png",
+      "violations": [],
+      "totalElementsScanned": 6,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/demo/dashboard",
+      "theme": "light",
+      "viewport": 1280,
+      "screenshotPath": "screenshots/tenant-dashboard_light_1280.png",
+      "violations": [],
+      "totalElementsScanned": 6,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/demo/dashboard",
+      "theme": "dark",
+      "viewport": 1280,
+      "screenshotPath": "screenshots/tenant-dashboard_dark_1280.png",
+      "violations": [],
+      "totalElementsScanned": 6,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/demo/dashboard",
+      "theme": "light",
+      "viewport": 1920,
+      "screenshotPath": "screenshots/tenant-dashboard_light_1920.png",
+      "violations": [],
+      "totalElementsScanned": 6,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/demo/dashboard",
+      "theme": "dark",
+      "viewport": 1920,
+      "screenshotPath": "screenshots/tenant-dashboard_dark_1920.png",
+      "violations": [],
+      "totalElementsScanned": 6,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/demo/orders",
+      "theme": "light",
+      "viewport": 375,
+      "screenshotPath": "screenshots/tenant-orders_light_375.png",
+      "violations": [],
+      "totalElementsScanned": 6,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/demo/orders",
+      "theme": "dark",
+      "viewport": 375,
+      "screenshotPath": "screenshots/tenant-orders_dark_375.png",
+      "violations": [],
+      "totalElementsScanned": 6,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/demo/orders",
+      "theme": "light",
+      "viewport": 768,
+      "screenshotPath": "screenshots/tenant-orders_light_768.png",
+      "violations": [],
+      "totalElementsScanned": 6,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/demo/orders",
+      "theme": "dark",
+      "viewport": 768,
+      "screenshotPath": "screenshots/tenant-orders_dark_768.png",
+      "violations": [],
+      "totalElementsScanned": 6,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/demo/orders",
+      "theme": "light",
+      "viewport": 1280,
+      "screenshotPath": "screenshots/tenant-orders_light_1280.png",
+      "violations": [],
+      "totalElementsScanned": 6,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/demo/orders",
+      "theme": "dark",
+      "viewport": 1280,
+      "screenshotPath": "screenshots/tenant-orders_dark_1280.png",
+      "violations": [],
+      "totalElementsScanned": 6,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/demo/orders",
+      "theme": "light",
+      "viewport": 1920,
+      "screenshotPath": "screenshots/tenant-orders_light_1920.png",
+      "violations": [],
+      "totalElementsScanned": 6,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/demo/orders",
+      "theme": "dark",
+      "viewport": 1920,
+      "screenshotPath": "screenshots/tenant-orders_dark_1920.png",
+      "violations": [],
+      "totalElementsScanned": 6,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/demo/inventory",
+      "theme": "light",
+      "viewport": 375,
+      "screenshotPath": "screenshots/tenant-inventory_light_375.png",
+      "violations": [],
+      "totalElementsScanned": 6,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/demo/inventory",
+      "theme": "dark",
+      "viewport": 375,
+      "screenshotPath": "screenshots/tenant-inventory_dark_375.png",
+      "violations": [],
+      "totalElementsScanned": 6,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/demo/inventory",
+      "theme": "light",
+      "viewport": 768,
+      "screenshotPath": "screenshots/tenant-inventory_light_768.png",
+      "violations": [],
+      "totalElementsScanned": 6,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/demo/inventory",
+      "theme": "dark",
+      "viewport": 768,
+      "screenshotPath": "screenshots/tenant-inventory_dark_768.png",
+      "violations": [],
+      "totalElementsScanned": 6,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/demo/inventory",
+      "theme": "light",
+      "viewport": 1280,
+      "screenshotPath": "screenshots/tenant-inventory_light_1280.png",
+      "violations": [],
+      "totalElementsScanned": 6,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/demo/inventory",
+      "theme": "dark",
+      "viewport": 1280,
+      "screenshotPath": "screenshots/tenant-inventory_dark_1280.png",
+      "violations": [],
+      "totalElementsScanned": 6,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/demo/inventory",
+      "theme": "light",
+      "viewport": 1920,
+      "screenshotPath": "screenshots/tenant-inventory_light_1920.png",
+      "violations": [],
+      "totalElementsScanned": 6,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    },
+    {
+      "route": "/demo/inventory",
+      "theme": "dark",
+      "viewport": 1920,
+      "screenshotPath": "screenshots/tenant-inventory_dark_1920.png",
+      "violations": [],
+      "totalElementsScanned": 6,
+      "hasHorizontalOverflow": false,
+      "wcagPass": true
+    }
+  ],
+  "violations": [],
+  "consistencyMatrix": [
+    {
+      "componentType": "StatCard",
+      "platformPage": "/platform",
+      "tenantPage": "/demo/dashboard",
+      "property": "borderWidth / radius",
+      "platformValue": "1px solid / rounded-xl (12px)",
+      "tenantValue": "1px solid / rounded-xl (12px)",
+      "isConsistent": true
+    },
+    {
+      "componentType": "StatCard",
+      "platformPage": "/platform",
+      "tenantPage": "/demo/dashboard",
+      "property": "shadow",
+      "platformValue": "shadow-xs (subtle flat)",
+      "tenantValue": "shadow-xs (subtle flat)",
+      "isConsistent": true
+    },
+    {
+      "componentType": "PrimaryButton",
+      "platformPage": "/platform",
+      "tenantPage": "/demo/dashboard",
+      "property": "borderWidth / radius",
+      "platformValue": "1px solid / rounded-xl (12px)",
+      "tenantValue": "1px solid / rounded-xl (12px)",
+      "isConsistent": true
+    },
+    {
+      "componentType": "PrimaryButton",
+      "platformPage": "/platform",
+      "tenantPage": "/demo/dashboard",
+      "property": "shadow",
+      "platformValue": "shadow-xs (subtle flat)",
+      "tenantValue": "shadow-xs (subtle flat)",
+      "isConsistent": true
+    },
+    {
+      "componentType": "Card",
+      "platformPage": "/platform",
+      "tenantPage": "/demo/dashboard",
+      "property": "borderWidth / radius",
+      "platformValue": "1px solid / rounded-xl (12px)",
+      "tenantValue": "1px solid / rounded-xl (12px)",
+      "isConsistent": true
+    },
+    {
+      "componentType": "Card",
+      "platformPage": "/platform",
+      "tenantPage": "/demo/dashboard",
+      "property": "shadow",
+      "platformValue": "shadow-xs (subtle flat)",
+      "tenantValue": "shadow-xs (subtle flat)",
+      "isConsistent": true
+    },
+    {
+      "componentType": "Table",
+      "platformPage": "/platform",
+      "tenantPage": "/demo/dashboard",
+      "property": "borderWidth / radius",
+      "platformValue": "1px solid / rounded-xl (12px)",
+      "tenantValue": "1px solid / rounded-xl (12px)",
+      "isConsistent": true
+    },
+    {
+      "componentType": "Table",
+      "platformPage": "/platform",
+      "tenantPage": "/demo/dashboard",
+      "property": "shadow",
+      "platformValue": "shadow-xs (subtle flat)",
+      "tenantValue": "shadow-xs (subtle flat)",
+      "isConsistent": true
+    },
+    {
+      "componentType": "Badge",
+      "platformPage": "/platform",
+      "tenantPage": "/demo/dashboard",
+      "property": "borderWidth / radius",
+      "platformValue": "1px solid / rounded-xl (12px)",
+      "tenantValue": "1px solid / rounded-xl (12px)",
+      "isConsistent": true
+    },
+    {
+      "componentType": "Badge",
+      "platformPage": "/platform",
+      "tenantPage": "/demo/dashboard",
+      "property": "shadow",
+      "platformValue": "shadow-xs (subtle flat)",
+      "tenantValue": "shadow-xs (subtle flat)",
+      "isConsistent": true
+    }
+  ]
+}

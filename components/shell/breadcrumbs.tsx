@@ -9,49 +9,46 @@ import { useTenant } from '@/hooks/use-tenant'
 import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 
 export function Breadcrumbs() {
-  const pathname = usePathname()
-  const { company } = useTenant()
-  const { t } = useI18n()
+ const pathname = usePathname()
+ const { company } = useTenant()
+ const { t } = useI18n()
 
-  const rawSegments = (pathname || '').split('/').filter(Boolean)
+ const rawSegments = (pathname || '').split('/').filter(Boolean)
   // If first segment matches the company slug, strip it for clean display
-  const segments = company?.slug && rawSegments[0] === company.slug
+ const segments = company?.slug && rawSegments[0] === company.slug
     ? rawSegments.slice(1)
     : rawSegments
 
-  if (segments.length === 0 || (segments.length === 1 && segments[0] === 'dashboard')) {
-    return null
+ if (segments.length === 0 || (segments.length === 1 && segments[0] === 'dashboard')) {
+ return null
   }
 
   // Format path segments
-  return (
-    <nav aria-label="Breadcrumbs" className="flex items-center gap-1.5 text-xs text-muted-foreground whitespace-nowrap shrink-0 max-w-[280px] overflow-hidden">
+ return (
+    <nav aria-label="Breadcrumbs"className="flex items-center gap-1.5 text-xs text-muted-foreground whitespace-nowrap shrink-0 max-w-[280px] overflow-hidden">
       <Link
-        href={getTenantNavHref('/dashboard', pathname, company?.slug)}
-        className="flex items-center gap-1 hover:text-foreground dark:hover:text-white transition-colors shrink-0"
-        title="Dashboard"
-      >
-        <Home className="h-3.5 w-3.5 shrink-0" />
+ href={getTenantNavHref('/dashboard', pathname, company?.slug)}
+ className="flex items-center gap-1 hover:text-foreground dark:hover:text-foreground transition-colors shrink-0"title="Dashboard">
+        <Home className="h-3.5 w-3.5 shrink-0"/>
       </Link>
 
       {segments.map((seg, idx) => {
-        const isLast = idx === segments.length - 1
-        const rawSubPath = `/${segments.slice(0, idx + 1).join('/')}`
-        const href = getTenantNavHref(rawSubPath, pathname, company?.slug)
-        const label = t(`nav.${seg}`) || seg.replace(/-/g, ' ')
+ const isLast = idx === segments.length - 1
+ const rawSubPath = `/${segments.slice(0, idx + 1).join('/')}`
+ const href = getTenantNavHref(rawSubPath, pathname, company?.slug)
+ const label = t(`nav.${seg}`) || seg.replace(/-/g, ' ')
 
-        return (
+ return (
           <React.Fragment key={rawSubPath}>
-            <ChevronRight className="h-3 w-3 text-muted-foreground shrink-0" />
+            <ChevronRight className="h-3 w-3 text-muted-foreground shrink-0"/>
             {isLast ? (
-              <span className="font-semibold text-foreground dark:text-white capitalize truncate">
+              <span className="font-semibold text-foreground capitalize truncate">
                 {label}
               </span>
             ) : (
               <Link
-                href={href}
-                className="hover:text-foreground dark:hover:text-white transition-colors capitalize truncate"
-              >
+ href={href}
+ className="hover:text-foreground dark:hover:text-foreground transition-colors capitalize truncate">
                 {label}
               </Link>
             )}

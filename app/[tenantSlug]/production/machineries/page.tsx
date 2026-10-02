@@ -5,32 +5,32 @@ import Link from 'next/link'
 import { useParams, usePathname } from 'next/navigation'
 import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import {
-  Cpu,
-  Plus,
-  Search,
-  Filter,
-  CheckCircle2,
-  PlayCircle,
-  Clock,
-  Wrench,
-  AlertTriangle,
-  PowerOff,
-  Archive,
-  Eye,
-  Edit,
-  Calendar,
-  Layers,
-  Sparkles,
-  LayoutGrid,
-  List,
-  RefreshCw,
-  SlidersHorizontal,
-  ChevronRight,
-  MoreVertical,
-  Printer,
-  ShieldAlert,
-  Disc,
-  Scissors,
+ Cpu,
+ Plus,
+ Search,
+ Filter,
+ CheckCircle2,
+ PlayCircle,
+ Clock,
+ Wrench,
+ AlertTriangle,
+ PowerOff,
+ Archive,
+ Eye,
+ Edit,
+ Calendar,
+ Layers,
+ Sparkles,
+ LayoutGrid,
+ List,
+ RefreshCw,
+ SlidersHorizontal,
+ ChevronRight,
+ MoreVertical,
+ Printer,
+ ShieldAlert,
+ Disc,
+ Scissors,
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
 import { usePermissions } from '@/hooks/use-permissions'
@@ -42,16 +42,16 @@ import { Badge } from '@/components/ui/badge'
 import { PageHeader } from '@/components/shared/page-header'
 import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
 import {
-  MachineryRecord,
-  MachineryStatus,
-  MachineryType,
-  MachineryDepartment,
-  MachinerySummaryMetrics,
+ MachineryRecord,
+ MachineryStatus,
+ MachineryType,
+ MachineryDepartment,
+ MachinerySummaryMetrics,
 } from '@/types/machinery.types'
 import {
-  getMachineriesAction,
-  getMachineryDashboardMetricsAction,
-  archiveMachineryAction,
+ getMachineriesAction,
+ getMachineryDashboardMetricsAction,
+ archiveMachineryAction,
 } from '@/actions/machinery.actions'
 import { MachineryStatusBadge } from '@/components/machinery/machinery-status-badge'
 import { MachineryFormModal } from '@/components/machinery/machinery-form-modal'
@@ -63,238 +63,214 @@ import { ConfirmDialog } from '@/components/shared/confirm-dialog'
 import { dispatchToast } from '@/components/shared/toast-feedback'
 
 export default function MachineriesListPage() {
-  const params = useParams()
-  const pathname = usePathname()
-  const tenantSlug = (params?.tenantSlug as string) || 'app'
-  const { company } = useTenant()
-  const { can, isOwner } = usePermissions()
-  const { tBilingual } = useI18n()
+ const params = useParams()
+ const pathname = usePathname()
+ const tenantSlug = (params?.tenantSlug as string) || 'app'
+ const { company } = useTenant()
+ const { can, isOwner } = usePermissions()
+ const { tBilingual } = useI18n()
 
-  const [mounted, setMounted] = useState(false)
-  useEffect(() => {
-    setMounted(true)
+ const [mounted, setMounted] = useState(false)
+ useEffect(() => {
+ setMounted(true)
   }, [])
 
-  const [machineries, setMachineries] = useState<MachineryRecord[]>([])
-  const [metrics, setMetrics] = useState<MachinerySummaryMetrics | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+ const [machineries, setMachineries] = useState<MachineryRecord[]>([])
+ const [metrics, setMetrics] = useState<MachinerySummaryMetrics | null>(null)
+ const [loading, setLoading] = useState(true)
+ const [error, setError] = useState<string | null>(null)
 
   // Filters & Search
-  const [search, setSearch] = useState('')
-  const [statusFilter, setStatusFilter] = useState<MachineryStatus | 'all'>('all')
-  const [typeFilter, setTypeFilter] = useState<MachineryType | 'all'>('all')
-  const [deptFilter, setDeptFilter] = useState<MachineryDepartment | 'all'>('all')
-  const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid')
+ const [search, setSearch] = useState('')
+ const [statusFilter, setStatusFilter] = useState<MachineryStatus | 'all'>('all')
+ const [typeFilter, setTypeFilter] = useState<MachineryType | 'all'>('all')
+ const [deptFilter, setDeptFilter] = useState<MachineryDepartment | 'all'>('all')
+ const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid')
 
   // Modals
-  const [isFormOpen, setIsFormOpen] = useState(false)
-  const [editingMachine, setEditingMachine] = useState<MachineryRecord | null>(null)
-  const [assigningMachine, setAssigningMachine] = useState<MachineryRecord | null>(null)
-  const [maintainingMachine, setMaintainingMachine] = useState<MachineryRecord | null>(null)
-  const [breakingMachine, setBreakingMachine] = useState<MachineryRecord | null>(null)
-  const [statusMachine, setStatusMachine] = useState<MachineryRecord | null>(null)
+ const [isFormOpen, setIsFormOpen] = useState(false)
+ const [editingMachine, setEditingMachine] = useState<MachineryRecord | null>(null)
+ const [assigningMachine, setAssigningMachine] = useState<MachineryRecord | null>(null)
+ const [maintainingMachine, setMaintainingMachine] = useState<MachineryRecord | null>(null)
+ const [breakingMachine, setBreakingMachine] = useState<MachineryRecord | null>(null)
+ const [statusMachine, setStatusMachine] = useState<MachineryRecord | null>(null)
 
-  const canCreate = isOwner || can('create', 'machineries') || can('create', 'production')
-  const canEdit = isOwner || can('edit', 'machineries') || can('edit', 'production')
-  const canAssign = isOwner || can('assign', 'machineries') || can('assign', 'production')
-  const canMaintain = isOwner || can('edit', 'machineries') || can('edit', 'production') || can('manage', 'production')
-  const canBreakdown = true // Any floor user/operator can report breakdown
+ const canCreate = isOwner || can('create', 'machineries') || can('create', 'production')
+ const canEdit = isOwner || can('edit', 'machineries') || can('edit', 'production')
+ const canAssign = isOwner || can('assign', 'machineries') || can('assign', 'production')
+ const canMaintain = isOwner || can('edit', 'machineries') || can('edit', 'production') || can('manage', 'production')
+ const canBreakdown = true // Any floor user/operator can report breakdown
 
-  const loadData = useCallback(async (isBackground = false) => {
-    if (!isBackground && machineries.length === 0) {
-      setLoading(true)
+ const loadData = useCallback(async (isBackground = false) => {
+ if (!isBackground && machineries.length === 0) {
+ setLoading(true)
     }
-    setError(null)
-    try {
-      const [machRes, metRes] = await Promise.all([
-        getMachineriesAction({
-          search,
-          status: statusFilter,
-          machine_type: typeFilter,
-          department: deptFilter,
+ setError(null)
+ try {
+ const [machRes, metRes] = await Promise.all([
+ getMachineriesAction({
+ search,
+ status: statusFilter,
+ machine_type: typeFilter,
+ department: deptFilter,
         }),
-        getMachineryDashboardMetricsAction(),
+ getMachineryDashboardMetricsAction(),
       ])
 
-      if (machRes.success && Array.isArray(machRes.data)) {
-        setMachineries(machRes.data)
+ if (machRes.success && Array.isArray(machRes.data)) {
+ setMachineries(machRes.data)
       } else {
-        setError(machRes.error || 'Failed to load machineries.')
+ setError(machRes.error || 'Failed to load machineries.')
       }
 
-      if (metRes.success && metRes.data) {
-        setMetrics(metRes.data)
+ if (metRes.success && metRes.data) {
+ setMetrics(metRes.data)
       }
     } catch (err: any) {
-      setError(err.message || 'An unexpected error occurred.')
+ setError(err.message || 'An unexpected error occurred.')
     } finally {
-      setLoading(false)
+ setLoading(false)
     }
   }, [search, statusFilter, typeFilter, deptFilter])
 
-  useEffect(() => {
-    loadData()
+ useEffect(() => {
+ loadData()
 
-    const handleRealtimeSync = () => {
-      loadData(true)
+ const handleRealtimeSync = () => {
+ loadData(true)
     }
 
-    if (typeof window !== 'undefined') {
-      window.addEventListener('printerp_table_synced:machines', handleRealtimeSync)
-      window.addEventListener('printerp_table_synced:mounted_rolls', handleRealtimeSync)
-      window.addEventListener('printerp_table_synced', handleRealtimeSync)
-      window.addEventListener('printerp_data_sync', handleRealtimeSync)
-      window.addEventListener('storage', handleRealtimeSync)
+ if (typeof window !== 'undefined') {
+ window.addEventListener('printerp_table_synced:machines', handleRealtimeSync)
+ window.addEventListener('printerp_table_synced:mounted_rolls', handleRealtimeSync)
+ window.addEventListener('printerp_table_synced', handleRealtimeSync)
+ window.addEventListener('printerp_data_sync', handleRealtimeSync)
+ window.addEventListener('storage', handleRealtimeSync)
     }
 
-    return () => {
-      if (typeof window !== 'undefined') {
-        window.removeEventListener('printerp_table_synced:machines', handleRealtimeSync)
-        window.removeEventListener('printerp_table_synced:mounted_rolls', handleRealtimeSync)
-        window.removeEventListener('printerp_table_synced', handleRealtimeSync)
-        window.removeEventListener('printerp_data_sync', handleRealtimeSync)
-        window.removeEventListener('storage', handleRealtimeSync)
+ return () => {
+ if (typeof window !== 'undefined') {
+ window.removeEventListener('printerp_table_synced:machines', handleRealtimeSync)
+ window.removeEventListener('printerp_table_synced:mounted_rolls', handleRealtimeSync)
+ window.removeEventListener('printerp_table_synced', handleRealtimeSync)
+ window.removeEventListener('printerp_data_sync', handleRealtimeSync)
+ window.removeEventListener('storage', handleRealtimeSync)
       }
     }
   }, [loadData])
 
   // Archive confirm modal state
-  const [machineToArchive, setMachineToArchive] = useState<MachineryRecord | null>(null)
-  const [isArchiveConfirmOpen, setIsArchiveConfirmOpen] = useState(false)
-  const [isArchiving, setIsArchiving] = useState(false)
+ const [machineToArchive, setMachineToArchive] = useState<MachineryRecord | null>(null)
+ const [isArchiveConfirmOpen, setIsArchiveConfirmOpen] = useState(false)
+ const [isArchiving, setIsArchiving] = useState(false)
 
-  const handleArchive = (m: MachineryRecord) => {
-    setMachineToArchive(m)
-    setIsArchiveConfirmOpen(true)
+ const handleArchive = (m: MachineryRecord) => {
+ setMachineToArchive(m)
+ setIsArchiveConfirmOpen(true)
   }
 
-  const confirmArchive = async () => {
-    if (!machineToArchive) return
-    setIsArchiving(true)
-    try {
-      const res = await archiveMachineryAction(machineToArchive.id)
-      if (res.success) {
-        dispatchToast({
-          type: 'success',
-          title: 'Machinery Archived',
-          titleBn: 'মেশিন আর্কাইভ করা হয়েছে',
-          message: `Machine "${machineToArchive.name}" has been retired/archived.`,
+ const confirmArchive = async () => {
+ if (!machineToArchive) return
+ setIsArchiving(true)
+ try {
+ const res = await archiveMachineryAction(machineToArchive.id)
+ if (res.success) {
+ dispatchToast({
+ type: 'success',
+ title: 'Machinery Archived',
+ titleBn: 'মেশিন আর্কাইভ করা হয়েছে',
+ message: `Machine"${machineToArchive.name}"has been retired/archived.`,
         })
-        setIsArchiveConfirmOpen(false)
-        setMachineToArchive(null)
-        loadData()
+ setIsArchiveConfirmOpen(false)
+ setMachineToArchive(null)
+ loadData()
       } else {
-        dispatchToast({
-          type: 'error',
-          title: 'Archive Failed',
-          titleBn: 'আর্কাইভ ব্যর্থ হয়েছে',
-          message: res.error || 'Failed to archive machinery.',
+ dispatchToast({
+ type: 'error',
+ title: 'Archive Failed',
+ titleBn: 'আর্কাইভ ব্যর্থ হয়েছে',
+ message: res.error || 'Failed to archive machinery.',
         })
       }
     } catch (err: any) {
-      dispatchToast({
-        type: 'error',
-        title: 'Error',
-        titleBn: 'ত্রুটি',
-        message: err.message || 'Failed to archive machinery.',
+ dispatchToast({
+ type: 'error',
+ title: 'Error',
+ titleBn: 'ত্রুটি',
+ message: err.message || 'Failed to archive machinery.',
       })
     } finally {
-      setIsArchiving(false)
+ setIsArchiving(false)
     }
   }
 
-  if (!mounted) {
-    return (
+ if (!mounted) {
+ return (
       <div className="space-y-6 pb-12 p-4 sm:p-6 animate-pulse">
-        <div className="h-10 bg-muted rounded-xl w-1/3" />
+        <div className="h-10 bg-muted rounded-xl w-1/3"/>
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
           {[1, 2, 3, 4, 5, 6, 7].map((i) => (
-            <div key={i} className="h-20 bg-muted rounded-xl" />
+            <div key={i} className="h-20 bg-muted rounded-xl"/>
           ))}
         </div>
-        <div className="h-12 bg-muted rounded-xl" />
+        <div className="h-12 bg-muted rounded-xl"/>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="h-48 bg-muted rounded-xl" />
+            <div key={i} className="h-48 bg-muted rounded-xl"/>
           ))}
         </div>
       </div>
     )
   }
 
-  return (
+ return (
     <PanelAccessGuard
-      module="machineries"
-      action="view"
-      panelTitle="Machineries & Fleet"
-      panelTitleBn="মেশিন ও যন্ত্রপাতি"
-    >
+ module="machineries"action="view"panelTitle="Machineries & Fleet"panelTitleBn="মেশিন ও যন্ত্রপাতি">
       <div className="space-y-6 pb-12 p-4 sm:p-6">
       {/* Page Header */}
       <PageHeader
-        titleEn="Machineries & Equipment Fleet"
-        titleBn="মেশিনারিজ ও ইকুইপমেন্ট বহর"
-        descriptionEn="Operational machine registry, live floor availability, job scheduling, preventive maintenance & breakdown tracking."
-        descriptionBn="কারখানার সব প্রিন্টার, লেজার, সিএনসি ও যন্ত্রপাতির লাইভ স্ট্যাটাস, কাজ বরাদ্দ এবং রক্ষণাবেক্ষণ পরিচালনা।"
-        icon={Cpu}
-        actions={
+ titleEn="Machineries & Equipment Fleet"titleBn="মেশিনারিজ ও ইকুইপমেন্ট বহর"descriptionEn="Operational machine registry, live floor availability, job scheduling, preventive maintenance & breakdown tracking."descriptionBn="কারখানার সব প্রিন্টার, লেজার, সিএনসি ও যন্ত্রপাতির লাইভ স্ট্যাটাস, কাজ বরাদ্দ এবং রক্ষণাবেক্ষণ পরিচালনা।"icon={Cpu}
+ actions={
           <div className="flex items-center gap-2 flex-wrap">
             <Link href={getTenantNavHref('/production', pathname, tenantSlug)}>
               <Button
-                variant="outline"
-                size="sm"
-                className="gap-1.5 border-border text-foreground font-bold"
-              >
-                <LayoutGrid className="h-4 w-4 text-indigo-600" />
+ variant="outline"size="sm"className="gap-1.5 border-border text-foreground font-bold">
+                <LayoutGrid className="h-4 w-4 text-indigo-600"/>
                 <span>Production Board</span>
               </Button>
             </Link>
 
             <Link href={getTenantNavHref('/operator', pathname, tenantSlug)}>
               <Button
-                variant="outline"
-                size="sm"
-                className="gap-1.5 border-blue-300 dark:border-blue-800 text-blue-700 dark:text-blue-300 bg-blue-50/50 dark:bg-blue-950/30 font-bold"
-              >
-                <PlayCircle className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+ variant="outline"size="sm"className="gap-1.5 border-blue-300 dark:border-blue-800 text-blue-700 dark:text-blue-300 bg-blue-50/50 dark:bg-blue-950/30 font-bold">
+                <PlayCircle className="h-4 w-4 text-blue-600 dark:text-blue-400"/>
                 <span>Shop Floor Terminal</span>
               </Button>
             </Link>
 
             <Link href={getTenantNavHref('/finishing', pathname, tenantSlug)}>
               <Button
-                variant="outline"
-                size="sm"
-                className="gap-1.5 border-border text-foreground font-bold"
-              >
-                <Scissors className="h-4 w-4 text-indigo-600" />
+ variant="outline"size="sm"className="gap-1.5 border-border text-foreground font-bold">
+                <Scissors className="h-4 w-4 text-indigo-600"/>
                 <span>Finishing Floor</span>
               </Button>
             </Link>
 
             <Button
-              variant="outline"
-              size="sm"
-              onClick={() => loadData()}
-              disabled={loading}
-              className="h-9 w-9 p-0 flex items-center justify-center shrink-0 cursor-pointer"
-              title="Refresh"
-              aria-label="Refresh"
-            >
+ variant="outline"size="sm"onClick={() => loadData()}
+ disabled={loading}
+ className="h-9 w-9 p-0 flex items-center justify-center shrink-0 cursor-pointer"title="Refresh"aria-label="Refresh">
               <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
             </Button>
 
             {canCreate && (
               <Button
-                size="sm"
-                onClick={() => {
-                  setEditingMachine(null)
-                  setIsFormOpen(true)
+ size="sm"onClick={() => {
+ setEditingMachine(null)
+ setIsFormOpen(true)
                 }}
-                className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold gap-1.5 shadow-sm"
-              >
-                <Plus className="h-4 w-4" />
+ className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold gap-1.5 shadow-sm">
+                <Plus className="h-4 w-4"/>
                 <span>+ Add Machine</span>
               </Button>
             )}
@@ -307,9 +283,9 @@ export default function MachineriesListPage() {
         <Card className="py-2 px-3 sm:py-2.5 sm:px-3.5 bg-card border border-border shadow-xs">
           <div className="flex items-center justify-between">
             <span className="text-2xs sm:text-xs font-bold text-muted-foreground uppercase tracking-wider">Total</span>
-            <Cpu className="h-3.5 w-3.5 text-muted-foreground" />
+            <Cpu className="h-3.5 w-3.5 text-muted-foreground"/>
           </div>
-          <p className="text-lg sm:text-xl font-black text-foreground dark:text-white mt-0.5 leading-tight">
+          <p className="text-lg sm:text-xl font-black text-foreground mt-0.5 leading-tight">
             {metrics?.totalMachines ?? machineries.length}
           </p>
         </Card>
@@ -317,7 +293,7 @@ export default function MachineriesListPage() {
         <Card className="py-2 px-3 sm:py-2.5 sm:px-3.5 bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800 shadow-xs">
           <div className="flex items-center justify-between">
             <span className="text-2xs sm:text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">Available</span>
-            <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
+            <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600"/>
           </div>
           <p className="text-lg sm:text-xl font-black text-emerald-700 dark:text-emerald-400 mt-0.5 leading-tight">
             {metrics?.available ?? machineries.filter((m) => m.status === 'available').length}
@@ -327,7 +303,7 @@ export default function MachineriesListPage() {
         <Card className="py-2 px-3 sm:py-2.5 sm:px-3.5 bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 shadow-xs">
           <div className="flex items-center justify-between">
             <span className="text-2xs sm:text-xs font-bold text-blue-700 dark:text-blue-400 uppercase tracking-wider">In Use</span>
-            <PlayCircle className="h-3.5 w-3.5 text-blue-600" />
+            <PlayCircle className="h-3.5 w-3.5 text-blue-600"/>
           </div>
           <p className="text-lg sm:text-xl font-black text-blue-700 dark:text-blue-400 mt-0.5 leading-tight">
             {metrics?.inUse ?? machineries.filter((m) => m.status === 'in_use').length}
@@ -337,7 +313,7 @@ export default function MachineriesListPage() {
         <Card className="py-2 px-3 sm:py-2.5 sm:px-3.5 bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-200 dark:border-indigo-800 shadow-xs">
           <div className="flex items-center justify-between">
             <span className="text-2xs sm:text-xs font-bold text-indigo-700 dark:text-indigo-400 uppercase tracking-wider">Scheduled</span>
-            <Clock className="h-3.5 w-3.5 text-indigo-600" />
+            <Clock className="h-3.5 w-3.5 text-indigo-600"/>
           </div>
           <p className="text-lg sm:text-xl font-black text-indigo-700 dark:text-indigo-400 mt-0.5 leading-tight">
             {metrics?.scheduled ?? machineries.filter((m) => m.status === 'scheduled').length}
@@ -347,7 +323,7 @@ export default function MachineriesListPage() {
         <Card className="py-2 px-3 sm:py-2.5 sm:px-3.5 bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 shadow-xs">
           <div className="flex items-center justify-between">
             <span className="text-2xs sm:text-xs font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider">Maintenance</span>
-            <Wrench className="h-3.5 w-3.5 text-amber-600" />
+            <Wrench className="h-3.5 w-3.5 text-amber-600"/>
           </div>
           <p className="text-lg sm:text-xl font-black text-amber-700 dark:text-amber-400 mt-0.5 leading-tight">
             {metrics?.maintenance ?? machineries.filter((m) => m.status === 'maintenance').length}
@@ -357,7 +333,7 @@ export default function MachineriesListPage() {
         <Card className="py-2 px-3 sm:py-2.5 sm:px-3.5 bg-red-50/50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 shadow-xs">
           <div className="flex items-center justify-between">
             <span className="text-2xs sm:text-xs font-bold text-red-700 dark:text-red-400 uppercase tracking-wider">Breakdown</span>
-            <AlertTriangle className="h-3.5 w-3.5 text-red-600" />
+            <AlertTriangle className="h-3.5 w-3.5 text-red-600"/>
           </div>
           <p className="text-lg sm:text-xl font-black text-red-700 dark:text-red-400 mt-0.5 leading-tight">
             {metrics?.breakdown ?? machineries.filter((m) => m.status === 'breakdown').length}
@@ -367,7 +343,7 @@ export default function MachineriesListPage() {
         <Card className="py-2 px-3 sm:py-2.5 sm:px-3.5 bg-muted border border-input shadow-xs col-span-2 sm:col-span-1">
           <div className="flex items-center justify-between">
             <span className="text-2xs sm:text-xs font-bold text-muted-foreground uppercase tracking-wider">Offline</span>
-            <PowerOff className="h-3.5 w-3.5 text-muted-foreground" />
+            <PowerOff className="h-3.5 w-3.5 text-muted-foreground"/>
           </div>
           <p className="text-lg sm:text-xl font-black text-foreground mt-0.5 leading-tight">
             {metrics?.offline ?? machineries.filter((m) => m.status === 'offline').length}
@@ -376,24 +352,21 @@ export default function MachineriesListPage() {
       </div>
 
       {/* Filter and Search Bar */}
-      <Card className="p-3.5 bg-card border border-border dark:border-border">
+      <Card className="p-3.5 bg-card border border-border">
         <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground"/>
             <Input
-              placeholder="Search by machine name, code, brand, model, serial #..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-9 text-xs"
-            />
+ placeholder="Search by machine name, code, brand, model, serial #..."value={search}
+ onChange={(e) => setSearch(e.target.value)}
+ className="pl-9 text-xs"/>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
             <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as any)}
-              className="h-9 px-2.5 rounded-md border border-input bg-card text-xs font-semibold"
-            >
+ value={statusFilter}
+ onChange={(e) => setStatusFilter(e.target.value as any)}
+ className="h-9 px-2.5 rounded-md border border-input bg-card text-xs font-semibold">
               <option value="all">All Statuses</option>
               <option value="available">Available Only</option>
               <option value="in_use">In Use</option>
@@ -404,10 +377,9 @@ export default function MachineriesListPage() {
             </select>
 
             <select
-              value={deptFilter}
-              onChange={(e) => setDeptFilter(e.target.value as any)}
-              className="h-9 px-2.5 rounded-md border border-input bg-card text-xs font-semibold"
-            >
+ value={deptFilter}
+ onChange={(e) => setDeptFilter(e.target.value as any)}
+ className="h-9 px-2.5 rounded-md border border-input bg-card text-xs font-semibold">
               <option value="all">All Departments</option>
               <option value="printing">Printing</option>
               <option value="finishing">Finishing</option>
@@ -416,25 +388,19 @@ export default function MachineriesListPage() {
               <option value="installation">Installation</option>
             </select>
 
-            <div className="flex items-center rounded-md border border-border p-0.5 bg-muted dark:bg-muted">
+            <div className="flex items-center rounded-md border border-border p-0.5 bg-muted">
               <Button
-                type="button"
-                variant={viewMode === 'grid' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setViewMode('grid')}
-                className="h-7 px-2.5 text-xs gap-1"
-              >
-                <LayoutGrid className="h-3.5 w-3.5" />
+ type="button"variant={viewMode === 'grid' ? 'default' : 'ghost'}
+ size="sm"onClick={() => setViewMode('grid')}
+ className="h-7 px-2.5 text-xs gap-1">
+                <LayoutGrid className="h-3.5 w-3.5"/>
                 <span className="hidden sm:inline">Cards</span>
               </Button>
               <Button
-                type="button"
-                variant={viewMode === 'table' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setViewMode('table')}
-                className="h-7 px-2.5 text-xs gap-1"
-              >
-                <List className="h-3.5 w-3.5" />
+ type="button"variant={viewMode === 'table' ? 'default' : 'ghost'}
+ size="sm"onClick={() => setViewMode('table')}
+ className="h-7 px-2.5 text-xs gap-1">
+                <List className="h-3.5 w-3.5"/>
                 <span className="hidden sm:inline">List</span>
               </Button>
             </div>
@@ -446,11 +412,11 @@ export default function MachineriesListPage() {
       {error && (
         <Card className="p-4 border-red-300 bg-red-50 dark:bg-red-950/30 text-red-900 dark:text-red-300 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-red-600 shrink-0" />
+            <AlertTriangle className="h-5 w-5 text-red-600 shrink-0"/>
             <span className="text-xs font-medium">{error}</span>
           </div>
-          <Button size="sm" variant="outline" onClick={() => loadData()}>
-            Retry
+          <Button size="sm"variant="outline"onClick={() => loadData()}>
+ Retry
           </Button>
         </Card>
       )}
@@ -460,32 +426,31 @@ export default function MachineriesListPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {[1, 2, 3, 4, 5, 6].map((n) => (
             <Card key={n} className="p-4 space-y-3 animate-pulse">
-              <div className="h-5 bg-muted rounded w-1/2" />
-              <div className="h-4 bg-muted rounded w-3/4" />
-              <div className="h-10 bg-muted rounded" />
+              <div className="h-5 bg-muted rounded w-1/2"/>
+              <div className="h-4 bg-muted rounded w-3/4"/>
+              <div className="h-10 bg-muted rounded"/>
             </Card>
           ))}
         </div>
       ) : machineries.length === 0 ? (
         /* Empty State */
-        <Card className="p-12 text-center border-dashed border-2 border-input bg-card dark:bg-card">
+        <Card className="p-12 text-center border-dashed border-2 border-input bg-card">
           <div className="mx-auto w-12 h-12 rounded-full bg-blue-50 dark:bg-blue-950/40 text-blue-600 flex items-center justify-center mb-3">
-            <Cpu className="h-6 w-6" />
+            <Cpu className="h-6 w-6"/>
           </div>
-          <h3 className="text-base font-bold text-foreground dark:text-white">
-            No machineries added yet
+          <h3 className="text-base font-bold text-foreground">
+ No machineries added yet
           </h3>
           <p className="text-xs text-muted-foreground max-w-md mx-auto mt-1 mb-5">
-            Add your printing presses, cutting plotters, CNC routers, lasers, and finishing equipment to begin tracking capacity, job assignments, and maintenance.
+ Add your printing presses, cutting plotters, CNC routers, lasers, and finishing equipment to begin tracking capacity, job assignments, and maintenance.
           </p>
           {canCreate && (
             <Button
-              onClick={() => {
-                setEditingMachine(null)
-                setIsFormOpen(true)
+ onClick={() => {
+ setEditingMachine(null)
+ setIsFormOpen(true)
               }}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold"
-            >
+ className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold">
               + Add First Machinery
             </Button>
           )}
@@ -495,21 +460,19 @@ export default function MachineriesListPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {machineries.map((m) => (
             <Card
-              key={m.id}
-              className="bg-card border border-border shadow-xs hover:border-blue-400 dark:hover:border-blue-700 transition-all flex flex-col justify-between overflow-hidden"
-            >
+ key={m.id}
+ className="bg-card border border-border shadow-xs hover:border-blue-400 dark:hover:border-blue-700 transition-all flex flex-col justify-between overflow-hidden">
               <div className="p-4 space-y-3">
                 {/* Header: Name, Code & Badge */}
                 <div className="flex items-start justify-between gap-2">
                   <div className="space-y-0.5">
                     <Link
-                      href={getTenantNavHref(`/production/machineries/${m.id}`, pathname, tenantSlug)}
-                      className="font-black text-sm text-foreground dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors line-clamp-1"
-                    >
+ href={getTenantNavHref(`/production/machineries/${m.id}`, pathname, tenantSlug)}
+ className="font-black text-sm text-foreground hover:text-blue-600 dark:hover:text-blue-400 transition-colors line-clamp-1">
                       {m.name}
                     </Link>
                     <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                      <span className="tabular-nums font-bold px-1.5 py-0.5 rounded bg-muted text-foreground dark:text-muted-foreground">
+                      <span className="tabular-nums font-bold px-1.5 py-0.5 rounded bg-muted text-foreground">
                         {m.code}
                       </span>
                       <span>•</span>
@@ -529,14 +492,14 @@ export default function MachineriesListPage() {
                 <div className="grid grid-cols-2 gap-2 p-2.5 rounded-lg bg-muted border border-border text-xs">
                   <div>
                     <span className="text-muted-foreground block text-2xs uppercase font-bold">Capacity</span>
-                    <span className="font-bold text-foreground dark:text-foreground">
+                    <span className="font-bold text-foreground">
                       {m.production_capacity ? `${m.production_capacity} ${m.capacity_unit}` : 'Standard'}
                     </span>
                   </div>
                   <div>
                     <span className="text-muted-foreground block text-2xs uppercase font-bold">Dimensions</span>
-                    <span className="font-bold text-foreground dark:text-foreground">
-                      {m.max_width ? `Max: ${m.max_width}" W` : 'Continuous'}
+                    <span className="font-bold text-foreground">
+                      {m.max_width ? `Max: ${m.max_width}"W` : 'Continuous'}
                     </span>
                   </div>
                 </div>
@@ -545,20 +508,20 @@ export default function MachineriesListPage() {
                 {m.active_mounted_roll_tag && (
                   <div className="p-2 rounded bg-indigo-50/80 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-900 text-xs flex items-center justify-between">
                     <span className="text-indigo-800 dark:text-indigo-300 font-bold flex items-center gap-1.5 truncate">
-                      <Disc className="h-3.5 w-3.5 text-indigo-600 shrink-0" />
-                      Roll: {m.active_mounted_roll_tag}
+                      <Disc className="h-3.5 w-3.5 text-indigo-600 shrink-0"/>
+ Roll: {m.active_mounted_roll_tag}
                     </span>
-                    <Badge variant="outline" className="text-2xs bg-indigo-100/60 text-indigo-700 border-indigo-300 shrink-0">
-                      Mounted
+                    <Badge variant="outline"className="text-2xs bg-indigo-100/60 text-indigo-700 border-indigo-300 shrink-0">
+ Mounted
                     </Badge>
                   </div>
                 )}
 
                 {/* Lifetime Production Meters */}
                 {(Number(m.total_sft_produced || 0) > 0 || Number(m.total_impressions || 0) > 0) && (
-                  <div className="flex items-center justify-between text-2xs px-2 py-1 rounded bg-muted tabular-nums text-muted-foreground dark:text-muted-foreground">
+                  <div className="flex items-center justify-between text-2xs px-2 py-1 rounded bg-muted tabular-nums text-muted-foreground">
                     <span>Meter:</span>
-                    <span className="font-bold text-foreground dark:text-foreground">
+                    <span className="font-bold text-foreground">
                       {m.total_sft_produced ? `${Number(m.total_sft_produced).toLocaleString()} SFT` : `${Number(m.total_impressions).toLocaleString()} Imp`}
                     </span>
                   </div>
@@ -568,13 +531,12 @@ export default function MachineriesListPage() {
                 {m.status === 'in_use' && m.current_assignment ? (
                   <div className="p-2 rounded bg-blue-50/80 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900 text-xs space-y-0.5">
                     <Link
-                      href={getTenantNavHref(`/production/${m.current_assignment.job_order_id || m.current_assignment.production_job_id || m.current_assignment.job_order?.job_number || ''}`, pathname, tenantSlug)}
-                      className="text-blue-700 dark:text-blue-300 font-bold block hover:underline"
-                    >
+ href={getTenantNavHref(`/production/${m.current_assignment.job_order_id || m.current_assignment.production_job_id || m.current_assignment.job_order?.job_number || ''}`, pathname, tenantSlug)}
+ className="text-blue-700 dark:text-blue-300 font-bold block hover:underline">
                       ⚡ Active Job: {m.current_assignment.job_order?.job_number || m.current_assignment.production_job?.production_job_number || 'Running'}
                     </Link>
                     <span className="text-muted-foreground text-2xs block">
-                      Operator: {m.current_assignment.operator_name || 'Assigned Operator'}
+ Operator: {m.current_assignment.operator_name || 'Assigned Operator'}
                     </span>
                   </div>
                 ) : m.status === 'breakdown' ? (
@@ -586,7 +548,7 @@ export default function MachineriesListPage() {
                     <span>Location: <strong>{m.location || 'Main Floor'}</strong></span>
                     {m.next_maintenance && (
                       <span className="text-2xs text-amber-600 dark:text-amber-400 font-medium">
-                        Maint: {new Date(m.next_maintenance.scheduled_date).toLocaleDateString()}
+ Maint: {new Date(m.next_maintenance.scheduled_date).toLocaleDateString()}
                       </span>
                     )}
                   </div>
@@ -597,19 +559,16 @@ export default function MachineriesListPage() {
               <div className="px-4 py-2.5 bg-muted border-t border-border flex items-center justify-between gap-1">
                 <div className="flex items-center gap-2">
                   <Link
-                    href={getTenantNavHref(`/production/machineries/${m.id}`, pathname, tenantSlug)}
-                    className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline inline-flex items-center gap-1 min-h-[36px] py-1"
-                  >
-                    <Eye className="h-3.5 w-3.5" />
+ href={getTenantNavHref(`/production/machineries/${m.id}`, pathname, tenantSlug)}
+ className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline inline-flex items-center gap-1 min-h-[36px] py-1">
+                    <Eye className="h-3.5 w-3.5"/>
                     <span>Details</span>
                   </Link>
 
                   <Link
-                    href={getTenantNavHref(`/operator?machine=${m.id}`, pathname, tenantSlug)}
-                    className="text-xs font-bold text-foreground hover:text-blue-600 dark:hover:text-blue-400 hover:underline inline-flex items-center gap-1 min-h-[36px] py-1"
-                    title="Launch Workstation Terminal"
-                  >
-                    <PlayCircle className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
+ href={getTenantNavHref(`/operator?machine=${m.id}`, pathname, tenantSlug)}
+ className="text-xs font-bold text-foreground hover:text-blue-600 dark:hover:text-blue-400 hover:underline inline-flex items-center gap-1 min-h-[36px] py-1"title="Launch Workstation Terminal">
+                    <PlayCircle className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400"/>
                     <span>Terminal</span>
                   </Link>
                 </div>
@@ -617,51 +576,36 @@ export default function MachineriesListPage() {
                 <div className="flex items-center gap-1">
                   {canAssign && m.status !== 'breakdown' && m.status !== 'maintenance' && m.status !== 'retired' && (
                     <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => setAssigningMachine(m)}
-                      className="h-8 text-xs font-bold text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-900"
-                    >
-                      Assign
+ size="sm"variant="outline"onClick={() => setAssigningMachine(m)}
+ className="h-8 text-xs font-bold text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-900">
+ Assign
                     </Button>
                   )}
 
                   {canMaintain && (
                     <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => setMaintainingMachine(m)}
-                      title="Schedule Maintenance"
-                      className="h-8 px-2 text-muted-foreground dark:text-muted-foreground"
-                    >
-                      <Wrench className="h-3.5 w-3.5" />
+ size="sm"variant="ghost"onClick={() => setMaintainingMachine(m)}
+ title="Schedule Maintenance"className="h-8 px-2 text-muted-foreground">
+                      <Wrench className="h-3.5 w-3.5"/>
                     </Button>
                   )}
 
                   {canBreakdown && m.status !== 'breakdown' && (
                     <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => setBreakingMachine(m)}
-                      title="Report Breakdown"
-                      className="h-8 px-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40"
-                    >
-                      <AlertTriangle className="h-3.5 w-3.5" />
+ size="sm"variant="ghost"onClick={() => setBreakingMachine(m)}
+ title="Report Breakdown"className="h-8 px-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40">
+                      <AlertTriangle className="h-3.5 w-3.5"/>
                     </Button>
                   )}
 
                   {canEdit && (
                     <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => {
-                        setEditingMachine(m)
-                        setIsFormOpen(true)
+ size="sm"variant="ghost"onClick={() => {
+ setEditingMachine(m)
+ setIsFormOpen(true)
                       }}
-                      title="Edit Machine"
-                      className="h-8 px-2 text-muted-foreground"
-                    >
-                      <Edit className="h-3.5 w-3.5" />
+ title="Edit Machine"className="h-8 px-2 text-muted-foreground">
+                      <Edit className="h-3.5 w-3.5"/>
                     </Button>
                   )}
                 </div>
@@ -673,7 +617,7 @@ export default function MachineriesListPage() {
         /* Table / List View */
         <Card className="bg-card border border-border overflow-x-auto shadow-xs">
           <table className="w-full text-xs text-left">
-            <thead className="bg-muted text-muted-foreground font-bold border-b border-border dark:border-border">
+            <thead className="bg-muted text-muted-foreground font-bold border-b border-border">
               <tr>
                 <th className="p-3">Code / Name</th>
                 <th className="p-3">Type</th>
@@ -689,15 +633,14 @@ export default function MachineriesListPage() {
                 <tr key={m.id} className="hover:bg-muted dark:hover:bg-muted/50 transition-colors">
                   <td className="p-3">
                     <Link
-                      href={getTenantNavHref(`/production/machineries/${m.id}`, pathname, tenantSlug)}
-                      className="font-bold text-foreground dark:text-white hover:text-blue-600"
-                    >
+ href={getTenantNavHref(`/production/machineries/${m.id}`, pathname, tenantSlug)}
+ className="font-bold text-foreground hover:text-blue-600">
                       {m.name}
                     </Link>
                     <span className="block tabular-nums text-2xs text-muted-foreground">{m.code}</span>
                     {m.active_mounted_roll_tag && (
                       <span className="inline-flex items-center gap-1 text-2xs text-indigo-700 dark:text-indigo-300 font-bold bg-indigo-50 dark:bg-indigo-950/40 px-1.5 py-0.5 rounded border border-indigo-200 dark:border-indigo-800 mt-1">
-                        <Disc className="h-3 w-3" />
+                        <Disc className="h-3 w-3"/>
                         {m.active_mounted_roll_tag}
                       </span>
                     )}
@@ -714,54 +657,41 @@ export default function MachineriesListPage() {
                   <td className="p-3 text-right">
                     <div className="flex items-center justify-end gap-1">
                       <Link
-                        href={getTenantNavHref(`/production/machineries/${m.id}`, pathname, tenantSlug)}
-                        className="p-1.5 rounded hover:bg-muted text-blue-600 font-bold"
-                        title="View Details"
-                      >
-                        <Eye className="h-4 w-4" />
+ href={getTenantNavHref(`/production/machineries/${m.id}`, pathname, tenantSlug)}
+ className="p-1.5 rounded hover:bg-muted text-blue-600 font-bold"title="View Details">
+                        <Eye className="h-4 w-4"/>
                       </Link>
 
                       <Link
-                        href={getTenantNavHref(`/operator?machine=${m.id}`, pathname, tenantSlug)}
-                        className="p-1.5 rounded hover:bg-muted text-foreground hover:text-blue-600 font-bold"
-                        title="Launch Workstation Terminal"
-                      >
-                        <PlayCircle className="h-4 w-4 text-blue-600" />
+ href={getTenantNavHref(`/operator?machine=${m.id}`, pathname, tenantSlug)}
+ className="p-1.5 rounded hover:bg-muted text-foreground hover:text-blue-600 font-bold"title="Launch Workstation Terminal">
+                        <PlayCircle className="h-4 w-4 text-blue-600"/>
                       </Link>
 
                       {canAssign && (
                         <button
-                          type="button"
-                          onClick={() => setAssigningMachine(m)}
-                          className="p-1.5 rounded hover:bg-muted text-indigo-600 font-bold"
-                          title="Assign"
-                        >
-                          <Clock className="h-4 w-4" />
+ type="button"onClick={() => setAssigningMachine(m)}
+ className="p-1.5 rounded hover:bg-muted text-indigo-600 font-bold"title="Assign">
+                          <Clock className="h-4 w-4"/>
                         </button>
                       )}
 
                       {canMaintain && (
                         <button
-                          type="button"
-                          onClick={() => setMaintainingMachine(m)}
-                          className="p-1.5 rounded hover:bg-muted text-amber-600"
-                          title="Maintenance"
-                        >
-                          <Wrench className="h-4 w-4" />
+ type="button"onClick={() => setMaintainingMachine(m)}
+ className="p-1.5 rounded hover:bg-muted text-amber-600"title="Maintenance">
+                          <Wrench className="h-4 w-4"/>
                         </button>
                       )}
 
                       {canEdit && (
                         <button
-                          type="button"
-                          onClick={() => {
-                            setEditingMachine(m)
-                            setIsFormOpen(true)
+ type="button"onClick={() => {
+ setEditingMachine(m)
+ setIsFormOpen(true)
                           }}
-                          className="p-1.5 rounded hover:bg-muted text-muted-foreground"
-                          title="Edit"
-                        >
-                          <Edit className="h-4 w-4" />
+ className="p-1.5 rounded hover:bg-muted text-muted-foreground"title="Edit">
+                          <Edit className="h-4 w-4"/>
                         </button>
                       )}
                     </div>
@@ -775,55 +705,51 @@ export default function MachineriesListPage() {
 
       {/* Action Modals */}
       <MachineryFormModal
-        open={isFormOpen}
-        onOpenChange={setIsFormOpen}
-        machinery={editingMachine}
-        onSuccess={() => loadData()}
+ open={isFormOpen}
+ onOpenChange={setIsFormOpen}
+ machinery={editingMachine}
+ onSuccess={() => loadData()}
       />
 
       <AssignMachineryModal
-        open={Boolean(assigningMachine)}
-        onOpenChange={(open) => !open && setAssigningMachine(null)}
-        machine={assigningMachine}
-        onSuccess={() => loadData()}
+ open={Boolean(assigningMachine)}
+ onOpenChange={(open) => !open && setAssigningMachine(null)}
+ machine={assigningMachine}
+ onSuccess={() => loadData()}
       />
 
       <ScheduleMaintenanceModal
-        open={Boolean(maintainingMachine)}
-        onOpenChange={(open) => !open && setMaintainingMachine(null)}
-        machine={maintainingMachine}
-        onSuccess={() => loadData()}
+ open={Boolean(maintainingMachine)}
+ onOpenChange={(open) => !open && setMaintainingMachine(null)}
+ machine={maintainingMachine}
+ onSuccess={() => loadData()}
       />
 
       <ReportBreakdownModal
-        open={Boolean(breakingMachine)}
-        onOpenChange={(open) => !open && setBreakingMachine(null)}
-        machine={breakingMachine}
-        onSuccess={() => loadData()}
+ open={Boolean(breakingMachine)}
+ onOpenChange={(open) => !open && setBreakingMachine(null)}
+ machine={breakingMachine}
+ onSuccess={() => loadData()}
       />
 
       <StatusChangeModal
-        open={Boolean(statusMachine)}
-        onOpenChange={(open) => !open && setStatusMachine(null)}
-        machine={statusMachine}
-        onSuccess={() => loadData()}
+ open={Boolean(statusMachine)}
+ onOpenChange={(open) => !open && setStatusMachine(null)}
+ machine={statusMachine}
+ onSuccess={() => loadData()}
       />
 
       {/* Machinery Archive Confirm Dialog */}
       <ConfirmDialog
-        open={isArchiveConfirmOpen}
-        onOpenChange={setIsArchiveConfirmOpen}
-        title={`Retire / Archive "${machineToArchive?.name || 'Machine'}"?`}
-        titleBn={`"${machineToArchive?.name || 'মেশিন'}" আর্কাইভ করবেন?`}
-        message={`Are you sure you want to retire "${machineToArchive?.name}" (${machineToArchive?.code})? It will no longer accept new production job assignments.`}
-        messageBn={`আপনি কি এই মেশিনটি আর্কাইভ করতে চান? এটি আর নতুন কাজের জন্য বরাদ্দ করা যাবে না।`}
-        confirmText="Retire / Archive"
-        confirmTextBn="আর্কাইভ নিশ্চিত করুন"
-        cancelText="Cancel"
-        cancelTextBn="বাতিল"
-        isDestructive={true}
-        isLoading={isArchiving}
-        onConfirm={confirmArchive}
+ open={isArchiveConfirmOpen}
+ onOpenChange={setIsArchiveConfirmOpen}
+ title={`Retire / Archive"${machineToArchive?.name || 'Machine'}"?`}
+ titleBn={`"${machineToArchive?.name || 'মেশিন'}"আর্কাইভ করবেন?`}
+ message={`Are you sure you want to retire"${machineToArchive?.name}"(${machineToArchive?.code})? It will no longer accept new production job assignments.`}
+ messageBn={`আপনি কি এই মেশিনটি আর্কাইভ করতে চান? এটি আর নতুন কাজের জন্য বরাদ্দ করা যাবে না।`}
+ confirmText="Retire / Archive"confirmTextBn="আর্কাইভ নিশ্চিত করুন"cancelText="Cancel"cancelTextBn="বাতিল"isDestructive={true}
+ isLoading={isArchiving}
+ onConfirm={confirmArchive}
       />
     </div>
     </PanelAccessGuard>

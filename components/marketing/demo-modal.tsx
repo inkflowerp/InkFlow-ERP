@@ -2,139 +2,130 @@
 
 import React, { useState, useEffect } from 'react'
 import {
-  Calendar,
-  CheckCircle2,
-  X,
-  Phone,
-  Building2,
-  Mail,
-  User,
-  MapPin,
-  Loader2,
-  AlertCircle,
-  Briefcase,
+ Calendar,
+ CheckCircle2,
+ X,
+ Phone,
+ Building2,
+ Mail,
+ User,
+ MapPin,
+ Loader2,
+ AlertCircle,
+ Briefcase,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useI18n } from '@/i18n/context'
 import { submitDemoRequestAction } from '@/actions/lead.actions'
 
 interface DemoModalProps {
-  isOpen: boolean
-  onClose: () => void
+ isOpen: boolean
+ onClose: () => void
 }
 
 export function DemoModal({ isOpen, onClose }: DemoModalProps) {
-  const { tBilingual } = useI18n()
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [serverError, setServerError] = useState<string | null>(null)
-  const [submitted, setSubmitted] = useState(false)
-  const [successMessage, setSuccessMessage] = useState('')
+ const { tBilingual } = useI18n()
+ const [isSubmitting, setIsSubmitting] = useState(false)
+ const [serverError, setServerError] = useState<string | null>(null)
+ const [submitted, setSubmitted] = useState(false)
+ const [successMessage, setSuccessMessage] = useState('')
 
-  const [formData, setFormData] = useState({
-    businessName: '',
-    contactName: '',
-    phone: '',
-    email: '',
-    city: 'Dhaka',
-    businessType: 'Digital Flex & Banner',
+ const [formData, setFormData] = useState({
+ businessName: '',
+ contactName: '',
+ phone: '',
+ email: '',
+ city: 'Dhaka',
+ businessType: 'Digital Flex & Banner',
   })
 
   // Keyboard escape listener & reset on close
-  useEffect(() => {
-    if (!isOpen) {
-      setSubmitted(false)
-      setServerError(null)
-      return
+ useEffect(() => {
+ if (!isOpen) {
+ setSubmitted(false)
+ setServerError(null)
+ return
     }
 
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        e.preventDefault()
-        onClose()
+ const handleKeyDown = (e: KeyboardEvent) => {
+ if (e.key === 'Escape') {
+ e.preventDefault()
+ onClose()
       }
     }
 
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
+ window.addEventListener('keydown', handleKeyDown)
+ return () => window.removeEventListener('keydown', handleKeyDown)
   }, [isOpen, onClose])
 
-  if (!isOpen) return null
+ if (!isOpen) return null
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setServerError(null)
-    setIsSubmitting(true)
+ const handleSubmit = async (e: React.FormEvent) => {
+ e.preventDefault()
+ setServerError(null)
+ setIsSubmitting(true)
 
-    try {
-      const res = await submitDemoRequestAction({
-        pressName: formData.businessName,
-        contactName: formData.contactName,
-        phone: formData.phone,
-        email: formData.email,
-        city: formData.city,
-        businessType: formData.businessType,
+ try {
+ const res = await submitDemoRequestAction({
+ pressName: formData.businessName,
+ contactName: formData.contactName,
+ phone: formData.phone,
+ email: formData.email,
+ city: formData.city,
+ businessType: formData.businessType,
       })
 
-      if (res.success) {
-        setSubmitted(true)
-        setSuccessMessage(
-          res.message ||
+ if (res.success) {
+ setSubmitted(true)
+ setSuccessMessage(
+ res.message ||
             'Demo request scheduled successfully. Our Dhaka team will contact you within 2 hours.'
         )
       } else {
-        setServerError(res.error || 'Failed to submit demo request. Please check your information.')
+ setServerError(res.error || 'Failed to submit demo request. Please check your information.')
       }
     } catch {
-      setServerError('An unexpected error occurred. Please verify your connection or call our helpline.')
+ setServerError('An unexpected error occurred. Please verify your connection or call our helpline.')
     } finally {
-      setIsSubmitting(false)
+ setIsSubmitting(false)
     }
   }
 
-  return (
+ return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900 backdrop-blur-sm animate-in fade-in-0 duration-200 overflow-y-auto cursor-pointer"
-      onClick={onClose}
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="demo-modal-title"
-    >
+ className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-surface-inset backdrop-blur-sm animate-in fade-in-0 duration-200 overflow-y-auto cursor-pointer"onClick={onClose}
+ role="dialog"aria-modal="true"aria-labelledby="demo-modal-title">
       <div
-        className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl bg-card border border-border p-6 sm:p-8 shadow-2xl text-foreground my-auto cursor-default animate-in zoom-in-95 duration-200"
-        onClick={(e) => e.stopPropagation()}
+ className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-xl bg-card border border-border p-6 sm:p-8 shadow-lg text-foreground my-auto cursor-default animate-in zoom-in-95 duration-200"onClick={(e) => e.stopPropagation()}
       >
         {/* Close Button */}
         <button
-          type="button"
-          onClick={onClose}
-          className="absolute top-4 right-4 sm:top-5 sm:right-5 p-2 rounded-lg text-muted-foreground hover:text-foreground dark:hover:text-white hover:bg-muted transition-colors cursor-pointer"
-          aria-label="Close dialog"
-        >
-          <X className="h-5 w-5" />
+ type="button"onClick={onClose}
+ className="absolute top-4 right-4 sm:top-5 sm:right-5 p-2 rounded-lg text-muted-foreground hover:text-foreground dark:hover:text-foreground hover:bg-muted transition-colors cursor-pointer"aria-label="Close dialog">
+          <X className="h-5 w-5"/>
         </button>
 
         {submitted ? (
           <div className="text-center py-6 sm:py-8 space-y-4">
             <div className="h-14 w-14 sm:h-16 sm:w-16 rounded-full bg-emerald-50 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto border border-emerald-200 dark:border-emerald-500/30">
-              <CheckCircle2 className="h-8 w-8" />
+              <CheckCircle2 className="h-8 w-8"/>
             </div>
 
-            <h3 id="demo-modal-title" className="text-xl sm:text-2xl font-bold text-foreground dark:text-white bangla-text">
+            <h3 id="demo-modal-title"className="text-xl sm:text-2xl font-bold text-foreground bangla-text">
               {tBilingual('Demo Walkthrough Scheduled!', 'ডেমো রিকোয়েস্ট নিশ্চিত হয়েছে!')}
             </h3>
 
             <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed max-w-sm mx-auto bangla-text">
               {tBilingual(
-                successMessage,
+ successMessage,
                 'আমাদের ঢাকা অনবোর্ডিং স্পেশালিস্ট আগামী ২ কর্মঘণ্টার মধ্যে কল করে আপনার সাথে লাইভ স্ক্রিন ডেমো পরিচালনা করবেন।'
               )}
             </p>
 
             <div className="pt-4">
               <Button
-                onClick={onClose}
-                className="w-full sm:w-auto px-8 h-11 font-semibold bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer"
-              >
+ onClick={onClose}
+ className="w-full sm:w-auto px-8 h-11 font-semibold bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer">
                 {tBilingual('Done', 'সম্পন্ন')}
               </Button>
             </div>
@@ -144,10 +135,10 @@ export function DemoModal({ isOpen, onClose }: DemoModalProps) {
             {/* Header */}
             <div className="space-y-1.5 pr-8">
               <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 border border-blue-200 dark:border-blue-800/60">
-                <Calendar className="h-3.5 w-3.5" />
+                <Calendar className="h-3.5 w-3.5"/>
                 <span>{tBilingual('Live Walkthrough', 'লাইভ স্ক্রিন ডেমো')}</span>
               </div>
-              <h3 id="demo-modal-title" className="text-xl sm:text-2xl font-black text-foreground dark:text-white tracking-tight bangla-text">
+              <h3 id="demo-modal-title"className="text-xl sm:text-2xl font-black text-foreground tracking-tight bangla-text">
                 {tBilingual('Schedule a Personalized Demo', 'আপনার প্রেসের জন্য ডেমো বুক করুন')}
               </h3>
               <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed bangla-text">
@@ -161,7 +152,7 @@ export function DemoModal({ isOpen, onClose }: DemoModalProps) {
             {/* Error Banner */}
             {serverError && (
               <div className="p-3 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-xs flex items-start gap-2 animate-in fade-in-0">
-                <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+                <AlertCircle className="h-4 w-4 shrink-0 mt-0.5"/>
                 <span>{serverError}</span>
               </div>
             )}
@@ -173,15 +164,12 @@ export function DemoModal({ isOpen, onClose }: DemoModalProps) {
                   {tBilingual('Press or Business Name *', 'প্রেস বা প্রতিষ্ঠানের নাম *')}
                 </label>
                 <div className="relative">
-                  <Building2 className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Building2 className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground"/>
                   <input
-                    required
-                    type="text"
-                    placeholder="e.g. Apex Digital Press"
-                    value={formData.businessName}
-                    onChange={(e) => setFormData({ ...formData, businessName: e.target.value })}
-                    className="w-full pl-9 pr-3 py-2 rounded-xl bg-muted border border-border text-foreground dark:text-white placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring text-xs transition-all"
-                  />
+ required
+ type="text"placeholder="e.g. Apex Digital Press"value={formData.businessName}
+ onChange={(e) => setFormData({ ...formData, businessName: e.target.value })}
+ className="w-full pl-9 pr-3 py-2 rounded-xl bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring text-xs transition-all"/>
                 </div>
               </div>
 
@@ -191,15 +179,12 @@ export function DemoModal({ isOpen, onClose }: DemoModalProps) {
                     {tBilingual('Your Name *', 'আপনার নাম *')}
                   </label>
                   <div className="relative">
-                    <User className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <User className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground"/>
                     <input
-                      required
-                      type="text"
-                      placeholder="Kamrul Hasan"
-                      value={formData.contactName}
-                      onChange={(e) => setFormData({ ...formData, contactName: e.target.value })}
-                      className="w-full pl-9 pr-3 py-2 rounded-xl bg-muted border border-border text-foreground dark:text-white placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring text-xs transition-all"
-                    />
+ required
+ type="text"placeholder="Kamrul Hasan"value={formData.contactName}
+ onChange={(e) => setFormData({ ...formData, contactName: e.target.value })}
+ className="w-full pl-9 pr-3 py-2 rounded-xl bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring text-xs transition-all"/>
                   </div>
                 </div>
 
@@ -208,15 +193,12 @@ export function DemoModal({ isOpen, onClose }: DemoModalProps) {
                     {tBilingual('Mobile Number (WhatsApp) *', 'মোবাইল নম্বর (হোয়াটসঅ্যাপ) *')}
                   </label>
                   <div className="relative">
-                    <Phone className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Phone className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground"/>
                     <input
-                      required
-                      type="tel"
-                      placeholder="01712-XXXXXX"
-                      value={formData.phone}
-                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                      className="w-full pl-9 pr-3 py-2 rounded-xl bg-muted border border-border text-foreground dark:text-white placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring text-xs tabular-nums transition-all"
-                    />
+ required
+ type="tel"placeholder="01712-XXXXXX"value={formData.phone}
+ onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+ className="w-full pl-9 pr-3 py-2 rounded-xl bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring text-xs tabular-nums transition-all"/>
                   </div>
                 </div>
               </div>
@@ -227,12 +209,11 @@ export function DemoModal({ isOpen, onClose }: DemoModalProps) {
                     {tBilingual('City / District', 'জেলা বা অঞ্চল')}
                   </label>
                   <div className="relative">
-                    <MapPin className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground pointer-events-none" />
+                    <MapPin className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground pointer-events-none"/>
                     <select
-                      value={formData.city}
-                      onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                      className="w-full pl-9 pr-3 py-2 rounded-xl bg-muted border border-border text-foreground dark:text-white focus:outline-none focus:ring-2 focus:ring-ring text-xs cursor-pointer"
-                    >
+ value={formData.city}
+ onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+ className="w-full pl-9 pr-3 py-2 rounded-xl bg-muted border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-ring text-xs cursor-pointer">
                       <option value="Dhaka">Dhaka (Motijheel / Arambagh)</option>
                       <option value="Chattogram">Chattogram</option>
                       <option value="Bogura">Bogura</option>
@@ -249,12 +230,11 @@ export function DemoModal({ isOpen, onClose }: DemoModalProps) {
                     {tBilingual('Primary Business Focus', 'প্রধান কাজের ধরন')}
                   </label>
                   <div className="relative">
-                    <Briefcase className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground pointer-events-none" />
+                    <Briefcase className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground pointer-events-none"/>
                     <select
-                      value={formData.businessType}
-                      onChange={(e) => setFormData({ ...formData, businessType: e.target.value })}
-                      className="w-full pl-9 pr-3 py-2 rounded-xl bg-muted border border-border text-foreground dark:text-white focus:outline-none focus:ring-2 focus:ring-ring text-xs cursor-pointer"
-                    >
+ value={formData.businessType}
+ onChange={(e) => setFormData({ ...formData, businessType: e.target.value })}
+ className="w-full pl-9 pr-3 py-2 rounded-xl bg-muted border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-ring text-xs cursor-pointer">
                       <option value="Digital Flex & Banner">Digital Flex & Banner</option>
                       <option value="Offset Printing Press">Offset Commercial Press</option>
                       <option value="Acrylic & LED Signage">Acrylic & LED Signage</option>
@@ -270,26 +250,21 @@ export function DemoModal({ isOpen, onClose }: DemoModalProps) {
                   {tBilingual('Email Address (Optional)', 'ইমেইল এড্রেস (ঐচ্ছিক)')}
                 </label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Mail className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground"/>
                   <input
-                    type="email"
-                    placeholder="info@yourpress.com.bd"
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="w-full pl-9 pr-3 py-2 rounded-xl bg-muted border border-border text-foreground dark:text-white placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring text-xs transition-all"
-                  />
+ type="email"placeholder="info@yourpress.com.bd"value={formData.email}
+ onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+ className="w-full pl-9 pr-3 py-2 rounded-xl bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring text-xs transition-all"/>
                 </div>
               </div>
 
               <div className="pt-3">
                 <Button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="w-full h-11 font-bold text-sm bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm cursor-pointer bangla-text flex items-center justify-center gap-2"
-                >
+ type="submit"disabled={isSubmitting}
+ className="w-full h-11 font-bold text-sm bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm cursor-pointer bangla-text flex items-center justify-center gap-2">
                   {isSubmitting ? (
                     <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <Loader2 className="h-4 w-4 animate-spin"/>
                       <span>{tBilingual('Scheduling Walkthrough...', 'শিডিউল করা হচ্ছে...')}</span>
                     </>
                   ) : (

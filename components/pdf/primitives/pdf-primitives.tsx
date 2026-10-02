@@ -1,19 +1,19 @@
 import {
-  Fixed as FormeFixed,
-  Image as FormeImage,
-  Link as FormeLink,
-  StyleSheet,
-  Text as FormeText,
-  View as FormeView,
-} from "@formepdf/react";
+ Fixed as FormeFixed,
+ Image as FormeImage,
+ Link as FormeLink,
+ StyleSheet,
+ Text as FormeText,
+ View as FormeView,
+} from"@formepdf/react";
 import type {
-  FixedProps,
-  ImageProps,
-  LinkProps,
-  Style,
-  TextProps,
-  ViewProps,
-} from "@formepdf/react";
+ FixedProps,
+ ImageProps,
+ LinkProps,
+ Style,
+ TextProps,
+ ViewProps,
+} from"@formepdf/react";
 
 export type FormeStyleInput =
   | Style
@@ -23,26 +23,26 @@ export type FormeStyleInput =
   | readonly FormeStyleInput[];
 
 export const mergeFormeStyles = (input: FormeStyleInput): Style | undefined => {
-  if (!input) {
-    return undefined;
+ if (!input) {
+ return undefined;
   }
 
-  if (!Array.isArray(input)) {
-    return input as Style;
+ if (!Array.isArray(input)) {
+ return input as Style;
   }
 
-  const merged: Style = {};
-  for (const entry of input) {
-    const resolved = mergeFormeStyles(entry);
-    if (resolved) {
-      Object.assign(merged, resolved);
+ const merged: Style = {};
+ for (const entry of input) {
+ const resolved = mergeFormeStyles(entry);
+ if (resolved) {
+ Object.assign(merged, resolved);
     }
   }
 
-  return Object.keys(merged).length > 0 ? merged : undefined;
+ return Object.keys(merged).length > 0 ? merged : undefined;
 };
 
-type WithStyle<T> = Omit<T, "style"> & { style?: FormeStyleInput };
+type WithStyle<T> = Omit<T,"style"> & { style?: FormeStyleInput };
 
 export const View = ({ style, ...props }: WithStyle<ViewProps>) => (
   <FormeView {...props} style={mergeFormeStyles(style)} />

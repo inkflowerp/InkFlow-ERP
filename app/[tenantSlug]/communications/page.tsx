@@ -3,26 +3,26 @@
 import React, { useState } from 'react'
 import Link from 'next/link'
 import {
-  Bell,
-  MessageSquare,
-  Send,
-  Plus,
-  Search,
-  CheckCircle2,
-  AlertTriangle,
-  Clock,
-  ExternalLink,
-  ShieldCheck,
-  Building,
-  Mail,
-  Smartphone,
-  Check,
-  Eye,
-  EyeOff,
-  Sparkles,
-  Settings,
-  Languages,
-  Layers,
+ Bell,
+ MessageSquare,
+ Send,
+ Plus,
+ Search,
+ CheckCircle2,
+ AlertTriangle,
+ Clock,
+ ExternalLink,
+ ShieldCheck,
+ Building,
+ Mail,
+ Smartphone,
+ Check,
+ Eye,
+ EyeOff,
+ Sparkles,
+ Settings,
+ Languages,
+ Layers,
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
@@ -39,17 +39,17 @@ import { PageHeader } from '@/components/shared/page-header'
 import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
 import { formatDate } from '@/lib/formatters'
 import {
-  DEFAULT_CHANNEL_CONFIGS,
-  DEFAULT_MESSAGE_TEMPLATES,
-  renderTemplate,
-  createSmsProvider,
+ DEFAULT_CHANNEL_CONFIGS,
+ DEFAULT_MESSAGE_TEMPLATES,
+ renderTemplate,
+ createSmsProvider,
 } from '@/services/communication.service'
 import {
-  InAppNotificationRecord,
-  ChannelConfigRecord,
-  MessageTemplateRecord,
-  CommunicationLogRecord,
-  SmsProviderType,
+ InAppNotificationRecord,
+ ChannelConfigRecord,
+ MessageTemplateRecord,
+ CommunicationLogRecord,
+ SmsProviderType,
 } from '@/types/communication.types'
 import { CustomerRecord } from '@/types/crm.types'
 import { useDataStore } from '@/hooks/use-data-store'
@@ -58,161 +58,147 @@ import { formatBDT } from '@/lib/formatters'
 import { FeatureGate } from '@/components/subscriptions/feature-gate'
 
 export default function CommunicationsHubPage() {
-  const params = useParams()
-  const routeSlug = (params?.tenantSlug as string) || ''
-  const { company } = useTenant()
-  const { locale, tBilingual } = useI18n()
-  const slug = routeSlug || company?.slug || ''
+ const params = useParams()
+ const routeSlug = (params?.tenantSlug as string) || ''
+ const { company } = useTenant()
+ const { locale, tBilingual } = useI18n()
+ const slug = routeSlug || company?.slug || ''
 
-  const [notifications, setNotifications] = useDataStore<InAppNotificationRecord[]>(
-    STORAGE_KEYS.IN_APP_NOTIFICATIONS,
+ const [notifications, setNotifications] = useDataStore<InAppNotificationRecord[]>(
+ STORAGE_KEYS.IN_APP_NOTIFICATIONS,
     [],
-    slug
+ slug
   )
-  const [channels, setChannels] = useDataStore<ChannelConfigRecord[]>(
-    STORAGE_KEYS.CHANNEL_CONFIGS,
-    DEFAULT_CHANNEL_CONFIGS,
-    slug
+ const [channels, setChannels] = useDataStore<ChannelConfigRecord[]>(
+ STORAGE_KEYS.CHANNEL_CONFIGS,
+ DEFAULT_CHANNEL_CONFIGS,
+ slug
   )
-  const [templates, setTemplates] = useDataStore<MessageTemplateRecord[]>(
-    STORAGE_KEYS.MESSAGE_TEMPLATES,
-    DEFAULT_MESSAGE_TEMPLATES,
-    slug
+ const [templates, setTemplates] = useDataStore<MessageTemplateRecord[]>(
+ STORAGE_KEYS.MESSAGE_TEMPLATES,
+ DEFAULT_MESSAGE_TEMPLATES,
+ slug
   )
-  const [commLogs, setCommLogs] = useDataStore<CommunicationLogRecord[]>(
-    STORAGE_KEYS.COMMUNICATION_LOGS,
+ const [commLogs, setCommLogs] = useDataStore<CommunicationLogRecord[]>(
+ STORAGE_KEYS.COMMUNICATION_LOGS,
     [],
-    slug
+ slug
   )
-  const [customers] = useDataStore<CustomerRecord[]>(
-    STORAGE_KEYS.CUSTOMERS,
+ const [customers] = useDataStore<CustomerRecord[]>(
+ STORAGE_KEYS.CUSTOMERS,
     [],
-    slug
+ slug
   )
 
-  const [activeTab, setActiveTab] = useState<'in_app' | 'logs' | 'templates' | 'gateways'>('in_app')
-  const [templateLang, setTemplateLang] = useState<'en' | 'bn'>('en')
-  const [search, setSearch] = useState('')
+ const [activeTab, setActiveTab] = useState<'in_app' | 'logs' | 'templates' | 'gateways'>('in_app')
+ const [templateLang, setTemplateLang] = useState<'en' | 'bn'>('en')
+ const [search, setSearch] = useState('')
 
   // Quick Send Modal State
-  const [isSendOpen, setIsSendOpen] = useState(false)
-  const [sendChannel, setSendChannel] = useState<'whatsapp' | 'sms'>('whatsapp')
-  const [sendRecipient, setSendRecipient] = useState(customers[0]?.id || '')
-  const [sendTemplateKey, setSendTemplateKey] = useState(templates[0]?.template_key || 'order_confirmation')
-  const [customPhone, setCustomPhone] = useState(customers[0]?.mobile || '')
-  const [notificationMsg, setNotificationMsg] = useState<string | null>(null)
+ const [isSendOpen, setIsSendOpen] = useState(false)
+ const [sendChannel, setSendChannel] = useState<'whatsapp' | 'sms'>('whatsapp')
+ const [sendRecipient, setSendRecipient] = useState(customers[0]?.id || '')
+ const [sendTemplateKey, setSendTemplateKey] = useState(templates[0]?.template_key || 'order_confirmation')
+ const [customPhone, setCustomPhone] = useState(customers[0]?.mobile || '')
+ const [notificationMsg, setNotificationMsg] = useState<string | null>(null)
 
   // Gateway Settings State
-  const [smsProvider, setSmsProvider] = useState<SmsProviderType>('bulksmsbd')
-  const [smsSenderId, setSmsSenderId] = useState(company?.name || 'SMS Mask')
-  const [waPhoneId, setWaPhoneId] = useState('')
+ const [smsProvider, setSmsProvider] = useState<SmsProviderType>('bulksmsbd')
+ const [smsSenderId, setSmsSenderId] = useState(company?.name || 'SMS Mask')
+ const [waPhoneId, setWaPhoneId] = useState('')
 
-  const showNotification = (msg: string) => {
-    setNotificationMsg(msg)
-    setTimeout(() => setNotificationMsg(null), 4000)
+ const showNotification = (msg: string) => {
+ setNotificationMsg(msg)
+ setTimeout(() => setNotificationMsg(null), 4000)
   }
 
   // Toggle Read/Unread
-  const handleToggleRead = (id: string) => {
-    setNotifications((prev) =>
+ const handleToggleRead = (id: string) => {
+ setNotifications((prev) =>
       (prev || []).map((n) => (n.id === id ? { ...n, is_read: !n.is_read } : n))
     )
-    const stored = PrintERPDataStore.get<InAppNotificationRecord[]>(STORAGE_KEYS.IN_APP_NOTIFICATIONS) || []
-    const updated = stored.map((n) => (n.id === id ? { ...n, is_read: !n.is_read } : n))
-    PrintERPDataStore.set(STORAGE_KEYS.IN_APP_NOTIFICATIONS, updated)
-    showNotification('Notification status updated.')
+ const stored = PrintERPDataStore.get<InAppNotificationRecord[]>(STORAGE_KEYS.IN_APP_NOTIFICATIONS) || []
+ const updated = stored.map((n) => (n.id === id ? { ...n, is_read: !n.is_read } : n))
+ PrintERPDataStore.set(STORAGE_KEYS.IN_APP_NOTIFICATIONS, updated)
+ showNotification('Notification status updated.')
   }
 
-  const handleMarkAllRead = () => {
-    setNotifications((prev) => (prev || []).map((n) => ({ ...n, is_read: true })))
-    showNotification('All notifications marked as read.')
+ const handleMarkAllRead = () => {
+ setNotifications((prev) => (prev || []).map((n) => ({ ...n, is_read: true })))
+ showNotification('All notifications marked as read.')
   }
 
   // Quick Send Handler
-  const handleQuickSend = (e: React.FormEvent) => {
-    e.preventDefault()
-    const custList = customers || []
-    const selectedCust = custList.find((c: CustomerRecord) => c.id === sendRecipient) || custList[0]
-    const selectedTpl = (templates || []).find((t) => t.template_key === sendTemplateKey) || templates[0]
+ const handleQuickSend = (e: React.FormEvent) => {
+ e.preventDefault()
+ const custList = customers || []
+ const selectedCust = custList.find((c: CustomerRecord) => c.id === sendRecipient) || custList[0]
+ const selectedTpl = (templates || []).find((t) => t.template_key === sendTemplateKey) || templates[0]
 
-    const interpolatedBody = renderTemplate(
-      templateLang === 'bn' ? selectedTpl?.body_bn || '' : selectedTpl?.body_en || '',
+ const interpolatedBody = renderTemplate(
+ templateLang === 'bn' ? selectedTpl?.body_bn || '' : selectedTpl?.body_en || '',
       {
-        customer_name: selectedCust?.name || 'Valued Customer',
-        order_number: 'ORD-000001',
-        invoice_number: 'INV-000001',
-        amount: '0',
-        due_amount: '0',
-        delivery_date: formatDate(new Date()),
+ customer_name: selectedCust?.name || 'Valued Customer',
+ order_number: 'ORD-000001',
+ invoice_number: 'INV-000001',
+ amount: '0',
+ due_amount: '0',
+ delivery_date: formatDate(new Date()),
       }
     )
 
-    const newLog: CommunicationLogRecord = {
-      id: `log-${Date.now()}`,
-      company_id: company?.id || 'c-01',
-      channel: sendChannel,
-      recipient_name: selectedCust?.name || 'Customer',
-      recipient_destination: customPhone || selectedCust?.mobile || '',
-      provider_used:
-        sendChannel === 'whatsapp'
+ const newLog: CommunicationLogRecord = {
+ id: `log-${Date.now()}`,
+ company_id: company?.id || 'c-01',
+ channel: sendChannel,
+ recipient_name: selectedCust?.name || 'Customer',
+ recipient_destination: customPhone || selectedCust?.mobile || '',
+ provider_used:
+ sendChannel === 'whatsapp'
           ? 'Meta WhatsApp Business API'
           : `${smsProvider.toUpperCase()} Gateway (Masking: ${smsSenderId})`,
-      message_content: interpolatedBody,
-      status: 'delivered',
-      created_at: 'Just now',
+ message_content: interpolatedBody,
+ status: 'delivered',
+ created_at: 'Just now',
     }
 
-    PrintERPDataStore.addItem<CommunicationLogRecord>(STORAGE_KEYS.COMMUNICATION_LOGS, newLog)
-    setIsSendOpen(false)
-    showNotification(
+ PrintERPDataStore.addItem<CommunicationLogRecord>(STORAGE_KEYS.COMMUNICATION_LOGS, newLog)
+ setIsSendOpen(false)
+ showNotification(
       `${sendChannel.toUpperCase()} message dispatched successfully to ${selectedCust?.name || 'recipient'} (${customPhone})!`
     )
   }
 
   // Active Unread Notifications Count
-  const unreadCount = (notifications || []).filter((n) => !n.is_read).length
+ const unreadCount = (notifications || []).filter((n) => !n.is_read).length
 
-  return (
+ return (
     <PanelAccessGuard
-      module="settings"
-      action="manage"
-      panelTitle="Communication, In-App Feeds & Gateways"
-      panelTitleBn="মেসেজিং, নোটিফিকেশন ও গেটওয়ে"
-    >
+ module="settings"action="manage"panelTitle="Communication, In-App Feeds & Gateways"panelTitleBn="মেসেজিং, নোটিফিকেশন ও গেটওয়ে">
       <FeatureGate feature="whatsapp_notifications">
         <div className="space-y-6 max-w-7xl">
       {/* Header */}
       <PageHeader
-        titleEn="Communication, In-App Feeds & Gateways"
-        titleBn="মেসেজিং, নোটিফিকেশন ও গেটওয়ে"
-        descriptionEn="Real-time in-app alerts, WhatsApp Business API dispatches, multi-provider Bangladesh SMS, and dual-language message templates."
-        descriptionBn="ইন-অ্যাপ সতর্কতা, হোয়াটসঅ্যাপ বিজনেজ এপিআই, বাংলাদেশি এসএমএস গেটওয়ে এবং বাংলা/ইংরেজি মেসেজ টেমপ্লেট।"
-        icon={MessageSquare}
-        iconColor="text-blue-600"
-        actions={
+ titleEn="Messages & SMS"titleBn="মেসেজিং, নোটিফিকেশন ও গেটওয়ে"descriptionEn="Real-time in-app alerts, WhatsApp Business API dispatches, multi-provider Bangladesh SMS, and dual-language message templates."descriptionBn="ইন-অ্যাপ সতর্কতা, হোয়াটসঅ্যাপ বিজনেজ এপিআই, বাংলাদেশি এসএমএস গেটওয়ে এবং বাংলা/ইংরেজি মেসেজ টেমপ্লেট।"icon={MessageSquare}
+ iconColor="text-blue-600"actions={
           <div className="flex items-center gap-2">
             <Link href={`/${slug}/communications/inbox`}>
               <Button
-                size="sm"
-                variant="outline"
-                className="text-xs gap-1.5 border-emerald-500/30 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/20"
-              >
-                <MessageSquare className="h-3.5 w-3.5 text-emerald-600" />
-                WhatsApp Inbox
+ size="sm"variant="outline"className="text-xs gap-1.5 border-emerald-500/30 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/20">
+                <MessageSquare className="h-3.5 w-3.5 text-emerald-600"/>
+ WhatsApp Inbox
               </Button>
             </Link>
             <Link href={`/${slug}/settings/whatsapp`}>
-              <Button size="sm" variant="outline" className="text-xs gap-1.5">
-                <Settings className="h-3.5 w-3.5 text-muted-foreground" />
-                Gateway Settings
+              <Button size="sm"variant="outline"className="text-xs gap-1.5">
+                <Settings className="h-3.5 w-3.5 text-muted-foreground"/>
+ Gateway Settings
               </Button>
             </Link>
             <Button
-              size="sm"
-              onClick={() => setIsSendOpen(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-xs text-white bangla-text"
-            >
-              <Send className="mr-1.5 h-3.5 w-3.5" />
+ size="sm"onClick={() => setIsSendOpen(true)}
+ className="bg-blue-600 hover:bg-blue-700 text-xs text-white bangla-text">
+              <Send className="mr-1.5 h-3.5 w-3.5"/>
               {tBilingual('Send Quick Notification', 'দ্রুত বার্তা পাঠান')}
             </Button>
           </div>
@@ -222,7 +208,7 @@ export default function CommunicationsHubPage() {
       {/* Notification */}
       {notificationMsg && (
         <div className="p-3 bg-emerald-50 text-emerald-800 rounded-lg text-xs font-semibold flex items-center gap-2 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800 animate-in fade-in-0">
-          <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+          <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0"/>
           <span>{notificationMsg}</span>
         </div>
       )}
@@ -233,7 +219,7 @@ export default function CommunicationsHubPage() {
           <div className="flex justify-between items-center">
             <span className="text-xs font-semibold text-muted-foreground">Unread In-App Alerts</span>
             {unreadCount > 0 && (
-              <span className="h-2 w-2 rounded-full bg-blue-600 animate-ping" />
+              <span className="h-2 w-2 rounded-full bg-blue-600 animate-ping"/>
             )}
           </div>
           <div className="text-2xl font-black text-blue-600 mt-1">{unreadCount} Alerts</div>
@@ -260,18 +246,17 @@ export default function CommunicationsHubPage() {
       </div>
 
       {/* View Switcher Tabs */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-2 rounded-xl bg-muted border border-border dark:border-border">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-2 rounded-xl bg-muted border border-border">
         <div className="flex items-center gap-1.5 overflow-x-auto -mx-2 px-2 sm:mx-0 sm:px-0 touch-scroll w-full sm:w-auto">
           <Button
-            size="sm"
-            variant={activeTab === 'in_app' ? 'default' : 'ghost'}
-            onClick={() => setActiveTab('in_app')}
-            className={`text-xs h-10 sm:h-8 px-3.5 whitespace-nowrap shrink-0 ${
-              activeTab === 'in_app' ? 'bg-blue-600 text-white shadow-xs' : 'text-muted-foreground dark:text-muted-foreground'
+ size="sm"variant={activeTab === 'in_app' ? 'default' : 'ghost'}
+ onClick={() => setActiveTab('in_app')}
+ className={`text-xs h-10 sm:h-8 px-3.5 whitespace-nowrap shrink-0 ${
+ activeTab === 'in_app' ? 'bg-blue-600 text-white shadow-xs' : 'text-muted-foreground '
             }`}
           >
-            <Bell className="h-3.5 w-3.5 mr-1.5" />
-            In-App Feed (ইনবক্স)
+            <Bell className="h-3.5 w-3.5 mr-1.5"/>
+ In-App Feed (ইনবক্স)
             {unreadCount > 0 && (
               <span className="ml-1.5 px-1.5 py-0.2 rounded-full text-2xs bg-card text-blue-700 font-bold">
                 {unreadCount}
@@ -280,72 +265,66 @@ export default function CommunicationsHubPage() {
           </Button>
 
           <Button
-            size="sm"
-            variant={activeTab === 'logs' ? 'default' : 'ghost'}
-            onClick={() => setActiveTab('logs')}
-            className={`text-xs h-10 sm:h-8 px-3.5 whitespace-nowrap shrink-0 ${
-              activeTab === 'logs' ? 'bg-emerald-600 text-white shadow-xs' : 'text-muted-foreground dark:text-muted-foreground'
+ size="sm"variant={activeTab === 'logs' ? 'default' : 'ghost'}
+ onClick={() => setActiveTab('logs')}
+ className={`text-xs h-10 sm:h-8 px-3.5 whitespace-nowrap shrink-0 ${
+ activeTab === 'logs' ? 'bg-emerald-600 text-white shadow-xs' : 'text-muted-foreground '
             }`}
           >
-            <MessageSquare className="h-3.5 w-3.5 mr-1.5" />
-            Communication Logs (হিস্ট্রি)
+            <MessageSquare className="h-3.5 w-3.5 mr-1.5"/>
+ Communication Logs (হিস্ট্রি)
           </Button>
 
           <Button
-            size="sm"
-            variant={activeTab === 'templates' ? 'default' : 'ghost'}
-            onClick={() => setActiveTab('templates')}
-            className={`text-xs h-10 sm:h-8 px-3.5 whitespace-nowrap shrink-0 ${
-              activeTab === 'templates' ? 'bg-purple-600 text-white shadow-xs' : 'text-muted-foreground dark:text-muted-foreground'
+ size="sm"variant={activeTab === 'templates' ? 'default' : 'ghost'}
+ onClick={() => setActiveTab('templates')}
+ className={`text-xs h-10 sm:h-8 px-3.5 whitespace-nowrap shrink-0 ${
+ activeTab === 'templates' ? 'bg-purple-600 text-white shadow-xs' : 'text-muted-foreground '
             }`}
           >
-            <Languages className="h-3.5 w-3.5 mr-1.5" />
-            Message Templates (টেমপ্লেট)
+            <Languages className="h-3.5 w-3.5 mr-1.5"/>
+ Message Templates (টেমপ্লেট)
           </Button>
 
           <Button
-            size="sm"
-            variant={activeTab === 'gateways' ? 'default' : 'ghost'}
-            onClick={() => setActiveTab('gateways')}
-            className={`text-xs h-10 sm:h-8 px-3.5 whitespace-nowrap shrink-0 ${
-              activeTab === 'gateways' ? 'bg-slate-800 text-white shadow-xs' : 'text-muted-foreground dark:text-muted-foreground'
+ size="sm"variant={activeTab === 'gateways' ? 'default' : 'ghost'}
+ onClick={() => setActiveTab('gateways')}
+ className={`text-xs h-10 sm:h-8 px-3.5 whitespace-nowrap shrink-0 ${
+ activeTab === 'gateways' ? 'bg-card-elevated text-foreground shadow-xs' : 'text-muted-foreground '
             }`}
           >
-            <Settings className="h-3.5 w-3.5 mr-1.5" />
-            Gateways &amp; SMS (গেটওয়ে)
+            <Settings className="h-3.5 w-3.5 mr-1.5"/>
+ Gateways &amp; SMS (গেটওয়ে)
           </Button>
         </div>
 
         {activeTab === 'in_app' && unreadCount > 0 && (
           <Button
-            size="sm"
-            variant="ghost"
-            onClick={handleMarkAllRead}
-            className="text-xs h-9 sm:h-7 text-muted-foreground hover:text-foreground dark:hover:text-white shrink-0"
-          >
-            Mark All as Read
+ size="sm"variant="ghost"onClick={handleMarkAllRead}
+ className="text-xs h-9 sm:h-7 text-muted-foreground hover:text-foreground dark:hover:text-foreground shrink-0">
+ Mark All as Read
           </Button>
         )}
       </div>
 
       {/* =========================================================================
-          VIEW 1: IN-APP NOTIFICATION FEED
+ VIEW 1: IN-APP NOTIFICATION FEED
          ========================================================================= */}
       {activeTab === 'in_app' && (
         <div className="space-y-3">
           {notifications.map((notif) => (
             <div
-              key={notif.id}
-              className={`p-4 rounded-xl border transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
-                notif.is_read
+ key={notif.id}
+ className={`p-4 rounded-xl border transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
+ notif.is_read
                   ? 'bg-card border-border opacity-80'
                   : 'bg-blue-50/40 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900 shadow-xs'
               }`}
             >
               <div className="flex items-start gap-3">
                 <div
-                  className={`p-2 rounded-lg shrink-0 mt-0.5 ${
-                    notif.type === 'new_order'
+ className={`p-2 rounded-lg shrink-0 mt-0.5 ${
+ notif.type === 'new_order'
                       ? 'bg-blue-100 text-blue-700'
                       : notif.type === 'payment_received'
                       ? 'bg-emerald-100 text-emerald-700'
@@ -354,16 +333,16 @@ export default function CommunicationsHubPage() {
                       : 'bg-purple-100 text-purple-700'
                   }`}
                 >
-                  <Bell className="h-4 w-4" />
+                  <Bell className="h-4 w-4"/>
                 </div>
 
                 <div className="space-y-0.5">
                   <div className="flex items-center gap-2">
-                    <h4 className="font-bold text-sm text-foreground dark:text-white bangla-text">
+                    <h4 className="font-bold text-sm text-foreground bangla-text">
                       {tBilingual(notif.title, notif.title_bn || notif.title)}
                     </h4>
                     {!notif.is_read && (
-                      <span className="h-2 w-2 rounded-full bg-blue-600 shrink-0" />
+                      <span className="h-2 w-2 rounded-full bg-blue-600 shrink-0"/>
                     )}
                   </div>
                   <p className="text-xs text-muted-foreground bangla-text">
@@ -375,24 +354,20 @@ export default function CommunicationsHubPage() {
                 </div>
               </div>
 
-              <div className="flex items-center justify-end sm:justify-start gap-2 shrink-0 pt-2 sm:pt-0 border-t sm:border-0 border-border dark:border-border">
+              <div className="flex items-center justify-end sm:justify-start gap-2 shrink-0 pt-2 sm:pt-0 border-t sm:border-0 border-border">
                 {notif.action_url && (
                   <Link
-                    href={getTenantNavHref(notif.action_url, null, slug)}
-                    className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold bg-card border border-input text-foreground hover:bg-muted"
-                  >
-                    View <ExternalLink className="h-3 w-3 ml-1" />
+ href={getTenantNavHref(notif.action_url, null, slug)}
+ className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold bg-card border border-input text-foreground hover:bg-muted">
+ View <ExternalLink className="h-3 w-3 ml-1"/>
                   </Link>
                 )}
 
                 <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => handleToggleRead(notif.id)}
-                  className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground dark:hover:text-white rounded-lg"
-                  title={notif.is_read ? 'Mark as unread' : 'Mark as read'}
+ size="sm"variant="ghost"onClick={() => handleToggleRead(notif.id)}
+ className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground dark:hover:text-foreground rounded-lg"title={notif.is_read ? 'Mark as unread' : 'Mark as read'}
                 >
-                  <Check className="h-4 w-4" />
+                  <Check className="h-4 w-4"/>
                 </Button>
               </div>
             </div>
@@ -401,11 +376,11 @@ export default function CommunicationsHubPage() {
       )}
 
       {/* =========================================================================
-          VIEW 2: COMMUNICATION AUDIT LOGS
+ VIEW 2: COMMUNICATION AUDIT LOGS
          ========================================================================= */}
       {activeTab === 'logs' && (
-        <Card className="rounded-2xl overflow-hidden shadow-sm">
-          <CardHeader className="pb-3 border-b border-border dark:border-border">
+        <Card className="rounded-xl overflow-hidden shadow-sm">
+          <CardHeader className="pb-3 border-b border-border">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
               <CardTitle className="text-base font-bold">Communication Audit Trail ({commLogs.length})</CardTitle>
               <span className="text-xs text-muted-foreground">Non-destructive transmission log</span>
@@ -441,15 +416,15 @@ export default function CommunicationsHubPage() {
                         <div className="text-2xs text-muted-foreground tabular-nums mt-0.5">{log.created_at}</div>
                       </td>
 
-                      <td className="py-3.5 px-4 font-bold text-foreground dark:text-white">
+                      <td className="py-3.5 px-4 font-bold text-foreground">
                         {log.recipient_name}
                       </td>
 
-                      <td className="py-3.5 px-4 tabular-nums text-muted-foreground dark:text-muted-foreground">
+                      <td className="py-3.5 px-4 tabular-nums text-muted-foreground">
                         {log.recipient_destination}
                       </td>
 
-                      <td className="py-3.5 px-4 max-w-[280px] truncate text-foreground dark:text-muted-foreground">
+                      <td className="py-3.5 px-4 max-w-[280px] truncate text-foreground">
                         {log.message_content}
                       </td>
 
@@ -459,7 +434,7 @@ export default function CommunicationsHubPage() {
 
                       <td className="py-3.5 px-4 text-center">
                         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-2xs font-bold bg-emerald-100 text-emerald-800">
-                          <CheckCircle2 className="h-3 w-3 text-emerald-600" /> Delivered
+                          <CheckCircle2 className="h-3 w-3 text-emerald-600"/> Delivered
                         </span>
                       </td>
                     </tr>
@@ -472,16 +447,16 @@ export default function CommunicationsHubPage() {
             <div className="md:hidden divide-y divide-border dark:divide-border">
               {commLogs.length === 0 ? (
                 <div className="p-8 text-center text-xs text-muted-foreground">
-                  No communication dispatches recorded yet.
+ No communication dispatches recorded yet.
                 </div>
               ) : (
-                commLogs.map((log) => (
+ commLogs.map((log) => (
                   <div key={log.id} className="p-4 space-y-2.5">
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex items-center gap-2">
                         <span
-                          className={`tabular-nums text-2xs font-bold px-2 py-0.5 rounded uppercase ${
-                            log.channel === 'whatsapp'
+ className={`tabular-nums text-2xs font-bold px-2 py-0.5 rounded uppercase ${
+ log.channel === 'whatsapp'
                               ? 'bg-emerald-100 text-emerald-700'
                               : log.channel === 'sms'
                               ? 'bg-blue-100 text-blue-700'
@@ -490,16 +465,16 @@ export default function CommunicationsHubPage() {
                         >
                           {log.channel}
                         </span>
-                        <span className="text-xs font-bold text-foreground dark:text-white">
+                        <span className="text-xs font-bold text-foreground">
                           {log.recipient_name}
                         </span>
                       </div>
                       <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-2xs font-bold bg-emerald-100 text-emerald-800">
-                        <CheckCircle2 className="h-3 w-3 text-emerald-600" /> Delivered
+                        <CheckCircle2 className="h-3 w-3 text-emerald-600"/> Delivered
                       </span>
                     </div>
 
-                    <div className="text-xs text-foreground bg-muted p-2.5 rounded-xl border border-border dark:border-border">
+                    <div className="text-xs text-foreground bg-muted p-2.5 rounded-xl border border-border">
                       {log.message_content}
                     </div>
 
@@ -516,7 +491,7 @@ export default function CommunicationsHubPage() {
       )}
 
       {/* =========================================================================
-          VIEW 3: MESSAGE TEMPLATES (BANGLA & ENGLISH)
+ VIEW 3: MESSAGE TEMPLATES (BANGLA & ENGLISH)
          ========================================================================= */}
       {activeTab === 'templates' && (
         <div className="space-y-4">
@@ -525,38 +500,34 @@ export default function CommunicationsHubPage() {
               <span className="text-xs text-muted-foreground shrink-0">Template Language:</span>
               <div className="inline-flex p-0.5 bg-muted rounded-lg border">
                 <Button
-                  size="sm"
-                  variant={templateLang === 'en' ? 'default' : 'ghost'}
-                  onClick={() => setTemplateLang('en')}
-                  className="text-xs h-8 sm:h-7 px-3"
-                >
-                  English
+ size="sm"variant={templateLang === 'en' ? 'default' : 'ghost'}
+ onClick={() => setTemplateLang('en')}
+ className="text-xs h-8 sm:h-7 px-3">
+ English
                 </Button>
                 <Button
-                  size="sm"
-                  variant={templateLang === 'bn' ? 'default' : 'ghost'}
-                  onClick={() => setTemplateLang('bn')}
-                  className="text-xs h-8 sm:h-7 px-3"
-                >
+ size="sm"variant={templateLang === 'bn' ? 'default' : 'ghost'}
+ onClick={() => setTemplateLang('bn')}
+ className="text-xs h-8 sm:h-7 px-3">
                   বাংলা (Bengali)
                 </Button>
               </div>
             </div>
 
             <span className="text-2xs sm:text-xs text-muted-foreground tabular-nums break-all sm:break-normal">
-              Supported Variables: {'{{customer_name}}, {{order_number}}, {{invoice_number}}, {{amount}}, {{due_amount}}, {{delivery_date}}'}
+ Supported Variables: {'{{customer_name}}, {{order_number}}, {{invoice_number}}, {{amount}}, {{due_amount}}, {{delivery_date}}'}
             </span>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {templates.map((tpl) => (
-              <Card key={tpl.id} className="p-4 border-border space-y-2.5 rounded-2xl">
+              <Card key={tpl.id} className="p-4 border-border space-y-2.5 rounded-xl">
                 <div className="flex justify-between items-start">
                   <div>
-                    <h4 className="font-bold text-sm text-foreground dark:text-white">{tpl.name}</h4>
+                    <h4 className="font-bold text-sm text-foreground">{tpl.name}</h4>
                     <span className="tabular-nums text-2xs text-blue-600">{tpl.template_key}</span>
                   </div>
-                  <Badge variant="outline" className="uppercase text-2xs">
+                  <Badge variant="outline"className="uppercase text-2xs">
                     {tpl.channel}
                   </Badge>
                 </div>
@@ -568,15 +539,12 @@ export default function CommunicationsHubPage() {
                 <div className="flex justify-between items-center text-2xs text-muted-foreground pt-1">
                   <span>Interpolation Engine: Active</span>
                   <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => {
-                      setSendTemplateKey(tpl.template_key)
-                      setIsSendOpen(true)
+ size="sm"variant="ghost"onClick={() => {
+ setSendTemplateKey(tpl.template_key)
+ setIsSendOpen(true)
                     }}
-                    className="h-8 sm:h-6 text-xs text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950 font-bold px-2.5"
-                  >
-                    Test Send
+ className="h-8 sm:h-6 text-xs text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950 font-bold px-2.5">
+ Test Send
                   </Button>
                 </div>
               </Card>
@@ -586,54 +554,53 @@ export default function CommunicationsHubPage() {
       )}
 
       {/* =========================================================================
-          VIEW 4: GATEWAY INTEGRATIONS (SMS, WhatsApp, SMTP)
+ VIEW 4: GATEWAY INTEGRATIONS (SMS, WhatsApp, SMTP)
          ========================================================================= */}
       {activeTab === 'gateways' && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {/* WhatsApp Business API */}
-          <Card className="p-4 space-y-3 rounded-2xl">
+          <Card className="p-4 space-y-3 rounded-xl">
             <div className="flex justify-between items-center">
-              <h4 className="font-bold text-sm text-foreground dark:text-white flex items-center gap-1.5">
-                <Smartphone className="h-4 w-4 text-emerald-600" />
-                WhatsApp Business API
+              <h4 className="font-bold text-sm text-foreground flex items-center gap-1.5">
+                <Smartphone className="h-4 w-4 text-emerald-600"/>
+ WhatsApp Business API
               </h4>
               <Badge className="bg-emerald-100 text-emerald-800 text-2xs">Connected</Badge>
             </div>
             <p className="text-xs text-muted-foreground">
-              Meta Cloud API for instant PDF quotation, invoice, and delivery tracking dispatch.
+ Meta Cloud API for instant PDF quotation, invoice, and delivery tracking dispatch.
             </p>
             <div className="space-y-2 text-xs">
               <div className="space-y-1">
                 <Label>Phone Number ID</Label>
-                <Input value={waPhoneId} onChange={(e) => setWaPhoneId(e.target.value)} className="h-10 sm:h-8 tabular-nums text-xs" />
+                <Input value={waPhoneId} onChange={(e) => setWaPhoneId(e.target.value)} className="h-10 sm:h-8 tabular-nums text-xs"/>
               </div>
               <div className="space-y-1">
                 <Label>Access Token (Permanent)</Label>
-                <Input type="password" value="EAAG9••••••••••••••••••••" readOnly className="h-10 sm:h-8 tabular-nums text-xs bg-muted dark:bg-card" />
+                <Input type="password"value="EAAG9••••••••••••••••••••"readOnly className="h-10 sm:h-8 tabular-nums text-xs bg-muted"/>
               </div>
             </div>
           </Card>
 
           {/* Bangladesh SMS Gateway Abstraction */}
-          <Card className="p-4 space-y-3 border-l-4 border-l-blue-600 rounded-2xl">
+          <Card className="p-4 space-y-3 border-l-4 border-l-blue-600 rounded-xl">
             <div className="flex justify-between items-center">
-              <h4 className="font-bold text-sm text-foreground dark:text-white flex items-center gap-1.5">
-                <MessageSquare className="h-4 w-4 text-blue-600" />
-                Bangladesh SMS Gateway
+              <h4 className="font-bold text-sm text-foreground flex items-center gap-1.5">
+                <MessageSquare className="h-4 w-4 text-blue-600"/>
+ Bangladesh SMS Gateway
               </h4>
               <Badge className="bg-blue-100 text-blue-800 text-2xs">Active Provider</Badge>
             </div>
             <p className="text-xs text-muted-foreground">
-              Multi-provider abstraction for verified Bangladeshi telco aggregators.
+ Multi-provider abstraction for verified Bangladeshi telco aggregators.
             </p>
             <div className="space-y-2 text-xs">
               <div className="space-y-1">
                 <Label>Active SMS Provider</Label>
                 <select
-                  value={smsProvider}
-                  onChange={(e) => setSmsProvider(e.target.value as SmsProviderType)}
-                  className="w-full h-10 sm:h-8 px-2.5 rounded-md border border-input bg-card font-bold text-xs"
-                >
+ value={smsProvider}
+ onChange={(e) => setSmsProvider(e.target.value as SmsProviderType)}
+ className="w-full h-10 sm:h-8 px-2.5 rounded-md border border-input bg-card font-bold text-xs">
                   <option value="bulksmsbd">BulkSMSBD (Approved Masking)</option>
                   <option value="ssl_wireless">SSL Wireless Gateway</option>
                   <option value="alpha">Alpha SMS Provider</option>
@@ -642,31 +609,31 @@ export default function CommunicationsHubPage() {
               </div>
               <div className="space-y-1">
                 <Label>Approved Masking Sender ID</Label>
-                <Input value={smsSenderId} onChange={(e) => setSmsSenderId(e.target.value)} className="h-10 sm:h-8 tabular-nums text-xs font-bold" />
+                <Input value={smsSenderId} onChange={(e) => setSmsSenderId(e.target.value)} className="h-10 sm:h-8 tabular-nums text-xs font-bold"/>
               </div>
             </div>
           </Card>
 
           {/* SMTP Email Server */}
-          <Card className="p-4 space-y-3 rounded-2xl sm:col-span-2 lg:col-span-1">
+          <Card className="p-4 space-y-3 rounded-xl sm:col-span-2 lg:col-span-1">
             <div className="flex justify-between items-center">
-              <h4 className="font-bold text-sm text-foreground dark:text-white flex items-center gap-1.5">
-                <Mail className="h-4 w-4 text-purple-600" />
-                Custom SMTP Server
+              <h4 className="font-bold text-sm text-foreground flex items-center gap-1.5">
+                <Mail className="h-4 w-4 text-purple-600"/>
+ Custom SMTP Server
               </h4>
               <Badge className="bg-purple-100 text-purple-800 text-2xs">Configured</Badge>
             </div>
             <p className="text-xs text-muted-foreground">
-              Corporate email transport for sending formal PDF estimates and payment receipts.
+ Corporate email transport for sending formal PDF estimates and payment receipts.
             </p>
             <div className="space-y-2 text-xs">
               <div className="space-y-1">
                 <Label>SMTP Host &amp; Port</Label>
-                <Input value={`smtp.${company?.slug || 'inkflow'}.com:587`} readOnly className="h-10 sm:h-8 tabular-nums text-xs bg-muted dark:bg-card" />
+                <Input value={`smtp.${company?.slug || 'inkflow'}.com:587`} readOnly className="h-10 sm:h-8 tabular-nums text-xs bg-muted"/>
               </div>
               <div className="space-y-1">
                 <Label>Password</Label>
-                <Input type="password" value="••••••••••••" readOnly className="h-10 sm:h-8 tabular-nums text-xs bg-muted dark:bg-card" />
+                <Input type="password"value="••••••••••••"readOnly className="h-10 sm:h-8 tabular-nums text-xs bg-muted"/>
               </div>
             </div>
           </Card>
@@ -674,24 +641,20 @@ export default function CommunicationsHubPage() {
       )}
 
       {/* =========================================================================
-          MODAL: SEND QUICK NOTIFICATION / BROADCAST
+ MODAL: SEND QUICK NOTIFICATION / BROADCAST
          ========================================================================= */}
       <ModalDialog
-        open={isSendOpen}
-        onOpenChange={setIsSendOpen}
-        title="Dispatch Notification via WhatsApp / SMS"
-        description="Select customer and pre-configured message template for instant dispatch."
-      >
+ open={isSendOpen}
+ onOpenChange={setIsSendOpen}
+ title="Dispatch Notification via WhatsApp / SMS"description="Select customer and pre-configured message template for instant dispatch.">
         <form onSubmit={handleQuickSend} className="space-y-4 pt-1">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label htmlFor="sCh" required>Dispatch Channel</Label>
+              <Label htmlFor="sCh"required>Dispatch Channel</Label>
               <select
-                id="sCh"
-                value={sendChannel}
-                onChange={(e) => setSendChannel(e.target.value as any)}
-                className="w-full h-10 px-3 rounded-md border border-input bg-card text-xs font-semibold"
-              >
+ id="sCh"value={sendChannel}
+ onChange={(e) => setSendChannel(e.target.value as any)}
+ className="w-full h-10 px-3 rounded-md border border-input bg-card text-xs font-semibold">
                 <option value="whatsapp">WhatsApp Business API</option>
                 <option value="sms">SMS (BulkSMSBD Masking)</option>
                 <option value="email">Email Gateway (Custom / Default)</option>
@@ -699,17 +662,15 @@ export default function CommunicationsHubPage() {
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="sCust" required>Recipient Customer</Label>
+              <Label htmlFor="sCust"required>Recipient Customer</Label>
               <select
-                id="sCust"
-                value={sendRecipient}
-                onChange={(e) => {
-                  setSendRecipient(e.target.value)
-                  const cust = (customers || []).find((c) => c.id === e.target.value)
-                  if (cust) setCustomPhone(cust.mobile)
+ id="sCust"value={sendRecipient}
+ onChange={(e) => {
+ setSendRecipient(e.target.value)
+ const cust = (customers || []).find((c) => c.id === e.target.value)
+ if (cust) setCustomPhone(cust.mobile)
                 }}
-                className="w-full h-10 px-3 rounded-md border border-input bg-card text-xs font-semibold"
-              >
+ className="w-full h-10 px-3 rounded-md border border-input bg-card text-xs font-semibold">
                 {(customers || []).map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.name} ({c.mobile})
@@ -721,13 +682,11 @@ export default function CommunicationsHubPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label htmlFor="sTpl" required>Message Template</Label>
+              <Label htmlFor="sTpl"required>Message Template</Label>
               <select
-                id="sTpl"
-                value={sendTemplateKey}
-                onChange={(e) => setSendTemplateKey(e.target.value)}
-                className="w-full h-10 px-3 rounded-md border border-input bg-card text-xs font-semibold"
-              >
+ id="sTpl"value={sendTemplateKey}
+ onChange={(e) => setSendTemplateKey(e.target.value)}
+ className="w-full h-10 px-3 rounded-md border border-input bg-card text-xs font-semibold">
                 {(templates || []).map((t) => (
                   <option key={t.id} value={t.template_key}>
                     {t.name}
@@ -737,13 +696,11 @@ export default function CommunicationsHubPage() {
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="sPh" required>Mobile Number (with +880)</Label>
+              <Label htmlFor="sPh"required>Mobile Number (with +880)</Label>
               <Input
-                id="sPh"
-                value={customPhone}
-                onChange={(e) => setCustomPhone(e.target.value)}
-                className="h-10 text-xs"
-                required
+ id="sPh"value={customPhone}
+ onChange={(e) => setCustomPhone(e.target.value)}
+ className="h-10 text-xs"required
               />
             </div>
           </div>
@@ -751,19 +708,19 @@ export default function CommunicationsHubPage() {
           {/* Interpolated Preview Box */}
           <div className="p-3 bg-muted border rounded-xl space-y-1">
             <span className="text-2xs uppercase font-bold text-muted-foreground">Live Interpolated Preview:</span>
-            <p className="text-xs tabular-nums text-foreground dark:text-foreground">
+            <p className="text-xs tabular-nums text-foreground">
               {renderTemplate(
-                templateLang === 'bn'
+ templateLang === 'bn'
                   ? (templates || []).find((t) => t.template_key === sendTemplateKey)?.body_bn || ''
                   : (templates || []).find((t) => t.template_key === sendTemplateKey)?.body_en || '',
                 {
-                  customer_name:
+ customer_name:
                     (customers || []).find((c) => c.id === sendRecipient)?.name || 'Client',
-                  order_number: 'ORD-000101',
-                  invoice_number: 'INV-2024-001',
-                  amount: '45,000',
-                  due_amount: '15,000',
-                  delivery_date: '05/09/2024',
+ order_number: 'ORD-000101',
+ invoice_number: 'INV-2024-001',
+ amount: '45,000',
+ due_amount: '15,000',
+ delivery_date: '05/09/2024',
                 }
               )}
             </p>
@@ -771,18 +728,13 @@ export default function CommunicationsHubPage() {
 
           <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-3 border-t">
             <Button
-              type="button"
-              variant="outline"
-              onClick={() => setIsSendOpen(false)}
-              className="w-full sm:w-auto h-11 sm:h-9"
-            >
-              Cancel
+ type="button"variant="outline"onClick={() => setIsSendOpen(false)}
+ className="w-full sm:w-auto h-11 sm:h-9">
+ Cancel
             </Button>
             <Button
-              type="submit"
-              className="w-full sm:w-auto h-11 sm:h-9 bg-primary hover:bg-primary/90 text-primary-foreground font-bold"
-            >
-              Dispatch Message
+ type="submit"className="w-full sm:w-auto h-11 sm:h-9 bg-primary hover:bg-primary/90 text-primary-foreground font-bold">
+ Dispatch Message
             </Button>
           </div>
         </form>

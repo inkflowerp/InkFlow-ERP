@@ -3,30 +3,30 @@
 import React, { useState } from 'react'
 import Link from 'next/link'
 import {
-  X,
-  Phone,
-  Mail,
-  Building,
-  Calendar,
-  Wallet,
-  Clock,
-  Coins,
-  FileText,
-  Key,
-  ShieldCheck,
-  Send,
-  ExternalLink,
-  MapPin,
-  HeartPulse,
-  Briefcase,
-  Layers,
-  CheckCircle2,
+ X,
+ Phone,
+ Mail,
+ Building,
+ Calendar,
+ Wallet,
+ Clock,
+ Coins,
+ FileText,
+ Key,
+ ShieldCheck,
+ Send,
+ ExternalLink,
+ MapPin,
+ HeartPulse,
+ Briefcase,
+ Layers,
+ CheckCircle2,
 } from 'lucide-react'
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
+ Dialog,
+ DialogContent,
+ DialogHeader,
+ DialogTitle,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -34,53 +34,53 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import type { EmployeeRecord } from '@/types/workforce.types'
 
 export interface EmployeeProfileDialogProps {
-  employee: EmployeeRecord | null
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  tenantSlug: string
-  onEdit?: (employee: EmployeeRecord) => void
-  onSendInvitation?: (employeeId: string) => Promise<void>
+ employee: EmployeeRecord | null
+ open: boolean
+ onOpenChange: (open: boolean) => void
+ tenantSlug: string
+ onEdit?: (employee: EmployeeRecord) => void
+ onSendInvitation?: (employeeId: string) => Promise<void>
 }
 
 export function EmployeeProfileDialog({
-  employee,
-  open,
-  onOpenChange,
-  tenantSlug,
-  onEdit,
-  onSendInvitation,
+ employee,
+ open,
+ onOpenChange,
+ tenantSlug,
+ onEdit,
+ onSendInvitation,
 }: EmployeeProfileDialogProps) {
-  const [activeTab, setActiveTab] = useState('overview')
-  const [isSendingInvite, setIsSendingInvite] = useState(false)
-  const [inviteSent, setInviteSent] = useState(false)
+ const [activeTab, setActiveTab] = useState('overview')
+ const [isSendingInvite, setIsSendingInvite] = useState(false)
+ const [inviteSent, setInviteSent] = useState(false)
 
-  if (!employee) return null
+ if (!employee) return null
 
-  const handleInvite = async () => {
-    if (!onSendInvitation) return
-    setIsSendingInvite(true)
-    try {
-      await onSendInvitation(employee.id)
-      setInviteSent(true)
-      setTimeout(() => setInviteSent(false), 3000)
+ const handleInvite = async () => {
+ if (!onSendInvitation) return
+ setIsSendingInvite(true)
+ try {
+ await onSendInvitation(employee.id)
+ setInviteSent(true)
+ setTimeout(() => setInviteSent(false), 3000)
     } finally {
-      setIsSendingInvite(false)
+ setIsSendingInvite(false)
     }
   }
 
-  const getStatusBadge = (status: string) => {
-    if (status === 'active') return 'bg-emerald-50 text-emerald-700 border-emerald-200'
-    if (status === 'on_leave') return 'bg-amber-50 text-amber-700 border-amber-200'
-    return 'bg-red-50 text-red-700 border-red-200'
+ const getStatusBadge = (status: string) => {
+ if (status === 'active') return 'bg-emerald-50 text-emerald-700 border-emerald-200'
+ if (status === 'on_leave') return 'bg-amber-50 text-amber-700 border-amber-200'
+ return 'bg-red-50 text-red-700 border-red-200'
   }
 
-  return (
+ return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl p-0 overflow-hidden bg-card border-border shadow-xl rounded-2xl">
+      <DialogContent className="max-w-2xl p-0 overflow-hidden bg-card border-border shadow-xs rounded-xl">
         {/* Header Profile Bar */}
         <div className="bg-muted border-b border-border p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-blue-600 text-white font-bold text-lg flex items-center justify-center shadow-sm shrink-0">
+            <div className="w-14 h-14 rounded-xl bg-blue-600 text-white font-bold text-lg flex items-center justify-center shadow-sm shrink-0">
               {employee.name.slice(0, 2).toUpperCase()}
             </div>
             <div>
@@ -89,9 +89,8 @@ export function EmployeeProfileDialog({
                   {employee.name}
                 </h2>
                 <Badge
-                  variant="outline"
-                  className={`text-[10px] font-semibold uppercase px-2 py-0.5 rounded-full ${getStatusBadge(
-                    employee.status
+ variant="outline"className={`text-[10px] font-semibold uppercase px-2 py-0.5 rounded-full ${getStatusBadge(
+ employee.status
                   )}`}
                 >
                   {employee.status}
@@ -115,7 +114,7 @@ export function EmployeeProfileDialog({
                   <>
                     <span>•</span>
                     <span className="flex items-center gap-1 text-muted-foreground">
-                      <Building className="w-3 h-3" />
+                      <Building className="w-3 h-3"/>
                       {employee.branch_name}
                     </span>
                   </>
@@ -127,15 +126,12 @@ export function EmployeeProfileDialog({
           <div className="flex items-center gap-2 self-end sm:self-center">
             {onEdit && (
               <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  onOpenChange(false)
-                  onEdit(employee)
+ variant="outline"size="sm"onClick={() => {
+ onOpenChange(false)
+ onEdit(employee)
                 }}
-                className="h-8 text-xs border-border hover:bg-muted min-h-[32px]"
-              >
-                Edit Profile
+ className="h-8 text-xs border-border hover:bg-muted min-h-[32px]">
+ Edit Profile
               </Button>
             )}
           </div>
@@ -146,45 +142,35 @@ export function EmployeeProfileDialog({
           <div className="border-b border-border px-6 bg-card">
             <TabsList className="bg-transparent h-10 p-0 space-x-6 justify-start">
               <TabsTrigger
-                value="overview"
-                className="data-[state=active]:border-b-2 data-[state=active]:border-blue-600 data-[state=active]:text-blue-600 rounded-none bg-transparent px-1 pb-2 pt-2 text-xs font-medium text-muted-foreground shadow-none"
-              >
-                Overview
+ value="overview"className="data-[state=active]:border-b-2 data-[state=active]:border-blue-600 data-[state=active]:text-blue-600 rounded-none bg-transparent px-1 pb-2 pt-2 text-xs font-medium text-muted-foreground shadow-none">
+ Overview
               </TabsTrigger>
               <TabsTrigger
-                value="compensation"
-                className="data-[state=active]:border-b-2 data-[state=active]:border-blue-600 data-[state=active]:text-blue-600 rounded-none bg-transparent px-1 pb-2 pt-2 text-xs font-medium text-muted-foreground shadow-none"
-              >
-                Compensation
+ value="compensation"className="data-[state=active]:border-b-2 data-[state=active]:border-blue-600 data-[state=active]:text-blue-600 rounded-none bg-transparent px-1 pb-2 pt-2 text-xs font-medium text-muted-foreground shadow-none">
+ Compensation
               </TabsTrigger>
               <TabsTrigger
-                value="duty"
-                className="data-[state=active]:border-b-2 data-[state=active]:border-blue-600 data-[state=active]:text-blue-600 rounded-none bg-transparent px-1 pb-2 pt-2 text-xs font-medium text-muted-foreground shadow-none"
-              >
-                Duty & Shifts
+ value="duty"className="data-[state=active]:border-b-2 data-[state=active]:border-blue-600 data-[state=active]:text-blue-600 rounded-none bg-transparent px-1 pb-2 pt-2 text-xs font-medium text-muted-foreground shadow-none">
+ Duty & Shifts
               </TabsTrigger>
               <TabsTrigger
-                value="advances"
-                className="data-[state=active]:border-b-2 data-[state=active]:border-blue-600 data-[state=active]:text-blue-600 rounded-none bg-transparent px-1 pb-2 pt-2 text-xs font-medium text-muted-foreground shadow-none"
-              >
-                Advances
+ value="advances"className="data-[state=active]:border-b-2 data-[state=active]:border-blue-600 data-[state=active]:text-blue-600 rounded-none bg-transparent px-1 pb-2 pt-2 text-xs font-medium text-muted-foreground shadow-none">
+ Advances
               </TabsTrigger>
               <TabsTrigger
-                value="access"
-                className="data-[state=active]:border-b-2 data-[state=active]:border-blue-600 data-[state=active]:text-blue-600 rounded-none bg-transparent px-1 pb-2 pt-2 text-xs font-medium text-muted-foreground shadow-none"
-              >
-                Login Access
+ value="access"className="data-[state=active]:border-b-2 data-[state=active]:border-blue-600 data-[state=active]:text-blue-600 rounded-none bg-transparent px-1 pb-2 pt-2 text-xs font-medium text-muted-foreground shadow-none">
+ Login Access
               </TabsTrigger>
             </TabsList>
           </div>
 
           <div className="p-6 max-h-[60vh] overflow-y-auto">
             {/* 1. Overview Tab */}
-            <TabsContent value="overview" className="m-0 space-y-4 text-xs">
+            <TabsContent value="overview"className="m-0 space-y-4 text-xs">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="p-3.5 rounded-xl border border-border bg-muted space-y-2">
                   <div className="font-semibold text-foreground flex items-center gap-1.5">
-                    <Phone className="w-3.5 h-3.5 text-blue-600" />
+                    <Phone className="w-3.5 h-3.5 text-blue-600"/>
                     <span>Contact Info</span>
                   </div>
                   <div className="space-y-1 text-muted-foreground">
@@ -206,7 +192,7 @@ export function EmployeeProfileDialog({
 
                 <div className="p-3.5 rounded-xl border border-border bg-muted space-y-2">
                   <div className="font-semibold text-foreground flex items-center gap-1.5">
-                    <Briefcase className="w-3.5 h-3.5 text-blue-600" />
+                    <Briefcase className="w-3.5 h-3.5 text-blue-600"/>
                     <span>Employment Terms</span>
                   </div>
                   <div className="space-y-1 text-muted-foreground">
@@ -231,7 +217,7 @@ export function EmployeeProfileDialog({
                 {employee.emergency_contact_name && (
                   <div className="p-3.5 rounded-xl border border-border bg-muted space-y-2 col-span-full">
                     <div className="font-semibold text-foreground flex items-center gap-1.5">
-                      <HeartPulse className="w-3.5 h-3.5 text-rose-600" />
+                      <HeartPulse className="w-3.5 h-3.5 text-rose-600"/>
                       <span>Emergency Contact</span>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-muted-foreground">
@@ -251,7 +237,7 @@ export function EmployeeProfileDialog({
             </TabsContent>
 
             {/* 2. Compensation Tab */}
-            <TabsContent value="compensation" className="m-0 space-y-4 text-xs">
+            <TabsContent value="compensation"className="m-0 space-y-4 text-xs">
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 <div className="p-3.5 rounded-xl border border-border bg-card">
                   <span className="text-[11px] text-muted-foreground block font-medium">Base Salary</span>
@@ -303,7 +289,7 @@ export function EmployeeProfileDialog({
             </TabsContent>
 
             {/* 3. Duty & Shifts Tab */}
-            <TabsContent value="duty" className="m-0 space-y-4 text-xs">
+            <TabsContent value="duty"className="m-0 space-y-4 text-xs">
               <div className="p-4 rounded-xl border border-border bg-card space-y-3">
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   <div>
@@ -341,7 +327,7 @@ export function EmployeeProfileDialog({
             </TabsContent>
 
             {/* 4. Advances Tab */}
-            <TabsContent value="advances" className="m-0 space-y-4 text-xs">
+            <TabsContent value="advances"className="m-0 space-y-4 text-xs">
               <div className="p-4 rounded-xl border border-border bg-card flex items-center justify-between">
                 <div>
                   <span className="text-muted-foreground block">Outstanding Advance</span>
@@ -349,24 +335,24 @@ export function EmployeeProfileDialog({
                     ৳ {(employee.current_advance_balance || 0).toLocaleString('en-IN')}
                   </span>
                 </div>
-                <Button asChild size="sm" className="h-8 text-xs bg-blue-600 text-white hover:bg-blue-700">
+                <Button asChild size="sm"className="h-8 text-xs bg-blue-600 text-white hover:bg-blue-700">
                   <Link href={`/${tenantSlug}/hr/advances?employee=${employee.id}`}>
                     <span>Manage Advances</span>
-                    <ExternalLink className="w-3.5 h-3.5 ml-1.5" />
+                    <ExternalLink className="w-3.5 h-3.5 ml-1.5"/>
                   </Link>
                 </Button>
               </div>
             </TabsContent>
 
             {/* 5. Access Tab */}
-            <TabsContent value="access" className="m-0 space-y-4 text-xs">
+            <TabsContent value="access"className="m-0 space-y-4 text-xs">
               <div className="p-4 rounded-xl border border-border bg-card space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="font-semibold text-foreground flex items-center gap-1.5">
-                    <Key className="w-3.5 h-3.5 text-blue-600" />
+                    <Key className="w-3.5 h-3.5 text-blue-600"/>
                     <span>Portal Credentials & Access</span>
                   </div>
-                  <Badge variant="outline" className="bg-muted text-foreground text-[10px]">
+                  <Badge variant="outline"className="bg-muted text-foreground text-[10px]">
                     {employee.portal_credentials?.create_login ? 'Portal Active' : 'No Login'}
                   </Badge>
                 </div>
@@ -393,23 +379,20 @@ export function EmployeeProfileDialog({
                 {onSendInvitation && (
                   <div className="pt-3 border-t border-border flex items-center justify-between">
                     <span className="text-[11px] text-muted-foreground">
-                      Send login instructions via SMS / WhatsApp
+ Send login instructions via SMS / WhatsApp
                     </span>
                     <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={handleInvite}
-                      disabled={isSendingInvite || inviteSent}
-                      className="h-8 text-xs border-border hover:bg-muted min-h-[32px]"
-                    >
+ size="sm"variant="outline"onClick={handleInvite}
+ disabled={isSendingInvite || inviteSent}
+ className="h-8 text-xs border-border hover:bg-muted min-h-[32px]">
                       {inviteSent ? (
                         <>
-                          <CheckCircle2 className="w-3.5 h-3.5 mr-1 text-emerald-600" />
+                          <CheckCircle2 className="w-3.5 h-3.5 mr-1 text-emerald-600"/>
                           <span>Invitation Sent</span>
                         </>
                       ) : (
                         <>
-                          <Send className="w-3.5 h-3.5 mr-1 text-blue-600" />
+                          <Send className="w-3.5 h-3.5 mr-1 text-blue-600"/>
                           <span>{isSendingInvite ? 'Sending...' : 'Send Invitation'}</span>
                         </>
                       )}

@@ -186,3 +186,58 @@ className="focus:ring-ring"
 ## 7. Print Styles
 
 Print styles (`print:`) are the ONE exception — they may use `print:bg-white` and `print:text-black` because physical paper is always white.
+
+---
+
+## 8. Platform UI Components (`components/platform`)
+
+The platform owner (super-admin) dashboard shares the identical design token system as the tenant app, utilizing these standardized UI components:
+
+### 8.1 StatCard (`@/components/platform/stat-card`)
+- **Height**: Fixed 96px (`min-h-24`)
+- **Structure**: Uppercase tracking-wider label, bold tabular-nums value, trend badge (`text-success` or `text-destructive`), and right-aligned icon in `bg-primary/10 text-primary border border-primary/20`.
+- **Usage**:
+```tsx
+<StatCard
+  title="Active Tenants"
+  value={48}
+  trend={{ value: '12%', isPositive: true, label: 'vs last month' }}
+  icon={Building2}
+/>
+```
+
+### 8.2 PlanCard (`@/components/platform/plan-card`)
+- **Border**: Flat 1px `border-border`. Popular plans use `border-primary ring-1 ring-primary/30`.
+- **Structure**: Header (name, code badge, popular pill, status badge, action dropdown), description, price section with subscriber counter, plan limit grid, and feature checklist with check/cross icons.
+- **Actions**: Edit, Duplicate, Assign Tenants, Archive, Delete.
+
+### 8.3 UsageMeter (`@/components/platform/usage-meter`)
+- **Thresholds**: `<80%` (`bg-primary`), `80–94%` (`bg-warning`), `>=95%` (`bg-destructive`).
+- **Structure**: Label and tabular counts (`current / max`), percentage pill, and 2-pixel tall rounded track with semantic bar.
+
+### 8.4 ImpersonationBanner (`@/components/platform/impersonation-banner`)
+- **Styling**: Sticky top banner with `bg-warning-surface border-b border-warning/30 text-foreground`.
+- **Content**: Impersonation mode indicator, tenant name & ID badge, admin context, and prominent destructive "Exit Impersonation" button.
+
+### 8.5 DangerZone (`@/components/platform/danger-zone`)
+- **Styling**: `border-destructive/30 bg-destructive/5 text-card-foreground`.
+- **Content**: Danger header with warning icon, destructive action list, and confirmation challenge dialog requiring typed verification string.
+
+---
+
+## 9. Automated Verification Gate & CI Audit
+
+To guarantee 0 regressions, all platform and tenant UI code is guarded by automated measurement scripts:
+
+1. **Full Playwright Route Crawler & Style Extractor:**
+   ```bash
+   npm run ui-audit
+   ```
+   Crawls all 38 platform routes across 4 viewports (375px, 768px, 1280px, 1920px) in both Light & Dark modes, measuring computed styles, WCAG AA contrast, border widths, and horizontal overflow. Must pass with 0 blocker, 0 major, and 0 minor violations.
+
+2. **Static Design Token Linter:**
+   ```bash
+   node scratch/audit-platform.js
+   ```
+   Scans for raw Tailwind palette colors, raw hex codes, arbitrary sizing classes (`w-[...]`), and gradients.
+

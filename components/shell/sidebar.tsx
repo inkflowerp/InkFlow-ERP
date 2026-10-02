@@ -4,64 +4,64 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
 import {
-  LayoutDashboard,
-  Printer,
-  Plus,
-  Bell,
-  MessageSquare,
-  Users,
-  Briefcase,
-  Receipt,
-  Palette,
-  Truck,
-  Package,
-  ShoppingBag,
-  Building2,
-  Building,
-  BarChart3,
-  Calculator,
-  Landmark,
-  Wallet,
-  UserCheck,
-  Users2,
-  Cpu,
-  ShieldCheck,
-  Workflow,
-  FileCheck2,
-  FileText,
-  FileSpreadsheet,
-  Settings,
-  Crown,
-  Sparkles,
-  ChevronLeft,
-  ChevronRight,
-  ChevronDown,
-  Headphones,
-  Zap,
-  Layers,
-  Disc,
-  Tag,
-  Trash2,
-  Scissors,
-  Search,
-  X,
-  Globe2,
-  Hash,
-  GitBranch,
-  Mail,
-  QrCode,
-  Sliders,
-  Key,
-  Shield,
-  RotateCcw,
-  Flame,
-  Activity,
-  TrendingDown,
-  Clock,
-  BookOpen,
-  PieChart,
-  Scale,
-  ArrowLeftRight,
+ LayoutDashboard,
+ Printer,
+ Plus,
+ Bell,
+ MessageSquare,
+ Users,
+ Briefcase,
+ Receipt,
+ Palette,
+ Truck,
+ Package,
+ ShoppingBag,
+ Building2,
+ Building,
+ BarChart3,
+ Calculator,
+ Landmark,
+ Wallet,
+ UserCheck,
+ Users2,
+ Cpu,
+ ShieldCheck,
+ Workflow,
+ FileCheck2,
+ FileText,
+ FileSpreadsheet,
+ Settings,
+ Crown,
+ Sparkles,
+ ChevronLeft,
+ ChevronRight,
+ ChevronDown,
+ Headphones,
+ Zap,
+ Layers,
+ Disc,
+ Tag,
+ Trash2,
+ Scissors,
+ Search,
+ X,
+ Globe2,
+ Hash,
+ GitBranch,
+ Mail,
+ QrCode,
+ Sliders,
+ Key,
+ Shield,
+ RotateCcw,
+ Flame,
+ Activity,
+ TrendingDown,
+ Clock,
+ BookOpen,
+ PieChart,
+ Scale,
+ ArrowLeftRight,
 } from 'lucide-react'
 import { getNavigationConfig, type NavItem, type NavSection } from '@/config/navigation.config'
 import { getTenantNavHref } from '@/lib/tenant/tenant-url'
@@ -75,58 +75,58 @@ import { cn } from '@/lib/utils'
 import { ResetTenantDataModal } from './reset-tenant-data-modal'
 
 const iconMap: Record<string, React.ElementType> = {
-  LayoutDashboard,
-  Printer,
-  Plus,
-  Bell,
-  MessageSquare,
-  Users,
-  Briefcase,
-  Receipt,
-  Palette,
-  Truck,
-  Package,
-  ShoppingBag,
-  Building2,
-  Building,
-  BarChart3,
-  Calculator,
-  Landmark,
-  Wallet,
-  UserCheck,
-  Users2,
-  Cpu,
-  ShieldCheck,
-  Workflow,
-  FileCheck2,
-  FileText,
-  FileSpreadsheet,
-  Settings,
-  Crown,
-  Sparkles,
-  Zap,
-  Layers,
-  Disc,
-  Tag,
-  Trash2,
-  Scissors,
-  Flame,
-  Globe2,
-  Hash,
-  GitBranch,
-  Mail,
-  QrCode,
-  Sliders,
-  Key,
-  Shield,
-  Activity,
-  TrendingDown,
-  Clock,
-  BookOpen,
-  PieChart,
-  Scale,
-  ArrowLeftRight,
-  RotateCcw,
+ LayoutDashboard,
+ Printer,
+ Plus,
+ Bell,
+ MessageSquare,
+ Users,
+ Briefcase,
+ Receipt,
+ Palette,
+ Truck,
+ Package,
+ ShoppingBag,
+ Building2,
+ Building,
+ BarChart3,
+ Calculator,
+ Landmark,
+ Wallet,
+ UserCheck,
+ Users2,
+ Cpu,
+ ShieldCheck,
+ Workflow,
+ FileCheck2,
+ FileText,
+ FileSpreadsheet,
+ Settings,
+ Crown,
+ Sparkles,
+ Zap,
+ Layers,
+ Disc,
+ Tag,
+ Trash2,
+ Scissors,
+ Flame,
+ Globe2,
+ Hash,
+ GitBranch,
+ Mail,
+ QrCode,
+ Sliders,
+ Key,
+ Shield,
+ Activity,
+ TrendingDown,
+ Clock,
+ BookOpen,
+ PieChart,
+ Scale,
+ ArrowLeftRight,
+ RotateCcw,
 }
 
 const SIDEBAR_COLLAPSED_STORAGE_KEY = 'printerp_sidebar_collapsed'
@@ -134,236 +134,236 @@ const EXPANDED_GROUPS_STORAGE_KEY = 'printerp_nav_expanded_groups'
 const EXPANDED_SUB_NAV_STORAGE_KEY = 'printerp_nav_expanded_sub_nav'
 
 export function Sidebar() {
-  const pathname = usePathname()
-  const searchParams = useSearchParams()
-  const { company } = useTenant()
-  const { appName, appLogoUrl, tagline } = usePlatformSettings()
-  const { can, isOwner } = usePermissions()
-  const { hasFeature, isTrial, daysRemainingInTrial, timeRemainingInTrial, currentPlan, openUpgradeModal } = useSubscription()
-  const { tBilingual } = useI18n()
+ const pathname = usePathname()
+ const searchParams = useSearchParams()
+ const { company } = useTenant()
+ const { appName, appLogoUrl, tagline } = usePlatformSettings()
+ const { can, isOwner } = usePermissions()
+ const { hasFeature, isTrial, daysRemainingInTrial, timeRemainingInTrial, currentPlan, openUpgradeModal } = useSubscription()
+ const { tBilingual } = useI18n()
 
-  const [filterQuery, setFilterQuery] = useState('')
-  const [resetModalOpen, setResetModalOpen] = useState(false)
+ const [filterQuery, setFilterQuery] = useState('')
+ const [resetModalOpen, setResetModalOpen] = useState(false)
 
-  const [collapsed, setCollapsed] = useState<boolean>(() => {
-    if (typeof window === 'undefined') return false
-    try {
+ const [collapsed, setCollapsed] = useState<boolean>(() => {
+ if (typeof window === 'undefined') return false
+ try {
       // Legacy migration from inkflow_
-      const legacyCollapsed = localStorage.getItem('inkflow_sidebar_collapsed')
-      if (legacyCollapsed && !localStorage.getItem(SIDEBAR_COLLAPSED_STORAGE_KEY)) {
-        localStorage.setItem(SIDEBAR_COLLAPSED_STORAGE_KEY, legacyCollapsed)
-        localStorage.removeItem('inkflow_sidebar_collapsed')
+ const legacyCollapsed = localStorage.getItem('inkflow_sidebar_collapsed')
+ if (legacyCollapsed && !localStorage.getItem(SIDEBAR_COLLAPSED_STORAGE_KEY)) {
+ localStorage.setItem(SIDEBAR_COLLAPSED_STORAGE_KEY, legacyCollapsed)
+ localStorage.removeItem('inkflow_sidebar_collapsed')
       }
-      return localStorage.getItem(SIDEBAR_COLLAPSED_STORAGE_KEY) === 'true'
+ return localStorage.getItem(SIDEBAR_COLLAPSED_STORAGE_KEY) === 'true'
     } catch {
-      return false
+ return false
     }
   })
 
   // State of expanded group IDs
-  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>(() => {
-    if (typeof window === 'undefined') {
-      return { today: true, work: true, management: true, settings: true }
+ const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>(() => {
+ if (typeof window === 'undefined') {
+ return { today: true, work: true, management: true, settings: true }
     }
-    try {
-      const saved = localStorage.getItem(EXPANDED_GROUPS_STORAGE_KEY)
-      if (saved) {
-        return JSON.parse(saved)
+ try {
+ const saved = localStorage.getItem(EXPANDED_GROUPS_STORAGE_KEY)
+ if (saved) {
+ return JSON.parse(saved)
       }
     } catch {}
-    return { today: true, work: true, management: true, settings: true }
+ return { today: true, work: true, management: true, settings: true }
   })
 
   // State of expanded sub-item groups (e.g. company_settings, hr, accounting)
-  const [expandedSubNav, setExpandedSubNav] = useState<Record<string, boolean>>(() => {
-    if (typeof window === 'undefined') {
-      return { company_settings: true, hr: true, accounting: true }
+ const [expandedSubNav, setExpandedSubNav] = useState<Record<string, boolean>>(() => {
+ if (typeof window === 'undefined') {
+ return { company_settings: true, hr: true, accounting: true }
     }
-    try {
-      const saved = localStorage.getItem(EXPANDED_SUB_NAV_STORAGE_KEY)
-      if (saved) {
-        return { hr: true, company_settings: true, accounting: true, ...JSON.parse(saved) }
+ try {
+ const saved = localStorage.getItem(EXPANDED_SUB_NAV_STORAGE_KEY)
+ if (saved) {
+ return { hr: true, company_settings: true, accounting: true, ...JSON.parse(saved) }
       }
     } catch {}
-    return { company_settings: true, hr: true, accounting: true }
+ return { company_settings: true, hr: true, accounting: true }
   })
 
-  const navSections = useMemo(() => getNavigationConfig(), [])
+ const navSections = useMemo(() => getNavigationConfig(), [])
 
   // Explicit permission and feature entitlement filtering
-  const isNavItemAllowed = useCallback((item: NavItem): boolean => {
-    if (item.featureGate && !hasFeature(item.featureGate)) return false
-    if (isOwner) return true
-    if (item.ownerOnly && !isOwner) return false
-    if (!item.permission) return true
-    return can(item.permission.action, item.permission.resource)
+ const isNavItemAllowed = useCallback((item: NavItem): boolean => {
+ if (item.featureGate && !hasFeature(item.featureGate)) return false
+ if (isOwner) return true
+ if (item.ownerOnly && !isOwner) return false
+ if (!item.permission) return true
+ return can(item.permission.action, item.permission.resource)
   }, [hasFeature, isOwner, can])
 
   // Filter sections by permissions and search query
-  const processedSections = useMemo(() => {
-    const q = filterQuery.trim().toLowerCase()
+ const processedSections = useMemo(() => {
+ const q = filterQuery.trim().toLowerCase()
 
-    return navSections
+ return navSections
       .map((section) => {
-        const allowedItems: NavItem[] = []
+ const allowedItems: NavItem[] = []
 
-        for (const item of section.items) {
-          if (!isNavItemAllowed(item)) continue
+ for (const item of section.items) {
+ if (!isNavItemAllowed(item)) continue
 
-          const allowedChildren = item.children?.filter(isNavItemAllowed)
+ const allowedChildren = item.children?.filter(isNavItemAllowed)
 
-          if (!q) {
-            allowedItems.push({
+ if (!q) {
+ allowedItems.push({
               ...item,
-              children: allowedChildren,
+ children: allowedChildren,
             })
-            continue
+ continue
           }
 
-          const matchTitle = item.title.toLowerCase().includes(q)
-          const matchTitleBn = item.titleBn.toLowerCase().includes(q)
-          const matchKey = item.key.toLowerCase().includes(q)
+ const matchTitle = item.title.toLowerCase().includes(q)
+ const matchTitleBn = item.titleBn.toLowerCase().includes(q)
+ const matchKey = item.key.toLowerCase().includes(q)
 
-          const matchedChildren = allowedChildren?.filter((child) => {
-            const cTitle = child.title.toLowerCase().includes(q)
-            const cTitleBn = child.titleBn.toLowerCase().includes(q)
-            const cKey = child.key.toLowerCase().includes(q)
-            return cTitle || cTitleBn || cKey
+ const matchedChildren = allowedChildren?.filter((child) => {
+ const cTitle = child.title.toLowerCase().includes(q)
+ const cTitleBn = child.titleBn.toLowerCase().includes(q)
+ const cKey = child.key.toLowerCase().includes(q)
+ return cTitle || cTitleBn || cKey
           })
 
-          if (matchTitle || matchTitleBn || matchKey || (matchedChildren && matchedChildren.length > 0)) {
-            allowedItems.push({
+ if (matchTitle || matchTitleBn || matchKey || (matchedChildren && matchedChildren.length > 0)) {
+ allowedItems.push({
               ...item,
-              children: matchedChildren && matchedChildren.length > 0 ? matchedChildren : allowedChildren,
+ children: matchedChildren && matchedChildren.length > 0 ? matchedChildren : allowedChildren,
             })
           }
         }
 
-        return { ...section, items: allowedItems }
+ return { ...section, items: allowedItems }
       })
       .filter((section) => section.items.length > 0)
   }, [navSections, isNavItemAllowed, filterQuery])
 
   // Persist sidebar collapsed state
-  const handleToggleCollapsed = useCallback(() => {
-    setCollapsed((prev) => {
-      const next = !prev
-      try {
-        localStorage.setItem(SIDEBAR_COLLAPSED_STORAGE_KEY, String(next))
+ const handleToggleCollapsed = useCallback(() => {
+ setCollapsed((prev) => {
+ const next = !prev
+ try {
+ localStorage.setItem(SIDEBAR_COLLAPSED_STORAGE_KEY, String(next))
       } catch {}
-      return next
+ return next
     })
   }, [])
 
   // Persist group expansion state
-  const toggleGroup = useCallback((groupId: string) => {
-    setExpandedGroups((prev) => {
-      const next = { ...prev, [groupId]: !prev[groupId] }
-      try {
-        localStorage.setItem(EXPANDED_GROUPS_STORAGE_KEY, JSON.stringify(next))
+ const toggleGroup = useCallback((groupId: string) => {
+ setExpandedGroups((prev) => {
+ const next = { ...prev, [groupId]: !prev[groupId] }
+ try {
+ localStorage.setItem(EXPANDED_GROUPS_STORAGE_KEY, JSON.stringify(next))
       } catch {}
-      return next
+ return next
     })
   }, [])
 
   // Persist sub-nav expansion state
-  const toggleSubNav = useCallback((key: string) => {
-    setExpandedSubNav((prev) => {
-      const next = { ...prev, [key]: !prev[key] }
-      try {
-        localStorage.setItem(EXPANDED_SUB_NAV_STORAGE_KEY, JSON.stringify(next))
+ const toggleSubNav = useCallback((key: string) => {
+ setExpandedSubNav((prev) => {
+ const next = { ...prev, [key]: !prev[key] }
+ try {
+ localStorage.setItem(EXPANDED_SUB_NAV_STORAGE_KEY, JSON.stringify(next))
       } catch {}
-      return next
+ return next
     })
   }, [])
 
   // Check whether an item is active with strict exact matching for root paths
-  const isItemActive = useCallback((itemHref: string, exact?: boolean) => {
-    if (!pathname) return false
-    const cleanPath = (company?.slug && pathname.startsWith(`/${company.slug}`))
+ const isItemActive = useCallback((itemHref: string, exact?: boolean) => {
+ if (!pathname) return false
+ const cleanPath = (company?.slug && pathname.startsWith(`/${company.slug}`))
       ? pathname.slice(`/${company.slug}`.length) || '/'
       : pathname
 
-    const [hrefPath, hrefQuery] = itemHref.split('?')
-    const isPathMatch = pathname === hrefPath || cleanPath === hrefPath
+ const [hrefPath, hrefQuery] = itemHref.split('?')
+ const isPathMatch = pathname === hrefPath || cleanPath === hrefPath
 
     // If itemHref has query parameters (e.g. /accounting?tab=expenses)
-    if (hrefQuery) {
-      if (!isPathMatch) return false
-      const currentTab = searchParams?.get('tab') || 'overview'
-      const targetParams = new URLSearchParams(hrefQuery)
-      const targetTab = targetParams.get('tab') || 'overview'
-      return currentTab === targetTab
+ if (hrefQuery) {
+ if (!isPathMatch) return false
+ const currentTab = searchParams?.get('tab') || 'overview'
+ const targetParams = new URLSearchParams(hrefQuery)
+ const targetTab = targetParams.get('tab') || 'overview'
+ return currentTab === targetTab
     }
 
     // If itemHref is /accounting (Finance Dashboard root)
-    if (cleanPath === '/accounting' && hrefPath === '/accounting') {
-      if (exact) {
-        const currentTab = searchParams?.get('tab')
-        return !currentTab || currentTab === 'overview'
+ if (cleanPath === '/accounting' && hrefPath === '/accounting') {
+ if (exact) {
+ const currentTab = searchParams?.get('tab')
+ return !currentTab || currentTab === 'overview'
       }
     }
 
-    if (isPathMatch) return true
+ if (isPathMatch) return true
 
-    if ((itemHref === '/trash' || itemHref === '/settings/trash') && (cleanPath === '/trash' || cleanPath === '/settings/trash' || cleanPath.startsWith('/trash/') || cleanPath.startsWith('/settings/trash/'))) {
-      return true
+ if ((itemHref === '/trash' || itemHref === '/settings/trash') && (cleanPath === '/trash' || cleanPath === '/settings/trash' || cleanPath.startsWith('/trash/') || cleanPath.startsWith('/settings/trash/'))) {
+ return true
     }
 
-    if ((itemHref === '/tax' || itemHref === '/settings/tax') && (cleanPath === '/tax' || cleanPath === '/settings/tax' || cleanPath.startsWith('/tax/') || cleanPath.startsWith('/settings/tax/'))) {
-      return true
+ if ((itemHref === '/tax' || itemHref === '/settings/tax') && (cleanPath === '/tax' || cleanPath === '/settings/tax' || cleanPath.startsWith('/tax/') || cleanPath.startsWith('/settings/tax/'))) {
+ return true
     }
 
     // Exact matches or /settings base must not claim child routes
-    if (exact || itemHref === '/' || itemHref === '/settings') {
-      return false
+ if (exact || itemHref === '/' || itemHref === '/settings') {
+ return false
     }
 
-    if (cleanPath.startsWith(`${hrefPath}/`)) {
-      return true
+ if (cleanPath.startsWith(`${hrefPath}/`)) {
+ return true
     }
-    return false
+ return false
   }, [pathname, company?.slug, searchParams])
 
   // Automatically ensure active route's parent group and sub-nav are expanded
-  useEffect(() => {
-    if (!pathname) return
-    const cleanPath = (company?.slug && pathname.startsWith(`/${company.slug}`))
+ useEffect(() => {
+ if (!pathname) return
+ const cleanPath = (company?.slug && pathname.startsWith(`/${company.slug}`))
       ? pathname.slice(`/${company.slug}`.length) || '/'
       : pathname
 
-    for (const section of processedSections) {
-      const hasActive = section.items.some((item) => {
-        if (isItemActive(item.href, item.exact)) return true
-        return item.children?.some((child) => isItemActive(child.href, child.exact))
+ for (const section of processedSections) {
+ const hasActive = section.items.some((item) => {
+ if (isItemActive(item.href, item.exact)) return true
+ return item.children?.some((child) => isItemActive(child.href, child.exact))
       })
 
-      if (hasActive && !expandedGroups[section.id]) {
-        setExpandedGroups((prev) => {
-          const next = { ...prev, [section.id]: true }
-          try {
-            localStorage.setItem(EXPANDED_GROUPS_STORAGE_KEY, JSON.stringify(next))
+ if (hasActive && !expandedGroups[section.id]) {
+ setExpandedGroups((prev) => {
+ const next = { ...prev, [section.id]: true }
+ try {
+ localStorage.setItem(EXPANDED_GROUPS_STORAGE_KEY, JSON.stringify(next))
           } catch {}
-          return next
+ return next
         })
       }
 
-      for (const item of section.items) {
-        if (item.children && item.children.length > 0) {
-          const hasActiveChild = item.children.some((child) => isItemActive(child.href, child.exact))
-          if (
-            hasActiveChild ||
+ for (const item of section.items) {
+ if (item.children && item.children.length > 0) {
+ const hasActiveChild = item.children.some((child) => isItemActive(child.href, child.exact))
+ if (
+ hasActiveChild ||
             (cleanPath.startsWith('/settings') && item.key === 'company_settings') ||
             (cleanPath.startsWith('/hr') && item.key === 'hr') ||
             (cleanPath.startsWith('/accounting') && item.key === 'accounting')
           ) {
-            setExpandedSubNav((prev) => {
-              if (prev[item.key]) return prev
-              const next = { ...prev, [item.key]: true }
-              try {
-                localStorage.setItem(EXPANDED_SUB_NAV_STORAGE_KEY, JSON.stringify(next))
+ setExpandedSubNav((prev) => {
+ if (prev[item.key]) return prev
+ const next = { ...prev, [item.key]: true }
+ try {
+ localStorage.setItem(EXPANDED_SUB_NAV_STORAGE_KEY, JSON.stringify(next))
               } catch {}
-              return next
+ return next
             })
           }
         }
@@ -371,38 +371,35 @@ export function Sidebar() {
     }
   }, [pathname, processedSections, isItemActive, expandedGroups, company?.slug])
 
-  return (
+ return (
     <aside
-      aria-label="Tenant Navigation Sidebar"
-      className={cn(
+ aria-label="Tenant Navigation Sidebar"className={cn(
         'relative hidden lg:flex flex-col border-r border-border bg-card transition-all duration-300 select-none z-30 h-full max-h-full shrink-0 overflow-hidden shadow-xs',
-        collapsed ? 'w-18' : 'w-64'
+ collapsed ? 'w-18' : 'w-64'
       )}
     >
       {/* Brand Header with CMYK Color Indicator */}
-      <div className="flex h-16 shrink-0 items-center justify-between border-b border-border px-4 dark:border-border">
+      <div className="flex h-16 shrink-0 items-center justify-between border-b border-border px-4">
         {!collapsed ? (
           <Link
-            href={getTenantNavHref('/dashboard', pathname, company?.slug)}
-            className="flex items-center gap-2.5 group cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-lg p-0.5"
-          >
+ href={getTenantNavHref('/dashboard', pathname, company?.slug)}
+ className="flex items-center gap-2.5 group cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-lg p-0.5">
             {/* CMYK Symbol or Custom Logo */}
             {appLogoUrl ? (
               <img
-                src={appLogoUrl}
-                alt={appName}
-                className="h-8 w-8 rounded-lg object-contain bg-slate-900 border border-slate-700/60 p-0.5 shadow-xs shrink-0"
-              />
+ src={appLogoUrl}
+ alt={appName}
+ className="h-8 w-8 rounded-lg object-contain bg-surface-inset border border-border/60 p-0.5 shadow-xs shrink-0"/>
             ) : (
-              <div className="grid grid-cols-2 gap-0.5 p-1 rounded-md bg-slate-900 shadow-xs group-hover:scale-105 transition-transform shrink-0">
-                <span className="h-2 w-2 rounded-full bg-cyan-400" />
-                <span className="h-2 w-2 rounded-full bg-pink-500" />
-                <span className="h-2 w-2 rounded-full bg-yellow-400" />
-                <span className="h-2 w-2 rounded-full bg-muted" />
+              <div className="grid grid-cols-2 gap-0.5 p-1 rounded-md bg-surface-inset shadow-xs group-hover:scale-105 transition-transform shrink-0">
+                <span className="h-2 w-2 rounded-full bg-cyan-400"/>
+                <span className="h-2 w-2 rounded-full bg-pink-500"/>
+                <span className="h-2 w-2 rounded-full bg-yellow-400"/>
+                <span className="h-2 w-2 rounded-full bg-muted"/>
               </div>
             )}
             <div className="flex flex-col text-left">
-              <span className="font-black tracking-tight text-base text-foreground dark:text-white leading-tight">
+              <span className="font-black tracking-tight text-base text-foreground leading-tight">
                 {appName}
               </span>
               <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground truncate max-w-[130px]">
@@ -412,31 +409,28 @@ export function Sidebar() {
           </Link>
         ) : (
           <Link
-            href={getTenantNavHref('/dashboard', pathname, company?.slug)}
-            className="mx-auto flex items-center justify-center p-1 rounded-md bg-slate-900 hover:scale-105 transition-transform cursor-pointer h-8 w-8"
-            title={`${appName} Dashboard`}
+ href={getTenantNavHref('/dashboard', pathname, company?.slug)}
+ className="mx-auto flex items-center justify-center p-1 rounded-md bg-surface-inset hover:scale-105 transition-transform cursor-pointer h-8 w-8"title={`${appName} Dashboard`}
           >
             {appLogoUrl ? (
-              <img src={appLogoUrl} alt={appName} className="h-6 w-6 object-contain" />
+              <img src={appLogoUrl} alt={appName} className="h-6 w-6 object-contain"/>
             ) : (
               <div className="grid grid-cols-2 gap-0.5">
-                <span className="h-2 w-2 rounded-full bg-cyan-400" />
-                <span className="h-2 w-2 rounded-full bg-pink-500" />
-                <span className="h-2 w-2 rounded-full bg-yellow-400" />
-                <span className="h-2 w-2 rounded-full bg-muted" />
+                <span className="h-2 w-2 rounded-full bg-cyan-400"/>
+                <span className="h-2 w-2 rounded-full bg-pink-500"/>
+                <span className="h-2 w-2 rounded-full bg-yellow-400"/>
+                <span className="h-2 w-2 rounded-full bg-muted"/>
               </div>
             )}
           </Link>
         )}
 
         <button
-          type="button"
-          onClick={handleToggleCollapsed}
-          className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-muted-foreground cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 transition-colors"
-          title={collapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
-          aria-label={collapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
+ type="button"onClick={handleToggleCollapsed}
+ className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-muted-foreground cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 transition-colors"title={collapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
+ aria-label={collapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
         >
-          {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+          {collapsed ? <ChevronRight className="h-4 w-4"/> : <ChevronLeft className="h-4 w-4"/>}
         </button>
       </div>
 
@@ -444,22 +438,17 @@ export function Sidebar() {
       {!collapsed && (
         <div className="px-3 pt-2.5 pb-1">
           <div className="relative">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none"/>
             <input
-              type="text"
-              value={filterQuery}
-              onChange={(e) => setFilterQuery(e.target.value)}
-              placeholder={tBilingual('Quick filter...', 'মেনু খুঁজুন...')}
-              className="w-full pl-8 pr-7 py-1.5 text-xs rounded-lg border border-border bg-muted text-foreground placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-ring transition-all bangla-text"
-            />
+ type="text"value={filterQuery}
+ onChange={(e) => setFilterQuery(e.target.value)}
+ placeholder={tBilingual('Quick filter...', 'মেনু খুঁজুন...')}
+ className="w-full pl-8 pr-7 py-1.5 text-xs rounded-lg border border-border bg-muted text-foreground placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-ring transition-all bangla-text"/>
             {filterQuery && (
               <button
-                type="button"
-                onClick={() => setFilterQuery('')}
-                className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 text-muted-foreground hover:text-muted-foreground dark:hover:text-foreground"
-                title="Clear filter"
-              >
-                <X className="h-3 w-3" />
+ type="button"onClick={() => setFilterQuery('')}
+ className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 text-muted-foreground hover:text-muted-foreground dark:hover:text-foreground"title="Clear filter">
+                <X className="h-3 w-3"/>
               </button>
             )}
           </div>
@@ -468,71 +457,66 @@ export function Sidebar() {
 
       {/* Navigation Sections */}
       <nav
-        aria-label="Sidebar Menu"
-        className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-3 py-2 space-y-1 overscroll-contain touch-auto scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-800 hover:scrollbar-thumb-slate-300 dark:hover:scrollbar-thumb-slate-700"
-      >
+ aria-label="Sidebar Menu"className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-3 py-2 space-y-1 overscroll-contain touch-auto scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-800 hover:scrollbar-thumb-slate-300 dark:hover:scrollbar-thumb-slate-700">
         {processedSections.map((section) => {
-          const isExpanded = expandedGroups[section.id] ?? true
-          const sectionTitle = tBilingual(section.title, section.titleBn)
+ const isExpanded = expandedGroups[section.id] ?? true
+ const sectionTitle = tBilingual(section.title, section.titleBn)
 
-          return (
+ return (
             <div key={section.id} className="space-y-0.5">
               {!collapsed && Boolean(section.title) && (
                 /* Collapsible Group Header Button (Expanded Sidebar) */
                 <button
-                  type="button"
-                  onClick={() => toggleGroup(section.id)}
-                  aria-expanded={isExpanded}
-                  className="w-full flex items-center justify-between px-3 py-1.5 text-2xs font-black uppercase tracking-wider text-muted-foreground hover:text-foreground dark:hover:text-muted-foreground transition-colors rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 cursor-pointer bangla-text group"
-                >
+ type="button"onClick={() => toggleGroup(section.id)}
+ aria-expanded={isExpanded}
+ className="w-full flex items-center justify-between px-3 py-1.5 text-2xs font-black uppercase tracking-wider text-muted-foreground hover:text-foreground dark:hover:text-muted-foreground transition-colors rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 cursor-pointer bangla-text group">
                   <span className="truncate">{sectionTitle}</span>
                   {isExpanded ? (
-                    <ChevronDown className="h-3.5 w-3.5 text-muted-foreground group-hover:text-muted-foreground dark:group-hover:text-foreground transition-transform" />
+                    <ChevronDown className="h-3.5 w-3.5 text-muted-foreground group-hover:text-muted-foreground dark:group-hover:text-foreground transition-transform"/>
                   ) : (
-                    <ChevronRight className="h-3.5 w-3.5 text-muted-foreground group-hover:text-muted-foreground dark:group-hover:text-foreground transition-transform" />
+                    <ChevronRight className="h-3.5 w-3.5 text-muted-foreground group-hover:text-muted-foreground dark:group-hover:text-foreground transition-transform"/>
                   )}
                 </button>
               )}
 
               {collapsed && Boolean(section.title) && (
                 /* Subtle Divider in Collapsed Sidebar */
-                <div className="h-px bg-muted my-1.5 mx-2" />
+                <div className="h-px bg-muted my-1.5 mx-2"/>
               )}
 
               {/* Items List */}
               {(!collapsed ? (section.title ? isExpanded : true) : true) && (
                 <div className="space-y-0.5 transition-all">
                   {section.items.map((item) => {
-                    const Icon = iconMap[item.icon] || Sparkles
-                    const isActive = isItemActive(item.href, item.exact)
-                    const itemTitle = tBilingual(item.title, item.titleBn)
-                    const isPrimary = item.isPrimaryAction
-                    const hasChildren = item.children && item.children.length > 0
-                    const isSubExpanded = expandedSubNav[item.key] ?? false
-                    const isChildActive = Boolean(hasChildren && item.children!.some((child) => isItemActive(child.href, child.exact)))
+ const Icon = iconMap[item.icon] || Sparkles
+ const isActive = isItemActive(item.href, item.exact)
+ const itemTitle = tBilingual(item.title, item.titleBn)
+ const isPrimary = item.isPrimaryAction
+ const hasChildren = item.children && item.children.length > 0
+ const isSubExpanded = expandedSubNav[item.key] ?? false
+ const isChildActive = Boolean(hasChildren && item.children!.some((child) => isItemActive(child.href, child.exact)))
 
-                    return (
+ return (
                       <div
-                        key={item.key}
-                        ref={isActive ? (el) => { if (el && typeof window !== 'undefined') { el.scrollIntoView({ block: 'nearest' }) } } : undefined}
-                        className="relative group/nav"
-                      >
+ key={item.key}
+ ref={isActive ? (el) => { if (el && typeof window !== 'undefined') { el.scrollIntoView({ block: 'nearest' }) } } : undefined}
+ className="relative group/nav">
                         <div className="flex items-center">
                           <Link
-                            href={getTenantNavHref(item.href, pathname, company?.slug)}
-                            aria-label={`${item.title} - ${item.titleBn}`}
-                            className={cn(
+ href={getTenantNavHref(item.href, pathname, company?.slug)}
+ aria-label={`${item.title} - ${item.titleBn}`}
+ className={cn(
                               'flex flex-1 items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors cursor-pointer bangla-text min-h-[40px] focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
-                              isActive || isChildActive
+ isActive || isChildActive
                                 ? 'bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400 font-semibold'
-                                : 'text-muted-foreground hover:bg-muted hover:text-foreground dark:hover:text-white',
-                              collapsed && 'justify-center px-2'
+                                : 'text-muted-foreground hover:bg-muted hover:text-foreground dark:hover:text-foreground',
+ collapsed && 'justify-center px-2'
                             )}
                           >
                             <Icon
-                              className={cn(
+ className={cn(
                                 'h-4 w-4 shrink-0 transition-transform group-hover/nav:scale-105',
-                                isActive || isChildActive
+ isActive || isChildActive
                                   ? 'text-blue-600 dark:text-blue-400'
                                   : 'text-muted-foreground group-hover/nav:text-muted-foreground dark:group-hover/nav:text-foreground'
                               )}
@@ -544,10 +528,10 @@ export function Sidebar() {
                                 <div className="flex items-center gap-1.5 shrink-0 ml-1.5">
                                   {item.badge && (
                                     <Badge
-                                      variant={isActive || isPrimary ? 'secondary' : 'default'}
-                                      className={cn(
+ variant={isActive || isPrimary ? 'secondary' : 'default'}
+ className={cn(
                                         'text-2xs px-2 py-0.5 h-4.5 font-bold shrink-0',
-                                        item.badgeVariant === 'live'
+ item.badgeVariant === 'live'
                                           ? 'bg-rose-500 text-white animate-pulse'
                                           : item.badgeVariant === 'fast'
                                           ? 'bg-emerald-400 text-foreground font-black'
@@ -561,19 +545,17 @@ export function Sidebar() {
                                   )}
                                   {hasChildren && (
                                     <button
-                                      type="button"
-                                      onClick={(e) => {
-                                        e.preventDefault()
-                                        e.stopPropagation()
-                                        toggleSubNav(item.key)
+ type="button"onClick={(e) => {
+ e.preventDefault()
+ e.stopPropagation()
+ toggleSubNav(item.key)
                                       }}
-                                      className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/60 dark:hover:bg-slate-700/60 transition-colors"
-                                      title={isSubExpanded ? 'Collapse sub-menu' : 'Expand sub-menu'}
+ className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/60 dark:hover:bg-muted/60 transition-colors"title={isSubExpanded ? 'Collapse sub-menu' : 'Expand sub-menu'}
                                     >
                                       <ChevronDown
-                                        className={cn(
+ className={cn(
                                           'h-3.5 w-3.5 transition-transform duration-200',
-                                          isSubExpanded ? 'rotate-180' : ''
+ isSubExpanded ? 'rotate-180' : ''
                                         )}
                                       />
                                     </button>
@@ -582,11 +564,11 @@ export function Sidebar() {
                               </div>
                             ) : (
                               /* Collapsed Badges (Live pulse dot) */
-                              item.badge && (
+ item.badge && (
                                 <span
-                                  className={cn(
+ className={cn(
                                     'absolute top-1.5 right-1.5 h-2 w-2 rounded-full',
-                                    item.badgeVariant === 'live' ? 'bg-rose-500 animate-pulse' : 'bg-emerald-500'
+ item.badgeVariant === 'live' ? 'bg-rose-500 animate-pulse' : 'bg-emerald-500'
                                   )}
                                 />
                               )
@@ -598,26 +580,26 @@ export function Sidebar() {
                         {!collapsed && hasChildren && (isSubExpanded || Boolean(filterQuery)) && (
                           <div className="ml-4 pl-3.5 border-l-2 border-border space-y-0.5 mt-1 animate-in fade-in-0 duration-150">
                             {item.children!.map((child) => {
-                              const ChildIcon = iconMap[child.icon] || Sparkles
-                              const isSubActive = isItemActive(child.href, child.exact)
-                              const childTitle = tBilingual(child.title, child.titleBn)
+ const ChildIcon = iconMap[child.icon] || Sparkles
+ const isSubActive = isItemActive(child.href, child.exact)
+ const childTitle = tBilingual(child.title, child.titleBn)
 
-                              return (
+ return (
                                 <Link
-                                  key={child.key}
-                                  href={getTenantNavHref(child.href, pathname, company?.slug)}
-                                  aria-label={`${child.title} - ${child.titleBn}`}
-                                  className={cn(
+ key={child.key}
+ href={getTenantNavHref(child.href, pathname, company?.slug)}
+ aria-label={`${child.title} - ${child.titleBn}`}
+ className={cn(
                                     'flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors cursor-pointer bangla-text min-h-[32px] focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
-                                    isSubActive
+ isSubActive
                                       ? 'bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400 font-semibold'
-                                      : 'text-muted-foreground hover:bg-muted hover:text-foreground dark:hover:text-white'
+                                      : 'text-muted-foreground hover:bg-muted hover:text-foreground dark:hover:text-foreground'
                                   )}
                                 >
                                   <ChildIcon
-                                    className={cn(
+ className={cn(
                                       'h-3.5 w-3.5 shrink-0 transition-transform',
-                                      isSubActive
+ isSubActive
                                         ? 'text-blue-600 dark:text-blue-400'
                                         : 'text-muted-foreground group-hover:text-muted-foreground dark:group-hover:text-foreground'
                                     )}
@@ -625,10 +607,8 @@ export function Sidebar() {
                                   <span className="truncate flex-1">{childTitle}</span>
                                   {child.badge && (
                                     <Badge
-                                      variant={isSubActive ? 'secondary' : 'default'}
-                                      size="xs"
-                                      className="font-bold shrink-0 ml-1"
-                                    >
+ variant={isSubActive ? 'secondary' : 'default'}
+ size="xs"className="font-bold shrink-0 ml-1">
                                       {child.badge}
                                     </Badge>
                                   )}
@@ -640,12 +620,12 @@ export function Sidebar() {
 
                         {/* Collapsed Hover Flyout / Popover */}
                         {collapsed && (
-                          <div className="absolute left-full top-0 ml-2.5 hidden group-hover/nav:flex flex-col z-50 animate-in fade-in-0 zoom-in-95 duration-150 w-64 rounded-2xl bg-card border border-border p-2 shadow-2xl">
+                          <div className="absolute left-full top-0 ml-2.5 hidden group-hover/nav:flex flex-col z-50 animate-in fade-in-0 zoom-in-95 duration-150 w-64 rounded-xl bg-card border border-border p-2 shadow-lg">
                             {/* Popover Header */}
                             <div className="px-2.5 py-2 border-b border-border flex items-center justify-between">
                               <div className="flex items-center gap-2 min-w-0">
-                                <Icon className="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0" />
-                                <span className="font-bold text-xs text-foreground dark:text-white truncate bangla-text">
+                                <Icon className="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0"/>
+                                <span className="font-bold text-xs text-foreground truncate bangla-text">
                                   {itemTitle}
                                 </span>
                               </div>
@@ -660,17 +640,17 @@ export function Sidebar() {
                             {hasChildren ? (
                               <div className="py-1 max-h-[70vh] overflow-y-auto space-y-0.5 scrollbar-thin">
                                 {item.children!.map((child) => {
-                                  const ChildIcon = iconMap[child.icon] || Sparkles
-                                  const isSubActive = isItemActive(child.href, child.exact)
-                                  return (
+ const ChildIcon = iconMap[child.icon] || Sparkles
+ const isSubActive = isItemActive(child.href, child.exact)
+ return (
                                     <Link
-                                      key={child.key}
-                                      href={getTenantNavHref(child.href, pathname, company?.slug)}
-                                      className={cn(
+ key={child.key}
+ href={getTenantNavHref(child.href, pathname, company?.slug)}
+ className={cn(
                                         'flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors bangla-text',
-                                        isSubActive
+ isSubActive
                                           ? 'bg-blue-600 text-white font-bold shadow-xs'
-                                          : 'text-muted-foreground hover:bg-muted hover:text-foreground dark:hover:text-white'
+                                          : 'text-muted-foreground hover:bg-muted hover:text-foreground dark:hover:text-foreground'
                                       )}
                                     >
                                       <ChildIcon className={cn('h-3.5 w-3.5 shrink-0', isSubActive ? 'text-white' : 'text-muted-foreground')} />
@@ -682,9 +662,8 @@ export function Sidebar() {
                             ) : (
                               <div className="p-1">
                                 <Link
-                                  href={getTenantNavHref(item.href, pathname, company?.slug)}
-                                  className="flex items-center gap-2 px-2.5 py-1.5 text-xs text-foreground hover:text-blue-600 bangla-text"
-                                >
+ href={getTenantNavHref(item.href, pathname, company?.slug)}
+ className="flex items-center gap-2 px-2.5 py-1.5 text-xs text-foreground hover:text-blue-600 bangla-text">
                                   <span>Open {itemTitle}</span>
                                 </Link>
                               </div>
@@ -695,9 +674,9 @@ export function Sidebar() {
                         {/* Optional Visual Separator Below Item */}
                         {item.hasDividerBelow && (
                           <div
-                            className={cn(
+ className={cn(
                               'h-px bg-muted/80 my-2',
-                              collapsed ? 'mx-2' : 'mx-1.5'
+ collapsed ? 'mx-2' : 'mx-1.5'
                             )}
                           />
                         )}
@@ -726,7 +705,7 @@ export function Sidebar() {
             <div className="rounded-lg bg-muted/40 p-2.5 border border-border space-y-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1.5 min-w-0">
-                  <Crown className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+                  <Crown className="h-3.5 w-3.5 text-amber-500 shrink-0"/>
                   <span className="text-xs font-bold text-foreground truncate bangla-text">
                     {tBilingual(currentPlan?.name || 'Free Trial', currentPlan?.name_bn || 'ফ্রি ট্রায়াল')}
                   </span>
@@ -737,19 +716,17 @@ export function Sidebar() {
               </div>
 
               <button
-                type="button"
-                onClick={() => openUpgradeModal('business')}
-                className="w-full flex items-center justify-center gap-1.5 py-1.5 px-2.5 rounded-lg bg-primary text-primary-foreground text-xs font-semibold shadow-xs hover:bg-primary/90 transition-colors cursor-pointer bangla-text"
-              >
-                <Crown className="h-3.5 w-3.5 text-amber-300" />
+ type="button"onClick={() => openUpgradeModal('business')}
+ className="w-full flex items-center justify-center gap-1.5 py-1.5 px-2.5 rounded-lg bg-primary text-primary-foreground text-xs font-semibold shadow-xs hover:bg-primary/90 transition-colors cursor-pointer bangla-text">
+                <Crown className="h-3.5 w-3.5 text-amber-300"/>
                 <span>{tBilingual('Upgrade Plan', 'প্ল্যান আপগ্রেড')}</span>
               </button>
             </div>
           ) : (
-            currentPlan && (
+ currentPlan && (
               <div className="rounded-xl bg-muted p-2.5 border border-border flex items-center justify-between">
                 <div className="flex items-center gap-1.5 min-w-0">
-                  <Sparkles className="h-3.5 w-3.5 text-indigo-500 shrink-0" />
+                  <Sparkles className="h-3.5 w-3.5 text-indigo-500 shrink-0"/>
                   <div className="truncate">
                     <span className="text-xs font-bold text-foreground block truncate bangla-text">
                       {tBilingual(currentPlan.name, currentPlan.name_bn)}
@@ -758,10 +735,8 @@ export function Sidebar() {
                 </div>
                 {currentPlan.code !== 'enterprise' && (
                   <button
-                    type="button"
-                    onClick={() => openUpgradeModal('enterprise')}
-                    className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline bangla-text cursor-pointer shrink-0 ml-1.5"
-                  >
+ type="button"onClick={() => openUpgradeModal('enterprise')}
+ className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline bangla-text cursor-pointer shrink-0 ml-1.5">
                     {tBilingual('Upgrade', 'আপগ্রেড')}
                   </button>
                 )}
@@ -771,11 +746,10 @@ export function Sidebar() {
 
           {/* Support Desk Link */}
           <Link
-            href={getTenantNavHref('/support', pathname, company?.slug)}
-            className="flex items-center justify-between rounded-xl bg-muted px-2.5 py-2 border border-border hover:border-blue-300 hover:bg-muted dark:hover:bg-muted/90 transition-all group cursor-pointer"
-          >
+ href={getTenantNavHref('/support', pathname, company?.slug)}
+ className="flex items-center justify-between rounded-xl bg-muted px-2.5 py-2 border border-border hover:border-blue-300 hover:bg-muted dark:hover:bg-muted/90 transition-all group cursor-pointer">
             <div className="flex items-center gap-2 min-w-0">
-              <Headphones className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400 shrink-0 group-hover:scale-110 transition-transform" />
+              <Headphones className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400 shrink-0 group-hover:scale-110 transition-transform"/>
               <div className="truncate">
                 <p className="text-xs font-bold text-foreground group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate bangla-text">
                   {tBilingual('Help & Support', 'সহায়তা ও সাপোর্ট')}
@@ -785,23 +759,21 @@ export function Sidebar() {
                 </p>
               </div>
             </div>
-            <ChevronRight className="h-3.5 w-3.5 text-muted-foreground group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors shrink-0" />
+            <ChevronRight className="h-3.5 w-3.5 text-muted-foreground group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors shrink-0"/>
           </Link>
 
           {/* Reset All Data Button */}
           <button
-            type="button"
-            onClick={() => setResetModalOpen(true)}
-            className="w-full flex items-center justify-between rounded-xl bg-rose-50/60 dark:bg-rose-950/20 px-2.5 py-1.5 border border-rose-200/80 dark:border-rose-900/40 hover:bg-rose-100/80 dark:hover:bg-rose-900/40 text-rose-700 dark:text-rose-300 transition-all group cursor-pointer"
-          >
+ type="button"onClick={() => setResetModalOpen(true)}
+ className="w-full flex items-center justify-between rounded-xl bg-rose-50/60 dark:bg-rose-950/20 px-2.5 py-1.5 border border-rose-200/80 dark:border-rose-900/40 hover:bg-rose-100/80 dark:hover:bg-rose-900/40 text-rose-700 dark:text-rose-300 transition-all group cursor-pointer">
             <div className="flex items-center gap-2 min-w-0">
-              <RotateCcw className="h-3.5 w-3.5 text-rose-600 dark:text-rose-400 shrink-0 group-hover:rotate-[-45deg] transition-transform" />
+              <RotateCcw className="h-3.5 w-3.5 text-rose-600 dark:text-rose-400 shrink-0 group-hover:rotate-[-45deg] transition-transform"/>
               <span className="text-xs font-bold truncate bangla-text">
                 {tBilingual('Reset All Data', 'সব ডাটা রিসেট')}
               </span>
             </div>
             <Badge className="text-2xs bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-300 dark:border-rose-800 tabular-nums px-1 py-0 shrink-0">
-              Zero State
+ Zero State
             </Badge>
           </button>
         </div>
@@ -811,23 +783,21 @@ export function Sidebar() {
       {collapsed && (
         <div className="shrink-0 border-t border-border p-2 flex justify-center">
           <button
-            type="button"
-            onClick={() => setResetModalOpen(true)}
-            className="h-9 w-9 rounded-xl flex items-center justify-center text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 hover:text-rose-600 transition-colors cursor-pointer"
-            title={tBilingual('Reset All Data', 'সব তথ্য রিসেট')}
+ type="button"onClick={() => setResetModalOpen(true)}
+ className="h-9 w-9 rounded-xl flex items-center justify-center text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 hover:text-rose-600 transition-colors cursor-pointer"title={tBilingual('Reset All Data', 'সব তথ্য রিসেট')}
           >
-            <RotateCcw className="h-4 w-4" />
+            <RotateCcw className="h-4 w-4"/>
           </button>
         </div>
       )}
 
       {/* Reset Confirmation Dialog */}
       <ResetTenantDataModal
-        open={resetModalOpen}
-        onOpenChange={setResetModalOpen}
-        companyId={company?.id || ''}
-        companySlug={company?.slug || ''}
-        companyName={company?.name || 'Your Business'}
+ open={resetModalOpen}
+ onOpenChange={setResetModalOpen}
+ companyId={company?.id || ''}
+ companySlug={company?.slug || ''}
+ companyName={company?.name || 'Your Business'}
       />
     </aside>
   )

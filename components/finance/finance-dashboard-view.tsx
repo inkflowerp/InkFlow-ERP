@@ -2,27 +2,27 @@
 
 import React, { useState } from 'react'
 import {
-  Wallet,
-  Building2,
-  Smartphone,
-  Plus,
-  ArrowDownLeft,
-  ArrowUpRight,
-  ArrowLeftRight,
-  Clock,
-  Users,
-  ShoppingBag,
-  TrendingDown,
-  TrendingUp,
-  Receipt,
-  Phone,
-  MessageCircle,
-  ExternalLink,
-  ChevronRight,
-  ShieldCheck,
-  CheckCircle2,
-  AlertTriangle,
-  Calendar,
+ Wallet,
+ Building2,
+ Smartphone,
+ Plus,
+ ArrowDownLeft,
+ ArrowUpRight,
+ ArrowLeftRight,
+ Clock,
+ Users,
+ ShoppingBag,
+ TrendingDown,
+ TrendingUp,
+ Receipt,
+ Phone,
+ MessageCircle,
+ ExternalLink,
+ ChevronRight,
+ ShieldCheck,
+ CheckCircle2,
+ AlertTriangle,
+ Calendar,
 } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -31,124 +31,124 @@ import { KpiCard, KpiGrid } from '@/components/shared/kpi-card'
 import { useI18n } from '@/i18n/context'
 import { formatBDT } from '@/lib/formatters'
 import type {
-  AccountRecord,
-  FinancialDashboardMetrics,
-  FinancialTransactionRecord,
-  ReceivablesAgingSummary,
-  PayablesAgingSummary,
+ AccountRecord,
+ FinancialDashboardMetrics,
+ FinancialTransactionRecord,
+ ReceivablesAgingSummary,
+ PayablesAgingSummary,
 } from '@/types/finance.types'
 
 export interface FinanceDashboardViewProps {
-  metrics: FinancialDashboardMetrics | null
-  receivables: ReceivablesAgingSummary | null
-  payables: PayablesAgingSummary | null
-  accounts: AccountRecord[]
-  recentTransactions?: FinancialTransactionRecord[]
-  onOpenMoneyIn: () => void
-  onOpenSpendModal: () => void
-  onOpenTransferModal: () => void
-  onOpenCashClosingModal: () => void
-  onNavigateTab: (tab: string) => void
-  onCollectCustomerDue?: (customerId: string, customerName: string, dueAmount: number) => void
-  onPaySupplier?: (supplierId: string, supplierName: string, dueAmount: number) => void
+ metrics: FinancialDashboardMetrics | null
+ receivables: ReceivablesAgingSummary | null
+ payables: PayablesAgingSummary | null
+ accounts: AccountRecord[]
+ recentTransactions?: FinancialTransactionRecord[]
+ onOpenMoneyIn: () => void
+ onOpenSpendModal: () => void
+ onOpenTransferModal: () => void
+ onOpenCashClosingModal: () => void
+ onNavigateTab: (tab: string) => void
+ onCollectCustomerDue?: (customerId: string, customerName: string, dueAmount: number) => void
+ onPaySupplier?: (supplierId: string, supplierName: string, dueAmount: number) => void
 }
 
 export function FinanceDashboardView({
-  metrics,
-  receivables,
-  payables,
-  accounts,
-  recentTransactions = [],
-  onOpenMoneyIn,
-  onOpenSpendModal,
-  onOpenTransferModal,
-  onOpenCashClosingModal,
-  onNavigateTab,
-  onCollectCustomerDue,
-  onPaySupplier,
+ metrics,
+ receivables,
+ payables,
+ accounts,
+ recentTransactions = [],
+ onOpenMoneyIn,
+ onOpenSpendModal,
+ onOpenTransferModal,
+ onOpenCashClosingModal,
+ onNavigateTab,
+ onCollectCustomerDue,
+ onPaySupplier,
 }: FinanceDashboardViewProps) {
-  const { tBilingual } = useI18n()
+ const { tBilingual } = useI18n()
 
   // Calculate actual liquidity totals from accounts or metrics fallback
-  let rawCashBalance = 0
-  let rawBankBalance = 0
-  let rawMfsBalance = 0
+ let rawCashBalance = 0
+ let rawBankBalance = 0
+ let rawMfsBalance = 0
 
-  for (const acc of accounts) {
-    const bal = Number(acc.current_balance || 0)
-    if (acc.account_subtype === 'CASH' || acc.code === '1010') {
-      rawCashBalance += bal
+ for (const acc of accounts) {
+ const bal = Number(acc.current_balance || 0)
+ if (acc.account_subtype === 'CASH' || acc.code === '1010') {
+ rawCashBalance += bal
     } else if (acc.account_subtype === 'BANK') {
-      rawBankBalance += bal
+ rawBankBalance += bal
     } else if (acc.account_subtype === 'MFS') {
-      rawMfsBalance += bal
+ rawMfsBalance += bal
     }
   }
 
   // Fallback to metrics if accounts array is not yet loaded
-  if (rawCashBalance === 0 && (metrics?.total_cash_balance ?? 0) > 0) {
-    rawCashBalance = metrics!.total_cash_balance
+ if (rawCashBalance === 0 && (metrics?.total_cash_balance ?? 0) > 0) {
+ rawCashBalance = metrics!.total_cash_balance
   }
-  if (rawBankBalance === 0 && (metrics?.total_bank_balance ?? 0) > 0) {
-    rawBankBalance = metrics!.total_bank_balance
+ if (rawBankBalance === 0 && (metrics?.total_bank_balance ?? 0) > 0) {
+ rawBankBalance = metrics!.total_bank_balance
   }
-  if (rawMfsBalance === 0 && (metrics?.total_mfs_balance ?? 0) > 0) {
-    rawMfsBalance = metrics!.total_mfs_balance
+ if (rawMfsBalance === 0 && (metrics?.total_mfs_balance ?? 0) > 0) {
+ rawMfsBalance = metrics!.total_mfs_balance
   }
 
   // Actual liquid account figures
-  const cashBalance = rawCashBalance
-  const bankBalance = rawBankBalance
-  const mfsBalance = rawMfsBalance
-  const totalAvailable = cashBalance + bankBalance + mfsBalance
+ const cashBalance = rawCashBalance
+ const bankBalance = rawBankBalance
+ const mfsBalance = rawMfsBalance
+ const totalAvailable = cashBalance + bankBalance + mfsBalance
 
   // Operational metrics
-  const totalReceivables = metrics?.total_receivables ?? receivables?.total_receivable ?? 0
-  const totalPayables = metrics?.total_payables ?? payables?.total_payable ?? 0
+ const totalReceivables = metrics?.total_receivables ?? receivables?.total_receivable ?? 0
+ const totalPayables = metrics?.total_payables ?? payables?.total_payable ?? 0
 
   // Today's numbers
-  const todayDate = new Date().toISOString().split('T')[0]
-  const todayTrend = metrics?.daily_trends?.find((d) => d.date === todayDate)
-  const todayCollection = todayTrend ? todayTrend.income : (metrics?.total_payments_received ? Math.round(metrics.total_payments_received * 0.12) : 0)
-  const todayExpense = todayTrend ? todayTrend.expense : (metrics?.monthly_expenses ? Math.round(metrics.monthly_expenses * 0.08) : 0)
+ const todayDate = new Date().toISOString().split('T')[0]
+ const todayTrend = metrics?.daily_trends?.find((d) => d.date === todayDate)
+ const todayCollection = todayTrend ? todayTrend.income : (metrics?.total_payments_received ? Math.round(metrics.total_payments_received * 0.12) : 0)
+ const todayExpense = todayTrend ? todayTrend.expense : (metrics?.monthly_expenses ? Math.round(metrics.monthly_expenses * 0.08) : 0)
 
   // Top overdue customers
-  const overdueCustomers = (metrics?.top_receivables && metrics.top_receivables.length > 0)
+ const overdueCustomers = (metrics?.top_receivables && metrics.top_receivables.length > 0)
     ? metrics.top_receivables.slice(0, 5)
     : []
 
   // Top supplier dues
-  const supplierDues = (metrics?.top_payables && metrics.top_payables.length > 0)
+ const supplierDues = (metrics?.top_payables && metrics.top_payables.length > 0)
     ? metrics.top_payables.slice(0, 5)
     : []
 
   // Unified recent transactions list
-  const txnsList = (metrics?.recent_transactions && metrics.recent_transactions.length > 0)
+ const txnsList = (metrics?.recent_transactions && metrics.recent_transactions.length > 0)
     ? metrics.recent_transactions.slice(0, 8)
     : recentTransactions.length > 0
     ? recentTransactions.map((t) => ({
-        id: t.id,
-        type: t.transaction_type,
-        title: t.narration || t.transaction_number,
-        subtitle: t.transaction_type.replace(/_/g, ' '),
-        amount: Number(t.total_amount || 0),
-        isCredit: t.transaction_type === 'CUSTOMER_PAYMENT',
-        time: t.transaction_date || 'Today',
-        date: t.transaction_date || 'Today',
-        color: t.transaction_type === 'CUSTOMER_PAYMENT' ? 'emerald' : t.transaction_type === 'EXPENSE' ? 'rose' : 'blue',
+ id: t.id,
+ type: t.transaction_type,
+ title: t.narration || t.transaction_number,
+ subtitle: t.transaction_type.replace(/_/g, ' '),
+ amount: Number(t.total_amount || 0),
+ isCredit: t.transaction_type === 'CUSTOMER_PAYMENT',
+ time: t.transaction_date || 'Today',
+ date: t.transaction_date || 'Today',
+ color: t.transaction_type === 'CUSTOMER_PAYMENT' ? 'emerald' : t.transaction_type === 'EXPENSE' ? 'rose' : 'blue',
       }))
     : []
 
-  return (
+ return (
     <div className="space-y-6">
       {/* 1. HERO LIQUID ACCOUNTS CARD & BALANCE BAR */}
-      <div className="rounded-2xl bg-card p-5 sm:p-6 shadow-xs border border-border">
+      <div className="rounded-xl bg-card p-5 sm:p-6 shadow-xs border border-border">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           {/* Total Available Liquid Capital */}
           <div>
             <div className="flex items-center gap-2 mb-1.5">
               <span className="p-1.5 rounded-lg bg-muted text-muted-foreground">
-                <Wallet className="w-4 h-4" />
+                <Wallet className="w-4 h-4"/>
               </span>
               <span className="text-xs font-semibold tracking-wider uppercase text-muted-foreground">
                 {tBilingual('Total Available Cash & Bank', 'মোট উপলব্ধ নগদ ও ব্যাংক তহবিল')}
@@ -158,9 +158,9 @@ export function FinanceDashboardView({
               <span className="text-3xl sm:text-4xl font-black tabular-nums tracking-tight text-foreground">
                 ৳{totalAvailable.toLocaleString()}
               </span>
-              <Badge variant="outline" className="text-2xs font-semibold">
-                <ShieldCheck className="w-3 h-3 mr-1" />
-                {tBilingual('100% Liquid', 'তাৎক্ষণিক ব্যবহারযোগ্য')}
+              <Badge variant="outline"className="text-2xs font-semibold">
+                <ShieldCheck className="w-3 h-3 mr-1"/>
+                {tBilingual('In Cash & Bank', 'তাৎক্ষণিক ব্যবহারযোগ্য')}
               </Badge>
             </div>
             <p className="text-xs text-muted-foreground mt-1 bangla-text">
@@ -174,38 +174,30 @@ export function FinanceDashboardView({
           {/* Quick Action Buttons */}
           <div className="flex flex-wrap items-center gap-2">
             <Button
-              variant="success"
-              onClick={onOpenMoneyIn}
-              className="text-xs h-9 px-4 gap-2"
-            >
-              <Plus className="w-4 h-4" />
+ variant="success"onClick={onOpenMoneyIn}
+ className="text-xs h-9 px-4 gap-2">
+              <Plus className="w-4 h-4"/>
               <span>{tBilingual('+ Money In', '+ টাকা জমা')}</span>
             </Button>
 
             <Button
-              variant="destructive"
-              onClick={onOpenSpendModal}
-              className="text-xs h-9 px-4 gap-2"
-            >
-              <TrendingDown className="w-4 h-4" />
+ variant="destructive"onClick={onOpenSpendModal}
+ className="text-xs h-9 px-4 gap-2">
+              <TrendingDown className="w-4 h-4"/>
               <span>{tBilingual('- Money Out', '- খরচ / ব্যয়')}</span>
             </Button>
 
             <Button
-              variant="outline"
-              onClick={onOpenTransferModal}
-              className="text-xs h-9 px-4 gap-2"
-            >
-              <ArrowLeftRight className="w-4 h-4" />
+ variant="outline"onClick={onOpenTransferModal}
+ className="text-xs h-9 px-4 gap-2">
+              <ArrowLeftRight className="w-4 h-4"/>
               <span>{tBilingual('Transfer', 'ট্রান্সফার')}</span>
             </Button>
 
             <Button
-              variant="outline"
-              onClick={onOpenCashClosingModal}
-              className="text-xs h-9 px-4 gap-2"
-            >
-              <Clock className="w-4 h-4" />
+ variant="outline"onClick={onOpenCashClosingModal}
+ className="text-xs h-9 px-4 gap-2">
+              <Clock className="w-4 h-4"/>
               <span>{tBilingual('Daily Closing', 'ক্যাশ ক্লোজিং')}</span>
             </Button>
           </div>
@@ -215,12 +207,11 @@ export function FinanceDashboardView({
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-5 pt-5 border-t border-border">
           {/* Cash Balance */}
           <div
-            onClick={() => onNavigateTab('cash-bank')}
-            className="p-3.5 rounded-xl bg-muted/50 hover:bg-muted border border-border transition-all cursor-pointer flex items-center justify-between"
-          >
+ onClick={() => onNavigateTab('cash-bank')}
+ className="p-3.5 rounded-xl bg-muted/50 hover:bg-muted border border-border transition-all cursor-pointer flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
-                <Wallet className="w-4.5 h-4.5" />
+                <Wallet className="w-4.5 h-4.5"/>
               </div>
               <div>
                 <span className="text-2xs font-semibold text-muted-foreground block uppercase tracking-wider">
@@ -231,17 +222,16 @@ export function FinanceDashboardView({
                 </span>
               </div>
             </div>
-            <ChevronRight className="w-4 h-4 text-muted-foreground" />
+            <ChevronRight className="w-4 h-4 text-muted-foreground"/>
           </div>
 
           {/* Bank Balance */}
           <div
-            onClick={() => onNavigateTab('cash-bank')}
-            className="p-3.5 rounded-xl bg-muted/50 hover:bg-muted border border-border transition-all cursor-pointer flex items-center justify-between"
-          >
+ onClick={() => onNavigateTab('cash-bank')}
+ className="p-3.5 rounded-xl bg-muted/50 hover:bg-muted border border-border transition-all cursor-pointer flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
-                <Building2 className="w-4.5 h-4.5" />
+                <Building2 className="w-4.5 h-4.5"/>
               </div>
               <div>
                 <span className="text-2xs font-semibold text-muted-foreground block uppercase tracking-wider">
@@ -252,17 +242,16 @@ export function FinanceDashboardView({
                 </span>
               </div>
             </div>
-            <ChevronRight className="w-4 h-4 text-muted-foreground" />
+            <ChevronRight className="w-4 h-4 text-muted-foreground"/>
           </div>
 
           {/* MFS Balance */}
           <div
-            onClick={() => onNavigateTab('cash-bank')}
-            className="p-3.5 rounded-xl bg-muted/50 hover:bg-muted border border-border transition-all cursor-pointer flex items-center justify-between"
-          >
+ onClick={() => onNavigateTab('cash-bank')}
+ className="p-3.5 rounded-xl bg-muted/50 hover:bg-muted border border-border transition-all cursor-pointer flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-lg bg-pink-500/10 text-pink-600 dark:text-pink-400 flex items-center justify-center shrink-0">
-                <Smartphone className="w-4.5 h-4.5" />
+                <Smartphone className="w-4.5 h-4.5"/>
               </div>
               <div>
                 <span className="text-2xs font-semibold text-muted-foreground block uppercase tracking-wider">
@@ -273,7 +262,7 @@ export function FinanceDashboardView({
                 </span>
               </div>
             </div>
-            <ChevronRight className="w-4 h-4 text-muted-foreground" />
+            <ChevronRight className="w-4 h-4 text-muted-foreground"/>
           </div>
         </div>
       </div>
@@ -282,68 +271,48 @@ export function FinanceDashboardView({
       <KpiGrid columns={4}>
         {/* Receivable */}
         <KpiCard
-          titleEn="Customer Due (Receivable)"
-          titleBn="গ্রাহকের বকেয়া (পাওনা)"
-          value={totalReceivables}
-          isCurrency={true}
-          icon={Users}
-          colorVariant="amber"
-          subtitleEn="Pending collections"
-          subtitleBn="আদায়যোগ্য বিল"
-          onClick={() => onNavigateTab('receivables')}
+ titleEn="Customer Due (Receivable)"titleBn="গ্রাহকের বকেয়া (পাওনা)"value={totalReceivables}
+ isCurrency={true}
+ icon={Users}
+ colorVariant="amber"subtitleEn="Pending collections"subtitleBn="আদায়যোগ্য বিল"onClick={() => onNavigateTab('receivables')}
         />
 
         {/* Payable */}
         <KpiCard
-          titleEn="Supplier Due (Payable)"
-          titleBn="মহাজনের দেনা (প্রদেয়)"
-          value={totalPayables}
-          isCurrency={true}
-          icon={ShoppingBag}
-          colorVariant="rose"
-          subtitleEn="Material & paper bills"
-          subtitleBn="কাঁচামাল ও কাগজের দেনা"
-          onClick={() => onNavigateTab('payables')}
+ titleEn="Supplier Due (Payable)"titleBn="মহাজনের দেনা (প্রদেয়)"value={totalPayables}
+ isCurrency={true}
+ icon={ShoppingBag}
+ colorVariant="rose"subtitleEn="Material & paper bills"subtitleBn="কাঁচামাল ও কাগজের দেনা"onClick={() => onNavigateTab('payables')}
         />
 
         {/* Today's Collection */}
         <KpiCard
-          titleEn="Today's Collection"
-          titleBn="আজকের জমা (Money In)"
-          value={todayCollection}
-          isCurrency={true}
-          icon={ArrowDownLeft}
-          colorVariant="emerald"
-          subtitleEn="Collected today"
-          subtitleBn="আজকের মোট আদায়"
-          onClick={() => onNavigateTab('transactions')}
+ titleEn="Today's Collection"titleBn="আজকের জমা (Money In)"value={todayCollection}
+ isCurrency={true}
+ icon={ArrowDownLeft}
+ colorVariant="emerald"subtitleEn="Collected today"subtitleBn="আজকের মোট আদায়"onClick={() => onNavigateTab('transactions')}
         />
 
         {/* Today's Expense */}
         <KpiCard
-          titleEn="Today's Expense"
-          titleBn="আজকের খরচ (Money Out)"
-          value={todayExpense}
-          isCurrency={true}
-          icon={ArrowUpRight}
-          colorVariant="rose"
-          subtitleEn="Spent today"
-          subtitleBn="আজকের মোট ব্যয়"
-          onClick={() => onNavigateTab('expenses')}
+ titleEn="Today's Expense"titleBn="আজকের খরচ (Money Out)"value={todayExpense}
+ isCurrency={true}
+ icon={ArrowUpRight}
+ colorVariant="rose"subtitleEn="Spent today"subtitleBn="আজকের মোট ব্যয়"onClick={() => onNavigateTab('expenses')}
         />
       </KpiGrid>
 
       {/* 3. TWO-COLUMN OPERATIONAL STREAM: OVERDUE CUSTOMERS & SUPPLIER DUES */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Overdue Customers Alert Table */}
-        <Card className="rounded-2xl border-border shadow-xs overflow-hidden">
+        <Card className="rounded-xl border-border shadow-xs overflow-hidden">
           <CardHeader className="pb-3 border-b border-border flex flex-row items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-950/50 text-amber-600 flex items-center justify-center">
-                <Users className="w-4 h-4" />
+                <Users className="w-4 h-4"/>
               </div>
               <div>
-                <CardTitle className="text-sm font-bold text-foreground dark:text-foreground">
+                <CardTitle className="text-sm font-bold text-foreground">
                   {tBilingual('Overdue Customers', 'বকেয়া গ্রাহকের তালিকা')}
                 </CardTitle>
                 <p className="text-2xs text-muted-foreground">
@@ -352,11 +321,8 @@ export function FinanceDashboardView({
               </div>
             </div>
             <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onNavigateTab('receivables')}
-              className="text-xs h-7 text-blue-600 hover:text-blue-700"
-            >
+ variant="ghost"size="sm"onClick={() => onNavigateTab('receivables')}
+ className="text-xs h-7 text-blue-600 hover:text-blue-700">
               {tBilingual('View All', 'সব দেখুন')}
             </Button>
           </CardHeader>
@@ -386,24 +352,17 @@ export function FinanceDashboardView({
                     <div className="flex items-center gap-1.5">
                       {cust.phone && (
                         <a
-                          href={`https://wa.me/88${cust.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(
+ href={`https://wa.me/88${cust.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(
                             `আসসালামু আলাইকুম ${cust.name}, PrintERP থেকে জানানো যাচ্ছে যে আপনার ৳${cust.amount.toLocaleString()} টাকা বকেয়া বিল রয়েছে। অনুগ্রহ করে পরিশোধের ব্যবস্থা করবেন। ধন্যবাদ।`
                           )}`}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="p-1.5 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-400 transition-colors"
-                          title="Send WhatsApp Reminder"
-                        >
-                          <MessageCircle className="w-3.5 h-3.5" />
+ target="_blank"rel="noreferrer"className="p-1.5 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-400 transition-colors"title="Send WhatsApp Reminder">
+                          <MessageCircle className="w-3.5 h-3.5"/>
                         </a>
                       )}
 
                       <Button
-                        size="xs"
-                        variant="warning"
-                        onClick={() => onCollectCustomerDue?.(cust.id, cust.name, cust.amount)}
-                        className="text-2xs"
-                      >
+ size="xs"variant="warning"onClick={() => onCollectCustomerDue?.(cust.id, cust.name, cust.amount)}
+ className="text-2xs">
                         {tBilingual('Collect', 'আদায়')}
                       </Button>
                     </div>
@@ -413,7 +372,7 @@ export function FinanceDashboardView({
 
               {overdueCustomers.length === 0 && (
                 <div className="p-6 text-center text-xs text-muted-foreground">
-                  <CheckCircle2 className="w-8 h-8 text-emerald-500 mx-auto mb-2 opacity-80" />
+                  <CheckCircle2 className="w-8 h-8 text-emerald-500 mx-auto mb-2 opacity-80"/>
                   <p>{tBilingual('No overdue customer payments. Excellent collection!', 'কোনো বকেয়া গ্রাহক নেই। চমৎকার কালেকশন!')}</p>
                 </div>
               )}
@@ -422,15 +381,15 @@ export function FinanceDashboardView({
         </Card>
 
         {/* Supplier Dues Alert Table */}
-        <Card className="rounded-2xl border-border shadow-xs overflow-hidden">
+        <Card className="rounded-xl border-border shadow-xs overflow-hidden">
           <CardHeader className="pb-3 border-b border-border flex flex-row items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-lg bg-rose-100 dark:bg-rose-950/50 text-rose-600 flex items-center justify-center">
-                <ShoppingBag className="w-4 h-4" />
+                <ShoppingBag className="w-4 h-4"/>
               </div>
               <div>
-                <CardTitle className="text-sm font-bold text-foreground dark:text-foreground">
-                  {tBilingual('Supplier Dues (Payables)', 'সরবরাহকারী মহাজন পাওনা')}
+                <CardTitle className="text-sm font-bold text-foreground">
+                  {tBilingual('Supplier Due', 'সরবরাহকারী মহাজন পাওনা')}
                 </CardTitle>
                 <p className="text-2xs text-muted-foreground">
                   {tBilingual('Outstanding supplier raw material & paper bills', 'কাঁচামাল ও কাগজের বকেয়া বিল')}
@@ -438,11 +397,8 @@ export function FinanceDashboardView({
               </div>
             </div>
             <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onNavigateTab('payables')}
-              className="text-xs h-7 text-rose-600 hover:text-rose-700"
-            >
+ variant="ghost"size="sm"onClick={() => onNavigateTab('payables')}
+ className="text-xs h-7 text-rose-600 hover:text-rose-700">
               {tBilingual('View All', 'সব দেখুন')}
             </Button>
           </CardHeader>
@@ -468,11 +424,8 @@ export function FinanceDashboardView({
                     </div>
 
                     <Button
-                      size="xs"
-                      variant="destructive"
-                      onClick={() => onPaySupplier?.(supp.id, supp.name, supp.amount)}
-                      className="text-2xs"
-                    >
+ size="xs"variant="destructive"onClick={() => onPaySupplier?.(supp.id, supp.name, supp.amount)}
+ className="text-2xs">
                       {tBilingual('Pay', 'পরিশোধ')}
                     </Button>
                   </div>
@@ -481,7 +434,7 @@ export function FinanceDashboardView({
 
               {supplierDues.length === 0 && (
                 <div className="p-6 text-center text-xs text-muted-foreground">
-                  <CheckCircle2 className="w-8 h-8 text-emerald-500 mx-auto mb-2 opacity-80" />
+                  <CheckCircle2 className="w-8 h-8 text-emerald-500 mx-auto mb-2 opacity-80"/>
                   <p>{tBilingual('All supplier accounts are settled!', 'সকল মহাজন বিল পরিশোধিত রয়েছে!')}</p>
                 </div>
               )}
@@ -491,14 +444,14 @@ export function FinanceDashboardView({
       </div>
 
       {/* 4. RECENT TRANSACTIONS (ONE UNIFIED LEDGER STREAM) */}
-      <Card className="rounded-2xl border-border shadow-xs overflow-hidden">
+      <Card className="rounded-xl border-border shadow-xs overflow-hidden">
         <CardHeader className="pb-3 border-b border-border flex flex-row items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-950/50 text-blue-600 flex items-center justify-center">
-              <Receipt className="w-4 h-4" />
+              <Receipt className="w-4 h-4"/>
             </div>
             <div>
-              <CardTitle className="text-sm font-bold text-foreground dark:text-foreground">
+              <CardTitle className="text-sm font-bold text-foreground">
                 {tBilingual('Recent Transactions', 'সাম্প্রতিক লেনদেন লেজার')}
               </CardTitle>
               <p className="text-2xs text-muted-foreground">
@@ -507,18 +460,15 @@ export function FinanceDashboardView({
             </div>
           </div>
           <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onNavigateTab('transactions')}
-            className="text-xs h-8 rounded-xl font-semibold text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-900"
-          >
-            {tBilingual('Open Full Ledger →', 'সম্পূর্ণ লেজার দেখুন →')}
+ variant="outline"size="sm"onClick={() => onNavigateTab('transactions')}
+ className="text-xs h-8 rounded-xl font-semibold text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-900">
+            {tBilingual('View All Transactions →', 'সম্পূর্ণ লেজার দেখুন →')}
           </Button>
         </CardHeader>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-muted text-foreground font-semibold border-b border-border dark:border-border">
+              <thead className="bg-muted text-foreground font-semibold border-b border-border">
                 <tr>
                   <th className="p-3">{tBilingual('Date', 'তারিখ')}</th>
                   <th className="p-3">{tBilingual('Type', 'ধরন')}</th>
@@ -533,13 +483,12 @@ export function FinanceDashboardView({
                     <td className="p-3 tabular-nums text-muted-foreground whitespace-nowrap">{t.date || t.time}</td>
                     <td className="p-3">
                       <Badge
-                        variant={t.isCredit ? 'success' : t.type === 'ACCOUNT_TRANSFER' ? 'info' : 'destructive'}
-                        size="xs"
-                      >
+ variant={t.isCredit ? 'success' : t.type === 'ACCOUNT_TRANSFER' ? 'info' : 'destructive'}
+ size="xs">
                         {t.isCredit ? 'Money In' : t.type === 'ACCOUNT_TRANSFER' ? 'Transfer' : 'Money Out'}
                       </Badge>
                     </td>
-                    <td className="p-3 font-medium text-foreground dark:text-foreground">
+                    <td className="p-3 font-medium text-foreground">
                       <div>{t.title}</div>
                       {t.subtitle && <div className="text-2xs text-muted-foreground truncate max-w-xs">{t.subtitle}</div>}
                     </td>

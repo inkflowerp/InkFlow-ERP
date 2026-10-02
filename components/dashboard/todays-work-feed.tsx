@@ -2,20 +2,20 @@
 
 import React, { useState } from 'react'
 import {
-  Clock,
-  Play,
-  Pause,
-  CheckCircle2,
-  AlertOctagon,
-  Printer,
-  Layers,
-  Truck,
-  Sparkles,
-  ChevronRight,
-  Filter,
-  Check,
-  User,
-  Calendar,
+ Clock,
+ Play,
+ Pause,
+ CheckCircle2,
+ AlertOctagon,
+ Printer,
+ Layers,
+ Truck,
+ Sparkles,
+ ChevronRight,
+ Filter,
+ Check,
+ User,
+ Calendar,
 } from 'lucide-react'
 import { useI18n } from '@/i18n/context'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -24,111 +24,111 @@ import { Badge } from '@/components/ui/badge'
 import { ReportProblemModal } from '@/components/production/report-problem-modal'
 import { ProductionTaskRecord } from '@/types/production.types'
 import {
-  startProductionTaskAction,
-  pauseProductionTaskAction,
-  completeProductionTaskAction,
+ startProductionTaskAction,
+ pauseProductionTaskAction,
+ completeProductionTaskAction,
 } from '@/actions/production-planning.actions'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 
 export interface TodaysWorkItem {
-  id: string
-  time: string
-  jobNumber: string
-  customerName: string
-  workTitle: string
-  dimensionsSpec: string
-  materialSpec: string
-  quantity: number
-  unit: string
-  stage: 'design' | 'printing' | 'finishing' | 'delivery'
-  status: 'queued' | 'in_progress' | 'paused' | 'completed'
-  priority?: 'normal' | 'urgent' | 'very_urgent'
-  assignedMachine?: string
+ id: string
+ time: string
+ jobNumber: string
+ customerName: string
+ workTitle: string
+ dimensionsSpec: string
+ materialSpec: string
+ quantity: number
+ unit: string
+ stage: 'design' | 'printing' | 'finishing' | 'delivery'
+ status: 'queued' | 'in_progress' | 'paused' | 'completed'
+ priority?: 'normal' | 'urgent' | 'very_urgent'
+ assignedMachine?: string
 }
 
 interface TodaysWorkFeedProps {
-  tasks?: ProductionTaskRecord[]
-  onRefresh?: () => void
-  onOpenNewWork?: () => void
+ tasks?: ProductionTaskRecord[]
+ onRefresh?: () => void
+ onOpenNewWork?: () => void
 }
 
 export function TodaysWorkFeed({ tasks = [], onRefresh, onOpenNewWork }: TodaysWorkFeedProps) {
-  const { tBilingual } = useI18n()
-  const [filter, setFilter] = useState<'all' | 'running' | 'queued' | 'urgent'>('all')
-  const [actionLoadingId, setActionLoadingId] = useState<string | null>(null)
-  const [problemTask, setProblemTask] = useState<ProductionTaskRecord | null>(null)
+ const { tBilingual } = useI18n()
+ const [filter, setFilter] = useState<'all' | 'running' | 'queued' | 'urgent'>('all')
+ const [actionLoadingId, setActionLoadingId] = useState<string | null>(null)
+ const [problemTask, setProblemTask] = useState<ProductionTaskRecord | null>(null)
 
   // Completion modal state
-  const [completingTask, setCompletingTask] = useState<ProductionTaskRecord | null>(null)
-  const [goodQty, setGoodQty] = useState(1)
-  const [scrapQty, setScrapQty] = useState(0)
-  const [isSubmittingComplete, setIsSubmittingComplete] = useState(false)
+ const [completingTask, setCompletingTask] = useState<ProductionTaskRecord | null>(null)
+ const [goodQty, setGoodQty] = useState(1)
+ const [scrapQty, setScrapQty] = useState(0)
+ const [isSubmittingComplete, setIsSubmittingComplete] = useState(false)
 
-  const handleStart = async (task: ProductionTaskRecord) => {
-    setActionLoadingId(task.id)
-    try {
-      await startProductionTaskAction(task.id, false, undefined, task)
-      onRefresh?.()
+ const handleStart = async (task: ProductionTaskRecord) => {
+ setActionLoadingId(task.id)
+ try {
+ await startProductionTaskAction(task.id, false, undefined, task)
+ onRefresh?.()
     } finally {
-      setActionLoadingId(null)
+ setActionLoadingId(null)
     }
   }
 
-  const handlePause = async (task: ProductionTaskRecord) => {
-    setActionLoadingId(task.id)
-    try {
-      await pauseProductionTaskAction(task.id, 'Operator Pause', undefined, task)
-      onRefresh?.()
+ const handlePause = async (task: ProductionTaskRecord) => {
+ setActionLoadingId(task.id)
+ try {
+ await pauseProductionTaskAction(task.id, 'Operator Pause', undefined, task)
+ onRefresh?.()
     } finally {
-      setActionLoadingId(null)
+ setActionLoadingId(null)
     }
   }
 
-  const handleOpenComplete = (task: ProductionTaskRecord) => {
-    setCompletingTask(task)
-    setGoodQty(task.quantity)
-    setScrapQty(0)
+ const handleOpenComplete = (task: ProductionTaskRecord) => {
+ setCompletingTask(task)
+ setGoodQty(task.quantity)
+ setScrapQty(0)
   }
 
-  const handleConfirmComplete = async () => {
-    if (!completingTask) return
-    setIsSubmittingComplete(true)
-    try {
-      await completeProductionTaskAction(
-        completingTask.id,
+ const handleConfirmComplete = async () => {
+ if (!completingTask) return
+ setIsSubmittingComplete(true)
+ try {
+ await completeProductionTaskAction(
+ completingTask.id,
         {
-          good_quantity: goodQty,
-          rejected_quantity: scrapQty,
+ good_quantity: goodQty,
+ rejected_quantity: scrapQty,
         },
-        undefined,
-        completingTask
+ undefined,
+ completingTask
       )
-      setCompletingTask(null)
-      onRefresh?.()
+ setCompletingTask(null)
+ onRefresh?.()
     } finally {
-      setIsSubmittingComplete(false)
+ setIsSubmittingComplete(false)
     }
   }
 
-  const filteredTasks = tasks.filter((t) => {
-    if (filter === 'running') return t.status === 'in_progress' || t.status === 'paused'
-    if (filter === 'queued') return t.status === 'queued' || t.status === 'scheduled' || t.status === 'ready'
-    if (filter === 'urgent') return t.priority === 'urgent' || t.priority === 'very_urgent'
-    return true
+ const filteredTasks = tasks.filter((t) => {
+ if (filter === 'running') return t.status === 'in_progress' || t.status === 'paused'
+ if (filter === 'queued') return t.status === 'queued' || t.status === 'scheduled' || t.status === 'ready'
+ if (filter === 'urgent') return t.priority === 'urgent' || t.priority === 'very_urgent'
+ return true
   })
 
-  return (
+ return (
     <div className="space-y-4">
       {/* Header & Filter Bar */}
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <h2 className="text-base font-bold text-foreground flex items-center gap-2">
-            <Clock className="h-5 w-5 text-blue-600" />
+            <Clock className="h-5 w-5 text-blue-600"/>
             <span>{tBilingual("Today's Schedule & Tasks", 'আজকের কাজের তালিকা')}</span>
           </h2>
-          <Badge variant="outline" className="text-xs tabular-nums font-bold bg-blue-50 text-blue-700 border-blue-200">
+          <Badge variant="outline"className="text-xs tabular-nums font-bold bg-blue-50 text-blue-700 border-blue-200">
             {tasks.length}
           </Badge>
         </div>
@@ -136,13 +136,12 @@ export function TodaysWorkFeed({ tasks = [], onRefresh, onOpenNewWork }: TodaysW
         <div className="flex items-center gap-1.5">
           {(['all', 'running', 'queued', 'urgent'] as const).map((f) => (
             <button
-              key={f}
-              type="button"
-              onClick={() => setFilter(f)}
-              className={`px-3 py-1 rounded-full text-xs font-semibold transition-all ${
-                filter === f
-                  ? 'bg-slate-900 text-white shadow-xs'
-                  : 'bg-muted text-muted-foreground hover:bg-muted dark:text-muted-foreground'
+ key={f}
+ type="button"onClick={() => setFilter(f)}
+ className={`px-3 py-1 rounded-full text-xs font-semibold transition-all ${
+ filter === f
+                  ? 'bg-surface-inset text-foreground shadow-xs'
+                  : 'bg-muted text-muted-foreground hover:bg-muted '
               }`}
             >
               {f === 'all' && tBilingual('All', 'সব')}
@@ -156,11 +155,11 @@ export function TodaysWorkFeed({ tasks = [], onRefresh, onOpenNewWork }: TodaysW
 
       {/* Task List */}
       {filteredTasks.length === 0 ? (
-        <Card className="border border-dashed border-input bg-muted dark:bg-card">
+        <Card className="border border-dashed border-input bg-muted">
           <CardContent className="p-8 text-center space-y-3">
-            <CheckCircle2 className="h-10 w-10 text-emerald-500 mx-auto" />
+            <CheckCircle2 className="h-10 w-10 text-emerald-500 mx-auto"/>
             <div>
-              <div className="text-sm font-bold text-foreground dark:text-foreground">
+              <div className="text-sm font-bold text-foreground">
                 {tBilingual('No active work in this filter', 'এই ফিল্টারে কোনো কাজ নেই')}
               </div>
               <p className="text-xs text-muted-foreground mt-0.5">
@@ -169,11 +168,8 @@ export function TodaysWorkFeed({ tasks = [], onRefresh, onOpenNewWork }: TodaysW
             </div>
             {onOpenNewWork && (
               <Button
-                type="button"
-                size="sm"
-                onClick={onOpenNewWork}
-                className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold"
-              >
+ type="button"size="sm"onClick={onOpenNewWork}
+ className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold">
                 + {tBilingual('Create New Work', 'নতুন কাজ যোগ করুন')}
               </Button>
             )}
@@ -182,20 +178,20 @@ export function TodaysWorkFeed({ tasks = [], onRefresh, onOpenNewWork }: TodaysW
       ) : (
         <div className="space-y-3">
           {filteredTasks.map((task) => {
-            const isRunning = task.status === 'in_progress'
-            const isPaused = task.status === 'paused'
-            const isCompleted = task.status === 'completed'
-            const isUrgent = task.priority === 'urgent' || task.priority === 'very_urgent'
+ const isRunning = task.status === 'in_progress'
+ const isPaused = task.status === 'paused'
+ const isCompleted = task.status === 'completed'
+ const isUrgent = task.priority === 'urgent' || task.priority === 'very_urgent'
 
-            return (
+ return (
               <Card
-                key={task.id}
-                className={`transition-all ${
-                  isRunning
+ key={task.id}
+ className={`transition-all ${
+ isRunning
                     ? 'border-2 border-blue-500 bg-blue-50/20 dark:bg-blue-950/20 shadow-sm'
                     : isPaused
                     ? 'border-2 border-amber-500 bg-amber-50/20 dark:bg-amber-950/20'
-                    : 'border border-border bg-card dark:bg-card'
+                    : 'border border-border bg-card '
                 }`}
               >
                 <CardContent className="p-4 space-y-3">
@@ -204,14 +200,14 @@ export function TodaysWorkFeed({ tasks = [], onRefresh, onOpenNewWork }: TodaysW
                     <div className="space-y-0.5 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <Badge
-                          className={`text-xs font-bold uppercase tracking-wider ${
-                            isRunning
+ className={`text-xs font-bold uppercase tracking-wider ${
+ isRunning
                               ? 'bg-blue-600 text-white'
                               : isPaused
                               ? 'bg-amber-600 text-white'
                               : isCompleted
                               ? 'bg-emerald-600 text-white'
-                              : 'bg-slate-700 text-white'
+                              : 'bg-card-elevated text-foreground'
                           }`}
                         >
                           #{task.job_number || task.task_number}
@@ -227,18 +223,18 @@ export function TodaysWorkFeed({ tasks = [], onRefresh, onOpenNewWork }: TodaysW
                       <h3 className="text-base font-bold text-foreground pt-0.5 truncate">
                         {task.task_name}
                       </h3>
-                      <p className="text-xs text-muted-foreground dark:text-muted-foreground">
+                      <p className="text-xs text-muted-foreground">
                         {task.customer_name} • {task.product_name}
                       </p>
                     </div>
 
                     <div className="text-right shrink-0">
-                      <div className="text-base font-bold tabular-nums text-foreground dark:text-foreground">
+                      <div className="text-base font-bold tabular-nums text-foreground">
                         {task.quantity} <span className="text-xs font-normal text-muted-foreground">{task.unit}</span>
                       </div>
                       {task.assigned_machine_name && (
                         <div className="text-2xs text-muted-foreground flex items-center justify-end gap-1">
-                          <Printer className="h-3 w-3" />
+                          <Printer className="h-3 w-3"/>
                           <span className="truncate max-w-[120px]">{task.assigned_machine_name}</span>
                         </div>
                       )}
@@ -249,49 +245,35 @@ export function TodaysWorkFeed({ tasks = [], onRefresh, onOpenNewWork }: TodaysW
                   <div className="pt-1 flex items-center justify-end gap-2">
                     {task.status === 'queued' || task.status === 'scheduled' || task.status === 'ready' ? (
                       <Button
-                        type="button"
-                        size="sm"
-                        disabled={actionLoadingId === task.id}
-                        onClick={() => handleStart(task)}
-                        className="h-10 text-xs font-bold bg-primary hover:bg-primary/90 text-primary-foreground px-5 shadow-xs"
-                      >
-                        <Play className="h-4 w-4 mr-1.5 fill-current" />
+ type="button"size="sm"disabled={actionLoadingId === task.id}
+ onClick={() => handleStart(task)}
+ className="h-10 text-xs font-bold bg-primary hover:bg-primary/90 text-primary-foreground px-5 shadow-xs">
+                        <Play className="h-4 w-4 mr-1.5 fill-current"/>
                         {tBilingual('Start Work', 'শুরু করুন')}
                       </Button>
                     ) : isRunning ? (
                       <div className="flex items-center gap-2 w-full justify-between">
                         <div className="flex items-center gap-2">
                           <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            disabled={actionLoadingId === task.id}
-                            onClick={() => handlePause(task)}
-                            className="h-10 text-xs font-bold border-amber-300 text-amber-800 hover:bg-amber-50"
-                          >
-                            <Pause className="h-4 w-4 mr-1" />
+ type="button"variant="outline"size="sm"disabled={actionLoadingId === task.id}
+ onClick={() => handlePause(task)}
+ className="h-10 text-xs font-bold border-amber-300 text-amber-800 hover:bg-amber-50">
+                            <Pause className="h-4 w-4 mr-1"/>
                             {tBilingual('Pause', 'স্থগিত')}
                           </Button>
                           <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setProblemTask(task)}
-                            className="h-10 text-xs font-bold border-rose-300 text-rose-800 hover:bg-rose-50"
-                          >
-                            <AlertOctagon className="h-4 w-4 mr-1 text-rose-600" />
+ type="button"variant="outline"size="sm"onClick={() => setProblemTask(task)}
+ className="h-10 text-xs font-bold border-rose-300 text-rose-800 hover:bg-rose-50">
+                            <AlertOctagon className="h-4 w-4 mr-1 text-rose-600"/>
                             {tBilingual('Report Issue', 'সমস্যা রিপোর্ট')}
                           </Button>
                         </div>
 
                         <Button
-                          type="button"
-                          size="sm"
-                          disabled={actionLoadingId === task.id}
-                          onClick={() => handleOpenComplete(task)}
-                          className="h-10 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white px-6 shadow-sm"
-                        >
-                          <CheckCircle2 className="h-4 w-4 mr-1.5" />
+ type="button"size="sm"disabled={actionLoadingId === task.id}
+ onClick={() => handleOpenComplete(task)}
+ className="h-10 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white px-6 shadow-sm">
+                          <CheckCircle2 className="h-4 w-4 mr-1.5"/>
                           {tBilingual('Complete', 'সম্পন্ন')}
                         </Button>
                       </div>
@@ -302,23 +284,16 @@ export function TodaysWorkFeed({ tasks = [], onRefresh, onOpenNewWork }: TodaysW
                         </span>
                         <div className="flex items-center gap-2">
                           <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setProblemTask(task)}
-                            className="h-9 text-xs font-semibold border-rose-200 text-rose-700"
-                          >
-                            <AlertOctagon className="h-3.5 w-3.5 mr-1" />
+ type="button"variant="outline"size="sm"onClick={() => setProblemTask(task)}
+ className="h-9 text-xs font-semibold border-rose-200 text-rose-700">
+                            <AlertOctagon className="h-3.5 w-3.5 mr-1"/>
                             {tBilingual('Report Issue', 'সমস্যা')}
                           </Button>
                           <Button
-                            type="button"
-                            size="sm"
-                            disabled={actionLoadingId === task.id}
-                            onClick={() => handleStart(task)}
-                            className="h-9 text-xs font-bold bg-primary hover:bg-primary/90 text-primary-foreground px-4"
-                          >
-                            <Play className="h-3.5 w-3.5 mr-1 fill-current" />
+ type="button"size="sm"disabled={actionLoadingId === task.id}
+ onClick={() => handleStart(task)}
+ className="h-9 text-xs font-bold bg-primary hover:bg-primary/90 text-primary-foreground px-4">
+                            <Play className="h-3.5 w-3.5 mr-1 fill-current"/>
                             {tBilingual('Resume', 'পুনরায় শুরু')}
                           </Button>
                         </div>
@@ -335,12 +310,12 @@ export function TodaysWorkFeed({ tasks = [], onRefresh, onOpenNewWork }: TodaysW
       {/* Problem Modal */}
       {problemTask && (
         <ReportProblemModal
-          isOpen={true}
-          task={problemTask}
-          onClose={() => setProblemTask(null)}
-          onSuccess={() => {
-            setProblemTask(null)
-            onRefresh?.()
+ isOpen={true}
+ task={problemTask}
+ onClose={() => setProblemTask(null)}
+ onSuccess={() => {
+ setProblemTask(null)
+ onRefresh?.()
           }}
         />
       )}
@@ -348,10 +323,10 @@ export function TodaysWorkFeed({ tasks = [], onRefresh, onOpenNewWork }: TodaysW
       {/* Completion Sign-Off Modal */}
       {completingTask && (
         <ModalDialog
-          open={true}
-          onOpenChange={(open) => !open && setCompletingTask(null)}
-          title={tBilingual('Sign Off & Complete Production', 'কাজ সম্পন্ন ও সাইন অফ')}
-          hideFooter={true}
+ open={true}
+ onOpenChange={(open) => !open && setCompletingTask(null)}
+ title={tBilingual('Sign Off & Complete Production', 'কাজ সম্পন্ন ও সাইন অফ')}
+ hideFooter={true}
         >
           <div className="space-y-4">
             <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 rounded-xl border border-emerald-200 dark:border-emerald-900">
@@ -359,7 +334,7 @@ export function TodaysWorkFeed({ tasks = [], onRefresh, onOpenNewWork }: TodaysW
                 {completingTask.task_name}
               </div>
               <div className="text-xs text-emerald-700 dark:text-emerald-300">
-                Customer: {completingTask.customer_name} • Target Qty: {completingTask.quantity} {completingTask.unit}
+ Customer: {completingTask.customer_name} • Target Qty: {completingTask.quantity} {completingTask.unit}
               </div>
             </div>
 
@@ -369,12 +344,9 @@ export function TodaysWorkFeed({ tasks = [], onRefresh, onOpenNewWork }: TodaysW
                   {tBilingual('Good Quantity', 'সঠিক পরিমাণ')} *
                 </Label>
                 <Input
-                  type="number"
-                  min="0"
-                  value={goodQty}
-                  onChange={(e) => setGoodQty(parseInt(e.target.value, 10) || 0)}
-                  className="h-11 text-base font-bold tabular-nums text-center text-emerald-700"
-                />
+ type="number"min="0"value={goodQty}
+ onChange={(e) => setGoodQty(parseInt(e.target.value, 10) || 0)}
+ className="h-11 text-base font-bold tabular-nums text-center text-emerald-700"/>
               </div>
 
               <div className="space-y-1">
@@ -382,26 +354,20 @@ export function TodaysWorkFeed({ tasks = [], onRefresh, onOpenNewWork }: TodaysW
                   {tBilingual('Scrap / Wastage', 'অপচয় / নষ্ট')}
                 </Label>
                 <Input
-                  type="number"
-                  min="0"
-                  value={scrapQty}
-                  onChange={(e) => setScrapQty(parseInt(e.target.value, 10) || 0)}
-                  className="h-11 text-base font-bold tabular-nums text-center text-rose-700"
-                />
+ type="number"min="0"value={scrapQty}
+ onChange={(e) => setScrapQty(parseInt(e.target.value, 10) || 0)}
+ className="h-11 text-base font-bold tabular-nums text-center text-rose-700"/>
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-border dark:border-border">
-              <Button type="button" variant="outline" size="sm" onClick={() => setCompletingTask(null)} className="text-xs">
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-border">
+              <Button type="button"variant="outline"size="sm"onClick={() => setCompletingTask(null)} className="text-xs">
                 {tBilingual('Cancel', 'বাতিল')}
               </Button>
               <Button
-                type="button"
-                size="sm"
-                disabled={isSubmittingComplete}
-                onClick={handleConfirmComplete}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold h-10 px-6 shadow-sm"
-              >
+ type="button"size="sm"disabled={isSubmittingComplete}
+ onClick={handleConfirmComplete}
+ className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold h-10 px-6 shadow-sm">
                 {isSubmittingComplete ? tBilingual('Saving...', 'সংরক্ষণ হচ্ছে...') : tBilingual('Confirm Complete', 'সম্পন্ন নিশ্চিত করুন')}
               </Button>
             </div>

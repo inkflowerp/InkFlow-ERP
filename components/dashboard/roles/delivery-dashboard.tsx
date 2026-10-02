@@ -2,13 +2,13 @@
 
 import React from 'react'
 import {
-  Truck,
-  CheckCircle2,
-  Clock,
-  MapPin,
-  Phone,
-  DollarSign,
-  FileCheck,
+ Truck,
+ CheckCircle2,
+ Clock,
+ MapPin,
+ Phone,
+ DollarSign,
+ FileCheck,
 } from 'lucide-react'
 import { useI18n } from '@/i18n/context'
 import { Badge } from '@/components/ui/badge'
@@ -17,28 +17,28 @@ import { Button } from '@/components/ui/button'
 import { KpiCard, KpiGrid } from '@/components/shared/kpi-card'
 
 interface DeliveryDashboardProps {
-  metrics: {
-    readyForDispatchCount: number
-    outForDeliveryCount: number
-    deliveredTodayCount: number
-    cashCollectedCount: number
+ metrics: {
+ readyForDispatchCount: number
+ outForDeliveryCount: number
+ deliveredTodayCount: number
+ cashCollectedCount: number
   }
-  onRefresh: () => void
+ onRefresh: () => void
 }
 
 export function DeliveryDashboard({ metrics, onRefresh }: DeliveryDashboardProps) {
-  const { tBilingual } = useI18n()
+ const { tBilingual } = useI18n()
 
-  const safeMetrics = {
-    readyForDispatchCount: metrics?.readyForDispatchCount ?? 0,
-    outForDeliveryCount: metrics?.outForDeliveryCount ?? 0,
-    deliveredTodayCount: metrics?.deliveredTodayCount ?? 0,
-    cashCollectedCount: metrics?.cashCollectedCount ?? 0,
+ const safeMetrics = {
+ readyForDispatchCount: metrics?.readyForDispatchCount ?? 0,
+ outForDeliveryCount: metrics?.outForDeliveryCount ?? 0,
+ deliveredTodayCount: metrics?.deliveredTodayCount ?? 0,
+ cashCollectedCount: metrics?.cashCollectedCount ?? 0,
   }
 
-  return (
+ return (
     <div className="space-y-6">
-      <div className="p-5 bg-card border border-border rounded-2xl shadow-xs flex items-center justify-between">
+      <div className="p-5 bg-card border border-border rounded-xl shadow-xs flex items-center justify-between">
         <div className="space-y-1">
           <Badge className="text-xs font-semibold">
             {tBilingual('Logistics & Delivery Fleet', 'ডেলিভারি ও চালান ব্যবস্থাপনা')}
@@ -54,34 +54,22 @@ export function DeliveryDashboard({ metrics, onRefresh }: DeliveryDashboardProps
 
       <KpiGrid columns={4}>
         <KpiCard
-          titleEn="Ready for Dispatch"
-          titleBn="ডেলিভারি প্রস্তুত"
-          value={safeMetrics.readyForDispatchCount}
-          icon={Clock}
-          colorVariant="warning"
-          badge={tBilingual('On Shelf', 'তৈরি আছে')}
+ titleEn="Ready for Dispatch"titleBn="ডেলিভারি প্রস্তুত"value={safeMetrics.readyForDispatchCount}
+ icon={Clock}
+ colorVariant="warning"badge={tBilingual('On Shelf', 'তৈরি আছে')}
         />
         <KpiCard
-          titleEn="Out for Delivery"
-          titleBn="পথে আছে"
-          value={safeMetrics.outForDeliveryCount}
-          icon={Truck}
-          colorVariant="primary"
-        />
+ titleEn="Out for Delivery"titleBn="পথে আছে"value={safeMetrics.outForDeliveryCount}
+ icon={Truck}
+ colorVariant="primary"/>
         <KpiCard
-          titleEn="Delivered Today"
-          titleBn="আজকের ডেলিভারি সম্পন্ন"
-          value={safeMetrics.deliveredTodayCount}
-          icon={CheckCircle2}
-          colorVariant="success"
-        />
+ titleEn="Delivered Today"titleBn="আজকের ডেলিভারি সম্পন্ন"value={safeMetrics.deliveredTodayCount}
+ icon={CheckCircle2}
+ colorVariant="success"/>
         <KpiCard
-          titleEn="COD Collected"
-          titleBn="নগদ আদায়"
-          value={safeMetrics.cashCollectedCount}
-          icon={DollarSign}
-          colorVariant="purple"
-        />
+ titleEn="COD Collected"titleBn="নগদ আদায়"value={safeMetrics.cashCollectedCount}
+ icon={DollarSign}
+ colorVariant="purple"/>
       </KpiGrid>
     </div>
   )

@@ -5,18 +5,18 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import {
-  Clock,
-  Crown,
-  Sparkles,
-  ArrowRight,
-  ShieldCheck,
-  CheckCircle2,
-  Users,
-  Building,
-  ShoppingCart,
-  HardDrive,
-  Flame,
-  AlertTriangle,
+ Clock,
+ Crown,
+ Sparkles,
+ ArrowRight,
+ ShieldCheck,
+ CheckCircle2,
+ Users,
+ Building,
+ ShoppingCart,
+ HardDrive,
+ Flame,
+ AlertTriangle,
 } from 'lucide-react'
 import { useSubscription } from '@/hooks/use-subscription'
 import { useTenant } from '@/hooks/use-tenant'
@@ -27,75 +27,75 @@ import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 
 export function TrialDashboardCard() {
-  const [mounted, setMounted] = React.useState(false)
-  React.useEffect(() => {
-    setMounted(true)
+ const [mounted, setMounted] = React.useState(false)
+ React.useEffect(() => {
+ setMounted(true)
   }, [])
 
-  const {
-    isLoading,
-    isTrial,
-    isTrialExpired,
-    daysRemainingInTrial,
-    timeRemainingInTrial,
-    trialProgressPercent,
-    currentPlan,
-    usage,
-    openUpgradeModal,
+ const {
+ isLoading,
+ isTrial,
+ isTrialExpired,
+ daysRemainingInTrial,
+ timeRemainingInTrial,
+ trialProgressPercent,
+ currentPlan,
+ usage,
+ openUpgradeModal,
   } = useSubscription()
-  const { company } = useTenant()
-  const { locale, tBilingual } = useI18n()
-  const pathname = usePathname()
-  const slug = company?.slug || 'app'
+ const { company } = useTenant()
+ const { locale, tBilingual } = useI18n()
+ const pathname = usePathname()
+ const slug = company?.slug || 'app'
 
-  if (!mounted || isLoading || !isTrial) return null
+ if (!mounted || isLoading || !isTrial) return null
 
-  const trialDaysTotal = currentPlan?.trial_days || 14
-  const trialDaysBn = toBengaliDigits(trialDaysTotal)
-  const daysRemBn = toBengaliDigits(daysRemainingInTrial)
-  const isUrgent = daysRemainingInTrial <= 3 || isTrialExpired
+ const trialDaysTotal = currentPlan?.trial_days || 14
+ const trialDaysBn = toBengaliDigits(trialDaysTotal)
+ const daysRemBn = toBengaliDigits(daysRemainingInTrial)
+ const isUrgent = daysRemainingInTrial <= 3 || isTrialExpired
 
-  const formatLimit = (count: number, limit: number) => {
-    const isUnlimited = limit <= 0 || limit >= 99999
-    const countStr = locale === 'bn' ? toBengaliDigits(count) : count
-    const limitStr = isUnlimited
+ const formatLimit = (count: number, limit: number) => {
+ const isUnlimited = limit <= 0 || limit >= 99999
+ const countStr = locale === 'bn' ? toBengaliDigits(count) : count
+ const limitStr = isUnlimited
       ? tBilingual('Unlimited', 'আনলিমিটেড')
       : locale === 'bn'
       ? toBengaliDigits(limit)
       : limit
-    return `${countStr}/${limitStr}`
+ return `${countStr}/${limitStr}`
   }
 
-  return (
+ return (
     <div
-      className={cn(
-        'relative overflow-hidden rounded-2xl border p-5 transition-all shadow-sm mb-6',
-        isUrgent
+ className={cn(
+        'relative overflow-hidden rounded-xl border p-5 transition-all shadow-sm mb-6',
+ isUrgent
           ? 'bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-red-500/10 border-amber-400 dark:border-amber-700/60'
           : 'bg-gradient-to-br from-indigo-500/10 via-purple-500/5 to-blue-500/10 border-indigo-200 dark:border-indigo-900/60'
       )}
     >
       {/* Decorative Blur */}
-      <div className="absolute top-0 right-0 -mt-10 -mr-10 w-48 h-48 rounded-full bg-indigo-500/10 blur-2xl pointer-events-none" />
+      <div className="absolute top-0 right-0 -mt-10 -mr-10 w-48 h-48 rounded-full bg-indigo-500/10 blur-2xl pointer-events-none"/>
 
       <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
         {/* Left: Trial details & countdown */}
         <div className="space-y-2 max-w-xl">
           <div className="flex items-center gap-2 flex-wrap">
             <Badge
-              className={cn(
+ className={cn(
                 'text-xs font-bold uppercase tracking-wider px-2.5 py-0.5',
-                isUrgent
+ isUrgent
                   ? 'bg-amber-600 text-white'
                   : 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white'
               )}
             >
-              <Crown className="h-3 w-3 mr-1" />
+              <Crown className="h-3 w-3 mr-1"/>
               {tBilingual(currentPlan?.name || 'PrintERP Free Trial', currentPlan?.name_bn || 'প্রিন্টইআরপি ফ্রি ট্রায়াল')}
             </Badge>
 
             <span className="text-xs font-bold text-foreground flex items-center gap-1 bangla-text">
-              <Clock className="h-3.5 w-3.5 text-amber-500" />
+              <Clock className="h-3.5 w-3.5 text-amber-500"/>
               {isTrialExpired
                 ? tBilingual('Trial Expired', 'ট্রায়াল মেয়াদ শেষ')
                 : timeRemainingInTrial && timeRemainingInTrial.days === 0
@@ -127,11 +127,11 @@ export function TrialDashboardCard() {
             </div>
             <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
               <div
-                className={cn(
+ className={cn(
                   'h-2 rounded-full transition-all',
-                  isUrgent ? 'bg-amber-500' : 'bg-gradient-to-r from-indigo-500 to-purple-500'
+ isUrgent ? 'bg-amber-500' : 'bg-gradient-to-r from-indigo-500 to-purple-500'
                 )}
-                style={{ width: `${trialProgressPercent}%` }}
+ style={{ width: `${trialProgressPercent}%` }}
               />
             </div>
           </div>
@@ -161,22 +161,21 @@ export function TrialDashboardCard() {
 
           <div className="flex items-center gap-2 w-full sm:w-auto">
             <Button
-              size="sm"
-              onClick={() => openUpgradeModal('business')}
-              className={cn(
+ size="sm"onClick={() => openUpgradeModal('business')}
+ className={cn(
                 'w-full sm:w-auto font-bold shadow-sm bangla-text',
-                isUrgent
+ isUrgent
                   ? 'bg-amber-600 hover:bg-amber-700 text-white'
                   : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white'
               )}
             >
-              <Crown className="mr-1.5 h-3.5 w-3.5 text-amber-300" />
+              <Crown className="mr-1.5 h-3.5 w-3.5 text-amber-300"/>
               {tBilingual('Upgrade Plan Now', 'এখনই প্ল্যান আপগ্রেড করুন')}
-              <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+              <ArrowRight className="ml-1.5 h-3.5 w-3.5"/>
             </Button>
 
             <Link href={getTenantNavHref('/settings/subscription', pathname, slug)} className="hidden sm:inline-block">
-              <Button size="sm" variant="outline" className="text-xs bangla-text">
+              <Button size="sm"variant="outline"className="text-xs bangla-text">
                 {tBilingual('Compare Plans', 'প্ল্যান দেখুন')}
               </Button>
             </Link>

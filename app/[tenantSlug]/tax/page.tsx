@@ -4,30 +4,30 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import Link from 'next/link'
 import { usePathname, useParams } from 'next/navigation'
 import {
-  FileText,
-  Save,
-  CheckCircle2,
-  AlertTriangle,
-  Building,
-  ShieldCheck,
-  Calculator,
-  Percent,
-  Check,
-  Sparkles,
-  ArrowRight,
-  Landmark,
-  Receipt,
-  FileSpreadsheet,
-  Download,
-  Printer,
-  Info,
-  BadgePercent,
-  RefreshCw,
-  Sliders,
-  Scale,
-  DollarSign,
-  Phone,
-  UserCheck,
+ FileText,
+ Save,
+ CheckCircle2,
+ AlertTriangle,
+ Building,
+ ShieldCheck,
+ Calculator,
+ Percent,
+ Check,
+ Sparkles,
+ ArrowRight,
+ Landmark,
+ Receipt,
+ FileSpreadsheet,
+ Download,
+ Printer,
+ Info,
+ BadgePercent,
+ RefreshCw,
+ Sliders,
+ Scale,
+ DollarSign,
+ Phone,
+ UserCheck,
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
@@ -43,8 +43,8 @@ import { useDataStore } from '@/hooks/use-data-store'
 import { STORAGE_KEYS } from '@/lib/db/data-store'
 import { updateCompanyAction, updateCompanySettingsAction } from '@/actions/tenant.actions'
 import {
-  DEFAULT_TAX_SETTINGS,
-  calculateVat,
+ DEFAULT_TAX_SETTINGS,
+ calculateVat,
 } from '@/services/tax-and-docs.service'
 import { CompanyTaxSettingsRecord, VatPricingMode } from '@/types/tax-and-docs.types'
 import { formatBDT } from '@/lib/formatters'
@@ -65,223 +65,209 @@ const BANGLADESH_COMMISSIONERATES = [
 ]
 
 export default function TaxPage() {
-  const params = useParams()
-  const routeSlug = (params?.tenantSlug as string) || ''
-  const { company, settings, refreshTenant } = useTenant()
-  const { locale, tBilingual } = useI18n()
-  const pathname = usePathname()
-  const slug = routeSlug || company?.slug || ''
-  const [mounted, setMounted] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const [notification, setNotification] = useState<string | null>(null)
-  const [selectedPeriodMonth, setSelectedPeriodMonth] = useState<'current' | 'previous'>('current')
+ const params = useParams()
+ const routeSlug = (params?.tenantSlug as string) || ''
+ const { company, settings, refreshTenant } = useTenant()
+ const { locale, tBilingual } = useI18n()
+ const pathname = usePathname()
+ const slug = routeSlug || company?.slug || ''
+ const [mounted, setMounted] = useState(false)
+ const [isLoading, setIsLoading] = useState(false)
+ const [notification, setNotification] = useState<string | null>(null)
+ const [selectedPeriodMonth, setSelectedPeriodMonth] = useState<'current' | 'previous'>('current')
 
-  useEffect(() => {
-    setMounted(true)
+ useEffect(() => {
+ setMounted(true)
   }, [])
 
-  const defaultSettings = useMemo<CompanyTaxSettingsRecord>(
+ const defaultSettings = useMemo<CompanyTaxSettingsRecord>(
     () => ({
       ...DEFAULT_TAX_SETTINGS,
-      bin_number: company?.bin_no || DEFAULT_TAX_SETTINGS.bin_number,
-      tin_number: company?.tin_no || DEFAULT_TAX_SETTINGS.tin_number,
-      trade_license_number: company?.trade_license_no || DEFAULT_TAX_SETTINGS.trade_license_number,
-      vat_enabled: settings?.vat_enabled ?? DEFAULT_TAX_SETTINGS.vat_enabled,
-      default_vat_rate: settings?.vat_rate ?? DEFAULT_TAX_SETTINGS.default_vat_rate,
+ bin_number: company?.bin_no || DEFAULT_TAX_SETTINGS.bin_number,
+ tin_number: company?.tin_no || DEFAULT_TAX_SETTINGS.tin_number,
+ trade_license_number: company?.trade_license_no || DEFAULT_TAX_SETTINGS.trade_license_number,
+ vat_enabled: settings?.vat_enabled ?? DEFAULT_TAX_SETTINGS.vat_enabled,
+ default_vat_rate: settings?.vat_rate ?? DEFAULT_TAX_SETTINGS.default_vat_rate,
     }),
     [company?.bin_no, company?.tin_no, company?.trade_license_no, settings?.vat_enabled, settings?.vat_rate]
   )
 
-  const [taxSettings, setTaxSettings] = useDataStore<CompanyTaxSettingsRecord>(
-    STORAGE_KEYS.TAX_SETTINGS,
-    defaultSettings,
-    slug
+ const [taxSettings, setTaxSettings] = useDataStore<CompanyTaxSettingsRecord>(
+ STORAGE_KEYS.TAX_SETTINGS,
+ defaultSettings,
+ slug
   )
 
-  const [invoices] = useDataStore<any[]>(STORAGE_KEYS.INVOICES, [], slug)
-  const [purchases] = useDataStore<any[]>(STORAGE_KEYS.PURCHASE_ORDERS, [], slug)
+ const [invoices] = useDataStore<any[]>(STORAGE_KEYS.INVOICES, [], slug)
+ const [purchases] = useDataStore<any[]>(STORAGE_KEYS.PURCHASE_ORDERS, [], slug)
 
   // Compute live NBR VAT return from store (Mushak 9.1 Summary)
-  const vatReturnSummary = useMemo(() => {
-    const now = new Date()
-    const targetMonth = selectedPeriodMonth === 'current' ? now.getMonth() : (now.getMonth() - 1 + 12) % 12
-    const targetYear = selectedPeriodMonth === 'current' ? now.getFullYear() : (now.getMonth() === 0 ? now.getFullYear() - 1 : now.getFullYear())
+ const vatReturnSummary = useMemo(() => {
+ const now = new Date()
+ const targetMonth = selectedPeriodMonth === 'current' ? now.getMonth() : (now.getMonth() - 1 + 12) % 12
+ const targetYear = selectedPeriodMonth === 'current' ? now.getFullYear() : (now.getMonth() === 0 ? now.getFullYear() - 1 : now.getFullYear())
 
-    const periodDate = new Date(targetYear, targetMonth, 1)
-    const periodLabel = periodDate.toLocaleString(locale === 'bn' ? 'bn-BD' : 'en-US', {
-      month: 'long',
-      year: 'numeric',
+ const periodDate = new Date(targetYear, targetMonth, 1)
+ const periodLabel = periodDate.toLocaleString(locale === 'bn' ? 'bn-BD' : 'en-US', {
+ month: 'long',
+ year: 'numeric',
     })
 
-    const filteredInvoices = invoices.filter((inv) => {
-      if (!inv.created_at && !inv.issue_date && !inv.invoice_date) return true
-      const d = new Date(inv.created_at || inv.issue_date || inv.invoice_date)
-      return d.getMonth() === targetMonth && d.getFullYear() === targetYear
+ const filteredInvoices = invoices.filter((inv) => {
+ if (!inv.created_at && !inv.issue_date && !inv.invoice_date) return true
+ const d = new Date(inv.created_at || inv.issue_date || inv.invoice_date)
+ return d.getMonth() === targetMonth && d.getFullYear() === targetYear
     })
 
-    const filteredPurchases = purchases.filter((p) => {
-      if (!p.created_at && !p.po_date && !p.order_date) return true
-      const d = new Date(p.created_at || p.po_date || p.order_date)
-      return d.getMonth() === targetMonth && d.getFullYear() === targetYear
+ const filteredPurchases = purchases.filter((p) => {
+ if (!p.created_at && !p.po_date && !p.order_date) return true
+ const d = new Date(p.created_at || p.po_date || p.order_date)
+ return d.getMonth() === targetMonth && d.getFullYear() === targetYear
     })
 
-    const grossTurnover = filteredInvoices.reduce(
+ const grossTurnover = filteredInvoices.reduce(
       (sum, i) => sum + (Number(i.subtotal) || Number(i.total_amount) || Number(i.grand_total) || 0),
       0
     )
-    const outputVat = filteredInvoices.reduce(
+ const outputVat = filteredInvoices.reduce(
       (sum, i) => sum + (Number(i.vat_amount) || Number(i.tax_amount) || 0),
       0
     )
-    const rawInputVat = filteredPurchases.reduce(
+ const rawInputVat = filteredPurchases.reduce(
       (sum, p) => sum + (Number(p.vat_amount) || Number(p.tax_amount) || 0),
       0
     )
     
     // If input tax rebate is enabled, subtract input VAT; otherwise 0 rebate
-    const inputVat = taxSettings.rebate_enabled !== false ? rawInputVat : 0
-    const netPayableVat = Math.max(0, outputVat - inputVat)
+ const inputVat = taxSettings.rebate_enabled !== false ? rawInputVat : 0
+ const netPayableVat = Math.max(0, outputVat - inputVat)
 
-    return {
-      period: periodLabel,
-      invoiceCount: filteredInvoices.length,
-      purchaseCount: filteredPurchases.length,
-      grossTurnover,
-      outputVat,
-      inputVat,
-      netPayableVat,
+ return {
+ period: periodLabel,
+ invoiceCount: filteredInvoices.length,
+ purchaseCount: filteredPurchases.length,
+ grossTurnover,
+ outputVat,
+ inputVat,
+ netPayableVat,
     }
   }, [invoices, purchases, locale, selectedPeriodMonth, taxSettings.rebate_enabled])
 
   // Live Calculator Simulator State
-  const [testAmount, setTestAmount] = useState<number>(10000)
-  const [testRate, setTestRate] = useState<number>(taxSettings.default_vat_rate || 15)
-  const [testMode, setTestMode] = useState<VatPricingMode>(taxSettings.pricing_mode || 'exclusive')
-  const [testVdsRate, setTestVdsRate] = useState<number>(taxSettings.vds_enabled ? (taxSettings.vds_rate || 7.5) : 0)
-  const [testTdsRate, setTestTdsRate] = useState<number>(taxSettings.tds_enabled ? (taxSettings.tds_rate || 3) : 0)
+ const [testAmount, setTestAmount] = useState<number>(10000)
+ const [testRate, setTestRate] = useState<number>(taxSettings.default_vat_rate || 15)
+ const [testMode, setTestMode] = useState<VatPricingMode>(taxSettings.pricing_mode || 'exclusive')
+ const [testVdsRate, setTestVdsRate] = useState<number>(taxSettings.vds_enabled ? (taxSettings.vds_rate || 7.5) : 0)
+ const [testTdsRate, setTestTdsRate] = useState<number>(taxSettings.tds_enabled ? (taxSettings.tds_rate || 3) : 0)
 
-  const showNotification = (msg: string) => {
-    setNotification(msg)
-    setTimeout(() => setNotification(null), 4000)
+ const showNotification = (msg: string) => {
+ setNotification(msg)
+ setTimeout(() => setNotification(null), 4000)
   }
 
-  const handleSaveTax = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-    try {
-      if (company?.id) {
-        await updateCompanyAction(company.id, {
-          bin_no: taxSettings.bin_number || null,
-          tin_no: taxSettings.tin_number || null,
-          trade_license_no: taxSettings.trade_license_number || null,
+ const handleSaveTax = async (e: React.FormEvent) => {
+ e.preventDefault()
+ setIsLoading(true)
+ try {
+ if (company?.id) {
+ await updateCompanyAction(company.id, {
+ bin_no: taxSettings.bin_number || null,
+ tin_no: taxSettings.tin_number || null,
+ trade_license_no: taxSettings.trade_license_number || null,
         })
-        await updateCompanySettingsAction(company.id, {
-          vat_enabled: taxSettings.vat_enabled,
-          vat_rate: taxSettings.default_vat_rate,
+ await updateCompanySettingsAction(company.id, {
+ vat_enabled: taxSettings.vat_enabled,
+ vat_rate: taxSettings.default_vat_rate,
         })
-        await refreshTenant()
+ await refreshTenant()
       }
       
-      const updated = {
+ const updated = {
         ...taxSettings,
-        updated_at: new Date().toISOString(),
+ updated_at: new Date().toISOString(),
       }
-      setTaxSettings(updated)
+ setTaxSettings(updated)
 
       // Broadcast update across windows & tabs
-      if (typeof window !== 'undefined') {
-        window.dispatchEvent(new CustomEvent('printerp_table_synced:tax_settings', { detail: updated }))
-        window.dispatchEvent(new CustomEvent('printerp_table_synced:settings', { detail: updated }))
-        window.dispatchEvent(new CustomEvent('printerp_table_synced:company', { detail: company }))
-        window.dispatchEvent(new CustomEvent('printerp_data_sync', { detail: { table: 'tax_settings' } }))
+ if (typeof window !== 'undefined') {
+ window.dispatchEvent(new CustomEvent('printerp_table_synced:tax_settings', { detail: updated }))
+ window.dispatchEvent(new CustomEvent('printerp_table_synced:settings', { detail: updated }))
+ window.dispatchEvent(new CustomEvent('printerp_table_synced:company', { detail: company }))
+ window.dispatchEvent(new CustomEvent('printerp_data_sync', { detail: { table: 'tax_settings' } }))
       }
 
-      showNotification(
-        locale === 'bn'
+ showNotification(
+ locale === 'bn'
           ? 'বাংলাদেশ ভ্যাট ও এনবিআর ট্যাক্স সেটিংস সফলভাবে সংরক্ষিত হয়েছে!'
           : 'Bangladesh VAT & NBR Tax settings saved successfully across all active modules!'
       )
     } catch (err: any) {
-      console.error('[TaxSettings] Save error:', err)
-      showNotification(err?.message || 'Failed to save tax settings')
+ console.error('[TaxSettings] Save error:', err)
+ showNotification(err?.message || 'Failed to save tax settings')
     } finally {
-      setIsLoading(false)
+ setIsLoading(false)
     }
   }
 
   // Simulator live calculations
-  const testCalcResult = useMemo(() => {
-    const baseCalc = calculateVat(testAmount, testRate, testMode)
-    const vdsAmount = testVdsRate > 0 ? Math.round(baseCalc.baseAmount * (testVdsRate / 100)) : 0
-    const tdsAmount = testTdsRate > 0 ? Math.round(baseCalc.baseAmount * (testTdsRate / 100)) : 0
-    const netReceivable = Math.max(0, baseCalc.totalAmount - vdsAmount - tdsAmount)
+ const testCalcResult = useMemo(() => {
+ const baseCalc = calculateVat(testAmount, testRate, testMode)
+ const vdsAmount = testVdsRate > 0 ? Math.round(baseCalc.baseAmount * (testVdsRate / 100)) : 0
+ const tdsAmount = testTdsRate > 0 ? Math.round(baseCalc.baseAmount * (testTdsRate / 100)) : 0
+ const netReceivable = Math.max(0, baseCalc.totalAmount - vdsAmount - tdsAmount)
 
-    return {
+ return {
       ...baseCalc,
-      vdsAmount,
-      tdsAmount,
-      netReceivable,
+ vdsAmount,
+ tdsAmount,
+ netReceivable,
     }
   }, [testAmount, testRate, testMode, testVdsRate, testTdsRate])
 
-  const handlePrintVatWorksheet = useCallback(() => {
-    if (typeof window === 'undefined') return
-    window.print()
+ const handlePrintVatWorksheet = useCallback(() => {
+ if (typeof window === 'undefined') return
+ window.print()
   }, [])
 
   // BIN validation helper
-  const binIsValid = Boolean(taxSettings.bin_number && taxSettings.bin_number.replace(/\D/g, '').length === 13)
-  const tinIsValid = Boolean(taxSettings.tin_number && taxSettings.tin_number.replace(/\D/g, '').length >= 10)
+ const binIsValid = Boolean(taxSettings.bin_number && taxSettings.bin_number.replace(/\D/g, '').length === 13)
+ const tinIsValid = Boolean(taxSettings.tin_number && taxSettings.tin_number.replace(/\D/g, '').length >= 10)
 
-  if (!mounted) {
-    return (
+ if (!mounted) {
+ return (
       <div className="space-y-6 max-w-7xl animate-pulse p-4 sm:p-0">
-        <div className="h-20 bg-muted rounded-2xl w-full" />
-        <div className="h-12 bg-muted rounded-xl w-3/4" />
-        <div className="h-44 bg-muted rounded-2xl w-full" />
+        <div className="h-20 bg-muted rounded-xl w-full"/>
+        <div className="h-12 bg-muted rounded-xl w-3/4"/>
+        <div className="h-44 bg-muted rounded-xl w-full"/>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="h-64 bg-muted rounded-2xl w-full" />
-          <div className="h-64 bg-muted rounded-2xl w-full" />
+          <div className="h-64 bg-muted rounded-xl w-full"/>
+          <div className="h-64 bg-muted rounded-xl w-full"/>
         </div>
       </div>
     )
   }
 
-  return (
+ return (
     <PanelAccessGuard
-      module="settings"
-      action="manage"
-      panelTitle="Bangladesh VAT & NBR Tax Management"
-      panelTitleBn="বাংলাদেশ ভ্যাট ও এনবিআর ট্যাক্স"
-    >
+ module="settings"action="manage"panelTitle="Bangladesh VAT & NBR Tax Management"panelTitleBn="বাংলাদেশ ভ্যাট ও এনবিআর ট্যাক্স">
       <div className="space-y-6 max-w-7xl pb-16">
       {/* Header */}
       <PageHeader
-        titleEn="Bangladesh VAT & NBR Tax Management"
-        titleBn="বাংলাদেশ ভ্যাট ও এনবিআর ট্যাক্স"
-        descriptionEn="Manage 13-digit BIN, NBR VAT rates, inclusive/exclusive pricing modes, VDS/TDS withholding, and monthly Mushak return summaries."
-        descriptionBn="১৩ ডিজিটের বিআইএন, এনবিআর ভ্যাট হার, ভ্যাট অন্তর্ভুক্তি মোড, উৎসে কর কর্তন এবং মাসিক মূসক রিটার্ন সারাংশ পরিচালনা করুন।"
-        icon={Landmark}
-        iconColor="text-emerald-600 dark:text-emerald-400"
-        actions={
+ titleEn="VAT & Tax"titleBn="বাংলাদেশ ভ্যাট ও এনবিআর ট্যাক্স"descriptionEn="Manage 13-digit BIN, NBR VAT rates, inclusive/exclusive pricing modes, VDS/TDS withholding, and monthly Mushak return summaries."descriptionBn="১৩ ডিজিটের বিআইএন, এনবিআর ভ্যাট হার, ভ্যাট অন্তর্ভুক্তি মোড, উৎসে কর কর্তন এবং মাসিক মূসক রিটার্ন সারাংশ পরিচালনা করুন।"icon={Landmark}
+ iconColor="text-emerald-600 dark:text-emerald-400"actions={
           <div className="flex flex-wrap items-center gap-2">
             <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={handlePrintVatWorksheet}
-              className="h-9 rounded-xl text-xs font-semibold gap-1.5 border-input hover:bg-muted dark:hover:bg-muted"
-            >
-              <Printer className="h-3.5 w-3.5 text-muted-foreground dark:text-muted-foreground" />
+ type="button"variant="outline"size="sm"onClick={handlePrintVatWorksheet}
+ className="h-9 rounded-xl text-xs font-semibold gap-1.5 border-input hover:bg-muted dark:hover:bg-muted">
+              <Printer className="h-3.5 w-3.5 text-muted-foreground"/>
               <span>{tBilingual('Print Worksheet', 'ওয়ার্কশিট প্রিন্ট')}</span>
             </Button>
             <Link
-              href={getTenantNavHref('/settings/documents', pathname, slug)}
-              className="inline-flex items-center gap-1.5 text-xs font-semibold px-3.5 h-9 rounded-xl border border-input hover:bg-muted text-foreground transition-colors"
-            >
-              <FileText className="h-3.5 w-3.5 text-blue-600" />
+ href={getTenantNavHref('/settings/documents', pathname, slug)}
+ className="inline-flex items-center gap-1.5 text-xs font-semibold px-3.5 h-9 rounded-xl border border-input hover:bg-muted text-foreground transition-colors">
+              <FileText className="h-3.5 w-3.5 text-blue-600"/>
               <span>{tBilingual('Document Templates', 'ডকুমেন্ট টেমপ্লেট')}</span>
-              <ArrowRight className="h-3 w-3 ml-0.5 text-muted-foreground" />
+              <ArrowRight className="h-3 w-3 ml-0.5 text-muted-foreground"/>
             </Link>
           </div>
         }
@@ -290,24 +276,24 @@ export default function TaxPage() {
       {/* Notification */}
       {notification && (
         <div className="p-3.5 bg-emerald-50 text-emerald-800 rounded-xl text-xs font-semibold flex items-center gap-2.5 border border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800 shadow-sm animate-in fade-in-0 slide-in-from-top-1">
-          <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+          <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0"/>
           <span>{notification}</span>
         </div>
       )}
 
       {/* NBR Monthly VAT Return Cockpit (Mushak 9.1 Summary) */}
       <div className="relative overflow-hidden rounded-xl bg-card border border-border shadow-xs">
-        <div className="absolute top-0 inset-x-0 h-0.5 bg-emerald-500" />
-        <div className="p-5 border-b border-border dark:border-border/80 bg-muted dark:bg-card">
+        <div className="absolute top-0 inset-x-0 h-0.5 bg-emerald-500"/>
+        <div className="p-5 border-b border-border /80 bg-muted">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <div className="flex flex-wrap items-center gap-2">
                 <div className="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400">
-                  <Receipt className="h-5 w-5" />
+                  <Receipt className="h-5 w-5"/>
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <h3 className="font-bold text-base text-foreground dark:text-white">
+                    <h3 className="font-bold text-base text-foreground">
                       {tBilingual('NBR Monthly VAT Return Summary (Mushak-9.1)', 'এনবিআর মাসিক মূসক রিটার্ন সারাংশ (মূসক-৯.১)')}
                     </h3>
                     <Badge className="bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-2xs tabular-nums font-bold">
@@ -327,32 +313,30 @@ export default function TaxPage() {
             <div className="flex items-center gap-3">
               <div className="inline-flex rounded-xl border border-border p-1 bg-muted text-xs">
                 <button
-                  type="button"
-                  onClick={() => setSelectedPeriodMonth('current')}
-                  className={`px-3 py-1.5 rounded-lg font-semibold text-xs transition-all ${
-                    selectedPeriodMonth === 'current'
-                      ? 'bg-card text-foreground dark:text-white shadow-xs'
-                      : 'text-muted-foreground hover:text-foreground dark:hover:text-white'
+ type="button"onClick={() => setSelectedPeriodMonth('current')}
+ className={`px-3 py-1.5 rounded-lg font-semibold text-xs transition-all ${
+ selectedPeriodMonth === 'current'
+                      ? 'bg-card text-foreground shadow-xs'
+                      : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
                   }`}
                 >
                   {tBilingual('This Month', 'চলতি মাস')}
                 </button>
                 <button
-                  type="button"
-                  onClick={() => setSelectedPeriodMonth('previous')}
-                  className={`px-3 py-1.5 rounded-lg font-semibold text-xs transition-all ${
-                    selectedPeriodMonth === 'previous'
-                      ? 'bg-card text-foreground dark:text-white shadow-xs'
-                      : 'text-muted-foreground hover:text-foreground dark:hover:text-white'
+ type="button"onClick={() => setSelectedPeriodMonth('previous')}
+ className={`px-3 py-1.5 rounded-lg font-semibold text-xs transition-all ${
+ selectedPeriodMonth === 'previous'
+                      ? 'bg-card text-foreground shadow-xs'
+                      : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
                   }`}
                 >
                   {tBilingual('Last Month', 'গত মাস')}
                 </button>
               </div>
 
-              <div className="text-right pl-4 border-l border-border dark:border-border">
+              <div className="text-right pl-4 border-l border-border">
                 <span className="text-2xs uppercase font-bold tracking-wider text-muted-foreground block">
-                  {tBilingual('Net Treasury Payable', 'সরকারি কোষাগারে প্রদেয়')}
+                  {tBilingual('Govt Tax Due', 'সরকারি কোষাগারে প্রদেয়')}
                 </span>
                 <div className="text-xl sm:text-2xl font-black tabular-nums text-emerald-600 dark:text-emerald-400">
                   {formatBDT(vatReturnSummary.netPayableVat)}
@@ -365,41 +349,22 @@ export default function TaxPage() {
         <div className="p-5">
           <KpiGrid columns={3}>
             <KpiCard
-              titleEn="1. Gross Taxable Turnover"
-              titleBn="১. মোট করযোগ্য বিক্রয়"
-              value={vatReturnSummary.grossTurnover}
-              isCurrency={true}
-              icon={Building}
-              colorVariant="slate"
-              badge={`${vatReturnSummary.invoiceCount} ${tBilingual('invoices', 'চালান')}`}
-              badgeColor="slate"
-              subtitleEn="Total B2B & Retail Revenue"
-              subtitleBn="মোট বাণিজ্যিক ও খুচরা রাজস্ব"
-            />
+ titleEn="1. Gross Taxable Turnover"titleBn="১. মোট করযোগ্য বিক্রয়"value={vatReturnSummary.grossTurnover}
+ isCurrency={true}
+ icon={Building}
+ colorVariant="slate"badge={`${vatReturnSummary.invoiceCount} ${tBilingual('invoices', 'চালান')}`}
+ badgeColor="slate"subtitleEn="Total Revenue"subtitleBn="মোট বাণিজ্যিক ও খুচরা রাজস্ব"/>
             <KpiCard
-              titleEn="2. Output VAT"
-              titleBn="২. প্রদেয় বিক্রয় মূসক"
-              value={vatReturnSummary.outputVat}
-              isCurrency={true}
-              icon={FileText}
-              colorVariant="blue"
-              badge="Mushak 6.3"
-              badgeColor="blue"
-              subtitleEn="Collected from buyers"
-              subtitleBn="ক্রেতাদের কাছ থেকে সংগৃহীত"
-            />
+ titleEn="2. Output VAT"titleBn="২. প্রদেয় বিক্রয় মূসক"value={vatReturnSummary.outputVat}
+ isCurrency={true}
+ icon={FileText}
+ colorVariant="blue"badge="Mushak 6.3"badgeColor="blue"subtitleEn="Collected from buyers"subtitleBn="ক্রেতাদের কাছ থেকে সংগৃহীত"/>
             <KpiCard
-              titleEn="3. Input VAT Rebate"
-              titleBn="৩. অনুমোদিত রেয়াত"
-              value={vatReturnSummary.inputVat}
-              isCurrency={true}
-              icon={Scale}
-              colorVariant="purple"
-              badge={`${vatReturnSummary.purchaseCount} ${tBilingual('bills', 'বিল')}`}
-              badgeColor="purple"
-              subtitleEn="Paid on raw material procurement"
-              subtitleBn="কাঁচামাল ক্রয়ের উপর প্রদেয় ভ্যাট"
-            />
+ titleEn="3. Input VAT Rebate"titleBn="৩. অনুমোদিত রেয়াত"value={vatReturnSummary.inputVat}
+ isCurrency={true}
+ icon={Scale}
+ colorVariant="purple"badge={`${vatReturnSummary.purchaseCount} ${tBilingual('bills', 'বিল')}`}
+ badgeColor="purple"subtitleEn="Paid on Raw Materials"subtitleBn="কাঁচামাল ক্রয়ের উপর প্রদেয় ভ্যাট"/>
           </KpiGrid>
         </div>
       </div>
@@ -407,11 +372,11 @@ export default function TaxPage() {
       {/* Main Settings Form */}
       <form onSubmit={handleSaveTax} className="space-y-6">
         {/* VAT Master Controls & Pricing Policies */}
-        <Card className="p-6 space-y-5 border-border rounded-2xl shadow-xs">
+        <Card className="p-6 space-y-5 border-border rounded-xl shadow-xs">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border pb-4">
             <div>
-              <CardTitle className="text-base font-bold flex items-center gap-2 text-foreground dark:text-white">
-                <Percent className="h-4 w-4 text-emerald-600" />
+              <CardTitle className="text-base font-bold flex items-center gap-2 text-foreground">
+                <Percent className="h-4 w-4 text-emerald-600"/>
                 <span>{tBilingual('Master VAT & Pricing Policies', 'ভ্যাট নীতি ও মূল্য নির্ধারণ মোড')}</span>
               </CardTitle>
               <CardDescription className="text-xs text-muted-foreground mt-0.5">
@@ -424,29 +389,27 @@ export default function TaxPage() {
 
             {/* VAT Master Switch */}
             <div className="flex items-center gap-3">
-              <span className="text-xs font-bold text-foreground dark:text-muted-foreground">
+              <span className="text-xs font-bold text-foreground">
                 {taxSettings.vat_enabled ? tBilingual('VAT Active', 'ভ্যাট সক্রিয়') : tBilingual('VAT Disabled', 'ভ্যাট নিষ্ক্রিয়')}
               </span>
               <Button
-                type="button"
-                size="sm"
-                variant={taxSettings.vat_enabled ? 'default' : 'outline'}
-                onClick={() =>
-                  setTaxSettings({ ...taxSettings, vat_enabled: !taxSettings.vat_enabled })
+ type="button"size="sm"variant={taxSettings.vat_enabled ? 'default' : 'outline'}
+ onClick={() =>
+ setTaxSettings({ ...taxSettings, vat_enabled: !taxSettings.vat_enabled })
                 }
-                className={`h-8 px-3.5 text-xs font-bold transition-all ${
-                  taxSettings.vat_enabled
+ className={`h-8 px-3.5 text-xs font-bold transition-all ${
+ taxSettings.vat_enabled
                     ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs'
-                    : 'text-muted-foreground border-input dark:border-border'
+                    : 'text-muted-foreground border-input '
                 }`}
               >
                 {taxSettings.vat_enabled ? (
                   <>
-                    <Check className="h-3.5 w-3.5 mr-1" />
+                    <Check className="h-3.5 w-3.5 mr-1"/>
                     {tBilingual('Enabled', 'চালু')}
                   </>
                 ) : (
-                  tBilingual('Disabled', 'বন্ধ')
+ tBilingual('Disabled', 'বন্ধ')
                 )}
               </Button>
             </div>
@@ -455,18 +418,17 @@ export default function TaxPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-1">
             {/* Pricing Mode Selection */}
             <div className="space-y-2">
-              <Label className="font-bold text-xs text-foreground dark:text-foreground">
+              <Label className="font-bold text-xs text-foreground">
                 {tBilingual('Pricing Calculation Mode', 'মূল্য ও ভ্যাট হিসাবের মোড')}
               </Label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 <button
-                  type="button"
-                  onClick={() => {
-                    setTaxSettings({ ...taxSettings, pricing_mode: 'exclusive' })
-                    setTestMode('exclusive')
+ type="button"onClick={() => {
+ setTaxSettings({ ...taxSettings, pricing_mode: 'exclusive' })
+ setTestMode('exclusive')
                   }}
-                  className={`p-3.5 rounded-xl border text-left transition-all cursor-pointer ${
-                    taxSettings.pricing_mode === 'exclusive'
+ className={`p-3.5 rounded-xl border text-left transition-all cursor-pointer ${
+ taxSettings.pricing_mode === 'exclusive'
                       ? 'border-blue-600 bg-blue-50/60 dark:bg-blue-950/30 text-blue-950 dark:text-blue-200 ring-2 ring-blue-600/30 shadow-xs'
                       : 'border-border hover:bg-muted dark:hover:bg-muted/60'
                   }`}
@@ -474,7 +436,7 @@ export default function TaxPage() {
                   <div className="font-bold text-xs flex items-center justify-between">
                     <span>{tBilingual('VAT-Exclusive', 'মূল্য + ভ্যাট (এক্সক্লুসিভ)')}</span>
                     {taxSettings.pricing_mode === 'exclusive' && (
-                      <CheckCircle2 className="h-3.5 w-3.5 text-blue-600" />
+                      <CheckCircle2 className="h-3.5 w-3.5 text-blue-600"/>
                     )}
                   </div>
                   <div className="text-2xs text-muted-foreground mt-1 leading-snug">
@@ -483,13 +445,12 @@ export default function TaxPage() {
                 </button>
 
                 <button
-                  type="button"
-                  onClick={() => {
-                    setTaxSettings({ ...taxSettings, pricing_mode: 'inclusive' })
-                    setTestMode('inclusive')
+ type="button"onClick={() => {
+ setTaxSettings({ ...taxSettings, pricing_mode: 'inclusive' })
+ setTestMode('inclusive')
                   }}
-                  className={`p-3.5 rounded-xl border text-left transition-all cursor-pointer ${
-                    taxSettings.pricing_mode === 'inclusive'
+ className={`p-3.5 rounded-xl border text-left transition-all cursor-pointer ${
+ taxSettings.pricing_mode === 'inclusive'
                       ? 'border-blue-600 bg-blue-50/60 dark:bg-blue-950/30 text-blue-950 dark:text-blue-200 ring-2 ring-blue-600/30 shadow-xs'
                       : 'border-border hover:bg-muted dark:hover:bg-muted/60'
                   }`}
@@ -497,7 +458,7 @@ export default function TaxPage() {
                   <div className="font-bold text-xs flex items-center justify-between">
                     <span>{tBilingual('VAT-Inclusive', 'ভ্যাটসহ (ইনক্লুসিভ)')}</span>
                     {taxSettings.pricing_mode === 'inclusive' && (
-                      <CheckCircle2 className="h-3.5 w-3.5 text-blue-600" />
+                      <CheckCircle2 className="h-3.5 w-3.5 text-blue-600"/>
                     )}
                   </div>
                   <div className="text-2xs text-muted-foreground mt-1 leading-snug">
@@ -509,7 +470,7 @@ export default function TaxPage() {
 
             {/* Default VAT Rate Selector */}
             <div className="space-y-2">
-              <Label className="font-bold text-xs text-foreground dark:text-foreground">
+              <Label className="font-bold text-xs text-foreground">
                 {tBilingual('Default NBR VAT Rate (%)', 'ডিফল্ট এনবিআর ভ্যাট হার (%)')}
               </Label>
               <div className="flex flex-wrap items-center gap-2">
@@ -520,18 +481,16 @@ export default function TaxPage() {
                   { rate: 0, label: '0% (Exempt/Books)' },
                 ].map((item) => (
                   <Button
-                    key={item.rate}
-                    type="button"
-                    size="sm"
-                    variant={taxSettings.default_vat_rate === item.rate ? 'default' : 'outline'}
-                    onClick={() => {
-                      setTaxSettings({ ...taxSettings, default_vat_rate: item.rate })
-                      setTestRate(item.rate)
+ key={item.rate}
+ type="button"size="sm"variant={taxSettings.default_vat_rate === item.rate ? 'default' : 'outline'}
+ onClick={() => {
+ setTaxSettings({ ...taxSettings, default_vat_rate: item.rate })
+ setTestRate(item.rate)
                     }}
-                    className={`text-xs h-8 px-3 font-bold transition-all ${
-                      taxSettings.default_vat_rate === item.rate
-                        ? 'bg-slate-900 text-white shadow-xs'
-                        : 'border-input dark:border-border'
+ className={`text-xs h-8 px-3 font-bold transition-all ${
+ taxSettings.default_vat_rate === item.rate
+                        ? 'bg-surface-inset text-foreground shadow-xs'
+                        : 'border-input '
                     }`}
                   >
                     {item.rate}%
@@ -539,18 +498,13 @@ export default function TaxPage() {
                 ))}
                 <div className="flex items-center gap-1.5 ml-auto sm:ml-0">
                   <Input
-                    type="number"
-                    step="0.5"
-                    min="0"
-                    max="100"
-                    value={taxSettings.default_vat_rate}
-                    onChange={(e) => {
-                      const r = Number(e.target.value)
-                      setTaxSettings({ ...taxSettings, default_vat_rate: r })
-                      setTestRate(r)
+ type="number"step="0.5"min="0"max="100"value={taxSettings.default_vat_rate}
+ onChange={(e) => {
+ const r = Number(e.target.value)
+ setTaxSettings({ ...taxSettings, default_vat_rate: r })
+ setTestRate(r)
                     }}
-                    className="w-20 h-8 text-xs tabular-nums font-bold text-center"
-                  />
+ className="w-20 h-8 text-xs tabular-nums font-bold text-center"/>
                   <span className="text-xs font-bold text-muted-foreground">%</span>
                 </div>
               </div>
@@ -565,10 +519,10 @@ export default function TaxPage() {
         </Card>
 
         {/* Withholding Tax & Source Deductions (TDS & VDS) */}
-        <Card className="p-6 space-y-4 border-border rounded-2xl shadow-xs">
+        <Card className="p-6 space-y-4 border-border rounded-xl shadow-xs">
           <div className="border-b border-border pb-3">
-            <CardTitle className="text-base font-bold flex items-center gap-2 text-foreground dark:text-white">
-              <Scale className="h-4 w-4 text-purple-600" />
+            <CardTitle className="text-base font-bold flex items-center gap-2 text-foreground">
+              <Scale className="h-4 w-4 text-purple-600"/>
               <span>{tBilingual('Withholding Tax & Source Deductions (VDS / TDS)', 'উৎসে মূসক ও কর কর্তন সেটিংস')}</span>
             </CardTitle>
             <CardDescription className="text-xs text-muted-foreground mt-0.5">
@@ -581,10 +535,10 @@ export default function TaxPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* VDS Setting */}
-            <div className="p-4 rounded-xl border border-border space-y-3 bg-muted dark:bg-card">
+            <div className="p-4 rounded-xl border border-border space-y-3 bg-muted">
               <div className="flex items-center justify-between">
                 <div>
-                  <Label className="font-bold text-xs text-foreground dark:text-foreground">
+                  <Label className="font-bold text-xs text-foreground">
                     {tBilingual('VDS (VAT Deducted at Source)', 'উৎসে মূসক কর্তন')}
                   </Label>
                   <p className="text-2xs text-muted-foreground mt-0.5">
@@ -592,16 +546,14 @@ export default function TaxPage() {
                   </p>
                 </div>
                 <Button
-                  type="button"
-                  size="sm"
-                  variant={taxSettings.vds_enabled ? 'default' : 'outline'}
-                  onClick={() => {
-                    const next = !taxSettings.vds_enabled
-                    setTaxSettings({ ...taxSettings, vds_enabled: next })
-                    setTestVdsRate(next ? (taxSettings.vds_rate || 7.5) : 0)
+ type="button"size="sm"variant={taxSettings.vds_enabled ? 'default' : 'outline'}
+ onClick={() => {
+ const next = !taxSettings.vds_enabled
+ setTaxSettings({ ...taxSettings, vds_enabled: next })
+ setTestVdsRate(next ? (taxSettings.vds_rate || 7.5) : 0)
                   }}
-                  className={`h-7 px-2.5 text-xs font-bold ${
-                    taxSettings.vds_enabled ? 'bg-purple-600 text-white' : 'text-muted-foreground'
+ className={`h-7 px-2.5 text-xs font-bold ${
+ taxSettings.vds_enabled ? 'bg-purple-600 text-white' : 'text-muted-foreground'
                   }`}
                 >
                   {taxSettings.vds_enabled ? tBilingual('Active', 'সক্রিয়') : tBilingual('Off', 'বন্ধ')}
@@ -610,23 +562,18 @@ export default function TaxPage() {
 
               {taxSettings.vds_enabled && (
                 <div className="pt-2 border-t border-border flex items-center justify-between gap-3">
-                  <span className="text-xs text-muted-foreground dark:text-muted-foreground">
+                  <span className="text-xs text-muted-foreground">
                     {tBilingual('Default VDS Deduction Rate:', 'ডিফল্ট কর্তন হার:')}
                   </span>
                   <div className="flex items-center gap-1.5">
                     <Input
-                      type="number"
-                      step="0.5"
-                      min="0"
-                      max="100"
-                      value={taxSettings.vds_rate ?? 7.5}
-                      onChange={(e) => {
-                        const val = Number(e.target.value)
-                        setTaxSettings({ ...taxSettings, vds_rate: val })
-                        setTestVdsRate(val)
+ type="number"step="0.5"min="0"max="100"value={taxSettings.vds_rate ?? 7.5}
+ onChange={(e) => {
+ const val = Number(e.target.value)
+ setTaxSettings({ ...taxSettings, vds_rate: val })
+ setTestVdsRate(val)
                       }}
-                      className="w-20 h-7 text-xs tabular-nums font-bold text-center"
-                    />
+ className="w-20 h-7 text-xs tabular-nums font-bold text-center"/>
                     <span className="text-xs font-bold text-muted-foreground">%</span>
                   </div>
                 </div>
@@ -634,10 +581,10 @@ export default function TaxPage() {
             </div>
 
             {/* TDS Setting */}
-            <div className="p-4 rounded-xl border border-border space-y-3 bg-muted dark:bg-card">
+            <div className="p-4 rounded-xl border border-border space-y-3 bg-muted">
               <div className="flex items-center justify-between">
                 <div>
-                  <Label className="font-bold text-xs text-foreground dark:text-foreground">
+                  <Label className="font-bold text-xs text-foreground">
                     {tBilingual('TDS (Income Tax Deducted at Source)', 'উৎসে আয়কর কর্তন')}
                   </Label>
                   <p className="text-2xs text-muted-foreground mt-0.5">
@@ -645,16 +592,14 @@ export default function TaxPage() {
                   </p>
                 </div>
                 <Button
-                  type="button"
-                  size="sm"
-                  variant={taxSettings.tds_enabled ? 'default' : 'outline'}
-                  onClick={() => {
-                    const next = !taxSettings.tds_enabled
-                    setTaxSettings({ ...taxSettings, tds_enabled: next })
-                    setTestTdsRate(next ? (taxSettings.tds_rate || 3) : 0)
+ type="button"size="sm"variant={taxSettings.tds_enabled ? 'default' : 'outline'}
+ onClick={() => {
+ const next = !taxSettings.tds_enabled
+ setTaxSettings({ ...taxSettings, tds_enabled: next })
+ setTestTdsRate(next ? (taxSettings.tds_rate || 3) : 0)
                   }}
-                  className={`h-7 px-2.5 text-xs font-bold ${
-                    taxSettings.tds_enabled ? 'bg-purple-600 text-white' : 'text-muted-foreground'
+ className={`h-7 px-2.5 text-xs font-bold ${
+ taxSettings.tds_enabled ? 'bg-purple-600 text-white' : 'text-muted-foreground'
                   }`}
                 >
                   {taxSettings.tds_enabled ? tBilingual('Active', 'সক্রিয়') : tBilingual('Off', 'বন্ধ')}
@@ -663,23 +608,18 @@ export default function TaxPage() {
 
               {taxSettings.tds_enabled && (
                 <div className="pt-2 border-t border-border flex items-center justify-between gap-3">
-                  <span className="text-xs text-muted-foreground dark:text-muted-foreground">
+                  <span className="text-xs text-muted-foreground">
                     {tBilingual('Default TDS Deduction Rate:', 'ডিফল্ট আয়কর কর্তন হার:')}
                   </span>
                   <div className="flex items-center gap-1.5">
                     <Input
-                      type="number"
-                      step="0.5"
-                      min="0"
-                      max="100"
-                      value={taxSettings.tds_rate ?? 3.0}
-                      onChange={(e) => {
-                        const val = Number(e.target.value)
-                        setTaxSettings({ ...taxSettings, tds_rate: val })
-                        setTestTdsRate(val)
+ type="number"step="0.5"min="0"max="100"value={taxSettings.tds_rate ?? 3.0}
+ onChange={(e) => {
+ const val = Number(e.target.value)
+ setTaxSettings({ ...taxSettings, tds_rate: val })
+ setTestTdsRate(val)
                       }}
-                      className="w-20 h-7 text-xs tabular-nums font-bold text-center"
-                    />
+ className="w-20 h-7 text-xs tabular-nums font-bold text-center"/>
                     <span className="text-xs font-bold text-muted-foreground">%</span>
                   </div>
                 </div>
@@ -689,10 +629,10 @@ export default function TaxPage() {
         </Card>
 
         {/* National Board of Revenue (NBR) Legal Particulars */}
-        <Card className="p-6 space-y-4 border-border rounded-2xl shadow-xs">
+        <Card className="p-6 space-y-4 border-border rounded-xl shadow-xs">
           <div className="border-b border-border pb-3">
-            <CardTitle className="text-base font-bold flex items-center gap-2 text-foreground dark:text-white">
-              <Building className="h-4 w-4 text-emerald-600" />
+            <CardTitle className="text-base font-bold flex items-center gap-2 text-foreground">
+              <Building className="h-4 w-4 text-emerald-600"/>
               <span>{tBilingual('National Board of Revenue (NBR) Legal Particulars', 'জাতীয় রাজস্ব বোর্ড (এনবিআর) নিবন্ধনের তথ্য')}</span>
             </CardTitle>
             <CardDescription className="text-xs text-muted-foreground mt-0.5">
@@ -706,14 +646,13 @@ export default function TaxPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
-                <Label htmlFor="binNo" required className="text-xs font-semibold">
+                <Label htmlFor="binNo"required className="text-xs font-semibold">
                   {tBilingual('13-Digit Business Identification Number (BIN)', '১৩ ডিজিটের মূসক নিবন্ধন নম্বর')}
                 </Label>
                 {taxSettings.bin_number && (
                   <Badge
-                    variant="outline"
-                    className={`text-2xs tabular-nums ${
-                      binIsValid
+ variant="outline"className={`text-2xs tabular-nums ${
+ binIsValid
                         ? 'border-emerald-500 text-emerald-700 dark:text-emerald-300'
                         : 'border-amber-500 text-amber-700 dark:text-amber-300'
                     }`}
@@ -723,25 +662,21 @@ export default function TaxPage() {
                 )}
               </div>
               <Input
-                id="binNo"
-                placeholder="e.g. 1234567890123"
-                value={taxSettings.bin_number || ''}
-                onChange={(e) => setTaxSettings({ ...taxSettings, bin_number: e.target.value })}
-                required
-                className="tabular-nums font-bold tracking-wider text-sm h-9"
-              />
+ id="binNo"placeholder="e.g. 1234567890123"value={taxSettings.bin_number || ''}
+ onChange={(e) => setTaxSettings({ ...taxSettings, bin_number: e.target.value })}
+ required
+ className="tabular-nums font-bold tracking-wider text-sm h-9"/>
             </div>
 
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
-                <Label htmlFor="tinNo" required className="text-xs font-semibold">
+                <Label htmlFor="tinNo"required className="text-xs font-semibold">
                   {tBilingual('12-Digit Taxpayer Identification Number (TIN)', '১২ ডিজিটের ই-টিন নম্বর')}
                 </Label>
                 {taxSettings.tin_number && (
                   <Badge
-                    variant="outline"
-                    className={`text-2xs tabular-nums ${
-                      tinIsValid
+ variant="outline"className={`text-2xs tabular-nums ${
+ tinIsValid
                         ? 'border-emerald-500 text-emerald-700 dark:text-emerald-300'
                         : 'border-amber-500 text-amber-700 dark:text-amber-300'
                     }`}
@@ -751,43 +686,33 @@ export default function TaxPage() {
                 )}
               </div>
               <Input
-                id="tinNo"
-                placeholder="e.g. 849201948123"
-                value={taxSettings.tin_number || ''}
-                onChange={(e) => setTaxSettings({ ...taxSettings, tin_number: e.target.value })}
-                required
-                className="tabular-nums text-sm h-9"
-              />
+ id="tinNo"placeholder="e.g. 849201948123"value={taxSettings.tin_number || ''}
+ onChange={(e) => setTaxSettings({ ...taxSettings, tin_number: e.target.value })}
+ required
+ className="tabular-nums text-sm h-9"/>
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="space-y-1.5">
-              <Label htmlFor="trdLic" required className="text-xs font-semibold">
+              <Label htmlFor="trdLic"required className="text-xs font-semibold">
                 {tBilingual('Trade License Number', 'ট্রেড লাইসেন্স নম্বর')}
               </Label>
               <Input
-                id="trdLic"
-                placeholder="e.g. TRAD/DSCC/019284/2023"
-                value={taxSettings.trade_license_number || ''}
-                onChange={(e) => setTaxSettings({ ...taxSettings, trade_license_number: e.target.value })}
-                required
-                className="tabular-nums text-xs h-9"
-              />
+ id="trdLic"placeholder="e.g. TRAD/DSCC/019284/2023"value={taxSettings.trade_license_number || ''}
+ onChange={(e) => setTaxSettings({ ...taxSettings, trade_license_number: e.target.value })}
+ required
+ className="tabular-nums text-xs h-9"/>
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="vatComm" className="text-xs font-semibold">
+              <Label htmlFor="vatComm"className="text-xs font-semibold">
                 {tBilingual('VAT Commissionerate', 'কাস্টমস, এক্সাইজ ও ভ্যাট কমিশনারেট')}
               </Label>
               <Input
-                id="vatComm"
-                placeholder="e.g. Customs, Excise & VAT, Dhaka South"
-                value={taxSettings.vat_commissionerate || ''}
-                onChange={(e) => setTaxSettings({ ...taxSettings, vat_commissionerate: e.target.value })}
-                className="text-xs h-9"
-                list="commissionerates-list"
-              />
+ id="vatComm"placeholder="e.g. Customs, Excise & VAT, Dhaka South"value={taxSettings.vat_commissionerate || ''}
+ onChange={(e) => setTaxSettings({ ...taxSettings, vat_commissionerate: e.target.value })}
+ className="text-xs h-9"list="commissionerates-list"/>
               <datalist id="commissionerates-list">
                 {BANGLADESH_COMMISSIONERATES.map((c) => (
                   <option key={c} value={c} />
@@ -796,108 +721,89 @@ export default function TaxPage() {
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="vatCirc" className="text-xs font-semibold">
+              <Label htmlFor="vatCirc"className="text-xs font-semibold">
                 {tBilingual('VAT Circle / Division', 'ভ্যাট সার্কেল ও রাজস্ব বিভাগ')}
               </Label>
               <Input
-                id="vatCirc"
-                placeholder="e.g. Motijheel Circle, Revenue Division-02"
-                value={taxSettings.vat_circle || ''}
-                onChange={(e) => setTaxSettings({ ...taxSettings, vat_circle: e.target.value })}
-                className="text-xs h-9"
-              />
+ id="vatCirc"placeholder="e.g. Motijheel Circle, Revenue Division-02"value={taxSettings.vat_circle || ''}
+ onChange={(e) => setTaxSettings({ ...taxSettings, vat_circle: e.target.value })}
+ className="text-xs h-9"/>
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
             <div className="space-y-1.5">
-              <Label htmlFor="vatPerson" className="text-xs font-semibold flex items-center gap-1.5">
-                <UserCheck className="h-3.5 w-3.5 text-muted-foreground" />
+              <Label htmlFor="vatPerson"className="text-xs font-semibold flex items-center gap-1.5">
+                <UserCheck className="h-3.5 w-3.5 text-muted-foreground"/>
                 <span>{tBilingual('VAT Authorized Officer / In-Charge', 'দায়িত্বপ্রাপ্ত মূসক কর্মকর্তা')}</span>
               </Label>
               <Input
-                id="vatPerson"
-                placeholder="e.g. Md. Rafiqul Islam (Manager Finance)"
-                value={taxSettings.vat_responsible_person || ''}
-                onChange={(e) => setTaxSettings({ ...taxSettings, vat_responsible_person: e.target.value })}
-                className="text-xs h-9"
-              />
+ id="vatPerson"placeholder="e.g. Md. Rafiqul Islam (Manager Finance)"value={taxSettings.vat_responsible_person || ''}
+ onChange={(e) => setTaxSettings({ ...taxSettings, vat_responsible_person: e.target.value })}
+ className="text-xs h-9"/>
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="vatPhone" className="text-xs font-semibold flex items-center gap-1.5">
-                <Phone className="h-3.5 w-3.5 text-muted-foreground" />
+              <Label htmlFor="vatPhone"className="text-xs font-semibold flex items-center gap-1.5">
+                <Phone className="h-3.5 w-3.5 text-muted-foreground"/>
                 <span>{tBilingual('Tax Officer Contact Mobile', 'কর্মকর্তার মোবাইল নম্বর')}</span>
               </Label>
               <Input
-                id="vatPhone"
-                placeholder="e.g. 01712345678"
-                value={taxSettings.vat_responsible_phone || ''}
-                onChange={(e) => setTaxSettings({ ...taxSettings, vat_responsible_phone: e.target.value })}
-                className="tabular-nums text-xs h-9"
-              />
+ id="vatPhone"placeholder="e.g. 01712345678"value={taxSettings.vat_responsible_phone || ''}
+ onChange={(e) => setTaxSettings({ ...taxSettings, vat_responsible_phone: e.target.value })}
+ className="tabular-nums text-xs h-9"/>
             </div>
           </div>
 
           {/* Statutory Documents Compliance Switches */}
           <div className="pt-3 border-t border-border space-y-2">
-            <Label className="text-xs font-bold text-foreground dark:text-foreground">
+            <Label className="text-xs font-bold text-foreground">
               {tBilingual('Statutory NBR Documents Auto-Generation', 'এনবিআর সংবিধিবদ্ধ দলিল স্বয়ংক্রিয় তৈরি')}
             </Label>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
               <label className="flex items-center gap-2 p-2.5 rounded-lg border border-border bg-card cursor-pointer hover:bg-muted dark:hover:bg-muted/60">
                 <input
-                  type="checkbox"
-                  checked={taxSettings.mushak_6_3_enabled !== false}
-                  onChange={(e) => setTaxSettings({ ...taxSettings, mushak_6_3_enabled: e.target.checked })}
-                  className="rounded border-input text-emerald-600 focus:ring-emerald-500"
-                />
-                <span className="text-xs font-semibold text-foreground dark:text-foreground">
+ type="checkbox"checked={taxSettings.mushak_6_3_enabled !== false}
+ onChange={(e) => setTaxSettings({ ...taxSettings, mushak_6_3_enabled: e.target.checked })}
+ className="rounded border-input text-emerald-600 focus:ring-emerald-500"/>
+                <span className="text-xs font-semibold text-foreground">
                   {tBilingual('Mushak 6.3 (Tax Invoice)', 'মূসক-৬.৩ কর চালান')}
                 </span>
               </label>
 
               <label className="flex items-center gap-2 p-2.5 rounded-lg border border-border bg-card cursor-pointer hover:bg-muted dark:hover:bg-muted/60">
                 <input
-                  type="checkbox"
-                  checked={taxSettings.mushak_6_5_enabled !== false}
-                  onChange={(e) => setTaxSettings({ ...taxSettings, mushak_6_5_enabled: e.target.checked })}
-                  className="rounded border-input text-emerald-600 focus:ring-emerald-500"
-                />
-                <span className="text-xs font-semibold text-foreground dark:text-foreground">
+ type="checkbox"checked={taxSettings.mushak_6_5_enabled !== false}
+ onChange={(e) => setTaxSettings({ ...taxSettings, mushak_6_5_enabled: e.target.checked })}
+ className="rounded border-input text-emerald-600 focus:ring-emerald-500"/>
+                <span className="text-xs font-semibold text-foreground">
                   {tBilingual('Mushak 6.5 (Factory Transfer)', 'মূসক-৬.৫ কারখানা চালান')}
                 </span>
               </label>
 
               <label className="flex items-center gap-2 p-2.5 rounded-lg border border-border bg-card cursor-pointer hover:bg-muted dark:hover:bg-muted/60">
                 <input
-                  type="checkbox"
-                  checked={taxSettings.mushak_6_6_enabled !== false}
-                  onChange={(e) => setTaxSettings({ ...taxSettings, mushak_6_6_enabled: e.target.checked })}
-                  className="rounded border-input text-emerald-600 focus:ring-emerald-500"
-                />
-                <span className="text-xs font-semibold text-foreground dark:text-foreground">
+ type="checkbox"checked={taxSettings.mushak_6_6_enabled !== false}
+ onChange={(e) => setTaxSettings({ ...taxSettings, mushak_6_6_enabled: e.target.checked })}
+ className="rounded border-input text-emerald-600 focus:ring-emerald-500"/>
+                <span className="text-xs font-semibold text-foreground">
                   {tBilingual('Mushak 6.6 (VDS Certificate)', 'মূসক-৬.৬ কর্তন সনদ')}
                 </span>
               </label>
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-border dark:border-border">
-            <div className="text-2xs text-muted-foreground dark:text-muted-foreground">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-border">
+            <div className="text-2xs text-muted-foreground">
               {tBilingual(
                 'Changes take effect immediately on all new invoices, quotations, and challans.',
                 'পরিবর্তনসমূহ তাৎক্ষণিকভাবে সকল নতুন ইনভয়েস ও কোটেশনে কার্যকর হবে।'
               )}
             </div>
             <Button
-              type="submit"
-              isLoading={isLoading}
-              variant="success"
-              size="sm"
-              className="gap-1.5 w-full sm:w-auto"
-            >
-              <Save className="h-3.5 w-3.5" />
+ type="submit"isLoading={isLoading}
+ variant="success"size="sm"className="gap-1.5 w-full sm:w-auto">
+              <Save className="h-3.5 w-3.5"/>
               <span>{tBilingual('Save Tax & VAT Settings', 'ভ্যাট ও ট্যাক্স সেটিংস সংরক্ষণ করুন')}</span>
             </Button>
           </div>
@@ -905,11 +811,11 @@ export default function TaxPage() {
       </form>
 
       {/* Interactive Live VAT Calculation Tester */}
-      <Card className="p-5 border-border rounded-2xl space-y-4 shadow-xs">
+      <Card className="p-5 border-border rounded-xl space-y-4 shadow-xs">
         <div className="flex items-center justify-between border-b border-border pb-3">
           <div className="flex items-center gap-2">
-            <Calculator className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-            <h3 className="font-bold text-sm text-foreground dark:text-white">
+            <Calculator className="h-5 w-5 text-blue-600 dark:text-blue-400"/>
+            <h3 className="font-bold text-sm text-foreground">
               {tBilingual('Live Pricing, VAT & Withholding Simulator', 'লাইভ প্রাইসিং, ভ্যাট ও উৎসে কর সিমুলেটর')}
             </h3>
           </div>
@@ -920,69 +826,56 @@ export default function TaxPage() {
 
         <div className="grid grid-cols-1 sm:grid-cols-5 gap-3">
           <div className="space-y-1">
-            <Label className="text-2xs font-semibold text-foreground dark:text-muted-foreground">
+            <Label className="text-2xs font-semibold text-foreground">
               {tBilingual('Order Amount', 'অর্ডার মূল্য')}
             </Label>
             <Input
-              type="number"
-              value={testAmount}
-              onChange={(e) => setTestAmount(Number(e.target.value))}
-              className="h-8 text-xs tabular-nums font-bold"
-            />
+ type="number"value={testAmount}
+ onChange={(e) => setTestAmount(Number(e.target.value))}
+ className="h-8 text-xs tabular-nums font-bold"/>
           </div>
 
           <div className="space-y-1">
-            <Label className="text-2xs font-semibold text-foreground dark:text-muted-foreground">
+            <Label className="text-2xs font-semibold text-foreground">
               {tBilingual('VAT Rate (%)', 'ভ্যাট হার (%)')}
             </Label>
             <Input
-              type="number"
-              value={testRate}
-              onChange={(e) => setTestRate(Number(e.target.value))}
-              className="h-8 text-xs tabular-nums font-bold"
-            />
+ type="number"value={testRate}
+ onChange={(e) => setTestRate(Number(e.target.value))}
+ className="h-8 text-xs tabular-nums font-bold"/>
           </div>
 
           <div className="space-y-1">
-            <Label className="text-2xs font-semibold text-foreground dark:text-muted-foreground">
+            <Label className="text-2xs font-semibold text-foreground">
               {tBilingual('Pricing Mode', 'মূল্য মোড')}
             </Label>
             <select
-              value={testMode}
-              onChange={(e) => setTestMode(e.target.value as any)}
-              className="w-full h-8 px-2 rounded-md border border-input bg-card text-xs font-bold text-foreground dark:text-foreground"
-            >
+ value={testMode}
+ onChange={(e) => setTestMode(e.target.value as any)}
+ className="w-full h-8 px-2 rounded-md border border-input bg-card text-xs font-bold text-foreground">
               <option value="exclusive">VAT-Exclusive (+ VAT)</option>
               <option value="inclusive">VAT-Inclusive (Contains VAT)</option>
             </select>
           </div>
 
           <div className="space-y-1">
-            <Label className="text-2xs font-semibold text-foreground dark:text-muted-foreground">
+            <Label className="text-2xs font-semibold text-foreground">
               {tBilingual('VDS Deduction (%)', 'উৎসে মূসক কর্তন (%)')}
             </Label>
             <Input
-              type="number"
-              step="0.5"
-              value={testVdsRate}
-              onChange={(e) => setTestVdsRate(Number(e.target.value))}
-              className="h-8 text-xs tabular-nums font-bold"
-              placeholder="0%"
-            />
+ type="number"step="0.5"value={testVdsRate}
+ onChange={(e) => setTestVdsRate(Number(e.target.value))}
+ className="h-8 text-xs tabular-nums font-bold"placeholder="0%"/>
           </div>
 
           <div className="space-y-1">
-            <Label className="text-2xs font-semibold text-foreground dark:text-muted-foreground">
+            <Label className="text-2xs font-semibold text-foreground">
               {tBilingual('TDS Deduction (%)', 'উৎসে আয়কর কর্তন (%)')}
             </Label>
             <Input
-              type="number"
-              step="0.5"
-              value={testTdsRate}
-              onChange={(e) => setTestTdsRate(Number(e.target.value))}
-              className="h-8 text-xs tabular-nums font-bold"
-              placeholder="0%"
-            />
+ type="number"step="0.5"value={testTdsRate}
+ onChange={(e) => setTestTdsRate(Number(e.target.value))}
+ className="h-8 text-xs tabular-nums font-bold"placeholder="0%"/>
           </div>
         </div>
 

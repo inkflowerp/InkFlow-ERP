@@ -6,51 +6,51 @@ import { useI18n } from '@/i18n/context'
 import { toBengaliNumerals } from '@/lib/formatters'
 
 export interface LiveDhakaClockProps {
-  className?: string
-  timeClassName?: string
-  iconClassName?: string
-  showSeconds?: boolean
-  showIcon?: boolean
+ className?: string
+ timeClassName?: string
+ iconClassName?: string
+ showSeconds?: boolean
+ showIcon?: boolean
 }
 
 /**
  * Hydration-safe live clock operating strictly in Asia/Dhaka (UTC+6)
  */
 export function LiveDhakaClock({
-  className = 'inline-flex items-center gap-1.5 font-numeric tabular-nums text-xs font-semibold text-muted-foreground dark:text-muted-foreground',
-  timeClassName,
-  iconClassName = 'h-3.5 w-3.5 text-muted-foreground shrink-0',
-  showSeconds = true,
-  showIcon = true,
+ className = 'inline-flex items-center gap-1.5 font-numeric tabular-nums text-xs font-semibold text-muted-foreground ',
+ timeClassName,
+ iconClassName = 'h-3.5 w-3.5 text-muted-foreground shrink-0',
+ showSeconds = true,
+ showIcon = true,
 }: LiveDhakaClockProps) {
-  const { locale } = useI18n()
-  const [timeString, setTimeString] = useState<string>('')
-  const [mounted, setMounted] = useState(false)
+ const { locale } = useI18n()
+ const [timeString, setTimeString] = useState<string>('')
+ const [mounted, setMounted] = useState(false)
 
-  useEffect(() => {
-    setMounted(true)
-    const updateTime = () => {
-      try {
-        const now = new Date()
-        const formatted = now.toLocaleTimeString('en-US', {
-          timeZone: 'Asia/Dhaka',
-          hour: '2-digit',
-          minute: '2-digit',
+ useEffect(() => {
+ setMounted(true)
+ const updateTime = () => {
+ try {
+ const now = new Date()
+ const formatted = now.toLocaleTimeString('en-US', {
+ timeZone: 'Asia/Dhaka',
+ hour: '2-digit',
+ minute: '2-digit',
           ...(showSeconds ? { second: '2-digit' } : {}),
-          hour12: true,
+ hour12: true,
         })
-        setTimeString(formatted)
+ setTimeString(formatted)
       } catch {
         // Fallback gracefully
       }
     }
 
-    updateTime()
-    const timer = setInterval(updateTime, 1000)
-    return () => clearInterval(timer)
+ updateTime()
+ const timer = setInterval(updateTime, 1000)
+ return () => clearInterval(timer)
   }, [locale, showSeconds])
 
-  return (
+ return (
     <span className={className} suppressHydrationWarning>
       {showIcon && <Clock className={iconClassName} />}
       <span className={timeClassName} suppressHydrationWarning>

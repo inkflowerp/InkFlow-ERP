@@ -2,16 +2,16 @@
 
 import React from 'react'
 import {
-  Layers,
-  Package,
-  Disc,
-  Send,
-  Scissors,
-  MapPin,
-  ShoppingBag,
-  Truck,
-  FileText,
-  Flame,
+ Layers,
+ Package,
+ Disc,
+ Send,
+ Scissors,
+ MapPin,
+ ShoppingBag,
+ Truck,
+ FileText,
+ Flame,
 } from 'lucide-react'
 import { useI18n } from '@/i18n/context'
 import { cn } from '@/lib/utils'
@@ -28,148 +28,147 @@ export type InventoryViewTab =
   | 'ledger'
 
 export interface TabConfig {
-  id: InventoryViewTab
-  labelEn: string
-  labelBn: string
-  icon: React.ElementType
-  count?: number
-  alert?: boolean
+ id: InventoryViewTab
+ labelEn: string
+ labelBn: string
+ icon: React.ElementType
+ count?: number
+ alert?: boolean
 }
 
 export interface InventoryTabsNavigationProps {
-  currentView: InventoryViewTab
-  onSelectTab: (tab: InventoryViewTab) => void
-  materialsCount: number
-  readyProductsCount: number
-  rollsCount: number
-  requestsCount: number
-  pendingRequestsCount: number
-  remnantsCount: number
-  locationsCount: number
-  ordersCount: number
-  pendingInwardCount: number
-  ledgerCount: number
+ currentView: InventoryViewTab
+ onSelectTab: (tab: InventoryViewTab) => void
+ materialsCount: number
+ readyProductsCount: number
+ rollsCount: number
+ requestsCount: number
+ pendingRequestsCount: number
+ remnantsCount: number
+ locationsCount: number
+ ordersCount: number
+ pendingInwardCount: number
+ ledgerCount: number
 }
 
 export function InventoryTabsNavigation({
-  currentView,
-  onSelectTab,
-  materialsCount,
-  readyProductsCount,
-  rollsCount,
-  requestsCount,
-  pendingRequestsCount,
-  remnantsCount,
-  locationsCount,
-  ordersCount,
-  pendingInwardCount,
-  ledgerCount,
+ currentView,
+ onSelectTab,
+ materialsCount,
+ readyProductsCount,
+ rollsCount,
+ requestsCount,
+ pendingRequestsCount,
+ remnantsCount,
+ locationsCount,
+ ordersCount,
+ pendingInwardCount,
+ ledgerCount,
 }: InventoryTabsNavigationProps) {
-  const { locale, tBilingual } = useI18n()
-  const isBn = locale === 'bn'
+ const { locale, tBilingual } = useI18n()
+ const isBn = locale === 'bn'
 
-  const tabs: TabConfig[] = [
+ const tabs: TabConfig[] = [
     {
-      id: 'materials',
-      labelEn: 'Raw Materials',
-      labelBn: 'কাঁচামাল ও রোল মিডিয়া',
-      icon: Layers,
-      count: materialsCount,
+ id: 'materials',
+ labelEn: 'Raw Materials',
+ labelBn: 'কাঁচামাল ও রোল মিডিয়া',
+ icon: Layers,
+ count: materialsCount,
     },
     {
-      id: 'ready_products',
-      labelEn: 'Ready Products',
-      labelBn: 'রেডি প্রোডাক্ট স্টক',
-      icon: Package,
-      count: readyProductsCount,
+ id: 'ready_products',
+ labelEn: 'Ready Products',
+ labelBn: 'রেডি প্রোডাক্ট স্টক',
+ icon: Package,
+ count: readyProductsCount,
     },
     {
-      id: 'rolls',
-      labelEn: 'Physical Rolls',
-      labelBn: 'রোল তালিকা ও প্রেস',
-      icon: Disc,
-      count: rollsCount,
+ id: 'rolls',
+ labelEn: 'Physical Rolls',
+ labelBn: 'রোল তালিকা ও প্রেস',
+ icon: Disc,
+ count: rollsCount,
     },
     {
-      id: 'requests',
-      labelEn: 'Material Requests',
-      labelBn: 'রিকুইজিশন',
-      icon: Send,
-      count: requestsCount,
-      alert: pendingRequestsCount > 0,
+ id: 'requests',
+ labelEn: 'Material Requests',
+ labelBn: 'রিকুইজিশন',
+ icon: Send,
+ count: requestsCount,
+ alert: pendingRequestsCount > 0,
     },
     {
-      id: 'remnants',
-      labelEn: 'Off-Cuts & Remnants',
-      labelBn: 'অফ-কাট ও অবশিষ্টাংশ',
-      icon: Scissors,
-      count: remnantsCount,
+ id: 'remnants',
+ labelEn: 'Off-Cuts & Remnants',
+ labelBn: 'অফ-কাট ও অবশিষ্টাংশ',
+ icon: Scissors,
+ count: remnantsCount,
     },
     {
-      id: 'locations',
-      labelEn: 'Locations & Stores',
-      labelBn: 'স্টোর ও ওয়্যারহাউস',
-      icon: MapPin,
-      count: locationsCount,
+ id: 'locations',
+ labelEn: 'Locations & Stores',
+ labelBn: 'স্টোর ও ওয়্যারহাউস',
+ icon: MapPin,
+ count: locationsCount,
     },
     {
-      id: 'purchases',
-      labelEn: 'Purchase Orders',
-      labelBn: 'ক্রয়াদেশ সমূহ',
-      icon: ShoppingBag,
-      count: ordersCount,
+ id: 'purchases',
+ labelEn: 'Purchase Orders',
+ labelBn: 'ক্রয়াদেশ সমূহ',
+ icon: ShoppingBag,
+ count: ordersCount,
     },
     {
-      id: 'receiving',
-      labelEn: 'Goods Receiving',
-      labelBn: 'পণ্য গ্রহণ ও রিসিভিং',
-      icon: Truck,
-      count: pendingInwardCount,
-      alert: pendingInwardCount > 0,
+ id: 'receiving',
+ labelEn: 'Goods Receiving',
+ labelBn: 'পণ্য গ্রহণ ও রিসিভিং',
+ icon: Truck,
+ count: pendingInwardCount,
+ alert: pendingInwardCount > 0,
     },
     {
-      id: 'ledger',
-      labelEn: 'Stock Ledger',
-      labelBn: 'স্টক খতিয়ান',
-      icon: FileText,
-      count: ledgerCount,
+ id: 'ledger',
+ labelEn: 'Stock Ledger',
+ labelBn: 'স্টক খতিয়ান',
+ icon: FileText,
+ count: ledgerCount,
     },
   ]
 
-  return (
+ return (
     <div className="flex items-center gap-1.5 border-b border-border overflow-x-auto pb-2 scrollbar-thin">
       {tabs.map((tab) => {
-        const Icon = tab.icon
-        const isActive = currentView === tab.id
+ const Icon = tab.icon
+ const isActive = currentView === tab.id
 
-        return (
+ return (
           <button
-            key={tab.id}
-            type="button"
-            onClick={() => onSelectTab(tab.id)}
-            className={cn(
+ key={tab.id}
+ type="button"onClick={() => onSelectTab(tab.id)}
+ className={cn(
               'flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer border shrink-0',
-              isActive
-                ? 'bg-slate-900 text-white border-slate-900 dark:border-white shadow-xs'
+ isActive
+                ? 'bg-surface-inset text-foreground border-border dark:border-white shadow-xs'
                 : 'bg-card text-muted-foreground border-border hover:bg-muted dark:hover:bg-muted'
             )}
           >
             <Icon
-              className={cn(
+ className={cn(
                 'h-3.5 w-3.5',
-                isActive ? 'text-emerald-400 dark:text-emerald-600' : 'text-muted-foreground'
+ isActive ? 'text-emerald-400 dark:text-emerald-600' : 'text-muted-foreground'
               )}
             />
             <span>{tBilingual(tab.labelEn, tab.labelBn)}</span>
             {tab.count !== undefined && (
               <span
-                className={cn(
+ className={cn(
                   'px-1.5 py-0.5 rounded-full text-2xs tabular-nums font-bold',
-                  tab.alert
+ tab.alert
                     ? 'bg-amber-500 text-white animate-pulse'
                     : isActive
-                    ? 'bg-card/20 text-white dark:text-foreground'
-                    : 'bg-muted text-muted-foreground dark:text-muted-foreground'
+                    ? 'bg-card/20 text-white '
+                    : 'bg-muted text-muted-foreground '
                 )}
               >
                 {tab.count}

@@ -15,43 +15,43 @@ import { useRealtime } from '@/components/providers/realtime-provider'
 import { AttendancePunchModal } from '@/components/mobile/attendance-punch-modal'
 
 export function TopNav() {
-  const router = useRouter()
-  const pathname = usePathname()
-  const { t, tBilingual } = useI18n()
-  const { company } = useTenant()
-  const { isLive, status } = useRealtime()
-  const [isAttendanceOpen, setIsAttendanceOpen] = useState(false)
+ const router = useRouter()
+ const pathname = usePathname()
+ const { t, tBilingual } = useI18n()
+ const { company } = useTenant()
+ const { isLive, status } = useRealtime()
+ const [isAttendanceOpen, setIsAttendanceOpen] = useState(false)
 
   // Listen for global attendance punch triggers across components
-  useEffect(() => {
-    const handleOpen = () => setIsAttendanceOpen(true)
-    const handleClose = () => setIsAttendanceOpen(false)
-    const handleToggle = () => setIsAttendanceOpen((prev) => !prev)
+ useEffect(() => {
+ const handleOpen = () => setIsAttendanceOpen(true)
+ const handleClose = () => setIsAttendanceOpen(false)
+ const handleToggle = () => setIsAttendanceOpen((prev) => !prev)
 
-    window.addEventListener('printerp_open_attendance_modal', handleOpen)
-    window.addEventListener('printerp_open_attendance_punch', handleOpen)
-    window.addEventListener('printerp_close_attendance_modal', handleClose)
-    window.addEventListener('printerp_toggle_attendance_modal', handleToggle)
+ window.addEventListener('printerp_open_attendance_modal', handleOpen)
+ window.addEventListener('printerp_open_attendance_punch', handleOpen)
+ window.addEventListener('printerp_close_attendance_modal', handleClose)
+ window.addEventListener('printerp_toggle_attendance_modal', handleToggle)
 
-    return () => {
-      window.removeEventListener('printerp_open_attendance_modal', handleOpen)
-      window.removeEventListener('printerp_open_attendance_punch', handleOpen)
-      window.removeEventListener('printerp_close_attendance_modal', handleClose)
-      window.removeEventListener('printerp_toggle_attendance_modal', handleToggle)
+ return () => {
+ window.removeEventListener('printerp_open_attendance_modal', handleOpen)
+ window.removeEventListener('printerp_open_attendance_punch', handleOpen)
+ window.removeEventListener('printerp_close_attendance_modal', handleClose)
+ window.removeEventListener('printerp_toggle_attendance_modal', handleToggle)
     }
   }, [])
 
-  const pathSlug = pathname ? pathname.split('/')[1] : null
-  const slug = (pathSlug && pathSlug !== 'platform-admin' && pathSlug !== 'login' && pathSlug !== 'onboarding' ? pathSlug : company?.slug) || 'app'
+ const pathSlug = pathname ? pathname.split('/')[1] : null
+ const slug = (pathSlug && pathSlug !== 'platform-admin' && pathSlug !== 'login' && pathSlug !== 'onboarding' ? pathSlug : company?.slug) || 'app'
 
-  return (
+ return (
     <header className="sticky top-0 z-40 flex h-16 w-full items-center justify-between border-b border-border bg-card/95 px-2.5 sm:px-6 backdrop-blur-md gap-2 sm:gap-4 relative">
       {/* Signature Printing Industry CMYK Micro Accent */}
-      <div className="absolute top-0 inset-x-0 h-0.5 cmyk-rainbow-bar opacity-85" />
+      <div className="absolute top-0 inset-x-0 h-0.5 cmyk-rainbow-bar opacity-85"/>
 
       {/* LEFT: Mobile Nav Drawer + Company Selector + Breadcrumbs */}
       <div className="flex items-center gap-1.5 sm:gap-3 min-w-0 shrink">
-        <React.Suspense fallback={<div className="h-10 w-10 shrink-0" />}>
+        <React.Suspense fallback={<div className="h-10 w-10 shrink-0"/>}>
           <MobileNav />
         </React.Suspense>
         <CompanySelector />
@@ -63,21 +63,18 @@ export function TopNav() {
       {/* RIGHT: Live Status + Flexible Search + Attendance/Punch + Notifications + User Avatar */}
       <div className="flex items-center gap-1.5 sm:gap-2.5 min-w-0 shrink-0">
         {/* Realtime Live Sync Health Indicator */}
-        <div className="hidden lg:flex items-center mr-0.5 shrink-0" suppressHydrationWarning>
+        <div className="hidden lg:flex items-center mr-0.5 shrink-0"suppressHydrationWarning>
           {isLive ? (
             <span
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200/80 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800/80"
-              title="Live Database Realtime Connected: Synchronized across all users & tabs"
-            >
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+ className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200/80 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800/80"title="Live Database Realtime Connected: Synchronized across all users & tabs">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"/>
               <span>Live</span>
             </span>
           ) : (
             <span
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200/80 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800/80"
-              title={`Connection State: ${status}`}
+ className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200/80 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800/80"title={`Connection State: ${status}`}
             >
-              <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+              <span className="h-1.5 w-1.5 rounded-full bg-amber-500"/>
               <span>{status === 'connecting' || status === 'reconnecting' ? 'Syncing...' : 'Live Ready'}</span>
             </span>
           )}
@@ -85,13 +82,10 @@ export function TopNav() {
 
         {/* Global Search Bar - Responsive Width */}
         <button
-          type="button"
-          onClick={() => window.dispatchEvent(new Event('printerp_open_search'))}
-          className="hidden sm:flex items-center justify-between gap-2 sm:gap-3 w-36 md:w-52 lg:w-64 xl:w-80 rounded-lg border border-border bg-muted/40 hover:bg-muted/70 px-3 py-1.5 sm:py-2 text-xs sm:text-sm text-muted-foreground hover:text-foreground cursor-pointer shrink transition-colors min-h-[38px] shadow-2xs"
-          title="Global Search (⌘K or /)"
-        >
+ type="button"onClick={() => window.dispatchEvent(new Event('printerp_open_search'))}
+ className="hidden sm:flex items-center justify-between gap-2 sm:gap-3 w-36 md:w-52 lg:w-64 xl:w-80 rounded-lg border border-border bg-muted/40 hover:bg-muted/70 px-3 py-1.5 sm:py-2 text-xs sm:text-sm text-muted-foreground hover:text-foreground cursor-pointer shrink transition-colors min-h-[38px] shadow-2xs"title="Global Search (⌘K or /)">
           <div className="flex items-center gap-2 min-w-0">
-            <Search className="h-4 w-4 text-muted-foreground shrink-0" />
+            <Search className="h-4 w-4 text-muted-foreground shrink-0"/>
             <span className="truncate bangla-text font-medium text-muted-foreground">{t('common.search')}</span>
           </div>
           <kbd className="hidden md:inline-flex items-center gap-0.5 rounded-md border border-border bg-background px-1.5 py-0.5 text-2xs font-bold text-muted-foreground tabular-nums shrink-0 shadow-2xs">
@@ -101,24 +95,18 @@ export function TopNav() {
 
         {/* Quick Search Icon Button (Mobile under 640px) */}
         <button
-          type="button"
-          onClick={() => window.dispatchEvent(new Event('printerp_open_search'))}
-          className="sm:hidden flex items-center justify-center h-9 w-9 rounded-lg border border-border bg-muted/40 text-muted-foreground hover:text-foreground hover:bg-muted/70 cursor-pointer shrink-0 min-h-[36px] min-w-[36px] transition-colors"
-          title="Global Search (/)"
-          aria-label="Search"
-        >
-          <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
+ type="button"onClick={() => window.dispatchEvent(new Event('printerp_open_search'))}
+ className="sm:hidden flex items-center justify-center h-9 w-9 rounded-lg border border-border bg-muted/40 text-muted-foreground hover:text-foreground hover:bg-muted/70 cursor-pointer shrink-0 min-h-[36px] min-w-[36px] transition-colors"title="Global Search (/)"aria-label="Search">
+          <Search className="h-4 w-4 shrink-0 text-muted-foreground"/>
         </button>
 
         {/* Dedicated Employee Attendance & Shift Punch Action */}
         <button
-          type="button"
-          onClick={() => setIsAttendanceOpen(true)}
-          className="relative rounded-lg border border-border bg-card p-2 text-muted-foreground hover:bg-muted hover:text-primary cursor-pointer shadow-2xs transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 shrink-0"
-          title={tBilingual('Employee Attendance & Shift Punch', 'কর্মচারী উপস্থিতি ও শিফট পাঞ্চ')}
-          aria-label={tBilingual('Employee Attendance & Shift Punch', 'কর্মচারী উপস্থিতি ও শিফট পাঞ্চ')}
+ type="button"onClick={() => setIsAttendanceOpen(true)}
+ className="relative rounded-lg border border-border bg-card p-2 text-muted-foreground hover:bg-muted hover:text-primary cursor-pointer shadow-2xs transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 shrink-0"title={tBilingual('Employee Attendance & Shift Punch', 'কর্মচারী উপস্থিতি ও শিফট পাঞ্চ')}
+ aria-label={tBilingual('Employee Attendance & Shift Punch', 'কর্মচারী উপস্থিতি ও শিফট পাঞ্চ')}
         >
-          <QrCode className="h-4 w-4" />
+          <QrCode className="h-4 w-4"/>
         </button>
 
         {/* Theme Toggle Button */}
@@ -127,7 +115,7 @@ export function TopNav() {
         {/* Notifications Dropdown */}
         <NotificationsDropdown />
 
-        <div className="h-5 w-px bg-muted mx-0.5 shrink-0" />
+        <div className="h-5 w-px bg-muted mx-0.5 shrink-0"/>
 
         {/* User Profile Menu */}
         <UserMenu />
@@ -136,9 +124,9 @@ export function TopNav() {
       {/* Direct Attendance Punch Modal */}
       {isAttendanceOpen && (
         <AttendancePunchModal
-          open={isAttendanceOpen}
-          onClose={() => setIsAttendanceOpen(false)}
-          tenantSlug={slug}
+ open={isAttendanceOpen}
+ onClose={() => setIsAttendanceOpen(false)}
+ tenantSlug={slug}
         />
       )}
     </header>

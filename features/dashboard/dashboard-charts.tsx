@@ -2,18 +2,18 @@
 
 import React, { useMemo } from 'react'
 import {
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  CartesianGrid,
-  PieChart,
-  Pie,
-  Cell,
-  AreaChart,
-  Area,
+ ResponsiveContainer,
+ BarChart,
+ Bar,
+ XAxis,
+ YAxis,
+ Tooltip,
+ CartesianGrid,
+ PieChart,
+ Pie,
+ Cell,
+ AreaChart,
+ Area,
 } from 'recharts'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -29,13 +29,13 @@ import { BarChart2 } from 'lucide-react'
 import { getBangladeshDateRange, toBangladeshDateString } from '@/lib/utils/business-date'
 
 export function DashboardChartsSkeleton() {
-  return (
+ return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-pulse">
       {[1, 2, 3, 4].map((i) => (
-        <Card key={i} className="p-5 border-border dark:border-border">
-          <div className="h-5 w-48 bg-muted rounded mb-2" />
-          <div className="h-3 w-64 bg-muted rounded mb-6" />
-          <div className="h-56 bg-muted rounded-xl" />
+        <Card key={i} className="p-5 border-border">
+          <div className="h-5 w-48 bg-muted rounded mb-2"/>
+          <div className="h-3 w-64 bg-muted rounded mb-6"/>
+          <div className="h-56 bg-muted rounded-xl"/>
         </Card>
       ))}
     </div>
@@ -43,19 +43,19 @@ export function DashboardChartsSkeleton() {
 }
 
 function EmptyChartState({ title, titleBn }: { title?: string; titleBn?: string }) {
-  const { tBilingual } = useI18n()
-  return (
+ const { tBilingual } = useI18n()
+ return (
     <div className="h-56 w-full flex flex-col items-center justify-center rounded-xl border border-dashed border-border bg-muted text-center p-6">
       <div className="rounded-full bg-muted p-3 text-muted-foreground mb-2">
-        <BarChart2 className="h-5 w-5" />
+        <BarChart2 className="h-5 w-5"/>
       </div>
       <p className="text-xs font-semibold text-foreground bangla-text">
         {tBilingual('Not enough data yet', 'এখনও পর্যাপ্ত তথ্য নেই')}
       </p>
       <p className="text-xs text-muted-foreground max-w-xs mt-1 bangla-text">
         {tBilingual(
-          title || 'New chart trends will appear automatically as you create records.',
-          titleBn || 'নতুন রেকর্ড তৈরি করলে চার্ট স্বয়ংক্রিয়ভাবে আপডেট হবে।'
+ title || 'New chart trends will appear automatically as you create records.',
+ titleBn || 'নতুন রেকর্ড তৈরি করলে চার্ট স্বয়ংক্রিয়ভাবে আপডেট হবে।'
         )}
       </p>
     </div>
@@ -63,120 +63,120 @@ function EmptyChartState({ title, titleBn }: { title?: string; titleBn?: string 
 }
 
 export function DashboardCharts() {
-  const { locale, tBilingual } = useI18n()
-  const { isOwner, isSales, isAccountant, can } = usePermissions()
-  const canSeeFinancials = isOwner || isSales || isAccountant || can('view', 'invoices') || can('view', 'reports')
-  const num = (v: number | string) => (typeof v === 'number' ? v.toLocaleString() : v)
+ const { locale, tBilingual } = useI18n()
+ const { isOwner, isSales, isAccountant, can } = usePermissions()
+ const canSeeFinancials = isOwner || isSales || isAccountant || can('view', 'invoices') || can('view', 'reports')
+ const num = (v: number | string) => (typeof v === 'number' ? v.toLocaleString() : v)
 
   // Live Data Stores
-  const [orders] = useDataStore<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS, [])
-  const [invoices] = useDataStore<InvoiceRecord[]>(STORAGE_KEYS.INVOICES, [])
-  const [payments] = useDataStore<PaymentRecord[]>(STORAGE_KEYS.PAYMENTS, [])
-  const [productionJobs] = useDataStore<ProductionJobRecord[]>(STORAGE_KEYS.PRODUCTION_JOBS, [])
+ const [orders] = useDataStore<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS, [])
+ const [invoices] = useDataStore<InvoiceRecord[]>(STORAGE_KEYS.INVOICES, [])
+ const [payments] = useDataStore<PaymentRecord[]>(STORAGE_KEYS.PAYMENTS, [])
+ const [productionJobs] = useDataStore<ProductionJobRecord[]>(STORAGE_KEYS.PRODUCTION_JOBS, [])
 
   // 1. Compute dynamic 7-day sales and collections trend using Bangladesh Date Range
-  const salesTrendData = useMemo(() => {
-    const range = getBangladeshDateRange(7)
+ const salesTrendData = useMemo(() => {
+ const range = getBangladeshDateRange(7)
 
-    return range.map((item) => {
+ return range.map((item) => {
       // Aggregate invoices for this day
-      const daySales = (invoices || [])
+ const daySales = (invoices || [])
         .filter((inv) => {
-          const invDate = toBangladeshDateString(inv.invoice_date || inv.created_at)
-          const rawStatus = String(inv.status || '').toLowerCase()
-          return invDate === item.dateStr && rawStatus !== 'cancelled' && rawStatus !== 'void'
+ const invDate = toBangladeshDateString(inv.invoice_date || inv.created_at)
+ const rawStatus = String(inv.status || '').toLowerCase()
+ return invDate === item.dateStr && rawStatus !== 'cancelled' && rawStatus !== 'void'
         })
         .reduce((sum, inv) => sum + (Number(inv.grand_total) || Number(inv.subtotal) || 0), 0)
 
       // Aggregate payments for this day
-      const dayCollections = (payments || [])
+ const dayCollections = (payments || [])
         .filter((p) => {
-          const pDate = toBangladeshDateString(p.payment_date || p.created_at)
-          return pDate === item.dateStr
+ const pDate = toBangladeshDateString(p.payment_date || p.created_at)
+ return pDate === item.dateStr
         })
         .reduce((sum, p) => sum + (Number(p.amount) || 0), 0)
 
-      return {
-        day: item.dayOfWeek,
-        dateStr: item.dateStr,
-        sales: daySales,
-        collections: dayCollections,
+ return {
+ day: item.dayOfWeek,
+ dateStr: item.dateStr,
+ sales: daySales,
+ collections: dayCollections,
       }
     })
   }, [invoices, payments])
 
-  const hasSalesTrendData = useMemo(() => {
-    return salesTrendData.some((d) => d.sales > 0 || d.collections > 0)
+ const hasSalesTrendData = useMemo(() => {
+ return salesTrendData.some((d) => d.sales > 0 || d.collections > 0)
   }, [salesTrendData])
 
   // 2. Compute payment collection by method from live data
-  const paymentCollectionData = useMemo(() => {
-    const methodTotals: Record<string, number> = {
-      bkash: 0,
-      nagad: 0,
-      bank: 0,
-      cash: 0,
+ const paymentCollectionData = useMemo(() => {
+ const methodTotals: Record<string, number> = {
+ bkash: 0,
+ nagad: 0,
+ bank: 0,
+ cash: 0,
     }
 
     ;(payments || []).forEach((p) => {
-      const method = (p.payment_method || '').toLowerCase()
-      if (method.includes('bkash')) {
-        methodTotals.bkash += Number(p.amount) || 0
+ const method = (p.payment_method || '').toLowerCase()
+ if (method.includes('bkash')) {
+ methodTotals.bkash += Number(p.amount) || 0
       } else if (method.includes('nagad') || method.includes('rocket')) {
-        methodTotals.nagad += Number(p.amount) || 0
+ methodTotals.nagad += Number(p.amount) || 0
       } else if (method.includes('bank') || method.includes('cheque') || method.includes('card')) {
-        methodTotals.bank += Number(p.amount) || 0
+ methodTotals.bank += Number(p.amount) || 0
       } else {
-        methodTotals.cash += Number(p.amount) || 0
+ methodTotals.cash += Number(p.amount) || 0
       }
     })
 
-    const channels = [
+ const channels = [
       { name: 'bKash MFS', key: 'bkash', color: '#ec4899' },
       { name: 'Nagad / Rocket', key: 'nagad', color: '#f97316' },
       { name: 'Bank Transfer / Cheque', key: 'bank', color: '#3b82f6' },
       { name: 'Cash Counter', key: 'cash', color: '#10b981' },
     ]
 
-    return channels
+ return channels
       .map((c) => ({
-        name: c.name,
-        amount: methodTotals[c.key] || 0,
-        color: c.color,
+ name: c.name,
+ amount: methodTotals[c.key] || 0,
+ color: c.color,
       }))
       .filter((c) => c.amount > 0)
   }, [payments])
 
-  const hasPaymentData = paymentCollectionData.length > 0
+ const hasPaymentData = paymentCollectionData.length > 0
 
   // 3. Compute order stage distribution from live orders
-  const orderStatusData = useMemo(() => {
-    const stageCounts: Record<string, number> = {
-      artwork_proofing: 0,
-      in_production: 0,
-      finishing: 0,
-      ready_for_delivery: 0,
-      delivered: 0,
+ const orderStatusData = useMemo(() => {
+ const stageCounts: Record<string, number> = {
+ artwork_proofing: 0,
+ in_production: 0,
+ finishing: 0,
+ ready_for_delivery: 0,
+ delivered: 0,
     }
 
     ;(orders || []).forEach((o) => {
-      const st = o.status as string
-      if (st === 'draft' || st === 'pending_approval' || st === 'design_pending' || st === 'pending') {
-        stageCounts.artwork_proofing++
+ const st = o.status as string
+ if (st === 'draft' || st === 'pending_approval' || st === 'design_pending' || st === 'pending') {
+ stageCounts.artwork_proofing++
       } else if (st === 'in_production') {
-        stageCounts.in_production++
+ stageCounts.in_production++
       } else if (st === 'finishing') {
-        stageCounts.finishing++
+ stageCounts.finishing++
       } else if (st === 'ready_for_delivery') {
-        stageCounts.ready_for_delivery++
+ stageCounts.ready_for_delivery++
       } else if (st === 'delivered') {
-        stageCounts.delivered++
+ stageCounts.delivered++
       } else {
-        stageCounts.in_production++
+ stageCounts.in_production++
       }
     })
 
-    const stages = [
+ const stages = [
       { name: 'Artwork / Proofing', key: 'artwork_proofing', color: '#3b82f6' },
       { name: 'Print Queue', key: 'in_production', color: '#f59e0b' },
       { name: 'Finishing', key: 'finishing', color: '#8b5cf6' },
@@ -184,41 +184,41 @@ export function DashboardCharts() {
       { name: 'Delivered', key: 'delivered', color: '#06b6d4' },
     ]
 
-    return stages
+ return stages
       .map((s) => ({
-        name: s.name,
-        value: stageCounts[s.key] || 0,
-        color: s.color,
+ name: s.name,
+ value: stageCounts[s.key] || 0,
+ color: s.color,
       }))
       .filter((s) => s.value > 0)
   }, [orders])
 
-  const activeOrdersCount = (orders || []).filter((o) => o.status !== 'delivered' && o.status !== 'cancelled').length
+ const activeOrdersCount = (orders || []).filter((o) => o.status !== 'delivered' && o.status !== 'cancelled').length
 
   // 4. Compute active production work volume by department from live jobs
-  const productionDepartmentData = useMemo(() => {
-    const deptMap: Record<string, { jobCount: number; totalQuantity: number }> = {}
+ const productionDepartmentData = useMemo(() => {
+ const deptMap: Record<string, { jobCount: number; totalQuantity: number }> = {}
 
     ;(productionJobs || []).forEach((job) => {
-      if (job.status === 'completed' || (job.status as string) === 'cancelled') return
-      const deptName = (job.department || 'printing').replace(/_/g, ' ').toUpperCase()
-      if (!deptMap[deptName]) {
-        deptMap[deptName] = { jobCount: 0, totalQuantity: 0 }
+ if (job.status === 'completed' || (job.status as string) === 'cancelled') return
+ const deptName = (job.department || 'printing').replace(/_/g, ' ').toUpperCase()
+ if (!deptMap[deptName]) {
+ deptMap[deptName] = { jobCount: 0, totalQuantity: 0 }
       }
-      deptMap[deptName].jobCount++
-      deptMap[deptName].totalQuantity += Number(job.quantity) || 1
+ deptMap[deptName].jobCount++
+ deptMap[deptName].totalQuantity += Number(job.quantity) || 1
     })
 
-    return Object.entries(deptMap).map(([department, data]) => ({
-      department,
-      jobCount: data.jobCount,
-      totalQuantity: data.totalQuantity,
+ return Object.entries(deptMap).map(([department, data]) => ({
+ department,
+ jobCount: data.jobCount,
+ totalQuantity: data.totalQuantity,
     }))
   }, [productionJobs])
 
-  const hasProductionData = productionDepartmentData.length > 0
+ const hasProductionData = productionDepartmentData.length > 0
 
-  return (
+ return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {/* Chart 1 & 2: Financial Charts (Protected) */}
       {canSeeFinancials && (
@@ -237,10 +237,10 @@ export function DashboardCharts() {
                 {hasSalesTrendData && (
                   <div className="flex items-center gap-3 text-xs font-medium">
                     <span className="flex items-center gap-1 bangla-text">
-                      <span className="h-2.5 w-2.5 rounded-full bg-blue-600" /> {tBilingual('Sales', 'বিক্রি')}
+                      <span className="h-2.5 w-2.5 rounded-full bg-blue-600"/> {tBilingual('Sales', 'বিক্রি')}
                     </span>
                     <span className="flex items-center gap-1 bangla-text">
-                      <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" /> {tBilingual('Collections', 'জমা')}
+                      <span className="h-2.5 w-2.5 rounded-full bg-emerald-500"/> {tBilingual('Collections', 'জমা')}
                     </span>
                   </div>
                 )}
@@ -251,24 +251,24 @@ export function DashboardCharts() {
                 <EmptyChartState />
               ) : (
                 <div className="h-64 w-full">
-                  <ResponsiveContainer width="100%" height="100%">
+                  <ResponsiveContainer width="100%"height="100%">
                     <AreaChart data={salesTrendData}>
                       <defs>
-                        <linearGradient id="salesGrad" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#2563eb" stopOpacity={0.3} />
-                          <stop offset="95%" stopColor="#2563eb" stopOpacity={0} />
+                        <linearGradient id="salesGrad"x1="0"y1="0"x2="0"y2="1">
+                          <stop offset="5%"stopColor="#2563eb"stopOpacity={0.3} />
+                          <stop offset="95%"stopColor="#2563eb"stopOpacity={0} />
                         </linearGradient>
-                        <linearGradient id="colGrad" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
-                          <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                        <linearGradient id="colGrad"x1="0"y1="0"x2="0"y2="1">
+                          <stop offset="5%"stopColor="#10b981"stopOpacity={0.3} />
+                          <stop offset="95%"stopColor="#10b981"stopOpacity={0} />
                         </linearGradient>
                       </defs>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.2} />
-                      <XAxis dataKey="day" tickLine={false} axisLine={false} fontSize={12} />
+                      <CartesianGrid strokeDasharray="3 3"vertical={false} opacity={0.2} />
+                      <XAxis dataKey="day"tickLine={false} axisLine={false} fontSize={12} />
                       <YAxis tickLine={false} axisLine={false} fontSize={11} tickFormatter={(val) => `৳${val / 1000}k`} />
                       <Tooltip formatter={(value: any) => [formatBDT(Number(value)), '']} />
-                      <Area type="monotone" dataKey="sales" stroke="#2563eb" strokeWidth={2.5} fillOpacity={1} fill="url(#salesGrad)" name="Sales" />
-                      <Area type="monotone" dataKey="collections" stroke="#10b981" strokeWidth={2.5} fillOpacity={1} fill="url(#colGrad)" name="Collections" />
+                      <Area type="monotone"dataKey="sales"stroke="#2563eb"strokeWidth={2.5} fillOpacity={1} fill="url(#salesGrad)"name="Sales"/>
+                      <Area type="monotone"dataKey="collections"stroke="#10b981"strokeWidth={2.5} fillOpacity={1} fill="url(#colGrad)"name="Collections"/>
                     </AreaChart>
                   </ResponsiveContainer>
                 </div>
@@ -287,7 +287,7 @@ export function DashboardCharts() {
                     {tBilingual('bKash, Nagad, Bank, and Cash breakdown', 'বিকাশ, নগদ, ব্যাংক ও ক্যাশ কাউন্টার')}
                   </CardDescription>
                 </div>
-                <Badge variant="outline" className="text-xs font-semibold bangla-text">
+                <Badge variant="outline"className="text-xs font-semibold bangla-text">
                   {tBilingual('All Received', 'মোট প্রাপ্তি')}
                 </Badge>
               </div>
@@ -297,13 +297,13 @@ export function DashboardCharts() {
                 <EmptyChartState />
               ) : (
                 <div className="h-64 w-full">
-                  <ResponsiveContainer width="100%" height="100%">
+                  <ResponsiveContainer width="100%"height="100%">
                     <BarChart data={paymentCollectionData} layout="vertical">
-                      <CartesianGrid strokeDasharray="3 3" horizontal={false} opacity={0.2} />
-                      <XAxis type="number" tickLine={false} axisLine={false} fontSize={11} tickFormatter={(val) => `৳${val / 1000}k`} />
-                      <YAxis type="category" dataKey="name" tickLine={false} axisLine={false} fontSize={11} width={140} />
+                      <CartesianGrid strokeDasharray="3 3"horizontal={false} opacity={0.2} />
+                      <XAxis type="number"tickLine={false} axisLine={false} fontSize={11} tickFormatter={(val) => `৳${val / 1000}k`} />
+                      <YAxis type="category"dataKey="name"tickLine={false} axisLine={false} fontSize={11} width={140} />
                       <Tooltip formatter={(value: any) => [formatBDT(Number(value)), 'Collected']} />
-                      <Bar dataKey="amount" radius={[0, 4, 4, 0]}>
+                      <Bar dataKey="amount"radius={[0, 4, 4, 0]}>
                         {paymentCollectionData.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={entry.color} />
                         ))}
@@ -340,15 +340,14 @@ export function DashboardCharts() {
           ) : (
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
               <div className="h-56 w-56 shrink-0">
-                <ResponsiveContainer width="100%" height="100%">
+                <ResponsiveContainer width="100%"height="100%">
                   <PieChart>
                     <Pie
-                      data={orderStatusData}
-                      innerRadius={50}
-                      outerRadius={75}
-                      paddingAngle={3}
-                      dataKey="value"
-                    >
+ data={orderStatusData}
+ innerRadius={50}
+ outerRadius={75}
+ paddingAngle={3}
+ dataKey="value">
                       {orderStatusData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.color} />
                       ))}
@@ -362,10 +361,10 @@ export function DashboardCharts() {
                 {orderStatusData.map((s) => (
                   <div key={s.name} className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <span className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: s.color }} />
+                      <span className="h-3 w-3 rounded-full shrink-0"style={{ backgroundColor: s.color }} />
                       <span className="text-muted-foreground font-medium">{s.name}</span>
                     </div>
-                    <strong className="text-foreground dark:text-white bangla-text">
+                    <strong className="text-foreground bangla-text">
                       {num(s.value)} {tBilingual('Jobs', 'টি কাজ')}
                     </strong>
                   </div>
@@ -395,13 +394,13 @@ export function DashboardCharts() {
             <EmptyChartState />
           ) : (
             <div className="h-56 w-full">
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%"height="100%">
                 <BarChart data={productionDepartmentData}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.2} />
-                  <XAxis dataKey="department" tickLine={false} axisLine={false} fontSize={10} />
+                  <CartesianGrid strokeDasharray="3 3"vertical={false} opacity={0.2} />
+                  <XAxis dataKey="department"tickLine={false} axisLine={false} fontSize={10} />
                   <YAxis tickLine={false} axisLine={false} fontSize={11} />
                   <Tooltip />
-                  <Bar dataKey="jobCount" fill="#3b82f6" name="Active Jobs" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="jobCount"fill="#3b82f6"name="Active Jobs"radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>

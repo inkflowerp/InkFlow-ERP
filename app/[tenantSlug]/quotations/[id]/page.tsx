@@ -4,33 +4,33 @@ import React, { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { useParams, useSearchParams, useRouter, usePathname } from 'next/navigation'
 import {
-  FileSpreadsheet,
-  ArrowLeft,
-  Printer,
-  Send,
-  Copy,
-  CheckCircle2,
-  AlertCircle,
-  Clock,
-  Building,
-  Phone,
-  Mail,
-  Receipt,
-  FileCheck,
-  History,
-  Sliders,
-  DollarSign,
-  MapPin,
-  ExternalLink,
-  Truck,
-  Wrench,
-  Tag,
-  Loader2,
-  Check,
-  ShieldCheck,
-  RefreshCw,
-  MessageSquare,
-  ArrowUpRight,
+ FileSpreadsheet,
+ ArrowLeft,
+ Printer,
+ Send,
+ Copy,
+ CheckCircle2,
+ AlertCircle,
+ Clock,
+ Building,
+ Phone,
+ Mail,
+ Receipt,
+ FileCheck,
+ History,
+ Sliders,
+ DollarSign,
+ MapPin,
+ ExternalLink,
+ Truck,
+ Wrench,
+ Tag,
+ Loader2,
+ Check,
+ ShieldCheck,
+ RefreshCw,
+ MessageSquare,
+ ArrowUpRight,
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
@@ -43,28 +43,28 @@ import { CurrencyDisplay } from '@/components/shared/currency-display'
 import { FeatureGate } from '@/components/shared/feature-gate'
 import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
 import {
-  DEFAULT_QUOTATION_TERMS,
-  DEFAULT_QUOTATION_TERMS_BN,
-  QuotationRecord,
-  QuotationStatus,
-  LanguageMode,
-  QuotationActivityRecord,
-  normalizeQuotationRecord,
+ DEFAULT_QUOTATION_TERMS,
+ DEFAULT_QUOTATION_TERMS_BN,
+ QuotationRecord,
+ QuotationStatus,
+ LanguageMode,
+ QuotationActivityRecord,
+ normalizeQuotationRecord,
 } from '@/types/quotation.types'
 import {
-  getQuotationDetailAction,
-  updateQuotationStatusAction,
-  convertQuotationToJobOrderAction,
-  convertQuotationToInvoiceAction,
-  sendQuotationAction,
+ getQuotationDetailAction,
+ updateQuotationStatusAction,
+ convertQuotationToJobOrderAction,
+ convertQuotationToInvoiceAction,
+ sendQuotationAction,
 } from '@/actions/quotation.actions'
 import { PdfActionButtons } from '@/components/pdf/pdf-action-buttons'
 import { QuotationPdfDocument } from '@/components/pdf/documents/quotation-pdf-document'
 import {
-  formatBDT,
-  toBengaliNumerals,
-  numberToWordsBDT,
-  numberToWordsBangla,
+ formatBDT,
+ toBengaliNumerals,
+ numberToWordsBDT,
+ numberToWordsBangla,
 } from '@/lib/formatters'
 import * as QuotationService from '@/lib/quotations/quotation-utils'
 import { FollowUpModal } from '@/components/quotations/follow-up-modal'
@@ -74,195 +74,194 @@ import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 
 function QuotationDetailContent() {
-  const params = useParams()
-  const searchParams = useSearchParams()
-  const router = useRouter()
-  const pathname = usePathname()
-  const quoteId = (params?.id as string) || ''
-  const shouldAutoPrint = searchParams?.get('print') === 'true'
+ const params = useParams()
+ const searchParams = useSearchParams()
+ const router = useRouter()
+ const pathname = usePathname()
+ const quoteId = (params?.id as string) || ''
+ const shouldAutoPrint = searchParams?.get('print') === 'true'
 
-  const { company, currentUser, isLoading: isTenantLoading } = useTenant()
-  const { tBilingual } = useI18n()
-  const slug = (params?.tenantSlug as string) || company?.slug || 'classic-printer'
+ const { company, currentUser, isLoading: isTenantLoading } = useTenant()
+ const { tBilingual } = useI18n()
+ const slug = (params?.tenantSlug as string) || company?.slug || 'classic-printer'
 
   // Local datastore fallback
-  const [localQuotations] = useDataStore<QuotationRecord[]>(STORAGE_KEYS.QUOTATIONS, [])
-  const [localActivities] = useDataStore<QuotationActivityRecord[]>(STORAGE_KEYS.QUOTATION_ACTIVITIES, [])
+ const [localQuotations] = useDataStore<QuotationRecord[]>(STORAGE_KEYS.QUOTATIONS, [])
+ const [localActivities] = useDataStore<QuotationActivityRecord[]>(STORAGE_KEYS.QUOTATION_ACTIVITIES, [])
 
-  const [quote, setQuote] = useState<QuotationRecord | null>(null)
-  const [activities, setActivities] = useState<QuotationActivityRecord[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [isRefreshing, setIsRefreshing] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+ const [quote, setQuote] = useState<QuotationRecord | null>(null)
+ const [activities, setActivities] = useState<QuotationActivityRecord[]>([])
+ const [isLoading, setIsLoading] = useState(true)
+ const [isRefreshing, setIsRefreshing] = useState(false)
+ const [error, setError] = useState<string | null>(null)
 
   // Presentation & Workflow State
-  const [languageMode, setLanguageMode] = useState<LanguageMode>(quote?.language_mode || 'bn')
-  const [notification, setNotification] = useState<string | null>(null)
-  const [isConvertingInvoice, setIsConvertingInvoice] = useState(false)
-  const [isConvertingOrder, setIsConvertingOrder] = useState(false)
-  const [isSendingEmail, setIsSendingEmail] = useState(false)
+ const [languageMode, setLanguageMode] = useState<LanguageMode>(quote?.language_mode || 'bn')
+ const [notification, setNotification] = useState<string | null>(null)
+ const [isConvertingInvoice, setIsConvertingInvoice] = useState(false)
+ const [isConvertingOrder, setIsConvertingOrder] = useState(false)
+ const [isSendingEmail, setIsSendingEmail] = useState(false)
 
   // Modals state
-  const [isFollowUpOpen, setIsFollowUpOpen] = useState(false)
-  const [isNegotiationOpen, setIsNegotiationOpen] = useState(false)
+ const [isFollowUpOpen, setIsFollowUpOpen] = useState(false)
+ const [isNegotiationOpen, setIsNegotiationOpen] = useState(false)
 
-  const showNotification = (msg: string) => {
-    setNotification(msg)
-    setTimeout(() => setNotification(null), 3500)
+ const showNotification = (msg: string) => {
+ setNotification(msg)
+ setTimeout(() => setNotification(null), 3500)
   }
 
-  const localQuotationsRef = React.useRef(localQuotations)
-  const localActivitiesRef = React.useRef(localActivities)
+ const localQuotationsRef = React.useRef(localQuotations)
+ const localActivitiesRef = React.useRef(localActivities)
 
-  useEffect(() => {
-    localQuotationsRef.current = localQuotations
-    localActivitiesRef.current = localActivities
+ useEffect(() => {
+ localQuotationsRef.current = localQuotations
+ localActivitiesRef.current = localActivities
   }, [localQuotations, localActivities])
 
   // Helper to find quotation across local storage keys
-  const findQuoteLocally = useCallback(() => {
-    if (!quoteId) return null
-    const fromRef = localQuotationsRef.current?.find((q) => q && (q.id === quoteId || q.quotation_number === quoteId))
-    if (fromRef) return normalizeQuotationRecord(fromRef)
+ const findQuoteLocally = useCallback(() => {
+ if (!quoteId) return null
+ const fromRef = localQuotationsRef.current?.find((q) => q && (q.id === quoteId || q.quotation_number === quoteId))
+ if (fromRef) return normalizeQuotationRecord(fromRef)
 
-    if (typeof window !== 'undefined') {
-      try {
-        const fromStore = (PrintERPDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS) || []).find(
+ if (typeof window !== 'undefined') {
+ try {
+ const fromStore = (PrintERPDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS) || []).find(
           (q) => q && (q.id === quoteId || q.quotation_number === quoteId)
         )
-        if (fromStore) return normalizeQuotationRecord(fromStore)
+ if (fromStore) return normalizeQuotationRecord(fromStore)
 
-        for (let i = 0; i < window.localStorage.length; i++) {
-          const k = window.localStorage.key(i)
-          if (!k) continue
-          if (
-            k.startsWith('printerp_tenant_quotations') ||
-            k.startsWith('printerp_quotations') ||
-            k.includes('quotation') ||
-            k.includes('quotes')
+ for (let i = 0; i < window.localStorage.length; i++) {
+ const k = window.localStorage.key(i)
+ if (!k) continue
+ if (
+ k.startsWith('printerp_tenant_quotations') ||
+ k.startsWith('printerp_quotations') ||
+ k.includes('quotation') ||
+ k.includes('quotes')
           ) {
-            const raw = window.localStorage.getItem(k)
-            if (raw) {
-              const parsed = JSON.parse(raw)
-              if (Array.isArray(parsed)) {
-                const f = parsed.find(
+ const raw = window.localStorage.getItem(k)
+ if (raw) {
+ const parsed = JSON.parse(raw)
+ if (Array.isArray(parsed)) {
+ const f = parsed.find(
                   (item: any) =>
-                    item &&
+ item &&
                     (item.id === quoteId ||
-                      item.quotation_number === quoteId ||
-                      String(item.id).toLowerCase() === quoteId.toLowerCase() ||
-                      String(item.quotation_number).toLowerCase() === quoteId.toLowerCase())
+ item.quotation_number === quoteId ||
+ String(item.id).toLowerCase() === quoteId.toLowerCase() ||
+ String(item.quotation_number).toLowerCase() === quoteId.toLowerCase())
                 )
-                if (f) return normalizeQuotationRecord(f)
+ if (f) return normalizeQuotationRecord(f)
               }
             }
           }
         }
       } catch {}
     }
-    return null
+ return null
   }, [quoteId])
 
   // Authoritative server fetch
-  const fetchQuotationDetail = useCallback(async (isSilent = false) => {
-    if (!quoteId) return
-    if (!isSilent && !quote) setIsLoading(true)
-    setIsRefreshing(true)
+ const fetchQuotationDetail = useCallback(async (isSilent = false) => {
+ if (!quoteId) return
+ if (!isSilent && !quote) setIsLoading(true)
+ setIsRefreshing(true)
 
-    try {
-      const res = await getQuotationDetailAction(quoteId, company?.id, slug)
-      if (res.success && res.data) {
-        const norm = normalizeQuotationRecord(res.data.quotation)
-        setQuote(norm)
-        setActivities(res.data.activities || [])
-        setError(null)
-        if (norm.language_mode) {
-          setLanguageMode(norm.language_mode)
+ try {
+ const res = await getQuotationDetailAction(quoteId, company?.id, slug)
+ if (res.success && res.data) {
+ const norm = normalizeQuotationRecord(res.data.quotation)
+ setQuote(norm)
+ setActivities(res.data.activities || [])
+ setError(null)
+ if (norm.language_mode) {
+ setLanguageMode(norm.language_mode)
         }
       } else {
         // Fallback to local store
-        const fallbackQuote = findQuoteLocally()
+ const fallbackQuote = findQuoteLocally()
 
-        if (fallbackQuote) {
-          setQuote(fallbackQuote)
-          setError(null)
-          const fallbackActs =
-            localActivitiesRef.current?.filter((a) => a.quotation_id === fallbackQuote.id || a.quotation_id === quoteId) ||
+ if (fallbackQuote) {
+ setQuote(fallbackQuote)
+ setError(null)
+ const fallbackActs =
+ localActivitiesRef.current?.filter((a) => a.quotation_id === fallbackQuote.id || a.quotation_id === quoteId) ||
             []
-          setActivities(fallbackActs)
+ setActivities(fallbackActs)
         } else if (!isTenantLoading) {
-          setError(res.error || 'Quotation not found.')
+ setError(res.error || 'Quotation not found.')
         }
       }
     } catch (err: any) {
-      const fallbackQuote = findQuoteLocally()
+ const fallbackQuote = findQuoteLocally()
 
-      if (fallbackQuote) {
-        setQuote(fallbackQuote)
-        setError(null)
+ if (fallbackQuote) {
+ setQuote(fallbackQuote)
+ setError(null)
       } else if (!isTenantLoading) {
-        setError(err?.message || 'Failed to load quotation.')
+ setError(err?.message || 'Failed to load quotation.')
       }
     } finally {
-      setIsLoading(false)
-      setIsRefreshing(false)
+ setIsLoading(false)
+ setIsRefreshing(false)
     }
   }, [quoteId, company, slug, isTenantLoading, quote, findQuoteLocally])
 
-  useEffect(() => {
-    fetchQuotationDetail()
+ useEffect(() => {
+ fetchQuotationDetail()
   }, [quoteId, company?.id, slug])
 
   // Sync if localQuotations becomes populated
-  useEffect(() => {
-    if (!quote && localQuotations && localQuotations.length > 0) {
-      const found = localQuotations.find((q) => q.id === quoteId || q.quotation_number === quoteId)
-      if (found) {
-        setQuote(found)
-        setError(null)
+ useEffect(() => {
+ if (!quote && localQuotations && localQuotations.length > 0) {
+ const found = localQuotations.find((q) => q.id === quoteId || q.quotation_number === quoteId)
+ if (found) {
+ setQuote(found)
+ setError(null)
       }
     }
   }, [quote, localQuotations, quoteId])
 
   // Auto-print on load if query param present
-  useEffect(() => {
-    if (shouldAutoPrint && quote && !isLoading) {
-      const timer = setTimeout(() => {
-        window.print()
+ useEffect(() => {
+ if (shouldAutoPrint && quote && !isLoading) {
+ const timer = setTimeout(() => {
+ window.print()
       }, 500)
-      return () => clearTimeout(timer)
+ return () => clearTimeout(timer)
     }
   }, [shouldAutoPrint, quote, isLoading])
 
-  if (isLoading && !quote) {
-    return (
+ if (isLoading && !quote) {
+ return (
       <FeatureGate feature="quotation_pdf">
         <div className="space-y-6 max-w-6xl py-12 text-center">
-          <Loader2 className="h-8 w-8 animate-spin text-blue-600 mx-auto" />
+          <Loader2 className="h-8 w-8 animate-spin text-blue-600 mx-auto"/>
           <p className="text-xs text-muted-foreground font-medium">Loading quotation cockpit...</p>
         </div>
       </FeatureGate>
     )
   }
 
-  if (!quote) {
-    return (
+ if (!quote) {
+ return (
       <FeatureGate feature="quotation_pdf">
         <div className="space-y-6 max-w-6xl">
           <Link
-            href={getTenantNavHref('/quotations', pathname, slug)}
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground dark:hover:text-white"
-          >
-            <ArrowLeft className="h-3.5 w-3.5" />
-            Back to Quotations Directory
+ href={getTenantNavHref('/quotations', pathname, slug)}
+ className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground dark:hover:text-foreground">
+            <ArrowLeft className="h-3.5 w-3.5"/>
+ Back to Quotations Directory
           </Link>
           <Card className="p-12 text-center border-dashed">
-            <FileSpreadsheet className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-            <h2 className="text-base font-bold text-foreground dark:text-foreground">Quotation Not Found</h2>
+            <FileSpreadsheet className="h-10 w-10 text-muted-foreground mx-auto mb-3"/>
+            <h2 className="text-base font-bold text-foreground">Quotation Not Found</h2>
             <p className="text-xs text-muted-foreground mt-1 max-w-md mx-auto">
-              The quotation you are trying to view does not exist or has been removed.
+ The quotation you are trying to view does not exist or has been removed.
             </p>
-            <Button asChild className="mt-4" size="sm">
+            <Button asChild className="mt-4"size="sm">
               <Link href={getTenantNavHref('/quotations', pathname, slug)}>Return to Directory</Link>
             </Button>
           </Card>
@@ -272,251 +271,246 @@ function QuotationDetailContent() {
   }
 
   // Handle status change via Server Action
-  const handleStatusChange = async (newStatus: QuotationStatus) => {
-    try {
-      const res = await updateQuotationStatusAction(quote.id, newStatus, undefined, company?.id)
-      if (res.success && res.data) {
-        setQuote(res.data)
-        showNotification(`Status updated to ${newStatus.toUpperCase()}`)
-        fetchQuotationDetail(true)
+ const handleStatusChange = async (newStatus: QuotationStatus) => {
+ try {
+ const res = await updateQuotationStatusAction(quote.id, newStatus, undefined, company?.id)
+ if (res.success && res.data) {
+ setQuote(res.data)
+ showNotification(`Status updated to ${newStatus.toUpperCase()}`)
+ fetchQuotationDetail(true)
       } else {
-        showNotification(`Failed to update status: ${res.error}`)
+ showNotification(`Failed to update status: ${res.error}`)
       }
     } catch (err: any) {
-      showNotification(`Error: ${err?.message}`)
+ showNotification(`Error: ${err?.message}`)
     }
   }
 
   // Convert to Job Order Action (Server Action)
-  const handleConvertToOrder = async () => {
-    setIsConvertingOrder(true)
-    try {
-      const res = await convertQuotationToJobOrderAction(
-        quote.id,
+ const handleConvertToOrder = async () => {
+ setIsConvertingOrder(true)
+ try {
+ const res = await convertQuotationToJobOrderAction(
+ quote.id,
         { advanceAmount: quote.advance_amount ?? undefined },
-        company?.id
+ company?.id
       )
-      setIsConvertingOrder(false)
-      if (res.success && res.data) {
+ setIsConvertingOrder(false)
+ if (res.success && res.data) {
         // Hydrate client DataStore immediately so Commercial Orders & Job Hub has it without refresh
-        try {
-          PrintERPDataStore.createSalesOrderWithIntegrations(res.data)
-          if (slug && slug !== 'default') {
-            PrintERPDataStore.addItem(STORAGE_KEYS.ORDERS, res.data, slug)
-            if (res.data.job_order) {
-              PrintERPDataStore.addItem(STORAGE_KEYS.JOB_ORDERS, res.data.job_order, slug)
+ try {
+ PrintERPDataStore.createSalesOrderWithIntegrations(res.data)
+ if (slug && slug !== 'default') {
+ PrintERPDataStore.addItem(STORAGE_KEYS.ORDERS, res.data, slug)
+ if (res.data.job_order) {
+ PrintERPDataStore.addItem(STORAGE_KEYS.JOB_ORDERS, res.data.job_order, slug)
             }
-            if (res.data.production_job) {
-              PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCTION_JOBS, res.data.production_job, slug)
+ if (res.data.production_job) {
+ PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCTION_JOBS, res.data.production_job, slug)
             }
-            PrintERPDataStore.updateItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, quote.id, {
-              status: 'converted',
-              converted_order_id: res.data.order_number,
+ PrintERPDataStore.updateItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, quote.id, {
+ status: 'converted',
+ converted_order_id: res.data.order_number,
             }, slug)
           }
-          PrintERPDataStore.updateItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, quote.id, {
-            status: 'converted',
-            converted_order_id: res.data.order_number,
+ PrintERPDataStore.updateItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, quote.id, {
+ status: 'converted',
+ converted_order_id: res.data.order_number,
           })
         } catch (e) {
-          console.warn('[QuotationDetail] Client store hydration:', e)
+ console.warn('[QuotationDetail] Client store hydration:', e)
         }
 
-        setQuote((prev) =>
-          prev
+ setQuote((prev) =>
+ prev
             ? {
                 ...prev,
-                status: 'converted',
-                converted_order_id: res.data.order_number,
+ status: 'converted',
+ converted_order_id: res.data.order_number,
               }
             : prev
         )
 
         // Dispatch instant multi-window & cross-component sync events
-        if (typeof window !== 'undefined') {
-          window.dispatchEvent(new CustomEvent('printerp_data_sync'))
-          window.dispatchEvent(new CustomEvent('printerp_table_synced:sales_orders'))
-          window.dispatchEvent(new CustomEvent('printerp_table_synced:job_orders'))
-          window.dispatchEvent(new CustomEvent('printerp_table_synced:quotations'))
-          window.dispatchEvent(new CustomEvent('printerp_table_synced:production_jobs'))
-          window.dispatchEvent(new CustomEvent('printerp_table_synced'))
+ if (typeof window !== 'undefined') {
+ window.dispatchEvent(new CustomEvent('printerp_data_sync'))
+ window.dispatchEvent(new CustomEvent('printerp_table_synced:sales_orders'))
+ window.dispatchEvent(new CustomEvent('printerp_table_synced:job_orders'))
+ window.dispatchEvent(new CustomEvent('printerp_table_synced:quotations'))
+ window.dispatchEvent(new CustomEvent('printerp_table_synced:production_jobs'))
+ window.dispatchEvent(new CustomEvent('printerp_table_synced'))
         }
 
-        showNotification(`Successfully converted to Job Order Ticket #${res.data.order_number}!`)
-        fetchQuotationDetail(true)
+ showNotification(`Successfully converted to Job Order Ticket #${res.data.order_number}!`)
+ fetchQuotationDetail(true)
       } else {
-        showNotification(`Conversion failed: ${res.error}`)
+ showNotification(`Conversion failed: ${res.error}`)
       }
     } catch (err: any) {
-      setIsConvertingOrder(false)
-      showNotification(`Conversion error: ${err?.message}`)
+ setIsConvertingOrder(false)
+ showNotification(`Conversion error: ${err?.message}`)
     }
   }
 
   // Convert to Invoice Action (Server Action)
-  const handleConvertToInvoice = async () => {
-    setIsConvertingInvoice(true)
-    try {
-      const res = await convertQuotationToInvoiceAction(quote.id, company?.id)
-      setIsConvertingInvoice(false)
-      if (res.success && res.data) {
-        try {
-          PrintERPDataStore.addItem(STORAGE_KEYS.INVOICES, res.data)
-          if (slug && slug !== 'default') {
-            PrintERPDataStore.addItem(STORAGE_KEYS.INVOICES, res.data, slug)
-            PrintERPDataStore.updateItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, quote.id, {
-              status: 'converted',
-              converted_invoice_id: res.data.id || res.data.invoice_number,
+ const handleConvertToInvoice = async () => {
+ setIsConvertingInvoice(true)
+ try {
+ const res = await convertQuotationToInvoiceAction(quote.id, company?.id)
+ setIsConvertingInvoice(false)
+ if (res.success && res.data) {
+ try {
+ PrintERPDataStore.addItem(STORAGE_KEYS.INVOICES, res.data)
+ if (slug && slug !== 'default') {
+ PrintERPDataStore.addItem(STORAGE_KEYS.INVOICES, res.data, slug)
+ PrintERPDataStore.updateItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, quote.id, {
+ status: 'converted',
+ converted_invoice_id: res.data.id || res.data.invoice_number,
             }, slug)
           }
-          PrintERPDataStore.updateItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, quote.id, {
-            status: 'converted',
-            converted_invoice_id: res.data.id || res.data.invoice_number,
+ PrintERPDataStore.updateItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, quote.id, {
+ status: 'converted',
+ converted_invoice_id: res.data.id || res.data.invoice_number,
           })
         } catch {}
 
-        const invoiceData = res.data
-        setQuote((prev) =>
-          prev
+ const invoiceData = res.data
+ setQuote((prev) =>
+ prev
             ? {
                 ...prev,
-                status: 'converted',
-                converted_invoice_id: invoiceData.id || invoiceData.invoice_number,
+ status: 'converted',
+ converted_invoice_id: invoiceData.id || invoiceData.invoice_number,
               }
             : prev
         )
 
-        if (typeof window !== 'undefined') {
-          window.dispatchEvent(new CustomEvent('printerp_data_sync'))
-          window.dispatchEvent(new CustomEvent('printerp_table_synced:invoices'))
-          window.dispatchEvent(new CustomEvent('printerp_table_synced:quotations'))
-          window.dispatchEvent(new CustomEvent('printerp_table_synced'))
+ if (typeof window !== 'undefined') {
+ window.dispatchEvent(new CustomEvent('printerp_data_sync'))
+ window.dispatchEvent(new CustomEvent('printerp_table_synced:invoices'))
+ window.dispatchEvent(new CustomEvent('printerp_table_synced:quotations'))
+ window.dispatchEvent(new CustomEvent('printerp_table_synced'))
         }
 
-        showNotification(`Successfully converted to Invoice #${res.data.invoice_number}! Quoted prices preserved.`)
-        fetchQuotationDetail(true)
+ showNotification(`Successfully converted to Invoice #${res.data.invoice_number}! Quoted prices preserved.`)
+ fetchQuotationDetail(true)
       } else {
-        showNotification(`Conversion failed: ${res.error}`)
+ showNotification(`Conversion failed: ${res.error}`)
       }
     } catch (err: any) {
-      setIsConvertingInvoice(false)
-      showNotification(`Conversion error: ${err?.message}`)
+ setIsConvertingInvoice(false)
+ showNotification(`Conversion error: ${err?.message}`)
     }
   }
 
   // Duplicate Quote Action
-  const handleDuplicate = async () => {
-    const dupNumber = `QUO-0000${Math.floor(Math.random() * 900) + 100}`
-    const duplicated: QuotationRecord = {
+ const handleDuplicate = async () => {
+ const dupNumber = `QUO-0000${Math.floor(Math.random() * 900) + 100}`
+ const duplicated: QuotationRecord = {
       ...quote,
-      id: `quo-${Date.now()}`,
-      quotation_number: dupNumber,
-      status: 'draft',
-      converted_order_id: undefined,
-      converted_invoice_id: undefined,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
+ id: `quo-${Date.now()}`,
+ quotation_number: dupNumber,
+ status: 'draft',
+ converted_order_id: undefined,
+ converted_invoice_id: undefined,
+ created_at: new Date().toISOString(),
+ updated_at: new Date().toISOString(),
     }
-    PrintERPDataStore.addItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, duplicated)
-    showNotification(`Quotation cloned into new Draft ${dupNumber}.`)
-    router.push(getTenantNavHref(`/quotations/${duplicated.id}`, pathname, slug))
+ PrintERPDataStore.addItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, duplicated)
+ showNotification(`Quotation cloned into new Draft ${dupNumber}.`)
+ router.push(getTenantNavHref(`/quotations/${duplicated.id}`, pathname, slug))
   }
 
   // Send WhatsApp Action
-  const handleSendWhatsApp = async () => {
-    const rawPhone = quote.customer_whatsapp || quote.customer_phone || ''
-    const cleanPhone = rawPhone.replace(/\D/g, '')
-    const formattedPhone = cleanPhone.startsWith('880')
+ const handleSendWhatsApp = async () => {
+ const rawPhone = quote.customer_whatsapp || quote.customer_phone || ''
+ const cleanPhone = rawPhone.replace(/\D/g, '')
+ const formattedPhone = cleanPhone.startsWith('880')
       ? cleanPhone
       : cleanPhone.startsWith('0')
       ? `88${cleanPhone}`
       : `880${cleanPhone}`
 
-    const messageText = QuotationService.generateBangladeshiQuotationWhatsAppMessage(
-      quote,
-      company?.name || 'InkFlow Printing & Signage Solutions'
+ const messageText = QuotationService.generateBangladeshiQuotationWhatsAppMessage(
+ quote,
+ company?.name || 'InkFlow Printing & Signage Solutions'
     )
 
-    window.open(`https://wa.me/${formattedPhone}?text=${encodeURIComponent(messageText)}`, '_blank')
+ window.open(`https://wa.me/${formattedPhone}?text=${encodeURIComponent(messageText)}`, '_blank')
 
-    await sendQuotationAction(
+ await sendQuotationAction(
       {
-        quotationId: quote.id,
-        channel: 'whatsapp',
-        format: 'text',
+ quotationId: quote.id,
+ channel: 'whatsapp',
+ format: 'text',
       },
-      company?.id
+ company?.id
     )
-    fetchQuotationDetail(true)
+ fetchQuotationDetail(true)
   }
 
   // Send Email Action
-  const handleSendEmail = async () => {
-    if (!quote.customer_email) {
-      showNotification('Customer email address is missing on this quotation.')
-      return
+ const handleSendEmail = async () => {
+ if (!quote.customer_email) {
+ showNotification('Customer email address is missing on this quotation.')
+ return
     }
 
-    setIsSendingEmail(true)
-    try {
-      const res = await sendQuotationAction(
+ setIsSendingEmail(true)
+ try {
+ const res = await sendQuotationAction(
         {
-          quotationId: quote.id,
-          channel: 'email',
-          format: 'pdf',
+ quotationId: quote.id,
+ channel: 'email',
+ format: 'pdf',
         },
-        company?.id
+ company?.id
       )
-      setIsSendingEmail(false)
-      if (res.success) {
-        showNotification(`Quotation PDF emailed to ${quote.customer_email} successfully.`)
-        fetchQuotationDetail(true)
+ setIsSendingEmail(false)
+ if (res.success) {
+ showNotification(`Quotation PDF emailed to ${quote.customer_email} successfully.`)
+ fetchQuotationDetail(true)
       } else {
-        showNotification(`Email failed: ${res.error}`)
+ showNotification(`Email failed: ${res.error}`)
       }
     } catch (err: any) {
-      setIsSendingEmail(false)
-      showNotification(`Email error: ${err?.message}`)
+ setIsSendingEmail(false)
+ showNotification(`Email error: ${err?.message}`)
     }
   }
 
-  const nextAction = QuotationService.calculateNextAction(quote)
-  const expiryUrgency = QuotationService.calculateExpiryUrgency(quote.valid_until)
+ const nextAction = QuotationService.calculateNextAction(quote)
+ const expiryUrgency = QuotationService.calculateExpiryUrgency(quote.valid_until)
 
-  const advancePct = quote.advance_percentage !== undefined && quote.advance_percentage !== null ? quote.advance_percentage : 50
-  const advanceAmt = quote.advance_amount !== undefined && quote.advance_amount !== null ? quote.advance_amount : Math.round((quote.grand_total * advancePct) / 100)
-  const dueOnDeliv = quote.due_on_delivery !== undefined && quote.due_on_delivery !== null ? quote.due_on_delivery : Math.max(0, quote.grand_total - advanceAmt)
+ const advancePct = quote.advance_percentage !== undefined && quote.advance_percentage !== null ? quote.advance_percentage : 50
+ const advanceAmt = quote.advance_amount !== undefined && quote.advance_amount !== null ? quote.advance_amount : Math.round((quote.grand_total * advancePct) / 100)
+ const dueOnDeliv = quote.due_on_delivery !== undefined && quote.due_on_delivery !== null ? quote.due_on_delivery : Math.max(0, quote.grand_total - advanceAmt)
 
-  return (
+ return (
     <FeatureGate feature="quotation_pdf">
       <div className="space-y-6 max-w-6xl pb-16 print:max-w-none print:w-full print:bg-white print:text-foreground print:m-0 print:p-0">
         {/* =========================================================================
-            NON-PRINT CONTROLS: ACTION HIERARCHY HEADER
+ NON-PRINT CONTROLS: ACTION HIERARCHY HEADER
            ========================================================================= */}
         <div className="print:hidden space-y-3">
           <div className="flex items-center justify-between">
             <Link
-              href={getTenantNavHref('/quotations', pathname, slug)}
-              className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground dark:hover:text-white"
-            >
-              <ArrowLeft className="h-3.5 w-3.5" />
-              Back to Quotations Directory
+ href={getTenantNavHref('/quotations', pathname, slug)}
+ className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground dark:hover:text-foreground">
+              <ArrowLeft className="h-3.5 w-3.5"/>
+ Back to Quotations Directory
             </Link>
 
             <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => fetchQuotationDetail(false)}
-              disabled={isRefreshing}
-              className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground dark:hover:text-muted-foreground cursor-pointer"
-              title="Sync / Refresh quotation data"
-            >
+ size="sm"variant="ghost"onClick={() => fetchQuotationDetail(false)}
+ disabled={isRefreshing}
+ className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground dark:hover:text-muted-foreground cursor-pointer"title="Sync / Refresh quotation data">
               <RefreshCw className={`h-3.5 w-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
             </Button>
           </div>
 
           {/* Cockpit Command Center Card */}
-          <div className="p-4 sm:p-5 rounded-2xl bg-slate-900 text-white shadow-xl space-y-4">
+          <div className="p-4 sm:p-5 rounded-xl bg-surface-inset text-foreground shadow-xs space-y-4">
             {/* Top Row: Identification & Badges */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-white/10">
               <div className="space-y-1">
@@ -524,20 +518,20 @@ function QuotationDetailContent() {
                   <span className="tabular-nums font-black text-cyan-300 text-xl tracking-tight">
                     {quote.quotation_number}
                   </span>
-                  <Badge variant="outline" className="bg-card/10 text-white border-white/20 text-xs font-bold capitalize">
+                  <Badge variant="outline"className="bg-card/10 text-white border-white/20 text-xs font-bold capitalize">
                     {quote.status}
                   </Badge>
                   {quote.converted_order_id && (
                     <Link href={getTenantNavHref(`/orders?search=${quote.converted_order_id}`, pathname, slug)}>
-                      <Badge variant="outline" className="bg-purple-900/80 text-purple-200 border-purple-400/60 text-xs tabular-nums font-bold hover:bg-purple-800 transition-colors cursor-pointer flex items-center gap-1">
+                      <Badge variant="outline"className="bg-purple-900/80 text-purple-200 border-purple-400/60 text-xs tabular-nums font-bold hover:bg-purple-800 transition-colors cursor-pointer flex items-center gap-1">
                         <span>Job Order #{quote.converted_order_id}</span>
-                        <ArrowUpRight className="h-3 w-3" />
+                        <ArrowUpRight className="h-3 w-3"/>
                       </Badge>
                     </Link>
                   )}
                   {quote.converted_invoice_id && (
-                    <Badge variant="outline" className="bg-emerald-900/80 text-emerald-200 border-emerald-400/60 text-xs tabular-nums font-bold">
-                      Invoice Converted
+                    <Badge variant="outline"className="bg-emerald-900/80 text-emerald-200 border-emerald-400/60 text-xs tabular-nums font-bold">
+ Invoice Converted
                     </Badge>
                   )}
                 </div>
@@ -559,31 +553,30 @@ function QuotationDetailContent() {
                 </div>
 
                 <select
-                  value={quote.status}
-                  onChange={(e) => handleStatusChange(e.target.value as QuotationStatus)}
-                  className="h-9 px-2.5 rounded-lg bg-card/10 text-white text-xs border border-white/20 font-semibold focus:ring-1 focus:ring-cyan-400"
-                >
-                  <option value="draft" className="text-black">Draft</option>
-                  <option value="sent" className="text-black">Sent</option>
-                  <option value="viewed" className="text-black">Viewed</option>
-                  <option value="negotiation" className="text-black">Negotiation</option>
-                  <option value="approved" className="text-black">Approved</option>
-                  <option value="rejected" className="text-black">Rejected</option>
-                  <option value="expired" className="text-black">Expired</option>
-                  <option value="converted" className="text-black">Converted</option>
+ value={quote.status}
+ onChange={(e) => handleStatusChange(e.target.value as QuotationStatus)}
+ className="h-9 px-2.5 rounded-lg bg-card/10 text-white text-xs border border-white/20 font-semibold focus:ring-1 focus:ring-cyan-400">
+                  <option value="draft"className="text-black">Draft</option>
+                  <option value="sent"className="text-black">Sent</option>
+                  <option value="viewed"className="text-black">Viewed</option>
+                  <option value="negotiation"className="text-black">Negotiation</option>
+                  <option value="approved"className="text-black">Approved</option>
+                  <option value="rejected"className="text-black">Rejected</option>
+                  <option value="expired"className="text-black">Expired</option>
+                  <option value="converted"className="text-black">Converted</option>
                 </select>
               </div>
             </div>
 
             {/* Commercial Advance Terms HUD Banner */}
-            <div className="p-3 rounded-xl bg-slate-800/80 border border-slate-700/60 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+            <div className="p-3 rounded-xl bg-card-elevated/80 border border-border/60 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
               <div>
                 <span className="text-2xs uppercase font-bold text-muted-foreground block">Total Quoted Value</span>
                 <span className="text-sm font-black tabular-nums text-white">{formatBDT(quote.grand_total)}</span>
               </div>
               <div>
                 <span className="text-2xs uppercase font-bold text-amber-300 block">
-                  Advance Required ({advancePct}%)
+ Advance Required ({advancePct}%)
                 </span>
                 <span className="text-sm font-black tabular-nums text-amber-400">{formatBDT(advanceAmt)}</span>
               </div>
@@ -605,59 +598,45 @@ function QuotationDetailContent() {
               <div className="flex flex-wrap items-center gap-2">
                 {/* 1. PRIMARY ACTION: Follow Up */}
                 <Button
-                  size="sm"
-                  onClick={() => setIsFollowUpOpen(true)}
-                  className="h-9 text-xs bg-amber-500 hover:bg-amber-600 text-foreground font-black px-4 shadow-md gap-1.5 cursor-pointer"
-                >
-                  <Clock className="h-4 w-4" />
-                  Follow Up
+ size="sm"onClick={() => setIsFollowUpOpen(true)}
+ className="h-9 text-xs bg-amber-500 hover:bg-amber-600 text-foreground font-black px-4 shadow-xs gap-1.5 cursor-pointer">
+                  <Clock className="h-4 w-4"/>
+ Follow Up
                 </Button>
 
                 {/* 2. WhatsApp Direct */}
                 <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={handleSendWhatsApp}
-                  className="h-9 text-xs bg-emerald-500/20 text-emerald-200 border-emerald-400/40 hover:bg-emerald-500/30 gap-1.5 cursor-pointer"
-                >
-                  <MessageSquare className="h-4 w-4 text-emerald-400" />
-                  Send WhatsApp
+ size="sm"variant="outline"onClick={handleSendWhatsApp}
+ className="h-9 text-xs bg-emerald-500/20 text-emerald-200 border-emerald-400/40 hover:bg-emerald-500/30 gap-1.5 cursor-pointer">
+                  <MessageSquare className="h-4 w-4 text-emerald-400"/>
+ Send WhatsApp
                 </Button>
 
                 {/* 3. Send Email */}
                 {quote.customer_email && (
                   <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={handleSendEmail}
-                    disabled={isSendingEmail}
-                    className="h-9 text-xs bg-blue-500/20 text-blue-200 border-blue-400/40 hover:bg-blue-500/30 gap-1.5 cursor-pointer"
-                  >
-                    <Mail className="h-4 w-4 text-blue-400" />
+ size="sm"variant="outline"onClick={handleSendEmail}
+ disabled={isSendingEmail}
+ className="h-9 text-xs bg-blue-500/20 text-blue-200 border-blue-400/40 hover:bg-blue-500/30 gap-1.5 cursor-pointer">
+                    <Mail className="h-4 w-4 text-blue-400"/>
                     {isSendingEmail ? 'Sending...' : 'Email PDF'}
                   </Button>
                 )}
 
                 {/* 4. Negotiate Margin */}
                 <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setIsNegotiationOpen(true)}
-                  className="h-9 text-xs bg-card/10 text-white border-white/20 hover:bg-card/20 gap-1.5 cursor-pointer"
-                >
-                  <Sliders className="h-3.5 w-3.5 text-cyan-300" />
-                  Negotiate Margin
+ size="sm"variant="outline"onClick={() => setIsNegotiationOpen(true)}
+ className="h-9 text-xs bg-card/10 text-white border-white/20 hover:bg-card/20 gap-1.5 cursor-pointer">
+                  <Sliders className="h-3.5 w-3.5 text-cyan-300"/>
+ Negotiate Margin
                 </Button>
 
                 {/* 5. Duplicate */}
                 <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={handleDuplicate}
-                  className="h-9 text-xs bg-card/10 text-white border-white/20 hover:bg-card/20 gap-1.5 cursor-pointer"
-                >
-                  <Copy className="h-3.5 w-3.5" />
-                  Duplicate
+ size="sm"variant="outline"onClick={handleDuplicate}
+ className="h-9 text-xs bg-card/10 text-white border-white/20 hover:bg-card/20 gap-1.5 cursor-pointer">
+                  <Copy className="h-3.5 w-3.5"/>
+ Duplicate
                 </Button>
               </div>
 
@@ -665,42 +644,38 @@ function QuotationDetailContent() {
               <div className="flex flex-wrap items-center gap-2">
                 {/* Print / Vector PDF Engine */}
                 <PdfActionButtons
-                  document={
+ document={
                     <QuotationPdfDocument
-                      quotation={quote}
-                      company={{
-                        name: company?.name,
-                        tagline: company?.legal_name || 'Printing & Signage Specialists',
-                        address: company?.address,
-                        phone: company?.phone,
-                        email: company?.email,
-                        binNumber: company?.bin_no,
+ quotation={quote}
+ company={{
+ name: company?.name,
+ tagline: company?.legal_name || 'Printing & Signage Specialists',
+ address: company?.address,
+ phone: company?.phone,
+ email: company?.email,
+ binNumber: company?.bin_no,
                       }}
                     />
                   }
-                  filename={`QUO-${quote.quotation_number}`}
-                  title={`Quotation #${quote.quotation_number}`}
+ filename={`QUO-${quote.quotation_number}`}
+ title={`Quotation #${quote.quotation_number}`}
                 />
 
                 {/* Convert to Job Order */}
                 {quote.status !== 'converted' && !quote.converted_order_id ? (
                   <Button
-                    size="sm"
-                    onClick={handleConvertToOrder}
-                    disabled={isConvertingOrder}
-                    className="h-9 text-xs bg-purple-600 hover:bg-purple-700 text-white font-bold gap-1.5 shadow-md cursor-pointer"
-                  >
-                    <FileCheck className="h-4 w-4" />
+ size="sm"onClick={handleConvertToOrder}
+ disabled={isConvertingOrder}
+ className="h-9 text-xs bg-purple-600 hover:bg-purple-700 text-white font-bold gap-1.5 shadow-xs cursor-pointer">
+                    <FileCheck className="h-4 w-4"/>
                     {isConvertingOrder ? 'Converting...' : 'Convert to Job Order'}
                   </Button>
                 ) : quote.converted_order_id ? (
                   <Link href={getTenantNavHref(`/orders?search=${quote.converted_order_id}`, pathname, slug)}>
                     <Button
-                      size="sm"
-                      className="h-9 text-xs bg-purple-700 hover:bg-purple-800 text-white font-bold gap-1.5 shadow-md cursor-pointer"
-                    >
-                      <ArrowUpRight className="h-4 w-4" />
-                      View Job Order #{quote.converted_order_id} →
+ size="sm"className="h-9 text-xs bg-purple-700 hover:bg-purple-800 text-white font-bold gap-1.5 shadow-xs cursor-pointer">
+                      <ArrowUpRight className="h-4 w-4"/>
+ View Job Order #{quote.converted_order_id} →
                     </Button>
                   </Link>
                 ) : null}
@@ -708,12 +683,10 @@ function QuotationDetailContent() {
                 {/* Convert to Invoice */}
                 {quote.status !== 'converted' && !quote.converted_invoice_id && (
                   <Button
-                    size="sm"
-                    onClick={handleConvertToInvoice}
-                    disabled={isConvertingInvoice}
-                    className="h-9 text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-bold gap-1.5 shadow-md cursor-pointer"
-                  >
-                    <Receipt className="h-4 w-4" />
+ size="sm"onClick={handleConvertToInvoice}
+ disabled={isConvertingInvoice}
+ className="h-9 text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-bold gap-1.5 shadow-xs cursor-pointer">
+                    <Receipt className="h-4 w-4"/>
                     {isConvertingInvoice ? 'Converting...' : 'Convert to Invoice'}
                   </Button>
                 )}
@@ -722,7 +695,7 @@ function QuotationDetailContent() {
           </div>
 
           {/* Document Presentation Language Switcher */}
-          <div className="flex items-center justify-between p-3 rounded-xl bg-muted text-xs border border-border dark:border-border">
+          <div className="flex items-center justify-between p-3 rounded-xl bg-muted text-xs border border-border">
             <span className="font-semibold text-foreground flex items-center gap-2">
               <span>Document Presentation Language:</span>
               <span className="text-2xs text-muted-foreground font-normal">
@@ -731,19 +704,15 @@ function QuotationDetailContent() {
             </span>
             <div className="flex items-center gap-1">
               <Button
-                size="sm"
-                variant={languageMode === 'en' ? 'default' : 'outline'}
-                onClick={() => setLanguageMode('en')}
-                className="h-7 text-xs px-3"
-              >
-                English
+ size="sm"variant={languageMode === 'en' ? 'default' : 'outline'}
+ onClick={() => setLanguageMode('en')}
+ className="h-7 text-xs px-3">
+ English
               </Button>
               <Button
-                size="sm"
-                variant={languageMode === 'bn' ? 'default' : 'outline'}
-                onClick={() => setLanguageMode('bn')}
-                className="h-7 text-xs px-3 bangla-text"
-              >
+ size="sm"variant={languageMode === 'bn' ? 'default' : 'outline'}
+ onClick={() => setLanguageMode('bn')}
+ className="h-7 text-xs px-3 bangla-text">
                 বাংলা
               </Button>
             </div>
@@ -753,25 +722,25 @@ function QuotationDetailContent() {
         {/* Notifications */}
         {notification && (
           <div className="print:hidden p-3 bg-emerald-50 text-emerald-800 rounded-xl text-xs font-semibold flex items-center gap-2 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800 animate-in fade-in-0">
-            <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+            <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0"/>
             <span>{notification}</span>
           </div>
         )}
 
         {/* =========================================================================
-            PROFESSIONAL PRINT & PDF QUOTATION DOCUMENT
-            Standard A4 layout with print-optimized styling
+ PROFESSIONAL PRINT & PDF QUOTATION DOCUMENT
+ Standard A4 layout with print-optimized styling
            ========================================================================= */}
-        <div className="bg-card text-foreground dark:text-white print:bg-white print:text-foreground print:dark:bg-card print:dark:text-foreground p-8 sm:p-12 rounded-2xl shadow-xl border border-border print:border-none print:shadow-none print:p-0 print:m-0 print:rounded-none">
+        <div className="bg-card text-foreground print:bg-white print:text-foreground print: print: p-8 sm:p-12 rounded-xl shadow-xs border border-border print:border-none print:shadow-none print:p-0 print:m-0 print:rounded-none">
           {/* Document Header */}
-          <div className="flex justify-between items-start border-b-2 border-slate-900 print:border-slate-900 pb-6">
+          <div className="flex justify-between items-start border-b-2 border-border print:border-border pb-6">
             <div className="space-y-1">
               <div className="flex items-center gap-2.5">
                 <div className="h-11 w-11 rounded-xl bg-blue-700 text-white font-black text-2xl flex items-center justify-center shadow-xs">
                   {(company?.name || 'I').charAt(0).toUpperCase()}
                 </div>
                 <div>
-                  <h2 className="text-xl font-black tracking-tight text-foreground dark:text-white print:text-foreground">
+                  <h2 className="text-xl font-black tracking-tight text-foreground print:text-foreground">
                     {company?.name || 'InkFlow Printing & Signage Solutions'}
                   </h2>
                   {company?.name_bn && (
@@ -799,14 +768,14 @@ function QuotationDetailContent() {
                 {quote.quotation_number}
               </div>
               <div className="text-xs text-muted-foreground print:text-muted-foreground">
-                Date: <strong>{quote.quotation_date}</strong>
+ Date: <strong>{quote.quotation_date}</strong>
               </div>
               <div className="text-xs text-red-600 dark:text-red-400 font-semibold print:text-red-600">
-                Valid Until: <strong>{quote.valid_until}</strong>
+ Valid Until: <strong>{quote.valid_until}</strong>
               </div>
               {quote.reference_no && (
                 <div className="text-xs text-foreground print:text-foreground tabular-nums">
-                  Ref / PO: <strong>{quote.reference_no}</strong>
+ Ref / PO: <strong>{quote.reference_no}</strong>
                 </div>
               )}
             </div>
@@ -818,7 +787,7 @@ function QuotationDetailContent() {
               <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground print:text-muted-foreground">
                 {languageMode === 'bn' ? 'গ্রাহকের তথ্য (বিল প্রাপক)' : 'Bill To / Client Details'}
               </span>
-              <div className="text-sm font-bold text-foreground dark:text-white print:text-foreground">
+              <div className="text-sm font-bold text-foreground print:text-foreground">
                 {languageMode === 'bn' && quote.customer_name_bn ? quote.customer_name_bn : quote.customer_name}
                 {quote.customer_company && (
                   <span className="font-normal text-xs text-muted-foreground print:text-muted-foreground ml-1">({quote.customer_company})</span>
@@ -829,7 +798,7 @@ function QuotationDetailContent() {
               {quote.customer_email && <div className="text-muted-foreground print:text-muted-foreground">Email: {quote.customer_email}</div>}
               {quote.customer_type && (
                 <div className="text-muted-foreground print:text-muted-foreground uppercase text-2xs font-bold pt-0.5">
-                  Category: {quote.customer_type}
+ Category: {quote.customer_type}
                 </div>
               )}
             </div>
@@ -839,26 +808,26 @@ function QuotationDetailContent() {
                 {languageMode === 'bn' ? 'প্রকল্প ও ডেলিভারি বিবরণ' : 'Quotation Specifics'}
               </span>
               <div className="text-foreground print:text-foreground">
-                Sales Representative: <strong>{quote.salesperson_name}</strong>
+ Sales Representative: <strong>{quote.salesperson_name}</strong>
               </div>
               {quote.delivery_date && (
                 <div className="text-foreground print:text-foreground">
-                  Target Delivery: <strong>{quote.delivery_date}</strong>
+ Target Delivery: <strong>{quote.delivery_date}</strong>
                 </div>
               )}
               {quote.delivery_method && (
                 <div className="text-foreground print:text-foreground capitalize">
-                  Delivery Method: <strong>{quote.delivery_method.replace('_', ' ')}</strong>
+ Delivery Method: <strong>{quote.delivery_method.replace('_', ' ')}</strong>
                 </div>
               )}
               {quote.delivery_location && (
                 <div className="text-foreground print:text-foreground">
-                  Delivery Location: <strong>{quote.delivery_location}</strong>
+ Delivery Location: <strong>{quote.delivery_location}</strong>
                 </div>
               )}
               {quote.customer_bin && (
                 <div className="text-foreground print:text-foreground tabular-nums">
-                  Customer BIN: <strong>{quote.customer_bin}</strong>
+ Customer BIN: <strong>{quote.customer_bin}</strong>
                 </div>
               )}
             </div>
@@ -868,7 +837,7 @@ function QuotationDetailContent() {
           <div className="my-6">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="bg-slate-900 text-white print:bg-slate-900">
+                <tr className="bg-surface-inset text-foreground print:bg-surface-inset">
                   <th className="py-2.5 px-3 font-bold w-12 text-center">#</th>
                   <th className="py-2.5 px-3 font-bold">
                     {languageMode === 'bn' ? 'পণ্যের বিবরণ ও স্পেসিফিকেশন' : 'Item Description & Specifications'}
@@ -889,18 +858,18 @@ function QuotationDetailContent() {
               </thead>
               <tbody className="divide-y divide-border border-b border-border print:divide-border print:border-border">
                 {quote.items.map((item, idx) => {
-                  const catPreset = (item as any).category_preset
-                  const offsetSpecs = (item as any).offset_specs
-                  const signageSpecs = (item as any).signage_specs
+ const catPreset = (item as any).category_preset
+ const offsetSpecs = (item as any).offset_specs
+ const signageSpecs = (item as any).signage_specs
 
-                  return (
+ return (
                     <tr key={item.id} className="hover:bg-muted dark:hover:bg-muted/50 print:hover:bg-transparent">
                       <td className="py-3 px-3 text-center tabular-nums font-bold text-muted-foreground print:text-muted-foreground">
                         {idx + 1}
                       </td>
                       <td className="py-3 px-3">
                         <div className="flex items-center gap-1.5 flex-wrap">
-                          <span className="font-bold text-foreground dark:text-white print:text-foreground">
+                          <span className="font-bold text-foreground print:text-foreground">
                             {languageMode === 'bn' && item.description_bn ? item.description_bn : item.description}
                           </span>
                           {catPreset && (
@@ -947,7 +916,7 @@ function QuotationDetailContent() {
 
                         {item.finishing && item.finishing !== 'None' && (
                           <div className="text-2xs text-blue-600 dark:text-blue-400 print:text-blue-600 font-medium mt-0.5">
-                            Finishing: {item.finishing}
+ Finishing: {item.finishing}
                           </div>
                         )}
                       </td>
@@ -960,7 +929,7 @@ function QuotationDetailContent() {
                       <td className="py-3 px-3 text-right tabular-nums font-medium">
                         {formatBDT(item.unit_rate)}
                       </td>
-                      <td className="py-3 px-3 text-right tabular-nums font-bold text-foreground dark:text-white print:text-foreground">
+                      <td className="py-3 px-3 text-right tabular-nums font-bold text-foreground print:text-foreground">
                         {formatBDT(item.item_total)}
                       </td>
                     </tr>
@@ -975,7 +944,7 @@ function QuotationDetailContent() {
             {/* Terms, Notes & Bank Accounts */}
             <div className="space-y-3 text-xs">
               <div>
-                <span className="font-bold text-foreground dark:text-white uppercase tracking-wider text-2xs print:text-foreground">
+                <span className="font-bold text-foreground uppercase tracking-wider text-2xs print:text-foreground">
                   {languageMode === 'bn' ? 'বিল ও ডেলিভারির শর্তাবলী:' : 'Commercial Terms & Conditions:'}
                 </span>
                 <pre className="font-sans whitespace-pre-line text-muted-foreground print:text-muted-foreground text-2xs leading-relaxed mt-1">
@@ -985,7 +954,7 @@ function QuotationDetailContent() {
 
               {/* Payment Remittance Details */}
               <div className="p-3 rounded-xl bg-muted border border-border text-foreground print:bg-muted print:border-border print:text-foreground space-y-1">
-                <span className="font-bold block text-2xs uppercase text-foreground dark:text-white print:text-foreground">
+                <span className="font-bold block text-2xs uppercase text-foreground print:text-foreground">
                   {languageMode === 'bn' ? 'পেমেন্ট ও ব্যাংক হিসাব (Payment Details):' : 'Official Payment Accounts:'}
                 </span>
                 <div className="text-2xs space-y-0.5">
@@ -1021,7 +990,7 @@ function QuotationDetailContent() {
                 <span className="tabular-nums">+ {formatBDT(quote.vat_amount)}</span>
               </div>
 
-              <div className="flex justify-between py-2 border-t-2 border-slate-900 print:border-slate-900 font-black text-sm text-foreground dark:text-white print:text-foreground">
+              <div className="flex justify-between py-2 border-t-2 border-border print:border-border font-black text-sm text-foreground print:text-foreground">
                 <span>{languageMode === 'bn' ? 'সর্বমোট প্রাক্কলন (Grand Total):' : 'Grand Total (BDT):'}</span>
                 <span className="tabular-nums text-base text-blue-700 dark:text-blue-400 print:text-blue-700">{formatBDT(quote.grand_total)}</span>
               </div>
@@ -1038,7 +1007,7 @@ function QuotationDetailContent() {
                 </div>
               </div>
 
-              <div className="text-2xs text-muted-foreground print:text-muted-foreground pt-1.5 italic border-t border-border dark:border-border">
+              <div className="text-2xs text-muted-foreground print:text-muted-foreground pt-1.5 italic border-t border-border">
                 {languageMode === 'bn'
                   ? `কথায়: ${numberToWordsBangla(quote.grand_total)}`
                   : `In Words: ${numberToWordsBDT(quote.grand_total)}`}
@@ -1049,14 +1018,14 @@ function QuotationDetailContent() {
           {/* Signature Block */}
           <div className="grid grid-cols-2 gap-12 mt-16 pt-6 border-t border-dashed border-input print:border-input text-xs">
             <div className="text-center space-y-1">
-              <div className="font-bold text-foreground dark:text-white print:text-foreground">{quote.salesperson_name}</div>
+              <div className="font-bold text-foreground print:text-foreground">{quote.salesperson_name}</div>
               <div className="text-2xs text-muted-foreground print:text-muted-foreground">
                 {languageMode === 'bn' ? 'প্রস্তুতকারক (বিক্রয় বিভাগ)' : 'Prepared By (Sales Dept)'}
               </div>
             </div>
 
             <div className="text-center space-y-1">
-              <div className="font-bold text-foreground dark:text-white print:text-foreground">Authorized Signatory</div>
+              <div className="font-bold text-foreground print:text-foreground">Authorized Signatory</div>
               <div className="text-2xs text-muted-foreground print:text-muted-foreground">
                 {languageMode === 'bn' ? 'অনুমোদনকারী কর্মকর্তা ও সিল' : `For ${company?.name || 'InkFlow Solutions'}`}
               </div>
@@ -1065,32 +1034,32 @@ function QuotationDetailContent() {
         </div>
 
         {/* =========================================================================
-            NON-PRINT ACTIVITY TIMELINE
+ NON-PRINT ACTIVITY TIMELINE
            ========================================================================= */}
         <div className="print:hidden">
           <Card>
-            <CardHeader className="pb-3 border-b border-border dark:border-border">
+            <CardHeader className="pb-3 border-b border-border">
               <CardTitle className="text-base font-bold flex items-center gap-2">
-                <History className="h-4 w-4 text-purple-600" />
-                Quotation Activity & Negotiation Timeline
+                <History className="h-4 w-4 text-purple-600"/>
+ Quotation Activity & Negotiation Timeline
               </CardTitle>
               <CardDescription className="text-xs">
-                Authoritative history of customer follow-ups, price negotiations, status advances, and order conversions.
+ Authoritative history of customer follow-ups, price negotiations, status advances, and order conversions.
               </CardDescription>
             </CardHeader>
             <CardContent className="p-5">
               {activities.length === 0 ? (
                 <div className="p-6 text-center text-xs text-muted-foreground">
-                  No recorded activity yet.
+ No recorded activity yet.
                 </div>
               ) : (
                 <div className="space-y-4">
                   {activities.map((act) => (
                     <div key={act.id} className="flex items-start gap-3 text-xs">
-                      <div className="h-2.5 w-2.5 rounded-full bg-blue-600 mt-1 shrink-0" />
+                      <div className="h-2.5 w-2.5 rounded-full bg-blue-600 mt-1 shrink-0"/>
                       <div className="flex-1 border-b border-border pb-3">
                         <div className="flex items-center justify-between">
-                          <span className="font-bold capitalize text-foreground dark:text-white">
+                          <span className="font-bold capitalize text-foreground">
                             {act.action.replace('_', ' ')}
                           </span>
                           <span className="text-muted-foreground tabular-nums text-2xs">
@@ -1114,27 +1083,27 @@ function QuotationDetailContent() {
 
         {/* Modals */}
         <FollowUpModal
-          open={isFollowUpOpen}
-          onOpenChange={setIsFollowUpOpen}
-          quotation={quote}
-          onFollowUpRecorded={(updated) => {
-            setQuote(updated)
-            showNotification(`Follow-up saved for #${updated.quotation_number}`)
-            fetchQuotationDetail(true)
+ open={isFollowUpOpen}
+ onOpenChange={setIsFollowUpOpen}
+ quotation={quote}
+ onFollowUpRecorded={(updated) => {
+ setQuote(updated)
+ showNotification(`Follow-up saved for #${updated.quotation_number}`)
+ fetchQuotationDetail(true)
           }}
-          companyId={company?.id || 'c-01'}
+ companyId={company?.id || 'c-01'}
         />
 
         <NegotiationModal
-          open={isNegotiationOpen}
-          onOpenChange={setIsNegotiationOpen}
-          quotation={quote}
-          onNegotiationApplied={(updated) => {
-            setQuote(updated)
-            showNotification(`Negotiated total ${formatBDT(updated.grand_total)} applied (Margin: ${updated.margin_percent}%).`)
-            fetchQuotationDetail(true)
+ open={isNegotiationOpen}
+ onOpenChange={setIsNegotiationOpen}
+ quotation={quote}
+ onNegotiationApplied={(updated) => {
+ setQuote(updated)
+ showNotification(`Negotiated total ${formatBDT(updated.grand_total)} applied (Margin: ${updated.margin_percent}%).`)
+ fetchQuotationDetail(true)
           }}
-          companyId={company?.id || 'c-01'}
+ companyId={company?.id || 'c-01'}
         />
       </div>
     </FeatureGate>
@@ -1142,17 +1111,13 @@ function QuotationDetailContent() {
 }
 
 export default function QuotationDetailPage() {
-  return (
+ return (
     <PanelAccessGuard
-      module="quotations"
-      action="view"
-      panelTitle="Quotation Details"
-      panelTitleBn="কোটেশন বিস্তারিত"
-    >
+ module="quotations"action="view"panelTitle="Quotation Details"panelTitleBn="কোটেশন বিস্তারিত">
       <React.Suspense
-        fallback={
+ fallback={
           <div className="flex flex-col items-center justify-center min-h-[400px] space-y-3">
-            <FileSpreadsheet className="h-6 w-6 text-indigo-500 animate-pulse" />
+            <FileSpreadsheet className="h-6 w-6 text-indigo-500 animate-pulse"/>
             <p className="text-xs text-muted-foreground">Loading Quotation...</p>
           </div>
         }

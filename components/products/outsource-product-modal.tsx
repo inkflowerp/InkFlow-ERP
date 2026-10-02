@@ -7,39 +7,39 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import {
-  Share2,
-  Sliders,
-  AlertCircle,
-  RefreshCw,
-  DollarSign,
-  TrendingUp,
-  Check,
-  ChevronRight,
-  ChevronLeft,
-  Sparkles,
-  ShieldCheck,
-  Tag,
-  Percent,
-  Coins,
-  Info,
-  Layers,
-  Warehouse,
-  Boxes,
-  Truck,
-  Scale,
-  Maximize2,
-  Building,
-  CheckCircle2,
-  Zap,
-  HelpCircle,
-  Clock,
-  ExternalLink,
-  Phone,
-  FileText,
-  MapPin,
-  ShoppingBag,
-  Send,
-  UserCheck,
+ Share2,
+ Sliders,
+ AlertCircle,
+ RefreshCw,
+ DollarSign,
+ TrendingUp,
+ Check,
+ ChevronRight,
+ ChevronLeft,
+ Sparkles,
+ ShieldCheck,
+ Tag,
+ Percent,
+ Coins,
+ Info,
+ Layers,
+ Warehouse,
+ Boxes,
+ Truck,
+ Scale,
+ Maximize2,
+ Building,
+ CheckCircle2,
+ Zap,
+ HelpCircle,
+ Clock,
+ ExternalLink,
+ Phone,
+ FileText,
+ MapPin,
+ ShoppingBag,
+ Send,
+ UserCheck,
 } from 'lucide-react'
 import { dispatchToast } from '@/components/shared/toast-feedback'
 import { cn } from '@/lib/utils'
@@ -49,12 +49,12 @@ import { formatBDT } from '@/lib/formatters'
 import { calculateGrossMargin, calculateSuggestedSellingPrice } from '@/lib/units'
 
 interface OutsourceProductModalProps {
-  isOpen: boolean
-  onClose: () => void
-  onSave: (productData: Partial<ProductRecord>) => Promise<void>
-  initialData?: ProductRecord | null
-  categories?: ProductCategoryRecord[]
-  suppliers?: Array<{ id: string; name: string; contact_person?: string; phone?: string }>
+ isOpen: boolean
+ onClose: () => void
+ onSave: (productData: Partial<ProductRecord>) => Promise<void>
+ initialData?: ProductRecord | null
+ categories?: ProductCategoryRecord[]
+ suppliers?: Array<{ id: string; name: string; contact_person?: string; phone?: string }>
 }
 
 export const OUTSOURCE_PRODUCT_UNITS: { value: UnitOfMeasure; label: string }[] = [
@@ -83,532 +83,528 @@ export const OUTSOURCE_CATEGORIES = [
 ]
 
 export const OUTSOURCE_PRESETS: Array<{
-  id: string
-  name: string
-  name_bn: string
-  category: string
-  unit: UnitOfMeasure
-  purchaseUnit: string
-  vendorName: string
-  vendorCost: number
-  defaultSellingPrice: number
-  turnaroundDays: number
-  deliveryMethod: string
-  specifications: string
-  vendorNotes: string
-  description: string
+ id: string
+ name: string
+ name_bn: string
+ category: string
+ unit: UnitOfMeasure
+ purchaseUnit: string
+ vendorName: string
+ vendorCost: number
+ defaultSellingPrice: number
+ turnaroundDays: number
+ deliveryMethod: string
+ specifications: string
+ vendorNotes: string
+ description: string
 }> = [
   {
-    id: 'offset_leaflet_1000',
-    name: 'Offset Flyer / Leaflet A4 120 GSM (1,000 pcs)',
-    name_bn: 'অফসেট লিফলেট এ৪ ১২০ জিএসএম (১,০০০ পিস)',
-    category: 'offset_printing',
-    unit: 'thousand',
-    purchaseUnit: 'thousand',
-    vendorName: 'Arambagh Offset Press Network',
-    vendorCost: 1800,
-    defaultSellingPrice: 2800,
-    turnaroundDays: 2,
-    deliveryMethod: 'vendor_delivery',
-    specifications: 'A4 Size (8.27×11.69 in), 120 GSM Art Paper, 4-Color Both Sides Offset Print, Pack of 1000.',
-    vendorNotes: 'High-speed 4-color Heidelberg offset press run. Plate cost included in vendor price.',
-    description: '1,000 copies A4 4-color offset flyer printing on premium 120 GSM imported art paper.',
+ id: 'offset_leaflet_1000',
+ name: 'Offset Flyer / Leaflet A4 120 GSM (1,000 pcs)',
+ name_bn: 'অফসেট লিফলেট এ৪ ১২০ জিএসএম (১,০০০ পিস)',
+ category: 'offset_printing',
+ unit: 'thousand',
+ purchaseUnit: 'thousand',
+ vendorName: 'Arambagh Offset Press Network',
+ vendorCost: 1800,
+ defaultSellingPrice: 2800,
+ turnaroundDays: 2,
+ deliveryMethod: 'vendor_delivery',
+ specifications: 'A4 Size (8.27×11.69 in), 120 GSM Art Paper, 4-Color Both Sides Offset Print, Pack of 1000.',
+ vendorNotes: 'High-speed 4-color Heidelberg offset press run. Plate cost included in vendor price.',
+ description: '1,000 copies A4 4-color offset flyer printing on premium 120 GSM imported art paper.',
   },
   {
-    id: 'neon_flex_custom',
-    name: 'Custom LED Neon Flex Sign on Clear Acrylic Base',
-    name_bn: 'কাস্টম এলইডি নিওন ফ্লেক্স সাইন এক্রিলিক বেসে',
-    category: 'neon_signage',
-    unit: 'sft',
-    purchaseUnit: 'sft',
-    vendorName: 'Neon Craft Studio',
-    vendorCost: 450,
-    defaultSellingPrice: 750,
-    turnaroundDays: 3,
-    deliveryMethod: 'shop_pickup',
-    specifications: '6mm/8mm Food Grade Silicon LED Neon Flex, 5mm Laser Cut Clear Acrylic Backer, 12V Power Adapter included.',
-    vendorNotes: 'Requires vector artwork outline. Hand-bent silicone neon tubing with clear wire harness.',
-    description: 'Custom shaped glowing neon sign mounted on laser-profiled clear acrylic with wall spacers and adapter.',
+ id: 'neon_flex_custom',
+ name: 'Custom LED Neon Flex Sign on Clear Acrylic Base',
+ name_bn: 'কাস্টম এলইডি নিওন ফ্লেক্স সাইন এক্রিলিক বেসে',
+ category: 'neon_signage',
+ unit: 'sft',
+ purchaseUnit: 'sft',
+ vendorName: 'Neon Craft Studio',
+ vendorCost: 450,
+ defaultSellingPrice: 750,
+ turnaroundDays: 3,
+ deliveryMethod: 'shop_pickup',
+ specifications: '6mm/8mm Food Grade Silicon LED Neon Flex, 5mm Laser Cut Clear Acrylic Backer, 12V Power Adapter included.',
+ vendorNotes: 'Requires vector artwork outline. Hand-bent silicone neon tubing with clear wire harness.',
+ description: 'Custom shaped glowing neon sign mounted on laser-profiled clear acrylic with wall spacers and adapter.',
   },
   {
-    id: 'computer_embroidery_polo',
-    name: 'Computer Embroidery Logo on Polo Shirts / Caps',
-    name_bn: 'কম্পিউটার এমব্রয়ডারি লোগো টি-শার্ট / ক্যাপে',
-    category: 'embroidery_apparel',
-    unit: 'piece',
-    purchaseUnit: 'piece',
-    vendorName: 'Tongi Embroidery Hub',
-    vendorCost: 45,
-    defaultSellingPrice: 90,
-    turnaroundDays: 2,
-    deliveryMethod: 'vendor_delivery',
-    specifications: 'Up to 10,000 stitches, 6 thread colors, Tajima high-density multi-head embroidery.',
-    vendorNotes: 'Digitizing DST file charge ৳300 waived for orders above 50 pcs.',
-    description: 'Precision multi-color Japanese machine embroidery on chest pocket, sleeve, or cap crown.',
+ id: 'computer_embroidery_polo',
+ name: 'Computer Embroidery Logo on Polo Shirts / Caps',
+ name_bn: 'কম্পিউটার এমব্রয়ডারি লোগো টি-শার্ট / ক্যাপে',
+ category: 'embroidery_apparel',
+ unit: 'piece',
+ purchaseUnit: 'piece',
+ vendorName: 'Tongi Embroidery Hub',
+ vendorCost: 45,
+ defaultSellingPrice: 90,
+ turnaroundDays: 2,
+ deliveryMethod: 'vendor_delivery',
+ specifications: 'Up to 10,000 stitches, 6 thread colors, Tajima high-density multi-head embroidery.',
+ vendorNotes: 'Digitizing DST file charge ৳300 waived for orders above 50 pcs.',
+ description: 'Precision multi-color Japanese machine embroidery on chest pocket, sleeve, or cap crown.',
   },
   {
-    id: 'gold_foil_business_cards',
-    name: 'Luxury Gold Foil Stamping + Velvet Matte Cards (500 pcs)',
-    name_bn: 'লাক্সারি গোল্ড ফয়েল স্ট্যাম্পিং ভিজিটিং কার্ড (৫০০ পিস)',
-    category: 'special_finishing',
-    unit: 'set',
-    purchaseUnit: 'set',
-    vendorName: 'Prestige Foil & Die-Makers',
-    vendorCost: 1600,
-    defaultSellingPrice: 2800,
-    turnaroundDays: 3,
-    deliveryMethod: 'shop_pickup',
-    specifications: '350 GSM Swedish Board, Soft-Touch Velvet Lamination, Single-side Metallic Hot Foil Stamping.',
-    vendorNotes: 'Custom copper hot-stamp block prepared from vector AI/PDF file.',
-    description: '500 pcs ultra-premium business cards with hot metallic foil stamping and soft velvet coating.',
+ id: 'gold_foil_business_cards',
+ name: 'Luxury Gold Foil Stamping + Velvet Matte Cards (500 pcs)',
+ name_bn: 'লাক্সারি গোল্ড ফয়েল স্ট্যাম্পিং ভিজিটিং কার্ড (৫০০ পিস)',
+ category: 'special_finishing',
+ unit: 'set',
+ purchaseUnit: 'set',
+ vendorName: 'Prestige Foil & Die-Makers',
+ vendorCost: 1600,
+ defaultSellingPrice: 2800,
+ turnaroundDays: 3,
+ deliveryMethod: 'shop_pickup',
+ specifications: '350 GSM Swedish Board, Soft-Touch Velvet Lamination, Single-side Metallic Hot Foil Stamping.',
+ vendorNotes: 'Custom copper hot-stamp block prepared from vector AI/PDF file.',
+ description: '500 pcs ultra-premium business cards with hot metallic foil stamping and soft velvet coating.',
   },
   {
-    id: 'acrylic_3d_channel_letters',
-    name: '3D Acrylic Channel Letters with Samsung LED Backlight',
-    name_bn: 'থ্রি-ডি এক্রিলিক চ্যানেল লেটার এলইডি ব্যাকলাইট সহ',
-    category: 'channel_letters',
-    unit: 'rft',
-    purchaseUnit: 'rft',
-    vendorName: 'Laser Cut Signage Fab',
-    vendorCost: 350,
-    defaultSellingPrice: 650,
-    turnaroundDays: 4,
-    deliveryMethod: 'shop_pickup',
-    specifications: '3mm Cast Acrylic Face, 2in Depth Acrylic/SS Return Bending, Samsung 12V IP67 Injection LED Modules.',
-    vendorNotes: 'Pre-assembled letter bays with tested LED modules and 12V DC lead wires.',
-    description: 'Fabricated 3D raised illuminated box letters with waterproof internal LED injection modules.',
+ id: 'acrylic_3d_channel_letters',
+ name: '3D Acrylic Channel Letters with Samsung LED Backlight',
+ name_bn: 'থ্রি-ডি এক্রিলিক চ্যানেল লেটার এলইডি ব্যাকলাইট সহ',
+ category: 'channel_letters',
+ unit: 'rft',
+ purchaseUnit: 'rft',
+ vendorName: 'Laser Cut Signage Fab',
+ vendorCost: 350,
+ defaultSellingPrice: 650,
+ turnaroundDays: 4,
+ deliveryMethod: 'shop_pickup',
+ specifications: '3mm Cast Acrylic Face, 2in Depth Acrylic/SS Return Bending, Samsung 12V IP67 Injection LED Modules.',
+ vendorNotes: 'Pre-assembled letter bays with tested LED modules and 12V DC lead wires.',
+ description: 'Fabricated 3D raised illuminated box letters with waterproof internal LED injection modules.',
   },
   {
-    id: 'die_cut_custom_box',
-    name: 'Die-Cut Custom Product Packaging Box (1,000 pcs)',
-    name_bn: 'ডাই-কাট কাস্টম প্রোডাক্ট প্যাকেজিং বক্স (১,০০০ পিস)',
-    category: 'special_finishing',
-    unit: 'thousand',
-    purchaseUnit: 'thousand',
-    vendorName: 'City Packaging & Die-Cutting',
-    vendorCost: 14000,
-    defaultSellingPrice: 22000,
-    turnaroundDays: 5,
-    deliveryMethod: 'vendor_delivery',
-    specifications: '350 GSM Duplex/Art Card, 4-Color Print, Glossy Lamination, Precision Steel Rule Die-Cut & Pasting.',
-    vendorNotes: 'Includes customized laser wooden die block, creasing, and automatic side gluing.',
-    description: 'Custom branded retail packaging boxes folded and glued ready for product insertion.',
+ id: 'die_cut_custom_box',
+ name: 'Die-Cut Custom Product Packaging Box (1,000 pcs)',
+ name_bn: 'ডাই-কাট কাস্টম প্রোডাক্ট প্যাকেজিং বক্স (১,০০০ পিস)',
+ category: 'special_finishing',
+ unit: 'thousand',
+ purchaseUnit: 'thousand',
+ vendorName: 'City Packaging & Die-Cutting',
+ vendorCost: 14000,
+ defaultSellingPrice: 22000,
+ turnaroundDays: 5,
+ deliveryMethod: 'vendor_delivery',
+ specifications: '350 GSM Duplex/Art Card, 4-Color Print, Glossy Lamination, Precision Steel Rule Die-Cut & Pasting.',
+ vendorNotes: 'Includes customized laser wooden die block, creasing, and automatic side gluing.',
+ description: 'Custom branded retail packaging boxes folded and glued ready for product insertion.',
   },
 ]
 
 export function OutsourceProductModal({
-  isOpen,
-  onClose,
-  onSave,
-  initialData,
-  categories = [],
-  suppliers = [],
+ isOpen,
+ onClose,
+ onSave,
+ initialData,
+ categories = [],
+ suppliers = [],
 }: OutsourceProductModalProps) {
   // 4 Master Tabs
-  const [activeTab, setActiveTab] = useState<'basic' | 'costing' | 'vendor_specs' | 'taxes'>('basic')
+ const [activeTab, setActiveTab] = useState<'basic' | 'costing' | 'vendor_specs' | 'taxes'>('basic')
 
   // Tab 1: Basic Identity & Vendor Mapping
-  const [name, setName] = useState('')
-  const [nameBn, setNameBn] = useState('')
-  const [sku, setSku] = useState('')
-  const [category, setCategory] = useState('offset_printing')
-  const [unit, setUnit] = useState<UnitOfMeasure>('piece')
-  const [purchaseUnit, setPurchaseUnit] = useState<string>('piece')
-  const [isActive, setIsActive] = useState(true)
-  const [description, setDescription] = useState('')
-  const [descriptionBn, setDescriptionBn] = useState('')
+ const [name, setName] = useState('')
+ const [nameBn, setNameBn] = useState('')
+ const [sku, setSku] = useState('')
+ const [category, setCategory] = useState('offset_printing')
+ const [unit, setUnit] = useState<UnitOfMeasure>('piece')
+ const [purchaseUnit, setPurchaseUnit] = useState<string>('piece')
+ const [isActive, setIsActive] = useState(true)
+ const [description, setDescription] = useState('')
+ const [descriptionBn, setDescriptionBn] = useState('')
 
   // Vendor Information
-  const [preferredVendorId, setPreferredVendorId] = useState('')
-  const [vendorName, setVendorName] = useState('')
-  const [vendorPhone, setVendorPhone] = useState('')
-  const [vendorAddress, setVendorAddress] = useState('')
-  const [vendorItemCode, setVendorItemCode] = useState('')
+ const [preferredVendorId, setPreferredVendorId] = useState('')
+ const [vendorName, setVendorName] = useState('')
+ const [vendorPhone, setVendorPhone] = useState('')
+ const [vendorAddress, setVendorAddress] = useState('')
+ const [vendorItemCode, setVendorItemCode] = useState('')
 
   // Tab 2: Costing, Markup & Customer Price Tiers
-  const [vendorCost, setVendorCost] = useState<number | ''>('')
-  const [sellingPrice, setSellingPrice] = useState<number | ''>('')
-  const [targetMargin, setTargetMargin] = useState<number>(35)
-  const [minAllowedMargin, setMinAllowedMargin] = useState<number>(15)
-  const [minPrice, setMinPrice] = useState<number | ''>('')
-  const [minOrderQty, setMinOrderQty] = useState<number>(1)
-  const [minBillableQty, setMinBillableQty] = useState<number>(1)
+ const [vendorCost, setVendorCost] = useState<number | ''>('')
+ const [sellingPrice, setSellingPrice] = useState<number | ''>('')
+ const [targetMargin, setTargetMargin] = useState<number>(35)
+ const [minAllowedMargin, setMinAllowedMargin] = useState<number>(15)
+ const [minPrice, setMinPrice] = useState<number | ''>('')
+ const [minOrderQty, setMinOrderQty] = useState<number>(1)
+ const [minBillableQty, setMinBillableQty] = useState<number>(1)
 
   // Price tiers
-  const [priceTiers, setPriceTiers] = useState<{
-    retail: number | ''
-    corporate: number | ''
-    dealer: number | ''
-    wholesale: number | ''
-    custom: number | ''
+ const [priceTiers, setPriceTiers] = useState<{
+ retail: number | ''
+ corporate: number | ''
+ dealer: number | ''
+ wholesale: number | ''
+ custom: number | ''
   }>({
-    retail: '',
-    corporate: '',
-    dealer: '',
-    wholesale: '',
-    custom: '',
+ retail: '',
+ corporate: '',
+ dealer: '',
+ wholesale: '',
+ custom: '',
   })
 
   // Tab 3: Vendor Specs & Turnaround
-  const [specifications, setSpecifications] = useState('')
-  const [vendorNotes, setVendorNotes] = useState('')
-  const [turnaroundDays, setTurnaroundDays] = useState<number | ''>(2)
-  const [deliveryMethod, setDeliveryMethod] = useState<'vendor_delivery' | 'shop_pickup' | 'direct_customer_dispatch' | string>('vendor_delivery')
+ const [specifications, setSpecifications] = useState('')
+ const [vendorNotes, setVendorNotes] = useState('')
+ const [turnaroundDays, setTurnaroundDays] = useState<number | ''>(2)
+ const [deliveryMethod, setDeliveryMethod] = useState<'vendor_delivery' | 'shop_pickup' | 'direct_customer_dispatch' | string>('vendor_delivery')
 
   // Tab 4: Taxes & Governance
-  const [vatApplicable, setVatApplicable] = useState(false)
-  const [isTaxInclusive, setIsTaxInclusive] = useState(false)
-  const [taxRate, setTaxRate] = useState<number>(7.5)
-  const [allowManualOverride, setAllowManualOverride] = useState(true)
-  const [internalNotes, setInternalNotes] = useState('')
+ const [vatApplicable, setVatApplicable] = useState(false)
+ const [isTaxInclusive, setIsTaxInclusive] = useState(false)
+ const [taxRate, setTaxRate] = useState<number>(7.5)
+ const [allowManualOverride, setAllowManualOverride] = useState(true)
+ const [internalNotes, setInternalNotes] = useState('')
 
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
+ const [isSubmitting, setIsSubmitting] = useState(false)
+ const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
 
-  useEffect(() => {
-    if (initialData) {
-      setName(initialData.name || '')
-      setNameBn(initialData.name_bn || '')
-      setSku(initialData.sku || '')
-      setCategory(initialData.category || initialData.outsource_category || 'offset_printing')
-      setUnit(initialData.selling_unit || initialData.unit || 'piece')
-      setPurchaseUnit(initialData.purchase_unit || initialData.unit || 'piece')
-      setIsActive(initialData.is_active !== false)
-      setDescription(initialData.description || '')
-      setDescriptionBn(initialData.description_bn || '')
+ useEffect(() => {
+ if (initialData) {
+ setName(initialData.name || '')
+ setNameBn(initialData.name_bn || '')
+ setSku(initialData.sku || '')
+ setCategory(initialData.category || initialData.outsource_category || 'offset_printing')
+ setUnit(initialData.selling_unit || initialData.unit || 'piece')
+ setPurchaseUnit(initialData.purchase_unit || initialData.unit || 'piece')
+ setIsActive(initialData.is_active !== false)
+ setDescription(initialData.description || '')
+ setDescriptionBn(initialData.description_bn || '')
 
-      const outCfg = initialData.outsource_config || (initialData as any).pricing_formula?.outsource_config || {}
-      setPreferredVendorId(initialData.vendor_id || outCfg.vendor_id || '')
-      setVendorName(initialData.vendor_name || outCfg.vendor_name || '')
-      setVendorPhone(initialData.vendor_phone || outCfg.vendor_phone || '')
-      setVendorAddress(initialData.vendor_address || outCfg.vendor_address || '')
-      setVendorItemCode(initialData.vendor_item_code || outCfg.vendor_item_code || '')
+ const outCfg = initialData.outsource_config || (initialData as any).pricing_formula?.outsource_config || {}
+ setPreferredVendorId(initialData.vendor_id || outCfg.vendor_id || '')
+ setVendorName(initialData.vendor_name || outCfg.vendor_name || '')
+ setVendorPhone(initialData.vendor_phone || outCfg.vendor_phone || '')
+ setVendorAddress(initialData.vendor_address || outCfg.vendor_address || '')
+ setVendorItemCode(initialData.vendor_item_code || outCfg.vendor_item_code || '')
 
-      const cost = initialData.base_cost ?? initialData.purchase_price ?? outCfg.vendor_unit_cost ?? ''
-      const sp = initialData.selling_price || ''
-      setVendorCost(cost)
-      setSellingPrice(sp)
-      setTargetMargin(initialData.target_margin_percentage ?? outCfg.markup_percent ?? 35)
-      setMinAllowedMargin(initialData.min_allowed_margin_percent ?? 15)
-      setMinPrice(initialData.min_price || '')
-      setMinOrderQty(initialData.min_order_quantity || 1)
-      setMinBillableQty(initialData.min_billable_quantity || 1)
+ const cost = initialData.base_cost ?? initialData.purchase_price ?? outCfg.vendor_unit_cost ?? ''
+ const sp = initialData.selling_price || ''
+ setVendorCost(cost)
+ setSellingPrice(sp)
+ setTargetMargin(initialData.target_margin_percentage ?? outCfg.markup_percent ?? 35)
+ setMinAllowedMargin(initialData.min_allowed_margin_percent ?? 15)
+ setMinPrice(initialData.min_price || '')
+ setMinOrderQty(initialData.min_order_quantity || 1)
+ setMinBillableQty(initialData.min_billable_quantity || 1)
 
-      const tiers = initialData.price_tiers || {}
-      setPriceTiers({
-        retail: tiers.retail ?? sp,
-        corporate: tiers.corporate ?? '',
-        dealer: tiers.dealer ?? '',
-        wholesale: tiers.wholesale ?? '',
-        custom: tiers.custom ?? '',
+ const tiers = initialData.price_tiers || {}
+ setPriceTiers({
+ retail: tiers.retail ?? sp,
+ corporate: tiers.corporate ?? '',
+ dealer: tiers.dealer ?? '',
+ wholesale: tiers.wholesale ?? '',
+ custom: tiers.custom ?? '',
       })
 
-      setSpecifications(outCfg.specifications || initialData.material_spec || '')
-      setVendorNotes(outCfg.vendor_notes || initialData.outsource_notes || '')
-      setTurnaroundDays(initialData.turnaround_days ?? outCfg.turnaround_days ?? 2)
-      setDeliveryMethod(outCfg.delivery_method || 'vendor_delivery')
+ setSpecifications(outCfg.specifications || initialData.material_spec || '')
+ setVendorNotes(outCfg.vendor_notes || initialData.outsource_notes || '')
+ setTurnaroundDays(initialData.turnaround_days ?? outCfg.turnaround_days ?? 2)
+ setDeliveryMethod(outCfg.delivery_method || 'vendor_delivery')
 
-      setVatApplicable(Boolean(initialData.vat_applicable))
-      setIsTaxInclusive(Boolean(initialData.is_tax_inclusive))
-      setTaxRate(initialData.tax_rate ?? 7.5)
-      setAllowManualOverride(initialData.allow_manual_override !== false)
-      setInternalNotes(initialData.internal_notes || '')
+ setVatApplicable(Boolean(initialData.vat_applicable))
+ setIsTaxInclusive(Boolean(initialData.is_tax_inclusive))
+ setTaxRate(initialData.tax_rate ?? 7.5)
+ setAllowManualOverride(initialData.allow_manual_override !== false)
+ setInternalNotes(initialData.internal_notes || '')
     } else {
-      setName('')
-      setNameBn('')
-      setSku(`OUT-${Date.now().toString().slice(-5)}`)
-      setCategory('offset_printing')
-      setUnit('piece')
-      setPurchaseUnit('piece')
-      setIsActive(true)
-      setDescription('')
-      setDescriptionBn('')
+ setName('')
+ setNameBn('')
+ setSku(`OUT-${Date.now().toString().slice(-5)}`)
+ setCategory('offset_printing')
+ setUnit('piece')
+ setPurchaseUnit('piece')
+ setIsActive(true)
+ setDescription('')
+ setDescriptionBn('')
 
-      setPreferredVendorId('')
-      setVendorName('')
-      setVendorPhone('')
-      setVendorAddress('')
-      setVendorItemCode('')
+ setPreferredVendorId('')
+ setVendorName('')
+ setVendorPhone('')
+ setVendorAddress('')
+ setVendorItemCode('')
 
-      setVendorCost('')
-      setSellingPrice('')
-      setTargetMargin(35)
-      setMinAllowedMargin(15)
-      setMinPrice('')
-      setMinOrderQty(1)
-      setMinBillableQty(1)
+ setVendorCost('')
+ setSellingPrice('')
+ setTargetMargin(35)
+ setMinAllowedMargin(15)
+ setMinPrice('')
+ setMinOrderQty(1)
+ setMinBillableQty(1)
 
-      setPriceTiers({
-        retail: '',
-        corporate: '',
-        dealer: '',
-        wholesale: '',
-        custom: '',
+ setPriceTiers({
+ retail: '',
+ corporate: '',
+ dealer: '',
+ wholesale: '',
+ custom: '',
       })
 
-      setSpecifications('')
-      setVendorNotes('')
-      setTurnaroundDays(2)
-      setDeliveryMethod('vendor_delivery')
+ setSpecifications('')
+ setVendorNotes('')
+ setTurnaroundDays(2)
+ setDeliveryMethod('vendor_delivery')
 
-      setVatApplicable(false)
-      setIsTaxInclusive(false)
-      setTaxRate(7.5)
-      setAllowManualOverride(true)
-      setInternalNotes('')
+ setVatApplicable(false)
+ setIsTaxInclusive(false)
+ setTaxRate(7.5)
+ setAllowManualOverride(true)
+ setInternalNotes('')
     }
-    setActiveTab('basic')
+ setActiveTab('basic')
   }, [initialData, isOpen])
 
   // Live Gross Margin & Markup Calculation
-  const marginMetrics = useMemo(() => {
-    const cost = Number(vendorCost) || 0
-    const sp = Number(sellingPrice) || 0
-    return calculateGrossMargin(cost, sp)
+ const marginMetrics = useMemo(() => {
+ const cost = Number(vendorCost) || 0
+ const sp = Number(sellingPrice) || 0
+ return calculateGrossMargin(cost, sp)
   }, [vendorCost, sellingPrice])
 
   // Live Suggested Selling Price from Target Margin
-  const suggestedSellingPrice = useMemo(() => {
-    const cost = Number(vendorCost) || 0
-    if (cost <= 0) return 0
-    return calculateSuggestedSellingPrice(cost, targetMargin)
+ const suggestedSellingPrice = useMemo(() => {
+ const cost = Number(vendorCost) || 0
+ if (cost <= 0) return 0
+ return calculateSuggestedSellingPrice(cost, targetMargin)
   }, [vendorCost, targetMargin])
 
   // Auto-fill price tiers based on standard segment percentages (MUST NOT be less than Vendor Cost)
-  const handleAutoFillTiers = () => {
-    let sp = Number(sellingPrice) || 0
-    const costFloor = Number(vendorCost) || 0
-    if (sp <= costFloor && costFloor > 0) {
-      sp = Math.ceil(costFloor * (1 + (targetMargin || 35) / 100))
-      setSellingPrice(sp)
+ const handleAutoFillTiers = () => {
+ let sp = Number(sellingPrice) || 0
+ const costFloor = Number(vendorCost) || 0
+ if (sp <= costFloor && costFloor > 0) {
+ sp = Math.ceil(costFloor * (1 + (targetMargin || 35) / 100))
+ setSellingPrice(sp)
     }
-    if (sp <= 0 && costFloor <= 0) return
+ if (sp <= 0 && costFloor <= 0) return
 
-    const effectiveSp = sp > 0 ? sp : Math.ceil(costFloor)
+ const effectiveSp = sp > 0 ? sp : Math.ceil(costFloor)
 
-    const clampToFloor = (calcVal: number) => {
-      const rounded = Math.round(calcVal)
-      const floored = Math.max(Math.ceil(costFloor), rounded)
-      return floored
+ const clampToFloor = (calcVal: number) => {
+ const rounded = Math.round(calcVal)
+ const floored = Math.max(Math.ceil(costFloor), rounded)
+ return floored
     }
 
-    setPriceTiers({
-      retail: clampToFloor(effectiveSp),
-      corporate: clampToFloor(effectiveSp * 0.95), // 5% discount, clamped to costFloor
-      dealer: clampToFloor(effectiveSp * 0.90),    // 10% discount, clamped to costFloor
-      wholesale: clampToFloor(effectiveSp * 0.85), // 15% discount, clamped to costFloor
-      custom: clampToFloor(effectiveSp * 0.75),
+ setPriceTiers({
+ retail: clampToFloor(effectiveSp),
+ corporate: clampToFloor(effectiveSp * 0.95), // 5% discount, clamped to costFloor
+ dealer: clampToFloor(effectiveSp * 0.90),    // 10% discount, clamped to costFloor
+ wholesale: clampToFloor(effectiveSp * 0.85), // 15% discount, clamped to costFloor
+ custom: clampToFloor(effectiveSp * 0.75),
     })
   }
 
   // 1-Click Outsource Preset Template Loader
-  const handleApplyPreset = (preset: typeof OUTSOURCE_PRESETS[0]) => {
-    setName(preset.name)
-    setNameBn(preset.name_bn)
-    setCategory(preset.category)
-    setUnit(preset.unit)
-    setPurchaseUnit(preset.purchaseUnit)
-    setVendorName(preset.vendorName)
-    setVendorCost(preset.vendorCost)
-    setSellingPrice(preset.defaultSellingPrice)
-    setTurnaroundDays(preset.turnaroundDays)
-    setDeliveryMethod(preset.deliveryMethod)
-    setSpecifications(preset.specifications)
-    setVendorNotes(preset.vendorNotes)
-    setDescription(preset.description)
+ const handleApplyPreset = (preset: typeof OUTSOURCE_PRESETS[0]) => {
+ setName(preset.name)
+ setNameBn(preset.name_bn)
+ setCategory(preset.category)
+ setUnit(preset.unit)
+ setPurchaseUnit(preset.purchaseUnit)
+ setVendorName(preset.vendorName)
+ setVendorCost(preset.vendorCost)
+ setSellingPrice(preset.defaultSellingPrice)
+ setTurnaroundDays(preset.turnaroundDays)
+ setDeliveryMethod(preset.deliveryMethod)
+ setSpecifications(preset.specifications)
+ setVendorNotes(preset.vendorNotes)
+ setDescription(preset.description)
 
     // Auto-fill price tiers
-    setPriceTiers({
-      retail: preset.defaultSellingPrice,
-      corporate: Math.round(preset.defaultSellingPrice * 0.95),
-      dealer: Math.round(preset.defaultSellingPrice * 0.90),
-      wholesale: Math.round(preset.defaultSellingPrice * 0.85),
-      custom: preset.defaultSellingPrice,
+ setPriceTiers({
+ retail: preset.defaultSellingPrice,
+ corporate: Math.round(preset.defaultSellingPrice * 0.95),
+ dealer: Math.round(preset.defaultSellingPrice * 0.90),
+ wholesale: Math.round(preset.defaultSellingPrice * 0.85),
+ custom: preset.defaultSellingPrice,
     })
   }
 
-  const handleSupplierSelect = (supId: string) => {
-    setPreferredVendorId(supId)
-    const sup = suppliers.find((s) => s.id === supId)
-    if (sup) {
-      setVendorName(sup.name)
-      if (sup.phone) setVendorPhone(sup.phone)
+ const handleSupplierSelect = (supId: string) => {
+ setPreferredVendorId(supId)
+ const sup = suppliers.find((s) => s.id === supId)
+ if (sup) {
+ setVendorName(sup.name)
+ if (sup.phone) setVendorPhone(sup.phone)
     }
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!name.trim()) {
-      setFieldErrors({ name: 'Product name is required before proceeding.' })
-      setActiveTab('basic')
-      dispatchToast({
-        type: 'warning',
-        title: 'Product Name Required',
-        message: 'Product name is required before proceeding.',
+ const handleSubmit = async (e: React.FormEvent) => {
+ e.preventDefault()
+ if (!name.trim()) {
+ setFieldErrors({ name: 'Product name is required before proceeding.' })
+ setActiveTab('basic')
+ dispatchToast({
+ type: 'warning',
+ title: 'Product Name Required',
+ message: 'Product name is required before proceeding.',
       })
-      return
+ return
     }
 
-    if (sellingPrice === '' || Number(sellingPrice) < 0) {
-      setFieldErrors({ sellingPrice: 'Please enter a valid base selling price.' })
-      setActiveTab('costing')
-      dispatchToast({
-        type: 'warning',
-        title: 'Selling Price Required',
-        message: 'Please enter a valid base selling price.',
+ if (sellingPrice === '' || Number(sellingPrice) < 0) {
+ setFieldErrors({ sellingPrice: 'Please enter a valid base selling price.' })
+ setActiveTab('costing')
+ dispatchToast({
+ type: 'warning',
+ title: 'Selling Price Required',
+ message: 'Please enter a valid base selling price.',
       })
-      return
+ return
     }
 
-    setIsSubmitting(true)
-    setFieldErrors({})
+ setIsSubmitting(true)
+ setFieldErrors({})
 
-    try {
-      const sp = Number(sellingPrice) || 0
-      const cost = Number(vendorCost) || 0
-      const minimumPrice =
-        minPrice !== '' && Number(minPrice) > 0
+ try {
+ const sp = Number(sellingPrice) || 0
+ const cost = Number(vendorCost) || 0
+ const minimumPrice =
+ minPrice !== '' && Number(minPrice) > 0
           ? Number(minPrice)
           : Math.round(sp * (1 - (minAllowedMargin / 100)))
 
-      const finalPriceTiers: ProductPriceTiers = {
-        retail: priceTiers.retail !== '' ? Number(priceTiers.retail) : sp,
-        corporate: priceTiers.corporate !== '' ? Number(priceTiers.corporate) : sp,
-        dealer: priceTiers.dealer !== '' ? Number(priceTiers.dealer) : sp,
-        wholesale: priceTiers.wholesale !== '' ? Number(priceTiers.wholesale) : sp,
-        custom: priceTiers.custom !== '' ? Number(priceTiers.custom) : sp,
+ const finalPriceTiers: ProductPriceTiers = {
+ retail: priceTiers.retail !== '' ? Number(priceTiers.retail) : sp,
+ corporate: priceTiers.corporate !== '' ? Number(priceTiers.corporate) : sp,
+ dealer: priceTiers.dealer !== '' ? Number(priceTiers.dealer) : sp,
+ wholesale: priceTiers.wholesale !== '' ? Number(priceTiers.wholesale) : sp,
+ custom: priceTiers.custom !== '' ? Number(priceTiers.custom) : sp,
       }
 
-      const outsourceConfig: OutsourceConfiguration = {
-        vendor_id: preferredVendorId || undefined,
-        vendor_name: vendorName.trim() || undefined,
-        vendor_phone: vendorPhone.trim() || undefined,
-        vendor_address: vendorAddress.trim() || undefined,
-        vendor_item_code: vendorItemCode.trim() || undefined,
-        vendor_unit_cost: cost,
-        purchase_unit: purchaseUnit || unit,
-        conversion_ratio: 1,
-        markup_percent: Number(targetMargin) || 35.0,
-        turnaround_days: turnaroundDays !== '' ? Number(turnaroundDays) : 2,
-        delivery_method: deliveryMethod,
-        specifications: specifications.trim() || undefined,
-        vendor_notes: vendorNotes.trim() || undefined,
-        is_non_inventory: true,
+ const outsourceConfig: OutsourceConfiguration = {
+ vendor_id: preferredVendorId || undefined,
+ vendor_name: vendorName.trim() || undefined,
+ vendor_phone: vendorPhone.trim() || undefined,
+ vendor_address: vendorAddress.trim() || undefined,
+ vendor_item_code: vendorItemCode.trim() || undefined,
+ vendor_unit_cost: cost,
+ purchase_unit: purchaseUnit || unit,
+ conversion_ratio: 1,
+ markup_percent: Number(targetMargin) || 35.0,
+ turnaround_days: turnaroundDays !== '' ? Number(turnaroundDays) : 2,
+ delivery_method: deliveryMethod,
+ specifications: specifications.trim() || undefined,
+ vendor_notes: vendorNotes.trim() || undefined,
+ is_non_inventory: true,
       }
 
-      await onSave({
-        name: name.trim(),
-        name_bn: nameBn.trim() || undefined,
-        sku: sku.trim() || `OUT-${Date.now().toString().slice(-5)}`,
-        category: category || 'offset_printing',
-        outsource_category: category || 'offset_printing',
-        product_type: 'outsource',
-        entity_type: 'product',
-        commercial_type: 'outsource',
-        is_ready_product: false,
-        is_service: false,
-        is_outsource: true,
-        is_non_inventory: true,
-        track_inventory: false,
-        unit,
-        selling_unit: unit,
-        purchase_unit: purchaseUnit || unit,
-        pricing_method: unit === 'sft' ? 'per_area' : unit === 'rft' ? 'per_length' : unit === 'job' ? 'per_job' : 'per_piece',
-        selling_price: sp,
-        base_cost: cost,
-        purchase_price: cost,
-        min_price: minimumPrice,
-        target_margin_percentage: Number(targetMargin) || 35.0,
-        min_allowed_margin_percent: Number(minAllowedMargin) || 15.0,
-        cost_basis_type: 'direct_cost',
-        price_tiers: finalPriceTiers,
-        outsource_config: outsourceConfig,
-        vendor_id: preferredVendorId || undefined,
-        vendor_name: vendorName.trim() || undefined,
-        vendor_phone: vendorPhone.trim() || undefined,
-        vendor_address: vendorAddress.trim() || undefined,
-        vendor_item_code: vendorItemCode.trim() || undefined,
-        vendor_unit_cost: cost,
-        turnaround_days: turnaroundDays !== '' ? Number(turnaroundDays) : 2,
-        vat_applicable: vatApplicable,
-        is_tax_inclusive: isTaxInclusive,
-        tax_rate: Number(taxRate) || 0,
-        allow_manual_override: allowManualOverride,
-        is_active: isActive,
-        description: description.trim() || undefined,
-        description_bn: descriptionBn.trim() || undefined,
-        internal_notes: internalNotes.trim() || undefined,
-        min_order_quantity: minOrderQty || 1,
-        min_billable_quantity: minBillableQty || minOrderQty || 1,
-        requires_production: false,
-        requires_design: false,
-        requires_approval: false,
-        requires_finishing: false,
-        requires_installation: false,
+ await onSave({
+ name: name.trim(),
+ name_bn: nameBn.trim() || undefined,
+ sku: sku.trim() || `OUT-${Date.now().toString().slice(-5)}`,
+ category: category || 'offset_printing',
+ outsource_category: category || 'offset_printing',
+ product_type: 'outsource',
+ entity_type: 'product',
+ commercial_type: 'outsource',
+ is_ready_product: false,
+ is_service: false,
+ is_outsource: true,
+ is_non_inventory: true,
+ track_inventory: false,
+ unit,
+ selling_unit: unit,
+ purchase_unit: purchaseUnit || unit,
+ pricing_method: unit === 'sft' ? 'per_area' : unit === 'rft' ? 'per_length' : unit === 'job' ? 'per_job' : 'per_piece',
+ selling_price: sp,
+ base_cost: cost,
+ purchase_price: cost,
+ min_price: minimumPrice,
+ target_margin_percentage: Number(targetMargin) || 35.0,
+ min_allowed_margin_percent: Number(minAllowedMargin) || 15.0,
+ cost_basis_type: 'direct_cost',
+ price_tiers: finalPriceTiers,
+ outsource_config: outsourceConfig,
+ vendor_id: preferredVendorId || undefined,
+ vendor_name: vendorName.trim() || undefined,
+ vendor_phone: vendorPhone.trim() || undefined,
+ vendor_address: vendorAddress.trim() || undefined,
+ vendor_item_code: vendorItemCode.trim() || undefined,
+ vendor_unit_cost: cost,
+ turnaround_days: turnaroundDays !== '' ? Number(turnaroundDays) : 2,
+ vat_applicable: vatApplicable,
+ is_tax_inclusive: isTaxInclusive,
+ tax_rate: Number(taxRate) || 0,
+ allow_manual_override: allowManualOverride,
+ is_active: isActive,
+ description: description.trim() || undefined,
+ description_bn: descriptionBn.trim() || undefined,
+ internal_notes: internalNotes.trim() || undefined,
+ min_order_quantity: minOrderQty || 1,
+ min_billable_quantity: minBillableQty || minOrderQty || 1,
+ requires_production: false,
+ requires_design: false,
+ requires_approval: false,
+ requires_finishing: false,
+ requires_installation: false,
       } as any)
-      onClose()
+ onClose()
     } catch (err: any) {
-      dispatchToast({
-        type: 'error',
-        title: 'Save Failed',
-        message: err.message || 'Failed to save outsource product.',
+ dispatchToast({
+ type: 'error',
+ title: 'Save Failed',
+ message: err.message || 'Failed to save outsource product.',
       })
     } finally {
-      setIsSubmitting(false)
+ setIsSubmitting(false)
     }
   }
 
-  const TABS_CONFIG = [
+ const TABS_CONFIG = [
     { id: 'basic', label: '1. Identity & Vendor', icon: Share2 },
     { id: 'costing', label: '2. Costing & Pricing', icon: DollarSign },
     { id: 'vendor_specs', label: '3. Specs & Lead Time', icon: Clock },
     { id: 'taxes', label: '4. Taxes & Notes', icon: Warehouse },
   ] as const
 
-  const currentTabIndex = TABS_CONFIG.findIndex((t) => t.id === activeTab)
+ const currentTabIndex = TABS_CONFIG.findIndex((t) => t.id === activeTab)
 
-  return (
+ return (
     <ModalDialog
-      open={isOpen}
-      onOpenChange={(open) => !open && onClose()}
-      size="5xl"
-      onSubmit={handleSubmit}
-      title={
+ open={isOpen}
+ onOpenChange={(open) => !open && onClose()}
+ size="5xl"onSubmit={handleSubmit}
+ title={
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-600/10 text-purple-600 dark:bg-purple-500/20 dark:text-purple-400 font-bold shrink-0 ring-1 ring-purple-500/20">
-            <Share2 className="h-5 w-5" />
+            <Share2 className="h-5 w-5"/>
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-base font-bold text-foreground dark:text-white">
+              <span className="text-base font-bold text-foreground">
                 {initialData ? `Edit Outsource Product: ${initialData.name}` : 'New Outsource Product'}
               </span>
-              <Badge variant="outline" className="text-2xs uppercase tabular-nums py-0.5 px-2 bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-800">
-                Non-Inventory Item
+              <Badge variant="outline"className="text-2xs uppercase tabular-nums py-0.5 px-2 bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-800">
+ Non-Inventory Item
               </Badge>
               {sellingPrice !== '' && Number(sellingPrice) > 0 && (
-                <Badge variant="outline" className="text-2xs tabular-nums py-0.5 px-2 bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800">
+                <Badge variant="outline"className="text-2xs tabular-nums py-0.5 px-2 bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800">
                   ৳{Number(sellingPrice).toFixed(2)} / {unit}
                 </Badge>
               )}
             </div>
-            <p className="text-xs text-muted-foreground dark:text-muted-foreground">
-              Subcontracted offset printing, neon signs, computer embroidery, hot foil, and special jobs routed to third-party vendors without internal stock depletion.
+            <p className="text-xs text-muted-foreground">
+ Subcontracted offset printing, neon signs, computer embroidery, hot foil, and special jobs routed to third-party vendors without internal stock depletion.
             </p>
           </div>
         </div>
       }
-      footer={
+ footer={
         <div className="flex items-center justify-between gap-3 w-full">
           <div>
             {currentTabIndex > 0 && (
               <Button
-                type="button"
-                variant="outline"
-                onClick={() => setActiveTab(TABS_CONFIG[currentTabIndex - 1].id)}
-                className="h-10 px-4 rounded-xl font-bold border-input text-foreground hover:bg-muted gap-1.5 cursor-pointer"
-              >
-                <ChevronLeft className="w-4 h-4" />
+ type="button"variant="outline"onClick={() => setActiveTab(TABS_CONFIG[currentTabIndex - 1].id)}
+ className="h-10 px-4 rounded-xl font-bold border-input text-foreground hover:bg-muted gap-1.5 cursor-pointer">
+                <ChevronLeft className="w-4 h-4"/>
                 <span>Back</span>
               </Button>
             )}
@@ -617,42 +613,37 @@ export function OutsourceProductModal({
           <div className="flex items-center gap-2">
             {currentTabIndex < TABS_CONFIG.length - 1 && (
               <Button
-                type="button"
-                variant="outline"
-                onClick={() => {
-                  if (activeTab === 'basic' && !name.trim()) {
-                    setFieldErrors({ name: 'Product name is required before proceeding.' })
-                    dispatchToast({
-                      type: 'warning',
-                      title: 'Product Name Required',
-                      message: 'Product name is required before proceeding.',
+ type="button"variant="outline"onClick={() => {
+ if (activeTab === 'basic' && !name.trim()) {
+ setFieldErrors({ name: 'Product name is required before proceeding.' })
+ dispatchToast({
+ type: 'warning',
+ title: 'Product Name Required',
+ message: 'Product name is required before proceeding.',
                     })
-                    return
+ return
                   }
-                  setFieldErrors({})
-                  setActiveTab(TABS_CONFIG[currentTabIndex + 1].id)
+ setFieldErrors({})
+ setActiveTab(TABS_CONFIG[currentTabIndex + 1].id)
                 }}
-                className="h-10 px-4 rounded-xl font-bold border-purple-300 text-purple-700 dark:border-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-950/40 gap-1.5 cursor-pointer"
-              >
+ className="h-10 px-4 rounded-xl font-bold border-purple-300 text-purple-700 dark:border-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-950/40 gap-1.5 cursor-pointer">
                 <span>Next Step</span>
-                <ChevronRight className="w-4 h-4" />
+                <ChevronRight className="w-4 h-4"/>
               </Button>
             )}
 
             {currentTabIndex === TABS_CONFIG.length - 1 && (
               <Button
-                type="submit"
-                disabled={isSubmitting}
-                className="h-10 px-5 rounded-xl font-bold bg-purple-600 hover:bg-purple-700 text-white shadow-xs flex items-center justify-center gap-2 cursor-pointer"
-              >
+ type="submit"disabled={isSubmitting}
+ className="h-10 px-5 rounded-xl font-bold bg-purple-600 hover:bg-purple-700 text-white shadow-xs flex items-center justify-center gap-2 cursor-pointer">
                 {isSubmitting ? (
                   <>
-                    <RefreshCw className="h-4 w-4 animate-spin" />
+                    <RefreshCw className="h-4 w-4 animate-spin"/>
                     <span>Saving Product...</span>
                   </>
                 ) : (
                   <>
-                    <Share2 className="h-4 w-4" />
+                    <Share2 className="h-4 w-4"/>
                     <span>{initialData ? 'Update Outsource Product' : 'Save Outsource Product'}</span>
                   </>
                 )}
@@ -664,20 +655,19 @@ export function OutsourceProductModal({
     >
       <div className="space-y-4 py-1">
         {/* 4-Tab Stepper Bar */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-1 p-1 bg-muted rounded-xl text-xs font-bold border border-border dark:border-slate-700/60">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-1 p-1 bg-muted rounded-xl text-xs font-bold border border-border /60">
           {TABS_CONFIG.map((tab) => {
-            const Icon = tab.icon
-            const isSelected = activeTab === tab.id
-            return (
+ const Icon = tab.icon
+ const isSelected = activeTab === tab.id
+ return (
               <button
-                key={tab.id}
-                type="button"
-                onClick={() => setActiveTab(tab.id)}
-                className={cn(
+ key={tab.id}
+ type="button"onClick={() => setActiveTab(tab.id)}
+ className={cn(
                   'px-2 py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap text-xs relative',
-                  isSelected
-                    ? 'bg-card text-foreground dark:text-white shadow-xs font-bold ring-1 ring-slate-200 dark:ring-slate-600'
-                    : 'text-muted-foreground hover:text-foreground dark:hover:text-white font-medium'
+ isSelected
+                    ? 'bg-card text-foreground shadow-xs font-bold ring-1 ring-slate-200 dark:ring-slate-600'
+                    : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground font-medium'
                 )}
               >
                 <Icon className={cn('w-3.5 h-3.5 shrink-0', isSelected ? 'text-purple-600 dark:text-purple-400' : 'text-muted-foreground')} />
@@ -696,61 +686,55 @@ export function OutsourceProductModal({
             <div className="p-4 rounded-xl border border-border bg-card space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <Label className="text-xs font-bold text-foreground dark:text-muted-foreground">
-                    Outsource Product Name <span className="text-rose-500">*</span>
+                  <Label className="text-xs font-bold text-foreground">
+ Outsource Product Name <span className="text-rose-500">*</span>
                   </Label>
                   <Input
-                    value={name}
-                    onChange={(e) => {
-                      setName(e.target.value)
-                      if (fieldErrors.name) setFieldErrors((prev) => ({ ...prev, name: '' }))
+ value={name}
+ onChange={(e) => {
+ setName(e.target.value)
+ if (fieldErrors.name) setFieldErrors((prev) => ({ ...prev, name: '' }))
                     }}
-                    placeholder="e.g. Offset Leaflet A4 120 GSM (1,000 pcs)"
-                    className={cn(
+ placeholder="e.g. Offset Leaflet A4 120 GSM (1,000 pcs)"className={cn(
                       'mt-1 h-9 text-xs font-medium transition-colors',
-                      fieldErrors.name && 'border-rose-500 focus-visible:ring-rose-400 bg-rose-50/30 dark:bg-rose-950/20'
+ fieldErrors.name && 'border-rose-500 focus-visible:ring-rose-400 bg-rose-50/30 dark:bg-rose-950/20'
                     )}
-                    required
+ required
                   />
                   {fieldErrors.name && (
                     <p className="text-2xs text-rose-600 dark:text-rose-400 font-medium mt-1 flex items-center gap-1">
-                      <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                      <AlertCircle className="w-3.5 h-3.5 shrink-0"/>
                       <span>{fieldErrors.name}</span>
                     </p>
                   )}
                 </div>
 
                 <div>
-                  <Label className="text-xs font-bold text-foreground dark:text-muted-foreground">
+                  <Label className="text-xs font-bold text-foreground">
                     নাম (বাংলায়)
                   </Label>
                   <Input
-                    value={nameBn}
-                    onChange={(e) => setNameBn(e.target.value)}
-                    placeholder="উদা: অফসেট লিফলেট এ৪ ১২০ জিএসএম (১,০০০ পিস)"
-                    className="mt-1 h-9 text-xs font-bengali"
-                  />
+ value={nameBn}
+ onChange={(e) => setNameBn(e.target.value)}
+ placeholder="উদা: অফসেট লিফলেট এ৪ ১২০ জিএসএম (১,০০০ পিস)"className="mt-1 h-9 text-xs font-bengali"/>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                  <Label className="text-xs font-bold text-foreground dark:text-muted-foreground">SKU Code</Label>
+                  <Label className="text-xs font-bold text-foreground">SKU Code</Label>
                   <Input
-                    value={sku}
-                    onChange={(e) => setSku(e.target.value.toUpperCase())}
-                    placeholder="OUT-1002"
-                    className="mt-1 h-9 text-xs tabular-nums font-bold"
-                  />
+ value={sku}
+ onChange={(e) => setSku(e.target.value.toUpperCase())}
+ placeholder="OUT-1002"className="mt-1 h-9 text-xs tabular-nums font-bold"/>
                 </div>
 
                 <div>
-                  <Label className="text-xs font-bold text-foreground dark:text-muted-foreground">Category</Label>
+                  <Label className="text-xs font-bold text-foreground">Category</Label>
                   <select
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                    className="mt-1 w-full h-9 px-3 rounded-lg border border-input bg-card text-xs font-medium focus:ring-1 focus:ring-purple-500"
-                  >
+ value={category}
+ onChange={(e) => setCategory(e.target.value)}
+ className="mt-1 w-full h-9 px-3 rounded-lg border border-input bg-card text-xs font-medium focus:ring-1 focus:ring-purple-500">
                     {OUTSOURCE_CATEGORIES.map((c) => (
                       <option key={c.id} value={c.id}>
                         {c.name}
@@ -760,16 +744,15 @@ export function OutsourceProductModal({
                 </div>
 
                 <div>
-                  <Label className="text-xs font-bold text-foreground dark:text-muted-foreground">Selling Unit</Label>
+                  <Label className="text-xs font-bold text-foreground">Selling Unit</Label>
                   <select
-                    value={unit}
-                    onChange={(e) => {
-                      const val = e.target.value as UnitOfMeasure
-                      setUnit(val)
-                      setPurchaseUnit(val)
+ value={unit}
+ onChange={(e) => {
+ const val = e.target.value as UnitOfMeasure
+ setUnit(val)
+ setPurchaseUnit(val)
                     }}
-                    className="mt-1 w-full h-9 px-3 rounded-lg border border-input bg-card text-xs font-medium focus:ring-1 focus:ring-purple-500 tabular-nums"
-                  >
+ className="mt-1 w-full h-9 px-3 rounded-lg border border-input bg-card text-xs font-medium focus:ring-1 focus:ring-purple-500 tabular-nums">
                     {OUTSOURCE_PRODUCT_UNITS.map((u) => (
                       <option key={u.value} value={u.value}>
                         {u.label}
@@ -782,21 +765,20 @@ export function OutsourceProductModal({
               {/* Vendor Mapping Section */}
               <div className="pt-3 border-t border-border space-y-3">
                 <div className="flex items-center gap-2">
-                  <Building className="w-4 h-4 text-purple-600" />
-                  <span className="text-xs font-bold text-foreground dark:text-foreground">
-                    Preferred Outsource Vendor & Contact
+                  <Building className="w-4 h-4 text-purple-600"/>
+                  <span className="text-xs font-bold text-foreground">
+ Preferred Outsource Vendor & Contact
                   </span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   {suppliers.length > 0 && (
                     <div>
-                      <Label className="text-xs font-medium text-muted-foreground dark:text-muted-foreground">Select Existing Vendor</Label>
+                      <Label className="text-xs font-medium text-muted-foreground">Select Existing Vendor</Label>
                       <select
-                        value={preferredVendorId}
-                        onChange={(e) => handleSupplierSelect(e.target.value)}
-                        className="mt-1 w-full h-9 px-3 rounded-lg border border-input bg-card text-xs font-medium focus:ring-1 focus:ring-purple-500"
-                      >
+ value={preferredVendorId}
+ onChange={(e) => handleSupplierSelect(e.target.value)}
+ className="mt-1 w-full h-9 px-3 rounded-lg border border-input bg-card text-xs font-medium focus:ring-1 focus:ring-purple-500">
                         <option value="">-- Choose Vendor / Press --</option>
                         {suppliers.map((s) => (
                           <option key={s.id} value={s.id}>
@@ -808,56 +790,46 @@ export function OutsourceProductModal({
                   )}
 
                   <div className={cn(suppliers.length === 0 ? 'sm:col-span-2' : '')}>
-                    <Label className="text-xs font-medium text-muted-foreground dark:text-muted-foreground">Vendor / Workshop Name</Label>
+                    <Label className="text-xs font-medium text-muted-foreground">Vendor / Workshop Name</Label>
                     <Input
-                      value={vendorName}
-                      onChange={(e) => setVendorName(e.target.value)}
-                      placeholder="e.g. Arambagh Offset Press / Neon Fab Studio"
-                      className="mt-1 h-9 text-xs font-medium"
-                    />
+ value={vendorName}
+ onChange={(e) => setVendorName(e.target.value)}
+ placeholder="e.g. Arambagh Offset Press / Neon Fab Studio"className="mt-1 h-9 text-xs font-medium"/>
                   </div>
 
                   <div>
-                    <Label className="text-xs font-medium text-muted-foreground dark:text-muted-foreground">Vendor Phone</Label>
+                    <Label className="text-xs font-medium text-muted-foreground">Vendor Phone</Label>
                     <Input
-                      value={vendorPhone}
-                      onChange={(e) => setVendorPhone(e.target.value)}
-                      placeholder="017XXXXXXXX"
-                      className="mt-1 h-9 text-xs tabular-nums"
-                    />
+ value={vendorPhone}
+ onChange={(e) => setVendorPhone(e.target.value)}
+ placeholder="017XXXXXXXX"className="mt-1 h-9 text-xs tabular-nums"/>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <Label className="text-xs font-medium text-muted-foreground dark:text-muted-foreground">Vendor Item / Reference Code</Label>
+                    <Label className="text-xs font-medium text-muted-foreground">Vendor Item / Reference Code</Label>
                     <Input
-                      value={vendorItemCode}
-                      onChange={(e) => setVendorItemCode(e.target.value)}
-                      placeholder="e.g. VEND-REF-409"
-                      className="mt-1 h-9 text-xs tabular-nums"
-                    />
+ value={vendorItemCode}
+ onChange={(e) => setVendorItemCode(e.target.value)}
+ placeholder="e.g. VEND-REF-409"className="mt-1 h-9 text-xs tabular-nums"/>
                   </div>
                   <div>
-                    <Label className="text-xs font-medium text-muted-foreground dark:text-muted-foreground">Vendor Address / Location</Label>
+                    <Label className="text-xs font-medium text-muted-foreground">Vendor Address / Location</Label>
                     <Input
-                      value={vendorAddress}
-                      onChange={(e) => setVendorAddress(e.target.value)}
-                      placeholder="e.g. Arambagh Press Lane, Motijheel, Dhaka"
-                      className="mt-1 h-9 text-xs"
-                    />
+ value={vendorAddress}
+ onChange={(e) => setVendorAddress(e.target.value)}
+ placeholder="e.g. Arambagh Press Lane, Motijheel, Dhaka"className="mt-1 h-9 text-xs"/>
                   </div>
                 </div>
               </div>
 
               <div>
-                <Label className="text-xs font-bold text-foreground dark:text-muted-foreground">Catalog Description</Label>
+                <Label className="text-xs font-bold text-foreground">Catalog Description</Label>
                 <Input
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Brief description visible in catalog and quote proposal..."
-                  className="mt-1 h-9 text-xs"
-                />
+ value={description}
+ onChange={(e) => setDescription(e.target.value)}
+ placeholder="Brief description visible in catalog and quote proposal..."className="mt-1 h-9 text-xs"/>
               </div>
             </div>
           </div>
@@ -873,7 +845,7 @@ export function OutsourceProductModal({
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3 rounded-xl bg-purple-50/50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800/80">
                 <div>
                   <span className="text-2xs font-bold uppercase text-purple-700 dark:text-purple-300 tracking-wider block">Vendor Cost (Buy)</span>
-                  <div className="text-lg font-bold tabular-nums text-foreground dark:text-white mt-0.5">
+                  <div className="text-lg font-bold tabular-nums text-foreground mt-0.5">
                     ৳{Number(vendorCost) || 0}
                   </div>
                   <span className="text-2xs text-muted-foreground">per {unit}</span>
@@ -907,62 +879,48 @@ export function OutsourceProductModal({
               {/* Pricing Form Inputs */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
-                  <Label className="text-xs font-bold text-foreground dark:text-muted-foreground">
-                    Vendor Purchase Cost (৳) <span className="text-rose-500">*</span>
+                  <Label className="text-xs font-bold text-foreground">
+ Vendor Purchase Cost (৳) <span className="text-rose-500">*</span>
                   </Label>
                   <Input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={vendorCost}
-                    onChange={(e) => setVendorCost(e.target.value === '' ? '' : Number(e.target.value))}
-                    placeholder="e.g. 1800"
-                    className="mt-1 h-9 text-xs tabular-nums font-bold"
-                  />
+ type="number"min="0"step="0.01"value={vendorCost}
+ onChange={(e) => setVendorCost(e.target.value === '' ? '' : Number(e.target.value))}
+ placeholder="e.g. 1800"className="mt-1 h-9 text-xs tabular-nums font-bold"/>
                   <span className="text-2xs text-muted-foreground mt-0.5 block">Price paid to third-party subcontractor</span>
                 </div>
 
                 <div>
-                  <Label className="text-xs font-bold text-foreground dark:text-muted-foreground">Target Margin %</Label>
+                  <Label className="text-xs font-bold text-foreground">Target Margin %</Label>
                   <Input
-                    type="number"
-                    min="1"
-                    max="99"
-                    value={targetMargin}
-                    onChange={(e) => setTargetMargin(Number(e.target.value))}
-                    placeholder="35"
-                    className="mt-1 h-9 text-xs tabular-nums font-bold text-purple-600"
-                  />
+ type="number"min="1"max="99"value={targetMargin}
+ onChange={(e) => setTargetMargin(Number(e.target.value))}
+ placeholder="35"className="mt-1 h-9 text-xs tabular-nums font-bold text-purple-600"/>
                   {suggestedSellingPrice > 0 && (
                     <span className="text-2xs text-purple-600 mt-0.5 block font-semibold">
-                      Suggested: ৳{suggestedSellingPrice} (Click to apply)
+ Suggested: ৳{suggestedSellingPrice} (Click to apply)
                     </span>
                   )}
                 </div>
 
                 <div>
-                  <Label className="text-xs font-bold text-foreground dark:text-muted-foreground">
-                    Catalog Base Selling Price (৳) <span className="text-rose-500">*</span>
+                  <Label className="text-xs font-bold text-foreground">
+ Catalog Base Selling Price (৳) <span className="text-rose-500">*</span>
                   </Label>
                   <Input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={sellingPrice}
-                    onChange={(e) => {
-                      setSellingPrice(e.target.value === '' ? '' : Number(e.target.value))
-                      if (fieldErrors.sellingPrice) setFieldErrors((prev) => ({ ...prev, sellingPrice: '' }))
+ type="number"min="0"step="0.01"value={sellingPrice}
+ onChange={(e) => {
+ setSellingPrice(e.target.value === '' ? '' : Number(e.target.value))
+ if (fieldErrors.sellingPrice) setFieldErrors((prev) => ({ ...prev, sellingPrice: '' }))
                     }}
-                    placeholder="e.g. 2800"
-                    className={cn(
+ placeholder="e.g. 2800"className={cn(
                       'mt-1 h-9 text-xs tabular-nums font-bold text-blue-600 transition-colors',
-                      fieldErrors.sellingPrice && 'border-rose-500 focus-visible:ring-rose-400 bg-rose-50/30 dark:bg-rose-950/20'
+ fieldErrors.sellingPrice && 'border-rose-500 focus-visible:ring-rose-400 bg-rose-50/30 dark:bg-rose-950/20'
                     )}
-                    required
+ required
                   />
                   {fieldErrors.sellingPrice && (
                     <p className="text-2xs text-rose-600 dark:text-rose-400 font-medium mt-1 flex items-center gap-1">
-                      <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                      <AlertCircle className="w-3.5 h-3.5 shrink-0"/>
                       <span>{fieldErrors.sellingPrice}</span>
                     </p>
                   )}
@@ -974,20 +932,16 @@ export function OutsourceProductModal({
               <div className="pt-3 border-t border-border space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Tag className="w-4 h-4 text-purple-600" />
-                    <span className="text-xs font-bold text-foreground dark:text-foreground">
-                      Multi-Tier Customer Pricing (৳ / {unit})
+                    <Tag className="w-4 h-4 text-purple-600"/>
+                    <span className="text-xs font-bold text-foreground">
+ Multi-Tier Customer Pricing (৳ / {unit})
                     </span>
                   </div>
                   <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={handleAutoFillTiers}
-                    className="h-7 px-2.5 text-2xs font-bold text-purple-700 border-purple-200 hover:bg-purple-50 cursor-pointer"
-                  >
-                    <Sparkles className="w-3 h-3 mr-1" />
-                    Auto-Calculate Tiers
+ type="button"variant="outline"size="sm"onClick={handleAutoFillTiers}
+ className="h-7 px-2.5 text-2xs font-bold text-purple-700 border-purple-200 hover:bg-purple-50 cursor-pointer">
+                    <Sparkles className="w-3 h-3 mr-1"/>
+ Auto-Calculate Tiers
                   </Button>
                 </div>
 
@@ -995,95 +949,69 @@ export function OutsourceProductModal({
                   <div>
                     <Label className="text-2xs font-semibold text-muted-foreground">Retail Rate (৳)</Label>
                     <Input
-                      type="number"
-                      value={priceTiers.retail}
-                      onChange={(e) => setPriceTiers({ ...priceTiers, retail: e.target.value === '' ? '' : Number(e.target.value) })}
-                      placeholder="Retail"
-                      className="mt-1 h-8 text-xs tabular-nums"
-                    />
+ type="number"value={priceTiers.retail}
+ onChange={(e) => setPriceTiers({ ...priceTiers, retail: e.target.value === '' ? '' : Number(e.target.value) })}
+ placeholder="Retail"className="mt-1 h-8 text-xs tabular-nums"/>
                   </div>
 
                   <div>
                     <Label className="text-2xs font-semibold text-muted-foreground">Corporate (-5%)</Label>
                     <Input
-                      type="number"
-                      value={priceTiers.corporate}
-                      onChange={(e) => setPriceTiers({ ...priceTiers, corporate: e.target.value === '' ? '' : Number(e.target.value) })}
-                      placeholder="Corporate"
-                      className="mt-1 h-8 text-xs tabular-nums text-indigo-600 font-semibold"
-                    />
+ type="number"value={priceTiers.corporate}
+ onChange={(e) => setPriceTiers({ ...priceTiers, corporate: e.target.value === '' ? '' : Number(e.target.value) })}
+ placeholder="Corporate"className="mt-1 h-8 text-xs tabular-nums text-indigo-600 font-semibold"/>
                   </div>
 
                   <div>
                     <Label className="text-2xs font-semibold text-muted-foreground">Dealer (-10%)</Label>
                     <Input
-                      type="number"
-                      value={priceTiers.dealer}
-                      onChange={(e) => setPriceTiers({ ...priceTiers, dealer: e.target.value === '' ? '' : Number(e.target.value) })}
-                      placeholder="Dealer"
-                      className="mt-1 h-8 text-xs tabular-nums text-amber-600 font-semibold"
-                    />
+ type="number"value={priceTiers.dealer}
+ onChange={(e) => setPriceTiers({ ...priceTiers, dealer: e.target.value === '' ? '' : Number(e.target.value) })}
+ placeholder="Dealer"className="mt-1 h-8 text-xs tabular-nums text-amber-600 font-semibold"/>
                   </div>
 
                   <div>
                     <Label className="text-2xs font-semibold text-muted-foreground">Wholesale (-15%)</Label>
                     <Input
-                      type="number"
-                      value={priceTiers.wholesale}
-                      onChange={(e) => setPriceTiers({ ...priceTiers, wholesale: e.target.value === '' ? '' : Number(e.target.value) })}
-                      placeholder="Wholesale"
-                      className="mt-1 h-8 text-xs tabular-nums text-emerald-600 font-semibold"
-                    />
+ type="number"value={priceTiers.wholesale}
+ onChange={(e) => setPriceTiers({ ...priceTiers, wholesale: e.target.value === '' ? '' : Number(e.target.value) })}
+ placeholder="Wholesale"className="mt-1 h-8 text-xs tabular-nums text-emerald-600 font-semibold"/>
                   </div>
 
                   <div>
                     <Label className="text-2xs font-semibold text-muted-foreground">Custom / VIP</Label>
                     <Input
-                      type="number"
-                      value={priceTiers.custom}
-                      onChange={(e) => setPriceTiers({ ...priceTiers, custom: e.target.value === '' ? '' : Number(e.target.value) })}
-                      placeholder="Custom"
-                      className="mt-1 h-8 text-xs tabular-nums text-purple-600 font-semibold"
-                    />
+ type="number"value={priceTiers.custom}
+ onChange={(e) => setPriceTiers({ ...priceTiers, custom: e.target.value === '' ? '' : Number(e.target.value) })}
+ placeholder="Custom"className="mt-1 h-8 text-xs tabular-nums text-purple-600 font-semibold"/>
                   </div>
                 </div>
               </div>
 
               {/* Order Minimums & Floor Margin */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3 border-t border-border dark:border-border">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3 border-t border-border">
                 <div>
-                  <Label className="text-xs font-medium text-muted-foreground dark:text-muted-foreground">Min Order Quantity (MOQ)</Label>
+                  <Label className="text-xs font-medium text-muted-foreground">Min Order Quantity (MOQ)</Label>
                   <Input
-                    type="number"
-                    min="1"
-                    value={minOrderQty}
-                    onChange={(e) => setMinOrderQty(Math.max(1, Number(e.target.value)))}
-                    className="mt-1 h-8 text-xs tabular-nums"
-                  />
+ type="number"min="1"value={minOrderQty}
+ onChange={(e) => setMinOrderQty(Math.max(1, Number(e.target.value)))}
+ className="mt-1 h-8 text-xs tabular-nums"/>
                 </div>
 
                 <div>
-                  <Label className="text-xs font-medium text-muted-foreground dark:text-muted-foreground">Min Allowed Margin Floor %</Label>
+                  <Label className="text-xs font-medium text-muted-foreground">Min Allowed Margin Floor %</Label>
                   <Input
-                    type="number"
-                    min="0"
-                    max="90"
-                    value={minAllowedMargin}
-                    onChange={(e) => setMinAllowedMargin(Number(e.target.value))}
-                    className="mt-1 h-8 text-xs tabular-nums text-rose-600 font-semibold"
-                  />
+ type="number"min="0"max="90"value={minAllowedMargin}
+ onChange={(e) => setMinAllowedMargin(Number(e.target.value))}
+ className="mt-1 h-8 text-xs tabular-nums text-rose-600 font-semibold"/>
                 </div>
 
                 <div>
-                  <Label className="text-xs font-medium text-muted-foreground dark:text-muted-foreground">Minimum Floor Selling Price (৳)</Label>
+                  <Label className="text-xs font-medium text-muted-foreground">Minimum Floor Selling Price (৳)</Label>
                   <Input
-                    type="number"
-                    min="0"
-                    value={minPrice}
-                    onChange={(e) => setMinPrice(e.target.value === '' ? '' : Number(e.target.value))}
-                    placeholder="Floor Price"
-                    className="mt-1 h-8 text-xs tabular-nums text-foreground dark:text-muted-foreground"
-                  />
+ type="number"min="0"value={minPrice}
+ onChange={(e) => setMinPrice(e.target.value === '' ? '' : Number(e.target.value))}
+ placeholder="Floor Price"className="mt-1 h-8 text-xs tabular-nums text-foreground"/>
                 </div>
               </div>
             </div>
@@ -1099,43 +1027,38 @@ export function OutsourceProductModal({
               {/* Non-Inventory Clarification Banner */}
               <div className="p-3.5 rounded-xl border border-purple-200 dark:border-purple-900/60 bg-purple-50/50 dark:bg-purple-950/20 flex items-start gap-3">
                 <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300 shrink-0 mt-0.5">
-                  <ShieldCheck className="w-4 h-4" />
+                  <ShieldCheck className="w-4 h-4"/>
                 </div>
                 <div className="text-xs space-y-1">
                   <span className="font-bold text-purple-900 dark:text-purple-200 block">
-                    Non-Inventory Item Routing Architecture
+ Non-Inventory Item Routing Architecture
                   </span>
                   <p className="text-muted-foreground leading-relaxed text-2xs">
-                    This product is configured as a <strong>Non-Inventory Item</strong>. When included in quotations and job orders, it will <strong>not</strong> consume internal warehouse stock rolls (e.g. flex banner or vinyl rolls) and will bypass internal machine queues, routing directly into vendor procurement and dispatch tickets.
+ This product is configured as a <strong>Non-Inventory Item</strong>. When included in quotations and job orders, it will <strong>not</strong> consume internal warehouse stock rolls (e.g. flex banner or vinyl rolls) and will bypass internal machine queues, routing directly into vendor procurement and dispatch tickets.
                   </p>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <Label className="text-xs font-bold text-foreground dark:text-muted-foreground">
-                    Estimated Vendor Turnaround / Lead Time
+                  <Label className="text-xs font-bold text-foreground">
+ Estimated Vendor Turnaround / Lead Time
                   </Label>
                   <div className="flex items-center gap-2 mt-1">
                     <Input
-                      type="number"
-                      min="1"
-                      value={turnaroundDays}
-                      onChange={(e) => setTurnaroundDays(e.target.value === '' ? '' : Number(e.target.value))}
-                      placeholder="2"
-                      className="h-9 text-xs tabular-nums font-bold w-28"
-                    />
-                    <span className="text-xs font-medium text-muted-foreground dark:text-muted-foreground">Working Days</span>
+ type="number"min="1"value={turnaroundDays}
+ onChange={(e) => setTurnaroundDays(e.target.value === '' ? '' : Number(e.target.value))}
+ placeholder="2"className="h-9 text-xs tabular-nums font-bold w-28"/>
+                    <span className="text-xs font-medium text-muted-foreground">Working Days</span>
                   </div>
                 </div>
 
                 <div>
-                  <Label className="text-xs font-bold text-foreground dark:text-muted-foreground">Fulfillment / Logistics Method</Label>
+                  <Label className="text-xs font-bold text-foreground">Fulfillment / Logistics Method</Label>
                   <select
-                    value={deliveryMethod}
-                    onChange={(e) => setDeliveryMethod(e.target.value)}
-                    className="mt-1 w-full h-9 px-3 rounded-lg border border-input bg-card text-xs font-medium focus:ring-1 focus:ring-purple-500"
-                  >
+ value={deliveryMethod}
+ onChange={(e) => setDeliveryMethod(e.target.value)}
+ className="mt-1 w-full h-9 px-3 rounded-lg border border-input bg-card text-xs font-medium focus:ring-1 focus:ring-purple-500">
                     <option value="vendor_delivery">Vendor delivers to our print shop (ভেন্ডর শপে ডেলিভারি করবে)</option>
                     <option value="shop_pickup">Our shop representative picks up from vendor (আমাদের লোক ভেন্ডর থেকে পিকআপ করবে)</option>
                     <option value="direct_customer_dispatch">Vendor dispatches directly to client (ভেন্ডর সরাসরি ক্লায়েন্টকে পাঠাবে)</option>
@@ -1144,29 +1067,25 @@ export function OutsourceProductModal({
               </div>
 
               <div>
-                <Label className="text-xs font-bold text-foreground dark:text-muted-foreground">
-                  Subcontract Technical Specifications & Artwork Guidelines
+                <Label className="text-xs font-bold text-foreground">
+ Subcontract Technical Specifications & Artwork Guidelines
                 </Label>
                 <textarea
-                  value={specifications}
-                  onChange={(e) => setSpecifications(e.target.value)}
-                  placeholder="e.g. 120 GSM Art paper, 4-color offset print, 3mm bleed margin, CMYK color space, vector outline font..."
-                  rows={3}
-                  className="mt-1 w-full p-2.5 rounded-lg border border-input bg-card text-xs font-medium focus:ring-1 focus:ring-purple-500"
-                />
+ value={specifications}
+ onChange={(e) => setSpecifications(e.target.value)}
+ placeholder="e.g. 120 GSM Art paper, 4-color offset print, 3mm bleed margin, CMYK color space, vector outline font..."rows={3}
+ className="mt-1 w-full p-2.5 rounded-lg border border-input bg-card text-xs font-medium focus:ring-1 focus:ring-purple-500"/>
               </div>
 
               <div>
-                <Label className="text-xs font-bold text-foreground dark:text-muted-foreground">
-                  Vendor Instructions / Plate Preparation Notes
+                <Label className="text-xs font-bold text-foreground">
+ Vendor Instructions / Plate Preparation Notes
                 </Label>
                 <textarea
-                  value={vendorNotes}
-                  onChange={(e) => setVendorNotes(e.target.value)}
-                  placeholder="Special instructions communicated to the vendor when issuing purchase order..."
-                  rows={2}
-                  className="mt-1 w-full p-2.5 rounded-lg border border-input bg-card text-xs font-medium focus:ring-1 focus:ring-purple-500"
-                />
+ value={vendorNotes}
+ onChange={(e) => setVendorNotes(e.target.value)}
+ placeholder="Special instructions communicated to the vendor when issuing purchase order..."rows={2}
+ className="mt-1 w-full p-2.5 rounded-lg border border-input bg-card text-xs font-medium focus:ring-1 focus:ring-purple-500"/>
               </div>
             </div>
           </div>
@@ -1184,41 +1103,31 @@ export function OutsourceProductModal({
                   
                   <div className="flex items-center gap-2">
                     <input
-                      type="checkbox"
-                      id="vat_app"
-                      checked={vatApplicable}
-                      onChange={(e) => setVatApplicable(e.target.checked)}
-                      className="rounded text-purple-600 focus:ring-purple-500 h-4 w-4 cursor-pointer"
-                    />
-                    <Label htmlFor="vat_app" className="text-xs font-medium cursor-pointer">
-                      VAT Applicable on this Outsource Product
+ type="checkbox"id="vat_app"checked={vatApplicable}
+ onChange={(e) => setVatApplicable(e.target.checked)}
+ className="rounded text-purple-600 focus:ring-purple-500 h-4 w-4 cursor-pointer"/>
+                    <Label htmlFor="vat_app"className="text-xs font-medium cursor-pointer">
+ VAT Applicable on this Outsource Product
                     </Label>
                   </div>
 
                   {vatApplicable && (
-                    <div className="space-y-2 pt-2 border-t border-border dark:border-border">
+                    <div className="space-y-2 pt-2 border-t border-border">
                       <div>
                         <Label className="text-xs font-medium text-muted-foreground">Standard VAT Rate (%)</Label>
                         <Input
-                          type="number"
-                          step="0.1"
-                          value={taxRate}
-                          onChange={(e) => setTaxRate(Number(e.target.value))}
-                          placeholder="7.5"
-                          className="mt-1 h-8 text-xs tabular-nums w-32"
-                        />
+ type="number"step="0.1"value={taxRate}
+ onChange={(e) => setTaxRate(Number(e.target.value))}
+ placeholder="7.5"className="mt-1 h-8 text-xs tabular-nums w-32"/>
                       </div>
 
                       <div className="flex items-center gap-2 pt-1">
                         <input
-                          type="checkbox"
-                          id="tax_inc"
-                          checked={isTaxInclusive}
-                          onChange={(e) => setIsTaxInclusive(e.target.checked)}
-                          className="rounded text-purple-600 focus:ring-purple-500 h-4 w-4 cursor-pointer"
-                        />
-                        <Label htmlFor="tax_inc" className="text-xs font-medium cursor-pointer">
-                          Selling Price is Tax Inclusive (VAT অন্তর্ভুক্ত)
+ type="checkbox"id="tax_inc"checked={isTaxInclusive}
+ onChange={(e) => setIsTaxInclusive(e.target.checked)}
+ className="rounded text-purple-600 focus:ring-purple-500 h-4 w-4 cursor-pointer"/>
+                        <Label htmlFor="tax_inc"className="text-xs font-medium cursor-pointer">
+ Selling Price is Tax Inclusive (VAT অন্তর্ভুক্ত)
                         </Label>
                       </div>
                     </div>
@@ -1230,43 +1139,35 @@ export function OutsourceProductModal({
 
                   <div className="flex items-center gap-2">
                     <input
-                      type="checkbox"
-                      id="allow_override"
-                      checked={allowManualOverride}
-                      onChange={(e) => setAllowManualOverride(e.target.checked)}
-                      className="rounded text-purple-600 focus:ring-purple-500 h-4 w-4 cursor-pointer"
-                    />
-                    <Label htmlFor="allow_override" className="text-xs font-medium cursor-pointer">
-                      Allow Sales Staff to Override Price on Quotation / Invoice
+ type="checkbox"id="allow_override"checked={allowManualOverride}
+ onChange={(e) => setAllowManualOverride(e.target.checked)}
+ className="rounded text-purple-600 focus:ring-purple-500 h-4 w-4 cursor-pointer"/>
+                    <Label htmlFor="allow_override"className="text-xs font-medium cursor-pointer">
+ Allow Sales Staff to Override Price on Quotation / Invoice
                     </Label>
                   </div>
 
                   <div className="flex items-center gap-2 pt-2">
                     <input
-                      type="checkbox"
-                      id="is_active_check"
-                      checked={isActive}
-                      onChange={(e) => setIsActive(e.target.checked)}
-                      className="rounded text-emerald-600 focus:ring-emerald-500 h-4 w-4 cursor-pointer"
-                    />
-                    <Label htmlFor="is_active_check" className="text-xs font-medium cursor-pointer">
-                      Active & Available in Quotation Catalog
+ type="checkbox"id="is_active_check"checked={isActive}
+ onChange={(e) => setIsActive(e.target.checked)}
+ className="rounded text-emerald-600 focus:ring-emerald-500 h-4 w-4 cursor-pointer"/>
+                    <Label htmlFor="is_active_check"className="text-xs font-medium cursor-pointer">
+ Active & Available in Quotation Catalog
                     </Label>
                   </div>
                 </div>
               </div>
 
               <div>
-                <Label className="text-xs font-bold text-foreground dark:text-muted-foreground">
-                  Internal Workshop Notes (Shielded from Customer Invoices)
+                <Label className="text-xs font-bold text-foreground">
+ Internal Workshop Notes (Shielded from Customer Invoices)
                 </Label>
                 <textarea
-                  value={internalNotes}
-                  onChange={(e) => setInternalNotes(e.target.value)}
-                  placeholder="Private internal notes regarding vendor negotiation, margin caps, or courier contacts..."
-                  rows={3}
-                  className="mt-1 w-full p-2.5 rounded-lg border border-input bg-card text-xs font-medium focus:ring-1 focus:ring-purple-500"
-                />
+ value={internalNotes}
+ onChange={(e) => setInternalNotes(e.target.value)}
+ placeholder="Private internal notes regarding vendor negotiation, margin caps, or courier contacts..."rows={3}
+ className="mt-1 w-full p-2.5 rounded-lg border border-input bg-card text-xs font-medium focus:ring-1 focus:ring-purple-500"/>
               </div>
             </div>
           </div>

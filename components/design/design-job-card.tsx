@@ -4,25 +4,25 @@ import { usePathname } from 'next/navigation'
 import { useTenant } from '@/hooks/use-tenant'
 import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import {
-  Sparkles,
-  Phone,
-  Clock,
-  CheckCircle2,
-  AlertTriangle,
-  Printer,
-  Eye,
-  MessageSquare,
-  Upload,
-  Layers,
-  FileCheck,
-  Check,
-  PauseCircle,
-  PlayCircle,
-  SplitSquareVertical,
-  RotateCcw,
-  ExternalLink,
-  Play,
-  Send,
+ Sparkles,
+ Phone,
+ Clock,
+ CheckCircle2,
+ AlertTriangle,
+ Printer,
+ Eye,
+ MessageSquare,
+ Upload,
+ Layers,
+ FileCheck,
+ Check,
+ PauseCircle,
+ PlayCircle,
+ SplitSquareVertical,
+ RotateCcw,
+ ExternalLink,
+ Play,
+ Send,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import type { DesignJobRecord } from '@/types/design.types'
@@ -31,72 +31,72 @@ import { useI18n } from '@/i18n/context'
 import { DesignTimerBadge } from './design-timer-badge'
 
 interface DesignJobCardProps {
-  job: DesignJobRecord
-  activeTab: string
-  preflight: PreflightState
-  onTogglePreflight: (jobId: string, key: keyof PreflightState, designNumber?: string) => void
-  onOpenWhatsApp: (job: DesignJobRecord, tpl?: 'proof' | 'reminder' | 'production' | 'revision') => void
-  onOpenLightbox: (job: DesignJobRecord, versionIndex?: number) => void
-  onOpenCompare: (job: DesignJobRecord) => void
-  onOpenPreflightModal: (job: DesignJobRecord) => void
-  onStartDesign: (job: DesignJobRecord) => void
-  onCompleteDesign: (job: DesignJobRecord) => void
-  onConfirmToProduction: (job: DesignJobRecord) => void
-  onPauseProduction: (job: DesignJobRecord) => void
-  onResumeProduction: (job: DesignJobRecord) => void
-  onRequestRevision: (job: DesignJobRecord) => void
+ job: DesignJobRecord
+ activeTab: string
+ preflight: PreflightState
+ onTogglePreflight: (jobId: string, key: keyof PreflightState, designNumber?: string) => void
+ onOpenWhatsApp: (job: DesignJobRecord, tpl?: 'proof' | 'reminder' | 'production' | 'revision') => void
+ onOpenLightbox: (job: DesignJobRecord, versionIndex?: number) => void
+ onOpenCompare: (job: DesignJobRecord) => void
+ onOpenPreflightModal: (job: DesignJobRecord) => void
+ onStartDesign: (job: DesignJobRecord) => void
+ onCompleteDesign: (job: DesignJobRecord) => void
+ onConfirmToProduction: (job: DesignJobRecord) => void
+ onPauseProduction: (job: DesignJobRecord) => void
+ onResumeProduction: (job: DesignJobRecord) => void
+ onRequestRevision: (job: DesignJobRecord) => void
 }
 
 export const DesignJobCard = React.memo(function DesignJobCard({
-  job,
-  activeTab,
-  preflight,
-  onTogglePreflight,
-  onOpenWhatsApp,
-  onOpenLightbox,
-  onOpenCompare,
-  onOpenPreflightModal,
-  onStartDesign,
-  onCompleteDesign,
-  onConfirmToProduction,
-  onPauseProduction,
-  onResumeProduction,
-  onRequestRevision,
+ job,
+ activeTab,
+ preflight,
+ onTogglePreflight,
+ onOpenWhatsApp,
+ onOpenLightbox,
+ onOpenCompare,
+ onOpenPreflightModal,
+ onStartDesign,
+ onCompleteDesign,
+ onConfirmToProduction,
+ onPauseProduction,
+ onResumeProduction,
+ onRequestRevision,
 }: DesignJobCardProps) {
-  const pathname = usePathname() || ''
-  const { company } = useTenant()
-  const tenantSlug = company?.slug || 'my-company'
-  const { tBilingual } = useI18n()
-  const specs = resolveDesignJobSpecs(job, job.all_invoice_items, tBilingual)
+ const pathname = usePathname() || ''
+ const { company } = useTenant()
+ const tenantSlug = company?.slug || 'my-company'
+ const { tBilingual } = useI18n()
+ const specs = resolveDesignJobSpecs(job, job.all_invoice_items, tBilingual)
 
-  const versions = job.versions || []
-  const currentVer = versions[versions.length - 1]
-  const previewUrl =
-    currentVer?.proof_file_url ||
-    currentVer?.preview_url ||
+ const versions = job.versions || []
+ const currentVer = versions[versions.length - 1]
+ const previewUrl =
+ currentVer?.proof_file_url ||
+ currentVer?.preview_url ||
     'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80'
 
-  const isUrgent = job.priority === 'urgent' || job.priority === 'very_urgent'
-  const isWalkIn =
-    job.customer_name?.toLowerCase().includes('walk') ||
-    job.customer_name?.toLowerCase().includes('counter') ||
+ const isUrgent = job.priority === 'urgent' || job.priority === 'very_urgent'
+ const isWalkIn =
+ job.customer_name?.toLowerCase().includes('walk') ||
+ job.customer_name?.toLowerCase().includes('counter') ||
     (job as any).is_walkin
-  const isDueToday = job.deadline?.includes(new Date().toISOString().split('T')[0])
+ const isDueToday = job.deadline?.includes(new Date().toISOString().split('T')[0])
 
-  const allPreflightPassed =
-    preflight.cmyk && preflight.dpi300 && preflight.bleed && preflight.curves
+ const allPreflightPassed =
+ preflight.cmyk && preflight.dpi300 && preflight.bleed && preflight.curves
 
-  const workbenchHref = getTenantNavHref(`/design/${job.id}`, pathname, tenantSlug)
-  const invoiceHref = job.invoice_number
+ const workbenchHref = getTenantNavHref(`/design/${job.id}`, pathname, tenantSlug)
+ const invoiceHref = job.invoice_number
     ? getTenantNavHref(`/billing/${job.invoice_id || job.invoice_number}`, pathname, tenantSlug)
     : null
 
-  return (
+ return (
     <div
-      className={`rounded-2xl border transition-all duration-200 overflow-hidden bg-card/95 backdrop-blur-sm shadow-xs ${
-        isUrgent
+ className={`rounded-xl border transition-all duration-200 overflow-hidden bg-card/95 backdrop-blur-sm shadow-xs ${
+ isUrgent
           ? 'border-rose-300 dark:border-rose-900/60 ring-1 ring-rose-400/20'
-          : 'border-border dark:border-border/80 hover:border-input dark:hover:border-border'
+          : 'border-border /80 hover:border-input dark:hover:border-border'
       }`}
     >
       {/* Top Banner for Urgent / Walk-in / Due Today */}
@@ -134,55 +134,51 @@ export const DesignJobCard = React.memo(function DesignJobCard({
             <div className="flex items-center justify-between gap-2 mb-1.5">
               <div className="flex items-center gap-1.5 flex-wrap">
                 <Link
-                  href={workbenchHref}
-                  className="tabular-nums text-xs font-bold text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 px-2 py-0.5 rounded-lg border border-indigo-200 dark:border-indigo-800 hover:bg-indigo-100 dark:hover:bg-indigo-900 transition-colors inline-flex items-center gap-1"
-                >
+ href={workbenchHref}
+ className="tabular-nums text-xs font-bold text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 px-2 py-0.5 rounded-lg border border-indigo-200 dark:border-indigo-800 hover:bg-indigo-100 dark:hover:bg-indigo-900 transition-colors inline-flex items-center gap-1">
                   <span>#{job.design_number}</span>
-                  <ExternalLink className="h-2.5 w-2.5 opacity-60" />
+                  <ExternalLink className="h-2.5 w-2.5 opacity-60"/>
                 </Link>
                 {job.order_number && (
                   <Link
-                    href={getTenantNavHref('/orders', pathname, tenantSlug)}
-                    className="tabular-nums text-xs font-semibold text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-2 py-0.5 rounded-lg border border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors"
-                  >
-                    Ord: #{job.order_number}
+ href={getTenantNavHref('/orders', pathname, tenantSlug)}
+ className="tabular-nums text-xs font-semibold text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-2 py-0.5 rounded-lg border border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors">
+ Ord: #{job.order_number}
                   </Link>
                 )}
                 {job.invoice_number && invoiceHref && (
                   <Link
-                    href={invoiceHref}
-                    className="tabular-nums text-xs font-semibold text-muted-foreground bg-muted px-2 py-0.5 rounded-lg hover:bg-muted dark:hover:bg-slate-700 transition-colors"
-                  >
-                    Inv: #{job.invoice_number}
+ href={invoiceHref}
+ className="tabular-nums text-xs font-semibold text-muted-foreground bg-muted px-2 py-0.5 rounded-lg hover:bg-muted dark:hover:bg-card-elevated transition-colors">
+ Inv: #{job.invoice_number}
                   </Link>
                 )}
                 {job.workflow_routing === 'design_ok' ? (
                   <span className="text-2xs font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 px-2 py-0.5 rounded-lg flex items-center gap-1">
-                    <FileCheck className="h-3 w-3" />
+                    <FileCheck className="h-3 w-3"/>
                     <span>রেডি ফাইল চেক (Design OK)</span>
                   </span>
                 ) : (
                   <span className="text-2xs font-bold bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300 px-2 py-0.5 rounded-lg flex items-center gap-1">
-                    <Sparkles className="h-3 w-3" />
+                    <Sparkles className="h-3 w-3"/>
                     <span>নতুন ডিজাইন দরকার</span>
                   </span>
                 )}
               </div>
               <div className="flex items-center gap-1.5">
                 <Link
-                  href={workbenchHref}
-                  className="text-2xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline inline-flex items-center gap-0.5"
-                >
+ href={workbenchHref}
+ className="text-2xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline inline-flex items-center gap-0.5">
                   <span>Workbench ➔</span>
                 </Link>
                 <span className="text-2xs tabular-nums text-muted-foreground">
-                  v{job.current_version || versions.length || 1}
+ v{job.current_version || versions.length || 1}
                 </span>
               </div>
             </div>
 
             {/* Title & Customer Name */}
-            <h3 className="text-sm font-bold text-foreground dark:text-white line-clamp-1 leading-snug">
+            <h3 className="text-sm font-bold text-foreground line-clamp-1 leading-snug">
               <Link href={workbenchHref} className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
                 {specs.serviceName}
               </Link>
@@ -193,11 +189,9 @@ export const DesignJobCard = React.memo(function DesignJobCard({
               </span>
               {(job.customer_phone || (job as any).mobile) && (
                 <button
-                  type="button"
-                  onClick={() => onOpenWhatsApp(job, 'proof')}
-                  className="inline-flex items-center gap-1 text-2xs font-bold text-emerald-700 dark:text-emerald-400 hover:underline"
-                >
-                  <Phone className="h-3 w-3 text-emerald-600" />
+ type="button"onClick={() => onOpenWhatsApp(job, 'proof')}
+ className="inline-flex items-center gap-1 text-2xs font-bold text-emerald-700 dark:text-emerald-400 hover:underline">
+                  <Phone className="h-3 w-3 text-emerald-600"/>
                   <span>{job.customer_phone || (job as any).mobile}</span>
                 </button>
               )}
@@ -214,7 +208,7 @@ export const DesignJobCard = React.memo(function DesignJobCard({
                 </div>
                 <div>
                   <span className="text-muted-foreground block text-2xs">{tBilingual('Material:', 'মেটেরিয়াল:')}</span>
-                  <strong className="text-foreground truncate block" title={specs.material}>
+                  <strong className="text-foreground truncate block"title={specs.material}>
                     {specs.material}
                   </strong>
                 </div>
@@ -244,7 +238,7 @@ export const DesignJobCard = React.memo(function DesignJobCard({
                 </div>
               </div>
               {job.instructions && (
-                <div className="border-t border-border dark:border-slate-700/60 pt-1.5 text-muted-foreground dark:text-muted-foreground">
+                <div className="border-t border-border /60 pt-1.5 text-muted-foreground">
                   <span className="text-2xs font-bold text-muted-foreground block">{tBilingual('Instructions:', 'কাস্টমার নির্দেশনা:')}</span>
                   <p className="line-clamp-2 text-2xs italic">{job.instructions}</p>
                 </div>
@@ -259,20 +253,17 @@ export const DesignJobCard = React.memo(function DesignJobCard({
                 প্রি-প্রেস কোয়ালিটি হেলথ (Pre-Press Verification):
               </span>
               <button
-                type="button"
-                onClick={() => onOpenPreflightModal(job)}
-                className="text-2xs text-indigo-600 dark:text-indigo-400 hover:underline font-bold"
-              >
+ type="button"onClick={() => onOpenPreflightModal(job)}
+ className="text-2xs text-indigo-600 dark:text-indigo-400 hover:underline font-bold">
                 {allPreflightPassed ? '✓ ভেরিফাইড (মেশিন সেট করুন)' : 'চেক করুন ও মেশিন রুট'}
               </button>
             </div>
             <div className="grid grid-cols-4 gap-1">
               {/* CMYK */}
               <button
-                type="button"
-                onClick={() => onTogglePreflight(job.id, 'cmyk', job.design_number)}
-                className={`py-1 px-1.5 rounded text-2xs font-bold border text-center transition-all ${
-                  preflight.cmyk
+ type="button"onClick={() => onTogglePreflight(job.id, 'cmyk', job.design_number)}
+ className={`py-1 px-1.5 rounded text-2xs font-bold border text-center transition-all ${
+ preflight.cmyk
                     ? 'bg-emerald-50 border-emerald-400 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
                     : 'bg-muted border-border text-muted-foreground hover:border-input'
                 }`}
@@ -281,10 +272,9 @@ export const DesignJobCard = React.memo(function DesignJobCard({
               </button>
               {/* 300 DPI */}
               <button
-                type="button"
-                onClick={() => onTogglePreflight(job.id, 'dpi300', job.design_number)}
-                className={`py-1 px-1.5 rounded text-2xs font-bold border text-center transition-all ${
-                  preflight.dpi300
+ type="button"onClick={() => onTogglePreflight(job.id, 'dpi300', job.design_number)}
+ className={`py-1 px-1.5 rounded text-2xs font-bold border text-center transition-all ${
+ preflight.dpi300
                     ? 'bg-emerald-50 border-emerald-400 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
                     : 'bg-muted border-border text-muted-foreground hover:border-input'
                 }`}
@@ -293,10 +283,9 @@ export const DesignJobCard = React.memo(function DesignJobCard({
               </button>
               {/* Bleed */}
               <button
-                type="button"
-                onClick={() => onTogglePreflight(job.id, 'bleed', job.design_number)}
-                className={`py-1 px-1.5 rounded text-2xs font-bold border text-center transition-all ${
-                  preflight.bleed
+ type="button"onClick={() => onTogglePreflight(job.id, 'bleed', job.design_number)}
+ className={`py-1 px-1.5 rounded text-2xs font-bold border text-center transition-all ${
+ preflight.bleed
                     ? 'bg-emerald-50 border-emerald-400 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
                     : 'bg-muted border-border text-muted-foreground hover:border-input'
                 }`}
@@ -305,10 +294,9 @@ export const DesignJobCard = React.memo(function DesignJobCard({
               </button>
               {/* Curves */}
               <button
-                type="button"
-                onClick={() => onTogglePreflight(job.id, 'curves', job.design_number)}
-                className={`py-1 px-1.5 rounded text-2xs font-bold border text-center transition-all ${
-                  preflight.curves
+ type="button"onClick={() => onTogglePreflight(job.id, 'curves', job.design_number)}
+ className={`py-1 px-1.5 rounded text-2xs font-bold border text-center transition-all ${
+ preflight.curves
                     ? 'bg-emerald-50 border-emerald-400 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
                     : 'bg-muted border-border text-muted-foreground hover:border-input'
                 }`}
@@ -325,41 +313,32 @@ export const DesignJobCard = React.memo(function DesignJobCard({
           <div className="relative group rounded-lg overflow-hidden bg-muted border border-border aspect-[4/3] flex items-center justify-center">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={previewUrl}
-              alt={job.title}
-              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-            />
+ src={previewUrl}
+ alt={job.title}
+ className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"/>
             {/* Format & Version Overlay */}
             <div className="absolute top-2 left-2 flex items-center gap-1">
-              <span className="bg-slate-900 backdrop-blur-sm text-white text-2xs font-bold uppercase px-1.5 py-0.5 rounded">
+              <span className="bg-surface-inset backdrop-blur-sm text-white text-2xs font-bold uppercase px-1.5 py-0.5 rounded">
                 {currentVer?.file_format || 'PNG'}
               </span>
               <span className="bg-indigo-600/90 text-white text-2xs font-bold px-1.5 py-0.5 rounded tabular-nums">
-                v{currentVer?.version_number || job.current_version || 1}
+ v{currentVer?.version_number || job.current_version || 1}
               </span>
             </div>
 
             {/* Hover Actions */}
-            <div className="absolute inset-0 bg-slate-900 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+            <div className="absolute inset-0 bg-surface-inset opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
               <Button
-                type="button"
-                size="sm"
-                variant="secondary"
-                onClick={() => onOpenLightbox(job)}
-                className="h-8 px-2.5 text-xs bg-card text-foreground font-bold shadow"
-              >
-                <Eye className="h-3.5 w-3.5 mr-1" />
+ type="button"size="sm"variant="secondary"onClick={() => onOpenLightbox(job)}
+ className="h-8 px-2.5 text-xs bg-card text-foreground font-bold shadow">
+                <Eye className="h-3.5 w-3.5 mr-1"/>
                 <span>বড় করে দেখুন</span>
               </Button>
               {versions.length > 1 && (
                 <Button
-                  type="button"
-                  size="sm"
-                  variant="secondary"
-                  onClick={() => onOpenCompare(job)}
-                  className="h-8 px-2.5 text-xs bg-card text-foreground font-bold shadow"
-                >
-                  <SplitSquareVertical className="h-3.5 w-3.5 mr-1" />
+ type="button"size="sm"variant="secondary"onClick={() => onOpenCompare(job)}
+ className="h-8 px-2.5 text-xs bg-card text-foreground font-bold shadow">
+                  <SplitSquareVertical className="h-3.5 w-3.5 mr-1"/>
                   <span>তুলনা (Diff)</span>
                 </Button>
               )}
@@ -372,76 +351,59 @@ export const DesignJobCard = React.memo(function DesignJobCard({
               {job.status === 'approved' || (job.status as string) === 'sent_to_production' || (job.status as string) === 'completed' ? (
                 <>
                   <DesignTimerBadge
-                    startedAt={job.started_at}
-                    completedAt={job.completed_at}
-                    durationSeconds={job.duration_seconds}
-                    isRunning={false}
+ startedAt={job.started_at}
+ completedAt={job.completed_at}
+ durationSeconds={job.duration_seconds}
+ isRunning={false}
                   />
                   <Button
-                    type="button"
-                    size="sm"
-                    disabled
-                    className="flex-1 text-xs bg-emerald-600/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 font-bold h-8 cursor-default"
-                  >
-                    <Check className="h-3.5 w-3.5 mr-1.5 stroke-[2.5]" />
+ type="button"size="sm"disabled
+ className="flex-1 text-xs bg-emerald-600/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 font-bold h-8 cursor-default">
+                    <Check className="h-3.5 w-3.5 mr-1.5 stroke-[2.5]"/>
                     <span>Sent to Production</span>
                   </Button>
                 </>
               ) : job.status === 'customer_approval' || (job as any).is_design_completed ? (
                 <>
                   <DesignTimerBadge
-                    startedAt={job.started_at}
-                    completedAt={job.completed_at}
-                    durationSeconds={job.duration_seconds}
-                    isRunning={false}
+ startedAt={job.started_at}
+ completedAt={job.completed_at}
+ durationSeconds={job.duration_seconds}
+ isRunning={false}
                   />
                   <Button
-                    type="button"
-                    size="sm"
-                    onClick={() => onConfirmToProduction(job)}
-                    className="flex-1 text-xs bg-indigo-600 hover:bg-indigo-700 text-white font-bold h-8 shadow-sm cursor-pointer"
-                  >
-                    <Send className="h-3.5 w-3.5 mr-1.5" />
+ type="button"size="sm"onClick={() => onConfirmToProduction(job)}
+ className="flex-1 text-xs bg-indigo-600 hover:bg-indigo-700 text-white font-bold h-8 shadow-sm cursor-pointer">
+                    <Send className="h-3.5 w-3.5 mr-1.5"/>
                     <span>Send to Production</span>
                   </Button>
                 </>
               ) : job.status === 'designing' || (job.status as string) === 'in_progress' ? (
                 <>
                   <DesignTimerBadge
-                    startedAt={job.started_at}
-                    isRunning={true}
+ startedAt={job.started_at}
+ isRunning={true}
                   />
                   <Button
-                    type="button"
-                    size="sm"
-                    onClick={() => onCompleteDesign(job)}
-                    className="flex-1 text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-bold h-8 shadow-sm cursor-pointer"
-                  >
-                    <Check className="h-3.5 w-3.5 mr-1.5 stroke-[2.5]" />
+ type="button"size="sm"onClick={() => onCompleteDesign(job)}
+ className="flex-1 text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-bold h-8 shadow-sm cursor-pointer">
+                    <Check className="h-3.5 w-3.5 mr-1.5 stroke-[2.5]"/>
                     <span>Design Complete</span>
                   </Button>
                 </>
               ) : (
                 <Button
-                  type="button"
-                  size="sm"
-                  onClick={() => onStartDesign(job)}
-                  className="flex-1 text-xs bg-primary hover:bg-primary/90 text-primary-foreground font-bold h-8 shadow-sm cursor-pointer"
-                >
-                  <Play className="h-3 w-3 mr-1.5 fill-current" />
+ type="button"size="sm"onClick={() => onStartDesign(job)}
+ className="flex-1 text-xs bg-primary hover:bg-primary/90 text-primary-foreground font-bold h-8 shadow-sm cursor-pointer">
+                  <Play className="h-3 w-3 mr-1.5 fill-current"/>
                   <span>Start Design</span>
                 </Button>
               )}
 
               <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                onClick={() => onOpenWhatsApp(job, 'proof')}
-                className="text-xs h-8 px-2 border-emerald-300 text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-950 shrink-0"
-                title="Send WhatsApp Proof"
-              >
-                <MessageSquare className="h-3.5 w-3.5" />
+ type="button"size="sm"variant="outline"onClick={() => onOpenWhatsApp(job, 'proof')}
+ className="text-xs h-8 px-2 border-emerald-300 text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-950 shrink-0"title="Send WhatsApp Proof">
+                <MessageSquare className="h-3.5 w-3.5"/>
               </Button>
             </div>
           </div>

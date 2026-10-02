@@ -3,25 +3,25 @@
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import {
-  Plus,
-  Printer,
-  Sparkles,
-  Layers,
-  Scissors,
-  Truck,
-  CheckCircle2,
-  Calendar,
-  DollarSign,
-  Phone,
-  User,
-  MapPin,
-  ArrowRight,
-  ArrowLeft,
-  Calculator,
-  Cpu,
-  FileText,
-  AlertCircle,
-  HelpCircle,
+ Plus,
+ Printer,
+ Sparkles,
+ Layers,
+ Scissors,
+ Truck,
+ CheckCircle2,
+ Calendar,
+ DollarSign,
+ Phone,
+ User,
+ MapPin,
+ ArrowRight,
+ ArrowLeft,
+ Calculator,
+ Cpu,
+ FileText,
+ AlertCircle,
+ HelpCircle,
 } from 'lucide-react'
 import { useI18n } from '@/i18n/context'
 import { useTenant } from '@/hooks/use-tenant'
@@ -38,350 +38,350 @@ import { createNewWorkIntakeAction } from '@/actions/order.actions'
 import { formatBDT } from '@/lib/formatters'
 
 interface WorkTypePreset {
-  id: string
-  nameEn: string
-  nameBn: string
-  defaultUnit: 'sqft' | 'inch' | 'pcs'
-  defaultMaterial: string
-  defaultFinishing: string[]
-  defaultRate: number
-  icon: string
+ id: string
+ nameEn: string
+ nameBn: string
+ defaultUnit: 'sqft' | 'inch' | 'pcs'
+ defaultMaterial: string
+ defaultFinishing: string[]
+ defaultRate: number
+ icon: string
 }
 
 const WORK_PRESETS: WorkTypePreset[] = [
   {
-    id: 'flex_banner',
-    nameEn: 'Flex Banner',
-    nameBn: 'ফ্লেক্স ব্যানার',
-    defaultUnit: 'sqft',
-    defaultMaterial: 'Star Flex (China 280gsm)',
-    defaultFinishing: ['Eyelet / Ring', 'Seaming / Border Fold'],
-    defaultRate: 15,
-    icon: 'Printer',
+ id: 'flex_banner',
+ nameEn: 'Flex Banner',
+ nameBn: 'ফ্লেক্স ব্যানার',
+ defaultUnit: 'sqft',
+ defaultMaterial: 'Star Flex (China 280gsm)',
+ defaultFinishing: ['Eyelet / Ring', 'Seaming / Border Fold'],
+ defaultRate: 15,
+ icon: 'Printer',
   },
   {
-    id: 'vinyl_sticker',
-    nameEn: 'Vinyl Sticker',
-    nameBn: 'ভিনাইল স্টিকার',
-    defaultUnit: 'sqft',
-    defaultMaterial: 'Glossy Vinyl White (3M/China)',
-    defaultFinishing: ['Cold Lamination (Glossy)'],
-    defaultRate: 35,
-    icon: 'Layers',
+ id: 'vinyl_sticker',
+ nameEn: 'Vinyl Sticker',
+ nameBn: 'ভিনাইল স্টিকার',
+ defaultUnit: 'sqft',
+ defaultMaterial: 'Glossy Vinyl White (3M/China)',
+ defaultFinishing: ['Cold Lamination (Glossy)'],
+ defaultRate: 35,
+ icon: 'Layers',
   },
   {
-    id: 'offset_memo',
-    nameEn: 'Cash Memo / Invoice Book',
-    nameBn: 'ক্যাশ মেমো / ইনভয়েস বই',
-    defaultUnit: 'pcs',
-    defaultMaterial: '80gsm Offset Paper (100 Sheets)',
-    defaultFinishing: ['Numbering', 'Perforation', 'Book Binding / Pad Glue'],
-    defaultRate: 80,
-    icon: 'FileText',
+ id: 'offset_memo',
+ nameEn: 'Cash Memo / Invoice Book',
+ nameBn: 'ক্যাশ মেমো / ইনভয়েস বই',
+ defaultUnit: 'pcs',
+ defaultMaterial: '80gsm Offset Paper (100 Sheets)',
+ defaultFinishing: ['Numbering', 'Perforation', 'Book Binding / Pad Glue'],
+ defaultRate: 80,
+ icon: 'FileText',
   },
   {
-    id: 'visiting_card',
-    nameEn: 'Visiting Card / Box',
-    nameBn: 'ভিজিটিং কার্ড (১০০ পিস)',
-    defaultUnit: 'pcs',
-    defaultMaterial: '300gsm Art Card (Premium)',
-    defaultFinishing: ['Matte Lamination', 'Spot UV'],
-    defaultRate: 350,
-    icon: 'Layers',
+ id: 'visiting_card',
+ nameEn: 'Visiting Card / Box',
+ nameBn: 'ভিজিটিং কার্ড (১০০ পিস)',
+ defaultUnit: 'pcs',
+ defaultMaterial: '300gsm Art Card (Premium)',
+ defaultFinishing: ['Matte Lamination', 'Spot UV'],
+ defaultRate: 350,
+ icon: 'Layers',
   },
   {
-    id: 'acrylic_sign',
-    nameEn: 'Acrylic Signboard',
-    nameBn: 'এক্রিলিক সাইনবোর্ড',
-    defaultUnit: 'sqft',
-    defaultMaterial: '3mm Cast Acrylic + LED',
-    defaultFinishing: ['Laser Cut', 'LED Lighting', 'Installation'],
-    defaultRate: 350,
-    icon: 'Cpu',
+ id: 'acrylic_sign',
+ nameEn: 'Acrylic Signboard',
+ nameBn: 'এক্রিলিক সাইনবোর্ড',
+ defaultUnit: 'sqft',
+ defaultMaterial: '3mm Cast Acrylic + LED',
+ defaultFinishing: ['Laser Cut', 'LED Lighting', 'Installation'],
+ defaultRate: 350,
+ icon: 'Cpu',
   },
   {
-    id: 'x_banner',
-    nameEn: 'X-Banner / Standee',
-    nameBn: 'এক্স-ব্যানার ও স্ট্যান্ড',
-    defaultUnit: 'pcs',
-    defaultMaterial: 'PVC Backlit / Synthetic Banner',
-    defaultFinishing: ['X-Stand Metal Frame', 'Eyelets 4 Corners'],
-    defaultRate: 650,
-    icon: 'Layers',
+ id: 'x_banner',
+ nameEn: 'X-Banner / Standee',
+ nameBn: 'এক্স-ব্যানার ও স্ট্যান্ড',
+ defaultUnit: 'pcs',
+ defaultMaterial: 'PVC Backlit / Synthetic Banner',
+ defaultFinishing: ['X-Stand Metal Frame', 'Eyelets 4 Corners'],
+ defaultRate: 650,
+ icon: 'Layers',
   },
   {
-    id: 'festoon',
-    nameEn: 'Festoon / Pole Sign',
-    nameBn: 'ফেস্টুন ও ফ্রেম',
-    defaultUnit: 'pcs',
-    defaultMaterial: 'Normal Flex (240gsm)',
-    defaultFinishing: ['Wooden Frame Fitting'],
-    defaultRate: 90,
-    icon: 'Printer',
+ id: 'festoon',
+ nameEn: 'Festoon / Pole Sign',
+ nameBn: 'ফেস্টুন ও ফ্রেম',
+ defaultUnit: 'pcs',
+ defaultMaterial: 'Normal Flex (240gsm)',
+ defaultFinishing: ['Wooden Frame Fitting'],
+ defaultRate: 90,
+ icon: 'Printer',
   },
   {
-    id: 'custom',
-    nameEn: 'Custom Job',
-    nameBn: 'অন্যান্য কাস্টম কাজ',
-    defaultUnit: 'sqft',
-    defaultMaterial: 'Custom Specification',
-    defaultFinishing: [],
-    defaultRate: 50,
-    icon: 'Scissors',
+ id: 'custom',
+ nameEn: 'Custom Job',
+ nameBn: 'অন্যান্য কাস্টম কাজ',
+ defaultUnit: 'sqft',
+ defaultMaterial: 'Custom Specification',
+ defaultFinishing: [],
+ defaultRate: 50,
+ icon: 'Scissors',
   },
 ]
 
 interface NewWorkWizardProps {
-  isOpen?: boolean
-  onClose?: () => void
-  onSuccess?: (jobData: any) => void
-  isInlineModal?: boolean
+ isOpen?: boolean
+ onClose?: () => void
+ onSuccess?: (jobData: any) => void
+ isInlineModal?: boolean
 }
 
 export function NewWorkWizard({
-  isOpen = true,
-  onClose,
-  onSuccess,
-  isInlineModal = false,
+ isOpen = true,
+ onClose,
+ onSuccess,
+ isInlineModal = false,
 }: NewWorkWizardProps) {
-  const { tBilingual } = useI18n()
-  const { company } = useTenant()
-  const router = useRouter()
-  const companyId = company?.id || 'demo-company'
-  const tenantSlug = company?.slug || 'my-company'
+ const { tBilingual } = useI18n()
+ const { company } = useTenant()
+ const router = useRouter()
+ const companyId = company?.id || 'demo-company'
+ const tenantSlug = company?.slug || 'my-company'
 
   // Wizard Steps: 1. Customer, 2. Work & Size, 3. Material & Finishing, 4. Delivery & Review
-  const [step, setStep] = useState<number>(1)
+ const [step, setStep] = useState<number>(1)
 
   // Customer State
-  const [customers, setCustomers] = useState<CustomerRecord[]>([])
-  const [customerSearch, setCustomerSearch] = useState('')
-  const [selectedCustomer, setSelectedCustomer] = useState<CustomerRecord | null>(null)
-  const [isCreatingCustomer, setIsCreatingCustomer] = useState(false)
-  const [newCustomerName, setNewCustomerName] = useState('')
-  const [newCustomerPhone, setNewCustomerPhone] = useState('')
-  const [newCustomerAddress, setNewCustomerAddress] = useState('')
+ const [customers, setCustomers] = useState<CustomerRecord[]>([])
+ const [customerSearch, setCustomerSearch] = useState('')
+ const [selectedCustomer, setSelectedCustomer] = useState<CustomerRecord | null>(null)
+ const [isCreatingCustomer, setIsCreatingCustomer] = useState(false)
+ const [newCustomerName, setNewCustomerName] = useState('')
+ const [newCustomerPhone, setNewCustomerPhone] = useState('')
+ const [newCustomerAddress, setNewCustomerAddress] = useState('')
 
   // Work Type State
-  const [selectedPreset, setSelectedPreset] = useState<WorkTypePreset>(WORK_PRESETS[0])
-  const [jobTitle, setJobTitle] = useState(WORK_PRESETS[0].nameBn)
-  const [width, setWidth] = useState<number>(8)
-  const [height, setHeight] = useState<number>(4)
-  const [unit, setUnit] = useState<'ft' | 'inch' | 'pcs'>('ft')
-  const [quantity, setQuantity] = useState<number>(1)
-  const [unitRate, setUnitRate] = useState<number>(WORK_PRESETS[0].defaultRate)
-  const [advancePaid, setAdvancePaid] = useState<number>(0)
-  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'bkash' | 'nagad' | 'bank'>('cash')
+ const [selectedPreset, setSelectedPreset] = useState<WorkTypePreset>(WORK_PRESETS[0])
+ const [jobTitle, setJobTitle] = useState(WORK_PRESETS[0].nameBn)
+ const [width, setWidth] = useState<number>(8)
+ const [height, setHeight] = useState<number>(4)
+ const [unit, setUnit] = useState<'ft' | 'inch' | 'pcs'>('ft')
+ const [quantity, setQuantity] = useState<number>(1)
+ const [unitRate, setUnitRate] = useState<number>(WORK_PRESETS[0].defaultRate)
+ const [advancePaid, setAdvancePaid] = useState<number>(0)
+ const [paymentMethod, setPaymentMethod] = useState<'cash' | 'bkash' | 'nagad' | 'bank'>('cash')
 
   // Material & Finishing
-  const [materialName, setMaterialName] = useState(WORK_PRESETS[0].defaultMaterial)
-  const [selectedFinishings, setSelectedFinishings] = useState<string[]>(WORK_PRESETS[0].defaultFinishing)
+ const [materialName, setMaterialName] = useState(WORK_PRESETS[0].defaultMaterial)
+ const [selectedFinishings, setSelectedFinishings] = useState<string[]>(WORK_PRESETS[0].defaultFinishing)
 
   // Delivery & Scheduling
-  const [deliveryDate, setDeliveryDate] = useState<string>(() => {
-    const d = new Date()
-    d.setDate(d.getDate() + 1)
-    return d.toISOString().split('T')[0]
+ const [deliveryDate, setDeliveryDate] = useState<string>(() => {
+ const d = new Date()
+ d.setDate(d.getDate() + 1)
+ return d.toISOString().split('T')[0]
   })
-  const [deliveryType, setDeliveryType] = useState<'pickup' | 'courier' | 'installation'>('pickup')
-  const [notes, setNotes] = useState('')
+ const [deliveryType, setDeliveryType] = useState<'pickup' | 'courier' | 'installation'>('pickup')
+ const [notes, setNotes] = useState('')
 
   // Advanced Options (Progressive Disclosure)
-  const [showAdvanced, setShowAdvanced] = useState(false)
-  const [assignedMachine, setAssignedMachine] = useState('Large Format Eco-Solvent #1')
-  const [colorProfile, setColorProfile] = useState('CMYK Standard')
-  const [priority, setPriority] = useState<'normal' | 'urgent' | 'very_urgent'>('normal')
+ const [showAdvanced, setShowAdvanced] = useState(false)
+ const [assignedMachine, setAssignedMachine] = useState('Large Format Eco-Solvent #1')
+ const [colorProfile, setColorProfile] = useState('CMYK Standard')
+ const [priority, setPriority] = useState<'normal' | 'urgent' | 'very_urgent'>('normal')
 
   // Submission State
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+ const [isSubmitting, setIsSubmitting] = useState(false)
+ const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   // Next Action Modal
-  const [nextActionConfig, setNextActionConfig] = useState<NextActionConfig | null>(null)
+ const [nextActionConfig, setNextActionConfig] = useState<NextActionConfig | null>(null)
 
   // Load existing customers on mount
-  useEffect(() => {
-    async function loadCustomers() {
-      try {
-        const res = await getCustomersAction(companyId)
-        if (res.success && res.data) {
-          setCustomers(res.data)
+ useEffect(() => {
+ async function loadCustomers() {
+ try {
+ const res = await getCustomersAction(companyId)
+ if (res.success && res.data) {
+ setCustomers(res.data)
         }
       } catch (_) {}
     }
-    loadCustomers()
+ loadCustomers()
   }, [companyId])
 
   // Calculation Helpers
-  const totalSqft = unit === 'ft' ? width * height * quantity : unit === 'inch' ? (width * height * quantity) / 144 : quantity
-  const totalAmount = Math.round(totalSqft * unitRate)
-  const dueAmount = Math.max(0, totalAmount - advancePaid)
+ const totalSqft = unit === 'ft' ? width * height * quantity : unit === 'inch' ? (width * height * quantity) / 144 : quantity
+ const totalAmount = Math.round(totalSqft * unitRate)
+ const dueAmount = Math.max(0, totalAmount - advancePaid)
 
   // Select Preset Handler
-  const handleSelectPreset = (preset: WorkTypePreset) => {
-    setSelectedPreset(preset)
-    setJobTitle(preset.nameBn)
-    setMaterialName(preset.defaultMaterial)
-    setSelectedFinishings(preset.defaultFinishing)
-    setUnitRate(preset.defaultRate)
-    if (preset.defaultUnit === 'pcs') {
-      setUnit('pcs')
+ const handleSelectPreset = (preset: WorkTypePreset) => {
+ setSelectedPreset(preset)
+ setJobTitle(preset.nameBn)
+ setMaterialName(preset.defaultMaterial)
+ setSelectedFinishings(preset.defaultFinishing)
+ setUnitRate(preset.defaultRate)
+ if (preset.defaultUnit === 'pcs') {
+ setUnit('pcs')
     } else if (unit === 'pcs') {
-      setUnit('ft')
+ setUnit('ft')
     }
   }
 
   // Toggle Finishing
-  const toggleFinishing = (item: string) => {
-    if (selectedFinishings.includes(item)) {
-      setSelectedFinishings(selectedFinishings.filter((f) => f !== item))
+ const toggleFinishing = (item: string) => {
+ if (selectedFinishings.includes(item)) {
+ setSelectedFinishings(selectedFinishings.filter((f) => f !== item))
     } else {
-      setSelectedFinishings([...selectedFinishings, item])
+ setSelectedFinishings([...selectedFinishings, item])
     }
   }
 
   // Filter Customers
-  const filteredCustomers = customers.filter((c) =>
-    c.name.toLowerCase().includes(customerSearch.toLowerCase()) ||
+ const filteredCustomers = customers.filter((c) =>
+ c.name.toLowerCase().includes(customerSearch.toLowerCase()) ||
     ((c as any).phone || c.mobile || '').includes(customerSearch) ||
     (c.company_name && c.company_name.toLowerCase().includes(customerSearch.toLowerCase()))
   )
 
   // Create Quick Customer
-  const handleQuickCreateCustomer = async () => {
-    if (!newCustomerName.trim() || !newCustomerPhone.trim()) {
-      setErrorMessage(tBilingual('Customer name and phone are required', 'কাস্টমারের নাম ও মোবাইল নম্বর আবশ্যক'))
-      return
+ const handleQuickCreateCustomer = async () => {
+ if (!newCustomerName.trim() || !newCustomerPhone.trim()) {
+ setErrorMessage(tBilingual('Customer name and phone are required', 'কাস্টমারের নাম ও মোবাইল নম্বর আবশ্যক'))
+ return
     }
 
-    try {
-      const res = await createCustomerAction({
-        company_id: companyId,
-        name: newCustomerName.trim(),
-        mobile: newCustomerPhone.trim(),
-        address: newCustomerAddress.trim() || undefined,
+ try {
+ const res = await createCustomerAction({
+ company_id: companyId,
+ name: newCustomerName.trim(),
+ mobile: newCustomerPhone.trim(),
+ address: newCustomerAddress.trim() || undefined,
       })
-      if (res.success && res.data) {
-        setSelectedCustomer(res.data)
-        setCustomers((prev) => [res.data!, ...prev])
-        setIsCreatingCustomer(false)
-        setErrorMessage(null)
+ if (res.success && res.data) {
+ setSelectedCustomer(res.data)
+ setCustomers((prev) => [res.data!, ...prev])
+ setIsCreatingCustomer(false)
+ setErrorMessage(null)
       } else {
-        setErrorMessage(res.error || 'Failed to create customer')
+ setErrorMessage(res.error || 'Failed to create customer')
       }
     } catch (err: any) {
-      setErrorMessage(err.message || 'Failed to create customer')
+ setErrorMessage(err.message || 'Failed to create customer')
     }
   }
 
   // Final Order Creation Handler
-  const handleCreateNewWork = async () => {
-    if (!selectedCustomer) {
-      setErrorMessage(tBilingual('Please select or create a customer first', 'দয়া করে একজন কাস্টমার নির্বাচন করুন'))
-      setStep(1)
-      return
+ const handleCreateNewWork = async () => {
+ if (!selectedCustomer) {
+ setErrorMessage(tBilingual('Please select or create a customer first', 'দয়া করে একজন কাস্টমার নির্বাচন করুন'))
+ setStep(1)
+ return
     }
 
-    setErrorMessage(null)
-    setIsSubmitting(true)
+ setErrorMessage(null)
+ setIsSubmitting(true)
 
-    try {
-      const custPhone = (selectedCustomer as any).phone || selectedCustomer.mobile || ''
+ try {
+ const custPhone = (selectedCustomer as any).phone || selectedCustomer.mobile || ''
 
-      const res = await createNewWorkIntakeAction({
-        customerId: selectedCustomer.id,
-        customerName: selectedCustomer.name,
-        customerPhone: custPhone,
-        customerAddress: selectedCustomer.address || '',
-        jobTitle,
-        width,
-        height,
-        unit,
-        quantity,
-        unitRate,
-        totalAmount,
-        advancePaid,
-        dueAmount,
-        paymentMethod,
-        materialName,
-        selectedFinishings,
-        deliveryDate,
-        deliveryType,
-        notes,
-        assignedMachine,
-        priority,
-        companyId,
+ const res = await createNewWorkIntakeAction({
+ customerId: selectedCustomer.id,
+ customerName: selectedCustomer.name,
+ customerPhone: custPhone,
+ customerAddress: selectedCustomer.address || '',
+ jobTitle,
+ width,
+ height,
+ unit,
+ quantity,
+ unitRate,
+ totalAmount,
+ advancePaid,
+ dueAmount,
+ paymentMethod,
+ materialName,
+ selectedFinishings,
+ deliveryDate,
+ deliveryType,
+ notes,
+ assignedMachine,
+ priority,
+ companyId,
       })
 
-      if (!res.success || !res.data) {
-        throw new Error(res.error || 'Failed to create work order')
+ if (!res.success || !res.data) {
+ throw new Error(res.error || 'Failed to create work order')
       }
 
-      const { invoiceNumber, jobNumber } = res.data
+ const { invoiceNumber, jobNumber } = res.data
 
       // Prepare Next Action Dialog
-      const cleanPhone = custPhone.replace(/\D/g, '')
-      const formattedPhone = cleanPhone.startsWith('880') ? cleanPhone : cleanPhone.startsWith('0') ? `88${cleanPhone}` : `880${cleanPhone}`
-      const whatsappMsg = encodeURIComponent(
+ const cleanPhone = custPhone.replace(/\D/g, '')
+ const formattedPhone = cleanPhone.startsWith('880') ? cleanPhone : cleanPhone.startsWith('0') ? `88${cleanPhone}` : `880${cleanPhone}`
+ const whatsappMsg = encodeURIComponent(
         `নমস্কার ${selectedCustomer.name},\nInkFlow এ আপনার কাজ (${jobTitle}) অর্ডার হিসেবে যুক্ত হয়েছে।\nবিল নং: ${invoiceNumber}\nমোট টাকা: ৳${totalAmount.toLocaleString()}\nজমা: ৳${advancePaid.toLocaleString()}\nবাকি: ৳${dueAmount.toLocaleString()}\nডেলিভারি: ${deliveryDate}\nধন্যবাদ!`
       )
-      const waUrl = `https://wa.me/${formattedPhone}?text=${whatsappMsg}`
+ const waUrl = `https://wa.me/${formattedPhone}?text=${whatsappMsg}`
 
-      setNextActionConfig({
-        titleEn: 'Work Order Created Successfully!',
-        titleBn: 'নতুন কাজ সফলভাবে তৈরি হয়েছে!',
-        descriptionEn: `Job #${jobNumber} and Invoice #${invoiceNumber} have been saved and dispatched to the production queue.`,
-        descriptionBn: `কাজের টিকিট #${jobNumber} এবং ইনভয়েস #${invoiceNumber} তৈরি হয়েছে এবং প্রোডাকশন কিউতে পাঠানো হয়েছে।`,
-        primaryAction: {
-          labelEn: 'Send WhatsApp Update',
-          labelBn: 'কাস্টমারকে হোয়াটসঅ্যাপ মেসেজ পাঠান',
-          onClick: () => {
-            window.open(waUrl, '_blank')
-            onSuccess?.(res.data)
-            onClose?.()
+ setNextActionConfig({
+ titleEn: 'Work Order Created Successfully!',
+ titleBn: 'নতুন কাজ সফলভাবে তৈরি হয়েছে!',
+ descriptionEn: `Job #${jobNumber} and Invoice #${invoiceNumber} have been saved and dispatched to the production queue.`,
+ descriptionBn: `কাজের টিকিট #${jobNumber} এবং ইনভয়েস #${invoiceNumber} তৈরি হয়েছে এবং প্রোডাকশন কিউতে পাঠানো হয়েছে।`,
+ primaryAction: {
+ labelEn: 'Send WhatsApp Update',
+ labelBn: 'কাস্টমারকে হোয়াটসঅ্যাপ মেসেজ পাঠান',
+ onClick: () => {
+ window.open(waUrl, '_blank')
+ onSuccess?.(res.data)
+ onClose?.()
           },
         },
-        secondaryActions: [
+ secondaryActions: [
           {
-            labelEn: 'Go to Floor Terminal',
-            labelBn: 'ফ্লোর টার্মিনালে যান (কাজ শুরু করুন)',
-            onClick: () => {
-              router.push('/operator')
-              onSuccess?.(res.data)
-              onClose?.()
+ labelEn: 'Go to Floor Terminal',
+ labelBn: 'ফ্লোর টার্মিনালে যান (কাজ শুরু করুন)',
+ onClick: () => {
+ router.push('/operator')
+ onSuccess?.(res.data)
+ onClose?.()
             },
           },
           {
-            labelEn: 'Print Work Ticket',
-            labelBn: 'জব টিকিট প্রিন্ট করুন',
-            onClick: () => {
-              window.print()
+ labelEn: 'Print Work Ticket',
+ labelBn: 'জব টিকিট প্রিন্ট করুন',
+ onClick: () => {
+ window.print()
             },
           },
           {
-            labelEn: '+ Create Another Work',
-            labelBn: '+ আরেকটি নতুন কাজ যোগ করুন',
-            onClick: () => {
-              setStep(1)
-              setSelectedCustomer(null)
-              setAdvancePaid(0)
-              setNotes('')
-              setNextActionConfig(null)
+ labelEn: '+ Create Another Work',
+ labelBn: '+ আরেকটি নতুন কাজ যোগ করুন',
+ onClick: () => {
+ setStep(1)
+ setSelectedCustomer(null)
+ setAdvancePaid(0)
+ setNotes('')
+ setNextActionConfig(null)
             },
           },
         ],
       })
     } catch (err: any) {
-      setErrorMessage(err.message || 'Failed to save new work')
+ setErrorMessage(err.message || 'Failed to save new work')
     } finally {
-      setIsSubmitting(false)
+ setIsSubmitting(false)
     }
   }
 
-  const content = (
+ const content = (
     <div className="space-y-6">
       {/* Step Progress Bar */}
-      <div className="flex items-center justify-between pb-3 border-b border-border dark:border-border">
+      <div className="flex items-center justify-between pb-3 border-b border-border">
         <div className="flex items-center gap-2">
           {[
             { num: 1, labelBn: 'কাস্টমার', labelEn: 'Customer' },
@@ -390,15 +390,14 @@ export function NewWorkWizard({
             { num: 4, labelBn: 'ডেলিভারি ও সেভ', labelEn: 'Delivery' },
           ].map((s) => (
             <button
-              key={s.num}
-              type="button"
-              onClick={() => s.num < step && setStep(s.num)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
-                step === s.num
+ key={s.num}
+ type="button"onClick={() => s.num < step && setStep(s.num)}
+ className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
+ step === s.num
                   ? 'bg-blue-600 text-white shadow-sm'
                   : step > s.num
                   ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300'
-                  : 'bg-muted text-muted-foreground dark:text-muted-foreground'
+                  : 'bg-muted text-muted-foreground '
               }`}
             >
               <span>{s.num}.</span>
@@ -408,18 +407,16 @@ export function NewWorkWizard({
         </div>
 
         <button
-          type="button"
-          onClick={() => setShowAdvanced(!showAdvanced)}
-          className="text-xs text-blue-600 dark:text-blue-400 font-semibold hover:underline flex items-center gap-1"
-        >
-          <Sparkles className="h-3.5 w-3.5" />
+ type="button"onClick={() => setShowAdvanced(!showAdvanced)}
+ className="text-xs text-blue-600 dark:text-blue-400 font-semibold hover:underline flex items-center gap-1">
+          <Sparkles className="h-3.5 w-3.5"/>
           {showAdvanced ? tBilingual('Simple View', 'সহজ ভিউ') : tBilingual('Advanced View', 'বিস্তারিত ভিউ')}
         </button>
       </div>
 
       {errorMessage && (
         <div className="p-3 bg-rose-50 border border-rose-200 rounded-lg text-rose-800 text-xs font-semibold flex items-center gap-2 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800">
-          <AlertCircle className="h-4 w-4 shrink-0 text-rose-600" />
+          <AlertCircle className="h-4 w-4 shrink-0 text-rose-600"/>
           <span>{errorMessage}</span>
         </div>
       )}
@@ -429,16 +426,13 @@ export function NewWorkWizard({
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-base font-bold text-foreground flex items-center gap-2">
-              <User className="h-5 w-5 text-blue-600" />
+              <User className="h-5 w-5 text-blue-600"/>
               {tBilingual('1. Select or Add Customer', '১. কাস্টমার নির্বাচন করুন বা নতুন যোগ করুন')}
             </h3>
             <Button
-              type="button"
-              size="sm"
-              variant={isCreatingCustomer ? 'outline' : 'default'}
-              onClick={() => setIsCreatingCustomer(!isCreatingCustomer)}
-              className="text-xs font-bold"
-            >
+ type="button"size="sm"variant={isCreatingCustomer ? 'outline' : 'default'}
+ onClick={() => setIsCreatingCustomer(!isCreatingCustomer)}
+ className="text-xs font-bold">
               {isCreatingCustomer ? tBilingual('Back to List', 'তালিকায় ফিরুন') : tBilingual('+ New Customer', '+ নতুন কাস্টমার')}
             </Button>
           </div>
@@ -450,38 +444,30 @@ export function NewWorkWizard({
                   <div className="space-y-1">
                     <Label className="text-xs font-bold">{tBilingual('Customer Name *', 'কাস্টমারের নাম *')}</Label>
                     <Input
-                      value={newCustomerName}
-                      onChange={(e) => setNewCustomerName(e.target.value)}
-                      placeholder="e.g. Rahim Enterprise / রহিম এন্টারপ্রাইজ"
-                      className="h-10 text-sm"
-                    />
+ value={newCustomerName}
+ onChange={(e) => setNewCustomerName(e.target.value)}
+ placeholder="e.g. Rahim Enterprise / রহিম এন্টারপ্রাইজ"className="h-10 text-sm"/>
                   </div>
                   <div className="space-y-1">
                     <Label className="text-xs font-bold">{tBilingual('Mobile / WhatsApp *', 'মোবাইল / হোয়াটসঅ্যাপ *')}</Label>
                     <Input
-                      value={newCustomerPhone}
-                      onChange={(e) => setNewCustomerPhone(e.target.value)}
-                      placeholder="e.g. 01711223344"
-                      className="h-10 text-sm tabular-nums"
-                    />
+ value={newCustomerPhone}
+ onChange={(e) => setNewCustomerPhone(e.target.value)}
+ placeholder="e.g. 01711223344"className="h-10 text-sm tabular-nums"/>
                   </div>
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs">{tBilingual('Shop / Delivery Address', 'ঠিকানা (ঐচ্ছিক)')}</Label>
                   <Input
-                    value={newCustomerAddress}
-                    onChange={(e) => setNewCustomerAddress(e.target.value)}
-                    placeholder="e.g. Shop 12, Mirpur 10, Dhaka"
-                    className="h-10 text-sm"
-                  />
+ value={newCustomerAddress}
+ onChange={(e) => setNewCustomerAddress(e.target.value)}
+ placeholder="e.g. Shop 12, Mirpur 10, Dhaka"className="h-10 text-sm"/>
                 </div>
                 <div className="flex justify-end pt-2">
                   <Button
-                    type="button"
-                    onClick={handleQuickCreateCustomer}
-                    className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold h-10 px-6"
-                  >
-                    <CheckCircle2 className="h-4 w-4 mr-1.5" />
+ type="button"onClick={handleQuickCreateCustomer}
+ className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold h-10 px-6">
+                    <CheckCircle2 className="h-4 w-4 mr-1.5"/>
                     {tBilingual('Save & Continue', 'সংরক্ষণ করে এগিয়ে যান')}
                   </Button>
                 </div>
@@ -490,11 +476,10 @@ export function NewWorkWizard({
           ) : (
             <div className="space-y-3">
               <Input
-                value={customerSearch}
-                onChange={(e) => setCustomerSearch(e.target.value)}
-                placeholder={tBilingual('Search by Name or Phone...', 'কাস্টমারের নাম বা মোবাইল নম্বর লিখুন...')}
-                className="h-12 text-sm bg-card border-input"
-              />
+ value={customerSearch}
+ onChange={(e) => setCustomerSearch(e.target.value)}
+ placeholder={tBilingual('Search by Name or Phone...', 'কাস্টমারের নাম বা মোবাইল নম্বর লিখুন...')}
+ className="h-12 text-sm bg-card border-input"/>
 
               {selectedCustomer && (
                 <div className="p-4 bg-emerald-50 dark:bg-emerald-950/30 border-2 border-emerald-500 rounded-xl flex items-center justify-between">
@@ -513,45 +498,39 @@ export function NewWorkWizard({
                     </p>
                   </div>
                   <Button
-                    type="button"
-                    size="sm"
-                    onClick={() => setStep(2)}
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold h-9 px-4"
-                  >
-                    {tBilingual('Next Step', 'পরবর্তী ধাপ')} <ArrowRight className="h-3.5 w-3.5 ml-1" />
+ type="button"size="sm"onClick={() => setStep(2)}
+ className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold h-9 px-4">
+                    {tBilingual('Next Step', 'পরবর্তী ধাপ')} <ArrowRight className="h-3.5 w-3.5 ml-1"/>
                   </Button>
                 </div>
               )}
 
-              <div className="max-h-60 overflow-y-auto space-y-1.5 border border-border rounded-xl p-2 bg-muted dark:bg-card">
+              <div className="max-h-60 overflow-y-auto space-y-1.5 border border-border rounded-xl p-2 bg-muted">
                 {filteredCustomers.length === 0 ? (
                   <div className="text-center py-6 text-xs text-muted-foreground">
                     {tBilingual('No customer found.', 'কোনো কাস্টমার পাওয়া যায়নি।')}
                     <Button
-                      type="button"
-                      variant="link"
-                      onClick={() => setIsCreatingCustomer(true)}
-                      className="text-xs font-bold text-blue-600 pl-1"
-                    >
+ type="button"variant="link"onClick={() => setIsCreatingCustomer(true)}
+ className="text-xs font-bold text-blue-600 pl-1">
                       {tBilingual('Create New', 'নতুন তৈরি করুন')}
                     </Button>
                   </div>
                 ) : (
-                  filteredCustomers.map((c) => (
+ filteredCustomers.map((c) => (
                     <div
-                      key={c.id}
-                      onClick={() => {
-                        setSelectedCustomer(c)
-                        setStep(2)
+ key={c.id}
+ onClick={() => {
+ setSelectedCustomer(c)
+ setStep(2)
                       }}
-                      className={`p-3 rounded-lg border text-xs cursor-pointer transition-all flex items-center justify-between hover:bg-blue-50/50 dark:hover:bg-blue-950/30 ${
-                        selectedCustomer?.id === c.id
+ className={`p-3 rounded-lg border text-xs cursor-pointer transition-all flex items-center justify-between hover:bg-blue-50/50 dark:hover:bg-blue-950/30 ${
+ selectedCustomer?.id === c.id
                           ? 'border-blue-500 bg-blue-50/40 font-semibold'
-                          : 'border-border bg-card dark:bg-card'
+                          : 'border-border bg-card '
                       }`}
                     >
                       <div>
-                        <div className="font-bold text-foreground dark:text-foreground">{c.name}</div>
+                        <div className="font-bold text-foreground">{c.name}</div>
                         <div className="text-2xs text-muted-foreground tabular-nums">{(c as any).phone || c.mobile}</div>
                       </div>
                       <div className="text-right">
@@ -577,11 +556,11 @@ export function NewWorkWizard({
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-base font-bold text-foreground flex items-center gap-2">
-              <Printer className="h-5 w-5 text-blue-600" />
+              <Printer className="h-5 w-5 text-blue-600"/>
               {tBilingual('2. What do they want to make?', '২. কী কাজ বানাতে চান?')}
             </h3>
             {selectedCustomer && (
-              <Badge variant="outline" className="text-xs font-medium">
+              <Badge variant="outline"className="text-xs font-medium">
                 {selectedCustomer.name}
               </Badge>
             )}
@@ -591,15 +570,15 @@ export function NewWorkWizard({
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
             {WORK_PRESETS.map((p) => (
               <div
-                key={p.id}
-                onClick={() => handleSelectPreset(p)}
-                className={`p-3 rounded-xl border-2 cursor-pointer transition-all text-center space-y-1 ${
-                  selectedPreset.id === p.id
+ key={p.id}
+ onClick={() => handleSelectPreset(p)}
+ className={`p-3 rounded-xl border-2 cursor-pointer transition-all text-center space-y-1 ${
+ selectedPreset.id === p.id
                     ? 'border-blue-600 bg-blue-50/50 dark:bg-blue-950/40 shadow-xs'
                     : 'border-border bg-card hover:border-input'
                 }`}
               >
-                <div className="text-sm font-bold text-foreground dark:text-foreground">{p.nameBn}</div>
+                <div className="text-sm font-bold text-foreground">{p.nameBn}</div>
                 <div className="text-2xs text-muted-foreground">{p.nameEn}</div>
                 <div className="text-xs font-semibold text-blue-600 dark:text-blue-400">
                   ৳{p.defaultRate}/{p.defaultUnit}
@@ -609,40 +588,31 @@ export function NewWorkWizard({
           </div>
 
           {/* Dimensions & Quantity Form */}
-          <Card className="border border-border bg-muted dark:bg-card">
+          <Card className="border border-border bg-muted">
             <CardContent className="p-4 space-y-4">
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <div className="space-y-1">
                   <Label className="text-xs font-bold">{tBilingual('Width', 'প্রস্থ')}</Label>
                   <Input
-                    type="number"
-                    min="0.1"
-                    step="0.5"
-                    value={width}
-                    onChange={(e) => setWidth(parseFloat(e.target.value) || 0)}
-                    className="h-11 text-base font-bold tabular-nums text-center"
-                  />
+ type="number"min="0.1"step="0.5"value={width}
+ onChange={(e) => setWidth(parseFloat(e.target.value) || 0)}
+ className="h-11 text-base font-bold tabular-nums text-center"/>
                 </div>
 
                 <div className="space-y-1">
                   <Label className="text-xs font-bold">{tBilingual('Height', 'উচ্চতা')}</Label>
                   <Input
-                    type="number"
-                    min="0.1"
-                    step="0.5"
-                    value={height}
-                    onChange={(e) => setHeight(parseFloat(e.target.value) || 0)}
-                    className="h-11 text-base font-bold tabular-nums text-center"
-                  />
+ type="number"min="0.1"step="0.5"value={height}
+ onChange={(e) => setHeight(parseFloat(e.target.value) || 0)}
+ className="h-11 text-base font-bold tabular-nums text-center"/>
                 </div>
 
                 <div className="space-y-1">
                   <Label className="text-xs font-bold">{tBilingual('Unit', 'একক')}</Label>
                   <select
-                    value={unit}
-                    onChange={(e) => setUnit(e.target.value as any)}
-                    className="w-full h-11 rounded-md border border-input bg-card px-3 py-2 text-sm font-semibold dark:text-foreground"
-                  >
+ value={unit}
+ onChange={(e) => setUnit(e.target.value as any)}
+ className="w-full h-11 rounded-md border border-input bg-card px-3 py-2 text-sm font-semibold">
                     <option value="ft">{tBilingual('Feet (ft)', 'ফুট')}</option>
                     <option value="inch">{tBilingual('Inches (in)', 'ইঞ্চি')}</option>
                     <option value="pcs">{tBilingual('Pieces (pcs)', 'পিস')}</option>
@@ -652,12 +622,9 @@ export function NewWorkWizard({
                 <div className="space-y-1">
                   <Label className="text-xs font-bold">{tBilingual('Quantity', 'পরিমাণ')}</Label>
                   <Input
-                    type="number"
-                    min="1"
-                    value={quantity}
-                    onChange={(e) => setQuantity(parseInt(e.target.value, 10) || 1)}
-                    className="h-11 text-base font-bold tabular-nums text-center text-blue-700"
-                  />
+ type="number"min="1"value={quantity}
+ onChange={(e) => setQuantity(parseInt(e.target.value, 10) || 1)}
+ className="h-11 text-base font-bold tabular-nums text-center text-blue-700"/>
                 </div>
               </div>
 
@@ -673,11 +640,9 @@ export function NewWorkWizard({
                 <div className="flex items-center gap-2">
                   <span className="text-muted-foreground">রেট: ৳</span>
                   <Input
-                    type="number"
-                    value={unitRate}
-                    onChange={(e) => setUnitRate(parseFloat(e.target.value) || 0)}
-                    className="w-20 h-8 text-xs font-bold text-center tabular-nums"
-                  />
+ type="number"value={unitRate}
+ onChange={(e) => setUnitRate(parseFloat(e.target.value) || 0)}
+ className="w-20 h-8 text-xs font-bold text-center tabular-nums"/>
                 </div>
 
                 <div>
@@ -691,11 +656,11 @@ export function NewWorkWizard({
           </Card>
 
           <div className="flex items-center justify-between pt-2">
-            <Button type="button" variant="outline" size="sm" onClick={() => setStep(1)} className="text-xs">
-              <ArrowLeft className="h-3.5 w-3.5 mr-1" /> {tBilingual('Back', 'পেছনে')}
+            <Button type="button"variant="outline"size="sm"onClick={() => setStep(1)} className="text-xs">
+              <ArrowLeft className="h-3.5 w-3.5 mr-1"/> {tBilingual('Back', 'পেছনে')}
             </Button>
-            <Button type="button" size="sm" onClick={() => setStep(3)} className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold h-10 px-6">
-              {tBilingual('Next: Material & Finishing', 'পরবর্তী: ম্যাটেরিয়াল ও ফিনিশিং')} <ArrowRight className="h-3.5 w-3.5 ml-1" />
+            <Button type="button"size="sm"onClick={() => setStep(3)} className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold h-10 px-6">
+              {tBilingual('Next: Material & Finishing', 'পরবর্তী: ম্যাটেরিয়াল ও ফিনিশিং')} <ArrowRight className="h-3.5 w-3.5 ml-1"/>
             </Button>
           </div>
         </div>
@@ -706,7 +671,7 @@ export function NewWorkWizard({
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-base font-bold text-foreground flex items-center gap-2">
-              <Layers className="h-5 w-5 text-blue-600" />
+              <Layers className="h-5 w-5 text-blue-600"/>
               {tBilingual('3. Material & Finishing Selection', '৩. ম্যাটেরিয়াল ও ফিনিশিং')}
             </h3>
             <span className="text-xs text-blue-600 font-bold">{jobTitle}</span>
@@ -716,11 +681,9 @@ export function NewWorkWizard({
             <div className="space-y-1.5">
               <Label className="text-xs font-bold">{tBilingual('Raw Material Specification', 'কাঁচামাল / মিডিয়া')}</Label>
               <Input
-                value={materialName}
-                onChange={(e) => setMaterialName(e.target.value)}
-                placeholder="e.g. Star Flex / Vinyl White / 3mm Acrylic"
-                className="h-10 text-sm"
-              />
+ value={materialName}
+ onChange={(e) => setMaterialName(e.target.value)}
+ placeholder="e.g. Star Flex / Vinyl White / 3mm Acrylic"className="h-10 text-sm"/>
             </div>
 
             <div className="space-y-2">
@@ -736,18 +699,18 @@ export function NewWorkWizard({
                   { label: 'Fitting / Pasting', label_bn: 'ফিটিং ও পেস্টিং' },
                   { label: 'LED Wiring', label_bn: 'এলইডি লাইটিং' },
                 ].map((item) => {
-                  const isSelected = selectedFinishings.includes(item.label)
-                  return (
+ const isSelected = selectedFinishings.includes(item.label)
+ return (
                     <div
-                      key={item.label}
-                      onClick={() => toggleFinishing(item.label)}
-                      className={`p-2.5 rounded-lg border text-xs font-medium cursor-pointer transition-all flex items-center gap-2 ${
-                        isSelected
+ key={item.label}
+ onClick={() => toggleFinishing(item.label)}
+ className={`p-2.5 rounded-lg border text-xs font-medium cursor-pointer transition-all flex items-center gap-2 ${
+ isSelected
                           ? 'border-blue-500 bg-blue-50 text-blue-900 dark:bg-blue-950/40 dark:text-blue-200'
-                          : 'border-border bg-card text-foreground dark:text-muted-foreground'
+                          : 'border-border bg-card text-foreground '
                       }`}
                     >
-                      <input type="checkbox" checked={isSelected} readOnly className="rounded text-blue-600" />
+                      <input type="checkbox"checked={isSelected} readOnly className="rounded text-blue-600"/>
                       <span className="truncate">{tBilingual(item.label, item.label_bn)}</span>
                     </div>
                   )
@@ -759,25 +722,24 @@ export function NewWorkWizard({
             {showAdvanced && (
               <div className="p-3 bg-muted rounded-xl border border-border space-y-3 pt-3">
                 <div className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                  <Sparkles className="h-4 w-4 text-blue-600" />
+                  <Sparkles className="h-4 w-4 text-blue-600"/>
                   <span>{tBilingual('Advanced Production Controls', 'অ্যাডভান্সড প্রোডাকশন সেটিংস')}</span>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
                   <div className="space-y-1">
                     <Label className="text-2xs">{tBilingual('Target Machine', 'মেশিন বরাদ্দ')}</Label>
-                    <Input value={assignedMachine} onChange={(e) => setAssignedMachine(e.target.value)} className="h-8 text-xs" />
+                    <Input value={assignedMachine} onChange={(e) => setAssignedMachine(e.target.value)} className="h-8 text-xs"/>
                   </div>
                   <div className="space-y-1">
                     <Label className="text-2xs">{tBilingual('Color Profile', 'কালার প্রোফাইল')}</Label>
-                    <Input value={colorProfile} onChange={(e) => setColorProfile(e.target.value)} className="h-8 text-xs" />
+                    <Input value={colorProfile} onChange={(e) => setColorProfile(e.target.value)} className="h-8 text-xs"/>
                   </div>
                   <div className="space-y-1">
                     <Label className="text-2xs">{tBilingual('Priority', 'জরুরি কিনা')}</Label>
                     <select
-                      value={priority}
-                      onChange={(e) => setPriority(e.target.value as any)}
-                      className="w-full h-8 rounded border border-input bg-card text-xs px-2"
-                    >
+ value={priority}
+ onChange={(e) => setPriority(e.target.value as any)}
+ className="w-full h-8 rounded border border-input bg-card text-xs px-2">
                       <option value="normal">{tBilingual('Normal', 'স্বাভাবিক')}</option>
                       <option value="urgent">{tBilingual('Urgent', 'জরুরি')}</option>
                       <option value="very_urgent">{tBilingual('Very Urgent', 'খুব জরুরি')}</option>
@@ -789,11 +751,11 @@ export function NewWorkWizard({
           </div>
 
           <div className="flex items-center justify-between pt-2">
-            <Button type="button" variant="outline" size="sm" onClick={() => setStep(2)} className="text-xs">
-              <ArrowLeft className="h-3.5 w-3.5 mr-1" /> {tBilingual('Back', 'পেছনে')}
+            <Button type="button"variant="outline"size="sm"onClick={() => setStep(2)} className="text-xs">
+              <ArrowLeft className="h-3.5 w-3.5 mr-1"/> {tBilingual('Back', 'পেছনে')}
             </Button>
-            <Button type="button" size="sm" onClick={() => setStep(4)} className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold h-10 px-6">
-              {tBilingual('Next: Delivery & Payment', 'পরবর্তী: ডেলিভারি ও পেমেন্ট')} <ArrowRight className="h-3.5 w-3.5 ml-1" />
+            <Button type="button"size="sm"onClick={() => setStep(4)} className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold h-10 px-6">
+              {tBilingual('Next: Delivery & Payment', 'পরবর্তী: ডেলিভারি ও পেমেন্ট')} <ArrowRight className="h-3.5 w-3.5 ml-1"/>
             </Button>
           </div>
         </div>
@@ -804,31 +766,28 @@ export function NewWorkWizard({
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-base font-bold text-foreground flex items-center gap-2">
-              <Truck className="h-5 w-5 text-blue-600" />
+              <Truck className="h-5 w-5 text-blue-600"/>
               {tBilingual('4. Delivery, Advance Payment & Confirmation', '৪. ডেলিভারি ও অগ্রিম পেমেন্ট')}
             </h3>
           </div>
 
-          <Card className="border border-border dark:border-border">
+          <Card className="border border-border">
             <CardContent className="p-4 space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <Label className="text-xs font-bold">{tBilingual('Delivery Due Date *', 'কবে ডেলিভারি দিতে হবে? *')}</Label>
                   <Input
-                    type="date"
-                    value={deliveryDate}
-                    onChange={(e) => setDeliveryDate(e.target.value)}
-                    className="h-10 text-sm font-semibold"
-                  />
+ type="date"value={deliveryDate}
+ onChange={(e) => setDeliveryDate(e.target.value)}
+ className="h-10 text-sm font-semibold"/>
                 </div>
 
                 <div className="space-y-1">
                   <Label className="text-xs font-bold">{tBilingual('Delivery Mode', 'ডেলিভারি মাধ্যম')}</Label>
                   <select
-                    value={deliveryType}
-                    onChange={(e) => setDeliveryType(e.target.value as any)}
-                    className="w-full h-10 rounded-md border border-input bg-card px-3 text-sm font-semibold dark:text-foreground"
-                  >
+ value={deliveryType}
+ onChange={(e) => setDeliveryType(e.target.value as any)}
+ className="w-full h-10 rounded-md border border-input bg-card px-3 text-sm font-semibold">
                     <option value="pickup">{tBilingual('Store Pickup', 'দোকান থেকে গ্রহণ')}</option>
                     <option value="courier">{tBilingual('Courier / Transport', 'কুরিয়ার বা পরিবহন')}</option>
                     <option value="installation">{tBilingual('Site Installation', 'সাইট ফিটিং ও ইনস্টলেশন')}</option>
@@ -851,22 +810,18 @@ export function NewWorkWizard({
                   <div className="space-y-1">
                     <Label className="text-2xs font-semibold">{tBilingual('Advance Amount', 'জমা টাকা')}</Label>
                     <Input
-                      type="number"
-                      min="0"
-                      max={totalAmount}
-                      value={advancePaid}
-                      onChange={(e) => setAdvancePaid(parseFloat(e.target.value) || 0)}
-                      className="h-10 text-sm font-bold tabular-nums text-emerald-700"
-                    />
+ type="number"min="0"max={totalAmount}
+ value={advancePaid}
+ onChange={(e) => setAdvancePaid(parseFloat(e.target.value) || 0)}
+ className="h-10 text-sm font-bold tabular-nums text-emerald-700"/>
                   </div>
 
                   <div className="space-y-1">
                     <Label className="text-2xs font-semibold">{tBilingual('Payment Channel', 'পেমেন্ট মাধ্যম')}</Label>
                     <select
-                      value={paymentMethod}
-                      onChange={(e) => setPaymentMethod(e.target.value as any)}
-                      className="w-full h-10 rounded-md border border-input bg-card px-3 text-xs font-semibold dark:text-foreground"
-                    >
+ value={paymentMethod}
+ onChange={(e) => setPaymentMethod(e.target.value as any)}
+ className="w-full h-10 rounded-md border border-input bg-card px-3 text-xs font-semibold">
                       <option value="cash">Cash (ক্যাশ)</option>
                       <option value="bkash">bKash (বিকাশ)</option>
                       <option value="nagad">Nagad (নগদ)</option>
@@ -886,32 +841,27 @@ export function NewWorkWizard({
               <div className="space-y-1">
                 <Label className="text-xs">{tBilingual('Notes / Instructions', 'বিশেষ নোট বা নির্দেশনা')}</Label>
                 <Input
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  placeholder="e.g. Design proof approved on WhatsApp / Urgent delivery needed by 4 PM"
-                  className="h-10 text-sm"
-                />
+ value={notes}
+ onChange={(e) => setNotes(e.target.value)}
+ placeholder="e.g. Design proof approved on WhatsApp / Urgent delivery needed by 4 PM"className="h-10 text-sm"/>
               </div>
             </CardContent>
           </Card>
 
           {/* Action Buttons */}
           <div className="flex items-center justify-between pt-2">
-            <Button type="button" variant="outline" size="sm" onClick={() => setStep(3)} className="text-xs">
-              <ArrowLeft className="h-3.5 w-3.5 mr-1" /> {tBilingual('Back', 'পেছনে')}
+            <Button type="button"variant="outline"size="sm"onClick={() => setStep(3)} className="text-xs">
+              <ArrowLeft className="h-3.5 w-3.5 mr-1"/> {tBilingual('Back', 'পেছনে')}
             </Button>
             <Button
-              type="button"
-              size="lg"
-              disabled={isSubmitting}
-              onClick={handleCreateNewWork}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold h-12 px-8 shadow-md"
-            >
+ type="button"size="lg"disabled={isSubmitting}
+ onClick={handleCreateNewWork}
+ className="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold h-12 px-8 shadow-xs">
               {isSubmitting ? (
                 <span>{tBilingual('Saving Work...', 'সংরক্ষণ হচ্ছে...')}</span>
               ) : (
                 <span className="flex items-center gap-2">
-                  <CheckCircle2 className="h-5 w-5" />
+                  <CheckCircle2 className="h-5 w-5"/>
                   {tBilingual('Save & Dispatch Work', 'কাজ নিশ্চিত ও সেভ করুন')}
                 </span>
               )}
@@ -923,30 +873,29 @@ export function NewWorkWizard({
       {/* Next Action Dialog Trigger */}
       {nextActionConfig && (
         <NextActionModal
-          isOpen={true}
-          onClose={() => {
-            setNextActionConfig(null)
-            onClose?.()
+ isOpen={true}
+ onClose={() => {
+ setNextActionConfig(null)
+ onClose?.()
           }}
-          config={nextActionConfig}
+ config={nextActionConfig}
         />
       )}
     </div>
   )
 
-  if (isInlineModal) {
-    return (
+ if (isInlineModal) {
+ return (
       <ModalDialog
-        open={isOpen}
-        onOpenChange={(open) => !open && onClose?.()}
-        title={tBilingual('New Work', 'নতুন কাজ')}
-        size="lg"
-        hideFooter={true}
+ open={isOpen}
+ onOpenChange={(open) => !open && onClose?.()}
+ title={tBilingual('New Work', 'নতুন কাজ')}
+ size="lg"hideFooter={true}
       >
         {content}
       </ModalDialog>
     )
   }
 
-  return content
+ return content
 }

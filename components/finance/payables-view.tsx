@@ -2,20 +2,20 @@
 
 import React, { useState, useMemo } from 'react'
 import {
-  ShoppingBag,
-  Search,
-  DollarSign,
-  ArrowUpRight,
-  Calendar,
-  Building,
-  CheckCircle2,
-  AlertTriangle,
-  Receipt,
-  FileText,
-  Clock,
-  ExternalLink,
-  ChevronRight,
-  TrendingDown,
+ ShoppingBag,
+ Search,
+ DollarSign,
+ ArrowUpRight,
+ Calendar,
+ Building,
+ CheckCircle2,
+ AlertTriangle,
+ Receipt,
+ FileText,
+ Clock,
+ ExternalLink,
+ ChevronRight,
+ TrendingDown,
 } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -27,117 +27,117 @@ import type { SupplierRecord } from '@/types/crm.types'
 import type { AccountRecord, PayablesAgingSummary, FinancialTransactionRecord } from '@/types/finance.types'
 
 export interface PayablesViewProps {
-  payables: PayablesAgingSummary | null
-  suppliers: SupplierRecord[]
-  accounts: AccountRecord[]
-  transactions?: FinancialTransactionRecord[]
-  onOpenPaySupplierModal: (supplierId?: string, supplierName?: string, dueAmount?: number) => void
+ payables: PayablesAgingSummary | null
+ suppliers: SupplierRecord[]
+ accounts: AccountRecord[]
+ transactions?: FinancialTransactionRecord[]
+ onOpenPaySupplierModal: (supplierId?: string, supplierName?: string, dueAmount?: number) => void
 }
 
 export function PayablesView({
-  payables,
-  suppliers,
-  accounts,
-  transactions = [],
-  onOpenPaySupplierModal,
+ payables,
+ suppliers,
+ accounts,
+ transactions = [],
+ onOpenPaySupplierModal,
 }: PayablesViewProps) {
-  const { tBilingual } = useI18n()
-  const [activeSubTab, setActiveSubTab] = useState<'supplier_due' | 'purchase_due' | 'payment_history' | 'aging'>('supplier_due')
-  const [searchQuery, setSearchQuery] = useState('')
+ const { tBilingual } = useI18n()
+ const [activeSubTab, setActiveSubTab] = useState<'supplier_due' | 'purchase_due' | 'payment_history' | 'aging'>('supplier_due')
+ const [searchQuery, setSearchQuery] = useState('')
 
-  const items = payables?.items || []
+ const items = payables?.items || []
 
   // Supplier-wise aggregated dues
-  const supplierDueMap = useMemo(() => {
-    const map = new Map<
-      string,
+ const supplierDueMap = useMemo(() => {
+ const map = new Map<
+ string,
       {
-        id: string
-        name: string
-        phone: string
-        totalAmount: number
-        paidAmount: number
-        dueAmount: number
-        billsCount: number
-        maxDaysOverdue: number
-        latestBill: string
+ id: string
+ name: string
+ phone: string
+ totalAmount: number
+ paidAmount: number
+ dueAmount: number
+ billsCount: number
+ maxDaysOverdue: number
+ latestBill: string
       }
     >()
 
-    const suppPhoneMap = new Map(suppliers.map((s) => [s.id, s.mobile || '']))
+ const suppPhoneMap = new Map(suppliers.map((s) => [s.id, s.mobile || '']))
 
-    for (const item of items) {
-      const sid = item.party_id || item.party_name
-      const existing = map.get(sid)
+ for (const item of items) {
+ const sid = item.party_id || item.party_name
+ const existing = map.get(sid)
 
-      if (existing) {
-        existing.totalAmount += Number(item.total_amount || 0)
-        existing.paidAmount += Number(item.paid_amount || 0)
-        existing.dueAmount += Number(item.due_amount || 0)
-        existing.billsCount++
-        existing.maxDaysOverdue = Math.max(existing.maxDaysOverdue, Number(item.days_overdue || 0))
+ if (existing) {
+ existing.totalAmount += Number(item.total_amount || 0)
+ existing.paidAmount += Number(item.paid_amount || 0)
+ existing.dueAmount += Number(item.due_amount || 0)
+ existing.billsCount++
+ existing.maxDaysOverdue = Math.max(existing.maxDaysOverdue, Number(item.days_overdue || 0))
       } else {
-        map.set(sid, {
-          id: item.party_id,
-          name: item.party_name,
-          phone: suppPhoneMap.get(item.party_id) || '',
-          totalAmount: Number(item.total_amount || 0),
-          paidAmount: Number(item.paid_amount || 0),
-          dueAmount: Number(item.due_amount || 0),
-          billsCount: 1,
-          maxDaysOverdue: Number(item.days_overdue || 0),
-          latestBill: item.reference_id,
+ map.set(sid, {
+ id: item.party_id,
+ name: item.party_name,
+ phone: suppPhoneMap.get(item.party_id) || '',
+ totalAmount: Number(item.total_amount || 0),
+ paidAmount: Number(item.paid_amount || 0),
+ dueAmount: Number(item.due_amount || 0),
+ billsCount: 1,
+ maxDaysOverdue: Number(item.days_overdue || 0),
+ latestBill: item.reference_id,
         })
       }
     }
 
-    const list = Array.from(map.values()).sort((a, b) => b.dueAmount - a.dueAmount)
-    return list
+ const list = Array.from(map.values()).sort((a, b) => b.dueAmount - a.dueAmount)
+ return list
   }, [items, suppliers])
 
   // Supplier payments history (from transactions)
-  const disbursementHistory = useMemo(() => {
-    return transactions
+ const disbursementHistory = useMemo(() => {
+ return transactions
       .filter((t) => t.transaction_type === 'SUPPLIER_PAYMENT')
       .sort((a, b) => new Date(b.transaction_date).getTime() - new Date(a.transaction_date).getTime())
   }, [transactions])
 
   // Filtered suppliers
-  const filteredSuppliers = useMemo(() => {
-    if (!searchQuery.trim()) return supplierDueMap
-    const q = searchQuery.toLowerCase()
-    return supplierDueMap.filter(
+ const filteredSuppliers = useMemo(() => {
+ if (!searchQuery.trim()) return supplierDueMap
+ const q = searchQuery.toLowerCase()
+ return supplierDueMap.filter(
       (s) => s.name.toLowerCase().includes(q) || s.phone.includes(q) || s.latestBill.toLowerCase().includes(q)
     )
   }, [supplierDueMap, searchQuery])
 
   // Filtered purchases
-  const filteredPurchases = useMemo(() => {
-    if (!searchQuery.trim()) return items
-    const q = searchQuery.toLowerCase()
-    return items.filter(
+ const filteredPurchases = useMemo(() => {
+ if (!searchQuery.trim()) return items
+ const q = searchQuery.toLowerCase()
+ return items.filter(
       (i) => i.party_name.toLowerCase().includes(q) || i.reference_id.toLowerCase().includes(q)
     )
   }, [items, searchQuery])
 
-  const totalPayables = payables?.total_payable ?? supplierDueMap.reduce((s, c) => s + c.dueAmount, 0)
-  const totalPurchases = supplierDueMap.reduce((s, c) => s + c.totalAmount, 0)
-  const totalPaid = supplierDueMap.reduce((s, c) => s + c.paidAmount, 0)
+ const totalPayables = payables?.total_payable ?? supplierDueMap.reduce((s, c) => s + c.dueAmount, 0)
+ const totalPurchases = supplierDueMap.reduce((s, c) => s + c.totalAmount, 0)
+ const totalPaid = supplierDueMap.reduce((s, c) => s + c.paidAmount, 0)
 
-  return (
+ return (
     <div className="space-y-6">
       {/* 1. VISUAL FLOW BANNER: PURCHASE -> PAID -> DUE */}
-      <div className="p-4 sm:p-5 rounded-2xl bg-card border border-border shadow-xs">
+      <div className="p-4 sm:p-5 rounded-xl bg-card border border-border shadow-xs">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <span className="p-2 rounded-xl bg-rose-600 text-white shadow-xs">
-              <ShoppingBag className="w-5 h-5" />
+              <ShoppingBag className="w-5 h-5"/>
             </span>
             <div>
-              <h3 className="font-bold text-sm text-foreground dark:text-white">
-                {tBilingual('Payables & Supplier Liabilities', 'সরবরাহকারী মহাজন দেনা ও বিল পরিশোধ')}
+              <h3 className="font-bold text-sm text-foreground">
+                {tBilingual('Supplier Due', 'সরবরাহকারী মহাজন দেনা ও বিল পরিশোধ')}
               </h3>
-              <p className="text-2xs text-muted-foreground dark:text-muted-foreground">
+              <p className="text-2xs text-muted-foreground">
                 {tBilingual(
                   'Raw material, paper, ink, and plate purchases directly link with liabilities and payouts.',
                   'কাঁচামাল, কাগজ, কালি ও প্লেট ক্রয় সরাসরি মহাজন দেনা ও ব্যাংক/ক্যাশ পেমেন্টের সাথে যুক্ত।'
@@ -147,29 +147,28 @@ export function PayablesView({
           </div>
 
           <Button
-            onClick={() => onOpenPaySupplierModal()}
-            className="bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs h-9 px-4 rounded-xl shadow-xs flex items-center gap-1.5 cursor-pointer self-start md:self-auto"
-          >
-            <ArrowUpRight className="w-4 h-4" />
+ onClick={() => onOpenPaySupplierModal()}
+ className="bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs h-9 px-4 rounded-xl shadow-xs flex items-center gap-1.5 cursor-pointer self-start md:self-auto">
+            <ArrowUpRight className="w-4 h-4"/>
             <span>{tBilingual('+ Pay Supplier', '+ মহাজন দেনা পরিশোধ')}</span>
           </Button>
         </div>
 
         {/* The Visual Pipeline Steps */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-4 pt-4 border-t border-border dark:border-border/60 text-center">
-          <div className="p-2.5 rounded-xl bg-card border border-border dark:border-border">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-4 pt-4 border-t border-border /60 text-center">
+          <div className="p-2.5 rounded-xl bg-card border border-border">
             <span className="text-3xs text-muted-foreground font-bold block uppercase">Step 1</span>
             <span className="text-xs font-bold text-foreground block">Purchase Billed</span>
-            <span className="text-xs tabular-nums text-foreground dark:text-white font-semibold">{totalPurchases > 0 ? formatBDT(totalPurchases) : 'Purchase Bill'}</span>
+            <span className="text-xs tabular-nums text-foreground font-semibold">{totalPurchases > 0 ? formatBDT(totalPurchases) : 'Purchase Bill'}</span>
           </div>
 
-          <div className="p-2.5 rounded-xl bg-card border border-border dark:border-border">
+          <div className="p-2.5 rounded-xl bg-card border border-border">
             <span className="text-3xs text-muted-foreground font-bold block uppercase">Step 2</span>
             <span className="text-xs font-bold text-foreground block">Paid to Vendor</span>
             <span className="text-xs tabular-nums text-emerald-600 font-semibold">{totalPaid > 0 ? `-${formatBDT(totalPaid)}` : 'Payment'}</span>
           </div>
 
-          <div className="p-2.5 rounded-xl bg-card border border-border dark:border-border">
+          <div className="p-2.5 rounded-xl bg-card border border-border">
             <span className="text-3xs text-muted-foreground font-bold block uppercase">Step 3</span>
             <span className="text-xs font-bold text-foreground block">Outstanding Due</span>
             <span className="text-xs tabular-nums text-rose-600 font-bold">{totalPayables > 0 ? formatBDT(totalPayables) : '৳0'}</span>
@@ -185,7 +184,7 @@ export function PayablesView({
 
       {/* 2. OPERATIONAL SUMMARY STATS */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="p-4 rounded-2xl bg-card border border-border shadow-xs">
+        <div className="p-4 rounded-xl bg-card border border-border shadow-xs">
           <span className="text-3xs text-muted-foreground uppercase font-semibold block">
             {tBilingual('Total Supplier Due', 'মোট মহাজন দেনা')}
           </span>
@@ -197,17 +196,17 @@ export function PayablesView({
           </span>
         </div>
 
-        <div className="p-4 rounded-2xl bg-card border border-border shadow-xs">
+        <div className="p-4 rounded-xl bg-card border border-border shadow-xs">
           <span className="text-3xs text-muted-foreground uppercase font-semibold block">
             {tBilingual('Total Material Purchases', 'মোট কাঁচামাল ক্রয়')}
           </span>
-          <span className="text-xl sm:text-2xl font-black tabular-nums text-foreground dark:text-foreground">
+          <span className="text-xl sm:text-2xl font-black tabular-nums text-foreground">
             ৳{totalPurchases.toLocaleString()}
           </span>
           <span className="text-3xs text-muted-foreground block mt-1">{items.length} {tBilingual('purchase bills', 'টি ক্রয় চালান')}</span>
         </div>
 
-        <div className="p-4 rounded-2xl bg-card border border-border shadow-xs">
+        <div className="p-4 rounded-xl bg-card border border-border shadow-xs">
           <span className="text-3xs text-muted-foreground uppercase font-semibold block">
             {tBilingual('Total Paid', 'মোট পরিশোধ')}
           </span>
@@ -219,7 +218,7 @@ export function PayablesView({
           </span>
         </div>
 
-        <div className="p-4 rounded-2xl bg-card border border-border shadow-xs">
+        <div className="p-4 rounded-xl bg-card border border-border shadow-xs">
           <span className="text-3xs text-muted-foreground uppercase font-semibold block">
             {tBilingual('Overdue Liabilities', 'মেয়াদোত্তীর্ণ দেনা')}
           </span>
@@ -232,12 +231,11 @@ export function PayablesView({
 
       {/* 3. SUB-NAVIGATION TABS & SEARCH */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div className="flex items-center gap-1.5 bg-muted p-1 rounded-2xl w-fit">
+        <div className="flex items-center gap-1.5 bg-muted p-1 rounded-xl w-fit">
           <button
-            type="button"
-            onClick={() => setActiveSubTab('supplier_due')}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-              activeSubTab === 'supplier_due'
+ type="button"onClick={() => setActiveSubTab('supplier_due')}
+ className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+ activeSubTab === 'supplier_due'
                 ? 'bg-card text-rose-600 dark:text-rose-400 shadow-xs'
                 : 'text-muted-foreground hover:text-foreground'
             }`}
@@ -246,10 +244,9 @@ export function PayablesView({
           </button>
 
           <button
-            type="button"
-            onClick={() => setActiveSubTab('purchase_due')}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-              activeSubTab === 'purchase_due'
+ type="button"onClick={() => setActiveSubTab('purchase_due')}
+ className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+ activeSubTab === 'purchase_due'
                 ? 'bg-card text-blue-600 dark:text-blue-400 shadow-xs'
                 : 'text-muted-foreground hover:text-foreground'
             }`}
@@ -258,10 +255,9 @@ export function PayablesView({
           </button>
 
           <button
-            type="button"
-            onClick={() => setActiveSubTab('payment_history')}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-              activeSubTab === 'payment_history'
+ type="button"onClick={() => setActiveSubTab('payment_history')}
+ className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+ activeSubTab === 'payment_history'
                 ? 'bg-card text-emerald-600 dark:text-emerald-400 shadow-xs'
                 : 'text-muted-foreground hover:text-foreground'
             }`}
@@ -270,10 +266,9 @@ export function PayablesView({
           </button>
 
           <button
-            type="button"
-            onClick={() => setActiveSubTab('aging')}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-              activeSubTab === 'aging'
+ type="button"onClick={() => setActiveSubTab('aging')}
+ className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+ activeSubTab === 'aging'
                 ? 'bg-card text-purple-600 dark:text-purple-400 shadow-xs'
                 : 'text-muted-foreground hover:text-foreground'
             }`}
@@ -283,13 +278,12 @@ export function PayablesView({
         </div>
 
         <div className="relative w-full sm:w-64">
-          <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+          <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"/>
           <Input
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder={tBilingual('Search supplier, phone or bill...', 'মহাজন বা চালান খুঁজুন...')}
-            className="h-8.5 pl-8 text-xs rounded-xl bg-card dark:bg-card"
-          />
+ value={searchQuery}
+ onChange={(e) => setSearchQuery(e.target.value)}
+ placeholder={tBilingual('Search supplier, phone or bill...', 'মহাজন বা চালান খুঁজুন...')}
+ className="h-8.5 pl-8 text-xs rounded-xl bg-card"/>
         </div>
       </div>
 
@@ -297,11 +291,11 @@ export function PayablesView({
 
       {/* Sub-tab A: Supplier-wise Due */}
       {activeSubTab === 'supplier_due' && (
-        <Card className="rounded-2xl border-border shadow-xs overflow-hidden">
+        <Card className="rounded-xl border-border shadow-xs overflow-hidden">
           <CardContent className="p-0">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-muted text-foreground font-semibold border-b border-border dark:border-border">
+                <thead className="bg-muted text-foreground font-semibold border-b border-border">
                   <tr>
                     <th className="p-3">{tBilingual('Supplier Name', 'মহাজনের নাম')}</th>
                     <th className="p-3">{tBilingual('Phone / Mobile', 'মোবাইল')}</th>
@@ -316,18 +310,18 @@ export function PayablesView({
                 <tbody className="divide-y divide-border dark:divide-border/50">
                   {filteredSuppliers.map((supp) => (
                     <tr key={supp.id} className="hover:bg-muted dark:hover:bg-muted/40 transition-colors">
-                      <td className="p-3 font-semibold text-foreground dark:text-foreground">
+                      <td className="p-3 font-semibold text-foreground">
                         {supp.name}
                       </td>
                       <td className="p-3 tabular-nums text-muted-foreground">
                         {supp.phone || '-'}
                       </td>
                       <td className="p-3 text-center tabular-nums">
-                        <Badge variant="outline" className="text-3xs px-1.5 py-0 h-4">
+                        <Badge variant="outline"className="text-3xs px-1.5 py-0 h-4">
                           {supp.billsCount} bills
                         </Badge>
                       </td>
-                      <td className="p-3 text-right tabular-nums text-foreground dark:text-muted-foreground">
+                      <td className="p-3 text-right tabular-nums text-foreground">
                         ৳{supp.totalAmount.toLocaleString()}
                       </td>
                       <td className="p-3 text-right tabular-nums text-emerald-600">
@@ -338,9 +332,8 @@ export function PayablesView({
                       </td>
                       <td className="p-3 text-center">
                         <Badge
-                          variant="outline"
-                          className={
-                            supp.maxDaysOverdue > 60
+ variant="outline"className={
+ supp.maxDaysOverdue > 60
                               ? 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 text-3xs'
                               : supp.maxDaysOverdue > 30
                               ? 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 text-3xs'
@@ -352,10 +345,8 @@ export function PayablesView({
                       </td>
                       <td className="p-3 text-center">
                         <Button
-                          size="sm"
-                          onClick={() => onOpenPaySupplierModal(supp.id, supp.name, supp.dueAmount)}
-                          className="h-7 px-3 text-2xs bg-rose-600 hover:bg-rose-700 text-white rounded-lg font-semibold shadow-xs"
-                        >
+ size="sm"onClick={() => onOpenPaySupplierModal(supp.id, supp.name, supp.dueAmount)}
+ className="h-7 px-3 text-2xs bg-rose-600 hover:bg-rose-700 text-white rounded-lg font-semibold shadow-xs">
                           {tBilingual('Pay Supplier', 'পরিশোধ')}
                         </Button>
                       </td>
@@ -365,7 +356,7 @@ export function PayablesView({
                   {filteredSuppliers.length === 0 && (
                     <tr>
                       <td colSpan={8} className="p-10 text-center text-muted-foreground text-xs">
-                        {tBilingual('No supplier payables found.', 'কোনো মহাজন পাওনা পাওয়া যায়নি।')}
+                        {tBilingual('No supplier dues found.', 'কোনো মহাজন পাওনা পাওয়া যায়নি।')}
                       </td>
                     </tr>
                   )}
@@ -378,11 +369,11 @@ export function PayablesView({
 
       {/* Sub-tab B: Purchase-wise Due */}
       {activeSubTab === 'purchase_due' && (
-        <Card className="rounded-2xl border-border shadow-xs overflow-hidden">
+        <Card className="rounded-xl border-border shadow-xs overflow-hidden">
           <CardContent className="p-0">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-muted text-foreground font-semibold border-b border-border dark:border-border">
+                <thead className="bg-muted text-foreground font-semibold border-b border-border">
                   <tr>
                     <th className="p-3">{tBilingual('Purchase Bill #', 'চালান নম্বর')}</th>
                     <th className="p-3">{tBilingual('Supplier Name', 'মহাজনের নাম')}</th>
@@ -397,10 +388,10 @@ export function PayablesView({
                 <tbody className="divide-y divide-border dark:divide-border/50">
                   {filteredPurchases.map((bill) => (
                     <tr key={bill.reference_id} className="hover:bg-muted dark:hover:bg-muted/40 transition-colors">
-                      <td className="p-3 tabular-nums font-medium text-foreground dark:text-muted-foreground">
+                      <td className="p-3 tabular-nums font-medium text-foreground">
                         {bill.reference_id}
                       </td>
-                      <td className="p-3 font-semibold text-foreground dark:text-foreground">
+                      <td className="p-3 font-semibold text-foreground">
                         {bill.party_name}
                       </td>
                       <td className="p-3 tabular-nums text-muted-foreground">
@@ -416,16 +407,14 @@ export function PayablesView({
                         ৳{bill.due_amount.toLocaleString()}
                       </td>
                       <td className="p-3 text-center">
-                        <Badge variant="outline" className="text-3xs font-medium">
+                        <Badge variant="outline"className="text-3xs font-medium">
                           {bill.bucket === '0_30' ? '1–30 Days' : bill.bucket === '31_60' ? '31–60 Days' : '60+ Days'}
                         </Badge>
                       </td>
                       <td className="p-3 text-center">
                         <Button
-                          size="sm"
-                          onClick={() => onOpenPaySupplierModal(bill.party_id, bill.party_name, bill.due_amount)}
-                          className="h-7 px-2.5 text-2xs bg-rose-600 hover:bg-rose-700 text-white rounded-lg font-semibold"
-                        >
+ size="sm"onClick={() => onOpenPaySupplierModal(bill.party_id, bill.party_name, bill.due_amount)}
+ className="h-7 px-2.5 text-2xs bg-rose-600 hover:bg-rose-700 text-white rounded-lg font-semibold">
                           {tBilingual('Pay', 'পরিশোধ')}
                         </Button>
                       </td>
@@ -448,11 +437,11 @@ export function PayablesView({
 
       {/* Sub-tab C: Payment History */}
       {activeSubTab === 'payment_history' && (
-        <Card className="rounded-2xl border-border shadow-xs overflow-hidden">
+        <Card className="rounded-xl border-border shadow-xs overflow-hidden">
           <CardContent className="p-0">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-muted text-foreground font-semibold border-b border-border dark:border-border">
+                <thead className="bg-muted text-foreground font-semibold border-b border-border">
                   <tr>
                     <th className="p-3">{tBilingual('Date', 'তারিখ')}</th>
                     <th className="p-3">{tBilingual('Voucher #', 'ভাউচার')}</th>
@@ -469,7 +458,7 @@ export function PayablesView({
                       <td className="p-3 tabular-nums font-medium text-rose-600 dark:text-rose-400">
                         {t.transaction_number}
                       </td>
-                      <td className="p-3 font-semibold text-foreground dark:text-foreground">
+                      <td className="p-3 font-semibold text-foreground">
                         {t.narration?.replace(/^(Payment to supplier |Supplier payment: )/i, '') || 'Supplier'}
                       </td>
                       <td className="p-3 text-muted-foreground text-3xs tabular-nums">
@@ -480,7 +469,7 @@ export function PayablesView({
                       </td>
                       <td className="p-3 text-center">
                         <Badge className="bg-rose-50 text-rose-700 border border-rose-200 dark:bg-rose-950/40 text-3xs">
-                          Disbursed ✓
+ Disbursed ✓
                         </Badge>
                       </td>
                     </tr>
@@ -504,7 +493,7 @@ export function PayablesView({
       {activeSubTab === 'aging' && (
         <div className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
-            <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/60">
+            <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/60">
               <span className="text-3xs font-bold uppercase text-emerald-700 dark:text-emerald-400 block">
                 0 – 30 Days (Current)
               </span>
@@ -514,17 +503,17 @@ export function PayablesView({
               <p className="text-3xs text-emerald-600/80 mt-1">{tBilingual('Regular supplier credit window', 'স্বাভাবিক ক্রেডিট বিল')}</p>
             </div>
 
-            <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/60">
+            <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/60">
               <span className="text-3xs font-bold uppercase text-amber-700 dark:text-amber-400 block">
                 31 – 60 Days
               </span>
               <span className="text-2xl font-black tabular-nums text-amber-800 dark:text-amber-200 block mt-1">
                 ৳{(payables?.bucket_31_60 || 0).toLocaleString()}
               </span>
-              <p className="text-3xs text-amber-600/80 mt-1">{tBilingual('Due for settlement this week', 'চলতি সপ্তাহে পরিশোধ যোগ্য')}</p>
+              <p className="text-3xs text-amber-600/80 mt-1">{tBilingual('Pay this week', 'চলতি সপ্তাহে পরিশোধ যোগ্য')}</p>
             </div>
 
-            <div className="p-4 rounded-2xl bg-orange-50 dark:bg-orange-950/30 border border-orange-200 dark:border-orange-900/60">
+            <div className="p-4 rounded-xl bg-orange-50 dark:bg-orange-950/30 border border-orange-200 dark:border-orange-900/60">
               <span className="text-3xs font-bold uppercase text-orange-700 dark:text-orange-400 block">
                 61 – 90 Days
               </span>
@@ -534,7 +523,7 @@ export function PayablesView({
               <p className="text-3xs text-orange-600/80 mt-1">{tBilingual('Overdue credit, vendor follow-up', 'মহাজন তাগাদা আসতে পারে')}</p>
             </div>
 
-            <div className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/60">
+            <div className="p-4 rounded-xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/60">
               <span className="text-3xs font-bold uppercase text-rose-700 dark:text-rose-400 block">
                 90+ Days (Critical)
               </span>

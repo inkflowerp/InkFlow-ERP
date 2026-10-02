@@ -2,28 +2,28 @@
 
 import React, { useState } from 'react'
 import {
-  Clock,
-  Calendar,
-  CheckCircle2,
-  AlertCircle,
-  Clock3,
-  CalendarRange,
-  DollarSign,
-  Wallet,
-  Coins,
-  FileText,
-  UserCheck,
-  Plus,
-  Printer,
-  ChevronRight,
-  TrendingUp,
-  ShieldCheck,
-  AlertTriangle,
-  Send,
-  Download,
-  Info,
-  Building,
-  Sparkles,
+ Clock,
+ Calendar,
+ CheckCircle2,
+ AlertCircle,
+ Clock3,
+ CalendarRange,
+ DollarSign,
+ Wallet,
+ Coins,
+ FileText,
+ UserCheck,
+ Plus,
+ Printer,
+ ChevronRight,
+ TrendingUp,
+ ShieldCheck,
+ AlertTriangle,
+ Send,
+ Download,
+ Info,
+ Building,
+ Sparkles,
 } from 'lucide-react'
 import { useI18n } from '@/i18n/context'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
@@ -35,136 +35,136 @@ import { formatBDT, formatDate } from '@/lib/formatters'
 import { useMyWorkforce, LeaveRequestItem } from '@/hooks/use-my-workforce'
 
 export function MyWorkforceHub() {
-  const { tBilingual } = useI18n()
-  const {
-    employee,
-    isLoading,
-    isClockedIn,
-    isClockedOut,
-    todayAttendance,
-    myAttendances,
-    myMonthAttendances,
-    presentDaysCount,
-    lateDaysCount,
-    totalLateMinutes,
-    totalWorkedMinutes,
-    approvedMonthOtHours,
-    otHourlyRate,
-    totalOtEarnings,
-    myOvertimes,
-    myLeaves,
-    allowedLeaves,
-    consumedMonthLeaves,
-    remainingLeaves,
-    myAdvances,
-    currentAdvanceBalance,
-    salaryStructure,
-    clockIn,
-    clockOut,
-    submitLeaveRequest,
-    submitAdvanceRequest,
+ const { tBilingual } = useI18n()
+ const {
+ employee,
+ isLoading,
+ isClockedIn,
+ isClockedOut,
+ todayAttendance,
+ myAttendances,
+ myMonthAttendances,
+ presentDaysCount,
+ lateDaysCount,
+ totalLateMinutes,
+ totalWorkedMinutes,
+ approvedMonthOtHours,
+ otHourlyRate,
+ totalOtEarnings,
+ myOvertimes,
+ myLeaves,
+ allowedLeaves,
+ consumedMonthLeaves,
+ remainingLeaves,
+ myAdvances,
+ currentAdvanceBalance,
+ salaryStructure,
+ clockIn,
+ clockOut,
+ submitLeaveRequest,
+ submitAdvanceRequest,
   } = useMyWorkforce()
 
-  const [activeTab, setActiveTab] = useState<'attendance' | 'overtime' | 'leaves' | 'salary' | 'advances'>('attendance')
-  const [isPunching, setIsPunching] = useState(false)
-  const [punchFeedback, setPunchFeedback] = useState<string | null>(null)
+ const [activeTab, setActiveTab] = useState<'attendance' | 'overtime' | 'leaves' | 'salary' | 'advances'>('attendance')
+ const [isPunching, setIsPunching] = useState(false)
+ const [punchFeedback, setPunchFeedback] = useState<string | null>(null)
 
   // Modals
-  const [isLeaveModalOpen, setIsLeaveModalOpen] = useState(false)
-  const [isAdvanceModalOpen, setIsAdvanceModalOpen] = useState(false)
-  const [isPayslipModalOpen, setIsPayslipModalOpen] = useState(false)
+ const [isLeaveModalOpen, setIsLeaveModalOpen] = useState(false)
+ const [isAdvanceModalOpen, setIsAdvanceModalOpen] = useState(false)
+ const [isPayslipModalOpen, setIsPayslipModalOpen] = useState(false)
 
   // Leave Form
-  const [leaveForm, setLeaveForm] = useState({
-    leave_type: 'casual_leave' as LeaveRequestItem['leave_type'],
-    start_date: new Date().toISOString().slice(0, 10),
-    end_date: new Date().toISOString().slice(0, 10),
-    reason: '',
+ const [leaveForm, setLeaveForm] = useState({
+ leave_type: 'casual_leave' as LeaveRequestItem['leave_type'],
+ start_date: new Date().toISOString().slice(0, 10),
+ end_date: new Date().toISOString().slice(0, 10),
+ reason: '',
   })
-  const [isSubmittingLeave, setIsSubmittingLeave] = useState(false)
+ const [isSubmittingLeave, setIsSubmittingLeave] = useState(false)
 
   // Advance Form
-  const [advanceForm, setAdvanceForm] = useState({
-    amount: 5000,
-    reason: '',
+ const [advanceForm, setAdvanceForm] = useState({
+ amount: 5000,
+ reason: '',
   })
-  const [isSubmittingAdvance, setIsSubmittingAdvance] = useState(false)
+ const [isSubmittingAdvance, setIsSubmittingAdvance] = useState(false)
 
   // Handle 1-Tap Clock In
-  const handleClockIn = async () => {
-    setIsPunching(true)
-    setPunchFeedback(null)
-    const res = await clockIn()
-    setIsPunching(false)
-    if (res.success) {
-      setPunchFeedback(tBilingual('Punch In recorded successfully!', 'হাজিরা সফলভাবে রেকর্ড করা হয়েছে!'))
+ const handleClockIn = async () => {
+ setIsPunching(true)
+ setPunchFeedback(null)
+ const res = await clockIn()
+ setIsPunching(false)
+ if (res.success) {
+ setPunchFeedback(tBilingual('Punch In recorded successfully!', 'হাজিরা সফলভাবে রেকর্ড করা হয়েছে!'))
     } else {
-      setPunchFeedback(res.error || 'Failed to punch in')
+ setPunchFeedback(res.error || 'Failed to punch in')
     }
   }
 
   // Handle 1-Tap Clock Out
-  const handleClockOut = async () => {
-    setIsPunching(true)
-    setPunchFeedback(null)
-    const res = await clockOut()
-    setIsPunching(false)
-    if (res.success) {
-      setPunchFeedback(tBilingual('Punch Out recorded successfully!', 'প্রস্থান সফলভাবে রেকর্ড করা হয়েছে!'))
+ const handleClockOut = async () => {
+ setIsPunching(true)
+ setPunchFeedback(null)
+ const res = await clockOut()
+ setIsPunching(false)
+ if (res.success) {
+ setPunchFeedback(tBilingual('Punch Out recorded successfully!', 'প্রস্থান সফলভাবে রেকর্ড করা হয়েছে!'))
     } else {
-      setPunchFeedback(res.error || 'Failed to punch out')
+ setPunchFeedback(res.error || 'Failed to punch out')
     }
   }
 
   // Handle Submit Leave Request
-  const handleLeaveSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!leaveForm.reason.trim()) return
-    setIsSubmittingLeave(true)
-    const res = await submitLeaveRequest(leaveForm)
-    setIsSubmittingLeave(false)
-    if (res.success) {
-      setIsLeaveModalOpen(false)
-      setLeaveForm({
-        leave_type: 'casual_leave',
-        start_date: new Date().toISOString().slice(0, 10),
-        end_date: new Date().toISOString().slice(0, 10),
-        reason: '',
+ const handleLeaveSubmit = async (e: React.FormEvent) => {
+ e.preventDefault()
+ if (!leaveForm.reason.trim()) return
+ setIsSubmittingLeave(true)
+ const res = await submitLeaveRequest(leaveForm)
+ setIsSubmittingLeave(false)
+ if (res.success) {
+ setIsLeaveModalOpen(false)
+ setLeaveForm({
+ leave_type: 'casual_leave',
+ start_date: new Date().toISOString().slice(0, 10),
+ end_date: new Date().toISOString().slice(0, 10),
+ reason: '',
       })
-      setPunchFeedback(tBilingual('Leave application submitted for approval!', 'ছুটির আবেদন অনুমোদনের জন্য জমা দেওয়া হয়েছে!'))
+ setPunchFeedback(tBilingual('Leave application submitted for approval!', 'ছুটির আবেদন অনুমোদনের জন্য জমা দেওয়া হয়েছে!'))
     }
   }
 
   // Handle Submit Advance Request
-  const handleAdvanceSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!advanceForm.amount || advanceForm.amount <= 0) return
-    setIsSubmittingAdvance(true)
-    const res = await submitAdvanceRequest(advanceForm)
-    setIsSubmittingAdvance(false)
-    if (res.success) {
-      setIsAdvanceModalOpen(false)
-      setAdvanceForm({ amount: 5000, reason: '' })
-      setPunchFeedback(tBilingual('Salary advance request submitted!', 'অগ্রিম বেতনের আবেদন জমা দেওয়া হয়েছে!'))
+ const handleAdvanceSubmit = async (e: React.FormEvent) => {
+ e.preventDefault()
+ if (!advanceForm.amount || advanceForm.amount <= 0) return
+ setIsSubmittingAdvance(true)
+ const res = await submitAdvanceRequest(advanceForm)
+ setIsSubmittingAdvance(false)
+ if (res.success) {
+ setIsAdvanceModalOpen(false)
+ setAdvanceForm({ amount: 5000, reason: '' })
+ setPunchFeedback(tBilingual('Salary advance request submitted!', 'অগ্রিম বেতনের আবেদন জমা দেওয়া হয়েছে!'))
     }
   }
 
-  return (
+ return (
     <div className="space-y-6">
       {/* 1. TOP IDENTITY & LIVE PUNCH BANNER */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-slate-900 via-blue-950 to-indigo-900 p-5 sm:p-6 text-white shadow-xl">
+      <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-slate-900 via-blue-950 to-indigo-900 p-5 sm:p-6 text-white shadow-xs">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-5">
           <div className="space-y-2">
             <div className="flex flex-wrap items-center gap-2">
               <Badge className="bg-blue-500/20 text-blue-200 border-blue-400/30 text-xs">
                 {tBilingual('Employee Self-Service Portal', 'কর্মচারী পোর্টাল ও সেলফ সার্ভিস')}
               </Badge>
-              <Badge variant="outline" className="text-white border-white/20 text-xs">
+              <Badge variant="outline"className="text-white border-white/20 text-xs">
                 {employee?.employee_id_number || '#EMP-1001'}
               </Badge>
               {employee?.branch_name && (
                 <span className="text-xs text-blue-200 flex items-center gap-1">
-                  <Building className="h-3 w-3" />
+                  <Building className="h-3 w-3"/>
                   {employee.branch_name}
                 </span>
               )}
@@ -183,24 +183,24 @@ export function MyWorkforceHub() {
           {/* Today's Punch Station */}
           <div className="bg-card/10 backdrop-blur-md border border-white/15 rounded-xl p-4 sm:p-4.5 min-w-[260px] text-center md:text-right space-y-2.5">
             <div className="text-xs text-blue-200 flex items-center justify-center md:justify-end gap-1.5 font-medium">
-              <Clock className="h-3.5 w-3.5 text-cyan-400" />
+              <Clock className="h-3.5 w-3.5 text-cyan-400"/>
               <span>{tBilingual('Today’s Shift Status', 'আজকের শিফট স্ট্যাটাস')}</span>
             </div>
 
             <div className="flex items-center justify-center md:justify-end gap-2">
               {todayAttendance?.check_in_time ? (
                 <Badge className="bg-emerald-500 text-white tabular-nums text-xs px-2.5 py-1">
-                  IN: {todayAttendance.check_in_time}
+ IN: {todayAttendance.check_in_time}
                 </Badge>
               ) : (
-                <Badge variant="outline" className="text-amber-300 border-amber-400/40 text-xs">
+                <Badge variant="outline"className="text-amber-300 border-amber-400/40 text-xs">
                   {tBilingual('Not Clocked In', 'হাজিরা দেওয়া হয়নি')}
                 </Badge>
               )}
 
               {todayAttendance?.check_out_time && (
                 <Badge className="bg-blue-600 text-white tabular-nums text-xs px-2.5 py-1">
-                  OUT: {todayAttendance.check_out_time}
+ OUT: {todayAttendance.check_out_time}
                 </Badge>
               )}
             </div>
@@ -209,27 +209,23 @@ export function MyWorkforceHub() {
             <div className="flex items-center justify-center md:justify-end gap-2 pt-1">
               {!isClockedIn ? (
                 <Button
-                  size="sm"
-                  onClick={handleClockIn}
-                  disabled={isPunching}
-                  className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs h-9 px-4 rounded-lg shadow-md cursor-pointer transition-all"
-                >
-                  <UserCheck className="h-4 w-4 mr-1.5" />
+ size="sm"onClick={handleClockIn}
+ disabled={isPunching}
+ className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs h-9 px-4 rounded-lg shadow-xs cursor-pointer transition-all">
+                  <UserCheck className="h-4 w-4 mr-1.5"/>
                   {isPunching ? tBilingual('Recording...', 'রেকর্ড হচ্ছে...') : tBilingual('1-Tap Punch In', 'হাজিরা দিন (ইন)')}
                 </Button>
               ) : !isClockedOut ? (
                 <Button
-                  size="sm"
-                  onClick={handleClockOut}
-                  disabled={isPunching}
-                  className="bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs h-9 px-4 rounded-lg shadow-md cursor-pointer transition-all"
-                >
-                  <Clock3 className="h-4 w-4 mr-1.5" />
+ size="sm"onClick={handleClockOut}
+ disabled={isPunching}
+ className="bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs h-9 px-4 rounded-lg shadow-xs cursor-pointer transition-all">
+                  <Clock3 className="h-4 w-4 mr-1.5"/>
                   {isPunching ? tBilingual('Recording...', 'রেকর্ড হচ্ছে...') : tBilingual('1-Tap Punch Out', 'প্রস্থান (আউট)')}
                 </Button>
               ) : (
                 <div className="text-xs text-emerald-300 flex items-center justify-center md:justify-end gap-1 font-semibold">
-                  <CheckCircle2 className="h-4 w-4" />
+                  <CheckCircle2 className="h-4 w-4"/>
                   {tBilingual('Shift Completed Today', 'আজকের শিফট সম্পন্ন')}
                 </div>
               )}
@@ -247,14 +243,14 @@ export function MyWorkforceHub() {
         {/* Attendance & Late */}
         <Card className="border-border shadow-xs hover:border-blue-400 transition-colors">
           <CardContent className="p-4 space-y-2">
-            <div className="flex items-center justify-between text-xs text-muted-foreground dark:text-muted-foreground">
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
               <span className="font-semibold">{tBilingual('This Month Attendance', 'চলতি মাসের হাজিরা')}</span>
-              <Calendar className="h-4 w-4 text-blue-600" />
+              <Calendar className="h-4 w-4 text-blue-600"/>
             </div>
-            <div className="text-2xl font-black tabular-nums text-foreground dark:text-foreground">
+            <div className="text-2xl font-black tabular-nums text-foreground">
               {presentDaysCount} <span className="text-xs font-normal text-muted-foreground">/ {myMonthAttendances.length || 26} {tBilingual('Days', 'দিন')}</span>
             </div>
-            <div className="flex items-center justify-between text-xs pt-1 border-t border-border dark:border-border">
+            <div className="flex items-center justify-between text-xs pt-1 border-t border-border">
               <span className={lateDaysCount > 0 ? 'text-amber-600 dark:text-amber-400 font-bold' : 'text-muted-foreground'}>
                 {lateDaysCount} {tBilingual('Late Arrivals', 'দিন লেট')}
               </span>
@@ -270,14 +266,14 @@ export function MyWorkforceHub() {
         {/* Overtime (OT) */}
         <Card className="border-border shadow-xs hover:border-emerald-400 transition-colors">
           <CardContent className="p-4 space-y-2">
-            <div className="flex items-center justify-between text-xs text-muted-foreground dark:text-muted-foreground">
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
               <span className="font-semibold">{tBilingual('Approved Overtime (OT)', 'অনুমোদিত ওভারটাইম')}</span>
-              <Clock3 className="h-4 w-4 text-emerald-600" />
+              <Clock3 className="h-4 w-4 text-emerald-600"/>
             </div>
             <div className="text-2xl font-black tabular-nums text-emerald-700 dark:text-emerald-400">
               {approvedMonthOtHours} <span className="text-xs font-normal text-muted-foreground">Hours</span>
             </div>
-            <div className="flex items-center justify-between text-xs pt-1 border-t border-border dark:border-border">
+            <div className="flex items-center justify-between text-xs pt-1 border-t border-border">
               <span className="text-muted-foreground">Rate: ৳{otHourlyRate}/hr</span>
               <span className="font-bold text-emerald-600 dark:text-emerald-400 tabular-nums">
                 +{formatBDT(totalOtEarnings)}
@@ -289,20 +285,18 @@ export function MyWorkforceHub() {
         {/* Leave Balance */}
         <Card className="border-border shadow-xs hover:border-purple-400 transition-colors">
           <CardContent className="p-4 space-y-2">
-            <div className="flex items-center justify-between text-xs text-muted-foreground dark:text-muted-foreground">
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
               <span className="font-semibold">{tBilingual('Leave Balance', 'ছুটির ব্যালেন্স')}</span>
-              <CalendarRange className="h-4 w-4 text-purple-600" />
+              <CalendarRange className="h-4 w-4 text-purple-600"/>
             </div>
             <div className="text-2xl font-black tabular-nums text-purple-700 dark:text-purple-400">
               {remainingLeaves} <span className="text-xs font-normal text-muted-foreground">/ {allowedLeaves} {tBilingual('Left', 'বাকি')}</span>
             </div>
-            <div className="flex items-center justify-between text-xs pt-1 border-t border-border dark:border-border">
+            <div className="flex items-center justify-between text-xs pt-1 border-t border-border">
               <span className="text-muted-foreground">{consumedMonthLeaves} {tBilingual('used this month', 'দিন কাটা হয়েছে')}</span>
               <button
-                type="button"
-                onClick={() => setIsLeaveModalOpen(true)}
-                className="text-purple-600 dark:text-purple-400 font-bold hover:underline cursor-pointer"
-              >
+ type="button"onClick={() => setIsLeaveModalOpen(true)}
+ className="text-purple-600 dark:text-purple-400 font-bold hover:underline cursor-pointer">
                 + {tBilingual('Apply', 'আবেদন')}
               </button>
             </div>
@@ -312,22 +306,20 @@ export function MyWorkforceHub() {
         {/* Salary & Advance */}
         <Card className="border-border shadow-xs hover:border-indigo-400 transition-colors">
           <CardContent className="p-4 space-y-2">
-            <div className="flex items-center justify-between text-xs text-muted-foreground dark:text-muted-foreground">
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
               <span className="font-semibold">{tBilingual('Estimated Net Salary', 'আনুমানিক নিট বেতন')}</span>
-              <Wallet className="h-4 w-4 text-indigo-600" />
+              <Wallet className="h-4 w-4 text-indigo-600"/>
             </div>
             <div className="text-2xl font-black tabular-nums text-indigo-700 dark:text-indigo-400">
               {formatBDT(salaryStructure.netPayable)}
             </div>
-            <div className="flex items-center justify-between text-xs pt-1 border-t border-border dark:border-border">
+            <div className="flex items-center justify-between text-xs pt-1 border-t border-border">
               <span className={currentAdvanceBalance > 0 ? 'text-amber-600 font-semibold' : 'text-muted-foreground'}>
                 {tBilingual('Advance:', 'অগ্রিম:')} {formatBDT(currentAdvanceBalance)}
               </span>
               <button
-                type="button"
-                onClick={() => setIsAdvanceModalOpen(true)}
-                className="text-indigo-600 dark:text-indigo-400 font-bold hover:underline cursor-pointer"
-              >
+ type="button"onClick={() => setIsAdvanceModalOpen(true)}
+ className="text-indigo-600 dark:text-indigo-400 font-bold hover:underline cursor-pointer">
                 + {tBilingual('Request', 'অনুরোধ')}
               </button>
             </div>
@@ -338,10 +330,9 @@ export function MyWorkforceHub() {
       {/* 3. TABS NAVIGATION */}
       <div className="flex items-center gap-1.5 border-b border-border overflow-x-auto pb-1">
         <button
-          type="button"
-          onClick={() => setActiveTab('attendance')}
-          className={`px-4 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer whitespace-nowrap ${
-            activeTab === 'attendance'
+ type="button"onClick={() => setActiveTab('attendance')}
+ className={`px-4 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer whitespace-nowrap ${
+ activeTab === 'attendance'
               ? 'bg-blue-600 text-white shadow-xs'
               : 'text-muted-foreground hover:text-foreground hover:bg-muted dark:hover:bg-muted'
           }`}
@@ -350,10 +341,9 @@ export function MyWorkforceHub() {
         </button>
 
         <button
-          type="button"
-          onClick={() => setActiveTab('overtime')}
-          className={`px-4 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer whitespace-nowrap ${
-            activeTab === 'overtime'
+ type="button"onClick={() => setActiveTab('overtime')}
+ className={`px-4 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer whitespace-nowrap ${
+ activeTab === 'overtime'
               ? 'bg-emerald-600 text-white shadow-xs'
               : 'text-muted-foreground hover:text-foreground hover:bg-muted dark:hover:bg-muted'
           }`}
@@ -362,10 +352,9 @@ export function MyWorkforceHub() {
         </button>
 
         <button
-          type="button"
-          onClick={() => setActiveTab('leaves')}
-          className={`px-4 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer whitespace-nowrap ${
-            activeTab === 'leaves'
+ type="button"onClick={() => setActiveTab('leaves')}
+ className={`px-4 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer whitespace-nowrap ${
+ activeTab === 'leaves'
               ? 'bg-purple-600 text-white shadow-xs'
               : 'text-muted-foreground hover:text-foreground hover:bg-muted dark:hover:bg-muted'
           }`}
@@ -374,10 +363,9 @@ export function MyWorkforceHub() {
         </button>
 
         <button
-          type="button"
-          onClick={() => setActiveTab('salary')}
-          className={`px-4 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer whitespace-nowrap ${
-            activeTab === 'salary'
+ type="button"onClick={() => setActiveTab('salary')}
+ className={`px-4 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer whitespace-nowrap ${
+ activeTab === 'salary'
               ? 'bg-indigo-600 text-white shadow-xs'
               : 'text-muted-foreground hover:text-foreground hover:bg-muted dark:hover:bg-muted'
           }`}
@@ -386,15 +374,14 @@ export function MyWorkforceHub() {
         </button>
 
         <button
-          type="button"
-          onClick={() => setActiveTab('advances')}
-          className={`px-4 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer whitespace-nowrap ${
-            activeTab === 'advances'
+ type="button"onClick={() => setActiveTab('advances')}
+ className={`px-4 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer whitespace-nowrap ${
+ activeTab === 'advances'
               ? 'bg-amber-600 text-white shadow-xs'
               : 'text-muted-foreground hover:text-foreground hover:bg-muted dark:hover:bg-muted'
           }`}
         >
-          {tBilingual('Advance Salary Ledger', 'অগ্রিম বেতন খতিয়ান')}
+          {tBilingual('Advance Salary History', 'অগ্রিম বেতন খতিয়ান')}
         </button>
       </div>
 
@@ -405,14 +392,14 @@ export function MyWorkforceHub() {
         <Card className="border-border shadow-xs">
           <CardHeader className="pb-3 border-b border-border flex flex-row items-center justify-between">
             <div>
-              <CardTitle className="text-sm font-bold text-foreground dark:text-foreground">
+              <CardTitle className="text-sm font-bold text-foreground">
                 {tBilingual('My Attendance & Punch History', 'আমার হাজিরা ও পাঞ্চিং ইতিহাস')}
               </CardTitle>
               <p className="text-xs text-muted-foreground mt-0.5">
                 {tBilingual('Showing records for the current calendar month', 'চলতি মাসের প্রতিদিনের উপস্থিতি ও লেট বিবরণ')}
               </p>
             </div>
-            <Badge variant="outline" className="text-xs tabular-nums">
+            <Badge variant="outline"className="text-xs tabular-nums">
               {myAttendances.length} {tBilingual('Logs', 'টি লগ')}
             </Badge>
           </CardHeader>
@@ -437,34 +424,34 @@ export function MyWorkforceHub() {
                   </thead>
                   <tbody className="divide-y divide-border font-medium">
                     {myAttendances.map((att) => {
-                      const isLate = att.status === 'late' || (att.late_minutes && att.late_minutes > 0)
-                      return (
+ const isLate = att.status === 'late' || (att.late_minutes && att.late_minutes > 0)
+ return (
                         <tr key={att.id} className="hover:bg-muted dark:hover:bg-muted/40 transition-colors">
                           <td className="px-4 py-3 tabular-nums font-bold text-foreground whitespace-nowrap">
                             {formatDate(att.attendance_date)}
                           </td>
                           <td className="px-4 py-3 whitespace-nowrap">
                             <Badge
-                              className={`text-2xs uppercase font-bold ${
-                                att.status === 'present'
+ className={`text-2xs uppercase font-bold ${
+ att.status === 'present'
                                   ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
                                   : isLate
                                   ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
                                   : att.status === 'absent'
                                   ? 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300'
-                                  : 'bg-muted text-foreground dark:text-muted-foreground'
+                                  : 'bg-muted text-foreground '
                               }`}
                             >
                               {att.status}
                             </Badge>
                           </td>
-                          <td className="px-4 py-3 tabular-nums text-foreground dark:text-muted-foreground">
+                          <td className="px-4 py-3 tabular-nums text-foreground">
                             {att.check_in_time || '—'}
                           </td>
-                          <td className="px-4 py-3 tabular-nums text-foreground dark:text-muted-foreground">
+                          <td className="px-4 py-3 tabular-nums text-foreground">
                             {att.check_out_time || '—'}
                           </td>
-                          <td className="px-4 py-3 text-right tabular-nums text-foreground dark:text-foreground">
+                          <td className="px-4 py-3 text-right tabular-nums text-foreground">
                             {att.worked_duration_formatted || (att.worked_minutes ? `${Math.floor(att.worked_minutes / 60)}h ${att.worked_minutes % 60}m` : '—')}
                           </td>
                           <td className="px-4 py-3 text-right tabular-nums">
@@ -499,7 +486,7 @@ export function MyWorkforceHub() {
         <Card className="border-border shadow-xs">
           <CardHeader className="pb-3 border-b border-border flex flex-row items-center justify-between">
             <div>
-              <CardTitle className="text-sm font-bold text-foreground dark:text-foreground">
+              <CardTitle className="text-sm font-bold text-foreground">
                 {tBilingual('My Overtime (OT) Sessions', 'আমার ওভারটাইম সেশনসমূহ')}
               </CardTitle>
               <p className="text-xs text-muted-foreground mt-0.5">
@@ -537,7 +524,7 @@ export function MyWorkforceHub() {
                         <td className="px-4 py-3 tabular-nums">
                           {ot.duration_hours || Math.round((ot.duration_minutes / 60) * 10) / 10} Hours
                         </td>
-                        <td className="px-4 py-3 max-w-xs truncate text-muted-foreground dark:text-muted-foreground">
+                        <td className="px-4 py-3 max-w-xs truncate text-muted-foreground">
                           {ot.reason || 'Late Production Run'}
                         </td>
                         <td className="px-4 py-3 text-right tabular-nums">
@@ -548,8 +535,8 @@ export function MyWorkforceHub() {
                         </td>
                         <td className="px-4 py-3 text-center whitespace-nowrap">
                           <Badge
-                            className={`text-2xs uppercase font-bold ${
-                              ot.status === 'approved' || ot.status === 'paid'
+ className={`text-2xs uppercase font-bold ${
+ ot.status === 'approved' || ot.status === 'paid'
                                 ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
                                 : ot.status === 'rejected'
                                 ? 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300'
@@ -574,7 +561,7 @@ export function MyWorkforceHub() {
         <Card className="border-border shadow-xs">
           <CardHeader className="pb-3 border-b border-border flex flex-row items-center justify-between">
             <div>
-              <CardTitle className="text-sm font-bold text-foreground dark:text-foreground">
+              <CardTitle className="text-sm font-bold text-foreground">
                 {tBilingual('My Leaves & Applications', 'আমার ছুটি ও ছুটির আবেদন')}
               </CardTitle>
               <p className="text-xs text-muted-foreground mt-0.5">
@@ -582,11 +569,9 @@ export function MyWorkforceHub() {
               </p>
             </div>
             <Button
-              size="sm"
-              onClick={() => setIsLeaveModalOpen(true)}
-              className="bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs h-8 px-3 rounded-lg cursor-pointer"
-            >
-              <Plus className="h-3.5 w-3.5 mr-1" />
+ size="sm"onClick={() => setIsLeaveModalOpen(true)}
+ className="bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs h-8 px-3 rounded-lg cursor-pointer">
+              <Plus className="h-3.5 w-3.5 mr-1"/>
               {tBilingual('Apply for Leave', 'ছুটির আবেদন')}
             </Button>
           </CardHeader>
@@ -613,19 +598,19 @@ export function MyWorkforceHub() {
                         <td className="px-4 py-3 font-semibold text-foreground capitalize">
                           {lv.leave_type.replace(/_/g, ' ')}
                         </td>
-                        <td className="px-4 py-3 tabular-nums text-foreground dark:text-muted-foreground">
+                        <td className="px-4 py-3 tabular-nums text-foreground">
                           {formatDate(lv.start_date)} {lv.start_date !== lv.end_date ? `to ${formatDate(lv.end_date)}` : ''}
                         </td>
                         <td className="px-4 py-3 text-center tabular-nums font-bold">
                           {lv.days_count} {tBilingual('Days', 'দিন')}
                         </td>
-                        <td className="px-4 py-3 max-w-xs truncate text-muted-foreground dark:text-muted-foreground">
+                        <td className="px-4 py-3 max-w-xs truncate text-muted-foreground">
                           {lv.reason}
                         </td>
                         <td className="px-4 py-3 text-center whitespace-nowrap">
                           <Badge
-                            className={`text-2xs uppercase font-bold ${
-                              lv.status === 'approved'
+ className={`text-2xs uppercase font-bold ${
+ lv.status === 'approved'
                                 ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
                                 : lv.status === 'rejected'
                                 ? 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300'
@@ -652,7 +637,7 @@ export function MyWorkforceHub() {
           <Card className="md:col-span-2 border-border shadow-xs">
             <CardHeader className="pb-3 border-b border-border flex flex-row items-center justify-between">
               <div>
-                <CardTitle className="text-sm font-bold text-foreground dark:text-foreground">
+                <CardTitle className="text-sm font-bold text-foreground">
                   {tBilingual('Monthly Salary Breakdown', 'মাসিক বেতন ও ভাতার বিবরণ')}
                 </CardTitle>
                 <p className="text-xs text-muted-foreground mt-0.5">
@@ -660,12 +645,9 @@ export function MyWorkforceHub() {
                 </p>
               </div>
               <Button
-                size="sm"
-                variant="outline"
-                onClick={() => setIsPayslipModalOpen(true)}
-                className="text-xs font-bold h-8 cursor-pointer"
-              >
-                <Printer className="h-3.5 w-3.5 mr-1" />
+ size="sm"variant="outline"onClick={() => setIsPayslipModalOpen(true)}
+ className="text-xs font-bold h-8 cursor-pointer">
+                <Printer className="h-3.5 w-3.5 mr-1"/>
                 {tBilingual('View Payslip', 'পে-স্লিপ দেখুন')}
               </Button>
             </CardHeader>
@@ -673,17 +655,17 @@ export function MyWorkforceHub() {
               <div className="space-y-2 text-xs">
                 <div className="flex items-center justify-between py-1.5 border-b border-border font-semibold">
                   <span>{tBilingual('Basic Salary', 'মূল বেতন (Basic)')}</span>
-                  <span className="tabular-nums text-foreground dark:text-foreground">{formatBDT(salaryStructure.basic)}</span>
+                  <span className="tabular-nums text-foreground">{formatBDT(salaryStructure.basic)}</span>
                 </div>
-                <div className="flex items-center justify-between py-1.5 border-b border-border text-muted-foreground dark:text-muted-foreground">
+                <div className="flex items-center justify-between py-1.5 border-b border-border text-muted-foreground">
                   <span>{tBilingual('House Rent Allowance (20%)', 'বাড়ি ভাড়া ভাতা (২০%)')}</span>
                   <span className="tabular-nums">{formatBDT(salaryStructure.house)}</span>
                 </div>
-                <div className="flex items-center justify-between py-1.5 border-b border-border text-muted-foreground dark:text-muted-foreground">
+                <div className="flex items-center justify-between py-1.5 border-b border-border text-muted-foreground">
                   <span>{tBilingual('Medical Allowance (10%)', 'চিকিৎসা ভাতা (১০%)')}</span>
                   <span className="tabular-nums">{formatBDT(salaryStructure.medical)}</span>
                 </div>
-                <div className="flex items-center justify-between py-1.5 border-b border-border text-muted-foreground dark:text-muted-foreground">
+                <div className="flex items-center justify-between py-1.5 border-b border-border text-muted-foreground">
                   <span>{tBilingual('Transport Allowance (10%)', 'যাতায়াত ভাতা (১০%)')}</span>
                   <span className="tabular-nums">{formatBDT(salaryStructure.transport)}</span>
                 </div>
@@ -693,7 +675,7 @@ export function MyWorkforceHub() {
                     <span className="tabular-nums">+{formatBDT(salaryStructure.totalOtEarnings)}</span>
                   </div>
                 )}
-                <div className="flex items-center justify-between py-2 border-b-2 border-input font-bold text-foreground dark:text-foreground">
+                <div className="flex items-center justify-between py-2 border-b-2 border-input font-bold text-foreground">
                   <span>{tBilingual('Gross Earnings', 'মোট অর্জন (Gross)')}</span>
                   <span className="tabular-nums text-emerald-600 dark:text-emerald-400">{formatBDT(salaryStructure.grossEarnings)}</span>
                 </div>
@@ -701,7 +683,7 @@ export function MyWorkforceHub() {
 
               {/* Deductions */}
               <div className="space-y-1.5 text-xs pt-2">
-                <span className="font-bold text-foreground dark:text-muted-foreground">{tBilingual('Deductions', 'কর্তনসমূহ')}:</span>
+                <span className="font-bold text-foreground">{tBilingual('Deductions', 'কর্তনসমূহ')}:</span>
                 <div className="flex items-center justify-between py-1 text-rose-600 dark:text-rose-400 font-medium">
                   <span>{tBilingual('Advance Salary Deduction', 'অগ্রিম বেতন কর্তন')}</span>
                   <span className="tabular-nums">-{formatBDT(salaryStructure.advanceDeduction)}</span>
@@ -749,7 +731,7 @@ export function MyWorkforceHub() {
         <Card className="border-border shadow-xs">
           <CardHeader className="pb-3 border-b border-border flex flex-row items-center justify-between">
             <div>
-              <CardTitle className="text-sm font-bold text-foreground dark:text-foreground">
+              <CardTitle className="text-sm font-bold text-foreground">
                 {tBilingual('My Salary Advance Vouchers', 'আমার অগ্রিম বেতন খতিয়ান')}
               </CardTitle>
               <p className="text-xs text-muted-foreground mt-0.5">
@@ -757,11 +739,9 @@ export function MyWorkforceHub() {
               </p>
             </div>
             <Button
-              size="sm"
-              onClick={() => setIsAdvanceModalOpen(true)}
-              className="bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs h-8 px-3 rounded-lg cursor-pointer"
-            >
-              <Plus className="h-3.5 w-3.5 mr-1" />
+ size="sm"onClick={() => setIsAdvanceModalOpen(true)}
+ className="bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs h-8 px-3 rounded-lg cursor-pointer">
+              <Plus className="h-3.5 w-3.5 mr-1"/>
               {tBilingual('Request Advance', 'অগ্রিম আবেদন')}
             </Button>
           </CardHeader>
@@ -799,9 +779,9 @@ export function MyWorkforceHub() {
                         </td>
                         <td className="px-4 py-3 text-center whitespace-nowrap">
                           <Badge
-                            className={`text-2xs uppercase font-bold ${
-                              adv.is_settled
-                                ? 'bg-muted text-foreground dark:text-muted-foreground'
+ className={`text-2xs uppercase font-bold ${
+ adv.is_settled
+                                ? 'bg-muted text-foreground '
                                 : adv.status === 'disbursed'
                                 ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
                                 : 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
@@ -836,10 +816,9 @@ export function MyWorkforceHub() {
             <div>
               <label className="font-semibold block mb-1">{tBilingual('Leave Type', 'ছুটির ধরন')}</label>
               <select
-                value={leaveForm.leave_type}
-                onChange={(e) => setLeaveForm({ ...leaveForm, leave_type: e.target.value as any })}
-                className="w-full h-9 px-3 rounded-lg border border-input bg-background"
-              >
+ value={leaveForm.leave_type}
+ onChange={(e) => setLeaveForm({ ...leaveForm, leave_type: e.target.value as any })}
+ className="w-full h-9 px-3 rounded-lg border border-input bg-background">
                 <option value="casual_leave">Casual Leave (নৈমিত্তিক ছুটি)</option>
                 <option value="sick_leave">Sick Leave (অসুস্থতাজনিত ছুটি)</option>
                 <option value="paid_leave">Paid Annual Leave (বাৎসরিক ছুটি)</option>
@@ -851,21 +830,17 @@ export function MyWorkforceHub() {
               <div>
                 <label className="font-semibold block mb-1">{tBilingual('Start Date', 'শুরুর তারিখ')}</label>
                 <Input
-                  type="date"
-                  value={leaveForm.start_date}
-                  onChange={(e) => setLeaveForm({ ...leaveForm, start_date: e.target.value })}
-                  className="h-9 text-xs"
-                  required
+ type="date"value={leaveForm.start_date}
+ onChange={(e) => setLeaveForm({ ...leaveForm, start_date: e.target.value })}
+ className="h-9 text-xs"required
                 />
               </div>
               <div>
                 <label className="font-semibold block mb-1">{tBilingual('End Date', 'শেষের তারিখ')}</label>
                 <Input
-                  type="date"
-                  value={leaveForm.end_date}
-                  onChange={(e) => setLeaveForm({ ...leaveForm, end_date: e.target.value })}
-                  className="h-9 text-xs"
-                  required
+ type="date"value={leaveForm.end_date}
+ onChange={(e) => setLeaveForm({ ...leaveForm, end_date: e.target.value })}
+ className="h-9 text-xs"required
                 />
               </div>
             </div>
@@ -873,20 +848,18 @@ export function MyWorkforceHub() {
             <div>
               <label className="font-semibold block mb-1">{tBilingual('Reason for Leave', 'ছুটির সুনির্দিষ্ট কারণ')}</label>
               <textarea
-                value={leaveForm.reason}
-                onChange={(e) => setLeaveForm({ ...leaveForm, reason: e.target.value })}
-                rows={3}
-                placeholder="Family emergency / Sick / Vacation..."
-                className="w-full p-2.5 rounded-lg border border-input bg-background text-xs"
-                required
+ value={leaveForm.reason}
+ onChange={(e) => setLeaveForm({ ...leaveForm, reason: e.target.value })}
+ rows={3}
+ placeholder="Family emergency / Sick / Vacation..."className="w-full p-2.5 rounded-lg border border-input bg-background text-xs"required
               />
             </div>
 
             <div className="flex items-center justify-end gap-2 pt-2">
-              <Button type="button" variant="outline" size="sm" onClick={() => setIsLeaveModalOpen(false)}>
+              <Button type="button"variant="outline"size="sm"onClick={() => setIsLeaveModalOpen(false)}>
                 {tBilingual('Cancel', 'বাতিল')}
               </Button>
-              <Button type="submit" size="sm" disabled={isSubmittingLeave} className="bg-purple-600 hover:bg-purple-700 text-white font-bold">
+              <Button type="submit"size="sm"disabled={isSubmittingLeave} className="bg-purple-600 hover:bg-purple-700 text-white font-bold">
                 {isSubmittingLeave ? tBilingual('Submitting...', 'জমা হচ্ছে...') : tBilingual('Submit Application', 'আবেদন জমা দিন')}
               </Button>
             </div>
@@ -910,33 +883,29 @@ export function MyWorkforceHub() {
             <div>
               <label className="font-semibold block mb-1">{tBilingual('Requested Amount (৳ BDT)', 'অগ্রিম টাকার পরিমাণ (৳)')}</label>
               <Input
-                type="number"
-                min={500}
-                step={500}
-                value={advanceForm.amount}
-                onChange={(e) => setAdvanceForm({ ...advanceForm, amount: Number(e.target.value) })}
-                className="h-9 text-xs tabular-nums font-bold"
-                required
+ type="number"min={500}
+ step={500}
+ value={advanceForm.amount}
+ onChange={(e) => setAdvanceForm({ ...advanceForm, amount: Number(e.target.value) })}
+ className="h-9 text-xs tabular-nums font-bold"required
               />
             </div>
 
             <div>
               <label className="font-semibold block mb-1">{tBilingual('Reason for Advance', 'অগ্রিম নেওয়ার কারণ')}</label>
               <textarea
-                value={advanceForm.reason}
-                onChange={(e) => setAdvanceForm({ ...advanceForm, reason: e.target.value })}
-                rows={3}
-                placeholder="Emergency medical expenses / House rent / Personal..."
-                className="w-full p-2.5 rounded-lg border border-input bg-background text-xs"
-                required
+ value={advanceForm.reason}
+ onChange={(e) => setAdvanceForm({ ...advanceForm, reason: e.target.value })}
+ rows={3}
+ placeholder="Emergency medical expenses / House rent / Personal..."className="w-full p-2.5 rounded-lg border border-input bg-background text-xs"required
               />
             </div>
 
             <div className="flex items-center justify-end gap-2 pt-2">
-              <Button type="button" variant="outline" size="sm" onClick={() => setIsAdvanceModalOpen(false)}>
+              <Button type="button"variant="outline"size="sm"onClick={() => setIsAdvanceModalOpen(false)}>
                 {tBilingual('Cancel', 'বাতিল')}
               </Button>
-              <Button type="submit" size="sm" disabled={isSubmittingAdvance} className="bg-amber-600 hover:bg-amber-700 text-white font-bold">
+              <Button type="submit"size="sm"disabled={isSubmittingAdvance} className="bg-amber-600 hover:bg-amber-700 text-white font-bold">
                 {isSubmittingAdvance ? tBilingual('Submitting...', 'জমা হচ্ছে...') : tBilingual('Submit Request', 'অনুরোধ জমা দিন')}
               </Button>
             </div>
@@ -950,7 +919,7 @@ export function MyWorkforceHub() {
           <DialogHeader>
             <DialogTitle className="text-base font-bold bangla-text flex items-center justify-between">
               <span>{tBilingual('Employee Payslip Voucher', 'কর্মচারী বেতন ভাউচার')}</span>
-              <Badge variant="outline" className="tabular-nums text-xs">
+              <Badge variant="outline"className="tabular-nums text-xs">
                 {new Date().toLocaleString('en-US', { month: 'long', year: 'numeric' })}
               </Badge>
             </DialogTitle>
@@ -959,7 +928,7 @@ export function MyWorkforceHub() {
           <div className="border border-border rounded-xl p-4 space-y-4 text-xs">
             <div className="flex items-center justify-between border-b pb-3">
               <div>
-                <div className="font-black text-sm text-foreground dark:text-foreground">{employee?.name}</div>
+                <div className="font-black text-sm text-foreground">{employee?.name}</div>
                 <div className="text-muted-foreground">{employee?.role} • {employee?.employee_id_number}</div>
               </div>
               <div className="text-right text-muted-foreground tabular-nums">
@@ -1010,7 +979,7 @@ export function MyWorkforceHub() {
               )}
             </div>
 
-            <div className="border-t-2 border-slate-900 pt-2 flex justify-between font-black text-sm text-foreground dark:text-foreground">
+            <div className="border-t-2 border-border pt-2 flex justify-between font-black text-sm text-foreground">
               <span>NET PAYABLE:</span>
               <span className="tabular-nums text-base text-indigo-600 dark:text-indigo-400">
                 {formatBDT(salaryStructure.netPayable)}
@@ -1019,11 +988,11 @@ export function MyWorkforceHub() {
           </div>
 
           <div className="flex items-center justify-end gap-2 pt-2">
-            <Button size="sm" variant="outline" onClick={() => window.print()}>
-              <Printer className="h-3.5 w-3.5 mr-1" />
+            <Button size="sm"variant="outline"onClick={() => window.print()}>
+              <Printer className="h-3.5 w-3.5 mr-1"/>
               {tBilingual('Print', 'প্রিন্ট')}
             </Button>
-            <Button size="sm" onClick={() => setIsPayslipModalOpen(false)}>
+            <Button size="sm"onClick={() => setIsPayslipModalOpen(false)}>
               {tBilingual('Close', 'বন্ধ করুন')}
             </Button>
           </div>

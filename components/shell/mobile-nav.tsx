@@ -4,65 +4,65 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
 import {
-  Menu,
-  X,
-  Search,
-  LayoutDashboard,
-  Printer,
-  Plus,
-  Bell,
-  MessageSquare,
-  Users,
-  Briefcase,
-  Receipt,
-  Palette,
-  Truck,
-  Package,
-  ShoppingBag,
-  Building2,
-  Building,
-  BarChart3,
-  Calculator,
-  Landmark,
-  Wallet,
-  UserCheck,
-  Users2,
-  Cpu,
-  ShieldCheck,
-  Workflow,
-  FileCheck2,
-  FileText,
-  FileSpreadsheet,
-  Settings,
-  Crown,
-  Sparkles,
-  Zap,
-  Layers,
-  Disc,
-  Tag,
-  Trash2,
-  Scissors,
-  LogOut,
-  Shield,
-  ChevronDown,
-  ChevronRight,
-  Headphones,
-  Globe2,
-  Hash,
-  GitBranch,
-  Mail,
-  QrCode,
-  Sliders,
-  Key,
-  RotateCcw,
-  Flame,
-  Activity,
-  TrendingDown,
-  Clock,
-  BookOpen,
-  PieChart,
-  Scale,
-  ArrowLeftRight,
+ Menu,
+ X,
+ Search,
+ LayoutDashboard,
+ Printer,
+ Plus,
+ Bell,
+ MessageSquare,
+ Users,
+ Briefcase,
+ Receipt,
+ Palette,
+ Truck,
+ Package,
+ ShoppingBag,
+ Building2,
+ Building,
+ BarChart3,
+ Calculator,
+ Landmark,
+ Wallet,
+ UserCheck,
+ Users2,
+ Cpu,
+ ShieldCheck,
+ Workflow,
+ FileCheck2,
+ FileText,
+ FileSpreadsheet,
+ Settings,
+ Crown,
+ Sparkles,
+ Zap,
+ Layers,
+ Disc,
+ Tag,
+ Trash2,
+ Scissors,
+ LogOut,
+ Shield,
+ ChevronDown,
+ ChevronRight,
+ Headphones,
+ Globe2,
+ Hash,
+ GitBranch,
+ Mail,
+ QrCode,
+ Sliders,
+ Key,
+ RotateCcw,
+ Flame,
+ Activity,
+ TrendingDown,
+ Clock,
+ BookOpen,
+ PieChart,
+ Scale,
+ ArrowLeftRight,
 } from 'lucide-react'
 import { getNavigationConfig, type NavItem } from '@/config/navigation.config'
 import { getTenantNavHref } from '@/lib/tenant/tenant-url'
@@ -81,286 +81,280 @@ import { ResetTenantDataModal } from './reset-tenant-data-modal'
 import { cn } from '@/lib/utils'
 
 const iconMap: Record<string, React.ElementType> = {
-  LayoutDashboard,
-  Printer,
-  Plus,
-  Bell,
-  MessageSquare,
-  Users,
-  Briefcase,
-  Receipt,
-  Palette,
-  Truck,
-  Package,
-  ShoppingBag,
-  Building2,
-  Building,
-  BarChart3,
-  Calculator,
-  Landmark,
-  Wallet,
-  UserCheck,
-  Users2,
-  Cpu,
-  ShieldCheck,
-  Workflow,
-  FileCheck2,
-  FileText,
-  FileSpreadsheet,
-  Settings,
-  Crown,
-  Sparkles,
-  Zap,
-  Layers,
-  Disc,
-  Tag,
-  Trash2,
-  Scissors,
-  Flame,
-  Globe2,
-  Hash,
-  GitBranch,
-  Mail,
-  QrCode,
-  Sliders,
-  Key,
-  Shield,
-  Activity,
-  TrendingDown,
-  Clock,
-  BookOpen,
-  PieChart,
-  Scale,
-  ArrowLeftRight,
-  RotateCcw,
+ LayoutDashboard,
+ Printer,
+ Plus,
+ Bell,
+ MessageSquare,
+ Users,
+ Briefcase,
+ Receipt,
+ Palette,
+ Truck,
+ Package,
+ ShoppingBag,
+ Building2,
+ Building,
+ BarChart3,
+ Calculator,
+ Landmark,
+ Wallet,
+ UserCheck,
+ Users2,
+ Cpu,
+ ShieldCheck,
+ Workflow,
+ FileCheck2,
+ FileText,
+ FileSpreadsheet,
+ Settings,
+ Crown,
+ Sparkles,
+ Zap,
+ Layers,
+ Disc,
+ Tag,
+ Trash2,
+ Scissors,
+ Flame,
+ Globe2,
+ Hash,
+ GitBranch,
+ Mail,
+ QrCode,
+ Sliders,
+ Key,
+ Shield,
+ Activity,
+ TrendingDown,
+ Clock,
+ BookOpen,
+ PieChart,
+ Scale,
+ ArrowLeftRight,
+ RotateCcw,
 }
 
 export function MobileNav() {
-  const [open, setOpen] = useState(false)
-  const [resetModalOpen, setResetModalOpen] = useState(false)
-  const [searchQuery, setSearchQuery] = useState('')
-  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({
-    today: true,
-    work: true,
-    management: true,
-    settings: true,
+ const [open, setOpen] = useState(false)
+ const [resetModalOpen, setResetModalOpen] = useState(false)
+ const [searchQuery, setSearchQuery] = useState('')
+ const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({
+ today: true,
+ work: true,
+ management: true,
+ settings: true,
   })
-  const [expandedSubNav, setExpandedSubNav] = useState<Record<string, boolean>>({
-    company_settings: true,
-    hr: true,
-    accounting: true,
+ const [expandedSubNav, setExpandedSubNav] = useState<Record<string, boolean>>({
+ company_settings: true,
+ hr: true,
+ accounting: true,
   })
 
-  const pathname = usePathname()
-  const searchParams = useSearchParams()
-  const { signOut } = useAuth()
-  const { company, currentRole, currentBranch, currentUser } = useTenant()
-  const { appName, appLogoUrl, tagline } = usePlatformSettings()
-  const { can, isOwner } = usePermissions()
-  const { isTrial, daysRemainingInTrial, timeRemainingInTrial, currentPlan, openUpgradeModal } = useSubscription()
-  const { tBilingual } = useI18n()
+ const pathname = usePathname()
+ const searchParams = useSearchParams()
+ const { signOut } = useAuth()
+ const { company, currentRole, currentBranch, currentUser } = useTenant()
+ const { appName, appLogoUrl, tagline } = usePlatformSettings()
+ const { can, isOwner } = usePermissions()
+ const { isTrial, daysRemainingInTrial, timeRemainingInTrial, currentPlan, openUpgradeModal } = useSubscription()
+ const { tBilingual } = useI18n()
 
-  const pathSlug = pathname ? pathname.split('/')[1] : null
-  const navSections = useMemo(() => getNavigationConfig(), [])
+ const pathSlug = pathname ? pathname.split('/')[1] : null
+ const navSections = useMemo(() => getNavigationConfig(), [])
 
   // Close drawer automatically on route navigation
-  useEffect(() => {
-    setOpen(false)
-    setSearchQuery('')
+ useEffect(() => {
+ setOpen(false)
+ setSearchQuery('')
   }, [pathname])
 
   // Listen to cross-component global event triggers
-  useEffect(() => {
-    const handleOpen = () => setOpen(true)
-    const handleClose = () => setOpen(false)
-    const handleToggle = () => setOpen((prev) => !prev)
+ useEffect(() => {
+ const handleOpen = () => setOpen(true)
+ const handleClose = () => setOpen(false)
+ const handleToggle = () => setOpen((prev) => !prev)
 
-    window.addEventListener('printerp_open_mobile_nav', handleOpen)
-    window.addEventListener('printerp_close_mobile_nav', handleClose)
-    window.addEventListener('printerp_toggle_mobile_nav', handleToggle)
+ window.addEventListener('printerp_open_mobile_nav', handleOpen)
+ window.addEventListener('printerp_close_mobile_nav', handleClose)
+ window.addEventListener('printerp_toggle_mobile_nav', handleToggle)
 
-    return () => {
-      window.removeEventListener('printerp_open_mobile_nav', handleOpen)
-      window.removeEventListener('printerp_close_mobile_nav', handleClose)
-      window.removeEventListener('printerp_toggle_mobile_nav', handleToggle)
+ return () => {
+ window.removeEventListener('printerp_open_mobile_nav', handleOpen)
+ window.removeEventListener('printerp_close_mobile_nav', handleClose)
+ window.removeEventListener('printerp_toggle_mobile_nav', handleToggle)
     }
   }, [])
 
   // Explicit permission checking
-  const isNavItemAllowed = useCallback((item: NavItem): boolean => {
-    if (isOwner) return true
-    if (item.ownerOnly && !isOwner) return false
-    if (!item.permission) return true
-    return can(item.permission.action, item.permission.resource)
+ const isNavItemAllowed = useCallback((item: NavItem): boolean => {
+ if (isOwner) return true
+ if (item.ownerOnly && !isOwner) return false
+ if (!item.permission) return true
+ return can(item.permission.action, item.permission.resource)
   }, [isOwner, can])
 
-  const userName = currentUser?.profile?.full_name
+ const userName = currentUser?.profile?.full_name
     ? tBilingual(currentUser.profile.full_name, currentUser.profile.full_name_bn || currentUser.profile.full_name)
     : 'User'
 
   // Toggle group expansion
-  const toggleGroup = useCallback((groupId: string) => {
-    setExpandedGroups((prev) => ({ ...prev, [groupId]: !prev[groupId] }))
+ const toggleGroup = useCallback((groupId: string) => {
+ setExpandedGroups((prev) => ({ ...prev, [groupId]: !prev[groupId] }))
   }, [])
 
   // Toggle sub-nav expansion
-  const toggleSubNav = useCallback((key: string) => {
-    setExpandedSubNav((prev) => ({ ...prev, [key]: !prev[key] }))
+ const toggleSubNav = useCallback((key: string) => {
+ setExpandedSubNav((prev) => ({ ...prev, [key]: !prev[key] }))
   }, [])
 
   // Check whether an item is active
-  const isItemActive = useCallback((itemHref: string, exact?: boolean) => {
-    if (!pathname) return false
-    const cleanPath = (company?.slug && pathname.startsWith(`/${company.slug}`))
+ const isItemActive = useCallback((itemHref: string, exact?: boolean) => {
+ if (!pathname) return false
+ const cleanPath = (company?.slug && pathname.startsWith(`/${company.slug}`))
       ? pathname.slice(`/${company.slug}`.length) || '/'
       : pathname
 
-    const [hrefPath, hrefQuery] = itemHref.split('?')
-    const isPathMatch = pathname === hrefPath || cleanPath === hrefPath
+ const [hrefPath, hrefQuery] = itemHref.split('?')
+ const isPathMatch = pathname === hrefPath || cleanPath === hrefPath
 
     // If itemHref has query parameters (e.g. /accounting?tab=expenses)
-    if (hrefQuery) {
-      if (!isPathMatch) return false
-      const currentTab = searchParams?.get('tab') || 'overview'
-      const targetParams = new URLSearchParams(hrefQuery)
-      const targetTab = targetParams.get('tab') || 'overview'
-      return currentTab === targetTab
+ if (hrefQuery) {
+ if (!isPathMatch) return false
+ const currentTab = searchParams?.get('tab') || 'overview'
+ const targetParams = new URLSearchParams(hrefQuery)
+ const targetTab = targetParams.get('tab') || 'overview'
+ return currentTab === targetTab
     }
 
     // If itemHref is /accounting (Finance Dashboard root)
-    if (cleanPath === '/accounting' && hrefPath === '/accounting') {
-      if (exact) {
-        const currentTab = searchParams?.get('tab')
-        return !currentTab || currentTab === 'overview'
+ if (cleanPath === '/accounting' && hrefPath === '/accounting') {
+ if (exact) {
+ const currentTab = searchParams?.get('tab')
+ return !currentTab || currentTab === 'overview'
       }
     }
 
-    if (isPathMatch) return true
+ if (isPathMatch) return true
 
-    if ((itemHref === '/trash' || itemHref === '/settings/trash') && (cleanPath === '/trash' || cleanPath === '/settings/trash' || cleanPath.startsWith('/trash/') || cleanPath.startsWith('/settings/trash/'))) {
-      return true
+ if ((itemHref === '/trash' || itemHref === '/settings/trash') && (cleanPath === '/trash' || cleanPath === '/settings/trash' || cleanPath.startsWith('/trash/') || cleanPath.startsWith('/settings/trash/'))) {
+ return true
     }
 
-    if ((itemHref === '/tax' || itemHref === '/settings/tax') && (cleanPath === '/tax' || cleanPath === '/settings/tax' || cleanPath.startsWith('/tax/') || cleanPath.startsWith('/settings/tax/'))) {
-      return true
+ if ((itemHref === '/tax' || itemHref === '/settings/tax') && (cleanPath === '/tax' || cleanPath === '/settings/tax' || cleanPath.startsWith('/tax/') || cleanPath.startsWith('/settings/tax/'))) {
+ return true
     }
 
-    if (exact || itemHref === '/' || itemHref === '/settings') {
-      return false
+ if (exact || itemHref === '/' || itemHref === '/settings') {
+ return false
     }
 
-    if (cleanPath.startsWith(`${hrefPath}/`)) {
-      return true
+ if (cleanPath.startsWith(`${hrefPath}/`)) {
+ return true
     }
-    return false
+ return false
   }, [pathname, company?.slug, searchParams])
 
   // Filter sections by search and permissions (including child sub-items)
-  const filteredNavSections = useMemo(() => {
-    const q = searchQuery.trim().toLowerCase()
+ const filteredNavSections = useMemo(() => {
+ const q = searchQuery.trim().toLowerCase()
 
-    return navSections
+ return navSections
       .map((section) => {
-        const allowedItems: NavItem[] = []
+ const allowedItems: NavItem[] = []
 
-        for (const item of section.items) {
-          if (!isNavItemAllowed(item)) continue
+ for (const item of section.items) {
+ if (!isNavItemAllowed(item)) continue
 
-          const allowedChildren = item.children?.filter(isNavItemAllowed)
+ const allowedChildren = item.children?.filter(isNavItemAllowed)
 
-          if (!q) {
-            allowedItems.push({
+ if (!q) {
+ allowedItems.push({
               ...item,
-              children: allowedChildren,
+ children: allowedChildren,
             })
-            continue
+ continue
           }
 
-          const matchTitle = item.title.toLowerCase().includes(q)
-          const matchTitleBn = item.titleBn.toLowerCase().includes(q)
-          const matchKey = item.key.toLowerCase().includes(q)
+ const matchTitle = item.title.toLowerCase().includes(q)
+ const matchTitleBn = item.titleBn.toLowerCase().includes(q)
+ const matchKey = item.key.toLowerCase().includes(q)
 
-          const matchedChildren = allowedChildren?.filter((child) => {
-            const cTitle = child.title.toLowerCase().includes(q)
-            const cTitleBn = child.titleBn.toLowerCase().includes(q)
-            const cKey = child.key.toLowerCase().includes(q)
-            return cTitle || cTitleBn || cKey
+ const matchedChildren = allowedChildren?.filter((child) => {
+ const cTitle = child.title.toLowerCase().includes(q)
+ const cTitleBn = child.titleBn.toLowerCase().includes(q)
+ const cKey = child.key.toLowerCase().includes(q)
+ return cTitle || cTitleBn || cKey
           })
 
-          if (matchTitle || matchTitleBn || matchKey || (matchedChildren && matchedChildren.length > 0)) {
-            allowedItems.push({
+ if (matchTitle || matchTitleBn || matchKey || (matchedChildren && matchedChildren.length > 0)) {
+ allowedItems.push({
               ...item,
-              children: matchedChildren && matchedChildren.length > 0 ? matchedChildren : allowedChildren,
+ children: matchedChildren && matchedChildren.length > 0 ? matchedChildren : allowedChildren,
             })
           }
         }
 
-        return { ...section, items: allowedItems }
+ return { ...section, items: allowedItems }
       })
       .filter((section) => section.items.length > 0)
   }, [navSections, isNavItemAllowed, searchQuery])
 
   // Auto-expand subnav if active child route
-  useEffect(() => {
-    if (!pathname) return
-    const cleanPath = (company?.slug && pathname.startsWith(`/${company.slug}`))
+ useEffect(() => {
+ if (!pathname) return
+ const cleanPath = (company?.slug && pathname.startsWith(`/${company.slug}`))
       ? pathname.slice(`/${company.slug}`.length) || '/'
       : pathname
 
-    for (const section of filteredNavSections) {
-      for (const item of section.items) {
-        if (item.children && item.children.length > 0) {
-          const hasActiveChild = item.children.some((child) => isItemActive(child.href, child.exact))
-          if (
-            hasActiveChild ||
+ for (const section of filteredNavSections) {
+ for (const item of section.items) {
+ if (item.children && item.children.length > 0) {
+ const hasActiveChild = item.children.some((child) => isItemActive(child.href, child.exact))
+ if (
+ hasActiveChild ||
             (cleanPath.startsWith('/settings') && item.key === 'company_settings') ||
             (cleanPath.startsWith('/hr') && item.key === 'hr') ||
             (cleanPath.startsWith('/accounting') && item.key === 'accounting')
           ) {
-            setExpandedSubNav((prev) => ({ ...prev, [item.key]: true }))
+ setExpandedSubNav((prev) => ({ ...prev, [item.key]: true }))
           }
         }
       }
     }
   }, [pathname, filteredNavSections, isItemActive, company?.slug])
 
-  return (
+ return (
     <div className="lg:hidden">
       <button
-        type="button"
-        onClick={() => setOpen(true)}
-        className="flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-muted p-2 text-foreground hover:bg-muted cursor-pointer shrink-0 transition-colors focus:outline-none focus:ring-2 focus:ring-ring"
-        aria-label="Open Navigation Drawer"
-        title="Open Menu"
-      >
-        <Menu className="h-5 w-5" />
+ type="button"onClick={() => setOpen(true)}
+ className="flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-muted p-2 text-foreground hover:bg-muted cursor-pointer shrink-0 transition-colors focus:outline-none focus:ring-2 focus:ring-ring"aria-label="Open Navigation Drawer"title="Open Menu">
+        <Menu className="h-5 w-5"/>
       </button>
 
       <Sheet open={open} onOpenChange={setOpen} side="left">
-        <SheetHeader onClose={() => setOpen(false)} className="border-b border-border px-4 py-3 dark:border-border">
+        <SheetHeader onClose={() => setOpen(false)} className="border-b border-border px-4 py-3">
           <div className="flex items-center justify-between">
             {/* Logo and Brand */}
             <Link
-              href={getTenantNavHref('/dashboard', pathname, company?.slug)}
-              onClick={() => setOpen(false)}
-              className="flex items-center gap-2.5 group cursor-pointer"
-            >
+ href={getTenantNavHref('/dashboard', pathname, company?.slug)}
+ onClick={() => setOpen(false)}
+ className="flex items-center gap-2.5 group cursor-pointer">
               {appLogoUrl ? (
                 <img
-                  src={appLogoUrl}
-                  alt={appName}
-                  className="h-8 w-8 rounded-lg object-contain bg-slate-900 border border-slate-700/60 p-0.5 shadow-xs shrink-0"
-                />
+ src={appLogoUrl}
+ alt={appName}
+ className="h-8 w-8 rounded-lg object-contain bg-surface-inset border border-border/60 p-0.5 shadow-xs shrink-0"/>
               ) : (
-                <div className="grid grid-cols-2 gap-0.5 p-1 rounded-lg bg-slate-900 shadow-xs ring-1 ring-slate-800 group-hover:scale-105 transition-transform shrink-0">
-                  <span className="h-2 w-2 rounded-full bg-cyan-400" />
-                  <span className="h-2 w-2 rounded-full bg-pink-500" />
-                  <span className="h-2 w-2 rounded-full bg-yellow-400" />
-                  <span className="h-2 w-2 rounded-full bg-muted" />
+                <div className="grid grid-cols-2 gap-0.5 p-1 rounded-lg bg-surface-inset shadow-xs ring-1 ring-slate-800 group-hover:scale-105 transition-transform shrink-0">
+                  <span className="h-2 w-2 rounded-full bg-cyan-400"/>
+                  <span className="h-2 w-2 rounded-full bg-pink-500"/>
+                  <span className="h-2 w-2 rounded-full bg-yellow-400"/>
+                  <span className="h-2 w-2 rounded-full bg-muted"/>
                 </div>
               )}
               <div className="flex flex-col text-left">
-                <span className="font-black text-base text-foreground dark:text-white leading-tight">
+                <span className="font-black text-base text-foreground leading-tight">
                   {appName}
                 </span>
                 <span className="text-2xs font-bold text-muted-foreground uppercase tracking-wider leading-none">
@@ -371,8 +365,8 @@ export function MobileNav() {
 
             {/* Actions: Theme Toggle & Language Switcher */}
             <div className="flex items-center gap-1.5">
-              <ThemeToggle size="sm" />
-              <LanguageSwitcher compact size="sm" />
+              <ThemeToggle size="sm"/>
+              <LanguageSwitcher compact size="sm"/>
             </div>
           </div>
         </SheetHeader>
@@ -384,12 +378,11 @@ export function MobileNav() {
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2 min-w-0">
                   <Avatar
-                    fallback={userName}
-                    src={currentUser?.profile?.avatar_url || undefined}
-                    className="h-8 w-8 text-xs font-bold shrink-0 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 ring-1 ring-blue-500/20"
-                  />
+ fallback={userName}
+ src={currentUser?.profile?.avatar_url || undefined}
+ className="h-8 w-8 text-xs font-bold shrink-0 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 ring-1 ring-blue-500/20"/>
                   <div className="truncate">
-                    <span className="block font-bold text-xs sm:text-sm text-foreground dark:text-white truncate leading-tight bangla-text">
+                    <span className="block font-bold text-xs sm:text-sm text-foreground truncate leading-tight bangla-text">
                       {userName}
                     </span>
                     <span className="block text-xs text-muted-foreground truncate">
@@ -399,18 +392,16 @@ export function MobileNav() {
                 </div>
 
                 <Badge
-                  variant="outline"
-                  className="text-xs uppercase font-semibold py-0.5 px-2 border-blue-200 bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 shrink-0"
-                >
-                  <Shield className="h-3 w-3 mr-1 text-blue-600" />
+ variant="outline"className="text-xs uppercase font-semibold py-0.5 px-2 border-blue-200 bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 shrink-0">
+                  <Shield className="h-3 w-3 mr-1 text-blue-600"/>
                   {currentRole || 'Staff'}
                 </Badge>
               </div>
 
               {/* Status / Plan Badge */}
-              <div className="flex items-center justify-between pt-1 border-t border-border dark:border-slate-700/60 text-xs">
-                <div className="flex items-center gap-1.5 text-muted-foreground dark:text-muted-foreground">
-                  <Building className="h-3.5 w-3.5 text-blue-600" />
+              <div className="flex items-center justify-between pt-1 border-t border-border /60 text-xs">
+                <div className="flex items-center gap-1.5 text-muted-foreground">
+                  <Building className="h-3.5 w-3.5 text-blue-600"/>
                   <span className="font-medium text-xs truncate max-w-[140px]">
                     {currentBranch ? currentBranch.name.split('(')[0].trim() : currentPlan?.name || 'Main Branch'}
                   </span>
@@ -420,9 +411,9 @@ export function MobileNav() {
                     {timeRemainingInTrial ? (tBilingual(timeRemainingInTrial.statusBadgeEn, timeRemainingInTrial.statusBadgeBn || timeRemainingInTrial.statusBadgeEn)) : `${daysRemainingInTrial} ${tBilingual('d trial', 'দিন ট্রায়াল')}`}
                   </Badge>
                 ) : (
-                  currentPlan && (
+ currentPlan && (
                     <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"/>
                       {tBilingual(currentPlan.name, currentPlan.name_bn)}
                     </span>
                   )
@@ -433,49 +424,41 @@ export function MobileNav() {
             {/* Quick Actions Shortcuts Chips */}
             <div className="grid grid-cols-3 gap-1.5">
               <Link
-                href={getTenantNavHref('/quotations', pathname, company?.slug)}
-                onClick={() => setOpen(false)}
-                className="flex items-center justify-center gap-1 p-2 rounded-lg bg-muted/50 border border-border text-foreground text-xs font-semibold hover:bg-muted transition-colors min-h-[38px] bangla-text"
-              >
-                <Plus className="h-3.5 w-3.5 text-primary" />
+ href={getTenantNavHref('/quotations', pathname, company?.slug)}
+ onClick={() => setOpen(false)}
+ className="flex items-center justify-center gap-1 p-2 rounded-lg bg-muted/50 border border-border text-foreground text-xs font-semibold hover:bg-muted transition-colors min-h-[38px] bangla-text">
+                <Plus className="h-3.5 w-3.5 text-primary"/>
                 <span>{tBilingual('Quotes', 'কোটেশন')}</span>
               </Link>
               <Link
-                href={getTenantNavHref('/sales/new-work', pathname, company?.slug)}
-                onClick={() => setOpen(false)}
-                className="flex items-center justify-center gap-1 p-2 rounded-lg bg-muted/50 border border-border text-foreground text-xs font-semibold hover:bg-muted transition-colors min-h-[38px] bangla-text"
-              >
-                <Plus className="h-3.5 w-3.5 text-primary" />
+ href={getTenantNavHref('/sales/new-work', pathname, company?.slug)}
+ onClick={() => setOpen(false)}
+ className="flex items-center justify-center gap-1 p-2 rounded-lg bg-muted/50 border border-border text-foreground text-xs font-semibold hover:bg-muted transition-colors min-h-[38px] bangla-text">
+                <Plus className="h-3.5 w-3.5 text-primary"/>
                 <span>{tBilingual('New Work', 'নতুন কাজ')}</span>
               </Link>
               <Link
-                href={getTenantNavHref('/production', pathname, company?.slug)}
-                onClick={() => setOpen(false)}
-                className="flex items-center justify-center gap-1 p-2 rounded-lg bg-muted/50 border border-border text-foreground text-xs font-semibold hover:bg-muted transition-colors min-h-[38px] bangla-text"
-              >
-                <Printer className="h-3.5 w-3.5 text-primary" />
+ href={getTenantNavHref('/production', pathname, company?.slug)}
+ onClick={() => setOpen(false)}
+ className="flex items-center justify-center gap-1 p-2 rounded-lg bg-muted/50 border border-border text-foreground text-xs font-semibold hover:bg-muted transition-colors min-h-[38px] bangla-text">
+                <Printer className="h-3.5 w-3.5 text-primary"/>
                 <span>{tBilingual('Production', 'কারখানা')}</span>
               </Link>
             </div>
 
             {/* Instant Filter Search Bar */}
             <div className="relative">
-              <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+              <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-muted-foreground"/>
               <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder={tBilingual('Search menu...', 'মেনু খুঁজুন...')}
-                className="w-full h-9 pl-9 pr-8 rounded-lg bg-muted/40 border border-border text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all bangla-text"
-              />
+ type="text"value={searchQuery}
+ onChange={(e) => setSearchQuery(e.target.value)}
+ placeholder={tBilingual('Search menu...', 'মেনু খুঁজুন...')}
+ className="w-full h-9 pl-9 pr-8 rounded-lg bg-muted/40 border border-border text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all bangla-text"/>
               {searchQuery && (
                 <button
-                  type="button"
-                  onClick={() => setSearchQuery('')}
-                  className="absolute right-2.5 top-2 text-muted-foreground hover:text-foreground p-0.5"
-                  aria-label="Clear filter search"
-                >
-                  <X className="h-4 w-4" />
+ type="button"onClick={() => setSearchQuery('')}
+ className="absolute right-2.5 top-2 text-muted-foreground hover:text-foreground p-0.5"aria-label="Clear filter search">
+                  <X className="h-4 w-4"/>
                 </button>
               )}
             </div>
@@ -483,26 +466,24 @@ export function MobileNav() {
             {/* Navigation Sections */}
             {(!Array.isArray(filteredNavSections) || filteredNavSections.length === 0) ? (
               <div className="py-8 text-center text-xs text-muted-foreground bangla-text">
-                {tBilingual(`No modules matching "${searchQuery}"`, `"${searchQuery}" এর জন্য কোনো মেনু পাওয়া যায়নি`)}
+                {tBilingual(`No modules matching"${searchQuery}"`, `"${searchQuery}"এর জন্য কোনো মেনু পাওয়া যায়নি`)}
               </div>
             ) : (
               (Array.isArray(filteredNavSections) ? filteredNavSections : []).map((section) => {
-                const sectionTitle = tBilingual(section.title, section.titleBn)
-                const isExpanded = searchQuery ? true : (expandedGroups[section.id] ?? true)
+ const sectionTitle = tBilingual(section.title, section.titleBn)
+ const isExpanded = searchQuery ? true : (expandedGroups[section.id] ?? true)
 
-                return (
+ return (
                   <div key={section.id} className="space-y-0.5">
                     {Boolean(section.title) && (
                       <button
-                        type="button"
-                        onClick={() => toggleGroup(section.id)}
-                        className="w-full flex items-center justify-between px-2 py-1 text-xs font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground dark:hover:text-muted-foreground cursor-pointer bangla-text"
-                      >
+ type="button"onClick={() => toggleGroup(section.id)}
+ className="w-full flex items-center justify-between px-2 py-1 text-xs font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground dark:hover:text-muted-foreground cursor-pointer bangla-text">
                         <span>{sectionTitle}</span>
                         {isExpanded ? (
-                          <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+                          <ChevronDown className="h-3.5 w-3.5 text-muted-foreground"/>
                         ) : (
-                          <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
+                          <ChevronRight className="h-3.5 w-3.5 text-muted-foreground"/>
                         )}
                       </button>
                     )}
@@ -510,23 +491,23 @@ export function MobileNav() {
                     {(section.title ? isExpanded : true) && (
                       <div className="space-y-0.5">
                         {section.items.map((item) => {
-                          const Icon = iconMap[item.icon] || Sparkles
-                          const isActive = isItemActive(item.href, item.exact)
-                          const itemTitle = tBilingual(item.title, item.titleBn)
-                          const isPrimary = item.isPrimaryAction
-                          const hasChildren = item.children && item.children.length > 0
-                          const isSubExpanded = expandedSubNav[item.key] ?? false
-                          const isChildActive = Boolean(hasChildren && item.children!.some((child) => isItemActive(child.href, child.exact)))
+ const Icon = iconMap[item.icon] || Sparkles
+ const isActive = isItemActive(item.href, item.exact)
+ const itemTitle = tBilingual(item.title, item.titleBn)
+ const isPrimary = item.isPrimaryAction
+ const hasChildren = item.children && item.children.length > 0
+ const isSubExpanded = expandedSubNav[item.key] ?? false
+ const isChildActive = Boolean(hasChildren && item.children!.some((child) => isItemActive(child.href, child.exact)))
 
-                          return (
+ return (
                             <React.Fragment key={item.key}>
                               <div className="flex items-center">
                                 <Link
-                                  href={getTenantNavHref(item.href, pathname, company?.slug)}
-                                  onClick={() => setOpen(false)}
-                                  className={cn(
+ href={getTenantNavHref(item.href, pathname, company?.slug)}
+ onClick={() => setOpen(false)}
+ className={cn(
                                     'group flex flex-1 items-center gap-3 rounded-lg px-3 py-2.5 text-xs sm:text-sm font-medium transition-colors min-h-[44px] cursor-pointer bangla-text',
-                                    isPrimary
+ isPrimary
                                       ? isActive
                                         ? 'bg-primary text-primary-foreground font-bold shadow-xs'
                                         : 'bg-primary text-primary-foreground font-semibold hover:bg-primary/90'
@@ -538,9 +519,9 @@ export function MobileNav() {
                                   )}
                                 >
                                   <Icon
-                                    className={cn(
+ className={cn(
                                       'h-4 w-4 shrink-0 transition-transform group-hover:scale-105',
-                                      isPrimary
+ isPrimary
                                         ? 'text-white'
                                         : isActive && !hasChildren
                                         ? 'text-blue-600 dark:text-blue-400'
@@ -552,9 +533,8 @@ export function MobileNav() {
                                   <span className="flex-1 truncate">{itemTitle}</span>
                                   {item.badge && (
                                     <Badge
-                                      variant={isActive || isPrimary ? 'secondary' : 'default'}
-                                      className="text-2xs px-2 py-0.5 h-4.5 font-bold shrink-0 ml-1.5"
-                                    >
+ variant={isActive || isPrimary ? 'secondary' : 'default'}
+ className="text-2xs px-2 py-0.5 h-4.5 font-bold shrink-0 ml-1.5">
                                       {item.badge}
                                     </Badge>
                                   )}
@@ -562,19 +542,17 @@ export function MobileNav() {
 
                                 {hasChildren && (
                                   <button
-                                    type="button"
-                                    onClick={(e) => {
-                                      e.preventDefault()
-                                      e.stopPropagation()
-                                      toggleSubNav(item.key)
+ type="button"onClick={(e) => {
+ e.preventDefault()
+ e.stopPropagation()
+ toggleSubNav(item.key)
                                     }}
-                                    className="p-2.5 text-muted-foreground hover:text-foreground rounded-lg"
-                                    title={isSubExpanded ? 'Collapse sub-menu' : 'Expand sub-menu'}
+ className="p-2.5 text-muted-foreground hover:text-foreground rounded-lg"title={isSubExpanded ? 'Collapse sub-menu' : 'Expand sub-menu'}
                                   >
                                     <ChevronDown
-                                      className={cn(
+ className={cn(
                                         'h-4 w-4 transition-transform duration-200',
-                                        isSubExpanded ? 'rotate-180' : ''
+ isSubExpanded ? 'rotate-180' : ''
                                       )}
                                     />
                                   </button>
@@ -585,18 +563,18 @@ export function MobileNav() {
                               {hasChildren && (isSubExpanded || Boolean(searchQuery)) && (
                                 <div className="ml-5 pl-3 border-l border-border space-y-1 my-1">
                                   {item.children!.map((child) => {
-                                    const ChildIcon = iconMap[child.icon] || Sparkles
-                                    const isSubActive = isItemActive(child.href, child.exact)
-                                    const childTitle = tBilingual(child.title, child.titleBn)
+ const ChildIcon = iconMap[child.icon] || Sparkles
+ const isSubActive = isItemActive(child.href, child.exact)
+ const childTitle = tBilingual(child.title, child.titleBn)
 
-                                    return (
+ return (
                                       <Link
-                                        key={child.key}
-                                        href={getTenantNavHref(child.href, pathname, company?.slug)}
-                                        onClick={() => setOpen(false)}
-                                        className={cn(
+ key={child.key}
+ href={getTenantNavHref(child.href, pathname, company?.slug)}
+ onClick={() => setOpen(false)}
+ className={cn(
                                           'flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-medium transition-colors min-h-[36px] bangla-text',
-                                          isSubActive
+ isSubActive
                                             ? 'bg-blue-50 text-blue-600 font-semibold dark:bg-blue-950/50 dark:text-blue-400'
                                             : 'text-muted-foreground hover:bg-muted hover:text-foreground dark:hover:bg-muted'
                                         )}
@@ -616,7 +594,7 @@ export function MobileNav() {
 
                               {/* Optional Visual Separator Below Item */}
                               {item.hasDividerBelow && (
-                                <div className="h-px bg-muted/80 my-2 mx-1" />
+                                <div className="h-px bg-muted/80 my-2 mx-1"/>
                               )}
                             </React.Fragment>
                           )
@@ -633,7 +611,7 @@ export function MobileNav() {
               <div className="rounded-lg bg-muted/40 p-3.5 border border-border space-y-2 shadow-xs">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-foreground flex items-center gap-1.5 bangla-text">
-                    <Crown className="h-4 w-4 text-amber-500" />
+                    <Crown className="h-4 w-4 text-amber-500"/>
                     <span>{tBilingual('Free Trial Active', 'ফ্রি ট্রায়াল চলছে')}</span>
                   </span>
                   <Badge suppressHydrationWarning className="text-xs bg-amber-50 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 font-bold border-amber-200 dark:border-amber-800 px-2 py-0.5">
@@ -641,17 +619,15 @@ export function MobileNav() {
                   </Badge>
                 </div>
                 <p className="text-xs text-muted-foreground leading-snug bangla-text">
-                  {tBilingual('Unlock unlimited orders, multi-branch, and SMS automation.', 'আনলিমিটেড অর্ডার ও ফিচারের জন্য বিজনেস প্ল্যানে আপগ্রেড করুন।')}
+                  {tBilingual('Unlock unlimited orders, multi-branch, and auto SMS.', 'আনলিমিটেড অর্ডার ও ফিচারের জন্য বিজনেস প্ল্যানে আপগ্রেড করুন।')}
                 </p>
                 <button
-                  type="button"
-                  onClick={() => {
-                    setOpen(false)
-                    openUpgradeModal('business')
+ type="button"onClick={() => {
+ setOpen(false)
+ openUpgradeModal('business')
                   }}
-                  className="w-full py-2 px-3 rounded-lg bg-primary text-primary-foreground text-xs font-semibold text-center shadow-xs hover:bg-primary/90 transition-colors cursor-pointer bangla-text min-h-[40px] flex items-center justify-center gap-1.5"
-                >
-                  <Crown className="h-3.5 w-3.5 text-amber-300" />
+ className="w-full py-2 px-3 rounded-lg bg-primary text-primary-foreground text-xs font-semibold text-center shadow-xs hover:bg-primary/90 transition-colors cursor-pointer bangla-text min-h-[40px] flex items-center justify-center gap-1.5">
+                  <Crown className="h-3.5 w-3.5 text-amber-300"/>
                   <span>{tBilingual('Upgrade Plan', 'প্ল্যান আপগ্রেড করুন')}</span>
                 </button>
               </div>
@@ -663,11 +639,10 @@ export function MobileNav() {
         <SheetFooter className="pb-[calc(1rem+env(safe-area-inset-bottom,0px))] flex flex-col gap-2">
           <div className="flex items-center justify-between w-full text-xs text-muted-foreground px-1">
             <Link
-              href={getTenantNavHref('/support', pathname, company?.slug)}
-              onClick={() => setOpen(false)}
-              className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400 font-semibold hover:underline"
-            >
-              <Headphones className="h-3.5 w-3.5" />
+ href={getTenantNavHref('/support', pathname, company?.slug)}
+ onClick={() => setOpen(false)}
+ className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400 font-semibold hover:underline">
+              <Headphones className="h-3.5 w-3.5"/>
               <span>{company?.phone || '24/7 Live Desk'}</span>
             </Link>
             <span className="text-xs text-muted-foreground">{appName}</span>
@@ -675,26 +650,22 @@ export function MobileNav() {
 
           <div className="grid grid-cols-2 gap-2">
             <button
-              type="button"
-              onClick={() => {
-                setOpen(false)
-                setResetModalOpen(true)
+ type="button"onClick={() => {
+ setOpen(false)
+ setResetModalOpen(true)
               }}
-              className="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl border border-rose-200/80 dark:border-rose-900/60 bg-rose-50/80 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 text-xs font-semibold hover:bg-rose-100 dark:hover:bg-rose-950/60 active:scale-98 transition-all cursor-pointer min-h-[42px] bangla-text shadow-xs"
-            >
-              <RotateCcw className="h-3.5 w-3.5 shrink-0" />
+ className="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl border border-rose-200/80 dark:border-rose-900/60 bg-rose-50/80 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 text-xs font-semibold hover:bg-rose-100 dark:hover:bg-rose-950/60 active:scale-98 transition-all cursor-pointer min-h-[42px] bangla-text shadow-xs">
+              <RotateCcw className="h-3.5 w-3.5 shrink-0"/>
               <span className="truncate">{tBilingual('Reset Data', 'ডাটা রিসেট')}</span>
             </button>
 
             <button
-              type="button"
-              onClick={() => {
-                setOpen(false)
-                signOut()
+ type="button"onClick={() => {
+ setOpen(false)
+ signOut()
               }}
-              className="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl border border-red-200/80 dark:border-red-900/60 bg-red-50/80 dark:bg-red-950/40 text-red-600 dark:text-red-400 text-xs font-semibold hover:bg-red-100 dark:hover:bg-red-950/60 active:scale-98 transition-all cursor-pointer min-h-[42px] bangla-text shadow-xs"
-            >
-              <LogOut className="h-3.5 w-3.5 shrink-0" />
+ className="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl border border-red-200/80 dark:border-red-900/60 bg-red-50/80 dark:bg-red-950/40 text-red-600 dark:text-red-400 text-xs font-semibold hover:bg-red-100 dark:hover:bg-red-950/60 active:scale-98 transition-all cursor-pointer min-h-[42px] bangla-text shadow-xs">
+              <LogOut className="h-3.5 w-3.5 shrink-0"/>
               <span className="truncate">{tBilingual('Sign Out', 'লগ আউট')}</span>
             </button>
           </div>
@@ -703,11 +674,11 @@ export function MobileNav() {
 
       {/* Reset Confirmation Dialog */}
       <ResetTenantDataModal
-        open={resetModalOpen}
-        onOpenChange={setResetModalOpen}
-        companyId={company?.id || ''}
-        companySlug={company?.slug || ''}
-        companyName={company?.name || 'Your Business'}
+ open={resetModalOpen}
+ onOpenChange={setResetModalOpen}
+ companyId={company?.id || ''}
+ companySlug={company?.slug || ''}
+ companyName={company?.name || 'Your Business'}
       />
     </div>
   )

@@ -3,48 +3,48 @@
 import React, { useState, useMemo, useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import {
-  TrendingUp,
-  DollarSign,
-  AlertTriangle,
-  AlertCircle,
-  Package,
-  Truck,
-  Printer,
-  Users,
-  ShieldCheck,
-  Plus,
-  ArrowUpRight,
-  ArrowDownRight,
-  ArrowRight,
-  Receipt,
-  Building,
-  Clock,
-  Calendar,
-  CheckCircle2,
-  Layers,
-  ChevronRight,
-  ExternalLink,
-  MessageSquare,
-  FileText,
-  Play,
-  Pause,
-  AlertOctagon,
-  MoreHorizontal,
-  RefreshCw,
-  Sparkles,
-  Phone,
-  BarChart3,
-  Check,
-  X,
-  Wallet,
-  Landmark,
-  Smartphone,
-  Gauge,
-  Cpu,
-  ShoppingBag,
-  ShoppingCart,
-  Settings,
-  Coins,
+ TrendingUp,
+ DollarSign,
+ AlertTriangle,
+ AlertCircle,
+ Package,
+ Truck,
+ Printer,
+ Users,
+ ShieldCheck,
+ Plus,
+ ArrowUpRight,
+ ArrowDownRight,
+ ArrowRight,
+ Receipt,
+ Building,
+ Clock,
+ Calendar,
+ CheckCircle2,
+ Layers,
+ ChevronRight,
+ ExternalLink,
+ MessageSquare,
+ FileText,
+ Play,
+ Pause,
+ AlertOctagon,
+ MoreHorizontal,
+ RefreshCw,
+ Sparkles,
+ Phone,
+ BarChart3,
+ Check,
+ X,
+ Wallet,
+ Landmark,
+ Smartphone,
+ Gauge,
+ Cpu,
+ ShoppingBag,
+ ShoppingCart,
+ Settings,
+ Coins,
 } from 'lucide-react'
 import { useI18n } from '@/i18n/context'
 import { useTenant } from '@/hooks/use-tenant'
@@ -61,293 +61,293 @@ import { getBangladeshGreeting, formatBangladeshDate, getBangladeshTodayDateStri
 import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import type {
-  OwnerDashboardSnapshot,
-  CriticalStockAlert,
-  SegmentMetrics,
-  LiquiditySummary,
-  MachineryFloorSummary,
+ OwnerDashboardSnapshot,
+ CriticalStockAlert,
+ SegmentMetrics,
+ LiquiditySummary,
+ MachineryFloorSummary,
 } from '@/services/dashboard.service'
 import type { EvaluatedJobRisk, NeedsAttentionItem } from '@/lib/dashboard/job-risk-engine'
 import type { OverdueReceivableSummary } from '@/lib/finance/canonical-finance'
 import {
-  ResponsiveContainer,
-  AreaChart,
-  Area,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  CartesianGrid,
+ ResponsiveContainer,
+ AreaChart,
+ Area,
+ BarChart,
+ Bar,
+ XAxis,
+ YAxis,
+ Tooltip,
+ CartesianGrid,
 } from 'recharts'
 
 interface OwnerDashboardProps {
-  data: OwnerDashboardSnapshot
-  onOpenNewWork: () => void
-  onOpenPaymentModal: (invoiceId?: string) => void
-  onRefresh: () => void
-  isUpdating?: boolean
+ data: OwnerDashboardSnapshot
+ onOpenNewWork: () => void
+ onOpenPaymentModal: (invoiceId?: string) => void
+ onRefresh: () => void
+ isUpdating?: boolean
 }
 
 export function OwnerDashboard({
-  data,
-  onOpenNewWork,
-  onOpenPaymentModal,
-  onRefresh,
-  isUpdating = false,
+ data,
+ onOpenNewWork,
+ onOpenPaymentModal,
+ onRefresh,
+ isUpdating = false,
 }: OwnerDashboardProps) {
-  const { tBilingual, locale } = useI18n()
-  const { company, currentBranch, currentUser } = useTenant()
-  const router = useRouter()
-  const pathname = usePathname()
-  const num = (v: number | string) => (typeof v === 'number' ? v.toLocaleString() : v)
+ const { tBilingual, locale } = useI18n()
+ const { company, currentBranch, currentUser } = useTenant()
+ const router = useRouter()
+ const pathname = usePathname()
+ const num = (v: number | string) => (typeof v === 'number' ? v.toLocaleString() : v)
 
-  const [isMounted, setIsMounted] = useState(false)
-  useEffect(() => {
-    setIsMounted(true)
+ const [isMounted, setIsMounted] = useState(false)
+ useEffect(() => {
+ setIsMounted(true)
   }, [])
 
-  const greeting = getBangladeshGreeting(locale as 'en' | 'bn')
-  const userFirstName = currentUser?.profile?.full_name?.split(' ')[0] || (locale === 'bn' ? 'মালিক' : 'Owner')
+ const greeting = getBangladeshGreeting(locale as 'en' | 'bn')
+ const userFirstName = currentUser?.profile?.full_name?.split(' ')[0] || (locale === 'bn' ? 'মালিক' : 'Owner')
 
   // Production Filter State
-  const [prodFilter, setProdFilter] = useState<'all' | 'digital' | 'offset' | 'signage' | 'urgent' | 'finishing'>('all')
+ const [prodFilter, setProdFilter] = useState<'all' | 'digital' | 'offset' | 'signage' | 'urgent' | 'finishing'>('all')
 
   // Reminder Modal State
-  const [reminderItem, setReminderItem] = useState<OverdueReceivableSummary | null>(null)
-  const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false)
+ const [reminderItem, setReminderItem] = useState<OverdueReceivableSummary | null>(null)
+ const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false)
 
   // Fail-Safe Data Normalization
-  const safeData = useMemo(() => {
-    const raw = data || ({} as Partial<OwnerDashboardSnapshot>)
-    return {
-      timestamp: raw.timestamp || new Date().toISOString(),
-      companyId: raw.companyId || company?.id || '',
-      branchId: raw.branchId || null,
-      businessDate: raw.businessDate || getBangladeshTodayDateString(),
-      hasFinancialPermission: raw.hasFinancialPermission !== false,
-      salesMetrics: {
-        isRestricted: Boolean(raw.salesMetrics?.isRestricted),
-        todaySales: raw.salesMetrics?.todaySales ?? 0,
-        todaySalesCount: raw.salesMetrics?.todaySalesCount ?? 0,
-        yesterdaySales: raw.salesMetrics?.yesterdaySales ?? 0,
-        yesterdaySalesCount: raw.salesMetrics?.yesterdaySalesCount ?? 0,
-        salesChangePercent: raw.salesMetrics?.salesChangePercent ?? null,
-        currency: 'BDT' as const,
+ const safeData = useMemo(() => {
+ const raw = data || ({} as Partial<OwnerDashboardSnapshot>)
+ return {
+ timestamp: raw.timestamp || new Date().toISOString(),
+ companyId: raw.companyId || company?.id || '',
+ branchId: raw.branchId || null,
+ businessDate: raw.businessDate || getBangladeshTodayDateString(),
+ hasFinancialPermission: raw.hasFinancialPermission !== false,
+ salesMetrics: {
+ isRestricted: Boolean(raw.salesMetrics?.isRestricted),
+ todaySales: raw.salesMetrics?.todaySales ?? 0,
+ todaySalesCount: raw.salesMetrics?.todaySalesCount ?? 0,
+ yesterdaySales: raw.salesMetrics?.yesterdaySales ?? 0,
+ yesterdaySalesCount: raw.salesMetrics?.yesterdaySalesCount ?? 0,
+ salesChangePercent: raw.salesMetrics?.salesChangePercent ?? null,
+ currency: 'BDT' as const,
       },
-      collectionMetrics: {
-        isRestricted: Boolean(raw.collectionMetrics?.isRestricted),
-        todayCollection: raw.collectionMetrics?.todayCollection ?? 0,
-        todayCollectionCount: raw.collectionMetrics?.todayCollectionCount ?? 0,
-        yesterdayCollection: raw.collectionMetrics?.yesterdayCollection ?? 0,
-        yesterdayCollectionCount: raw.collectionMetrics?.yesterdayCollectionCount ?? 0,
-        collectionChangePercent: raw.collectionMetrics?.collectionChangePercent ?? null,
-        currency: 'BDT' as const,
+ collectionMetrics: {
+ isRestricted: Boolean(raw.collectionMetrics?.isRestricted),
+ todayCollection: raw.collectionMetrics?.todayCollection ?? 0,
+ todayCollectionCount: raw.collectionMetrics?.todayCollectionCount ?? 0,
+ yesterdayCollection: raw.collectionMetrics?.yesterdayCollection ?? 0,
+ yesterdayCollectionCount: raw.collectionMetrics?.yesterdayCollectionCount ?? 0,
+ collectionChangePercent: raw.collectionMetrics?.collectionChangePercent ?? null,
+ currency: 'BDT' as const,
       },
-      receivablesMetrics: {
-        isRestricted: Boolean(raw.receivablesMetrics?.isRestricted),
-        totalDue: raw.receivablesMetrics?.totalDue ?? 0,
-        overdueCount: raw.receivablesMetrics?.overdueCount ?? 0,
-        overdueTotal: raw.receivablesMetrics?.overdueTotal ?? 0,
-        unpaidInvoicesCount: raw.receivablesMetrics?.unpaidInvoicesCount ?? 0,
-        currency: 'BDT' as const,
+ receivablesMetrics: {
+ isRestricted: Boolean(raw.receivablesMetrics?.isRestricted),
+ totalDue: raw.receivablesMetrics?.totalDue ?? 0,
+ overdueCount: raw.receivablesMetrics?.overdueCount ?? 0,
+ overdueTotal: raw.receivablesMetrics?.overdueTotal ?? 0,
+ unpaidInvoicesCount: raw.receivablesMetrics?.unpaidInvoicesCount ?? 0,
+ currency: 'BDT' as const,
       },
-      profitMetrics: {
-        isRestricted: Boolean(raw.profitMetrics?.isRestricted),
-        hasReliableCostData: Boolean(raw.profitMetrics?.hasReliableCostData),
-        totalRevenue: raw.profitMetrics?.totalRevenue ?? 0,
-        totalCost: raw.profitMetrics?.totalCost ?? 0,
-        grossProfit: raw.profitMetrics?.grossProfit ?? 0,
-        marginPercent: raw.profitMetrics?.marginPercent ?? 0,
-        currency: 'BDT' as const,
-        costBreakdown: raw.profitMetrics?.costBreakdown ?? {
-          materialCost: 0,
-          laborCost: 0,
-          machineCost: 0,
-          otherCost: 0,
+ profitMetrics: {
+ isRestricted: Boolean(raw.profitMetrics?.isRestricted),
+ hasReliableCostData: Boolean(raw.profitMetrics?.hasReliableCostData),
+ totalRevenue: raw.profitMetrics?.totalRevenue ?? 0,
+ totalCost: raw.profitMetrics?.totalCost ?? 0,
+ grossProfit: raw.profitMetrics?.grossProfit ?? 0,
+ marginPercent: raw.profitMetrics?.marginPercent ?? 0,
+ currency: 'BDT' as const,
+ costBreakdown: raw.profitMetrics?.costBreakdown ?? {
+ materialCost: 0,
+ laborCost: 0,
+ machineCost: 0,
+ otherCost: 0,
         },
       },
-      liquiditySummary: (() => {
-        if (raw.liquiditySummary && raw.liquiditySummary.totalLiquidAssets > 0) {
-          return raw.liquiditySummary
+ liquiditySummary: (() => {
+ if (raw.liquiditySummary && raw.liquiditySummary.totalLiquidAssets > 0) {
+ return raw.liquiditySummary
         }
         // Client-side fallback if server-side returned 0
-        try {
-          if (typeof window !== 'undefined') {
-            const payments = [
+ try {
+ if (typeof window !== 'undefined') {
+ const payments = [
               ...(PrintERPDataStore.getAll<any>(STORAGE_KEYS.PAYMENTS, company?.slug) || []),
               ...(PrintERPDataStore.getAll<any>(STORAGE_KEYS.PAYMENTS, company?.id) || []),
               ...(PrintERPDataStore.get<any[]>(STORAGE_KEYS.PAYMENTS) || []),
             ]
-            const invoices = [
+ const invoices = [
               ...(PrintERPDataStore.getAll<any>(STORAGE_KEYS.INVOICES, company?.slug) || []),
               ...(PrintERPDataStore.getAll<any>(STORAGE_KEYS.INVOICES, company?.id) || []),
               ...(PrintERPDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || []),
             ]
-            const expenses = [
+ const expenses = [
               ...(PrintERPDataStore.getAll<any>(STORAGE_KEYS.EXPENSES, company?.slug) || []),
               ...(PrintERPDataStore.getAll<any>(STORAGE_KEYS.EXPENSES, company?.id) || []),
               ...(PrintERPDataStore.get<any[]>(STORAGE_KEYS.EXPENSES) || []),
             ]
 
-            let pCash = 0, pMfs = 0, pBank = 0
-            const seenPay = new Set<string>()
-            payments.forEach((p) => {
-              if (p?.id && !seenPay.has(p.id)) {
-                seenPay.add(p.id)
-                const amt = Number(p.amount) || 0
-                const meth = String(p.payment_method || '').toLowerCase()
-                if (meth === 'cash') pCash += amt
-                else if (meth.includes('bkash') || meth.includes('nagad') || meth.includes('mfs') || meth.includes('rocket') || meth.includes('upay')) pMfs += amt
-                else if (meth.includes('bank') || meth.includes('cheque') || meth.includes('card')) pBank += amt
-                else pCash += amt
+ let pCash = 0, pMfs = 0, pBank = 0
+ const seenPay = new Set<string>()
+ payments.forEach((p) => {
+ if (p?.id && !seenPay.has(p.id)) {
+ seenPay.add(p.id)
+ const amt = Number(p.amount) || 0
+ const meth = String(p.payment_method || '').toLowerCase()
+ if (meth === 'cash') pCash += amt
+ else if (meth.includes('bkash') || meth.includes('nagad') || meth.includes('mfs') || meth.includes('rocket') || meth.includes('upay')) pMfs += amt
+ else if (meth.includes('bank') || meth.includes('cheque') || meth.includes('card')) pBank += amt
+ else pCash += amt
               }
             })
 
-            if (pCash === 0 && pMfs === 0 && pBank === 0) {
-              const seenInv = new Set<string>()
-              let totalInvPaid = 0
-              invoices.forEach((inv) => {
-                if (inv?.id && !seenInv.has(inv.id)) {
-                  seenInv.add(inv.id)
-                  totalInvPaid += Number(inv.paid_amount) || 0
+ if (pCash === 0 && pMfs === 0 && pBank === 0) {
+ const seenInv = new Set<string>()
+ let totalInvPaid = 0
+ invoices.forEach((inv) => {
+ if (inv?.id && !seenInv.has(inv.id)) {
+ seenInv.add(inv.id)
+ totalInvPaid += Number(inv.paid_amount) || 0
                 }
               })
-              if (totalInvPaid > 0) {
-                pCash = Math.round(totalInvPaid * 0.6)
-                pMfs = Math.round(totalInvPaid * 0.4)
+ if (totalInvPaid > 0) {
+ pCash = Math.round(totalInvPaid * 0.6)
+ pMfs = Math.round(totalInvPaid * 0.4)
               }
             }
 
-            let eCash = 0, eMfs = 0, eBank = 0
-            const seenExp = new Set<string>()
-            expenses.forEach((e) => {
-              if (e?.id && !seenExp.has(e.id)) {
-                seenExp.add(e.id)
-                const amt = Number(e.amount) || 0
-                const meth = String(e.payment_method || e.method || '').toLowerCase()
-                if (meth.includes('bkash') || meth.includes('nagad') || meth.includes('mfs')) eMfs += amt
-                else if (meth.includes('bank') || meth.includes('cheque') || meth.includes('card')) eBank += amt
-                else eCash += amt
+ let eCash = 0, eMfs = 0, eBank = 0
+ const seenExp = new Set<string>()
+ expenses.forEach((e) => {
+ if (e?.id && !seenExp.has(e.id)) {
+ seenExp.add(e.id)
+ const amt = Number(e.amount) || 0
+ const meth = String(e.payment_method || e.method || '').toLowerCase()
+ if (meth.includes('bkash') || meth.includes('nagad') || meth.includes('mfs')) eMfs += amt
+ else if (meth.includes('bank') || meth.includes('cheque') || meth.includes('card')) eBank += amt
+ else eCash += amt
               }
             })
 
-            const cHand = Math.max(0, pCash - eCash)
-            const mfs = Math.max(0, pMfs - eMfs)
-            const bank = Math.max(0, pBank - eBank)
-            const tot = cHand + mfs + bank
-            const todayCol = raw.collectionMetrics?.todayCollection ?? 0
-            const todayExp = raw.liquiditySummary?.todayExpenses ?? 0
+ const cHand = Math.max(0, pCash - eCash)
+ const mfs = Math.max(0, pMfs - eMfs)
+ const bank = Math.max(0, pBank - eBank)
+ const tot = cHand + mfs + bank
+ const todayCol = raw.collectionMetrics?.todayCollection ?? 0
+ const todayExp = raw.liquiditySummary?.todayExpenses ?? 0
 
-            if (tot > 0 || cHand > 0 || mfs > 0 || bank > 0) {
-              return {
-                cashInHand: cHand,
-                bankBalance: bank,
-                mfsBalance: mfs,
-                totalLiquidAssets: tot,
-                todayCollection: todayCol,
-                todayExpenses: todayExp,
-                todayNetCashFlow: Number((todayCol - todayExp).toFixed(2)),
+ if (tot > 0 || cHand > 0 || mfs > 0 || bank > 0) {
+ return {
+ cashInHand: cHand,
+ bankBalance: bank,
+ mfsBalance: mfs,
+ totalLiquidAssets: tot,
+ todayCollection: todayCol,
+ todayExpenses: todayExp,
+ todayNetCashFlow: Number((todayCol - todayExp).toFixed(2)),
               }
             }
           }
         } catch {}
-        return raw.liquiditySummary || {
-          cashInHand: 0,
-          bankBalance: 0,
-          mfsBalance: 0,
-          totalLiquidAssets: 0,
-          todayCollection: raw.collectionMetrics?.todayCollection ?? 0,
-          todayExpenses: 0,
-          todayNetCashFlow: raw.collectionMetrics?.todayCollection ?? 0,
+ return raw.liquiditySummary || {
+ cashInHand: 0,
+ bankBalance: 0,
+ mfsBalance: 0,
+ totalLiquidAssets: 0,
+ todayCollection: raw.collectionMetrics?.todayCollection ?? 0,
+ todayExpenses: 0,
+ todayNetCashFlow: raw.collectionMetrics?.todayCollection ?? 0,
         }
       })(),
-      segmentMetrics: raw.segmentMetrics || {
-        digital: { activeJobsCount: 0, completedTodayCount: 0, todaySales: 0 },
-        offset: { activeJobsCount: 0, platesPending: 0, pressRunning: 0, todaySales: 0 },
-        signage: { activeJobsCount: 0, totalSqFt: 0, installationPending: 0, todaySales: 0 },
+ segmentMetrics: raw.segmentMetrics || {
+ digital: { activeJobsCount: 0, completedTodayCount: 0, todaySales: 0 },
+ offset: { activeJobsCount: 0, platesPending: 0, pressRunning: 0, todaySales: 0 },
+ signage: { activeJobsCount: 0, totalSqFt: 0, installationPending: 0, todaySales: 0 },
       },
-      criticalStockAlerts: Array.isArray(raw.criticalStockAlerts) ? raw.criticalStockAlerts : [],
-      machinerySummary: raw.machinerySummary || {
-        totalMachines: 0,
-        runningCount: 0,
-        idleCount: 0,
-        maintenanceCount: 0,
-        breakdownCount: 0,
+ criticalStockAlerts: Array.isArray(raw.criticalStockAlerts) ? raw.criticalStockAlerts : [],
+ machinerySummary: raw.machinerySummary || {
+ totalMachines: 0,
+ runningCount: 0,
+ idleCount: 0,
+ maintenanceCount: 0,
+ breakdownCount: 0,
       },
-      attentionItems: Array.isArray(raw.attentionItems) ? raw.attentionItems : [],
-      blockedWorkItems: Array.isArray(raw.blockedWorkItems) ? raw.blockedWorkItems : [],
-      productionSummary: {
-        activeCount: raw.productionSummary?.activeCount ?? 0,
-        runningCount: raw.productionSummary?.runningCount ?? 0,
-        queuedCount: raw.productionSummary?.queuedCount ?? 0,
-        waitingCount: raw.productionSummary?.waitingCount ?? 0,
-        finishingCount: raw.productionSummary?.finishingCount ?? 0,
-        atRiskCount: raw.productionSummary?.atRiskCount ?? 0,
-        completedTodayCount: raw.productionSummary?.completedTodayCount ?? 0,
-        topJobs: Array.isArray(raw.productionSummary?.topJobs) ? raw.productionSummary.topJobs : [],
+ attentionItems: Array.isArray(raw.attentionItems) ? raw.attentionItems : [],
+ blockedWorkItems: Array.isArray(raw.blockedWorkItems) ? raw.blockedWorkItems : [],
+ productionSummary: {
+ activeCount: raw.productionSummary?.activeCount ?? 0,
+ runningCount: raw.productionSummary?.runningCount ?? 0,
+ queuedCount: raw.productionSummary?.queuedCount ?? 0,
+ waitingCount: raw.productionSummary?.waitingCount ?? 0,
+ finishingCount: raw.productionSummary?.finishingCount ?? 0,
+ atRiskCount: raw.productionSummary?.atRiskCount ?? 0,
+ completedTodayCount: raw.productionSummary?.completedTodayCount ?? 0,
+ topJobs: Array.isArray(raw.productionSummary?.topJobs) ? raw.productionSummary.topJobs : [],
       },
-      deliverySummary: {
-        scheduledCount: raw.deliverySummary?.scheduledCount ?? 0,
-        assignedCount: raw.deliverySummary?.assignedCount ?? 0,
-        outForDeliveryCount: raw.deliverySummary?.outForDeliveryCount ?? 0,
-        deliveredCount: raw.deliverySummary?.deliveredCount ?? 0,
-        delayedCount: raw.deliverySummary?.delayedCount ?? 0,
-        topDeliveries: Array.isArray(raw.deliverySummary?.topDeliveries) ? raw.deliverySummary.topDeliveries : [],
+ deliverySummary: {
+ scheduledCount: raw.deliverySummary?.scheduledCount ?? 0,
+ assignedCount: raw.deliverySummary?.assignedCount ?? 0,
+ outForDeliveryCount: raw.deliverySummary?.outForDeliveryCount ?? 0,
+ deliveredCount: raw.deliverySummary?.deliveredCount ?? 0,
+ delayedCount: raw.deliverySummary?.delayedCount ?? 0,
+ topDeliveries: Array.isArray(raw.deliverySummary?.topDeliveries) ? raw.deliverySummary.topDeliveries : [],
       },
-      moneyToCollect: Array.isArray(raw.moneyToCollect) ? raw.moneyToCollect : [],
-      pipelineCounts: {
-        newWork: raw.pipelineCounts?.newWork ?? 0,
-        quotation: raw.pipelineCounts?.quotation ?? 0,
-        approved: raw.pipelineCounts?.approved ?? 0,
-        design: raw.pipelineCounts?.design ?? 0,
-        production: raw.pipelineCounts?.production ?? 0,
-        ready: raw.pipelineCounts?.ready ?? 0,
-        delivered: raw.pipelineCounts?.delivered ?? 0,
+ moneyToCollect: Array.isArray(raw.moneyToCollect) ? raw.moneyToCollect : [],
+ pipelineCounts: {
+ newWork: raw.pipelineCounts?.newWork ?? 0,
+ quotation: raw.pipelineCounts?.quotation ?? 0,
+ approved: raw.pipelineCounts?.approved ?? 0,
+ design: raw.pipelineCounts?.design ?? 0,
+ production: raw.pipelineCounts?.production ?? 0,
+ ready: raw.pipelineCounts?.ready ?? 0,
+ delivered: raw.pipelineCounts?.delivered ?? 0,
       },
-      trendData: Array.isArray(raw.trendData) ? raw.trendData : [],
-      branchCount: raw.branchCount ?? 1,
+ trendData: Array.isArray(raw.trendData) ? raw.trendData : [],
+ branchCount: raw.branchCount ?? 1,
     }
   }, [data, company?.id])
 
   // Real Computed Operations & Pipeline Metrics (Zero demo data fallbacks)
-  const realTotalOrders = useMemo(() => {
-    let storeOrdersCount = 0
-    if (typeof window !== 'undefined') {
-      try {
-        const orders = [
+ const realTotalOrders = useMemo(() => {
+ let storeOrdersCount = 0
+ if (typeof window !== 'undefined') {
+ try {
+ const orders = [
           ...(PrintERPDataStore.getAll<any>(STORAGE_KEYS.ORDERS, company?.slug) || []),
           ...(PrintERPDataStore.getAll<any>(STORAGE_KEYS.ORDERS, company?.id) || []),
         ]
-        const seen = new Set<string>()
-        storeOrdersCount = orders.filter((o) => o?.id && !seen.has(o.id) && seen.add(o.id)).length
+ const seen = new Set<string>()
+ storeOrdersCount = orders.filter((o) => o?.id && !seen.has(o.id) && seen.add(o.id)).length
       } catch {}
     }
-    const pipelineSum =
+ const pipelineSum =
       (safeData.pipelineCounts?.newWork ?? 0) +
       (safeData.pipelineCounts?.production ?? 0) +
       (safeData.pipelineCounts?.ready ?? 0) +
       (safeData.pipelineCounts?.delivered ?? 0)
-    return Math.max(storeOrdersCount, pipelineSum, safeData.salesMetrics.todaySalesCount ?? 0)
+ return Math.max(storeOrdersCount, pipelineSum, safeData.salesMetrics.todaySalesCount ?? 0)
   }, [company?.id, company?.slug, safeData])
 
-  const realPendingOrders = useMemo(() => {
-    return (safeData.receivablesMetrics.unpaidInvoicesCount ?? 0) > 0
+ const realPendingOrders = useMemo(() => {
+ return (safeData.receivablesMetrics.unpaidInvoicesCount ?? 0) > 0
       ? (safeData.receivablesMetrics.unpaidInvoicesCount ?? 0)
       : (safeData.pipelineCounts?.newWork ?? 0) + (safeData.pipelineCounts?.quotation ?? 0)
   }, [safeData])
 
-  const realProductionCount = useMemo(() => {
-    return (
-      safeData.productionSummary?.activeCount ??
+ const realProductionCount = useMemo(() => {
+ return (
+ safeData.productionSummary?.activeCount ??
       ((safeData.segmentMetrics?.digital.activeJobsCount ?? 0) +
         (safeData.segmentMetrics?.offset.activeJobsCount ?? 0) +
         (safeData.segmentMetrics?.signage.activeJobsCount ?? 0))
     )
   }, [safeData])
 
-  const realReadyForDeliveryCount = useMemo(() => {
-    return (
+ const realReadyForDeliveryCount = useMemo(() => {
+ return (
       (safeData.deliverySummary?.scheduledCount ?? 0) +
         (safeData.deliverySummary?.assignedCount ?? 0) ||
       (safeData.pipelineCounts?.ready ?? 0) ||
@@ -355,58 +355,58 @@ export function OwnerDashboard({
     )
   }, [safeData])
 
-  const salesTrend = useMemo(() => {
-    if (safeData.salesMetrics.salesChangePercent === null || safeData.salesMetrics.salesChangePercent === undefined) {
-      return undefined
+ const salesTrend = useMemo(() => {
+ if (safeData.salesMetrics.salesChangePercent === null || safeData.salesMetrics.salesChangePercent === undefined) {
+ return undefined
     }
-    const val = safeData.salesMetrics.salesChangePercent
-    return {
-      value: `${Math.abs(val)}%`,
-      labelEn: 'vs yesterday',
-      labelBn: 'গতকালের তুলনায়',
-      direction: (val >= 0 ? 'up' : 'down') as 'up' | 'down',
-      isGood: val >= 0,
+ const val = safeData.salesMetrics.salesChangePercent
+ return {
+ value: `${Math.abs(val)}%`,
+ labelEn: 'vs yesterday',
+ labelBn: 'গতকালের তুলনায়',
+ direction: (val >= 0 ? 'up' : 'down') as 'up' | 'down',
+ isGood: val >= 0,
     }
   }, [safeData.salesMetrics.salesChangePercent])
 
   // Filtered Production Jobs according to Printing Streams
-  const filteredProductionJobs = (safeData.productionSummary.topJobs || []).filter((j) => {
-    const name = `${j.productName || ''} ${j.currentStage || ''}`.toLowerCase()
-    if (prodFilter === 'digital') {
-      return name.includes('digital') || name.includes('laser') || name.includes('card') || name.includes('flyer') || name.includes('brochure') || name.includes('id') || name.includes('mug') || name.includes('crest')
+ const filteredProductionJobs = (safeData.productionSummary.topJobs || []).filter((j) => {
+ const name = `${j.productName || ''} ${j.currentStage || ''}`.toLowerCase()
+ if (prodFilter === 'digital') {
+ return name.includes('digital') || name.includes('laser') || name.includes('card') || name.includes('flyer') || name.includes('brochure') || name.includes('id') || name.includes('mug') || name.includes('crest')
     }
-    if (prodFilter === 'offset') {
-      return name.includes('offset') || name.includes('book') || name.includes('box') || name.includes('carton') || name.includes('magazine') || name.includes('memo') || name.includes('voucher') || name.includes('poster') || name.includes('pad')
+ if (prodFilter === 'offset') {
+ return name.includes('offset') || name.includes('book') || name.includes('box') || name.includes('carton') || name.includes('magazine') || name.includes('memo') || name.includes('voucher') || name.includes('poster') || name.includes('pad')
     }
-    if (prodFilter === 'signage') {
-      return name.includes('signage') || name.includes('large_format') || name.includes('banner') || name.includes('vinyl') || name.includes('flex') || name.includes('sticker') || name.includes('acrylic') || name.includes('board') || name.includes('standee')
+ if (prodFilter === 'signage') {
+ return name.includes('signage') || name.includes('large_format') || name.includes('banner') || name.includes('vinyl') || name.includes('flex') || name.includes('sticker') || name.includes('acrylic') || name.includes('board') || name.includes('standee')
     }
-    if (prodFilter === 'urgent') return j.riskLevel === 'critical' || j.riskLevel === 'at_risk'
-    if (prodFilter === 'finishing') return j.currentStage === 'finishing'
-    return true
+ if (prodFilter === 'urgent') return j.riskLevel === 'critical' || j.riskLevel === 'at_risk'
+ if (prodFilter === 'finishing') return j.currentStage === 'finishing'
+ return true
   })
 
   // Format Respectful Bangladeshi WhatsApp Reminder Message with Payment Account Info
-  const getWhatsAppReminderUrl = (item: OverdueReceivableSummary) => {
-    const rawPhone = (item.customerPhone || '').replace(/\D/g, '')
-    const phone = rawPhone.startsWith('880') ? rawPhone : rawPhone.startsWith('0') ? `88${rawPhone}` : `880${rawPhone}`
-    const companyTitle = company?.name || 'প্রিন্টিং প্রেস'
-    const msg = encodeURIComponent(
+ const getWhatsAppReminderUrl = (item: OverdueReceivableSummary) => {
+ const rawPhone = (item.customerPhone || '').replace(/\D/g, '')
+ const phone = rawPhone.startsWith('880') ? rawPhone : rawPhone.startsWith('0') ? `88${rawPhone}` : `880${rawPhone}`
+ const companyTitle = company?.name || 'প্রিন্টিং প্রেস'
+ const msg = encodeURIComponent(
       `আসসালামু আলাইকুম / আদাব ${item.customerName},\n` +
       `${companyTitle} থেকে আপনার ইনভয়েস #${item.invoiceNumber}-এর বকেয়া বিল ${formatBDT(item.dueAmount)} পরিশোধের জন্য বিনীত অনুরোধ করা যাচ্ছে।\n` +
       `বিল পরিশোধের তারিখ ছিল: ${item.dueDate} (${item.daysOverdue} দিন অতিবাহিত)।\n` +
       `বিকাশ মার্চেন্ট / নগদ / ব্যাংক একাউন্টে পেমেন্ট করে অনুগ্রহ করে ট্রানজেকশন আইডি আমাদের অবহিত করুন।\n` +
       `ধন্যবাদ!`
     )
-    return `https://wa.me/${phone}?text=${msg}`
+ return `https://wa.me/${phone}?text=${msg}`
   }
 
-  return (
+ return (
     <div className="space-y-6 pb-16">
       {/* ========================================================================= */}
       {/* 1. UPGRADED EXECUTIVE CONTROL CENTER HEADER (Vibrant Gradient + Identity) */}
       {/* ========================================================================= */}
-      <div className="rounded-2xl bg-card border border-border shadow-xs p-5 sm:p-6">
+      <div className="rounded-xl bg-card border border-border shadow-xs p-5 sm:p-6">
         {/* Ambient Subtle Accent Highlights */}
         
         
@@ -421,16 +421,14 @@ export function OwnerDashboard({
               </span>
 
               <Badge
-                variant="outline"
-                className="font-semibold text-2xs sm:text-xs py-0.5 px-2.5"
-              >
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                <span>{tBilingual('Digital • Offset • Signage Command Center', 'ডিজিটাল • অফসেট • সাইনেজ নিয়ন্ত্রণ কেন্দ্র')}</span>
+ variant="outline"className="font-semibold text-2xs sm:text-xs py-0.5 px-2.5">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse"/>
+                <span>{tBilingual('Owner Dashboard', 'ডিজিটাল • অফসেট • সাইনেজ নিয়ন্ত্রণ কেন্দ্র')}</span>
               </Badge>
 
               {currentBranch && (
-                <Badge variant="outline" className="text-2xs py-0.5 px-2">
-                  <Building className="h-3 w-3 mr-1 text-blue-200" />
+                <Badge variant="outline"className="text-2xs py-0.5 px-2">
+                  <Building className="h-3 w-3 mr-1 text-blue-200"/>
                   {currentBranch.name.split('(')[0].trim()}
                 </Badge>
               )}
@@ -438,21 +436,20 @@ export function OwnerDashboard({
 
             {/* Main Greeting */}
             <h1
-              className="text-2xl sm:text-3xl font-black tracking-tight text-foreground bangla-text leading-tight"
-              suppressHydrationWarning
+ className="text-2xl sm:text-3xl font-black tracking-tight text-foreground bangla-text leading-tight"suppressHydrationWarning
             >
               {tBilingual(`${greeting.en}, ${userFirstName}`, `${greeting.bn}, ${userFirstName}`)}
             </h1>
 
             {/* Business Date */}
             <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground font-medium pt-0.5">
-              <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
+              <Calendar className="h-4 w-4 text-muted-foreground shrink-0"/>
               <span suppressHydrationWarning>
                 {formatBangladeshDate(new Date(), locale as 'en' | 'bn', {
-                  weekday: 'long',
-                  month: 'short',
-                  day: 'numeric',
-                  year: 'numeric',
+ weekday: 'long',
+ month: 'short',
+ day: 'numeric',
+ year: 'numeric',
                 })}
               </span>
             </div>
@@ -461,24 +458,22 @@ export function OwnerDashboard({
           {/* RIGHT: Time/Status Focal Area (Large Clock + Current Time) */}
           <div className="flex flex-col md:items-end justify-center shrink-0 pt-3 md:pt-0 border-t border-border md:border-t-0">
             <div className="flex items-center gap-2 md:justify-end text-muted-foreground mb-1">
-              <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
+              <Clock className="h-4 w-4 text-muted-foreground shrink-0"/>
               <span className="text-2xs sm:text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                 {tBilingual('Current Time', 'বর্তমান সময়')}
               </span>
               {isUpdating && (
                 <span className="flex items-center gap-1 text-2xs font-semibold text-muted-foreground bg-muted px-2 py-0.5 rounded-full border border-border animate-pulse">
-                  <RefreshCw className="h-2.5 w-2.5 animate-spin" />
+                  <RefreshCw className="h-2.5 w-2.5 animate-spin"/>
                   <span>{tBilingual('Syncing', 'সিঙ্ক হচ্ছে')}</span>
                 </span>
               )}
             </div>
 
             <LiveDhakaClock
-              showSeconds={true}
-              showIcon={false}
-              className="inline-flex items-center"
-              timeClassName="text-3xl sm:text-4xl font-bold font-numeric tabular-nums tracking-normal text-foreground leading-none"
-            />
+ showSeconds={true}
+ showIcon={false}
+ className="inline-flex items-center"timeClassName="text-3xl sm:text-4xl font-bold font-numeric tabular-nums tracking-normal text-foreground leading-none"/>
 
             <span className="text-2xs text-muted-foreground font-medium mt-1">
               {tBilingual('Asia/Dhaka (UTC+6)', 'বাংলাদেশ সময়')}
@@ -494,31 +489,29 @@ export function OwnerDashboard({
         {/* LEFT COLUMN: Quick Actions (7 cols on desktop for comfortable 3x2 cards) */}
         <div className="lg:col-span-7 flex flex-col">
           <QuickActionsBar
-            onOpenPaymentModal={onOpenPaymentModal}
-            onOpenNewWork={onOpenNewWork}
-            onRefresh={onRefresh}
-            className="h-full"
-          />
+ onOpenPaymentModal={onOpenPaymentModal}
+ onOpenNewWork={onOpenNewWork}
+ onRefresh={onRefresh}
+ className="h-full"/>
         </div>
 
         {/* RIGHT COLUMN: Needs Your Attention (5 cols on desktop) */}
         <div className="lg:col-span-5 flex flex-col">
-          <Card className="p-3.5 sm:p-4 bg-card border border-border rounded-2xl sm:rounded-3xl shadow-xs flex flex-col justify-between h-full">
+          <Card className="p-3.5 sm:p-4 bg-card border border-border rounded-xl sm:rounded-3xl shadow-xs flex flex-col justify-between h-full">
             <div>
               {/* Header Label Row */}
               <div className="flex items-center justify-between mb-3 px-1">
                 <div className="flex items-center gap-2">
                   <span className="p-1.5 rounded-lg bg-amber-50 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400 shrink-0">
-                    <AlertTriangle className="h-3.5 w-3.5" />
+                    <AlertTriangle className="h-3.5 w-3.5"/>
                   </span>
                   <h2 className="text-xs font-black uppercase tracking-wider text-foreground bangla-text">
                     {tBilingual('Needs Your Attention', 'জরুরি মনোযোগ প্রয়োজন')}
                   </h2>
                 </div>
                 <Badge
-                  variant="outline"
-                  className={`text-xs tabular-nums font-bold ${
-                    safeData.attentionItems.length > 0
+ variant="outline"className={`text-xs tabular-nums font-bold ${
+ safeData.attentionItems.length > 0
                       ? 'bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950/40 dark:text-amber-300'
                       : 'bg-emerald-50 text-emerald-800 border-emerald-300'
                   }`}
@@ -529,8 +522,8 @@ export function OwnerDashboard({
 
               {/* Content Area */}
               {safeData.attentionItems.length === 0 ? (
-                <div className="p-4 bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900 rounded-xl sm:rounded-2xl flex items-center gap-3">
-                  <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0" />
+                <div className="p-4 bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900 rounded-xl sm:rounded-xl flex items-center gap-3">
+                  <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0"/>
                   <div>
                     <div className="text-xs font-bold text-emerald-900 dark:text-emerald-100 bangla-text">
                       {tBilingual('Operations are healthy and on track!', 'ব্যবসার সকল কার্যক্রম স্বাভাবিক ও নিয়মতান্ত্রিকভাবে চলছে!')}
@@ -543,12 +536,12 @@ export function OwnerDashboard({
               ) : (
                 <div className="space-y-2.5 max-h-[380px] overflow-y-auto pr-0.5">
                   {safeData.attentionItems.map((item) => {
-                    const isUrgent = item.severity === 'urgent'
-                    return (
+ const isUrgent = item.severity === 'urgent'
+ return (
                       <div
-                        key={item.id}
-                        className={`p-3 rounded-xl sm:rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 shadow-xs transition-all ${
-                          isUrgent
+ key={item.id}
+ className={`p-3 rounded-xl sm:rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 shadow-xs transition-all ${
+ isUrgent
                             ? 'bg-rose-50/70 border-rose-200 dark:bg-rose-950/20 dark:border-rose-900/60'
                             : 'bg-amber-50/70 border-amber-200 dark:bg-amber-950/20 dark:border-amber-900/60'
                         }`}
@@ -575,20 +568,19 @@ export function OwnerDashboard({
                         </div>
 
                         <Button
-                          size="sm"
-                          onClick={() => {
-                            if (item.actionType === 'route') {
-                              router.push(getTenantNavHref(item.actionTarget, pathname, company?.slug))
+ size="sm"onClick={() => {
+ if (item.actionType === 'route') {
+ router.push(getTenantNavHref(item.actionTarget, pathname, company?.slug))
                             }
                           }}
-                          className={`h-8 sm:h-9 px-3 text-xs font-bold shrink-0 bangla-text cursor-pointer self-start sm:self-center ${
-                            isUrgent
+ className={`h-8 sm:h-9 px-3 text-xs font-bold shrink-0 bangla-text cursor-pointer self-start sm:self-center ${
+ isUrgent
                               ? 'bg-rose-600 text-white hover:bg-rose-700 border-rose-600'
                               : 'bg-amber-600 text-white hover:bg-amber-700 border-amber-600'
                           }`}
                         >
                           <span>{tBilingual(item.actionLabelEn, item.actionLabelBn)}</span>
-                          <ChevronRight className="h-3.5 w-3.5 ml-1" />
+                          <ChevronRight className="h-3.5 w-3.5 ml-1"/>
                         </Button>
                       </div>
                     )
@@ -604,24 +596,24 @@ export function OwnerDashboard({
       {/* 3. CASH & LIQUIDITY IN-DRAWER PANEL (ক্যাশ ড্রয়ার ও ডিজিটাল ব্যালেন্স)   */}
       {/* ========================================================================= */}
       {safeData.hasFinancialPermission !== false && safeData.liquiditySummary && (
-        <Card className="border-border shadow-xs bg-card rounded-2xl p-4 sm:p-5">
+        <Card className="border-border shadow-xs bg-card rounded-xl p-4 sm:p-5">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-border">
             <div className="flex items-center gap-2.5">
               <div className="p-2 rounded-lg bg-muted text-muted-foreground">
-                <Wallet className="h-5 w-5" />
+                <Wallet className="h-5 w-5"/>
               </div>
               <div>
                 <h2 className="text-sm font-bold tracking-wide text-foreground uppercase bangla-text">
-                  {tBilingual('Live Liquid Funds & Cash Drawer', 'হাতের নগদ ক্যাশ ড্রয়ার ও ডিজিটাল ব্যালেন্স')}
+                  {tBilingual('Cash Box & Bank', 'হাতের নগদ ক্যাশ ড্রয়ার ও ডিজিটাল ব্যালেন্স')}
                 </h2>
                 <p className="text-xs text-muted-foreground bangla-text">
-                  {tBilingual('Real-time counter cash in drawer, bKash merchant & bank balances', 'কাউন্টার ক্যাশ, বিকাশ/নগদ ও ব্যাংক একাউন্টের সরাসরি হিসাব')}
+                  {tBilingual('Cash in box, bKash and bank money', 'কাউন্টার ক্যাশ, বিকাশ/নগদ ও ব্যাংক একাউন্টের সরাসরি হিসাব')}
                 </p>
               </div>
             </div>
 
             <div className="flex items-center gap-2 bg-muted px-3.5 py-1.5 rounded-full border border-border">
-              <span className="text-xs text-muted-foreground font-semibold">{tBilingual('Total Liquid Cash:', 'মোট ক্যাশ ব্যালেন্স:')}</span>
+              <span className="text-xs text-muted-foreground font-semibold">{tBilingual('Total Cash:', 'মোট ক্যাশ ব্যালেন্স:')}</span>
               <span className="text-base font-black tabular-nums text-emerald-600 dark:text-emerald-400">
                 {formatBDT(safeData.liquiditySummary.totalLiquidAssets)}
               </span>
@@ -633,7 +625,7 @@ export function OwnerDashboard({
             <div className="p-3 bg-muted/50 rounded-xl border border-border hover:bg-muted transition-all space-y-1">
               <div className="flex items-center justify-between text-xs text-emerald-600 dark:text-emerald-400 font-medium">
                 <span className="flex items-center gap-1.5">
-                  <Wallet className="h-3.5 w-3.5" />
+                  <Wallet className="h-3.5 w-3.5"/>
                   {tBilingual('Cash in Drawer', 'ক্যাশ ড্রয়ার')}
                 </span>
                 <span className="text-2xs tabular-nums opacity-80">1001</span>
@@ -650,7 +642,7 @@ export function OwnerDashboard({
             <div className="p-3 bg-muted/50 rounded-xl border border-border hover:bg-muted transition-all space-y-1">
               <div className="flex items-center justify-between text-xs text-pink-600 dark:text-pink-400 font-medium">
                 <span className="flex items-center gap-1.5">
-                  <Smartphone className="h-3.5 w-3.5" />
+                  <Smartphone className="h-3.5 w-3.5"/>
                   {tBilingual('bKash / Nagad MFS', 'বিকাশ / নগদ')}
                 </span>
                 <span className="text-2xs tabular-nums opacity-80">1003</span>
@@ -667,7 +659,7 @@ export function OwnerDashboard({
             <div className="p-3 bg-muted/50 rounded-xl border border-border hover:bg-muted transition-all space-y-1">
               <div className="flex items-center justify-between text-xs text-blue-600 dark:text-blue-400 font-medium">
                 <span className="flex items-center gap-1.5">
-                  <Landmark className="h-3.5 w-3.5" />
+                  <Landmark className="h-3.5 w-3.5"/>
                   {tBilingual('Bank Accounts', 'ব্যাংক একাউন্ট')}
                 </span>
                 <span className="text-2xs tabular-nums opacity-80">1002</span>
@@ -684,7 +676,7 @@ export function OwnerDashboard({
             <div className="p-3 bg-muted/50 rounded-xl border border-border hover:bg-muted transition-all space-y-1">
               <div className="flex items-center justify-between text-xs text-amber-600 dark:text-amber-400 font-medium">
                 <span className="flex items-center gap-1.5">
-                  <TrendingUp className="h-3.5 w-3.5" />
+                  <TrendingUp className="h-3.5 w-3.5"/>
                   {tBilingual('Today Net Flow', 'আজকের নিট জমা')}
                 </span>
                 <span className="text-2xs tabular-nums font-bold text-emerald-600 dark:text-emerald-400">
@@ -713,7 +705,7 @@ export function OwnerDashboard({
       <div className="space-y-2">
         <div className="flex items-center justify-between px-1">
           <div className="flex items-center gap-2">
-            <span className="h-2.5 w-2.5 rounded-full bg-blue-600" />
+            <span className="h-2.5 w-2.5 rounded-full bg-blue-600"/>
             <h2 className="text-xs font-bold uppercase tracking-wider text-foreground bangla-text">
               {tBilingual('Business Today (Core Financials)', 'আজকের ব্যবসায়িক সারসংক্ষেপ')}
             </h2>
@@ -724,9 +716,9 @@ export function OwnerDashboard({
         </div>
 
         {safeData.hasFinancialPermission === false || safeData.salesMetrics.isRestricted ? (
-          <Card className="p-6 border-border text-center bg-muted dark:bg-card">
+          <Card className="p-6 border-border text-center bg-muted">
             <div className="inline-flex p-3 rounded-full bg-muted text-muted-foreground mb-2">
-              <ShieldCheck className="h-6 w-6" />
+              <ShieldCheck className="h-6 w-6"/>
             </div>
             <h3 className="font-bold text-sm text-foreground bangla-text">
               {tBilingual('Financial Overview Restricted', 'আর্থিক তথ্য দেখতে বিশেষ অনুমতি প্রয়োজন')}
@@ -743,85 +735,61 @@ export function OwnerDashboard({
             {/* ROW 1: Operations */}
             {/* 1. Total Orders */}
             <KpiCard
-              titleEn="Total Orders"
-              titleBn="মোট অর্ডার"
-              value={realTotalOrders}
-              icon={ShoppingCart}
-              colorVariant="blue"
-              trend={salesTrend}
+ titleEn="Total Orders"titleBn="মোট অর্ডার"value={realTotalOrders}
+ icon={ShoppingCart}
+ colorVariant="blue"trend={salesTrend}
             />
 
             {/* 2. Pending Orders */}
             <KpiCard
-              titleEn="Pending Orders"
-              titleBn="অপেক্ষমান অর্ডার"
-              value={realPendingOrders}
-              icon={Clock}
-              colorVariant="amber"
-            />
+ titleEn="Pending Orders"titleBn="অপেক্ষমান অর্ডার"value={realPendingOrders}
+ icon={Clock}
+ colorVariant="amber"/>
 
             {/* 3. Production */}
             <KpiCard
-              titleEn="Production"
-              titleBn="চলমান প্রোডাকশন"
-              value={realProductionCount}
-              icon={Settings}
-              colorVariant="indigo"
-            />
+ titleEn="Production"titleBn="চলমান প্রোডাকশন"value={realProductionCount}
+ icon={Settings}
+ colorVariant="indigo"/>
 
             {/* 4. Ready for Delivery */}
             <KpiCard
-              titleEn="Ready for Delivery"
-              titleBn="ডেলিভারি প্রস্তুত"
-              value={realReadyForDeliveryCount}
-              icon={Truck}
-              colorVariant="emerald"
-            />
+ titleEn="Ready for Delivery"titleBn="ডেলিভারি প্রস্তুত"value={realReadyForDeliveryCount}
+ icon={Truck}
+ colorVariant="emerald"/>
 
             {/* ROW 2: Financials */}
             {/* 5. Total Sales */}
             <KpiCard
-              titleEn="Total Sales"
-              titleBn="মোট বিক্রয়"
-              value={safeData.profitMetrics.totalRevenue || safeData.salesMetrics.todaySales || 0}
-              isCurrency={true}
-              icon={BarChart3}
-              colorVariant="emerald"
-              trend={salesTrend}
+ titleEn="Total Sales"titleBn="মোট বিক্রয়"value={safeData.profitMetrics.totalRevenue || safeData.salesMetrics.todaySales || 0}
+ isCurrency={true}
+ icon={BarChart3}
+ colorVariant="emerald"trend={salesTrend}
             />
 
             {/* 6. Outstanding */}
             <KpiCard
-              titleEn="Outstanding"
-              titleBn="বকেয়া বাকি"
-              value={safeData.receivablesMetrics.totalDue ?? 0}
-              isCurrency={true}
-              icon={FileText}
-              colorVariant="rose"
-            />
+ titleEn="Outstanding"titleBn="বকেয়া বাকি"value={safeData.receivablesMetrics.totalDue ?? 0}
+ isCurrency={true}
+ icon={FileText}
+ colorVariant="rose"/>
 
             {/* 7. Production Cost */}
             <KpiCard
-              titleEn="Production Cost"
-              titleBn="উৎপাদন খরচ"
-              value={safeData.profitMetrics.totalCost ?? 0}
-              isCurrency={true}
-              icon={Coins}
-              colorVariant="slate"
-            />
+ titleEn="Production Cost"titleBn="উৎপাদন খরচ"value={safeData.profitMetrics.totalCost ?? 0}
+ isCurrency={true}
+ icon={Coins}
+ colorVariant="slate"/>
 
             {/* 8. Net Profit */}
             <KpiCard
-              titleEn="Net Profit"
-              titleBn="নিট লাভ"
-              value={
-                safeData.profitMetrics.grossProfit ||
+ titleEn="Net Profit"titleBn="নিট লাভ"value={
+ safeData.profitMetrics.grossProfit ||
                 (safeData.profitMetrics.totalRevenue ? safeData.profitMetrics.totalRevenue - safeData.profitMetrics.totalCost : 0)
               }
-              isCurrency={true}
-              icon={TrendingUp}
-              colorVariant="emerald"
-            />
+ isCurrency={true}
+ icon={TrendingUp}
+ colorVariant="emerald"/>
           </KpiGrid>
         )}
       </div>
@@ -833,10 +801,9 @@ export function OwnerDashboard({
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Digital Printing Stream Card */}
           <button
-            type="button"
-            onClick={() => setProdFilter((prev) => (prev === 'digital' ? 'all' : 'digital'))}
-            className={`p-4 rounded-2xl text-left border transition-all cursor-pointer space-y-2 select-none ${
-              prodFilter === 'digital'
+ type="button"onClick={() => setProdFilter((prev) => (prev === 'digital' ? 'all' : 'digital'))}
+ className={`p-4 rounded-xl text-left border transition-all cursor-pointer space-y-2 select-none ${
+ prodFilter === 'digital'
                 ? 'bg-blue-100/70 border-blue-500 dark:bg-blue-950/60 dark:border-blue-400 ring-2 ring-blue-500/30 shadow-xs'
                 : 'bg-blue-50/40 border-blue-200 dark:bg-blue-950/20 dark:border-blue-900/60 hover:border-blue-400 hover:shadow-xs'
             }`}
@@ -844,7 +811,7 @@ export function OwnerDashboard({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="p-2 rounded-xl bg-blue-600 text-white shadow-xs">
-                  <Printer className="h-4.5 w-4.5" />
+                  <Printer className="h-4.5 w-4.5"/>
                 </div>
                 <div>
                   <div className="flex items-center gap-1.5">
@@ -855,7 +822,7 @@ export function OwnerDashboard({
                       <Badge className="bg-blue-600 text-white text-2xs py-0 px-1">Active Filter</Badge>
                     )}
                   </div>
-                  <p className="text-2xs text-muted-foreground dark:text-muted-foreground">Fast Laser, ID, Cards, Mugs, Crests</p>
+                  <p className="text-2xs text-muted-foreground">Fast Laser, ID, Cards, Mugs, Crests</p>
                 </div>
               </div>
               <Badge className="bg-blue-600 text-white text-2xs py-0.5 px-2">
@@ -864,8 +831,8 @@ export function OwnerDashboard({
             </div>
 
             <div className="pt-2 border-t border-blue-100 dark:border-blue-900/80 flex items-center justify-between text-xs tabular-nums">
-              <span className="text-muted-foreground dark:text-muted-foreground">
-                {tBilingual('Done Today:', 'আজকে সম্পন্ন:')} <strong className="text-foreground dark:text-foreground">{safeData.segmentMetrics.digital.completedTodayCount}</strong>
+              <span className="text-muted-foreground">
+                {tBilingual('Done Today:', 'আজকে সম্পন্ন:')} <strong className="text-foreground">{safeData.segmentMetrics.digital.completedTodayCount}</strong>
               </span>
               <span className="font-bold text-blue-600 dark:text-blue-400">
                 {formatBDT(safeData.segmentMetrics.digital.todaySales)}
@@ -875,10 +842,9 @@ export function OwnerDashboard({
 
           {/* Offset Printing Stream Card */}
           <button
-            type="button"
-            onClick={() => setProdFilter((prev) => (prev === 'offset' ? 'all' : 'offset'))}
-            className={`p-4 rounded-2xl text-left border transition-all cursor-pointer space-y-2 select-none ${
-              prodFilter === 'offset'
+ type="button"onClick={() => setProdFilter((prev) => (prev === 'offset' ? 'all' : 'offset'))}
+ className={`p-4 rounded-xl text-left border transition-all cursor-pointer space-y-2 select-none ${
+ prodFilter === 'offset'
                 ? 'bg-purple-100/70 border-purple-500 dark:bg-purple-950/60 dark:border-purple-400 ring-2 ring-purple-500/30 shadow-xs'
                 : 'bg-purple-50/40 border-purple-200 dark:bg-purple-950/20 dark:border-purple-900/60 hover:border-purple-400 hover:shadow-xs'
             }`}
@@ -886,7 +852,7 @@ export function OwnerDashboard({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="p-2 rounded-xl bg-purple-600 text-white shadow-xs">
-                  <Layers className="h-4.5 w-4.5" />
+                  <Layers className="h-4.5 w-4.5"/>
                 </div>
                 <div>
                   <div className="flex items-center gap-1.5">
@@ -897,7 +863,7 @@ export function OwnerDashboard({
                       <Badge className="bg-purple-600 text-white text-2xs py-0 px-1">Active Filter</Badge>
                     )}
                   </div>
-                  <p className="text-2xs text-muted-foreground dark:text-muted-foreground">Books, Packaging, Cartons, Memos, Pads</p>
+                  <p className="text-2xs text-muted-foreground">Books, Packaging, Cartons, Memos, Pads</p>
                 </div>
               </div>
               <Badge className="bg-purple-600 text-white text-2xs py-0.5 px-2">
@@ -906,8 +872,8 @@ export function OwnerDashboard({
             </div>
 
             <div className="pt-2 border-t border-purple-100 dark:border-purple-900/80 flex items-center justify-between text-xs tabular-nums">
-              <span className="text-muted-foreground dark:text-muted-foreground">
-                {tBilingual('Plates / CTP:', 'প্লেট / সিটিপি:')} <strong className="text-foreground dark:text-foreground">{safeData.segmentMetrics.offset.platesPending}</strong>
+              <span className="text-muted-foreground">
+                {tBilingual('Plates / CTP:', 'প্লেট / সিটিপি:')} <strong className="text-foreground">{safeData.segmentMetrics.offset.platesPending}</strong>
               </span>
               <span className="font-bold text-purple-600 dark:text-purple-400">
                 {formatBDT(safeData.segmentMetrics.offset.todaySales)}
@@ -917,10 +883,9 @@ export function OwnerDashboard({
 
           {/* Signage & Large Format Stream Card */}
           <button
-            type="button"
-            onClick={() => setProdFilter((prev) => (prev === 'signage' ? 'all' : 'signage'))}
-            className={`p-4 rounded-2xl text-left border transition-all cursor-pointer space-y-2 select-none ${
-              prodFilter === 'signage'
+ type="button"onClick={() => setProdFilter((prev) => (prev === 'signage' ? 'all' : 'signage'))}
+ className={`p-4 rounded-xl text-left border transition-all cursor-pointer space-y-2 select-none ${
+ prodFilter === 'signage'
                 ? 'bg-amber-100/70 border-amber-500 dark:bg-amber-950/60 dark:border-amber-400 ring-2 ring-amber-500/30 shadow-xs'
                 : 'bg-amber-50/40 border-amber-200 dark:bg-amber-950/20 dark:border-amber-900/60 hover:border-amber-400 hover:shadow-xs'
             }`}
@@ -928,7 +893,7 @@ export function OwnerDashboard({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="p-2 rounded-xl bg-amber-600 text-white shadow-xs">
-                  <Gauge className="h-4.5 w-4.5" />
+                  <Gauge className="h-4.5 w-4.5"/>
                 </div>
                 <div>
                   <div className="flex items-center gap-1.5">
@@ -939,7 +904,7 @@ export function OwnerDashboard({
                       <Badge className="bg-amber-600 text-white text-2xs py-0 px-1">Active Filter</Badge>
                     )}
                   </div>
-                  <p className="text-2xs text-muted-foreground dark:text-muted-foreground">Banner, Vinyl, Acrylic 3D, LED, Boards</p>
+                  <p className="text-2xs text-muted-foreground">Banner, Vinyl, Acrylic 3D, LED, Boards</p>
                 </div>
               </div>
               <Badge className="bg-amber-600 text-white text-2xs py-0.5 px-2">
@@ -948,8 +913,8 @@ export function OwnerDashboard({
             </div>
 
             <div className="pt-2 border-t border-amber-100 dark:border-amber-900/80 flex items-center justify-between text-xs tabular-nums">
-              <span className="text-muted-foreground dark:text-muted-foreground">
-                {tBilingual('Volume:', 'সাইজ:')} <strong className="text-foreground dark:text-foreground">{safeData.segmentMetrics.signage.totalSqFt} sft</strong>
+              <span className="text-muted-foreground">
+                {tBilingual('Volume:', 'সাইজ:')} <strong className="text-foreground">{safeData.segmentMetrics.signage.totalSqFt} sft</strong>
               </span>
               <span className="font-bold text-amber-600 dark:text-amber-400">
                 {formatBDT(safeData.segmentMetrics.signage.todaySales)}
@@ -963,11 +928,11 @@ export function OwnerDashboard({
       {/* 6. CRITICAL RAW MATERIAL LOW-STOCK ACTION WATCHLIST                       */}
       {/* ========================================================================= */}
       {safeData.criticalStockAlerts && safeData.criticalStockAlerts.length > 0 && (
-        <Card className="border-rose-200 dark:border-rose-900/60 bg-rose-50/30 dark:bg-rose-950/20 rounded-2xl p-4 space-y-3">
+        <Card className="border-rose-200 dark:border-rose-900/60 bg-rose-50/30 dark:bg-rose-950/20 rounded-xl p-4 space-y-3">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <span className="p-1 rounded-md bg-rose-600 text-white">
-                <AlertCircle className="h-4 w-4" />
+                <AlertCircle className="h-4 w-4"/>
               </span>
               <div>
                 <h3 className="text-xs font-black uppercase tracking-wider text-rose-900 dark:text-rose-200 bangla-text">
@@ -980,11 +945,9 @@ export function OwnerDashboard({
             </div>
 
             <Button
-              size="sm"
-              onClick={() => setIsPurchaseModalOpen(true)}
-              className="bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shrink-0 self-start sm:self-center"
-            >
-              <Plus className="h-3.5 w-3.5 mr-1" />
+ size="sm"onClick={() => setIsPurchaseModalOpen(true)}
+ className="bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shrink-0 self-start sm:self-center">
+              <Plus className="h-3.5 w-3.5 mr-1"/>
               {tBilingual('+ Buy Materials (Purchase PO)', '+ কাঁচামাল ক্রয় আদেশ')}
             </Button>
           </div>
@@ -992,13 +955,12 @@ export function OwnerDashboard({
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 pt-1">
             {safeData.criticalStockAlerts.map((mat) => (
               <div
-                key={mat.id}
-                className="p-2.5 bg-card rounded-xl border border-rose-200 dark:border-rose-900 flex items-center justify-between gap-2 text-xs"
-              >
+ key={mat.id}
+ className="p-2.5 bg-card rounded-xl border border-rose-200 dark:border-rose-900 flex items-center justify-between gap-2 text-xs">
                 <div className="min-w-0 flex-1">
                   <div className="font-bold text-foreground truncate">{mat.name}</div>
                   <div className="text-2xs text-muted-foreground tabular-nums">
-                    SKU: {mat.sku} • Min: {mat.minStockLevel} {mat.unit}
+ SKU: {mat.sku} • Min: {mat.minStockLevel} {mat.unit}
                   </div>
                 </div>
                 <div className="text-right shrink-0">
@@ -1016,20 +978,20 @@ export function OwnerDashboard({
       {/* 7. PRODUCTION TODAY (Floor Control & Work Pipeline)                        */}
       {/* ========================================================================= */}
       <Card className="border-border shadow-xs">
-        <CardHeader className="pb-3 border-b border-border dark:border-border">
+        <CardHeader className="pb-3 border-b border-border">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="space-y-0.5">
               <div className="flex items-center gap-2">
-                <Printer className="h-4 w-4 text-purple-600" />
+                <Printer className="h-4 w-4 text-purple-600"/>
                 <CardTitle className="text-base font-bold bangla-text">
                   {tBilingual('Production Floor & Machine Runs', 'আজকের প্রোডাকশন ও মেশিন ফ্লোর')}
                 </CardTitle>
-                <Badge variant="outline" className="text-xs tabular-nums font-bold bg-purple-50 text-purple-700 border-purple-200">
+                <Badge variant="outline"className="text-xs tabular-nums font-bold bg-purple-50 text-purple-700 border-purple-200">
                   {safeData.productionSummary.activeCount} {tBilingual('Active', 'চলতি')}
                 </Badge>
               </div>
               <CardDescription className="text-xs bangla-text">
-                {tBilingual('Real-time machine floor runs, queues, and task completions', 'লাইভ মেশিন ফ্লোর রান, কিউ এবং কাজ সম্পন্নের অবস্থা')}
+                {tBilingual('Machine work and running orders', 'লাইভ মেশিন ফ্লোর রান, কিউ এবং কাজ সম্পন্নের অবস্থা')}
               </CardDescription>
             </div>
 
@@ -1044,13 +1006,12 @@ export function OwnerDashboard({
                 { key: 'finishing', labelEn: 'Finishing', labelBn: 'ফিনিশিং' },
               ].map((pill) => (
                 <button
-                  key={pill.key}
-                  type="button"
-                  onClick={() => setProdFilter(pill.key as any)}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                    prodFilter === pill.key
+ key={pill.key}
+ type="button"onClick={() => setProdFilter(pill.key as any)}
+ className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+ prodFilter === pill.key
                       ? 'bg-purple-600 text-white shadow-xs'
-                      : 'bg-muted text-muted-foreground hover:bg-muted dark:text-muted-foreground'
+                      : 'bg-muted text-muted-foreground hover:bg-muted '
                   }`}
                 >
                   <span>{tBilingual(pill.labelEn, pill.labelBn)}</span>
@@ -1065,29 +1026,26 @@ export function OwnerDashboard({
             <div className="py-8 text-center text-xs text-muted-foreground bangla-text space-y-2">
               <p>{tBilingual('No production jobs matching this filter right now.', 'এই ক্যাটাগরিতে বর্তমানে কোনো কাজ বাকি নেই।')}</p>
               <Button
-                size="sm"
-                variant="outline"
-                onClick={() => router.push(getTenantNavHref('/production', pathname, company?.slug))}
-                className="text-xs font-bold"
-              >
+ size="sm"variant="outline"onClick={() => router.push(getTenantNavHref('/production', pathname, company?.slug))}
+ className="text-xs font-bold">
                 {tBilingual('Open Production Board', 'প্রোডাকশন বোর্ড দেখুন')}
               </Button>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
               {filteredProductionJobs.map((job) => {
-                const isCritical = job.riskLevel === 'critical'
-                const isAtRisk = job.riskLevel === 'at_risk'
+ const isCritical = job.riskLevel === 'critical'
+ const isAtRisk = job.riskLevel === 'at_risk'
 
-                return (
+ return (
                   <div
-                    key={job.jobId}
-                    className={`p-3.5 rounded-xl border flex flex-col justify-between gap-2.5 transition-all bg-card ${
-                      isCritical
+ key={job.jobId}
+ className={`p-3.5 rounded-xl border flex flex-col justify-between gap-2.5 transition-all bg-card ${
+ isCritical
                         ? 'border-rose-400 bg-rose-50/20'
                         : isAtRisk
                         ? 'border-amber-300 bg-amber-50/20'
-                        : 'border-border dark:border-border'
+                        : 'border-border '
                     }`}
                   >
                     <div className="space-y-1.5">
@@ -1101,7 +1059,7 @@ export function OwnerDashboard({
                               {tBilingual('Critical', 'ঝুঁকিপূর্ণ')}
                             </Badge>
                           )}
-                          <Badge variant="outline" className="text-2xs py-0 capitalize">
+                          <Badge variant="outline"className="text-2xs py-0 capitalize">
                             {job.currentStage}
                           </Badge>
                         </div>
@@ -1117,7 +1075,7 @@ export function OwnerDashboard({
 
                       {job.blockedReason && (
                         <div className="text-2xs text-amber-700 dark:text-amber-300 font-semibold bg-amber-50 dark:bg-amber-950/40 p-1.5 rounded flex items-center gap-1">
-                          <AlertTriangle className="h-3 w-3 shrink-0" />
+                          <AlertTriangle className="h-3 w-3 shrink-0"/>
                           <span className="truncate">{tBilingual(job.blockedReason, job.blockedReasonBn || job.blockedReason)}</span>
                         </div>
                       )}
@@ -1125,16 +1083,13 @@ export function OwnerDashboard({
 
                     <div className="pt-2 border-t border-border flex items-center justify-between text-xs text-muted-foreground">
                       <span className="flex items-center gap-1">
-                        <Clock className="h-3 w-3" />
+                        <Clock className="h-3 w-3"/>
                         {job.deadline}
                       </span>
                       <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => router.push(getTenantNavHref('/production', pathname, company?.slug))}
-                        className="h-7 text-xs font-bold text-blue-600 hover:text-blue-700 p-0"
-                      >
-                        {tBilingual('Open Job', 'বিস্তারিত')} <ArrowRight className="h-3 w-3 ml-0.5" />
+ size="sm"variant="ghost"onClick={() => router.push(getTenantNavHref('/production', pathname, company?.slug))}
+ className="h-7 text-xs font-bold text-blue-600 hover:text-blue-700 p-0">
+                        {tBilingual('Open Job', 'বিস্তারিত')} <ArrowRight className="h-3 w-3 ml-0.5"/>
                       </Button>
                     </div>
                   </div>
@@ -1151,19 +1106,19 @@ export function OwnerDashboard({
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* 8A. DELIVERY TODAY */}
         <Card className="border-border shadow-xs">
-          <CardHeader className="pb-3 border-b border-border dark:border-border">
+          <CardHeader className="pb-3 border-b border-border">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Truck className="h-4 w-4 text-cyan-600" />
+                <Truck className="h-4 w-4 text-cyan-600"/>
                 <CardTitle className="text-base font-bold bangla-text">
                   {tBilingual('Delivery Today', 'আজকের ডেলিভারি ও গেট পাস')}
                 </CardTitle>
               </div>
               <div className="flex items-center gap-1.5 text-xs">
-                <Badge variant="outline" className="bg-cyan-50 text-cyan-800 border-cyan-200 font-bold">
+                <Badge variant="outline"className="bg-cyan-50 text-cyan-800 border-cyan-200 font-bold">
                   {safeData.deliverySummary.outForDeliveryCount} {tBilingual('Out', 'রাস্তায়')}
                 </Badge>
-                <Badge variant="outline" className="bg-emerald-50 text-emerald-800 border-emerald-200 font-bold">
+                <Badge variant="outline"className="bg-emerald-50 text-emerald-800 border-emerald-200 font-bold">
                   {safeData.deliverySummary.deliveredCount} {tBilingual('Done', 'ডেলিভার্ড')}
                 </Badge>
               </div>
@@ -1178,9 +1133,8 @@ export function OwnerDashboard({
               <div className="space-y-2">
                 {safeData.deliverySummary.topDeliveries.map((del) => (
                   <div
-                    key={del.id}
-                    className="p-3 bg-muted rounded-xl border border-border flex items-center justify-between gap-3 text-xs"
-                  >
+ key={del.id}
+ className="p-3 bg-muted rounded-xl border border-border flex items-center justify-between gap-3 text-xs">
                     <div className="space-y-0.5 min-w-0">
                       <div className="flex items-center gap-1.5 tabular-nums font-bold text-blue-600">
                         <span>{del.challanNumber}</span>
@@ -1195,11 +1149,8 @@ export function OwnerDashboard({
                     </div>
 
                     <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => router.push(getTenantNavHref('/delivery', pathname, company?.slug))}
-                      className="h-8 text-xs font-semibold shrink-0"
-                    >
+ size="sm"variant="outline"onClick={() => router.push(getTenantNavHref('/delivery', pathname, company?.slug))}
+ className="h-8 text-xs font-semibold shrink-0">
                       {tBilingual('Details', 'বিস্তারিত')}
                     </Button>
                   </div>
@@ -1211,28 +1162,25 @@ export function OwnerDashboard({
 
         {/* 8B. MONEY TO COLLECT (High Priority Overdue Receivables) */}
         <Card className="border-border shadow-xs">
-          <CardHeader className="pb-3 border-b border-border dark:border-border">
+          <CardHeader className="pb-3 border-b border-border">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Receipt className="h-4 w-4 text-emerald-600" />
+                <Receipt className="h-4 w-4 text-emerald-600"/>
                 <CardTitle className="text-base font-bold bangla-text">
                   {tBilingual('Money to Collect', 'বকেয়া টাকা আদায়')}
                 </CardTitle>
               </div>
               <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => router.push(getTenantNavHref('/billing?tab=due', pathname, company?.slug))}
-                className="text-xs font-bold text-blue-600 h-7"
-              >
-                {tBilingual('View All Dues', 'সকল বাকি')} <ChevronRight className="h-3.5 w-3.5 ml-0.5" />
+ size="sm"variant="ghost"onClick={() => router.push(getTenantNavHref('/billing?tab=due', pathname, company?.slug))}
+ className="text-xs font-bold text-blue-600 h-7">
+                {tBilingual('View All Dues', 'সকল বাকি')} <ChevronRight className="h-3.5 w-3.5 ml-0.5"/>
               </Button>
             </div>
           </CardHeader>
           <CardContent className="p-4 space-y-3">
             {safeData.hasFinancialPermission === false || safeData.receivablesMetrics.isRestricted ? (
               <div className="py-6 text-center text-xs text-muted-foreground bangla-text">
-                {tBilingual('Financial receivables data restricted by permissions.', 'আর্থিক বাকি তথ্য দেখতে বিশেষ অনুমতি প্রয়োজন।')}
+                {tBilingual('Customer due data is restricted.', 'আর্থিক বাকি তথ্য দেখতে বিশেষ অনুমতি প্রয়োজন।')}
               </div>
             ) : safeData.moneyToCollect.length === 0 ? (
               <div className="py-6 text-center text-xs text-emerald-600 font-semibold bangla-text">
@@ -1242,9 +1190,8 @@ export function OwnerDashboard({
               <div className="space-y-2">
                 {safeData.moneyToCollect.map((item) => (
                   <div
-                    key={item.invoiceId}
-                    className="p-3 bg-rose-50/40 dark:bg-rose-950/20 rounded-xl border border-rose-200 dark:border-rose-900 flex items-center justify-between gap-3 text-xs"
-                  >
+ key={item.invoiceId}
+ className="p-3 bg-rose-50/40 dark:bg-rose-950/20 rounded-xl border border-rose-200 dark:border-rose-900 flex items-center justify-between gap-3 text-xs">
                     <div className="space-y-0.5 min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="font-bold text-foreground truncate">{item.customerName}</span>
@@ -1264,32 +1211,26 @@ export function OwnerDashboard({
                       {item.customerPhone && (
                         <>
                           <a
-                            href={`tel:${item.customerPhone}`}
-                            className="h-8 w-8 rounded-lg border border-input flex items-center justify-center text-muted-foreground hover:text-blue-600 hover:bg-muted transition-colors"
-                            title={tBilingual('Call Customer', 'কল করুন')}
+ href={`tel:${item.customerPhone}`}
+ className="h-8 w-8 rounded-lg border border-input flex items-center justify-center text-muted-foreground hover:text-blue-600 hover:bg-muted transition-colors"title={tBilingual('Call Customer', 'কল করুন')}
                           >
-                            <Phone className="h-3.5 w-3.5" />
+                            <Phone className="h-3.5 w-3.5"/>
                           </a>
 
                           <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => setReminderItem(item)}
-                            className="h-8 px-2 text-xs font-semibold text-emerald-700 border-emerald-300 hover:bg-emerald-50"
-                            title={tBilingual('Send WhatsApp Reminder', 'হোয়াটসঅ্যাপ তাগাদা পাঠান')}
+ size="sm"variant="outline"onClick={() => setReminderItem(item)}
+ className="h-8 px-2 text-xs font-semibold text-emerald-700 border-emerald-300 hover:bg-emerald-50"title={tBilingual('Send WhatsApp Reminder', 'হোয়াটসঅ্যাপ তাগাদা পাঠান')}
                           >
-                            <MessageSquare className="h-3.5 w-3.5 mr-1" />
+                            <MessageSquare className="h-3.5 w-3.5 mr-1"/>
                             <span className="hidden sm:inline">{tBilingual('Remind', 'তাগাদা')}</span>
                           </Button>
                         </>
                       )}
 
                       <Button
-                        size="sm"
-                        onClick={() => onOpenPaymentModal(item.invoiceId)}
-                        className="h-8 px-2.5 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white"
-                      >
-                        <DollarSign className="h-3.5 w-3.5 mr-0.5" />
+ size="sm"onClick={() => onOpenPaymentModal(item.invoiceId)}
+ className="h-8 px-2.5 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white">
+                        <DollarSign className="h-3.5 w-3.5 mr-0.5"/>
                         {tBilingual('Collect', 'আদায়')}
                       </Button>
                     </div>
@@ -1304,11 +1245,11 @@ export function OwnerDashboard({
       {/* ========================================================================= */}
       {/* 9. WORKFLOW PIPELINE (New Work -> Delivered)                              */}
       {/* ========================================================================= */}
-      <Card className="border-border shadow-xs bg-muted dark:bg-card">
-        <CardHeader className="pb-3 border-b border-border dark:border-border">
+      <Card className="border-border shadow-xs bg-muted">
+        <CardHeader className="pb-3 border-b border-border">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Layers className="h-4 w-4 text-indigo-600" />
+              <Layers className="h-4 w-4 text-indigo-600"/>
               <CardTitle className="text-base font-bold bangla-text">
                 {tBilingual('Workflow Pipeline', 'ব্যবসায়িক পাইপলাইন')}
               </CardTitle>
@@ -1330,10 +1271,9 @@ export function OwnerDashboard({
               { labelEn: 'Delivered', labelBn: 'ডেলিভার্ড', count: safeData.pipelineCounts.delivered, route: '/delivery', color: 'teal' },
             ].map((stage) => (
               <div
-                key={stage.labelEn}
-                onClick={() => router.push(getTenantNavHref(stage.route, pathname, company?.slug))}
-                className="p-3 bg-card rounded-xl border border-border text-center cursor-pointer hover:border-blue-400 hover:shadow-xs transition-all space-y-1"
-              >
+ key={stage.labelEn}
+ onClick={() => router.push(getTenantNavHref(stage.route, pathname, company?.slug))}
+ className="p-3 bg-card rounded-xl border border-border text-center cursor-pointer hover:border-blue-400 hover:shadow-xs transition-all space-y-1">
                 <div className="text-2xs text-muted-foreground font-semibold bangla-text">
                   {tBilingual(stage.labelEn, stage.labelBn)}
                 </div>
@@ -1351,7 +1291,7 @@ export function OwnerDashboard({
       {/* ========================================================================= */}
       {safeData.hasFinancialPermission !== false && (
         <Card className="border-border shadow-xs">
-          <CardHeader className="pb-3 border-b border-border dark:border-border">
+          <CardHeader className="pb-3 border-b border-border">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div>
                 <CardTitle className="text-base font-bold bangla-text">
@@ -1363,10 +1303,10 @@ export function OwnerDashboard({
               </div>
               <div className="flex items-center gap-3 text-xs font-medium">
                 <span className="flex items-center gap-1">
-                  <span className="h-2.5 w-2.5 rounded-full bg-blue-600" /> {tBilingual('Sales', 'সেলস')}
+                  <span className="h-2.5 w-2.5 rounded-full bg-blue-600"/> {tBilingual('Sales', 'সেলস')}
                 </span>
                 <span className="flex items-center gap-1">
-                  <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" /> {tBilingual('Collections', 'আদায়')}
+                  <span className="h-2.5 w-2.5 rounded-full bg-emerald-500"/> {tBilingual('Collections', 'আদায়')}
                 </span>
               </div>
             </div>
@@ -1374,28 +1314,28 @@ export function OwnerDashboard({
           <CardContent className="p-4">
             <div className="h-64 w-full">
               {isMounted ? (
-                <ResponsiveContainer width="100%" height="100%">
+                <ResponsiveContainer width="100%"height="100%">
                   <AreaChart data={safeData.trendData}>
                     <defs>
-                      <linearGradient id="ownerSalesGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#2563eb" stopOpacity={0.3} />
-                        <stop offset="95%" stopColor="#2563eb" stopOpacity={0} />
+                      <linearGradient id="ownerSalesGrad"x1="0"y1="0"x2="0"y2="1">
+                        <stop offset="5%"stopColor="#2563eb"stopOpacity={0.3} />
+                        <stop offset="95%"stopColor="#2563eb"stopOpacity={0} />
                       </linearGradient>
-                      <linearGradient id="ownerColGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
-                        <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                      <linearGradient id="ownerColGrad"x1="0"y1="0"x2="0"y2="1">
+                        <stop offset="5%"stopColor="#10b981"stopOpacity={0.3} />
+                        <stop offset="95%"stopColor="#10b981"stopOpacity={0} />
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.2} />
-                    <XAxis dataKey="dayLabelEn" tickLine={false} axisLine={false} fontSize={12} />
+                    <CartesianGrid strokeDasharray="3 3"vertical={false} opacity={0.2} />
+                    <XAxis dataKey="dayLabelEn"tickLine={false} axisLine={false} fontSize={12} />
                     <YAxis tickLine={false} axisLine={false} fontSize={11} tickFormatter={(val) => `৳${val / 1000}k`} />
                     <Tooltip formatter={(value: any) => [formatBDT(Number(value)), '']} />
-                    <Area type="monotone" dataKey="sales" stroke="#2563eb" strokeWidth={2.5} fillOpacity={1} fill="url(#ownerSalesGrad)" name="Sales" />
-                    <Area type="monotone" dataKey="collections" stroke="#10b981" strokeWidth={2.5} fillOpacity={1} fill="url(#ownerColGrad)" name="Collections" />
+                    <Area type="monotone"dataKey="sales"stroke="#2563eb"strokeWidth={2.5} fillOpacity={1} fill="url(#ownerSalesGrad)"name="Sales"/>
+                    <Area type="monotone"dataKey="collections"stroke="#10b981"strokeWidth={2.5} fillOpacity={1} fill="url(#ownerColGrad)"name="Collections"/>
                   </AreaChart>
                 </ResponsiveContainer>
               ) : (
-                <div className="h-full w-full animate-pulse bg-muted rounded-lg" />
+                <div className="h-full w-full animate-pulse bg-muted rounded-lg"/>
               )}
             </div>
           </CardContent>
@@ -1407,10 +1347,10 @@ export function OwnerDashboard({
       {/* ========================================================================= */}
       {reminderItem && (
         <ModalDialog
-          open={true}
-          onOpenChange={(open) => !open && setReminderItem(null)}
-          title={tBilingual('Send Due Payment Reminder', 'বকেয়া বিলের তাগাদা বার্তা পাঠান')}
-          description={`${reminderItem.customerName} • Invoice #${reminderItem.invoiceNumber} (${formatBDT(reminderItem.dueAmount)})`}
+ open={true}
+ onOpenChange={(open) => !open && setReminderItem(null)}
+ title={tBilingual('Send Due Payment Reminder', 'বকেয়া বিলের তাগাদা বার্তা পাঠান')}
+ description={`${reminderItem.customerName} • Invoice #${reminderItem.invoiceNumber} (${formatBDT(reminderItem.dueAmount)})`}
         >
           <div className="space-y-4 pt-2">
             <div className="p-3 bg-muted rounded-lg text-xs tabular-nums border space-y-1">
@@ -1421,19 +1361,16 @@ export function OwnerDashboard({
             </div>
 
             <div className="flex items-center justify-end gap-2 pt-2 border-t">
-              <Button type="button" variant="outline" size="sm" onClick={() => setReminderItem(null)} className="text-xs">
+              <Button type="button"variant="outline"size="sm"onClick={() => setReminderItem(null)} className="text-xs">
                 {tBilingual('Cancel', 'বাতিল')}
               </Button>
               <Button
-                type="button"
-                size="sm"
-                onClick={() => {
-                  window.open(getWhatsAppReminderUrl(reminderItem), '_blank')
-                  setReminderItem(null)
+ type="button"size="sm"onClick={() => {
+ window.open(getWhatsAppReminderUrl(reminderItem), '_blank')
+ setReminderItem(null)
                 }}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold"
-              >
-                <MessageSquare className="h-4 w-4 mr-1.5" />
+ className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold">
+                <MessageSquare className="h-4 w-4 mr-1.5"/>
                 {tBilingual('Open in WhatsApp', 'হোয়াটসঅ্যাপে পাঠান')}
               </Button>
             </div>
@@ -1445,11 +1382,11 @@ export function OwnerDashboard({
       {/* MODAL: BUY MATERIALS (PURCHASE PO)                                        */}
       {/* ========================================================================= */}
       <NewPurchaseModal
-        open={isPurchaseModalOpen}
-        onOpenChange={setIsPurchaseModalOpen}
-        onPurchaseCreated={() => {
-          setIsPurchaseModalOpen(false)
-          onRefresh?.()
+ open={isPurchaseModalOpen}
+ onOpenChange={setIsPurchaseModalOpen}
+ onPurchaseCreated={() => {
+ setIsPurchaseModalOpen(false)
+ onRefresh?.()
         }}
       />
     </div>

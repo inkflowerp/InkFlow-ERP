@@ -3,27 +3,27 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import {
-  Receipt,
-  Plus,
-  Trash2,
-  Printer,
-  Send,
-  CheckCircle2,
-  AlertTriangle,
-  ChevronDown,
-  MessageSquare,
-  Mail,
-  Smartphone,
-  ShieldCheck,
-  RefreshCw,
-  X,
-  UserCheck,
-  CreditCard,
-  AlertOctagon,
-  FileText,
-  Clock,
-  Layers,
-  Palette,
+ Receipt,
+ Plus,
+ Trash2,
+ Printer,
+ Send,
+ CheckCircle2,
+ AlertTriangle,
+ ChevronDown,
+ MessageSquare,
+ Mail,
+ Smartphone,
+ ShieldCheck,
+ RefreshCw,
+ X,
+ UserCheck,
+ CreditCard,
+ AlertOctagon,
+ FileText,
+ Clock,
+ Layers,
+ Palette,
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
@@ -38,11 +38,11 @@ import { ProductRecord } from '@/types/product.types'
 import { formatBDT } from '@/lib/formatters'
 import { cn } from '@/lib/utils'
 import {
-  searchInvoiceCustomersAction,
-  resolveCustomerPricingAction,
-  createInvoiceAction,
-  sendInvoiceAction,
-  getInvoiceProductsAction,
+ searchInvoiceCustomersAction,
+ resolveCustomerPricingAction,
+ createInvoiceAction,
+ sendInvoiceAction,
+ getInvoiceProductsAction,
 } from '@/actions/billing.actions'
 import { getCustomerFinancialSummaryAction } from '@/actions/customer.actions'
 import { evaluateStockAvailability, type StockAvailabilityResult } from '@/lib/domain/stock-availability'
@@ -52,104 +52,104 @@ import type { MaterialRecord, InventoryRollRecord, InventoryStockBalanceRecord, 
 import { isServiceProduct, isReadyProduct, isMaterialProduct } from '@/lib/units'
 
 export interface NewInvoiceModalProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  preselectedCustomerId?: string
-  preselectedQuotationId?: string
-  preselectedSalesOrderId?: string
-  preselectedCustomerType?: 'retail' | 'reseller' | 'corporate' | 'government'
-  preselectedWhatsappNumber?: string
-  preselectedCustomerName?: string
-  preselectedCustomerPhone?: string
-  preselectedCustomerEmail?: string
-  preselectedCustomerAddress?: string
-  preselectedCompanyName?: string
-  preselectedItems?: any[]
-  preselectedRequestId?: string
-  preselectedDesignJobId?: string
-  preselectedItemsSummary?: string
-  preselectedEstimatedAmount?: number
-  preselectedNotes?: string
-  preselectedDiscountAmount?: number
-  preselectedVatPercentage?: number
-  preselectedAdvanceAmount?: number
-  onInvoiceCreated?: (invoice: InvoiceRecord) => void
+ open: boolean
+ onOpenChange: (open: boolean) => void
+ preselectedCustomerId?: string
+ preselectedQuotationId?: string
+ preselectedSalesOrderId?: string
+ preselectedCustomerType?: 'retail' | 'reseller' | 'corporate' | 'government'
+ preselectedWhatsappNumber?: string
+ preselectedCustomerName?: string
+ preselectedCustomerPhone?: string
+ preselectedCustomerEmail?: string
+ preselectedCustomerAddress?: string
+ preselectedCompanyName?: string
+ preselectedItems?: any[]
+ preselectedRequestId?: string
+ preselectedDesignJobId?: string
+ preselectedItemsSummary?: string
+ preselectedEstimatedAmount?: number
+ preselectedNotes?: string
+ preselectedDiscountAmount?: number
+ preselectedVatPercentage?: number
+ preselectedAdvanceAmount?: number
+ onInvoiceCreated?: (invoice: InvoiceRecord) => void
 }
 
 
 interface ItemRowState {
-  id: string
-  productId?: string
-  item_kind?: 'service' | 'ready_product' | 'material' | 'custom' | 'custom_manufacturing' | 'outsource'
-  product_type?: string
-  category_preset?: 'digital_print' | 'offset_print' | 'signage_fabrication' | 'ready_merchandise' | 'custom' | string | null
-  itemName: string
-  description_bn?: string | null
-  material_spec?: string | null
-  dimensions_spec?: string
-  width: string
-  height: string
-  dimension_unit?: 'ft' | 'inch' | 'm' | string
-  quantity: number
-  unit: string
-  base_rate?: number
-  rate: number
-  finishing: string
-  finishing_rate?: number
-  add_on?: string
-  add_on_rate?: number
-  rateSource?: 'custom' | 'last_invoice' | 'last_quotation' | 'default' | 'manual'
-  tier_applied?: string
-  moq?: number
-  pcs_per_carton?: number
-  unit_cost?: number
-  available_dimension_presets?: Array<{ label?: string; width: number; length: number; unit?: string }>
-  available_finishing_options?: Array<{ id: string; name: string; pricing_method?: string; unit_price?: number; unit_cost?: number }>
-  available_additional_options?: Array<{ id: string; name: string; pricing_method?: string; unit_price?: number; unit_cost?: number }>
-  printable_material_name?: string
-  showAdvanced?: boolean
-  isManualRate?: boolean
-  artwork_required?: boolean
-  installation_required?: boolean
-  selected_installation?: { id: string; name: string; rate?: number; cost?: number } | null
-  offset_specs?: {
-    paper_gsm?: number | string | null
-    color_mode?: string | null
-    binding_type?: string | null
-    numbering_required?: boolean | null
-    numbering_range?: string | null
-    ncr_parts?: number | null
-    plates_count?: number | null
+ id: string
+ productId?: string
+ item_kind?: 'service' | 'ready_product' | 'material' | 'custom' | 'custom_manufacturing' | 'outsource'
+ product_type?: string
+ category_preset?: 'digital_print' | 'offset_print' | 'signage_fabrication' | 'ready_merchandise' | 'custom' | string | null
+ itemName: string
+ description_bn?: string | null
+ material_spec?: string | null
+ dimensions_spec?: string
+ width: string
+ height: string
+ dimension_unit?: 'ft' | 'inch' | 'm' | string
+ quantity: number
+ unit: string
+ base_rate?: number
+ rate: number
+ finishing: string
+ finishing_rate?: number
+ add_on?: string
+ add_on_rate?: number
+ rateSource?: 'custom' | 'last_invoice' | 'last_quotation' | 'default' | 'manual'
+ tier_applied?: string
+ moq?: number
+ pcs_per_carton?: number
+ unit_cost?: number
+ available_dimension_presets?: Array<{ label?: string; width: number; length: number; unit?: string }>
+ available_finishing_options?: Array<{ id: string; name: string; pricing_method?: string; unit_price?: number; unit_cost?: number }>
+ available_additional_options?: Array<{ id: string; name: string; pricing_method?: string; unit_price?: number; unit_cost?: number }>
+ printable_material_name?: string
+ showAdvanced?: boolean
+ isManualRate?: boolean
+ artwork_required?: boolean
+ installation_required?: boolean
+ selected_installation?: { id: string; name: string; rate?: number; cost?: number } | null
+ offset_specs?: {
+ paper_gsm?: number | string | null
+ color_mode?: string | null
+ binding_type?: string | null
+ numbering_required?: boolean | null
+ numbering_range?: string | null
+ ncr_parts?: number | null
+ plates_count?: number | null
   } | null
-  signage_specs?: {
-    letter_height_inch?: number | null
-    led_module_type?: string | null
-    led_count?: number | null
-    power_supply_watts?: number | null
-    frame_structure?: string | null
-    installation_type?: string | null
+ signage_specs?: {
+ letter_height_inch?: number | null
+ led_module_type?: string | null
+ led_count?: number | null
+ power_supply_watts?: number | null
+ frame_structure?: string | null
+ installation_type?: string | null
   } | null
-  design_required?: boolean
-  customer_approval_required?: boolean
-  workflow_routing?: 'ready_product' | 'design_required' | 'design_ok' | 'ready_production' | 'outsource' | 'custom' | string
+ design_required?: boolean
+ customer_approval_required?: boolean
+ workflow_routing?: 'ready_product' | 'design_required' | 'design_ok' | 'ready_production' | 'outsource' | 'custom' | string
 }
 
 import {
-  STANDARD_FINISHING_OPTIONS,
-  STANDARD_ADD_ON_OPTIONS,
-  getFinishingRate,
-  getAddOnRate,
-  type FinishingOptionItem,
-  type AddOnOptionItem,
+ STANDARD_FINISHING_OPTIONS,
+ STANDARD_ADD_ON_OPTIONS,
+ getFinishingRate,
+ getAddOnRate,
+ type FinishingOptionItem,
+ type AddOnOptionItem,
 } from '@/lib/finishing-addons'
 
 export {
-  STANDARD_FINISHING_OPTIONS,
-  STANDARD_ADD_ON_OPTIONS,
-  getFinishingRate,
-  getAddOnRate,
-  type FinishingOptionItem,
-  type AddOnOptionItem,
+ STANDARD_FINISHING_OPTIONS,
+ STANDARD_ADD_ON_OPTIONS,
+ getFinishingRate,
+ getAddOnRate,
+ type FinishingOptionItem,
+ type AddOnOptionItem,
 }
 
 const UNIT_OPTIONS = [
@@ -169,53 +169,53 @@ const UNIT_OPTIONS = [
 ]
 
 export function detectProductKind(p: ProductRecord | any): 'ready_product' | 'material' | 'service' {
-  if (!p) return 'service'
-  if (isServiceProduct(p)) return 'service'
-  if (isReadyProduct(p)) return 'ready_product'
-  if (isMaterialProduct(p)) return 'material'
-  return 'service'
+ if (!p) return 'service'
+ if (isServiceProduct(p)) return 'service'
+ if (isReadyProduct(p)) return 'ready_product'
+ if (isMaterialProduct(p)) return 'material'
+ return 'service'
 }
 
 interface CatalogComboboxProps {
-  products: ProductRecord[]
-  selectedProductId?: string
-  onSelectProduct: (productId: string) => void
-  onCustomSelect?: () => void
+ products: ProductRecord[]
+ selectedProductId?: string
+ onSelectProduct: (productId: string) => void
+ onCustomSelect?: () => void
 }
 
 function CatalogItemCombobox({
-  products,
-  selectedProductId,
-  onSelectProduct,
-  onCustomSelect,
+ products,
+ selectedProductId,
+ onSelectProduct,
+ onCustomSelect,
 }: CatalogComboboxProps) {
-  const [isOpen, setIsOpen] = useState(false)
-  const [keyword, setKeyword] = useState('')
-  const [highlightedIndex, setHighlightedIndex] = useState(0)
-  const dropdownRef = useRef<HTMLDivElement>(null)
-  const itemRefs = useRef<Map<number, HTMLDivElement>>(new Map())
+ const [isOpen, setIsOpen] = useState(false)
+ const [keyword, setKeyword] = useState('')
+ const [highlightedIndex, setHighlightedIndex] = useState(0)
+ const dropdownRef = useRef<HTMLDivElement>(null)
+ const itemRefs = useRef<Map<number, HTMLDivElement>>(new Map())
 
-  const selectedProduct = useMemo(() => {
-    return products.find((p) => p.id === selectedProductId)
+ const selectedProduct = useMemo(() => {
+ return products.find((p) => p.id === selectedProductId)
   }, [products, selectedProductId])
 
   // Close when clicked outside
-  useEffect(() => {
-    const handleDocClick = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setIsOpen(false)
+ useEffect(() => {
+ const handleDocClick = (e: MouseEvent) => {
+ if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+ setIsOpen(false)
       }
     }
-    document.addEventListener('mousedown', handleDocClick)
-    return () => document.removeEventListener('mousedown', handleDocClick)
+ document.addEventListener('mousedown', handleDocClick)
+ return () => document.removeEventListener('mousedown', handleDocClick)
   }, [])
 
-  const filteredProducts = useMemo(() => {
-    const term = keyword.toLowerCase().trim()
-    if (!term) return products
-    return products.filter((p) => {
-      return (
-        p.name.toLowerCase().includes(term) ||
+ const filteredProducts = useMemo(() => {
+ const term = keyword.toLowerCase().trim()
+ if (!term) return products
+ return products.filter((p) => {
+ return (
+ p.name.toLowerCase().includes(term) ||
         (p.sku && p.sku.toLowerCase().includes(term)) ||
         ((p as any).code && (p as any).code.toLowerCase().includes(term)) ||
         ((p as any).name_bn && (p as any).name_bn.toLowerCase().includes(term)) ||
@@ -225,136 +225,125 @@ function CatalogItemCombobox({
     })
   }, [products, keyword])
 
-  const services = useMemo(() => filteredProducts.filter((p) => detectProductKind(p) === 'service'), [filteredProducts])
-  const readyProducts = useMemo(() => filteredProducts.filter((p) => detectProductKind(p) === 'ready_product'), [filteredProducts])
-  const materials = useMemo(() => filteredProducts.filter((p) => detectProductKind(p) === 'material'), [filteredProducts])
+ const services = useMemo(() => filteredProducts.filter((p) => detectProductKind(p) === 'service'), [filteredProducts])
+ const readyProducts = useMemo(() => filteredProducts.filter((p) => detectProductKind(p) === 'ready_product'), [filteredProducts])
+ const materials = useMemo(() => filteredProducts.filter((p) => detectProductKind(p) === 'material'), [filteredProducts])
 
   // Flat list of selectable items for arrow key navigation
-  const flatSelectableItems = useMemo(() => {
-    const list: Array<{ id: string; type: 'custom' | 'product'; product?: ProductRecord }> = [
+ const flatSelectableItems = useMemo(() => {
+ const list: Array<{ id: string; type: 'custom' | 'product'; product?: ProductRecord }> = [
       { id: '', type: 'custom' }
     ]
-    services.forEach((p) => list.push({ id: p.id, type: 'product', product: p }))
-    readyProducts.forEach((p) => list.push({ id: p.id, type: 'product', product: p }))
-    materials.forEach((p) => list.push({ id: p.id, type: 'product', product: p }))
-    return list
+ services.forEach((p) => list.push({ id: p.id, type: 'product', product: p }))
+ readyProducts.forEach((p) => list.push({ id: p.id, type: 'product', product: p }))
+ materials.forEach((p) => list.push({ id: p.id, type: 'product', product: p }))
+ return list
   }, [services, readyProducts, materials])
 
   // Reset highlightedIndex when keyword changes or menu opens
-  useEffect(() => {
-    setHighlightedIndex(0)
+ useEffect(() => {
+ setHighlightedIndex(0)
   }, [keyword, isOpen])
 
   // Scroll active item into view
-  useEffect(() => {
-    if (isOpen && itemRefs.current.has(highlightedIndex)) {
-      itemRefs.current.get(highlightedIndex)?.scrollIntoView({ block: 'nearest' })
+ useEffect(() => {
+ if (isOpen && itemRefs.current.has(highlightedIndex)) {
+ itemRefs.current.get(highlightedIndex)?.scrollIntoView({ block: 'nearest' })
     }
   }, [highlightedIndex, isOpen])
 
-  const handleSelect = (item: { id: string; type: 'custom' | 'product'; product?: ProductRecord }) => {
-    if (item.type === 'custom' || !item.id) {
-      onSelectProduct('')
-      if (onCustomSelect) onCustomSelect()
+ const handleSelect = (item: { id: string; type: 'custom' | 'product'; product?: ProductRecord }) => {
+ if (item.type === 'custom' || !item.id) {
+ onSelectProduct('')
+ if (onCustomSelect) onCustomSelect()
     } else {
-      onSelectProduct(item.id)
+ onSelectProduct(item.id)
     }
-    setIsOpen(false)
-    setKeyword('')
+ setIsOpen(false)
+ setKeyword('')
   }
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (!isOpen) {
-      if (e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.key === 'Enter') {
-        setIsOpen(true)
-        e.preventDefault()
+ const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+ if (!isOpen) {
+ if (e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.key === 'Enter') {
+ setIsOpen(true)
+ e.preventDefault()
       }
-      return
+ return
     }
 
-    if (e.key === 'ArrowDown') {
-      e.preventDefault()
-      setHighlightedIndex((prev) => (prev + 1) % flatSelectableItems.length)
+ if (e.key === 'ArrowDown') {
+ e.preventDefault()
+ setHighlightedIndex((prev) => (prev + 1) % flatSelectableItems.length)
     } else if (e.key === 'ArrowUp') {
-      e.preventDefault()
-      setHighlightedIndex((prev) => (prev - 1 + flatSelectableItems.length) % flatSelectableItems.length)
+ e.preventDefault()
+ setHighlightedIndex((prev) => (prev - 1 + flatSelectableItems.length) % flatSelectableItems.length)
     } else if (e.key === 'Enter') {
-      e.preventDefault()
-      if (flatSelectableItems[highlightedIndex]) {
-        handleSelect(flatSelectableItems[highlightedIndex])
+ e.preventDefault()
+ if (flatSelectableItems[highlightedIndex]) {
+ handleSelect(flatSelectableItems[highlightedIndex])
       }
     } else if (e.key === 'Escape') {
-      e.preventDefault()
-      setIsOpen(false)
+ e.preventDefault()
+ setIsOpen(false)
     }
   }
 
-  return (
-    <div className="relative w-full" ref={dropdownRef}>
+ return (
+    <div className="relative w-full"ref={dropdownRef}>
       <div className="relative">
         <Input
-          placeholder="Type keyword to search catalog (e.g. flex, vinyl, 3D)..."
-          value={isOpen ? keyword : selectedProduct ? selectedProduct.name : keyword}
-          onFocus={() => {
-            setIsOpen(true)
-            setKeyword('')
+ placeholder="Type keyword to search catalog (e.g. flex, vinyl, 3D)..."value={isOpen ? keyword : selectedProduct ? selectedProduct.name : keyword}
+ onFocus={() => {
+ setIsOpen(true)
+ setKeyword('')
           }}
-          onChange={(e) => {
-            setKeyword(e.target.value)
-            if (!isOpen) setIsOpen(true)
+ onChange={(e) => {
+ setKeyword(e.target.value)
+ if (!isOpen) setIsOpen(true)
           }}
-          onKeyDown={handleKeyDown}
-          className="text-xs h-9 pr-14 font-medium"
-        />
+ onKeyDown={handleKeyDown}
+ className="text-xs h-9 pr-14 font-medium"/>
         <div className="absolute right-1.5 top-1.5 flex items-center gap-1">
           {selectedProductId && (
             <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation()
-                onSelectProduct('')
-                setKeyword('')
-                if (onCustomSelect) onCustomSelect()
+ type="button"onClick={(e) => {
+ e.stopPropagation()
+ onSelectProduct('')
+ setKeyword('')
+ if (onCustomSelect) onCustomSelect()
               }}
-              className="p-1 text-muted-foreground hover:text-muted-foreground rounded cursor-pointer"
-              title="Clear to Custom Item"
-            >
-              <X className="h-3.5 w-3.5" />
+ className="p-1 text-muted-foreground hover:text-muted-foreground rounded cursor-pointer"title="Clear to Custom Item">
+              <X className="h-3.5 w-3.5"/>
             </button>
           )}
           <button
-            type="button"
-            onClick={() => setIsOpen(!isOpen)}
-            className="p-1 text-muted-foreground hover:text-muted-foreground rounded cursor-pointer"
-          >
-            <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", isOpen && "rotate-180")} />
+ type="button"onClick={() => setIsOpen(!isOpen)}
+ className="p-1 text-muted-foreground hover:text-muted-foreground rounded cursor-pointer">
+            <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", isOpen &&"rotate-180")} />
           </button>
         </div>
       </div>
 
       {isOpen && (
-        <div className="absolute z-50 left-0 right-0 mt-1 max-h-60 overflow-y-auto bg-card rounded-xl border border-border shadow-xl divide-y divide-border text-xs">
+        <div className="absolute z-50 left-0 right-0 mt-1 max-h-60 overflow-y-auto bg-card rounded-xl border border-border shadow-xs divide-y divide-border text-xs">
           {/* Custom Item option (Index 0) */}
           <div
-            ref={(el) => {
-              if (el) itemRefs.current.set(0, el)
-              else itemRefs.current.delete(0)
+ ref={(el) => {
+ if (el) itemRefs.current.set(0, el)
+ else itemRefs.current.delete(0)
             }}
-            onMouseEnter={() => setHighlightedIndex(0)}
-            onClick={() => handleSelect({ id: '', type: 'custom' })}
-            className={cn(
-              "p-2.5 cursor-pointer font-semibold flex items-center justify-between transition-colors",
-              highlightedIndex === 0
-                ? "bg-blue-100/90 dark:bg-blue-950/70 border-l-4 border-blue-600 text-blue-900 dark:text-blue-100"
-                : !selectedProductId
-                ? "bg-blue-50/80 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300"
-                : "hover:bg-muted text-muted-foreground dark:text-muted-foreground"
-            )}
+ onMouseEnter={() => setHighlightedIndex(0)}
+ onClick={() => handleSelect({ id: '', type: 'custom' })}
+ className={cn("p-2.5 cursor-pointer font-semibold flex items-center justify-between transition-colors",
+ highlightedIndex === 0
+                ?"bg-blue-100/90 dark:bg-blue-950/70 border-l-4 border-blue-600 text-blue-900 dark:text-blue-100": !selectedProductId
+                ?"bg-blue-50/80 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300":"hover:bg-muted text-muted-foreground")}
           >
             <span>✨ -- Custom Item (No Catalog) --</span>
             <div className="flex items-center gap-1.5">
               {highlightedIndex === 0 && <span className="text-2xs font-semibold text-blue-600 dark:text-blue-400">↵ Enter</span>}
-              {!selectedProductId && <CheckCircle2 className="h-3.5 w-3.5 text-blue-600" />}
+              {!selectedProductId && <CheckCircle2 className="h-3.5 w-3.5 text-blue-600"/>}
             </div>
           </div>
 
@@ -365,28 +354,24 @@ function CatalogItemCombobox({
                 🖨️ Printing & Services ({services.length})
               </div>
               {services.map((p, sIdx) => {
-                const globalIdx = 1 + sIdx
-                const isHighlighted = highlightedIndex === globalIdx
-                return (
+ const globalIdx = 1 + sIdx
+ const isHighlighted = highlightedIndex === globalIdx
+ return (
                   <div
-                    key={p.id}
-                    ref={(el) => {
-                      if (el) itemRefs.current.set(globalIdx, el)
-                      else itemRefs.current.delete(globalIdx)
+ key={p.id}
+ ref={(el) => {
+ if (el) itemRefs.current.set(globalIdx, el)
+ else itemRefs.current.delete(globalIdx)
                     }}
-                    onMouseEnter={() => setHighlightedIndex(globalIdx)}
-                    onClick={() => handleSelect({ id: p.id, type: 'product', product: p })}
-                    className={cn(
-                      "p-2.5 cursor-pointer flex items-center justify-between gap-2 transition-colors",
-                      isHighlighted
-                        ? "bg-blue-100/90 dark:bg-blue-950/70 border-l-4 border-blue-600 text-blue-900 dark:text-blue-100"
-                        : selectedProductId === p.id
-                        ? "bg-blue-50 font-bold text-blue-700 dark:bg-blue-950/50 dark:text-blue-300"
-                        : "hover:bg-blue-50/70 dark:hover:bg-blue-950/40"
-                    )}
+ onMouseEnter={() => setHighlightedIndex(globalIdx)}
+ onClick={() => handleSelect({ id: p.id, type: 'product', product: p })}
+ className={cn("p-2.5 cursor-pointer flex items-center justify-between gap-2 transition-colors",
+ isHighlighted
+                        ?"bg-blue-100/90 dark:bg-blue-950/70 border-l-4 border-blue-600 text-blue-900 dark:text-blue-100": selectedProductId === p.id
+                        ?"bg-blue-50 font-bold text-blue-700 dark:bg-blue-950/50 dark:text-blue-300":"hover:bg-blue-50/70 dark:hover:bg-blue-950/40")}
                   >
                     <div>
-                      <div className="font-semibold text-foreground dark:text-white">{p.name}</div>
+                      <div className="font-semibold text-foreground">{p.name}</div>
                       <div className="text-2xs text-muted-foreground flex items-center gap-1.5 mt-0.5">
                         {p.sku && <span className="tabular-nums bg-muted px-1 rounded">{p.sku}</span>}
                         <span>Unit: {p.unit || 'sft'}</span>
@@ -411,28 +396,24 @@ function CatalogItemCombobox({
                 📦 Ready Products ({readyProducts.length})
               </div>
               {readyProducts.map((p, rIdx) => {
-                const globalIdx = 1 + services.length + rIdx
-                const isHighlighted = highlightedIndex === globalIdx
-                return (
+ const globalIdx = 1 + services.length + rIdx
+ const isHighlighted = highlightedIndex === globalIdx
+ return (
                   <div
-                    key={p.id}
-                    ref={(el) => {
-                      if (el) itemRefs.current.set(globalIdx, el)
-                      else itemRefs.current.delete(globalIdx)
+ key={p.id}
+ ref={(el) => {
+ if (el) itemRefs.current.set(globalIdx, el)
+ else itemRefs.current.delete(globalIdx)
                     }}
-                    onMouseEnter={() => setHighlightedIndex(globalIdx)}
-                    onClick={() => handleSelect({ id: p.id, type: 'product', product: p })}
-                    className={cn(
-                      "p-2.5 cursor-pointer flex items-center justify-between gap-2 transition-colors",
-                      isHighlighted
-                        ? "bg-blue-100/90 dark:bg-blue-950/70 border-l-4 border-blue-600 text-blue-900 dark:text-blue-100"
-                        : selectedProductId === p.id
-                        ? "bg-emerald-50 font-bold text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300"
-                        : "hover:bg-emerald-50/70 dark:hover:bg-emerald-950/40"
-                    )}
+ onMouseEnter={() => setHighlightedIndex(globalIdx)}
+ onClick={() => handleSelect({ id: p.id, type: 'product', product: p })}
+ className={cn("p-2.5 cursor-pointer flex items-center justify-between gap-2 transition-colors",
+ isHighlighted
+                        ?"bg-blue-100/90 dark:bg-blue-950/70 border-l-4 border-blue-600 text-blue-900 dark:text-blue-100": selectedProductId === p.id
+                        ?"bg-emerald-50 font-bold text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300":"hover:bg-emerald-50/70 dark:hover:bg-emerald-950/40")}
                   >
                     <div>
-                      <div className="font-semibold text-foreground dark:text-white">{p.name}</div>
+                      <div className="font-semibold text-foreground">{p.name}</div>
                       <div className="text-2xs text-muted-foreground flex items-center gap-1.5 mt-0.5">
                         {p.sku && <span className="tabular-nums bg-muted px-1 rounded">{p.sku}</span>}
                         <span>Unit: {p.unit || 'pcs'}</span>
@@ -457,28 +438,24 @@ function CatalogItemCombobox({
                 🧵 Raw Materials ({materials.length})
               </div>
               {materials.map((p, mIdx) => {
-                const globalIdx = 1 + services.length + readyProducts.length + mIdx
-                const isHighlighted = highlightedIndex === globalIdx
-                return (
+ const globalIdx = 1 + services.length + readyProducts.length + mIdx
+ const isHighlighted = highlightedIndex === globalIdx
+ return (
                   <div
-                    key={p.id}
-                    ref={(el) => {
-                      if (el) itemRefs.current.set(globalIdx, el)
-                      else itemRefs.current.delete(globalIdx)
+ key={p.id}
+ ref={(el) => {
+ if (el) itemRefs.current.set(globalIdx, el)
+ else itemRefs.current.delete(globalIdx)
                     }}
-                    onMouseEnter={() => setHighlightedIndex(globalIdx)}
-                    onClick={() => handleSelect({ id: p.id, type: 'product', product: p })}
-                    className={cn(
-                      "p-2.5 cursor-pointer flex items-center justify-between gap-2 transition-colors",
-                      isHighlighted
-                        ? "bg-blue-100/90 dark:bg-blue-950/70 border-l-4 border-blue-600 text-blue-900 dark:text-blue-100"
-                        : selectedProductId === p.id
-                        ? "bg-purple-50 font-bold text-purple-700 dark:bg-purple-950/50 dark:text-purple-300"
-                        : "hover:bg-purple-50/70 dark:hover:bg-purple-950/40"
-                    )}
+ onMouseEnter={() => setHighlightedIndex(globalIdx)}
+ onClick={() => handleSelect({ id: p.id, type: 'product', product: p })}
+ className={cn("p-2.5 cursor-pointer flex items-center justify-between gap-2 transition-colors",
+ isHighlighted
+                        ?"bg-blue-100/90 dark:bg-blue-950/70 border-l-4 border-blue-600 text-blue-900 dark:text-blue-100": selectedProductId === p.id
+                        ?"bg-purple-50 font-bold text-purple-700 dark:bg-purple-950/50 dark:text-purple-300":"hover:bg-purple-50/70 dark:hover:bg-purple-950/40")}
                   >
                     <div>
-                      <div className="font-semibold text-foreground dark:text-white">{p.name}</div>
+                      <div className="font-semibold text-foreground">{p.name}</div>
                       <div className="text-2xs text-muted-foreground flex items-center gap-1.5 mt-0.5">
                         {p.sku && <span className="tabular-nums bg-muted px-1 rounded">{p.sku}</span>}
                         <span>Unit: {p.unit || 'roll'}</span>
@@ -498,7 +475,7 @@ function CatalogItemCombobox({
 
           {filteredProducts.length === 0 && (
             <div className="p-4 text-center text-muted-foreground">
-              No catalog items match &quot;{keyword}&quot;. You can use it as a custom item description.
+ No catalog items match &quot;{keyword}&quot;. You can use it as a custom item description.
             </div>
           )}
         </div>
@@ -508,44 +485,44 @@ function CatalogItemCombobox({
 }
 
 interface CustomerSuggestionsDropdownProps {
-  results: CustomerRecord[]
-  highlightedIndex: number
-  onSelect: (cust: CustomerRecord) => void
-  onHover: (idx: number) => void
+ results: CustomerRecord[]
+ highlightedIndex: number
+ onSelect: (cust: CustomerRecord) => void
+ onHover: (idx: number) => void
 }
 
 function CustomerSuggestionsDropdown({
-  results,
-  highlightedIndex,
-  onSelect,
-  onHover,
+ results,
+ highlightedIndex,
+ onSelect,
+ onHover,
 }: CustomerSuggestionsDropdownProps) {
-  const itemRefs = useRef<Map<number, HTMLDivElement>>(new Map())
+ const itemRefs = useRef<Map<number, HTMLDivElement>>(new Map())
 
-  useEffect(() => {
-    if (itemRefs.current.has(highlightedIndex)) {
-      itemRefs.current.get(highlightedIndex)?.scrollIntoView({ block: 'nearest' })
+ useEffect(() => {
+ if (itemRefs.current.has(highlightedIndex)) {
+ itemRefs.current.get(highlightedIndex)?.scrollIntoView({ block: 'nearest' })
     }
   }, [highlightedIndex])
 
-  return (
-    <div className="absolute z-50 left-0 right-0 mt-1 max-h-56 overflow-y-auto bg-card rounded-xl border border-border shadow-2xl divide-y divide-border text-xs animate-in fade-in-0">
+ return (
+    <div className="absolute z-50 left-0 right-0 mt-1 max-h-56 overflow-y-auto bg-card rounded-xl border border-border shadow-lg divide-y divide-border text-xs animate-in fade-in-0">
       {results.map((cust, idx) => {
-        const isHighlighted = idx === highlightedIndex
-        return (
+ const isHighlighted = idx === highlightedIndex
+ return (
           <div
-            key={cust.id}
-            ref={(el) => {
-              if (el) itemRefs.current.set(idx, el)
-              else itemRefs.current.delete(idx)
+ key={cust.id}
+ ref={(el) => {
+ if (el) itemRefs.current.set(idx, el)
+ else itemRefs.current.delete(idx)
             }}
-            onMouseEnter={() => onHover(idx)}
-            onClick={() => onSelect(cust)}
-            className={cn(
+ onMouseEnter={() => onHover(idx)}
+ onClick={() => onSelect(cust)}
+ className={cn(
               'p-2.5 cursor-pointer transition-colors flex items-center justify-between gap-2',
-              isHighlighted
+ isHighlighted
                 ? 'bg-blue-50 dark:bg-blue-950/70 border-l-4 border-blue-600 text-blue-900 dark:text-blue-100'
-                : 'hover:bg-muted dark:hover:bg-muted/60 text-foreground dark:text-foreground'
+                : 'hover:bg-muted dark:hover:bg-muted/60 text-foreground '
             )}
           >
             <div className="min-w-0">
@@ -564,7 +541,7 @@ function CustomerSuggestionsDropdown({
             </div>
 
             <div className="flex items-center gap-1.5 shrink-0">
-              <span className="text-2xs uppercase font-bold px-1.5 py-0.5 rounded bg-muted text-muted-foreground dark:text-muted-foreground">
+              <span className="text-2xs uppercase font-bold px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
                 {cust.customer_type || 'Retail'}
               </span>
               {isHighlighted && (
@@ -581,271 +558,271 @@ function CustomerSuggestionsDropdown({
 }
 
 export function NewInvoiceModal({
-  open,
-  onOpenChange,
-  preselectedCustomerId,
-  preselectedCustomerType,
-  preselectedWhatsappNumber,
-  preselectedQuotationId,
-  preselectedSalesOrderId,
-  preselectedCustomerName,
-  preselectedCustomerPhone,
-  preselectedCustomerEmail,
-  preselectedCustomerAddress,
-  preselectedCompanyName,
-  preselectedItems,
-  preselectedRequestId,
-  preselectedDesignJobId,
-  preselectedItemsSummary,
-  preselectedEstimatedAmount,
-  preselectedNotes,
-  preselectedDiscountAmount,
-  preselectedVatPercentage,
-  preselectedAdvanceAmount,
-  onInvoiceCreated,
+ open,
+ onOpenChange,
+ preselectedCustomerId,
+ preselectedCustomerType,
+ preselectedWhatsappNumber,
+ preselectedQuotationId,
+ preselectedSalesOrderId,
+ preselectedCustomerName,
+ preselectedCustomerPhone,
+ preselectedCustomerEmail,
+ preselectedCustomerAddress,
+ preselectedCompanyName,
+ preselectedItems,
+ preselectedRequestId,
+ preselectedDesignJobId,
+ preselectedItemsSummary,
+ preselectedEstimatedAmount,
+ preselectedNotes,
+ preselectedDiscountAmount,
+ preselectedVatPercentage,
+ preselectedAdvanceAmount,
+ onInvoiceCreated,
 }: NewInvoiceModalProps) {
-  const router = useRouter()
-  const { company } = useTenant()
-  const { locale, tBilingual } = useI18n()
-  const isBn = locale === 'bn'
-  const tenantSlug = company?.slug || 'my-company'
+ const router = useRouter()
+ const { company } = useTenant()
+ const { locale, tBilingual } = useI18n()
+ const isBn = locale === 'bn'
+ const tenantSlug = company?.slug || 'my-company'
 
   // Products catalog & pricing cache
-  const [products, setProducts] = useState<ProductRecord[]>([])
-  const [customerRates, setCustomerRates] = useState<ResolvedProductRate[]>([])
+ const [products, setProducts] = useState<ProductRecord[]>([])
+ const [customerRates, setCustomerRates] = useState<ResolvedProductRate[]>([])
 
   // Mode: Simple vs Advanced
-  const [isAdvancedMode, setIsAdvancedMode] = useState(false)
+ const [isAdvancedMode, setIsAdvancedMode] = useState(false)
 
   // Customer Form Fields
-  const [selectedCustomer, setSelectedCustomer] = useState<CustomerRecord | null>(null)
-  const [customerId, setCustomerId] = useState<string | undefined>(undefined)
-  const [customerName, setCustomerName] = useState('')
-  const [companyName, setCompanyName] = useState('')
-  const [phoneNumber, setPhoneNumber] = useState('')
-  const [whatsappNumber, setWhatsappNumber] = useState('')
-  const [address, setAddress] = useState('')
-  const [customerType, setCustomerType] = useState<'retail' | 'reseller' | 'corporate' | 'government'>('retail')
-  const [emailAddress, setEmailAddress] = useState('')
-  const [saveCustomer, setSaveCustomer] = useState(true)
+ const [selectedCustomer, setSelectedCustomer] = useState<CustomerRecord | null>(null)
+ const [customerId, setCustomerId] = useState<string | undefined>(undefined)
+ const [customerName, setCustomerName] = useState('')
+ const [companyName, setCompanyName] = useState('')
+ const [phoneNumber, setPhoneNumber] = useState('')
+ const [whatsappNumber, setWhatsappNumber] = useState('')
+ const [address, setAddress] = useState('')
+ const [customerType, setCustomerType] = useState<'retail' | 'reseller' | 'corporate' | 'government'>('retail')
+ const [emailAddress, setEmailAddress] = useState('')
+ const [saveCustomer, setSaveCustomer] = useState(true)
 
-  const isFromDesignWorkOrder = Boolean(preselectedDesignJobId || preselectedRequestId)
+ const isFromDesignWorkOrder = Boolean(preselectedDesignJobId || preselectedRequestId)
 
   // Document metadata
-  const [invoiceType, setInvoiceType] = useState<InvoiceType>('sales_invoice')
-  const [invoiceDate, setInvoiceDate] = useState<string>(new Date().toISOString().split('T')[0])
-  const [dueDate, setDueDate] = useState<string>(new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0])
-  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'bkash' | 'nagad' | 'bank' | 'cheque' | 'other_mfs'>('cash')
-  const [paymentMethodNote, setPaymentMethodNote] = useState('')
-  const [referenceNo, setReferenceNo] = useState('')
-  const [deliveryDate, setDeliveryDate] = useState('')
-  const [deliveryLocation, setDeliveryLocation] = useState('')
-  const [deliveryMethod, setDeliveryMethod] = useState<'customer_pickup' | 'company_delivery' | 'courier'>('customer_pickup')
-  const [notes, setNotes] = useState('')
-  const [termsAndConditions, setTermsAndConditions] = useState('')
-  const [quotationId, setQuotationId] = useState<string | undefined>(preselectedQuotationId)
-  const [salesOrderId, setSalesOrderId] = useState<string | undefined>(preselectedSalesOrderId)
-  const [idempotencyKey, setIdempotencyKey] = useState<string>(() => (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `inv-idemp-${Date.now()}`))
+ const [invoiceType, setInvoiceType] = useState<InvoiceType>('sales_invoice')
+ const [invoiceDate, setInvoiceDate] = useState<string>(new Date().toISOString().split('T')[0])
+ const [dueDate, setDueDate] = useState<string>(new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0])
+ const [paymentMethod, setPaymentMethod] = useState<'cash' | 'bkash' | 'nagad' | 'bank' | 'cheque' | 'other_mfs'>('cash')
+ const [paymentMethodNote, setPaymentMethodNote] = useState('')
+ const [referenceNo, setReferenceNo] = useState('')
+ const [deliveryDate, setDeliveryDate] = useState('')
+ const [deliveryLocation, setDeliveryLocation] = useState('')
+ const [deliveryMethod, setDeliveryMethod] = useState<'customer_pickup' | 'company_delivery' | 'courier'>('customer_pickup')
+ const [notes, setNotes] = useState('')
+ const [termsAndConditions, setTermsAndConditions] = useState('')
+ const [quotationId, setQuotationId] = useState<string | undefined>(preselectedQuotationId)
+ const [salesOrderId, setSalesOrderId] = useState<string | undefined>(preselectedSalesOrderId)
+ const [idempotencyKey, setIdempotencyKey] = useState<string>(() => (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `inv-idemp-${Date.now()}`))
 
 
   // Credit Limit Override
-  const [creditOverrideReason, setCreditOverrideReason] = useState('')
-  const [confirmCreditOverride, setConfirmCreditOverride] = useState(false)
+ const [creditOverrideReason, setCreditOverrideReason] = useState('')
+ const [confirmCreditOverride, setConfirmCreditOverride] = useState(false)
 
   // Search suggestions dropdown across name, phone, company, email
-  const [activeCustomerSearchField, setActiveCustomerSearchField] = useState<'name' | 'phone' | 'company' | 'email' | null>(null)
-  const [searchResults, setSearchResults] = useState<CustomerRecord[]>([])
-  const [showSuggestions, setShowSuggestions] = useState(false)
-  const [customerHighlightedIndex, setCustomerHighlightedIndex] = useState(0)
-  const [isSearching, setIsSearching] = useState(false)
-  const [isExistingCustomerSelected, setIsExistingCustomerSelected] = useState(false)
+ const [activeCustomerSearchField, setActiveCustomerSearchField] = useState<'name' | 'phone' | 'company' | 'email' | null>(null)
+ const [searchResults, setSearchResults] = useState<CustomerRecord[]>([])
+ const [showSuggestions, setShowSuggestions] = useState(false)
+ const [customerHighlightedIndex, setCustomerHighlightedIndex] = useState(0)
+ const [isSearching, setIsSearching] = useState(false)
+ const [isExistingCustomerSelected, setIsExistingCustomerSelected] = useState(false)
 
   // Items State (Default width and height are blank without prefilled 4 and 6)
-  const [items, setItems] = useState<ItemRowState[]>([
+ const [items, setItems] = useState<ItemRowState[]>([
     {
-      id: `item-${Date.now()}-1`,
-      productId: '',
-      item_kind: 'service',
-      workflow_routing: 'design_required',
-      itemName: 'Pana Flex Banner Print',
-      width: '',
-      height: '',
-      dimension_unit: 'ft',
-      quantity: 1,
-      unit: 'sft',
-      base_rate: 22,
-      rate: 22,
-      finishing: 'None',
-      finishing_rate: 0,
-      add_on: 'None',
-      add_on_rate: 0,
-      rateSource: 'default',
-      design_required: true,
-      customer_approval_required: true,
-      showAdvanced: false,
+ id: `item-${Date.now()}-1`,
+ productId: '',
+ item_kind: 'service',
+ workflow_routing: 'design_required',
+ itemName: 'Pana Flex Banner Print',
+ width: '',
+ height: '',
+ dimension_unit: 'ft',
+ quantity: 1,
+ unit: 'sft',
+ base_rate: 22,
+ rate: 22,
+ finishing: 'None',
+ finishing_rate: 0,
+ add_on: 'None',
+ add_on_rate: 0,
+ rateSource: 'default',
+ design_required: true,
+ customer_approval_required: true,
+ showAdvanced: false,
     },
   ])
 
   // Financials State
-  const [discountAmount, setDiscountAmount] = useState<number>(0)
-  const [vatPercentage, setVatPercentage] = useState<number>(0)
-  const [advanceAmount, setAdvanceAmount] = useState<number>(0)
-  const [advancePercentage, setAdvancePercentage] = useState<number>(50)
+ const [discountAmount, setDiscountAmount] = useState<number>(0)
+ const [vatPercentage, setVatPercentage] = useState<number>(0)
+ const [advanceAmount, setAdvanceAmount] = useState<number>(0)
+ const [advancePercentage, setAdvancePercentage] = useState<number>(50)
 
 
   // Feedback & Action states
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [submittingAction, setSubmittingAction] = useState<'save' | 'print' | 'send' | 'design' | null>(null)
-  const [savedInvoice, setSavedInvoice] = useState<InvoiceRecord | null>(null)
-  const [errorMessage, setErrorMessage] = useState<string | null>(null)
-  const [communicationStatus, setCommunicationStatus] = useState<{
-    status: 'idle' | 'success' | 'failed'
-    message: string
-    channel?: string
-    format?: string
+ const [isSubmitting, setIsSubmitting] = useState(false)
+ const [submittingAction, setSubmittingAction] = useState<'save' | 'print' | 'send' | 'design' | null>(null)
+ const [savedInvoice, setSavedInvoice] = useState<InvoiceRecord | null>(null)
+ const [errorMessage, setErrorMessage] = useState<string | null>(null)
+ const [communicationStatus, setCommunicationStatus] = useState<{
+ status: 'idle' | 'success' | 'failed'
+ message: string
+ channel?: string
+ format?: string
   }>({ status: 'idle', message: '' })
 
   // Send Dropdown state & Customer Search Container Refs
-  const [showSendMenu, setShowSendMenu] = useState(false)
-  const sendMenuRef = useRef<HTMLDivElement>(null)
-  const nameSearchRef = useRef<HTMLDivElement>(null)
-  const phoneSearchRef = useRef<HTMLDivElement>(null)
-  const companySearchRef = useRef<HTMLDivElement>(null)
-  const emailSearchRef = useRef<HTMLDivElement>(null)
+ const [showSendMenu, setShowSendMenu] = useState(false)
+ const sendMenuRef = useRef<HTMLDivElement>(null)
+ const nameSearchRef = useRef<HTMLDivElement>(null)
+ const phoneSearchRef = useRef<HTMLDivElement>(null)
+ const companySearchRef = useRef<HTMLDivElement>(null)
+ const emailSearchRef = useRef<HTMLDivElement>(null)
 
   // Inventory state for stock availability checking
-  const [materials, setMaterials] = useState<MaterialRecord[]>([])
-  const [stockBalances, setStockBalances] = useState<InventoryStockBalanceRecord[]>([])
-  const [physicalRolls, setPhysicalRolls] = useState<InventoryRollRecord[]>([])
-  const [remnants, setRemnants] = useState<InventoryRemnantRecord[]>([])
+ const [materials, setMaterials] = useState<MaterialRecord[]>([])
+ const [stockBalances, setStockBalances] = useState<InventoryStockBalanceRecord[]>([])
+ const [physicalRolls, setPhysicalRolls] = useState<InventoryRollRecord[]>([])
+ const [remnants, setRemnants] = useState<InventoryRemnantRecord[]>([])
 
   // Fetch active catalog products and inventory data
-  useEffect(() => {
-    if (!open) return
-    getInvoiceProductsAction(company?.id).then((res) => {
-      if (res.success && res.data) {
-        setProducts(res.data)
+ useEffect(() => {
+ if (!open) return
+ getInvoiceProductsAction(company?.id).then((res) => {
+ if (res.success && res.data) {
+ setProducts(res.data)
       }
     })
 
-    const matList = PrintERPDataStore.getAll<MaterialRecord>(STORAGE_KEYS.MATERIALS, company?.id) || []
-    const rollList = PrintERPDataStore.getAll<InventoryRollRecord>(STORAGE_KEYS.MOUNTED_ROLLS, company?.id) || []
-    const balList = PrintERPDataStore.getAll<InventoryStockBalanceRecord>(STORAGE_KEYS.INVENTORY_STOCK_BALANCES, company?.id) || []
-    const remList = PrintERPDataStore.getAll<InventoryRemnantRecord>(STORAGE_KEYS.INVENTORY_REMNANTS, company?.id) || []
+ const matList = PrintERPDataStore.getAll<MaterialRecord>(STORAGE_KEYS.MATERIALS, company?.id) || []
+ const rollList = PrintERPDataStore.getAll<InventoryRollRecord>(STORAGE_KEYS.MOUNTED_ROLLS, company?.id) || []
+ const balList = PrintERPDataStore.getAll<InventoryStockBalanceRecord>(STORAGE_KEYS.INVENTORY_STOCK_BALANCES, company?.id) || []
+ const remList = PrintERPDataStore.getAll<InventoryRemnantRecord>(STORAGE_KEYS.INVENTORY_REMNANTS, company?.id) || []
 
-    setMaterials(matList)
-    setPhysicalRolls(rollList)
-    setStockBalances(balList)
-    setRemnants(remList)
+ setMaterials(matList)
+ setPhysicalRolls(rollList)
+ setStockBalances(balList)
+ setRemnants(remList)
   }, [open, company?.id])
 
   // Close menus on outside click
-  useEffect(() => {
-    const handleOutsideClick = (e: MouseEvent) => {
-      if (sendMenuRef.current && !sendMenuRef.current.contains(e.target as Node)) {
-        setShowSendMenu(false)
+ useEffect(() => {
+ const handleOutsideClick = (e: MouseEvent) => {
+ if (sendMenuRef.current && !sendMenuRef.current.contains(e.target as Node)) {
+ setShowSendMenu(false)
       }
-      const clickedInsideCustomerField =
+ const clickedInsideCustomerField =
         (nameSearchRef.current && nameSearchRef.current.contains(e.target as Node)) ||
         (phoneSearchRef.current && phoneSearchRef.current.contains(e.target as Node)) ||
         (companySearchRef.current && companySearchRef.current.contains(e.target as Node)) ||
         (emailSearchRef.current && emailSearchRef.current.contains(e.target as Node))
 
-      if (!clickedInsideCustomerField) {
-        setShowSuggestions(false)
-        setActiveCustomerSearchField(null)
+ if (!clickedInsideCustomerField) {
+ setShowSuggestions(false)
+ setActiveCustomerSearchField(null)
       }
     }
-    document.addEventListener('mousedown', handleOutsideClick)
-    return () => document.removeEventListener('mousedown', handleOutsideClick)
+ document.addEventListener('mousedown', handleOutsideClick)
+ return () => document.removeEventListener('mousedown', handleOutsideClick)
   }, [])
 
   // Auto-fill when preselected customer ID, sales order ID, or request details are provided
-  useEffect(() => {
-    if (open) {
-      setIdempotencyKey(typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `inv-idemp-${Date.now()}`)
-      if (preselectedCustomerType) {
-        setCustomerType(preselectedCustomerType)
+ useEffect(() => {
+ if (open) {
+ setIdempotencyKey(typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `inv-idemp-${Date.now()}`)
+ if (preselectedCustomerType) {
+ setCustomerType(preselectedCustomerType)
       }
-      if (preselectedWhatsappNumber) {
-        setWhatsappNumber(preselectedWhatsappNumber)
+ if (preselectedWhatsappNumber) {
+ setWhatsappNumber(preselectedWhatsappNumber)
       }
-      if (preselectedSalesOrderId) {
-        setSalesOrderId(preselectedSalesOrderId)
+ if (preselectedSalesOrderId) {
+ setSalesOrderId(preselectedSalesOrderId)
       }
-      if (preselectedQuotationId) {
-        setQuotationId(preselectedQuotationId)
+ if (preselectedQuotationId) {
+ setQuotationId(preselectedQuotationId)
       }
-      if (preselectedNotes) {
-        setNotes(preselectedNotes)
+ if (preselectedNotes) {
+ setNotes(preselectedNotes)
       }
-      if (preselectedDiscountAmount !== undefined) {
-        setDiscountAmount(Number(preselectedDiscountAmount) || 0)
+ if (preselectedDiscountAmount !== undefined) {
+ setDiscountAmount(Number(preselectedDiscountAmount) || 0)
       }
-      if (preselectedVatPercentage !== undefined) {
-        setVatPercentage(Number(preselectedVatPercentage) || 0)
+ if (preselectedVatPercentage !== undefined) {
+ setVatPercentage(Number(preselectedVatPercentage) || 0)
       }
-      if (preselectedAdvanceAmount !== undefined) {
-        setAdvanceAmount(Number(preselectedAdvanceAmount) || 0)
+ if (preselectedAdvanceAmount !== undefined) {
+ setAdvanceAmount(Number(preselectedAdvanceAmount) || 0)
       }
 
-      if (preselectedCustomerId) {
-        searchInvoiceCustomersAction(preselectedCustomerId, company?.id).then((res) => {
-          if (res.success && res.data && res.data.length > 0) {
-            handleSelectCustomer(res.data[0])
+ if (preselectedCustomerId) {
+ searchInvoiceCustomersAction(preselectedCustomerId, company?.id).then((res) => {
+ if (res.success && res.data && res.data.length > 0) {
+ handleSelectCustomer(res.data[0])
             // If explicit overrides were passed alongside customerId, respect them
-            if (preselectedCustomerType) setCustomerType(preselectedCustomerType)
-            if (preselectedCustomerPhone) setPhoneNumber(preselectedCustomerPhone)
-            if (preselectedWhatsappNumber) setWhatsappNumber(preselectedWhatsappNumber)
-            if (preselectedCustomerAddress) setAddress(preselectedCustomerAddress)
-            if (preselectedCompanyName) setCompanyName(preselectedCompanyName)
-            if (preselectedCustomerEmail) setEmailAddress(preselectedCustomerEmail)
+ if (preselectedCustomerType) setCustomerType(preselectedCustomerType)
+ if (preselectedCustomerPhone) setPhoneNumber(preselectedCustomerPhone)
+ if (preselectedWhatsappNumber) setWhatsappNumber(preselectedWhatsappNumber)
+ if (preselectedCustomerAddress) setAddress(preselectedCustomerAddress)
+ if (preselectedCompanyName) setCompanyName(preselectedCompanyName)
+ if (preselectedCustomerEmail) setEmailAddress(preselectedCustomerEmail)
           }
         })
       } else if (preselectedCustomerName) {
-        setCustomerName(preselectedCustomerName)
-        if (preselectedCustomerType) setCustomerType(preselectedCustomerType)
-        if (preselectedCustomerPhone) setPhoneNumber(preselectedCustomerPhone)
-        if (preselectedWhatsappNumber) setWhatsappNumber(preselectedWhatsappNumber)
+ setCustomerName(preselectedCustomerName)
+ if (preselectedCustomerType) setCustomerType(preselectedCustomerType)
+ if (preselectedCustomerPhone) setPhoneNumber(preselectedCustomerPhone)
+ if (preselectedWhatsappNumber) setWhatsappNumber(preselectedWhatsappNumber)
       }
 
-      if (preselectedCompanyName) {
-        setCompanyName(preselectedCompanyName)
+ if (preselectedCompanyName) {
+ setCompanyName(preselectedCompanyName)
       }
-      if (preselectedCustomerAddress) {
-        setAddress(preselectedCustomerAddress)
+ if (preselectedCustomerAddress) {
+ setAddress(preselectedCustomerAddress)
       }
-      if (preselectedCustomerEmail) {
-        setEmailAddress(preselectedCustomerEmail)
+ if (preselectedCustomerEmail) {
+ setEmailAddress(preselectedCustomerEmail)
       }
 
-      if (Array.isArray(preselectedItems) && preselectedItems.length > 0) {
-        const mappedItems: ItemRowState[] = preselectedItems.map((it, idx) => {
-          const matchingProduct = products.find(
+ if (Array.isArray(preselectedItems) && preselectedItems.length > 0) {
+ const mappedItems: ItemRowState[] = preselectedItems.map((it, idx) => {
+ const matchingProduct = products.find(
             (p) =>
-              p.id === it.productId ||
-              p.id === it.product_id ||
-              p.name.toLowerCase() === (it.itemName || it.item_name || '').toLowerCase()
+ p.id === it.productId ||
+ p.id === it.product_id ||
+ p.name.toLowerCase() === (it.itemName || it.item_name || '').toLowerCase()
           )
 
-          const detectedKind = matchingProduct ? detectProductKind(matchingProduct) : undefined
-          const isReady = it.item_kind === 'ready_product' || detectedKind === 'ready_product'
-          const isMat = !isReady && (it.item_kind === 'material' || detectedKind === 'material')
-          const isService = !isReady && !isMat
+ const detectedKind = matchingProduct ? detectProductKind(matchingProduct) : undefined
+ const isReady = it.item_kind === 'ready_product' || detectedKind === 'ready_product'
+ const isMat = !isReady && (it.item_kind === 'material' || detectedKind === 'material')
+ const isService = !isReady && !isMat
 
           // Strictly prioritize the rate filled on the order / invoice request
-          const resolvedRate =
+ const resolvedRate =
             (Number(it.rate) > 0 ? Number(it.rate) : undefined) ??
             (Number(it.unit_price) > 0 ? Number(it.unit_price) : undefined) ??
             (Number(matchingProduct?.selling_price) ||
-              Number((matchingProduct as any)?.base_price) ||
+ Number((matchingProduct as any)?.base_price) ||
               (isReady ? 50 : 25))
 
-          const isDesignRequired = isFromDesignWorkOrder
+ const isDesignRequired = isFromDesignWorkOrder
             ? false
             : isService && Boolean(it.design_required)
 
-          const workflowRoutingResolved = isReady
+ const workflowRoutingResolved = isReady
             ? 'ready_product'
             : isMat
             ? 'ready_production'
@@ -853,178 +830,178 @@ export function NewInvoiceModal({
             ? 'ready_production'
             : it.workflow_routing || (it.design_required ? 'design_required' : 'design_ok')
 
-          return {
-            id: `item-${Date.now()}-${idx + 1}`,
-            productId: matchingProduct?.id || it.productId || it.product_id || '',
-            item_kind: isReady ? 'ready_product' : isMat ? 'material' : 'service',
-            product_type: matchingProduct?.product_type || it.product_type,
-            itemName: it.itemName || it.item_name || matchingProduct?.name || (isReady ? 'Ready Display Product' : 'Printing Service Item'),
-            dimensions_spec: it.dimensions_spec || (matchingProduct as any)?.dimensions_spec || (it.width && it.height ? `${it.width}×${it.height} ${it.dimension_unit || 'ft'}` : undefined),
-            width: String(isReady || isMat ? '0' : (it.width !== undefined && it.width !== '' ? it.width : '4')),
-            height: String(isReady || isMat ? '0' : (it.height !== undefined && it.height !== '' ? it.height : '6')),
-            dimension_unit: isReady ? (it.unit || matchingProduct?.selling_unit || 'pcs') : (it.dimension_unit || (matchingProduct?.service_config?.default_unit as any) || 'ft'),
-            quantity: Number(it.quantity) || 1,
-            unit: it.unit || matchingProduct?.selling_unit || matchingProduct?.unit || (isReady ? 'pcs' : isMat ? 'roll' : 'sft'),
-            rate: resolvedRate,
-            finishing: isReady ? 'None' : (it.finishing || 'None'),
-            finishing_rate: Number(it.finishing_rate) || (it.finishing && it.finishing !== 'None' ? getFinishingRate(it.finishing) : 0),
-            add_on: isReady ? 'None' : (it.add_on || 'None'),
-            add_on_rate: Number(it.add_on_rate) || (it.add_on && it.add_on !== 'None' ? getAddOnRate(it.add_on) : 0),
-            rateSource: it.rate || it.unit_price ? 'custom' : matchingProduct ? 'default' : 'manual',
-            available_dimension_presets:
-              matchingProduct?.service_config?.dimension_presets ||
+ return {
+ id: `item-${Date.now()}-${idx + 1}`,
+ productId: matchingProduct?.id || it.productId || it.product_id || '',
+ item_kind: isReady ? 'ready_product' : isMat ? 'material' : 'service',
+ product_type: matchingProduct?.product_type || it.product_type,
+ itemName: it.itemName || it.item_name || matchingProduct?.name || (isReady ? 'Ready Display Product' : 'Printing Service Item'),
+ dimensions_spec: it.dimensions_spec || (matchingProduct as any)?.dimensions_spec || (it.width && it.height ? `${it.width}×${it.height} ${it.dimension_unit || 'ft'}` : undefined),
+ width: String(isReady || isMat ? '0' : (it.width !== undefined && it.width !== '' ? it.width : '4')),
+ height: String(isReady || isMat ? '0' : (it.height !== undefined && it.height !== '' ? it.height : '6')),
+ dimension_unit: isReady ? (it.unit || matchingProduct?.selling_unit || 'pcs') : (it.dimension_unit || (matchingProduct?.service_config?.default_unit as any) || 'ft'),
+ quantity: Number(it.quantity) || 1,
+ unit: it.unit || matchingProduct?.selling_unit || matchingProduct?.unit || (isReady ? 'pcs' : isMat ? 'roll' : 'sft'),
+ rate: resolvedRate,
+ finishing: isReady ? 'None' : (it.finishing || 'None'),
+ finishing_rate: Number(it.finishing_rate) || (it.finishing && it.finishing !== 'None' ? getFinishingRate(it.finishing) : 0),
+ add_on: isReady ? 'None' : (it.add_on || 'None'),
+ add_on_rate: Number(it.add_on_rate) || (it.add_on && it.add_on !== 'None' ? getAddOnRate(it.add_on) : 0),
+ rateSource: it.rate || it.unit_price ? 'custom' : matchingProduct ? 'default' : 'manual',
+ available_dimension_presets:
+ matchingProduct?.service_config?.dimension_presets ||
               (matchingProduct as any)?.dimension_presets ||
               [],
-            available_finishing_options:
-              matchingProduct?.service_config?.finishing_options ||
+ available_finishing_options:
+ matchingProduct?.service_config?.finishing_options ||
               (matchingProduct as any)?.finishing_options ||
               [],
-            available_additional_options:
-              matchingProduct?.service_config?.additional_options ||
+ available_additional_options:
+ matchingProduct?.service_config?.additional_options ||
               (matchingProduct as any)?.additional_options ||
               [],
-            printable_material_name:
-              it.material_spec ||
-              it.printable_material_name ||
-              matchingProduct?.service_config?.printable_material_name ||
+ printable_material_name:
+ it.material_spec ||
+ it.printable_material_name ||
+ matchingProduct?.service_config?.printable_material_name ||
               (matchingProduct as any)?.material_spec,
-            design_required: isDesignRequired,
-            customer_approval_required: !isFromDesignWorkOrder && isService && it.customer_approval_required !== false,
-            workflow_routing: workflowRoutingResolved,
-            showAdvanced: Boolean(it.showAdvanced),
+ design_required: isDesignRequired,
+ customer_approval_required: !isFromDesignWorkOrder && isService && it.customer_approval_required !== false,
+ workflow_routing: workflowRoutingResolved,
+ showAdvanced: Boolean(it.showAdvanced),
           }
         })
-        setItems(mappedItems)
+ setItems(mappedItems)
       } else if (preselectedItemsSummary) {
-        setItems((prev) => {
-          if (
-            prev.length === 1 &&
+ setItems((prev) => {
+ if (
+ prev.length === 1 &&
             (!prev[0].productId ||
-              prev[0].itemName === 'Printing Service Item' ||
-              prev[0].itemName === 'Flex Banner 10x4' ||
-              prev[0].itemName === 'Pana Flex Banner Print')
+ prev[0].itemName === 'Printing Service Item' ||
+ prev[0].itemName === 'Flex Banner 10x4' ||
+ prev[0].itemName === 'Pana Flex Banner Print')
           ) {
-            return [
+ return [
               {
                 ...prev[0],
-                itemName: preselectedItemsSummary,
-                rate:
-                  preselectedEstimatedAmount && preselectedEstimatedAmount > 0
+ itemName: preselectedItemsSummary,
+ rate:
+ preselectedEstimatedAmount && preselectedEstimatedAmount > 0
                     ? preselectedEstimatedAmount
                     : prev[0].rate,
-                quantity: 1,
+ quantity: 1,
               },
             ]
           }
-          return prev
+ return prev
         })
       }
     }
   }, [
-    open,
-    preselectedCustomerId,
-    preselectedCustomerType,
-    preselectedWhatsappNumber,
-    preselectedSalesOrderId,
-    preselectedQuotationId,
-    preselectedCustomerName,
-    preselectedCustomerPhone,
-    preselectedCustomerEmail,
-    preselectedCustomerAddress,
-    preselectedCompanyName,
-    preselectedItems,
-    preselectedItemsSummary,
-    preselectedEstimatedAmount,
-    preselectedNotes,
-    preselectedDiscountAmount,
-    preselectedVatPercentage,
-    preselectedAdvanceAmount,
-    products,
-    company?.id,
+ open,
+ preselectedCustomerId,
+ preselectedCustomerType,
+ preselectedWhatsappNumber,
+ preselectedSalesOrderId,
+ preselectedQuotationId,
+ preselectedCustomerName,
+ preselectedCustomerPhone,
+ preselectedCustomerEmail,
+ preselectedCustomerAddress,
+ preselectedCompanyName,
+ preselectedItems,
+ preselectedItemsSummary,
+ preselectedEstimatedAmount,
+ preselectedNotes,
+ preselectedDiscountAmount,
+ preselectedVatPercentage,
+ preselectedAdvanceAmount,
+ products,
+ company?.id,
   ])
 
   // Customer keyword search across name, phone, company, email
-  useEffect(() => {
-    if (!activeCustomerSearchField || isExistingCustomerSelected) {
-      setSearchResults([])
-      setShowSuggestions(false)
-      return
+ useEffect(() => {
+ if (!activeCustomerSearchField || isExistingCustomerSelected) {
+ setSearchResults([])
+ setShowSuggestions(false)
+ return
     }
 
-    let query = ''
-    if (activeCustomerSearchField === 'name') query = customerName
-    else if (activeCustomerSearchField === 'phone') query = phoneNumber
-    else if (activeCustomerSearchField === 'company') query = companyName
-    else if (activeCustomerSearchField === 'email') query = emailAddress
+ let query = ''
+ if (activeCustomerSearchField === 'name') query = customerName
+ else if (activeCustomerSearchField === 'phone') query = phoneNumber
+ else if (activeCustomerSearchField === 'company') query = companyName
+ else if (activeCustomerSearchField === 'email') query = emailAddress
 
-    const trimmed = query.trim()
-    if (!trimmed) {
-      setSearchResults([])
-      setShowSuggestions(false)
-      return
+ const trimmed = query.trim()
+ if (!trimmed) {
+ setSearchResults([])
+ setShowSuggestions(false)
+ return
     }
 
-    const timer = setTimeout(async () => {
-      setIsSearching(true)
-      try {
-        const res = await searchInvoiceCustomersAction(trimmed, company?.id)
-        if (res.success && res.data && res.data.length > 0) {
-          setSearchResults(res.data)
-          setShowSuggestions(true)
-          setCustomerHighlightedIndex(0)
+ const timer = setTimeout(async () => {
+ setIsSearching(true)
+ try {
+ const res = await searchInvoiceCustomersAction(trimmed, company?.id)
+ if (res.success && res.data && res.data.length > 0) {
+ setSearchResults(res.data)
+ setShowSuggestions(true)
+ setCustomerHighlightedIndex(0)
         } else {
-          setSearchResults([])
-          setShowSuggestions(false)
+ setSearchResults([])
+ setShowSuggestions(false)
         }
       } catch (err) {
-        console.error('Customer search error:', err)
+ console.error('Customer search error:', err)
       } finally {
-        setIsSearching(false)
+ setIsSearching(false)
       }
     }, 200)
 
-    return () => clearTimeout(timer)
+ return () => clearTimeout(timer)
   }, [
-    activeCustomerSearchField,
-    customerName,
-    phoneNumber,
-    companyName,
-    emailAddress,
-    isExistingCustomerSelected,
-    company?.id,
+ activeCustomerSearchField,
+ customerName,
+ phoneNumber,
+ companyName,
+ emailAddress,
+ isExistingCustomerSelected,
+ company?.id,
   ])
 
   // Select existing customer & auto-fill without creating duplicates
-  const handleSelectCustomer = async (cust: CustomerRecord) => {
-    setSelectedCustomer(cust)
-    setCustomerId(cust.id)
-    setCustomerName(cust.name)
-    setCompanyName(cust.company_name || '')
-    setPhoneNumber(cust.mobile)
-    setWhatsappNumber(cust.whatsapp || '')
-    setAddress(cust.address || '')
-    const typeMapping = ['retail', 'reseller', 'corporate', 'government'].includes(cust.customer_type || '')
+ const handleSelectCustomer = async (cust: CustomerRecord) => {
+ setSelectedCustomer(cust)
+ setCustomerId(cust.id)
+ setCustomerName(cust.name)
+ setCompanyName(cust.company_name || '')
+ setPhoneNumber(cust.mobile)
+ setWhatsappNumber(cust.whatsapp || '')
+ setAddress(cust.address || '')
+ const typeMapping = ['retail', 'reseller', 'corporate', 'government'].includes(cust.customer_type || '')
       ? (cust.customer_type as any)
       : 'retail'
-    setCustomerType(typeMapping)
-    setEmailAddress(cust.email || '')
-    setIsExistingCustomerSelected(true)
-    setShowSuggestions(false)
-    setActiveCustomerSearchField(null)
-    setCustomerHighlightedIndex(0)
-    setErrorMessage(null)
+ setCustomerType(typeMapping)
+ setEmailAddress(cust.email || '')
+ setIsExistingCustomerSelected(true)
+ setShowSuggestions(false)
+ setActiveCustomerSearchField(null)
+ setCustomerHighlightedIndex(0)
+ setErrorMessage(null)
 
     // Real-time authoritative customer financial summary fetch
-    getCustomerFinancialSummaryAction(cust.id, company?.id)
+ getCustomerFinancialSummaryAction(cust.id, company?.id)
       .then((finRes) => {
-        if (finRes.success && finRes.data) {
-          const finData = finRes.data
-          setSelectedCustomer((prev) =>
-            prev && prev.id === cust.id
+ if (finRes.success && finRes.data) {
+ const finData = finRes.data
+ setSelectedCustomer((prev) =>
+ prev && prev.id === cust.id
               ? {
                   ...prev,
-                  total_due_balance: finData.totalDue,
-                  credit_limit: finData.creditLimit ?? prev.credit_limit,
+ total_due_balance: finData.totalDue,
+ credit_limit: finData.creditLimit ?? prev.credit_limit,
                 }
               : prev
           )
@@ -1033,649 +1010,648 @@ export function NewInvoiceModal({
       .catch(() => {})
 
     // Resolve 3-tier customer pricing
-    try {
-      const rateRes = await resolveCustomerPricingAction(cust.id, company?.id)
-      if (rateRes.success && rateRes.data) {
-        setCustomerRates(rateRes.data)
-        setItems((prev) =>
-          prev.map((item) => {
-            if (item.productId && !item.isManualRate) {
-              const resolved = rateRes.data?.find((r) => r.productId === item.productId)
-              if (resolved) {
-                return {
+ try {
+ const rateRes = await resolveCustomerPricingAction(cust.id, company?.id)
+ if (rateRes.success && rateRes.data) {
+ setCustomerRates(rateRes.data)
+ setItems((prev) =>
+ prev.map((item) => {
+ if (item.productId && !item.isManualRate) {
+ const resolved = rateRes.data?.find((r) => r.productId === item.productId)
+ if (resolved) {
+ return {
                   ...item,
-                  rate: resolved.effectiveRate,
-                  rateSource: resolved.source,
+ rate: resolved.effectiveRate,
+ rateSource: resolved.source,
                 }
               }
             }
-            return item
+ return item
           })
         )
       }
     } catch (err) {
-      console.error('Failed to resolve customer pricing:', err)
+ console.error('Failed to resolve customer pricing:', err)
     }
   }
 
-  const handleCustomerFieldChange = (
-    field: 'name' | 'phone' | 'company' | 'email',
-    val: string
+ const handleCustomerFieldChange = (
+ field: 'name' | 'phone' | 'company' | 'email',
+ val: string
   ) => {
-    if (field === 'name') setCustomerName(val)
-    else if (field === 'phone') setPhoneNumber(val)
-    else if (field === 'company') setCompanyName(val)
-    else if (field === 'email') setEmailAddress(val)
+ if (field === 'name') setCustomerName(val)
+ else if (field === 'phone') setPhoneNumber(val)
+ else if (field === 'company') setCompanyName(val)
+ else if (field === 'email') setEmailAddress(val)
 
-    setActiveCustomerSearchField(field)
-    setCustomerHighlightedIndex(0)
+ setActiveCustomerSearchField(field)
+ setCustomerHighlightedIndex(0)
 
-    if (isExistingCustomerSelected) {
-      setIsExistingCustomerSelected(false)
-      setSelectedCustomer(null)
-      setCustomerId(undefined)
-      setCustomerRates([])
+ if (isExistingCustomerSelected) {
+ setIsExistingCustomerSelected(false)
+ setSelectedCustomer(null)
+ setCustomerId(undefined)
+ setCustomerRates([])
     }
   }
 
-  const handleCustomerKeyDown = (
-    field: 'name' | 'phone' | 'company' | 'email',
-    e: React.KeyboardEvent<HTMLInputElement>
+ const handleCustomerKeyDown = (
+ field: 'name' | 'phone' | 'company' | 'email',
+ e: React.KeyboardEvent<HTMLInputElement>
   ) => {
-    if (!showSuggestions || searchResults.length === 0) {
-      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-        setActiveCustomerSearchField(field)
+ if (!showSuggestions || searchResults.length === 0) {
+ if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+ setActiveCustomerSearchField(field)
       }
-      return
+ return
     }
 
-    if (e.key === 'ArrowDown') {
-      e.preventDefault()
-      setCustomerHighlightedIndex((prev) => (prev + 1) % searchResults.length)
+ if (e.key === 'ArrowDown') {
+ e.preventDefault()
+ setCustomerHighlightedIndex((prev) => (prev + 1) % searchResults.length)
     } else if (e.key === 'ArrowUp') {
-      e.preventDefault()
-      setCustomerHighlightedIndex((prev) => (prev - 1 + searchResults.length) % searchResults.length)
+ e.preventDefault()
+ setCustomerHighlightedIndex((prev) => (prev - 1 + searchResults.length) % searchResults.length)
     } else if (e.key === 'Enter') {
-      e.preventDefault()
-      if (searchResults[customerHighlightedIndex]) {
-        handleSelectCustomer(searchResults[customerHighlightedIndex])
+ e.preventDefault()
+ if (searchResults[customerHighlightedIndex]) {
+ handleSelectCustomer(searchResults[customerHighlightedIndex])
       }
     } else if (e.key === 'Escape') {
-      e.preventDefault()
-      setShowSuggestions(false)
-      setActiveCustomerSearchField(null)
+ e.preventDefault()
+ setShowSuggestions(false)
+ setActiveCustomerSearchField(null)
     }
   }
 
   // Categorized product catalog lists
-  const readyProductsList = useMemo(() => {
-    return products.filter((p) => detectProductKind(p) === 'ready_product')
+ const readyProductsList = useMemo(() => {
+ return products.filter((p) => detectProductKind(p) === 'ready_product')
   }, [products])
 
-  const materialsList = useMemo(() => {
-    return products.filter((p) => detectProductKind(p) === 'material')
+ const materialsList = useMemo(() => {
+ return products.filter((p) => detectProductKind(p) === 'material')
   }, [products])
 
-  const servicesList = useMemo(() => {
-    return products.filter((p) => detectProductKind(p) === 'service')
+ const servicesList = useMemo(() => {
+ return products.filter((p) => detectProductKind(p) === 'service')
   }, [products])
 
   // Line Item Handlers
-  const handleProductSelect = (index: number, productId: string) => {
-    if (!productId) {
-      setItems((prev) => {
-        const next = [...prev]
-        next[index] = {
+ const handleProductSelect = (index: number, productId: string) => {
+ if (!productId) {
+ setItems((prev) => {
+ const next = [...prev]
+ next[index] = {
           ...next[index],
-          productId: '',
-          item_kind: 'custom',
-          tier_applied: undefined,
-          moq: undefined,
-          pcs_per_carton: undefined,
-          available_dimension_presets: [],
-          available_finishing_options: [],
-          available_additional_options: [],
-          printable_material_name: undefined,
+ productId: '',
+ item_kind: 'custom',
+ tier_applied: undefined,
+ moq: undefined,
+ pcs_per_carton: undefined,
+ available_dimension_presets: [],
+ available_finishing_options: [],
+ available_additional_options: [],
+ printable_material_name: undefined,
         }
-        return next
+ return next
       })
-      return
+ return
     }
 
-    const prd = products.find((p) => p.id === productId)
-    if (!prd) return
+ const prd = products.find((p) => p.id === productId)
+ if (!prd) return
 
-    setItems((prev) => {
-      const next = [...prev]
-      const current = next[index]
+ setItems((prev) => {
+ const next = [...prev]
+ const current = next[index]
 
-      const defaultPrice = Number(prd.selling_price) || Number((prd as any).base_price) || 20
-      let effectiveRate = defaultPrice
-      let rateSrc: 'custom' | 'last_invoice' | 'last_quotation' | 'default' = 'default'
-      let tierApplied: string | undefined = undefined
+ const defaultPrice = Number(prd.selling_price) || Number((prd as any).base_price) || 20
+ let effectiveRate = defaultPrice
+ let rateSrc: 'custom' | 'last_invoice' | 'last_quotation' | 'default' = 'default'
+ let tierApplied: string | undefined = undefined
 
-      if (customerId && customerRates.length > 0) {
-        const resolved = customerRates.find((r) => r.productId === prd.id)
-        if (resolved) {
-          effectiveRate = resolved.effectiveRate
-          rateSrc = resolved.source
+ if (customerId && customerRates.length > 0) {
+ const resolved = customerRates.find((r) => r.productId === prd.id)
+ if (resolved) {
+ effectiveRate = resolved.effectiveRate
+ rateSrc = resolved.source
         }
       }
 
-      const itemKind = detectProductKind(prd)
-      const isReady = itemKind === 'ready_product'
-      const isMat = itemKind === 'material'
-      const isService = itemKind === 'service'
+ const itemKind = detectProductKind(prd)
+ const isReady = itemKind === 'ready_product'
+ const isMat = itemKind === 'material'
+ const isService = itemKind === 'service'
 
       // Tier price resolution for ready products if not overridden by rate map
-      if (isReady && prd.price_tiers && rateSrc === 'default') {
-        const cType = (customerType || selectedCustomer?.customer_type || 'retail').toLowerCase()
-        if (cType === 'corporate' && (prd.price_tiers['corporate'] || prd.price_tiers['corporate_price'])) {
-          effectiveRate = Number(prd.price_tiers['corporate'] ?? prd.price_tiers['corporate_price'])
-          tierApplied = 'Corporate Tier'
+ if (isReady && prd.price_tiers && rateSrc === 'default') {
+ const cType = (customerType || selectedCustomer?.customer_type || 'retail').toLowerCase()
+ if (cType === 'corporate' && (prd.price_tiers['corporate'] || prd.price_tiers['corporate_price'])) {
+ effectiveRate = Number(prd.price_tiers['corporate'] ?? prd.price_tiers['corporate_price'])
+ tierApplied = 'Corporate Tier'
         } else if ((cType === 'reseller' || cType === 'dealer') && (prd.price_tiers['dealer'] || prd.price_tiers['dealer_price'])) {
-          effectiveRate = Number(prd.price_tiers['dealer'] ?? prd.price_tiers['dealer_price'])
-          tierApplied = 'Dealer Tier'
+ effectiveRate = Number(prd.price_tiers['dealer'] ?? prd.price_tiers['dealer_price'])
+ tierApplied = 'Dealer Tier'
         } else if (cType === 'wholesale' && (prd.price_tiers['wholesale'] || prd.price_tiers['wholesale_price'])) {
-          effectiveRate = Number(prd.price_tiers['wholesale'] ?? prd.price_tiers['wholesale_price'])
-          tierApplied = 'Wholesale Tier'
+ effectiveRate = Number(prd.price_tiers['wholesale'] ?? prd.price_tiers['wholesale_price'])
+ tierApplied = 'Wholesale Tier'
         } else if (cType === 'vip' && (prd.price_tiers['vip'] || prd.price_tiers['vip_price'])) {
-          effectiveRate = Number(prd.price_tiers['vip'] ?? prd.price_tiers['vip_price'])
-          tierApplied = 'VIP Tier'
+ effectiveRate = Number(prd.price_tiers['vip'] ?? prd.price_tiers['vip_price'])
+ tierApplied = 'VIP Tier'
         }
       }
 
-      const dimensionPresets =
-        prd.service_config?.dimension_presets ||
-        prd.service_config?.presets ||
+ const dimensionPresets =
+ prd.service_config?.dimension_presets ||
+ prd.service_config?.presets ||
         (prd as any).dimension_presets ||
         []
 
-      const finishingOptions =
-        prd.service_config?.finishing_options ||
+ const finishingOptions =
+ prd.service_config?.finishing_options ||
         (prd as any).finishing_options ||
         []
 
-      const additionalOptions =
+ const additionalOptions =
         (prd.service_config as any)?.additional_options ||
         (prd as any).additional_options ||
         []
 
-      const printableMaterial =
-        prd.service_config?.printable_material_name ||
-        prd.printable_material_name ||
-        prd.material_spec
+ const printableMaterial =
+ prd.service_config?.printable_material_name ||
+ prd.printable_material_name ||
+ prd.material_spec
 
-      const w = isReady || isMat ? '0' : (current.width || '')
-      const h = isReady || isMat ? '0' : (current.height || '')
-      const dimUnit = isReady ? (prd.selling_unit || prd.unit || 'pcs') : (current.dimension_unit || (prd.service_config?.default_unit as any) || 'ft')
+ const w = isReady || isMat ? '0' : (current.width || '')
+ const h = isReady || isMat ? '0' : (current.height || '')
+ const dimUnit = isReady ? (prd.selling_unit || prd.unit || 'pcs') : (current.dimension_unit || (prd.service_config?.default_unit as any) || 'ft')
 
-      const prdUnit = isReady
+ const prdUnit = isReady
         ? prd.selling_unit || prd.unit || (prd as any).unit_of_measure || 'pcs'
         : isMat
         ? prd.purchase_unit || prd.unit || 'roll'
         : prd.selling_unit || prd.unit || (prd as any).unit_of_measure || 'sft'
 
-      const curFinishing = isReady ? 'None' : (current.finishing || 'None')
-      const curAddOn = isReady ? 'None' : (current.add_on || 'None')
-      const finishingRate = getFinishingRate(curFinishing, finishingOptions)
-      const addOnRate = getAddOnRate(curAddOn, additionalOptions)
-      const totalRate = effectiveRate + finishingRate + addOnRate
+ const curFinishing = isReady ? 'None' : (current.finishing || 'None')
+ const curAddOn = isReady ? 'None' : (current.add_on || 'None')
+ const finishingRate = getFinishingRate(curFinishing, finishingOptions)
+ const addOnRate = getAddOnRate(curAddOn, additionalOptions)
+ const totalRate = effectiveRate + finishingRate + addOnRate
 
-      next[index] = {
+ next[index] = {
         ...current,
-        productId: prd.id,
-        item_kind: itemKind,
-        product_type: prd.product_type,
-        itemName: prd.name,
-        dimensions_spec: (prd.dimensions_spec || (isReady ? (prd as any).size_spec : undefined)) || undefined,
-        width: w,
-        height: h,
-        dimension_unit: dimUnit,
-        unit: prdUnit,
-        base_rate: effectiveRate,
-        finishing_rate: finishingRate,
-        add_on_rate: addOnRate,
-        rate: totalRate,
-        rateSource: rateSrc,
-        tier_applied: tierApplied,
-        moq: prd.min_order_quantity || undefined,
-        pcs_per_carton: (prd as any).pcs_per_carton || undefined,
-        unit_cost: Number(prd.effective_unit_cost ?? prd.base_cost) || 0,
-        isManualRate: false,
-        workflow_routing: isReady ? 'ready_product' : isMat ? 'ready_production' : (current.workflow_routing || 'design_required'),
-        design_required: isService,
-        customer_approval_required: isService,
-        available_dimension_presets: dimensionPresets,
-        available_finishing_options: finishingOptions,
-        available_additional_options: additionalOptions,
-        printable_material_name: printableMaterial || undefined,
-        finishing: curFinishing,
-        add_on: curAddOn,
+ productId: prd.id,
+ item_kind: itemKind,
+ product_type: prd.product_type,
+ itemName: prd.name,
+ dimensions_spec: (prd.dimensions_spec || (isReady ? (prd as any).size_spec : undefined)) || undefined,
+ width: w,
+ height: h,
+ dimension_unit: dimUnit,
+ unit: prdUnit,
+ base_rate: effectiveRate,
+ finishing_rate: finishingRate,
+ add_on_rate: addOnRate,
+ rate: totalRate,
+ rateSource: rateSrc,
+ tier_applied: tierApplied,
+ moq: prd.min_order_quantity || undefined,
+ pcs_per_carton: (prd as any).pcs_per_carton || undefined,
+ unit_cost: Number(prd.effective_unit_cost ?? prd.base_cost) || 0,
+ isManualRate: false,
+ workflow_routing: isReady ? 'ready_product' : isMat ? 'ready_production' : (current.workflow_routing || 'design_required'),
+ design_required: isService,
+ customer_approval_required: isService,
+ available_dimension_presets: dimensionPresets,
+ available_finishing_options: finishingOptions,
+ available_additional_options: additionalOptions,
+ printable_material_name: printableMaterial || undefined,
+ finishing: curFinishing,
+ add_on: curAddOn,
       }
-      return next
+ return next
     })
   }
 
-  const handleToggleItemKind = (index: number, newKind: 'service' | 'ready_product') => {
-    setItems((prev) => {
-      const next = [...prev]
-      const current = next[index]
-      next[index] = {
+ const handleToggleItemKind = (index: number, newKind: 'service' | 'ready_product') => {
+ setItems((prev) => {
+ const next = [...prev]
+ const current = next[index]
+ next[index] = {
         ...current,
-        item_kind: newKind,
-        workflow_routing: newKind === 'ready_product' ? 'ready_product' : 'design_required',
-        design_required: newKind === 'service',
-        customer_approval_required: newKind === 'service',
-        width: newKind === 'service' ? (current.width && current.width !== '0' ? current.width : '') : '0',
-        height: newKind === 'service' ? (current.height && current.height !== '0' ? current.height : '') : '0',
-        unit: newKind === 'service' ? 'sft' : 'pcs',
-        dimension_unit: newKind === 'service' ? 'ft' : 'pcs',
-        finishing: newKind === 'ready_product' ? 'None' : (current.finishing || 'None'),
-        add_on: newKind === 'ready_product' ? 'None' : (current.add_on || 'None'),
+ item_kind: newKind,
+ workflow_routing: newKind === 'ready_product' ? 'ready_product' : 'design_required',
+ design_required: newKind === 'service',
+ customer_approval_required: newKind === 'service',
+ width: newKind === 'service' ? (current.width && current.width !== '0' ? current.width : '') : '0',
+ height: newKind === 'service' ? (current.height && current.height !== '0' ? current.height : '') : '0',
+ unit: newKind === 'service' ? 'sft' : 'pcs',
+ dimension_unit: newKind === 'service' ? 'ft' : 'pcs',
+ finishing: newKind === 'ready_product' ? 'None' : (current.finishing || 'None'),
+ add_on: newKind === 'ready_product' ? 'None' : (current.add_on || 'None'),
       }
-      return next
+ return next
     })
   }
 
-  const handleApplyPreset = (index: number, preset: { width: number; length: number; unit?: string }) => {
-    setItems((prev) => {
-      const next = [...prev]
-      next[index] = {
+ const handleApplyPreset = (index: number, preset: { width: number; length: number; unit?: string }) => {
+ setItems((prev) => {
+ const next = [...prev]
+ next[index] = {
         ...next[index],
-        width: String(preset.width),
-        height: String(preset.length),
-        dimension_unit: preset.unit || next[index].dimension_unit || 'ft',
+ width: String(preset.width),
+ height: String(preset.length),
+ dimension_unit: preset.unit || next[index].dimension_unit || 'ft',
       }
-      return next
+ return next
     })
   }
 
-  const handleToggleAdvanced = (index: number) => {
-    setItems((prev) => {
-      const next = [...prev]
-      next[index] = { ...next[index], showAdvanced: !next[index].showAdvanced }
-      return next
+ const handleToggleAdvanced = (index: number) => {
+ setItems((prev) => {
+ const next = [...prev]
+ next[index] = { ...next[index], showAdvanced: !next[index].showAdvanced }
+ return next
     })
   }
 
-  const handleItemChange = (index: number, field: keyof ItemRowState, value: any) => {
-    setItems((prev) => {
-      const next = [...prev]
-      const current = { ...next[index], [field]: value }
+ const handleItemChange = (index: number, field: keyof ItemRowState, value: any) => {
+ setItems((prev) => {
+ const next = [...prev]
+ const current = { ...next[index], [field]: value }
 
-      if (field === 'finishing') {
-        const fRate = getFinishingRate(value, current.available_finishing_options)
-        current.finishing_rate = fRate
-        const base = current.base_rate !== undefined ? current.base_rate : (Number(current.rate) - (current.finishing_rate || 0) - (current.add_on_rate || 0))
-        current.base_rate = Math.max(0, base)
-        current.rate = Math.max(0, current.base_rate + fRate + (current.add_on_rate || 0))
+ if (field === 'finishing') {
+ const fRate = getFinishingRate(value, current.available_finishing_options)
+ current.finishing_rate = fRate
+ const base = current.base_rate !== undefined ? current.base_rate : (Number(current.rate) - (current.finishing_rate || 0) - (current.add_on_rate || 0))
+ current.base_rate = Math.max(0, base)
+ current.rate = Math.max(0, current.base_rate + fRate + (current.add_on_rate || 0))
       } else if (field === 'add_on') {
-        const aRate = getAddOnRate(value, current.available_additional_options)
-        current.add_on_rate = aRate
-        const base = current.base_rate !== undefined ? current.base_rate : (Number(current.rate) - (current.finishing_rate || 0) - (current.add_on_rate || 0))
-        current.base_rate = Math.max(0, base)
-        current.rate = Math.max(0, current.base_rate + (current.finishing_rate || 0) + aRate)
+ const aRate = getAddOnRate(value, current.available_additional_options)
+ current.add_on_rate = aRate
+ const base = current.base_rate !== undefined ? current.base_rate : (Number(current.rate) - (current.finishing_rate || 0) - (current.add_on_rate || 0))
+ current.base_rate = Math.max(0, base)
+ current.rate = Math.max(0, current.base_rate + (current.finishing_rate || 0) + aRate)
       } else if (field === 'rate') {
-        current.isManualRate = true
-        current.rateSource = 'manual'
-        const fRate = current.finishing_rate || 0
-        const aRate = current.add_on_rate || 0
-        current.base_rate = Math.max(0, Number(value) - fRate - aRate)
+ current.isManualRate = true
+ current.rateSource = 'manual'
+ const fRate = current.finishing_rate || 0
+ const aRate = current.add_on_rate || 0
+ current.base_rate = Math.max(0, Number(value) - fRate - aRate)
       }
 
-      next[index] = current
-      return next
+ next[index] = current
+ return next
     })
   }
 
-  const handleAddItem = () => {
-    setItems((prev) => [
+ const handleAddItem = () => {
+ setItems((prev) => [
       ...prev,
       {
-        id: `item-${Date.now()}-${prev.length + 1}`,
-        productId: '',
-        item_kind: 'service',
-        workflow_routing: 'design_required',
-        itemName: '',
-        width: '',
-        height: '',
-        dimension_unit: 'ft',
-        quantity: 1,
-        unit: 'sft',
-        base_rate: 0,
-        rate: 0,
-        finishing: 'None',
-        finishing_rate: 0,
-        add_on: 'None',
-        add_on_rate: 0,
-        rateSource: 'custom',
-        design_required: true,
-        customer_approval_required: true,
-        showAdvanced: false,
+ id: `item-${Date.now()}-${prev.length + 1}`,
+ productId: '',
+ item_kind: 'service',
+ workflow_routing: 'design_required',
+ itemName: '',
+ width: '',
+ height: '',
+ dimension_unit: 'ft',
+ quantity: 1,
+ unit: 'sft',
+ base_rate: 0,
+ rate: 0,
+ finishing: 'None',
+ finishing_rate: 0,
+ add_on: 'None',
+ add_on_rate: 0,
+ rateSource: 'custom',
+ design_required: true,
+ customer_approval_required: true,
+ showAdvanced: false,
       },
     ])
   }
 
-  const handleRemoveItem = (index: number) => {
-    if (items.length <= 1) return
-    setItems((prev) => prev.filter((_, i) => i !== index))
+ const handleRemoveItem = (index: number) => {
+ if (items.length <= 1) return
+ setItems((prev) => prev.filter((_, i) => i !== index))
   }
 
   // Calculate line items
-  const calculatedItems = useMemo(() => {
-    return items.map((item) => {
-      const qty = Math.max(0.01, Number(item.quantity) || 1)
-      const rate = Math.max(0, Number(item.rate) || 0)
-      const w = Number(item.width) || 0
-      const h = Number(item.height) || 0
-      const isReady = item.item_kind === 'ready_product'
+ const calculatedItems = useMemo(() => {
+ return items.map((item) => {
+ const qty = Math.max(0.01, Number(item.quantity) || 1)
+ const rate = Math.max(0, Number(item.rate) || 0)
+ const w = Number(item.width) || 0
+ const h = Number(item.height) || 0
+ const isReady = item.item_kind === 'ready_product'
 
-      let lineTotal = 0
-      let area = 0
-      if (!isReady && w > 0 && h > 0 && (item.unit === 'sft' || item.unit === 'sqft' || item.unit === 'sqin' || item.dimension_unit === 'ft' || item.dimension_unit === 'inch' || item.dimension_unit === 'm')) {
-        if (item.dimension_unit === 'inch' || item.unit === 'sqin') {
-          area = (w * h) / 144
+ let lineTotal = 0
+ let area = 0
+ if (!isReady && w > 0 && h > 0 && (item.unit === 'sft' || item.unit === 'sqft' || item.unit === 'sqin' || item.dimension_unit === 'ft' || item.dimension_unit === 'inch' || item.dimension_unit === 'm')) {
+ if (item.dimension_unit === 'inch' || item.unit === 'sqin') {
+ area = (w * h) / 144
         } else if (item.dimension_unit === 'm') {
-          area = w * h * 10.7639
+ area = w * h * 10.7639
         } else {
-          area = w * h
+ area = w * h
         }
-        lineTotal = Math.round(area * qty * rate)
+ lineTotal = Math.round(area * qty * rate)
       } else {
-        lineTotal = Math.round(qty * rate)
+ lineTotal = Math.round(qty * rate)
       }
 
-      return {
+ return {
         ...item,
-        area,
-        lineTotal,
+ area,
+ lineTotal,
       }
     })
   }, [items])
 
   // Overall Totals
-  const subtotal = useMemo(() => {
-    return calculatedItems.reduce((sum, it) => sum + it.lineTotal, 0)
+ const subtotal = useMemo(() => {
+ return calculatedItems.reduce((sum, it) => sum + it.lineTotal, 0)
   }, [calculatedItems])
 
-  const subtotalAfterDiscount = useMemo(() => {
-    return Math.max(0, subtotal - (Number(discountAmount) || 0))
+ const subtotalAfterDiscount = useMemo(() => {
+ return Math.max(0, subtotal - (Number(discountAmount) || 0))
   }, [subtotal, discountAmount])
 
-  const vatAmount = useMemo(() => {
-    return Math.round((subtotalAfterDiscount * (Number(vatPercentage) || 0)) / 100)
+ const vatAmount = useMemo(() => {
+ return Math.round((subtotalAfterDiscount * (Number(vatPercentage) || 0)) / 100)
   }, [subtotalAfterDiscount, vatPercentage])
 
-  const grandTotal = useMemo(() => {
-    return subtotalAfterDiscount + vatAmount
+ const grandTotal = useMemo(() => {
+ return subtotalAfterDiscount + vatAmount
   }, [subtotalAfterDiscount, vatAmount])
 
-  const effectiveAdvance = useMemo(() => {
-    return Math.min(grandTotal, Math.max(0, Number(advanceAmount) || 0))
+ const effectiveAdvance = useMemo(() => {
+ return Math.min(grandTotal, Math.max(0, Number(advanceAmount) || 0))
   }, [grandTotal, advanceAmount])
 
-  const dueAmount = useMemo(() => {
-    return Math.max(0, grandTotal - effectiveAdvance)
+ const dueAmount = useMemo(() => {
+ return Math.max(0, grandTotal - effectiveAdvance)
   }, [grandTotal, effectiveAdvance])
 
   // Customer Credit Calculations
-  const customerOutstanding = Number(selectedCustomer?.total_due_balance) || 0
-  const customerCreditLimit = Number(selectedCustomer?.credit_limit) || 0
-  const availableCredit = customerCreditLimit > 0 ? customerCreditLimit - customerOutstanding : Infinity
-  const projectedOutstanding = customerOutstanding + dueAmount
-  const isCreditLimitExceeded = customerCreditLimit > 0 && projectedOutstanding > customerCreditLimit
-  const creditExceededBy = isCreditLimitExceeded ? projectedOutstanding - customerCreditLimit : 0
+ const customerOutstanding = Number(selectedCustomer?.total_due_balance) || 0
+ const customerCreditLimit = Number(selectedCustomer?.credit_limit) || 0
+ const availableCredit = customerCreditLimit > 0 ? customerCreditLimit - customerOutstanding : Infinity
+ const projectedOutstanding = customerOutstanding + dueAmount
+ const isCreditLimitExceeded = customerCreditLimit > 0 && projectedOutstanding > customerCreditLimit
+ const creditExceededBy = isCreditLimitExceeded ? projectedOutstanding - customerCreditLimit : 0
 
   // Save-First Core Validation & Persistence
-  const persistInvoice = async (): Promise<InvoiceRecord | null> => {
-    setErrorMessage(null)
+ const persistInvoice = async (): Promise<InvoiceRecord | null> => {
+ setErrorMessage(null)
 
-    if (!customerName.trim()) {
-      setErrorMessage('Customer Name is required.')
-      return null
+ if (!customerName.trim()) {
+ setErrorMessage('Customer Name is required.')
+ return null
     }
-    if (!phoneNumber.trim()) {
-      setErrorMessage('Phone Number is required.')
-      return null
+ if (!phoneNumber.trim()) {
+ setErrorMessage('Phone Number is required.')
+ return null
     }
-    if (items.length === 0) {
-      setErrorMessage('At least one item is required.')
-      return null
+ if (items.length === 0) {
+ setErrorMessage('At least one item is required.')
+ return null
     }
 
-    if (isCreditLimitExceeded && !confirmCreditOverride) {
-      setErrorMessage(
+ if (isCreditLimitExceeded && !confirmCreditOverride) {
+ setErrorMessage(
         `Customer credit limit exceeded by ৳${creditExceededBy.toLocaleString()}. Please authorize the override below to proceed.`
       )
-      return null
+ return null
     }
 
-    const payloadItems: CreateInvoiceItemInput[] = calculatedItems.map((it) => {
-      const routing =
-        it.workflow_routing ||
+ const payloadItems: CreateInvoiceItemInput[] = calculatedItems.map((it) => {
+ const routing =
+ it.workflow_routing ||
         (it.item_kind === 'ready_product'
           ? 'ready_product'
           : it.design_required === false
           ? 'design_ok'
           : 'design_required')
 
-      return {
-        product_id: it.productId || undefined,
-        item_kind: it.item_kind || (it.width && it.height ? 'service' : 'ready_product'),
-        product_type: it.product_type || undefined,
-        category_preset: it.category_preset || undefined,
-        item_name: it.itemName,
-        description_bn: it.description_bn || undefined,
-        material_spec: it.material_spec || undefined,
-        dimensions_spec: it.dimensions_spec || undefined,
-        width: Number(it.width) || undefined,
-        height: Number(it.height) || undefined,
-        dimension_unit: it.dimension_unit || undefined,
-        area_sft: it.area ? Number(it.area.toFixed(2)) : undefined,
-        quantity: Number(it.quantity) || 1,
-        unit: it.unit,
-        unit_price: Number(it.rate) || 0,
-        rate_source: it.rateSource || 'default',
-        tier_applied: it.tier_applied || undefined,
-        moq: it.moq || undefined,
-        unit_cost: it.unit_cost || undefined,
-        finishing: it.finishing,
-        add_on: it.add_on,
-        add_on_rate: it.add_on_rate,
-        artwork_required: Boolean(it.artwork_required),
-        installation_required: Boolean(it.installation_required),
-        offset_specs: it.offset_specs || undefined,
-        signage_specs: it.signage_specs || undefined,
-        design_required: routing === 'design_required',
-        customer_approval_required: routing === 'design_required' && it.customer_approval_required !== false,
-        workflow_routing: routing,
-        total_price: it.lineTotal,
+ return {
+ product_id: it.productId || undefined,
+ item_kind: it.item_kind || (it.width && it.height ? 'service' : 'ready_product'),
+ product_type: it.product_type || undefined,
+ category_preset: it.category_preset || undefined,
+ item_name: it.itemName,
+ description_bn: it.description_bn || undefined,
+ material_spec: it.material_spec || undefined,
+ dimensions_spec: it.dimensions_spec || undefined,
+ width: Number(it.width) || undefined,
+ height: Number(it.height) || undefined,
+ dimension_unit: it.dimension_unit || undefined,
+ area_sft: it.area ? Number(it.area.toFixed(2)) : undefined,
+ quantity: Number(it.quantity) || 1,
+ unit: it.unit,
+ unit_price: Number(it.rate) || 0,
+ rate_source: it.rateSource || 'default',
+ tier_applied: it.tier_applied || undefined,
+ moq: it.moq || undefined,
+ unit_cost: it.unit_cost || undefined,
+ finishing: it.finishing,
+ add_on: it.add_on,
+ add_on_rate: it.add_on_rate,
+ artwork_required: Boolean(it.artwork_required),
+ installation_required: Boolean(it.installation_required),
+ offset_specs: it.offset_specs || undefined,
+ signage_specs: it.signage_specs || undefined,
+ design_required: routing === 'design_required',
+ customer_approval_required: routing === 'design_required' && it.customer_approval_required !== false,
+ workflow_routing: routing,
+ total_price: it.lineTotal,
       }
     })
 
-    const payload = {
-      customer_id: customerId,
-      new_customer: !customerId
+ const payload = {
+ customer_id: customerId,
+ new_customer: !customerId
         ? {
-            name: customerName.trim(),
-            company_name: companyName.trim() || undefined,
-            mobile: phoneNumber.trim(),
-            whatsapp: whatsappNumber.trim() || undefined,
-            address: address.trim(),
-            customer_type: customerType,
-            email: emailAddress.trim() || undefined,
-            save_customer: saveCustomer,
+ name: customerName.trim(),
+ company_name: companyName.trim() || undefined,
+ mobile: phoneNumber.trim(),
+ whatsapp: whatsappNumber.trim() || undefined,
+ address: address.trim(),
+ customer_type: customerType,
+ email: emailAddress.trim() || undefined,
+ save_customer: saveCustomer,
           }
         : undefined,
-      customer_name: customerName.trim(),
-      customer_name_bn: (selectedCustomer as any)?.name_bn || undefined,
-      customer_company: companyName.trim() || undefined,
-      customer_phone: phoneNumber.trim(),
-      customer_whatsapp: whatsappNumber.trim() || undefined,
-      customer_address: address.trim(),
-      customer_email: emailAddress.trim() || undefined,
-      customer_bin: (selectedCustomer as any)?.bin_number || (selectedCustomer as any)?.bin || undefined,
-      customer_tin: (selectedCustomer as any)?.tin_number || undefined,
-      customer_type: customerType,
-      invoice_type: invoiceType,
-      invoice_date: invoiceDate,
-      due_date: dueDate,
-      discount_amount: Number(discountAmount) || 0,
-      vat_percentage: Number(vatPercentage) || 0,
-      advance_percentage: advancePercentage,
-      advance_amount: effectiveAdvance,
-      due_on_delivery: dueAmount,
-      payment_method: paymentMethod,
-      payment_method_note: paymentMethodNote.trim() || undefined,
-      mushak_version: invoiceType === 'vat_invoice' ? '6.3' : undefined,
-      reference_no: referenceNo.trim() || undefined,
-      delivery_date: deliveryDate || undefined,
-      delivery_location: deliveryLocation.trim() || undefined,
-      delivery_method: deliveryMethod,
-      notes: notes.trim() || undefined,
-      terms_and_conditions: termsAndConditions.trim() || undefined,
-      quotation_id: quotationId,
-      sales_order_id: salesOrderId,
-      credit_override_reason: isCreditLimitExceeded ? creditOverrideReason || 'Authorized credit limit override' : undefined,
-      idempotency_key: idempotencyKey,
-      items: payloadItems,
+ customer_name: customerName.trim(),
+ customer_name_bn: (selectedCustomer as any)?.name_bn || undefined,
+ customer_company: companyName.trim() || undefined,
+ customer_phone: phoneNumber.trim(),
+ customer_whatsapp: whatsappNumber.trim() || undefined,
+ customer_address: address.trim(),
+ customer_email: emailAddress.trim() || undefined,
+ customer_bin: (selectedCustomer as any)?.bin_number || (selectedCustomer as any)?.bin || undefined,
+ customer_tin: (selectedCustomer as any)?.tin_number || undefined,
+ customer_type: customerType,
+ invoice_type: invoiceType,
+ invoice_date: invoiceDate,
+ due_date: dueDate,
+ discount_amount: Number(discountAmount) || 0,
+ vat_percentage: Number(vatPercentage) || 0,
+ advance_percentage: advancePercentage,
+ advance_amount: effectiveAdvance,
+ due_on_delivery: dueAmount,
+ payment_method: paymentMethod,
+ payment_method_note: paymentMethodNote.trim() || undefined,
+ mushak_version: invoiceType === 'vat_invoice' ? '6.3' : undefined,
+ reference_no: referenceNo.trim() || undefined,
+ delivery_date: deliveryDate || undefined,
+ delivery_location: deliveryLocation.trim() || undefined,
+ delivery_method: deliveryMethod,
+ notes: notes.trim() || undefined,
+ terms_and_conditions: termsAndConditions.trim() || undefined,
+ quotation_id: quotationId,
+ sales_order_id: salesOrderId,
+ credit_override_reason: isCreditLimitExceeded ? creditOverrideReason || 'Authorized credit limit override' : undefined,
+ idempotency_key: idempotencyKey,
+ items: payloadItems,
     }
 
-    setIsSubmitting(true)
+ setIsSubmitting(true)
 
-    try {
-      const result = await createInvoiceAction(payload, company?.id)
-      if (!result.success || !result.data) {
-        setErrorMessage(result.error || 'Failed to save invoice.')
-        return null
+ try {
+ const result = await createInvoiceAction(payload, company?.id)
+ if (!result.success || !result.data) {
+ setErrorMessage(result.error || 'Failed to save invoice.')
+ return null
       }
 
-      setSavedInvoice(result.data)
-      setIdempotencyKey(typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `inv-idemp-${Date.now()}`)
-      try {
-        const allInvs = PrintERPDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []
-        const filtered = allInvs.filter((i) => i.id !== result.data!.id)
-        PrintERPDataStore.set(STORAGE_KEYS.INVOICES, [result.data, ...filtered])
+ setSavedInvoice(result.data)
+ setIdempotencyKey(typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `inv-idemp-${Date.now()}`)
+ try {
+ const allInvs = PrintERPDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []
+ const filtered = allInvs.filter((i) => i.id !== result.data!.id)
+ PrintERPDataStore.set(STORAGE_KEYS.INVOICES, [result.data, ...filtered])
       } catch {}
-      if (onInvoiceCreated) {
-        onInvoiceCreated(result.data)
+ if (onInvoiceCreated) {
+ onInvoiceCreated(result.data)
       }
-      return result.data
+ return result.data
     } catch (err: any) {
-      setErrorMessage(err.message || 'An unexpected error occurred while saving.')
-      return null
+ setErrorMessage(err.message || 'An unexpected error occurred while saving.')
+ return null
     } finally {
-      setIsSubmitting(false)
+ setIsSubmitting(false)
     }
   }
 
   // Action: Save & Exit
-  const handleSaveOnly = async () => {
-    setSubmittingAction('save')
-    const invoice = await persistInvoice()
-    setSubmittingAction(null)
-    if (invoice) {
-      onOpenChange(false)
+ const handleSaveOnly = async () => {
+ setSubmittingAction('save')
+ const invoice = await persistInvoice()
+ setSubmittingAction(null)
+ if (invoice) {
+ onOpenChange(false)
     }
   }
 
 
 
   // Action: Save & Print PDF
-  const handleSaveAndPrint = async () => {
-    setSubmittingAction('print')
-    const invoice = await persistInvoice()
-    setSubmittingAction(null)
-    if (invoice) {
-      window.open(`/billing/${invoice.id}`, '_blank')
-      onOpenChange(false)
+ const handleSaveAndPrint = async () => {
+ setSubmittingAction('print')
+ const invoice = await persistInvoice()
+ setSubmittingAction(null)
+ if (invoice) {
+ window.open(`/billing/${invoice.id}`, '_blank')
+ onOpenChange(false)
     }
   }
 
   // Action: Save & Send via WhatsApp or Email
-  const handleSaveAndSend = async (channel: 'whatsapp' | 'email') => {
-    setShowSendMenu(false)
-    setSubmittingAction('send')
-    const invoice = await persistInvoice()
+ const handleSaveAndSend = async (channel: 'whatsapp' | 'email') => {
+ setShowSendMenu(false)
+ setSubmittingAction('send')
+ const invoice = await persistInvoice()
 
-    if (!invoice) {
-      setSubmittingAction(null)
-      return
+ if (!invoice) {
+ setSubmittingAction(null)
+ return
     }
 
-    setCommunicationStatus({
-      status: 'idle',
-      message: `Dispatching ${channel.toUpperCase()} message...`,
-      channel,
+ setCommunicationStatus({
+ status: 'idle',
+ message: `Dispatching ${channel.toUpperCase()} message...`,
+ channel,
     })
 
-    try {
-      const res = await sendInvoiceAction(
+ try {
+ const res = await sendInvoiceAction(
         {
-          invoiceId: invoice.id,
-          channel,
-          format: 'pdf',
+ invoiceId: invoice.id,
+ channel,
+ format: 'pdf',
         },
-        company?.id
+ company?.id
       )
 
-      if (res.success) {
-        setCommunicationStatus({
-          status: 'success',
-          message: `Invoice #${invoice.invoice_number} dispatched via ${channel.toUpperCase()} successfully!`,
-          channel,
+ if (res.success) {
+ setCommunicationStatus({
+ status: 'success',
+ message: `Invoice #${invoice.invoice_number} dispatched via ${channel.toUpperCase()} successfully!`,
+ channel,
         })
-        if (channel === 'whatsapp' && res.data?.whatsappUrl) {
-          window.open(res.data.whatsappUrl, '_blank')
+ if (channel === 'whatsapp' && res.data?.whatsappUrl) {
+ window.open(res.data.whatsappUrl, '_blank')
         }
       } else {
-        setCommunicationStatus({
-          status: 'failed',
-          message: res.error || `Failed to send via ${channel.toUpperCase()}`,
-          channel,
+ setCommunicationStatus({
+ status: 'failed',
+ message: res.error || `Failed to send via ${channel.toUpperCase()}`,
+ channel,
         })
       }
     } catch (err: any) {
-      setCommunicationStatus({
-        status: 'failed',
-        message: err.message || `Communication dispatch error`,
-        channel,
+ setCommunicationStatus({
+ status: 'failed',
+ message: err.message || `Communication dispatch error`,
+ channel,
       })
     } finally {
-      setSubmittingAction(null)
+ setSubmittingAction(null)
     }
   }
 
-  const getRateBadge = (source?: 'custom' | 'last_invoice' | 'last_quotation' | 'default' | 'manual') => {
-    if (source === 'custom') {
-      return <Badge className="bg-purple-100 text-purple-800 border-purple-200 text-2xs py-0">Custom Rate</Badge>
+ const getRateBadge = (source?: 'custom' | 'last_invoice' | 'last_quotation' | 'default' | 'manual') => {
+ if (source === 'custom') {
+ return <Badge className="bg-purple-100 text-purple-800 border-purple-200 text-2xs py-0">Custom Rate</Badge>
     }
-    if (source === 'last_invoice') {
-      return <Badge className="bg-blue-100 text-blue-800 border-blue-200 text-2xs py-0">Last Inv Rate</Badge>
+ if (source === 'last_invoice') {
+ return <Badge className="bg-blue-100 text-blue-800 border-blue-200 text-2xs py-0">Last Inv Rate</Badge>
     }
-    if (source === 'last_quotation') {
-      return <Badge className="bg-amber-100 text-amber-800 border-amber-200 text-2xs py-0">Last Quote Rate</Badge>
+ if (source === 'last_quotation') {
+ return <Badge className="bg-amber-100 text-amber-800 border-amber-200 text-2xs py-0">Last Quote Rate</Badge>
     }
-    if (source === 'manual') {
-      return <Badge className="bg-amber-100 text-amber-800 border-amber-200 text-2xs py-0">Manual</Badge>
+ if (source === 'manual') {
+ return <Badge className="bg-amber-100 text-amber-800 border-amber-200 text-2xs py-0">Manual</Badge>
     }
-    return <Badge variant="outline" className="text-muted-foreground text-2xs py-0">Default</Badge>
+ return <Badge variant="outline"className="text-muted-foreground text-2xs py-0">Default</Badge>
   }
 
-  return (
+ return (
     <ModalDialog
-      open={open}
-      onOpenChange={onOpenChange}
-      size="5xl"
-      title={
+ open={open}
+ onOpenChange={onOpenChange}
+ size="5xl"title={
         <div className="flex items-center justify-between w-full pr-6">
           <div className="flex items-center gap-2.5">
             <div className="h-9 w-9 rounded-xl bg-blue-600/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 flex items-center justify-center">
-              <Receipt className="h-5 w-5" />
+              <Receipt className="h-5 w-5"/>
             </div>
             <div>
-              <h2 className="text-base font-black text-foreground dark:text-white">
+              <h2 className="text-base font-black text-foreground">
                 {locale === 'bn' ? 'নতুন চালান / ইনভয়েস' : 'New Invoice'}
               </h2>
             </div>
@@ -1683,77 +1659,62 @@ export function NewInvoiceModal({
 
           <div className="flex items-center gap-2">
             <button
-              type="button"
-              onClick={() => setIsAdvancedMode(!isAdvancedMode)}
-              className={cn(
+ type="button"onClick={() => setIsAdvancedMode(!isAdvancedMode)}
+ className={cn(
                 'text-xs font-bold px-2.5 py-1 rounded-lg border transition-all cursor-pointer flex items-center gap-1.5',
-                isAdvancedMode
+ isAdvancedMode
                   ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300'
-                  : 'bg-muted text-muted-foreground border-border dark:text-muted-foreground'
+                  : 'bg-muted text-muted-foreground border-border '
               )}
             >
-              <Layers className="h-3.5 w-3.5" />
+              <Layers className="h-3.5 w-3.5"/>
               <span>{isAdvancedMode ? 'Advanced Mode Active' : 'Simple Mode'}</span>
             </button>
           </div>
         </div>
       }
-      footerClassName="bg-card border-border px-4 sm:px-6 py-3"
-      footer={
+ footerClassName="bg-card border-border px-4 sm:px-6 py-3"footer={
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3 w-full">
           <Button
-            type="button"
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            disabled={isSubmitting}
-            className="w-full sm:w-auto h-10 px-4 rounded-xl font-bold border-input text-foreground hover:bg-muted cursor-pointer"
-          >
-            Cancel
+ type="button"variant="outline"onClick={() => onOpenChange(false)}
+ disabled={isSubmitting}
+ className="w-full sm:w-auto h-10 px-4 rounded-xl font-bold border-input text-foreground hover:bg-muted cursor-pointer">
+ Cancel
           </Button>
 
           <div className="flex flex-wrap items-center justify-end gap-2 w-full sm:w-auto">
             {/* Direct Print Button */}
             <Button
-              type="button"
-              variant="outline"
-              onClick={handleSaveAndPrint}
-              disabled={isSubmitting}
-              className="h-10 px-4 rounded-xl font-bold border-input text-foreground hover:bg-muted gap-1.5 cursor-pointer"
-            >
-              <Printer className="h-4 w-4" />
+ type="button"variant="outline"onClick={handleSaveAndPrint}
+ disabled={isSubmitting}
+ className="h-10 px-4 rounded-xl font-bold border-input text-foreground hover:bg-muted gap-1.5 cursor-pointer">
+              <Printer className="h-4 w-4"/>
               <span>Save & Print PDF</span>
             </Button>
 
             {/* Send via WhatsApp / Email Dropdown */}
-            <div className="relative" ref={sendMenuRef}>
+            <div className="relative"ref={sendMenuRef}>
               <Button
-                type="button"
-                variant="outline"
-                onClick={() => setShowSendMenu(!showSendMenu)}
-                disabled={isSubmitting}
-                className="h-10 px-4 rounded-xl font-bold border-emerald-300 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-700 dark:text-emerald-300 gap-1.5 cursor-pointer"
-              >
-                <Send className="h-4 w-4" />
+ type="button"variant="outline"onClick={() => setShowSendMenu(!showSendMenu)}
+ disabled={isSubmitting}
+ className="h-10 px-4 rounded-xl font-bold border-emerald-300 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-700 dark:text-emerald-300 gap-1.5 cursor-pointer">
+                <Send className="h-4 w-4"/>
                 <span>Save & Send</span>
-                <ChevronDown className="h-3.5 w-3.5" />
+                <ChevronDown className="h-3.5 w-3.5"/>
               </Button>
 
               {showSendMenu && (
-                <div className="absolute right-0 bottom-full mb-1.5 w-52 bg-card rounded-xl border border-border shadow-xl py-1 z-50 text-xs">
+                <div className="absolute right-0 bottom-full mb-1.5 w-52 bg-card rounded-xl border border-border shadow-xs py-1 z-50 text-xs">
                   <button
-                    type="button"
-                    onClick={() => handleSaveAndSend('whatsapp')}
-                    className="w-full text-left px-3.5 py-2 hover:bg-muted flex items-center gap-2 text-foreground font-semibold cursor-pointer"
-                  >
-                    <Smartphone className="h-4 w-4 text-emerald-600" />
+ type="button"onClick={() => handleSaveAndSend('whatsapp')}
+ className="w-full text-left px-3.5 py-2 hover:bg-muted flex items-center gap-2 text-foreground font-semibold cursor-pointer">
+                    <Smartphone className="h-4 w-4 text-emerald-600"/>
                     <span>Send via WhatsApp</span>
                   </button>
                   <button
-                    type="button"
-                    onClick={() => handleSaveAndSend('email')}
-                    className="w-full text-left px-3.5 py-2 hover:bg-muted flex items-center gap-2 text-foreground font-semibold cursor-pointer"
-                  >
-                    <Mail className="h-4 w-4 text-blue-600" />
+ type="button"onClick={() => handleSaveAndSend('email')}
+ className="w-full text-left px-3.5 py-2 hover:bg-muted flex items-center gap-2 text-foreground font-semibold cursor-pointer">
+                    <Mail className="h-4 w-4 text-blue-600"/>
                     <span>Send PDF via Email</span>
                   </button>
                 </div>
@@ -1762,19 +1723,17 @@ export function NewInvoiceModal({
 
             {/* Primary Save Button */}
             <Button
-              type="button"
-              onClick={handleSaveOnly}
-              disabled={isSubmitting}
-              className="h-10 px-5 rounded-xl font-bold bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs flex items-center gap-2 cursor-pointer"
-            >
+ type="button"onClick={handleSaveOnly}
+ disabled={isSubmitting}
+ className="h-10 px-5 rounded-xl font-bold bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs flex items-center gap-2 cursor-pointer">
               {isSubmitting ? (
                 <>
-                  <RefreshCw className="h-4 w-4 animate-spin" />
+                  <RefreshCw className="h-4 w-4 animate-spin"/>
                   <span>Saving Invoice...</span>
                 </>
               ) : (
                 <>
-                  <Receipt className="h-4 w-4" />
+                  <Receipt className="h-4 w-4"/>
                   <span>Save Invoice</span>
                 </>
               )}
@@ -1787,7 +1746,7 @@ export function NewInvoiceModal({
         {/* ERROR BANNER */}
         {errorMessage && (
           <div className="p-3 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 rounded-xl text-xs text-rose-900 dark:text-rose-200 flex items-start gap-2 animate-in fade-in-0">
-            <AlertTriangle className="h-4 w-4 text-rose-600 shrink-0 mt-0.5" />
+            <AlertTriangle className="h-4 w-4 text-rose-600 shrink-0 mt-0.5"/>
             <div>
               <strong>Action Required:</strong> {errorMessage}
             </div>
@@ -1797,9 +1756,9 @@ export function NewInvoiceModal({
         {/* COMMUNICATION STATUS BANNER */}
         {communicationStatus.message && (
           <div
-            className={cn(
+ className={cn(
               'p-3 rounded-xl text-xs flex items-center gap-2 border animate-in fade-in-0',
-              communicationStatus.status === 'success'
+ communicationStatus.status === 'success'
                 ? 'bg-emerald-50 text-emerald-900 border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-200'
                 : communicationStatus.status === 'failed'
                 ? 'bg-amber-50 text-amber-900 border-amber-300 dark:bg-amber-950/40 dark:text-amber-200'
@@ -1807,18 +1766,18 @@ export function NewInvoiceModal({
             )}
           >
             {communicationStatus.status === 'success' ? (
-              <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+              <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0"/>
             ) : communicationStatus.status === 'failed' ? (
-              <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0" />
+              <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0"/>
             ) : (
-              <RefreshCw className="h-4 w-4 text-blue-600 animate-spin shrink-0" />
+              <RefreshCw className="h-4 w-4 text-blue-600 animate-spin shrink-0"/>
             )}
             <span>{communicationStatus.message}</span>
           </div>
         )}
 
         {/* =========================================================================
-            SECTION 1: CUSTOMER SEARCH & DETAILS
+ SECTION 1: CUSTOMER SEARCH & DETAILS
            ========================================================================= */}
         <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
           <div className="flex items-center justify-between flex-wrap gap-2">
@@ -1826,21 +1785,21 @@ export function NewInvoiceModal({
               <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
                 1
               </div>
-              <h3 className="text-xs font-bold text-foreground dark:text-white uppercase tracking-wider">
-                Customer Information
+              <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
+ Customer Information
               </h3>
             </div>
 
             <div className="flex items-center gap-2">
               {isExistingCustomerSelected && (
                 <span className="inline-flex items-center gap-1 text-2xs font-bold text-blue-600 bg-blue-50 dark:bg-blue-950/50 px-2 py-0.5 rounded-md border border-blue-200 dark:border-blue-800">
-                  <UserCheck className="h-3.5 w-3.5" />
-                  Customer Linked & Pricing Resolved
+                  <UserCheck className="h-3.5 w-3.5"/>
+ Customer Linked & Pricing Resolved
                 </span>
               )}
 
               {/* Customer Type Tabs */}
-              <div className="inline-flex items-center p-0.5 rounded-lg bg-muted border border-border dark:border-border">
+              <div className="inline-flex items-center p-0.5 rounded-lg bg-muted border border-border">
                 {[
                   { value: 'retail', label: isBn ? 'খুচরা' : 'Retail' },
                   { value: 'reseller', label: isBn ? 'রিসেলার' : 'Reseller' },
@@ -1848,12 +1807,11 @@ export function NewInvoiceModal({
                   { value: 'government', label: isBn ? 'সরকারি / সংস্থা' : 'Govt / Org' },
                 ].map((tab) => (
                   <button
-                    key={tab.value}
-                    type="button"
-                    onClick={() => setCustomerType(tab.value as any)}
-                    className={cn(
+ key={tab.value}
+ type="button"onClick={() => setCustomerType(tab.value as any)}
+ className={cn(
                       'px-2.5 py-1 text-xs font-medium rounded-md transition-all cursor-pointer',
-                      customerType === tab.value
+ customerType === tab.value
                         ? 'bg-card text-blue-600 dark:text-blue-400 shadow-xs font-semibold'
                         : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
                     )}
@@ -1868,95 +1826,89 @@ export function NewInvoiceModal({
           {/* Customer Search & Inputs */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             {/* Row 1: [Customer Name] [Phone Number] [Company Name] */}
-            <div className="relative" ref={nameSearchRef}>
+            <div className="relative"ref={nameSearchRef}>
               <Label className="text-xs font-semibold mb-1 block">
-                Customer Name <span className="text-rose-500">*</span>
+ Customer Name <span className="text-rose-500">*</span>
               </Label>
               <div className="relative">
                 <Input
-                  placeholder="Type name to search or enter new..."
-                  value={customerName}
-                  onChange={(e) => handleCustomerFieldChange('name', e.target.value)}
-                  onFocus={() => {
-                    setActiveCustomerSearchField('name')
-                    if (customerName.trim().length > 0 && !isExistingCustomerSelected) {
-                      setShowSuggestions(true)
+ placeholder="Type name to search or enter new..."value={customerName}
+ onChange={(e) => handleCustomerFieldChange('name', e.target.value)}
+ onFocus={() => {
+ setActiveCustomerSearchField('name')
+ if (customerName.trim().length > 0 && !isExistingCustomerSelected) {
+ setShowSuggestions(true)
                     }
                   }}
-                  onKeyDown={(e) => handleCustomerKeyDown('name', e)}
-                  className="text-xs h-9 pr-8"
-                  required
+ onKeyDown={(e) => handleCustomerKeyDown('name', e)}
+ className="text-xs h-9 pr-8"required
                 />
               </div>
 
               {/* Suggestions */}
               {activeCustomerSearchField === 'name' && showSuggestions && searchResults.length > 0 && (
                 <CustomerSuggestionsDropdown
-                  results={searchResults}
-                  highlightedIndex={customerHighlightedIndex}
-                  onSelect={handleSelectCustomer}
-                  onHover={setCustomerHighlightedIndex}
+ results={searchResults}
+ highlightedIndex={customerHighlightedIndex}
+ onSelect={handleSelectCustomer}
+ onHover={setCustomerHighlightedIndex}
                 />
               )}
             </div>
 
-            <div className="relative" ref={phoneSearchRef}>
+            <div className="relative"ref={phoneSearchRef}>
               <Label className="text-xs font-semibold mb-1 block">
-                Phone Number <span className="text-rose-500">*</span>
+ Phone Number <span className="text-rose-500">*</span>
               </Label>
               <div className="relative">
                 <Input
-                  placeholder="01XXXXXXXXX"
-                  value={phoneNumber}
-                  onChange={(e) => handleCustomerFieldChange('phone', e.target.value)}
-                  onFocus={() => {
-                    setActiveCustomerSearchField('phone')
-                    if (phoneNumber.trim().length > 0 && !isExistingCustomerSelected) {
-                      setShowSuggestions(true)
+ placeholder="01XXXXXXXXX"value={phoneNumber}
+ onChange={(e) => handleCustomerFieldChange('phone', e.target.value)}
+ onFocus={() => {
+ setActiveCustomerSearchField('phone')
+ if (phoneNumber.trim().length > 0 && !isExistingCustomerSelected) {
+ setShowSuggestions(true)
                     }
                   }}
-                  onKeyDown={(e) => handleCustomerKeyDown('phone', e)}
-                  className="text-xs h-9 pr-8 tabular-nums"
-                  required
+ onKeyDown={(e) => handleCustomerKeyDown('phone', e)}
+ className="text-xs h-9 pr-8 tabular-nums"required
                 />
               </div>
 
               {/* Suggestions */}
               {activeCustomerSearchField === 'phone' && showSuggestions && searchResults.length > 0 && (
                 <CustomerSuggestionsDropdown
-                  results={searchResults}
-                  highlightedIndex={customerHighlightedIndex}
-                  onSelect={handleSelectCustomer}
-                  onHover={setCustomerHighlightedIndex}
+ results={searchResults}
+ highlightedIndex={customerHighlightedIndex}
+ onSelect={handleSelectCustomer}
+ onHover={setCustomerHighlightedIndex}
                 />
               )}
             </div>
 
-            <div className="relative" ref={companySearchRef}>
+            <div className="relative"ref={companySearchRef}>
               <Label className="text-xs font-semibold mb-1 block">Company Name (Optional)</Label>
               <div className="relative">
                 <Input
-                  placeholder="Business / Organization"
-                  value={companyName}
-                  onChange={(e) => handleCustomerFieldChange('company', e.target.value)}
-                  onFocus={() => {
-                    setActiveCustomerSearchField('company')
-                    if (companyName.trim().length > 0 && !isExistingCustomerSelected) {
-                      setShowSuggestions(true)
+ placeholder="Business / Organization"value={companyName}
+ onChange={(e) => handleCustomerFieldChange('company', e.target.value)}
+ onFocus={() => {
+ setActiveCustomerSearchField('company')
+ if (companyName.trim().length > 0 && !isExistingCustomerSelected) {
+ setShowSuggestions(true)
                     }
                   }}
-                  onKeyDown={(e) => handleCustomerKeyDown('company', e)}
-                  className="text-xs h-9 pr-8"
-                />
+ onKeyDown={(e) => handleCustomerKeyDown('company', e)}
+ className="text-xs h-9 pr-8"/>
               </div>
 
               {/* Suggestions */}
               {activeCustomerSearchField === 'company' && showSuggestions && searchResults.length > 0 && (
                 <CustomerSuggestionsDropdown
-                  results={searchResults}
-                  highlightedIndex={customerHighlightedIndex}
-                  onSelect={handleSelectCustomer}
-                  onHover={setCustomerHighlightedIndex}
+ results={searchResults}
+ highlightedIndex={customerHighlightedIndex}
+ onSelect={handleSelectCustomer}
+ onHover={setCustomerHighlightedIndex}
                 />
               )}
             </div>
@@ -1964,42 +1916,37 @@ export function NewInvoiceModal({
             {/* Row 2: [Billing Address (2 cols)] [Email (1 col)] */}
             <div className="md:col-span-2">
               <Label className="text-xs font-semibold mb-1 block">
-                Billing Address (Optional)
+ Billing Address (Optional)
               </Label>
               <Input
-                placeholder="Full address for delivery & invoice"
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                className="text-xs h-9"
-              />
+ placeholder="Full address for delivery & invoice"value={address}
+ onChange={(e) => setAddress(e.target.value)}
+ className="text-xs h-9"/>
             </div>
 
-            <div className="relative md:col-span-1" ref={emailSearchRef}>
+            <div className="relative md:col-span-1"ref={emailSearchRef}>
               <Label className="text-xs font-semibold mb-1 block">Email (for PDF Invoice)</Label>
               <div className="relative">
                 <Input
-                  type="email"
-                  placeholder="client@domain.com"
-                  value={emailAddress}
-                  onChange={(e) => handleCustomerFieldChange('email', e.target.value)}
-                  onFocus={() => {
-                    setActiveCustomerSearchField('email')
-                    if (emailAddress.trim().length > 0 && !isExistingCustomerSelected) {
-                      setShowSuggestions(true)
+ type="email"placeholder="client@domain.com"value={emailAddress}
+ onChange={(e) => handleCustomerFieldChange('email', e.target.value)}
+ onFocus={() => {
+ setActiveCustomerSearchField('email')
+ if (emailAddress.trim().length > 0 && !isExistingCustomerSelected) {
+ setShowSuggestions(true)
                     }
                   }}
-                  onKeyDown={(e) => handleCustomerKeyDown('email', e)}
-                  className="text-xs h-9 pr-8"
-                />
+ onKeyDown={(e) => handleCustomerKeyDown('email', e)}
+ className="text-xs h-9 pr-8"/>
               </div>
 
               {/* Suggestions */}
               {activeCustomerSearchField === 'email' && showSuggestions && searchResults.length > 0 && (
                 <CustomerSuggestionsDropdown
-                  results={searchResults}
-                  highlightedIndex={customerHighlightedIndex}
-                  onSelect={handleSelectCustomer}
-                  onHover={setCustomerHighlightedIndex}
+ results={searchResults}
+ highlightedIndex={customerHighlightedIndex}
+ onSelect={handleSelectCustomer}
+ onHover={setCustomerHighlightedIndex}
                 />
               )}
             </div>
@@ -2007,14 +1954,12 @@ export function NewInvoiceModal({
 
           {/* Save Customer Checkbox */}
           {!isExistingCustomerSelected && (
-            <div className="pt-1 flex items-center justify-between border-t border-border dark:border-border/80">
-              <label className="flex items-center gap-2 cursor-pointer select-none text-xs font-medium text-foreground dark:text-muted-foreground">
+            <div className="pt-1 flex items-center justify-between border-t border-border /80">
+              <label className="flex items-center gap-2 cursor-pointer select-none text-xs font-medium text-foreground">
                 <input
-                  type="checkbox"
-                  checked={saveCustomer}
-                  onChange={(e) => setSaveCustomer(e.target.checked)}
-                  className="rounded border-input text-blue-600 focus:ring-ring h-4 w-4"
-                />
+ type="checkbox"checked={saveCustomer}
+ onChange={(e) => setSaveCustomer(e.target.checked)}
+ className="rounded border-input text-blue-600 focus:ring-ring h-4 w-4"/>
                 <span>Save customer details to directory for future invoices</span>
               </label>
             </div>
@@ -2041,7 +1986,7 @@ export function NewInvoiceModal({
               </div>
               <div>
                 <span className="text-2xs uppercase font-bold text-muted-foreground block">Customer Category</span>
-                <Badge variant="outline" className="text-2xs uppercase font-bold py-0 h-4">
+                <Badge variant="outline"className="text-2xs uppercase font-bold py-0 h-4">
                   {selectedCustomer.customer_type || 'Retail'}
                 </Badge>
               </div>
@@ -2052,7 +1997,7 @@ export function NewInvoiceModal({
           {isCreditLimitExceeded && (
             <div className="p-3.5 bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800 rounded-xl text-xs space-y-2 text-amber-900 dark:text-amber-200 animate-in fade-in-0">
               <div className="flex items-center gap-2 font-bold text-amber-800 dark:text-amber-300">
-                <AlertOctagon className="h-4 w-4 text-amber-600 shrink-0" />
+                <AlertOctagon className="h-4 w-4 text-amber-600 shrink-0"/>
                 <span>Credit Limit Warning: Projected Outstanding Exceeds Credit Limit</span>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-2xs tabular-nums">
@@ -2064,20 +2009,16 @@ export function NewInvoiceModal({
               <div className="pt-2 border-t border-amber-200 dark:border-amber-800/60 flex flex-col sm:flex-row items-start sm:items-center gap-3">
                 <label className="flex items-center gap-2 font-bold cursor-pointer select-none">
                   <input
-                    type="checkbox"
-                    checked={confirmCreditOverride}
-                    onChange={(e) => setConfirmCreditOverride(e.target.checked)}
-                    className="rounded text-amber-600 focus:ring-amber-500 h-4 w-4"
-                  />
+ type="checkbox"checked={confirmCreditOverride}
+ onChange={(e) => setConfirmCreditOverride(e.target.checked)}
+ className="rounded text-amber-600 focus:ring-amber-500 h-4 w-4"/>
                   <span>Authorize Credit Limit Override</span>
                 </label>
                 {confirmCreditOverride && (
                   <Input
-                    placeholder="Enter authorization reason (e.g. Approved by CFO / Owner)..."
-                    value={creditOverrideReason}
-                    onChange={(e) => setCreditOverrideReason(e.target.value)}
-                    className="h-8 text-xs bg-card font-medium"
-                  />
+ placeholder="Enter authorization reason (e.g. Approved by CFO / Owner)..."value={creditOverrideReason}
+ onChange={(e) => setCreditOverrideReason(e.target.value)}
+ className="h-8 text-xs bg-card font-medium"/>
                 )}
               </div>
             </div>
@@ -2085,7 +2026,7 @@ export function NewInvoiceModal({
         </div>
 
         {/* =========================================================================
-            SECTION 2: INVOICE ITEMS & SPECS (PRODUCT & SERVICE AWARE)
+ SECTION 2: INVOICE ITEMS & SPECS (PRODUCT & SERVICE AWARE)
            ========================================================================= */}
         <div className="rounded-xl border border-border bg-card p-4 space-y-4 shadow-xs">
           <div className="flex items-center justify-between gap-2">
@@ -2094,16 +2035,16 @@ export function NewInvoiceModal({
                 2
               </div>
               <div>
-                <h3 className="text-xs font-bold text-foreground dark:text-white uppercase tracking-wider">
-                  Invoice Items & Specs
+                <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
+ Invoice Items & Specs
                 </h3>
                 <p className="text-2xs text-muted-foreground">
-                  Billing & Fulfillment: Supports Printing Services, Ready Products & Hardware, and Materials.
+ Billing & Fulfillment: Supports Printing Services, Ready Products & Hardware, and Materials.
                 </p>
               </div>
             </div>
 
-            <Badge variant="outline" className="text-2xs tabular-nums uppercase bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300">
+            <Badge variant="outline"className="text-2xs tabular-nums uppercase bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300">
               {items.length} Item{items.length > 1 ? 's' : ''}
             </Badge>
           </div>
@@ -2111,57 +2052,56 @@ export function NewInvoiceModal({
 
           <div className="space-y-4">
             {items.map((item, index) => {
-              const calc = calculatedItems[index]
-              const isService = item.item_kind === 'service' || (item.item_kind !== 'ready_product' && item.item_kind !== 'material' && Boolean(Number(item.width) > 0 && Number(item.height) > 0))
-              const isReadyProduct = item.item_kind === 'ready_product'
-              const isMaterial = item.item_kind === 'material'
-              const isCustom = !item.productId
+ const calc = calculatedItems[index]
+ const isService = item.item_kind === 'service' || (item.item_kind !== 'ready_product' && item.item_kind !== 'material' && Boolean(Number(item.width) > 0 && Number(item.height) > 0))
+ const isReadyProduct = item.item_kind === 'ready_product'
+ const isMaterial = item.item_kind === 'material'
+ const isCustom = !item.productId
 
               // Internal estimated economics
-              const estimatedUnitCost = item.unit_cost || 0
-              const estimatedDirectCost = isService ? (calc?.area || 1) * (Number(item.quantity) || 1) * estimatedUnitCost : (Number(item.quantity) || 1) * estimatedUnitCost
-              const total = Number(calc?.lineTotal) || 0
-              const estMarginPercent = total > 0 && estimatedDirectCost > 0
+ const estimatedUnitCost = item.unit_cost || 0
+ const estimatedDirectCost = isService ? (calc?.area || 1) * (Number(item.quantity) || 1) * estimatedUnitCost : (Number(item.quantity) || 1) * estimatedUnitCost
+ const total = Number(calc?.lineTotal) || 0
+ const estMarginPercent = total > 0 && estimatedDirectCost > 0
                 ? Math.round(((total - estimatedDirectCost) / total) * 100)
                 : 0
 
-              return (
+ return (
                 <div
-                  key={item.id}
-                  className="p-4 rounded-xl bg-muted border border-border shadow-xs space-y-3.5 transition-all"
-                >
+ key={item.id}
+ className="p-4 rounded-xl bg-muted border border-border shadow-xs space-y-3.5 transition-all">
                   {/* Item Header & Badges */}
                   <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-2.5">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="tabular-nums text-xs font-bold text-muted-foreground bg-muted/80 px-2 py-0.5 rounded">
-                        Item #{index + 1}
+ Item #{index + 1}
                       </span>
 
                       {/* Item Kind Badge */}
                       {isService && (
-                        <Badge variant="outline" className="bg-indigo-50 text-indigo-700 border-indigo-300 dark:bg-indigo-950/40 dark:text-indigo-300 text-2xs font-bold">
+                        <Badge variant="outline"className="bg-indigo-50 text-indigo-700 border-indigo-300 dark:bg-indigo-950/40 dark:text-indigo-300 text-2xs font-bold">
                           🖨️ Printing & Service
                         </Badge>
                       )}
                       {isReadyProduct && (
-                        <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-300 text-2xs font-bold">
+                        <Badge variant="outline"className="bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-300 text-2xs font-bold">
                           📦 Ready Product
                         </Badge>
                       )}
                       {isMaterial && (
-                        <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-300 dark:bg-purple-950/40 dark:text-purple-300 text-2xs font-bold">
+                        <Badge variant="outline"className="bg-purple-50 text-purple-700 border-purple-300 dark:bg-purple-950/40 dark:text-purple-300 text-2xs font-bold">
                           🧵 Raw Material
                         </Badge>
                       )}
                       {isCustom && (
-                        <Badge variant="outline" className="bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950/40 dark:text-amber-300 text-2xs font-bold">
+                        <Badge variant="outline"className="bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950/40 dark:text-amber-300 text-2xs font-bold">
                           ✨ Custom Item
                         </Badge>
                       )}
 
                       {/* Tier Rate Applied Badge */}
                       {item.tier_applied && (
-                        <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-300 dark:bg-blue-950/40 dark:text-blue-300 text-2xs font-bold">
+                        <Badge variant="outline"className="bg-blue-50 text-blue-700 border-blue-300 dark:bg-blue-950/40 dark:text-blue-300 text-2xs font-bold">
                           💎 {item.tier_applied}
                         </Badge>
                       )}
@@ -2172,33 +2112,25 @@ export function NewInvoiceModal({
                       {/* MOQ Notice */}
                       {item.moq && item.quantity < item.moq && (
                         <span className="text-2xs text-amber-700 dark:text-amber-300 font-bold bg-amber-50 dark:bg-amber-950/50 border border-amber-300 dark:border-amber-800 px-1.5 py-0.5 rounded flex items-center gap-1">
-                          <AlertTriangle className="h-3 w-3 text-amber-600" />
-                          Below MOQ ({item.moq} {item.unit})
+                          <AlertTriangle className="h-3 w-3 text-amber-600"/>
+ Below MOQ ({item.moq} {item.unit})
                         </span>
                       )}
                     </div>
 
                     <div className="flex items-center gap-2">
                       <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleToggleAdvanced(index)}
-                        className="h-7 px-2 text-muted-foreground hover:text-foreground text-xs font-semibold cursor-pointer"
-                      >
+ type="button"variant="ghost"size="sm"onClick={() => handleToggleAdvanced(index)}
+ className="h-7 px-2 text-muted-foreground hover:text-foreground text-xs font-semibold cursor-pointer">
                         {item.showAdvanced ? 'Simple Specs' : 'More Specs'}
                       </Button>
 
                       {items.length > 1 && (
                         <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleRemoveItem(index)}
-                          className="h-7 px-2 text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-xs cursor-pointer"
-                        >
-                          <Trash2 className="h-3.5 w-3.5 mr-1" />
-                          Remove
+ type="button"variant="ghost"size="sm"onClick={() => handleRemoveItem(index)}
+ className="h-7 px-2 text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-xs cursor-pointer">
+                          <Trash2 className="h-3.5 w-3.5 mr-1"/>
+ Remove
                         </Button>
                       )}
                     </div>
@@ -2209,37 +2141,35 @@ export function NewInvoiceModal({
                     <div className="sm:col-span-5">
                       <Label className="text-xs font-semibold mb-1 block">Select Catalog Item</Label>
                       <CatalogItemCombobox
-                        products={products}
-                        selectedProductId={item.productId}
-                        onSelectProduct={(pid) => handleProductSelect(index, pid)}
-                        onCustomSelect={() => handleProductSelect(index, '')}
+ products={products}
+ selectedProductId={item.productId}
+ onSelectProduct={(pid) => handleProductSelect(index, pid)}
+ onCustomSelect={() => handleProductSelect(index, '')}
                       />
                     </div>
 
                     <div className="sm:col-span-7">
                       <div className="flex items-center justify-between mb-1">
                         <Label className="text-xs font-semibold block">
-                          Item Description / Service Name <span className="text-rose-500">*</span>
+ Item Description / Service Name <span className="text-rose-500">*</span>
                         </Label>
                         {isCustom && (
                           <div className="flex items-center gap-1">
                             <span className="text-2xs text-muted-foreground mr-1">Mode:</span>
                             <button
-                              type="button"
-                              onClick={() => handleToggleItemKind(index, 'service')}
-                              className={cn(
+ type="button"onClick={() => handleToggleItemKind(index, 'service')}
+ className={cn(
                                 'px-1.5 py-0.5 rounded text-2xs font-bold transition-all cursor-pointer',
-                                isService ? 'bg-indigo-600 text-white' : 'bg-muted text-muted-foreground'
+ isService ? 'bg-indigo-600 text-white' : 'bg-muted text-muted-foreground'
                               )}
                             >
                               📐 Sqft Area
                             </button>
                             <button
-                              type="button"
-                              onClick={() => handleToggleItemKind(index, 'ready_product')}
-                              className={cn(
+ type="button"onClick={() => handleToggleItemKind(index, 'ready_product')}
+ className={cn(
                                 'px-1.5 py-0.5 rounded text-2xs font-bold transition-all cursor-pointer',
-                                isReadyProduct ? 'bg-emerald-600 text-white' : 'bg-muted text-muted-foreground'
+ isReadyProduct ? 'bg-emerald-600 text-white' : 'bg-muted text-muted-foreground'
                               )}
                             >
                               📦 Unit
@@ -2248,76 +2178,74 @@ export function NewInvoiceModal({
                         )}
                       </div>
                       <Input
-                        placeholder="e.g. Star Flex Banner 40ft × 20ft with Eyelets"
-                        value={item.itemName}
-                        onChange={(e) => handleItemChange(index, 'itemName', e.target.value)}
-                        className="text-xs h-9 font-medium"
-                        required
+ placeholder="e.g. Star Flex Banner 40ft × 20ft with Eyelets"value={item.itemName}
+ onChange={(e) => handleItemChange(index, 'itemName', e.target.value)}
+ className="text-xs h-9 font-medium"required
                       />
                     </div>
                   </div>
 
                   {/* REAL-TIME NON-BLOCKING STOCK AVAILABILITY WARNING */}
                   {(() => {
-                    const matchingProduct = products.find((p) => p.id === item.productId || p.name === item.itemName)
-                    const stockAvail = evaluateStockAvailability({
-                      service: matchingProduct,
-                      materialId: (matchingProduct?.service_config as any)?.required_material_id || matchingProduct?.service_config?.required_materials?.[0]?.material_id,
-                      customerWidthFt: Number(item.width) || 0,
-                      customerLengthFt: Number(item.height) || 0,
-                      quantity: item.quantity,
-                      materials,
-                      stockBalances,
-                      physicalRolls,
-                      remnants,
+ const matchingProduct = products.find((p) => p.id === item.productId || p.name === item.itemName)
+ const stockAvail = evaluateStockAvailability({
+ service: matchingProduct,
+ materialId: (matchingProduct?.service_config as any)?.required_material_id || matchingProduct?.service_config?.required_materials?.[0]?.material_id,
+ customerWidthFt: Number(item.width) || 0,
+ customerLengthFt: Number(item.height) || 0,
+ quantity: item.quantity,
+ materials,
+ stockBalances,
+ physicalRolls,
+ remnants,
                     })
 
-                    if (stockAvail.status === 'INSUFFICIENT_FOR_ORDER') {
-                      return (
+ if (stockAvail.status === 'INSUFFICIENT_FOR_ORDER') {
+ return (
                         <div className="p-2 bg-amber-500/10 border border-amber-500/30 rounded-lg text-amber-800 dark:text-amber-300 text-2xs flex items-center justify-between gap-2 animate-in fade-in-0">
                           <div className="flex items-center gap-1.5 font-bold">
-                            <AlertTriangle className="h-3.5 w-3.5 text-amber-600 shrink-0" />
+                            <AlertTriangle className="h-3.5 w-3.5 text-amber-600 shrink-0"/>
                             <span>INSUFFICIENT FOR THIS ORDER:</span>
                             <span className="font-normal">{stockAvail.warningMessage}</span>
                           </div>
-                          <Badge variant="outline" className="bg-amber-100 text-amber-800 border-amber-300 text-2xs shrink-0">
-                            Non-blocking Warning
+                          <Badge variant="outline"className="bg-amber-100 text-amber-800 border-amber-300 text-2xs shrink-0">
+ Non-blocking Warning
                           </Badge>
                         </div>
                       )
                     }
 
-                    if (stockAvail.status === 'LOW_STOCK') {
-                      return (
+ if (stockAvail.status === 'LOW_STOCK') {
+ return (
                         <div className="p-2 bg-yellow-500/10 border border-yellow-500/30 rounded-lg text-yellow-800 dark:text-yellow-300 text-2xs flex items-center justify-between gap-2 animate-in fade-in-0">
                           <div className="flex items-center gap-1.5 font-bold">
-                            <AlertTriangle className="h-3.5 w-3.5 text-yellow-600 shrink-0" />
+                            <AlertTriangle className="h-3.5 w-3.5 text-yellow-600 shrink-0"/>
                             <span>LOW STOCK ALERT:</span>
                             <span className="font-normal">{stockAvail.warningMessage}</span>
                           </div>
-                          <Badge variant="outline" className="bg-yellow-100 text-yellow-800 border-yellow-300 text-2xs shrink-0">
-                            Reorder Threshold
+                          <Badge variant="outline"className="bg-yellow-100 text-yellow-800 border-yellow-300 text-2xs shrink-0">
+ Reorder Threshold
                           </Badge>
                         </div>
                       )
                     }
 
-                    if (stockAvail.status === 'GEOMETRY_INCOMPATIBLE') {
-                      return (
+ if (stockAvail.status === 'GEOMETRY_INCOMPATIBLE') {
+ return (
                         <div className="p-2 bg-rose-500/10 border border-rose-500/30 rounded-lg text-rose-800 dark:text-rose-300 text-2xs flex items-center justify-between gap-2 animate-in fade-in-0">
                           <div className="flex items-center gap-1.5 font-bold">
-                            <AlertOctagon className="h-3.5 w-3.5 text-rose-600 shrink-0" />
+                            <AlertOctagon className="h-3.5 w-3.5 text-rose-600 shrink-0"/>
                             <span>PHYSICAL WIDTH INCOMPATIBLE:</span>
                             <span className="font-normal">{stockAvail.warningMessage}</span>
                           </div>
-                          <Badge variant="outline" className="bg-rose-100 text-rose-800 border-rose-300 text-2xs shrink-0">
-                            Physical Roll Alert
+                          <Badge variant="outline"className="bg-rose-100 text-rose-800 border-rose-300 text-2xs shrink-0">
+ Physical Roll Alert
                           </Badge>
                         </div>
                       )
                     }
 
-                    return null
+ return null
                   })()}
 
                   {/* Dimension Presets for Services */}
@@ -2326,12 +2254,11 @@ export function NewInvoiceModal({
                       <span className="text-2xs font-bold text-muted-foreground mr-1">Standard Sizes:</span>
                       {item.available_dimension_presets.map((preset, pIdx) => (
                         <button
-                          key={pIdx}
-                          type="button"
-                          onClick={() => handleApplyPreset(index, preset)}
-                          className={cn(
+ key={pIdx}
+ type="button"onClick={() => handleApplyPreset(index, preset)}
+ className={cn(
                             'px-2 py-0.5 rounded-md text-2xs font-semibold border transition-all cursor-pointer',
-                            item.width === String(preset.width) && item.height === String(preset.length)
+ item.width === String(preset.width) && item.height === String(preset.length)
                               ? 'bg-blue-600 text-white border-blue-600'
                               : 'bg-card border-input text-foreground hover:border-blue-400'
                           )}
@@ -2350,13 +2277,9 @@ export function NewInvoiceModal({
                           <Label className="text-2xs font-semibold truncate whitespace-nowrap">Width</Label>
                         </div>
                         <Input
-                          type="number"
-                          step="0.1"
-                          placeholder="0"
-                          value={item.width}
-                          onChange={(e) => handleItemChange(index, 'width', e.target.value)}
-                          className="text-xs h-9 tabular-nums w-full"
-                        />
+ type="number"step="0.1"placeholder="0"value={item.width}
+ onChange={(e) => handleItemChange(index, 'width', e.target.value)}
+ className="text-xs h-9 tabular-nums w-full"/>
                       </div>
 
                       <div className="sm:col-span-1">
@@ -2364,13 +2287,9 @@ export function NewInvoiceModal({
                           <Label className="text-2xs font-semibold truncate whitespace-nowrap">Height</Label>
                         </div>
                         <Input
-                          type="number"
-                          step="0.1"
-                          placeholder="0"
-                          value={item.height}
-                          onChange={(e) => handleItemChange(index, 'height', e.target.value)}
-                          className="text-xs h-9 tabular-nums w-full"
-                        />
+ type="number"step="0.1"placeholder="0"value={item.height}
+ onChange={(e) => handleItemChange(index, 'height', e.target.value)}
+ className="text-xs h-9 tabular-nums w-full"/>
                       </div>
 
                       <div className="sm:col-span-1">
@@ -2378,10 +2297,9 @@ export function NewInvoiceModal({
                           <Label className="text-2xs font-semibold truncate whitespace-nowrap">Dim. Unit</Label>
                         </div>
                         <select
-                          value={item.dimension_unit || 'ft'}
-                          onChange={(e) => handleItemChange(index, 'dimension_unit', e.target.value)}
-                          className="w-full h-9 px-1 rounded-lg border border-input bg-card text-xs font-medium"
-                        >
+ value={item.dimension_unit || 'ft'}
+ onChange={(e) => handleItemChange(index, 'dimension_unit', e.target.value)}
+ className="w-full h-9 px-1 rounded-lg border border-input bg-card text-xs font-medium">
                           <option value="ft">ft</option>
                           <option value="inch">inch</option>
                           <option value="m">m</option>
@@ -2393,12 +2311,9 @@ export function NewInvoiceModal({
                           <Label className="text-2xs font-semibold truncate whitespace-nowrap">Qty</Label>
                         </div>
                         <Input
-                          type="number"
-                          min="1"
-                          value={item.quantity}
-                          onChange={(e) => handleItemChange(index, 'quantity', Number(e.target.value) || 1)}
-                          className="text-xs h-9 tabular-nums font-bold w-full"
-                          required
+ type="number"min="1"value={item.quantity}
+ onChange={(e) => handleItemChange(index, 'quantity', Number(e.target.value) || 1)}
+ className="text-xs h-9 tabular-nums font-bold w-full"required
                         />
                       </div>
 
@@ -2412,19 +2327,18 @@ export function NewInvoiceModal({
                           )}
                         </div>
                         <select
-                          value={item.finishing || 'None'}
-                          onChange={(e) => handleItemChange(index, 'finishing', e.target.value)}
-                          className="w-full h-9 px-2 rounded-lg border border-input bg-card text-xs font-medium"
-                        >
+ value={item.finishing || 'None'}
+ onChange={(e) => handleItemChange(index, 'finishing', e.target.value)}
+ className="w-full h-9 px-2 rounded-lg border border-input bg-card text-xs font-medium">
                           <option value="None">None (+৳0)</option>
                           {item.available_finishing_options && item.available_finishing_options.length > 0 ? (
-                            item.available_finishing_options.map((f) => (
+ item.available_finishing_options.map((f) => (
                               <option key={f.id} value={f.name}>
                                 {f.name} {f.unit_price ? `(+৳${f.unit_price})` : ''}
                               </option>
                             ))
                           ) : (
-                            STANDARD_FINISHING_OPTIONS.filter((f) => f.id !== 'none').map((f) => (
+ STANDARD_FINISHING_OPTIONS.filter((f) => f.id !== 'none').map((f) => (
                               <option key={f.id} value={f.name}>
                                 {f.name} (+৳{f.rate})
                               </option>
@@ -2443,19 +2357,18 @@ export function NewInvoiceModal({
                           )}
                         </div>
                         <select
-                          value={item.add_on || 'None'}
-                          onChange={(e) => handleItemChange(index, 'add_on', e.target.value)}
-                          className="w-full h-9 px-2 rounded-lg border border-input bg-card text-xs font-medium"
-                        >
+ value={item.add_on || 'None'}
+ onChange={(e) => handleItemChange(index, 'add_on', e.target.value)}
+ className="w-full h-9 px-2 rounded-lg border border-input bg-card text-xs font-medium">
                           <option value="None">None (+৳0)</option>
                           {item.available_additional_options && item.available_additional_options.length > 0 ? (
-                            item.available_additional_options.map((a) => (
+ item.available_additional_options.map((a) => (
                               <option key={a.id} value={a.name}>
                                 {a.name} {a.unit_price ? `(+৳${a.unit_price})` : ''}
                               </option>
                             ))
                           ) : (
-                            STANDARD_ADD_ON_OPTIONS.filter((a) => a.id !== 'none').map((a) => (
+ STANDARD_ADD_ON_OPTIONS.filter((a) => a.id !== 'none').map((a) => (
                               <option key={a.id} value={a.name}>
                                 {a.name} (+৳{a.rate})
                               </option>
@@ -2466,22 +2379,19 @@ export function NewInvoiceModal({
 
                       <div className="sm:col-span-2">
                         <div className="h-5 flex items-center justify-between mb-1 gap-1">
-                          <Label className="text-2xs font-semibold truncate whitespace-nowrap" title={`Rate per ${item.dimension_unit || 'sft'} (৳)`}>
-                            Rate ({item.dimension_unit || 'sft'})
+                          <Label className="text-2xs font-semibold truncate whitespace-nowrap"title={`Rate per ${item.dimension_unit || 'sft'} (৳)`}>
+ Rate ({item.dimension_unit || 'sft'})
                           </Label>
                           {((item.finishing_rate ?? 0) > 0 || (item.add_on_rate ?? 0) > 0) && (
-                            <span className="text-2xs text-muted-foreground tabular-nums whitespace-nowrap shrink-0" title={`Base: ৳${item.base_rate ?? 0} + Finishing: ৳${item.finishing_rate ?? 0} + Add-on: ৳${item.add_on_rate ?? 0}`}>
-                              Base ৳{item.base_rate ?? 0}
+                            <span className="text-2xs text-muted-foreground tabular-nums whitespace-nowrap shrink-0"title={`Base: ৳${item.base_rate ?? 0} + Finishing: ৳${item.finishing_rate ?? 0} + Add-on: ৳${item.add_on_rate ?? 0}`}>
+ Base ৳{item.base_rate ?? 0}
                             </span>
                           )}
                         </div>
                         <Input
-                          type="number"
-                          step="0.5"
-                          value={item.rate}
-                          onChange={(e) => handleItemChange(index, 'rate', Number(e.target.value) || 0)}
-                          className="text-xs h-9 tabular-nums font-bold text-blue-600 dark:text-blue-400 w-full"
-                          required
+ type="number"step="0.5"value={item.rate}
+ onChange={(e) => handleItemChange(index, 'rate', Number(e.target.value) || 0)}
+ className="text-xs h-9 tabular-nums font-bold text-blue-600 dark:text-blue-400 w-full"required
                         />
                       </div>
                     </div>
@@ -2489,7 +2399,7 @@ export function NewInvoiceModal({
 
                   {/* READY PRODUCT CONTROLS (Physical Spec + Discrete Unit + Qty + Rate) */}
                   {isReadyProduct && (
-                    <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 p-3 bg-card rounded-xl border border-border dark:border-border">
+                    <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 p-3 bg-card rounded-xl border border-border">
                       <div className="sm:col-span-5 flex flex-col justify-center">
                         <span className="text-2xs uppercase font-bold text-muted-foreground block mb-0.5">Physical Specs & Packaging</span>
                         <div className="flex flex-wrap items-center gap-1.5 text-xs text-foreground font-medium">
@@ -2507,7 +2417,7 @@ export function NewInvoiceModal({
                           ) : null}
                           {item.moq ? (
                             <span className="bg-muted px-2 py-0.5 rounded text-2xs">
-                              Min Order: {item.moq} {item.unit}
+ Min Order: {item.moq} {item.unit}
                             </span>
                           ) : null}
                         </div>
@@ -2516,22 +2426,18 @@ export function NewInvoiceModal({
                       <div className="sm:col-span-3">
                         <Label className="text-2xs font-semibold mb-1 block">Quantity</Label>
                         <Input
-                          type="number"
-                          min="1"
-                          value={item.quantity}
-                          onChange={(e) => handleItemChange(index, 'quantity', Number(e.target.value) || 1)}
-                          className="text-xs h-9 tabular-nums font-bold"
-                          required
+ type="number"min="1"value={item.quantity}
+ onChange={(e) => handleItemChange(index, 'quantity', Number(e.target.value) || 1)}
+ className="text-xs h-9 tabular-nums font-bold"required
                         />
                       </div>
 
                       <div className="sm:col-span-2">
                         <Label className="text-2xs font-semibold mb-1 block">Unit</Label>
                         <select
-                          value={item.unit}
-                          onChange={(e) => handleItemChange(index, 'unit', e.target.value)}
-                          className="w-full h-9 px-2 rounded-lg border border-input bg-card text-xs font-medium"
-                        >
+ value={item.unit}
+ onChange={(e) => handleItemChange(index, 'unit', e.target.value)}
+ className="w-full h-9 px-2 rounded-lg border border-input bg-card text-xs font-medium">
                           <option value="pcs">{tBilingual('pcs', 'পিস')}</option>
                           <option value="set">{tBilingual('set', 'সেট')}</option>
                           <option value="pack">{tBilingual('pack', 'প্যাক')}</option>
@@ -2557,12 +2463,9 @@ export function NewInvoiceModal({
                       <div className="sm:col-span-2">
                         <Label className="text-2xs font-semibold mb-1 block">Unit Price (৳)</Label>
                         <Input
-                          type="number"
-                          step="1"
-                          value={item.rate}
-                          onChange={(e) => handleItemChange(index, 'rate', Number(e.target.value) || 0)}
-                          className="text-xs h-9 tabular-nums font-bold text-emerald-600 dark:text-emerald-400"
-                          required
+ type="number"step="1"value={item.rate}
+ onChange={(e) => handleItemChange(index, 'rate', Number(e.target.value) || 0)}
+ className="text-xs h-9 tabular-nums font-bold text-emerald-600 dark:text-emerald-400"required
                         />
                       </div>
                     </div>
@@ -2574,23 +2477,18 @@ export function NewInvoiceModal({
                       <div>
                         <Label className="text-2xs font-semibold mb-1 block">Quantity</Label>
                         <Input
-                          type="number"
-                          min="0.1"
-                          step="0.1"
-                          value={item.quantity}
-                          onChange={(e) => handleItemChange(index, 'quantity', Number(e.target.value) || 1)}
-                          className="text-xs h-9 tabular-nums font-bold"
-                          required
+ type="number"min="0.1"step="0.1"value={item.quantity}
+ onChange={(e) => handleItemChange(index, 'quantity', Number(e.target.value) || 1)}
+ className="text-xs h-9 tabular-nums font-bold"required
                         />
                       </div>
 
                       <div>
                         <Label className="text-2xs font-semibold mb-1 block">Usage Unit</Label>
                         <select
-                          value={item.unit}
-                          onChange={(e) => handleItemChange(index, 'unit', e.target.value)}
-                          className="w-full h-9 px-2 rounded-lg border border-input bg-card text-xs font-medium"
-                        >
+ value={item.unit}
+ onChange={(e) => handleItemChange(index, 'unit', e.target.value)}
+ className="w-full h-9 px-2 rounded-lg border border-input bg-card text-xs font-medium">
                           <option value="sft">{tBilingual('sft', 'বর্গফুট')}</option>
                           <option value="rft">{tBilingual('rft', 'রানিং ফুট')}</option>
                           <option value="sheet">{tBilingual('sheet', 'শিট')}</option>
@@ -2604,22 +2502,17 @@ export function NewInvoiceModal({
                       <div>
                         <Label className="text-2xs font-semibold mb-1 block">Material Spec</Label>
                         <Input
-                          placeholder="e.g. 280 GSM Frontlit"
-                          value={item.dimensions_spec || ''}
-                          onChange={(e) => handleItemChange(index, 'dimensions_spec', e.target.value)}
-                          className="text-xs h-9"
-                        />
+ placeholder="e.g. 280 GSM Frontlit"value={item.dimensions_spec || ''}
+ onChange={(e) => handleItemChange(index, 'dimensions_spec', e.target.value)}
+ className="text-xs h-9"/>
                       </div>
 
                       <div>
                         <Label className="text-2xs font-semibold mb-1 block">Rate / Unit (৳)</Label>
                         <Input
-                          type="number"
-                          step="1"
-                          value={item.rate}
-                          onChange={(e) => handleItemChange(index, 'rate', Number(e.target.value) || 0)}
-                          className="text-xs h-9 tabular-nums font-bold text-purple-600 dark:text-purple-400"
-                          required
+ type="number"step="1"value={item.rate}
+ onChange={(e) => handleItemChange(index, 'rate', Number(e.target.value) || 0)}
+ className="text-xs h-9 tabular-nums font-bold text-purple-600 dark:text-purple-400"required
                         />
                       </div>
                     </div>
@@ -2627,53 +2520,50 @@ export function NewInvoiceModal({
 
                   {/* Substrate / Printable Material pill for service */}
                   {isService && item.printable_material_name && (
-                    <div className="flex items-center gap-2 text-2xs text-muted-foreground bg-card px-3 py-1.5 rounded-lg border border-border dark:border-border">
-                      <Layers className="h-3.5 w-3.5 text-indigo-500 shrink-0" />
+                    <div className="flex items-center gap-2 text-2xs text-muted-foreground bg-card px-3 py-1.5 rounded-lg border border-border">
+                      <Layers className="h-3.5 w-3.5 text-indigo-500 shrink-0"/>
                       <span>Linked Substrate: <strong>{item.printable_material_name}</strong></span>
                     </div>
                   )}
 
                   {/* SERVICE DESIGN STATUS TOGGLE (Design Required vs Design OK or Pre-Press Verified) */}
                   {isService && (
-                    isFromDesignWorkOrder || item.workflow_routing === 'ready_production' ? (
+ isFromDesignWorkOrder || item.workflow_routing === 'ready_production' ? (
                       <div className="flex flex-wrap items-center justify-between gap-2 p-2.5 bg-blue-50/80 dark:bg-blue-950/40 rounded-xl border border-blue-200 dark:border-blue-800">
                         <div className="flex items-center gap-2">
-                          <CheckCircle2 className="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0" />
+                          <CheckCircle2 className="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0"/>
                           <div>
                             <span className="text-xs font-bold text-blue-950 dark:text-blue-100 flex items-center gap-1.5">
                               {tBilingual('Pre-Press Verified', 'ডিজাইন যাচাই সম্পন্ন')}
                             </span>
                             <span className="text-2xs text-blue-700/80 dark:text-blue-300/80 block">
-                              Artwork is pre-press approved in Design Studio. Sent directly to Production Planning & Shop Floor.
+ Artwork is pre-press approved in Design Studio. Sent directly to Production Planning & Shop Floor.
                             </span>
                           </div>
                         </div>
 
                         <Badge
-                          variant="outline"
-                          className="text-2xs font-bold px-2 py-0.5 bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-900 dark:text-blue-200"
-                        >
+ variant="outline"className="text-2xs font-bold px-2 py-0.5 bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-900 dark:text-blue-200">
                           🚀 Production Planning & Shop Floor Direct
                         </Badge>
                       </div>
                     ) : (
-                      <div className="flex flex-wrap items-center justify-between gap-2 p-2.5 bg-muted rounded-xl border border-border dark:border-border">
+                      <div className="flex flex-wrap items-center justify-between gap-2 p-2.5 bg-muted rounded-xl border border-border">
                         <div className="flex items-center gap-2">
                           <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                            <Palette className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
-                            Design Status:
+                            <Palette className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400"/>
+ Design Status:
                           </span>
-                          <div className="inline-flex p-0.5 bg-muted/80 rounded-lg border border-input dark:border-border">
+                          <div className="inline-flex p-0.5 bg-muted/80 rounded-lg border border-input">
                             <button
-                              type="button"
-                              onClick={() => {
-                                handleItemChange(index, 'workflow_routing', 'design_required')
-                                handleItemChange(index, 'design_required', true)
-                                handleItemChange(index, 'customer_approval_required', true)
+ type="button"onClick={() => {
+ handleItemChange(index, 'workflow_routing', 'design_required')
+ handleItemChange(index, 'design_required', true)
+ handleItemChange(index, 'customer_approval_required', true)
                               }}
-                              className={cn(
+ className={cn(
                                 'px-3 py-1 rounded-md text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5',
-                                item.workflow_routing === 'design_required' || (item.design_required !== false && item.workflow_routing !== 'design_ok')
+ item.workflow_routing === 'design_required' || (item.design_required !== false && item.workflow_routing !== 'design_ok')
                                   ? 'bg-indigo-600 text-white shadow-xs'
                                   : 'text-muted-foreground hover:text-foreground'
                               )}
@@ -2681,15 +2571,14 @@ export function NewInvoiceModal({
                               <span>🎨 Design Required</span>
                             </button>
                             <button
-                              type="button"
-                              onClick={() => {
-                                handleItemChange(index, 'workflow_routing', 'design_ok')
-                                handleItemChange(index, 'design_required', false)
-                                handleItemChange(index, 'customer_approval_required', false)
+ type="button"onClick={() => {
+ handleItemChange(index, 'workflow_routing', 'design_ok')
+ handleItemChange(index, 'design_required', false)
+ handleItemChange(index, 'customer_approval_required', false)
                               }}
-                              className={cn(
+ className={cn(
                                 'px-3 py-1 rounded-md text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5',
-                                item.workflow_routing === 'design_ok' || item.design_required === false
+ item.workflow_routing === 'design_ok' || item.design_required === false
                                   ? 'bg-cyan-600 text-white shadow-xs'
                                   : 'text-muted-foreground hover:text-foreground'
                               )}
@@ -2700,10 +2589,9 @@ export function NewInvoiceModal({
                         </div>
 
                         <Badge
-                          variant="outline"
-                          className={cn(
+ variant="outline"className={cn(
                             'text-2xs font-bold px-2 py-0.5',
-                            item.workflow_routing === 'design_ok' || item.design_required === false
+ item.workflow_routing === 'design_ok' || item.design_required === false
                               ? 'bg-cyan-50 text-cyan-700 border-cyan-300 dark:bg-cyan-950/40 dark:text-cyan-300'
                               : 'bg-indigo-50 text-indigo-700 border-indigo-300 dark:bg-indigo-950/40 dark:text-indigo-300'
                           )}
@@ -2721,7 +2609,7 @@ export function NewInvoiceModal({
                     <div className="p-3.5 rounded-xl bg-card border border-border space-y-3 text-xs animate-in fade-in-0">
                       <div className="flex items-center justify-between">
                         <span className="text-2xs uppercase font-bold text-muted-foreground flex items-center gap-1.5">
-                          <Layers className="h-3.5 w-3.5 text-blue-600" />
+                          <Layers className="h-3.5 w-3.5 text-blue-600"/>
                           {item.category_preset === 'offset_print'
                             ? tBilingual('Offset Printing Specifications', 'অফসেট প্রিন্টিং বিবরণ')
                             : item.category_preset === 'signage_fabrication'
@@ -2729,7 +2617,7 @@ export function NewInvoiceModal({
                             : tBilingual('Advanced Domain & Material Specs', 'অ্যাডভান্সড স্পেসিফিকেশন')}
                         </span>
                         {item.description_bn && (
-                          <span className="text-2xs font-medium text-muted-foreground dark:text-muted-foreground">
+                          <span className="text-2xs font-medium text-muted-foreground">
                             {item.description_bn}
                           </span>
                         )}
@@ -2737,19 +2625,18 @@ export function NewInvoiceModal({
 
                       {/* Offset Commercial Specific Inputs */}
                       {(item.category_preset === 'offset_print' || item.offset_specs) && (
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 p-2.5 bg-muted rounded-lg border border-border dark:border-border">
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 p-2.5 bg-muted rounded-lg border border-border">
                           <div>
                             <Label className="text-2xs font-semibold mb-1 block">{tBilingual('Paper GSM', 'কাগজের জিএসএম')}</Label>
                             <select
-                              value={item.offset_specs?.paper_gsm || ''}
-                              onChange={(e) =>
-                                handleItemChange(index, 'offset_specs', {
+ value={item.offset_specs?.paper_gsm || ''}
+ onChange={(e) =>
+ handleItemChange(index, 'offset_specs', {
                                   ...(item.offset_specs || {}),
-                                  paper_gsm: e.target.value,
+ paper_gsm: e.target.value,
                                 })
                               }
-                              className="w-full h-8 px-2 rounded-md border border-input bg-card text-xs font-medium"
-                            >
+ className="w-full h-8 px-2 rounded-md border border-input bg-card text-xs font-medium">
                               <option value="">{tBilingual('Select GSM', 'জিএসএম নির্বাচন')}</option>
                               <option value="55">{tBilingual('55 GSM (NCR Carbonless)', '৫৫ জিএসএম (এনসিআর)')}</option>
                               <option value="70">{tBilingual('70 GSM (Offset Paper)', '৭০ জিএসএম (অফসেট)')}</option>
@@ -2765,15 +2652,14 @@ export function NewInvoiceModal({
                           <div>
                             <Label className="text-2xs font-semibold mb-1 block">{tBilingual('Color Mode', 'রঙের মোড')}</Label>
                             <select
-                              value={item.offset_specs?.color_mode || ''}
-                              onChange={(e) =>
-                                handleItemChange(index, 'offset_specs', {
+ value={item.offset_specs?.color_mode || ''}
+ onChange={(e) =>
+ handleItemChange(index, 'offset_specs', {
                                   ...(item.offset_specs || {}),
-                                  color_mode: e.target.value,
+ color_mode: e.target.value,
                                 })
                               }
-                              className="w-full h-8 px-2 rounded-md border border-input bg-card text-xs font-medium"
-                            >
+ className="w-full h-8 px-2 rounded-md border border-input bg-card text-xs font-medium">
                               <option value="1/0 Single Color">{tBilingual('1/0 Single Color', '১ রঙ (একপাশ)')}</option>
                               <option value="2/0 Two Color">{tBilingual('2/0 Two Color', '২ রঙ (একপাশ)')}</option>
                               <option value="4/0 Single-side CMYK">{tBilingual('4/0 Single-side 4-Color', 'একপাশে ৪ রঙ')}</option>
@@ -2784,15 +2670,14 @@ export function NewInvoiceModal({
                           <div>
                             <Label className="text-2xs font-semibold mb-1 block">{tBilingual('Binding / Packaging', 'বাইন্ডিং ও প্যাকেজিং')}</Label>
                             <select
-                              value={item.offset_specs?.binding_type || ''}
-                              onChange={(e) =>
-                                handleItemChange(index, 'offset_specs', {
+ value={item.offset_specs?.binding_type || ''}
+ onChange={(e) =>
+ handleItemChange(index, 'offset_specs', {
                                   ...(item.offset_specs || {}),
-                                  binding_type: e.target.value,
+ binding_type: e.target.value,
                                 })
                               }
-                              className="w-full h-8 px-2 rounded-md border border-input bg-card text-xs font-medium"
-                            >
+ className="w-full h-8 px-2 rounded-md border border-input bg-card text-xs font-medium">
                               <option value="Bundle Pack">{tBilingual('Bundle Pack', 'বান্ডিল')}</option>
                               <option value="Top Gumming">{tBilingual('Top Gumming Pad', 'গাম প্যাড')}</option>
                               <option value="Carbonless NCR Pad Binding">{tBilingual('NCR Pad Binding', 'এনসিআর প্যাড')}</option>
@@ -2805,83 +2690,72 @@ export function NewInvoiceModal({
                           <div>
                             <Label className="text-2xs font-semibold mb-1 block">{tBilingual('Numbering / NCR Part', 'নম্বর বা পার্ট')}</Label>
                             <Input
-                              placeholder="e.g. 0001 - 0500, 3-Part"
-                              value={item.offset_specs?.numbering_range || ''}
-                              onChange={(e) =>
-                                handleItemChange(index, 'offset_specs', {
+ placeholder="e.g. 0001 - 0500, 3-Part"value={item.offset_specs?.numbering_range || ''}
+ onChange={(e) =>
+ handleItemChange(index, 'offset_specs', {
                                   ...(item.offset_specs || {}),
-                                  numbering_range: e.target.value,
-                                  numbering_required: Boolean(e.target.value.trim()),
+ numbering_range: e.target.value,
+ numbering_required: Boolean(e.target.value.trim()),
                                 })
                               }
-                              className="text-xs h-8"
-                            />
+ className="text-xs h-8"/>
                           </div>
                         </div>
                       )}
 
                       {/* 3D Signage Specific Inputs */}
                       {(item.category_preset === 'signage_fabrication' || item.signage_specs) && (
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 p-2.5 bg-muted rounded-lg border border-border dark:border-border">
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 p-2.5 bg-muted rounded-lg border border-border">
                           <div>
                             <Label className="text-2xs font-semibold mb-1 block">{tBilingual('Letter Height (inch)', 'অক্ষরের উচ্চতা (ইঞ্চি)')}</Label>
                             <Input
-                              type="number"
-                              placeholder="e.g. 12"
-                              value={item.signage_specs?.letter_height_inch || ''}
-                              onChange={(e) =>
-                                handleItemChange(index, 'signage_specs', {
+ type="number"placeholder="e.g. 12"value={item.signage_specs?.letter_height_inch || ''}
+ onChange={(e) =>
+ handleItemChange(index, 'signage_specs', {
                                   ...(item.signage_specs || {}),
-                                  letter_height_inch: Number(e.target.value) || 0,
+ letter_height_inch: Number(e.target.value) || 0,
                                 })
                               }
-                              className="text-xs h-8 tabular-nums"
-                            />
+ className="text-xs h-8 tabular-nums"/>
                           </div>
 
                           <div>
                             <Label className="text-2xs font-semibold mb-1 block">LED Module Type</Label>
                             <Input
-                              placeholder="e.g. Korean 3-LED Module"
-                              value={item.signage_specs?.led_module_type || ''}
-                              onChange={(e) =>
-                                handleItemChange(index, 'signage_specs', {
+ placeholder="e.g. Korean 3-LED Module"value={item.signage_specs?.led_module_type || ''}
+ onChange={(e) =>
+ handleItemChange(index, 'signage_specs', {
                                   ...(item.signage_specs || {}),
-                                  led_module_type: e.target.value,
+ led_module_type: e.target.value,
                                 })
                               }
-                              className="text-xs h-8"
-                            />
+ className="text-xs h-8"/>
                           </div>
 
                           <div>
                             <Label className="text-2xs font-semibold mb-1 block">SMPS / Power Supply</Label>
                             <Input
-                              placeholder="e.g. 12V 33A Waterproof SMPS"
-                              value={item.signage_specs?.power_supply_watts ? `${item.signage_specs.power_supply_watts}W` : ''}
-                              onChange={(e) =>
-                                handleItemChange(index, 'signage_specs', {
+ placeholder="e.g. 12V 33A Waterproof SMPS"value={item.signage_specs?.power_supply_watts ? `${item.signage_specs.power_supply_watts}W` : ''}
+ onChange={(e) =>
+ handleItemChange(index, 'signage_specs', {
                                   ...(item.signage_specs || {}),
-                                  power_supply_watts: Number(e.target.value.replace(/[^0-9]/g, '')) || 0,
+ power_supply_watts: Number(e.target.value.replace(/[^0-9]/g, '')) || 0,
                                 })
                               }
-                              className="text-xs h-8"
-                            />
+ className="text-xs h-8"/>
                           </div>
 
                           <div>
                             <Label className="text-2xs font-semibold mb-1 block">Frame Structure</Label>
                             <Input
-                              placeholder="e.g. 1&quot; MS Pipe Sub-frame"
-                              value={item.signage_specs?.frame_structure || ''}
-                              onChange={(e) =>
-                                handleItemChange(index, 'signage_specs', {
+ placeholder="e.g. 1&quot; MS Pipe Sub-frame"value={item.signage_specs?.frame_structure || ''}
+ onChange={(e) =>
+ handleItemChange(index, 'signage_specs', {
                                   ...(item.signage_specs || {}),
-                                  frame_structure: e.target.value,
+ frame_structure: e.target.value,
                                 })
                               }
-                              className="text-xs h-8"
-                            />
+ className="text-xs h-8"/>
                           </div>
                         </div>
                       )}
@@ -2891,52 +2765,47 @@ export function NewInvoiceModal({
                         <div>
                           <Label className="text-2xs font-semibold mb-1 block">Substrate Spec / Description</Label>
                           <Input
-                            placeholder="e.g. 3mm Cast Acrylic Face + PVC Foam Return"
-                            value={item.material_spec || item.dimensions_spec || ''}
-                            onChange={(e) => {
-                              handleItemChange(index, 'material_spec', e.target.value)
-                              handleItemChange(index, 'dimensions_spec', e.target.value)
+ placeholder="e.g. 3mm Cast Acrylic Face + PVC Foam Return"value={item.material_spec || item.dimensions_spec || ''}
+ onChange={(e) => {
+ handleItemChange(index, 'material_spec', e.target.value)
+ handleItemChange(index, 'dimensions_spec', e.target.value)
                             }}
-                            className="text-xs h-8"
-                          />
+ className="text-xs h-8"/>
                         </div>
                         <div>
                           <Label className="text-2xs font-semibold mb-1 block">Item Internal Unit Cost (৳)</Label>
                           <Input
-                            type="number"
-                            placeholder="0"
-                            value={item.unit_cost || ''}
-                            onChange={(e) => handleItemChange(index, 'unit_cost', Number(e.target.value) || 0)}
-                            className="text-xs h-8 tabular-nums"
-                          />
+ type="number"placeholder="0"value={item.unit_cost || ''}
+ onChange={(e) => handleItemChange(index, 'unit_cost', Number(e.target.value) || 0)}
+ className="text-xs h-8 tabular-nums"/>
                         </div>
                       </div>
                     </div>
                   )}
 
                   {/* Line Calculation Summary HUD */}
-                  <div className="flex flex-wrap items-center justify-between text-xs pt-1.5 px-1 text-muted-foreground font-medium border-t border-border dark:border-border">
+                  <div className="flex flex-wrap items-center justify-between text-xs pt-1.5 px-1 text-muted-foreground font-medium border-t border-border">
                     <div className="flex items-center gap-3">
                       {(calc?.area || 0) > 0 ? (
                         <span>
-                          Area: <strong>{calc?.area.toFixed(2)} sft</strong> ({item.width}ft × {item.height}ft × {item.quantity})
+ Area: <strong>{calc?.area.toFixed(2)} sft</strong> ({item.width}ft × {item.height}ft × {item.quantity})
                         </span>
                       ) : (
                         <span>
-                          Quantity: <strong>{item.quantity} {item.unit}</strong>
+ Quantity: <strong>{item.quantity} {item.unit}</strong>
                         </span>
                       )}
 
                       {estimatedDirectCost > 0 && (
                         <span className="text-2xs text-muted-foreground bg-muted px-2 py-0.5 rounded tabular-nums">
-                          Est. Cost: ৳{Math.round(estimatedDirectCost)} • Margin: {estMarginPercent}%
+ Est. Cost: ৳{Math.round(estimatedDirectCost)} • Margin: {estMarginPercent}%
                         </span>
                       )}
                     </div>
 
                     <div className="text-right">
                       <span className="text-2xs text-muted-foreground mr-2">Line Total:</span>
-                      <span className="tabular-nums font-bold text-foreground dark:text-white text-sm">
+                      <span className="tabular-nums font-bold text-foreground text-sm">
                         {formatBDT(calc?.lineTotal || 0)}
                       </span>
                     </div>
@@ -2948,20 +2817,17 @@ export function NewInvoiceModal({
             {/* Add Item Button below item */}
             <div className="pt-1">
               <Button
-                type="button"
-                variant="outline"
-                onClick={handleAddItem}
-                className="w-full h-9 text-xs font-bold gap-1.5 text-blue-600 dark:text-blue-400 border border-dashed border-blue-300 dark:border-blue-800 bg-blue-50/50 hover:bg-blue-100/70 dark:bg-blue-950/20 dark:hover:bg-blue-950/40 rounded-xl cursor-pointer shadow-2xs transition-all"
-              >
-                <Plus className="h-4 w-4" />
-                Add Item
+ type="button"variant="outline"onClick={handleAddItem}
+ className="w-full h-9 text-xs font-bold gap-1.5 text-blue-600 dark:text-blue-400 border border-dashed border-blue-300 dark:border-blue-800 bg-blue-50/50 hover:bg-blue-100/70 dark:bg-blue-950/20 dark:hover:bg-blue-950/40 rounded-xl cursor-pointer shadow-2xs transition-all">
+                <Plus className="h-4 w-4"/>
+ Add Item
               </Button>
             </div>
           </div>
         </div>
 
         {/* =========================================================================
-            SECTION 3: FINANCIAL TOTALS & BANGLADESHI COMMERCIAL SETTLEMENT
+ SECTION 3: FINANCIAL TOTALS & BANGLADESHI COMMERCIAL SETTLEMENT
            ========================================================================= */}
         <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
           <div className="flex items-center justify-between gap-2">
@@ -2969,28 +2835,27 @@ export function NewInvoiceModal({
               <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
                 3
               </div>
-              <h3 className="text-xs font-bold text-foreground dark:text-white uppercase tracking-wider">
-                {tBilingual('Financial Totals & Commercial Settlement', 'চালান ও মূল্য পরিশোধের হিসাব')}
+              <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
+                {tBilingual('Payment Details', 'চালান ও মূল্য পরিশোধের হিসাব')}
               </h3>
             </div>
           </div>
 
-          {/* 3-Column Financial Totals & Commercial Settlement */}
+          {/* 3-Column Payment Details */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch text-xs">
             {/* Column 1: Note */}
             <div className="lg:col-span-4 flex flex-col">
-              <Label className="text-xs font-semibold mb-1.5 block text-foreground dark:text-muted-foreground">
+              <Label className="text-xs font-semibold mb-1.5 block text-foreground">
                 {tBilingual('Note', 'নোট')}
               </Label>
               <textarea
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder={tBilingual(
+ value={notes}
+ onChange={(e) => setNotes(e.target.value)}
+ placeholder={tBilingual(
                   'Write special instructions, delivery notes, or terms here...',
                   'বিশেষ নির্দেশনা, ডেলিভারি নোট বা শর্তাবলী লিখুন...'
                 )}
-                className="w-full flex-1 min-h-[190px] p-2.5 text-xs rounded-lg border border-input bg-card text-foreground dark:text-white placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring resize-none font-sans"
-              />
+ className="w-full flex-1 min-h-[190px] p-2.5 text-xs rounded-lg border border-input bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring resize-none font-sans"/>
             </div>
 
             {/* Column 2: Commercial & Logistics Details */}
@@ -3003,11 +2868,9 @@ export function NewInvoiceModal({
                   </Label>
                   <div className="col-span-7">
                     <Input
-                      placeholder="e.g. PO-2026-9812"
-                      value={referenceNo}
-                      onChange={(e) => setReferenceNo(e.target.value)}
-                      className="h-8.5 text-xs font-medium"
-                    />
+ placeholder="e.g. PO-2026-9812"value={referenceNo}
+ onChange={(e) => setReferenceNo(e.target.value)}
+ className="h-8.5 text-xs font-medium"/>
                   </div>
                 </div>
 
@@ -3018,11 +2881,9 @@ export function NewInvoiceModal({
                   </Label>
                   <div className="col-span-7">
                     <Input
-                      type="date"
-                      value={dueDate}
-                      onChange={(e) => setDueDate(e.target.value)}
-                      className="h-8.5 text-xs"
-                      required
+ type="date"value={dueDate}
+ onChange={(e) => setDueDate(e.target.value)}
+ className="h-8.5 text-xs"required
                     />
                   </div>
                 </div>
@@ -3034,11 +2895,9 @@ export function NewInvoiceModal({
                   </Label>
                   <div className="col-span-7">
                     <Input
-                      type="date"
-                      value={deliveryDate}
-                      onChange={(e) => setDeliveryDate(e.target.value)}
-                      className="h-8.5 text-xs"
-                    />
+ type="date"value={deliveryDate}
+ onChange={(e) => setDeliveryDate(e.target.value)}
+ className="h-8.5 text-xs"/>
                   </div>
                 </div>
 
@@ -3049,10 +2908,9 @@ export function NewInvoiceModal({
                   </Label>
                   <div className="col-span-7">
                     <select
-                      value={deliveryMethod}
-                      onChange={(e) => setDeliveryMethod(e.target.value as any)}
-                      className="w-full h-8.5 px-2 rounded-md border border-input bg-card text-xs font-medium"
-                    >
+ value={deliveryMethod}
+ onChange={(e) => setDeliveryMethod(e.target.value as any)}
+ className="w-full h-8.5 px-2 rounded-md border border-input bg-card text-xs font-medium">
                       <option value="customer_pickup">{tBilingual('Customer Pickup', 'কাস্টমার পিকআপ')}</option>
                       <option value="company_delivery">{tBilingual('Company Delivery', 'কোম্পানি ডেলিভারি')}</option>
                       <option value="courier">{tBilingual('Courier (Sundarban / SA)', 'কুরিয়ার (সুন্দরবন / এসএ)')}</option>
@@ -3069,10 +2927,9 @@ export function NewInvoiceModal({
                   </Label>
                   <div className="col-span-7">
                     <select
-                      value={paymentMethod}
-                      onChange={(e) => setPaymentMethod(e.target.value as any)}
-                      className="w-full h-8.5 text-xs rounded-md border border-input bg-card px-2 font-medium"
-                    >
+ value={paymentMethod}
+ onChange={(e) => setPaymentMethod(e.target.value as any)}
+ className="w-full h-8.5 text-xs rounded-md border border-input bg-card px-2 font-medium">
                       <option value="cash">{tBilingual('Cash Counter', 'ক্যাশ কাউন্টার')}</option>
                       <option value="bkash">{tBilingual('bKash Merchant', 'বিকাশ')}</option>
                       <option value="nagad">{tBilingual('Nagad Wallet', 'নগদ')}</option>
@@ -3089,11 +2946,10 @@ export function NewInvoiceModal({
                     </span>
                     <div className="col-span-7">
                       <Input
-                        placeholder={tBilingual('Trx ID / Cheque / Account Note', 'ট্রানজেকশন আইডি / চেক নং')}
-                        value={paymentMethodNote}
-                        onChange={(e) => setPaymentMethodNote(e.target.value)}
-                        className="h-7 text-2xs"
-                      />
+ placeholder={tBilingual('Trx ID / Cheque / Account Note', 'ট্রানজেকশন আইডি / চেক নং')}
+ value={paymentMethodNote}
+ onChange={(e) => setPaymentMethodNote(e.target.value)}
+ className="h-7 text-2xs"/>
                     </div>
                   </div>
                 )}
@@ -3104,27 +2960,24 @@ export function NewInvoiceModal({
             <div className="lg:col-span-4 flex flex-col justify-between space-y-2">
               {/* Subtotal */}
               <div className="grid grid-cols-12 items-center gap-2">
-                <span className="col-span-5 text-xs font-semibold text-muted-foreground dark:text-muted-foreground">
+                <span className="col-span-5 text-xs font-semibold text-muted-foreground">
                   {tBilingual('Subtotal', 'মোট বিল')}
                 </span>
-                <div className="col-span-7 h-8.5 px-3 flex items-center justify-end text-right bg-muted rounded-md tabular-nums font-bold text-foreground dark:text-white">
+                <div className="col-span-7 h-8.5 px-3 flex items-center justify-end text-right bg-muted rounded-md tabular-nums font-bold text-foreground">
                   {formatBDT(subtotal)}
                 </div>
               </div>
 
               {/* Discount */}
               <div className="grid grid-cols-12 items-center gap-2">
-                <span className="col-span-5 text-xs font-semibold text-muted-foreground dark:text-muted-foreground">
+                <span className="col-span-5 text-xs font-semibold text-muted-foreground">
                   {tBilingual('Discount', 'ছাড় (৳)')}
                 </span>
                 <div className="col-span-7">
                   <Input
-                    type="number"
-                    value={discountAmount || ''}
-                    onChange={(e) => setDiscountAmount(Math.max(0, Number(e.target.value) || 0))}
-                    className="h-8.5 text-xs tabular-nums font-bold text-right no-spinner [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                    placeholder="0.00"
-                    min={0}
+ type="number"value={discountAmount || ''}
+ onChange={(e) => setDiscountAmount(Math.max(0, Number(e.target.value) || 0))}
+ className="h-8.5 text-xs tabular-nums font-bold text-right no-spinner [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"placeholder="0.00"min={0}
                   />
                 </div>
               </div>
@@ -3132,30 +2985,27 @@ export function NewInvoiceModal({
               {/* Vat []% */}
               <div className="grid grid-cols-12 items-center gap-2">
                 <div className="col-span-5 flex items-center gap-1.5 flex-wrap">
-                  <span className="text-xs font-semibold text-muted-foreground dark:text-muted-foreground">
+                  <span className="text-xs font-semibold text-muted-foreground">
                     {tBilingual('Vat', 'ভ্যাট')}
                   </span>
-                  <div className="inline-flex items-center border border-input rounded-md overflow-hidden bg-card dark:bg-card">
+                  <div className="inline-flex items-center border border-input rounded-md overflow-hidden bg-card">
                     <input
-                      type="number"
-                      value={vatPercentage || ''}
-                      onChange={(e) => setVatPercentage(Math.max(0, Math.min(100, Number(e.target.value) || 0)))}
-                      className="w-8 h-6 text-2xs tabular-nums font-bold text-center bg-transparent focus:outline-none no-spinner [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                      placeholder="0"
-                      min={0}
-                      max={100}
+ type="number"value={vatPercentage || ''}
+ onChange={(e) => setVatPercentage(Math.max(0, Math.min(100, Number(e.target.value) || 0)))}
+ className="w-8 h-6 text-2xs tabular-nums font-bold text-center bg-transparent focus:outline-none no-spinner [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"placeholder="0"min={0}
+ max={100}
                     />
                     <span className="pr-1 text-2xs text-muted-foreground font-medium">%</span>
                   </div>
                 </div>
-                <div className="col-span-7 h-8.5 px-3 flex items-center justify-end text-right bg-muted rounded-md tabular-nums font-semibold text-foreground dark:text-muted-foreground">
+                <div className="col-span-7 h-8.5 px-3 flex items-center justify-end text-right bg-muted rounded-md tabular-nums font-semibold text-foreground">
                   {formatBDT(vatAmount)}
                 </div>
               </div>
 
               {/* Grand Total */}
               <div className="grid grid-cols-12 items-center gap-2">
-                <span className="col-span-5 text-xs font-bold text-foreground dark:text-white">
+                <span className="col-span-5 text-xs font-bold text-foreground">
                   {tBilingual('Grand Total', 'সর্বমোট বিল')}
                 </span>
                 <div className="col-span-7 h-8.5 px-3 flex items-center justify-end text-right bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-800 rounded-md tabular-nums font-black text-blue-700 dark:text-blue-300">
@@ -3165,36 +3015,33 @@ export function NewInvoiceModal({
 
               {/* Advance */}
               <div className="grid grid-cols-12 items-center gap-2">
-                <span className="col-span-5 text-xs font-semibold text-muted-foreground dark:text-muted-foreground">
+                <span className="col-span-5 text-xs font-semibold text-muted-foreground">
                   {tBilingual('Advance', 'অগ্রিম')}
                 </span>
                 <div className="col-span-7">
                   <Input
-                    type="number"
-                    value={advanceAmount || ''}
-                    onChange={(e) => {
-                      const val = Math.max(0, Number(e.target.value) || 0)
-                      setAdvanceAmount(val)
-                      if (grandTotal > 0) {
-                        setAdvancePercentage(Math.round((val / grandTotal) * 100))
+ type="number"value={advanceAmount || ''}
+ onChange={(e) => {
+ const val = Math.max(0, Number(e.target.value) || 0)
+ setAdvanceAmount(val)
+ if (grandTotal > 0) {
+ setAdvancePercentage(Math.round((val / grandTotal) * 100))
                       }
                     }}
-                    className="h-8.5 text-xs tabular-nums font-bold text-right no-spinner [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                    placeholder="0.00"
-                    min={0}
-                    max={grandTotal}
+ className="h-8.5 text-xs tabular-nums font-bold text-right no-spinner [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"placeholder="0.00"min={0}
+ max={grandTotal}
                   />
                 </div>
               </div>
 
               {/* Due */}
               <div className="grid grid-cols-12 items-center gap-2">
-                <span className="col-span-5 text-xs font-bold text-foreground dark:text-white">
+                <span className="col-span-5 text-xs font-bold text-foreground">
                   {tBilingual('Due', 'বাকি')}
                 </span>
                 <div className={cn(
                   'col-span-7 h-8.5 px-3 flex items-center justify-end text-right rounded-md tabular-nums font-black border',
-                  dueAmount > 0
+ dueAmount > 0
                     ? 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/50 dark:text-rose-300 dark:border-rose-800'
                     : 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800'
                 )}>
@@ -3209,11 +3056,9 @@ export function NewInvoiceModal({
             <div className="pt-3 border-t border-border text-xs animate-in fade-in-0">
               <Label className="text-xs font-semibold mb-1 block">Terms & Conditions</Label>
               <Input
-                placeholder="Delivery upon full payment, no return on custom prints..."
-                value={termsAndConditions}
-                onChange={(e) => setTermsAndConditions(e.target.value)}
-                className="h-9 text-xs"
-              />
+ placeholder="Delivery upon full payment, no return on custom prints..."value={termsAndConditions}
+ onChange={(e) => setTermsAndConditions(e.target.value)}
+ className="h-9 text-xs"/>
             </div>
           )}
         </div>

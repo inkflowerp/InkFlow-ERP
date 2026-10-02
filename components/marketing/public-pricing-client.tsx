@@ -15,14 +15,14 @@ import { Button } from '@/components/ui/button'
 import { PublicPlansData } from '@/actions/subscription.actions'
 
 interface PublicPricingClientProps {
-  initialData?: PublicPlansData | null
+ initialData?: PublicPlansData | null
 }
 
 function PricingPageContent() {
-  const { tBilingual } = useI18n()
-  const { paidPlans, trialDays, trialDaysBn } = usePublicSubscriptionPlans()
+ const { tBilingual } = useI18n()
+ const { paidPlans, trialDays, trialDaysBn } = usePublicSubscriptionPlans()
 
-  return (
+ return (
     <div className="min-h-screen bg-muted text-foreground selection:bg-blue-600 selection:text-white font-sans antialiased overflow-x-hidden">
       <MarketingNavbar />
 
@@ -31,10 +31,10 @@ function PricingPageContent() {
         <div className="py-16 sm:py-20 bg-card border-b border-border text-center px-4">
           <div className="max-w-3xl mx-auto space-y-3">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200/70 dark:border-blue-800/60 uppercase tracking-wider">
-              <Zap className="h-3.5 w-3.5" />
+              <Zap className="h-3.5 w-3.5"/>
               <span>{tBilingual('Transparent Plans in BDT', 'স্বচ্ছ মূল্যতালিকা')}</span>
             </span>
-            <h1 className="text-3xl sm:text-5xl font-black text-foreground dark:text-white tracking-tight bangla-text">
+            <h1 className="text-3xl sm:text-5xl font-black text-foreground tracking-tight bangla-text">
               {tBilingual(
                 'Simple, Affordable Pricing for Every Print Business.',
                 'যেকোনো আকারের প্রেসের জন্য সহজ ও সাশ্রয়ী প্যাকেজ।'
@@ -53,24 +53,24 @@ function PricingPageContent() {
         <PricingSection />
 
         {/* Plan Comparison Table Matrix */}
-        <section className="py-16 bg-muted border-t border-border dark:border-border">
+        <section className="py-16 bg-muted border-t border-border">
           <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-            <h3 className="text-2xl font-black text-foreground dark:text-white text-center bangla-text">
+            <h3 className="text-2xl font-black text-foreground text-center bangla-text">
               {tBilingual('Detailed Feature Matrix', 'প্ল্যান অনুযায়ী বিস্তারিত ফিচারের তালিকা')}
             </h3>
 
-            <div className="overflow-x-auto rounded-2xl border border-border bg-card shadow-sm">
-              <table className="w-full text-left text-xs text-foreground dark:text-muted-foreground">
-                <thead className="bg-muted text-muted-foreground uppercase tabular-nums border-b border-border dark:border-border">
+            <div className="overflow-x-auto rounded-xl border border-border bg-card shadow-sm">
+              <table className="w-full text-left text-xs text-foreground">
+                <thead className="bg-muted text-muted-foreground uppercase tabular-nums border-b border-border">
                   <tr>
                     <th className="p-4 font-bold">Feature / Capability</th>
                     {paidPlans.map((p) => {
-                      const isBusiness = p.code === 'business'
-                      return (
+ const isBusiness = p.code === 'business'
+ return (
                         <th
-                          key={p.id || p.code}
-                          className={`p-4 text-center ${
-                            isBusiness ? 'text-blue-600 dark:text-blue-400 font-bold' : 'text-foreground dark:text-white'
+ key={p.id || p.code}
+ className={`p-4 text-center ${
+ isBusiness ? 'text-blue-600 dark:text-blue-400 font-bold' : 'text-foreground'
                           }`}
                         >
                           {tBilingual(p.name, p.name_bn)}
@@ -81,14 +81,14 @@ function PricingPageContent() {
                 </thead>
                 <tbody className="divide-y divide-border dark:divide-border">
                   <tr>
-                    <td className="p-4 font-semibold text-foreground dark:text-white">Monthly Cost (BDT)</td>
+                    <td className="p-4 font-semibold text-foreground">Monthly Cost (BDT)</td>
                     {paidPlans.map((p) => {
-                      const isBusiness = p.code === 'business'
-                      return (
+ const isBusiness = p.code === 'business'
+ return (
                         <td
-                          key={p.id || p.code}
-                          className={`p-4 text-center tabular-nums font-bold ${
-                            isBusiness ? 'text-blue-600 dark:text-blue-400 text-sm' : 'text-foreground dark:text-white text-sm'
+ key={p.id || p.code}
+ className={`p-4 text-center tabular-nums font-bold ${
+ isBusiness ? 'text-blue-600 dark:text-blue-400 text-sm' : 'text-foreground text-sm'
                           }`}
                         >
                           ৳ {p.price_monthly.toLocaleString()}
@@ -132,7 +132,7 @@ function PricingPageContent() {
                     <td className="p-4">SFT Quotation Auto-Calculator</td>
                     {paidPlans.map((p) => (
                       <td key={p.id || p.code} className="p-4 text-center">
-                        <Check className="h-4 w-4 text-emerald-600 mx-auto" />
+                        <Check className="h-4 w-4 text-emerald-600 mx-auto"/>
                       </td>
                     ))}
                   </tr>
@@ -140,7 +140,7 @@ function PricingPageContent() {
                     <td className="p-4">Traditional Delivery Challan (NBR)</td>
                     {paidPlans.map((p) => (
                       <td key={p.id || p.code} className="p-4 text-center">
-                        <Check className="h-4 w-4 text-emerald-600 mx-auto" />
+                        <Check className="h-4 w-4 text-emerald-600 mx-auto"/>
                       </td>
                     ))}
                   </tr>
@@ -148,7 +148,7 @@ function PricingPageContent() {
                     <td className="p-4">WhatsApp Payment Reminders</td>
                     {paidPlans.map((p) => (
                       <td key={p.id || p.code} className="p-4 text-center">
-                        <Check className="h-4 w-4 text-emerald-600 mx-auto" />
+                        <Check className="h-4 w-4 text-emerald-600 mx-auto"/>
                       </td>
                     ))}
                   </tr>
@@ -157,9 +157,9 @@ function PricingPageContent() {
                     {paidPlans.map((p) => (
                       <td key={p.id || p.code} className="p-4 text-center">
                         {p.code === 'starter' ? (
-                          <span className="text-muted-foreground dark:text-foreground">—</span>
+                          <span className="text-muted-foreground">—</span>
                         ) : (
-                          <Check className="h-4 w-4 text-emerald-600 mx-auto" />
+                          <Check className="h-4 w-4 text-emerald-600 mx-auto"/>
                         )}
                       </td>
                     ))}
@@ -169,9 +169,9 @@ function PricingPageContent() {
                     {paidPlans.map((p) => (
                       <td key={p.id || p.code} className="p-4 text-center">
                         {p.code === 'starter' ? (
-                          <span className="text-muted-foreground dark:text-foreground">—</span>
+                          <span className="text-muted-foreground">—</span>
                         ) : (
-                          <Check className="h-4 w-4 text-emerald-600 mx-auto" />
+                          <Check className="h-4 w-4 text-emerald-600 mx-auto"/>
                         )}
                       </td>
                     ))}
@@ -181,9 +181,9 @@ function PricingPageContent() {
                     {paidPlans.map((p) => (
                       <td key={p.id || p.code} className="p-4 text-center">
                         {p.code === 'starter' ? (
-                          <span className="text-muted-foreground dark:text-foreground">—</span>
+                          <span className="text-muted-foreground">—</span>
                         ) : (
-                          <Check className="h-4 w-4 text-emerald-600 mx-auto" />
+                          <Check className="h-4 w-4 text-emerald-600 mx-auto"/>
                         )}
                       </td>
                     ))}
@@ -216,7 +216,7 @@ function PricingPageContent() {
 }
 
 export function PublicPricingClient({ initialData }: PublicPricingClientProps) {
-  return (
+ return (
     <PublicPlansProvider initialData={initialData}>
       <MarketingDemoProvider>
         <PricingPageContent />

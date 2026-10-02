@@ -2,17 +2,17 @@
 
 import React, { useState } from 'react'
 import {
-  AlertOctagon,
-  AlertTriangle,
-  Camera,
-  Upload,
-  CheckCircle2,
-  X,
-  Mic,
-  Cpu,
-  Layers,
-  FileSpreadsheet,
-  HelpCircle,
+ AlertOctagon,
+ AlertTriangle,
+ Camera,
+ Upload,
+ CheckCircle2,
+ X,
+ Mic,
+ Cpu,
+ Layers,
+ FileSpreadsheet,
+ HelpCircle,
 } from 'lucide-react'
 import { useI18n } from '@/i18n/context'
 import { ModalDialog } from '@/components/shared/modal-dialog'
@@ -33,10 +33,10 @@ export type ProblemReasonCode =
   | 'other'
 
 interface ProblemReasonOption {
-  code: ProblemReasonCode
-  labelEn: string
-  labelBn: string
-  icon: React.ElementType
+ code: ProblemReasonCode
+ labelEn: string
+ labelBn: string
+ icon: React.ElementType
 }
 
 const PROBLEM_REASONS: ProblemReasonOption[] = [
@@ -50,78 +50,77 @@ const PROBLEM_REASONS: ProblemReasonOption[] = [
 ]
 
 interface ReportProblemModalProps {
-  isOpen: boolean
-  onClose: () => void
-  task: ProductionTaskRecord | null
-  onSuccess?: (result: any) => void
+ isOpen: boolean
+ onClose: () => void
+ task: ProductionTaskRecord | null
+ onSuccess?: (result: any) => void
 }
 
 export function ReportProblemModal({
-  isOpen,
-  onClose,
-  task,
-  onSuccess,
+ isOpen,
+ onClose,
+ task,
+ onSuccess,
 }: ReportProblemModalProps) {
-  const { tBilingual } = useI18n()
+ const { tBilingual } = useI18n()
 
-  const [selectedReason, setSelectedReason] = useState<ProblemReasonCode>('machine_problem')
-  const [notes, setNotes] = useState<string>('')
-  const [photoPreview, setPhotoPreview] = useState<string | null>(null)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+ const [selectedReason, setSelectedReason] = useState<ProblemReasonCode>('machine_problem')
+ const [notes, setNotes] = useState<string>('')
+ const [photoPreview, setPhotoPreview] = useState<string | null>(null)
+ const [isSubmitting, setIsSubmitting] = useState(false)
+ const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   // Handle Photo Capture / File Selection
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setPhotoPreview(reader.result as string)
+ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+ const file = e.target.files?.[0]
+ if (file) {
+ const reader = new FileReader()
+ reader.onloadend = () => {
+ setPhotoPreview(reader.result as string)
       }
-      reader.readAsDataURL(file)
+ reader.readAsDataURL(file)
     }
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!task) return
+ const handleSubmit = async (e: React.FormEvent) => {
+ e.preventDefault()
+ if (!task) return
 
-    setErrorMessage(null)
-    setIsSubmitting(true)
+ setErrorMessage(null)
+ setIsSubmitting(true)
 
-    try {
-      const res = await reportProductionProblemAction({
-        task_id: task.id,
-        reason: selectedReason,
-        notes: notes.trim() || undefined,
-        photo_url: photoPreview || undefined,
-        taskPayload: task,
+ try {
+ const res = await reportProductionProblemAction({
+ task_id: task.id,
+ reason: selectedReason,
+ notes: notes.trim() || undefined,
+ photo_url: photoPreview || undefined,
+ taskPayload: task,
       })
 
-      if (!res.success) {
-        setErrorMessage(res.error || 'Failed to submit problem report.')
-        return
+ if (!res.success) {
+ setErrorMessage(res.error || 'Failed to submit problem report.')
+ return
       }
 
-      onSuccess?.(res.data)
-      onClose()
+ onSuccess?.(res.data)
+ onClose()
     } catch (err: any) {
-      setErrorMessage(err.message || 'An unexpected error occurred.')
+ setErrorMessage(err.message || 'An unexpected error occurred.')
     } finally {
-      setIsSubmitting(false)
+ setIsSubmitting(false)
     }
   }
 
-  if (!task) return null
+ if (!task) return null
 
-  return (
+ return (
     <ModalDialog
-      open={isOpen}
-      onOpenChange={(open) => !open && onClose()}
-      title={tBilingual('Report Floor Issue', 'সমস্যা রিপোর্ট করুন')}
-      hideFooter={true}
-      size="md"
-    >
+ open={isOpen}
+ onOpenChange={(open) => !open && onClose()}
+ title={tBilingual('Report Floor Issue', 'সমস্যা রিপোর্ট করুন')}
+ hideFooter={true}
+ size="md">
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Task Summary Banner */}
         <div className="p-3 bg-rose-50 dark:bg-rose-950/40 rounded-xl border border-rose-200 dark:border-rose-900 flex items-center justify-between">
@@ -138,12 +137,12 @@ export function ReportProblemModal({
               {task.customer_name} • {task.quantity} {task.unit}
             </p>
           </div>
-          <AlertOctagon className="h-6 w-6 text-rose-600 shrink-0" />
+          <AlertOctagon className="h-6 w-6 text-rose-600 shrink-0"/>
         </div>
 
         {errorMessage && (
           <div className="p-3 bg-rose-50 border border-rose-200 rounded-lg text-rose-800 text-xs font-medium flex items-center gap-2 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800">
-            <AlertTriangle className="h-4 w-4 shrink-0 text-rose-600" />
+            <AlertTriangle className="h-4 w-4 shrink-0 text-rose-600"/>
             <span>{errorMessage}</span>
           </div>
         )}
@@ -155,14 +154,14 @@ export function ReportProblemModal({
           </Label>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-52 overflow-y-auto pr-1">
             {PROBLEM_REASONS.map((r) => {
-              const isSelected = selectedReason === r.code
-              const IconComp = r.icon
-              return (
+ const isSelected = selectedReason === r.code
+ const IconComp = r.icon
+ return (
                 <div
-                  key={r.code}
-                  onClick={() => setSelectedReason(r.code)}
-                  className={`p-2.5 rounded-xl border-2 text-xs cursor-pointer transition-all flex items-center gap-2.5 ${
-                    isSelected
+ key={r.code}
+ onClick={() => setSelectedReason(r.code)}
+ className={`p-2.5 rounded-xl border-2 text-xs cursor-pointer transition-all flex items-center gap-2.5 ${
+ isSelected
                       ? 'border-rose-500 bg-rose-50/70 text-rose-950 dark:bg-rose-950/50 dark:text-rose-100 font-bold shadow-xs'
                       : 'border-border bg-card text-foreground hover:border-input'
                   }`}
@@ -184,24 +183,22 @@ export function ReportProblemModal({
           </Label>
 
           {photoPreview ? (
-            <div className="relative rounded-xl border-2 border-border overflow-hidden max-h-36 flex items-center justify-center bg-slate-900">
-              <img src={photoPreview} alt="Problem preview" className="max-h-36 object-contain" />
+            <div className="relative rounded-xl border-2 border-border overflow-hidden max-h-36 flex items-center justify-center bg-surface-inset">
+              <img src={photoPreview} alt="Problem preview"className="max-h-36 object-contain"/>
               <button
-                type="button"
-                onClick={() => setPhotoPreview(null)}
-                className="absolute top-2 right-2 p-1 rounded-full bg-black/60 text-white hover:bg-black"
-              >
-                <X className="h-4 w-4" />
+ type="button"onClick={() => setPhotoPreview(null)}
+ className="absolute top-2 right-2 p-1 rounded-full bg-black/60 text-white hover:bg-black">
+                <X className="h-4 w-4"/>
               </button>
             </div>
           ) : (
             <label className="flex flex-col items-center justify-center p-3 border-2 border-dashed border-input rounded-xl cursor-pointer hover:bg-muted dark:hover:bg-muted/60 transition-all text-center">
-              <Camera className="h-6 w-6 text-muted-foreground mb-1" />
-              <span className="text-xs font-semibold text-foreground dark:text-muted-foreground">
+              <Camera className="h-6 w-6 text-muted-foreground mb-1"/>
+              <span className="text-xs font-semibold text-foreground">
                 {tBilingual('Take Photo or Upload Image', 'ক্যামেরা দিয়ে ছবি তুলুন বা আপলোড করুন')}
               </span>
               <span className="text-2xs text-muted-foreground">JPG, PNG up to 10MB</span>
-              <input type="file" accept="image/*" capture="environment" onChange={handleFileChange} className="hidden" />
+              <input type="file"accept="image/*"capture="environment"onChange={handleFileChange} className="hidden"/>
             </label>
           )}
         </div>
@@ -212,11 +209,10 @@ export function ReportProblemModal({
             {tBilingual('Additional Notes', 'বিস্তারিত বিবরণ')}
           </Label>
           <Input
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            placeholder={tBilingual('e.g. Media slipped after 10 feet / Need technician', 'যেমন: ১০ ফিট চলার পর মিডিয়া বাঁকা হয়ে গেছে')}
-            className="h-10 text-xs"
-          />
+ value={notes}
+ onChange={(e) => setNotes(e.target.value)}
+ placeholder={tBilingual('e.g. Media slipped after 10 feet / Need technician', 'যেমন: ১০ ফিট চলার পর মিডিয়া বাঁকা হয়ে গেছে')}
+ className="h-10 text-xs"/>
         </div>
 
         {/* Warning Explanation */}
@@ -228,21 +224,18 @@ export function ReportProblemModal({
         </p>
 
         {/* Action Buttons */}
-        <div className="flex items-center justify-end gap-2 pt-2 border-t border-border dark:border-border">
-          <Button type="button" variant="outline" size="sm" onClick={onClose} disabled={isSubmitting} className="text-xs">
+        <div className="flex items-center justify-end gap-2 pt-2 border-t border-border">
+          <Button type="button"variant="outline"size="sm"onClick={onClose} disabled={isSubmitting} className="text-xs">
             {tBilingual('Cancel', 'বাতিল')}
           </Button>
           <Button
-            type="submit"
-            size="sm"
-            disabled={isSubmitting}
-            className="bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold h-10 px-5 shadow-sm"
-          >
+ type="submit"size="sm"disabled={isSubmitting}
+ className="bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold h-10 px-5 shadow-sm">
             {isSubmitting ? (
               <span>{tBilingual('Submitting...', 'জমা হচ্ছে...')}</span>
             ) : (
               <span className="flex items-center gap-1.5">
-                <AlertOctagon className="h-4 w-4" />
+                <AlertOctagon className="h-4 w-4"/>
                 {tBilingual('Confirm & Pause Job', 'স্থগিত নিশ্চিত করুন')}
               </span>
             )}

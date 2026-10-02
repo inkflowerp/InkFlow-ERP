@@ -2,17 +2,17 @@ import * as React from 'react'
 import { cn } from '@/lib/utils'
 
 export interface LabelProps extends React.LabelHTMLAttributes<HTMLLabelElement> {
-  required?: boolean
+ required?: boolean
 }
 
 const Label = React.forwardRef<HTMLLabelElement, LabelProps>(
   ({ className, required, children, ...props }, ref) => {
-    return (
+ return (
       <label
-        ref={ref}
-        className={cn(
+ ref={ref}
+ className={cn(
           'text-xs sm:text-sm font-semibold text-foreground flex items-center gap-1 leading-normal select-none bangla-text',
-          className
+ className
         )}
         {...props}
       >

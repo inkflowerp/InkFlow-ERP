@@ -3,91 +3,91 @@
 import React, { useState } from 'react'
 import Link from 'next/link'
 import {
-  Lock,
-  CheckCircle2,
-  Wallet,
-  Coins,
-  CreditCard,
-  Printer,
-  Download,
-  AlertCircle,
-  Clock,
-  ArrowRight,
+ Lock,
+ CheckCircle2,
+ Wallet,
+ Coins,
+ CreditCard,
+ Printer,
+ Download,
+ AlertCircle,
+ Clock,
+ ArrowRight,
 } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import type {
-  PayrollPeriodRecord,
-  PayrollItemRecord,
+ PayrollPeriodRecord,
+ PayrollItemRecord,
 } from '@/types/workforce.types'
 
 export interface PayrollSheetProps {
-  period: PayrollPeriodRecord
-  items: PayrollItemRecord[]
-  isLoading?: boolean
-  tenantSlug: string
-  onApprovePeriod?: () => Promise<void>
-  onLockPeriod?: () => Promise<void>
-  onOpenPaymentModal: (item: PayrollItemRecord) => void
+ period: PayrollPeriodRecord
+ items: PayrollItemRecord[]
+ isLoading?: boolean
+ tenantSlug: string
+ onApprovePeriod?: () => Promise<void>
+ onLockPeriod?: () => Promise<void>
+ onOpenPaymentModal: (item: PayrollItemRecord) => void
 }
 
 export function PayrollSheet({
-  period,
-  items,
-  isLoading = false,
-  tenantSlug,
-  onApprovePeriod,
-  onLockPeriod,
-  onOpenPaymentModal,
+ period,
+ items,
+ isLoading = false,
+ tenantSlug,
+ onApprovePeriod,
+ onLockPeriod,
+ onOpenPaymentModal,
 }: PayrollSheetProps) {
-  const [selectedItemDetail, setSelectedItemDetail] = useState<PayrollItemRecord | null>(null)
-  const [isActionPending, setIsActionPending] = useState(false)
+ const [selectedItemDetail, setSelectedItemDetail] = useState<PayrollItemRecord | null>(null)
+ const [isActionPending, setIsActionPending] = useState(false)
 
-  const isLocked = Boolean(period.locked_at) || period.status === 'locked'
-  const isApproved = period.status === 'approved' || isLocked || period.status === 'paid'
+ const isLocked = Boolean(period.locked_at) || period.status === 'locked'
+ const isApproved = period.status === 'approved' || isLocked || period.status === 'paid'
 
-  const handleApprove = async () => {
-    if (!onApprovePeriod) return
-    setIsActionPending(true)
-    try {
-      await onApprovePeriod()
+ const handleApprove = async () => {
+ if (!onApprovePeriod) return
+ setIsActionPending(true)
+ try {
+ await onApprovePeriod()
     } finally {
-      setIsActionPending(false)
+ setIsActionPending(false)
     }
   }
 
-  const handleLock = async () => {
-    if (!onLockPeriod) return
-    setIsActionPending(true)
-    try {
-      await onLockPeriod()
+ const handleLock = async () => {
+ if (!onLockPeriod) return
+ setIsActionPending(true)
+ try {
+ await onLockPeriod()
     } finally {
-      setIsActionPending(false)
+ setIsActionPending(false)
     }
   }
 
-  const getItemStatusBadge = (status: string) => {
-    if (status === 'paid') return 'bg-emerald-50 text-emerald-700 border-emerald-200'
-    if (status === 'partial') return 'bg-amber-50 text-amber-700 border-amber-200'
-    return 'bg-red-50 text-red-700 border-red-200'
+ const getItemStatusBadge = (status: string) => {
+ if (status === 'paid') return 'bg-emerald-50 text-emerald-700 border-emerald-200'
+ if (status === 'partial') return 'bg-amber-50 text-amber-700 border-amber-200'
+ return 'bg-red-50 text-red-700 border-red-200'
   }
 
-  if (isLoading) {
-    return (
+ if (isLoading) {
+ return (
       <Card className="bg-card border-border p-6">
         <div className="space-y-4">
-          <Skeleton className="h-8 w-64" />
+          <Skeleton className="h-8 w-64"/>
           {Array.from({ length: 5 }).map((_, i) => (
-            <Skeleton key={i} className="h-12 w-full rounded-lg" />
+            <Skeleton key={i} className="h-12 w-full rounded-lg"/>
           ))}
         </div>
       </Card>
     )
   }
 
-  return (
+ return (
     <div className="space-y-5">
       {/* Top Summary Banner */}
       <Card className="bg-card border-border shadow-[0_1px_3px_rgba(0,0,0,0.02)] rounded-xl p-5">
@@ -95,18 +95,18 @@ export function PayrollSheet({
           <div>
             <div className="flex items-center gap-2">
               <h2 className="text-xl font-bold text-foreground">{period.period_name}</h2>
-              <Badge variant="outline" className="text-xs uppercase font-bold px-2 py-0.5">
+              <Badge variant="outline"className="text-xs uppercase font-bold px-2 py-0.5">
                 {period.status}
               </Badge>
               {isLocked && (
-                <Badge variant="outline" className="bg-muted text-foreground border-input text-xs flex items-center gap-1">
-                  <Lock className="w-3 h-3 text-muted-foreground" />
+                <Badge variant="outline"className="bg-muted text-foreground border-input text-xs flex items-center gap-1">
+                  <Lock className="w-3 h-3 text-muted-foreground"/>
                   <span>Locked</span>
                 </Badge>
               )}
             </div>
             <p className="text-xs text-muted-foreground mt-1 font-mono">
-              Dates: {period.start_date} to {period.end_date} • {items.length} Employees
+ Dates: {period.start_date} to {period.end_date} • {items.length} Employees
             </p>
           </div>
 
@@ -114,25 +114,20 @@ export function PayrollSheet({
           <div className="flex items-center gap-2 flex-wrap">
             {!isApproved && onApprovePeriod && (
               <Button
-                size="sm"
-                onClick={handleApprove}
-                disabled={isActionPending}
-                className="h-8 px-3.5 text-xs font-semibold bg-primary hover:bg-primary/90 text-primary-foreground min-h-[32px]"
-              >
-                <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
+ size="sm"onClick={handleApprove}
+ disabled={isActionPending}
+ className="h-8 px-3.5 text-xs font-semibold bg-primary hover:bg-primary/90 text-primary-foreground min-h-[32px]">
+                <CheckCircle2 className="w-3.5 h-3.5 mr-1"/>
                 <span>Approve Payroll</span>
               </Button>
             )}
 
             {isApproved && !isLocked && onLockPeriod && (
               <Button
-                size="sm"
-                variant="outline"
-                onClick={handleLock}
-                disabled={isActionPending}
-                className="h-8 px-3.5 text-xs font-semibold border-amber-300 text-amber-700 bg-amber-50 hover:bg-amber-100 min-h-[32px]"
-              >
-                <Lock className="w-3.5 h-3.5 mr-1" />
+ size="sm"variant="outline"onClick={handleLock}
+ disabled={isActionPending}
+ className="h-8 px-3.5 text-xs font-semibold border-amber-300 text-amber-700 bg-amber-50 hover:bg-amber-100 min-h-[32px]">
+                <Lock className="w-3.5 h-3.5 mr-1"/>
                 <span>Lock Period</span>
               </Button>
             )}
@@ -141,7 +136,7 @@ export function PayrollSheet({
               <div className="text-right text-[11px] text-muted-foreground">
                 <span className="font-medium text-foreground">Period is locked & immutable.</span>
                 <span className="block text-muted-foreground">
-                  Locked {period.locked_at ? new Date(period.locked_at).toLocaleDateString() : ''}
+ Locked {period.locked_at ? new Date(period.locked_at).toLocaleDateString() : ''}
                 </span>
               </div>
             )}
@@ -224,15 +219,15 @@ export function PayrollSheet({
             </thead>
             <tbody className="divide-y divide-border">
               {items.map((item) => {
-                const base = Number(item.base_salary || 0)
-                const otAmt = Number(item.overtime_amount || 0)
-                const bonuses = Number(item.bonuses || 0)
-                const advDed = Number(item.advance_salary_deducted || 0)
-                const net = Number(item.net_salary || 0)
-                const paid = Number(item.paid_amount || 0)
-                const due = Number(item.due_amount || (net - paid))
+ const base = Number(item.base_salary || 0)
+ const otAmt = Number(item.overtime_amount || 0)
+ const bonuses = Number(item.bonuses || 0)
+ const advDed = Number(item.advance_salary_deducted || 0)
+ const net = Number(item.net_salary || 0)
+ const paid = Number(item.paid_amount || 0)
+ const due = Number(item.due_amount || (net - paid))
 
-                return (
+ return (
                   <tr key={item.id} className="hover:bg-muted transition-colors">
                     {/* Employee */}
                     <td className="py-3 px-4">
@@ -295,9 +290,8 @@ export function PayrollSheet({
                     {/* Status */}
                     <td className="py-3 px-3 text-center">
                       <Badge
-                        variant="outline"
-                        className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${getItemStatusBadge(
-                          item.payment_status || (due <= 0 ? 'paid' : paid > 0 ? 'partial' : 'unpaid')
+ variant="outline"className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${getItemStatusBadge(
+ item.payment_status || (due <= 0 ? 'paid' : paid > 0 ? 'partial' : 'unpaid')
                         )}`}
                       >
                         {item.payment_status || (due <= 0 ? 'paid' : paid > 0 ? 'partial' : 'unpaid')}
@@ -308,16 +302,14 @@ export function PayrollSheet({
                     <td className="py-3 px-4 text-right">
                       {due > 0 ? (
                         <Button
-                          size="sm"
-                          onClick={() => onOpenPaymentModal(item)}
-                          className="h-7 px-2.5 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white min-h-[28px]"
-                        >
-                          <CreditCard className="w-3 h-3 mr-1" />
+ size="sm"onClick={() => onOpenPaymentModal(item)}
+ className="h-7 px-2.5 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white min-h-[28px]">
+                          <CreditCard className="w-3 h-3 mr-1"/>
                           <span>Pay Due</span>
                         </Button>
                       ) : (
                         <span className="text-[11px] text-emerald-600 font-semibold flex items-center justify-end gap-1">
-                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          <CheckCircle2 className="w-3.5 h-3.5"/>
                           <span>Fully Paid</span>
                         </span>
                       )}

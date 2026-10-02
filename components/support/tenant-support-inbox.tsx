@@ -7,85 +7,85 @@
 
 import React, { useState, useMemo } from 'react'
 import {
-  Search,
-  Plus,
-  MessageSquare,
-  Clock,
-  CheckCircle2,
-  AlertCircle,
-  Inbox,
-  Filter,
-  Sparkles,
-  ChevronRight,
-  RefreshCw,
+ Search,
+ Plus,
+ MessageSquare,
+ Clock,
+ CheckCircle2,
+ AlertCircle,
+ Inbox,
+ Filter,
+ Sparkles,
+ ChevronRight,
+ RefreshCw,
 } from 'lucide-react'
 import {
-  SupportConversationRecord,
-  SupportStatus,
-  SupportCategory,
-  SUPPORT_STATUS_CONFIG,
-  SUPPORT_PRIORITY_CONFIG,
+ SupportConversationRecord,
+ SupportStatus,
+ SupportCategory,
+ SUPPORT_STATUS_CONFIG,
+ SUPPORT_PRIORITY_CONFIG,
 } from '@/types/support.types'
 import { formatDate, formatTime } from '@/lib/formatters'
 import { useI18n } from '@/i18n/context'
 import { cn } from '@/lib/utils'
 
 interface TenantSupportInboxProps {
-  conversations: SupportConversationRecord[]
-  selectedId: string | null
-  onSelect: (id: string) => void
-  onOpenNewModal: () => void
-  loading: boolean
-  onRefresh: () => void
+ conversations: SupportConversationRecord[]
+ selectedId: string | null
+ onSelect: (id: string) => void
+ onOpenNewModal: () => void
+ loading: boolean
+ onRefresh: () => void
 }
 
 export function TenantSupportInbox({
-  conversations,
-  selectedId,
-  onSelect,
-  onOpenNewModal,
-  loading,
-  onRefresh,
+ conversations,
+ selectedId,
+ onSelect,
+ onOpenNewModal,
+ loading,
+ onRefresh,
 }: TenantSupportInboxProps) {
-  const { tBilingual } = useI18n()
-  const [activeTab, setActiveTab] = useState<'all' | 'open' | 'in_progress' | 'resolved' | 'closed'>('all')
-  const [searchQuery, setSearchQuery] = useState('')
+ const { tBilingual } = useI18n()
+ const [activeTab, setActiveTab] = useState<'all' | 'open' | 'in_progress' | 'resolved' | 'closed'>('all')
+ const [searchQuery, setSearchQuery] = useState('')
 
-  const filteredList = useMemo(() => {
-    return conversations.filter((c) => {
-      if (activeTab !== 'all' && c.status !== activeTab) {
-        return false
+ const filteredList = useMemo(() => {
+ return conversations.filter((c) => {
+ if (activeTab !== 'all' && c.status !== activeTab) {
+ return false
       }
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase().trim()
-        const matchesTicket = c.ticket_number.toLowerCase().includes(q)
-        const matchesSubject = c.subject.toLowerCase().includes(q)
-        const matchesPreview = c.last_message_preview?.toLowerCase().includes(q)
-        if (!matchesTicket && !matchesSubject && !matchesPreview) {
-          return false
+ if (searchQuery.trim()) {
+ const q = searchQuery.toLowerCase().trim()
+ const matchesTicket = c.ticket_number.toLowerCase().includes(q)
+ const matchesSubject = c.subject.toLowerCase().includes(q)
+ const matchesPreview = c.last_message_preview?.toLowerCase().includes(q)
+ if (!matchesTicket && !matchesSubject && !matchesPreview) {
+ return false
         }
       }
-      return true
+ return true
     })
   }, [conversations, activeTab, searchQuery])
 
-  const openCount = useMemo(
+ const openCount = useMemo(
     () => conversations.filter((c) => c.status === 'open' || c.status === 'in_progress').length,
     [conversations]
   )
 
-  const unreadCount = useMemo(
+ const unreadCount = useMemo(
     () => conversations.reduce((acc, c) => acc + (c.unread_tenant_count || 0), 0),
     [conversations]
   )
 
-  return (
+ return (
     <div className="flex flex-col h-full bg-card border-r border-border select-none">
       {/* Top Header */}
-      <div className="p-4 border-b border-border dark:border-border/80 space-y-3">
+      <div className="p-4 border-b border-border /80 space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <h1 className="text-base font-semibold text-foreground dark:text-foreground">
+            <h1 className="text-base font-semibold text-foreground">
               {tBilingual('Support Inbox', 'সহায়তা ইনবক্স')}
             </h1>
             {unreadCount > 0 && (
@@ -96,17 +96,14 @@ export function TenantSupportInbox({
           </div>
           <div className="flex items-center gap-1.5">
             <button
-              onClick={onRefresh}
-              title="Refresh"
-              className="p-1.5 rounded-lg text-muted-foreground hover:text-muted-foreground hover:bg-muted transition-colors"
-            >
+ onClick={onRefresh}
+ title="Refresh"className="p-1.5 rounded-lg text-muted-foreground hover:text-muted-foreground hover:bg-muted transition-colors">
               <RefreshCw className={cn('w-4 h-4', loading && 'animate-spin')} />
             </button>
             <button
-              onClick={onOpenNewModal}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-sm shadow-indigo-500/20 transition-all cursor-pointer"
-            >
-              <Plus className="w-3.5 h-3.5" />
+ onClick={onOpenNewModal}
+ className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-sm shadow-indigo-500/20 transition-all cursor-pointer">
+              <Plus className="w-3.5 h-3.5"/>
               <span>{tBilingual('New Ticket', 'নতুন টিকেট')}</span>
             </button>
           </div>
@@ -114,14 +111,12 @@ export function TenantSupportInbox({
 
         {/* Search Box */}
         <div className="relative">
-          <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"/>
           <input
-            type="text"
-            placeholder={tBilingual('Search tickets by ID or keyword...', 'টিকেট বা বিষয় দিয়ে খুঁজুন...')}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-8 pr-3 py-2 text-xs rounded-xl border border-border bg-slate-50/70 text-foreground focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-indigo-500 transition-all placeholder:text-muted-foreground"
-          />
+ type="text"placeholder={tBilingual('Search tickets by ID or keyword...', 'টিকেট বা বিষয় দিয়ে খুঁজুন...')}
+ value={searchQuery}
+ onChange={(e) => setSearchQuery(e.target.value)}
+ className="w-full pl-8 pr-3 py-2 text-xs rounded-xl border border-border bg-muted/70 text-foreground focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-indigo-500 transition-all placeholder:text-muted-foreground"/>
         </div>
 
         {/* Filter Tabs */}
@@ -130,40 +125,40 @@ export function TenantSupportInbox({
             [
               { key: 'all', label: tBilingual('All', 'সকল'), count: conversations.length },
               {
-                key: 'open',
-                label: tBilingual('Open', 'উন্মুক্ত'),
-                count: conversations.filter((c) => c.status === 'open').length,
+ key: 'open',
+ label: tBilingual('Open', 'উন্মুক্ত'),
+ count: conversations.filter((c) => c.status === 'open').length,
               },
               {
-                key: 'in_progress',
-                label: tBilingual('Active', 'চলমান'),
-                count: conversations.filter((c) => c.status === 'in_progress').length,
+ key: 'in_progress',
+ label: tBilingual('Active', 'চলমান'),
+ count: conversations.filter((c) => c.status === 'in_progress').length,
               },
               {
-                key: 'resolved',
-                label: tBilingual('Resolved', 'মীমাংসিত'),
-                count: conversations.filter((c) => c.status === 'resolved').length,
+ key: 'resolved',
+ label: tBilingual('Resolved', 'মীমাংসিত'),
+ count: conversations.filter((c) => c.status === 'resolved').length,
               },
             ] as const
           ).map((tab) => (
             <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className={cn(
+ key={tab.key}
+ onClick={() => setActiveTab(tab.key)}
+ className={cn(
                 'px-2.5 py-1 rounded-lg font-medium whitespace-nowrap transition-colors flex items-center gap-1.5',
-                activeTab === tab.key
-                  ? 'bg-slate-900 text-white dark:text-foreground'
+ activeTab === tab.key
+                  ? 'bg-surface-inset text-foreground '
                   : 'text-muted-foreground hover:bg-muted dark:hover:bg-muted'
               )}
             >
               <span>{tab.label}</span>
               {tab.count > 0 && (
                 <span
-                  className={cn(
+ className={cn(
                     'text-2xs px-1.5 py-0.2 rounded-full font-bold',
-                    activeTab === tab.key
-                      ? 'bg-slate-700 text-white dark:bg-slate-300 dark:text-foreground'
-                      : 'bg-muted/80 text-muted-foreground dark:text-muted-foreground'
+ activeTab === tab.key
+                      ? 'bg-card-elevated text-foreground dark:bg-muted '
+                      : 'bg-muted/80 text-muted-foreground '
                   )}
                 >
                   {tab.count}
@@ -180,40 +175,40 @@ export function TenantSupportInbox({
           <div className="p-4 space-y-3">
             {[1, 2, 3, 4].map((n) => (
               <div key={n} className="p-3 rounded-xl bg-muted animate-pulse space-y-2">
-                <div className="h-3.5 bg-muted rounded w-1/3" />
-                <div className="h-3 bg-muted rounded w-4/5" />
-                <div className="h-2.5 bg-muted rounded w-1/2" />
+                <div className="h-3.5 bg-muted rounded w-1/3"/>
+                <div className="h-3 bg-muted rounded w-4/5"/>
+                <div className="h-2.5 bg-muted rounded w-1/2"/>
               </div>
             ))}
           </div>
         ) : filteredList.length === 0 ? (
           <div className="flex flex-col items-center justify-center p-8 text-center text-muted-foreground space-y-3">
-            <div className="w-12 h-12 rounded-2xl bg-muted flex items-center justify-center text-muted-foreground">
-              <Inbox className="w-6 h-6" />
+            <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center text-muted-foreground">
+              <Inbox className="w-6 h-6"/>
             </div>
             <div>
-              <p className="text-sm font-medium text-foreground dark:text-muted-foreground">
+              <p className="text-sm font-medium text-foreground">
                 {searchQuery ? tBilingual('No matches found', 'কোনো ফলাফল পাওয়া যায়নি') : tBilingual('No conversations yet', 'কোনো সহায়তা বার্তা নেই')}
               </p>
               <p className="text-xs text-muted-foreground mt-1 max-w-[220px]">
-                {tBilingual('Have a question or need technical help? Click "New Ticket" to start.', 'কোনো সহায়তা প্রয়োজন হলে "নতুন টিকেট" বাটনে ক্লিক করুন।')}
+                {tBilingual('Have a question or need technical help? Click"New Ticket"to start.', 'কোনো সহায়তা প্রয়োজন হলে"নতুন টিকেট"বাটনে ক্লিক করুন।')}
               </p>
             </div>
           </div>
         ) : (
-          filteredList.map((conv) => {
-            const statusConfig = SUPPORT_STATUS_CONFIG[conv.status]
-            const priorityConfig = SUPPORT_PRIORITY_CONFIG[conv.priority]
-            const isSelected = selectedId === conv.id
-            const hasUnread = (conv.unread_tenant_count || 0) > 0
+ filteredList.map((conv) => {
+ const statusConfig = SUPPORT_STATUS_CONFIG[conv.status]
+ const priorityConfig = SUPPORT_PRIORITY_CONFIG[conv.priority]
+ const isSelected = selectedId === conv.id
+ const hasUnread = (conv.unread_tenant_count || 0) > 0
 
-            return (
+ return (
               <button
-                key={conv.id}
-                onClick={() => onSelect(conv.id)}
-                className={cn(
+ key={conv.id}
+ onClick={() => onSelect(conv.id)}
+ className={cn(
                   'w-full text-left p-3.5 transition-all flex flex-col gap-1.5 cursor-pointer relative',
-                  isSelected
+ isSelected
                     ? 'bg-indigo-50/70 dark:bg-indigo-950/30 border-l-4 border-indigo-600'
                     : 'hover:bg-muted/80 dark:hover:bg-muted/40'
                 )}
@@ -225,16 +220,16 @@ export function TenantSupportInbox({
                       {conv.ticket_number}
                     </span>
                     <span
-                      className={cn(
+ className={cn(
                         'px-2 py-0.5 rounded-md text-2xs font-medium border',
-                        statusConfig.badgeClass
+ statusConfig.badgeClass
                       )}
                     >
                       {statusConfig.labelEn}
                     </span>
                   </div>
                   <div className="flex items-center gap-1.5 text-2xs text-muted-foreground">
-                    <Clock className="w-3 h-3" />
+                    <Clock className="w-3 h-3"/>
                     <span>{formatDate(conv.last_message_at)}</span>
                   </div>
                 </div>
@@ -242,24 +237,24 @@ export function TenantSupportInbox({
                 {/* Line 2: Subject */}
                 <div className="flex items-center justify-between gap-2">
                   <h3
-                    className={cn(
+ className={cn(
                       'text-xs truncate font-medium',
-                      hasUnread
-                        ? 'text-foreground dark:text-white font-bold'
-                        : 'text-foreground dark:text-foreground'
+ hasUnread
+                        ? 'text-foreground font-bold'
+                        : 'text-foreground '
                     )}
                   >
                     {conv.subject}
                   </h3>
                   {hasUnread && (
-                    <span className="w-2 h-2 rounded-full bg-indigo-600 shrink-0" />
+                    <span className="w-2 h-2 rounded-full bg-indigo-600 shrink-0"/>
                   )}
                 </div>
 
                 {/* Line 3: Last Message Preview */}
                 <p className="text-2xs text-muted-foreground truncate line-clamp-1">
                   {conv.last_message_by && (
-                    <span className="font-medium text-foreground dark:text-muted-foreground">
+                    <span className="font-medium text-foreground">
                       {conv.last_message_by}:{' '}
                     </span>
                   )}

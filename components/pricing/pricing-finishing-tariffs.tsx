@@ -2,19 +2,19 @@
 
 import React, { useState } from 'react'
 import {
-  Wrench,
-  Printer,
-  Truck,
-  Plus,
-  Edit2,
-  Trash2,
-  CheckCircle2,
-  AlertCircle,
-  Tag,
-  DollarSign,
-  Layers,
-  Sparkles,
-  Scissors,
+ Wrench,
+ Printer,
+ Truck,
+ Plus,
+ Edit2,
+ Trash2,
+ CheckCircle2,
+ AlertCircle,
+ Tag,
+ DollarSign,
+ Layers,
+ Sparkles,
+ Scissors,
 } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -26,188 +26,188 @@ import { ConfirmDialog } from '@/components/shared/confirm-dialog'
 import { dispatchToast } from '@/components/shared/toast-feedback'
 import { useI18n } from '@/i18n/context'
 import type {
-  FinishingOptionRecord,
-  PrintingMethod,
-  InstallationOptionRecord,
+ FinishingOptionRecord,
+ PrintingMethod,
+ InstallationOptionRecord,
 } from '@/types/product.types'
 import { formatBDT } from '@/lib/formatters'
 
 interface PricingFinishingTariffsProps {
-  finishingOptions: FinishingOptionRecord[]
-  printingMethods: PrintingMethod[]
-  installationOptions: InstallationOptionRecord[]
-  onSaveFinishing: (data: Partial<FinishingOptionRecord>) => Promise<any>
-  onDeleteFinishing: (id: string) => Promise<any>
-  onSavePrintingMethod: (data: Partial<PrintingMethod>) => Promise<any>
-  onDeletePrintingMethod: (id: string) => Promise<any>
-  onSaveInstallation: (data: Partial<InstallationOptionRecord>) => Promise<any>
-  onDeleteInstallation: (id: string) => Promise<any>
+ finishingOptions: FinishingOptionRecord[]
+ printingMethods: PrintingMethod[]
+ installationOptions: InstallationOptionRecord[]
+ onSaveFinishing: (data: Partial<FinishingOptionRecord>) => Promise<any>
+ onDeleteFinishing: (id: string) => Promise<any>
+ onSavePrintingMethod: (data: Partial<PrintingMethod>) => Promise<any>
+ onDeletePrintingMethod: (id: string) => Promise<any>
+ onSaveInstallation: (data: Partial<InstallationOptionRecord>) => Promise<any>
+ onDeleteInstallation: (id: string) => Promise<any>
 }
 
 export function PricingFinishingTariffs({
-  finishingOptions,
-  printingMethods,
-  installationOptions,
-  onSaveFinishing,
-  onDeleteFinishing,
-  onSavePrintingMethod,
-  onDeletePrintingMethod,
-  onSaveInstallation,
-  onDeleteInstallation,
+ finishingOptions,
+ printingMethods,
+ installationOptions,
+ onSaveFinishing,
+ onDeleteFinishing,
+ onSavePrintingMethod,
+ onDeletePrintingMethod,
+ onSaveInstallation,
+ onDeleteInstallation,
 }: PricingFinishingTariffsProps) {
-  const { tBilingual } = useI18n()
+ const { tBilingual } = useI18n()
 
   // Modal State for Finishing Option
-  const [isFinishingModalOpen, setIsFinishingModalOpen] = useState(false)
-  const [editingFinishing, setEditingFinishing] = useState<FinishingOptionRecord | null>(null)
-  const [finForm, setFinForm] = useState({
-    name: '',
-    name_bn: '',
-    pricing_method: 'sqft',
-    selling_price: 5,
-    cost: 2,
-    is_active: true,
+ const [isFinishingModalOpen, setIsFinishingModalOpen] = useState(false)
+ const [editingFinishing, setEditingFinishing] = useState<FinishingOptionRecord | null>(null)
+ const [finForm, setFinForm] = useState({
+ name: '',
+ name_bn: '',
+ pricing_method: 'sqft',
+ selling_price: 5,
+ cost: 2,
+ is_active: true,
   })
 
   // Modal State for Printing Method
-  const [isMethodModalOpen, setIsMethodModalOpen] = useState(false)
-  const [editingMethod, setEditingMethod] = useState<PrintingMethod | null>(null)
-  const [methodForm, setMethodForm] = useState<Partial<PrintingMethod>>({
-    name: '',
-    code: '',
-    cost_per_sqft: 0,
-    is_active: true,
+ const [isMethodModalOpen, setIsMethodModalOpen] = useState(false)
+ const [editingMethod, setEditingMethod] = useState<PrintingMethod | null>(null)
+ const [methodForm, setMethodForm] = useState<Partial<PrintingMethod>>({
+ name: '',
+ code: '',
+ cost_per_sqft: 0,
+ is_active: true,
   })
 
   // Delete confirm states
-  const [finishingToDelete, setFinishingToDelete] = useState<FinishingOptionRecord | null>(null)
-  const [isDeleteFinishingOpen, setIsDeleteFinishingOpen] = useState(false)
-  const [isDeletingFinishing, setIsDeletingFinishing] = useState(false)
+ const [finishingToDelete, setFinishingToDelete] = useState<FinishingOptionRecord | null>(null)
+ const [isDeleteFinishingOpen, setIsDeleteFinishingOpen] = useState(false)
+ const [isDeletingFinishing, setIsDeletingFinishing] = useState(false)
 
-  const [methodToDelete, setMethodToDelete] = useState<PrintingMethod | null>(null)
-  const [isDeleteMethodOpen, setIsDeleteMethodOpen] = useState(false)
-  const [isDeletingMethod, setIsDeletingMethod] = useState(false)
+ const [methodToDelete, setMethodToDelete] = useState<PrintingMethod | null>(null)
+ const [isDeleteMethodOpen, setIsDeleteMethodOpen] = useState(false)
+ const [isDeletingMethod, setIsDeletingMethod] = useState(false)
 
-  const confirmDeleteFinishing = async () => {
-    if (!finishingToDelete) return
-    setIsDeletingFinishing(true)
-    try {
-      await onDeleteFinishing(finishingToDelete.id)
-      dispatchToast({
-        type: 'success',
-        title: 'Finishing Tariff Removed',
-        titleBn: 'ফিনিশিং অপশন মুছে ফেলা হয়েছে',
-        message: `Finishing option "${finishingToDelete.name}" deleted.`,
+ const confirmDeleteFinishing = async () => {
+ if (!finishingToDelete) return
+ setIsDeletingFinishing(true)
+ try {
+ await onDeleteFinishing(finishingToDelete.id)
+ dispatchToast({
+ type: 'success',
+ title: 'Finishing Tariff Removed',
+ titleBn: 'ফিনিশিং অপশন মুছে ফেলা হয়েছে',
+ message: `Finishing option"${finishingToDelete.name}"deleted.`,
       })
-      setIsDeleteFinishingOpen(false)
-      setFinishingToDelete(null)
+ setIsDeleteFinishingOpen(false)
+ setFinishingToDelete(null)
     } finally {
-      setIsDeletingFinishing(false)
+ setIsDeletingFinishing(false)
     }
   }
 
-  const confirmDeleteMethod = async () => {
-    if (!methodToDelete) return
-    setIsDeletingMethod(true)
-    try {
-      await onDeletePrintingMethod(methodToDelete.id)
-      dispatchToast({
-        type: 'success',
-        title: 'Printing Method Removed',
-        titleBn: 'প্রিন্টিং মেথড মুছে ফেলা হয়েছে',
-        message: `Printing method "${methodToDelete.name}" deleted.`,
+ const confirmDeleteMethod = async () => {
+ if (!methodToDelete) return
+ setIsDeletingMethod(true)
+ try {
+ await onDeletePrintingMethod(methodToDelete.id)
+ dispatchToast({
+ type: 'success',
+ title: 'Printing Method Removed',
+ titleBn: 'প্রিন্টিং মেথড মুছে ফেলা হয়েছে',
+ message: `Printing method"${methodToDelete.name}"deleted.`,
       })
-      setIsDeleteMethodOpen(false)
-      setMethodToDelete(null)
+ setIsDeleteMethodOpen(false)
+ setMethodToDelete(null)
     } finally {
-      setIsDeletingMethod(false)
+ setIsDeletingMethod(false)
     }
   }
 
-  const handleOpenAddFinishing = () => {
-    setEditingFinishing(null)
-    setFinForm({
-      name: '',
-      name_bn: '',
-      pricing_method: 'sqft',
-      selling_price: 5,
-      cost: 2,
-      is_active: true,
+ const handleOpenAddFinishing = () => {
+ setEditingFinishing(null)
+ setFinForm({
+ name: '',
+ name_bn: '',
+ pricing_method: 'sqft',
+ selling_price: 5,
+ cost: 2,
+ is_active: true,
     })
-    setIsFinishingModalOpen(true)
+ setIsFinishingModalOpen(true)
   }
 
-  const handleOpenEditFinishing = (fin: FinishingOptionRecord) => {
-    setEditingFinishing(fin)
-    setFinForm({
-      name: fin.name,
-      name_bn: fin.name_bn || '',
-      pricing_method: fin.pricing_method || 'sqft',
-      selling_price: Number(fin.selling_price) || 0,
-      cost: Number(fin.cost) || 0,
-      is_active: fin.is_active ?? true,
+ const handleOpenEditFinishing = (fin: FinishingOptionRecord) => {
+ setEditingFinishing(fin)
+ setFinForm({
+ name: fin.name,
+ name_bn: fin.name_bn || '',
+ pricing_method: fin.pricing_method || 'sqft',
+ selling_price: Number(fin.selling_price) || 0,
+ cost: Number(fin.cost) || 0,
+ is_active: fin.is_active ?? true,
     })
-    setIsFinishingModalOpen(true)
+ setIsFinishingModalOpen(true)
   }
 
-  const handleSaveFinishingSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    await onSaveFinishing({
-      id: editingFinishing?.id,
-      name: finForm.name,
-      name_bn: finForm.name_bn || null,
-      pricing_method: finForm.pricing_method,
-      selling_price: Number(finForm.selling_price),
-      cost: Number(finForm.cost),
-      is_active: finForm.is_active,
+ const handleSaveFinishingSubmit = async (e: React.FormEvent) => {
+ e.preventDefault()
+ await onSaveFinishing({
+ id: editingFinishing?.id,
+ name: finForm.name,
+ name_bn: finForm.name_bn || null,
+ pricing_method: finForm.pricing_method,
+ selling_price: Number(finForm.selling_price),
+ cost: Number(finForm.cost),
+ is_active: finForm.is_active,
     })
-    setIsFinishingModalOpen(false)
+ setIsFinishingModalOpen(false)
   }
 
-  const handleOpenAddMethod = () => {
-    setEditingMethod(null)
-    setMethodForm({
-      name: '',
-      code: '',
-      cost_per_sqft: 5,
-      is_active: true,
+ const handleOpenAddMethod = () => {
+ setEditingMethod(null)
+ setMethodForm({
+ name: '',
+ code: '',
+ cost_per_sqft: 5,
+ is_active: true,
     })
-    setIsMethodModalOpen(true)
+ setIsMethodModalOpen(true)
   }
 
-  const handleOpenEditMethod = (m: PrintingMethod) => {
-    setEditingMethod(m)
-    setMethodForm({
-      name: m.name,
-      code: m.code || '',
-      cost_per_sqft: Number(m.cost_per_sqft) || 0,
-      is_active: m.is_active ?? true,
+ const handleOpenEditMethod = (m: PrintingMethod) => {
+ setEditingMethod(m)
+ setMethodForm({
+ name: m.name,
+ code: m.code || '',
+ cost_per_sqft: Number(m.cost_per_sqft) || 0,
+ is_active: m.is_active ?? true,
     })
-    setIsMethodModalOpen(true)
+ setIsMethodModalOpen(true)
   }
 
-  const handleSaveMethodSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    const name = methodForm.name || ''
-    await onSavePrintingMethod({
-      id: editingMethod?.id,
-      name,
-      code: methodForm.code || name.toLowerCase().replace(/\s+/g, '_'),
-      cost_per_sqft: Number(methodForm.cost_per_sqft || 0),
-      is_active: methodForm.is_active,
+ const handleSaveMethodSubmit = async (e: React.FormEvent) => {
+ e.preventDefault()
+ const name = methodForm.name || ''
+ await onSavePrintingMethod({
+ id: editingMethod?.id,
+ name,
+ code: methodForm.code || name.toLowerCase().replace(/\s+/g, '_'),
+ cost_per_sqft: Number(methodForm.cost_per_sqft || 0),
+ is_active: methodForm.is_active,
     })
-    setIsMethodModalOpen(false)
+ setIsMethodModalOpen(false)
   }
 
-  return (
+ return (
     <div className="space-y-6">
       {/* 1. FINISHING OPTIONS TARIFFS */}
       <Card className="rounded-xl shadow-xs border-border overflow-hidden">
-        <CardHeader className="py-3 px-4 bg-muted/50 border-b border-border dark:border-border">
+        <CardHeader className="py-3 px-4 bg-muted/50 border-b border-border">
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="text-sm font-bold flex items-center gap-2">
-                <Scissors className="h-4 w-4 text-teal-600" />
+                <Scissors className="h-4 w-4 text-teal-600"/>
                 <span>{tBilingual('Finishing & Fabrication Option Tariffs', 'ফিনিশিং ও পোস্ট-প্রেস ট্যারিফ')}</span>
               </CardTitle>
               <CardDescription className="text-xs">
@@ -219,11 +219,9 @@ export function PricingFinishingTariffs({
             </div>
 
             <Button
-              size="sm"
-              onClick={handleOpenAddFinishing}
-              className="bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs h-8 shadow-xs"
-            >
-              <Plus className="h-3.5 w-3.5 mr-1" />
+ size="sm"onClick={handleOpenAddFinishing}
+ className="bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs h-8 shadow-xs">
+              <Plus className="h-3.5 w-3.5 mr-1"/>
               {tBilingual('Add Finishing Option', 'নতুন ফিনিশিং')}
             </Button>
           </div>
@@ -231,7 +229,7 @@ export function PricingFinishingTariffs({
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50/90 font-bold text-muted-foreground border-b border-border dark:border-border">
+              <thead className="bg-muted/90 font-bold text-muted-foreground border-b border-border">
                 <tr>
                   <th className="py-3 px-4">{tBilingual('Finishing Option', 'ফিনিশিং বিবরণ')}</th>
                   <th className="py-3 px-4">{tBilingual('Billing Unit / Method', 'বিলিং মেথড')}</th>
@@ -243,21 +241,21 @@ export function PricingFinishingTariffs({
               </thead>
               <tbody className="divide-y divide-border dark:divide-border">
                 {finishingOptions.map((fin) => {
-                  const sell = Number(fin.selling_price) || 0
-                  const cost = Number(fin.cost) || 0
-                  const marginPct = sell > 0 ? Math.round(((sell - cost) / sell) * 100) : 0
+ const sell = Number(fin.selling_price) || 0
+ const cost = Number(fin.cost) || 0
+ const marginPct = sell > 0 ? Math.round(((sell - cost) / sell) * 100) : 0
 
-                  return (
+ return (
                     <tr key={fin.id} className="hover:bg-muted/60 dark:hover:bg-muted/60 transition-colors">
                       <td className="py-3 px-4">
-                        <div className="font-bold text-foreground dark:text-white">{fin.name}</div>
+                        <div className="font-bold text-foreground">{fin.name}</div>
                         {fin.name_bn && (
                           <div className="text-2xs text-teal-700 dark:text-teal-400 font-medium bangla-text">
                             {fin.name_bn}
                           </div>
                         )}
                       </td>
-                      <td className="py-3 px-4 uppercase tabular-nums font-semibold text-muted-foreground dark:text-muted-foreground">
+                      <td className="py-3 px-4 uppercase tabular-nums font-semibold text-muted-foreground">
                         {fin.pricing_method || 'sqft'}
                       </td>
                       <td className="py-3 px-4 tabular-nums font-black text-teal-700 dark:text-teal-400 text-sm">
@@ -268,9 +266,8 @@ export function PricingFinishingTariffs({
                       </td>
                       <td className="py-3 px-4">
                         <Badge
-                          variant="outline"
-                          className={`text-2xs tabular-nums font-bold ${
-                            marginPct >= 40
+ variant="outline"className={`text-2xs tabular-nums font-bold ${
+ marginPct >= 40
                               ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
                               : 'bg-amber-50 text-amber-800 border-amber-200'
                           }`}
@@ -281,25 +278,17 @@ export function PricingFinishingTariffs({
                       <td className="py-3 px-4 text-right">
                         <div className="flex items-center justify-end gap-1">
                           <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleOpenEditFinishing(fin)}
-                            className="h-7 px-2 text-xs"
-                            title="Edit Finishing Option"
-                          >
-                            <Edit2 className="h-3 w-3" />
+ size="sm"variant="outline"onClick={() => handleOpenEditFinishing(fin)}
+ className="h-7 px-2 text-xs"title="Edit Finishing Option">
+                            <Edit2 className="h-3 w-3"/>
                           </Button>
                           <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => {
-                              setFinishingToDelete(fin)
-                              setIsDeleteFinishingOpen(true)
+ size="sm"variant="outline"onClick={() => {
+ setFinishingToDelete(fin)
+ setIsDeleteFinishingOpen(true)
                             }}
-                            className="h-7 px-2 text-xs text-rose-600 hover:text-rose-700"
-                            title="Delete"
-                          >
-                            <Trash2 className="h-3 w-3" />
+ className="h-7 px-2 text-xs text-rose-600 hover:text-rose-700"title="Delete">
+                            <Trash2 className="h-3 w-3"/>
                           </Button>
                         </div>
                       </td>
@@ -314,11 +303,11 @@ export function PricingFinishingTariffs({
 
       {/* 2. MACHINE PRINTING METHOD SURCHARGES */}
       <Card className="rounded-xl shadow-xs border-border overflow-hidden">
-        <CardHeader className="py-3 px-4 bg-muted/50 border-b border-border dark:border-border">
+        <CardHeader className="py-3 px-4 bg-muted/50 border-b border-border">
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="text-sm font-bold flex items-center gap-2">
-                <Printer className="h-4 w-4 text-blue-600" />
+                <Printer className="h-4 w-4 text-blue-600"/>
                 <span>{tBilingual('Printing Methods & Resolution Surcharges', 'মেশিন মেথড ও রেজোলিউশন সারচার্জ')}</span>
               </CardTitle>
               <CardDescription className="text-xs">
@@ -330,11 +319,9 @@ export function PricingFinishingTariffs({
             </div>
 
             <Button
-              size="sm"
-              onClick={handleOpenAddMethod}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs h-8 shadow-xs"
-            >
-              <Plus className="h-3.5 w-3.5 mr-1" />
+ size="sm"onClick={handleOpenAddMethod}
+ className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs h-8 shadow-xs">
+              <Plus className="h-3.5 w-3.5 mr-1"/>
               {tBilingual('Add Printing Method', 'নতুন মেথড')}
             </Button>
           </div>
@@ -342,7 +329,7 @@ export function PricingFinishingTariffs({
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50/90 font-bold text-muted-foreground border-b border-border dark:border-border">
+              <thead className="bg-muted/90 font-bold text-muted-foreground border-b border-border">
                 <tr>
                   <th className="py-3 px-4">{tBilingual('Method Name', 'মেথডের নাম')}</th>
                   <th className="py-3 px-4">{tBilingual('Identifier Code', 'কোড')}</th>
@@ -354,7 +341,7 @@ export function PricingFinishingTariffs({
               <tbody className="divide-y divide-border dark:divide-border">
                 {printingMethods.map((m) => (
                   <tr key={m.id} className="hover:bg-muted/60 dark:hover:bg-muted/60 transition-colors">
-                    <td className="py-3 px-4 font-bold text-foreground dark:text-white">{m.name}</td>
+                    <td className="py-3 px-4 font-bold text-foreground">{m.name}</td>
                     <td className="py-3 px-4 tabular-nums text-muted-foreground">{m.code || '—'}</td>
                     <td className="py-3 px-4 uppercase tabular-nums font-semibold">sft</td>
                     <td className="py-3 px-4 tabular-nums font-black text-blue-700 dark:text-blue-400 text-sm">
@@ -363,25 +350,17 @@ export function PricingFinishingTariffs({
                     <td className="py-3 px-4 text-right">
                       <div className="flex items-center justify-end gap-1">
                         <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleOpenEditMethod(m)}
-                          className="h-7 px-2 text-xs"
-                          title="Edit Printing Method"
-                        >
-                          <Edit2 className="h-3 w-3" />
+ size="sm"variant="outline"onClick={() => handleOpenEditMethod(m)}
+ className="h-7 px-2 text-xs"title="Edit Printing Method">
+                          <Edit2 className="h-3 w-3"/>
                         </Button>
                         <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => {
-                            setMethodToDelete(m)
-                            setIsDeleteMethodOpen(true)
+ size="sm"variant="outline"onClick={() => {
+ setMethodToDelete(m)
+ setIsDeleteMethodOpen(true)
                           }}
-                          className="h-7 px-2 text-xs text-rose-600 hover:text-rose-700"
-                          title="Delete"
-                        >
-                          <Trash2 className="h-3 w-3" />
+ className="h-7 px-2 text-xs text-rose-600 hover:text-rose-700"title="Delete">
+                          <Trash2 className="h-3 w-3"/>
                         </Button>
                       </div>
                     </td>
@@ -395,10 +374,10 @@ export function PricingFinishingTariffs({
 
       {/* MODAL: ADD / EDIT FINISHING OPTION */}
       <ModalDialog
-        open={isFinishingModalOpen}
-        onOpenChange={setIsFinishingModalOpen}
-        title={
-          editingFinishing
+ open={isFinishingModalOpen}
+ onOpenChange={setIsFinishingModalOpen}
+ title={
+ editingFinishing
             ? tBilingual('Edit Finishing Tariff', 'ফিনিশিং ট্যারিফ সম্পাদনা')
             : tBilingual('Add New Finishing Tariff', 'নতুন ফিনিশিং ট্যারিফ যুক্ত করুন')
         }
@@ -410,11 +389,9 @@ export function PricingFinishingTariffs({
                 {tBilingual('Finishing Name (English)', 'ফিনিশিং নাম (ইংরেজি)')} <span className="text-rose-500">*</span>
               </Label>
               <Input
-                placeholder="e.g. Gloss Lamination (100 micron)"
-                value={finForm.name}
-                onChange={(e) => setFinForm({ ...finForm, name: e.target.value })}
-                className="text-xs h-9"
-                required
+ placeholder="e.g. Gloss Lamination (100 micron)"value={finForm.name}
+ onChange={(e) => setFinForm({ ...finForm, name: e.target.value })}
+ className="text-xs h-9"required
               />
             </div>
 
@@ -423,11 +400,9 @@ export function PricingFinishingTariffs({
                 {tBilingual('Bengali Name', 'বাংলা নাম')}
               </Label>
               <Input
-                placeholder="যেমন: গ্লস লেমিনেশন"
-                value={finForm.name_bn}
-                onChange={(e) => setFinForm({ ...finForm, name_bn: e.target.value })}
-                className="text-xs h-9 bangla-text"
-              />
+ placeholder="যেমন: গ্লস লেমিনেশন"value={finForm.name_bn}
+ onChange={(e) => setFinForm({ ...finForm, name_bn: e.target.value })}
+ className="text-xs h-9 bangla-text"/>
             </div>
           </div>
 
@@ -437,10 +412,9 @@ export function PricingFinishingTariffs({
                 {tBilingual('Pricing Method / Unit', 'মূল্য নির্ধারণ পদ্ধতি')}
               </Label>
               <select
-                value={finForm.pricing_method}
-                onChange={(e) => setFinForm({ ...finForm, pricing_method: e.target.value })}
-                className="w-full h-9 rounded-lg border border-input bg-card px-3 text-xs tabular-nums"
-              >
+ value={finForm.pricing_method}
+ onChange={(e) => setFinForm({ ...finForm, pricing_method: e.target.value })}
+ className="w-full h-9 rounded-lg border border-input bg-card px-3 text-xs tabular-nums">
                 <option value="sqft">sqft (per sqft)</option>
                 <option value="per_piece">per_piece (per piece / eyelet)</option>
                 <option value="per_linear_ft">per_linear_ft (perimeter rft)</option>
@@ -454,12 +428,9 @@ export function PricingFinishingTariffs({
                 {tBilingual('Client Price', 'বিক্রয় দর')} <span className="text-rose-500">*</span>
               </Label>
               <Input
-                type="number"
-                step="0.01"
-                value={finForm.selling_price}
-                onChange={(e) => setFinForm({ ...finForm, selling_price: Number(e.target.value) })}
-                className="text-xs h-9 tabular-nums font-bold"
-                required
+ type="number"step="0.01"value={finForm.selling_price}
+ onChange={(e) => setFinForm({ ...finForm, selling_price: Number(e.target.value) })}
+ className="text-xs h-9 tabular-nums font-bold"required
               />
             </div>
 
@@ -468,20 +439,17 @@ export function PricingFinishingTariffs({
                 {tBilingual('Internal Cost', 'অভ্যন্তরীণ খরচ')}
               </Label>
               <Input
-                type="number"
-                step="0.01"
-                value={finForm.cost}
-                onChange={(e) => setFinForm({ ...finForm, cost: Number(e.target.value) })}
-                className="text-xs h-9 tabular-nums"
-              />
+ type="number"step="0.01"value={finForm.cost}
+ onChange={(e) => setFinForm({ ...finForm, cost: Number(e.target.value) })}
+ className="text-xs h-9 tabular-nums"/>
             </div>
           </div>
 
-          <div className="pt-2 flex justify-end gap-2 border-t border-border dark:border-border">
-            <Button type="button" variant="outline" onClick={() => setIsFinishingModalOpen(false)} className="text-xs h-9">
+          <div className="pt-2 flex justify-end gap-2 border-t border-border">
+            <Button type="button"variant="outline"onClick={() => setIsFinishingModalOpen(false)} className="text-xs h-9">
               {tBilingual('Cancel', 'বাতিল')}
             </Button>
-            <Button type="submit" className="bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs h-9 px-5">
+            <Button type="submit"className="bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs h-9 px-5">
               {tBilingual('Save Tariff', 'সংরক্ষণ করুন')}
             </Button>
           </div>
@@ -490,10 +458,10 @@ export function PricingFinishingTariffs({
 
       {/* MODAL: ADD / EDIT PRINTING METHOD */}
       <ModalDialog
-        open={isMethodModalOpen}
-        onOpenChange={setIsMethodModalOpen}
-        title={
-          editingMethod
+ open={isMethodModalOpen}
+ onOpenChange={setIsMethodModalOpen}
+ title={
+ editingMethod
             ? tBilingual('Edit Printing Method Tariff', 'প্রিন্টিং মেথড সম্পাদনা')
             : tBilingual('Add Printing Method Tariff', 'নতুন প্রিন্টিং মেথড যুক্ত করুন')
         }
@@ -505,11 +473,9 @@ export function PricingFinishingTariffs({
                 {tBilingual('Method Name', 'মেথডের নাম')} <span className="text-rose-500">*</span>
               </Label>
               <Input
-                placeholder="e.g. UV 8-Pass Ultra Vivid"
-                value={methodForm.name}
-                onChange={(e) => setMethodForm({ ...methodForm, name: e.target.value })}
-                className="text-xs h-9"
-                required
+ placeholder="e.g. UV 8-Pass Ultra Vivid"value={methodForm.name}
+ onChange={(e) => setMethodForm({ ...methodForm, name: e.target.value })}
+ className="text-xs h-9"required
               />
             </div>
 
@@ -518,11 +484,9 @@ export function PricingFinishingTariffs({
                 {tBilingual('Code Identifier', 'কোড')}
               </Label>
               <Input
-                placeholder="e.g. uv_8pass"
-                value={methodForm.code || ''}
-                onChange={(e) => setMethodForm({ ...methodForm, code: e.target.value })}
-                className="text-xs h-9 tabular-nums"
-              />
+ placeholder="e.g. uv_8pass"value={methodForm.code || ''}
+ onChange={(e) => setMethodForm({ ...methodForm, code: e.target.value })}
+ className="text-xs h-9 tabular-nums"/>
             </div>
           </div>
 
@@ -532,21 +496,18 @@ export function PricingFinishingTariffs({
                 {tBilingual('Print Surcharge per SFT', 'প্রতি স্কয়ার ফিট সারচার্জ দর')} <span className="text-rose-500">*</span>
               </Label>
               <Input
-                type="number"
-                step="0.01"
-                value={methodForm.cost_per_sqft}
-                onChange={(e) => setMethodForm({ ...methodForm, cost_per_sqft: Number(e.target.value) })}
-                className="text-xs h-9 tabular-nums font-bold"
-                required
+ type="number"step="0.01"value={methodForm.cost_per_sqft}
+ onChange={(e) => setMethodForm({ ...methodForm, cost_per_sqft: Number(e.target.value) })}
+ className="text-xs h-9 tabular-nums font-bold"required
               />
             </div>
           </div>
 
-          <div className="pt-2 flex justify-end gap-2 border-t border-border dark:border-border">
-            <Button type="button" variant="outline" onClick={() => setIsMethodModalOpen(false)} className="text-xs h-9">
+          <div className="pt-2 flex justify-end gap-2 border-t border-border">
+            <Button type="button"variant="outline"onClick={() => setIsMethodModalOpen(false)} className="text-xs h-9">
               {tBilingual('Cancel', 'বাতিল')}
             </Button>
-            <Button type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs h-9 px-5">
+            <Button type="submit"className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs h-9 px-5">
               {tBilingual('Save Method', 'সংরক্ষণ করুন')}
             </Button>
           </div>
@@ -555,36 +516,24 @@ export function PricingFinishingTariffs({
 
       {/* Delete Finishing Tariff Confirm Dialog */}
       <ConfirmDialog
-        open={isDeleteFinishingOpen}
-        onOpenChange={setIsDeleteFinishingOpen}
-        title={`Delete Finishing Option "${finishingToDelete?.name || ''}"?`}
-        titleBn={`ফিনিশিং অপশন "${finishingToDelete?.name || ''}" মুছে ফেলবেন?`}
-        message="Are you sure you want to remove this finishing option from price calculation tariffs?"
-        messageBn="আপনি কি মূল্য নির্ধারণ থেকে এই ফিনিশিং অপশনটি মুছে ফেলতে চান?"
-        confirmText="Delete Option"
-        confirmTextBn="অপশন মুছুন"
-        cancelText="Cancel"
-        cancelTextBn="বাতিল"
-        isDestructive={true}
-        isLoading={isDeletingFinishing}
-        onConfirm={confirmDeleteFinishing}
+ open={isDeleteFinishingOpen}
+ onOpenChange={setIsDeleteFinishingOpen}
+ title={`Delete Finishing Option"${finishingToDelete?.name || ''}"?`}
+ titleBn={`ফিনিশিং অপশন"${finishingToDelete?.name || ''}"মুছে ফেলবেন?`}
+ message="Are you sure you want to remove this finishing option from price calculation tariffs?"messageBn="আপনি কি মূল্য নির্ধারণ থেকে এই ফিনিশিং অপশনটি মুছে ফেলতে চান?"confirmText="Delete Option"confirmTextBn="অপশন মুছুন"cancelText="Cancel"cancelTextBn="বাতিল"isDestructive={true}
+ isLoading={isDeletingFinishing}
+ onConfirm={confirmDeleteFinishing}
       />
 
       {/* Delete Printing Method Confirm Dialog */}
       <ConfirmDialog
-        open={isDeleteMethodOpen}
-        onOpenChange={setIsDeleteMethodOpen}
-        title={`Delete Printing Method "${methodToDelete?.name || ''}"?`}
-        titleBn={`প্রিন্টিং মেথড "${methodToDelete?.name || ''}" মুছে ফেলবেন?`}
-        message="Are you sure you want to remove this printing surcharge tariff?"
-        messageBn="আপনি কি এই প্রিন্টিং সারচার্জ মেথডটি মুছে ফেলতে চান?"
-        confirmText="Delete Method"
-        confirmTextBn="মেথড মুছুন"
-        cancelText="Cancel"
-        cancelTextBn="বাতিল"
-        isDestructive={true}
-        isLoading={isDeletingMethod}
-        onConfirm={confirmDeleteMethod}
+ open={isDeleteMethodOpen}
+ onOpenChange={setIsDeleteMethodOpen}
+ title={`Delete Printing Method"${methodToDelete?.name || ''}"?`}
+ titleBn={`প্রিন্টিং মেথড"${methodToDelete?.name || ''}"মুছে ফেলবেন?`}
+ message="Are you sure you want to remove this printing surcharge tariff?"messageBn="আপনি কি এই প্রিন্টিং সারচার্জ মেথডটি মুছে ফেলতে চান?"confirmText="Delete Method"confirmTextBn="মেথড মুছুন"cancelText="Cancel"cancelTextBn="বাতিল"isDestructive={true}
+ isLoading={isDeletingMethod}
+ onConfirm={confirmDeleteMethod}
       />
     </div>
   )

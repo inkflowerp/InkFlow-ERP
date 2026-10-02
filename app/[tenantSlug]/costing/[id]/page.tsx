@@ -5,27 +5,27 @@ import Link from 'next/link'
 import { useParams, useRouter, usePathname } from 'next/navigation'
 import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import {
-  Calculator,
-  ArrowLeft,
-  Printer,
-  CheckCircle2,
-  AlertTriangle,
-  Clock,
-  TrendingUp,
-  TrendingDown,
-  DollarSign,
-  ShieldCheck,
-  ShieldAlert,
-  Percent,
-  Layers,
-  Sparkles,
-  Eye,
-  EyeOff,
-  Wrench,
-  Truck,
-  Users,
-  Building,
-  FileText,
+ Calculator,
+ ArrowLeft,
+ Printer,
+ CheckCircle2,
+ AlertTriangle,
+ Clock,
+ TrendingUp,
+ TrendingDown,
+ DollarSign,
+ ShieldCheck,
+ ShieldAlert,
+ Percent,
+ Layers,
+ Sparkles,
+ Eye,
+ EyeOff,
+ Wrench,
+ Truck,
+ Users,
+ Building,
+ FileText,
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
@@ -39,52 +39,51 @@ import { useDataStore } from '@/hooks/use-data-store'
 import { STORAGE_KEYS } from '@/lib/db/data-store'
 
 export default function JobCostingDetailPage() {
-  const params = useParams()
-  const router = useRouter()
-  const pathname = usePathname()
-  const cstId = (params?.id as string) || ''
-  const { company } = useTenant()
-  const { locale, tBilingual } = useI18n()
-  const slug = (params?.tenantSlug as string) || company?.slug || 'my-company'
+ const params = useParams()
+ const router = useRouter()
+ const pathname = usePathname()
+ const cstId = (params?.id as string) || ''
+ const { company } = useTenant()
+ const { locale, tBilingual } = useI18n()
+ const slug = (params?.tenantSlug as string) || company?.slug || 'my-company'
 
-  const [mounted, setMounted] = useState(false)
-  useEffect(() => {
-    setMounted(true)
+ const [mounted, setMounted] = useState(false)
+ useEffect(() => {
+ setMounted(true)
   }, [])
 
-  const [isSalesRoleShielded, setIsSalesRoleShielded] = useState<boolean>(false)
-  const [costings] = useDataStore<JobCostingRecord[]>(STORAGE_KEYS.JOB_COSTINGS, [])
-  const costing = costings.find((c: JobCostingRecord) => c.id === cstId || c.job_number === cstId)
+ const [isSalesRoleShielded, setIsSalesRoleShielded] = useState<boolean>(false)
+ const [costings] = useDataStore<JobCostingRecord[]>(STORAGE_KEYS.JOB_COSTINGS, [])
+ const costing = costings.find((c: JobCostingRecord) => c.id === cstId || c.job_number === cstId)
 
-  if (!mounted) {
-    return (
+ if (!mounted) {
+ return (
       <div className="space-y-6 max-w-5xl pb-20 animate-pulse">
-        <div className="h-8 bg-muted rounded-xl w-40" />
-        <div className="h-96 bg-muted rounded-2xl" />
+        <div className="h-8 bg-muted rounded-xl w-40"/>
+        <div className="h-96 bg-muted rounded-xl"/>
       </div>
     )
   }
 
-  if (!costing) {
-    return (
+ if (!costing) {
+ return (
       <FeatureGate feature="job_costing">
         <div className="space-y-6 max-w-5xl pb-20">
           <Link
-            href={getTenantNavHref('/costing', pathname, slug)}
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground dark:hover:text-white"
-          >
-            <ArrowLeft className="h-3.5 w-3.5" />
-            <span>{tBilingual('Back to Costing Ledger', 'কস্টিং তালিকায় ফিরুন')}</span>
+ href={getTenantNavHref('/costing', pathname, slug)}
+ className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground dark:hover:text-foreground">
+            <ArrowLeft className="h-3.5 w-3.5"/>
+            <span>{tBilingual('Back to Costing', 'কস্টিং তালিকায় ফিরুন')}</span>
           </Link>
-          <Card className="p-12 text-center border-dashed rounded-2xl">
-            <Calculator className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-            <h2 className="text-base font-bold text-foreground dark:text-foreground">
+          <Card className="p-12 text-center border-dashed rounded-xl">
+            <Calculator className="h-10 w-10 text-muted-foreground mx-auto mb-3"/>
+            <h2 className="text-base font-bold text-foreground">
               {tBilingual('Job Costing Sheet Not Found', 'জব কস্টিং শিট পাওয়া যায়নি')}
             </h2>
             <p className="text-xs text-muted-foreground mt-1 max-w-md mx-auto">
-              The job costing calculation sheet you are looking for does not exist in your organization.
+ The job costing calculation sheet you are looking for does not exist in your organization.
             </p>
-            <Button asChild className="mt-4 rounded-xl" size="sm">
+            <Button asChild className="mt-4 rounded-xl"size="sm">
               <Link href={getTenantNavHref('/costing', pathname, slug)}>
                 {tBilingual('View All Costings', 'সব কস্টিং দেখুন')}
               </Link>
@@ -95,7 +94,7 @@ export default function JobCostingDetailPage() {
     )
   }
 
-  const costHeadsList = [
+ const costHeadsList = [
     { labelEn: '1. Raw Material Substrate', labelBn: 'কাঁচামাল / মিডিয়া / বোর্ড', est: costing.est.material_cost, act: costing.act.material_cost },
     { labelEn: '2. Ink & Chemical Consumables', labelBn: 'কালি / ইঙ্ক / কেমিক্যাল', est: costing.est.ink_cost, act: costing.act.ink_cost },
     { labelEn: '3. Machine Printing Running & Power', labelBn: 'মেশিন রানিং ও ডেসকো বিদ্যুৎ', est: costing.est.machine_cost, act: costing.act.machine_cost },
@@ -107,66 +106,61 @@ export default function JobCostingDetailPage() {
     { labelEn: '9. Packaging & Contingency Buffer', labelBn: 'প্যাকেজিং ও অন্যান্য বাফার', est: costing.est.other_cost, act: costing.act.other_cost },
   ]
 
-  const totalEffectiveCost = costing.status === 'actualized' ? costing.act.total_cost : costing.est.total_cost
+ const totalEffectiveCost = costing.status === 'actualized' ? costing.act.total_cost : costing.est.total_cost
 
-  return (
+ return (
     <FeatureGate feature="job_costing">
-      <div className="space-y-6 max-w-5xl pb-20 print:max-w-none print:w-full print:bg-white print:text-foreground print:dark:bg-card print:dark:text-foreground print:m-0 print:p-0">
+      <div className="space-y-6 max-w-5xl pb-20 print:max-w-none print:w-full print:bg-white print:text-foreground print: print: print:m-0 print:p-0">
         {/* Non-Print Action Bar */}
         <div className="print:hidden flex flex-wrap items-center justify-between gap-3">
           <Link
-            href={getTenantNavHref('/costing', pathname, slug)}
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground dark:hover:text-white"
-          >
-            <ArrowLeft className="h-3.5 w-3.5" />
-            <span>{tBilingual('Back to Costing Ledger', 'কস্টিং তালিকায় ফিরুন')}</span>
+ href={getTenantNavHref('/costing', pathname, slug)}
+ className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground dark:hover:text-foreground">
+            <ArrowLeft className="h-3.5 w-3.5"/>
+            <span>{tBilingual('Back to Costing', 'কস্টিং তালিকায় ফিরুন')}</span>
           </Link>
 
           <div className="flex flex-wrap items-center gap-2">
             <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setIsSalesRoleShielded(!isSalesRoleShielded)}
-              className={`text-xs h-9 rounded-xl font-semibold ${
-                isSalesRoleShielded
+ size="sm"variant="outline"onClick={() => setIsSalesRoleShielded(!isSalesRoleShielded)}
+ className={`text-xs h-9 rounded-xl font-semibold ${
+ isSalesRoleShielded
                   ? 'bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950/40 dark:text-amber-300'
-                  : 'text-foreground dark:text-muted-foreground'
+                  : 'text-foreground '
               }`}
             >
               {isSalesRoleShielded ? (
                 <>
-                  <EyeOff className="mr-1.5 h-3.5 w-3.5 text-amber-600" />
+                  <EyeOff className="mr-1.5 h-3.5 w-3.5 text-amber-600"/>
                   <span>{tBilingual('Sales View (Masked)', 'সেলস ভিউ')}</span>
                 </>
               ) : (
                 <>
-                  <ShieldCheck className="mr-1.5 h-3.5 w-3.5 text-emerald-600" />
+                  <ShieldCheck className="mr-1.5 h-3.5 w-3.5 text-emerald-600"/>
                   <span>{tBilingual('Owner View (Full)', 'মালিক ভিউ')}</span>
                 </>
               )}
             </Button>
 
             <Button
-              size="sm"
-              onClick={() => window.print()}
-              className="bg-slate-900 hover:bg-slate-800 text-xs text-white h-9 px-4 rounded-xl shadow-xs font-semibold flex items-center gap-1.5"
-            >
-              <Printer className="h-3.5 w-3.5" />
+ size="sm"onClick={() => window.print()}
+ className="bg-surface-inset hover:bg-card-elevated text-xs text-white h-9 px-4 rounded-xl shadow-xs font-semibold flex items-center gap-1.5">
+              <Printer className="h-3.5 w-3.5"/>
               <span>{tBilingual('Print Cost Traveler', 'প্রিন্ট কস্ট ট্রাভেলার')}</span>
             </Button>
           </div>
         </div>
 
         {/* =========================================================================
-            PRINTABLE JOB COST TRAVELER & PROFIT AUDIT
+ PRINTABLE JOB COST TRAVELER & PROFIT AUDIT
            ========================================================================= */}
-        <div className="bg-card print:bg-white print:dark:bg-card text-foreground dark:text-white print:text-foreground print:dark:text-foreground p-6 sm:p-10 rounded-2xl border border-border shadow-xs print:border-none print:shadow-none print:p-0 text-xs space-y-6">
+        <div className="bg-card print:bg-white print: text-foreground print:text-foreground print: p-6 sm:p-10 rounded-xl border border-border shadow-xs print:border-none print:shadow-none print:p-0 text-xs space-y-6">
           {/* Letterhead */}
-          <div className="text-center space-y-1 pb-4 border-b-2 border-slate-900 print:border-slate-900">
+          <div className="text-center space-y-1 pb-4 border-b-2 border-border print:border-border">
             <h1 className="text-xl sm:text-2xl font-black tracking-tight">{company?.name || 'Industrial Printing & Signage Solutions'}</h1>
             <p className="text-muted-foreground text-2xs">Commercial Printing • Large-Format Signage • 4-Color Offset{company?.address ? ` • ${company.address}` : ''}</p>
-            <div className="inline-block mt-2 px-5 py-1 rounded-full bg-muted font-black text-xs sm:text-sm tracking-wider uppercase border border-input dark:border-border">
-              JOB COST TRAVELER & MARGIN AUDIT (কস্টিং ও লাভ নিরীক্ষা)
+            <div className="inline-block mt-2 px-5 py-1 rounded-full bg-muted font-black text-xs sm:text-sm tracking-wider uppercase border border-input">
+ JOB COST TRAVELER & MARGIN AUDIT (কস্টিং ও লাভ নিরীক্ষা)
             </div>
           </div>
 
@@ -174,7 +168,7 @@ export default function JobCostingDetailPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-xl bg-muted border border-border text-xs">
             <div className="space-y-1">
               <span className="text-2xs uppercase font-bold text-muted-foreground">Job Particulars:</span>
-              <div className="font-black text-base text-foreground dark:text-white tabular-nums">{costing.job_number}</div>
+              <div className="font-black text-base text-foreground tabular-nums">{costing.job_number}</div>
               <div className="font-bold text-blue-600 dark:text-blue-400">{costing.customer_name}</div>
               <div className="text-foreground font-semibold">{costing.item_title}</div>
               <div className="text-muted-foreground tabular-nums text-2xs">Specs: {costing.dimensions_spec || 'Custom dimensions'}</div>
@@ -182,14 +176,14 @@ export default function JobCostingDetailPage() {
 
             <div className="space-y-1 text-left sm:text-right tabular-nums">
               <div>
-                Selling Price (Revenue):{' '}
-                <strong className="text-base font-black text-foreground dark:text-white">
+ Selling Price (Revenue):{' '}
+                <strong className="text-base font-black text-foreground">
                   {formatBDT(costing.selling_price)}
                 </strong>
               </div>
               <div>Labor Mode: <strong className="uppercase">{costing.labor_cost_mode.replace('_', ' ')}</strong></div>
               <div>
-                Status:{' '}
+ Status:{' '}
                 <strong className={`uppercase ${costing.status === 'actualized' ? 'text-emerald-600' : 'text-blue-600'}`}>
                   {costing.status}
                 </strong>
@@ -201,7 +195,7 @@ export default function JobCostingDetailPage() {
           {/* 9-HEAD COMPARISON TABLE: ESTIMATED VS ACTUAL VS VARIANCE */}
           <div className="border border-input rounded-xl overflow-hidden">
             <table className="w-full text-left text-xs tabular-nums">
-              <thead className="bg-muted font-bold border-b border-input dark:border-border">
+              <thead className="bg-muted font-bold border-b border-input">
                 <tr>
                   <th className="p-3">Cost Head (খরচ খাত)</th>
                   <th className="p-3 text-right">Pre-Production Est.</th>
@@ -212,9 +206,9 @@ export default function JobCostingDetailPage() {
               </thead>
               <tbody className="divide-y divide-border dark:divide-border">
                 {costHeadsList.map((h, idx) => {
-                  const variance = h.act > 0 ? h.act - h.est : 0
+ const variance = h.act > 0 ? h.act - h.est : 0
 
-                  return (
+ return (
                     <tr key={idx} className="hover:bg-muted">
                       <td className="p-3 font-semibold text-foreground font-sans">
                         <div>{h.labelEn}</div>
@@ -222,16 +216,16 @@ export default function JobCostingDetailPage() {
                       </td>
 
                       {/* Pre-Production Estimate */}
-                      <td className="p-3 text-right text-muted-foreground dark:text-muted-foreground">
+                      <td className="p-3 text-right text-muted-foreground">
                         {isSalesRoleShielded ? '••••' : formatBDT(h.est)}
                       </td>
 
                       {/* Post-Production Actual */}
-                      <td className="p-3 text-right font-bold text-foreground dark:text-white">
+                      <td className="p-3 text-right font-bold text-foreground">
                         {isSalesRoleShielded ? (
                           '••••'
                         ) : costing.status === 'actualized' ? (
-                          formatBDT(h.act)
+ formatBDT(h.act)
                         ) : (
                           <span className="text-muted-foreground italic">In progress</span>
                         )}
@@ -242,7 +236,7 @@ export default function JobCostingDetailPage() {
                         {isSalesRoleShielded ? (
                           '••••'
                         ) : costing.status === 'actualized' ? (
-                          variance < 0 ? (
+ variance < 0 ? (
                             <span className="text-emerald-600 font-bold">-{formatBDT(Math.abs(variance))}</span>
                           ) : variance > 0 ? (
                             <span className="text-red-600 font-bold">+{formatBDT(variance)}</span>
@@ -260,8 +254,8 @@ export default function JobCostingDetailPage() {
                           <span className="text-muted-foreground text-2xs">Shielded</span>
                         ) : costing.status === 'actualized' ? (
                           <Badge
-                            className={
-                              variance < 0
+ className={
+ variance < 0
                                 ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200'
                                 : variance > 0
                                 ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
@@ -278,13 +272,13 @@ export default function JobCostingDetailPage() {
                   )
                 })}
               </tbody>
-              <tfoot className="bg-muted font-black text-xs border-t-2 border-input dark:border-border">
+              <tfoot className="bg-muted font-black text-xs border-t-2 border-input">
                 <tr>
                   <td className="p-3">TOTAL PRODUCTION COST</td>
                   <td className="p-3 text-right text-muted-foreground">
                     {isSalesRoleShielded ? '••••••' : formatBDT(costing.est.total_cost)}
                   </td>
-                  <td className="p-3 text-right text-foreground dark:text-white">
+                  <td className="p-3 text-right text-foreground">
                     {isSalesRoleShielded
                       ? '••••••'
                       : costing.status === 'actualized'
@@ -336,7 +330,7 @@ export default function JobCostingDetailPage() {
             {/* Actual Margins */}
             <div className="p-4 rounded-xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-300 dark:border-emerald-800 space-y-1 tabular-nums text-xs">
               <span className="text-2xs uppercase font-bold text-emerald-700 dark:text-emerald-300">
-                Realized Post-Production Margin:
+ Realized Post-Production Margin:
               </span>
               <div className="flex justify-between">
                 <span>Actual Realized Profit:</span>

@@ -2,18 +2,18 @@
 
 import React, { useState } from 'react'
 import {
-  Tag,
-  Search,
-  CheckCircle2,
-  AlertCircle,
-  HelpCircle,
-  Edit2,
-  Trash2,
-  Save,
-  RotateCcw,
-  Sparkles,
-  ShieldAlert,
-  SlidersHorizontal,
+ Tag,
+ Search,
+ CheckCircle2,
+ AlertCircle,
+ HelpCircle,
+ Edit2,
+ Trash2,
+ Save,
+ RotateCcw,
+ Sparkles,
+ ShieldAlert,
+ SlidersHorizontal,
 } from 'lucide-react'
 import { ResolvedProductRate } from '@/types/crm.types'
 import { formatBDT } from '@/lib/formatters'
@@ -27,140 +27,140 @@ import { dispatchToast } from '@/components/shared/toast-feedback'
 import { cn } from '@/lib/utils'
 
 interface CustomerRatesTableProps {
-  customerId: string
-  rates: ResolvedProductRate[]
-  canEdit?: boolean
-  companyId?: string
-  onRatesUpdated?: () => void
+ customerId: string
+ rates: ResolvedProductRate[]
+ canEdit?: boolean
+ companyId?: string
+ onRatesUpdated?: () => void
 }
 
 export function CustomerRatesTable({
-  customerId,
-  rates,
-  canEdit = true,
-  companyId,
-  onRatesUpdated,
+ customerId,
+ rates,
+ canEdit = true,
+ companyId,
+ onRatesUpdated,
 }: CustomerRatesTableProps) {
-  const [searchTerm, setSearchTerm] = useState('')
-  const [editingProductId, setEditingProductId] = useState<string | null>(null)
-  const [editRateValue, setEditRateValue] = useState<string>('')
-  const [editNotes, setEditNotes] = useState<string>('')
-  const [isSaving, setIsSaving] = useState(false)
-  const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
+ const [searchTerm, setSearchTerm] = useState('')
+ const [editingProductId, setEditingProductId] = useState<string | null>(null)
+ const [editRateValue, setEditRateValue] = useState<string>('')
+ const [editNotes, setEditNotes] = useState<string>('')
+ const [isSaving, setIsSaving] = useState(false)
+ const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
 
   // Reset rate confirm state
-  const [productToReset, setProductToReset] = useState<string | null>(null)
-  const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false)
-  const [isResetting, setIsResetting] = useState(false)
+ const [productToReset, setProductToReset] = useState<string | null>(null)
+ const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false)
+ const [isResetting, setIsResetting] = useState(false)
 
-  const showFeedback = (type: 'success' | 'error', message: string) => {
-    setFeedback({ type, message })
-    dispatchToast({
-      type,
-      title: type === 'error' ? 'Error' : 'Success',
-      titleBn: type === 'error' ? 'ত্রুটি' : 'সফল হয়েছে',
-      message,
+ const showFeedback = (type: 'success' | 'error', message: string) => {
+ setFeedback({ type, message })
+ dispatchToast({
+ type,
+ title: type === 'error' ? 'Error' : 'Success',
+ titleBn: type === 'error' ? 'ত্রুটি' : 'সফল হয়েছে',
+ message,
     })
-    setTimeout(() => setFeedback(null), 4000)
+ setTimeout(() => setFeedback(null), 4000)
   }
 
-  const filteredRates = rates.filter((r) => {
-    const q = searchTerm.toLowerCase()
-    return (
-      r.productName.toLowerCase().includes(q) ||
+ const filteredRates = rates.filter((r) => {
+ const q = searchTerm.toLowerCase()
+ return (
+ r.productName.toLowerCase().includes(q) ||
       (r.productNameBn && r.productNameBn.includes(searchTerm)) ||
-      r.sku.toLowerCase().includes(q) ||
-      r.category.toLowerCase().includes(q)
+ r.sku.toLowerCase().includes(q) ||
+ r.category.toLowerCase().includes(q)
     )
   })
 
-  const handleStartEdit = (rate: ResolvedProductRate) => {
-    setEditingProductId(rate.productId)
-    setEditRateValue(
-      rate.customerRate !== null ? String(rate.customerRate) : String(rate.effectiveRate)
+ const handleStartEdit = (rate: ResolvedProductRate) => {
+ setEditingProductId(rate.productId)
+ setEditRateValue(
+ rate.customerRate !== null ? String(rate.customerRate) : String(rate.effectiveRate)
     )
-    setEditNotes('')
+ setEditNotes('')
   }
 
-  const handleCancelEdit = () => {
-    setEditingProductId(null)
-    setEditRateValue('')
-    setEditNotes('')
+ const handleCancelEdit = () => {
+ setEditingProductId(null)
+ setEditRateValue('')
+ setEditNotes('')
   }
 
-  const handleSaveRate = async (productId: string) => {
-    const num = parseFloat(editRateValue)
-    if (isNaN(num) || num < 0) {
-      showFeedback('error', 'Please enter a valid rate amount (>= 0).')
-      return
+ const handleSaveRate = async (productId: string) => {
+ const num = parseFloat(editRateValue)
+ if (isNaN(num) || num < 0) {
+ showFeedback('error', 'Please enter a valid rate amount (>= 0).')
+ return
     }
 
-    setIsSaving(true)
-    try {
-      const res = await saveCustomerRateAction(customerId, productId, num, editNotes, companyId)
-      if (res.success) {
-        showFeedback('success', `Customer rate saved: ৳${num}`)
-        setEditingProductId(null)
-        onRatesUpdated?.()
+ setIsSaving(true)
+ try {
+ const res = await saveCustomerRateAction(customerId, productId, num, editNotes, companyId)
+ if (res.success) {
+ showFeedback('success', `Customer rate saved: ৳${num}`)
+ setEditingProductId(null)
+ onRatesUpdated?.()
       } else {
-        showFeedback('error', res.error || 'Failed to save customer rate.')
+ showFeedback('error', res.error || 'Failed to save customer rate.')
       }
     } catch {
-      showFeedback('error', 'Network error while saving rate.')
+ showFeedback('error', 'Network error while saving rate.')
     } finally {
-      setIsSaving(false)
+ setIsSaving(false)
     }
   }
 
-  const handleResetRate = (productId: string) => {
-    setProductToReset(productId)
-    setIsResetConfirmOpen(true)
+ const handleResetRate = (productId: string) => {
+ setProductToReset(productId)
+ setIsResetConfirmOpen(true)
   }
 
-  const confirmResetRate = async () => {
-    if (!productToReset) return
-    setIsResetting(true)
-    try {
-      const res = await deleteCustomerRateAction(customerId, productToReset, companyId)
-      if (res.success) {
-        showFeedback('success', 'Custom rate override removed.')
-        setEditingProductId(null)
-        setIsResetConfirmOpen(false)
-        setProductToReset(null)
-        onRatesUpdated?.()
+ const confirmResetRate = async () => {
+ if (!productToReset) return
+ setIsResetting(true)
+ try {
+ const res = await deleteCustomerRateAction(customerId, productToReset, companyId)
+ if (res.success) {
+ showFeedback('success', 'Custom rate override removed.')
+ setEditingProductId(null)
+ setIsResetConfirmOpen(false)
+ setProductToReset(null)
+ onRatesUpdated?.()
       } else {
-        showFeedback('error', res.error || 'Failed to remove rate override.')
+ showFeedback('error', res.error || 'Failed to remove rate override.')
       }
     } catch {
-      showFeedback('error', 'Network error while deleting rate.')
+ showFeedback('error', 'Network error while deleting rate.')
     } finally {
-      setIsResetting(false)
+ setIsResetting(false)
     }
   }
 
-  return (
+ return (
     <div className="space-y-4">
       {/* Immutability & Hierarchy Info Banner */}
       <div className="p-3.5 rounded-xl border border-blue-100 dark:border-blue-950/60 bg-blue-50/70 dark:bg-blue-950/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
         <div className="flex items-start gap-2.5">
           <div className="p-1 rounded-md bg-blue-600 text-white shrink-0 mt-0.5">
-            <Sparkles className="h-3.5 w-3.5" />
+            <Sparkles className="h-3.5 w-3.5"/>
           </div>
           <div>
-            <div className="font-semibold text-foreground dark:text-white">
-              Automated Dynamic Rate Priority Engine
+            <div className="font-semibold text-foreground">
+ Automated Dynamic Rate Priority Engine
             </div>
             <div className="text-muted-foreground text-2xs leading-relaxed mt-0.5">
-              Priority: <span className="font-semibold text-blue-600 dark:text-blue-400">Custom Rate</span> &rarr;{' '}
+ Priority: <span className="font-semibold text-blue-600 dark:text-blue-400">Custom Rate</span> &rarr;{' '}
               <span className="font-semibold text-emerald-600 dark:text-emerald-400">Last Invoice Rate</span> &rarr;{' '}
               <span className="font-semibold text-amber-600 dark:text-amber-400">Last Quotation Rate</span> &rarr;{' '}
-              <span className="font-semibold text-muted-foreground dark:text-muted-foreground">Catalog Default</span>.
+              <span className="font-semibold text-muted-foreground">Catalog Default</span>.
             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-1.5 text-2xs text-muted-foreground shrink-0 bg-card/60 px-2.5 py-1.5 rounded-lg border border-border dark:border-border">
-          <ShieldAlert className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+        <div className="flex items-center gap-1.5 text-2xs text-muted-foreground shrink-0 bg-card/60 px-2.5 py-1.5 rounded-lg border border-border">
+          <ShieldAlert className="h-3.5 w-3.5 text-amber-500 shrink-0"/>
           <span>Historical invoices remain immutable</span>
         </div>
       </div>
@@ -168,17 +168,17 @@ export function CustomerRatesTable({
       {/* Feedback Alert */}
       {feedback && (
         <div
-          className={cn(
+ className={cn(
             'p-3 rounded-lg text-xs font-medium flex items-center gap-2 animate-in fade-in duration-200',
-            feedback.type === 'success'
+ feedback.type === 'success'
               ? 'bg-emerald-50 text-emerald-800 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800'
               : 'bg-rose-50 text-rose-800 border border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800'
           )}
         >
           {feedback.type === 'success' ? (
-            <CheckCircle2 className="h-4 w-4 shrink-0" />
+            <CheckCircle2 className="h-4 w-4 shrink-0"/>
           ) : (
-            <AlertCircle className="h-4 w-4 shrink-0" />
+            <AlertCircle className="h-4 w-4 shrink-0"/>
           )}
           <span>{feedback.message}</span>
         </div>
@@ -187,13 +187,11 @@ export function CustomerRatesTable({
       {/* Search Bar */}
       <div className="flex items-center gap-2">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none"/>
           <Input
-            placeholder="Search products & services by name or SKU..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-9 text-xs h-9"
-          />
+ placeholder="Search products & services by name or SKU..."value={searchTerm}
+ onChange={(e) => setSearchTerm(e.target.value)}
+ className="pl-9 text-xs h-9"/>
         </div>
       </div>
 
@@ -218,28 +216,28 @@ export function CustomerRatesTable({
               {filteredRates.length === 0 ? (
                 <tr>
                   <td colSpan={canEdit ? 9 : 8} className="py-8 text-center text-muted-foreground">
-                    No products matched your search filter.
+ No products matched your search filter.
                   </td>
                 </tr>
               ) : (
-                filteredRates.map((r) => {
-                  const isEditing = editingProductId === r.productId
+ filteredRates.map((r) => {
+ const isEditing = editingProductId === r.productId
 
-                  return (
+ return (
                     <tr
-                      key={r.productId}
-                      className={cn(
+ key={r.productId}
+ className={cn(
                         'hover:bg-muted dark:hover:bg-muted/40 transition-colors',
-                        r.hasCustomRate && 'bg-blue-50/20 dark:bg-blue-950/10'
+ r.hasCustomRate && 'bg-blue-50/20 dark:bg-blue-950/10'
                       )}
                     >
                       {/* Product Name */}
                       <td className="py-3 px-4">
-                        <div className="font-semibold text-foreground dark:text-white">
+                        <div className="font-semibold text-foreground">
                           {r.productName}
                         </div>
                         {r.productNameBn && (
-                          <div className="text-2xs text-muted-foreground dark:text-muted-foreground">
+                          <div className="text-2xs text-muted-foreground">
                             {r.productNameBn}
                           </div>
                         )}
@@ -266,7 +264,7 @@ export function CustomerRatesTable({
                               {formatBDT(r.lastInvoiceRate)}
                             </span>
                             {r.lastInvoiceNumber && (
-                              <div className="text-2xs text-muted-foreground truncate" title={`${r.lastInvoiceNumber} (${r.lastInvoiceDate})`}>
+                              <div className="text-2xs text-muted-foreground truncate"title={`${r.lastInvoiceNumber} (${r.lastInvoiceDate})`}>
                                 {r.lastInvoiceNumber}
                               </div>
                             )}
@@ -284,7 +282,7 @@ export function CustomerRatesTable({
                               {formatBDT(r.lastQuotationRate)}
                             </span>
                             {r.lastQuotationNumber && (
-                              <div className="text-2xs text-muted-foreground truncate" title={`${r.lastQuotationNumber} (${r.lastQuotationDate})`}>
+                              <div className="text-2xs text-muted-foreground truncate"title={`${r.lastQuotationNumber} (${r.lastQuotationDate})`}>
                                 {r.lastQuotationNumber}
                               </div>
                             )}
@@ -299,32 +297,23 @@ export function CustomerRatesTable({
                         {isEditing ? (
                           <div className="space-y-1">
                             <Input
-                              type="number"
-                              step="0.01"
-                              value={editRateValue}
-                              onChange={(e) => setEditRateValue(e.target.value)}
-                              className="h-8 w-24 text-right text-xs font-bold"
-                              autoFocus
+ type="number"step="0.01"value={editRateValue}
+ onChange={(e) => setEditRateValue(e.target.value)}
+ className="h-8 w-24 text-right text-xs font-bold"autoFocus
                             />
                             <div className="flex items-center gap-1 justify-end">
                               {r.lastInvoiceRate !== null && (
                                 <button
-                                  type="button"
-                                  onClick={() => setEditRateValue(String(r.lastInvoiceRate))}
-                                  className="text-2xs text-emerald-600 hover:underline font-bold"
-                                  title="Auto-fill last invoice rate"
-                                >
-                                  Invoiced
+ type="button"onClick={() => setEditRateValue(String(r.lastInvoiceRate))}
+ className="text-2xs text-emerald-600 hover:underline font-bold"title="Auto-fill last invoice rate">
+ Invoiced
                                 </button>
                               )}
                               {r.lastQuotationRate !== null && r.lastQuotationRate !== undefined && (
                                 <button
-                                  type="button"
-                                  onClick={() => setEditRateValue(String(r.lastQuotationRate))}
-                                  className="text-2xs text-amber-600 hover:underline font-bold"
-                                  title="Auto-fill last quotation rate"
-                                >
-                                  Quoted
+ type="button"onClick={() => setEditRateValue(String(r.lastQuotationRate))}
+ className="text-2xs text-amber-600 hover:underline font-bold"title="Auto-fill last quotation rate">
+ Quoted
                                 </button>
                               )}
                             </div>
@@ -342,25 +331,25 @@ export function CustomerRatesTable({
                       <td className="py-3 px-3 text-center">
                         {r.source === 'custom' ? (
                           <Badge className="bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-800 text-2xs font-semibold">
-                            Custom Rate
+ Custom Rate
                           </Badge>
                         ) : r.source === 'last_invoice' ? (
                           <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800 text-2xs font-semibold">
-                            Last Invoice
+ Last Invoice
                           </Badge>
                         ) : r.source === 'last_quotation' ? (
                           <Badge className="bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-800 text-2xs font-semibold">
-                            Last Quote
+ Last Quote
                           </Badge>
                         ) : (
-                          <Badge variant="outline" className="text-muted-foreground text-2xs">
-                            Catalog Default
+                          <Badge variant="outline"className="text-muted-foreground text-2xs">
+ Catalog Default
                           </Badge>
                         )}
                       </td>
 
                       {/* Effective Rate */}
-                      <td className="py-3 px-3 text-right font-black text-sm text-foreground dark:text-white">
+                      <td className="py-3 px-3 text-right font-black text-sm text-foreground">
                         {formatBDT(r.effectiveRate)}
                       </td>
 
@@ -370,46 +359,33 @@ export function CustomerRatesTable({
                           {isEditing ? (
                             <div className="flex items-center justify-center gap-1">
                               <Button
-                                size="sm"
-                                variant="default"
-                                onClick={() => handleSaveRate(r.productId)}
-                                disabled={isSaving}
-                                className="h-7 px-2 text-2xs bg-blue-600 hover:bg-blue-700"
-                              >
-                                <Save className="h-3 w-3 mr-1" />
-                                Save
+ size="sm"variant="default"onClick={() => handleSaveRate(r.productId)}
+ disabled={isSaving}
+ className="h-7 px-2 text-2xs bg-blue-600 hover:bg-blue-700">
+                                <Save className="h-3 w-3 mr-1"/>
+ Save
                               </Button>
                               <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={handleCancelEdit}
-                                disabled={isSaving}
-                                className="h-7 px-2 text-2xs"
-                              >
-                                Cancel
+ size="sm"variant="outline"onClick={handleCancelEdit}
+ disabled={isSaving}
+ className="h-7 px-2 text-2xs">
+ Cancel
                               </Button>
                             </div>
                           ) : (
                             <div className="flex items-center justify-center gap-1">
                               <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleStartEdit(r)}
-                                className="h-7 px-2 text-2xs"
-                              >
-                                <Edit2 className="h-3 w-3 mr-1" />
+ size="sm"variant="outline"onClick={() => handleStartEdit(r)}
+ className="h-7 px-2 text-2xs">
+                                <Edit2 className="h-3 w-3 mr-1"/>
                                 {r.hasCustomRate ? 'Edit' : 'Set Custom'}
                               </Button>
 
                               {r.hasCustomRate && (
                                 <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  onClick={() => handleResetRate(r.productId)}
-                                  className="h-7 w-7 p-0 text-muted-foreground hover:text-rose-600"
-                                  title="Reset to automated fallback"
-                                >
-                                  <RotateCcw className="h-3 w-3" />
+ size="sm"variant="ghost"onClick={() => handleResetRate(r.productId)}
+ className="h-7 w-7 p-0 text-muted-foreground hover:text-rose-600"title="Reset to automated fallback">
+                                  <RotateCcw className="h-3 w-3"/>
                                 </Button>
                               )}
                             </div>
@@ -429,23 +405,23 @@ export function CustomerRatesTable({
       <div className="block md:hidden space-y-2.5">
         {filteredRates.length === 0 ? (
           <div className="py-8 text-center text-muted-foreground text-xs bg-card rounded-xl border p-4">
-            No products match your search.
+ No products match your search.
           </div>
         ) : (
-          filteredRates.map((r) => {
-            const isEditing = editingProductId === r.productId
+ filteredRates.map((r) => {
+ const isEditing = editingProductId === r.productId
 
-            return (
+ return (
               <Card
-                key={r.productId}
-                className={cn(
+ key={r.productId}
+ className={cn(
                   'border-border shadow-sm p-3.5 space-y-3',
-                  r.hasCustomRate && 'border-blue-200 dark:border-blue-900 bg-blue-50/10'
+ r.hasCustomRate && 'border-blue-200 dark:border-blue-900 bg-blue-50/10'
                 )}
               >
                 <div className="flex items-start justify-between gap-2">
                   <div>
-                    <div className="font-bold text-sm text-foreground dark:text-white">
+                    <div className="font-bold text-sm text-foreground">
                       {r.productName}
                     </div>
                     {r.productNameBn && (
@@ -459,19 +435,19 @@ export function CustomerRatesTable({
                   <div>
                     {r.source === 'custom' ? (
                       <Badge className="bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-950 dark:text-blue-300 text-2xs">
-                        Custom
+ Custom
                       </Badge>
                     ) : r.source === 'last_invoice' ? (
                       <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 text-2xs">
-                        Last Invoice
+ Last Invoice
                       </Badge>
                     ) : r.source === 'last_quotation' ? (
                       <Badge className="bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-950 dark:text-amber-300 text-2xs">
-                        Last Quote
+ Last Quote
                       </Badge>
                     ) : (
-                      <Badge variant="outline" className="text-muted-foreground text-2xs">
-                        Default
+                      <Badge variant="outline"className="text-muted-foreground text-2xs">
+ Default
                       </Badge>
                     )}
                   </div>
@@ -480,7 +456,7 @@ export function CustomerRatesTable({
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 p-2 rounded-lg bg-muted text-xs">
                   <div>
                     <div className="text-2xs text-muted-foreground">Default</div>
-                    <div className="font-medium text-muted-foreground dark:text-muted-foreground">
+                    <div className="font-medium text-muted-foreground">
                       {formatBDT(r.defaultRate)}
                     </div>
                   </div>
@@ -498,7 +474,7 @@ export function CustomerRatesTable({
                   </div>
                   <div>
                     <div className="text-2xs text-muted-foreground font-bold">Effective</div>
-                    <div className="font-black text-foreground dark:text-white">
+                    <div className="font-black text-foreground">
                       {formatBDT(r.effectiveRate)}
                     </div>
                   </div>
@@ -510,53 +486,38 @@ export function CustomerRatesTable({
                       <div className="space-y-2">
                         <div className="flex items-center gap-2">
                           <Input
-                            type="number"
-                            step="0.01"
-                            value={editRateValue}
-                            onChange={(e) => setEditRateValue(e.target.value)}
-                            placeholder="Rate (BDT)"
-                            className="h-9 text-sm font-bold"
-                            autoFocus
+ type="number"step="0.01"value={editRateValue}
+ onChange={(e) => setEditRateValue(e.target.value)}
+ placeholder="Rate (BDT)"className="h-9 text-sm font-bold"autoFocus
                           />
                           <Button
-                            size="sm"
-                            onClick={() => handleSaveRate(r.productId)}
-                            disabled={isSaving}
-                            className="bg-blue-600 hover:bg-blue-700 h-9"
-                          >
-                            Save
+ size="sm"onClick={() => handleSaveRate(r.productId)}
+ disabled={isSaving}
+ className="bg-blue-600 hover:bg-blue-700 h-9">
+ Save
                           </Button>
                           <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={handleCancelEdit}
-                            disabled={isSaving}
-                            className="h-9"
-                          >
-                            Cancel
+ size="sm"variant="outline"onClick={handleCancelEdit}
+ disabled={isSaving}
+ className="h-9">
+ Cancel
                           </Button>
                         </div>
                       </div>
                     ) : (
                       <div className="flex items-center justify-between">
                         <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleStartEdit(r)}
-                          className="h-8 text-xs font-semibold text-blue-600 dark:text-blue-400"
-                        >
-                          <Edit2 className="h-3 w-3 mr-1.5" />
+ size="sm"variant="outline"onClick={() => handleStartEdit(r)}
+ className="h-8 text-xs font-semibold text-blue-600 dark:text-blue-400">
+                          <Edit2 className="h-3 w-3 mr-1.5"/>
                           {r.hasCustomRate ? 'Modify Custom Rate' : 'Set Custom Rate'}
                         </Button>
 
                         {r.hasCustomRate && (
                           <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => handleResetRate(r.productId)}
-                            className="h-8 text-xs text-rose-500 hover:text-rose-600"
-                          >
-                            Reset
+ size="sm"variant="ghost"onClick={() => handleResetRate(r.productId)}
+ className="h-8 text-xs text-rose-500 hover:text-rose-600">
+ Reset
                           </Button>
                         )}
                       </div>
@@ -571,19 +532,11 @@ export function CustomerRatesTable({
 
       {/* Reset Rate Confirm Dialog */}
       <ConfirmDialog
-        open={isResetConfirmOpen}
-        onOpenChange={setIsResetConfirmOpen}
-        title="Remove Custom Rate Override?"
-        titleBn="কাস্টম রেট ওভাররাইড মুছে ফেলবেন?"
-        message="Are you sure you want to remove this custom rate override and restore automatic pricing tier priority?"
-        messageBn="আপনি কি এই পণ্যের বিশেষ মূল্য বাতিল করে পূর্বের স্ট্যান্ডার্ড মূল্য পুনরুদ্ধার করতে চান?"
-        confirmText="Remove Rate"
-        confirmTextBn="রেট সরান"
-        cancelText="Cancel"
-        cancelTextBn="বাতিল"
-        isDestructive={true}
-        isLoading={isResetting}
-        onConfirm={confirmResetRate}
+ open={isResetConfirmOpen}
+ onOpenChange={setIsResetConfirmOpen}
+ title="Remove Custom Rate Override?"titleBn="কাস্টম রেট ওভাররাইড মুছে ফেলবেন?"message="Are you sure you want to remove this custom rate override and restore automatic pricing tier priority?"messageBn="আপনি কি এই পণ্যের বিশেষ মূল্য বাতিল করে পূর্বের স্ট্যান্ডার্ড মূল্য পুনরুদ্ধার করতে চান?"confirmText="Remove Rate"confirmTextBn="রেট সরান"cancelText="Cancel"cancelTextBn="বাতিল"isDestructive={true}
+ isLoading={isResetting}
+ onConfirm={confirmResetRate}
       />
     </div>
   )

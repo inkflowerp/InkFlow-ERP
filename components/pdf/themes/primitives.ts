@@ -1,31 +1,31 @@
-import type { PrimitiveTokens } from "./types";
+import type { PrimitiveTokens } from"./types";
 
 export const defaultPrimitives: PrimitiveTokens = {
-  borderRadius: {
-    full: 9999,
-    lg: 8,
-    md: 4,
-    none: 0,
-    sm: 2,
+ borderRadius: {
+ full: 9999,
+ lg: 8,
+ md: 4,
+ none: 0,
+ sm: 2,
   },
-  fontWeights: {
-    bold: 700,
-    medium: 500,
-    regular: 400,
-    semibold: 600,
+ fontWeights: {
+ bold: 700,
+ medium: 500,
+ regular: 400,
+ semibold: 600,
   },
-  letterSpacing: {
-    normal: 0,
-    tight: -0.025,
-    wide: 0.025,
-    wider: 0.05,
+ letterSpacing: {
+ normal: 0,
+ tight: -0.025,
+ wide: 0.025,
+ wider: 0.05,
   },
-  lineHeights: {
-    normal: 1.4,
-    relaxed: 1.6,
-    tight: 1.2,
+ lineHeights: {
+ normal: 1.4,
+ relaxed: 1.6,
+ tight: 1.2,
   },
-  spacing: {
+ spacing: {
     0: 0,
     0.5: 2,
     1: 4,
@@ -39,13 +39,11 @@ export const defaultPrimitives: PrimitiveTokens = {
     12: 48,
     16: 64,
   },
-  typography: {
-    "2xl": 28,
-    "3xl": 36,
-    base: 15,
-    lg: 18,
-    sm: 12,
-    xl: 22,
-    xs: 10,
+ typography: {"2xl": 28,"3xl": 36,
+ base: 15,
+ lg: 18,
+ sm: 12,
+ xl: 22,
+ xs: 10,
   },
 };

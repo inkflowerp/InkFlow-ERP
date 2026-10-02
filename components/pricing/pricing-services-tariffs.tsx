@@ -2,18 +2,18 @@
 
 import React, { useState } from 'react'
 import {
-  Layers,
-  Sparkles,
-  Search,
-  Tag,
-  DollarSign,
-  TrendingUp,
-  Percent,
-  Clock,
-  Printer,
-  Edit2,
-  Plus,
-  ShieldCheck,
+ Layers,
+ Sparkles,
+ Search,
+ Tag,
+ DollarSign,
+ TrendingUp,
+ Percent,
+ Clock,
+ Printer,
+ Edit2,
+ Plus,
+ ShieldCheck,
 } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -24,55 +24,55 @@ import type { ProductRecord } from '@/types/product.types'
 import { formatBDT } from '@/lib/formatters'
 
 interface PricingServicesTariffsProps {
-  products: ProductRecord[]
-  onOpenEditProductPrice: (product: ProductRecord) => void
-  tenantSlug: string
+ products: ProductRecord[]
+ onOpenEditProductPrice: (product: ProductRecord) => void
+ tenantSlug: string
 }
 
 export function PricingServicesTariffs({
-  products,
-  onOpenEditProductPrice,
-  tenantSlug,
+ products,
+ onOpenEditProductPrice,
+ tenantSlug,
 }: PricingServicesTariffsProps) {
-  const { tBilingual } = useI18n()
-  const [search, setSearch] = useState('')
+ const { tBilingual } = useI18n()
+ const [search, setSearch] = useState('')
 
   // Filter custom print services
-  const serviceProducts = products.filter((p) => {
-    const isService =
-      p.product_type === 'print_service' ||
-      p.product_type === 'fabrication_service' ||
-      p.product_type === 'installation_service' ||
-      p.product_type === 'custom_job' ||
-      p.product_type === 'service' ||
-      p.product_type === 'SERVICE' ||
-      p.pricing_method === 'per_sft' ||
-      p.pricing_method === 'per_area' ||
-      p.pricing_method === 'dimensional_area' ||
+ const serviceProducts = products.filter((p) => {
+ const isService =
+ p.product_type === 'print_service' ||
+ p.product_type === 'fabrication_service' ||
+ p.product_type === 'installation_service' ||
+ p.product_type === 'custom_job' ||
+ p.product_type === 'service' ||
+ p.product_type === 'SERVICE' ||
+ p.pricing_method === 'per_sft' ||
+ p.pricing_method === 'per_area' ||
+ p.pricing_method === 'dimensional_area' ||
       (p.pricing_method as any) === 'per_sqft' ||
-      p.unit === 'sft' ||
-      p.unit === 'sqm' ||
-      p.unit === 'rft' ||
-      p.unit === 'running_feet'
+ p.unit === 'sft' ||
+ p.unit === 'sqm' ||
+ p.unit === 'rft' ||
+ p.unit === 'running_feet'
 
-    if (!isService) return false
+ if (!isService) return false
 
-    if (search) {
-      const q = search.toLowerCase()
-      return (
-        p.name.toLowerCase().includes(q) ||
+ if (search) {
+ const q = search.toLowerCase()
+ return (
+ p.name.toLowerCase().includes(q) ||
         (p.name_bn && p.name_bn.toLowerCase().includes(q)) ||
         (p.category && p.category.toLowerCase().includes(q))
       )
     }
-    return true
+ return true
   })
 
-  return (
+ return (
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h3 className="text-sm font-bold text-foreground dark:text-white">
+          <h3 className="text-sm font-bold text-foreground">
             {tBilingual('Custom Printing & Signage Service Tariffs', 'কাস্টম প্রিন্টিং ও সাইনেজ সেবা ট্যারিফ')}
           </h3>
           <p className="text-xs text-muted-foreground">
@@ -84,48 +84,45 @@ export function PricingServicesTariffs({
         </div>
 
         <div className="relative w-64">
-          <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+          <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground"/>
           <Input
-            placeholder="Search print services..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-8 text-xs h-8"
-          />
+ placeholder="Search print services..."value={search}
+ onChange={(e) => setSearch(e.target.value)}
+ className="pl-8 text-xs h-8"/>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {serviceProducts.map((p) => {
-          const baseSell = Number(p.selling_price) || Number((p as any).base_price) || 0
-          const baseCost = Number(p.base_cost) || Number((p as any).cost_price) || 0
-          const minBillable = Number(p.min_billable_quantity) || Number(p.service_config?.min_billable_qty) || 0
-          const minCharge = Number(p.minimum_charge) || Number(p.service_config?.min_charge) || Number(p.service_config?.minimum_charge) || 0
-          const tiers = (p.price_tiers as any) || {}
-          const resellerPrice = tiers.reseller ?? (baseSell > 0 ? Math.round(baseSell * 0.85) : 0)
-          const corporatePrice = tiers.corporate ?? (baseSell > 0 ? Math.round(baseSell * 0.9) : 0)
+ const baseSell = Number(p.selling_price) || Number((p as any).base_price) || 0
+ const baseCost = Number(p.base_cost) || Number((p as any).cost_price) || 0
+ const minBillable = Number(p.min_billable_quantity) || Number(p.service_config?.min_billable_qty) || 0
+ const minCharge = Number(p.minimum_charge) || Number(p.service_config?.min_charge) || Number(p.service_config?.minimum_charge) || 0
+ const tiers = (p.price_tiers as any) || {}
+ const resellerPrice = tiers.reseller ?? (baseSell > 0 ? Math.round(baseSell * 0.85) : 0)
+ const corporatePrice = tiers.corporate ?? (baseSell > 0 ? Math.round(baseSell * 0.9) : 0)
 
-          const marginPct =
-            baseSell > 0 && baseCost > 0
+ const marginPct =
+ baseSell > 0 && baseCost > 0
               ? Math.round(((baseSell - baseCost) / baseSell) * 100)
               : null
 
-          return (
+ return (
             <Card
-              key={p.id}
-              className="rounded-xl shadow-xs border-border bg-card overflow-hidden flex flex-col justify-between hover:shadow-md transition-shadow"
-            >
+ key={p.id}
+ className="rounded-xl shadow-xs border-border bg-card overflow-hidden flex flex-col justify-between hover:shadow-xs transition-shadow">
               <div>
                 {/* Header */}
                 <div className="p-4 pb-3 border-b border-border flex items-start justify-between gap-2">
                   <div>
-                    <div className="font-bold text-foreground dark:text-white text-sm">{p.name}</div>
+                    <div className="font-bold text-foreground text-sm">{p.name}</div>
                     {p.name_bn && (
                       <div className="text-xs text-teal-700 dark:text-teal-400 font-medium bangla-text mt-0.5">
                         {p.name_bn}
                       </div>
                     )}
                   </div>
-                  <Badge variant="outline" className="text-2xs uppercase tabular-nums font-bold bg-sky-50 text-sky-800 border-sky-200 dark:bg-sky-950/40 dark:text-sky-300 shrink-0">
+                  <Badge variant="outline"className="text-2xs uppercase tabular-nums font-bold bg-sky-50 text-sky-800 border-sky-200 dark:bg-sky-950/40 dark:text-sky-300 shrink-0">
                     {p.unit || 'sft'}
                   </Badge>
                 </div>
@@ -135,7 +132,7 @@ export function PricingServicesTariffs({
                   <div className="grid grid-cols-2 gap-2 bg-muted p-3 rounded-xl text-xs">
                     <div>
                       <span className="text-2xs text-muted-foreground uppercase font-semibold">Retail Rate</span>
-                      <div className="text-base font-black text-foreground dark:text-white tabular-nums">
+                      <div className="text-base font-black text-foreground tabular-nums">
                         {formatBDT(baseSell)} <span className="text-2xs text-muted-foreground font-normal">/{p.unit || 'sft'}</span>
                       </div>
                     </div>
@@ -152,7 +149,7 @@ export function PricingServicesTariffs({
                   <div className="space-y-1.5 text-xs">
                     <div className="flex justify-between text-2xs text-muted-foreground">
                       <span>Base Material Cost:</span>
-                      <span className="tabular-nums font-bold text-foreground dark:text-muted-foreground">
+                      <span className="tabular-nums font-bold text-foreground">
                         {baseCost > 0 ? formatBDT(baseCost) : '—'}
                       </span>
                     </div>
@@ -167,14 +164,14 @@ export function PricingServicesTariffs({
                     {minCharge > 0 && (
                       <div className="flex justify-between text-2xs text-muted-foreground">
                         <span>Min Job Charge:</span>
-                        <span className="tabular-nums font-bold text-foreground dark:text-foreground">
+                        <span className="tabular-nums font-bold text-foreground">
                           {formatBDT(minCharge)}
                         </span>
                       </div>
                     )}
 
                     {marginPct !== null && (
-                      <div className="flex justify-between text-2xs pt-1 border-t border-border dark:border-border">
+                      <div className="flex justify-between text-2xs pt-1 border-t border-border">
                         <span className="text-muted-foreground">Gross Margin:</span>
                         <span className="tabular-nums font-bold text-emerald-600 dark:text-emerald-400">
                           {marginPct}%
@@ -189,12 +186,9 @@ export function PricingServicesTariffs({
               <div className="p-3 bg-muted/50 border-t border-border flex items-center justify-between">
                 <span className="text-2xs text-muted-foreground capitalize">{p.category || 'Print Service'}</span>
                 <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => onOpenEditProductPrice(p)}
-                  className="h-7 px-2.5 text-xs font-bold text-teal-700 dark:text-teal-300 border-teal-200 dark:border-teal-800 bg-card dark:bg-muted"
-                >
-                  <Edit2 className="h-3 w-3 mr-1 text-teal-600" />
+ size="sm"variant="outline"onClick={() => onOpenEditProductPrice(p)}
+ className="h-7 px-2.5 text-xs font-bold text-teal-700 dark:text-teal-300 border-teal-200 dark:border-teal-800 bg-card">
+                  <Edit2 className="h-3 w-3 mr-1 text-teal-600"/>
                   {tBilingual('Edit Tariff', 'দর পরিবর্তন')}
                 </Button>
               </div>

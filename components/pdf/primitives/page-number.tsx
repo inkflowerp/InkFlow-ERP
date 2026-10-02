@@ -1,70 +1,70 @@
-import { usePdfcnTheme, useSafeMemo } from "./theme-provider";
-import { Text, StyleSheet, View } from "./pdf-primitives";
-import type { Style } from "./pdf-primitives";
-import type { PDFComponentProps, PdfcnTheme } from "../themes/types";
+import { usePdfcnTheme, useSafeMemo } from"./theme-provider";
+import { Text, StyleSheet, View } from"./pdf-primitives";
+import type { Style } from"./pdf-primitives";
+import type { PDFComponentProps, PdfcnTheme } from"../themes/types";
 
-export type PageNumberAlign = "left" | "center" | "right";
-export type PageNumberSize = "xs" | "sm" | "md";
+export type PageNumberAlign ="left"|"center"|"right";
+export type PageNumberSize ="xs"|"sm"|"md";
 
-export interface PageNumberProps extends Omit<PDFComponentProps, "children"> {
-  format?: string;
-  align?: PageNumberAlign;
-  size?: PageNumberSize;
-  fixed?: boolean;
-  muted?: boolean;
-  children?: never;
+export interface PageNumberProps extends Omit<PDFComponentProps,"children"> {
+ format?: string;
+ align?: PageNumberAlign;
+ size?: PageNumberSize;
+ fixed?: boolean;
+ muted?: boolean;
+ children?: never;
 }
 
 const createPageNumberStyles = (t: PdfcnTheme) => {
-  const { typography, colors, primitives } = t;
-  return StyleSheet.create({
-    alignCenter: { textAlign: "center" },
-    alignLeft: { textAlign: "left" },
-    alignRight: { textAlign: "right" },
-    colorForeground: { color: colors.foreground },
-    colorMuted: { color: colors.mutedForeground },
-    container: { width: "100%" },
-    sizeMd: { fontSize: primitives.typography.base },
-    sizeSm: { fontSize: primitives.typography.sm },
-    sizeXs: { fontSize: primitives.typography.xs },
-    text: { fontFamily: typography.body.fontFamily },
+ const { typography, colors, primitives } = t;
+ return StyleSheet.create({
+ alignCenter: { textAlign:"center"},
+ alignLeft: { textAlign:"left"},
+ alignRight: { textAlign:"right"},
+ colorForeground: { color: colors.foreground },
+ colorMuted: { color: colors.mutedForeground },
+ container: { width:"100%"},
+ sizeMd: { fontSize: primitives.typography.base },
+ sizeSm: { fontSize: primitives.typography.sm },
+ sizeXs: { fontSize: primitives.typography.xs },
+ text: { fontFamily: typography.body.fontFamily },
   });
 };
 
 export const PageNumber = ({
-  format = "Page {page} of {total}",
-  align = "center",
-  size = "sm",
-  muted = true,
-  style,
+ format ="Page {page} of {total}",
+ align ="center",
+ size ="sm",
+ muted = true,
+ style,
 }: PageNumberProps) => {
-  const theme = usePdfcnTheme();
-  const styles = useSafeMemo(() => createPageNumberStyles(theme), [theme]);
-  const alignMap = {
-    center: styles.alignCenter,
-    left: styles.alignLeft,
-    right: styles.alignRight,
+ const theme = usePdfcnTheme();
+ const styles = useSafeMemo(() => createPageNumberStyles(theme), [theme]);
+ const alignMap = {
+ center: styles.alignCenter,
+ left: styles.alignLeft,
+ right: styles.alignRight,
   } as Record<PageNumberAlign, Style>;
-  const sizeMap = {
-    md: styles.sizeMd,
-    sm: styles.sizeSm,
-    xs: styles.sizeXs,
+ const sizeMap = {
+ md: styles.sizeMd,
+ sm: styles.sizeSm,
+ xs: styles.sizeXs,
   } as Record<PageNumberSize, Style>;
-  const textStyles: Style[] = [
-    styles.text,
-    alignMap[align],
-    sizeMap[size],
-    muted ? styles.colorMuted : styles.colorForeground,
+ const textStyles: Style[] = [
+ styles.text,
+ alignMap[align],
+ sizeMap[size],
+ muted ? styles.colorMuted : styles.colorForeground,
   ];
-  if (style) {
-    textStyles.push(...[style].flat());
+ if (style) {
+ textStyles.push(...[style].flat());
   }
-  return (
+ return (
     <View style={styles.container}>
       <Text style={textStyles as never}>
         {format
-          .replace("{page}", "{{pageNumber}}")
-          .replace("{total}", "{{totalPages}}")}
+          .replace("{page}","{{pageNumber}}")
+          .replace("{total}","{{totalPages}}")}
       </Text>
     </View>
   );

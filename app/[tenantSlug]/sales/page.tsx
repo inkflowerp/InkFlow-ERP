@@ -4,14 +4,14 @@ import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
-  Briefcase,
-  FileSpreadsheet,
-  Receipt,
-  Truck,
-  TrendingUp,
-  Plus,
-  ArrowUpRight,
-  CheckCircle2,
+ Briefcase,
+ FileSpreadsheet,
+ Receipt,
+ Truck,
+ TrendingUp,
+ Plus,
+ ArrowUpRight,
+ CheckCircle2,
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
@@ -25,10 +25,10 @@ import { KpiCard, KpiGrid } from '@/components/shared/kpi-card'
 import { useDataStore } from '@/hooks/use-data-store'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import {
-  QuotationRecord,
-  normalizeQuotationRecord,
-  extractQuotationsFromAny,
-  deduplicateQuotations,
+ QuotationRecord,
+ normalizeQuotationRecord,
+ extractQuotationsFromAny,
+ deduplicateQuotations,
 } from '@/types/quotation.types'
 import { SalesOrderRecord } from '@/types/order.types'
 import { formatBDT } from '@/lib/formatters'
@@ -36,77 +36,77 @@ import { getQuotationsAction, convertQuotationToJobOrderAction } from '@/actions
 import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 
 export default function SalesManagerPage() {
-  const pathname = usePathname()
-  const { company } = useTenant()
-  const { locale, tBilingual } = useI18n()
-  const slug = company?.slug || 'my-company'
-  const companyId = company?.id
+ const pathname = usePathname()
+ const { company } = useTenant()
+ const { locale, tBilingual } = useI18n()
+ const slug = company?.slug || 'my-company'
+ const companyId = company?.id
 
-  const [localQuotations] = useDataStore<QuotationRecord[]>(STORAGE_KEYS.QUOTATIONS, [], slug)
-  const [serverQuotations, setServerQuotations] = useState<QuotationRecord[] | null>(null)
-  const [orders] = useDataStore<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS, [], slug)
+ const [localQuotations] = useDataStore<QuotationRecord[]>(STORAGE_KEYS.QUOTATIONS, [], slug)
+ const [serverQuotations, setServerQuotations] = useState<QuotationRecord[] | null>(null)
+ const [orders] = useDataStore<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS, [], slug)
 
-  const [activeTab, setActiveTab] = useState<'quotations' | 'orders' | 'leads'>('quotations')
-  const [notification, setNotification] = useState<string | null>(null)
+ const [activeTab, setActiveTab] = useState<'quotations' | 'orders' | 'leads'>('quotations')
+ const [notification, setNotification] = useState<string | null>(null)
 
-  useEffect(() => {
-    async function load() {
-      try {
-        const res = await getQuotationsAction(companyId, slug)
-        if (res.success && res.data) {
-          setServerQuotations(res.data)
+ useEffect(() => {
+ async function load() {
+ try {
+ const res = await getQuotationsAction(companyId, slug)
+ if (res.success && res.data) {
+ setServerQuotations(res.data)
         }
       } catch {}
     }
-    load()
+ load()
 
-    const handleRealtimeSync = () => {
-      load()
+ const handleRealtimeSync = () => {
+ load()
     }
 
-    if (typeof window !== 'undefined') {
-      window.addEventListener('printerp_table_synced:quotations', handleRealtimeSync)
-      window.addEventListener('printerp_table_synced:sales_orders', handleRealtimeSync)
-      window.addEventListener('printerp_table_synced', handleRealtimeSync)
-      window.addEventListener('printerp_data_sync', handleRealtimeSync)
-      window.addEventListener('storage', handleRealtimeSync)
+ if (typeof window !== 'undefined') {
+ window.addEventListener('printerp_table_synced:quotations', handleRealtimeSync)
+ window.addEventListener('printerp_table_synced:sales_orders', handleRealtimeSync)
+ window.addEventListener('printerp_table_synced', handleRealtimeSync)
+ window.addEventListener('printerp_data_sync', handleRealtimeSync)
+ window.addEventListener('storage', handleRealtimeSync)
     }
 
-    return () => {
-      if (typeof window !== 'undefined') {
-        window.removeEventListener('printerp_table_synced:quotations', handleRealtimeSync)
-        window.removeEventListener('printerp_table_synced:sales_orders', handleRealtimeSync)
-        window.removeEventListener('printerp_table_synced', handleRealtimeSync)
-        window.removeEventListener('printerp_data_sync', handleRealtimeSync)
-        window.removeEventListener('storage', handleRealtimeSync)
+ return () => {
+ if (typeof window !== 'undefined') {
+ window.removeEventListener('printerp_table_synced:quotations', handleRealtimeSync)
+ window.removeEventListener('printerp_table_synced:sales_orders', handleRealtimeSync)
+ window.removeEventListener('printerp_table_synced', handleRealtimeSync)
+ window.removeEventListener('printerp_data_sync', handleRealtimeSync)
+ window.removeEventListener('storage', handleRealtimeSync)
       }
     }
   }, [companyId, slug])
 
   // Resiliently merge all quotation sources
-  const quotations = React.useMemo(() => {
-    const rawList: any[] = []
+ const quotations = React.useMemo(() => {
+ const rawList: any[] = []
 
-    if (typeof window !== 'undefined') {
-      try {
-        for (let i = 0; i < window.localStorage.length; i++) {
-          const k = window.localStorage.key(i)
-          if (!k) continue
-          const raw = window.localStorage.getItem(k)
-          if (!raw) continue
+ if (typeof window !== 'undefined') {
+ try {
+ for (let i = 0; i < window.localStorage.length; i++) {
+ const k = window.localStorage.key(i)
+ if (!k) continue
+ const raw = window.localStorage.getItem(k)
+ if (!raw) continue
 
-          if (
-            k.startsWith('printerp_tenant_quotations') ||
-            k.startsWith('printerp_quotations') ||
-            k.includes('quotation') ||
-            k.includes('quotes') ||
-            k.includes('draft') ||
-            k.includes('outbox') ||
-            k.includes('inkflow')
+ if (
+ k.startsWith('printerp_tenant_quotations') ||
+ k.startsWith('printerp_quotations') ||
+ k.includes('quotation') ||
+ k.includes('quotes') ||
+ k.includes('draft') ||
+ k.includes('outbox') ||
+ k.includes('inkflow')
           ) {
-            const extracted = extractQuotationsFromAny(raw)
-            if (extracted.length > 0) {
-              rawList.push(...extracted)
+ const extracted = extractQuotationsFromAny(raw)
+ if (extracted.length > 0) {
+ rawList.push(...extracted)
             }
           }
         }
@@ -114,114 +114,105 @@ export default function SalesManagerPage() {
     }
 
     // Direct DataStore reads
-    const dsTenant = PrintERPDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS, slug) || []
-    if (Array.isArray(dsTenant)) rawList.push(...dsTenant)
+ const dsTenant = PrintERPDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS, slug) || []
+ if (Array.isArray(dsTenant)) rawList.push(...dsTenant)
 
-    const dsGlobal = PrintERPDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS) || []
-    if (Array.isArray(dsGlobal)) rawList.push(...dsGlobal)
+ const dsGlobal = PrintERPDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS) || []
+ if (Array.isArray(dsGlobal)) rawList.push(...dsGlobal)
 
-    if (localQuotations && Array.isArray(localQuotations)) {
-      rawList.push(...localQuotations)
+ if (localQuotations && Array.isArray(localQuotations)) {
+ rawList.push(...localQuotations)
     }
 
-    if (serverQuotations && Array.isArray(serverQuotations)) {
-      rawList.push(...serverQuotations)
+ if (serverQuotations && Array.isArray(serverQuotations)) {
+ rawList.push(...serverQuotations)
     }
 
-    return deduplicateQuotations(rawList, companyId, slug)
+ return deduplicateQuotations(rawList, companyId, slug)
   }, [serverQuotations, localQuotations, slug, companyId])
 
-  const showNotification = (msg: string) => {
-    setNotification(msg)
-    setTimeout(() => setNotification(null), 3500)
+ const showNotification = (msg: string) => {
+ setNotification(msg)
+ setTimeout(() => setNotification(null), 3500)
   }
 
-  const handleConvertToOrder = async (quoteId: string) => {
-    try {
-      const q = (quotations || []).find((item) => item.id === quoteId || item.quotation_number === quoteId)
-      const res = await convertQuotationToJobOrderAction(
-        quoteId,
+ const handleConvertToOrder = async (quoteId: string) => {
+ try {
+ const q = (quotations || []).find((item) => item.id === quoteId || item.quotation_number === quoteId)
+ const res = await convertQuotationToJobOrderAction(
+ quoteId,
         { advanceAmount: q?.advance_amount ?? undefined },
-        companyId
+ companyId
       )
-      if (res.success && res.data) {
-        PrintERPDataStore.createSalesOrderWithIntegrations(res.data)
-        if (slug && slug !== 'default') {
-          PrintERPDataStore.addItem(STORAGE_KEYS.ORDERS, res.data, slug)
-          if (res.data.job_order) {
-            PrintERPDataStore.addItem(STORAGE_KEYS.JOB_ORDERS, res.data.job_order, slug)
+ if (res.success && res.data) {
+ PrintERPDataStore.createSalesOrderWithIntegrations(res.data)
+ if (slug && slug !== 'default') {
+ PrintERPDataStore.addItem(STORAGE_KEYS.ORDERS, res.data, slug)
+ if (res.data.job_order) {
+ PrintERPDataStore.addItem(STORAGE_KEYS.JOB_ORDERS, res.data.job_order, slug)
           }
-          if (res.data.production_job) {
-            PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCTION_JOBS, res.data.production_job, slug)
+ if (res.data.production_job) {
+ PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCTION_JOBS, res.data.production_job, slug)
           }
-          PrintERPDataStore.updateItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, quoteId, {
-            status: 'converted',
-            converted_order_id: res.data.order_number,
+ PrintERPDataStore.updateItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, quoteId, {
+ status: 'converted',
+ converted_order_id: res.data.order_number,
           }, slug)
         }
-        PrintERPDataStore.updateItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, quoteId, {
-          status: 'converted',
-          converted_order_id: res.data.order_number,
+ PrintERPDataStore.updateItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, quoteId, {
+ status: 'converted',
+ converted_order_id: res.data.order_number,
         })
-        if (typeof window !== 'undefined') {
-          window.dispatchEvent(new CustomEvent('printerp_data_sync'))
-          window.dispatchEvent(new CustomEvent('printerp_table_synced:sales_orders'))
-          window.dispatchEvent(new CustomEvent('printerp_table_synced:job_orders'))
-          window.dispatchEvent(new CustomEvent('printerp_table_synced:quotations'))
-          window.dispatchEvent(new CustomEvent('printerp_table_synced'))
+ if (typeof window !== 'undefined') {
+ window.dispatchEvent(new CustomEvent('printerp_data_sync'))
+ window.dispatchEvent(new CustomEvent('printerp_table_synced:sales_orders'))
+ window.dispatchEvent(new CustomEvent('printerp_table_synced:job_orders'))
+ window.dispatchEvent(new CustomEvent('printerp_table_synced:quotations'))
+ window.dispatchEvent(new CustomEvent('printerp_table_synced'))
         }
-        showNotification(`Quotation converted to Job Order Ticket #${res.data.order_number} successfully!`)
+ showNotification(`Quotation converted to Job Order Ticket #${res.data.order_number} successfully!`)
       } else {
-        const localRes = PrintERPDataStore.convertQuotationToSalesOrder(quoteId)
-        if (localRes) {
-          if (typeof window !== 'undefined') {
-            window.dispatchEvent(new CustomEvent('printerp_data_sync'))
-            window.dispatchEvent(new CustomEvent('printerp_table_synced:sales_orders'))
-            window.dispatchEvent(new CustomEvent('printerp_table_synced:job_orders'))
-            window.dispatchEvent(new CustomEvent('printerp_table_synced:quotations'))
+ const localRes = PrintERPDataStore.convertQuotationToSalesOrder(quoteId)
+ if (localRes) {
+ if (typeof window !== 'undefined') {
+ window.dispatchEvent(new CustomEvent('printerp_data_sync'))
+ window.dispatchEvent(new CustomEvent('printerp_table_synced:sales_orders'))
+ window.dispatchEvent(new CustomEvent('printerp_table_synced:job_orders'))
+ window.dispatchEvent(new CustomEvent('printerp_table_synced:quotations'))
           }
-          showNotification(`Quotation converted to Sales Order ${localRes.order_number} successfully!`)
+ showNotification(`Quotation converted to Sales Order ${localRes.order_number} successfully!`)
         } else {
-          showNotification(`Conversion failed: ${res.error || 'Unknown error'}`)
+ showNotification(`Conversion failed: ${res.error || 'Unknown error'}`)
         }
       }
     } catch {
-      const localRes = PrintERPDataStore.convertQuotationToSalesOrder(quoteId)
-      if (localRes) {
-        showNotification(`Quotation converted to Sales Order ${localRes.order_number} successfully!`)
+ const localRes = PrintERPDataStore.convertQuotationToSalesOrder(quoteId)
+ if (localRes) {
+ showNotification(`Quotation converted to Sales Order ${localRes.order_number} successfully!`)
       }
     }
   }
 
-  const totalBookedSales = (orders || []).reduce((acc, o) => acc + (o.final_price || 0), 0)
-  const pendingQuotes = (quotations || []).filter((q) => q.status !== 'approved' && q.status !== 'rejected')
-  const pendingQuotesValue = pendingQuotes.reduce((acc, q) => acc + (q.grand_total || 0), 0)
+ const totalBookedSales = (orders || []).reduce((acc, o) => acc + (o.final_price || 0), 0)
+ const pendingQuotes = (quotations || []).filter((q) => q.status !== 'approved' && q.status !== 'rejected')
+ const pendingQuotesValue = pendingQuotes.reduce((acc, q) => acc + (q.grand_total || 0), 0)
 
-  return (
+ return (
     <PanelAccessGuard
-      module="orders"
-      action="view"
-      panelTitle="Commercial & Sales"
-      panelTitleBn="কমার্শিয়াল ও সেলস"
-    >
+ module="orders"action="view"panelTitle="Commercial & Sales"panelTitleBn="কমার্শিয়াল ও সেলস">
       <div className="space-y-6 max-w-7xl">
       {/* Header */}
       <PageHeader
-        titleEn="Commercial & Sales Management"
-        titleBn="কমার্শিয়াল ও সেলস ম্যানেজমেন্ট"
-        descriptionEn="CRM leads, dimensional quotations, booked job orders, advance payments, and customer delivery schedules."
-        descriptionBn="সিআরএম লিড, পরিমাপভিত্তিক কোটেশন, বুক করা জব অর্ডার, অগ্রিম আদায় ও ডেলিভারি সময়সূচী।"
-        icon={Briefcase}
-        iconColor="text-blue-600"
-        badge={
-          <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 bangla-text">
+ titleEn="Commercial & Sales Management"titleBn="কমার্শিয়াল ও সেলস ম্যানেজমেন্ট"descriptionEn="CRM leads, dimensional quotations, booked job orders, advance payments, and customer delivery schedules."descriptionBn="সিআরএম লিড, পরিমাপভিত্তিক কোটেশন, বুক করা জব অর্ডার, অগ্রিম আদায় ও ডেলিভারি সময়সূচী।"icon={Briefcase}
+ iconColor="text-blue-600"badge={
+          <Badge variant="outline"className="text-xs bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 bangla-text">
             {tBilingual('Role: Sales Manager', 'রোল: সেলস ম্যানেজার')}
           </Badge>
         }
-        actions={
+ actions={
           <Link href={getTenantNavHref('/quotations', pathname, slug)}>
             <Button className="bg-blue-600 hover:bg-blue-700 bangla-text">
-              <Plus className="mr-1.5 h-4 w-4" />
+              <Plus className="mr-1.5 h-4 w-4"/>
               {tBilingual('New Quotation', 'নতুন কোটেশন')}
             </Button>
           </Link>
@@ -231,7 +222,7 @@ export default function SalesManagerPage() {
       {/* Notification */}
       {notification && (
         <div className="p-3 bg-emerald-50 text-emerald-800 rounded-lg text-xs font-semibold flex items-center gap-2 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800 animate-in fade-in-0">
-          <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+          <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0"/>
           <span>{notification}</span>
         </div>
       )}
@@ -239,57 +230,36 @@ export default function SalesManagerPage() {
       {/* KPI Cards */}
       <KpiGrid columns={4}>
         <KpiCard
-          titleEn="Today's Sales Booked"
-          titleBn="আজকের বিক্রয় বুকিং"
-          value={totalBookedSales}
-          isCurrency
-          icon={TrendingUp}
-          colorVariant="emerald"
-          trend={{
-            value: 'Live',
-            labelEn: 'active revenue',
-            labelBn: 'সক্রিয় আয়',
-            direction: 'up',
+ titleEn="Today's Sales Booked"titleBn="আজকের বিক্রয় বুকিং"value={totalBookedSales}
+ isCurrency
+ icon={TrendingUp}
+ colorVariant="emerald"trend={{
+ value: 'Live',
+ labelEn: 'active revenue',
+ labelBn: 'সক্রিয় আয়',
+ direction: 'up',
           }}
         />
 
         <KpiCard
-          titleEn="Pending Quotations"
-          titleBn="অপেক্ষমান দরপ্রস্তাব"
-          value={pendingQuotes.length}
-          unitEn="Quotes"
-          unitBn="টি কোটেশন"
-          icon={FileSpreadsheet}
-          colorVariant="amber"
-          subtitleEn={`Value: ${formatBDT(pendingQuotesValue)}`}
-          subtitleBn={`মূল্য: ${formatBDT(pendingQuotesValue)}`}
+ titleEn="Pending Quotations"titleBn="অপেক্ষমান দরপ্রস্তাব"value={pendingQuotes.length}
+ unitEn="Quotes"unitBn="টি কোটেশন"icon={FileSpreadsheet}
+ colorVariant="amber"subtitleEn={`Value: ${formatBDT(pendingQuotesValue)}`}
+ subtitleBn={`মূল্য: ${formatBDT(pendingQuotesValue)}`}
         />
 
         <KpiCard
-          titleEn="Active Orders"
-          titleBn="সক্রিয় জব অর্ডার"
-          value={orders.length}
-          unitEn="Booked"
-          unitBn="টি অর্ডার"
-          icon={Receipt}
-          colorVariant="blue"
-          subtitleEn="Direct production pipeline"
-          subtitleBn="উৎপাদন পাইপলাইন"
-        />
+ titleEn="Active Orders"titleBn="সক্রিয় জব অর্ডার"value={orders.length}
+ unitEn="Booked"unitBn="টি অর্ডার"icon={Receipt}
+ colorVariant="blue"subtitleEn="Direct production pipeline"subtitleBn="উৎপাদন পাইপলাইন"/>
 
         <KpiCard
-          titleEn="Ready for Delivery"
-          titleBn="ডেলিভারির জন্য প্রস্তুত"
-          value={orders.filter((o) => o.status === 'ready_for_delivery').length}
-          unitEn="Orders"
-          unitBn="টি অর্ডার"
-          icon={Truck}
-          colorVariant="purple"
-          footer={
+ titleEn="Ready for Delivery"titleBn="ডেলিভারির জন্য প্রস্তুত"value={orders.filter((o) => o.status === 'ready_for_delivery').length}
+ unitEn="Orders"unitBn="টি অর্ডার"icon={Truck}
+ colorVariant="purple"footer={
             <Link
-              href={getTenantNavHref('/delivery', pathname, slug)}
-              className="text-xs font-semibold text-purple-600 dark:text-purple-400 hover:underline inline-flex items-center gap-1"
-            >
+ href={getTenantNavHref('/delivery', pathname, slug)}
+ className="text-xs font-semibold text-purple-600 dark:text-purple-400 hover:underline inline-flex items-center gap-1">
               <span>{tBilingual('Generate Challans', 'চালান তৈরি করুন')}</span>
               <span>&rarr;</span>
             </Link>
@@ -305,10 +275,10 @@ export default function SalesManagerPage() {
           { id: 'leads', label: tBilingual('Corporate Leads', 'কর্পোরেট লিড') },
         ].map((tab) => (
           <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id as typeof activeTab)}
-            className={`px-4 py-2.5 text-xs font-semibold border-b-2 -mb-px transition-colors shrink-0 whitespace-nowrap bangla-text ${
-              activeTab === tab.id
+ key={tab.id}
+ onClick={() => setActiveTab(tab.id as typeof activeTab)}
+ className={`px-4 py-2.5 text-xs font-semibold border-b-2 -mb-px transition-colors shrink-0 whitespace-nowrap bangla-text ${
+ activeTab === tab.id
                 ? 'border-blue-600 text-blue-600 dark:text-blue-400'
                 : 'border-transparent text-muted-foreground hover:text-foreground dark:hover:text-foreground'
             }`}
@@ -321,17 +291,17 @@ export default function SalesManagerPage() {
       {/* Quotations List */}
       {activeTab === 'quotations' && (
         <Card>
-          <CardHeader className="pb-3 border-b border-border dark:border-border">
+          <CardHeader className="pb-3 border-b border-border">
             <CardTitle className="text-base">Pending Customer Quotations</CardTitle>
             <CardDescription className="text-xs">
-              Review estimates, discount approvals, and convert directly to Job Orders.
+ Review estimates, discount approvals, and convert directly to Job Orders.
             </CardDescription>
           </CardHeader>
           <CardContent className="p-0">
             {/* Desktop Table */}
             <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-left text-sm">
-                <thead className="bg-muted text-xs font-semibold text-muted-foreground border-b border-border dark:border-border">
+                <thead className="bg-muted text-xs font-semibold text-muted-foreground border-b border-border">
                   <tr>
                     <th className="py-3 px-4">Quote No.</th>
                     <th className="py-3 px-4">Client</th>
@@ -349,34 +319,30 @@ export default function SalesManagerPage() {
                           {q.quotation_number}
                         </Link>
                       </td>
-                      <td className="py-3.5 px-4 font-semibold text-foreground dark:text-white">{q.customer_name}</td>
-                      <td className="py-3.5 px-4 text-xs text-muted-foreground dark:text-muted-foreground">
+                      <td className="py-3.5 px-4 font-semibold text-foreground">{q.customer_name}</td>
+                      <td className="py-3.5 px-4 text-xs text-muted-foreground">
                         {q.items?.map((i) => `${i.description} (${i.width}x${i.height} ${i.unit})`).join(', ') || 'Custom Print Job'}
                       </td>
-                      <td className="py-3.5 px-4 font-bold text-foreground dark:text-white">
+                      <td className="py-3.5 px-4 font-bold text-foreground">
                         <CurrencyDisplay amount={q.grand_total} />
                       </td>
                       <td className="py-3.5 px-4">
-                        <Badge variant="outline" className="text-xs capitalize">
+                        <Badge variant="outline"className="text-xs capitalize">
                           {q.status.replace('_', ' ')}
                         </Badge>
                       </td>
                       <td className="py-3.5 px-4 text-right">
                         {q.status !== 'converted' && !q.converted_order_id ? (
                           <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleConvertToOrder(q.id)}
-                            className="h-8 text-xs font-semibold text-blue-600 hover:bg-blue-50"
-                          >
-                            Convert to Order
+ size="sm"variant="outline"onClick={() => handleConvertToOrder(q.id)}
+ className="h-8 text-xs font-semibold text-blue-600 hover:bg-blue-50">
+ Convert to Order
                           </Button>
                         ) : (
                           <Link
-                            href={`/orders?search=${q.converted_order_id || ''}`}
-                            className="text-xs text-purple-600 font-semibold hover:underline"
-                          >
-                            Job Order #{q.converted_order_id || 'View'} →
+ href={`/orders?search=${q.converted_order_id || ''}`}
+ className="text-xs text-purple-600 font-semibold hover:underline">
+ Job Order #{q.converted_order_id || 'View'} →
                           </Link>
                         )}
                       </td>
@@ -385,7 +351,7 @@ export default function SalesManagerPage() {
                   {(quotations || []).length === 0 && (
                     <tr>
                       <td colSpan={6} className="py-8 text-center text-muted-foreground text-xs">
-                        No quotations found.
+ No quotations found.
                       </td>
                     </tr>
                   )}
@@ -400,43 +366,38 @@ export default function SalesManagerPage() {
                   <div className="flex items-start justify-between gap-2">
                     <div>
                       <Link
-                        href={`/quotations/${q.id}`}
-                        className="tabular-nums text-xs font-bold text-blue-600 hover:underline"
-                      >
+ href={`/quotations/${q.id}`}
+ className="tabular-nums text-xs font-bold text-blue-600 hover:underline">
                         {q.quotation_number}
                       </Link>
-                      <div className="font-semibold text-sm text-foreground dark:text-white mt-0.5">
+                      <div className="font-semibold text-sm text-foreground mt-0.5">
                         {q.customer_name}
                       </div>
                     </div>
-                    <Badge variant="outline" className="text-2xs capitalize">
+                    <Badge variant="outline"className="text-2xs capitalize">
                       {q.status.replace('_', ' ')}
                     </Badge>
                   </div>
 
-                  <div className="text-xs text-muted-foreground bg-muted p-2.5 rounded-lg border border-border dark:border-border/60">
+                  <div className="text-xs text-muted-foreground bg-muted p-2.5 rounded-lg border border-border /60">
                     {q.items?.map((i) => `${i.description} (${i.width}x${i.height} ${i.unit})`).join(', ') || 'Custom Print Job'}
                   </div>
 
                   <div className="flex items-center justify-between pt-1">
-                    <div className="font-black tabular-nums text-base text-foreground dark:text-white">
+                    <div className="font-black tabular-nums text-base text-foreground">
                       <CurrencyDisplay amount={q.grand_total} />
                     </div>
                     {q.status !== 'converted' && !q.converted_order_id ? (
                       <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleConvertToOrder(q.id)}
-                        className="h-9 px-3 text-xs font-bold text-blue-600 hover:bg-blue-50"
-                      >
-                        Convert to Order
+ size="sm"variant="outline"onClick={() => handleConvertToOrder(q.id)}
+ className="h-9 px-3 text-xs font-bold text-blue-600 hover:bg-blue-50">
+ Convert to Order
                       </Button>
                     ) : (
                       <Link
-                        href={`/orders?search=${q.converted_order_id || ''}`}
-                        className="text-xs text-purple-600 font-bold hover:underline"
-                      >
-                        Job Order #{q.converted_order_id || 'View'} →
+ href={`/orders?search=${q.converted_order_id || ''}`}
+ className="text-xs text-purple-600 font-bold hover:underline">
+ Job Order #{q.converted_order_id || 'View'} →
                       </Link>
                     )}
                   </div>
@@ -444,7 +405,7 @@ export default function SalesManagerPage() {
               ))}
               {(quotations || []).length === 0 && (
                 <div className="p-8 text-center text-muted-foreground text-xs">
-                  No quotations found.
+ No quotations found.
                 </div>
               )}
             </div>
@@ -455,17 +416,17 @@ export default function SalesManagerPage() {
       {/* Job Orders List */}
       {activeTab === 'orders' && (
         <Card>
-          <CardHeader className="pb-3 border-b border-border dark:border-border">
+          <CardHeader className="pb-3 border-b border-border">
             <CardTitle className="text-base">Commercial Job Orders ({orders.length})</CardTitle>
             <CardDescription className="text-xs">
-              Track production and delivery statuses for sales team commission & customer follow-up.
+ Track production and delivery statuses for sales team commission & customer follow-up.
             </CardDescription>
           </CardHeader>
           <CardContent className="p-0">
             {/* Desktop Table */}
             <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-left text-sm">
-                <thead className="bg-muted text-xs font-semibold text-muted-foreground border-b border-border dark:border-border">
+                <thead className="bg-muted text-xs font-semibold text-muted-foreground border-b border-border">
                   <tr>
                     <th className="py-3 px-4">Order No.</th>
                     <th className="py-3 px-4">Customer</th>
@@ -483,8 +444,8 @@ export default function SalesManagerPage() {
                           {o.order_number}
                         </Link>
                       </td>
-                      <td className="py-3.5 px-4 font-semibold text-foreground dark:text-white">{o.customer_name}</td>
-                      <td className="py-3.5 px-4 font-bold text-foreground dark:text-white">
+                      <td className="py-3.5 px-4 font-semibold text-foreground">{o.customer_name}</td>
+                      <td className="py-3.5 px-4 font-bold text-foreground">
                         <CurrencyDisplay amount={o.final_price || 0} />
                       </td>
                       <td className="py-3.5 px-4 font-semibold text-emerald-600">
@@ -494,7 +455,7 @@ export default function SalesManagerPage() {
                         <CurrencyDisplay amount={o.due_amount || 0} />
                       </td>
                       <td className="py-3.5 px-4">
-                        <Badge variant="outline" className="text-xs capitalize">
+                        <Badge variant="outline"className="text-xs capitalize">
                           {o.status.replace('_', ' ')}
                         </Badge>
                       </td>
@@ -503,7 +464,7 @@ export default function SalesManagerPage() {
                   {(orders || []).length === 0 && (
                     <tr>
                       <td colSpan={6} className="py-8 text-center text-muted-foreground text-xs">
-                        No commercial job orders found.
+ No commercial job orders found.
                       </td>
                     </tr>
                   )}
@@ -518,24 +479,23 @@ export default function SalesManagerPage() {
                   <div className="flex items-start justify-between gap-2">
                     <div>
                       <Link
-                        href={`/orders/${o.id}`}
-                        className="tabular-nums text-xs font-bold text-blue-600 hover:underline"
-                      >
+ href={`/orders/${o.id}`}
+ className="tabular-nums text-xs font-bold text-blue-600 hover:underline">
                         {o.order_number}
                       </Link>
-                      <div className="font-semibold text-sm text-foreground dark:text-white mt-0.5">
+                      <div className="font-semibold text-sm text-foreground mt-0.5">
                         {o.customer_name}
                       </div>
                     </div>
-                    <Badge variant="outline" className="text-2xs capitalize">
+                    <Badge variant="outline"className="text-2xs capitalize">
                       {o.status.replace('_', ' ')}
                     </Badge>
                   </div>
 
-                  <div className="grid grid-cols-3 gap-2 p-2.5 bg-muted rounded-lg border border-border dark:border-border/60 text-center">
+                  <div className="grid grid-cols-3 gap-2 p-2.5 bg-muted rounded-lg border border-border /60 text-center">
                     <div>
                       <span className="text-2xs text-muted-foreground uppercase block">Total</span>
-                      <div className="tabular-nums font-bold text-xs text-foreground dark:text-white">
+                      <div className="tabular-nums font-bold text-xs text-foreground">
                         {formatBDT(o.final_price || 0)}
                       </div>
                     </div>
@@ -556,7 +516,7 @@ export default function SalesManagerPage() {
               ))}
               {(orders || []).length === 0 && (
                 <div className="p-8 text-center text-muted-foreground text-xs">
-                  No commercial job orders found.
+ No commercial job orders found.
                 </div>
               )}
             </div>
@@ -567,10 +527,10 @@ export default function SalesManagerPage() {
       {/* Leads List */}
       {activeTab === 'leads' && (
         <Card>
-          <CardHeader className="pb-3 border-b border-border dark:border-border">
+          <CardHeader className="pb-3 border-b border-border">
             <CardTitle className="text-base">Corporate Printing Leads</CardTitle>
             <CardDescription className="text-xs">
-              New prospective business inquiries from advertising agencies and corporate clients.
+ New prospective business inquiries from advertising agencies and corporate clients.
             </CardDescription>
           </CardHeader>
           <CardContent className="p-4 text-xs text-muted-foreground">

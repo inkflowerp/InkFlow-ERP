@@ -2,161 +2,161 @@
 
 import React, { useState, useMemo } from 'react'
 import {
-  Calendar,
-  Search,
-  Filter,
-  Clock,
-  UserCheck,
-  UserX,
-  UserMinus,
-  Activity,
-  MapPin,
-  QrCode,
-  Edit2,
-  CheckCircle2,
-  AlertTriangle,
-  ChevronLeft,
-  ChevronRight,
-  MoreVertical,
-  Plus,
+ Calendar,
+ Search,
+ Filter,
+ Clock,
+ UserCheck,
+ UserX,
+ UserMinus,
+ Activity,
+ MapPin,
+ QrCode,
+ Edit2,
+ CheckCircle2,
+ AlertTriangle,
+ ChevronLeft,
+ ChevronRight,
+ MoreVertical,
+ Plus,
 } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
+ DropdownMenu,
+ DropdownMenuContent,
+ DropdownMenuItem,
+ DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Skeleton } from '@/components/ui/skeleton'
 import type {
-  EmployeeRecord,
-  AttendanceDailySummaryRecord,
-  AttendanceDailyStatus,
+ EmployeeRecord,
+ AttendanceDailySummaryRecord,
+ AttendanceDailyStatus,
 } from '@/types/workforce.types'
 
 export interface AttendanceRosterProps {
-  employees: EmployeeRecord[]
-  attendanceRecords: AttendanceDailySummaryRecord[]
-  selectedDate: string
-  onDateChange: (date: string) => void
-  isLoading?: boolean
-  tenantSlug: string
-  branches?: Array<{ id: string; name: string }>
-  onMarkAttendance: (employee: EmployeeRecord, status: AttendanceDailyStatus) => void
-  onAdjustTime: (record: AttendanceDailySummaryRecord) => void
-  onOpenManualEntry: () => void
-  onOpenQrPunch: () => void
+ employees: EmployeeRecord[]
+ attendanceRecords: AttendanceDailySummaryRecord[]
+ selectedDate: string
+ onDateChange: (date: string) => void
+ isLoading?: boolean
+ tenantSlug: string
+ branches?: Array<{ id: string; name: string }>
+ onMarkAttendance: (employee: EmployeeRecord, status: AttendanceDailyStatus) => void
+ onAdjustTime: (record: AttendanceDailySummaryRecord) => void
+ onOpenManualEntry: () => void
+ onOpenQrPunch: () => void
 }
 
 export function AttendanceRoster({
-  employees,
-  attendanceRecords,
-  selectedDate,
-  onDateChange,
-  isLoading = false,
-  tenantSlug,
-  branches = [],
-  onMarkAttendance,
-  onAdjustTime,
-  onOpenManualEntry,
-  onOpenQrPunch,
+ employees,
+ attendanceRecords,
+ selectedDate,
+ onDateChange,
+ isLoading = false,
+ tenantSlug,
+ branches = [],
+ onMarkAttendance,
+ onAdjustTime,
+ onOpenManualEntry,
+ onOpenQrPunch,
 }: AttendanceRosterProps) {
-  const [searchTerm, setSearchTerm] = useState('')
-  const [selectedDept, setSelectedDept] = useState('all')
-  const [selectedBranch, setSelectedBranch] = useState('all')
+ const [searchTerm, setSearchTerm] = useState('')
+ const [selectedDept, setSelectedDept] = useState('all')
+ const [selectedBranch, setSelectedBranch] = useState('all')
 
   // Map employee with their attendance summary for this date
-  const rosterItems = useMemo(() => {
-    const recordMap = new Map<string, AttendanceDailySummaryRecord>()
-    for (const rec of attendanceRecords) {
-      recordMap.set(rec.employee_id, rec)
+ const rosterItems = useMemo(() => {
+ const recordMap = new Map<string, AttendanceDailySummaryRecord>()
+ for (const rec of attendanceRecords) {
+ recordMap.set(rec.employee_id, rec)
     }
 
-    return employees.map((emp) => {
-      const summary = recordMap.get(emp.id) || null
-      return {
-        employee: emp,
-        summary,
-        status: (summary?.status || 'absent') as AttendanceDailyStatus,
+ return employees.map((emp) => {
+ const summary = recordMap.get(emp.id) || null
+ return {
+ employee: emp,
+ summary,
+ status: (summary?.status || 'absent') as AttendanceDailyStatus,
       }
     })
   }, [employees, attendanceRecords])
 
-  const filteredRoster = useMemo(() => {
-    return rosterItems.filter(({ employee, summary }) => {
-      const query = searchTerm.toLowerCase().trim()
-      if (query) {
-        const matchesName = employee.name.toLowerCase().includes(query) || (employee.name_bn && employee.name_bn.toLowerCase().includes(query))
-        const matchesId = employee.employee_id_number?.toLowerCase().includes(query)
-        const matchesRole = employee.role?.toLowerCase().includes(query)
-        if (!matchesName && !matchesId && !matchesRole) return false
+ const filteredRoster = useMemo(() => {
+ return rosterItems.filter(({ employee, summary }) => {
+ const query = searchTerm.toLowerCase().trim()
+ if (query) {
+ const matchesName = employee.name.toLowerCase().includes(query) || (employee.name_bn && employee.name_bn.toLowerCase().includes(query))
+ const matchesId = employee.employee_id_number?.toLowerCase().includes(query)
+ const matchesRole = employee.role?.toLowerCase().includes(query)
+ if (!matchesName && !matchesId && !matchesRole) return false
       }
 
-      if (selectedDept !== 'all' && employee.department?.toLowerCase() !== selectedDept.toLowerCase()) {
-        return false
+ if (selectedDept !== 'all' && employee.department?.toLowerCase() !== selectedDept.toLowerCase()) {
+ return false
       }
 
-      if (selectedBranch !== 'all' && employee.branch_id !== selectedBranch) {
-        return false
+ if (selectedBranch !== 'all' && employee.branch_id !== selectedBranch) {
+ return false
       }
 
-      return true
+ return true
     })
   }, [rosterItems, searchTerm, selectedDept, selectedBranch])
 
   // Top KPIs
-  const stats = useMemo(() => {
-    let present = 0
-    let late = 0
-    let absent = 0
-    let leave = 0
-    let fieldWork = 0
-    let currentlyWorking = 0
+ const stats = useMemo(() => {
+ let present = 0
+ let late = 0
+ let absent = 0
+ let leave = 0
+ let fieldWork = 0
+ let currentlyWorking = 0
 
-    for (const item of rosterItems) {
-      if (item.summary) {
-        if (item.summary.status === 'present' || item.summary.status === 'half_day') present++
-        if (item.summary.status === 'late' || item.summary.late_minutes > 0) late++
-        if (item.summary.status === 'leave') leave++
-        if (item.summary.status === 'field_work') fieldWork++
-        if (item.summary.check_in_time && !item.summary.check_out_time) currentlyWorking++
+ for (const item of rosterItems) {
+ if (item.summary) {
+ if (item.summary.status === 'present' || item.summary.status === 'half_day') present++
+ if (item.summary.status === 'late' || item.summary.late_minutes > 0) late++
+ if (item.summary.status === 'leave') leave++
+ if (item.summary.status === 'field_work') fieldWork++
+ if (item.summary.check_in_time && !item.summary.check_out_time) currentlyWorking++
       } else {
-        absent++
+ absent++
       }
     }
-    return { present, late, absent, leave, fieldWork, currentlyWorking }
+ return { present, late, absent, leave, fieldWork, currentlyWorking }
   }, [rosterItems])
 
-  const getStatusBadge = (status: AttendanceDailyStatus) => {
-    switch (status) {
-      case 'present':
-      case 'half_day':
-        return 'bg-emerald-50 text-emerald-700 border-emerald-200'
-      case 'late':
-        return 'bg-amber-50 text-amber-700 border-amber-200'
-      case 'absent':
-        return 'bg-red-50 text-red-700 border-red-200'
-      case 'leave':
-        return 'bg-blue-50 text-blue-700 border-blue-200'
-      case 'field_work':
-        return 'bg-purple-50 text-purple-700 border-purple-200'
-      default:
-        return 'bg-muted text-foreground border-border'
+ const getStatusBadge = (status: AttendanceDailyStatus) => {
+ switch (status) {
+ case 'present':
+ case 'half_day':
+ return 'bg-emerald-50 text-emerald-700 border-emerald-200'
+ case 'late':
+ return 'bg-amber-50 text-amber-700 border-amber-200'
+ case 'absent':
+ return 'bg-red-50 text-red-700 border-red-200'
+ case 'leave':
+ return 'bg-blue-50 text-blue-700 border-blue-200'
+ case 'field_work':
+ return 'bg-purple-50 text-purple-700 border-purple-200'
+ default:
+ return 'bg-muted text-foreground border-border'
     }
   }
 
-  const shiftDate = (days: number) => {
-    const cur = new Date(selectedDate)
-    cur.setDate(cur.getDate() + days)
-    onDateChange(cur.toISOString().split('T')[0])
+ const shiftDate = (days: number) => {
+ const cur = new Date(selectedDate)
+ cur.setDate(cur.getDate() + days)
+ onDateChange(cur.toISOString().split('T')[0])
   }
 
-  const isToday = selectedDate === new Date().toISOString().split('T')[0]
+ const isToday = selectedDate === new Date().toISOString().split('T')[0]
 
-  return (
+ return (
     <div className="space-y-4">
       {/* KPI Cards Row */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
@@ -199,40 +199,29 @@ export function AttendanceRoster({
             {/* Date Selector */}
             <div className="flex items-center gap-2">
               <Button
-                variant="outline"
-                size="sm"
-                onClick={() => shiftDate(-1)}
-                className="h-8 w-8 p-0 border-border text-muted-foreground hover:bg-muted"
-              >
-                <ChevronLeft className="w-4 h-4" />
+ variant="outline"size="sm"onClick={() => shiftDate(-1)}
+ className="h-8 w-8 p-0 border-border text-muted-foreground hover:bg-muted">
+                <ChevronLeft className="w-4 h-4"/>
               </Button>
 
               <div className="relative">
                 <Input
-                  type="date"
-                  value={selectedDate}
-                  onChange={(e) => onDateChange(e.target.value)}
-                  className="h-8 text-xs font-semibold bg-card border-border w-36 pl-3"
-                />
+ type="date"value={selectedDate}
+ onChange={(e) => onDateChange(e.target.value)}
+ className="h-8 text-xs font-semibold bg-card border-border w-36 pl-3"/>
               </div>
 
               <Button
-                variant="outline"
-                size="sm"
-                onClick={() => shiftDate(1)}
-                className="h-8 w-8 p-0 border-border text-muted-foreground hover:bg-muted"
-              >
-                <ChevronRight className="w-4 h-4" />
+ variant="outline"size="sm"onClick={() => shiftDate(1)}
+ className="h-8 w-8 p-0 border-border text-muted-foreground hover:bg-muted">
+                <ChevronRight className="w-4 h-4"/>
               </Button>
 
               {!isToday && (
                 <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => onDateChange(new Date().toISOString().split('T')[0])}
-                  className="h-8 text-xs text-blue-600 hover:text-blue-700 px-2 font-medium"
-                >
-                  Today
+ variant="ghost"size="sm"onClick={() => onDateChange(new Date().toISOString().split('T')[0])}
+ className="h-8 text-xs text-blue-600 hover:text-blue-700 px-2 font-medium">
+ Today
                 </Button>
               )}
             </div>
@@ -240,21 +229,16 @@ export function AttendanceRoster({
             {/* Quick Actions */}
             <div className="flex items-center gap-2 flex-wrap">
               <Button
-                variant="outline"
-                size="sm"
-                onClick={onOpenQrPunch}
-                className="h-8 text-xs border-border hover:bg-muted text-foreground min-h-[32px]"
-              >
-                <QrCode className="w-3.5 h-3.5 mr-1.5 text-blue-600" />
+ variant="outline"size="sm"onClick={onOpenQrPunch}
+ className="h-8 text-xs border-border hover:bg-muted text-foreground min-h-[32px]">
+                <QrCode className="w-3.5 h-3.5 mr-1.5 text-blue-600"/>
                 <span>QR Attendance</span>
               </Button>
 
               <Button
-                size="sm"
-                onClick={onOpenManualEntry}
-                className="h-8 px-3 text-xs font-medium bg-primary hover:bg-primary/90 text-primary-foreground min-h-[32px]"
-              >
-                <Plus className="w-3.5 h-3.5 mr-1" />
+ size="sm"onClick={onOpenManualEntry}
+ className="h-8 px-3 text-xs font-medium bg-primary hover:bg-primary/90 text-primary-foreground min-h-[32px]">
+                <Plus className="w-3.5 h-3.5 mr-1"/>
                 <span>Manual Punch</span>
               </Button>
             </div>
@@ -263,21 +247,17 @@ export function AttendanceRoster({
           {/* Search & Filter Row */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pt-2 border-t border-border">
             <div className="relative flex-1 max-w-sm">
-              <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+              <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"/>
               <Input
-                type="text"
-                placeholder="Search roster..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-8 h-8 text-xs bg-muted border-border"
-              />
+ type="text"placeholder="Search roster..."value={searchTerm}
+ onChange={(e) => setSearchTerm(e.target.value)}
+ className="pl-8 h-8 text-xs bg-muted border-border"/>
             </div>
 
             <select
-              value={selectedDept}
-              onChange={(e) => setSelectedDept(e.target.value)}
-              className="h-8 rounded-md border border-border bg-card px-2.5 text-xs text-foreground"
-            >
+ value={selectedDept}
+ onChange={(e) => setSelectedDept(e.target.value)}
+ className="h-8 rounded-md border border-border bg-card px-2.5 text-xs text-foreground">
               <option value="all">All Departments</option>
               <option value="printing">Printing</option>
               <option value="finishing">Finishing</option>
@@ -291,10 +271,9 @@ export function AttendanceRoster({
 
             {branches.length > 0 && (
               <select
-                value={selectedBranch}
-                onChange={(e) => setSelectedBranch(e.target.value)}
-                className="h-8 rounded-md border border-border bg-card px-2.5 text-xs text-foreground"
-              >
+ value={selectedBranch}
+ onChange={(e) => setSelectedBranch(e.target.value)}
+ className="h-8 rounded-md border border-border bg-card px-2.5 text-xs text-foreground">
                 <option value="all">All Branches</option>
                 {branches.map((b) => (
                   <option key={b.id} value={b.id}>
@@ -305,7 +284,7 @@ export function AttendanceRoster({
             )}
 
             <span className="text-muted-foreground text-xs ml-auto shrink-0">
-              Showing {filteredRoster.length} staff
+ Showing {filteredRoster.length} staff
             </span>
           </div>
         </CardContent>
@@ -316,7 +295,7 @@ export function AttendanceRoster({
         <Card className="bg-card border-border p-6">
           <div className="space-y-3">
             {Array.from({ length: 6 }).map((_, i) => (
-              <Skeleton key={i} className="h-12 w-full rounded-lg" />
+              <Skeleton key={i} className="h-12 w-full rounded-lg"/>
             ))}
           </div>
         </Card>
@@ -346,7 +325,7 @@ export function AttendanceRoster({
               </thead>
               <tbody className="divide-y divide-border">
                 {filteredRoster.map(({ employee, summary, status }) => {
-                  return (
+ return (
                     <tr key={employee.id} className="hover:bg-muted transition-colors">
                       {/* Employee */}
                       <td className="py-3 px-4">
@@ -369,9 +348,8 @@ export function AttendanceRoster({
                       {/* Status */}
                       <td className="py-3 px-3 text-center">
                         <Badge
-                          variant="outline"
-                          className={`text-[10px] font-semibold capitalize px-2 py-0.5 rounded-full ${getStatusBadge(
-                            status
+ variant="outline"className={`text-[10px] font-semibold capitalize px-2 py-0.5 rounded-full ${getStatusBadge(
+ status
                           )}`}
                         >
                           {status}
@@ -421,32 +399,29 @@ export function AttendanceRoster({
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg min-h-[32px] min-w-[32px]"
-                            >
-                              <MoreVertical className="w-4 h-4" />
+ variant="ghost"size="sm"className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg min-h-[32px] min-w-[32px]">
+                              <MoreVertical className="w-4 h-4"/>
                             </Button>
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="w-44 text-xs font-medium">
+                          <DropdownMenuContent align="end"className="w-44 text-xs font-medium">
                             <DropdownMenuItem onClick={() => onMarkAttendance(employee, 'present')}>
-                              <UserCheck className="w-3.5 h-3.5 mr-2 text-emerald-600" />
+                              <UserCheck className="w-3.5 h-3.5 mr-2 text-emerald-600"/>
                               <span>Mark Present</span>
                             </DropdownMenuItem>
 
                             <DropdownMenuItem onClick={() => onMarkAttendance(employee, 'late')}>
-                              <Clock className="w-3.5 h-3.5 mr-2 text-amber-600" />
+                              <Clock className="w-3.5 h-3.5 mr-2 text-amber-600"/>
                               <span>Mark Late</span>
                             </DropdownMenuItem>
 
                             <DropdownMenuItem onClick={() => onMarkAttendance(employee, 'absent')}>
-                              <UserX className="w-3.5 h-3.5 mr-2 text-red-600" />
+                              <UserX className="w-3.5 h-3.5 mr-2 text-red-600"/>
                               <span>Mark Absent</span>
                             </DropdownMenuItem>
 
                             {summary && (
                               <DropdownMenuItem onClick={() => onAdjustTime(summary)}>
-                                <Edit2 className="w-3.5 h-3.5 mr-2 text-blue-600" />
+                                <Edit2 className="w-3.5 h-3.5 mr-2 text-blue-600"/>
                                 <span>Adjust Punch Times</span>
                               </DropdownMenuItem>
                             )}

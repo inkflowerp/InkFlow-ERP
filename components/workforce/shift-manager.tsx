@@ -2,14 +2,14 @@
 
 import React, { useState } from 'react'
 import {
-  Clock,
-  Plus,
-  Users,
-  Check,
-  AlertCircle,
-  MoreVertical,
-  Calendar,
-  Building,
+ Clock,
+ Plus,
+ Users,
+ Check,
+ AlertCircle,
+ MoreVertical,
+ Calendar,
+ Building,
 } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -17,93 +17,93 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
+ Dialog,
+ DialogContent,
+ DialogHeader,
+ DialogTitle,
 } from '@/components/ui/dialog'
 import { Skeleton } from '@/components/ui/skeleton'
 import type { ShiftRecord, EmployeeRecord } from '@/types/workforce.types'
 
 export interface ShiftManagerProps {
-  shifts: ShiftRecord[]
-  employees: EmployeeRecord[]
-  isLoading?: boolean
-  tenantSlug: string
-  onCreateShift: (data: Partial<ShiftRecord>) => Promise<void>
-  onAssignEmployeeShift?: (employeeId: string, shiftId: string) => Promise<void>
+ shifts: ShiftRecord[]
+ employees: EmployeeRecord[]
+ isLoading?: boolean
+ tenantSlug: string
+ onCreateShift: (data: Partial<ShiftRecord>) => Promise<void>
+ onAssignEmployeeShift?: (employeeId: string, shiftId: string) => Promise<void>
 }
 
 export function ShiftManager({
-  shifts,
-  employees,
-  isLoading = false,
-  tenantSlug,
-  onCreateShift,
-  onAssignEmployeeShift,
+ shifts,
+ employees,
+ isLoading = false,
+ tenantSlug,
+ onCreateShift,
+ onAssignEmployeeShift,
 }: ShiftManagerProps) {
-  const [modalOpen, setModalOpen] = useState(false)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [errorMsg, setErrorMsg] = useState<string | null>(null)
+ const [modalOpen, setModalOpen] = useState(false)
+ const [isSubmitting, setIsSubmitting] = useState(false)
+ const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
-  const [shiftData, setShiftData] = useState<Partial<ShiftRecord>>({
-    shift_name: '',
-    shift_code: '',
-    start_time: '09:00',
-    end_time: '18:00',
-    is_overnight: false,
-    grace_period_minutes: 15,
-    break_duration_minutes: 60,
-    working_days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Saturday', 'Sunday'],
-    is_active: true,
+ const [shiftData, setShiftData] = useState<Partial<ShiftRecord>>({
+ shift_name: '',
+ shift_code: '',
+ start_time: '09:00',
+ end_time: '18:00',
+ is_overnight: false,
+ grace_period_minutes: 15,
+ break_duration_minutes: 60,
+ working_days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Saturday', 'Sunday'],
+ is_active: true,
   })
 
-  const handleCreate = async () => {
-    setErrorMsg(null)
-    if (!shiftData.shift_name?.trim()) {
-      setErrorMsg('Shift name is required.')
-      return
+ const handleCreate = async () => {
+ setErrorMsg(null)
+ if (!shiftData.shift_name?.trim()) {
+ setErrorMsg('Shift name is required.')
+ return
     }
-    if (!shiftData.shift_code?.trim()) {
-      setErrorMsg('Shift code is required.')
-      return
+ if (!shiftData.shift_code?.trim()) {
+ setErrorMsg('Shift code is required.')
+ return
     }
 
-    setIsSubmitting(true)
-    try {
-      await onCreateShift(shiftData)
-      setModalOpen(false)
-      setShiftData({
-        shift_name: '',
-        shift_code: '',
-        start_time: '09:00',
-        end_time: '18:00',
-        is_overnight: false,
-        grace_period_minutes: 15,
-        break_duration_minutes: 60,
-        working_days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Saturday', 'Sunday'],
-        is_active: true,
+ setIsSubmitting(true)
+ try {
+ await onCreateShift(shiftData)
+ setModalOpen(false)
+ setShiftData({
+ shift_name: '',
+ shift_code: '',
+ start_time: '09:00',
+ end_time: '18:00',
+ is_overnight: false,
+ grace_period_minutes: 15,
+ break_duration_minutes: 60,
+ working_days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Saturday', 'Sunday'],
+ is_active: true,
       })
     } catch (err: any) {
-      setErrorMsg(err.message || 'Failed to create shift')
+ setErrorMsg(err.message || 'Failed to create shift')
     } finally {
-      setIsSubmitting(false)
+ setIsSubmitting(false)
     }
   }
 
-  if (isLoading) {
-    return (
+ if (isLoading) {
+ return (
       <Card className="bg-card border-border p-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {Array.from({ length: 3 }).map((_, i) => (
-            <Skeleton key={i} className="h-32 w-full rounded-xl" />
+            <Skeleton key={i} className="h-32 w-full rounded-xl"/>
           ))}
         </div>
       </Card>
     )
   }
 
-  return (
+ return (
     <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between gap-4">
@@ -113,11 +113,9 @@ export function ShiftManager({
         </div>
 
         <Button
-          size="sm"
-          onClick={() => setModalOpen(true)}
-          className="h-8 px-3 text-xs font-semibold bg-primary hover:bg-primary/90 text-primary-foreground min-h-[32px]"
-        >
-          <Plus className="w-3.5 h-3.5 mr-1" />
+ size="sm"onClick={() => setModalOpen(true)}
+ className="h-8 px-3 text-xs font-semibold bg-primary hover:bg-primary/90 text-primary-foreground min-h-[32px]">
+          <Plus className="w-3.5 h-3.5 mr-1"/>
           <span>New Shift</span>
         </Button>
       </div>
@@ -127,30 +125,27 @@ export function ShiftManager({
         <Card className="bg-card border-border py-12 text-center">
           <p className="text-sm font-medium text-muted-foreground">No custom shifts configured yet</p>
           <p className="text-xs text-muted-foreground mt-1 mb-4">
-            Standard 09:00 AM - 06:00 PM roster is currently used for all active staff.
+ Standard 09:00 AM - 06:00 PM roster is currently used for all active staff.
           </p>
           <Button
-            size="sm"
-            onClick={() => setModalOpen(true)}
-            className="h-8 px-3.5 text-xs bg-blue-600 text-white"
-          >
-            Create First Shift
+ size="sm"onClick={() => setModalOpen(true)}
+ className="h-8 px-3.5 text-xs bg-blue-600 text-white">
+ Create First Shift
           </Button>
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {shifts.map((shift) => (
             <Card
-              key={shift.id}
-              className="p-4 bg-card border-border shadow-[0_1px_3px_rgba(0,0,0,0.02)] rounded-xl flex flex-col justify-between"
-            >
+ key={shift.id}
+ className="p-4 bg-card border-border shadow-[0_1px_3px_rgba(0,0,0,0.02)] rounded-xl flex flex-col justify-between">
               <div>
                 <div className="flex items-start justify-between gap-2 mb-2">
                   <div>
                     <h4 className="font-semibold text-foreground text-sm">{shift.shift_name}</h4>
                     <span className="font-mono text-[11px] text-muted-foreground">{shift.shift_code}</span>
                   </div>
-                  <Badge variant="outline" className="bg-muted text-muted-foreground text-[10px]">
+                  <Badge variant="outline"className="bg-muted text-muted-foreground text-[10px]">
                     {shift.is_overnight ? 'Overnight' : 'Day Shift'}
                   </Badge>
                 </div>
@@ -183,14 +178,14 @@ export function ShiftManager({
 
       {/* New Shift Modal */}
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-        <DialogContent className="max-w-md p-6 bg-card border-border shadow-xl rounded-2xl space-y-4">
+        <DialogContent className="max-w-md p-6 bg-card border-border shadow-xs rounded-xl space-y-4">
           <DialogHeader>
             <DialogTitle className="text-base font-bold text-foreground">Create Work Shift</DialogTitle>
           </DialogHeader>
 
           {errorMsg && (
             <div className="p-3 rounded-lg bg-red-50 text-red-700 text-xs flex items-center gap-1.5">
-              <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
+              <AlertCircle className="w-4 h-4 shrink-0 text-red-600"/>
               <span>{errorMsg}</span>
             </div>
           )}
@@ -199,41 +194,33 @@ export function ShiftManager({
             <div>
               <Label className="text-xs font-semibold text-foreground">Shift Name *</Label>
               <Input
-                placeholder="e.g. Morning Offset Shift"
-                value={shiftData.shift_name || ''}
-                onChange={(e) => setShiftData({ ...shiftData, shift_name: e.target.value })}
-                className="h-8 text-xs mt-1"
-              />
+ placeholder="e.g. Morning Offset Shift"value={shiftData.shift_name || ''}
+ onChange={(e) => setShiftData({ ...shiftData, shift_name: e.target.value })}
+ className="h-8 text-xs mt-1"/>
             </div>
 
             <div>
               <Label className="text-xs font-semibold text-foreground">Shift Code *</Label>
               <Input
-                placeholder="e.g. SHT-AM"
-                value={shiftData.shift_code || ''}
-                onChange={(e) => setShiftData({ ...shiftData, shift_code: e.target.value })}
-                className="h-8 text-xs mt-1 font-mono"
-              />
+ placeholder="e.g. SHT-AM"value={shiftData.shift_code || ''}
+ onChange={(e) => setShiftData({ ...shiftData, shift_code: e.target.value })}
+ className="h-8 text-xs mt-1 font-mono"/>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label className="text-xs font-semibold text-foreground">Start Time</Label>
                 <Input
-                  type="time"
-                  value={shiftData.start_time || '09:00'}
-                  onChange={(e) => setShiftData({ ...shiftData, start_time: e.target.value })}
-                  className="h-8 text-xs mt-1"
-                />
+ type="time"value={shiftData.start_time || '09:00'}
+ onChange={(e) => setShiftData({ ...shiftData, start_time: e.target.value })}
+ className="h-8 text-xs mt-1"/>
               </div>
               <div>
                 <Label className="text-xs font-semibold text-foreground">End Time</Label>
                 <Input
-                  type="time"
-                  value={shiftData.end_time || '18:00'}
-                  onChange={(e) => setShiftData({ ...shiftData, end_time: e.target.value })}
-                  className="h-8 text-xs mt-1"
-                />
+ type="time"value={shiftData.end_time || '18:00'}
+ onChange={(e) => setShiftData({ ...shiftData, end_time: e.target.value })}
+ className="h-8 text-xs mt-1"/>
               </div>
             </div>
 
@@ -241,41 +228,30 @@ export function ShiftManager({
               <div>
                 <Label className="text-xs font-semibold text-foreground">Grace Period (Mins)</Label>
                 <Input
-                  type="number"
-                  value={shiftData.grace_period_minutes ?? 15}
-                  onChange={(e) => setShiftData({ ...shiftData, grace_period_minutes: parseInt(e.target.value) || 0 })}
-                  className="h-8 text-xs mt-1"
-                />
+ type="number"value={shiftData.grace_period_minutes ?? 15}
+ onChange={(e) => setShiftData({ ...shiftData, grace_period_minutes: parseInt(e.target.value) || 0 })}
+ className="h-8 text-xs mt-1"/>
               </div>
               <div>
                 <Label className="text-xs font-semibold text-foreground">Break (Mins)</Label>
                 <Input
-                  type="number"
-                  value={shiftData.break_duration_minutes ?? 60}
-                  onChange={(e) => setShiftData({ ...shiftData, break_duration_minutes: parseInt(e.target.value) || 0 })}
-                  className="h-8 text-xs mt-1"
-                />
+ type="number"value={shiftData.break_duration_minutes ?? 60}
+ onChange={(e) => setShiftData({ ...shiftData, break_duration_minutes: parseInt(e.target.value) || 0 })}
+ className="h-8 text-xs mt-1"/>
               </div>
             </div>
           </div>
 
           <div className="flex items-center justify-end gap-2 pt-2 border-t border-border">
             <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => setModalOpen(false)}
-              className="h-8 text-xs border-border"
-            >
-              Cancel
+ type="button"variant="outline"size="sm"onClick={() => setModalOpen(false)}
+ className="h-8 text-xs border-border">
+ Cancel
             </Button>
             <Button
-              type="button"
-              size="sm"
-              onClick={handleCreate}
-              disabled={isSubmitting}
-              className="h-8 px-4 text-xs font-semibold bg-primary hover:bg-primary/90 text-primary-foreground min-h-[32px]"
-            >
+ type="button"size="sm"onClick={handleCreate}
+ disabled={isSubmitting}
+ className="h-8 px-4 text-xs font-semibold bg-primary hover:bg-primary/90 text-primary-foreground min-h-[32px]">
               {isSubmitting ? 'Saving...' : 'Save Shift'}
             </Button>
           </div>

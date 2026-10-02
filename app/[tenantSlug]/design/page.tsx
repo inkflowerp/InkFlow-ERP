@@ -6,10 +6,10 @@ import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
 import { Palette } from 'lucide-react'
 
 function DesignPanelLoading() {
-  return (
+ return (
     <div className="flex flex-col items-center justify-center min-h-[400px] space-y-3">
       <div className="h-10 w-10 rounded-xl bg-pink-600 text-white flex items-center justify-center animate-pulse">
-        <Palette className="h-5 w-5 animate-spin" />
+        <Palette className="h-5 w-5 animate-spin"/>
       </div>
       <p className="text-sm font-semibold text-muted-foreground">Loading Design Panel...</p>
     </div>
@@ -17,15 +17,11 @@ function DesignPanelLoading() {
 }
 
 export default function DesignPage() {
-  return (
+ return (
     <PanelAccessGuard
-      module="design"
-      action="view"
-      panelTitle="Design Panel"
-      panelTitleBn="ডিজাইন প্যানেল"
-    >
+ module="design"action="view"panelTitle="Design Panel"panelTitleBn="ডিজাইন প্যানেল">
       <Suspense fallback={<DesignPanelLoading />}>
-        <DesignPanel defaultTab="new_tasks" />
+        <DesignPanel defaultTab="new_tasks"/>
       </Suspense>
     </PanelAccessGuard>
   )

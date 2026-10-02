@@ -9,83 +9,78 @@ import { useI18n } from '@/i18n/context'
 import { formatDate } from '@/lib/formatters'
 
 interface PrintableQrPosterProps {
-  location: AttendanceLocationRecord
-  companyName: string
-  companyNameBn?: string | null
-  logoUrl?: string | null
-  onClose?: () => void
+ location: AttendanceLocationRecord
+ companyName: string
+ companyNameBn?: string | null
+ logoUrl?: string | null
+ onClose?: () => void
 }
 
 export function PrintableQrPoster({
-  location,
-  companyName,
-  companyNameBn,
-  logoUrl,
-  onClose,
+ location,
+ companyName,
+ companyNameBn,
+ logoUrl,
+ onClose,
 }: PrintableQrPosterProps) {
-  const { tBilingual } = useI18n()
-  const posterRef = useRef<HTMLDivElement>(null)
+ const { tBilingual } = useI18n()
+ const posterRef = useRef<HTMLDivElement>(null)
 
-  const activeToken = location.active_qr_token
-  const qrValue = activeToken?.raw_token
+ const activeToken = location.active_qr_token
+ const qrValue = activeToken?.raw_token
     ? `INKFLOW:ATT:v1:${activeToken.raw_token}`
     : `INKFLOW:ATT:LOC:${location.id}`
 
-  const generatedDate = formatDate(
-    activeToken?.created_at || new Date(),
+ const generatedDate = formatDate(
+ activeToken?.created_at || new Date(),
     'en',
     { day: '2-digit', month: 'short', year: 'numeric' }
   )
 
-  const handlePrint = () => {
-    window.print()
+ const handlePrint = () => {
+ window.print()
   }
 
-  const handleDownloadSvg = () => {
-    const svgElement = posterRef.current?.querySelector('svg')
-    if (!svgElement) return
+ const handleDownloadSvg = () => {
+ const svgElement = posterRef.current?.querySelector('svg')
+ if (!svgElement) return
 
-    const svgData = new XMLSerializer().serializeToString(svgElement)
-    const blob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' })
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = `${location.name.toLowerCase().replace(/[^a-z0-9]/g, '-')}-qr.svg`
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-    URL.revokeObjectURL(url)
+ const svgData = new XMLSerializer().serializeToString(svgElement)
+ const blob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' })
+ const url = URL.createObjectURL(blob)
+ const link = document.createElement('a')
+ link.href = url
+ link.download = `${location.name.toLowerCase().replace(/[^a-z0-9]/g, '-')}-qr.svg`
+ document.body.appendChild(link)
+ link.click()
+ document.body.removeChild(link)
+ URL.revokeObjectURL(url)
   }
 
-  return (
+ return (
     <div className="space-y-4">
       {/* Top Action Bar (hidden when printing) */}
-      <div className="flex flex-wrap items-center justify-between gap-2 p-3 bg-slate-900 border border-border rounded-xl print:hidden">
+      <div className="flex flex-wrap items-center justify-between gap-2 p-3 bg-surface-inset border border-border rounded-xl print:hidden">
         <div className="flex items-center gap-2 text-muted-foreground text-xs">
-          <QrCode className="h-4 w-4 text-indigo-400" />
+          <QrCode className="h-4 w-4 text-indigo-400"/>
           <span>{tBilingual('Printable QR Poster for Location Entrance', 'লোকেশন প্রবেশদ্বারের জন্য প্রিন্ট উপযোগী পোস্টার')}</span>
         </div>
         <div className="flex items-center gap-2">
           {onClose && (
-            <Button type="button" variant="outline" size="sm" onClick={onClose} className="h-8 text-xs border-border">
-              Close
+            <Button type="button"variant="outline"size="sm"onClick={onClose} className="h-8 text-xs border-border">
+ Close
             </Button>
           )}
           <Button
-            type="button"
-            variant="outline"
-            onClick={handleDownloadSvg}
-            className="h-8 text-xs border-indigo-500/40 bg-slate-800 hover:bg-slate-700 text-indigo-300 font-bold flex items-center gap-1.5 cursor-pointer"
-          >
-            <Download className="h-3.5 w-3.5" />
+ type="button"variant="outline"onClick={handleDownloadSvg}
+ className="h-8 text-xs border-indigo-500/40 bg-card-elevated hover:bg-card-elevated text-indigo-300 font-bold flex items-center gap-1.5 cursor-pointer">
+            <Download className="h-3.5 w-3.5"/>
             <span>Download SVG</span>
           </Button>
           <Button
-            type="button"
-            onClick={handlePrint}
-            className="h-8 text-xs bg-indigo-600 hover:bg-indigo-500 text-white font-bold flex items-center gap-1.5 cursor-pointer shadow-md"
-          >
-            <Printer className="h-3.5 w-3.5" />
+ type="button"onClick={handlePrint}
+ className="h-8 text-xs bg-indigo-600 hover:bg-indigo-500 text-white font-bold flex items-center gap-1.5 cursor-pointer shadow-xs">
+            <Printer className="h-3.5 w-3.5"/>
             <span>Print Poster (প্রিন্ট করুন)</span>
           </Button>
         </div>
@@ -93,13 +88,12 @@ export function PrintableQrPoster({
 
       {/* Printable Poster Sheet (A4 format) */}
       <div
-        ref={posterRef}
-        className="bg-card text-foreground print:bg-white print:dark:bg-card print:text-foreground print:dark:text-foreground p-8 sm:p-12 rounded-2xl border border-input shadow-2xl max-w-lg mx-auto print:max-w-none print:w-full print:p-8 print:shadow-none print:border-none print:rounded-none"
-      >
+ ref={posterRef}
+ className="bg-card text-foreground print:bg-white print: print:text-foreground print: p-8 sm:p-12 rounded-xl border border-input shadow-lg max-w-lg mx-auto print:max-w-none print:w-full print:p-8 print:shadow-none print:border-none print:rounded-none">
         {/* Poster Header */}
-        <div className="text-center space-y-2 border-b-2 border-slate-900 pb-6">
+        <div className="text-center space-y-2 border-b-2 border-border pb-6">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200 text-xs font-bold tracking-wider uppercase">
-            <ShieldCheck className="h-4 w-4" />
+            <ShieldCheck className="h-4 w-4"/>
             <span>InkFlow ERP • Smart Attendance</span>
           </div>
 
@@ -114,14 +108,14 @@ export function PrintableQrPoster({
         {/* Location Badge */}
         <div className="my-6 text-center space-y-1">
           <span className="text-2xs font-bold text-indigo-600 uppercase tracking-widest block">
-            Official Attendance Terminal (হাজিরা পয়েন্ট)
+ Official Attendance Terminal (হাজিরা পয়েন্ট)
           </span>
           <h2 className="text-xl sm:text-2xl font-black text-foreground tracking-tight">
             {location.name}
           </h2>
           {location.address && (
             <p className="text-xs text-muted-foreground flex items-center justify-center gap-1 max-w-xs mx-auto">
-              <MapPin className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+              <MapPin className="h-3.5 w-3.5 text-muted-foreground shrink-0"/>
               <span>{location.address}</span>
             </p>
           )}
@@ -129,28 +123,25 @@ export function PrintableQrPoster({
 
         {/* QR Code Container */}
         <div className="my-8 flex flex-col items-center justify-center">
-          <div className="p-4 bg-card border-4 border-slate-900 rounded-3xl shadow-lg relative">
+          <div className="p-4 bg-card border-4 border-border rounded-3xl shadow-xs relative">
             <QRCodeSVG
-              value={qrValue}
-              size={220}
-              bgColor="#FFFFFF"
-              fgColor="#0F172A"
-              includeMargin={false}
-              className="rounded-xl"
-            />
+ value={qrValue}
+ size={220}
+ bgColor="#FFFFFF"fgColor="#0F172A"includeMargin={false}
+ className="rounded-xl"/>
             {/* Corner Target Markers */}
-            <div className="absolute -top-2 -left-2 w-6 h-6 border-t-4 border-l-4 border-indigo-600" />
-            <div className="absolute -top-2 -right-2 w-6 h-6 border-t-4 border-r-4 border-indigo-600" />
-            <div className="absolute -bottom-2 -left-2 w-6 h-6 border-b-4 border-l-4 border-indigo-600" />
-            <div className="absolute -bottom-2 -right-2 w-6 h-6 border-b-4 border-r-4 border-indigo-600" />
+            <div className="absolute -top-2 -left-2 w-6 h-6 border-t-4 border-l-4 border-indigo-600"/>
+            <div className="absolute -top-2 -right-2 w-6 h-6 border-t-4 border-r-4 border-indigo-600"/>
+            <div className="absolute -bottom-2 -left-2 w-6 h-6 border-b-4 border-l-4 border-indigo-600"/>
+            <div className="absolute -bottom-2 -right-2 w-6 h-6 border-b-4 border-r-4 border-indigo-600"/>
           </div>
 
           <div className="mt-4 text-center space-y-1">
             <div className="inline-block px-3 py-1 bg-muted rounded-lg text-xs tabular-nums font-bold text-foreground">
-              Terminal Code: {activeToken?.token_prefix || `LOC-${location.id.slice(0, 8)}`}
+ Terminal Code: {activeToken?.token_prefix || `LOC-${location.id.slice(0, 8)}`}
             </div>
             <p className="text-xs text-muted-foreground font-medium">
-              Geofence Radius: <strong className="text-foreground">{location.radius_meters}m</strong>
+ Geofence Radius: <strong className="text-foreground">{location.radius_meters}m</strong>
             </p>
           </div>
         </div>
@@ -174,7 +165,7 @@ export function PrintableQrPoster({
             <span>Generated: {generatedDate}</span>
           </div>
           <div className="flex items-center gap-1 text-emerald-600 font-bold">
-            <ShieldCheck className="h-3.5 w-3.5" />
+            <ShieldCheck className="h-3.5 w-3.5"/>
             <span>Server Verified • Geofenced</span>
           </div>
         </div>

@@ -5,21 +5,21 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import {
-  Lock,
-  Sparkles,
-  ArrowRight,
-  ShieldAlert,
-  Zap,
-  CheckCircle2,
-  PhoneCall,
-  Crown,
+ Lock,
+ Sparkles,
+ ArrowRight,
+ ShieldAlert,
+ Zap,
+ CheckCircle2,
+ PhoneCall,
+ Crown,
 } from 'lucide-react'
 import { FeatureCode, PlanCode, SubscriptionPlanRecord } from '@/types/subscription.types'
 import {
-  FEATURE_METADATA,
-  getMinimumPlanForFeature,
-  PLAN_TIER_ORDER,
-  DEFAULT_PLANS,
+ FEATURE_METADATA,
+ getMinimumPlanForFeature,
+ PLAN_TIER_ORDER,
+ DEFAULT_PLANS,
 } from '@/lib/subscription/subscription-constants'
 import { useSubscription } from '@/hooks/use-subscription'
 import { useTenant } from '@/hooks/use-tenant'
@@ -30,67 +30,67 @@ import { Badge } from '@/components/ui/badge'
 import { CurrencyDisplay } from '@/components/shared/currency-display'
 
 interface UpgradePromptProps {
-  feature: FeatureCode
-  title?: string
-  description?: string
-  compact?: boolean
-  className?: string
+ feature: FeatureCode
+ title?: string
+ description?: string
+ compact?: boolean
+ className?: string
 }
 
 export function UpgradePrompt({
-  feature,
-  title,
-  description,
-  compact = false,
-  className = '',
+ feature,
+ title,
+ description,
+ compact = false,
+ className = '',
 }: UpgradePromptProps) {
-  const {
-    currentPlan,
-    currentPlanCode,
-    allPlans,
-    isTrial,
-    isTrialExpired,
-    isPlanExpired,
-    isPastDue,
-    isSuspended,
+ const {
+ currentPlan,
+ currentPlanCode,
+ allPlans,
+ isTrial,
+ isTrialExpired,
+ isPlanExpired,
+ isPastDue,
+ isSuspended,
   } = useSubscription()
-  const { company } = useTenant()
-  const { locale, tBilingual } = useI18n()
-  const pathname = usePathname()
-  const slug = company?.slug || 'app'
+ const { company } = useTenant()
+ const { locale, tBilingual } = useI18n()
+ const pathname = usePathname()
+ const slug = company?.slug || 'app'
 
-  const meta = FEATURE_METADATA[feature] || {
-    code: feature,
-    name: title || feature,
-    name_bn: title || feature,
-    description: description || 'This feature requires a higher tier plan.',
-    minPlan: 'business',
-    category: 'advanced',
+ const meta = FEATURE_METADATA[feature] || {
+ code: feature,
+ name: title || feature,
+ name_bn: title || feature,
+ description: description || 'This feature requires a higher tier plan.',
+ minPlan: 'business',
+ category: 'advanced',
   }
 
-  const rawRequiredPlan =
+ const rawRequiredPlan =
     (allPlans && allPlans.find((p: SubscriptionPlanRecord) => p.code === meta.minPlan)) ||
-    getMinimumPlanForFeature(feature, allPlans)
+ getMinimumPlanForFeature(feature, allPlans)
 
-  const currentRank = PLAN_TIER_ORDER[currentPlanCode as PlanCode] ?? 1
-  const requiredRank = PLAN_TIER_ORDER[rawRequiredPlan.code as PlanCode] ?? 2
-  const isPlanLevelSufficient = currentRank >= requiredRank
+ const currentRank = PLAN_TIER_ORDER[currentPlanCode as PlanCode] ?? 1
+ const requiredRank = PLAN_TIER_ORDER[rawRequiredPlan.code as PlanCode] ?? 2
+ const isPlanLevelSufficient = currentRank >= requiredRank
 
   // Determine target plan for upgrade: if current plan is already sufficient, offer next tier (enterprise)
-  const targetPlan = isPlanLevelSufficient
+ const targetPlan = isPlanLevelSufficient
     ? ((allPlans && allPlans.find((p: SubscriptionPlanRecord) => p.code === 'enterprise')) || DEFAULT_PLANS[3])
     : rawRequiredPlan
 
   // Determine status reason
-  const isExpiredState = isTrialExpired || isPlanExpired
-  const statusTitleEn = isSuspended
+ const isExpiredState = isTrialExpired || isPlanExpired
+ const statusTitleEn = isSuspended
     ? 'Account Suspended'
     : isPastDue
     ? 'Payment Past Due'
     : isExpiredState
     ? (isTrial ? 'Free Trial Expired' : 'Subscription Expired')
     : `${rawRequiredPlan.name} Required`
-  const statusTitleBn = isSuspended
+ const statusTitleBn = isSuspended
     ? 'অ্যাকাউন্ট স্থগিত'
     : isPastDue
     ? 'বিলিং বকেয়া রয়েছে'
@@ -98,7 +98,7 @@ export function UpgradePrompt({
     ? (isTrial ? 'ফ্রি ট্রায়ালের মেয়াদ শেষ' : 'সাবস্ক্রিপশনের মেয়াদ শেষ')
     : `${rawRequiredPlan.name_bn} প্রয়োজন`
 
-  const ctaTextEn = isSuspended
+ const ctaTextEn = isSuspended
     ? 'Contact Support'
     : isPastDue
     ? 'Pay Overdue Invoice'
@@ -106,7 +106,7 @@ export function UpgradePrompt({
     ? (isTrial ? `Upgrade to ${targetPlan.name}` : `Renew ${currentPlan.name}`)
     : `Upgrade to ${targetPlan.name}`
 
-  const ctaTextBn = isSuspended
+ const ctaTextBn = isSuspended
     ? 'সাপোর্টে যোগাযোগ করুন'
     : isPastDue
     ? 'ইনভয়েস পরিশোধ করুন'
@@ -114,14 +114,14 @@ export function UpgradePrompt({
     ? (isTrial ? `${targetPlan.name_bn} এ আপগ্রেড করুন` : `${currentPlan.name_bn} নবায়ন করুন`)
     : `${targetPlan.name_bn} এ আপগ্রেড করুন`
 
-  if (compact) {
-    return (
+ if (compact) {
+ return (
       <div
-        className={`flex items-center justify-between p-3.5 rounded-xl border border-amber-500/30 bg-amber-500/5 text-amber-900 dark:text-amber-200 ${className}`}
+ className={`flex items-center justify-between p-3.5 rounded-xl border border-amber-500/30 bg-amber-500/5 text-amber-900 dark:text-amber-200 ${className}`}
       >
         <div className="flex items-center gap-2.5">
           <div className="h-8 w-8 rounded-lg bg-amber-500/20 flex items-center justify-center text-amber-600 dark:text-amber-400 shrink-0">
-            <Lock className="h-4 w-4" />
+            <Lock className="h-4 w-4"/>
           </div>
           <div className="text-xs bangla-text">
             <span className="font-bold">
@@ -134,38 +134,38 @@ export function UpgradePrompt({
         </div>
 
         <Link href={getTenantNavHref('/settings/subscription', pathname, slug)}>
-          <Button size="sm" className="h-7 text-xs bg-amber-600 hover:bg-amber-700 text-white font-semibold bangla-text">
+          <Button size="sm"className="h-7 text-xs bg-amber-600 hover:bg-amber-700 text-white font-semibold bangla-text">
             {tBilingual(isExpiredState ? 'Renew' : 'Upgrade', isExpiredState ? 'নবায়ন' : 'আপগ্রেড')}
-            <ArrowRight className="ml-1 h-3 w-3" />
+            <ArrowRight className="ml-1 h-3 w-3"/>
           </Button>
         </Link>
       </div>
     )
   }
 
-  return (
-    <Card className={`relative overflow-hidden border-indigo-200 dark:border-indigo-950/60 bg-gradient-to-b from-white via-indigo-50/30 to-white dark:from-slate-900 dark:via-indigo-950/20 dark:to-slate-900 shadow-xl ${className}`}>
+ return (
+    <Card className={`relative overflow-hidden border-indigo-200 dark:border-indigo-950/60 bg-gradient-to-b from-white via-indigo-50/30 to-white dark:from-slate-900 dark:via-indigo-950/20 dark:to-slate-900 shadow-xs ${className}`}>
       {/* Decorative gradient blur background */}
-      <div className="absolute top-0 right-0 -mt-12 -mr-12 w-64 h-64 rounded-full bg-indigo-500/10 blur-3xl pointer-events-none" />
-      <div className="absolute bottom-0 left-0 -mb-12 -ml-12 w-64 h-64 rounded-full bg-purple-500/10 blur-3xl pointer-events-none" />
+      <div className="absolute top-0 right-0 -mt-12 -mr-12 w-64 h-64 rounded-full bg-indigo-500/10 blur-3xl pointer-events-none"/>
+      <div className="absolute bottom-0 left-0 -mb-12 -ml-12 w-64 h-64 rounded-full bg-purple-500/10 blur-3xl pointer-events-none"/>
 
       <CardHeader className="text-center pb-2 pt-8">
-        <div className="mx-auto h-16 w-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/25 mb-4">
-          <Lock className="h-8 w-8" />
+        <div className="mx-auto h-16 w-16 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/25 mb-4">
+          <Lock className="h-8 w-8"/>
         </div>
 
         <div className="flex items-center justify-center gap-2 mb-2">
-          <Badge variant="outline" className="text-2xs tabular-nums border-indigo-300 dark:border-indigo-700 text-indigo-700 dark:text-indigo-300 bangla-text">
+          <Badge variant="outline"className="text-2xs tabular-nums border-indigo-300 dark:border-indigo-700 text-indigo-700 dark:text-indigo-300 bangla-text">
             {tBilingual(`${currentPlan.name} (Current)`, `${currentPlan.name_bn} (বর্তমান)`)}
           </Badge>
-          <ArrowRight className="h-3 w-3 text-muted-foreground" />
+          <ArrowRight className="h-3 w-3 text-muted-foreground"/>
           <Badge className="text-2xs font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 text-white bangla-text">
-            <Crown className="h-3 w-3 mr-1" />
+            <Crown className="h-3 w-3 mr-1"/>
             {tBilingual(statusTitleEn, statusTitleBn)}
           </Badge>
         </div>
 
-        <CardTitle className="text-2xl font-black tracking-tight text-foreground dark:text-white bangla-text">
+        <CardTitle className="text-2xl font-black tracking-tight text-foreground bangla-text">
           {tBilingual(meta.name, meta.name_bn)}
         </CardTitle>
 
@@ -180,15 +180,15 @@ export function UpgradePrompt({
       </CardHeader>
 
       <CardContent className="max-w-lg mx-auto pt-4 pb-6 space-y-4">
-        <div className="rounded-xl bg-slate-100/80 p-4 border border-border space-y-2.5">
+        <div className="rounded-xl bg-muted/80 p-4 border border-border space-y-2.5">
           <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5 bangla-text">
-            <Sparkles className="h-3.5 w-3.5 text-indigo-500" />
+            <Sparkles className="h-3.5 w-3.5 text-indigo-500"/>
             {tBilingual(`Included with ${targetPlan.name}:`, `${targetPlan.name_bn}-এর মূল সুবিধাসমূহ:`)}
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-foreground bangla-text">
             <div className="flex items-center gap-1.5">
-              <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
+              <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0"/>
               <span>
                 {targetPlan.max_users <= 0 || targetPlan.max_users >= 99999
                   ? tBilingual('Unlimited', 'আনলিমিটেড')
@@ -197,7 +197,7 @@ export function UpgradePrompt({
               </span>
             </div>
             <div className="flex items-center gap-1.5">
-              <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
+              <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0"/>
               <span>
                 {targetPlan.max_branches <= 0 || targetPlan.max_branches >= 99999
                   ? tBilingual('Unlimited', 'আনলিমিটেড')
@@ -206,7 +206,7 @@ export function UpgradePrompt({
               </span>
             </div>
             <div className="flex items-center gap-1.5">
-              <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
+              <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0"/>
               <span>
                 {targetPlan.storage_gb <= 0 || targetPlan.storage_gb >= 99999
                   ? tBilingual('Unlimited', 'আনলিমিটেড')
@@ -215,7 +215,7 @@ export function UpgradePrompt({
               </span>
             </div>
             <div className="flex items-center gap-1.5">
-              <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
+              <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0"/>
               <span>
                 {targetPlan.monthly_orders <= 0 || targetPlan.monthly_orders >= 99999
                   ? tBilingual('Unlimited', 'আনলিমিটেড')
@@ -227,13 +227,13 @@ export function UpgradePrompt({
         </div>
 
         <div className="text-center bangla-text">
-          <span className="text-xs text-muted-foreground dark:text-muted-foreground">
+          <span className="text-xs text-muted-foreground">
             {tBilingual('Starting from ', 'শুরু মাত্র ')}
           </span>
-          <span className="text-lg font-black text-foreground dark:text-white">
+          <span className="text-lg font-black text-foreground">
             <CurrencyDisplay amount={targetPlan.price_monthly} />
           </span>
-          <span className="text-xs text-muted-foreground dark:text-muted-foreground">
+          <span className="text-xs text-muted-foreground">
             {tBilingual(' / month', ' / প্রতি মাসে')}
           </span>
         </div>
@@ -241,14 +241,14 @@ export function UpgradePrompt({
 
       <CardFooter className="flex flex-col sm:flex-row items-center justify-center gap-3 pb-8">
         <Link href={getTenantNavHref('/settings/subscription', pathname, slug)} className="w-full sm:w-auto">
-          <Button className="w-full sm:w-auto bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold px-6 shadow-md shadow-indigo-500/20 bangla-text">
-            <Zap className="mr-2 h-4 w-4" />
+          <Button className="w-full sm:w-auto bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold px-6 shadow-xs shadow-indigo-500/20 bangla-text">
+            <Zap className="mr-2 h-4 w-4"/>
             {tBilingual(ctaTextEn, ctaTextBn)}
           </Button>
         </Link>
 
         <Link href={getTenantNavHref('/settings/subscription', pathname, slug)} className="w-full sm:w-auto">
-          <Button variant="outline" className="w-full sm:w-auto text-xs bangla-text">
+          <Button variant="outline"className="w-full sm:w-auto text-xs bangla-text">
             {tBilingual('Compare All Plans', 'প্ল্যান তুলনা দেখুন')}
           </Button>
         </Link>

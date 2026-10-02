@@ -1,18 +1,11 @@
 'use client'
 
-// ==============================================================================
-// InkFlow SaaS - Platform Notifications Popover Component
-// Live real-time notification stream with Supabase Realtime, category tabs,
-// unread badges, instant mark-as-read, and authoritative database counters.
-// ==============================================================================
-
 import React, { useState, useMemo } from 'react'
 import Link from 'next/link'
 import {
   Bell,
   AlertTriangle,
   Building2,
-  HeartPulse,
   ShieldAlert,
   ShieldCheck,
   Check,
@@ -23,14 +16,14 @@ import {
   CreditCard,
   RefreshCw,
   Clock,
-  Sparkles,
-  Zap,
 } from 'lucide-react'
 import { usePlatformNotifications } from '@/hooks/use-platform-notifications'
-import { formatTime, formatDate } from '@/lib/formatters'
+import { formatTime } from '@/lib/formatters'
 import { cn } from '@/lib/utils'
+import { useI18n } from '@/i18n/context'
 
 export function PlatformNotificationsPopover() {
+  const { tBilingual } = useI18n()
   const [open, setOpen] = useState(false)
   const [activeTab, setActiveTab] = useState<'all' | 'support' | 'tenant' | 'billing' | 'system'>('all')
 
@@ -45,7 +38,6 @@ export function PlatformNotificationsPopover() {
     markAllAsRead,
   } = usePlatformNotifications({ pageSize: 30 })
 
-  // Filtered notifications by tab (with safe fallback for unknown categories under 'all' or 'system')
   const filteredNotifications = useMemo(() => {
     if (activeTab === 'all') return notifications
     return notifications.filter((n) => {
@@ -53,27 +45,35 @@ export function PlatformNotificationsPopover() {
       if (activeTab === 'support') return type === 'support' || type.includes('support')
       if (activeTab === 'tenant') return type === 'tenant' || type === 'tenant_lifecycle'
       if (activeTab === 'billing') return type === 'billing'
-      if (activeTab === 'system') return type === 'system' || type === 'security' || type === 'backup' || type === 'maintenance' || !['support', 'tenant', 'tenant_lifecycle', 'billing'].includes(type)
+      if (activeTab === 'system') {
+        return (
+          type === 'system' ||
+          type === 'security' ||
+          type === 'backup' ||
+          type === 'maintenance' ||
+          !['support', 'tenant', 'tenant_lifecycle', 'billing'].includes(type)
+        )
+      }
       return true
     })
   }, [notifications, activeTab])
 
   const getTypeIcon = (type: string, severity: string) => {
-    if (severity === 'critical') return <ShieldAlert className="h-4 w-4 text-rose-400" />
-    if (severity === 'warning') return <AlertTriangle className="h-4 w-4 text-amber-400" />
+    if (severity === 'critical') return <ShieldAlert className="h-4 w-4 text-destructive" />
+    if (severity === 'warning') return <AlertTriangle className="h-4 w-4 text-warning" />
 
     switch (type) {
       case 'support':
-        return <MessageSquare className="h-4 w-4 text-indigo-400" />
+        return <MessageSquare className="h-4 w-4 text-primary" />
       case 'tenant':
       case 'tenant_lifecycle':
-        return <Building2 className="h-4 w-4 text-blue-400" />
+        return <Building2 className="h-4 w-4 text-primary" />
       case 'billing':
-        return <CreditCard className="h-4 w-4 text-emerald-400" />
+        return <CreditCard className="h-4 w-4 text-success" />
       case 'security':
-        return <ShieldCheck className="h-4 w-4 text-purple-400" />
+        return <ShieldCheck className="h-4 w-4 text-primary" />
       default:
-        return <Info className="h-4 w-4 text-cyan-400" />
+        return <Info className="h-4 w-4 text-muted-foreground" />
     }
   }
 
@@ -85,30 +85,32 @@ export function PlatformNotificationsPopover() {
           setOpen(!open)
           if (!open) refetch()
         }}
-        className="relative p-2 rounded-xl text-muted-foreground hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
-        title="Platform Notifications"
+        className="relative p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
+        title={tBilingual('Alerts', 'বিজ্ঞপ্তি')}
       >
         <Bell className="h-4 w-4" />
         {unreadCount > 0 && (
-          <span className="absolute top-1 right-1 h-2.5 w-2.5 rounded-full bg-rose-500 animate-pulse ring-2 ring-slate-950" />
+          <span className="absolute top-1 right-1 h-2.5 w-2.5 rounded-full bg-destructive animate-pulse ring-2 ring-background" />
         )}
       </button>
 
       {open && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-slate-900 border border-border rounded-2xl shadow-2xl shadow-black/90 ring-1 ring-slate-700/60 z-50 overflow-hidden text-xs animate-in fade-in-0 zoom-in-95 duration-150 font-sans">
+          <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-popover border border-border rounded-xl shadow-lg z-50 overflow-hidden text-xs animate-in fade-in-0 zoom-in-95 duration-150 font-sans">
             {/* Header */}
-            <div className="px-4 py-3 border-b border-border flex items-center justify-between bg-slate-900">
+            <div className="px-4 py-3 border-b border-border flex items-center justify-between bg-card">
               <div className="flex items-center gap-2">
-                <span className="font-bold text-white text-sm">Platform Notifications</span>
+                <span className="font-bold text-foreground text-sm">
+                  {tBilingual('Alerts', 'বিজ্ঞপ্তি')}
+                </span>
                 {unreadCount > 0 ? (
-                  <span className="px-1.5 py-0.2 rounded-full bg-rose-500/20 text-rose-300 text-2xs font-bold border border-rose-500/30">
-                    {unreadCount} new
+                  <span className="px-1.5 py-0.5 rounded-full bg-destructive/10 text-destructive text-2xs font-semibold border border-destructive/20">
+                    {unreadCount} {tBilingual('new', 'নতুন')}
                   </span>
                 ) : (
-                  <span className="px-1.5 py-0.2 rounded-full bg-slate-800 text-muted-foreground text-2xs font-medium border border-border">
-                    {totalCount} total
+                  <span className="px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground text-2xs font-medium border border-border">
+                    {totalCount} {tBilingual('total', 'মোট')}
                   </span>
                 )}
               </div>
@@ -116,8 +118,8 @@ export function PlatformNotificationsPopover() {
                 <button
                   type="button"
                   onClick={() => refetch()}
-                  className="p-1 rounded-lg text-muted-foreground hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
-                  title="Refresh Notifications"
+                  className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
+                  title={tBilingual('Refresh', 'রিফ্রেশ')}
                 >
                   <RefreshCw className={cn('h-3.5 w-3.5', loading && 'animate-spin')} />
                 </button>
@@ -125,31 +127,31 @@ export function PlatformNotificationsPopover() {
                   <button
                     type="button"
                     onClick={() => markAllAsRead()}
-                    className="text-2xs font-semibold text-indigo-300 hover:text-indigo-200 transition-colors cursor-pointer"
+                    className="text-2xs font-semibold text-primary hover:underline transition-colors cursor-pointer"
                   >
-                    Mark all read
+                    {tBilingual('Mark all read', 'সব পড়া হয়েছে')}
                   </button>
                 )}
               </div>
             </div>
 
             {/* Category Filter Sub-Tabs */}
-            <div className="flex items-center gap-1 p-1.5 bg-slate-900 border-b border-border overflow-x-auto scrollbar-none text-2xs">
+            <div className="flex items-center gap-1 p-1.5 bg-muted/40 border-b border-border overflow-x-auto scrollbar-none text-2xs">
               {[
-                { id: 'all', label: 'All' },
-                { id: 'support', label: 'Support' },
-                { id: 'tenant', label: 'Tenants' },
-                { id: 'billing', label: 'Billing' },
-                { id: 'system', label: 'System' },
+                { id: 'all', label: tBilingual('All', 'সব') },
+                { id: 'support', label: tBilingual('Support', 'সহায়তা') },
+                { id: 'tenant', label: tBilingual('Clients', 'ক্লায়েন্ট') },
+                { id: 'billing', label: tBilingual('Bills', 'বিল') },
+                { id: 'system', label: tBilingual('System', 'সিস্টেম') },
               ].map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as any)}
                   className={cn(
-                    'px-2.5 py-1 rounded-lg font-medium transition-colors whitespace-nowrap cursor-pointer',
+                    'px-2.5 py-1 rounded-md font-medium transition-colors whitespace-nowrap cursor-pointer',
                     activeTab === tab.id
-                      ? 'bg-indigo-600 text-white font-semibold shadow-xs'
-                      : 'text-muted-foreground hover:bg-slate-800 hover:text-white'
+                      ? 'bg-primary text-primary-foreground font-semibold shadow-xs'
+                      : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                   )}
                 >
                   {tab.label}
@@ -158,31 +160,35 @@ export function PlatformNotificationsPopover() {
             </div>
 
             {/* List */}
-            <div className="max-h-84 overflow-y-auto divide-y divide-slate-700/70 scrollbar-thin scrollbar-thumb-slate-700">
+            <div className="max-h-84 overflow-y-auto divide-y divide-border">
               {loading && notifications.length === 0 ? (
                 <div className="p-6 text-center text-muted-foreground text-xs flex items-center justify-center gap-2">
-                  <div className="w-4 h-4 rounded-full border-2 border-indigo-500 border-t-transparent animate-spin" />
-                  <span>Loading platform updates...</span>
+                  <div className="w-4 h-4 rounded-full border border-primary border-t-transparent animate-spin" />
+                  <span>{tBilingual('Loading...', 'লোড হচ্ছে...')}</span>
                 </div>
               ) : error ? (
                 <div className="p-6 text-center text-muted-foreground space-y-2">
-                  <AlertTriangle className="h-6 w-6 text-amber-400 mx-auto opacity-80" />
-                  <div className="font-semibold text-rose-300 text-xs">Unable to load notifications</div>
+                  <AlertTriangle className="h-6 w-6 text-warning mx-auto opacity-80" />
+                  <div className="font-semibold text-destructive text-xs">
+                    {tBilingual('Could not load', 'লোড করা যায়নি')}
+                  </div>
                   <p className="text-2xs text-muted-foreground">{error}</p>
                   <button
                     type="button"
                     onClick={() => refetch()}
-                    className="mt-2 px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-100 text-2xs rounded-lg cursor-pointer border border-slate-600 font-medium"
+                    className="mt-2 px-3 py-1 bg-muted hover:bg-muted/80 text-foreground text-2xs rounded-md cursor-pointer border border-border font-medium"
                   >
-                    Retry
+                    {tBilingual('Retry', 'আবার চেষ্টা করুন')}
                   </button>
                 </div>
               ) : filteredNotifications.length === 0 ? (
                 <div className="p-8 text-center text-muted-foreground space-y-2">
-                  <CheckCircle2 className="h-8 w-8 text-emerald-400 mx-auto opacity-80" />
-                  <div className="font-semibold text-white text-xs">No notifications yet.</div>
+                  <CheckCircle2 className="h-8 w-8 text-success mx-auto opacity-80" />
+                  <div className="font-semibold text-foreground text-xs">
+                    {tBilingual('No alerts', 'কোনো বিজ্ঞপ্তি নেই')}
+                  </div>
                   <p className="text-2xs text-muted-foreground">
-                    No active notifications in this category. Platform operations are nominal.
+                    {tBilingual('Nothing here right now.', 'এই বিভাগে কিছু নেই।')}
                   </p>
                 </div>
               ) : (
@@ -192,7 +198,7 @@ export function PlatformNotificationsPopover() {
                     (notif.type === 'support'
                       ? '/platform/support'
                       : notif.company_id
-                      ? `/platform/companies`
+                      ? `/platform/tenants`
                       : '/platform/notifications')
 
                   return (
@@ -201,22 +207,22 @@ export function PlatformNotificationsPopover() {
                       className={cn(
                         'p-3.5 transition-colors flex items-start justify-between gap-3 group',
                         notif.is_read
-                          ? 'bg-transparent opacity-90 hover:opacity-100 hover:bg-slate-800/40'
-                          : 'bg-indigo-950/30 hover:bg-indigo-950/50 border-l-2 border-indigo-500'
+                          ? 'bg-transparent opacity-80 hover:opacity-100 hover:bg-muted/40'
+                          : 'bg-primary/5 hover:bg-primary/10 border-l-2 border-primary'
                       )}
                     >
                       <div className="flex items-start gap-2.5 min-w-0 flex-1">
-                        <div className="mt-0.5 shrink-0 p-1 rounded-lg bg-slate-900 border border-border">
+                        <div className="mt-0.5 shrink-0 p-1 rounded-md bg-muted border border-border">
                           {getTypeIcon(notif.type, notif.severity)}
                         </div>
                         <div className="space-y-0.5 min-w-0 flex-1">
                           <Link
                             href={targetUrl}
                             onClick={() => setOpen(false)}
-                            className="font-bold text-slate-100 hover:text-indigo-300 transition-colors line-clamp-1 flex items-center gap-1"
+                            className="font-semibold text-foreground hover:text-primary transition-colors line-clamp-1 flex items-center gap-1"
                           >
                             <span className="truncate">{notif.title}</span>
-                            <ArrowRight className="h-3 w-3 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity text-indigo-400" />
+                            <ArrowRight className="h-3 w-3 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity text-primary" />
                           </Link>
                           <p className="text-2xs text-muted-foreground leading-relaxed line-clamp-2">{notif.message}</p>
                           <div className="flex items-center gap-2 text-2xs text-muted-foreground pt-0.5 flex-wrap">
@@ -225,11 +231,11 @@ export function PlatformNotificationsPopover() {
                               {formatTime(notif.created_at)}
                             </span>
                             {notif.company_name && (
-                              <span className="text-indigo-200 font-semibold truncate bg-indigo-950 px-1.5 py-0.2 rounded border border-indigo-700/80">
+                              <span className="text-foreground font-semibold truncate bg-muted px-1.5 py-0.5 rounded border border-border">
                                 {notif.company_name}
                               </span>
                             )}
-                            <span className="uppercase text-2xs font-bold text-foreground px-1 py-0.2 rounded bg-slate-800 border border-slate-600">
+                            <span className="uppercase text-2xs font-semibold text-muted-foreground px-1 py-0.5 rounded bg-muted border border-border">
                               {notif.type}
                             </span>
                           </div>
@@ -240,8 +246,8 @@ export function PlatformNotificationsPopover() {
                         <button
                           type="button"
                           onClick={() => markAsRead(notif.id)}
-                          className="text-muted-foreground hover:text-indigo-300 p-1 shrink-0 cursor-pointer"
-                          title="Mark as read"
+                          className="text-muted-foreground hover:text-foreground p-1 shrink-0 cursor-pointer"
+                          title={tBilingual('Mark as read', 'পড়া হয়েছে')}
                         >
                           <Check className="h-3.5 w-3.5" />
                         </button>
@@ -253,21 +259,21 @@ export function PlatformNotificationsPopover() {
             </div>
 
             {/* Footer */}
-            <div className="p-2.5 bg-slate-900 border-t border-border flex items-center justify-between px-4">
+            <div className="p-2.5 bg-card border-t border-border flex items-center justify-between px-4">
               <Link
                 href="/platform/notifications"
                 onClick={() => setOpen(false)}
-                className="text-2xs font-bold text-indigo-300 hover:text-indigo-200 transition-colors flex items-center gap-1"
+                className="text-2xs font-semibold text-primary hover:underline transition-colors flex items-center gap-1"
               >
-                <span>Notification Center</span>
+                <span>{tBilingual('All Alerts', 'সব বিজ্ঞপ্তি')}</span>
                 <ArrowRight className="w-3 h-3" />
               </Link>
               <Link
                 href="/platform/audit"
                 onClick={() => setOpen(false)}
-                className="text-2xs text-muted-foreground hover:text-white transition-colors font-medium"
+                className="text-2xs text-muted-foreground hover:text-foreground transition-colors font-medium"
               >
-                Audit Trail →
+                {tBilingual('Activity Log →', 'কাজের ইতিহাস →')}
               </Link>
             </div>
           </div>

@@ -2,15 +2,15 @@
 
 import React, { useState, useEffect } from 'react'
 import {
-  MessageSquare,
-  Phone,
-  Mail,
-  User,
-  Calendar,
-  CheckCircle2,
-  AlertCircle,
-  Loader2,
-  Clock,
+ MessageSquare,
+ Phone,
+ Mail,
+ User,
+ Calendar,
+ CheckCircle2,
+ AlertCircle,
+ Loader2,
+ Clock,
 } from 'lucide-react'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import { Button } from '@/components/ui/button'
@@ -22,119 +22,118 @@ import { recordQuotationFollowUpAction } from '@/actions/quotation.actions'
 import { formatBDT } from '@/lib/formatters'
 
 export interface FollowUpModalProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  quotation: QuotationRecord | null
-  onFollowUpRecorded?: (quote: QuotationRecord) => void
-  companyId?: string
+ open: boolean
+ onOpenChange: (open: boolean) => void
+ quotation: QuotationRecord | null
+ onFollowUpRecorded?: (quote: QuotationRecord) => void
+ companyId?: string
 }
 
 export function FollowUpModal({
-  open,
-  onOpenChange,
-  quotation,
-  onFollowUpRecorded,
-  companyId = 'c-01',
+ open,
+ onOpenChange,
+ quotation,
+ onFollowUpRecorded,
+ companyId = 'c-01',
 }: FollowUpModalProps) {
-  const [method, setMethod] = useState<FollowUpMethod>('whatsapp')
-  const [outcome, setOutcome] = useState<FollowUpOutcome>('interested')
-  const [note, setNote] = useState('')
-  const [nextFollowUpDate, setNextFollowUpDate] = useState<string>('')
-  const [markResponded, setMarkResponded] = useState(true)
+ const [method, setMethod] = useState<FollowUpMethod>('whatsapp')
+ const [outcome, setOutcome] = useState<FollowUpOutcome>('interested')
+ const [note, setNote] = useState('')
+ const [nextFollowUpDate, setNextFollowUpDate] = useState<string>('')
+ const [markResponded, setMarkResponded] = useState(true)
 
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+ const [isSubmitting, setIsSubmitting] = useState(false)
+ const [error, setError] = useState<string | null>(null)
 
   // Reset form when modal opens or quotation changes
-  useEffect(() => {
-    if (open && quotation) {
-      setMethod('whatsapp')
-      setOutcome('interested')
-      setNote('')
-      setError(null)
-      setIsSubmitting(false)
-      setMarkResponded(true)
+ useEffect(() => {
+ if (open && quotation) {
+ setMethod('whatsapp')
+ setOutcome('interested')
+ setNote('')
+ setError(null)
+ setIsSubmitting(false)
+ setMarkResponded(true)
 
       // Default next follow up date to tomorrow
-      const d = new Date()
-      d.setDate(d.getDate() + 1)
-      setNextFollowUpDate(d.toISOString().split('T')[0])
+ const d = new Date()
+ d.setDate(d.getDate() + 1)
+ setNextFollowUpDate(d.toISOString().split('T')[0])
     }
   }, [open, quotation])
 
-  if (!quotation) return null
+ if (!quotation) return null
 
-  const handleQuickSchedule = (days: number) => {
-    if (days === 0) {
-      setNextFollowUpDate('')
-      return
+ const handleQuickSchedule = (days: number) => {
+ if (days === 0) {
+ setNextFollowUpDate('')
+ return
     }
-    const d = new Date()
-    d.setDate(d.getDate() + days)
-    setNextFollowUpDate(d.toISOString().split('T')[0])
+ const d = new Date()
+ d.setDate(d.getDate() + days)
+ setNextFollowUpDate(d.toISOString().split('T')[0])
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!note.trim()) {
-      setError('Please add a brief note about the customer conversation.')
-      return
+ const handleSubmit = async (e: React.FormEvent) => {
+ e.preventDefault()
+ if (!note.trim()) {
+ setError('Please add a brief note about the customer conversation.')
+ return
     }
 
-    setIsSubmitting(true)
-    setError(null)
+ setIsSubmitting(true)
+ setError(null)
 
-    try {
-      const res = await recordQuotationFollowUpAction(
+ try {
+ const res = await recordQuotationFollowUpAction(
         {
-          quotationId: quotation.id,
-          method,
-          note: note.trim(),
-          outcome,
-          nextFollowUpDate: nextFollowUpDate || null,
-          markResponded,
+ quotationId: quotation.id,
+ method,
+ note: note.trim(),
+ outcome,
+ nextFollowUpDate: nextFollowUpDate || null,
+ markResponded,
         },
-        companyId
+ companyId
       )
 
-      setIsSubmitting(false)
-      if (res.success && res.data) {
-        if (onFollowUpRecorded) {
-          onFollowUpRecorded(res.data)
+ setIsSubmitting(false)
+ if (res.success && res.data) {
+ if (onFollowUpRecorded) {
+ onFollowUpRecorded(res.data)
         }
-        onOpenChange(false)
+ onOpenChange(false)
       } else {
-        setError(res.error || 'Failed to record follow-up.')
+ setError(res.error || 'Failed to record follow-up.')
       }
     } catch (err: any) {
-      setIsSubmitting(false)
-      setError(err?.message || 'Encountered an unexpected error.')
+ setIsSubmitting(false)
+ setError(err?.message || 'Encountered an unexpected error.')
     }
   }
 
-  return (
+ return (
     <ModalDialog
-      open={open}
-      onOpenChange={onOpenChange}
-      size="lg"
-      title={
+ open={open}
+ onOpenChange={onOpenChange}
+ size="lg"title={
         <div className="flex items-center gap-2">
           <div className="h-8 w-8 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold">
-            <Clock className="h-4 w-4" />
+            <Clock className="h-4 w-4"/>
           </div>
           <div>
-            <h2 className="text-sm font-bold text-foreground dark:text-white">Record Quotation Follow-up</h2>
+            <h2 className="text-sm font-bold text-foreground">Record Quotation Follow-up</h2>
             <p className="text-2xs text-muted-foreground">
-              Log client conversation, update status, and schedule next contact
+ Log client conversation, update status, and schedule next contact
             </p>
           </div>
         </div>
       }
-      hideFooter
+ hideFooter
     >
       <form onSubmit={handleSubmit} className="space-y-4 pt-1">
         {/* Quotation Summary Card */}
-        <div className="p-3 rounded-xl bg-slate-900 text-white space-y-1.5 text-xs shadow-inner">
+        <div className="p-3 rounded-xl bg-surface-inset text-foreground space-y-1.5 text-xs shadow-inner">
           <div className="flex items-center justify-between">
             <span className="tabular-nums font-bold text-cyan-300">
               #{quotation.quotation_number}
@@ -155,7 +154,7 @@ export function FollowUpModal({
 
         {error && (
           <div className="p-2.5 rounded-lg bg-red-50 text-red-800 dark:bg-red-950/40 dark:text-red-200 border border-red-200 text-xs flex items-center gap-2">
-            <AlertCircle className="h-4 w-4 text-red-600 shrink-0" />
+            <AlertCircle className="h-4 w-4 text-red-600 shrink-0"/>
             <span>{error}</span>
           </div>
         )}
@@ -171,20 +170,19 @@ export function FollowUpModal({
               { id: 'in_person', label: 'In-person', icon: User },
               { id: 'other', label: 'Other', icon: Clock },
             ].map((m) => {
-              const Icon = m.icon
-              const isSelected = method === m.id
-              return (
+ const Icon = m.icon
+ const isSelected = method === m.id
+ return (
                 <button
-                  key={m.id}
-                  type="button"
-                  onClick={() => setMethod(m.id as FollowUpMethod)}
-                  className={`p-2 rounded-lg border text-center transition-all cursor-pointer flex flex-col items-center gap-1 ${
-                    isSelected
+ key={m.id}
+ type="button"onClick={() => setMethod(m.id as FollowUpMethod)}
+ className={`p-2 rounded-lg border text-center transition-all cursor-pointer flex flex-col items-center gap-1 ${
+ isSelected
                       ? 'bg-blue-50 text-blue-700 border-blue-400 font-bold dark:bg-blue-950/50 dark:text-blue-300'
-                      : 'border-border text-muted-foreground hover:bg-muted dark:text-muted-foreground'
+                      : 'border-border text-muted-foreground hover:bg-muted '
                   }`}
                 >
-                  <Icon className="h-3.5 w-3.5" />
+                  <Icon className="h-3.5 w-3.5"/>
                   <span className="text-2xs">{m.label}</span>
                 </button>
               )
@@ -194,15 +192,13 @@ export function FollowUpModal({
 
         {/* Customer Reaction / Outcome */}
         <div>
-          <Label htmlFor="outcomeSelect" className="text-xs font-semibold mb-1 block">
-            Customer Response / Current Stage
+          <Label htmlFor="outcomeSelect"className="text-xs font-semibold mb-1 block">
+ Customer Response / Current Stage
           </Label>
           <select
-            id="outcomeSelect"
-            value={outcome}
-            onChange={(e) => setOutcome(e.target.value as FollowUpOutcome)}
-            className="w-full h-9 px-3 rounded-lg border border-input bg-card text-xs font-medium text-foreground dark:text-foreground"
-          >
+ id="outcomeSelect"value={outcome}
+ onChange={(e) => setOutcome(e.target.value as FollowUpOutcome)}
+ className="w-full h-9 px-3 rounded-lg border border-input bg-card text-xs font-medium text-foreground">
             <option value="interested">Interested — Considering proposal</option>
             <option value="negotiating">Negotiating — Requested discount or revised scope</option>
             <option value="approved">Approved — Verbally confirmed / Ready for order</option>
@@ -216,19 +212,16 @@ export function FollowUpModal({
         {/* Follow-up Note */}
         <div>
           <div className="flex items-center justify-between mb-1">
-            <Label htmlFor="followUpNote" className="text-xs font-semibold">
-              Follow-Up Notes <span className="text-rose-500">*</span>
+            <Label htmlFor="followUpNote"className="text-xs font-semibold">
+ Follow-Up Notes <span className="text-rose-500">*</span>
             </Label>
             <span className="text-2xs text-muted-foreground">Internal only • Never shared with customer</span>
           </div>
           <textarea
-            id="followUpNote"
-            rows={3}
-            placeholder="e.g. Spoke with Mr. Karim. He asked for 5% discount on installation. Will decide tomorrow morning."
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            className="w-full p-2.5 rounded-lg border border-input bg-card text-xs focus:ring-1 focus:ring-ring"
-            required
+ id="followUpNote"rows={3}
+ placeholder="e.g. Spoke with Mr. Karim. He asked for 5% discount on installation. Will decide tomorrow morning."value={note}
+ onChange={(e) => setNote(e.target.value)}
+ className="w-full p-2.5 rounded-lg border border-input bg-card text-xs focus:ring-1 focus:ring-ring"required
           />
         </div>
 
@@ -237,61 +230,46 @@ export function FollowUpModal({
           <Label className="text-xs font-semibold mb-1 block">Schedule Next Follow-Up</Label>
           <div className="flex items-center gap-2 mb-2">
             <button
-              type="button"
-              onClick={() => handleQuickSchedule(1)}
-              className="px-2.5 py-1 text-2xs rounded-md border border-border hover:bg-muted text-foreground font-medium cursor-pointer"
-            >
-              Tomorrow
+ type="button"onClick={() => handleQuickSchedule(1)}
+ className="px-2.5 py-1 text-2xs rounded-md border border-border hover:bg-muted text-foreground font-medium cursor-pointer">
+ Tomorrow
             </button>
             <button
-              type="button"
-              onClick={() => handleQuickSchedule(3)}
-              className="px-2.5 py-1 text-2xs rounded-md border border-border hover:bg-muted text-foreground font-medium cursor-pointer"
-            >
-              In 3 Days
+ type="button"onClick={() => handleQuickSchedule(3)}
+ className="px-2.5 py-1 text-2xs rounded-md border border-border hover:bg-muted text-foreground font-medium cursor-pointer">
+ In 3 Days
             </button>
             <button
-              type="button"
-              onClick={() => handleQuickSchedule(7)}
-              className="px-2.5 py-1 text-2xs rounded-md border border-border hover:bg-muted text-foreground font-medium cursor-pointer"
-            >
-              In 1 Week
+ type="button"onClick={() => handleQuickSchedule(7)}
+ className="px-2.5 py-1 text-2xs rounded-md border border-border hover:bg-muted text-foreground font-medium cursor-pointer">
+ In 1 Week
             </button>
             <button
-              type="button"
-              onClick={() => handleQuickSchedule(0)}
-              className="px-2.5 py-1 text-2xs rounded-md border border-border hover:bg-muted text-muted-foreground font-medium cursor-pointer"
-            >
-              No Follow-Up
+ type="button"onClick={() => handleQuickSchedule(0)}
+ className="px-2.5 py-1 text-2xs rounded-md border border-border hover:bg-muted text-muted-foreground font-medium cursor-pointer">
+ No Follow-Up
             </button>
           </div>
           <Input
-            type="date"
-            value={nextFollowUpDate}
-            onChange={(e) => setNextFollowUpDate(e.target.value)}
-            className="text-xs h-9"
-          />
+ type="date"value={nextFollowUpDate}
+ onChange={(e) => setNextFollowUpDate(e.target.value)}
+ className="text-xs h-9"/>
         </div>
 
         {/* Footer Actions */}
-        <div className="flex items-center justify-end gap-2 pt-3 border-t border-border dark:border-border">
+        <div className="flex items-center justify-end gap-2 pt-3 border-t border-border">
           <Button
-            type="button"
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            className="text-xs h-9"
-          >
-            Cancel
+ type="button"variant="outline"onClick={() => onOpenChange(false)}
+ className="text-xs h-9">
+ Cancel
           </Button>
           <Button
-            type="submit"
-            disabled={isSubmitting}
-            className="text-xs h-9 bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-4"
-          >
+ type="submit"disabled={isSubmitting}
+ className="text-xs h-9 bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-4">
             {isSubmitting ? (
               <>
-                <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
-                Saving...
+                <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin"/>
+ Saving...
               </>
             ) : (
               'Save Follow-Up & Timeline'

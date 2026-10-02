@@ -1,100 +1,100 @@
-import { usePdfcnTheme, useSafeMemo } from "./theme-provider";
-import { Text as PDFText, StyleSheet, View } from "./pdf-primitives";
-import type { Style } from "./pdf-primitives";
-import type { PdfcnTheme } from "../themes/types";
+import { usePdfcnTheme, useSafeMemo } from"./theme-provider";
+import { Text as PDFText, StyleSheet, View } from"./pdf-primitives";
+import type { Style } from"./pdf-primitives";
+import type { PdfcnTheme } from"../themes/types";
 
-export type SignatureVariant = "single" | "double" | "inline";
+export type SignatureVariant ="single"|"double"|"inline";
 
 export interface SignatureSigner {
-  label?: string;
-  name?: string;
-  title?: string;
-  date?: string;
+ label?: string;
+ name?: string;
+ title?: string;
+ date?: string;
 }
 
 export interface PdfSignatureBlockProps {
-  variant?: SignatureVariant;
-  label?: string;
-  name?: string;
-  title?: string;
-  date?: string;
-  signers?: [SignatureSigner, SignatureSigner];
-  style?: Style;
+ variant?: SignatureVariant;
+ label?: string;
+ name?: string;
+ title?: string;
+ date?: string;
+ signers?: [SignatureSigner, SignatureSigner];
+ style?: Style;
 }
 
 const createSignatureStyles = (t: PdfcnTheme) => {
-  const { spacing, fontWeights, typography } = t.primitives;
-  return StyleSheet.create({
-    block: { flex: 1, minWidth: 140 },
-    container: {
-      marginBottom: t.spacing.componentGap,
-      marginTop: t.spacing.sectionGap,
+ const { spacing, fontWeights, typography } = t.primitives;
+ return StyleSheet.create({
+ block: { flex: 1, minWidth: 140 },
+ container: {
+ marginBottom: t.spacing.componentGap,
+ marginTop: t.spacing.sectionGap,
     },
-    dateText: {
-      color: t.colors.mutedForeground,
-      fontFamily: t.typography.body.fontFamily,
-      fontSize: typography.xs,
-      marginTop: 1,
+ dateText: {
+ color: t.colors.mutedForeground,
+ fontFamily: t.typography.body.fontFamily,
+ fontSize: typography.xs,
+ marginTop: 1,
     },
-    doubleRow: {
-      flexDirection: "row",
-      gap: spacing[8],
-      justifyContent: "space-between",
+ doubleRow: {
+ flexDirection:"row",
+ gap: spacing[8],
+ justifyContent:"space-between",
     },
-    inlineLabel: {
-      color: t.colors.mutedForeground,
-      fontFamily: t.typography.body.fontFamily,
-      fontSize: typography.sm,
+ inlineLabel: {
+ color: t.colors.mutedForeground,
+ fontFamily: t.typography.body.fontFamily,
+ fontSize: typography.sm,
     },
-    inlineLine: {
-      borderBottomColor: t.colors.foreground,
-      borderBottomStyle: "solid",
-      borderBottomWidth: 1,
-      height: spacing[5],
-      minWidth: 120,
-      paddingHorizontal: spacing[2],
+ inlineLine: {
+ borderBottomColor: t.colors.foreground,
+ borderBottomStyle:"solid",
+ borderBottomWidth: 1,
+ height: spacing[5],
+ minWidth: 120,
+ paddingHorizontal: spacing[2],
     },
-    inlineName: {
-      color: t.colors.foreground,
-      fontFamily: t.typography.body.fontFamily,
-      fontSize: t.typography.body.fontSize,
+ inlineName: {
+ color: t.colors.foreground,
+ fontFamily: t.typography.body.fontFamily,
+ fontSize: t.typography.body.fontSize,
     },
-    inlineRow: {
-      alignItems: "center",
-      flexDirection: "row",
-      flexWrap: "wrap",
-      gap: spacing[3],
+ inlineRow: {
+ alignItems:"center",
+ flexDirection:"row",
+ flexWrap:"wrap",
+ gap: spacing[3],
     },
-    label: {
-      color: t.colors.mutedForeground,
-      fontFamily: t.typography.body.fontFamily,
-      fontSize: typography.sm,
-      marginBottom: spacing[1],
+ label: {
+ color: t.colors.mutedForeground,
+ fontFamily: t.typography.body.fontFamily,
+ fontSize: typography.sm,
+ marginBottom: spacing[1],
     },
-    line: {
-      borderBottomColor: t.colors.foreground,
-      borderBottomStyle: "solid",
-      borderBottomWidth: 1,
-      marginBottom: spacing[1],
-      minHeight: spacing[6],
+ line: {
+ borderBottomColor: t.colors.foreground,
+ borderBottomStyle:"solid",
+ borderBottomWidth: 1,
+ marginBottom: spacing[1],
+ minHeight: spacing[6],
     },
-    name: {
-      color: t.colors.foreground,
-      fontFamily: t.typography.body.fontFamily,
-      fontSize: t.typography.body.fontSize,
-      fontWeight: fontWeights.semibold,
+ name: {
+ color: t.colors.foreground,
+ fontFamily: t.typography.body.fontFamily,
+ fontSize: t.typography.body.fontSize,
+ fontWeight: fontWeights.semibold,
     },
-    titleText: {
-      color: t.colors.mutedForeground,
-      fontFamily: t.typography.body.fontFamily,
-      fontSize: typography.sm,
+ titleText: {
+ color: t.colors.mutedForeground,
+ fontFamily: t.typography.body.fontFamily,
+ fontSize: typography.sm,
     },
   });
 };
 
 const renderSignerBlock = (
-  signer: SignatureSigner,
-  styles: ReturnType<typeof createSignatureStyles>
+ signer: SignatureSigner,
+ styles: ReturnType<typeof createSignatureStyles>
 ) => (
   <View style={styles.block}>
     {signer.label ? (
@@ -112,23 +112,23 @@ const renderSignerBlock = (
 );
 
 export const PdfSignatureBlock = ({
-  variant = "single",
-  label = "Signature",
-  name,
-  title,
-  date,
-  signers,
-  style,
+ variant ="single",
+ label ="Signature",
+ name,
+ title,
+ date,
+ signers,
+ style,
 }: PdfSignatureBlockProps) => {
-  const theme = usePdfcnTheme();
-  const styles = useSafeMemo(() => createSignatureStyles(theme), [theme]);
-  const containerStyles: Style[] = [styles.container];
-  if (style) {
-    containerStyles.push(style);
+ const theme = usePdfcnTheme();
+ const styles = useSafeMemo(() => createSignatureStyles(theme), [theme]);
+ const containerStyles: Style[] = [styles.container];
+ if (style) {
+ containerStyles.push(style);
   }
 
-  if (variant === "inline") {
-    return (
+ if (variant ==="inline") {
+ return (
       <View wrap={false} style={containerStyles as never}>
         <View style={styles.inlineRow}>
           <PDFText style={styles.inlineLabel}>{`${label}:`}</PDFText>
@@ -139,12 +139,12 @@ export const PdfSignatureBlock = ({
     );
   }
 
-  if (variant === "double") {
-    const [first, second] = signers ?? [
-      { date: "", label: "Authorized Signature", name: "", title: "" },
-      { date: "", label: "Received By / Customer", name: "", title: "" },
+ if (variant ==="double") {
+ const [first, second] = signers ?? [
+      { date:"", label:"Authorized Signature", name:"", title:""},
+      { date:"", label:"Received By / Customer", name:"", title:""},
     ];
-    return (
+ return (
       <View wrap={false} style={containerStyles as never}>
         <View style={styles.doubleRow}>
           {renderSignerBlock(first, styles)}
@@ -154,7 +154,7 @@ export const PdfSignatureBlock = ({
     );
   }
 
-  return (
+ return (
     <View wrap={false} style={containerStyles as never}>
       {renderSignerBlock({ date, label, name, title }, styles)}
     </View>

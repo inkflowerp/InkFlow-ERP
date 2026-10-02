@@ -24,6 +24,15 @@ const nextConfig: NextConfig = {
   },
   turbopack: {},
   webpack: (config, { isServer }) => {
+    config.experiments = {
+      ...config.experiments,
+      asyncWebAssembly: true,
+      layers: true,
+    };
+    config.module.rules.push({
+      test: /\.wasm$/,
+      type: 'webassembly/async',
+    });
     if (!isServer) {
       config.resolve.fallback = {
         ...config.resolve.fallback,

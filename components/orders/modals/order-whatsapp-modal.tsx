@@ -2,11 +2,11 @@
 
 import React, { useState, useEffect } from 'react'
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
+ Dialog,
+ DialogContent,
+ DialogHeader,
+ DialogTitle,
+ DialogDescription,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -15,118 +15,118 @@ import { Label } from '@/components/ui/label'
 import { MessageSquare, Phone, Copy, Check, ExternalLink, Sparkles } from 'lucide-react'
 import { useI18n } from '@/i18n/context'
 import {
-  ORDER_WHATSAPP_TEMPLATES,
-  type OrderWhatsAppTemplateKey,
-  type UnifiedOrderRecord,
-  sanitizeBangladeshiPhone,
-  buildBangladeshiOrderWhatsAppMessage,
+ ORDER_WHATSAPP_TEMPLATES,
+ type OrderWhatsAppTemplateKey,
+ type UnifiedOrderRecord,
+ sanitizeBangladeshiPhone,
+ buildBangladeshiOrderWhatsAppMessage,
 } from '../types'
 
 interface OrderWhatsAppModalProps {
-  isOpen: boolean
-  onClose: () => void
-  order: UnifiedOrderRecord | null
-  companyName?: string
-  initialTemplate?: OrderWhatsAppTemplateKey
-  onShowNotification?: (msg: string, type?: 'success' | 'warning' | 'info') => void
+ isOpen: boolean
+ onClose: () => void
+ order: UnifiedOrderRecord | null
+ companyName?: string
+ initialTemplate?: OrderWhatsAppTemplateKey
+ onShowNotification?: (msg: string, type?: 'success' | 'warning' | 'info') => void
 }
 
 export const OrderWhatsAppModal = React.memo(function OrderWhatsAppModal({
-  isOpen,
-  onClose,
-  order,
-  companyName,
-  initialTemplate = 'order_confirmed',
-  onShowNotification,
+ isOpen,
+ onClose,
+ order,
+ companyName,
+ initialTemplate = 'order_confirmed',
+ onShowNotification,
 }: OrderWhatsAppModalProps) {
-  const { tBilingual } = useI18n()
-  const [selectedTemplate, setSelectedTemplate] = useState<OrderWhatsAppTemplateKey>(initialTemplate)
-  const [phoneNumber, setPhoneNumber] = useState('')
-  const [messageText, setMessageText] = useState('')
-  const [isCopied, setIsCopied] = useState(false)
+ const { tBilingual } = useI18n()
+ const [selectedTemplate, setSelectedTemplate] = useState<OrderWhatsAppTemplateKey>(initialTemplate)
+ const [phoneNumber, setPhoneNumber] = useState('')
+ const [messageText, setMessageText] = useState('')
+ const [isCopied, setIsCopied] = useState(false)
 
-  useEffect(() => {
-    if (order && isOpen) {
-      setSelectedTemplate(initialTemplate)
-      const raw = order.customerPhone || '01711000000'
-      setPhoneNumber(raw)
+ useEffect(() => {
+ if (order && isOpen) {
+ setSelectedTemplate(initialTemplate)
+ const raw = order.customerPhone || '01711000000'
+ setPhoneNumber(raw)
 
-      const itemsSummary = order.items
+ const itemsSummary = order.items
         .map((it) => `${it.itemName} (${it.dimensions || `${it.quantity} ${it.unit}`})`)
         .join(', ') || 'Printing Services'
 
-      const generated = buildBangladeshiOrderWhatsAppMessage({
-        template: initialTemplate,
-        customerName: order.customerName,
-        companyName: companyName || 'PrintERP Press Studio',
-        orderNumber: order.orderNumber,
-        invoiceNumber: order.invoiceNumber,
-        totalAmount: order.totalAmount,
-        advanceAmount: order.advanceAmount,
-        dueAmount: order.dueAmount,
-        deliveryDate: order.deliveryDate,
-        itemsSummary,
+ const generated = buildBangladeshiOrderWhatsAppMessage({
+ template: initialTemplate,
+ customerName: order.customerName,
+ companyName: companyName || 'PrintERP Press Studio',
+ orderNumber: order.orderNumber,
+ invoiceNumber: order.invoiceNumber,
+ totalAmount: order.totalAmount,
+ advanceAmount: order.advanceAmount,
+ dueAmount: order.dueAmount,
+ deliveryDate: order.deliveryDate,
+ itemsSummary,
       })
-      setMessageText(generated)
-      setIsCopied(false)
+ setMessageText(generated)
+ setIsCopied(false)
     }
   }, [order, isOpen, companyName, initialTemplate])
 
-  const handleTemplateChange = (tpl: OrderWhatsAppTemplateKey) => {
-    setSelectedTemplate(tpl)
-    if (!order) return
-    const itemsSummary = order.items
+ const handleTemplateChange = (tpl: OrderWhatsAppTemplateKey) => {
+ setSelectedTemplate(tpl)
+ if (!order) return
+ const itemsSummary = order.items
       .map((it) => `${it.itemName} (${it.dimensions || `${it.quantity} ${it.unit}`})`)
       .join(', ') || 'Printing Services'
 
-    const generated = buildBangladeshiOrderWhatsAppMessage({
-      template: tpl,
-      customerName: order.customerName,
-      companyName: companyName || 'PrintERP Press Studio',
-      orderNumber: order.orderNumber,
-      invoiceNumber: order.invoiceNumber,
-      totalAmount: order.totalAmount,
-      advanceAmount: order.advanceAmount,
-      dueAmount: order.dueAmount,
-      deliveryDate: order.deliveryDate,
-      itemsSummary,
+ const generated = buildBangladeshiOrderWhatsAppMessage({
+ template: tpl,
+ customerName: order.customerName,
+ companyName: companyName || 'PrintERP Press Studio',
+ orderNumber: order.orderNumber,
+ invoiceNumber: order.invoiceNumber,
+ totalAmount: order.totalAmount,
+ advanceAmount: order.advanceAmount,
+ dueAmount: order.dueAmount,
+ deliveryDate: order.deliveryDate,
+ itemsSummary,
     })
-    setMessageText(generated)
+ setMessageText(generated)
   }
 
-  const handleCopy = () => {
-    if (!messageText) return
-    navigator.clipboard.writeText(messageText)
-    setIsCopied(true)
-    setTimeout(() => setIsCopied(false), 2500)
-    onShowNotification?.(
-      tBilingual('WhatsApp message copied to clipboard!', 'হোয়াটসঅ্যাপ বার্তা সফলভাবে কপি হয়েছে!'),
+ const handleCopy = () => {
+ if (!messageText) return
+ navigator.clipboard.writeText(messageText)
+ setIsCopied(true)
+ setTimeout(() => setIsCopied(false), 2500)
+ onShowNotification?.(
+ tBilingual('WhatsApp message copied to clipboard!', 'হোয়াটসঅ্যাপ বার্তা সফলভাবে কপি হয়েছে!'),
       'success'
     )
   }
 
-  const handleOpenWhatsAppWeb = () => {
-    if (!phoneNumber) return
-    const clean = sanitizeBangladeshiPhone(phoneNumber)
-    const encoded = encodeURIComponent(messageText)
-    window.open(`https://wa.me/${clean}?text=${encoded}`, '_blank')
+ const handleOpenWhatsAppWeb = () => {
+ if (!phoneNumber) return
+ const clean = sanitizeBangladeshiPhone(phoneNumber)
+ const encoded = encodeURIComponent(messageText)
+ window.open(`https://wa.me/${clean}?text=${encoded}`, '_blank')
   }
 
-  if (!order) return null
+ if (!order) return null
 
-  return (
+ return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-2xl bg-card border border-border text-foreground p-6 shadow-2xl">
+      <DialogContent className="max-w-2xl bg-card border border-border text-foreground p-6 shadow-lg">
         <DialogHeader className="border-b border-border pb-3">
           <DialogTitle className="text-lg font-bold flex items-center gap-2 text-emerald-700 dark:text-emerald-400">
-            <MessageSquare className="h-5 w-5" />
+            <MessageSquare className="h-5 w-5"/>
             <span>{tBilingual('Order WhatsApp Communication Hub', 'অর্ডার হোয়াটসঅ্যাপ যোগাযোগ হাব')}</span>
           </DialogTitle>
           <DialogDescription className="text-xs text-muted-foreground">
             {tBilingual('Order #:', 'অর্ডার নং:')}{' '}
             <span className="tabular-nums font-bold text-indigo-600">#{order.orderNumber}</span> |{' '}
             {tBilingual('Customer:', 'কাস্টমার:')}{' '}
-            <span className="font-semibold text-foreground dark:text-foreground">{order.customerName}</span>
+            <span className="font-semibold text-foreground">{order.customerName}</span>
           </DialogDescription>
         </DialogHeader>
 
@@ -139,11 +139,10 @@ export const OrderWhatsAppModal = React.memo(function OrderWhatsAppModal({
             <div className="grid grid-cols-2 gap-2">
               {ORDER_WHATSAPP_TEMPLATES.map((t) => (
                 <button
-                  key={t.key}
-                  type="button"
-                  onClick={() => handleTemplateChange(t.key)}
-                  className={`p-2.5 rounded-lg border text-left text-xs font-semibold transition-all flex flex-col justify-between ${
-                    selectedTemplate === t.key
+ key={t.key}
+ type="button"onClick={() => handleTemplateChange(t.key)}
+ className={`p-2.5 rounded-lg border text-left text-xs font-semibold transition-all flex flex-col justify-between ${
+ selectedTemplate === t.key
                       ? 'bg-emerald-50 border-emerald-500 text-emerald-950 dark:bg-emerald-950/50 dark:text-emerald-200 shadow-sm'
                       : 'bg-muted border-border text-foreground hover:border-emerald-300'
                   }`}
@@ -158,19 +157,17 @@ export const OrderWhatsAppModal = React.memo(function OrderWhatsAppModal({
           {/* Phone Number Input */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-end">
             <div className="space-y-1">
-              <Label className="text-xs font-bold flex items-center gap-1.5 text-foreground dark:text-muted-foreground">
-                <Phone className="h-3.5 w-3.5 text-emerald-600" />
+              <Label className="text-xs font-bold flex items-center gap-1.5 text-foreground">
+                <Phone className="h-3.5 w-3.5 text-emerald-600"/>
                 <span>{tBilingual('Customer WhatsApp Phone:', 'গ্রাহকের হোয়াটসঅ্যাপ নম্বর:')}</span>
               </Label>
               <Input
-                value={phoneNumber}
-                onChange={(e) => setPhoneNumber(e.target.value)}
-                placeholder="01711-XXXXXX"
-                className="tabular-nums text-xs bg-muted border-input dark:border-border"
-              />
+ value={phoneNumber}
+ onChange={(e) => setPhoneNumber(e.target.value)}
+ placeholder="01711-XXXXXX"className="tabular-nums text-xs bg-muted border-input"/>
             </div>
-            <div className="text-2xs text-muted-foreground bg-muted p-2 rounded-md border border-border dark:border-border">
-              <span className="font-semibold text-foreground dark:text-muted-foreground">
+            <div className="text-2xs text-muted-foreground bg-muted p-2 rounded-md border border-border">
+              <span className="font-semibold text-foreground">
                 {tBilingual('Auto 88 Format:', 'অটো ৮৮ ফরম্যাট:')}{' '}
               </span>
               +{sanitizeBangladeshiPhone(phoneNumber)}
@@ -181,55 +178,41 @@ export const OrderWhatsAppModal = React.memo(function OrderWhatsAppModal({
           <div className="space-y-1">
             <div className="flex items-center justify-between">
               <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                <Sparkles className="h-3.5 w-3.5 text-indigo-600" />
+                <Sparkles className="h-3.5 w-3.5 text-indigo-600"/>
                 <span>{tBilingual('Message Preview & Editor:', 'মেসেজ প্রিভিউ ও এডিটর:')}</span>
               </Label>
               <button
-                type="button"
-                onClick={handleCopy}
-                className="text-2xs text-emerald-700 dark:text-emerald-400 hover:underline flex items-center gap-1 font-semibold"
-              >
-                {isCopied ? <Check className="h-3 w-3 text-emerald-600" /> : <Copy className="h-3 w-3" />}
+ type="button"onClick={handleCopy}
+ className="text-2xs text-emerald-700 dark:text-emerald-400 hover:underline flex items-center gap-1 font-semibold">
+                {isCopied ? <Check className="h-3 w-3 text-emerald-600"/> : <Copy className="h-3 w-3"/>}
                 <span>{isCopied ? tBilingual('Copied!', 'কপি হয়েছে') : tBilingual('Copy Text', 'কপি করুন')}</span>
               </button>
             </div>
             <Textarea
-              rows={6}
-              value={messageText}
-              onChange={(e) => setMessageText(e.target.value)}
-              className="text-xs font-sans leading-relaxed bg-muted border-input dark:border-border"
-            />
+ rows={6}
+ value={messageText}
+ onChange={(e) => setMessageText(e.target.value)}
+ className="text-xs font-sans leading-relaxed bg-muted border-input"/>
           </div>
 
           {/* Actions */}
           <div className="flex items-center justify-between border-t border-border pt-3">
             <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={onClose}
-              className="text-xs text-muted-foreground dark:text-muted-foreground"
-            >
+ type="button"variant="outline"size="sm"onClick={onClose}
+ className="text-xs text-muted-foreground">
               {tBilingual('Close', 'বন্ধ করুন')}
             </Button>
             <div className="flex items-center gap-2">
               <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={handleCopy}
-                className="text-xs border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950"
-              >
-                {isCopied ? <Check className="h-3.5 w-3.5 mr-1" /> : <Copy className="h-3.5 w-3.5 mr-1" />}
+ type="button"variant="outline"size="sm"onClick={handleCopy}
+ className="text-xs border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950">
+                {isCopied ? <Check className="h-3.5 w-3.5 mr-1"/> : <Copy className="h-3.5 w-3.5 mr-1"/>}
                 <span>{isCopied ? tBilingual('Copied', 'কপি সম্পন্ন') : tBilingual('Copy Text', 'টেক্সট কপি করুন')}</span>
               </Button>
               <Button
-                type="button"
-                size="sm"
-                onClick={handleOpenWhatsAppWeb}
-                className="text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-md"
-              >
-                <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
+ type="button"size="sm"onClick={handleOpenWhatsAppWeb}
+ className="text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-xs">
+                <ExternalLink className="h-3.5 w-3.5 mr-1.5"/>
                 <span>{tBilingual('Open WhatsApp', 'হোয়াটসঅ্যাপে পাঠান')}</span>
               </Button>
             </div>

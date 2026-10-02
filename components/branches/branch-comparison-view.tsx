@@ -3,26 +3,26 @@
 import type { BranchComparisonData } from '../../types/branch.types.ts'
 
 interface BranchComparisonViewProps {
-  data: BranchComparisonData
+ data: BranchComparisonData
 }
 
 export function BranchComparisonView({ data }: BranchComparisonViewProps) {
-  return (
+ return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-bold text-foreground dark:text-foreground">
-          Branch Comparison Matrix / শাখা সমূহের পারফরম্যান্স তুলনা
+        <h2 className="text-xl font-bold text-foreground">
+ Branch Comparison Matrix / শাখা সমূহের পারফরম্যান্স তুলনা
         </h2>
-        <p className="text-sm text-muted-foreground dark:text-muted-foreground">
-          Executive comparative breakdown of revenue, gross profit, margin %, job completion, and rework rates
+        <p className="text-sm text-muted-foreground">
+ Executive comparative breakdown of revenue, gross profit, margin %, job completion, and rework rates
         </p>
       </div>
 
       {/* Summary Banner */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-5 bg-gradient-to-r from-primary-900/20 via-slate-900/40 to-emerald-900/20 rounded-2xl border border-border dark:border-border">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-5 bg-gradient-to-r from-primary-900/20 via-slate-900/40 to-emerald-900/20 rounded-xl border border-border">
         <div>
           <div className="text-xs font-semibold uppercase text-muted-foreground">Total Company Revenue</div>
-          <div className="text-2xl font-black text-foreground dark:text-foreground">
+          <div className="text-2xl font-black text-foreground">
             ৳{data.totals.total_revenue.toLocaleString('en-IN')}
           </div>
         </div>
@@ -47,10 +47,10 @@ export function BranchComparisonView({ data }: BranchComparisonViewProps) {
       </div>
 
       {/* Comparison Table */}
-      <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
+      <div className="bg-card rounded-xl border border-border shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm text-muted-foreground dark:text-muted-foreground">
-            <thead className="bg-muted text-xs uppercase font-semibold text-muted-foreground border-b border-border dark:border-border">
+          <table className="w-full text-left text-sm text-muted-foreground">
+            <thead className="bg-muted text-xs uppercase font-semibold text-muted-foreground border-b border-border">
               <tr>
                 <th className="px-6 py-4">Branch</th>
                 <th className="px-6 py-4 text-right">Revenue (৳)</th>
@@ -66,18 +66,17 @@ export function BranchComparisonView({ data }: BranchComparisonViewProps) {
             <tbody className="divide-y divide-border dark:divide-border">
               {data.branches.map((b) => (
                 <tr
-                  key={b.branch_id}
-                  className="hover:bg-muted/50 dark:hover:bg-muted/30 transition-colors"
-                >
+ key={b.branch_id}
+ className="hover:bg-muted/50 dark:hover:bg-muted/30 transition-colors">
                   <td className="px-6 py-4">
-                    <div className="font-bold text-foreground dark:text-foreground">
+                    <div className="font-bold text-foreground">
                       {b.branch_name}
                     </div>
                     <div className="text-xs text-muted-foreground tabular-nums font-semibold">
                       {b.branch_code}
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-right font-semibold text-foreground dark:text-foreground">
+                  <td className="px-6 py-4 text-right font-semibold text-foreground">
                     ৳{b.revenue.toLocaleString('en-IN')}
                   </td>
                   <td className="px-6 py-4 text-right text-muted-foreground">
@@ -102,8 +101,8 @@ export function BranchComparisonView({ data }: BranchComparisonViewProps) {
                   </td>
                   <td className="px-6 py-4 text-right">
                     <span
-                      className={`text-xs font-bold ${
-                        b.rework_rate > 5 ? 'text-rose-600' : 'text-muted-foreground'
+ className={`text-xs font-bold ${
+ b.rework_rate > 5 ? 'text-rose-600' : 'text-muted-foreground'
                       }`}
                     >
                       {b.rework_rate}%
@@ -112,7 +111,7 @@ export function BranchComparisonView({ data }: BranchComparisonViewProps) {
                 </tr>
               ))}
             </tbody>
-            <tfoot className="bg-muted font-bold text-foreground border-t-2 border-border dark:border-border">
+            <tfoot className="bg-muted font-bold text-foreground border-t-2 border-border">
               <tr>
                 <td className="px-6 py-4">Total / মোট</td>
                 <td className="px-6 py-4 text-right">

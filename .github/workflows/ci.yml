@@ -40,6 +40,9 @@ jobs:
       - name: 2. Code Quality & Standards (ESLint)
         run: npm run lint
 
+      - name: 2b. Plain Language & UX Copy Lint (Shopkeeper English & Bangla)
+        run: npm run copy-lint
+
       - name: 3. Comprehensive Automated Tests (Node Native Test Runner)
         run: npm test
 

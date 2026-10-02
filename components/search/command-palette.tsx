@@ -3,33 +3,33 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import {
-  Search,
-  X,
-  UserPlus,
-  FileSpreadsheet,
-  ShoppingBag,
-  CreditCard,
-  Truck,
-  Receipt,
-  Users,
-  Printer,
-  Package,
-  Layers,
-  Settings,
-  ArrowRight,
-  Sparkles,
-  Command,
-  RotateCcw,
-  SlidersHorizontal,
-  Cpu,
-  Scissors,
+ Search,
+ X,
+ UserPlus,
+ FileSpreadsheet,
+ ShoppingBag,
+ CreditCard,
+ Truck,
+ Receipt,
+ Users,
+ Printer,
+ Package,
+ Layers,
+ Settings,
+ ArrowRight,
+ Sparkles,
+ Command,
+ RotateCcw,
+ SlidersHorizontal,
+ Cpu,
+ Scissors,
 } from 'lucide-react'
 import { SearchService } from '@/services/search.service'
 import {
-  SearchEntity,
-  SearchResultItem,
-  GroupedSearchResults,
-  QuickCommand,
+ SearchEntity,
+ SearchResultItem,
+ GroupedSearchResults,
+ QuickCommand,
 } from '@/types/search.types'
 import { useShortcuts } from '@/hooks/use-shortcuts'
 import { useTenant } from '@/hooks/use-tenant'
@@ -38,294 +38,280 @@ import { Button } from '@/components/ui/button'
 import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 
 const ENTITY_CONFIG: Record<
-  SearchEntity,
+ SearchEntity,
   { label: string; labelBn: string; icon: React.ElementType; color: string }
 > = {
-  customer: { label: 'Customers', labelBn: 'কাস্টমার', icon: Users, color: 'text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-500/10 border-cyan-200 dark:border-cyan-500/30' },
-  order: { label: 'Orders', labelBn: 'অর্ডার', icon: ShoppingBag, color: 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10 border-indigo-200 dark:border-indigo-500/30' },
-  quotation: { label: 'Quotations', labelBn: 'কোটেশন', icon: FileSpreadsheet, color: 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10 border-blue-200 dark:border-blue-500/30' },
-  invoice: { label: 'Invoices', labelBn: 'ইনভয়েস', icon: Receipt, color: 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/30' },
-  job: { label: 'Jobs', labelBn: 'জব', icon: Printer, color: 'text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border-amber-200 dark:border-amber-500/30' },
-  product: { label: 'Products', labelBn: 'পণ্য', icon: Package, color: 'text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-500/10 border-purple-200 dark:border-purple-500/30' },
-  material: { label: 'Materials', labelBn: 'ম্যাটেরিয়াল', icon: Layers, color: 'text-pink-600 dark:text-pink-400 bg-pink-50 dark:bg-pink-500/10 border-pink-200 dark:border-pink-500/30' },
-  supplier: { label: 'Suppliers', labelBn: 'সাপ্লায়ার', icon: Truck, color: 'text-yellow-600 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-500/10 border-yellow-200 dark:border-yellow-500/30' },
-  employee: { label: 'Employees', labelBn: 'স্টাফ', icon: Users, color: 'text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-500/10 border-teal-200 dark:border-teal-500/30' },
-  inventory: { label: 'Inventory', labelBn: 'মজুত', icon: Layers, color: 'text-pink-600 dark:text-pink-400 bg-pink-50 dark:bg-pink-500/10 border-pink-200 dark:border-pink-500/30' },
-  production_job: { label: 'Production', labelBn: 'উৎপাদন', icon: Printer, color: 'text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border-amber-200 dark:border-amber-500/30' },
-  design_job: { label: 'Design', labelBn: 'ডিজাইন', icon: Sparkles, color: 'text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-500/10 border-violet-200 dark:border-violet-500/30' },
-  challan: { label: 'Challans', labelBn: 'চালান', icon: Truck, color: 'text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-500/10 border-orange-200 dark:border-orange-500/30' },
-  machinery: { label: 'Machineries', labelBn: 'মেশিনারি', icon: Cpu, color: 'text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-500/10 border-cyan-200 dark:border-cyan-500/30' },
+ customer: { label: 'Customers', labelBn: 'কাস্টমার', icon: Users, color: 'text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-500/10 border-cyan-200 dark:border-cyan-500/30' },
+ order: { label: 'Orders', labelBn: 'অর্ডার', icon: ShoppingBag, color: 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10 border-indigo-200 dark:border-indigo-500/30' },
+ quotation: { label: 'Quotations', labelBn: 'কোটেশন', icon: FileSpreadsheet, color: 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10 border-blue-200 dark:border-blue-500/30' },
+ invoice: { label: 'Invoices', labelBn: 'ইনভয়েস', icon: Receipt, color: 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/30' },
+ job: { label: 'Jobs', labelBn: 'জব', icon: Printer, color: 'text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border-amber-200 dark:border-amber-500/30' },
+ product: { label: 'Products', labelBn: 'পণ্য', icon: Package, color: 'text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-500/10 border-purple-200 dark:border-purple-500/30' },
+ material: { label: 'Materials', labelBn: 'ম্যাটেরিয়াল', icon: Layers, color: 'text-pink-600 dark:text-pink-400 bg-pink-50 dark:bg-pink-500/10 border-pink-200 dark:border-pink-500/30' },
+ supplier: { label: 'Suppliers', labelBn: 'সাপ্লায়ার', icon: Truck, color: 'text-yellow-600 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-500/10 border-yellow-200 dark:border-yellow-500/30' },
+ employee: { label: 'Employees', labelBn: 'স্টাফ', icon: Users, color: 'text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-500/10 border-teal-200 dark:border-teal-500/30' },
+ inventory: { label: 'Inventory', labelBn: 'মজুত', icon: Layers, color: 'text-pink-600 dark:text-pink-400 bg-pink-50 dark:bg-pink-500/10 border-pink-200 dark:border-pink-500/30' },
+ production_job: { label: 'Production', labelBn: 'উৎপাদন', icon: Printer, color: 'text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border-amber-200 dark:border-amber-500/30' },
+ design_job: { label: 'Design', labelBn: 'ডিজাইন', icon: Sparkles, color: 'text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-500/10 border-violet-200 dark:border-violet-500/30' },
+ challan: { label: 'Challans', labelBn: 'চালান', icon: Truck, color: 'text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-500/10 border-orange-200 dark:border-orange-500/30' },
+ machinery: { label: 'Machineries', labelBn: 'মেশিনারি', icon: Cpu, color: 'text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-500/10 border-cyan-200 dark:border-cyan-500/30' },
 }
 
 const COMMAND_ICONS: Record<string, React.ElementType> = {
-  UserPlus,
-  FileSpreadsheet,
-  ShoppingBag,
-  CreditCard,
-  Truck,
-  Receipt,
-  Printer,
-  Scissors,
-  Cpu,
+ UserPlus,
+ FileSpreadsheet,
+ ShoppingBag,
+ CreditCard,
+ Truck,
+ Receipt,
+ Printer,
+ Scissors,
+ Cpu,
 }
 
 const COMMAND_THEMES: Record<
-  string,
+ string,
   { gradient: string; text: string; border: string; bg: string }
 > = {
   'cmd-new-work': {
-    gradient: 'from-blue-500/20 to-cyan-500/20',
-    text: 'text-blue-600 dark:text-blue-400',
-    border: 'border-blue-200 dark:border-blue-500/30',
-    bg: 'bg-blue-50 dark:bg-blue-500/10',
+ gradient: 'from-blue-500/20 to-cyan-500/20',
+ text: 'text-blue-600 dark:text-blue-400',
+ border: 'border-blue-200 dark:border-blue-500/30',
+ bg: 'bg-blue-50 dark:bg-blue-500/10',
   },
   'cmd-create-customer': {
-    gradient: 'from-cyan-500/20 to-blue-500/20',
-    text: 'text-cyan-600 dark:text-cyan-400',
-    border: 'border-cyan-200 dark:border-cyan-500/30',
-    bg: 'bg-cyan-50 dark:bg-cyan-500/10',
+ gradient: 'from-cyan-500/20 to-blue-500/20',
+ text: 'text-cyan-600 dark:text-cyan-400',
+ border: 'border-cyan-200 dark:border-cyan-500/30',
+ bg: 'bg-cyan-50 dark:bg-cyan-500/10',
   },
   'cmd-create-quotation': {
-    gradient: 'from-blue-500/20 to-indigo-500/20',
-    text: 'text-blue-600 dark:text-blue-400',
-    border: 'border-blue-200 dark:border-blue-500/30',
-    bg: 'bg-blue-50 dark:bg-blue-500/10',
+ gradient: 'from-blue-500/20 to-indigo-500/20',
+ text: 'text-blue-600 dark:text-blue-400',
+ border: 'border-blue-200 dark:border-blue-500/30',
+ bg: 'bg-blue-50 dark:bg-blue-500/10',
   },
   'cmd-create-order': {
-    gradient: 'from-indigo-500/20 to-violet-500/20',
-    text: 'text-indigo-600 dark:text-indigo-400',
-    border: 'border-indigo-200 dark:border-indigo-500/30',
-    bg: 'bg-indigo-50 dark:bg-indigo-500/10',
+ gradient: 'from-indigo-500/20 to-violet-500/20',
+ text: 'text-indigo-600 dark:text-indigo-400',
+ border: 'border-indigo-200 dark:border-indigo-500/30',
+ bg: 'bg-indigo-50 dark:bg-indigo-500/10',
   },
   'cmd-finishing': {
-    gradient: 'from-amber-500/20 to-orange-500/20',
-    text: 'text-amber-600 dark:text-amber-400',
-    border: 'border-amber-200 dark:border-amber-500/30',
-    bg: 'bg-amber-50 dark:bg-amber-500/10',
+ gradient: 'from-amber-500/20 to-orange-500/20',
+ text: 'text-amber-600 dark:text-amber-400',
+ border: 'border-amber-200 dark:border-amber-500/30',
+ bg: 'bg-amber-50 dark:bg-amber-500/10',
   },
   'cmd-record-payment': {
-    gradient: 'from-emerald-500/20 to-teal-500/20',
-    text: 'text-emerald-600 dark:text-emerald-400',
-    border: 'border-emerald-200 dark:border-emerald-500/30',
-    bg: 'bg-emerald-50 dark:bg-emerald-500/10',
+ gradient: 'from-emerald-500/20 to-teal-500/20',
+ text: 'text-emerald-600 dark:text-emerald-400',
+ border: 'border-emerald-200 dark:border-emerald-500/30',
+ bg: 'bg-emerald-50 dark:bg-emerald-500/10',
   },
   'cmd-create-purchase': {
-    gradient: 'from-sky-500/20 to-cyan-500/20',
-    text: 'text-sky-600 dark:text-sky-400',
-    border: 'border-sky-200 dark:border-sky-500/30',
-    bg: 'bg-sky-50 dark:bg-sky-500/10',
+ gradient: 'from-sky-500/20 to-cyan-500/20',
+ text: 'text-sky-600 dark:text-sky-400',
+ border: 'border-sky-200 dark:border-sky-500/30',
+ bg: 'bg-sky-50 dark:bg-sky-500/10',
   },
   'cmd-add-expense': {
-    gradient: 'from-amber-500/20 to-rose-500/20',
-    text: 'text-amber-600 dark:text-amber-400',
-    border: 'border-amber-200 dark:border-amber-500/30',
-    bg: 'bg-amber-50 dark:bg-amber-500/10',
+ gradient: 'from-amber-500/20 to-rose-500/20',
+ text: 'text-amber-600 dark:text-amber-400',
+ border: 'border-amber-200 dark:border-amber-500/30',
+ bg: 'bg-amber-50 dark:bg-amber-500/10',
   },
   'cmd-add-machinery': {
-    gradient: 'from-teal-500/20 to-emerald-500/20',
-    text: 'text-teal-600 dark:text-teal-400',
-    border: 'border-teal-200 dark:border-teal-500/30',
-    bg: 'bg-teal-50 dark:bg-teal-500/10',
+ gradient: 'from-teal-500/20 to-emerald-500/20',
+ text: 'text-teal-600 dark:text-teal-400',
+ border: 'border-teal-200 dark:border-teal-500/30',
+ bg: 'bg-teal-50 dark:bg-teal-500/10',
   },
 }
 
 interface CommandPaletteProps {
-  isOpen: boolean
-  onClose: () => void
-  initialMode?: 'search' | 'quick-new'
+ isOpen: boolean
+ onClose: () => void
+ initialMode?: 'search' | 'quick-new'
 }
 
 export function CommandPalette({ isOpen, onClose, initialMode = 'search' }: CommandPaletteProps) {
-  const router = useRouter()
-  const pathname = usePathname()
-  const { company } = useTenant()
-  const { tBilingual } = useI18n()
-  const tenantSlug = company?.slug || 'app'
+ const router = useRouter()
+ const pathname = usePathname()
+ const { company } = useTenant()
+ const { tBilingual } = useI18n()
+ const tenantSlug = company?.slug || 'app'
 
-  const [query, setQuery] = useState('')
-  const [selectedEntity, setSelectedEntity] = useState<string>('all')
-  const [showSettings, setShowSettings] = useState(false)
-  const [viewMode, setViewMode] = useState<'search' | 'quick-new'>(initialMode)
-  const [selectedIndex, setSelectedIndex] = useState<number>(0)
+ const [query, setQuery] = useState('')
+ const [selectedEntity, setSelectedEntity] = useState<string>('all')
+ const [showSettings, setShowSettings] = useState(false)
+ const [viewMode, setViewMode] = useState<'search' | 'quick-new'>(initialMode)
+ const [selectedIndex, setSelectedIndex] = useState<number>(0)
 
-  const inputRef = useRef<HTMLInputElement>(null)
+ const inputRef = useRef<HTMLInputElement>(null)
 
-  const { shortcuts, updateShortcuts, resetShortcuts } = useShortcuts({
-    onClose: () => onClose(),
+ const { shortcuts, updateShortcuts, resetShortcuts } = useShortcuts({
+ onClose: () => onClose(),
   })
 
   // Sync viewMode when initialMode changes or modal opens
-  useEffect(() => {
-    setViewMode(initialMode)
+ useEffect(() => {
+ setViewMode(initialMode)
   }, [initialMode, isOpen])
 
   // Focus search input on open
-  useEffect(() => {
-    if (isOpen) {
-      setTimeout(() => {
-        if (inputRef.current) {
-          inputRef.current.focus()
-          inputRef.current.select()
+ useEffect(() => {
+ if (isOpen) {
+ setTimeout(() => {
+ if (inputRef.current) {
+ inputRef.current.focus()
+ inputRef.current.select()
         }
       }, 60)
     } else {
-      setQuery('')
-      setSelectedEntity('all')
-      setSelectedIndex(0)
-      setShowSettings(false)
+ setQuery('')
+ setSelectedEntity('all')
+ setSelectedIndex(0)
+ setShowSettings(false)
     }
   }, [isOpen, initialMode])
 
   // Execute Search via SearchService
-  const groupedResults: GroupedSearchResults = useMemo(() => {
-    if (!company?.id || !query.trim()) return {}
-    return SearchService.search(company.id, query)
+ const groupedResults: GroupedSearchResults = useMemo(() => {
+ if (!company?.id || !query.trim()) return {}
+ return SearchService.search(company.id, query)
   }, [company?.id, query])
 
-  const quickCommands = useMemo(() => {
-    return SearchService.getQuickCommands()
+ const quickCommands = useMemo(() => {
+ return SearchService.getQuickCommands()
   }, [])
 
   // Flattened searchable items for arrow navigation
-  const flatSearchItems = useMemo(() => {
-    const isQueryEmpty = query.trim().length === 0
-    if (isQueryEmpty || viewMode === 'quick-new') {
-      return quickCommands.map((cmd) => ({ type: 'command' as const, data: cmd }))
+ const flatSearchItems = useMemo(() => {
+ const isQueryEmpty = query.trim().length === 0
+ if (isQueryEmpty || viewMode === 'quick-new') {
+ return quickCommands.map((cmd) => ({ type: 'command' as const, data: cmd }))
     }
 
-    const items: Array<{ type: 'result'; data: SearchResultItem; entity: string }> = []
-    Object.entries(groupedResults).forEach(([entityKey, list]) => {
-      if (selectedEntity === 'all' || selectedEntity === entityKey) {
-        list.forEach((item) => items.push({ type: 'result', data: item, entity: entityKey }))
+ const items: Array<{ type: 'result'; data: SearchResultItem; entity: string }> = []
+ Object.entries(groupedResults).forEach(([entityKey, list]) => {
+ if (selectedEntity === 'all' || selectedEntity === entityKey) {
+ list.forEach((item) => items.push({ type: 'result', data: item, entity: entityKey }))
       }
     })
-    return items
+ return items
   }, [query, viewMode, quickCommands, groupedResults, selectedEntity])
 
   // Reset selectedIndex when filter/query changes
-  useEffect(() => {
-    setSelectedIndex(0)
+ useEffect(() => {
+ setSelectedIndex(0)
   }, [query, selectedEntity, viewMode])
 
-  if (!isOpen) return null
+ if (!isOpen) return null
 
-  const handleSelectCommand = (cmd: QuickCommand) => {
-    onClose()
-    router.push(getTenantNavHref(cmd.href, pathname, tenantSlug))
+ const handleSelectCommand = (cmd: QuickCommand) => {
+ onClose()
+ router.push(getTenantNavHref(cmd.href, pathname, tenantSlug))
   }
 
-  const handleSelectResult = (item: SearchResultItem) => {
-    onClose()
-    router.push(getTenantNavHref(item.href, pathname, tenantSlug))
+ const handleSelectResult = (item: SearchResultItem) => {
+ onClose()
+ router.push(getTenantNavHref(item.href, pathname, tenantSlug))
   }
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Escape') {
-      e.preventDefault()
-      onClose()
-      return
+ const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+ if (e.key === 'Escape') {
+ e.preventDefault()
+ onClose()
+ return
     }
 
-    if (e.key === 'ArrowDown') {
-      e.preventDefault()
-      setSelectedIndex((prev) => (flatSearchItems.length > 0 ? (prev + 1) % flatSearchItems.length : 0))
-      return
+ if (e.key === 'ArrowDown') {
+ e.preventDefault()
+ setSelectedIndex((prev) => (flatSearchItems.length > 0 ? (prev + 1) % flatSearchItems.length : 0))
+ return
     }
 
-    if (e.key === 'ArrowUp') {
-      e.preventDefault()
-      setSelectedIndex((prev) => (flatSearchItems.length > 0 ? (prev - 1 + flatSearchItems.length) % flatSearchItems.length : 0))
-      return
+ if (e.key === 'ArrowUp') {
+ e.preventDefault()
+ setSelectedIndex((prev) => (flatSearchItems.length > 0 ? (prev - 1 + flatSearchItems.length) % flatSearchItems.length : 0))
+ return
     }
 
-    if (e.key === 'Enter') {
-      e.preventDefault()
-      if (flatSearchItems.length > 0 && flatSearchItems[selectedIndex]) {
-        const item = flatSearchItems[selectedIndex]
-        if (item.type === 'command') {
-          handleSelectCommand(item.data)
+ if (e.key === 'Enter') {
+ e.preventDefault()
+ if (flatSearchItems.length > 0 && flatSearchItems[selectedIndex]) {
+ const item = flatSearchItems[selectedIndex]
+ if (item.type === 'command') {
+ handleSelectCommand(item.data)
         } else {
-          handleSelectResult(item.data)
+ handleSelectResult(item.data)
         }
       }
     }
   }
 
-  const hasResults = Object.keys(groupedResults).length > 0
-  const isQueryEmpty = query.trim().length === 0
+ const hasResults = Object.keys(groupedResults).length > 0
+ const isQueryEmpty = query.trim().length === 0
 
-  return (
+ return (
     <div
-      className="fixed inset-0 z-50 bg-slate-900 backdrop-blur-md flex items-start justify-center p-3 sm:p-6 sm:pt-20 animate-in fade-in duration-150 cursor-pointer"
-      onClick={onClose}
+ className="fixed inset-0 z-50 bg-surface-inset backdrop-blur-md flex items-start justify-center p-3 sm:p-6 sm:pt-20 animate-in fade-in duration-150 cursor-pointer"onClick={onClose}
     >
       <div
-        className="bg-card border border-border rounded-xl max-w-2xl w-full shadow-2xl overflow-hidden flex flex-col max-h-[85vh] relative animate-in zoom-in-95 duration-150 cursor-default"
-        onClick={(e) => e.stopPropagation()}
+ className="bg-card border border-border rounded-xl max-w-2xl w-full shadow-lg overflow-hidden flex flex-col max-h-[85vh] relative animate-in zoom-in-95 duration-150 cursor-default"onClick={(e) => e.stopPropagation()}
       >
         {/* Printing Industry Micro Accent */}
-        <div className="absolute top-0 inset-x-0 h-0.5 cmyk-rainbow-bar opacity-80" />
+        <div className="absolute top-0 inset-x-0 h-0.5 cmyk-rainbow-bar opacity-80"/>
 
         {/* Search Header */}
         <div className="p-3 sm:p-4 border-b border-border flex items-center gap-3 bg-muted/30">
           <div className="h-9 w-9 rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400 flex items-center justify-center shrink-0 shadow-xs">
-            <Search className="h-4 w-4" />
+            <Search className="h-4 w-4"/>
           </div>
 
           <input
-            ref={inputRef}
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder={
-              viewMode === 'quick-new'
+ ref={inputRef}
+ type="text"value={query}
+ onChange={(e) => setQuery(e.target.value)}
+ onKeyDown={handleKeyDown}
+ placeholder={
+ viewMode === 'quick-new'
                 ? tBilingual('Type to filter operations (e.g. customer, quote, payment)...', 'অপারেশন খুঁজুন (যেমন: কাস্টমার, কোটেশন, পেমেন্ট)...')
                 : tBilingual('Search customers, orders, invoices, jobs, materials...', 'কাস্টমার, অর্ডার, ইনভয়েস, জব, ম্যাটেরিয়াল খুঁজুন...')
             }
-            className="w-full bg-transparent text-sm sm:text-base text-foreground dark:text-white placeholder:text-muted-foreground font-sans border-0 outline-none ring-0 shadow-none focus:outline-none focus:ring-0 focus:border-transparent focus:shadow-none select-text"
-            style={{
-              outline: 'none',
-              boxShadow: 'none',
-              border: 'none',
-              WebkitAppearance: 'none',
+ className="w-full bg-transparent text-sm sm:text-base text-foreground placeholder:text-muted-foreground font-sans border-0 outline-none ring-0 shadow-none focus:outline-none focus:ring-0 focus:border-transparent focus:shadow-none select-text"style={{
+ outline: 'none',
+ boxShadow: 'none',
+ border: 'none',
+ WebkitAppearance: 'none',
             }}
           />
 
           {query && (
             <button
-              type="button"
-              onClick={() => setQuery('')}
-              className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground dark:hover:text-white hover:bg-muted dark:hover:bg-muted/80 cursor-pointer transition-colors"
-              title="Clear search query"
-              aria-label="Clear query"
-            >
-              <X className="h-4 w-4" />
+ type="button"onClick={() => setQuery('')}
+ className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground dark:hover:text-foreground hover:bg-muted dark:hover:bg-muted/80 cursor-pointer transition-colors"title="Clear search query"aria-label="Clear query">
+              <X className="h-4 w-4"/>
             </button>
           )}
 
           <button
-            type="button"
-            onClick={() => setShowSettings(!showSettings)}
-            className={`p-1.5 rounded-xl shrink-0 cursor-pointer transition-colors ${
-              showSettings
+ type="button"onClick={() => setShowSettings(!showSettings)}
+ className={`p-1.5 rounded-xl shrink-0 cursor-pointer transition-colors ${
+ showSettings
                 ? 'bg-indigo-50 text-indigo-600 border border-indigo-200 dark:bg-indigo-600/20 dark:text-indigo-300 dark:border-indigo-500/30'
-                : 'text-muted-foreground hover:text-foreground dark:hover:text-white hover:bg-muted dark:hover:bg-muted'
+                : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground hover:bg-muted dark:hover:bg-muted'
             }`}
-            title={tBilingual('Configure Shortcuts', 'শর্টকাট কনফিগার')}
-            aria-label="Configure shortcuts"
-          >
-            <SlidersHorizontal className="h-4 w-4" />
+ title={tBilingual('Configure Shortcuts', 'শর্টকাট কনফিগার')}
+ aria-label="Configure shortcuts">
+            <SlidersHorizontal className="h-4 w-4"/>
           </button>
 
           <button
-            type="button"
-            onClick={onClose}
-            className="p-1.5 rounded-xl text-muted-foreground hover:text-foreground dark:hover:text-white hover:bg-muted shrink-0 cursor-pointer transition-colors"
-            title="Close Search (ESC)"
-            aria-label="Close search"
-          >
-            <X className="h-4 w-4" />
+ type="button"onClick={onClose}
+ className="p-1.5 rounded-xl text-muted-foreground hover:text-foreground dark:hover:text-foreground hover:bg-muted shrink-0 cursor-pointer transition-colors"title="Close Search (ESC)"aria-label="Close search">
+            <X className="h-4 w-4"/>
           </button>
         </div>
 
@@ -333,43 +319,36 @@ export function CommandPalette({ isOpen, onClose, initialMode = 'search' }: Comm
         {showSettings && (
           <div className="p-4 bg-muted border-b border-border text-xs space-y-3 animate-in slide-in-from-top-2">
             <div className="flex items-center justify-between">
-              <span className="font-bold text-foreground dark:text-white flex items-center gap-1.5">
-                <Command className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
+              <span className="font-bold text-foreground flex items-center gap-1.5">
+                <Command className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400"/>
                 <span>{tBilingual('Configurable Keyboard Shortcuts', 'কীবোর্ড শর্টকাট কনফিগারেশন')}</span>
               </span>
               <Button
-                size="sm"
-                variant="ghost"
-                onClick={resetShortcuts}
-                className="h-6 text-2xs text-muted-foreground hover:text-foreground dark:hover:text-white"
-              >
-                <RotateCcw className="h-3 w-3 mr-1" />
+ size="sm"variant="ghost"onClick={resetShortcuts}
+ className="h-6 text-2xs text-muted-foreground hover:text-foreground dark:hover:text-foreground">
+                <RotateCcw className="h-3 w-3 mr-1"/>
                 {tBilingual('Reset Defaults', 'ডিফল্ট রিসেট')}
               </Button>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-foreground dark:text-muted-foreground">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-foreground">
               <div className="flex items-center justify-between p-2.5 rounded-xl bg-card border border-border shadow-xs">
                 <span className="text-2xs font-medium">{tBilingual('Global Search Trigger', 'সার্চ ট্রিগার কি')}</span>
                 <input
-                  type="text"
-                  maxLength={1}
-                  value={shortcuts.openSearch}
-                  onChange={(e) => updateShortcuts({ openSearch: e.target.value || '/' })}
-                  className="w-9 h-7 text-center tabular-nums font-bold text-indigo-600 dark:text-indigo-400 bg-muted border border-input rounded-lg outline-none"
-                  style={{ outline: 'none', boxShadow: 'none' }}
+ type="text"maxLength={1}
+ value={shortcuts.openSearch}
+ onChange={(e) => updateShortcuts({ openSearch: e.target.value || '/' })}
+ className="w-9 h-7 text-center tabular-nums font-bold text-indigo-600 dark:text-indigo-400 bg-muted border border-input rounded-lg outline-none"style={{ outline: 'none', boxShadow: 'none' }}
                 />
               </div>
 
               <div className="flex items-center justify-between p-2.5 rounded-xl bg-card border border-border shadow-xs">
                 <span className="text-2xs font-medium">{tBilingual('Quick Operations Menu', 'অপারেশন মেনু কি')}</span>
                 <input
-                  type="text"
-                  maxLength={1}
-                  value={shortcuts.openNewMenu}
-                  onChange={(e) => updateShortcuts({ openNewMenu: e.target.value || 'n' })}
-                  className="w-9 h-7 text-center tabular-nums font-bold text-indigo-600 dark:text-indigo-400 bg-muted border border-input rounded-lg uppercase outline-none"
-                  style={{ outline: 'none', boxShadow: 'none' }}
+ type="text"maxLength={1}
+ value={shortcuts.openNewMenu}
+ onChange={(e) => updateShortcuts({ openNewMenu: e.target.value || 'n' })}
+ className="w-9 h-7 text-center tabular-nums font-bold text-indigo-600 dark:text-indigo-400 bg-muted border border-input rounded-lg uppercase outline-none"style={{ outline: 'none', boxShadow: 'none' }}
                 />
               </div>
             </div>
@@ -378,31 +357,29 @@ export function CommandPalette({ isOpen, onClose, initialMode = 'search' }: Comm
 
         {/* Category Pill Filters (when searching) */}
         {!isQueryEmpty && (
-          <div className="px-3.5 py-2 border-b border-border dark:border-border/80 bg-muted/50 flex items-center gap-1.5 overflow-x-auto text-2xs no-scrollbar">
+          <div className="px-3.5 py-2 border-b border-border /80 bg-muted/50 flex items-center gap-1.5 overflow-x-auto text-2xs no-scrollbar">
             <button
-              type="button"
-              onClick={() => setSelectedEntity('all')}
-              className={`px-3 py-1 rounded-xl transition-all font-medium cursor-pointer shrink-0 ${
-                selectedEntity === 'all'
+ type="button"onClick={() => setSelectedEntity('all')}
+ className={`px-3 py-1 rounded-xl transition-all font-medium cursor-pointer shrink-0 ${
+ selectedEntity === 'all'
                   ? 'bg-indigo-600 text-white font-bold shadow-xs'
-                  : 'text-muted-foreground hover:text-foreground dark:hover:text-white bg-card border border-border dark:border-border'
+                  : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground bg-card border border-border '
               }`}
             >
               {tBilingual('All Results', 'সকল ফলাফল')}
             </button>
             {Object.entries(ENTITY_CONFIG).map(([key, item]) => {
-              const count = groupedResults[key as SearchEntity]?.length || 0
-              if (count === 0) return null
+ const count = groupedResults[key as SearchEntity]?.length || 0
+ if (count === 0) return null
 
-              return (
+ return (
                 <button
-                  key={key}
-                  type="button"
-                  onClick={() => setSelectedEntity(key)}
-                  className={`px-2.5 py-1 rounded-xl transition-all flex items-center gap-1.5 font-medium cursor-pointer shrink-0 ${
-                    selectedEntity === key
+ key={key}
+ type="button"onClick={() => setSelectedEntity(key)}
+ className={`px-2.5 py-1 rounded-xl transition-all flex items-center gap-1.5 font-medium cursor-pointer shrink-0 ${
+ selectedEntity === key
                       ? 'bg-indigo-600 text-white font-bold shadow-xs'
-                      : 'text-muted-foreground hover:text-foreground dark:hover:text-white bg-card border border-border dark:border-border'
+                      : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground bg-card border border-border '
                   }`}
                 >
                   <span>{tBilingual(item.label, item.labelBn)}</span>
@@ -422,7 +399,7 @@ export function CommandPalette({ isOpen, onClose, initialMode = 'search' }: Comm
             <div className="space-y-3">
               <div className="px-1 text-2xs font-bold uppercase tracking-wider text-muted-foreground flex items-center justify-between">
                 <span className="flex items-center gap-1.5">
-                  <Sparkles className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
+                  <Sparkles className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400"/>
                   <span>{tBilingual('Quick Operations', 'দ্রুত অপারেশন কমান্ড')}</span>
                 </span>
                 <span className="text-2xs text-muted-foreground tabular-nums">
@@ -432,37 +409,36 @@ export function CommandPalette({ isOpen, onClose, initialMode = 'search' }: Comm
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {quickCommands.map((cmd, idx) => {
-                  const Icon = COMMAND_ICONS[cmd.icon] || Sparkles
-                  const theme = COMMAND_THEMES[cmd.id] || {
-                    gradient: 'from-indigo-500/20 to-purple-500/20',
-                    text: 'text-indigo-600 dark:text-indigo-400',
-                    border: 'border-indigo-200 dark:border-indigo-500/30',
-                    bg: 'bg-indigo-50 dark:bg-indigo-500/10',
+ const Icon = COMMAND_ICONS[cmd.icon] || Sparkles
+ const theme = COMMAND_THEMES[cmd.id] || {
+ gradient: 'from-indigo-500/20 to-purple-500/20',
+ text: 'text-indigo-600 dark:text-indigo-400',
+ border: 'border-indigo-200 dark:border-indigo-500/30',
+ bg: 'bg-indigo-50 dark:bg-indigo-500/10',
                   }
-                  const isSelected = selectedIndex === idx
+ const isSelected = selectedIndex === idx
 
-                  return (
+ return (
                     <button
-                      key={cmd.id}
-                      type="button"
-                      onClick={() => handleSelectCommand(cmd)}
-                      onMouseEnter={() => setSelectedIndex(idx)}
-                      className={`p-3.5 rounded-2xl border text-left transition-all flex items-center justify-between group cursor-pointer relative overflow-hidden ${
-                        isSelected
-                          ? 'bg-indigo-50/80 border-indigo-500/80 dark:border-indigo-500/80 shadow-md shadow-indigo-500/10 ring-2 ring-indigo-500/20'
-                          : 'bg-slate-50/60 border-border dark:border-border/90 hover:border-input hover:bg-muted/80 dark:hover:bg-muted/80'
+ key={cmd.id}
+ type="button"onClick={() => handleSelectCommand(cmd)}
+ onMouseEnter={() => setSelectedIndex(idx)}
+ className={`p-3.5 rounded-xl border text-left transition-all flex items-center justify-between group cursor-pointer relative overflow-hidden ${
+ isSelected
+                          ? 'bg-indigo-50/80 border-indigo-500/80 dark:border-indigo-500/80 shadow-xs shadow-indigo-500/10 ring-2 ring-indigo-500/20'
+                          : 'bg-muted/60 border-border /90 hover:border-input hover:bg-muted/80 dark:hover:bg-muted/80'
                       }`}
                     >
                       <div className="flex items-center gap-3.5 min-w-0">
                         <div
-                          className={`h-10 w-10 rounded-2xl ${theme.bg} ${theme.text} border ${theme.border} flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform shadow-xs`}
+ className={`h-10 w-10 rounded-xl ${theme.bg} ${theme.text} border ${theme.border} flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform shadow-xs`}
                         >
-                          <Icon className="h-5 w-5" />
+                          <Icon className="h-5 w-5"/>
                         </div>
                         <div className="min-w-0 pr-1 space-y-0.5">
                           <div
-                            className={`text-xs sm:text-sm font-bold text-foreground dark:text-white transition-colors truncate ${
-                              isSelected ? 'text-indigo-600 dark:text-indigo-300' : 'group-hover:text-indigo-600 dark:group-hover:text-indigo-300'
+ className={`text-xs sm:text-sm font-bold text-foreground transition-colors truncate ${
+ isSelected ? 'text-indigo-600 dark:text-indigo-300' : 'group-hover:text-indigo-600 dark:group-hover:text-indigo-300'
                             }`}
                           >
                             {tBilingual(cmd.title, cmd.titleBn)}
@@ -474,7 +450,7 @@ export function CommandPalette({ isOpen, onClose, initialMode = 'search' }: Comm
                       </div>
 
                       {cmd.shortcut && (
-                        <kbd className="h-7 min-w-7 px-2 rounded-xl bg-card border border-border dark:border-slate-700/80 text-xs tabular-nums text-foreground font-bold ml-2 shrink-0 flex items-center justify-center shadow-xs">
+                        <kbd className="h-7 min-w-7 px-2 rounded-xl bg-card border border-border /80 text-xs tabular-nums text-foreground font-bold ml-2 shrink-0 flex items-center justify-center shadow-xs">
                           {cmd.shortcut}
                         </kbd>
                       )}
@@ -490,11 +466,11 @@ export function CommandPalette({ isOpen, onClose, initialMode = 'search' }: Comm
             <div className="space-y-4">
               {!hasResults ? (
                 <div className="py-12 text-center text-muted-foreground text-xs space-y-2">
-                  <div className="w-12 h-12 rounded-2xl bg-muted border border-border flex items-center justify-center mx-auto text-muted-foreground dark:text-muted-foreground">
-                    <Search className="h-5 w-5" />
+                  <div className="w-12 h-12 rounded-xl bg-muted border border-border flex items-center justify-center mx-auto text-muted-foreground">
+                    <Search className="h-5 w-5"/>
                   </div>
                   <p className="font-semibold text-foreground text-sm">
-                    {tBilingual(`No results found for "${query}"`, `"${query}" এর জন্য কোনো ফলাফল নেই`)}
+                    {tBilingual(`No results found for"${query}"`, `"${query}"এর জন্য কোনো ফলাফল নেই`)}
                   </p>
                   <p className="text-2xs text-muted-foreground max-w-sm mx-auto">
                     {tBilingual(
@@ -505,21 +481,21 @@ export function CommandPalette({ isOpen, onClose, initialMode = 'search' }: Comm
                 </div>
               ) : (
                 (() => {
-                  let runningIndex = 0
-                  return Object.entries(groupedResults).map(([entityKey, items]) => {
-                    if (selectedEntity !== 'all' && selectedEntity !== entityKey) {
-                      return null
+ let runningIndex = 0
+ return Object.entries(groupedResults).map(([entityKey, items]) => {
+ if (selectedEntity !== 'all' && selectedEntity !== entityKey) {
+ return null
                     }
-                    if (!items || items.length === 0) return null
+ if (!items || items.length === 0) return null
 
-                    const config = ENTITY_CONFIG[entityKey as SearchEntity]
-                    const Icon = config.icon
+ const config = ENTITY_CONFIG[entityKey as SearchEntity]
+ const Icon = config.icon
 
-                    return (
+ return (
                       <div key={entityKey} className="space-y-1.5">
                         {/* Group Header */}
                         <div className="px-1 text-2xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                          <Icon className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
+                          <Icon className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400"/>
                           <span>{tBilingual(config.label, config.labelBn)}</span>
                           <span className="tabular-nums text-2xs text-muted-foreground font-bold">({items.length})</span>
                         </div>
@@ -527,33 +503,32 @@ export function CommandPalette({ isOpen, onClose, initialMode = 'search' }: Comm
                         {/* Items */}
                         <div className="space-y-1">
                           {items.map((item) => {
-                            const itemIndex = runningIndex++
-                            const isSelected = selectedIndex === itemIndex
+ const itemIndex = runningIndex++
+ const isSelected = selectedIndex === itemIndex
 
-                            return (
+ return (
                               <button
-                                key={item.id}
-                                type="button"
-                                onClick={() => handleSelectResult(item)}
-                                onMouseEnter={() => setSelectedIndex(itemIndex)}
-                                className={`w-full p-3 rounded-2xl border text-left transition-all flex items-center justify-between group cursor-pointer ${
-                                  isSelected
-                                    ? 'bg-indigo-50/80 dark:bg-slate-850 border-indigo-500/80 dark:border-indigo-500/80 ring-2 ring-indigo-500/20 shadow-xs'
-                                    : 'bg-muted/50 border-border dark:border-border/80 hover:border-indigo-400 dark:hover:border-indigo-500/40 hover:bg-muted/60 dark:hover:bg-muted/80'
+ key={item.id}
+ type="button"onClick={() => handleSelectResult(item)}
+ onMouseEnter={() => setSelectedIndex(itemIndex)}
+ className={`w-full p-3 rounded-xl border text-left transition-all flex items-center justify-between group cursor-pointer ${
+ isSelected
+                                    ? 'bg-indigo-50/80 dark:bg-muted border-indigo-500/80 dark:border-indigo-500/80 ring-2 ring-indigo-500/20 shadow-xs'
+                                    : 'bg-muted/50 border-border /80 hover:border-indigo-400 dark:hover:border-indigo-500/40 hover:bg-muted/60 dark:hover:bg-muted/80'
                                 }`}
                               >
                                 <div className="min-w-0 pr-2">
                                   <div className="flex items-center gap-2">
                                     <span
-                                      className={`font-bold text-xs sm:text-sm text-foreground dark:text-white transition-colors ${
-                                        isSelected ? 'text-indigo-600 dark:text-indigo-300' : 'group-hover:text-indigo-600 dark:group-hover:text-indigo-300'
+ className={`font-bold text-xs sm:text-sm text-foreground transition-colors ${
+ isSelected ? 'text-indigo-600 dark:text-indigo-300' : 'group-hover:text-indigo-600 dark:group-hover:text-indigo-300'
                                       }`}
                                     >
                                       {item.title}
                                     </span>
                                     {item.badge && (
                                       <span
-                                        className={`px-2 py-0.5 rounded-lg text-2xs tabular-nums font-bold uppercase border ${config.color}`}
+ className={`px-2 py-0.5 rounded-lg text-2xs tabular-nums font-bold uppercase border ${config.color}`}
                                       >
                                         {item.badge}
                                       </span>
@@ -565,8 +540,8 @@ export function CommandPalette({ isOpen, onClose, initialMode = 'search' }: Comm
                                 </div>
 
                                 <ArrowRight
-                                  className={`h-4 w-4 text-muted-foreground transition-all shrink-0 ${
-                                    isSelected
+ className={`h-4 w-4 text-muted-foreground transition-all shrink-0 ${
+ isSelected
                                       ? 'text-indigo-600 dark:text-indigo-400 translate-x-1'
                                       : 'group-hover:text-indigo-600 dark:group-hover:text-indigo-400 group-hover:translate-x-1'
                                   }`}
@@ -585,7 +560,7 @@ export function CommandPalette({ isOpen, onClose, initialMode = 'search' }: Comm
         </div>
 
         {/* Footer Navigation Hints */}
-        <div className="p-3 sm:p-3.5 border-t border-border dark:border-border/80 bg-slate-50/90 flex flex-wrap items-center justify-between gap-2 text-2xs text-muted-foreground dark:text-muted-foreground">
+        <div className="p-3 sm:p-3.5 border-t border-border /80 bg-muted/90 flex flex-wrap items-center justify-between gap-2 text-2xs text-muted-foreground">
           <div className="flex items-center gap-3">
             <span className="flex items-center gap-1.5">
               <kbd className="px-1.5 py-0.5 rounded-md bg-card border border-border text-2xs tabular-nums text-muted-foreground font-bold shadow-xs">
@@ -615,16 +590,13 @@ export function CommandPalette({ isOpen, onClose, initialMode = 'search' }: Comm
 
           <div className="flex items-center gap-2.5">
             <span className="hidden sm:flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 text-2xs tabular-nums font-medium">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"/>
               <span>Multi-Tenant Isolated</span>
             </span>
             <button
-              type="button"
-              onClick={onClose}
-              className="px-2 py-0.5 rounded-lg bg-card hover:bg-muted border border-border text-2xs tabular-nums text-muted-foreground hover:text-foreground dark:hover:text-white cursor-pointer transition-colors shadow-xs"
-              title="Close search"
-            >
-              ESC to close
+ type="button"onClick={onClose}
+ className="px-2 py-0.5 rounded-lg bg-card hover:bg-muted border border-border text-2xs tabular-nums text-muted-foreground hover:text-foreground dark:hover:text-foreground cursor-pointer transition-colors shadow-xs"title="Close search">
+ ESC to close
             </button>
           </div>
         </div>

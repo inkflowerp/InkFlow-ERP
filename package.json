@@ -3,11 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --webpack",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
+    "copy-lint": "node scripts/copy-lint/copy-linter.js",
+    "ui-audit": "node --experimental-strip-types scripts/ui-audit/check.ts",
     "test": "node --experimental-strip-types --test tests/unit/*.test.ts tests/integration/*.test.ts tests/security/*.test.ts tests/roles/*.test.ts tests/edge-cases/*.test.ts tests/acceptance/*.test.ts"
   },
   "dependencies": {
@@ -40,6 +42,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.3.4",
+    "playwright": "^1.63.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

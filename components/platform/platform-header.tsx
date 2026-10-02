@@ -21,12 +21,16 @@ import {
 } from 'lucide-react'
 import { GlobalSearchDialog } from './global-search-dialog'
 import { PlatformNotificationsPopover } from './platform-notifications-popover'
+import { ThemeToggle } from '@/components/shell/theme-toggle'
+import { LanguageSwitcher } from '@/components/shell/language-switcher'
+import { useI18n } from '@/i18n/context'
 import { platformLogoutAction, getPlatformSessionUserAction } from '@/actions/platform-auth.actions'
 import { PlatformUserRecord } from '@/lib/auth/types'
 import { usePlatformSettings } from '@/hooks/use-platform-settings'
 
 export function PlatformHeader() {
   const { appName, appLogoUrl } = usePlatformSettings()
+  const { tBilingual } = useI18n()
   const [searchOpen, setSearchOpen] = useState(false)
   const [profileMenuOpen, setProfileMenuOpen] = useState(false)
   const [currentUser, setCurrentUser] = useState<PlatformUserRecord | null>(null)
@@ -91,7 +95,7 @@ export function PlatformHeader() {
 
   return (
     <>
-      <header className="h-16 border-b border-slate-700/80 bg-slate-900 backdrop-blur-md px-3 sm:px-6 flex items-center justify-between gap-2 sm:gap-4 sticky top-0 z-30 shrink-0">
+      <header className="h-16 border-b border-border bg-card px-3 sm:px-6 flex items-center justify-between gap-2 sm:gap-4 sticky top-0 z-30 shrink-0">
         {/* Left: Hamburger (Mobile) & Branding */}
         <div className="flex items-center gap-2 sm:gap-3">
           <button
@@ -99,7 +103,7 @@ export function PlatformHeader() {
             onClick={() => {
               window.dispatchEvent(new Event('printerp_open_platform_nav'))
             }}
-            className="lg:hidden flex items-center justify-center h-10 w-10 rounded-xl bg-slate-800/80 text-foreground hover:text-white border border-border cursor-pointer min-h-[44px] min-w-[44px]"
+            className="lg:hidden flex items-center justify-center h-10 w-10 rounded-lg bg-muted text-foreground hover:bg-muted/80 border border-border cursor-pointer min-h-11 min-w-11"
             aria-label="Open Platform Navigation Menu"
           >
             <Menu className="h-5 w-5" />
@@ -110,21 +114,23 @@ export function PlatformHeader() {
               <img
                 src={appLogoUrl}
                 alt={appName}
-                className="h-8 w-8 rounded-lg object-contain bg-slate-900 border border-border p-1 shadow-md ring-1 ring-white/20 shrink-0"
+                className="h-8 w-8 rounded-lg object-contain bg-muted border border-border p-1 shadow-xs shrink-0"
               />
             ) : (
-              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-indigo-500 via-purple-600 to-pink-600 flex items-center justify-center text-white shadow-md shadow-indigo-500/20 ring-1 ring-white/20 group-hover:scale-105 transition-transform shrink-0">
+              <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center text-primary-foreground shadow-xs shrink-0">
                 <Server className="h-4 w-4" />
               </div>
             )}
             <div className="hidden xs:block sm:block">
-              <div className="text-xs font-black tracking-tight text-white flex items-center gap-1.5">
+              <div className="text-xs font-bold tracking-tight text-foreground flex items-center gap-1.5">
                 {appName} SaaS
-                <span className="text-2xs px-1.5 py-0.2 rounded bg-indigo-500/20 text-indigo-300 tabular-nums font-bold border border-indigo-500/30">
+                <span className="text-2xs px-1.5 py-0.5 rounded bg-primary/10 text-primary tabular-nums font-bold border border-primary/20">
                   ROOT
                 </span>
               </div>
-              <div className="text-2xs text-muted-foreground font-medium">Platform Control Center</div>
+              <div className="text-2xs text-muted-foreground font-medium">
+                {tBilingual('Control Center', 'কন্ট্রোল সেন্টার')}
+              </div>
             </div>
           </Link>
         </div>
@@ -134,44 +140,54 @@ export function PlatformHeader() {
           <button
             type="button"
             onClick={() => setSearchOpen(true)}
-            className="w-full h-9 px-2.5 sm:px-3 rounded-xl bg-slate-900 hover:bg-slate-900 border border-border hover:border-indigo-500/60 text-muted-foreground hover:text-white text-xs flex items-center justify-between transition-all cursor-pointer shadow-inner min-h-[36px]"
+            className="w-full h-9 px-2.5 sm:px-3 rounded-lg bg-muted/60 hover:bg-muted border border-border text-muted-foreground hover:text-foreground text-xs flex items-center justify-between transition-all cursor-pointer min-h-9"
           >
             <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
-              <Search className="h-3.5 w-3.5 text-indigo-400 shrink-0" />
-              <span className="truncate hidden sm:inline text-muted-foreground">Search platform, tenants, users, audit...</span>
-              <span className="truncate sm:hidden text-2xs text-muted-foreground">Search platform...</span>
+              <Search className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+              <span className="truncate hidden sm:inline text-muted-foreground">
+                {tBilingual('Search clients, staff, activity...', 'ক্লায়েন্ট বা কাজ খুঁজুন...')}
+              </span>
+              <span className="truncate sm:hidden text-2xs text-muted-foreground">
+                {tBilingual('Search...', 'খুঁজুন...')}
+              </span>
             </div>
             <div className="flex items-center gap-1 shrink-0">
-              <kbd className="hidden sm:inline-block px-1.5 py-0.5 text-2xs tabular-nums text-muted-foreground bg-slate-800 border border-slate-600 rounded font-semibold shadow-xs">
+              <kbd className="hidden sm:inline-block px-1.5 py-0.5 text-2xs tabular-nums text-muted-foreground bg-card border border-border rounded font-semibold shadow-xs">
                 /
               </kbd>
             </div>
           </button>
         </div>
 
-        {/* Right: Actions & User Menu */}
-        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
+        {/* Right: Actions, Language, Theme Toggle & User Menu */}
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           {/* Notifications */}
           <PlatformNotificationsPopover />
 
           {/* System Health Pill */}
           <Link
             href="/platform/health"
-            className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-950/60 border border-emerald-700/80 text-emerald-200 text-2xs font-semibold hover:bg-emerald-900/50 transition-colors"
-            title="System Cluster Operational (BD-Central)"
+            className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-success-surface border border-success/30 text-success text-2xs font-semibold hover:opacity-90 transition-opacity"
+            title={tBilingual('System OK', 'সব ঠিক আছে')}
           >
-            <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span>Cluster Operational</span>
+            <span className="h-2 w-2 rounded-full bg-success animate-pulse" />
+            <span>{tBilingual('System OK', 'সব ঠিক আছে')}</span>
           </Link>
+
+          {/* Language Switcher */}
+          <LanguageSwitcher size="sm" />
+
+          {/* Theme Toggle (Light / Dark) */}
+          <ThemeToggle variant="button" size="sm" />
 
           {/* Profile Menu */}
           <div className="relative">
             <button
               type="button"
               onClick={() => setProfileMenuOpen(!profileMenuOpen)}
-              className="flex items-center gap-1 sm:gap-2 p-1 sm:p-1.5 rounded-xl hover:bg-slate-800 text-foreground hover:text-white transition-colors cursor-pointer min-h-[40px]"
+              className="flex items-center gap-1 sm:gap-2 p-1 sm:p-1.5 rounded-lg hover:bg-muted text-foreground transition-colors cursor-pointer min-h-10"
             >
-              <div className="h-7 w-7 rounded-lg bg-indigo-600/40 border border-indigo-500/50 text-indigo-200 flex items-center justify-center font-bold text-xs">
+              <div className="h-7 w-7 rounded-lg bg-primary/10 border border-primary/20 text-primary flex items-center justify-center font-bold text-xs">
                 {initials}
               </div>
               <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
@@ -180,11 +196,11 @@ export function PlatformHeader() {
             {profileMenuOpen && (
               <>
                 <div className="fixed inset-0 z-40" onClick={() => setProfileMenuOpen(false)} />
-                <div className="absolute right-0 mt-2 w-64 max-w-[calc(100vw-24px)] bg-slate-900 border border-border rounded-2xl shadow-2xl shadow-black/80 ring-1 ring-slate-700/50 z-50 p-2 text-xs divide-y divide-slate-700 animate-in fade-in-0 zoom-in-95 duration-150">
+                <div className="absolute right-0 mt-2 w-64 max-w-xs bg-popover border border-border rounded-xl shadow-md z-50 p-2 text-xs divide-y divide-border animate-in fade-in-0 zoom-in-95 duration-150">
                   <div className="px-3 py-2">
-                    <div className="font-bold text-white truncate">{userFullName}</div>
-                    <div className="text-2xs text-indigo-300 tabular-nums truncate font-mono">{userEmail}</div>
-                    <span className="inline-block mt-1 text-2xs font-bold uppercase tracking-wider px-1.5 py-0.2 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                    <div className="font-bold text-foreground truncate">{userFullName}</div>
+                    <div className="text-2xs text-muted-foreground tabular-nums truncate font-mono">{userEmail}</div>
+                    <span className="inline-block mt-1 text-2xs font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">
                       {formattedRole}
                     </span>
                   </div>
@@ -193,55 +209,55 @@ export function PlatformHeader() {
                     <Link
                       href="/platform/profile"
                       onClick={() => setProfileMenuOpen(false)}
-                      className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-muted-foreground hover:text-white hover:bg-slate-800 transition-colors"
+                      className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
                     >
-                      <User className="h-3.5 w-3.5 text-indigo-400" />
-                      <span>Profile</span>
+                      <User className="h-3.5 w-3.5 text-muted-foreground" />
+                      <span>{tBilingual('Profile', 'প্রোফাইল')}</span>
                     </Link>
 
                     <Link
                       href="/platform/security"
                       onClick={() => setProfileMenuOpen(false)}
-                      className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-muted-foreground hover:text-white hover:bg-slate-800 transition-colors"
+                      className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
                     >
-                      <Shield className="h-3.5 w-3.5 text-cyan-400" />
-                      <span>Security & MFA</span>
+                      <Shield className="h-3.5 w-3.5 text-muted-foreground" />
+                      <span>{tBilingual('Security', 'নিরাপত্তা')}</span>
                     </Link>
 
                     <Link
                       href="/platform/support"
                       onClick={() => setProfileMenuOpen(false)}
-                      className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-muted-foreground hover:text-white hover:bg-slate-800 transition-colors"
+                      className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
                     >
-                      <Key className="h-3.5 w-3.5 text-amber-400" />
-                      <span>Support Access</span>
+                      <Key className="h-3.5 w-3.5 text-muted-foreground" />
+                      <span>{tBilingual('Support', 'সহায়তা')}</span>
                     </Link>
 
                     <Link
                       href="/platform/sessions"
                       onClick={() => setProfileMenuOpen(false)}
-                      className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-muted-foreground hover:text-white hover:bg-slate-800 transition-colors"
+                      className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
                     >
-                      <Laptop className="h-3.5 w-3.5 text-purple-400" />
-                      <span>Active Sessions</span>
+                      <Laptop className="h-3.5 w-3.5 text-muted-foreground" />
+                      <span>{tBilingual('Devices', 'ডিভাইস')}</span>
                     </Link>
 
                     <Link
                       href="/platform/settings/communication"
                       onClick={() => setProfileMenuOpen(false)}
-                      className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-muted-foreground hover:text-white hover:bg-slate-800 transition-colors"
+                      className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
                     >
-                      <Mail className="h-3.5 w-3.5 text-indigo-400" />
-                      <span>Email Gateway</span>
+                      <Mail className="h-3.5 w-3.5 text-muted-foreground" />
+                      <span>{tBilingual('Email', 'ইমেইল')}</span>
                     </Link>
 
                     <Link
                       href="/platform/settings"
                       onClick={() => setProfileMenuOpen(false)}
-                      className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-muted-foreground hover:text-white hover:bg-slate-800 transition-colors"
+                      className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
                     >
-                      <Settings className="h-3.5 w-3.5 text-amber-400" />
-                      <span>Platform Settings</span>
+                      <Settings className="h-3.5 w-3.5 text-muted-foreground" />
+                      <span>{tBilingual('Settings', 'সেটিংস')}</span>
                     </Link>
                   </div>
 
@@ -250,10 +266,10 @@ export function PlatformHeader() {
                       type="button"
                       disabled={isLoggingOut}
                       onClick={handleLogout}
-                      className="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-950/40 transition-colors font-semibold cursor-pointer disabled:opacity-50"
+                      className="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-destructive hover:bg-danger-surface transition-colors font-semibold cursor-pointer disabled:opacity-50"
                     >
                       <LogOut className="h-3.5 w-3.5" />
-                      <span>{isLoggingOut ? 'Signing out...' : 'Secure Logout'}</span>
+                      <span>{isLoggingOut ? tBilingual('Logging out...', 'লগ আউট হচ্ছে...') : tBilingual('Log Out', 'লগ আউট')}</span>
                     </button>
                   </div>
                 </div>

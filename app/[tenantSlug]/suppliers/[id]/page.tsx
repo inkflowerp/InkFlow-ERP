@@ -5,33 +5,33 @@ import Link from 'next/link'
 import { useParams, useRouter, usePathname } from 'next/navigation'
 import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import {
-  Truck,
-  ArrowLeft,
-  Phone,
-  MessageSquare,
-  Mail,
-  MapPin,
-  CheckCircle2,
-  AlertCircle,
-  Plus,
-  Package,
-  Receipt,
-  FileText,
-  DollarSign,
-  Tag,
-  Building,
-  Edit2,
-  Printer,
-  CreditCard,
-  Landmark,
-  Clock,
-  ExternalLink,
-  Trash2,
-  Layers,
-  Sparkles,
-  ShieldCheck,
-  Calendar,
-  User,
+ Truck,
+ ArrowLeft,
+ Phone,
+ MessageSquare,
+ Mail,
+ MapPin,
+ CheckCircle2,
+ AlertCircle,
+ Plus,
+ Package,
+ Receipt,
+ FileText,
+ DollarSign,
+ Tag,
+ Building,
+ Edit2,
+ Printer,
+ CreditCard,
+ Landmark,
+ Clock,
+ ExternalLink,
+ Trash2,
+ Layers,
+ Sparkles,
+ ShieldCheck,
+ Calendar,
+ User,
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
@@ -47,9 +47,9 @@ import type { CashBookEntryRecord } from '@/types/accounting.types'
 import type { PurchaseOrderRecord } from '@/types/purchase.types'
 import { formatBDT } from '@/lib/formatters'
 import {
-  SUPPLIER_CATEGORY_META,
-  BANGLADESH_MARKET_HUBS,
-  SUPPLIER_PAYMENT_TERMS,
+ SUPPLIER_CATEGORY_META,
+ BANGLADESH_MARKET_HUBS,
+ SUPPLIER_PAYMENT_TERMS,
 } from '@/components/suppliers/supplier-types'
 import { SupplierModal } from '@/components/suppliers/supplier-modal'
 import { PaySupplierVoucherModal } from '@/components/suppliers/pay-supplier-voucher-modal'
@@ -61,152 +61,151 @@ import { dispatchToast } from '@/components/shared/toast-feedback'
 type TabKey = 'prices' | 'purchases' | 'payments' | 'ledger' | 'company_info'
 
 export default function SupplierProfilePage() {
-  const params = useParams()
-  const router = useRouter()
-  const pathname = usePathname()
-  const supplierId = (params?.id as string) || ''
-  const { company } = useTenant()
-  const { locale, tBilingual } = useI18n()
-  const slug = (params?.tenantSlug as string) || company?.slug || 'my-company'
+ const params = useParams()
+ const router = useRouter()
+ const pathname = usePathname()
+ const supplierId = (params?.id as string) || ''
+ const { company } = useTenant()
+ const { locale, tBilingual } = useI18n()
+ const slug = (params?.tenantSlug as string) || company?.slug || 'my-company'
 
-  const [mounted, setMounted] = useState(false)
-  useEffect(() => {
-    setMounted(true)
+ const [mounted, setMounted] = useState(false)
+ useEffect(() => {
+ setMounted(true)
   }, [])
 
-  const [suppliers, setSuppliers] = useDataStore<SupplierRecord[]>(STORAGE_KEYS.SUPPLIERS, [])
-  const [allPrices, setAllPrices] = useDataStore<SupplierMaterialPrice[]>(STORAGE_KEYS.SUPPLIER_PRICES, [])
-  const [purchaseOrders] = useDataStore<PurchaseOrderRecord[]>(STORAGE_KEYS.PURCHASE_ORDERS, [])
-  const [cashEntries] = useDataStore<CashBookEntryRecord[]>(STORAGE_KEYS.CASH_BOOK, [])
+ const [suppliers, setSuppliers] = useDataStore<SupplierRecord[]>(STORAGE_KEYS.SUPPLIERS, [])
+ const [allPrices, setAllPrices] = useDataStore<SupplierMaterialPrice[]>(STORAGE_KEYS.SUPPLIER_PRICES, [])
+ const [purchaseOrders] = useDataStore<PurchaseOrderRecord[]>(STORAGE_KEYS.PURCHASE_ORDERS, [])
+ const [cashEntries] = useDataStore<CashBookEntryRecord[]>(STORAGE_KEYS.CASH_BOOK, [])
 
-  const supplier = suppliers.find((s) => s.id === supplierId || s.supplier_name === supplierId)
-  const materialPrices = allPrices.filter((p) => supplier && (p.supplier_id === supplier.id || p.supplier_id === supplierId))
-  const relatedPOs = purchaseOrders.filter((po) => supplier && (po.supplier_id === supplier.id || po.supplier_name === supplier.supplier_name))
+ const supplier = suppliers.find((s) => s.id === supplierId || s.supplier_name === supplierId)
+ const materialPrices = allPrices.filter((p) => supplier && (p.supplier_id === supplier.id || p.supplier_id === supplierId))
+ const relatedPOs = purchaseOrders.filter((po) => supplier && (po.supplier_id === supplier.id || po.supplier_name === supplier.supplier_name))
 
-  const [activeTab, setActiveTab] = useState<TabKey>('prices')
-  const [notification, setNotification] = useState<string | null>(null)
+ const [activeTab, setActiveTab] = useState<TabKey>('prices')
+ const [notification, setNotification] = useState<string | null>(null)
 
   // Modal States
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
-  const [isPayModalOpen, setIsPayModalOpen] = useState(false)
-  const [isRateModalOpen, setIsRateModalOpen] = useState(false)
-  const [priceToEdit, setPriceToEdit] = useState<SupplierMaterialPrice | null>(null)
-  const [isNewPOOpen, setIsNewPOOpen] = useState(false)
+ const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+ const [isPayModalOpen, setIsPayModalOpen] = useState(false)
+ const [isRateModalOpen, setIsRateModalOpen] = useState(false)
+ const [priceToEdit, setPriceToEdit] = useState<SupplierMaterialPrice | null>(null)
+ const [isNewPOOpen, setIsNewPOOpen] = useState(false)
 
   // Rate delete confirm state
-  const [rateToDelete, setRateToDelete] = useState<{ id: string; name: string } | null>(null)
-  const [isDeleteRateOpen, setIsDeleteRateOpen] = useState(false)
+ const [rateToDelete, setRateToDelete] = useState<{ id: string; name: string } | null>(null)
+ const [isDeleteRateOpen, setIsDeleteRateOpen] = useState(false)
 
-  const showNotification = (msg: string, type: 'success' | 'info' | 'error' = 'success') => {
-    setNotification(msg)
-    dispatchToast({
-      type,
-      title: type === 'error' ? 'Error' : type === 'info' ? 'Notice' : 'Success',
-      titleBn: type === 'error' ? 'ত্রুটি' : type === 'info' ? 'বিজ্ঞপ্তি' : 'সফল হয়েছে',
-      message: msg,
+ const showNotification = (msg: string, type: 'success' | 'info' | 'error' = 'success') => {
+ setNotification(msg)
+ dispatchToast({
+ type,
+ title: type === 'error' ? 'Error' : type === 'info' ? 'Notice' : 'Success',
+ titleBn: type === 'error' ? 'ত্রুটি' : type === 'info' ? 'বিজ্ঞপ্তি' : 'সফল হয়েছে',
+ message: msg,
     })
-    setTimeout(() => setNotification(null), 3800)
+ setTimeout(() => setNotification(null), 3800)
   }
 
   // Handle Save Rate
-  const handleSaveRate = (rate: SupplierMaterialPrice) => {
-    const exists = allPrices.some((p) => p.id === rate.id)
-    if (exists) {
-      PrintERPDataStore.updateItem(STORAGE_KEYS.SUPPLIER_PRICES, rate.id, rate)
-      showNotification(`Contract rate for '${rate.material_name}' updated.`)
+ const handleSaveRate = (rate: SupplierMaterialPrice) => {
+ const exists = allPrices.some((p) => p.id === rate.id)
+ if (exists) {
+ PrintERPDataStore.updateItem(STORAGE_KEYS.SUPPLIER_PRICES, rate.id, rate)
+ showNotification(`Contract rate for '${rate.material_name}' updated.`)
     } else {
-      PrintERPDataStore.addItem(STORAGE_KEYS.SUPPLIER_PRICES, rate)
-      showNotification(`Contract rate for '${rate.material_name}' saved.`)
+ PrintERPDataStore.addItem(STORAGE_KEYS.SUPPLIER_PRICES, rate)
+ showNotification(`Contract rate for '${rate.material_name}' saved.`)
     }
   }
 
   // Handle Delete Rate
-  const handleDeleteRate = (rateId: string, rateName: string) => {
-    setRateToDelete({ id: rateId, name: rateName })
-    setIsDeleteRateOpen(true)
+ const handleDeleteRate = (rateId: string, rateName: string) => {
+ setRateToDelete({ id: rateId, name: rateName })
+ setIsDeleteRateOpen(true)
   }
 
-  const confirmDeleteRate = () => {
-    if (!rateToDelete) return
-    PrintERPDataStore.removeItem(STORAGE_KEYS.SUPPLIER_PRICES, rateToDelete.id)
-    showNotification(`Contract rate for '${rateToDelete.name}' removed.`, 'info')
-    setIsDeleteRateOpen(false)
-    setRateToDelete(null)
+ const confirmDeleteRate = () => {
+ if (!rateToDelete) return
+ PrintERPDataStore.removeItem(STORAGE_KEYS.SUPPLIER_PRICES, rateToDelete.id)
+ showNotification(`Contract rate for '${rateToDelete.name}' removed.`, 'info')
+ setIsDeleteRateOpen(false)
+ setRateToDelete(null)
   }
 
   // Handle Save Supplier from Edit
-  const handleSaveSupplier = (updated: SupplierRecord) => {
-    PrintERPDataStore.updateItem<SupplierRecord>(STORAGE_KEYS.SUPPLIERS, updated.id, updated)
-    showNotification(`Supplier profile '${updated.supplier_name}' updated.`)
+ const handleSaveSupplier = (updated: SupplierRecord) => {
+ PrintERPDataStore.updateItem<SupplierRecord>(STORAGE_KEYS.SUPPLIERS, updated.id, updated)
+ showNotification(`Supplier profile '${updated.supplier_name}' updated.`)
   }
 
   // Handle Record Payment
-  const handlePaymentRecorded = (amount: number, details: any) => {
-    if (!supplier) return
+ const handlePaymentRecorded = (amount: number, details: any) => {
+ if (!supplier) return
 
-    const newBalance = Math.max(0, (supplier.outstanding_balance || 0) - amount)
-    PrintERPDataStore.updateItem<SupplierRecord>(STORAGE_KEYS.SUPPLIERS, supplier.id, {
-      outstanding_balance: newBalance,
-      updated_at: new Date().toISOString(),
+ const newBalance = Math.max(0, (supplier.outstanding_balance || 0) - amount)
+ PrintERPDataStore.updateItem<SupplierRecord>(STORAGE_KEYS.SUPPLIERS, supplier.id, {
+ outstanding_balance: newBalance,
+ updated_at: new Date().toISOString(),
     })
 
-    if (details.method === 'cash') {
-      const cashEntry: CashBookEntryRecord = {
-        id: `cbe-${Date.now()}`,
-        company_id: company?.id || 'c-01',
-        entry_date: new Date().toISOString().split('T')[0],
-        entry_type: 'cash_out',
-        amount: amount,
-        category: 'Supplier Payment',
-        description: `Disbursement to ${supplier.supplier_name} (${details.voucherNumber})`,
-        reference_id: details.voucherNumber,
-        performed_by_name: details.authorizedBy || 'Cashier',
-        created_at: new Date().toISOString(),
+ if (details.method === 'cash') {
+ const cashEntry: CashBookEntryRecord = {
+ id: `cbe-${Date.now()}`,
+ company_id: company?.id || 'c-01',
+ entry_date: new Date().toISOString().split('T')[0],
+ entry_type: 'cash_out',
+ amount: amount,
+ category: 'Supplier Payment',
+ description: `Disbursement to ${supplier.supplier_name} (${details.voucherNumber})`,
+ reference_id: details.voucherNumber,
+ performed_by_name: details.authorizedBy || 'Cashier',
+ created_at: new Date().toISOString(),
       }
-      PrintERPDataStore.addItem<CashBookEntryRecord>(STORAGE_KEYS.CASH_BOOK, cashEntry)
+ PrintERPDataStore.addItem<CashBookEntryRecord>(STORAGE_KEYS.CASH_BOOK, cashEntry)
     }
 
-    showNotification(`Payment voucher ${details.voucherNumber} of ${formatBDT(amount)} recorded for ${supplier.supplier_name}.`)
+ showNotification(`Payment voucher ${details.voucherNumber} of ${formatBDT(amount)} recorded for ${supplier.supplier_name}.`)
   }
 
   // Print Statement Summary
-  const handlePrintStatement = () => {
-    window.print()
+ const handlePrintStatement = () => {
+ window.print()
   }
 
-  if (!mounted) {
-    return (
+ if (!mounted) {
+ return (
       <div className="space-y-6 max-w-7xl pb-12 animate-pulse">
-        <div className="h-6 w-48 bg-muted rounded mb-3" />
-        <div className="h-24 bg-muted rounded-2xl" />
+        <div className="h-6 w-48 bg-muted rounded mb-3"/>
+        <div className="h-24 bg-muted rounded-xl"/>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-24 bg-muted rounded-xl" />
+            <div key={i} className="h-24 bg-muted rounded-xl"/>
           ))}
         </div>
       </div>
     )
   }
 
-  if (!supplier) {
-    return (
+ if (!supplier) {
+ return (
       <div className="space-y-6 max-w-7xl">
         <Link
-          href={getTenantNavHref('/suppliers', pathname, slug)}
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground dark:hover:text-white"
-        >
-          <ArrowLeft className="h-3.5 w-3.5" />
+ href={getTenantNavHref('/suppliers', pathname, slug)}
+ className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground dark:hover:text-foreground">
+          <ArrowLeft className="h-3.5 w-3.5"/>
           {tBilingual('Back to Supplier Directory', 'মহাজন তালিকায় ফিরে যান')}
         </Link>
         <Card className="p-12 text-center border-dashed rounded-xl">
-          <Truck className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-          <h2 className="text-base font-bold text-foreground dark:text-foreground">
+          <Truck className="h-10 w-10 text-muted-foreground mx-auto mb-3"/>
+          <h2 className="text-base font-bold text-foreground">
             {tBilingual('Supplier Not Found', 'সরবরাহকারী পাওয়া যায়নি')}
           </h2>
           <p className="text-xs text-muted-foreground mt-1 max-w-md mx-auto">
-            The supplier record you are looking for does not exist in your organization or was removed.
+ The supplier record you are looking for does not exist in your organization or was removed.
           </p>
-          <Button asChild className="mt-4 bg-teal-600 hover:bg-teal-700 text-white font-bold" size="sm">
+          <Button asChild className="mt-4 bg-teal-600 hover:bg-teal-700 text-white font-bold"size="sm">
             <Link href={getTenantNavHref('/suppliers', pathname, slug)}>View All Suppliers</Link>
           </Button>
         </Card>
@@ -214,46 +213,44 @@ export default function SupplierProfilePage() {
     )
   }
 
-  const catMeta = SUPPLIER_CATEGORY_META[supplier.category] || SUPPLIER_CATEGORY_META.media
-  const CatIcon = catMeta.icon
-  const creditLimit = supplier.credit_limit || 500000
-  const outstandingDue = supplier.outstanding_balance || 0
-  const creditUsedPct = Math.min(100, Math.round((outstandingDue / creditLimit) * 100))
+ const catMeta = SUPPLIER_CATEGORY_META[supplier.category] || SUPPLIER_CATEGORY_META.media
+ const CatIcon = catMeta.icon
+ const creditLimit = supplier.credit_limit || 500000
+ const outstandingDue = supplier.outstanding_balance || 0
+ const creditUsedPct = Math.min(100, Math.round((outstandingDue / creditLimit) * 100))
 
-  return (
+ return (
     <div className="space-y-6 max-w-7xl">
       {/* Top Breadcrumb & Action Header */}
       <div>
         <Link
-          href={getTenantNavHref('/suppliers', pathname, slug)}
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground dark:hover:text-white mb-3"
-        >
-          <ArrowLeft className="h-3.5 w-3.5" />
+ href={getTenantNavHref('/suppliers', pathname, slug)}
+ className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground dark:hover:text-foreground mb-3">
+          <ArrowLeft className="h-3.5 w-3.5"/>
           {tBilingual('Back to Supplier Directory', 'মহাজন তালিকায় ফিরে যান')}
         </Link>
 
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-card p-5 rounded-2xl border border-border shadow-xs">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-card p-5 rounded-xl border border-border shadow-xs">
           {/* Vendor Identity */}
           <div className="flex items-start gap-4">
             <div
-              className="h-14 w-14 rounded-2xl flex items-center justify-center font-black text-xl shrink-0 shadow-xs"
-              style={{ backgroundColor: `${catMeta.color}20`, color: catMeta.color }}
+ className="h-14 w-14 rounded-xl flex items-center justify-center font-black text-xl shrink-0 shadow-xs"style={{ backgroundColor: `${catMeta.color}20`, color: catMeta.color }}
             >
               {supplier.supplier_name.slice(0, 2).toUpperCase()}
             </div>
 
             <div className="space-y-1">
               <div className="flex flex-wrap items-center gap-2.5">
-                <h1 className="text-xl sm:text-2xl font-black tracking-tight text-foreground dark:text-white">
+                <h1 className="text-xl sm:text-2xl font-black tracking-tight text-foreground">
                   {supplier.supplier_name}
                 </h1>
                 <span
-                  className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold border ${catMeta.badgeClass}`}
+ className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold border ${catMeta.badgeClass}`}
                 >
-                  <CatIcon className="h-3.5 w-3.5" />
+                  <CatIcon className="h-3.5 w-3.5"/>
                   <span>{catMeta.labelEn.split(' ')[0]}</span>
                 </span>
-                <Badge variant="outline" className="text-2xs tabular-nums py-0.5 px-2 bg-muted text-muted-foreground dark:text-muted-foreground">
+                <Badge variant="outline"className="text-2xs tabular-nums py-0.5 px-2 bg-muted text-muted-foreground">
                   {supplier.supplier_code || 'SUP-001'}
                 </Badge>
               </div>
@@ -267,37 +264,32 @@ export default function SupplierProfilePage() {
               {/* Contact & Hub Links */}
               <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground pt-1">
                 <a
-                  href={`tel:${supplier.mobile}`}
-                  className="flex items-center gap-1 tabular-nums text-foreground hover:text-teal-600 font-bold"
-                >
-                  <Phone className="h-3.5 w-3.5 text-muted-foreground" />
+ href={`tel:${supplier.mobile}`}
+ className="flex items-center gap-1 tabular-nums text-foreground hover:text-teal-600 font-bold">
+                  <Phone className="h-3.5 w-3.5 text-muted-foreground"/>
                   <span>{supplier.mobile}</span>
                 </a>
 
                 {supplier.whatsapp && (
                   <a
-                    href={`https://wa.me/${supplier.whatsapp.replace(/\D/g, '')}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-1 text-emerald-600 tabular-nums font-bold hover:underline"
-                  >
-                    <MessageSquare className="h-3.5 w-3.5" />
+ href={`https://wa.me/${supplier.whatsapp.replace(/\D/g, '')}`}
+ target="_blank"rel="noopener noreferrer"className="flex items-center gap-1 text-emerald-600 tabular-nums font-bold hover:underline">
+                    <MessageSquare className="h-3.5 w-3.5"/>
                     <span>WhatsApp</span>
                   </a>
                 )}
 
                 {supplier.email && (
                   <a
-                    href={`mailto:${supplier.email}`}
-                    className="flex items-center gap-1 text-muted-foreground hover:underline"
-                  >
-                    <Mail className="h-3.5 w-3.5 text-muted-foreground" />
+ href={`mailto:${supplier.email}`}
+ className="flex items-center gap-1 text-muted-foreground hover:underline">
+                    <Mail className="h-3.5 w-3.5 text-muted-foreground"/>
                     <span>{supplier.email}</span>
                   </a>
                 )}
 
                 <span className="flex items-center gap-1 text-muted-foreground">
-                  <MapPin className="h-3.5 w-3.5 text-muted-foreground" />
+                  <MapPin className="h-3.5 w-3.5 text-muted-foreground"/>
                   <span className="truncate max-w-[200px]">{supplier.address || supplier.market_hub || 'Dhaka'}</span>
                 </span>
               </div>
@@ -307,54 +299,40 @@ export default function SupplierProfilePage() {
           {/* Quick Action Buttons */}
           <div className="flex flex-wrap items-center gap-2 shrink-0">
             <Button
-              size="sm"
-              variant="outline"
-              onClick={handlePrintStatement}
-              className="text-xs h-9 font-semibold"
-              title="Print Statement"
-            >
-              <Printer className="mr-1.5 h-3.5 w-3.5 text-muted-foreground" />
+ size="sm"variant="outline"onClick={handlePrintStatement}
+ className="text-xs h-9 font-semibold"title="Print Statement">
+              <Printer className="mr-1.5 h-3.5 w-3.5 text-muted-foreground"/>
               {tBilingual('Print', 'প্রিন্ট')}
             </Button>
 
             <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setIsEditModalOpen(true)}
-              className="text-xs h-9 font-semibold text-foreground dark:text-muted-foreground"
-            >
-              <Edit2 className="mr-1.5 h-3.5 w-3.5" />
+ size="sm"variant="outline"onClick={() => setIsEditModalOpen(true)}
+ className="text-xs h-9 font-semibold text-foreground">
+              <Edit2 className="mr-1.5 h-3.5 w-3.5"/>
               {tBilingual('Edit Profile', 'সম্পাদনা')}
             </Button>
 
             <Button
-              size="sm"
-              variant="outline"
-              onClick={() => {
-                setPriceToEdit(null)
-                setIsRateModalOpen(true)
+ size="sm"variant="outline"onClick={() => {
+ setPriceToEdit(null)
+ setIsRateModalOpen(true)
               }}
-              className="text-xs h-9 font-semibold text-teal-700 dark:text-teal-300 border-teal-200 dark:border-teal-800 bg-teal-50/50 hover:bg-teal-100"
-            >
-              <Tag className="mr-1.5 h-3.5 w-3.5 text-teal-600" />
+ className="text-xs h-9 font-semibold text-teal-700 dark:text-teal-300 border-teal-200 dark:border-teal-800 bg-teal-50/50 hover:bg-teal-100">
+              <Tag className="mr-1.5 h-3.5 w-3.5 text-teal-600"/>
               {tBilingual('Add Rate', 'দর যুক্ত করুন')}
             </Button>
 
             <Button
-              size="sm"
-              onClick={() => setIsPayModalOpen(true)}
-              className="bg-teal-600 hover:bg-teal-700 text-xs text-white font-bold h-9 shadow-xs"
-            >
-              <Receipt className="mr-1.5 h-3.5 w-3.5" />
+ size="sm"onClick={() => setIsPayModalOpen(true)}
+ className="bg-teal-600 hover:bg-teal-700 text-xs text-white font-bold h-9 shadow-xs">
+              <Receipt className="mr-1.5 h-3.5 w-3.5"/>
               {tBilingual('Pay Supplier Voucher', 'বিল পরিশোধ')}
             </Button>
 
             <Button
-              size="sm"
-              onClick={() => setIsNewPOOpen(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-xs text-white font-bold h-9 shadow-xs"
-            >
-              <Package className="mr-1.5 h-3.5 w-3.5" />
+ size="sm"onClick={() => setIsNewPOOpen(true)}
+ className="bg-blue-600 hover:bg-blue-700 text-xs text-white font-bold h-9 shadow-xs">
+              <Package className="mr-1.5 h-3.5 w-3.5"/>
               {tBilingual('Issue New PO', 'ক্রয়াদেশ')}
             </Button>
           </div>
@@ -364,7 +342,7 @@ export default function SupplierProfilePage() {
       {/* Notification Toast */}
       {notification && (
         <div className="p-3 bg-emerald-50 text-emerald-800 rounded-xl text-xs font-semibold flex items-center gap-2 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800 animate-in fade-in-0 shadow-xs">
-          <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+          <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0"/>
           <span>{notification}</span>
         </div>
       )}
@@ -373,57 +351,43 @@ export default function SupplierProfilePage() {
       <KpiGrid columns={4}>
         {/* Total Purchases */}
         <KpiCard
-          titleEn="Total Purchases from Vendor"
-          titleBn="মোট ক্রয়কৃত মালামাল"
-          value={supplier.total_purchases_amount || 0}
-          isCurrency
-          icon={Package}
-          colorVariant="blue"
-          subtitleEn="Cumulative roll/sheet acquisitions"
-          subtitleBn="রোল ও শিট ক্রয় ভলিউম"
-        />
+ titleEn="Total Purchases from Vendor"titleBn="মোট ক্রয়কৃত মালামাল"value={supplier.total_purchases_amount || 0}
+ isCurrency
+ icon={Package}
+ colorVariant="blue"subtitleEn="Cumulative roll/sheet acquisitions"subtitleBn="রোল ও শিট ক্রয় ভলিউম"/>
 
         {/* Payments Cleared */}
         <KpiCard
-          titleEn="Total Payments Cleared"
-          titleBn="মোট পরিশোধিত বিল"
-          value={Math.max(0, (supplier.total_purchases_amount || 0) - (supplier.outstanding_balance || 0))}
-          isCurrency
-          icon={CheckCircle2}
-          colorVariant="emerald"
-          subtitleEn="Bank Cheques, RTGS & Cash"
-          subtitleBn="চেক, আরটিজিএস ও ক্যাশ"
-        />
+ titleEn="Total Payments Cleared"titleBn="মোট পরিশোধিত বিল"value={Math.max(0, (supplier.total_purchases_amount || 0) - (supplier.outstanding_balance || 0))}
+ isCurrency
+ icon={CheckCircle2}
+ colorVariant="emerald"subtitleEn="Bank & Cash"subtitleBn="চেক, আরটিজিএস ও ক্যাশ"/>
 
         {/* Payable Due */}
         <KpiCard
-          titleEn="Payable Balance"
-          titleBn="বর্তমান বকেয়া পাওনা"
-          value={outstandingDue}
-          isCurrency
-          icon={CreditCard}
-          colorVariant={outstandingDue > 0 ? 'amber' : 'emerald'}
-          badge={outstandingDue > 0 ? 'Pending' : 'Settled'}
-          badgeColor={outstandingDue > 0 ? 'bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-800' : 'bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800'}
-          subtitle={`Terms: ${supplier.payment_terms.replace('_', ' ').toUpperCase()}`}
+ titleEn="Payable Balance"titleBn="বর্তমান বকেয়া পাওনা"value={outstandingDue}
+ isCurrency
+ icon={CreditCard}
+ colorVariant={outstandingDue > 0 ? 'amber' : 'emerald'}
+ badge={outstandingDue > 0 ? 'Pending' : 'Settled'}
+ badgeColor={outstandingDue > 0 ? 'bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-800' : 'bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800'}
+ subtitle={`Terms: ${supplier.payment_terms.replace('_', ' ').toUpperCase()}`}
         />
 
         {/* Credit Limit Meter */}
         <KpiCard
-          titleEn="Credit Limit Utilization"
-          titleBn="বাকি সীমা ব্যবহার"
-          value={creditLimit}
-          isCurrency
-          icon={ShieldCheck}
-          colorVariant={creditUsedPct > 90 ? 'danger' : creditUsedPct > 50 ? 'amber' : 'teal'}
-          subtitle={`${creditUsedPct}% limit used`}
+ titleEn="Credit Used"titleBn="বাকি সীমা ব্যবহার"value={creditLimit}
+ isCurrency
+ icon={ShieldCheck}
+ colorVariant={creditUsedPct > 90 ? 'danger' : creditUsedPct > 50 ? 'amber' : 'teal'}
+ subtitle={`${creditUsedPct}% limit used`}
         >
           <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden mt-1.5">
             <div
-              className={`h-full transition-all rounded-full ${
-                creditUsedPct > 90 ? 'bg-rose-500' : creditUsedPct > 50 ? 'bg-amber-500' : 'bg-teal-500'
+ className={`h-full transition-all rounded-full ${
+ creditUsedPct > 90 ? 'bg-rose-500' : creditUsedPct > 50 ? 'bg-amber-500' : 'bg-teal-500'
               }`}
-              style={{ width: `${Math.min(100, Math.max(0, creditUsedPct))}%` }}
+ style={{ width: `${Math.min(100, Math.max(0, creditUsedPct))}%` }}
             />
           </div>
         </KpiCard>
@@ -439,17 +403,17 @@ export default function SupplierProfilePage() {
           { id: 'company_info', labelEn: '🏢 Corporate, Legal & Bank Details', labelBn: '🏢 ব্যাংক ও আইনি তথ্য' },
         ].map((tab) => (
           <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id as TabKey)}
-            className={`px-4 py-2.5 text-xs font-bold border-b-2 -mb-px whitespace-nowrap transition-all flex items-center gap-1.5 cursor-pointer bangla-text ${
-              activeTab === tab.id
+ key={tab.id}
+ onClick={() => setActiveTab(tab.id as TabKey)}
+ className={`px-4 py-2.5 text-xs font-bold border-b-2 -mb-px whitespace-nowrap transition-all flex items-center gap-1.5 cursor-pointer bangla-text ${
+ activeTab === tab.id
                 ? 'border-teal-600 text-teal-700 dark:border-teal-400 dark:text-teal-300 bg-teal-50/50 dark:bg-teal-950/30 rounded-t-lg'
                 : 'border-transparent text-muted-foreground hover:text-foreground hover:bg-muted dark:hover:bg-muted/40'
             }`}
           >
             <span>{tBilingual(tab.labelEn, tab.labelBn)}</span>
             {tab.count !== undefined && (
-              <Badge variant="outline" className="text-2xs tabular-nums py-0 px-1.5">
+              <Badge variant="outline"className="text-2xs tabular-nums py-0 px-1.5">
                 {tab.count}
               </Badge>
             )}
@@ -462,7 +426,7 @@ export default function SupplierProfilePage() {
       {/* ==================================================== */}
       {activeTab === 'prices' && (
         <Card className="rounded-xl shadow-xs border-border overflow-hidden">
-          <CardHeader className="py-3 px-4 bg-muted border-b border-border dark:border-border">
+          <CardHeader className="py-3 px-4 bg-muted border-b border-border">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <CardTitle className="text-sm font-bold">
@@ -476,14 +440,12 @@ export default function SupplierProfilePage() {
                 </CardDescription>
               </div>
               <Button
-                size="sm"
-                onClick={() => {
-                  setPriceToEdit(null)
-                  setIsRateModalOpen(true)
+ size="sm"onClick={() => {
+ setPriceToEdit(null)
+ setIsRateModalOpen(true)
                 }}
-                className="bg-teal-600 hover:bg-teal-700 text-xs text-white font-bold shrink-0 shadow-xs"
-              >
-                <Plus className="h-3.5 w-3.5 mr-1" />
+ className="bg-teal-600 hover:bg-teal-700 text-xs text-white font-bold shrink-0 shadow-xs">
+                <Plus className="h-3.5 w-3.5 mr-1"/>
                 {tBilingual('Add Material Rate', 'নতুন চুক্তি দর')}
               </Button>
             </div>
@@ -491,7 +453,7 @@ export default function SupplierProfilePage() {
           <CardContent className="p-0">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-muted font-bold text-muted-foreground border-b border-border dark:border-border">
+                <thead className="bg-muted font-bold text-muted-foreground border-b border-border">
                   <tr>
                     <th className="py-3 px-4">{tBilingual('Material Specification & Brand', 'মেটেরিয়াল বিবরণ')}</th>
                     <th className="py-3 px-4">{tBilingual('Category', 'ক্যাটাগরি')}</th>
@@ -507,26 +469,26 @@ export default function SupplierProfilePage() {
                   {materialPrices.length === 0 ? (
                     <tr>
                       <td colSpan={8} className="py-12 text-center text-muted-foreground">
-                        <Tag className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                        <div className="font-bold text-muted-foreground dark:text-muted-foreground">
+                        <Tag className="h-8 w-8 mx-auto mb-2 opacity-50"/>
+                        <div className="font-bold text-muted-foreground">
                           {tBilingual('No Material Contract Rates Configured', 'কোন চুক্তি দর নির্ধারিত নেই')}
                         </div>
                         <p className="text-xs text-muted-foreground mt-1">
-                          Click &quot;Add Material Rate&quot; to record buying rates for roll media, inks, or sheets.
+ Click &quot;Add Material Rate&quot; to record buying rates for roll media, inks, or sheets.
                         </p>
                       </td>
                     </tr>
                   ) : (
-                    materialPrices.map((price) => (
+ materialPrices.map((price) => (
                       <tr key={price.id} className="hover:bg-muted dark:hover:bg-muted/60 transition-colors">
-                        <td className="py-3 px-4 font-bold text-foreground dark:text-white">{price.material_name}</td>
+                        <td className="py-3 px-4 font-bold text-foreground">{price.material_name}</td>
                         <td className="py-3 px-4 capitalize text-muted-foreground">{price.category}</td>
                         <td className="py-3 px-4 uppercase tabular-nums font-semibold">{price.unit}</td>
                         <td className="py-3 px-4 font-black tabular-nums text-teal-700 dark:text-teal-400 text-sm">
                           {formatBDT(price.contract_price_bdt)} <span className="text-2xs font-normal text-muted-foreground">/ {price.unit}</span>
                         </td>
-                        <td className="py-3 px-4 tabular-nums text-muted-foreground dark:text-muted-foreground">
-                          MOQ: {price.moq || 1} • {price.lead_time_days || 2}d
+                        <td className="py-3 px-4 tabular-nums text-muted-foreground">
+ MOQ: {price.moq || 1} • {price.lead_time_days || 2}d
                         </td>
                         <td className="py-3 px-4 text-muted-foreground tabular-nums">{price.effective_date}</td>
                         <td className="py-3 px-4 text-muted-foreground italic max-w-[200px] truncate">
@@ -535,25 +497,17 @@ export default function SupplierProfilePage() {
                         <td className="py-3 px-4 text-right">
                           <div className="flex items-center justify-end gap-1">
                             <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => {
-                                setPriceToEdit(price)
-                                setIsRateModalOpen(true)
+ size="sm"variant="outline"onClick={() => {
+ setPriceToEdit(price)
+ setIsRateModalOpen(true)
                               }}
-                              className="h-7 px-2 text-xs"
-                              title="Edit Rate"
-                            >
-                              <Edit2 className="h-3 w-3" />
+ className="h-7 px-2 text-xs"title="Edit Rate">
+                              <Edit2 className="h-3 w-3"/>
                             </Button>
                             <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleDeleteRate(price.id, price.material_name)}
-                              className="h-7 px-2 text-xs text-rose-600 hover:text-rose-700"
-                              title="Delete Rate"
-                            >
-                              <Trash2 className="h-3 w-3" />
+ size="sm"variant="outline"onClick={() => handleDeleteRate(price.id, price.material_name)}
+ className="h-7 px-2 text-xs text-rose-600 hover:text-rose-700"title="Delete Rate">
+                              <Trash2 className="h-3 w-3"/>
                             </Button>
                           </div>
                         </td>
@@ -572,17 +526,15 @@ export default function SupplierProfilePage() {
       {/* ==================================================== */}
       {activeTab === 'purchases' && (
         <Card className="rounded-xl shadow-xs border-border overflow-hidden">
-          <CardHeader className="py-3 px-4 bg-muted border-b border-border dark:border-border">
+          <CardHeader className="py-3 px-4 bg-muted border-b border-border">
             <div className="flex items-center justify-between">
               <CardTitle className="text-sm font-bold">
                 {tBilingual('Purchase Orders & Inward GRN Shipments', 'ক্রয়াদেশ ও চালান রিসিভিং')}
               </CardTitle>
               <Button
-                size="sm"
-                onClick={() => setIsNewPOOpen(true)}
-                className="bg-blue-600 hover:bg-blue-700 text-xs text-white font-bold shrink-0 shadow-xs"
-              >
-                <Plus className="h-3.5 w-3.5 mr-1" />
+ size="sm"onClick={() => setIsNewPOOpen(true)}
+ className="bg-blue-600 hover:bg-blue-700 text-xs text-white font-bold shrink-0 shadow-xs">
+                <Plus className="h-3.5 w-3.5 mr-1"/>
                 {tBilingual('Issue Purchase Order', 'নতুন ক্রয়াদেশ')}
               </Button>
             </div>
@@ -590,7 +542,7 @@ export default function SupplierProfilePage() {
           <CardContent className="p-0">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-muted font-bold text-muted-foreground border-b border-border dark:border-border">
+                <thead className="bg-muted font-bold text-muted-foreground border-b border-border">
                   <tr>
                     <th className="py-3 px-4">{tBilingual('PO Number', 'পিও নম্বর')}</th>
                     <th className="py-3 px-4">{tBilingual('Order Date', 'অর্ডারের তারিখ')}</th>
@@ -604,35 +556,35 @@ export default function SupplierProfilePage() {
                   {relatedPOs.length === 0 ? (
                     <tr>
                       <td colSpan={6} className="py-12 text-center text-muted-foreground">
-                        <Package className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                        <div className="font-bold text-muted-foreground dark:text-muted-foreground">
+                        <Package className="h-8 w-8 mx-auto mb-2 opacity-50"/>
+                        <div className="font-bold text-muted-foreground">
                           {tBilingual('No Purchase Orders Found', 'কোন ক্রয়াদেশ পাওয়া যায়নি')}
                         </div>
                         <p className="text-xs text-muted-foreground mt-1">
-                          Click &quot;Issue Purchase Order&quot; to procure raw materials or finished products from this vendor.
+ Click &quot;Issue Purchase Order&quot; to procure raw materials or finished products from this vendor.
                         </p>
                       </td>
                     </tr>
                   ) : (
-                    relatedPOs.map((po) => (
+ relatedPOs.map((po) => (
                       <tr key={po.id} className="hover:bg-muted dark:hover:bg-muted/60 transition-colors">
                         <td className="py-3 px-4 tabular-nums font-bold text-teal-600 dark:text-teal-400">
                           {po.po_number}
                         </td>
                         <td className="py-3 px-4 text-muted-foreground tabular-nums">{po.po_date}</td>
-                        <td className="py-3 px-4 font-medium text-foreground dark:text-white">
+                        <td className="py-3 px-4 font-medium text-foreground">
                           {po.items?.length || 0} line item(s) • {po.items?.[0]?.material_name || 'Standard supplies'}
                         </td>
-                        <td className="py-3 px-4 tabular-nums font-bold text-foreground dark:text-white">
+                        <td className="py-3 px-4 tabular-nums font-bold text-foreground">
                           {formatBDT(po.grand_total || 0)}
                         </td>
                         <td className="py-3 px-4">
-                          <Badge variant="outline" className="bg-emerald-50 text-emerald-800 border-emerald-200 capitalize text-2xs">
+                          <Badge variant="outline"className="bg-emerald-50 text-emerald-800 border-emerald-200 capitalize text-2xs">
                             {po.status}
                           </Badge>
                         </td>
                         <td className="py-3 px-4">
-                          <Badge variant="outline" className="bg-sky-50 text-sky-800 border-sky-200 capitalize text-2xs">
+                          <Badge variant="outline"className="bg-sky-50 text-sky-800 border-sky-200 capitalize text-2xs">
                             {po.due_amount <= 0 ? 'Paid' : po.paid_amount > 0 ? 'Partially Paid' : 'Unpaid'}
                           </Badge>
                         </td>
@@ -651,28 +603,26 @@ export default function SupplierProfilePage() {
       {/* ==================================================== */}
       {activeTab === 'payments' && (
         <Card className="rounded-xl shadow-xs border-border overflow-hidden">
-          <CardHeader className="py-3 px-4 bg-muted border-b border-border dark:border-border">
+          <CardHeader className="py-3 px-4 bg-muted border-b border-border">
             <div className="flex items-center justify-between">
               <CardTitle className="text-sm font-bold">
                 {tBilingual('Disbursed Payment Vouchers', 'পরিশোধিত পেমেন্ট ভাউচার')}
               </CardTitle>
               <Button
-                size="sm"
-                onClick={() => setIsPayModalOpen(true)}
-                className="bg-teal-600 hover:bg-teal-700 text-xs text-white font-bold shrink-0 shadow-xs"
-              >
-                <Receipt className="h-3.5 w-3.5 mr-1" />
-                {tBilingual('Disburse Voucher', 'নতুন ভাউচার')}
+ size="sm"onClick={() => setIsPayModalOpen(true)}
+ className="bg-teal-600 hover:bg-teal-700 text-xs text-white font-bold shrink-0 shadow-xs">
+                <Receipt className="h-3.5 w-3.5 mr-1"/>
+                {tBilingual('Pay Voucher', 'নতুন ভাউচার')}
               </Button>
             </div>
           </CardHeader>
           <CardContent className="p-0">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-muted font-bold text-muted-foreground border-b border-border dark:border-border">
+                <thead className="bg-muted font-bold text-muted-foreground border-b border-border">
                   <tr>
                     <th className="py-3 px-4">{tBilingual('Voucher No', 'ভাউচার নং')}</th>
-                    <th className="py-3 px-4">{tBilingual('Disbursement Channel', 'পেমেন্টের মাধ্যম')}</th>
+                    <th className="py-3 px-4">{tBilingual('Payment Method', 'পেমেন্টের মাধ্যম')}</th>
                     <th className="py-3 px-4">{tBilingual('Amount Paid', 'পরিশোধের পরিমাণ')}</th>
                     <th className="py-3 px-4">{tBilingual('Date', 'তারিখ')}</th>
                     <th className="py-3 px-4">{tBilingual('Bank / Cheque Ref', 'চেক বা ব্যাংক রেফারেন্স')}</th>
@@ -682,13 +632,13 @@ export default function SupplierProfilePage() {
                 <tbody className="divide-y divide-border dark:divide-border">
                   <tr className="hover:bg-muted dark:hover:bg-muted/60">
                     <td className="py-3 px-4 tabular-nums font-bold text-teal-600">PV-2024-0012</td>
-                    <td className="py-3 px-4 font-medium text-foreground dark:text-foreground">Bank Cheque</td>
+                    <td className="py-3 px-4 font-medium text-foreground">Bank Cheque</td>
                     <td className="py-3 px-4 tabular-nums font-bold text-emerald-600 text-sm">৳ 100,000</td>
                     <td className="py-3 px-4 text-muted-foreground tabular-nums">20/08/2024</td>
-                    <td className="py-3 px-4 tabular-nums text-muted-foreground dark:text-muted-foreground">City Bank Cheque #982104</td>
+                    <td className="py-3 px-4 tabular-nums text-muted-foreground">City Bank Cheque #982104</td>
                     <td className="py-3 px-4">
-                      <Badge variant="outline" className="text-emerald-700 bg-emerald-50 text-2xs">
-                        Cheque Cleared
+                      <Badge variant="outline"className="text-emerald-700 bg-emerald-50 text-2xs">
+ Cheque Cleared
                       </Badge>
                     </td>
                   </tr>
@@ -704,26 +654,26 @@ export default function SupplierProfilePage() {
       {/* ==================================================== */}
       {activeTab === 'ledger' && (
         <Card className="rounded-xl shadow-xs border-border overflow-hidden">
-          <CardHeader className="py-3 px-4 bg-muted border-b border-border dark:border-border">
+          <CardHeader className="py-3 px-4 bg-muted border-b border-border">
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle className="text-sm font-bold">
-                  {tBilingual('Supplier Account Statement & Audit Ledger', 'মহাজনের খতিয়ান ও হিসাব বিবরণী')}
+                  {tBilingual('Supplier Statement', 'মহাজনের খতিয়ান ও হিসাব বিবরণী')}
                 </CardTitle>
                 <CardDescription className="text-xs">
                   {tBilingual('Chronological statement of purchases, debit disbursements, credit notes, and running balance.', 'ক্রয় ও পরিশোধের পূর্ণাঙ্গ লেজার।')}
                 </CardDescription>
               </div>
-              <Button size="sm" variant="outline" onClick={handlePrintStatement} className="text-xs">
-                <Printer className="h-3.5 w-3.5 mr-1" />
-                {tBilingual('Print Ledger', 'লেজার প্রিন্ট')}
+              <Button size="sm"variant="outline"onClick={handlePrintStatement} className="text-xs">
+                <Printer className="h-3.5 w-3.5 mr-1"/>
+                {tBilingual('Print Statement', 'লেজার প্রিন্ট')}
               </Button>
             </div>
           </CardHeader>
           <CardContent className="p-0">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-muted font-bold text-muted-foreground border-b border-border dark:border-border">
+                <thead className="bg-muted font-bold text-muted-foreground border-b border-border">
                   <tr>
                     <th className="py-3 px-4">{tBilingual('Date', 'তারিখ')}</th>
                     <th className="py-3 px-4">{tBilingual('Transaction Type', 'লেনদেনের ধরন')}</th>
@@ -736,11 +686,11 @@ export default function SupplierProfilePage() {
                 <tbody className="divide-y divide-border tabular-nums">
                   <tr>
                     <td className="py-3 px-4 text-muted-foreground">28/08/2024</td>
-                    <td className="py-3 px-4 font-sans font-semibold text-foreground dark:text-foreground">
-                      Goods Received (GRN-0089)
+                    <td className="py-3 px-4 font-sans font-semibold text-foreground">
+ Goods Received (GRN-0089)
                     </td>
                     <td className="py-3 px-4 text-teal-600 font-bold">PO-000034</td>
-                    <td className="py-3 px-4 text-right font-bold text-foreground dark:text-white">৳ 23,750</td>
+                    <td className="py-3 px-4 text-right font-bold text-foreground">৳ 23,750</td>
                     <td className="py-3 px-4 text-right text-muted-foreground">—</td>
                     <td className="py-3 px-4 text-right font-bold text-amber-700 dark:text-amber-400">
                       {formatBDT(supplier.outstanding_balance || 0)}
@@ -749,7 +699,7 @@ export default function SupplierProfilePage() {
                   <tr>
                     <td className="py-3 px-4 text-muted-foreground">20/08/2024</td>
                     <td className="py-3 px-4 font-sans font-semibold text-emerald-600">
-                      Payment Voucher Cleared
+ Payment Voucher Cleared
                     </td>
                     <td className="py-3 px-4 text-muted-foreground">PV-2024-0012</td>
                     <td className="py-3 px-4 text-right text-muted-foreground">—</td>
@@ -771,32 +721,32 @@ export default function SupplierProfilePage() {
           {/* Legal & Market Location */}
           <Card className="p-5 rounded-xl shadow-xs border-border space-y-4">
             <div className="flex items-center gap-2 border-b border-border pb-2">
-              <Building className="h-4 w-4 text-teal-600" />
-              <h3 className="text-sm font-bold text-foreground dark:text-white">
+              <Building className="h-4 w-4 text-teal-600"/>
+              <h3 className="text-sm font-bold text-foreground">
                 {tBilingual('Legal & Trade Registration', 'আইনগত ও ট্রেড তথ্য')}
               </h3>
             </div>
 
             <div className="space-y-2.5 text-xs">
-              <div className="flex justify-between py-1 border-b border-slate-50 dark:border-border">
+              <div className="flex justify-between py-1 border-b border-border">
                 <span className="text-muted-foreground">Trade License:</span>
-                <span className="tabular-nums font-bold text-foreground dark:text-foreground">
+                <span className="tabular-nums font-bold text-foreground">
                   {supplier.trade_license || '—'}
                 </span>
               </div>
-              <div className="flex justify-between py-1 border-b border-slate-50 dark:border-border">
+              <div className="flex justify-between py-1 border-b border-border">
                 <span className="text-muted-foreground">BIN / VAT Registration:</span>
-                <span className="tabular-nums font-bold text-foreground dark:text-foreground">
+                <span className="tabular-nums font-bold text-foreground">
                   {supplier.bin || '—'}
                 </span>
               </div>
-              <div className="flex justify-between py-1 border-b border-slate-50 dark:border-border">
+              <div className="flex justify-between py-1 border-b border-border">
                 <span className="text-muted-foreground">TIN Number:</span>
-                <span className="tabular-nums font-bold text-foreground dark:text-foreground">
+                <span className="tabular-nums font-bold text-foreground">
                   {supplier.tin || '—'}
                 </span>
               </div>
-              <div className="flex justify-between py-1 border-b border-slate-50 dark:border-border">
+              <div className="flex justify-between py-1 border-b border-border">
                 <span className="text-muted-foreground">Market Hub Area:</span>
                 <span className="font-bold text-foreground capitalize">
                   {supplier.market_hub || 'Nayabazar'}
@@ -814,40 +764,40 @@ export default function SupplierProfilePage() {
           {/* Bank & Cheque Disbursement Details */}
           <Card className="p-5 rounded-xl shadow-xs border-border space-y-4">
             <div className="flex items-center gap-2 border-b border-border pb-2">
-              <Landmark className="h-4 w-4 text-teal-600" />
-              <h3 className="text-sm font-bold text-foreground dark:text-white">
+              <Landmark className="h-4 w-4 text-teal-600"/>
+              <h3 className="text-sm font-bold text-foreground">
                 {tBilingual('Bank Account for Disbursements', 'ব্যাংক অ্যাকাউন্ট ও চেক প্রদান তথ্য')}
               </h3>
             </div>
 
             <div className="space-y-2.5 text-xs">
-              <div className="flex justify-between py-1 border-b border-slate-50 dark:border-border">
+              <div className="flex justify-between py-1 border-b border-border">
                 <span className="text-muted-foreground">Bank Name:</span>
-                <span className="font-bold text-foreground dark:text-foreground">
+                <span className="font-bold text-foreground">
                   {supplier.bank_name || 'Dutch-Bangla Bank PLC'}
                 </span>
               </div>
-              <div className="flex justify-between py-1 border-b border-slate-50 dark:border-border">
+              <div className="flex justify-between py-1 border-b border-border">
                 <span className="text-muted-foreground">Account Title:</span>
-                <span className="font-semibold text-foreground dark:text-foreground">
+                <span className="font-semibold text-foreground">
                   {supplier.bank_account_name || supplier.supplier_name}
                 </span>
               </div>
-              <div className="flex justify-between py-1 border-b border-slate-50 dark:border-border">
+              <div className="flex justify-between py-1 border-b border-border">
                 <span className="text-muted-foreground">Account Number:</span>
                 <span className="tabular-nums font-bold text-teal-700 dark:text-teal-400">
                   {supplier.bank_account_number || '—'}
                 </span>
               </div>
-              <div className="flex justify-between py-1 border-b border-slate-50 dark:border-border">
+              <div className="flex justify-between py-1 border-b border-border">
                 <span className="text-muted-foreground">Branch Name:</span>
-                <span className="text-foreground dark:text-foreground">
+                <span className="text-foreground">
                   {supplier.bank_branch || 'Dhaka Main'}
                 </span>
               </div>
               <div className="flex justify-between py-1">
                 <span className="text-muted-foreground">Routing Number:</span>
-                <span className="tabular-nums text-foreground dark:text-foreground">
+                <span className="tabular-nums text-foreground">
                   {supplier.bank_routing_number || '—'}
                 </span>
               </div>
@@ -859,7 +809,7 @@ export default function SupplierProfilePage() {
             <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
               {tBilingual('Vendor Agreement Remarks & Special Notes', 'চুক্তি ও বাকির শর্তাবলীর বিশেষ নোট')}
             </h3>
-            <p className="text-xs text-foreground leading-relaxed bg-muted p-3 rounded-lg border border-border dark:border-border">
+            <p className="text-xs text-foreground leading-relaxed bg-muted p-3 rounded-lg border border-border">
               {supplier.notes || 'No special credit remarks recorded for this supplier.'}
             </p>
           </Card>
@@ -868,47 +818,43 @@ export default function SupplierProfilePage() {
 
       {/* ALL MODALS */}
       <SupplierModal
-        open={isEditModalOpen}
-        onOpenChange={setIsEditModalOpen}
-        supplierToEdit={supplier}
-        onSave={handleSaveSupplier}
+ open={isEditModalOpen}
+ onOpenChange={setIsEditModalOpen}
+ supplierToEdit={supplier}
+ onSave={handleSaveSupplier}
       />
 
       <PaySupplierVoucherModal
-        open={isPayModalOpen}
-        onOpenChange={setIsPayModalOpen}
-        supplier={supplier}
-        onPaymentRecorded={handlePaymentRecorded}
+ open={isPayModalOpen}
+ onOpenChange={setIsPayModalOpen}
+ supplier={supplier}
+ onPaymentRecorded={handlePaymentRecorded}
       />
 
       <SupplierMaterialRateModal
-        open={isRateModalOpen}
-        onOpenChange={setIsRateModalOpen}
-        supplier={supplier}
-        priceToEdit={priceToEdit}
-        onSaveRate={handleSaveRate}
+ open={isRateModalOpen}
+ onOpenChange={setIsRateModalOpen}
+ supplier={supplier}
+ priceToEdit={priceToEdit}
+ onSaveRate={handleSaveRate}
       />
 
       <NewPurchaseModal
-        open={isNewPOOpen}
-        onOpenChange={setIsNewPOOpen}
-        defaultSupplierId={supplier.id}
+ open={isNewPOOpen}
+ onOpenChange={setIsNewPOOpen}
+ defaultSupplierId={supplier.id}
       />
 
       {/* Delete Contract Rate Confirm Dialog */}
       <ConfirmDialog
-        open={isDeleteRateOpen}
-        onOpenChange={setIsDeleteRateOpen}
-        title={`Remove Contract Rate for "${rateToDelete?.name || 'Material'}"?`}
-        titleBn={`"${rateToDelete?.name || 'ম্যাটেরিয়াল'}" এর চুক্তির দর মুছে ফেলবেন?`}
-        message={`Are you sure you want to remove this negotiated rate from ${supplier.supplier_name}?`}
-        messageBn={`আপনি কি এই সরবরাহকারীর জন্য নির্ধারিত কাঁচামালের রেটটি মুছে ফেলতে চান?`}
-        confirmText="Remove Rate"
-        confirmTextBn="রেট মুছুন"
-        cancelText="Cancel"
-        cancelTextBn="বাতিল"
-        isDestructive={true}
-        onConfirm={confirmDeleteRate}
+ open={isDeleteRateOpen}
+ onOpenChange={setIsDeleteRateOpen}
+ title={`Remove Contract Rate for"${rateToDelete?.name || 'Material'}"?`}
+ titleBn={`"${rateToDelete?.name || 'ম্যাটেরিয়াল'}"এর চুক্তির দর মুছে ফেলবেন?`}
+ message={`Are you sure you want to remove this negotiated rate from ${supplier.supplier_name}?`}
+ messageBn={`আপনি কি এই সরবরাহকারীর জন্য নির্ধারিত কাঁচামালের রেটটি মুছে ফেলতে চান?`}
+ confirmText="Remove Rate"confirmTextBn="রেট মুছুন"cancelText="Cancel"cancelTextBn="বাতিল"isDestructive={true}
+ onConfirm={confirmDeleteRate}
       />
     </div>
   )

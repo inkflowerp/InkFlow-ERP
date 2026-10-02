@@ -33,50 +33,50 @@ const PWAInstaller = dynamic(
 import type { SubscriptionSnapshot } from '@/types/subscription.types'
 
 export function AppShell({
-  initialSubscriptionSnapshot,
-  children,
+ initialSubscriptionSnapshot,
+ children,
 }: {
-  initialSubscriptionSnapshot?: SubscriptionSnapshot | null
-  children: React.ReactNode
+ initialSubscriptionSnapshot?: SubscriptionSnapshot | null
+ children: React.ReactNode
 }) {
-  const [syncDrawerOpen, setSyncDrawerOpen] = useState(false)
-  const [searchOpen, setSearchOpen] = useState(false)
-  const [searchMode, setSearchMode] = useState<'search' | 'quick-new'>('search')
+ const [syncDrawerOpen, setSyncDrawerOpen] = useState(false)
+ const [searchOpen, setSearchOpen] = useState(false)
+ const [searchMode, setSearchMode] = useState<'search' | 'quick-new'>('search')
 
   // Global keyboard shortcuts (/ and N)
-  useShortcuts({
-    onOpenSearch: () => {
-      setSearchMode('search')
-      setSearchOpen(true)
+ useShortcuts({
+ onOpenSearch: () => {
+ setSearchMode('search')
+ setSearchOpen(true)
     },
-    onOpenNew: () => {
-      setSearchMode('quick-new')
-      setSearchOpen(true)
+ onOpenNew: () => {
+ setSearchMode('quick-new')
+ setSearchOpen(true)
     },
-    onClose: () => setSearchOpen(false),
+ onClose: () => setSearchOpen(false),
   })
 
   // Custom DOM event triggers from TopNav or Mobile
-  useEffect(() => {
-    const handleOpenSearch = () => {
-      setSearchMode('search')
-      setSearchOpen(true)
+ useEffect(() => {
+ const handleOpenSearch = () => {
+ setSearchMode('search')
+ setSearchOpen(true)
     }
-    const handleOpenNew = () => {
-      setSearchMode('quick-new')
-      setSearchOpen(true)
+ const handleOpenNew = () => {
+ setSearchMode('quick-new')
+ setSearchOpen(true)
     }
 
-    window.addEventListener('printerp_open_search', handleOpenSearch)
-    window.addEventListener('printerp_open_new', handleOpenNew)
+ window.addEventListener('printerp_open_search', handleOpenSearch)
+ window.addEventListener('printerp_open_new', handleOpenNew)
 
-    return () => {
-      window.removeEventListener('printerp_open_search', handleOpenSearch)
-      window.removeEventListener('printerp_open_new', handleOpenNew)
+ return () => {
+ window.removeEventListener('printerp_open_search', handleOpenSearch)
+ window.removeEventListener('printerp_open_new', handleOpenNew)
     }
   }, [])
 
-  return (
+ return (
     <RealtimeProvider>
       <SubscriptionProvider initialSnapshot={initialSubscriptionSnapshot}>
         <ToastProvider>
@@ -105,13 +105,13 @@ export function AppShell({
               <PWAInstaller />
               <MobileBottomNav />
               <OfflineSyncDrawer
-                open={syncDrawerOpen}
-                onClose={() => setSyncDrawerOpen(false)}
+ open={syncDrawerOpen}
+ onClose={() => setSyncDrawerOpen(false)}
               />
               <CommandPalette
-                isOpen={searchOpen}
-                onClose={() => setSearchOpen(false)}
-                initialMode={searchMode}
+ isOpen={searchOpen}
+ onClose={() => setSearchOpen(false)}
+ initialMode={searchMode}
               />
               <TrialUpgradeModal />
               <LimitExceededModal />

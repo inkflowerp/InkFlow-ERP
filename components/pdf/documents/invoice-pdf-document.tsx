@@ -1,239 +1,234 @@
-import React from "react";
-import { Document, Page, StyleSheet, View } from "@formepdf/react";
+import React from"react";
+import { Document, Page, StyleSheet, View } from"@formepdf/react";
 import {
-  PdfcnThemeProvider,
-  usePdfcnTheme,
-} from "../primitives/theme-provider";
-import { Text } from "../primitives/text";
-import { Badge } from "../primitives/badge";
-import { Divider } from "../primitives/divider";
-import { KeyValue } from "../primitives/key-value";
-import { PageHeader } from "../primitives/page-header";
-import { PageFooter } from "../primitives/page-footer";
-import { PageNumber } from "../primitives/page-number";
-import { Table, TableBody, TableCell, TableHeader, TableRow } from "../primitives/table";
-import { PdfSignatureBlock } from "../primitives/signature";
-import { PdfQRCode } from "../primitives/qrcode";
-import type { PdfcnTheme } from "../themes/types";
-import type { InvoiceRecord } from "@/types/billing.types";
-import { formatLakhCrore, numberToWordsBDT } from "@/lib/formatters";
+ PdfcnThemeProvider,
+ usePdfcnTheme,
+} from"../primitives/theme-provider";
+import { Text } from"../primitives/text";
+import { Badge } from"../primitives/badge";
+import { Divider } from"../primitives/divider";
+import { KeyValue } from"../primitives/key-value";
+import { PageHeader } from"../primitives/page-header";
+import { PageFooter } from"../primitives/page-footer";
+import { PageNumber } from"../primitives/page-number";
+import { Table, TableBody, TableCell, TableHeader, TableRow } from"../primitives/table";
+import { PdfSignatureBlock } from"../primitives/signature";
+import { PdfQRCode } from"../primitives/qrcode";
+import type { PdfcnTheme } from"../themes/types";
+import type { InvoiceRecord } from"@/types/billing.types";
+import { formatLakhCrore, numberToWordsBDT } from"@/lib/formatters";
 
 export interface InvoicePdfProps {
-  theme?: PdfcnTheme;
-  invoice: InvoiceRecord;
-  company?: {
-    name?: string | null;
-    tagline?: string | null;
-    address?: string | null;
-    phone?: string | null;
-    email?: string | null;
-    website?: string | null;
-    binNumber?: string | null;
-    tinNumber?: string | null;
-    bankDetails?: string | null;
+ theme?: PdfcnTheme;
+ invoice: InvoiceRecord;
+ company?: {
+ name?: string | null;
+ tagline?: string | null;
+ address?: string | null;
+ phone?: string | null;
+ email?: string | null;
+ website?: string | null;
+ binNumber?: string | null;
+ tinNumber?: string | null;
+ bankDetails?: string | null;
   };
 }
 
 const InvoicePdfContent = ({ invoice, company }: { invoice: InvoiceRecord; company?: InvoicePdfProps["company"] }) => {
-  const theme = usePdfcnTheme();
+ const theme = usePdfcnTheme();
 
-  const companyName = company?.name || "InkFlow PrintERP";
-  const companySubtitle = company?.tagline || "Printing & Signage Manufacturing";
-  const companyAddress = company?.address || "";
-  const companyContact = `${company?.phone || "+880 1700-000000"}  ·  ${company?.email || "billing@inkflow-erp.com"}`;
+ const companyName = company?.name ||"InkFlow PrintERP";
+ const companySubtitle = company?.tagline ||"Printing & Signage Manufacturing";
+ const companyAddress = company?.address ||"";
+ const companyContact = `${company?.phone ||"+880 1700-000000"} · ${company?.email ||"billing@inkflow-erp.com"}`;
 
-  const isMushak = invoice.invoice_type === "vat_invoice";
-  const title = isMushak
-    ? "MUSHAK-6.3 VAT INVOICE"
-    : invoice.invoice_type === "payment_receipt"
-    ? "PAYMENT RECEIPT"
-    : "COMMERCIAL INVOICE";
+ const isMushak = invoice.invoice_type ==="vat_invoice";
+ const title = isMushak
+    ?"MUSHAK-6.3 VAT INVOICE": invoice.invoice_type ==="payment_receipt"?"PAYMENT RECEIPT":"COMMERCIAL INVOICE";
 
-  const qrPayload = `https://rangao.inkflow-erp.vercel.app/api/pdf/invoice?id=${encodeURIComponent(invoice.invoice_number || invoice.id)}`;
+ const qrPayload = `https://rangao.inkflow-erp.vercel.app/api/pdf/invoice?id=${encodeURIComponent(invoice.invoice_number || invoice.id)}`;
 
-  const styles = StyleSheet.create({
-    page: {
-      backgroundColor: theme.colors.background,
+ const styles = StyleSheet.create({
+ page: {
+ backgroundColor: theme.colors.background,
     },
-    metaRow: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      marginBottom: 16,
+ metaRow: {
+ flexDirection:"row",
+ justifyContent:"space-between",
+ marginBottom: 16,
     },
-    metaCol: {
-      width: "48.5%",
-      flexShrink: 0,
+ metaCol: {
+ width:"48.5%",
+ flexShrink: 0,
     },
-    clientCard: {
-      backgroundColor: theme.colors.muted,
-      borderRadius: theme.primitives.borderRadius.sm,
-      padding: 12,
-      borderStyle: "solid",
-      borderWidth: 1,
-      borderColor: theme.colors.border,
+ clientCard: {
+ backgroundColor: theme.colors.muted,
+ borderRadius: theme.primitives.borderRadius.sm,
+ padding: 12,
+ borderStyle:"solid",
+ borderWidth: 1,
+ borderColor: theme.colors.border,
     },
-    summaryContainer: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      marginTop: 16,
+ summaryContainer: {
+ flexDirection:"row",
+ justifyContent:"space-between",
+ marginTop: 16,
     },
-    notesCol: {
-      width: "54%",
-      flexShrink: 0,
+ notesCol: {
+ width:"54%",
+ flexShrink: 0,
     },
-    summaryCard: {
-      width: 240,
-      backgroundColor: theme.colors.muted,
-      borderRadius: theme.primitives.borderRadius.sm,
-      padding: 12,
-      borderStyle: "solid",
-      borderWidth: 1,
-      borderColor: theme.colors.border,
+ summaryCard: {
+ width: 240,
+ backgroundColor: theme.colors.muted,
+ borderRadius: theme.primitives.borderRadius.sm,
+ padding: 12,
+ borderStyle:"solid",
+ borderWidth: 1,
+ borderColor: theme.colors.border,
     },
-    inWordsBox: {
-      marginTop: 10,
-      padding: 8,
-      backgroundColor: "#f8fafc",
-      borderRadius: theme.primitives.borderRadius.sm,
-      borderLeftWidth: 3,
-      borderLeftColor: theme.colors.primary,
-      borderLeftStyle: "solid",
+ inWordsBox: {
+ marginTop: 10,
+ padding: 8,
+ backgroundColor:"#f8fafc",
+ borderRadius: theme.primitives.borderRadius.sm,
+ borderLeftWidth: 3,
+ borderLeftColor: theme.colors.primary,
+ borderLeftStyle:"solid",
     },
-    bankBox: {
-      marginTop: 12,
-      padding: 8,
-      backgroundColor: "#f1f5f9",
-      borderRadius: theme.primitives.borderRadius.sm,
+ bankBox: {
+ marginTop: 12,
+ padding: 8,
+ backgroundColor:"#f1f5f9",
+ borderRadius: theme.primitives.borderRadius.sm,
     },
   });
 
-  const getStatusBadge = () => {
-    switch (invoice.status) {
-      case "paid":
-        return <Badge label="PAID" variant="success" size="sm" />;
-      case "partially_paid":
-        return <Badge label="PARTIAL" variant="warning" size="sm" />;
-      case "overdue":
-        return <Badge label="OVERDUE" variant="destructive" size="sm" />;
-      default:
-        return <Badge label="UNPAID" variant="outline" size="sm" />;
+ const getStatusBadge = () => {
+ switch (invoice.status) {
+ case"paid":
+ return <Badge label="PAID"variant="success"size="sm"/>;
+ case"partially_paid":
+ return <Badge label="PARTIAL"variant="warning"size="sm"/>;
+ case"overdue":
+ return <Badge label="OVERDUE"variant="destructive"size="sm"/>;
+ default:
+ return <Badge label="UNPAID"variant="outline"size="sm"/>;
     }
   };
 
-  const formattedInWords = numberToWordsBDT(invoice.grand_total || 0);
+ const formattedInWords = numberToWordsBDT(invoice.grand_total || 0);
 
-  return (
+ return (
     <Document title={`Invoice ${invoice.invoice_number}`}>
-      <Page size="A4" margin={{ bottom: 36, left: 36, right: 36, top: 36 }}>
+      <Page size="A4"margin={{ bottom: 36, left: 36, right: 36, top: 36 }}>
         <PageFooter
-          leftText={`Generated by InkFlow PrintERP  ·  Page 1 of 1`}
-          rightText={`Invoice ${invoice.invoice_number}`}
-          sticky
+ leftText={`Generated by InkFlow PrintERP · Page 1 of 1`}
+ rightText={`Invoice ${invoice.invoice_number}`}
+ sticky
         />
 
         <View style={styles.page as never}>
           {/* Header */}
           <PageHeader
-            variant="simple"
-            title={companyName}
-            subtitle={companyAddress ? `${companySubtitle}  |  ${companyAddress}` : companySubtitle}
-            rightText={title}
-            rightSubText={companyContact}
-            marginBottom={14}
+ variant="simple"title={companyName}
+ subtitle={companyAddress ? `${companySubtitle} | ${companyAddress}` : companySubtitle}
+ rightText={title}
+ rightSubText={companyContact}
+ marginBottom={14}
           />
 
           {/* Metadata & Client Grid */}
           <View style={styles.metaRow}>
             {/* Customer Details */}
             <View style={[styles.metaCol, styles.clientCard] as never}>
-              <Text variant="xs" weight="bold" color="mutedForeground" uppercase noMargin>
-                BILLED TO / CUSTOMER
+              <Text variant="xs"weight="bold"color="mutedForeground"uppercase noMargin>
+ BILLED TO / CUSTOMER
               </Text>
-              <Text variant="sm" weight="bold" noMargin style={{ marginTop: 4 }}>
+              <Text variant="sm"weight="bold"noMargin style={{ marginTop: 4 }}>
                 {invoice.customer_name}
               </Text>
               {invoice.customer_company && (
-                <Text variant="xs" weight="medium" noMargin color="mutedForeground">
+                <Text variant="xs"weight="medium"noMargin color="mutedForeground">
                   {invoice.customer_company}
                 </Text>
               )}
               {invoice.customer_address && (
-                <Text variant="xs" noMargin color="mutedForeground">
+                <Text variant="xs"noMargin color="mutedForeground">
                   {invoice.customer_address}
                 </Text>
               )}
-              <Text variant="xs" noMargin color="mutedForeground">
-                Phone: {invoice.customer_phone || "N/A"}
+              <Text variant="xs"noMargin color="mutedForeground">
+ Phone: {invoice.customer_phone ||"N/A"}
               </Text>
               {invoice.customer_bin && (
-                <Text variant="xs" noMargin color="mutedForeground">
-                  BIN: {invoice.customer_bin}
+                <Text variant="xs"noMargin color="mutedForeground">
+ BIN: {invoice.customer_bin}
                 </Text>
               )}
             </View>
 
             {/* Invoice Meta */}
             <View style={[styles.metaCol, styles.clientCard] as never}>
-              <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-                <Text variant="xs" weight="bold" color="mutedForeground" uppercase noMargin>
-                  INVOICE SPECIFICATIONS
+              <View style={{ flexDirection:"row", justifyContent:"space-between", alignItems:"center", marginBottom: 6 }}>
+                <Text variant="xs"weight="bold"color="mutedForeground"uppercase noMargin>
+ INVOICE SPECIFICATIONS
                 </Text>
                 {getStatusBadge()}
               </View>
 
               <KeyValue
-                size="sm"
-                items={[
-                  { key: "Invoice No:", value: invoice.invoice_number },
-                  { key: "Issue Date:", value: invoice.invoice_date },
-                  { key: "Due Date:", value: invoice.due_date || invoice.invoice_date },
-                  ...(invoice.order_number ? [{ key: "Sales Order:", value: invoice.order_number }] : []),
-                  ...(company?.binNumber ? [{ key: "Seller BIN:", value: company.binNumber }] : []),
+ size="sm"items={[
+                  { key:"Invoice No:", value: invoice.invoice_number },
+                  { key:"Issue Date:", value: invoice.invoice_date },
+                  { key:"Due Date:", value: invoice.due_date || invoice.invoice_date },
+                  ...(invoice.order_number ? [{ key:"Sales Order:", value: invoice.order_number }] : []),
+                  ...(company?.binNumber ? [{ key:"Seller BIN:", value: company.binNumber }] : []),
                 ]}
               />
             </View>
           </View>
 
           {/* Line Items Table */}
-          <Table variant="bordered" zebraStripe>
+          <Table variant="bordered"zebraStripe>
             <TableHeader>
               <TableRow header>
-                <TableCell width="6%" align="center">Sl</TableCell>
+                <TableCell width="6%"align="center">Sl</TableCell>
                 <TableCell width="48%">Item & Specifications</TableCell>
-                <TableCell width="12%" align="center">Qty</TableCell>
-                <TableCell width="16%" align="right">Rate (BDT)</TableCell>
-                <TableCell width="18%" align="right">Amount (BDT)</TableCell>
+                <TableCell width="12%"align="center">Qty</TableCell>
+                <TableCell width="16%"align="right">Rate (BDT)</TableCell>
+                <TableCell width="18%"align="right">Amount (BDT)</TableCell>
               </TableRow>
             </TableHeader>
             <TableBody>
               {(invoice.items || []).map((item, idx) => {
-                const specs = [
-                  item.material_spec,
-                  item.dimensions_spec || (item.width && item.height ? `${item.width} x ${item.height} ${item.dimension_unit || 'inch'}` : null),
-                  item.area_sft ? `${item.area_sft} sqft` : null,
-                  item.finishing,
-                ].filter(Boolean).join("  |  ");
+ const specs = [
+ item.material_spec,
+ item.dimensions_spec || (item.width && item.height ? `${item.width} x ${item.height} ${item.dimension_unit || 'inch'}` : null),
+ item.area_sft ? `${item.area_sft} sqft` : null,
+ item.finishing,
+                ].filter(Boolean).join("|");
 
-                return (
+ return (
                   <TableRow key={item.id || idx}>
-                    <TableCell width="6%" align="center">{`${idx + 1}`}</TableCell>
+                    <TableCell width="6%"align="center">{`${idx + 1}`}</TableCell>
                     <TableCell width="48%">
-                      <Text variant="xs" weight="bold" noMargin>
-                        {item.item_name || item.item_description || "Printing Work"}
+                      <Text variant="xs"weight="bold"noMargin>
+                        {item.item_name || item.item_description ||"Printing Work"}
                       </Text>
                       {specs ? (
-                        <Text variant="xs" color="mutedForeground" noMargin style={{ marginTop: 2, fontSize: 8 }}>
+                        <Text variant="xs"color="mutedForeground"noMargin style={{ marginTop: 2, fontSize: 8 }}>
                           {specs}
                         </Text>
                       ) : null}
                     </TableCell>
-                    <TableCell width="12%" align="center">
-                      {`${item.quantity} ${item.unit || "pcs"}`}
+                    <TableCell width="12%"align="center">
+                      {`${item.quantity} ${item.unit ||"pcs"}`}
                     </TableCell>
-                    <TableCell width="16%" align="right">
+                    <TableCell width="16%"align="right">
                       {formatLakhCrore(item.unit_price || 0)}
                     </TableCell>
-                    <TableCell width="18%" align="right">
+                    <TableCell width="18%"align="right">
                       {formatLakhCrore(item.total_price || (item.quantity * item.unit_price) || 0)}
                     </TableCell>
                   </TableRow>
@@ -247,28 +242,28 @@ const InvoicePdfContent = ({ invoice, company }: { invoice: InvoiceRecord; compa
             <View style={styles.notesCol}>
               {/* Amount in words */}
               <View style={styles.inWordsBox}>
-                <Text variant="xs" weight="bold" noMargin color="mutedForeground" uppercase>
-                  In Words:
+                <Text variant="xs"weight="bold"noMargin color="mutedForeground"uppercase>
+ In Words:
                 </Text>
-                <Text variant="xs" weight="semibold" noMargin style={{ marginTop: 2 }}>
+                <Text variant="xs"weight="semibold"noMargin style={{ marginTop: 2 }}>
                   {formattedInWords}
                 </Text>
               </View>
 
               {/* Payment Notes / Bank Details */}
               <View style={styles.bankBox}>
-                <Text variant="xs" weight="bold" noMargin color="mutedForeground" uppercase>
-                  Payment & Bank Terms:
+                <Text variant="xs"weight="bold"noMargin color="mutedForeground"uppercase>
+ Payment & Bank Terms:
                 </Text>
-                <Text variant="xs" noMargin color="foreground" style={{ marginTop: 2 }}>
-                  {invoice.payment_method_note || company?.bankDetails || "Bank transfer or MFS (bKash/Nagad). Please quote invoice number upon payment."}
+                <Text variant="xs"noMargin color="foreground"style={{ marginTop: 2 }}>
+                  {invoice.payment_method_note || company?.bankDetails ||"Bank transfer or MFS (bKash/Nagad). Please quote invoice number upon payment."}
                 </Text>
               </View>
 
               {invoice.notes && (
                 <View style={{ marginTop: 8 }}>
-                  <Text variant="xs" color="mutedForeground" noMargin>
-                    Notes: {invoice.notes}
+                  <Text variant="xs"color="mutedForeground"noMargin>
+ Notes: {invoice.notes}
                   </Text>
                 </View>
               )}
@@ -277,27 +272,26 @@ const InvoicePdfContent = ({ invoice, company }: { invoice: InvoiceRecord; compa
             {/* Right Financial Key-Value Box */}
             <View style={styles.summaryCard}>
               <KeyValue
-                size="sm"
-                divided
-                items={[
-                  { key: "Subtotal:", value: `BDT ${formatLakhCrore(invoice.subtotal || 0)}` },
-                  ...(invoice.discount_amount > 0 ? [{ key: "Discount:", value: `- BDT ${formatLakhCrore(invoice.discount_amount)}` }] : []),
+ size="sm"divided
+ items={[
+                  { key:"Subtotal:", value: `BDT ${formatLakhCrore(invoice.subtotal || 0)}` },
+                  ...(invoice.discount_amount > 0 ? [{ key:"Discount:", value: `- BDT ${formatLakhCrore(invoice.discount_amount)}` }] : []),
                   ...(invoice.vat_amount > 0 ? [{ key: `VAT (${invoice.vat_percentage || 0}%):`, value: `BDT ${formatLakhCrore(invoice.vat_amount)}` }] : []),
                   {
-                    key: "Grand Total:",
-                    keyStyle: { fontSize: 11, fontWeight: "bold" },
-                    value: `BDT ${formatLakhCrore(invoice.grand_total || 0)}`,
-                    valueStyle: { fontSize: 11, fontWeight: "bold", color: theme.colors.primary },
+ key:"Grand Total:",
+ keyStyle: { fontSize: 11, fontWeight:"bold"},
+ value: `BDT ${formatLakhCrore(invoice.grand_total || 0)}`,
+ valueStyle: { fontSize: 11, fontWeight:"bold", color: theme.colors.primary },
                   },
-                  { key: "Paid Amount:", value: `BDT ${formatLakhCrore(invoice.paid_amount || 0)}` },
+                  { key:"Paid Amount:", value: `BDT ${formatLakhCrore(invoice.paid_amount || 0)}` },
                   {
-                    key: "Due Balance:",
-                    keyStyle: { fontSize: 11, fontWeight: "bold" },
-                    value: `BDT ${formatLakhCrore(invoice.due_amount || 0)}`,
-                    valueStyle: {
-                      fontSize: 11,
-                      fontWeight: "bold",
-                      color: (invoice.due_amount || 0) > 0 ? theme.colors.destructive : theme.colors.success,
+ key:"Due Balance:",
+ keyStyle: { fontSize: 11, fontWeight:"bold"},
+ value: `BDT ${formatLakhCrore(invoice.due_amount || 0)}`,
+ valueStyle: {
+ fontSize: 11,
+ fontWeight:"bold",
+ color: (invoice.due_amount || 0) > 0 ? theme.colors.destructive : theme.colors.success,
                     },
                   },
                 ]}
@@ -306,20 +300,19 @@ const InvoicePdfContent = ({ invoice, company }: { invoice: InvoiceRecord; compa
           </View>
 
           {/* Signatures & QR Code */}
-          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-end", marginTop: 24 }}>
+          <View style={{ flexDirection:"row", justifyContent:"space-between", alignItems:"flex-end", marginTop: 24 }}>
             <View>
               <PdfQRCode value={qrPayload} size={64} margin={2} />
-              <Text variant="xs" color="mutedForeground" noMargin style={{ fontSize: 7, marginTop: 4, textAlign: "center" }}>
-                Scan to Verify
+              <Text variant="xs"color="mutedForeground"noMargin style={{ fontSize: 7, marginTop: 4, textAlign:"center"}}>
+ Scan to Verify
               </Text>
             </View>
 
             <View style={{ width: 360 }}>
               <PdfSignatureBlock
-                variant="double"
-                signers={[
-                  { label: "Prepared By", name: invoice.created_by_name || "Accounts Dept", date: invoice.invoice_date },
-                  { label: "Authorized Signature", name: companyName, date: invoice.invoice_date },
+ variant="double"signers={[
+                  { label:"Prepared By", name: invoice.created_by_name ||"Accounts Dept", date: invoice.invoice_date },
+                  { label:"Authorized Signature", name: companyName, date: invoice.invoice_date },
                 ]}
               />
             </View>
@@ -331,9 +324,9 @@ const InvoicePdfContent = ({ invoice, company }: { invoice: InvoiceRecord; compa
 };
 
 export const InvoicePdfDocument = ({
-  theme,
-  invoice,
-  company,
+ theme,
+ invoice,
+ company,
 }: InvoicePdfProps) => (
   <PdfcnThemeProvider theme={theme}>
     <InvoicePdfContent invoice={invoice} company={company} />

@@ -8,29 +8,29 @@
 
 import React, { useState, useEffect } from 'react'
 import {
-  Mail,
-  Server,
-  ShieldCheck,
-  Send,
-  RefreshCw,
-  Save,
-  CheckCircle2,
-  AlertTriangle,
-  Clock,
-  Eye,
-  EyeOff,
-  Sparkles,
-  Zap,
-  Globe,
-  RotateCw,
-  FileText,
-  Search,
-  Check,
-  Building,
-  Info,
-  ExternalLink,
-  Trash2,
-  Lock,
+ Mail,
+ Server,
+ ShieldCheck,
+ Send,
+ RefreshCw,
+ Save,
+ CheckCircle2,
+ AlertTriangle,
+ Clock,
+ Eye,
+ EyeOff,
+ Sparkles,
+ Zap,
+ Globe,
+ RotateCw,
+ FileText,
+ Search,
+ Check,
+ Building,
+ Info,
+ ExternalLink,
+ Trash2,
+ Lock,
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
@@ -42,325 +42,317 @@ import { Badge } from '@/components/ui/badge'
 import { PageHeader } from '@/components/shared/page-header'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import {
-  getTenantEmailGatewayAction,
-  saveTenantEmailGatewayAction,
-  disconnectTenantGmailAction,
-  deleteTenantEmailGatewayAction,
-  testTenantEmailGatewayAction,
-  sendTestTenantEmailAction,
-  getTenantEmailTemplatesAction,
-  saveTenantEmailTemplateAction,
-  getTenantEmailLogsAction,
-  getGoogleOAuthStatusAction,
+ getTenantEmailGatewayAction,
+ saveTenantEmailGatewayAction,
+ disconnectTenantGmailAction,
+ deleteTenantEmailGatewayAction,
+ testTenantEmailGatewayAction,
+ sendTestTenantEmailAction,
+ getTenantEmailTemplatesAction,
+ saveTenantEmailTemplateAction,
+ getTenantEmailLogsAction,
+ getGoogleOAuthStatusAction,
 } from '@/actions/email-gateway.actions'
 import type {
-  EmailGatewayRecord,
-  EmailGatewayFormData,
-  EmailProviderType,
-  EmailTemplateRecord,
-  EmailLogRecord,
+ EmailGatewayRecord,
+ EmailGatewayFormData,
+ EmailProviderType,
+ EmailTemplateRecord,
+ EmailLogRecord,
 } from '@/types/communication.types'
 import { interpolateVariables } from '@/services/email-template.service'
 
 export default function TenantEmailSettingsPage() {
-  const { company } = useTenant()
-  const { locale, tBilingual } = useI18n()
-  const companyId = company?.id || ''
+ const { company } = useTenant()
+ const { locale, tBilingual } = useI18n()
+ const companyId = company?.id || ''
 
-  const [mounted, setMounted] = useState(false)
-  const [activeTab, setActiveTab] = useState<'gateway' | 'templates' | 'logs'>('gateway')
-  const [gateway, setGateway] = useState<EmailGatewayRecord | null>(null)
-  const [hasConfiguredGateway, setHasConfiguredGateway] = useState(false)
-  const [templates, setTemplates] = useState<EmailTemplateRecord[]>([])
-  const [logs, setLogs] = useState<EmailLogRecord[]>([])
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
-  const [testing, setTesting] = useState(false)
-  const [disconnecting, setDisconnecting] = useState(false)
-  const [showSecret, setShowSecret] = useState(false)
+ const [mounted, setMounted] = useState(false)
+ const [activeTab, setActiveTab] = useState<'gateway' | 'templates' | 'logs'>('gateway')
+ const [gateway, setGateway] = useState<EmailGatewayRecord | null>(null)
+ const [hasConfiguredGateway, setHasConfiguredGateway] = useState(false)
+ const [templates, setTemplates] = useState<EmailTemplateRecord[]>([])
+ const [logs, setLogs] = useState<EmailLogRecord[]>([])
+ const [loading, setLoading] = useState(true)
+ const [saving, setSaving] = useState(false)
+ const [testing, setTesting] = useState(false)
+ const [disconnecting, setDisconnecting] = useState(false)
+ const [showSecret, setShowSecret] = useState(false)
 
   // Selected Provider Mode in UI: 'gmail' or 'smtp'
-  const [providerMode, setProviderMode] = useState<'gmail' | 'smtp'>('gmail')
+ const [providerMode, setProviderMode] = useState<'gmail' | 'smtp'>('gmail')
 
   // SMTP Form State
-  const [smtpHost, setSmtpHost] = useState('')
-  const [smtpPort, setSmtpPort] = useState(587)
-  const [encryptionType, setEncryptionType] = useState<'ssl' | 'tls' | 'starttls' | 'none'>('tls')
-  const [smtpUsername, setSmtpUsername] = useState('')
-  const [password, setPassword] = useState('')
-  const [senderName, setSenderName] = useState(company?.name || 'Printing Enterprise')
-  const [senderEmail, setSenderEmail] = useState(company?.email || 'billing@example.com')
-  const [replyToEmail, setReplyToEmail] = useState(company?.email || 'billing@example.com')
+ const [smtpHost, setSmtpHost] = useState('')
+ const [smtpPort, setSmtpPort] = useState(587)
+ const [encryptionType, setEncryptionType] = useState<'ssl' | 'tls' | 'starttls' | 'none'>('tls')
+ const [smtpUsername, setSmtpUsername] = useState('')
+ const [password, setPassword] = useState('')
+ const [senderName, setSenderName] = useState(company?.name || 'Printing Enterprise')
+ const [senderEmail, setSenderEmail] = useState(company?.email || 'billing@example.com')
+ const [replyToEmail, setReplyToEmail] = useState(company?.email || 'billing@example.com')
 
   // Toast & Modal State
-  const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
-  const [testResult, setTestResult] = useState<{ success: boolean; message: string; latencyMs?: number } | null>(null)
-  const [isTestModalOpen, setIsTestModalOpen] = useState(false)
-  const [testRecipient, setTestRecipient] = useState(company?.email || 'customer@example.com')
-  const [sendingTestEmail, setSendingTestEmail] = useState(false)
+ const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
+ const [testResult, setTestResult] = useState<{ success: boolean; message: string; latencyMs?: number } | null>(null)
+ const [isTestModalOpen, setIsTestModalOpen] = useState(false)
+ const [testRecipient, setTestRecipient] = useState(company?.email || 'customer@example.com')
+ const [sendingTestEmail, setSendingTestEmail] = useState(false)
 
   // Template Editing State
-  const [selectedTemplate, setSelectedTemplate] = useState<EmailTemplateRecord | null>(null)
-  const [templateLang, setTemplateLang] = useState<'en' | 'bn'>('bn')
-  const [logSearch, setLogSearch] = useState('')
-  const [googleOAuthStatus, setGoogleOAuthStatus] = useState<{
-    isConfigured: boolean
-    hasClientId: boolean
-    hasClientSecret: boolean
-    hasRedirectUri: boolean
-    redirectUri: string
-    issues: string[]
+ const [selectedTemplate, setSelectedTemplate] = useState<EmailTemplateRecord | null>(null)
+ const [templateLang, setTemplateLang] = useState<'en' | 'bn'>('bn')
+ const [logSearch, setLogSearch] = useState('')
+ const [googleOAuthStatus, setGoogleOAuthStatus] = useState<{
+ isConfigured: boolean
+ hasClientId: boolean
+ hasClientSecret: boolean
+ hasRedirectUri: boolean
+ redirectUri: string
+ issues: string[]
   } | null>(null)
 
-  const showNotification = (message: string, type: 'success' | 'error' = 'success') => {
-    setNotification({ message, type })
-    setTimeout(() => setNotification(null), 5000)
+ const showNotification = (message: string, type: 'success' | 'error' = 'success') => {
+ setNotification({ message, type })
+ setTimeout(() => setNotification(null), 5000)
   }
 
-  const loadTenantData = async () => {
-    if (!companyId) return
-    setLoading(true)
-    try {
-      const [gwRes, tplRes, logsRes, oauthStatusRes] = await Promise.all([
-        getTenantEmailGatewayAction(companyId),
-        getTenantEmailTemplatesAction(companyId),
-        getTenantEmailLogsAction(companyId),
-        getGoogleOAuthStatusAction(),
+ const loadTenantData = async () => {
+ if (!companyId) return
+ setLoading(true)
+ try {
+ const [gwRes, tplRes, logsRes, oauthStatusRes] = await Promise.all([
+ getTenantEmailGatewayAction(companyId),
+ getTenantEmailTemplatesAction(companyId),
+ getTenantEmailLogsAction(companyId),
+ getGoogleOAuthStatusAction(),
       ])
 
-      if (oauthStatusRes.success) {
-        setGoogleOAuthStatus({
-          isConfigured: oauthStatusRes.isConfigured,
-          hasClientId: oauthStatusRes.hasClientId,
-          hasClientSecret: oauthStatusRes.hasClientSecret,
-          hasRedirectUri: oauthStatusRes.hasRedirectUri,
-          redirectUri: oauthStatusRes.redirectUri,
-          issues: oauthStatusRes.issues,
+ if (oauthStatusRes.success) {
+ setGoogleOAuthStatus({
+ isConfigured: oauthStatusRes.isConfigured,
+ hasClientId: oauthStatusRes.hasClientId,
+ hasClientSecret: oauthStatusRes.hasClientSecret,
+ hasRedirectUri: oauthStatusRes.hasRedirectUri,
+ redirectUri: oauthStatusRes.redirectUri,
+ issues: oauthStatusRes.issues,
         })
       }
 
-      if (gwRes.success && gwRes.customGateway) {
-        setGateway(gwRes.customGateway)
-        setHasConfiguredGateway(true)
-        if (gwRes.customGateway.provider === 'gmail') {
-          setProviderMode('gmail')
+ if (gwRes.success && gwRes.customGateway) {
+ setGateway(gwRes.customGateway)
+ setHasConfiguredGateway(true)
+ if (gwRes.customGateway.provider === 'gmail') {
+ setProviderMode('gmail')
         } else {
-          setProviderMode('smtp')
+ setProviderMode('smtp')
         }
-        setSmtpHost(gwRes.customGateway.smtp_host || '')
-        setSmtpPort(gwRes.customGateway.smtp_port || 587)
-        setEncryptionType(gwRes.customGateway.encryption_type || 'tls')
-        setSmtpUsername(gwRes.customGateway.smtp_username || '')
-        setSenderName(gwRes.customGateway.sender_name || company?.name || '')
-        setSenderEmail(gwRes.customGateway.sender_email || company?.email || '')
-        setReplyToEmail(gwRes.customGateway.reply_to_email || company?.email || '')
+ setSmtpHost(gwRes.customGateway.smtp_host || '')
+ setSmtpPort(gwRes.customGateway.smtp_port || 587)
+ setEncryptionType(gwRes.customGateway.encryption_type || 'tls')
+ setSmtpUsername(gwRes.customGateway.smtp_username || '')
+ setSenderName(gwRes.customGateway.sender_name || company?.name || '')
+ setSenderEmail(gwRes.customGateway.sender_email || company?.email || '')
+ setReplyToEmail(gwRes.customGateway.reply_to_email || company?.email || '')
       } else {
-        setGateway(null)
-        setHasConfiguredGateway(false)
-        setSenderName(company?.name || 'Printing Team')
-        setSenderEmail(company?.email || '')
-        setReplyToEmail(company?.email || '')
+ setGateway(null)
+ setHasConfiguredGateway(false)
+ setSenderName(company?.name || 'Printing Team')
+ setSenderEmail(company?.email || '')
+ setReplyToEmail(company?.email || '')
       }
 
-      if (tplRes.success && tplRes.data) {
-        setTemplates(tplRes.data)
-        if (!selectedTemplate && tplRes.data.length > 0) {
-          setSelectedTemplate(tplRes.data[0])
+ if (tplRes.success && tplRes.data) {
+ setTemplates(tplRes.data)
+ if (!selectedTemplate && tplRes.data.length > 0) {
+ setSelectedTemplate(tplRes.data[0])
         }
       }
 
-      if (logsRes.success && logsRes.data) {
-        setLogs(logsRes.data)
+ if (logsRes.success && logsRes.data) {
+ setLogs(logsRes.data)
       }
     } finally {
-      setLoading(false)
+ setLoading(false)
     }
   }
 
-  useEffect(() => {
-    setMounted(true)
-    loadTenantData()
+ useEffect(() => {
+ setMounted(true)
+ loadTenantData()
 
     // Realtime broadcast sync listeners
-    const handleSync = () => {
-      loadTenantData()
+ const handleSync = () => {
+ loadTenantData()
     }
-    window.addEventListener('printerp_table_synced:email_gateways', handleSync)
-    window.addEventListener('printerp_data_sync', handleSync)
+ window.addEventListener('printerp_table_synced:email_gateways', handleSync)
+ window.addEventListener('printerp_data_sync', handleSync)
 
     // Inspect URL for OAuth success or errors
-    if (typeof window !== 'undefined') {
-      const url = new URL(window.location.href)
-      if (url.searchParams.get('gmail') === 'connected') {
-        showNotification('Gmail account successfully connected and active for email sending!', 'success')
-        url.searchParams.delete('gmail')
-        window.history.replaceState({}, document.title, url.toString())
+ if (typeof window !== 'undefined') {
+ const url = new URL(window.location.href)
+ if (url.searchParams.get('gmail') === 'connected') {
+ showNotification('Gmail account successfully connected and active for email sending!', 'success')
+ url.searchParams.delete('gmail')
+ window.history.replaceState({}, document.title, url.toString())
       } else if (url.searchParams.get('error') === 'google_client_id_missing') {
-        showNotification('Google OAuth credentials not configured. Please add GOOGLE_CLIENT_ID & GOOGLE_CLIENT_SECRET to .env.local', 'error')
-        url.searchParams.delete('error')
-        window.history.replaceState({}, document.title, url.toString())
+ showNotification('Google OAuth credentials not configured. Please add GOOGLE_CLIENT_ID & GOOGLE_CLIENT_SECRET to .env.local', 'error')
+ url.searchParams.delete('error')
+ window.history.replaceState({}, document.title, url.toString())
       } else if (url.searchParams.get('error')) {
-        showNotification(`Google OAuth failed: ${url.searchParams.get('error')}`, 'error')
-        url.searchParams.delete('error')
-        window.history.replaceState({}, document.title, url.toString())
+ showNotification(`Google OAuth failed: ${url.searchParams.get('error')}`, 'error')
+ url.searchParams.delete('error')
+ window.history.replaceState({}, document.title, url.toString())
       }
     }
 
-    return () => {
-      window.removeEventListener('printerp_table_synced:email_gateways', handleSync)
-      window.removeEventListener('printerp_data_sync', handleSync)
+ return () => {
+ window.removeEventListener('printerp_table_synced:email_gateways', handleSync)
+ window.removeEventListener('printerp_data_sync', handleSync)
     }
   }, [companyId])
 
-  const handleConnectGmail = () => {
-    if (!companyId) return
-    window.location.href = `/api/email/oauth/google/start?scope=tenant&tenantId=${companyId}`
+ const handleConnectGmail = () => {
+ if (!companyId) return
+ window.location.href = `/api/email/oauth/google/start?scope=tenant&tenantId=${companyId}`
   }
 
-  const handleDisconnectGmail = async () => {
-    if (!companyId) return
-    setDisconnecting(true)
-    const res = await disconnectTenantGmailAction(companyId)
-    if (res.success) {
-      setGateway(null)
-      setHasConfiguredGateway(false)
-      showNotification('Gmail disconnected successfully. Email credentials revoked.', 'success')
-      await loadTenantData()
+ const handleDisconnectGmail = async () => {
+ if (!companyId) return
+ setDisconnecting(true)
+ const res = await disconnectTenantGmailAction(companyId)
+ if (res.success) {
+ setGateway(null)
+ setHasConfiguredGateway(false)
+ showNotification('Gmail disconnected successfully. Email credentials revoked.', 'success')
+ await loadTenantData()
     } else {
-      showNotification(res.error || 'Failed to disconnect Gmail', 'error')
+ showNotification(res.error || 'Failed to disconnect Gmail', 'error')
     }
-    setDisconnecting(false)
+ setDisconnecting(false)
   }
 
-  const handleSaveSmtpGateway = async () => {
-    if (!companyId) return
-    setSaving(true)
+ const handleSaveSmtpGateway = async () => {
+ if (!companyId) return
+ setSaving(true)
 
-    const payload: EmailGatewayFormData = {
-      provider: 'smtp',
-      scope_type: 'TENANT',
-      smtp_host: smtpHost,
-      smtp_port: smtpPort,
-      smtp_username: smtpUsername,
-      password: password || undefined,
-      encryption_type: encryptionType,
-      sender_name: senderName,
-      sender_email: senderEmail,
-      reply_to_email: replyToEmail,
-      status: 'active',
-      is_default: true,
+ const payload: EmailGatewayFormData = {
+ provider: 'smtp',
+ scope_type: 'TENANT',
+ smtp_host: smtpHost,
+ smtp_port: smtpPort,
+ smtp_username: smtpUsername,
+ password: password || undefined,
+ encryption_type: encryptionType,
+ sender_name: senderName,
+ sender_email: senderEmail,
+ reply_to_email: replyToEmail,
+ status: 'active',
+ is_default: true,
     }
 
-    const res = await saveTenantEmailGatewayAction(companyId, payload)
-    if (res.success && res.data) {
-      setGateway(res.data)
-      setHasConfiguredGateway(true)
-      setPassword('')
-      showNotification('Custom SMTP Gateway saved and active for sending.', 'success')
+ const res = await saveTenantEmailGatewayAction(companyId, payload)
+ if (res.success && res.data) {
+ setGateway(res.data)
+ setHasConfiguredGateway(true)
+ setPassword('')
+ showNotification('Custom SMTP Gateway saved and active for sending.', 'success')
     } else {
-      showNotification(res.error || 'Failed to save SMTP settings', 'error')
+ showNotification(res.error || 'Failed to save SMTP settings', 'error')
     }
-    setSaving(false)
+ setSaving(false)
   }
 
-  const handleDisableSmtp = async () => {
-    if (!companyId) return
-    setDisconnecting(true)
-    const res = await deleteTenantEmailGatewayAction(companyId)
-    if (res.success) {
-      setGateway(null)
-      setHasConfiguredGateway(false)
-      showNotification('SMTP gateway disabled successfully.', 'success')
-      await loadTenantData()
+ const handleDisableSmtp = async () => {
+ if (!companyId) return
+ setDisconnecting(true)
+ const res = await deleteTenantEmailGatewayAction(companyId)
+ if (res.success) {
+ setGateway(null)
+ setHasConfiguredGateway(false)
+ showNotification('SMTP gateway disabled successfully.', 'success')
+ await loadTenantData()
     } else {
-      showNotification(res.error || 'Failed to disable SMTP', 'error')
+ showNotification(res.error || 'Failed to disable SMTP', 'error')
     }
-    setDisconnecting(false)
+ setDisconnecting(false)
   }
 
-  const handleTestSmtpConnection = async () => {
-    if (!companyId) return
-    setTesting(true)
-    setTestResult(null)
+ const handleTestSmtpConnection = async () => {
+ if (!companyId) return
+ setTesting(true)
+ setTestResult(null)
 
-    const payload: EmailGatewayFormData = {
-      provider: 'smtp',
-      smtp_host: smtpHost,
-      smtp_port: smtpPort,
-      smtp_username: smtpUsername,
-      password: password || gateway?.encrypted_credentials || undefined,
-      encryption_type: encryptionType,
-      sender_name: senderName,
-      sender_email: senderEmail,
-      reply_to_email: replyToEmail,
+ const payload: EmailGatewayFormData = {
+ provider: 'smtp',
+ smtp_host: smtpHost,
+ smtp_port: smtpPort,
+ smtp_username: smtpUsername,
+ password: password || gateway?.encrypted_credentials || undefined,
+ encryption_type: encryptionType,
+ sender_name: senderName,
+ sender_email: senderEmail,
+ reply_to_email: replyToEmail,
     }
 
-    const res = await testTenantEmailGatewayAction(companyId, payload)
-    setTestResult(res)
-    setTesting(false)
+ const res = await testTenantEmailGatewayAction(companyId, payload)
+ setTestResult(res)
+ setTesting(false)
   }
 
-  const handleSendTestEmail = async () => {
-    if (!companyId || !testRecipient) return
-    setSendingTestEmail(true)
-    const res = await sendTestTenantEmailAction(companyId, testRecipient)
-    if (res.success) {
-      showNotification(`Test email dispatched successfully to ${testRecipient}!`, 'success')
-      setIsTestModalOpen(false)
-      const logsRes = await getTenantEmailLogsAction(companyId)
-      if (logsRes.success) setLogs(logsRes.data)
+ const handleSendTestEmail = async () => {
+ if (!companyId || !testRecipient) return
+ setSendingTestEmail(true)
+ const res = await sendTestTenantEmailAction(companyId, testRecipient)
+ if (res.success) {
+ showNotification(`Test email dispatched successfully to ${testRecipient}!`, 'success')
+ setIsTestModalOpen(false)
+ const logsRes = await getTenantEmailLogsAction(companyId)
+ if (logsRes.success) setLogs(logsRes.data)
     } else {
-      showNotification(res.error || 'Failed to dispatch test email', 'error')
+ showNotification(res.error || 'Failed to dispatch test email', 'error')
     }
-    setSendingTestEmail(false)
+ setSendingTestEmail(false)
   }
 
-  const handleSaveTemplate = async () => {
-    if (!companyId || !selectedTemplate) return
-    setSaving(true)
-    const res = await saveTenantEmailTemplateAction(companyId, selectedTemplate)
-    if (res.success && res.data) {
-      setTemplates((prev) =>
-        prev.map((t) => (t.event_type === res.data!.event_type ? res.data! : t))
+ const handleSaveTemplate = async () => {
+ if (!companyId || !selectedTemplate) return
+ setSaving(true)
+ const res = await saveTenantEmailTemplateAction(companyId, selectedTemplate)
+ if (res.success && res.data) {
+ setTemplates((prev) =>
+ prev.map((t) => (t.event_type === res.data!.event_type ? res.data! : t))
       )
-      showNotification(`Custom template for "${selectedTemplate.name}" saved.`, 'success')
+ showNotification(`Custom template for"${selectedTemplate.name}"saved.`, 'success')
     } else {
-      showNotification(res.error || 'Failed to save template', 'error')
+ showNotification(res.error || 'Failed to save template', 'error')
     }
-    setSaving(false)
+ setSaving(false)
   }
 
-  if (!mounted) {
-    return (
+ if (!mounted) {
+ return (
       <div className="space-y-6 max-w-5xl animate-pulse">
-        <div className="h-20 bg-muted rounded-2xl" />
-        <div className="h-12 bg-muted rounded-xl" />
-        <div className="h-48 bg-muted rounded-2xl" />
-        <div className="h-48 bg-muted rounded-2xl" />
+        <div className="h-20 bg-muted rounded-xl"/>
+        <div className="h-12 bg-muted rounded-xl"/>
+        <div className="h-48 bg-muted rounded-xl"/>
+        <div className="h-48 bg-muted rounded-xl"/>
       </div>
     )
   }
 
-  return (
+ return (
     <div className="space-y-6 max-w-5xl">
       {/* Header */}
       <PageHeader
-        titleEn="Business Email & Customer Communications"
-        titleBn="প্রতিষ্ঠান ইমেইল ও গ্রাহক যোগাযোগ"
-        descriptionEn="Connect your Gmail account or standard SMTP server to deliver branded customer quotations, invoices, and vouchers."
-        descriptionBn="ব্র্যান্ডেড কোটেশন ও ইনভয়েস পাঠাতে জিমেইল বা এসটিএমটিপি সার্ভার সংযুক্ত করুন।"
-        icon={Mail}
-        iconColor="text-blue-600"
-        actions={
+ titleEn="Email Settings"titleBn="প্রতিষ্ঠান ইমেইল ও গ্রাহক যোগাযোগ"descriptionEn="Connect your Gmail account or standard SMTP server to deliver branded customer quotations, invoices, and vouchers."descriptionBn="ব্র্যান্ডেড কোটেশন ও ইনভয়েস পাঠাতে জিমেইল বা এসটিএমটিপি সার্ভার সংযুক্ত করুন।"icon={Mail}
+ iconColor="text-blue-600"actions={
           <div className="flex items-center gap-2">
             <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setIsTestModalOpen(true)}
-              className="text-xs h-9 min-h-[38px]"
-              disabled={!hasConfiguredGateway}
+ size="sm"variant="outline"onClick={() => setIsTestModalOpen(true)}
+ className="text-xs h-9 min-h-[38px]"disabled={!hasConfiguredGateway}
             >
-              <Send className="mr-1.5 h-3.5 w-3.5" />
+              <Send className="mr-1.5 h-3.5 w-3.5"/>
               {tBilingual('Send Test Email', 'টেস্ট ইমেইল পাঠান')}
             </Button>
           </div>
@@ -370,13 +362,13 @@ export default function TenantEmailSettingsPage() {
       {/* Toast Notification */}
       {notification && (
         <div
-          className={`p-4 rounded-xl text-xs font-semibold flex items-center gap-2.5 border transition-all ${
-            notification.type === 'success'
+ className={`p-4 rounded-xl text-xs font-semibold flex items-center gap-2.5 border transition-all ${
+ notification.type === 'success'
               ? 'bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800'
               : 'bg-rose-50 text-rose-800 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800'
           }`}
         >
-          <Info className="h-4 w-4 shrink-0" />
+          <Info className="h-4 w-4 shrink-0"/>
           <span>{notification.message}</span>
         </div>
       )}
@@ -384,47 +376,44 @@ export default function TenantEmailSettingsPage() {
       {/* Navigation Switcher Tabs */}
       <div className="flex border-b border-border gap-1 overflow-x-auto">
         <button
-          type="button"
-          onClick={() => setActiveTab('gateway')}
-          className={`flex items-center gap-2 px-4 py-2.5 text-xs font-semibold border-b-2 -mb-px transition-colors whitespace-nowrap min-h-[44px] ${
-            activeTab === 'gateway'
+ type="button"onClick={() => setActiveTab('gateway')}
+ className={`flex items-center gap-2 px-4 py-2.5 text-xs font-semibold border-b-2 -mb-px transition-colors whitespace-nowrap min-h-[44px] ${
+ activeTab === 'gateway'
               ? 'border-blue-600 text-blue-600 dark:border-blue-500 dark:text-blue-400'
               : 'border-transparent text-muted-foreground hover:text-foreground dark:hover:text-foreground'
           }`}
         >
-          <Server className="h-4 w-4" />
+          <Server className="h-4 w-4"/>
           {tBilingual('Email Provider Setup', 'ইমেইল গেটওয়ে সেটিংস')}
         </button>
 
         <button
-          type="button"
-          onClick={() => setActiveTab('templates')}
-          className={`flex items-center gap-2 px-4 py-2.5 text-xs font-semibold border-b-2 -mb-px transition-colors whitespace-nowrap min-h-[44px] ${
-            activeTab === 'templates'
+ type="button"onClick={() => setActiveTab('templates')}
+ className={`flex items-center gap-2 px-4 py-2.5 text-xs font-semibold border-b-2 -mb-px transition-colors whitespace-nowrap min-h-[44px] ${
+ activeTab === 'templates'
               ? 'border-blue-600 text-blue-600 dark:border-blue-500 dark:text-blue-400'
               : 'border-transparent text-muted-foreground hover:text-foreground dark:hover:text-foreground'
           }`}
         >
-          <FileText className="h-4 w-4" />
+          <FileText className="h-4 w-4"/>
           {tBilingual('Email Templates', 'ইমেইল টেমপ্লেট')} ({templates.length})
         </button>
 
         <button
-          type="button"
-          onClick={() => setActiveTab('logs')}
-          className={`flex items-center gap-2 px-4 py-2.5 text-xs font-semibold border-b-2 -mb-px transition-colors whitespace-nowrap min-h-[44px] ${
-            activeTab === 'logs'
+ type="button"onClick={() => setActiveTab('logs')}
+ className={`flex items-center gap-2 px-4 py-2.5 text-xs font-semibold border-b-2 -mb-px transition-colors whitespace-nowrap min-h-[44px] ${
+ activeTab === 'logs'
               ? 'border-blue-600 text-blue-600 dark:border-blue-500 dark:text-blue-400'
               : 'border-transparent text-muted-foreground hover:text-foreground dark:hover:text-foreground'
           }`}
         >
-          <Clock className="h-4 w-4" />
+          <Clock className="h-4 w-4"/>
           {tBilingual('Delivery Logs', 'ডেলিভারি হিস্ট্রি')} ({logs.length})
         </button>
       </div>
 
       {/* =======================================================================
-          TAB 1: EMAIL PROVIDER SELECTION & SETUP
+ TAB 1: EMAIL PROVIDER SELECTION & SETUP
          ======================================================================= */}
       {activeTab === 'gateway' && (
         <div className="space-y-6">
@@ -436,13 +425,13 @@ export default function TenantEmailSettingsPage() {
                   <CardTitle className="text-base flex items-center gap-2">
                     {hasConfiguredGateway ? (
                       <>
-                        <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+                        <CheckCircle2 className="h-5 w-5 text-emerald-600"/>
                         {gateway?.provider === 'gmail' ? 'Gmail Active & Connected' : 'Custom SMTP Active & Connected'}
                       </>
                     ) : (
                       <>
-                        <AlertTriangle className="h-5 w-5 text-amber-500" />
-                        No Email Provider Configured
+                        <AlertTriangle className="h-5 w-5 text-amber-500"/>
+ No Email Provider Configured
                       </>
                     )}
                   </CardTitle>
@@ -454,8 +443,8 @@ export default function TenantEmailSettingsPage() {
                 </div>
 
                 <Badge
-                  className={`text-2xs uppercase font-bold self-start sm:self-center ${
-                    hasConfiguredGateway
+ className={`text-2xs uppercase font-bold self-start sm:self-center ${
+ hasConfiguredGateway
                       ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300'
                       : 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300'
                   }`}
@@ -470,9 +459,9 @@ export default function TenantEmailSettingsPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Option 1: Gmail */}
             <div
-              onClick={() => setProviderMode('gmail')}
-              className={`p-4 rounded-xl border-2 transition-all cursor-pointer flex flex-col justify-between ${
-                providerMode === 'gmail'
+ onClick={() => setProviderMode('gmail')}
+ className={`p-4 rounded-xl border-2 transition-all cursor-pointer flex flex-col justify-between ${
+ providerMode === 'gmail'
                   ? 'border-blue-600 bg-blue-50/50 dark:bg-blue-950/30 dark:border-blue-500 shadow-sm'
                   : 'border-border hover:border-input'
               }`}
@@ -480,58 +469,58 @@ export default function TenantEmailSettingsPage() {
               <div>
                 <div className="flex items-center justify-between mb-1">
                   <div className="flex items-center gap-2">
-                    <span className="font-bold text-sm text-foreground dark:text-white">Gmail (Google OAuth 2.0)</span>
+                    <span className="font-bold text-sm text-foreground">Gmail (Google OAuth 2.0)</span>
                     <Badge className="text-2xs bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">
-                      Recommended
+ Recommended
                     </Badge>
                   </div>
-                  {providerMode === 'gmail' && <Check className="h-4 w-4 text-blue-600" />}
+                  {providerMode === 'gmail' && <Check className="h-4 w-4 text-blue-600"/>}
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  One-click sign in with Google. 100% secure, zero password sharing, and high inbox delivery.
+ One-click sign in with Google. 100% secure, zero password sharing, and high inbox delivery.
                 </p>
               </div>
               <div className="mt-3 text-2xs tabular-nums text-muted-foreground">
-                Protocol: Google Gmail API (OAuth2)
+ Protocol: Google Gmail API (OAuth2)
               </div>
             </div>
 
             {/* Option 2: SMTP */}
             <div
-              onClick={() => setProviderMode('smtp')}
-              className={`p-4 rounded-xl border-2 transition-all cursor-pointer flex flex-col justify-between ${
-                providerMode === 'smtp'
+ onClick={() => setProviderMode('smtp')}
+ className={`p-4 rounded-xl border-2 transition-all cursor-pointer flex flex-col justify-between ${
+ providerMode === 'smtp'
                   ? 'border-blue-600 bg-blue-50/50 dark:bg-blue-950/30 dark:border-blue-500 shadow-sm'
                   : 'border-border hover:border-input'
               }`}
             >
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <span className="font-bold text-sm text-foreground dark:text-white">Custom SMTP Host</span>
-                  {providerMode === 'smtp' && <Check className="h-4 w-4 text-blue-600" />}
+                  <span className="font-bold text-sm text-foreground">Custom SMTP Host</span>
+                  {providerMode === 'smtp' && <Check className="h-4 w-4 text-blue-600"/>}
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Connect any standard SMTP host (cPanel, Google Workspace, Office 365, Zoho Mail, Mailgun).
+ Connect any standard SMTP host (cPanel, Google Workspace, Office 365, Zoho Mail, Mailgun).
                 </p>
               </div>
               <div className="mt-3 text-2xs tabular-nums text-muted-foreground">
-                Protocol: TLS / SSL / STARTTLS
+ Protocol: TLS / SSL / STARTTLS
               </div>
             </div>
           </div>
 
           {/* ===================================================================
-              PROVIDER 1: GMAIL OAUTH CONFIGURATION
+ PROVIDER 1: GMAIL OAUTH CONFIGURATION
              =================================================================== */}
           {providerMode === 'gmail' && (
             <Card>
               <CardHeader className="border-b border-border pb-4">
                 <CardTitle className="text-sm font-bold flex items-center gap-2">
-                  <Globe className="h-4 w-4 text-blue-600" />
-                  Google Gmail Integration
+                  <Globe className="h-4 w-4 text-blue-600"/>
+ Google Gmail Integration
                 </CardTitle>
                 <CardDescription className="text-xs">
-                  Authorize InkFlow to send business documents directly from your Gmail / Google Workspace account.
+ Authorize InkFlow to send business documents directly from your Gmail / Google Workspace account.
                 </CardDescription>
               </CardHeader>
               <CardContent className="p-6">
@@ -543,33 +532,27 @@ export default function TenantEmailSettingsPage() {
                           ✓
                         </div>
                         <div>
-                          <div className="font-bold text-xs text-foreground dark:text-white">
-                            Connected Account: {gateway.gmail_account_email || gateway.sender_email}
+                          <div className="font-bold text-xs text-foreground">
+ Connected Account: {gateway.gmail_account_email || gateway.sender_email}
                           </div>
                           <div className="text-2xs text-muted-foreground">
-                            Display Name: {gateway.gmail_display_name || gateway.sender_name}
+ Display Name: {gateway.gmail_display_name || gateway.sender_name}
                           </div>
                         </div>
                       </div>
 
                       <div className="flex items-center gap-2">
                         <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => setIsTestModalOpen(true)}
-                          className="text-xs h-9 min-h-[38px]"
-                        >
-                          <Send className="mr-1.5 h-3.5 w-3.5" />
-                          Send Test
+ size="sm"variant="outline"onClick={() => setIsTestModalOpen(true)}
+ className="text-xs h-9 min-h-[38px]">
+                          <Send className="mr-1.5 h-3.5 w-3.5"/>
+ Send Test
                         </Button>
                         <Button
-                          size="sm"
-                          variant="destructive"
-                          disabled={disconnecting}
-                          onClick={handleDisconnectGmail}
-                          className="text-xs h-9 min-h-[38px]"
-                        >
-                          <Trash2 className="mr-1.5 h-3.5 w-3.5" />
+ size="sm"variant="destructive"disabled={disconnecting}
+ onClick={handleDisconnectGmail}
+ className="text-xs h-9 min-h-[38px]">
+                          <Trash2 className="mr-1.5 h-3.5 w-3.5"/>
                           {disconnecting ? 'Disconnecting...' : 'Disconnect'}
                         </Button>
                       </div>
@@ -578,39 +561,37 @@ export default function TenantEmailSettingsPage() {
                     <div className="p-3 bg-muted rounded-xl border text-xs text-muted-foreground space-y-1">
                       <span className="font-semibold text-foreground block">Security Guarantee:</span>
                       <p className="text-2xs leading-relaxed">
-                        InkFlow uses official Google OAuth 2.0 with limited `gmail.send` scope. We never have access to read your inbox messages, and tokens are encrypted at rest with AES-256-GCM.
+ InkFlow uses official Google OAuth 2.0 with limited `gmail.send` scope. We never have access to read your inbox messages, and tokens are encrypted at rest with AES-256-GCM.
                       </p>
                     </div>
                   </div>
                 ) : (
                   <div className="p-6 text-center space-y-4">
                     <div className="max-w-md mx-auto space-y-2">
-                      <div className="h-12 w-12 rounded-2xl bg-blue-100 dark:bg-blue-900/40 text-blue-600 mx-auto flex items-center justify-center">
-                        <Mail className="h-6 w-6" />
+                      <div className="h-12 w-12 rounded-xl bg-blue-100 dark:bg-blue-900/40 text-blue-600 mx-auto flex items-center justify-center">
+                        <Mail className="h-6 w-6"/>
                       </div>
-                      <h3 className="font-bold text-sm text-foreground dark:text-white">Connect Your Gmail Account</h3>
+                      <h3 className="font-bold text-sm text-foreground">Connect Your Gmail Account</h3>
                       <p className="text-xs text-muted-foreground leading-relaxed">
-                        Click below to sign in with Google. InkFlow will securely obtain an authorization token to dispatch customer quotes and invoices from your address.
+ Click below to sign in with Google. InkFlow will securely obtain an authorization token to dispatch customer quotes and invoices from your address.
                       </p>
                     </div>
 
                     <Button
-                      size="lg"
-                      onClick={handleConnectGmail}
-                      className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs h-11 px-6 min-h-[44px] shadow-md shadow-blue-600/20"
-                    >
-                      <Globe className="mr-2 h-4 w-4" />
-                      Sign in with Google / Connect Gmail
+ size="lg"onClick={handleConnectGmail}
+ className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs h-11 px-6 min-h-[44px] shadow-xs shadow-blue-600/20">
+                      <Globe className="mr-2 h-4 w-4"/>
+ Sign in with Google / Connect Gmail
                     </Button>
 
                     {googleOAuthStatus && !googleOAuthStatus.isConfigured && (
                       <div className="max-w-xl mx-auto text-left p-4 rounded-xl border border-amber-200 bg-amber-50/70 dark:bg-amber-950/30 dark:border-amber-800 text-xs space-y-2 mt-4">
                         <div className="flex items-center gap-2 font-bold text-amber-800 dark:text-amber-300">
-                          <AlertTriangle className="h-4 w-4 shrink-0" />
+                          <AlertTriangle className="h-4 w-4 shrink-0"/>
                           <span>Google Cloud OAuth Setup Note</span>
                         </div>
                         <p className="text-2xs text-amber-700 dark:text-amber-400 leading-relaxed">
-                          To enable 1-click Gmail connection, configure Google Cloud OAuth 2.0 Web Application credentials in your server environment (<code>.env.local</code> or Vercel Environment Variables):
+ To enable 1-click Gmail connection, configure Google Cloud OAuth 2.0 Web Application credentials in your server environment (<code>.env.local</code> or Vercel Environment Variables):
                         </p>
                         <div className="bg-card/80 p-2.5 rounded-lg border border-amber-200/60 dark:border-amber-900/60 tabular-nums text-2xs text-foreground space-y-1">
                           <div className="flex items-center justify-between">
@@ -633,7 +614,7 @@ export default function TenantEmailSettingsPage() {
                           </div>
                         </div>
                         {googleOAuthStatus.redirectUri && (
-                          <div className="text-2xs text-muted-foreground dark:text-muted-foreground">
+                          <div className="text-2xs text-muted-foreground">
                             <strong>Google Cloud Authorized Redirect URI:</strong>
                             <code className="block mt-1 p-2 bg-muted rounded tabular-nums text-2xs break-all select-all">
                               {googleOAuthStatus.redirectUri}
@@ -641,7 +622,7 @@ export default function TenantEmailSettingsPage() {
                           </div>
                         )}
                         <p className="text-2xs text-muted-foreground pt-1">
-                          Tip: You can use standard <strong>Custom SMTP</strong> immediately below without any Google Cloud project setup.
+ Tip: You can use standard <strong>Custom SMTP</strong> immediately below without any Google Cloud project setup.
                         </p>
                       </div>
                     )}
@@ -652,16 +633,16 @@ export default function TenantEmailSettingsPage() {
           )}
 
           {/* ===================================================================
-              PROVIDER 2: SMTP CONFIGURATION
+ PROVIDER 2: SMTP CONFIGURATION
              =================================================================== */}
           {providerMode === 'smtp' && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Server Credentials */}
               <Card>
-                <CardHeader className="pb-3 border-b border-border dark:border-border">
+                <CardHeader className="pb-3 border-b border-border">
                   <CardTitle className="text-sm">SMTP Server Credentials</CardTitle>
                   <CardDescription className="text-xs">
-                    Credentials are encrypted and protected against exposure.
+ Credentials are encrypted and protected against exposure.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="p-4 space-y-3.5">
@@ -669,20 +650,16 @@ export default function TenantEmailSettingsPage() {
                     <div className="col-span-2 space-y-1">
                       <Label className="text-xs">SMTP Host</Label>
                       <Input
-                        value={smtpHost}
-                        onChange={(e) => setSmtpHost(e.target.value)}
-                        placeholder="mail.yourcompany.com"
-                        className="h-9 text-xs tabular-nums min-h-[38px]"
-                      />
+ value={smtpHost}
+ onChange={(e) => setSmtpHost(e.target.value)}
+ placeholder="mail.yourcompany.com"className="h-9 text-xs tabular-nums min-h-[38px]"/>
                     </div>
                     <div className="space-y-1">
                       <Label className="text-xs">Port</Label>
                       <Input
-                        type="number"
-                        value={smtpPort}
-                        onChange={(e) => setSmtpPort(Number(e.target.value))}
-                        className="h-9 text-xs tabular-nums min-h-[38px]"
-                      />
+ type="number"value={smtpPort}
+ onChange={(e) => setSmtpPort(Number(e.target.value))}
+ className="h-9 text-xs tabular-nums min-h-[38px]"/>
                     </div>
                   </div>
 
@@ -690,10 +667,9 @@ export default function TenantEmailSettingsPage() {
                     <div className="space-y-1">
                       <Label className="text-xs">Encryption</Label>
                       <select
-                        value={encryptionType}
-                        onChange={(e) => setEncryptionType(e.target.value as any)}
-                        className="w-full h-9 px-2.5 rounded-md border border-input bg-card text-xs font-medium min-h-[38px]"
-                      >
+ value={encryptionType}
+ onChange={(e) => setEncryptionType(e.target.value as any)}
+ className="w-full h-9 px-2.5 rounded-md border border-input bg-card text-xs font-medium min-h-[38px]">
                         <option value="tls">TLS / STARTTLS (587)</option>
                         <option value="ssl">SSL (465)</option>
                         <option value="none">Plain / None (25)</option>
@@ -703,11 +679,9 @@ export default function TenantEmailSettingsPage() {
                     <div className="space-y-1">
                       <Label className="text-xs">Username / Account</Label>
                       <Input
-                        value={smtpUsername}
-                        onChange={(e) => setSmtpUsername(e.target.value)}
-                        placeholder="billing@yourcompany.com"
-                        className="h-9 text-xs tabular-nums min-h-[38px]"
-                      />
+ value={smtpUsername}
+ onChange={(e) => setSmtpUsername(e.target.value)}
+ placeholder="billing@yourcompany.com"className="h-9 text-xs tabular-nums min-h-[38px]"/>
                     </div>
                   </div>
 
@@ -715,44 +689,37 @@ export default function TenantEmailSettingsPage() {
                     <div className="flex items-center justify-between">
                       <Label className="text-xs">Password</Label>
                       <button
-                        type="button"
-                        onClick={() => setShowSecret(!showSecret)}
-                        className="text-2xs text-blue-600 hover:underline flex items-center gap-1"
-                      >
-                        {showSecret ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+ type="button"onClick={() => setShowSecret(!showSecret)}
+ className="text-2xs text-blue-600 hover:underline flex items-center gap-1">
+                        {showSecret ? <EyeOff className="h-3 w-3"/> : <Eye className="h-3 w-3"/>}
                         {showSecret ? 'Hide' : 'Reveal'}
                       </button>
                     </div>
                     <Input
-                      type={showSecret ? 'text' : 'password'}
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder={gateway?.provider === 'smtp' ? '•••••••••••• (Encrypted on file)' : 'Enter password'}
-                      className="h-9 text-xs tabular-nums min-h-[38px]"
-                    />
+ type={showSecret ? 'text' : 'password'}
+ value={password}
+ onChange={(e) => setPassword(e.target.value)}
+ placeholder={gateway?.provider === 'smtp' ? '•••••••••••• (Encrypted on file)' : 'Enter password'}
+ className="h-9 text-xs tabular-nums min-h-[38px]"/>
                   </div>
 
                   {/* Test Connection Button */}
                   <div className="pt-3 border-t flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      disabled={testing}
-                      onClick={handleTestSmtpConnection}
-                      className="text-xs h-9 min-h-[38px]"
-                    >
+ type="button"variant="outline"size="sm"disabled={testing}
+ onClick={handleTestSmtpConnection}
+ className="text-xs h-9 min-h-[38px]">
                       <RotateCw className={`h-3.5 w-3.5 mr-1.5 ${testing ? 'animate-spin text-blue-600' : ''}`} />
                       {testing ? 'Testing...' : 'Test Connection'}
                     </Button>
 
                     {testResult && (
                       <span
-                        className={`text-xs font-semibold flex items-center gap-1.5 ${
-                          testResult.success ? 'text-emerald-600' : 'text-rose-600'
+ className={`text-xs font-semibold flex items-center gap-1.5 ${
+ testResult.success ? 'text-emerald-600' : 'text-rose-600'
                         }`}
                       >
-                        {testResult.success ? <CheckCircle2 className="h-3.5 w-3.5" /> : <AlertTriangle className="h-3.5 w-3.5" />}
+                        {testResult.success ? <CheckCircle2 className="h-3.5 w-3.5"/> : <AlertTriangle className="h-3.5 w-3.5"/>}
                         {testResult.message}
                       </span>
                     )}
@@ -763,43 +730,35 @@ export default function TenantEmailSettingsPage() {
               {/* Sender Identity & Action */}
               <Card className="flex flex-col justify-between">
                 <div>
-                  <CardHeader className="pb-3 border-b border-border dark:border-border">
+                  <CardHeader className="pb-3 border-b border-border">
                     <CardTitle className="text-sm">Sender Display &amp; Routing</CardTitle>
                     <CardDescription className="text-xs">
-                      Appearance of outgoing messages to clients.
+ Appearance of outgoing messages to clients.
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="p-4 space-y-3.5">
                     <div className="space-y-1">
                       <Label className="text-xs">Sender / Shop Display Name</Label>
                       <Input
-                        value={senderName}
-                        onChange={(e) => setSenderName(e.target.value)}
-                        placeholder="Printing Enterprise"
-                        className="h-9 text-xs min-h-[38px]"
-                      />
+ value={senderName}
+ onChange={(e) => setSenderName(e.target.value)}
+ placeholder="Printing Enterprise"className="h-9 text-xs min-h-[38px]"/>
                     </div>
 
                     <div className="space-y-1">
                       <Label className="text-xs">From Email Address</Label>
                       <Input
-                        type="email"
-                        value={senderEmail}
-                        onChange={(e) => setSenderEmail(e.target.value)}
-                        placeholder="billing@example.com"
-                        className="h-9 text-xs tabular-nums min-h-[38px]"
-                      />
+ type="email"value={senderEmail}
+ onChange={(e) => setSenderEmail(e.target.value)}
+ placeholder="billing@example.com"className="h-9 text-xs tabular-nums min-h-[38px]"/>
                     </div>
 
                     <div className="space-y-1">
                       <Label className="text-xs">Reply-To Email</Label>
                       <Input
-                        type="email"
-                        value={replyToEmail}
-                        onChange={(e) => setReplyToEmail(e.target.value)}
-                        placeholder="support@example.com"
-                        className="h-9 text-xs tabular-nums min-h-[38px]"
-                      />
+ type="email"value={replyToEmail}
+ onChange={(e) => setReplyToEmail(e.target.value)}
+ placeholder="support@example.com"className="h-9 text-xs tabular-nums min-h-[38px]"/>
                     </div>
                   </CardContent>
                 </div>
@@ -807,22 +766,17 @@ export default function TenantEmailSettingsPage() {
                 <div className="p-4 border-t flex items-center justify-between gap-2">
                   {gateway?.provider === 'smtp' && (
                     <Button
-                      size="sm"
-                      variant="ghost"
-                      disabled={disconnecting}
-                      onClick={handleDisableSmtp}
-                      className="text-xs text-rose-600 hover:bg-rose-50"
-                    >
-                      Disable SMTP
+ size="sm"variant="ghost"disabled={disconnecting}
+ onClick={handleDisableSmtp}
+ className="text-xs text-rose-600 hover:bg-rose-50">
+ Disable SMTP
                     </Button>
                   )}
                   <Button
-                    size="sm"
-                    disabled={saving}
-                    onClick={handleSaveSmtpGateway}
-                    className="ml-auto bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold h-9 min-h-[38px]"
-                  >
-                    <Save className="mr-1.5 h-3.5 w-3.5" />
+ size="sm"disabled={saving}
+ onClick={handleSaveSmtpGateway}
+ className="ml-auto bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold h-9 min-h-[38px]">
+                    <Save className="mr-1.5 h-3.5 w-3.5"/>
                     {saving ? 'Saving...' : 'Save SMTP Settings'}
                   </Button>
                 </div>
@@ -833,20 +787,19 @@ export default function TenantEmailSettingsPage() {
       )}
 
       {/* =======================================================================
-          TAB 2: TEMPLATES CUSTOMIZATION
+ TAB 2: TEMPLATES CUSTOMIZATION
          ======================================================================= */}
       {activeTab === 'templates' && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card className="md:col-span-1 p-2 space-y-1 max-h-[550px] overflow-y-auto">
             {templates.map((tpl) => {
-              const isSelected = selectedTemplate?.event_type === tpl.event_type
-              return (
+ const isSelected = selectedTemplate?.event_type === tpl.event_type
+ return (
                 <button
-                  key={tpl.event_type}
-                  type="button"
-                  onClick={() => setSelectedTemplate(tpl)}
-                  className={`w-full text-left p-2.5 rounded-lg text-xs transition-all flex flex-col gap-0.5 min-h-[44px] ${
-                    isSelected
+ key={tpl.event_type}
+ type="button"onClick={() => setSelectedTemplate(tpl)}
+ className={`w-full text-left p-2.5 rounded-lg text-xs transition-all flex flex-col gap-0.5 min-h-[44px] ${
+ isSelected
                       ? 'bg-blue-600 text-white font-bold shadow-xs'
                       : 'text-foreground hover:bg-muted dark:hover:bg-muted'
                   }`}
@@ -864,35 +817,33 @@ export default function TenantEmailSettingsPage() {
             <Card className="md:col-span-2 p-4 space-y-4">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b gap-2">
                 <div>
-                  <h4 className="font-bold text-sm text-foreground dark:text-white">{selectedTemplate.name}</h4>
+                  <h4 className="font-bold text-sm text-foreground">{selectedTemplate.name}</h4>
                   <span className="text-2xs tabular-nums text-blue-600">{selectedTemplate.event_type}</span>
                 </div>
 
                 <div className="flex items-center gap-2">
                   <div className="inline-flex p-0.5 bg-muted rounded-lg border">
                     <button
-                      type="button"
-                      onClick={() => setTemplateLang('en')}
-                      className={`px-2.5 py-1 text-2xs font-bold rounded-md ${
-                        templateLang === 'en' ? 'bg-blue-600 text-white' : 'text-muted-foreground dark:text-muted-foreground'
+ type="button"onClick={() => setTemplateLang('en')}
+ className={`px-2.5 py-1 text-2xs font-bold rounded-md ${
+ templateLang === 'en' ? 'bg-blue-600 text-white' : 'text-muted-foreground '
                       }`}
                     >
-                      English
+ English
                     </button>
                     <button
-                      type="button"
-                      onClick={() => setTemplateLang('bn')}
-                      className={`px-2.5 py-1 text-2xs font-bold rounded-md ${
-                        templateLang === 'bn' ? 'bg-blue-600 text-white' : 'text-muted-foreground dark:text-muted-foreground'
+ type="button"onClick={() => setTemplateLang('bn')}
+ className={`px-2.5 py-1 text-2xs font-bold rounded-md ${
+ templateLang === 'bn' ? 'bg-blue-600 text-white' : 'text-muted-foreground '
                       }`}
                     >
                       বাংলা
                     </button>
                   </div>
 
-                  <Button size="sm" onClick={handleSaveTemplate} className="h-8 text-xs bg-primary hover:bg-primary/90 text-primary-foreground min-h-[38px]">
-                    <Save className="h-3 w-3 mr-1" />
-                    Save
+                  <Button size="sm"onClick={handleSaveTemplate} className="h-8 text-xs bg-primary hover:bg-primary/90 text-primary-foreground min-h-[38px]">
+                    <Save className="h-3 w-3 mr-1"/>
+ Save
                   </Button>
                 </div>
               </div>
@@ -901,59 +852,56 @@ export default function TenantEmailSettingsPage() {
               <div className="space-y-1">
                 <Label className="text-xs">Subject Line ({templateLang === 'en' ? 'English' : 'বাংলা'})</Label>
                 <Input
-                  value={
-                    templateLang === 'en'
+ value={
+ templateLang === 'en'
                       ? selectedTemplate.subject_template
                       : selectedTemplate.subject_template_bn || selectedTemplate.subject_template
                   }
-                  onChange={(e) => {
-                    if (templateLang === 'en') {
-                      setSelectedTemplate({ ...selectedTemplate, subject_template: e.target.value })
+ onChange={(e) => {
+ if (templateLang === 'en') {
+ setSelectedTemplate({ ...selectedTemplate, subject_template: e.target.value })
                     } else {
-                      setSelectedTemplate({ ...selectedTemplate, subject_template_bn: e.target.value })
+ setSelectedTemplate({ ...selectedTemplate, subject_template_bn: e.target.value })
                     }
                   }}
-                  className="h-9 text-xs min-h-[38px]"
-                />
+ className="h-9 text-xs min-h-[38px]"/>
               </div>
 
               {/* Body */}
               <div className="space-y-1">
                 <Label className="text-xs">Email Body Content</Label>
                 <textarea
-                  rows={6}
-                  value={
-                    templateLang === 'en'
+ rows={6}
+ value={
+ templateLang === 'en'
                       ? selectedTemplate.body_template
                       : selectedTemplate.body_template_bn || selectedTemplate.body_template
                   }
-                  onChange={(e) => {
-                    if (templateLang === 'en') {
-                      setSelectedTemplate({ ...selectedTemplate, body_template: e.target.value })
+ onChange={(e) => {
+ if (templateLang === 'en') {
+ setSelectedTemplate({ ...selectedTemplate, body_template: e.target.value })
                     } else {
-                      setSelectedTemplate({ ...selectedTemplate, body_template_bn: e.target.value })
+ setSelectedTemplate({ ...selectedTemplate, body_template_bn: e.target.value })
                     }
                   }}
-                  className="w-full p-2.5 rounded-lg border border-input bg-card text-xs tabular-nums focus:outline-none focus:ring-1 focus:ring-ring"
-                />
+ className="w-full p-2.5 rounded-lg border border-input bg-card text-xs tabular-nums focus:outline-none focus:ring-1 focus:ring-ring"/>
               </div>
 
               {/* Rendered Preview */}
               <div className="p-3 bg-muted rounded-xl border space-y-1">
                 <span className="text-2xs font-bold uppercase text-muted-foreground">Live Preview:</span>
                 <div
-                  className="p-3 bg-card text-foreground text-xs rounded border max-h-40 overflow-y-auto"
-                  dangerouslySetInnerHTML={{
+ className="p-3 bg-card text-foreground text-xs rounded border max-h-40 overflow-y-auto"dangerouslySetInnerHTML={{
                     __html: interpolateVariables(
-                      templateLang === 'en'
+ templateLang === 'en'
                         ? selectedTemplate.body_template
                         : selectedTemplate.body_template_bn || selectedTemplate.body_template,
                       {
-                        customer_name: 'Akash Ahmed (City Corporation)',
-                        company_name: company?.name || 'Printing Enterprise',
-                        invoice_number: 'INV-0042',
-                        amount: '12,500',
-                        due_amount: '4,500',
+ customer_name: 'Akash Ahmed (City Corporation)',
+ company_name: company?.name || 'Printing Enterprise',
+ invoice_number: 'INV-0042',
+ amount: '12,500',
+ due_amount: '4,500',
                       }
                     ),
                   }}
@@ -965,7 +913,7 @@ export default function TenantEmailSettingsPage() {
       )}
 
       {/* =======================================================================
-          TAB 3: DELIVERY LOGS
+ TAB 3: DELIVERY LOGS
          ======================================================================= */}
       {activeTab === 'logs' && (
         <Card>
@@ -973,11 +921,9 @@ export default function TenantEmailSettingsPage() {
             <CardTitle className="text-sm">Tenant Email Delivery History</CardTitle>
             <div className="w-full sm:w-56">
               <Input
-                placeholder="Search logs..."
-                value={logSearch}
-                onChange={(e) => setLogSearch(e.target.value)}
-                className="h-9 text-xs min-h-[38px]"
-              />
+ placeholder="Search logs..."value={logSearch}
+ onChange={(e) => setLogSearch(e.target.value)}
+ className="h-9 text-xs min-h-[38px]"/>
             </div>
           </CardHeader>
           <CardContent className="p-0">
@@ -995,16 +941,16 @@ export default function TenantEmailSettingsPage() {
                   {logs.length === 0 ? (
                     <tr>
                       <td colSpan={4} className="py-8 text-center text-xs text-muted-foreground">
-                        No email transmission logs recorded yet.
+ No email transmission logs recorded yet.
                       </td>
                     </tr>
                   ) : (
-                    logs
+ logs
                       .filter(
                         (l) =>
                           !logSearch ||
-                          l.recipient.toLowerCase().includes(logSearch.toLowerCase()) ||
-                          l.subject.toLowerCase().includes(logSearch.toLowerCase())
+ l.recipient.toLowerCase().includes(logSearch.toLowerCase()) ||
+ l.subject.toLowerCase().includes(logSearch.toLowerCase())
                       )
                       .map((log) => (
                         <tr key={log.id} className="hover:bg-muted dark:hover:bg-muted/40">
@@ -1012,16 +958,16 @@ export default function TenantEmailSettingsPage() {
                             <div>{new Date(log.created_at).toLocaleDateString()}</div>
                             <span className="text-muted-foreground">{log.event_type}</span>
                           </td>
-                          <td className="py-2.5 px-3 font-medium text-foreground dark:text-white">
+                          <td className="py-2.5 px-3 font-medium text-foreground">
                             {log.recipient}
                           </td>
-                          <td className="py-2.5 px-3 truncate max-w-xs text-muted-foreground dark:text-muted-foreground">
+                          <td className="py-2.5 px-3 truncate max-w-xs text-muted-foreground">
                             {log.subject}
                           </td>
                           <td className="py-2.5 px-3 text-center">
                             <Badge
-                              className={`text-2xs uppercase ${
-                                log.status === 'sent'
+ className={`text-2xs uppercase ${
+ log.status === 'sent'
                                   ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300'
                                   : log.status === 'failed'
                                   ? 'bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-300'
@@ -1044,39 +990,32 @@ export default function TenantEmailSettingsPage() {
       {/* Test Email Modal */}
       {isTestModalOpen && (
         <ModalDialog
-          open={isTestModalOpen}
-          onOpenChange={(open) => setIsTestModalOpen(open)}
-          title="Send Real Test Email"
-          description="Verify live dispatch and delivery using your active email provider."
-          hideFooter={true}
+ open={isTestModalOpen}
+ onOpenChange={(open) => setIsTestModalOpen(open)}
+ title="Send Real Test Email"description="Verify live dispatch and delivery using your active email provider."hideFooter={true}
         >
           <div className="space-y-4 pt-2">
             <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-foreground dark:text-muted-foreground">Recipient Email Address</Label>
+              <Label className="text-xs font-semibold text-foreground">Recipient Email Address</Label>
               <Input
-                type="email"
-                value={testRecipient}
-                onChange={(e) => setTestRecipient(e.target.value)}
-                placeholder="your.email@example.com"
-                className="h-10 text-xs tabular-nums text-foreground bg-card border-input dark:text-white min-h-[40px]"
-              />
+ type="email"value={testRecipient}
+ onChange={(e) => setTestRecipient(e.target.value)}
+ placeholder="your.email@example.com"className="h-10 text-xs tabular-nums text-foreground bg-card border-input min-h-[40px]"/>
             </div>
 
-            <div className="p-3 bg-muted rounded-xl border border-border text-xs text-muted-foreground dark:text-muted-foreground">
-              Provider: <strong className="text-foreground dark:text-white capitalize">{gateway?.provider || 'Active Provider'}</strong>
+            <div className="p-3 bg-muted rounded-xl border border-border text-xs text-muted-foreground">
+ Provider: <strong className="text-foreground capitalize">{gateway?.provider || 'Active Provider'}</strong>
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-3 border-t border-border dark:border-border">
-              <Button size="sm" variant="outline" onClick={() => setIsTestModalOpen(false)}>
-                Cancel
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-border">
+              <Button size="sm"variant="outline"onClick={() => setIsTestModalOpen(false)}>
+ Cancel
               </Button>
               <Button
-                size="sm"
-                disabled={sendingTestEmail || !testRecipient}
-                onClick={handleSendTestEmail}
-                className="bg-primary hover:bg-primary/90 text-primary-foreground min-h-[38px] font-medium"
-              >
-                <Send className="mr-1.5 h-3.5 w-3.5" />
+ size="sm"disabled={sendingTestEmail || !testRecipient}
+ onClick={handleSendTestEmail}
+ className="bg-primary hover:bg-primary/90 text-primary-foreground min-h-[38px] font-medium">
+                <Send className="mr-1.5 h-3.5 w-3.5"/>
                 {sendingTestEmail ? 'Dispatching...' : 'Send Test'}
               </Button>
             </div>

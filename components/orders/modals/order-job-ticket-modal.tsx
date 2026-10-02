@@ -2,55 +2,55 @@
 
 import React from 'react'
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
+ Dialog,
+ DialogContent,
+ DialogHeader,
+ DialogTitle,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Printer, CheckSquare, Layers, Building, Phone, Calendar, Scissors, Sparkles } from 'lucide-react'
 import { useI18n } from '@/i18n/context'
 import {
-  type UnifiedOrderRecord,
-  type OrderItemSpec,
-  formatOrderItemQuantityAndUnit,
-  resolveOrderItemSpecs,
+ type UnifiedOrderRecord,
+ type OrderItemSpec,
+ formatOrderItemQuantityAndUnit,
+ resolveOrderItemSpecs,
 } from '../types'
 
 interface OrderJobTicketModalProps {
-  isOpen: boolean
-  onClose: () => void
-  order: UnifiedOrderRecord | null
-  companyName?: string
-  companyAddress?: string
-  companyPhone?: string
+ isOpen: boolean
+ onClose: () => void
+ order: UnifiedOrderRecord | null
+ companyName?: string
+ companyAddress?: string
+ companyPhone?: string
 }
 
 export const OrderJobTicketModal = React.memo(function OrderJobTicketModal({
-  isOpen,
-  onClose,
-  order,
-  companyName = 'PrintERP Commercial Press',
-  companyAddress = 'Paltan / Fakirapool, Dhaka',
-  companyPhone = '01700-000000',
+ isOpen,
+ onClose,
+ order,
+ companyName = 'PrintERP Commercial Press',
+ companyAddress = 'Paltan / Fakirapool, Dhaka',
+ companyPhone = '01700-000000',
 }: OrderJobTicketModalProps) {
-  const { tBilingual } = useI18n()
+ const { tBilingual } = useI18n()
 
-  if (!order) return null
+ if (!order) return null
 
-  const handlePrint = () => {
-    window.print()
+ const handlePrint = () => {
+ window.print()
   }
 
-  const isUrgent = order.priority === 'urgent' || order.priority === 'very_urgent'
+ const isUrgent = order.priority === 'urgent' || order.priority === 'very_urgent'
 
-  return (
+ return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-3xl bg-card text-foreground p-6 shadow-2xl overflow-y-auto max-h-[90vh]">
+      <DialogContent className="max-w-3xl bg-card text-foreground p-6 shadow-lg overflow-y-auto max-h-[90vh]">
         <DialogHeader className="border-b border-border pb-3 flex flex-row items-center justify-between gap-4 print:hidden">
           <div className="min-w-0 flex-1">
             <DialogTitle className="text-base font-bold flex items-center gap-2 text-indigo-700 truncate">
-              <Printer className="h-5 w-5 shrink-0" />
+              <Printer className="h-5 w-5 shrink-0"/>
               <span>{tBilingual('Production Job Ticket / Press Sheet', 'প্রোডাকশন জব স্লিপ')}</span>
             </DialogTitle>
             <p className="text-xs text-muted-foreground mt-0.5 truncate">
@@ -61,26 +61,23 @@ export const OrderJobTicketModal = React.memo(function OrderJobTicketModal({
             </p>
           </div>
           <Button
-            type="button"
-            size="sm"
-            onClick={handlePrint}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shrink-0"
-          >
-            <Printer className="h-3.5 w-3.5 mr-1" />
+ type="button"size="sm"onClick={handlePrint}
+ className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shrink-0">
+            <Printer className="h-3.5 w-3.5 mr-1"/>
             <span>{tBilingual('Print Job Sheet', 'জব স্লিপ প্রিন্ট')}</span>
           </Button>
         </DialogHeader>
 
         {/* Printable Area */}
-        <div id="printable-job-ticket" className="space-y-4 pt-3 text-xs">
+        <div id="printable-job-ticket"className="space-y-4 pt-3 text-xs">
           {/* Header Banner */}
-          <div className="flex items-start justify-between border-b-2 border-slate-900 pb-3">
+          <div className="flex items-start justify-between border-b-2 border-border pb-3">
             <div>
               <h2 className="text-lg font-black uppercase tracking-tight text-foreground">
                 {companyName}
               </h2>
               <p className="text-muted-foreground text-2xs">{companyAddress} | Ph: {companyPhone}</p>
-              <span className="inline-block mt-1 bg-slate-900 text-white text-2xs font-bold px-2 py-0.5 rounded uppercase tracking-wider">
+              <span className="inline-block mt-1 bg-surface-inset text-foreground text-2xs font-bold px-2 py-0.5 rounded uppercase tracking-wider">
                 {tBilingual('JOB ORDER TICKET', 'জব অর্ডার টিকেট')}
               </span>
             </div>
@@ -142,7 +139,7 @@ export const OrderJobTicketModal = React.memo(function OrderJobTicketModal({
           {/* Job Items Specs Breakdown Table */}
           <div>
             <h3 className="font-bold text-xs text-foreground uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
-              <Layers className="h-3.5 w-3.5 text-indigo-600" />
+              <Layers className="h-3.5 w-3.5 text-indigo-600"/>
               <span>{tBilingual('Job Items & Technical Specifications:', 'কাজের বিবরণ ও স্পেসিফিকেশন:')}</span>
             </h3>
             <table className="w-full text-left border-collapse border border-input">
@@ -158,19 +155,19 @@ export const OrderJobTicketModal = React.memo(function OrderJobTicketModal({
               </thead>
               <tbody>
                 {(order.items.length === 0 ? [{
-                  id: `job-item-${order.id}`,
-                  serviceName: order.rawJob?.product_name || order.rawInvoice?.items?.[0]?.item_description || tBilingual('Custom Printing Work', 'কাস্টম প্রিন্টিং কাজ'),
-                  itemName: order.rawJob?.product_name || order.rawInvoice?.items?.[0]?.item_description || tBilingual('Custom Printing Work', 'কাস্টম প্রিন্টিং কাজ'),
-                  quantity: Number(order.rawJob?.quantity || order.rawInvoice?.items?.[0]?.quantity) || 1,
-                  unit: order.rawInvoice?.items?.[0]?.unit || 'pcs',
-                  materialSpec: order.rawJob?.material_spec || order.rawInvoice?.items?.[0]?.material_spec || undefined,
-                  dimensions: order.rawJob?.size_spec || order.rawInvoice?.items?.[0]?.dimensions_spec || undefined,
-                  finishing: order.rawJob?.production_instructions?.match(/Finishing:\s*([^|;]+)/i)?.[1]?.trim() || (order.rawJob?.production_instructions?.startsWith('Finishing:') ? order.rawJob.production_instructions.replace(/^Finishing:\s*/, '').split('|')[0].trim() : undefined),
-                  addOn: order.rawJob?.production_instructions?.match(/Add-?on:\s*([^|;]+)/i)?.[1]?.trim() || undefined,
-                  workflowRouting: 'ready_production',
+ id: `job-item-${order.id}`,
+ serviceName: order.rawJob?.product_name || order.rawInvoice?.items?.[0]?.item_description || tBilingual('Custom Printing Work', 'কাস্টম প্রিন্টিং কাজ'),
+ itemName: order.rawJob?.product_name || order.rawInvoice?.items?.[0]?.item_description || tBilingual('Custom Printing Work', 'কাস্টম প্রিন্টিং কাজ'),
+ quantity: Number(order.rawJob?.quantity || order.rawInvoice?.items?.[0]?.quantity) || 1,
+ unit: order.rawInvoice?.items?.[0]?.unit || 'pcs',
+ materialSpec: order.rawJob?.material_spec || order.rawInvoice?.items?.[0]?.material_spec || undefined,
+ dimensions: order.rawJob?.size_spec || order.rawInvoice?.items?.[0]?.dimensions_spec || undefined,
+ finishing: order.rawJob?.production_instructions?.match(/Finishing:\s*([^|;]+)/i)?.[1]?.trim() || (order.rawJob?.production_instructions?.startsWith('Finishing:') ? order.rawJob.production_instructions.replace(/^Finishing:\s*/, '').split('|')[0].trim() : undefined),
+ addOn: order.rawJob?.production_instructions?.match(/Add-?on:\s*([^|;]+)/i)?.[1]?.trim() || undefined,
+ workflowRouting: 'ready_production',
                 } as OrderItemSpec] : order.items).map((it, idx) => {
-                  const specs = resolveOrderItemSpecs(it, order.rawJob, order.rawInvoice, tBilingual)
-                  return (
+ const specs = resolveOrderItemSpecs(it, order.rawJob, order.rawInvoice, tBilingual)
+ return (
                     <tr key={it.id || idx} className="border border-input text-2xs">
                       <td className="border border-input p-2 text-center font-bold">{idx + 1}</td>
                       <td className="border border-input p-2">
@@ -228,7 +225,7 @@ export const OrderJobTicketModal = React.memo(function OrderJobTicketModal({
                 {tBilingual('1. Design / Pre-Press', '১. ডিজাইন / প্রি-প্রেস')}
               </span>
               <div className="h-6 flex items-center justify-center">
-                <CheckSquare className="h-4 w-4 text-muted-foreground" />
+                <CheckSquare className="h-4 w-4 text-muted-foreground"/>
               </div>
               <span className="text-2xs text-muted-foreground block border-t border-border pt-1">
                 {tBilingual('Signature', 'স্বাক্ষর')}
@@ -239,7 +236,7 @@ export const OrderJobTicketModal = React.memo(function OrderJobTicketModal({
                 {tBilingual('2. Machine Printing', '২. মেশিন প্রিন্টিং')}
               </span>
               <div className="h-6 flex items-center justify-center">
-                <CheckSquare className="h-4 w-4 text-muted-foreground" />
+                <CheckSquare className="h-4 w-4 text-muted-foreground"/>
               </div>
               <span className="text-2xs text-muted-foreground block border-t border-border pt-1">
                 {tBilingual('Operator', 'অপারেটর')}
@@ -250,7 +247,7 @@ export const OrderJobTicketModal = React.memo(function OrderJobTicketModal({
                 {tBilingual('3. Finishing & Cutting', '৩. ফিনিশিং ও কাটিং')}
               </span>
               <div className="h-6 flex items-center justify-center">
-                <CheckSquare className="h-4 w-4 text-muted-foreground" />
+                <CheckSquare className="h-4 w-4 text-muted-foreground"/>
               </div>
               <span className="text-2xs text-muted-foreground block border-t border-border pt-1">
                 {tBilingual('In-Charge', 'ইনচার্জ')}
@@ -261,7 +258,7 @@ export const OrderJobTicketModal = React.memo(function OrderJobTicketModal({
                 {tBilingual('4. QC & Packaging', '৪. কিউসি ও প্যাকিং')}
               </span>
               <div className="h-6 flex items-center justify-center">
-                <CheckSquare className="h-4 w-4 text-muted-foreground" />
+                <CheckSquare className="h-4 w-4 text-muted-foreground"/>
               </div>
               <span className="text-2xs text-muted-foreground block border-t border-border pt-1">
                 {tBilingual('Counter', 'কাউন্টার')}
@@ -279,11 +276,11 @@ export const OrderJobTicketModal = React.memo(function OrderJobTicketModal({
 
         {/* Footer Actions */}
         <div className="flex justify-end gap-2 border-t border-border pt-3 print:hidden">
-          <Button type="button" variant="outline" size="sm" onClick={onClose} className="text-xs">
+          <Button type="button"variant="outline"size="sm"onClick={onClose} className="text-xs">
             {tBilingual('Close', 'বন্ধ করুন')}
           </Button>
-          <Button type="button" size="sm" onClick={handlePrint} className="bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold">
-            <Printer className="h-3.5 w-3.5 mr-1" />
+          <Button type="button"size="sm"onClick={handlePrint} className="bg-surface-inset hover:bg-card-elevated text-foreground text-xs font-bold">
+            <Printer className="h-3.5 w-3.5 mr-1"/>
             <span>{tBilingual('Print Ticket', 'প্রিন্ট টিকেট')}</span>
           </Button>
         </div>

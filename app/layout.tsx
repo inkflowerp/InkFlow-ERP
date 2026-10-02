@@ -1,24 +1,12 @@
 import type { Metadata, Viewport } from 'next'
-import { Inter, Hind_Siliguri } from 'next/font/google'
 import { ThemeProvider } from '@/components/providers/theme-provider'
 import { I18nProvider } from '@/i18n/context'
 import { PlatformSettingsProvider } from '@/components/providers/platform-settings-provider'
 import { PlatformService } from '@/services/platform.service'
 import './globals.css'
 
-const inter = Inter({
-  subsets: ['latin'],
-  variable: '--font-inter',
-  display: 'swap',
-})
-
-const hindSiliguri = Hind_Siliguri({
-  subsets: ['bengali', 'latin'],
-  weight: ['300', '400', '500', '600', '700'],
-  variable: '--font-hind-siliguri',
-  display: 'swap',
-  preload: false,
-})
+const inter = { variable: 'font-inter' }
+const hindSiliguri = { variable: 'font-hind-siliguri' }
 
 export const viewport: Viewport = {
   width: 'device-width',

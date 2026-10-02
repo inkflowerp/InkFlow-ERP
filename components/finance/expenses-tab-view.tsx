@@ -2,26 +2,26 @@
 
 import React, { useState, useMemo } from 'react'
 import {
-  TrendingDown,
-  Plus,
-  Search,
-  Calendar,
-  Wallet,
-  Building2,
-  Paperclip,
-  CheckCircle2,
-  Clock,
-  ExternalLink,
-  Flame,
-  Zap,
-  Building,
-  Truck,
-  Globe2,
-  Wrench,
-  FileText,
-  Users2,
-  Megaphone,
-  FolderOpen,
+ TrendingDown,
+ Plus,
+ Search,
+ Calendar,
+ Wallet,
+ Building2,
+ Paperclip,
+ CheckCircle2,
+ Clock,
+ ExternalLink,
+ Flame,
+ Zap,
+ Building,
+ Truck,
+ Globe2,
+ Wrench,
+ FileText,
+ Users2,
+ Megaphone,
+ FolderOpen,
 } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -32,10 +32,10 @@ import { formatBDT } from '@/lib/formatters'
 import type { ExpenseSummaryReport, ExpenseItemRecord, AccountRecord } from '@/types/finance.types'
 
 export interface ExpensesTabViewProps {
-  report: ExpenseSummaryReport | null
-  accounts: AccountRecord[]
-  onOpenSpendModal: (prefillCategory?: string) => void
-  isLoading?: boolean
+ report: ExpenseSummaryReport | null
+ accounts: AccountRecord[]
+ onOpenSpendModal: (prefillCategory?: string) => void
+ isLoading?: boolean
 }
 
 // Preset standard categories
@@ -61,57 +61,57 @@ const DEFAULT_RECURRING_BILLS = [
 ]
 
 export function ExpensesTabView({
-  report,
-  accounts,
-  onOpenSpendModal,
-  isLoading = false,
+ report,
+ accounts,
+ onOpenSpendModal,
+ isLoading = false,
 }: ExpensesTabViewProps) {
-  const { tBilingual } = useI18n()
-  const [activeSubTab, setActiveSubTab] = useState<'entries' | 'categories' | 'recurring'>('entries')
-  const [searchQuery, setSearchQuery] = useState('')
-  const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<string>('ALL')
+ const { tBilingual } = useI18n()
+ const [activeSubTab, setActiveSubTab] = useState<'entries' | 'categories' | 'recurring'>('entries')
+ const [searchQuery, setSearchQuery] = useState('')
+ const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<string>('ALL')
 
-  const items = report?.items || []
-  const totalExpenses = (report?.total_expenses && report.total_expenses > 0)
+ const items = report?.items || []
+ const totalExpenses = (report?.total_expenses && report.total_expenses > 0)
     ? report.total_expenses
     : items.reduce((s, i) => s + Number(i.amount || 0), 0)
-  const totalStaffSalary = report?.total_staff_salary || 0
+ const totalStaffSalary = report?.total_staff_salary || 0
 
   // Filtered expense entries
-  const filteredItems = useMemo(() => {
-    return items.filter((item) => {
-      if (selectedCategoryFilter !== 'ALL' && item.category !== selectedCategoryFilter) return false
-      if (!searchQuery.trim()) return true
+ const filteredItems = useMemo(() => {
+ return items.filter((item) => {
+ if (selectedCategoryFilter !== 'ALL' && item.category !== selectedCategoryFilter) return false
+ if (!searchQuery.trim()) return true
 
-      const q = searchQuery.toLowerCase()
-      const matchDesc = (item.description || '').toLowerCase().includes(q)
-      const matchTxn = (item.transaction_number || '').toLowerCase().includes(q)
-      const matchVendor = (item.vendor_name || '').toLowerCase().includes(q)
-      const matchEmp = (item.employee_name || '').toLowerCase().includes(q)
-      const matchCat = (item.category_label || '').toLowerCase().includes(q)
-      return matchDesc || matchTxn || matchVendor || matchEmp || matchCat
+ const q = searchQuery.toLowerCase()
+ const matchDesc = (item.description || '').toLowerCase().includes(q)
+ const matchTxn = (item.transaction_number || '').toLowerCase().includes(q)
+ const matchVendor = (item.vendor_name || '').toLowerCase().includes(q)
+ const matchEmp = (item.employee_name || '').toLowerCase().includes(q)
+ const matchCat = (item.category_label || '').toLowerCase().includes(q)
+ return matchDesc || matchTxn || matchVendor || matchEmp || matchCat
     })
   }, [items, selectedCategoryFilter, searchQuery])
 
   // Category breakdown calculation
-  const categoryStats = useMemo(() => {
-    const map = new Map<string, { total: number; count: number }>()
+ const categoryStats = useMemo(() => {
+ const map = new Map<string, { total: number; count: number }>()
 
-    for (const item of items) {
-      const cat = item.category || 'miscellaneous'
-      const existing = map.get(cat) || { total: 0, count: 0 }
-      existing.total += Number(item.amount || 0)
-      existing.count++
-      map.set(cat, existing)
+ for (const item of items) {
+ const cat = item.category || 'miscellaneous'
+ const existing = map.get(cat) || { total: 0, count: 0 }
+ existing.total += Number(item.amount || 0)
+ existing.count++
+ map.set(cat, existing)
     }
 
-    return map
+ return map
   }, [items])
 
-  return (
+ return (
     <div className="space-y-6">
       {/* 1. TOP STATS BAR & + ADD EXPENSE BUTTON */}
-      <div className="p-5 rounded-2xl bg-card shadow-xs border border-border flex flex-col md:flex-row md:items-center justify-between gap-5">
+      <div className="p-5 rounded-xl bg-card shadow-xs border border-border flex flex-col md:flex-row md:items-center justify-between gap-5">
         <div>
           <div className="flex items-center gap-2 mb-1">
             <Badge className="bg-rose-500/20 text-rose-300 border-none text-2xs uppercase tracking-wider">
@@ -136,22 +136,20 @@ export function ExpensesTabView({
 
         {/* Primary + Add Expense Button */}
         <Button
-          onClick={() => onOpenSpendModal()}
-          variant="destructive" className="text-xs h-9 px-4 gap-2 self-start md:self-auto"
-        >
-          <Plus className="w-4 h-4" />
+ onClick={() => onOpenSpendModal()}
+ variant="destructive"className="text-xs h-9 px-4 gap-2 self-start md:self-auto">
+          <Plus className="w-4 h-4"/>
           <span>{tBilingual('+ Add Expense', '+ নতুন খরচ এন্ট্রি')}</span>
         </Button>
       </div>
 
       {/* 2. SUB-NAVIGATION TABS & CONTROLS */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div className="flex items-center gap-1.5 bg-muted p-1 rounded-2xl w-fit">
+        <div className="flex items-center gap-1.5 bg-muted p-1 rounded-xl w-fit">
           <button
-            type="button"
-            onClick={() => setActiveSubTab('entries')}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-              activeSubTab === 'entries'
+ type="button"onClick={() => setActiveSubTab('entries')}
+ className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+ activeSubTab === 'entries'
                 ? 'bg-card text-rose-600 dark:text-rose-400 shadow-xs'
                 : 'text-muted-foreground hover:text-foreground'
             }`}
@@ -160,10 +158,9 @@ export function ExpensesTabView({
           </button>
 
           <button
-            type="button"
-            onClick={() => setActiveSubTab('categories')}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-              activeSubTab === 'categories'
+ type="button"onClick={() => setActiveSubTab('categories')}
+ className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+ activeSubTab === 'categories'
                 ? 'bg-card text-blue-600 dark:text-blue-400 shadow-xs'
                 : 'text-muted-foreground hover:text-foreground'
             }`}
@@ -172,10 +169,9 @@ export function ExpensesTabView({
           </button>
 
           <button
-            type="button"
-            onClick={() => setActiveSubTab('recurring')}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-              activeSubTab === 'recurring'
+ type="button"onClick={() => setActiveSubTab('recurring')}
+ className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+ activeSubTab === 'recurring'
                 ? 'bg-card text-purple-600 dark:text-purple-400 shadow-xs'
                 : 'text-muted-foreground hover:text-foreground'
             }`}
@@ -186,13 +182,12 @@ export function ExpensesTabView({
 
         {activeSubTab === 'entries' && (
           <div className="relative w-full sm:w-64">
-            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"/>
             <Input
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={tBilingual('Search memo, category, payee...', 'বিবরণ বা খাত খুঁজুন...')}
-              className="h-8.5 pl-8 text-xs rounded-xl bg-card dark:bg-card"
-            />
+ value={searchQuery}
+ onChange={(e) => setSearchQuery(e.target.value)}
+ placeholder={tBilingual('Search memo, category, payee...', 'বিবরণ বা খাত খুঁজুন...')}
+ className="h-8.5 pl-8 text-xs rounded-xl bg-card"/>
           </div>
         )}
       </div>
@@ -201,11 +196,11 @@ export function ExpensesTabView({
 
       {/* Sub-tab A: Expense Entries Table */}
       {activeSubTab === 'entries' && (
-        <Card className="rounded-2xl border-border shadow-xs overflow-hidden">
+        <Card className="rounded-xl border-border shadow-xs overflow-hidden">
           <CardContent className="p-0">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-muted text-foreground font-semibold border-b border-border dark:border-border">
+                <thead className="bg-muted text-foreground font-semibold border-b border-border">
                   <tr>
                     <th className="p-3">{tBilingual('Date', 'তারিখ')}</th>
                     <th className="p-3">{tBilingual('Voucher #', 'ভাউচার')}</th>
@@ -226,7 +221,7 @@ export function ExpensesTabView({
                         {item.transaction_number}
                       </td>
                       <td className="p-3">
-                        <Badge variant="outline" className="text-3xs font-semibold bg-rose-50/50 text-rose-700 dark:text-rose-300 border-rose-200/60">
+                        <Badge variant="outline"className="text-3xs font-semibold bg-rose-50/50 text-rose-700 dark:text-rose-300 border-rose-200/60">
                           {item.category_label || item.category}
                         </Badge>
                       </td>
@@ -234,16 +229,16 @@ export function ExpensesTabView({
                         {item.description}
                         {item.employee_name && (
                           <span className="text-3xs text-muted-foreground block font-normal">
-                            Payee: {item.employee_name}
+ Payee: {item.employee_name}
                           </span>
                         )}
                         {item.vendor_name && (
                           <span className="text-3xs text-muted-foreground block font-normal">
-                            Vendor: {item.vendor_name}
+ Vendor: {item.vendor_name}
                           </span>
                         )}
                       </td>
-                      <td className="p-3 tabular-nums text-2xs text-muted-foreground dark:text-muted-foreground">
+                      <td className="p-3 tabular-nums text-2xs text-muted-foreground">
                         {item.payment_account_name} ({item.payment_account_code})
                       </td>
                       <td className="p-3 text-right tabular-nums font-bold text-rose-600 dark:text-rose-400">
@@ -252,13 +247,9 @@ export function ExpensesTabView({
                       <td className="p-3 text-center">
                         {item.attachment_url ? (
                           <a
-                            href={item.attachment_url}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="p-1 rounded bg-muted text-blue-600 hover:text-blue-700 inline-flex items-center"
-                            title="View attachment / receipt"
-                          >
-                            <Paperclip className="w-3.5 h-3.5" />
+ href={item.attachment_url}
+ target="_blank"rel="noreferrer"className="p-1 rounded bg-muted text-blue-600 hover:text-blue-700 inline-flex items-center"title="View attachment / receipt">
+                            <Paperclip className="w-3.5 h-3.5"/>
                           </a>
                         ) : (
                           <span className="text-3xs text-muted-foreground">-</span>
@@ -285,23 +276,22 @@ export function ExpensesTabView({
       {activeSubTab === 'categories' && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {PRESET_CATEGORIES.map((cat) => {
-            const Icon = cat.icon
-            const stats = categoryStats.get(cat.id) || { total: 0, count: 0 }
-            const percentage = totalExpenses > 0 ? Math.round((stats.total / totalExpenses) * 100) : 0
+ const Icon = cat.icon
+ const stats = categoryStats.get(cat.id) || { total: 0, count: 0 }
+ const percentage = totalExpenses > 0 ? Math.round((stats.total / totalExpenses) * 100) : 0
 
-            return (
+ return (
               <Card
-                key={cat.id}
-                className="rounded-2xl border-border shadow-xs hover:border-blue-300 transition-all p-4 bg-card flex flex-col justify-between"
-              >
+ key={cat.id}
+ className="rounded-xl border-border shadow-xs hover:border-blue-300 transition-all p-4 bg-card flex flex-col justify-between">
                 <div>
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2.5">
                       <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${cat.color}`}>
-                        <Icon className="w-5 h-5" />
+                        <Icon className="w-5 h-5"/>
                       </div>
                       <div>
-                        <span className="font-bold text-xs text-foreground dark:text-white block">
+                        <span className="font-bold text-xs text-foreground block">
                           {tBilingual(cat.labelEn, cat.labelBn)}
                         </span>
                         <span className="text-3xs text-muted-foreground">
@@ -310,7 +300,7 @@ export function ExpensesTabView({
                       </div>
                     </div>
 
-                    <Badge variant="outline" className="text-3xs tabular-nums font-bold">
+                    <Badge variant="outline"className="text-3xs tabular-nums font-bold">
                       {percentage}%
                     </Badge>
                   </div>
@@ -327,30 +317,24 @@ export function ExpensesTabView({
                   {/* Visual Progress Bar */}
                   <div className="w-full bg-muted h-1.5 rounded-full overflow-hidden">
                     <div
-                      className="bg-rose-500 h-full rounded-full transition-all duration-500"
-                      style={{ width: `${Math.min(100, percentage)}%` }}
+ className="bg-rose-500 h-full rounded-full transition-all duration-500"style={{ width: `${Math.min(100, percentage)}%` }}
                     />
                   </div>
                 </div>
 
-                <div className="pt-3 border-t border-border dark:border-border/80 mt-3 flex items-center justify-between">
+                <div className="pt-3 border-t border-border /80 mt-3 flex items-center justify-between">
                   <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => {
-                      setSelectedCategoryFilter(cat.id)
-                      setActiveSubTab('entries')
+ size="sm"variant="ghost"onClick={() => {
+ setSelectedCategoryFilter(cat.id)
+ setActiveSubTab('entries')
                     }}
-                    className="h-7 text-2xs text-muted-foreground hover:text-foreground p-0 font-medium"
-                  >
+ className="h-7 text-2xs text-muted-foreground hover:text-foreground p-0 font-medium">
                     {tBilingual('Filter vouchers →', 'ভাউচার দেখুন →')}
                   </Button>
 
                   <Button
-                    size="sm"
-                    onClick={() => onOpenSpendModal(cat.id)}
-                    className="h-7 px-2.5 text-2xs bg-rose-50 hover:bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300 font-semibold rounded-lg"
-                  >
+ size="sm"onClick={() => onOpenSpendModal(cat.id)}
+ className="h-7 px-2.5 text-2xs bg-rose-50 hover:bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300 font-semibold rounded-lg">
                     + Add
                   </Button>
                 </div>
@@ -363,10 +347,10 @@ export function ExpensesTabView({
       {/* Sub-tab C: Recurring Expenses */}
       {activeSubTab === 'recurring' && (
         <div className="space-y-4">
-          <Card className="rounded-2xl border-border shadow-xs overflow-hidden">
+          <Card className="rounded-xl border-border shadow-xs overflow-hidden">
             <CardHeader className="pb-3 border-b border-border flex flex-row items-center justify-between">
               <div>
-                <CardTitle className="text-sm font-bold text-foreground dark:text-foreground">
+                <CardTitle className="text-sm font-bold text-foreground">
                   {tBilingual('Fixed Monthly Overheads & Bills', 'মাসিক নির্দিষ্ট পরিচালন খরচ ও বিল')}
                 </CardTitle>
                 <p className="text-3xs text-muted-foreground">
@@ -383,7 +367,7 @@ export function ExpensesTabView({
                   <div key={bill.id} className="p-4 flex items-center justify-between hover:bg-muted dark:hover:bg-muted/40 transition-colors">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400 flex items-center justify-center shrink-0">
-                        <Clock className="w-5 h-5" />
+                        <Clock className="w-5 h-5"/>
                       </div>
                       <div>
                         <span className="font-bold text-xs text-foreground block">
@@ -397,13 +381,12 @@ export function ExpensesTabView({
 
                     <div className="flex items-center gap-4">
                       <div className="text-right">
-                        <span className="tabular-nums font-bold text-sm text-foreground dark:text-white block">
+                        <span className="tabular-nums font-bold text-sm text-foreground block">
                           ৳{bill.amount.toLocaleString()}
                         </span>
                         <Badge
-                          variant="outline"
-                          className={
-                            bill.status === 'PAID'
+ variant="outline"className={
+ bill.status === 'PAID'
                               ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 text-3xs'
                               : 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 text-3xs'
                           }
@@ -413,11 +396,10 @@ export function ExpensesTabView({
                       </div>
 
                       <Button
-                        size="sm"
-                        onClick={() => onOpenSpendModal(bill.category)}
-                        className={`h-8 px-3 text-xs rounded-xl font-semibold ${
-                          bill.status === 'PAID'
-                            ? 'bg-muted hover:bg-muted text-foreground dark:text-muted-foreground'
+ size="sm"onClick={() => onOpenSpendModal(bill.category)}
+ className={`h-8 px-3 text-xs rounded-xl font-semibold ${
+ bill.status === 'PAID'
+                            ? 'bg-muted hover:bg-muted text-foreground '
                             : 'bg-rose-600 hover:bg-rose-700 text-white shadow-xs'
                         }`}
                       >

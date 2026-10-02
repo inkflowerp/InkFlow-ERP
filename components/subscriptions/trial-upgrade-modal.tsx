@@ -2,26 +2,26 @@
 
 import React, { useState, useEffect } from 'react'
 import {
-  Crown,
-  CheckCircle2,
-  Sparkles,
-  Zap,
-  ArrowRight,
-  ShieldCheck,
-  Building,
-  Users,
-  HardDrive,
-  ShoppingCart,
-  Layers,
-  Smartphone,
-  CreditCard,
-  Landmark,
-  X,
-  Clock,
-  Flame,
-  Check,
-  AlertCircle,
-  ExternalLink,
+ Crown,
+ CheckCircle2,
+ Sparkles,
+ Zap,
+ ArrowRight,
+ ShieldCheck,
+ Building,
+ Users,
+ HardDrive,
+ ShoppingCart,
+ Layers,
+ Smartphone,
+ CreditCard,
+ Landmark,
+ X,
+ Clock,
+ Flame,
+ Check,
+ AlertCircle,
+ ExternalLink,
 } from 'lucide-react'
 import { useSubscription } from '@/hooks/use-subscription'
 import { useTenant } from '@/hooks/use-tenant'
@@ -33,158 +33,157 @@ import { Badge } from '@/components/ui/badge'
 import { CurrencyDisplay } from '@/components/shared/currency-display'
 import { PAYMENT_GATEWAY_METADATA_LIST } from '@/lib/payments/types'
 import {
-  PlanCode,
-  BillingInterval,
-  PaymentGatewayType,
-  SubscriptionPlanRecord,
-  SubscriptionCheckoutResult,
-  TenantAccountType,
+ PlanCode,
+ BillingInterval,
+ PaymentGatewayType,
+ SubscriptionPlanRecord,
+ SubscriptionCheckoutResult,
+ TenantAccountType,
 } from '@/types/subscription.types'
 import { TENANT_ACCOUNT_TYPE_METADATA } from '@/lib/subscription/subscription-constants'
 import { cn } from '@/lib/utils'
 
 export function TrialUpgradeModal() {
-  const {
-    isUpgradeModalOpen,
-    closeUpgradeModal,
-    upgradeModalInitialTarget,
-    upgradeModalTriggerFeature,
-    currentPlanCode,
-    allPlans,
-    daysRemainingInTrial,
-    isTrial,
-    initiateCheckout,
-    verifyPayment,
+ const {
+ isUpgradeModalOpen,
+ closeUpgradeModal,
+ upgradeModalInitialTarget,
+ upgradeModalTriggerFeature,
+ currentPlanCode,
+ allPlans,
+ daysRemainingInTrial,
+ isTrial,
+ initiateCheckout,
+ verifyPayment,
   } = useSubscription()
-  const { company } = useTenant()
-  const { locale, tBilingual } = useI18n()
-  const { activePaymentGateways } = usePublicSubscriptionPlans()
+ const { company } = useTenant()
+ const { locale, tBilingual } = useI18n()
+ const { activePaymentGateways } = usePublicSubscriptionPlans()
 
-  const [interval, setInterval] = useState<BillingInterval>('monthly')
-  const [selectedPlan, setSelectedPlan] = useState<PlanCode>('business')
-  const [selectedGateway, setSelectedGateway] = useState<PaymentGatewayType>('bkash')
-  const [txReference, setTxReference] = useState('')
-  const [currentTrxId, setCurrentTrxId] = useState<string | null>(null)
-  const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null)
-  const [instructions, setInstructions] = useState<string[] | null>(null)
-  const [isProcessing, setIsProcessing] = useState(false)
-  const [isSuccess, setIsSuccess] = useState(false)
-  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+ const [interval, setInterval] = useState<BillingInterval>('monthly')
+ const [selectedPlan, setSelectedPlan] = useState<PlanCode>('business')
+ const [selectedGateway, setSelectedGateway] = useState<PaymentGatewayType>('bkash')
+ const [txReference, setTxReference] = useState('')
+ const [currentTrxId, setCurrentTrxId] = useState<string | null>(null)
+ const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null)
+ const [instructions, setInstructions] = useState<string[] | null>(null)
+ const [isProcessing, setIsProcessing] = useState(false)
+ const [isSuccess, setIsSuccess] = useState(false)
+ const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
-  const providers =
-    activePaymentGateways && activePaymentGateways.length > 0
+ const providers =
+ activePaymentGateways && activePaymentGateways.length > 0
       ? activePaymentGateways
       : PAYMENT_GATEWAY_METADATA_LIST.filter((p) =>
           ['bkash', 'sslcommerz', 'nagad', 'bank_wire'].includes(p.id)
         )
-  const activeProvider = providers.find((p) => p.id === selectedGateway) || providers[0]
+ const activeProvider = providers.find((p) => p.id === selectedGateway) || providers[0]
 
-  useEffect(() => {
-    if (providers.length > 0 && !providers.some((p) => p.id === selectedGateway)) {
-      setSelectedGateway(providers[0].id as PaymentGatewayType)
+ useEffect(() => {
+ if (providers.length > 0 && !providers.some((p) => p.id === selectedGateway)) {
+ setSelectedGateway(providers[0].id as PaymentGatewayType)
     }
   }, [providers, selectedGateway])
 
-  useEffect(() => {
-    if (upgradeModalInitialTarget && upgradeModalInitialTarget !== 'trial') {
-      setSelectedPlan(upgradeModalInitialTarget)
+ useEffect(() => {
+ if (upgradeModalInitialTarget && upgradeModalInitialTarget !== 'trial') {
+ setSelectedPlan(upgradeModalInitialTarget)
     } else if (currentPlanCode === 'starter') {
-      setSelectedPlan('business')
+ setSelectedPlan('business')
     } else if (currentPlanCode === 'business') {
-      setSelectedPlan('enterprise')
+ setSelectedPlan('enterprise')
     } else {
-      setSelectedPlan('business')
+ setSelectedPlan('business')
     }
   }, [upgradeModalInitialTarget, currentPlanCode, isUpgradeModalOpen])
 
-  if (!isUpgradeModalOpen) return null
+ if (!isUpgradeModalOpen) return null
 
-  const paidPlans = allPlans.filter((p: SubscriptionPlanRecord) => p.code !== 'trial')
-  const targetPlanObj = allPlans.find((p: SubscriptionPlanRecord) => p.code === selectedPlan) || paidPlans[1]
+ const paidPlans = allPlans.filter((p: SubscriptionPlanRecord) => p.code !== 'trial')
+ const targetPlanObj = allPlans.find((p: SubscriptionPlanRecord) => p.code === selectedPlan) || paidPlans[1]
 
-  const payableAmount =
-    interval === 'yearly'
+ const payableAmount =
+ interval === 'yearly'
       ? targetPlanObj.price_yearly
       : targetPlanObj.price_monthly
 
-  const handleInitiateCheckout = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsProcessing(true)
-    setErrorMessage(null)
+ const handleInitiateCheckout = async (e: React.FormEvent) => {
+ e.preventDefault()
+ setIsProcessing(true)
+ setErrorMessage(null)
 
-    try {
-      const res = await initiateCheckout({
-        planCode: selectedPlan,
-        interval,
-        gatewayProvider: selectedGateway,
-        customerName: company?.name || 'Tenant Administrator',
-        customerPhone: (company as any)?.phone || '',
-        customerEmail: (company as any)?.email || '',
+ try {
+ const res = await initiateCheckout({
+ planCode: selectedPlan,
+ interval,
+ gatewayProvider: selectedGateway,
+ customerName: company?.name || 'Tenant Administrator',
+ customerPhone: (company as any)?.phone || '',
+ customerEmail: (company as any)?.email || '',
       })
 
-      if (!res.success) {
-        setErrorMessage(res.error || 'Failed to initiate checkout.')
-        setIsProcessing(false)
-        return
+ if (!res.success) {
+ setErrorMessage(res.error || 'Failed to initiate checkout.')
+ setIsProcessing(false)
+ return
       }
 
-      const checkoutRes = res as SubscriptionCheckoutResult
-      setCurrentTrxId(checkoutRes.internalTrxId || null)
+ const checkoutRes = res as SubscriptionCheckoutResult
+ setCurrentTrxId(checkoutRes.internalTrxId || null)
 
-      if (checkoutRes.checkoutUrl) {
-        setCheckoutUrl(checkoutRes.checkoutUrl)
-        window.location.href = checkoutRes.checkoutUrl
-        return
+ if (checkoutRes.checkoutUrl) {
+ setCheckoutUrl(checkoutRes.checkoutUrl)
+ window.location.href = checkoutRes.checkoutUrl
+ return
       }
 
-      if (checkoutRes.instructions && checkoutRes.instructions.length > 0) {
-        setInstructions(checkoutRes.instructions)
+ if (checkoutRes.instructions && checkoutRes.instructions.length > 0) {
+ setInstructions(checkoutRes.instructions)
       }
     } catch (err: any) {
-      setErrorMessage(err?.message || 'Checkout failed.')
+ setErrorMessage(err?.message || 'Checkout failed.')
     } finally {
-      setIsProcessing(false)
+ setIsProcessing(false)
     }
   }
 
-  const handleManualVerify = async () => {
-    if (!currentTrxId && !txReference) return
-    setIsProcessing(true)
-    setErrorMessage(null)
+ const handleManualVerify = async () => {
+ if (!currentTrxId && !txReference) return
+ setIsProcessing(true)
+ setErrorMessage(null)
 
-    try {
-      const verifyRes = await verifyPayment({
-        internalTrxId: currentTrxId || undefined,
-        providerTrxId: txReference || undefined,
-        provider: selectedGateway,
+ try {
+ const verifyRes = await verifyPayment({
+ internalTrxId: currentTrxId || undefined,
+ providerTrxId: txReference || undefined,
+ provider: selectedGateway,
       })
 
-      if (verifyRes.success) {
-        setIsSuccess(true)
-        setTimeout(() => {
-          setIsSuccess(false)
-          closeUpgradeModal()
+ if (verifyRes.success) {
+ setIsSuccess(true)
+ setTimeout(() => {
+ setIsSuccess(false)
+ closeUpgradeModal()
         }, 2500)
       } else {
-        setErrorMessage(verifyRes.error || 'Payment could not be verified by provider.')
+ setErrorMessage(verifyRes.error || 'Payment could not be verified by provider.')
       }
     } catch (err: any) {
-      setErrorMessage(err?.message || 'Verification failed.')
+ setErrorMessage(err?.message || 'Verification failed.')
     } finally {
-      setIsProcessing(false)
+ setIsProcessing(false)
     }
   }
 
-  return (
+ return (
     <ModalDialog
-      open={isUpgradeModalOpen}
-      onOpenChange={(open) => !open && closeUpgradeModal()}
-      size="6xl"
-      hideFooter
-      title={
-        <div className="flex items-center gap-2.5 text-foreground dark:text-white">
+ open={isUpgradeModalOpen}
+ onOpenChange={(open) => !open && closeUpgradeModal()}
+ size="6xl"hideFooter
+ title={
+        <div className="flex items-center gap-2.5 text-foreground">
           <div className="p-2 rounded-xl bg-gradient-to-br from-amber-500 to-indigo-600 text-white shadow-sm shrink-0">
-            <Crown className="h-5 w-5" />
+            <Crown className="h-5 w-5"/>
           </div>
           <div>
             <div className="font-black text-xl tracking-tight bangla-text">
@@ -207,10 +206,10 @@ export function TrialUpgradeModal() {
       {isSuccess ? (
         <div className="py-12 text-center space-y-4">
           <div className="mx-auto w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-950 flex items-center justify-center text-emerald-600">
-            <CheckCircle2 className="h-10 w-10 animate-bounce" />
+            <CheckCircle2 className="h-10 w-10 animate-bounce"/>
           </div>
           <div className="space-y-1">
-            <h3 className="text-xl font-black text-foreground dark:text-white bangla-text">
+            <h3 className="text-xl font-black text-foreground bangla-text">
               {tBilingual('Payment Verified & Plan Activated!', 'পেমেন্ট ভেরিফাইড এবং প্ল্যান সক্রিয় হয়েছে!')}
             </h3>
             <p className="text-sm text-muted-foreground max-w-md mx-auto bangla-text">
@@ -225,20 +224,19 @@ export function TrialUpgradeModal() {
         <form onSubmit={handleInitiateCheckout} className="space-y-6 w-full">
           {errorMessage && (
             <div className="p-3 bg-red-50 text-red-800 rounded-xl text-xs font-semibold flex items-center gap-2 border border-red-200 dark:bg-red-950/40 dark:text-red-300 dark:border-red-800">
-              <AlertCircle className="h-4 w-4 text-red-600 shrink-0" />
+              <AlertCircle className="h-4 w-4 text-red-600 shrink-0"/>
               <span>{errorMessage}</span>
             </div>
           )}
 
           {/* Interval Switcher */}
           <div className="flex items-center justify-center">
-            <div className="inline-flex items-center bg-muted p-1 rounded-xl border border-border dark:border-border">
+            <div className="inline-flex items-center bg-muted p-1 rounded-xl border border-border">
               <button
-                type="button"
-                onClick={() => setInterval('monthly')}
-                className={cn(
+ type="button"onClick={() => setInterval('monthly')}
+ className={cn(
                   'px-4 py-1.5 rounded-lg text-xs font-bold transition-all',
-                  interval === 'monthly'
+ interval === 'monthly'
                     ? 'bg-card text-blue-600 dark:text-blue-400 shadow-xs'
                     : 'text-muted-foreground hover:text-foreground'
                 )}
@@ -246,11 +244,10 @@ export function TrialUpgradeModal() {
                 {tBilingual('Monthly Billing', 'মাসিক বিলিং')}
               </button>
               <button
-                type="button"
-                onClick={() => setInterval('yearly')}
-                className={cn(
+ type="button"onClick={() => setInterval('yearly')}
+ className={cn(
                   'flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-bold transition-all',
-                  interval === 'yearly'
+ interval === 'yearly'
                     ? 'bg-card text-blue-600 dark:text-blue-400 shadow-xs'
                     : 'text-muted-foreground hover:text-foreground'
                 )}
@@ -266,46 +263,46 @@ export function TrialUpgradeModal() {
           {/* Plan Comparison Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6 w-full">
             {paidPlans.map((plan: SubscriptionPlanRecord) => {
-              const isSelected = selectedPlan === plan.code
-              const isRecommended = plan.code === 'business'
-              const price = interval === 'yearly' ? plan.price_yearly : plan.price_monthly
+ const isSelected = selectedPlan === plan.code
+ const isRecommended = plan.code === 'business'
+ const price = interval === 'yearly' ? plan.price_yearly : plan.price_monthly
 
-              const planDesc =
-                locale === 'bn'
+ const planDesc =
+ locale === 'bn'
                   ? (plan as any).description_bn ||
-                    TENANT_ACCOUNT_TYPE_METADATA[plan.code as TenantAccountType]?.descriptionBn ||
-                    plan.description
+ TENANT_ACCOUNT_TYPE_METADATA[plan.code as TenantAccountType]?.descriptionBn ||
+ plan.description
                   : plan.description
 
-              const isUnlimitedUsers = plan.max_users <= 0 || plan.max_users >= 999
-              const isUnlimitedBranches = plan.max_branches <= 0 || plan.max_branches >= 999
-              const isUnlimitedOrders = plan.monthly_orders <= 0 || plan.monthly_orders >= 99999
-              const isUnlimitedStorage = plan.storage_gb <= 0 || plan.storage_gb >= 999
+ const isUnlimitedUsers = plan.max_users <= 0 || plan.max_users >= 999
+ const isUnlimitedBranches = plan.max_branches <= 0 || plan.max_branches >= 999
+ const isUnlimitedOrders = plan.monthly_orders <= 0 || plan.monthly_orders >= 99999
+ const isUnlimitedStorage = plan.storage_gb <= 0 || plan.storage_gb >= 999
 
-              const usersLabel = isUnlimitedUsers
+ const usersLabel = isUnlimitedUsers
                 ? tBilingual('Unlimited Users', 'আনলিমিটেড ইউজার')
                 : `${locale === 'bn' ? toBengaliDigits(plan.max_users) : plan.max_users} ${tBilingual('Team Users', 'জন ইউজার')}`
 
-              const branchesLabel = isUnlimitedBranches
+ const branchesLabel = isUnlimitedBranches
                 ? tBilingual('Unlimited Branches', 'আনলিমিটেড ব্রাঞ্চ')
                 : `${locale === 'bn' ? toBengaliDigits(plan.max_branches) : plan.max_branches} ${tBilingual('Branches / Hubs', 'টি ব্রাঞ্চ')}`
 
-              const ordersLabel = isUnlimitedOrders
+ const ordersLabel = isUnlimitedOrders
                 ? tBilingual('Unlimited Orders', 'আনলিমিটেড অর্ডার/মাস')
                 : `${locale === 'bn' ? toBengaliDigits(plan.monthly_orders) : plan.monthly_orders.toLocaleString()} ${tBilingual('Orders / mo', 'টি অর্ডার/মাস')}`
 
-              const storageLabel = isUnlimitedStorage
+ const storageLabel = isUnlimitedStorage
                 ? tBilingual('Unlimited Storage', 'আনলিমিটেড ক্লাউড স্টোরেজ')
                 : `${locale === 'bn' ? toBengaliDigits(plan.storage_gb) : plan.storage_gb} ${tBilingual('GB Cloud Storage', 'জিবি স্টোরেজ')}`
 
-              return (
+ return (
                 <div
-                  key={plan.id}
-                  onClick={() => setSelectedPlan(plan.code)}
-                  className={cn(
-                    'relative rounded-2xl border-2 p-4 sm:p-5 cursor-pointer transition-all flex flex-col justify-between',
-                    isSelected
-                      ? 'border-blue-600 bg-blue-50/40 dark:bg-blue-950/30 shadow-xl shadow-blue-500/10'
+ key={plan.id}
+ onClick={() => setSelectedPlan(plan.code)}
+ className={cn(
+                    'relative rounded-xl border-2 p-4 sm:p-5 cursor-pointer transition-all flex flex-col justify-between',
+ isSelected
+                      ? 'border-blue-600 bg-blue-50/40 dark:bg-blue-950/30 shadow-xs shadow-blue-500/10'
                       : 'border-border bg-card hover:border-input dark:hover:border-border'
                   )}
                 >
@@ -317,19 +314,19 @@ export function TrialUpgradeModal() {
 
                   <div className="space-y-3">
                     <div className="flex items-center justify-between gap-2">
-                      <h4 className="font-bold text-base text-foreground dark:text-white bangla-text truncate">
+                      <h4 className="font-bold text-base text-foreground bangla-text truncate">
                         {tBilingual(plan.name, plan.name_bn)}
                       </h4>
                       {isSelected && (
                         <div className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center shrink-0">
-                          <Check className="h-3 w-3" />
+                          <Check className="h-3 w-3"/>
                         </div>
                       )}
                     </div>
 
                     <div>
                       <div className="flex items-baseline gap-1.5 flex-nowrap whitespace-nowrap overflow-hidden">
-                        <span className="text-xl sm:text-2xl lg:text-3xl font-black text-foreground dark:text-white whitespace-nowrap tracking-tight">
+                        <span className="text-xl sm:text-2xl lg:text-3xl font-black text-foreground whitespace-nowrap tracking-tight">
                           <CurrencyDisplay amount={price} showDecimals={false} />
                         </span>
                         <span className="text-xs font-semibold text-muted-foreground whitespace-nowrap shrink-0">
@@ -344,32 +341,30 @@ export function TrialUpgradeModal() {
                     {/* Limit items */}
                     <div className="pt-3 border-t border-border space-y-2 text-xs text-foreground bangla-text">
                       <div className="flex items-center gap-2 min-w-0">
-                        <Users className="h-4 w-4 text-blue-500 shrink-0" />
+                        <Users className="h-4 w-4 text-blue-500 shrink-0"/>
                         <span className="truncate">{usersLabel}</span>
                       </div>
                       <div className="flex items-center gap-2 min-w-0">
-                        <Building className="h-4 w-4 text-indigo-500 shrink-0" />
+                        <Building className="h-4 w-4 text-indigo-500 shrink-0"/>
                         <span className="truncate">{branchesLabel}</span>
                       </div>
                       <div className="flex items-center gap-2 min-w-0">
-                        <ShoppingCart className="h-4 w-4 text-emerald-500 shrink-0" />
+                        <ShoppingCart className="h-4 w-4 text-emerald-500 shrink-0"/>
                         <span className="truncate">{ordersLabel}</span>
                       </div>
                       <div className="flex items-center gap-2 min-w-0">
-                        <HardDrive className="h-4 w-4 text-purple-500 shrink-0" />
+                        <HardDrive className="h-4 w-4 text-purple-500 shrink-0"/>
                         <span className="truncate">{storageLabel}</span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="mt-4 pt-3 border-t border-border dark:border-border">
+                  <div className="mt-4 pt-3 border-t border-border">
                     <Button
-                      type="button"
-                      variant={isSelected ? 'default' : 'outline'}
-                      size="sm"
-                      className={cn(
+ type="button"variant={isSelected ? 'default' : 'outline'}
+ size="sm"className={cn(
                         'w-full text-xs font-bold bangla-text h-9 rounded-xl',
-                        isSelected && 'bg-primary hover:bg-primary/90 text-primary-foreground'
+ isSelected && 'bg-primary hover:bg-primary/90 text-primary-foreground'
                       )}
                     >
                       {isSelected
@@ -383,13 +378,13 @@ export function TrialUpgradeModal() {
           </div>
 
           {/* Payment Gateway Selection */}
-          <div className="rounded-2xl bg-muted p-4 border border-border space-y-3">
+          <div className="rounded-xl bg-muted p-4 border border-border space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5 bangla-text">
-                <CreditCard className="h-4 w-4 text-blue-600" />
+                <CreditCard className="h-4 w-4 text-blue-600"/>
                 {tBilingual('Select Payment Method (Bangladesh Gateways)', 'পেমেন্ট মেথড নির্বাচন করুন (বাংলাদেশ)')}
               </span>
-              <span className="text-xs font-bold text-foreground dark:text-white">
+              <span className="text-xs font-bold text-foreground">
                 {tBilingual('Total Payable: ', 'মোট প্রদেয়: ')}
                 <CurrencyDisplay amount={payableAmount} />
               </span>
@@ -405,26 +400,25 @@ export function TrialUpgradeModal() {
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {providers.map((p) => {
-                  const isGWSelected = selectedGateway === p.id
-                  return (
+ const isGWSelected = selectedGateway === p.id
+ return (
                     <button
-                      key={p.id}
-                      type="button"
-                      onClick={() => setSelectedGateway(p.id as PaymentGatewayType)}
-                      className={cn(
+ key={p.id}
+ type="button"onClick={() => setSelectedGateway(p.id as PaymentGatewayType)}
+ className={cn(
                         'p-2.5 rounded-xl border text-center transition-all flex flex-col items-center justify-center gap-1 cursor-pointer',
-                        isGWSelected
+ isGWSelected
                           ? 'border-blue-600 bg-card shadow-sm ring-2 ring-blue-500/20'
                           : 'border-border bg-card hover:bg-muted dark:hover:bg-muted'
                       )}
                     >
                       <div className="flex items-center gap-1">
-                        {p.id === 'bkash' && <Smartphone className="h-3.5 w-3.5 text-pink-600" />}
-                        {p.id === 'sslcommerz' && <CreditCard className="h-3.5 w-3.5 text-blue-600" />}
-                        {p.id === 'nagad' && <Smartphone className="h-3.5 w-3.5 text-amber-600" />}
-                        {p.id === 'bank_wire' && <Landmark className="h-3.5 w-3.5 text-emerald-600" />}
+                        {p.id === 'bkash' && <Smartphone className="h-3.5 w-3.5 text-pink-600"/>}
+                        {p.id === 'sslcommerz' && <CreditCard className="h-3.5 w-3.5 text-blue-600"/>}
+                        {p.id === 'nagad' && <Smartphone className="h-3.5 w-3.5 text-amber-600"/>}
+                        {p.id === 'bank_wire' && <Landmark className="h-3.5 w-3.5 text-emerald-600"/>}
                         {!['bkash', 'sslcommerz', 'nagad', 'bank_wire'].includes(p.id) && (
-                          <CreditCard className="h-3.5 w-3.5 text-indigo-600" />
+                          <CreditCard className="h-3.5 w-3.5 text-indigo-600"/>
                         )}
                         <span className="text-xs font-black text-foreground bangla-text">
                           {tBilingual(p.name, p.nameBn)}
@@ -448,7 +442,7 @@ export function TrialUpgradeModal() {
               <div className="p-3 bg-blue-50 dark:bg-blue-950/40 rounded-xl border border-blue-200 dark:border-blue-800 space-y-1">
                 {instructions.map((ins, i) => (
                   <div key={i} className="text-xs text-blue-900 dark:text-blue-200 flex items-center gap-1.5">
-                    <CheckCircle2 className="h-3.5 w-3.5 text-blue-600 shrink-0" />
+                    <CheckCircle2 className="h-3.5 w-3.5 text-blue-600 shrink-0"/>
                     <span>{ins}</span>
                   </div>
                 ))}
@@ -462,19 +456,14 @@ export function TrialUpgradeModal() {
                 </label>
                 <div className="flex gap-2">
                   <input
-                    type="text"
-                    value={txReference}
-                    onChange={(e) => setTxReference(e.target.value)}
-                    placeholder={`e.g. ${selectedGateway.toUpperCase()}-987261`}
-                    className="flex-1 text-xs tabular-nums px-3 py-2 rounded-lg border border-input bg-card text-foreground focus:outline-hidden focus:ring-2 focus:ring-ring"
-                  />
+ type="text"value={txReference}
+ onChange={(e) => setTxReference(e.target.value)}
+ placeholder={`e.g. ${selectedGateway.toUpperCase()}-987261`}
+ className="flex-1 text-xs tabular-nums px-3 py-2 rounded-lg border border-input bg-card text-foreground focus:outline-hidden focus:ring-2 focus:ring-ring"/>
                   <Button
-                    type="button"
-                    size="sm"
-                    onClick={handleManualVerify}
-                    disabled={isProcessing}
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shrink-0"
-                  >
+ type="button"size="sm"onClick={handleManualVerify}
+ disabled={isProcessing}
+ className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shrink-0">
                     {isProcessing ? 'Verifying...' : 'Verify Now'}
                   </Button>
                 </div>
@@ -483,29 +472,22 @@ export function TrialUpgradeModal() {
           </div>
 
           {/* Modal Footer Actions */}
-          <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2.5 pt-2 border-t border-border dark:border-border">
+          <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2.5 pt-2 border-t border-border">
             <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={closeUpgradeModal}
-              disabled={isProcessing}
-              className="w-full sm:w-auto min-h-[44px] sm:min-h-[36px]"
-            >
+ type="button"variant="outline"size="sm"onClick={closeUpgradeModal}
+ disabled={isProcessing}
+ className="w-full sm:w-auto min-h-[44px] sm:min-h-[36px]">
               {tBilingual('Cancel', 'বাতিল')}
             </Button>
 
             <Button
-              type="submit"
-              size="sm"
-              disabled={isProcessing}
-              className="w-full sm:w-auto min-h-[44px] sm:min-h-[36px] bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold px-6 shadow-md shadow-blue-500/20 bangla-text"
-            >
+ type="submit"size="sm"disabled={isProcessing}
+ className="w-full sm:w-auto min-h-[44px] sm:min-h-[36px] bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold px-6 shadow-xs shadow-blue-500/20 bangla-text">
               {isProcessing ? (
                 <span>{tBilingual('Processing Checkout...', 'প্রক্রিয়াধীন...')}</span>
               ) : (
                 <>
-                  <Zap className="mr-1.5 h-4 w-4 text-amber-300" />
+                  <Zap className="mr-1.5 h-4 w-4 text-amber-300"/>
                   <span>
                     {tBilingual(
                       `Upgrade to ${targetPlanObj.name} (৳${payableAmount.toLocaleString()})`,

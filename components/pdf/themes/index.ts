@@ -1,7 +1,7 @@
-export * from "./types";
-export * from "./primitives";
-export * from "./corporate";
-export * from "./modern";
+export * from"./types";
+export * from"./primitives";
+export * from"./corporate";
+export * from"./modern";
 
-import { corporateTheme } from "./corporate";
+import { corporateTheme } from"./corporate";
 export const defaultPdfTheme = corporateTheme;

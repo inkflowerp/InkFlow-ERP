@@ -2,13 +2,13 @@
 
 import React from 'react'
 import {
-  Package,
-  AlertTriangle,
-  ArrowDownLeft,
-  ArrowUpRight,
-  CheckCircle2,
-  Layers,
-  Clock,
+ Package,
+ AlertTriangle,
+ ArrowDownLeft,
+ ArrowUpRight,
+ CheckCircle2,
+ Layers,
+ Clock,
 } from 'lucide-react'
 import { useI18n } from '@/i18n/context'
 import { Badge } from '@/components/ui/badge'
@@ -17,28 +17,28 @@ import { Button } from '@/components/ui/button'
 import { KpiCard, KpiGrid } from '@/components/shared/kpi-card'
 
 interface StoreDashboardProps {
-  metrics: {
-    lowStockCount: number
-    pendingRequisitionsCount: number
-    todayIssuesCount: number
-    todayReceivedCount: number
+ metrics: {
+ lowStockCount: number
+ pendingRequisitionsCount: number
+ todayIssuesCount: number
+ todayReceivedCount: number
   }
-  onRefresh: () => void
+ onRefresh: () => void
 }
 
 export function StoreDashboard({ metrics, onRefresh }: StoreDashboardProps) {
-  const { tBilingual } = useI18n()
+ const { tBilingual } = useI18n()
 
-  const safeMetrics = {
-    lowStockCount: metrics?.lowStockCount ?? 0,
-    pendingRequisitionsCount: metrics?.pendingRequisitionsCount ?? 0,
-    todayIssuesCount: metrics?.todayIssuesCount ?? 0,
-    todayReceivedCount: metrics?.todayReceivedCount ?? 0,
+ const safeMetrics = {
+ lowStockCount: metrics?.lowStockCount ?? 0,
+ pendingRequisitionsCount: metrics?.pendingRequisitionsCount ?? 0,
+ todayIssuesCount: metrics?.todayIssuesCount ?? 0,
+ todayReceivedCount: metrics?.todayReceivedCount ?? 0,
   }
 
-  return (
+ return (
     <div className="space-y-6">
-      <div className="p-5 bg-card border border-border rounded-2xl shadow-xs flex items-center justify-between">
+      <div className="p-5 bg-card border border-border rounded-xl shadow-xs flex items-center justify-between">
         <div className="space-y-1">
           <Badge className="text-xs font-semibold">
             {tBilingual('Warehouse & Raw Materials Store', 'কাঁচামাল ও গুদাম ব্যবস্থাপনা')}
@@ -54,35 +54,23 @@ export function StoreDashboard({ metrics, onRefresh }: StoreDashboardProps) {
 
       <KpiGrid columns={4}>
         <KpiCard
-          titleEn="Pending Material Requests"
-          titleBn="বিলি করার অপেক্ষায়"
-          value={safeMetrics.pendingRequisitionsCount}
-          icon={Clock}
-          colorVariant="warning"
-          badge={tBilingual('Requisitions', 'রিকুইজিশন')}
+ titleEn="Pending Material Requests"titleBn="বিলি করার অপেক্ষায়"value={safeMetrics.pendingRequisitionsCount}
+ icon={Clock}
+ colorVariant="warning"badge={tBilingual('Requisitions', 'রিকুইজিশন')}
         />
         <KpiCard
-          titleEn="Low Stock Warnings"
-          titleBn="কম স্টক সতর্কতা"
-          value={safeMetrics.lowStockCount}
-          icon={AlertTriangle}
-          colorVariant="danger"
-          badge={tBilingual('Reorder Needed', 'অর্ডার প্রয়োজন')}
+ titleEn="Low Stock Warnings"titleBn="কম স্টক সতর্কতা"value={safeMetrics.lowStockCount}
+ icon={AlertTriangle}
+ colorVariant="danger"badge={tBilingual('Reorder Needed', 'অর্ডার প্রয়োজন')}
         />
         <KpiCard
-          titleEn="Today's Material Issues"
-          titleBn="আজকে ফ্লোরে মাল বিলি"
-          value={safeMetrics.todayIssuesCount}
-          icon={ArrowUpRight}
-          colorVariant="primary"
-        />
+ titleEn="Today's Material Issues"titleBn="আজকে ফ্লোরে মাল বিলি"value={safeMetrics.todayIssuesCount}
+ icon={ArrowUpRight}
+ colorVariant="primary"/>
         <KpiCard
-          titleEn="Goods Received Today"
-          titleBn="আজকের মাল রিসিভ"
-          value={safeMetrics.todayReceivedCount}
-          icon={ArrowDownLeft}
-          colorVariant="success"
-        />
+ titleEn="Goods Received Today"titleBn="আজকের মাল রিসিভ"value={safeMetrics.todayReceivedCount}
+ icon={ArrowDownLeft}
+ colorVariant="success"/>
       </KpiGrid>
     </div>
   )

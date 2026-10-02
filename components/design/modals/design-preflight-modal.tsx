@@ -2,11 +2,11 @@
 
 import React, { useState, useEffect } from 'react'
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
+ Dialog,
+ DialogContent,
+ DialogHeader,
+ DialogTitle,
+ DialogDescription,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
@@ -15,74 +15,74 @@ import type { DesignJobRecord } from '@/types/design.types'
 import { PRINT_MACHINERY_LIST, type PreflightState } from '../types'
 
 interface DesignPreflightModalProps {
-  isOpen: boolean
-  onClose: () => void
-  job: DesignJobRecord | null
-  currentPreflight: PreflightState
-  onToggleCheck: (jobId: string, checkKey: keyof PreflightState, designNumber?: string) => void
-  onConfirmAndRoute: (job: DesignJobRecord, targetMachineId: string) => Promise<void>
-  onShowNotification?: (msg: string, type?: 'success' | 'warning' | 'info') => void
+ isOpen: boolean
+ onClose: () => void
+ job: DesignJobRecord | null
+ currentPreflight: PreflightState
+ onToggleCheck: (jobId: string, checkKey: keyof PreflightState, designNumber?: string) => void
+ onConfirmAndRoute: (job: DesignJobRecord, targetMachineId: string) => Promise<void>
+ onShowNotification?: (msg: string, type?: 'success' | 'warning' | 'info') => void
 }
 
 export const DesignPreflightModal = React.memo(function DesignPreflightModal({
-  isOpen,
-  onClose,
-  job,
-  currentPreflight,
-  onToggleCheck,
-  onConfirmAndRoute,
-  onShowNotification,
+ isOpen,
+ onClose,
+ job,
+ currentPreflight,
+ onToggleCheck,
+ onConfirmAndRoute,
+ onShowNotification,
 }: DesignPreflightModalProps) {
-  const [selectedMachine, setSelectedMachine] = useState('heidelberg_sm74')
-  const [isSubmitting, setIsSubmitting] = useState(false)
+ const [selectedMachine, setSelectedMachine] = useState('heidelberg_sm74')
+ const [isSubmitting, setIsSubmitting] = useState(false)
 
-  useEffect(() => {
-    if (job) {
+ useEffect(() => {
+ if (job) {
       // Intelligently pre-select machine based on title or material
-      const titleLower = (job.title + ' ' + (job.material || '')).toLowerCase()
-      if (titleLower.includes('banner') || titleLower.includes('flex') || titleLower.includes('vinyl')) {
-        setSelectedMachine('roland_truevis')
+ const titleLower = (job.title + ' ' + (job.material || '')).toLowerCase()
+ if (titleLower.includes('banner') || titleLower.includes('flex') || titleLower.includes('vinyl')) {
+ setSelectedMachine('roland_truevis')
       } else if (titleLower.includes('uv') || titleLower.includes('board') || titleLower.includes('acrylic')) {
-        setSelectedMachine('docan_uv_flatbed')
+ setSelectedMachine('docan_uv_flatbed')
       } else if (titleLower.includes('sticker') && titleLower.includes('cut')) {
-        setSelectedMachine('graphtec_cutter')
+ setSelectedMachine('graphtec_cutter')
       } else if (titleLower.includes('card') || titleLower.includes('visiting') || titleLower.includes('digital')) {
-        setSelectedMachine('konica_c1085')
+ setSelectedMachine('konica_c1085')
       } else {
-        setSelectedMachine('heidelberg_sm74')
+ setSelectedMachine('heidelberg_sm74')
       }
     }
   }, [job])
 
-  if (!job) return null
+ if (!job) return null
 
-  const allPassed = currentPreflight.cmyk && currentPreflight.dpi300 && currentPreflight.bleed && currentPreflight.curves
+ const allPassed = currentPreflight.cmyk && currentPreflight.dpi300 && currentPreflight.bleed && currentPreflight.curves
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSubmitting(true)
-    try {
-      await onConfirmAndRoute(job, selectedMachine)
-      onClose()
+ const handleSubmit = async (e: React.FormEvent) => {
+ e.preventDefault()
+ setIsSubmitting(true)
+ try {
+ await onConfirmAndRoute(job, selectedMachine)
+ onClose()
     } catch (err: any) {
-      onShowNotification?.(err.message || 'Routing failed', 'warning')
+ onShowNotification?.(err.message || 'Routing failed', 'warning')
     } finally {
-      setIsSubmitting(false)
+ setIsSubmitting(false)
     }
   }
 
-  const selectedMachineObj = PRINT_MACHINERY_LIST.find((m) => m.id === selectedMachine)
+ const selectedMachineObj = PRINT_MACHINERY_LIST.find((m) => m.id === selectedMachine)
 
-  return (
+ return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-2xl bg-card border border-border text-foreground p-6 shadow-2xl">
+      <DialogContent className="max-w-2xl bg-card border border-border text-foreground p-6 shadow-lg">
         <DialogHeader className="border-b border-border pb-3">
           <DialogTitle className="text-lg font-bold flex items-center gap-2 text-indigo-700 dark:text-indigo-400">
-            <ShieldCheck className="h-5 w-5" />
+            <ShieldCheck className="h-5 w-5"/>
             <span>Pre-Press Quality Health & Print Floor Routing (প্রি-ফ্লাইট ও মেশিন অনুমোদন)</span>
           </DialogTitle>
           <DialogDescription className="text-xs text-muted-foreground">
-            জব: <span className="font-semibold text-foreground dark:text-foreground">{job.title}</span> (#{job.design_number}) | কাস্টমার: {job.customer_name}
+            জব: <span className="font-semibold text-foreground">{job.title}</span> (#{job.design_number}) | কাস্টমার: {job.customer_name}
           </DialogDescription>
         </DialogHeader>
 
@@ -95,19 +95,19 @@ export const DesignPreflightModal = React.memo(function DesignPreflightModal({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
               {/* CMYK Check */}
               <div
-                onClick={() => onToggleCheck(job.id, 'cmyk', job.design_number)}
-                className={`p-3 rounded-lg border flex items-center gap-2.5 cursor-pointer transition-all ${
-                  currentPreflight.cmyk
+ onClick={() => onToggleCheck(job.id, 'cmyk', job.design_number)}
+ className={`p-3 rounded-lg border flex items-center gap-2.5 cursor-pointer transition-all ${
+ currentPreflight.cmyk
                     ? 'bg-emerald-50 border-emerald-400 text-emerald-950 dark:bg-emerald-950/40 dark:text-emerald-200'
                     : 'bg-muted border-border text-muted-foreground hover:border-input'
                 }`}
               >
                 <div
-                  className={`h-4 w-4 rounded flex items-center justify-center shrink-0 border ${
-                    currentPreflight.cmyk ? 'bg-emerald-600 text-white border-emerald-600' : 'border-input dark:border-slate-600'
+ className={`h-4 w-4 rounded flex items-center justify-center shrink-0 border ${
+ currentPreflight.cmyk ? 'bg-emerald-600 text-white border-emerald-600' : 'border-input '
                   }`}
                 >
-                  {currentPreflight.cmyk && <Check className="h-3 w-3" />}
+                  {currentPreflight.cmyk && <Check className="h-3 w-3"/>}
                 </div>
                 <div>
                   <div className="font-bold text-xs">Color Mode: CMYK Process</div>
@@ -117,19 +117,19 @@ export const DesignPreflightModal = React.memo(function DesignPreflightModal({
 
               {/* 300 DPI Check */}
               <div
-                onClick={() => onToggleCheck(job.id, 'dpi300', job.design_number)}
-                className={`p-3 rounded-lg border flex items-center gap-2.5 cursor-pointer transition-all ${
-                  currentPreflight.dpi300
+ onClick={() => onToggleCheck(job.id, 'dpi300', job.design_number)}
+ className={`p-3 rounded-lg border flex items-center gap-2.5 cursor-pointer transition-all ${
+ currentPreflight.dpi300
                     ? 'bg-emerald-50 border-emerald-400 text-emerald-950 dark:bg-emerald-950/40 dark:text-emerald-200'
                     : 'bg-muted border-border text-muted-foreground hover:border-input'
                 }`}
               >
                 <div
-                  className={`h-4 w-4 rounded flex items-center justify-center shrink-0 border ${
-                    currentPreflight.dpi300 ? 'bg-emerald-600 text-white border-emerald-600' : 'border-input dark:border-slate-600'
+ className={`h-4 w-4 rounded flex items-center justify-center shrink-0 border ${
+ currentPreflight.dpi300 ? 'bg-emerald-600 text-white border-emerald-600' : 'border-input '
                   }`}
                 >
-                  {currentPreflight.dpi300 && <Check className="h-3 w-3" />}
+                  {currentPreflight.dpi300 && <Check className="h-3 w-3"/>}
                 </div>
                 <div>
                   <div className="font-bold text-xs">Resolution: ≥ 300 DPI High-Res</div>
@@ -139,19 +139,19 @@ export const DesignPreflightModal = React.memo(function DesignPreflightModal({
 
               {/* Bleed Check */}
               <div
-                onClick={() => onToggleCheck(job.id, 'bleed', job.design_number)}
-                className={`p-3 rounded-lg border flex items-center gap-2.5 cursor-pointer transition-all ${
-                  currentPreflight.bleed
+ onClick={() => onToggleCheck(job.id, 'bleed', job.design_number)}
+ className={`p-3 rounded-lg border flex items-center gap-2.5 cursor-pointer transition-all ${
+ currentPreflight.bleed
                     ? 'bg-emerald-50 border-emerald-400 text-emerald-950 dark:bg-emerald-950/40 dark:text-emerald-200'
                     : 'bg-muted border-border text-muted-foreground hover:border-input'
                 }`}
               >
                 <div
-                  className={`h-4 w-4 rounded flex items-center justify-center shrink-0 border ${
-                    currentPreflight.bleed ? 'bg-emerald-600 text-white border-emerald-600' : 'border-input dark:border-slate-600'
+ className={`h-4 w-4 rounded flex items-center justify-center shrink-0 border ${
+ currentPreflight.bleed ? 'bg-emerald-600 text-white border-emerald-600' : 'border-input '
                   }`}
                 >
-                  {currentPreflight.bleed && <Check className="h-3 w-3" />}
+                  {currentPreflight.bleed && <Check className="h-3 w-3"/>}
                 </div>
                 <div>
                   <div className="font-bold text-xs">Bleed: 3mm / 2.0&quot; Margins</div>
@@ -161,19 +161,19 @@ export const DesignPreflightModal = React.memo(function DesignPreflightModal({
 
               {/* Curves Check */}
               <div
-                onClick={() => onToggleCheck(job.id, 'curves', job.design_number)}
-                className={`p-3 rounded-lg border flex items-center gap-2.5 cursor-pointer transition-all ${
-                  currentPreflight.curves
+ onClick={() => onToggleCheck(job.id, 'curves', job.design_number)}
+ className={`p-3 rounded-lg border flex items-center gap-2.5 cursor-pointer transition-all ${
+ currentPreflight.curves
                     ? 'bg-emerald-50 border-emerald-400 text-emerald-950 dark:bg-emerald-950/40 dark:text-emerald-200'
                     : 'bg-muted border-border text-muted-foreground hover:border-input'
                 }`}
               >
                 <div
-                  className={`h-4 w-4 rounded flex items-center justify-center shrink-0 border ${
-                    currentPreflight.curves ? 'bg-emerald-600 text-white border-emerald-600' : 'border-input dark:border-slate-600'
+ className={`h-4 w-4 rounded flex items-center justify-center shrink-0 border ${
+ currentPreflight.curves ? 'bg-emerald-600 text-white border-emerald-600' : 'border-input '
                   }`}
                 >
-                  {currentPreflight.curves && <Check className="h-3 w-3" />}
+                  {currentPreflight.curves && <Check className="h-3 w-3"/>}
                 </div>
                 <div>
                   <div className="font-bold text-xs">Fonts: Converted to Outlines/Curves</div>
@@ -185,21 +185,20 @@ export const DesignPreflightModal = React.memo(function DesignPreflightModal({
 
           {!allPassed && (
             <div className="flex items-center gap-2 p-2 rounded-md bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300 text-xs">
-              <AlertTriangle className="h-4 w-4 shrink-0 text-amber-600" />
+              <AlertTriangle className="h-4 w-4 shrink-0 text-amber-600"/>
               <span>টিপস: চারটি কোয়ালিটি চেকবক্স পূরণ করলে প্রেসে কোনো টেকনিক্যাল ওয়েস্টেজ হবে না।</span>
             </div>
           )}
 
           {/* Machine Selection */}
           <div className="space-y-1.5">
-            <Label className="text-xs font-bold text-foreground dark:text-muted-foreground">
+            <Label className="text-xs font-bold text-foreground">
               টার্গেট প্রিন্ট ফ্লোর মেশিন (Select Target Printing Machine):
             </Label>
             <select
-              value={selectedMachine}
-              onChange={(e) => setSelectedMachine(e.target.value)}
-              className="w-full text-xs font-semibold rounded-lg border border-input bg-muted p-2.5 text-foreground dark:text-foreground"
-            >
+ value={selectedMachine}
+ onChange={(e) => setSelectedMachine(e.target.value)}
+ className="w-full text-xs font-semibold rounded-lg border border-input bg-muted p-2.5 text-foreground">
               {PRINT_MACHINERY_LIST.map((m) => (
                 <option key={m.id} value={m.id}>
                   {m.name} [{m.type}]
@@ -207,8 +206,8 @@ export const DesignPreflightModal = React.memo(function DesignPreflightModal({
               ))}
             </select>
             {selectedMachineObj && (
-              <div className="text-2xs text-muted-foreground bg-muted p-2 rounded border border-border dark:border-border">
-                <span className="font-bold text-foreground dark:text-muted-foreground">স্পেসিফিকেশন:</span> {selectedMachineObj.specs} | <span className="font-bold text-foreground dark:text-muted-foreground">ফ্লোর:</span> {selectedMachineObj.location}
+              <div className="text-2xs text-muted-foreground bg-muted p-2 rounded border border-border">
+                <span className="font-bold text-foreground">স্পেসিফিকেশন:</span> {selectedMachineObj.specs} | <span className="font-bold text-foreground">ফ্লোর:</span> {selectedMachineObj.location}
               </div>
             )}
           </div>
@@ -216,21 +215,14 @@ export const DesignPreflightModal = React.memo(function DesignPreflightModal({
           {/* Actions */}
           <div className="flex items-center justify-between border-t border-border pt-3">
             <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={onClose}
-              className="text-xs text-muted-foreground dark:text-muted-foreground"
-            >
+ type="button"variant="outline"size="sm"onClick={onClose}
+ className="text-xs text-muted-foreground">
               বাতিল (Cancel)
             </Button>
             <Button
-              type="submit"
-              size="sm"
-              disabled={isSubmitting}
-              className="text-xs bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-md"
-            >
-              <Printer className="h-3.5 w-3.5 mr-1.5" />
+ type="submit"size="sm"disabled={isSubmitting}
+ className="text-xs bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-xs">
+              <Printer className="h-3.5 w-3.5 mr-1.5"/>
               <span>{isSubmitting ? 'প্রক্রিয়াধীন...' : 'অনুমোদন ও প্রেসে পাঠান (Authorize & Route)'}</span>
             </Button>
           </div>

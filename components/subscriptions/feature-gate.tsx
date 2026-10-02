@@ -6,50 +6,50 @@ import { useFeatureGate } from '@/hooks/use-feature-gate'
 import { UpgradePrompt } from './upgrade-prompt'
 
 interface FeatureGateProps {
-  feature: FeatureCode
-  children: React.ReactNode
-  fallback?: React.ReactNode
-  hideIfForbidden?: boolean
-  compact?: boolean
-  className?: string
+ feature: FeatureCode
+ children: React.ReactNode
+ fallback?: React.ReactNode
+ hideIfForbidden?: boolean
+ compact?: boolean
+ className?: string
 }
 
 export function FeatureGate({
-  feature,
-  children,
-  fallback,
-  hideIfForbidden = false,
-  compact = false,
-  className = '',
+ feature,
+ children,
+ fallback,
+ hideIfForbidden = false,
+ compact = false,
+ className = '',
 }: FeatureGateProps) {
-  const { hasAccess, isLoading } = useFeatureGate(feature)
+ const { hasAccess, isLoading } = useFeatureGate(feature)
 
-  if (hasAccess) {
-    return <>{children}</>
+ if (hasAccess) {
+ return <>{children}</>
   }
 
-  if (isLoading) {
-    if (compact) {
-      return (
-        <div className={`h-12 rounded-xl border border-border bg-slate-100/50 animate-pulse ${className}`} />
+ if (isLoading) {
+ if (compact) {
+ return (
+        <div className={`h-12 rounded-xl border border-border bg-muted/50 animate-pulse ${className}`} />
       )
     }
-    return (
-      <div className={`p-8 rounded-2xl border border-border bg-slate-100/40 flex flex-col items-center justify-center space-y-3 animate-pulse ${className}`}>
-        <div className="h-10 w-10 rounded-xl bg-muted dark:bg-muted" />
-        <div className="h-4 w-48 rounded bg-muted dark:bg-muted" />
-        <div className="h-3 w-32 rounded bg-muted dark:bg-muted" />
+ return (
+      <div className={`p-8 rounded-xl border border-border bg-muted/40 flex flex-col items-center justify-center space-y-3 animate-pulse ${className}`}>
+        <div className="h-10 w-10 rounded-xl bg-muted"/>
+        <div className="h-4 w-48 rounded bg-muted"/>
+        <div className="h-3 w-32 rounded bg-muted"/>
       </div>
     )
   }
 
-  if (hideIfForbidden) {
-    return null
+ if (hideIfForbidden) {
+ return null
   }
 
-  if (fallback) {
-    return <>{fallback}</>
+ if (fallback) {
+ return <>{fallback}</>
   }
 
-  return <UpgradePrompt feature={feature} compact={compact} className={className} />
+ return <UpgradePrompt feature={feature} compact={compact} className={className} />
 }
