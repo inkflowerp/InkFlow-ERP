@@ -1,4 +1,3 @@
-import 'server-only'
 import { createServerClient } from '@supabase/ssr'
 import type { Database } from '../../types/database.types.ts'
 import { getAuthCookieOptions } from '../tenant/tenant-resolution.ts'

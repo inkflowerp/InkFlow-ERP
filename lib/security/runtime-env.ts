@@ -3,15 +3,16 @@
  * Distinguishes between test suites, browser, and server execution.
  */
 export function isTestEnvironment(): boolean {
-  if (typeof process === 'undefined') return false
+  if (typeof process === 'undefined' || !process.env) return false
+  if (process.env.NEXT_RUNTIME === 'edge') return false
   if (process.env.NODE_ENV === 'production') return false
-  return (
-    process.env.NODE_ENV === 'test' ||
-    typeof process.env.NODE_TEST_CONTEXT !== 'undefined' ||
-    Boolean(process.env.npm_lifecycle_event && process.env.npm_lifecycle_event.includes('test')) ||
-    (Array.isArray(process.execArgv) && process.execArgv.includes('--test')) ||
-    (Array.isArray(process.argv) && process.argv.some(arg => arg.includes('--test') || arg.includes('tests/')))
-  )
+  if (process.env.NODE_ENV === 'test' || typeof process.env.NODE_TEST_CONTEXT !== 'undefined') return true
+  if (Boolean(process.env.npm_lifecycle_event && process.env.npm_lifecycle_event.includes('test'))) return true
+  
+  const proc = process as any
+  const execArgv = proc && typeof proc === 'object' && Array.isArray(proc['execArgv']) ? proc['execArgv'] : []
+  const argv = proc && typeof proc === 'object' && Array.isArray(proc['argv']) ? proc['argv'] : []
+  return execArgv.includes('--test') || argv.some((arg: string) => typeof arg === 'string' && (arg.includes('--test') || arg.includes('tests/')))
 }
 
 /**
