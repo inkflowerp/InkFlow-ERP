@@ -124,7 +124,7 @@ export function CashClosingView({
   return (
     <div className="space-y-6">
       {/* 1. TOP HEADER STRIP */}
-      <div className="p-5 rounded-3xl bg-linear-to-r from-purple-950 via-slate-900 to-indigo-950 text-white shadow-xl border border-border flex flex-col md:flex-row md:items-center justify-between gap-5">
+      <div className="p-5 rounded-2xl bg-card shadow-xs border border-border flex flex-col md:flex-row md:items-center justify-between gap-5">
         <div>
           <div className="flex items-center gap-2 mb-1">
             <Badge className="bg-purple-500/20 text-purple-300 border-none text-2xs uppercase tracking-wider flex items-center gap-1">
@@ -155,7 +155,7 @@ export function CashClosingView({
           <Button
             onClick={handleLockClosing}
             disabled={isSubmitting}
-            className="bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs h-10 px-5 rounded-xl shadow-lg shadow-purple-950/40 flex items-center gap-2 cursor-pointer self-start md:self-auto transition-all hover:scale-102"
+            variant="default" className="text-xs h-9 px-4 gap-2 self-start md:self-auto"
           >
             <Lock className="w-4 h-4" />
             <span>{isSubmitting ? tBilingual('Locking...', 'লক হচ্ছে...') : tBilingual('Confirm & Lock Closing', 'নিশ্চিত করুন ও লক করুন')}</span>
@@ -401,7 +401,7 @@ export function CashClosingView({
                 <Button
                   onClick={handleLockClosing}
                   disabled={isSubmitting}
-                  className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs h-10 rounded-xl shadow-xs flex items-center justify-center gap-2 cursor-pointer"
+                  variant="default" className="w-full text-xs h-10 gap-2"
                 >
                   <Lock className="w-4 h-4" />
                   <span>{isSubmitting ? tBilingual('Locking...', 'লক হচ্ছে...') : tBilingual('Confirm & Lock Today Closing', 'ক্লোজিং নিশ্চিত করুন ও লক করুন')}</span>

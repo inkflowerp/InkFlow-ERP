@@ -406,30 +406,30 @@ export function OwnerDashboard({
       {/* ========================================================================= */}
       {/* 1. UPGRADED EXECUTIVE CONTROL CENTER HEADER (Vibrant Gradient + Identity) */}
       {/* ========================================================================= */}
-      <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl border border-blue-400/20 dark:border-blue-500/20 bg-gradient-to-r from-[#1E5AF6] via-[#1642B5] to-[#0A1633] p-6 sm:p-7 md:p-8 shadow-md text-white">
+      <div className="rounded-2xl bg-card border border-border shadow-xs p-5 sm:p-6">
         {/* Ambient Subtle Accent Highlights */}
-        <div className="pointer-events-none absolute -right-16 -top-16 h-60 w-60 rounded-full bg-blue-400/5 blur-3xl" />
-        <div className="pointer-events-none absolute -left-16 -bottom-16 h-60 w-60 rounded-full bg-blue-300/15 blur-3xl" />
+        
+        
 
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           {/* LEFT: Business Identity + Context Badge + Dynamic Greeting + Date */}
           <div className="space-y-2 min-w-0">
             {/* Top Context Row */}
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xs sm:text-sm font-black uppercase tracking-wider text-white drop-shadow-2xs">
+              <span className="text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
                 {company ? tBilingual(company.name, company.name_bn || company.name) : 'InkFlow Business'}
               </span>
 
               <Badge
                 variant="outline"
-                className="bg-card/15 text-white border-white/25 backdrop-blur-sm font-bold text-2xs sm:text-xs py-0.5 px-2.5 rounded-full flex items-center gap-1.5 shadow-2xs"
+                className="font-semibold text-2xs sm:text-xs py-0.5 px-2.5"
               >
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
                 <span>{tBilingual('Digital • Offset • Signage Command Center', 'ডিজিটাল • অফসেট • সাইনেজ নিয়ন্ত্রণ কেন্দ্র')}</span>
               </Badge>
 
               {currentBranch && (
-                <Badge variant="outline" className="bg-card/10 text-blue-100 border-white/20 text-2xs py-0.5 px-2 rounded-full">
+                <Badge variant="outline" className="text-2xs py-0.5 px-2">
                   <Building className="h-3 w-3 mr-1 text-blue-200" />
                   {currentBranch.name.split('(')[0].trim()}
                 </Badge>
@@ -438,15 +438,15 @@ export function OwnerDashboard({
 
             {/* Main Greeting */}
             <h1
-              className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-white bangla-text leading-tight drop-shadow-2xs"
+              className="text-2xl sm:text-3xl font-black tracking-tight text-foreground bangla-text leading-tight"
               suppressHydrationWarning
             >
               {tBilingual(`${greeting.en}, ${userFirstName}`, `${greeting.bn}, ${userFirstName}`)}
             </h1>
 
             {/* Business Date */}
-            <div className="flex items-center gap-2 text-xs sm:text-sm text-blue-100/90 font-medium pt-0.5">
-              <Calendar className="h-4 w-4 text-blue-200 shrink-0" />
+            <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground font-medium pt-0.5">
+              <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
               <span suppressHydrationWarning>
                 {formatBangladeshDate(new Date(), locale as 'en' | 'bn', {
                   weekday: 'long',
@@ -459,14 +459,14 @@ export function OwnerDashboard({
           </div>
 
           {/* RIGHT: Time/Status Focal Area (Large Clock + Current Time) */}
-          <div className="flex flex-col md:items-end justify-center shrink-0 pt-3 md:pt-0 border-t border-white/10 md:border-t-0">
-            <div className="flex items-center gap-2 md:justify-end text-blue-100/90 mb-1">
-              <Clock className="h-4 w-4 text-blue-200 shrink-0" />
-              <span className="text-2xs sm:text-xs font-bold uppercase tracking-widest text-blue-200">
+          <div className="flex flex-col md:items-end justify-center shrink-0 pt-3 md:pt-0 border-t border-border md:border-t-0">
+            <div className="flex items-center gap-2 md:justify-end text-muted-foreground mb-1">
+              <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
+              <span className="text-2xs sm:text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                 {tBilingual('Current Time', 'বর্তমান সময়')}
               </span>
               {isUpdating && (
-                <span className="flex items-center gap-1 text-2xs font-bold text-cyan-200 bg-card/20 px-2 py-0.5 rounded-full border border-white/25 animate-pulse">
+                <span className="flex items-center gap-1 text-2xs font-semibold text-muted-foreground bg-muted px-2 py-0.5 rounded-full border border-border animate-pulse">
                   <RefreshCw className="h-2.5 w-2.5 animate-spin" />
                   <span>{tBilingual('Syncing', 'সিঙ্ক হচ্ছে')}</span>
                 </span>
@@ -477,10 +477,10 @@ export function OwnerDashboard({
               showSeconds={true}
               showIcon={false}
               className="inline-flex items-center"
-              timeClassName="text-3xl sm:text-4xl lg:text-5xl font-bold font-numeric tabular-nums tracking-normal text-white drop-shadow-sm leading-none"
+              timeClassName="text-3xl sm:text-4xl font-bold font-numeric tabular-nums tracking-normal text-foreground leading-none"
             />
 
-            <span className="text-2xs text-blue-200/80 font-semibold mt-1">
+            <span className="text-2xs text-muted-foreground font-medium mt-1">
               {tBilingual('Asia/Dhaka (UTC+6)', 'বাংলাদেশ সময়')}
             </span>
           </div>
@@ -604,25 +604,25 @@ export function OwnerDashboard({
       {/* 3. CASH & LIQUIDITY IN-DRAWER PANEL (ক্যাশ ড্রয়ার ও ডিজিটাল ব্যালেন্স)   */}
       {/* ========================================================================= */}
       {safeData.hasFinancialPermission !== false && safeData.liquiditySummary && (
-        <Card className="border-border shadow-xs bg-gradient-to-br from-slate-900 via-blue-950 to-slate-950 text-white rounded-2xl sm:rounded-3xl p-4 sm:p-5">
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-white/10">
+        <Card className="border-border shadow-xs bg-card rounded-2xl p-4 sm:p-5">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-border">
             <div className="flex items-center gap-2.5">
-              <div className="p-2 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+              <div className="p-2 rounded-lg bg-muted text-muted-foreground">
                 <Wallet className="h-5 w-5" />
               </div>
               <div>
-                <h2 className="text-sm font-black tracking-wide text-white uppercase bangla-text">
+                <h2 className="text-sm font-bold tracking-wide text-foreground uppercase bangla-text">
                   {tBilingual('Live Liquid Funds & Cash Drawer', 'হাতের নগদ ক্যাশ ড্রয়ার ও ডিজিটাল ব্যালেন্স')}
                 </h2>
-                <p className="text-xs text-blue-200/80 bangla-text">
+                <p className="text-xs text-muted-foreground bangla-text">
                   {tBilingual('Real-time counter cash in drawer, bKash merchant & bank balances', 'কাউন্টার ক্যাশ, বিকাশ/নগদ ও ব্যাংক একাউন্টের সরাসরি হিসাব')}
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-2 bg-card/10 px-3.5 py-1.5 rounded-full border border-white/15">
-              <span className="text-xs text-blue-200 font-semibold">{tBilingual('Total Liquid Cash:', 'মোট ক্যাশ ব্যালেন্স:')}</span>
-              <span className="text-base font-black tabular-nums text-emerald-300">
+            <div className="flex items-center gap-2 bg-muted px-3.5 py-1.5 rounded-full border border-border">
+              <span className="text-xs text-muted-foreground font-semibold">{tBilingual('Total Liquid Cash:', 'মোট ক্যাশ ব্যালেন্স:')}</span>
+              <span className="text-base font-black tabular-nums text-emerald-600 dark:text-emerald-400">
                 {formatBDT(safeData.liquiditySummary.totalLiquidAssets)}
               </span>
             </div>
@@ -630,75 +630,75 @@ export function OwnerDashboard({
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4">
             {/* 1. Cash in Counter Drawer */}
-            <div className="p-3 bg-card/5 rounded-xl border border-white/10 hover:bg-card/10 transition-all space-y-1">
-              <div className="flex items-center justify-between text-xs text-emerald-300 font-medium">
+            <div className="p-3 bg-muted/50 rounded-xl border border-border hover:bg-muted transition-all space-y-1">
+              <div className="flex items-center justify-between text-xs text-emerald-600 dark:text-emerald-400 font-medium">
                 <span className="flex items-center gap-1.5">
                   <Wallet className="h-3.5 w-3.5" />
                   {tBilingual('Cash in Drawer', 'ক্যাশ ড্রয়ার')}
                 </span>
                 <span className="text-2xs tabular-nums opacity-80">1001</span>
               </div>
-              <div className="text-lg font-black tabular-nums text-white">
+              <div className="text-lg font-black tabular-nums text-foreground">
                 {formatBDT(safeData.liquiditySummary.cashInHand)}
               </div>
-              <div className="text-2xs text-emerald-400 font-semibold">
+              <div className="text-2xs text-emerald-600 dark:text-emerald-400 font-medium">
                 {tBilingual('Main Counter Cash', 'প্রধান ক্যাশ কাউন্টার')}
               </div>
             </div>
 
             {/* 2. bKash / Nagad / MFS */}
-            <div className="p-3 bg-card/5 rounded-xl border border-white/10 hover:bg-card/10 transition-all space-y-1">
-              <div className="flex items-center justify-between text-xs text-pink-300 font-medium">
+            <div className="p-3 bg-muted/50 rounded-xl border border-border hover:bg-muted transition-all space-y-1">
+              <div className="flex items-center justify-between text-xs text-pink-600 dark:text-pink-400 font-medium">
                 <span className="flex items-center gap-1.5">
                   <Smartphone className="h-3.5 w-3.5" />
                   {tBilingual('bKash / Nagad MFS', 'বিকাশ / নগদ')}
                 </span>
                 <span className="text-2xs tabular-nums opacity-80">1003</span>
               </div>
-              <div className="text-lg font-black tabular-nums text-white">
+              <div className="text-lg font-black tabular-nums text-foreground">
                 {formatBDT(safeData.liquiditySummary.mfsBalance)}
               </div>
-              <div className="text-2xs text-pink-300 font-semibold">
+              <div className="text-2xs text-pink-600 dark:text-pink-400 font-medium">
                 {tBilingual('Merchant Accounts', 'মার্চেন্ট ওয়ালেট')}
               </div>
             </div>
 
             {/* 3. Bank Accounts */}
-            <div className="p-3 bg-card/5 rounded-xl border border-white/10 hover:bg-card/10 transition-all space-y-1">
-              <div className="flex items-center justify-between text-xs text-cyan-300 font-medium">
+            <div className="p-3 bg-muted/50 rounded-xl border border-border hover:bg-muted transition-all space-y-1">
+              <div className="flex items-center justify-between text-xs text-blue-600 dark:text-blue-400 font-medium">
                 <span className="flex items-center gap-1.5">
                   <Landmark className="h-3.5 w-3.5" />
                   {tBilingual('Bank Accounts', 'ব্যাংক একাউন্ট')}
                 </span>
                 <span className="text-2xs tabular-nums opacity-80">1002</span>
               </div>
-              <div className="text-lg font-black tabular-nums text-white">
+              <div className="text-lg font-black tabular-nums text-foreground">
                 {formatBDT(safeData.liquiditySummary.bankBalance)}
               </div>
-              <div className="text-2xs text-cyan-300 font-semibold">
+              <div className="text-2xs text-blue-600 dark:text-blue-400 font-medium">
                 {tBilingual('Current / CD Accounts', 'চলতি হিসাব')}
               </div>
             </div>
 
             {/* 4. Today's Net Cash Flow (Collection vs Expenses) */}
-            <div className="p-3 bg-card/5 rounded-xl border border-white/10 hover:bg-card/10 transition-all space-y-1">
-              <div className="flex items-center justify-between text-xs text-amber-300 font-medium">
+            <div className="p-3 bg-muted/50 rounded-xl border border-border hover:bg-muted transition-all space-y-1">
+              <div className="flex items-center justify-between text-xs text-amber-600 dark:text-amber-400 font-medium">
                 <span className="flex items-center gap-1.5">
                   <TrendingUp className="h-3.5 w-3.5" />
                   {tBilingual('Today Net Flow', 'আজকের নিট জমা')}
                 </span>
-                <span className="text-2xs tabular-nums font-bold text-emerald-300">
+                <span className="text-2xs tabular-nums font-bold text-emerald-600 dark:text-emerald-400">
                   +{formatBDT(safeData.liquiditySummary.todayCollection)}
                 </span>
               </div>
-              <div className="text-lg font-black tabular-nums text-white">
+              <div className="text-lg font-black tabular-nums text-foreground">
                 {formatBDT(safeData.liquiditySummary.todayNetCashFlow)}
               </div>
               <div className="flex items-center justify-between text-2xs font-medium pt-0.5">
-                <span className="text-rose-300">
+                <span className="text-rose-600 dark:text-rose-400">
                   {tBilingual('Expense:', 'খরচ:')} -{formatBDT(safeData.liquiditySummary.todayExpenses)}
                 </span>
-                <span className="text-emerald-300 font-bold">
+                <span className="text-emerald-600 dark:text-emerald-400 font-semibold">
                   {tBilingual('Net Drawer', 'নিট জমা')}
                 </span>
               </div>
@@ -973,7 +973,7 @@ export function OwnerDashboard({
                 <h3 className="text-xs font-black uppercase tracking-wider text-rose-900 dark:text-rose-200 bangla-text">
                   {tBilingual('Critical Raw Material Shortage Alert', 'কাঁচামাল সংকট সতর্কতা (পেপার, ব্যানার, কালি ও প্লেট)')}
                 </h3>
-                <p className="text-2xs text-rose-700 dark:text-rose-300 bangla-text">
+                <p className="text-2xs text-rose-700 dark:text-rose-600 dark:text-rose-400 bangla-text">
                   {tBilingual('Items below minimum stock level that may stall print machine operations.', 'স্টক ফুরিয়ে যাওয়া কাঁচামাল যা চলমান উৎপাদন ব্যাহত করতে পারে।')}
                 </p>
               </div>

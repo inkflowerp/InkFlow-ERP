@@ -446,7 +446,7 @@ export function DashboardView({ initialSnapshot = null, tenantSlug }: DashboardV
       return (
         <div className="space-y-6 pb-12 animate-pulse">
           {/* Header Skeleton */}
-          <div className="rounded-2xl bg-gradient-to-r from-blue-700 via-indigo-700 to-slate-900 p-5 sm:p-6 text-white shadow-xl">
+          <div className="rounded-2xl bg-card border border-border shadow-xs p-5 sm:p-6">
             <div className="h-4 w-40 bg-card/20 rounded-full mb-3" />
             <div className="h-8 w-64 bg-card/30 rounded-lg mb-2" />
             <div className="h-4 w-96 bg-card/20 rounded-md" />
@@ -495,7 +495,7 @@ export function DashboardView({ initialSnapshot = null, tenantSlug }: DashboardV
       return (
         <div className="space-y-6 pb-12 animate-pulse">
           {/* Header Skeleton */}
-          <div className="rounded-2xl bg-gradient-to-r from-blue-700 via-indigo-700 to-slate-900 p-5 sm:p-6 text-white shadow-xl">
+          <div className="rounded-2xl bg-card border border-border shadow-xs p-5 sm:p-6">
             <div className="h-4 w-40 bg-card/20 rounded-full mb-3" />
             <div className="h-8 w-64 bg-card/30 rounded-lg mb-2" />
             <div className="h-4 w-96 bg-card/20 rounded-md" />

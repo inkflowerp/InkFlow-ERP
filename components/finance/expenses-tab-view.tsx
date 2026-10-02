@@ -111,7 +111,7 @@ export function ExpensesTabView({
   return (
     <div className="space-y-6">
       {/* 1. TOP STATS BAR & + ADD EXPENSE BUTTON */}
-      <div className="p-5 rounded-3xl bg-linear-to-r from-rose-950 via-slate-900 to-indigo-950 text-white shadow-xl border border-border flex flex-col md:flex-row md:items-center justify-between gap-5">
+      <div className="p-5 rounded-2xl bg-card shadow-xs border border-border flex flex-col md:flex-row md:items-center justify-between gap-5">
         <div>
           <div className="flex items-center gap-2 mb-1">
             <Badge className="bg-rose-500/20 text-rose-300 border-none text-2xs uppercase tracking-wider">
@@ -137,7 +137,7 @@ export function ExpensesTabView({
         {/* Primary + Add Expense Button */}
         <Button
           onClick={() => onOpenSpendModal()}
-          className="bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs h-10 px-5 rounded-xl shadow-lg shadow-rose-950/40 flex items-center gap-2 cursor-pointer self-start md:self-auto transition-all hover:scale-102"
+          variant="destructive" className="text-xs h-9 px-4 gap-2 self-start md:self-auto"
         >
           <Plus className="w-4 h-4" />
           <span>{tBilingual('+ Add Expense', '+ নতুন খরচ এন্ট্রি')}</span>

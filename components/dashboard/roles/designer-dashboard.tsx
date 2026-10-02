@@ -284,24 +284,24 @@ export function DesignerDashboard({ tasks, onRefresh }: DesignerDashboardProps) 
 
 
       {/* Hero Command Banner */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-violet-950 via-purple-900 to-slate-900 p-6 sm:p-7 text-white shadow-xl border border-purple-500/20">
+      <div className="rounded-2xl bg-card border border-border shadow-xs p-5 sm:p-6">
         <div className="absolute -right-8 -top-8 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-5">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-5">
           <div className="space-y-1.5 max-w-2xl">
             <div className="flex items-center gap-2">
               <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/30 text-xs font-semibold backdrop-blur-sm flex items-center gap-1.5 px-2.5 py-0.5">
                 <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
                 {tBilingual('Pre-Press Command Center', 'প্রি-প্রেস কমান্ড সেন্টার')}
               </Badge>
-              <Badge className="bg-card/10 text-white border-white/15 text-xs tabular-nums font-medium">
+              <Badge className="bg-card/10 text-white border-border text-xs tabular-nums font-medium">
                 {userDisplayName}
               </Badge>
             </div>
             <h1 className="text-xl sm:text-2xl md:text-3xl font-black tracking-tight text-white flex items-center gap-2.5">
-              <Palette className="h-7 w-7 text-purple-300" />
+              <Palette className="h-7 w-7 text-muted-foreground" />
               <span>{tBilingual('Graphic Design & Pre-Press Cockpit', 'গ্রাফিক ডিজাইন ও প্রি-প্রেস ককপিট')}</span>
             </h1>
-            <p className="text-xs sm:text-sm text-purple-100/90 leading-relaxed">
+            <p className="text-xs sm:text-sm text-muted-foreground/90 leading-relaxed">
               {tBilingual(
                 'High-resolution artwork preflighting, client WhatsApp proofing, color separations, and direct print operator dispatch.',
                 'ক্লায়েন্ট প্রুফিং, ৩শ ডিপিআই কালার সেপারেশন, ডাই-কাট ফাইল প্রস্তুত ও প্রেসে ফাইল ছাড়ার স্বয়ংক্রিয় কমান্ড।'
@@ -324,7 +324,7 @@ export function DesignerDashboard({ tasks, onRefresh }: DesignerDashboardProps) 
               variant="outline"
               className="bg-purple-900/60 hover:bg-purple-800/80 text-white border-purple-400/30 font-bold text-xs sm:text-sm transition-all flex items-center gap-2 h-10 px-4"
             >
-              <Layers className="h-4 w-4 text-purple-300" />
+              <Layers className="h-4 w-4 text-muted-foreground" />
               <span>{tBilingual('Work Orders', 'কাজের অর্ডার')}</span>
             </Button>
 
@@ -332,7 +332,7 @@ export function DesignerDashboard({ tasks, onRefresh }: DesignerDashboardProps) 
               onClick={handleRefresh}
               variant="ghost"
               disabled={isRefreshing}
-              className="h-10 w-10 p-0 text-purple-200 hover:text-white hover:bg-card/10 rounded-xl"
+              className="h-10 w-10 p-0 text-muted-foreground hover:text-white hover:bg-card/10 rounded-xl"
               title="Refresh Queue"
             >
               <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
@@ -374,10 +374,10 @@ export function DesignerDashboard({ tasks, onRefresh }: DesignerDashboardProps) 
       </KpiGrid>
 
       {/* Pre-Press Machinery Reference & Checklist Bar */}
-      <Card className="border border-purple-100 dark:border-purple-900/40 bg-gradient-to-r from-purple-50/50 via-slate-50 to-indigo-50/40 dark:from-slate-900 dark:via-purple-950/20 dark:to-slate-900 overflow-hidden shadow-sm">
+      <Card className="border border-border bg-card shadow-xs">
         <div className="p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-start gap-3">
-            <div className="h-10 w-10 rounded-xl bg-purple-600/10 text-purple-700 dark:text-purple-300 flex items-center justify-center shrink-0">
+            <div className="h-10 w-10 rounded-xl bg-purple-600/10 text-purple-700 dark:text-muted-foreground flex items-center justify-center shrink-0">
               <ShieldCheck className="h-5 w-5" />
             </div>
             <div>
@@ -400,7 +400,7 @@ export function DesignerDashboard({ tasks, onRefresh }: DesignerDashboardProps) 
             size="sm"
             variant="outline"
             onClick={() => setShowSpecsGuide(!showSpecsGuide)}
-            className="text-xs font-bold text-purple-700 dark:text-purple-300 border-purple-300 dark:border-purple-700 hover:bg-purple-100/50 shrink-0 flex items-center gap-1.5"
+            className="text-xs font-bold text-purple-700 dark:text-muted-foreground border-purple-300 dark:border-purple-700 hover:bg-purple-100/50 shrink-0 flex items-center gap-1.5"
           >
             <SlidersHorizontal className="h-3.5 w-3.5" />
             <span>{showSpecsGuide ? tBilingual('Hide Reference Specs', 'মাপ লুকান') : tBilingual('View Machine Specs Guide', 'মেশিনের মাপ দেখুন')}</span>
@@ -547,7 +547,7 @@ export function DesignerDashboard({ tasks, onRefresh }: DesignerDashboardProps) 
         ) : filteredJobs.length === 0 ? (
           <Card className="border border-dashed border-input p-12 text-center bg-muted dark:bg-card">
             <div className="flex flex-col items-center justify-center space-y-3 max-w-sm mx-auto">
-              <div className="h-12 w-12 rounded-2xl bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300 flex items-center justify-center">
+              <div className="h-12 w-12 rounded-2xl bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-muted-foreground flex items-center justify-center">
                 <Palette className="h-6 w-6" />
               </div>
               <h3 className="text-sm font-bold text-foreground dark:text-foreground">
@@ -613,7 +613,7 @@ export function DesignerDashboard({ tasks, onRefresh }: DesignerDashboardProps) 
                             {tBilingual('Revision Requested', 'সংশোধন প্রয়োজন')}
                           </Badge>
                         ) : isDesigning ? (
-                          <Badge className="bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 border-purple-300 text-xs font-bold">
+                          <Badge className="bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-muted-foreground border-purple-300 text-xs font-bold">
                             <Palette className="h-3 w-3 mr-1" />
                             {tBilingual('Designing / Working', 'ডিজাইন চলছে')}
                           </Badge>
@@ -885,7 +885,7 @@ export function DesignerDashboard({ tasks, onRefresh }: DesignerDashboardProps) 
           <DialogContent className="max-w-lg p-5 sm:p-6" onClose={() => setReleaseModalJob(null)}>
             <div className="space-y-4">
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-xl bg-purple-500/10 text-purple-700 dark:text-purple-300 flex items-center justify-center shrink-0">
+                <div className="h-10 w-10 rounded-xl bg-purple-500/10 text-purple-700 dark:text-muted-foreground flex items-center justify-center shrink-0">
                   <Printer className="h-5 w-5" />
                 </div>
                 <div>

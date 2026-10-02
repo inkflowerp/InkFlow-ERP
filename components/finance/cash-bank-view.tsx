@@ -144,10 +144,10 @@ export function CashBankView({
   return (
     <div className="space-y-6">
       {/* 1. TOP SUMMARY STRIP & ACTION BUTTONS */}
-      <div className="p-5 rounded-3xl bg-linear-to-r from-slate-900 via-slate-850 to-indigo-950 text-white shadow-xl border border-border flex flex-col md:flex-row md:items-center justify-between gap-5">
+      <div className="p-5 rounded-2xl bg-card shadow-xs border border-border flex flex-col md:flex-row md:items-center justify-between gap-5">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <Badge className="bg-emerald-500/20 text-emerald-300 border-none text-2xs uppercase tracking-wider">
+            <Badge className="text-2xs uppercase tracking-wider font-semibold">
               {tBilingual('Liquid Treasury', 'চলতি নগদ ও ব্যাংক তহবিল')}
             </Badge>
           </div>
@@ -171,7 +171,7 @@ export function CashBankView({
         <div className="flex flex-wrap items-center gap-2">
           <Button
             onClick={onOpenAddAccount}
-            className="bg-blue-600 hover:bg-blue-500 text-white text-xs h-9 px-3.5 rounded-xl font-semibold shadow-xs flex items-center gap-1.5 cursor-pointer"
+            variant="outline" className="text-xs h-9 px-3.5 gap-1.5"
           >
             <Plus className="w-4 h-4" />
             <span>{tBilingual('Add Account', '+ নতুন হিসাব')}</span>
@@ -179,7 +179,7 @@ export function CashBankView({
 
           <Button
             onClick={() => onOpenMoneyIn()}
-            className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs h-9 px-3.5 rounded-xl font-semibold shadow-xs flex items-center gap-1.5 cursor-pointer"
+            variant="success" className="text-xs h-9 px-3.5 gap-1.5"
           >
             <ArrowDownLeft className="w-4 h-4" />
             <span>{tBilingual('Money In', 'টাকা জমা')}</span>
@@ -187,7 +187,7 @@ export function CashBankView({
 
           <Button
             onClick={() => onOpenSpendModal()}
-            className="bg-rose-600 hover:bg-rose-500 text-white text-xs h-9 px-3.5 rounded-xl font-semibold shadow-xs flex items-center gap-1.5 cursor-pointer"
+            variant="destructive" className="text-xs h-9 px-3.5 gap-1.5"
           >
             <ArrowUpRight className="w-4 h-4" />
             <span>{tBilingual('Money Out', 'টাকা খরচ')}</span>
@@ -196,7 +196,7 @@ export function CashBankView({
           <Button
             onClick={() => onOpenTransferModal()}
             variant="outline"
-            className="border-border bg-slate-800 text-foreground hover:bg-slate-700 text-xs h-9 px-3.5 rounded-xl font-semibold cursor-pointer flex items-center gap-1.5"
+            className="text-xs h-9 px-3.5 gap-1.5"
           >
             <ArrowLeftRight className="w-4 h-4" />
             <span>{tBilingual('Transfer', 'ট্রান্সফার')}</span>

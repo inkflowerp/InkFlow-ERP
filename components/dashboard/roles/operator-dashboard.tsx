@@ -111,16 +111,16 @@ export function OperatorDashboard({ tasks, onRefresh }: OperatorDashboardProps) 
   return (
     <div className="space-y-6 max-w-6xl mx-auto pb-16">
       {/* 1. SHOP FLOOR COCKPIT BANNER */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-slate-900 via-blue-950 to-indigo-900 p-5 sm:p-6 text-white shadow-xl">
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-5">
+      <div className="rounded-2xl bg-card border border-border shadow-xs p-5 sm:p-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-5">
           <div className="space-y-2">
             <div className="flex flex-wrap items-center gap-2">
-              <Badge className="bg-cyan-500/20 text-cyan-300 border-cyan-400/30 text-xs font-semibold">
+              <Badge className="text-xs font-semibold">
                 <Printer className="h-3 w-3 mr-1" />
                 {tBilingual('Shop Floor & Press Terminal', 'প্রেস ও ফ্লোর টার্মিনাল')}
               </Badge>
               {currentBranch && (
-                <Badge variant="outline" className="text-white border-white/20 text-xs">
+                <Badge variant="outline" className="text-xs">
                   <Building className="h-3 w-3 mr-1" />
                   {currentBranch.name.split('(')[0].trim()}
                 </Badge>
@@ -139,9 +139,9 @@ export function OperatorDashboard({ tasks, onRefresh }: OperatorDashboardProps) 
           </div>
 
           {/* Quick Shift Punch Status */}
-          <div className="bg-card/10 backdrop-blur-md border border-white/15 rounded-xl p-4 min-w-[240px] text-center md:text-right space-y-2 shrink-0">
-            <div className="text-xs text-blue-200 flex items-center justify-center md:justify-end gap-1.5 font-medium">
-              <Clock className="h-3.5 w-3.5 text-cyan-400" />
+          <div className="bg-muted border border-border rounded-xl p-4 min-w-[240px] text-center md:text-right space-y-2 shrink-0">
+            <div className="text-xs text-muted-foreground flex items-center justify-center md:justify-end gap-1.5 font-medium">
+              <Clock className="h-3.5 w-3.5 text-muted-foreground" />
               <span>{tBilingual('Duty Attendance', 'হাজিরা ও শিফট')}</span>
             </div>
 

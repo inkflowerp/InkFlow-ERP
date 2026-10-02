@@ -30,7 +30,7 @@ export function DashboardHeader({
   const branchDisplay = branchName ? ` • ${branchName.split('(')[0].trim()}` : ''
 
   return (
-    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 rounded-2xl bg-gradient-to-r from-blue-700 via-indigo-700 to-slate-900 p-5 sm:p-6 text-white shadow-xl shadow-blue-900/10">
+    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 rounded-2xl bg-card border border-border shadow-xs p-5 sm:p-6">
       <div className="space-y-1.5 min-w-0">
         <div
           className="inline-flex items-center gap-1.5 rounded-full bg-card/10 px-2.5 py-0.5 text-xs text-cyan-300 backdrop-blur-sm"
@@ -64,7 +64,7 @@ export function DashboardHeader({
             <Badge
               key={resp}
               variant="outline"
-              className="bg-card/10 text-white border-white/20 text-xs py-0.5 capitalize bangla-text"
+              className="text-xs py-0.5 capitalize bangla-text"
             >
               {resp.replace('_', ' ')}
             </Badge>

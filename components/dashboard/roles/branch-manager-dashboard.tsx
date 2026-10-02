@@ -184,19 +184,19 @@ export function BranchManagerDashboard({
   return (
     <div className="space-y-6">
       {/* Hero Banner: Branch Identity & Quick Actions */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-emerald-950 via-teal-900 to-slate-900 p-6 sm:p-7 text-white shadow-xl border border-emerald-500/20">
+      <div className="rounded-2xl bg-card border border-border shadow-xs p-5 sm:p-6">
         <div className="absolute -right-8 -top-8 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-5">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-5">
           <div className="space-y-2 max-w-2xl">
             <div className="flex flex-wrap items-center gap-2">
               <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/30 text-xs font-semibold backdrop-blur-sm flex items-center gap-1.5 px-2.5 py-0.5">
                 <Store className="h-3.5 w-3.5 text-emerald-400" />
                 <span>{tBilingual('Branch Command Center', 'ব্রাঞ্চ কমান্ড সেন্টার')}</span>
               </Badge>
-              <Badge className="bg-card/10 text-white border-white/15 text-xs tabular-nums font-medium">
+              <Badge className="bg-card/10 text-white border-border text-xs tabular-nums font-medium">
                 {branch?.code || 'BR-01'}
               </Badge>
-              <Badge className="bg-emerald-400/20 text-emerald-200 border-emerald-400/30 text-xs font-bold flex items-center gap-1">
+              <Badge className="bg-emerald-400/20 text-muted-foreground border-emerald-400/30 text-xs font-bold flex items-center gap-1">
                 <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
                 {tBilingual('Branch Operational', 'ব্রাঞ্চ সক্রিয়')}
               </Badge>
@@ -207,7 +207,7 @@ export function BranchManagerDashboard({
               <span>{tBilingual(`${branchName} — Overview`, `${branchNameBn} — ড্যাশবোর্ড`)}</span>
             </h1>
 
-            <p className="text-xs sm:text-sm text-emerald-100/90 leading-relaxed flex flex-wrap items-center gap-x-3 gap-y-1">
+            <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed flex flex-wrap items-center gap-x-3 gap-y-1">
               <span><strong>Manager:</strong> {userDisplayName}</span>
               {branch?.address && (
                 <span className="flex items-center gap-1">
@@ -256,7 +256,7 @@ export function BranchManagerDashboard({
               onClick={handleRefresh}
               variant="ghost"
               disabled={isRefreshing}
-              className="h-10 w-10 p-0 text-emerald-200 hover:text-white hover:bg-card/10 rounded-xl"
+              className="h-10 w-10 p-0 text-muted-foreground hover:text-white hover:bg-card/10 rounded-xl"
               title="Refresh Queue"
             >
               <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
@@ -300,7 +300,7 @@ export function BranchManagerDashboard({
       </KpiGrid>
 
       {/* Roles, Permissions, Restrictions & Limitations Callout Card */}
-      <Card className="border border-emerald-200/80 dark:border-emerald-900/50 bg-gradient-to-r from-emerald-50/50 via-slate-50 to-teal-50/40 dark:from-slate-900 dark:via-emerald-950/20 dark:to-slate-900 overflow-hidden shadow-xs">
+      <Card className="border border-border bg-card shadow-xs">
         <div className="p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-start gap-3">
             <div className="h-10 w-10 rounded-xl bg-emerald-600/10 text-emerald-700 dark:text-emerald-300 flex items-center justify-center shrink-0">
@@ -337,7 +337,7 @@ export function BranchManagerDashboard({
           <div className="border-t border-emerald-100 dark:border-emerald-900/40 p-4 sm:p-5 bg-card/70 grid grid-cols-1 md:grid-cols-2 gap-4 text-xs animate-in fade-in-50 duration-200">
             {/* Granted Authorities */}
             <div className="p-3.5 rounded-xl border border-emerald-200 dark:border-emerald-900/60 bg-emerald-50/40 dark:bg-emerald-950/20 space-y-2">
-              <div className="flex items-center gap-2 font-bold text-emerald-900 dark:text-emerald-200">
+              <div className="flex items-center gap-2 font-bold text-emerald-900 dark:text-muted-foreground">
                 <CheckCircle2 className="h-4 w-4 text-emerald-600" />
                 <span>{tBilingual('Branch Manager Permissions & Authorities', 'অনুমোদিত দায়িত্ব ও ক্ষমতা')}</span>
               </div>

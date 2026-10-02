@@ -142,19 +142,12 @@ export function FinanceDashboardView({
   return (
     <div className="space-y-6">
       {/* 1. HERO LIQUID ACCOUNTS CARD & BALANCE BAR */}
-      <div className="rounded-3xl bg-linear-to-br from-slate-950 via-slate-900 to-indigo-950 p-6 text-white shadow-xl border border-border relative overflow-hidden">
-        {/* Signature CMYK Top Accent Strip */}
-        <div className="absolute top-0 inset-x-0 h-1 cmyk-rainbow-bar" />
-
-        {/* Subtle background glow */}
-        <div className="absolute top-0 right-0 -mt-10 -mr-10 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-0 -mb-10 -ml-10 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
-
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div className="rounded-2xl bg-card p-5 sm:p-6 shadow-xs border border-border">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           {/* Total Available Liquid Capital */}
           <div>
             <div className="flex items-center gap-2 mb-1.5">
-              <span className="p-1.5 rounded-lg bg-emerald-500/20 text-emerald-400">
+              <span className="p-1.5 rounded-lg bg-muted text-muted-foreground">
                 <Wallet className="w-4 h-4" />
               </span>
               <span className="text-xs font-semibold tracking-wider uppercase text-muted-foreground">
@@ -162,28 +155,28 @@ export function FinanceDashboardView({
               </span>
             </div>
             <div className="flex items-baseline gap-2">
-              <span className="text-3xl sm:text-4xl lg:text-5xl font-black tabular-nums tracking-tight text-white">
+              <span className="text-3xl sm:text-4xl font-black tabular-nums tracking-tight text-foreground">
                 ৳{totalAvailable.toLocaleString()}
               </span>
-              <span className="text-xs text-emerald-400 font-semibold flex items-center gap-1">
-                <ShieldCheck className="w-3.5 h-3.5" />
+              <Badge variant="outline" className="text-2xs font-semibold">
+                <ShieldCheck className="w-3 h-3 mr-1" />
                 {tBilingual('100% Liquid', 'তাৎক্ষণিক ব্যবহারযোগ্য')}
-              </span>
+              </Badge>
             </div>
             <p className="text-xs text-muted-foreground mt-1 bangla-text">
               {tBilingual(
                 'Ready cash across all cash drawers, company bank accounts, and mobile wallets.',
-                'দোকানের ক্যাশ ড্রয়ার, ব্যাংক একাউন্ট এবং বিকাশ/নগদ ওয়ালেটে থাকা মোট টাকা।'
+                'দোকানের ক্যাশ ড্রয়ার, ব্যাংক একাউন্ট এবং বিকাশ/নগদ ওয়ালেটে থাকা মোট টাকা।'
               )}
             </p>
           </div>
 
-          {/* Quick Action Buttons with Unified Design System Variants */}
-          <div className="flex flex-wrap items-center gap-2.5">
+          {/* Quick Action Buttons */}
+          <div className="flex flex-wrap items-center gap-2">
             <Button
               variant="success"
               onClick={onOpenMoneyIn}
-              className="text-xs h-10 px-4 gap-2"
+              className="text-xs h-9 px-4 gap-2"
             >
               <Plus className="w-4 h-4" />
               <span>{tBilingual('+ Money In', '+ টাকা জমা')}</span>
@@ -192,16 +185,16 @@ export function FinanceDashboardView({
             <Button
               variant="destructive"
               onClick={onOpenSpendModal}
-              className="text-xs h-10 px-4 gap-2"
+              className="text-xs h-9 px-4 gap-2"
             >
               <TrendingDown className="w-4 h-4" />
-              <span>{tBilingual('- Money Out', '- খরচ / ব্যয়')}</span>
+              <span>{tBilingual('- Money Out', '- খরচ / ব্যয়')}</span>
             </Button>
 
             <Button
               variant="outline"
               onClick={onOpenTransferModal}
-              className="border-border bg-slate-800/80 hover:bg-slate-700 text-foreground font-semibold text-xs h-10 px-3.5 rounded-xl cursor-pointer"
+              className="text-xs h-9 px-4 gap-2"
             >
               <ArrowLeftRight className="w-4 h-4" />
               <span>{tBilingual('Transfer', 'ট্রান্সফার')}</span>
@@ -210,7 +203,7 @@ export function FinanceDashboardView({
             <Button
               variant="outline"
               onClick={onOpenCashClosingModal}
-              className="border-border bg-slate-800/80 hover:bg-slate-700 text-purple-300 font-semibold text-xs h-10 px-3.5 rounded-xl cursor-pointer"
+              className="text-xs h-9 px-4 gap-2"
             >
               <Clock className="w-4 h-4" />
               <span>{tBilingual('Daily Closing', 'ক্যাশ ক্লোজিং')}</span>
@@ -219,21 +212,21 @@ export function FinanceDashboardView({
         </div>
 
         {/* 3-Way Account Balance Split Bar */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-6 pt-6 border-t border-border">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-5 pt-5 border-t border-border">
           {/* Cash Balance */}
           <div
             onClick={() => onNavigateTab('cash-bank')}
-            className="p-3.5 rounded-2xl bg-card/5 hover:bg-card/10 border border-white/10 transition-all cursor-pointer flex items-center justify-between"
+            className="p-3.5 rounded-xl bg-muted/50 hover:bg-muted border border-border transition-all cursor-pointer flex items-center justify-between"
           >
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
-                <Wallet className="w-5 h-5" />
+              <div className="w-9 h-9 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                <Wallet className="w-4.5 h-4.5" />
               </div>
               <div>
                 <span className="text-2xs font-semibold text-muted-foreground block uppercase tracking-wider">
                   {tBilingual('Cash Balance', 'নগদ ক্যাশ ব্যালেন্স')}
                 </span>
-                <span className="text-base sm:text-lg font-black tabular-nums text-white">
+                <span className="text-base sm:text-lg font-black tabular-nums text-foreground">
                   ৳{cashBalance.toLocaleString()}
                 </span>
               </div>
@@ -244,17 +237,17 @@ export function FinanceDashboardView({
           {/* Bank Balance */}
           <div
             onClick={() => onNavigateTab('cash-bank')}
-            className="p-3.5 rounded-2xl bg-card/5 hover:bg-card/10 border border-white/10 transition-all cursor-pointer flex items-center justify-between"
+            className="p-3.5 rounded-xl bg-muted/50 hover:bg-muted border border-border transition-all cursor-pointer flex items-center justify-between"
           >
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center shrink-0">
-                <Building2 className="w-5 h-5" />
+              <div className="w-9 h-9 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+                <Building2 className="w-4.5 h-4.5" />
               </div>
               <div>
                 <span className="text-2xs font-semibold text-muted-foreground block uppercase tracking-wider">
                   {tBilingual('Bank Balance', 'ব্যাংক অ্যাকাউন্ট ব্যালেন্স')}
                 </span>
-                <span className="text-base sm:text-lg font-black tabular-nums text-white">
+                <span className="text-base sm:text-lg font-black tabular-nums text-foreground">
                   ৳{bankBalance.toLocaleString()}
                 </span>
               </div>
@@ -265,17 +258,17 @@ export function FinanceDashboardView({
           {/* MFS Balance */}
           <div
             onClick={() => onNavigateTab('cash-bank')}
-            className="p-3.5 rounded-2xl bg-card/5 hover:bg-card/10 border border-white/10 transition-all cursor-pointer flex items-center justify-between"
+            className="p-3.5 rounded-xl bg-muted/50 hover:bg-muted border border-border transition-all cursor-pointer flex items-center justify-between"
           >
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-pink-500/20 text-pink-400 flex items-center justify-center shrink-0">
-                <Smartphone className="w-5 h-5" />
+              <div className="w-9 h-9 rounded-lg bg-pink-500/10 text-pink-600 dark:text-pink-400 flex items-center justify-center shrink-0">
+                <Smartphone className="w-4.5 h-4.5" />
               </div>
               <div>
                 <span className="text-2xs font-semibold text-muted-foreground block uppercase tracking-wider">
-                  {tBilingual('bKash / Nagad / MFS', 'বিকাশ / নগদ ওয়ালেট')}
+                  {tBilingual('bKash / Nagad / MFS', 'বিকাশ / নগদ ওয়ালেট')}
                 </span>
-                <span className="text-base sm:text-lg font-black tabular-nums text-white">
+                <span className="text-base sm:text-lg font-black tabular-nums text-foreground">
                   ৳{mfsBalance.toLocaleString()}
                 </span>
               </div>

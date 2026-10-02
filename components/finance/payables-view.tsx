@@ -127,7 +127,7 @@ export function PayablesView({
   return (
     <div className="space-y-6">
       {/* 1. VISUAL FLOW BANNER: PURCHASE -> PAID -> DUE */}
-      <div className="p-4 sm:p-5 rounded-3xl bg-linear-to-r from-rose-500/10 via-pink-500/10 to-indigo-500/10 border border-rose-300/40 dark:border-rose-800/40 shadow-xs">
+      <div className="p-4 sm:p-5 rounded-2xl bg-card border border-border shadow-xs">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <span className="p-2 rounded-xl bg-rose-600 text-white shadow-xs">

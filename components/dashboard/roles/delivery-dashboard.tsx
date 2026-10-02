@@ -38,9 +38,9 @@ export function DeliveryDashboard({ metrics, onRefresh }: DeliveryDashboardProps
 
   return (
     <div className="space-y-6">
-      <div className="p-5 bg-gradient-to-r from-emerald-700 to-teal-800 text-white rounded-2xl shadow-md flex items-center justify-between">
+      <div className="p-5 bg-card border border-border rounded-2xl shadow-xs flex items-center justify-between">
         <div className="space-y-1">
-          <Badge className="bg-card/20 text-white border-none text-xs font-semibold backdrop-blur-sm">
+          <Badge className="text-xs font-semibold">
             {tBilingual('Logistics & Delivery Fleet', 'ডেলিভারি ও চালান ব্যবস্থাপনা')}
           </Badge>
           <h1 className="text-xl sm:text-2xl font-black">

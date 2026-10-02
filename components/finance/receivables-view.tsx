@@ -140,10 +140,10 @@ export function ReceivablesView({
   return (
     <div className="space-y-6">
       {/* 1. VISUAL FLOW BANNER: INVOICE -> ADVANCE -> DUE -> PAYMENT COLLECTION -> ৳0 */}
-      <div className="p-4 sm:p-5 rounded-3xl bg-linear-to-r from-amber-500/10 via-emerald-500/10 to-blue-500/10 border border-amber-300/40 dark:border-amber-800/40 shadow-xs">
+      <div className="p-4 sm:p-5 rounded-2xl bg-card border border-border shadow-xs">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <span className="p-2 rounded-xl bg-amber-500 text-white shadow-xs">
+            <span className="p-2 rounded-lg bg-muted text-muted-foreground">
               <Users className="w-5 h-5" />
             </span>
             <div>
@@ -161,7 +161,7 @@ export function ReceivablesView({
 
           <Button
             onClick={() => onOpenCollectModal()}
-            className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs h-9 px-4 rounded-xl shadow-xs flex items-center gap-1.5 cursor-pointer self-start md:self-auto"
+            variant="success" className="text-xs h-9 px-4 gap-1.5 self-start md:self-auto"
           >
             <ArrowDownLeft className="w-4 h-4" />
             <span>{tBilingual('+ Collect Payment', '+ বাকি আদায় / জমা নিন')}</span>
@@ -194,9 +194,9 @@ export function ReceivablesView({
             <span className="text-xs tabular-nums text-emerald-600 font-bold">{totalCollected > 0 ? `+${formatBDT(totalCollected)}` : 'Collection'}</span>
           </div>
 
-          <div className="col-span-2 sm:col-span-1 p-2 rounded-xl bg-emerald-500/10 dark:bg-emerald-950/40 border border-emerald-500/30">
-            <span className="text-3xs text-emerald-600 dark:text-emerald-400 font-bold block uppercase">Settled</span>
-            <span className="text-xs font-bold text-emerald-800 dark:text-emerald-300 block">Due Balance</span>
+          <div className="col-span-2 sm:col-span-1 p-2 rounded-xl bg-muted/50 border border-border">
+            <span className="text-3xs text-emerald-600 dark:text-emerald-400 font-semibold block uppercase">Settled</span>
+            <span className="text-xs font-bold text-foreground block">Due Balance</span>
             <span className="text-xs tabular-nums text-emerald-600 font-black">{totalReceivables === 0 ? '৳0 ✓' : formatBDT(totalReceivables)}</span>
           </div>
         </div>
