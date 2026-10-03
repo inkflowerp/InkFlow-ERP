@@ -393,7 +393,7 @@ export default function TenantSubscriptionPage() {
             <div className="flex items-center justify-between text-xs font-semibold text-foreground">
               <span className="flex items-center gap-1.5">
                 <Users className="h-4 w-4 text-blue-500"/>
- Team Users
+                {isBn ? 'টিম সদস্য' : 'Team Users'}
               </span>
               <span className="tabular-nums text-foreground font-bold">
                 {userLimit.current} / {userLimit.limit}
@@ -422,7 +422,7 @@ export default function TenantSubscriptionPage() {
             <div className="flex items-center justify-between text-xs font-semibold text-foreground">
               <span className="flex items-center gap-1.5">
                 <Building className="h-4 w-4 text-purple-500"/>
- Branches &amp; Hubs
+                {isBn ? 'শাখা ও কারখানা হাব' : 'Branches & Hubs'}
               </span>
               <span className="tabular-nums text-foreground font-bold">
                 {branchLimit.current} / {branchLimit.limit}
@@ -447,10 +447,10 @@ export default function TenantSubscriptionPage() {
             <div className="flex items-center justify-between text-xs font-semibold text-foreground">
               <span className="flex items-center gap-1.5">
                 <HardDrive className="h-4 w-4 text-cyan-500"/>
- Cloud Artwork Storage
+                {isBn ? 'ক্লাউড আর্টওয়ার্ক স্টোরেজ' : 'Cloud Artwork Storage'}
               </span>
               <span className="tabular-nums text-foreground font-bold">
-                {storageLimit.current} GB / {storageLimit.limit} GB
+                {storageLimit.current} {isBn ? 'জিবি' : 'GB'} / {storageLimit.limit} {isBn ? 'জিবি' : 'GB'}
               </span>
             </div>
             <div className="w-full bg-muted rounded-full h-2 mt-2 overflow-hidden">
@@ -460,7 +460,7 @@ export default function TenantSubscriptionPage() {
             </div>
             <div className="text-2xs text-muted-foreground mt-1 flex justify-between">
               <span>{storageLimit.percentage}% {isBn ? 'ব্যবহৃত' : 'used'}</span>
-              <span className="bangla-text">{(storageLimit.limit - storageLimit.current).toFixed(1)} GB {isBn ? 'ফ্রি' : 'free'}</span>
+              <span className="bangla-text">{(storageLimit.limit - storageLimit.current).toFixed(1)} {isBn ? 'জিবি খালি' : 'GB free'}</span>
             </div>
           </Card>
 
@@ -469,7 +469,7 @@ export default function TenantSubscriptionPage() {
             <div className="flex items-center justify-between text-xs font-semibold text-foreground">
               <span className="flex items-center gap-1.5">
                 <ShoppingCart className="h-4 w-4 text-emerald-500"/>
- Monthly Orders
+                {isBn ? 'মাসিক অর্ডার' : 'Monthly Orders'}
               </span>
               <span className="tabular-nums text-foreground font-bold">
                 {orderLimit.current} / {orderLimit.limit}
@@ -491,7 +491,7 @@ export default function TenantSubscriptionPage() {
             <div className="flex items-center justify-between text-xs font-semibold text-foreground">
               <span className="flex items-center gap-1.5">
                 <Users className="h-4 w-4 text-amber-500"/>
- Client Directory
+                {isBn ? 'গ্রাহক তালিকা' : 'Client Directory'}
               </span>
               <span className="tabular-nums text-foreground font-bold">
                 {customerLimit.current} / {customerLimit.limit}
@@ -513,7 +513,7 @@ export default function TenantSubscriptionPage() {
             <div className="flex items-center justify-between text-xs font-semibold text-foreground">
               <span className="flex items-center gap-1.5">
                 <Layers className="h-4 w-4 text-pink-500"/>
- Catalog Products
+                {isBn ? 'ক্যাটালগ পণ্য' : 'Catalog Products'}
               </span>
               <span className="tabular-nums text-foreground font-bold">
                 {productLimit.current} / {productLimit.limit}

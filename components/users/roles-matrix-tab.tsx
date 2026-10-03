@@ -47,13 +47,14 @@ import { useI18n } from '@/i18n/context'
 
 
 interface RoleItem {
- id: string
- name: string
- name_bn?: string | null
- slug: string
- description?: string | null
- is_system: boolean
- permissions: string[]
+  id: string
+  name: string
+  name_bn?: string | null
+  slug: string
+  description?: string | null
+  description_bn?: string | null
+  is_system: boolean
+  permissions: string[]
 }
 
 const HIGH_RISK_PERMISSIONS = new Set([
@@ -113,6 +114,7 @@ const DEFAULT_CLIENT_ROLES: RoleItem[] = [
  name_bn: 'ব্যবসা স্বত্বাধিকারী',
  slug: 'business_owner',
  description: 'Universal administrative authority and organization governance.',
+    description_bn: 'সার্বজনীন প্রশাসনিক ক্ষমতা এবং প্রাতিষ্ঠানিক পরিচালনা।',
  is_system: true,
  permissions: Object.entries(MODULE_ACTION_SPECS).flatMap(([mod, spec]) =>
  spec.actions.map((act) => `${mod}.${act}`)
@@ -124,6 +126,7 @@ const DEFAULT_CLIENT_ROLES: RoleItem[] = [
  name_bn: 'সেলস ম্যানেজার',
  slug: 'sales_manager',
  description: 'Quotations, pricing, customer relations, invoicing, and order handling.',
+    description_bn: 'কোটেশন, মূল্য নির্ধারণ, গ্রাহক সম্পর্ক, ইনভয়েসিং এবং অর্ডার ব্যবস্থাপনা।',
  is_system: true,
  permissions: [
       'customers.view', 'customers.create', 'customers.edit', 'customers.export',
@@ -142,6 +145,7 @@ const DEFAULT_CLIENT_ROLES: RoleItem[] = [
  name_bn: 'গ্রাফিক ডিজাইনার',
  slug: 'designer',
  description: 'Artwork proofs, customer approvals, pre-press checks, and design revisions.',
+    description_bn: 'আর্টওয়ার্ক প্রুফ, গ্রাহক অনুমোদন, প্রি-প্রেস যাচাই এবং ডিজাইন সংশোধন।',
  is_system: true,
  permissions: [
       'customers.view', 'quotations.view', 'orders.view', 'orders.create', 'orders.edit', 'orders.print',
@@ -155,6 +159,7 @@ const DEFAULT_CLIENT_ROLES: RoleItem[] = [
  name_bn: 'প্রোডাকশন ম্যানেজার',
  slug: 'production_manager',
  description: 'Plant machine queues, raw media allocation, stages, and quality control.',
+    description_bn: 'কারখানা মেশিন কিউ, কাঁচামাল বরাদ্দ, কাজের ধাপ ও মান নিয়ন্ত্রণ।',
  is_system: true,
  permissions: [
       'orders.view', 'orders.edit', 'orders.assign', 'orders.complete',
@@ -170,6 +175,7 @@ const DEFAULT_CLIENT_ROLES: RoleItem[] = [
  name_bn: 'মেশিন অপারেটর',
  slug: 'operator',
  description: 'Floor press runs, finishing works, task completions, and machine logs.',
+    description_bn: 'প্রিন্ট প্রেস পরিচালনা, ফিনিশিং কাজ, টাস্ক সম্পন্নকরণ এবং মেশিন লগ।',
  is_system: true,
  permissions: [
       'orders.view', 'production.view', 'production.complete',
@@ -182,6 +188,7 @@ const DEFAULT_CLIENT_ROLES: RoleItem[] = [
  name_bn: 'স্টোর ও ইনভেন্টরি ম্যানেজার',
  slug: 'store_manager',
  description: 'Raw media rolls, inks, boards, store ledger, and material dispatches.',
+    description_bn: 'কাঁচামাল রোল, কালি, বোর্ড, স্টোর লেজার এবং উপাদান সরবরাহ।',
  is_system: true,
  permissions: [
       'inventory.view', 'inventory.create', 'inventory.edit', 'inventory.approve',
@@ -194,6 +201,7 @@ const DEFAULT_CLIENT_ROLES: RoleItem[] = [
  name_bn: 'হিসাবরক্ষক ও বিলিং কর্মকর্তা',
  slug: 'accountant',
  description: 'Invoicing, receipts, payment recording, banking, and financial reports.',
+    description_bn: 'ইনভয়েস, রসিদ, পেমেন্ট রেকর্ড, ব্যাংকিং এবং আর্থিক রিপোর্ট।',
  is_system: true,
  permissions: [
       'customers.view', 'customers.create', 'quotations.view',
@@ -208,6 +216,7 @@ const DEFAULT_CLIENT_ROLES: RoleItem[] = [
  name_bn: 'ডেলিভারি ও চালান সমন্বয়ক',
  slug: 'delivery_coordinator',
  description: 'Delivery challans, site installation sign-offs, and dispatch routing.',
+    description_bn: 'ডেলিভারি চালান, সাইট ইনস্টলেশন অনুমোদন এবং সরবরাহ রুট সমন্বয়।',
  is_system: true,
  permissions: [
       'customers.view', 'orders.view', 'invoices.view', 'invoices.print',
@@ -222,6 +231,7 @@ const DEFAULT_CLIENT_ROLES: RoleItem[] = [
  name_bn: 'সাধারণ কর্মী',
  slug: 'general_staff',
  description: 'Standard workspace member with basic operational view access.',
+    description_bn: 'মৌলিক অপারেশনাল অ্যাক্সেসসহ সাধারণ ওয়ার্কস্পেস সদস্য।',
  is_system: true,
  permissions: [
       'orders.view', 'machineries.view', 'delivery.view', 'tasks.view', 'notifications.view', 'support.view'
@@ -498,7 +508,10 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
             {tBilingual('Roles & Permission Matrix Studio', 'রোল ও পারমিশন স্টুডিও')}
           </h2>
           <p className="text-xs text-muted-foreground">
- Define role boundaries, customize permissions per module, and create custom job templates.
+            {tBilingual(
+              'Define role boundaries, customize permissions per module, and create custom job templates.',
+              'রোল নির্ধারণ করুন, মডিউলভিত্তিক অনুমতি কাস্টমাইজ করুন এবং কাজের টেমপ্লেট তৈরি করুন।'
+            )}
           </p>
         </div>
 
@@ -535,12 +548,12 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
           <Card className="border-border bg-card backdrop-blur-md shadow-xs">
             <CardHeader className="pb-3 border-b border-border">
               <CardTitle className="text-xs font-bold text-foreground uppercase tracking-wider">
- Select Role Template ({Array.isArray(roles) ? roles.length : 0})
+                {isBn ? `রোল টেমপ্লেট নির্বাচন করুন (${Array.isArray(roles) ? roles.length : 0})` : `Select Role Template (${Array.isArray(roles) ? roles.length : 0})`}
               </CardTitle>
             </CardHeader>
             <CardContent className="p-2 space-y-1">
               {isLoading ? (
-                <div className="p-6 text-center text-xs text-muted-foreground">Loading roles...</div>
+                <div className="p-6 text-center text-xs text-muted-foreground">{isBn ? 'রোল লোড হচ্ছে...' : 'Loading roles...'}</div>
               ) : (
                 (Array.isArray(roles) ? roles : []).map((role) => {
  const isSelected = selectedRoleId === role.id
@@ -565,12 +578,12 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
                       </div>
 
                       {role.is_system ? (
-                        <Badge variant="outline"className="text-2xs px-1 py-0 bg-muted text-muted-foreground border-input shrink-0">
- System
+                        <Badge variant="outline" className="text-2xs px-1 py-0 bg-muted text-muted-foreground border-input shrink-0">
+                          {isBn ? 'সিস্টেম' : 'System'}
                         </Badge>
                       ) : (
-                        <Badge variant="outline"className="text-2xs px-1 py-0 bg-purple-50 dark:bg-purple-500/10 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-500/30 shrink-0">
- Custom
+                        <Badge variant="outline" className="text-2xs px-1 py-0 bg-purple-50 dark:bg-purple-500/10 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-500/30 shrink-0">
+                          {isBn ? 'কাস্টম' : 'Custom'}
                         </Badge>
                       )}
                     </button>
@@ -595,12 +608,12 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
                       </CardTitle>
 
                       {selectedRole.is_system ? (
-                        <Badge variant="outline"className="text-2xs bg-muted text-foreground border-border">
- System Role
+                        <Badge variant="outline" className="text-2xs bg-muted text-foreground border-border">
+                          {isBn ? 'সিস্টেম রোল' : 'System Role'}
                         </Badge>
                       ) : (
                         <Badge className="bg-purple-50 dark:bg-purple-500/20 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-500/30 text-2xs">
- Custom Role
+                          {isBn ? 'কাস্টম রোল' : 'Custom Role'}
                         </Badge>
                       )}
 
@@ -618,7 +631,7 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
                       )}
                     </div>
                     <CardDescription className="text-xs text-muted-foreground">
-                      {selectedRole.description || 'Configured permission template for team members.'}
+                      {(isBn ? (selectedRole.description_bn || selectedRole.description) : selectedRole.description) || (isBn ? 'টিম সদস্যদের জন্য নির্ধারিত অনুমতি টেমপ্লেট।' : 'Configured permission template for team members.')}
                     </CardDescription>
                   </div>
 
@@ -626,7 +639,7 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
                   <div className="flex items-center gap-2">
                     {unsavedChangesCount > 0 && (
                       <Badge variant="outline"className="text-2xs bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/30 animate-pulse">
-                        {unsavedChangesCount} unsaved change(s)
+                        {isBn ? `${unsavedChangesCount}টি অসংরক্ষিত পরিবর্তন` : `${unsavedChangesCount} unsaved change(s)`}
                       </Badge>
                     )}
 
@@ -638,7 +651,7 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
  disabled={unsavedChangesCount === 0 || isPending}
  className="border-border text-xs text-muted-foreground hover:text-foreground dark:hover:text-foreground">
                       <RotateCcw className="w-3 h-3 mr-1"/>
- Reset
+                      {tBilingual('Reset', 'রিসেট')}
                     </Button>
 
                     <Button

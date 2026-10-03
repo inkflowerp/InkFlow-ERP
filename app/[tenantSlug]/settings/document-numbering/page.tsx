@@ -30,11 +30,11 @@ interface SequenceConfig {
 }
 
 const INITIAL_SEQUENCES: SequenceConfig[] = [
-  { doc_type: 'quotation', name: 'Price Quotations', nameBn: 'দরপ্রস্তাব / কোটেশন', prefix: 'QUO', current_val: 1, padding: 6 },
+  { doc_type: 'quotation', name: 'Price Quotations', nameBn: 'মূল্য কোটেশন', prefix: 'QUO', current_val: 1, padding: 6 },
   { doc_type: 'order', name: 'Job Orders', nameBn: 'জব অর্ডার টিকেট', prefix: 'ORD', current_val: 1, padding: 6 },
-  { doc_type: 'invoice', name: 'Commercial Invoices', nameBn: 'ইনভয়েস / বিল', prefix: 'INV', current_val: 1, padding: 6 },
+  { doc_type: 'invoice', name: 'Commercial Invoices', nameBn: 'বাণিজ্যিক ইনভয়েস', prefix: 'INV', current_val: 1, padding: 6 },
   { doc_type: 'challan', name: 'Delivery Challans', nameBn: 'ডেলিভারি চালান', prefix: 'CHL', current_val: 1, padding: 6 },
-  { doc_type: 'payment', name: 'Money Receipts', nameBn: 'পেমেন্ট / মানি রসিদ', prefix: 'PAY', current_val: 1, padding: 6 },
+  { doc_type: 'payment', name: 'Money Receipts', nameBn: 'মানি রসিদ', prefix: 'PAY', current_val: 1, padding: 6 },
   { doc_type: 'purchase', name: 'Stock Purchases', nameBn: 'কাঁচামাল ক্রয় চালান', prefix: 'PUR', current_val: 1, padding: 6 },
 ]
 
@@ -181,7 +181,7 @@ export default function DocumentNumberingSettingsPage() {
       {isSaved && (
         <div className="p-3 bg-emerald-50 text-emerald-800 rounded-lg text-xs font-semibold flex items-center gap-2 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800 animate-in fade-in-0">
           <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0"/>
-          <span>Document sequence rules saved and recorded in audit log.</span>
+          <span>{tBilingual('Document sequence rules saved and recorded in audit log.', 'ডকুমেন্ট সিকোয়েন্স নিয়ম সফলভাবে সংরক্ষিত হয়েছে।')}</span>
         </div>
       )}
 
@@ -191,10 +191,13 @@ export default function DocumentNumberingSettingsPage() {
           <ShieldCheck className="h-5 w-5 text-blue-600 shrink-0 mt-0.5"/>
           <div className="text-xs text-blue-950 dark:text-blue-200 space-y-1">
             <strong className="text-sm block text-blue-900 dark:text-blue-100">
- PostgreSQL Transaction Safety & Zero Duplicate Numbers
+              {tBilingual('PostgreSQL Transaction Safety & Zero Duplicate Numbers', 'পোস্টগ্রিসকুয়েল ট্রানজ্যাকশন নিরাপত্তা ও ডুপ্লিকেটহীন নম্বর')}
             </strong>
             <p>
- Number generation executes inside PostgreSQL using <code>SELECT ... FOR UPDATE</code> row-level locking. Even when multiple sales counters or production operators book job orders at the exact same millisecond, sequential document numbers are guaranteed to never collide or skip.
+              {tBilingual(
+                'Number generation executes inside PostgreSQL using SELECT ... FOR UPDATE row-level locking. Even when multiple sales counters or production operators book job orders at the exact same millisecond, sequential document numbers are guaranteed to never collide or skip.',
+                'পোস্টগ্রিসকুয়েল রো-লেভেল লকিংয়ের মাধ্যমে নম্বর তৈরি হয়। একাধিক কাউন্টার একই সময়ে অর্ডার করলেও কোনো নম্বর ডুপ্লিকেট বা বাদ পড়বে না।'
+              )}
             </p>
           </div>
         </div>
@@ -203,9 +206,12 @@ export default function DocumentNumberingSettingsPage() {
       <form onSubmit={handleSave} className="space-y-6">
         <Card>
           <CardHeader className="pb-3 border-b border-border">
-            <CardTitle className="text-base">Configured Document Sequences</CardTitle>
+            <CardTitle className="text-base">{tBilingual('Configured Document Sequences', 'কনফিগার করা ডকুমেন্ট সিকোয়েন্স')}</CardTitle>
             <CardDescription className="text-xs">
- Customize prefixes (e.g. QUO, ORD, INV) and zero-padding lengths for each business paper.
+              {tBilingual(
+                'Customize prefixes (e.g. QUO, ORD, INV) and zero-padding lengths for each business paper.',
+                'প্রতিটি ব্যবসায়িক নথির জন্য প্রিফিক্স (যেমন QUO, ORD, INV) এবং ডিজিট প্যাডিং নির্ধারণ করুন।'
+              )}
             </CardDescription>
           </CardHeader>
           <CardContent className="p-0">
@@ -225,9 +231,8 @@ export default function DocumentNumberingSettingsPage() {
                     <tr key={seq.doc_type} className="hover:bg-muted dark:hover:bg-muted/50">
                       <td className="py-3 px-4">
                         <div className="font-semibold text-foreground">
-                          {seq.name}
+                          {locale === 'bn' ? seq.nameBn : seq.name}
                         </div>
-                        <div className="text-xs text-muted-foreground">{seq.nameBn}</div>
                       </td>
 
                       <td className="py-3 px-4">
@@ -243,10 +248,10 @@ export default function DocumentNumberingSettingsPage() {
  value={seq.padding}
  onChange={(e) => handlePaddingChange(seq.doc_type, Number(e.target.value))}
  className="h-8 w-full rounded-md border border-input bg-card text-xs tabular-nums px-2">
-                          <option value={4}>4 digits (0001)</option>
-                          <option value={5}>5 digits (00001)</option>
-                          <option value={6}>6 digits (000001)</option>
-                          <option value={7}>7 digits (0000001)</option>
+                          <option value={4}>{tBilingual('4 digits (0001)', '৪ ডিজিট (০০০১)')}</option>
+                          <option value={5}>{tBilingual('5 digits (00001)', '৫ ডিজিট (০০০০১)')}</option>
+                          <option value={6}>{tBilingual('6 digits (000001)', '৬ ডিজিট (০০০০০১)')}</option>
+                          <option value={7}>{tBilingual('7 digits (0000001)', '৭ ডিজিট (০০০০০০১)')}</option>
                         </select>
                       </td>
 
@@ -273,9 +278,8 @@ export default function DocumentNumberingSettingsPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <div className="font-bold text-sm text-foreground">
-                        {seq.name}
+                        {locale === 'bn' ? seq.nameBn : seq.name}
                       </div>
-                      <div className="text-xs text-muted-foreground">{seq.nameBn}</div>
                     </div>
                     <div className="flex items-center gap-1.5">
                       <span className="tabular-nums font-bold text-xs px-2 py-0.5 rounded bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
@@ -286,7 +290,7 @@ export default function DocumentNumberingSettingsPage() {
 
                   <div className="grid grid-cols-2 gap-3 pt-1">
                     <div className="space-y-1">
-                      <Label className="text-2xs text-muted-foreground">Prefix Code</Label>
+                      <Label className="text-2xs text-muted-foreground">{tBilingual('Prefix Code', 'প্রিফিক্স কোড')}</Label>
                       <Input
  value={seq.prefix}
  onChange={(e) => handlePrefixChange(seq.doc_type, e.target.value)}
@@ -295,7 +299,7 @@ export default function DocumentNumberingSettingsPage() {
                     </div>
 
                     <div className="space-y-1">
-                      <Label className="text-2xs text-muted-foreground">Zero Padding</Label>
+                      <Label className="text-2xs text-muted-foreground">{tBilingual('Zero Padding', 'ডিজিট প্যাডিং')}</Label>
                       <select
  value={seq.padding}
  onChange={(e) => handlePaddingChange(seq.doc_type, Number(e.target.value))}
@@ -316,7 +320,7 @@ export default function DocumentNumberingSettingsPage() {
         <div className="flex justify-end pt-2">
           <Button type="submit"isLoading={isLoading} className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto h-11 sm:h-9 text-xs font-semibold">
             <Save className="mr-1.5 h-4 w-4"/>
- Save Document Numbering
+            {tBilingual('Save Document Numbering', 'ডকুমেন্ট নাম্বারিং সংরক্ষণ করুন')}
           </Button>
         </div>
       </form>

@@ -426,19 +426,19 @@ export default function TenantEmailSettingsPage() {
                     {hasConfiguredGateway ? (
                       <>
                         <CheckCircle2 className="h-5 w-5 text-emerald-600"/>
-                        {gateway?.provider === 'gmail' ? 'Gmail Active & Connected' : 'Custom SMTP Active & Connected'}
+                        {gateway?.provider === 'gmail' ? tBilingual('Gmail Active & Connected', 'জিমেইল সক্রিয় ও সংযুক্ত') : tBilingual('Custom SMTP Active & Connected', 'কাস্টম এসএমটিপি সক্রিয় ও সংযুক্ত')}
                       </>
                     ) : (
                       <>
                         <AlertTriangle className="h-5 w-5 text-amber-500"/>
- No Email Provider Configured
+                        {tBilingual('No Email Provider Configured', 'কোনো ইমেইল প্রোভাইডার কনফিগার করা নেই')}
                       </>
                     )}
                   </CardTitle>
                   <CardDescription className="text-xs mt-0.5">
                     {hasConfiguredGateway
-                      ? `Outgoing business emails are sent via ${gateway?.sender_email || 'your account'}.`
-                      : 'Connect your Gmail account or custom SMTP server to begin sending quotations, invoices, and vouchers to customers.'}
+                      ? tBilingual(`Outgoing business emails are sent via ${gateway?.sender_email || 'your account'}.`, `ব্যবসায়িক ইমেইল ${gateway?.sender_email || 'আপনার অ্যাকাউন্ট'} এর মাধ্যমে পাঠানো হচ্ছে।`)
+                      : tBilingual('Connect your Gmail account or custom SMTP server to begin sending quotations, invoices, and vouchers to customers.', 'গ্রাহকদের কোটেশন, ইনভয়েস ও চালান পাঠাতে আপনার জিমেইল বা কাস্টম এসএমটিপি সার্ভার সংযুক্ত করুন।')}
                   </CardDescription>
                 </div>
 
@@ -449,7 +449,7 @@ export default function TenantEmailSettingsPage() {
                       : 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300'
                   }`}
                 >
-                  {hasConfiguredGateway ? 'Active & Ready' : 'Setup Required'}
+                  {hasConfiguredGateway ? tBilingual('Active & Ready', 'সক্রিয় ও প্রস্তুত') : tBilingual('Setup Required', 'সেটআপ প্রয়োজন')}
                 </Badge>
               </div>
             </CardHeader>
@@ -471,17 +471,17 @@ export default function TenantEmailSettingsPage() {
                   <div className="flex items-center gap-2">
                     <span className="font-bold text-sm text-foreground">Gmail (Google OAuth 2.0)</span>
                     <Badge className="text-2xs bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">
- Recommended
-                    </Badge>
+                        {tBilingual('Recommended', 'প্রস্তাবিত')}
+                      </Badge>
                   </div>
                   {providerMode === 'gmail' && <Check className="h-4 w-4 text-blue-600"/>}
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
- One-click sign in with Google. 100% secure, zero password sharing, and high inbox delivery.
+                  {tBilingual('One-click sign in with Google. 100% secure, zero password sharing, and high inbox delivery.', 'গুগলের মাধ্যমে ১-ক্লিকে সাইন ইন করুন। ১০০% নিরাপদ, কোনো পাসওয়ার্ড শেয়ার করতে হয় না এবং দ্রুত ইনবক্সে পৌঁছে।')}
                 </p>
               </div>
               <div className="mt-3 text-2xs tabular-nums text-muted-foreground">
- Protocol: Google Gmail API (OAuth2)
+                {tBilingual('Protocol: Google Gmail API (OAuth2)', 'প্রোটোকল: গুগল জিমেইল এপিআই (OAuth2)')}
               </div>
             </div>
 
@@ -496,15 +496,15 @@ export default function TenantEmailSettingsPage() {
             >
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <span className="font-bold text-sm text-foreground">Custom SMTP Host</span>
+                  <span className="font-bold text-sm text-foreground">{tBilingual('Custom SMTP Host', 'কাস্টম এসএমটিপি হোস্ট')}</span>
                   {providerMode === 'smtp' && <Check className="h-4 w-4 text-blue-600"/>}
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
- Connect any standard SMTP host (cPanel, Google Workspace, Office 365, Zoho Mail, Mailgun).
+                  {tBilingual('Connect any standard SMTP host (cPanel, Google Workspace, Office 365, Zoho Mail, Mailgun).', 'যেকোনো স্ট্যান্ডার্ড এসএমটিপি হোস্ট সংযুক্ত করুন (cPanel, Google Workspace, Office 365, Zoho Mail, Mailgun)।')}
                 </p>
               </div>
               <div className="mt-3 text-2xs tabular-nums text-muted-foreground">
- Protocol: TLS / SSL / STARTTLS
+                {tBilingual('Protocol: TLS / SSL / STARTTLS', 'প্রোটোকল: TLS / SSL / STARTTLS')}
               </div>
             </div>
           </div>
@@ -517,10 +517,10 @@ export default function TenantEmailSettingsPage() {
               <CardHeader className="border-b border-border pb-4">
                 <CardTitle className="text-sm font-bold flex items-center gap-2">
                   <Globe className="h-4 w-4 text-blue-600"/>
- Google Gmail Integration
+                  {tBilingual('Google Gmail Integration', 'গুগল জিমেইল ইন্টিগ্রেশন')}
                 </CardTitle>
                 <CardDescription className="text-xs">
- Authorize InkFlow to send business documents directly from your Gmail / Google Workspace account.
+                  {tBilingual('Authorize InkFlow to send business documents directly from your Gmail / Google Workspace account.', 'আপনার জিমেইল / গুগল ওয়ার্কস্পেস অ্যাকাউন্ট থেকে সরাসরি ব্যবসায়িক নথি পাঠানোর অনুমতি দিন।')}
                 </CardDescription>
               </CardHeader>
               <CardContent className="p-6">
@@ -546,14 +546,14 @@ export default function TenantEmailSettingsPage() {
  size="sm"variant="outline"onClick={() => setIsTestModalOpen(true)}
  className="text-xs h-9 min-h-[38px]">
                           <Send className="mr-1.5 h-3.5 w-3.5"/>
- Send Test
+                          {tBilingual('Send Test', 'টেস্ট পাঠান')}
                         </Button>
                         <Button
  size="sm"variant="destructive"disabled={disconnecting}
  onClick={handleDisconnectGmail}
  className="text-xs h-9 min-h-[38px]">
                           <Trash2 className="mr-1.5 h-3.5 w-3.5"/>
-                          {disconnecting ? 'Disconnecting...' : 'Disconnect'}
+                          {disconnecting ? tBilingual('Disconnecting...', 'বিচ্ছিন্ন করা হচ্ছে...') : tBilingual('Disconnect', 'সংযোগ বিচ্ছিন্ন করুন')}
                         </Button>
                       </div>
                     </div>
@@ -571,9 +571,9 @@ export default function TenantEmailSettingsPage() {
                       <div className="h-12 w-12 rounded-xl bg-blue-100 dark:bg-blue-900/40 text-blue-600 mx-auto flex items-center justify-center">
                         <Mail className="h-6 w-6"/>
                       </div>
-                      <h3 className="font-bold text-sm text-foreground">Connect Your Gmail Account</h3>
+                      <h3 className="font-bold text-sm text-foreground">{tBilingual('Connect Your Gmail Account', 'আপনার জিমেইল অ্যাকাউন্ট সংযুক্ত করুন')}</h3>
                       <p className="text-xs text-muted-foreground leading-relaxed">
- Click below to sign in with Google. InkFlow will securely obtain an authorization token to dispatch customer quotes and invoices from your address.
+                        {tBilingual('Click below to sign in with Google. InkFlow will securely obtain an authorization token to dispatch customer quotes and invoices from your address.', 'গুগলে সাইন ইন করতে নিচে ক্লিক করুন। আপনার ঠিকানা থেকে গ্রাহকদের কোটেশন ও ইনভয়েস পাঠাতে ইনকফ্লো নিরাপদে অনুমতি গ্রহণ করবে।')}
                       </p>
                     </div>
 
@@ -581,7 +581,7 @@ export default function TenantEmailSettingsPage() {
  size="lg"onClick={handleConnectGmail}
  className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs h-11 px-6 min-h-[44px] shadow-xs shadow-blue-600/20">
                       <Globe className="mr-2 h-4 w-4"/>
- Sign in with Google / Connect Gmail
+                      {tBilingual('Sign in with Google / Connect Gmail', 'গুগল দিয়ে সাইন ইন / জিমেইল যুক্ত করুন')}
                     </Button>
 
                     {googleOAuthStatus && !googleOAuthStatus.isConfigured && (
@@ -640,9 +640,9 @@ export default function TenantEmailSettingsPage() {
               {/* Server Credentials */}
               <Card>
                 <CardHeader className="pb-3 border-b border-border">
-                  <CardTitle className="text-sm">SMTP Server Credentials</CardTitle>
+                  <CardTitle className="text-sm">{tBilingual('SMTP Server Credentials', 'এসএমটিপি সার্ভার তথ্য')}</CardTitle>
                   <CardDescription className="text-xs">
- Credentials are encrypted and protected against exposure.
+                    {tBilingual('Credentials are encrypted and protected against exposure.', 'লগইন তথ্য এনক্রিপ্ট করা এবং সুরক্ষিত।')}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="p-4 space-y-3.5">

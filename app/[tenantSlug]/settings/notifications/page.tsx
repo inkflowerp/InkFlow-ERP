@@ -359,7 +359,7 @@ export default function NotificationSettingsPage() {
       {isSaved && (
         <div className="p-3.5 bg-emerald-50 text-emerald-800 rounded-xl text-xs font-semibold flex items-center gap-2 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800 animate-in fade-in-0 shadow-sm">
           <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0"/>
-          <span>Notification gateways and audio telemetry updated and recorded in audit log.</span>
+          <span>{tBilingual('Notification gateways and audio telemetry updated and recorded in audit log.', 'নোটিফিকেশন গেটওয়ে ও অডিও টেলিমেট্রি সফলভাবে আপডেট করা হয়েছে।')}</span>
         </div>
       )}
 
@@ -373,14 +373,14 @@ export default function NotificationSettingsPage() {
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <CardTitle className="text-base">Realtime Audio Chimes &amp; Browser Push</CardTitle>
+                  <CardTitle className="text-base">{tBilingual('Realtime Audio Chimes & Browser Push', 'রিয়েলটাইম অডিও চাইম ও ব্রাউজার পুশ')}</CardTitle>
                   <Badge className="bg-indigo-600 text-white text-2xs font-bold">Web Audio 2.0</Badge>
                   <Badge className="bg-emerald-600/20 text-emerald-400 border border-emerald-500/30 text-2xs font-bold">
- Limiter Protected
+                    {tBilingual('Limiter Protected', 'লিমিটার সুরক্ষিত')}
                   </Badge>
                 </div>
                 <CardDescription className="text-xs">
- High-fidelity harmonic synthesis with 5.6x amplified output volume and native OS desktop push notifications.
+                  {tBilingual('High-fidelity harmonic synthesis with 5.6x amplified output volume and native OS desktop push notifications.', 'হাই-ফিডেলিটি হারমোনিক সাউন্ড সিন্থেসিস এবং ৫.৬ গুণ বর্ধিত সাউন্ডসহ ব্রাউজার পুশ অ্যালার্ট।')}
                 </CardDescription>
               </div>
             </div>
@@ -435,29 +435,30 @@ export default function NotificationSettingsPage() {
 
               {/* Quick Volume Preset Buttons */}
               <div className="flex items-center gap-1.5 pt-1">
-                <span className="text-2xs text-muted-foreground uppercase font-semibold">Presets:</span>
+                <span className="text-2xs text-muted-foreground uppercase font-semibold">{tBilingual('Presets:', 'প্রিসেট:')}</span>
                 {[
-                  { label: '25% Subtle', val: 25 },
-                  { label: '50% Normal', val: 50 },
-                  { label: '85% Loud', val: 85 },
-                  { label: '100% Boost', val: 100 },
+                  { labelEn: '25% Subtle', labelBn: '২৫% মৃদু', val: 25 },
+                  { labelEn: '50% Normal', labelBn: '৫০% সাধারণ', val: 50 },
+                  { labelEn: '85% Loud', labelBn: '৮৫% জোরালো', val: 85 },
+                  { labelEn: '100% Boost', labelBn: '১০০% সর্বোচ্চ', val: 100 },
                 ].map((preset) => (
                   <button
- key={preset.val}
- type="button"onClick={() => handleVolumePreset(preset.val)}
- className={`px-2 py-0.5 rounded text-2xs font-bold border transition-colors cursor-pointer ${
- volume === preset.val && !soundMuted
+                    key={preset.val}
+                    type="button"
+                    onClick={() => handleVolumePreset(preset.val)}
+                    className={`px-2 py-0.5 rounded text-2xs font-bold border transition-colors cursor-pointer ${
+                      volume === preset.val && !soundMuted
                         ? 'bg-indigo-600 text-white border-indigo-500'
                         : 'bg-card border-input text-muted-foreground hover:border-indigo-400'
                     }`}
                   >
-                    {preset.label}
+                    {tBilingual(preset.labelEn, preset.labelBn)}
                   </button>
                 ))}
               </div>
 
               <p className="text-2xs text-muted-foreground">
- Crafted with dynamic limiter compression to cut through loud printing presses, noisy cutter machines, and busy retail counters without digital distortion.
+                {tBilingual('Crafted with dynamic limiter compression to cut through loud printing presses, noisy cutter machines, and busy retail counters without digital distortion.', 'প্রিন্টিং প্রেসের তীব্র শব্দ ও কোলাহলেও স্পষ্টভাবে শোনার জন্য ডায়নামিক লিমিটার কম্প্রেশন প্রযুক্তি যুক্ত।')}
               </p>
             </div>
 
@@ -467,7 +468,7 @@ export default function NotificationSettingsPage() {
                 <div className="flex items-center gap-2">
                   <Smartphone className="h-4 w-4 text-indigo-600 dark:text-indigo-400"/>
                   <span className="text-xs font-bold text-foreground">
- Desktop / OS Push Notifications
+                    {tBilingual('Desktop / OS Push Notifications', 'ডেস্কটপ / ওএস পুশ নোটিফিকেশন')}
                   </span>
                 </div>
 
@@ -481,18 +482,18 @@ export default function NotificationSettingsPage() {
                   }
                 >
                   {browserPerm === 'granted'
-                    ? 'Granted / Active'
+                    ? tBilingual('Granted / Active', 'অনুমোদিত / সক্রিয়')
                     : browserPerm === 'denied'
-                    ? 'Blocked in Browser'
-                    : 'Permission Required'}
+                    ? tBilingual('Blocked in Browser', 'ব্রাউজারে ব্লক করা')
+                    : tBilingual('Permission Required', 'অনুমতি প্রয়োজন')}
                 </Badge>
               </div>
 
               <div className="flex items-center justify-between gap-3 pt-1">
                 <span className="text-2xs text-muted-foreground">
                   {browserPerm === 'granted'
-                    ? 'System alerts will pop up even when the browser tab is minimized or in background.'
-                    : 'Enable browser permission to receive desktop alerts when away from the tab.'}
+                    ? tBilingual('System alerts will pop up even when the browser tab is minimized or in background.', 'ট্যাব মিনিমাইজ করা থাকলেও সিস্টেম অ্যালার্ট স্ক্রিনে ভেসে উঠবে।')
+                    : tBilingual('Enable browser permission to receive desktop alerts when away from the tab.', 'ট্যাব ব্যাকগ্রাউন্ডে থাকাকালীন ডেস্কটপ অ্যালার্ট পেতে ব্রাউজারের অনুমতি দিন।')}
                 </span>
 
                 {browserPerm !== 'granted' ? (
@@ -505,7 +506,7 @@ export default function NotificationSettingsPage() {
                   <Button
  type="button"size="sm"variant="outline"onClick={handleToggleBrowserEnabled}
  className="h-8 text-xs shrink-0 cursor-pointer">
-                    {browserEnabled ? 'Disable' : 'Enable'}
+                    {browserEnabled ? tBilingual('Disable', 'নিষ্ক্রিয় করুন') : tBilingual('Enable', 'সক্রিয় করুন')}
                   </Button>
                 )}
               </div>
@@ -518,32 +519,33 @@ export default function NotificationSettingsPage() {
               <div className="flex items-center gap-2">
                 <span className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
                   <Sparkles className="h-4 w-4 text-amber-500"/>
- Sound Synthesizer &amp; Alert Studio (13 Archetypes)
+                  {tBilingual('Sound Synthesizer & Alert Studio (13 Archetypes)', 'সাউন্ড সিন্থেসাইজার ও অ্যালার্ট স্টুডিও (১৩টি আর্কিটাইপ)')}
                 </span>
                 <Badge className="bg-indigo-500/10 text-indigo-400 border-indigo-500/30 text-2xs">
-                  {filteredCatalog.length} Sounds
+                  {filteredCatalog.length} {tBilingual('Sounds', 'সাউন্ড')}
                 </Badge>
               </div>
 
               {/* Category Filter Tabs */}
               <div className="flex items-center gap-1 overflow-x-auto">
                 {[
-                  { key: 'all' as const, label: 'All' },
-                  { key: 'commercial' as const, label: 'Commercial' },
-                  { key: 'operations' as const, label: 'Operations' },
-                  { key: 'alerts' as const, label: 'Alerts' },
-                  { key: 'system' as const, label: 'System' },
+                  { key: 'all' as const, labelEn: 'All', labelBn: 'সকল' },
+                  { key: 'commercial' as const, labelEn: 'Commercial', labelBn: 'বাণিজ্যিক' },
+                  { key: 'operations' as const, labelEn: 'Operations', labelBn: 'অপারেশনস' },
+                  { key: 'alerts' as const, labelEn: 'Alerts', labelBn: 'অ্যালার্ট' },
+                  { key: 'system' as const, labelEn: 'System', labelBn: 'সিস্টেম' },
                 ].map((tab) => (
                   <button
- key={tab.key}
- type="button"onClick={() => setSelectedCategory(tab.key)}
- className={`px-2.5 py-1 rounded-lg text-2xs font-semibold transition-all cursor-pointer ${
- selectedCategory === tab.key
+                    key={tab.key}
+                    type="button"
+                    onClick={() => setSelectedCategory(tab.key)}
+                    className={`px-2.5 py-1 rounded-lg text-2xs font-semibold transition-all cursor-pointer ${
+                      selectedCategory === tab.key
                         ? 'bg-indigo-600 text-white'
                         : 'bg-muted text-muted-foreground hover:text-foreground'
                     }`}
                   >
-                    {tab.label}
+                    {tBilingual(tab.labelEn, tab.labelBn)}
                   </button>
                 ))}
               </div>
@@ -590,7 +592,7 @@ export default function NotificationSettingsPage() {
                               {tBilingual(item.nameEn, item.nameBn)}
                             </div>
                             <span className="text-2xs text-muted-foreground uppercase tabular-nums tracking-wider">
-                              {item.category} • {item.waveform}
+                              {item.category === 'commercial' ? tBilingual('Commercial', 'বাণিজ্যিক') : item.category === 'operations' ? tBilingual('Operations', 'অপারেশনস') : item.category === 'alerts' ? tBilingual('Alerts', 'অ্যালার্ট') : tBilingual('System', 'সিস্টেম')} • {item.waveform === 'sine' ? tBilingual('SINE', 'সাইন') : item.waveform === 'hybrid' ? tBilingual('HYBRID', 'হাইব্রিড') : item.waveform === 'triangle' ? tBilingual('TRIANGLE', 'ট্রায়াঙ্গেল') : tBilingual('SAWTOOTH', 'স-টুথ')}
                             </span>
                           </div>
                         </div>
@@ -598,7 +600,7 @@ export default function NotificationSettingsPage() {
                         {isPlayingThis && (
                           <span className="flex items-center gap-1 text-2xs text-indigo-400 font-bold animate-pulse">
                             <Volume2 className="h-3 w-3"/>
- Playing
+                            {tBilingual('Playing', 'বাজছে')}
                           </span>
                         )}
                       </div>
@@ -617,13 +619,13 @@ export default function NotificationSettingsPage() {
  type="button"onClick={() => handleTestSound(item.type)}
  className="px-2.5 py-1.5 rounded-xl bg-muted hover:bg-indigo-100 dark:hover:bg-indigo-950/80 text-2xs font-bold text-foreground hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer text-center flex items-center justify-center gap-1.5"title="Play audio chime only">
                         <Volume2 className="h-3.5 w-3.5"/>
- Chime 🔊
+                        {tBilingual('Chime 🔊', 'চাইম 🔊')}
                       </button>
                       <button
  type="button"onClick={() => handleTestLivePopup(item.type)}
  className="px-2.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-2xs font-bold text-white transition-colors cursor-pointer text-center flex items-center justify-center gap-1.5 shadow-sm"title="Trigger live popup card & chime">
                         <Bell className="h-3.5 w-3.5"/>
- Popup 🔔
+                        {tBilingual('Popup 🔔', 'পপআপ 🔔')}
                       </button>
                     </div>
                   </div>
@@ -642,9 +644,9 @@ export default function NotificationSettingsPage() {
               <div className="flex items-center gap-2.5">
                 <MessageSquare className="h-5 w-5 text-emerald-600"/>
                 <div>
-                  <CardTitle className="text-base">WhatsApp Order &amp; Proof Alerts</CardTitle>
+                  <CardTitle className="text-base">{tBilingual('WhatsApp Order & Proof Alerts', 'হোয়াটসঅ্যাপ অর্ডার ও প্রুফ অ্যালার্ট')}</CardTitle>
                   <CardDescription className="text-xs">
- Send high-res watermarked proofs and delivery PDF receipts to customer WhatsApp.
+                    {tBilingual('Send high-res watermarked proofs and delivery PDF receipts to customer WhatsApp.', 'গ্রাহকের হোয়াটসঅ্যাপে ওয়াটারমার্কযুক্ত প্রুফ ও ডেলিভারি রসিদ পাঠান।')}
                   </CardDescription>
                 </div>
               </div>
@@ -657,7 +659,7 @@ export default function NotificationSettingsPage() {
           </CardHeader>
           <CardContent className="space-y-4 pt-4">
             <div className="space-y-1.5">
-              <Label htmlFor="whatsappNo">WhatsApp Business Helpline</Label>
+              <Label htmlFor="whatsappNo">{tBilingual('WhatsApp Business Helpline', 'হোয়াটসঅ্যাপ হেল্পলাইন নম্বর')}</Label>
               <Input
  id="whatsappNo"placeholder="+880 1700-000000"value={notif.whatsapp_number}
  onChange={(e) => setNotif({ ...notif, whatsapp_number: e.target.value })}
@@ -674,9 +676,9 @@ export default function NotificationSettingsPage() {
               <div className="flex items-center gap-2.5">
                 <PhoneCall className="h-5 w-5 text-blue-600"/>
                 <div>
-                  <CardTitle className="text-base">Bangladeshi Masked SMS Gateway</CardTitle>
+                  <CardTitle className="text-base">{tBilingual('Bangladeshi Masked SMS Gateway', 'বাংলাদেশি মাস্কড এসএমএস গেটওয়ে')}</CardTitle>
                   <CardDescription className="text-xs">
- Instant delivery readiness and invoice payment confirmation SMS.
+                    {tBilingual('Instant delivery readiness and invoice payment confirmation SMS.', 'ডেলিভারি প্রস্তুতি এবং বিল পেমেন্টের তাৎক্ষণিক নিশ্চিতকরণ এসএমএস।')}
                   </CardDescription>
                 </div>
               </div>
@@ -690,7 +692,7 @@ export default function NotificationSettingsPage() {
           <CardContent className="space-y-4 pt-4">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="space-y-1.5">
-                <Label htmlFor="smsGateway">SMS Provider</Label>
+                <Label htmlFor="smsGateway">{tBilingual('SMS Provider', 'এসএমএস প্রোভাইডার')}</Label>
                 <select
  id="smsGateway"className="w-full h-10 px-3 rounded-md border border-input bg-card text-xs font-semibold"value={notif.sms_gateway}
  onChange={(e) => setNotif({ ...notif, sms_gateway: e.target.value })}
@@ -703,7 +705,7 @@ export default function NotificationSettingsPage() {
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="senderId">BTCL Approved Masking ID</Label>
+                <Label htmlFor="senderId">{tBilingual('BTCL Approved Masking ID', 'বিটিসিএল অনুমোদিত মাস্কিং আইডি')}</Label>
                 <Input
  id="senderId"placeholder={tBilingual("PRINTFLOW", "PRINTFLOW")}value={notif.sms_sender_id}
  onChange={(e) => setNotif({ ...notif, sms_sender_id: e.target.value })}
@@ -712,7 +714,7 @@ export default function NotificationSettingsPage() {
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="smsApiKey">API Secret Key</Label>
+                <Label htmlFor="smsApiKey">{tBilingual('API Secret Key', 'এপিআই সিক্রেট কি')}</Label>
                 <Input
  id="smsApiKey"type="password"value={notif.sms_api_key}
  onChange={(e) => setNotif({ ...notif, sms_api_key: e.target.value })}
@@ -730,9 +732,9 @@ export default function NotificationSettingsPage() {
               <div className="flex items-center gap-2.5">
                 <AlertTriangle className="h-5 w-5 text-amber-600"/>
                 <div>
-                  <CardTitle className="text-base">Low-Stock Media Alerts</CardTitle>
+                  <CardTitle className="text-base">{tBilingual('Low-Stock Media Alerts', 'স্বল্প স্টক ও কাঁচামাল সতর্কতা')}</CardTitle>
                   <CardDescription className="text-xs">
- Notify Floor Manager when media rolls or solvent inks reach re-order threshold.
+                    {tBilingual('Notify Floor Manager when media rolls or solvent inks reach re-order threshold.', 'মিডিয়া রোল বা কালির পরিমাণ পুনর্ক্রয় সীমায় পৌঁছালে ফ্লোর ম্যানেজারকে সতর্ক করুন।')}
                   </CardDescription>
                 </div>
               </div>
@@ -745,7 +747,7 @@ export default function NotificationSettingsPage() {
           </CardHeader>
           <CardContent className="space-y-4 pt-4">
             <div className="space-y-1.5 max-w-xs">
-              <Label htmlFor="lowStockThresh">Re-order Alert Margin (sft / rolls)</Label>
+              <Label htmlFor="lowStockThresh">{tBilingual('Re-order Alert Margin (sft / rolls)', 'পুনর্ক্রয় সতর্কতার সীমা (স্কয়ারফুট / রোল)')}</Label>
               <Input
  id="lowStockThresh"type="number"value={notif.low_stock_threshold}
  onChange={(e) => setNotif({ ...notif, low_stock_threshold: Number(e.target.value) })}
@@ -758,7 +760,7 @@ export default function NotificationSettingsPage() {
         <div className="flex justify-end pt-2">
           <Button type="submit"isLoading={isLoading} className="bg-amber-600 hover:bg-amber-700 text-white font-bold">
             <Save className="mr-1.5 h-4 w-4"/>
- Save Notification Gateways
+            {tBilingual('Save Notification Gateways', 'নোটিফিকেশন গেটওয়ে সংরক্ষণ করুন')}
           </Button>
         </div>
       </form>
