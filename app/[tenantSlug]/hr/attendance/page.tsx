@@ -1,5 +1,6 @@
-import { useI18n } from '@/i18n/context'
 'use client'
+
+import { useI18n } from '@/i18n/context'
 
 import React, { useState, useEffect, useTransition, useCallback } from 'react'
 import { useParams, useSearchParams } from 'next/navigation'
