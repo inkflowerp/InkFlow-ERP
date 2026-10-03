@@ -74,6 +74,49 @@ const HIGH_RISK_PERMISSIONS = new Set([
 
 type ModuleCategory = 'all' | 'sales' | 'production' | 'inventory' | 'hr' | 'system'
 
+
+export const ROLE_NAMES_BN: Record<string, string> = {
+  business_owner: 'ব্যবসা স্বত্বাধিকারী',
+  sales_manager: 'সেলস ম্যানেজার',
+  designer: 'গ্রাফিক ডিজাইনার',
+  production_manager: 'প্রোডাকশন ম্যানেজার',
+  operator: 'মেশিন অপারেটর',
+  store_manager: 'স্টোর ও ইনভেন্টরি ম্যানেজার',
+  accountant: 'হিসাবরক্ষক ও বিলিং কর্মকর্তা',
+  delivery_coordinator: 'ডেলিভারি ও চালান সমন্বয়ক',
+  general_staff: 'সাধারণ কর্মী',
+  'Business Owner': 'ব্যবসা স্বত্বাধিকারী',
+  'Sales Manager': 'সেলস ম্যানেজার',
+  'Graphic Designer': 'গ্রাফিক ডিজাইনার',
+  'Production Manager': 'প্রোডাকশন ম্যানেজার',
+  'Machine Operator': 'মেশিন অপারেটর',
+  'Store & Inventory Manager': 'স্টোর ও ইনভেন্টরি ম্যানেজার',
+  'Accountant & Billing Officer': 'হিসাবরক্ষক ও বিলিং কর্মকর্তা',
+  'Delivery & Challan Coordinator': 'ডেলিভারি ও চালান সমন্বয়ক',
+  'General Staff': 'সাধারণ কর্মী',
+}
+
+export const ROLE_DESCRIPTIONS_BN: Record<string, string> = {
+  business_owner: 'সার্বজনীন প্রশাসনিক ক্ষমতা এবং প্রাতিষ্ঠানিক পরিচালনা।',
+  sales_manager: 'কোটেশন, মূল্য নির্ধারণ, গ্রাহক সম্পর্ক, ইনভয়েসিং এবং অর্ডার ব্যবস্থাপনা।',
+  designer: 'আর্টওয়ার্ক প্রুফ, গ্রাহক অনুমোদন, প্রি-প্রেস যাচাই এবং ডিজাইন সংশোধন।',
+  production_manager: 'কারখানা মেশিন কিউ, কাঁচামাল বরাদ্দ, কাজের ধাপ ও মান নিয়ন্ত্রণ।',
+  operator: 'প্রিন্ট প্রেস পরিচালনা, ফিনিশিং কাজ, টাস্ক সম্পন্নকরণ এবং মেশিন লগ।',
+  store_manager: 'কাঁচামাল রোল, কালি, বোর্ড, স্টোর লেজার এবং উপাদান সরবরাহ।',
+  accountant: 'ইনভয়েস, রসিদ, পেমেন্ট রেকর্ড, ব্যাংকিং এবং আর্থিক রিপোর্ট।',
+  delivery_coordinator: 'ডেলিভারি চালান, সাইট ইনস্টলেশন অনুমোদন এবং সরবরাহ রুট সমন্বয়।',
+  general_staff: 'মৌলিক অপারেশনাল অ্যাক্সেসসহ সাধারণ ওয়ার্কস্পেস সদস্য।',
+  'Sales Manager': 'কোটেশন, মূল্য নির্ধারণ, গ্রাহক সম্পর্ক, ইনভয়েসিং এবং অর্ডার ব্যবস্থাপনা।',
+  'Business Owner': 'সার্বজনীন প্রশাসনিক ক্ষমতা এবং প্রাতিষ্ঠানিক পরিচালনা।',
+  'Graphic Designer': 'আর্টওয়ার্ক প্রুফ, গ্রাহক অনুমোদন, প্রি-প্রেস যাচাই এবং ডিজাইন সংশোধন।',
+  'Production Manager': 'কারখানা মেশিন কিউ, কাঁচামাল বরাদ্দ, কাজের ধাপ ও মান নিয়ন্ত্রণ।',
+  'Machine Operator': 'প্রিন্ট প্রেস পরিচালনা, ফিনিশিং কাজ, টাস্ক সম্পন্নকরণ এবং মেশিন লগ।',
+  'Store & Inventory Manager': 'কাঁচামাল রোল, কালি, বোর্ড, স্টোর লেজার এবং উপাদান সরবরাহ।',
+  'Accountant & Billing Officer': 'ইনভয়েস, রসিদ, পেমেন্ট রেকর্ড, ব্যাংকিং এবং আর্থিক রিপোর্ট।',
+  'Delivery & Challan Coordinator': 'ডেলিভারি চালান, সাইট ইনস্টলেশন অনুমোদন এবং সরবরাহ রুট সমন্বয়।',
+  'General Staff': 'মৌলিক অপারেশনাল অ্যাক্সেসসহ সাধারণ ওয়ার্কস্পেস সদস্য।',
+}
+
 const MODULE_CATEGORIES: Record<ModuleCategory, { labelEn: string; labelBn: string; modules: PermissionModule[] }> = {
  all: {
  labelEn: 'All Modules',
@@ -570,7 +613,7 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
                     >
                       <div className="space-y-0.5 min-w-0 pr-2">
                         <div className="flex items-center gap-1.5 truncate">
-                          <span className="truncate">{isBn ? (role.name_bn || role.name) : role.name}</span>
+                          <span className="truncate">{isBn ? (role.name_bn || ROLE_NAMES_BN[role.slug || ''] || ROLE_NAMES_BN[role.name] || role.name) : role.name}</span>
                         </div>
                         <div className="text-2xs text-muted-foreground tabular-nums">
                           {role.permissions?.length || 0} {isBn ? 'টি পারমিশন কার্যকর' : 'permissions granted'}
@@ -604,7 +647,7 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
                       <CardTitle className="text-base font-bold text-foreground flex items-center gap-2">
-                        {isBn ? (selectedRole.name_bn || selectedRole.name) : selectedRole.name}
+                        {isBn ? (selectedRole.name_bn || ROLE_NAMES_BN[selectedRole.slug || ''] || ROLE_NAMES_BN[selectedRole.name] || selectedRole.name) : selectedRole.name}
                       </CardTitle>
 
                       {selectedRole.is_system ? (
@@ -631,7 +674,7 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
                       )}
                     </div>
                     <CardDescription className="text-xs text-muted-foreground">
-                      {(isBn ? (selectedRole.description_bn || selectedRole.description) : selectedRole.description) || (isBn ? 'টিম সদস্যদের জন্য নির্ধারিত অনুমতি টেমপ্লেট।' : 'Configured permission template for team members.')}
+                      {isBn ? (selectedRole.description_bn || (selectedRole.slug ? ROLE_DESCRIPTIONS_BN[selectedRole.slug] : undefined) || ROLE_DESCRIPTIONS_BN[selectedRole.name] || 'টিম সদস্যদের জন্য নির্ধারিত অনুমতি টেমপ্লেট।') : (selectedRole.description || 'Configured permission template for team members.')}
                     </CardDescription>
                   </div>
 

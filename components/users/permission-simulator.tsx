@@ -54,16 +54,89 @@ interface PermissionSimulatorProps {
  onEditUserPermissions?: (user: CompanyUserWithProfile) => void
 }
 
-const HIGH_RISK_ACTIONS: { code: string; module: PermissionModule; action: PermissionAction; label: string; desc: string }[] = [
-  { code: 'invoices.cancel', module: 'invoices', action: 'cancel', label: 'Cancel Invoices', desc: 'Void issued commercial & tax invoices' },
-  { code: 'invoices.delete', module: 'invoices', action: 'delete', label: 'Delete Invoices', desc: 'Permanently remove billing records' },
-  { code: 'payments.delete', module: 'payments', action: 'delete', label: 'Delete Payments', desc: 'Remove recorded cash/bKash money receipts' },
-  { code: 'hr.approve', module: 'hr', action: 'approve', label: 'Approve Payroll & Salaries', desc: 'Authorize employee compensation disbursements' },
-  { code: 'users.manage', module: 'users', action: 'manage', label: 'Manage Users & Permissions', desc: 'Create, modify roles, or alter security overrides' },
-  { code: 'machineries.delete', module: 'machineries', action: 'delete', label: 'Delete Plant Machinery', desc: 'Decommission and remove factory assets' },
-  { code: 'pricing.delete', module: 'pricing', action: 'delete', label: 'Delete Price Tariffs', desc: 'Delete rate cards and floor margins' },
-  { code: 'inventory.approve', module: 'inventory', action: 'approve', label: 'Approve Inventory Adjustments', desc: 'Authorize write-offs and material stock balances' },
+const HIGH_RISK_ACTIONS: { code: string; module: PermissionModule; action: PermissionAction; label: string; labelBn: string; desc: string; descBn: string }[] = [
+  { code: 'invoices.cancel', module: 'invoices', action: 'cancel', label: 'Cancel Invoices', labelBn: 'ইনভয়েস বাতিল', desc: 'Void issued commercial & tax invoices', descBn: 'ইস্যুকৃত কমার্শিয়াল ও ট্যাক্স ইনভয়েস বাতিলকরণ' },
+  { code: 'invoices.delete', module: 'invoices', action: 'delete', label: 'Delete Invoices', labelBn: 'ইনভয়েস মুছে ফেলা', desc: 'Permanently remove billing records', descBn: 'বিলিং রেকর্ড স্থায়ীভাবে মুছে ফেলা' },
+  { code: 'payments.delete', module: 'payments', action: 'delete', label: 'Delete Payments', labelBn: 'পেমেন্ট মুছে ফেলা', desc: 'Remove recorded cash/bKash money receipts', descBn: 'নগদ বা বিকাশ মানি রিসিট স্থায়ীভাবে মুছে ফেলা' },
+  { code: 'hr.approve', module: 'hr', action: 'approve', label: 'Approve Payroll & Salaries', labelBn: 'বেতন ও পে-রোল অনুমোদন', desc: 'Authorize employee compensation disbursements', descBn: 'কর্মীদের বেতন ও ভাতা অনুমোদন' },
+  { code: 'users.manage', module: 'users', action: 'manage', label: 'Manage Users & Permissions', labelBn: 'ব্যবহারকারী ও অনুমতি পরিচালনা', desc: 'Create, modify roles, or alter security overrides', descBn: 'রোল তৈরি, পরিবর্তন বা নিরাপত্তা ওভাররাইড' },
+  { code: 'machineries.delete', module: 'machineries', action: 'delete', label: 'Delete Plant Machinery', labelBn: 'কারখানা মেশিনারি মুছে ফেলা', desc: 'Decommission and remove factory assets', descBn: 'কারখানার স্থায়ী যন্ত্রপাতি নিষ্ক্রিয় বা মুছে ফেলা' },
+  { code: 'pricing.delete', module: 'pricing', action: 'delete', label: 'Delete Price Tariffs', labelBn: 'মূল্য তালিকা মুছে ফেলা', desc: 'Delete rate cards and floor margins', descBn: 'রেট কার্ড এবং ফ্লোর মার্জিন মুছে ফেলা' },
+  { code: 'inventory.approve', module: 'inventory', action: 'approve', label: 'Approve Inventory Adjustments', labelBn: 'ইনভেন্টরি সমন্বয় অনুমোদন', desc: 'Authorize write-offs and material stock balances', descBn: 'কাঁচামাল স্টক সমন্বয় ও ঘাটতি অনুমোদন' },
 ]
+
+
+const ROLE_NAMES_BN: Record<string, string> = {
+  business_owner: 'ব্যবসা স্বত্বাধিকারী',
+  sales_manager: 'সেলস ম্যানেজার',
+  designer: 'গ্রাফিক ডিজাইনার',
+  production_manager: 'প্রোডাকশন ম্যানেজার',
+  operator: 'মেশিন অপারেটর',
+  store_manager: 'স্টোর ও ইনভেন্টরি ম্যানেজার',
+  accountant: 'হিসাবরক্ষক ও বিলিং কর্মকর্তা',
+  delivery_coordinator: 'ডেলিভারি ও চালান সমন্বয়ক',
+  general_staff: 'সাধারণ কর্মী',
+  'Business Owner': 'ব্যবসা স্বত্বাধিকারী',
+  'Sales Manager': 'সেলস ম্যানেজার',
+  'Graphic Designer': 'গ্রাফিক ডিজাইনার',
+  'Production Manager': 'প্রোডাকশন ম্যানেজার',
+  'Machine Operator': 'মেশিন অপারেটর',
+  'Store & Inventory Manager': 'স্টোর ও ইনভেন্টরি ম্যানেজার',
+  'Accountant & Billing Officer': 'হিসাবরক্ষক ও বিলিং কর্মকর্তা',
+  'Delivery & Challan Coordinator': 'ডেলিভারি ও চালান সমন্বয়ক',
+  'General Staff': 'সাধারণ কর্মী',
+}
+
+const translateStatus = (status: string, isBn: boolean) => {
+  if (!isBn) return status
+  if (status === 'active') return 'সক্রিয়'
+  if (status === 'disabled') return 'নিষ্ক্রিয়'
+  if (status === 'invited') return 'আমন্ত্রিত'
+  return status
+}
+
+const translateScope = (scope: string, isBn: boolean) => {
+  if (!isBn) return scope.toUpperCase()
+  const map: Record<string, string> = {
+    company: 'প্রতিষ্ঠান (সার্বজনীন)',
+    all_branches: 'সকল শাখা',
+    selected_branches: 'নির্বাচিত শাখা',
+    branch: 'শাখা',
+    department: 'বিভাগ',
+    assigned: 'বরাদ্দকৃত',
+    own: 'নিজস্ব',
+  }
+  return map[scope.toLowerCase()] || scope
+}
+
+const translateBranchReason = (reason: string, isBn: boolean) => {
+  if (!isBn) return reason
+  const map: Record<string, string> = {
+    'No specific branch constraint': 'কোনো নির্দিষ্ট শাখা সীমাবদ্ধতা নেই',
+    'Business Owner has universal branch clearance': 'স্বত্বাধিকারীর সর্বজনীন শাখা অনুমতি রয়েছে',
+    'Data scope allows cross-branch operations': 'ডেটা স্কোপ অনুযায়ী আন্তঃশাখা অপারেশনের অনুমতি রয়েছে',
+    'Explicitly authorized for this branch': 'এই শাখার জন্য স্পষ্টভাবে অনুমোদিত',
+    'Branch not in user authorized branch list': 'ব্যবহারকারীর অনুমোদিত শাখা তালিকায় নেই',
+    'Assigned Primary Branch': 'নির্ধারিত প্রাথমিক শাখা',
+    'Restricted to primary branch only': 'শুধুমাত্র প্রাথমিক শাখায় সীমাবদ্ধ',
+  }
+  return map[reason] || reason
+}
+
+const translateSourceDetail = (src: string | undefined, isBn: boolean) => {
+  if (!src) return isBn ? 'অজ্ঞাত' : 'Unknown'
+  if (!isBn) return src
+  if (src === 'Business Owner Full Access') return 'ব্যবসা স্বত্বাধিকারী পূর্ণ অ্যাক্সেস'
+  if (src.includes('Role Matrix')) return 'রোল ম্যাট্রিক্স অনুমোদন'
+  if (src.includes('Override')) return 'সরাসরি ব্যবহারকারী ওভাররাইড'
+  if (src.includes('System Default')) return 'সিস্টেম ডিফল্ট'
+  return src
+}
+
+const translateResponsibilities = (resps: string[], isBn: boolean) => {
+  if (!isBn) return resps.join(', ')
+  return resps.map((r) => ROLE_NAMES_BN[r] || r).join(', ')
+}
 
 export function PermissionSimulator({
  users = [],
@@ -333,7 +406,7 @@ export function PermissionSimulator({
                               : 'bg-muted border-border text-muted-foreground hover:text-foreground hover:border-input dark:hover:border-border'
                           )}
                         >
-                          {ACTION_LABELS[act]?.label || act}
+                          {locale === 'bn' ? (ACTION_LABELS[act]?.labelBn || act) : (ACTION_LABELS[act]?.label || act)}
                         </button>
                       )
                     })}
@@ -361,7 +434,7 @@ export function PermissionSimulator({
  variant="outline"size="sm"onClick={() => onEditUserPermissions(selectedUser)}
  className="w-full mt-2 border-border hover:bg-muted text-xs text-foreground gap-1.5">
                     <Sliders className="w-3.5 h-3.5 text-primary"/>
- Configure Overrides for {getUserDisplayName(selectedUser).split(' ')[0]}
+ {locale === 'bn' ? `${getUserDisplayName(selectedUser).split(' ')[0]}-এর ওভাররাইড কনফিগার` : `Configure Overrides for ${getUserDisplayName(selectedUser).split(' ')[0]}`}
                   </Button>
                 )}
               </CardContent>
@@ -413,7 +486,7 @@ export function PermissionSimulator({
                         : 'bg-rose-500/20 text-rose-700 dark:text-rose-400 border-rose-500/40'
                     )}
                   >
-                    {evaluationResult.detail.source.toUpperCase()}
+                    {locale === 'bn' ? (evaluationResult.detail.source === 'owner' ? 'মালিক' : evaluationResult.detail.source.startsWith('override') ? 'ওভাররাইড' : evaluationResult.detail.source === 'inherited' ? 'রোল ম্যাট্রিক্স' : 'সিস্টেম') : evaluationResult.detail.source.toUpperCase()}
                   </Badge>
                 </div>
 
@@ -465,7 +538,7 @@ export function PermissionSimulator({
                               : 'bg-muted text-muted-foreground border-border '
                           )}
                         >
-                          {evaluationResult.detail.source === 'inherited' ? 'Granted in Matrix' : 'Evaluated'}
+                          {evaluationResult.detail.source === 'inherited' ? tBilingual('Granted in Matrix', 'ম্যাট্রিক্সে অনুমোদিত') : tBilingual('Evaluated', 'মূল্যায়িত')}
                         </Badge>
                       </div>
 
@@ -474,11 +547,11 @@ export function PermissionSimulator({
                         <div className="flex items-start gap-2.5">
                           <div className="p-1 rounded bg-muted text-foreground tabular-nums text-2xs mt-0.5">03</div>
                           <div>
-                            <div className="font-medium text-foreground">Direct User Overrides (+Grant / -Deny)</div>
+                            <div className="font-medium text-foreground">{tBilingual('Direct User Overrides (+Grant / -Deny)', 'সরাসরি ব্যবহারকারী ওভাররাইড (+অনুমোদন / -বাতিল)')}</div>
                             <div className="text-muted-foreground text-2xs">
-                              {evaluationResult.detail.source === 'override_allow' && 'Explicit user grant override applied'}
-                              {evaluationResult.detail.source === 'override_deny' && 'Explicit user revoke override applied'}
-                              {!evaluationResult.detail.source.startsWith('override') && 'No specific override for this action'}
+                              {evaluationResult.detail.source === 'override_allow' && tBilingual('Explicit user grant override applied', 'সরাসরি ব্যবহারকারী অনুমোদন প্রয়োগ করা হয়েছে')}
+                              {evaluationResult.detail.source === 'override_deny' && tBilingual('Explicit user revoke override applied', 'সরাসরি ব্যবহারকারী বাতিল প্রয়োগ করা হয়েছে')}
+                              {!evaluationResult.detail.source.startsWith('override') && tBilingual('No specific override for this action', 'এই অ্যাকশনের জন্য কোনো নির্দিষ্ট ওভাররাইড নেই')}
                             </div>
                           </div>
                         </div>
@@ -493,10 +566,10 @@ export function PermissionSimulator({
                           )}
                         >
                           {evaluationResult.detail.source === 'override_allow'
-                            ? '+OVERRIDE ALLOW'
+                            ? (locale === 'bn' ? '+ওভাররাইড অনুমোদন' : '+OVERRIDE ALLOW')
                             : evaluationResult.detail.source === 'override_deny'
-                            ? '-OVERRIDE DENY'
-                            : 'NONE'}
+                            ? (locale === 'bn' ? '-ওভাররাইড বাতিল' : '-OVERRIDE DENY')
+                            : (locale === 'bn' ? 'নেই' : 'NONE')}
                         </Badge>
                       </div>
 
@@ -519,7 +592,7 @@ export function PermissionSimulator({
                               : 'bg-rose-500/20 text-rose-700 dark:text-rose-300 border-rose-500/30'
                           )}
                         >
-                          {evaluationResult.branchAccessGranted ? 'Branch Passed' : 'Branch Restricted'}
+                          {evaluationResult.branchAccessGranted ? tBilingual('Branch Passed', 'শাখা অনুমোদিত') : tBilingual('Branch Restricted', 'শাখা সীমাবদ্ধ')}
                         </Badge>
                       </div>
                     </div>
@@ -528,10 +601,10 @@ export function PermissionSimulator({
                   {/* Summary Box */}
                   <div className="p-3.5 rounded-xl bg-muted border border-border flex items-center justify-between text-xs">
                     <div className="text-muted-foreground">
- Authoritative resolution: <span className="font-semibold text-foreground">{evaluationResult.detail.sourceDetail}</span>
+ {tBilingual('Authoritative resolution:', 'চূড়ান্ত সিদ্ধান্ত:')} <span className="font-semibold text-foreground">{translateSourceDetail(evaluationResult.detail.sourceDetail, locale === 'bn')}</span>
                     </div>
                     <div className="text-muted-foreground text-2xs">
- Module: <span className="text-foreground tabular-nums font-medium">{selectedModule}</span>
+ {tBilingual('Module:', 'মডিউল:')} <span className="text-foreground tabular-nums font-medium">{locale === 'bn' ? (MODULE_ACTION_SPECS[selectedModule]?.labelBn || selectedModule) : selectedModule}</span>
                     </div>
                   </div>
                 </CardContent>
@@ -569,7 +642,7 @@ export function PermissionSimulator({
             <CardContent className="space-y-4">
               {/* High-Risk Selector Pills */}
               <div className="space-y-2">
-                <Label className="text-xs text-foreground font-medium">Select Critical Operation to Audit:</Label>
+                <Label className="text-xs text-foreground font-medium">{tBilingual('Select Critical Operation to Audit:', 'অডিট করার জন্য সংবেদনশীল অপারেশন নির্বাচন করুন:')}</Label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
                   {HIGH_RISK_ACTIONS.map((item) => {
  const isSelected = auditTargetCode === item.code
@@ -585,12 +658,12 @@ export function PermissionSimulator({
                         )}
                       >
                         <div className="flex items-center justify-between gap-1">
-                          <span className="font-semibold text-xs text-foreground">{item.label}</span>
+                          <span className="font-semibold text-xs text-foreground">{locale === 'bn' ? item.labelBn : item.label}</span>
                           <Badge variant="outline"className="text-2xs tabular-nums px-1 py-0 uppercase bg-muted border-border text-muted-foreground">
                             {item.code}
                           </Badge>
                         </div>
-                        <div className="text-2xs text-muted-foreground mt-1 line-clamp-1">{item.desc}</div>
+                        <div className="text-2xs text-muted-foreground mt-1 line-clamp-1">{locale === 'bn' ? item.descBn : item.desc}</div>
                       </button>
                     )
                   })}
@@ -602,13 +675,13 @@ export function PermissionSimulator({
                 <div className="relative flex-1 max-w-sm">
                   <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-muted-foreground"/>
                   <Input
- type="text"placeholder="Filter audit results by name or email..."value={auditSearchQuery}
+ type="text"placeholder={tBilingual('Filter audit results by name or email...', 'নাম বা ইমেইল দিয়ে ফলাফল ফিল্টার করুন...')}value={auditSearchQuery}
  onChange={(e) => setAuditSearchQuery(e.target.value)}
  className="pl-9 h-8 text-xs bg-card border-border text-foreground"/>
                 </div>
 
                 <div className="text-xs text-muted-foreground">
- Found <span className="font-bold text-amber-600 dark:text-amber-400">{auditResults.length}</span> user(s) with this privilege
+ {locale === 'bn' ? <>পাওয়া গেছে <span className="font-bold text-amber-600 dark:text-amber-400">{auditResults.length}</span> জন সদস্য এই অনুমতিপ্রাপ্ত</> : <>Found <span className="font-bold text-amber-600 dark:text-amber-400">{auditResults.length}</span> user(s) with this privilege</>}
                 </div>
               </div>
 
@@ -618,18 +691,18 @@ export function PermissionSimulator({
                   <table className="w-full text-xs text-left">
                     <thead className="bg-muted text-muted-foreground uppercase tracking-wider text-2xs border-b border-border">
                       <tr>
-                        <th className="px-4 py-3">Team Member</th>
-                        <th className="px-4 py-3">Role / Department</th>
-                        <th className="px-4 py-3">Status</th>
-                        <th className="px-4 py-3">Privilege Source</th>
-                        <th className="px-4 py-3 text-right">Quick Action</th>
+                        <th className="px-4 py-3">{tBilingual('Team Member', 'টিম সদস্য')}</th>
+                        <th className="px-4 py-3">{tBilingual('Role / Department', 'রোল / বিভাগ')}</th>
+                        <th className="px-4 py-3">{tBilingual('Status', 'স্ট্যাটাস')}</th>
+                        <th className="px-4 py-3">{tBilingual('Privilege Source', 'অনুমতির উৎস')}</th>
+                        <th className="px-4 py-3 text-right">{tBilingual('Quick Action', 'দ্রুত অ্যাকশন')}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border dark:divide-border/60">
                       {!Array.isArray(auditResults) || auditResults.length === 0 ? (
                         <tr>
                           <td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">
- No team members have been granted this permission.
+ {tBilingual('No team members have been granted this permission.', 'কোনো টিম সদস্যকে এই অনুমতি দেওয়া হয়নি।')}
                           </td>
                         </tr>
                       ) : (
@@ -658,7 +731,7 @@ export function PermissionSimulator({
                                     : 'bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-500/30'
                                 )}
                               >
-                                {user.status || 'active'}
+                                {translateStatus(user.status || 'active', locale === 'bn')}
                               </Badge>
                             </td>
 
@@ -674,7 +747,7 @@ export function PermissionSimulator({
                                       : 'bg-muted text-foreground border-border '
                                   )}
                                 >
-                                  {source}
+                                  {translateSourceDetail(source, locale === 'bn')}
                                 </Badge>
                               </div>
                             </td>
@@ -684,7 +757,7 @@ export function PermissionSimulator({
                                 <Button
  variant="ghost"size="sm"onClick={() => onEditUserPermissions(user)}
  className="h-7 px-2.5 text-xs text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 hover:bg-sky-50 dark:hover:bg-sky-500/10">
- Modify Access
+ {tBilingual('Modify Access', 'অ্যাক্সেস সংশোধন')}
                                 </Button>
                               )}
                             </td>

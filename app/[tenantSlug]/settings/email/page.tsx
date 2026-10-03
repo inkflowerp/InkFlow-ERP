@@ -62,6 +62,17 @@ import type {
 } from '@/types/communication.types'
 import { interpolateVariables } from '@/services/email-template.service'
 
+const getTemplateDisplayName = (tpl: EmailTemplateRecord, isBn: boolean) => {
+  if (isBn) {
+    if (tpl.name_bn) return tpl.name_bn
+    const match = tpl.name.match(/\(([^)]*[\u0980-\u09FF][^)]*)\)/)
+    if (match) return match[1].trim()
+    return tpl.name
+  } else {
+    return tpl.name.replace(/\s*\([^)]*[\u0980-\u09FF][^)]*\)/g, '').trim()
+  }
+}
+
 export default function TenantEmailSettingsPage() {
  const { company } = useTenant()
  const { locale, tBilingual } = useI18n()
@@ -804,7 +815,7 @@ export default function TenantEmailSettingsPage() {
                       : 'text-foreground hover:bg-muted dark:hover:bg-muted'
                   }`}
                 >
-                  <span className="truncate">{tpl.name}</span>
+                  <span className="truncate">{getTemplateDisplayName(tpl, locale === 'bn')}</span>
                   <span className={`text-2xs tabular-nums ${isSelected ? 'text-blue-100' : 'text-muted-foreground'}`}>
                     {tpl.event_type}
                   </span>
@@ -817,7 +828,7 @@ export default function TenantEmailSettingsPage() {
             <Card className="md:col-span-2 p-4 space-y-4">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b gap-2">
                 <div>
-                  <h4 className="font-bold text-sm text-foreground">{selectedTemplate.name}</h4>
+                  <h4 className="font-bold text-sm text-foreground">{getTemplateDisplayName(selectedTemplate, locale === 'bn')}</h4>
                   <span className="text-2xs tabular-nums text-blue-600">{selectedTemplate.event_type}</span>
                 </div>
 
@@ -850,7 +861,7 @@ export default function TenantEmailSettingsPage() {
 
               {/* Subject */}
               <div className="space-y-1">
-                <Label className="text-xs">Subject Line ({templateLang === 'en' ? 'English' : 'বাংলা'})</Label>
+                <Label className="text-xs">{locale === 'bn' ? `বিষয়বস্তু (${templateLang === 'en' ? 'ইংরেজি' : 'বাংলা'})` : `Subject Line (${templateLang === 'en' ? 'English' : 'Bengali'})`}</Label>
                 <Input
  value={
  templateLang === 'en'
@@ -869,7 +880,7 @@ export default function TenantEmailSettingsPage() {
 
               {/* Body */}
               <div className="space-y-1">
-                <Label className="text-xs">Email Body Content</Label>
+                <Label className="text-xs">{locale === 'bn' ? 'ইমেইল মূল বিবরণী' : 'Email Body Content'}</Label>
                 <textarea
  rows={6}
  value={
@@ -889,7 +900,7 @@ export default function TenantEmailSettingsPage() {
 
               {/* Rendered Preview */}
               <div className="p-3 bg-muted rounded-xl border space-y-1">
-                <span className="text-2xs font-bold uppercase text-muted-foreground">Live Preview:</span>
+                <span className="text-2xs font-bold uppercase text-muted-foreground">{locale === 'bn' ? 'লাইভ প্রিভিউ:' : 'LIVE PREVIEW:'}</span>
                 <div
  className="p-3 bg-card text-foreground text-xs rounded border max-h-40 overflow-y-auto"dangerouslySetInnerHTML={{
                     __html: interpolateVariables(
@@ -918,7 +929,7 @@ export default function TenantEmailSettingsPage() {
       {activeTab === 'logs' && (
         <Card>
           <CardHeader className="pb-3 border-b flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <CardTitle className="text-sm">Tenant Email Delivery History</CardTitle>
+            <CardTitle className="text-sm">{tBilingual('Tenant Email Delivery History', 'ইমেইল ডেলিভারি হিস্ট্রি')}</CardTitle>
             <div className="w-full sm:w-56">
               <Input
  placeholder={tBilingual('Search logs...', 'লগ অনুসন্ধান করুন...')}value={logSearch}
@@ -996,7 +1007,7 @@ export default function TenantEmailSettingsPage() {
         >
           <div className="space-y-4 pt-2">
             <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-foreground">Recipient Email Address</Label>
+              <Label className="text-xs font-semibold text-foreground">{tBilingual('Recipient Email Address', 'প্রাপকের ইমেইল ঠিকানা')}</Label>
               <Input
  type="email"value={testRecipient}
  onChange={(e) => setTestRecipient(e.target.value)}
@@ -1004,7 +1015,7 @@ export default function TenantEmailSettingsPage() {
             </div>
 
             <div className="p-3 bg-muted rounded-xl border border-border text-xs text-muted-foreground">
- Provider: <strong className="text-foreground capitalize">{gateway?.provider || 'Active Provider'}</strong>
+ {tBilingual('Provider:', 'প্রোভাইডার:')} <strong className="text-foreground capitalize">{gateway?.provider || (locale === 'bn' ? 'সক্রিয় প্রোভাইডার' : 'Active Provider')}</strong>
             </div>
 
             <div className="flex items-center justify-end gap-2 pt-3 border-t border-border">
@@ -1016,7 +1027,7 @@ export default function TenantEmailSettingsPage() {
  onClick={handleSendTestEmail}
  className="bg-primary hover:bg-primary/90 text-primary-foreground min-h-[38px] font-medium">
                 <Send className="mr-1.5 h-3.5 w-3.5"/>
-                {sendingTestEmail ? 'Dispatching...' : 'Send Test'}
+                {sendingTestEmail ? (locale === 'bn' ? 'পাঠানো হচ্ছে...' : 'Dispatching...') : (locale === 'bn' ? 'টেস্ট পাঠান' : 'Send Test')}
               </Button>
             </div>
           </div>

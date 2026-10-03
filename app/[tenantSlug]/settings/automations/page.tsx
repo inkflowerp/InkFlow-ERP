@@ -68,7 +68,7 @@ export default function WorkflowAutomationsPage() {
  const params = useParams()
  const tenantSlug = (params?.tenantSlug as string) || 'my-company'
  const { company } = useTenant()
- const { tBilingual } = useI18n()
+ const { locale, tBilingual } = useI18n()
  const activeCompanyId = company?.id || 'c-01'
 
  const [mounted, setMounted] = useState(false)
@@ -405,7 +405,7 @@ export default function WorkflowAutomationsPage() {
                   : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
               }`}
             >
- Automation Rules ({rules.length})
+ {locale === 'bn' ? `অটোমেশন নিয়মাবলী (${rules.length})` : `Automation Rules (${rules.length})`}
             </button>
             <button
  onClick={() => setActiveTab('logs')}
@@ -415,7 +415,7 @@ export default function WorkflowAutomationsPage() {
                   : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
               }`}
             >
- Execution Logs ({logs.length})
+ {locale === 'bn' ? `এক্সিকিউশন লগ (${logs.length})` : `Execution Logs (${logs.length})`}
             </button>
           </div>
 
@@ -423,7 +423,7 @@ export default function WorkflowAutomationsPage() {
             <div className="relative flex-1 sm:w-60">
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground"/>
               <Input
- placeholder={activeTab === 'rules' ? 'Search rules...' : 'Search logs by rule or ID...'}
+ placeholder={activeTab === 'rules' ? (locale === 'bn' ? 'নিয়মাবলী খুঁজুন...' : 'Search rules...') : (locale === 'bn' ? 'লগ খুঁজুন...' : 'Search logs by rule or ID...')}
  value={searchQuery}
  onChange={(e) => setSearchQuery(e.target.value)}
  className="h-10 sm:h-9 text-xs bg-muted border-border text-foreground placeholder:text-muted-foreground rounded-xl pl-8"/>
@@ -437,7 +437,7 @@ export default function WorkflowAutomationsPage() {
                 <option value="all">{tBilingual('All Trigger Types', 'সকল ট্রিগার টাইপ')}</option>
                 {TRIGGER_DEFINITIONS.map((td) => (
                   <option key={td.type} value={td.type}>
-                    {td.label}
+                    {locale === 'bn' ? (td.labelBn || td.label) : td.label}
                   </option>
                 ))}
               </select>
@@ -482,12 +482,7 @@ export default function WorkflowAutomationsPage() {
                         </div>
                         <div>
                           <CardTitle className="text-sm sm:text-base font-bold text-foreground flex flex-wrap items-center gap-2">
-                            <span>{rule.name}</span>
-                            {rule.name_bn && (
-                              <span className="text-xs font-normal text-muted-foreground font-sans">
-                                ({rule.name_bn})
-                              </span>
-                            )}
+                            <span>{locale === 'bn' ? (rule.name_bn || rule.name) : rule.name}</span>
                             {rule.is_active ? (
                               <span className="text-2xs tabular-nums px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 flex items-center gap-1 font-semibold">
                                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"/>
@@ -495,7 +490,7 @@ export default function WorkflowAutomationsPage() {
                               </span>
                             ) : (
                               <span className="text-2xs tabular-nums px-2 py-0.5 rounded-full bg-muted text-muted-foreground border border-border">
- PAUSED
+ {locale === 'bn' ? 'স্থগিত' : 'PAUSED'}
                               </span>
                             )}
                           </CardTitle>
@@ -519,14 +514,14 @@ export default function WorkflowAutomationsPage() {
  simulatingRuleId === rule.id ? 'animate-spin' : ''
                           }`}
                         />
-                        <span>{simulatingRuleId === rule.id ? 'Testing...' : 'Test Run'}</span>
+                        <span>{simulatingRuleId === rule.id ? (locale === 'bn' ? 'পরীক্ষা চলছে...' : 'Testing...') : (locale === 'bn' ? 'টেস্ট রান' : 'Test Run')}</span>
                       </Button>
 
                       <Button
  size="sm"variant="outline"onClick={() => handleEditRule(rule)}
  className="h-8 text-xs border-border bg-card text-foreground hover:bg-muted rounded-xl px-2.5"title="Edit workflow rule">
                         <Edit2 className="h-3 w-3 mr-1"/>
-                        <span>Edit</span>
+                        <span>{locale === 'bn' ? 'সম্পাদনা' : 'Edit'}</span>
                       </Button>
 
                       <div className="flex items-center gap-1.5 pl-1">
@@ -587,7 +582,7 @@ export default function WorkflowAutomationsPage() {
                         </div>
                       ) : (
                         <span className="text-2xs text-muted-foreground italic px-1">
- Always matches (No conditions)
+ {locale === 'bn' ? 'সর্বদা কার্যকর (কোনো শর্ত নেই)' : 'Always matches (No conditions)'}
                         </span>
                       )}
 
@@ -616,13 +611,13 @@ export default function WorkflowAutomationsPage() {
                     {/* Execution Metrics Footer */}
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1 text-2xs text-muted-foreground pt-1 tabular-nums">
                       <div>
-                        <span>Total Executions: </span>
-                        <strong className="text-foreground">{rule.execution_count} runs</strong>
+                        <span>{locale === 'bn' ? 'মোট সম্পাদন:' : 'Total Executions:'} </span>
+                        <strong className="text-foreground">{rule.execution_count} {locale === 'bn' ? 'বার' : 'runs'}</strong>
                       </div>
                       <div>
-                        <span>Last Triggered: </span>
+                        <span>{locale === 'bn' ? 'সর্বশেষ ট্রিগার:' : 'Last Triggered:'} </span>
                         <strong className="text-foreground">
-                          {rule.last_executed_at ? formatDateTime(rule.last_executed_at) : 'Never'}
+                          {rule.last_executed_at ? formatDateTime(rule.last_executed_at) : (locale === 'bn' ? 'কখনও নয়' : 'Never')}
                         </strong>
                       </div>
                     </div>
@@ -641,10 +636,10 @@ export default function WorkflowAutomationsPage() {
             <CardHeader className="border-b border-border pb-3.5 bg-muted">
               <CardTitle className="text-base font-bold text-foreground flex items-center gap-2">
                 <History className="h-4 w-4 text-indigo-600 dark:text-indigo-400"/>
-                <span>Workflow Execution Audit Stream</span>
+                <span>{tBilingual('Workflow Execution Audit Stream', 'ওয়ার্কফ্লো এক্সিকিউশন অডিট স্ট্রিম')}</span>
               </CardTitle>
               <CardDescription className="text-xs text-muted-foreground">
- Deterministic log of triggered rules, evaluated conditions, and executed service handlers.
+ {tBilingual('Deterministic log of triggered rules, evaluated conditions, and executed service handlers.', 'ট্রিগার হওয়া নিয়ম, মূল্যায়িত শর্ত এবং সম্পাদিত সার্ভিস হ্যান্ডলারের নির্ভরযোগ্য লগ।')}
               </CardDescription>
             </CardHeader>
             <CardContent className="p-0">
@@ -900,7 +895,7 @@ export default function WorkflowAutomationsPage() {
  className="w-full h-9 rounded-lg border border-input bg-card px-3 text-xs font-medium">
                       {TRIGGER_DEFINITIONS.map((t) => (
                         <option key={t.type} value={t.type}>
-                          {t.label} ({t.labelBn})
+                          {locale === 'bn' ? (t.labelBn || t.label) : t.label}
                         </option>
                       ))}
                     </select>
@@ -964,7 +959,7 @@ export default function WorkflowAutomationsPage() {
 
                 {(!editingRule.conditions || editingRule.conditions.length === 0) ? (
                   <div className="p-3 rounded-lg bg-muted border border-dashed border-border text-xs text-muted-foreground text-center">
- No conditions configured. This rule will trigger on every matching event.
+ {tBilingual('No conditions configured. This rule will trigger on every matching event.', 'কোনো শর্ত নির্ধারিত নেই। প্রতিটি প্রযোজ্য ইভেন্টে এটি সক্রিয় হবে।')}
                   </div>
                 ) : (
                   <div className="space-y-2.5">
@@ -1160,7 +1155,7 @@ export default function WorkflowAutomationsPage() {
  className="h-9 bg-card border border-input text-foreground rounded-lg px-3 text-xs flex-1 font-medium">
                     {ACTION_DEFINITIONS.map((a) => (
                       <option key={a.type} value={a.type}>
-                        {a.label} ({a.labelBn})
+                        {locale === 'bn' ? (a.labelBn || a.label) : a.label}
                       </option>
                     ))}
                   </select>
@@ -1182,7 +1177,7 @@ export default function WorkflowAutomationsPage() {
                 </Button>
                 <Button
  type="submit"className="w-full sm:w-auto min-h-[40px] text-xs bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-sm px-6">
- Save Workflow Rule
+ {tBilingual('Save Workflow Rule', 'ওয়ার্কফ্লো রুল সংরক্ষণ করুন')}
                 </Button>
               </div>
             </form>
