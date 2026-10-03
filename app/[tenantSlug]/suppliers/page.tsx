@@ -367,7 +367,7 @@ export default function SuppliersPage() {
               <Button
  variant="outline"size="sm"className="text-xs h-9 font-semibold text-foreground">
                 <Layers className="mr-1.5 h-3.5 w-3.5 text-teal-600"/>
-                <span className="hidden sm:inline">PO & GRN Log</span>
+                <span className="hidden sm:inline">{tBilingual('PO & GRN Log', 'পিও ও জিআরএন লগ')}</span>
               </Button>
             </Link>
 
@@ -375,7 +375,7 @@ export default function SuppliersPage() {
               <Button
  variant="outline"size="sm"className="text-xs h-9 font-semibold text-muted-foreground">
                 <Trash2 className="mr-1.5 h-3.5 w-3.5 text-muted-foreground"/>
-                <span className="hidden sm:inline">Trash Bin</span>
+                <span className="hidden sm:inline">{tBilingual('Trash Bin', 'ট্র্যাশ বিন')}</span>
               </Button>
             </Link>
 
@@ -433,7 +433,7 @@ export default function SuppliersPage() {
 
         {/* Avg Credit Term */}
         <KpiCard
- titleEn="Standard Credit"titleBn="সাধারণ বাকি মেয়াদ"value="15-30 Days"icon={Clock}
+ titleEn="Standard Credit"titleBn="সাধারণ বাকি মেয়াদ"value={tBilingual('15-30 Days', '১৫-৩০ দিন')}icon={Clock}
  colorVariant="indigo"subtitleEn="Post-dated Cheque cycle"subtitleBn="চেক পেমেন্ট সাইকেল"/>
       </KpiGrid>
 
@@ -516,7 +516,7 @@ export default function SuppliersPage() {
                 : 'bg-muted text-muted-foreground hover:bg-muted dark:hover:bg-card-elevated'
             }`}
           >
- All Categories ({suppliers.length})
+ {tBilingual('All Categories', 'সকল ক্যাটাগরি')} ({suppliers.length})
           </button>
 
           {Object.values(SUPPLIER_CATEGORY_META).map((cat) => {
@@ -532,7 +532,7 @@ export default function SuppliersPage() {
                     : 'bg-muted text-muted-foreground hover:bg-muted dark:hover:bg-card-elevated'
                 }`}
               >
-                <span>{cat.labelEn.split(' ')[0]}</span>
+                <span>{tBilingual(cat.labelEn.split(' ')[0], cat.labelBn.split(' ')[0])}</span>
                 <span className="text-2xs opacity-75 tabular-nums">({count})</span>
               </button>
             )
@@ -578,10 +578,10 @@ export default function SuppliersPage() {
                   {tBilingual('Registered Suppliers & Vendor Partners', 'নিবন্ধিত মহাজন ও ভেন্ডর পার্টনার')}
                 </CardTitle>
                 <Badge variant="outline"className="text-2xs tabular-nums">
-                  {filtered.length} shown
+                  {filtered.length} {tBilingual('shown', 'দেখানো হচ্ছে')}
                 </Badge>
               </div>
-              <span className="text-xs text-muted-foreground">Showing complete supplier master list</span>
+              <span className="text-xs text-muted-foreground">{tBilingual('Showing complete supplier master list', 'সম্পূর্ণ মহাজন ও সরবরাহকারী তালিকা')}</span>
             </div>
           </CardHeader>
           <CardContent className="p-0">
@@ -643,7 +643,7 @@ export default function SuppliersPage() {
  className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-2xs font-bold border ${catMeta.badgeClass}`}
                           >
                             <CatIcon className="h-3 w-3"/>
-                            <span>{catMeta.labelEn.split(' ')[0]}</span>
+                            <span>{tBilingual(catMeta.labelEn.split(' ')[0], catMeta.labelBn.split(' ')[0])}</span>
                           </span>
                         </td>
 
@@ -693,7 +693,7 @@ export default function SuppliersPage() {
                           </div>
                           {(supplier.credit_limit || 0) > 0 && (
                             <div className="text-2xs text-muted-foreground tabular-nums">
- Limit: {formatBDT(supplier.credit_limit || 0)}
+ {tBilingual('Limit', 'সীমা')}: {formatBDT(supplier.credit_limit || 0)}
                             </div>
                           )}
                         </td>
@@ -707,16 +707,16 @@ export default function SuppliersPage() {
                               </div>
                               {isOverLimit ? (
                                 <Badge className="bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300 text-2xs py-0 px-1 border-0">
- Limit Exceeded
+ {tBilingual('Limit Exceeded', 'সীমা অতিক্রম')}
                                 </Badge>
                               ) : (
-                                <span className="text-2xs text-amber-600 font-semibold">Payable Due</span>
+                                <span className="text-2xs text-amber-600 font-semibold">{tBilingual('Payable Due', 'পাওনা বাকি')}</span>
                               )}
                             </div>
                           ) : (
                             <div className="flex items-center gap-1 text-emerald-600 font-bold text-xs">
                               <CheckCircle2 className="h-3.5 w-3.5"/>
-                              <span>Settled</span>
+                              <span>{tBilingual('Settled', 'পরিশোধিত')}</span>
                             </div>
                           )}
                         </td>
@@ -868,8 +868,8 @@ export default function SuppliersPage() {
                     {/* Credit Bar */}
                     <div className="space-y-1">
                       <div className="flex justify-between text-2xs text-muted-foreground font-semibold">
-                        <span>Terms: {supplier.payment_terms.replace('_', ' ').toUpperCase()}</span>
-                        <span>Credit Limit: {formatBDT(creditLimit)}</span>
+                        <span>{tBilingual('Terms', 'শর্তাবলী')}: {supplier.payment_terms.replace('_', ' ').toUpperCase()}</span>
+                        <span>{tBilingual('Credit Limit', 'বাকি সীমা')}: {formatBDT(creditLimit)}</span>
                       </div>
                       <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
                         <div
@@ -896,7 +896,7 @@ export default function SuppliersPage() {
                         </span>
                       ) : (
                         <span className="text-xs text-emerald-600 font-bold flex items-center gap-1">
-                          <CheckCircle2 className="h-3.5 w-3.5"/> Settled
+                          <CheckCircle2 className="h-3.5 w-3.5"/> {tBilingual('Settled', 'পরিশোধিত')}
                         </span>
                       )}
                     </div>

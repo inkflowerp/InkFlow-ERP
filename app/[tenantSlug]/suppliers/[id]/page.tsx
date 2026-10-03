@@ -203,10 +203,10 @@ export default function SupplierProfilePage() {
             {tBilingual('Supplier Not Found', 'সরবরাহকারী পাওয়া যায়নি')}
           </h2>
           <p className="text-xs text-muted-foreground mt-1 max-w-md mx-auto">
- The supplier record you are looking for does not exist in your organization or was removed.
+ {tBilingual('The supplier record you are looking for does not exist in your organization or was removed.', 'কাঙ্ক্ষিত সরবরাহকারীর তথ্য খুঁজে পাওয়া যায়নি অথবা মুছে ফেলা হয়েছে।')}
           </p>
           <Button asChild className="mt-4 bg-teal-600 hover:bg-teal-700 text-white font-bold"size="sm">
-            <Link href={getTenantNavHref('/suppliers', pathname, slug)}>View All Suppliers</Link>
+            <Link href={getTenantNavHref('/suppliers', pathname, slug)}>{tBilingual('View All Suppliers', 'সকল সরবরাহকারী দেখুন')}</Link>
           </Button>
         </Card>
       </div>
@@ -369,9 +369,9 @@ export default function SupplierProfilePage() {
  isCurrency
  icon={CreditCard}
  colorVariant={outstandingDue > 0 ? 'amber' : 'emerald'}
- badge={outstandingDue > 0 ? 'Pending' : 'Settled'}
+ badge={outstandingDue > 0 ? tBilingual('Pending', 'অপেক্ষমান') : tBilingual('Settled', 'পরিশোধিত')}
  badgeColor={outstandingDue > 0 ? 'bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-800' : 'bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800'}
- subtitle={`Terms: ${supplier.payment_terms.replace('_', ' ').toUpperCase()}`}
+ subtitle={`${tBilingual('Terms', 'শর্তাবলী')}: ${supplier.payment_terms.replace('_', ' ').toUpperCase()}`}
         />
 
         {/* Credit Limit Meter */}
@@ -380,7 +380,7 @@ export default function SupplierProfilePage() {
  isCurrency
  icon={ShieldCheck}
  colorVariant={creditUsedPct > 90 ? 'danger' : creditUsedPct > 50 ? 'amber' : 'teal'}
- subtitle={`${creditUsedPct}% limit used`}
+ subtitle={`${creditUsedPct}% ${tBilingual('limit used', 'সীমা ব্যবহৃত')}`}
         >
           <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden mt-1.5">
             <div

@@ -587,28 +587,28 @@ export default function JobCostingPage() {
           <KpiCard
  titleEn="Average Realized Margin"titleBn="গড় অর্জিত মার্জিন"value={isSalesRoleShielded ? '•••• %' : `${avgMargin.toFixed(1)}%`}
  icon={TrendingUp}
- colorVariant="emerald"badge="Target > 25%"badgeColor="emerald"subtitleEn={`Across ${completedJobs.length} completed production runs`}
+ colorVariant="emerald"badge={tBilingual('Target > 25%', 'টার্গেট > ২৫%')}badgeColor="emerald"subtitleEn={`Across ${completedJobs.length} completed production runs`}
  subtitleBn={`${completedJobs.length}টি সম্পন্ন কাজের হিসাব`}
           />
           <KpiCard
  titleEn="Realized Job Profit"titleBn="মোট অর্জিত লাভ"value={isSalesRoleShielded ? '••••••' : totalActualProfit}
  isCurrency={!isSalesRoleShielded}
  icon={DollarSign}
- colorVariant="blue"badge="Audited"badgeColor="blue"subtitleEn={`Total Billed: ${formatBDT(totalRevenue)}`}
+ colorVariant="blue"badge={tBilingual('Audited', 'নিরীক্ষিত')}badgeColor="blue"subtitleEn={`Total Billed: ${formatBDT(totalRevenue)}`}
  subtitleBn={`মোট বিল: ${formatBDT(totalRevenue)}`}
           />
           <KpiCard
  titleEn="Budget Overruns"titleBn="বাজেট অতিরিক্ত ব্যয়"value={overrunJobsCount}
  unitEn="Jobs"unitBn="টি কাজ"icon={AlertTriangle}
  colorVariant={overrunJobsCount > 0 ? 'amber' : 'emerald'}
- badge={overrunJobsCount > 0 ? 'Requires Audit' : 'Healthy'}
+ badge={overrunJobsCount > 0 ? tBilingual('Requires Audit', 'নিরীক্ষা প্রয়োজন') : tBilingual('Healthy', 'পরিমিত')}
  badgeColor={overrunJobsCount > 0 ? 'amber' : 'emerald'}
  subtitleEn="Transport / overtime variance"subtitleBn="পরিবহন ও অতিরিক্ত সময় ব্যত্যয়"/>
           <KpiCard
  titleEn="Material & Yield Savings"titleBn="কাঁচামাল ও নেস্টিং সাশ্রয়"value={isSalesRoleShielded ? '••••••' : totalSavings}
  isCurrency={!isSalesRoleShielded}
  icon={Sparkles}
- colorVariant="purple"badge="Efficiency"badgeColor="purple"subtitleEn="Saved paper on sheet"subtitleBn="উপযুক্ত গ্যাং-রান নেস্টিং সাশ্রয়"/>
+ colorVariant="purple"badge={tBilingual('Efficiency', 'সাশ্রয়ী')}badgeColor="purple"subtitleEn="Saved paper on sheet"subtitleBn="উপযুক্ত গ্যাং-রান নেস্টিং সাশ্রয়"/>
         </KpiGrid>
 
         {/* Sensitive Cost Notice for Sales Mode */}
@@ -622,7 +622,7 @@ export default function JobCostingPage() {
               </span>
             </div>
             <span className="tabular-nums text-2xs uppercase font-bold bg-amber-200 text-amber-900 px-2 py-0.5 rounded shrink-0 self-start sm:self-auto">
- Role: Sales Executive
+ {tBilingual('Role: Sales Executive', 'পদবী: সেলস এক্সিকিউটিভ')}
             </span>
           </div>
         )}
@@ -750,7 +750,7 @@ export default function JobCostingPage() {
                         ) : cst.status === 'actualized' ? (
                           <span className="text-foreground">{formatBDT(cst.act.total_cost)}</span>
                         ) : (
-                          <span className="text-muted-foreground italic">In progress</span>
+                          <span className="text-muted-foreground italic">{tBilingual('In progress', 'চলমান')}</span>
                         )}
                       </td>
 
@@ -773,30 +773,30 @@ export default function JobCostingPage() {
                             {cst.act.margin_percentage}%
                           </span>
                         ) : (
-                          <span className="text-muted-foreground text-2xs">Est: {cst.est.margin_percentage}%</span>
+                          <span className="text-muted-foreground text-2xs">{tBilingual('Est', 'আনুমানিক')}: {cst.est.margin_percentage}%</span>
                         )}
                       </td>
 
                       {/* Variance Status */}
                       <td className="py-3.5 px-4">
                         {isSalesRoleShielded ? (
-                          <span className="text-2xs text-muted-foreground tabular-nums">Active</span>
+                          <span className="text-2xs text-muted-foreground tabular-nums">{tBilingual('Active', 'সক্রিয়')}</span>
                         ) : cst.status === 'actualized' ? (
                           (cst.variances?.total_variance || 0) < 0 ? (
                             <span className="inline-flex items-center gap-1 text-2xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-200">
                               <TrendingDown className="h-3 w-3 text-emerald-600"/>
- Saved {formatBDT(Math.abs(cst.variances?.total_variance || 0))}
+ {tBilingual('Saved', 'সাশ্রয়')} {formatBDT(Math.abs(cst.variances?.total_variance || 0))}
                             </span>
                           ) : (cst.variances?.total_variance || 0) > 0 ? (
                             <span className="inline-flex items-center gap-1 text-2xs font-bold text-red-700 bg-red-50 px-2 py-0.5 rounded-lg border border-red-200">
                               <TrendingUp className="h-3 w-3 text-red-600"/>
- Overrun +{formatBDT(cst.variances.total_variance)}
+ {tBilingual('Overrun', 'অতিরিক্ত')} +{formatBDT(cst.variances.total_variance)}
                             </span>
                           ) : (
-                            <span className="text-2xs text-muted-foreground tabular-nums">On Budget</span>
+                            <span className="text-2xs text-muted-foreground tabular-nums">{tBilingual('On Budget', 'বাজেট অনুযায়ী')}</span>
                           )
                         ) : (
-                          <span className="text-2xs text-blue-600 tabular-nums font-medium">In Production</span>
+                          <span className="text-2xs text-blue-600 tabular-nums font-medium">{tBilingual('In Production', 'প্রোডাকশনে')}</span>
                         )}
                       </td>
 
@@ -906,7 +906,7 @@ export default function JobCostingPage() {
                               : 'bg-red-100 text-red-800'
                           }`}
                         >
-                          {cst.act.margin_percentage}% Margin
+                          {cst.act.margin_percentage}% {tBilingual('Margin', 'মার্জিন')}
                         </span>
                       ) : (
                         <span className="text-muted-foreground text-2xs">Est: {cst.est.margin_percentage}%</span>
@@ -922,7 +922,7 @@ export default function JobCostingPage() {
                   {/* Costs & Variance Grid */}
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     <div className="p-2 rounded-xl bg-muted border border-border">
-                      <span className="text-2xs text-muted-foreground block uppercase">Est vs Act Cost</span>
+                      <span className="text-2xs text-muted-foreground block uppercase">{tBilingual('Est vs Act Cost', 'আনুমানিক বনাম প্রকৃত')}</span>
                       <span className="tabular-nums font-semibold">
                         {isSalesRoleShielded
                           ? '••••••'
@@ -930,7 +930,7 @@ export default function JobCostingPage() {
                       </span>
                     </div>
                     <div className="p-2 rounded-xl bg-muted border border-border">
-                      <span className="text-2xs text-muted-foreground block uppercase">Variance</span>
+                      <span className="text-2xs text-muted-foreground block uppercase">{tBilingual('Variance', 'পার্থক্য')}</span>
                       {isSalesRoleShielded ? (
                         <span className="tabular-nums text-muted-foreground">••••</span>
                       ) : cst.status === 'actualized' ? (
@@ -946,7 +946,7 @@ export default function JobCostingPage() {
                           <span className="text-2xs text-muted-foreground tabular-nums">On Budget</span>
                         )
                       ) : (
-                        <span className="text-2xs text-blue-600 tabular-nums">In Prod</span>
+                        <span className="text-2xs text-blue-600 tabular-nums">{tBilingual('In Prod', 'প্রোডাকশনে')}</span>
                       )}
                     </div>
                   </div>
@@ -1016,7 +1016,7 @@ export default function JobCostingPage() {
  open={isNewCostingOpen}
  onOpenChange={(open) => !open && setIsNewCostingOpen(false)}
  title={tBilingual('New Job Costing & 9-Head Allocation', 'নতুন জব কস্টিং ও ৯-খাতে ব্যয় বরাদ্দ')}
- description="Calculate material, ink, machine power, labor, and structure fabrication before confirming job order.">
+ description={tBilingual('Calculate material, ink, machine power, labor, and structure fabrication before confirming job order.', 'কাজের অর্ডার চূড়ান্ত করার পূর্বে কাঁচামাল, কালি, বিদ্যুৎ খরচ, মজুরি ও কাঠামোর ব্যয় হিসাব করুন।')}>
           <form onSubmit={handleCreateCosting} className="space-y-4 pt-1 max-h-[75vh] overflow-y-auto px-1">
             {/* Quick Industry Presets */}
             <div className="space-y-2">
@@ -1096,13 +1096,13 @@ export default function JobCostingPage() {
                   {tBilingual('9-Head Estimated Cost Breakdown', '৯টি ব্যয় খাতের হিসাব')}
                 </Label>
                 <span className="text-xs tabular-nums font-bold text-muted-foreground">
- Total Cost: {formatBDT(newTotalEstCost)}
+ {tBilingual('Total Cost', 'মোট খরচ')}: {formatBDT(newTotalEstCost)}
                 </span>
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs">
                 <div className="space-y-1">
-                  <span className="text-2xs text-muted-foreground block truncate">1. Substrate (মিডিয়া/বোর্ড)</span>
+                  <span className="text-2xs text-muted-foreground block truncate">1. {tBilingual('Print Media', 'মিডিয়া/বোর্ড')}</span>
                   <Input
  type="number"min="0"value={newEstHeads.material_cost}
  onChange={(e) => setNewEstHeads({ ...newEstHeads, material_cost: Number(e.target.value) })}
@@ -1179,7 +1179,7 @@ export default function JobCostingPage() {
             <div className="p-3.5 rounded-xl bg-muted border border-border space-y-2">
               <div className="flex items-center justify-between">
                 <Label htmlFor="newSellingPrice"className="text-xs font-bold text-foreground">
- Selling Price (বিক্রয় মূল্য ৳)
+ {tBilingual('Selling Price', 'বিক্রয় মূল্য')} (৳)
                 </Label>
                 <Input
  id="newSellingPrice"type="number"min="0"value={newSellingPrice}
@@ -1189,12 +1189,12 @@ export default function JobCostingPage() {
               </div>
 
               <div className="flex items-center justify-between text-xs pt-2 border-t border-border tabular-nums">
-                <span className="text-muted-foreground">Estimated Gross Profit:</span>
+                <span className="text-muted-foreground">{tBilingual('Estimated Gross Profit:', 'আনুমানিক মোট লাভ:')}</span>
                 <span className="font-bold text-blue-600">{formatBDT(newEstProfit)}</span>
               </div>
 
               <div className="flex items-center justify-between text-xs tabular-nums">
-                <span className="text-muted-foreground">Estimated Profit Margin:</span>
+                <span className="text-muted-foreground">{tBilingual('Estimated Profit Margin:', 'আনুমানিক মুনাফার হার:')}</span>
                 <span
  className={`font-black px-2 py-0.5 rounded ${
  newEstMargin >= 25
@@ -1227,7 +1227,7 @@ export default function JobCostingPage() {
  open={Boolean(negotiatingJob)}
  onOpenChange={(open) => !open && setNegotiatingJob(null)}
  title={tBilingual('Customer Price Negotiation & Margin Guard', 'দরদাম সিমুলেটর ও মার্জিন গার্ড')}
- description="Simulate discount proposal and verify profitability before confirming quotation.">
+ description={tBilingual('Simulate discount proposal and verify profitability before confirming quotation.', 'কোটেশন চূড়ান্ত করার পূর্বে ছাড় প্রস্তাবনা ও লাভজনকতা যাচাই করুন।')}>
           {negotiatingJob && negotiationResult && (
             <div className="space-y-4 pt-1 max-h-[75vh] overflow-y-auto px-1">
               <div className="p-3 bg-muted border border-border rounded-xl space-y-1 text-xs">
@@ -1242,7 +1242,7 @@ export default function JobCostingPage() {
               <div className="space-y-2 p-3 bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900 rounded-xl">
                 <div className="flex justify-between items-center text-xs">
                   <Label htmlFor="discSlider"className="font-bold text-blue-900 dark:text-blue-200">
- Proposed Discount Percentage (%)
+ {tBilingual('Proposed Discount Percentage (%)', 'প্রস্তাবিত ছাড়ের শতাংশ (%)')}
                   </Label>
                   <div className="flex items-center gap-1 tabular-nums font-black text-sm text-blue-700">
                     <Input
@@ -1262,25 +1262,25 @@ export default function JobCostingPage() {
               {/* Live Impact Waterfall */}
               <div className="p-4 rounded-xl bg-muted space-y-2 text-xs tabular-nums">
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Original List Price:</span>
+                  <span className="text-muted-foreground">{tBilingual('Original List Price:', 'মূল তালিকা মূল্য:')}</span>
                   <span className="font-bold">{formatBDT(negotiatingJob.selling_price)}</span>
                 </div>
 
                 <div className="flex justify-between text-red-600 font-bold">
-                  <span>(-) Proposed Discount:</span>
+                  <span>{tBilingual('(-) Proposed Discount:', '(-) প্রস্তাবিত ছাড়:')}</span>
                   <span>-{formatBDT(negotiationResult.discountAmount)} ({discountPercent}%)</span>
                 </div>
 
                 <div className="flex justify-between pt-2 border-t border-border font-black text-sm text-foreground">
-                  <span>Final Negotiated Price:</span>
+                  <span>{tBilingual('Final Negotiated Price:', 'চূড়ান্ত দরদাম মূল্য:')}</span>
                   <span className="text-blue-600">{formatBDT(negotiationResult.finalPrice)}</span>
                 </div>
 
                 {/* Sensitive Margin Display (Hidden if sales rep is shielded) */}
                 <div className="flex justify-between pt-2 border-t border-border items-center">
-                  <span className="text-muted-foreground">Resulting Profit Margin:</span>
+                  <span className="text-muted-foreground">{tBilingual('Resulting Profit Margin:', 'চূড়ান্ত মুনাফার হার:')}</span>
                   {isSalesRoleShielded ? (
-                    <span className="font-bold text-muted-foreground">Shielded by Company Policy</span>
+                    <span className="font-bold text-muted-foreground">{tBilingual('Shielded by Company Policy', 'কোম্পানি নীতিমালা অনুযায়ী গোপন')}</span>
                   ) : (
                     <span
  className={`font-black text-sm px-2 py-0.5 rounded ${
@@ -1344,7 +1344,7 @@ export default function JobCostingPage() {
  negotiationResult.isSafeMargin ? 'bg-blue-600 hover:bg-blue-700' : 'bg-amber-600 hover:bg-amber-700'
                   }`}
                 >
- Apply Negotiated Price
+ {tBilingual('Apply Negotiated Price', 'দরদাম মূল্য প্রয়োগ করুন')}
                 </Button>
               </div>
             </div>
@@ -1358,7 +1358,7 @@ export default function JobCostingPage() {
  open={Boolean(editingJob)}
  onOpenChange={(open) => !open && setEditingJob(null)}
  title={tBilingual('Record Post-Production 9-Head Actual Costs', 'পোস্ট-প্রোডাকশন ৯-খাতে প্রকৃত খরচ এন্ট্রি')}
- description="Update realized substrate consumption, ink bottles, machine hours, and on-site fitting.">
+ description={tBilingual('Update realized material consumption, ink bottles, machine hours, and on-site fitting.', 'ব্যবহৃত কাঁচামাল, কালির বোতল, মেশিনের সময় এবং সাইট ফিটিংয়ের প্রকৃত খরচ আপডেট করুন।')}>
           {editingJob && (
             <form onSubmit={handleSaveActuals} className="space-y-4 pt-1 max-h-[75vh] overflow-y-auto px-1">
               <div className="p-3 rounded-xl bg-muted border text-xs">

@@ -170,32 +170,32 @@ export function ReceivablesView({
         {/* The Visual Pipeline Steps */}
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 mt-4 pt-4 border-t border-border /60 text-center">
           <div className="p-2 rounded-xl bg-card border border-border">
-            <span className="text-3xs text-muted-foreground font-bold block uppercase">Step 1</span>
-            <span className="text-xs font-bold text-foreground block">Invoice</span>
-            <span className="text-xs tabular-nums text-blue-600 font-semibold">{totalBilled > 0 ? formatBDT(totalBilled) : 'Billing'}</span>
+            <span className="text-3xs text-muted-foreground font-bold block uppercase">{tBilingual('Step 1', 'ধাপ ১')}</span>
+            <span className="text-xs font-bold text-foreground block">{tBilingual('Invoice', 'ইনভয়েস')}</span>
+            <span className="text-xs tabular-nums text-blue-600 font-semibold">{totalBilled > 0 ? formatBDT(totalBilled) : tBilingual('Billing', 'বিলিং')}</span>
           </div>
 
           <div className="p-2 rounded-xl bg-card border border-border">
-            <span className="text-3xs text-muted-foreground font-bold block uppercase">Step 2</span>
-            <span className="text-xs font-bold text-foreground block">Advance</span>
-            <span className="text-xs tabular-nums text-emerald-600 font-semibold">{totalCollected > 0 ? formatBDT(totalCollected) : 'Deposit'}</span>
+            <span className="text-3xs text-muted-foreground font-bold block uppercase">{tBilingual('Step 2', 'ধাপ ২')}</span>
+            <span className="text-xs font-bold text-foreground block">{tBilingual('Advance', 'অগ্রিম')}</span>
+            <span className="text-xs tabular-nums text-emerald-600 font-semibold">{totalCollected > 0 ? formatBDT(totalCollected) : tBilingual('Deposit', 'জমা')}</span>
           </div>
 
           <div className="p-2 rounded-xl bg-card border border-border">
-            <span className="text-3xs text-muted-foreground font-bold block uppercase">Step 3</span>
-            <span className="text-xs font-bold text-foreground block">Net Due</span>
+            <span className="text-3xs text-muted-foreground font-bold block uppercase">{tBilingual('Step 3', 'ধাপ ৩')}</span>
+            <span className="text-xs font-bold text-foreground block">{tBilingual('Net Due', 'নীট বাকি')}</span>
             <span className="text-xs tabular-nums text-amber-600 font-bold">{totalReceivables > 0 ? formatBDT(totalReceivables) : '৳0'}</span>
           </div>
 
           <div className="p-2 rounded-xl bg-card border border-border">
-            <span className="text-3xs text-muted-foreground font-bold block uppercase">Step 4</span>
-            <span className="text-xs font-bold text-foreground block">Collection</span>
-            <span className="text-xs tabular-nums text-emerald-600 font-bold">{totalCollected > 0 ? `+${formatBDT(totalCollected)}` : 'Collection'}</span>
+            <span className="text-3xs text-muted-foreground font-bold block uppercase">{tBilingual('Step 4', 'ধাপ ৪')}</span>
+            <span className="text-xs font-bold text-foreground block">{tBilingual('Collection', 'আদায়')}</span>
+            <span className="text-xs tabular-nums text-emerald-600 font-bold">{totalCollected > 0 ? `+${formatBDT(totalCollected)}` : tBilingual('Collection', 'কালেকশন')}</span>
           </div>
 
           <div className="col-span-2 sm:col-span-1 p-2 rounded-xl bg-muted/50 border border-border">
-            <span className="text-3xs text-emerald-600 dark:text-emerald-400 font-semibold block uppercase">Settled</span>
-            <span className="text-xs font-bold text-foreground block">Due Balance</span>
+            <span className="text-3xs text-emerald-600 dark:text-emerald-400 font-semibold block uppercase">{tBilingual('Settled', 'পরিশোধিত')}</span>
+            <span className="text-xs font-bold text-foreground block">{tBilingual('Due Balance', 'বাকি ব্যালেন্স')}</span>
             <span className="text-xs tabular-nums text-emerald-600 font-black">{totalReceivables === 0 ? '৳0 ✓' : formatBDT(totalReceivables)}</span>
           </div>
         </div>
@@ -337,7 +337,7 @@ export function ReceivablesView({
                       </td>
                       <td className="p-3 text-center tabular-nums">
                         <Badge variant="outline"className="text-3xs px-1.5 py-0 h-4">
-                          {cust.invoicesCount} inv
+                          {cust.invoicesCount} {tBilingual('inv', 'টি')}
                         </Badge>
                       </td>
                       <td className="p-3 text-right tabular-nums text-foreground">
@@ -359,7 +359,7 @@ export function ReceivablesView({
                               : 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 text-3xs'
                           }
                         >
-                          {cust.maxDaysOverdue > 0 ? `${cust.maxDaysOverdue}d overdue` : 'Current'}
+                          {cust.maxDaysOverdue > 0 ? `${cust.maxDaysOverdue} ${tBilingual('days overdue', 'দিন বাকি')}` : tBilingual('Current', 'চলতি')}
                         </Badge>
                       </td>
                       <td className="p-3 text-center">
@@ -452,7 +452,7 @@ export function ReceivablesView({
                       </td>
                       <td className="p-3 text-center">
                         <Badge variant="outline"className="text-3xs font-medium">
-                          {inv.bucket === '0_30' ? '1–30 Days' : inv.bucket === '31_60' ? '31–60 Days' : '60+ Days'}
+                          {inv.bucket === '0_30' ? tBilingual('1–30 Days', '১–৩০ দিন') : inv.bucket === '31_60' ? tBilingual('31–60 Days', '৩১–৬০ দিন') : tBilingual('60+ Days', '৬০+ দিন')}
                         </Badge>
                       </td>
                       <td className="p-3 text-center">
@@ -513,7 +513,7 @@ export function ReceivablesView({
                       </td>
                       <td className="p-3 text-center">
                         <Badge className="bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 text-3xs">
- Received ✓
+ {tBilingual('Received ✓', 'গৃহীত ✓')}
                         </Badge>
                       </td>
                     </tr>
@@ -539,7 +539,7 @@ export function ReceivablesView({
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
             <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/60">
               <span className="text-3xs font-bold uppercase text-emerald-700 dark:text-emerald-400 block">
-                0 – 30 Days (Current)
+                {tBilingual('0 – 30 Days (Current)', '০ – ৩০ দিন (চলতি)')}
               </span>
               <span className="text-2xl font-black tabular-nums text-emerald-800 dark:text-emerald-200 block mt-1">
                 ৳{(receivables?.bucket_0_30 || 0).toLocaleString()}
@@ -549,7 +549,7 @@ export function ReceivablesView({
 
             <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/60">
               <span className="text-3xs font-bold uppercase text-amber-700 dark:text-amber-400 block">
-                31 – 60 Days
+                {tBilingual('31 – 60 Days', '৩১ – ৬০ দিন')}
               </span>
               <span className="text-2xl font-black tabular-nums text-amber-800 dark:text-amber-200 block mt-1">
                 ৳{(receivables?.bucket_31_60 || 0).toLocaleString()}
@@ -559,7 +559,7 @@ export function ReceivablesView({
 
             <div className="p-4 rounded-xl bg-orange-50 dark:bg-orange-950/30 border border-orange-200 dark:border-orange-900/60">
               <span className="text-3xs font-bold uppercase text-orange-700 dark:text-orange-400 block">
-                61 – 90 Days
+                {tBilingual('61 – 90 Days', '৬১ – ৯০ দিন')}
               </span>
               <span className="text-2xl font-black tabular-nums text-orange-800 dark:text-orange-200 block mt-1">
                 ৳{(receivables?.bucket_61_90 || 0).toLocaleString()}
@@ -569,7 +569,7 @@ export function ReceivablesView({
 
             <div className="p-4 rounded-xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/60">
               <span className="text-3xs font-bold uppercase text-rose-700 dark:text-rose-400 block">
-                90+ Days (High Risk)
+                {tBilingual('90+ Days (High Risk)', '৯০+ দিন (উচ্চ ঝুঁকি)')}
               </span>
               <span className="text-2xl font-black tabular-nums text-rose-800 dark:text-rose-200 block mt-1">
                 ৳{(receivables?.bucket_90_plus || 0).toLocaleString()}
