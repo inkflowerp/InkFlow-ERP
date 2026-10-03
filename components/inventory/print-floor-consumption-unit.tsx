@@ -263,13 +263,13 @@ export function PrintFloorConsumptionUnit({
         <KpiCard
  titleEn="Floor Stock Balance"titleBn="মেশিনে অবশিষ্ট মাল"value={kpis.totalRemainingQty}
  icon={Printer}
- colorVariant="blue"badge={`${kpis.activeFloorItemsCount} active`}
+ colorVariant="blue"badge={tBilingual(`${kpis.activeFloorItemsCount} active`, `${kpis.activeFloorItemsCount}টি সক্রিয়`)}
  badgeColor="blue"/>
 
         <KpiCard
  titleEn="Scrap & Wastage"titleBn="অপচয় / স্ক্র্যাপ"value={kpis.totalWastageQty}
  icon={Flame}
- colorVariant="rose"badge={`${kpis.scrapRatePercent}% rate`}
+ colorVariant="rose"badge={tBilingual(`${kpis.scrapRatePercent}% rate`, `${kpis.scrapRatePercent}% হার`)}
  badgeColor="rose"/>
       </KpiGrid>
 
@@ -281,7 +281,7 @@ export function PrintFloorConsumptionUnit({
           <div className="flex items-center gap-2">
             <Disc className="h-4 w-4 text-blue-600 dark:text-blue-400"/>
             <span className="text-xs font-black uppercase text-blue-900 dark:text-blue-200 tracking-wider">
-              {tBilingual('Active Physical Rolls & Substrates on Print Floor', 'প্রিন্ট ফ্লোরে সক্রিয় পিস ও রোল বহর')} ({activeFloorRolls.length} Pcs)
+              {tBilingual('Active Physical Rolls & Substrates on Print Floor', 'প্রিন্ট ফ্লোরে সক্রিয় পিস ও রোল বহর')} ({activeFloorRolls.length} {tBilingual('Pcs', 'টি')})
             </span>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
@@ -315,7 +315,7 @@ export function PrintFloorConsumptionUnit({
               </span>
             </div>
             <Badge variant="outline"className="bg-amber-100 dark:bg-amber-900/50 border-amber-300 text-amber-800 dark:text-amber-200 text-2xs font-bold">
-              {pendingRequests.length} Pending
+              {pendingRequests.length} {tBilingual('Pending', 'অপেক্ষমাণ')}
             </Badge>
           </div>
         )}
@@ -325,7 +325,7 @@ export function PrintFloorConsumptionUnit({
           <div className="p-2.5 bg-blue-100/60 dark:bg-blue-950/40 rounded-lg border border-blue-200 dark:border-blue-900/60 flex items-center gap-2 overflow-x-auto text-2xs tabular-nums text-blue-900 dark:text-blue-200 scrollbar-thin">
             <span className="font-bold shrink-0 uppercase text-2xs tracking-wider text-blue-700 dark:text-blue-300 flex items-center gap-1">
               <Layers className="h-3 w-3"/>
- Floor Pieces:
+ {tBilingual('Floor Pieces:', 'ফ্লোর পিস:')}
             </span>
             {activeFloorRolls.map((r) => (
               <Badge
@@ -360,10 +360,10 @@ export function PrintFloorConsumptionUnit({
                           {roll.roll_code || roll.roll_tag}
                         </span>
                         <Badge className="text-2xs bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300 font-bold py-0">
-                          {roll.width_ft} ft Wide
+                          {roll.width_ft} {tBilingual('ft Wide', 'ফুট প্রশস্ত')}
                         </Badge>
                         <Badge variant="outline"className="text-2xs tabular-nums font-bold py-0 text-muted-foreground">
-                          1 Pcs
+                          1 {tBilingual('Pcs', 'টি')}
                         </Badge>
                       </div>
                       <span className="text-2xs text-muted-foreground block mt-0.5 font-medium">
@@ -393,9 +393,9 @@ export function PrintFloorConsumptionUnit({
                   {/* Length Ticker & Progress Bar */}
                   <div className="space-y-1 pt-1.5 border-t border-border">
                     <div className="flex items-center justify-between text-xs tabular-nums">
-                      <span className="text-muted-foreground text-2xs">Available Length:</span>
+                      <span className="text-muted-foreground text-2xs">{tBilingual('Available Length:', 'উপলব্ধ দৈর্ঘ্য:')}</span>
                       <strong className="text-emerald-600 dark:text-emerald-400 font-black">
-                        {currentLen.toFixed(2)} ft — 1 Pcs
+                        {currentLen.toFixed(2)} {tBilingual('ft — 1 Pcs', 'ফুট — ১টি')}
                       </strong>
                     </div>
                     <div className="w-full bg-muted rounded-full h-1.5 overflow-hidden">
@@ -513,7 +513,7 @@ export function PrintFloorConsumptionUnit({
                 <tr>
                   <td colSpan={10} className="p-8 text-center text-muted-foreground">
                     <Flame className="h-8 w-8 mx-auto mb-2 text-muted-foreground"/>
-                    <p className="font-bold">No print floor consumption records match your filter.</p>
+                    <p className="font-bold">{tBilingual('No print floor consumption records match your filter.', 'আপনার ফিল্টারের সাথে কোনো প্রিন্ট ফ্লোর খরচের রেকর্ড মেলেনি।')}</p>
                     <p className="text-xs text-muted-foreground mt-1">
  Issue raw materials from the store to the floor or click below to log direct consumption.
                     </p>

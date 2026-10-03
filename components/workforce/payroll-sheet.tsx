@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
+import { useI18n } from '@/i18n/context'
 import Link from 'next/link'
 import {
  Lock,
@@ -42,6 +43,7 @@ export function PayrollSheet({
  onLockPeriod,
  onOpenPaymentModal,
 }: PayrollSheetProps) {
+  const { tBilingual } = useI18n()
  const [selectedItemDetail, setSelectedItemDetail] = useState<PayrollItemRecord | null>(null)
  const [isActionPending, setIsActionPending] = useState(false)
 
@@ -101,7 +103,7 @@ export function PayrollSheet({
               {isLocked && (
                 <Badge variant="outline"className="bg-muted text-foreground border-input text-xs flex items-center gap-1">
                   <Lock className="w-3 h-3 text-muted-foreground"/>
-                  <span>Locked</span>
+                  <span>{tBilingual('Locked', 'লক করা')}</span>
                 </Badge>
               )}
             </div>
@@ -118,7 +120,7 @@ export function PayrollSheet({
  disabled={isActionPending}
  className="h-8 px-3.5 text-xs font-semibold bg-primary hover:bg-primary/90 text-primary-foreground min-h-[32px]">
                 <CheckCircle2 className="w-3.5 h-3.5 mr-1"/>
-                <span>Approve Payroll</span>
+                <span>{tBilingual('Approve Payroll', 'পেরোল অনুমোদন করুন')}</span>
               </Button>
             )}
 
@@ -128,13 +130,13 @@ export function PayrollSheet({
  disabled={isActionPending}
  className="h-8 px-3.5 text-xs font-semibold border-border text-foreground hover:bg-muted min-h-[32px]">
                 <Lock className="w-3.5 h-3.5 mr-1"/>
-                <span>Lock Period</span>
+                <span>{tBilingual('Lock Period', 'পিরিয়ড লক করুন')}</span>
               </Button>
             )}
 
             {isLocked && (
               <div className="text-right text-[11px] text-muted-foreground">
-                <span className="font-medium text-foreground">Period is locked & immutable.</span>
+                <span className="font-medium text-foreground">{tBilingual('Period is locked & immutable.', 'পিরিয়ড লক এবং অপরিবর্তনীয়।')}</span>
                 <span className="block text-muted-foreground">
  Locked {period.locked_at ? new Date(period.locked_at).toLocaleDateString() : ''}
                 </span>
@@ -146,49 +148,49 @@ export function PayrollSheet({
         {/* Financial KPI Numbers */}
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3 pt-4 text-xs">
           <div>
-            <span className="text-muted-foreground block font-medium">Gross Payroll</span>
+            <span className="text-muted-foreground block font-medium">{tBilingual('Gross Payroll', 'মোট পেরোল')}</span>
             <span className="text-sm font-bold text-foreground tabular-nums">
               ৳ {Number(period.total_gross_salary || 0).toLocaleString('en-IN')}
             </span>
           </div>
 
           <div>
-            <span className="text-muted-foreground block font-medium">Overtime</span>
+            <span className="text-muted-foreground block font-medium">{tBilingual('Overtime', 'ওভারটাইম')}</span>
             <span className="text-sm font-bold text-indigo-600 tabular-nums">
               ৳ {Number(period.total_ot_amount || 0).toLocaleString('en-IN')}
             </span>
           </div>
 
           <div>
-            <span className="text-muted-foreground block font-medium">Advances Deducted</span>
+            <span className="text-muted-foreground block font-medium">{tBilingual('Advances Deducted', 'কর্তনকৃত অগ্রিম')}</span>
             <span className="text-sm font-bold text-amber-600 tabular-nums">
               ৳ {Number(period.total_advances_deducted || 0).toLocaleString('en-IN')}
             </span>
           </div>
 
           <div>
-            <span className="text-muted-foreground block font-medium">Other Deductions</span>
+            <span className="text-muted-foreground block font-medium">{tBilingual('Other Deductions', 'অন্যান্য কর্তন')}</span>
             <span className="text-sm font-bold text-red-600 tabular-nums">
               ৳ {Number(period.total_other_deductions || 0).toLocaleString('en-IN')}
             </span>
           </div>
 
           <div>
-            <span className="text-muted-foreground block font-medium">Net Payable</span>
+            <span className="text-muted-foreground block font-medium">{tBilingual('Net Payable', 'নীট প্রদেয়')}</span>
             <span className="text-sm font-bold text-foreground tabular-nums">
               ৳ {Number(period.total_net_salary || 0).toLocaleString('en-IN')}
             </span>
           </div>
 
           <div>
-            <span className="text-muted-foreground block font-medium">Paid</span>
+            <span className="text-muted-foreground block font-medium">{tBilingual('Paid', 'পরিশোধিত')}</span>
             <span className="text-sm font-bold text-emerald-600 tabular-nums">
               ৳ {Number(period.total_paid_amount || 0).toLocaleString('en-IN')}
             </span>
           </div>
 
           <div>
-            <span className="text-muted-foreground block font-medium">Due Remaining</span>
+            <span className="text-muted-foreground block font-medium">{tBilingual('Due Remaining', 'অবশিষ্ট বকেয়া')}</span>
             <span className="text-sm font-bold text-rose-600 tabular-nums">
               ৳ {Number(period.total_due_amount || 0).toLocaleString('en-IN')}
             </span>
@@ -202,19 +204,19 @@ export function PayrollSheet({
           <table className="w-full text-left text-xs">
             <thead className="bg-muted border-b border-border text-muted-foreground uppercase tracking-wider font-semibold text-[11px]">
               <tr>
-                <th className="py-3 px-4">Employee</th>
-                <th className="py-3 px-3">Basis</th>
-                <th className="py-3 px-3 text-right">Base</th>
-                <th className="py-3 px-3 text-center">Days</th>
-                <th className="py-3 px-3 text-center">OT (h)</th>
-                <th className="py-3 px-3 text-right">OT (৳)</th>
-                <th className="py-3 px-3 text-right">Bonuses</th>
-                <th className="py-3 px-3 text-right">Advance Ded.</th>
-                <th className="py-3 px-3 text-right">Net Salary</th>
-                <th className="py-3 px-3 text-right">Paid</th>
-                <th className="py-3 px-3 text-right">Due</th>
-                <th className="py-3 px-3 text-center">Status</th>
-                <th className="py-3 px-4 text-right">Payment</th>
+                <th className="py-3 px-4">{tBilingual('Employee', 'কর্মী')}</th>
+                <th className="py-3 px-3">{tBilingual('Basis', 'ধরন')}</th>
+                <th className="py-3 px-3 text-right">{tBilingual('Base', 'মূল বেতন')}</th>
+                <th className="py-3 px-3 text-center">{tBilingual('Days', 'দিন')}</th>
+                <th className="py-3 px-3 text-center">{tBilingual('OT (h)', 'ওভারটাইম (ঘণ্টা)')}</th>
+                <th className="py-3 px-3 text-right">{tBilingual('OT (৳)', 'ওভারটাইম (৳)')}</th>
+                <th className="py-3 px-3 text-right">{tBilingual('Bonuses', 'বোনাস')}</th>
+                <th className="py-3 px-3 text-right">{tBilingual('Advance Ded.', 'অগ্রিম কর্তন')}</th>
+                <th className="py-3 px-3 text-right">{tBilingual('Net Salary', 'নীট বেতন')}</th>
+                <th className="py-3 px-3 text-right">{tBilingual('Paid', 'পরিশোধিত')}</th>
+                <th className="py-3 px-3 text-right">{tBilingual('Due', 'বকেয়া')}</th>
+                <th className="py-3 px-3 text-center">{tBilingual('Status', 'অবস্থা')}</th>
+                <th className="py-3 px-4 text-right">{tBilingual('Payment', 'পেমেন্ট')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">

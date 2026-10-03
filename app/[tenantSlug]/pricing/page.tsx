@@ -551,7 +551,7 @@ export default function PricingManagementPage() {
             {products.length}
           </div>
           <div className="text-2xs text-teal-600 dark:text-teal-400 font-semibold mt-0.5">
- Products & Print Services
+            {tBilingual('Products & Print Services', 'পণ্য ও প্রিন্ট সার্ভিস')}
           </div>
         </Card>
 

@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useMemo } from 'react'
+import { useI18n } from '@/i18n/context'
 import {
  FileSpreadsheet,
  Calendar,
@@ -48,6 +49,7 @@ export function WorkforceReport({
  isLoading = false,
  tenantSlug,
 }: WorkforceReportProps) {
+  const { tBilingual } = useI18n()
  const [activeTab, setActiveTab] = useState<'attendance' | 'salary' | 'overtime' | 'advances' | 'cost'>('salary')
  const [selectedPeriodId, setSelectedPeriodId] = useState<string>(
  payrollPeriods[0]?.id || ''
@@ -154,19 +156,19 @@ export function WorkforceReport({
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border pb-2">
           <TabsList className="bg-muted p-1 h-9 rounded-lg">
             <TabsTrigger value="salary"className="text-xs px-3 py-1 font-medium">
- Salary Report
+ {tBilingual('Salary Report', 'বেতন রিপোর্ট')}
             </TabsTrigger>
             <TabsTrigger value="attendance"className="text-xs px-3 py-1 font-medium">
- Attendance Report
+ {tBilingual('Attendance Report', 'হাজিরা রিপোর্ট')}
             </TabsTrigger>
             <TabsTrigger value="overtime"className="text-xs px-3 py-1 font-medium">
- Overtime Report
+ {tBilingual('Overtime Report', 'ওভারটাইম রিপোর্ট')}
             </TabsTrigger>
             <TabsTrigger value="advances"className="text-xs px-3 py-1 font-medium">
- Advances Report
+ {tBilingual('Advances Report', 'অগ্রিম রিপোর্ট')}
             </TabsTrigger>
             <TabsTrigger value="cost"className="text-xs px-3 py-1 font-medium">
- Workforce Cost
+ {tBilingual('Workforce Cost', 'শ্রম ব্যয় বিশ্লেষণ')}
             </TabsTrigger>
           </TabsList>
 
@@ -175,14 +177,14 @@ export function WorkforceReport({
  variant="outline"size="sm"onClick={handleExportCSV}
  className="h-8 px-2.5 text-xs text-foreground bg-card border-border hover:bg-muted min-h-[32px]">
               <Download className="w-3.5 h-3.5 mr-1 text-muted-foreground"/>
-              <span>Export CSV</span>
+              <span>{tBilingual('Export CSV', 'সিএসভি ডাউনলোড')}</span>
             </Button>
 
             <Button
  variant="outline"size="sm"onClick={() => window.print()}
  className="h-8 px-2.5 text-xs text-foreground bg-card border-border hover:bg-muted min-h-[32px]">
               <Printer className="w-3.5 h-3.5 mr-1 text-muted-foreground"/>
-              <span>Print</span>
+              <span>{tBilingual('Print', 'প্রিন্ট')}</span>
             </Button>
           </div>
         </div>
@@ -192,7 +194,7 @@ export function WorkforceReport({
           {/* Period & Department Selector */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-card p-3.5 rounded-xl border border-border">
             <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold text-foreground shrink-0">Payroll Period:</span>
+              <span className="text-xs font-semibold text-foreground shrink-0">{tBilingual('Payroll Period:', 'পেরোল পিরিয়ড:')}</span>
               <select
  value={selectedPeriodId}
  onChange={(e) => setSelectedPeriodId(e.target.value)}
@@ -209,7 +211,7 @@ export function WorkforceReport({
               <div className="relative">
                 <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground"/>
                 <Input
- placeholder="Filter by name..."value={searchTerm}
+ placeholder={tBilingual('Filter by name...', 'নাম দিয়ে ফিল্টার...')}value={searchTerm}
  onChange={(e) => setSearchTerm(e.target.value)}
  className="pl-8 h-8 text-xs w-44 bg-muted border-border"/>
               </div>
@@ -218,7 +220,7 @@ export function WorkforceReport({
  value={deptFilter}
  onChange={(e) => setDeptFilter(e.target.value)}
  className="h-8 rounded-lg border border-border bg-card px-2.5 text-xs text-foreground">
-                <option value="ALL">All Departments</option>
+                <option value="ALL">{tBilingual('All Departments', 'সকল বিভাগ')}</option>
                 <option value="printing">Printing</option>
                 <option value="finishing">Finishing</option>
                 <option value="fabrication">Fabrication</option>
@@ -232,8 +234,8 @@ export function WorkforceReport({
           {/* Table */}
           {filteredItems.length === 0 ? (
             <Card className="bg-card border-border py-12 text-center">
-              <p className="text-sm font-medium text-muted-foreground">No data for selected period</p>
-              <p className="text-xs text-muted-foreground mt-1">Generate a payroll period draft to view salary reports.</p>
+              <p className="text-sm font-medium text-muted-foreground">{tBilingual('No data for selected period', 'নির্বাচিত পিরিয়ডের কোনো তথ্য নেই')}</p>
+              <p className="text-xs text-muted-foreground mt-1">{tBilingual('Generate a payroll period draft to view salary reports.', 'বেতন রিপোর্ট দেখতে একটি পেরোল পিরিয়ডের ড্রাফট তৈরি করুন।')}</p>
             </Card>
           ) : (
             <Card className="bg-card border-border shadow-[0_1px_3px_rgba(0,0,0,0.02)] rounded-xl overflow-hidden">
@@ -241,16 +243,16 @@ export function WorkforceReport({
                 <table className="w-full text-left text-xs">
                   <thead className="bg-muted border-b border-border text-muted-foreground uppercase tracking-wider font-semibold text-[11px]">
                     <tr>
-                      <th className="py-3 px-4">Employee</th>
-                      <th className="py-3 px-3">Department</th>
-                      <th className="py-3 px-3 text-right">Base Salary</th>
-                      <th className="py-3 px-3 text-center">Days</th>
-                      <th className="py-3 px-3 text-right">OT Amount</th>
-                      <th className="py-3 px-3 text-right">Bonuses</th>
-                      <th className="py-3 px-3 text-right">Advance Ded.</th>
-                      <th className="py-3 px-3 text-right">Net Payable</th>
-                      <th className="py-3 px-3 text-right">Paid</th>
-                      <th className="py-3 px-3 text-right">Due</th>
+                      <th className="py-3 px-4">{tBilingual('Employee', 'কর্মী')}</th>
+                      <th className="py-3 px-3">{tBilingual('Department', 'বিভাগ')}</th>
+                      <th className="py-3 px-3 text-right">{tBilingual('Base Salary', 'মূল বেতন')}</th>
+                      <th className="py-3 px-3 text-center">{tBilingual('Days', 'দিন')}</th>
+                      <th className="py-3 px-3 text-right">{tBilingual('OT Amount', 'ওভারটাইম')}</th>
+                      <th className="py-3 px-3 text-right">{tBilingual('Bonuses', 'বোনাস')}</th>
+                      <th className="py-3 px-3 text-right">{tBilingual('Advance Ded.', 'অগ্রিম কর্তন')}</th>
+                      <th className="py-3 px-3 text-right">{tBilingual('Net Payable', 'নীট প্রদেয়')}</th>
+                      <th className="py-3 px-3 text-right">{tBilingual('Paid', 'পরিশোধিত')}</th>
+                      <th className="py-3 px-3 text-right">{tBilingual('Due', 'বকেয়া')}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border">
@@ -294,29 +296,29 @@ export function WorkforceReport({
         {/* 2. ATTENDANCE REPORT TAB */}
         <TabsContent value="attendance"className="pt-4 space-y-4">
           <Card className="bg-card border-border p-5 rounded-xl">
-            <h3 className="text-sm font-bold text-foreground mb-1">Attendance Analytics</h3>
+            <h3 className="text-sm font-bold text-foreground mb-1">{tBilingual('Attendance Analytics', 'হাজিরা অ্যানালিটিক্স')}</h3>
             <p className="text-xs text-muted-foreground mb-4">
- Historical presence, late minutes, and field work counts across employees
+ {tBilingual('Historical presence, late minutes, and field work counts across employees', 'কর্মীদের উপস্থিতি, দেরিতে আগমন ও ফিল্ড ওয়ার্কের সামগ্রিক তথ্য')}
             </p>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <div className="p-3 bg-muted rounded-lg border border-border">
-                <span className="text-[11px] text-muted-foreground block">Total Staff Tracked</span>
+                <span className="text-[11px] text-muted-foreground block">{tBilingual('Total Staff Tracked', 'মোট ট্র্যাককৃত কর্মী')}</span>
                 <span className="text-lg font-bold text-foreground">{employees.length}</span>
               </div>
               <div className="p-3 bg-muted rounded-lg border border-border">
-                <span className="text-[11px] text-muted-foreground block">Active Status</span>
+                <span className="text-[11px] text-muted-foreground block">{tBilingual('Active Status', 'সক্রিয় কর্মী')}</span>
                 <span className="text-lg font-bold text-emerald-600">
                   {employees.filter((e) => e.status === 'active').length}
                 </span>
               </div>
               <div className="p-3 bg-muted rounded-lg border border-border">
-                <span className="text-[11px] text-muted-foreground block">On Leave</span>
+                <span className="text-[11px] text-muted-foreground block">{tBilingual('On Leave', 'ছুটিতে')}</span>
                 <span className="text-lg font-bold text-amber-600">
                   {employees.filter((e) => e.status === 'on_leave').length}
                 </span>
               </div>
               <div className="p-3 bg-muted rounded-lg border border-border">
-                <span className="text-[11px] text-muted-foreground block">Daily Labor</span>
+                <span className="text-[11px] text-muted-foreground block">{tBilingual('Daily Labor', 'দিনমজুর কর্মী')}</span>
                 <span className="text-lg font-bold text-blue-600">
                   {employees.filter((e) => e.salary_basis === 'daily_rate' || e.is_daily_worker).length}
                 </span>
@@ -328,11 +330,11 @@ export function WorkforceReport({
         {/* 3. OVERTIME REPORT TAB */}
         <TabsContent value="overtime"className="pt-4 space-y-4">
           <Card className="bg-card border-border p-5 rounded-xl">
-            <h3 className="text-sm font-bold text-foreground mb-1">Overtime Breakdown</h3>
-            <p className="text-xs text-muted-foreground mb-4">Total overtime volume and expenditures</p>
+            <h3 className="text-sm font-bold text-foreground mb-1">{tBilingual('Overtime Breakdown', 'ওভারটাইম বিবরণ')}</h3>
+            <p className="text-xs text-muted-foreground mb-4">{tBilingual('Total overtime volume and expenditures', 'মোট অনুমোদিত ওভারটাইম ও ব্যয়ের পরিমাণ')}</p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div className="p-3 bg-muted rounded-lg border border-border">
-                <span className="text-[11px] text-muted-foreground block">Approved Overtime Hours</span>
+                <span className="text-[11px] text-muted-foreground block">{tBilingual('Approved Overtime Hours', 'অনুমোদিত ওভারটাইম ঘণ্টা')}</span>
                 <span className="text-lg font-bold text-indigo-600">
                   {overtimeRecords
                     .filter((o) => o.status === 'approved')
@@ -341,7 +343,7 @@ export function WorkforceReport({
                 </span>
               </div>
               <div className="p-3 bg-muted rounded-lg border border-border">
-                <span className="text-[11px] text-muted-foreground block">Approved OT Amount</span>
+                <span className="text-[11px] text-muted-foreground block">{tBilingual('Approved OT Amount', 'অনুমোদিত ওভারটাইম ব্যয়')}</span>
                 <span className="text-lg font-bold text-foreground tabular-nums">
                   ৳{' '}
                   {overtimeRecords
@@ -351,7 +353,7 @@ export function WorkforceReport({
                 </span>
               </div>
               <div className="p-3 bg-muted rounded-lg border border-border">
-                <span className="text-[11px] text-muted-foreground block">Pending Requests</span>
+                <span className="text-[11px] text-muted-foreground block">{tBilingual('Pending Requests', 'অপেক্ষমাণ আবেদন')}</span>
                 <span className="text-lg font-bold text-amber-600">
                   {overtimeRecords.filter((o) => o.status === 'pending_approval').length}
                 </span>
@@ -363,11 +365,11 @@ export function WorkforceReport({
         {/* 4. ADVANCES REPORT TAB */}
         <TabsContent value="advances"className="pt-4 space-y-4">
           <Card className="bg-card border-border p-5 rounded-xl">
-            <h3 className="text-sm font-bold text-foreground mb-1">Advance Disbursement & Recovery</h3>
-            <p className="text-xs text-muted-foreground mb-4">Cumulative loan vouchers and payroll deductions</p>
+            <h3 className="text-sm font-bold text-foreground mb-1">{tBilingual('Advance Disbursement & Recovery', 'অগ্রিম প্রদান ও আদায় বিবরণ')}</h3>
+            <p className="text-xs text-muted-foreground mb-4">{tBilingual('Cumulative loan vouchers and payroll deductions', 'সামগ্রিক অগ্রিম ঋণ এবং পেরোল কর্তনের বিবরণ')}</p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div className="p-3 bg-muted rounded-lg border border-border">
-                <span className="text-[11px] text-muted-foreground block">Total Disbursed</span>
+                <span className="text-[11px] text-muted-foreground block">{tBilingual('Total Disbursed', 'মোট বিতরণকৃত')}</span>
                 <span className="text-lg font-bold text-foreground tabular-nums">
                   ৳{' '}
                   {advances
@@ -376,7 +378,7 @@ export function WorkforceReport({
                 </span>
               </div>
               <div className="p-3 bg-muted rounded-lg border border-border">
-                <span className="text-[11px] text-muted-foreground block">Total Recovered</span>
+                <span className="text-[11px] text-muted-foreground block">{tBilingual('Total Recovered', 'মোট আদায়কৃত')}</span>
                 <span className="text-lg font-bold text-emerald-600 tabular-nums">
                   ৳{' '}
                   {advances
@@ -385,7 +387,7 @@ export function WorkforceReport({
                 </span>
               </div>
               <div className="p-3 bg-muted rounded-lg border border-border">
-                <span className="text-[11px] text-muted-foreground block">Current Outstanding</span>
+                <span className="text-[11px] text-muted-foreground block">{tBilingual('Current Outstanding', 'বর্তমান বকেয়া')}</span>
                 <span className="text-lg font-bold text-amber-600 tabular-nums">
                   ৳{' '}
                   {advances
@@ -401,31 +403,31 @@ export function WorkforceReport({
         {/* 5. WORKFORCE COST TAB */}
         <TabsContent value="cost"className="pt-4 space-y-4">
           <Card className="bg-card border-border p-5 rounded-xl">
-            <h3 className="text-sm font-bold text-foreground mb-1">Total Workforce Cost Analysis</h3>
+            <h3 className="text-sm font-bold text-foreground mb-1">{tBilingual('Total Workforce Cost Analysis', 'মোট শ্রম ব্যয় বিশ্লেষণ')}</h3>
             <p className="text-xs text-muted-foreground mb-4">
- Comprehensive internal labor commitment (Salaries + Overtime + Advance exposures)
+ {tBilingual('Comprehensive internal labor commitment (Salaries + Overtime + Advance exposures)', 'সামগ্রিক শ্রম প্রতিশ্রুতি (বেতন + ওভারটাইম + বকেয়া অগ্রিম)')}
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
               <div className="p-3 bg-muted rounded-lg border border-border">
-                <span className="text-[11px] text-muted-foreground block">Gross Payroll Base</span>
+                <span className="text-[11px] text-muted-foreground block">{tBilingual('Gross Payroll Base', 'গ্রস পেরোল বেস')}</span>
                 <span className="text-lg font-bold text-foreground tabular-nums">
                   ৳ {costBreakdown.grossSalaries.toLocaleString('en-IN')}
                 </span>
               </div>
               <div className="p-3 bg-muted rounded-lg border border-border">
-                <span className="text-[11px] text-muted-foreground block">Approved Overtime Cost</span>
+                <span className="text-[11px] text-muted-foreground block">{tBilingual('Approved Overtime Cost', 'অনুমোদিত ওভারটাইম ব্যয়')}</span>
                 <span className="text-lg font-bold text-indigo-600 tabular-nums">
                   ৳ {costBreakdown.totalOvertime.toLocaleString('en-IN')}
                 </span>
               </div>
               <div className="p-3 bg-muted rounded-lg border border-border">
-                <span className="text-[11px] text-muted-foreground block">Advance Exposure</span>
+                <span className="text-[11px] text-muted-foreground block">{tBilingual('Advance Exposure', 'অগ্রিম এক্সপোজার')}</span>
                 <span className="text-lg font-bold text-amber-600 tabular-nums">
                   ৳ {costBreakdown.advancesOutstanding.toLocaleString('en-IN')}
                 </span>
               </div>
               <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-                <span className="text-[11px] text-blue-700 block font-semibold">Total Labor Cost</span>
+                <span className="text-[11px] text-blue-700 block font-semibold">{tBilingual('Total Labor Cost', 'মোট শ্রম ব্যয়')}</span>
                 <span className="text-lg font-bold text-blue-900 tabular-nums">
                   ৳ {costBreakdown.totalCommittedCost.toLocaleString('en-IN')}
                 </span>

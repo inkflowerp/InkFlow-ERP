@@ -445,8 +445,7 @@ export default function SuppliersPage() {
             <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground"/>
             <Input
  placeholder={tBilingual(
-                'Search by supplier name, bangla name, mobile, contact person, market hub, BIN/TIN...',
-                'মহাজন নাম, বাংলা নাম, মোবাইল, প্রতিনিধি, মার্কেট বা ভ্যাট নম্বর দিয়ে খুঁজুন...'
+                'Search by supplier name, mobile, contact person, market hub, BIN/TIN...', 'মহাজন নাম, মোবাইল, প্রতিনিধি, মার্কেট বা ভ্যাট নম্বর দিয়ে খুঁজুন...'
               )}
  value={search}
  onChange={(e) => setSearch(e.target.value)}
@@ -462,7 +461,7 @@ export default function SuppliersPage() {
               <option value="all">{tBilingual("📍 All Market Hubs", "📍 সকল এলাকা")}</option>
               {BANGLADESH_MARKET_HUBS.map((hub) => (
                 <option key={hub.id} value={hub.id}>
-                  {hub.nameEn.split(' ')[0]} - {hub.nameBn}
+                  {locale === 'bn' ? hub.nameBn : hub.nameEn}
                 </option>
               ))}
             </select>
@@ -532,7 +531,7 @@ export default function SuppliersPage() {
                     : 'bg-muted text-muted-foreground hover:bg-muted dark:hover:bg-card-elevated'
                 }`}
               >
-                <span>{tBilingual(cat.labelEn.split(' ')[0], cat.labelBn.split(' ')[0])}</span>
+                <span>{locale === 'bn' ? cat.labelBn.split(' ')[0] : cat.labelEn.split(' ')[0]}</span>
                 <span className="text-2xs opacity-75 tabular-nums">({count})</span>
               </button>
             )
@@ -549,8 +548,8 @@ export default function SuppliersPage() {
           </h2>
           <p className="text-xs text-muted-foreground mt-1 max-w-md mx-auto">
             {search || selectedCategory !== 'all' || selectedHub !== 'all' || dueFilter !== 'all'
-              ? 'Try adjusting your search query, market hub, category filter, or due status.'
-              : 'Register your first material vendor for media rolls, inks, acrylic sheets, and display hardware.'}
+              ? tBilingual('Try adjusting your search query, market hub, category filter, or due status.', 'অনুসন্ধান, মার্কেট হাব, ক্যাটাগরি বা বাকি অবস্থা ফিল্টার পরিবর্তন করে দেখুন।')
+              : tBilingual('Register your first material vendor for media rolls, inks, acrylic sheets, and display hardware.', 'মিডিয়া রোল, কালি, এক্রিলিক শিট ও সাইনেজ হার্ডওয়্যারের প্রথম সরবরাহকারী যুক্ত করুন।')}
           </p>
           <Button
  onClick={() => {
@@ -621,14 +620,9 @@ export default function SuppliersPage() {
                               <Link
  href={getTenantNavHref(`/suppliers/${supplier.id}`, pathname, slug)}
  className="font-bold text-foreground hover:text-teal-600 flex items-center gap-1 group">
-                                <span>{supplier.supplier_name}</span>
+                                <span>{locale === 'bn' ? (supplier.name_bn || supplier.supplier_name) : supplier.supplier_name}</span>
                                 <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 text-teal-600 transition-opacity"/>
                               </Link>
-                              {supplier.name_bn && (
-                                <div className="text-2xs text-teal-700 dark:text-teal-400 font-medium bangla-text">
-                                  {supplier.name_bn}
-                                </div>
-                              )}
                               <div className="flex items-center gap-2 text-2xs text-muted-foreground tabular-nums mt-0.5">
                                 <span>{supplier.supplier_code || 'SUP-001'}</span>
                                 {supplier.company && <span>• {supplier.company}</span>}
@@ -806,14 +800,9 @@ export default function SuppliersPage() {
                           <Link
  href={getTenantNavHref(`/suppliers/${supplier.id}`, pathname, slug)}
  className="font-bold text-foreground hover:text-teal-600 text-sm flex items-center gap-1 group">
-                            <span>{supplier.supplier_name}</span>
+                            <span>{locale === 'bn' ? (supplier.name_bn || supplier.supplier_name) : supplier.supplier_name}</span>
                             <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 text-teal-600"/>
                           </Link>
-                          {supplier.name_bn && (
-                            <div className="text-xs text-teal-700 dark:text-teal-400 font-medium bangla-text">
-                              {supplier.name_bn}
-                            </div>
-                          )}
                           <div className="text-2xs text-muted-foreground tabular-nums mt-0.5">
                             {supplier.supplier_code || 'SUP-001'} {supplier.company && `• ${supplier.company}`}
                           </div>
@@ -824,7 +813,7 @@ export default function SuppliersPage() {
  className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-2xs font-bold border shrink-0 ${catMeta.badgeClass}`}
                       >
                         <CatIcon className="h-3 w-3"/>
-                        <span>{catMeta.labelEn.split(' ')[0]}</span>
+                        <span>{locale === 'bn' ? catMeta.labelBn.split(' ')[0] : catMeta.labelEn.split(' ')[0]}</span>
                       </span>
                     </div>
                   </div>

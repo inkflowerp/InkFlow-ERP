@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import { useI18n } from '@/i18n/context'
 import {
  User,
  Shield,
@@ -115,6 +116,7 @@ export function UserTable({
  onResetPassword,
  onRemoveLogin,
 }: UserTableProps) {
+  const { tBilingual } = useI18n()
  const branchMap = React.useMemo(() => {
  const map = new Map<string, BranchRow>()
  branches.forEach((b) => map.set(b.id, b))
@@ -142,30 +144,16 @@ export function UserTable({
         <table className="w-full text-left text-sm border-collapse">
           <thead>
             <tr className="border-b border-border bg-muted/75 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-              <th scope="col"className="px-5 py-3.5">
- User
-              </th>
-              <th scope="col"className="px-4 py-3.5">
- Linked Employee
-              </th>
-              <th scope="col"className="px-4 py-3.5">
- Role & Scope
-              </th>
-              <th scope="col"className="px-4 py-3.5">
- Key Responsibilities
-              </th>
-              <th scope="col"className="px-4 py-3.5">
- Branch Access
-              </th>
+              <th scope="col"className="px-5 py-3.5">{tBilingual('User', 'ব্যবহারকারী')}</th>
+              <th scope="col"className="px-4 py-3.5">{tBilingual('Linked Employee', 'সংযুক্ত কর্মী')}</th>
+              <th scope="col"className="px-4 py-3.5">{tBilingual('Role & Scope', 'রোল ও পরিসর')}</th>
+              <th scope="col"className="px-4 py-3.5">{tBilingual('Key Responsibilities', 'মূল দায়িত্ব')}</th>
+              <th scope="col"className="px-4 py-3.5">{tBilingual('Branch Access', 'শাখা অ্যাক্সেস')}</th>
               <th scope="col"className="px-4 py-3.5 text-center">
  Status
               </th>
-              <th scope="col"className="px-4 py-3.5">
- Last Login
-              </th>
-              <th scope="col"className="px-5 py-3.5 text-right">
- Actions
-              </th>
+              <th scope="col"className="px-4 py-3.5">{tBilingual('Last Login', 'সর্বশেষ লগইন')}</th>
+              <th scope="col"className="px-5 py-3.5 text-right">{tBilingual('Actions', 'অ্যাকশন')}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border dark:divide-border/80">

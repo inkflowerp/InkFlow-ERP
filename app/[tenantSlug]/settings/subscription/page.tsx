@@ -257,7 +257,7 @@ export default function TenantSubscriptionPage() {
           <div className="space-y-2">
             <div className="flex items-center gap-2.5 flex-wrap">
               <Badge className="bg-amber-100 text-amber-900 dark:bg-amber-950/50 dark:text-amber-300 border border-amber-300 font-bold tracking-wider uppercase text-2xs px-2.5 py-0.5">
-                {isTrial ? 'Free Trial' : currentPlan.name}
+                {isTrial ? (isBn ? 'ফ্রি ট্রায়াল' : 'Free Trial') : (isBn ? (currentPlan.name_bn || currentPlan.name) : currentPlan.name)}
               </Badge>
 
               <Badge
@@ -277,12 +277,12 @@ export default function TenantSubscriptionPage() {
               >
                 {isTrial
                   ? isTrialExpired
-                    ? 'Trial Expired'
+                    ? (isBn ? 'ট্রায়ালের মেয়াদ শেষ' : 'Trial Expired')
                     : timeRemainingInTrial && timeRemainingInTrial.days === 0
-                    ? `Trial (${isBn ? timeRemainingInTrial.formattedBn : timeRemainingInTrial.formattedEn})`
-                    : `Trial (${daysRemainingInTrial} Days Remaining)`
+                    ? `Trial (${isBn ? timeRemainingInTrial.formattedBn : isBn ? timeRemainingInTrial.formattedBn : timeRemainingInTrial.formattedEn})`
+                    : (isBn ? `ট্রায়াল (${daysRemainingInTrial} দিন বাকি)` : `Trial (${daysRemainingInTrial} Days Remaining)`)
                   : isPlanExpired
-                  ? 'Plan Expired'
+                  ? (isBn ? 'প্ল্যানের মেয়াদ শেষ' : 'Plan Expired')
                   : subscription.status.replace('_', ' ')}
               </Badge>
 
@@ -328,7 +328,7 @@ export default function TenantSubscriptionPage() {
               </span>
               {subscription.last_payment_reference && (
                 <span>
- Last Payment Reference:{' '}
+ {isBn ? 'সর্বশেষ পেমেন্ট রেফারেন্স:' : 'Last Payment Reference:'}{' '}
                   <strong className="text-indigo-300 tabular-nums">{subscription.last_payment_reference}</strong>{' '}
                   ({subscription.payment_method_type?.toUpperCase()})
                 </span>

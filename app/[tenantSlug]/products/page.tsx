@@ -1915,7 +1915,7 @@ export default function ProductsCatalogPage() {
             <span>{fetchError}</span>
           </div>
           <Button size="sm"variant="outline"onClick={handleRefreshAll} className="text-xs shrink-0">
-            <RefreshCw className="mr-1.5 h-3 w-3"/> Retry Connection
+            <RefreshCw className="mr-1.5 h-3 w-3"/> {tBilingual('Retry Connection', 'পুনরায় চেষ্টা করুন')}
           </Button>
         </div>
       )}
@@ -1925,7 +1925,7 @@ export default function ProductsCatalogPage() {
         {/* 1. Total Active Catalog Items */}
         <Card className="p-3.5 bg-card border-border shadow-xs">
           <div className="text-2xs font-bold text-muted-foreground uppercase tracking-wider">
- Active Catalog Items
+            {tBilingual('Active Catalog Items', 'সক্রিয় পণ্য তালিকা')}
           </div>
           <div className="text-lg sm:text-xl font-bold font-numeric tabular-nums text-foreground mt-1">
             {metrics.totalActive}
@@ -1938,39 +1938,39 @@ export default function ProductsCatalogPage() {
         {/* 2. Average Gross Margin */}
         <Card className="p-3.5 bg-card border-emerald-200 dark:border-emerald-900/60 shadow-xs">
           <div className="text-2xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">
- Average Gross Margin
+            {tBilingual('Average Gross Margin', 'গড় গ্রস মার্জিন')}
           </div>
           <div className="text-lg sm:text-xl font-bold font-numeric tabular-nums text-emerald-600 dark:text-emerald-400 mt-1">
             {metrics.avgMargin}%
           </div>
           <div className="text-xs text-emerald-600/90 font-numeric tabular-nums mt-0.5">
- Yield-Adjusted Profitability
+            {tBilingual('Yield-Adjusted Profitability', 'উৎপাদন ও অপচয় সমন্বিত লাভ')}
           </div>
         </Card>
 
         {/* 3. Low Margin Alert */}
         <Card className="p-3.5 bg-card border-amber-200 dark:border-amber-900/60 shadow-xs">
           <div className="text-2xs font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider">
- Low Margin Alert (&lt;20%)
+            {tBilingual('Low Margin Alert (<20%)', 'স্বল্প মার্জিন সতর্কতা (<২০%)')}
           </div>
           <div className="text-lg sm:text-xl font-bold font-numeric tabular-nums text-amber-600 dark:text-amber-400 mt-1">
             {metrics.lowMarginCount}
           </div>
           <div className="text-xs text-amber-600/90 font-numeric tabular-nums mt-0.5">
- Review Raw Purchase Tariffs
+            {tBilingual('Review Raw Purchase Tariffs', 'কাঁচামাল ক্রয় দর যাচাই করুন')}
           </div>
         </Card>
 
         {/* 4. Configuration Masters */}
         <Card className="p-3.5 bg-card border-border shadow-xs">
           <div className="text-2xs font-bold text-muted-foreground uppercase tracking-wider">
- Configuration Masters
+            {tBilingual('Configuration Masters', 'কনফিগারেশন মাস্টার্স')}
           </div>
           <div className="text-lg sm:text-xl font-bold font-numeric tabular-nums text-foreground mt-1">
             {tabCounts.finishing + tabCounts.additional + tabCounts.installation + tabCounts.printing_methods}
           </div>
           <div className="text-xs text-muted-foreground font-numeric tabular-nums mt-0.5">
- Finishing, Addons, Logistics & Inks
+            {tBilingual('Finishing, Addons, Logistics & Inks', 'ফিনিশিং, অতিরিক্ত কাজ, লজিস্টিকস ও কালি')}
           </div>
         </Card>
       </div>
@@ -2024,7 +2024,7 @@ export default function ProductsCatalogPage() {
         <div className="relative flex-1 min-w-[220px]">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground"/>
           <Input
- placeholder={tBilingual('Search by English name, বাংলা নাম, SKU, specs, pricing...', 'ইংরেজি বা বাংলা নাম, কোড, স্পেক বা দাম দিয়ে খুঁজুন...')}value={search}
+ placeholder={tBilingual('Search by name, SKU, specs, pricing...', 'পণ্য বা সেবার নাম, কোড, স্পেক বা দাম দিয়ে খুঁজুন...')}value={search}
  onChange={(e) => setSearch(e.target.value)}
  className="pl-8 text-xs h-9"/>
         </div>
@@ -2040,7 +2040,7 @@ export default function ProductsCatalogPage() {
               {categories.length > 0 ? (
  categories.map((cat) => (
                   <option key={cat.id} value={cat.slug || cat.name}>
-                    {cat.name} {cat.name_bn ? `(${cat.name_bn})` : ''}
+                    {locale === 'bn' ? (cat.name_bn || cat.name) : cat.name}
                   </option>
                 ))
               ) : (
@@ -2081,7 +2081,7 @@ export default function ProductsCatalogPage() {
               <option value="all">{tBilingual('All Commercial Types', 'সকল পণ্যের ধরন')}</option>
               {COMMERCIAL_PRODUCT_TYPES.map((t) => (
                 <option key={t.id} value={t.id}>
-                  {t.label}
+                  {locale === 'bn' ? (t.label_bn || t.label) : t.label}
                 </option>
               ))}
             </select>
@@ -2096,36 +2096,25 @@ export default function ProductsCatalogPage() {
               'px-3 py-1.5 rounded-md transition-all cursor-pointer',
  statusFilter === 'active' ? 'bg-card text-blue-600 dark:text-blue-400 shadow-xs font-bold' : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
             )}
-          >
- Active
-          </button>
-          <button
- onClick={() => setStatusFilter('low_margin')}
+          >{tBilingual('Active', 'সক্রিয়')}</button>
+          <button onClick={() => setStatusFilter('low_margin')}
  className={cn(
               'px-3 py-1.5 rounded-md transition-all cursor-pointer',
  statusFilter === 'low_margin' ? 'bg-card text-amber-600 dark:text-amber-400 shadow-xs font-bold' : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
             )}
-          >
- Low Margin
-          </button>
-          <button
- onClick={() => setStatusFilter('archived')}
+          >{tBilingual('Low Margin', 'কম মার্জিন')}</button>
+          <button onClick={() => setStatusFilter('archived')}
  className={cn(
               'px-3 py-1.5 rounded-md transition-all cursor-pointer',
  statusFilter === 'archived' ? 'bg-card text-foreground shadow-xs font-bold' : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
             )}
-          >
- Archived
-          </button>
-          <button
- onClick={() => setStatusFilter('all')}
+          >{tBilingual('Archived', 'আর্কাইভড')}</button>
+          <button onClick={() => setStatusFilter('all')}
  className={cn(
               'px-3 py-1.5 rounded-md transition-all cursor-pointer',
  statusFilter === 'all' ? 'bg-card text-foreground shadow-xs font-bold' : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
             )}
-          >
- All
-          </button>
+          >{tBilingual('All', 'সকল')}</button>
         </div>
       </div>
 
@@ -2216,7 +2205,7 @@ export default function ProductsCatalogPage() {
                         <td className="py-3.5 px-3">
                           {pm.is_active !== false ? (
                             <span className="inline-flex items-center gap-1 text-2xs font-semibold text-emerald-600">
-                              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"/> Active
+                              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"/> {tBilingual('Active', 'সক্রিয়')}
                             </span>
                           ) : (
                             <span className="inline-flex items-center gap-1 text-2xs font-semibold text-muted-foreground">
@@ -2765,12 +2754,9 @@ export default function ProductsCatalogPage() {
                             <Link
  href={getTenantNavHref(`/products/${item.id}`, pathname, slug)}
  className="font-bold text-foreground hover:text-blue-600 flex items-center gap-1.5 group">
-                              <span>{item.name}</span>
+                              <span>{locale === 'bn' ? (item.name_bn || item.name) : item.name}</span>
                               <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 text-blue-600 transition-opacity"/>
                             </Link>
-                            {item.name_bn && (
-                              <div className="text-xs text-muted-foreground font-medium font-bengali">{item.name_bn}</div>
-                            )}
                             <div className="text-2xs tabular-nums text-muted-foreground mt-0.5">
                               {item.sku} • {item.category || 'printing'}
                             </div>
@@ -2846,7 +2832,7 @@ export default function ProductsCatalogPage() {
                               </span>
                             ) : (
                               <span className="inline-flex items-center gap-1 text-2xs font-semibold text-muted-foreground">
-                                <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground"/> Archived
+                                <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground"/> {tBilingual('Archived', 'আর্কাইভড')}
                               </span>
                             )}
                           </td>
@@ -3388,7 +3374,7 @@ export default function ProductsCatalogPage() {
  {tBilingual('No catalog items matched your current filter criteria. Create a new product or reset your search.', 'আপনার ফিল্টারের সাথে মিলে এমন কোনো পণ্য পাওয়া যায়নি। নতুন পণ্য তৈরি করুন অথবা ফিল্টার রিসেট করুন।')}
                 </p>
                 <Button size="sm"onClick={handleOpenCreate} className="mt-2 text-xs bg-blue-600 hover:bg-blue-700">
-                  <Plus className="h-3.5 w-3.5 mr-1"/> Add New Item
+                  <Plus className="h-3.5 w-3.5 mr-1"/> {tBilingual('Add New Item', 'নতুন আইটেম যোগ করুন')}
                 </Button>
               </div>
             )}
@@ -3452,7 +3438,7 @@ export default function ProductsCatalogPage() {
                                   : 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950/40 dark:text-indigo-300'
                               )}
                             >
-                              {getProductEntityKindLabel(item)}
+                              {getProductEntityKindLabel(item, locale)}
                             </span>
                           </td>
 
@@ -3469,7 +3455,7 @@ export default function ProductsCatalogPage() {
                                 </div>
                               </div>
                             ) : (
-                              <span className="text-xs text-muted-foreground italic whitespace-nowrap">No Purchase Unit</span>
+                              <span className="text-xs text-muted-foreground italic whitespace-nowrap">{tBilingual('No Purchase Unit', 'ক্রয় একক নেই')}</span>
                             )}
                           </td>
 
@@ -3551,13 +3537,10 @@ export default function ProductsCatalogPage() {
                       <div className="flex items-start justify-between gap-2">
                         <div>
                           <Link
- href={getTenantNavHref(`/products/${item.id}`, pathname, slug)}
- className="font-bold text-sm text-foreground hover:text-blue-600">
-                            {item.name}
-                          </Link>
-                          {item.name_bn && (
-                            <div className="text-xs text-muted-foreground font-medium font-bengali">{item.name_bn}</div>
-                          )}
+                          href={getTenantNavHref(`/products/${item.id}`, pathname, slug)}
+                          className="font-bold text-sm text-foreground hover:text-blue-600">
+                          {locale === 'bn' ? (item.name_bn || item.name) : item.name}
+                        </Link>
                           <div className="text-2xs tabular-nums text-muted-foreground mt-0.5">
                             {item.sku} • {item.material_spec || 'Standard Spec'}
                           </div>
@@ -3574,33 +3557,33 @@ export default function ProductsCatalogPage() {
                               : 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950/40 dark:text-indigo-300'
                           )}
                         >
-                          {getProductEntityKindLabel(item)}
+                          {getProductEntityKindLabel(item, locale)}
                         </span>
                       </div>
 
                       {/* Commercial Economics Badges */}
                       {item.purchase_price && item.purchase_price > 0 ? (
                         <div className="text-xs tabular-nums text-muted-foreground bg-muted p-2 rounded-lg border border-border">
- Buy: <strong>৳{item.purchase_price}/{item.purchase_unit || 'roll'}</strong> (1 {item.purchase_unit || 'roll'} = {getProductConversionRatio(item)} {item.selling_unit || item.unit})
+ {tBilingual('Buy:', 'ক্রয়:')} <strong>৳{item.purchase_price}/{item.purchase_unit || 'roll'}</strong> (1 {item.purchase_unit || 'roll'} = {getProductConversionRatio(item)} {item.selling_unit || item.unit})
                         </div>
                       ) : null}
 
                       {/* Metrics Grid */}
                       <div className="grid grid-cols-3 gap-2 p-2.5 bg-muted rounded-lg text-center border border-border">
                         <div>
-                          <span className="text-2xs text-muted-foreground uppercase block">Selling Rate</span>
+                          <span className="text-2xs text-muted-foreground uppercase block">{tBilingual('Selling Rate', 'বিক্রয় দর')}</span>
                           <div className="tabular-nums font-bold text-xs text-blue-600 dark:text-blue-400">
                             ৳{item.selling_price}/{item.selling_unit || item.unit}
                           </div>
                         </div>
                         <div>
-                          <span className="text-2xs text-muted-foreground uppercase block">Eff. Cost</span>
+                          <span className="text-2xs text-muted-foreground uppercase block">{tBilingual('Eff. Cost', 'কার্যকর খরচ')}</span>
                           <div className="tabular-nums text-xs text-muted-foreground">
                             ৳{item.base_cost}
                           </div>
                         </div>
                         <div>
-                          <span className="text-2xs text-emerald-600 uppercase block">Margin</span>
+                          <span className="text-2xs text-emerald-600 uppercase block">{tBilingual('Margin', 'মার্জিন')}</span>
                           <div className="tabular-nums font-bold text-xs text-emerald-600">
                             {marginPercent}%
                           </div>
@@ -3613,13 +3596,13 @@ export default function ProductsCatalogPage() {
                           <Button
  size="sm"onClick={() => handleOpenFastQuote(item)}
  className="flex-1 h-9 text-xs font-bold bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs">
-                            <Calculator className="h-3.5 w-3.5 mr-1"/> Fast Quote
+                            <Calculator className="h-3.5 w-3.5 mr-1"/> {tBilingual('Fast Quote', 'দ্রুত কোটেশন')}
                           </Button>
                         ) : (
                           <Button
  size="sm"onClick={() => handleToggleArchive(item)}
  className="flex-1 h-9 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs">
-                            <RefreshCw className="h-3.5 w-3.5 mr-1"/> Restore Item
+                            <RefreshCw className="h-3.5 w-3.5 mr-1"/> {tBilingual('Restore Item', 'আইটেম পুনরুদ্ধার করুন')}
                           </Button>
                         )}
                         <Button
@@ -3631,18 +3614,14 @@ export default function ProductsCatalogPage() {
  setNewWastage(item.default_wastage_percentage || 0)
                           }}
  className="h-9 px-2.5 text-xs">
-                          <Edit3 className="h-3.5 w-3.5 mr-1"/> Price
+                          <Edit3 className="h-3.5 w-3.5 mr-1"/> {tBilingual('Price', 'দর')}
                         </Button>
                         <Button
  size="sm"variant="outline"onClick={() => handleOpenEdit(item)}
- className="h-9 px-2.5 text-xs">
- Edit
-                        </Button>
+ className="h-9 px-2.5 text-xs">{tBilingual('Edit', 'সম্পাদনা')}</Button>
                         <Link
  href={getTenantNavHref(`/products/${item.id}`, pathname, slug)}
- className="inline-flex items-center justify-center h-9 px-2.5 rounded-md text-xs font-semibold border border-input text-foreground hover:bg-muted">
- Detail
-                        </Link>
+ className="inline-flex items-center justify-center h-9 px-2.5 rounded-md text-xs font-semibold border border-input text-foreground hover:bg-muted">{tBilingual('Detail', 'বিস্তারিত')}</Link>
                       </div>
                     </div>
                   )

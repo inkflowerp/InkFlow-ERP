@@ -215,15 +215,13 @@ export default function AttendancePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-6">
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border">
-            <div>
+                        <div>
               <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
- Attendance
+                {tBilingual('Attendance & Floor Activity', 'হাজিরা ও ফ্লোর কার্যক্রম')}
               </h1>
-              <div className="flex items-center gap-2 mt-1">
-                <span className="text-sm font-medium text-muted-foreground">হাজিরা ও ফ্লোর কার্যক্রম</span>
-                <span className="text-muted-foreground">•</span>
-                <span className="text-xs text-muted-foreground">Daily shop-floor roster, punch tracking & overtime</span>
-              </div>
+              <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+                {tBilingual('Daily shop-floor roster, punch tracking & overtime ledger.', 'দৈনিক শপ-ফ্লোর রোস্টার, পাঞ্চ ট্র্যাকিং এবং ওভারটাইম খতিয়ান।')}
+              </p>
             </div>
 
             <Button
@@ -231,7 +229,7 @@ export default function AttendancePage() {
  disabled={isLoading || isPending}
  className="h-9 px-3 text-xs font-medium text-foreground bg-card border-border hover:bg-muted self-start sm:self-auto min-h-[36px]">
               <RefreshCw className={`w-3.5 h-3.5 mr-1.5 ${isLoading || isPending ? 'animate-spin' : ''}`} />
-              <span>Refresh</span>
+              <span>{tBilingual('Refresh', 'রিফ্রেশ')}</span>
             </Button>
           </div>
 
@@ -246,14 +244,14 @@ export default function AttendancePage() {
               }`}
             >
               <UserCheck className="w-4 h-4"/>
-              <span>Today Roster</span>
+              <span>{tBilingual('Today Roster', 'আজকের রোস্টার')}</span>
             </button>
 
             <button
  onClick={() => setQrModalOpen(true)}
  className="px-3.5 py-1.5 rounded-lg text-muted-foreground hover:bg-muted flex items-center gap-1.5 transition-colors shrink-0">
               <QrCode className="w-4 h-4 text-blue-600"/>
-              <span>QR Punch</span>
+              <span>{tBilingual('QR Punch', 'কিউআর পাঞ্চ')}</span>
             </button>
 
             <button
@@ -276,7 +274,7 @@ export default function AttendancePage() {
               }`}
             >
               <Clock className="w-4 h-4"/>
-              <span>Corrections</span>
+              <span>{tBilingual('Corrections', 'হাজিরা সংশোধন')}</span>
               {pendingCorrectionsCount > 0 && (
                 <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
  activeTab === 'corrections' ? 'bg-card text-blue-600' : 'bg-amber-100 text-amber-800'

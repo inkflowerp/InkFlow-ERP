@@ -557,10 +557,7 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
                     >
                       <div className="space-y-0.5 min-w-0 pr-2">
                         <div className="flex items-center gap-1.5 truncate">
-                          <span className="truncate">{role.name}</span>
-                          {role.name_bn && (
-                            <span className="text-2xs text-muted-foreground truncate font-normal">({role.name_bn})</span>
-                          )}
+                          <span className="truncate">{isBn ? (role.name_bn || role.name) : role.name}</span>
                         </div>
                         <div className="text-2xs text-muted-foreground tabular-nums">
                           {role.permissions?.length || 0} {isBn ? 'টি পারমিশন কার্যকর' : 'permissions granted'}
@@ -594,10 +591,7 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
                       <CardTitle className="text-base font-bold text-foreground flex items-center gap-2">
-                        {selectedRole.name}
-                        {selectedRole.name_bn && (
-                          <span className="text-sm font-normal text-muted-foreground">({selectedRole.name_bn})</span>
-                        )}
+                        {isBn ? (selectedRole.name_bn || selectedRole.name) : selectedRole.name}
                       </CardTitle>
 
                       {selectedRole.is_system ? (
@@ -739,8 +733,7 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border /50 pb-2.5">
                           <div>
                             <div className="text-xs font-bold text-foreground flex items-center gap-2">
-                              {spec.label}
-                              <span className="text-muted-foreground font-normal">({spec.labelBn})</span>
+                              {isBn ? (spec.labelBn || spec.label) : spec.label}
                               <Badge variant="outline"className="text-2xs tabular-nums px-1 py-0 uppercase bg-muted border-border text-muted-foreground">
                                 {moduleKey}
                               </Badge>
@@ -800,10 +793,10 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
             </Card>
           ) : (
             <Card className="border-border bg-card backdrop-blur-md shadow-xs p-10 text-center text-muted-foreground">
-              <p className="text-sm font-semibold text-foreground">No Role Selected / কোনো রোল নির্বাচন করা হয়নি</p>
+              <p className="text-sm font-semibold text-foreground">{tBilingual('No Role Selected', 'কোনো রোল নির্বাচন করা হয়নি')}</p>
               <p className="text-xs text-muted-foreground mt-1">Please select a role from the left menu or click reload to refresh permissions.</p>
               <Button variant="outline"size="sm"onClick={loadRoles} className="mt-4 border-border text-xs">
- Reload Roles / রোল রিফ্রেশ করুন
+ {tBilingual('Reload Roles', 'রোল রিফ্রেশ করুন')}
               </Button>
             </Card>
           )}
@@ -814,10 +807,10 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
       <ModalDialog
  open={isCreateRoleOpen}
  onOpenChange={setIsCreateRoleOpen}
- title="Create Custom Role Template (নতুন রোল তৈরি)"description="Define a new role with a custom name, Bengali label, and baseline permission set.">
+ title={tBilingual('Create Custom Role Template', 'নতুন রোল টেমপ্লেট তৈরি করুন')}description="Define a new role with a custom name, Bengali label, and baseline permission set.">
         <form onSubmit={handleCreateRole} className="space-y-4 pt-2">
           <div className="space-y-1.5">
-            <Label className="text-xs text-foreground font-medium">Role Name (English)</Label>
+            <Label className="text-xs text-foreground font-medium">{tBilingual('Role Name (English)', 'রোলের নাম (ইংরেজি)')}</Label>
             <Input
  type="text"required
  placeholder={tBilingual('e.g. Pre-Press Lead, Shift Supervisor', 'যেমন: প্রি-প্রেস লিড, শিফট সুপারভাইজার')}value={newRoleName}
@@ -826,15 +819,15 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs text-foreground font-medium">Role Name (বাংলা - ঐচ্ছিক)</Label>
+            <Label className="text-xs text-foreground font-medium">{tBilingual('Role Name (Bengali - Optional)', 'রোলের নাম (বাংলা - ঐচ্ছিক)')}</Label>
             <Input
- type="text"placeholder="যেমনঃ প্রি-প্রেস প্রধান, শিফট সুপারভাইজার"value={newRoleNameBn}
+ type="text"placeholder={tBilingual('e.g. Pre-Press Lead, Shift Supervisor', 'যেমনঃ প্রি-প্রেস প্রধান, শিফট সুপারভাইজার')}value={newRoleNameBn}
  onChange={(e) => setNewRoleNameBn(e.target.value)}
  className="bg-card border-border text-foreground"/>
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs text-foreground font-medium">Clone Permissions from Existing Template</Label>
+            <Label className="text-xs text-foreground font-medium">{tBilingual('Clone Permissions from Existing Template', 'বিদ্যমান টেমপ্লেট থেকে অনুমতি ক্লোন করুন')}</Label>
             <select
  value={newRoleBaseSlug}
  onChange={(e) => setNewRoleBaseSlug(e.target.value)}
@@ -884,7 +877,7 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs text-foreground font-medium">Role Name (বাংলা)</Label>
+            <Label className="text-xs text-foreground font-medium">{tBilingual('Role Name (Bengali)', 'রোলের নাম (বাংলা)')}</Label>
             <Input
  type="text"value={editRoleNameBn}
  onChange={(e) => setEditRoleNameBn(e.target.value)}

@@ -1842,8 +1842,17 @@ export function getProductEntityKind(p: Partial<ProductRecord> | null | undefine
   return 'product'
 }
 
-export function getProductEntityKindLabel(p: Partial<ProductRecord> | null | undefined): 'Service' | 'Raw Material' | 'Ready Product' | 'Outsource (Non-Inventory)' {
+export function getProductEntityKindLabel(
+  p: Partial<ProductRecord> | null | undefined,
+  locale?: string
+): string {
   const kind = getProductEntityKind(p)
+  if (locale === 'bn') {
+    if (kind === 'outsource') return 'আউটসোর্স'
+    if (kind === 'service') return 'সার্ভিস'
+    if (kind === 'material') return 'কাঁচামাল'
+    return 'রেডি প্রোডাক্ট'
+  }
   if (kind === 'outsource') return 'Outsource (Non-Inventory)'
   if (kind === 'service') return 'Service'
   if (kind === 'material') return 'Raw Material'

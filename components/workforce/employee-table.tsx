@@ -72,7 +72,7 @@ export function EmployeeTable({
   onManageAccess,
   onToggleStatus,
 }: EmployeeTableProps) {
-  const { tBilingual } = useI18n()
+  const { locale, tBilingual } = useI18n()
   const [searchTerm, setSearchTerm] = useState('')
  const [selectedDept, setSelectedDept] = useState('all')
  const [selectedType, setSelectedType] = useState('all')
@@ -319,13 +319,8 @@ export function EmployeeTable({
                           </div>
                           <div>
                             <div className="font-semibold text-foreground group-hover:text-blue-600 transition-colors">
-                              {emp.name}
+                              {locale === 'bn' ? (emp.name_bn || emp.name) : emp.name}
                             </div>
-                            {emp.name_bn && (
-                              <div className="text-[11px] text-muted-foreground font-normal">
-                                {emp.name_bn}
-                              </div>
-                            )}
                             <div className="text-[11px] text-muted-foreground flex items-center gap-1.5 mt-0.5">
                               <span>{emp.mobile}</span>
                             </div>
@@ -392,12 +387,12 @@ export function EmployeeTable({
                           <DropdownMenuContent align="end"className="w-44 text-xs font-medium">
                             <DropdownMenuItem onClick={() => onViewEmployee(emp)} className="cursor-pointer">
                               <Eye className="w-3.5 h-3.5 mr-2 text-muted-foreground"/>
-                              <span>View 360° Profile</span>
+                              <span>{tBilingual('View 360° Profile', '৩৬০° প্রোফাইল দেখুন')}</span>
                             </DropdownMenuItem>
 
                             <DropdownMenuItem onClick={() => onEditEmployee(emp)} className="cursor-pointer">
                               <Edit className="w-3.5 h-3.5 mr-2 text-muted-foreground"/>
-                              <span>Edit Details</span>
+                              <span>{tBilingual('Edit Details', 'তথ্য সংশোধন')}</span>
                             </DropdownMenuItem>
 
                             <DropdownMenuSeparator />
@@ -405,28 +400,28 @@ export function EmployeeTable({
                             <DropdownMenuItem asChild className="cursor-pointer">
                               <Link href={`/${tenantSlug}/hr/attendance?employee=${emp.id}`}>
                                 <Clock className="w-3.5 h-3.5 mr-2 text-blue-600"/>
-                                <span>Attendance Roster</span>
+                                <span>{tBilingual('Attendance Roster', 'হাজিরা রোস্টার')}</span>
                               </Link>
                             </DropdownMenuItem>
 
                             <DropdownMenuItem asChild className="cursor-pointer">
                               <Link href={`/${tenantSlug}/hr/payroll?employee=${emp.id}`}>
                                 <Wallet className="w-3.5 h-3.5 mr-2 text-emerald-600"/>
-                                <span>Payroll & Slips</span>
+                                <span>{tBilingual('Payroll & Slips', 'বেতন ও পে-স্লিপ')}</span>
                               </Link>
                             </DropdownMenuItem>
 
                             <DropdownMenuItem asChild className="cursor-pointer">
                               <Link href={`/${tenantSlug}/hr/advances?employee=${emp.id}`}>
                                 <Coins className="w-3.5 h-3.5 mr-2 text-amber-600"/>
-                                <span>Salary Advance</span>
+                                <span>{tBilingual('Salary Advance', 'বেতন অগ্রিম')}</span>
                               </Link>
                             </DropdownMenuItem>
 
                             {onManageAccess && (
                               <DropdownMenuItem onClick={() => onManageAccess(emp)} className="cursor-pointer">
                                 <Key className="w-3.5 h-3.5 mr-2 text-indigo-600"/>
-                                <span>Login Access</span>
+                                <span>{tBilingual('Login Access', 'লগইন অ্যাক্সেস')}</span>
                               </DropdownMenuItem>
                             )}
 
@@ -442,12 +437,12 @@ export function EmployeeTable({
                                   {emp.status === 'active' ? (
                                     <>
                                       <UserX className="w-3.5 h-3.5 mr-2"/>
-                                      <span>Deactivate</span>
+                                      <span>{tBilingual('Deactivate', 'নিষ্ক্রিয় করুন')}</span>
                                     </>
                                   ) : (
                                     <>
                                       <UserCheck className="w-3.5 h-3.5 mr-2"/>
-                                      <span>Activate</span>
+                                      <span>{tBilingual('Activate', 'সক্রিয় করুন')}</span>
                                     </>
                                   )}
                                 </DropdownMenuItem>
@@ -495,22 +490,22 @@ export function EmployeeTable({
                       <DropdownMenuContent align="end"className="w-44 text-xs font-medium">
                         <DropdownMenuItem onClick={() => onViewEmployee(emp)}>
                           <Eye className="w-3.5 h-3.5 mr-2"/>
-                          <span>View Profile</span>
+                          <span>{tBilingual('View Profile', 'প্রোফাইল দেখুন')}</span>
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => onEditEmployee(emp)}>
                           <Edit className="w-3.5 h-3.5 mr-2"/>
-                          <span>Edit</span>
+                          <span>{tBilingual('Edit', 'সম্পাদনা')}</span>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
                           <Link href={`/${tenantSlug}/hr/attendance?employee=${emp.id}`}>
                             <Clock className="w-3.5 h-3.5 mr-2 text-blue-600"/>
-                            <span>Attendance</span>
+                            <span>{tBilingual('Attendance', 'হাজিরা')}</span>
                           </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
                           <Link href={`/${tenantSlug}/hr/payroll?employee=${emp.id}`}>
                             <Wallet className="w-3.5 h-3.5 mr-2 text-emerald-600"/>
-                            <span>Payroll</span>
+                            <span>{tBilingual('Payroll', 'বেতন')}</span>
                           </Link>
                         </DropdownMenuItem>
                       </DropdownMenuContent>

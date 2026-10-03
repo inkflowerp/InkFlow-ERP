@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react'
+import { useI18n } from '@/i18n/context'
 import {
  Users,
  UserPlus,
@@ -44,6 +45,7 @@ import { useParams } from 'next/navigation'
 import { cn } from '@/lib/utils'
 
 export function TeamUsersPage() {
+  const { tBilingual } = useI18n()
  const params = useParams()
  const routeSlug = (params?.tenantSlug as string) || ''
  const { company, currentUser } = useTenant()
@@ -320,11 +322,10 @@ export function TeamUsersPage() {
         <div>
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
             <Users className="w-6 h-6 text-blue-600"/>
-            <span>Team Users</span>
-            <span className="text-xs font-normal text-muted-foreground font-hind">টিম সদস্য ও অ্যাক্সেস</span>
+            <span>{tBilingual('Team Users', 'টিম সদস্য ও অ্যাক্সেস')}</span>
           </h1>
           <p className="text-xs sm:text-sm text-muted-foreground mt-1">
- Manage who can log in, linked workforce employees, roles, branch access, and data scopes.
+ {tBilingual('Manage who can log in, linked workforce employees, roles, branch access, and data scopes.', 'ব্যবহারকারীদের লগইন, কর্মী লিংক, রোল ও শাখা অ্যাক্সেস পরিচালনা করুন।')}
           </p>
         </div>
 
@@ -334,14 +335,14 @@ export function TeamUsersPage() {
  disabled={isRefreshing || isLoading}
  className="h-9 px-3 text-muted-foreground border-border hover:bg-muted dark:hover:bg-muted">
             <RefreshCw className={cn('w-4 h-4 mr-1.5', isRefreshing && 'animate-spin')} />
-            <span>Refresh</span>
+            <span>{tBilingual('Refresh', 'রিফ্রেশ')}</span>
           </Button>
 
           <Button
  variant="default"size="sm"onClick={handleOpenCreateWizard}
  className="h-9 px-4 bg-primary hover:bg-primary/90 text-primary-foreground font-medium shadow-sm transition-all flex items-center gap-1.5">
             <UserPlus className="w-4 h-4"/>
-            <span>Add User</span>
+            <span>{tBilingual('Add User', 'ব্যবহারকারী যোগ')}</span>
           </Button>
         </div>
       </div>
@@ -351,11 +352,11 @@ export function TeamUsersPage() {
         {/* Total Users */}
         <div className="bg-card rounded-xl p-4 border border-border shadow-sm flex items-center justify-between">
           <div>
-            <p className="text-xs font-medium text-muted-foreground">Total Users</p>
+            <p className="text-xs font-medium text-muted-foreground">{tBilingual('Total Users', 'মোট ব্যবহারকারী')}</p>
             <p className="text-2xl font-bold text-foreground mt-1">
               {isLoading ? '...' : kpis.total}
             </p>
-            <p className="text-[11px] text-muted-foreground mt-0.5">All authorized identities</p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">{tBilingual('All authorized identities', 'সকল অনুমোদিত প্রোফাইল')}</p>
           </div>
           <div className="w-10 h-10 rounded-lg bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center border border-blue-100 dark:border-blue-900/50">
             <Users className="w-5 h-5"/>
@@ -365,11 +366,11 @@ export function TeamUsersPage() {
         {/* Active Users */}
         <div className="bg-card rounded-xl p-4 border border-border shadow-sm flex items-center justify-between">
           <div>
-            <p className="text-xs font-medium text-muted-foreground">Active Logins</p>
+            <p className="text-xs font-medium text-muted-foreground">{tBilingual('Active Logins', 'সক্রিয় ব্যবহারকারী')}</p>
             <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 mt-1">
               {isLoading ? '...' : kpis.active}
             </p>
-            <p className="text-[11px] text-muted-foreground mt-0.5">Can authenticate now</p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">{tBilingual('Can authenticate now', 'বর্তমানে লগইন অনুমোদিত')}</p>
           </div>
           <div className="w-10 h-10 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-100 dark:border-emerald-900/50">
             <CheckCircle2 className="w-5 h-5"/>
@@ -379,11 +380,11 @@ export function TeamUsersPage() {
         {/* Invited / Pending */}
         <div className="bg-card rounded-xl p-4 border border-border shadow-sm flex items-center justify-between">
           <div>
-            <p className="text-xs font-medium text-muted-foreground">Invited / Pending</p>
+            <p className="text-xs font-medium text-muted-foreground">{tBilingual('Invited / Pending', 'আমন্ত্রিত / অপেক্ষমাণ')}</p>
             <p className="text-2xl font-bold text-amber-600 dark:text-amber-400 mt-1">
               {isLoading ? '...' : kpis.invited}
             </p>
-            <p className="text-[11px] text-muted-foreground mt-0.5">Invitation link pending</p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">{tBilingual('Invitation link pending', 'আমন্ত্রণ লিংক অপেক্ষমাণ')}</p>
           </div>
           <div className="w-10 h-10 rounded-lg bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 flex items-center justify-center border border-amber-100 dark:border-amber-900/50">
             <Clock className="w-5 h-5"/>
@@ -393,11 +394,11 @@ export function TeamUsersPage() {
         {/* Disabled */}
         <div className="bg-card rounded-xl p-4 border border-border shadow-sm flex items-center justify-between">
           <div>
-            <p className="text-xs font-medium text-muted-foreground">Disabled Logins</p>
+            <p className="text-xs font-medium text-muted-foreground">{tBilingual('Disabled Logins', 'নিষ্ক্রিয় অ্যাকাউন্ট')}</p>
             <p className="text-2xl font-bold text-foreground mt-1">
               {isLoading ? '...' : kpis.disabled}
             </p>
-            <p className="text-[11px] text-muted-foreground mt-0.5">Access suspended</p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">{tBilingual('Access suspended', 'অ্যাক্সেস স্থগিত করা হয়েছে')}</p>
           </div>
           <div className="w-10 h-10 rounded-lg bg-muted text-muted-foreground flex items-center justify-center border border-border">
             <UserX className="w-5 h-5"/>
@@ -412,7 +413,7 @@ export function TeamUsersPage() {
           <div className="relative flex-1 max-w-md">
             <Search className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2"/>
             <Input
- type="text"placeholder="Search by name, email, employee ID..."value={searchQuery}
+ type="text"placeholder={tBilingual('Search by name, email, employee ID...', 'নাম, ইমেইল বা আইডি দিয়ে অনুসন্ধান...')}value={searchQuery}
  onChange={(e) => setSearchQuery(e.target.value)}
  className="pl-9 pr-8 h-9 text-xs sm:text-sm bg-muted/70 border-border focus:bg-card"/>
             {searchQuery && (
@@ -435,7 +436,7 @@ export function TeamUsersPage() {
                   : 'text-muted-foreground hover:text-foreground'
               )}
             >
- All ({kpis.total})
+ {tBilingual('All', 'সকল')} ({kpis.total})
             </button>
             <button
  type="button"onClick={() => setStatusFilter('active')}
@@ -446,7 +447,7 @@ export function TeamUsersPage() {
                   : 'text-muted-foreground hover:text-foreground'
               )}
             >
- Active ({kpis.active})
+ {tBilingual('Active', 'সক্রিয়')} ({kpis.active})
             </button>
             <button
  type="button"onClick={() => setStatusFilter('invited')}
@@ -457,7 +458,7 @@ export function TeamUsersPage() {
                   : 'text-muted-foreground hover:text-foreground'
               )}
             >
- Invited ({kpis.invited})
+ {tBilingual('Invited', 'আমন্ত্রিত')} ({kpis.invited})
             </button>
             <button
  type="button"onClick={() => setStatusFilter('disabled')}
@@ -468,7 +469,7 @@ export function TeamUsersPage() {
                   : 'text-muted-foreground hover:text-foreground'
               )}
             >
- Disabled ({kpis.disabled})
+ {tBilingual('Disabled', 'নিষ্ক্রিয়')} ({kpis.disabled})
             </button>
           </div>
         </div>
@@ -477,7 +478,7 @@ export function TeamUsersPage() {
         <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-border text-xs">
           <div className="flex items-center gap-1.5 text-muted-foreground">
             <Filter className="w-3.5 h-3.5"/>
-            <span>Filters:</span>
+            <span>{tBilingual('Filters:', 'ফিল্টার:')}</span>
           </div>
 
           {/* Role Filter */}
@@ -485,7 +486,7 @@ export function TeamUsersPage() {
  value={roleFilter}
  onChange={(e) => setRoleFilter(e.target.value)}
  className="h-8 rounded-md border border-border bg-card px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring">
-            <option value="all">All Roles</option>
+            <option value="all">{tBilingual('All Roles', 'সকল রোল')}</option>
             {roles.map((r) => (
               <option key={r.id} value={r.name}>
                 {r.name}
@@ -498,7 +499,7 @@ export function TeamUsersPage() {
  value={branchFilter}
  onChange={(e) => setBranchFilter(e.target.value)}
  className="h-8 rounded-md border border-border bg-card px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring">
-            <option value="all">All Branches</option>
+            <option value="all">{tBilingual('All Branches', 'সকল শাখা')}</option>
             {branches.map((b) => (
               <option key={b.id} value={b.id}>
                 {b.name}
@@ -506,7 +507,7 @@ export function TeamUsersPage() {
             ))}
           </select>
 
-          {/* Reset Filters button if any filter is active */}
+          {/* {tBilingual('Reset Filters', 'ফিল্টার রিসেট')} button if any filter is active */}
           {(searchQuery || statusFilter !== 'all' || roleFilter !== 'all' || branchFilter !== 'all') && (
             <button
  type="button"onClick={() => {

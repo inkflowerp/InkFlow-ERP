@@ -236,7 +236,7 @@ export default function BrandingSettingsPage() {
         {/* Document Footer Terms & Conditions */}
         <Card>
           <CardHeader className="pb-3 border-b border-border">
-            <CardTitle className="text-base">Document Footer Notes & Terms (বিল শর্তাবলী)</CardTitle>
+            <CardTitle className="text-base">{tBilingual('Document Footer Notes & Terms', 'বিল ও চালানের শর্তাবলী')}</CardTitle>
             <CardDescription className="text-xs">
  Printed automatically at the bottom of all Commercial Invoices, Quotations, and Delivery Challans.
             </CardDescription>

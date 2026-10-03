@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useMemo } from 'react'
+import { useI18n } from '@/i18n/context'
 import {
  Calendar,
  Search,
@@ -64,6 +65,7 @@ export function AttendanceRoster({
  onOpenManualEntry,
  onOpenQrPunch,
 }: AttendanceRosterProps) {
+  const { tBilingual } = useI18n()
  const [searchTerm, setSearchTerm] = useState('')
  const [selectedDept, setSelectedDept] = useState('all')
  const [selectedBranch, setSelectedBranch] = useState('all')
@@ -161,34 +163,28 @@ export function AttendanceRoster({
       {/* KPI Cards Row */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
         <Card className="p-3 bg-card border-border shadow-[0_1px_3px_rgba(0,0,0,0.02)] rounded-xl">
-          <span className="text-[11px] font-medium text-muted-foreground block">Present</span>
+          <span className="text-[11px] font-medium text-muted-foreground block">{tBilingual('Present', 'উপস্থিত')}</span>
           <span className="text-xl font-bold text-emerald-600 tabular-nums">{stats.present}</span>
-          <span className="text-[10px] text-muted-foreground block">উপস্থিত</span>
         </Card>
         <Card className="p-3 bg-card border-border shadow-[0_1px_3px_rgba(0,0,0,0.02)] rounded-xl">
-          <span className="text-[11px] font-medium text-muted-foreground block">Late</span>
+          <span className="text-[11px] font-medium text-muted-foreground block">{tBilingual('Late', 'দেরিতে আগমন')}</span>
           <span className="text-xl font-bold text-amber-600 tabular-nums">{stats.late}</span>
-          <span className="text-[10px] text-muted-foreground block">দেরিতে আগমন</span>
         </Card>
         <Card className="p-3 bg-card border-border shadow-[0_1px_3px_rgba(0,0,0,0.02)] rounded-xl">
-          <span className="text-[11px] font-medium text-muted-foreground block">Absent</span>
+          <span className="text-[11px] font-medium text-muted-foreground block">{tBilingual('Absent', 'অনুপস্থিত')}</span>
           <span className="text-xl font-bold text-red-600 tabular-nums">{stats.absent}</span>
-          <span className="text-[10px] text-muted-foreground block">অনুপস্থিত</span>
         </Card>
         <Card className="p-3 bg-card border-border shadow-[0_1px_3px_rgba(0,0,0,0.02)] rounded-xl">
-          <span className="text-[11px] font-medium text-muted-foreground block">Leave</span>
+          <span className="text-[11px] font-medium text-muted-foreground block">{tBilingual('Leave', 'ছুটিতে')}</span>
           <span className="text-xl font-bold text-blue-600 tabular-nums">{stats.leave}</span>
-          <span className="text-[10px] text-muted-foreground block">ছুটিতে</span>
         </Card>
         <Card className="p-3 bg-card border-border shadow-[0_1px_3px_rgba(0,0,0,0.02)] rounded-xl">
-          <span className="text-[11px] font-medium text-muted-foreground block">Field Work</span>
+          <span className="text-[11px] font-medium text-muted-foreground block">{tBilingual('Field Work', 'ফিল্ডে')}</span>
           <span className="text-xl font-bold text-purple-600 tabular-nums">{stats.fieldWork}</span>
-          <span className="text-[10px] text-muted-foreground block">ফিল্ডে</span>
         </Card>
         <Card className="p-3 bg-card border-border shadow-[0_1px_3px_rgba(0,0,0,0.02)] rounded-xl">
-          <span className="text-[11px] font-medium text-muted-foreground block">Working Now</span>
+          <span className="text-[11px] font-medium text-muted-foreground block">{tBilingual('Working Now', 'ফ্লোরে কর্মরত')}</span>
           <span className="text-xl font-bold text-indigo-600 tabular-nums">{stats.currentlyWorking}</span>
-          <span className="text-[10px] text-muted-foreground block">ফ্লোরে কর্মরত</span>
         </Card>
       </div>
 
@@ -232,14 +228,14 @@ export function AttendanceRoster({
  variant="outline"size="sm"onClick={onOpenQrPunch}
  className="h-8 text-xs border-border hover:bg-muted text-foreground min-h-[32px]">
                 <QrCode className="w-3.5 h-3.5 mr-1.5 text-blue-600"/>
-                <span>QR Attendance</span>
+                <span>{tBilingual('QR Attendance', 'কিউআর হাজিরা')}</span>
               </Button>
 
               <Button
  size="sm"onClick={onOpenManualEntry}
  className="h-8 px-3 text-xs font-medium bg-primary hover:bg-primary/90 text-primary-foreground min-h-[32px]">
                 <Plus className="w-3.5 h-3.5 mr-1"/>
-                <span>Manual Punch</span>
+                <span>{tBilingual('Manual Punch', 'ম্যানুয়াল পাঞ্চ')}</span>
               </Button>
             </div>
           </div>
@@ -249,7 +245,7 @@ export function AttendanceRoster({
             <div className="relative flex-1 max-w-sm">
               <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"/>
               <Input
- type="text"placeholder="Search roster..."value={searchTerm}
+ type="text"placeholder={tBilingual('Search roster...', 'রোস্টার খুঁজুন...')}value={searchTerm}
  onChange={(e) => setSearchTerm(e.target.value)}
  className="pl-8 h-8 text-xs bg-muted border-border"/>
             </div>
@@ -258,7 +254,7 @@ export function AttendanceRoster({
  value={selectedDept}
  onChange={(e) => setSelectedDept(e.target.value)}
  className="h-8 rounded-md border border-border bg-card px-2.5 text-xs text-foreground">
-              <option value="all">All Departments</option>
+              <option value="all">{tBilingual('All Departments', 'সকল বিভাগ')}</option>
               <option value="printing">Printing</option>
               <option value="finishing">Finishing</option>
               <option value="fabrication">Fabrication</option>
@@ -274,7 +270,7 @@ export function AttendanceRoster({
  value={selectedBranch}
  onChange={(e) => setSelectedBranch(e.target.value)}
  className="h-8 rounded-md border border-border bg-card px-2.5 text-xs text-foreground">
-                <option value="all">All Branches</option>
+                <option value="all">{tBilingual('All Branches', 'সকল শাখা')}</option>
                 {branches.map((b) => (
                   <option key={b.id} value={b.id}>
                     {b.name}
@@ -284,7 +280,7 @@ export function AttendanceRoster({
             )}
 
             <span className="text-muted-foreground text-xs ml-auto shrink-0">
- Showing {filteredRoster.length} staff
+ {tBilingual(`Showing ${filteredRoster.length} staff`, `${filteredRoster.length} জন কর্মী প্রদর্শিত`)}
             </span>
           </div>
         </CardContent>
@@ -301,8 +297,8 @@ export function AttendanceRoster({
         </Card>
       ) : filteredRoster.length === 0 ? (
         <Card className="bg-card border-border py-12 text-center">
-          <p className="text-sm font-medium text-muted-foreground">No attendance records for this date</p>
-          <p className="text-xs text-muted-foreground mt-1">Try selecting a different date or clearing your search.</p>
+          <p className="text-sm font-medium text-muted-foreground">{tBilingual('No attendance records for this date', 'এই তারিখের কোনো হাজিরার রেকর্ড নেই')}</p>
+          <p className="text-xs text-muted-foreground mt-1">{tBilingual('Try selecting a different date or clearing your search.', 'ভিন্ন তারিখ নির্বাচন করুন অথবা সার্চ ফিল্টার রিসেট করুন।')}</p>
         </Card>
       ) : (
         <Card className="bg-card border-border shadow-[0_1px_3px_rgba(0,0,0,0.02)] rounded-xl overflow-hidden">
@@ -310,17 +306,17 @@ export function AttendanceRoster({
             <table className="w-full text-left text-xs">
               <thead className="bg-muted border-b border-border text-muted-foreground uppercase tracking-wider font-semibold text-[11px]">
                 <tr>
-                  <th className="py-3 px-4">Employee</th>
-                  <th className="py-3 px-3">Department</th>
-                  <th className="py-3 px-3">Shift</th>
-                  <th className="py-3 px-3 text-center">Status</th>
-                  <th className="py-3 px-3">Check In</th>
-                  <th className="py-3 px-3">Check Out</th>
-                  <th className="py-3 px-3">Worked</th>
-                  <th className="py-3 px-3">Late</th>
-                  <th className="py-3 px-3">OT</th>
-                  <th className="py-3 px-3">Source</th>
-                  <th className="py-3 px-4 text-right">Actions</th>
+                  <th className="py-3 px-4">{tBilingual('Employee', 'কর্মী')}</th>
+                  <th className="py-3 px-3">{tBilingual('Department', 'বিভাগ')}</th>
+                  <th className="py-3 px-3">{tBilingual('Shift', 'শিফট')}</th>
+                  <th className="py-3 px-3 text-center">{tBilingual('Status', 'অবস্থা')}</th>
+                  <th className="py-3 px-3">{tBilingual('Check In', 'প্রবেশ')}</th>
+                  <th className="py-3 px-3">{tBilingual('Check Out', 'প্রস্থান')}</th>
+                  <th className="py-3 px-3">{tBilingual('Worked', 'কর্মকাল')}</th>
+                  <th className="py-3 px-3">{tBilingual('Late', 'দেরি')}</th>
+                  <th className="py-3 px-3">{tBilingual('OT', 'ওভারটাইম')}</th>
+                  <th className="py-3 px-3">{tBilingual('Source', 'উৎস')}</th>
+                  <th className="py-3 px-4 text-right">{tBilingual('Actions', 'অ্যাকশন')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">

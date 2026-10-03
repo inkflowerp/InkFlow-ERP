@@ -1594,7 +1594,7 @@ export default function AttendanceSettingsPage() {
           <div className="p-4 rounded-xl bg-rose-50 dark:bg-rose-500/15 border border-rose-200 dark:border-rose-500/30 text-rose-800 dark:text-rose-300 text-xs flex items-start gap-3">
             <AlertTriangle className="h-5 w-5 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5"/>
             <div className="space-y-1">
-              <h4 className="font-bold text-foreground">Permanent Deletion Warning (স্থায়ীভাবে মুছে ফেলা)</h4>
+              <h4 className="font-bold text-foreground">{tBilingual('Permanent Deletion Warning', 'স্থায়ীভাবে মুছে ফেলার সতর্কতা')}</h4>
               <p>
  Deleting <strong>&ldquo;{locationToDelete?.name}&rdquo;</strong> will permanently remove this location and immediately deactivate all associated QR codes. This action cannot be undone.
               </p>
@@ -1612,13 +1612,13 @@ export default function AttendanceSettingsPage() {
             <Button
  type="button"variant="outline"size="sm"onClick={() => setIsDeleteLocationConfirmOpen(false)}
  className="border-border text-foreground text-xs rounded-xl">
- Cancel (বাতিল)
+ {tBilingual('Cancel', 'বাতিল')}
             </Button>
             <Button
  type="button"size="sm"disabled={isSubmitting}
  onClick={handleConfirmDeleteLocation}
  className="bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-xl shadow-sm">
-              {isSubmitting ? 'Deleting...' : 'Confirm Delete (মুছে ফেলুন)'}
+              {isSubmitting ? tBilingual('Deleting...', 'মুছে ফেলা হচ্ছে...') : tBilingual('Confirm Delete', 'মুছে ফেলুন')}
             </Button>
           </div>
         </div>

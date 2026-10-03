@@ -440,7 +440,7 @@ export default function CompanySettingsPage() {
  color: 'text-amber-600 bg-amber-50 dark:bg-amber-950/50',
  badge: 'Tier Status',
           },
-        ].map((item) => {
+        ].map((item: { title: string; titleBn: string; desc: string; descBn?: string; path: string; icon: any; color: string; badge: string; }) => {
  const Icon = item.icon
  const targetHref = getTenantNavHref(item.path, pathname, tenantSlug)
  return (
@@ -459,11 +459,10 @@ export default function CompanySettingsPage() {
                 </div>
                 <div>
                   <div className="font-bold text-sm text-foreground group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors flex items-center gap-1.5">
-                    <span>{item.title}</span>
+                    <span>{locale === 'bn' ? item.titleBn : item.title}</span>
                     <ArrowRight className="h-3 w-3 opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all text-blue-600"/>
                   </div>
-                  <div className="text-2xs text-muted-foreground mt-0.5">{item.titleBn}</div>
-                  <p className="text-xs text-muted-foreground mt-1 leading-relaxed line-clamp-2">{item.desc}</p>
+                  <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed line-clamp-2">{locale === 'bn' ? (item.descBn || item.desc) : item.desc}</p>
                 </div>
               </div>
             </Link>
@@ -913,7 +912,7 @@ export default function CompanySettingsPage() {
  id="default_language"className="w-full h-10 px-3 rounded-md border border-input bg-card text-sm focus:ring-2 focus:ring-ring"{...register('default_language')}
                   >
                     <option value="bn">{tBilingual("বাংলা (Bengali)", "বাংলা (Bengali)")}</option>
-                    <option value="en">{tBilingual("English (ইংরেজি)", "English (ইংরেজি)")}</option>
+                    <option value="en">{tBilingual("English", "ইংরেজি")}</option>
                   </select>
                 </div>
               </div>

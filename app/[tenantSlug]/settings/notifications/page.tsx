@@ -397,12 +397,12 @@ export default function NotificationSettingsPage() {
                 {soundMuted ? (
                   <>
                     <VolumeX className="mr-1.5 h-4 w-4"/>
- Audio Muted (নিঃশব্দ)
+ {tBilingual('Audio Muted', 'নিঃশব্দ')}
                   </>
                 ) : (
                   <>
                     <Volume2 className="mr-1.5 h-4 w-4"/>
- Audio Active (সক্রিয়)
+ {tBilingual('Audio Active', 'সাউন্ড সক্রিয়')}
                   </>
                 )}
               </Button>
@@ -419,7 +419,7 @@ export default function NotificationSettingsPage() {
                 <div className="flex items-center gap-2">
                   <Sliders className="h-4 w-4 text-indigo-600 dark:text-indigo-400"/>
                   <span className="text-xs font-bold text-foreground">
- Master Chime Volume (সাউন্ড ভলিউম)
+ {tBilingual('Master Chime Volume', 'সাউন্ড ভলিউম')}
                   </span>
                 </div>
                 <span className="text-xs tabular-nums font-bold text-indigo-600 dark:text-indigo-400">

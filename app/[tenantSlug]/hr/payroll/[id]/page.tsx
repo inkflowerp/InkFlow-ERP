@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useTransition, useCallback } from 'react'
+import { useI18n } from '@/i18n/context'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import {
@@ -29,6 +30,7 @@ import type {
 } from '@/types/workforce.types'
 
 export default function PayrollPeriodDetailPage() {
+  const { tBilingual } = useI18n()
  const params = useParams()
  const router = useRouter()
  const periodId = (params?.id as string) || ''
@@ -112,7 +114,7 @@ export default function PayrollPeriodDetailPage() {
  href={`/${slug}/hr/payroll`}
  className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors">
               <ArrowLeft className="w-3.5 h-3.5"/>
-              <span>Back to Payroll Periods</span>
+              <span>{tBilingual('Back to Payroll Periods', 'পেরোল পিরিয়ড তালিকায় ফিরুন')}</span>
             </Link>
 
             <div className="flex items-center gap-2">
@@ -120,7 +122,7 @@ export default function PayrollPeriodDetailPage() {
  variant="outline"size="sm"onClick={() => window.print()}
  className="h-8 px-3 text-xs font-medium text-foreground bg-card border-border hover:bg-muted min-h-[32px]">
                 <Printer className="w-3.5 h-3.5 mr-1.5"/>
-                <span>Print Payroll Sheet</span>
+                <span>{tBilingual('Print Payroll Sheet', 'পেরোল শিট প্রিন্ট করুন')}</span>
               </Button>
 
               <Button
@@ -138,7 +140,7 @@ export default function PayrollPeriodDetailPage() {
               <AlertCircle className="w-8 h-8 text-red-500 mx-auto mb-2"/>
               <h3 className="text-sm font-semibold text-foreground">{errorMsg}</h3>
               <Button asChild size="sm"className="mt-4 text-xs">
-                <Link href={`/${slug}/hr/payroll`}>Return to Payroll Overview</Link>
+                <Link href={`/${slug}/hr/payroll`}>{tBilingual('Return to Payroll Overview', 'পেরোল তালিকায় ফিরুন')}</Link>
               </Button>
             </Card>
           )}

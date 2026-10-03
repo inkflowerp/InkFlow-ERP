@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
+import { useI18n } from '@/i18n/context'
 import {
  Coins,
  Plus,
@@ -56,6 +57,7 @@ export function AdvanceTable({
  onApproveAdvance,
  onDisburseAdvance,
 }: AdvanceTableProps) {
+  const { tBilingual } = useI18n()
  const [modalOpen, setModalOpen] = useState(false)
  const [selectedEmpId, setSelectedEmpId] = useState('')
  const [amount, setAmount] = useState<number>(5000)
@@ -144,10 +146,10 @@ export function AdvanceTable({
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
           <div>
             <h4 className="text-xs font-bold text-foreground uppercase tracking-wider">
- Salary Advance Flow
+ {tBilingual('Salary Advance Flow', 'বেতন অগ্রিম ও ঋণ সমন্বয়')}
             </h4>
             <p className="text-[11px] text-muted-foreground">
- Request → Approval → Disbursement → Outstanding Balance → Payroll Deduction → Settled
+ {tBilingual('Request → Approval → Disbursement → Outstanding Balance → Payroll Deduction → Settled', 'আবেদন → অনুমোদন → বিতরণ → বকেয়া ব্যালেন্স → পেরোল কর্তন → সমন্বয়')}
             </p>
           </div>
 
@@ -158,27 +160,27 @@ export function AdvanceTable({
             }}
  className="h-8 px-3.5 text-xs font-semibold bg-primary hover:bg-primary/90 text-primary-foreground min-h-[32px] shrink-0">
             <Plus className="w-3.5 h-3.5 mr-1"/>
-            <span>Request Salary Advance</span>
+            <span>{tBilingual('Request Salary Advance', 'অগ্রিম বেতনের আবেদন')}</span>
           </Button>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 text-xs">
           <div className="p-3 rounded-lg border border-border bg-muted">
-            <span className="text-muted-foreground block text-[11px]">Outstanding Balance</span>
+            <span className="text-muted-foreground block text-[11px]">{tBilingual('Outstanding Balance', 'মোট বকেয়া ব্যালেন্স')}</span>
             <span className="text-base font-bold text-amber-600 tabular-nums">
               ৳ {totalOutstanding.toLocaleString('en-IN')}
             </span>
           </div>
 
           <div className="p-3 rounded-lg border border-border bg-muted">
-            <span className="text-muted-foreground block text-[11px]">Total Disbursed</span>
+            <span className="text-muted-foreground block text-[11px]">{tBilingual('Total Disbursed', 'মোট বিতরণকৃত')}</span>
             <span className="text-base font-bold text-foreground tabular-nums">
               ৳ {totalDisbursed.toLocaleString('en-IN')}
             </span>
           </div>
 
           <div className="p-3 rounded-lg border border-border bg-muted">
-            <span className="text-muted-foreground block text-[11px]">Recovered via Payroll</span>
+            <span className="text-muted-foreground block text-[11px]">{tBilingual('Recovered via Payroll', 'পেরোলে আদায়কৃত')}</span>
             <span className="text-base font-bold text-emerald-600 tabular-nums">
               ৳ {totalDeducted.toLocaleString('en-IN')}
             </span>
@@ -197,8 +199,8 @@ export function AdvanceTable({
         </Card>
       ) : advances.length === 0 ? (
         <Card className="bg-card border-border py-12 text-center">
-          <p className="text-sm font-medium text-muted-foreground">No outstanding advances</p>
-          <p className="text-xs text-muted-foreground mt-1">There are no advance vouchers currently recorded.</p>
+          <p className="text-sm font-medium text-muted-foreground">{tBilingual('No outstanding advances', 'কোনো বকেয়া অগ্রিম নেই')}</p>
+          <p className="text-xs text-muted-foreground mt-1">{tBilingual('There are no advance vouchers currently recorded.', 'বর্তমানে কোনো অগ্রিম ভাউচার রেকর্ড করা নেই।')}</p>
         </Card>
       ) : (
         <Card className="bg-card border-border shadow-[0_1px_3px_rgba(0,0,0,0.02)] rounded-xl overflow-hidden">
@@ -206,15 +208,15 @@ export function AdvanceTable({
             <table className="w-full text-left text-xs">
               <thead className="bg-muted border-b border-border text-muted-foreground uppercase tracking-wider font-semibold text-[11px]">
                 <tr>
-                  <th className="py-3 px-4">Employee</th>
-                  <th className="py-3 px-3">Voucher #</th>
-                  <th className="py-3 px-3 text-right">Amount</th>
-                  <th className="py-3 px-3 text-right">Deducted</th>
-                  <th className="py-3 px-3 text-right">Remaining</th>
-                  <th className="py-3 px-3">Date</th>
-                  <th className="py-3 px-3">Method</th>
-                  <th className="py-3 px-3 text-center">Status</th>
-                  <th className="py-3 px-4 text-right">Actions</th>
+                  <th className="py-3 px-4">{tBilingual('Employee', 'কর্মী')}</th>
+                  <th className="py-3 px-3">{tBilingual('Voucher #', 'ভাউচার নং')}</th>
+                  <th className="py-3 px-3 text-right">{tBilingual('Amount', 'পরিমাণ')}</th>
+                  <th className="py-3 px-3 text-right">{tBilingual('Deducted', 'আদায়কৃত')}</th>
+                  <th className="py-3 px-3 text-right">{tBilingual('Remaining', 'অবশিষ্ট')}</th>
+                  <th className="py-3 px-3">{tBilingual('Date', 'তারিখ')}</th>
+                  <th className="py-3 px-3">{tBilingual('Method', 'মাধ্যম')}</th>
+                  <th className="py-3 px-3 text-center">{tBilingual('Status', 'অবস্থা')}</th>
+                  <th className="py-3 px-4 text-right">{tBilingual('Actions', 'অ্যাকশন')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -311,7 +313,7 @@ export function AdvanceTable({
 
           <form onSubmit={handleCreate} className="space-y-3.5 text-xs">
             <div>
-              <Label className="text-xs font-semibold text-foreground">Select Employee *</Label>
+              <Label className="text-xs font-semibold text-foreground">{tBilingual('Select Employee *', 'কর্মী নির্বাচন করুন *')}</Label>
               <select
  value={selectedEmpId}
  onChange={(e) => setSelectedEmpId(e.target.value)}
@@ -325,7 +327,7 @@ export function AdvanceTable({
             </div>
 
             <div>
-              <Label className="text-xs font-semibold text-foreground">Advance Amount (৳) *</Label>
+              <Label className="text-xs font-semibold text-foreground">{tBilingual('Advance Amount (৳) *', 'অগ্রিম পরিমাণ (৳) *')}</Label>
               <Input
  type="number"value={amount}
  onChange={(e) => setAmount(parseFloat(e.target.value) || 0)}
@@ -333,7 +335,7 @@ export function AdvanceTable({
             </div>
 
             <div>
-              <Label className="text-xs font-semibold text-foreground">Payment / Disburse Method</Label>
+              <Label className="text-xs font-semibold text-foreground">{tBilingual('Payment / Disburse Method', 'পরিশোধের মাধ্যম')}</Label>
               <div className="grid grid-cols-3 sm:grid-cols-5 gap-1.5 mt-1.5">
                 {(['cash', 'bank', 'bkash', 'nagad', 'rocket'] as PaymentMethod[]).map((m) => (
                   <button
@@ -352,9 +354,9 @@ export function AdvanceTable({
             </div>
 
             <div>
-              <Label className="text-xs font-semibold text-foreground">Reason / Purpose</Label>
+              <Label className="text-xs font-semibold text-foreground">{tBilingual('Reason / Purpose', 'কারণ / উদ্দেশ্য')}</Label>
               <Input
- placeholder="e.g. Medical emergency / Festival advance"value={reason}
+ placeholder={tBilingual('e.g. Medical emergency / Festival advance', 'যেমন: জরুরি চিকিৎসা / উৎসব অগ্রিম')}value={reason}
  onChange={(e) => setReason(e.target.value)}
  className="h-9 text-xs mt-1"/>
             </div>

@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import { useI18n } from '@/i18n/context'
 import Link from 'next/link'
 import {
  Wallet,
@@ -41,6 +42,7 @@ export function PayrollPeriodTable({
  tenantSlug,
  onOpenGenerateModal,
 }: PayrollPeriodTableProps) {
+  const { locale, tBilingual } = useI18n()
  const getStatusBadge = (status: PayrollPeriodStatus) => {
  switch (status) {
  case 'locked':
@@ -63,10 +65,10 @@ export function PayrollPeriodTable({
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
           <div>
             <h4 className="text-xs font-bold text-foreground uppercase tracking-wider">
- Payroll Processing Lifecycle
+ {tBilingual('Payroll Processing Lifecycle', 'পেরোল প্রসেসিং লাইফসাইকেল')}
             </h4>
             <p className="text-[11px] text-muted-foreground">
- Standardized flow preventing accidental skips from draft to paid without review and lock
+ {tBilingual('Standardized flow preventing accidental skips from draft to paid without review and lock', 'ড্রাফট থেকে অনুমোদনের পর্যায়ক্রমিক নিরাপদ ধাপসমূহ')}
             </p>
           </div>
 
@@ -74,7 +76,7 @@ export function PayrollPeriodTable({
  size="sm"onClick={onOpenGenerateModal}
  className="h-8 px-3.5 text-xs font-semibold bg-primary hover:bg-primary/90 text-primary-foreground min-h-[32px] shrink-0">
             <Plus className="w-3.5 h-3.5 mr-1"/>
-            <span>Generate New Period</span>
+            <span>{tBilingual('Generate New Period', 'নতুন পিরিয়ড তৈরি')}</span>
           </Button>
         </div>
 
@@ -88,10 +90,7 @@ export function PayrollPeriodTable({
                 </span>
                 <div className="text-left">
                   <div className="text-[11px] font-semibold text-foreground whitespace-nowrap leading-tight">
-                    {s.label}
-                  </div>
-                  <div className="text-[9px] text-muted-foreground whitespace-nowrap">
-                    {s.labelBn}
+                    {locale === 'bn' ? s.labelBn : s.label}
                   </div>
                 </div>
               </div>
@@ -137,16 +136,16 @@ export function PayrollPeriodTable({
               <thead className="bg-muted border-b border-border text-muted-foreground uppercase tracking-wider font-semibold text-[11px]">
                 <tr>
                   <th className="py-3 px-4">Period</th>
-                  <th className="py-3 px-3">Date Range</th>
-                  <th className="py-3 px-3 text-center">Employees</th>
+                  <th className="py-3 px-3">{tBilingual('Date Range', 'সময়সীমা')}</th>
+                  <th className="py-3 px-3 text-center">{tBilingual('Employees', 'মোট কর্মী')}</th>
                   <th className="py-3 px-3 text-right">Gross</th>
                   <th className="py-3 px-3 text-right">OT</th>
                   <th className="py-3 px-3 text-right">Deductions</th>
-                  <th className="py-3 px-3 text-right">Net Payable</th>
+                  <th className="py-3 px-3 text-right">{tBilingual('Net Payable', 'নীট প্রদেয়')}</th>
                   <th className="py-3 px-3 text-right">Paid</th>
                   <th className="py-3 px-3 text-right">Due</th>
-                  <th className="py-3 px-3 text-center">Status</th>
-                  <th className="py-3 px-4 text-right">Actions</th>
+                  <th className="py-3 px-3 text-center">{tBilingual('Status', 'অবস্থা')}</th>
+                  <th className="py-3 px-4 text-right">{tBilingual('Actions', 'অ্যাকশন')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">

@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import { useI18n } from '@/i18n/context'
 import {
  CreditCard,
  Wallet,
@@ -44,6 +45,7 @@ export function SalaryPaymentDialog({
  onOpenChange,
  onRecordPayment,
 }: SalaryPaymentDialogProps) {
+  const { tBilingual } = useI18n()
   const currentDue = Number(
     item ? item.due_amount || (Number(item.net_salary || 0) - Number(item.paid_amount || 0)) : 0
   )
@@ -101,7 +103,7 @@ export function SalaryPaymentDialog({
         <DialogHeader>
           <DialogTitle className="text-base font-bold text-foreground flex items-center gap-2">
             <Wallet className="w-5 h-5 text-emerald-600"/>
-            <span>Disburse Salary Payment</span>
+            <span>{tBilingual('Disburse Salary Payment', 'বেতন পরিশোধ রেকর্ড করুন')}</span>
           </DialogTitle>
           <p className="text-xs text-muted-foreground">
             {item.employee_name} • {periodName}
@@ -134,7 +136,7 @@ export function SalaryPaymentDialog({
 
           {/* Amount Input */}
           <div>
-            <Label className="text-xs font-semibold text-foreground">Payment Amount (৳) *</Label>
+            <Label className="text-xs font-semibold text-foreground">{tBilingual('Payment Amount (৳) *', 'পরিশোধের পরিমাণ (৳) *')}</Label>
             <div className="flex items-center gap-2 mt-1">
               <Input
  type="number"value={amount}
@@ -171,9 +173,9 @@ export function SalaryPaymentDialog({
 
           {/* Reference Number */}
           <div>
-            <Label className="text-xs font-semibold text-foreground">Transaction Reference / Voucher</Label>
+            <Label className="text-xs font-semibold text-foreground">{tBilingual('Transaction Reference / Voucher', 'ট্রানজেকশন রেফারেন্স / ভাউচার')}</Label>
             <Input
- placeholder="e.g. TrxID / Cheque # / Voucher #"value={refNum}
+ placeholder={tBilingual('e.g. TrxID / Cheque # / Voucher #', 'যেমন: ট্রানজেকশন আইডি / চেক নং / ভাউচার নং')}value={refNum}
  onChange={(e) => setRefNum(e.target.value)}
  className="h-9 text-xs mt-1"/>
           </div>
@@ -192,7 +194,7 @@ export function SalaryPaymentDialog({
             <Button
  type="button"variant="outline"size="sm"onClick={() => onOpenChange(false)}
  className="h-8 text-xs border-border">
- Cancel
+ {tBilingual('Cancel', 'বাতিল')}
             </Button>
             <Button
  type="submit"size="sm"disabled={isSubmitting}

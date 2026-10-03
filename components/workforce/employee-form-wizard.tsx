@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
+import { useI18n } from '@/i18n/context'
 import {
  User,
  Briefcase,
@@ -58,6 +59,7 @@ export function EmployeeFormWizard({
  branches = [],
  onSave,
 }: EmployeeFormWizardProps) {
+  const { tBilingual } = useI18n()
  const [currentStep, setCurrentStep] = useState(1)
  const [isSubmitting, setIsSubmitting] = useState(false)
  const [errorMsg, setErrorMsg] = useState<string | null>(null)
@@ -227,14 +229,14 @@ export function EmployeeFormWizard({
             <div className="space-y-3.5 text-xs">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div>
-                  <Label className="text-xs font-semibold text-foreground">Full Name (English) *</Label>
+                  <Label className="text-xs font-semibold text-foreground">{tBilingual('Full Name (English) *', 'পূর্ণ নাম (ইংরেজি) *')}</Label>
                   <Input
  placeholder="e.g. Rahim Uddin"value={formData.name || ''}
  onChange={(e) => updateField('name', e.target.value)}
  className="h-9 text-xs mt-1"/>
                 </div>
                 <div>
-                  <Label className="text-xs font-semibold text-foreground">Full Name (বাংলা)</Label>
+                  <Label className="text-xs font-semibold text-foreground">{tBilingual('Full Name (Bengali Script)', 'পূর্ণ নাম (বাংলায়)')}</Label>
                   <Input
  placeholder="যেমনঃ রহিম উদ্দিন"value={formData.name_bn || ''}
  onChange={(e) => updateField('name_bn', e.target.value)}
@@ -301,7 +303,7 @@ export function EmployeeFormWizard({
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div>
-                  <Label className="text-xs font-semibold text-foreground">Role / Designation</Label>
+                  <Label className="text-xs font-semibold text-foreground">{tBilingual('Role / Designation', 'পদবী ও দায়িত্ব')}</Label>
                   <Input
  placeholder="e.g. Master Offset Operator"value={formData.role || ''}
  onChange={(e) => updateField('role', e.target.value)}
@@ -359,13 +361,13 @@ export function EmployeeFormWizard({
  value={formData.salary_basis || 'monthly'}
  onChange={(e) => updateField('salary_basis', e.target.value as SalaryBasis)}
  className="h-9 w-full rounded-md border border-border bg-card px-3 text-xs text-foreground mt-1 capitalize">
-                    <option value="monthly">Monthly Fixed Salary</option>
-                    <option value="daily_rate">Daily Wage (দিনমজুর)</option>
-                    <option value="hourly_rate">Hourly Rate (ঘণ্টা ভিত্তিক)</option>
+                    <option value="monthly">{tBilingual('Monthly Fixed Salary', 'মাসিক নির্দিষ্ট বেতন')}</option>
+                    <option value="daily_rate">{tBilingual('Daily Wage', 'দিনমজুর')}</option>
+                    <option value="hourly_rate">{tBilingual('Hourly Rate', 'ঘণ্টা ভিত্তিক')}</option>
                   </select>
                 </div>
                 <div>
-                  <Label className="text-xs font-semibold text-foreground">Base Salary (৳)</Label>
+                  <Label className="text-xs font-semibold text-foreground">{tBilingual('Base Salary (৳)', 'মূল বেতন (৳)')}</Label>
                   <Input
  type="number"value={formData.base_salary || 0}
  onChange={(e) => updateField('base_salary', parseFloat(e.target.value) || 0)}
@@ -375,21 +377,21 @@ export function EmployeeFormWizard({
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
                 <div>
-                  <Label className="text-xs font-semibold text-foreground">Daily Rate (৳)</Label>
+                  <Label className="text-xs font-semibold text-foreground">{tBilingual('Daily Rate (৳)', 'দৈনিক মজুরি (৳)')}</Label>
                   <Input
  type="number"value={formData.daily_rate || 0}
  onChange={(e) => updateField('daily_rate', parseFloat(e.target.value) || 0)}
  className="h-9 text-xs mt-1 tabular-nums"/>
                 </div>
                 <div>
-                  <Label className="text-xs font-semibold text-foreground">Hourly Rate (৳)</Label>
+                  <Label className="text-xs font-semibold text-foreground">{tBilingual('Hourly Rate (৳)', 'ঘণ্টা ভিত্তিক মজুরি (৳)')}</Label>
                   <Input
  type="number"value={formData.hourly_rate || 0}
  onChange={(e) => updateField('hourly_rate', parseFloat(e.target.value) || 0)}
  className="h-9 text-xs mt-1 tabular-nums"/>
                 </div>
                 <div>
-                  <Label className="text-xs font-semibold text-foreground">OT Hourly Rate (৳)</Label>
+                  <Label className="text-xs font-semibold text-foreground">{tBilingual('OT Hourly Rate (৳)', 'ওভারটাইম রেট (৳)')}</Label>
                   <Input
  type="number"value={formData.overtime_hourly_rate || 0}
  onChange={(e) => updateField('overtime_hourly_rate', parseFloat(e.target.value) || 0)}
@@ -433,10 +435,10 @@ export function EmployeeFormWizard({
  value={formData.duty_settings?.weekly_off_day || 'Friday'}
  onChange={(e) => updateDuty('weekly_off_day', e.target.value)}
  className="h-9 w-full rounded-md border border-border bg-card px-3 text-xs text-foreground mt-1">
-                    <option value="Friday">Friday (শুক্রবার)</option>
-                    <option value="Sunday">Sunday (রবিবার)</option>
-                    <option value="Saturday">Saturday (শনিবার)</option>
-                    <option value="None">None / Roster Based</option>
+                    <option value="Friday">{tBilingual('Friday', 'শুক্রবার')}</option>
+                    <option value="Sunday">{tBilingual('Sunday', 'রবিবার')}</option>
+                    <option value="Saturday">{tBilingual('Saturday', 'শনিবার')}</option>
+                    <option value="None">{tBilingual('None (Roster Based)', 'কোনোটি নয় (রোস্টার অনুযায়ী)')}</option>
                   </select>
                 </div>
               </div>
@@ -484,7 +486,7 @@ export function EmployeeFormWizard({
                 {formData.portal_credentials?.create_login && (
                   <div className="space-y-3 pt-2">
                     <div>
-                      <Label className="text-xs font-semibold text-foreground">Login Username / Mobile</Label>
+                      <Label className="text-xs font-semibold text-foreground">{tBilingual('Login Username / Mobile', 'লগইন ইউজারনেম / মোবাইল')}</Label>
                       <Input
  placeholder="Mobile or username"value={formData.portal_credentials?.username || formData.mobile || ''}
  onChange={(e) => updatePortal('username', e.target.value)}

@@ -484,27 +484,35 @@ export function SubscriptionProvider({
 
   const accountTypeMeta: TenantAccountTypeMeta = useMemo(() => {
     const base = TENANT_ACCOUNT_TYPE_METADATA[accountType] || TENANT_ACCOUNT_TYPE_METADATA.trial
+    const hasBengali = (text?: string | null) => Boolean(text && /[\u0980-\u09FF]/.test(text))
+
     if (accountType === 'trial' && currentPlan) {
       const trialDays = currentPlan.trial_days || 14
+      const planDesc = currentPlan.description
+      const isDescBn = hasBengali(planDesc)
       return {
         ...base,
-        nameEn: currentPlan.name || `Free Trial (${trialDays} Days)`,
-        nameBn: currentPlan.name_bn || `${toBengaliDigits(trialDays)} দিনের ফ্রি ট্রায়াল`,
+        nameEn: (!hasBengali(currentPlan.name) ? currentPlan.name : null) || `Free Trial (${trialDays} Days)`,
+        nameBn: currentPlan.name_bn || (hasBengali(currentPlan.name) ? currentPlan.name : null) || `${toBengaliDigits(trialDays)} দিনের ফ্রি ট্রায়াল`,
         maxUsers: currentPlan.max_users,
         maxBranches: currentPlan.max_branches,
-        descriptionEn: currentPlan.description || base.descriptionEn,
+        descriptionEn: (!isDescBn && planDesc) ? planDesc : base.descriptionEn,
+        descriptionBn: (isDescBn && planDesc) ? planDesc : (currentPlan.description_bn || base.descriptionBn),
       }
     }
     if (currentPlan) {
+      const planDesc = currentPlan.description
+      const isDescBn = hasBengali(planDesc)
       return {
         ...base,
-        nameEn: currentPlan.name || base.nameEn,
-        nameBn: currentPlan.name_bn || base.nameBn,
+        nameEn: (!hasBengali(currentPlan.name) ? currentPlan.name : null) || base.nameEn,
+        nameBn: currentPlan.name_bn || (hasBengali(currentPlan.name) ? currentPlan.name : null) || base.nameBn,
         maxUsers: currentPlan.max_users,
         maxBranches: currentPlan.max_branches,
         priceMonthly: currentPlan.price_monthly,
         priceYearly: currentPlan.price_yearly,
-        descriptionEn: currentPlan.description || base.descriptionEn,
+        descriptionEn: (!isDescBn && planDesc) ? planDesc : base.descriptionEn,
+        descriptionBn: (isDescBn && planDesc) ? planDesc : (currentPlan.description_bn || base.descriptionBn),
       }
     }
     return base

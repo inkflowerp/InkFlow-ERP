@@ -504,7 +504,7 @@ export default function ProductDetailPage() {
  href={getTenantNavHref('/products', pathname, slug)}
  className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground dark:hover:text-foreground mb-3">
           <ArrowLeft className="h-3.5 w-3.5"/>
- Back to Product Catalog
+          {tBilingual('Back to Product Catalog', 'পণ্য ক্যাটালগে ফিরে যান')}
         </Link>
         <Card className="p-12 text-center border-dashed">
           <Layers className="h-10 w-10 text-muted-foreground mx-auto mb-3"/>
@@ -543,7 +543,7 @@ export default function ProductDetailPage() {
           <div className="space-y-1">
             <div className="flex items-center gap-2.5 flex-wrap">
               <h1 className="text-2xl font-black tracking-tight text-foreground">
-                {product.name}
+                {locale === 'bn' ? (product.name_bn || product.name) : product.name}
               </h1>
               <span
  className={cn(
@@ -557,21 +557,19 @@ export default function ProductDetailPage() {
                     : 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950/40 dark:text-indigo-300'
                 )}
               >
-                {getProductEntityKindLabel(product)}
+                {getProductEntityKindLabel(product, locale)}
               </span>
               <span className="px-2 py-0.5 rounded text-xs font-bold bg-purple-50 text-purple-700 border border-purple-200 dark:bg-purple-950/40 dark:text-purple-300 uppercase">
                 {commercialEconomics?.pricingMethod?.replace('_', ' ') || 'Per Area'}
               </span>
               {product.is_active !== false ? (
-                <Badge className="bg-emerald-500 text-white text-2xs">Active</Badge>
+                <Badge className="bg-emerald-500 text-white text-2xs">{tBilingual('Active', 'সক্রিয়')}</Badge>
               ) : (
-                <Badge variant="outline"className="text-muted-foreground border-input text-2xs">Archived</Badge>
+                <Badge variant="outline" className="text-muted-foreground border-input text-2xs">{tBilingual('Archived', 'আর্কাইভড')}</Badge>
               )}
             </div>
 
-            {product.name_bn && (
-              <div className="text-sm font-medium text-muted-foreground font-bengali">{product.name_bn}</div>
-            )}
+            
 
             <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground pt-1">
               <span className="tabular-nums font-bold text-foreground">{product.sku}</span>
@@ -579,13 +577,13 @@ export default function ProductDetailPage() {
               <span className="capitalize">{product.category?.replace('_', ' ')}</span>
               <span>•</span>
               <span className="uppercase tabular-nums font-semibold text-blue-600">
- Sell: {product.selling_unit || product.unit}
+ {tBilingual('Sell:', 'বিক্রয়:')} {product.selling_unit || product.unit}
               </span>
               {product.purchase_price && product.purchase_price > 0 ? (
                 <>
                   <span>•</span>
                   <span className="tabular-nums text-muted-foreground">
- Buy: ৳{product.purchase_price}/{product.purchase_unit || 'roll'}
+ {tBilingual('Buy:', 'ক্রয়:')} ৳{product.purchase_price}/{product.purchase_unit || 'roll'}
                   </span>
                 </>
               ) : null}
@@ -598,20 +596,20 @@ export default function ProductDetailPage() {
  size="sm"onClick={handleOpenEdit}
  className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold shadow-xs">
               <Boxes className="mr-1.5 h-3.5 w-3.5"/>
- Edit {isOutsourceProduct(product) ? 'Outsource Product' : isServiceProduct(product) ? 'Service' : isMaterialProduct(product) ? 'Material' : 'Product'}
+ {tBilingual('Edit Item', 'আইটেম সম্পাদনা করুন')}
             </Button>
 
             <Button
  size="sm"variant="outline"onClick={() => setIsPriceModalOpen(true)}
  className="text-xs font-bold text-foreground">
               <Edit3 className="mr-1.5 h-3.5 w-3.5"/>
- Adjust Price
+              {tBilingual('Adjust Price', 'মূল্য নির্ধারণ')}
             </Button>
 
             <Link href={getTenantNavHref(`/pricing?tab=calculator&productId=${product.id}`, pathname, slug)}>
               <Button size="sm"variant="outline"className="text-xs font-bold gap-1.5">
                 <Calculator className="h-3.5 w-3.5 text-blue-600"/>
-                <span>Live Estimator</span>
+                <span>{tBilingual('Live Estimator', 'লাইভ এস্টিমেটর')}</span>
               </Button>
             </Link>
 
@@ -619,7 +617,7 @@ export default function ProductDetailPage() {
  size="sm"variant="outline"onClick={handleToggleArchive}
  className="text-xs text-muted-foreground">
               <Archive className="mr-1.5 h-3.5 w-3.5"/>
-              {product.is_active !== false ? 'Archive' : 'Restore'}
+              {product.is_active !== false ? tBilingual('Archive', 'আর্কাইভ') : tBilingual('Restore', 'পুনরুদ্ধার')}
             </Button>
 
             <Button

@@ -100,17 +100,13 @@ export default function PayrollPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-6">
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border">
-            <div>
+                        <div>
               <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
- Payroll
+                {tBilingual('Payroll & Compensation', 'বেতন ও পেরোল শিট')}
               </h1>
-              <div className="flex items-center gap-2 mt-1">
-                <span className="text-sm font-medium text-muted-foreground">বেতন ও পেরোল শিট</span>
-                <span className="text-muted-foreground">•</span>
-                <span className="text-xs text-muted-foreground">
- Generate, review, approve, lock and disburse workforce compensation
-                </span>
-              </div>
+              <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+                {tBilingual('Generate, review, approve, lock and disburse workforce compensation.', 'কর্মীদের বেতন প্রস্তুত, পর্যালোচনা, অনুমোদন, লক ও পরিশোধ পরিচালনা করুন।')}
+              </p>
             </div>
 
             <Button
@@ -118,7 +114,7 @@ export default function PayrollPage() {
  disabled={isLoading || isPending}
  className="h-9 px-3 text-xs font-medium text-foreground bg-card border-border hover:bg-muted self-start sm:self-auto min-h-[36px]">
               <RefreshCw className={`w-3.5 h-3.5 mr-1.5 ${isLoading || isPending ? 'animate-spin' : ''}`} />
-              <span>Refresh</span>
+              <span>{tBilingual('Refresh', 'রিফ্রেশ')}</span>
             </Button>
           </div>
 
@@ -136,7 +132,7 @@ export default function PayrollPage() {
               <DialogHeader>
                 <DialogTitle className="text-base font-bold text-foreground flex items-center gap-2">
                   <Wallet className="w-5 h-5 text-blue-600"/>
-                  <span>Generate Monthly Payroll Draft</span>
+                  <span>{tBilingual('Generate Monthly Payroll Draft', 'মাসিক বেতনের ড্রাফট তৈরি করুন')}</span>
                 </DialogTitle>
                 <p className="text-xs text-muted-foreground">
  Compiles verified attendance, approved overtime and advances into draft payroll items
@@ -152,7 +148,7 @@ export default function PayrollPage() {
 
               <form onSubmit={handleGeneratePayroll} className="space-y-3.5 text-xs">
                 <div>
-                  <Label className="text-xs font-semibold text-foreground">Payroll Period Name *</Label>
+                  <Label className="text-xs font-semibold text-foreground">{tBilingual('Payroll Period Name *', 'বেতন পিরিয়ডের নাম *')}</Label>
                   <Input
  value={periodName}
  onChange={(e) => setPeriodName(e.target.value)}
@@ -161,14 +157,14 @@ export default function PayrollPage() {
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <Label className="text-xs font-semibold text-foreground">Start Date</Label>
+                    <Label className="text-xs font-semibold text-foreground">{tBilingual('Start Date', 'শুরুর তারিখ')}</Label>
                     <Input
  type="date"value={startDate}
  onChange={(e) => setStartDate(e.target.value)}
  className="h-9 text-xs mt-1"/>
                   </div>
                   <div>
-                    <Label className="text-xs font-semibold text-foreground">End Date</Label>
+                    <Label className="text-xs font-semibold text-foreground">{tBilingual('End Date', 'শেষের তারিখ')}</Label>
                     <Input
  type="date"value={endDate}
  onChange={(e) => setEndDate(e.target.value)}
@@ -177,7 +173,7 @@ export default function PayrollPage() {
                 </div>
 
                 <div>
-                  <Label className="text-xs font-semibold text-foreground">Working Days in Month</Label>
+                  <Label className="text-xs font-semibold text-foreground">{tBilingual('Working Days in Month', 'মাসের কর্মদিবস')}</Label>
                   <Input
  type="number"value={workingDays}
  onChange={(e) => setWorkingDays(parseInt(e.target.value) || 26)}
@@ -188,12 +184,12 @@ export default function PayrollPage() {
                   <Button
  type="button"variant="outline"size="sm"onClick={() => setGenerateModalOpen(false)}
  className="h-8 text-xs border-border">
- Cancel
+ {tBilingual('Cancel', 'বাতিল')}
                   </Button>
                   <Button
  type="submit"size="sm"disabled={isSubmitting}
  className="h-8 px-4 text-xs font-semibold bg-primary hover:bg-primary/90 text-primary-foreground min-h-[32px]">
-                    {isSubmitting ? 'Generating...' : 'Generate Draft Sheet'}
+                    {isSubmitting ? tBilingual('Generating...', 'তৈরি হচ্ছে...') : tBilingual('Generate Draft Sheet', 'ড্রাফট শিট তৈরি করুন')}
                   </Button>
                 </div>
               </form>

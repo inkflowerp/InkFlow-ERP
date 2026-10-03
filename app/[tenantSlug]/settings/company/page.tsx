@@ -42,10 +42,10 @@ const OFFICE_HOURS_PRESETS = [
 ]
 
 const HOLIDAY_PRESETS = [
-  'Friday (সাপ্তাহিক ছুটি)',
+  'Friday',
   'Friday & Saturday (দ্বি-সাপ্তাহিক ছুটি)',
-  'Friday & Govt Holidays (শুক্রবার ও সরকারি ছুটি)',
-  'Sunday (রবিবার)',
+  'Friday & Govt Holidays',
+  'Sunday',
 ]
 
 function cleanField(val?: string | null): string {
@@ -337,7 +337,7 @@ export default function CompanyProfileSettingsPage() {
 
             {/* Logo */}
             <div className="space-y-2 pt-2 border-t border-border">
-              <Label htmlFor="logo_url">Company Logo URL (কোম্পানির লোগো)</Label>
+              <Label htmlFor="logo_url">{tBilingual('Company Logo URL', 'কোম্পানির লোগো ইউআরএল')}</Label>
               <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
                 <div className="h-16 w-24 rounded-lg border border-border bg-muted flex items-center justify-center overflow-hidden shrink-0">
                   {formData.logo_url ? (
@@ -381,7 +381,7 @@ export default function CompanyProfileSettingsPage() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="space-y-1.5">
                 <Label htmlFor="phone"required>
- Office Phone Number (অফিস ফোন)
+ {tBilingual('Office Phone Number', 'অফিস ফোন নম্বর')}
                 </Label>
                 <Input
  id="phone"name="phone"value={formData.phone}
@@ -392,7 +392,7 @@ export default function CompanyProfileSettingsPage() {
 
               <div className="space-y-1.5">
                 <Label htmlFor="whatsapp">
- Business WhatsApp Number (হোয়াটসঅ্যাপ)
+ {tBilingual('Business WhatsApp Number', 'বিজনেস হোয়াটসঅ্যাপ নম্বর')}
                 </Label>
                 <Input
  id="whatsapp"name="whatsapp"value={formData.whatsapp}
@@ -402,7 +402,7 @@ export default function CompanyProfileSettingsPage() {
 
               <div className="space-y-1.5">
                 <Label htmlFor="email"required>
- Official Billing Email (অফিসিয়াল ইমেইল)
+ {tBilingual('Official Billing Email', 'অফিসিয়াল বিলিং ইমেইল')}
                 </Label>
                 <Input
  id="email"name="email"type="email"value={formData.email}
@@ -425,7 +425,7 @@ export default function CompanyProfileSettingsPage() {
           <CardContent className="space-y-4 pt-4">
             <div className="space-y-1.5">
               <Label htmlFor="area">
- Printing Hub / Commercial Area (মার্কেট বা বাণিজ্যিক এলাকা)
+ {tBilingual('Printing Hub / Commercial Area', 'মার্কেট বা বাণিজ্যিক এলাকা')}
               </Label>
               <Input
  id="area"name="area"value={formData.area}
@@ -436,7 +436,7 @@ export default function CompanyProfileSettingsPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <Label htmlFor="address">
- Full Street Address (English)
+ {tBilingual('Full Street Address (English)', 'পূর্ণ ঠিকানা (ইংরেজি)')}
                 </Label>
                 <Input
  id="address"name="address"value={formData.address}
@@ -446,7 +446,7 @@ export default function CompanyProfileSettingsPage() {
 
               <div className="space-y-1.5">
                 <Label htmlFor="address_bn">
-                  সম্পূর্ণ ঠিকানা (বাংলা)
+                  {tBilingual('Full Street Address (Bengali Script)', 'পূর্ণ ঠিকানা (বাংলায়)')}
                 </Label>
                 <Input
  id="address_bn"name="address_bn"value={formData.address_bn}
@@ -469,7 +469,7 @@ export default function CompanyProfileSettingsPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <Label htmlFor="trade_license_no">
- Trade License Number (ট্রেড লাইসেন্স নং)
+ {tBilingual('Trade License Number', 'ট্রেড লাইসেন্স নম্বর')}
                 </Label>
                 <Input
  id="trade_license_no"name="trade_license_no"value={formData.trade_license_no}
@@ -479,7 +479,7 @@ export default function CompanyProfileSettingsPage() {
 
               <div className="space-y-1.5">
                 <Label htmlFor="bin_no">
- BIN Number (Business Identification Number / ভ্যাট নিবন্ধন নং)
+ {tBilingual('BIN Number (Business Identification Number)', 'ভ্যাট নিবন্ধন নম্বর (বিআইএন)')}
                 </Label>
                 <Input
  id="bin_no"name="bin_no"value={formData.bin_no}
@@ -501,7 +501,7 @@ export default function CompanyProfileSettingsPage() {
           <CardContent className="space-y-4 pt-4">
             <div className="space-y-2">
               <Label htmlFor="office_hours">
- Office Hours / Business Hours (অফিস সময়সূচী)
+ {tBilingual('Office Hours / Business Hours', 'অফিস সময়সূচি')}
               </Label>
               <Input
  id="office_hours"name="office_hours"value={formData.office_hours}
@@ -522,7 +522,7 @@ export default function CompanyProfileSettingsPage() {
 
             <div className="space-y-2 pt-3 border-t border-border">
               <Label htmlFor="holidays">
- Weekly Holiday & Closed Days (সাপ্তাহিক ছুটি ও বন্ধের দিন)
+ {tBilingual('Weekly Holiday & Closed Days', 'সাপ্তাহিক ছুটি ও বন্ধের দিন')}
               </Label>
               <Input
  id="holidays"name="holidays"value={formData.holidays}

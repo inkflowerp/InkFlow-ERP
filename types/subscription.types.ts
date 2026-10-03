@@ -352,6 +352,7 @@ export interface SubscriptionPlanRecord {
   name: string
   name_bn: string
   description?: string | null
+  description_bn?: string | null
   price_monthly: number
   price_yearly: number
   currency?: string

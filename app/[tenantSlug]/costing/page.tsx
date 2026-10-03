@@ -617,8 +617,7 @@ export default function JobCostingPage() {
             <div className="flex items-center gap-2">
               <ShieldAlert className="h-4 w-4 text-amber-600 shrink-0"/>
               <span>
-                <strong>Sales Representative Protection Active: </strong>
- Factory internal substrate purchase rates, machine electricity costs, and raw margin % are hidden.
+                <strong>{tBilingual('Sales Representative Protection Active: ', 'বিক্রয় প্রতিনিধি সুরক্ষা সক্রিয়: ')}</strong>{tBilingual('Factory internal substrate purchase rates, machine electricity costs, and raw margin % are hidden.', 'কারখানার নিজস্ব কাঁচামাল ক্রয় দর, মেশিনের বিদ্যুৎ খরচ এবং প্রকৃত মার্জিন শতাংশ আড়াল করা হয়েছে।')}
               </span>
             </div>
             <span className="tabular-nums text-2xs uppercase font-bold bg-amber-200 text-amber-900 px-2 py-0.5 rounded shrink-0 self-start sm:self-auto">
@@ -636,7 +635,7 @@ export default function JobCostingPage() {
                   {tBilingual(`Production Job Costings & Margins (${filteredCostings.length})`, `কস্টিং তালিকা (${filteredCostings.length}টি)`)}
                 </CardTitle>
                 <CardDescription className="text-xs">
- Audited 9-head cost allocation from raw roll unwinding to final on-site installation.
+                  {tBilingual('Audited 9-head cost allocation from raw roll unwinding to final on-site installation.', 'রোল কাঁচামাল আনওয়াইন্ডিং থেকে শুরু করে অন-সাইট ইনস্টলেশন পর্যন্ত ৯টি খাতের নিরীক্ষিত খরচ বণ্টন।')}
                 </CardDescription>
               </div>
 
@@ -648,41 +647,31 @@ export default function JobCostingPage() {
  className={`px-2.5 py-1 rounded-lg transition-all ${
  statusFilter === 'all' ? 'bg-card shadow-xs text-foreground' : 'text-muted-foreground'
                     }`}
-                  >
- All ({costings.length})
-                  </button>
+                  >{tBilingual('All', 'সকল')} ({costings.length})</button>
                   <button
  onClick={() => setStatusFilter('in_production')}
  className={`px-2.5 py-1 rounded-lg transition-all ${
  statusFilter === 'in_production' ? 'bg-card shadow-xs text-blue-600' : 'text-muted-foreground'
                     }`}
-                  >
- In Production
-                  </button>
+                  >{tBilingual('In Production', 'চলতি কাজ')}</button>
                   <button
  onClick={() => setStatusFilter('actualized')}
  className={`px-2.5 py-1 rounded-lg transition-all ${
  statusFilter === 'actualized' ? 'bg-card shadow-xs text-emerald-600' : 'text-muted-foreground'
                     }`}
-                  >
- Audited
-                  </button>
+                  >{tBilingual('Audited', 'নিরীক্ষিত')}</button>
                   <button
  onClick={() => setStatusFilter('overrun')}
  className={`px-2.5 py-1 rounded-lg transition-all ${
  statusFilter === 'overrun' ? 'bg-card shadow-xs text-red-600' : 'text-muted-foreground'
                     }`}
-                  >
- Overrun
-                  </button>
+                  >{tBilingual('Overrun', 'বাজেট অতিরিক্ত')}</button>
                   <button
  onClick={() => setStatusFilter('saved')}
  className={`px-2.5 py-1 rounded-lg transition-all ${
  statusFilter === 'saved' ? 'bg-card shadow-xs text-teal-600' : 'text-muted-foreground'
                     }`}
-                  >
- Saved
-                  </button>
+                  >{tBilingual('Saved', 'সাশ্রয়ী')}</button>
                 </div>
 
                 <div className="relative w-full sm:w-56">
@@ -757,9 +746,7 @@ export default function JobCostingPage() {
                       {/* Realized Margin */}
                       <td className="py-3.5 px-4 text-center tabular-nums">
                         {isSalesRoleShielded ? (
-                          <span className="px-2 py-0.5 rounded text-2xs font-bold bg-muted text-muted-foreground">
- Shielded
-                          </span>
+                          <span className="px-2 py-0.5 rounded text-2xs font-bold bg-muted text-muted-foreground">{tBilingual('Shielded', 'সুরক্ষিত')}</span>
                         ) : cst.status === 'actualized' ? (
                           <span
  className={`inline-flex items-center px-2 py-0.5 rounded text-2xs font-black ${
@@ -808,9 +795,7 @@ export default function JobCostingPage() {
  setNegotiatingJob(cst)
  setDiscountPercent(5)
                             }}
- className="h-7 text-2xs px-2 text-foreground border-input hover:bg-muted rounded-lg">
- Negotiate
-                          </Button>
+ className="h-7 text-2xs px-2 text-foreground border-input hover:bg-muted rounded-lg">{tBilingual('Negotiate', 'দরদাম')}</Button>
 
                           {!isSalesRoleShielded && (
                             <Button
@@ -829,16 +814,12 @@ export default function JobCostingPage() {
  other_cost: cst.act?.other_cost || cst.est.other_cost,
                                 })
                               }}
- className="h-7 text-2xs px-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg">
- Actuals
-                            </Button>
+ className="h-7 text-2xs px-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg">{tBilingual('Actuals', 'প্রকৃত ব্যয়')}</Button>
                           )}
 
                           <Link
  href={getTenantNavHref(`/costing/${cst.id}`, pathname, slug)}
- className="inline-flex items-center px-2 py-1 rounded-lg text-xs font-semibold text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950">
- Details
-                          </Link>
+ className="inline-flex items-center px-2 py-1 rounded-lg text-xs font-semibold text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950">{tBilingual('Details', 'বিস্তারিত')}</Link>
                         </div>
                       </td>
                     </tr>
@@ -893,9 +874,7 @@ export default function JobCostingPage() {
                         {formatBDT(cst.selling_price)}
                       </div>
                       {isSalesRoleShielded ? (
-                        <span className="px-2 py-0.5 rounded text-2xs font-bold bg-muted text-muted-foreground">
- Shielded
-                        </span>
+                        <span className="px-2 py-0.5 rounded text-2xs font-bold bg-muted text-muted-foreground">{tBilingual('Shielded', 'সুরক্ষিত')}</span>
                       ) : cst.status === 'actualized' ? (
                         <span
  className={`inline-flex items-center px-1.5 py-0.5 rounded text-2xs font-black ${
@@ -909,7 +888,7 @@ export default function JobCostingPage() {
                           {cst.act.margin_percentage}% {tBilingual('Margin', 'মার্জিন')}
                         </span>
                       ) : (
-                        <span className="text-muted-foreground text-2xs">Est: {cst.est.margin_percentage}%</span>
+                        <span className="text-muted-foreground text-2xs">{tBilingual('Est', 'আনুমানিক')}: {cst.est.margin_percentage}%</span>
                       )}
                     </div>
                   </div>
@@ -935,15 +914,13 @@ export default function JobCostingPage() {
                         <span className="tabular-nums text-muted-foreground">••••</span>
                       ) : cst.status === 'actualized' ? (
                         (cst.variances?.total_variance || 0) < 0 ? (
-                          <span className="text-2xs font-bold text-emerald-600 tabular-nums">
- Saved {formatBDT(Math.abs(cst.variances?.total_variance || 0))}
-                          </span>
+                          <span className="text-2xs font-bold text-emerald-600 tabular-nums">{tBilingual('Saved', 'সাশ্রয়')} {formatBDT(Math.abs(cst.variances?.total_variance || 0))}</span>
                         ) : (cst.variances?.total_variance || 0) > 0 ? (
                           <span className="text-2xs font-bold text-red-600 tabular-nums">
                             +{formatBDT(cst.variances.total_variance)}
                           </span>
                         ) : (
-                          <span className="text-2xs text-muted-foreground tabular-nums">On Budget</span>
+                          <span className="text-2xs text-muted-foreground tabular-nums">{tBilingual('On Budget', 'বাজেট অনুযায়ী')}</span>
                         )
                       ) : (
                         <span className="text-2xs text-blue-600 tabular-nums">{tBilingual('In Prod', 'প্রোডাকশনে')}</span>
@@ -958,9 +935,7 @@ export default function JobCostingPage() {
  setNegotiatingJob(cst)
  setDiscountPercent(5)
                       }}
- className="flex-1 h-9 text-xs font-semibold rounded-xl">
- Negotiate
-                    </Button>
+ className="flex-1 h-9 text-xs font-semibold rounded-xl">{tBilingual('Negotiate', 'দরদাম')}</Button>
 
                     {!isSalesRoleShielded && (
                       <Button
@@ -979,16 +954,12 @@ export default function JobCostingPage() {
  other_cost: cst.act?.other_cost || cst.est.other_cost,
                           })
                         }}
- className="flex-1 h-9 text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl">
- Actuals
-                      </Button>
+ className="flex-1 h-9 text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl">{tBilingual('Actuals', 'প্রকৃত ব্যয়')}</Button>
                     )}
 
                     <Link
  href={getTenantNavHref(`/costing/${cst.id}`, pathname, slug)}
- className="inline-flex items-center justify-center h-9 px-3 rounded-xl text-xs font-semibold border border-input text-foreground hover:bg-muted dark:hover:bg-muted">
- Details
-                    </Link>
+ className="inline-flex items-center justify-center h-9 px-3 rounded-xl text-xs font-semibold border border-input text-foreground hover:bg-muted dark:hover:bg-muted">{tBilingual('Details', 'বিস্তারিত')}</Link>
                   </div>
                 </div>
               ))}

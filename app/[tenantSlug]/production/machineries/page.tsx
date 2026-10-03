@@ -415,9 +415,7 @@ export default function MachineriesListPage() {
             <AlertTriangle className="h-5 w-5 text-red-600 shrink-0"/>
             <span className="text-xs font-medium">{error}</span>
           </div>
-          <Button size="sm"variant="outline"onClick={() => loadData()}>
- Retry
-          </Button>
+          <Button size="sm"variant="outline"onClick={() => loadData()}>{tBilingual('Retry', 'পুনরায় চেষ্টা করুন')}</Button>
         </Card>
       )}
 
