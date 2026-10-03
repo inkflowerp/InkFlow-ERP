@@ -308,7 +308,7 @@ export default function CompanyProfileSettingsPage() {
  id="name"name="name"value={formData.name}
  onChange={handleChange}
  required
- placeholder="e.g. Rapid Print & Media"/>
+ placeholder={tBilingual("e.g. Rapid Print & Media", "যেমন: র‍্যাপিড প্রিন্ট অ্যান্ড মিডিয়া")}/>
               </div>
 
               <div className="space-y-1.5">
@@ -329,7 +329,7 @@ export default function CompanyProfileSettingsPage() {
               <Input
  id="legal_name"name="legal_name"value={formData.legal_name}
  onChange={handleChange}
- placeholder="e.g. Rapid Print Solutions Limited"/>
+ placeholder={tBilingual("e.g. Rapid Print Solutions Limited", "যেমন: র‍্যাপিড প্রিন্ট সল্যুশনস লিমিটেড")}/>
               <p className="text-2xs text-muted-foreground">
  Official entity name utilized for NBR tax Mushak vouchers and legal vendor contracts.
               </p>
@@ -408,7 +408,7 @@ export default function CompanyProfileSettingsPage() {
  id="email"name="email"type="email"value={formData.email}
  onChange={handleChange}
  required
- placeholder="billing@company.com"/>
+ placeholder={tBilingual("billing@company.com", "billing@company.com")}/>
               </div>
             </div>
           </CardContent>
@@ -430,7 +430,7 @@ export default function CompanyProfileSettingsPage() {
               <Input
  id="area"name="area"value={formData.area}
  onChange={handleChange}
- placeholder="e.g. Fakirapool, Arambagh, Nilkhet"/>
+ placeholder={tBilingual("e.g. Fakirapool, Arambagh, Nilkhet", "যেমন: ফকিরাপুল, আরামবাগ, নীলক্ষেত")}/>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -441,7 +441,7 @@ export default function CompanyProfileSettingsPage() {
                 <Input
  id="address"name="address"value={formData.address}
  onChange={handleChange}
- placeholder="Street address in English"/>
+ placeholder={tBilingual("Street address in English", "ইংরেজিতে রাস্তার ঠিকানা")}/>
               </div>
 
               <div className="space-y-1.5">
@@ -474,7 +474,7 @@ export default function CompanyProfileSettingsPage() {
                 <Input
  id="trade_license_no"name="trade_license_no"value={formData.trade_license_no}
  onChange={handleChange}
- placeholder="TRAD/DNCC/..."/>
+ placeholder={tBilingual("TRAD/DNCC/...", "ট্রেড/ডিএনসিসি/...")}/>
               </div>
 
               <div className="space-y-1.5">
@@ -506,7 +506,7 @@ export default function CompanyProfileSettingsPage() {
               <Input
  id="office_hours"name="office_hours"value={formData.office_hours}
  onChange={handleChange}
- placeholder="e.g. 9:00 AM - 8:00 PM (Sat - Thu)"/>
+ placeholder={tBilingual("e.g. 9:00 AM - 8:00 PM (Sat - Thu)", "যেমন: সকাল ৯:০০ - রাত ৮:০০ (শনিবার - বৃহস্পতিবার)")}/>
               <div className="flex flex-wrap items-center gap-2 pt-1">
                 <span className="text-xs text-muted-foreground">Presets:</span>
                 {OFFICE_HOURS_PRESETS.map((preset) => (
@@ -527,7 +527,7 @@ export default function CompanyProfileSettingsPage() {
               <Input
  id="holidays"name="holidays"value={formData.holidays}
  onChange={handleChange}
- placeholder="e.g. Friday (সাপ্তাহিক ছুটি)"/>
+ placeholder={tBilingual("e.g. Friday (Weekly Holiday)", "যেমন: শুক্রবার (সাপ্তাহিক ছুটি)")}/>
               <div className="flex flex-wrap items-center gap-2 pt-1">
                 <span className="text-xs text-muted-foreground">Presets:</span>
                 {HOLIDAY_PRESETS.map((preset) => (

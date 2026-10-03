@@ -688,7 +688,7 @@ export default function JobCostingPage() {
                 <div className="relative w-full sm:w-56">
                   <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground"/>
                   <Input
- placeholder="Search job #, customer, title..."value={search}
+ placeholder={tBilingual('Search job #, customer, title...', 'জব নং, গ্রাহক বা কাজের নাম দিয়ে খুঁজুন...')}value={search}
  onChange={(e) => setSearch(e.target.value)}
  className="pl-8 h-8 text-xs bg-card rounded-xl"/>
                 </div>
@@ -701,14 +701,14 @@ export default function JobCostingPage() {
               <table className="w-full text-left text-xs">
                 <thead className="bg-muted font-semibold text-muted-foreground border-b border-border">
                   <tr>
-                    <th className="py-3 px-4">Job & Client</th>
-                    <th className="py-3 px-4">Work Description</th>
-                    <th className="py-3 px-4 tabular-nums">Selling Price</th>
-                    <th className="py-3 px-4 tabular-nums">Estimated Cost</th>
-                    <th className="py-3 px-4 tabular-nums">Actual Cost</th>
-                    <th className="py-3 px-4 tabular-nums text-center">Realized Margin</th>
-                    <th className="py-3 px-4">Variance Status</th>
-                    <th className="py-3 px-4 text-right">Actions</th>
+                    <th className="py-3 px-4 bangla-text">{tBilingual('Job & Client', 'জব ও গ্রাহক')}</th>
+                    <th className="py-3 px-4 bangla-text">{tBilingual('Work Description', 'কাজের বিবরণ')}</th>
+                    <th className="py-3 px-4 tabular-nums bangla-text">{tBilingual('Selling Price', 'বিক্রয় মূল্য')}</th>
+                    <th className="py-3 px-4 tabular-nums bangla-text">{tBilingual('Estimated Cost', 'আনুমানিক খরচ')}</th>
+                    <th className="py-3 px-4 tabular-nums bangla-text">{tBilingual('Actual Cost', 'প্রকৃত খরচ')}</th>
+                    <th className="py-3 px-4 tabular-nums text-center bangla-text">{tBilingual('Realized Margin', 'অর্জিত মার্জিন')}</th>
+                    <th className="py-3 px-4 bangla-text">{tBilingual('Variance Status', 'পার্থক্য অবস্থা')}</th>
+                    <th className="py-3 px-4 text-right bangla-text">{tBilingual('Actions', 'অ্যাকশন')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border dark:divide-border">
@@ -1061,7 +1061,7 @@ export default function JobCostingPage() {
                   {tBilingual('Customer Name', 'গ্রাহকের নাম')}
                 </Label>
                 <Input
- id="newCustName"placeholder="e.g. Apex Footwear Ltd."value={newCustomerName}
+ id="newCustName"placeholder={tBilingual("e.g. Apex Footwear Ltd.", "যেমন: এপেক্স ফুটওয়্যার লি:")}value={newCustomerName}
  onChange={(e) => setNewCustomerName(e.target.value)}
  className="h-8 text-xs"required
                 />
@@ -1073,7 +1073,7 @@ export default function JobCostingPage() {
                 {tBilingual('Work / Item Title', 'কাজের বিবরণ')}
               </Label>
               <Input
- id="newItemTitle"placeholder="e.g. Outdoor Panaflex Mega Billboard 20ft × 10ft"value={newItemTitle}
+ id="newItemTitle"placeholder={tBilingual("e.g. Outdoor Panaflex Mega Billboard 20ft × 10ft", "যেমন: আউটডোর প্যানাফ্লেক্স মেগা বিলবোর্ড ২০ ফুট × ১০ ফুট")}value={newItemTitle}
  onChange={(e) => setNewItemTitle(e.target.value)}
  className="h-8 text-xs font-medium"required
               />
@@ -1084,7 +1084,7 @@ export default function JobCostingPage() {
                 {tBilingual('Technical Specs & Dimensions', 'সাইজ ও স্পেক্স')}
               </Label>
               <Input
- id="newSpecs"placeholder="e.g. 20ft × 10ft • 440 GSM Star Flex • Konica 512i • MS Pipe 1 inch"value={newSpecs}
+ id="newSpecs"placeholder={tBilingual("e.g. 20ft × 10ft • 440 GSM Star Flex • Konica 512i • MS Pipe 1 inch", "যেমন: ২০ ফুট × ১০ ফুট • ৪৪০ জিএসএম স্টার ফ্লেক্স • কোনিকা ৫১২আই")}value={newSpecs}
  onChange={(e) => setNewSpecs(e.target.value)}
  className="h-8 text-xs tabular-nums"/>
             </div>

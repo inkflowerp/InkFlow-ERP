@@ -696,16 +696,16 @@ export default function NotificationSettingsPage() {
  onChange={(e) => setNotif({ ...notif, sms_gateway: e.target.value })}
  disabled={!notif.sms_enabled}
                 >
-                  <option value="Greenweb SMS Gateway">Greenweb BD (Fast OTP/Alerts)</option>
-                  <option value="SSL Wireless">SSL Wireless SMS Engine</option>
-                  <option value="Banglalink/Grameenphone Aggregator">Direct Telco Aggregator</option>
+                  <option value="Greenweb SMS Gateway">{tBilingual("Greenweb BD (Fast OTP/Alerts)", "গ্রিনওয়েব বিডি (দ্রুত ওটিপি/অ্যালার্ট)")}</option>
+                  <option value="SSL Wireless">{tBilingual("SSL Wireless SMS Engine", "এসএসএল ওয়্যারলেস এসএমএস ইঞ্জিন")}</option>
+                  <option value="Banglalink/Grameenphone Aggregator">{tBilingual("Direct Telco Aggregator", "ডিরেক্ট টেলকো এগ্রিগেটর")}</option>
                 </select>
               </div>
 
               <div className="space-y-1.5">
                 <Label htmlFor="senderId">BTCL Approved Masking ID</Label>
                 <Input
- id="senderId"placeholder="PRINTFLOW"value={notif.sms_sender_id}
+ id="senderId"placeholder={tBilingual("PRINTFLOW", "PRINTFLOW")}value={notif.sms_sender_id}
  onChange={(e) => setNotif({ ...notif, sms_sender_id: e.target.value })}
  disabled={!notif.sms_enabled}
  className="tabular-nums text-xs uppercase"/>

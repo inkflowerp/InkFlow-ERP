@@ -214,10 +214,10 @@ export default function DocumentNumberingSettingsPage() {
               <table className="w-full text-left text-sm">
                 <thead className="bg-muted text-xs font-semibold text-muted-foreground border-b border-border">
                   <tr>
-                    <th className="py-3 px-4">Document Type</th>
-                    <th className="py-3 px-4 w-36">Prefix</th>
-                    <th className="py-3 px-4 w-32">Digits Padding</th>
-                    <th className="py-3 px-4">Live Sample Preview</th>
+                    <th className="py-3 px-4 bangla-text">{tBilingual('Document Type', 'ডকুমেন্টের ধরন')}</th>
+                    <th className="py-3 px-4 w-36 bangla-text">{tBilingual('Prefix', 'প্রিফিক্স')}</th>
+                    <th className="py-3 px-4 w-32 bangla-text">{tBilingual('Digits Padding', 'ডিজিট প্যাডিং')}</th>
+                    <th className="py-3 px-4 bangla-text">{tBilingual('Live Sample Preview', 'লাইভ প্রিভিউ')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border dark:divide-border">

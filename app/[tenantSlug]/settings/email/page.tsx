@@ -652,7 +652,7 @@ export default function TenantEmailSettingsPage() {
                       <Input
  value={smtpHost}
  onChange={(e) => setSmtpHost(e.target.value)}
- placeholder="mail.yourcompany.com"className="h-9 text-xs tabular-nums min-h-[38px]"/>
+ placeholder={tBilingual("mail.yourcompany.com", "mail.yourcompany.com")}className="h-9 text-xs tabular-nums min-h-[38px]"/>
                     </div>
                     <div className="space-y-1">
                       <Label className="text-xs">Port</Label>
@@ -670,9 +670,9 @@ export default function TenantEmailSettingsPage() {
  value={encryptionType}
  onChange={(e) => setEncryptionType(e.target.value as any)}
  className="w-full h-9 px-2.5 rounded-md border border-input bg-card text-xs font-medium min-h-[38px]">
-                        <option value="tls">TLS / STARTTLS (587)</option>
-                        <option value="ssl">SSL (465)</option>
-                        <option value="none">Plain / None (25)</option>
+                        <option value="tls">{tBilingual("TLS / STARTTLS (587)", "টিএলএস / স্টার্টটিএলএস (৫৮৭)")}</option>
+                        <option value="ssl">{tBilingual("SSL (465)", "এসএসএল (৪৬৫)")}</option>
+                        <option value="none">{tBilingual("Plain / None (25)", "প্লেইন / কোনোটি নয় (২৫)")}</option>
                       </select>
                     </div>
 
@@ -681,7 +681,7 @@ export default function TenantEmailSettingsPage() {
                       <Input
  value={smtpUsername}
  onChange={(e) => setSmtpUsername(e.target.value)}
- placeholder="billing@yourcompany.com"className="h-9 text-xs tabular-nums min-h-[38px]"/>
+ placeholder={tBilingual("billing@yourcompany.com", "billing@yourcompany.com")}className="h-9 text-xs tabular-nums min-h-[38px]"/>
                     </div>
                   </div>
 
@@ -742,7 +742,7 @@ export default function TenantEmailSettingsPage() {
                       <Input
  value={senderName}
  onChange={(e) => setSenderName(e.target.value)}
- placeholder="Printing Enterprise"className="h-9 text-xs min-h-[38px]"/>
+ placeholder={tBilingual("Printing Enterprise", "প্রিন্টিং এন্টারপ্রাইজ")}className="h-9 text-xs min-h-[38px]"/>
                     </div>
 
                     <div className="space-y-1">
@@ -750,7 +750,7 @@ export default function TenantEmailSettingsPage() {
                       <Input
  type="email"value={senderEmail}
  onChange={(e) => setSenderEmail(e.target.value)}
- placeholder="billing@example.com"className="h-9 text-xs tabular-nums min-h-[38px]"/>
+ placeholder={tBilingual("billing@example.com", "billing@example.com")}className="h-9 text-xs tabular-nums min-h-[38px]"/>
                     </div>
 
                     <div className="space-y-1">
@@ -758,7 +758,7 @@ export default function TenantEmailSettingsPage() {
                       <Input
  type="email"value={replyToEmail}
  onChange={(e) => setReplyToEmail(e.target.value)}
- placeholder="support@example.com"className="h-9 text-xs tabular-nums min-h-[38px]"/>
+ placeholder={tBilingual("support@example.com", "support@example.com")}className="h-9 text-xs tabular-nums min-h-[38px]"/>
                     </div>
                   </CardContent>
                 </div>
@@ -921,7 +921,7 @@ export default function TenantEmailSettingsPage() {
             <CardTitle className="text-sm">Tenant Email Delivery History</CardTitle>
             <div className="w-full sm:w-56">
               <Input
- placeholder="Search logs..."value={logSearch}
+ placeholder={tBilingual('Search logs...', 'লগ অনুসন্ধান করুন...')}value={logSearch}
  onChange={(e) => setLogSearch(e.target.value)}
  className="h-9 text-xs min-h-[38px]"/>
             </div>
@@ -931,17 +931,17 @@ export default function TenantEmailSettingsPage() {
               <table className="w-full text-left text-xs">
                 <thead className="bg-muted text-muted-foreground border-b">
                   <tr>
-                    <th className="py-2.5 px-3">Date &amp; Event</th>
-                    <th className="py-2.5 px-3">Recipient</th>
-                    <th className="py-2.5 px-3">Subject</th>
-                    <th className="py-2.5 px-3 text-center">Status</th>
+                    <th className="py-2.5 px-3 bangla-text">{tBilingual('Date & Event', 'তারিখ ও ইভেন্ট')}</th>
+                    <th className="py-2.5 px-3 bangla-text">{tBilingual('Recipient', 'প্রাপক')}</th>
+                    <th className="py-2.5 px-3 bangla-text">{tBilingual('Subject', 'বিষয়')}</th>
+                    <th className="py-2.5 px-3 text-center bangla-text">{tBilingual('Status', 'অবস্থা')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y">
                   {logs.length === 0 ? (
                     <tr>
                       <td colSpan={4} className="py-8 text-center text-xs text-muted-foreground">
- No email transmission logs recorded yet.
+ {tBilingual('No email transmission logs recorded yet.', 'এখনও কোনো ইমেইল পাঠানোর লগ নেই।')}
                       </td>
                     </tr>
                   ) : (
@@ -1000,7 +1000,7 @@ export default function TenantEmailSettingsPage() {
               <Input
  type="email"value={testRecipient}
  onChange={(e) => setTestRecipient(e.target.value)}
- placeholder="your.email@example.com"className="h-10 text-xs tabular-nums text-foreground bg-card border-input min-h-[40px]"/>
+ placeholder={tBilingual("your.email@example.com", "your.email@example.com")}className="h-10 text-xs tabular-nums text-foreground bg-card border-input min-h-[40px]"/>
             </div>
 
             <div className="p-3 bg-muted rounded-xl border border-border text-xs text-muted-foreground">

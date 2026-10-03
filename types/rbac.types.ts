@@ -114,6 +114,7 @@ export interface ModuleActionSpec {
   label: string
   labelBn: string
   description: string
+  descriptionBn?: string
   actions: PermissionAction[]
   defaultScope: DataScope
 }
@@ -121,6 +122,7 @@ export interface ModuleActionSpec {
 export const MODULE_ACTION_SPECS: Record<PermissionModule, ModuleActionSpec> = {
   products: {
     module: 'products',
+    descriptionBn: 'প্রিন্ট, ফেব্রিকেশন, ইনস্টলেশন রেট, স্পেসিফিকেশন ও ক্যাটালগ আইটেম',
     label: 'Products & Services',
     labelBn: 'পণ্য ও সেবা',
     description: 'Print, fabrication, installation tariffs, specifications and catalog items',
@@ -129,6 +131,7 @@ export const MODULE_ACTION_SPECS: Record<PermissionModule, ModuleActionSpec> = {
   },
   pricing: {
     module: 'pricing',
+    descriptionBn: 'মূল্য তালিকা, কাস্টমার রেট, ফ্লোর মার্জিন ও ক্যালকুলেশন ফর্মুলা',
     label: 'Pricing & Rates',
     labelBn: 'মূল্য নির্ধারণ ও দর',
     description: 'Price lists, customer rates, floor margins and calculation formulas',
@@ -137,6 +140,7 @@ export const MODULE_ACTION_SPECS: Record<PermissionModule, ModuleActionSpec> = {
   },
   customers: {
     module: 'customers',
+    descriptionBn: 'কাস্টমার প্রোফাইল, যোগাযোগকারী ব্যক্তি, ক্রেডিট লিমিট ও বাকি ব্যালেন্স',
     label: 'Customers',
     labelBn: 'কাস্টমার তালিকা',
     description: 'Customer profiles, contact persons, credit limit & outstanding balance',
@@ -145,6 +149,7 @@ export const MODULE_ACTION_SPECS: Record<PermissionModule, ModuleActionSpec> = {
   },
   quotations: {
     module: 'quotations',
+    descriptionBn: 'স্কয়ার ফুট রেট হিসাব, এস্টিমেট, মূল্য অনুমোদন ও ক্লায়েন্ট কোটেশন',
     label: 'Quotations',
     labelBn: 'কোটেশন ও দরপত্র',
     description: 'Square-foot rate calculations, estimates, price approvals & client dispatch',
@@ -153,6 +158,7 @@ export const MODULE_ACTION_SPECS: Record<PermissionModule, ModuleActionSpec> = {
   },
   orders: {
     module: 'orders',
+    descriptionBn: 'জব টিকিট, মিডিয়ার বিবরণ, ডেলিভারি সময়সীমা, দায়িত্ব বণ্টন ও অগ্রিম',
     label: 'Work Orders',
     labelBn: 'কাজের অর্ডার',
     description: 'Job tickets, media specifications, delivery milestones, assignments & deposits',
@@ -161,6 +167,7 @@ export const MODULE_ACTION_SPECS: Record<PermissionModule, ModuleActionSpec> = {
   },
   design: {
     module: 'design',
+    descriptionBn: 'প্রি-প্রেস প্রুফ, কাস্টমার ডিজাইন অনুমোদন, ফাইল ডাউনলোড ও সংশোধন',
     label: 'Design Panel',
     labelBn: 'ডিজাইন ও প্রুফ',
     description: 'Prepress proofs, customer design approvals, file downloads & revisions',
@@ -169,6 +176,7 @@ export const MODULE_ACTION_SPECS: Record<PermissionModule, ModuleActionSpec> = {
   },
   invoices: {
     module: 'invoices',
+    descriptionBn: 'বাণিজ্যিক বিল, ভ্যাট ৬.৩ চালান, ডিসকাউন্ট, অনুমোদন, বাতিল ও প্রিন্ট',
     label: 'Invoices & Billing',
     labelBn: 'ইনভয়েস ও বিল',
     description: 'Commercial bills, tax invoices, discounts, approvals, voids & prints',
@@ -177,6 +185,7 @@ export const MODULE_ACTION_SPECS: Record<PermissionModule, ModuleActionSpec> = {
   },
   payments: {
     module: 'payments',
+    descriptionBn: 'নগদ, বিকাশ/নগদ, ব্যাংক জমা ও মানি রসিদ (এমআর) কালেকশন',
     label: 'Payments & Receipts',
     labelBn: 'পেমেন্ট ও মানি রসিদ',
     description: 'Cash, bKash/Nagad, bank transfer collections & money receipts (MR)',
@@ -185,6 +194,7 @@ export const MODULE_ACTION_SPECS: Record<PermissionModule, ModuleActionSpec> = {
   },
   production: {
     module: 'production',
+    descriptionBn: 'মেশিন কিউ, স্টেজ শিডিউলিং, ফেব্রিকেশন, ফিনিশিং ও কিউসি পরীক্ষণ',
     label: 'Production Floor',
     labelBn: 'কারখানা ও উৎপাদন',
     description: 'Machine queues, stage scheduling, fabrication, finishing & QC inspection',
@@ -193,6 +203,7 @@ export const MODULE_ACTION_SPECS: Record<PermissionModule, ModuleActionSpec> = {
   },
   machineries: {
     module: 'machineries',
+    descriptionBn: 'মেশিন বহর, সক্রিয় অবস্থা, ধারণক্ষমতা, রক্ষণাবেক্ষণ ও ডাউনটাইম লগ',
     label: 'Machineries & Fleet',
     labelBn: 'মেশিনারি ও সরঞ্জাম',
     description: 'Machine fleet, operational status, capacity, maintenance & breakdown logs',
@@ -201,6 +212,7 @@ export const MODULE_ACTION_SPECS: Record<PermissionModule, ModuleActionSpec> = {
   },
   delivery: {
     module: 'delivery',
+    descriptionBn: 'ডেলিভারি চালান, পরিবহন প্রেরণ, সাইট ইনস্টলেশন ও রসিদ হ্যান্ডওভার',
     label: 'Delivery & Challans',
     labelBn: 'ডেলিভারি ও চালান',
     description: 'Delivery challans, transport dispatch, site installations & signed handovers',
@@ -209,6 +221,7 @@ export const MODULE_ACTION_SPECS: Record<PermissionModule, ModuleActionSpec> = {
   },
   inventory: {
     module: 'inventory',
+    descriptionBn: 'ফ্লেক্স রোল, ভিনাইল, কালি, বোর্ড, স্টক সমন্বয় ও রিকুইজিশন অনুমোদন',
     label: 'Inventory & Materials',
     labelBn: 'কাঁচামাল ও স্টক',
     description: 'Flex rolls, vinyl, inks, boards, stock adjustments & requisition approvals',
@@ -217,6 +230,7 @@ export const MODULE_ACTION_SPECS: Record<PermissionModule, ModuleActionSpec> = {
   },
   reports: {
     module: 'reports',
+    descriptionBn: 'রাজস্ব গ্রাফ, লাভ-ক্ষতি, মেশিন আপটাইম, অপচয় বিশ্লেষণ ও ভ্যাট রিপোর্ট',
     label: 'Reports & Analytics',
     labelBn: 'রিপোর্ট ও হিসাব',
     description: 'Revenue graphs, P&L, machine uptime, wastage analysis & VAT reports',
@@ -225,6 +239,7 @@ export const MODULE_ACTION_SPECS: Record<PermissionModule, ModuleActionSpec> = {
   },
   settings: {
     module: 'settings',
+    descriptionBn: 'প্রতিষ্ঠান তথ্য, ভ্যাট কনফিগারেশন, শাখা, ইউজার এক্সেস ও সিস্টেম নিয়ম',
     label: 'Company Settings',
     labelBn: 'প্রতিষ্ঠান সেটিংস',
     description: 'Company info, VAT configuration, branches, user access & system rules',
@@ -233,6 +248,7 @@ export const MODULE_ACTION_SPECS: Record<PermissionModule, ModuleActionSpec> = {
   },
   tasks: {
     module: 'tasks',
+    descriptionBn: 'দৈনিক অপারেশনাল কাজ, রিমাইন্ডার ও সম্পন্ন করার মাইলফলক',
     label: 'Tasks & Workflow',
     labelBn: 'কাজের তালিকা',
     description: 'Daily operational tasks, reminders and milestones',
@@ -241,6 +257,7 @@ export const MODULE_ACTION_SPECS: Record<PermissionModule, ModuleActionSpec> = {
   },
   notifications: {
     module: 'notifications',
+    descriptionBn: 'রিয়েল-টাইম কাজের আপডেট, জরুরি অ্যালার্ট ও ইন্টারনাল নোটিশ',
     label: 'Notifications',
     labelBn: 'বিজ্ঞপ্তি',
     description: 'Real-time job updates, alerts and internal communications',
@@ -249,6 +266,7 @@ export const MODULE_ACTION_SPECS: Record<PermissionModule, ModuleActionSpec> = {
   },
   support: {
     module: 'support',
+    descriptionBn: 'লাইভ সাপোর্ট চ্যাট, টিকিট ব্যবস্থাপনা ও সমস্যা সমাধান',
     label: 'Help & Support',
     labelBn: 'সহায়তা ও সাপোর্ট',
     description: 'Live support chat, ticket management and troubleshooting',
@@ -257,6 +275,7 @@ export const MODULE_ACTION_SPECS: Record<PermissionModule, ModuleActionSpec> = {
   },
   branches: {
     module: 'branches',
+    descriptionBn: 'একাধিক শাখা পরিচালনা, ফ্যাক্টরি আউটলেট ও আন্তঃশাখা সমন্বয়',
     label: 'Branch Management',
     labelBn: 'শাখা ব্যবস্থাপনা',
     description: 'Multi-branch operations, factory outlets, and cross-branch logistics',
@@ -265,6 +284,7 @@ export const MODULE_ACTION_SPECS: Record<PermissionModule, ModuleActionSpec> = {
   },
   users: {
     module: 'users',
+    descriptionBn: 'টিম সদস্য ডিরেক্টরি, লগইন তথ্য, দায়িত্ব, এক্সেস ওভাররাইড ও নিরাপত্তা অডিট',
     label: 'Users & Permissions',
     labelBn: 'টিম সদস্য ও অনুমতি',
     description: 'Staff directory, access credentials, responsibilities, overrides, and security audit',
@@ -273,6 +293,7 @@ export const MODULE_ACTION_SPECS: Record<PermissionModule, ModuleActionSpec> = {
   },
   hr: {
     module: 'hr',
+    descriptionBn: 'হাজিরা, শিফট, ওভারটাইম, বেতন অগ্রিম, পে-রোল শীট ও বেতন প্রদান',
     label: 'Workforce & Payroll',
     labelBn: 'কর্মী ও বেতন',
     description: 'Attendance, shifts, overtime, salary advances, payroll sheets, and payment disbursement',
@@ -281,6 +302,7 @@ export const MODULE_ACTION_SPECS: Record<PermissionModule, ModuleActionSpec> = {
   },
   whatsapp: {
     module: 'whatsapp',
+    descriptionBn: 'হোয়াটসঅ্যাপ মেসেজিং, কানেকশন লিংক, কাস্টমার/কর্মী বার্তা ও ওটিপি প্রেরণ',
     label: 'WhatsApp Gateway & Communications',
     labelBn: 'হোয়াটসঅ্যাপ ও যোগাযোগ',
     description: 'WhatsApp inbox, connection linking, customer/employee messaging, and OTP dispatch',

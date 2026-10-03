@@ -540,7 +540,7 @@ export default function CompanySettingsPage() {
                     <Label htmlFor="name"required>
                       {tBilingual('Display Name (English)', 'প্রদর্শনী নাম (ইংরেজি)')}
                     </Label>
-                    <Input id="name"{...register('name')} error={errors.name?.message} placeholder="e.g. Rapid Print & Media"/>
+                    <Input id="name"{...register('name')} error={errors.name?.message} placeholder={tBilingual("e.g. Rapid Print & Media", "যেমন: র‍্যাপিড প্রিন্ট অ্যান্ড মিডিয়া")}/>
                   </div>
 
                   <div className="space-y-1.5">
@@ -561,7 +561,7 @@ export default function CompanySettingsPage() {
                     </span>
                   </div>
                   <Input
- id="legal_name"placeholder="e.g. Rapid Print Solutions Limited"{...register('legal_name')}
+ id="legal_name"placeholder={tBilingual("e.g. Rapid Print Solutions Limited", "যেমন: র‍্যাপিড প্রিন্ট সল্যুশনস লিমিটেড")}{...register('legal_name')}
                   />
                   <p className="text-2xs text-muted-foreground">
                     {tBilingual(
@@ -644,7 +644,7 @@ export default function CompanySettingsPage() {
                     <Label htmlFor="email"required>
                       {tBilingual('Official Billing Email', 'অফিসিয়াল বিলিং ইমেইল')}
                     </Label>
-                    <Input id="email"type="email"placeholder="billing@company.com"{...register('email')} error={errors.email?.message} />
+                    <Input id="email"type="email"placeholder={tBilingual("billing@company.com", "billing@company.com")}{...register('email')} error={errors.email?.message} />
                   </div>
                 </div>
               </CardContent>
@@ -668,7 +668,7 @@ export default function CompanySettingsPage() {
                   <Label htmlFor="area">
                     {tBilingual('Commercial Area / Printing Hub', 'মার্কেট বা বাণিজ্যিক এলাকা')}
                   </Label>
-                  <Input id="area"placeholder="e.g. Fakirapool, Arambagh, Banglabazar, Nilkhet"{...register('area')} />
+                  <Input id="area"placeholder={tBilingual("e.g. Fakirapool, Arambagh, Banglabazar, Nilkhet", "যেমন: ফকিরাপুল, আরামবাগ, বাংলাবাজার")}{...register('area')} />
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -676,7 +676,7 @@ export default function CompanySettingsPage() {
                     <Label htmlFor="address"required>
                       {tBilingual('Full Address (English)', 'পূর্ণাঙ্গ ঠিকানা (ইংরেজি)')}
                     </Label>
-                    <Input id="address"placeholder="e.g. 14/A Toyenbee Circular Road, Motijheel"{...register('address')} error={errors.address?.message} />
+                    <Input id="address"placeholder={tBilingual("e.g. 14/A Toyenbee Circular Road, Motijheel", "যেমন: ১৪/এ তোয়েনবি সার্কুলার রোড, মতিঝিল")}{...register('address')} error={errors.address?.message} />
                   </div>
 
                   <div className="space-y-1.5">
@@ -711,7 +711,7 @@ export default function CompanySettingsPage() {
                   {tBilingual('Office Hours / Business Hours', 'অফিস সময়সূচী')}
                 </Label>
                 <Input
- id="office_hours"placeholder="e.g. 9:00 AM - 8:00 PM (Sat - Thu)"{...register('office_hours')}
+ id="office_hours"placeholder={tBilingual("e.g. 9:00 AM - 8:00 PM (Sat - Thu)", "যেমন: সকাল ৯:০০ - রাত ৮:০০ (শনিবার - বৃহস্পতিবার)")}{...register('office_hours')}
                 />
                 <div className="flex flex-wrap items-center gap-2 pt-1">
                   <span className="text-xs text-muted-foreground">{tBilingual('Quick Presets:', 'কুইক প্রিসেট:')}</span>
@@ -771,7 +771,7 @@ export default function CompanySettingsPage() {
                   <Label htmlFor="trade_license_no">
                     {tBilingual('Trade License Number', 'ট্রেড লাইসেন্স নং')}
                   </Label>
-                  <Input id="trade_license_no"placeholder="TRAD/DNCC/..."{...register('trade_license_no')} />
+                  <Input id="trade_license_no"placeholder={tBilingual("TRAD/DNCC/...", "ট্রেড/ডিএনসিসি/...")}{...register('trade_license_no')} />
                 </div>
 
                 <div className="space-y-1.5">
@@ -865,7 +865,7 @@ export default function CompanySettingsPage() {
                   <Label htmlFor="invoice_prefix"required>
                     {tBilingual('Invoice Prefix', 'ইনভয়েস প্রিফিক্স')}
                   </Label>
-                  <Input id="invoice_prefix"placeholder="INV"{...register('invoice_prefix')} />
+                  <Input id="invoice_prefix"placeholder={tBilingual("INV", "INV")}{...register('invoice_prefix')} />
                   <span className="text-2xs text-muted-foreground">Example: INV-2026-0482</span>
                 </div>
 
@@ -912,8 +912,8 @@ export default function CompanySettingsPage() {
                   <select
  id="default_language"className="w-full h-10 px-3 rounded-md border border-input bg-card text-sm focus:ring-2 focus:ring-ring"{...register('default_language')}
                   >
-                    <option value="bn">বাংলা (Bengali)</option>
-                    <option value="en">English</option>
+                    <option value="bn">{tBilingual("বাংলা (Bengali)", "বাংলা (Bengali)")}</option>
+                    <option value="en">{tBilingual("English (ইংরেজি)", "English (ইংরেজি)")}</option>
                   </select>
                 </div>
               </div>

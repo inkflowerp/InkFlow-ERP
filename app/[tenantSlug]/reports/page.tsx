@@ -1,3 +1,4 @@
+import { useI18n } from '@/i18n/context'
 'use client'
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react'
@@ -67,6 +68,7 @@ import { DonutDistributionChart } from '@/components/reports/donut-distribution-
 import { QuickReportModal, QuickReportType } from '@/components/reports/quick-report-modal'
 
 export default function BusinessReportsPage() {
+  const { tBilingual } = useI18n()
  const { company } = useTenant()
 
  const [mounted, setMounted] = useState(false)
@@ -785,7 +787,7 @@ export default function BusinessReportsPage() {
                   <button
  type="button"onClick={() => setActiveQuickReport('all_customers')}
  className="text-xs font-semibold text-blue-600 hover:text-blue-700 cursor-pointer">
- View All
+ {tBilingual('View All', 'সব দেখুন')}
                   </button>
                 </div>
 
@@ -793,10 +795,10 @@ export default function BusinessReportsPage() {
                   <div className="py-8 text-center text-muted-foreground flex flex-col items-center justify-center gap-1.5">
                     <CheckCircle2 className="w-6 h-6 text-emerald-500/80 stroke-[1.5]"/>
                     <span className="text-xs font-semibold text-muted-foreground">
- No customer sales records found
+ {tBilingual('No customer sales records found', 'কোনো গ্রাহক বিক্রয় রেকর্ড পাওয়া যায়নি')}
                     </span>
                     <span className="text-2xs text-muted-foreground">
- Sales records will appear here automatically
+ {tBilingual('Sales records will appear here automatically', 'কনফার্ম করা বিক্রয় রেকর্ড এখানে স্বয়ংক্রিয়ভাবে প্রদর্শিত হবে')}
                     </span>
                   </div>
                 ) : (
@@ -814,7 +816,7 @@ export default function BusinessReportsPage() {
                               {item.customerName}
                             </span>
                             <span className="text-3xs text-muted-foreground font-medium">
-                              {item.invoicesCount} Invoices
+                              {item.invoicesCount} {tBilingual('Invoices', 'টি চালান')}
                             </span>
                           </div>
                         </div>
@@ -853,10 +855,10 @@ export default function BusinessReportsPage() {
                   <div className="py-8 text-center text-muted-foreground flex flex-col items-center justify-center gap-1.5">
                     <Package className="w-6 h-6 text-muted-foreground stroke-[1.5]"/>
                     <span className="text-xs font-semibold text-muted-foreground">
- No product sales records found
+ {tBilingual('No product sales records found', 'কোনো পণ্য বিক্রয় রেকর্ড পাওয়া যায়নি')}
                     </span>
                     <span className="text-2xs text-muted-foreground">
- Line items from confirmed orders will appear here
+ {tBilingual('Line items from confirmed orders will appear here', 'কনফার্ম করা অর্ডারের পণ্য তালিকা এখানে প্রদর্শিত হবে')}
                     </span>
                   </div>
                 ) : (
@@ -959,25 +961,25 @@ export default function BusinessReportsPage() {
             <div className="xl:col-span-7 bg-card rounded-xl border border-border /80 p-3.5 2xl:p-5 shadow-xs flex flex-col justify-between">
               <div>
                 <h3 className="text-sm font-bold text-foreground mb-3 2xl:mb-3.5">
- Monthly Performance Summary
+ {tBilingual('Monthly Performance Summary', 'মাসিক পারফরম্যান্স সারসংক্ষেপ')}
                 </h3>
 
                 <div className="overflow-x-auto -mx-3.5 sm:mx-0 px-3.5 sm:px-0">
                   <table className="w-full text-xs text-left min-w-[460px] 2xl:min-w-[500px]">
                     <thead>
                       <tr className="text-2xs font-semibold text-muted-foreground border-b border-border pb-2">
-                        <th className="pb-2 2xl:pb-2.5 font-semibold">Month</th>
-                        <th className="pb-2 2xl:pb-2.5 font-semibold text-right">Sales</th>
-                        <th className="pb-2 2xl:pb-2.5 font-semibold text-right">Cost</th>
-                        <th className="pb-2 2xl:pb-2.5 font-semibold text-right">Profit</th>
-                        <th className="pb-2 2xl:pb-2.5 font-semibold text-right">Margin</th>
+                        <th className="pb-2 2xl:pb-2.5 font-semibold bangla-text">{tBilingual('Month', 'মাস')}</th>
+                        <th className="pb-2 2xl:pb-2.5 font-semibold text-right bangla-text">{tBilingual('Sales', 'বিক্রয়')}</th>
+                        <th className="pb-2 2xl:pb-2.5 font-semibold text-right bangla-text">{tBilingual('Cost', 'খরচ')}</th>
+                        <th className="pb-2 2xl:pb-2.5 font-semibold text-right bangla-text">{tBilingual('Profit', 'লাভ')}</th>
+                        <th className="pb-2 2xl:pb-2.5 font-semibold text-right bangla-text">{tBilingual('Margin', 'মার্জিন')}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border dark:divide-border/60">
                       {reportData.monthlyOverview.length === 0 ? (
                         <tr>
                           <td colSpan={5} className="py-8 text-center text-muted-foreground text-xs">
- No monthly records recorded yet
+ {tBilingual('No monthly records recorded yet', 'এখনও কোনো মাসিক রেকর্ড লিপিবদ্ধ করা হয়নি')}
                           </td>
                         </tr>
                       ) : (

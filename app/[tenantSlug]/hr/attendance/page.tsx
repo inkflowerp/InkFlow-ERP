@@ -1,3 +1,4 @@
+import { useI18n } from '@/i18n/context'
 'use client'
 
 import React, { useState, useEffect, useTransition, useCallback } from 'react'
@@ -50,6 +51,7 @@ import type {
 import type { AttendanceCorrectionRecord } from '@/types/attendance.types'
 
 export default function AttendancePage() {
+  const { tBilingual } = useI18n()
  const params = useParams()
  const searchParams = useSearchParams()
  const { company } = useTenant()
@@ -403,23 +405,23 @@ export default function AttendancePage() {
                 </div>
 
                 <div>
-                  <Label className="text-xs font-semibold text-foreground">Attendance Status</Label>
+                  <Label className="text-xs font-semibold text-foreground">{tBilingual("Attendance Status", "উপস্থিতির অবস্থা")}</Label>
                   <select
  value={manualStatus}
  onChange={(e) => setManualStatus(e.target.value as AttendanceDailyStatus)}
  className="h-9 w-full rounded-md border border-border bg-card px-3 text-xs text-foreground mt-1 capitalize">
-                    <option value="present">Present (উপস্থিত)</option>
-                    <option value="late">Late (দেরিতে আগমন)</option>
-                    <option value="half_day">Half Day (অর্ধ দিবস)</option>
-                    <option value="leave">On Leave (ছুটিতে)</option>
-                    <option value="field_work">Field Work (মাঠে কাজ)</option>
-                    <option value="absent">Absent (অনুপস্থিত)</option>
+                    <option value="present">{tBilingual("Present", "উপস্থিত")}</option>
+                    <option value="late">{tBilingual("Late", "দেরিতে আগমন")}</option>
+                    <option value="half_day">{tBilingual("Half Day", "অর্ধ দিবস")}</option>
+                    <option value="leave">{tBilingual("On Leave", "ছুটিতে")}</option>
+                    <option value="field_work">{tBilingual("Field Work", "মাঠে কাজ")}</option>
+                    <option value="absent">{tBilingual("Absent", "অনুপস্থিত")}</option>
                   </select>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <Label className="text-xs font-semibold text-foreground">Check In Time</Label>
+                    <Label className="text-xs font-semibold text-foreground">{tBilingual("Check In Time", "প্রবেশের সময়")}</Label>
                     <Input
  type="time"value={manualCheckIn}
  onChange={(e) => setManualCheckIn(e.target.value)}

@@ -557,7 +557,7 @@ export default function BranchesSettingsPage() {
  Branch Code
               </Label>
               <Input
- id="branchCode"placeholder="e.g. TEJ-PLANT"value={newBranch.code}
+ id="branchCode"placeholder={tBilingual("e.g. TEJ-PLANT", "যেমন: TEJ-PLANT")}value={newBranch.code}
  onChange={(e) => setNewBranch({ ...newBranch, code: e.target.value })}
  className="h-9 text-xs tabular-nums uppercase"required
               />
@@ -580,7 +580,7 @@ export default function BranchesSettingsPage() {
  Branch Name (English)
               </Label>
               <Input
- id="branchName"placeholder="e.g. Tejgaon Industrial Offset Plant"value={newBranch.name}
+ id="branchName"placeholder={tBilingual("e.g. Tejgaon Industrial Offset Plant", "যেমন: তেজগাঁও অফসেট প্ল্যান্ট")}value={newBranch.name}
  onChange={(e) => setNewBranch({ ...newBranch, name: e.target.value })}
  className="h-9 text-xs"required
               />
@@ -603,7 +603,7 @@ export default function BranchesSettingsPage() {
  Manager / Contact Person
               </Label>
               <Input
- id="branchManager"placeholder="e.g. Md. Kabir Hossain"value={newBranch.managerName}
+ id="branchManager"placeholder={tBilingual("e.g. Md. Kabir Hossain", "যেমন: মো: কবির হোসেন")}value={newBranch.managerName}
  onChange={(e) => setNewBranch({ ...newBranch, managerName: e.target.value })}
  className="h-9 text-xs"/>
             </div>
@@ -613,7 +613,7 @@ export default function BranchesSettingsPage() {
  Full Address
               </Label>
               <Input
- id="branchAddress"placeholder="Plot 42, Tejgaon I/A, Dhaka-1208"value={newBranch.address}
+ id="branchAddress"placeholder={tBilingual("Plot 42, Tejgaon I/A, Dhaka-1208", "প্লট ৪২, তেজগাঁও শিল্প এলাকা, ঢাকা-১২০৮")}value={newBranch.address}
  onChange={(e) => setNewBranch({ ...newBranch, address: e.target.value })}
  className="h-9 text-xs"required
               />

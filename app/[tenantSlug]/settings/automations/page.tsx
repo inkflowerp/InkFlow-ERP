@@ -434,7 +434,7 @@ export default function WorkflowAutomationsPage() {
  value={selectedTriggerFilter}
  onChange={(e) => setSelectedTriggerFilter(e.target.value)}
  className="h-10 sm:h-9 bg-muted border border-border text-foreground rounded-xl px-3 text-xs font-semibold focus:outline-hidden">
-                <option value="all">All Trigger Types</option>
+                <option value="all">{tBilingual('All Trigger Types', 'সকল ট্রিগার টাইপ')}</option>
                 {TRIGGER_DEFINITIONS.map((td) => (
                   <option key={td.type} value={td.type}>
                     {td.label}
@@ -446,10 +446,10 @@ export default function WorkflowAutomationsPage() {
  value={logStatusFilter}
  onChange={(e) => setLogStatusFilter(e.target.value)}
  className="h-10 sm:h-9 bg-muted border border-border text-foreground rounded-xl px-3 text-xs font-semibold focus:outline-hidden">
-                <option value="all">All Execution Statuses</option>
-                <option value="success">Success Only</option>
-                <option value="skipped">Skipped Only</option>
-                <option value="failed">Failed Only</option>
+                <option value="all">{tBilingual("All Execution Statuses", "সকল এক্সিকিউশন অবস্থা")}</option>
+                <option value="success">{tBilingual("Success Only", "শুধুমাত্র সফল")}</option>
+                <option value="skipped">{tBilingual("Skipped Only", "শুধুমাত্র বাদ দেওয়া")}</option>
+                <option value="failed">{tBilingual("Failed Only", "শুধুমাত্র ব্যর্থ")}</option>
               </select>
             )}
           </div>
@@ -653,18 +653,18 @@ export default function WorkflowAutomationsPage() {
                 <table className="w-full text-left text-xs">
                   <thead className="bg-muted text-muted-foreground border-b border-border font-semibold uppercase tracking-wider text-2xs">
                     <tr>
-                      <th className="py-3 px-4">Executed At</th>
-                      <th className="py-3 px-4">Workflow Rule</th>
-                      <th className="py-3 px-4">Trigger & Entity</th>
-                      <th className="py-3 px-4">Status</th>
-                      <th className="py-3 px-4">Actions Executed</th>
+                      <th className="py-3 px-4 bangla-text">{tBilingual('Executed At', 'সম্পন্নের সময়')}</th>
+                      <th className="py-3 px-4 bangla-text">{tBilingual('Workflow Rule', 'ওয়ার্কফ্লো রুল')}</th>
+                      <th className="py-3 px-4 bangla-text">{tBilingual('Trigger & Entity', 'ট্রিগার ও বিষয়')}</th>
+                      <th className="py-3 px-4 bangla-text">{tBilingual('Status', 'অবস্থা')}</th>
+                      <th className="py-3 px-4 bangla-text">{tBilingual('Actions Executed', 'সম্পাদিত অ্যাকশন')}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border dark:divide-border/80 text-foreground">
                     {filteredLogs.length === 0 ? (
                       <tr>
                         <td colSpan={5} className="py-12 text-center text-muted-foreground">
- No workflow execution records found matching your filters.
+                          {tBilingual("No workflow execution records found matching your filters.", "ফিল্টারের সাথে মেলে এমন কোনো ওয়ার্কফ্লো রেকর্ড পাওয়া যায়নি।")}
                         </td>
                       </tr>
                     ) : (
@@ -727,7 +727,7 @@ export default function WorkflowAutomationsPage() {
               <div className="md:hidden divide-y divide-border dark:divide-border/80">
                 {filteredLogs.length === 0 ? (
                   <div className="py-12 text-center text-muted-foreground text-xs">
- No workflow execution records found matching your filters.
+                          {tBilingual("No workflow execution records found matching your filters.", "ফিল্টারের সাথে মেলে এমন কোনো ওয়ার্কফ্লো রেকর্ড পাওয়া যায়নি।")}
                   </div>
                 ) : (
  filteredLogs.map((log) => (
@@ -839,7 +839,7 @@ export default function WorkflowAutomationsPage() {
  Rule Name (English) <span className="text-rose-500">*</span>
                     </Label>
                     <Input
- placeholder="e.g. Quotation Approved ➔ Auto-Create Order"value={editingRule.name || ''}
+ placeholder={tBilingual("e.g. Quotation Approved ➔ Auto-Create Order", "যেমন: কোটেশন অনুমোদন ➔ স্বয়ংক্রিয় অর্ডার তৈরি")}value={editingRule.name || ''}
  onChange={(e) => setEditingRule({ ...editingRule, name: e.target.value })}
  className="text-xs h-9"required
                     />
@@ -859,7 +859,7 @@ export default function WorkflowAutomationsPage() {
                 <div>
                   <Label className="text-xs font-semibold mb-1 block">Description</Label>
                   <Input
- placeholder="Describe the workflow business purpose..."value={editingRule.description || ''}
+ placeholder={tBilingual("Describe the workflow business purpose...", "ওয়ার্কফ্লোর উদ্দেশ্য ও কাজের বিবরণ লিখুন...")}value={editingRule.description || ''}
  onChange={(e) => setEditingRule({ ...editingRule, description: e.target.value })}
  className="text-xs h-9"/>
                 </div>
@@ -914,14 +914,14 @@ export default function WorkflowAutomationsPage() {
  setEditingRule({ ...editingRule, trigger_entity: e.target.value as any })
                       }
  className="w-full h-9 rounded-lg border border-input bg-card px-3 text-xs font-medium capitalize">
-                      <option value="quotation">Quotation (কোটেশন)</option>
-                      <option value="order">Sales Order (অর্ডার)</option>
-                      <option value="design">Design / Prepress (ডিজাইন)</option>
-                      <option value="job">Production Job (প্রেস জব)</option>
-                      <option value="invoice">Invoice (বিল/চালান)</option>
-                      <option value="payment">Payment (পেমেন্ট)</option>
-                      <option value="material">Material / Stock (উপাদান)</option>
-                      <option value="delivery">Delivery (ডেলিভারি)</option>
+                      <option value="quotation">{tBilingual("Quotation", "কোটেশন")}</option>
+                      <option value="order">{tBilingual("Sales Order", "অর্ডার")}</option>
+                      <option value="design">{tBilingual("Design / Prepress", "ডিজাইন ও প্রিপ্রেস")}</option>
+                      <option value="job">{tBilingual("Production Job", "প্রেস জব")}</option>
+                      <option value="invoice">{tBilingual("Invoice", "বিল/চালান")}</option>
+                      <option value="payment">{tBilingual("Payment", "পেমেন্ট")}</option>
+                      <option value="material">{tBilingual("Material / Stock", "উপাদান ও স্টক")}</option>
+                      <option value="delivery">{tBilingual("Delivery", "ডেলিভারি")}</option>
                     </select>
                   </div>
 
@@ -930,7 +930,7 @@ export default function WorkflowAutomationsPage() {
  Target State / Status
                     </Label>
                     <Input
- placeholder="e.g. approved, confirmed, ready"value={editingRule.trigger_config?.to_status || ''}
+ placeholder={tBilingual("e.g. approved, confirmed, ready", "যেমন: approved, confirmed, ready")}value={editingRule.trigger_config?.to_status || ''}
  onChange={(e) =>
  setEditingRule({
                           ...editingRule,
@@ -977,7 +977,7 @@ export default function WorkflowAutomationsPage() {
                         </span>
 
                         <Input
- placeholder="field (e.g. pricing.total_amount)"value={cond.field}
+ placeholder={tBilingual("field (e.g. pricing.total_amount)", "ফিল্ড (যেমন: pricing.total_amount)")}value={cond.field}
  onChange={(e) => handleUpdateCondition(cIdx, { field: e.target.value })}
  className="h-8 text-xs flex-1"/>
 
@@ -995,7 +995,7 @@ export default function WorkflowAutomationsPage() {
                         </select>
 
                         <Input
- placeholder="value (e.g. 50000)"value={String(cond.value ?? '')}
+ placeholder={tBilingual("value (e.g. 50000)", "মান (যেমন: 50000)")}value={String(cond.value ?? '')}
  onChange={(e) => handleUpdateCondition(cIdx, { value: e.target.value })}
  className="h-8 text-xs flex-1"/>
 
@@ -1058,10 +1058,10 @@ export default function WorkflowAutomationsPage() {
  handleUpdateActionConfig(idx, 'target_document', e.target.value)
                               }
  className="h-8 w-full rounded border border-input bg-card text-xs px-2">
-                              <option value="order">Sales Order (জব বুকিং)</option>
-                              <option value="production_job">Production Job Ticket (প্রেস টিকিট)</option>
-                              <option value="delivery_challan">Delivery Challan (চালান)</option>
-                              <option value="invoice">Commercial Invoice (ইনভয়েস)</option>
+                              <option value="order">{tBilingual("Sales Order", "জব বুকিং / অর্ডার")}</option>
+                              <option value="production_job">{tBilingual("Production Job Ticket", "প্রেস টিকিট")}</option>
+                              <option value="delivery_challan">{tBilingual("Delivery Challan", "চালান")}</option>
+                              <option value="invoice">{tBilingual("Commercial Invoice", "ইনভয়েস")}</option>
                             </select>
                           </div>
                           <div>
@@ -1074,8 +1074,8 @@ export default function WorkflowAutomationsPage() {
  handleUpdateActionConfig(idx, 'copy_items', e.target.value === 'yes')
                               }
  className="h-8 w-full rounded border border-input bg-card text-xs px-2">
-                              <option value="yes">Yes, Clone items & pricing</option>
-                              <option value="no">No, Header only</option>
+                              <option value="yes">{tBilingual("Yes, Clone items & pricing", "হ্যাঁ, আইটেম ও দর কপি করুন")}</option>
+                              <option value="no">{tBilingual("No, Header only", "না, শুধুমাত্র হেডার")}</option>
                             </select>
                           </div>
                         </div>
@@ -1090,7 +1090,7 @@ export default function WorkflowAutomationsPage() {
                             <Input
  value={act.config?.title || ''}
  onChange={(e) => handleUpdateActionConfig(idx, 'title', e.target.value)}
- className="h-8 text-xs"placeholder="e.g. Order Generated"/>
+ className="h-8 text-xs"placeholder={tBilingual("e.g. Order Generated", "যেমন: নতুন অর্ডার তৈরি হয়েছে")}/>
                           </div>
                           <div>
                             <Label className="text-2xs font-medium text-muted-foreground mb-0.5 block">
@@ -1099,7 +1099,7 @@ export default function WorkflowAutomationsPage() {
                             <Input
  value={act.config?.message || ''}
  onChange={(e) => handleUpdateActionConfig(idx, 'message', e.target.value)}
- className="h-8 text-xs"placeholder="Notification description..."/>
+ className="h-8 text-xs"placeholder={tBilingual("Notification description...", "নোটিফিকেশনের বিবরণ লিখুন...")}/>
                           </div>
                         </div>
                       )}
@@ -1113,7 +1113,7 @@ export default function WorkflowAutomationsPage() {
                             <Input
  value={act.config?.message || ''}
  onChange={(e) => handleUpdateActionConfig(idx, 'message', e.target.value)}
- className="h-8 text-xs"placeholder="e.g. Your PrintERP order is ready."/>
+ className="h-8 text-xs"placeholder={tBilingual("e.g. Your order is ready.", "যেমন: আপনার অর্ডারটি প্রস্তুত হয়েছে।")}/>
                           </div>
                           <div>
                             <Label className="text-2xs font-medium text-muted-foreground mb-0.5 block">
@@ -1136,7 +1136,7 @@ export default function WorkflowAutomationsPage() {
                             <Input
  value={act.config?.target || 'order'}
  onChange={(e) => handleUpdateActionConfig(idx, 'target', e.target.value)}
- className="h-8 text-xs"placeholder="order, job, invoice"/>
+ className="h-8 text-xs"placeholder={tBilingual("order, job, invoice", "order, job, invoice")}/>
                           </div>
                           <div>
                             <Label className="text-2xs font-medium text-muted-foreground mb-0.5 block">
@@ -1145,7 +1145,7 @@ export default function WorkflowAutomationsPage() {
                             <Input
  value={act.config?.new_status || ''}
  onChange={(e) => handleUpdateActionConfig(idx, 'new_status', e.target.value)}
- className="h-8 text-xs"placeholder="in_production, completed"/>
+ className="h-8 text-xs"placeholder={tBilingual("in_production, completed", "in_production, completed")}/>
                           </div>
                         </div>
                       )}

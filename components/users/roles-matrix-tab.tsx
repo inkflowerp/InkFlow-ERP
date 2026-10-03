@@ -43,7 +43,8 @@ import { Label } from '@/components/ui/label'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import { ConfirmDialog } from '@/components/shared/confirm-dialog'
 import { cn } from '@/lib/utils'
-import { tBilingual } from '@/lib/formatters'
+import { useI18n } from '@/i18n/context'
+
 
 interface RoleItem {
  id: string
@@ -235,6 +236,8 @@ interface RolesMatrixTabProps {
 }
 
 export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesMatrixTabProps) {
+  const { locale, tBilingual } = useI18n()
+  const isBn = locale === 'bn'
  const [roles, setRoles] = useState<RoleItem[]>(DEFAULT_CLIENT_ROLES)
  const [selectedRoleId, setSelectedRoleId] = useState<string>('role-sales')
  const [currentPermissions, setCurrentPermissions] = useState<Set<string>>(() => {
@@ -560,7 +563,7 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
                           )}
                         </div>
                         <div className="text-2xs text-muted-foreground tabular-nums">
-                          {role.permissions?.length || 0} permissions granted
+                          {role.permissions?.length || 0} {isBn ? 'টি পারমিশন কার্যকর' : 'permissions granted'}
                         </div>
                       </div>
 
@@ -649,7 +652,7 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
  disabled={unsavedChangesCount === 0 || isPending}
  className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs gap-1.5 shadow-sm">
                       <Save className="w-3.5 h-3.5"/>
-                      {isPending ? 'Saving...' : 'Save Permissions'}
+                      {isPending ? (isBn ? 'সংরক্ষণ হচ্ছে...' : 'Saving...') : (isBn ? 'অনুমতি সংরক্ষণ করুন' : 'Save Permissions')}
                     </Button>
 
                     {!selectedRole.is_system && (
@@ -693,32 +696,32 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
                   <div className="relative flex-1 max-w-xs">
                     <Search className="w-3.5 h-3.5 absolute left-2.5 top-2.5 text-muted-foreground"/>
                     <Input
- type="text"placeholder="Filter module or action..."value={searchQuery}
+ type="text"placeholder={isBn ? 'মডিউল বা অ্যাকশন খুঁজুন...' : 'Filter module or action...'}value={searchQuery}
  onChange={(e) => setSearchQuery(e.target.value)}
  className="pl-8 h-8 text-xs bg-card border-border"/>
                   </div>
 
                   <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className="text-2xs text-muted-foreground mr-1 font-medium">Batch:</span>
+                    <span className="text-2xs text-muted-foreground mr-1 font-medium bangla-text">{isBn ? 'ব্যাচ:' : 'Batch:'}</span>
                     <Button
  variant="outline"size="sm"onClick={() => handleCategoryAction(selectedCategory, 'view_all')}
  className="h-7 px-2 text-2xs border-border text-foreground hover:bg-muted dark:hover:bg-muted">
-                      + Grant View
+                      {isBn ? '+ দেখার অনুমতি' : '+ Grant View'}
                     </Button>
                     <Button
  variant="outline"size="sm"onClick={() => handleCategoryAction(selectedCategory, 'grant_all')}
  className="h-7 px-2 text-2xs border-border text-foreground hover:bg-muted dark:hover:bg-muted">
-                      + Grant All
+                      {isBn ? '+ সব অনুমতি দিন' : '+ Grant All'}
                     </Button>
                     <Button
  variant="outline"size="sm"onClick={() => handleCategoryAction(selectedCategory, 'revoke_delete')}
  className="h-7 px-2 text-2xs border-rose-200 dark:border-rose-900/40 text-rose-600 dark:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-500/10">
-                      - Revoke Delete
+                      {isBn ? '- ডিলিট বাদ দিন' : '- Revoke Delete'}
                     </Button>
                     <Button
  variant="outline"size="sm"onClick={() => handleCategoryAction(selectedCategory, 'clear_all')}
  className="h-7 px-2 text-2xs border-border text-muted-foreground hover:bg-muted dark:hover:bg-muted">
- Clear Category
+ {isBn ? 'ক্যাটেগরি ক্লিয়ার' : 'Clear Category'}
                     </Button>
                   </div>
                 </div>
@@ -742,7 +745,7 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
                                 {moduleKey}
                               </Badge>
                             </div>
-                            <div className="text-2xs text-muted-foreground mt-0.5">{spec.description}</div>
+                            <div className="text-2xs text-muted-foreground mt-0.5 bangla-text">{isBn ? (spec.descriptionBn || spec.description) : spec.description}</div>
                           </div>
                         </div>
 
@@ -770,7 +773,7 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
                               >
                                 <span className="truncate flex items-center gap-1">
                                   {isHighRisk && <ShieldAlert className="w-3 h-3 text-rose-500 shrink-0"/>}
-                                  {ACTION_LABELS[act]?.label || act}
+                                  {isBn ? (ACTION_LABELS[act]?.labelBn || act) : (ACTION_LABELS[act]?.label || act)}
                                 </span>
 
                                 {isChecked ? (
@@ -817,7 +820,7 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
             <Label className="text-xs text-foreground font-medium">Role Name (English)</Label>
             <Input
  type="text"required
- placeholder="e.g. Pre-Press Lead, Shift Supervisor"value={newRoleName}
+ placeholder={tBilingual('e.g. Pre-Press Lead, Shift Supervisor', 'যেমন: প্রি-প্রেস লিড, শিফট সুপারভাইজার')}value={newRoleName}
  onChange={(e) => setNewRoleName(e.target.value)}
  className="bg-card border-border text-foreground"/>
           </div>
@@ -847,7 +850,7 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
           <div className="space-y-1.5">
             <Label className="text-xs text-foreground font-medium">Description</Label>
             <Input
- type="text"placeholder="Brief description of responsibilities..."value={newRoleDesc}
+ type="text"placeholder={tBilingual('Brief description of responsibilities...', 'দায়িত্বের সংক্ষিপ্ত বিবরণ...')}value={newRoleDesc}
  onChange={(e) => setNewRoleDesc(e.target.value)}
  className="bg-card border-border text-foreground"/>
           </div>

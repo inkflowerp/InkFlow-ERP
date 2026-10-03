@@ -2024,7 +2024,7 @@ export default function ProductsCatalogPage() {
         <div className="relative flex-1 min-w-[220px]">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground"/>
           <Input
- placeholder="Search by English name, বাংলা নাম, SKU, specs, pricing..."value={search}
+ placeholder={tBilingual('Search by English name, বাংলা নাম, SKU, specs, pricing...', 'ইংরেজি বা বাংলা নাম, কোড, স্পেক বা দাম দিয়ে খুঁজুন...')}value={search}
  onChange={(e) => setSearch(e.target.value)}
  className="pl-8 text-xs h-9"/>
         </div>
@@ -2036,7 +2036,7 @@ export default function ProductsCatalogPage() {
  value={selectedCategory}
  onChange={(e) => setSelectedCategory(e.target.value)}
  className="h-9 px-3 rounded-lg border border-input bg-card text-xs font-semibold">
-              <option value="all">All Categories (সকল ক্যাটাগরি)</option>
+              <option value="all">{tBilingual("All Categories", "সকল ক্যাটাগরি")}</option>
               {categories.length > 0 ? (
  categories.map((cat) => (
                   <option key={cat.id} value={cat.slug || cat.name}>
@@ -2045,17 +2045,17 @@ export default function ProductsCatalogPage() {
                 ))
               ) : (
                 <>
-                  <option value="flex_banner">Flex & Vinyl Banner</option>
-                  <option value="backlit_flex">Backlit Signage</option>
-                  <option value="vinyl_sticker">Vinyl & Stickers</option>
-                  <option value="rigid_board">Rigid Board Mounts</option>
-                  <option value="signage_3d">3D Letter & Signage</option>
-                  <option value="display_stand">Display & Standee</option>
-                  <option value="commercial_print">Visiting Card & Leaflet</option>
-                  <option value="finishing">Finishing & Binding</option>
-                  <option value="installation">Installation & Site Work</option>
-                  <option value="design_service">Design & Artwork</option>
-                  <option value="delivery_logistics">Delivery & Logistics</option>
+                  <option value="flex_banner">{tBilingual("Flex & Vinyl Banner", "ফ্লেক্স ও ভিনাইল ব্যানার")}</option>
+                  <option value="backlit_flex">{tBilingual("Backlit Signage", "ব্যাকলিট সাইনেজ")}</option>
+                  <option value="vinyl_sticker">{tBilingual("Vinyl & Stickers", "ভিনাইল ও স্টিকার")}</option>
+                  <option value="rigid_board">{tBilingual("Rigid Board Mounts", "রিজিড বোর্ড মাউন্ট")}</option>
+                  <option value="signage_3d">{tBilingual("3D Letter & Signage", "থ্রিডি লেটার সাইনেজ")}</option>
+                  <option value="display_stand">{tBilingual("Display & Standee", "ডিসপ্লে ও স্ট্যান্ডি")}</option>
+                  <option value="commercial_print">{tBilingual("Visiting Card & Leaflet", "ভিজিটিং কার্ড ও লিফলেট")}</option>
+                  <option value="finishing">{tBilingual("Finishing & Binding", "ফিনিশিং ও বাইন্ডিং")}</option>
+                  <option value="installation">{tBilingual("Installation & Site Work", "ইনস্টলেশন ও সাইট কাজ")}</option>
+                  <option value="design_service">{tBilingual("Design & Artwork", "ডিজাইন ও আর্টওয়ার্ক")}</option>
+                  <option value="delivery_logistics">{tBilingual("Delivery & Logistics", "ডেলিভারি ও লজিস্টিকস")}</option>
                 </>
               )}
             </select>
@@ -2078,7 +2078,7 @@ export default function ProductsCatalogPage() {
  value={selectedType}
  onChange={(e) => setSelectedType(e.target.value)}
  className="h-9 px-3 rounded-lg border border-input bg-card text-xs font-semibold">
-              <option value="all">All Commercial Types</option>
+              <option value="all">{tBilingual('All Commercial Types', 'সকল পণ্যের ধরন')}</option>
               {COMMERCIAL_PRODUCT_TYPES.map((t) => (
                 <option key={t.id} value={t.id}>
                   {t.label}
@@ -2178,13 +2178,13 @@ export default function ProductsCatalogPage() {
                 <table className="w-full text-left text-sm">
                   <thead className="bg-muted text-xs font-semibold text-muted-foreground border-b border-border">
                     <tr>
-                      <th className="py-3 px-4">Method Name & Description</th>
-                      <th className="py-3 px-3">Code</th>
-                      <th className="py-3 px-3">Compatible Media</th>
-                      <th className="py-3 px-3">Default Ink System</th>
-                      <th className="py-3 px-3">Base Cost / sqft</th>
-                      <th className="py-3 px-3">Status</th>
-                      <th className="py-3 px-4 text-right">Actions</th>
+                      <th className="py-3 px-4 bangla-text">{tBilingual('Method Name & Description', 'পদ্ধতির নাম ও বিবরণ')}</th>
+                      <th className="py-3 px-3 bangla-text">{tBilingual('Code', 'কোড')}</th>
+                      <th className="py-3 px-3 bangla-text">{tBilingual('Compatible Media', 'উপযোগী মিডিয়া')}</th>
+                      <th className="py-3 px-3 bangla-text">{tBilingual('Default Ink System', 'ডিফল্ট কালি সিস্টেম')}</th>
+                      <th className="py-3 px-3 bangla-text">{tBilingual('Base Cost / sqft', 'বেস খরচ / বর্গফুট')}</th>
+                      <th className="py-3 px-3 bangla-text">{tBilingual('Status', 'অবস্থা')}</th>
+                      <th className="py-3 px-4 text-right bangla-text">{tBilingual('Actions', 'অ্যাকশন')}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border dark:divide-border">
@@ -2300,15 +2300,15 @@ export default function ProductsCatalogPage() {
                 <table className="w-full text-left text-sm">
                   <thead className="bg-muted text-xs font-semibold text-muted-foreground border-b border-border">
                     <tr>
-                      <th className="py-3 px-4">Finishing Name</th>
-                      <th className="py-3 px-3">Category</th>
-                      <th className="py-3 px-3">Pricing Method</th>
-                      <th className="py-3 px-3">Unit Cost</th>
-                      <th className="py-3 px-3">Selling Price</th>
-                      <th className="py-3 px-3">Gross Margin</th>
-                      <th className="py-3 px-3">Linked Material</th>
-                      <th className="py-3 px-3">Status</th>
-                      <th className="py-3 px-4 text-right">Actions</th>
+                      <th className="py-3 px-4 bangla-text">{tBilingual('Finishing Name', 'ফিনিশিংয়ের নাম')}</th>
+                      <th className="py-3 px-3 bangla-text">{tBilingual('Category', 'ক্যাটাগরি')}</th>
+                      <th className="py-3 px-3 bangla-text">{tBilingual('Pricing Method', 'মূল্য পদ্ধতি')}</th>
+                      <th className="py-3 px-3 bangla-text">{tBilingual('Unit Cost', 'একক খরচ')}</th>
+                      <th className="py-3 px-3 bangla-text">{tBilingual('Selling Price', 'বিক্রয় মূল্য')}</th>
+                      <th className="py-3 px-3 bangla-text">{tBilingual('Gross Margin', 'মোট মার্জিন')}</th>
+                      <th className="py-3 px-3 bangla-text">{tBilingual('Linked Material', 'যুক্ত কাঁচামাল')}</th>
+                      <th className="py-3 px-3 bangla-text">{tBilingual('Status', 'অবস্থা')}</th>
+                      <th className="py-3 px-4 text-right bangla-text">{tBilingual('Actions', 'অ্যাকশন')}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border dark:divide-border">
@@ -2448,14 +2448,14 @@ export default function ProductsCatalogPage() {
                 <table className="w-full text-left text-sm">
                   <thead className="bg-muted text-xs font-semibold text-muted-foreground border-b border-border">
                     <tr>
-                      <th className="py-3 px-4">Option Name</th>
-                      <th className="py-3 px-3">Linked Catalog Item</th>
-                      <th className="py-3 px-3">Pricing Method</th>
-                      <th className="py-3 px-3">Unit Cost</th>
-                      <th className="py-3 px-3">Selling Price</th>
-                      <th className="py-3 px-3">Gross Margin</th>
-                      <th className="py-3 px-3">Status</th>
-                      <th className="py-3 px-4 text-right">Actions</th>
+                      <th className="py-3 px-4 bangla-text">{tBilingual('Option Name', 'অপশনের নাম')}</th>
+                      <th className="py-3 px-3 bangla-text">{tBilingual('Linked Catalog Item', 'যুক্ত পণ্য')}</th>
+                      <th className="py-3 px-3 bangla-text">{tBilingual('Pricing Method', 'মূল্য পদ্ধতি')}</th>
+                      <th className="py-3 px-3 bangla-text">{tBilingual('Unit Cost', 'একক খরচ')}</th>
+                      <th className="py-3 px-3 bangla-text">{tBilingual('Selling Price', 'বিক্রয় মূল্য')}</th>
+                      <th className="py-3 px-3 bangla-text">{tBilingual('Gross Margin', 'মোট মার্জিন')}</th>
+                      <th className="py-3 px-3 bangla-text">{tBilingual('Status', 'অবস্থা')}</th>
+                      <th className="py-3 px-4 text-right bangla-text">{tBilingual('Actions', 'অ্যাকশন')}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border dark:divide-border">
@@ -2590,15 +2590,15 @@ export default function ProductsCatalogPage() {
                 <table className="w-full text-left text-sm">
                   <thead className="bg-muted text-xs font-semibold text-muted-foreground border-b border-border">
                     <tr>
-                      <th className="py-3 px-4">Scope Name</th>
-                      <th className="py-3 px-3">Fulfillment Scope</th>
-                      <th className="py-3 px-3">Production Task</th>
-                      <th className="py-3 px-3">Pricing Method</th>
-                      <th className="py-3 px-3">Unit Cost</th>
-                      <th className="py-3 px-3">Selling Rate</th>
-                      <th className="py-3 px-3">Gross Margin</th>
-                      <th className="py-3 px-3">Status</th>
-                      <th className="py-3 px-4 text-right">Actions</th>
+                      <th className="py-3 px-4 bangla-text">{tBilingual('Scope Name', 'কাজের নাম')}</th>
+                      <th className="py-3 px-3 bangla-text">{tBilingual('Fulfillment Scope', 'কাজের ক্ষেত্র')}</th>
+                      <th className="py-3 px-3 bangla-text">{tBilingual('Production Task', 'প্রোডাকশন টাস্ক')}</th>
+                      <th className="py-3 px-3 bangla-text">{tBilingual('Pricing Method', 'মূল্য পদ্ধতি')}</th>
+                      <th className="py-3 px-3 bangla-text">{tBilingual('Unit Cost', 'একক খরচ')}</th>
+                      <th className="py-3 px-3 bangla-text">{tBilingual('Selling Rate', 'বিক্রয় দর')}</th>
+                      <th className="py-3 px-3 bangla-text">{tBilingual('Gross Margin', 'মোট মার্জিন')}</th>
+                      <th className="py-3 px-3 bangla-text">{tBilingual('Status', 'অবস্থা')}</th>
+                      <th className="py-3 px-4 text-right bangla-text">{tBilingual('Actions', 'অ্যাকশন')}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border dark:divide-border">
@@ -2737,17 +2737,17 @@ export default function ProductsCatalogPage() {
                 <table className="w-full text-left text-sm">
                   <thead className="bg-muted text-xs font-semibold text-muted-foreground border-b border-border">
                     <tr>
-                      <th className="py-3 px-4 min-w-[200px]">Service & SKU</th>
-                      <th className="py-3 px-3 whitespace-nowrap">Printable Substrate</th>
-                      <th className="py-3 px-3 whitespace-nowrap">Pricing Model</th>
-                      <th className="py-3 px-3 whitespace-nowrap">Dimension Presets</th>
-                      <th className="py-3 px-3 whitespace-nowrap">Finishing</th>
-                      <th className="py-3 px-3 whitespace-nowrap">Base Cost</th>
-                      <th className="py-3 px-3 whitespace-nowrap">Selling Rate</th>
-                      <th className="py-3 px-3 whitespace-nowrap text-center">Gross Margin</th>
-                      <th className="py-3 px-3 whitespace-nowrap text-center">Min Charge</th>
-                      <th className="py-3 px-3 whitespace-nowrap text-center">Status</th>
-                      <th className="py-3 px-4 text-center whitespace-nowrap w-[70px] min-w-[70px]">Actions</th>
+                      <th className="py-3 px-4 min-w-[200px] bangla-text">{tBilingual('Service & SKU', 'সার্ভিস ও এসকেইউ')}</th>
+                      <th className="py-3 px-3 whitespace-nowrap bangla-text">{tBilingual('Print Media', 'প্রিন্ট মিডিয়া')}</th>
+                      <th className="py-3 px-3 whitespace-nowrap bangla-text">{tBilingual('Pricing Model', 'প্রাইসিং মডেল')}</th>
+                      <th className="py-3 px-3 whitespace-nowrap bangla-text">{tBilingual('Dimension Presets', 'সাইজ ও মাপ')}</th>
+                      <th className="py-3 px-3 whitespace-nowrap bangla-text">{tBilingual('Finishing', 'ফিনিশিং')}</th>
+                      <th className="py-3 px-3 whitespace-nowrap bangla-text">{tBilingual('Base Cost', 'বেস খরচ')}</th>
+                      <th className="py-3 px-3 whitespace-nowrap bangla-text">{tBilingual('Selling Rate', 'বিক্রয় দর')}</th>
+                      <th className="py-3 px-3 whitespace-nowrap text-center bangla-text">{tBilingual('Gross Margin', 'মোট মার্জিন')}</th>
+                      <th className="py-3 px-3 whitespace-nowrap text-center bangla-text">{tBilingual('Min Charge', 'সর্বনিম্ন চার্জ')}</th>
+                      <th className="py-3 px-3 whitespace-nowrap text-center bangla-text">{tBilingual('Status', 'অবস্থা')}</th>
+                      <th className="py-3 px-4 text-center whitespace-nowrap w-[70px] min-w-[70px] bangla-text">{tBilingual('Actions', 'অ্যাকশন')}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border dark:divide-border">
@@ -2909,15 +2909,15 @@ export default function ProductsCatalogPage() {
                 <table className="w-full text-left text-sm">
                   <thead className="bg-muted text-xs font-semibold text-muted-foreground border-b border-border">
                     <tr>
-                      <th className="py-3 px-4 min-w-[200px]">Product & SKU</th>
-                      <th className="py-3 px-3 whitespace-nowrap">Physical Dimensions & Spec</th>
-                      <th className="py-3 px-3 whitespace-nowrap">Packaging & MOQ</th>
-                      <th className="py-3 px-3 whitespace-nowrap">Price Tiers (Corp/Dealer/Wholesale)</th>
-                      <th className="py-3 px-3 whitespace-nowrap">Unit Cost</th>
-                      <th className="py-3 px-3 whitespace-nowrap">Selling Rate</th>
-                      <th className="py-3 px-3 whitespace-nowrap text-center">Gross Margin</th>
-                      <th className="py-3 px-3 whitespace-nowrap text-center">Status</th>
-                      <th className="py-3 px-4 text-center whitespace-nowrap w-[70px] min-w-[70px]">Actions</th>
+                      <th className="py-3 px-4 min-w-[200px] bangla-text">{tBilingual('Product & SKU', 'পণ্য ও এসকেইউ')}</th>
+                      <th className="py-3 px-3 whitespace-nowrap bangla-text">{tBilingual('Physical Dimensions & Spec', 'পরিমাপ ও বিবরণ')}</th>
+                      <th className="py-3 px-3 whitespace-nowrap bangla-text">{tBilingual('Packaging & MOQ', 'প্যাকেজিং ও নূন্যতম অর্ডার')}</th>
+                      <th className="py-3 px-3 whitespace-nowrap bangla-text">{tBilingual('Price Tiers', 'মূল্যের স্তর')}</th>
+                      <th className="py-3 px-3 whitespace-nowrap bangla-text">{tBilingual('Unit Cost', 'একক খরচ')}</th>
+                      <th className="py-3 px-3 whitespace-nowrap bangla-text">{tBilingual('Selling Rate', 'বিক্রয় দর')}</th>
+                      <th className="py-3 px-3 whitespace-nowrap text-center bangla-text">{tBilingual('Gross Margin', 'মোট মার্জিন')}</th>
+                      <th className="py-3 px-3 whitespace-nowrap text-center bangla-text">{tBilingual('Status', 'অবস্থা')}</th>
+                      <th className="py-3 px-4 text-center whitespace-nowrap w-[70px] min-w-[70px] bangla-text">{tBilingual('Actions', 'অ্যাকশন')}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border dark:divide-border">
@@ -3070,14 +3070,14 @@ export default function ProductsCatalogPage() {
                 <table className="w-full text-left text-sm">
                   <thead className="bg-muted text-xs font-semibold text-muted-foreground border-b border-border">
                     <tr>
-                      <th className="py-3 px-4 min-w-[200px]">Material Name & SKU</th>
-                      <th className="py-3 px-3 whitespace-nowrap">Media Form & Geometry</th>
-                      <th className="py-3 px-3 whitespace-nowrap">Purchase Economics</th>
-                      <th className="py-3 px-3 whitespace-nowrap">Yield & Conversion</th>
-                      <th className="py-3 px-3 whitespace-nowrap">Compatible Printing</th>
-                      <th className="py-3 px-3 whitespace-nowrap">Effective Cost / Unit</th>
-                      <th className="py-3 px-3 whitespace-nowrap text-center">Status</th>
-                      <th className="py-3 px-4 text-center whitespace-nowrap w-[70px] min-w-[70px]">Actions</th>
+                      <th className="py-3 px-4 min-w-[200px] bangla-text">{tBilingual('Material Name & SKU', 'কাঁচামালের নাম ও এসকেইউ')}</th>
+                      <th className="py-3 px-3 whitespace-nowrap bangla-text">{tBilingual('Media Form & Geometry', 'মিডিয়া আকার ও পরিমাপ')}</th>
+                      <th className="py-3 px-3 whitespace-nowrap bangla-text">{tBilingual('Purchase Economics', 'ক্রয় দর ও হিসাব')}</th>
+                      <th className="py-3 px-3 whitespace-nowrap bangla-text">{tBilingual('Yield & Conversion', 'উৎপাদন ও রূপান্তর')}</th>
+                      <th className="py-3 px-3 whitespace-nowrap bangla-text">{tBilingual('Compatible Printing', 'উপযোগী প্রিন্টিং')}</th>
+                      <th className="py-3 px-3 whitespace-nowrap bangla-text">{tBilingual('Effective Cost / Unit', 'কার্যকর খরচ / একক')}</th>
+                      <th className="py-3 px-3 whitespace-nowrap text-center bangla-text">{tBilingual('Status', 'অবস্থা')}</th>
+                      <th className="py-3 px-4 text-center whitespace-nowrap w-[70px] min-w-[70px] bangla-text">{tBilingual('Actions', 'অ্যাকশন')}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border dark:divide-border">
@@ -3221,15 +3221,15 @@ export default function ProductsCatalogPage() {
                 <table className="w-full text-left text-sm">
                   <thead className="bg-muted text-xs font-semibold text-muted-foreground border-b border-border">
                     <tr>
-                      <th className="py-3 px-4 min-w-[200px]">Product & SKU</th>
-                      <th className="py-3 px-3 whitespace-nowrap">Subcontract Vendor</th>
-                      <th className="py-3 px-3 whitespace-nowrap">Lead Time & Inventory</th>
-                      <th className="py-3 px-3 whitespace-nowrap">Price Tiers</th>
-                      <th className="py-3 px-3 whitespace-nowrap">Vendor Cost</th>
-                      <th className="py-3 px-3 whitespace-nowrap">Selling Rate</th>
-                      <th className="py-3 px-3 whitespace-nowrap text-center">Gross Margin</th>
-                      <th className="py-3 px-3 whitespace-nowrap text-center">Status</th>
-                      <th className="py-3 px-4 text-center whitespace-nowrap w-[70px] min-w-[70px]">Actions</th>
+                      <th className="py-3 px-4 min-w-[200px] bangla-text">{tBilingual('Product & SKU', 'পণ্য ও এসকেইউ')}</th>
+                      <th className="py-3 px-3 whitespace-nowrap bangla-text">{tBilingual('Subcontract Vendor', 'সাব-কন্ট্রাক্ট ভেন্ডর')}</th>
+                      <th className="py-3 px-3 whitespace-nowrap bangla-text">{tBilingual('Lead Time & Inventory', 'সময় ও স্টক')}</th>
+                      <th className="py-3 px-3 whitespace-nowrap bangla-text">{tBilingual('Price Tiers', 'মূল্যের স্তর')}</th>
+                      <th className="py-3 px-3 whitespace-nowrap bangla-text">{tBilingual('Vendor Cost', 'ভেন্ডর খরচ')}</th>
+                      <th className="py-3 px-3 whitespace-nowrap bangla-text">{tBilingual('Selling Rate', 'বিক্রয় দর')}</th>
+                      <th className="py-3 px-3 whitespace-nowrap text-center bangla-text">{tBilingual('Gross Margin', 'মোট মার্জিন')}</th>
+                      <th className="py-3 px-3 whitespace-nowrap text-center bangla-text">{tBilingual('Status', 'অবস্থা')}</th>
+                      <th className="py-3 px-4 text-center whitespace-nowrap w-[70px] min-w-[70px] bangla-text">{tBilingual('Actions', 'অ্যাকশন')}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border dark:divide-border">
@@ -3399,15 +3399,15 @@ export default function ProductsCatalogPage() {
                 <table className="w-full text-left text-sm">
                   <thead className="bg-muted text-xs font-semibold text-muted-foreground border-b border-border">
                     <tr>
-                      <th className="py-3 px-4 min-w-[200px]">Item & SKU</th>
-                      <th className="py-3 px-3 whitespace-nowrap">Entity Kind</th>
-                      <th className="py-3 px-3 whitespace-nowrap">Purchase Economics</th>
-                      <th className="py-3 px-3 whitespace-nowrap">Effective Cost</th>
-                      <th className="py-3 px-3 whitespace-nowrap">Selling Rate</th>
-                      <th className="py-3 px-3 whitespace-nowrap text-center">Gross Margin</th>
-                      <th className="py-3 px-3 whitespace-nowrap text-center">Min Charge</th>
-                      <th className="py-3 px-3 whitespace-nowrap text-center">Status</th>
-                      <th className="py-3 px-4 text-center whitespace-nowrap w-[70px] min-w-[70px]">Actions</th>
+                      <th className="py-3 px-4 min-w-[200px] bangla-text">{tBilingual('Item & SKU', 'আইটেম ও এসকেইউ')}</th>
+                      <th className="py-3 px-3 whitespace-nowrap bangla-text">{tBilingual('Entity Kind', 'পণ্যের ধরন')}</th>
+                      <th className="py-3 px-3 whitespace-nowrap bangla-text">{tBilingual('Purchase Economics', 'ক্রয় দর ও হিসাব')}</th>
+                      <th className="py-3 px-3 whitespace-nowrap bangla-text">{tBilingual('Effective Cost', 'কার্যকর খরচ')}</th>
+                      <th className="py-3 px-3 whitespace-nowrap bangla-text">{tBilingual('Selling Rate', 'বিক্রয় দর')}</th>
+                      <th className="py-3 px-3 whitespace-nowrap text-center bangla-text">{tBilingual('Gross Margin', 'মোট মার্জিন')}</th>
+                      <th className="py-3 px-3 whitespace-nowrap text-center bangla-text">{tBilingual('Min Charge', 'সর্বনিম্ন চার্জ')}</th>
+                      <th className="py-3 px-3 whitespace-nowrap text-center bangla-text">{tBilingual('Status', 'অবস্থা')}</th>
+                      <th className="py-3 px-4 text-center whitespace-nowrap w-[70px] min-w-[70px] bangla-text">{tBilingual('Actions', 'অ্যাকশন')}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border dark:divide-border">
@@ -3719,7 +3719,7 @@ export default function ProductsCatalogPage() {
  Customer / Company Name <span className="text-rose-500">*</span>
                       </Label>
                       <Input
- placeholder="e.g. ABC Advertising Ltd"value={quoteCustomerName}
+ placeholder={tBilingual("e.g. ABC Advertising Ltd", "যেমন: এবিসি অ্যাডভারটাইজিং লি:")}value={quoteCustomerName}
  onChange={(e) => setQuoteCustomerName(e.target.value)}
  className="text-xs h-9"required
                       />
@@ -3763,9 +3763,9 @@ export default function ProductsCatalogPage() {
  value={quoteDimUnit}
  onChange={(e) => setQuoteDimUnit(e.target.value as any)}
  className="w-full h-9 rounded-lg border border-input bg-card px-2.5 text-xs font-medium">
-                        <option value="ft">Feet (ft)</option>
-                        <option value="inch">Inches (in)</option>
-                        <option value="m">Meters (m)</option>
+                        <option value="ft">{tBilingual("Feet (ft)", "ফুট (ft)")}</option>
+                        <option value="inch">{tBilingual("Inches (in)", "ইঞ্চি (in)")}</option>
+                        <option value="m">{tBilingual("Meters (m)", "মিটার (m)")}</option>
                       </select>
                     </div>
                     <div>
@@ -4003,7 +4003,7 @@ export default function ProductsCatalogPage() {
  Product Name <span className="text-rose-500">*</span>
                 </Label>
                 <Input
- placeholder="e.g. Star Flex Banner 320 GSM, Vinyl Sticker, Graphic Design..."value={formData.name}
+ placeholder={tBilingual("e.g. Star Flex Banner 320 GSM, Vinyl Sticker...", "যেমন: স্টার ফ্লেক্স ব্যানার ৩২০ জিএসএম, ভিনাইল স্টিকার...")}value={formData.name}
  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
  className="text-sm font-medium h-9"required
  autoFocus
@@ -4029,7 +4029,7 @@ export default function ProductsCatalogPage() {
  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
  className="w-full h-9 rounded-lg border border-input bg-card px-3 text-xs font-medium text-foreground focus:border-blue-500 focus:outline-none"required
                 >
-                  <option value=""disabled>Select category...</option>
+                  <option value="" disabled>{tBilingual("Select category...", "ক্যাটাগরি নির্বাচন করুন...")}</option>
                   {categories.length > 0 ? (
  categories.map((cat) => (
                       <option key={cat.id} value={cat.slug || cat.name}>
@@ -4038,12 +4038,12 @@ export default function ProductsCatalogPage() {
                     ))
                   ) : (
                     <>
-                      <option value="flex_banner">Flex Banner</option>
-                      <option value="vinyl_sticker">Vinyl Sticker</option>
-                      <option value="display_stand">Display Stand</option>
-                      <option value="finishing">Finishing</option>
-                      <option value="services">Services & Design</option>
-                      <option value="delivery_logistics">Delivery</option>
+                      <option value="flex_banner">{tBilingual("Flex Banner", "ফ্লেক্স ব্যানার")}</option>
+                      <option value="vinyl_sticker">{tBilingual("Vinyl Sticker", "ভিনাইল স্টিকার")}</option>
+                      <option value="display_stand">{tBilingual("Display Stand", "ডিসপ্লে স্ট্যান্ড")}</option>
+                      <option value="finishing">{tBilingual("Finishing", "ফিনিশিং")}</option>
+                      <option value="services">{tBilingual("Services & Design", "সার্ভিস ও ডিজাইন")}</option>
+                      <option value="delivery_logistics">{tBilingual("Delivery", "ডেলিভারি")}</option>
                     </>
                   )}
                 </select>
@@ -4064,7 +4064,7 @@ export default function ProductsCatalogPage() {
  SKU / Item Code (Optional)
                 </Label>
                 <Input
- placeholder="PRD-FLX-01"value={formData.sku}
+ placeholder={tBilingual("PRD-FLX-01", "PRD-FLX-01")}value={formData.sku}
  onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
  className="text-xs h-9 tabular-nums uppercase text-muted-foreground"/>
               </div>
@@ -4072,7 +4072,7 @@ export default function ProductsCatalogPage() {
               <div>
                 <Label className="text-xs font-semibold mb-1 block">Description (Optional)</Label>
                 <Input
- placeholder="Customer-facing notes or specifications..."value={formData.description}
+ placeholder={tBilingual("Customer-facing notes or specifications...", "গ্রাহকের জন্য বিশেষ নোট বা বিবরণ...")}value={formData.description}
  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
  className="text-xs h-9"/>
               </div>
@@ -4609,12 +4609,12 @@ export default function ProductsCatalogPage() {
                     <table className="w-full text-xs text-left">
                       <thead className="bg-muted font-semibold text-muted-foreground">
                         <tr>
-                          <th className="py-2 px-3">Item Name</th>
-                          <th className="py-2 px-2">Qty</th>
-                          <th className="py-2 px-2">Unit</th>
-                          <th className="py-2 px-2">Cost (৳)</th>
-                          <th className="py-2 px-2">Role</th>
-                          <th className="py-2 px-3 text-right">Action</th>
+                          <th className="py-2 px-3 bangla-text">{tBilingual('Item Name', 'আইটেমের নাম')}</th>
+                          <th className="py-2 px-2 bangla-text">{tBilingual('Qty', 'পরিমাণ')}</th>
+                          <th className="py-2 px-2 bangla-text">{tBilingual('Unit', 'একক')}</th>
+                          <th className="py-2 px-2 bangla-text">{tBilingual('Cost (৳)', 'খরচ (৳)')}</th>
+                          <th className="py-2 px-2 bangla-text">{tBilingual('Role', 'ভূমিকা')}</th>
+                          <th className="py-2 px-3 text-right bangla-text">{tBilingual('Action', 'অ্যাকশন')}</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-border tabular-nums">
@@ -4658,7 +4658,7 @@ export default function ProductsCatalogPage() {
                     <div className="col-span-2 sm:col-span-2">
                       <Label className="text-2xs mb-0.5 block">Item Name</Label>
                       <Input
- placeholder="e.g. X-Stand Hardware"value={newComponent.name}
+ placeholder={tBilingual("e.g. X-Stand Hardware", "যেমন: এক্স-স্ট্যান্ড হার্ডওয়্যার")}value={newComponent.name}
  onChange={(e) => setNewComponent({ ...newComponent, name: e.target.value })}
  className="text-xs h-8"/>
                     </div>
@@ -4672,7 +4672,7 @@ export default function ProductsCatalogPage() {
                     <div>
                       <Label className="text-2xs mb-0.5 block">Unit</Label>
                       <Input
- placeholder="pcs"value={newComponent.unit}
+ placeholder={tBilingual("pcs", "পিস")}value={newComponent.unit}
  onChange={(e) => setNewComponent({ ...newComponent, unit: e.target.value })}
  className="text-xs h-8 uppercase tabular-nums"/>
                     </div>
@@ -4803,7 +4803,7 @@ export default function ProductsCatalogPage() {
  Reason for Price Adjustment (Audit Trail) <span className="text-rose-500">*</span>
               </Label>
               <Input
- placeholder="e.g. Raw solvent media and ink import duty increase"value={priceReason}
+ placeholder={tBilingual("e.g. Raw solvent media and ink import duty increase", "যেমন: কাঁচামাল ও কালির আমদানি শুল্ক বৃদ্ধি")}value={priceReason}
  onChange={(e) => setPriceReason(e.target.value)}
  className="text-xs h-9"required
               />

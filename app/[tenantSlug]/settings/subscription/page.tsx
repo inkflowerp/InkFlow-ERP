@@ -279,7 +279,7 @@ export default function TenantSubscriptionPage() {
                   ? isTrialExpired
                     ? 'Trial Expired'
                     : timeRemainingInTrial && timeRemainingInTrial.days === 0
-                    ? `Trial (${timeRemainingInTrial.formattedEn})`
+                    ? `Trial (${isBn ? timeRemainingInTrial.formattedBn : timeRemainingInTrial.formattedEn})`
                     : `Trial (${daysRemainingInTrial} Days Remaining)`
                   : isPlanExpired
                   ? 'Plan Expired'
@@ -287,7 +287,7 @@ export default function TenantSubscriptionPage() {
               </Badge>
 
               <span className="text-xs text-muted-foreground capitalize">
-                • {subscription.billing_interval} billing
+                • {isBn ? (subscription.billing_interval === 'yearly' ? 'বার্ষিক বিলিং' : 'মাসিক বিলিং') : `${subscription.billing_interval} billing`}
               </span>
             </div>
 
@@ -302,7 +302,7 @@ export default function TenantSubscriptionPage() {
                 }
               />
               <span className="text-xs text-muted-foreground font-normal">
-                {isTrial ? `/ ${currentPlan.trial_days || 30} days evaluation` : `/ ${subscription.billing_interval === 'yearly' ? 'year' : 'month'}`}
+                {isTrial ? (isBn ? `/ ${currentPlan.trial_days || 30} দিনের মূল্যায়ন` : `/ ${currentPlan.trial_days || 30} days evaluation`) : (isBn ? (subscription.billing_interval === 'yearly' ? '/ বছর' : '/ মাস') : `/ ${subscription.billing_interval === 'yearly' ? 'year' : 'month'}`)}
               </span>
             </div>
 
@@ -312,7 +312,7 @@ export default function TenantSubscriptionPage() {
 
             <div className="text-2xs text-muted-foreground pt-1 flex items-center gap-3 flex-wrap">
               <span>
-                {isTrial ? 'Trial Ends:' : 'Period Ends:'}{' '}
+                {isTrial ? (isBn ? 'ট্রায়াল শেষ:' : 'Trial Ends:') : (isBn ? 'মেয়াদ শেষ:' : 'Period Ends:')}{' '}
                 <strong className="text-white tabular-nums">
                   {formatDate(trialExpiresAt || planExpiresAt || subscription.current_period_end, locale)}
                 </strong>{' '}
@@ -323,7 +323,7 @@ export default function TenantSubscriptionPage() {
                       : timeRemainingInTrial.formattedEn
                     : isPlanExpired
                     ? 'Expired'
-                    : timeRemainingInPlan.formattedEn})
+                    : isBn ? timeRemainingInPlan.formattedBn : timeRemainingInPlan.formattedEn})
                 </span>
               </span>
               {subscription.last_payment_reference && (
@@ -341,7 +341,7 @@ export default function TenantSubscriptionPage() {
  onClick={() => openUpgradeModal()}
  className="bg-primary text-primary-foreground hover:bg-primary/90 font-bold text-xs px-5 shadow-xs">
               <Zap className="mr-1.5 h-4 w-4"/>
-              {isTrial ? 'Upgrade Free Trial' : 'Change / Upgrade Plan'}
+              {isTrial ? (isBn ? 'ফ্রি ট্রায়াল আপগ্রেড করুন' : 'Upgrade Free Trial') : (isBn ? 'প্ল্যান পরিবর্তন / আপগ্রেড' : 'Change / Upgrade Plan')}
             </Button>
 
             {!isTrial && subscription.status === 'active' && !isCancelScheduled && (
@@ -376,13 +376,13 @@ export default function TenantSubscriptionPage() {
               {isBn ? 'রিসোর্স ব্যবহার ও কোটা মিটার' : '6 Configurable Limits & Utilization'}
             </h2>
             <p className="text-xs text-muted-foreground">
- Authoritative server-side consumption tracking against your plan quota.
+ {isBn ? 'আপনার সাবস্ক্রিপশন প্ল্যানের কোটা ও রিয়েল-টাইম ব্যবহারের পরিসংখ্যান।' : 'Authoritative server-side consumption tracking against your plan quota.'}
             </p>
           </div>
 
           {subscription.custom_limits_override && (
             <Badge className="bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 border-purple-200 text-2xs">
- Custom Overrides Active
+ {isBn ? 'কাস্টম সীমা সক্রিয়' : 'Custom Overrides Active'}
             </Badge>
           )}
         </div>
@@ -412,8 +412,8 @@ export default function TenantSubscriptionPage() {
               />
             </div>
             <div className="text-2xs text-muted-foreground mt-1 flex justify-between">
-              <span>{userLimit.percentage}% used</span>
-              <span>{Math.max(0, userLimit.limit - userLimit.current)} seats left</span>
+              <span>{userLimit.percentage}% {isBn ? 'ব্যবহৃত' : 'used'}</span>
+              <span className="bangla-text">{Math.max(0, userLimit.limit - userLimit.current)} {isBn ? 'টি সিট বাকি' : 'seats left'}</span>
             </div>
           </Card>
 
@@ -437,8 +437,8 @@ export default function TenantSubscriptionPage() {
               />
             </div>
             <div className="text-2xs text-muted-foreground mt-1 flex justify-between">
-              <span>{branchLimit.percentage}% used</span>
-              <span>{Math.max(0, branchLimit.limit - branchLimit.current)} available</span>
+              <span>{branchLimit.percentage}% {isBn ? 'ব্যবহৃত' : 'used'}</span>
+              <span className="bangla-text">{Math.max(0, branchLimit.limit - branchLimit.current)} {isBn ? 'টি অবশিষ্ট' : 'available'}</span>
             </div>
           </Card>
 
@@ -459,8 +459,8 @@ export default function TenantSubscriptionPage() {
               />
             </div>
             <div className="text-2xs text-muted-foreground mt-1 flex justify-between">
-              <span>{storageLimit.percentage}% used</span>
-              <span>{(storageLimit.limit - storageLimit.current).toFixed(1)} GB free</span>
+              <span>{storageLimit.percentage}% {isBn ? 'ব্যবহৃত' : 'used'}</span>
+              <span className="bangla-text">{(storageLimit.limit - storageLimit.current).toFixed(1)} GB {isBn ? 'ফ্রি' : 'free'}</span>
             </div>
           </Card>
 
@@ -481,8 +481,8 @@ export default function TenantSubscriptionPage() {
               />
             </div>
             <div className="text-2xs text-muted-foreground mt-1 flex justify-between">
-              <span>{orderLimit.percentage}% used</span>
-              <span>Resets on 1st of month</span>
+              <span>{orderLimit.percentage}% {isBn ? 'ব্যবহৃত' : 'used'}</span>
+              <span className="bangla-text">{isBn ? 'প্রতি মাসের ১ তারিখে রিসেট হবে' : 'Resets on 1st of month'}</span>
             </div>
           </Card>
 
@@ -503,8 +503,8 @@ export default function TenantSubscriptionPage() {
               />
             </div>
             <div className="text-2xs text-muted-foreground mt-1 flex justify-between">
-              <span>{customerLimit.percentage}% used</span>
-              <span>{customerLimit.limit - customerLimit.current} entries left</span>
+              <span>{customerLimit.percentage}% {isBn ? 'ব্যবহৃত' : 'used'}</span>
+              <span className="bangla-text">{customerLimit.limit - customerLimit.current} {isBn ? 'টি এন্ট্রি বাকি' : 'entries left'}</span>
             </div>
           </Card>
 
@@ -525,8 +525,8 @@ export default function TenantSubscriptionPage() {
               />
             </div>
             <div className="text-2xs text-muted-foreground mt-1 flex justify-between">
-              <span>{productLimit.percentage}% used</span>
-              <span>{productLimit.limit - productLimit.current} products left</span>
+              <span>{productLimit.percentage}% {isBn ? 'ব্যবহৃত' : 'used'}</span>
+              <span className="bangla-text">{productLimit.limit - productLimit.current} {isBn ? 'টি প্রোডাক্ট বাকি' : 'products left'}</span>
             </div>
           </Card>
         </div>
@@ -540,7 +540,7 @@ export default function TenantSubscriptionPage() {
             {isBn ? 'সাবস্ক্রিপশন ইভেন্ট ও অ্যাক্টিভেশন হিস্ট্রি' : 'Subscription Events & Audit Log'}
           </CardTitle>
           <CardDescription className="text-xs text-muted-foreground">
- Immutable server-side audit trail of all plan changes, payment verifications, and renewals.
+ {isBn ? 'সকল প্ল্যান পরিবর্তন, পেমেন্ট যাচাইকরণ ও রিনিউয়ালের স্থায়ী সার্ভার অডিট লগ।' : 'Immutable server-side audit trail of all plan changes, payment verifications, and renewals.'}
           </CardDescription>
         </CardHeader>
 
@@ -550,18 +550,18 @@ export default function TenantSubscriptionPage() {
             <table className="w-full text-left text-xs">
               <thead className="bg-muted font-semibold text-muted-foreground border-b border-border">
                 <tr>
-                  <th className="py-3 px-4">Event Type</th>
-                  <th className="py-3 px-4">Transition</th>
-                  <th className="py-3 px-4">Amount</th>
-                  <th className="py-3 px-4">Reason / Reference</th>
-                  <th className="py-3 px-4">Timestamp</th>
+                  <th className="py-3 px-4 bangla-text">{isBn ? 'ইভেন্টের ধরন' : 'Event Type'}</th>
+                  <th className="py-3 px-4 bangla-text">{isBn ? 'পরিবর্তন' : 'Transition'}</th>
+                  <th className="py-3 px-4 bangla-text">{isBn ? 'পরিমাণ' : 'Amount'}</th>
+                  <th className="py-3 px-4 bangla-text">{isBn ? 'কারণ / রেফারেন্স' : 'Reason / Reference'}</th>
+                  <th className="py-3 px-4 bangla-text">{isBn ? 'সময়' : 'Timestamp'}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border dark:divide-border">
                 {events.length === 0 ? (
                   <tr>
                     <td colSpan={5} className="py-8 text-center text-muted-foreground">
-                      {loadingEvents ? 'Loading subscription events...' : 'No subscription events recorded yet.'}
+                      {loadingEvents ? (isBn ? 'ইভেন্ট লোড হচ্ছে...' : 'Loading subscription events...') : (isBn ? 'এখনও কোনো সাবস্ক্রিপশন ইভেন্ট রেকর্ড করা হয়নি।' : 'No subscription events recorded yet.')}
                     </td>
                   </tr>
                 ) : (
@@ -601,7 +601,7 @@ export default function TenantSubscriptionPage() {
           <div className="md:hidden divide-y divide-border dark:divide-border">
             {events.length === 0 ? (
               <div className="py-8 text-center text-xs text-muted-foreground">
-                {loadingEvents ? 'Loading subscription events...' : 'No subscription events recorded yet.'}
+                {loadingEvents ? (isBn ? 'ইভেন্ট লোড হচ্ছে...' : 'Loading subscription events...') : (isBn ? 'এখনও কোনো সাবস্ক্রিপশন ইভেন্ট রেকর্ড করা হয়নি।' : 'No subscription events recorded yet.')}
               </div>
             ) : (
  events.map((ev) => (
@@ -642,7 +642,7 @@ export default function TenantSubscriptionPage() {
             {isBn ? 'পেমেন্ট ইনভয়েস ও রসিদ হিস্ট্রি' : 'Billing Invoices & Payment Receipts'}
           </CardTitle>
           <CardDescription className="text-xs text-muted-foreground">
- Official billing statements, gateway transaction references, and settlement records.
+ {isBn ? 'অফিসিয়াল বিলিং স্টেটমেন্ট, গেটওয়ে ট্রানজেকশন রেফারেন্স ও সেটেলমেন্ট রেকর্ড।' : 'Official billing statements, gateway transaction references, and settlement records.'}
           </CardDescription>
         </CardHeader>
 
@@ -652,20 +652,20 @@ export default function TenantSubscriptionPage() {
             <table className="w-full text-left text-xs">
               <thead className="bg-muted font-semibold text-muted-foreground border-b border-border">
                 <tr>
-                  <th className="py-3 px-4">Invoice #</th>
-                  <th className="py-3 px-4">Plan & Interval</th>
-                  <th className="py-3 px-4">Amount</th>
-                  <th className="py-3 px-4">Payment Method</th>
-                  <th className="py-3 px-4">Transaction Ref</th>
-                  <th className="py-3 px-4">Status</th>
-                  <th className="py-3 px-4">Date</th>
+                  <th className="py-3 px-4 bangla-text">{isBn ? 'ইনভয়েস নং' : 'Invoice #'}</th>
+                  <th className="py-3 px-4 bangla-text">{isBn ? 'প্ল্যান ও সময়কাল' : 'Plan & Interval'}</th>
+                  <th className="py-3 px-4 bangla-text">{isBn ? 'পরিমাণ' : 'Amount'}</th>
+                  <th className="py-3 px-4 bangla-text">{isBn ? 'পেমেন্ট মাধ্যম' : 'Payment Method'}</th>
+                  <th className="py-3 px-4 bangla-text">{isBn ? 'ট্রানজেকশন রেফারেন্স' : 'Transaction Ref'}</th>
+                  <th className="py-3 px-4 bangla-text">{isBn ? 'অবস্থা' : 'Status'}</th>
+                  <th className="py-3 px-4 bangla-text">{isBn ? 'তারিখ' : 'Date'}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border dark:divide-border">
                 {invoices.length === 0 ? (
                   <tr>
                     <td colSpan={7} className="py-8 text-center text-muted-foreground">
-                      {loadingInvoices ? 'Loading billing invoices...' : 'No billing transactions recorded yet.'}
+                      {loadingInvoices ? (isBn ? 'ইনভয়েস লোড হচ্ছে...' : 'Loading billing invoices...') : (isBn ? 'এখনও কোনো বিলিং ট্রানজেকশন রেকর্ড করা হয়নি।' : 'No billing transactions recorded yet.')}
                     </td>
                   </tr>
                 ) : (
@@ -711,7 +711,7 @@ export default function TenantSubscriptionPage() {
           <div className="md:hidden divide-y divide-border dark:divide-border">
             {invoices.length === 0 ? (
               <div className="py-8 text-center text-xs text-muted-foreground">
-                {loadingInvoices ? 'Loading billing invoices...' : 'No billing transactions recorded yet.'}
+                {loadingInvoices ? (isBn ? 'ইনভয়েস লোড হচ্ছে...' : 'Loading billing invoices...') : (isBn ? 'এখনও কোনো বিলিং ট্রানজেকশন রেকর্ড করা হয়নি।' : 'No billing transactions recorded yet.')}
               </div>
             ) : (
  invoices.map((inv) => (

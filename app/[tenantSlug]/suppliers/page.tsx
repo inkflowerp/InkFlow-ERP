@@ -459,7 +459,7 @@ export default function SuppliersPage() {
  value={selectedHub}
  onChange={(e) => setSelectedHub(e.target.value)}
  className="w-full h-9 px-3 rounded-lg border border-input bg-card text-xs font-semibold">
-              <option value="all">📍 All Market Hubs (সকল এলাকা)</option>
+              <option value="all">{tBilingual("📍 All Market Hubs", "📍 সকল এলাকা")}</option>
               {BANGLADESH_MARKET_HUBS.map((hub) => (
                 <option key={hub.id} value={hub.id}>
                   {hub.nameEn.split(' ')[0]} - {hub.nameBn}
@@ -474,10 +474,10 @@ export default function SuppliersPage() {
  value={dueFilter}
  onChange={(e) => setDueFilter(e.target.value as any)}
  className="w-full h-9 px-3 rounded-lg border border-input bg-card text-xs font-semibold">
-              <option value="all">All Balances (সকল হিসাব)</option>
-              <option value="due">⚠️ Has Payable Due (বাকি আছে)</option>
-              <option value="settled">✅ Fully Settled (পরিশোধিত)</option>
-              <option value="over_credit">🚨 Over Credit Limit (সীমা অতিক্রম)</option>
+              <option value="all">{tBilingual("All Balances", "সকল হিসাব")}</option>
+              <option value="due">{tBilingual("⚠️ Has Payable Due", "⚠️ বাকি আছে")}</option>
+              <option value="settled">{tBilingual("✅ Fully Settled", "✅ পরিশোধিত")}</option>
+              <option value="over_credit">{tBilingual("🚨 Over Credit Limit", "🚨 সীমা অতিক্রম")}</option>
             </select>
           </div>
 

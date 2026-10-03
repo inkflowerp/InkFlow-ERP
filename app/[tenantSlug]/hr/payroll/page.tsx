@@ -1,3 +1,4 @@
+import { useI18n } from '@/i18n/context'
 'use client'
 
 import React, { useState, useEffect, useTransition, useCallback } from 'react'
@@ -28,6 +29,7 @@ import {
 import type { PayrollPeriodRecord } from '@/types/workforce.types'
 
 export default function PayrollPage() {
+  const { tBilingual } = useI18n()
  const params = useParams()
  const router = useRouter()
  const { company } = useTenant()
@@ -153,7 +155,7 @@ export default function PayrollPage() {
                   <Input
  value={periodName}
  onChange={(e) => setPeriodName(e.target.value)}
- className="h-9 text-xs mt-1"placeholder="e.g. October 2026 Payroll"/>
+ className="h-9 text-xs mt-1"placeholder={tBilingual("e.g. October 2026 Payroll", "যেমন: অক্টোবর ২০২৬ বেতন")}/>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">

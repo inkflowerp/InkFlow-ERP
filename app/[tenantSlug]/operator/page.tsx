@@ -696,8 +696,8 @@ function MobileOperatorPanelContent() {
  value={selectedStationMachineId}
  onChange={(e) => setSelectedStationMachineId(e.target.value)}
  className="w-full text-xs font-medium rounded-md border border-input bg-muted px-3 py-2 text-foreground shadow-xs focus:border-blue-500 focus:outline-hidden">
-              <option value="all">⚡ All Machines & Stations (সকল স্টেশন)</option>
-              <option value="manual">✋ Manual / Hand Work Stations</option>
+              <option value="all">{tBilingual("⚡ All Machines & Stations", "⚡ সকল মেশিন ও স্টেশন")}</option>
+              <option value="manual">{tBilingual('✋ Manual / Hand Work Stations', '✋ ম্যানুয়াল / হাতের কাজের স্টেশন')}</option>
               {machineries.map((m) => (
                 <option key={m.id} value={m.id}>
                   {m.name} ({m.code}) — [{m.status.toUpperCase()}]
@@ -1142,7 +1142,7 @@ function MobileOperatorPanelContent() {
  required
  value={breakdownTitle}
  onChange={(e) => setBreakdownTitle(e.target.value)}
- placeholder="e.g. Printhead error / Motor driver malfunction..."className="text-xs"/>
+ placeholder={tBilingual("e.g. Printhead error / Motor driver malfunction...", "যেমন: প্রিন্টহেড সমস্যা / মোটর ড্রাইভার ত্রুটি...")}className="text-xs"/>
           </div>
 
           <div className="space-y-1.5">
@@ -1153,7 +1153,7 @@ function MobileOperatorPanelContent() {
  required
  value={breakdownDesc}
  onChange={(e) => setBreakdownDesc(e.target.value)}
- placeholder="Explain the symptom observed..."className="text-xs"/>
+ placeholder={tBilingual("Explain the symptom observed...", "কী সমস্যা দেখা যাচ্ছে তা লিখুন...")}className="text-xs"/>
           </div>
 
           <div className="flex items-center justify-end gap-2 pt-2 border-t border-border">

@@ -176,7 +176,7 @@ export default function BrandingSettingsPage() {
                 )}
               </div>
               <Input
- placeholder="Logo image URL"value={branding.logo_url || ''}
+ placeholder={tBilingual('Logo image URL', 'লোগো ইমেজের লিংক')}value={branding.logo_url || ''}
  onChange={(e) => setBranding({ ...branding, logo_url: e.target.value })}
  className="text-xs h-9"/>
             </CardContent>
@@ -201,7 +201,7 @@ export default function BrandingSettingsPage() {
                 )}
               </div>
               <Input
- placeholder="Invoice Logo URL"value={branding.invoice_logo_url || ''}
+ placeholder={tBilingual('Invoice Logo URL', 'ইনভয়েস লোগোর লিংক')}value={branding.invoice_logo_url || ''}
  onChange={(e) => setBranding({ ...branding, invoice_logo_url: e.target.value })}
  className="text-xs h-9"/>
             </CardContent>
@@ -226,7 +226,7 @@ export default function BrandingSettingsPage() {
                 )}
               </div>
               <Input
- placeholder="Quotation Logo URL"value={branding.quotation_logo_url || ''}
+ placeholder={tBilingual('Quotation Logo URL', 'কোটেশন লোগোর লিংক')}value={branding.quotation_logo_url || ''}
  onChange={(e) => setBranding({ ...branding, quotation_logo_url: e.target.value })}
  className="text-xs h-9"/>
             </CardContent>

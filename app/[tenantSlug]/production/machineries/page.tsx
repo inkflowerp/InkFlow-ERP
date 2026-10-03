@@ -357,7 +357,7 @@ export default function MachineriesListPage() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground"/>
             <Input
- placeholder="Search by machine name, code, brand, model, serial #..."value={search}
+ placeholder={tBilingual('Search by machine name, code, brand, model, serial #...', 'মেশিনের নাম, কোড, ব্র্যান্ড, মডেল বা সিরিয়াল নং দিয়ে খুঁজুন...')}value={search}
  onChange={(e) => setSearch(e.target.value)}
  className="pl-9 text-xs"/>
           </div>
@@ -367,25 +367,25 @@ export default function MachineriesListPage() {
  value={statusFilter}
  onChange={(e) => setStatusFilter(e.target.value as any)}
  className="h-9 px-2.5 rounded-md border border-input bg-card text-xs font-semibold">
-              <option value="all">All Statuses</option>
-              <option value="available">Available Only</option>
-              <option value="in_use">In Use</option>
-              <option value="scheduled">Scheduled</option>
-              <option value="maintenance">Under Maintenance</option>
-              <option value="breakdown">Breakdown</option>
-              <option value="offline">Offline</option>
+              <option value="all">{tBilingual('All Statuses', 'সকল স্ট্যাটাস')}</option>
+              <option value="available">{tBilingual('Available Only', 'শুধুমাত্র প্রস্তুত')}</option>
+              <option value="in_use">{tBilingual('In Use', 'চলমান')}</option>
+              <option value="scheduled">{tBilingual('Scheduled', 'শিডিউল করা')}</option>
+              <option value="maintenance">{tBilingual('Under Maintenance', 'রক্ষণাবেক্ষণে')}</option>
+              <option value="breakdown">{tBilingual('Breakdown', 'নষ্ট / ব্রেকডাউন')}</option>
+              <option value="offline">{tBilingual('Offline', 'অফলাইন')}</option>
             </select>
 
             <select
  value={deptFilter}
  onChange={(e) => setDeptFilter(e.target.value as any)}
  className="h-9 px-2.5 rounded-md border border-input bg-card text-xs font-semibold">
-              <option value="all">All Departments</option>
-              <option value="printing">Printing</option>
-              <option value="finishing">Finishing</option>
-              <option value="fabrication">Fabrication</option>
-              <option value="design">Design</option>
-              <option value="installation">Installation</option>
+              <option value="all">{tBilingual('All Departments', 'সকল বিভাগ')}</option>
+              <option value="printing">{tBilingual('Printing', 'প্রিন্টিং')}</option>
+              <option value="finishing">{tBilingual('Finishing', 'ফিনিশিং')}</option>
+              <option value="fabrication">{tBilingual('Fabrication', 'ফেব্রিকেশন')}</option>
+              <option value="design">{tBilingual('Design', 'ডিজাইন')}</option>
+              <option value="installation">{tBilingual('Installation', 'ইনস্টলেশন')}</option>
             </select>
 
             <div className="flex items-center rounded-md border border-border p-0.5 bg-muted">
@@ -439,7 +439,7 @@ export default function MachineriesListPage() {
             <Cpu className="h-6 w-6"/>
           </div>
           <h3 className="text-base font-bold text-foreground">
- No machineries added yet
+ {tBilingual('No machineries added yet', 'এখনও কোনো মেশিন যুক্ত করা হয়নি')}
           </h3>
           <p className="text-xs text-muted-foreground max-w-md mx-auto mt-1 mb-5">
  Add your printing presses, cutting plotters, CNC routers, lasers, and finishing equipment to begin tracking capacity, job assignments, and maintenance.
@@ -619,13 +619,13 @@ export default function MachineriesListPage() {
           <table className="w-full text-xs text-left">
             <thead className="bg-muted text-muted-foreground font-bold border-b border-border">
               <tr>
-                <th className="p-3">Code / Name</th>
-                <th className="p-3">Type</th>
-                <th className="p-3">Dept</th>
-                <th className="p-3">Status</th>
-                <th className="p-3">Capacity</th>
-                <th className="p-3">Location</th>
-                <th className="p-3 text-right">Actions</th>
+                <th className="p-3 bangla-text">{tBilingual('Code / Name', 'কোড / নাম')}</th>
+                <th className="p-3 bangla-text">{tBilingual('Type', 'ধরন')}</th>
+                <th className="p-3 bangla-text">{tBilingual('Dept', 'বিভাগ')}</th>
+                <th className="p-3 bangla-text">{tBilingual('Status', 'অবস্থা')}</th>
+                <th className="p-3 bangla-text">{tBilingual('Capacity', 'ধারণক্ষমতা')}</th>
+                <th className="p-3 bangla-text">{tBilingual('Location', 'লোকেশন')}</th>
+                <th className="p-3 text-right bangla-text">{tBilingual('Actions', 'অ্যাকশন')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border dark:divide-border">

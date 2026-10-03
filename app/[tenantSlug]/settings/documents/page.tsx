@@ -453,7 +453,7 @@ export default function DocumentDesignerPage() {
  handleUpdateTemplate({ email_subject_template: e.target.value })
                       }
                     }}
- placeholder="e.g. Official Quotation #{{quotation_number}} [৳ {{quotation_total}}]"className="h-9 text-xs font-medium bg-card"/>
+ placeholder={tBilingual("e.g. Official Quotation #{{quotation_number}} [৳ {{quotation_total}}]", "যেমন: অফিশিয়াল কোটেশন #{{quotation_number}} [৳ {{quotation_total}}]")}className="h-9 text-xs font-medium bg-card"/>
                   {/* Quick-insert tags for Subject */}
                   <div className="flex flex-wrap items-center gap-1 pt-1">
                     <span className="text-2xs text-muted-foreground font-medium mr-1">Quick Add:</span>
@@ -498,7 +498,7 @@ export default function DocumentDesignerPage() {
  handleUpdateTemplate({ email_body_template: e.target.value })
                       }
                     }}
- placeholder="<p>Dear {{customer_name}},</p><p>Please find attached...</p>"className="w-full p-2.5 rounded-xl border text-xs tabular-nums bg-card focus:outline-none focus:ring-1 focus:ring-ring"/>
+ placeholder={tBilingual("<p>Dear {{customer_name}},</p><p>Please find attached...</p>", "<p>প্রিয় {{customer_name}},</p><p>অনুগ্রহ করে সংযুক্ত ফাইলটি দেখুন...</p>")}className="w-full p-2.5 rounded-xl border text-xs tabular-nums bg-card focus:outline-none focus:ring-1 focus:ring-ring"/>
                   {/* Quick-insert tags for Email Body */}
                   <div className="flex flex-wrap items-center gap-1 pt-1">
                     <span className="text-2xs text-muted-foreground font-medium mr-1">Quick Add:</span>
@@ -544,7 +544,7 @@ export default function DocumentDesignerPage() {
  handleUpdateTemplate({ whatsapp_template: e.target.value })
                       }
                     }}
- placeholder="*QUOTATION - {{company_name}}*&#10;Dear {{customer_name}},&#10;Total: ৳ {{quotation_total}}..."className="w-full p-2.5 rounded-xl border text-xs tabular-nums bg-card focus:outline-none focus:ring-1 focus:ring-emerald-500"/>
+ placeholder={tBilingual("*QUOTATION - {{company_name}}*\nDear {{customer_name}},\nTotal: ৳ {{quotation_total}}...", "*কোটেশন - {{company_name}}*\nপ্রিয় {{customer_name}},\nমোট: ৳ {{quotation_total}}...")}className="w-full p-2.5 rounded-xl border text-xs tabular-nums bg-card focus:outline-none focus:ring-1 focus:ring-emerald-500"/>
                   {/* Quick-insert tags for WhatsApp */}
                   <div className="flex flex-wrap items-center gap-1 pt-1">
                     <span className="text-2xs text-muted-foreground font-medium mr-1">Quick Add:</span>
@@ -590,7 +590,7 @@ export default function DocumentDesignerPage() {
                     <input
  type="text"value={variableSearch}
  onChange={(e) => setVariableSearch(e.target.value)}
- placeholder="Search variables (e.g. phone, vat, due)..."className="w-full pl-7 pr-3 py-1 text-2xs rounded-lg border border-border bg-card focus:outline-none focus:ring-1 focus:ring-ring text-foreground"/>
+ placeholder={tBilingual('Search variables (e.g. phone, vat, due)...', 'ভ্যারিয়েবল খুঁজুন (যেমন: phone, vat, due)...')}className="w-full pl-7 pr-3 py-1 text-2xs rounded-lg border border-border bg-card focus:outline-none focus:ring-1 focus:ring-ring text-foreground"/>
                   </div>
 
                   {/* Category Filter Tabs */}
@@ -646,7 +646,7 @@ export default function DocumentDesignerPage() {
                     ))}
                     {filteredVariables.length === 0 && (
                       <div className="p-4 text-center text-muted-foreground text-2xs">
- No supported variables found matching &ldquo;{variableSearch}&rdquo;.
+ {tBilingual('No supported variables found matching', 'মিলছে এমন কোনো ভ্যারিয়েবল পাওয়া যায়নি')} &ldquo;{variableSearch}&rdquo;.
                       </div>
                     )}
                   </div>
@@ -761,11 +761,11 @@ export default function DocumentDesignerPage() {
                 <table className="w-full text-left border-collapse border border-input print:border-input text-xs tabular-nums print:text-foreground">
                   <thead className="bg-muted print:bg-muted font-bold border-b border-input print:border-input print:text-foreground">
                     <tr>
-                      <th className="p-2 border text-center">SL</th>
-                      <th className="p-2 border">Description (বিবরণ)</th>
-                      <th className="p-2 border text-center">Qty</th>
-                      <th className="p-2 border text-right">Rate</th>
-                      <th className="p-2 border text-right">Total (৳)</th>
+                      <th className="p-2 border text-center bangla-text">{tBilingual('SL', 'ক্রম')}</th>
+                      <th className="p-2 border bangla-text">{tBilingual('Description', 'বিবরণ')}</th>
+                      <th className="p-2 border text-center bangla-text">{tBilingual('Qty', 'পরিমাণ')}</th>
+                      <th className="p-2 border text-right bangla-text">{tBilingual('Rate', 'দর')}</th>
+                      <th className="p-2 border text-right bangla-text">{tBilingual('Total (৳)', 'মোট (৳)')}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -893,12 +893,12 @@ export default function DocumentDesignerPage() {
                 <table className="w-full text-left text-xs border-collapse">
                   <thead>
                     <tr className="border-b border-border text-muted-foreground font-bold uppercase text-2xs">
-                      <th className="pb-2 tabular-nums">Variable Tag</th>
-                      <th className="pb-2">Name</th>
-                      <th className="pb-2">Category</th>
-                      <th className="pb-2">Description</th>
-                      <th className="pb-2 tabular-nums">Example / Live Value</th>
-                      <th className="pb-2 text-right">Action</th>
+                      <th className="pb-2 tabular-nums bangla-text">{tBilingual('Variable Tag', 'ভ্যারিয়েবল ট্যাগ')}</th>
+                      <th className="pb-2 bangla-text">{tBilingual('Name', 'নাম')}</th>
+                      <th className="pb-2 bangla-text">{tBilingual('Category', 'ক্যাটাগরি')}</th>
+                      <th className="pb-2 bangla-text">{tBilingual('Description', 'বিবরণ')}</th>
+                      <th className="pb-2 tabular-nums bangla-text">{tBilingual('Example / Live Value', 'উদাহরণ / মান')}</th>
+                      <th className="pb-2 text-right bangla-text">{tBilingual('Action', 'অ্যাকশন')}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border dark:divide-border/60">
