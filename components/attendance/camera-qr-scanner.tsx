@@ -397,7 +397,7 @@ export function CameraQrScanner({
               <Input
  value={manualCode}
  onChange={(e) => setManualCode(e.target.value)}
- placeholder="e.g. INKFLOW:ATT:v1:... or Terminal Code"className="bg-surface-inset border-border text-white tabular-nums text-xs h-11"autoFocus
+ placeholder="e.g. INKFLOW:ATT:v1:... or Terminal Code"className="bg-card border-border text-foreground tabular-nums text-xs h-11"autoFocus
               />
             </div>
             <div className="flex gap-2">

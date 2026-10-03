@@ -274,9 +274,12 @@ export default function DocumentDesignerPage() {
  titleEn="Print & SMS Formats"titleBn="ডকুমেন্ট ডিজাইন ও মেসেজ টেমপ্লেট"descriptionEn="Customize print layouts, quotation & invoice email subjects, HTML email bodies, WhatsApp messages, and PDF attachments."descriptionBn="প্রিন্ট লেআউট, কোটেশন ও ইনভয়েস পিডিএফ স্টাইল, ইমেইল বডি এবং হোয়াটসঅ্যাপ নোটিফিকেশন টেমপ্লেট পরিচালনা করুন।"icon={FileText}
  iconColor="text-blue-600 dark:text-blue-400"actions={
             <Button
- size="sm"onClick={() => window.print()}
- className="bg-surface-inset hover:bg-card-elevated text-xs text-white">
-              <Printer className="mr-1.5 h-3.5 w-3.5"/>
+              size="sm"
+              variant="outline"
+              onClick={() => window.print()}
+              className="border-border bg-card text-foreground hover:bg-muted text-xs cursor-pointer shadow-xs"
+            >
+              <Printer className="mr-1.5 h-3.5 w-3.5 text-primary" />
               {tBilingual('Print Preview', 'প্রিন্ট প্রিভিউ')}
             </Button>
           }
@@ -326,16 +329,18 @@ export default function DocumentDesignerPage() {
                 { id: 'english', label: 'English' },
                 { id: 'bengali', label: 'বাংলা' },
               ].map((lang) => (
-                <Button
- key={lang.id}
- size="sm"variant={langMode === lang.id ? 'default' : 'ghost'}
- onClick={() => setLangMode(lang.id as DocumentLanguageMode)}
- className={`text-xs h-8 sm:h-6 px-3 sm:px-2.5 font-bold ${
- langMode === lang.id ? 'bg-card-elevated text-foreground shadow-xs' : 'text-muted-foreground'
+                <button
+                  key={lang.id}
+                  type="button"
+                  onClick={() => setLangMode(lang.id as DocumentLanguageMode)}
+                  className={`text-xs h-8 sm:h-6 px-3 sm:px-2.5 rounded-md font-bold transition-all cursor-pointer ${
+                    langMode === lang.id
+                      ? 'bg-primary text-primary-foreground shadow-xs'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-muted'
                   }`}
                 >
                   {lang.label}
-                </Button>
+                </button>
               ))}
             </div>
           </div>
@@ -357,8 +362,8 @@ export default function DocumentDesignerPage() {
                     : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
                 }`}
               >
-                <Sliders className="h-3.5 w-3.5"/>
- PDF &amp; Print Layout
+                <Sliders className="h-3.5 w-3.5" />
+                {tBilingual('PDF & Print Layout', 'পিডিএফ ও প্রিন্ট লেআউট')}
               </button>
               {(selectedDoc === 'quotation' || selectedDoc === 'invoice') && (
                 <button
@@ -369,8 +374,8 @@ export default function DocumentDesignerPage() {
                       : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
                   }`}
                 >
-                  <Mail className="h-3.5 w-3.5"/>
- Email &amp; WhatsApp
+                  <Mail className="h-3.5 w-3.5" />
+                  {tBilingual('Email & WhatsApp', 'ইমেইল ও হোয়াটসঅ্যাপ')}
                 </button>
               )}
             </div>
@@ -662,43 +667,59 @@ export default function DocumentDesignerPage() {
         <div className="lg:col-span-2 print:col-span-3 print:w-full overflow-x-auto print:overflow-visible space-y-3">
           {/* Live Preview Mode Switcher */}
           <div className="print:hidden flex items-center justify-between p-2 bg-muted rounded-xl border">
-            <span className="text-xs font-bold text-muted-foreground flex items-center gap-1.5 pl-1">
-              <Eye className="h-3.5 w-3.5 text-blue-600"/>
- Live Output Preview:
+            <span className="text-xs font-bold text-foreground flex items-center gap-1.5 pl-1">
+              <Eye className="h-3.5 w-3.5 text-primary" />
+              {tBilingual('Live Output Preview:', 'লাইভ আউটপুট প্রিভিউ:')}
             </span>
             <div className="flex items-center gap-1 overflow-x-auto">
-              <Button
- size="sm"variant={previewMode === 'pdf' ? 'default' : 'ghost'}
- onClick={() => setPreviewMode('pdf')}
- className={`text-xs h-7 px-3 ${previewMode === 'pdf' ? 'bg-card-elevated text-foreground font-bold' : 'text-muted-foreground'}`}
+              <button
+                type="button"
+                onClick={() => setPreviewMode('pdf')}
+                className={`text-xs h-7 px-3 rounded-lg font-bold transition-all flex items-center gap-1 cursor-pointer ${
+                  previewMode === 'pdf'
+                    ? 'bg-primary text-primary-foreground shadow-xs'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-card/70'
+                }`}
               >
-                <FileText className="h-3 w-3 mr-1"/>
- PDF Document
-              </Button>
-              <Button
- size="sm"variant={previewMode === 'email' ? 'default' : 'ghost'}
- onClick={() => setPreviewMode('email')}
- className={`text-xs h-7 px-3 ${previewMode === 'email' ? 'bg-blue-600 text-white font-bold' : 'text-muted-foreground'}`}
+                <FileText className="h-3.5 w-3.5" />
+                {tBilingual('PDF Document', 'পিডিএফ ডকুমেন্ট')}
+              </button>
+              <button
+                type="button"
+                onClick={() => setPreviewMode('email')}
+                className={`text-xs h-7 px-3 rounded-lg font-bold transition-all flex items-center gap-1 cursor-pointer ${
+                  previewMode === 'email'
+                    ? 'bg-blue-600 text-white shadow-xs'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-card/70'
+                }`}
               >
-                <Mail className="h-3 w-3 mr-1"/>
- Email View
-              </Button>
-              <Button
- size="sm"variant={previewMode === 'whatsapp' ? 'default' : 'ghost'}
- onClick={() => setPreviewMode('whatsapp')}
- className={`text-xs h-7 px-3 ${previewMode === 'whatsapp' ? 'bg-emerald-600 text-white font-bold' : 'text-muted-foreground'}`}
+                <Mail className="h-3.5 w-3.5" />
+                {tBilingual('Email View', 'ইমেইল প্রিভিউ')}
+              </button>
+              <button
+                type="button"
+                onClick={() => setPreviewMode('whatsapp')}
+                className={`text-xs h-7 px-3 rounded-lg font-bold transition-all flex items-center gap-1 cursor-pointer ${
+                  previewMode === 'whatsapp'
+                    ? 'bg-emerald-600 text-white shadow-xs'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-card/70'
+                }`}
               >
-                <MessageSquare className="h-3 w-3 mr-1"/>
- WhatsApp
-              </Button>
-              <Button
- size="sm"variant={previewMode === 'variables' ? 'default' : 'ghost'}
- onClick={() => setPreviewMode('variables')}
- className={`text-xs h-7 px-3 ${previewMode === 'variables' ? 'bg-indigo-600 text-white font-bold' : 'text-muted-foreground'}`}
+                <MessageSquare className="h-3.5 w-3.5" />
+                {tBilingual('WhatsApp', 'হোয়াটসঅ্যাপ')}
+              </button>
+              <button
+                type="button"
+                onClick={() => setPreviewMode('variables')}
+                className={`text-xs h-7 px-3 rounded-lg font-bold transition-all flex items-center gap-1 cursor-pointer ${
+                  previewMode === 'variables'
+                    ? 'bg-indigo-600 text-white shadow-xs'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-card/70'
+                }`}
               >
-                <Sparkles className="h-3 w-3 mr-1"/>
- Variables Guide
-              </Button>
+                <Sparkles className="h-3.5 w-3.5" />
+                {tBilingual('Variables Guide', 'ভ্যারিয়েবল গাইড')}
+              </button>
             </div>
           </div>
 

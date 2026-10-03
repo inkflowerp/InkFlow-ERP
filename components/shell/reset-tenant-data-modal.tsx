@@ -192,7 +192,7 @@ export function ResetTenantDataModal({
             <Input
  type="text"placeholder="RESET"value={confirmText}
  onChange={(e) => setConfirmText(e.target.value)}
- className="tabular-nums text-center tracking-widest uppercase bg-surface-inset border-border text-white placeholder:text-muted-foreground focus:border-rose-500 focus:ring-rose-500/20"/>
+ className="tabular-nums text-center tracking-widest uppercase bg-card border-border text-foreground placeholder:text-muted-foreground focus:border-rose-500 focus:ring-rose-500/20"/>
           </div>
         </div>
 

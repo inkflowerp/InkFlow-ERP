@@ -613,7 +613,7 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
                     >
                       <div className="space-y-0.5 min-w-0 pr-2">
                         <div className="flex items-center gap-1.5 truncate">
-                          <span className="truncate">{isBn ? (role.name_bn || ROLE_NAMES_BN[role.slug || ''] || ROLE_NAMES_BN[role.name] || role.name) : role.name}</span>
+                          <span className={cn('truncate font-bold', isSelected ? 'text-primary dark:text-sky-300' : 'text-foreground')}>{isBn ? (role.name_bn || ROLE_NAMES_BN[role.slug || ''] || ROLE_NAMES_BN[role.name] || role.name) : role.name}</span>
                         </div>
                         <div className="text-2xs text-muted-foreground tabular-nums">
                           {role.permissions?.length || 0} {isBn ? 'টি পারমিশন কার্যকর' : 'permissions granted'}
@@ -820,10 +820,17 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
                                       : 'bg-muted/60 border-border text-muted-foreground hover:text-foreground dark:hover:text-muted-foreground hover:border-input dark:hover:border-border'
                                 )}
                               >
-                                <span className="truncate flex items-center gap-1">
-                                  {isHighRisk && <ShieldAlert className="w-3 h-3 text-rose-500 shrink-0"/>}
-                                  {isBn ? (ACTION_LABELS[act]?.labelBn || act) : (ACTION_LABELS[act]?.label || act)}
-                                </span>
+                                <span className={cn(
+                                    'truncate flex items-center gap-1 font-semibold',
+                                    isChecked
+                                      ? isHighRisk
+                                        ? 'text-rose-800 dark:text-rose-200'
+                                        : 'text-primary dark:text-sky-300'
+                                      : 'text-foreground'
+                                  )}>
+                                    {isHighRisk && <ShieldAlert className="w-3 h-3 text-rose-500 shrink-0"/>}
+                                    {isBn ? (ACTION_LABELS[act]?.labelBn || act) : (ACTION_LABELS[act]?.label || act)}
+                                  </span>
 
                                 {isChecked ? (
                                   <div

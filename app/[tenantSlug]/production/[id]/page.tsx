@@ -157,7 +157,7 @@ export default function ProductionJobDetailPage() {
           <div className="flex items-center gap-2 print:hidden">
             <Button
  size="sm"onClick={() => window.print()}
- className="bg-surface-inset hover:bg-card-elevated text-xs text-white">
+ className="border border-border bg-card text-foreground hover:bg-muted text-xs">
               <Printer className="h-3.5 w-3.5 mr-1"/>
  Print Traveler Bag
             </Button>

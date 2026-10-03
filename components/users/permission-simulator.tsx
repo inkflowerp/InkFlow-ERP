@@ -406,7 +406,7 @@ export function PermissionSimulator({
                               : 'bg-muted border-border text-muted-foreground hover:text-foreground hover:border-input dark:hover:border-border'
                           )}
                         >
-                          {locale === 'bn' ? (ACTION_LABELS[act]?.labelBn || act) : (ACTION_LABELS[act]?.label || act)}
+                          <span className={isSelected ? (isDestructive ? 'text-rose-800 dark:text-rose-300 font-bold' : 'text-primary dark:text-sky-300 font-bold') : 'text-muted-foreground'}>{locale === 'bn' ? (ACTION_LABELS[act]?.labelBn || act) : (ACTION_LABELS[act]?.label || act)}</span>
                         </button>
                       )
                     })}

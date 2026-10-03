@@ -258,30 +258,20 @@ button, [role="button"], .btn {
   text-rendering: optimizeLegibility;
 }
 
-/* High-contrast foreground enforcement on solid colored buttons */
-button.bg-primary,
-button[class*="bg-primary"],
-a.bg-primary,
-a[class*="bg-primary"],
-button.bg-blue-600,
-button.bg-blue-700,
-button[class*="bg-blue-600"],
-button[class*="bg-blue-700"] {
-  color: #FFFFFF !important;
-}
-
-button.bg-destructive,
-button[class*="bg-destructive"] {
-  color: #FFFFFF !important;
-}
-
-button.bg-success,
-button[class*="bg-success"],
-button.bg-emerald-600,
-button.bg-emerald-700,
-button[class*="bg-emerald-600"],
-button[class*="bg-emerald-700"] {
-  color: #FFFFFF !important;
+/* High-contrast foreground enforcement ONLY on solid colored buttons (never on opacity tints or elements with explicit text color) */
+button.bg-primary:not([class*="/"]):not([class*="text-"]):not([class*="border-"]),
+a.bg-primary:not([class*="/"]):not([class*="text-"]):not([class*="border-"]),
+button.bg-blue-600:not([class*="/"]):not([class*="text-"]):not([class*="border-"]),
+a.bg-blue-600:not([class*="/"]):not([class*="text-"]):not([class*="border-"]),
+button.bg-blue-700:not([class*="/"]):not([class*="text-"]):not([class*="border-"]),
+a.bg-blue-700:not([class*="/"]):not([class*="text-"]):not([class*="border-"]),
+button.bg-destructive:not([class*="/"]):not([class*="text-"]):not([class*="border-"]),
+a.bg-destructive:not([class*="/"]):not([class*="text-"]):not([class*="border-"]),
+button.bg-emerald-600:not([class*="/"]):not([class*="text-"]):not([class*="border-"]),
+a.bg-emerald-600:not([class*="/"]):not([class*="text-"]):not([class*="border-"]),
+button.bg-emerald-700:not([class*="/"]):not([class*="text-"]):not([class*="border-"]),
+a.bg-emerald-700:not([class*="/"]):not([class*="text-"]):not([class*="border-"]) {
+  color: #FFFFFF;
 }
 
 /* ==============================================================================
