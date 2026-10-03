@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import { useI18n } from '@/i18n/context'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import {
@@ -47,10 +48,11 @@ export const DesignFilterToolbar = React.memo(function DesignFilterToolbar({
  onRefresh,
  isRefreshing = false,
 }: DesignFilterToolbarProps) {
+  const { tBilingual } = useI18n()
  const tabs = [
-    { id: 'new_tasks', label: 'New', count: tabCounts.new_tasks },
-    { id: 'completed', label: 'Completed', count: tabCounts.completed },
-    { id: 'all', label: 'All Jobs', count: tabCounts.all },
+    { id: 'new_tasks', label: tBilingual('New', 'নতুন'), count: tabCounts.new_tasks },
+    { id: 'completed', label: tBilingual('Completed', 'সম্পন্ন'), count: tabCounts.completed },
+    { id: 'all', label: tBilingual('All Jobs', 'সকল কাজ'), count: tabCounts.all },
   ]
 
  return (
@@ -70,7 +72,7 @@ export const DesignFilterToolbar = React.memo(function DesignFilterToolbar({
                   : 'bg-card border border-border /80 text-foreground hover:bg-muted dark:hover:bg-muted/80'
               )}
             >
-              <span>{tab.label}</span>
+              <span className="bangla-text">{tab.label}</span>
               <span
  className={cn(
                   'text-2xs px-2 py-0.5 rounded-full font-bold tabular-nums',
@@ -94,7 +96,7 @@ export const DesignFilterToolbar = React.memo(function DesignFilterToolbar({
           <Input
  value={filters.searchQuery}
  onChange={(e) => onFilterChange({ searchQuery: e.target.value })}
- placeholder="Search invoice, customer, job, product..."className="pl-9 text-xs bg-transparent border-0 focus-visible:ring-0 shadow-none h-8 text-foreground placeholder:text-muted-foreground"/>
+ placeholder={tBilingual('Search invoice, customer, job, product...', 'ইনভয়েস, গ্রাহক, কাজ বা প্রোডাক্ট দিয়ে খুঁজুন...')} className="pl-9 text-xs bangla-text bg-transparent border-0 focus-visible:ring-0 shadow-none h-8 text-foreground placeholder:text-muted-foreground"/>
         </div>
 
         {/* Right Dropdowns & Refresh Button */}
@@ -104,7 +106,7 @@ export const DesignFilterToolbar = React.memo(function DesignFilterToolbar({
  value={filters.selectedDesigner}
  onChange={(e) => onFilterChange({ selectedDesigner: e.target.value })}
  className="text-xs font-medium rounded-lg border border-border bg-card px-3 h-8 text-foreground outline-none cursor-pointer hover:border-input transition-colors">
-            <option value="all">All Designers</option>
+            <option value="all">{tBilingual('All Designers', 'সকল ডিজাইনার')}</option>
             {designers.map((d) => (
               <option key={d} value={d}>
                 {d}
@@ -117,10 +119,10 @@ export const DesignFilterToolbar = React.memo(function DesignFilterToolbar({
  value={filters.selectedPriority || 'all'}
  onChange={(e) => onFilterChange({ selectedPriority: e.target.value })}
  className="text-xs font-medium rounded-lg border border-border bg-card px-3 h-8 text-foreground outline-none cursor-pointer hover:border-input transition-colors">
-            <option value="all">All Priority</option>
-            <option value="urgent">Urgent</option>
-            <option value="very_urgent">Very Urgent</option>
-            <option value="normal">Normal</option>
+            <option value="all">{tBilingual('All Priority', 'সকল অগ্রাধিকার')}</option>
+            <option value="urgent">{tBilingual('Urgent', 'জরুরি')}</option>
+            <option value="very_urgent">{tBilingual('Very Urgent', 'খুব জরুরি')}</option>
+            <option value="normal">{tBilingual('Normal', 'সাধারণ')}</option>
           </select>
 
           {/* All Dates Dropdown */}
@@ -128,10 +130,10 @@ export const DesignFilterToolbar = React.memo(function DesignFilterToolbar({
  value={filters.selectedDate || 'all'}
  onChange={(e) => onFilterChange({ selectedDate: e.target.value })}
  className="text-xs font-medium rounded-lg border border-border bg-card px-3 h-8 text-foreground outline-none cursor-pointer hover:border-input transition-colors">
-            <option value="all">All Dates</option>
-            <option value="today">Today</option>
-            <option value="2_days">Next 2 Days</option>
-            <option value="this_week">This Week</option>
+            <option value="all">{tBilingual('All Dates', 'সকল তারিখ')}</option>
+            <option value="today">{tBilingual('Today', 'আজ')}</option>
+            <option value="2_days">{tBilingual('Next 2 Days', 'আগামী ২ দিন')}</option>
+            <option value="this_week">{tBilingual('This Week', 'এই সপ্তাহ')}</option>
           </select>
 
           {/* Refresh Button */}

@@ -1348,7 +1348,7 @@ function BillingContent() {
               <div className="relative flex-1 min-w-[200px] max-w-xs">
                 <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground pointer-events-none"/>
                 <Input
- placeholder="Search invoice #, customer, phone, BIN..."value={search}
+ placeholder={tBilingual('Search invoice #, customer, phone, BIN...', 'ইনভয়েস নং, গ্রাহক, ফোন বা বিআইএন দিয়ে খুঁজুন...')} value={search}
  onChange={(e) => setSearch(e.target.value)}
  className="pl-9 pr-8 text-xs h-9 font-medium rounded-xl border-border bg-card shadow-2xs"/>
                 {search && (
@@ -1367,13 +1367,13 @@ function BillingContent() {
  value={invoiceFilterTab}
  onChange={(e) => setInvoiceFilterTab(e.target.value)}
  className="h-9 pl-3 pr-8 rounded-xl border border-border bg-card text-xs font-semibold text-foreground shadow-2xs focus:ring-1 focus:ring-ring outline-none cursor-pointer appearance-none">
-                    <option value="all">All Invoices ({invoices.length})</option>
-                    <option value="unpaid">Unpaid / Due ({invoices.filter((i) => (i.due_amount || 0) > 0 && i.status !== 'cancelled').length})</option>
-                    <option value="overdue">Overdue ({effectiveMetrics?.overdueCount || 0})</option>
-                    <option value="paid">Paid ({invoices.filter((i) => i.status === 'paid' || ((i.due_amount || 0) <= 0 && i.status !== 'cancelled')).length})</option>
-                    <option value="partially_paid">Partially Paid ({invoices.filter((i) => (i.paid_amount || 0) > 0 && (i.due_amount || 0) > 0 && i.status !== 'cancelled').length})</option>
-                    <option value="vat">VAT 6.3 Tax Invoices ({invoices.filter((i) => i.invoice_type === 'vat_invoice').length})</option>
-                    <option value="cancelled">Cancelled ({invoices.filter((i) => i.status === 'cancelled').length})</option>
+                    <option value="all">{tBilingual('All Invoices', 'সকল ইনভয়েস')} ({invoices.length})</option>
+                    <option value="unpaid">{tBilingual('Unpaid / Due', 'বকেয়া')} ({invoices.filter((i) => (i.due_amount || 0) > 0 && i.status !== 'cancelled').length})</option>
+                    <option value="overdue">{tBilingual('Overdue', 'মেয়াদোত্তীর্ণ')} ({effectiveMetrics?.overdueCount || 0})</option>
+                    <option value="paid">{tBilingual('Paid', 'পরিশোধিত')} ({invoices.filter((i) => i.status === 'paid' || ((i.due_amount || 0) <= 0 && i.status !== 'cancelled')).length})</option>
+                    <option value="partially_paid">{tBilingual('Partially Paid', 'আংশিক পরিশোধিত')} ({invoices.filter((i) => (i.paid_amount || 0) > 0 && (i.due_amount || 0) > 0 && i.status !== 'cancelled').length})</option>
+                    <option value="vat">{tBilingual('VAT 6.3 Tax Invoices', 'মূসক ৬.৩ কর চালান')} ({invoices.filter((i) => i.invoice_type === 'vat_invoice').length})</option>
+                    <option value="cancelled">{tBilingual('Cancelled', 'বাতিল')} ({invoices.filter((i) => i.status === 'cancelled').length})</option>
                   </select>
                   <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-muted-foreground">
                     <ChevronDown className="h-3.5 w-3.5"/>
@@ -1393,7 +1393,7 @@ function BillingContent() {
                   )}
                 >
                   <Receipt className="h-3.5 w-3.5"/>
-                  <span>Invoices</span>
+                  <span className="bangla-text">{tBilingual('Invoices', 'ইনভয়েস')}</span>
                   <Badge className={cn('text-2xs py-0 px-1 font-bold', activeTab === 'invoices' ? 'bg-blue-800 text-white' : 'bg-muted text-foreground ')}>
                     {invoices.length}
                   </Badge>
@@ -1409,10 +1409,10 @@ function BillingContent() {
                   )}
                 >
                   <FileSpreadsheet className="h-3.5 w-3.5"/>
-                  <span>Invoice Requests</span>
+                  <span className="bangla-text">{tBilingual('Invoice Requests', 'ইনভয়েস রিকোয়েস্ট')}</span>
                   {pendingRequestsCount > 0 ? (
                     <Badge className={cn('text-2xs py-0 px-1 font-bold', activeTab === 'requests' ? 'bg-amber-800 text-white' : 'bg-amber-100 text-amber-900 border border-amber-300 dark:bg-amber-950 dark:text-amber-300 animate-pulse')}>
-                      {pendingRequestsCount} Hold
+                      {pendingRequestsCount} {tBilingual('Hold', 'অপেক্ষমাণ')}
                     </Badge>
                   ) : (
                     <Badge className={cn('text-2xs py-0 px-1 font-bold', activeTab === 'requests' ? 'bg-amber-800 text-white' : 'bg-muted text-foreground ')}>
@@ -1431,7 +1431,7 @@ function BillingContent() {
                   )}
                 >
                   <DollarSign className="h-3.5 w-3.5"/>
-                  <span>Payments</span>
+                  <span className="bangla-text">{tBilingual('Payments', 'পেমেন্ট')}</span>
                   <Badge className={cn('text-2xs py-0 px-1 font-bold', activeTab === 'payments' ? 'bg-emerald-800 text-white' : 'bg-muted text-foreground ')}>
                     {payments.length}
                   </Badge>
@@ -1447,7 +1447,7 @@ function BillingContent() {
                   )}
                 >
                   <Percent className="h-3.5 w-3.5"/>
-                  <span>Receivables</span>
+                  <span className="bangla-text">{tBilingual('Customer Due', 'বকেয়া/পাওনা')}</span>
                   <Badge className={cn('text-2xs py-0 px-1 font-bold', activeTab === 'receivables' ? 'bg-purple-800 text-white' : 'bg-muted text-foreground ')}>
                     {customerReceivables.length}
                   </Badge>
@@ -1523,12 +1523,12 @@ function BillingContent() {
             {invoiceFilterTab !== 'all' && (
               <div className="flex items-center justify-between px-1 text-xs">
                 <span className="text-muted-foreground font-medium">
- Filtered by: <strong className="text-foreground">{invoiceFilterTab.replace('_', ' ')}</strong>
+ {tBilingual('Filtered by:', 'ফিল্টার করা হয়েছে:')} <strong className="text-foreground">{invoiceFilterTab.replace('_', ' ')}</strong>
                 </span>
                 <button
  type="button"onClick={() => setInvoiceFilterTab('all')}
- className="text-xs text-blue-600 dark:text-blue-400 hover:underline font-semibold cursor-pointer">
- Clear Filter
+ className="text-xs text-blue-600 dark:text-blue-400 hover:underline font-semibold cursor-pointer bangla-text">
+ {tBilingual('Clear Filter', 'ফিল্টার মুছুন')}
                 </button>
               </div>
             )}
@@ -1540,23 +1540,23 @@ function BillingContent() {
                 <table className="w-full text-left text-xs min-w-[940px]">
                   <thead className="bg-muted border-b border-border /80 text-muted-foreground uppercase tracking-wider text-2xs font-bold">
                     <tr>
-                      <th className="p-3.5 whitespace-nowrap min-w-[125px]">Invoice #</th>
-                      <th className="p-3.5 min-w-[160px]">Customer & Phone</th>
-                      <th className="p-3.5 text-center whitespace-nowrap w-[90px] min-w-[90px]">Date</th>
-                      <th className="p-3.5 text-center whitespace-nowrap w-[90px] min-w-[90px]">Due Date</th>
-                      <th className="p-3.5 text-right whitespace-nowrap w-[95px] min-w-[95px]">Total</th>
-                      <th className="p-3.5 text-right whitespace-nowrap w-[95px] min-w-[95px]">Paid</th>
-                      <th className="p-3.5 text-right whitespace-nowrap w-[95px] min-w-[95px]">Due</th>
-                      <th className="p-3.5 text-center whitespace-nowrap w-[110px] min-w-[110px]">Status</th>
-                      <th className="p-3.5 whitespace-nowrap min-w-[120px]">Salesperson</th>
-                      <th className="p-3.5 text-center whitespace-nowrap w-[70px] min-w-[70px]">Actions</th>
+                      <th className="p-3.5 whitespace-nowrap min-w-[125px] bangla-text">{tBilingual('Invoice #', 'ইনভয়েস নং')}</th>
+                      <th className="p-3.5 min-w-[160px] bangla-text">{tBilingual('Customer & Phone', 'গ্রাহক ও ফোন')}</th>
+                      <th className="p-3.5 text-center whitespace-nowrap w-[90px] min-w-[90px] bangla-text">{tBilingual('Date', 'তারিখ')}</th>
+                      <th className="p-3.5 text-center whitespace-nowrap w-[90px] min-w-[90px] bangla-text">{tBilingual('Due Date', 'পরিশোধের তারিখ')}</th>
+                      <th className="p-3.5 text-right whitespace-nowrap w-[95px] min-w-[95px] bangla-text">{tBilingual('Total', 'মোট')}</th>
+                      <th className="p-3.5 text-right whitespace-nowrap w-[95px] min-w-[95px] bangla-text">{tBilingual('Paid', 'পরিশোধ')}</th>
+                      <th className="p-3.5 text-right whitespace-nowrap w-[95px] min-w-[95px] bangla-text">{tBilingual('Due', 'বকেয়া')}</th>
+                      <th className="p-3.5 text-center whitespace-nowrap w-[110px] min-w-[110px] bangla-text">{tBilingual('Status', 'অবস্থা')}</th>
+                      <th className="p-3.5 whitespace-nowrap min-w-[120px] bangla-text">{tBilingual('Salesperson', 'বিক্রয়কর্মী')}</th>
+                      <th className="p-3.5 text-center whitespace-nowrap w-[70px] min-w-[70px] bangla-text">{tBilingual('Actions', 'অ্যাকশন')}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border dark:divide-border">
                     {filteredInvoices.length === 0 ? (
                       <tr>
                         <td colSpan={10} className="p-12 text-center text-muted-foreground text-xs">
- No commercial invoices found matching current filters.
+ {tBilingual('No commercial invoices found matching current filters.', 'ফিল্টারের সাথে মেলে এমন কোনো ইনভয়েস পাওয়া যায়নি।')}
                         </td>
                       </tr>
                     ) : (
@@ -1922,21 +1922,21 @@ function BillingContent() {
                 <table className="w-full text-left text-xs min-w-[950px]">
                   <thead className="bg-muted border-b border-border /80 text-muted-foreground uppercase tracking-wider text-2xs font-bold">
                     <tr>
-                      <th className="p-3.5 whitespace-nowrap min-w-[130px]">Receipt #</th>
-                      <th className="p-3.5 text-center whitespace-nowrap w-[100px] min-w-[100px]">Date</th>
-                      <th className="p-3.5 min-w-[170px]">Customer</th>
-                      <th className="p-3.5 whitespace-nowrap w-[100px] min-w-[100px]">Method</th>
-                      <th className="p-3.5 whitespace-nowrap min-w-[140px]">Reference / TrxID</th>
-                      <th className="p-3.5 text-right whitespace-nowrap w-[110px] min-w-[110px]">Amount</th>
-                      <th className="p-3.5 whitespace-nowrap min-w-[120px]">Received By</th>
-                      <th className="p-3.5 text-right whitespace-nowrap w-[100px] min-w-[100px]">Actions</th>
+                      <th className="p-3.5 whitespace-nowrap min-w-[130px] bangla-text">{tBilingual('Receipt #', 'রশিদ নং')}</th>
+                      <th className="p-3.5 text-center whitespace-nowrap w-[100px] min-w-[100px] bangla-text">{tBilingual('Date', 'তারিখ')}</th>
+                      <th className="p-3.5 min-w-[170px] bangla-text">{tBilingual('Customer', 'গ্রাহক')}</th>
+                      <th className="p-3.5 whitespace-nowrap w-[100px] min-w-[100px] bangla-text">{tBilingual('Method', 'পদ্ধতি')}</th>
+                      <th className="p-3.5 whitespace-nowrap min-w-[140px] bangla-text">{tBilingual('Reference / TrxID', 'রেফারেন্স / ট্রানজেকশন')}</th>
+                      <th className="p-3.5 text-right whitespace-nowrap w-[110px] min-w-[110px] bangla-text">{tBilingual('Amount', 'পরিমাণ')}</th>
+                      <th className="p-3.5 whitespace-nowrap min-w-[120px] bangla-text">{tBilingual('Received By', 'গ্রহণকারী')}</th>
+                      <th className="p-3.5 text-right whitespace-nowrap w-[100px] min-w-[100px] bangla-text">{tBilingual('Actions', 'অ্যাকশন')}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border dark:divide-border">
                     {filteredPayments.length === 0 ? (
                       <tr>
                         <td colSpan={8} className="p-12 text-center text-muted-foreground text-xs">
- No payment records found.
+ {tBilingual('No payment records found.', 'কোনো পেমেন্ট রেকর্ড পাওয়া যায়নি।')}
                         </td>
                       </tr>
                     ) : (
@@ -1985,7 +1985,7 @@ function BillingContent() {
               <div className="md:hidden divide-y divide-border dark:divide-border">
                 {filteredPayments.length === 0 ? (
                   <div className="p-8 text-center text-xs text-muted-foreground">
- No payment records found.
+ {tBilingual('No payment records found.', 'কোনো পেমেন্ট রেকর্ড পাওয়া যায়নি।')}
                   </div>
                 ) : (
  filteredPayments.map((pay) => (
@@ -2081,20 +2081,20 @@ function BillingContent() {
                   <table className="w-full text-left text-xs min-w-[950px]">
                     <thead className="bg-muted border-b border-border /80 text-muted-foreground uppercase tracking-wider text-2xs font-bold">
                       <tr>
-                        <th className="p-3.5 min-w-[180px]">Customer</th>
-                        <th className="p-3.5 whitespace-nowrap min-w-[120px]">Phone</th>
-                        <th className="p-3.5 text-center whitespace-nowrap w-[110px] min-w-[110px]">Unpaid Bills</th>
-                        <th className="p-3.5 text-center whitespace-nowrap w-[110px] min-w-[110px]">Oldest Due Date</th>
-                        <th className="p-3.5 text-center whitespace-nowrap w-[120px] min-w-[120px]">Aging Status</th>
-                        <th className="p-3.5 text-right whitespace-nowrap w-[120px] min-w-[120px]">Outstanding Due</th>
-                        <th className="p-3.5 text-right whitespace-nowrap w-[180px] min-w-[180px]">Actions</th>
+                        <th className="p-3.5 min-w-[180px] bangla-text">{tBilingual('Customer', 'গ্রাহক')}</th>
+                        <th className="p-3.5 whitespace-nowrap min-w-[120px] bangla-text">{tBilingual('Phone', 'ফোন')}</th>
+                        <th className="p-3.5 text-center whitespace-nowrap w-[110px] min-w-[110px] bangla-text">{tBilingual('Unpaid Bills', 'বকেয়া বিল')}</th>
+                        <th className="p-3.5 text-center whitespace-nowrap w-[110px] min-w-[110px] bangla-text">{tBilingual('Oldest Due Date', 'প্রাচীনতম বকেয়ার তারিখ')}</th>
+                        <th className="p-3.5 text-center whitespace-nowrap w-[120px] min-w-[120px] bangla-text">{tBilingual('Aging Status', 'মেয়াদ অবস্থা')}</th>
+                        <th className="p-3.5 text-right whitespace-nowrap w-[120px] min-w-[120px] bangla-text">{tBilingual('Outstanding Due', 'মোট বকেয়া')}</th>
+                        <th className="p-3.5 text-right whitespace-nowrap w-[180px] min-w-[180px] bangla-text">{tBilingual('Actions', 'অ্যাকশন')}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border dark:divide-border">
                       {customerReceivables.length === 0 ? (
                         <tr>
                           <td colSpan={7} className="p-12 text-center text-muted-foreground text-xs">
- No customers with outstanding due balances matching filters.
+ {tBilingual('No customers with outstanding due balances matching filters.', 'ফিল্টারের সাথে মেলে এমন কোনো বকেয়া ব্যালেন্স পাওয়া যায়নি।')}
                           </td>
                         </tr>
                       ) : (

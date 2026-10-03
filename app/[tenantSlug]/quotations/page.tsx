@@ -1006,7 +1006,7 @@ export default function QuotationsPage() {
                     <div className="relative flex-1 min-w-[200px] max-w-sm">
                       <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground"/>
                       <Input
- placeholder="Search quote #, customer, phone, item..."value={search}
+ placeholder={tBilingual('Search quote #, customer, phone, item...', 'কোটেশন নং, গ্রাহক, ফোন বা আইটেম দিয়ে খুঁজুন...')} value={search}
  onChange={(e) => setSearch(e.target.value)}
  className="pl-9 pr-8 text-xs h-9 font-medium rounded-xl border-border bg-card shadow-2xs"/>
                       {search && (
@@ -1046,22 +1046,22 @@ export default function QuotationsPage() {
  type="date"value={customStartDate}
  onChange={(e) => setCustomStartDate(e.target.value)}
  className="px-2 py-0.5 rounded-lg bg-card border border-input text-foreground tabular-nums text-xs focus:ring-1 focus:ring-ring outline-none h-7"title="From Date"/>
-                        <span className="text-muted-foreground font-bold px-0.5 text-xs">to</span>
+                        <span className="text-muted-foreground font-bold px-0.5 text-xs bangla-text">{tBilingual('to', 'থেকে')}</span>
                         <input
  type="date"value={customEndDate}
  onChange={(e) => setCustomEndDate(e.target.value)}
  className="px-2 py-0.5 rounded-lg bg-card border border-input text-foreground tabular-nums text-xs focus:ring-1 focus:ring-ring outline-none h-7"title="To Date"/>
                         <Button
  size="sm"onClick={() => loadQuotationsData(false)}
- className="h-7 px-2 text-xs font-bold bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs cursor-pointer rounded-lg">
- Apply
+ className="h-7 px-2 text-xs font-bold bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs cursor-pointer rounded-lg bangla-text">
+ {tBilingual('Apply', 'প্রয়োগ')}
                         </Button>
                       </div>
                     ) : (
                       <div className="flex items-center gap-1.5 bg-muted px-3 py-1.5 rounded-xl border border-border /60 text-xs font-semibold text-muted-foreground tabular-nums whitespace-nowrap">
                         <Calendar className="h-3.5 w-3.5 text-blue-500 shrink-0"/>
                         <span>
-                          {effectiveMetrics?.startDate} to {effectiveMetrics?.endDate}
+                          {effectiveMetrics?.startDate} {tBilingual('to', 'থেকে')} {effectiveMetrics?.endDate}
                         </span>
                       </div>
                     )}
@@ -1086,7 +1086,7 @@ export default function QuotationsPage() {
                     {/* 5. Refresh */}
                     <button
  type="button"onClick={() => loadQuotationsData(false)}
- className="h-9 w-9 flex items-center justify-center rounded-xl text-muted-foreground hover:text-foreground bg-card border border-border hover:bg-muted transition-colors shadow-2xs cursor-pointer shrink-0"title="Refresh quotations data">
+ className="h-9 w-9 flex items-center justify-center rounded-xl text-muted-foreground hover:text-foreground bg-card border border-border hover:bg-muted transition-colors shadow-2xs cursor-pointer shrink-0"title={tBilingual('Refresh quotations data', 'কোটেশন ডেটা রিফ্রেশ করুন')}>
                       <RefreshCw className={cn('h-3.5 w-3.5', (isLoading || isRefreshing) && 'animate-spin text-blue-600')} />
                     </button>
                   </div>
@@ -1097,18 +1097,18 @@ export default function QuotationsPage() {
               <Card className="shadow-xs border-border overflow-hidden rounded-xl bg-card/80 backdrop-blur-md">
                 <CardHeader className="py-3 px-4 border-b border-border flex flex-row items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <CardTitle className="text-sm font-bold text-foreground">
- Quotation Directory
+                    <CardTitle className="text-sm font-bold text-foreground bangla-text">
+ {tBilingual('Quotation Directory', 'কোটেশন ডিরেক্টরি')}
                     </CardTitle>
-                    <Badge variant="outline"className="text-xs tabular-nums">
-                      {filteredQuotations.length} records
+                    <Badge variant="outline"className="text-xs tabular-nums bangla-text">
+                      {filteredQuotations.length} {tBilingual('records', 'টি রেকর্ড')}
                     </Badge>
                   </div>
                   {selectedFilter !== 'all' && (
                     <button
  type="button"onClick={() => setSelectedFilter('all')}
- className="text-xs text-blue-600 dark:text-blue-400 hover:underline font-semibold cursor-pointer">
- Clear Filter
+ className="text-xs text-blue-600 dark:text-blue-400 hover:underline font-semibold cursor-pointer bangla-text">
+ {tBilingual('Clear Filter', 'ফিল্টার মুছুন')}
                     </button>
                   )}
                 </CardHeader>
@@ -1117,7 +1117,7 @@ export default function QuotationsPage() {
                   {isLoading ? (
                     <div className="p-12 text-center space-y-3">
                       <RefreshCw className="h-7 w-7 animate-spin text-blue-600 mx-auto"/>
-                      <p className="text-xs text-muted-foreground font-medium">Loading quotations pipeline...</p>
+                      <p className="text-xs text-muted-foreground font-medium bangla-text">{tBilingual('Loading quotations pipeline...', 'কোটেশন পাইপলাইন লোড হচ্ছে...')}</p>
                     </div>
                   ) : filteredQuotations.length === 0 ? (
                     <div className="p-12 text-center space-y-3">
@@ -1125,15 +1125,15 @@ export default function QuotationsPage() {
                         <FileSpreadsheet className="h-6 w-6"/>
                       </div>
                       <div>
-                        <h3 className="text-sm font-bold text-foreground">
+                        <h3 className="text-sm font-bold text-foreground bangla-text">
                           {search || selectedFilter !== 'all'
-                            ? 'No quotations match current filter'
-                            : 'No quotations created yet'}
+                            ? tBilingual('No quotations match current filter', 'ফিল্টারের সাথে কোনো কোটেশন মিলছে না')
+                            : tBilingual('No quotations created yet', 'কোনো কোটেশন এখনও তৈরি করা হয়নি')}
                         </h3>
-                        <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
+                        <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto bangla-text">
                           {search || selectedFilter !== 'all'
-                            ? 'Try clearing the search query or changing active filter tabs.'
-                            : 'Generate formal commercial proposals with custom rates and dimensional pricing in under 60 seconds.'}
+                            ? tBilingual('Try clearing the search query or changing active filter tabs.', 'সার্চ মুছুন অথবা ফিল্টার পরিবর্তন করে চেষ্টা করুন।')
+                            : tBilingual('Generate formal commercial proposals with custom rates and dimensional pricing in under 60 seconds.', 'কাস্টম রেট এবং সাইজ অনুযায়ী ১ মিনিটের মধ্যে নির্ভুল কোটেশন তৈরি করুন।')}
                         </p>
                       </div>
                       {!search && selectedFilter === 'all' && (
@@ -1141,7 +1141,7 @@ export default function QuotationsPage() {
  size="sm"onClick={() => setIsNewOpen(true)}
  className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold mt-2 rounded-xl">
                           <Plus className="h-3.5 w-3.5 mr-1"/>
- Create First Quotation
+ {tBilingual('Create First Quotation', 'প্রথম কোটেশন তৈরি করুন')}
                         </Button>
                       )}
                     </div>

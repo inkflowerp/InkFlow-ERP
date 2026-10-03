@@ -627,21 +627,21 @@ export default function DeliveryLogisticsPage() {
               <Link href={getTenantNavHref('/production', pathname, slug)}>
                 <Button variant="outline"size="sm"className="text-xs gap-1.5 border-border">
                   <LayoutGrid className="h-3.5 w-3.5 text-indigo-600"/>
-                  <span className="hidden sm:inline">Production</span>
+                  <span className="hidden sm:inline bangla-text">{tBilingual('Production', 'প্রোডাকশন')}</span>
                 </Button>
               </Link>
 
               <Link href={getTenantNavHref('/finishing', pathname, slug)}>
                 <Button variant="outline"size="sm"className="text-xs gap-1.5 border-border">
                   <Scissors className="h-3.5 w-3.5 text-indigo-600"/>
-                  <span className="hidden sm:inline">Finishing</span>
+                  <span className="hidden sm:inline bangla-text">{tBilingual('Finishing', 'ফিনিশিং')}</span>
                 </Button>
               </Link>
 
               <Link href={getTenantNavHref('/operator', pathname, slug)}>
                 <Button variant="outline"size="sm"className="text-xs gap-1.5 border-border">
                   <Printer className="h-3.5 w-3.5 text-blue-600"/>
-                  <span className="hidden sm:inline">Terminal</span>
+                  <span className="hidden sm:inline bangla-text">{tBilingual('Terminal', 'টার্মিনাল')}</span>
                 </Button>
               </Link>
 

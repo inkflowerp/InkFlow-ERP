@@ -475,7 +475,7 @@ export default function FinishingAndFabricationPage() {
               <Button
  variant="outline"size="sm"onClick={() => loadData(false)}
  disabled={loading}
- className="h-9 w-9 p-0"title="Refresh Tasks"aria-label="Refresh Tasks">
+ className="h-9 w-9 p-0"title={tBilingual('Refresh Tasks', 'টাস্ক রিফ্রেশ করুন')} aria-label={tBilingual('Refresh Tasks', 'টাস্ক রিফ্রেশ করুন')}>
                 <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin text-primary' : ''}`} />
               </Button>
 
@@ -630,11 +630,11 @@ export default function FinishingAndFabricationPage() {
  value={selectedStatus}
  onChange={(e) => setSelectedStatus(e.target.value)}
  className="text-xs font-medium rounded-lg border border-border bg-card px-3 h-8 text-foreground outline-none cursor-pointer hover:border-input transition-colors">
-              <option value="all">⚡ All Statuses</option>
-              <option value="ready">Ready for Floor</option>
-              <option value="in_progress">In Progress</option>
-              <option value="on_hold">On Hold</option>
-              <option value="completed">Completed Today</option>
+              <option value="all">⚡ {tBilingual('All Statuses', 'সকল স্ট্যাটাস')}</option>
+              <option value="ready">{tBilingual('Ready for Floor', 'ফ্লোরের জন্য প্রস্তুত')}</option>
+              <option value="in_progress">{tBilingual('In Progress', 'চলমান')}</option>
+              <option value="on_hold">{tBilingual('On Hold', 'স্থগিত')}</option>
+              <option value="completed">{tBilingual('Completed Today', 'আজ সম্পন্ন')}</option>
             </select>
           </div>
         </div>
