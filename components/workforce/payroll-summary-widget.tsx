@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { ArrowRight, Wallet, CheckCircle2, Clock, AlertCircle } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useI18n } from '@/i18n/context'
 
 export interface PayrollSummaryWidgetProps {
  periodName: string
@@ -17,15 +18,16 @@ export interface PayrollSummaryWidgetProps {
 }
 
 export function PayrollSummaryWidget({
- periodName,
- grossPayroll,
- paid,
- pending,
- due,
- isLoading = false,
- tenantSlug,
+  periodName,
+  grossPayroll,
+  paid,
+  pending,
+  due,
+  isLoading = false,
+  tenantSlug,
 }: PayrollSummaryWidgetProps) {
- if (isLoading) {
+  const { tBilingual } = useI18n()
+  if (isLoading) {
  return (
       <Card className="p-4 bg-card border-border shadow-none">
         <Skeleton className="h-6 w-44 mb-4"/>
@@ -80,17 +82,16 @@ export function PayrollSummaryWidget({
       <CardHeader className="pb-3 border-b border-border px-5 pt-5 flex flex-row items-center justify-between">
         <div>
           <CardTitle className="text-base font-semibold text-foreground flex items-center gap-2">
-            <span>Payroll Status</span>
-            <span className="text-xs font-normal text-muted-foreground">বেতন পরিস্থিতি</span>
+            <span>{tBilingual('Payroll Status', 'বেতন পরিস্থিতি')}</span>
           </CardTitle>
           <p className="text-xs text-muted-foreground mt-0.5">
-            {periodName} • {paidPct}% paid of gross commitments
+            {periodName} • {tBilingual(`${paidPct}% paid of gross commitments`, `মোট ব্যয়ের ${paidPct}% পরিশোধিত`)}
           </p>
         </div>
         <Link
  href={`/${tenantSlug}/hr/payroll`}
  className="text-xs font-medium text-blue-600 hover:text-blue-700 flex items-center gap-1 shrink-0">
-          <span>Payroll Sheets</span>
+          <span>{tBilingual('Payroll Sheets', 'বেতন শিট')}</span>
           <ArrowRight className="w-3.5 h-3.5"/>
         </Link>
       </CardHeader>
@@ -107,10 +108,7 @@ export function PayrollSummaryWidget({
                 </div>
                 <div>
                   <div className="text-sm font-medium text-foreground leading-tight">
-                    {item.label}
-                  </div>
-                  <div className="text-[11px] text-muted-foreground font-normal">
-                    {item.labelBn}
+                    {tBilingual(item.label, item.labelBn)}
                   </div>
                 </div>
               </div>

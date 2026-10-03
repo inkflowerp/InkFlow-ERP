@@ -239,38 +239,38 @@ export default function BusinessReportsPage() {
   ])
 
   // Period title helper
- const periodTitle = useMemo(() => {
- switch (period) {
- case 'today':
- return 'Today'
- case 'yesterday':
- return 'Yesterday'
- case 'this_week':
- return 'This Week'
- case 'last_week':
- return 'Last Week'
- case 'this_month':
- return 'This Month'
- case 'last_month':
- return 'Last Month'
- case 'last_3_months':
- return 'Last 3 Months'
- case 'last_6_months':
- return 'Last 6 Months'
- case 'last_9_months':
- return 'Last 9 Months'
- case 'last_12_months':
- return 'Last 12 Months'
- case 'this_year':
- return 'This Year'
- case 'all_time':
- return 'All Time'
- case 'custom':
- return 'Custom Range'
- default:
- return 'This Month'
+  const periodTitle = useMemo(() => {
+    switch (period) {
+      case 'today':
+        return tBilingual('Today', 'আজ')
+      case 'yesterday':
+        return tBilingual('Yesterday', 'গতকাল')
+      case 'this_week':
+        return tBilingual('This Week', 'এই সপ্তাহ')
+      case 'last_week':
+        return tBilingual('Last Week', 'গত সপ্তাহ')
+      case 'this_month':
+        return tBilingual('This Month', 'এই মাস')
+      case 'last_month':
+        return tBilingual('Last Month', 'গত মাস')
+      case 'last_3_months':
+        return tBilingual('Last 3 Months', 'বিগত ৩ মাস')
+      case 'last_6_months':
+        return tBilingual('Last 6 Months', 'বিগত ৬ মাস')
+      case 'last_9_months':
+        return tBilingual('Last 9 Months', 'বিগত ৯ মাস')
+      case 'last_12_months':
+        return tBilingual('Last 12 Months', 'বিগত ১২ মাস')
+      case 'this_year':
+        return tBilingual('This Year', 'এই বছর')
+      case 'all_time':
+        return tBilingual('All Time', 'সর্বমোট সময়')
+      case 'custom':
+        return tBilingual('Custom Range', 'কাস্টম সময়সীমা')
+      default:
+        return tBilingual('This Month', 'এই মাস')
     }
-  }, [period])
+  }, [period, tBilingual])
 
   // High-Level KPIs Computed Live from Database
  const totalSales = reportData.summary.totalSales
@@ -389,10 +389,13 @@ export default function BusinessReportsPage() {
             </div>
             <div>
               <h1 className="text-2xl font-black text-foreground tracking-tight">
- Business Reports
+                {tBilingual('Business Reports', 'বিজনেস রিপোর্ট')}
               </h1>
               <p className="text-xs text-muted-foreground">
- Track your business performance, sales, production, finance and profit in one place.
+                {tBilingual(
+                  'Track your business performance, sales, production, finance and profit in one place.',
+                  'আপনার ব্যবসা পারফরম্যান্স, বিক্রয়, উৎপাদন, অর্থ ও মুনাফার হিসাব এক জায়গায় ট্র্যাক করুন।'
+                )}
               </p>
             </div>
           </div>
@@ -405,7 +408,7 @@ export default function BusinessReportsPage() {
  value={selectedBranch}
  onChange={(e) => setSelectedBranch(e.target.value)}
  className="h-9 px-3 rounded-xl border border-border bg-card text-xs font-semibold text-foreground shadow-2xs hover:bg-muted dark:hover:bg-muted/60 cursor-pointer transition-colors focus:outline-none">
-                <option value="all">All Outlets ({branches.length})</option>
+                <option value="all">{tBilingual('All Outlets', 'সকল আউটলেট')} ({branches.length})</option>
                 {branches.map((b) => (
                   <option key={b.id} value={b.id}>
                     {b.name}
@@ -440,17 +443,17 @@ export default function BusinessReportsPage() {
                   />
                   <div className="absolute right-0 top-full mt-1.5 w-44 bg-card border border-border rounded-xl shadow-xs z-30 py-1 text-xs">
                     {[
-                      { id: 'today', label: 'Today' },
-                      { id: 'yesterday', label: 'Yesterday' },
-                      { id: 'this_week', label: 'This Week' },
-                      { id: 'last_week', label: 'Last Week' },
-                      { id: 'this_month', label: 'This Month' },
-                      { id: 'last_month', label: 'Last Month' },
-                      { id: 'last_3_months', label: 'Last 3 Months' },
-                      { id: 'last_6_months', label: 'Last 6 Months' },
-                      { id: 'this_year', label: 'This Year' },
-                      { id: 'all_time', label: 'All Time' },
-                      { id: 'custom', label: 'Custom Range...' },
+                      { id: 'today', labelEn: 'Today', labelBn: 'আজ' },
+                      { id: 'yesterday', labelEn: 'Yesterday', labelBn: 'গতকাল' },
+                      { id: 'this_week', labelEn: 'This Week', labelBn: 'এই সপ্তাহ' },
+                      { id: 'last_week', labelEn: 'Last Week', labelBn: 'গত সপ্তাহ' },
+                      { id: 'this_month', labelEn: 'This Month', labelBn: 'এই মাস' },
+                      { id: 'last_month', labelEn: 'Last Month', labelBn: 'গত মাস' },
+                      { id: 'last_3_months', labelEn: 'Last 3 Months', labelBn: 'বিগত ৩ মাস' },
+                      { id: 'last_6_months', labelEn: 'Last 6 Months', labelBn: 'বিগত ৬ মাস' },
+                      { id: 'this_year', labelEn: 'This Year', labelBn: 'এই বছর' },
+                      { id: 'all_time', labelEn: 'All Time', labelBn: 'সর্বমোট সময়' },
+                      { id: 'custom', labelEn: 'Custom Range...', labelBn: 'কাস্টম সময়সীমা...' },
                     ].map((item) => (
                       <button
  key={item.id}
@@ -467,7 +470,7 @@ export default function BusinessReportsPage() {
                             : 'text-foreground '
                         }`}
                       >
-                        {item.label}
+                        {tBilingual(item.labelEn, item.labelBn)}
                       </button>
                     ))}
                   </div>
@@ -481,7 +484,7 @@ export default function BusinessReportsPage() {
  onClick={() => setIsExportMenuOpen(!isExportMenuOpen)}
  className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs h-9 px-4 rounded-xl shadow-xs flex items-center gap-1.5 cursor-pointer">
                 <Download className="w-3.5 h-3.5"/>
-                <span>Export</span>
+                <span>{tBilingual('Export', 'এক্সপোর্ট')}</span>
                 <ChevronDown className="w-3 h-3 ml-0.5 opacity-80"/>
               </Button>
 
@@ -497,13 +500,13 @@ export default function BusinessReportsPage() {
  onClick={() => handleExport('excel')}
  className="w-full px-3 py-2 text-left rounded-lg hover:bg-emerald-50 dark:hover:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 flex items-center gap-2 font-medium cursor-pointer">
                         <FileSpreadsheet className="w-4 h-4 text-emerald-600"/>
- Excel CSV (.xlsx)
+ {tBilingual('Excel CSV (.xlsx)', 'এক্সেল সিএসভি (.xlsx)')}
                       </button>
                       <button
  onClick={() => handleExport('csv')}
  className="w-full px-3 py-2 text-left rounded-lg hover:bg-muted text-foreground flex items-center gap-2 font-medium cursor-pointer">
                         <Download className="w-4 h-4 text-muted-foreground"/>
- Standard CSV
+ {tBilingual('Standard CSV', 'স্ট্যান্ডার্ড সিএসভি')}
                       </button>
                     </div>
                     <div className="p-1">
@@ -511,7 +514,7 @@ export default function BusinessReportsPage() {
  onClick={() => handleExport('print')}
  className="w-full px-3 py-2 text-left rounded-lg hover:bg-muted text-foreground flex items-center gap-2 font-medium cursor-pointer">
                         <Printer className="w-4 h-4 text-muted-foreground"/>
- Print / PDF Report
+ {tBilingual('Print / PDF Report', 'প্রিন্ট / পিডিএফ রিপোর্ট')}
                       </button>
                     </div>
                   </div>
@@ -545,7 +548,7 @@ export default function BusinessReportsPage() {
             }`}
           >
             <Activity className="w-3.5 h-3.5"/>
-            <span>Executive Overview</span>
+            <span>{tBilingual('Executive Overview', 'সারসংক্ষেপ')}</span>
           </Button>
 
           <Button
@@ -558,7 +561,7 @@ export default function BusinessReportsPage() {
             }`}
           >
             <TrendingUp className="w-3.5 h-3.5"/>
-            <span>Sales & Orders</span>
+            <span>{tBilingual('Sales & Orders', 'বিক্রয় ও অর্ডার')}</span>
           </Button>
 
           <Button
@@ -571,7 +574,7 @@ export default function BusinessReportsPage() {
             }`}
           >
             <ClipboardList className="w-3.5 h-3.5"/>
-            <span>Production & Jobs</span>
+            <span>{tBilingual('Production & Jobs', 'উৎপাদন ও কাজ')}</span>
           </Button>
 
           <Button
@@ -584,7 +587,7 @@ export default function BusinessReportsPage() {
             }`}
           >
             <Scale className="w-3.5 h-3.5"/>
-            <span>Profitability</span>
+            <span>{tBilingual('Profitability', 'লাভ-মার্জিন')}</span>
           </Button>
 
           <Button
@@ -597,7 +600,7 @@ export default function BusinessReportsPage() {
             }`}
           >
             <Users className="w-3.5 h-3.5"/>
-            <span>Top Customers</span>
+            <span>{tBilingual('Top Customers', 'শীর্ষ গ্রাহক')}</span>
           </Button>
 
           <Button
@@ -610,7 +613,7 @@ export default function BusinessReportsPage() {
             }`}
           >
             <FileText className="w-3.5 h-3.5"/>
-            <span>Quick Reports Hub</span>
+            <span>{tBilingual('Quick Reports Hub', 'কুইক রিপোর্ট হাব')}</span>
           </Button>
         </div>
 
@@ -677,25 +680,25 @@ export default function BusinessReportsPage() {
  titleEn="Net Profit"titleBn="নিট লাভ"value={netProfit}
  isCurrency
  icon={Calculator}
- colorVariant="emerald"subtitleEn="Operating Bottomline"subtitleBn="পরিচালন ফলাফল"badge={`${profitMarginPercent}% margin`}
+ colorVariant="emerald"subtitleEn="Operating Bottomline"subtitleBn="পরিচালন ফলাফল"badge={tBilingual(`${profitMarginPercent}% margin`, `${profitMarginPercent}% মার্জিন`)}
  badgeColor="emerald"/>
 
           <KpiCard
  titleEn="Production Cost"titleBn="উৎপাদন খরচ"value={directCosts}
  isCurrency
  icon={Layers}
- colorVariant="amber"subtitleEn="Material & Floor Cost"subtitleBn="উপাদান ও ফ্লোর খরচ"badge="59.6% rev"badgeColor="amber"/>
+ colorVariant="amber"subtitleEn="Material & Floor Cost"subtitleBn="উপাদান ও ফ্লোর খরচ"badge={tBilingual('59.6% rev', '৫৯.৬% রেভিনিউ')}badgeColor="amber"/>
 
           <KpiCard
  titleEn="Avg Order Value"titleBn="গড় অর্ডার মূল্য"value={averageOrderValue}
  isCurrency
  icon={ShoppingBag}
- colorVariant="sky"subtitleEn="Per Invoice Average"subtitleBn="প্রতি চালানের গড়"badge="Live"badgeColor="sky"/>
+ colorVariant="sky"subtitleEn="Per Invoice Average"subtitleBn="প্রতি চালানের গড়"badge={tBilingual('Live', 'লাইভ')}badgeColor="sky"/>
 
           <KpiCard
  titleEn="Active Work Orders"titleBn="চলমান ওয়ার্ক অর্ডার"value={effectiveOrders.length || totalJobs}
  icon={Clock}
- colorVariant="violet"subtitleEn="Production Pipeline"subtitleBn="উৎপাদন পাইপলাইন"badge="Tracked"badgeColor="violet"/>
+ colorVariant="violet"subtitleEn="Production Pipeline"subtitleBn="উৎপাদন পাইপলাইন"badge={tBilingual('Tracked', 'ট্র্যাকড')}badgeColor="violet"/>
         </KpiGrid>
 
         {/* =========================================================================
@@ -725,7 +728,7 @@ export default function BusinessReportsPage() {
                           : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
                       }`}
                     >
- Customer Types
+ {tBilingual('Customer Types', 'গ্রাহকের ধরন')}
                     </button>
                     <button
  type="button"onClick={() => setDonutDistributionMode('product_category')}
@@ -735,7 +738,7 @@ export default function BusinessReportsPage() {
                           : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
                       }`}
                     >
- Products & Services
+ {tBilingual('Products & Services', 'পণ্য ও সেবা')}
                     </button>
                   </div>
                   <span className="text-xs font-semibold text-muted-foreground">
@@ -745,7 +748,7 @@ export default function BusinessReportsPage() {
 
                 {donutDistributionMode === 'customer_type' ? (
                   <DonutDistributionChart
- title="Sales by Customer Type"totalAmount={totalSales}
+ title={tBilingual('Sales by Customer Type', 'গ্রাহকের ধরন অনুযায়ী বিক্রয়')}totalAmount={totalSales}
  items={reportData.salesByCustomerType.map((c: CustomerTypeSalesPoint) => ({
  id: c.type,
  label: c.type,
@@ -754,10 +757,10 @@ export default function BusinessReportsPage() {
  color: c.color,
                     }))}
  periodLabel={periodTitle}
- centerSubtext="Total Sales"/>
+ centerSubtext={tBilingual('Total Sales', 'মোট বিক্রয়')}/>
                 ) : (
                   <DonutDistributionChart
- title="Sales by Product / Service"totalAmount={totalSales}
+ title={tBilingual('Sales by Product / Service', 'পণ্য ও সেবা অনুযায়ী বিক্রয়')}totalAmount={totalSales}
  items={reportData.salesByProduct.map((p: ProductSalesPoint) => ({
  id: p.id,
  label: p.name,
@@ -766,7 +769,7 @@ export default function BusinessReportsPage() {
  color: p.color,
                     }))}
  periodLabel={periodTitle}
- centerSubtext="Total Sales"/>
+ centerSubtext={tBilingual('Total Sales', 'মোট বিক্রয়')}/>
                 )}
               </div>
             </div>
@@ -783,7 +786,7 @@ export default function BusinessReportsPage() {
               <div>
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-sm font-bold text-foreground">
- Top Customers by Sales
+                    {tBilingual('Top Customers by Sales', 'বিক্রয়ের ভিত্তিতে শীর্ষ গ্রাহক')}
                   </h3>
                   <button
  type="button"onClick={() => setActiveQuickReport('all_customers')}
@@ -843,12 +846,13 @@ export default function BusinessReportsPage() {
               <div>
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-sm font-bold text-foreground">
- Top Selling Products
+                    {tBilingual('Top Selling Products', 'সর্বাধিক বিক্রিত পণ্য')}
                   </h3>
                   <button
- type="button"onClick={() => setActiveQuickReport('all_products')}
- className="text-xs font-semibold text-blue-600 hover:text-blue-700 cursor-pointer">
- View All
+                    type="button"
+                    onClick={() => setActiveQuickReport('all_products')}
+                    className="text-xs font-semibold text-blue-600 hover:text-blue-700 cursor-pointer">
+                    {tBilingual('View All', 'সব দেখুন')}
                   </button>
                 </div>
 
@@ -877,7 +881,7 @@ export default function BusinessReportsPage() {
                               {item.name}
                             </span>
                             <span className="text-3xs text-muted-foreground font-medium">
- Qty: {item.quantityFormatted}
+                              {tBilingual('Qty:', 'পরিমাণ:')} {item.quantityFormatted}
                             </span>
                           </div>
                         </div>
@@ -903,12 +907,13 @@ export default function BusinessReportsPage() {
               <div>
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-sm font-bold text-foreground">
- Jobs Pipeline & Status
+                    {tBilingual('Jobs Pipeline & Status', 'কাজের অগ্রগতি ও অবস্থা')}
                   </h3>
                   <button
- type="button"onClick={() => setActiveQuickReport('production')}
- className="text-xs font-semibold text-blue-600 hover:text-blue-700 cursor-pointer">
- View All
+                    type="button"
+                    onClick={() => setActiveQuickReport('production')}
+                    className="text-xs font-semibold text-blue-600 hover:text-blue-700 cursor-pointer">
+                    {tBilingual('View All', 'সব দেখুন')}
                   </button>
                 </div>
 
@@ -928,7 +933,20 @@ export default function BusinessReportsPage() {
  className="w-4 h-4 shrink-0"style={{ color: st.color }}
                             />
                             <span className="font-semibold text-foreground">
-                              {st.label}
+                              {tBilingual(
+                                st.label,
+                                st.key === 'completed'
+                                  ? 'সম্পন্ন'
+                                  : st.key === 'in_production'
+                                  ? 'প্রোডাকশনে'
+                                  : st.key === 'designing'
+                                  ? 'ডিজাইনিং'
+                                  : st.key === 'pending'
+                                  ? 'অপেক্ষমান'
+                                  : st.key === 'on_hold'
+                                  ? 'স্থগিত'
+                                  : st.label
+                              )}
                             </span>
                           </div>
                           <span className="tabular-nums text-2xs font-bold text-muted-foreground">
@@ -1023,7 +1041,7 @@ export default function BusinessReportsPage() {
             <div className="xl:col-span-5 bg-card rounded-xl border border-border /80 p-3.5 2xl:p-5 shadow-xs flex flex-col justify-between">
               <div>
                 <h3 className="text-sm font-bold text-foreground mb-3 2xl:mb-3.5">
- Quick Reports Hub
+                  {tBilingual('Quick Reports Hub', 'কুইক রিপোর্ট হাব')}
                 </h3>
 
                 <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-4 gap-2 2xl:gap-2.5">
@@ -1032,7 +1050,7 @@ export default function BusinessReportsPage() {
  type="button"onClick={() => setActiveQuickReport('sales')}
  className="flex items-center gap-2 p-2 2xl:p-2.5 rounded-xl border border-emerald-200/80 dark:border-emerald-900/60 bg-emerald-50/40 dark:bg-emerald-950/20 hover:bg-emerald-50 text-emerald-800 dark:text-emerald-300 text-xs font-semibold transition-all cursor-pointer text-left min-h-[42px] 2xl:min-h-[44px]">
                     <TrendingUp className="w-4 h-4 text-emerald-600 shrink-0"/>
-                    <span className="leading-tight">Sales Report</span>
+                    <span className="leading-tight">{tBilingual('Sales Report', 'বিক্রয় রিপোর্ট')}</span>
                   </button>
 
                   {/* 2. Production Report */}
@@ -1040,7 +1058,7 @@ export default function BusinessReportsPage() {
  type="button"onClick={() => setActiveQuickReport('production')}
  className="flex items-center gap-2 p-2 2xl:p-2.5 rounded-xl border border-blue-200/80 dark:border-blue-900/60 bg-blue-50/40 dark:bg-blue-950/20 hover:bg-blue-50 text-blue-800 dark:text-blue-300 text-xs font-semibold transition-all cursor-pointer text-left min-h-[42px] 2xl:min-h-[44px]">
                     <ClipboardList className="w-4 h-4 text-blue-600 shrink-0"/>
-                    <span className="leading-tight">Production</span>
+                    <span className="leading-tight">{tBilingual('Production', 'উৎপাদন')}</span>
                   </button>
 
                   {/* 3. Inventory Report */}
@@ -1048,7 +1066,7 @@ export default function BusinessReportsPage() {
  type="button"onClick={() => setActiveQuickReport('inventory')}
  className="flex items-center gap-2 p-2 2xl:p-2.5 rounded-xl border border-amber-200/80 dark:border-amber-900/60 bg-amber-50/40 dark:bg-amber-950/20 hover:bg-amber-50 text-amber-800 dark:text-amber-300 text-xs font-semibold transition-all cursor-pointer text-left min-h-[42px] 2xl:min-h-[44px]">
                     <Package className="w-4 h-4 text-amber-600 shrink-0"/>
-                    <span className="leading-tight">Inventory</span>
+                    <span className="leading-tight">{tBilingual('Inventory', 'ইনভেন্টরি')}</span>
                   </button>
 
                   {/* 4. Financial Report */}
@@ -1056,7 +1074,7 @@ export default function BusinessReportsPage() {
  type="button"onClick={() => setActiveQuickReport('financial')}
  className="flex items-center gap-2 p-2 2xl:p-2.5 rounded-xl border border-purple-200/80 dark:border-purple-900/60 bg-purple-50/40 dark:bg-purple-950/20 hover:bg-purple-50 text-purple-800 dark:text-purple-300 text-xs font-semibold transition-all cursor-pointer text-left min-h-[42px] 2xl:min-h-[44px]">
                     <FileText className="w-4 h-4 text-purple-600 shrink-0"/>
-                    <span className="leading-tight">Financial</span>
+                    <span className="leading-tight">{tBilingual('Financial', 'আর্থিক')}</span>
                   </button>
 
                   {/* 5. Customer Report */}
@@ -1064,7 +1082,7 @@ export default function BusinessReportsPage() {
  type="button"onClick={() => setActiveQuickReport('customer')}
  className="flex items-center gap-2 p-2 2xl:p-2.5 rounded-xl border border-sky-200/80 dark:border-sky-900/60 bg-sky-50/40 dark:bg-sky-950/20 hover:bg-sky-50 text-sky-800 dark:text-sky-300 text-xs font-semibold transition-all cursor-pointer text-left min-h-[42px] 2xl:min-h-[44px]">
                     <Users className="w-4 h-4 text-sky-600 shrink-0"/>
-                    <span className="leading-tight">Customer</span>
+                    <span className="leading-tight">{tBilingual('Customer', 'গ্রাহক')}</span>
                   </button>
 
                   {/* 6. Supplier Report */}
@@ -1072,7 +1090,7 @@ export default function BusinessReportsPage() {
  type="button"onClick={() => setActiveQuickReport('supplier')}
  className="flex items-center gap-2 p-2 2xl:p-2.5 rounded-xl border border-indigo-200/80 dark:border-indigo-900/60 bg-indigo-50/40 dark:bg-indigo-950/20 hover:bg-indigo-50 text-indigo-800 dark:text-indigo-300 text-xs font-semibold transition-all cursor-pointer text-left min-h-[42px] 2xl:min-h-[44px]">
                     <Truck className="w-4 h-4 text-indigo-600 shrink-0"/>
-                    <span className="leading-tight">Supplier</span>
+                    <span className="leading-tight">{tBilingual('Supplier', 'মহাজন')}</span>
                   </button>
 
                   {/* 7. Profitability Report */}
@@ -1080,7 +1098,7 @@ export default function BusinessReportsPage() {
  type="button"onClick={() => setActiveQuickReport('profitability')}
  className="flex items-center gap-2 p-2 2xl:p-2.5 rounded-xl border border-rose-200/80 dark:border-rose-900/60 bg-rose-50/40 dark:bg-rose-950/20 hover:bg-rose-50 text-rose-800 dark:text-rose-300 text-xs font-semibold transition-all cursor-pointer text-left min-h-[42px] 2xl:min-h-[44px]">
                     <Scale className="w-4 h-4 text-rose-600 shrink-0"/>
-                    <span className="leading-tight">Profitability</span>
+                    <span className="leading-tight">{tBilingual('Profitability', 'লাভ-মার্জিন')}</span>
                   </button>
 
                   {/* 8. Custom Range Report */}
@@ -1088,7 +1106,7 @@ export default function BusinessReportsPage() {
  type="button"onClick={() => setShowDatePickerModal(true)}
  className="flex items-center gap-2 p-2 2xl:p-2.5 rounded-xl border border-teal-200/80 dark:border-teal-900/60 bg-teal-50/40 dark:bg-teal-950/20 hover:bg-teal-50 text-teal-800 dark:text-teal-300 text-xs font-semibold transition-all cursor-pointer text-left min-h-[42px] 2xl:min-h-[44px]">
                     <Calendar className="w-4 h-4 text-teal-600 shrink-0"/>
-                    <span className="leading-tight">Custom Date</span>
+                    <span className="leading-tight">{tBilingual('Custom Date', 'কাস্টম তারিখ')}</span>
                   </button>
                 </div>
               </div>
@@ -1104,8 +1122,8 @@ export default function BusinessReportsPage() {
             <div className="bg-card rounded-xl border border-border shadow-xs max-w-sm w-full p-5 space-y-4">
               <div className="flex items-center justify-between pb-2 border-b border-border">
                 <h3 className="font-bold text-foreground text-sm flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-blue-600"/>
- Select Custom Date Range
+                  <Calendar className="w-4 h-4 text-blue-600" />
+                  {tBilingual('Select Custom Date Range', 'কাস্টম সময়সীমা নির্ধারণ')}
                 </h3>
                 <button
  type="button"onClick={() => setShowDatePickerModal(false)}
@@ -1117,40 +1135,45 @@ export default function BusinessReportsPage() {
               <div className="space-y-3 text-xs">
                 <div>
                   <label className="block font-semibold text-foreground mb-1">
- Start Date
+                    {tBilingual('Start Date', 'শুরুর তারিখ')}
                   </label>
                   <Input
- type="date"value={customStartDate}
- onChange={(e) => setCustomStartDate(e.target.value)}
- className="h-9 rounded-xl text-xs"/>
+                    type="date"
+                    value={customStartDate}
+                    onChange={(e) => setCustomStartDate(e.target.value)}
+                    className="h-9 rounded-xl text-xs"/>
                 </div>
                 <div>
                   <label className="block font-semibold text-foreground mb-1">
- End Date
+                    {tBilingual('End Date', 'শেষের তারিখ')}
                   </label>
                   <Input
- type="date"value={customEndDate}
- onChange={(e) => setCustomEndDate(e.target.value)}
- className="h-9 rounded-xl text-xs"/>
+                    type="date"
+                    value={customEndDate}
+                    onChange={(e) => setCustomEndDate(e.target.value)}
+                    className="h-9 rounded-xl text-xs"/>
                 </div>
               </div>
 
               <div className="flex items-center justify-end gap-2 pt-2 border-t border-border">
                 <Button
- variant="outline"size="sm"onClick={() => setShowDatePickerModal(false)}
- className="rounded-xl text-xs h-8">
- Cancel
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowDatePickerModal(false)}
+                  className="rounded-xl text-xs h-8">
+                  {tBilingual('Cancel', 'বাতিল')}
                 </Button>
                 <Button
- size="sm"onClick={() => {
- if (customStartDate && customEndDate) {
- setPeriod('custom')
- setShowDatePickerModal(false)
+                  size="sm"
+                  onClick={() => {
+                    if (customStartDate && customEndDate) {
+                      setPeriod('custom')
+                      setShowDatePickerModal(false)
                     }
                   }}
- disabled={!customStartDate || !customEndDate}
- className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl text-xs h-8">
- Apply Range
+                  disabled={!customStartDate || !customEndDate}
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl text-xs h-8">
+                  {tBilingual('Apply Range', 'প্রয়োগ করুন')}
                 </Button>
               </div>
             </div>

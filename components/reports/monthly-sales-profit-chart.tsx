@@ -4,6 +4,7 @@ import React, { useState, useMemo } from 'react'
 import { MonthlySalesVsProfitPoint } from '@/types/reports.types'
 import { Activity } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useI18n } from '@/i18n/context'
 
 interface MonthlySalesProfitChartProps {
  data: MonthlySalesVsProfitPoint[]
@@ -12,10 +13,11 @@ interface MonthlySalesProfitChartProps {
 }
 
 export function MonthlySalesProfitChart({
- data,
- monthsCount,
- onMonthsCountChange,
+  data,
+  monthsCount,
+  onMonthsCountChange,
 }: MonthlySalesProfitChartProps) {
+  const { tBilingual } = useI18n()
  const [hoveredIdx, setHoveredIdx] = useState<number | null>(null)
 
   // Dynamic maximum scale for bar heights matching Finance Dashboard
@@ -39,7 +41,7 @@ export function MonthlySalesProfitChart({
       {/* Header matching Finance Dashboard */}
       <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
         <h3 className="text-sm font-bold text-foreground">
- Monthly Sales vs Profit
+          {tBilingual('Monthly Sales vs Profit', 'মাসিক বিক্রয় বনাম লাভ')}
         </h3>
 
         <div className="flex items-center gap-4">
@@ -47,11 +49,11 @@ export function MonthlySalesProfitChart({
           <div className="flex items-center gap-3 text-xs">
             <div className="flex items-center gap-1.5 font-medium text-muted-foreground">
               <span className="h-2.5 w-2.5 rounded-full bg-emerald-500"/>
-              <span>Sales</span>
+              <span>{tBilingual('Sales', 'বিক্রয়')}</span>
             </div>
             <div className="flex items-center gap-1.5 font-medium text-muted-foreground">
               <span className="h-2.5 w-2.5 rounded-full bg-blue-600"/>
-              <span>Profit</span>
+              <span>{tBilingual('Profit', 'লাভ')}</span>
             </div>
           </div>
 
@@ -61,9 +63,9 @@ export function MonthlySalesProfitChart({
  value={monthsCount}
  onChange={(e) => onMonthsCountChange(Number(e.target.value) as 6 | 9 | 12)}
  className="text-xs font-semibold px-2.5 py-1 rounded-lg border border-border bg-card text-foreground cursor-pointer hover:bg-muted dark:hover:bg-muted/60 shadow-2xs transition-colors focus:outline-none">
-              <option value={6}>Last 6 Months</option>
-              <option value={9}>Last 9 Months</option>
-              <option value={12}>Last 12 Months</option>
+              <option value={6}>{tBilingual('Last 6 Months', 'বিগত ৬ মাস')}</option>
+              <option value={9}>{tBilingual('Last 9 Months', 'বিগত ৯ মাস')}</option>
+              <option value={12}>{tBilingual('Last 12 Months', 'বিগত ১২ মাস')}</option>
             </select>
           </div>
         </div>
@@ -74,7 +76,7 @@ export function MonthlySalesProfitChart({
         {data.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-muted-foreground text-xs">
             <Activity className="w-8 h-8 stroke-1 text-muted-foreground mb-2"/>
-            <span>No monthly sales or profit recorded for this period</span>
+            <span>{tBilingual('No monthly sales or profit recorded for this period', 'এই সময়ের জন্য কোনো মাসিক বিক্রয় বা লাভের তথ্য নেই')}</span>
           </div>
         ) : (
           <>
@@ -115,14 +117,14 @@ export function MonthlySalesProfitChart({
                         <div className="font-bold text-foreground mb-0.5 flex items-center justify-between gap-2">
                           <span>{item.monthLabel}</span>
                           <span className="text-2xs text-blue-300 tabular-nums">
-                            {item.margin}% margin
+                            {item.margin}% {tBilingual('margin', 'মার্জিন')}
                           </span>
                         </div>
                         <div className="text-emerald-400 tabular-nums">
- Sales: ৳ {item.sales.toLocaleString()}
+ {tBilingual('Sales', 'বিক্রয়')}: ৳ {item.sales.toLocaleString()}
                         </div>
                         <div className="text-blue-400 tabular-nums">
- Profit: ৳ {item.profit.toLocaleString()}
+ {tBilingual('Profit', 'লাভ')}: ৳ {item.profit.toLocaleString()}
                         </div>
                       </div>
                     )}

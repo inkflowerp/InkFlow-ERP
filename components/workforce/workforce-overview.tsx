@@ -16,6 +16,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { PageHeader } from '@/components/shared/page-header'
 import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
+import { useI18n } from '@/i18n/context'
 import { WorkforceKpiGrid } from './workforce-kpi-grid'
 import { AttendanceSummaryWidget } from './attendance-summary-widget'
 import { PayrollSummaryWidget } from './payroll-summary-widget'
@@ -30,6 +31,7 @@ export interface WorkforceOverviewProps {
 }
 
 export function WorkforceOverview({ tenantSlug }: WorkforceOverviewProps) {
+  const { tBilingual } = useI18n()
  const [data, setData] = useState<WorkforceOverviewSummary | null>(null)
  const [isLoading, setIsLoading] = useState(true)
  const [error, setError] = useState<string | null>(null)
@@ -82,13 +84,11 @@ export function WorkforceOverview({ tenantSlug }: WorkforceOverviewProps) {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border">
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
- Workforce Overview
+                {tBilingual('Workforce Overview', 'কর্মী ব্যবস্থাপনা')}
               </h1>
-              <div className="flex items-center gap-2 mt-1">
-                <span className="text-sm font-medium text-muted-foreground">কর্মী ব্যবস্থাপনা</span>
-                <span className="text-muted-foreground">•</span>
-                <span className="text-xs text-muted-foreground">Real-time attendance, payroll & operations</span>
-              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                {tBilingual('Attendance, payroll & floor operations', 'উপস্থিতি, বেতন ও ফ্লোর কার্যক্রম')}
+              </p>
             </div>
 
             <div className="flex items-center gap-2.5 flex-wrap">
@@ -97,7 +97,7 @@ export function WorkforceOverview({ tenantSlug }: WorkforceOverviewProps) {
  disabled={isLoading || isPending}
  className="h-9 px-3 text-xs font-medium text-foreground bg-card border-border hover:bg-muted min-h-[36px]">
                 <RefreshCw className={`w-3.5 h-3.5 mr-1.5 ${isLoading || isPending ? 'animate-spin' : ''}`} />
-                <span>Refresh</span>
+                <span>{tBilingual('Refresh', 'রিফ্রেশ')}</span>
               </Button>
 
               <Button
@@ -105,7 +105,7 @@ export function WorkforceOverview({ tenantSlug }: WorkforceOverviewProps) {
  variant="outline"size="sm"className="h-9 px-3 text-xs font-medium text-foreground bg-card border-border hover:bg-muted min-h-[36px]">
                 <Link href={`/${tenantSlug}/hr/attendance?mode=qr`}>
                   <QrCode className="w-3.5 h-3.5 mr-1.5 text-blue-600"/>
-                  <span>QR Punch</span>
+                  <span>{tBilingual('QR Punch', 'কিউআর পাঞ্চ')}</span>
                 </Link>
               </Button>
 
@@ -114,7 +114,7 @@ export function WorkforceOverview({ tenantSlug }: WorkforceOverviewProps) {
  size="sm"className="h-9 px-3.5 text-xs font-medium bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm min-h-[36px]">
                 <Link href={`/${tenantSlug}/hr/employees?action=new`}>
                   <UserPlus className="w-3.5 h-3.5 mr-1.5"/>
-                  <span>Add Employee</span>
+                  <span>{tBilingual('Add Employee', 'কর্মী যোগ করুন')}</span>
                 </Link>
               </Button>
             </div>
@@ -130,7 +130,7 @@ export function WorkforceOverview({ tenantSlug }: WorkforceOverviewProps) {
               <Button
  variant="outline"size="sm"onClick={fetchOverview}
  className="text-xs border-destructive/30 hover:bg-destructive/10 text-destructive h-8">
- Retry
+ {tBilingual('Retry', 'পুনরায় চেষ্টা করুন')}
               </Button>
             </div>
           )}

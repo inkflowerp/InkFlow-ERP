@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useTransition, useCallback } from 'react'
 import { useParams, useSearchParams } from 'next/navigation'
 import { useTenant } from '@/hooks/use-tenant'
+import { useI18n } from '@/i18n/context'
 import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
 import { EmployeeTable } from '@/components/workforce/employee-table'
 import { EmployeeProfileDialog } from '@/components/workforce/employee-profile-dialog'
@@ -17,7 +18,8 @@ import { listBranchesAction } from '@/actions/branch.actions'
 import type { EmployeeRecord } from '@/types/workforce.types'
 
 export default function EmployeesPage() {
- const params = useParams()
+  const { tBilingual } = useI18n()
+  const params = useParams()
  const searchParams = useSearchParams()
  const { company } = useTenant()
  const slug = (params?.tenantSlug as string) || company?.slug || 'my-company'
@@ -121,15 +123,14 @@ export default function EmployeesPage() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border">
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
- Employees
+                {tBilingual('Employees', 'কর্মী তালিকা')}
               </h1>
-              <div className="flex items-center gap-2 mt-1">
-                <span className="text-sm font-medium text-muted-foreground">কর্মী তালিকা</span>
-                <span className="text-muted-foreground">•</span>
-                <span className="text-xs text-muted-foreground">
- Directory of shop-floor, design, sales & management staff
-                </span>
-              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                {tBilingual(
+                  'Directory of shop-floor, design, sales & management staff',
+                  'কারখানা, ডিজাইন, বিক্রয় ও ব্যবস্থাপনা কর্মীদের তালিকা'
+                )}
+              </p>
             </div>
           </div>
 

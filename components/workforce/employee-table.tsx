@@ -33,6 +33,7 @@ import {
  DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useI18n } from '@/i18n/context'
 import type { EmployeeRecord, EmploymentType, SalaryBasis } from '@/types/workforce.types'
 
 export interface EmployeeTableProps {
@@ -61,17 +62,18 @@ const DEPARTMENTS = [
 ]
 
 export function EmployeeTable({
- employees,
- isLoading = false,
- tenantSlug,
- branches = [],
- onAddEmployee,
- onViewEmployee,
- onEditEmployee,
- onManageAccess,
- onToggleStatus,
+  employees,
+  isLoading = false,
+  tenantSlug,
+  branches = [],
+  onAddEmployee,
+  onViewEmployee,
+  onEditEmployee,
+  onManageAccess,
+  onToggleStatus,
 }: EmployeeTableProps) {
- const [searchTerm, setSearchTerm] = useState('')
+  const { tBilingual } = useI18n()
+  const [searchTerm, setSearchTerm] = useState('')
  const [selectedDept, setSelectedDept] = useState('all')
  const [selectedType, setSelectedType] = useState('all')
  const [selectedStatus, setSelectedStatus] = useState('active')
@@ -151,7 +153,7 @@ export function EmployeeTable({
             <div className="relative flex-1 max-w-md">
               <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"/>
               <Input
- type="text"placeholder="Search by name, ID, phone, role..."value={searchTerm}
+ type="text"placeholder={tBilingual("Search by name, ID, phone, role...", "নাম, আইডি, মোবাইল বা পদবী দিয়ে খুঁজুন...")}value={searchTerm}
  onChange={(e) => setSearchTerm(e.target.value)}
  className="pl-9 h-9 text-xs bg-muted border-border focus:bg-card transition-colors"/>
               {searchTerm && (
@@ -168,7 +170,7 @@ export function EmployeeTable({
  onClick={onAddEmployee}
  size="sm"className="h-9 px-4 text-xs font-semibold bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm shrink-0 min-h-[36px]">
               <UserPlus className="w-4 h-4 mr-1.5"/>
-              <span>Add Employee</span>
+              <span>{tBilingual('Add Employee', 'কর্মী যোগ করুন')}</span>
             </Button>
           </div>
 
@@ -181,7 +183,7 @@ export function EmployeeTable({
  className="h-8 rounded-lg border border-border bg-card px-2.5 text-xs text-foreground focus:border-blue-500 focus:outline-none">
               {DEPARTMENTS.map((d) => (
                 <option key={d.id} value={d.id}>
-                  {d.label}
+                  {tBilingual(d.label, d.labelBn)}
                 </option>
               ))}
             </select>
@@ -191,11 +193,11 @@ export function EmployeeTable({
  value={selectedType}
  onChange={(e) => setSelectedType(e.target.value)}
  className="h-8 rounded-lg border border-border bg-card px-2.5 text-xs text-foreground focus:border-blue-500 focus:outline-none">
-              <option value="all">All Employment Types</option>
-              <option value="permanent">Permanent Staff</option>
-              <option value="contract">Contract Worker</option>
-              <option value="daily_worker">Daily Labor</option>
-              <option value="hourly_worker">Hourly Worker</option>
+              <option value="all">{tBilingual('All Employment Types', 'সকল কর্মসংস্থান ধরন')}</option>
+              <option value="permanent">{tBilingual('Permanent Staff', 'স্থায়ী কর্মী')}</option>
+              <option value="contract">{tBilingual('Contract Worker', 'চুক্তিভিত্তিক কর্মী')}</option>
+              <option value="daily_worker">{tBilingual('Daily Labor', 'দৈনিক মজুরি')}</option>
+              <option value="hourly_worker">{tBilingual('Hourly Worker', 'ঘণ্টাভিত্তিক কর্মী')}</option>
             </select>
 
             {/* Status */}
@@ -203,10 +205,10 @@ export function EmployeeTable({
  value={selectedStatus}
  onChange={(e) => setSelectedStatus(e.target.value)}
  className="h-8 rounded-lg border border-border bg-card px-2.5 text-xs text-foreground focus:border-blue-500 focus:outline-none">
-              <option value="all">All Statuses</option>
-              <option value="active">Active Only</option>
-              <option value="on_leave">On Leave</option>
-              <option value="terminated">Deactivated</option>
+              <option value="all">{tBilingual('All Statuses', 'সকল অবস্থা')}</option>
+              <option value="active">{tBilingual('Active Only', 'শুধুমাত্র সক্রিয়')}</option>
+              <option value="on_leave">{tBilingual('On Leave', 'ছুটিতে')}</option>
+              <option value="terminated">{tBilingual('Deactivated', 'নিষ্ক্রিয়')}</option>
             </select>
 
             {/* Branch */}
@@ -215,7 +217,7 @@ export function EmployeeTable({
  value={selectedBranch}
  onChange={(e) => setSelectedBranch(e.target.value)}
  className="h-8 rounded-lg border border-border bg-card px-2.5 text-xs text-foreground focus:border-blue-500 focus:outline-none">
-                <option value="all">All Branches</option>
+                <option value="all">{tBilingual('All Branches', 'সকল শাখা')}</option>
                 {branches.map((b) => (
                   <option key={b.id} value={b.id}>
                     {b.name}
@@ -225,7 +227,7 @@ export function EmployeeTable({
             )}
 
             <span className="text-muted-foreground text-xs ml-auto shrink-0 pl-2">
- Showing {filteredEmployees.length} of {employees.length}
+ {tBilingual(`Showing ${filteredEmployees.length} of ${employees.length}`, `${employees.length} জনের মধ্যে ${filteredEmployees.length} জন`)}
             </span>
           </div>
         </CardContent>
@@ -247,19 +249,27 @@ export function EmployeeTable({
               <UserPlus className="w-6 h-6"/>
             </div>
             <h3 className="text-base font-semibold text-foreground">
-              {employees.length === 0 ? 'No employees yet' : 'No matching employees found'}
+              {employees.length === 0
+                ? tBilingual('No employees yet', 'এখনও কোনো কর্মী নেই')
+                : tBilingual('No matching employees found', 'কোনো কর্মী খুঁজে পাওয়া যায়নি')}
             </h3>
             <p className="text-xs text-muted-foreground mt-1 mb-5">
               {employees.length === 0
-                ? 'Get started by creating your first employee profile with attendance and salary details.'
-                : 'Try adjusting your search query or filters to find what you are looking for.'}
+                ? tBilingual(
+                    'Get started by creating your first employee profile with attendance and salary details.',
+                    'হাজিরা ও বেতন বিবরণীসহ প্রথম কর্মীর প্রোফাইল তৈরি শুরু করুন।'
+                  )
+                : tBilingual(
+                    'Try adjusting your search query or filters to find what you are looking for.',
+                    'অনুসন্ধান বা ফিল্টার পরিবর্তন করে পুনরায় চেষ্টা করুন।'
+                  )}
             </p>
             {employees.length === 0 ? (
               <Button
  onClick={onAddEmployee}
  size="sm"className="h-9 px-4 text-xs font-semibold bg-primary hover:bg-primary/90 text-primary-foreground min-h-[36px]">
                 <UserPlus className="w-4 h-4 mr-1.5"/>
-                <span>Add Employee</span>
+                <span>{tBilingual('Add Employee', 'কর্মী যোগ করুন')}</span>
               </Button>
             ) : (
               <Button
@@ -271,7 +281,7 @@ export function EmployeeTable({
  setSelectedBranch('all')
                 }}
  className="h-8 text-xs border-border">
- Clear Filters
+ {tBilingual('Clear Filters', 'ফিল্টার মুছুন')}
               </Button>
             )}
           </div>
@@ -283,15 +293,15 @@ export function EmployeeTable({
             <table className="w-full text-left text-xs">
               <thead className="bg-muted border-b border-border text-muted-foreground uppercase tracking-wider font-semibold text-[11px]">
                 <tr>
-                  <th className="py-3 px-4">Employee</th>
-                  <th className="py-3 px-3">ID</th>
-                  <th className="py-3 px-3">Department</th>
-                  <th className="py-3 px-3">Role / Responsibility</th>
-                  <th className="py-3 px-3">Employment Type</th>
-                  <th className="py-3 px-3">Salary Basis</th>
-                  <th className="py-3 px-3 text-right">Current Salary</th>
-                  <th className="py-3 px-3 text-center">Status</th>
-                  <th className="py-3 px-4 text-right">Actions</th>
+                  <th className="py-3 px-4">{tBilingual('Employee', 'কর্মী')}</th>
+                  <th className="py-3 px-3">{tBilingual('ID', 'আইডি')}</th>
+                  <th className="py-3 px-3">{tBilingual('Department', 'বিভাগ')}</th>
+                  <th className="py-3 px-3">{tBilingual('Role / Responsibility', 'পদবী ও দায়িত্ব')}</th>
+                  <th className="py-3 px-3">{tBilingual('Employment Type', 'চুক্তির ধরন')}</th>
+                  <th className="py-3 px-3">{tBilingual('Salary Basis', 'বেতনের ভিত্তি')}</th>
+                  <th className="py-3 px-3 text-right">{tBilingual('Current Salary', 'বর্তমান বেতন')}</th>
+                  <th className="py-3 px-3 text-center">{tBilingual('Status', 'অবস্থা')}</th>
+                  <th className="py-3 px-4 text-right">{tBilingual('Actions', 'অ্যাকশন')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">

@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { ArrowRight, UserCheck, Clock, UserMinus, UserX, Activity } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useI18n } from '@/i18n/context'
 
 export interface AttendanceSummaryWidgetProps {
  present: number
@@ -18,16 +19,17 @@ export interface AttendanceSummaryWidgetProps {
 }
 
 export function AttendanceSummaryWidget({
- present,
- late,
- leave,
- absent,
- currentlyWorking,
- totalActive,
- isLoading = false,
- tenantSlug,
+  present,
+  late,
+  leave,
+  absent,
+  currentlyWorking,
+  totalActive,
+  isLoading = false,
+  tenantSlug,
 }: AttendanceSummaryWidgetProps) {
- if (isLoading) {
+  const { tBilingual } = useI18n()
+  if (isLoading) {
  return (
       <Card className="p-4 bg-card border-border shadow-none">
         <Skeleton className="h-6 w-44 mb-4"/>
@@ -90,17 +92,19 @@ export function AttendanceSummaryWidget({
       <CardHeader className="pb-3 border-b border-border px-5 pt-5 flex flex-row items-center justify-between">
         <div>
           <CardTitle className="text-base font-semibold text-foreground flex items-center gap-2">
-            <span>Today's Attendance</span>
-            <span className="text-xs font-normal text-muted-foreground">আজকের হাজিরা</span>
+            <span>{tBilingual("Today's Attendance", 'আজকের হাজিরা')}</span>
           </CardTitle>
           <p className="text-xs text-muted-foreground mt-0.5">
-            {attendanceRatio}% workforce attendance rate today ({present + late}/{totalActive} active)
+            {tBilingual(
+              `${attendanceRatio}% workforce attendance rate today (${present + late}/${totalActive} active)`,
+              `আজ উপস্থিতির হার ${attendanceRatio}% (${totalActive} জনের মধ্যে ${present + late} জন)`
+            )}
           </p>
         </div>
         <Link
  href={`/${tenantSlug}/hr/attendance`}
  className="text-xs font-medium text-blue-600 hover:text-blue-700 flex items-center gap-1 shrink-0">
-          <span>Floor Roster</span>
+          <span>{tBilingual('Floor Roster', 'ফ্লোর রোস্টার')}</span>
           <ArrowRight className="w-3.5 h-3.5"/>
         </Link>
       </CardHeader>
@@ -117,10 +121,7 @@ export function AttendanceSummaryWidget({
                 </div>
                 <div>
                   <div className="text-sm font-medium text-foreground leading-tight">
-                    {item.label}
-                  </div>
-                  <div className="text-[11px] text-muted-foreground font-normal">
-                    {item.labelBn}
+                    {tBilingual(item.label, item.labelBn)}
                   </div>
                 </div>
               </div>

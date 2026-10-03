@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
+import { useI18n } from '@/i18n/context'
 
 export interface DonutSliceItem {
  id: string
@@ -20,12 +21,13 @@ interface DonutDistributionChartProps {
 }
 
 export function DonutDistributionChart({
- title,
- totalAmount,
- items,
- periodLabel = 'This Month',
- centerSubtext = 'Total Sales',
+  title,
+  totalAmount,
+  items,
+  periodLabel = 'This Month',
+  centerSubtext = 'Total Sales',
 }: DonutDistributionChartProps) {
+  const { tBilingual } = useI18n()
  const [hoveredId, setHoveredId] = useState<string | null>(null)
 
   // Donut geometry matching Finance Dashboard
@@ -119,7 +121,7 @@ export function DonutDistributionChart({
         <div className="flex-1 w-full space-y-1.5 2xl:space-y-2 text-xs">
           {isAllZero ? (
             <div className="text-center py-4 text-xs text-muted-foreground">
- No sales records in this period
+              {tBilingual('No sales records in this period', 'এই সময়ের কোনো বিক্রয় রেকর্ড নেই')}
             </div>
           ) : (
  validItems.slice(0, 5).map((item) => {

@@ -16,6 +16,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useI18n } from '@/i18n/context'
 
 export interface PendingActionItem {
  id: string
@@ -36,11 +37,12 @@ export interface PendingActionsCardProps {
 }
 
 export function PendingActionsCard({
- items,
- isLoading = false,
- tenantSlug,
+  items,
+  isLoading = false,
+  tenantSlug,
 }: PendingActionsCardProps) {
- if (isLoading) {
+  const { tBilingual } = useI18n()
+  if (isLoading) {
  return (
       <Card className="p-5 bg-card border-border shadow-none">
         <Skeleton className="h-6 w-52 mb-4"/>
@@ -95,16 +97,18 @@ export function PendingActionsCard({
       <CardHeader className="pb-3 border-b border-border px-5 pt-5 flex flex-row items-center justify-between">
         <div>
           <CardTitle className="text-base font-semibold text-foreground flex items-center gap-2">
-            <span>Pending Approvals & Actions</span>
-            <span className="text-xs font-normal text-muted-foreground">অপেক্ষমান কার্যক্রম</span>
+            <span>{tBilingual('Pending Approvals & Actions', 'অপেক্ষমাণ কার্যক্রম')}</span>
             {items.length > 0 && (
-              <Badge variant="outline"className="ml-1 bg-amber-50 text-amber-700 border-amber-200 text-xs">
-                {items.length} pending
+              <Badge variant="outline" className="ml-1 bg-amber-50 text-amber-700 border-amber-200 text-xs">
+                {items.length} {tBilingual('pending', 'অপেক্ষমাণ')}
               </Badge>
             )}
           </CardTitle>
           <p className="text-xs text-muted-foreground mt-0.5">
- Operational approvals requiring immediate manager or accounts decision
+            {tBilingual(
+              'Operational approvals requiring immediate manager or accounts decision',
+              'ম্যানেজার বা হিসাব শাখার জরুরি সিদ্ধান্তের অপেক্ষায় থাকা কার্যক্রম'
+            )}
           </p>
         </div>
       </CardHeader>
@@ -115,9 +119,12 @@ export function PendingActionsCard({
             <div className="p-2.5 rounded-full bg-emerald-50 border border-emerald-200 mb-2">
               <CheckCircle2 className="w-5 h-5 text-emerald-600"/>
             </div>
-            <h4 className="text-sm font-semibold text-foreground">All caught up!</h4>
+            <h4 className="text-sm font-semibold text-foreground">{tBilingual('All caught up!', 'সব কাজ সম্পন্ন!')}</h4>
             <p className="text-xs text-muted-foreground mt-0.5">
- No pending overtime, attendance corrections, or advances awaiting review.
+              {tBilingual(
+                'No pending overtime, attendance corrections, or advances awaiting review.',
+                'পর্যালোচনার জন্য কোনো অপেক্ষমাণ ওভারটাইম, হাজিরা সংশোধন বা অগ্রিম নেই।'
+              )}
             </p>
           </div>
         ) : (
@@ -139,8 +146,9 @@ export function PendingActionsCard({
                         <Icon className={`w-4 h-4 ${visual.iconColor}`} />
                       </div>
                       <div>
-                        <div className="text-xs font-semibold text-foreground">{action.title}</div>
-                        <div className="text-[11px] text-muted-foreground">{action.titleBn}</div>
+                        <div className="text-xs font-semibold text-foreground">
+                          {tBilingual(action.title, action.titleBn)}
+                        </div>
                       </div>
                     </div>
                     <Badge variant="outline"className={`text-[10px] uppercase font-bold px-1.5 py-0 ${visual.badgeClass}`}>
@@ -154,13 +162,13 @@ export function PendingActionsCard({
 
                   <div className="pt-2 border-t border-border flex items-center justify-between mt-auto">
                     <span className="text-[11px] text-muted-foreground">
-                      {action.dateOrTime || 'Immediate'}
+                      {action.dateOrTime || tBilingual('Immediate', 'জরুরি')}
                     </span>
                     <Button
  asChild
  size="sm"variant="outline"className="h-8 px-3 text-xs font-medium text-foreground border-border hover:bg-muted min-h-[32px] touch-manipulation">
                       <Link href={targetHref}>
-                        <span>{action.actionLabel}</span>
+                        <span>{tBilingual(action.actionLabel, action.actionLabelBn)}</span>
                         <ChevronRight className="w-3.5 h-3.5 ml-1"/>
                       </Link>
                     </Button>
