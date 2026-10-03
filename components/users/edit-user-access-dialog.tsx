@@ -1,6 +1,8 @@
 'use client'
 
 import React, { useState, useEffect, useMemo } from 'react'
+import { useI18n } from '@/i18n/context'
+import { ROLE_NAMES_BN } from './roles-matrix-tab'
 import {
  Shield,
  Briefcase,
@@ -38,6 +40,25 @@ interface EditUserAccessDialogProps {
  onOpenAdvancedPermissions?: (user: CompanyUserWithProfile) => void
 }
 
+const RESPONSIBILITY_NAMES_BN: Record<string, string> = {
+  'Material Request': 'উপাদান রিকুইজিশন',
+  'Sales': 'বিক্রয়',
+  'Quotation': 'কোটেশন',
+  'Customer Management': 'গ্রাহক পরিচালনা',
+  'Production': 'উৎপাদন',
+  'Delivery': 'ডেলিভারি',
+  'Design': 'ডিজাইন',
+  'Approval': 'অনুমোদন',
+  'Revision': 'সংশোধন',
+  'Finishing': 'ফিনিশিং',
+  'Machine Operation': 'মেশিন পরিচালনা',
+  'Printing': 'প্রিন্টিং',
+  'Inventory': 'ইনভেন্টরি',
+  'Accounts': 'হিসাবরক্ষণ',
+  'HR': 'মানবসম্পদ',
+  'Installation': 'ইনস্টলেশন',
+}
+
 const DATA_SCOPE_OPTIONS: { id: DataScope; label: string; labelBn: string; desc: string }[] = [
   { id: 'own', label: 'My Work', labelBn: 'নিজের কাজ', desc: 'Only records created by or assigned to this user' },
   { id: 'assigned', label: 'Assigned Work', labelBn: 'বরাদ্দকৃত কাজ', desc: 'Records explicitly assigned to this user or their queue' },
@@ -58,6 +79,8 @@ export function EditUserAccessDialog({
  onOpenAdvancedPermissions,
 }: EditUserAccessDialogProps) {
  const { showToast } = useToast()
+  const { locale, tBilingual } = useI18n()
+  const isBn = locale === 'bn'
 
  const [selectedRoleId, setSelectedRoleId] = useState<string>('')
  const [selectedResponsibilities, setSelectedResponsibilities] = useState<string[]>([])
@@ -195,15 +218,13 @@ export function EditUserAccessDialog({
     <ModalDialog
  open={isOpen}
  onOpenChange={(open) => !open && onClose()}
- title="Edit User Access"description={`Configure access rights, operational duties, and branch scope for ${userName}.`}
+ title={tBilingual('Edit User Access', 'ব্যবহারকারীর অ্যাক্সেস সম্পাদনা')} description={tBilingual(`Configure access rights, operational duties, and branch scope for ${userName}.`, `${userName}-এর জন্য অ্যাক্সেস ক্ষমতা, দায়িত্ব ও শাখা স্কোপ নির্ধারণ করুন।`)}
  hideFooter={true}
  size="2xl">
       <div className="space-y-5 pt-1">
         {/* 1. Primary Role Selection */}
         <div className="space-y-2">
-          <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
- Role Template
-          </Label>
+          <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{tBilingual('Role Template', 'রোল টেমপ্লেট')}</Label>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {roles.map((r) => {
  const isSelected = selectedRoleId === r.id
@@ -217,7 +238,7 @@ export function EditUserAccessDialog({
                       : 'border-border hover:bg-muted dark:hover:bg-muted/50 text-foreground '
                   }`}
                 >
-                  <div className="text-xs font-semibold truncate">{r.name}</div>
+                  <div className="text-xs font-semibold truncate">{isBn ? (r.name_bn || ROLE_NAMES_BN[r.slug || ''] || ROLE_NAMES_BN[r.name] || r.name) : r.name}</div>
                   <div className="text-[11px] text-muted-foreground mt-0.5 truncate">
                     {r.name_bn || r.slug}
                   </div>
@@ -229,7 +250,7 @@ export function EditUserAccessDialog({
           {isRoleChanged && (
             <div className="p-2.5 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/40 rounded-lg text-xs text-amber-800 dark:text-amber-300 flex items-center gap-2">
               <AlertTriangle className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400"/>
-              <span>Role changed. Default permissions and responsibility presets have been updated.</span>
+              <span>{tBilingual('Role changed. Default permissions and responsibility presets have been updated.', 'রোল পরিবর্তিত হয়েছে। ডিফল্ট অনুমতি এবং দায়িত্ব প্রিসেট আপডেট করা হয়েছে।')}</span>
             </div>
           )}
         </div>
@@ -237,10 +258,8 @@ export function EditUserAccessDialog({
         {/* 2. Responsibilities Multi-select */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
- Assigned Responsibilities ({selectedResponsibilities.length})
-            </Label>
-            <span className="text-[11px] text-muted-foreground">Select all duties performed</span>
+            <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{tBilingual('Assigned Responsibilities', 'নির্ধারিত দায়িত্বসমূহ')} ({selectedResponsibilities.length})</Label>
+            <span className="text-[11px] text-muted-foreground">{tBilingual('Select all duties performed', 'সকল কার্যকর দায়িত্ব নির্বাচন করুন')}</span>
           </div>
 
           <div className="flex flex-wrap gap-1.5 p-3 border border-border rounded-lg bg-muted/50">
@@ -257,7 +276,7 @@ export function EditUserAccessDialog({
                   }`}
                 >
                   {isChecked && <Check className="h-3 w-3"/>}
-                  <span>{resp}</span>
+                  <span>{isBn ? (RESPONSIBILITY_NAMES_BN[resp] || resp) : resp}</span>
                 </button>
               )
             })}
@@ -267,32 +286,28 @@ export function EditUserAccessDialog({
         {/* 3. Branch Access */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
- Primary Branch
-            </Label>
+            <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{tBilingual('Primary Branch', 'প্রধান শাখা')}</Label>
             <select
  value={primaryBranchId}
  onChange={(e) => setPrimaryBranchId(e.target.value)}
  className="w-full text-sm rounded-lg border border-input bg-card px-3 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-blue-600">
               {branches.map((b) => (
                 <option key={b.id} value={b.id}>
-                  {b.name} {(b as any).is_head_office ? '(Main)' : ''}
+                  {isBn ? ((b as any).name_bn || b.name) : b.name} {(b as any).is_head_office ? (isBn ? '(প্রধান)' : '(Main)') : ''}
                 </option>
               ))}
             </select>
           </div>
 
           <div className="space-y-2">
-            <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
- Data Scope
-            </Label>
+            <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{tBilingual('Data Scope', 'ডেটা স্কোপ')}</Label>
             <select
  value={selectedScope}
  onChange={(e) => setSelectedScope(e.target.value as DataScope)}
  className="w-full text-sm rounded-lg border border-input bg-card px-3 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-blue-600">
               {DATA_SCOPE_OPTIONS.map((opt) => (
                 <option key={opt.id} value={opt.id}>
-                  {opt.label} — {opt.desc}
+                  {isBn ? opt.labelBn : opt.label} — {opt.desc}
                 </option>
               ))}
             </select>
@@ -304,7 +319,7 @@ export function EditUserAccessDialog({
           <div className="p-3 bg-blue-50/70 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/40 rounded-lg text-xs text-blue-900 dark:text-blue-300 flex items-start gap-2">
             <Eye className="h-4 w-4 shrink-0 text-blue-600 dark:text-blue-400 mt-0.5"/>
             <div>
-              <strong>Entire Company Scope:</strong> This user will have visibility into company-wide orders, customers, and operations allowed by their role permissions.
+              <strong>{tBilingual('Entire Company Scope:', 'সমগ্র প্রতিষ্ঠান স্কোপ:')}</strong> {tBilingual('This user will have visibility into company-wide orders, customers, and operations allowed by their role permissions.', 'এই ব্যবহারকারী তাদের রোলের অনুমতি অনুযায়ী প্রতিষ্ঠানব্যাপী সকল অর্ডার, গ্রাহক ও কার্যক্রমে প্রবেশ করতে পারবেন।')}
             </div>
           </div>
         )}
@@ -312,9 +327,7 @@ export function EditUserAccessDialog({
         {/* Additional Branches (if more than 1 branch in company) */}
         {branches.length > 1 && (
           <div className="space-y-2">
-            <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
- Additional Authorized Branches
-            </Label>
+            <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{tBilingual('Additional Authorized Branches', 'অতিরিক্ত অনুমোদিত শাখাসমূহ')}</Label>
             <div className="flex flex-wrap gap-2">
               {branches
                 .filter((b) => b.id !== primaryBranchId)
@@ -343,10 +356,10 @@ export function EditUserAccessDialog({
         <div className="p-3 bg-muted border border-border rounded-lg flex items-center justify-between text-xs">
           <div>
             <span className="font-semibold text-foreground">
-              {defaultPermissionsCount} Default Permissions
+              {defaultPermissionsCount} {tBilingual('Default Permissions', 'ডিফল্ট অনুমতি')}
             </span>
             <span className="text-muted-foreground ml-1.5">
- based on {selectedRole?.name || 'role'}
+ {tBilingual('based on ', 'ভিত্তি: ')} {isBn ? (ROLE_NAMES_BN[selectedRole?.slug || ''] || ROLE_NAMES_BN[selectedRole?.name || ''] || selectedRole?.name || 'রোল') : (selectedRole?.name || 'role')}
             </span>
           </div>
 
@@ -358,22 +371,20 @@ export function EditUserAccessDialog({
               }}
  className="text-xs gap-1.5 h-7">
               <Sliders className="h-3 w-3"/>
- Customize Permissions
+              {tBilingual('Customize Permissions', 'অনুমতি কাস্টমাইজ করুন')}
             </Button>
           )}
         </div>
 
         {/* Actions */}
         <div className="flex items-center justify-end gap-2 pt-3 border-t border-border">
-          <Button variant="outline"size="sm"onClick={onClose} disabled={isSubmitting}>
- Cancel
-          </Button>
+          <Button variant="outline" size="sm" onClick={onClose} disabled={isSubmitting}>{tBilingual('Cancel', 'বাতিল')}</Button>
           <Button
  size="sm"onClick={handleSave}
  disabled={isSubmitting || !selectedRoleId}
  className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium gap-1.5">
             {isSubmitting && <Loader2 className="h-3.5 w-3.5 animate-spin"/>}
- Save Changes
+ {tBilingual('Save Changes', 'পরিবর্তন সংরক্ষণ করুন')}
           </Button>
         </div>
       </div>

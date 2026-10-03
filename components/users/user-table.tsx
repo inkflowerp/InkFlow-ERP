@@ -72,32 +72,53 @@ function getRoleBadgeStyle(roleName: string) {
  return 'bg-muted text-foreground border-border '
 }
 
-function getDataScopeBadge(scope?: string) {
- const s = scope || 'branch'
- if (s === 'company') {
- return (
+import { ROLE_NAMES_BN } from './roles-matrix-tab'
+
+const RESPONSIBILITY_NAMES_BN: Record<string, string> = {
+  'Material Request': 'উপাদান রিকুইজিশন',
+  'Sales': 'বিক্রয়',
+  'Quotation': 'কোটেশন',
+  'Customer Management': 'গ্রাহক পরিচালনা',
+  'Production': 'উৎপাদন',
+  'Delivery': 'ডেলিভারি',
+  'Design': 'ডিজাইন',
+  'Approval': 'অনুমোদন',
+  'Revision': 'সংশোধন',
+  'Finishing': 'ফিনিশিং',
+  'Machine Operation': 'মেশিন পরিচালনা',
+  'Printing': 'প্রিন্টিং',
+  'Inventory': 'ইনভেন্টরি',
+  'Accounts': 'হিসাবরক্ষণ',
+  'HR': 'মানবসম্পদ',
+  'Installation': 'ইনস্টলেশন',
+}
+
+function getDataScopeBadge(scope?: string, isBn?: boolean) {
+  const s = scope || 'branch'
+  if (s === 'company') {
+    return (
       <span className="inline-flex items-center text-[10px] font-medium px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-950/30 dark:text-amber-300 dark:border-amber-800">
- Entire Company
+        {isBn ? 'সমগ্র প্রতিষ্ঠান' : 'Entire Company'}
       </span>
     )
   }
- if (s === 'branch') {
- return (
+  if (s === 'branch') {
+    return (
       <span className="inline-flex items-center text-[10px] font-medium px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/30 dark:text-blue-300 dark:border-blue-800">
- Branch
+        {isBn ? 'শাখা' : 'Branch'}
       </span>
     )
   }
- if (s === 'department') {
- return (
+  if (s === 'department') {
+    return (
       <span className="inline-flex items-center text-[10px] font-medium px-1.5 py-0.5 rounded bg-teal-50 text-teal-700 border border-teal-200 dark:bg-teal-950/30 dark:text-teal-300 dark:border-teal-800">
- Department
+        {isBn ? 'বিভাগ' : 'Department'}
       </span>
     )
   }
- return (
+  return (
     <span className="inline-flex items-center text-[10px] font-medium px-1.5 py-0.5 rounded bg-muted text-foreground border border-border">
- Assigned / Own
+      {isBn ? 'বরাদ্দকৃত / নিজস্ব' : 'Assigned / Own'}
     </span>
   )
 }
@@ -116,7 +137,8 @@ export function UserTable({
  onResetPassword,
  onRemoveLogin,
 }: UserTableProps) {
-  const { tBilingual } = useI18n()
+  const { locale, tBilingual } = useI18n()
+  const isBn = locale === 'bn'
  const branchMap = React.useMemo(() => {
  const map = new Map<string, BranchRow>()
  branches.forEach((b) => map.set(b.id, b))
@@ -124,9 +146,18 @@ export function UserTable({
   }, [branches])
 
  const getBranchName = (bId?: string | null) => {
- if (!bId) return 'Main Branch'
- const b = branchMap.get(bId)
- return b ? b.name : 'Branch'
+    if (!bId) return isBn ? 'প্রধান শাখা' : 'Main Branch'
+    const b = branchMap.get(bId)
+    if (!b) return isBn ? 'শাখা' : 'Branch'
+    if (isBn) {
+      if ((b as any).name_bn) return (b as any).name_bn
+      return b.name
+        .replace(/Head Office/gi, 'প্রধান কার্যালয়')
+        .replace(/Main Branch/gi, 'প্রধান শাখা')
+        .replace(/Main/gi, 'প্রধান শাখা')
+        .replace(/Branch/gi, 'শাখা')
+    }
+    return b.name
   }
 
  const getUserInitials = (user: CompanyUserWithProfile) => {
@@ -149,9 +180,7 @@ export function UserTable({
               <th scope="col"className="px-4 py-3.5">{tBilingual('Role & Scope', 'রোল ও পরিসর')}</th>
               <th scope="col"className="px-4 py-3.5">{tBilingual('Key Responsibilities', 'মূল দায়িত্ব')}</th>
               <th scope="col"className="px-4 py-3.5">{tBilingual('Branch Access', 'শাখা অ্যাক্সেস')}</th>
-              <th scope="col"className="px-4 py-3.5 text-center">
- Status
-              </th>
+              <th scope="col" className="px-4 py-3.5 text-center">{tBilingual('Status', 'স্ট্যাটাস')}</th>
               <th scope="col"className="px-4 py-3.5">{tBilingual('Last Login', 'সর্বশেষ লগইন')}</th>
               <th scope="col"className="px-5 py-3.5 text-right">{tBilingual('Actions', 'অ্যাকশন')}</th>
             </tr>
@@ -184,16 +213,14 @@ export function UserTable({
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
                           <span className="font-semibold text-foreground truncate text-sm">
-                            {u.profile?.full_name || u.linked_employee?.name || 'Unnamed User'}
+                            {u.profile?.full_name || u.linked_employee?.name || tBilingual('Unnamed User', 'নামহীন ব্যবহারকারী')}
                           </span>
                           {isCurrentUser && (
-                            <Badge variant="outline"className="text-[10px] py-0 px-1.5 border-blue-300 text-blue-700 dark:text-blue-300 bg-blue-50/50">
- You
-                            </Badge>
+                            <Badge variant="outline" className="text-[10px] py-0 px-1.5 border-blue-300 text-blue-700 dark:text-blue-300 bg-blue-50/50">{tBilingual('You', 'আপনি')}</Badge>
                           )}
                         </div>
                         <div className="text-xs text-muted-foreground truncate">
-                          {u.profile?.email || 'No email registered'}
+                          {u.profile?.email || tBilingual('No email registered', 'কোনো ইমেইল নেই')}
                         </div>
                       </div>
                     </div>
@@ -213,14 +240,14 @@ export function UserTable({
                               {u.linked_employee.employee_id_number}
                             </span>
                           )}
-                          <span className="truncate">{u.linked_employee.role || u.linked_employee.department || 'Workforce'}</span>
+                          <span className="truncate">{u.linked_employee.role || u.linked_employee.department || tBilingual('Workforce', 'কর্মী')}</span>
                         </div>
                       </div>
                     ) : (
                       <div className="flex items-center gap-2">
                         <span className="inline-flex items-center gap-1 text-[11px] text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 rounded border border-amber-200 dark:border-amber-800 font-medium">
                           <AlertCircle className="w-3 h-3 text-amber-500"/>
- No Employee Profile
+                          {tBilingual('No Employee Profile', 'কর্মী প্রোফাইল নেই')}
                         </span>
                         <Button
  variant="ghost"size="sm"onClick={() => onLinkEmployee(u)}
@@ -235,9 +262,9 @@ export function UserTable({
                   <td className="px-4 py-3.5 whitespace-nowrap">
                     <div className="flex flex-col gap-1 items-start">
                       <span className={cn('text-xs font-semibold px-2 py-0.5 rounded-md border', getRoleBadgeStyle(roleName))}>
-                        {roleName}
+                        {isBn ? (ROLE_NAMES_BN[roleName] || roleName) : roleName}
                       </span>
-                      {getDataScopeBadge(u.data_scope || (u as any).dataScope)}
+                      {getDataScopeBadge(u.data_scope || (u as any).dataScope, isBn)}
                     </div>
                   </td>
 
@@ -247,19 +274,18 @@ export function UserTable({
                       {topResponsibilities.length > 0 ? (
  topResponsibilities.map((resp) => (
                           <span
- key={resp}
- className="inline-flex items-center text-[10px] bg-muted text-foreground px-1.5 py-0.5 rounded border border-border /80 font-normal truncate">
-                            {resp}
+                            key={resp}
+                            className="inline-flex items-center text-[10px] bg-muted text-foreground px-1.5 py-0.5 rounded border border-border /80 font-normal truncate"
+                          >
+                            {isBn ? (RESPONSIBILITY_NAMES_BN[resp] || resp) : resp}
                           </span>
                         ))
                       ) : (
-                        <span className="text-xs text-muted-foreground italic">Standard duties</span>
+                        <span className="text-xs text-muted-foreground italic">{tBilingual('Standard duties', 'সাধারণ দায়িত্ব')}</span>
                       )}
                       {extraCount > 0 && (
                         <span
- className="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded border border-border"title="Click row to view all duties">
-                          +{extraCount} more
-                        </span>
+ className="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded border border-border"title={tBilingual('Click row to view all duties', 'সকল দায়িত্ব দেখতে ক্লিক করুন')}>+{extraCount} {tBilingual('more', 'আরো')}</span>
                       )}
                     </div>
                   </td>
@@ -274,7 +300,7 @@ export function UserTable({
                     </div>
                     {u.user_branch_access && u.user_branch_access.length > 1 && (
                       <span className="text-[10px] text-muted-foreground ml-5">
-                        +{u.user_branch_access.length - 1} extra branch
+                        +{u.user_branch_access.length - 1} {isBn ? 'অতিরিক্ত শাখা' : 'extra branch'}
                       </span>
                     )}
                   </td>
@@ -284,19 +310,19 @@ export function UserTable({
                     {isUserActive && (
                       <span className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"/>
- Active
+                        {tBilingual('Active', 'সক্রিয়')}
                       </span>
                     )}
                     {isUserInvited && (
                       <span className="inline-flex items-center gap-1.5 text-xs font-medium text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 rounded-full border border-amber-200 dark:border-amber-800">
                         <span className="w-1.5 h-1.5 rounded-full bg-amber-500"/>
- Invited
+                        {tBilingual('Invited', 'আমন্ত্রিত')}
                       </span>
                     )}
                     {isUserDisabled && (
                       <span className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground bg-muted px-2 py-0.5 rounded-full border border-border">
                         <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground"/>
- Disabled
+                        {tBilingual('Disabled', 'নিষ্ক্রিয়')}
                       </span>
                     )}
                   </td>
@@ -306,10 +332,10 @@ export function UserTable({
                     {lastLogin ? (
                       <div className="flex items-center gap-1.5"title={new Date(lastLogin).toLocaleString()}>
                         <Clock className="w-3.5 h-3.5 text-muted-foreground"/>
-                        <span>{formatDateTime(lastLogin, 'en')}</span>
+                        <span>{formatDateTime(lastLogin, isBn ? 'bn' : 'en')}</span>
                       </div>
                     ) : (
-                      <span className="text-muted-foreground italic">Never logged in</span>
+                      <span className="text-muted-foreground italic">{tBilingual('Never logged in', 'কখনও লগইন করেননি')}</span>
                     )}
                   </td>
 
@@ -320,9 +346,9 @@ export function UserTable({
                     <div className="flex items-center justify-end gap-1">
                       <Button
  variant="ghost"size="sm"onClick={() => onViewDetails(u)}
- className="h-8 px-2 text-muted-foreground hover:text-blue-600 dark:hover:text-blue-400"title="View Full Profile & Diagnostics">
+ className="h-8 px-2 text-muted-foreground hover:text-blue-600 dark:hover:text-blue-400"title={tBilingual('View Full Profile & Diagnostics', 'সম্পূর্ণ প্রোফাইল ও বিবরণ দেখুন')}>
                         <Eye className="w-4 h-4 mr-1"/>
-                        <span className="text-xs">View</span>
+                        <span className="text-xs">{tBilingual('View', 'দেখুন')}</span>
                       </Button>
 
                       <DropdownMenu>
@@ -340,11 +366,11 @@ export function UserTable({
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => onLinkEmployee(u)}>
                             <UserCheck className="w-4 h-4 mr-2 text-emerald-600"/>
-                            <span>{u.linked_employee ? 'Change Employee' : 'Link Employee'}</span>
+                            <span>{u.linked_employee ? tBilingual('Change Employee', 'কর্মী পরিবর্তন করুন') : tBilingual('Link Employee', 'কর্মী সংযুক্ত করুন')}</span>
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => onResetPassword(u)}>
                             <KeyRound className="w-4 h-4 mr-2 text-amber-600"/>
-                            <span>Send Password Reset</span>
+                            <span>{tBilingual('Send Password Reset', 'পাসওয়ার্ড রিসেট পাঠান')}</span>
                           </DropdownMenuItem>
 
                           <DropdownMenuSeparator />
@@ -357,12 +383,12 @@ export function UserTable({
                               {isUserActive ? (
                                 <>
                                   <UserX className="w-4 h-4 mr-2"/>
-                                  <span>Disable Login</span>
+                                  <span>{tBilingual('Disable Login', 'লগইন নিষ্ক্রিয় করুন')}</span>
                                 </>
                               ) : (
                                 <>
                                   <CheckCircle2 className="w-4 h-4 mr-2"/>
-                                  <span>Enable Login</span>
+                                  <span>{tBilingual('Enable Login', 'লগইন সক্রিয় করুন')}</span>
                                 </>
                               )}
                             </DropdownMenuItem>
@@ -373,7 +399,7 @@ export function UserTable({
  onClick={() => onRemoveLogin(u)}
  className="text-red-600 focus:text-red-700 focus:bg-red-50 dark:focus:bg-red-950/40">
                               <Trash2 className="w-4 h-4 mr-2"/>
-                              <span>Remove Login</span>
+                              <span>{tBilingual('Remove Login', 'লগইন মুছে ফেলুন')}</span>
                             </DropdownMenuItem>
                           )}
                         </DropdownMenuContent>

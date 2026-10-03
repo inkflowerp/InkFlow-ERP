@@ -41,6 +41,8 @@ import {
  getUserAuditActivityAction,
 } from '@/actions/company-users.actions'
 import { useToast } from '@/components/shared/toast-feedback'
+import { useI18n } from '@/i18n/context'
+import { ROLE_NAMES_BN } from './roles-matrix-tab'
 import { formatDateTime } from '@/lib/formatters'
 
 interface UserDetailProps {
@@ -69,6 +71,8 @@ export function UserDetailDrawer({
  onRefresh,
 }: UserDetailProps) {
  const { showToast } = useToast()
+  const { locale, tBilingual } = useI18n()
+  const isBn = locale === 'bn'
  const [activeTab, setActiveTab] = useState<DetailTab>('account')
 
   // Diagnostic health state
@@ -290,14 +294,13 @@ export function UserDetailDrawer({
       ? 'bg-amber-500'
       : 'bg-red-500'
 
- const statusText =
- status === 'active' ? 'Active' : status === 'invited' ? 'Invited' : 'Disabled'
+ const statusText = isBn ? (status === 'active' ? 'সক্রিয়' : status === 'invited' ? 'আমন্ত্রিত' : 'নিষ্ক্রিয়') : (status === 'active' ? 'Active' : status === 'invited' ? 'Invited' : 'Disabled')
 
  return (
     <>
       {/* Backdrop */}
       <div
- className="fixed inset-0 bg-surface-inset backdrop-blur-[2px] z-40 transition-opacity"onClick={onClose}
+ className="fixed inset-0 bg-black/50 backdrop-blur-[2px] z-40 transition-opacity"onClick={onClose}
  aria-hidden="true"/>
 
       {/* Drawer Container */}
@@ -324,7 +327,7 @@ export function UserDetailDrawer({
 
               <div className="text-xs text-muted-foreground mt-0.5 flex items-center gap-2 flex-wrap">
                 <Badge variant="outline"className="text-xs font-medium">
-                  {primaryRole?.name || 'General Staff'}
+                  {isBn ? (ROLE_NAMES_BN[primaryRole?.slug || ''] || ROLE_NAMES_BN[primaryRole?.name || ''] || primaryRole?.name || 'সাধারণ কর্মী') : (primaryRole?.name || 'General Staff')}
                 </Badge>
 
                 {linkedEmployee ? (
@@ -333,7 +336,7 @@ export function UserDetailDrawer({
                     <span>EMP: {linkedEmployee.employee_id_number || linkedEmployee.name}</span>
                   </span>
                 ) : (
-                  <span className="text-muted-foreground">Not Linked to Employee</span>
+                  <span className="text-muted-foreground">{tBilingual('Not Linked to Employee', 'কর্মী প্রোফাইল সংযুক্ত নেই')}</span>
                 )}
               </div>
             </div>
@@ -349,12 +352,12 @@ export function UserDetailDrawer({
         {/* TAB NAVIGATION */}
         <div className="flex border-b border-border px-4 overflow-x-auto gap-1 text-xs scrollbar-none">
           {[
-            { id: 'account', label: 'Account' },
-            { id: 'access', label: 'Role & Duties' },
-            { id: 'data', label: 'Data Scope' },
-            { id: 'branch', label: 'Branches' },
-            { id: 'security', label: 'Security' },
-            { id: 'activity', label: 'Activity' },
+            { id: 'account', label: tBilingual('Account', 'অ্যাকাউন্ট') },
+            { id: 'access', label: tBilingual('Role & Duties', 'রোল ও দায়িত্ব') },
+            { id: 'data', label: tBilingual('Data Scope', 'ডেটা স্কোপ') },
+            { id: 'branch', label: tBilingual('Branches', 'শাখাসমূহ') },
+            { id: 'security', label: tBilingual('Security', 'নিরাপত্তা') },
+            { id: 'activity', label: tBilingual('Activity', 'অ্যাক্টিভিটি') },
           ].map((tab) => (
             <button
  key={tab.id}
@@ -803,7 +806,7 @@ export function UserDetailDrawer({
  open={isDisableConfirmOpen}
  onOpenChange={setIsDisableConfirmOpen}
  onConfirm={() => handleToggleStatus('disabled')}
- title="Disable this user's login?"titleBn="এই ব্যবহারকারীর লগইন নিষ্ক্রিয় করবেন?"message="They will no longer be able to sign in or access PrintERP. All linked employee records, attendance, and payroll will remain intact."confirmText="Disable Login"isDestructive={true}
+ title="Disable this user's login?"titleBn="এই ব্যবহারকারীর লগইন নিষ্ক্রিয় করবেন?"message="They will no longer be able to sign in or access PrintERP. All linked employee records, attendance, and payroll will remain intact."confirmText={tBilingual('Disable Login', 'লগইন নিষ্ক্রিয় করুন')} cancelText={tBilingual('Cancel', 'বাতিল')}isDestructive={true}
  isLoading={actionLoading}
       />
 
@@ -812,7 +815,7 @@ export function UserDetailDrawer({
  open={isEnableConfirmOpen}
  onOpenChange={setIsEnableConfirmOpen}
  onConfirm={() => handleToggleStatus('active')}
- title="Enable this user's login?"titleBn="এই ব্যবহারকারীর লগইন সক্রিয় করবেন?"message="They will be granted sign-in access under their current role, responsibilities, and branch assignments."confirmText="Enable Login"isDestructive={false}
+ title="Enable this user's login?"titleBn="এই ব্যবহারকারীর লগইন সক্রিয় করবেন?"message="They will be granted sign-in access under their current role, responsibilities, and branch assignments."confirmText={tBilingual('Enable Login', 'লগইন সক্রিয় করুন')} cancelText={tBilingual('Cancel', 'বাতিল')}isDestructive={false}
  isLoading={actionLoading}
       />
 
@@ -822,7 +825,7 @@ export function UserDetailDrawer({
  onOpenChange={setIsResetPasswordConfirmOpen}
  onConfirm={handleResetPassword}
  title="Send Password Reset Email?"titleBn="পাসওয়ার্ড রিসেট ইমেইল পাঠাবেন?"message={`A secure recovery link will be dispatched to ${email}. They can click the link to configure a new password.`}
- confirmText="Send Reset Link"isDestructive={false}
+ confirmText={tBilingual('Send Reset Link', 'রিসেট লিংক পাঠান')} cancelText={tBilingual('Cancel', 'বাতিল')}isDestructive={false}
  isLoading={actionLoading}
       />
 
@@ -831,7 +834,7 @@ export function UserDetailDrawer({
  open={isRemoveLoginConfirmOpen}
  onOpenChange={setIsRemoveLoginConfirmOpen}
  onConfirm={handleRemoveLogin}
- title="Remove system login?"titleBn="লগইন অ্যাকাউন্ট মুছে ফেলবেন?"message="This removes login credentials and system access. IMPORTANT: The linked employee profile, historical attendance, advances, and payroll sheets will NOT be deleted."confirmText="Remove Login"isDestructive={true}
+ title="Remove system login?"titleBn="লগইন অ্যাকাউন্ট মুছে ফেলবেন?"message="This removes login credentials and system access. IMPORTANT: The linked employee profile, historical attendance, advances, and payroll sheets will NOT be deleted."confirmText={tBilingual('Remove Login', 'লগইন মুছুন')} cancelText={tBilingual('Cancel', 'বাতিল')}isDestructive={true}
  isLoading={actionLoading}
       />
 
@@ -841,7 +844,7 @@ export function UserDetailDrawer({
  onOpenChange={setIsUnlinkConfirmOpen}
  onConfirm={handleUnlinkEmployee}
  title="Unlink employee profile?"titleBn="কর্মী প্রোফাইল বিচ্ছিন্ন করবেন?"message={`Disconnect ${linkedEmployee?.name || 'employee'} from this login account. Both the login account and employee record will remain, but separated.`}
- confirmText="Unlink"isDestructive={true}
+ confirmText={tBilingual('Unlink', 'বিচ্ছিন্ন করুন')} cancelText={tBilingual('Cancel', 'বাতিল')}isDestructive={true}
  isLoading={actionLoading}
       />
     </>

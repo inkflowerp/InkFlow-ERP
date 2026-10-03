@@ -36,6 +36,7 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { ConfirmDialog } from '@/components/shared/confirm-dialog'
 import { UserTable } from '@/components/users/user-table'
+import { ROLE_NAMES_BN } from './roles-matrix-tab'
 import { UserCard } from '@/components/users/user-card'
 import { CreateUserWizard } from '@/components/users/create-user-wizard'
 import { EditUserAccessDialog } from '@/components/users/edit-user-access-dialog'
@@ -45,7 +46,8 @@ import { useParams } from 'next/navigation'
 import { cn } from '@/lib/utils'
 
 export function TeamUsersPage() {
-  const { tBilingual } = useI18n()
+  const { locale, tBilingual } = useI18n()
+  const isBn = locale === 'bn'
  const params = useParams()
  const routeSlug = (params?.tenantSlug as string) || ''
  const { company, currentUser } = useTenant()
@@ -489,7 +491,7 @@ export function TeamUsersPage() {
             <option value="all">{tBilingual('All Roles', 'সকল রোল')}</option>
             {roles.map((r) => (
               <option key={r.id} value={r.name}>
-                {r.name}
+                {isBn ? (ROLE_NAMES_BN[r.slug || ''] || ROLE_NAMES_BN[r.name] || r.name) : r.name}
               </option>
             ))}
           </select>
@@ -502,7 +504,7 @@ export function TeamUsersPage() {
             <option value="all">{tBilingual('All Branches', 'সকল শাখা')}</option>
             {branches.map((b) => (
               <option key={b.id} value={b.id}>
-                {b.name}
+                {isBn ? ((b as any).name_bn || b.name) : b.name}
               </option>
             ))}
           </select>
@@ -516,9 +518,7 @@ export function TeamUsersPage() {
  setRoleFilter('all')
  setBranchFilter('all')
               }}
- className="text-xs text-blue-600 hover:text-blue-700 dark:text-blue-400 font-medium ml-auto">
- Reset Filters
-            </button>
+ className="text-xs text-blue-600 hover:text-blue-700 dark:text-blue-400 font-medium ml-auto">{tBilingual('Reset Filters', 'ফিল্টার রিসেট')}</button>
           )}
         </div>
       </div>
@@ -539,11 +539,9 @@ export function TeamUsersPage() {
       ) : error ? (
         <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 rounded-xl p-6 text-center space-y-3">
           <AlertCircle className="w-8 h-8 text-red-600 dark:text-red-400 mx-auto"/>
-          <h3 className="font-semibold text-foreground text-sm">Failed to Load Team Users</h3>
+          <h3 className="font-semibold text-foreground text-sm">{tBilingual('Failed to Load Team Users', 'টিম ব্যবহারকারী লোড করা যায়নি')}</h3>
           <p className="text-xs text-red-700 dark:text-red-300 max-w-md mx-auto">{error}</p>
-          <Button variant="outline"size="sm"onClick={() => loadData(true)} className="h-8 text-xs">
- Retry
-          </Button>
+          <Button variant="outline" size="sm" onClick={() => loadData(true)} className="h-8 text-xs">{tBilingual('Retry', 'পুনরায় চেষ্টা করুন')}</Button>
         </div>
       ) : filteredUsers.length === 0 ? (
         <div className="bg-card border border-border rounded-xl p-12 text-center shadow-sm space-y-3">
@@ -551,20 +549,18 @@ export function TeamUsersPage() {
             <Users className="w-6 h-6"/>
           </div>
           <h3 className="font-semibold text-foreground text-sm">
-            {users.length === 0 ? 'No Team Users Yet' : 'No Matching Users Found'}
+            {users.length === 0 ? tBilingual('No Team Users Yet', 'কোনো টিম ব্যবহারকারী নেই') : tBilingual('No Matching Users Found', 'কোনো ব্যবহারকারী পাওয়া যায়নি')}
           </h3>
           <p className="text-xs text-muted-foreground max-w-sm mx-auto">
-            {users.length === 0
-              ? 'Add your team members to grant them secure role-based access to invoices, jobs, and branch operations.'
-              : 'Try clearing your search query or adjusting your status and role filters.'}
+            {users.length === 0 ? tBilingual('Add your team members to grant them secure role-based access to invoices, jobs, and branch operations.', 'ইনভয়েস, জব ও শাখা কার্যক্রমে ভূমিকাভিত্তিক অ্যাক্সেস দিতে টিম সদস্যদের যুক্ত করুন।') : tBilingual('Try clearing your search query or adjusting your status and role filters.', 'অনুসন্ধান মুছে ফেলুন বা ফিল্টার পরিবর্তন করে চেষ্টা করুন।')}
           </p>
           {users.length === 0 ? (
             <Button
  variant="default"size="sm"onClick={handleOpenCreateWizard}
  className="mt-2 bg-primary hover:bg-primary/90 text-primary-foreground">
               <UserPlus className="w-4 h-4 mr-1.5"/>
- Add First User
-            </Button>
+                {tBilingual('Add First User', 'প্রথম ব্যবহারকারী যোগ করুন')}
+              </Button>
           ) : (
             <Button
  variant="outline"size="sm"onClick={() => {
@@ -573,9 +569,7 @@ export function TeamUsersPage() {
  setRoleFilter('all')
  setBranchFilter('all')
               }}
- className="mt-2 text-xs">
- Clear Filters
-            </Button>
+ className="mt-2 text-xs">{tBilingual('Clear Filters', 'ফিল্টার মুছুন')}</Button>
           )}
         </div>
       ) : (
@@ -721,14 +715,15 @@ export function TeamUsersPage() {
       <ConfirmDialog
  open={Boolean(userToToggleStatus)}
  onOpenChange={(open) => !open && setUserToToggleStatus(null)}
- title={userToToggleStatus?.status === 'active' ? 'Disable User Login?' : 'Activate User Login?'}
+ title={userToToggleStatus?.status === 'active' ? tBilingual('Disable User Login?', 'লগইন নিষ্ক্রিয় করবেন?') : tBilingual('Activate User Login?', 'লগইন সক্রিয় করবেন?')}
  message={
  userToToggleStatus?.status === 'active'
             ? `Disabling login will immediately prevent ${userToToggleStatus?.profile?.full_name || userToToggleStatus?.profile?.email} from authenticating or accessing company records. Their employee profile and work logs remain preserved.`
             : `Re-activating login will restore authentication access for ${userToToggleStatus?.profile?.full_name || userToToggleStatus?.profile?.email}.`
         }
- confirmText={userToToggleStatus?.status === 'active' ? 'Disable Login' : 'Activate Login'}
- cancelText="Cancel"isDestructive={userToToggleStatus?.status === 'active'}
+ confirmText={userToToggleStatus?.status === 'active' ? tBilingual('Disable Login', 'লগইন নিষ্ক্রিয় করুন') : tBilingual('Activate Login', 'লগইন সক্রিয় করুন')}
+        cancelText={tBilingual('Cancel', 'বাতিল')}
+ isDestructive={userToToggleStatus?.status === 'active'}
  isLoading={isActionSubmitting}
  onConfirm={handleConfirmToggleStatus}
       />
@@ -737,8 +732,8 @@ export function TeamUsersPage() {
       <ConfirmDialog
  open={Boolean(userToResetPassword)}
  onOpenChange={(open) => !open && setUserToResetPassword(null)}
- title="Send Password Reset Link?"message={`A secure password recovery email will be dispatched to ${userToResetPassword?.profile?.email}. The user will be prompted to choose a new password.`}
- confirmText="Send Reset Link"cancelText="Cancel"isDestructive={false}
+ title={tBilingual('Send Password Reset Link?', 'পাসওয়ার্ড রিসেট লিংক পাঠাবেন?')}message={`A secure password recovery email will be dispatched to ${userToResetPassword?.profile?.email}. The user will be prompted to choose a new password.`}
+ confirmText={tBilingual('Send Reset Link', 'রিসেট লিংক পাঠান')} cancelText={tBilingual('Cancel', 'বাতিল')}isDestructive={false}
  isLoading={isActionSubmitting}
  onConfirm={handleConfirmResetPassword}
       />
@@ -747,8 +742,8 @@ export function TeamUsersPage() {
       <ConfirmDialog
  open={Boolean(userToRemoveLogin)}
  onOpenChange={(open) => !open && setUserToRemoveLogin(null)}
- title="Remove User Login Access?"message={`This will completely revoke the login account for ${userToRemoveLogin?.profile?.full_name || userToRemoveLogin?.profile?.email}. If this user is linked to an employee profile (${userToRemoveLogin?.linked_employee?.name || 'Staff'}), their employee record, attendance, and salary history will NOT be deleted.`}
- confirmText="Remove Login"cancelText="Cancel"isDestructive={true}
+ title={tBilingual('Remove User Login Access?', 'লগইন অ্যাক্সেস মুছে ফেলবেন?')}message={`This will completely revoke the login account for ${userToRemoveLogin?.profile?.full_name || userToRemoveLogin?.profile?.email}. If this user is linked to an employee profile (${userToRemoveLogin?.linked_employee?.name || 'Staff'}), their employee record, attendance, and salary history will NOT be deleted.`}
+ confirmText={tBilingual('Remove Login', 'লগইন মুছুন')} cancelText={tBilingual('Cancel', 'বাতিল')}isDestructive={true}
  isLoading={isActionSubmitting}
  onConfirm={handleConfirmRemoveLogin}
       />

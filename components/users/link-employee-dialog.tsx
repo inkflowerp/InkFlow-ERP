@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useMemo } from 'react'
+import { useI18n } from '@/i18n/context'
 import { Search, UserCheck, AlertCircle, Check, Loader2 } from 'lucide-react'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import { Button } from '@/components/ui/button'
@@ -30,6 +31,8 @@ export function LinkEmployeeDialog({
  onSuccess,
 }: LinkEmployeeDialogProps) {
  const { showToast } = useToast()
+  const { locale, tBilingual } = useI18n()
+  const isBn = locale === 'bn'
  const [search, setSearch] = useState('')
  const [selectedEmpId, setSelectedEmpId] = useState<string | null>(null)
  const [isSubmitting, setIsSubmitting] = useState(false)
@@ -100,14 +103,14 @@ export function LinkEmployeeDialog({
     <ModalDialog
  open={isOpen}
  onOpenChange={(open) => !open && onClose()}
- title="Link Employee Profile"description={`Associate an active workforce record with ${userName}.`}
+ title={tBilingual('Link Employee Profile', 'কর্মী প্রোফাইল সংযুক্ত করুন')} description={tBilingual(`Associate an active workforce record with ${userName}.`, `${userName}-এর সাথে কর্মী প্রোফাইল সংযুক্ত করুন।`)}
  hideFooter={true}
  size="lg">
       <div className="space-y-4 pt-1">
         <div className="relative">
           <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground"/>
           <Input
- placeholder="Search by name, employee ID, mobile..."value={search}
+ placeholder={tBilingual('Search by name, employee ID, mobile...', 'নাম, কর্মী আইডি বা মোবাইল দিয়ে অনুসন্ধান...')}value={search}
  onChange={(e) => setSearch(e.target.value)}
  className="pl-9 text-sm"/>
         </div>
@@ -115,7 +118,7 @@ export function LinkEmployeeDialog({
         <div className="max-h-64 overflow-y-auto divide-y divide-border border border-border rounded-lg">
           {filteredEmployees.length === 0 ? (
             <div className="p-6 text-center text-sm text-muted-foreground">
- No matching employees found in workforce directory.
+ {tBilingual('No matching employees found in workforce directory.', 'কর্মী তালিকায় কোনো মিল পাওয়া যায়নি।')}
             </div>
           ) : (
  filteredEmployees.map((emp) => {
@@ -152,7 +155,7 @@ export function LinkEmployeeDialog({
                   <div className="shrink-0 flex items-center gap-2">
                     {isAlreadyLinkedOther ? (
                       <span className="text-[11px] text-amber-600 dark:text-amber-400 font-medium">
- Has login
+ {tBilingual('Has login', 'লগইন আছে')}
                       </span>
                     ) : isSelected ? (
                       <div className="h-6 w-6 rounded-full bg-blue-600 text-white flex items-center justify-center">
@@ -172,23 +175,20 @@ export function LinkEmployeeDialog({
           <div className="p-3 bg-blue-50/60 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900/40 rounded-lg text-xs text-blue-900 dark:text-blue-300 flex items-start gap-2">
             <UserCheck className="h-4 w-4 shrink-0 text-blue-600 dark:text-blue-400 mt-0.5"/>
             <div>
-              <span>Confirm linking </span>
-              <strong>{selectedEmployee.name}</strong> ({selectedEmployee.employee_id_number || 'EMP'}) to this login account.
- The employee will be able to punch attendance and view personal tasks.
+              <span>{tBilingual('Confirm linking ', 'নিশ্চিত করুন ')}</span>
+              <strong>{selectedEmployee.name}</strong> ({selectedEmployee.employee_id_number || 'EMP'}) {tBilingual('to this login account. The employee will be able to punch attendance and view personal tasks.', 'এই লগইন অ্যাকাউন্টে যুক্ত করতে।')}
             </div>
           </div>
         )}
 
         <div className="flex items-center justify-end gap-2 pt-2 border-t border-border">
-          <Button variant="outline"size="sm"onClick={onClose} disabled={isSubmitting}>
- Cancel
-          </Button>
+          <Button variant="outline" size="sm" onClick={onClose} disabled={isSubmitting}>{tBilingual('Cancel', 'বাতিল')}</Button>
           <Button
  size="sm"onClick={handleLink}
  disabled={!selectedEmpId || isSubmitting}
  className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium gap-1.5">
             {isSubmitting && <Loader2 className="h-3.5 w-3.5 animate-spin"/>}
- Confirm Link
+ {tBilingual('Confirm Link', 'সংযুক্ত করুন')}
           </Button>
         </div>
       </div>

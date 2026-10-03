@@ -85,6 +85,10 @@ export const ROLE_NAMES_BN: Record<string, string> = {
   accountant: 'হিসাবরক্ষক ও বিলিং কর্মকর্তা',
   delivery_coordinator: 'ডেলিভারি ও চালান সমন্বয়ক',
   general_staff: 'সাধারণ কর্মী',
+  Staff: 'সাধারণ কর্মী',
+  staff: 'সাধারণ কর্মী',
+  branch_manager: 'শাখা ব্যবস্থাপক',
+  manager: 'ব্যবস্থাপক',
   'Business Owner': 'ব্যবসা স্বত্বাধিকারী',
   'Sales Manager': 'সেলস ম্যানেজার',
   'Graphic Designer': 'গ্রাফিক ডিজাইনার',
@@ -94,6 +98,8 @@ export const ROLE_NAMES_BN: Record<string, string> = {
   'Accountant & Billing Officer': 'হিসাবরক্ষক ও বিলিং কর্মকর্তা',
   'Delivery & Challan Coordinator': 'ডেলিভারি ও চালান সমন্বয়ক',
   'General Staff': 'সাধারণ কর্মী',
+  'Branch Manager': 'শাখা ব্যবস্থাপক',
+  'Manager': 'ব্যবস্থাপক',
 }
 
 export const ROLE_DESCRIPTIONS_BN: Record<string, string> = {
