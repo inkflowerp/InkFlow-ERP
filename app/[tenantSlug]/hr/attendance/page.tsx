@@ -262,7 +262,7 @@ export default function AttendancePage() {
               }}
  className="px-3.5 py-1.5 rounded-lg text-muted-foreground hover:bg-muted flex items-center gap-1.5 transition-colors shrink-0">
               <Plus className="w-4 h-4"/>
-              <span>Manual Entry</span>
+              <span>{tBilingual('Manual Entry', 'ম্যানুয়াল এন্ট্রি')}</span>
             </button>
 
             <button
@@ -293,7 +293,7 @@ export default function AttendancePage() {
               }`}
             >
               <Clock4 className="w-4 h-4"/>
-              <span>Overtime</span>
+              <span>{tBilingual('Overtime', 'ওভারটাইম')}</span>
               {pendingOtCount > 0 && (
                 <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
  activeTab === 'overtime' ? 'bg-card text-blue-600' : 'bg-indigo-100 text-indigo-800'
@@ -312,7 +312,7 @@ export default function AttendancePage() {
               }`}
             >
               <Layers className="w-4 h-4"/>
-              <span>Shifts</span>
+              <span>{tBilingual('Shifts', 'শিফট')}</span>
             </button>
           </div>
 

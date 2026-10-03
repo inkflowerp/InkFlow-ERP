@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import type { AttendanceCorrectionRecord } from '@/types/attendance.types'
+import { useI18n } from '@/i18n/context'
 
 export interface AttendanceCorrectionTableProps {
  corrections: AttendanceCorrectionRecord[]
@@ -30,6 +31,7 @@ export function AttendanceCorrectionTable({
  tenantSlug,
  onReview,
 }: AttendanceCorrectionTableProps) {
+  const { locale, tBilingual } = useI18n()
  const [processingId, setProcessingId] = useState<string | null>(null)
  const [filterStatus, setFilterStatus] = useState<'all' | 'pending' | 'approved' | 'rejected'>('pending')
 
@@ -70,22 +72,27 @@ export function AttendanceCorrectionTable({
       {/* Header and Filter */}
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h3 className="text-base font-semibold text-foreground">Attendance Corrections Inbox</h3>
-          <p className="text-xs text-muted-foreground">Employee punch adjustment requests requiring manager sign-off</p>
+          <h3 className="text-base font-semibold text-foreground">{tBilingual('Attendance Corrections Inbox', 'হাজিরা সংশোধনের ইনবক্স')}</h3>
+          <p className="text-xs text-muted-foreground">{tBilingual('Employee punch adjustment requests requiring manager sign-off', 'কর্মীদের পাঞ্চ সংশোধনের আবেদন যা ম্যানেজারের অনুমোদন প্রয়োজন')}</p>
         </div>
 
         <div className="flex items-center gap-1.5 bg-muted p-1 rounded-lg text-xs">
-          {(['pending', 'approved', 'rejected', 'all'] as const).map((st) => (
+          {([
+            { key: 'pending', labelEn: 'Pending', labelBn: 'অপেক্ষমাণ' },
+            { key: 'approved', labelEn: 'Approved', labelBn: 'অনুমোদিত' },
+            { key: 'rejected', labelEn: 'Rejected', labelBn: 'বাতিলকৃত' },
+            { key: 'all', labelEn: 'All', labelBn: 'সকল' },
+          ] as const).map((st) => (
             <button
- key={st}
- onClick={() => setFilterStatus(st)}
- className={`px-3 py-1 rounded-md capitalize font-medium transition-colors ${
- filterStatus === st
+              key={st.key}
+              onClick={() => setFilterStatus(st.key)}
+              className={`px-3 py-1 rounded-md font-medium transition-colors ${
+                filterStatus === st.key
                   ? 'bg-card text-foreground shadow-xs'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              {st}
+              {tBilingual(st.labelEn, st.labelBn)}
             </button>
           ))}
         </div>
@@ -93,8 +100,16 @@ export function AttendanceCorrectionTable({
 
       {filteredCorrections.length === 0 ? (
         <Card className="bg-card border-border py-12 text-center">
-          <p className="text-sm font-medium text-muted-foreground">No {filterStatus} correction requests</p>
-          <p className="text-xs text-muted-foreground mt-1">All employee punch corrections are up to date.</p>
+          <p className="text-sm font-medium text-muted-foreground">
+            {filterStatus === 'all'
+              ? tBilingual('No correction requests', 'কোনো সংশোধনের আবেদন নেই')
+              : filterStatus === 'pending'
+              ? tBilingual('No pending correction requests', 'কোনো অপেক্ষমাণ সংশোধনের আবেদন নেই')
+              : filterStatus === 'approved'
+              ? tBilingual('No approved correction requests', 'কোনো অনুমোদিত সংশোধনের আবেদন নেই')
+              : tBilingual('No rejected correction requests', 'কোনো বাতিলকৃত সংশোধনের আবেদন নেই')}
+          </p>
+          <p className="text-xs text-muted-foreground mt-1">{tBilingual('All employee punch corrections are up to date.', 'সকল পাঞ্চ সংশোধন হালনাগাদ রয়েছে।')}</p>
         </Card>
       ) : (
         <Card className="bg-card border-border shadow-[0_1px_3px_rgba(0,0,0,0.02)] rounded-xl overflow-hidden">
@@ -102,13 +117,13 @@ export function AttendanceCorrectionTable({
             <table className="w-full text-left text-xs">
               <thead className="bg-muted border-b border-border text-muted-foreground uppercase tracking-wider font-semibold text-[11px]">
                 <tr>
-                  <th className="py-3 px-4">Employee</th>
-                  <th className="py-3 px-3">Date</th>
-                  <th className="py-3 px-3">Type</th>
-                  <th className="py-3 px-3">Requested Time</th>
-                  <th className="py-3 px-4">Reason</th>
-                  <th className="py-3 px-3 text-center">Status</th>
-                  <th className="py-3 px-4 text-right">Actions</th>
+                  <th className="py-3 px-4">{tBilingual('Employee', 'কর্মী')}</th>
+                  <th className="py-3 px-3">{tBilingual('Date', 'তারিখ')}</th>
+                  <th className="py-3 px-3">{tBilingual('Type', 'ধরন')}</th>
+                  <th className="py-3 px-3">{tBilingual('Requested Time', 'অনুরোধকৃত সময়')}</th>
+                  <th className="py-3 px-4">{tBilingual('Reason', 'কারণ')}</th>
+                  <th className="py-3 px-3 text-center">{tBilingual('Status', 'অবস্থা')}</th>
+                  <th className="py-3 px-4 text-right">{tBilingual('Actions', 'অ্যাকশন')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -136,9 +151,7 @@ export function AttendanceCorrectionTable({
  variant="outline"className={`text-[10px] font-semibold capitalize px-2 py-0.5 rounded-full ${getStatusBadge(
  corr.status
                           )}`}
-                        >
-                          {corr.status}
-                        </Badge>
+                        >{corr.status === 'approved' ? tBilingual('Approved', 'অনুমোদিত') : corr.status === 'rejected' ? tBilingual('Rejected', 'বাতিলকৃত') : tBilingual('Pending', 'অপেক্ষমাণ')}</Badge>
                       </td>
                       <td className="py-3 px-4 text-right">
                         {corr.status === 'pending' ? (
@@ -148,19 +161,19 @@ export function AttendanceCorrectionTable({
  onClick={() => handleReviewAction(corr.id, 'approved')}
  className="h-7 px-2.5 text-xs font-medium bg-emerald-600 hover:bg-emerald-700 text-white min-h-[28px]">
                               <Check className="w-3.5 h-3.5 mr-1"/>
-                              <span>Approve</span>
+                              <span>{tBilingual('Approve', 'অনুমোদন')}</span>
                             </Button>
                             <Button
  size="sm"variant="outline"disabled={isProcessing}
  onClick={() => handleReviewAction(corr.id, 'rejected')}
  className="h-7 px-2.5 text-xs font-medium border-red-200 text-red-600 hover:bg-red-50 min-h-[28px]">
                               <X className="w-3.5 h-3.5 mr-1"/>
-                              <span>Reject</span>
+                              <span>{tBilingual('Reject', 'বাতিল')}</span>
                             </Button>
                           </div>
                         ) : (
                           <span className="text-[11px] text-muted-foreground capitalize">
- Reviewed by {corr.reviewed_by_name || 'Manager'}
+ {tBilingual(`Reviewed by ${corr.reviewed_by_name || 'Manager'}`, `${corr.reviewed_by_name || 'ম্যানেজার'} দ্বারা পর্যালোচিত`)}
                           </span>
                         )}
                       </td>

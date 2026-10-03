@@ -24,6 +24,7 @@ import {
 } from '@/components/ui/dialog'
 import { Skeleton } from '@/components/ui/skeleton'
 import type { ShiftRecord, EmployeeRecord } from '@/types/workforce.types'
+import { useI18n } from '@/i18n/context'
 
 export interface ShiftManagerProps {
  shifts: ShiftRecord[]
@@ -42,6 +43,7 @@ export function ShiftManager({
  onCreateShift,
  onAssignEmployeeShift,
 }: ShiftManagerProps) {
+  const { locale, tBilingual } = useI18n()
  const [modalOpen, setModalOpen] = useState(false)
  const [isSubmitting, setIsSubmitting] = useState(false)
  const [errorMsg, setErrorMsg] = useState<string | null>(null)
@@ -108,29 +110,29 @@ export function ShiftManager({
       {/* Header */}
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h3 className="text-base font-semibold text-foreground">Work Shifts & Timing Rules</h3>
-          <p className="text-xs text-muted-foreground">Configure factory floor, design and administrative shifts</p>
+          <h3 className="text-base font-semibold text-foreground">{tBilingual('Work Shifts & Timing Rules', 'কাজের শিফট ও সময়সীমা নিয়মাবলী')}</h3>
+          <p className="text-xs text-muted-foreground">{tBilingual('Configure factory floor, design and administrative shifts', 'কারখানা ফ্লোর, ডিজাইন ও প্রশাসনিক কাজের শিফট নির্ধারণ করুন')}</p>
         </div>
 
         <Button
  size="sm"onClick={() => setModalOpen(true)}
  className="h-8 px-3 text-xs font-semibold bg-primary hover:bg-primary/90 text-primary-foreground min-h-[32px]">
           <Plus className="w-3.5 h-3.5 mr-1"/>
-          <span>New Shift</span>
+          <span>{tBilingual('New Shift', 'নতুন শিফট')}</span>
         </Button>
       </div>
 
       {/* Shifts Grid */}
       {shifts.length === 0 ? (
         <Card className="bg-card border-border py-12 text-center">
-          <p className="text-sm font-medium text-muted-foreground">No custom shifts configured yet</p>
+          <p className="text-sm font-medium text-muted-foreground">{tBilingual('No custom shifts configured yet', 'এখনো কোনো কাস্টম শিফট নির্ধারণ করা হয়নি')}</p>
           <p className="text-xs text-muted-foreground mt-1 mb-4">
- Standard 09:00 AM - 06:00 PM roster is currently used for all active staff.
+            {tBilingual('Standard 09:00 AM - 06:00 PM roster is currently used for all active staff.', 'সকল সক্রিয় কর্মীদের জন্য সাধারণ সকাল ০৯:০০ - সন্ধ্যা ০৬:০০ রোস্টার ব্যবহার করা হচ্ছে।')}
           </p>
           <Button
  size="sm"onClick={() => setModalOpen(true)}
  className="h-8 px-3.5 text-xs bg-blue-600 text-white">
- Create First Shift
+ {tBilingual('Create First Shift', 'প্রথম শিফট তৈরি করুন')}
           </Button>
         </Card>
       ) : (
@@ -146,30 +148,30 @@ export function ShiftManager({
                     <span className="font-mono text-[11px] text-muted-foreground">{shift.shift_code}</span>
                   </div>
                   <Badge variant="outline"className="bg-muted text-muted-foreground text-[10px]">
-                    {shift.is_overnight ? 'Overnight' : 'Day Shift'}
+                    {shift.is_overnight ? tBilingual('Overnight', 'নৈশ শিফট') : tBilingual('Day Shift', 'দিনের শিফট')}
                   </Badge>
                 </div>
 
                 <div className="space-y-1.5 text-xs text-muted-foreground mt-3 pt-3 border-t border-border">
                   <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Timings:</span>
+                    <span className="text-muted-foreground">{tBilingual('Timings:', 'সময়সীমা:')}</span>
                     <span className="font-mono font-medium text-foreground">
                       {shift.start_time} — {shift.end_time}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Grace Period:</span>
-                    <span className="font-medium text-foreground">{shift.grace_period_minutes} mins</span>
+                    <span className="text-muted-foreground">{tBilingual('Grace Period:', 'বিলম্ব মার্জিন:')}</span>
+                    <span className="font-medium text-foreground">{shift.grace_period_minutes} {tBilingual('mins', 'মিনিট')}</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Break:</span>
-                    <span className="font-medium text-foreground">{shift.break_duration_minutes} mins</span>
+                    <span className="text-muted-foreground">{tBilingual('Break:', 'বিরতি:')}</span>
+                    <span className="font-medium text-foreground">{shift.break_duration_minutes} {tBilingual('mins', 'মিনিট')}</span>
                   </div>
                 </div>
               </div>
 
               <div className="pt-3 mt-3 border-t border-border flex items-center justify-between text-[11px] text-muted-foreground">
-                <span>Status: {shift.is_active ? 'Active' : 'Disabled'}</span>
+                <span>{tBilingual('Status:', 'অবস্থা:')} {shift.is_active ? tBilingual('Active', 'সক্রিয়') : tBilingual('Disabled', 'নিষ্ক্রিয়')}</span>
               </div>
             </Card>
           ))}
@@ -180,7 +182,7 @@ export function ShiftManager({
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
         <DialogContent className="max-w-md p-6 bg-card border-border shadow-xs rounded-xl space-y-4">
           <DialogHeader>
-            <DialogTitle className="text-base font-bold text-foreground">Create Work Shift</DialogTitle>
+            <DialogTitle className="text-base font-bold text-foreground">{tBilingual('Create Work Shift', 'নতুন কাজের শিফট তৈরি করুন')}</DialogTitle>
           </DialogHeader>
 
           {errorMsg && (
@@ -192,7 +194,7 @@ export function ShiftManager({
 
           <div className="space-y-3 text-xs">
             <div>
-              <Label className="text-xs font-semibold text-foreground">Shift Name *</Label>
+              <Label className="text-xs font-semibold text-foreground">{tBilingual('Shift Name *', 'শিফটের নাম *')}</Label>
               <Input
  placeholder="e.g. Morning Offset Shift"value={shiftData.shift_name || ''}
  onChange={(e) => setShiftData({ ...shiftData, shift_name: e.target.value })}
@@ -200,7 +202,7 @@ export function ShiftManager({
             </div>
 
             <div>
-              <Label className="text-xs font-semibold text-foreground">Shift Code *</Label>
+              <Label className="text-xs font-semibold text-foreground">{tBilingual('Shift Code *', 'শিফট কোড *')}</Label>
               <Input
  placeholder="e.g. SHT-AM"value={shiftData.shift_code || ''}
  onChange={(e) => setShiftData({ ...shiftData, shift_code: e.target.value })}
@@ -209,14 +211,14 @@ export function ShiftManager({
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label className="text-xs font-semibold text-foreground">Start Time</Label>
+                <Label className="text-xs font-semibold text-foreground">{tBilingual('Start Time', 'শুরুর সময়')}</Label>
                 <Input
  type="time"value={shiftData.start_time || '09:00'}
  onChange={(e) => setShiftData({ ...shiftData, start_time: e.target.value })}
  className="h-8 text-xs mt-1"/>
               </div>
               <div>
-                <Label className="text-xs font-semibold text-foreground">End Time</Label>
+                <Label className="text-xs font-semibold text-foreground">{tBilingual('End Time', 'শেষের সময়')}</Label>
                 <Input
  type="time"value={shiftData.end_time || '18:00'}
  onChange={(e) => setShiftData({ ...shiftData, end_time: e.target.value })}
@@ -226,14 +228,14 @@ export function ShiftManager({
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label className="text-xs font-semibold text-foreground">Grace Period (Mins)</Label>
+                <Label className="text-xs font-semibold text-foreground">{tBilingual('Grace Period (Mins)', 'বিলম্ব মার্জিন (মিনিট)')}</Label>
                 <Input
  type="number"value={shiftData.grace_period_minutes ?? 15}
  onChange={(e) => setShiftData({ ...shiftData, grace_period_minutes: parseInt(e.target.value) || 0 })}
  className="h-8 text-xs mt-1"/>
               </div>
               <div>
-                <Label className="text-xs font-semibold text-foreground">Break (Mins)</Label>
+                <Label className="text-xs font-semibold text-foreground">{tBilingual('Break (Mins)', 'বিরতি (মিনিট)')}</Label>
                 <Input
  type="number"value={shiftData.break_duration_minutes ?? 60}
  onChange={(e) => setShiftData({ ...shiftData, break_duration_minutes: parseInt(e.target.value) || 0 })}
@@ -246,13 +248,12 @@ export function ShiftManager({
             <Button
  type="button"variant="outline"size="sm"onClick={() => setModalOpen(false)}
  className="h-8 text-xs border-border">
- Cancel
-            </Button>
+ {tBilingual('Cancel', 'বাতিল')}</Button>
             <Button
  type="button"size="sm"onClick={handleCreate}
  disabled={isSubmitting}
  className="h-8 px-4 text-xs font-semibold bg-primary hover:bg-primary/90 text-primary-foreground min-h-[32px]">
-              {isSubmitting ? 'Saving...' : 'Save Shift'}
+              {isSubmitting ? tBilingual('Saving...', 'সংরক্ষণ হচ্ছে...') : tBilingual('Save Shift', 'শিফট সংরক্ষণ করুন')}
             </Button>
           </div>
         </DialogContent>

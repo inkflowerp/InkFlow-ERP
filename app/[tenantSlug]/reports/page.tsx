@@ -68,8 +68,35 @@ import { MonthlySalesProfitChart } from '@/components/reports/monthly-sales-prof
 import { DonutDistributionChart } from '@/components/reports/donut-distribution-chart'
 import { QuickReportModal, QuickReportType } from '@/components/reports/quick-report-modal'
 
+
+const BENGALI_MONTHS_MAP: Record<string, string> = {
+  Jan: 'জানুয়ারি',
+  Feb: 'ফেব্রুয়ারি',
+  Mar: 'মার্চ',
+  Apr: 'এপ্রিল',
+  May: 'মে',
+  Jun: 'জুন',
+  Jul: 'জুলাই',
+  Aug: 'আগস্ট',
+  Sep: 'সেপ্টেম্বর',
+  Oct: 'অক্টোবর',
+  Nov: 'নভেম্বর',
+  Dec: 'ডিসেম্বর',
+}
+
+function formatMonthYear(monthStr: string, locale: string): string {
+  if (locale !== 'bn') return monthStr
+  const parts = monthStr.trim().split(' ')
+  if (parts.length === 2) {
+    const monthBn = BENGALI_MONTHS_MAP[parts[0]] || parts[0]
+    const yearBn = parts[1].replace(/\d/g, (d) => '০১২৩৪৫৬৭৮৯'[Number(d)])
+    return `${monthBn} ${yearBn}`
+  }
+  return monthStr
+}
+
 export default function BusinessReportsPage() {
-  const { tBilingual } = useI18n()
+  const { locale, tBilingual } = useI18n()
  const { company } = useTenant()
 
  const [mounted, setMounted] = useState(false)
@@ -1007,13 +1034,13 @@ export default function BusinessReportsPage() {
  key={row.month}
  className="hover:bg-muted dark:hover:bg-muted/40 transition-colors">
                             <td className="py-2.5 2xl:py-3 font-bold text-foreground whitespace-nowrap">
-                              {row.month}
+                              {formatMonthYear(row.month, locale)}
                             </td>
                             <td className="py-2.5 2xl:py-3 text-right tabular-nums font-semibold text-foreground">
-                              ৳ {row.sales.toLocaleString()}
+                              {locale === 'bn' ? `৳ ${row.sales.toLocaleString('en-US').replace(/\d/g, (d: string) => '০১২৩৪৫৬৭৮৯'[Number(d)])}` : `৳ ${row.sales.toLocaleString()}`}
                             </td>
                             <td className="py-2.5 2xl:py-3 text-right tabular-nums text-muted-foreground">
-                              ৳ {row.cost.toLocaleString()}
+                              {locale === 'bn' ? `৳ ${row.cost.toLocaleString('en-US').replace(/\d/g, (d: string) => '০১২৩৪৫৬৭৮৯'[Number(d)])}` : `৳ ${row.cost.toLocaleString()}`}
                             </td>
                             <td
  className={cn(
@@ -1023,10 +1050,10 @@ export default function BusinessReportsPage() {
                                   : 'text-rose-600 dark:text-rose-400'
                               )}
                             >
-                              ৳ {row.profit.toLocaleString()}
+                              {locale === 'bn' ? `৳ ${row.profit.toLocaleString('en-US').replace(/\d/g, (d: string) => '০১২৩৪৫৬৭৮৯'[Number(d)])}` : `৳ ${row.profit.toLocaleString()}`}
                             </td>
                             <td className="py-2.5 2xl:py-3 text-right tabular-nums font-bold text-emerald-600 dark:text-emerald-400">
-                              {row.margin}%
+                              {locale === 'bn' ? `${String(row.margin).replace(/\d/g, (d: string) => '০১২৩৪৫৬৭৮৯'[Number(d)])}%` : `${row.margin}%`}
                             </td>
                           </tr>
                         ))
