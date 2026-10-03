@@ -117,15 +117,15 @@ export function PayrollPeriodTable({
             <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center text-muted-foreground mb-3">
               <Wallet className="w-6 h-6"/>
             </div>
-            <h3 className="text-base font-semibold text-foreground">No payroll periods created yet</h3>
+            <h3 className="text-base font-semibold text-foreground">{tBilingual('No payroll periods created yet', 'কোনো পে-রোল পিরিয়ড তৈরি করা হয়নি')}</h3>
             <p className="text-xs text-muted-foreground mt-1 mb-5">
- Draft your first monthly salary sheet based on verified floor attendance and advances.
+              {tBilingual('Draft your first monthly salary sheet based on verified floor attendance and advances.', 'হাজিরা ও অগ্রিমের ওপর ভিত্তি করে আপনার প্রথম মাসিক বেতন শিট তৈরি করুন।')}
             </p>
             <Button
  onClick={onOpenGenerateModal}
  size="sm"className="h-9 px-4 text-xs font-semibold bg-primary hover:bg-primary/90 text-primary-foreground min-h-[36px]">
               <Plus className="w-4 h-4 mr-1.5"/>
-              <span>Create Payroll Period</span>
+              <span>{tBilingual('Create Payroll Period', 'নতুন পে-রোল পিরিয়ড তৈরি করুন')}</span>
             </Button>
           </div>
         </Card>
@@ -135,15 +135,15 @@ export function PayrollPeriodTable({
             <table className="w-full text-left text-xs">
               <thead className="bg-muted border-b border-border text-muted-foreground uppercase tracking-wider font-semibold text-[11px]">
                 <tr>
-                  <th className="py-3 px-4">Period</th>
+                  <th className="py-3 px-4">{tBilingual('Period', 'বেতন কাল')}</th>
                   <th className="py-3 px-3">{tBilingual('Date Range', 'সময়সীমা')}</th>
                   <th className="py-3 px-3 text-center">{tBilingual('Employees', 'মোট কর্মী')}</th>
-                  <th className="py-3 px-3 text-right">Gross</th>
-                  <th className="py-3 px-3 text-right">OT</th>
-                  <th className="py-3 px-3 text-right">Deductions</th>
+                  <th className="py-3 px-3 text-right">{tBilingual('Gross', 'মোট বেতন')}</th>
+                  <th className="py-3 px-3 text-right">{tBilingual('OT', 'ওভারটাইম')}</th>
+                  <th className="py-3 px-3 text-right">{tBilingual('Deductions', 'কর্তন')}</th>
                   <th className="py-3 px-3 text-right">{tBilingual('Net Payable', 'নীট প্রদেয়')}</th>
-                  <th className="py-3 px-3 text-right">Paid</th>
-                  <th className="py-3 px-3 text-right">Due</th>
+                  <th className="py-3 px-3 text-right">{tBilingual('Paid', 'পরিশোধিত')}</th>
+                  <th className="py-3 px-3 text-right">{tBilingual('Due', 'বকেয়া')}</th>
                   <th className="py-3 px-3 text-center">{tBilingual('Status', 'অবস্থা')}</th>
                   <th className="py-3 px-4 text-right">{tBilingual('Actions', 'অ্যাকশন')}</th>
                 </tr>
@@ -171,7 +171,7 @@ export function PayrollPeriodTable({
                         {period.locked_at && (
                           <div className="flex items-center gap-1 text-[10px] text-muted-foreground mt-0.5">
                             <Lock className="w-3 h-3 text-muted-foreground"/>
-                            <span>Locked {new Date(period.locked_at).toLocaleDateString()}</span>
+                            <span>{tBilingual('Locked', 'লক করা হয়েছে')} {new Date(period.locked_at).toLocaleDateString()}</span>
                           </div>
                         )}
                       </td>
@@ -233,7 +233,7 @@ export function PayrollPeriodTable({
  asChild
  size="sm"variant="outline"className="h-7 px-2.5 text-xs font-semibold text-foreground border-border hover:bg-muted min-h-[28px]">
                           <Link href={`/${tenantSlug}/hr/payroll/${period.id}`}>
-                            <span>Open Sheet</span>
+                            <span>{tBilingual('Open Sheet', 'বেতন শিট দেখুন')}</span>
                             <ArrowRight className="w-3.5 h-3.5 ml-1"/>
                           </Link>
                         </Button>

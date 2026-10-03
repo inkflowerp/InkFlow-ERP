@@ -750,12 +750,14 @@ export function DesignPanel({ defaultTab = 'new_tasks' }: DesignPanelProps) {
                 <Edit3 className="w-6 h-6 stroke-[2]"/>
               </div>
               <div className="text-base font-bold text-foreground">
-                {activeTab === 'all' ? 'No design jobs yet' : 'No jobs found in this tab'}
+                {activeTab === 'all'
+                  ? tBilingual('No design jobs yet', 'এখনো কোনো ডিজাইন কাজ নেই')
+                  : tBilingual('No jobs found in this tab', 'এই ট্যাবে কোনো কাজ পাওয়া যায়নি')}
               </div>
               <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
                 {activeTab === 'all'
-                  ? 'Confirmed commercial orders requiring design will appear here automatically, or you can create a direct design job.'
-                  : 'Try selecting another status tab or clear your search filters.'}
+                  ? tBilingual('Confirmed commercial orders requiring design will appear here automatically, or you can create a direct design job.', 'ডিজাইন প্রয়োজন এমন অর্ডারগুলো স্বয়ংক্রিয়ভাবে এখানে আসবে, অথবা আপনি সরাসরি নতুন ডিজাইন কাজ তৈরি করতে পারেন।')
+                  : tBilingual('Try selecting another status tab or clear your search filters.', 'অন্য কোনো স্ট্যাটাস ট্যাব নির্বাচন করুন অথবা অনুসন্ধান ফিল্টার মুছুন।')}
               </p>
               {activeTab === 'all' && (
                 <div className="mt-4">
@@ -763,7 +765,7 @@ export function DesignPanel({ defaultTab = 'new_tasks' }: DesignPanelProps) {
  onClick={() => setIsWorkOrderModalOpen(true)}
  className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs rounded-xl px-4 py-2 cursor-pointer shadow-xs inline-flex items-center gap-1.5">
                     <Plus className="w-4 h-4 stroke-[2.5]"/>
-                    <span>Add Work Order</span>
+                    <span>{tBilingual('Add Work Order', 'নতুন কাজের আদেশ')}</span>
                   </Button>
                 </div>
               )}

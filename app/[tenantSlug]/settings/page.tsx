@@ -333,128 +333,152 @@ export default function CompanySettingsPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
         {[
           {
- title: 'Company Profile',
- titleBn: 'প্রতিষ্ঠান পরিচিতি',
- desc: 'Legal entity, office hours, contacts & trade license',
- path: '/settings/company',
- icon: Building2,
- color: 'text-blue-600 bg-blue-50 dark:bg-blue-950/50',
- badge: company?.name ? 'Configured' : 'Setup Required',
+            title: 'Company Profile',
+            titleBn: 'প্রতিষ্ঠান পরিচিতি',
+            desc: 'Legal entity, office hours, contacts & trade license',
+            descBn: 'আইনি সত্তা, অফিস সময়, যোগাযোগের তথ্য ও ট্রেড লাইসেন্স',
+            path: '/settings/company',
+            icon: Building2,
+            color: 'text-blue-600 bg-blue-50 dark:bg-blue-950/50',
+            badge: company?.name ? 'Configured' : 'Setup Required',
+            badgeBn: company?.name ? 'সংরক্ষিত' : 'প্রয়োজন',
           },
           {
- title: 'Branding & Theme',
- titleBn: 'ব্র্যান্ডিং ও লোগো',
- desc: 'Custom colors, header logos, and bill footer terms',
- path: '/settings/branding',
- icon: Palette,
- color: 'text-purple-600 bg-purple-50 dark:bg-purple-950/50',
- badge: 'Theme Active',
+            title: 'Branding & Theme',
+            titleBn: 'ব্র্যান্ডিং ও লোগো',
+            desc: 'Custom colors, header logos, and bill footer terms',
+            descBn: 'নিজস্ব রঙ, হেডার লোগো এবং বিলের ফুটার শর্তাবলী',
+            path: '/settings/branding',
+            icon: Palette,
+            color: 'text-purple-600 bg-purple-50 dark:bg-purple-950/50',
+            badge: 'Theme Active',
+            badgeBn: 'সক্রিয়',
           },
           {
- title: 'Language & Formats',
- titleBn: 'ভাষা ও মুদ্রা',
- desc: 'BDT / USD, DD/MM/YYYY, Bengali/English UI',
- path: '/settings/localization',
- icon: Globe2,
- color: 'text-emerald-600 bg-emerald-50 dark:bg-emerald-950/50',
- badge: `${company?.currency || 'BDT'} / ${company?.default_locale === 'en' ? 'EN' : 'BN'}`,
+            title: 'Language & Formats',
+            titleBn: 'ভাষা ও মুদ্রা',
+            desc: 'BDT / USD, DD/MM/YYYY, Bengali/English UI',
+            descBn: 'বিডিটি / ইউএসডি, তারিখ ফরম্যাট ও বাংলা/ইংরেজি ইন্টারফেস',
+            path: '/settings/localization',
+            icon: Globe2,
+            color: 'text-emerald-600 bg-emerald-50 dark:bg-emerald-950/50',
+            badge: `${company?.currency || 'BDT'} / ${company?.default_locale === 'en' ? 'EN' : 'BN'}`,
+            badgeBn: `${company?.currency || 'BDT'} / ${company?.default_locale === 'en' ? 'EN' : 'BN'}`,
           },
           {
- title: 'Document Numbering',
- titleBn: 'ডকুমেন্ট নাম্বারিং',
- desc: 'INV, QUO, CHL sequence prefixes and padding',
- path: '/settings/document-numbering',
- icon: Hash,
- color: 'text-indigo-600 bg-indigo-50 dark:bg-indigo-950/50',
- badge: 'PostgreSQL Safe',
+            title: 'Document Numbering',
+            titleBn: 'ডকুমেন্ট নাম্বারিং',
+            desc: 'INV, QUO, CHL sequence prefixes and padding',
+            descBn: 'চালান, কোটেশন ও ইনভয়েস নম্বর সিকোয়েন্স',
+            path: '/settings/document-numbering',
+            icon: Hash,
+            color: 'text-indigo-600 bg-indigo-50 dark:bg-indigo-950/50',
+            badge: 'PostgreSQL Safe',
+            badgeBn: 'সুরক্ষিত',
           },
           {
- title: 'Document Templates',
- titleBn: 'ডকুমেন্ট টেমপ্লেট',
- desc: 'PDF invoice, quotation designer & WhatsApp variables',
- path: '/settings/documents',
- icon: FileText,
- color: 'text-cyan-600 bg-cyan-50 dark:bg-cyan-950/50',
- badge: 'Live Preview',
+            title: 'Document Templates',
+            titleBn: 'ডকুমেন্ট টেমপ্লেট',
+            desc: 'PDF invoice, quotation designer & WhatsApp variables',
+            descBn: 'পিডিএফ ইনভয়েস, কোটেশন ডিজাইন ও হোয়াটসঅ্যাপ ভ্যারিয়েবল',
+            path: '/settings/documents',
+            icon: FileText,
+            color: 'text-cyan-600 bg-cyan-50 dark:bg-cyan-950/50',
+            badge: 'Live Preview',
+            badgeBn: 'লাইভ প্রিভিউ',
           },
           {
- title: 'Workflow Automations',
- titleBn: 'কাজের অটোমেশন',
- desc: 'Auto-convert quotations, trigger jobs & status alerts',
- path: '/settings/automations',
- icon: Workflow,
- color: 'text-pink-600 bg-pink-50 dark:bg-pink-950/50',
- badge: 'Pipelines Active',
+            title: 'Workflow Automations',
+            titleBn: 'কাজের অটোমেশন',
+            desc: 'Auto-convert quotations, trigger jobs & status alerts',
+            descBn: 'স্বয়ংক্রিয় কোটেশন রূপান্তর, জব ট্রিগার ও অ্যালার্ট',
+            path: '/settings/automations',
+            icon: Workflow,
+            color: 'text-pink-600 bg-pink-50 dark:bg-pink-950/50',
+            badge: 'Pipelines Active',
+            badgeBn: 'সক্রিয়',
           },
           {
- title: 'Branches & Factories',
- titleBn: 'শাখা ও কারখানা',
- desc: 'Showrooms, print floors & regional fabrication hubs',
- path: '/settings/branches',
- icon: GitBranch,
- color: 'text-teal-600 bg-teal-50 dark:bg-teal-950/50',
- badge: 'Hubs Managed',
+            title: 'Branches & Factories',
+            titleBn: 'শাখা ও কারখানা',
+            desc: 'Showrooms, print floors & regional fabrication hubs',
+            descBn: 'শোরুম, প্রিন্ট ফ্লোর এবং আঞ্চলিক ফেব্রিকেশন হাব',
+            path: '/settings/branches',
+            icon: GitBranch,
+            color: 'text-teal-600 bg-teal-50 dark:bg-teal-950/50',
+            badge: 'Hubs Managed',
+            badgeBn: 'পরিচালিত',
           },
           {
- title: 'Attendance & QR',
- titleBn: 'হাজিরা ও কিউআর',
- desc: 'Workplace geofence GPS and cryptographic QR tokens',
- path: '/settings/attendance',
- icon: QrCode,
- color: 'text-indigo-600 bg-indigo-50 dark:bg-indigo-950/50',
- badge: 'Geofence Active',
+            title: 'Attendance & QR',
+            titleBn: 'হাজিরা ও কিউআর',
+            desc: 'Workplace geofence GPS and cryptographic QR tokens',
+            descBn: 'কর্মস্থলের জিওফেন্স জিপিএস এবং ক্রিপ্টোগ্রাফিক কিউআর',
+            path: '/settings/attendance',
+            icon: QrCode,
+            color: 'text-indigo-600 bg-indigo-50 dark:bg-indigo-950/50',
+            badge: 'Geofence Active',
+            badgeBn: 'সক্রিয়',
           },
           {
- title: 'Notifications & SMS',
- titleBn: 'নোটিফিকেশন ও এসএমএস',
- desc: 'Bangladeshi masked SMS, WhatsApp & audio chimes',
- path: '/settings/notifications',
- icon: Bell,
- color: 'text-amber-600 bg-amber-50 dark:bg-amber-950/50',
- badge: 'Audio & SMS',
+            title: 'Notifications & SMS',
+            titleBn: 'নোটিফিকেশন ও এসএমএস',
+            desc: 'Bangladeshi masked SMS, WhatsApp & audio chimes',
+            descBn: 'মাস্কড এসএমএস, হোয়াটসঅ্যাপ নোটিফিকেশন ও অডিও অ্যালার্ট',
+            path: '/settings/notifications',
+            icon: Bell,
+            color: 'text-amber-600 bg-amber-50 dark:bg-amber-950/50',
+            badge: 'Audio & SMS',
+            badgeBn: 'এসএমএস',
           },
           {
- title: 'Email Gateway',
- titleBn: 'ইমেইল গেটওয়ে',
- desc: 'Gmail OAuth 2.0 and custom authenticated SMTP server',
- path: '/settings/email',
- icon: Mail,
- color: 'text-blue-600 bg-blue-50 dark:bg-blue-950/50',
- badge: 'Gmail / SMTP',
+            title: 'Email Gateway',
+            titleBn: 'ইমেইল গেটওয়ে',
+            desc: 'Gmail OAuth 2.0 and custom authenticated SMTP server',
+            descBn: 'জিমেইল ও কাস্টম অথেনটিকেটেড এসএমটিপি গেটওয়ে',
+            path: '/settings/email',
+            icon: Mail,
+            color: 'text-blue-600 bg-blue-50 dark:bg-blue-950/50',
+            badge: 'Gmail / SMTP',
+            badgeBn: 'কনফিগারড',
           },
           {
- title: 'Users & Permissions',
- titleBn: 'টিম সদস্য ও অনুমতি',
- desc: 'Manage staff accounts, departments, custom roles & permission matrix',
- path: '/settings/users',
- icon: ShieldCheck,
- color: 'text-violet-600 bg-violet-50 dark:bg-violet-950/50',
- badge: 'RBAC Studio',
+            title: 'Users & Permissions',
+            titleBn: 'টিম সদস্য ও অনুমতি',
+            desc: 'Manage staff accounts, departments, custom roles & permission matrix',
+            descBn: 'টিম সদস্য, বিভাগ, পদবী ও অ্যাক্সেস পারমিশন ম্যাট্রিক্স',
+            path: '/settings/users',
+            icon: ShieldCheck,
+            color: 'text-violet-600 bg-violet-50 dark:bg-violet-950/50',
+            badge: 'RBAC Studio',
+            badgeBn: 'আরবিএসি',
           },
           {
- title: 'Subscription & Quotas',
- titleBn: 'সাবস্ক্রিপশন ও কোটা',
- desc: 'Plan tier, 6 resource limit meters & billing statements',
- path: '/settings/subscription',
- icon: Crown,
- color: 'text-amber-600 bg-amber-50 dark:bg-amber-950/50',
- badge: 'Tier Status',
+            title: 'Subscription & Quotas',
+            titleBn: 'সাবস্ক্রিপশন ও কোটা',
+            desc: 'Plan tier, 6 resource limit meters & billing statements',
+            descBn: 'প্ল্যান টায়ার, ৬টি রিসোর্স কোটা মিটার ও বিলিং হিস্ট্রি',
+            path: '/settings/subscription',
+            icon: Crown,
+            color: 'text-amber-600 bg-amber-50 dark:bg-amber-950/50',
+            badge: 'Tier Status',
+            badgeBn: 'প্ল্যান অবস্থা',
           },
-        ].map((item: { title: string; titleBn: string; desc: string; descBn?: string; path: string; icon: any; color: string; badge: string; }) => {
- const Icon = item.icon
- const targetHref = getTenantNavHref(item.path, pathname, tenantSlug)
- return (
+        ].map((item) => {
+          const Icon = item.icon
+          const targetHref = getTenantNavHref(item.path, pathname, tenantSlug)
+          return (
             <Link
- key={item.path}
- href={targetHref}
- className="p-4 rounded-xl bg-card border border-border shadow-xs hover:shadow-xs hover:border-blue-400 dark:hover:border-blue-600 transition-all flex flex-col justify-between group min-h-[120px]">
+              key={item.path}
+              href={targetHref}
+              className="p-4 rounded-xl bg-card border border-border shadow-xs hover:shadow-xs hover:border-blue-400 dark:hover:border-blue-600 transition-all flex flex-col justify-between group min-h-[120px]">
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <div className={`h-9 w-9 rounded-xl flex items-center justify-center ${item.color} shrink-0`}>
                     <Icon className="h-4.5 w-4.5"/>
                   </div>
-                  <Badge variant="outline"className="text-2xs tabular-nums font-semibold px-2 py-0.5">
-                    {item.badge}
+                  <Badge variant="outline" className="text-2xs tabular-nums font-semibold px-2 py-0.5">
+                    {locale === 'bn' ? item.badgeBn : item.badge}
                   </Badge>
                 </div>
                 <div>
@@ -462,7 +486,7 @@ export default function CompanySettingsPage() {
                     <span>{locale === 'bn' ? item.titleBn : item.title}</span>
                     <ArrowRight className="h-3 w-3 opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all text-blue-600"/>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed line-clamp-2">{locale === 'bn' ? (item.descBn || item.desc) : item.desc}</p>
+                  <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed line-clamp-2">{locale === 'bn' ? item.descBn : item.desc}</p>
                 </div>
               </div>
             </Link>

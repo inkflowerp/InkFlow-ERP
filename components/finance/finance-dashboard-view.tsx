@@ -279,7 +279,7 @@ export function FinanceDashboardView({
 
         {/* Payable */}
         <KpiCard
- titleEn="Supplier Due (Payable)"titleBn="মহাজনের দেনা (প্রদেয়)"value={totalPayables}
+ titleEn="Supplier Due (Payable)" titleBn="মহাজনের প্রদেয় দেনা"value={totalPayables}
  isCurrency={true}
  icon={ShoppingBag}
  colorVariant="rose"subtitleEn="Material & paper bills"subtitleBn="কাঁচামাল ও কাগজের দেনা"onClick={() => onNavigateTab('payables')}
@@ -287,7 +287,7 @@ export function FinanceDashboardView({
 
         {/* Today's Collection */}
         <KpiCard
- titleEn="Today's Collection"titleBn="আজকের জমা (Money In)"value={todayCollection}
+ titleEn="Today's Collection" titleBn="আজকের জমা"value={todayCollection}
  isCurrency={true}
  icon={ArrowDownLeft}
  colorVariant="emerald"subtitleEn="Collected today"subtitleBn="আজকের মোট আদায়"onClick={() => onNavigateTab('transactions')}
@@ -295,7 +295,7 @@ export function FinanceDashboardView({
 
         {/* Today's Expense */}
         <KpiCard
- titleEn="Today's Expense"titleBn="আজকের খরচ (Money Out)"value={todayExpense}
+ titleEn="Today's Expense" titleBn="আজকের খরচ"value={todayExpense}
  isCurrency={true}
  icon={ArrowUpRight}
  colorVariant="rose"subtitleEn="Spent today"subtitleBn="আজকের মোট ব্যয়"onClick={() => onNavigateTab('expenses')}

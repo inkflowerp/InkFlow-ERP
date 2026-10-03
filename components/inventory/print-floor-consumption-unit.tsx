@@ -515,7 +515,10 @@ export function PrintFloorConsumptionUnit({
                     <Flame className="h-8 w-8 mx-auto mb-2 text-muted-foreground"/>
                     <p className="font-bold">{tBilingual('No print floor consumption records match your filter.', 'আপনার ফিল্টারের সাথে কোনো প্রিন্ট ফ্লোর খরচের রেকর্ড মেলেনি।')}</p>
                     <p className="text-xs text-muted-foreground mt-1">
- Issue raw materials from the store to the floor or click below to log direct consumption.
+                      {tBilingual(
+                        'Issue raw materials from the store to the floor or click below to log direct consumption.',
+                        'স্টোর থেকে প্রোডাকশন ফ্লোরে কাঁচামাল ইস্যু করুন অথবা সরাসরি ব্যবহার রেকর্ড করতে নিচের বাটনে চাপ দিন।'
+                      )}
                     </p>
                     <Button
  size="sm"onClick={() => setIsIssueRollOpen(true)}
