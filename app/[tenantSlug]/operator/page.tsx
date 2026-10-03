@@ -900,7 +900,7 @@ function MobileOperatorPanelContent() {
             <Layers className="h-4 w-4 text-blue-600"/>
             <span>{tBilingual('UPCOMING IN QUEUE', 'পরবর্তী কিউ')} ({upcomingTasks.length})</span>
           </span>
-          <span className="text-2xs text-muted-foreground font-medium">Tap Start to begin production or use 3-dot menu for actions</span>
+          <span className="text-2xs text-muted-foreground font-medium">{tBilingual("Tap Start to begin production or use 3-dot menu for actions", "কাজ শুরু করতে স্টার্ট চাপুন বা অন্যান্য অ্যাকশনের জন্য ৩-ডট মেনু ব্যবহার করুন")}</span>
         </div>
 
         <div className="space-y-2.5">

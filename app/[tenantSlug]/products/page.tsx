@@ -1931,7 +1931,7 @@ export default function ProductsCatalogPage() {
             {metrics.totalActive}
           </div>
           <div className="text-xs text-muted-foreground font-numeric tabular-nums mt-0.5">
-            {tabCounts.service} Services • {tabCounts.product} Products • {tabCounts.material} Materials • {tabCounts.outsource} Outsource
+            {tBilingual(`${tabCounts.service} Services • ${tabCounts.product} Products • ${tabCounts.material} Materials • ${tabCounts.outsource} Outsource`, `${tabCounts.service}টি সার্ভিস • ${tabCounts.product}টি পণ্য • ${tabCounts.material}টি কাঁচামাল • ${tabCounts.outsource}টি আউটসোর্স`)}
           </div>
         </Card>
 
@@ -1978,15 +1978,15 @@ export default function ProductsCatalogPage() {
       {/* 9 Specialized Commercial Navigation Tabs with Live Counts */}
       <div className="flex items-center gap-1.5 overflow-x-auto pb-2 border-b border-border scrollbar-thin">
         {[
-          { id: 'all', label: 'All Items', count: tabCounts.all, icon: Package },
-          { id: 'service', label: 'Services', count: tabCounts.service, icon: Printer },
-          { id: 'product', label: 'Ready Products', count: tabCounts.product, icon: Package },
-          { id: 'material', label: 'Raw Materials', count: tabCounts.material, icon: Layers },
-          { id: 'outsource', label: 'Outsource Products', count: tabCounts.outsource, icon: Share2 },
-          { id: 'finishing', label: 'Finishing Masters', count: tabCounts.finishing, icon: Scissors },
-          { id: 'additional', label: 'Additional Work', count: tabCounts.additional, icon: PlusCircle },
-          { id: 'installation', label: 'Installation & Delivery', count: tabCounts.installation, icon: Truck },
-          { id: 'printing_methods', label: 'Printing Methods', count: tabCounts.printing_methods, icon: Palette },
+          { id: 'all', label: tBilingual('All Items', 'সকল আইটেম'), count: tabCounts.all, icon: Package },
+          { id: 'service', label: tBilingual('Services', 'সার্ভিসসমূহ'), count: tabCounts.service, icon: Printer },
+          { id: 'product', label: tBilingual('Ready Products', 'প্রস্তুত পণ্য'), count: tabCounts.product, icon: Package },
+          { id: 'material', label: tBilingual('Raw Materials', 'কাঁচামাল'), count: tabCounts.material, icon: Layers },
+          { id: 'outsource', label: tBilingual('Outsource Products', 'আউটসোর্স পণ্য'), count: tabCounts.outsource, icon: Share2 },
+          { id: 'finishing', label: tBilingual('Finishing Masters', 'ফিনিশিং মাস্টার'), count: tabCounts.finishing, icon: Scissors },
+          { id: 'additional', label: tBilingual('Additional Work', 'অতিরিক্ত কাজ'), count: tabCounts.additional, icon: PlusCircle },
+          { id: 'installation', label: tBilingual('Installation & Delivery', 'ইনস্টলেশন ও ডেলিভারি'), count: tabCounts.installation, icon: Truck },
+          { id: 'printing_methods', label: tBilingual('Printing Methods', 'প্রিন্টিং পদ্ধতি'), count: tabCounts.printing_methods, icon: Palette },
         ].map((tab) => {
  const Icon = tab.icon
  const isActive = entityTypeFilter === tab.id
@@ -2137,7 +2137,7 @@ export default function ProductsCatalogPage() {
           <CardHeader className="py-3.5 px-4 border-b border-border bg-muted flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
               <CardTitle className="text-sm font-bold text-foreground flex items-center gap-2">
-                <span>Printing Technologies & Methods</span>
+                <span>{tBilingual('Printing Technologies & Methods', 'প্রিন্টিং টেকনোলজি ও মেথডস')}</span>
                 <Badge variant="outline"className="text-xs tabular-nums font-bold">
                   {filteredPrintingMethods.length}
                 </Badge>
@@ -2160,9 +2160,9 @@ export default function ProductsCatalogPage() {
             {filteredPrintingMethods.length === 0 ? (
               <div className="p-12 text-center space-y-3">
                 <Palette className="h-10 w-10 text-muted-foreground mx-auto"/>
-                <h3 className="text-sm font-bold text-foreground">No Printing Methods Found</h3>
+                <h3 className="text-sm font-bold text-foreground">{tBilingual('No Printing Methods Found', 'কোনো প্রিন্টিং পদ্ধতি পাওয়া যায়নি')}</h3>
                 <p className="text-xs text-muted-foreground max-w-sm mx-auto">
- Add printing technologies to bind compatible raw media, ink rates, and production speeds.
+ {tBilingual('Add printing technologies to bind compatible raw media, ink rates, and production speeds.', 'কাঁচামাল, কালির দর ও উৎপাদন গতির সাথে যুক্ত করতে নতুন প্রিন্টিং প্রযুক্তি যুক্ত করুন।')}
                 </p>
                 <Button
  size="sm"onClick={() => {
@@ -2259,7 +2259,7 @@ export default function ProductsCatalogPage() {
           <CardHeader className="py-3.5 px-4 border-b border-border bg-muted flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
               <CardTitle className="text-sm font-bold text-foreground flex items-center gap-2">
-                <span>Post-Press Finishing & Fabrication Masters</span>
+                <span>{tBilingual('Post-Press Finishing & Fabrication Masters', 'পোস্ট-প্রেস ফিনিশিং ও ফেব্রিকেশন মাস্টার্স')}</span>
                 <Badge variant="outline"className="text-xs tabular-nums font-bold">
                   {filteredFinishingOptions.length}
                 </Badge>
@@ -2282,9 +2282,9 @@ export default function ProductsCatalogPage() {
             {filteredFinishingOptions.length === 0 ? (
               <div className="p-12 text-center space-y-3">
                 <Scissors className="h-10 w-10 text-muted-foreground mx-auto"/>
-                <h3 className="text-sm font-bold text-foreground">No Finishing Options Configured</h3>
+                <h3 className="text-sm font-bold text-foreground">{tBilingual('No Finishing Options Configured', 'কোনো ফিনিশিং অপশন পাওয়া যায়নি')}</h3>
                 <p className="text-xs text-muted-foreground max-w-sm mx-auto">
- Add finishing operations with custom pricing methods (per sqft, per linear ft, per piece, or fixed) to attach them to services.
+ {tBilingual('Add finishing operations with custom pricing methods (per sqft, per linear ft, per piece, or fixed) to attach them to services.', 'সার্ভিসের সাথে যুক্ত করতে প্রতি বর্গফুট, রানিং ফুট বা পিস ভিত্তিক ফিনিশিং অপশন যুক্ত করুন।')}
                 </p>
                 <Button
  size="sm"onClick={() => {
@@ -2407,7 +2407,7 @@ export default function ProductsCatalogPage() {
           <CardHeader className="py-3.5 px-4 border-b border-border bg-muted flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
               <CardTitle className="text-sm font-bold text-foreground flex items-center gap-2">
-                <span>Additional Work & Catalog Addons</span>
+                <span>{tBilingual('Additional Work & Catalog Addons', 'অতিরিক্ত কাজ ও ক্যাটালগ অ্যাড-অন')}</span>
                 <Badge variant="outline"className="text-xs tabular-nums font-bold">
                   {filteredAdditionalOptions.length}
                 </Badge>
@@ -2430,9 +2430,9 @@ export default function ProductsCatalogPage() {
             {filteredAdditionalOptions.length === 0 ? (
               <div className="p-12 text-center space-y-3">
                 <PlusCircle className="h-10 w-10 text-muted-foreground mx-auto"/>
-                <h3 className="text-sm font-bold text-foreground">No Additional Options Configured</h3>
+                <h3 className="text-sm font-bold text-foreground">{tBilingual('No Additional Options Configured', 'কোনো অতিরিক্ত অপশন পাওয়া যায়নি')}</h3>
                 <p className="text-xs text-muted-foreground max-w-sm mx-auto">
- Add hardware accessories, stands, or extra charges to attach them seamlessly to jobs and quotes.
+ {tBilingual('Add hardware accessories, stands, or extra charges to attach them directly to jobs and quotes.', 'কোটেশন বা জবের সাথে যুক্ত করতে স্ট্যান্ড বা অতিরিক্ত ফি যুক্ত করুন।')}
                 </p>
                 <Button
  size="sm"onClick={() => {
@@ -2549,7 +2549,7 @@ export default function ProductsCatalogPage() {
           <CardHeader className="py-3.5 px-4 border-b border-border bg-muted flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
               <CardTitle className="text-sm font-bold text-foreground flex items-center gap-2">
-                <span>Installation, Logistics & Dispatch Masters</span>
+                <span>{tBilingual('Installation, Logistics & Dispatch Masters', 'ইনস্টলেশন, লজিস্টিকস ও ডেলিভারি মাস্টার্স')}</span>
                 <Badge variant="outline"className="text-xs tabular-nums font-bold">
                   {filteredInstallationOptions.length}
                 </Badge>
@@ -2572,9 +2572,9 @@ export default function ProductsCatalogPage() {
             {filteredInstallationOptions.length === 0 ? (
               <div className="p-12 text-center space-y-3">
                 <Truck className="h-10 w-10 text-muted-foreground mx-auto"/>
-                <h3 className="text-sm font-bold text-foreground">No Installation & Delivery Options Configured</h3>
+                <h3 className="text-sm font-bold text-foreground">{tBilingual('No Installation & Delivery Options Configured', 'কোনো ইনস্টলেশন বা ডেলিভারি অপশন পাওয়া যায়নি')}</h3>
                 <p className="text-xs text-muted-foreground max-w-sm mx-auto">
- Add installation tariffs or delivery zones with automatic shop-floor task generation upon order confirmation.
+ {tBilingual('Add installation tariffs or delivery zones with automatic shop-floor task generation upon order confirmation.', 'অর্ডারের সাথে স্বয়ংক্রিয় টাস্ক তৈরি করতে ইনস্টলেশন রেট বা ডেলিভারি জোন যুক্ত করুন।')}
                 </p>
                 <Button
  size="sm"onClick={() => {
@@ -2698,7 +2698,7 @@ export default function ProductsCatalogPage() {
           <CardHeader className="py-3.5 px-4 border-b border-border bg-muted flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
               <CardTitle className="text-sm font-bold text-foreground flex items-center gap-2">
-                <span>Printing & Fabrication Services Master</span>
+                <span>{tBilingual('Printing & Fabrication Services Master', 'প্রিন্টিং ও ফেব্রিকেশন সার্ভিসেস মাস্টার')}</span>
                 <Badge variant="outline"className="text-xs tabular-nums font-bold">
                   {filteredProducts.length}
                 </Badge>
@@ -2724,9 +2724,9 @@ export default function ProductsCatalogPage() {
             ) : filteredProducts.length === 0 ? (
               <div className="p-12 text-center space-y-3">
                 <Printer className="h-10 w-10 text-muted-foreground mx-auto"/>
-                <h3 className="text-sm font-bold text-foreground">No Services Found</h3>
+                <h3 className="text-sm font-bold text-foreground">{tBilingual('No Services Found', 'কোনো সার্ভিস পাওয়া যায়নি')}</h3>
                 <p className="text-xs text-muted-foreground max-w-sm mx-auto">
- Create high-performance printing services with substrate allowances, dimension presets, and finishing tariffs.
+ {tBilingual('Create high-performance printing services with media allowances, dimension presets, and finishing tariffs.', 'সাইজ প্রিসেট ও ফিনিশিং ট্যারিফ সহ নতুন প্রিন্টিং সার্ভিস তৈরি করুন।')}
                 </p>
                 <Button size="sm"onClick={handleOpenCreateService} className="mt-2 text-xs bg-primary hover:bg-primary/90 text-primary-foreground">
                   <Plus className="h-3.5 w-3.5 mr-1"/> Add Service
@@ -2870,7 +2870,7 @@ export default function ProductsCatalogPage() {
           <CardHeader className="py-3.5 px-4 border-b border-border bg-muted flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
               <CardTitle className="text-sm font-bold text-foreground flex items-center gap-2">
-                <span>Ready Products & Display Hardware</span>
+                <span>{tBilingual('Ready Products & Display Hardware', 'প্রস্তুত পণ্য ও ডিসপ্লে হার্ডওয়্যার')}</span>
                 <Badge variant="outline"className="text-xs tabular-nums font-bold">
                   {filteredProducts.length}
                 </Badge>
@@ -2896,9 +2896,9 @@ export default function ProductsCatalogPage() {
             ) : filteredProducts.length === 0 ? (
               <div className="p-12 text-center space-y-3">
                 <Package className="h-10 w-10 text-muted-foreground mx-auto"/>
-                <h3 className="text-sm font-bold text-foreground">No Ready Products Found</h3>
+                <h3 className="text-sm font-bold text-foreground">{tBilingual('No Ready Products Found', 'কোনো প্রস্তুত পণ্য পাওয়া যায়নি')}</h3>
                 <p className="text-xs text-muted-foreground max-w-sm mx-auto">
- Add finished display hardware or stock products with packaging specifications and tiered dealer pricing.
+ {tBilingual('Add finished display hardware or stock products with packaging specifications and tiered dealer pricing.', 'প্যাকেজিং স্পেসিফিকেশন ও ডিলার প্রাইসিং সহ ফিনিশড ডিসপ্লে পণ্য যুক্ত করুন।')}
                 </p>
                 <Button size="sm"onClick={handleOpenCreateProduct} className="mt-2 text-xs bg-indigo-600 hover:bg-indigo-700 text-white">
                   <Plus className="h-3.5 w-3.5 mr-1"/> Add Ready Product
@@ -3031,7 +3031,7 @@ export default function ProductsCatalogPage() {
           <CardHeader className="py-3.5 px-4 border-b border-border bg-muted flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
               <CardTitle className="text-sm font-bold text-foreground flex items-center gap-2">
-                <span>Raw Materials & Media Master</span>
+                <span>{tBilingual('Raw Materials & Media Master', 'কাঁচামাল ও মিডিয়া মাস্টার')}</span>
                 <Badge variant="outline"className="text-xs tabular-nums font-bold">
                   {filteredProducts.length}
                 </Badge>
@@ -3057,9 +3057,9 @@ export default function ProductsCatalogPage() {
             ) : filteredProducts.length === 0 ? (
               <div className="p-12 text-center space-y-3">
                 <Layers className="h-10 w-10 text-muted-foreground mx-auto"/>
-                <h3 className="text-sm font-bold text-foreground">No Raw Materials Found</h3>
+                <h3 className="text-sm font-bold text-foreground">{tBilingual('No Raw Materials Found', 'কোনো কাঁচামাল পাওয়া যায়নি')}</h3>
                 <p className="text-xs text-muted-foreground max-w-sm mx-auto">
- Add substrates (rolls, sheets, inks) with bulk procurement rates, dimensional conversion ratios, and wastage factors.
+ {tBilingual('Add media (rolls, sheets, inks) with bulk procurement rates, dimensional conversion ratios, and wastage factors.', 'পাইকারি ক্রয় দর ও রূপান্তর হিসাব সহ কাঁচামাল যুক্ত করুন।')}
                 </p>
                 <Button size="sm"onClick={handleOpenCreateMaterial} className="mt-2 text-xs bg-emerald-600 hover:bg-emerald-700 text-white">
                   <Plus className="h-3.5 w-3.5 mr-1"/> Add Raw Material
@@ -3182,7 +3182,7 @@ export default function ProductsCatalogPage() {
           <CardHeader className="py-3.5 px-4 border-b border-border bg-muted flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
               <CardTitle className="text-sm font-bold text-foreground flex items-center gap-2">
-                <span>Outsource Products & Subcontract Services (Non-Inventory)</span>
+                <span>{tBilingual('Outsource Products & Subcontract Services', 'আউটসোর্স পণ্য ও সাব-কন্ট্রাক্ট সার্ভিস')}</span>
                 <Badge variant="outline"className="text-xs tabular-nums font-bold text-purple-600 border-purple-300">
                   {filteredProducts.length}
                 </Badge>
@@ -3208,9 +3208,9 @@ export default function ProductsCatalogPage() {
             ) : filteredProducts.length === 0 ? (
               <div className="p-12 text-center space-y-3">
                 <Share2 className="h-10 w-10 text-purple-300 mx-auto"/>
-                <h3 className="text-sm font-bold text-foreground">No Outsource Products Found</h3>
+                <h3 className="text-sm font-bold text-foreground">{tBilingual('No Outsource Products Found', 'কোনো আউটসোর্স পণ্য পাওয়া যায়নি')}</h3>
                 <p className="text-xs text-muted-foreground max-w-sm mx-auto">
- Add non-inventory outsource items with third-party vendor cost, turnaround lead time, and multi-tier pricing.
+ {tBilingual('Add non-inventory outsource items with third-party vendor cost, turnaround lead time, and multi-tier pricing.', 'ভেন্ডর খরচ ও সময়সীমা উল্লেখ করে আউটসোর্স আইটেম যুক্ত করুন।')}
                 </p>
                 <Button size="sm"onClick={handleOpenCreateOutsource} className="mt-2 text-xs bg-purple-600 hover:bg-purple-700 text-white">
                   <Plus className="h-3.5 w-3.5 mr-1"/> Add Outsource Product
@@ -3361,12 +3361,12 @@ export default function ProductsCatalogPage() {
           <CardHeader className="py-3.5 px-4 border-b border-border bg-muted">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
               <CardTitle className="text-sm font-bold text-foreground flex items-center gap-2">
-                <span>Commercial Master Catalog</span>
+                <span>{tBilingual('Commercial Master Catalog', 'কমার্শিয়াল মাস্টার ক্যাটালগ')}</span>
                 <Badge variant="outline"className="text-xs tabular-nums font-bold">
                   {filteredProducts.length}
                 </Badge>
               </CardTitle>
-              <span className="text-xs text-muted-foreground">PostgreSQL Authoritative Units, Conversion & Costing</span>
+              <span className="text-xs text-muted-foreground">{tBilingual("PostgreSQL Authoritative Units, Conversion & Costing", "ইউনিট কনভার্সন ও নির্ভরযোগ্য কস্টিং")}</span>
             </div>
           </CardHeader>
           <CardContent className="p-0">
@@ -3383,9 +3383,9 @@ export default function ProductsCatalogPage() {
             {!isLoading && filteredProducts.length === 0 && (
               <div className="p-12 text-center space-y-3">
                 <Package className="h-10 w-10 text-muted-foreground mx-auto"/>
-                <h3 className="text-sm font-bold text-foreground">No Products Found</h3>
+                <h3 className="text-sm font-bold text-foreground">{tBilingual('No Products Found', 'কোনো পণ্য পাওয়া যায়নি')}</h3>
                 <p className="text-xs text-muted-foreground max-w-sm mx-auto">
- No catalog items matched your current filter criteria. Create a new product or reset your search.
+ {tBilingual('No catalog items matched your current filter criteria. Create a new product or reset your search.', 'আপনার ফিল্টারের সাথে মিলে এমন কোনো পণ্য পাওয়া যায়নি। নতুন পণ্য তৈরি করুন অথবা ফিল্টার রিসেট করুন।')}
                 </p>
                 <Button size="sm"onClick={handleOpenCreate} className="mt-2 text-xs bg-blue-600 hover:bg-blue-700">
                   <Plus className="h-3.5 w-3.5 mr-1"/> Add New Item

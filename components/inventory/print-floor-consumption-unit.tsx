@@ -297,7 +297,7 @@ export function PrintFloorConsumptionUnit({
  size="sm"onClick={() => setIsIssueRollOpen(true)}
  className="bg-cyan-600 hover:bg-cyan-700 text-white text-xs font-bold h-7.5 px-3 cursor-pointer shadow-xs gap-1 transition-colors">
               <Plus className="h-3.5 w-3.5"/>
-              <span>{tBilingual('Direct Issue to Floor', '+ সরাসরি ফ্লোরে ইস্যু')}</span>
+              <span>{tBilingual('Direct Issue to Floor', 'সরাসরি ফ্লোরে ইস্যু')}</span>
             </Button>
           </div>
         </div>
@@ -339,7 +339,7 @@ export function PrintFloorConsumptionUnit({
 
         {activeFloorRolls.length === 0 ? (
           <div className="p-4 text-center text-xs text-muted-foreground border border-dashed rounded-lg bg-card/60">
-            <span>No master rolls currently mounted or active on the floor. Click &quot;Issue Master Roll to Floor&quot; to mount a roll.</span>
+            <span>{tBilingual('No master rolls currently mounted or active on the floor. Click "Direct Issue to Floor" to mount a roll.', 'বর্তমানে ফ্লোরে কোনো সক্রিয় রোল বা সাবস্ট্রেট মাউন্ট করা নেই। রোল মাউন্ট করতে "সরাসরি ফ্লোরে ইস্যু" ক্লিক করুন।')}</span>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
@@ -465,10 +465,10 @@ export function PrintFloorConsumptionUnit({
           {/* Status Filter */}
           <div className="flex items-center gap-1 shrink-0 overflow-x-auto w-full sm:w-auto">
             {[
-              { id: 'all', label: 'All Floor Items' },
-              { id: 'on_floor', label: 'In Use / Active' },
-              { id: 'partially_consumed', label: 'Partial' },
-              { id: 'fully_consumed', label: 'Reconciled' },
+              { id: 'all', label: tBilingual('All Floor Items', 'সকল আইটেম') },
+              { id: 'on_floor', label: tBilingual('In Use / Active', 'চলমান / সক্রিয়') },
+              { id: 'partially_consumed', label: tBilingual('Partial', 'আংশিক ব্যবহৃত') },
+              { id: 'fully_consumed', label: tBilingual('Reconciled', 'সম্পন্ন') },
             ].map((st) => (
               <Button
  key={st.id}
@@ -496,16 +496,16 @@ export function PrintFloorConsumptionUnit({
           <table className="w-full text-xs text-left">
             <thead className="bg-muted text-muted-foreground border-b font-bold">
               <tr>
-                <th className="p-3">Issue Ref & Date</th>
-                <th className="p-3">Material Substrate</th>
-                <th className="p-3">Machine & Operator</th>
-                <th className="p-3 text-right">Issued Qty</th>
-                <th className="p-3 text-right">Consumed</th>
-                <th className="p-3 text-right">Scrap / Wastage</th>
-                <th className="p-3 text-right">Floor Balance</th>
-                <th className="p-3 text-center">Progress</th>
-                <th className="p-3">Status</th>
-                <th className="p-3 text-right">Actions</th>
+                <th className="p-3 bangla-text">{tBilingual('Issue Ref & Date', 'ইস্যু নম্বর ও তারিখ')}</th>
+                <th className="p-3 bangla-text">{tBilingual('Material & Media', 'কাঁচামাল ও মিডিয়া')}</th>
+                <th className="p-3 bangla-text">{tBilingual('Machine & Operator', 'মেশিন ও অপারেটর')}</th>
+                <th className="p-3 text-right bangla-text">{tBilingual('Issued Qty', 'ইস্যুকৃত পরিমাণ')}</th>
+                <th className="p-3 text-right bangla-text">{tBilingual('Consumed', 'ব্যবহৃত')}</th>
+                <th className="p-3 text-right bangla-text">{tBilingual('Scrap / Wastage', 'অপচয় / স্ক্র্যাপ')}</th>
+                <th className="p-3 text-right bangla-text">{tBilingual('Floor Balance', 'ফ্লোরে অবশিষ্ট')}</th>
+                <th className="p-3 text-center bangla-text">{tBilingual('Progress', 'অগ্রগতি')}</th>
+                <th className="p-3 bangla-text">{tBilingual('Status', 'অবস্থা')}</th>
+                <th className="p-3 text-right bangla-text">{tBilingual('Actions', 'অ্যাকশন')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border dark:divide-border">

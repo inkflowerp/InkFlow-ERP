@@ -565,7 +565,7 @@ export default function PricingManagementPage() {
           <div className="text-2xl font-black text-blue-700 dark:text-blue-400 mt-1 tabular-nums">
             {rules.length}
           </div>
-          <div className="text-2xs text-muted-foreground mt-0.5">Customer-type rules</div>
+          <div className="text-2xs text-muted-foreground mt-0.5">{tBilingual('Customer-type rules', 'গ্রাহকভিত্তিক বিশেষ দর')}</div>
         </Card>
 
         <Card className="p-3.5 sm:p-4 rounded-xl shadow-xs border-border">
@@ -578,7 +578,7 @@ export default function PricingManagementPage() {
           <div className="text-2xl font-black text-purple-700 dark:text-purple-400 mt-1 tabular-nums">
             {finishingOptions.length}
           </div>
-          <div className="text-2xs text-muted-foreground mt-0.5">Lamination, Eyelets, etc.</div>
+          <div className="text-2xs text-muted-foreground mt-0.5">{tBilingual('Lamination, Eyelets, etc.', 'লেমিনেশন, আইলেট ইত্যাদি')}</div>
         </Card>
 
         <Card className="p-3.5 sm:p-4 rounded-xl shadow-xs border-border">
@@ -591,7 +591,7 @@ export default function PricingManagementPage() {
           <div className="text-2xl font-black text-amber-700 dark:text-amber-400 mt-1 tabular-nums">
             {printingMethods.length}
           </div>
-          <div className="text-2xs text-muted-foreground mt-0.5">Solvent, Eco, UV modes</div>
+          <div className="text-2xs text-muted-foreground mt-0.5">{tBilingual('Solvent, Eco, UV modes', 'সলভেন্ট, ইকো, ইউভি মোড')}</div>
         </Card>
 
         <Card className="p-3.5 sm:p-4 rounded-xl shadow-xs border-border col-span-2 lg:col-span-1">

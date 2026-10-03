@@ -236,7 +236,7 @@ export default function MachineriesListPage() {
               <Button
  variant="outline"size="sm"className="gap-1.5 border-border text-foreground font-bold">
                 <LayoutGrid className="h-4 w-4 text-indigo-600"/>
-                <span>Production Board</span>
+                <span>{tBilingual('Production Board', 'প্রোডাকশন বোর্ড')}</span>
               </Button>
             </Link>
 
@@ -244,7 +244,7 @@ export default function MachineriesListPage() {
               <Button
  variant="outline"size="sm"className="gap-1.5 border-blue-300 dark:border-blue-800 text-blue-700 dark:text-blue-300 bg-blue-50/50 dark:bg-blue-950/30 font-bold">
                 <PlayCircle className="h-4 w-4 text-blue-600 dark:text-blue-400"/>
-                <span>Shop Floor Terminal</span>
+                <span>{tBilingual('Shop Floor Terminal', 'শপ ফ্লোর টার্মিনাল')}</span>
               </Button>
             </Link>
 
@@ -252,7 +252,7 @@ export default function MachineriesListPage() {
               <Button
  variant="outline"size="sm"className="gap-1.5 border-border text-foreground font-bold">
                 <Scissors className="h-4 w-4 text-indigo-600"/>
-                <span>Finishing Floor</span>
+                <span>{tBilingual('Finishing Floor', 'ফিনিশিং ফ্লোর')}</span>
               </Button>
             </Link>
 
@@ -271,7 +271,7 @@ export default function MachineriesListPage() {
                 }}
  className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold gap-1.5 shadow-sm">
                 <Plus className="h-4 w-4"/>
-                <span>+ Add Machine</span>
+                <span>{tBilingual('Add Machine', 'মেশিন যুক্ত করুন')}</span>
               </Button>
             )}
           </div>
@@ -282,7 +282,7 @@ export default function MachineriesListPage() {
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2.5 sm:gap-3">
         <Card className="py-2 px-3 sm:py-2.5 sm:px-3.5 bg-card border border-border shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-2xs sm:text-xs font-bold text-muted-foreground uppercase tracking-wider">Total</span>
+            <span className="text-2xs sm:text-xs font-bold text-muted-foreground uppercase tracking-wider">{tBilingual("Total", "মোট মেশিন")}</span>
             <Cpu className="h-3.5 w-3.5 text-muted-foreground"/>
           </div>
           <p className="text-lg sm:text-xl font-black text-foreground mt-0.5 leading-tight">
@@ -292,7 +292,7 @@ export default function MachineriesListPage() {
 
         <Card className="py-2 px-3 sm:py-2.5 sm:px-3.5 bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800 shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-2xs sm:text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">Available</span>
+            <span className="text-2xs sm:text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">{tBilingual("Available", "প্রস্তুত / সচল")}</span>
             <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600"/>
           </div>
           <p className="text-lg sm:text-xl font-black text-emerald-700 dark:text-emerald-400 mt-0.5 leading-tight">
@@ -302,7 +302,7 @@ export default function MachineriesListPage() {
 
         <Card className="py-2 px-3 sm:py-2.5 sm:px-3.5 bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-2xs sm:text-xs font-bold text-blue-700 dark:text-blue-400 uppercase tracking-wider">In Use</span>
+            <span className="text-2xs sm:text-xs font-bold text-blue-700 dark:text-blue-400 uppercase tracking-wider">{tBilingual("In Use", "চলমান")}</span>
             <PlayCircle className="h-3.5 w-3.5 text-blue-600"/>
           </div>
           <p className="text-lg sm:text-xl font-black text-blue-700 dark:text-blue-400 mt-0.5 leading-tight">
@@ -312,7 +312,7 @@ export default function MachineriesListPage() {
 
         <Card className="py-2 px-3 sm:py-2.5 sm:px-3.5 bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-200 dark:border-indigo-800 shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-2xs sm:text-xs font-bold text-indigo-700 dark:text-indigo-400 uppercase tracking-wider">Scheduled</span>
+            <span className="text-2xs sm:text-xs font-bold text-indigo-700 dark:text-indigo-400 uppercase tracking-wider">{tBilingual("Scheduled", "নির্ধারিত")}</span>
             <Clock className="h-3.5 w-3.5 text-indigo-600"/>
           </div>
           <p className="text-lg sm:text-xl font-black text-indigo-700 dark:text-indigo-400 mt-0.5 leading-tight">
@@ -322,7 +322,7 @@ export default function MachineriesListPage() {
 
         <Card className="py-2 px-3 sm:py-2.5 sm:px-3.5 bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-2xs sm:text-xs font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider">Maintenance</span>
+            <span className="text-2xs sm:text-xs font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider">{tBilingual("Maintenance", "রক্ষণাবেক্ষণে")}</span>
             <Wrench className="h-3.5 w-3.5 text-amber-600"/>
           </div>
           <p className="text-lg sm:text-xl font-black text-amber-700 dark:text-amber-400 mt-0.5 leading-tight">
@@ -332,7 +332,7 @@ export default function MachineriesListPage() {
 
         <Card className="py-2 px-3 sm:py-2.5 sm:px-3.5 bg-red-50/50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-2xs sm:text-xs font-bold text-red-700 dark:text-red-400 uppercase tracking-wider">Breakdown</span>
+            <span className="text-2xs sm:text-xs font-bold text-red-700 dark:text-red-400 uppercase tracking-wider">{tBilingual("Breakdown", "ত্রুটিযুক্ত")}</span>
             <AlertTriangle className="h-3.5 w-3.5 text-red-600"/>
           </div>
           <p className="text-lg sm:text-xl font-black text-red-700 dark:text-red-400 mt-0.5 leading-tight">
@@ -342,7 +342,7 @@ export default function MachineriesListPage() {
 
         <Card className="py-2 px-3 sm:py-2.5 sm:px-3.5 bg-muted border border-input shadow-xs col-span-2 sm:col-span-1">
           <div className="flex items-center justify-between">
-            <span className="text-2xs sm:text-xs font-bold text-muted-foreground uppercase tracking-wider">Offline</span>
+            <span className="text-2xs sm:text-xs font-bold text-muted-foreground uppercase tracking-wider">{tBilingual("Offline", "অফলাইন")}</span>
             <PowerOff className="h-3.5 w-3.5 text-muted-foreground"/>
           </div>
           <p className="text-lg sm:text-xl font-black text-foreground mt-0.5 leading-tight">
@@ -394,14 +394,14 @@ export default function MachineriesListPage() {
  size="sm"onClick={() => setViewMode('grid')}
  className="h-7 px-2.5 text-xs gap-1">
                 <LayoutGrid className="h-3.5 w-3.5"/>
-                <span className="hidden sm:inline">Cards</span>
+                <span className="hidden sm:inline">{tBilingual("Cards", "কার্ড ভিউ")}</span>
               </Button>
               <Button
  type="button"variant={viewMode === 'table' ? 'default' : 'ghost'}
  size="sm"onClick={() => setViewMode('table')}
  className="h-7 px-2.5 text-xs gap-1">
                 <List className="h-3.5 w-3.5"/>
-                <span className="hidden sm:inline">List</span>
+                <span className="hidden sm:inline">{tBilingual("List", "তালিকা")}</span>
               </Button>
             </div>
           </div>
@@ -442,7 +442,7 @@ export default function MachineriesListPage() {
  {tBilingual('No machineries added yet', 'এখনও কোনো মেশিন যুক্ত করা হয়নি')}
           </h3>
           <p className="text-xs text-muted-foreground max-w-md mx-auto mt-1 mb-5">
- Add your printing presses, cutting plotters, CNC routers, lasers, and finishing equipment to begin tracking capacity, job assignments, and maintenance.
+ {tBilingual("Add your printing presses, cutting plotters, CNC routers, lasers, and finishing equipment to begin tracking capacity, job assignments, and maintenance.", "উৎপাদন ক্ষমতা ও শিডিউল ট্র্যাক করতে আপনার প্রিন্টার, কাটিং প্লটার, সিএনসি রাউটার বা ফিনিশিং মেশিন যুক্ত করুন।")}
           </p>
           {canCreate && (
             <Button
@@ -451,7 +451,7 @@ export default function MachineriesListPage() {
  setIsFormOpen(true)
               }}
  className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold">
-              + Add First Machinery
+              {tBilingual("+ Add First Machinery", "+ প্রথম মেশিন যুক্ত করুন")}
             </Button>
           )}
         </Card>
