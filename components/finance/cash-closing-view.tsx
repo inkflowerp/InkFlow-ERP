@@ -214,7 +214,7 @@ export function CashClosingView({
           <Card className="lg:col-span-7 rounded-xl border-border shadow-xs p-6 bg-card">
             <CardHeader className="p-0 pb-4 border-b border-border">
               <CardTitle className="text-sm font-bold text-foreground flex items-center justify-between">
-                <span>{tBilingual('Cash Register Breakdown (আজকের ক্যাশ হিসাব)', 'ক্যাশ রেজিস্টার হিসাব')}</span>
+                <span>{tBilingual('Cash Register Breakdown', 'ক্যাশ রেজিস্টার হিসাব')}</span>
                 <span className="tabular-nums text-xs text-muted-foreground">{todayStr}</span>
               </CardTitle>
             </CardHeader>
@@ -224,7 +224,7 @@ export function CashClosingView({
               <div className="py-3 flex items-center justify-between">
                 <div>
                   <span className="font-semibold text-foreground block">
-                    {tBilingual('Opening Cash in Drawer', 'সকালে ড্রয়ারে থাকা ক্যাশ (Opening)')}
+                    {tBilingual('Opening Cash in Drawer', 'সকালে ড্রয়ারে থাকা নগদ ক্যাশ')}
                   </span>
                   <span className="text-3xs text-muted-foreground">
                     {tBilingual('Carried forward from yesterday', 'পূর্ববর্তী দিনের অবশিষ্ট নগদ')}
@@ -372,13 +372,13 @@ export function CashClosingView({
               {/* Variance Notes Input */}
               <div className="mb-4">
                 <Label className="text-2xs font-semibold text-muted-foreground mb-1 block">
-                  {tBilingual('Variance Reason / Closing Note', 'অমিলে কারণ বা সমাপনী নোট')}
+                  {tBilingual('Variance Reason / Closing Note', 'অমিলের কারণ বা সমাপনী নোট')}
                 </Label>
                 <Input
  value={varianceReason}
  onChange={(e) => setVarianceReason(e.target.value)}
  disabled={Boolean(todayClosing)}
- placeholder="e.g. ৳500 paid for delivery fare pending voucher"className="h-8.5 text-xs rounded-xl"/>
+ placeholder={tBilingual('e.g. ৳500 paid for delivery fare pending voucher', 'যেমন: ভাউচার পেন্ডিং থাকায় ডেলিভারি ভাড়ার ৫০০ টাকা প্রদান')}className="h-8.5 text-xs rounded-xl"/>
               </div>
 
               {/* Lock Button */}

@@ -22,6 +22,7 @@ import { usePathname, useParams } from 'next/navigation'
 import { useTenant } from '@/hooks/use-tenant'
 import { useSubscription } from '@/hooks/use-subscription'
 import { useI18n } from '@/i18n/context'
+import { toBengaliDigits } from '@/hooks/use-public-plans'
 import { PageHeader } from '@/components/shared/page-header'
 import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
@@ -257,25 +258,25 @@ export default function CompanyProfileSettingsPage() {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-xs font-semibold text-muted-foreground">Account Type:</span>
+                <span className="text-xs font-semibold text-muted-foreground">{tBilingual('Account Type:', 'অ্যাকাউন্টের ধরন:')}</span>
                 <span
  className={cn(
                     'text-xs px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wide border',
  accountTypeMeta.badgeClass
                   )}
                 >
-                  {isTrial ? `Trial (${daysRemainingInTrial} Days Left)` : accountTypeMeta.badgeTextEn}
+                  {isTrial ? (locale === 'bn' ? `ট্রায়াল (${toBengaliDigits(daysRemainingInTrial)} দিন বাকি)` : `Trial (${daysRemainingInTrial} Days Left)`) : (locale === 'bn' ? accountTypeMeta.badgeTextBn : accountTypeMeta.badgeTextEn)}
                 </span>
               </div>
               <p className="text-xs text-muted-foreground mt-0.5">
-                {accountTypeMeta.nameEn} • {accountTypeMeta.maxUsers} Users • {accountTypeMeta.maxBranches} Branch(es)
+                {locale === 'bn' ? `${accountTypeMeta.nameBn} • ${toBengaliDigits(accountTypeMeta.maxUsers)} জন ব্যবহারকারী • ${toBengaliDigits(accountTypeMeta.maxBranches)}টি শাখা` : `${accountTypeMeta.nameEn} • ${accountTypeMeta.maxUsers} Users • ${accountTypeMeta.maxBranches} Branch(es)`}
               </p>
             </div>
           </div>
 
           <Link href={getTenantNavHref('/settings/subscription', pathname, slug)}>
             <Button size="sm"variant="default"className="text-xs shrink-0 gap-1.5">
-              <span>{isTrial ? 'Upgrade Account' : 'Manage Subscription'}</span>
+              <span>{isTrial ? tBilingual('Upgrade Account', 'প্ল্যান আপগ্রেড করুন') : tBilingual('Manage Subscription', 'সাবস্ক্রিপশন ব্যবস্থাপনা')}</span>
               <ArrowRight className="h-3.5 w-3.5"/>
             </Button>
           </Link>
@@ -295,7 +296,7 @@ export default function CompanyProfileSettingsPage() {
           <CardHeader className="pb-3 border-b border-border">
             <CardTitle className="text-base flex items-center gap-2">
               <FileText className="h-4 w-4 text-blue-600"/>
- Corporate Names & Branding
+              {tBilingual('Corporate Names & Branding', 'প্রাতিষ্ঠানিক নাম ও ব্র্যান্ডিং')}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4 pt-4">
@@ -313,25 +314,25 @@ export default function CompanyProfileSettingsPage() {
 
               <div className="space-y-1.5">
                 <Label htmlFor="name_bn">
- Display Name (বাংলা)
+                  {tBilingual('Display Name (Bengali)', 'প্রদর্শন নাম (বাংলা)')}
                 </Label>
                 <Input
  id="name_bn"name="name_bn"value={formData.name_bn}
  onChange={handleChange}
- placeholder="উদা: র‍্যাপিড প্রিন্ট অ্যান্ড মিডিয়া"/>
+ placeholder={tBilingual('e.g. Rapid Print & Media', 'যেমন: র‍্যাপিড প্রিন্ট অ্যান্ড মিডিয়া')}/>
               </div>
             </div>
 
             <div className="space-y-1.5">
               <Label htmlFor="legal_name">
- Registered Legal Entity Name (for NBR & Contracts)
+                {tBilingual('Registered Legal Entity Name (for NBR & Contracts)', 'নিবন্ধিত আইনি প্রতিষ্ঠানের নাম (এনবিআর ও চুক্তির জন্য)')}
               </Label>
               <Input
  id="legal_name"name="legal_name"value={formData.legal_name}
  onChange={handleChange}
  placeholder={tBilingual("e.g. Rapid Print Solutions Limited", "যেমন: র‍্যাপিড প্রিন্ট সল্যুশনস লিমিটেড")}/>
               <p className="text-2xs text-muted-foreground">
- Official entity name utilized for NBR tax Mushak vouchers and legal vendor contracts.
+                {tBilingual('Official entity name utilized for NBR tax Mushak vouchers and legal vendor contracts.', 'এনবিআর মূসক চালান এবং আইনি ভেন্ডর চুক্তির জন্য ব্যবহৃত অফিশিয়াল প্রতিষ্ঠানের নাম।')}
               </p>
             </div>
 
@@ -351,7 +352,7 @@ export default function CompanyProfileSettingsPage() {
                   ) : (
                     <div className="text-center p-2">
                       <ImageIcon className="h-5 w-5 mx-auto text-muted-foreground"/>
-                      <span className="text-2xs text-muted-foreground block mt-0.5">No Logo</span>
+                      <span className="text-2xs text-muted-foreground block mt-0.5">{tBilingual('No Logo', 'লোগো নেই')}</span>
                     </div>
                   )}
                 </div>
@@ -361,7 +362,7 @@ export default function CompanyProfileSettingsPage() {
  onChange={handleChange}
  placeholder="https://example.com/logo.png"/>
                   <span className="text-2xs text-muted-foreground block">
- Printed at the top of client quotations, work challans, and money receipts.
+                    {tBilingual('Printed at the top of client quotations, work challans, and money receipts.', 'গ্রাহক কোটেশন, কাজের চালান ও মানি রিসিটের শীর্ষে মুদ্রিত হবে।')}
                   </span>
                 </div>
               </div>
@@ -374,7 +375,7 @@ export default function CompanyProfileSettingsPage() {
           <CardHeader className="pb-3 border-b border-border">
             <CardTitle className="text-base flex items-center gap-2">
               <Phone className="h-4 w-4 text-emerald-600"/>
- Contact & Digital Channels
+              {tBilingual('Contact & Digital Channels', 'যোগাযোগ ও ডিজিটাল চ্যানেল')}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4 pt-4">
@@ -419,7 +420,7 @@ export default function CompanyProfileSettingsPage() {
           <CardHeader className="pb-3 border-b border-border">
             <CardTitle className="text-base flex items-center gap-2">
               <MapPin className="h-4 w-4 text-red-600"/>
- Print Hub & Commercial Address
+              {tBilingual('Print Hub & Commercial Address', 'প্রিন্ট হাব ও বাণিজ্যিক ঠিকানা')}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4 pt-4">
@@ -451,7 +452,7 @@ export default function CompanyProfileSettingsPage() {
                 <Input
  id="address_bn"name="address_bn"value={formData.address_bn}
  onChange={handleChange}
- placeholder="বিস্তারিত ঠিকানা বাংলায়"/>
+ placeholder={tBilingual('Detailed street address in Bengali', 'বিস্তারিত ঠিকানা বাংলায়')}/>
               </div>
             </div>
           </CardContent>
@@ -462,7 +463,7 @@ export default function CompanyProfileSettingsPage() {
           <CardHeader className="pb-3 border-b border-border">
             <CardTitle className="text-base flex items-center gap-2">
               <ShieldCheck className="h-4 w-4 text-purple-600"/>
- Tax & Business Registrations
+              {tBilingual('Tax & Business Registrations', 'ট্যাক্স ও ব্যবসায়িক নিবন্ধন')}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4 pt-4">
@@ -495,7 +496,7 @@ export default function CompanyProfileSettingsPage() {
           <CardHeader className="pb-3 border-b border-border">
             <CardTitle className="text-base flex items-center gap-2">
               <Clock className="h-4 w-4 text-blue-600"/>
- Office Hours & Holiday Schedule
+              {tBilingual('Office Hours & Holiday Schedule', 'অফিস সময়সূচি ও ছুটির তালিকা')}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4 pt-4">
@@ -508,7 +509,7 @@ export default function CompanyProfileSettingsPage() {
  onChange={handleChange}
  placeholder={tBilingual("e.g. 9:00 AM - 8:00 PM (Sat - Thu)", "যেমন: সকাল ৯:০০ - রাত ৮:০০ (শনিবার - বৃহস্পতিবার)")}/>
               <div className="flex flex-wrap items-center gap-2 pt-1">
-                <span className="text-xs text-muted-foreground">Presets:</span>
+                <span className="text-xs text-muted-foreground">{tBilingual('Presets:', 'প্রিসেট:')}</span>
                 {OFFICE_HOURS_PRESETS.map((preset) => (
                   <button
  key={preset}
@@ -529,7 +530,7 @@ export default function CompanyProfileSettingsPage() {
  onChange={handleChange}
  placeholder={tBilingual("e.g. Friday (Weekly Holiday)", "যেমন: শুক্রবার (সাপ্তাহিক ছুটি)")}/>
               <div className="flex flex-wrap items-center gap-2 pt-1">
-                <span className="text-xs text-muted-foreground">Presets:</span>
+                <span className="text-xs text-muted-foreground">{tBilingual('Presets:', 'প্রিসেট:')}</span>
                 {HOLIDAY_PRESETS.map((preset) => (
                   <button
  key={preset}
@@ -548,7 +549,7 @@ export default function CompanyProfileSettingsPage() {
  type="submit"isLoading={isLoading}
  className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto h-11 sm:h-9 text-xs font-semibold">
             <Save className="mr-1.5 h-4 w-4"/>
- Save Profile Settings
+            {tBilingual('Save Profile Settings', 'প্রোফাইল সেটিংস সংরক্ষণ করুন')}
           </Button>
         </div>
       </form>

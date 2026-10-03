@@ -841,11 +841,11 @@ export default function QuotationsPage() {
   // Calculate health tier from win rate
  const winRateNum = Number(effectiveMetrics?.winRate || 0)
  const healthTier =
- winRateNum >= 50
-      ? { label: 'Optimal Flow', color: 'text-emerald-600 dark:text-emerald-400', bar: 'bg-emerald-500' }
+    winRateNum >= 50
+      ? { labelEn: 'Optimal Flow', labelBn: 'চমৎকার অগ্রগতি', color: 'text-emerald-600 dark:text-emerald-400', bar: 'bg-emerald-500' }
       : winRateNum >= 25
-      ? { label: 'Steady Pace', color: 'text-blue-600 dark:text-blue-400', bar: 'bg-blue-500' }
-      : { label: 'Needs Follow-up', color: 'text-amber-600 dark:text-amber-400', bar: 'bg-amber-500' }
+      ? { labelEn: 'Steady Pace', labelBn: 'স্থিতিশীল গতি', color: 'text-blue-600 dark:text-blue-400', bar: 'bg-blue-500' }
+      : { labelEn: 'Needs Follow-up', labelBn: 'অনুসরণ প্রয়োজন', color: 'text-amber-600 dark:text-amber-400', bar: 'bg-amber-500' }
 
   // Directory filter tabs
  const directoryFilterTabs = [
@@ -979,7 +979,7 @@ export default function QuotationsPage() {
             <KpiCard
  titleEn="Win Rate"titleBn="জয়ের হার"value={`${effectiveMetrics?.winRate || 0}%`}
  icon={Activity}
- colorVariant="cyan"subtitle={healthTier.label}
+ colorVariant="cyan"subtitle={locale === 'bn' ? healthTier.labelBn : healthTier.labelEn}
             >
               <div className="w-full bg-muted h-1.5 rounded-full mt-1.5 overflow-hidden">
                 <div

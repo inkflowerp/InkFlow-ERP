@@ -1215,11 +1215,11 @@ function BillingContent() {
   // Calculate health tier from collection rate
  const collectionRateNum = Number(effectiveMetrics?.collectionRate || 0)
  const healthTier =
- collectionRateNum >= 80
-      ? { label: 'Optimal Flow', color: 'text-emerald-600 dark:text-emerald-400', bar: 'bg-emerald-500' }
+    collectionRateNum >= 80
+      ? { labelEn: 'Optimal Flow', labelBn: 'চমৎকার অগ্রগতি', color: 'text-emerald-600 dark:text-emerald-400', bar: 'bg-emerald-500' }
       : collectionRateNum >= 60
-      ? { label: 'Steady Pace', color: 'text-blue-600 dark:text-blue-400', bar: 'bg-blue-500' }
-      : { label: 'Needs Follow-up', color: 'text-amber-600 dark:text-amber-400', bar: 'bg-amber-500' }
+      ? { labelEn: 'Steady Pace', labelBn: 'স্থিতিশীল গতি', color: 'text-blue-600 dark:text-blue-400', bar: 'bg-blue-500' }
+      : { labelEn: 'Needs Follow-up', labelBn: 'অনুসরণ প্রয়োজন', color: 'text-amber-600 dark:text-amber-400', bar: 'bg-amber-500' }
 
  return (
     <div className="space-y-6 max-w-7xl mx-auto pb-20">
@@ -1323,7 +1323,7 @@ function BillingContent() {
           <KpiCard
  titleEn="Collection Rate"titleBn="আদায়ের হার"value={`${effectiveMetrics?.collectionRate || 0}%`}
  icon={Activity}
- colorVariant="cyan"subtitle={healthTier.label}
+ colorVariant="cyan"subtitle={locale === 'bn' ? healthTier.labelBn : healthTier.labelEn}
           >
             <div className="w-full bg-muted h-1.5 rounded-full mt-1.5 overflow-hidden">
               <div

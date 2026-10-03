@@ -24,12 +24,12 @@ import { useDataStore } from '@/hooks/use-data-store'
 import { STORAGE_KEYS } from '@/lib/db/data-store'
 
 const COLOR_PRESETS = [
-  { name: 'Royal Blue', hex: '#2563eb' },
-  { name: 'Crimson Red', hex: '#dc2626' },
-  { name: 'Emerald Green', hex: '#059669' },
-  { name: 'Vibrant Purple', hex: '#7c3aed' },
-  { name: 'Dark Indigo', hex: '#4338ca' },
-  { name: 'Amber Orange', hex: '#d97706' },
+  { nameEn: 'Royal Blue', nameBn: 'রয়্যাল ব্লু', hex: '#2563eb' },
+  { nameEn: 'Crimson Red', nameBn: 'ক্রিমসন রেড', hex: '#dc2626' },
+  { nameEn: 'Emerald Green', nameBn: 'এমেরাল্ড গ্রিন', hex: '#059669' },
+  { nameEn: 'Vibrant Purple', nameBn: 'ভাইব্রেন্ট পার্পল', hex: '#7c3aed' },
+  { nameEn: 'Dark Indigo', nameBn: 'ডার্ক ইন্ডিগো', hex: '#4338ca' },
+  { nameEn: 'Amber Orange', nameBn: 'অ্যাম্বার অরেঞ্জ', hex: '#d97706' },
 ]
 
 export default function BrandingSettingsPage() {
@@ -114,7 +114,7 @@ export default function BrandingSettingsPage() {
       {isSaved && (
         <div className="p-3 bg-emerald-50 text-emerald-800 rounded-lg text-xs font-semibold flex items-center gap-2 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800 animate-in fade-in-0">
           <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0"/>
-          <span>Branding settings updated and recorded in audit log.</span>
+          <span>{tBilingual('Branding settings updated and recorded in audit log.', 'ব্র্যান্ডিং সেটিংস আপডেট ও অডিট লগে সংরক্ষণ করা হয়েছে।')}</span>
         </div>
       )}
 
@@ -122,9 +122,9 @@ export default function BrandingSettingsPage() {
         {/* Color & Visual Theme */}
         <Card>
           <CardHeader className="pb-3 border-b border-border">
-            <CardTitle className="text-base">Primary Brand Accent Color</CardTitle>
+            <CardTitle className="text-base">{tBilingual('Primary Brand Accent Color', 'প্রধান ব্র্যান্ড কালার')}</CardTitle>
             <CardDescription className="text-xs">
- This color will highlight your invoices, challans, and customer web previews.
+              {tBilingual('This color will highlight your invoices, challans, and customer web previews.', 'এই রঙটি আপনার ইনভয়েস, চালান এবং গ্রাহক ওয়েব প্রিভিউতে প্রদর্শিত হবে।')}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 pt-4">
@@ -140,7 +140,7 @@ export default function BrandingSettingsPage() {
                   }`}
                 >
                   <span className="h-4 w-4 rounded-full shrink-0"style={{ backgroundColor: c.hex }} />
-                  <span>{c.name}</span>
+                  <span>{locale === 'bn' ? c.nameBn : c.nameEn}</span>
                 </button>
               ))}
 
@@ -162,7 +162,7 @@ export default function BrandingSettingsPage() {
             <CardHeader className="pb-2 border-b border-border">
               <CardTitle className="text-sm flex items-center gap-2">
                 <ImageIcon className="h-4 w-4 text-blue-600"/>
- Main Company Logo
+                {tBilingual('Main Company Logo', 'মূল কোম্পানির লোগো')}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 pt-3">
@@ -172,7 +172,7 @@ export default function BrandingSettingsPage() {
  src={branding.logo_url}
  alt="Logo"className="max-h-full max-w-full object-contain"/>
                 ) : (
-                  <span className="text-xs text-muted-foreground">No logo uploaded</span>
+                  <span className="text-xs text-muted-foreground">{tBilingual('No logo uploaded', 'কোনো লোগো আপলোড করা হয়নি')}</span>
                 )}
               </div>
               <Input
@@ -187,7 +187,7 @@ export default function BrandingSettingsPage() {
             <CardHeader className="pb-2 border-b border-border">
               <CardTitle className="text-sm flex items-center gap-2">
                 <Receipt className="h-4 w-4 text-emerald-600"/>
- Invoice Header Logo
+                {tBilingual('Invoice Header Logo', 'ইনভয়েস হেডার লোগো')}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 pt-3">
@@ -197,7 +197,7 @@ export default function BrandingSettingsPage() {
  src={branding.invoice_logo_url}
  alt="Invoice Logo"className="max-h-full max-w-full object-contain"/>
                 ) : (
-                  <span className="text-xs text-muted-foreground">Default company logo</span>
+                  <span className="text-xs text-muted-foreground">{tBilingual('Default company logo', 'ডিফল্ট কোম্পানির লোগো')}</span>
                 )}
               </div>
               <Input
@@ -212,7 +212,7 @@ export default function BrandingSettingsPage() {
             <CardHeader className="pb-2 border-b border-border">
               <CardTitle className="text-sm flex items-center gap-2">
                 <FileSpreadsheet className="h-4 w-4 text-purple-600"/>
- Quotation Header Logo
+                {tBilingual('Quotation Header Logo', 'কোটেশন হেডার লোগো')}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 pt-3">
@@ -222,7 +222,7 @@ export default function BrandingSettingsPage() {
  src={branding.quotation_logo_url}
  alt="Quotation Logo"className="max-h-full max-w-full object-contain"/>
                 ) : (
-                  <span className="text-xs text-muted-foreground">Default company logo</span>
+                  <span className="text-xs text-muted-foreground">{tBilingual('Default company logo', 'ডিফল্ট কোম্পানির লোগো')}</span>
                 )}
               </div>
               <Input
@@ -238,13 +238,13 @@ export default function BrandingSettingsPage() {
           <CardHeader className="pb-3 border-b border-border">
             <CardTitle className="text-base">{tBilingual('Document Footer Notes & Terms', 'বিল ও চালানের শর্তাবলী')}</CardTitle>
             <CardDescription className="text-xs">
- Printed automatically at the bottom of all Commercial Invoices, Quotations, and Delivery Challans.
+              {tBilingual('Printed automatically at the bottom of all Commercial Invoices, Quotations, and Delivery Challans.', 'সকল বাণিজ্যিক ইনভয়েস, কোটেশন ও ডেলিভারি চালানের নিচে স্বয়ংক্রিয়ভাবে মুদ্রিত হবে।')}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 pt-4">
             <div className="space-y-1.5">
               <Label htmlFor="footer_text">
- English Footer Note / Terms
+                {tBilingual('English Footer Note / Terms', 'ইংরেজি বিল শর্তাবলী')}
               </Label>
               <Input
  id="footer_text"value={branding.footer_text}
@@ -254,7 +254,7 @@ export default function BrandingSettingsPage() {
 
             <div className="space-y-1.5">
               <Label htmlFor="footer_text_bn">
-                বাংলা বিল শর্তাবলী
+                {tBilingual('Bengali Footer Note / Terms', 'বাংলা বিল শর্তাবলী')}
               </Label>
               <Input
  id="footer_text_bn"value={branding.footer_text_bn}
@@ -267,7 +267,7 @@ export default function BrandingSettingsPage() {
         <div className="flex justify-end pt-2">
           <Button type="submit"isLoading={isLoading} className="bg-purple-600 hover:bg-purple-700 text-white w-full sm:w-auto h-11 sm:h-9 text-xs font-semibold">
             <Save className="mr-1.5 h-4 w-4"/>
- Save Branding Configuration
+            {tBilingual('Save Branding Configuration', 'ব্র্যান্ডিং কনফিগারেশন সংরক্ষণ করুন')}
           </Button>
         </div>
       </form>
