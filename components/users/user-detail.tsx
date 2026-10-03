@@ -44,6 +44,7 @@ import { useToast } from '@/components/shared/toast-feedback'
 import { useI18n } from '@/i18n/context'
 import { ROLE_NAMES_BN } from './roles-matrix-tab'
 import { formatDateTime } from '@/lib/formatters'
+import { resolveUserRole } from './user-resolvers'
 
 interface UserDetailProps {
  user: CompanyUserWithProfile | null
@@ -283,7 +284,8 @@ export function UserDetailDrawer({
  const email = user.profile?.email || user.invited_email || 'No email'
  const username = user.profile?.email ? user.profile.email.split('@')[0] : ''
  const phone = user.profile?.phone || ''
- const primaryRole = user.roles?.[0]
+  const primaryRole = user.roles?.[0]
+  const resolvedRole = resolveUserRole(user)
  const status = user.status
  const linkedEmployee = user.linked_employee
 
@@ -326,8 +328,8 @@ export function UserDetailDrawer({
               </div>
 
               <div className="text-xs text-muted-foreground mt-0.5 flex items-center gap-2 flex-wrap">
-                <Badge variant="outline"className="text-xs font-medium">
-                  {isBn ? (ROLE_NAMES_BN[primaryRole?.slug || ''] || ROLE_NAMES_BN[primaryRole?.name || ''] || primaryRole?.name || 'সাধারণ কর্মী') : (primaryRole?.name || 'General Staff')}
+                <Badge variant="outline" className="text-xs font-medium">
+                  {isBn ? resolvedRole.nameBn : resolvedRole.name}
                 </Badge>
 
                 {linkedEmployee ? (
@@ -521,40 +523,42 @@ export function UserDetailDrawer({
               <div className="p-4 border border-border rounded-lg space-y-3">
                 <div className="flex items-center justify-between">
                   <div>
-                    <span className="text-xs text-muted-foreground uppercase tracking-wider">Current Role</span>
+                    <span className="text-xs text-muted-foreground uppercase tracking-wider">{tBilingual('Current Role', 'বর্তমান রোল')}</span>
                     <h3 className="font-bold text-foreground text-base mt-0.5">
-                      {primaryRole?.name || 'General Staff'}
+                      {isBn ? resolvedRole.nameBn : resolvedRole.name}
                     </h3>
                   </div>
 
                   <Button
- size="sm"onClick={() => onEditAccess(user)}
- className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs gap-1.5">
+                    size="sm"
+                    onClick={() => onEditAccess(user)}
+                    className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs gap-1.5">
                     <Edit2 className="h-3.5 w-3.5"/>
-                    <span>Edit Access</span>
+                    <span>{tBilingual('Edit Access', 'অ্যাক্সেস সম্পাদনা')}</span>
                   </Button>
                 </div>
 
                 <p className="text-xs text-muted-foreground">
-                  {primaryRole?.description || 'Operational role template with standard printing responsibilities.'}
+                  {primaryRole?.description || (isBn ? 'স্ট্যান্ডার্ড প্রিন্টিং দায়িত্বসহ অপারেশনাল রোল টেমপ্লেট।' : 'Operational role template with standard printing responsibilities.')}
                 </p>
               </div>
 
               {/* Responsibilities Cloud */}
               <div className="space-y-2">
                 <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
- Assigned Responsibilities ({user.responsibilities?.length || 0})
+                  {tBilingual('Assigned Responsibilities', 'নির্ধারিত দায়িত্বসমূহ')} ({user.responsibilities?.length || 0})
                 </Label>
                 <div className="flex flex-wrap gap-1.5">
                   {(user.responsibilities || []).map((resp) => (
                     <Badge
- key={resp}
- variant="secondary"className="px-2.5 py-1 text-xs font-medium bg-muted text-foreground">
-                      {resp}
+                      key={resp}
+                      variant="secondary"
+                      className="px-2.5 py-1 text-xs font-medium bg-muted text-foreground">
+                      {isBn ? (ROLE_NAMES_BN[resp] || resp) : resp}
                     </Badge>
                   ))}
                   {(!user.responsibilities || user.responsibilities.length === 0) && (
-                    <span className="text-xs text-muted-foreground">No responsibilities assigned</span>
+                    <span className="text-xs text-muted-foreground">{tBilingual('No responsibilities assigned', 'কোনো দায়িত্ব বরাদ্দ করা হয়নি')}</span>
                   )}
                 </div>
               </div>

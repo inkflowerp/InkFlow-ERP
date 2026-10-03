@@ -43,6 +43,8 @@ import {
  extractResponsibilities,
  DEFAULT_RESPONSIBILITY_MATRICES,
 } from '@/lib/auth/rbac.client'
+import { formatBranchName } from '@/lib/formatters'
+import { resolveUserRole } from './user-resolvers'
 import type { CompanyUserWithProfile, RoleRow, BranchRow } from '@/types/tenant.types'
 import { cn } from '@/lib/utils'
 
@@ -179,9 +181,9 @@ export function PermissionSimulator({
     }
   }, [selectedModule, availableActions, selectedAction])
 
-  // Helper to extract role name or slug
- const getUserRoleLabel = (u: CompanyUserWithProfile) => {
- return u.roles?.[0]?.name || u.roles?.[0]?.slug || (u as any).role || 'General Staff'
+  const getUserRoleLabel = (u: CompanyUserWithProfile) => {
+    const resolved = resolveUserRole(u, roles)
+    return locale === 'bn' ? resolved.nameBn : resolved.name
   }
 
  const getUserDisplayName = (u: CompanyUserWithProfile) => {
@@ -365,7 +367,7 @@ export function PermissionSimulator({
  className="w-full bg-card border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary">
                     {safeUsers.map((u) => (
                       <option key={u.id} value={u.id}>
-                        {getUserDisplayName(u)} ({getUserRoleLabel(u)}) {u.status === 'disabled' ? '⛔ Disabled' : ''}
+                        {getUserDisplayName(u)} ({getUserRoleLabel(u)}) {u.status === 'disabled' ? (locale === 'bn' ? '⛔ নিষ্ক্রিয়' : '⛔ Disabled') : ''}
                       </option>
                     ))}
                   </select>
@@ -423,7 +425,7 @@ export function PermissionSimulator({
                     <option value="all">{tBilingual('Any Branch / General Context', 'যেকোনো শাখা / সাধারণ কনটেক্সট')}</option>
                     {safeBranches.map((b) => (
                       <option key={b.id} value={b.id}>
-                        {locale === 'bn' ? (b.name_bn || b.name) : b.name} {b.is_main ? '⭐ Main' : ''}
+                        {formatBranchName(b.name, locale === 'bn' ? 'bn' : 'en', b.name_bn)} {b.is_main ? (locale === 'bn' ? '⭐ (প্রধান শাখা)' : '⭐ (Main)') : ''}
                       </option>
                     ))}
                   </select>

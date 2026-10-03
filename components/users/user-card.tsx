@@ -30,8 +30,9 @@ import {
  DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu'
 import { getResponsibilityPresetsForRole } from '@/lib/auth/rbac.client'
-import { formatDateTime } from '@/lib/formatters'
+import { formatDateTime, formatBranchName } from '@/lib/formatters'
 import { cn } from '@/lib/utils'
+import { resolveUserRole, resolveUserDataScope, resolveUserResponsibilities } from './user-resolvers'
 
 interface UserCardProps {
  user: CompanyUserWithProfile
@@ -94,27 +95,27 @@ function getDataScopeBadge(scope?: string, isBn?: boolean) {
   const s = scope || 'branch'
   if (s === 'company') {
     return (
-      <span className="inline-flex items-center text-[10px] font-medium px-2 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-950/30 dark:text-amber-300 dark:border-amber-800">
+      <span className="inline-flex items-center text-2xs font-medium px-2 py-0.5 rounded-md bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-950/30 dark:text-amber-300 dark:border-amber-800 whitespace-nowrap">
         {isBn ? 'সমগ্র প্রতিষ্ঠান' : 'Entire Company'}
       </span>
     )
   }
   if (s === 'branch') {
     return (
-      <span className="inline-flex items-center text-[10px] font-medium px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/30 dark:text-blue-300 dark:border-blue-800">
+      <span className="inline-flex items-center text-2xs font-medium px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/30 dark:text-blue-300 dark:border-blue-800 whitespace-nowrap">
         {isBn ? 'শাখা' : 'Branch'}
       </span>
     )
   }
   if (s === 'department') {
     return (
-      <span className="inline-flex items-center text-[10px] font-medium px-2 py-0.5 rounded bg-teal-50 text-teal-700 border border-teal-200 dark:bg-teal-950/30 dark:text-teal-300 dark:border-teal-800">
+      <span className="inline-flex items-center text-2xs font-medium px-2 py-0.5 rounded-md bg-teal-50 text-teal-700 border border-teal-200 dark:bg-teal-950/30 dark:text-teal-300 dark:border-teal-800 whitespace-nowrap">
         {isBn ? 'বিভাগ' : 'Department'}
       </span>
     )
   }
   return (
-    <span className="inline-flex items-center text-[10px] font-medium px-2 py-0.5 rounded bg-muted text-foreground border border-border">
+    <span className="inline-flex items-center text-2xs font-medium px-2 py-0.5 rounded-md bg-muted text-foreground border border-border whitespace-nowrap">
       {isBn ? 'বরাদ্দকৃত / নিজস্ব' : 'Assigned / Own'}
     </span>
   )
@@ -141,30 +142,23 @@ export function UserCard({
  branches.forEach((b) => map.set(b.id, b))
  return map
   }, [branches])
-
- const getBranchName = (bId?: string | null) => {
+  const getBranchName = (bId?: string | null) => {
     if (!bId) return isBn ? 'প্রধান শাখা' : 'Main Branch'
     const b = branchMap.get(bId)
-    if (!b) return isBn ? 'শাখা' : 'Branch'
-    if (isBn) {
-      if ((b as any).name_bn) return (b as any).name_bn
-      return b.name
-        .replace(/Head Office/gi, 'প্রধান কার্যালয়')
-        .replace(/Main Branch/gi, 'প্রধান শাখা')
-        .replace(/Main/gi, 'প্রধান শাখা')
-        .replace(/Branch/gi, 'শাখা')
-    }
-    return b.name
+    return formatBranchName(b?.name, isBn ? 'bn' : 'en', (b as any)?.name_bn)
   }
 
- const roleName = user.role?.name || user.roles?.[0]?.name || 'Staff'
- const isCurrentUser = currentUserId && (user.user_id === currentUserId || user.id === currentUserId)
- const isUserActive = user.status === 'active'
- const isUserInvited = user.status === 'invited'
- const isUserDisabled = user.status === 'disabled'
- const lastLogin = user.last_login_at || (user.profile as any)?.last_sign_in_at
- const responsibilities = getResponsibilityPresetsForRole(roleName)
- const topResponsibilities = responsibilities.slice(0, 3)
+  const resolvedRole = resolveUserRole(user, roles)
+  const roleName = resolvedRole.name
+  const roleNameBn = resolvedRole.nameBn
+  const resolvedScope = resolveUserDataScope(user, resolvedRole.slug)
+  const isCurrentUser = currentUserId && (user.user_id === currentUserId || user.id === currentUserId)
+  const isUserActive = user.status === 'active'
+  const isUserInvited = user.status === 'invited'
+  const isUserDisabled = user.status === 'disabled'
+  const lastLogin = user.last_login_at || (user.profile as any)?.last_sign_in_at
+  const responsibilities = resolveUserResponsibilities(user, resolvedRole.slug)
+  const topResponsibilities = responsibilities.slice(0, 3)
 
  const name = user.profile?.full_name || user.linked_employee?.name || user.profile?.email || 'User'
  const initials = name
@@ -253,12 +247,12 @@ export function UserCard({
       {/* Row 3: Role, Scope & Branch */}
       <div className="grid grid-cols-2 gap-2 text-xs">
         <div className="space-y-1">
-          <div className="text-[11px] text-muted-foreground">Role & Scope</div>
+          <div className="text-[11px] text-muted-foreground">{tBilingual('Role & Scope', 'রোল ও পরিসর')}</div>
           <div className="flex flex-wrap items-center gap-1.5">
-            <span className={cn('text-xs font-semibold px-2 py-0.5 rounded-md border', getRoleBadgeStyle(roleName))}>
-              {isBn ? (ROLE_NAMES_BN[roleName] || roleName) : roleName}
+            <span className={cn('text-xs font-semibold px-2 py-0.5 rounded-md border whitespace-nowrap', getRoleBadgeStyle(roleName))}>
+              {isBn ? roleNameBn : roleName}
             </span>
-            {getDataScopeBadge(user.data_scope || (user as any).dataScope, isBn)}
+            {getDataScopeBadge(resolvedScope, isBn)}
           </div>
         </div>
 
@@ -279,7 +273,7 @@ export function UserCard({
             {topResponsibilities.map((resp) => (
               <span
                 key={resp}
-                className="inline-flex items-center text-[10px] bg-muted text-foreground px-2 py-0.5 rounded border border-border"
+                className="inline-flex items-center text-2xs bg-muted text-foreground px-2 py-0.5 rounded-md border border-border font-medium"
               >
                 {isBn ? (RESPONSIBILITY_NAMES_BN[resp] || resp) : resp}
               </span>
@@ -300,15 +294,19 @@ export function UserCard({
         {/* Buttons (min-h-[44px] touch target for accessibility) */}
         <div className="flex items-center gap-2">
           <Button
- variant="outline"size="sm"onClick={() => onEditAccess(user)}
- className="h-10 min-h-[44px] px-3 text-xs font-medium text-foreground border-border">
+            variant="outline"
+            size="sm"
+            onClick={() => onEditAccess(user)}
+            className="h-10 min-h-[44px] px-3 text-xs font-medium text-foreground border-border">
             <Shield className="w-3.5 h-3.5 mr-1.5 text-blue-600"/>
             {tBilingual('Access', 'অ্যাক্সেস')}
           </Button>
 
           <Button
- variant="default"size="sm"onClick={() => onViewDetails(user)}
- className="h-10 min-h-[44px] px-3.5 text-xs font-medium bg-primary hover:bg-primary/90 text-primary-foreground">
+            variant="default"
+            size="sm"
+            onClick={() => onViewDetails(user)}
+            className="h-10 min-h-[44px] px-3.5 text-xs font-medium bg-primary hover:bg-primary/90 text-primary-foreground">
             <Eye className="w-3.5 h-3.5 mr-1.5"/>
             {tBilingual('Details', 'বিস্তারিত')}
           </Button>
@@ -316,12 +314,19 @@ export function UserCard({
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
- variant="ghost"size="sm"className="h-10 w-10 min-h-[44px] min-w-[44px] p-0 text-muted-foreground hover:text-foreground dark:hover:text-foreground">
+                variant="ghost"
+                size="sm"
+                className="h-10 w-10 min-h-[44px] min-w-[44px] p-0 text-muted-foreground hover:text-foreground dark:hover:text-foreground">
                 <MoreVertical className="w-4 h-4"/>
-                <span className="sr-only">More options</span>
+                <span className="sr-only">{tBilingual('More options', 'আরো অপশন')}</span>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end"className="w-48">
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuItem onClick={() => onEditAccess(user)}>
+                <Shield className="w-4 h-4 mr-2 text-blue-600"/>
+                <span>{tBilingual('Edit Access & Role', 'অ্যাক্সেস ও রোল সম্পাদনা')}</span>
+              </DropdownMenuItem>
+
               <DropdownMenuItem onClick={() => onResetPassword(user)}>
                 <KeyRound className="w-4 h-4 mr-2 text-amber-600"/>
                 <span>{tBilingual('Reset Password', 'পাসওয়ার্ড রিসেট')}</span>
@@ -331,18 +336,18 @@ export function UserCard({
 
               {!isCurrentUser && (
                 <DropdownMenuItem
- onClick={() => onToggleStatus(user)}
- className={isUserActive ? 'text-amber-600' : 'text-emerald-600'}
+                  onClick={() => onToggleStatus(user)}
+                  className={isUserActive ? 'text-amber-600' : 'text-emerald-600'}
                 >
                   {isUserActive ? (
                     <>
                       <UserX className="w-4 h-4 mr-2"/>
-                      <span>Disable Login</span>
+                      <span>{tBilingual('Disable Login', 'লগইন নিষ্ক্রিয় করুন')}</span>
                     </>
                   ) : (
                     <>
                       <CheckCircle2 className="w-4 h-4 mr-2"/>
-                      <span>Enable Login</span>
+                      <span>{tBilingual('Enable Login', 'লগইন সক্রিয় করুন')}</span>
                     </>
                   )}
                 </DropdownMenuItem>
@@ -350,10 +355,10 @@ export function UserCard({
 
               {!isCurrentUser && (
                 <DropdownMenuItem
- onClick={() => onRemoveLogin(user)}
- className="text-red-600 focus:text-red-700 focus:bg-red-50 dark:focus:bg-red-950/40">
+                  onClick={() => onRemoveLogin(user)}
+                  className="text-red-600 focus:text-red-700 focus:bg-red-50 dark:focus:bg-red-950/40">
                   <Trash2 className="w-4 h-4 mr-2"/>
-                  <span>Remove Login</span>
+                  <span>{tBilingual('Remove Login', 'লগইন মুছে ফেলুন')}</span>
                 </DropdownMenuItem>
               )}
             </DropdownMenuContent>
@@ -363,3 +368,4 @@ export function UserCard({
     </div>
   )
 }
+

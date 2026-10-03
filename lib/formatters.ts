@@ -558,3 +558,64 @@ export function formatCustomerIdNo(
   return `CUST-${String((index !== undefined ? index + 1 : 1)).padStart(3, '0')}`
 }
 
+/**
+ * Formats branch name strictly adhering to language purity.
+ * Eliminates bilingual slashes (e.g. "Main Branch / হেড অফিস").
+ * In 'bn' mode: "প্রধান শাখা"
+ * In 'en' mode: "Main Branch"
+ */
+export function formatBranchName(
+  branchName?: string | null,
+  locale: 'bn' | 'en' = 'en',
+  nameBn?: string | null
+): string {
+  const isBn = locale === 'bn'
+  if (!branchName || !branchName.trim()) {
+    return isBn ? 'প্রধান শাখা' : 'Main Branch'
+  }
+  if (isBn && nameBn && nameBn.trim()) {
+    return nameBn.trim()
+  }
+
+  const raw = branchName.trim()
+  const lower = raw.toLowerCase()
+
+  // Match main / head office indicators
+  if (
+    lower.includes('main') ||
+    raw.includes('প্রধান') ||
+    lower.includes('head office') ||
+    raw.includes('হেড অফিস')
+  ) {
+    return isBn ? 'প্রধান শাখা' : 'Main Branch'
+  }
+
+  // Handle slash separating English and Bengali (e.g. "Dhanmondi Branch / ধানমন্ডি শাখা")
+  if (raw.includes('/')) {
+    const parts = raw.split('/').map((p) => p.trim())
+    const bnPart = parts.find((p) => /[\u0980-\u09FF]/.test(p))
+    const enPart = parts.find((p) => !/[\u0980-\u09FF]/.test(p))
+    if (isBn && bnPart) return bnPart
+    if (!isBn && enPart) return enPart
+  }
+
+  if (isBn) {
+    return raw
+      .replace(/Head Office/gi, 'প্রধান কার্যালয়')
+      .replace(/Main Branch/gi, 'প্রধান শাখা')
+      .replace(/Main/gi, 'প্রধান')
+      .replace(/Branch/gi, 'শাখা')
+      .replace(/\s*\/\s*/g, ' ')
+      .trim()
+  }
+
+  // English: strip any Bengali unicode letters and slashes
+  const cleaned = raw
+    .replace(/[\u0980-\u09FF]/g, '')
+    .replace(/\s*\/\s*/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+
+  return cleaned || raw
+}
+

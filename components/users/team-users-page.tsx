@@ -44,6 +44,8 @@ import { LinkEmployeeDialog } from '@/components/users/link-employee-dialog'
 import { UserDetailDrawer } from '@/components/users/user-detail'
 import { useParams } from 'next/navigation'
 import { cn } from '@/lib/utils'
+import { formatBranchName } from '@/lib/formatters'
+import { resolveUserRole } from './user-resolvers'
 
 export function TeamUsersPage() {
   const { locale, tBilingual } = useI18n()
@@ -180,11 +182,15 @@ export function TeamUsersPage() {
  if (statusFilter === 'active' && u.status !== 'active') return false
  if (statusFilter === 'invited' && u.status !== 'invited') return false
  if (statusFilter === 'disabled' && u.status !== 'disabled') return false
-
       // 2. Role Filter
- if (roleFilter !== 'all') {
- const uRole = u.role?.name?.toLowerCase() || ''
- if (uRole !== roleFilter.toLowerCase()) return false
+      if (roleFilter !== 'all') {
+        const uRole = resolveUserRole(u, roles)
+        if (
+          uRole.name.toLowerCase() !== roleFilter.toLowerCase() &&
+          uRole.slug.toLowerCase() !== roleFilter.toLowerCase()
+        ) {
+          return false
+        }
       }
 
       // 3. Branch Filter
@@ -504,7 +510,7 @@ export function TeamUsersPage() {
             <option value="all">{tBilingual('All Branches', 'সকল শাখা')}</option>
             {branches.map((b) => (
               <option key={b.id} value={b.id}>
-                {isBn ? ((b as any).name_bn || b.name) : b.name}
+                {formatBranchName(b.name, isBn ? 'bn' : 'en', (b as any).name_bn)}
               </option>
             ))}
           </select>
