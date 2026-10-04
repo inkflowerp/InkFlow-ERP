@@ -14,6 +14,7 @@
     "security-grep": "node scripts/security-grep-gate.mjs",
     "test:migrations": "node scripts/test-migrations.mjs",
     "ui-audit": "node --experimental-strip-types scripts/ui-audit/check.ts",
+    "brand-check": "node scripts/brand-check.mjs",
     "test": "node --env-file-if-exists=.env.local --env-file-if-exists=.env --conditions=react-server --experimental-strip-types --test tests/unit/*.test.ts tests/integration/*.test.ts tests/security/*.test.ts tests/roles/*.test.ts tests/edge-cases/*.test.ts tests/acceptance/*.test.ts"
   },
   "dependencies": {

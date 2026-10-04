@@ -1,0 +1,92 @@
+{
+  "exactAllowlist": [
+    {
+      "token": "_printerp_migrations",
+      "reason": "Live database migration tracking table name; must not be dropped or renamed per architectural continuity"
+    },
+    {
+      "token": "printerp_platform_session",
+      "reason": "Legacy 1-release transition key migration reader"
+    },
+    {
+      "token": "printerp_tenant_session",
+      "reason": "Legacy 1-release transition key migration reader"
+    },
+    {
+      "token": "printerp_support_tenant",
+      "reason": "Legacy 1-release transition key migration reader"
+    },
+    {
+      "token": "accounts@inkflow-erp.com",
+      "reason": "email, pending owner decision"
+    },
+    {
+      "token": "sales@inkflow-erp.com",
+      "reason": "email, pending owner decision"
+    },
+    {
+      "token": "billing@inkflow-erp.com",
+      "reason": "email, pending owner decision"
+    },
+    {
+      "token": "dispatch@inkflow-erp.com",
+      "reason": "email, pending owner decision"
+    },
+    {
+      "token": "support@printerp.com.bd",
+      "reason": "email, pending owner decision"
+    },
+    {
+      "token": "support@printerp.com",
+      "reason": "email, pending owner decision"
+    },
+    {
+      "token": "billing@printerp.com",
+      "reason": "email, pending owner decision"
+    },
+    {
+      "token": "notifications@printerp.com",
+      "reason": "email, pending owner decision"
+    },
+    {
+      "token": "test@printerp.com",
+      "reason": "email, pending owner decision"
+    },
+    {
+      "token": "tariqul@inkflow.com.bd",
+      "reason": "email, pending owner decision"
+    },
+    {
+      "token": "admin@inkflow.com.bd",
+      "reason": "email, pending owner decision"
+    },
+    {
+      "token": "support@inkflow.com.bd",
+      "reason": "email, pending owner decision"
+    },
+    {
+      "token": "info@inkflowerp.com",
+      "reason": "email, pending owner decision"
+    },
+    {
+      "token": "smtp.printerp.com",
+      "reason": "email, pending owner decision"
+    },
+    {
+      "token": "inkflowerp/InkFlow-ERP",
+      "reason": "GitHub upstream git repository identifier"
+    },
+    {
+      "token": "repo: inkflowerp/InkFlow-ERP",
+      "reason": "GitHub upstream git repository identifier"
+    }
+  ],
+  "allowedFilePatterns": [
+    "docs/rebrand/**",
+    "docs/hardening/migration-drift.md",
+    "scripts/brand-check.mjs",
+    "scripts/brand-allowlist.json",
+    "scripts/build-inventory.mjs",
+    "scripts/inventory.json"
+  ]
+}

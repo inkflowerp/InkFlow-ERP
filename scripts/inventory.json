@@ -1,0 +1,3235 @@
+{
+  "summary": {
+    "Token: inkflow": 854,
+    "Token: ink-flow": 1,
+    "Token: printerp": 3962,
+    "Token: print erp": 3,
+    "Bangla: প্রিন্ট ইআরপি": 7,
+    "Bangla: প্রিন্টইআরপি": 27,
+    "Bangla: ইঙ্কফ্লো": 3,
+    "Hostname / Domain": 450
+  },
+  "fileCounts": {
+    ".env.example": 11,
+    ".github/workflows/ci.yml": 1,
+    "AGENTS.md": 1,
+    "ARCHITECTURE.md": 22,
+    "PLATFORM_UI_CHECKLIST.md": 1,
+    "STYLE_GUIDE.md": 1,
+    "TENANT_AUTH_AUDIT.md": 36,
+    "WRITING_GUIDE.md": 2,
+    "actions/communication.actions.ts": 1,
+    "actions/email-gateway.actions.ts": 25,
+    "actions/finance.actions.ts": 1,
+    "actions/platform-subscription.actions.ts": 2,
+    "actions/quotation.actions.ts": 2,
+    "actions/support.actions.ts": 1,
+    "actions/workforce.actions.ts": 1,
+    "app/(auth)/layout.tsx": 5,
+    "app/(auth)/login/page.tsx": 3,
+    "app/[tenantSlug]/billing/[id]/page.tsx": 3,
+    "app/[tenantSlug]/communications/page.tsx": 5,
+    "app/[tenantSlug]/customers/page.tsx": 30,
+    "app/[tenantSlug]/delivery/[id]/page.tsx": 3,
+    "app/[tenantSlug]/delivery/page.tsx": 19,
+    "app/[tenantSlug]/production/page.tsx": 32,
+    "app/[tenantSlug]/quotations/[id]/page.tsx": 29,
+    "app/[tenantSlug]/quotations/page.tsx": 21,
+    "app/[tenantSlug]/sales/page.tsx": 31,
+    "app/[tenantSlug]/settings/attendance/page.tsx": 7,
+    "app/[tenantSlug]/settings/email/page.tsx": 8,
+    "app/[tenantSlug]/settings/notifications/page.tsx": 1,
+    "app/[tenantSlug]/support/page.tsx": 4,
+    "app/api/health/route.ts": 1,
+    "app/api/pdf/[type]/route.ts": 6,
+    "app/global-error.tsx": 1,
+    "app/platform/admins/admins-client.tsx": 4,
+    "app/platform/billing/billing-client.tsx": 2,
+    "app/platform/email/email-client.tsx": 24,
+    "app/platform/login/page.tsx": 10,
+    "app/platform/notifications/notifications-client.tsx": 2,
+    "app/platform/settings/settings-client.tsx": 9,
+    "app/platform/tenants/tenants-client.tsx": 7,
+    "app/tenant-not-found/page.tsx": 1,
+    "components/attendance/camera-qr-scanner.tsx": 1,
+    "components/attendance/printable-qr-poster.tsx": 4,
+    "components/attendance/qr-code-svg.tsx": 1,
+    "components/billing/money-receipt-modal.tsx": 2,
+    "components/dashboard/roles/designer-dashboard.tsx": 2,
+    "components/dashboard/roles/owner-dashboard.tsx": 13,
+    "components/delivery/delivery-challan-table.tsx": 1,
+    "components/design/design-panel.tsx": 22,
+    "components/design/modals/design-whatsapp-modal.tsx": 6,
+    "components/inventory/issue-master-roll-modal.tsx": 14,
+    "components/mobile/attendance-punch-modal.tsx": 2,
+    "components/orders/new-work-wizard.tsx": 1,
+    "components/pdf/documents/challan-pdf-document.tsx": 6,
+    "components/pdf/documents/invoice-pdf-document.tsx": 8,
+    "components/pdf/documents/money-receipt-pdf-document.tsx": 6,
+    "components/pdf/documents/quotation-pdf-document.tsx": 6,
+    "components/pdf/primitives/qrcode.tsx": 2,
+    "components/platform/platform-sidebar.tsx": 15,
+    "components/production/production-job-ticket-modal.tsx": 1,
+    "components/production/production-task-table.tsx": 1,
+    "components/quotations/new-quotation-modal.tsx": 8,
+    "components/quotations/quotation-table.tsx": 1,
+    "components/shared/new-customer-modal.tsx": 1,
+    "components/shell/sidebar.tsx": 8,
+    "components/support/new-conversation-modal.tsx": 1,
+    "components/support/platform-chat-pane.tsx": 2,
+    "components/support/platform-support-console.tsx": 1,
+    "components/support/platform-ticket-info.tsx": 1,
+    "components/support/tenant-chat-view.tsx": 1,
+    "components/support/tenant-support-inbox.tsx": 1,
+    "components/users/permission-simulator.tsx": 1,
+    "config/ui-audit-allowlist.json": 1,
+    "copy-inventory.csv": 23,
+    "design-spec.json": 1,
+    "docs/EMAIL_INTEGRATION_GUIDE.md": 7,
+    "docs/PRODUCTION_BASELINE.md": 7,
+    "docs/V10_SUBSCRIPTION_360_CERTIFICATION.md": 2,
+    "docs/V5_PURCHASING_CERTIFICATION.md": 4,
+    "docs/V6_WORKFORCE_FINANCE_CERTIFICATION.md": 4,
+    "docs/V7_BANGLADESH_LOCALIZATION_VAT_CERTIFICATION.md": 4,
+    "docs/V8_MOBILE_COMMUNICATION_OFFLINE_CERTIFICATION.md": 6,
+    "docs/V8_MOBILE_COMMUNICATION_OFFLINE_IMPLEMENTATION.md": 7,
+    "docs/V9_MULTI_BRANCH_ADVANCED_MANAGEMENT_CERTIFICATION.md": 4,
+    "docs/V9_MULTI_BRANCH_ADVANCED_MANAGEMENT_IMPLEMENTATION.md": 4,
+    "docs/deployment/vercel-supabase-environments.md": 6,
+    "docs/hardening/README.md": 3,
+    "docs/hardening/baseline.md": 2,
+    "docs/hardening/launch-report.md": 36,
+    "docs/hardening/permission-matrix.md": 3,
+    "docs/hardening/rpc-inventory.md": 2,
+    "docs/hardening/server-actions.md": 1,
+    "docs/hardening/service-role-usage.md": 1,
+    "docs/hardening/ux/customers.md": 1,
+    "docs/hardening/ux/dashboard.md": 2,
+    "docs/hardening/ux/delivery-finishing.md": 1,
+    "docs/hardening/ux/design-designer.md": 1,
+    "docs/hardening/ux/inventory-floor-consumption.md": 1,
+    "docs/hardening/ux/invoices-billing.md": 1,
+    "docs/hardening/ux/orders-sales.md": 1,
+    "docs/hardening/ux/production-operator.md": 1,
+    "docs/hardening/ux/purchases-suppliers.md": 1,
+    "docs/hardening/ux/quotations.md": 1,
+    "docs/ops/backups-pitr-recovery.md": 2,
+    "docs/ops/ci-branch-protection.md": 1,
+    "docs/ops/data-retention-and-deletion-policy.md": 2,
+    "docs/ops/rollback-playbook.md": 6,
+    "glossary.md": 1,
+    "hooks/use-support-chat.ts": 1,
+    "lib/actions/action-wrapper.ts": 1,
+    "lib/attendance/geofence-utils.ts": 2,
+    "lib/auth/auth-providers.ts": 1,
+    "lib/auth/google-auth.ts": 5,
+    "lib/auth/identifier-helper.ts": 1,
+    "lib/auth/platform-auth.ts": 3,
+    "lib/auth/tenant-auth.ts": 5,
+    "lib/auth/types.ts": 4,
+    "lib/billing-utils.ts": 4,
+    "lib/calc/costing.ts": 1,
+    "lib/calc/index.ts": 1,
+    "lib/calc/invoice.ts": 1,
+    "lib/calc/payroll.ts": 1,
+    "lib/calc/pricing.ts": 1,
+    "lib/communication/challan-whatsapp.ts": 1,
+    "lib/communication/production-whatsapp.ts": 1,
+    "lib/context/operator-mode-context.tsx": 3,
+    "lib/dashboard/job-risk-engine.ts": 1,
+    "lib/db/data-store.ts": 153,
+    "lib/domain/material-compatibility.ts": 1,
+    "lib/domain/production-geometry.ts": 1,
+    "lib/domain/service-costing-engine.ts": 1,
+    "lib/email/adapters/gmail.adapter.ts": 5,
+    "lib/email/adapters/resend.adapter.ts": 4,
+    "lib/email/adapters/ses.adapter.ts": 4,
+    "lib/email/adapters/smtp.adapter.ts": 4,
+    "lib/errors/app-error.ts": 1,
+    "lib/finance/canonical-finance.ts": 1,
+    "lib/money.ts": 1,
+    "lib/observability/structured-logger.ts": 1,
+    "lib/observability/telemetry.ts": 1,
+    "lib/performance/logger.ts": 2,
+    "lib/quotations/quotation-utils.ts": 3,
+    "lib/repositories/billing.repository.ts": 72,
+    "lib/repositories/branch-analytics.repository.ts": 25,
+    "lib/repositories/communication.repository.ts": 13,
+    "lib/repositories/finance.repository.ts": 27,
+    "lib/repositories/purchase.repository.ts": 21,
+    "lib/repositories/quotation.repository.ts": 28,
+    "lib/repositories/supplier.repository.ts": 24,
+    "lib/repositories/workforce.repository.ts": 153,
+    "lib/security/file-validation.ts": 1,
+    "lib/security/rate-limiter.ts": 1,
+    "lib/security/runtime-env.ts": 1,
+    "lib/security/session-signer.ts": 1,
+    "lib/subscription/subscription-guard.ts": 1,
+    "lib/supabase/middleware.ts": 14,
+    "lib/tenant/tenant-resolution.ts": 9,
+    "lib/tenant/tenant-url.ts": 32,
+    "lib/units.ts": 1,
+    "lib/utils/business-date.ts": 1,
+    "next.config.ts": 10,
+    "push_to_github.bat": 4,
+    "scripts/check-licenses.mjs": 2,
+    "scripts/codemod-tokens.ts": 1,
+    "scripts/copy-lint/copy-linter.js": 1,
+    "scripts/copy-lint/fix-copy.js": 1,
+    "scripts/generate-audit-report.ts": 1,
+    "scripts/generate-matrix-tests.ts": 1,
+    "scripts/remediate-security-advisors.mjs": 1,
+    "scripts/security-grep-gate.mjs": 2,
+    "scripts/seed-test-tenants.ts": 1,
+    "scripts/test-migrations.mjs": 2,
+    "scripts/test_live_invoice_lifecycle.ts": 2,
+    "scripts/ui-audit/audit-scanner.ts": 2,
+    "scripts/ui-audit/check.ts": 2,
+    "scripts/ui-audit/crawler.ts": 5,
+    "scripts/ui-audit/ui-audit-report.md": 1,
+    "scripts/visual-audit.ts": 6,
+    "services/attendance.service.ts": 7,
+    "services/audit.service.ts": 1,
+    "services/auth-email.service.ts": 7,
+    "services/auth.service.ts": 35,
+    "services/billing.service.ts": 8,
+    "services/company-users.service.ts": 4,
+    "services/crm.service.ts": 2,
+    "services/dashboard.service.ts": 1,
+    "services/design.service.ts": 2,
+    "services/email-gateway.service.ts": 27,
+    "services/email-template.service.ts": 20,
+    "services/entitlement.service.ts": 3,
+    "services/finance.service.ts": 1,
+    "services/inventory.service.ts": 10,
+    "services/logistics.service.ts": 1,
+    "services/machinery.service.ts": 1,
+    "services/notification.service.ts": 1,
+    "services/order.service.ts": 2,
+    "services/platform-entitlement.service.ts": 2,
+    "services/platform-subscription.service.ts": 13,
+    "services/platform.service.ts": 66,
+    "services/production.service.ts": 1,
+    "services/purchase.service.ts": 3,
+    "services/saas-billing.service.ts": 10,
+    "services/saas-revenue.service.ts": 3,
+    "services/supplier.service.ts": 2,
+    "services/support.service.ts": 5,
+    "services/unified-communication.service.ts": 1,
+    "services/workforce-calculator.service.ts": 1,
+    "services/workforce.service.ts": 13,
+    "supabase/migrations/031_platform_support_sessions_and_hardening.sql": 2,
+    "supabase/migrations/032_platform_security_hardening.sql": 2,
+    "supabase/migrations/033_user_account_creation_and_profiles_fix.sql": 2,
+    "supabase/migrations/034_tenant_auth_and_isolation_hardening.sql": 1,
+    "supabase/migrations/035_platform_control_panel_hardening.sql": 1,
+    "supabase/migrations/036_add_department_to_company_users.sql": 2,
+    "supabase/migrations/037_platform_security_definer_hardening.sql": 1,
+    "supabase/migrations/038_strict_auth_isolation_boundary.sql": 1,
+    "supabase/migrations/040_seed_trial_plan_and_repair_subscriptions.sql": 2,
+    "supabase/migrations/041_platform_system_settings.sql": 2,
+    "supabase/migrations/043_saas_subscription_lifecycle_and_events.sql": 2,
+    "supabase/migrations/044_subscription_billing_security_and_reconciliation.sql": 2,
+    "supabase/migrations/045_platform_saas_subscription_and_billing.sql": 2,
+    "supabase/migrations/047_qr_geolocation_attendance.sql": 1,
+    "supabase/migrations/048_production_performance_indexes.sql": 2,
+    "supabase/migrations/049_support_chat_system.sql": 1,
+    "supabase/migrations/050_platform_notifications_realtime.sql": 1,
+    "supabase/migrations/052_strict_rls_and_security_hardening.sql": 1,
+    "supabase/migrations/053_final_security_and_rls_hardening.sql": 1,
+    "supabase/migrations/054_auth_pkce_and_trigger_hardening.sql": 2,
+    "supabase/migrations/055_email_otp_and_verification_system.sql": 2,
+    "supabase/migrations/056_auth_verifications_hardening.sql": 2,
+    "supabase/migrations/057_customer_rates_and_pricing_priority.sql": 2,
+    "supabase/migrations/060_machineries_management.sql": 1,
+    "supabase/migrations/061_machinery_production_task_integration.sql": 1,
+    "supabase/migrations/062_production_planning_and_scheduling.sql": 1,
+    "supabase/migrations/063_production_concurrency_and_hardening.sql": 1,
+    "supabase/migrations/064_inventory_management.sql": 1,
+    "supabase/migrations/065_products_pricing_costing.sql": 1,
+    "supabase/migrations/066_purchasing_and_suppliers.sql": 2,
+    "supabase/migrations/067_workforce_finance.sql": 1,
+    "supabase/migrations/068_bangladesh_localization_vat.sql": 1,
+    "supabase/migrations/069_mobile_communication_offline.sql": 1,
+    "supabase/migrations/070_multi_branch_advanced_management.sql": 1,
+    "supabase/migrations/071_v9_1_operator_first_and_production_hardening.sql": 1,
+    "supabase/migrations/072_finance_360_hardening.sql": 1,
+    "supabase/migrations/073_saas_subscription_360_production_hardening.sql": 1,
+    "supabase/migrations/074_subscription_security_lockdown_and_bypass_prevention.sql": 1,
+    "supabase/migrations/075_subscription_security_audit_hardening.sql": 1,
+    "supabase/migrations/076_sync_canonical_plan_features_and_fix_business_entitlements.sql": 1,
+    "supabase/migrations/078_billing_collections_owner_control_center.sql": 1,
+    "supabase/migrations/079_billing_financial_integrity_hardening.sql": 1,
+    "supabase/migrations/080_billing_invoice_schema_reconciliation.sql": 1,
+    "supabase/migrations/081_financial_authorization_security_hardening.sql": 1,
+    "supabase/migrations/082_finance_360_security_definer_hardening.sql": 1,
+    "supabase/migrations/083_products_services_master_upgrade.sql": 1,
+    "supabase/migrations/084_products_commercial_master_v2.sql": 1,
+    "supabase/migrations/085_products_commercial_master_v2_1.sql": 1,
+    "supabase/migrations/086_product_categories_and_composable_master.sql": 1,
+    "supabase/migrations/087_products_services_purchasing_inventory_rebuild.sql": 1,
+    "supabase/migrations/088_dynamic_configuration_driven_masters.sql": 1,
+    "supabase/migrations/089_relax_products_type_and_unit_constraints.sql": 1,
+    "supabase/migrations/090_customer_type_pricing_engine.sql": 1,
+    "supabase/migrations/091_workforce_attendance_payroll_hardening.sql": 1,
+    "supabase/migrations/092_rbac_permissions_roles_and_data_scope_hardening.sql": 1,
+    "supabase/migrations/099_tenant_permanent_deletion_trigger_and_cascade_hardening.sql": 3,
+    "supabase/migrations/101_fix_company_users_is_active_and_payment_atomic_rpcs.sql": 1,
+    "supabase/migrations/102_username_and_phone_uniqueness.sql": 1,
+    "supabase/migrations/103_platform_branding_and_identity.sql": 12,
+    "supabase/migrations/105_fix_companies_owner_id_and_payment_atomic_rpcs.sql": 1,
+    "supabase/migrations/111_enforce_forced_rls_and_tenant_immutability.sql": 1,
+    "supabase/migrations/112_security_hotfix.sql": 8,
+    "supabase/migrations/113_seed_authoritative_rbac_matrix.sql": 1,
+    "supabase/migrations/115_employee_ownership_rls_and_isolation.sql": 1,
+    "supabase/migrations/116_server_side_totals_and_financial_integrity.sql": 1,
+    "supabase/migrations/122_optimize_realtime_publication.sql": 1,
+    "supabase/schema_full.sql": 88,
+    "supabase/tests/rpc_authz.sql": 1,
+    "tests/acceptance/ci-gate-rejection.test.ts": 2,
+    "tests/acceptance/critical-paths-e2e.test.ts": 8,
+    "tests/acceptance/customers-flow.test.ts": 2,
+    "tests/acceptance/dashboard-flow.test.ts": 2,
+    "tests/acceptance/delivery-finishing-flow.test.ts": 2,
+    "tests/acceptance/design-designer-flow.test.ts": 3,
+    "tests/acceptance/employee-mobile-playwright.test.ts": 1,
+    "tests/acceptance/inventory-consumption-flow.test.ts": 2,
+    "tests/acceptance/inventory-purchases-consolidation.test.ts": 5,
+    "tests/acceptance/inventory-reconciliation-hardening.test.ts": 8,
+    "tests/acceptance/invoices-billing-flow.test.ts": 3,
+    "tests/acceptance/notifications-multichannel.test.ts": 1,
+    "tests/acceptance/orders-sales-flow.test.ts": 3,
+    "tests/acceptance/production-operator-flow.test.ts": 3,
+    "tests/acceptance/purchases-suppliers-flow.test.ts": 2,
+    "tests/acceptance/quotations-flow.test.ts": 3,
+    "tests/acceptance/realtime-browser-contexts.test.ts": 3,
+    "tests/acceptance/realtime-multitenant-sync.test.ts": 9,
+    "tests/integration/gmail-smtp-lifecycle.test.ts": 18,
+    "tests/integration/machinery-lifecycle.test.ts": 1,
+    "tests/integration/procurement-inventory-costing-lifecycle.test.ts": 10,
+    "tests/integration/whatsapp-sms-communication-lifecycle.test.ts": 7,
+    "tests/integration/workforce-attendance-costing-lifecycle.test.ts": 2,
+    "tests/security/attendance-security-penetration.test.ts": 5,
+    "tests/security/auth-audit-remediation.test.ts": 18,
+    "tests/security/auth-verification-security.test.ts": 12,
+    "tests/security/email-tenant-isolation.test.ts": 10,
+    "tests/security/employee-mobile-and-isolation.test.ts": 13,
+    "tests/security/financial-authorization-and-isolation.test.ts": 2,
+    "tests/security/gateway-isolation.test.ts": 3,
+    "tests/security/matrix-enforcement.test.ts": 1,
+    "tests/security/multi-tenant-full-isolation.test.ts": 10,
+    "tests/security/platform-control-panel-production.test.ts": 17,
+    "tests/security/platform-tenant-isolation-boundary.test.ts": 16,
+    "tests/security/support-isolation-and-rls.test.ts": 18,
+    "tests/security/tenant-subdomain-security.test.ts": 6,
+    "tests/security/tenant-user-auth-hardening.test.ts": 16,
+    "tests/security/workforce-security-and-rls.test.ts": 1,
+    "tests/unit/attendance-geofence.test.ts": 3,
+    "tests/unit/attendance-qr-security.test.ts": 6,
+    "tests/unit/auth-email-otp.test.ts": 6,
+    "tests/unit/billing-bangladeshi-press-upgrade.test.ts": 2,
+    "tests/unit/calc-formulas.test.ts": 1,
+    "tests/unit/customer-financial-integrity-e2e.test.ts": 6,
+    "tests/unit/email-deliverability-spam.test.ts": 16,
+    "tests/unit/email-verification-otp.test.ts": 19,
+    "tests/unit/employee-login-invitation.test.ts": 20,
+    "tests/unit/google-auth-branding.test.ts": 28,
+    "tests/unit/google-oauth-config.test.ts": 15,
+    "tests/unit/incomplete-registrations.test.ts": 6,
+    "tests/unit/money.test.ts": 1,
+    "tests/unit/password-reset-flow.test.ts": 6,
+    "tests/unit/platform-auth-vercel-deployment.test.ts": 16,
+    "tests/unit/platform-settings.test.ts": 13,
+    "tests/unit/platform-subscription-billing.test.ts": 2,
+    "tests/unit/pricing-engine-customer-type.test.ts": 3,
+    "tests/unit/products-modal-and-category-modal-ux.test.ts": 1,
+    "tests/unit/products-production-readiness-audit.test.ts": 4,
+    "tests/unit/quotation-business-owner-workflow.test.ts": 7,
+    "tests/unit/quotation-production-hardening.test.ts": 6,
+    "tests/unit/quotation-workflow.test.ts": 10,
+    "tests/unit/resolve-tenant.test.ts": 54,
+    "tests/unit/tenant-account-types.test.ts": 1,
+    "tests/unit/tenant-navigation-system.test.ts": 1,
+    "tests/unit/tenant-subdomain-resolution.test.ts": 128,
+    "tests/unit/unified-communication-templates.test.ts": 7,
+    "tests/unit/workforce-full-business-lifecycle.test.ts": 2,
+    "types/attendance.types.ts": 1,
+    "types/branch.types.ts": 1,
+    "types/finance.types.ts": 1,
+    "types/machinery.types.ts": 1,
+    "types/platform-subscription.types.ts": 2,
+    "types/platform.types.ts": 7,
+    "types/subscription.types.ts": 1,
+    "types/support.types.ts": 1,
+    "types/sync.types.ts": 1,
+    "types/workforce.types.ts": 1,
+    "README.md": 5,
+    "SECURITY_REVIEW.md": 7,
+    "actions/gateway.actions.ts": 1,
+    "actions/lead.actions.ts": 1,
+    "actions/platform-auth.actions.ts": 2,
+    "actions/platform-whatsapp.actions.ts": 1,
+    "actions/platform.actions.ts": 8,
+    "actions/tenant.actions.ts": 1,
+    "actions/whatsapp-campaign.actions.ts": 1,
+    "actions/whatsapp-connection.actions.ts": 3,
+    "app/(auth)/register/page.tsx": 2,
+    "app/(auth)/verify/page.tsx": 4,
+    "app/(onboarding)/onboarding/page.tsx": 14,
+    "app/403/page.tsx": 1,
+    "app/[tenantSlug]/accounting/page.tsx": 15,
+    "app/[tenantSlug]/attendance/page.tsx": 8,
+    "app/[tenantSlug]/audit/page.tsx": 4,
+    "app/[tenantSlug]/billing/page.tsx": 29,
+    "app/[tenantSlug]/communications/inbox/page.tsx": 7,
+    "app/[tenantSlug]/costing/page.tsx": 5,
+    "app/[tenantSlug]/customers/[id]/page.tsx": 30,
+    "app/[tenantSlug]/design/[id]/page.tsx": 19,
+    "app/[tenantSlug]/finishing/page.tsx": 14,
+    "app/[tenantSlug]/inventory/page.tsx": 40,
+    "app/[tenantSlug]/operator/page.tsx": 18,
+    "app/[tenantSlug]/orders/[id]/page.tsx": 7,
+    "app/[tenantSlug]/orders/page.tsx": 50,
+    "app/[tenantSlug]/pricing/page.tsx": 9,
+    "app/[tenantSlug]/production/floor-consumption/page.tsx": 8,
+    "app/[tenantSlug]/production/machineries/page.tsx": 8,
+    "app/[tenantSlug]/products/page.tsx": 10,
+    "app/[tenantSlug]/purchases/[id]/page.tsx": 7,
+    "app/[tenantSlug]/reports/branches/page.tsx": 10,
+    "app/[tenantSlug]/reports/page.tsx": 8,
+    "app/[tenantSlug]/settings/branches/page.tsx": 7,
+    "app/[tenantSlug]/settings/localization/page.tsx": 4,
+    "app/[tenantSlug]/settings/page.tsx": 8,
+    "app/[tenantSlug]/settings/subscription/page.tsx": 5,
+    "app/[tenantSlug]/settings/whatsapp/page.tsx": 2,
+    "app/[tenantSlug]/suppliers/[id]/page.tsx": 7,
+    "app/[tenantSlug]/suppliers/page.tsx": 8,
+    "app/[tenantSlug]/tax/page.tsx": 4,
+    "app/[tenantSlug]/trash/page.tsx": 9,
+    "app/api/email/oauth/google/callback/route.ts": 3,
+    "app/api/email/oauth/google/start/route.ts": 1,
+    "app/api/webhooks/[provider]/route.ts": 2,
+    "app/api/webhooks/openwa/route.ts": 2,
+    "app/contact/page.tsx": 2,
+    "app/error.tsx": 1,
+    "app/faq/page.tsx": 2,
+    "app/features/page.tsx": 2,
+    "app/layout.tsx": 3,
+    "app/loading.tsx": 1,
+    "app/logout/route.ts": 1,
+    "app/manifest.ts": 2,
+    "app/page.tsx": 7,
+    "app/platform/communications/whatsapp/whatsapp-client.tsx": 1,
+    "app/platform/customer-success/customer-success-client.tsx": 1,
+    "app/platform/feature-flags/feature-flags-client.tsx": 1,
+    "app/platform/forgot-password/page.tsx": 3,
+    "app/platform/integrations/integrations-client.tsx": 27,
+    "app/platform/plans/plans-client.tsx": 3,
+    "app/platform/profile/profile-client.tsx": 1,
+    "app/platform/reset-password/page.tsx": 1,
+    "app/platform/security/security-client.tsx": 1,
+    "app/platform/subscriptions/subscriptions-client.tsx": 8,
+    "app/platform/tenants/[companyId]/tenant-detail-client.tsx": 2,
+    "app/platform/usage/usage-client.tsx": 3,
+    "app/privacy/page.tsx": 5,
+    "app/tenant-suspended/page.tsx": 1,
+    "app/terms/page.tsx": 4,
+    "components/billing/new-invoice-modal.tsx": 7,
+    "components/billing/record-payment-modal.tsx": 9,
+    "components/design/types.ts": 1,
+    "components/finance/expenses-tab-view.tsx": 2,
+    "components/finance/finance-dashboard-view.tsx": 1,
+    "components/finance/modals/account-statement-modal.tsx": 2,
+    "components/finance/modals/add-account-modal.tsx": 1,
+    "components/finance/receivables-view.tsx": 2,
+    "components/finance/transactions-ledger-view.tsx": 1,
+    "components/inventory/receive-stock-modal.tsx": 25,
+    "components/marketing/core-problems-section.tsx": 4,
+    "components/marketing/core-workflow-section.tsx": 2,
+    "components/marketing/demo-modal.tsx": 1,
+    "components/marketing/faq-section.tsx": 2,
+    "components/marketing/feature-deep-dive-section.tsx": 7,
+    "components/marketing/hero-visual.tsx": 1,
+    "components/marketing/industry-solutions-section.tsx": 2,
+    "components/marketing/marketing-footer.tsx": 2,
+    "components/marketing/mobile-workflow-section.tsx": 1,
+    "components/marketing/operational-advantages-section.tsx": 2,
+    "components/marketing/what-printerp-manages-section.tsx": 6,
+    "components/mobile/bottom-nav.tsx": 1,
+    "components/mobile/offline-sync-drawer.tsx": 1,
+    "components/orders/modals/order-job-ticket-modal.tsx": 1,
+    "components/orders/modals/order-whatsapp-modal.tsx": 2,
+    "components/orders/types.ts": 1,
+    "components/platform/platform-header.tsx": 1,
+    "components/platform/platform-mobile-bottom-nav.tsx": 1,
+    "components/pricing/pricing-calculator-simulator.tsx": 1,
+    "components/production/complete-task-modal.tsx": 3,
+    "components/production/production-job-card.tsx": 37,
+    "components/production/schedule-task-modal.tsx": 2,
+    "components/providers/platform-settings-provider.tsx": 1,
+    "components/providers/realtime-provider.tsx": 1,
+    "components/providers/theme-provider.tsx": 1,
+    "components/purchases/new-purchase-modal.tsx": 16,
+    "components/pwa/pwa-installer.tsx": 1,
+    "components/reports/quick-report-modal.tsx": 1,
+    "components/shared/page-header.tsx": 1,
+    "components/shared/toast-feedback.tsx": 3,
+    "components/shared/work-order-modal.tsx": 5,
+    "components/shell/app-shell.tsx": 4,
+    "components/shell/language-switcher.tsx": 1,
+    "components/shell/mobile-nav.tsx": 7,
+    "components/shell/platform-support-banner.tsx": 2,
+    "components/shell/realtime-notification-popup.tsx": 5,
+    "components/shell/reset-tenant-data-modal.tsx": 4,
+    "components/shell/top-nav.tsx": 10,
+    "components/subscriptions/trial-dashboard-card.tsx": 3,
+    "components/subscriptions/trial-notification-popup.tsx": 3,
+    "components/subscriptions/trial-upgrade-modal.tsx": 2,
+    "components/users/user-detail.tsx": 1,
+    "config/env.client.ts": 1,
+    "config/env.ts": 1,
+    "deployment/openwa.md": 25,
+    "docs/SUPABASE_PRODUCTION_CHECKLIST.md": 4,
+    "docs/hardening/migration-drift.md": 8,
+    "docs/hardening/platform-data-access.md": 1,
+    "docs/workflow.md": 4,
+    "features/dashboard/dashboard-header.tsx": 1,
+    "features/dashboard/dashboard-modals.tsx": 5,
+    "features/dashboard/dashboard-view.tsx": 7,
+    "hooks/use-auth.ts": 2,
+    "hooks/use-data-store.ts": 35,
+    "hooks/use-my-workforce.ts": 14,
+    "hooks/use-offline-queue.ts": 4,
+    "hooks/use-public-plans.tsx": 12,
+    "hooks/use-shortcuts.ts": 3,
+    "hooks/use-subscription.tsx": 11,
+    "hooks/use-tenant.tsx": 11,
+    "i18n/context.tsx": 6,
+    "i18n/dictionaries/en.json": 2,
+    "lib/api/pagination-helper.ts": 1,
+    "lib/auth/rbac.client.ts": 1,
+    "lib/auth/totp.ts": 1,
+    "lib/communication/job-queue.ts": 4,
+    "lib/communication/variables.ts": 4,
+    "lib/dashboard/dashboard-engine.ts": 2,
+    "lib/email/adapters/mock.adapter.ts": 1,
+    "lib/email/adapters/sendgrid.adapter.ts": 1,
+    "lib/email/oauth/google-oauth.ts": 2,
+    "lib/email/provider.factory.ts": 1,
+    "lib/email/types.ts": 1,
+    "lib/formatters.ts": 2,
+    "lib/gateway/gateway.registry.ts": 9,
+    "lib/gateway/phone-utils.ts": 1,
+    "lib/integrations/openwa/client.ts": 2,
+    "lib/marketing/marketing-data.ts": 21,
+    "lib/notifications/browser-notification.ts": 4,
+    "lib/notifications/notification-bus.ts": 4,
+    "lib/notifications/sound-manager.ts": 5,
+    "lib/offline/drafts.ts": 4,
+    "lib/offline/sync-queue.ts": 3,
+    "lib/payments/adapters/bkash.adapter.ts": 4,
+    "lib/payments/adapters/nagad.adapter.ts": 2,
+    "lib/payments/adapters/sslcommerz.adapter.ts": 8,
+    "lib/payments/adapters/stripe.adapter.ts": 9,
+    "lib/payments/adapters/uddoktapay.adapter.ts": 11,
+    "lib/payments/provider.factory.ts": 1,
+    "lib/payments/providers/bank-wire.provider.ts": 2,
+    "lib/payments/types.ts": 2,
+    "lib/performance/query-coalesce.ts": 1,
+    "lib/realtime/subscription-manager.ts": 37,
+    "lib/reports/business-report-engine.ts": 1,
+    "lib/repositories/additional-option.repository.ts": 6,
+    "lib/repositories/attendance.repository.ts": 6,
+    "lib/repositories/branch.repository.ts": 11,
+    "lib/repositories/category.repository.ts": 10,
+    "lib/repositories/costing.repository.ts": 7,
+    "lib/repositories/customer.repository.ts": 28,
+    "lib/repositories/design.repository.ts": 40,
+    "lib/repositories/finishing-option.repository.ts": 6,
+    "lib/repositories/installation-option.repository.ts": 6,
+    "lib/repositories/inventory.repository.ts": 125,
+    "lib/repositories/invoice-request.repository.ts": 32,
+    "lib/repositories/logistics.repository.ts": 12,
+    "lib/repositories/machinery.repository.ts": 22,
+    "lib/repositories/material-purchase-config.repository.ts": 6,
+    "lib/repositories/order.repository.ts": 19,
+    "lib/repositories/pricing.repository.ts": 8,
+    "lib/repositories/printing-method.repository.ts": 6,
+    "lib/repositories/product.repository.ts": 79,
+    "lib/repositories/production-task.repository.ts": 25,
+    "lib/repositories/production.repository.ts": 9,
+    "lib/repositories/tenant.repository.ts": 3,
+    "lib/repositories/trash.repository.ts": 51,
+    "lib/search/client-search.ts": 13,
+    "lib/security/encryption.ts": 4,
+    "lib/security/input-validation.ts": 1,
+    "lib/security/secrets.ts": 1,
+    "lib/security/storage-cleanup.ts": 1,
+    "lib/sms/adapters/bulksmsbd.adapter.ts": 2,
+    "lib/sms/adapters/greenweb.adapter.ts": 2,
+    "lib/sms/adapters/ssl-wireless.adapter.ts": 2,
+    "lib/sms/adapters/twilio.adapter.ts": 2,
+    "lib/sms/provider.factory.ts": 1,
+    "lib/sms/types.ts": 1,
+    "lib/subscription/subscription-constants.ts": 10,
+    "lib/supabase/client.ts": 1,
+    "lib/telegram/adapters/telegram-bot.adapter.ts": 2,
+    "lib/telegram/types.ts": 1,
+    "lib/whatsapp/adapters/meta-whatsapp.adapter.ts": 2,
+    "lib/whatsapp/adapters/openwa.adapter.ts": 1,
+    "lib/whatsapp/types.ts": 1,
+    "lib/workflow/workflow-engine.ts": 1,
+    "package-lock.json": 2,
+    "package.json": 1,
+    "public/sw.js": 1,
+    "scripts/audit_email_system.ts": 8,
+    "scripts/execute_full_system_reset.mjs": 2,
+    "scripts/migrate.js": 4,
+    "scripts/reset_platform.ts": 8,
+    "services/accounting.service.ts": 12,
+    "services/business-email.service.ts": 1,
+    "services/communication-router.ts": 1,
+    "services/communication-server.service.ts": 4,
+    "services/communication-templates.service.ts": 12,
+    "services/communication.service.ts": 1,
+    "services/costing.service.ts": 3,
+    "services/gateway.service.ts": 3,
+    "services/invoice-request.service.ts": 10,
+    "services/otp.service.ts": 3,
+    "services/pdf-generator.service.ts": 1,
+    "services/production-planning.service.ts": 13,
+    "services/quotation.service.ts": 1,
+    "services/reports.service.ts": 11,
+    "services/subscription.service.ts": 20,
+    "services/tenant.service.ts": 3,
+    "services/workflow.service.ts": 9,
+    "supabase/config.toml": 2,
+    "supabase/migrations/001_initial_schema.sql": 1,
+    "supabase/migrations/002_bangladesh_geo.sql": 1,
+    "supabase/migrations/003_multitenant_rls.sql": 1,
+    "supabase/migrations/004_printing_catalog_enums.sql": 1,
+    "supabase/migrations/005_core_multitenant_entities.sql": 1,
+    "supabase/migrations/006_strict_rls_policies.sql": 1,
+    "supabase/migrations/007_rbac_matrix_and_platform_owner.sql": 1,
+    "supabase/migrations/008_settings_and_document_sequences.sql": 1,
+    "supabase/migrations/009_customers_and_suppliers.sql": 1,
+    "supabase/migrations/010_products_and_pricing_engine.sql": 1,
+    "supabase/migrations/011_quotations_workflow.sql": 1,
+    "supabase/migrations/012_orders_and_job_orders.sql": 1,
+    "supabase/migrations/013_design_management.sql": 1,
+    "supabase/migrations/014_production_management.sql": 1,
+    "supabase/migrations/015_inventory_and_stock_ledger.sql": 1,
+    "supabase/migrations/016_purchase_management.sql": 1,
+    "supabase/migrations/017_invoicing_and_payments.sql": 1,
+    "supabase/migrations/018_delivery_and_installation.sql": 1,
+    "supabase/migrations/019_expenses_and_accounting.sql": 1,
+    "supabase/migrations/020_employees_and_payroll.sql": 1,
+    "supabase/migrations/021_job_costing_and_profitability.sql": 1,
+    "supabase/migrations/022_reporting_and_analytics.sql": 1,
+    "supabase/migrations/023_communication_and_notifications.sql": 1,
+    "supabase/migrations/024_vat_tax_and_document_settings.sql": 1,
+    "supabase/migrations/025_saas_subscriptions.sql": 1,
+    "supabase/migrations/026_platform_administration.sql": 5,
+    "supabase/migrations/027_security_audit_and_data_integrity.sql": 1,
+    "supabase/migrations/028_workflow_automation.sql": 1,
+    "supabase/migrations/029_production_performance_optimization.sql": 1,
+    "supabase/migrations/030_platform_admin_hardening.sql": 1,
+    "supabase/migrations/039_email_gateway_and_communication_system.sql": 1,
+    "supabase/migrations/042_production_gateways_and_api_integrations.sql": 1,
+    "supabase/migrations/046_enable_realtime_synchronization.sql": 1,
+    "supabase/migrations/051_gmail_smtp_email_integration.sql": 1,
+    "supabase/migrations/059_add_tenant_company_extended_fields.sql": 1,
+    "supabase/migrations/077_quotations_sales_control_center_hardening.sql": 1,
+    "supabase/migrations/093_permanent_tenant_deletion_and_cleanup.sql": 4,
+    "supabase/migrations/094_production_commercial_workflow_gates.sql": 1,
+    "supabase/migrations/095_designer_panel_dual_intake.sql": 1,
+    "supabase/migrations/096_admin_purge_invoices_and_financial_reset.sql": 1,
+    "supabase/migrations/097_admin_purge_customers_requests_and_work_orders.sql": 1,
+    "supabase/migrations/100_admin_purge_products_invoices_quotations_works.sql": 1,
+    "supabase/migrations/106_workflow_security_definer_and_performance_indexes.sql": 1,
+    "supabase/migrations/107_tenant_whatsapp_gateway_and_communication_infrastructure.sql": 1,
+    "supabase/migrations/108_billing_and_inventory_atomic_integrity.sql": 1,
+    "supabase/migrations/109_drop_abandoned_subsystem_tables.sql": 1,
+    "supabase/migrations/110_data_integrity_and_concurrency_hardening.sql": 1,
+    "supabase/seed.sql": 1,
+    "supabase/verify_multitenant_rls.sql": 1,
+    "tests/acceptance/abc-sign-print-workflow.test.ts": 2,
+    "tests/acceptance/business-owner-workflow-rebuild.test.ts": 40,
+    "tests/acceptance/full-rebuild-scenarios.test.ts": 17,
+    "tests/acceptance/subscription-360-acceptance.test.ts": 6,
+    "tests/acceptance/uv-vinyl-real-world.test.ts": 2,
+    "tests/integration/billing-consolidation-and-due-collection.test.ts": 2,
+    "tests/integration/designer-dual-intake-workflow.test.ts": 22,
+    "tests/integration/email-queue-retry.test.ts": 5,
+    "tests/integration/invoice-design-production-e2e.test.ts": 3,
+    "tests/integration/product-costing-lifecycle.test.ts": 3,
+    "tests/integration/products-fast-quote-e2e.test.ts": 7,
+    "tests/integration/purchasing-rolls-inventory.test.ts": 3,
+    "tests/integration/subscription-360-failed-payment-grace.test.ts": 5,
+    "tests/integration/subscription-360-lifecycle.test.ts": 4,
+    "tests/integration/support-chat-flow.test.ts": 2,
+    "tests/integration/tenant-permanent-deletion-full-audit.test.ts": 44,
+    "tests/integration/work-order-invoice-flow.test.ts": 11,
+    "tests/roles/dashboard-engine.test.ts": 1,
+    "tests/roles/role-matrix.test.ts": 1,
+    "tests/security/auth-concurrency-and-replay.test.ts": 11,
+    "tests/security/platform-auth-security.test.ts": 16,
+    "tests/security/platform-boundary-attacks.test.ts": 6,
+    "tests/security/platform-governance.test.ts": 7,
+    "tests/security/platform-logout-bfcache.test.ts": 7,
+    "tests/security/platform-owner-experience.test.ts": 9,
+    "tests/security/platform-rbac.test.ts": 2,
+    "tests/security/products-tenant-isolation-and-rbac.test.ts": 5,
+    "tests/security/products-tenant-isolation-attack.test.ts": 6,
+    "tests/security/rpc-permanent-deletion-abuse.test.ts": 8,
+    "tests/security/start-free-trial-redirect-loop.test.ts": 8,
+    "tests/security/subscription-360-tenant-isolation.test.ts": 4,
+    "tests/security/subscription-security-bypass-prevention.test.ts": 18,
+    "tests/security/tenant-isolation.test.ts": 2,
+    "tests/security/tenant-permanent-deletion-cross-tenant-attack.test.ts": 20,
+    "tests/unit/benchmark-percentiles.test.ts": 1,
+    "tests/unit/billing-collections-control-center.test.ts": 9,
+    "tests/unit/billing-collections-final-fix.test.ts": 6,
+    "tests/unit/billing-financial-integrity-hardening.test.ts": 8,
+    "tests/unit/billing-invoice-requests-queue.test.ts": 6,
+    "tests/unit/branch-analytics-reporting.test.ts": 7,
+    "tests/unit/business-email-events.test.ts": 8,
+    "tests/unit/business-plan-entitlement-and-upgrade-cta.test.ts": 7,
+    "tests/unit/communication-pdf-templates.test.ts": 9,
+    "tests/unit/customer-balance-and-orders-flow.test.ts": 3,
+    "tests/unit/data-persistence.test.ts": 1,
+    "tests/unit/delivery-bangladeshi-press-upgrade.test.ts": 2,
+    "tests/unit/delivery-multi-product-status-modal.test.ts": 14,
+    "tests/unit/design-format-jpg-png-paste-support.test.ts": 7,
+    "tests/unit/design-job-lookup-and-dispatch.test.ts": 12,
+    "tests/unit/design-job-specs-resolution.test.ts": 6,
+    "tests/unit/design-panel-commercial-orders-autopull.test.ts": 1,
+    "tests/unit/design-panel-grouped-invoice-cards.test.ts": 1,
+    "tests/unit/design-panel-invoice-intake.test.ts": 8,
+    "tests/unit/design-panel-invoiced-items-visibility.test.ts": 1,
+    "tests/unit/design-workbench-multi-work-upgrades.test.ts": 6,
+    "tests/unit/direct-material-issue-purchase-unit-and-auto-store.test.ts": 9,
+    "tests/unit/direct-stock-intake-and-price-intelligence.test.ts": 7,
+    "tests/unit/document-numbering.test.ts": 1,
+    "tests/unit/e2e-receive-issue-floor-tracking.test.ts": 15,
+    "tests/unit/email-encryption.test.ts": 5,
+    "tests/unit/email-gateway-resolver.test.ts": 17,
+    "tests/unit/email-provider-abstraction.test.ts": 1,
+    "tests/unit/finishing-fabrication-shop-floor.test.ts": 11,
+    "tests/unit/floor-consumption-and-inventory-filter.test.ts": 3,
+    "tests/unit/full-tenant-workflow-e2e.test.ts": 15,
+    "tests/unit/gateway-phone-utils.test.ts": 2,
+    "tests/unit/in-app-notifications.test.ts": 5,
+    "tests/unit/inventory-architecture-purchase-stock-consumption-units.test.ts": 5,
+    "tests/unit/inventory-canonical-seven-attribute-grouping.test.ts": 5,
+    "tests/unit/invoice-bangladeshi-press-upgrade.test.ts": 1,
+    "tests/unit/invoice-grouping-and-ready-product-bypass.test.ts": 10,
+    "tests/unit/invoice-request-keep-filled-info.test.ts": 7,
+    "tests/unit/invoice-visibility-lifecycle.test.ts": 3,
+    "tests/unit/issue-to-floor-inventory-reduction.test.ts": 10,
+    "tests/unit/material-requisition-and-floor-issue-workflow.test.ts": 5,
+    "tests/unit/multi-active-sizes-stock-intake-preservation.test.ts": 2,
+    "tests/unit/multi-item-issue-to-floor.test.ts": 6,
+    "tests/unit/multi-size-roll-intake-preservation.test.ts": 3,
+    "tests/unit/openwa-provider.test.ts": 12,
+    "tests/unit/orders-job-flow-upgrade.test.ts": 12,
+    "tests/unit/performance-scalability.test.ts": 1,
+    "tests/unit/physical-rolls-inventory.test.ts": 4,
+    "tests/unit/platform-integrations-v2.test.ts": 1,
+    "tests/unit/production-commercial-workflow.test.ts": 46,
+    "tests/unit/production-inventory-machinery-integration.test.ts": 8,
+    "tests/unit/production-planning-hardening.test.ts": 4,
+    "tests/unit/production-task-lookup-and-lifecycle.test.ts": 14,
+    "tests/unit/products-archive-delete-protection.test.ts": 5,
+    "tests/unit/products-commercial-master-2.0.test.ts": 5,
+    "tests/unit/products-commercial-master-2.1.test.ts": 7,
+    "tests/unit/products-commercial-master-2.2.test.ts": 7,
+    "tests/unit/products-commercial-master-2.3.test.ts": 7,
+    "tests/unit/products-commercial-masters-upgrade.test.ts": 5,
+    "tests/unit/products-composable-architecture.test.ts": 2,
+    "tests/unit/products-crud-and-authoritative.test.ts": 5,
+    "tests/unit/products-entity-classification.test.ts": 5,
+    "tests/unit/products-machinery-production-integration.test.ts": 11,
+    "tests/unit/products-outsource-non-inventory.test.ts": 3,
+    "tests/unit/products-pricing-floor-enforcement.test.ts": 5,
+    "tests/unit/products-pricing-hierarchy-deterministic.test.ts": 5,
+    "tests/unit/products-roll-material-real-world-audit.test.ts": 4,
+    "tests/unit/pvc-multi-size-roll-intake-inventory.test.ts": 3,
+    "tests/unit/quotation-bangladeshi-press-upgrade.test.ts": 1,
+    "tests/unit/quotation-to-job-order-hub-sync.test.ts": 6,
+    "tests/unit/ready-product-opening-stock.test.ts": 6,
+    "tests/unit/realtime-sync-manager.test.ts": 23,
+    "tests/unit/receive-stock-available-stock-determinism.test.ts": 3,
+    "tests/unit/receive-stock-multi-category-available-stock.test.ts": 4,
+    "tests/unit/receive-stock-pricing-update.test.ts": 13,
+    "tests/unit/register-to-onboarding-step7-pull.test.ts": 4,
+    "tests/unit/resilience-failure-simulation.test.ts": 8,
+    "tests/unit/roll-dimensional-consumption.test.ts": 4,
+    "tests/unit/single-source-of-truth-group-stock.test.ts": 8,
+    "tests/unit/store-purchase-unit-and-floor-piece-consumption.test.ts": 7,
+    "tests/unit/subscription-360-entitlement-engine.test.ts": 8,
+    "tests/unit/subscription-360-limits.test.ts": 5,
+    "tests/unit/subscription-360-revenue-metrics.test.ts": 5,
+    "tests/unit/subscription-authoritative-resolver.test.ts": 4,
+    "tests/unit/subscription-billing-authoritative.test.ts": 2,
+    "tests/unit/subscription-plan-control-360-certification.test.ts": 9,
+    "tests/unit/support-service.test.ts": 6,
+    "tests/unit/team-users-rebuild.test.ts": 6,
+    "tests/unit/tenant-complete-purge.test.ts": 55,
+    "tests/unit/tenant-full-workflow-audit.test.ts": 16,
+    "tests/unit/tenant-isolation.test.ts": 20,
+    "tests/unit/tenant-purge.test.ts": 28,
+    "tests/unit/three-way-workflow-routing-symmetrical-ids.test.ts": 6,
+    "tests/unit/trash-recycle-bin.test.ts": 27,
+    "tests/unit/trial-account-auth.test.ts": 9,
+    "tests/unit/work-order-customer-items-propagation.test.ts": 12,
+    "tests/unit/workflow-automations-engine.test.ts": 3,
+    "types/audit.types.ts": 1,
+    "types/database.types.ts": 1,
+    "types/gateway.types.ts": 1,
+    "types/offline.types.ts": 1,
+    "types/search.types.ts": 1,
+    "types/workflow.types.ts": 1,
+    "i18n/dictionaries/bn.json": 2,
+    "components/subscriptions/subscription-status-banner.tsx": 1
+  },
+  "hostMatches": [
+    {
+      "file": ".env.example",
+      "line": 18,
+      "content": "NEXT_PUBLIC_ROOT_DOMAIN=localhost:3000 # e.g. printerp.com.bd or inkflowerp.com in production"
+    },
+    {
+      "file": ".env.example",
+      "line": 107,
+      "content": "PLATFORM_SMTP_HOST=smtp.printerp.com"
+    },
+    {
+      "file": ".env.example",
+      "line": 108,
+      "content": "SMTP_HOST=smtp.printerp.com # Alias supported"
+    },
+    {
+      "file": ".env.example",
+      "line": 110,
+      "content": "PLATFORM_SMTP_USER=notifications@printerp.com"
+    },
+    {
+      "file": "ARCHITECTURE.md",
+      "line": 29,
+      "content": "|  inkflowerp.com  |            | admin.inkflowerp  |           | [slug].inkflowerp |"
+    },
+    {
+      "file": "ARCHITECTURE.md",
+      "line": 46,
+      "content": "| **Marketing / Root** | `ROOT_DOMAIN` (`inkflowerp.com`, `localhost:3000`) | Landing page, workspace discovery, tenant registration, legal pages | Host-only (`inkflowerp.com`) |"
+    },
+    {
+      "file": "ARCHITECTURE.md",
+      "line": 47,
+      "content": "| **Platform Owner** | `admin.ROOT_DOMAIN` (`admin.inkflowerp.com`, `admin.localhost`) | Platform administration, subscriptions, tenant audit, metrics | Host-only (`admin.inkflowerp.com`) |"
+    },
+    {
+      "file": "ARCHITECTURE.md",
+      "line": 48,
+      "content": "| **Tenant Portal** | `[tenantSlug].ROOT_DOMAIN` (`vision.inkflowerp.com`) | Tenant business operations, billing, inventory, POS, employee login | Host-only (`vision.inkflowerp.com`) |"
+    },
+    {
+      "file": "ARCHITECTURE.md",
+      "line": 50,
+      "content": "| **PSL / Dev Fallback**| `inkflow-erp.vercel.app/t/[slug]/*` or `/[slug]/*` | Path-based fallback when wildcard DNS is unavailable | Host-only on fallback host |"
+    },
+    {
+      "file": "ARCHITECTURE.md",
+      "line": 56,
+      "content": "- Wildcards on `*.inkflow-erp.vercel.app` are mathematically and architecturally impossible because `vercel.app` is an entry on the Public Suffix List (PSL)."
+    },
+    {
+      "file": "ARCHITECTURE.md",
+      "line": 247,
+      "content": "|    - Verified Host / Subdomain / Custom Domain Resolution (e.g. acme.inkflowerp.com)             |"
+    },
+    {
+      "file": "ARCHITECTURE.md",
+      "line": 254,
+      "content": "|    - Reconstructs internal routing / rewrites (e.g. acme.inkflowerp.com/sales -> /acme/sales)    |"
+    },
+    {
+      "file": "TENANT_AUTH_AUDIT.md",
+      "line": 19,
+      "content": "6. **Vercel Wildcard Domain Misconception:** `*.inkflow-erp.vercel.app` is fundamentally unroutable via wildcards because `vercel.app` is on the Public Suffix List (PSL)."
+    },
+    {
+      "file": "TENANT_AUTH_AUDIT.md",
+      "line": 117,
+      "content": "- Generates synthetic email: `username@companySlug.inkflow.app`."
+    },
+    {
+      "file": "TENANT_AUTH_AUDIT.md",
+      "line": 130,
+      "content": "### Reproduction 1: Wildcard 404 & SSL Failure on `*.inkflow-erp.vercel.app`"
+    },
+    {
+      "file": "TENANT_AUTH_AUDIT.md",
+      "line": 131,
+      "content": "- **Steps:** Navigate to `https://acme.inkflow-erp.vercel.app`."
+    },
+    {
+      "file": "TENANT_AUTH_AUDIT.md",
+      "line": 133,
+      "content": "- **Root Cause:** `vercel.app` is an entry on the Public Suffix List (PSL). Vercel does not and cannot issue wildcard SSL certificates (`*.inkflow-erp.vercel.app`) for projects on the `vercel.app` domain."
+    },
+    {
+      "file": "TENANT_AUTH_AUDIT.md",
+      "line": 134,
+      "content": "- **Resolution:** Production must use a custom root domain (e.g. `inkflowerp.com`) with nameservers pointing to Vercel (`ns1.vercel-dns.com`, `ns2.vercel-dns.com`). Interim preview/development environments must use path-based routing (`/t/[tenantSlug]/...` or `/[tenantSlug]/...`) behind an explicit environment flag."
+    },
+    {
+      "file": "TENANT_AUTH_AUDIT.md",
+      "line": 165,
+      "content": "1. Log into `alpha.inkflowerp.com`."
+    },
+    {
+      "file": "TENANT_AUTH_AUDIT.md",
+      "line": 167,
+      "content": "- **Observed Behavior:** Domain attribute is `.inkflowerp.com`. Cookie is sent to `beta.inkflowerp.com` and `admin.inkflowerp.com`."
+    },
+    {
+      "file": "TENANT_AUTH_AUDIT.md",
+      "line": 188,
+      "content": "| **SEC-HIGH-01** | **Vercel Wildcard SSL Impossibility on `*.vercel.app`** | Project Domain Architecture | Subdomains on `*.inkflow-erp.vercel.app` fail SSL/DNS; requires custom root domain and path-based fallback. |"
+    },
+    {
+      "file": "actions/email-gateway.actions.ts",
+      "line": 293,
+      "content": "sender_email: formData.sender_email || 'test@printerp.com',"
+    },
+    {
+      "file": "actions/whatsapp-connection.actions.ts",
+      "line": 168,
+      "content": "const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.printerp.com'"
+    },
+    {
+      "file": "app/(auth)/login/page.tsx",
+      "line": 231,
+      "content": "// On root domain (e.g. inkflow.com.bd, inkflow-erp.vercel.app, localhost:3000)"
+    },
+    {
+      "file": "app/api/pdf/[type]/route.ts",
+      "line": 109,
+      "content": "email: tenantCompany?.email || \"billing@inkflow-erp.com\","
+    },
+    {
+      "file": "app/api/pdf/[type]/route.ts",
+      "line": 110,
+      "content": "website: tenantCompany?.website || \"www.inkflow-erp.com\","
+    },
+    {
+      "file": "app/contact/page.tsx",
+      "line": 125,
+      "content": "{contactEmail || 'support@printerp.com.bd'}"
+    },
+    {
+      "file": "app/platform/admins/admins-client.tsx",
+      "line": 883,
+      "content": "placeholder=\"tariqul@inkflow.com.bd\""
+    },
+    {
+      "file": "app/platform/email/email-client.tsx",
+      "line": 675,
+      "content": "placeholder=\"smtp.printerp.com\""
+    },
+    {
+      "file": "app/platform/email/email-client.tsx",
+      "line": 1020,
+      "content": "value={customDomainInput || (gateway?.sender_email || senderEmail || 'printerp.com').split('@')[1] || 'printerp.com'}"
+    },
+    {
+      "file": "app/platform/email/email-client.tsx",
+      "line": 1176,
+      "content": "const domain = customDomainInput || (gateway?.sender_email || senderEmail || 'printerp.com').split('@')[1] || 'printerp.com'"
+    },
+    {
+      "file": "app/platform/email/email-client.tsx",
+      "line": 1208,
+      "content": "{`v=DMARC1; p=quarantine; sp=quarantine; rua=mailto:postmaster@${customDomainInput || (gateway?.sender_email || senderEmail || 'printerp.com').split('@')[1] || 'printerp.com'}; aspf=r; adkim=r;`}"
+    },
+    {
+      "file": "app/platform/email/email-client.tsx",
+      "line": 1290,
+      "content": "placeholder=\"admin@printerp.com\""
+    },
+    {
+      "file": "app/platform/forgot-password/page.tsx",
+      "line": 108,
+      "content": "placeholder=\"admin@printerp.com.bd\""
+    },
+    {
+      "file": "app/platform/integrations/integrations-client.tsx",
+      "line": 194,
+      "content": "{ key: 'smtp_username', label: 'SMTP Username / Login', placeholder: 'notifications@printerp.com', type: 'text', required: true },"
+    },
+    {
+      "file": "app/platform/integrations/integrations-client.tsx",
+      "line": 196,
+      "content": "{ key: 'sender_email', label: 'From Email Address', placeholder: 'notifications@printerp.com', type: 'text', required: true },"
+    },
+    {
+      "file": "app/platform/integrations/integrations-client.tsx",
+      "line": 197,
+      "content": "{ key: 'reply_to_email', label: 'Reply-To Email', placeholder: 'support@printerp.com', type: 'text', required: false },"
+    },
+    {
+      "file": "app/platform/integrations/integrations-client.tsx",
+      "line": 981,
+      "content": "recipient = String(formData.public_config?.sender_email || formData.public_config?.gmail_account_email || 'admin@printerp.com').trim()"
+    },
+    {
+      "file": "app/platform/integrations/integrations-client.tsx",
+      "line": 1107,
+      "content": "if (gw.category === 'email') defaultRecipient = 'admin@printerp.com'"
+    },
+    {
+      "file": "app/platform/integrations/integrations-client.tsx",
+      "line": 2706,
+      "content": "? 'admin@printerp.com'"
+    },
+    {
+      "file": "app/platform/login/page.tsx",
+      "line": 341,
+      "content": "placeholder={tBilingual('admin@inkflow.com.bd, 017...', 'ইমেইল বা ০১...')}"
+    },
+    {
+      "file": "app/platform/notifications/notifications-client.tsx",
+      "line": 882,
+      "content": "placeholder=\"e.g., /platform/health or https://status.inkflow.io\""
+    },
+    {
+      "file": "app/platform/settings/settings-client.tsx",
+      "line": 677,
+      "content": "placeholder=\"e.g. inkflow.com.bd or localhost:3000\""
+    },
+    {
+      "file": "app/platform/settings/settings-client.tsx",
+      "line": 756,
+      "content": "placeholder=\"support@printerp.com.bd\""
+    },
+    {
+      "file": "app/platform/subscriptions/subscriptions-client.tsx",
+      "line": 807,
+      "content": "{s.company_slug}.printerp.com.bd"
+    },
+    {
+      "file": "app/platform/tenants/[companyId]/tenant-detail-client.tsx",
+      "line": 245,
+      "content": "<span className=\"tabular-nums text-primary\">{company.slug}.printerp.com.bd</span>"
+    },
+    {
+      "file": "app/platform/usage/usage-client.tsx",
+      "line": 561,
+      "content": "{r.company_slug}.printerp.com.bd"
+    },
+    {
+      "file": "app/privacy/page.tsx",
+      "line": 75,
+      "content": "If you have any questions regarding data compliance, export requests, or security audits, contact our Dhaka data protection desk at <span className=\"text-primary tabular-nums\">privacy@printerp.com.bd</span>."
+    },
+    {
+      "file": "components/billing/money-receipt-modal.tsx",
+      "line": 413,
+      "content": "value={`${typeof window !== 'undefined' ? window.location.origin : (process.env.NEXT_PUBLIC_APP_URL || 'https://inkflowerp.com')}/api/pdf/receipt?id=${encodeURIComponent(payment.receipt_number || payment.id)}`}"
+    },
+    {
+      "file": "components/design/modals/design-whatsapp-modal.tsx",
+      "line": 54,
+      "content": "const proofUrl = latestVer?.proof_file_url || 'https://inkflow-erp.vercel.app/proof'"
+    },
+    {
+      "file": "components/design/modals/design-whatsapp-modal.tsx",
+      "line": 75,
+      "content": "const proofUrl = latestVer?.proof_file_url || 'https://inkflow-erp.vercel.app/proof'"
+    },
+    {
+      "file": "components/marketing/marketing-footer.tsx",
+      "line": 62,
+      "content": "<span>{contactEmail || 'support@printerp.com.bd'}</span>"
+    },
+    {
+      "file": "components/pdf/documents/challan-pdf-document.tsx",
+      "line": 36,
+      "content": "const companyContact = `${company?.phone ||\"+880 1700-000000\"} · ${company?.email ||\"dispatch@inkflow-erp.com\"}`;"
+    },
+    {
+      "file": "components/pdf/documents/challan-pdf-document.tsx",
+      "line": 41,
+      "content": ": process.env.NEXT_PUBLIC_APP_URL || 'https://inkflowerp.com'"
+    },
+    {
+      "file": "components/pdf/documents/invoice-pdf-document.tsx",
+      "line": 43,
+      "content": "const companyContact = `${company?.phone ||\"+880 1700-000000\"} · ${company?.email ||\"billing@inkflow-erp.com\"}`;"
+    },
+    {
+      "file": "components/pdf/documents/invoice-pdf-document.tsx",
+      "line": 52,
+      "content": ": process.env.NEXT_PUBLIC_APP_URL || 'https://inkflowerp.com'"
+    },
+    {
+      "file": "components/pdf/documents/money-receipt-pdf-document.tsx",
+      "line": 37,
+      "content": "const companyContact = `${company?.phone ||\"+880 1700-000000\"} · ${company?.email ||\"accounts@inkflow-erp.com\"}`;"
+    },
+    {
+      "file": "components/pdf/documents/money-receipt-pdf-document.tsx",
+      "line": 42,
+      "content": ": process.env.NEXT_PUBLIC_APP_URL || 'https://inkflowerp.com'"
+    },
+    {
+      "file": "components/pdf/documents/quotation-pdf-document.tsx",
+      "line": 39,
+      "content": "const companyContact = `${company?.phone ||\"+880 1700-000000\"} · ${company?.email ||\"sales@inkflow-erp.com\"}`;"
+    },
+    {
+      "file": "components/pdf/documents/quotation-pdf-document.tsx",
+      "line": 44,
+      "content": ": process.env.NEXT_PUBLIC_APP_URL || 'https://inkflowerp.com'"
+    },
+    {
+      "file": "components/pdf/primitives/qrcode.tsx",
+      "line": 42,
+      "content": "const textToEncode = (value && value.trim()) ||\"https://rangao.inkflow-erp.vercel.app\";"
+    },
+    {
+      "file": "copy-inventory.csv",
+      "line": 2131,
+      "content": "\"code.page.admin_inkflow_com_bd_017_\",\"app\\platform\\login\\page.tsx\",\"login\",\"admin@inkflow.com.bd, 017...\",\"ইমেইল বা ০১...\",\"label\",\"\",\"\",\"scanned\""
+    },
+    {
+      "file": "deployment/openwa.md",
+      "line": 5,
+      "content": "OpenWA runs as an independent, persistent gateway service on a dedicated Linux VPS/instance (e.g. `wa.printerp.com` or internal VPC network). It provides multi-session WhatsApp connectivity for PrintERP SaaS tenants while remaining completely decoupled from PrintERP's Vercel/Next.js frontend."
+    },
+    {
+      "file": "deployment/openwa.md",
+      "line": 10,
+      "content": "|   app.printerp.com / api.printerp.com   |"
+    },
+    {
+      "file": "deployment/openwa.md",
+      "line": 18,
+      "content": "|            wa.printerp.com             |"
+    },
+    {
+      "file": "deployment/openwa.md",
+      "line": 165,
+      "content": "Create `/etc/nginx/sites-available/wa.printerp.com`:"
+    },
+    {
+      "file": "deployment/openwa.md",
+      "line": 170,
+      "content": "server_name wa.printerp.com;"
+    },
+    {
+      "file": "deployment/openwa.md",
+      "line": 176,
+      "content": "server_name wa.printerp.com;"
+    },
+    {
+      "file": "deployment/openwa.md",
+      "line": 178,
+      "content": "ssl_certificate /etc/letsencrypt/live/wa.printerp.com/fullchain.pem;"
+    },
+    {
+      "file": "deployment/openwa.md",
+      "line": 179,
+      "content": "ssl_certificate_key /etc/letsencrypt/live/wa.printerp.com/privkey.pem;"
+    },
+    {
+      "file": "deployment/openwa.md",
+      "line": 218,
+      "content": "OPENWA_BASE_URL=\"https://wa.printerp.com/api\""
+    },
+    {
+      "file": "deployment/openwa.md",
+      "line": 221,
+      "content": "NEXT_PUBLIC_APP_URL=\"https://app.printerp.com\""
+    },
+    {
+      "file": "deployment/openwa.md",
+      "line": 230,
+      "content": "curl -I -H \"X-API-Key: YOUR_API_KEY\" https://wa.printerp.com/api/stats/overview"
+    },
+    {
+      "file": "docs/V8_MOBILE_COMMUNICATION_OFFLINE_IMPLEMENTATION.md",
+      "line": 202,
+      "content": "Document Link / লিংক: https://cdn.inkflow.com.bd/invoices/inv-123.pdf"
+    },
+    {
+      "file": "docs/deployment/vercel-supabase-environments.md",
+      "line": 23,
+      "content": "| `NEXT_PUBLIC_APP_URL` | `http://localhost:3000` | `https://[pr-hash].inkflowerp.com` | `https://app.inkflowerp.com` |"
+    },
+    {
+      "file": "docs/deployment/vercel-supabase-environments.md",
+      "line": 24,
+      "content": "| `NEXT_PUBLIC_ROOT_DOMAIN` | `localhost:3000` | `inkflow-preview.com` | `inkflowerp.com` |"
+    },
+    {
+      "file": "docs/ops/rollback-playbook.md",
+      "line": 26,
+      "content": "- Synthetic check against `https://app.inkflowerp.com/api/health` confirming `dbStatus === 'ok'` and `queueStatus === 'ok'`."
+    },
+    {
+      "file": "lib/auth/google-auth.ts",
+      "line": 701,
+      "content": "domainDisplayed = 'auth.inkflowerp.com'"
+    },
+    {
+      "file": "lib/auth/platform-auth.ts",
+      "line": 613,
+      "content": "actor_email: params.actorEmail || 'system@inkflowerp.com',"
+    },
+    {
+      "file": "lib/communication/variables.ts",
+      "line": 21,
+      "content": "{ tag: '{{company_website}}', name: 'Company Website', description: 'Public website or portal URL', category: 'company', example: 'https://demo.printerp.app' },"
+    },
+    {
+      "file": "lib/communication/variables.ts",
+      "line": 49,
+      "content": "{ tag: '{{sender_email}}', name: 'Sender Email', description: 'Email address of logged in staff', category: 'user', example: 'tanvir@printerp.app' },"
+    },
+    {
+      "file": "lib/db/data-store.ts",
+      "line": 531,
+      "content": "contact_email: 'support@printerp.com.bd',"
+    },
+    {
+      "file": "lib/db/data-store.ts",
+      "line": 579,
+      "content": "// 1. Resolve tenant slug directly from subdomain hostname (e.g. rangao.inkflow-erp.vercel.app -> rangao)"
+    },
+    {
+      "file": "lib/email/adapters/resend.adapter.ts",
+      "line": 48,
+      "content": "const senderDomain = senderDomainMatch ? senderDomainMatch[1] : 'printerp.com'"
+    },
+    {
+      "file": "lib/email/adapters/ses.adapter.ts",
+      "line": 64,
+      "content": "const senderDomain = senderDomainMatch ? senderDomainMatch[1] : 'printerp.com'"
+    },
+    {
+      "file": "lib/email/adapters/smtp.adapter.ts",
+      "line": 75,
+      "content": ": 'printerp.com'"
+    },
+    {
+      "file": "lib/gateway/gateway.registry.ts",
+      "line": 52,
+      "content": "const senderEmail = publicConfig.sender_email || publicConfig.gmail_account_email || 'test@printerp.com'"
+    },
+    {
+      "file": "lib/gateway/gateway.registry.ts",
+      "line": 241,
+      "content": "const senderEmail = publicConfig.sender_email || publicConfig.gmail_account_email || 'test@printerp.com'"
+    },
+    {
+      "file": "lib/payments/adapters/bkash.adapter.ts",
+      "line": 139,
+      "content": "params.callbackUrl || `${params.redirectUrl || 'https://printerp.com/api/webhooks/bkash'}?trx=${trxId}`"
+    },
+    {
+      "file": "lib/payments/adapters/sslcommerz.adapter.ts",
+      "line": 136,
+      "content": ": process.env.NEXT_PUBLIC_APP_URL || 'https://printerp.com'"
+    },
+    {
+      "file": "lib/payments/adapters/sslcommerz.adapter.ts",
+      "line": 154,
+      "content": "bodyParams.append('cus_email', params.customerEmail || 'billing@printerp.com')"
+    },
+    {
+      "file": "lib/payments/adapters/stripe.adapter.ts",
+      "line": 122,
+      "content": "body.append('success_url', params.redirectUrl || 'https://printerp.com/platform/billing?session_id={CHECKOUT_SESSION_ID}')"
+    },
+    {
+      "file": "lib/payments/adapters/stripe.adapter.ts",
+      "line": 123,
+      "content": "body.append('cancel_url', params.cancelUrl || 'https://printerp.com/platform/billing')"
+    },
+    {
+      "file": "lib/payments/adapters/stripe.adapter.ts",
+      "line": 125,
+      "content": "body.append('customer_email', params.customerEmail || 'billing@printerp.com')"
+    },
+    {
+      "file": "lib/payments/adapters/uddoktapay.adapter.ts",
+      "line": 116,
+      "content": "email: params.customerEmail || 'billing@printerp.com',"
+    },
+    {
+      "file": "lib/payments/adapters/uddoktapay.adapter.ts",
+      "line": 123,
+      "content": "redirect_url: params.redirectUrl || 'https://printerp.com/platform/billing',"
+    },
+    {
+      "file": "lib/payments/adapters/uddoktapay.adapter.ts",
+      "line": 124,
+      "content": "cancel_url: params.cancelUrl || 'https://printerp.com/platform/billing',"
+    },
+    {
+      "file": "lib/payments/adapters/uddoktapay.adapter.ts",
+      "line": 125,
+      "content": "webhook_url: params.callbackUrl || 'https://printerp.com/api/webhooks/uddoktapay',"
+    },
+    {
+      "file": "lib/security/encryption.ts",
+      "line": 320,
+      "content": "* Masks an email for privacy (e.g. `sup••••@printerp.com`)"
+    },
+    {
+      "file": "lib/supabase/middleware.ts",
+      "line": 69,
+      "content": "// On tenant subdomains (e.g. rangao.inkflow-erp.vercel.app), routes are compiled inside app/[tenantSlug]/..."
+    },
+    {
+      "file": "lib/supabase/middleware.ts",
+      "line": 132,
+      "content": "// 0b. Handle Reserved System Subdomains (e.g. admin.inkflow.com.bd -> redirect to root/platform)"
+    },
+    {
+      "file": "lib/supabase/middleware.ts",
+      "line": 312,
+      "content": "// B. TENANT SUBDOMAIN ROUTING (e.g. vision.inkflow.com.bd or vision.localhost:3000)"
+    },
+    {
+      "file": "lib/supabase/middleware.ts",
+      "line": 324,
+      "content": "// e.g. https://rangao.inkflow-erp.vercel.app/rangao/dashboard -> 307 redirect to https://rangao.inkflow-erp.vercel.app/dashboard"
+    },
+    {
+      "file": "lib/supabase/middleware.ts",
+      "line": 342,
+      "content": "// 3. Tenant Auth Paths on Subdomain (e.g. vision.inkflow.com.bd/login)"
+    },
+    {
+      "file": "lib/supabase/middleware.ts",
+      "line": 462,
+      "content": "// C. ROOT DOMAIN ROUTING (e.g. inkflowerp.com, localhost:3000)"
+    },
+    {
+      "file": "lib/supabase/middleware.ts",
+      "line": 541,
+      "content": "// 4. If user visits explicit path with tenant slug on root domain (e.g. inkflowerp.com/alpha-print/invoices)"
+    },
+    {
+      "file": "lib/tenant/tenant-resolution.ts",
+      "line": 85,
+      "content": "* (e.g. inkflow.com.bd, not inkflow.bd)."
+    },
+    {
+      "file": "lib/tenant/tenant-resolution.ts",
+      "line": 265,
+      "content": "return 'inkflowerp.com'"
+    },
+    {
+      "file": "lib/tenant/tenant-resolution.ts",
+      "line": 616,
+      "content": "// If the host itself is a preview deployment URL (e.g. inkflow-erp.vercel.app or branch-xyz.vercel.app)"
+    },
+    {
+      "file": "lib/tenant/tenant-resolution.ts",
+      "line": 656,
+      "content": "// Subdomain on preview root (e.g. vision.inkflow-erp.vercel.app)"
+    },
+    {
+      "file": "lib/tenant/tenant-url.ts",
+      "line": 12,
+      "content": "* - https://rangao.inkflow-erp.vercel.app"
+    },
+    {
+      "file": "lib/tenant/tenant-url.ts",
+      "line": 13,
+      "content": "* - https://rangao.inkflow.bd"
+    },
+    {
+      "file": "lib/tenant/tenant-url.ts",
+      "line": 14,
+      "content": "* - https://vision-sign.inkflow.com"
+    },
+    {
+      "file": "lib/tenant/tenant-url.ts",
+      "line": 15,
+      "content": "* - https://vision.inkflow.com.bd"
+    },
+    {
+      "file": "lib/tenant/tenant-url.ts",
+      "line": 48,
+      "content": "* getTenantLink('rangao', '/invoices/INV-001', 'inkflow-erp.vercel.app') -> https://rangao.inkflow-erp.vercel.app/invoices/INV-001"
+    },
+    {
+      "file": "lib/tenant/tenant-url.ts",
+      "line": 49,
+      "content": "* getTenantLink('rangao', 'dashboard', 'inkflow.bd') -> https://rangao.inkflow.bd/dashboard"
+    },
+    {
+      "file": "lib/tenant/tenant-url.ts",
+      "line": 50,
+      "content": "* getTenantLink('vision-sign', '/orders', 'inkflow.com') -> https://vision-sign.inkflow.com/orders"
+    },
+    {
+      "file": "lib/tenant/tenant-url.ts",
+      "line": 68,
+      "content": "* formatDocumentUrl('vision', 'invoice', 'INV-2026-0012') -> https://vision.inkflow.com.bd/invoices/INV-2026-0012"
+    },
+    {
+      "file": "lib/tenant/tenant-url.ts",
+      "line": 69,
+      "content": "* formatDocumentUrl('vision', 'quotation', 'QUO-2026-0089') -> https://vision.inkflow.com.bd/quotations/QUO-2026-0089"
+    },
+    {
+      "file": "lib/tenant/tenant-url.ts",
+      "line": 70,
+      "content": "* formatDocumentUrl('vision', 'receipt', 'MR-2026-0044') -> https://vision.inkflow.com.bd/billing/receipts/MR-2026-0044"
+    },
+    {
+      "file": "lib/tenant/tenant-url.ts",
+      "line": 112,
+      "content": "* - Subdomain tenant routing (e.g., vision.inkflow.com.bd/dashboard -> /orders)"
+    },
+    {
+      "file": "lib/tenant/tenant-url.ts",
+      "line": 120,
+      "content": "* 1. Subdomain tenant routing (e.g. rangao.inkflow-erp.vercel.app/production or vision.inkflow.com.bd/dashboard):"
+    },
+    {
+      "file": "lib/tenant/tenant-url.ts",
+      "line": 122,
+      "content": "* 2. Path-based tenant routing (e.g. localhost:3000/rangao/dashboard or inkflow.com.bd/vision/orders):"
+    },
+    {
+      "file": "lib/tenant/tenant-url.ts",
+      "line": 146,
+      "content": "// Check if host is an authoritative tenant subdomain (e.g. rangao.inkflow-erp.vercel.app or vision.inkflow.com.bd or vision.localhost:3000)"
+    },
+    {
+      "file": "lib/tenant/tenant-url.ts",
+      "line": 161,
+      "content": "// On root host (e.g. localhost:3000 or inkflow.com.bd), check if browserPathname is path-based"
+    },
+    {
+      "file": "next.config.ts",
+      "line": 3,
+      "content": "const configuredRoot = process.env.ROOT_DOMAIN || process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'inkflowerp.com'"
+    },
+    {
+      "file": "next.config.ts",
+      "line": 11,
+      "content": "'inkflowerp.com',"
+    },
+    {
+      "file": "next.config.ts",
+      "line": 12,
+      "content": "'*.inkflowerp.com',"
+    },
+    {
+      "file": "next.config.ts",
+      "line": 13,
+      "content": "'inkflow.com.bd',"
+    },
+    {
+      "file": "next.config.ts",
+      "line": 14,
+      "content": "'*.inkflow.com.bd',"
+    },
+    {
+      "file": "scripts/audit_email_system.ts",
+      "line": 34,
+      "content": "const maskedMail = maskEmail('billing.manager@printerp.com')"
+    },
+    {
+      "file": "scripts/audit_email_system.ts",
+      "line": 44,
+      "content": "sender_email: 'audit@printerp.com',"
+    },
+    {
+      "file": "scripts/audit_email_system.ts",
+      "line": 88,
+      "content": "payment_link: 'https://printerp.app/pay/INV-9081',"
+    },
+    {
+      "file": "scripts/reset_platform.ts",
+      "line": 172,
+      "content": "actor_email: admins?.[0]?.email || 'system@printerp.com.bd',"
+    },
+    {
+      "file": "scripts/reset_platform.ts",
+      "line": 200,
+      "content": "support_email: 'support@printerp.com.bd',"
+    },
+    {
+      "file": "scripts/reset_platform.ts",
+      "line": 201,
+      "content": "billing_email: 'billing@printerp.com.bd',"
+    },
+    {
+      "file": "scripts/test_live_invoice_lifecycle.ts",
+      "line": 35,
+      "content": "customer_email: 'forensic.audit@inkflow.com',"
+    },
+    {
+      "file": "scripts/ui-audit/crawler.ts",
+      "line": 52,
+      "content": "email: 'owner@printerp.com',"
+    },
+    {
+      "file": "services/communication-templates.service.ts",
+      "line": 32,
+      "content": "{ tag: '{{company_website}}', name: 'Company Website', description: 'Public website or portal URL', category: 'company', example: 'https://demo.printerp.app' },"
+    },
+    {
+      "file": "services/communication-templates.service.ts",
+      "line": 285,
+      "content": "const compWebsite = company?.website || `https://${tenantSlug}.printerp.app`"
+    },
+    {
+      "file": "services/communication-templates.service.ts",
+      "line": 372,
+      "content": "const compWebsite = company?.website || `https://${tenantSlug}.printerp.app`"
+    },
+    {
+      "file": "services/email-gateway.service.ts",
+      "line": 523,
+      "content": "(!effectiveSenderEmail || effectiveSenderEmail === 'inkflow.erp@gmail.com' || effectiveSenderEmail === 'notifications@printerp.com')"
+    },
+    {
+      "file": "services/gateway.service.ts",
+      "line": 628,
+      "content": "payload.recipient = String(publicConfig.sender_email || publicConfig.gmail_account_email || 'admin@printerp.com').trim()"
+    },
+    {
+      "file": "services/inventory.service.ts",
+      "line": 106,
+      "content": "userEmail: data.actor_email || 'inventory@inkflow.com',"
+    },
+    {
+      "file": "services/inventory.service.ts",
+      "line": 128,
+      "content": "userEmail: actorEmail || 'inventory@inkflow.com',"
+    },
+    {
+      "file": "services/platform-subscription.service.ts",
+      "line": 218,
+      "content": "customerEmail: input.adminEmail || 'admin@inkflow.io',"
+    },
+    {
+      "file": "services/platform-subscription.service.ts",
+      "line": 253,
+      "content": "recipientEmail: input.adminEmail || 'admin@inkflow.io',"
+    },
+    {
+      "file": "services/platform-subscription.service.ts",
+      "line": 489,
+      "content": "recipientEmail: 'admin@inkflow.io',"
+    },
+    {
+      "file": "services/platform-subscription.service.ts",
+      "line": 556,
+      "content": "recipientEmail: 'admin@inkflow.io',"
+    },
+    {
+      "file": "services/platform-subscription.service.ts",
+      "line": 606,
+      "content": "recipientEmail: 'admin@inkflow.io',"
+    },
+    {
+      "file": "services/platform.service.ts",
+      "line": 3840,
+      "content": "const actorEmail = l.actor_email || adminObj?.email || 'system@printerp.com.bd'"
+    },
+    {
+      "file": "services/platform.service.ts",
+      "line": 3841,
+      "content": "const actorName = adminObj?.full_name || l.details?.actor_name || l.details?.admin_name || (actorEmail === 'bdinfosky@gmail.com' ? 'Shahidur Rahman' : (actorEmail === 'admin@printerp.com.bd' ? 'Md. Shahidur Rahman' : null))"
+    },
+    {
+      "file": "services/platform.service.ts",
+      "line": 3945,
+      "content": "actorEmail = 'system@printerp.com.bd'"
+    },
+    {
+      "file": "services/platform.service.ts",
+      "line": 4434,
+      "content": "const email = profile?.email || cu.invited_email || (cu.user_id?.includes('@') ? cu.user_id : 'user@printerp.com')"
+    },
+    {
+      "file": "services/platform.service.ts",
+      "line": 5373,
+      "content": "email: u.profile?.email || 'staff@printerp.com.bd',"
+    },
+    {
+      "file": "services/platform.service.ts",
+      "line": 6196,
+      "content": "owner_email: comp.email || 'admin@' + comp.slug + '.printerp.com',"
+    },
+    {
+      "file": "services/platform.service.ts",
+      "line": 7113,
+      "content": "const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://inkflow-erp.vercel.app'"
+    },
+    {
+      "file": "services/workforce.service.ts",
+      "line": 410,
+      "content": "email = `${cleanUsername}@${cleanSlug || 'workspace'}.inkflow.app`"
+    },
+    {
+      "file": "services/workforce.service.ts",
+      "line": 648,
+      "content": "const isSystemEmail = email.endsWith('.local') || email.endsWith('.inkflow.app')"
+    },
+    {
+      "file": "services/workforce.service.ts",
+      "line": 743,
+      "content": "if (!targetEmail || !targetEmail.includes('@') || targetEmail.endsWith('.local') || targetEmail.endsWith('.inkflow.app')) {"
+    },
+    {
+      "file": "supabase/migrations/026_platform_administration.sql",
+      "line": 15,
+      "content": "actor_email text not null default 'system@printerp.com.bd',"
+    },
+    {
+      "file": "supabase/migrations/026_platform_administration.sql",
+      "line": 205,
+      "content": "coalesce(v_email, 'system@printerp.com.bd'),"
+    },
+    {
+      "file": "supabase/migrations/093_permanent_tenant_deletion_and_cleanup.sql",
+      "line": 673,
+      "content": "'platform-admin@printerp.com.bd',"
+    },
+    {
+      "file": "supabase/migrations/099_tenant_permanent_deletion_trigger_and_cascade_hardening.sql",
+      "line": 313,
+      "content": "'platform-admin@printerp.com.bd',"
+    },
+    {
+      "file": "supabase/migrations/103_platform_branding_and_identity.sql",
+      "line": 15,
+      "content": "add column if not exists app_domain text not null default 'inkflow.com.bd',"
+    },
+    {
+      "file": "supabase/migrations/103_platform_branding_and_identity.sql",
+      "line": 16,
+      "content": "add column if not exists contact_email text not null default 'support@printerp.com.bd',"
+    },
+    {
+      "file": "supabase/migrations/103_platform_branding_and_identity.sql",
+      "line": 30,
+      "content": "app_domain = coalesce(nullif(app_domain, ''), 'inkflow.com.bd'),"
+    },
+    {
+      "file": "supabase/migrations/103_platform_branding_and_identity.sql",
+      "line": 31,
+      "content": "contact_email = coalesce(nullif(contact_email, ''), 'support@printerp.com.bd'),"
+    },
+    {
+      "file": "supabase/schema_full.sql",
+      "line": 4013,
+      "content": "actor_email text not null default 'system@printerp.com.bd',"
+    },
+    {
+      "file": "supabase/schema_full.sql",
+      "line": 4203,
+      "content": "coalesce(v_email, 'system@printerp.com.bd'),"
+    },
+    {
+      "file": "tests/integration/designer-dual-intake-workflow.test.ts",
+      "line": 96,
+      "content": "file_url: 'https://storage.printerp.com/designs/abc_fashion_v2.pdf',"
+    },
+    {
+      "file": "tests/integration/designer-dual-intake-workflow.test.ts",
+      "line": 97,
+      "content": "preview_url: 'https://storage.printerp.com/designs/abc_fashion_v2_thumb.jpg',"
+    },
+    {
+      "file": "tests/integration/designer-dual-intake-workflow.test.ts",
+      "line": 388,
+      "content": "file_url: 'https://storage.printerp.com/menu_v2.pdf',"
+    },
+    {
+      "file": "tests/integration/designer-dual-intake-workflow.test.ts",
+      "line": 412,
+      "content": "file_url: 'https://storage.printerp.com/menu_v3.pdf',"
+    },
+    {
+      "file": "tests/integration/gmail-smtp-lifecycle.test.ts",
+      "line": 38,
+      "content": "gmail_account_email: 'sales@inkflow-tenant.com',"
+    },
+    {
+      "file": "tests/integration/gmail-smtp-lifecycle.test.ts",
+      "line": 43,
+      "content": "sender_email: 'sales@inkflow-tenant.com',"
+    },
+    {
+      "file": "tests/integration/invoice-design-production-e2e.test.ts",
+      "line": 56,
+      "content": "file_url: 'https://storage.printerp.com/designs/apex_final.pdf',"
+    },
+    {
+      "file": "tests/integration/procurement-inventory-costing-lifecycle.test.ts",
+      "line": 49,
+      "content": "'admin@inkflow.com'"
+    },
+    {
+      "file": "tests/integration/procurement-inventory-costing-lifecycle.test.ts",
+      "line": 92,
+      "content": "'prod@inkflow.com'"
+    },
+    {
+      "file": "tests/integration/procurement-inventory-costing-lifecycle.test.ts",
+      "line": 100,
+      "content": "{ id: 'usr-mgr-01', name: 'Supply Chain Manager', email: 'manager@inkflow.com' },"
+    },
+    {
+      "file": "tests/integration/procurement-inventory-costing-lifecycle.test.ts",
+      "line": 116,
+      "content": "{ name: 'Procurement Officer', email: 'procurement@inkflow.com' },"
+    },
+    {
+      "file": "tests/integration/support-chat-flow.test.ts",
+      "line": 13,
+      "content": "const agentEmail = 'support@printerp.com'"
+    },
+    {
+      "file": "tests/integration/whatsapp-sms-communication-lifecycle.test.ts",
+      "line": 54,
+      "content": "attachmentUrl: `https://cdn.inkflow.com.bd/invoices/${inv.id}.pdf`,"
+    },
+    {
+      "file": "tests/integration/workforce-attendance-costing-lifecycle.test.ts",
+      "line": 18,
+      "content": "email: 'tanvir@inkflow.com.bd',"
+    },
+    {
+      "file": "tests/security/attendance-security-penetration.test.ts",
+      "line": 47,
+      "content": "const hash3 = hashQrToken(`https://inkflow.app/attendance/scan?t=${rawHex}`)"
+    },
+    {
+      "file": "tests/security/attendance-security-penetration.test.ts",
+      "line": 48,
+      "content": "const hash4 = hashQrToken(`https://inkflow.app/attendance/scan?qr=${rawHex}&mode=mobile`)"
+    },
+    {
+      "file": "tests/security/auth-audit-remediation.test.ts",
+      "line": 28,
+      "content": "const origin = 'https://app.inkflow.com.bd'"
+    },
+    {
+      "file": "tests/security/auth-audit-remediation.test.ts",
+      "line": 32,
+      "content": "assert.strictEqual(sanitized, 'https://app.inkflow.com.bd/login?logged_out=true')"
+    },
+    {
+      "file": "tests/security/auth-audit-remediation.test.ts",
+      "line": 37,
+      "content": "assert.strictEqual(sanitized, 'https://app.inkflow.com.bd/login?logged_out=true')"
+    },
+    {
+      "file": "tests/security/auth-audit-remediation.test.ts",
+      "line": 42,
+      "content": "assert.strictEqual(sanitized, 'https://app.inkflow.com.bd/login?logged_out=true')"
+    },
+    {
+      "file": "tests/security/auth-audit-remediation.test.ts",
+      "line": 47,
+      "content": "assert.strictEqual(sanitized, 'https://app.inkflow.com.bd/login?logged_out=true')"
+    },
+    {
+      "file": "tests/security/auth-audit-remediation.test.ts",
+      "line": 52,
+      "content": "assert.strictEqual(sanitized, 'https://app.inkflow.com.bd/login?reauth=true')"
+    },
+    {
+      "file": "tests/security/auth-audit-remediation.test.ts",
+      "line": 107,
+      "content": "const opts = getAuthCookieOptions('inkflow.com.bd')"
+    },
+    {
+      "file": "tests/security/auth-audit-remediation.test.ts",
+      "line": 129,
+      "content": "const email1 = '  Admin@PrintERP.com  '.trim().toLowerCase()"
+    },
+    {
+      "file": "tests/security/auth-audit-remediation.test.ts",
+      "line": 130,
+      "content": "const email2 = 'admin@printerp.com'"
+    },
+    {
+      "file": "tests/security/auth-verification-security.test.ts",
+      "line": 160,
+      "content": "const unverifiedEmail = 'unverified-owner@inkflow.com'"
+    },
+    {
+      "file": "tests/security/auth-verification-security.test.ts",
+      "line": 169,
+      "content": "assert.strictEqual(resolveAppBaseUrl('https://app.printerp.com/'), 'https://app.printerp.com')"
+    },
+    {
+      "file": "tests/security/auth-verification-security.test.ts",
+      "line": 173,
+      "content": "'x-forwarded-host': 'custom.printerp.io',"
+    },
+    {
+      "file": "tests/security/auth-verification-security.test.ts",
+      "line": 176,
+      "content": "assert.strictEqual(resolveRequestOrigin(mockHeaders), 'https://custom.printerp.io')"
+    },
+    {
+      "file": "tests/security/auth-verification-security.test.ts",
+      "line": 180,
+      "content": "const customOrigin = 'https://cloud.printerp.com'"
+    },
+    {
+      "file": "tests/security/email-tenant-isolation.test.ts",
+      "line": 83,
+      "content": "sender_email: 'platform-noreply@printerp.com',"
+    },
+    {
+      "file": "tests/security/gateway-isolation.test.ts",
+      "line": 15,
+      "content": "public_config: { smtp_host: 'smtp.printerp.com', smtp_port: 587 },"
+    },
+    {
+      "file": "tests/security/multi-tenant-full-isolation.test.ts",
+      "line": 39,
+      "content": "const prodOpts = getAuthCookieOptions('alpha.inkflowerp.com')"
+    },
+    {
+      "file": "tests/security/multi-tenant-full-isolation.test.ts",
+      "line": 46,
+      "content": "const pslOpts = getAuthCookieOptions('alpha.inkflow-erp.vercel.app')"
+    },
+    {
+      "file": "tests/security/multi-tenant-full-isolation.test.ts",
+      "line": 51,
+      "content": "const platformRes = resolveTenant('admin.inkflowerp.com', '', { overrideRootDomain: 'inkflowerp.com' })"
+    },
+    {
+      "file": "tests/security/multi-tenant-full-isolation.test.ts",
+      "line": 55,
+      "content": "const tenantRes = resolveTenant('printcraft.inkflowerp.com', '', { overrideRootDomain: 'inkflowerp.com' })"
+    },
+    {
+      "file": "tests/security/multi-tenant-full-isolation.test.ts",
+      "line": 61,
+      "content": "const res = resolveTenant('malicious.tenant.inkflowerp.com', '', { overrideRootDomain: 'inkflowerp.com' })"
+    },
+    {
+      "file": "tests/security/platform-auth-security.test.ts",
+      "line": 235,
+      "content": "email: 'haji.shamim@printerp.com.bd',"
+    },
+    {
+      "file": "tests/security/platform-auth-security.test.ts",
+      "line": 246,
+      "content": "email: 'ops-lead@printerp.com.bd',"
+    },
+    {
+      "file": "tests/security/platform-auth-security.test.ts",
+      "line": 256,
+      "content": "email: 'support-agent@printerp.com.bd',"
+    },
+    {
+      "file": "tests/security/platform-auth-security.test.ts",
+      "line": 266,
+      "content": "email: 'billing-lead@printerp.com.bd',"
+    },
+    {
+      "file": "tests/security/platform-auth-security.test.ts",
+      "line": 276,
+      "content": "email: 'auditor@printerp.com.bd',"
+    },
+    {
+      "file": "tests/security/platform-auth-security.test.ts",
+      "line": 353,
+      "content": "const fakeAdminEmail = 'admin@printerp.com.bd'"
+    },
+    {
+      "file": "tests/security/platform-auth-security.test.ts",
+      "line": 415,
+      "content": "email: 'haji.shamim@printerp.com.bd', // Matches owner's email address"
+    },
+    {
+      "file": "tests/security/platform-auth-security.test.ts",
+      "line": 418,
+      "content": "{ id: 'pa-owner-001', user_id: 'u-auth-owner-001', email: 'haji.shamim@printerp.com.bd', is_active: true }"
+    },
+    {
+      "file": "tests/security/platform-boundary-attacks.test.ts",
+      "line": 16,
+      "content": "email: 'ro@printerp.com',"
+    },
+    {
+      "file": "tests/security/platform-boundary-attacks.test.ts",
+      "line": 36,
+      "content": "email: 'disabled@printerp.com',"
+    },
+    {
+      "file": "tests/security/platform-boundary-attacks.test.ts",
+      "line": 52,
+      "content": "email: 'support@printerp.com',"
+    },
+    {
+      "file": "tests/security/platform-control-panel-production.test.ts",
+      "line": 98,
+      "content": "email: 'owner@inkflow.com',"
+    },
+    {
+      "file": "tests/security/platform-control-panel-production.test.ts",
+      "line": 108,
+      "content": "email: 'admin@inkflow.com',"
+    },
+    {
+      "file": "tests/security/platform-control-panel-production.test.ts",
+      "line": 118,
+      "content": "email: 'former@inkflow.com',"
+    },
+    {
+      "file": "tests/security/platform-control-panel-production.test.ts",
+      "line": 156,
+      "content": "email: 'owner@inkflow.com',"
+    },
+    {
+      "file": "tests/security/platform-control-panel-production.test.ts",
+      "line": 167,
+      "content": "email: 'ops@inkflow.com',"
+    },
+    {
+      "file": "tests/security/platform-control-panel-production.test.ts",
+      "line": 196,
+      "content": "email: 'sole@inkflow.com',"
+    },
+    {
+      "file": "tests/security/platform-control-panel-production.test.ts",
+      "line": 206,
+      "content": "email: 'staff@inkflow.com',"
+    },
+    {
+      "file": "tests/security/platform-control-panel-production.test.ts",
+      "line": 232,
+      "content": "email: 'owner2@inkflow.com',"
+    },
+    {
+      "file": "tests/security/platform-governance.test.ts",
+      "line": 154,
+      "content": "email: 'admin@printerp.com.bd',"
+    },
+    {
+      "file": "tests/security/platform-governance.test.ts",
+      "line": 172,
+      "content": "email: 'auditor@printerp.com.bd',"
+    },
+    {
+      "file": "tests/security/platform-governance.test.ts",
+      "line": 192,
+      "content": "email: 'former_staff@printerp.com.bd',"
+    },
+    {
+      "file": "tests/security/platform-logout-bfcache.test.ts",
+      "line": 50,
+      "content": "email: 'owner@printerp.com',"
+    },
+    {
+      "file": "tests/security/platform-owner-experience.test.ts",
+      "line": 44,
+      "content": "email: 'admin@printerp.com.bd',"
+    },
+    {
+      "file": "tests/security/platform-owner-experience.test.ts",
+      "line": 60,
+      "content": "user_email: 'admin@printerp.com.bd',"
+    },
+    {
+      "file": "tests/security/platform-owner-experience.test.ts",
+      "line": 69,
+      "content": "user_email: 'admin@printerp.com.bd',"
+    },
+    {
+      "file": "tests/security/platform-owner-experience.test.ts",
+      "line": 161,
+      "content": "assert.strictEqual(profile.email, 'admin@printerp.com.bd')"
+    },
+    {
+      "file": "tests/security/platform-rbac.test.ts",
+      "line": 21,
+      "content": "email: `${role}@printerp.com`,"
+    },
+    {
+      "file": "tests/security/platform-tenant-isolation-boundary.test.ts",
+      "line": 52,
+      "content": "email: 'haji.shamim@printerp.com.bd',"
+    },
+    {
+      "file": "tests/security/platform-tenant-isolation-boundary.test.ts",
+      "line": 60,
+      "content": "email: 'ops.lead@printerp.com.bd',"
+    },
+    {
+      "file": "tests/security/platform-tenant-isolation-boundary.test.ts",
+      "line": 68,
+      "content": "email: 'ex.admin@printerp.com.bd',"
+    },
+    {
+      "file": "tests/security/platform-tenant-isolation-boundary.test.ts",
+      "line": 279,
+      "content": "const res = simulatePlatformLogin('haji.shamim@printerp.com.bd', 'RootPass123!')"
+    },
+    {
+      "file": "tests/security/platform-tenant-isolation-boundary.test.ts",
+      "line": 300,
+      "content": "const res = simulateTenantLogin('haji.shamim@printerp.com.bd', 'RootPass123!')"
+    },
+    {
+      "file": "tests/security/platform-tenant-isolation-boundary.test.ts",
+      "line": 306,
+      "content": "const res = simulateTenantLogin('ops.lead@printerp.com.bd', 'AdminPass123!')"
+    },
+    {
+      "file": "tests/security/platform-tenant-isolation-boundary.test.ts",
+      "line": 448,
+      "content": "const loginRes = simulatePlatformLogin('ex.admin@printerp.com.bd', 'Pass123!')"
+    },
+    {
+      "file": "tests/security/rpc-permanent-deletion-abuse.test.ts",
+      "line": 39,
+      "content": "email: 'owner@printerp.com',"
+    },
+    {
+      "file": "tests/security/support-isolation-and-rls.test.ts",
+      "line": 19,
+      "content": "'alpha@inkflow.com',"
+    },
+    {
+      "file": "tests/security/support-isolation-and-rls.test.ts",
+      "line": 34,
+      "content": "'beta@inkflow.com',"
+    },
+    {
+      "file": "tests/security/support-isolation-and-rls.test.ts",
+      "line": 63,
+      "content": "'beta@inkflow.com',"
+    },
+    {
+      "file": "tests/security/support-isolation-and-rls.test.ts",
+      "line": 88,
+      "content": "'beta@inkflow.com',"
+    },
+    {
+      "file": "tests/security/support-isolation-and-rls.test.ts",
+      "line": 102,
+      "content": "'alpha@inkflow.com',"
+    },
+    {
+      "file": "tests/security/support-isolation-and-rls.test.ts",
+      "line": 119,
+      "content": "'alpha@inkflow.com',"
+    },
+    {
+      "file": "tests/security/support-isolation-and-rls.test.ts",
+      "line": 130,
+      "content": "await SupportService.sendPlatformReply(adminId, 'agent1@inkflow.com', 'Agent 1', {"
+    },
+    {
+      "file": "tests/security/support-isolation-and-rls.test.ts",
+      "line": 135,
+      "content": "await SupportService.sendPlatformReply(adminId, 'agent2@inkflow.com', 'Agent 2', {"
+    },
+    {
+      "file": "tests/security/support-isolation-and-rls.test.ts",
+      "line": 140,
+      "content": "await SupportService.sendPlatformReply(adminId, 'agent1@inkflow.com', 'Agent 1', {"
+    },
+    {
+      "file": "tests/security/tenant-isolation.test.ts",
+      "line": 12,
+      "content": "const url = `https://storage.printerp.app/${bucket}/${filePath}?expires=${expiresAt}&signature=${signature}`"
+    },
+    {
+      "file": "tests/security/tenant-subdomain-security.test.ts",
+      "line": 147,
+      "content": "// User Bob belongs to ABC Printing, tries to access vision.inkflow.com.bd"
+    },
+    {
+      "file": "tests/security/tenant-subdomain-security.test.ts",
+      "line": 155,
+      "content": "// Bob (ABC Printing) tries to query invoices on vision.inkflow.com.bd"
+    },
+    {
+      "file": "tests/security/tenant-subdomain-security.test.ts",
+      "line": 162,
+      "content": "// Alice (Vision Sign) accesses vision.inkflow.com.bd"
+    },
+    {
+      "file": "tests/security/tenant-user-auth-hardening.test.ts",
+      "line": 297,
+      "content": "db.signUp('existing@inkflow.com', 'Pass123456!', 'Existing User')"
+    },
+    {
+      "file": "tests/security/tenant-user-auth-hardening.test.ts",
+      "line": 299,
+      "content": "() => db.signUp('existing@inkflow.com', 'AnotherPass123!', 'Duplicate User'),"
+    },
+    {
+      "file": "tests/security/tenant-user-auth-hardening.test.ts",
+      "line": 306,
+      "content": "() => db.signUp('weak@inkflow.com', '123', 'Weak Password User'),"
+    },
+    {
+      "file": "tests/security/tenant-user-auth-hardening.test.ts",
+      "line": 370,
+      "content": "const { userId: userA } = db.signUp('ownerA@inkflow.com', 'Password123!', 'Owner A')"
+    },
+    {
+      "file": "tests/security/tenant-user-auth-hardening.test.ts",
+      "line": 379,
+      "content": "const { userId: userB } = db.signUp('ownerB@inkflow.com', 'Password123!', 'Owner B')"
+    },
+    {
+      "file": "tests/security/tenant-user-auth-hardening.test.ts",
+      "line": 407,
+      "content": "const { userId: userA } = db.signUp('intruder@inkflow.com', 'Password123!', 'Intruder')"
+    },
+    {
+      "file": "tests/security/tenant-user-auth-hardening.test.ts",
+      "line": 410,
+      "content": "const { userId: userB } = db.signUp('victim@inkflow.com', 'Password123!', 'Victim')"
+    },
+    {
+      "file": "tests/unit/attendance-geofence.test.ts",
+      "line": 110,
+      "content": "assert.equal(hashQrToken(`https://app.inkflow.io/punch?qr=${rawToken}`), tokenHash)"
+    },
+    {
+      "file": "tests/unit/attendance-qr-security.test.ts",
+      "line": 37,
+      "content": "const urlA = `https://inkflow.app/acme-press/attendance?qr=${raw}`"
+    },
+    {
+      "file": "tests/unit/attendance-qr-security.test.ts",
+      "line": 41,
+      "content": "const urlB = `https://inkflow.app/attendance/scan?t=${raw}&source=mobile`"
+    },
+    {
+      "file": "tests/unit/auth-email-otp.test.ts",
+      "line": 157,
+      "content": "email: 'newowner@inkflow.com',"
+    },
+    {
+      "file": "tests/unit/auth-email-otp.test.ts",
+      "line": 169,
+      "content": "email: 'owner@printerp.com',"
+    },
+    {
+      "file": "tests/unit/business-email-events.test.ts",
+      "line": 67,
+      "content": "paymentLink: 'https://printerp.com/pay/INV-0441',"
+    },
+    {
+      "file": "tests/unit/business-email-events.test.ts",
+      "line": 114,
+      "content": "proofUrl: 'https://printerp.com/proofs/dsg-552/review',"
+    },
+    {
+      "file": "tests/unit/communication-pdf-templates.test.ts",
+      "line": 143,
+      "content": "const vars = CommunicationTemplateService.buildQuotationVariables(mockQuotation, mockCompany, 'https://printerp.app')"
+    },
+    {
+      "file": "tests/unit/communication-pdf-templates.test.ts",
+      "line": 155,
+      "content": "const vars = CommunicationTemplateService.buildInvoiceVariables(mockInvoice, mockCompany, 'https://printerp.app')"
+    },
+    {
+      "file": "tests/unit/communication-pdf-templates.test.ts",
+      "line": 277,
+      "content": "const quoteVars = CommunicationTemplateService.buildQuotationVariables(mockQuotation, mockCompany, 'https://printerp.app')"
+    },
+    {
+      "file": "tests/unit/communication-pdf-templates.test.ts",
+      "line": 288,
+      "content": "const invVars = CommunicationTemplateService.buildInvoiceVariables(mockInvoice, mockCompany, 'https://printerp.app')"
+    },
+    {
+      "file": "tests/unit/customer-financial-integrity-e2e.test.ts",
+      "line": 293,
+      "content": "userEmail: 'real.cashier@inkflow.com',"
+    },
+    {
+      "file": "tests/unit/customer-financial-integrity-e2e.test.ts",
+      "line": 298,
+      "content": "user_email: 'fake.admin@inkflow.com',"
+    },
+    {
+      "file": "tests/unit/customer-financial-integrity-e2e.test.ts",
+      "line": 306,
+      "content": "assert.strictEqual(resolvedActorEmail, 'real.cashier@inkflow.com')"
+    },
+    {
+      "file": "tests/unit/email-deliverability-spam.test.ts",
+      "line": 28,
+      "content": "<p>Please click <a href=\"https://printerp.com/verify?code=123456\">here to verify</a> your account.</p>"
+    },
+    {
+      "file": "tests/unit/email-deliverability-spam.test.ts",
+      "line": 42,
+      "content": "assert.strictEqual(plain.includes('here to verify (https://printerp.com/verify?code=123456)'), true)"
+    },
+    {
+      "file": "tests/unit/email-deliverability-spam.test.ts",
+      "line": 84,
+      "content": "// Message-ID must match sender domain @myprintbiz.com, NOT hardcoded @printerp.com"
+    },
+    {
+      "file": "tests/unit/email-deliverability-spam.test.ts",
+      "line": 136,
+      "content": "sender_email: 'notifications@printerp.com', // Dummy unaligned sender"
+    },
+    {
+      "file": "tests/unit/email-deliverability-spam.test.ts",
+      "line": 137,
+      "content": "reply_to_email: 'support@printerp.com',"
+    },
+    {
+      "file": "tests/unit/email-encryption.test.ts",
+      "line": 47,
+      "content": "const email = 'finance@printerp.com'"
+    },
+    {
+      "file": "tests/unit/email-encryption.test.ts",
+      "line": 51,
+      "content": "assert.ok(masked.endsWith('@printerp.com'), 'Masked email must preserve domain')"
+    },
+    {
+      "file": "tests/unit/email-gateway-resolver.test.ts",
+      "line": 48,
+      "content": "sender_email: 'noreply@printerp.com',"
+    },
+    {
+      "file": "tests/unit/email-gateway-resolver.test.ts",
+      "line": 70,
+      "content": "sender_email: 'noreply@printerp.com',"
+    },
+    {
+      "file": "tests/unit/email-gateway-resolver.test.ts",
+      "line": 82,
+      "content": "assert.strictEqual(resolved.sender_email, 'noreply@printerp.com')"
+    },
+    {
+      "file": "tests/unit/email-gateway-resolver.test.ts",
+      "line": 111,
+      "content": "payment_link: 'https://printerp.com/pay/INV-0099',"
+    },
+    {
+      "file": "tests/unit/email-verification-otp.test.ts",
+      "line": 165,
+      "content": "email: 'newuser@inkflow.com',"
+    },
+    {
+      "file": "tests/unit/email-verification-otp.test.ts",
+      "line": 177,
+      "content": "email: 'resetuser@inkflow.com',"
+    },
+    {
+      "file": "tests/unit/email-verification-otp.test.ts",
+      "line": 212,
+      "content": "const email = 'activation-flow@inkflow.com'"
+    },
+    {
+      "file": "tests/unit/email-verification-otp.test.ts",
+      "line": 227,
+      "content": "const email = 'link-flow@inkflow.com'"
+    },
+    {
+      "file": "tests/unit/email-verification-otp.test.ts",
+      "line": 242,
+      "content": "const email = 'route-flow@inkflow.com'"
+    },
+    {
+      "file": "tests/unit/email-verification-otp.test.ts",
+      "line": 263,
+      "content": "const email = 'poll-check@inkflow.com'"
+    },
+    {
+      "file": "tests/unit/email-verification-otp.test.ts",
+      "line": 289,
+      "content": "const email = 'link-first-otp-second@inkflow.com'"
+    },
+    {
+      "file": "tests/unit/email-verification-otp.test.ts",
+      "line": 312,
+      "content": "const email = 'already-onboarded@inkflow.com'"
+    },
+    {
+      "file": "tests/unit/employee-login-invitation.test.ts",
+      "line": 102,
+      "content": "const employeeEmail = 'designer.karim@inkflow.com'"
+    },
+    {
+      "file": "tests/unit/employee-login-invitation.test.ts",
+      "line": 110,
+      "content": "inviteUrl: 'http://localhost:3000/auth/verify?token=test_invite_token_1234567890abcdef1234567890abcdef&email=designer.karim%40inkflow.com&purpose=invitation',"
+    },
+    {
+      "file": "tests/unit/gateway-phone-utils.test.ts",
+      "line": 38,
+      "content": "assert.strictEqual(isValidEmail('admin@printerp.com'), true)"
+    },
+    {
+      "file": "tests/unit/google-auth-branding.test.ts",
+      "line": 30,
+      "content": "process.env.NEXT_PUBLIC_APP_URL = 'https://inkflowerp.com'"
+    },
+    {
+      "file": "tests/unit/google-auth-branding.test.ts",
+      "line": 43,
+      "content": "const config = getGoogleAuthClientConfig('https://inkflowerp.com')"
+    },
+    {
+      "file": "tests/unit/google-auth-branding.test.ts",
+      "line": 48,
+      "content": "assert.strictEqual(config.redirectUri, 'https://inkflowerp.com/api/auth/google/callback')"
+    },
+    {
+      "file": "tests/unit/google-auth-branding.test.ts",
+      "line": 55,
+      "content": "const config = getGoogleAuthClientConfig('https://inkflowerp.com')"
+    },
+    {
+      "file": "tests/unit/google-auth-branding.test.ts",
+      "line": 60,
+      "content": "assert.strictEqual(config.redirectUri, 'https://inkflowerp.com/api/auth/google/callback')"
+    },
+    {
+      "file": "tests/unit/google-auth-branding.test.ts",
+      "line": 68,
+      "content": "origin: 'https://inkflowerp.com',"
+    },
+    {
+      "file": "tests/unit/google-auth-branding.test.ts",
+      "line": 77,
+      "content": "assert.strictEqual(parsedUrl.searchParams.get('redirect_uri'), 'https://inkflowerp.com/api/auth/google/callback')"
+    },
+    {
+      "file": "tests/unit/google-auth-branding.test.ts",
+      "line": 92,
+      "content": "sourceOrigin: 'https://inkflowerp.com',"
+    },
+    {
+      "file": "tests/unit/google-auth-branding.test.ts",
+      "line": 100,
+      "content": "assert.strictEqual(verified?.sourceOrigin, 'https://inkflowerp.com')"
+    },
+    {
+      "file": "tests/unit/google-auth-branding.test.ts",
+      "line": 240,
+      "content": "process.env.NEXT_PUBLIC_APP_URL = 'https://inkflowerp.com'"
+    },
+    {
+      "file": "tests/unit/google-auth-branding.test.ts",
+      "line": 242,
+      "content": "const diag = getGoogleAuthBrandingDiagnostics('https://inkflowerp.com')"
+    },
+    {
+      "file": "tests/unit/google-auth-branding.test.ts",
+      "line": 245,
+      "content": "assert.strictEqual(diag.domainDisplayedToUser, 'inkflowerp.com')"
+    },
+    {
+      "file": "tests/unit/google-auth-branding.test.ts",
+      "line": 246,
+      "content": "assert.strictEqual(diag.redirectUri, 'https://inkflowerp.com/api/auth/google/callback')"
+    },
+    {
+      "file": "tests/unit/google-oauth-config.test.ts",
+      "line": 54,
+      "content": "process.env.GOOGLE_GMAIL_REDIRECT_URI = 'https://app.printerp.com/api/email/oauth/google/callback'"
+    },
+    {
+      "file": "tests/unit/google-oauth-config.test.ts",
+      "line": 61,
+      "content": "assert.strictEqual(diag.redirectUri, 'https://app.printerp.com/api/email/oauth/google/callback')"
+    },
+    {
+      "file": "tests/unit/google-oauth-config.test.ts",
+      "line": 75,
+      "content": "process.env.VERCEL_PROJECT_PRODUCTION_URL = 'inkflow-erp.vercel.app'"
+    },
+    {
+      "file": "tests/unit/google-oauth-config.test.ts",
+      "line": 77,
+      "content": "assert.strictEqual(diag.redirectUri, 'https://inkflow-erp.vercel.app/api/email/oauth/google/callback')"
+    },
+    {
+      "file": "tests/unit/google-oauth-config.test.ts",
+      "line": 89,
+      "content": "process.env.GOOGLE_GMAIL_REDIRECT_URI = 'https://app.printerp.com/api/email/oauth/google/callback'"
+    },
+    {
+      "file": "tests/unit/google-oauth-config.test.ts",
+      "line": 105,
+      "content": "assert.strictEqual(authUrl.searchParams.get('redirect_uri'), 'https://app.printerp.com/api/email/oauth/google/callback')"
+    },
+    {
+      "file": "tests/unit/incomplete-registrations.test.ts",
+      "line": 65,
+      "content": "const completedEmails = new Set<string>(['owner@active-press.com', 'admin@printerp.com'])"
+    },
+    {
+      "file": "tests/unit/incomplete-registrations.test.ts",
+      "line": 70,
+      "content": "{ id: 'v-3', user_id: null, email: 'admin@printerp.com', full_name: 'Platform Admin' },"
+    },
+    {
+      "file": "tests/unit/openwa-provider.test.ts",
+      "line": 8,
+      "content": "const client1 = new OpenWAClient({ baseUrl: 'http://wa.printerp.com:2785/api/', apiKey: 'test-key' });"
+    },
+    {
+      "file": "tests/unit/openwa-provider.test.ts",
+      "line": 9,
+      "content": "const client2 = new OpenWAClient({ baseUrl: 'http://wa.printerp.com:2785/', apiKey: 'test-key' });"
+    },
+    {
+      "file": "tests/unit/openwa-provider.test.ts",
+      "line": 10,
+      "content": "const client3 = new OpenWAClient({ baseUrl: 'http://wa.printerp.com:2785', apiKey: 'test-key' });"
+    },
+    {
+      "file": "tests/unit/openwa-provider.test.ts",
+      "line": 12,
+      "content": "assert.equal((client1 as any).baseUrl, 'http://wa.printerp.com:2785/api');"
+    },
+    {
+      "file": "tests/unit/openwa-provider.test.ts",
+      "line": 13,
+      "content": "assert.equal((client2 as any).baseUrl, 'http://wa.printerp.com:2785/api');"
+    },
+    {
+      "file": "tests/unit/openwa-provider.test.ts",
+      "line": 14,
+      "content": "assert.equal((client3 as any).baseUrl, 'http://wa.printerp.com:2785/api');"
+    },
+    {
+      "file": "tests/unit/password-reset-flow.test.ts",
+      "line": 15,
+      "content": "const nonExistentEmail = 'nonexistent_user_999@inkflow-fake.com'"
+    },
+    {
+      "file": "tests/unit/password-reset-flow.test.ts",
+      "line": 25,
+      "content": "const validEmail = 'owner@inkflow.com'"
+    },
+    {
+      "file": "tests/unit/platform-auth-vercel-deployment.test.ts",
+      "line": 18,
+      "content": "test('1. getAuthCookieOptions sets host-scoped cookies for inkflow-erp.vercel.app (PSL domain)', () => {"
+    },
+    {
+      "file": "tests/unit/platform-auth-vercel-deployment.test.ts",
+      "line": 19,
+      "content": "const opts = getAuthCookieOptions('inkflow-erp.vercel.app')"
+    },
+    {
+      "file": "tests/unit/platform-auth-vercel-deployment.test.ts",
+      "line": 27,
+      "content": "const opts = getAuthCookieOptions('inkflow.com.bd')"
+    },
+    {
+      "file": "tests/unit/platform-auth-vercel-deployment.test.ts",
+      "line": 42,
+      "content": "process.env.VERCEL_URL = 'inkflow-erp.vercel.app'"
+    },
+    {
+      "file": "tests/unit/platform-auth-vercel-deployment.test.ts",
+      "line": 45,
+      "content": "assert.equal(root, 'inkflow-erp.vercel.app')"
+    },
+    {
+      "file": "tests/unit/platform-auth-vercel-deployment.test.ts",
+      "line": 58,
+      "content": "const emailRes = classifyLoginIdentifier('admin@printerp.com.bd')"
+    },
+    {
+      "file": "tests/unit/platform-auth-vercel-deployment.test.ts",
+      "line": 60,
+      "content": "assert.equal(emailRes.normalized, 'admin@printerp.com.bd')"
+    },
+    {
+      "file": "tests/unit/platform-auth-vercel-deployment.test.ts",
+      "line": 81,
+      "content": "email: 'admin@printerp.com.bd',"
+    },
+    {
+      "file": "tests/unit/platform-settings.test.ts",
+      "line": 54,
+      "content": "app_domain: 'inkflow.com.bd',"
+    },
+    {
+      "file": "tests/unit/platform-settings.test.ts",
+      "line": 55,
+      "content": "contact_email: 'support@printerp.com.bd',"
+    },
+    {
+      "file": "tests/unit/platform-settings.test.ts",
+      "line": 258,
+      "content": "assert.strictEqual(DEFAULT_PLATFORM_SETTINGS.app_domain, 'inkflow.com.bd')"
+    },
+    {
+      "file": "tests/unit/platform-settings.test.ts",
+      "line": 259,
+      "content": "assert.strictEqual(DEFAULT_PLATFORM_SETTINGS.contact_email, 'support@printerp.com.bd')"
+    },
+    {
+      "file": "tests/unit/platform-subscription-billing.test.ts",
+      "line": 59,
+      "content": "adminEmail: 'admin@inkflow.io',"
+    },
+    {
+      "file": "tests/unit/production-commercial-workflow.test.ts",
+      "line": 118,
+      "content": "file_url: 'https://cdn.printerp.com/designs/v1.pdf',"
+    },
+    {
+      "file": "tests/unit/production-commercial-workflow.test.ts",
+      "line": 361,
+      "content": "file_url: 'https://cdn.printerp.com/designs/gamma.dxf',"
+    },
+    {
+      "file": "tests/unit/production-commercial-workflow.test.ts",
+      "line": 592,
+      "content": "file_url: 'https://cdn.printerp.com/box_v1.pdf',"
+    },
+    {
+      "file": "tests/unit/production-commercial-workflow.test.ts",
+      "line": 610,
+      "content": "file_url: 'https://cdn.printerp.com/box_v2.pdf',"
+    },
+    {
+      "file": "tests/unit/production-commercial-workflow.test.ts",
+      "line": 669,
+      "content": "file_url: 'https://cdn.printerp.com/storefront_v1.pdf',"
+    },
+    {
+      "file": "tests/unit/production-commercial-workflow.test.ts",
+      "line": 702,
+      "content": "file_url: 'https://cdn.printerp.com/storefront_v2.pdf',"
+    },
+    {
+      "file": "tests/unit/resolve-tenant.test.ts",
+      "line": 13,
+      "content": "const ROOT_DOMAIN = 'inkflowerp.com'"
+    },
+    {
+      "file": "tests/unit/resolve-tenant.test.ts",
+      "line": 16,
+      "content": "const res = resolveTenant('vision.inkflowerp.com', '', { overrideRootDomain: ROOT_DOMAIN })"
+    },
+    {
+      "file": "tests/unit/resolve-tenant.test.ts",
+      "line": 19,
+      "content": "assert.equal(res.rootDomain, 'inkflowerp.com')"
+    },
+    {
+      "file": "tests/unit/resolve-tenant.test.ts",
+      "line": 25,
+      "content": "const res = resolveTenant('VISION-SIGN.INKFLOWERP.COM', '', { overrideRootDomain: ROOT_DOMAIN })"
+    },
+    {
+      "file": "tests/unit/resolve-tenant.test.ts",
+      "line": 31,
+      "content": "const res = resolveTenant('vision.inkflowerp.com:8443', '', { overrideRootDomain: ROOT_DOMAIN })"
+    },
+    {
+      "file": "tests/unit/resolve-tenant.test.ts",
+      "line": 34,
+      "content": "assert.equal(res.hostname, 'vision.inkflowerp.com')"
+    },
+    {
+      "file": "tests/unit/resolve-tenant.test.ts",
+      "line": 38,
+      "content": "const res = resolveTenant('vision.inkflowerp.com.', '', { overrideRootDomain: ROOT_DOMAIN })"
+    },
+    {
+      "file": "tests/unit/resolve-tenant.test.ts",
+      "line": 44,
+      "content": "const res = resolveTenant('admin.inkflowerp.com', '', { overrideRootDomain: ROOT_DOMAIN })"
+    },
+    {
+      "file": "tests/unit/resolve-tenant.test.ts",
+      "line": 50,
+      "content": "const res = resolveTenant('platform.inkflowerp.com', '', { overrideRootDomain: ROOT_DOMAIN })"
+    },
+    {
+      "file": "tests/unit/resolve-tenant.test.ts",
+      "line": 55,
+      "content": "test('7. Identifies root marketing domain (inkflowerp.com & www.inkflowerp.com)', () => {"
+    },
+    {
+      "file": "tests/unit/resolve-tenant.test.ts",
+      "line": 56,
+      "content": "const res1 = resolveTenant('inkflowerp.com', '', { overrideRootDomain: ROOT_DOMAIN })"
+    },
+    {
+      "file": "tests/unit/resolve-tenant.test.ts",
+      "line": 60,
+      "content": "const res2 = resolveTenant('www.inkflowerp.com', '', { overrideRootDomain: ROOT_DOMAIN })"
+    },
+    {
+      "file": "tests/unit/resolve-tenant.test.ts",
+      "line": 68,
+      "content": "const res = resolveTenant(`${r}.inkflowerp.com`, '', { overrideRootDomain: ROOT_DOMAIN })"
+    },
+    {
+      "file": "tests/unit/resolve-tenant.test.ts",
+      "line": 75,
+      "content": "const res = resolveTenant('evil.vision.inkflowerp.com', '', { overrideRootDomain: ROOT_DOMAIN })"
+    },
+    {
+      "file": "tests/unit/resolve-tenant.test.ts",
+      "line": 82,
+      "content": "'vi.inkflowerp.com', // < 3 chars"
+    },
+    {
+      "file": "tests/unit/resolve-tenant.test.ts",
+      "line": 83,
+      "content": "'a--b.inkflowerp.com', // double hyphen"
+    },
+    {
+      "file": "tests/unit/resolve-tenant.test.ts",
+      "line": 84,
+      "content": "'-leading.inkflowerp.com', // leading hyphen"
+    },
+    {
+      "file": "tests/unit/resolve-tenant.test.ts",
+      "line": 85,
+      "content": "'trailing-.inkflowerp.com', // trailing hyphen"
+    },
+    {
+      "file": "tests/unit/resolve-tenant.test.ts",
+      "line": 86,
+      "content": "'under_score.inkflowerp.com', // underscore"
+    },
+    {
+      "file": "tests/unit/resolve-tenant.test.ts",
+      "line": 87,
+      "content": "'dots.in.slug.inkflowerp.com', // dots"
+    },
+    {
+      "file": "tests/unit/resolve-tenant.test.ts",
+      "line": 88,
+      "content": "`${'a'.repeat(31)}.inkflowerp.com`, // > 30 chars"
+    },
+    {
+      "file": "tests/unit/resolve-tenant.test.ts",
+      "line": 102,
+      "content": "'inkflowerp.com.attacker.com',"
+    },
+    {
+      "file": "tests/unit/resolve-tenant.test.ts",
+      "line": 148,
+      "content": "// Path-based tenant on Vercel preview: inkflow-erp.vercel.app/t/vision/invoices"
+    },
+    {
+      "file": "tests/unit/resolve-tenant.test.ts",
+      "line": 149,
+      "content": "const previewRes = resolveTenant('inkflow-erp.vercel.app', '/t/vision/invoices', {"
+    },
+    {
+      "file": "tests/unit/resolve-tenant.test.ts",
+      "line": 150,
+      "content": "overrideRootDomain: 'inkflow-erp.vercel.app',"
+    },
+    {
+      "file": "tests/unit/resolve-tenant.test.ts",
+      "line": 159,
+      "content": "const prodRes = resolveTenant('inkflowerp.com', '/vision/dashboard', {"
+    },
+    {
+      "file": "tests/unit/resolve-tenant.test.ts",
+      "line": 180,
+      "content": "const opts = getAuthCookieOptions('vision.inkflowerp.com')"
+    },
+    {
+      "file": "tests/unit/support-service.test.ts",
+      "line": 65,
+      "content": "await SupportService.sendPlatformReply(adminId, 'agent@printerp.com', 'Agent Tareq', {"
+    },
+    {
+      "file": "tests/unit/support-service.test.ts",
+      "line": 72,
+      "content": "await SupportService.sendPlatformReply(adminId, 'agent@printerp.com', 'Agent Tareq', {"
+    },
+    {
+      "file": "tests/unit/support-service.test.ts",
+      "line": 112,
+      "content": "await SupportService.sendPlatformReply(adminId, 'agent@printerp.com', 'Agent Tareq', {"
+    },
+    {
+      "file": "tests/unit/team-users-rebuild.test.ts",
+      "line": 93,
+      "content": "{ id: 'emp-md', name: 'Managing Director', email: 'owner@printerp.com', mobile: '01700000000', user_id: 'user-owner-1' },"
+    },
+    {
+      "file": "tests/unit/team-users-rebuild.test.ts",
+      "line": 94,
+      "content": "{ id: 'emp-sales', name: 'Sales Executive', email: 'sales@printerp.com', mobile: '01711111111', user_id: 'user-sales-2' },"
+    },
+    {
+      "file": "tests/unit/team-users-rebuild.test.ts",
+      "line": 95,
+      "content": "{ id: 'emp-unlinked', name: 'Floor Technician', email: 'tech@printerp.com', mobile: '01722222222', user_id: null },"
+    },
+    {
+      "file": "tests/unit/tenant-full-workflow-audit.test.ts",
+      "line": 244,
+      "content": "artwork_proof_url: 'https://cdn.printerp.com/artworks/walton-flex-20x10.pdf',"
+    },
+    {
+      "file": "tests/unit/tenant-purge.test.ts",
+      "line": 117,
+      "content": "{ id: 'admin-1', email: 'admin@printerp.com.bd', role: 'super_admin' },"
+    },
+    {
+      "file": "tests/unit/tenant-subdomain-resolution.test.ts",
+      "line": 22,
+      "content": "const res = resolveHostname('vision.inkflow.com.bd')"
+    },
+    {
+      "file": "tests/unit/tenant-subdomain-resolution.test.ts",
+      "line": 25,
+      "content": "assert.equal(res.rootDomain, 'inkflow.com.bd')"
+    },
+    {
+      "file": "tests/unit/tenant-subdomain-resolution.test.ts",
+      "line": 30,
+      "content": "const res = resolveHostname('abc-print-dhaka.inkflow.com.bd')"
+    },
+    {
+      "file": "tests/unit/tenant-subdomain-resolution.test.ts",
+      "line": 33,
+      "content": "assert.equal(res.rootDomain, 'inkflow.com.bd')"
+    },
+    {
+      "file": "tests/unit/tenant-subdomain-resolution.test.ts",
+      "line": 37,
+      "content": "const res = resolveHostname('VISION-SIGN.INKFLOW.COM.BD')"
+    },
+    {
+      "file": "tests/unit/tenant-subdomain-resolution.test.ts",
+      "line": 43,
+      "content": "const res = resolveHostname('inkflow.com.bd')"
+    },
+    {
+      "file": "tests/unit/tenant-subdomain-resolution.test.ts",
+      "line": 46,
+      "content": "assert.equal(res.rootDomain, 'inkflow.com.bd')"
+    },
+    {
+      "file": "tests/unit/tenant-subdomain-resolution.test.ts",
+      "line": 50,
+      "content": "const res = resolveHostname('www.inkflow.com.bd')"
+    },
+    {
+      "file": "tests/unit/tenant-subdomain-resolution.test.ts",
+      "line": 56,
+      "content": "const reservedCases = ['admin.inkflow.com.bd', 'api.inkflow.com.bd', 'mail.inkflow.com.bd', 'billing.inkflow.com.bd', 'auth.inkflow.com.bd']"
+    },
+    {
+      "file": "tests/unit/tenant-subdomain-resolution.test.ts",
+      "line": 86,
+      "content": "const invalidCases = ['', '..invalid', 'vision..sign.inkflow.com.bd', '-invalid-.inkflow.com.bd']"
+    },
+    {
+      "file": "tests/unit/tenant-subdomain-resolution.test.ts",
+      "line": 128,
+      "content": "const prodOpts = getAuthCookieOptions('inkflow.com.bd')"
+    },
+    {
+      "file": "tests/unit/tenant-subdomain-resolution.test.ts",
+      "line": 167,
+      "content": "test('18. Resolves inkflow-erp.vercel.app as root and *.inkflow-erp.vercel.app as tenant subdomains', () => {"
+    },
+    {
+      "file": "tests/unit/tenant-subdomain-resolution.test.ts",
+      "line": 168,
+      "content": "const rootRes = resolveHostname('inkflow-erp.vercel.app', 'inkflow-erp.vercel.app')"
+    },
+    {
+      "file": "tests/unit/tenant-subdomain-resolution.test.ts",
+      "line": 172,
+      "content": "const tenantRes1 = resolveHostname('vision.inkflow-erp.vercel.app', 'inkflow-erp.vercel.app')"
+    },
+    {
+      "file": "tests/unit/tenant-subdomain-resolution.test.ts",
+      "line": 176,
+      "content": "const tenantRes2 = resolveHostname('abc-print.inkflow-erp.vercel.app', 'inkflow-erp.vercel.app')"
+    },
+    {
+      "file": "tests/unit/tenant-subdomain-resolution.test.ts",
+      "line": 180,
+      "content": "const reservedRes = resolveHostname('dashboard.inkflow-erp.vercel.app', 'inkflow-erp.vercel.app')"
+    },
+    {
+      "file": "tests/unit/tenant-subdomain-resolution.test.ts",
+      "line": 184,
+      "content": "test('19. Sets secure host-scoped cookies for PSL domain inkflow-erp.vercel.app', () => {"
+    },
+    {
+      "file": "tests/unit/tenant-subdomain-resolution.test.ts",
+      "line": 185,
+      "content": "const opts = getAuthCookieOptions('inkflow-erp.vercel.app')"
+    },
+    {
+      "file": "tests/unit/tenant-subdomain-resolution.test.ts",
+      "line": 206,
+      "content": "const res = resolveHostname('www.vision.inkflow-erp.vercel.app', 'inkflow-erp.vercel.app')"
+    },
+    {
+      "file": "tests/unit/tenant-subdomain-resolution.test.ts",
+      "line": 209,
+      "content": "assert.equal(res.rootDomain, 'inkflow-erp.vercel.app')"
+    },
+    {
+      "file": "tests/unit/tenant-subdomain-resolution.test.ts",
+      "line": 214,
+      "content": "assert.ok(!base.includes('www.inkflow.com.bd'))"
+    },
+    {
+      "file": "tests/unit/tenant-subdomain-resolution.test.ts",
+      "line": 223,
+      "content": "const opts = getAuthCookieOptions('www.inkflow.com.bd')"
+    },
+    {
+      "file": "tests/unit/tenant-subdomain-resolution.test.ts",
+      "line": 228,
+      "content": "// Vercel deployment: rangao.inkflow-erp.vercel.app"
+    },
+    {
+      "file": "tests/unit/tenant-subdomain-resolution.test.ts",
+      "line": 229,
+      "content": "const vercelTenant = resolveHostname('rangao.inkflow-erp.vercel.app')"
+    },
+    {
+      "file": "tests/unit/tenant-subdomain-resolution.test.ts",
+      "line": 232,
+      "content": "assert.equal(vercelTenant.rootDomain, 'inkflow-erp.vercel.app')"
+    },
+    {
+      "file": "tests/unit/tenant-subdomain-resolution.test.ts",
+      "line": 234,
+      "content": "const vercelRoot = resolveHostname('inkflow-erp.vercel.app')"
+    },
+    {
+      "file": "tests/unit/tenant-subdomain-resolution.test.ts",
+      "line": 238,
+      "content": "// ccTLD (.bd): rangao.inkflow.bd"
+    },
+    {
+      "file": "tests/unit/tenant-subdomain-resolution.test.ts",
+      "line": 239,
+      "content": "const bdTenant = resolveHostname('rangao.inkflow.bd')"
+    },
+    {
+      "file": "tests/unit/tenant-subdomain-resolution.test.ts",
+      "line": 242,
+      "content": "assert.equal(bdTenant.rootDomain, 'inkflow.bd')"
+    },
+    {
+      "file": "tests/unit/tenant-subdomain-resolution.test.ts",
+      "line": 244,
+      "content": "const bdRoot = resolveHostname('inkflow.bd')"
+    },
+    {
+      "file": "tests/unit/tenant-subdomain-resolution.test.ts",
+      "line": 248,
+      "content": "// gTLD (.com): vision-sign.inkflow.com"
+    },
+    {
+      "file": "tests/unit/tenant-subdomain-resolution.test.ts",
+      "line": 249,
+      "content": "const comTenant = resolveHostname('vision-sign.inkflow.com')"
+    },
+    {
+      "file": "tests/unit/tenant-subdomain-resolution.test.ts",
+      "line": 252,
+      "content": "assert.equal(comTenant.rootDomain, 'inkflow.com')"
+    },
+    {
+      "file": "tests/unit/tenant-subdomain-resolution.test.ts",
+      "line": 254,
+      "content": "const comRoot = resolveHostname('inkflow.com')"
+    },
+    {
+      "file": "tests/unit/tenant-subdomain-resolution.test.ts",
+      "line": 258,
+      "content": "// Second-level ccTLD (.com.bd): vision.inkflow.com.bd"
+    },
+    {
+      "file": "tests/unit/tenant-subdomain-resolution.test.ts",
+      "line": 259,
+      "content": "const comBdTenant = resolveHostname('vision.inkflow.com.bd')"
+    },
+    {
+      "file": "tests/unit/tenant-subdomain-resolution.test.ts",
+      "line": 262,
+      "content": "assert.equal(comBdTenant.rootDomain, 'inkflow.com.bd')"
+    },
+    {
+      "file": "tests/unit/tenant-subdomain-resolution.test.ts",
+      "line": 264,
+      "content": "const comBdRoot = resolveHostname('inkflow.com.bd')"
+    },
+    {
+      "file": "tests/unit/tenant-subdomain-resolution.test.ts",
+      "line": 271,
+      "content": "getTenantBaseUrl('rangao', 'inkflow-erp.vercel.app'),"
+    },
+    {
+      "file": "tests/unit/tenant-subdomain-resolution.test.ts",
+      "line": 272,
+      "content": "'https://rangao.inkflow-erp.vercel.app'"
+    },
+    {
+      "file": "tests/unit/tenant-subdomain-resolution.test.ts",
+      "line": 275,
+      "content": "getTenantBaseUrl('rangao', 'inkflow.bd'),"
+    },
+    {
+      "file": "tests/unit/tenant-subdomain-resolution.test.ts",
+      "line": 276,
+      "content": "'https://rangao.inkflow.bd'"
+    },
+    {
+      "file": "tests/unit/tenant-subdomain-resolution.test.ts",
+      "line": 279,
+      "content": "getTenantBaseUrl('vision-sign', 'inkflow.com'),"
+    },
+    {
+      "file": "tests/unit/tenant-subdomain-resolution.test.ts",
+      "line": 280,
+      "content": "'https://vision-sign.inkflow.com'"
+    },
+    {
+      "file": "tests/unit/tenant-subdomain-resolution.test.ts",
+      "line": 283,
+      "content": "getTenantBaseUrl('vision', 'inkflow.com.bd'),"
+    },
+    {
+      "file": "tests/unit/tenant-subdomain-resolution.test.ts",
+      "line": 284,
+      "content": "'https://vision.inkflow.com.bd'"
+    },
+    {
+      "file": "tests/unit/tenant-subdomain-resolution.test.ts",
+      "line": 294,
+      "content": "getTenantLink('rangao', '/orders', 'inkflow-erp.vercel.app'),"
+    },
+    {
+      "file": "tests/unit/tenant-subdomain-resolution.test.ts",
+      "line": 295,
+      "content": "'https://rangao.inkflow-erp.vercel.app/orders'"
+    },
+    {
+      "file": "tests/unit/tenant-subdomain-resolution.test.ts",
+      "line": 298,
+      "content": "getTenantLink('rangao', 'dashboard', 'inkflow.bd'),"
+    },
+    {
+      "file": "tests/unit/tenant-subdomain-resolution.test.ts",
+      "line": 299,
+      "content": "'https://rangao.inkflow.bd/dashboard'"
+    },
+    {
+      "file": "tests/unit/tenant-subdomain-resolution.test.ts",
+      "line": 302,
+      "content": "getTenantLink('vision-sign', '/invoices/INV-2026-001', 'inkflow.com'),"
+    },
+    {
+      "file": "tests/unit/tenant-subdomain-resolution.test.ts",
+      "line": 303,
+      "content": "'https://vision-sign.inkflow.com/invoices/INV-2026-001'"
+    },
+    {
+      "file": "tests/unit/tenant-subdomain-resolution.test.ts",
+      "line": 306,
+      "content": "getTenantLink('vision', '/quotations/QUO-2026-001', 'inkflow.com.bd'),"
+    },
+    {
+      "file": "tests/unit/tenant-subdomain-resolution.test.ts",
+      "line": 307,
+      "content": "'https://vision.inkflow.com.bd/quotations/QUO-2026-001'"
+    },
+    {
+      "file": "tests/unit/tenant-subdomain-resolution.test.ts",
+      "line": 317,
+      "content": "formatDocumentUrl('rangao', 'invoice', 'INV-100', 'inkflow-erp.vercel.app'),"
+    },
+    {
+      "file": "tests/unit/tenant-subdomain-resolution.test.ts",
+      "line": 318,
+      "content": "'https://rangao.inkflow-erp.vercel.app/invoices/INV-100'"
+    },
+    {
+      "file": "tests/unit/tenant-subdomain-resolution.test.ts",
+      "line": 321,
+      "content": "formatDocumentUrl('rangao', 'quotation', 'QUO-200', 'inkflow.bd'),"
+    },
+    {
+      "file": "tests/unit/tenant-subdomain-resolution.test.ts",
+      "line": 322,
+      "content": "'https://rangao.inkflow.bd/quotations/QUO-200'"
+    },
+    {
+      "file": "tests/unit/tenant-subdomain-resolution.test.ts",
+      "line": 325,
+      "content": "formatDocumentUrl('vision-sign', 'receipt', 'MR-300', 'inkflow.com'),"
+    },
+    {
+      "file": "tests/unit/tenant-subdomain-resolution.test.ts",
+      "line": 326,
+      "content": "'https://vision-sign.inkflow.com/billing?receipt=MR-300'"
+    },
+    {
+      "file": "tests/unit/tenant-subdomain-resolution.test.ts",
+      "line": 331,
+      "content": "assert.equal(getAuthCookieOptions('inkflow.bd').domain, undefined)"
+    },
+    {
+      "file": "tests/unit/tenant-subdomain-resolution.test.ts",
+      "line": 332,
+      "content": "assert.equal(getAuthCookieOptions('inkflow.com').domain, undefined)"
+    },
+    {
+      "file": "tests/unit/tenant-subdomain-resolution.test.ts",
+      "line": 333,
+      "content": "assert.equal(getAuthCookieOptions('inkflow.com.bd').domain, undefined)"
+    },
+    {
+      "file": "tests/unit/tenant-subdomain-resolution.test.ts",
+      "line": 334,
+      "content": "assert.equal(getAuthCookieOptions('inkflow-erp.vercel.app').domain, undefined)"
+    },
+    {
+      "file": "tests/unit/unified-communication-templates.test.ts",
+      "line": 109,
+      "content": "attachmentUrl: 'https://cdn.inkflow.com.bd/invoices/INV-2026-001.pdf',"
+    },
+    {
+      "file": "tests/unit/unified-communication-templates.test.ts",
+      "line": 116,
+      "content": "assert.ok(log.message_content.includes('Document Link: https://cdn.inkflow.com.bd/invoices/INV-2026-001.pdf'))"
+    },
+    {
+      "file": "types/platform.types.ts",
+      "line": 749,
+      "content": "app_domain: 'inkflow.com.bd',"
+    },
+    {
+      "file": "types/platform.types.ts",
+      "line": 750,
+      "content": "contact_email: 'support@printerp.com.bd',"
+    }
+  ],
+  "bnMatches": [
+    {
+      "file": "components/finance/expenses-tab-view.tsx",
+      "line": 60,
+      "content": "{ id: 'rec_erp', titleEn: 'PrintERP Cloud Platform', titleBn: 'প্রিন্ট ইআরপি সাবস্ক্রিপশন', category: 'miscellaneous', amount: 3000, dueDay: 1, status: 'PAID' },"
+    },
+    {
+      "file": "components/shell/sidebar.tsx",
+      "line": 406,
+      "content": "{tagline || tBilingual('Print ERP System', 'প্রিন্ট ইআরপি সফটওয়্যার')}"
+    },
+    {
+      "file": "copy-inventory.csv",
+      "line": 2,
+      "content": "\"app.name\",\"i18n/dictionaries/en.json\",\"app\",\"PrintERP\",\"প্রিন্ট ইআরপি\",\"label\",\"\",\"\",\"scanned\""
+    },
+    {
+      "file": "copy-inventory.csv",
+      "line": 58,
+      "content": "\"auth.login_title\",\"i18n/dictionaries/en.json\",\"auth\",\"Sign In to PrintERP\",\"প্রিন্ট ইআরপি-তে প্রবেশ করুন\",\"label\",\"\",\"\",\"scanned\""
+    },
+    {
+      "file": "copy-inventory.csv",
+      "line": 4023,
+      "content": "\"code.sidebar.print_erp_system\",\"components\\shell\\sidebar.tsx\",\"shell\",\"Print ERP System\",\"প্রিন্ট ইআরপি সফটওয়্যার\",\"label\",\"\",\"\",\"scanned\""
+    },
+    {
+      "file": "i18n/dictionaries/bn.json",
+      "line": 3,
+      "content": "\"name\": \"প্রিন্ট ইআরপি\","
+    },
+    {
+      "file": "i18n/dictionaries/bn.json",
+      "line": 67,
+      "content": "\"login_title\": \"প্রিন্ট ইআরপি-তে প্রবেশ করুন\","
+    },
+    {
+      "file": "app/[tenantSlug]/support/page.tsx",
+      "line": 99,
+      "content": "titleEn=\"Enterprise Support & Helpdesk\"titleBn=\"এন্টারপ্রাইজ হেল্পডেস্ক ও লাইভ সাপোর্ট\"descriptionEn=\"Direct communication channel with PrintERP engineers, press technicians, and billing specialists.\"descriptionBn=\"প্রিন্টইআরপি ইঞ্জিনিয়ার, প্রেস টেকনিশিয়ান ও হিসাব বিশেষজ্ঞদের সাথে সরাসরি সহায়তা ও যোগাযোগ চ্যানেল।\"icon={Headset}"
+    },
+    {
+      "file": "app/faq/page.tsx",
+      "line": 26,
+      "content": "{tBilingual('Frequently Asked Questions', 'প্রিন্টইআরপি সাধারণ প্রশ্নোত্তর')}"
+    },
+    {
+      "file": "app/terms/page.tsx",
+      "line": 31,
+      "content": "'প্রিন্টইআরপি প্ল্যাটফর্ম ব্যবহার ও সেবার নীতিমালা।'"
+    },
+    {
+      "file": "components/marketing/core-problems-section.tsx",
+      "line": 45,
+      "content": "'কোটেশন যখন হোয়াটসঅ্যাপে, কাজের মাপ ছেঁড়া চিরকুটে আর বাকি টাকা স্মৃতির ওপর থাকে, তখন কাজের ভুল ও লোকসান ঠেকানো অসম্ভব। প্রিন্টইআরপি এই বিশৃঙ্খলাকে শৃঙ্খলায় রূপান্তর করে।'"
+    },
+    {
+      "file": "components/marketing/core-problems-section.tsx",
+      "line": 99,
+      "content": "<span>{tBilingual('With PrintERP: Connected & Clear', 'প্রিন্টইআরপিতে: সমন্বিত ও পরিষ্কার')}</span>"
+    },
+    {
+      "file": "components/marketing/core-workflow-section.tsx",
+      "line": 43,
+      "content": "'প্রিন্টইআরপি প্রেস ও সাইনেজ ব্যবসার বাস্তব কর্মপ্রবাহের সাথে মানানসই: প্রয়োজন অনুযায়ী নমনীয় ধাপ, বহুমুখী কাজের বিভাজন ও স্বচ্ছ হিসাব।'"
+    },
+    {
+      "file": "components/marketing/faq-section.tsx",
+      "line": 36,
+      "content": "'প্রিন্টইআরপির ফিচার, রোল স্টক, বাংলা ভাষা, টাকা হিসাব এবং সহজে শুরু করার স্পষ্ট উত্তর।'"
+    },
+    {
+      "file": "components/marketing/feature-deep-dive-section.tsx",
+      "line": 506,
+      "content": "'অনেক সময় লাখ টাকার বিল করেও মাস শেষে ক্যাশ থাকে না। কারণ লুকায়িত খরচগুলো হিসাবে আসে না। প্রিন্টইআরপিতে মেটেরিয়াল, কালি, বিদ্যুৎ, কারিগরের মজুরি ও পরিবহন বাদ দিয়ে প্রতিটি কাজের আসল লাভ নিশ্চিত করা হয়।'"
+    },
+    {
+      "file": "components/marketing/feature-deep-dive-section.tsx",
+      "line": 723,
+      "content": "'প্রেসের লাভ আটকে থাকে কাস্টমারের বাকি টাকায়। প্রিন্টইআরপি স্বয়ংক্রিয়ভাবে কার কাছে কত টাকা বাকি আছে তা হিসাব রাখে এবং ১ ক্লিকে গ্রাহকের হোয়াটসঅ্যাপে ভদ্র তাগাদার মেসেজ পাঠায়।'"
+    },
+    {
+      "file": "components/marketing/industry-solutions-section.tsx",
+      "line": 35,
+      "content": "'আরামবাগের ব্যানার শপ, ফকিরাপুলের অফসেট প্রেস কিংবা চট্টগ্রামের সাইনবোর্ড ফ্যাব্রিকেশন—প্রিন্টইআরপি আপনার কারখানার কাজের ধরন অনুযায়ী মানানসই।'"
+    },
+    {
+      "file": "components/marketing/operational-advantages-section.tsx",
+      "line": 38,
+      "content": "'সাধারণ রিটেইল সফটওয়্যার প্রেসে অচল, কারণ এখানে প্রতিটি কাজ কাস্টম প্রজেক্ট। প্রিন্টইআরপি পরিমাপ, রোল স্টক, মেশিন কিউ ও বাস্তব প্রেস কালচারের ওপর ভিত্তি করে নির্মিত।'"
+    },
+    {
+      "file": "components/marketing/what-printerp-manages-section.tsx",
+      "line": 38,
+      "content": "{tBilingual('What PrintERP Actually Manages.', 'প্রিন্টইআরপি আপনার ব্যবসায়ের ঠিক কী কী পরিচালনা করে।')}"
+    },
+    {
+      "file": "components/subscriptions/subscription-status-banner.tsx",
+      "line": 64,
+      "content": "'সতর্কতা: আপনার প্রিন্টইআরপি অ্যাকাউন্ট প্ল্যাটফর্ম অ্যাডমিন দ্বারা স্থগিত (Suspended) করা হয়েছে। নতুন কাজ বুকিং বন্ধ রয়েছে।'"
+    },
+    {
+      "file": "components/subscriptions/trial-dashboard-card.tsx",
+      "line": 94,
+      "content": "{tBilingual(currentPlan?.name || 'PrintERP Free Trial', currentPlan?.name_bn || 'প্রিন্টইআরপি ফ্রি ট্রায়াল')}"
+    },
+    {
+      "file": "components/subscriptions/trial-notification-popup.tsx",
+      "line": 213,
+      "content": "'প্রিন্টইআরপি ট্রায়াল উপভোগ করছেন?'"
+    },
+    {
+      "file": "components/subscriptions/trial-upgrade-modal.tsx",
+      "line": 192,
+      "content": ": tBilingual('Upgrade Your PrintERP Plan', 'আপনার প্রিন্টইআরপি প্ল্যান আপগ্রেড করুন')}"
+    },
+    {
+      "file": "copy-inventory.csv",
+      "line": 1862,
+      "content": "\"prop.desc.direct_communication_chan\",\"app\\[tenantSlug]\\support\\page.tsx\",\"support\",\"Direct communication channel with PrintERP engineers, press technicians, and billing specialists.\",\"প্রিন্টইআরপি ইঞ্জিনিয়ার, প্রেস টেকনিশিয়ান ও হিসাব বিশেষজ্ঞদের সাথে সরাসরি সহায়তা ও যোগাযোগ চ্যানেল।\",\"hint\",\"\",\"\",\"scanned\""
+    },
+    {
+      "file": "copy-inventory.csv",
+      "line": 3263,
+      "content": "\"code.core-problems-section.with_printerp_connected_c\",\"components\\marketing\\core-problems-section.tsx\",\"marketing\",\"With PrintERP: Connected & Clear\",\"প্রিন্টইআরপিতে: সমন্বিত ও পরিষ্কার\",\"label\",\"\",\"\",\"scanned\""
+    },
+    {
+      "file": "copy-inventory.csv",
+      "line": 3323,
+      "content": "\"code.what-printerp-manages-section.what_printerp_actually_ma\",\"components\\marketing\\what-printerp-manages-section.tsx\",\"marketing\",\"What PrintERP Actually Manages.\",\"প্রিন্টইআরপি আপনার ব্যবসায়ের ঠিক কী কী পরিচালনা করে।\",\"label\",\"\",\"\",\"scanned\""
+    },
+    {
+      "file": "copy-inventory.csv",
+      "line": 4094,
+      "content": "\"code.trial-upgrade-modal.upgrade_your_printerp_pla\",\"components\\subscriptions\\trial-upgrade-modal.tsx\",\"subscriptions\",\"Upgrade Your PrintERP Plan\",\"আপনার প্রিন্টইআরপি প্ল্যান আপগ্রেড করুন\",\"label\",\"\",\"\",\"scanned\""
+    },
+    {
+      "file": "lib/marketing/marketing-data.ts",
+      "line": 496,
+      "content": "qBn: 'প্রিন্টইআরপি (PrintERP) কী?',"
+    },
+    {
+      "file": "lib/marketing/marketing-data.ts",
+      "line": 498,
+      "content": "aBn: 'প্রিন্টইআরপি হলো বাংলাদেশের ডিজিটাল প্রিন্ট, অফসেট প্রেস, ব্যানার, সাইনবোর্ড ফ্যাব্রিকেশন ও বিজ্ঞাপন এজেন্সির জন্য বিশেষভাবে তৈরি সফটওয়্যার। এটি কোটেশন, অর্ডার, ডিজাইন অনুমোদন, কারখানা প্রোডাকশন, স্টক, চালান ও বকেয়া আদায়ের পুরো ব্যবসাকে এক ছাদের নিচে পরিচালনা করে।',"
+    },
+    {
+      "file": "lib/marketing/marketing-data.ts",
+      "line": 502,
+      "content": "qBn: 'প্রিন্টইআরপি কাদের জন্য তৈরি?',"
+    },
+    {
+      "file": "lib/marketing/marketing-data.ts",
+      "line": 532,
+      "content": "qBn: 'প্রিন্টইআরপিতে কি বাংলা ভাষা সাপোর্ট করে?',"
+    },
+    {
+      "file": "lib/marketing/marketing-data.ts",
+      "line": 550,
+      "content": "qBn: 'প্রিন্টইআরপি কি স্মার্টফোনে ব্যবহার করা যায়?',"
+    },
+    {
+      "file": "lib/marketing/marketing-data.ts",
+      "line": 552,
+      "content": "aBn: 'প্রিন্টইআরপি সম্পূর্ণ মোবাইল-ফ্রেন্ডলি। ফলে কম্পিউটার ছাড়াও যেকোনো সাধারণ স্মার্টফোনে লাইভ সেলস, বকেয়া খাতা ও প্রোডাকশন মনিটর করা যায়।',"
+    },
+    {
+      "file": "lib/marketing/marketing-data.ts",
+      "line": 562,
+      "content": "qBn: 'খাতা বা এক্সেল থেকে প্রিন্টইআরপিতে আসা কতটা সহজ?',"
+    },
+    {
+      "file": "app/platform/login/page.tsx",
+      "line": 154,
+      "content": "{tBilingual('Operate InkFlow.', 'ইঙ্কফ্লো পরিচালনা করুন।')}"
+    },
+    {
+      "file": "app/platform/login/page.tsx",
+      "line": 163,
+      "content": "'একটি নিরাপদ কন্ট্রোল সেন্টার থেকে ইঙ্কফ্লো প্ল্যাটফর্ম, ক্লায়েন্ট ও সিস্টেম পরিচালনা করুন।'"
+    },
+    {
+      "file": "copy-inventory.csv",
+      "line": 2113,
+      "content": "\"code.page.operate_inkflow_\",\"app\\platform\\login\\page.tsx\",\"login\",\"Operate InkFlow.\",\"ইঙ্কফ্লো পরিচালনা করুন।\",\"label\",\"\",\"\",\"scanned\""
+    }
+  ]
+}
