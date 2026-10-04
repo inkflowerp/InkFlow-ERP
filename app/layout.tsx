@@ -5,6 +5,7 @@ import { ThemeProvider } from '@/components/providers/theme-provider'
 import { I18nProvider } from '@/i18n/context'
 import { PlatformSettingsProvider } from '@/components/providers/platform-settings-provider'
 import { PlatformService } from '@/services/platform.service'
+import { BRAND } from '@/config/brand'
 import './globals.css'
 
 const inter = Inter({
@@ -35,7 +36,8 @@ export const viewport: Viewport = {
 
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await PlatformService.getPublicPlatformSettings()
-  const title = settings.app_title || `${settings.app_name || 'PrintERP'} SaaS - Operating System for Printing & Signage in Bangladesh`
+  const appName = settings.app_name || BRAND.name
+  const title = settings.app_title || `${appName} - Operating System for Printing & Signage in Bangladesh`
   const description = settings.app_description || 'Production-ready SaaS for digital printing, offset press, flex/banner, stickers, packaging, LED signage, acrylic fabrication, and installation businesses in Bangladesh.'
   const favicon = settings.favicon_url || '/favicon.ico'
 
@@ -51,7 +53,7 @@ export async function generateMetadata(): Promise<Metadata> {
     appleWebApp: {
       capable: true,
       statusBarStyle: 'black-translucent',
-      title: settings.app_name || 'PrintERP',
+      title: appName,
     },
   }
 }

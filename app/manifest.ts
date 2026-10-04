@@ -1,9 +1,10 @@
 import type { MetadataRoute } from 'next'
+import { BRAND } from '@/config/brand'
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'PrintERP SaaS - Printing & Signage OS',
-    short_name: 'PrintERP',
+    name: `${BRAND.name} - Printing & Signage OS`,
+    short_name: BRAND.name,
     description: 'Operating System for Digital Printing, Offset Press, Packaging, and LED Signage in Bangladesh.',
     start_url: '/',
     display: 'standalone',

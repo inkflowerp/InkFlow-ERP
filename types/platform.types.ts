@@ -2,6 +2,8 @@
 // PrintERP SaaS - Platform Administration & Root Governance Types
 // ==============================================================================
 
+import { BRAND } from '@/config/brand'
+
 export type PlatformCompanyStatus =
   | 'trial'
   | 'active'
@@ -739,18 +741,19 @@ export interface PlatformSystemSettings {
 }
 
 export const DEFAULT_PLATFORM_BRANDING = {
-  app_name: 'InkFlow ERP',
+  app_name: BRAND.name,
   app_logo_url: '',
-  app_tagline: 'The Complete Printing & Signage Operating System',
+  app_tagline: BRAND.tagline,
   favicon_url: '/favicon.ico',
-  app_title: 'PrintERP SaaS - Operating System for Printing & Signage in Bangladesh',
+  app_title: `${BRAND.name} - Operating System for Printing & Signage in Bangladesh`,
   app_description: 'Production-ready SaaS for digital printing, offset press, flex/banner, stickers, packaging, LED signage, acrylic fabrication, and installation businesses in Bangladesh.',
-  support_helpline: '+880 1819-876543',
-  app_domain: 'inkflow.com.bd',
+  support_helpline: BRAND.helplineDisplay,
+  app_domain: BRAND.rootDomain,
   contact_email: 'support@printerp.com.bd',
-  contact_phone: '+880 1819-876543',
+  contact_phone: BRAND.helplineDisplay,
   contact_address: 'Arambagh Press Cluster, Motijheel, Dhaka-1000, Bangladesh',
 } as const
+
 
 
 export interface PlatformTenantUserItem {

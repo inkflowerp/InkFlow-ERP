@@ -11,6 +11,7 @@ import {
 } from 'lucide-react'
 import { useI18n } from '@/i18n/context'
 import { usePlatformSettings } from '@/hooks/use-platform-settings'
+import { BRAND } from '@/config/brand'
 
 export function MarketingFooter() {
  const { locale, setLocale, tBilingual } = useI18n()
@@ -43,7 +44,7 @@ export function MarketingFooter() {
 
             <p className="text-xs text-muted-foreground leading-relaxed max-w-sm bangla-text">
               {tBilingual(
- tagline || 'The operating system for print and signage businesses in Bangladesh.',
+                tagline || BRAND.tagline,
                 'বাংলাদেশের প্রিন্টিং প্রেস, সাইনেজ ও ফ্যাব্রিকেশন কারখানার জন্য সমন্বিত অপারেটিং সিস্টেম।'
               )}
             </p>
@@ -55,7 +56,23 @@ export function MarketingFooter() {
               </div>
               <div className="flex items-center gap-2">
                 <Phone className="h-3.5 w-3.5 text-primary shrink-0"/>
-                <span className="tabular-nums">{contactPhone || supportHelpline || '+880 1819-876543'}</span>
+                <a
+                  href={`tel:${BRAND.helplineE164}`}
+                  className="tabular-nums hover:text-foreground transition-colors"
+                >
+                  {contactPhone || supportHelpline || BRAND.helplineDisplay}
+                </a>
+              </div>
+              <div className="flex items-center gap-2">
+                <a
+                  href={BRAND.whatsappUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-foreground transition-colors inline-flex items-center gap-1"
+                >
+                  <span className="font-semibold text-primary">WhatsApp:</span>
+                  <span className="tabular-nums">{BRAND.helplineDisplay}</span>
+                </a>
               </div>
               <div className="flex items-center gap-2">
                 <Mail className="h-3.5 w-3.5 text-primary shrink-0"/>
