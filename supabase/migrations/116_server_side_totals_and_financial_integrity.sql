@@ -53,14 +53,14 @@ SET
         ROUND(GREATEST(0, COALESCE(subtotal, 0)) - GREATEST(0, COALESCE(discount_amount, 0)) + GREATEST(0, COALESCE(vat_amount, 0)), 2),
         GREATEST(0, COALESCE(paid_amount, 0))
     ),
-    due_amount = ROUND(GREATEST(0, COALESCE(subtotal, 0)) - GREATEST(0, COALESCE(discount_amount, 0)) + GREATEST(0, COALESCE(vat_amount, 0)), 2) - 
+    due_amount = GREATEST(0, ROUND(GREATEST(0, COALESCE(subtotal, 0)) - GREATEST(0, COALESCE(discount_amount, 0)) + GREATEST(0, COALESCE(vat_amount, 0)), 2) - 
         LEAST(
             ROUND(GREATEST(0, COALESCE(subtotal, 0)) - GREATEST(0, COALESCE(discount_amount, 0)) + GREATEST(0, COALESCE(vat_amount, 0)), 2),
             GREATEST(0, COALESCE(paid_amount, 0))
-        )
+        ) - COALESCE(write_off_amount, 0))
 WHERE grand_total <> ROUND(COALESCE(subtotal, 0) - COALESCE(discount_amount, 0) + COALESCE(vat_amount, 0), 2)
    OR paid_amount > grand_total
-   OR ROUND(paid_amount + due_amount, 2) <> ROUND(grand_total, 2);
+   OR ROUND(paid_amount + due_amount + COALESCE(write_off_amount, 0), 2) <> ROUND(grand_total, 2);
 
 ALTER TABLE public.invoices
     ADD CONSTRAINT chk_invoice_subtotal_non_neg CHECK (subtotal >= 0),

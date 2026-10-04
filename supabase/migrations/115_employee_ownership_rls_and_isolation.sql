@@ -67,6 +67,8 @@ GRANT EXECUTE ON FUNCTION public.auth_get_current_company_user_id(UUID) TO authe
 -- ==============================================================================
 DROP POLICY IF EXISTS "Active company users can view payroll items" ON public.payroll_items;
 DROP POLICY IF EXISTS "Authorized company users can manage payroll items" ON public.payroll_items;
+DROP POLICY IF EXISTS "payroll_items_select_scoped" ON public.payroll_items;
+DROP POLICY IF EXISTS "payroll_items_manage_authorized" ON public.payroll_items;
 
 CREATE POLICY "payroll_items_select_scoped"
     ON public.payroll_items FOR SELECT
@@ -152,6 +154,8 @@ CREATE POLICY "salary_advances_manage_scoped"
 -- ==============================================================================
 DROP POLICY IF EXISTS "Active company users can view attendances" ON public.attendances;
 DROP POLICY IF EXISTS "Authorized company users can manage attendances" ON public.attendances;
+DROP POLICY IF EXISTS "attendances_select_scoped" ON public.attendances;
+DROP POLICY IF EXISTS "attendances_manage_scoped" ON public.attendances;
 
 CREATE POLICY "attendances_select_scoped"
     ON public.attendances FOR SELECT
@@ -177,6 +181,7 @@ CREATE POLICY "attendances_manage_scoped"
     );
 
 DROP POLICY IF EXISTS "Company users can view attendance records" ON public.attendance_records;
+DROP POLICY IF EXISTS "attendance_records_select_scoped" ON public.attendance_records;
 
 CREATE POLICY "attendance_records_select_scoped"
     ON public.attendance_records FOR SELECT
@@ -195,6 +200,10 @@ CREATE POLICY "attendance_records_select_scoped"
 -- ==============================================================================
 DROP POLICY IF EXISTS "Active company users can view production tasks" ON public.production_tasks;
 DROP POLICY IF EXISTS "Authorized company users can manage production tasks" ON public.production_tasks;
+DROP POLICY IF EXISTS "production_tasks_select_scoped" ON public.production_tasks;
+DROP POLICY IF EXISTS "production_tasks_update_scoped" ON public.production_tasks;
+DROP POLICY IF EXISTS "production_tasks_manage_authorized" ON public.production_tasks;
+DROP POLICY IF EXISTS "production_tasks_delete_authorized" ON public.production_tasks;
 
 CREATE POLICY "production_tasks_select_scoped"
     ON public.production_tasks FOR SELECT
@@ -262,6 +271,8 @@ CREATE POLICY "production_tasks_delete_authorized"
 -- ==============================================================================
 DROP POLICY IF EXISTS "Active company users can view design jobs" ON public.design_jobs;
 DROP POLICY IF EXISTS "Authorized company users can update design jobs" ON public.design_jobs;
+DROP POLICY IF EXISTS "design_jobs_select_scoped" ON public.design_jobs;
+DROP POLICY IF EXISTS "design_jobs_update_scoped" ON public.design_jobs;
 
 CREATE POLICY "design_jobs_select_scoped"
     ON public.design_jobs FOR SELECT

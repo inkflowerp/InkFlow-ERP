@@ -140,9 +140,27 @@ grant execute on function public.validate_tenant_limit_atomic(uuid, text, intege
 alter function public.validate_tenant_limit_atomic(uuid, text, integer) set search_path = public, pg_temp;
 
 -- 5.6 Sequence Generators & Platform Internal Queries
-revoke execute on function public.get_next_document_number(uuid, text) from public, anon, authenticated;
-grant execute on function public.get_next_document_number(uuid, text) to service_role;
-alter function public.get_next_document_number(uuid, text) set search_path = public, pg_temp;
+do $$
+begin
+    if exists (
+        select 1 from pg_proc p
+        join pg_namespace n on n.oid = p.pronamespace
+        where n.nspname = 'public' and p.proname = 'get_next_document_number' and p.pronargs = 2
+    ) then
+        execute 'revoke execute on function public.get_next_document_number(uuid, text) from public, anon, authenticated';
+        execute 'grant execute on function public.get_next_document_number(uuid, text) to service_role';
+        execute 'alter function public.get_next_document_number(uuid, text) set search_path = public, pg_temp';
+    end if;
+    if exists (
+        select 1 from pg_proc p
+        join pg_namespace n on n.oid = p.pronamespace
+        where n.nspname = 'public' and p.proname = 'get_next_document_number' and p.pronargs = 3
+    ) then
+        execute 'revoke execute on function public.get_next_document_number(uuid, text, text) from public, anon, authenticated';
+        execute 'grant execute on function public.get_next_document_number(uuid, text, text) to service_role';
+        execute 'alter function public.get_next_document_number(uuid, text, text) set search_path = public, pg_temp';
+    end if;
+end $$;
 
 revoke execute on function public.get_next_tenant_document_number(uuid, text, text) from public, anon, authenticated;
 grant execute on function public.get_next_tenant_document_number(uuid, text, text) to service_role;
@@ -1380,8 +1398,25 @@ begin
 end;
 $$;
 
-revoke execute on function public.get_tenant_dashboard_metrics from public, anon;
-grant execute on function public.get_tenant_dashboard_metrics to authenticated, service_role;
+do $$
+begin
+    if exists (
+        select 1 from pg_proc p
+        join pg_namespace n on n.oid = p.pronamespace
+        where n.nspname = 'public' and p.proname = 'get_tenant_dashboard_metrics' and p.pronargs = 1
+    ) then
+        execute 'revoke execute on function public.get_tenant_dashboard_metrics(uuid) from public, anon';
+        execute 'grant execute on function public.get_tenant_dashboard_metrics(uuid) to authenticated, service_role';
+    end if;
+    if exists (
+        select 1 from pg_proc p
+        join pg_namespace n on n.oid = p.pronamespace
+        where n.nspname = 'public' and p.proname = 'get_tenant_dashboard_metrics' and p.pronargs = 2
+    ) then
+        execute 'revoke execute on function public.get_tenant_dashboard_metrics(uuid, uuid) from public, anon';
+        execute 'grant execute on function public.get_tenant_dashboard_metrics(uuid, uuid) to authenticated, service_role';
+    end if;
+end $$;
 
 revoke execute on function public.get_tenant_dashboard_metrics_v2 from public, anon;
 grant execute on function public.get_tenant_dashboard_metrics_v2 to authenticated, service_role;
@@ -1452,6 +1487,10 @@ alter function public.platform_is_feature_enabled(text, uuid) set search_path = 
 drop policy if exists "Admins can manage role permissions" on public.role_permissions;
 drop policy if exists "Users can view role permissions" on public.role_permissions;
 drop policy if exists "Users can view role_permissions" on public.role_permissions;
+drop policy if exists "role_permissions_select_policy" on public.role_permissions;
+drop policy if exists "role_permissions_insert_policy" on public.role_permissions;
+drop policy if exists "role_permissions_update_policy" on public.role_permissions;
+drop policy if exists "role_permissions_delete_policy" on public.role_permissions;
 
 -- Enable and force RLS on role_permissions
 alter table public.role_permissions enable row level security;
