@@ -6,6 +6,7 @@ import { TENANT_SESSION_COOKIE, PLATFORM_SESSION_COOKIE, type TenantSessionData 
 import { resolveTenant, resolveHostname, isReservedSlug, isValidSlugFormat, getAuthCookieOptions } from '@/lib/tenant/tenant-resolution'
 import { getTenantLink } from '@/lib/tenant/tenant-url'
 import { verifySessionToken } from '@/lib/security/session-signer'
+import { BRAND } from '@/config/brand'
 
 // Canonical root-level tenant application routes redirected dynamically
 export const TENANT_APP_ROUTES = new Set([
@@ -64,6 +65,27 @@ export async function updateSession(request: NextRequest) {
     )
     const pathname = request.nextUrl.pathname
     const search = request.nextUrl.search
+
+    // Legacy host 308 redirect: *.inkflow-erp.vercel.app -> printflow.bd
+    // Skips non-production deployment URLs (*-<hash>-*.vercel.app) and localhost.
+    if (
+      !isLocal &&
+      (hostWithoutPort === 'inkflow-erp.vercel.app' || hostWithoutPort.endsWith('.inkflow-erp.vercel.app'))
+    ) {
+      let targetDomain: string = BRAND.rootDomain
+      if (hostWithoutPort === 'inkflow-erp.vercel.app' || hostWithoutPort === 'www.inkflow-erp.vercel.app') {
+        targetDomain = BRAND.rootDomain
+      } else {
+        const sub = hostWithoutPort.slice(0, -'.inkflow-erp.vercel.app'.length)
+        if (sub === 'admin' || sub === 'platform') {
+          targetDomain = `admin.${BRAND.rootDomain}`
+        } else if (isValidSlugFormat(sub) && !isReservedSlug(sub)) {
+          targetDomain = `${sub}.${BRAND.rootDomain}`
+        }
+      }
+      const redirectUrl = new URL(`https://${targetDomain}${pathname}${search}`)
+      return NextResponse.redirect(redirectUrl, 308)
+    }
 
     // 0. Next.js Server Actions:
     // On tenant subdomains (e.g. rangao.inkflow-erp.vercel.app), routes are compiled inside app/[tenantSlug]/...
@@ -187,6 +209,26 @@ export async function updateSession(request: NextRequest) {
       pathname.startsWith('/terms') ||
       pathname.startsWith('/privacy') ||
       pathname === '/logout'
+
+    // 3b. Platform Admin Host Routing (admin.printflow.bd / platform.printflow.bd / admin.localhost)
+    if (hostType === 'platform') {
+      if (pathname === '/' || pathname === '') {
+        const url = request.nextUrl.clone()
+        url.pathname = '/platform'
+        return applyNoCacheHeaders(NextResponse.redirect(url, 307))
+      }
+      if (pathname === '/login') {
+        const url = request.nextUrl.clone()
+        url.pathname = '/platform/login'
+        return applyNoCacheHeaders(NextResponse.redirect(url, 307))
+      }
+      if (!pathname.startsWith('/platform') && !isPublicStaticOrSystem) {
+        // Any tenant routes attempted on admin host redirect to /platform
+        const url = request.nextUrl.clone()
+        url.pathname = '/platform'
+        return applyNoCacheHeaders(NextResponse.redirect(url, 307))
+      }
+    }
 
     // Cryptographically verify Platform Session Cookie with HMAC-SHA256
     interface PlatformSessionPayload {
@@ -312,6 +354,28 @@ export async function updateSession(request: NextRequest) {
     // B. TENANT SUBDOMAIN ROUTING (e.g. vision.inkflow.com.bd or vision.localhost:3000)
     // --------------------------------------------------------------------------
     if (hostType === 'tenant' && tenantSlug) {
+      // 0. Platform routes are completely unreachable on tenant hosts
+      if (pathname.startsWith('/platform')) {
+        const notFoundUrl = request.nextUrl.clone()
+        notFoundUrl.pathname = '/404'
+        return NextResponse.rewrite(notFoundUrl, { status: 404 })
+      }
+
+      // 0b. Reject & clear tenant session cookie on tenant mismatch
+      if (
+        hasValidTenantCookie &&
+        tenantSessionData?.companySlug &&
+        tenantSessionData.companySlug.toLowerCase() !== tenantSlug.toLowerCase()
+      ) {
+        responseCookies.push({
+          name: TENANT_SESSION_COOKIE,
+          value: '',
+          options: { path: '/', maxAge: 0, expires: new Date(0) },
+        })
+        hasValidTenantCookie = false
+        tenantSessionData = null
+      }
+
       // 1. Static and system paths pass through
       if (isPublicStaticOrSystem) {
         const res = NextResponse.next({ request })

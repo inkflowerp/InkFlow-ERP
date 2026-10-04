@@ -4,7 +4,6 @@ import React, { createContext, useContext, useState, useEffect, useCallback, use
 import type { PlatformSystemSettings } from '@/types/platform.types'
 import { DEFAULT_PLATFORM_BRANDING } from '@/types/platform.types'
 import { getPublicPlatformSettingsAction } from '@/actions/platform-data.actions'
-import { setRuntimeRootDomain } from '@/lib/tenant/tenant-resolution'
 
 export interface PlatformSettingsContextType {
  appName: string
@@ -97,10 +96,6 @@ export function PlatformSettingsProvider({
  metaDesc.content = description
     }
 
-    // 3. Synchronize Runtime Domain for tenant URL generation
- if (domain) {
- setRuntimeRootDomain(domain)
-    }
   }, [faviconUrl, description, domain, appName])
 
  const refreshSettings = useCallback(async () => {
@@ -109,9 +104,6 @@ export function PlatformSettingsProvider({
  const res = await getPublicPlatformSettingsAction()
  if (res.success && res.data) {
  setSettings(res.data)
- if (res.data.app_domain) {
- setRuntimeRootDomain(res.data.app_domain)
-        }
       }
     } catch {
       // Non-blocking fallback
@@ -126,9 +118,6 @@ export function PlatformSettingsProvider({
  const customEvent = e as CustomEvent<PlatformSystemSettings>
  if (customEvent.detail) {
  setSettings(customEvent.detail)
- if (customEvent.detail.app_domain) {
- setRuntimeRootDomain(customEvent.detail.app_domain)
-        }
       } else {
  refreshSettings()
       }

@@ -4,6 +4,8 @@
 // Strict single-label validation, host normalization, and host-only cookie isolation.
 // ==============================================================================
 
+import { BRAND } from '../../config/brand.ts'
+
 /**
  * Authoritative list of reserved system subdomains and routes.
  * Cannot be claimed as tenant slugs during registration, onboarding, or renames.
@@ -170,19 +172,6 @@ export interface ResolveTenantOptions {
   allowPathFallback?: boolean
 }
 
-let runtimeRootDomain: string | null = null
-
-/**
- * Sets the active platform-configured root domain dynamically.
- */
-export function setRuntimeRootDomain(domain: string | null | undefined): void {
-  if (domain && domain.trim()) {
-    runtimeRootDomain = domain.replace(/^https?:\/\//i, '').split('/')[0].toLowerCase().trim()
-  } else {
-    runtimeRootDomain = null
-  }
-}
-
 /**
  * Extracts the canonical root domain from any raw host across all environments.
  */
@@ -235,34 +224,34 @@ export function extractCanonicalRootDomain(rawHost: string | null | undefined): 
 }
 
 /**
- * Normalizes and extracts the configured root domain.
+ * Normalizes and extracts the configured root domain deterministically.
+ * Resolution hierarchy:
+ * 1. ROOT_DOMAIN or NEXT_PUBLIC_ROOT_DOMAIN env vars (explicit infrastructure root)
+ * 2. In browser runtime: extract canonical root from window.location.host
+ * 3. BRAND.rootDomain in production ('printflow.bd'), 'localhost:3000' otherwise
+ *
+ * NOTE: VERCEL_URL / VERCEL_PROJECT_PRODUCTION_URL / NEXT_PUBLIC_VERCEL_URL
+ * are intentionally excluded to prevent non-deterministic subdomain generation.
  */
 export function getRootDomain(): string {
-  if (runtimeRootDomain) {
-    return runtimeRootDomain
-  }
-
-  // 1. Client-side browser runtime: Extract canonical root from active browser host
-  if (typeof window !== 'undefined' && window.location && window.location.host) {
-    return extractCanonicalRootDomain(window.location.host)
-  }
-
-  // 2. Explicit server environment variables
+  // 1. Explicit server environment variables
   const configured =
     process.env.ROOT_DOMAIN ||
-    process.env.NEXT_PUBLIC_ROOT_DOMAIN ||
-    process.env.NEXT_PUBLIC_APP_DOMAIN ||
-    process.env.VERCEL_PROJECT_PRODUCTION_URL ||
-    process.env.VERCEL_URL ||
-    process.env.NEXT_PUBLIC_VERCEL_URL
+    process.env.NEXT_PUBLIC_ROOT_DOMAIN
 
   if (configured && configured.trim() !== '') {
     const clean = configured.replace(/^https?:\/\//i, '').split('/')[0].toLowerCase().trim()
     return clean.replace(/^www\./i, '').replace(/\.$/, '')
   }
 
+  // 2. Client-side browser runtime: Extract canonical root from active browser host
+  if (typeof window !== 'undefined' && window.location && window.location.host) {
+    return extractCanonicalRootDomain(window.location.host)
+  }
+
+  // 3. BRAND.rootDomain in production, localhost:3000 otherwise
   if (process.env.NODE_ENV === 'production') {
-    return 'inkflowerp.com'
+    return BRAND.rootDomain
   }
 
   return 'localhost:3000'
@@ -729,9 +718,8 @@ export function resolveHostname(
   if (resolution.type === 'tenant') {
     hostType = 'tenant'
   } else if (resolution.type === 'platform') {
-    const isLegacyAdmin = resolution.hostname.startsWith('admin.')
-    hostType = isLegacyAdmin ? 'reserved' : 'platform'
-    tenantSlug = isLegacyAdmin ? 'admin' : 'platform'
+    hostType = 'platform'
+    tenantSlug = resolution.hostname.startsWith('admin.') ? 'admin' : 'platform'
   } else if (resolution.type === 'invalid') {
     hostType = 'invalid'
   } else if (resolution.type === 'not_found' && resolution.slug && isReservedSlug(resolution.slug)) {

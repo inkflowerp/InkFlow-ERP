@@ -16,21 +16,274 @@ import {
   Sparkles,
   CheckCircle2,
   AlertTriangle,
+  Building2,
+  ExternalLink,
 } from 'lucide-react'
 import { loginSchema, LoginFormData } from '@/features/auth/auth.schemas'
-import { signInAction, signInWithGoogleAction } from '@/actions/auth.actions'
+import {
+  signInAction,
+  signInWithGoogleAction,
+  findWorkspaceAction,
+  lookupWorkspacesByEmailAction,
+} from '@/actions/auth.actions'
 import { GoogleOAuthProvider } from '@/lib/auth/auth-providers'
 import { resolveHostname } from '@/lib/tenant/tenant-resolution'
 import { getTenantLink } from '@/lib/tenant/tenant-url'
+import { BRAND } from '@/config/brand'
+import { k } from '@/lib/brand/keys'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card'
 import { useI18n } from '@/i18n/context'
 
-const SAVED_EMAIL_STORAGE_KEY = 'printerp_remembered_email'
+const SAVED_EMAIL_STORAGE_KEY = k('remembered_email')
 
-function LoginForm() {
+/**
+ * Root Domain Workspace Finder Form
+ * Invariant: Credentials are NEVER accepted on the root domain (printflow.bd or localhost:3000).
+ * Users must first specify their workspace slug/name, which redirects to the tenant subdomain.
+ */
+function WorkspaceFinderForm({ rootDomain }: { rootDomain: string }) {
+  const { locale } = useI18n()
+  const [workspaceInput, setWorkspaceInput] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  // Forgot workspace flow
+  const [showForgot, setShowForgot] = useState(false)
+  const [forgotEmail, setForgotEmail] = useState('')
+  const [isForgotLoading, setIsForgotLoading] = useState(false)
+  const [forgotWorkspaces, setForgotWorkspaces] = useState<Array<{ slug: string; name: string }> | null>(null)
+  const [forgotError, setForgotError] = useState<string | null>(null)
+
+  const handleWorkspaceSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    const trimmed = workspaceInput.trim()
+    if (!trimmed) {
+      setError(locale === 'bn' ? 'অনুগ্রহ করে ওয়ার্কস্পেসের নাম বা কোড লিখুন' : 'Please enter your workspace name or URL code')
+      return
+    }
+
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      const res = await findWorkspaceAction(trimmed)
+      if (res.success && res.slug) {
+        window.location.href = getTenantLink(res.slug, '/login')
+      } else {
+        setError(res.error || (locale === 'bn' ? 'ওয়ার্কস্পেস পাওয়া যায়নি।' : 'Workspace not found.'))
+      }
+    } catch (err: any) {
+      setError(err?.message || (locale === 'bn' ? 'সার্ভার ত্রুটি ঘটেছে।' : 'Failed to lookup workspace.'))
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleForgotLookup = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!forgotEmail.trim() || !forgotEmail.includes('@')) {
+      setForgotError(locale === 'bn' ? 'অনুগ্রহ করে সঠিক ইমেইল ঠিকানা দিন' : 'Please enter a valid email address')
+      return
+    }
+
+    setIsForgotLoading(true)
+    setForgotError(null)
+    setForgotWorkspaces(null)
+
+    try {
+      const res = await lookupWorkspacesByEmailAction(forgotEmail)
+      if (res.success && res.workspaces && res.workspaces.length > 0) {
+        setForgotWorkspaces(res.workspaces)
+      } else {
+        setForgotError(
+          locale === 'bn'
+            ? 'এই ইমেইল ঠিকানায় কোনো সক্রিয় ওয়ার্কস্পেস পাওয়া যায়নি।'
+            : 'No active workspaces found associated with this email address.'
+        )
+      }
+    } catch (err: any) {
+      setForgotError(err?.message || (locale === 'bn' ? 'ওয়ার্কস্পেস খুঁজতে সমস্যা হয়েছে।' : 'Error looking up workspaces.'))
+    } finally {
+      setIsForgotLoading(false)
+    }
+  }
+
+  return (
+    <Card className="border border-border bg-card shadow-xs">
+      <CardHeader className="space-y-1.5 text-center pb-4 pt-6 px-6">
+        <div className="mx-auto w-10 h-10 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary mb-2">
+          <Building2 className="h-5 w-5" />
+        </div>
+        <CardTitle className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+          {locale === 'bn' ? `${BRAND.nameBn}-তে সাইন ইন করুন` : `Sign In to ${BRAND.name}`}
+        </CardTitle>
+        <CardDescription className="text-xs text-muted-foreground">
+          {locale === 'bn'
+            ? 'লগইন করতে আপনার প্রতিষ্ঠানের ওয়ার্কস্পেস কোড বা নাম লিখুন।'
+            : 'Enter your workspace name or URL code to access your printing press portal.'}
+        </CardDescription>
+      </CardHeader>
+
+      <CardContent className="space-y-4 px-6">
+        {error && (
+          <div className="rounded-lg bg-destructive/10 p-3 text-xs text-destructive border border-destructive/20 flex items-start gap-2.5 animate-in fade-in-50">
+            <ShieldAlert className="h-4 w-4 shrink-0 mt-0.5" />
+            <span className="font-medium leading-relaxed">{error}</span>
+          </div>
+        )}
+
+        <form onSubmit={handleWorkspaceSubmit} className="space-y-3.5">
+          <div className="space-y-1.5">
+            <Label htmlFor="workspace-input" required>
+              {locale === 'bn' ? 'ওয়ার্কস্পেস কোড বা নাম' : 'Workspace Name or URL'}
+            </Label>
+            <div className="relative flex items-center">
+              <Input
+                id="workspace-input"
+                type="text"
+                autoComplete="organization"
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
+                placeholder="e.g. vision-sign"
+                value={workspaceInput}
+                onChange={(e) => setWorkspaceInput(e.target.value)}
+                className="pr-28 font-mono text-sm h-11"
+              />
+              <span className="absolute right-3 text-xs text-muted-foreground select-none pointer-events-none font-mono">
+                .{rootDomain}
+              </span>
+            </div>
+          </div>
+
+          <Button
+            type="submit"
+            className="w-full h-11 text-sm font-semibold cursor-pointer"
+            isLoading={isLoading}
+          >
+            <span>{locale === 'bn' ? 'এগিয়ে যান' : 'Continue to Workspace'}</span>
+            <ArrowRight className="ml-1.5 h-4 w-4" />
+          </Button>
+        </form>
+
+        <div className="pt-1 text-center">
+          <button
+            type="button"
+            onClick={() => {
+              setShowForgot(!showForgot)
+              setForgotError(null)
+              setForgotWorkspaces(null)
+            }}
+            className="text-xs text-primary hover:underline font-medium cursor-pointer"
+          >
+            {showForgot
+              ? (locale === 'bn' ? 'ফিরে যান' : 'Back to workspace entry')
+              : (locale === 'bn' ? 'ওয়ার্কস্পেস মনে নেই?' : 'Forgot your workspace URL?')}
+          </button>
+        </div>
+
+        {showForgot && (
+          <div className="p-3.5 rounded-lg bg-muted border border-border space-y-3 animate-in fade-in-50">
+            <div className="text-xs font-semibold text-foreground">
+              {locale === 'bn' ? 'ইমেইল দিয়ে ওয়ার্কস্পেস খুঁজুন' : 'Find Workspace by Email'}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {locale === 'bn'
+                ? 'আপনার অ্যাকাউন্টের ইমেইল ঠিকানা দিন, সংযুক্ত প্রতিষ্ঠানগুলো দেখানো হবে।'
+                : 'Enter your account email address to list all associated workspaces.'}
+            </p>
+
+            {forgotError && (
+              <div className="p-2 rounded bg-destructive/10 text-xs text-destructive border border-destructive/20">
+                {forgotError}
+              </div>
+            )}
+
+            <form onSubmit={handleForgotLookup} className="space-y-2">
+              <Input
+                type="email"
+                placeholder="user@company.com"
+                value={forgotEmail}
+                onChange={(e) => setForgotEmail(e.target.value)}
+                className="text-xs h-9 bg-background"
+              />
+              <Button
+                type="submit"
+                size="sm"
+                variant="outline"
+                className="w-full text-xs h-9 cursor-pointer"
+                isLoading={isForgotLoading}
+              >
+                {locale === 'bn' ? 'ওয়ার্কস্পেস খুঁজুন' : 'Lookup Workspaces'}
+              </Button>
+            </form>
+
+            {forgotWorkspaces && forgotWorkspaces.length > 0 && (
+              <div className="space-y-1.5 pt-1">
+                <div className="text-xs font-semibold text-muted-foreground">
+                  {locale === 'bn' ? 'পাওয়া গেছে:' : 'Found Workspaces:'}
+                </div>
+                <div className="space-y-1">
+                  {forgotWorkspaces.map((ws) => (
+                    <a
+                      key={ws.slug}
+                      href={getTenantLink(ws.slug, '/login')}
+                      className="flex items-center justify-between p-2 rounded-md bg-card hover:bg-muted text-xs border border-border transition-colors group"
+                    >
+                      <span className="font-semibold text-foreground group-hover:text-primary">
+                        {ws.name}
+                      </span>
+                      <span className="font-mono text-muted-foreground flex items-center gap-1">
+                        {ws.slug}.{rootDomain}
+                        <ExternalLink className="h-3 w-3" />
+                      </span>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </CardContent>
+
+      <CardFooter className="flex flex-col space-y-2 pt-3 pb-5 px-6 text-center text-xs text-muted-foreground border-t border-border">
+        <div>
+          {locale === 'bn' ? 'নতুন প্রতিষ্ঠান নিবন্ধন করবেন?' : "Don't have a workspace yet?"}{' '}
+          <Link
+            href="/register"
+            className="font-bold text-primary hover:underline"
+          >
+            {locale === 'bn' ? 'রেজিস্টার করুন' : 'Register your Press'}
+          </Link>
+        </div>
+        <div>
+          <Link
+            href="/platform/login"
+            className="text-muted-foreground hover:text-foreground hover:underline"
+          >
+            {locale === 'bn' ? 'প্ল্যাটফর্ম অ্যাডমিন পোর্টাল' : 'Platform Control Center'}
+          </Link>
+        </div>
+      </CardFooter>
+    </Card>
+  )
+}
+
+/**
+ * Tenant Subdomain Login Form
+ * Renders on tenant subdomains ([tenantSlug].printflow.bd or [tenantSlug].localhost:3000).
+ * Posts credentials exclusively to the tenant origin.
+ */
+function TenantLoginForm({
+  tenantSlug,
+  rootDomain,
+}: {
+  tenantSlug: string | null
+  rootDomain: string
+}) {
   const [error, setError] = useState<string | null>(null)
   const [isPlatformAdminError, setIsPlatformAdminError] = useState(false)
   const [isNetworkError, setIsNetworkError] = useState(false)
@@ -41,7 +294,6 @@ function LoginForm() {
   const [isCapsLock, setIsCapsLock] = useState(false)
   const [statusMessage, setStatusMessage] = useState<string | null>(null)
 
-  const router = useRouter()
   const searchParams = useSearchParams()
   const { t, locale } = useI18n()
 
@@ -62,7 +314,6 @@ function LoginForm() {
   const currentEmail = watch('email')
   const currentPassword = watch('password')
 
-  // Load remembered email and handle search param feedback
   useEffect(() => {
     try {
       const savedEmail = localStorage.getItem(SAVED_EMAIL_STORAGE_KEY)
@@ -87,8 +338,8 @@ function LoginForm() {
     } else if (errParam === 'unauthorized_google' || errParam === 'unauthorized_tenant') {
       setError(
         locale === 'bn'
-          ? 'এই গুগল অ্যাকাউন্টটির সাথে কোনো অনুমোদিত প্রতিষ্ঠানের সংযোগ নেই। অনুগ্রহ করে অ্যাডমিনের সাথে যোগাযোগ করুন অথবা নতুন প্রতিষ্ঠান নিবন্ধন করুন।'
-          : 'This Google account is not associated with an authorized business. Please contact your administrator or create a new company account.'
+          ? 'এই গুগল অ্যাকাউন্টটির সাথে এই প্রতিষ্ঠানের সংযোগ নেই। অনুগ্রহ করে অ্যাডমিনের সাথে যোগাযোগ করুন।'
+          : 'This Google account is not associated with this workspace. Please contact your administrator.'
       )
     } else if (errParam === 'unauthorized') {
       setStatusMessage(
@@ -156,7 +407,6 @@ function LoginForm() {
 
     const normalizedEmail = email.trim().toLowerCase()
 
-    // Save or clear remembered email
     try {
       if (rememberMe) {
         localStorage.setItem(SAVED_EMAIL_STORAGE_KEY, normalizedEmail)
@@ -176,83 +426,30 @@ function LoginForm() {
           return
         }
 
-        const targetSlug = res.data.session.companySlug || 'my-company'
+        const targetSlug = res.data.session.companySlug
         const paramRedirect = searchParams.get('redirectTo')
 
-        // Resolve active host topology to avoid redundant slug prefixes on subdomains
-        let isCurrentHostSubdomain = false
-        let currentHostTenantSlug: string | null = null
-        let isLocalhost = false
-        let isPslDomain = false
-        if (typeof window !== 'undefined') {
-          const resHost = resolveHostname(window.location.host)
-          isLocalhost = Boolean(
-            resHost.isLocalhost ||
-            window.location.hostname === 'localhost' ||
-            window.location.hostname === '127.0.0.1'
-          )
-          isPslDomain = Boolean(
-            window.location.hostname.endsWith('.vercel.app') ||
-            window.location.hostname.endsWith('.pages.dev') ||
-            window.location.hostname.endsWith('.netlify.app')
-          )
-          if (resHost.hostType === 'tenant') {
-            isCurrentHostSubdomain = true
-            currentHostTenantSlug = resHost.tenantSlug
-          }
-        }
-
-        let destination: string
-        if (isCurrentHostSubdomain) {
-          if (currentHostTenantSlug && currentHostTenantSlug !== targetSlug) {
-            // User logged in on workspace A, but account belongs to workspace B
-            if (isLocalhost || isPslDomain) {
-              const cleanSub = paramRedirect && !paramRedirect.startsWith('/login') ? paramRedirect : '/dashboard'
-              const formattedSubPath = cleanSub.startsWith('/') ? cleanSub : `/${cleanSub}`
-              destination = `/${targetSlug}${formattedSubPath}`
-            } else {
-              window.location.href = getTenantLink(targetSlug, paramRedirect || '/dashboard')
-              return
-            }
-          } else {
-            // Authenticated directly on matching tenant subdomain -> clean relative URL
-            let clean = '/dashboard'
-            if (paramRedirect && paramRedirect.startsWith('/') && !paramRedirect.startsWith('/login')) {
-              clean = paramRedirect
-              if (clean.startsWith(`/${targetSlug}/`)) {
-                clean = clean.slice(`/${targetSlug}`.length) || '/dashboard'
-              } else if (clean === `/${targetSlug}`) {
-                clean = '/dashboard'
-              }
-            }
-            destination = clean
-          }
-        } else {
-          // On root domain (e.g. inkflow.com.bd, inkflow-erp.vercel.app, localhost:3000)
-          let cleanSubPath = '/dashboard'
+        // Clean relative redirect on matching host
+        if (tenantSlug && tenantSlug.toLowerCase() === targetSlug.toLowerCase()) {
+          let clean = '/dashboard'
           if (paramRedirect && paramRedirect.startsWith('/') && !paramRedirect.startsWith('/login')) {
-            cleanSubPath = paramRedirect
-            if (cleanSubPath.startsWith(`/${targetSlug}/`)) {
-              cleanSubPath = cleanSubPath.slice(`/${targetSlug}`.length) || '/dashboard'
-            } else if (cleanSubPath === `/${targetSlug}`) {
-              cleanSubPath = '/dashboard'
+            clean = paramRedirect
+            if (clean.startsWith(`/${targetSlug}/`)) {
+              clean = clean.slice(`/${targetSlug}`.length) || '/dashboard'
+            } else if (clean === `/${targetSlug}`) {
+              clean = '/dashboard'
             }
           }
-          if (isLocalhost || isPslDomain) {
-            const formattedSubPath = cleanSubPath.startsWith('/') ? cleanSubPath : `/${cleanSubPath}`
-            destination = `/${targetSlug}${formattedSubPath}`
-          } else {
-            destination = getTenantLink(targetSlug, cleanSubPath)
-          }
+          window.location.href = clean
+          return
         }
 
-        // Hard redirect to force HTTP request headers to include the updated tenant session cookie
-        window.location.href = destination
+        // Account belongs to a different workspace -> redirect to that workspace's login
+        window.location.href = getTenantLink(targetSlug, paramRedirect || '/dashboard')
       } else {
         const errorMsg = res.error || 'Invalid email or password'
         setError(errorMsg)
-        
-        // Detect if a platform admin attempted to sign in on the tenant portal
+
         if (
           errorMsg.toLowerCase().includes('platform') ||
           errorMsg.toLowerCase().includes('business workspace') ||
@@ -294,14 +491,12 @@ function LoginForm() {
         ? `${origin}/auth/callback?next=${encodeURIComponent(redirectToParam)}`
         : `${origin}/auth/callback`
 
-      // 1. Primary: Secure Server Action initialization (immune to client-side env bundler stripping)
       const res = await signInWithGoogleAction(callbackUrl)
       if (res.success && res.url) {
         window.location.href = res.url
         return
       }
 
-      // 2. Fallback: Client SDK Provider
       if (!res.success) {
         const provider = new GoogleOAuthProvider()
         const clientRes = await provider.signInWithGoogle({ redirectTo: callbackUrl })
@@ -353,32 +548,41 @@ function LoginForm() {
   }
 
   return (
-    <Card className="border-border shadow-2xl shadow-slate-200/50 dark:border-border/90 dark:shadow-black/40 backdrop-blur-xl">
-      <CardHeader className="space-y-1.5 text-center pb-3 pt-6 px-5 sm:px-6">
-        <div>
-          <CardTitle className="text-xl sm:text-2xl font-black tracking-tight text-foreground dark:text-white">
-            {t('auth.login_title')}
-          </CardTitle>
-          <CardDescription className="text-xs text-muted-foreground mt-0.5">
-            {t('auth.login_subtitle')}
-          </CardDescription>
-        </div>
+    <Card className="border border-border bg-card shadow-xs">
+      <CardHeader className="space-y-1.5 text-center pb-3 pt-6 px-6">
+        {tenantSlug && (
+          <div className="inline-flex items-center justify-center gap-1.5 px-2.5 py-1 rounded-full bg-muted border border-border text-xs text-muted-foreground mx-auto mb-1">
+            <Building2 className="h-3.5 w-3.5 text-primary" />
+            <span className="font-mono font-medium text-foreground">{tenantSlug}</span>
+            <span className="text-muted-foreground/60">·</span>
+            <a
+              href={`https://${rootDomain}/login`}
+              className="text-primary hover:underline font-normal"
+            >
+              {locale === 'bn' ? 'পরিবর্তন' : 'Switch'}
+            </a>
+          </div>
+        )}
+        <CardTitle className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+          {t('auth.login_title')}
+        </CardTitle>
+        <CardDescription className="text-xs text-muted-foreground mt-0.5">
+          {t('auth.login_subtitle')}
+        </CardDescription>
       </CardHeader>
 
       <form onSubmit={handleSubmit(onSubmit)} noValidate>
-        <CardContent className="space-y-3.5 pt-1 px-5 sm:px-6">
-          {/* Status Feedback / Signed Out Message */}
+        <CardContent className="space-y-3.5 pt-1 px-6">
           {statusMessage && (
-            <div className="rounded-xl bg-success-surface p-3 text-xs text-success bg-success-surface/60 text-success border border-success-border border-success-border flex items-start gap-2.5 animate-in fade-in-50 duration-200">
-              <CheckCircle2 className="h-4 w-4 text-success text-success shrink-0 mt-0.5" />
+            <div className="rounded-lg bg-success-surface p-3 text-xs text-success border border-success flex items-start gap-2.5 animate-in fade-in-50">
+              <CheckCircle2 className="h-4 w-4 text-success shrink-0 mt-0.5" />
               <div className="flex-1 font-medium">{statusMessage}</div>
             </div>
           )}
 
-          {/* Standard Error Alert Box */}
           {error && (
-            <div className="rounded-xl bg-danger-surface p-3 text-xs text-destructive bg-danger-surface/60 text-destructive border border-danger-border border-danger-border/80 flex items-start gap-2.5 animate-in fade-in-50 duration-200">
-              <ShieldAlert className="h-4 w-4 text-destructive text-destructive shrink-0 mt-0.5" />
+            <div className="rounded-lg bg-destructive/10 p-3 text-xs text-destructive border border-destructive/20 flex items-start gap-2.5 animate-in fade-in-50">
+              <ShieldAlert className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
               <div className="flex-1 space-y-1.5">
                 <span className="font-medium leading-relaxed">{error}</span>
                 {isNetworkError && (
@@ -388,7 +592,7 @@ function LoginForm() {
                       size="sm"
                       variant="outline"
                       onClick={() => performLogin(currentEmail, currentPassword)}
-                      className="text-xs h-6 border-danger-border bg-danger-surface hover:bg-destructive text-destructive border-danger-border bg-destructive/40 text-destructive cursor-pointer"
+                      className="text-xs h-6 cursor-pointer"
                     >
                       <RefreshCw className="h-3 w-3 mr-1" />
                       {locale === 'bn' ? 'পুনরায় চেষ্টা করুন' : 'Try Again'}
@@ -399,15 +603,14 @@ function LoginForm() {
             </div>
           )}
 
-          {/* Cross-Portal Platform Administrator Redirection Callout */}
           {isPlatformAdminError && (
-            <div className="p-3 rounded-xl border border-primary/20/40 text-xs text-primary flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 shadow-lg shadow-purple-950/30 animate-in fade-in-50">
+            <div className="p-3 rounded-lg border border-border bg-muted text-xs text-foreground flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 animate-in fade-in-50">
               <div className="space-y-0.5">
-                <div className="font-bold text-white flex items-center gap-1.5">
+                <div className="font-bold flex items-center gap-1.5">
                   <Sparkles className="h-3.5 w-3.5 text-primary" />
                   <span>{locale === 'bn' ? 'প্ল্যাটফর্ম অ্যাডমিন অ্যাকাউন্ট' : 'Platform Administrator Account'}</span>
                 </div>
-                <div className="text-xs text-primary">
+                <div className="text-xs text-muted-foreground">
                   {locale === 'bn'
                     ? 'সুপারঅ্যাডমিনদের জন্য আলাদা প্ল্যাটফর্ম কন্ট্রোল সেন্টার পোর্টাল রয়েছে।'
                     : 'Superadmins must sign in via the dedicated Platform Control Center.'}
@@ -416,15 +619,14 @@ function LoginForm() {
 
               <Link
                 href="/platform/login"
-                className="inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-lg bg-primary hover:bg-primary text-white font-semibold text-xs transition-colors shrink-0 shadow-sm"
+                className="inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-md bg-primary text-primary-foreground font-semibold text-xs transition-colors shrink-0"
               >
-                <span>{locale === 'bn' ? 'প্ল্যাটফর্ম লগইন' : 'Go to Platform Login'}</span>
+                <span>{locale === 'bn' ? 'প্ল্যাটফর্ম লগইন' : 'Platform Login'}</span>
                 <ArrowRight className="h-3.5 w-3.5" />
               </Link>
             </div>
           )}
 
-          {/* Email / Username / Phone Input Field */}
           <div className="space-y-1.5">
             <Label required htmlFor="tenant-login-email">
               {locale === 'bn' ? 'ইমেইল, মোবাইল বা ইউজারনেম' : 'Email, Username or Mobile'}
@@ -443,7 +645,6 @@ function LoginForm() {
             />
           </div>
 
-          {/* Password Input Field with Caps Lock Warning */}
           <div className="space-y-1.5">
             <Label required htmlFor="tenant-login-password">
               {t('auth.password')}
@@ -473,7 +674,7 @@ function LoginForm() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="p-2 text-muted-foreground hover:text-muted-foreground transition-colors focus:outline-none min-h-[44px] min-w-[44px] flex items-center justify-center cursor-pointer"
+                  className="p-2 text-muted-foreground hover:text-foreground transition-colors focus:outline-none min-h-[44px] min-w-[44px] flex items-center justify-center cursor-pointer"
                   aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
                   {showPassword ? (
@@ -485,16 +686,14 @@ function LoginForm() {
               }
             />
 
-            {/* Caps Lock Alert Notification */}
             {isCapsLock && (
-              <div className="flex items-center gap-1.5 text-xs font-semibold text-warning text-warning pt-0.5">
+              <div className="flex items-center gap-1.5 text-xs font-semibold text-warning pt-0.5">
                 <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
                 <span>{t('auth.caps_lock_on') || 'Caps Lock is ON'}</span>
               </div>
             )}
           </div>
 
-          {/* Remember Me & Forgot Password Row */}
           <div className="flex items-center justify-between pt-0.5">
             <label className="flex items-center gap-2 cursor-pointer select-none">
               <input
@@ -510,42 +709,39 @@ function LoginForm() {
 
             <Link
               href="/forgot-password"
-              className="text-xs text-primary hover:text-primary text-primary dark:hover:text-primary font-medium transition-colors hover:underline py-0.5"
+              className="text-xs text-primary hover:underline font-medium transition-colors py-0.5"
             >
               {t('auth.forgot_password')}
             </Link>
           </div>
 
-          {/* Primary Submit Button */}
           <Button
             type="submit"
-            className="w-full hover: hover: text-white font-bold cursor-pointer h-11 text-sm shadow-lg shadow-cyan-600/20 border border-primary/20/30 transition-all active:scale-[0.99]"
+            className="w-full font-bold cursor-pointer h-11 text-sm shadow-xs transition-all active:scale-[0.99]"
             isLoading={isLoading}
           >
             <span>{t('auth.sign_in')}</span>
             <ArrowRight className="ml-1.5 h-4 w-4" />
           </Button>
 
-          {/* Divider */}
           <div className="relative my-2.5">
             <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-border dark:border-border" />
+              <span className="w-full border-t border-border" />
             </div>
             <div className="relative flex justify-center text-xs uppercase font-bold tracking-wider">
-              <span className="bg-card px-2.5 text-muted-foreground dark:bg-card">
+              <span className="bg-card px-2.5 text-muted-foreground">
                 {locale === 'bn' ? 'অথবা' : 'Or continue with'}
               </span>
             </div>
           </div>
 
-          {/* Google SSO Login Button */}
           <Button
             type="button"
             variant="outline"
             onClick={handleGoogleLogin}
             isLoading={isGoogleLoading}
             disabled={isGoogleLoading || isLoading}
-            className="w-full text-xs font-semibold cursor-pointer h-10 border-border hover:bg-muted dark:hover:bg-muted"
+            className="w-full text-xs font-semibold cursor-pointer h-10 border-border hover:bg-muted"
           >
             <svg className="mr-2 h-4 w-4 shrink-0" viewBox="0 0 24 24">
               <path
@@ -571,19 +767,18 @@ function LoginForm() {
                   ? 'গুগলের সাথে সংযুক্ত হচ্ছে...'
                   : 'Connecting to Google...'
                 : locale === 'bn'
-                ? 'গুগল ওয়ার্কস্পেস দিয়ে এগিয়ে যান'
-                : 'Continue with Google Workspace'}
+                ? 'গুগল দিয়ে প্রবেশ করুন'
+                : 'Continue with Google'}
             </span>
           </Button>
         </CardContent>
 
-        {/* Card Footer: Sign Up Link */}
-        <CardFooter className="flex flex-col space-y-3 pt-4 pb-5 px-5 sm:px-6 text-center text-xs text-muted-foreground border-t border-border dark:border-border/80">
+        <CardFooter className="flex flex-col space-y-2 pt-3 pb-5 px-6 text-center text-xs text-muted-foreground border-t border-border">
           <div>
             {t('auth.no_account')}{' '}
             <Link
               href="/register"
-              className="font-bold text-primary hover:text-primary text-primary dark:hover:text-primary transition-colors hover:underline py-1"
+              className="font-bold text-primary hover:underline py-1"
             >
               {t('auth.sign_up')}
             </Link>
@@ -594,11 +789,54 @@ function LoginForm() {
   )
 }
 
+function LoginForm() {
+  const [hostResolution, setHostResolution] = useState<{
+    hostType: string
+    tenantSlug: string | null
+    rootDomain: string
+  } | null>(null)
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const res = resolveHostname(window.location.host)
+      setHostResolution({
+        hostType: res.hostType,
+        tenantSlug: res.tenantSlug,
+        rootDomain: res.rootDomain,
+      })
+    }
+  }, [])
+
+  if (!hostResolution) {
+    return (
+      <Card className="border border-border bg-card p-8 text-center text-sm text-muted-foreground shadow-xs">
+        <div className="inline-flex items-center justify-center gap-2">
+          <RefreshCw className="h-4 w-4 animate-spin text-primary" />
+          <span>Connecting to authentication portal...</span>
+        </div>
+      </Card>
+    )
+  }
+
+  // Root domain: Render workspace finder (credentials are never accepted on root)
+  if (hostResolution.hostType === 'root') {
+    return <WorkspaceFinderForm rootDomain={hostResolution.rootDomain || BRAND.rootDomain} />
+  }
+
+  // Tenant subdomain: Render host-isolated credential login
+  return (
+    <TenantLoginForm
+      tenantSlug={hostResolution.tenantSlug}
+      rootDomain={hostResolution.rootDomain || BRAND.rootDomain}
+    />
+  )
+}
+
 export default function LoginPage() {
   return (
     <Suspense
       fallback={
-        <div className="p-8 text-center text-sm text-muted-foreground dark:text-muted-foreground">
+        <div className="p-8 text-center text-sm text-muted-foreground">
           <div className="inline-flex items-center gap-2">
             <RefreshCw className="h-4 w-4 animate-spin text-primary" />
             <span>Loading login portal...</span>
@@ -610,4 +848,3 @@ export default function LoginPage() {
     </Suspense>
   )
 }
-

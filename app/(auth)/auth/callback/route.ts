@@ -6,8 +6,9 @@ import { AuditService } from '@/services/audit.service'
 import { TENANT_SESSION_COOKIE, TenantSessionData, TenantRole, resolveTenantRole } from '@/lib/auth/types'
 import { PrimaryRole, MODULE_ACTION_SPECS } from '@/types/rbac.types'
 import { resolveRequestOrigin } from '@/lib/security/runtime-env'
-import { getTenantLink } from '@/lib/tenant/tenant-url'
+import { getTenantLink, getTenantBaseUrl } from '@/lib/tenant/tenant-url'
 import { getAuthCookieOptions } from '@/lib/tenant/tenant-resolution'
+import { createSubdomainHandoffToken } from '@/lib/auth/subdomain-handoff'
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
@@ -247,24 +248,33 @@ export async function GET(request: Request) {
       if (isPslOrLocal) {
         const formattedSubPath = cleanNext.startsWith('/') ? cleanNext : `/${cleanNext}`
         destination = `${origin}/${company.slug}${formattedSubPath}`
+        const redirectResponse = NextResponse.redirect(destination)
+        for (const ec of emittedCookies) {
+          redirectResponse.cookies.set(ec.name, ec.value, ec.options)
+        }
+        redirectResponse.cookies.set(TENANT_SESSION_COOKIE, encodeURIComponent(JSON.stringify(sessionData)), {
+          path: '/',
+          maxAge: 60 * 60 * 24 * 7,
+          sameSite: 'lax',
+          secure: cookieOpts.secure,
+          domain: cookieOpts.domain,
+          httpOnly: cookieOpts.httpOnly ?? false,
+        })
+        return redirectResponse
       } else {
-        destination = getTenantLink(company.slug, cleanNext)
+        const handoffToken = await createSubdomainHandoffToken({
+          userId: user.id,
+          email,
+          slug: company.slug,
+          sessionData,
+        })
+        destination = `${getTenantBaseUrl(company.slug)}/api/auth/handoff?token=${handoffToken}&next=${encodeURIComponent(cleanNext)}`
+        const redirectResponse = NextResponse.redirect(destination)
+        for (const ec of emittedCookies) {
+          redirectResponse.cookies.set(ec.name, ec.value, ec.options)
+        }
+        return redirectResponse
       }
-
-      const redirectResponse = NextResponse.redirect(destination)
-      for (const ec of emittedCookies) {
-        redirectResponse.cookies.set(ec.name, ec.value, ec.options)
-      }
-      redirectResponse.cookies.set(TENANT_SESSION_COOKIE, encodeURIComponent(JSON.stringify(sessionData)), {
-        path: '/',
-        maxAge: 60 * 60 * 24 * 7,
-        sameSite: 'lax',
-        secure: cookieOpts.secure,
-        domain: cookieOpts.domain,
-        httpOnly: cookieOpts.httpOnly ?? false,
-      })
-
-      return redirectResponse
     }
 
     // 6. Seamless Onboarding for New Google OAuth Users

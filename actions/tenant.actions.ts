@@ -13,6 +13,7 @@ import { getTenantBaseUrl } from '@/lib/tenant/tenant-url'
 import type { ApiResponse } from '@/types/common.types'
 import type { CompanyRow } from '@/types/tenant.types'
 import { withTenantAction } from '@/lib/actions/action-wrapper'
+import { createSubdomainHandoffToken } from '@/lib/auth/subdomain-handoff'
 
 async function getCookieOptions() {
   try {
@@ -71,9 +72,10 @@ export async function createCompanyAction(
   }
 
   // 2. Set Tenant Session Cookie
+  let sessionData: TenantSessionData | null = null
   if (effectiveUserId) {
     const membership = await TenantRepository.resolveUserMembership(effectiveUserId, company.slug)
-    const sessionData: TenantSessionData = {
+    sessionData = {
       userId: effectiveUserId,
       userEmail: membership?.companyUser?.profile?.email || data.owner_email || data.email || '',
       fullName: membership?.companyUser?.profile?.full_name || data.owner_name || 'Business Owner',
@@ -131,9 +133,23 @@ export async function createCompanyAction(
     }
   } catch {}
 
-  const subdomainUrl = isPslOrLocalRequest
+  let subdomainUrl = isPslOrLocalRequest
     ? `/${company.slug}/dashboard`
     : `${getTenantBaseUrl(company.slug)}/dashboard`
+
+  if (!isPslOrLocalRequest && effectiveUserId) {
+    try {
+      const handoffToken = await createSubdomainHandoffToken({
+        userId: effectiveUserId,
+        email: data.owner_email || data.email || '',
+        slug: company.slug,
+        sessionData: sessionData || null,
+      })
+      subdomainUrl = `${getTenantBaseUrl(company.slug)}/api/auth/handoff?token=${handoffToken}&next=/dashboard`
+    } catch (handoffErr) {
+      console.warn('[createCompanyAction] Failed to create subdomain handoff token:', handoffErr)
+    }
+  }
 
   return { success: true, data: result.data, subdomainUrl }
 }
@@ -196,8 +212,35 @@ export async function switchCompanyAction(slug: string) {
     await getCookieOptions()
   )
 
+  // Check if current request is from localhost or PSL (e.g. *.vercel.app)
+  let isPslOrLocalRequest = false
+  try {
+    const headerStore = await headers()
+    const host = (headerStore.get('x-forwarded-host') || headerStore.get('host') || '').toLowerCase().split(':')[0]
+    if (
+      host.includes('localhost') ||
+      host.includes('127.0.0.1') ||
+      host.endsWith('.vercel.app') ||
+      host.endsWith('.pages.dev') ||
+      host.endsWith('.netlify.app')
+    ) {
+      isPslOrLocalRequest = true
+    }
+  } catch {}
+
   revalidatePath('/', 'layout')
-  const targetSubdomainUrl = `${getTenantBaseUrl(slug)}/dashboard`
+
+  if (isPslOrLocalRequest) {
+    redirect(`/${slug}/dashboard`)
+  }
+
+  const handoffToken = await createSubdomainHandoffToken({
+    userId,
+    email: sessionData.userEmail,
+    slug: company.slug,
+    sessionData,
+  })
+  const targetSubdomainUrl = `${getTenantBaseUrl(slug)}/api/auth/handoff?token=${handoffToken}&next=/dashboard`
   redirect(targetSubdomainUrl)
 }
 

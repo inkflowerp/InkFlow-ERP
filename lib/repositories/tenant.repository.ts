@@ -476,6 +476,97 @@ export class TenantRepository {
     }
   }
 
+  static async searchCompaniesByName(nameQuery: string, limit = 5): Promise<CompanyRow[]> {
+    if (!nameQuery || !nameQuery.trim()) return []
+    try {
+      const admin = createAdminClient()
+      const { data, error } = await (admin as any)
+        .from('companies')
+        .select('*')
+        .ilike('name', `%${nameQuery.trim()}%`)
+        .eq('is_active', true)
+        .limit(limit)
+
+      if (error || !data) return []
+      return data as CompanyRow[]
+    } catch {
+      return []
+    }
+  }
+
+  static async lookupWorkspacesByEmail(email: string): Promise<Array<{ slug: string; name: string }>> {
+    if (!email || !email.includes('@')) return []
+    const cleanEmail = email.trim().toLowerCase()
+    try {
+      const admin = createAdminClient()
+      const workspaceMap = new Map<string, string>()
+
+      // 1. Direct company contact email match
+      const { data: directCompanies } = await (admin as any)
+        .from('companies')
+        .select('slug, name, is_active')
+        .ilike('email', cleanEmail)
+        .eq('is_active', true)
+
+      if (directCompanies) {
+        for (const comp of directCompanies) {
+          if (comp.slug && comp.name) {
+            workspaceMap.set(comp.slug, comp.name)
+          }
+        }
+      }
+
+      // 2. Invited email match in company_users
+      const { data: invitedUsers } = await (admin as any)
+        .from('company_users')
+        .select('company_id, companies!inner(slug, name, is_active)')
+        .ilike('invited_email', cleanEmail)
+        .eq('companies.is_active', true)
+
+      if (invitedUsers) {
+        for (const item of invitedUsers) {
+          const comp = Array.isArray(item.companies) ? item.companies[0] : item.companies
+          if (comp?.slug && comp?.name) {
+            workspaceMap.set(comp.slug, comp.name)
+          }
+        }
+      }
+
+      // 3. User ID lookup by email via listUsers
+      try {
+        const { data: authUserData } = await admin.auth.admin.listUsers()
+        const matchingUser = authUserData?.users?.find(
+          (u) => u.email?.toLowerCase() === cleanEmail
+        )
+        if (matchingUser) {
+          const { data: memberCompanies } = await (admin as any)
+            .from('company_users')
+            .select('company_id, companies!inner(slug, name, is_active)')
+            .eq('user_id', matchingUser.id)
+            .eq('companies.is_active', true)
+
+          if (memberCompanies) {
+            for (const item of memberCompanies) {
+              const comp = Array.isArray(item.companies) ? item.companies[0] : item.companies
+              if (comp?.slug && comp?.name) {
+                workspaceMap.set(comp.slug, comp.name)
+              }
+            }
+          }
+        }
+      } catch {
+        // Non-blocking fallback
+      }
+
+      return Array.from(workspaceMap.entries()).map(([slug, name]) => ({
+        slug,
+        name,
+      }))
+    } catch {
+      return []
+    }
+  }
+
   static async getUserMembership(companyId: string, userId: string): Promise<{ id: string } | null> {
     try {
       const admin = createAdminClient()

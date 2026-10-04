@@ -5,12 +5,13 @@ import { redirect } from 'next/navigation'
 import { cookies, headers } from 'next/headers'
 import { AuthService } from '@/services/auth.service'
 import { AuditService } from '@/services/audit.service'
-import { checkRateLimit, checkRateLimitAsync } from '@/lib/security/rate-limiter'
+import { checkRateLimitAsync } from '@/lib/security/rate-limiter'
 import { TENANT_SESSION_COOKIE } from '@/lib/auth/types'
 import { getCurrentTenant } from '@/lib/auth/tenant-auth'
 import { resolveRequestOrigin } from '@/lib/security/runtime-env'
 import { getAuthCookieOptions, resolveHostname, resolveTenant, isReservedSlug } from '@/lib/tenant/tenant-resolution'
 import { getTenantLink } from '@/lib/tenant/tenant-url'
+import { TenantRepository } from '@/lib/repositories/tenant.repository'
 
 async function getRequestBaseUrl(): Promise<string> {
   try {
@@ -98,6 +99,11 @@ export async function loginAction(formData: FormData) {
       const hostRes = resolveHostname(host)
       if (hostRes.hostType === 'tenant' && hostRes.tenantSlug) {
         targetCompanySlug = hostRes.tenantSlug
+      } else if (hostRes.hostType === 'root') {
+        return {
+          success: false,
+          error: 'Direct credential submission on the root domain is not allowed. Please enter your workspace name first.',
+        }
       }
     }
   } catch {}
@@ -192,6 +198,14 @@ export async function signInAction(email: string, pass: string) {
       const tenantRes = resolveTenant(host, pathFromReferer)
       if (tenantRes.type === 'tenant' && tenantRes.slug) {
         targetCompanySlug = tenantRes.slug
+      } else {
+        const hostRes = resolveHostname(host)
+        if (hostRes.hostType === 'root') {
+          return {
+            success: false,
+            error: 'Direct credential submission on the root domain is not allowed. Please enter your workspace name first.',
+          }
+        }
       }
     }
   } catch {}
@@ -504,3 +518,92 @@ export async function getGoogleAuthBrandingDiagnosticsAction() {
     return { success: false, error: err?.message || 'Failed to load Google OAuth diagnostics' }
   }
 }
+
+/**
+ * Searches for a tenant workspace by slug or company name for the root login flow.
+ * Validates that the workspace exists and is active.
+ */
+export async function findWorkspaceAction(query: string): Promise<{
+  success: boolean
+  slug?: string
+  name?: string
+  error?: string
+}> {
+  if (!query || typeof query !== 'string' || !query.trim()) {
+    return { success: false, error: 'Please enter a workspace name or slug' }
+  }
+
+  const clean = query.trim().toLowerCase().replace(/^https?:\/\//i, '').split('.')[0]
+  if (isReservedSlug(clean)) {
+    return { success: false, error: `"${clean}" is a reserved system address` }
+  }
+
+  // 1. Direct match by slug
+  const companyBySlug = await TenantRepository.getCompanyBySlug(clean)
+  if (companyBySlug && companyBySlug.is_active !== false) {
+    return {
+      success: true,
+      slug: companyBySlug.slug,
+      name: companyBySlug.name,
+    }
+  }
+
+  // 2. Name search via repository
+  try {
+    const companies = await TenantRepository.searchCompaniesByName(query.trim(), 5)
+    if (companies && companies.length > 0) {
+      const exact = companies.find((c: any) => c.name.toLowerCase() === query.trim().toLowerCase())
+      const chosen = exact || companies[0]
+      return {
+        success: true,
+        slug: chosen.slug,
+        name: chosen.name,
+      }
+    }
+  } catch (err: any) {
+    console.error('[findWorkspaceAction] Error looking up workspace:', err)
+  }
+
+  return {
+    success: false,
+    error: `Workspace "${query.trim()}" not found. Please verify the spelling or check with your administrator.`,
+  }
+}
+
+/**
+ * Looks up workspaces associated with a user's email address.
+ * Matches company contact email, invited_email, and member user_id.
+ */
+export async function lookupWorkspacesByEmailAction(email: string): Promise<{
+  success: boolean
+  workspaces?: Array<{ slug: string; name: string }>
+  error?: string
+}> {
+  if (!email || typeof email !== 'string' || !email.includes('@')) {
+    return { success: false, error: 'Please enter a valid email address' }
+  }
+
+  const cleanEmail = email.trim().toLowerCase()
+  const rateLimit = await checkRateLimitAsync(cleanEmail, 'auth')
+  if (!rateLimit.success) {
+    return {
+      success: false,
+      error: `Too many lookup attempts. Please wait ${rateLimit.resetSeconds} seconds.`,
+    }
+  }
+
+  try {
+    const workspaces = await TenantRepository.lookupWorkspacesByEmail(cleanEmail)
+    return {
+      success: true,
+      workspaces,
+    }
+  } catch (err: any) {
+    console.error('[lookupWorkspacesByEmailAction] Error looking up workspaces:', err)
+    return {
+      success: false,
+      error: 'Failed to look up workspaces. Please try again.',
+    }
+  }
+}
+

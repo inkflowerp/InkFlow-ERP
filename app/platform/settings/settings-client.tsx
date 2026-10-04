@@ -669,16 +669,16 @@ export default function PlatformSettingsPage() {
  <CardContent className="p-5 space-y-4">
  <div>
  <label className="text-xs font-semibold text-muted-foreground block mb-1">
- Primary Domain / Host
+ Primary Domain / Host (Display Only)
  </label>
  <Input
  value={settings.app_domain || ''}
  onChange={(e) => setSettings({ ...settings, app_domain: e.target.value })}
- placeholder="e.g. inkflow.com.bd or localhost:3000"
+ placeholder="e.g. printflow.bd"
  className="h-9 text-xs bg-card border-border text-foreground rounded-xl tabular-nums"
  />
  <span className="text-xs text-muted-foreground mt-1 block">
- Main domain for client links and websites.
+ Display-only brand domain shown in marketing/docs. Routing and link generation are strictly governed by infrastructure domain configuration (ROOT_DOMAIN / printflow.bd).
  </span>
  </div>
 

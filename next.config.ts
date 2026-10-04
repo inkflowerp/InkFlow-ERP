@@ -1,23 +1,17 @@
 import type { NextConfig } from "next";
 
-const configuredRoot = process.env.ROOT_DOMAIN || process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'inkflowerp.com'
-const cleanRoot = configuredRoot.replace(/^https?:\/\//i, '').split('/')[0].split(':')[0].toLowerCase()
-
-const isDev = process.env.NODE_ENV !== 'production'
-
-const allowedActionOrigins = Array.from(
-  new Set([
-    ...(isDev ? ['localhost:3000', 'localhost', '*.localhost:3000', '*.localhost'] : []),
-    'inkflowerp.com',
-    '*.inkflowerp.com',
-    'inkflow.com.bd',
-    '*.inkflow.com.bd',
-    cleanRoot,
-    `*.${cleanRoot}`,
-  ].filter(Boolean))
-)
+const allowedActionOrigins = [
+  'printflow.bd',
+  '*.printflow.bd',
+  'localhost:3000',
+  '*.localhost:3000',
+  '*.vercel.app',
+]
 
 const nextConfig: NextConfig = {
+  outputFileTracingIncludes: {
+    '/api/pdf/[type]': ['./node_modules/@formepdf/core/pkg-node/**'],
+  },
   serverExternalPackages: ['nodemailer', 'pg'],
   compress: true,
   poweredByHeader: false,

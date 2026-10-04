@@ -62,7 +62,6 @@ import type {
   IncompleteRegistrationsOverview,
 } from '../types/platform.types.ts'
 import { DEFAULT_PLATFORM_BRANDING } from '../types/platform.types.ts'
-import { setRuntimeRootDomain } from '../lib/tenant/tenant-resolution.ts'
 import { isTestEnvironment } from '../lib/security/runtime-env.ts'
 import type { PlatformRole } from '../lib/auth/types.ts'
 import type { ApiResponse } from '../types/common.types.ts'
@@ -5968,9 +5967,6 @@ export class PlatformService {
         .maybeSingle()
 
       if (data && !error) {
-        if (data.app_domain) {
-          setRuntimeRootDomain(data.app_domain)
-        }
         return {
           success: true,
           data: {
@@ -6008,9 +6004,6 @@ export class PlatformService {
     // Fallback to local data store if present
     const saved = PrintERPDataStore.get<PlatformSystemSettings>(STORAGE_KEYS.PLATFORM_SYSTEM_SETTINGS)
     if (saved) {
-      if (saved.app_domain) {
-        setRuntimeRootDomain(saved.app_domain)
-      }
       return {
         success: true,
         data: {
@@ -6761,18 +6754,11 @@ export class PlatformService {
         } catch {}
       }
 
-      // Sync active domain
-      if (payload.app_domain) {
-        setRuntimeRootDomain(payload.app_domain)
-      }
 
       // Sync with transient local store
       PrintERPDataStore.set(STORAGE_KEYS.PLATFORM_SYSTEM_SETTINGS, payload)
     } catch {
       // Non-blocking fallback
-      if (settings.app_domain) {
-        setRuntimeRootDomain(settings.app_domain)
-      }
       PrintERPDataStore.set(STORAGE_KEYS.PLATFORM_SYSTEM_SETTINGS, settings)
     }
 
@@ -7110,7 +7096,7 @@ export class PlatformService {
       }
 
       if (notification.action_url) {
-        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://inkflow-erp.vercel.app'
+        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://printflow.bd'
         const fullUrl = notification.action_url.startsWith('http')
           ? notification.action_url
           : `${baseUrl}${notification.action_url}`
