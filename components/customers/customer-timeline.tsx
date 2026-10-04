@@ -67,21 +67,21 @@ export function CustomerTimeline({
  const getEventIcon = (type: string) => {
  switch (type) {
  case 'customer_created':
- return <UserPlus className="h-4 w-4 text-blue-600"/>
+ return <UserPlus className="h-4 w-4 text-primary"/>
  case 'quotation_sent':
  case 'quotation_created':
- return <Send className="h-4 w-4 text-amber-600"/>
+ return <Send className="h-4 w-4 text-warning"/>
  case 'order_created':
  case 'job_started':
- return <ShoppingBag className="h-4 w-4 text-cyan-600"/>
+ return <ShoppingBag className="h-4 w-4 text-primary"/>
  case 'invoice_created':
- return <FileText className="h-4 w-4 text-indigo-600"/>
+ return <FileText className="h-4 w-4 text-primary"/>
  case 'payment_received':
- return <CreditCard className="h-4 w-4 text-emerald-600"/>
+ return <CreditCard className="h-4 w-4 text-success"/>
  case 'communication_logged':
- return <PhoneCall className="h-4 w-4 text-sky-600"/>
+ return <PhoneCall className="h-4 w-4 text-primary"/>
  case 'rate_overridden':
- return <Tag className="h-4 w-4 text-purple-600"/>
+ return <Tag className="h-4 w-4 text-primary"/>
  default:
  return <Clock className="h-4 w-4 text-muted-foreground"/>
     }
@@ -91,33 +91,33 @@ export function CustomerTimeline({
  switch (type) {
  case 'payment_received':
  return (
-          <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 text-2xs">
+          <Badge className="bg-success-surface text-success border-success-border bg-success-surface/60 text-success text-xs">
  Payment
           </Badge>
         )
  case 'invoice_created':
  return (
-          <Badge className="bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950/60 dark:text-indigo-300 text-2xs">
+          <Badge className="bg-primary/10 text-primary border-primary/20 bg-primary/10 text-primary text-xs">
  Invoice
           </Badge>
         )
  case 'quotation_sent':
  case 'quotation_created':
  return (
-          <Badge className="bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/60 dark:text-amber-300 text-2xs">
+          <Badge className="bg-warning-surface text-warning border-warning-border bg-warning-surface/60 text-warning text-xs">
  Quotation
           </Badge>
         )
  case 'order_created':
  case 'job_started':
  return (
-          <Badge className="bg-cyan-50 text-cyan-700 border-cyan-200 dark:bg-cyan-950/60 dark:text-cyan-300 text-2xs">
+          <Badge className="bg-info-surface text-primary border-primary/20 bg-primary/10 text-primary text-xs">
  Order
           </Badge>
         )
  case 'communication_logged':
  return (
-          <Badge className="bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-950/60 dark:text-sky-300 text-2xs">
+          <Badge className="bg-info-surface text-primary border-primary/20 bg-primary/10 text-primary text-xs">
  Comm
           </Badge>
         )
@@ -135,9 +135,9 @@ export function CustomerTimeline({
  return (
         <Link
  href={getTenantNavHref(`/billing/${evt.referenceId || refNum}`, pathname, baseSlug)}
- className="inline-flex items-center gap-1 tabular-nums text-2xs font-bold text-blue-600 hover:text-blue-800 dark:text-blue-400 hover:underline bg-blue-50/70 dark:bg-blue-950/50 px-1.5 py-0.5 rounded border border-blue-200 dark:border-blue-900"title="Open Invoice">
+ className="inline-flex items-center gap-1 tabular-nums text-xs font-bold text-primary hover:text-primary text-primary hover:underline bg-primary/10/70 bg-primary/10 px-1.5 py-0.5 rounded border border-primary/20 border-border"title="Open Invoice">
           <span>{refNum}</span>
-          <span className="text-2xs">&rarr;</span>
+          <span className="text-xs">&rarr;</span>
         </Link>
       )
     }
@@ -146,9 +146,9 @@ export function CustomerTimeline({
  return (
         <Link
  href={getTenantNavHref('/quotations', pathname, baseSlug)}
- className="inline-flex items-center gap-1 tabular-nums text-2xs font-bold text-amber-600 hover:text-amber-800 dark:text-amber-400 hover:underline bg-amber-50/70 dark:bg-amber-950/50 px-1.5 py-0.5 rounded border border-amber-200 dark:border-amber-900"title="Open Quotations">
+ className="inline-flex items-center gap-1 tabular-nums text-xs font-bold text-warning hover:text-warning text-warning hover:underline bg-warning-surface/70 bg-warning-surface px-1.5 py-0.5 rounded border border-warning-border border-warning-border"title="Open Quotations">
           <span>{refNum}</span>
-          <span className="text-2xs">&rarr;</span>
+          <span className="text-xs">&rarr;</span>
         </Link>
       )
     }
@@ -157,23 +157,23 @@ export function CustomerTimeline({
  return (
         <Link
  href={getTenantNavHref('/orders', pathname, baseSlug)}
- className="inline-flex items-center gap-1 tabular-nums text-2xs font-bold text-cyan-600 hover:text-cyan-800 dark:text-cyan-400 hover:underline bg-cyan-50/70 dark:bg-cyan-950/50 px-1.5 py-0.5 rounded border border-cyan-200 dark:border-cyan-900"title="Open Orders">
+ className="inline-flex items-center gap-1 tabular-nums text-xs font-bold text-primary hover:text-primary text-primary hover:underline bg-info-surface/70 bg-primary/10 px-1.5 py-0.5 rounded border border-primary/20 border-border"title="Open Orders">
           <span>{refNum}</span>
-          <span className="text-2xs">&rarr;</span>
+          <span className="text-xs">&rarr;</span>
         </Link>
       )
     }
 
  if (evt.referenceType === 'payment' || evt.type === 'payment_received') {
  return (
-        <span className="inline-flex items-center gap-1 tabular-nums text-2xs font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-50/70 dark:bg-emerald-950/50 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-900">
+        <span className="inline-flex items-center gap-1 tabular-nums text-xs font-bold text-success text-success bg-success-surface/70 bg-success-surface px-1.5 py-0.5 rounded border border-success-border border-success-border">
  MR #{refNum}
         </span>
       )
     }
 
  return (
-      <span className="tabular-nums text-2xs font-medium text-muted-foreground">
+      <span className="tabular-nums text-xs font-medium text-muted-foreground">
  Ref: {refNum}
       </span>
     )
@@ -200,7 +200,7 @@ export function CustomerTimeline({
                   {renderReferenceLink(evt)}
                 </div>
 
-                <div className="text-2xs text-muted-foreground font-medium shrink-0">
+                <div className="text-xs text-muted-foreground font-medium shrink-0">
                   {new Date(evt.timestamp).toLocaleDateString('en-GB', {
  day: 'numeric',
  month: 'short',
@@ -210,12 +210,12 @@ export function CustomerTimeline({
               </div>
 
               {evt.description && (
-                <div className="text-muted-foreground text-2xs leading-relaxed">
+                <div className="text-muted-foreground text-xs leading-relaxed">
                   {evt.description}
                 </div>
               )}
 
-              <div className="flex items-center justify-between pt-1 text-2xs text-muted-foreground">
+              <div className="flex items-center justify-between pt-1 text-xs text-muted-foreground">
                 {evt.actorName && (
                   <span>
  By: <strong className="text-muted-foreground font-medium">{evt.actorName}</strong>

@@ -253,7 +253,7 @@ export function StockAdjustmentModal({
  size="3xl"onSubmit={handleSubmit}
  title={
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-linear-to-br from-amber-500 to-amber-700 text-white shadow-xs flex items-center justify-center font-bold shrink-0">
+          <div className="h-10 w-10 rounded-xl bg-primary text-primary-foreground shadow-xs flex items-center justify-center font-bold shrink-0">
             <Scale className="h-5 w-5"/>
           </div>
           <div>
@@ -262,7 +262,7 @@ export function StockAdjustmentModal({
                 {tBilingual('Count Check & Fix Stock', 'ফিজিক্যাল স্টক গণনা ও সমন্বয়')}
               </h2>
               <Badge
- variant="outline"className="text-2xs uppercase tabular-nums py-0.5 px-2 bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-700">
+ variant="outline"className="text-xs uppercase tabular-nums py-0.5 px-2 bg-warning-surface bg-warning-surface/60 text-warning text-warning border-warning-border border-warning-border">
  Audit Log
               </Badge>
             </div>
@@ -286,11 +286,11 @@ export function StockAdjustmentModal({
           <Button
  type="submit"disabled={loading}
  className={cn(
-              'w-full sm:w-auto min-h-[40px] text-xs text-white font-bold px-7 shadow-xs cursor-pointer',
+              'w-full sm:w-auto min-h-[40px] text-xs text-primary-foreground font-bold px-7 shadow-xs cursor-pointer',
  variance > 0
-                ? 'bg-emerald-600 hover:bg-emerald-700'
+                ? 'bg-success hover:bg-success'
                 : variance < 0
-                ? 'bg-amber-600 hover:bg-amber-700'
+                ? 'bg-warning hover:bg-warning/90'
                 : 'bg-card-elevated hover:bg-card-elevated'
             )}
           >
@@ -312,16 +312,16 @@ export function StockAdjustmentModal({
       <div className="space-y-4 pt-1 pb-2">
         {/* Success Alert */}
         {successMsg && (
-          <div className="p-3.5 bg-emerald-50 text-emerald-900 dark:bg-emerald-950/50 dark:text-emerald-200 rounded-xl border border-emerald-300 dark:border-emerald-800 text-xs flex items-center gap-2 animate-in fade-in-0">
-            <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0"/>
+          <div className="p-3.5 bg-success-surface text-success bg-success-surface text-success rounded-xl border border-success-border border-success-border text-xs flex items-center gap-2 animate-in fade-in-0">
+            <CheckCircle2 className="h-4 w-4 text-success shrink-0"/>
             <span className="font-semibold">{successMsg}</span>
           </div>
         )}
 
         {/* Error Alert */}
         {error && (
-          <div className="p-3.5 bg-rose-50 text-rose-900 dark:bg-rose-950/50 dark:text-rose-200 rounded-xl border border-rose-300 dark:border-rose-800 text-xs flex items-center gap-2 animate-in fade-in-0">
-            <AlertTriangle className="h-4 w-4 text-rose-600 shrink-0"/>
+          <div className="p-3.5 bg-danger-surface text-destructive bg-danger-surface text-destructive rounded-xl border border-danger-border border-danger-border text-xs flex items-center gap-2 animate-in fade-in-0">
+            <AlertTriangle className="h-4 w-4 text-destructive shrink-0"/>
             <span className="font-medium">{error}</span>
           </div>
         )}
@@ -333,7 +333,7 @@ export function StockAdjustmentModal({
  className={cn(
               'flex items-center justify-center gap-2 py-2 px-3 rounded-lg font-bold transition-all text-center cursor-pointer',
  mode === 'physical_count'
-                ? 'bg-card text-amber-700 dark:text-amber-400 shadow-xs'
+                ? 'bg-card text-warning text-warning shadow-xs'
                 : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
             )}
           >
@@ -346,7 +346,7 @@ export function StockAdjustmentModal({
  className={cn(
               'flex items-center justify-center gap-2 py-2 px-3 rounded-lg font-bold transition-all text-center cursor-pointer',
  mode === 'delta'
-                ? 'bg-card text-amber-700 dark:text-amber-400 shadow-xs'
+                ? 'bg-card text-warning text-warning shadow-xs'
                 : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
             )}
           >
@@ -359,7 +359,7 @@ export function StockAdjustmentModal({
  className={cn(
               'flex items-center justify-center gap-2 py-2 px-3 rounded-lg font-bold transition-all text-center cursor-pointer',
  mode === 'damage_writeoff'
-                ? 'bg-card text-amber-700 dark:text-amber-400 shadow-xs'
+                ? 'bg-card text-warning text-warning shadow-xs'
                 : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
             )}
           >
@@ -371,7 +371,7 @@ export function StockAdjustmentModal({
         {/* MATERIAL & LOCATION SELECTION */}
         <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
           <div className="flex items-center gap-2">
-            <Package className="h-4 w-4 text-amber-600 dark:text-amber-400"/>
+            <Package className="h-4 w-4 text-warning text-warning"/>
             <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
               {tBilingual('Material & Warehouse Store Location', 'কাঁচামাল ও গোডাউন')}
             </h3>
@@ -380,7 +380,7 @@ export function StockAdjustmentModal({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <Label className="text-xs font-semibold mb-1 block">
-                {tBilingual('Select Material Item', 'কাঁচামাল নির্বাচন')} <span className="text-rose-500">*</span>
+                {tBilingual('Select Material Item', 'কাঁচামাল নির্বাচন')} <span className="text-destructive">*</span>
               </Label>
               <select
  value={materialId}
@@ -398,7 +398,7 @@ export function StockAdjustmentModal({
 
             <div>
               <Label className="text-xs font-semibold mb-1 block">
-                {tBilingual('Store Location', 'গোডাউন লোকেশন')} <span className="text-rose-500">*</span>
+                {tBilingual('Store Location', 'গোডাউন লোকেশন')} <span className="text-destructive">*</span>
               </Label>
               <select
  value={locationId}
@@ -417,21 +417,21 @@ export function StockAdjustmentModal({
           {/* Configured Roll Sizes Breakdown Display */}
           {stockBreakdown && stockBreakdown.roll_items && stockBreakdown.roll_items.length > 0 && (
             <div className="pt-2 border-t border-border">
-              <span className="text-2xs font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">
+              <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">
  Active Configured Sizes & SFT Breakdown ({stockBreakdown.purchase_unit_display}):
               </span>
               <div className="flex flex-wrap gap-1.5">
                 {stockBreakdown.roll_items.map((item, idx) => (
                   <Badge
  key={idx}
- variant="outline"className="text-2xs tabular-nums py-1 px-2.5 bg-muted border-border text-foreground flex items-center gap-1.5">
-                    <span className="font-bold text-amber-600 dark:text-amber-400">
+ variant="outline"className="text-xs tabular-nums py-1 px-2.5 bg-muted border-border text-foreground flex items-center gap-1.5">
+                    <span className="font-bold text-warning text-warning">
                       {item.width_ft}ft × {item.length_ft}ft:
                     </span>
                     <span className="font-semibold">{item.roll_count} Roll(s)</span>
-                    <span className="text-muted-foreground text-2xs">({item.total_sft.toLocaleString()} SFT)</span>
+                    <span className="text-muted-foreground text-xs">({item.total_sft.toLocaleString()} SFT)</span>
                     {item.purchase_price ? (
-                      <span className="text-emerald-600 dark:text-emerald-400 font-semibold text-2xs">
+                      <span className="text-success text-success font-semibold text-xs">
                         @ ৳{item.purchase_price}
                       </span>
                     ) : null}
@@ -445,7 +445,7 @@ export function StockAdjustmentModal({
         {/* VARIANCE CALCULATOR & AUDIT COUNT */}
         <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
           <div className="flex items-center gap-2">
-            <Scale className="h-4 w-4 text-amber-600 dark:text-amber-400"/>
+            <Scale className="h-4 w-4 text-warning text-warning"/>
             <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
               {tBilingual('Physical Audit Entry & Variance Calculation', 'গণনাকৃত ব্যালেন্স ও পার্থক্য')}
             </h3>
@@ -457,7 +457,7 @@ export function StockAdjustmentModal({
               <div>
                 <Label className="text-xs font-semibold mb-1 block">
                   {tBilingual('Audited Physical Count', 'ফিজিক্যাল গণনা')} ({activeMaterial?.unit || 'units'}){' '}
-                  <span className="text-rose-500">*</span>
+                  <span className="text-destructive">*</span>
                 </Label>
                 <Input
  type="number"step="any"min="0"value={physicalCount}
@@ -471,7 +471,7 @@ export function StockAdjustmentModal({
               <div>
                 <Label className="text-xs font-semibold mb-1 block">
                   {tBilingual('Quantity Adjustment (+/-)', 'স্টক বৃদ্ধি/হ্রাস')} ({activeMaterial?.unit || 'units'}){' '}
-                  <span className="text-rose-500">*</span>
+                  <span className="text-destructive">*</span>
                 </Label>
                 <Input
  type="number"step="any"value={deltaQuantity}
@@ -485,13 +485,13 @@ export function StockAdjustmentModal({
               <div>
                 <Label className="text-xs font-semibold mb-1 block">
                   {tBilingual('Damage Qty to Write-off (-)', 'বাতিলকৃত অপচয়ের পরিমাণ')} ({activeMaterial?.unit || 'units'}){' '}
-                  <span className="text-rose-500">*</span>
+                  <span className="text-destructive">*</span>
                 </Label>
                 <Input
  type="number"step="any"min="0.01"max={currentSysStock}
  value={deltaQuantity ? Math.abs(deltaQuantity) : ''}
  onChange={(e) => setDeltaQuantity(-Math.abs(Number(e.target.value)))}
- placeholder="e.g. 2.0"className="text-xs h-10 tabular-nums font-bold text-base border-rose-300 dark:border-rose-700 text-rose-600"required
+ placeholder="e.g. 2.0"className="text-xs h-10 tabular-nums font-bold text-base border-danger-border border-danger-border text-destructive"required
                 />
               </div>
             )}
@@ -518,11 +518,11 @@ export function StockAdjustmentModal({
           {/* Variance & Financial Impact HUD */}
           <div className="p-3.5 rounded-xl bg-muted border border-border grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
             <div>
-              <span className="text-2xs text-muted-foreground block font-semibold uppercase">Quantity Variance:</span>
+              <span className="text-xs text-muted-foreground block font-semibold uppercase">Quantity Variance:</span>
               <div
  className={cn(
                   'text-base font-black tabular-nums flex items-center gap-1.5 mt-0.5',
- variance > 0 ? 'text-emerald-600' : variance < 0 ? 'text-rose-600' : 'text-muted-foreground'
+ variance > 0 ? 'text-success' : variance < 0 ? 'text-destructive' : 'text-muted-foreground'
                 )}
               >
                 {variance > 0 ? (
@@ -539,21 +539,21 @@ export function StockAdjustmentModal({
             </div>
 
             <div>
-              <span className="text-2xs text-muted-foreground block font-semibold uppercase">Unit Valuation:</span>
+              <span className="text-xs text-muted-foreground block font-semibold uppercase">Unit Valuation:</span>
               <div className="text-base font-bold tabular-nums text-foreground mt-0.5">
                 {formatBDT(unitCost)} / {activeMaterial?.unit || 'unit'}
               </div>
             </div>
 
             <div>
-              <span className="text-2xs text-muted-foreground block font-semibold uppercase">Financial Impact:</span>
+              <span className="text-xs text-muted-foreground block font-semibold uppercase">Financial Impact:</span>
               <div
  className={cn(
                   'text-base font-black tabular-nums mt-0.5',
  valuationImpact > 0
-                    ? 'text-emerald-600'
+                    ? 'text-success'
                     : valuationImpact < 0
-                    ? 'text-rose-600'
+                    ? 'text-destructive'
                     : 'text-muted-foreground'
                 )}
               >
@@ -566,7 +566,7 @@ export function StockAdjustmentModal({
         {/* AUDIT REASON & PRESET JUSTIFICATION */}
         <div className="rounded-xl border border-border bg-card p-4 space-y-3 shadow-xs">
           <Label className="text-xs font-semibold block">
-            {tBilingual('Audit Reason / Root Cause', 'সমন্বয়ের কারণ ও যৌক্তিকতা')} <span className="text-rose-500">*</span>
+            {tBilingual('Audit Reason / Root Cause', 'সমন্বয়ের কারণ ও যৌক্তিকতা')} <span className="text-destructive">*</span>
           </Label>
 
           {/* Quick preset buttons */}
@@ -575,7 +575,7 @@ export function StockAdjustmentModal({
               <button
  key={idx}
  type="button"onClick={() => setReason(p.reasonEn)}
- className="text-2xs font-medium bg-muted hover:bg-amber-100 dark:hover:bg-amber-950/60 text-foreground px-2.5 py-1 rounded-md border border-border transition-colors cursor-pointer">
+ className="text-xs font-medium bg-muted hover:bg-warning-surface dark:hover:bg-warning-surface/60 text-foreground px-2.5 py-1 rounded-md border border-border transition-colors cursor-pointer">
                 🏷️ {p.tag}
               </button>
             ))}

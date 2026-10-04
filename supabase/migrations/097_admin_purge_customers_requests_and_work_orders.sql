@@ -136,7 +136,7 @@ begin
 end;
 $$;
 
-grant execute on function public.admin_purge_all_company_operational_data(uuid) to service_role, authenticated, anon;
+grant execute on function public.admin_purge_all_company_operational_data(uuid) to service_role;
 
--- Execute cleanup for Classic Printer tenant
-select public.admin_purge_all_company_operational_data('2af84f1d-1ebd-48e7-9795-fd5c24c38a96');
+-- Replay protection: purged data call permanently neutralized
+-- select public.admin_purge_all_company_operational_data('2af84f1d-1ebd-48e7-9795-fd5c24c38a96');

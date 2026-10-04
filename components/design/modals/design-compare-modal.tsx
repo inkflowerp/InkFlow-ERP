@@ -42,7 +42,7 @@ export const DesignCompareModal = React.memo(function DesignCompareModal({
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-5xl bg-surface-inset border border-border text-foreground p-6 shadow-lg">
         <DialogHeader className="border-b border-border pb-3">
-          <DialogTitle className="text-base font-bold flex items-center gap-2 text-indigo-300">
+          <DialogTitle className="text-base font-bold flex items-center gap-2 text-primary">
             <SplitSquareVertical className="h-5 w-5"/>
             <span>Side-by-Side Version Diff & Compare (আর্টওয়ার্ক সংশোধন তুলনা)</span>
           </DialogTitle>
@@ -90,7 +90,7 @@ export const DesignCompareModal = React.memo(function DesignCompareModal({
           <div className="flex flex-col bg-surface-inset rounded-lg border border-border overflow-hidden">
             <div className="bg-card-elevated/80 px-3 py-1.5 text-xs font-semibold text-muted-foreground border-b border-border flex justify-between">
               <span>ভার্সন v{versionA?.version_number}</span>
-              <span className="text-2xs text-muted-foreground">{versionA?.created_at?.split('T')[0]}</span>
+              <span className="text-xs text-muted-foreground">{versionA?.created_at?.split('T')[0]}</span>
             </div>
             <div className="flex-1 flex items-center justify-center p-2 overflow-hidden">
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -100,9 +100,9 @@ export const DesignCompareModal = React.memo(function DesignCompareModal({
 
           {/* Version B */}
           <div className="flex flex-col bg-surface-inset rounded-lg border border-border overflow-hidden">
-            <div className="bg-emerald-950/60 px-3 py-1.5 text-xs font-semibold text-emerald-300 border-b border-emerald-800/60 flex justify-between">
+            <div className="bg-success-surface/60 px-3 py-1.5 text-xs font-semibold text-success border-b border-success-border/60 flex justify-between">
               <span>ভার্সন v{versionB?.version_number} (Latest)</span>
-              <span className="text-2xs text-emerald-400">{versionB?.created_at?.split('T')[0]}</span>
+              <span className="text-xs text-success">{versionB?.created_at?.split('T')[0]}</span>
             </div>
             <div className="flex-1 flex items-center justify-center p-2 overflow-hidden">
               {/* eslint-disable-next-line @next/next/no-img-element */}

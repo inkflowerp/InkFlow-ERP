@@ -113,7 +113,7 @@ export function MaterialRequestModal({
     >
       <form onSubmit={handleSubmit} className="space-y-4 pt-1 max-h-[75vh] overflow-y-auto px-1">
         {error && (
-          <div className="p-3 bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-300 rounded-lg text-xs font-semibold border border-red-200 dark:border-red-800">
+          <div className="p-3 bg-danger-surface text-destructive bg-danger-surface text-destructive rounded-lg text-xs font-semibold border border-danger-border border-danger-border">
             {error}
           </div>
         )}
@@ -173,7 +173,7 @@ export function MaterialRequestModal({
                     {items.length > 1 && (
                       <Button
  type="button"size="sm"variant="ghost"onClick={() => handleRemoveItem(idx)}
- className="h-6 w-6 p-0 text-red-600">
+ className="h-6 w-6 p-0 text-destructive">
                         <Trash2 className="h-3.5 w-3.5"/>
                       </Button>
                     )}

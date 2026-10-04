@@ -580,11 +580,13 @@ export class ProductionTaskRepository {
   static async updateTask(
     param1: string,
     param2: Partial<ProductionTaskRecord> | string,
-    param3?: Partial<ProductionTaskRecord> | string
+    param3?: Partial<ProductionTaskRecord> | string,
+    param4?: number
   ): Promise<ProductionTaskRecord> {
     let id = param1
     let companyId = ''
     let updates: Partial<ProductionTaskRecord> = {}
+    let expectedVersion: number | undefined = param4
 
     if (typeof param2 === 'string') {
       id = param1
@@ -596,15 +598,17 @@ export class ProductionTaskRepository {
       companyId = typeof param3 === 'string' ? param3 : ''
     }
 
-    const payload = {
+    const payload: any = {
       ...updates,
       updated_at: new Date().toISOString(),
     }
+    delete payload.version
+
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
     try {
       const supabase = await createClient()
       let query = (supabase as any).from('production_tasks').update(payload)
-      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
       if (uuidRegex.test(id)) {
         query = query.eq('id', id)
       } else {
@@ -613,12 +617,40 @@ export class ProductionTaskRepository {
       if (companyId && uuidRegex.test(companyId)) {
         query = query.eq('company_id', companyId)
       }
+      if (typeof expectedVersion === 'number') {
+        query = query.eq('version', expectedVersion)
+      }
+
       const { data, error } = await query.select().single()
 
       if (!error && data) {
         return data as ProductionTaskRecord
       }
-    } catch {}
+
+      // Check if stale write occurred
+      if (typeof expectedVersion === 'number') {
+        let checkQuery = (supabase as any).from('production_tasks').select('id, version')
+        if (uuidRegex.test(id)) {
+          checkQuery = checkQuery.eq('id', id)
+        } else {
+          checkQuery = checkQuery.eq('task_number', id)
+        }
+        if (companyId && uuidRegex.test(companyId)) {
+          checkQuery = checkQuery.eq('company_id', companyId)
+        }
+        const { data: existingRow } = await checkQuery.maybeSingle()
+        if (existingRow && existingRow.version !== expectedVersion) {
+          const conflictErr: any = new Error('Updated by someone else, reload?')
+          conflictErr.code = 'STALE_WRITE'
+          conflictErr.conflict = true
+          throw conflictErr
+        }
+      }
+    } catch (err: any) {
+      if (err?.conflict || err?.code === 'STALE_WRITE') {
+        throw err
+      }
+    }
 
     const all = PrintERPDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
     const idx = all.findIndex(
@@ -632,7 +664,14 @@ export class ProductionTaskRepository {
         (!companyId || this.isMatchingCompany(t.company_id, companyId))
     )
     if (idx >= 0) {
-      all[idx] = { ...all[idx], ...payload }
+      if (typeof expectedVersion === 'number' && all[idx].version !== undefined && all[idx].version !== expectedVersion) {
+        const conflictErr: any = new Error('Updated by someone else, reload?')
+        conflictErr.code = 'STALE_WRITE'
+        conflictErr.conflict = true
+        throw conflictErr
+      }
+      const nextVersion = (all[idx].version || 1) + 1
+      all[idx] = { ...all[idx], ...payload, version: nextVersion }
       PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, all)
       return all[idx]
     }

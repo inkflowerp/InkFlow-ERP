@@ -543,6 +543,33 @@ export class WorkforceRepository {
     return emps.find((e) => e.id === id || e.employee_id_number === id) || null
   }
 
+  static async getEmployeeByUserId(userId: string, companyId: string): Promise<EmployeeRecord | null> {
+    try {
+      const admin = createAdminClient()
+      const { data, error } = await (admin as any)
+        .from('employees')
+        .select('*, branches(name)')
+        .eq('company_id', companyId)
+        .eq('user_id', userId)
+        .eq('status', 'active')
+        .maybeSingle()
+
+      if (!error && data) {
+        return {
+          ...data,
+          branch_name: data.branches?.name || null,
+        } as EmployeeRecord
+      }
+    } catch (e) {
+      console.warn('[WorkforceRepository.getEmployeeByUserId] DB fallback:', e)
+    }
+
+    const storeEmp = (PrintERPDataStore.get<EmployeeRecord[]>(STORAGE_KEYS.EMPLOYEES, companyId) || []).find(
+      (e) => e.user_id === userId && e.status === 'active'
+    )
+    return storeEmp || null
+  }
+
   static async createEmployee(emp: EmployeeRecord): Promise<EmployeeRecord> {
     // 1. Always save to DataStore in tenant scope, clean slug scope, and general scope to guarantee local persistence
     const cleanSlug = emp.company_id.replace(/^comp-/, '').replace(/^co-/, '')

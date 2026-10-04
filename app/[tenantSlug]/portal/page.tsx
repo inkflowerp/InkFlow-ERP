@@ -1,34 +1,27 @@
-import { redirect } from 'next/navigation'
-import { getCurrentTenant } from '@/lib/auth/tenant-auth'
+'use client'
 
-interface PortalPageProps {
- params: Promise<{ tenantSlug: string }>
-}
+import React from 'react'
+import { useParams } from 'next/navigation'
+import { UserCheck } from 'lucide-react'
+import { useI18n } from '@/i18n/context'
+import { PageHeader } from '@/components/shared/page-header'
+import { MyWorkforceHub } from '@/components/portal/my-workforce-hub'
 
-/**
- * Tenant Portal Entry Point
- * Redirects authenticated portal users (e.g. Designers, Operators, Staff) directly to their dashboard.
- * If unauthenticated, smoothly redirects to the tenant-scoped login page with return URL.
- */
-export default async function TenantPortalRedirect({ params }: PortalPageProps) {
- const { tenantSlug } = await params
+export default function TenantStaffPortalPage() {
+  const { tBilingual } = useI18n()
+  const params = useParams()
+  const tenantSlug = (params?.tenantSlug as string) || 'app'
 
- try {
- const tenant = await getCurrentTenant(tenantSlug)
- if (tenant?.userId) {
- redirect(`/${tenantSlug}/dashboard`)
-    }
-  } catch (error: any) {
- if (
- typeof error === 'object' &&
- error !== null &&
-      'digest' in error &&
- typeof error.digest === 'string' &&
- error.digest.startsWith('NEXT_REDIRECT')
-    ) {
- throw error
-    }
-  }
-
- redirect(`/login?tenant=${tenantSlug}&redirectTo=/${tenantSlug}/dashboard`)
+  return (
+    <div className="space-y-6 mx-auto pb-16">
+      <PageHeader
+        titleEn="Staff Portal"
+        titleBn="স্টাফ পোর্টাল"
+        descriptionEn="Personal attendance, leave records, salary slips, overtime earnings, and advance salary balance."
+        descriptionBn="আপনার ব্যক্তিগত হাজিরা, ছুটির হিসাব, বেতন পে-স্লিপ, ওভারটাইম অর্জন ও অগ্রিম বেতন।"
+        icon={UserCheck}
+      />
+      <MyWorkforceHub />
+    </div>
+  )
 }

@@ -964,26 +964,26 @@ function BillingContent() {
  switch (sec) {
  case 'offset_print':
  return (
-          <Badge className="bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20 text-2xs py-0 px-1.5 font-medium">
+          <Badge className="bg-warning/10 text-warning border border-warning-border/20 text-xs py-0 px-1.5 font-medium">
             📑 Offset
           </Badge>
         )
  case 'signage_fabrication':
  return (
-          <Badge className="bg-purple-500/10 text-purple-700 dark:text-purple-400 border border-purple-500/20 text-2xs py-0 px-1.5 font-medium">
+          <Badge className="bg-primary/10 text-primary border border-primary/20/20 text-xs py-0 px-1.5 font-medium">
             💡 Signage
           </Badge>
         )
  case 'ready_merchandise':
  return (
-          <Badge className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 text-2xs py-0 px-1.5 font-medium">
+          <Badge className="bg-success/10 text-success border border-success-border/20 text-xs py-0 px-1.5 font-medium">
             🎁 Merch
           </Badge>
         )
  case 'digital_print':
  default:
  return (
-          <Badge className="bg-sky-500/10 text-sky-700 dark:text-sky-400 border border-sky-500/20 text-2xs py-0 px-1.5 font-medium">
+          <Badge className="bg-primary/10 text-primary border border-primary/20/20 text-xs py-0 px-1.5 font-medium">
             🎨 Digital
           </Badge>
         )
@@ -1167,15 +1167,15 @@ function BillingContent() {
 
  if (status === 'paid' || dueAmt <= 0.01) {
  return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-2xs font-semibold bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">
-          <CheckCircle2 className="h-3 w-3 text-emerald-600 dark:text-emerald-400"/> Paid
+        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-success/10 text-success border border-success-border/20">
+          <CheckCircle2 className="h-3 w-3 text-success"/> Paid
         </span>
       )
     }
 
  if (status === 'cancelled') {
  return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-2xs font-semibold bg-muted0/10 text-foreground border border-border/20">
+        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-muted0/10 text-foreground border border-border/20">
           <Ban className="h-3 w-3 text-muted-foreground"/> Cancelled
         </span>
       )
@@ -1183,7 +1183,7 @@ function BillingContent() {
 
  if (status === 'written_off') {
  return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-2xs font-semibold bg-purple-500/10 text-purple-700 dark:text-purple-400 border border-purple-500/20">
+        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20/20">
  Written Off
         </span>
       )
@@ -1191,22 +1191,22 @@ function BillingContent() {
 
  if (dueAmt > 0 && daysOverdue > 0) {
  return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-2xs font-bold bg-rose-500/15 text-rose-700 dark:text-rose-400 border border-rose-500/30 animate-pulse">
-          <AlertOctagon className="h-3 w-3 text-rose-600 dark:text-rose-400"/> {daysOverdue}d Overdue
+        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-destructive/15 text-destructive text-destructive border border-danger-border/30 animate-pulse">
+          <AlertOctagon className="h-3 w-3 text-destructive text-destructive"/> {daysOverdue}d Overdue
         </span>
       )
     }
 
  if (status === 'partially_paid') {
  return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-2xs font-semibold bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-500/20">
-          <Clock className="h-3 w-3 text-blue-600 dark:text-blue-400"/> Partially Paid
+        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20/20">
+          <Clock className="h-3 w-3 text-primary"/> Partially Paid
         </span>
       )
     }
 
  return (
-      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-2xs font-semibold bg-amber-500/10 text-amber-800 dark:text-amber-400 border border-amber-500/20">
+      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-warning/10 text-warning border border-warning-border/20">
  Unpaid
       </span>
     )
@@ -1216,21 +1216,21 @@ function BillingContent() {
  const collectionRateNum = Number(effectiveMetrics?.collectionRate || 0)
  const healthTier =
     collectionRateNum >= 80
-      ? { labelEn: 'Optimal Flow', labelBn: 'চমৎকার অগ্রগতি', color: 'text-emerald-600 dark:text-emerald-400', bar: 'bg-emerald-500' }
+      ? { labelEn: 'Optimal Flow', labelBn: 'চমৎকার অগ্রগতি', color: 'text-success', bar: 'bg-success' }
       : collectionRateNum >= 60
-      ? { labelEn: 'Steady Pace', labelBn: 'স্থিতিশীল গতি', color: 'text-blue-600 dark:text-blue-400', bar: 'bg-blue-500' }
-      : { labelEn: 'Needs Follow-up', labelBn: 'অনুসরণ প্রয়োজন', color: 'text-amber-600 dark:text-amber-400', bar: 'bg-amber-500' }
+      ? { labelEn: 'Steady Pace', labelBn: 'স্থিতিশীল গতি', color: 'text-primary', bar: 'bg-primary' }
+      : { labelEn: 'Needs Follow-up', labelBn: 'অনুসরণ প্রয়োজন', color: 'text-warning', bar: 'bg-warning' }
 
  return (
-    <div className="space-y-6 max-w-7xl mx-auto pb-20">
+    <div className="space-y-6 mx-auto pb-20">
       {/* NOTIFICATION TOAST */}
       {notification && (
-        <div className="fixed bottom-6 right-6 z-50 px-4 py-3 bg-surface-inset text-foreground backdrop-blur-md rounded-xl shadow-lg border border-white/10 dark:border-black/10 flex items-center gap-3 text-xs font-semibold animate-in slide-in-from-bottom-5">
-          <Sparkles className="h-4 w-4 text-emerald-400 dark:text-emerald-600 shrink-0"/>
+        <div className="fixed bottom-6 right-6 z-50 px-4 py-3 bg-surface-inset text-foreground backdrop-blur-md rounded-xl shadow-lg border border-border flex items-center gap-3 text-xs font-semibold animate-in slide-in-">
+          <Sparkles className="h-4 w-4 text-success shrink-0"/>
           <span>{notification}</span>
           <button
  onClick={() => setNotification(null)}
- className="p-1 text-muted-foreground hover:text-foreground dark:hover:text-black cursor-pointer ml-1">
+ className="p-1 text-muted-foreground hover:text-foreground dark:hover:text-foreground cursor-pointer ml-1">
             <X className="h-3.5 w-3.5"/>
           </button>
         </div>
@@ -1242,7 +1242,7 @@ function BillingContent() {
       <PageHeader
  titleEn="Billing & Collections"titleBn="বিলিং ও কালেকশন"descriptionEn="Canonical commercial finance workspace • Invoices, collection priorities & receivables"descriptionBn="চালান, পেমেন্ট আদায়, গ্রাহক বকেয়া ও কালেকশন নিয়ন্ত্রণ কেন্দ্র"icon={Receipt}
  badge={
-          <Badge className="bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-400 border border-blue-200 dark:border-blue-800 text-2xs font-bold py-0.5">
+          <Badge className="bg-primary/10 text-primary bg-primary/10 text-primary border border-primary/20 border-border text-xs font-bold py-0.5">
  Live BDT ৳
           </Badge>
         }
@@ -1255,7 +1255,7 @@ function BillingContent() {
  setIsReceivePaymentOpen(true)
               }}
  className="gap-1.5">
-              <DollarSign className="h-4 w-4 text-emerald-600 dark:text-emerald-400"/>
+              <DollarSign className="h-4 w-4 text-success"/>
               <span>{tBilingual('Collect Due', 'বকেয়া আদায়')}</span>
             </Button>
 
@@ -1270,69 +1270,143 @@ function BillingContent() {
       />
 
       {/* =========================================================================
-          2. KPI SUMMARY CARDS (TOTAL INVOICED, COLLECTED, DUE, OVERDUE)
+          2. CANONICAL 4-KPI ROW & PRIORITIZED ATTENTION QUEUE
          ========================================================================= */}
-      <div className="space-y-3">
-        {/* 6 Executive Metric Cards */}
-        <KpiGrid columns={6}>
+      <div className="space-y-4">
+        {/* Canonical 4-KPI Row */}
+        <KpiGrid columns={4}>
           {/* 1. Total Invoiced */}
           <KpiCard
- titleEn="Total Invoiced"titleBn="মোট চালানের মূল্য"value={effectiveMetrics?.salesAmount || 0}
- isCurrency
- icon={FileSpreadsheet}
- colorVariant="blue"subtitleEn={`${effectiveMetrics?.salesCount || 0} Bills Generated`}
- subtitleBn={`${effectiveMetrics?.salesCount || 0}টি বিল তৈরি`}
+            titleEn="Total Invoiced"
+            titleBn="মোট চালানের মূল্য"
+            value={effectiveMetrics?.salesAmount || 0}
+            isCurrency
+            icon={FileSpreadsheet}
+            colorVariant="blue"
+            subtitleEn={`${effectiveMetrics?.salesCount || 0} Bills Generated`}
+            subtitleBn={`${effectiveMetrics?.salesCount || 0}টি বিল তৈরি`}
           />
 
           {/* 2. Collected */}
           <KpiCard
- titleEn="Collected"titleBn="মোট আদায়"value={effectiveMetrics?.collectionAmount || 0}
- isCurrency
- icon={ShieldCheck}
- colorVariant="emerald"subtitleEn={`${effectiveMetrics?.collectionCount || 0} Payments Received`}
- subtitleBn={`${effectiveMetrics?.collectionCount || 0}টি পেমেন্ট সম্পন্ন`}
+            titleEn="Collected"
+            titleBn="মোট আদায়"
+            value={effectiveMetrics?.collectionAmount || 0}
+            isCurrency
+            icon={ShieldCheck}
+            colorVariant="emerald"
+            subtitleEn={`${effectiveMetrics?.collectionCount || 0} Payments (${effectiveMetrics?.collectionRate || 0}% rate)`}
+            subtitleBn={`${effectiveMetrics?.collectionCount || 0}টি পেমেন্ট (${effectiveMetrics?.collectionRate || 0}% হার)`}
           />
 
           {/* 3. Outstanding Due */}
           <KpiCard
- titleEn="Outstanding Due"titleBn="চলতি বকেয়া"value={effectiveMetrics?.outstandingDue ?? effectiveMetrics?.totalReceivables ?? 0}
- isCurrency
- icon={Clock}
- colorVariant="amber"subtitleEn={`${effectiveMetrics?.outstandingDueCount ?? effectiveMetrics?.dueTodayCount ?? 0} Bills Pending`}
- subtitleBn={`${effectiveMetrics?.outstandingDueCount ?? effectiveMetrics?.dueTodayCount ?? 0}টি বিল বকেয়া`}
+            titleEn="Outstanding Due"
+            titleBn="চলতি বকেয়া"
+            value={effectiveMetrics?.outstandingDue ?? effectiveMetrics?.totalReceivables ?? 0}
+            isCurrency
+            icon={Clock}
+            colorVariant="amber"
+            subtitleEn={`${effectiveMetrics?.outstandingDueCount ?? effectiveMetrics?.dueTodayCount ?? 0} Bills Pending`}
+            subtitleBn={`${effectiveMetrics?.outstandingDueCount ?? effectiveMetrics?.dueTodayCount ?? 0}টি বিল বকেয়া`}
           />
 
-          {/* 4. Overdue */}
+          {/* 4. Critical Overdue */}
           <KpiCard
- titleEn="Overdue"titleBn="মেয়াদোত্তীর্ণ বকেয়া"value={effectiveMetrics?.overdueAmount || 0}
- isCurrency
- icon={AlertTriangle}
- colorVariant="danger"badge={(effectiveMetrics?.overdueAmount || 0) > 0 ? 'Urgent' : undefined}
- badgeColor="bg-rose-100 text-rose-700 border-rose-200 dark:bg-rose-950 dark:text-rose-300 dark:border-rose-800"subtitleEn={`${effectiveMetrics?.overdueCount || 0} Overdue Bills`}
- subtitleBn={`${effectiveMetrics?.overdueCount || 0}টি বকেয়া বিল`}
+            titleEn="Overdue"
+            titleBn="মেয়াদোত্তীর্ণ বকেয়া"
+            value={effectiveMetrics?.overdueAmount || 0}
+            isCurrency
+            icon={AlertTriangle}
+            colorVariant="danger"
+            badge={(effectiveMetrics?.overdueAmount || 0) > 0 ? 'Urgent' : undefined}
+            badgeColor="bg-danger-surface text-destructive border-danger-border"
+            subtitleEn={`${effectiveMetrics?.overdueCount || 0} Overdue Bills`}
+            subtitleBn={`${effectiveMetrics?.overdueCount || 0}টি বকেয়া বিল`}
           />
-
-          {/* 5. Total Receivable */}
-          <KpiCard
- titleEn="Total Receivable"titleBn="মোট পাওনা"value={effectiveMetrics?.totalReceivables || 0}
- isCurrency
- icon={Building}
- colorVariant="purple"subtitleEn="All Open Accounts"subtitleBn="সকল চলমান হিসাব"/>
-
-          {/* 6. Collection Efficiency Rate */}
-          <KpiCard
- titleEn="Collection Rate"titleBn="আদায়ের হার"value={`${effectiveMetrics?.collectionRate || 0}%`}
- icon={Activity}
- colorVariant="cyan"subtitle={locale === 'bn' ? healthTier.labelBn : healthTier.labelEn}
-          >
-            <div className="w-full bg-muted h-1.5 rounded-full mt-1.5 overflow-hidden">
-              <div
- className={cn('h-full rounded-full transition-all duration-500', healthTier.bar)}
- style={{ width: `${Math.min(100, Math.max(0, collectionRateNum))}%` }}
-              />
-            </div>
-          </KpiCard>
         </KpiGrid>
+
+        {/* Prioritized Attention Queue: "What needs my attention now?" */}
+        {effectivePriorities.length > 0 ? (
+          <Card className="border-border p-4 bg-card rounded-xl shadow-xs">
+            <div className="flex items-center justify-between pb-3 border-b border-border">
+              <div className="flex items-center gap-2">
+                <span className="p-1 rounded-md bg-warning-surface text-warning">
+                  <AlertTriangle className="h-4 w-4" />
+                </span>
+                <h3 className="text-xs font-bold uppercase tracking-wider text-foreground bangla-text">
+                  {tBilingual('Needs Your Attention Now (Critical Collections Queue)', 'জরুরি কালেকশন তালিকা (অগ্রাধিকার প্রাপ্ত বকেয়া)')}
+                </h3>
+              </div>
+              <Badge variant="outline" className="bg-warning-surface text-warning border-warning-border font-bold text-xs">
+                {effectivePriorities.length} {tBilingual('Accounts Due', 'টি বকেয়া হিসাব')}
+              </Badge>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 pt-3">
+              {effectivePriorities.slice(0, 6).map((item) => (
+                <div
+                  key={item.id}
+                  className="p-3 rounded-lg border border-border bg-muted/40 hover:bg-muted/80 transition-colors flex flex-col justify-between space-y-2.5"
+                >
+                  <div>
+                    <div className="flex items-center justify-between gap-1.5">
+                      <span className="font-mono text-xs font-bold text-primary">
+                        {item.invoiceNumber || 'INV-DUE'}
+                      </span>
+                      <Badge
+                        variant="outline"
+                        className={cn(
+                          'text-xs font-bold py-0 h-5',
+                          item.priorityReason === 'overdue'
+                            ? 'bg-danger-surface text-destructive border-danger-border'
+                            : 'bg-warning-surface text-warning border-warning-border'
+                        )}
+                      >
+                        {item.daysOverdue > 0 ? `${item.daysOverdue}d overdue` : item.priorityReason}
+                      </Badge>
+                    </div>
+                    <div className="font-semibold text-xs text-foreground mt-1 truncate">
+                      {item.customerName}
+                    </div>
+                    <div className="text-xs text-muted-foreground truncate">
+                      {item.customerPhone ? `Phone: ${item.customerPhone}` : 'No phone logged'}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-2 border-t border-border">
+                    <div className="font-bold text-xs tabular-nums text-foreground">
+                      {formatBDT(item.dueAmount || 0)}
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <Button
+                        size="sm"
+                        onClick={() => {
+                          setSelectedCustomerIdForPayment(item.customerId)
+                          setSelectedInvoiceIdForPayment(item.invoiceId || item.id)
+                          setIsReceivePaymentOpen(true)
+                        }}
+                        className="h-7 px-2.5 text-xs font-bold bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer"
+                      >
+                        {tBilingual('Collect', 'আদায়')}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Card>
+        ) : (
+          <div className="px-4 py-3 rounded-xl border border-border bg-card/60 flex items-center justify-between text-xs text-muted-foreground">
+            <span className="flex items-center gap-2">
+              <CheckCircle2 className="h-4 w-4 text-success" />
+              <span>{tBilingual('All customer accounts in good standing • No critical overdue dues', 'সকল গ্রাহক হিসাব স্বাভাবিক রয়েছে • কোনো অতিরিক্ত বকেয়া নেই')}</span>
+            </span>
+            <span className="font-semibold text-primary">
+              {tBilingual('Total Invoiced:', 'মোট চালান:')} {formatBDT(effectiveMetrics?.salesAmount || 0)}
+            </span>
+          </div>
+        )}
       </div>
 
       {/* =========================================================================
@@ -1382,19 +1456,19 @@ function BillingContent() {
               )}
 
               {/* 3. Main Module Tabs [Invoices, Invoice Requests, Payments, Receivables] */}
-              <div className="flex items-center gap-1 bg-muted p-0.5 rounded-xl border border-border /60 text-xs shrink-0 overflow-x-auto scrollbar-none">
+              <div className="flex items-center gap-1 bg-muted p-0.5 rounded-xl border border-border/60 text-xs shrink-0 overflow-x-auto scrollbar-none">
                 <button
  type="button"onClick={() => handleTabChange('invoices')}
  className={cn(
                     'h-8 px-2.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shrink-0',
  activeTab === 'invoices'
-                      ? 'bg-blue-600 text-white shadow-xs'
+                      ? 'bg-primary text-primary-foreground shadow-xs'
                       : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
                   )}
                 >
                   <Receipt className="h-3.5 w-3.5"/>
                   <span className="bangla-text">{tBilingual('Invoices', 'ইনভয়েস')}</span>
-                  <Badge className={cn('text-2xs py-0 px-1 font-bold', activeTab === 'invoices' ? 'bg-blue-800 text-white' : 'bg-muted text-foreground ')}>
+                  <Badge className={cn('text-xs py-0 px-1 font-bold', activeTab === 'invoices' ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground ')}>
                     {invoices.length}
                   </Badge>
                 </button>
@@ -1404,18 +1478,18 @@ function BillingContent() {
  className={cn(
                     'h-8 px-2.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shrink-0',
  activeTab === 'requests'
-                      ? 'bg-amber-600 text-white shadow-xs'
+                      ? 'bg-warning text-warning-foreground shadow-xs'
                       : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
                   )}
                 >
                   <FileSpreadsheet className="h-3.5 w-3.5"/>
                   <span className="bangla-text">{tBilingual('Invoice Requests', 'ইনভয়েস রিকোয়েস্ট')}</span>
                   {pendingRequestsCount > 0 ? (
-                    <Badge className={cn('text-2xs py-0 px-1 font-bold', activeTab === 'requests' ? 'bg-amber-800 text-white' : 'bg-amber-100 text-amber-900 border border-amber-300 dark:bg-amber-950 dark:text-amber-300 animate-pulse')}>
+                    <Badge className={cn('text-xs py-0 px-1 font-bold', activeTab === 'requests' ? 'bg-warning text-warning-foreground' : 'bg-warning-surface text-warning border border-warning-border bg-warning-surface text-warning animate-pulse')}>
                       {pendingRequestsCount} {tBilingual('Hold', 'অপেক্ষমাণ')}
                     </Badge>
                   ) : (
-                    <Badge className={cn('text-2xs py-0 px-1 font-bold', activeTab === 'requests' ? 'bg-amber-800 text-white' : 'bg-muted text-foreground ')}>
+                    <Badge className={cn('text-xs py-0 px-1 font-bold', activeTab === 'requests' ? 'bg-warning text-warning-foreground' : 'bg-muted text-foreground ')}>
                       {invoiceRequests.length}
                     </Badge>
                   )}
@@ -1426,13 +1500,13 @@ function BillingContent() {
  className={cn(
                     'h-8 px-2.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shrink-0',
  activeTab === 'payments'
-                      ? 'bg-emerald-600 text-white shadow-xs'
+                      ? 'bg-success text-success-foreground shadow-xs'
                       : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
                   )}
                 >
                   <DollarSign className="h-3.5 w-3.5"/>
                   <span className="bangla-text">{tBilingual('Payments', 'পেমেন্ট')}</span>
-                  <Badge className={cn('text-2xs py-0 px-1 font-bold', activeTab === 'payments' ? 'bg-emerald-800 text-white' : 'bg-muted text-foreground ')}>
+                  <Badge className={cn('text-xs py-0 px-1 font-bold', activeTab === 'payments' ? 'bg-success text-success-foreground' : 'bg-muted text-foreground ')}>
                     {payments.length}
                   </Badge>
                 </button>
@@ -1442,13 +1516,13 @@ function BillingContent() {
  className={cn(
                     'h-8 px-2.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shrink-0',
  activeTab === 'receivables'
-                      ? 'bg-purple-600 text-white shadow-xs'
+                      ? 'bg-primary text-primary-foreground shadow-xs'
                       : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
                   )}
                 >
                   <Percent className="h-3.5 w-3.5"/>
                   <span className="bangla-text">{tBilingual('Customer Due', 'বকেয়া/পাওনা')}</span>
-                  <Badge className={cn('text-2xs py-0 px-1 font-bold', activeTab === 'receivables' ? 'bg-purple-800 text-white' : 'bg-muted text-foreground ')}>
+                  <Badge className={cn('text-xs py-0 px-1 font-bold', activeTab === 'receivables' ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground ')}>
                     {customerReceivables.length}
                   </Badge>
                 </button>
@@ -1460,7 +1534,7 @@ function BillingContent() {
               {/* 4. Selected Date */}
               {selectedPeriod === 'custom' ? (
                 <div className="flex items-center gap-1.5 bg-muted px-2 py-1 rounded-xl border border-border text-xs shadow-2xs">
-                  <Calendar className="h-3.5 w-3.5 text-blue-500 shrink-0"/>
+                  <Calendar className="h-3.5 w-3.5 text-primary shrink-0"/>
                   <input
  type="date"value={customStartDate}
  onChange={(e) => setCustomStartDate(e.target.value)}
@@ -1477,8 +1551,8 @@ function BillingContent() {
                   </Button>
                 </div>
               ) : (
-                <div className="flex items-center gap-1.5 bg-muted px-3 py-1.5 rounded-xl border border-border /60 text-xs font-semibold text-muted-foreground tabular-nums whitespace-nowrap">
-                  <Calendar className="h-3.5 w-3.5 text-blue-500 shrink-0"/>
+                <div className="flex items-center gap-1.5 bg-muted px-3 py-1.5 rounded-xl border border-border/60 text-xs font-semibold text-muted-foreground tabular-nums whitespace-nowrap">
+                  <Calendar className="h-3.5 w-3.5 text-primary shrink-0"/>
                   <span>
                     {effectiveMetrics?.startDate === effectiveMetrics?.endDate
                       ? effectiveMetrics?.startDate
@@ -1508,7 +1582,7 @@ function BillingContent() {
               <button
  type="button"onClick={() => loadBillingData()}
  className="h-9 w-9 flex items-center justify-center rounded-xl text-muted-foreground hover:text-foreground bg-card border border-border hover:bg-muted transition-colors shadow-2xs cursor-pointer shrink-0"title="Refresh billing data">
-                <RefreshCw className={cn('h-3.5 w-3.5', isLoading && 'animate-spin text-blue-600')} />
+                <RefreshCw className={cn('h-3.5 w-3.5', isLoading && 'animate-spin text-primary')} />
               </button>
             </div>
           </div>
@@ -1527,7 +1601,7 @@ function BillingContent() {
                 </span>
                 <button
  type="button"onClick={() => setInvoiceFilterTab('all')}
- className="text-xs text-blue-600 dark:text-blue-400 hover:underline font-semibold cursor-pointer bangla-text">
+ className="text-xs text-primary hover:underline font-semibold cursor-pointer bangla-text">
  {tBilingual('Clear Filter', 'ফিল্টার মুছুন')}
                 </button>
               </div>
@@ -1538,7 +1612,7 @@ function BillingContent() {
               {/* Desktop Table View */}
               <div className="hidden md:block overflow-x-auto min-h-[340px] pb-12">
                 <table className="w-full text-left text-xs min-w-[940px]">
-                  <thead className="bg-muted border-b border-border /80 text-muted-foreground uppercase tracking-wider text-2xs font-bold">
+                  <thead className="bg-muted border-b border-border /80 text-muted-foreground uppercase tracking-wider text-xs font-bold">
                     <tr>
                       <th className="p-3.5 whitespace-nowrap min-w-[125px] bangla-text">{tBilingual('Invoice #', 'ইনভয়েস নং')}</th>
                       <th className="p-3.5 min-w-[160px] bangla-text">{tBilingual('Customer & Phone', 'গ্রাহক ও ফোন')}</th>
@@ -1566,17 +1640,17 @@ function BillingContent() {
                             <div className="flex items-center gap-1.5 flex-nowrap">
                               <Link
  href={getTenantNavHref(`/billing/${inv.id}`, pathname, slug)}
- className="tabular-nums font-bold text-blue-600 dark:text-blue-400 hover:underline whitespace-nowrap">
+ className="tabular-nums font-bold text-primary hover:underline whitespace-nowrap">
                                 {inv.invoice_number}
                               </Link>
                               {inv.invoice_type === 'vat_invoice' && (
-                                <Badge className="bg-purple-500/10 text-purple-700 dark:text-purple-300 border border-purple-500/20 text-2xs py-0 px-1 shrink-0 whitespace-nowrap">
+                                <Badge className="bg-primary/10 text-primary border border-primary/20/20 text-xs py-0 px-1 shrink-0 whitespace-nowrap">
  VAT 6.3
                                 </Badge>
                               )}
                             </div>
                             {inv.order_number && (
-                              <span className="text-2xs text-muted-foreground tabular-nums block mt-0.5 whitespace-nowrap">
+                              <span className="text-xs text-muted-foreground tabular-nums block mt-0.5 whitespace-nowrap">
  Order: {inv.order_number}
                               </span>
                             )}
@@ -1586,13 +1660,13 @@ function BillingContent() {
                             {inv.customer_phone ? (
                               <a
  href={`tel:${inv.customer_phone}`}
- className="text-2xs text-muted-foreground tabular-nums hover:text-blue-600 dark:hover:text-blue-400 hover:underline inline-flex items-center gap-1 mt-0.5 whitespace-nowrap"title="Call Customer"onClick={(e) => e.stopPropagation()}
+ className="text-xs text-muted-foreground tabular-nums hover:text-primary dark:hover:text-primary hover:underline inline-flex items-center gap-1 mt-0.5 whitespace-nowrap"title="Call Customer"onClick={(e) => e.stopPropagation()}
                               >
                                 <Phone className="h-3 w-3 text-muted-foreground shrink-0"/>
                                 <span>{inv.customer_phone}</span>
                               </a>
                             ) : (
-                              <span className="text-2xs text-muted-foreground tabular-nums">—</span>
+                              <span className="text-xs text-muted-foreground tabular-nums">—</span>
                             )}
                           </td>
                           <td className="p-3.5 text-center tabular-nums text-muted-foreground whitespace-nowrap">{inv.invoice_date}</td>
@@ -1600,10 +1674,10 @@ function BillingContent() {
                           <td className="p-3.5 text-right tabular-nums font-bold text-foreground whitespace-nowrap">
                             {formatBDT(inv.grand_total)}
                           </td>
-                          <td className="p-3.5 text-right tabular-nums text-emerald-600 font-bold whitespace-nowrap">
+                          <td className="p-3.5 text-right tabular-nums text-success font-bold whitespace-nowrap">
                             {formatBDT(inv.paid_amount || 0)}
                           </td>
-                          <td className="p-3.5 text-right tabular-nums font-bold text-rose-600 dark:text-rose-400 whitespace-nowrap">
+                          <td className="p-3.5 text-right tabular-nums font-bold text-destructive text-destructive whitespace-nowrap">
                             {formatBDT(inv.due_amount || 0)}
                           </td>
                           <td className="p-3.5 text-center whitespace-nowrap">
@@ -1644,7 +1718,7 @@ function BillingContent() {
  href={getTenantNavHref(`/billing/${inv.id}`, pathname, slug)}
  onClick={() => setActiveMenuInvoiceId(null)}
  className="w-full text-left px-3 py-2 hover:bg-muted flex items-center gap-2.5 text-foreground transition-colors">
-                                    <Eye className="h-3.5 w-3.5 text-blue-500 shrink-0"/>
+                                    <Eye className="h-3.5 w-3.5 text-primary shrink-0"/>
                                     <span className="font-medium">View Invoice</span>
                                   </Link>
 
@@ -1657,11 +1731,11 @@ function BillingContent() {
  setSelectedInvoiceIdForPayment(inv.id)
  setIsReceivePaymentOpen(true)
                                       }}
- className="w-full text-left px-3 py-2 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 flex items-center gap-2.5 text-emerald-700 dark:text-emerald-400 transition-colors cursor-pointer">
-                                      <DollarSign className="h-3.5 w-3.5 text-emerald-600 shrink-0"/>
+ className="w-full text-left px-3 py-2 hover:bg-success-surface dark:hover:bg-success-surface flex items-center gap-2.5 text-success transition-colors cursor-pointer">
+                                      <DollarSign className="h-3.5 w-3.5 text-success shrink-0"/>
                                       <div className="flex flex-col text-left">
                                         <span className="font-semibold">Collect Payment</span>
-                                        <span className="text-2xs text-emerald-600/80 dark:text-emerald-400/80 tabular-nums">
+                                        <span className="text-xs text-success/80 text-success/80 tabular-nums">
  Due: {formatBDT(inv.due_amount)}
                                         </span>
                                       </div>
@@ -1675,8 +1749,8 @@ function BillingContent() {
  setActiveMenuInvoiceId(null)
  handleSendReminder(inv.id)
                                       }}
- className="w-full text-left px-3 py-2 hover:bg-emerald-50/60 dark:hover:bg-emerald-950/30 flex items-center gap-2.5 text-foreground hover:text-emerald-700 dark:hover:text-emerald-400 transition-colors cursor-pointer">
-                                      <MessageSquare className="h-3.5 w-3.5 text-emerald-500 shrink-0"/>
+ className="w-full text-left px-3 py-2 hover:bg-success-surface/60 dark:hover:bg-success-surface flex items-center gap-2.5 text-foreground hover:text-success dark:hover:text-success transition-colors cursor-pointer">
+                                      <MessageSquare className="h-3.5 w-3.5 text-success shrink-0"/>
                                       <span>Remind (WhatsApp)</span>
                                     </button>
                                   )}
@@ -1693,8 +1767,8 @@ function BillingContent() {
  setActiveMenuInvoiceId(null)
  setSelectedInvoiceForCancel(inv)
                                       }}
- className="w-full text-left px-3 py-2 hover:bg-amber-50 dark:hover:bg-amber-950/40 flex items-center gap-2.5 text-amber-700 dark:text-amber-400 transition-colors cursor-pointer">
-                                      <Ban className="h-3.5 w-3.5 text-amber-500 shrink-0"/>
+ className="w-full text-left px-3 py-2 hover:bg-warning-surface dark:hover:bg-warning-surface flex items-center gap-2.5 text-warning transition-colors cursor-pointer">
+                                      <Ban className="h-3.5 w-3.5 text-warning shrink-0"/>
                                       <span>Cancel / Void Invoice</span>
                                     </button>
                                   )}
@@ -1706,8 +1780,8 @@ function BillingContent() {
  setActiveMenuInvoiceId(null)
  setSelectedInvoiceForDelete(inv)
                                       }}
- className="w-full text-left px-3 py-2 hover:bg-rose-50 dark:hover:bg-rose-950/40 flex items-center gap-2.5 text-rose-600 dark:text-rose-400 transition-colors cursor-pointer">
-                                      <Trash2 className="h-3.5 w-3.5 text-rose-500 shrink-0"/>
+ className="w-full text-left px-3 py-2 hover:bg-danger-surface dark:hover:bg-danger-surface flex items-center gap-2.5 text-destructive text-destructive transition-colors cursor-pointer">
+                                      <Trash2 className="h-3.5 w-3.5 text-destructive shrink-0"/>
                                       <span>Delete Invoice</span>
                                     </button>
                                   )}
@@ -1735,7 +1809,7 @@ function BillingContent() {
                         <div className="flex items-center gap-1.5 flex-wrap">
                           <Link
  href={getTenantNavHref(`/billing/${inv.id}`, pathname, slug)}
- className="tabular-nums font-bold text-sm text-blue-600 dark:text-blue-400">
+ className="tabular-nums font-bold text-sm text-primary">
                             #{inv.invoice_number}
                           </Link>
                           {getSectorBadge(getSectorForInvoice(inv))}
@@ -1748,7 +1822,7 @@ function BillingContent() {
                         {inv.customer_phone ? (
                           <a
  href={`tel:${inv.customer_phone}`}
- className="text-xs text-blue-600 dark:text-blue-400 tabular-nums inline-flex items-center gap-1 hover:underline mt-0.5">
+ className="text-xs text-primary tabular-nums inline-flex items-center gap-1 hover:underline mt-0.5">
                             <Phone className="h-3 w-3"/>
                             <span>{inv.customer_phone}</span>
                           </a>
@@ -1759,27 +1833,27 @@ function BillingContent() {
 
                       <div className="grid grid-cols-3 gap-2 text-center tabular-nums text-xs bg-muted p-2.5 rounded-xl border border-border /50">
                         <div>
-                          <span className="text-2xs text-muted-foreground block">Total</span>
+                          <span className="text-xs text-muted-foreground block">Total</span>
                           <span className="font-bold text-foreground">{formatBDT(inv.grand_total)}</span>
                         </div>
                         <div>
-                          <span className="text-2xs text-emerald-600 block">Paid</span>
-                          <span className="font-bold text-emerald-600">{formatBDT(inv.paid_amount || 0)}</span>
+                          <span className="text-xs text-success block">Paid</span>
+                          <span className="font-bold text-success">{formatBDT(inv.paid_amount || 0)}</span>
                         </div>
                         <div>
-                          <span className="text-2xs text-rose-600 block">Due</span>
-                          <span className="font-black text-rose-600">{formatBDT(inv.due_amount || 0)}</span>
+                          <span className="text-xs text-destructive block">Due</span>
+                          <span className="font-black text-destructive">{formatBDT(inv.due_amount || 0)}</span>
                         </div>
                       </div>
 
                       <div className="flex items-center justify-between pt-1">
-                        <span className="text-2xs text-muted-foreground tabular-nums">Date: {inv.invoice_date}</span>
+                        <span className="text-xs text-muted-foreground tabular-nums">Date: {inv.invoice_date}</span>
                         <div className="flex items-center gap-2">
                           {inv.due_amount > 0 && inv.status !== 'cancelled' && (
                             <>
                               <Button
  size="sm"variant="outline"onClick={() => handleSendReminder(inv.id)}
- className="h-8 text-xs font-bold border-emerald-300 text-emerald-700 px-2 rounded-lg"title="Remind on WhatsApp">
+ className="h-8 text-xs font-bold border-success-border text-success px-2 rounded-lg"title="Remind on WhatsApp">
                                 <MessageSquare className="h-3.5 w-3.5"/>
                               </Button>
                               <Button
@@ -1788,7 +1862,7 @@ function BillingContent() {
  setSelectedInvoiceIdForPayment(inv.id)
  setIsReceivePaymentOpen(true)
                                 }}
- className="h-8 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white px-3 rounded-lg">
+ className="h-8 text-xs font-bold bg-success hover:bg-success text-success-foreground px-3 rounded-lg">
  Collect Due
                               </Button>
                             </>
@@ -1801,7 +1875,7 @@ function BillingContent() {
                           {can('delete', 'invoices') && inv.status !== 'cancelled' && (
                             <Button
  size="sm"variant="ghost"onClick={() => setSelectedInvoiceForDelete(inv)}
- className="h-8 text-xs px-2 text-muted-foreground hover:text-rose-600 rounded-lg">
+ className="h-8 text-xs px-2 text-muted-foreground hover:text-destructive rounded-lg">
  Delete
                             </Button>
                           )}
@@ -1920,7 +1994,7 @@ function BillingContent() {
             <Card className="border-border /80 shadow-xs overflow-hidden rounded-xl bg-card/80 backdrop-blur-md">
               <div className="hidden md:block overflow-x-auto">
                 <table className="w-full text-left text-xs min-w-[950px]">
-                  <thead className="bg-muted border-b border-border /80 text-muted-foreground uppercase tracking-wider text-2xs font-bold">
+                  <thead className="bg-muted border-b border-border /80 text-muted-foreground uppercase tracking-wider text-xs font-bold">
                     <tr>
                       <th className="p-3.5 whitespace-nowrap min-w-[130px] bangla-text">{tBilingual('Receipt #', 'রশিদ নং')}</th>
                       <th className="p-3.5 text-center whitespace-nowrap w-[100px] min-w-[100px] bangla-text">{tBilingual('Date', 'তারিখ')}</th>
@@ -1942,7 +2016,7 @@ function BillingContent() {
                     ) : (
  filteredPayments.map((pay) => (
                         <tr key={pay.id} className="hover:bg-muted dark:hover:bg-muted/60 transition-colors">
-                          <td className="p-3.5 tabular-nums font-bold text-emerald-600 dark:text-emerald-400 whitespace-nowrap">
+                          <td className="p-3.5 tabular-nums font-bold text-success whitespace-nowrap">
                             {pay.receipt_number}
                           </td>
                           <td className="p-3.5 text-center tabular-nums text-muted-foreground whitespace-nowrap">{pay.payment_date}</td>
@@ -1950,14 +2024,14 @@ function BillingContent() {
                             {pay.customer_name || 'Walk-in Customer'}
                           </td>
                           <td className="p-3.5 whitespace-nowrap">
-                            <Badge className="bg-muted text-foreground uppercase text-2xs rounded-md font-semibold whitespace-nowrap">
+                            <Badge className="bg-muted text-foreground uppercase text-xs rounded-md font-semibold whitespace-nowrap">
                               {pay.payment_method}
                             </Badge>
                           </td>
-                          <td className="p-3.5 tabular-nums text-muted-foreground text-2xs whitespace-nowrap">
+                          <td className="p-3.5 tabular-nums text-muted-foreground text-xs whitespace-nowrap">
                             {pay.mfs_transaction_id || pay.cheque_number || pay.bank_name || '—'}
                           </td>
-                          <td className="p-3.5 text-right tabular-nums font-black text-emerald-600 text-sm whitespace-nowrap">
+                          <td className="p-3.5 text-right tabular-nums font-black text-success text-sm whitespace-nowrap">
                             {formatBDT(pay.amount)}
                           </td>
                           <td className="p-3.5 text-muted-foreground whitespace-nowrap">
@@ -1969,7 +2043,7 @@ function BillingContent() {
  setSelectedPaymentForReceipt(pay)
  setIsReceiptModalOpen(true)
                               }}
- className="h-7 text-xs font-semibold gap-1 text-emerald-700 border-emerald-300 hover:bg-emerald-50 dark:border-emerald-700 dark:text-emerald-300 cursor-pointer rounded-lg">
+ className="h-7 text-xs font-semibold gap-1 text-success border-success-border hover:bg-success-surface border-success-border text-success cursor-pointer rounded-lg">
                               <Receipt className="h-3 w-3"/>
                               <span>Receipt</span>
                             </Button>
@@ -1991,10 +2065,10 @@ function BillingContent() {
  filteredPayments.map((pay) => (
                     <div key={pay.id} className="p-4 space-y-2.5">
                       <div className="flex items-center justify-between">
-                        <span className="tabular-nums font-bold text-sm text-emerald-600 dark:text-emerald-400">
+                        <span className="tabular-nums font-bold text-sm text-success">
                           {pay.receipt_number}
                         </span>
-                        <Badge className="bg-muted text-foreground uppercase text-2xs rounded-md">
+                        <Badge className="bg-muted text-foreground uppercase text-xs rounded-md">
                           {pay.payment_method}
                         </Badge>
                       </div>
@@ -2004,16 +2078,16 @@ function BillingContent() {
                           <div className="font-bold text-sm text-foreground">
                             {pay.customer_name || 'Walk-in Customer'}
                           </div>
-                          <div className="text-2xs text-muted-foreground tabular-nums mt-0.5">
+                          <div className="text-xs text-muted-foreground tabular-nums mt-0.5">
                             {pay.payment_date} • By: {pay.received_by_name || 'Cashier'}
                           </div>
                         </div>
                         <div className="text-right">
-                          <div className="tabular-nums font-black text-emerald-600 text-base">
+                          <div className="tabular-nums font-black text-success text-base">
                             {formatBDT(pay.amount)}
                           </div>
                           {(pay.mfs_transaction_id || pay.cheque_number || pay.bank_name) && (
-                            <span className="text-2xs text-muted-foreground tabular-nums block">
+                            <span className="text-xs text-muted-foreground tabular-nums block">
  Ref: {pay.mfs_transaction_id || pay.cheque_number || pay.bank_name}
                             </span>
                           )}
@@ -2026,7 +2100,7 @@ function BillingContent() {
  setSelectedPaymentForReceipt(pay)
  setIsReceiptModalOpen(true)
                           }}
- className="h-8 text-xs font-semibold gap-1.5 text-emerald-700 border-emerald-300 hover:bg-emerald-50 dark:border-emerald-700 dark:text-emerald-300 cursor-pointer rounded-lg">
+ className="h-8 text-xs font-semibold gap-1.5 text-success border-success-border hover:bg-success-surface border-success-border text-success cursor-pointer rounded-lg">
                           <Receipt className="h-3.5 w-3.5"/>
                           <span>View Receipt</span>
                         </Button>
@@ -2049,7 +2123,7 @@ function BillingContent() {
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
                 {receivablesAging.buckets.map((b) => (
                   <Card key={b.bucket} className="p-3.5 bg-card/80 backdrop-blur-md border-border /80 shadow-xs rounded-xl">
-                    <span className="text-2xs font-bold text-muted-foreground uppercase tracking-wider block">
+                    <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block">
                       {b.label}
                     </span>
                     <div className="text-base font-black font-numeric tabular-nums text-foreground mt-1">
@@ -2079,7 +2153,7 @@ function BillingContent() {
               <CardContent className="p-0">
                 <div className="hidden md:block overflow-x-auto">
                   <table className="w-full text-left text-xs min-w-[950px]">
-                    <thead className="bg-muted border-b border-border /80 text-muted-foreground uppercase tracking-wider text-2xs font-bold">
+                    <thead className="bg-muted border-b border-border /80 text-muted-foreground uppercase tracking-wider text-xs font-bold">
                       <tr>
                         <th className="p-3.5 min-w-[180px] bangla-text">{tBilingual('Customer', 'গ্রাহক')}</th>
                         <th className="p-3.5 whitespace-nowrap min-w-[120px] bangla-text">{tBilingual('Phone', 'ফোন')}</th>
@@ -2107,7 +2181,7 @@ function BillingContent() {
                               {c.customerPhone ? (
                                 <a
  href={`tel:${c.customerPhone}`}
- className="text-foreground hover:text-blue-600 dark:hover:text-blue-400 hover:underline inline-flex items-center gap-1 whitespace-nowrap"title="Call Customer">
+ className="text-foreground hover:text-primary dark:hover:text-primary hover:underline inline-flex items-center gap-1 whitespace-nowrap"title="Call Customer">
                                   <Phone className="h-3 w-3 text-muted-foreground shrink-0"/>
                                   <span>{c.customerPhone}</span>
                                 </a>
@@ -2115,22 +2189,22 @@ function BillingContent() {
                                 '—'
                               )}
                             </td>
-                            <td className="p-3.5 text-center tabular-nums font-bold text-blue-600 whitespace-nowrap">
+                            <td className="p-3.5 text-center tabular-nums font-bold text-primary whitespace-nowrap">
                               {c.unpaidCount} Invoices
                             </td>
                             <td className="p-3.5 text-center tabular-nums text-muted-foreground whitespace-nowrap">{c.oldestDueDate}</td>
                             <td className="p-3.5 text-center whitespace-nowrap">
                               {c.maxDaysOverdue > 0 ? (
-                                <Badge className="bg-rose-500/10 text-rose-800 dark:text-rose-300 border border-rose-500/20 font-bold text-2xs rounded-md whitespace-nowrap">
+                                <Badge className="bg-destructive/10 text-destructive text-destructive border border-danger-border/20 font-bold text-xs rounded-md whitespace-nowrap">
                                   {c.maxDaysOverdue}d Overdue
                                 </Badge>
                               ) : (
-                                <Badge className="bg-amber-500/10 text-amber-900 dark:text-amber-300 border border-amber-500/20 text-2xs rounded-md whitespace-nowrap">
+                                <Badge className="bg-warning/10 text-warning border border-warning-border/20 text-xs rounded-md whitespace-nowrap">
  Due Soon
                                 </Badge>
                               )}
                             </td>
-                            <td className="p-3.5 text-right tabular-nums font-black text-rose-600 dark:text-rose-400 text-sm whitespace-nowrap">
+                            <td className="p-3.5 text-right tabular-nums font-black text-destructive text-destructive text-sm whitespace-nowrap">
                               {formatBDT(c.totalDue)}
                             </td>
                             <td className="p-3.5 text-right whitespace-nowrap w-[180px] min-w-[180px]">
@@ -2138,7 +2212,7 @@ function BillingContent() {
                                 {c.invoices[0] && (
                                   <Button
  size="sm"variant="outline"onClick={() => handleSendReminder(c.invoices[0].id)}
- className="h-7 text-xs font-bold border-emerald-300 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-700 dark:text-emerald-300 px-2 cursor-pointer rounded-lg shrink-0 gap-1"title="Send WhatsApp payment reminder">
+ className="h-7 text-xs font-bold border-success-border text-success hover:bg-success-surface border-success-border text-success px-2 cursor-pointer rounded-lg shrink-0 gap-1"title="Send WhatsApp payment reminder">
                                     <MessageSquare className="h-3 w-3"/>
                                     <span>Remind</span>
                                   </Button>
@@ -2149,7 +2223,7 @@ function BillingContent() {
  setSelectedInvoiceIdForPayment(c.invoices[0]?.id)
  setIsReceivePaymentOpen(true)
                                   }}
- className="h-7 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs px-3 cursor-pointer rounded-lg shrink-0">
+ className="h-7 text-xs font-bold bg-success hover:bg-success text-success-foreground shadow-xs px-3 cursor-pointer rounded-lg shrink-0">
  Collect Due
                                 </Button>
                               </div>
@@ -2175,11 +2249,11 @@ function BillingContent() {
                             {c.customerName}
                           </span>
                           {c.maxDaysOverdue > 0 ? (
-                            <Badge className="bg-rose-500/10 text-rose-800 dark:text-rose-300 border border-rose-500/20 font-bold text-2xs rounded-md">
+                            <Badge className="bg-destructive/10 text-destructive text-destructive border border-danger-border/20 font-bold text-xs rounded-md">
                               {c.maxDaysOverdue}d Overdue
                             </Badge>
                           ) : (
-                            <Badge className="bg-amber-500/10 text-amber-900 dark:text-amber-300 border border-amber-500/20 text-2xs rounded-md">
+                            <Badge className="bg-warning/10 text-warning border border-warning-border/20 text-xs rounded-md">
  Due Soon
                             </Badge>
                           )}
@@ -2189,24 +2263,24 @@ function BillingContent() {
                           {c.customerPhone ? (
                             <a
  href={`tel:${c.customerPhone}`}
- className="text-blue-600 dark:text-blue-400 tabular-nums inline-flex items-center gap-1 hover:underline">
+ className="text-primary tabular-nums inline-flex items-center gap-1 hover:underline">
                               <Phone className="h-3 w-3"/>
                               <span>{c.customerPhone}</span>
                             </a>
                           ) : (
                             <span className="text-muted-foreground">Phone: —</span>
                           )}
-                          <span className="text-blue-600 font-bold">{c.unpaidCount} Bills</span>
+                          <span className="text-primary font-bold">{c.unpaidCount} Bills</span>
                         </div>
 
                         <div className="flex items-center justify-between bg-muted p-2.5 rounded-xl border border-border /50">
                           <div>
-                            <span className="text-2xs text-muted-foreground block tabular-nums">Oldest Due Date</span>
+                            <span className="text-xs text-muted-foreground block tabular-nums">Oldest Due Date</span>
                             <span className="text-xs tabular-nums text-foreground">{c.oldestDueDate}</span>
                           </div>
                           <div className="text-right">
-                            <span className="text-2xs text-muted-foreground block tabular-nums">Total Outstanding</span>
-                            <span className="tabular-nums font-black text-rose-600 text-sm">{formatBDT(c.totalDue)}</span>
+                            <span className="text-xs text-muted-foreground block tabular-nums">Total Outstanding</span>
+                            <span className="tabular-nums font-black text-destructive text-sm">{formatBDT(c.totalDue)}</span>
                           </div>
                         </div>
 
@@ -2214,7 +2288,7 @@ function BillingContent() {
                           {c.invoices[0] && (
                             <Button
  size="sm"variant="outline"onClick={() => handleSendReminder(c.invoices[0].id)}
- className="h-8 text-xs font-bold border-emerald-300 text-emerald-700 px-2 rounded-lg"title="Remind on WhatsApp">
+ className="h-8 text-xs font-bold border-success-border text-success px-2 rounded-lg"title="Remind on WhatsApp">
                               <MessageSquare className="h-3.5 w-3.5 mr-1"/>
                               <span>Remind</span>
                             </Button>
@@ -2225,7 +2299,7 @@ function BillingContent() {
  setSelectedInvoiceIdForPayment(c.invoices[0]?.id)
  setIsReceivePaymentOpen(true)
                             }}
- className="h-8 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs px-3 cursor-pointer rounded-lg">
+ className="h-8 text-xs font-bold bg-success hover:bg-success text-success-foreground shadow-xs px-3 cursor-pointer rounded-lg">
  Collect Due
                           </Button>
                         </div>
@@ -2331,7 +2405,7 @@ function BillingContent() {
         >
           {selectedInvoiceForDelete.status === 'paid' || (selectedInvoiceForDelete.paid_amount || 0) >= (selectedInvoiceForDelete.grand_total || 0) ? (
             <div className="space-y-4 pt-1">
-              <div className="p-3 bg-amber-50 dark:bg-amber-950/40 rounded-xl border border-amber-300 dark:border-amber-800 text-xs text-amber-900 dark:text-amber-200 space-y-1">
+              <div className="p-3 bg-warning-surface bg-warning-surface rounded-xl border border-warning-border border-warning-border text-xs text-warning space-y-1">
                 <strong>Paid invoices cannot be deleted</strong> because they are part of the permanent financial record.
               </div>
               <div className="text-xs text-muted-foreground">
@@ -2347,14 +2421,14 @@ function BillingContent() {
             </div>
           ) : (selectedInvoiceForDelete.paid_amount || 0) > 0 ? (
             <div className="space-y-4 pt-1">
-              <div className="p-3 bg-amber-50 dark:bg-amber-950/40 rounded-xl border border-amber-300 dark:border-amber-800 text-xs text-amber-900 dark:text-amber-200 space-y-1">
+              <div className="p-3 bg-warning-surface bg-warning-surface rounded-xl border border-warning-border border-warning-border text-xs text-warning space-y-1">
                 <strong>Partially paid invoices cannot be deleted directly</strong> because financial payments are attached to this document. Please perform an authorized payment refund/reversal first.
               </div>
               <div className="text-xs text-muted-foreground">
  Invoice: <strong>#{selectedInvoiceForDelete.invoice_number}</strong><br />
  Customer: <strong>{selectedInvoiceForDelete.customer_name}</strong><br />
- Paid: <strong className="tabular-nums text-emerald-600">{formatBDT(selectedInvoiceForDelete.paid_amount || 0)}</strong><br />
- Remaining Due: <strong className="tabular-nums text-rose-600">{formatBDT(selectedInvoiceForDelete.due_amount || 0)}</strong>
+ Paid: <strong className="tabular-nums text-success">{formatBDT(selectedInvoiceForDelete.paid_amount || 0)}</strong><br />
+ Remaining Due: <strong className="tabular-nums text-destructive">{formatBDT(selectedInvoiceForDelete.due_amount || 0)}</strong>
               </div>
               <div className="flex justify-end pt-2">
                 <Button type="button"variant="outline"size="sm"onClick={() => setSelectedInvoiceForDelete(null)}>
@@ -2388,7 +2462,7 @@ function BillingContent() {
                 </Button>
                 <Button
  type="submit"size="sm"disabled={isSubmittingDelete}
- className="bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs">
+ className="bg-destructive hover:bg-destructive text-white font-bold text-xs">
                   {isSubmittingDelete ? 'Deleting...' : 'Delete Invoice'}
                 </Button>
               </div>
@@ -2425,7 +2499,7 @@ function BillingContent() {
               </Button>
               <Button
  type="submit"size="sm"disabled={isSubmittingCancel}
- className="bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs">
+ className="bg-destructive hover:bg-destructive text-white font-bold text-xs">
                 {isSubmittingCancel ? 'Voiding...' : 'Confirm Void Invoice'}
               </Button>
             </div>
@@ -2441,7 +2515,7 @@ export default function BillingPage() {
     <React.Suspense
  fallback={
         <div className="flex flex-col items-center justify-center min-h-[400px] space-y-3">
-          <Receipt className="h-7 w-7 text-blue-600 animate-pulse"/>
+          <Receipt className="h-7 w-7 text-primary animate-pulse"/>
           <p className="text-xs font-medium text-muted-foreground">Loading Billing Workspace...</p>
         </div>
       }

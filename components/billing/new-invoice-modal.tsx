@@ -337,20 +337,20 @@ function CatalogItemCombobox({
  onClick={() => handleSelect({ id: '', type: 'custom' })}
  className={cn("p-2.5 cursor-pointer font-semibold flex items-center justify-between transition-colors",
  highlightedIndex === 0
-                ?"bg-blue-100/90 dark:bg-blue-950/70 border-l-4 border-blue-600 text-blue-900 dark:text-blue-100": !selectedProductId
-                ?"bg-blue-50/80 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300":"hover:bg-muted text-muted-foreground")}
+                ?"bg-primary/10/90 bg-primary/10 border-l-4 border-border text-primary text-primary": !selectedProductId
+                ?"bg-primary/10/80 text-primary bg-primary/10 text-primary":"hover:bg-muted text-muted-foreground")}
           >
             <span>✨ -- Custom Item (No Catalog) --</span>
             <div className="flex items-center gap-1.5">
-              {highlightedIndex === 0 && <span className="text-2xs font-semibold text-blue-600 dark:text-blue-400">↵ Enter</span>}
-              {!selectedProductId && <CheckCircle2 className="h-3.5 w-3.5 text-blue-600"/>}
+              {highlightedIndex === 0 && <span className="text-xs font-semibold text-primary text-primary">↵ Enter</span>}
+              {!selectedProductId && <CheckCircle2 className="h-3.5 w-3.5 text-primary"/>}
             </div>
           </div>
 
           {/* Printing Services */}
           {services.length > 0 && (
             <div>
-              <div className="px-2.5 py-1 text-2xs font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-950/30 uppercase tracking-wider">
+              <div className="px-2.5 py-1 text-xs font-bold text-primary text-primary bg-primary/10/50 bg-primary/10 uppercase tracking-wider">
                 🖨️ Printing & Services ({services.length})
               </div>
               {services.map((p, sIdx) => {
@@ -367,21 +367,21 @@ function CatalogItemCombobox({
  onClick={() => handleSelect({ id: p.id, type: 'product', product: p })}
  className={cn("p-2.5 cursor-pointer flex items-center justify-between gap-2 transition-colors",
  isHighlighted
-                        ?"bg-blue-100/90 dark:bg-blue-950/70 border-l-4 border-blue-600 text-blue-900 dark:text-blue-100": selectedProductId === p.id
-                        ?"bg-blue-50 font-bold text-blue-700 dark:bg-blue-950/50 dark:text-blue-300":"hover:bg-blue-50/70 dark:hover:bg-blue-950/40")}
+                        ?"bg-primary/10/90 bg-primary/10 border-l-4 border-border text-primary text-primary": selectedProductId === p.id
+                        ?"bg-primary/10 font-bold text-primary bg-primary/10 text-primary":"hover:bg-primary/10/70 dark:hover:bg-primary/10")}
                   >
                     <div>
                       <div className="font-semibold text-foreground">{p.name}</div>
-                      <div className="text-2xs text-muted-foreground flex items-center gap-1.5 mt-0.5">
+                      <div className="text-xs text-muted-foreground flex items-center gap-1.5 mt-0.5">
                         {p.sku && <span className="tabular-nums bg-muted px-1 rounded">{p.sku}</span>}
                         <span>Unit: {p.unit || 'sft'}</span>
                       </div>
                     </div>
                     <div className="flex items-center gap-1.5 shrink-0">
-                      <span className="tabular-nums font-bold text-indigo-600 dark:text-indigo-400">
+                      <span className="tabular-nums font-bold text-primary text-primary">
                         ৳{p.selling_price}
                       </span>
-                      {isHighlighted && <span className="text-2xs font-semibold text-blue-600 dark:text-blue-400">↵ Enter</span>}
+                      {isHighlighted && <span className="text-xs font-semibold text-primary text-primary">↵ Enter</span>}
                     </div>
                   </div>
                 )
@@ -392,7 +392,7 @@ function CatalogItemCombobox({
           {/* Ready Products */}
           {readyProducts.length > 0 && (
             <div>
-              <div className="px-2.5 py-1 text-2xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50/50 dark:bg-emerald-950/30 uppercase tracking-wider">
+              <div className="px-2.5 py-1 text-xs font-bold text-success text-success bg-success-surface/50 bg-success-surface uppercase tracking-wider">
                 📦 Ready Products ({readyProducts.length})
               </div>
               {readyProducts.map((p, rIdx) => {
@@ -409,21 +409,21 @@ function CatalogItemCombobox({
  onClick={() => handleSelect({ id: p.id, type: 'product', product: p })}
  className={cn("p-2.5 cursor-pointer flex items-center justify-between gap-2 transition-colors",
  isHighlighted
-                        ?"bg-blue-100/90 dark:bg-blue-950/70 border-l-4 border-blue-600 text-blue-900 dark:text-blue-100": selectedProductId === p.id
-                        ?"bg-emerald-50 font-bold text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300":"hover:bg-emerald-50/70 dark:hover:bg-emerald-950/40")}
+                        ?"bg-primary/10/90 bg-primary/10 border-l-4 border-border text-primary text-primary": selectedProductId === p.id
+                        ?"bg-success-surface font-bold text-success bg-success-surface text-success":"hover:bg-success-surface/70 dark:hover:bg-success-surface")}
                   >
                     <div>
                       <div className="font-semibold text-foreground">{p.name}</div>
-                      <div className="text-2xs text-muted-foreground flex items-center gap-1.5 mt-0.5">
+                      <div className="text-xs text-muted-foreground flex items-center gap-1.5 mt-0.5">
                         {p.sku && <span className="tabular-nums bg-muted px-1 rounded">{p.sku}</span>}
                         <span>Unit: {p.unit || 'pcs'}</span>
                       </div>
                     </div>
                     <div className="flex items-center gap-1.5 shrink-0">
-                      <span className="tabular-nums font-bold text-emerald-600 dark:text-emerald-400">
+                      <span className="tabular-nums font-bold text-success text-success">
                         ৳{p.selling_price}
                       </span>
-                      {isHighlighted && <span className="text-2xs font-semibold text-blue-600 dark:text-blue-400">↵ Enter</span>}
+                      {isHighlighted && <span className="text-xs font-semibold text-primary text-primary">↵ Enter</span>}
                     </div>
                   </div>
                 )
@@ -434,7 +434,7 @@ function CatalogItemCombobox({
           {/* Raw Materials */}
           {materials.length > 0 && (
             <div>
-              <div className="px-2.5 py-1 text-2xs font-bold text-purple-600 dark:text-purple-400 bg-purple-50/50 dark:bg-purple-950/30 uppercase tracking-wider">
+              <div className="px-2.5 py-1 text-xs font-bold text-primary text-primary bg-primary/10/50 bg-primary/10 uppercase tracking-wider">
                 🧵 Raw Materials ({materials.length})
               </div>
               {materials.map((p, mIdx) => {
@@ -451,21 +451,21 @@ function CatalogItemCombobox({
  onClick={() => handleSelect({ id: p.id, type: 'product', product: p })}
  className={cn("p-2.5 cursor-pointer flex items-center justify-between gap-2 transition-colors",
  isHighlighted
-                        ?"bg-blue-100/90 dark:bg-blue-950/70 border-l-4 border-blue-600 text-blue-900 dark:text-blue-100": selectedProductId === p.id
-                        ?"bg-purple-50 font-bold text-purple-700 dark:bg-purple-950/50 dark:text-purple-300":"hover:bg-purple-50/70 dark:hover:bg-purple-950/40")}
+                        ?"bg-primary/10/90 bg-primary/10 border-l-4 border-border text-primary text-primary": selectedProductId === p.id
+                        ?"bg-primary/10 font-bold text-primary bg-primary/10 text-primary":"hover:bg-primary/10/70 dark:hover:bg-primary/10")}
                   >
                     <div>
                       <div className="font-semibold text-foreground">{p.name}</div>
-                      <div className="text-2xs text-muted-foreground flex items-center gap-1.5 mt-0.5">
+                      <div className="text-xs text-muted-foreground flex items-center gap-1.5 mt-0.5">
                         {p.sku && <span className="tabular-nums bg-muted px-1 rounded">{p.sku}</span>}
                         <span>Unit: {p.unit || 'roll'}</span>
                       </div>
                     </div>
                     <div className="flex items-center gap-1.5 shrink-0">
-                      <span className="tabular-nums font-bold text-purple-600 dark:text-purple-400">
+                      <span className="tabular-nums font-bold text-primary text-primary">
                         ৳{p.selling_price}
                       </span>
-                      {isHighlighted && <span className="text-2xs font-semibold text-blue-600 dark:text-blue-400">↵ Enter</span>}
+                      {isHighlighted && <span className="text-xs font-semibold text-primary text-primary">↵ Enter</span>}
                     </div>
                   </div>
                 )
@@ -521,7 +521,7 @@ function CustomerSuggestionsDropdown({
  className={cn(
               'p-2.5 cursor-pointer transition-colors flex items-center justify-between gap-2',
  isHighlighted
-                ? 'bg-blue-50 dark:bg-blue-950/70 border-l-4 border-blue-600 text-blue-900 dark:text-blue-100'
+                ? 'bg-primary/10 bg-primary/10 border-l-4 border-border text-primary text-primary'
                 : 'hover:bg-muted dark:hover:bg-muted/60 text-foreground '
             )}
           >
@@ -529,23 +529,23 @@ function CustomerSuggestionsDropdown({
               <div className="font-bold flex items-center gap-1.5 truncate">
                 <span>{cust.name}</span>
                 {cust.company_name && (
-                  <span className="text-2xs font-normal text-muted-foreground truncate">
+                  <span className="text-xs font-normal text-muted-foreground truncate">
                     • {cust.company_name}
                   </span>
                 )}
               </div>
-              <div className="text-2xs text-muted-foreground tabular-nums flex flex-wrap items-center gap-2 mt-0.5">
+              <div className="text-xs text-muted-foreground tabular-nums flex flex-wrap items-center gap-2 mt-0.5">
                 <span>📞 {cust.mobile}</span>
                 {cust.email && <span className="truncate">✉️ {cust.email}</span>}
               </div>
             </div>
 
             <div className="flex items-center gap-1.5 shrink-0">
-              <span className="text-2xs uppercase font-bold px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
+              <span className="text-xs uppercase font-bold px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
                 {cust.customer_type || 'Retail'}
               </span>
               {isHighlighted && (
-                <span className="text-2xs font-semibold text-blue-600 dark:text-blue-400">
+                <span className="text-xs font-semibold text-primary text-primary">
                   ↵ Enter
                 </span>
               )}
@@ -1626,18 +1626,18 @@ export function NewInvoiceModal({
 
  const getRateBadge = (source?: 'custom' | 'last_invoice' | 'last_quotation' | 'default' | 'manual') => {
  if (source === 'custom') {
- return <Badge className="bg-purple-100 text-purple-800 border-purple-200 text-2xs py-0">Custom Rate</Badge>
+ return <Badge className="bg-primary/10 text-primary border-primary/20 text-xs py-0">Custom Rate</Badge>
     }
  if (source === 'last_invoice') {
- return <Badge className="bg-blue-100 text-blue-800 border-blue-200 text-2xs py-0">Last Inv Rate</Badge>
+ return <Badge className="bg-primary/10 text-primary border-primary/20 text-xs py-0">Last Inv Rate</Badge>
     }
  if (source === 'last_quotation') {
- return <Badge className="bg-amber-100 text-amber-800 border-amber-200 text-2xs py-0">Last Quote Rate</Badge>
+ return <Badge className="bg-warning-surface text-warning border-warning-border text-xs py-0">Last Quote Rate</Badge>
     }
  if (source === 'manual') {
- return <Badge className="bg-amber-100 text-amber-800 border-amber-200 text-2xs py-0">Manual</Badge>
+ return <Badge className="bg-warning-surface text-warning border-warning-border text-xs py-0">Manual</Badge>
     }
- return <Badge variant="outline"className="text-muted-foreground text-2xs py-0">Default</Badge>
+ return <Badge variant="outline"className="text-muted-foreground text-xs py-0">Default</Badge>
   }
 
  return (
@@ -1647,7 +1647,7 @@ export function NewInvoiceModal({
  size="5xl"title={
         <div className="flex items-center justify-between w-full pr-6">
           <div className="flex items-center gap-2.5">
-            <div className="h-9 w-9 rounded-xl bg-blue-600/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 flex items-center justify-center">
+            <div className="h-9 w-9 rounded-xl bg-primary/10 text-primary bg-primary/20 text-primary flex items-center justify-center">
               <Receipt className="h-5 w-5"/>
             </div>
             <div>
@@ -1663,7 +1663,7 @@ export function NewInvoiceModal({
  className={cn(
                 'text-xs font-bold px-2.5 py-1 rounded-lg border transition-all cursor-pointer flex items-center gap-1.5',
  isAdvancedMode
-                  ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300'
+                  ? 'bg-primary/10 text-primary border-primary/20 bg-primary/10 text-primary'
                   : 'bg-muted text-muted-foreground border-border '
               )}
             >
@@ -1697,7 +1697,7 @@ export function NewInvoiceModal({
               <Button
  type="button"variant="outline"onClick={() => setShowSendMenu(!showSendMenu)}
  disabled={isSubmitting}
- className="h-10 px-4 rounded-xl font-bold border-emerald-300 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-700 dark:text-emerald-300 gap-1.5 cursor-pointer">
+ className="h-10 px-4 rounded-xl font-bold border-success-border text-success hover:bg-success-surface border-success-border text-success gap-1.5 cursor-pointer">
                 <Send className="h-4 w-4"/>
                 <span>Save & Send</span>
                 <ChevronDown className="h-3.5 w-3.5"/>
@@ -1708,13 +1708,13 @@ export function NewInvoiceModal({
                   <button
  type="button"onClick={() => handleSaveAndSend('whatsapp')}
  className="w-full text-left px-3.5 py-2 hover:bg-muted flex items-center gap-2 text-foreground font-semibold cursor-pointer">
-                    <Smartphone className="h-4 w-4 text-emerald-600"/>
+                    <Smartphone className="h-4 w-4 text-success"/>
                     <span>Send via WhatsApp</span>
                   </button>
                   <button
  type="button"onClick={() => handleSaveAndSend('email')}
  className="w-full text-left px-3.5 py-2 hover:bg-muted flex items-center gap-2 text-foreground font-semibold cursor-pointer">
-                    <Mail className="h-4 w-4 text-blue-600"/>
+                    <Mail className="h-4 w-4 text-primary"/>
                     <span>Send PDF via Email</span>
                   </button>
                 </div>
@@ -1745,8 +1745,8 @@ export function NewInvoiceModal({
       <div className="space-y-4 pt-1 pb-2">
         {/* ERROR BANNER */}
         {errorMessage && (
-          <div className="p-3 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 rounded-xl text-xs text-rose-900 dark:text-rose-200 flex items-start gap-2 animate-in fade-in-0">
-            <AlertTriangle className="h-4 w-4 text-rose-600 shrink-0 mt-0.5"/>
+          <div className="p-3 bg-danger-surface bg-danger-surface border border-danger-border border-danger-border rounded-xl text-xs text-destructive text-destructive flex items-start gap-2 animate-in fade-in-0">
+            <AlertTriangle className="h-4 w-4 text-destructive shrink-0 mt-0.5"/>
             <div>
               <strong>Action Required:</strong> {errorMessage}
             </div>
@@ -1759,18 +1759,18 @@ export function NewInvoiceModal({
  className={cn(
               'p-3 rounded-xl text-xs flex items-center gap-2 border animate-in fade-in-0',
  communicationStatus.status === 'success'
-                ? 'bg-emerald-50 text-emerald-900 border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-200'
+                ? 'bg-success-surface text-success border-success-border bg-success-surface text-success'
                 : communicationStatus.status === 'failed'
-                ? 'bg-amber-50 text-amber-900 border-amber-300 dark:bg-amber-950/40 dark:text-amber-200'
-                : 'bg-blue-50 text-blue-900 border-blue-200 dark:bg-blue-950/40 dark:text-blue-200'
+                ? 'bg-warning-surface text-warning border-warning-border bg-warning-surface text-warning'
+                : 'bg-primary/10 text-primary border-primary/20 bg-primary/10 text-primary'
             )}
           >
             {communicationStatus.status === 'success' ? (
-              <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0"/>
+              <CheckCircle2 className="h-4 w-4 text-success shrink-0"/>
             ) : communicationStatus.status === 'failed' ? (
-              <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0"/>
+              <AlertTriangle className="h-4 w-4 text-warning shrink-0"/>
             ) : (
-              <RefreshCw className="h-4 w-4 text-blue-600 animate-spin shrink-0"/>
+              <RefreshCw className="h-4 w-4 text-primary animate-spin shrink-0"/>
             )}
             <span>{communicationStatus.message}</span>
           </div>
@@ -1782,7 +1782,7 @@ export function NewInvoiceModal({
         <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
           <div className="flex items-center justify-between flex-wrap gap-2">
             <div className="flex items-center gap-2">
-              <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
+              <div className="h-6 w-6 rounded-lg bg-primary/10 text-primary bg-primary/60 text-primary flex items-center justify-center font-bold text-xs">
                 1
               </div>
               <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
@@ -1792,7 +1792,7 @@ export function NewInvoiceModal({
 
             <div className="flex items-center gap-2">
               {isExistingCustomerSelected && (
-                <span className="inline-flex items-center gap-1 text-2xs font-bold text-blue-600 bg-blue-50 dark:bg-blue-950/50 px-2 py-0.5 rounded-md border border-blue-200 dark:border-blue-800">
+                <span className="inline-flex items-center gap-1 text-xs font-bold text-primary bg-primary/10 bg-primary/10 px-2 py-0.5 rounded-md border border-primary/20 border-border">
                   <UserCheck className="h-3.5 w-3.5"/>
  Customer Linked & Pricing Resolved
                 </span>
@@ -1812,7 +1812,7 @@ export function NewInvoiceModal({
  className={cn(
                       'px-2.5 py-1 text-xs font-medium rounded-md transition-all cursor-pointer',
  customerType === tab.value
-                        ? 'bg-card text-blue-600 dark:text-blue-400 shadow-xs font-semibold'
+                        ? 'bg-card text-primary text-primary shadow-xs font-semibold'
                         : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
                     )}
                   >
@@ -1828,7 +1828,7 @@ export function NewInvoiceModal({
             {/* Row 1: [Customer Name] [Phone Number] [Company Name] */}
             <div className="relative"ref={nameSearchRef}>
               <Label className="text-xs font-semibold mb-1 block">
- Customer Name <span className="text-rose-500">*</span>
+ Customer Name <span className="text-destructive">*</span>
               </Label>
               <div className="relative">
                 <Input
@@ -1858,7 +1858,7 @@ export function NewInvoiceModal({
 
             <div className="relative"ref={phoneSearchRef}>
               <Label className="text-xs font-semibold mb-1 block">
- Phone Number <span className="text-rose-500">*</span>
+ Phone Number <span className="text-destructive">*</span>
               </Label>
               <div className="relative">
                 <Input
@@ -1959,7 +1959,7 @@ export function NewInvoiceModal({
                 <input
  type="checkbox"checked={saveCustomer}
  onChange={(e) => setSaveCustomer(e.target.checked)}
- className="rounded border-input text-blue-600 focus:ring-ring h-4 w-4"/>
+ className="rounded border-input text-primary focus:ring-ring h-4 w-4"/>
                 <span>Save customer details to directory for future invoices</span>
               </label>
             </div>
@@ -1969,24 +1969,24 @@ export function NewInvoiceModal({
           {selectedCustomer && (
             <div className="p-3 bg-muted border border-border rounded-xl grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs animate-in fade-in-0">
               <div>
-                <span className="text-2xs uppercase font-bold text-muted-foreground block">Outstanding Balance</span>
-                <span className="tabular-nums font-bold text-rose-600 text-sm">{formatBDT(customerOutstanding)}</span>
+                <span className="text-xs uppercase font-bold text-muted-foreground block">Outstanding Balance</span>
+                <span className="tabular-nums font-bold text-destructive text-sm">{formatBDT(customerOutstanding)}</span>
               </div>
               <div>
-                <span className="text-2xs uppercase font-bold text-muted-foreground block">Credit Limit</span>
+                <span className="text-xs uppercase font-bold text-muted-foreground block">Credit Limit</span>
                 <span className="tabular-nums font-bold text-foreground text-sm">
                   {customerCreditLimit > 0 ? `${formatBDT(customerCreditLimit)}` : 'No Limit'}
                 </span>
               </div>
               <div>
-                <span className="text-2xs uppercase font-bold text-muted-foreground block">Available Credit</span>
-                <span className={cn('tabular-nums font-bold text-sm', availableCredit > 0 ? 'text-emerald-600' : 'text-rose-600')}>
+                <span className="text-xs uppercase font-bold text-muted-foreground block">Available Credit</span>
+                <span className={cn('tabular-nums font-bold text-sm', availableCredit > 0 ? 'text-success' : 'text-destructive')}>
                   {customerCreditLimit > 0 ? `${formatBDT(Math.max(0, availableCredit))}` : 'Unlimited'}
                 </span>
               </div>
               <div>
-                <span className="text-2xs uppercase font-bold text-muted-foreground block">Customer Category</span>
-                <Badge variant="outline"className="text-2xs uppercase font-bold py-0 h-4">
+                <span className="text-xs uppercase font-bold text-muted-foreground block">Customer Category</span>
+                <Badge variant="outline"className="text-xs uppercase font-bold py-0 h-4">
                   {selectedCustomer.customer_type || 'Retail'}
                 </Badge>
               </div>
@@ -1995,23 +1995,23 @@ export function NewInvoiceModal({
 
           {/* CREDIT LIMIT WARNING MODAL / BANNER */}
           {isCreditLimitExceeded && (
-            <div className="p-3.5 bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800 rounded-xl text-xs space-y-2 text-amber-900 dark:text-amber-200 animate-in fade-in-0">
-              <div className="flex items-center gap-2 font-bold text-amber-800 dark:text-amber-300">
-                <AlertOctagon className="h-4 w-4 text-amber-600 shrink-0"/>
+            <div className="p-3.5 bg-warning-surface bg-warning-surface border border-warning-border border-warning-border rounded-xl text-xs space-y-2 text-warning text-warning animate-in fade-in-0">
+              <div className="flex items-center gap-2 font-bold text-warning text-warning">
+                <AlertOctagon className="h-4 w-4 text-warning shrink-0"/>
                 <span>Credit Limit Warning: Projected Outstanding Exceeds Credit Limit</span>
               </div>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-2xs tabular-nums">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs tabular-nums">
                 <div>Outstanding: <strong>{formatBDT(customerOutstanding)}</strong></div>
                 <div>New Due: <strong>{formatBDT(dueAmount)}</strong></div>
                 <div>Limit: <strong>{formatBDT(customerCreditLimit)}</strong></div>
-                <div className="text-rose-600 font-bold">Exceeds By: <strong>{formatBDT(creditExceededBy)}</strong></div>
+                <div className="text-destructive font-bold">Exceeds By: <strong>{formatBDT(creditExceededBy)}</strong></div>
               </div>
-              <div className="pt-2 border-t border-amber-200 dark:border-amber-800/60 flex flex-col sm:flex-row items-start sm:items-center gap-3">
+              <div className="pt-2 border-t border-warning-border border-warning-border/60 flex flex-col sm:flex-row items-start sm:items-center gap-3">
                 <label className="flex items-center gap-2 font-bold cursor-pointer select-none">
                   <input
  type="checkbox"checked={confirmCreditOverride}
  onChange={(e) => setConfirmCreditOverride(e.target.checked)}
- className="rounded text-amber-600 focus:ring-amber-500 h-4 w-4"/>
+ className="rounded text-warning focus:ring-ring h-4 w-4"/>
                   <span>Authorize Credit Limit Override</span>
                 </label>
                 {confirmCreditOverride && (
@@ -2031,20 +2031,20 @@ export function NewInvoiceModal({
         <div className="rounded-xl border border-border bg-card p-4 space-y-4 shadow-xs">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
+              <div className="h-6 w-6 rounded-lg bg-primary/10 text-primary bg-primary/60 text-primary flex items-center justify-center font-bold text-xs">
                 2
               </div>
               <div>
                 <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
  Invoice Items & Specs
                 </h3>
-                <p className="text-2xs text-muted-foreground">
+                <p className="text-xs text-muted-foreground">
  Billing & Fulfillment: Supports Printing Services, Ready Products & Hardware, and Materials.
                 </p>
               </div>
             </div>
 
-            <Badge variant="outline"className="text-2xs tabular-nums uppercase bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300">
+            <Badge variant="outline"className="text-xs tabular-nums uppercase bg-primary/10 text-primary border-primary/20 bg-primary/10 text-primary">
               {items.length} Item{items.length > 1 ? 's' : ''}
             </Badge>
           </div>
@@ -2079,29 +2079,29 @@ export function NewInvoiceModal({
 
                       {/* Item Kind Badge */}
                       {isService && (
-                        <Badge variant="outline"className="bg-indigo-50 text-indigo-700 border-indigo-300 dark:bg-indigo-950/40 dark:text-indigo-300 text-2xs font-bold">
+                        <Badge variant="outline"className="bg-primary/10 text-primary border-primary/20 bg-primary/10 text-primary text-xs font-bold">
                           🖨️ Printing & Service
                         </Badge>
                       )}
                       {isReadyProduct && (
-                        <Badge variant="outline"className="bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-300 text-2xs font-bold">
+                        <Badge variant="outline"className="bg-success-surface text-success border-success-border bg-success-surface text-success text-xs font-bold">
                           📦 Ready Product
                         </Badge>
                       )}
                       {isMaterial && (
-                        <Badge variant="outline"className="bg-purple-50 text-purple-700 border-purple-300 dark:bg-purple-950/40 dark:text-purple-300 text-2xs font-bold">
+                        <Badge variant="outline"className="bg-primary/10 text-primary border-primary/20 bg-primary/10 text-primary text-xs font-bold">
                           🧵 Raw Material
                         </Badge>
                       )}
                       {isCustom && (
-                        <Badge variant="outline"className="bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950/40 dark:text-amber-300 text-2xs font-bold">
+                        <Badge variant="outline"className="bg-warning-surface text-warning border-warning-border bg-warning-surface text-warning text-xs font-bold">
                           ✨ Custom Item
                         </Badge>
                       )}
 
                       {/* Tier Rate Applied Badge */}
                       {item.tier_applied && (
-                        <Badge variant="outline"className="bg-blue-50 text-blue-700 border-blue-300 dark:bg-blue-950/40 dark:text-blue-300 text-2xs font-bold">
+                        <Badge variant="outline"className="bg-primary/10 text-primary border-primary/20 bg-primary/10 text-primary text-xs font-bold">
                           💎 {item.tier_applied}
                         </Badge>
                       )}
@@ -2111,8 +2111,8 @@ export function NewInvoiceModal({
 
                       {/* MOQ Notice */}
                       {item.moq && item.quantity < item.moq && (
-                        <span className="text-2xs text-amber-700 dark:text-amber-300 font-bold bg-amber-50 dark:bg-amber-950/50 border border-amber-300 dark:border-amber-800 px-1.5 py-0.5 rounded flex items-center gap-1">
-                          <AlertTriangle className="h-3 w-3 text-amber-600"/>
+                        <span className="text-xs text-warning text-warning font-bold bg-warning-surface bg-warning-surface border border-warning-border border-warning-border px-1.5 py-0.5 rounded flex items-center gap-1">
+                          <AlertTriangle className="h-3 w-3 text-warning"/>
  Below MOQ ({item.moq} {item.unit})
                         </span>
                       )}
@@ -2128,7 +2128,7 @@ export function NewInvoiceModal({
                       {items.length > 1 && (
                         <Button
  type="button"variant="ghost"size="sm"onClick={() => handleRemoveItem(index)}
- className="h-7 px-2 text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-xs cursor-pointer">
+ className="h-7 px-2 text-destructive hover:text-destructive hover:bg-danger-surface dark:hover:bg-danger-surface text-xs cursor-pointer">
                           <Trash2 className="h-3.5 w-3.5 mr-1"/>
  Remove
                         </Button>
@@ -2151,16 +2151,16 @@ export function NewInvoiceModal({
                     <div className="sm:col-span-7">
                       <div className="flex items-center justify-between mb-1">
                         <Label className="text-xs font-semibold block">
- Item Description / Service Name <span className="text-rose-500">*</span>
+ Item Description / Service Name <span className="text-destructive">*</span>
                         </Label>
                         {isCustom && (
                           <div className="flex items-center gap-1">
-                            <span className="text-2xs text-muted-foreground mr-1">Mode:</span>
+                            <span className="text-xs text-muted-foreground mr-1">Mode:</span>
                             <button
  type="button"onClick={() => handleToggleItemKind(index, 'service')}
  className={cn(
-                                'px-1.5 py-0.5 rounded text-2xs font-bold transition-all cursor-pointer',
- isService ? 'bg-indigo-600 text-white' : 'bg-muted text-muted-foreground'
+                                'px-1.5 py-0.5 rounded text-xs font-bold transition-all cursor-pointer',
+ isService ? 'bg-primary text-white' : 'bg-muted text-muted-foreground'
                               )}
                             >
                               📐 Sqft Area
@@ -2168,8 +2168,8 @@ export function NewInvoiceModal({
                             <button
  type="button"onClick={() => handleToggleItemKind(index, 'ready_product')}
  className={cn(
-                                'px-1.5 py-0.5 rounded text-2xs font-bold transition-all cursor-pointer',
- isReadyProduct ? 'bg-emerald-600 text-white' : 'bg-muted text-muted-foreground'
+                                'px-1.5 py-0.5 rounded text-xs font-bold transition-all cursor-pointer',
+ isReadyProduct ? 'bg-success text-white' : 'bg-muted text-muted-foreground'
                               )}
                             >
                               📦 Unit
@@ -2202,13 +2202,13 @@ export function NewInvoiceModal({
 
  if (stockAvail.status === 'INSUFFICIENT_FOR_ORDER') {
  return (
-                        <div className="p-2 bg-amber-500/10 border border-amber-500/30 rounded-lg text-amber-800 dark:text-amber-300 text-2xs flex items-center justify-between gap-2 animate-in fade-in-0">
+                        <div className="p-2 bg-warning/10 border border-warning-border/30 rounded-lg text-warning text-warning text-xs flex items-center justify-between gap-2 animate-in fade-in-0">
                           <div className="flex items-center gap-1.5 font-bold">
-                            <AlertTriangle className="h-3.5 w-3.5 text-amber-600 shrink-0"/>
+                            <AlertTriangle className="h-3.5 w-3.5 text-warning shrink-0"/>
                             <span>INSUFFICIENT FOR THIS ORDER:</span>
                             <span className="font-normal">{stockAvail.warningMessage}</span>
                           </div>
-                          <Badge variant="outline"className="bg-amber-100 text-amber-800 border-amber-300 text-2xs shrink-0">
+                          <Badge variant="outline"className="bg-warning-surface text-warning border-warning-border text-xs shrink-0">
  Non-blocking Warning
                           </Badge>
                         </div>
@@ -2217,13 +2217,13 @@ export function NewInvoiceModal({
 
  if (stockAvail.status === 'LOW_STOCK') {
  return (
-                        <div className="p-2 bg-yellow-500/10 border border-yellow-500/30 rounded-lg text-yellow-800 dark:text-yellow-300 text-2xs flex items-center justify-between gap-2 animate-in fade-in-0">
+                        <div className="p-2 bg-warning/10 border border-warning-border/30 rounded-lg text-warning text-warning text-xs flex items-center justify-between gap-2 animate-in fade-in-0">
                           <div className="flex items-center gap-1.5 font-bold">
-                            <AlertTriangle className="h-3.5 w-3.5 text-yellow-600 shrink-0"/>
+                            <AlertTriangle className="h-3.5 w-3.5 text-warning shrink-0"/>
                             <span>LOW STOCK ALERT:</span>
                             <span className="font-normal">{stockAvail.warningMessage}</span>
                           </div>
-                          <Badge variant="outline"className="bg-yellow-100 text-yellow-800 border-yellow-300 text-2xs shrink-0">
+                          <Badge variant="outline"className="bg-warning-surface text-warning border-warning-border text-xs shrink-0">
  Reorder Threshold
                           </Badge>
                         </div>
@@ -2232,13 +2232,13 @@ export function NewInvoiceModal({
 
  if (stockAvail.status === 'GEOMETRY_INCOMPATIBLE') {
  return (
-                        <div className="p-2 bg-rose-500/10 border border-rose-500/30 rounded-lg text-rose-800 dark:text-rose-300 text-2xs flex items-center justify-between gap-2 animate-in fade-in-0">
+                        <div className="p-2 bg-destructive/10 border border-danger-border/30 rounded-lg text-destructive text-destructive text-xs flex items-center justify-between gap-2 animate-in fade-in-0">
                           <div className="flex items-center gap-1.5 font-bold">
-                            <AlertOctagon className="h-3.5 w-3.5 text-rose-600 shrink-0"/>
+                            <AlertOctagon className="h-3.5 w-3.5 text-destructive shrink-0"/>
                             <span>PHYSICAL WIDTH INCOMPATIBLE:</span>
                             <span className="font-normal">{stockAvail.warningMessage}</span>
                           </div>
-                          <Badge variant="outline"className="bg-rose-100 text-rose-800 border-rose-300 text-2xs shrink-0">
+                          <Badge variant="outline"className="bg-danger-surface text-destructive border-danger-border text-xs shrink-0">
  Physical Roll Alert
                           </Badge>
                         </div>
@@ -2251,16 +2251,16 @@ export function NewInvoiceModal({
                   {/* Dimension Presets for Services */}
                   {isService && item.available_dimension_presets && item.available_dimension_presets.length > 0 && (
                     <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
-                      <span className="text-2xs font-bold text-muted-foreground mr-1">Standard Sizes:</span>
+                      <span className="text-xs font-bold text-muted-foreground mr-1">Standard Sizes:</span>
                       {item.available_dimension_presets.map((preset, pIdx) => (
                         <button
  key={pIdx}
  type="button"onClick={() => handleApplyPreset(index, preset)}
  className={cn(
-                            'px-2 py-0.5 rounded-md text-2xs font-semibold border transition-all cursor-pointer',
+                            'px-2 py-0.5 rounded-md text-xs font-semibold border transition-all cursor-pointer',
  item.width === String(preset.width) && item.height === String(preset.length)
-                              ? 'bg-blue-600 text-white border-blue-600'
-                              : 'bg-card border-input text-foreground hover:border-blue-400'
+                              ? 'bg-primary text-white border-border'
+                              : 'bg-card border-input text-foreground hover:border-border'
                           )}
                         >
                           {preset.label || `${preset.width} × ${preset.length} ${preset.unit || 'ft'}`}
@@ -2274,7 +2274,7 @@ export function NewInvoiceModal({
                     <div className="grid grid-cols-2 sm:grid-cols-12 gap-2.5 items-start">
                       <div className="sm:col-span-1">
                         <div className="h-5 flex items-center mb-1">
-                          <Label className="text-2xs font-semibold truncate whitespace-nowrap">Width</Label>
+                          <Label className="text-xs font-semibold truncate whitespace-nowrap">Width</Label>
                         </div>
                         <Input
  type="number"step="0.1"placeholder="0"value={item.width}
@@ -2284,7 +2284,7 @@ export function NewInvoiceModal({
 
                       <div className="sm:col-span-1">
                         <div className="h-5 flex items-center mb-1">
-                          <Label className="text-2xs font-semibold truncate whitespace-nowrap">Height</Label>
+                          <Label className="text-xs font-semibold truncate whitespace-nowrap">Height</Label>
                         </div>
                         <Input
  type="number"step="0.1"placeholder="0"value={item.height}
@@ -2294,7 +2294,7 @@ export function NewInvoiceModal({
 
                       <div className="sm:col-span-1">
                         <div className="h-5 flex items-center mb-1">
-                          <Label className="text-2xs font-semibold truncate whitespace-nowrap">Dim. Unit</Label>
+                          <Label className="text-xs font-semibold truncate whitespace-nowrap">Dim. Unit</Label>
                         </div>
                         <select
  value={item.dimension_unit || 'ft'}
@@ -2308,7 +2308,7 @@ export function NewInvoiceModal({
 
                       <div className="sm:col-span-1">
                         <div className="h-5 flex items-center mb-1">
-                          <Label className="text-2xs font-semibold truncate whitespace-nowrap">Qty</Label>
+                          <Label className="text-xs font-semibold truncate whitespace-nowrap">Qty</Label>
                         </div>
                         <Input
  type="number"min="1"value={item.quantity}
@@ -2319,9 +2319,9 @@ export function NewInvoiceModal({
 
                       <div className="sm:col-span-3">
                         <div className="h-5 flex items-center justify-between mb-1 gap-1">
-                          <Label className="text-2xs font-semibold truncate whitespace-nowrap">Finishing</Label>
+                          <Label className="text-xs font-semibold truncate whitespace-nowrap">Finishing</Label>
                           {(item.finishing_rate ?? 0) > 0 && (
-                            <span className="text-2xs text-indigo-600 dark:text-indigo-400 tabular-nums font-bold whitespace-nowrap shrink-0">
+                            <span className="text-xs text-primary text-primary tabular-nums font-bold whitespace-nowrap shrink-0">
                               +৳{item.finishing_rate}
                             </span>
                           )}
@@ -2349,9 +2349,9 @@ export function NewInvoiceModal({
 
                       <div className="sm:col-span-3">
                         <div className="h-5 flex items-center justify-between mb-1 gap-1">
-                          <Label className="text-2xs font-semibold truncate whitespace-nowrap">Add on</Label>
+                          <Label className="text-xs font-semibold truncate whitespace-nowrap">Add on</Label>
                           {(item.add_on_rate ?? 0) > 0 && (
-                            <span className="text-2xs text-purple-600 dark:text-purple-400 tabular-nums font-bold whitespace-nowrap shrink-0">
+                            <span className="text-xs text-primary text-primary tabular-nums font-bold whitespace-nowrap shrink-0">
                               +৳{item.add_on_rate}
                             </span>
                           )}
@@ -2379,11 +2379,11 @@ export function NewInvoiceModal({
 
                       <div className="sm:col-span-2">
                         <div className="h-5 flex items-center justify-between mb-1 gap-1">
-                          <Label className="text-2xs font-semibold truncate whitespace-nowrap"title={`Rate per ${item.dimension_unit || 'sft'} (৳)`}>
+                          <Label className="text-xs font-semibold truncate whitespace-nowrap"title={`Rate per ${item.dimension_unit || 'sft'} (৳)`}>
  Rate ({item.dimension_unit || 'sft'})
                           </Label>
                           {((item.finishing_rate ?? 0) > 0 || (item.add_on_rate ?? 0) > 0) && (
-                            <span className="text-2xs text-muted-foreground tabular-nums whitespace-nowrap shrink-0"title={`Base: ৳${item.base_rate ?? 0} + Finishing: ৳${item.finishing_rate ?? 0} + Add-on: ৳${item.add_on_rate ?? 0}`}>
+                            <span className="text-xs text-muted-foreground tabular-nums whitespace-nowrap shrink-0"title={`Base: ৳${item.base_rate ?? 0} + Finishing: ৳${item.finishing_rate ?? 0} + Add-on: ৳${item.add_on_rate ?? 0}`}>
  Base ৳{item.base_rate ?? 0}
                             </span>
                           )}
@@ -2391,7 +2391,7 @@ export function NewInvoiceModal({
                         <Input
  type="number"step="0.5"value={item.rate}
  onChange={(e) => handleItemChange(index, 'rate', Number(e.target.value) || 0)}
- className="text-xs h-9 tabular-nums font-bold text-blue-600 dark:text-blue-400 w-full"required
+ className="text-xs h-9 tabular-nums font-bold text-primary text-primary w-full"required
                         />
                       </div>
                     </div>
@@ -2401,22 +2401,22 @@ export function NewInvoiceModal({
                   {isReadyProduct && (
                     <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 p-3 bg-card rounded-xl border border-border">
                       <div className="sm:col-span-5 flex flex-col justify-center">
-                        <span className="text-2xs uppercase font-bold text-muted-foreground block mb-0.5">Physical Specs & Packaging</span>
+                        <span className="text-xs uppercase font-bold text-muted-foreground block mb-0.5">Physical Specs & Packaging</span>
                         <div className="flex flex-wrap items-center gap-1.5 text-xs text-foreground font-medium">
                           {item.dimensions_spec ? (
-                            <span className="bg-muted px-2 py-0.5 rounded tabular-nums text-2xs">
+                            <span className="bg-muted px-2 py-0.5 rounded tabular-nums text-xs">
                               📐 {item.dimensions_spec}
                             </span>
                           ) : (
-                            <span className="text-muted-foreground italic text-2xs">Standard Factory Size</span>
+                            <span className="text-muted-foreground italic text-xs">Standard Factory Size</span>
                           )}
                           {item.pcs_per_carton ? (
-                            <span className="bg-muted px-2 py-0.5 rounded text-2xs">
+                            <span className="bg-muted px-2 py-0.5 rounded text-xs">
                               📦 {item.pcs_per_carton} pcs/box
                             </span>
                           ) : null}
                           {item.moq ? (
-                            <span className="bg-muted px-2 py-0.5 rounded text-2xs">
+                            <span className="bg-muted px-2 py-0.5 rounded text-xs">
  Min Order: {item.moq} {item.unit}
                             </span>
                           ) : null}
@@ -2424,7 +2424,7 @@ export function NewInvoiceModal({
                       </div>
 
                       <div className="sm:col-span-3">
-                        <Label className="text-2xs font-semibold mb-1 block">Quantity</Label>
+                        <Label className="text-xs font-semibold mb-1 block">Quantity</Label>
                         <Input
  type="number"min="1"value={item.quantity}
  onChange={(e) => handleItemChange(index, 'quantity', Number(e.target.value) || 1)}
@@ -2433,7 +2433,7 @@ export function NewInvoiceModal({
                       </div>
 
                       <div className="sm:col-span-2">
-                        <Label className="text-2xs font-semibold mb-1 block">Unit</Label>
+                        <Label className="text-xs font-semibold mb-1 block">Unit</Label>
                         <select
  value={item.unit}
  onChange={(e) => handleItemChange(index, 'unit', e.target.value)}
@@ -2461,11 +2461,11 @@ export function NewInvoiceModal({
                       </div>
 
                       <div className="sm:col-span-2">
-                        <Label className="text-2xs font-semibold mb-1 block">Unit Price (৳)</Label>
+                        <Label className="text-xs font-semibold mb-1 block">Unit Price (৳)</Label>
                         <Input
  type="number"step="1"value={item.rate}
  onChange={(e) => handleItemChange(index, 'rate', Number(e.target.value) || 0)}
- className="text-xs h-9 tabular-nums font-bold text-emerald-600 dark:text-emerald-400"required
+ className="text-xs h-9 tabular-nums font-bold text-success text-success"required
                         />
                       </div>
                     </div>
@@ -2475,7 +2475,7 @@ export function NewInvoiceModal({
                   {isMaterial && (
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                       <div>
-                        <Label className="text-2xs font-semibold mb-1 block">Quantity</Label>
+                        <Label className="text-xs font-semibold mb-1 block">Quantity</Label>
                         <Input
  type="number"min="0.1"step="0.1"value={item.quantity}
  onChange={(e) => handleItemChange(index, 'quantity', Number(e.target.value) || 1)}
@@ -2484,7 +2484,7 @@ export function NewInvoiceModal({
                       </div>
 
                       <div>
-                        <Label className="text-2xs font-semibold mb-1 block">Usage Unit</Label>
+                        <Label className="text-xs font-semibold mb-1 block">Usage Unit</Label>
                         <select
  value={item.unit}
  onChange={(e) => handleItemChange(index, 'unit', e.target.value)}
@@ -2500,7 +2500,7 @@ export function NewInvoiceModal({
                       </div>
 
                       <div>
-                        <Label className="text-2xs font-semibold mb-1 block">Material Spec</Label>
+                        <Label className="text-xs font-semibold mb-1 block">Material Spec</Label>
                         <Input
  placeholder="e.g. 280 GSM Frontlit"value={item.dimensions_spec || ''}
  onChange={(e) => handleItemChange(index, 'dimensions_spec', e.target.value)}
@@ -2508,11 +2508,11 @@ export function NewInvoiceModal({
                       </div>
 
                       <div>
-                        <Label className="text-2xs font-semibold mb-1 block">Rate / Unit (৳)</Label>
+                        <Label className="text-xs font-semibold mb-1 block">Rate / Unit (৳)</Label>
                         <Input
  type="number"step="1"value={item.rate}
  onChange={(e) => handleItemChange(index, 'rate', Number(e.target.value) || 0)}
- className="text-xs h-9 tabular-nums font-bold text-purple-600 dark:text-purple-400"required
+ className="text-xs h-9 tabular-nums font-bold text-primary text-primary"required
                         />
                       </div>
                     </div>
@@ -2520,8 +2520,8 @@ export function NewInvoiceModal({
 
                   {/* Substrate / Printable Material pill for service */}
                   {isService && item.printable_material_name && (
-                    <div className="flex items-center gap-2 text-2xs text-muted-foreground bg-card px-3 py-1.5 rounded-lg border border-border">
-                      <Layers className="h-3.5 w-3.5 text-indigo-500 shrink-0"/>
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground bg-card px-3 py-1.5 rounded-lg border border-border">
+                      <Layers className="h-3.5 w-3.5 text-primary shrink-0"/>
                       <span>Linked Substrate: <strong>{item.printable_material_name}</strong></span>
                     </div>
                   )}
@@ -2529,21 +2529,21 @@ export function NewInvoiceModal({
                   {/* SERVICE DESIGN STATUS TOGGLE (Design Required vs Design OK or Pre-Press Verified) */}
                   {isService && (
  isFromDesignWorkOrder || item.workflow_routing === 'ready_production' ? (
-                      <div className="flex flex-wrap items-center justify-between gap-2 p-2.5 bg-blue-50/80 dark:bg-blue-950/40 rounded-xl border border-blue-200 dark:border-blue-800">
+                      <div className="flex flex-wrap items-center justify-between gap-2 p-2.5 bg-primary/10/80 bg-primary/10 rounded-xl border border-primary/20 border-border">
                         <div className="flex items-center gap-2">
-                          <CheckCircle2 className="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0"/>
+                          <CheckCircle2 className="h-4 w-4 text-primary text-primary shrink-0"/>
                           <div>
-                            <span className="text-xs font-bold text-blue-950 dark:text-blue-100 flex items-center gap-1.5">
+                            <span className="text-xs font-bold text-primary text-primary flex items-center gap-1.5">
                               {tBilingual('Pre-Press Verified', 'ডিজাইন যাচাই সম্পন্ন')}
                             </span>
-                            <span className="text-2xs text-blue-700/80 dark:text-blue-300/80 block">
+                            <span className="text-xs text-primary/80 text-primary/80 block">
  Artwork is pre-press approved in Design Studio. Sent directly to Production Planning & Shop Floor.
                             </span>
                           </div>
                         </div>
 
                         <Badge
- variant="outline"className="text-2xs font-bold px-2 py-0.5 bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-900 dark:text-blue-200">
+ variant="outline"className="text-xs font-bold px-2 py-0.5 bg-primary/10 text-primary border-primary/20 bg-primary text-primary">
                           🚀 Production Planning & Shop Floor Direct
                         </Badge>
                       </div>
@@ -2551,7 +2551,7 @@ export function NewInvoiceModal({
                       <div className="flex flex-wrap items-center justify-between gap-2 p-2.5 bg-muted rounded-xl border border-border">
                         <div className="flex items-center gap-2">
                           <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                            <Palette className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400"/>
+                            <Palette className="h-3.5 w-3.5 text-primary text-primary"/>
  Design Status:
                           </span>
                           <div className="inline-flex p-0.5 bg-muted/80 rounded-lg border border-input">
@@ -2564,7 +2564,7 @@ export function NewInvoiceModal({
  className={cn(
                                 'px-3 py-1 rounded-md text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5',
  item.workflow_routing === 'design_required' || (item.design_required !== false && item.workflow_routing !== 'design_ok')
-                                  ? 'bg-indigo-600 text-white shadow-xs'
+                                  ? 'bg-primary text-white shadow-xs'
                                   : 'text-muted-foreground hover:text-foreground'
                               )}
                             >
@@ -2579,7 +2579,7 @@ export function NewInvoiceModal({
  className={cn(
                                 'px-3 py-1 rounded-md text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5',
  item.workflow_routing === 'design_ok' || item.design_required === false
-                                  ? 'bg-cyan-600 text-white shadow-xs'
+                                  ? 'bg-primary text-white shadow-xs'
                                   : 'text-muted-foreground hover:text-foreground'
                               )}
                             >
@@ -2590,10 +2590,10 @@ export function NewInvoiceModal({
 
                         <Badge
  variant="outline"className={cn(
-                            'text-2xs font-bold px-2 py-0.5',
+                            'text-xs font-bold px-2 py-0.5',
  item.workflow_routing === 'design_ok' || item.design_required === false
-                              ? 'bg-cyan-50 text-cyan-700 border-cyan-300 dark:bg-cyan-950/40 dark:text-cyan-300'
-                              : 'bg-indigo-50 text-indigo-700 border-indigo-300 dark:bg-indigo-950/40 dark:text-indigo-300'
+                              ? 'bg-info-surface text-primary border-primary/20 bg-primary/10 text-primary'
+                              : 'bg-primary/10 text-primary border-primary/20 bg-primary/10 text-primary'
                           )}
                         >
                           {item.workflow_routing === 'design_ok' || item.design_required === false
@@ -2608,8 +2608,8 @@ export function NewInvoiceModal({
                   {(item.showAdvanced || isAdvancedMode || item.category_preset === 'offset_print' || item.category_preset === 'signage_fabrication') && (
                     <div className="p-3.5 rounded-xl bg-card border border-border space-y-3 text-xs animate-in fade-in-0">
                       <div className="flex items-center justify-between">
-                        <span className="text-2xs uppercase font-bold text-muted-foreground flex items-center gap-1.5">
-                          <Layers className="h-3.5 w-3.5 text-blue-600"/>
+                        <span className="text-xs uppercase font-bold text-muted-foreground flex items-center gap-1.5">
+                          <Layers className="h-3.5 w-3.5 text-primary"/>
                           {item.category_preset === 'offset_print'
                             ? tBilingual('Offset Printing Specifications', 'অফসেট প্রিন্টিং বিবরণ')
                             : item.category_preset === 'signage_fabrication'
@@ -2617,7 +2617,7 @@ export function NewInvoiceModal({
                             : tBilingual('Advanced Domain & Material Specs', 'অ্যাডভান্সড স্পেসিফিকেশন')}
                         </span>
                         {item.description_bn && (
-                          <span className="text-2xs font-medium text-muted-foreground">
+                          <span className="text-xs font-medium text-muted-foreground">
                             {item.description_bn}
                           </span>
                         )}
@@ -2627,7 +2627,7 @@ export function NewInvoiceModal({
                       {(item.category_preset === 'offset_print' || item.offset_specs) && (
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 p-2.5 bg-muted rounded-lg border border-border">
                           <div>
-                            <Label className="text-2xs font-semibold mb-1 block">{tBilingual('Paper GSM', 'কাগজের জিএসএম')}</Label>
+                            <Label className="text-xs font-semibold mb-1 block">{tBilingual('Paper GSM', 'কাগজের জিএসএম')}</Label>
                             <select
  value={item.offset_specs?.paper_gsm || ''}
  onChange={(e) =>
@@ -2650,7 +2650,7 @@ export function NewInvoiceModal({
                           </div>
 
                           <div>
-                            <Label className="text-2xs font-semibold mb-1 block">{tBilingual('Color Mode', 'রঙের মোড')}</Label>
+                            <Label className="text-xs font-semibold mb-1 block">{tBilingual('Color Mode', 'রঙের মোড')}</Label>
                             <select
  value={item.offset_specs?.color_mode || ''}
  onChange={(e) =>
@@ -2668,7 +2668,7 @@ export function NewInvoiceModal({
                           </div>
 
                           <div>
-                            <Label className="text-2xs font-semibold mb-1 block">{tBilingual('Binding / Packaging', 'বাইন্ডিং ও প্যাকেজিং')}</Label>
+                            <Label className="text-xs font-semibold mb-1 block">{tBilingual('Binding / Packaging', 'বাইন্ডিং ও প্যাকেজিং')}</Label>
                             <select
  value={item.offset_specs?.binding_type || ''}
  onChange={(e) =>
@@ -2688,7 +2688,7 @@ export function NewInvoiceModal({
                           </div>
 
                           <div>
-                            <Label className="text-2xs font-semibold mb-1 block">{tBilingual('Numbering / NCR Part', 'নম্বর বা পার্ট')}</Label>
+                            <Label className="text-xs font-semibold mb-1 block">{tBilingual('Numbering / NCR Part', 'নম্বর বা পার্ট')}</Label>
                             <Input
  placeholder="e.g. 0001 - 0500, 3-Part"value={item.offset_specs?.numbering_range || ''}
  onChange={(e) =>
@@ -2707,7 +2707,7 @@ export function NewInvoiceModal({
                       {(item.category_preset === 'signage_fabrication' || item.signage_specs) && (
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 p-2.5 bg-muted rounded-lg border border-border">
                           <div>
-                            <Label className="text-2xs font-semibold mb-1 block">{tBilingual('Letter Height (inch)', 'অক্ষরের উচ্চতা (ইঞ্চি)')}</Label>
+                            <Label className="text-xs font-semibold mb-1 block">{tBilingual('Letter Height (inch)', 'অক্ষরের উচ্চতা (ইঞ্চি)')}</Label>
                             <Input
  type="number"placeholder="e.g. 12"value={item.signage_specs?.letter_height_inch || ''}
  onChange={(e) =>
@@ -2720,7 +2720,7 @@ export function NewInvoiceModal({
                           </div>
 
                           <div>
-                            <Label className="text-2xs font-semibold mb-1 block">LED Module Type</Label>
+                            <Label className="text-xs font-semibold mb-1 block">LED Module Type</Label>
                             <Input
  placeholder="e.g. Korean 3-LED Module"value={item.signage_specs?.led_module_type || ''}
  onChange={(e) =>
@@ -2733,7 +2733,7 @@ export function NewInvoiceModal({
                           </div>
 
                           <div>
-                            <Label className="text-2xs font-semibold mb-1 block">SMPS / Power Supply</Label>
+                            <Label className="text-xs font-semibold mb-1 block">SMPS / Power Supply</Label>
                             <Input
  placeholder="e.g. 12V 33A Waterproof SMPS"value={item.signage_specs?.power_supply_watts ? `${item.signage_specs.power_supply_watts}W` : ''}
  onChange={(e) =>
@@ -2746,7 +2746,7 @@ export function NewInvoiceModal({
                           </div>
 
                           <div>
-                            <Label className="text-2xs font-semibold mb-1 block">Frame Structure</Label>
+                            <Label className="text-xs font-semibold mb-1 block">Frame Structure</Label>
                             <Input
  placeholder="e.g. 1&quot; MS Pipe Sub-frame"value={item.signage_specs?.frame_structure || ''}
  onChange={(e) =>
@@ -2763,7 +2763,7 @@ export function NewInvoiceModal({
                       {/* General Material & Cost Row */}
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
-                          <Label className="text-2xs font-semibold mb-1 block">Substrate Spec / Description</Label>
+                          <Label className="text-xs font-semibold mb-1 block">Substrate Spec / Description</Label>
                           <Input
  placeholder="e.g. 3mm Cast Acrylic Face + PVC Foam Return"value={item.material_spec || item.dimensions_spec || ''}
  onChange={(e) => {
@@ -2773,7 +2773,7 @@ export function NewInvoiceModal({
  className="text-xs h-8"/>
                         </div>
                         <div>
-                          <Label className="text-2xs font-semibold mb-1 block">Item Internal Unit Cost (৳)</Label>
+                          <Label className="text-xs font-semibold mb-1 block">Item Internal Unit Cost (৳)</Label>
                           <Input
  type="number"placeholder="0"value={item.unit_cost || ''}
  onChange={(e) => handleItemChange(index, 'unit_cost', Number(e.target.value) || 0)}
@@ -2797,14 +2797,14 @@ export function NewInvoiceModal({
                       )}
 
                       {estimatedDirectCost > 0 && (
-                        <span className="text-2xs text-muted-foreground bg-muted px-2 py-0.5 rounded tabular-nums">
+                        <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded tabular-nums">
  Est. Cost: ৳{Math.round(estimatedDirectCost)} • Margin: {estMarginPercent}%
                         </span>
                       )}
                     </div>
 
                     <div className="text-right">
-                      <span className="text-2xs text-muted-foreground mr-2">Line Total:</span>
+                      <span className="text-xs text-muted-foreground mr-2">Line Total:</span>
                       <span className="tabular-nums font-bold text-foreground text-sm">
                         {formatBDT(calc?.lineTotal || 0)}
                       </span>
@@ -2818,7 +2818,7 @@ export function NewInvoiceModal({
             <div className="pt-1">
               <Button
  type="button"variant="outline"onClick={handleAddItem}
- className="w-full h-9 text-xs font-bold gap-1.5 text-blue-600 dark:text-blue-400 border border-dashed border-blue-300 dark:border-blue-800 bg-blue-50/50 hover:bg-blue-100/70 dark:bg-blue-950/20 dark:hover:bg-blue-950/40 rounded-xl cursor-pointer shadow-2xs transition-all">
+ className="w-full h-9 text-xs font-bold gap-1.5 text-primary text-primary border border-dashed border-primary/20 border-border bg-primary/10/50 hover:bg-primary/10/70 bg-primary/10 dark:hover:bg-primary/10 rounded-xl cursor-pointer shadow-2xs transition-all">
                 <Plus className="h-4 w-4"/>
  Add Item
               </Button>
@@ -2832,7 +2832,7 @@ export function NewInvoiceModal({
         <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
+              <div className="h-6 w-6 rounded-lg bg-primary/10 text-primary bg-primary/60 text-primary flex items-center justify-center font-bold text-xs">
                 3
               </div>
               <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
@@ -2941,7 +2941,7 @@ export function NewInvoiceModal({
                 </div>
                 {paymentMethod !== 'cash' && (
                   <div className="grid grid-cols-12 items-center gap-2 pt-0.5">
-                    <span className="col-span-5 text-2xs text-muted-foreground truncate">
+                    <span className="col-span-5 text-xs text-muted-foreground truncate">
                       {tBilingual('Trx Note', 'নোট')}
                     </span>
                     <div className="col-span-7">
@@ -2949,7 +2949,7 @@ export function NewInvoiceModal({
  placeholder={tBilingual('Trx ID / Cheque / Account Note', 'ট্রানজেকশন আইডি / চেক নং')}
  value={paymentMethodNote}
  onChange={(e) => setPaymentMethodNote(e.target.value)}
- className="h-7 text-2xs"/>
+ className="h-7 text-xs"/>
                     </div>
                   </div>
                 )}
@@ -2992,10 +2992,10 @@ export function NewInvoiceModal({
                     <input
  type="number"value={vatPercentage || ''}
  onChange={(e) => setVatPercentage(Math.max(0, Math.min(100, Number(e.target.value) || 0)))}
- className="w-8 h-6 text-2xs tabular-nums font-bold text-center bg-transparent focus:outline-none no-spinner [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"placeholder="0"min={0}
+ className="w-8 h-6 text-xs tabular-nums font-bold text-center bg-transparent focus:outline-none no-spinner [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"placeholder="0"min={0}
  max={100}
                     />
-                    <span className="pr-1 text-2xs text-muted-foreground font-medium">%</span>
+                    <span className="pr-1 text-xs text-muted-foreground font-medium">%</span>
                   </div>
                 </div>
                 <div className="col-span-7 h-8.5 px-3 flex items-center justify-end text-right bg-muted rounded-md tabular-nums font-semibold text-foreground">
@@ -3008,7 +3008,7 @@ export function NewInvoiceModal({
                 <span className="col-span-5 text-xs font-bold text-foreground">
                   {tBilingual('Grand Total', 'সর্বমোট বিল')}
                 </span>
-                <div className="col-span-7 h-8.5 px-3 flex items-center justify-end text-right bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-800 rounded-md tabular-nums font-black text-blue-700 dark:text-blue-300">
+                <div className="col-span-7 h-8.5 px-3 flex items-center justify-end text-right bg-primary/10 bg-primary/10 border border-primary/20 border-border rounded-md tabular-nums font-black text-primary text-primary">
                   {formatBDT(grandTotal)}
                 </div>
               </div>
@@ -3042,8 +3042,8 @@ export function NewInvoiceModal({
                 <div className={cn(
                   'col-span-7 h-8.5 px-3 flex items-center justify-end text-right rounded-md tabular-nums font-black border',
  dueAmount > 0
-                    ? 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/50 dark:text-rose-300 dark:border-rose-800'
-                    : 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800'
+                    ? 'bg-danger-surface text-destructive border-danger-border bg-danger-surface text-destructive border-danger-border'
+                    : 'bg-success-surface text-success border-success-border bg-success-surface text-success border-success-border'
                 )}>
                   {formatBDT(dueAmount)}
                 </div>

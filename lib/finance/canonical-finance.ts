@@ -354,7 +354,7 @@ export class CanonicalFinance {
       totalMaterialCost += Number(c.act?.material_cost ?? c.est?.material_cost ?? (c as any).material_cost ?? 0)
       totalLaborCost += Number(c.act?.labor_cost ?? c.est?.labor_cost ?? (c as any).labor_cost ?? 0)
       totalMachineCost += Number(c.act?.machine_cost ?? c.est?.machine_cost ?? (c as any).machine_cost ?? 0)
-      totalOtherCost += Number(c.act?.finishing_cost ?? c.est?.finishing_cost ?? (c as any).finishing_cost ?? 0)
+      totalOtherCost += Number(c.act?.finishing_cost ?? c.est?.finishing_cost ?? (c as any).finishing_cost ?? (c as any).other_cost ?? 0)
     }
 
     const totalCost = totalMaterialCost + totalLaborCost + totalMachineCost + totalOtherCost

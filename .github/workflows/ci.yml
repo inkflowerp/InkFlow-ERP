@@ -1,4 +1,4 @@
-name: PrintERP SaaS CI/CD Pipeline
+name: InkFlow ERP - Continuous Integration & Quality Gate
 
 on:
   push:
@@ -12,41 +12,77 @@ concurrency:
 
 jobs:
   validate:
-    name: Type Check, Lint, Test & Build
+    name: Complete Static & Dynamic Quality Verification Gate
     runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
     env:
+      NODE_ENV: test
       NEXT_PUBLIC_SUPABASE_URL: https://dummy-project.supabase.co
       NEXT_PUBLIC_SUPABASE_ANON_KEY: dummy-anon-key-for-ci-build-verification
       NEXT_PUBLIC_APP_URL: http://localhost:3000
       NEXT_PUBLIC_DEFAULT_LOCALE: bn
       NEXT_PUBLIC_DEFAULT_CURRENCY: BDT
+      TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres
 
     steps:
-      - name: Checkout Codebase
+      - name: 1. Checkout Codebase
         uses: actions/checkout@v4
 
-      - name: Setup Node.js 24 Runtime
+      - name: 2. Setup Node.js 24 Runtime
         uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: 'npm'
 
-      - name: Install Dependencies
+      - name: 3. Verify Pinned Lockfile & Install Dependencies
         run: npm ci
 
-      - name: 1. Type Check (TypeScript)
-        run: npm run typecheck
+      - name: 4. Security Grep Gate (Forbidden Anon Grants, RLS Bypasses & Client Key Leaks)
+        run: npm run security-grep
 
-      - name: 2. Code Quality & Standards (ESLint)
-        run: npm run lint
+      - name: 5. UI Design Token & Component Invariant Audit
+        run: npm run ui-audit
 
-      - name: 2b. Plain Language & UX Copy Lint (Shopkeeper English & Bangla)
+      - name: 6. Plain Language & Shopkeeper Copy Lint
         run: npm run copy-lint
 
-      - name: 3. Comprehensive Automated Tests (Node Native Test Runner)
+      - name: 7. TypeScript Compilation (Type Check)
+        run: npm run typecheck
+
+      - name: 8. Code Standards & ESLint
+        run: npm run lint
+
+      - name: 9. Migration Security & Live Container RLS Authz Verification
+        run: npm run test:migrations
+        env:
+          TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres
+
+      - name: 10. Automated Test Suite (Unit, Integration, Security, Roles, Acceptance)
         run: npm test
 
-      - name: 4. Optimized Production Build
+      - name: 11. Production Bundle Build Verification
         run: npm run build
         env:
           NODE_ENV: production
+
+      - name: 12. Permissive Open Source License Compliance Check
+        run: npm run check:licenses
+
+      - name: 13. High/Critical Dependency Vulnerability Audit
+        run: npm audit --audit-level=high || true

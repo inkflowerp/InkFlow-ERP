@@ -277,18 +277,18 @@ export function CreateUserWizard({
  key={item.s}
  className={`flex items-center gap-1.5 font-medium ${
  step === item.s
-                  ? 'text-blue-600 dark:text-blue-400 font-bold'
+                  ? 'text-primary text-primary font-bold'
                   : step > item.s
-                  ? 'text-emerald-600 dark:text-emerald-400'
+                  ? 'text-success text-success'
                   : 'text-muted-foreground'
               }`}
             >
               <div
- className={`h-5 w-5 rounded-full flex items-center justify-center text-[10px] ${
+ className={`h-5 w-5 rounded-full flex items-center justify-center text-xs ${
  step === item.s
-                    ? 'bg-blue-600 text-white'
+                    ? 'bg-primary text-white'
                     : step > item.s
-                    ? 'bg-emerald-600 text-white'
+                    ? 'bg-success text-white'
                     : 'bg-muted text-muted-foreground'
                 }`}
               >
@@ -327,7 +327,7 @@ export function CreateUserWizard({
  onClick={() => handleSelectEmployee(emp)}
  className={`w-full text-left p-3 transition-colors flex items-center justify-between gap-3 text-sm ${
  isSelected
-                          ? 'bg-blue-50/80 dark:bg-blue-950/30'
+                          ? 'bg-primary/10/80 bg-primary/10'
                           : isBlocked
                           ? 'opacity-50 cursor-not-allowed bg-muted/50 '
                           : 'hover:bg-muted dark:hover:bg-muted/50'
@@ -349,11 +349,11 @@ export function CreateUserWizard({
 
                       <div className="shrink-0 flex items-center gap-2">
                         {isBlocked ? (
-                          <Badge variant="outline"className="text-[11px] text-amber-700 dark:text-amber-300 border-amber-200 bg-amber-50">
+                          <Badge variant="outline"className="text-xs text-warning text-warning border-warning-border bg-warning-surface">
  Already has a login
                           </Badge>
                         ) : isSelected ? (
-                          <div className="h-6 w-6 rounded-full bg-blue-600 text-white flex items-center justify-center">
+                          <div className="h-6 w-6 rounded-full bg-primary text-white flex items-center justify-center">
                             <Check className="h-3.5 w-3.5"/>
                           </div>
                         ) : (
@@ -378,7 +378,7 @@ export function CreateUserWizard({
                 }}
  className={`text-xs font-medium ${
  isExternalUser
-                    ? 'text-blue-600 dark:text-blue-400 font-bold underline'
+                    ? 'text-primary text-primary font-bold underline'
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
@@ -400,13 +400,13 @@ export function CreateUserWizard({
         {step === 2 && (
           <div className="space-y-4">
             {selectedEmployee ? (
-              <div className="p-3 bg-blue-50/60 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900/40 rounded-lg text-xs flex items-center justify-between text-blue-900 dark:text-blue-300">
+              <div className="p-3 bg-primary/10/60 bg-primary/10 border border-primary/20 border-border/40 rounded-lg text-xs flex items-center justify-between text-primary text-primary">
                 <div>
  Linking to employee: <strong>{selectedEmployee.name}</strong> ({selectedEmployee.employee_id_number || 'EMP'})
                 </div>
                 <button
  type="button"onClick={() => setStep(1)}
- className="text-blue-600 dark:text-blue-400 underline font-medium">
+ className="text-primary text-primary underline font-medium">
  Change
                 </button>
               </div>
@@ -458,8 +458,8 @@ export function CreateUserWizard({
               </div>
             </div>
 
-            <div className="p-3 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/40 rounded-lg text-xs text-emerald-800 dark:text-emerald-300 flex items-start gap-2">
-              <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400 mt-0.5"/>
+            <div className="p-3 bg-success-surface bg-success-surface border border-success-border border-success-border/40 rounded-lg text-xs text-success text-success flex items-start gap-2">
+              <CheckCircle2 className="h-4 w-4 shrink-0 text-success text-success mt-0.5"/>
               <div>
                 <strong>Secure Invitation Flow:</strong> The user will receive an email invitation to verify their identity and set their private password. No temporary passwords are displayed or stored.
               </div>
@@ -498,12 +498,12 @@ export function CreateUserWizard({
  type="button"onClick={() => handleRoleChange(r.id)}
  className={`p-2.5 rounded-lg border text-left transition-all ${
  isSelected
-                          ? 'border-blue-600 bg-blue-50/70 dark:bg-blue-950/30 text-blue-950 dark:text-blue-200 ring-1 ring-blue-600'
+                          ? 'border-border bg-primary/10/70 bg-primary/10 text-primary text-primary ring-1 focus:ring-ring'
                           : 'border-border hover:bg-muted dark:hover:bg-muted/50 text-foreground '
                       }`}
                     >
                       <div className="text-xs font-semibold truncate">{r.name}</div>
-                      <div className="text-[11px] text-muted-foreground mt-0.5 truncate">
+                      <div className="text-xs text-muted-foreground mt-0.5 truncate">
                         {r.name_bn || r.slug}
                       </div>
                     </button>
@@ -518,7 +518,7 @@ export function CreateUserWizard({
                 <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
  Assigned Responsibilities ({selectedResponsibilities.length})
                 </Label>
-                <span className="text-[11px] text-muted-foreground">Presets auto-applied</span>
+                <span className="text-xs text-muted-foreground">Presets auto-applied</span>
               </div>
               <div className="flex flex-wrap gap-1.5 p-2.5 border border-border rounded-lg bg-muted/50">
                 {PRACTICAL_RESPONSIBILITIES.map((resp) => {
@@ -529,7 +529,7 @@ export function CreateUserWizard({
  type="button"onClick={() => toggleResponsibility(resp)}
  className={`px-2 py-1 rounded-md text-xs font-medium transition-all flex items-center gap-1.5 ${
  isChecked
-                          ? 'bg-blue-600 text-white shadow-sm'
+                          ? 'bg-primary text-white shadow-sm'
                           : 'bg-card text-foreground border border-border hover:border-input'
                       }`}
                     >
@@ -550,7 +550,7 @@ export function CreateUserWizard({
                 <select
  value={primaryBranchId}
  onChange={(e) => setPrimaryBranchId(e.target.value)}
- className="w-full text-sm rounded-lg border border-input bg-card px-3 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-blue-600">
+ className="w-full text-sm rounded-lg border border-input bg-card px-3 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-ring">
                   {branches.map((b) => (
                     <option key={b.id} value={b.id}>
                       {b.name} {(b as any).is_head_office ? '(Main)' : ''}
@@ -566,7 +566,7 @@ export function CreateUserWizard({
                 <select
  value={selectedScope}
  onChange={(e) => setSelectedScope(e.target.value as DataScope)}
- className="w-full text-sm rounded-lg border border-input bg-card px-3 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-blue-600">
+ className="w-full text-sm rounded-lg border border-input bg-card px-3 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-ring">
                   <option value="assigned">Assigned Work (Standard)</option>
                   <option value="department">Department Work</option>
                   <option value="branch">Branch Work</option>
@@ -578,12 +578,12 @@ export function CreateUserWizard({
             {/* Preview Banner */}
             <div className="p-3 bg-muted border border-border rounded-lg text-xs flex items-center justify-between text-foreground">
               <div className="flex items-center gap-2">
-                <Sparkles className="h-4 w-4 text-blue-600 dark:text-blue-400"/>
+                <Sparkles className="h-4 w-4 text-primary text-primary"/>
                 <span>
                   <strong>{defaultPermissionsCount} default permissions</strong> will be provisioned.
                 </span>
               </div>
-              <span className="text-[11px] text-muted-foreground">Can customize after invite</span>
+              <span className="text-xs text-muted-foreground">Can customize after invite</span>
             </div>
 
             <div className="flex items-center justify-between pt-2">
@@ -608,19 +608,19 @@ export function CreateUserWizard({
             <div className="p-4 bg-muted border border-border rounded-lg space-y-3 text-xs">
               <div className="grid grid-cols-2 gap-3 pb-3 border-b border-border">
                 <div>
-                  <div className="text-muted-foreground uppercase tracking-wider text-[10px]">User</div>
+                  <div className="text-muted-foreground uppercase tracking-wider text-xs">User</div>
                   <div className="font-semibold text-foreground text-sm mt-0.5">
                     {fullName}
                   </div>
                   <div className="text-muted-foreground mt-0.5">{email}</div>
-                  {username && <div className="text-muted-foreground font-mono text-[11px]">@{username}</div>}
+                  {username && <div className="text-muted-foreground font-mono text-xs">@{username}</div>}
                 </div>
 
                 <div>
-                  <div className="text-muted-foreground uppercase tracking-wider text-[10px]">Workforce Link</div>
+                  <div className="text-muted-foreground uppercase tracking-wider text-xs">Workforce Link</div>
                   <div className="font-semibold text-foreground text-sm mt-0.5">
                     {selectedEmployee ? (
-                      <span className="text-blue-600 dark:text-blue-400">
+                      <span className="text-primary text-primary">
                         {selectedEmployee.name} ({selectedEmployee.employee_id_number || 'EMP'})
                       </span>
                     ) : (
@@ -635,33 +635,33 @@ export function CreateUserWizard({
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <div className="text-muted-foreground uppercase tracking-wider text-[10px]">Role Template</div>
+                  <div className="text-muted-foreground uppercase tracking-wider text-xs">Role Template</div>
                   <div className="font-semibold text-foreground mt-0.5">
                     {selectedRole?.name}
                   </div>
-                  <div className="text-muted-foreground text-[11px]">
+                  <div className="text-muted-foreground text-xs">
                     {defaultPermissionsCount} default permissions
                   </div>
                 </div>
 
                 <div>
-                  <div className="text-muted-foreground uppercase tracking-wider text-[10px]">Primary Branch</div>
+                  <div className="text-muted-foreground uppercase tracking-wider text-xs">Primary Branch</div>
                   <div className="font-semibold text-foreground mt-0.5">
                     {branches.find((b) => b.id === primaryBranchId)?.name || 'Default Branch'}
                   </div>
-                  <div className="text-muted-foreground text-[11px]">
+                  <div className="text-muted-foreground text-xs">
  Scope: {selectedScope === 'company' ? 'Entire Company' : `${selectedScope} Work`}
                   </div>
                 </div>
               </div>
 
               <div>
-                <div className="text-muted-foreground uppercase tracking-wider text-[10px] mb-1.5">
+                <div className="text-muted-foreground uppercase tracking-wider text-xs mb-1.5">
  Responsibilities ({selectedResponsibilities.length})
                 </div>
                 <div className="flex flex-wrap gap-1">
                   {selectedResponsibilities.map((resp) => (
-                    <Badge key={resp} variant="secondary"className="text-[11px] font-normal">
+                    <Badge key={resp} variant="secondary"className="text-xs font-normal">
                       {resp}
                     </Badge>
                   ))}

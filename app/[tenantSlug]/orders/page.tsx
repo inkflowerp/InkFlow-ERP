@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useMemo, useEffect, useCallback, useTransition } from 'react'
-import { useParams, usePathname } from 'next/navigation'
+import { useParams, usePathname, useSearchParams } from 'next/navigation'
 import {
  Briefcase,
  Plus,
@@ -21,7 +21,8 @@ import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import { OrderRepository } from '@/lib/repositories/order.repository'
 import { BillingRepository } from '@/lib/repositories/billing.repository'
-import { getOrdersAction, getJobOrdersAction } from '@/actions/order.actions'
+import { getOrdersAction, getJobOrdersAction, updateOrderStatusAction } from '@/actions/order.actions'
+import { useRealtime } from '@/components/providers/realtime-provider'
 import { getInvoicesAction } from '@/actions/billing.actions'
 import { getProductionTasksAction } from '@/actions/production-planning.actions'
 import { getDesignJobsAction } from '@/actions/design.actions'
@@ -97,6 +98,7 @@ export default function OrdersPage() {
  const { company } = useTenant()
  const { tBilingual } = useI18n()
  const tenantSlug = (params?.tenantSlug as string) || company?.slug || 'default'
+  const { registerOptimisticMutation } = useRealtime()
  const companyId = company?.id || tenantSlug
 
   // Hydration state
@@ -464,6 +466,7 @@ export default function OrdersPage() {
  rawJob: linkedJobs[0],
  rawInvoice: linkedInvoice,
  workflowResolution,
+          version: o.version || 1,
         })
       })
 
@@ -1099,18 +1102,18 @@ export default function OrdersPage() {
       {/* Toast Notification */}
       {notification && (
         <div
- className={`p-3 rounded-lg text-xs font-bold flex items-center justify-between shadow-lg transition-all animate-in fade-in slide-in-from-top-2 duration-200 ${
+ className={`p-3 rounded-lg text-xs font-bold flex items-center justify-between shadow-lg transition-all animate-in fade-in slide-in- duration-200 ${
  notification.type === 'warning'
-              ? 'bg-amber-600 text-white'
+              ? 'bg-warning text-warning-foreground'
               : notification.type === 'info'
-              ? 'bg-blue-600 text-white'
-              : 'bg-emerald-600 text-white'
+              ? 'bg-primary text-primary-foreground'
+              : 'bg-success text-success-foreground'
           }`}
         >
           <span>{notification.msg}</span>
           <button
  type="button"onClick={() => setNotification(null)}
- className="text-white/80 hover:text-foreground ml-2 text-xs tabular-nums">
+ className="text-foreground/80 hover:text-foreground ml-2 text-xs tabular-nums">
             ✕
           </button>
         </div>
@@ -1142,9 +1145,9 @@ export default function OrdersPage() {
 
       {/* Owner Dashboard Needs Attention Summary Banner (Section 50) */}
       {metrics.needsAttentionCount > 0 && (
-        <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60 rounded-xl p-3 px-4 flex flex-wrap items-center justify-between gap-3 text-xs">
-          <div className="flex items-center gap-2 font-bold text-amber-900 dark:text-amber-200">
-            <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400"/>
+        <div className="bg-warning-surface border border-warning-border/60 rounded-xl p-3 px-4 flex flex-wrap items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-2 font-bold text-warning">
+            <AlertTriangle className="w-4 h-4 text-warning"/>
             <span>{tBilingual('NEEDS ATTENTION', 'দৃষ্টি আকর্ষণ')}</span>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -1154,7 +1157,7 @@ export default function OrdersPage() {
  setActiveStage('approval')
  setFilters((f) => ({ ...f, quickFilter: 'all' }))
                 }}
- className="px-2.5 py-1 rounded-lg bg-card border border-amber-300 dark:border-amber-700/60 text-amber-800 dark:text-amber-300 font-medium hover:bg-amber-100/50 transition-colors cursor-pointer">
+ className="px-2.5 py-1 rounded-lg bg-card border border-warning-border/60 text-warning font-medium hover:bg-warning-surface/50 transition-colors cursor-pointer">
                 {metrics.inApproval} {tBilingual('jobs waiting approval', 'অনুমোদনের অপেক্ষায়')}
               </button>
             )}
@@ -1163,7 +1166,7 @@ export default function OrdersPage() {
  type="button"onClick={() => {
  setFilters((f) => ({ ...f, quickFilter: 'blocked' }))
                 }}
- className="px-2.5 py-1 rounded-lg bg-card border border-red-300 dark:border-red-700/60 text-red-700 dark:text-red-300 font-medium hover:bg-red-50 transition-colors cursor-pointer">
+ className="px-2.5 py-1 rounded-lg bg-card border border-danger-border border-danger-border/60 text-destructive font-medium hover:bg-danger-surface transition-colors cursor-pointer">
                 {metrics.blockedCount} {tBilingual('blocked jobs', 'স্থগিত কাজ')}
               </button>
             )}
@@ -1173,7 +1176,7 @@ export default function OrdersPage() {
  setActiveStage('ready')
  setFilters((f) => ({ ...f, quickFilter: 'all' }))
                 }}
- className="px-2.5 py-1 rounded-lg bg-card border border-emerald-300 dark:border-emerald-700/60 text-emerald-800 dark:text-emerald-300 font-medium hover:bg-emerald-50 transition-colors cursor-pointer">
+ className="px-2.5 py-1 rounded-lg bg-card border border-success-border border-success-border/60 text-success font-medium hover:bg-success-surface transition-colors cursor-pointer">
                 {metrics.readyDelivery} {tBilingual('delivery ready', 'ডেলিভারি প্রস্তুত')}
               </button>
             )}
@@ -1182,7 +1185,7 @@ export default function OrdersPage() {
  type="button"onClick={() => {
  setFilters((f) => ({ ...f, quickFilter: 'payment_due' }))
                 }}
- className="px-2.5 py-1 rounded-lg bg-card border border-blue-300 dark:border-blue-700/60 text-blue-800 dark:text-blue-300 font-medium hover:bg-blue-50 transition-colors cursor-pointer">
+ className="px-2.5 py-1 rounded-lg bg-card border border-primary/20 border-border/60 text-primary font-medium hover:bg-primary/10 transition-colors cursor-pointer">
                 {metrics.paymentDueCount} {tBilingual('customer dues', 'গ্রাহকের বকেয়া')}
               </button>
             )}
@@ -1221,15 +1224,15 @@ export default function OrdersPage() {
               }}
  className={`px-4 py-1.5 rounded-full text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer shadow-2xs ${
  isActive
-                  ? 'bg-blue-600 dark:bg-blue-600 text-white shadow-xs'
-                  : 'bg-card border border-border /80 text-foreground hover:bg-muted dark:hover:bg-muted/80'
+                  ? 'bg-primary text-primary-foreground shadow-xs'
+                  : 'bg-card border border-border/80 text-foreground hover:bg-muted dark:hover:bg-muted/80'
               }`}
             >
               <span>{s.label}</span>
               <span
- className={`text-2xs px-2 py-0.5 rounded-full font-bold tabular-nums ${
+ className={`text-xs px-2 py-0.5 rounded-full font-bold tabular-nums ${
  isActive
-                    ? 'bg-card text-blue-600 dark:text-blue-600'
+                    ? 'bg-card text-primary'
                     : 'bg-muted text-muted-foreground '
                 }`}
               >
@@ -1251,7 +1254,7 @@ export default function OrdersPage() {
       {/* Content Rendering: Card View vs High-Density Table View */}
       {isLoading ? (
         <div className="p-12 text-center text-muted-foreground text-xs flex items-center justify-center gap-2">
-          <RefreshCw className="h-4 w-4 animate-spin text-indigo-600"/>
+          <RefreshCw className="h-4 w-4 animate-spin text-primary"/>
           <span>{tBilingual('Loading orders...', 'অর্ডার লোড হচ্ছে...')}</span>
         </div>
       ) : filters.viewMode === 'table' ? (

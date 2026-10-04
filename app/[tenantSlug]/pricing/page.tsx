@@ -470,14 +470,14 @@ export default function PricingManagementPage() {
  return (
     <PanelAccessGuard
  module="pricing"action="view"panelTitle="Pricing & Tariffs Control Center"panelTitleBn="মূল্য নির্ধারণ ও ট্যারিফ মাস্টার">
-      <div className="space-y-6 pb-12 max-w-7xl">
+      <div className="space-y-6 pb-12">
       {/* Toast Notification */}
       {notification && (
         <div
- className={`fixed bottom-6 right-6 z-50 flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg border text-xs font-semibold animate-in fade-in slide-in-from-bottom-3 duration-200 ${
+ className={`fixed bottom-6 right-6 z-50 flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg border text-xs font-semibold animate-in fade-in slide-in- duration-200 ${
  notification.type === 'success'
-              ? 'bg-emerald-600 text-white border-emerald-700'
-              : 'bg-rose-600 text-white border-rose-700'
+              ? 'bg-success text-white border-success-border'
+              : 'bg-destructive text-white border-danger-border'
           }`}
         >
           {notification.type === 'success' ? <CheckCircle2 className="h-4 w-4"/> : <AlertTriangle className="h-4 w-4"/>}
@@ -491,7 +491,7 @@ export default function PricingManagementPage() {
       {/* Page Header */}
       <PageHeader
  titleEn="Price Settings"titleBn="মূল্য নির্ধারণ ও ট্যারিফ মাস্টার"descriptionEn="Manage customer-specific selling prices, margins, dimensional tariffs, finishing add-ons, and quotation multipliers."descriptionBn="খুচরা, পাইকারি, কর্পোরেট ও এজেন্ট দর, স্কয়ার ফিট ট্যারিফ এবং ফিনিশিং চার্জ নির্ধারণের পূর্ণাঙ্গ কন্ট্রোল সেন্টার।"icon={Tag}
- iconColor="text-teal-600"actions={
+ iconColor="text-success"actions={
           <div className="flex flex-wrap items-center gap-2">
             <Button
  variant="outline"size="sm"onClick={handleExportRateSheet}
@@ -528,7 +528,7 @@ export default function PricingManagementPage() {
  setFormRoundingRule('none')
  setIsRuleModalOpen(true)
                   }}
- className="bg-teal-600 hover:bg-teal-700 text-xs text-white font-bold h-9 shadow-xs">
+ className="bg-success hover:bg-success text-xs text-white font-bold h-9 shadow-xs">
                   <Plus className="mr-1.5 h-4 w-4"/>
                   {tBilingual('New Pricing Rule', 'নতুন মূল্য নিয়ম')}
                 </Button>
@@ -542,66 +542,66 @@ export default function PricingManagementPage() {
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
         <Card className="p-3.5 sm:p-4 rounded-xl shadow-xs border-border">
           <div className="flex items-center justify-between">
-            <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground">
+            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
               {tBilingual('Total Catalog Items', 'মোট পণ্য ও সেবা')}
             </span>
-            <Package className="h-4 w-4 text-teal-600 dark:text-teal-400"/>
+            <Package className="h-4 w-4 text-success text-success"/>
           </div>
           <div className="text-2xl font-black text-foreground mt-1 tabular-nums">
             {products.length}
           </div>
-          <div className="text-2xs text-teal-600 dark:text-teal-400 font-semibold mt-0.5">
+          <div className="text-xs text-success text-success font-semibold mt-0.5">
             {tBilingual('Products & Print Services', 'পণ্য ও প্রিন্ট সার্ভিস')}
           </div>
         </Card>
 
         <Card className="p-3.5 sm:p-4 rounded-xl shadow-xs border-border">
           <div className="flex items-center justify-between">
-            <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground">
+            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
               {tBilingual('Active Tier Rules', 'সক্রিয় মূল্য নিয়ম')}
             </span>
-            <Tag className="h-4 w-4 text-blue-600"/>
+            <Tag className="h-4 w-4 text-primary"/>
           </div>
-          <div className="text-2xl font-black text-blue-700 dark:text-blue-400 mt-1 tabular-nums">
+          <div className="text-2xl font-black text-primary text-primary mt-1 tabular-nums">
             {rules.length}
           </div>
-          <div className="text-2xs text-muted-foreground mt-0.5">{tBilingual('Customer-type rules', 'গ্রাহকভিত্তিক বিশেষ দর')}</div>
+          <div className="text-xs text-muted-foreground mt-0.5">{tBilingual('Customer-type rules', 'গ্রাহকভিত্তিক বিশেষ দর')}</div>
         </Card>
 
         <Card className="p-3.5 sm:p-4 rounded-xl shadow-xs border-border">
           <div className="flex items-center justify-between">
-            <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground">
+            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
               {tBilingual('Finishing Tariffs', 'ফিনিশিং ট্যারিফ')}
             </span>
-            <Wrench className="h-4 w-4 text-purple-600"/>
+            <Wrench className="h-4 w-4 text-primary"/>
           </div>
-          <div className="text-2xl font-black text-purple-700 dark:text-purple-400 mt-1 tabular-nums">
+          <div className="text-2xl font-black text-primary text-primary mt-1 tabular-nums">
             {finishingOptions.length}
           </div>
-          <div className="text-2xs text-muted-foreground mt-0.5">{tBilingual('Lamination, Eyelets, etc.', 'লেমিনেশন, আইলেট ইত্যাদি')}</div>
+          <div className="text-xs text-muted-foreground mt-0.5">{tBilingual('Lamination, Eyelets, etc.', 'লেমিনেশন, আইলেট ইত্যাদি')}</div>
         </Card>
 
         <Card className="p-3.5 sm:p-4 rounded-xl shadow-xs border-border">
           <div className="flex items-center justify-between">
-            <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground">
+            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
               {tBilingual('Printing Methods', 'প্রিন্টিং মেথড')}
             </span>
-            <Printer className="h-4 w-4 text-amber-600"/>
+            <Printer className="h-4 w-4 text-warning"/>
           </div>
-          <div className="text-2xl font-black text-amber-700 dark:text-amber-400 mt-1 tabular-nums">
+          <div className="text-2xl font-black text-warning text-warning mt-1 tabular-nums">
             {printingMethods.length}
           </div>
-          <div className="text-2xs text-muted-foreground mt-0.5">{tBilingual('Solvent, Eco, UV modes', 'সলভেন্ট, ইকো, ইউভি মোড')}</div>
+          <div className="text-xs text-muted-foreground mt-0.5">{tBilingual('Solvent, Eco, UV modes', 'সলভেন্ট, ইকো, ইউভি মোড')}</div>
         </Card>
 
         <Card className="p-3.5 sm:p-4 rounded-xl shadow-xs border-border col-span-2 lg:col-span-1">
           <div className="flex items-center justify-between">
-            <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground">
+            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
               {tBilingual('Avg Retail Margin', 'গড় খুচরা মুনাফা')}
             </span>
-            <TrendingUp className="h-4 w-4 text-emerald-600"/>
+            <TrendingUp className="h-4 w-4 text-success"/>
           </div>
-          <div className="text-2xl font-black text-emerald-600 mt-1 tabular-nums">
+          <div className="text-2xl font-black text-success mt-1 tabular-nums">
             {(() => {
  const withMargin = products.filter((p) => Number(p.selling_price) > 0 && Number(p.base_cost) > 0)
  if (withMargin.length === 0) return '0%'
@@ -614,7 +614,7 @@ export default function PricingManagementPage() {
  return `${avg}%`
             })()}
           </div>
-          <div className="text-2xs text-emerald-600 font-semibold mt-0.5">
+          <div className="text-xs text-success font-semibold mt-0.5">
             {(() => {
  const withMargin = products.filter((p) => Number(p.selling_price) > 0 && Number(p.base_cost) > 0)
  if (withMargin.length === 0) return tBilingual('No active margin data', 'কোনো মার্জিন ডেটা নেই')
@@ -646,7 +646,7 @@ export default function PricingManagementPage() {
  onClick={() => setDomainTab(tab.id as MainDomainTab)}
  className={`px-4 py-2.5 text-xs font-bold border-b-2 -mb-px whitespace-nowrap transition-all flex items-center gap-1.5 cursor-pointer bangla-text ${
  domainTab === tab.id
-                ? 'border-teal-600 text-teal-700 dark:border-teal-400 dark:text-teal-300 bg-teal-50/50 dark:bg-teal-950/30 rounded-t-lg'
+                ? 'border-success-border text-success border-success-border text-success bg-success-surface/50 bg-success-surface rounded-t-lg'
                 : 'border-transparent text-muted-foreground hover:text-foreground hover:bg-muted dark:hover:bg-muted/40'
             }`}
           >
@@ -758,7 +758,7 @@ export default function PricingManagementPage() {
         <form onSubmit={handleSaveRule} className="space-y-4 pt-1">
           <div>
             <Label className="text-xs font-semibold mb-1 block">
-              {tBilingual('Select Product / Service', 'পণ্য / সেবা নির্বাচন করুন')} <span className="text-rose-500">*</span>
+              {tBilingual('Select Product / Service', 'পণ্য / সেবা নির্বাচন করুন')} <span className="text-destructive">*</span>
             </Label>
             <select
  value={formProductId}
@@ -845,9 +845,9 @@ export default function PricingManagementPage() {
           </div>
 
           {/* Live Preview Card */}
-          <div className="p-3 bg-teal-50 dark:bg-teal-950/40 rounded-xl border border-teal-200 dark:border-teal-800 flex items-center justify-between text-xs">
+          <div className="p-3 bg-success-surface bg-success-surface rounded-xl border border-success-border border-success-border flex items-center justify-between text-xs">
             <span className="text-muted-foreground">Effective Calculated Price:</span>
-            <span className="text-base font-black text-teal-700 dark:text-teal-300 tabular-nums">
+            <span className="text-base font-black text-success text-success tabular-nums">
               {formatBDT(livePreview.calculatedPrice)}
             </span>
           </div>
@@ -856,7 +856,7 @@ export default function PricingManagementPage() {
             <Button type="button"variant="outline"onClick={() => setIsRuleModalOpen(false)} className="text-xs h-9">
               {tBilingual('Cancel', 'বাতিল')}
             </Button>
-            <Button type="submit"disabled={isPending} className="bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs h-9 px-5">
+            <Button type="submit"disabled={isPending} className="bg-success hover:bg-success text-white font-bold text-xs h-9 px-5">
               {isPending ? 'Saving...' : tBilingual('Save Rule', 'নিয়ম সংরক্ষণ')}
             </Button>
           </div>
@@ -916,7 +916,7 @@ export default function PricingManagementPage() {
  setBulkProductIds(products.map((p) => p.id))
                   }
                 }}
- className="text-2xs text-teal-600 font-bold hover:underline">
+ className="text-xs text-success font-bold hover:underline">
                 {bulkProductIds.length === products.length ? 'Deselect All' : 'Select All Products'}
               </button>
             </div>
@@ -937,7 +937,7 @@ export default function PricingManagementPage() {
  setBulkProductIds(bulkProductIds.filter((id) => id !== p.id))
                         }
                       }}
- className="h-3.5 w-3.5 rounded text-teal-600 focus:ring-teal-500"/>
+ className="h-3.5 w-3.5 rounded text-success focus:ring-ring"/>
                     <span className="truncate">{p.name}</span>
                   </label>
                 )
@@ -949,7 +949,7 @@ export default function PricingManagementPage() {
             <Button type="button"variant="outline"onClick={() => setIsBulkModalOpen(false)} className="text-xs h-9">
  Cancel
             </Button>
-            <Button type="submit"disabled={isPending} className="bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs h-9 px-5">
+            <Button type="submit"disabled={isPending} className="bg-success hover:bg-success text-white font-bold text-xs h-9 px-5">
               {isPending ? 'Applying...' : 'Apply Bulk Adjustment'}
             </Button>
           </div>
@@ -1007,7 +1007,7 @@ export default function PricingManagementPage() {
             <Button type="button"variant="outline"onClick={() => setIsCopyModalOpen(false)} className="text-xs h-9">
  Cancel
             </Button>
-            <Button type="submit"disabled={isPending} className="bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs h-9 px-5">
+            <Button type="submit"disabled={isPending} className="bg-success hover:bg-success text-white font-bold text-xs h-9 px-5">
               {isPending ? 'Copying...' : 'Clone Pricing Rules'}
             </Button>
           </div>

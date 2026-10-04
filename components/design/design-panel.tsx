@@ -17,6 +17,7 @@ import { useToast } from '@/components/shared/toast-feedback'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import { DesignRepository } from '@/lib/repositories/design.repository'
 import { sendToPrintOperatorAction } from '@/actions/design.actions'
+import { usePresence } from '@/components/providers/realtime-provider'
 import type { DesignJobRecord } from '@/types/design.types'
 import type { ProductionJobRecord } from '@/types/production.types'
 import { WorkOrderModal } from '@/components/shared/work-order-modal'
@@ -37,6 +38,7 @@ import { DesignWhatsAppModal } from './modals/design-whatsapp-modal'
 import { DesignPreflightModal } from './modals/design-preflight-modal'
 import { DesignLightboxModal } from './modals/design-lightbox-modal'
 import { DesignCompareModal } from './modals/design-compare-modal'
+import { DesignUploadVersionModal } from './modals/design-upload-version-modal'
 import { DesignNewJobModal } from './modals/design-new-job-modal'
 
 export interface DesignPanelProps {
@@ -68,9 +70,11 @@ export function DesignPanel({ defaultTab = 'new_tasks' }: DesignPanelProps) {
  const tenantSlug = (params?.tenantSlug as string) || company?.slug || 'default'
  const { user } = useAuth()
  const companyId = company?.id || tenantSlug
+ const { users: designBoardUsers } = usePresence('design')
 
   // Work Order Modal State
  const [isWorkOrderModalOpen, setIsWorkOrderModalOpen] = useState(false)
+  const [uploadVersionJob, setUploadVersionJob] = useState<DesignJobRecord | null>(null)
 
   // Data States
  const [jobs, setJobs] = useState<DesignJobRecord[]>([])
@@ -620,12 +624,19 @@ export function DesignPanel({ defaultTab = 'new_tasks' }: DesignPanelProps) {
  actions={
           <Button
  onClick={() => setIsWorkOrderModalOpen(true)}
- className="bg-gradient-to-r from-blue-600 via-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs h-9 px-4 rounded-xl shadow-sm shadow-blue-500/20 flex items-center gap-1.5 cursor-pointer transition-transform active:scale-[0.98]">
+ className=" hover: hover: text-white font-bold text-xs h-9 px-4 rounded-xl shadow-sm shadow-blue-500/20 flex items-center gap-1.5 cursor-pointer transition-transform active:scale-[0.98]">
             <Plus className="w-4 h-4 stroke-[2.5]"/>
             <span>{tBilingual('Add Work Order', 'নতুন ওয়ার্ক অর্ডার')}</span>
           </Button>
         }
       />
+
+      {designBoardUsers.length > 0 && (
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-warning-surface text-xs text-warning border border-warning/30">
+          <span className="w-2 h-2 rounded-full bg-warning shrink-0" />
+          <span>{tBilingual('Active on design board:', 'ডিজাইন বোর্ডে সক্রিয় আছেন:')} {designBoardUsers.map((u: any) => u.userName).join(', ')}</span>
+        </div>
+      )}
 
       {/* 2. Top Metrics KPI Bar (6 Cards matching reference) */}
       <DesignMetricsBar
@@ -657,7 +668,7 @@ export function DesignPanel({ defaultTab = 'new_tasks' }: DesignPanelProps) {
       {/* 4. Content Rendering: Invoice Accordion Cards */}
       {isLoading ? (
         <div className="p-16 text-center text-muted-foreground text-xs flex items-center justify-center gap-2">
-          <RefreshCw className="h-4 w-4 animate-spin text-indigo-600"/>
+          <RefreshCw className="h-4 w-4 animate-spin text-primary"/>
           <span>Loading design panel...</span>
         </div>
       ) : filters.viewMode === 'table' ? (
@@ -696,6 +707,7 @@ export function DesignPanel({ defaultTab = 'new_tasks' }: DesignPanelProps) {
  onPauseProduction={handlePauseProduction}
  onResumeProduction={handleResumeProduction}
  onRequestRevision={handleRequestRevision}
+              onUploadVersion={(j: DesignJobRecord) => setUploadVersionJob(j)}
             />
           ))}
 
@@ -739,6 +751,7 @@ export function DesignPanel({ defaultTab = 'new_tasks' }: DesignPanelProps) {
  onPauseProduction={handlePauseProduction}
  onResumeProduction={handleResumeProduction}
  onRequestRevision={handleRequestRevision}
+                  onUploadVersion={(j: DesignJobRecord) => setUploadVersionJob(j)}
                 />
               ))}
             </div>
@@ -746,7 +759,7 @@ export function DesignPanel({ defaultTab = 'new_tasks' }: DesignPanelProps) {
 
           {filteredJobs.length === 0 && (
             <div className="bg-card rounded-xl border border-border p-12 text-center text-muted-foreground shadow-2xs">
-              <div className="w-12 h-12 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mx-auto mb-3">
+              <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center mx-auto mb-3">
                 <Edit3 className="w-6 h-6 stroke-[2]"/>
               </div>
               <div className="text-base font-bold text-foreground">
@@ -762,8 +775,9 @@ export function DesignPanel({ defaultTab = 'new_tasks' }: DesignPanelProps) {
               {activeTab === 'all' && (
                 <div className="mt-4">
                   <Button
- onClick={() => setIsWorkOrderModalOpen(true)}
- className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs rounded-xl px-4 py-2 cursor-pointer shadow-xs inline-flex items-center gap-1.5">
+                    onClick={() => setIsWorkOrderModalOpen(true)}
+                    className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs rounded-xl px-4 py-2 cursor-pointer shadow-xs inline-flex items-center gap-1.5"
+                  >
                     <Plus className="w-4 h-4 stroke-[2.5]"/>
                     <span>{tBilingual('Add Work Order', 'নতুন কাজের আদেশ')}</span>
                   </Button>
@@ -830,6 +844,18 @@ export function DesignPanel({ defaultTab = 'new_tasks' }: DesignPanelProps) {
         />
       )}
 
+
+      {uploadVersionJob && (
+        <DesignUploadVersionModal
+          isOpen={!!uploadVersionJob}
+          onClose={() => setUploadVersionJob(null)}
+          job={uploadVersionJob}
+          onSuccess={() => {
+            loadData()
+            showNotification('New design version uploaded successfully!', 'success')
+          }}
+        />
+      )}
       {isWorkOrderModalOpen && (
         <WorkOrderModal
  isOpen={isWorkOrderModalOpen}

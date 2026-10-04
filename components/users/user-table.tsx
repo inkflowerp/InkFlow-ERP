@@ -17,7 +17,10 @@ import {
  Eye,
  CheckCircle2,
  Clock,
- ExternalLink,
+  ExternalLink,
+  Lock,
+  RefreshCw,
+  Sliders,
 } from 'lucide-react'
 import { CompanyUserWithProfile, RoleRow, BranchRow } from '@/types/tenant.types'
 import { Badge } from '@/components/ui/badge'
@@ -29,7 +32,7 @@ import {
  DropdownMenuItem,
  DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu'
-import { getResponsibilityPresetsForRole } from '@/lib/auth/rbac.client'
+import { getResponsibilityPresetsForRole, isUserBusinessOwner } from '@/lib/auth/rbac.client'
 import { formatDateTime, formatBranchName } from '@/lib/formatters'
 import { cn } from '@/lib/utils'
 import { resolveUserRole, resolveUserDataScope, resolveUserResponsibilities } from './user-resolvers'
@@ -46,6 +49,8 @@ interface UserTableProps {
  onLinkEmployee: (user: CompanyUserWithProfile) => void
  onToggleStatus: (user: CompanyUserWithProfile) => void
  onResetPassword: (user: CompanyUserWithProfile) => void
+  onResendInvitation?: (user: CompanyUserWithProfile) => void
+  onCustomizePermissions?: (user: CompanyUserWithProfile) => void
  onRemoveLogin: (user: CompanyUserWithProfile) => void
  onRefresh: () => void
 }
@@ -53,22 +58,22 @@ interface UserTableProps {
 function getRoleBadgeStyle(roleName: string) {
  const norm = roleName.toLowerCase()
  if (norm.includes('owner')) {
- return 'bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800'
+ return 'bg-warning-surface text-warning border-warning-border bg-warning-surface text-warning border-warning-border'
   }
  if (norm.includes('manager') || norm.includes('admin')) {
- return 'bg-blue-50 text-blue-800 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800'
+ return 'bg-primary/10 text-primary border-primary/20 bg-primary/10 text-primary border-border'
   }
  if (norm.includes('sales')) {
- return 'bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800'
+ return 'bg-success-surface text-success border-success-border bg-success-surface text-success border-success-border'
   }
  if (norm.includes('design')) {
- return 'bg-indigo-50 text-indigo-800 border-indigo-200 dark:bg-indigo-950/40 dark:text-indigo-300 dark:border-indigo-800'
+ return 'bg-primary/10 text-primary border-primary/20 bg-primary/10 text-primary border-border'
   }
  if (norm.includes('operator') || norm.includes('production')) {
- return 'bg-orange-50 text-orange-800 border-orange-200 dark:bg-orange-950/40 dark:text-orange-300 dark:border-orange-800'
+ return 'bg-warning-surface text-warning border-warning-border bg-warning-surface text-warning border-warning-border'
   }
  if (norm.includes('account') || norm.includes('cashier')) {
- return 'bg-purple-50 text-purple-800 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-800'
+ return 'bg-primary/10 text-primary border-primary/20 bg-primary/10 text-primary border-border'
   }
  return 'bg-muted text-foreground border-border '
 }
@@ -98,27 +103,27 @@ function getDataScopeBadge(scope?: string, isBn?: boolean) {
   const s = scope || 'branch'
   if (s === 'company') {
     return (
-      <span className="inline-flex items-center text-2xs font-medium px-2 py-0.5 rounded-md bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-950/30 dark:text-amber-300 dark:border-amber-800 whitespace-nowrap">
+      <span className="inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-md bg-warning-surface text-warning border border-warning-border bg-warning-surface text-warning border-warning-border whitespace-nowrap">
         {isBn ? 'সমগ্র প্রতিষ্ঠান' : 'Entire Company'}
       </span>
     )
   }
   if (s === 'branch') {
     return (
-      <span className="inline-flex items-center text-2xs font-medium px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/30 dark:text-blue-300 dark:border-blue-800 whitespace-nowrap">
+      <span className="inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-md bg-primary/10 text-primary border border-primary/20 bg-primary/10 text-primary border-border whitespace-nowrap">
         {isBn ? 'শাখা' : 'Branch'}
       </span>
     )
   }
   if (s === 'department') {
     return (
-      <span className="inline-flex items-center text-2xs font-medium px-2 py-0.5 rounded-md bg-teal-50 text-teal-700 border border-teal-200 dark:bg-teal-950/30 dark:text-teal-300 dark:border-teal-800 whitespace-nowrap">
+      <span className="inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-md bg-success-surface text-success border border-success-border bg-success-surface text-success border-success-border whitespace-nowrap">
         {isBn ? 'বিভাগ' : 'Department'}
       </span>
     )
   }
   return (
-    <span className="inline-flex items-center text-2xs font-medium px-2 py-0.5 rounded-md bg-muted text-foreground border border-border whitespace-nowrap">
+    <span className="inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-md bg-muted text-foreground border border-border whitespace-nowrap">
       {isBn ? 'বরাদ্দকৃত / নিজস্ব' : 'Assigned / Own'}
     </span>
   )
@@ -136,7 +141,9 @@ export function UserTable({
  onLinkEmployee,
  onToggleStatus,
  onResetPassword,
- onRemoveLogin,
+  onResendInvitation,
+  onCustomizePermissions,
+  onRemoveLogin,
 }: UserTableProps) {
   const { locale, tBilingual } = useI18n()
   const isBn = locale === 'bn'
@@ -151,6 +158,10 @@ export function UserTable({
     return formatBranchName(b?.name, isBn ? 'bn' : 'en', (b as any)?.name_bn)
   }
 
+
+  const activeOwnersCount = React.useMemo(() => {
+    return users.filter((u) => u.status === 'active' && isUserBusinessOwner(u)).length
+  }, [users])
 
  const getUserInitials = (user: CompanyUserWithProfile) => {
  const name = user.profile?.full_name || user.linked_employee?.name || user.profile?.email || 'U'
@@ -192,6 +203,8 @@ export function UserTable({
               const isUserDisabled = u.status === 'disabled'
               const lastLogin = u.last_login_at || (u.profile as any)?.last_sign_in_at
               const resolvedScope = resolveUserDataScope(u, resolvedRole.slug)
+              const isRowOwner = isUserBusinessOwner(u)
+              const isLastActiveOwner = isRowOwner && isUserActive && activeOwnersCount <= 1
 
  return (
                 <tr
@@ -201,7 +214,7 @@ export function UserTable({
                   {/* Column 1: User Identity */}
                   <td className="px-5 py-3.5 whitespace-nowrap">
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-full bg-muted text-foreground font-semibold text-xs flex items-center justify-center border border-border flex-shrink-0 group-hover:border-blue-400 dark:group-hover:border-blue-500 transition-colors">
+                      <div className="w-9 h-9 rounded-full bg-muted text-foreground font-semibold text-xs flex items-center justify-center border border-border flex-shrink-0 group-hover:border-border dark:group-hover:border-primary/20 transition-colors">
                         {initials}
                       </div>
                       <div className="min-w-0">
@@ -210,7 +223,7 @@ export function UserTable({
                             {u.profile?.full_name || u.linked_employee?.name || tBilingual('Unnamed User', 'নামহীন ব্যবহারকারী')}
                           </span>
                           {isCurrentUser && (
-                            <Badge variant="outline" className="text-[10px] py-0 px-1.5 border-blue-300 text-blue-700 dark:text-blue-300 bg-blue-50/50">{tBilingual('You', 'আপনি')}</Badge>
+                            <Badge variant="outline" className="text-xs py-0 px-1.5 border-primary/20 text-primary text-primary bg-primary/10/50">{tBilingual('You', 'আপনি')}</Badge>
                           )}
                         </div>
                         <div className="text-xs text-muted-foreground truncate">
@@ -225,12 +238,12 @@ export function UserTable({
                     {u.linked_employee ? (
                       <div className="flex flex-col gap-0.5">
                         <div className="flex items-center gap-1.5 font-medium text-foreground text-xs">
-                          <UserCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 flex-shrink-0"/>
+                          <UserCheck className="w-3.5 h-3.5 text-success text-success flex-shrink-0"/>
                           <span className="truncate">{u.linked_employee.name}</span>
                         </div>
-                        <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                           {u.linked_employee.employee_id_number && (
-                            <span className="font-mono bg-muted px-1 rounded text-[10px] border border-border">
+                            <span className="font-mono bg-muted px-1 rounded text-xs border border-border">
                               {u.linked_employee.employee_id_number}
                             </span>
                           )}
@@ -239,15 +252,15 @@ export function UserTable({
                       </div>
                     ) : (
                       <div className="flex items-center gap-2">
-                        <span className="inline-flex items-center gap-1.5 text-2xs text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 px-2 py-1 rounded-md border border-amber-200 dark:border-amber-800 font-medium whitespace-nowrap shrink-0">
-                          <AlertCircle className="w-3.5 h-3.5 text-amber-500 shrink-0"/>
+                        <span className="inline-flex items-center gap-1.5 text-xs text-warning text-warning bg-warning-surface bg-warning-surface px-2 py-1 rounded-md border border-warning-border border-warning-border font-medium whitespace-nowrap shrink-0">
+                          <AlertCircle className="w-3.5 h-3.5 text-warning shrink-0"/>
                           {tBilingual('No Employee Profile', 'কর্মী প্রোফাইল নেই')}
                         </span>
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => onLinkEmployee(u)}
-                          className="h-6 px-2 text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950/40 font-medium whitespace-nowrap shrink-0">
+                          className="h-6 px-2 text-xs text-primary hover:text-primary hover:bg-primary/10 text-primary dark:hover:bg-primary/10 font-medium whitespace-nowrap shrink-0">
                           {tBilingual('Link', 'যুক্ত করুন')}
                         </Button>
                       </div>
@@ -271,7 +284,7 @@ export function UserTable({
                         topResponsibilities.map((resp) => (
                           <span
                             key={resp}
-                            className="inline-flex items-center text-2xs bg-muted text-foreground px-2 py-0.5 rounded-md border border-border font-medium whitespace-nowrap"
+                            className="inline-flex items-center text-xs bg-muted text-foreground px-2 py-0.5 rounded-md border border-border font-medium whitespace-nowrap"
                           >
                             {isBn ? (RESPONSIBILITY_NAMES_BN[resp] || resp) : resp}
                           </span>
@@ -281,7 +294,7 @@ export function UserTable({
                       )}
                       {extraCount > 0 && (
                         <span
-                          className="inline-flex items-center text-2xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded-md border border-border font-medium whitespace-nowrap"
+                          className="inline-flex items-center text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded-md border border-border font-medium whitespace-nowrap"
                           title={tBilingual('Click row to view all duties', 'সকল দায়িত্ব দেখতে ক্লিক করুন')}
                         >
                           +{extraCount} {tBilingual('more', 'আরো')}
@@ -299,7 +312,7 @@ export function UserTable({
                       </span>
                     </div>
                     {u.user_branch_access && u.user_branch_access.length > 1 && (
-                      <span className="text-2xs text-muted-foreground ml-5 block mt-0.5">
+                      <span className="text-xs text-muted-foreground ml-5 block mt-0.5">
                         +{u.user_branch_access.length - 1} {isBn ? 'অতিরিক্ত শাখা' : 'extra branch'}
                       </span>
                     )}
@@ -308,16 +321,36 @@ export function UserTable({
                   {/* Column 6: Status */}
                   <td className="px-4 py-3.5 whitespace-nowrap text-center">
                     {isUserActive && (
-                      <span className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"/>
+                      <span className="inline-flex items-center gap-1.5 text-xs font-medium text-success text-success bg-success-surface bg-success-surface px-2 py-0.5 rounded-full border border-success-border border-success-border">
+                        <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse"/>
                         {tBilingual('Active', 'সক্রিয়')}
                       </span>
                     )}
                     {isUserInvited && (
-                      <span className="inline-flex items-center gap-1.5 text-xs font-medium text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 rounded-full border border-amber-200 dark:border-amber-800">
-                        <span className="w-1.5 h-1.5 rounded-full bg-amber-500"/>
-                        {tBilingual('Invited', 'আমন্ত্রিত')}
-                      </span>
+                      <div className="flex flex-col items-center gap-0.5">
+                        {u.is_expired ? (
+                          <span className="inline-flex items-center gap-1 text-xs font-semibold text-destructive bg-destructive/10 px-2 py-0.5 rounded-full border border-destructive/20 whitespace-nowrap">
+                            <Clock className="w-3 h-3 text-destructive shrink-0"/>
+                            {tBilingual('Expired', 'মেয়াদোত্তীর্ণ')}
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1.5 text-xs font-medium text-warning text-warning bg-warning-surface bg-warning-surface px-2 py-0.5 rounded-full border border-warning-border border-warning-border whitespace-nowrap">
+                            <span className="w-1.5 h-1.5 rounded-full bg-warning"/>
+                            {tBilingual('Invited', 'আমন্ত্রিত')}
+                          </span>
+                        )}
+                        {u.invitation_expires_at && !u.is_expired && (
+                          <span className="text-xs text-muted-foreground tabular-nums whitespace-nowrap">
+                            {(() => {
+                              const diffMs = new Date(u.invitation_expires_at).getTime() - Date.now()
+                              const daysLeft = Math.ceil(diffMs / (1000 * 60 * 60 * 24))
+                              return daysLeft > 0
+                                ? tBilingual(`Expires in ${daysLeft}d`, `${daysLeft} দিন বাকি`)
+                                : tBilingual('Expiring today', 'আজই মেয়াদ শেষ')
+                            })()}
+                          </span>
+                        )}
+                      </div>
                     )}
                     {isUserDisabled && (
                       <span className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground bg-muted px-2 py-0.5 rounded-full border border-border">
@@ -349,7 +382,7 @@ export function UserTable({
                         variant="ghost"
                         size="sm"
                         onClick={() => onViewDetails(u)}
-                        className="h-8 px-2 text-muted-foreground hover:text-blue-600 dark:hover:text-blue-400 font-medium"
+                        className="h-8 px-2 text-muted-foreground hover:text-primary dark:hover:text-primary font-medium"
                         title={tBilingual('View Full Profile & Diagnostics', 'সম্পূর্ণ প্রোফাইল ও বিবরণ দেখুন')}>
                         <Eye className="w-4 h-4 mr-1 shrink-0"/>
                         <span className="text-xs">{tBilingual('View', 'দেখুন')}</span>
@@ -367,24 +400,36 @@ export function UserTable({
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-48">
                           <DropdownMenuItem onClick={() => onEditAccess(u)}>
-                            <Shield className="w-4 h-4 mr-2 text-blue-600"/>
+                            <Shield className="w-4 h-4 mr-2 text-primary"/>
                             <span>{tBilingual('Edit Access & Role', 'অ্যাক্সেস ও রোল সম্পাদনা')}</span>
                           </DropdownMenuItem>
+                          {onCustomizePermissions && (
+                            <DropdownMenuItem onClick={() => onCustomizePermissions(u)}>
+                              <Sliders className="w-4 h-4 mr-2 text-primary"/>
+                              <span>{tBilingual('Permission Overrides', 'পারমিশন ওভাররাইড')}</span>
+                            </DropdownMenuItem>
+                          )}
                           <DropdownMenuItem onClick={() => onLinkEmployee(u)}>
-                            <UserCheck className="w-4 h-4 mr-2 text-emerald-600"/>
+                            <UserCheck className="w-4 h-4 mr-2 text-success"/>
                             <span>{u.linked_employee ? tBilingual('Change Employee', 'কর্মী পরিবর্তন করুন') : tBilingual('Link Employee', 'কর্মী সংযুক্ত করুন')}</span>
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => onResetPassword(u)}>
-                            <KeyRound className="w-4 h-4 mr-2 text-amber-600"/>
+                            <KeyRound className="w-4 h-4 mr-2 text-warning"/>
                             <span>{tBilingual('Send Password Reset', 'পাসওয়ার্ড রিসেট পাঠান')}</span>
                           </DropdownMenuItem>
+                          {isUserInvited && onResendInvitation && (
+                            <DropdownMenuItem onClick={() => onResendInvitation(u)}>
+                              <RefreshCw className="w-4 h-4 mr-2 text-primary"/>
+                              <span>{tBilingual('Resend Invitation', 'পুনরায় আমন্ত্রণ পাঠান')}</span>
+                            </DropdownMenuItem>
+                          )}
 
                           <DropdownMenuSeparator />
 
-                          {!isCurrentUser && (
+                          {!isCurrentUser && !isLastActiveOwner && (
                             <DropdownMenuItem
- onClick={() => onToggleStatus(u)}
- className={isUserActive ? 'text-amber-600' : 'text-emerald-600'}
+                              onClick={() => onToggleStatus(u)}
+                              className={isUserActive ? 'text-warning' : 'text-success'}
                             >
                               {isUserActive ? (
                                 <>
@@ -400,13 +445,20 @@ export function UserTable({
                             </DropdownMenuItem>
                           )}
 
-                          {!isCurrentUser && (
+                          {!isCurrentUser && !isLastActiveOwner && (
                             <DropdownMenuItem
- onClick={() => onRemoveLogin(u)}
- className="text-red-600 focus:text-red-700 focus:bg-red-50 dark:focus:bg-red-950/40">
+                              onClick={() => onRemoveLogin(u)}
+                              className="text-destructive focus:text-destructive focus:bg-destructive/10">
                               <Trash2 className="w-4 h-4 mr-2"/>
                               <span>{tBilingual('Remove Login', 'লগইন মুছে ফেলুন')}</span>
                             </DropdownMenuItem>
+                          )}
+
+                          {isLastActiveOwner && (
+                            <div className="px-2 py-1.5 text-xs text-muted-foreground flex items-center gap-1.5 italic">
+                              <Lock className="w-3 h-3 text-warning shrink-0" />
+                              <span>{tBilingual('Sole active owner protected', 'একমাত্র সক্রিয় স্বত্বাধিকারী সুরক্ষিত')}</span>
+                            </div>
                           )}
                         </DropdownMenuContent>
                       </DropdownMenu>

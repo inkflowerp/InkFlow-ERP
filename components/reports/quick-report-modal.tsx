@@ -30,7 +30,7 @@ import {
  X,
 } from 'lucide-react'
 import { formatBDT, formatDate } from '@/lib/formatters'
-import { exportToCsv } from '@/services/reports.service'
+import { exportToCsv } from '@/lib/export/csv'
 import type { InvoiceRecord, PaymentRecord } from '@/types/billing.types'
 import type { SalesOrderRecord } from '@/types/order.types'
 import type { ProductionJobRecord } from '@/types/production.types'
@@ -86,8 +86,8 @@ export function QuickReportModal({
  titleBn: 'বিক্রয় ও চালান প্রতিবেদন',
  description: 'Comprehensive line-item invoices, collections and customer billing ledger.',
  icon: TrendingUp,
- iconColor: 'text-emerald-600',
- bgColor: 'bg-emerald-50 dark:bg-emerald-950/40',
+ iconColor: 'text-success',
+ bgColor: 'bg-success-surface bg-success-surface',
         }
  case 'production':
  return {
@@ -95,8 +95,8 @@ export function QuickReportModal({
  titleBn: 'উৎপাদন ও মেশিন ফ্লোর রিপোর্ট',
  description: 'Job statuses, press queue, department routing and completion tracking.',
  icon: Layers,
- iconColor: 'text-blue-600',
- bgColor: 'bg-blue-50 dark:bg-blue-950/40',
+ iconColor: 'text-primary',
+ bgColor: 'bg-primary/10 bg-primary/10',
         }
  case 'inventory':
  return {
@@ -104,8 +104,8 @@ export function QuickReportModal({
  titleBn: 'কাঁচামাল ও গুদাম মূল্যায়ন রিপোর্ট',
  description: 'Substrates, vinyl, paper, acrylic and ink balances with weighted unit costs.',
  icon: Package,
- iconColor: 'text-cyan-600',
- bgColor: 'bg-cyan-50 dark:bg-cyan-950/40',
+ iconColor: 'text-primary',
+ bgColor: 'bg-info-surface bg-primary/10',
         }
  case 'financial':
  return {
@@ -113,8 +113,8 @@ export function QuickReportModal({
  titleBn: 'আর্থিক হিসাব ও স্টেটমেন্ট',
  description: 'Revenue, direct material costs, gross profit, OPEX expenses and net profit.',
  icon: FileText,
- iconColor: 'text-blue-600',
- bgColor: 'bg-blue-50 dark:bg-blue-950/40',
+ iconColor: 'text-primary',
+ bgColor: 'bg-primary/10 bg-primary/10',
         }
  case 'customer':
  case 'all_customers':
@@ -123,8 +123,8 @@ export function QuickReportModal({
  titleBn: 'গ্রাহক তথ্য ও বাকি হিসাব',
  description: 'Customer lifetime turnover, payments, current due balances and order history.',
  icon: Users,
- iconColor: 'text-purple-600',
- bgColor: 'bg-purple-50 dark:bg-purple-950/40',
+ iconColor: 'text-primary',
+ bgColor: 'bg-primary/10 bg-primary/10',
         }
  case 'supplier':
  return {
@@ -132,8 +132,8 @@ export function QuickReportModal({
  titleBn: 'মহাজন ও সরবরাহকারী প্রতিবেদন',
  description: 'Vendor substrate procurement, material bills and payment balances.',
  icon: Truck,
- iconColor: 'text-sky-600',
- bgColor: 'bg-sky-50 dark:bg-sky-950/40',
+ iconColor: 'text-primary',
+ bgColor: 'bg-info-surface bg-primary/10',
         }
  case 'profitability':
  case 'all_products':
@@ -142,8 +142,8 @@ export function QuickReportModal({
  titleBn: 'পণ্য লাভ ও বিক্রয় বিশ্লেষণ',
  description: 'Margin analysis across printing products, signage, stickers and banners.',
  icon: PieChart,
- iconColor: 'text-amber-600',
- bgColor: 'bg-amber-50 dark:bg-amber-950/40',
+ iconColor: 'text-warning',
+ bgColor: 'bg-warning-surface bg-warning-surface',
         }
  case 'custom':
  default:
@@ -152,8 +152,8 @@ export function QuickReportModal({
  titleBn: 'কাস্টম ডাটা এক্সপোর্ট',
  description: 'Multi-field real-time operational dataset for executive decision making.',
  icon: FileSpreadsheet,
- iconColor: 'text-rose-600',
- bgColor: 'bg-rose-50 dark:bg-rose-950/40',
+ iconColor: 'text-destructive',
+ bgColor: 'bg-danger-surface bg-danger-surface',
         }
     }
   }, [type])
@@ -244,8 +244,8 @@ export function QuickReportModal({
             </Button>
             <Button
  size="sm"variant="outline"onClick={() => handleExport(true)}
- className="text-xs h-8 text-emerald-700 border-emerald-300 hover:bg-emerald-50 dark:border-emerald-800">
-              <FileSpreadsheet className="mr-1.5 h-3.5 w-3.5 text-emerald-600"/>
+ className="text-xs h-8 text-success border-success-border hover:bg-success-surface border-success-border">
+              <FileSpreadsheet className="mr-1.5 h-3.5 w-3.5 text-success"/>
  Excel
             </Button>
             <Button
@@ -315,20 +315,20 @@ export function QuickReportModal({
                         <td className="py-2.5 px-3 text-right font-bold text-foreground">
                           {formatBDT(inv.grand_total || (inv as any).total_amount || 0)}
                         </td>
-                        <td className="py-2.5 px-3 text-right text-emerald-600 font-bold">
+                        <td className="py-2.5 px-3 text-right text-success font-bold">
                           {formatBDT(inv.paid_amount || 0)}
                         </td>
-                        <td className="py-2.5 px-3 text-right text-amber-600 font-bold">
+                        <td className="py-2.5 px-3 text-right text-warning font-bold">
                           {formatBDT(inv.due_amount || 0)}
                         </td>
                         <td className="py-2.5 px-3 text-center font-sans">
                           <span
- className={`px-2 py-0.5 rounded-full text-2xs font-bold capitalize ${
+ className={`px-2 py-0.5 rounded-full text-xs font-bold capitalize ${
  inv.status === 'paid'
-                                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                ? 'bg-success-surface text-success border border-success-border'
                                 : inv.status === 'partially_paid'
-                                ? 'bg-amber-50 text-amber-700 border border-amber-200'
-                                : 'bg-rose-50 text-rose-700 border border-rose-200'
+                                ? 'bg-warning-surface text-warning border border-warning-border'
+                                : 'bg-danger-surface text-destructive border border-danger-border'
                             }`}
                           >
                             {inv.status?.replace('_', ' ')}
@@ -381,10 +381,10 @@ export function QuickReportModal({
                           </td>
                           <td className="py-2.5 px-3 text-center font-sans">
                             <span
- className={`px-2 py-0.5 rounded-full text-2xs font-bold ${
+ className={`px-2 py-0.5 rounded-full text-xs font-bold ${
  isLow
-                                  ? 'bg-rose-50 text-rose-700 border border-rose-200'
-                                  : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                  ? 'bg-danger-surface text-destructive border border-danger-border'
+                                  : 'bg-success-surface text-success border border-success-border'
                               }`}
                             >
                               {isLow ? 'Low Stock' : 'Adequate'}
@@ -433,7 +433,7 @@ export function QuickReportModal({
                         <td className="py-2.5 px-3 text-right font-bold text-foreground">
                           {formatBDT(cust.total_orders_amount || 0)}
                         </td>
-                        <td className="py-2.5 px-3 text-right font-black text-amber-600">
+                        <td className="py-2.5 px-3 text-right font-black text-warning">
                           {formatBDT(cust.total_due_balance || 0)}
                         </td>
                       </tr>
@@ -475,7 +475,7 @@ export function QuickReportModal({
                           {ord.order_date || ord.created_at?.slice(0, 10)}
                         </td>
                         <td className="py-2.5 px-3 text-center font-sans">
-                          <span className="px-2 py-0.5 rounded-full text-2xs font-bold bg-blue-50 text-blue-700 border border-blue-200 capitalize">
+                          <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-primary/10 text-primary border border-primary/20 capitalize">
                             {ord.status?.replace('_', ' ')}
                           </span>
                         </td>

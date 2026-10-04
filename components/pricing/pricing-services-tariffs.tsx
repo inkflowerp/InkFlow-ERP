@@ -117,12 +117,12 @@ export function PricingServicesTariffs({
                   <div>
                     <div className="font-bold text-foreground text-sm">{p.name}</div>
                     {p.name_bn && (
-                      <div className="text-xs text-teal-700 dark:text-teal-400 font-medium bangla-text mt-0.5">
+                      <div className="text-xs text-success text-success font-medium bangla-text mt-0.5">
                         {p.name_bn}
                       </div>
                     )}
                   </div>
-                  <Badge variant="outline"className="text-2xs uppercase tabular-nums font-bold bg-sky-50 text-sky-800 border-sky-200 dark:bg-sky-950/40 dark:text-sky-300 shrink-0">
+                  <Badge variant="outline"className="text-xs uppercase tabular-nums font-bold bg-info-surface text-primary border-primary/20 bg-primary/10 text-primary shrink-0">
                     {p.unit || 'sft'}
                   </Badge>
                 </div>
@@ -131,15 +131,15 @@ export function PricingServicesTariffs({
                 <div className="p-4 space-y-3">
                   <div className="grid grid-cols-2 gap-2 bg-muted p-3 rounded-xl text-xs">
                     <div>
-                      <span className="text-2xs text-muted-foreground uppercase font-semibold">Retail Rate</span>
+                      <span className="text-xs text-muted-foreground uppercase font-semibold">Retail Rate</span>
                       <div className="text-base font-black text-foreground tabular-nums">
-                        {formatBDT(baseSell)} <span className="text-2xs text-muted-foreground font-normal">/{p.unit || 'sft'}</span>
+                        {formatBDT(baseSell)} <span className="text-xs text-muted-foreground font-normal">/{p.unit || 'sft'}</span>
                       </div>
                     </div>
 
                     <div>
-                      <span className="text-2xs text-muted-foreground uppercase font-semibold">Reseller Wholesale</span>
-                      <div className="text-base font-bold text-blue-700 dark:text-blue-400 tabular-nums">
+                      <span className="text-xs text-muted-foreground uppercase font-semibold">Reseller Wholesale</span>
+                      <div className="text-base font-bold text-primary text-primary tabular-nums">
                         {formatBDT(resellerPrice)}
                       </div>
                     </div>
@@ -147,7 +147,7 @@ export function PricingServicesTariffs({
 
                   {/* Specifications */}
                   <div className="space-y-1.5 text-xs">
-                    <div className="flex justify-between text-2xs text-muted-foreground">
+                    <div className="flex justify-between text-xs text-muted-foreground">
                       <span>Base Material Cost:</span>
                       <span className="tabular-nums font-bold text-foreground">
                         {baseCost > 0 ? formatBDT(baseCost) : '—'}
@@ -155,14 +155,14 @@ export function PricingServicesTariffs({
                     </div>
 
                     {minBillable > 0 && (
-                      <div className="flex justify-between text-2xs text-muted-foreground">
+                      <div className="flex justify-between text-xs text-muted-foreground">
                         <span>Min Billable Area:</span>
                         <span className="tabular-nums font-semibold">{minBillable} sft</span>
                       </div>
                     )}
 
                     {minCharge > 0 && (
-                      <div className="flex justify-between text-2xs text-muted-foreground">
+                      <div className="flex justify-between text-xs text-muted-foreground">
                         <span>Min Job Charge:</span>
                         <span className="tabular-nums font-bold text-foreground">
                           {formatBDT(minCharge)}
@@ -171,9 +171,9 @@ export function PricingServicesTariffs({
                     )}
 
                     {marginPct !== null && (
-                      <div className="flex justify-between text-2xs pt-1 border-t border-border">
+                      <div className="flex justify-between text-xs pt-1 border-t border-border">
                         <span className="text-muted-foreground">Gross Margin:</span>
-                        <span className="tabular-nums font-bold text-emerald-600 dark:text-emerald-400">
+                        <span className="tabular-nums font-bold text-success text-success">
                           {marginPct}%
                         </span>
                       </div>
@@ -184,11 +184,11 @@ export function PricingServicesTariffs({
 
               {/* Card Footer */}
               <div className="p-3 bg-muted/50 border-t border-border flex items-center justify-between">
-                <span className="text-2xs text-muted-foreground capitalize">{p.category || 'Print Service'}</span>
+                <span className="text-xs text-muted-foreground capitalize">{p.category || 'Print Service'}</span>
                 <Button
  size="sm"variant="outline"onClick={() => onOpenEditProductPrice(p)}
- className="h-7 px-2.5 text-xs font-bold text-teal-700 dark:text-teal-300 border-teal-200 dark:border-teal-800 bg-card">
-                  <Edit2 className="h-3 w-3 mr-1 text-teal-600"/>
+ className="h-7 px-2.5 text-xs font-bold text-success text-success border-success-border border-success-border bg-card">
+                  <Edit2 className="h-3 w-3 mr-1 text-success"/>
                   {tBilingual('Edit Tariff', 'দর পরিবর্তন')}
                 </Button>
               </div>

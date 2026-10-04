@@ -107,7 +107,7 @@ export default function PayrollPeriodDetailPage() {
  return (
     <PanelAccessGuard module="payroll"action="view"panelTitle="Payroll Detail"panelTitleBn="বেতন শিট বিস্তারিত">
       <div className="min-h-screen bg-muted pb-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-6">
+        <div className="mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-6">
           {/* Back Navigation Bar */}
           <div className="flex items-center justify-between gap-4 pb-2">
             <Link
@@ -137,7 +137,7 @@ export default function PayrollPeriodDetailPage() {
           {/* Error Message */}
           {errorMsg && (
             <Card className="p-8 text-center bg-card border-border">
-              <AlertCircle className="w-8 h-8 text-red-500 mx-auto mb-2"/>
+              <AlertCircle className="w-8 h-8 text-destructive mx-auto mb-2"/>
               <h3 className="text-sm font-semibold text-foreground">{errorMsg}</h3>
               <Button asChild size="sm"className="mt-4 text-xs">
                 <Link href={`/${slug}/hr/payroll`}>{tBilingual('Return to Payroll Overview', 'পেরোল তালিকায় ফিরুন')}</Link>

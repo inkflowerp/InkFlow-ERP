@@ -110,7 +110,7 @@ export default function PlatformForgotPasswordPage() {
  />
  </div>
 
- <div className="p-3 rounded-xl bg-card border border-border text-2xs text-muted-foreground">
+ <div className="p-3 rounded-xl bg-card border border-border text-xs text-muted-foreground">
  {tBilingual('Reset link expires after 15 minutes for your safety.', 'নিরাপত্তার জন্য রিসেট লিংক ১৫ মিনিট পর বাতিল হয়ে যাবে।')}
  </div>
 

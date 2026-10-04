@@ -1,8 +1,8 @@
 'use client'
 
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import Link from 'next/link'
-import { useParams, usePathname } from 'next/navigation'
+import { useParams, usePathname, useRouter, useSearchParams } from 'next/navigation'
 import {
  Users,
  Plus,
@@ -346,6 +346,8 @@ function enrichCustomerWithFinancials(
 export default function CustomersPage() {
  const params = useParams()
  const pathname = usePathname()
+  const searchParams = useSearchParams()
+  const router = useRouter()
  const { company } = useTenant()
  const { can } = usePermissions()
  const { checkCanCreate, openLimitExceededModal, refreshUsage } = useSubscription()
@@ -364,13 +366,13 @@ export default function CustomersPage() {
  totalOutstandingDue: 0,
   })
  const [totalRecords, setTotalRecords] = useState(0)
- const [page, setPage] = useState(1)
+  const [page, setPage] = useState(() => { const p = parseInt(searchParams?.get('page') || '1', 10); return isNaN(p) || p < 1 ? 1 : p; })
  const [pageSize, setPageSize] = useState(25)
 
- const [search, setSearch] = useState('')
- const [selectedType, setSelectedType] = useState<string>('all')
- const [selectedDueFilter, setSelectedDueFilter] = useState<'all' | 'has_due' | 'no_due'>('all')
- const [sortPreset, setSortPreset] = useState<'newest' | 'highest_billed' | 'highest_due' | 'latest_order' | 'alphabetical'>('newest')
+  const [search, setSearch] = useState(() => searchParams?.get('q') || searchParams?.get('search') || '')
+  const [selectedType, setSelectedType] = useState<string>(() => searchParams?.get('type') || 'all')
+  const [selectedDueFilter, setSelectedDueFilter] = useState<'all' | 'has_due' | 'no_due'>(() => { const due = searchParams?.get('due'); return due === 'has_due' || due === 'no_due' ? due : 'all'; })
+  const [sortPreset, setSortPreset] = useState<'newest' | 'highest_billed' | 'highest_due' | 'latest_order' | 'alphabetical'>(() => { const s = searchParams?.get('sort'); return s && ['newest', 'highest_billed', 'highest_due', 'latest_order', 'alphabetical'].includes(s) ? (s as any) : 'newest'; })
 
  const [isLoading, setIsLoading] = useState(true)
  const [isError, setIsError] = useState(false)
@@ -618,6 +620,64 @@ export default function CustomersPage() {
     }
   }, [loadData])
 
+  // Synchronize state with URL search parameters
+  useEffect(() => {
+    if (!isMounted) return
+    const currentParams = new URLSearchParams()
+    if (search.trim()) currentParams.set('q', search.trim())
+    if (selectedType !== 'all') currentParams.set('type', selectedType)
+    if (selectedDueFilter !== 'all') currentParams.set('due', selectedDueFilter)
+    if (sortPreset !== 'newest') currentParams.set('sort', sortPreset)
+    if (page > 1) currentParams.set('page', String(page))
+
+    const qs = currentParams.toString()
+    const targetUrl = qs ? `${pathname}?${qs}` : pathname
+    router.replace(targetUrl, { scroll: false })
+  }, [search, selectedType, selectedDueFilter, sortPreset, page, pathname, router, isMounted])
+
+  // Prioritized Attention Queue: identify high-due, exceeded-credit-limit, and inactive overdue accounts
+  const attentionCustomers = useMemo(() => {
+    return customers
+      .filter((c) => (c.total_due_balance || 0) > 0)
+      .map((c) => {
+        const due = c.total_due_balance || 0
+        const limit = Number(c.credit_limit) || 0
+        let reason: 'exceeded_limit' | 'high_due' | 'inactive_due' = 'high_due'
+        let reasonLabelEn = 'Outstanding Due'
+        let reasonLabelBn = 'বকেয়া পাওনা'
+
+        if (c.is_active === false) {
+          reason = 'inactive_due'
+          reasonLabelEn = 'Inactive Account with Due'
+          reasonLabelBn = 'নিষ্ক্রিয় গ্রাহকের বকেয়া'
+        } else if (limit > 0 && due >= limit) {
+          reason = 'exceeded_limit'
+          reasonLabelEn = 'Credit Limit Exceeded'
+          reasonLabelBn = 'ক্রেডিট সীমা অতিক্রান্ত'
+        } else if (due >= 25000) {
+          reason = 'high_due'
+          reasonLabelEn = 'High Priority Due'
+          reasonLabelBn = 'জরুরি বকেয়া কালেকশন'
+        }
+        return {
+          customer: c,
+          due,
+          limit,
+          reason,
+          reasonLabelEn,
+          reasonLabelBn,
+        }
+      })
+      .sort((a, b) => {
+        const weight = (r: 'exceeded_limit' | 'high_due' | 'inactive_due') => (r === 'exceeded_limit' ? 3 : r === 'inactive_due' ? 2 : 1)
+        if (weight(b.reason) !== weight(a.reason)) {
+          return weight(b.reason) - weight(a.reason)
+        }
+        return b.due - a.due
+      })
+      .slice(0, 3)
+  }, [customers])
+
  const handleOpenAddCustomer = () => {
  const check = checkCanCreate('max_customers')
  if (!check.allowed) {
@@ -755,11 +815,11 @@ export default function CustomersPage() {
  return (
     <PanelAccessGuard
  module="customers"action="view"panelTitle="Customers & CRM"panelTitleBn="কাস্টমার ও হিসাব">
-      <div className="space-y-6 max-w-7xl pb-16">
+      <div className="space-y-6 pb-16">
       {/* Page Header */}
       <PageHeader
  titleEn="Customers & Accounts Directory"titleBn="গ্রাহক ও ক্লায়েন্ট খতিয়ান"descriptionEn="Complete client directory with individualized price tiers, credit management, and 360° analytics."descriptionBn="গ্রাহক ডিরেক্টরি, কাস্টম দর তালিকা, বকেয়া বাকি ট্র্যাকিং ও ৩৬০ ডিগ্রি ব্যবসায়িক বিশ্লেষণ।"icon={Users}
- iconColor="text-blue-600 dark:text-blue-400"actions={
+ iconColor="text-primary"actions={
           <div className="flex items-center gap-2.5 shrink-0 flex-wrap">
             {can('export', 'customers') && (
               <Button
@@ -784,7 +844,7 @@ export default function CustomersPage() {
 
       {/* Notification Banner */}
       {notification && (
-        <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 dark:bg-emerald-950/40 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-xs font-semibold flex items-center gap-2 animate-in fade-in duration-150">
+        <div className="p-3.5 rounded-xl bg-success-surface border border-success-border text-success text-xs font-semibold flex items-center gap-2 animate-in fade-in duration-150">
           <CheckCircle2 className="h-4 w-4 shrink-0"/>
           <span>{notification}</span>
         </div>
@@ -818,8 +878,105 @@ export default function CustomersPage() {
  colorVariant="danger"subtitleEn="Receivable across all accounts"subtitleBn="সর্বমোট আদায়যোগ্য বকেয়া"/>
       </KpiGrid>
 
+      {/* Needs Your Attention Now - Prioritized Accounts Queue */}
+      {attentionCustomers.length > 0 && (
+        <div className="rounded-2xl border border-border bg-card p-4 space-y-3 shadow-xs">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-warning-surface text-warning border border-warning-border">
+                <AlertCircle className="h-4 w-4" />
+              </div>
+              <div>
+                <h3 className="text-xs sm:text-sm font-bold text-foreground flex items-center gap-1.5">
+                  <span>{tBilingual('Needs Your Attention Now', 'জরুরি মনোযোগ প্রয়োজন')}</span>
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-warning-surface text-warning font-semibold border border-warning-border tabular-nums">
+                    {attentionCustomers.length} {tBilingual('Accounts', 'টি অ্যাকাউন্ট')}
+                  </span>
+                </h3>
+                <p className="text-xs text-muted-foreground hidden sm:block">
+                  {tBilingual(
+                    'High receivable balances and credit limit threshold alerts requiring recovery',
+                    'উচ্চ বকেয়া ও ক্রেডিট লিমিট অতিক্রম করা গ্রাহক হিসাব'
+                  )}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {attentionCustomers.map(({ customer: c, due, limit, reasonLabelEn, reasonLabelBn, reason }) => (
+              <div
+                key={c.id}
+                className="flex flex-col justify-between p-3.5 rounded-xl border border-border bg-muted/40 hover:bg-muted/70 transition-colors space-y-2.5"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <Link
+                      href={getTenantNavHref(`/customers/${c.id}`, pathname, slug)}
+                      className="font-bold text-xs sm:text-sm text-foreground hover:text-primary transition-colors flex items-center gap-1"
+                    >
+                      <span>{c.name}</span>
+                      <ArrowRight className="h-3 w-3 text-muted-foreground" />
+                    </Link>
+                    <div className="text-xs text-muted-foreground">
+                      {c.company_name || c.mobile}
+                    </div>
+                  </div>
+                  <span
+                    className={cn(
+                      'text-xs font-semibold px-2 py-0.5 rounded-md border shrink-0',
+                      reason === 'exceeded_limit'
+                        ? 'bg-destructive/10 text-destructive border-destructive/20'
+                        : 'bg-warning-surface text-warning border-warning-border'
+                    )}
+                  >
+                    {tBilingual(reasonLabelEn, reasonLabelBn)}
+                  </span>
+                </div>
+
+                <div className="flex items-baseline justify-between pt-1 border-t border-border">
+                  <span className="text-xs text-muted-foreground font-medium">
+                    {tBilingual('Due Balance', 'বকেয়া পাওনা')}:
+                  </span>
+                  <span className="text-sm font-bold text-destructive font-numeric tabular-nums">
+                    ৳{due.toLocaleString('en-IN')}
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-2 pt-1">
+                  <Button
+                    size="sm"
+                    onClick={() => setSelectedCustomerForPayment(c)}
+                    className="flex-1 h-8 text-xs font-semibold bg-primary hover:bg-primary/90 text-primary-foreground gap-1.5 cursor-pointer"
+                  >
+                    <CreditCard className="h-3.5 w-3.5" />
+                    <span>{tBilingual('Collect Due', 'কালেকশন')}</span>
+                  </Button>
+                  {c.mobile && (
+                    <a
+                      href={`https://wa.me/${(c.whatsapp || c.mobile).replace(/\D/g, '')}?text=${encodeURIComponent(
+                        tBilingual(
+                          `Dear ${c.name}, greetings from InkFlow. Your outstanding balance is ৳${due.toLocaleString('en-IN')}. Please settle the payment at your earliest convenience. Thank you.`,
+                          `আসসালামু আলাইকুম ${c.name}, InkFlow থেকে শুভেচ্ছা। আপনার বকেয়া বিল ৳${due.toLocaleString('en-IN')} পরিশোধের জন্য বিনীত অনুরোধ করা হচ্ছে। ধন্যবাদ।`
+                        )
+                      )}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="h-8 px-2.5 flex items-center justify-center rounded-lg border border-border bg-card hover:bg-muted text-foreground transition-colors"
+                      title={tBilingual('Send WhatsApp Reminder', 'হোয়াটসঅ্যাপে তাগাদা পাঠান')}
+                    >
+                      <MessageSquare className="h-3.5 w-3.5 text-success" />
+                    </a>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Search & Filters Toolbar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 p-3.5 rounded-xl border border-border /80 bg-card shadow-xs">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 p-3.5 rounded-xl border border-border bg-card shadow-xs">
         {/* Search */}
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground"/>
@@ -899,13 +1056,13 @@ export default function CustomersPage() {
         </div>
       ) : isError ? (
         /* Error State with Retry */
-        <Card className="border-rose-200 dark:border-rose-900 bg-rose-50/40 dark:bg-rose-950/20 p-8 text-center space-y-3">
-          <AlertCircle className="h-8 w-8 text-rose-500 mx-auto"/>
-          <div className="text-sm font-bold text-rose-900 dark:text-rose-300">
+        <Card className="border-danger-border bg-danger-surface p-8 text-center space-y-3">
+          <AlertCircle className="h-8 w-8 text-destructive mx-auto"/>
+          <div className="text-sm font-bold text-destructive">
             {errorText}
           </div>
           <div>
-            <Button size="sm"onClick={() => loadData()} className="text-xs bg-rose-600 hover:bg-rose-700">
+            <Button size="sm"onClick={() => loadData()} className="text-xs bg-destructive hover:bg-destructive">
               {tBilingual('Retry Data Load', 'পুনরায় লোড করুন')}
             </Button>
           </div>
@@ -913,7 +1070,7 @@ export default function CustomersPage() {
       ) : customers.length === 0 ? (
         /* Empty State */
         <Card className="border-border p-12 text-center space-y-4 bg-card">
-          <div className="p-3 rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-600 w-fit mx-auto">
+          <div className="p-3 rounded-full bg-primary/10 text-primary w-fit mx-auto">
             <Users className="h-8 w-8"/>
           </div>
           <div>
@@ -929,7 +1086,7 @@ export default function CustomersPage() {
           {can('create', 'customers') && (
             <Button
  size="sm"onClick={handleOpenAddCustomer}
- className="bg-blue-600 hover:bg-blue-700 text-xs font-bold">
+ className="bg-primary hover:bg-primary text-xs font-bold">
               <Plus className="mr-1.5 h-3.5 w-3.5"/>
               <span>{tBilingual('Create First Customer', 'প্রথম কাস্টমার তৈরি করুন')}</span>
             </Button>
@@ -938,10 +1095,10 @@ export default function CustomersPage() {
       ) : (
         <>
           {/* Desktop Table View */}
-          <div className="hidden md:block overflow-hidden rounded-xl border border-border /80 bg-card shadow-xs">
+          <div className="hidden md:block overflow-hidden rounded-xl border border-border bg-card shadow-xs">
             <div className="overflow-x-auto min-h-[340px] pb-12">
               <table className="w-full text-xs text-left">
-                <thead className="bg-muted border-b border-border /80 text-muted-foreground font-semibold">
+                <thead className="bg-muted border-b border-border text-muted-foreground font-semibold">
                   <tr>
                     <th className="py-3 px-3">{tBilingual('Customer ID', 'কাস্টমার আইডি')}</th>
                     <th className="py-3 px-4">{tBilingual('Customer Name', 'গ্রাহকের নাম')}</th>
@@ -954,7 +1111,7 @@ export default function CustomersPage() {
                     <th className="py-3 px-4 text-center w-[70px] min-w-[70px]">{tBilingual('Actions', 'অ্যাকশন')}</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-border/80 dark:divide-border/80">
+                <tbody className="divide-y divide-border">
                   {customers.map((c, idx) => {
  const hasDue = (c.total_due_balance || 0) > 0
  const custType = c.customer_category || c.customer_type || 'retail'
@@ -966,7 +1123,7 @@ export default function CustomersPage() {
  className="hover:bg-muted dark:hover:bg-muted/40 transition-colors group">
                         {/* Customer ID */}
                         <td className="py-3.5 px-3">
-                          <span className="tabular-nums text-2xs font-bold px-2 py-0.5 rounded-md bg-muted text-foreground border border-border">
+                          <span className="tabular-nums text-xs font-bold px-2 py-0.5 rounded-md bg-muted text-foreground border border-border">
                             {custIdNo}
                           </span>
                         </td>
@@ -975,15 +1132,15 @@ export default function CustomersPage() {
                         <td className="py-3.5 px-4">
                           <Link
  href={getTenantNavHref(`/customers/${c.id}`, pathname, slug)}
- className="font-bold text-foreground hover:text-blue-600 dark:hover:text-blue-400 flex items-center gap-1.5">
+ className="font-bold text-foreground hover:text-primary dark:hover:text-primary flex items-center gap-1.5">
                             <span>{c.name}</span>
                             <ArrowRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity"/>
                           </Link>
                           {c.name_bn && (
-                            <div className="text-2xs text-muted-foreground">{c.name_bn}</div>
+                            <div className="text-xs text-muted-foreground">{c.name_bn}</div>
                           )}
                           {c.area && (
-                            <div className="text-2xs text-muted-foreground mt-0.5">{c.area}</div>
+                            <div className="text-xs text-muted-foreground mt-0.5">{c.area}</div>
                           )}
                         </td>
 
@@ -1003,14 +1160,14 @@ export default function CustomersPage() {
                           <div className="flex items-center gap-2">
                             <a
  href={`tel:${c.mobile}`}
- className="tabular-nums text-foreground hover:text-blue-600 flex items-center gap-1"title="Call">
+ className="tabular-nums text-foreground hover:text-primary flex items-center gap-1"title="Call">
                               <Phone className="h-3 w-3 text-muted-foreground"/>
                               <span>{c.mobile}</span>
                             </a>
                             {c.whatsapp && (
                               <a
  href={`https://wa.me/${c.whatsapp.replace(/\D/g, '')}`}
- target="_blank"rel="noreferrer"className="text-emerald-600 hover:text-emerald-700"title="Chat on WhatsApp">
+ target="_blank"rel="noreferrer"className="text-success hover:text-success"title="Chat on WhatsApp">
                                 <MessageSquare className="h-3.5 w-3.5"/>
                               </a>
                             )}
@@ -1021,12 +1178,12 @@ export default function CustomersPage() {
                         <td className="py-3.5 px-3">
                           <Badge
  variant="outline"className={cn(
-                              'text-2xs font-semibold capitalize',
- custType === 'corporate' && 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950 dark:text-purple-300',
- custType === 'agency' && 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-300',
- custType === 'reseller' && 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950 dark:text-indigo-300',
- custType === 'government' && 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950 dark:text-amber-300',
- custType === 'retail' && 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300'
+                              'text-xs font-semibold capitalize',
+ custType === 'corporate' && 'bg-primary/10 text-primary border-primary/20',
+ custType === 'agency' && 'bg-primary/10 text-primary border-primary/20',
+ custType === 'reseller' && 'bg-primary/10 text-primary border-primary/20',
+ custType === 'government' && 'bg-warning-surface text-warning border-warning-border',
+ custType === 'retail' && 'bg-success-surface text-success border-success-border'
                             )}
                           >
                             {custType === 'corporate'
@@ -1052,7 +1209,7 @@ export default function CustomersPage() {
  className={cn(
                               'font-bold px-2 py-0.5 rounded-md text-xs font-numeric tabular-nums',
  hasDue
-                                ? 'bg-rose-50 text-rose-700 border border-rose-200 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-900'
+                                ? 'bg-danger-surface text-destructive border border-danger-border'
                                 : 'text-muted-foreground'
                             )}
                           >
@@ -1067,7 +1224,7 @@ export default function CustomersPage() {
                               <div className="font-medium text-foreground">
                                 {c.last_order_number || 'Order'}
                               </div>
-                              <div className="text-2xs text-muted-foreground font-numeric">{c.last_order_date}</div>
+                              <div className="text-xs text-muted-foreground font-numeric">{c.last_order_date}</div>
                             </div>
                           ) : (
                             <span className="text-muted-foreground italic">—</span>
@@ -1086,7 +1243,7 @@ export default function CustomersPage() {
                                 'h-8 w-8 p-0 rounded-lg transition-colors cursor-pointer mx-auto flex items-center justify-center',
  activeMenuCustomerId === c.id
                                   ? 'bg-muted text-foreground'
-                                  : 'text-muted-foreground hover:text-foreground hover:bg-muted dark:hover:bg-muted'
+                                  : 'text-muted-foreground hover:text-foreground hover:bg-muted'
                               )}
  title={tBilingual('Actions', 'অ্যাকশন')}
  aria-label="Customer Actions"aria-expanded={activeMenuCustomerId === c.id}
@@ -1108,7 +1265,7 @@ export default function CustomersPage() {
  href={getTenantNavHref(`/customers/${c.id}`, pathname, slug)}
  onClick={() => setActiveMenuCustomerId(null)}
  className="w-full text-left px-3 py-2 hover:bg-muted flex items-center gap-2.5 text-foreground transition-colors">
-                                  <Eye className="h-3.5 w-3.5 text-blue-500 shrink-0"/>
+                                  <Eye className="h-3.5 w-3.5 text-primary shrink-0"/>
                                   <span className="font-medium">
                                     {tBilingual('Profile & History', '৩৬০ প্রোফাইল ও লেজার')}
                                   </span>
@@ -1118,8 +1275,8 @@ export default function CustomersPage() {
                                 <Link
  href={getTenantNavHref(`/quotations/new?customerId=${c.id}`, pathname, slug)}
  onClick={() => setActiveMenuCustomerId(null)}
- className="w-full text-left px-3 py-2 hover:bg-amber-50 dark:hover:bg-amber-950/40 flex items-center gap-2.5 text-foreground hover:text-amber-700 dark:hover:text-amber-300 transition-colors">
-                                  <FileText className="h-3.5 w-3.5 text-amber-500 shrink-0"/>
+ className="w-full text-left px-3 py-2 hover:bg-warning-surface flex items-center gap-2.5 text-foreground hover:text-warning transition-colors">
+                                  <FileText className="h-3.5 w-3.5 text-warning shrink-0"/>
                                   <span>{tBilingual('Create Quotation', 'কোটেশন তৈরি করুন')}</span>
                                 </Link>
 
@@ -1129,8 +1286,8 @@ export default function CustomersPage() {
  setActiveMenuCustomerId(null)
  setSelectedCustomerForInvoice(c)
                                   }}
- className="w-full text-left px-3 py-2 hover:bg-blue-50 dark:hover:bg-blue-950/40 flex items-center gap-2.5 text-foreground hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer">
-                                  <Receipt className="h-3.5 w-3.5 text-blue-500 shrink-0"/>
+ className="w-full text-left px-3 py-2 hover:bg-primary/10 flex items-center gap-2.5 text-foreground hover:text-primary transition-colors cursor-pointer">
+                                  <Receipt className="h-3.5 w-3.5 text-primary shrink-0"/>
                                   <span>{tBilingual('Create Invoice', 'নতুন ইনভয়েস তৈরি')}</span>
                                 </button>
 
@@ -1141,11 +1298,11 @@ export default function CustomersPage() {
  setActiveMenuCustomerId(null)
  setSelectedCustomerForPayment(c)
                                     }}
- className="w-full text-left px-3 py-2 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 flex items-center gap-2.5 text-emerald-700 dark:text-emerald-400 transition-colors cursor-pointer">
-                                    <CreditCard className="h-3.5 w-3.5 text-emerald-600 shrink-0"/>
+ className="w-full text-left px-3 py-2 hover:bg-success-surface flex items-center gap-2.5 text-success transition-colors cursor-pointer">
+                                    <CreditCard className="h-3.5 w-3.5 text-success shrink-0"/>
                                     <div className="flex flex-col text-left">
                                       <span className="font-semibold">{tBilingual('Record Payment', 'পেমেন্ট গ্রহণ')}</span>
-                                      <span className="text-2xs text-emerald-600/80 dark:text-emerald-400/80 font-numeric">
+                                      <span className="text-xs text-success/80 text-success/80 font-numeric">
  Due: ৳{(c.total_due_balance || 0).toLocaleString('en-IN')}
                                       </span>
                                     </div>
@@ -1164,8 +1321,8 @@ export default function CustomersPage() {
  setActiveMenuCustomerId(null)
  handleTrashCustomer(c)
                                     }}
- className="w-full text-left px-3 py-2 hover:bg-rose-50 dark:hover:bg-rose-950/40 flex items-center gap-2.5 text-rose-600 dark:text-rose-400 transition-colors cursor-pointer">
-                                    <Trash2 className="h-3.5 w-3.5 text-rose-500 shrink-0"/>
+ className="w-full text-left px-3 py-2 hover:bg-danger-surface dark:hover:bg-danger-surface flex items-center gap-2.5 text-destructive transition-colors cursor-pointer">
+                                    <Trash2 className="h-3.5 w-3.5 text-destructive shrink-0"/>
                                     <span>{tBilingual('Move to Trash', 'ট্র্যাশে পাঠান')}</span>
                                   </button>
                                 )}
@@ -1194,7 +1351,7 @@ export default function CustomersPage() {
  className={cn(
                     'border shadow-sm p-4 space-y-3 bg-card transition-colors rounded-xl relative overflow-hidden',
  hasDue
-                      ? 'border-rose-200/80 dark:border-rose-950/80'
+                      ? 'border-danger-border'
                       : 'border-border '
                   )}
                 >
@@ -1204,10 +1361,10 @@ export default function CustomersPage() {
                       <div className="flex items-center gap-1.5 flex-wrap">
                         <Link
  href={getTenantNavHref(`/customers/${c.id}`, pathname, slug)}
- className="font-bold text-base text-foreground hover:text-blue-600">
+ className="font-bold text-base text-foreground hover:text-primary">
                           {c.name}
                         </Link>
-                        <span className="tabular-nums text-2xs font-bold px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
+                        <span className="tabular-nums text-xs font-bold px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
                           {custIdNo}
                         </span>
                       </div>
@@ -1223,11 +1380,11 @@ export default function CustomersPage() {
                     </div>
 
                     <div className="flex flex-col items-end gap-1 shrink-0">
-                      <Badge variant="outline"className="text-2xs capitalize">
+                      <Badge variant="outline"className="text-xs capitalize">
                         {custType}
                       </Badge>
                       {hasDue && (
-                        <span className="text-2xs font-black text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/60 px-2 py-0.5 rounded-md border border-rose-200 dark:border-rose-900">
+                        <span className="text-xs font-black text-destructive bg-danger-surface px-2 py-0.5 rounded-md border border-danger-border">
  Due: ৳{(c.total_due_balance || 0).toLocaleString('en-IN')}
                         </span>
                       )}
@@ -1239,14 +1396,14 @@ export default function CustomersPage() {
                     <a
  href={`tel:${c.mobile}`}
  className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-muted hover:bg-muted font-semibold text-xs text-foreground">
-                      <Phone className="h-3.5 w-3.5 text-blue-600"/>
+                      <Phone className="h-3.5 w-3.5 text-primary"/>
                       <span>{c.mobile}</span>
                     </a>
 
                     {c.whatsapp && (
                       <a
  href={`https://wa.me/${c.whatsapp.replace(/\D/g, '')}`}
- target="_blank"rel="noreferrer"className="flex items-center justify-center p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 hover:bg-emerald-100 border border-emerald-200 dark:border-emerald-900"title="WhatsApp">
+ target="_blank"rel="noreferrer"className="flex items-center justify-center p-2 rounded-xl bg-success-surface bg-success-surface/60 text-success hover:bg-success-surface border border-success-border"title="WhatsApp">
                         <MessageSquare className="h-4 w-4"/>
                       </a>
                     )}
@@ -1255,17 +1412,17 @@ export default function CustomersPage() {
                   {/* Financial Stats Bar */}
                   <div className="grid grid-cols-2 gap-2 p-2.5 rounded-xl bg-muted text-xs">
                     <div>
-                      <div className="text-2xs text-muted-foreground">{tBilingual('Total Billed', 'মোট বিল')}</div>
+                      <div className="text-xs text-muted-foreground">{tBilingual('Total Billed', 'মোট বিল')}</div>
                       <div className="font-bold text-foreground font-numeric">
                         ৳{(c.total_invoiced_amount || 0).toLocaleString('en-IN')}
                       </div>
                     </div>
                     <div>
-                      <div className="text-2xs text-muted-foreground">{tBilingual('Due Balance', 'বকেয়া স্থিতি')}</div>
+                      <div className="text-xs text-muted-foreground">{tBilingual('Due Balance', 'বকেয়া স্থিতি')}</div>
                       <div
  className={cn(
                           'font-bold font-numeric',
- hasDue ? 'text-rose-600 dark:text-rose-400' : 'text-muted-foreground '
+ hasDue ? 'text-destructive' : 'text-muted-foreground '
                         )}
                       >
                         ৳{(c.total_due_balance || 0).toLocaleString('en-IN')}
@@ -1277,25 +1434,25 @@ export default function CustomersPage() {
                   <div className="flex items-center gap-2 pt-1">
                     <Link
  href={getTenantNavHref(`/quotations/new?customerId=${c.id}`, pathname, slug)}
- className="flex-1 text-center py-1.5 rounded-lg border border-border text-2xs font-semibold text-foreground hover:bg-muted">
+ className="flex-1 text-center py-1.5 rounded-lg border border-border text-xs font-semibold text-foreground hover:bg-muted">
                       {tBilingual('Quote', 'কোটেশন')}
                     </Link>
                     <button
  onClick={() => setSelectedCustomerForInvoice(c)}
- className="flex-1 text-center py-1.5 rounded-lg border border-blue-200 dark:border-blue-800 text-2xs font-semibold text-blue-600 dark:text-blue-400 hover:bg-blue-50">
+ className="flex-1 text-center py-1.5 rounded-lg border border-primary/20 border-border text-xs font-semibold text-primary hover:bg-primary/10">
                       {tBilingual('Invoice', 'ইনভয়েস')}
                     </button>
                     {hasDue && (
                       <button
  onClick={() => setSelectedCustomerForPayment(c)}
- className="flex-1 text-center py-1.5 rounded-lg border border-emerald-200 dark:border-emerald-800 text-2xs font-bold text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50">
+ className="flex-1 text-center py-1.5 rounded-lg border border-success-border text-xs font-bold text-success text-success hover:bg-success-surface">
                         {tBilingual('Pay', 'পরিশোধ')}
                       </button>
                     )}
                     {can('delete', 'customers') && (
                       <button
  onClick={() => handleTrashCustomer(c)}
- className="p-1.5 rounded-lg border border-rose-200 dark:border-rose-900 text-rose-600 hover:bg-rose-50"title="Move to Trash">
+ className="p-1.5 rounded-lg border border-danger-border text-destructive hover:bg-danger-surface"title="Move to Trash">
                         <Trash2 className="h-3.5 w-3.5"/>
                       </button>
                     )}

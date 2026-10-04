@@ -2,11 +2,13 @@ import { CompanyUserWithProfile, RoleRow, BranchRow } from '../types/tenant.type
 import { ApiResponse } from '../types/common.types'
 import { DataScope } from '../types/rbac.types'
 import { TenantRepository } from '@/lib/repositories/tenant.repository'
+import { CompanyUsersRepository } from '@/lib/repositories/company-users.repository'
 import { AuditService } from '@/services/audit.service'
-import { createAdminClient } from '@/lib/supabase/admin'
-import { createClient } from '@/lib/supabase/server'
 import { AuthService } from '@/services/auth.service'
 import { AuthEmailService } from '@/services/auth-email.service'
+
+const createAdminClient = () => CompanyUsersRepository.getAdminClient()
+const createClient = () => CompanyUsersRepository.getServerClient()
 
 export class CompanyUsersService {
   /**
@@ -162,7 +164,7 @@ export class CompanyUsersService {
       let userId: string | null = null
       const { data: userList } = await admin.auth.admin.listUsers()
       const existingAuth = userList?.users?.find(
-        (u) => u.email?.toLowerCase() === normalizedEmail
+        (u: { email?: string; id: string }) => u.email?.toLowerCase() === normalizedEmail
       )
 
       if (existingAuth) {
@@ -316,7 +318,7 @@ export class CompanyUsersService {
       let userId: string | null = null
       const { data: userList } = await admin.auth.admin.listUsers()
       const existingAuth = userList?.users?.find(
-        (u) => u.email?.toLowerCase() === normalizedEmail
+        (u: { email?: string; id: string }) => u.email?.toLowerCase() === normalizedEmail
       )
 
       if (existingAuth) {
@@ -372,6 +374,7 @@ export class CompanyUsersService {
             branch_id: branchId || null,
             invited_email: normalizedEmail,
             status: 'invited',
+            invitation_expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
           })
@@ -409,6 +412,62 @@ export class CompanyUsersService {
       return { success: true, message: `User ${normalizedEmail} invited successfully.` }
     } catch (error: any) {
       return { success: false, error: error.message || 'Failed to invite user' }
+    }
+  }
+
+  /**
+   * Resend an invitation to a user under a tenant company, renewing 7-day expiration
+   */
+  static async resendInvitation(
+    companyUserId: string,
+    companyId: string,
+    actorName = 'Admin'
+  ): Promise<ApiResponse> {
+    try {
+      const admin = createAdminClient()
+      const { data: cu, error: cuErr } = await (admin as any)
+        .from('company_users')
+        .select('id, user_id, invited_email, status')
+        .eq('id', companyUserId)
+        .eq('company_id', companyId)
+        .single()
+
+      if (cuErr || !cu) {
+        return { success: false, error: 'User invitation not found' }
+      }
+
+      const newExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+      const { error: updErr } = await (admin as any)
+        .from('company_users')
+        .update({
+          status: 'invited',
+          invitation_expires_at: newExpiry,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', companyUserId)
+
+      if (updErr) {
+        return { success: false, error: updErr.message }
+      }
+
+      await AuditService.logEvent(
+        companyId,
+        null,
+        actorName,
+        'user.resend_invitation',
+        'user',
+        companyUserId,
+        null,
+        { invited_email: cu.invited_email, new_expires_at: newExpiry },
+        `Resent invitation to ${cu.invited_email || 'user'}. Expiry renewed for 7 days.`
+      )
+
+      return {
+        success: true,
+        message: `Invitation resent to ${cu.invited_email || 'user'}. Expiry extended by 7 days.`,
+      }
+    } catch (error: any) {
+      return { success: false, error: error.message || 'Failed to resend invitation' }
     }
   }
 
@@ -516,6 +575,47 @@ export class CompanyUsersService {
   ): Promise<ApiResponse> {
     try {
       const admin = createAdminClient()
+
+      if (companyId) {
+        const users = await TenantRepository.getCompanyUsers(companyId)
+        const targetUser = users.find((u) => u.id === companyUserId)
+        const isTargetOwner =
+          targetUser?.responsibilities?.includes('business_owner') ||
+          targetUser?.responsibilities?.includes('owner') ||
+          targetUser?.roles?.some((r) => r.slug === 'business_owner' || r.slug === 'owner')
+
+        const roles = await TenantRepository.getRoles(companyId)
+        const targetRole = roles.find((r) => r.id === targetRoleId)
+        const isTargetRoleOwner = targetRole?.slug === 'business_owner' || targetRole?.slug === 'owner'
+
+        if (isTargetOwner && !isTargetRoleOwner) {
+          const activeOwners = users.filter(
+            (u) =>
+              u.status === 'active' &&
+              (u.responsibilities?.includes('business_owner') ||
+                u.responsibilities?.includes('owner') ||
+                u.roles?.some((r) => r.slug === 'business_owner' || r.slug === 'owner'))
+          )
+          if (activeOwners.length <= 1) {
+            return {
+              success: false,
+              error: 'Cannot remove or demote the last active Business Owner. Assign or transfer ownership first.',
+            }
+          }
+          const updatedResps = (targetUser?.responsibilities || []).filter(
+            (r) => r !== 'business_owner' && r !== 'owner'
+          )
+          await (admin as any).from('company_users').update({ responsibilities: updatedResps }).eq('id', companyUserId)
+        } else if (isTargetRoleOwner) {
+          const currentResps = targetUser?.responsibilities || []
+          if (!currentResps.includes('business_owner')) {
+            await (admin as any).from('company_users').update({
+              responsibilities: Array.from(new Set([...currentResps, 'business_owner']))
+            }).eq('id', companyUserId)
+          }
+        }
+      }
+
       // Remove old role assignments and set new one
       await (admin as any).from('user_roles').delete().eq('company_user_id', companyUserId)
       await (admin as any).from('user_roles').insert({
@@ -599,6 +699,7 @@ export class CompanyUsersService {
   static async updateUserAccessAndPermissions(params: {
     companyUserId: string
     companyId?: string
+    roleId?: string
     responsibilities?: string[]
     overrides?: Record<string, boolean>
     dataScopes?: Record<string, DataScope>
@@ -609,10 +710,58 @@ export class CompanyUsersService {
     actorId?: string
   }): Promise<ApiResponse> {
     try {
+      if (params.companyId) {
+        const users = await TenantRepository.getCompanyUsers(params.companyId)
+        const targetUser = users.find((u) => u.id === params.companyUserId)
+        const isTargetOwner =
+          targetUser?.responsibilities?.includes('business_owner') ||
+          targetUser?.responsibilities?.includes('owner') ||
+          targetUser?.roles?.some((r) => r.slug === 'business_owner' || r.slug === 'owner')
+
+        const roles = await TenantRepository.getRoles(params.companyId)
+        const targetRole = params.roleId ? roles.find((r) => r.id === params.roleId) : null
+        const isNewRoleOwner =
+          targetRole?.slug === 'business_owner' ||
+          targetRole?.slug === 'owner' ||
+          params.responsibilities?.includes('business_owner')
+
+        // Last Active Owner demotion protection
+        if (isTargetOwner && !isNewRoleOwner) {
+          const activeOwners = users.filter(
+            (u) =>
+              u.status === 'active' &&
+              (u.responsibilities?.includes('business_owner') ||
+                u.responsibilities?.includes('owner') ||
+                u.roles?.some((r) => r.slug === 'business_owner' || r.slug === 'owner'))
+          )
+          if (activeOwners.length <= 1) {
+            return {
+              success: false,
+              error: 'Cannot remove or demote the last active Business Owner. Assign or transfer ownership first.',
+            }
+          }
+        }
+
+        // If target remains or becomes owner, guarantee business_owner in responsibilities & company scope
+        if (isNewRoleOwner || (isTargetOwner && targetRole === null && !params.responsibilities?.length)) {
+          if (!params.responsibilities) {
+            params.responsibilities = ['business_owner']
+          } else if (!params.responsibilities.includes('business_owner')) {
+            params.responsibilities.unshift('business_owner')
+          }
+          if (params.dataScopes) {
+            Object.keys(params.dataScopes).forEach((k) => {
+              params.dataScopes![k] = 'company'
+            })
+          }
+        }
+      }
+
       await TenantRepository.updateUserResponsibilitiesAndOverrides({
         companyUserId: params.companyUserId,
         department: params.department,
         branchId: params.branchId,
+        roleId: params.roleId,
         responsibilities: params.responsibilities,
         overrides: params.overrides,
         dataScopes: params.dataScopes,
@@ -776,7 +925,7 @@ export class CompanyUsersService {
       let userId: string | null = null
       const { data: userList } = await admin.auth.admin.listUsers({ perPage: 1000 })
       const existingAuth = userList?.users?.find(
-        (u) => u.email?.toLowerCase() === normalizedEmail
+        (u: { email?: string; id: string }) => u.email?.toLowerCase() === normalizedEmail
       )
 
       if (existingAuth) {

@@ -1,7 +1,10 @@
 'use server'
 
+import { withTenantAction } from '@/lib/actions/action-wrapper'
+
+
 import { getCurrentTenant } from '@/lib/auth/tenant-auth'
-import { DashboardService, type OwnerDashboardSnapshot } from '@/services/dashboard.service'
+import { DashboardService, type OwnerDashboardSnapshot, type FastSummaryMetrics } from '@/services/dashboard.service'
 
 export interface ServerActionResult<T> {
   success: boolean
@@ -10,11 +13,60 @@ export interface ServerActionResult<T> {
 }
 
 /**
+ * Server Action: Authoritatively fetches fast pre-aggregated summary metrics from PostgreSQL RPC
+ */
+export const getFastDashboardMetricsAction = withTenantAction(
+  {
+    permission: "reports.view",
+    entityType: "dashboard"
+  },
+  async (ctx, branchId?: string | null): Promise<ServerActionResult<FastSummaryMetrics | null>> => {
+    try {
+      const tenant = await getCurrentTenant()
+      if (!tenant?.companyId) {
+        return {
+          success: false,
+          error: 'Unauthorized: No active tenant company session found.',
+        }
+      }
+
+      const isOwnerOrAdmin =
+        tenant.companyRole === 'business_owner' ||
+        tenant.primaryRole === 'business_owner' ||
+        Boolean(tenant.isSupportMode)
+
+      let effectiveBranchId = branchId
+      if (!isOwnerOrAdmin && tenant.branchId) {
+        effectiveBranchId = tenant.branchId
+      }
+
+      const metrics = await DashboardService.getFastSummaryMetrics(
+        tenant.companyId,
+        effectiveBranchId
+      )
+
+      return {
+        success: true,
+        data: metrics,
+      }
+    } catch (err: any) {
+      return {
+        success: false,
+        error: err.message || 'Failed to fetch fast dashboard metrics.',
+      }
+    }
+  }
+)
+
+/**
  * Server Action: Authoritatively fetches owner dashboard data snapshot from PostgreSQL repositories
  */
-export async function getOwnerDashboardDataAction(
-  branchId?: string | null
-): Promise<ServerActionResult<OwnerDashboardSnapshot>> {
+export const getOwnerDashboardDataAction = withTenantAction(
+  {
+    permission: "reports.view",
+    entityType: "dashboard"
+  },
+  async (ctx, branchId?: string | null) : Promise<ServerActionResult<OwnerDashboardSnapshot>> => {
   try {
     const tenant = await getCurrentTenant()
     if (!tenant?.companyId) {
@@ -67,4 +119,5 @@ export async function getOwnerDashboardDataAction(
       error: err.message || 'Failed to fetch owner dashboard data.',
     }
   }
-}
+
+})

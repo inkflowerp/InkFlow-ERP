@@ -105,64 +105,64 @@ function PopupCard({ notification, onDismiss, onAction }: PopupItemProps) {
  switch (notification.type) {
  case 'urgent':
  return {
- icon: <Flame className="h-5 w-5 text-rose-400 animate-bounce"/>,
- badgeBg: 'bg-rose-500/20 border-rose-500/40 text-rose-300 animate-pulse',
+ icon: <Flame className="h-5 w-5 text-destructive animate-bounce"/>,
+ badgeBg: 'bg-destructive/20 border-danger-border/40 text-destructive animate-pulse',
  borderAccent: 'border-l-rose-500',
- progressBg: 'bg-rose-500',
+ progressBg: 'bg-destructive',
  tag: 'Urgent Action',
  tagBn: 'জরুরি সতর্কতা',
         }
  case 'order':
  return {
- icon: <ShoppingBag className="h-5 w-5 text-indigo-400"/>,
- badgeBg: 'bg-indigo-500/10 border-indigo-500/30 text-indigo-400',
+ icon: <ShoppingBag className="h-5 w-5 text-primary"/>,
+ badgeBg: 'bg-primary/10 border-primary/20/30 text-primary',
  borderAccent: 'border-l-indigo-500',
- progressBg: 'bg-indigo-500',
+ progressBg: 'bg-primary',
  tag: 'Sales Order',
  tagBn: 'সেলস অর্ডার',
         }
  case 'job':
  return {
- icon: <Layers className="h-5 w-5 text-amber-400"/>,
- badgeBg: 'bg-amber-500/10 border-amber-500/30 text-amber-400',
+ icon: <Layers className="h-5 w-5 text-warning"/>,
+ badgeBg: 'bg-warning/10 border-warning-border/30 text-warning',
  borderAccent: 'border-l-amber-500',
- progressBg: 'bg-amber-500',
+ progressBg: 'bg-warning',
  tag: 'Shop Floor',
  tagBn: 'শপ ফ্লোর',
         }
  case 'payment':
  return {
- icon: <DollarSign className="h-5 w-5 text-emerald-400"/>,
- badgeBg: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400',
+ icon: <DollarSign className="h-5 w-5 text-success"/>,
+ badgeBg: 'bg-success/10 border-success-border/30 text-success',
  borderAccent: 'border-l-emerald-500',
- progressBg: 'bg-emerald-500',
+ progressBg: 'bg-success',
  tag: 'Payment',
  tagBn: 'পেমেন্ট',
         }
  case 'delivery':
  return {
- icon: <Truck className="h-5 w-5 text-cyan-400"/>,
- badgeBg: 'bg-cyan-500/10 border-cyan-500/30 text-cyan-400',
+ icon: <Truck className="h-5 w-5 text-primary"/>,
+ badgeBg: 'bg-primary/10 border-primary/20/30 text-primary',
  borderAccent: 'border-l-cyan-500',
- progressBg: 'bg-cyan-500',
+ progressBg: 'bg-primary',
  tag: 'Dispatch',
  tagBn: 'ডেলিভারি',
         }
  case 'attendance':
  return {
- icon: <UserCheck className="h-5 w-5 text-blue-400"/>,
- badgeBg: 'bg-blue-500/10 border-blue-500/30 text-blue-400',
+ icon: <UserCheck className="h-5 w-5 text-primary"/>,
+ badgeBg: 'bg-primary/10 border-primary/20/30 text-primary',
  borderAccent: 'border-l-blue-500',
- progressBg: 'bg-blue-500',
+ progressBg: 'bg-primary',
  tag: 'Attendance',
  tagBn: 'হাজিরা',
         }
  case 'inventory':
  return {
- icon: <Package className="h-5 w-5 text-purple-400"/>,
- badgeBg: 'bg-purple-500/10 border-purple-500/30 text-purple-400',
+ icon: <Package className="h-5 w-5 text-primary"/>,
+ badgeBg: 'bg-primary/10 border-primary/20/30 text-primary',
  borderAccent: 'border-l-purple-500',
- progressBg: 'bg-purple-500',
+ progressBg: 'bg-primary',
  tag: 'Inventory',
  tagBn: 'ইনভেন্টরি',
         }
@@ -178,46 +178,46 @@ function PopupCard({ notification, onDismiss, onAction }: PopupItemProps) {
  case 'message':
  case 'customer':
  return {
- icon: <MessageSquare className="h-5 w-5 text-teal-400"/>,
- badgeBg: 'bg-teal-500/10 border-teal-500/30 text-teal-400',
+ icon: <MessageSquare className="h-5 w-5 text-success"/>,
+ badgeBg: 'bg-success/10 border-success-border/30 text-success',
  borderAccent: 'border-l-teal-500',
- progressBg: 'bg-teal-500',
+ progressBg: 'bg-success',
  tag: 'Live Chat',
  tagBn: 'লাইভ চ্যাট',
         }
  case 'warning':
  return {
- icon: <AlertTriangle className="h-5 w-5 text-amber-400"/>,
- badgeBg: 'bg-amber-500/10 border-amber-500/30 text-amber-400',
+ icon: <AlertTriangle className="h-5 w-5 text-warning"/>,
+ badgeBg: 'bg-warning/10 border-warning-border/30 text-warning',
  borderAccent: 'border-l-amber-500',
- progressBg: 'bg-amber-500',
+ progressBg: 'bg-warning',
  tag: 'Alert',
  tagBn: 'সতর্কতা',
         }
  case 'error':
  return {
- icon: <AlertCircle className="h-5 w-5 text-rose-400"/>,
- badgeBg: 'bg-rose-500/10 border-rose-500/30 text-rose-400',
+ icon: <AlertCircle className="h-5 w-5 text-destructive"/>,
+ badgeBg: 'bg-destructive/10 border-danger-border/30 text-destructive',
  borderAccent: 'border-l-rose-500',
- progressBg: 'bg-rose-500',
+ progressBg: 'bg-destructive',
  tag: 'Exception',
  tagBn: 'ত্রুটি',
         }
  case 'success':
  return {
- icon: <Sparkles className="h-5 w-5 text-emerald-400"/>,
- badgeBg: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400',
+ icon: <Sparkles className="h-5 w-5 text-success"/>,
+ badgeBg: 'bg-success/10 border-success-border/30 text-success',
  borderAccent: 'border-l-emerald-500',
- progressBg: 'bg-emerald-500',
+ progressBg: 'bg-success',
  tag: 'Success',
  tagBn: 'সফল',
         }
  default:
  return {
- icon: <Bell className="h-5 w-5 text-blue-400"/>,
- badgeBg: 'bg-blue-500/10 border-blue-500/30 text-blue-400',
+ icon: <Bell className="h-5 w-5 text-primary"/>,
+ badgeBg: 'bg-primary/10 border-primary/20/30 text-primary',
  borderAccent: 'border-l-blue-500',
- progressBg: 'bg-blue-500',
+ progressBg: 'bg-primary',
  tag: 'Realtime Sync',
  tagBn: 'লাইভ সিঙ্ক',
         }
@@ -231,7 +231,7 @@ function PopupCard({ notification, onDismiss, onAction }: PopupItemProps) {
  onMouseEnter={handleMouseEnter}
  onMouseLeave={handleMouseLeave}
  role="status"aria-live="polite"className={cn(
-        'group relative overflow-hidden rounded-xl bg-surface-inset text-foreground shadow-lg border border-border/60 backdrop-blur-xl transition-all duration-300 transform animate-in fade-in slide-in-from-top-3 border-l-4 pointer-events-auto',
+        'group relative overflow-hidden rounded-xl bg-surface-inset text-foreground shadow-lg border border-border/60 backdrop-blur-xl transition-all duration-300 transform animate-in fade-in slide-in- border-l-4 pointer-events-auto',
  theme.borderAccent
       )}
     >
@@ -245,7 +245,7 @@ function PopupCard({ notification, onDismiss, onAction }: PopupItemProps) {
         <div className="flex-1 min-w-0 space-y-1">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-1.5 min-w-0">
-              <span className={cn('px-1.5 py-0.5 rounded text-2xs font-bold border', theme.badgeBg)}>
+              <span className={cn('px-1.5 py-0.5 rounded text-xs font-bold border', theme.badgeBg)}>
                 {tBilingual(theme.tag, theme.tagBn)}
               </span>
               <h5 className="text-xs font-bold text-foreground truncate bangla-text">
@@ -253,13 +253,13 @@ function PopupCard({ notification, onDismiss, onAction }: PopupItemProps) {
               </h5>
             </div>
 
-            <span className="text-2xs text-muted-foreground shrink-0 tabular-nums">
+            <span className="text-xs text-muted-foreground shrink-0 tabular-nums">
               {tBilingual('Just now', 'এইমাত্র')}
             </span>
           </div>
 
           {notification.message && (
-            <p className="text-2xs text-muted-foreground bangla-text line-clamp-2 leading-relaxed">
+            <p className="text-xs text-muted-foreground bangla-text line-clamp-2 leading-relaxed">
               {tBilingual(notification.message, notification.messageBn)}
             </p>
           )}
@@ -269,7 +269,7 @@ function PopupCard({ notification, onDismiss, onAction }: PopupItemProps) {
             <div className="pt-2 flex items-center gap-2">
               <button
  type="button"onClick={() => onAction(notification.actionUrl!)}
- className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white cursor-pointer transition-all active:scale-95 bangla-text shadow-sm">
+ className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold bg-primary hover:bg-primary text-white cursor-pointer transition-all active:scale-95 bangla-text shadow-sm">
                 <span>
                   {tBilingual(
  notification.actionLabel || 'View Details',
@@ -395,7 +395,7 @@ export function RealtimeNotificationPopup() {
       {/* Controls Bar when multiple notifications are stacked */}
       {queue.length > 1 && (
         <div className="flex items-center justify-between px-3 py-1.5 rounded-xl bg-surface-inset border border-border/60 backdrop-blur-md text-xs text-muted-foreground pointer-events-auto shadow-lg animate-in fade-in">
-          <span className="font-semibold text-2xs bangla-text">
+          <span className="font-semibold text-xs bangla-text">
             {queue.length} {tBilingual('Active Alerts', 'টি নোটিফিকেশন')}
           </span>
           <div className="flex items-center gap-2">
@@ -403,11 +403,11 @@ export function RealtimeNotificationPopup() {
  type="button"onClick={handleToggleMute}
  className="p-1 rounded hover:bg-card-elevated text-muted-foreground hover:text-foreground transition-colors cursor-pointer"title={muted ? 'Unmute alerts' : 'Mute alert sounds'}
             >
-              {muted ? <VolumeX className="h-3.5 w-3.5 text-rose-400"/> : <Volume2 className="h-3.5 w-3.5 text-emerald-400"/>}
+              {muted ? <VolumeX className="h-3.5 w-3.5 text-destructive"/> : <Volume2 className="h-3.5 w-3.5 text-success"/>}
             </button>
             <button
  type="button"onClick={dismissAll}
- className="text-2xs font-bold text-indigo-400 hover:text-indigo-300 cursor-pointer transition-colors bangla-text">
+ className="text-xs font-bold text-primary hover:text-primary cursor-pointer transition-colors bangla-text">
               {tBilingual('Clear All', 'সব মুছুন')}
             </button>
           </div>

@@ -1,5 +1,7 @@
 'use client'
 
+import { searchLocalStore, getQuickCommands } from '@/lib/search/client-search'
+
 import React, { useState, useEffect, useRef, useMemo } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import {
@@ -24,7 +26,6 @@ import {
  Cpu,
  Scissors,
 } from 'lucide-react'
-import { SearchService } from '@/services/search.service'
 import {
  SearchEntity,
  SearchResultItem,
@@ -41,20 +42,20 @@ const ENTITY_CONFIG: Record<
  SearchEntity,
   { label: string; labelBn: string; icon: React.ElementType; color: string }
 > = {
- customer: { label: 'Customers', labelBn: 'কাস্টমার', icon: Users, color: 'text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-500/10 border-cyan-200 dark:border-cyan-500/30' },
- order: { label: 'Orders', labelBn: 'অর্ডার', icon: ShoppingBag, color: 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10 border-indigo-200 dark:border-indigo-500/30' },
- quotation: { label: 'Quotations', labelBn: 'কোটেশন', icon: FileSpreadsheet, color: 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10 border-blue-200 dark:border-blue-500/30' },
- invoice: { label: 'Invoices', labelBn: 'ইনভয়েস', icon: Receipt, color: 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/30' },
- job: { label: 'Jobs', labelBn: 'জব', icon: Printer, color: 'text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border-amber-200 dark:border-amber-500/30' },
- product: { label: 'Products', labelBn: 'পণ্য', icon: Package, color: 'text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-500/10 border-purple-200 dark:border-purple-500/30' },
+ customer: { label: 'Customers', labelBn: 'কাস্টমার', icon: Users, color: 'text-primary text-primary bg-info-surface bg-primary/10 border-primary/20 border-primary/20/30' },
+ order: { label: 'Orders', labelBn: 'অর্ডার', icon: ShoppingBag, color: 'text-primary text-primary bg-primary/10 bg-primary/10 border-primary/20 border-primary/20/30' },
+ quotation: { label: 'Quotations', labelBn: 'কোটেশন', icon: FileSpreadsheet, color: 'text-primary text-primary bg-primary/10 bg-primary/10 border-primary/20 border-primary/20/30' },
+ invoice: { label: 'Invoices', labelBn: 'ইনভয়েস', icon: Receipt, color: 'text-success text-success bg-success-surface bg-success/10 border-success-border border-success-border/30' },
+ job: { label: 'Jobs', labelBn: 'জব', icon: Printer, color: 'text-warning text-warning bg-warning-surface bg-warning/10 border-warning-border border-warning-border/30' },
+ product: { label: 'Products', labelBn: 'পণ্য', icon: Package, color: 'text-primary text-primary bg-primary/10 bg-primary/10 border-primary/20 border-primary/20/30' },
  material: { label: 'Materials', labelBn: 'ম্যাটেরিয়াল', icon: Layers, color: 'text-pink-600 dark:text-pink-400 bg-pink-50 dark:bg-pink-500/10 border-pink-200 dark:border-pink-500/30' },
- supplier: { label: 'Suppliers', labelBn: 'সাপ্লায়ার', icon: Truck, color: 'text-yellow-600 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-500/10 border-yellow-200 dark:border-yellow-500/30' },
- employee: { label: 'Employees', labelBn: 'স্টাফ', icon: Users, color: 'text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-500/10 border-teal-200 dark:border-teal-500/30' },
+ supplier: { label: 'Suppliers', labelBn: 'সাপ্লায়ার', icon: Truck, color: 'text-warning text-warning bg-warning-surface bg-warning/10 border-warning-border border-warning-border/30' },
+ employee: { label: 'Employees', labelBn: 'স্টাফ', icon: Users, color: 'text-success text-success bg-success-surface bg-success/10 border-success-border border-success-border/30' },
  inventory: { label: 'Inventory', labelBn: 'মজুত', icon: Layers, color: 'text-pink-600 dark:text-pink-400 bg-pink-50 dark:bg-pink-500/10 border-pink-200 dark:border-pink-500/30' },
- production_job: { label: 'Production', labelBn: 'উৎপাদন', icon: Printer, color: 'text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border-amber-200 dark:border-amber-500/30' },
- design_job: { label: 'Design', labelBn: 'ডিজাইন', icon: Sparkles, color: 'text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-500/10 border-violet-200 dark:border-violet-500/30' },
- challan: { label: 'Challans', labelBn: 'চালান', icon: Truck, color: 'text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-500/10 border-orange-200 dark:border-orange-500/30' },
- machinery: { label: 'Machineries', labelBn: 'মেশিনারি', icon: Cpu, color: 'text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-500/10 border-cyan-200 dark:border-cyan-500/30' },
+ production_job: { label: 'Production', labelBn: 'উৎপাদন', icon: Printer, color: 'text-warning text-warning bg-warning-surface bg-warning/10 border-warning-border border-warning-border/30' },
+ design_job: { label: 'Design', labelBn: 'ডিজাইন', icon: Sparkles, color: 'text-primary text-primary bg-primary/10 bg-primary/10 border-primary/20 border-primary/20/30' },
+ challan: { label: 'Challans', labelBn: 'চালান', icon: Truck, color: 'text-warning text-warning bg-warning-surface bg-warning/10 border-warning-border border-warning-border/30' },
+ machinery: { label: 'Machineries', labelBn: 'মেশিনারি', icon: Cpu, color: 'text-primary text-primary bg-info-surface bg-primary/10 border-primary/20 border-primary/20/30' },
 }
 
 const COMMAND_ICONS: Record<string, React.ElementType> = {
@@ -74,58 +75,58 @@ const COMMAND_THEMES: Record<
   { gradient: string; text: string; border: string; bg: string }
 > = {
   'cmd-new-work': {
- gradient: 'from-blue-500/20 to-cyan-500/20',
- text: 'text-blue-600 dark:text-blue-400',
- border: 'border-blue-200 dark:border-blue-500/30',
- bg: 'bg-blue-50 dark:bg-blue-500/10',
+ gradient: ' ',
+ text: 'text-primary text-primary',
+ border: 'border-primary/20 border-primary/20/30',
+ bg: 'bg-primary/10 bg-primary/10',
   },
   'cmd-create-customer': {
- gradient: 'from-cyan-500/20 to-blue-500/20',
- text: 'text-cyan-600 dark:text-cyan-400',
- border: 'border-cyan-200 dark:border-cyan-500/30',
- bg: 'bg-cyan-50 dark:bg-cyan-500/10',
+ gradient: ' ',
+ text: 'text-primary text-primary',
+ border: 'border-primary/20 border-primary/20/30',
+ bg: 'bg-info-surface bg-primary/10',
   },
   'cmd-create-quotation': {
- gradient: 'from-blue-500/20 to-indigo-500/20',
- text: 'text-blue-600 dark:text-blue-400',
- border: 'border-blue-200 dark:border-blue-500/30',
- bg: 'bg-blue-50 dark:bg-blue-500/10',
+ gradient: ' ',
+ text: 'text-primary text-primary',
+ border: 'border-primary/20 border-primary/20/30',
+ bg: 'bg-primary/10 bg-primary/10',
   },
   'cmd-create-order': {
- gradient: 'from-indigo-500/20 to-violet-500/20',
- text: 'text-indigo-600 dark:text-indigo-400',
- border: 'border-indigo-200 dark:border-indigo-500/30',
- bg: 'bg-indigo-50 dark:bg-indigo-500/10',
+ gradient: ' ',
+ text: 'text-primary text-primary',
+ border: 'border-primary/20 border-primary/20/30',
+ bg: 'bg-primary/10 bg-primary/10',
   },
   'cmd-finishing': {
- gradient: 'from-amber-500/20 to-orange-500/20',
- text: 'text-amber-600 dark:text-amber-400',
- border: 'border-amber-200 dark:border-amber-500/30',
- bg: 'bg-amber-50 dark:bg-amber-500/10',
+ gradient: ' ',
+ text: 'text-warning text-warning',
+ border: 'border-warning-border border-warning-border/30',
+ bg: 'bg-warning-surface bg-warning/10',
   },
   'cmd-record-payment': {
- gradient: 'from-emerald-500/20 to-teal-500/20',
- text: 'text-emerald-600 dark:text-emerald-400',
- border: 'border-emerald-200 dark:border-emerald-500/30',
- bg: 'bg-emerald-50 dark:bg-emerald-500/10',
+ gradient: ' ',
+ text: 'text-success text-success',
+ border: 'border-success-border border-success-border/30',
+ bg: 'bg-success-surface bg-success/10',
   },
   'cmd-create-purchase': {
- gradient: 'from-sky-500/20 to-cyan-500/20',
- text: 'text-sky-600 dark:text-sky-400',
- border: 'border-sky-200 dark:border-sky-500/30',
- bg: 'bg-sky-50 dark:bg-sky-500/10',
+ gradient: ' ',
+ text: 'text-primary text-primary',
+ border: 'border-primary/20 border-primary/20/30',
+ bg: 'bg-info-surface bg-primary/10',
   },
   'cmd-add-expense': {
- gradient: 'from-amber-500/20 to-rose-500/20',
- text: 'text-amber-600 dark:text-amber-400',
- border: 'border-amber-200 dark:border-amber-500/30',
- bg: 'bg-amber-50 dark:bg-amber-500/10',
+ gradient: ' ',
+ text: 'text-warning text-warning',
+ border: 'border-warning-border border-warning-border/30',
+ bg: 'bg-warning-surface bg-warning/10',
   },
   'cmd-add-machinery': {
- gradient: 'from-teal-500/20 to-emerald-500/20',
- text: 'text-teal-600 dark:text-teal-400',
- border: 'border-teal-200 dark:border-teal-500/30',
- bg: 'bg-teal-50 dark:bg-teal-500/10',
+ gradient: ' ',
+ text: 'text-success text-success',
+ border: 'border-success-border border-success-border/30',
+ bg: 'bg-success-surface bg-success/10',
   },
 }
 
@@ -179,18 +180,18 @@ export function CommandPalette({ isOpen, onClose, initialMode = 'search' }: Comm
   // Execute Search via SearchService
  const groupedResults: GroupedSearchResults = useMemo(() => {
  if (!company?.id || !query.trim()) return {}
- return SearchService.search(company.id, query)
+ return searchLocalStore(company.id, query)
   }, [company?.id, query])
 
  const quickCommands = useMemo(() => {
- return SearchService.getQuickCommands()
+ return getQuickCommands()
   }, [])
 
   // Flattened searchable items for arrow navigation
  const flatSearchItems = useMemo(() => {
  const isQueryEmpty = query.trim().length === 0
  if (isQueryEmpty || viewMode === 'quick-new') {
- return quickCommands.map((cmd) => ({ type: 'command' as const, data: cmd }))
+ return quickCommands.map((cmd: any) => ({ type: 'command' as const, data: cmd }))
     }
 
  const items: Array<{ type: 'result'; data: SearchResultItem; entity: string }> = []
@@ -266,7 +267,7 @@ export function CommandPalette({ isOpen, onClose, initialMode = 'search' }: Comm
 
         {/* Search Header */}
         <div className="p-3 sm:p-4 border-b border-border flex items-center gap-3 bg-muted/30">
-          <div className="h-9 w-9 rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400 flex items-center justify-center shrink-0 shadow-xs">
+          <div className="h-9 w-9 rounded-lg bg-primary/10 text-primary bg-primary/10 text-primary flex items-center justify-center shrink-0 shadow-xs">
             <Search className="h-4 w-4"/>
           </div>
 
@@ -300,7 +301,7 @@ export function CommandPalette({ isOpen, onClose, initialMode = 'search' }: Comm
  type="button"onClick={() => setShowSettings(!showSettings)}
  className={`p-1.5 rounded-xl shrink-0 cursor-pointer transition-colors ${
  showSettings
-                ? 'bg-indigo-50 text-indigo-600 border border-indigo-200 dark:bg-indigo-600/20 dark:text-indigo-300 dark:border-indigo-500/30'
+                ? 'bg-primary/10 text-primary border border-primary/20 bg-primary/20 text-primary border-primary/20/30'
                 : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground hover:bg-muted dark:hover:bg-muted'
             }`}
  title={tBilingual('Configure Shortcuts', 'শর্টকাট কনফিগার')}
@@ -317,15 +318,15 @@ export function CommandPalette({ isOpen, onClose, initialMode = 'search' }: Comm
 
         {/* Shortcuts Settings Banner / Drawer */}
         {showSettings && (
-          <div className="p-4 bg-muted border-b border-border text-xs space-y-3 animate-in slide-in-from-top-2">
+          <div className="p-4 bg-muted border-b border-border text-xs space-y-3 animate-in slide-in-">
             <div className="flex items-center justify-between">
               <span className="font-bold text-foreground flex items-center gap-1.5">
-                <Command className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400"/>
+                <Command className="h-3.5 w-3.5 text-primary text-primary"/>
                 <span>{tBilingual('Configurable Keyboard Shortcuts', 'কীবোর্ড শর্টকাট কনফিগারেশন')}</span>
               </span>
               <Button
  size="sm"variant="ghost"onClick={resetShortcuts}
- className="h-6 text-2xs text-muted-foreground hover:text-foreground dark:hover:text-foreground">
+ className="h-6 text-xs text-muted-foreground hover:text-foreground dark:hover:text-foreground">
                 <RotateCcw className="h-3 w-3 mr-1"/>
                 {tBilingual('Reset Defaults', 'ডিফল্ট রিসেট')}
               </Button>
@@ -333,22 +334,22 @@ export function CommandPalette({ isOpen, onClose, initialMode = 'search' }: Comm
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-foreground">
               <div className="flex items-center justify-between p-2.5 rounded-xl bg-card border border-border shadow-xs">
-                <span className="text-2xs font-medium">{tBilingual('Global Search Trigger', 'সার্চ ট্রিগার কি')}</span>
+                <span className="text-xs font-medium">{tBilingual('Global Search Trigger', 'সার্চ ট্রিগার কি')}</span>
                 <input
  type="text"maxLength={1}
  value={shortcuts.openSearch}
  onChange={(e) => updateShortcuts({ openSearch: e.target.value || '/' })}
- className="w-9 h-7 text-center tabular-nums font-bold text-indigo-600 dark:text-indigo-400 bg-muted border border-input rounded-lg outline-none"style={{ outline: 'none', boxShadow: 'none' }}
+ className="w-9 h-7 text-center tabular-nums font-bold text-primary text-primary bg-muted border border-input rounded-lg outline-none"style={{ outline: 'none', boxShadow: 'none' }}
                 />
               </div>
 
               <div className="flex items-center justify-between p-2.5 rounded-xl bg-card border border-border shadow-xs">
-                <span className="text-2xs font-medium">{tBilingual('Quick Operations Menu', 'অপারেশন মেনু কি')}</span>
+                <span className="text-xs font-medium">{tBilingual('Quick Operations Menu', 'অপারেশন মেনু কি')}</span>
                 <input
  type="text"maxLength={1}
  value={shortcuts.openNewMenu}
  onChange={(e) => updateShortcuts({ openNewMenu: e.target.value || 'n' })}
- className="w-9 h-7 text-center tabular-nums font-bold text-indigo-600 dark:text-indigo-400 bg-muted border border-input rounded-lg uppercase outline-none"style={{ outline: 'none', boxShadow: 'none' }}
+ className="w-9 h-7 text-center tabular-nums font-bold text-primary text-primary bg-muted border border-input rounded-lg uppercase outline-none"style={{ outline: 'none', boxShadow: 'none' }}
                 />
               </div>
             </div>
@@ -357,12 +358,12 @@ export function CommandPalette({ isOpen, onClose, initialMode = 'search' }: Comm
 
         {/* Category Pill Filters (when searching) */}
         {!isQueryEmpty && (
-          <div className="px-3.5 py-2 border-b border-border /80 bg-muted/50 flex items-center gap-1.5 overflow-x-auto text-2xs no-scrollbar">
+          <div className="px-3.5 py-2 border-b border-border /80 bg-muted/50 flex items-center gap-1.5 overflow-x-auto text-xs no-scrollbar">
             <button
  type="button"onClick={() => setSelectedEntity('all')}
  className={`px-3 py-1 rounded-xl transition-all font-medium cursor-pointer shrink-0 ${
  selectedEntity === 'all'
-                  ? 'bg-indigo-600 text-white font-bold shadow-xs'
+                  ? 'bg-primary text-white font-bold shadow-xs'
                   : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground bg-card border border-border '
               }`}
             >
@@ -378,12 +379,12 @@ export function CommandPalette({ isOpen, onClose, initialMode = 'search' }: Comm
  type="button"onClick={() => setSelectedEntity(key)}
  className={`px-2.5 py-1 rounded-xl transition-all flex items-center gap-1.5 font-medium cursor-pointer shrink-0 ${
  selectedEntity === key
-                      ? 'bg-indigo-600 text-white font-bold shadow-xs'
+                      ? 'bg-primary text-white font-bold shadow-xs'
                       : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground bg-card border border-border '
                   }`}
                 >
                   <span>{tBilingual(item.label, item.labelBn)}</span>
-                  <span className="tabular-nums text-2xs px-1.5 py-0.2 rounded-md bg-muted text-muted-foreground font-bold">
+                  <span className="tabular-nums text-xs px-1.5 py-0.2 rounded-md bg-muted text-muted-foreground font-bold">
                     {count}
                   </span>
                 </button>
@@ -397,24 +398,24 @@ export function CommandPalette({ isOpen, onClose, initialMode = 'search' }: Comm
           {/* SECTION 1: QUICK COMMANDS (Shown when empty query or in quick-new mode) */}
           {(isQueryEmpty || viewMode === 'quick-new') && (
             <div className="space-y-3">
-              <div className="px-1 text-2xs font-bold uppercase tracking-wider text-muted-foreground flex items-center justify-between">
+              <div className="px-1 text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center justify-between">
                 <span className="flex items-center gap-1.5">
-                  <Sparkles className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400"/>
+                  <Sparkles className="h-3.5 w-3.5 text-primary text-primary"/>
                   <span>{tBilingual('Quick Operations', 'দ্রুত অপারেশন কমান্ড')}</span>
                 </span>
-                <span className="text-2xs text-muted-foreground tabular-nums">
+                <span className="text-xs text-muted-foreground tabular-nums">
                   {tBilingual('Press shortcut key to trigger', 'কীবোর্ড শর্টকাট চাপুন')}
                 </span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {quickCommands.map((cmd, idx) => {
+                {quickCommands.map((cmd: any, idx: number) => {
  const Icon = COMMAND_ICONS[cmd.icon] || Sparkles
  const theme = COMMAND_THEMES[cmd.id] || {
- gradient: 'from-indigo-500/20 to-purple-500/20',
- text: 'text-indigo-600 dark:text-indigo-400',
- border: 'border-indigo-200 dark:border-indigo-500/30',
- bg: 'bg-indigo-50 dark:bg-indigo-500/10',
+ gradient: ' ',
+ text: 'text-primary text-primary',
+ border: 'border-primary/20 border-primary/20/30',
+ bg: 'bg-primary/10 bg-primary/10',
                   }
  const isSelected = selectedIndex === idx
 
@@ -425,7 +426,7 @@ export function CommandPalette({ isOpen, onClose, initialMode = 'search' }: Comm
  onMouseEnter={() => setSelectedIndex(idx)}
  className={`p-3.5 rounded-xl border text-left transition-all flex items-center justify-between group cursor-pointer relative overflow-hidden ${
  isSelected
-                          ? 'bg-indigo-50/80 border-indigo-500/80 dark:border-indigo-500/80 shadow-xs shadow-indigo-500/10 ring-2 ring-indigo-500/20'
+                          ? 'bg-primary/10/80 border-primary/20/80 border-primary/20/80 shadow-xs shadow-indigo-500/10 ring-2 focus:ring-ring/20'
                           : 'bg-muted/60 border-border /90 hover:border-input hover:bg-muted/80 dark:hover:bg-muted/80'
                       }`}
                     >
@@ -438,12 +439,12 @@ export function CommandPalette({ isOpen, onClose, initialMode = 'search' }: Comm
                         <div className="min-w-0 pr-1 space-y-0.5">
                           <div
  className={`text-xs sm:text-sm font-bold text-foreground transition-colors truncate ${
- isSelected ? 'text-indigo-600 dark:text-indigo-300' : 'group-hover:text-indigo-600 dark:group-hover:text-indigo-300'
+ isSelected ? 'text-primary text-primary' : 'group-hover:text-primary dark:group-hover:text-primary'
                             }`}
                           >
                             {tBilingual(cmd.title, cmd.titleBn)}
                           </div>
-                          <div className="text-2xs text-muted-foreground leading-snug line-clamp-2">
+                          <div className="text-xs text-muted-foreground leading-snug line-clamp-2">
                             {tBilingual(cmd.subtitle, cmd.subtitleBn)}
                           </div>
                         </div>
@@ -472,7 +473,7 @@ export function CommandPalette({ isOpen, onClose, initialMode = 'search' }: Comm
                   <p className="font-semibold text-foreground text-sm">
                     {tBilingual(`No results found for"${query}"`, `"${query}"এর জন্য কোনো ফলাফল নেই`)}
                   </p>
-                  <p className="text-2xs text-muted-foreground max-w-sm mx-auto">
+                  <p className="text-xs text-muted-foreground max-w-sm mx-auto">
                     {tBilingual(
                       'Try searching by customer name, phone number, order ID, invoice number, or material title.',
                       'কাস্টমার নাম, ফোন নম্বর, অর্ডার আইডি বা ইনভয়েস নম্বর দিয়ে খুঁজুন।'
@@ -494,10 +495,10 @@ export function CommandPalette({ isOpen, onClose, initialMode = 'search' }: Comm
  return (
                       <div key={entityKey} className="space-y-1.5">
                         {/* Group Header */}
-                        <div className="px-1 text-2xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                          <Icon className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400"/>
+                        <div className="px-1 text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                          <Icon className="h-3.5 w-3.5 text-primary text-primary"/>
                           <span>{tBilingual(config.label, config.labelBn)}</span>
-                          <span className="tabular-nums text-2xs text-muted-foreground font-bold">({items.length})</span>
+                          <span className="tabular-nums text-xs text-muted-foreground font-bold">({items.length})</span>
                         </div>
 
                         {/* Items */}
@@ -513,28 +514,28 @@ export function CommandPalette({ isOpen, onClose, initialMode = 'search' }: Comm
  onMouseEnter={() => setSelectedIndex(itemIndex)}
  className={`w-full p-3 rounded-xl border text-left transition-all flex items-center justify-between group cursor-pointer ${
  isSelected
-                                    ? 'bg-indigo-50/80 dark:bg-muted border-indigo-500/80 dark:border-indigo-500/80 ring-2 ring-indigo-500/20 shadow-xs'
-                                    : 'bg-muted/50 border-border /80 hover:border-indigo-400 dark:hover:border-indigo-500/40 hover:bg-muted/60 dark:hover:bg-muted/80'
+                                    ? 'bg-primary/10/80 dark:bg-muted border-primary/20/80 border-primary/20/80 ring-2 focus:ring-ring/20 shadow-xs'
+                                    : 'bg-muted/50 border-border /80 hover:border-border dark:hover:border-primary/20/40 hover:bg-muted/60 dark:hover:bg-muted/80'
                                 }`}
                               >
                                 <div className="min-w-0 pr-2">
                                   <div className="flex items-center gap-2">
                                     <span
  className={`font-bold text-xs sm:text-sm text-foreground transition-colors ${
- isSelected ? 'text-indigo-600 dark:text-indigo-300' : 'group-hover:text-indigo-600 dark:group-hover:text-indigo-300'
+ isSelected ? 'text-primary text-primary' : 'group-hover:text-primary dark:group-hover:text-primary'
                                       }`}
                                     >
                                       {item.title}
                                     </span>
                                     {item.badge && (
                                       <span
- className={`px-2 py-0.5 rounded-lg text-2xs tabular-nums font-bold uppercase border ${config.color}`}
+ className={`px-2 py-0.5 rounded-lg text-xs tabular-nums font-bold uppercase border ${config.color}`}
                                       >
                                         {item.badge}
                                       </span>
                                     )}
                                   </div>
-                                  <div className="text-2xs text-muted-foreground mt-0.5 truncate">
+                                  <div className="text-xs text-muted-foreground mt-0.5 truncate">
                                     {item.subtitle}
                                   </div>
                                 </div>
@@ -542,8 +543,8 @@ export function CommandPalette({ isOpen, onClose, initialMode = 'search' }: Comm
                                 <ArrowRight
  className={`h-4 w-4 text-muted-foreground transition-all shrink-0 ${
  isSelected
-                                      ? 'text-indigo-600 dark:text-indigo-400 translate-x-1'
-                                      : 'group-hover:text-indigo-600 dark:group-hover:text-indigo-400 group-hover:translate-x-1'
+                                      ? 'text-primary text-primary translate-x-1'
+                                      : 'group-hover:text-primary dark:group-hover:text-primary group-hover:translate-x-1'
                                   }`}
                                 />
                               </button>
@@ -560,28 +561,28 @@ export function CommandPalette({ isOpen, onClose, initialMode = 'search' }: Comm
         </div>
 
         {/* Footer Navigation Hints */}
-        <div className="p-3 sm:p-3.5 border-t border-border /80 bg-muted/90 flex flex-wrap items-center justify-between gap-2 text-2xs text-muted-foreground">
+        <div className="p-3 sm:p-3.5 border-t border-border /80 bg-muted/90 flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
           <div className="flex items-center gap-3">
             <span className="flex items-center gap-1.5">
-              <kbd className="px-1.5 py-0.5 rounded-md bg-card border border-border text-2xs tabular-nums text-muted-foreground font-bold shadow-xs">
+              <kbd className="px-1.5 py-0.5 rounded-md bg-card border border-border text-xs tabular-nums text-muted-foreground font-bold shadow-xs">
                 {shortcuts.openSearch}
               </kbd>
               <span>{tBilingual('Search', 'সার্চ')}</span>
             </span>
             <span className="flex items-center gap-1.5">
-              <kbd className="px-1.5 py-0.5 rounded-md bg-card border border-border text-2xs tabular-nums text-muted-foreground font-bold uppercase shadow-xs">
+              <kbd className="px-1.5 py-0.5 rounded-md bg-card border border-border text-xs tabular-nums text-muted-foreground font-bold uppercase shadow-xs">
                 {shortcuts.openNewMenu}
               </kbd>
               <span>{tBilingual('New Action', 'নতুন কাজ')}</span>
             </span>
             <span className="hidden sm:flex items-center gap-1.5">
-              <kbd className="px-1.5 py-0.5 rounded-md bg-card border border-border text-2xs tabular-nums text-muted-foreground font-bold shadow-xs">
+              <kbd className="px-1.5 py-0.5 rounded-md bg-card border border-border text-xs tabular-nums text-muted-foreground font-bold shadow-xs">
                 ↑↓
               </kbd>
               <span>{tBilingual('Navigate', 'নেভিগেট')}</span>
             </span>
             <span className="hidden sm:flex items-center gap-1.5">
-              <kbd className="px-1.5 py-0.5 rounded-md bg-card border border-border text-2xs tabular-nums text-muted-foreground font-bold shadow-xs">
+              <kbd className="px-1.5 py-0.5 rounded-md bg-card border border-border text-xs tabular-nums text-muted-foreground font-bold shadow-xs">
                 ↵
               </kbd>
               <span>{tBilingual('Select', 'নির্বাচন')}</span>
@@ -589,13 +590,13 @@ export function CommandPalette({ isOpen, onClose, initialMode = 'search' }: Comm
           </div>
 
           <div className="flex items-center gap-2.5">
-            <span className="hidden sm:flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 text-2xs tabular-nums font-medium">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"/>
+            <span className="hidden sm:flex items-center gap-1.5 text-success text-success text-xs tabular-nums font-medium">
+              <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse"/>
               <span>Multi-Tenant Isolated</span>
             </span>
             <button
  type="button"onClick={onClose}
- className="px-2 py-0.5 rounded-lg bg-card hover:bg-muted border border-border text-2xs tabular-nums text-muted-foreground hover:text-foreground dark:hover:text-foreground cursor-pointer transition-colors shadow-xs"title="Close search">
+ className="px-2 py-0.5 rounded-lg bg-card hover:bg-muted border border-border text-xs tabular-nums text-muted-foreground hover:text-foreground dark:hover:text-foreground cursor-pointer transition-colors shadow-xs"title="Close search">
  ESC to close
             </button>
           </div>

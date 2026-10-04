@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "InkFlow ERP UI Audit Allowlist for Verified Legitimate Exceptions",
+  "allowedHex": [
+    {
+      "hex": ["#00E5FF", "#FF007F", "#FFEB3B", "#0F172A", "#00e5ff", "#ff007f", "#ffeb3b", "#0f172a", "#00aeef", "#ec008c", "#ffd700", "#fff200", "#231f20", "#80d6f7", "#f680c5", "#94a3b8", "#ffffff", "#FFFFFF"],
+      "pattern": "cmyk|swatch|color-bar|service-config|ink|press",
+      "reason": "ISO printing industry standard CMYK & Spot physical ink channel swatch definitions (Cyan, Magenta, Yellow, Key, Light Cyan, Light Magenta, Varnish)"
+    },
+    {
+      "hex": ["#000000", "#FFFFFF", "#000", "#FFF", "#ffffff", "#000000"],
+      "pattern": "qr",
+      "reason": "ISO/IEC 18004 QR Code specification mandates physical optical contrast between dark modules and light quiet zone"
+    },
+    {
+      "hex": ["#FFFFFF", "#ffffff"],
+      "pattern": "pdf|invoice|challan|print",
+      "reason": "A4 physical offset and thermal paper print preview rendering"
+    },
+    {
+      "hex": ["#4285F4", "#34A853", "#FBBC05", "#EA4335", "#4285f4", "#34a853", "#fbbc05", "#ea4335"],
+      "pattern": "google|auth",
+      "reason": "Official Google identity brand guidelines for standard OAuth sign-in button SVG vector icons"
+    },
+    {
+      "hex": ["#2563eb", "#dc2626", "#059669", "#7c3aed", "#4338ca", "#d97706"],
+      "pattern": "branding",
+      "reason": "Tenant primary branding theme preset palette options for white-label print shops"
+    },
+    {
+      "hex": ["#f8fafc", "#090d16"],
+      "pattern": "layout|theme-provider",
+      "reason": "Browser mobile viewport status bar theme color definition"
+    }
+  ],
+  "allowedPaletteClasses": [
+    {
+      "class": "print:bg-white",
+      "reason": "Paper background on physical print stylesheets"
+    },
+    {
+      "class": "print:text-black",
+      "reason": "Physical printer ink optimization on print media queries"
+    }
+  ]
+}

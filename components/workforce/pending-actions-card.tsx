@@ -60,34 +60,34 @@ export function PendingActionsCard({
  case 'overtime':
  return {
  icon: Clock4,
- iconColor: 'text-indigo-600',
- bgColor: 'bg-indigo-50 border-indigo-100',
+ iconColor: 'text-primary',
+ bgColor: 'bg-primary/10 border-border',
  badgeText: 'Overtime',
- badgeClass: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+ badgeClass: 'bg-primary/10 text-primary border-primary/20',
         }
  case 'correction':
  return {
  icon: Clock,
- iconColor: 'text-amber-600',
- bgColor: 'bg-amber-50 border-amber-100',
+ iconColor: 'text-warning',
+ bgColor: 'bg-warning-surface border-warning-border',
  badgeText: 'Correction',
- badgeClass: 'bg-amber-50 text-amber-700 border-amber-200',
+ badgeClass: 'bg-warning-surface text-warning border-warning-border',
         }
  case 'advance':
  return {
  icon: Coins,
- iconColor: 'text-emerald-600',
- bgColor: 'bg-emerald-50 border-emerald-100',
+ iconColor: 'text-success',
+ bgColor: 'bg-success-surface border-success-border',
  badgeText: 'Advance',
- badgeClass: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+ badgeClass: 'bg-success-surface text-success border-success-border',
         }
  case 'salary_due':
  return {
  icon: Wallet,
- iconColor: 'text-rose-600',
- bgColor: 'bg-rose-50 border-rose-100',
+ iconColor: 'text-destructive',
+ bgColor: 'bg-danger-surface border-danger-border',
  badgeText: 'Payroll',
- badgeClass: 'bg-rose-50 text-rose-700 border-rose-200',
+ badgeClass: 'bg-danger-surface text-destructive border-danger-border',
         }
     }
   }
@@ -99,7 +99,7 @@ export function PendingActionsCard({
           <CardTitle className="text-base font-semibold text-foreground flex items-center gap-2">
             <span>{tBilingual('Pending Approvals & Actions', 'অপেক্ষমাণ কার্যক্রম')}</span>
             {items.length > 0 && (
-              <Badge variant="outline" className="ml-1 bg-amber-50 text-amber-700 border-amber-200 text-xs">
+              <Badge variant="outline" className="ml-1 bg-warning-surface text-warning border-warning-border text-xs">
                 {items.length} {tBilingual('pending', 'অপেক্ষমাণ')}
               </Badge>
             )}
@@ -116,8 +116,8 @@ export function PendingActionsCard({
       <CardContent className="p-5">
         {items.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8 text-center bg-muted rounded-xl border border-dashed border-border">
-            <div className="p-2.5 rounded-full bg-emerald-50 border border-emerald-200 mb-2">
-              <CheckCircle2 className="w-5 h-5 text-emerald-600"/>
+            <div className="p-2.5 rounded-full bg-success-surface border border-success-border mb-2">
+              <CheckCircle2 className="w-5 h-5 text-success"/>
             </div>
             <h4 className="text-sm font-semibold text-foreground">{tBilingual('All caught up!', 'সব কাজ সম্পন্ন!')}</h4>
             <p className="text-xs text-muted-foreground mt-0.5">
@@ -151,7 +151,7 @@ export function PendingActionsCard({
                         </div>
                       </div>
                     </div>
-                    <Badge variant="outline"className={`text-[10px] uppercase font-bold px-1.5 py-0 ${visual.badgeClass}`}>
+                    <Badge variant="outline"className={`text-xs uppercase font-bold px-1.5 py-0 ${visual.badgeClass}`}>
                       {visual.badgeText}
                     </Badge>
                   </div>
@@ -161,7 +161,7 @@ export function PendingActionsCard({
                   </div>
 
                   <div className="pt-2 border-t border-border flex items-center justify-between mt-auto">
-                    <span className="text-[11px] text-muted-foreground">
+                    <span className="text-xs text-muted-foreground">
                       {action.dateOrTime || tBilingual('Immediate', 'জরুরি')}
                     </span>
                     <Button

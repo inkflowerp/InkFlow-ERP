@@ -251,4 +251,4 @@ exception when others then
 end;
 $$;
 
-grant execute on function public.admin_purge_all_company_catalog_and_orders(uuid) to service_role, authenticated, anon;
+grant execute on function public.admin_purge_all_company_catalog_and_orders(uuid) to service_role;

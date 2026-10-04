@@ -320,7 +320,7 @@ export function SupplierModal({
  onOpenChange={onOpenChange}
  size="4xl"title={
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-teal-600/10 text-teal-600 dark:bg-teal-500/20 dark:text-teal-400 font-bold shrink-0">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-success/10 text-success bg-success/20 text-success font-bold shrink-0">
             <Truck className="h-5 w-5"/>
           </div>
           <div>
@@ -331,7 +331,7 @@ export function SupplierModal({
                   : tBilingual('Register New Material Supplier', 'নতুন সাপ্লায়ার / মহাজন যুক্ত করুন')}
               </span>
               <Badge
- variant="outline"className="text-2xs uppercase tabular-nums py-0.5 px-2 bg-teal-50 dark:bg-teal-950/50 text-teal-700 dark:text-teal-300 border-teal-200 dark:border-teal-800">
+ variant="outline"className="text-xs uppercase tabular-nums py-0.5 px-2 bg-success-surface bg-success-surface text-success text-success border-success-border border-success-border">
                 {formData.supplier_code || 'VENDOR'}
               </Badge>
             </div>
@@ -364,11 +364,11 @@ export function SupplierModal({
  type="button"onClick={() => setActiveTab(tab.id as TabKey)}
  className={`flex items-center gap-1.5 px-3 py-2 text-xs font-bold rounded-t-lg transition-all border-b-2 whitespace-nowrap cursor-pointer ${
  isActive
-                    ? 'border-teal-600 text-teal-700 bg-teal-50/60 dark:bg-teal-950/40 dark:border-teal-400 dark:text-teal-300'
+                    ? 'border-success-border text-success bg-success-surface/60 bg-success-surface border-success-border text-success'
                     : 'border-transparent text-muted-foreground hover:text-foreground hover:bg-muted dark:hover:bg-muted/60 '
                 }`}
               >
-                <Icon className={`h-3.5 w-3.5 ${isActive ? 'text-teal-600 dark:text-teal-400' : 'text-muted-foreground'}`} />
+                <Icon className={`h-3.5 w-3.5 ${isActive ? 'text-success text-success' : 'text-muted-foreground'}`} />
                 <span>{tBilingual(tab.labelEn, tab.labelBn)}</span>
               </button>
             )
@@ -383,7 +383,7 @@ export function SupplierModal({
               <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <div className="h-6 w-6 rounded-lg bg-teal-100 text-teal-700 dark:bg-teal-900/60 dark:text-teal-300 flex items-center justify-center font-bold text-xs">
+                    <div className="h-6 w-6 rounded-lg bg-success-surface text-success bg-success/60 text-success flex items-center justify-center font-bold text-xs">
                       1
                     </div>
                     <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
@@ -393,7 +393,7 @@ export function SupplierModal({
                   <div className="flex items-center gap-2">
                     <Label htmlFor="supActiveToggle"className="text-xs font-semibold cursor-pointer">
                       {formData.is_active ? (
-                        <span className="text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1">
+                        <span className="text-success text-success font-bold flex items-center gap-1">
                           <CheckCircle2 className="h-3.5 w-3.5"/> Active Vendor
                         </span>
                       ) : (
@@ -403,14 +403,14 @@ export function SupplierModal({
                     <input
  id="supActiveToggle"type="checkbox"checked={formData.is_active}
  onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
- className="h-4 w-4 rounded text-teal-600 focus:ring-teal-500 cursor-pointer"/>
+ className="h-4 w-4 rounded text-success focus:ring-ring cursor-pointer"/>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div className="sm:col-span-2">
                     <Label className="text-xs font-semibold mb-1 block">
-                      {tBilingual('Supplier / Shop Name (English)', 'সাপ্লায়ার / দোকানের নাম (ইংরেজি)')} <span className="text-rose-500">*</span>
+                      {tBilingual('Supplier / Shop Name (English)', 'সাপ্লায়ার / দোকানের নাম (ইংরেজি)')} <span className="text-destructive">*</span>
                     </Label>
                     <Input
  placeholder="e.g. Nayabazar Paper House & Media"value={formData.supplier_name}
@@ -419,11 +419,11 @@ export function SupplierModal({
  if (fieldErrors.supplier_name) setFieldErrors((prev) => ({ ...prev, supplier_name: '' }))
                       }}
  className={cn("text-xs h-9",
- fieldErrors.supplier_name &&"border-rose-500 focus-visible:ring-rose-400 bg-rose-50/30 dark:bg-rose-950/20")}
+ fieldErrors.supplier_name &&"border-danger-border focus-visible:focus:ring-ring bg-danger-surface/30 bg-danger-surface")}
  required
                     />
                     {fieldErrors.supplier_name && (
-                      <p className="text-2xs text-rose-600 dark:text-rose-400 font-medium mt-1 flex items-center gap-1">
+                      <p className="text-xs text-destructive text-destructive font-medium mt-1 flex items-center gap-1">
                         <AlertCircle className="w-3.5 h-3.5 shrink-0"/>
                         <span>{fieldErrors.supplier_name}</span>
                       </p>
@@ -468,12 +468,12 @@ export function SupplierModal({
               <div className="rounded-xl border border-border bg-card p-4 space-y-3 shadow-xs">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <CategoryIcon className="h-4 w-4 text-teal-600 dark:text-teal-400"/>
+                    <CategoryIcon className="h-4 w-4 text-success text-success"/>
                     <Label className="text-xs font-bold uppercase tracking-wider text-foreground">
-                      {tBilingual('Primary Supply Category', 'প্রধান উপাদানের ক্যাটাগরি')} <span className="text-rose-500">*</span>
+                      {tBilingual('Primary Supply Category', 'প্রধান উপাদানের ক্যাটাগরি')} <span className="text-destructive">*</span>
                     </Label>
                   </div>
-                  <span className="text-2xs text-muted-foreground">Used for fast purchase PO filtering</span>
+                  <span className="text-xs text-muted-foreground">Used for fast purchase PO filtering</span>
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -486,7 +486,7 @@ export function SupplierModal({
  type="button"onClick={() => setFormData({ ...formData, category: cat.id as SupplierCategory })}
  className={`p-2.5 rounded-xl border text-left flex items-start gap-2.5 transition-all cursor-pointer ${
  isSelected
-                            ? 'border-teal-600 bg-teal-50/70 dark:bg-teal-950/50 shadow-xs ring-1 ring-teal-500'
+                            ? 'border-success-border bg-success-surface/70 bg-success-surface shadow-xs ring-1 focus:ring-ring'
                             : 'border-border bg-card hover:border-input dark:hover:border-border'
                         }`}
                       >
@@ -499,7 +499,7 @@ export function SupplierModal({
                           <div className="text-xs font-bold text-foreground truncate">
                             {cat.labelEn.split(' ')[0]}
                           </div>
-                          <div className="text-2xs text-muted-foreground truncate">{cat.labelBn}</div>
+                          <div className="text-xs text-muted-foreground truncate">{cat.labelBn}</div>
                         </div>
                       </button>
                     )
@@ -514,7 +514,7 @@ export function SupplierModal({
             <div className="space-y-4 animate-in fade-in-50 duration-150">
               <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
                 <div className="flex items-center gap-2">
-                  <div className="h-6 w-6 rounded-lg bg-teal-100 text-teal-700 dark:bg-teal-900/60 dark:text-teal-300 flex items-center justify-center font-bold text-xs">
+                  <div className="h-6 w-6 rounded-lg bg-success-surface text-success bg-success/60 text-success flex items-center justify-center font-bold text-xs">
                     2
                   </div>
                   <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
@@ -548,7 +548,7 @@ export function SupplierModal({
                   <div>
                     <div className="flex items-center justify-between mb-1">
                       <Label className="text-xs font-semibold block">
-                        {tBilingual('Primary Mobile', 'প্রধান মোবাইল নম্বর')} <span className="text-rose-500">*</span>
+                        {tBilingual('Primary Mobile', 'প্রধান মোবাইল নম্বর')} <span className="text-destructive">*</span>
                       </Label>
                     </div>
                     <div className="relative">
@@ -560,12 +560,12 @@ export function SupplierModal({
  if (fieldErrors.mobile) setFieldErrors((prev) => ({ ...prev, mobile: '' }))
                         }}
  className={cn("text-xs h-9 pl-9 tabular-nums",
- fieldErrors.mobile &&"border-rose-500 focus-visible:ring-rose-400 bg-rose-50/30 dark:bg-rose-950/20")}
+ fieldErrors.mobile &&"border-danger-border focus-visible:focus:ring-ring bg-danger-surface/30 bg-danger-surface")}
  required
                       />
                     </div>
                     {fieldErrors.mobile && (
-                      <p className="text-2xs text-rose-600 dark:text-rose-400 font-medium mt-1 flex items-center gap-1">
+                      <p className="text-xs text-destructive text-destructive font-medium mt-1 flex items-center gap-1">
                         <AlertCircle className="w-3.5 h-3.5 shrink-0"/>
                         <span>{fieldErrors.mobile}</span>
                       </p>
@@ -580,17 +580,17 @@ export function SupplierModal({
                       {formData.mobile && formData.mobile !== formData.whatsapp && (
                         <button
  type="button"onClick={handleCopyMobileToWhatsapp}
- className="text-2xs text-teal-600 hover:text-teal-700 font-bold flex items-center gap-0.5 cursor-pointer">
+ className="text-xs text-success hover:text-success font-bold flex items-center gap-0.5 cursor-pointer">
                           <Copy className="h-2.5 w-2.5"/> Same
                         </button>
                       )}
                     </div>
                     <div className="relative">
-                      <MessageSquare className="absolute left-2.5 top-2.5 h-4 w-4 text-emerald-500"/>
+                      <MessageSquare className="absolute left-2.5 top-2.5 h-4 w-4 text-success"/>
                       <Input
  placeholder="01819-XXXXXX"value={formData.whatsapp}
  onChange={(e) => setFormData({ ...formData, whatsapp: e.target.value })}
- className="text-xs h-9 pl-9 tabular-nums text-emerald-700 dark:text-emerald-400"/>
+ className="text-xs h-9 pl-9 tabular-nums text-success text-success"/>
                     </div>
                   </div>
 
@@ -626,7 +626,7 @@ export function SupplierModal({
             <div className="space-y-4 animate-in fade-in-50 duration-150">
               <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
                 <div className="flex items-center gap-2">
-                  <div className="h-6 w-6 rounded-lg bg-teal-100 text-teal-700 dark:bg-teal-900/60 dark:text-teal-300 flex items-center justify-center font-bold text-xs">
+                  <div className="h-6 w-6 rounded-lg bg-success-surface text-success bg-success/60 text-success flex items-center justify-center font-bold text-xs">
                     3
                   </div>
                   <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
@@ -648,15 +648,15 @@ export function SupplierModal({
  type="button"onClick={() => handleHubSelect(hub.id)}
  className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
  isSelected
-                              ? 'border-teal-600 bg-teal-50/70 dark:bg-teal-950/50 ring-1 ring-teal-500 shadow-xs'
+                              ? 'border-success-border bg-success-surface/70 bg-success-surface ring-1 focus:ring-ring shadow-xs'
                               : 'border-border bg-card hover:border-input dark:hover:border-border'
                           }`}
                         >
                           <div className="text-xs font-bold text-foreground truncate">
                             📍 {hub.nameEn.split(' ')[0]}
                           </div>
-                          <div className="text-2xs text-teal-700 dark:text-teal-400 truncate">{hub.nameBn}</div>
-                          <div className="text-2xs text-muted-foreground truncate mt-0.5">{hub.area}</div>
+                          <div className="text-xs text-success text-success truncate">{hub.nameBn}</div>
+                          <div className="text-xs text-muted-foreground truncate mt-0.5">{hub.area}</div>
                         </button>
                       )
                     })}
@@ -703,7 +703,7 @@ export function SupplierModal({
             <div className="space-y-4 animate-in fade-in-50 duration-150">
               <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
                 <div className="flex items-center gap-2">
-                  <div className="h-6 w-6 rounded-lg bg-teal-100 text-teal-700 dark:bg-teal-900/60 dark:text-teal-300 flex items-center justify-center font-bold text-xs">
+                  <div className="h-6 w-6 rounded-lg bg-success-surface text-success bg-success/60 text-success flex items-center justify-center font-bold text-xs">
                     4
                   </div>
                   <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
@@ -725,7 +725,7 @@ export function SupplierModal({
  type="button"onClick={() => setFormData({ ...formData, payment_terms: term.id as SupplierPaymentTerms })}
  className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
  isSelected
-                              ? 'border-teal-600 bg-teal-50/70 dark:bg-teal-950/50 ring-1 ring-teal-500 shadow-xs'
+                              ? 'border-success-border bg-success-surface/70 bg-success-surface ring-1 focus:ring-ring shadow-xs'
                               : 'border-border bg-card hover:border-input dark:hover:border-border'
                           }`}
                         >
@@ -733,11 +733,11 @@ export function SupplierModal({
                             <span className="text-xs font-bold text-foreground">
                               {tBilingual(term.labelEn, term.labelBn)}
                             </span>
-                            <Badge variant="outline"className="text-2xs tabular-nums">
+                            <Badge variant="outline"className="text-xs tabular-nums">
                               {term.days > 0 ? `${term.days} Days` : 'Spot'}
                             </Badge>
                           </div>
-                          <div className="text-2xs text-muted-foreground mt-1 leading-tight">
+                          <div className="text-xs text-muted-foreground mt-1 leading-tight">
                             {tBilingual(term.descriptionEn, term.descriptionBn || term.descriptionEn)}
                           </div>
                         </button>
@@ -782,7 +782,7 @@ export function SupplierModal({
             <div className="space-y-4 animate-in fade-in-50 duration-150">
               <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
                 <div className="flex items-center gap-2">
-                  <div className="h-6 w-6 rounded-lg bg-teal-100 text-teal-700 dark:bg-teal-900/60 dark:text-teal-300 flex items-center justify-center font-bold text-xs">
+                  <div className="h-6 w-6 rounded-lg bg-success-surface text-success bg-success/60 text-success flex items-center justify-center font-bold text-xs">
                     5
                   </div>
                   <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
@@ -826,7 +826,7 @@ export function SupplierModal({
                 {/* Bank Account Info */}
                 <div className="pt-2 border-t border-border space-y-3">
                   <div className="flex items-center gap-2">
-                    <Landmark className="h-4 w-4 text-teal-600 dark:text-teal-400"/>
+                    <Landmark className="h-4 w-4 text-success text-success"/>
                     <span className="text-xs font-bold text-foreground">
                       {tBilingual('Bank Account for Cheque / BEFTN Disbursements', 'চেক বা ব্যাংক ট্রান্সফারের তথ্য')}
                     </span>
@@ -903,7 +903,7 @@ export function SupplierModal({
  rows={2}
  placeholder="e.g. Discount 2% on 15-day early clearance. Free delivery for rolls over 5,000 sft."value={formData.notes}
  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
- className="w-full rounded-lg border border-input bg-card p-2.5 text-xs text-foreground focus:outline-hidden focus:ring-2 focus:ring-teal-500"/>
+ className="w-full rounded-lg border border-input bg-card p-2.5 text-xs text-foreground focus:outline-hidden focus:ring-2 focus:ring-ring"/>
                 </div>
               </div>
             </div>
@@ -963,7 +963,7 @@ export function SupplierModal({
  const nextIdx = tabs.indexOf(activeTab) + 1
  if (nextIdx < tabs.length) setActiveTab(tabs[nextIdx])
                 }}
- className="w-full sm:w-auto min-h-[40px] text-xs font-semibold text-teal-700 dark:text-teal-400">
+ className="w-full sm:w-auto min-h-[40px] text-xs font-semibold text-success text-success">
                 {tBilingual('Next Section', 'পরবর্তী ধাপ')} <ChevronRight className="h-3.5 w-3.5 ml-1"/>
               </Button>
             )}
@@ -971,7 +971,7 @@ export function SupplierModal({
             {activeTab === 'banking' && (
               <Button
  type="submit"disabled={loading}
- className="w-full sm:w-auto min-h-[40px] text-xs bg-teal-600 hover:bg-teal-700 text-white font-bold shadow-sm px-6">
+ className="w-full sm:w-auto min-h-[40px] text-xs bg-success hover:bg-success text-white font-bold shadow-sm px-6">
                 {loading
                   ? tBilingual('Saving...', 'সংরক্ষণ হচ্ছে...')
                   : isEditing

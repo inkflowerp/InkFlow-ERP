@@ -25,7 +25,8 @@ export class QuotationRepository {
   static async getNextQuotationNumber(companyId: string): Promise<string> {
     try {
       const supabase = await createClient()
-      const { data, error } = await (supabase as any).rpc('get_next_document_number', {
+      const client = createAdminClient() || supabase
+      const { data, error } = await (client as any).rpc('get_next_document_number', {
         p_company_id: companyId,
         p_doc_type: 'quotation',
       })
@@ -461,17 +462,17 @@ export class QuotationRepository {
       }
     })
 
-    const effectiveSubtotal = calculatedSubtotal || Number(quotation.subtotal) || Number(quotation.grand_total) || 0
-    const discountAmount = Math.max(0, Number(quotation.discount_amount) || 0)
+    const effectiveSubtotal = calculatedSubtotal || Number(quotation.subtotal) || 0
+    const discountAmount = Math.min(effectiveSubtotal, Math.max(0, Number(quotation.discount_amount) || 0))
     const vatRate = typeof quotation.vat_rate === 'number' ? quotation.vat_rate : 7.5
     const subtotalAfterDiscount = Math.max(0, effectiveSubtotal - discountAmount)
-    const vatAmount = quotation.vat_amount !== undefined ? Number(quotation.vat_amount) : Math.round((subtotalAfterDiscount * vatRate) / 100)
-    const grandTotal = quotation.grand_total !== undefined ? Number(quotation.grand_total) : (subtotalAfterDiscount + vatAmount)
+    const vatAmount = Math.round((subtotalAfterDiscount * vatRate) / 100)
+    const grandTotal = subtotalAfterDiscount + vatAmount
     const marginPercent = grandTotal > 0 ? Math.round(((grandTotal - totalCost) / grandTotal) * 100) : 40
 
     const advancePercent = quotation.advance_percentage !== undefined && quotation.advance_percentage !== null ? Number(quotation.advance_percentage) : 50
-    const advanceAmount = quotation.advance_amount !== undefined && quotation.advance_amount !== null ? Number(quotation.advance_amount) : Math.round((grandTotal * advancePercent) / 100)
-    const dueOnDelivery = quotation.due_on_delivery !== undefined && quotation.due_on_delivery !== null ? Number(quotation.due_on_delivery) : Math.max(0, grandTotal - advanceAmount)
+    const advanceAmount = Math.min(grandTotal, Math.max(0, Math.round((grandTotal * advancePercent) / 100)))
+    const dueOnDelivery = grandTotal - advanceAmount
 
     const quoteId = quotation.id || `quo-${Date.now()}`
 

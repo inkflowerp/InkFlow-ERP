@@ -72,11 +72,11 @@ export function ProductionFilterToolbar({
 
  const quickFilterChips = [
     { id: 'all', labelEn: 'All Jobs', labelBn: 'সকল কাজ', icon: Layers },
-    { id: 'urgent', labelEn: 'Urgent Only', labelBn: 'জরুরি ডেলিভারি', icon: ShieldAlert, color: 'text-rose-600' },
-    { id: 'due_today', labelEn: 'Due Today', labelBn: 'আজকের ডেলিভারি', icon: Clock, color: 'text-amber-600' },
-    { id: 'running', labelEn: 'Running Floor', labelBn: 'মেশিনে রানিং', icon: Flame, color: 'text-blue-600' },
-    { id: 'walk_in', labelEn: 'Walk-in Clients', labelBn: 'দোকানে বসা', icon: UserCheck, color: 'text-orange-600' },
-    { id: 'on_hold', labelEn: 'On Hold', labelBn: 'স্থগিতাদেশ', icon: AlertOctagon, color: 'text-amber-600' },
+    { id: 'urgent', labelEn: 'Urgent Only', labelBn: 'জরুরি ডেলিভারি', icon: ShieldAlert, color: 'text-destructive' },
+    { id: 'due_today', labelEn: 'Due Today', labelBn: 'আজকের ডেলিভারি', icon: Clock, color: 'text-warning' },
+    { id: 'running', labelEn: 'Running Floor', labelBn: 'মেশিনে রানিং', icon: Flame, color: 'text-primary' },
+    { id: 'walk_in', labelEn: 'Walk-in Clients', labelBn: 'দোকানে বসা', icon: UserCheck, color: 'text-warning' },
+    { id: 'on_hold', labelEn: 'On Hold', labelBn: 'স্থগিতাদেশ', icon: AlertOctagon, color: 'text-warning' },
   ]
 
  return (
@@ -122,13 +122,13 @@ export function ProductionFilterToolbar({
  type="button"onClick={() => onViewModeChange('terminal')}
  className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
  viewMode === 'terminal'
-                ? 'bg-blue-600 text-white shadow-xs font-bold'
+                ? 'bg-primary text-white shadow-xs font-bold'
                 : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
             }`}
           >
             <Printer className="h-3.5 w-3.5"/>
             <span>{isBn ? 'শপ ফ্লোর টার্মিনাল' : 'Floor Terminal'}</span>
-            <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse ml-0.5"/>
+            <span className="h-2 w-2 rounded-full bg-success animate-pulse ml-0.5"/>
           </button>
 
           <button
@@ -139,7 +139,7 @@ export function ProductionFilterToolbar({
                 : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
             }`}
           >
-            <Cpu className="h-3.5 w-3.5 text-purple-600"/>
+            <Cpu className="h-3.5 w-3.5 text-primary"/>
             <span>{isBn ? 'মেশিন কিউ' : 'Fleet Queues'}</span>
           </button>
 
@@ -160,8 +160,8 @@ export function ProductionFilterToolbar({
         <div className="flex items-center gap-2 shrink-0">
           <Button
  size="sm"variant="outline"onClick={onAutoGenerateClick}
- className="text-xs h-9 gap-1.5 border-blue-200 text-blue-700 bg-blue-50/50 hover:bg-blue-100 dark:border-blue-800 dark:text-blue-300 dark:bg-blue-950/40 rounded-xl cursor-pointer">
-            <Sparkles className="h-3.5 w-3.5 text-blue-600"/>
+ className="text-xs h-9 gap-1.5 border-primary/20 text-primary bg-primary/10/50 hover:bg-primary/10 border-border text-primary bg-primary/10 rounded-xl cursor-pointer">
+            <Sparkles className="h-3.5 w-3.5 text-primary"/>
             <span>{isBn ? 'অর্ডার থেকে টাস্ক জেনারেট' : 'Auto-Generate Tasks'}</span>
           </Button>
         </div>
@@ -202,7 +202,7 @@ export function ProductionFilterToolbar({
 
         {/* Sector / Department Selector */}
         <div className="flex items-center gap-1.5 shrink-0">
-          <span className="text-2xs text-muted-foreground hidden md:inline">
+          <span className="text-xs text-muted-foreground hidden md:inline">
             {isBn ? 'বিভাগ:' : 'Sector:'}
           </span>
           <select

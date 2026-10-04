@@ -293,13 +293,14 @@ export const DEFAULT_ROLE_MATRICES: Record<PrimaryRole, RolePermissionMatrix> = 
 }
 
 function generateFullModuleMatrix(val: boolean): Record<PermissionModule, Partial<Record<PermissionAction, boolean>>> {
-  const res: any = {}
+  const res = {} as Record<PermissionModule, Partial<Record<PermissionAction, boolean>>>
   for (const [mod, spec] of Object.entries(MODULE_ACTION_SPECS)) {
-    res[mod] = {}
+    const modKey = mod as PermissionModule
+    res[modKey] = {}
     for (const act of spec.actions) {
-      res[mod][act] = val
+      res[modKey][act] = val
     }
-    res[mod].full_control = val
+    res[modKey].full_control = val
   }
   return res
 }
@@ -375,11 +376,63 @@ export interface EffectivePermissionDetail {
 export interface UserPermissionContext {
   userId?: string
   role?: string | { name?: string; slug?: string; id?: string } | null
+  roles?: Array<{ name?: string; slug?: string; id?: string }> | null
   primaryRole?: string
+  companyRole?: string
   responsibilities?: string[]
   overrides?: Record<string, boolean>
   data_scopes?: Record<string, DataScope | string>
   isOwner?: boolean
+}
+
+/**
+ * Universal evaluator to determine if a user context, session or role represents a Business Owner / Platform Owner.
+ */
+export function isUserBusinessOwner(user: UserPermissionContext | string | Record<string, unknown> | null | undefined): boolean {
+  if (!user) return false
+  if (typeof user === 'string') {
+    const s = user.toLowerCase().trim()
+    return s === 'business_owner' || s === 'owner' || s === 'platform_owner' || s.includes('owner')
+  }
+
+  const userObj = user as UserPermissionContext
+  if (userObj.isOwner === true) return true
+  if (userObj.primaryRole === 'business_owner' || userObj.primaryRole === 'owner' || userObj.primaryRole === 'platform_owner') return true
+  if (userObj.companyRole === 'business_owner' || userObj.companyRole === 'owner') return true
+
+  if (typeof userObj.role === 'string') {
+    const s = userObj.role.toLowerCase().trim()
+    if (s === 'business_owner' || s === 'owner' || s === 'platform_owner' || s.includes('owner')) return true
+  } else if (typeof userObj.role === 'object' && userObj.role !== null) {
+    const slug = (userObj.role.slug || userObj.role.name || '').toLowerCase()
+    if (slug === 'business_owner' || slug === 'owner' || slug === 'platform_owner' || slug.includes('owner')) return true
+  }
+
+  if (Array.isArray(userObj.roles)) {
+    if (
+      userObj.roles.some((r: { slug?: string; name?: string } | null | undefined) => {
+        if (!r) return false
+        const slug = (r.slug || r.name || '').toLowerCase()
+        return slug === 'business_owner' || slug === 'owner' || slug === 'platform_owner' || slug.includes('owner')
+      })
+    ) {
+      return true
+    }
+  }
+
+  if (Array.isArray(user.responsibilities)) {
+    if (
+      user.responsibilities.some((r: string) => {
+        if (typeof r !== 'string') return false
+        const s = r.toLowerCase().trim()
+        return s === 'business_owner' || s === 'owner' || s === 'platform_owner'
+      })
+    ) {
+      return true
+    }
+  }
+
+  return false
 }
 
 /**
@@ -399,9 +452,14 @@ export function extractResponsibilities(user: UserPermissionContext | string): R
     }
   }
 
+  // If user is a business owner, guarantee 'business_owner' is present
+  if (isUserBusinessOwner(user) && !list.includes('business_owner')) {
+    list.unshift('business_owner')
+  }
+
   if (list.length === 0) {
     const rawRole = typeof user.role === 'string' ? user.role : user.role?.slug || user.role?.name
-    const roleSlug = user.primaryRole || rawRole || 'general_staff'
+    const roleSlug = user.primaryRole || rawRole || (Array.isArray(user.roles) && user.roles[0]?.slug) || 'general_staff'
     list.push(normalizeResponsibilitySlug(roleSlug))
   }
 
@@ -524,17 +582,22 @@ export function getPermissionDetail(
   const userCtx: UserPermissionContext =
     typeof user === 'string' ? { primaryRole: user } : user
 
-  const isOwner =
-    userCtx.isOwner ||
-    userCtx.primaryRole === 'business_owner' ||
-    userCtx.primaryRole === 'platform_owner' ||
-    userCtx.role === 'owner' ||
-    userCtx.responsibilities?.includes('business_owner') ||
-    userCtx.responsibilities?.includes('owner')
+  const isOwner = isUserBusinessOwner(userCtx)
+
+  // 1. Business Owner -> IMMUTABLE FULL ACCESS (Highest Priority, cannot be locked out)
+  if (isOwner) {
+    return {
+      module: permModule,
+      action,
+      isGranted: true,
+      source: 'owner',
+      sourceDetail: 'Business Owner Full Access',
+    }
+  }
 
   const overrides = userCtx.overrides || {}
 
-  // 1. Check EXPLICIT USER DENY (Highest Priority)
+  // 2. Check EXPLICIT USER DENY (Highest Priority for employees)
   if (overrides[code] === false || overrides[`${rawModule}.${action}`] === false) {
     return {
       module: permModule,
@@ -545,7 +608,7 @@ export function getPermissionDetail(
     }
   }
 
-  // 2. Check EXPLICIT USER ALLOW
+  // 3. Check EXPLICIT USER ALLOW
   if (
     overrides[code] === true ||
     overrides[`${rawModule}.${action}`] === true ||
@@ -558,17 +621,6 @@ export function getPermissionDetail(
       isGranted: true,
       source: 'override_allow',
       sourceDetail: 'User Override (Allowed)',
-    }
-  }
-
-  // If Business Owner (and no explicit deny) -> UNIVERSAL ALLOW
-  if (isOwner) {
-    return {
-      module: permModule,
-      action,
-      isGranted: true,
-      source: 'owner',
-      sourceDetail: 'Business Owner Full Access',
     }
   }
 
@@ -655,24 +707,20 @@ export function getEffectiveDataScope(
 ): DataScope {
   const permModule = normalizeModuleKey(rawModule)
 
-  // 1. User specific scope override
+  // 1. Owner always has company scope
+  if (isUserBusinessOwner(user)) {
+    return 'company'
+  }
+
+  // 2. User specific scope override
   if (user.data_scopes && user.data_scopes[permModule]) {
     return user.data_scopes[permModule] as DataScope
   }
 
-  // 2. Owner has company scope
-  const isOwner =
-    user.isOwner ||
-    user.primaryRole === 'business_owner' ||
-    user.primaryRole === 'platform_owner' ||
-    user.role === 'owner' ||
-    user.responsibilities?.includes('business_owner')
-
-  if (isOwner) return 'company'
-
   // 3. Manager / Accountant have company scope default; Branch Manager strictly scopes to their assigned branch
   const responsibilities = extractResponsibilities(user)
-  if (responsibilities.includes('branch_manager') || user.primaryRole === 'branch_manager' || (user as any).role === 'branch_manager') {
+  const roleName = typeof user.role === 'string' ? user.role : (user.role?.slug || user.role?.name || '')
+  if (responsibilities.includes('branch_manager') || user.primaryRole === 'branch_manager' || roleName === 'branch_manager') {
     return 'branch'
   }
   if (responsibilities.includes('sales_manager') || responsibilities.includes('accountant')) {
@@ -786,11 +834,7 @@ export function checkDataScopeAccess(
     recordAssigneeId: resource.assigned_to || resource.assignee_id || resource.recordAssigneeId,
     recordDepartment: resource.department || resource.recordDepartment,
     recordBranchId: resource.branch_id || resource.branchId || resource.recordBranchId,
-    isOwnerOrAdmin:
-      user.isOwner ||
-      user.role === 'business_owner' ||
-      user.primaryRole === 'business_owner' ||
-      user.responsibilities?.includes('business_owner'),
+    isOwnerOrAdmin: isUserBusinessOwner(user),
   }
 
   return evaluateDataScopeInternal(scope, ctx)

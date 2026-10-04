@@ -141,26 +141,26 @@ export function CustomerRatesTable({
  return (
     <div className="space-y-4">
       {/* Immutability & Hierarchy Info Banner */}
-      <div className="p-3.5 rounded-xl border border-blue-100 dark:border-blue-950/60 bg-blue-50/70 dark:bg-blue-950/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+      <div className="p-3.5 rounded-xl border border-border border-border/60 bg-primary/10/70 bg-primary/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
         <div className="flex items-start gap-2.5">
-          <div className="p-1 rounded-md bg-blue-600 text-white shrink-0 mt-0.5">
+          <div className="p-1 rounded-md bg-primary text-white shrink-0 mt-0.5">
             <Sparkles className="h-3.5 w-3.5"/>
           </div>
           <div>
             <div className="font-semibold text-foreground">
  Automated Dynamic Rate Priority Engine
             </div>
-            <div className="text-muted-foreground text-2xs leading-relaxed mt-0.5">
- Priority: <span className="font-semibold text-blue-600 dark:text-blue-400">Custom Rate</span> &rarr;{' '}
-              <span className="font-semibold text-emerald-600 dark:text-emerald-400">Last Invoice Rate</span> &rarr;{' '}
-              <span className="font-semibold text-amber-600 dark:text-amber-400">Last Quotation Rate</span> &rarr;{' '}
+            <div className="text-muted-foreground text-xs leading-relaxed mt-0.5">
+ Priority: <span className="font-semibold text-primary text-primary">Custom Rate</span> &rarr;{' '}
+              <span className="font-semibold text-success text-success">Last Invoice Rate</span> &rarr;{' '}
+              <span className="font-semibold text-warning text-warning">Last Quotation Rate</span> &rarr;{' '}
               <span className="font-semibold text-muted-foreground">Catalog Default</span>.
             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-1.5 text-2xs text-muted-foreground shrink-0 bg-card/60 px-2.5 py-1.5 rounded-lg border border-border">
-          <ShieldAlert className="h-3.5 w-3.5 text-amber-500 shrink-0"/>
+        <div className="flex items-center gap-1.5 text-xs text-muted-foreground shrink-0 bg-card/60 px-2.5 py-1.5 rounded-lg border border-border">
+          <ShieldAlert className="h-3.5 w-3.5 text-warning shrink-0"/>
           <span>Historical invoices remain immutable</span>
         </div>
       </div>
@@ -171,8 +171,8 @@ export function CustomerRatesTable({
  className={cn(
             'p-3 rounded-lg text-xs font-medium flex items-center gap-2 animate-in fade-in duration-200',
  feedback.type === 'success'
-              ? 'bg-emerald-50 text-emerald-800 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800'
-              : 'bg-rose-50 text-rose-800 border border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800'
+              ? 'bg-success-surface text-success border border-success-border bg-success-surface text-success border-success-border'
+              : 'bg-danger-surface text-destructive border border-danger-border bg-danger-surface text-destructive border-danger-border'
           )}
         >
           {feedback.type === 'success' ? (
@@ -228,7 +228,7 @@ export function CustomerRatesTable({
  key={r.productId}
  className={cn(
                         'hover:bg-muted dark:hover:bg-muted/40 transition-colors',
- r.hasCustomRate && 'bg-blue-50/20 dark:bg-blue-950/10'
+ r.hasCustomRate && 'bg-primary/10/20 bg-primary/10'
                       )}
                     >
                       {/* Product Name */}
@@ -237,11 +237,11 @@ export function CustomerRatesTable({
                           {r.productName}
                         </div>
                         {r.productNameBn && (
-                          <div className="text-2xs text-muted-foreground">
+                          <div className="text-xs text-muted-foreground">
                             {r.productNameBn}
                           </div>
                         )}
-                        <div className="text-2xs text-muted-foreground tabular-nums mt-0.5">
+                        <div className="text-xs text-muted-foreground tabular-nums mt-0.5">
                           {r.sku}
                         </div>
                       </td>
@@ -260,11 +260,11 @@ export function CustomerRatesTable({
                       <td className="py-3 px-3 text-right">
                         {r.lastInvoiceRate !== null ? (
                           <div>
-                            <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                            <span className="font-semibold text-success text-success">
                               {formatBDT(r.lastInvoiceRate)}
                             </span>
                             {r.lastInvoiceNumber && (
-                              <div className="text-2xs text-muted-foreground truncate"title={`${r.lastInvoiceNumber} (${r.lastInvoiceDate})`}>
+                              <div className="text-xs text-muted-foreground truncate"title={`${r.lastInvoiceNumber} (${r.lastInvoiceDate})`}>
                                 {r.lastInvoiceNumber}
                               </div>
                             )}
@@ -278,11 +278,11 @@ export function CustomerRatesTable({
                       <td className="py-3 px-3 text-right">
                         {r.lastQuotationRate !== null && r.lastQuotationRate !== undefined ? (
                           <div>
-                            <span className="font-semibold text-amber-600 dark:text-amber-400">
+                            <span className="font-semibold text-warning text-warning">
                               {formatBDT(r.lastQuotationRate)}
                             </span>
                             {r.lastQuotationNumber && (
-                              <div className="text-2xs text-muted-foreground truncate"title={`${r.lastQuotationNumber} (${r.lastQuotationDate})`}>
+                              <div className="text-xs text-muted-foreground truncate"title={`${r.lastQuotationNumber} (${r.lastQuotationDate})`}>
                                 {r.lastQuotationNumber}
                               </div>
                             )}
@@ -305,21 +305,21 @@ export function CustomerRatesTable({
                               {r.lastInvoiceRate !== null && (
                                 <button
  type="button"onClick={() => setEditRateValue(String(r.lastInvoiceRate))}
- className="text-2xs text-emerald-600 hover:underline font-bold"title="Auto-fill last invoice rate">
+ className="text-xs text-success hover:underline font-bold"title="Auto-fill last invoice rate">
  Invoiced
                                 </button>
                               )}
                               {r.lastQuotationRate !== null && r.lastQuotationRate !== undefined && (
                                 <button
  type="button"onClick={() => setEditRateValue(String(r.lastQuotationRate))}
- className="text-2xs text-amber-600 hover:underline font-bold"title="Auto-fill last quotation rate">
+ className="text-xs text-warning hover:underline font-bold"title="Auto-fill last quotation rate">
  Quoted
                                 </button>
                               )}
                             </div>
                           </div>
                         ) : r.customerRate !== null ? (
-                          <span className="font-bold text-blue-600 dark:text-blue-400">
+                          <span className="font-bold text-primary text-primary">
                             {formatBDT(r.customerRate)}
                           </span>
                         ) : (
@@ -330,19 +330,19 @@ export function CustomerRatesTable({
                       {/* Active Source Badge */}
                       <td className="py-3 px-3 text-center">
                         {r.source === 'custom' ? (
-                          <Badge className="bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-800 text-2xs font-semibold">
+                          <Badge className="bg-primary/10 text-primary border-primary/20 bg-primary/10 text-primary border-border text-xs font-semibold">
  Custom Rate
                           </Badge>
                         ) : r.source === 'last_invoice' ? (
-                          <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800 text-2xs font-semibold">
+                          <Badge className="bg-success-surface text-success border-success-border bg-success-surface text-success border-success-border text-xs font-semibold">
  Last Invoice
                           </Badge>
                         ) : r.source === 'last_quotation' ? (
-                          <Badge className="bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-800 text-2xs font-semibold">
+                          <Badge className="bg-warning-surface text-warning border-warning-border bg-warning-surface text-warning border-warning-border text-xs font-semibold">
  Last Quote
                           </Badge>
                         ) : (
-                          <Badge variant="outline"className="text-muted-foreground text-2xs">
+                          <Badge variant="outline"className="text-muted-foreground text-xs">
  Catalog Default
                           </Badge>
                         )}
@@ -361,14 +361,14 @@ export function CustomerRatesTable({
                               <Button
  size="sm"variant="default"onClick={() => handleSaveRate(r.productId)}
  disabled={isSaving}
- className="h-7 px-2 text-2xs bg-blue-600 hover:bg-blue-700">
+ className="h-7 px-2 text-xs bg-primary hover:bg-primary">
                                 <Save className="h-3 w-3 mr-1"/>
  Save
                               </Button>
                               <Button
  size="sm"variant="outline"onClick={handleCancelEdit}
  disabled={isSaving}
- className="h-7 px-2 text-2xs">
+ className="h-7 px-2 text-xs">
  Cancel
                               </Button>
                             </div>
@@ -376,7 +376,7 @@ export function CustomerRatesTable({
                             <div className="flex items-center justify-center gap-1">
                               <Button
  size="sm"variant="outline"onClick={() => handleStartEdit(r)}
- className="h-7 px-2 text-2xs">
+ className="h-7 px-2 text-xs">
                                 <Edit2 className="h-3 w-3 mr-1"/>
                                 {r.hasCustomRate ? 'Edit' : 'Set Custom'}
                               </Button>
@@ -384,7 +384,7 @@ export function CustomerRatesTable({
                               {r.hasCustomRate && (
                                 <Button
  size="sm"variant="ghost"onClick={() => handleResetRate(r.productId)}
- className="h-7 w-7 p-0 text-muted-foreground hover:text-rose-600"title="Reset to automated fallback">
+ className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"title="Reset to automated fallback">
                                   <RotateCcw className="h-3 w-3"/>
                                 </Button>
                               )}
@@ -416,7 +416,7 @@ export function CustomerRatesTable({
  key={r.productId}
  className={cn(
                   'border-border shadow-sm p-3.5 space-y-3',
- r.hasCustomRate && 'border-blue-200 dark:border-blue-900 bg-blue-50/10'
+ r.hasCustomRate && 'border-primary/20 border-border bg-primary/10/10'
                 )}
               >
                 <div className="flex items-start justify-between gap-2">
@@ -427,26 +427,26 @@ export function CustomerRatesTable({
                     {r.productNameBn && (
                       <div className="text-xs text-muted-foreground">{r.productNameBn}</div>
                     )}
-                    <div className="text-2xs text-muted-foreground tabular-nums mt-0.5">
+                    <div className="text-xs text-muted-foreground tabular-nums mt-0.5">
                       {r.sku} • {r.unit.toUpperCase()}
                     </div>
                   </div>
 
                   <div>
                     {r.source === 'custom' ? (
-                      <Badge className="bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-950 dark:text-blue-300 text-2xs">
+                      <Badge className="bg-primary/10 text-primary border-primary/20 bg-primary/10 text-primary text-xs">
  Custom
                       </Badge>
                     ) : r.source === 'last_invoice' ? (
-                      <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 text-2xs">
+                      <Badge className="bg-success-surface text-success border-success-border bg-success-surface text-success text-xs">
  Last Invoice
                       </Badge>
                     ) : r.source === 'last_quotation' ? (
-                      <Badge className="bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-950 dark:text-amber-300 text-2xs">
+                      <Badge className="bg-warning-surface text-warning border-warning-border bg-warning-surface text-warning text-xs">
  Last Quote
                       </Badge>
                     ) : (
-                      <Badge variant="outline"className="text-muted-foreground text-2xs">
+                      <Badge variant="outline"className="text-muted-foreground text-xs">
  Default
                       </Badge>
                     )}
@@ -455,25 +455,25 @@ export function CustomerRatesTable({
 
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 p-2 rounded-lg bg-muted text-xs">
                   <div>
-                    <div className="text-2xs text-muted-foreground">Default</div>
+                    <div className="text-xs text-muted-foreground">Default</div>
                     <div className="font-medium text-muted-foreground">
                       {formatBDT(r.defaultRate)}
                     </div>
                   </div>
                   <div>
-                    <div className="text-2xs text-muted-foreground">Last Invoice</div>
-                    <div className="font-medium text-emerald-600 dark:text-emerald-400 truncate">
+                    <div className="text-xs text-muted-foreground">Last Invoice</div>
+                    <div className="font-medium text-success text-success truncate">
                       {r.lastInvoiceRate !== null ? formatBDT(r.lastInvoiceRate) : 'None'}
                     </div>
                   </div>
                   <div>
-                    <div className="text-2xs text-muted-foreground">Last Quoted</div>
-                    <div className="font-medium text-amber-600 dark:text-amber-400 truncate">
+                    <div className="text-xs text-muted-foreground">Last Quoted</div>
+                    <div className="font-medium text-warning text-warning truncate">
                       {r.lastQuotationRate !== null && r.lastQuotationRate !== undefined ? formatBDT(r.lastQuotationRate) : 'None'}
                     </div>
                   </div>
                   <div>
-                    <div className="text-2xs text-muted-foreground font-bold">Effective</div>
+                    <div className="text-xs text-muted-foreground font-bold">Effective</div>
                     <div className="font-black text-foreground">
                       {formatBDT(r.effectiveRate)}
                     </div>
@@ -493,7 +493,7 @@ export function CustomerRatesTable({
                           <Button
  size="sm"onClick={() => handleSaveRate(r.productId)}
  disabled={isSaving}
- className="bg-blue-600 hover:bg-blue-700 h-9">
+ className="bg-primary hover:bg-primary h-9">
  Save
                           </Button>
                           <Button
@@ -508,7 +508,7 @@ export function CustomerRatesTable({
                       <div className="flex items-center justify-between">
                         <Button
  size="sm"variant="outline"onClick={() => handleStartEdit(r)}
- className="h-8 text-xs font-semibold text-blue-600 dark:text-blue-400">
+ className="h-8 text-xs font-semibold text-primary text-primary">
                           <Edit2 className="h-3 w-3 mr-1.5"/>
                           {r.hasCustomRate ? 'Modify Custom Rate' : 'Set Custom Rate'}
                         </Button>
@@ -516,7 +516,7 @@ export function CustomerRatesTable({
                         {r.hasCustomRate && (
                           <Button
  size="sm"variant="ghost"onClick={() => handleResetRate(r.productId)}
- className="h-8 text-xs text-rose-500 hover:text-rose-600">
+ className="h-8 text-xs text-destructive hover:text-destructive">
  Reset
                           </Button>
                         )}

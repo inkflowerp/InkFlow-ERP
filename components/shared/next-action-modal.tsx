@@ -52,7 +52,7 @@ export function NextActionModal({ isOpen, onClose, config }: NextActionModalProp
  size="md">
       <div className="space-y-5 text-center py-2">
         {/* Success Icon */}
-        <div className="mx-auto w-14 h-14 rounded-full bg-emerald-100 dark:bg-emerald-950/60 border-2 border-emerald-500 flex items-center justify-center text-emerald-600 shadow-sm animate-in zoom-in-50 duration-200">
+        <div className="mx-auto w-14 h-14 rounded-full bg-success-surface bg-success-surface/60 border-2 border-success-border flex items-center justify-center text-success shadow-sm animate-in zoom-in-50 duration-200">
           <CheckCircle2 className="h-8 w-8"/>
         </div>
 
@@ -70,7 +70,7 @@ export function NextActionModal({ isOpen, onClose, config }: NextActionModalProp
 
         {/* Question Prompt */}
         <div className="py-1">
-          <span className="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 px-3 py-1 rounded-full border border-blue-200 dark:border-blue-900">
+          <span className="text-xs font-bold uppercase tracking-wider text-primary text-primary bg-primary/10 bg-primary/10 px-3 py-1 rounded-full border border-primary/20 border-border">
             {tBilingual('What would you like to do next?', 'পরবর্তী কোন কাজটি করতে চান?')}
           </span>
         </div>
@@ -82,7 +82,7 @@ export function NextActionModal({ isOpen, onClose, config }: NextActionModalProp
  config.primaryAction.onClick()
  onClose()
             }}
- className="w-full h-12 text-sm font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs flex items-center justify-center gap-2">
+ className="w-full h-12 text-sm font-bold bg-success hover:bg-success text-white shadow-xs flex items-center justify-center gap-2">
             {config.primaryAction.icon && React.createElement(config.primaryAction.icon, { className: 'h-5 w-5' })}
             <span>{tBilingual(config.primaryAction.labelEn, config.primaryAction.labelBn)}</span>
             <ArrowRight className="h-4 w-4"/>

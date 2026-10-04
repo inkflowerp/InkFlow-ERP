@@ -4,7 +4,6 @@ import React, { createContext, useContext, useState, useEffect, useCallback, use
 import type { PlatformSystemSettings } from '@/types/platform.types'
 import { DEFAULT_PLATFORM_BRANDING } from '@/types/platform.types'
 import { getPublicPlatformSettingsAction } from '@/actions/platform-data.actions'
-import { createClient } from '@/lib/supabase/client'
 import { setRuntimeRootDomain } from '@/lib/tenant/tenant-resolution'
 
 export interface PlatformSettingsContextType {
@@ -142,37 +141,8 @@ export function PlatformSettingsProvider({
  refreshSettings()
     }
 
-    // Subscribe to Supabase Realtime for platform_system_settings table
- let channel: any
- try {
- const supabase = createClient()
- channel = supabase
-        .channel('realtime_platform_settings_sync')
-        .on(
-          'postgres_changes',
-          { event: '*', schema: 'public', table: 'platform_system_settings' },
-          (payload: any) => {
- if (payload?.new) {
- setSettings((prev) => ({ ...(prev || {}), ...payload.new }))
- if (payload.new.app_domain) {
- setRuntimeRootDomain(payload.new.app_domain)
-              }
-            }
-          }
-        )
-        .subscribe()
-    } catch {
-      // Realtime subscription non-blocking fallback
-    }
-
- return () => {
- window.removeEventListener(PLATFORM_SETTINGS_EVENT, handlePlatformSettingsUpdated)
- if (channel) {
- try {
- const supabase = createClient()
- supabase.removeChannel(channel)
-        } catch {}
-      }
+    return () => {
+      window.removeEventListener(PLATFORM_SETTINGS_EVENT, handlePlatformSettingsUpdated)
     }
   }, [initialSettings, refreshSettings])
 

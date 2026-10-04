@@ -10,17 +10,17 @@ import type { PrimaryRole } from '../../types/rbac.types.ts'
 
 async function performRedirect(url: string): Promise<never> {
   try {
-    const nav: any = await import('next/navigation.js').catch(() => import('next/navigation'))
-    if (typeof nav?.redirect === 'function') {
+    const nav = await import('next/navigation').catch(() => null)
+    if (nav && typeof nav.redirect === 'function') {
       nav.redirect(url)
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (
       typeof error === 'object' &&
       error !== null &&
       'digest' in error &&
-      typeof error.digest === 'string' &&
-      error.digest.startsWith('NEXT_REDIRECT')
+      typeof (error as { digest?: unknown }).digest === 'string' &&
+      ((error as { digest: string }).digest).startsWith('NEXT_REDIRECT')
     ) {
       throw error
     }
@@ -31,8 +31,8 @@ async function performRedirect(url: string): Promise<never> {
 
 async function getRequestHeaders(): Promise<Headers | null> {
   try {
-    const nextHeaders: any = await import('next/headers.js').catch(() => import('next/headers'))
-    if (typeof nextHeaders?.headers === 'function') {
+    const nextHeaders = await import('next/headers').catch(() => null)
+    if (nextHeaders && typeof nextHeaders.headers === 'function') {
       return await nextHeaders.headers()
     }
   } catch {}
@@ -188,7 +188,7 @@ export async function requireTenantMember(
     throw new UnauthorizedError(`User ${user.email} is not an authorized member of workspace '${tenant.name}'.`)
   }
 
-  if ((membershipResult.companyUser as any).is_active === false || (membershipResult.companyUser as any).status === 'suspended') {
+  if (membershipResult.companyUser.is_active === false || membershipResult.companyUser.status === 'suspended') {
     throw new UnauthorizedError('User account in this workspace is deactivated or suspended.')
   }
 

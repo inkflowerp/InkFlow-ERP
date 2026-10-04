@@ -224,7 +224,7 @@ export default function ForgotPasswordPage() {
           <form onSubmit={handleEmailSubmit}>
             <CardContent className="space-y-4">
               {error && (
-                <div className="flex items-start gap-2 rounded-lg bg-red-50 p-3 text-xs text-red-600 dark:bg-red-950/50 dark:text-red-300 border border-red-200 dark:border-red-900">
+                <div className="flex items-start gap-2 rounded-lg bg-danger-surface p-3 text-xs text-destructive bg-danger-surface text-destructive border border-danger-border border-danger-border">
                   <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
                   <span>{error}</span>
                 </div>
@@ -247,7 +247,7 @@ export default function ForgotPasswordPage() {
             <CardFooter className="flex flex-col gap-3 border-t border-border pt-4">
               <Button
                 type="submit"
-                className="w-full justify-center bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 text-white font-bold h-11 text-sm shadow-md"
+                className="w-full justify-center hover: hover: text-white font-bold h-11 text-sm shadow-md"
                 isLoading={isLoading}
               >
                 <span>{locale === 'bn' ? 'ভেরিফিকেশন কোড পাঠান' : 'Send Verification Code'}</span>
@@ -270,7 +270,7 @@ export default function ForgotPasswordPage() {
       {step === 'VERIFY_OTP' && (
         <>
           <CardHeader className="space-y-1.5 text-center pb-4">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-cyan-100 text-cyan-600 dark:bg-cyan-950/60 dark:text-cyan-400 mb-1">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-info-surface text-primary bg-primary/10 text-primary mb-1">
               <ShieldCheck className="h-6 w-6" />
             </div>
             <CardTitle className="text-xl font-bold tracking-tight">
@@ -286,14 +286,14 @@ export default function ForgotPasswordPage() {
           <form onSubmit={handleOtpSubmit}>
             <CardContent className="space-y-4 pt-1">
               {error && (
-                <div className="flex items-start gap-2 rounded-lg bg-red-50 p-3 text-xs text-red-600 dark:bg-red-950/50 dark:text-red-300 border border-red-200 dark:border-red-900">
+                <div className="flex items-start gap-2 rounded-lg bg-danger-surface p-3 text-xs text-destructive bg-danger-surface text-destructive border border-danger-border border-danger-border">
                   <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
                   <span>{error}</span>
                 </div>
               )}
 
               {successMsg && (
-                <div className="flex items-start gap-2 rounded-lg bg-emerald-50 p-3 text-xs text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900">
+                <div className="flex items-start gap-2 rounded-lg bg-success-surface p-3 text-xs text-success bg-success-surface text-success border border-success-border border-success-border">
                   <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5" />
                   <span>{successMsg}</span>
                 </div>
@@ -317,7 +317,7 @@ export default function ForgotPasswordPage() {
                       value={digit}
                       onChange={(e) => handleDigitChange(idx, e.target.value)}
                       onKeyDown={(e) => handleKeyDown(idx, e)}
-                      className="h-12 w-10 sm:h-14 sm:w-12 rounded-lg border border-input bg-card text-center text-xl font-bold text-foreground shadow-sm transition-all focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/30 dark:text-foreground"
+                      className="h-12 w-10 sm:h-14 sm:w-12 rounded-lg border border-input bg-card text-center text-xl font-bold text-foreground shadow-sm transition-all focus:border-primary/20 focus:outline-none focus:ring-2 focus:ring-ring/30 dark:text-foreground"
                       aria-label={`Digit ${idx + 1}`}
                       autoFocus={idx === 0}
                     />
@@ -329,7 +329,7 @@ export default function ForgotPasswordPage() {
             <CardFooter className="flex flex-col gap-3.5 border-t border-border pt-4">
               <Button
                 type="submit"
-                className="w-full justify-center gap-2 bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 text-white font-bold h-11 text-sm shadow-md"
+                className="w-full justify-center gap-2 hover: hover: text-white font-bold h-11 text-sm shadow-md"
                 isLoading={isLoading}
               >
                 <span>{locale === 'bn' ? 'কোড যাচাই করুন' : 'Verify Code'}</span>
@@ -349,7 +349,7 @@ export default function ForgotPasswordPage() {
                     type="button"
                     onClick={handleResend}
                     disabled={isResending || isLoading}
-                    className="inline-flex items-center gap-1 font-bold text-cyan-600 hover:text-cyan-700 dark:text-cyan-400 hover:underline cursor-pointer bangla-text"
+                    className="inline-flex items-center gap-1 font-bold text-primary hover:text-primary text-primary hover:underline cursor-pointer bangla-text"
                   >
                     <RefreshCw className={`h-3.5 w-3.5 ${isResending ? 'animate-spin' : ''}`} />
                     <span>{isResending ? (locale === 'bn' ? 'পাঠানো হচ্ছে...' : 'Sending...') : t('auth.resend_code') || 'Resend Code'}</span>
@@ -388,7 +388,7 @@ export default function ForgotPasswordPage() {
           <form onSubmit={handlePasswordSubmit}>
             <CardContent className="space-y-3.5">
               {error && (
-                <div className="flex items-start gap-2 rounded-lg bg-red-50 p-3 text-xs text-red-600 dark:bg-red-950/50 dark:text-red-300 border border-red-200 dark:border-red-900">
+                <div className="flex items-start gap-2 rounded-lg bg-danger-surface p-3 text-xs text-destructive bg-danger-surface text-destructive border border-danger-border border-danger-border">
                   <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
                   <span>{error}</span>
                 </div>
@@ -423,7 +423,7 @@ export default function ForgotPasswordPage() {
             <CardFooter className="flex flex-col gap-3 border-t border-border pt-4">
               <Button
                 type="submit"
-                className="w-full justify-center bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 text-white font-bold h-11 text-sm shadow-md"
+                className="w-full justify-center hover: hover: text-white font-bold h-11 text-sm shadow-md"
                 isLoading={isLoading}
               >
                 <span>{locale === 'bn' ? 'পাসওয়ার্ড রিসেট করুন' : 'Reset Password'}</span>
@@ -437,7 +437,7 @@ export default function ForgotPasswordPage() {
       {/* STEP 4: Success Message */}
       {step === 'SUCCESS' && (
         <CardContent className="space-y-4 py-8 text-center">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-success-surface text-success bg-success-surface/60 text-success">
             <CheckCircle2 className="h-7 w-7" />
           </div>
           <h4 className="text-lg font-bold text-foreground dark:text-foreground">
@@ -448,7 +448,7 @@ export default function ForgotPasswordPage() {
           </p>
           <div className="pt-3">
             <Link href="/login">
-              <Button className="w-full bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 text-white font-bold">
+              <Button className="w-full text-white font-bold">
                 {t('auth.sign_in') || 'Sign In'}
               </Button>
             </Link>

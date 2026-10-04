@@ -5,13 +5,14 @@
 // ==============================================================================
 
 import { cache } from 'react'
+import type { User } from '@supabase/supabase-js'
 import { createClient } from '../supabase/server.ts'
 import { createAdminClient } from '../supabase/admin.ts'
-import { resolveTenantRole, type TenantContext, type TenantRole, type TenantSessionData } from './types.ts'
-import { TENANT_SESSION_COOKIE } from './types.ts'
+import { resolveTenantRole, TENANT_SESSION_COOKIE, type TenantContext, type TenantSessionData } from './types.ts'
 import { TenantRepository } from '../repositories/tenant.repository.ts'
 import { getCurrentPlatformUser } from './platform-auth.ts'
 import { MODULE_ACTION_SPECS } from '../../types/rbac.types.ts'
+import { verifySessionToken, signSessionToken } from '../security/session-signer.ts'
 
 async function performRedirect(url: string): Promise<never> {
   try {
@@ -19,7 +20,7 @@ async function performRedirect(url: string): Promise<never> {
     if (typeof nav?.redirect === 'function') {
       nav.redirect(url)
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (
       typeof error === 'object' &&
       error !== null &&
@@ -96,7 +97,7 @@ export const getCurrentTenant = cache(async function getCurrentTenant(
           const adminClient = createAdminClient()
 
           // Authoritative DB verification for support session (Strict Fail-Closed)
-          const { data: dbSession, error: sessErr } = await (adminClient as any)
+          const { data: dbSession, error: sessErr } = await adminClient
             .from('platform_support_sessions')
             .select('id, platform_admin_id, company_id, status, expires_at, access_level')
             .eq('id', supportSession.sessionId)
@@ -157,7 +158,7 @@ export const getCurrentTenant = cache(async function getCurrentTenant(
     }
 
     // 2. Query Authoritative Supabase Auth Session
-    let user: any = null
+    let user: User | null = null
     try {
       const supabase = await createClient()
       const { data, error: authError } = await supabase.auth.getUser()
@@ -166,34 +167,8 @@ export const getCurrentTenant = cache(async function getCurrentTenant(
       }
     } catch {}
 
-    // Fallback: Exclusively in automated test suites (isTestEnvironment), if user is not yet in Supabase SSR token context, check tenant session cookie.
-    // NEVER active in development, staging, or production to prevent cookie spoofing.
-    const { isTestEnvironment } = await import('../security/runtime-env.ts')
-    if (!user?.id && isTestEnvironment()) {
-      try {
-        const sessionCookie = cookieStore.get(TENANT_SESSION_COOKIE)?.value
-        if (sessionCookie) {
-          let sessionData: any = null
-          try {
-            sessionData = JSON.parse(decodeURIComponent(sessionCookie))
-          } catch {
-            try {
-              sessionData = JSON.parse(sessionCookie)
-            } catch {}
-          }
-          if (sessionData?.userId && sessionData?.companyId) {
-            const adminClient = createAdminClient()
-            const { data: dbUser } = await adminClient.auth.admin.getUserById(sessionData.userId)
-            if (dbUser?.user) {
-              user = dbUser.user
-            }
-          }
-        }
-      } catch {}
-    }
-
     if (!user?.id) {
-      return null // FAIL CLOSED
+      return null // FAIL CLOSED: Authenticated Supabase session required
     }
 
     // Fast-path in-memory tenant context check
@@ -212,7 +187,7 @@ export const getCurrentTenant = cache(async function getCurrentTenant(
     } else {
       try {
         const adminClient = createAdminClient()
-        const { data: platformAdmin } = await (adminClient as any)
+        const { data: platformAdmin } = await adminClient
           .from('platform_admins')
           .select('id')
           .eq('user_id', user.id)
@@ -234,7 +209,7 @@ export const getCurrentTenant = cache(async function getCurrentTenant(
     }
 
     // 3. Authoritative DB membership resolution from company_users & companies
-    let membership: any = null
+    let membership: Awaited<ReturnType<typeof TenantRepository.resolveUserMembership>> = null
     try {
       membership = await TenantRepository.resolveUserMembership(user.id, targetSlugOrId)
     } catch {
@@ -267,8 +242,8 @@ export const getCurrentTenant = cache(async function getCurrentTenant(
     try {
       const sessionCookie = cookieStore.get(TENANT_SESSION_COOKIE)?.value
       if (sessionCookie) {
-        const parsed = JSON.parse(decodeURIComponent(sessionCookie))
-        if (parsed && (parsed.userId === user.id || parsed.userEmail === user.email)) {
+        const parsed = await verifySessionToken<TenantSessionData>(sessionCookie)
+        if (parsed && (parsed.userId === user.id || parsed.userEmail === user.email || parsed.sub === user.id)) {
           if (parsed.phone) displayPhone = parsed.phone
           if (parsed.fullNameBn) displayFullNameBn = parsed.fullNameBn
         }
@@ -322,7 +297,6 @@ export const getCurrentTenant = cache(async function getCurrentTenant(
  */
 export async function requireTenantUser(requestedSlugOrId?: string): Promise<TenantContext> {
   let targetSlug = requestedSlugOrId
-  let isSubdomain = false
 
   try {
     const { headers } = await import('next/headers')
@@ -336,7 +310,6 @@ export async function requireTenantUser(requestedSlugOrId?: string): Promise<Ten
       const { resolveHostname } = await import('../tenant/tenant-resolution.ts')
       const resolution = resolveHostname(headerHost)
       if (resolution.hostType === 'tenant') {
-        isSubdomain = true
         if (!targetSlug && resolution.tenantSlug) {
           targetSlug = resolution.tenantSlug
         }
@@ -370,8 +343,11 @@ export async function requireTenantUser(requestedSlugOrId?: string): Promise<Ten
           await performRedirect(`/tenant-suspended?slug=${encodeURIComponent(targetSlug)}`)
           throw new Error('Tenant Suspended')
         }
-      } catch (err: any) {
-        if (err?.message?.startsWith('REDIRECT:') || err?.digest?.startsWith('NEXT_REDIRECT')) {
+      } catch (err: unknown) {
+        const errorObj = typeof err === 'object' && err !== null ? (err as Record<string, unknown>) : null
+        const msg = String(errorObj?.message || '')
+        const digest = String(errorObj?.digest || '')
+        if (msg.startsWith('REDIRECT:') || digest.startsWith('NEXT_REDIRECT')) {
           throw err
         }
         // Fall through if lookup error
@@ -425,22 +401,35 @@ export async function getTenantCompanyId(requestedSlugOrId?: string): Promise<st
  * Validates whether the user has the required permission within their verified tenant.
  */
 export async function requireTenantPermission(
-  companyId: string,
+  targetSlugOrId: string,
   requiredPermission: string
 ): Promise<TenantContext> {
-  const tenant = await requireTenantUser(companyId)
+  const tenant = await requireTenantUser(targetSlugOrId)
 
   // Check specific permission against effective permissions list
-  const hasPerm =
+  const isOwner =
     tenant.companyRole === 'business_owner' ||
     tenant.primaryRole === 'business_owner' ||
-    tenant.isSupportMode ||
+    tenant.isSupportMode
+
+  if (isOwner) {
+    return tenant
+  }
+
+  const [module, action] = requiredPermission.split('.')
+  const altModule = module.endsWith('s') ? module.slice(0, -1) : `${module}s`
+  const altPermission = `${altModule}.${action}`
+
+  const hasPerm =
     tenant.permissions.includes(requiredPermission) ||
-    tenant.permissions.includes(requiredPermission.split('.')[0] + '.full_control')
+    tenant.permissions.includes(altPermission) ||
+    tenant.permissions.includes(`${module}.full_control`) ||
+    tenant.permissions.includes(`${altModule}.full_control`) ||
+    tenant.permissions.includes('all.manage')
 
   if (!hasPerm) {
-    await performRedirect(`/403?type=tenant&missing=${requiredPermission}`)
-    throw new Error('Forbidden')
+    await performRedirect(`/403?type=tenant&missing=${encodeURIComponent(requiredPermission)}`)
+    throw new Error(`Forbidden: missing ${requiredPermission}`)
   }
 
   return tenant
@@ -472,6 +461,25 @@ export async function getTenantRedirectSlug(): Promise<string> {
 
   await performRedirect('/login')
   throw new Error('Unauthorized')
+}
+
+/**
+ * Issues a cryptographically HMAC-signed JWT session token for the tenant context.
+ */
+export async function issueTenantSessionToken(tenantCtx: TenantContext): Promise<string> {
+  return await signSessionToken(
+    {
+      sub: tenantCtx.userId,
+      userId: tenantCtx.userId,
+      userEmail: tenantCtx.userEmail,
+      companyId: tenantCtx.companyId,
+      companySlug: tenantCtx.companySlug,
+      role: tenantCtx.companyRole,
+      primaryRole: tenantCtx.primaryRole,
+      branchId: tenantCtx.branchId,
+    },
+    '7d'
+  )
 }
 
 

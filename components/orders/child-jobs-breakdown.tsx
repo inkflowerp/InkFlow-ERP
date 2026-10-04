@@ -46,7 +46,7 @@ export function ChildJobsBreakdown({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h2 className="text-base font-bold text-foreground flex items-center gap-2">
-            <Layers className="h-5 w-5 text-blue-600"/>
+            <Layers className="h-5 w-5 text-primary"/>
             <span>
               {tBilingual('Production Job Orders', 'প্রোডাকশন জব টিকেটসমূহ')} ({jobs.length}{' '}
               {tBilingual('Jobs', 'টিকেট')})
@@ -62,7 +62,7 @@ export function ChildJobsBreakdown({
 
         <Button
  size="sm"onClick={onOpenNewJobModal}
- className="bg-blue-600 hover:bg-blue-700 text-xs text-white shadow-xs self-start sm:self-auto">
+ className="bg-primary hover:bg-primary text-xs text-white shadow-xs self-start sm:self-auto">
           <Plus className="mr-1.5 h-3.5 w-3.5"/>
           <span>{tBilingual('+ Add Job Ticket', '+ নতুন জব টিকেট')}</span>
         </Button>
@@ -82,7 +82,7 @@ export function ChildJobsBreakdown({
  tenantSlug={tenantSlug}
  className="h-full"/>
               {/* Quick Traveler Print and Manual Status Override */}
-              <div className="flex items-center justify-between px-3 py-1.5 bg-muted border-x border-b border-border rounded-b-xl text-2xs">
+              <div className="flex items-center justify-between px-3 py-1.5 bg-muted border-x border-b border-border rounded-b-xl text-xs">
                 <button
  type="button"onClick={() => onSelectJobForPrint(job)}
  className="inline-flex items-center gap-1 font-semibold text-muted-foreground hover:text-foreground dark:hover:text-foreground"title={tBilingual('Print Job Traveler (Job Bag)', 'জব ব্যাগ প্রিন্ট করুন')}
@@ -94,7 +94,7 @@ export function ChildJobsBreakdown({
                 <select
  value={job.status}
  onChange={(e) => onUpdateJobStatus(job.id, e.target.value as JobStatus)}
- className="h-6 px-1.5 rounded text-3xs font-semibold border border-input bg-card text-foreground"aria-label="Status override">
+ className="h-6 px-1.5 rounded text-xs font-semibold border border-input bg-card text-foreground"aria-label="Status override">
                   <option value="queued">Queued</option>
                   <option value="in_progress">In Progress</option>
                   <option value="quality_check">QC Check</option>

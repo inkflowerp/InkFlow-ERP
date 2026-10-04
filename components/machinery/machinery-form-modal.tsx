@@ -302,7 +302,7 @@ export function MachineryFormModal({
  type="button"onClick={() => setActiveTab('basic')}
  className={`flex items-center gap-1.5 px-3 py-2 text-xs font-bold border-b-2 transition-colors ${
  activeTab === 'basic'
-                ? 'border-blue-600 text-blue-600 dark:text-blue-400'
+                ? 'border-border text-primary text-primary'
                 : 'border-transparent text-muted-foreground hover:text-foreground dark:hover:text-foreground'
             }`}
           >
@@ -313,7 +313,7 @@ export function MachineryFormModal({
  type="button"onClick={() => setActiveTab('production')}
  className={`flex items-center gap-1.5 px-3 py-2 text-xs font-bold border-b-2 transition-colors ${
  activeTab === 'production'
-                ? 'border-blue-600 text-blue-600 dark:text-blue-400'
+                ? 'border-border text-primary text-primary'
                 : 'border-transparent text-muted-foreground hover:text-foreground dark:hover:text-foreground'
             }`}
           >
@@ -324,7 +324,7 @@ export function MachineryFormModal({
  type="button"onClick={() => setActiveTab('costing')}
  className={`flex items-center gap-1.5 px-3 py-2 text-xs font-bold border-b-2 transition-colors ${
  activeTab === 'costing'
-                ? 'border-blue-600 text-blue-600 dark:text-blue-400'
+                ? 'border-border text-primary text-primary'
                 : 'border-transparent text-muted-foreground hover:text-foreground dark:hover:text-foreground'
             }`}
           >
@@ -581,7 +581,7 @@ export function MachineryFormModal({
         {/* TAB 3: COSTING INFORMATION */}
         {activeTab === 'costing' && (
           <div className="space-y-3.5 py-1">
-            <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900 text-xs text-blue-800 dark:text-blue-300">
+            <div className="p-3 rounded-lg bg-primary/10 bg-primary/10 border border-primary/20 border-border text-xs text-primary text-primary">
               💡 <strong>V4 Costing Readiness:</strong> Machine hourly and operating costs are used for accurate live job costing, electricity attribution, and floor profit margin auditing.
             </div>
 

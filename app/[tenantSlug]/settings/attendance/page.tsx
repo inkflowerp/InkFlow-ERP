@@ -468,7 +468,7 @@ export default function AttendanceSettingsPage() {
 
  if (!mounted) {
  return (
-      <div className="max-w-6xl mx-auto space-y-6 pb-20 px-4 sm:px-0 animate-pulse">
+      <div className="mx-auto space-y-6 pb-20 px-4 sm:px-0 animate-pulse">
         <div className="h-20 bg-muted rounded-xl w-full"/>
         <div className="h-12 bg-muted rounded-xl w-3/4"/>
         <div className="h-64 bg-muted rounded-xl w-full"/>
@@ -477,11 +477,11 @@ export default function AttendanceSettingsPage() {
   }
 
  return (
-    <div className="max-w-6xl mx-auto space-y-6 pb-20 px-4 sm:px-0">
+    <div className="mx-auto space-y-6 pb-20 px-4 sm:px-0">
       {/* Page Header */}
       <PageHeader
  titleEn="Attendance Setup"titleBn="কর্মস্থল লোকেশন ও কিউআর ব্যবস্থাপনা"descriptionEn="Configure physical workplace GPS boundaries, generate rotatable cryptographic QR tokens, and print on-site entrance posters."descriptionBn="কর্মস্থলের জিপিএস সীমানা নির্ধারণ করুন, কিউআর কোড তৈরি ও রোটেট করুন এবং অন-সাইট পোস্টার প্রিন্ট করুন।"icon={QrCode}
- iconColor="text-indigo-600 dark:text-indigo-400"actions={
+ iconColor="text-primary text-primary"actions={
           <div className="flex items-center gap-2">
             <Button
  type="button"variant="outline"size="sm"onClick={loadAllData}
@@ -489,7 +489,7 @@ export default function AttendanceSettingsPage() {
  className="border-border text-foreground hover:bg-muted h-9 w-9 p-0 rounded-xl flex items-center justify-center shrink-0 cursor-pointer"title={tBilingual('Refresh', 'রিফ্রেশ')}
  aria-label={tBilingual('Refresh', 'রিফ্রেশ')}
             >
-              <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? 'animate-spin text-indigo-500' : ''}`} />
+              <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? 'animate-spin text-primary' : ''}`} />
             </Button>
 
             <Button
@@ -497,7 +497,7 @@ export default function AttendanceSettingsPage() {
  resetLocationForm()
  setIsAddLocationOpen(true)
               }}
- className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs h-9 rounded-xl flex items-center gap-1.5 shadow-sm transition-all">
+ className="bg-primary hover:bg-primary text-white font-bold text-xs h-9 rounded-xl flex items-center gap-1.5 shadow-sm transition-all">
               <Plus className="h-4 w-4"/>
               <span>{tBilingual('Add Location', 'নতুন লোকেশন')}</span>
             </Button>
@@ -508,17 +508,17 @@ export default function AttendanceSettingsPage() {
       {/* Notification Toast */}
       {notification && (
         <div
- className={`p-4 rounded-xl text-xs font-semibold flex items-center justify-between shadow-lg transition-all animate-in slide-in-from-top-2 ${
+ className={`p-4 rounded-xl text-xs font-semibold flex items-center justify-between shadow-lg transition-all animate-in slide-in- ${
  notification.type === 'success'
-              ? 'bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300'
-              : 'bg-rose-50 dark:bg-rose-950/80 border border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-300'
+              ? 'bg-success-surface bg-success-surface/80 border border-success-border border-success-border text-success text-success'
+              : 'bg-danger-surface bg-danger-surface/80 border border-danger-border border-danger-border text-destructive text-destructive'
           }`}
         >
           <div className="flex items-center gap-2.5">
             {notification.type === 'success' ? (
-              <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400"/>
+              <CheckCircle2 className="h-4 w-4 shrink-0 text-success text-success"/>
             ) : (
-              <AlertTriangle className="h-4 w-4 shrink-0 text-rose-600 dark:text-rose-400"/>
+              <AlertTriangle className="h-4 w-4 shrink-0 text-destructive text-destructive"/>
             )}
             <span>{notification.message}</span>
           </div>
@@ -563,13 +563,13 @@ export default function AttendanceSettingsPage() {
  type="button"onClick={() => setActiveTab('locations')}
  className={`pb-3 px-4 text-xs font-bold border-b-2 transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
  activeTab === 'locations'
-              ? 'border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400'
+              ? 'border-border text-primary border-border text-primary'
               : 'border-transparent text-muted-foreground hover:text-foreground dark:hover:text-foreground'
           }`}
         >
           <MapPin className="h-3.5 w-3.5"/>
           <span>{tBilingual('Attendance Locations', 'কর্মস্থল লোকেশন')}</span>
-          <Badge variant="outline"className="ml-1 text-2xs px-1.5 py-0">
+          <Badge variant="outline"className="ml-1 text-xs px-1.5 py-0">
             {locations.length}
           </Badge>
         </button>
@@ -578,7 +578,7 @@ export default function AttendanceSettingsPage() {
  type="button"onClick={() => setActiveTab('qr_management')}
  className={`pb-3 px-4 text-xs font-bold border-b-2 transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
  activeTab === 'qr_management'
-              ? 'border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400'
+              ? 'border-border text-primary border-border text-primary'
               : 'border-transparent text-muted-foreground hover:text-foreground dark:hover:text-foreground'
           }`}
         >
@@ -590,14 +590,14 @@ export default function AttendanceSettingsPage() {
  type="button"onClick={() => setActiveTab('corrections')}
  className={`pb-3 px-4 text-xs font-bold border-b-2 transition-all cursor-pointer whitespace-nowrap flex items-center gap-2 ${
  activeTab === 'corrections'
-              ? 'border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400'
+              ? 'border-border text-primary border-border text-primary'
               : 'border-transparent text-muted-foreground hover:text-foreground dark:hover:text-foreground'
           }`}
         >
           <Clock className="h-3.5 w-3.5"/>
           <span>{tBilingual('Correction Requests', 'সংশোধন অনুরোধ')}</span>
           {pendingCorrectionsCount > 0 && (
-            <Badge className="bg-amber-500 text-white dark:bg-amber-500/20 dark:text-amber-300 dark:border-amber-500/30 text-2xs px-1.5 py-0 font-bold animate-pulse">
+            <Badge className="bg-warning text-white bg-warning/20 text-warning border-warning-border/30 text-xs px-1.5 py-0 font-bold animate-pulse">
               {pendingCorrectionsCount}
             </Badge>
           )}
@@ -607,13 +607,13 @@ export default function AttendanceSettingsPage() {
  type="button"onClick={() => setActiveTab('audit')}
  className={`pb-3 px-4 text-xs font-bold border-b-2 transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
  activeTab === 'audit'
-              ? 'border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400'
+              ? 'border-border text-primary border-border text-primary'
               : 'border-transparent text-muted-foreground hover:text-foreground dark:hover:text-foreground'
           }`}
         >
           <ShieldCheck className="h-3.5 w-3.5"/>
           <span>{tBilingual('Audit Log', 'অডিট হিস্ট্রি')}</span>
-          <Badge variant="outline"className="ml-1 text-2xs px-1.5 py-0">
+          <Badge variant="outline"className="ml-1 text-xs px-1.5 py-0">
             {auditLogs.length}
           </Badge>
         </button>
@@ -693,7 +693,7 @@ export default function AttendanceSettingsPage() {
           {/* Locations Grid */}
           {filteredLocations.length === 0 ? (
             <Card className="border-border bg-card p-12 text-center space-y-3 rounded-xl shadow-sm">
-              <div className="w-12 h-12 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 flex items-center justify-center mx-auto text-indigo-600 dark:text-indigo-400">
+              <div className="w-12 h-12 rounded-xl bg-primary/10 bg-primary/10 flex items-center justify-center mx-auto text-primary text-primary">
                 <MapPin className="h-6 w-6"/>
               </div>
               <h3 className="text-base font-bold text-foreground">
@@ -712,7 +712,7 @@ export default function AttendanceSettingsPage() {
  resetLocationForm()
  setIsAddLocationOpen(true)
                 }}
- className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs h-9 rounded-xl shadow-sm">
+ className="bg-primary hover:bg-primary text-white font-bold text-xs h-9 rounded-xl shadow-sm">
                 <Plus className="h-3.5 w-3.5 mr-1"/>
                 <span>{tBilingual('Create Location', 'লোকেশন তৈরি করুন')}</span>
               </Button>
@@ -737,9 +737,9 @@ export default function AttendanceSettingsPage() {
                               {loc.name}
                             </CardTitle>
                             <Badge
- className={`text-2xs font-bold ${
+ className={`text-xs font-bold ${
  loc.is_active
-                                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800'
+                                  ? 'bg-success-surface text-success border-success-border bg-success-surface text-success border-success-border'
                                   : 'bg-muted text-muted-foreground border-border '
                               }`}
                             >
@@ -749,7 +749,7 @@ export default function AttendanceSettingsPage() {
                           <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                             {loc.branch_name && (
                               <Badge
- variant="outline"className="bg-muted text-indigo-600 dark:text-indigo-300 border-border text-2xs px-2 py-0.5 flex items-center gap-1 rounded-md">
+ variant="outline"className="bg-muted text-primary text-primary border-border text-xs px-2 py-0.5 flex items-center gap-1 rounded-md">
                                 <Building className="h-2.5 w-2.5"/>
                                 <span>{loc.branch_name}</span>
                               </Badge>
@@ -766,12 +766,12 @@ export default function AttendanceSettingsPage() {
                         <div className="flex items-center gap-1">
                           <button
  type="button"onClick={() => openEditModal(loc)}
- className="p-1.5 text-muted-foreground hover:text-indigo-600 dark:hover:text-foreground rounded-lg hover:bg-muted transition-colors"title="Edit Location">
+ className="p-1.5 text-muted-foreground hover:text-primary dark:hover:text-foreground rounded-lg hover:bg-muted transition-colors"title="Edit Location">
                             <Edit className="h-4 w-4"/>
                           </button>
                           <button
  type="button"onClick={() => openDeleteConfirm(loc)}
- className="p-1.5 text-muted-foreground hover:text-rose-600 dark:hover:text-rose-400 rounded-lg hover:bg-muted transition-colors"title="Delete Location & QR Terminal">
+ className="p-1.5 text-muted-foreground hover:text-destructive dark:hover:text-destructive rounded-lg hover:bg-muted transition-colors"title="Delete Location & QR Terminal">
                             <Trash2 className="h-4 w-4"/>
                           </button>
                         </div>
@@ -784,19 +784,19 @@ export default function AttendanceSettingsPage() {
                         <div
  id={`qr-container-${loc.id}`}
  onClick={() => openQrDetailModal(loc)}
- className="p-2.5 bg-card rounded-xl shrink-0 shadow-sm border border-border dark:border-transparent cursor-pointer hover:ring-2 hover:ring-indigo-500 transition-all group-hover:scale-105"title="Click to zoom & inspect QR details">
+ className="p-2.5 bg-card rounded-xl shrink-0 shadow-sm border border-border dark:border-transparent cursor-pointer hover:ring-2 hover:focus:ring-ring transition-all group-hover:scale-105"title="Click to zoom & inspect QR details">
                           <QRCodeSVG value={qrValue} size={84} includeMargin={false} />
                         </div>
 
                         <div className="space-y-1 text-xs flex-1">
                           <div className="flex justify-between items-center text-muted-foreground">
                             <span className="flex items-center gap-1">
-                              <Compass className="h-3 w-3 text-indigo-500"/>
+                              <Compass className="h-3 w-3 text-primary"/>
                               <span>{tBilingual('GPS Center', 'জিপিএস অবস্থান')}:</span>
                             </span>
                             <button
  type="button"onClick={() => handleCopy(`${loc.latitude.toFixed(6)}, ${loc.longitude.toFixed(6)}`, 'GPS')}
- className="tabular-nums text-foreground font-semibold hover:text-indigo-600 flex items-center gap-1 cursor-pointer"title="Copy Coordinates">
+ className="tabular-nums text-foreground font-semibold hover:text-primary flex items-center gap-1 cursor-pointer"title="Copy Coordinates">
                               <span>{loc.latitude.toFixed(4)}°, {loc.longitude.toFixed(4)}°</span>
                               <Copy className="h-2.5 w-2.5 text-muted-foreground"/>
                             </button>
@@ -804,7 +804,7 @@ export default function AttendanceSettingsPage() {
 
                           <div className="flex justify-between text-muted-foreground">
                             <span>{tBilingual('Radius Geofence', 'অনুমোদিত ব্যাসার্ধ')}:</span>
-                            <span className="font-semibold text-indigo-600 dark:text-indigo-400 tabular-nums">{loc.radius_meters}m</span>
+                            <span className="font-semibold text-primary text-primary tabular-nums">{loc.radius_meters}m</span>
                           </div>
 
                           <div className="flex justify-between text-muted-foreground">
@@ -814,7 +814,7 @@ export default function AttendanceSettingsPage() {
 
                           <div className="flex justify-between text-muted-foreground pt-1 border-t border-border">
                             <span>{tBilingual('Token Prefix', 'কিউআর টোকেন')}:</span>
-                            <span className="tabular-nums text-2xs text-emerald-600 dark:text-emerald-400 font-bold">
+                            <span className="tabular-nums text-xs text-success text-success font-bold">
                               {activeToken?.token_prefix || 'ACTIVE'}
                             </span>
                           </div>
@@ -828,15 +828,15 @@ export default function AttendanceSettingsPage() {
  setSelectedLocation(loc)
  setIsPrintPosterOpen(true)
                           }}
- className="border-border bg-card text-foreground hover:bg-muted dark:hover:bg-card-elevated text-2xs h-9 rounded-xl font-bold flex items-center justify-center gap-1.5 shadow-none">
-                          <Printer className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400"/>
+ className="border-border bg-card text-foreground hover:bg-muted dark:hover:bg-card-elevated text-xs h-9 rounded-xl font-bold flex items-center justify-center gap-1.5 shadow-none">
+                          <Printer className="h-3.5 w-3.5 text-primary text-primary"/>
                           <span>{tBilingual('Poster', 'পোস্টার')}</span>
                         </Button>
 
                         <Button
  type="button"variant="outline"onClick={() => handleDownloadQrSvg(loc)}
- className="border-border bg-card text-foreground hover:bg-muted dark:hover:bg-card-elevated text-2xs h-9 rounded-xl font-bold flex items-center justify-center gap-1.5 shadow-none">
-                          <Download className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400"/>
+ className="border-border bg-card text-foreground hover:bg-muted dark:hover:bg-card-elevated text-xs h-9 rounded-xl font-bold flex items-center justify-center gap-1.5 shadow-none">
+                          <Download className="h-3.5 w-3.5 text-success text-success"/>
                           <span>{tBilingual('Vector', 'ভেক্টর')}</span>
                         </Button>
 
@@ -845,8 +845,8 @@ export default function AttendanceSettingsPage() {
  setSelectedLocation(loc)
  setIsRegenerateConfirmOpen(true)
                           }}
- className="border-amber-200 dark:border-amber-500/20 bg-amber-50 text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-card-elevated text-2xs h-9 rounded-xl font-bold flex items-center justify-center gap-1.5 shadow-none">
-                          <RefreshCw className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400"/>
+ className="border-warning-border border-warning-border/20 bg-warning-surface text-warning text-warning hover:bg-warning-surface dark:hover:bg-card-elevated text-xs h-9 rounded-xl font-bold flex items-center justify-center gap-1.5 shadow-none">
+                          <RefreshCw className="h-3.5 w-3.5 text-warning text-warning"/>
                           <span>{tBilingual('Rotate', 'রোটেট')}</span>
                         </Button>
                       </div>
@@ -893,7 +893,7 @@ export default function AttendanceSettingsPage() {
                       <div
  id={`qr-container-${loc.id}`}
  onClick={() => openQrDetailModal(loc)}
- className="p-2 bg-card rounded-xl shrink-0 shadow-sm border border-border dark:border-transparent cursor-pointer hover:ring-2 hover:ring-indigo-500 transition-all"title="Click to inspect">
+ className="p-2 bg-card rounded-xl shrink-0 shadow-sm border border-border dark:border-transparent cursor-pointer hover:ring-2 hover:focus:ring-ring transition-all"title="Click to inspect">
                         <QRCodeSVG value={qrValue} size={76} includeMargin={false} />
                       </div>
 
@@ -901,20 +901,20 @@ export default function AttendanceSettingsPage() {
                         <div className="flex items-center gap-2">
                           <span className="font-bold text-foreground text-sm">{loc.name}</span>
                           <Badge
- className={`text-2xs font-bold ${
+ className={`text-xs font-bold ${
  activeToken?.is_active
-                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800'
-                                : 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950 dark:text-rose-300 dark:border-rose-800'
+                                ? 'bg-success-surface text-success border-success-border bg-success-surface text-success border-success-border'
+                                : 'bg-danger-surface text-destructive border-danger-border bg-danger-surface text-destructive border-danger-border'
                             }`}
                           >
                             {activeToken?.is_active ? 'ACTIVE TOKEN' : 'INACTIVE'}
                           </Badge>
                         </div>
                         <p className="text-xs text-muted-foreground tabular-nums">
- Prefix: <strong className="text-indigo-600 dark:text-indigo-300">{activeToken?.token_prefix || 'ACTIVE'}</strong> • Radius: {loc.radius_meters}m • Max Accuracy: ±{loc.max_accuracy_meters}m
+ Prefix: <strong className="text-primary text-primary">{activeToken?.token_prefix || 'ACTIVE'}</strong> • Radius: {loc.radius_meters}m • Max Accuracy: ±{loc.max_accuracy_meters}m
                         </p>
                         {activeToken?.created_at && (
-                          <p className="text-2xs text-muted-foreground tabular-nums">
+                          <p className="text-xs text-muted-foreground tabular-nums">
  Last Rotated: {new Date(activeToken.created_at).toLocaleString()}
                           </p>
                         )}
@@ -933,7 +933,7 @@ export default function AttendanceSettingsPage() {
  setSelectedLocation(loc)
  setIsPrintPosterOpen(true)
                         }}
- className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs h-8 rounded-lg font-bold">
+ className="bg-primary hover:bg-primary text-white text-xs h-8 rounded-lg font-bold">
                         <Printer className="h-3.5 w-3.5 mr-1"/>
                         <span>Poster</span>
                       </Button>
@@ -942,8 +942,8 @@ export default function AttendanceSettingsPage() {
  setSelectedLocation(loc)
  setIsRegenerateConfirmOpen(true)
                         }}
- className="border-amber-200 dark:border-amber-500/30 text-amber-700 dark:text-amber-300 hover:bg-amber-50 text-xs h-8 rounded-lg font-bold">
-                        <RefreshCw className="h-3.5 w-3.5 mr-1 text-amber-500"/>
+ className="border-warning-border border-warning-border/30 text-warning text-warning hover:bg-warning-surface text-xs h-8 rounded-lg font-bold">
+                        <RefreshCw className="h-3.5 w-3.5 mr-1 text-warning"/>
                         <span>Regenerate</span>
                       </Button>
                       <Button
@@ -951,8 +951,8 @@ export default function AttendanceSettingsPage() {
  setSelectedLocation(loc)
  setIsRevokeConfirmOpen(true)
                         }}
- className="border-rose-200 dark:border-rose-500/30 text-rose-700 dark:text-rose-400 hover:bg-rose-50 text-xs h-8 rounded-lg font-bold">
-                        <Ban className="h-3.5 w-3.5 mr-1 text-rose-500"/>
+ className="border-danger-border border-danger-border/30 text-destructive text-destructive hover:bg-danger-surface text-xs h-8 rounded-lg font-bold">
+                        <Ban className="h-3.5 w-3.5 mr-1 text-destructive"/>
                         <span>Revoke</span>
                       </Button>
                     </div>
@@ -1007,19 +1007,19 @@ export default function AttendanceSettingsPage() {
                       <span className="font-bold text-foreground text-xs">
                         {corr.employee_name || 'Staff Member'}
                       </span>
-                      <Badge className="text-2xs bg-indigo-50 text-indigo-700 border-indigo-200 dark:text-indigo-300">
+                      <Badge className="text-xs bg-primary/10 text-primary border-primary/20 text-primary">
                         {corr.requested_type}
                       </Badge>
                       <span className="text-xs text-muted-foreground">
                         {corr.attendance_date} at {corr.requested_time}
                       </span>
                       <Badge
- className={`text-2xs font-bold ${
+ className={`text-xs font-bold ${
  corr.status === 'approved'
-                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800'
+                            ? 'bg-success-surface text-success border-success-border bg-success-surface text-success border-success-border'
                             : corr.status === 'rejected'
-                            ? 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950 dark:text-rose-300 dark:border-rose-800'
-                            : 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-800'
+                            ? 'bg-danger-surface text-destructive border-danger-border bg-danger-surface text-destructive border-danger-border'
+                            : 'bg-warning-surface text-warning border-warning-border bg-warning-surface text-warning border-warning-border'
                         }`}
                       >
                         {corr.status.toUpperCase()}
@@ -1029,7 +1029,7 @@ export default function AttendanceSettingsPage() {
  Reason: <strong className="text-foreground">{corr.reason}</strong>
                     </p>
                     {corr.review_notes && (
-                      <p className="text-2xs text-muted-foreground italic">
+                      <p className="text-xs text-muted-foreground italic">
  Manager Note: &ldquo;{corr.review_notes}&rdquo;
                       </p>
                     )}
@@ -1042,7 +1042,7 @@ export default function AttendanceSettingsPage() {
  setSelectedCorrection(corr)
  handleReviewCorrection('approved')
                         }}
- className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs h-8 rounded-lg font-bold">
+ className="bg-success hover:bg-success text-white text-xs h-8 rounded-lg font-bold">
                         <Check className="h-3.5 w-3.5 mr-1"/>
                         <span>Approve</span>
                       </Button>
@@ -1051,7 +1051,7 @@ export default function AttendanceSettingsPage() {
  setSelectedCorrection(corr)
  handleReviewCorrection('rejected')
                         }}
- className="border-rose-200 text-rose-600 dark:text-rose-400 hover:bg-rose-50 text-xs h-8 rounded-lg font-bold">
+ className="border-danger-border text-destructive text-destructive hover:bg-danger-surface text-xs h-8 rounded-lg font-bold">
                         <X className="h-3.5 w-3.5 mr-1"/>
                         <span>Reject</span>
                       </Button>
@@ -1105,7 +1105,7 @@ export default function AttendanceSettingsPage() {
                   <div className="space-y-0.5">
                     <div className="flex items-center gap-2">
                       <Badge
- variant="outline"className="text-2xs tabular-nums bg-muted text-indigo-600 dark:text-indigo-300 border-border">
+ variant="outline"className="text-xs tabular-nums bg-muted text-primary text-primary border-border">
                         {log.action_type}
                       </Badge>
                       <span className="font-semibold text-foreground">{log.actor_name}</span>
@@ -1113,11 +1113,11 @@ export default function AttendanceSettingsPage() {
                         <span className="text-muted-foreground">• Location: {log.location_name}</span>
                       )}
                     </div>
-                    <span className="text-muted-foreground text-2xs block tabular-nums truncate max-w-xl">
+                    <span className="text-muted-foreground text-xs block tabular-nums truncate max-w-xl">
                       {typeof log.details === 'object' ? JSON.stringify(log.details) : log.details}
                     </span>
                   </div>
-                  <span className="text-2xs text-muted-foreground tabular-nums shrink-0">
+                  <span className="text-xs text-muted-foreground tabular-nums shrink-0">
                     {new Date(log.created_at).toLocaleString()}
                   </span>
                 </div>
@@ -1183,21 +1183,21 @@ export default function AttendanceSettingsPage() {
           <div className="p-4 rounded-xl bg-muted border border-border space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                <Compass className="h-4 w-4 text-indigo-600 dark:text-indigo-400"/>
+                <Compass className="h-4 w-4 text-primary text-primary"/>
                 <span>{tBilingual('Geofence GPS Coordinates', 'জিওফেন্স জিপিএস কো-অর্ডিনেট')}</span>
               </span>
 
               <Button
  type="button"variant="outline"size="sm"onClick={detectCurrentGps}
  disabled={isDetectingGps}
- className="h-8 text-xs border-indigo-300 dark:border-indigo-500/40 text-indigo-600 dark:text-indigo-300 hover:bg-indigo-50 rounded-xl font-bold">
+ className="h-8 text-xs border-primary/20 border-primary/20/40 text-primary text-primary hover:bg-primary/10 rounded-xl font-bold">
                 <Navigation className={`h-3.5 w-3.5 mr-1 ${isDetectingGps ? 'animate-spin' : ''}`} />
                 <span>{isDetectingGps ? tBilingual('Detecting GPS...', 'জিপিএস ধরা হচ্ছে...') : tBilingual('Capture Current GPS', 'বর্তমান অবস্থান নিন')}</span>
               </Button>
             </div>
 
             {gpsAccuracyCaptured && (
-              <div className="text-2xs text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 p-2 rounded-lg border border-emerald-200 dark:border-emerald-800 flex items-center gap-1.5">
+              <div className="text-xs text-success text-success bg-success-surface bg-success-surface p-2 rounded-lg border border-success-border border-success-border flex items-center gap-1.5">
                 <CheckCircle2 className="h-3.5 w-3.5 shrink-0"/>
                 <span>Device Satellite Accuracy: ±{gpsAccuracyCaptured}m (Verified)</span>
               </div>
@@ -1205,7 +1205,7 @@ export default function AttendanceSettingsPage() {
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <Label htmlFor="locLat"className="text-2xs text-muted-foreground font-semibold">
+                <Label htmlFor="locLat"className="text-xs text-muted-foreground font-semibold">
                   {tBilingual('Latitude (°N)', 'অক্ষাংশ')}
                 </Label>
                 <Input
@@ -1216,7 +1216,7 @@ export default function AttendanceSettingsPage() {
               </div>
 
               <div className="space-y-1">
-                <Label htmlFor="locLng"className="text-2xs text-muted-foreground font-semibold">
+                <Label htmlFor="locLng"className="text-xs text-muted-foreground font-semibold">
                   {tBilingual('Longitude (°E)', 'দ্রাঘিমাংশ')}
                 </Label>
                 <Input
@@ -1233,7 +1233,7 @@ export default function AttendanceSettingsPage() {
             <div className="space-y-1.5 p-3 rounded-xl bg-muted border border-border">
               <div className="flex justify-between items-center">
                 <Label htmlFor="locRadius"className="text-xs font-semibold text-foreground">
- Radius: <strong className="text-indigo-600 dark:text-indigo-400 tabular-nums">{locRadius}m</strong>
+ Radius: <strong className="text-primary text-primary tabular-nums">{locRadius}m</strong>
                 </Label>
               </div>
               <input
@@ -1243,7 +1243,7 @@ export default function AttendanceSettingsPage() {
  value={locRadius}
  onChange={(e) => setLocRadius(parseInt(e.target.value))}
  className="w-full accent-indigo-600"/>
-              <p className="text-2xs text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 {tBilingual('Allowed punch circle diameter.', 'অনুমোদিত উপস্থিতি বলয়।')}
               </p>
             </div>
@@ -1261,7 +1261,7 @@ export default function AttendanceSettingsPage() {
  value={locMaxAccuracy}
  onChange={(e) => setLocMaxAccuracy(parseInt(e.target.value))}
  className="w-full accent-indigo-600"/>
-              <p className="text-2xs text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 {tBilingual('Rejects inaccurate GPS satellite signals.', 'দুর্বল জিপিএস সিগন্যাল বাতিল করবে।')}
               </p>
             </div>
@@ -1275,7 +1275,7 @@ export default function AttendanceSettingsPage() {
             </Button>
             <Button
  type="submit"size="sm"disabled={isSubmitting}
- className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-sm">
+ className="bg-primary hover:bg-primary text-white font-bold text-xs rounded-xl shadow-sm">
               {isSubmitting ? tBilingual('Creating...', 'তৈরি হচ্ছে...') : tBilingual('Create Location & Generate QR', 'লোকেশন তৈরি ও কিউআর জেনারেট')}
             </Button>
           </div>
@@ -1332,7 +1332,7 @@ export default function AttendanceSettingsPage() {
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <Label className="text-2xs text-muted-foreground font-semibold">{tBilingual('Latitude (°N)', 'অক্ষাংশ')}</Label>
+              <Label className="text-xs text-muted-foreground font-semibold">{tBilingual('Latitude (°N)', 'অক্ষাংশ')}</Label>
               <Input
  type="number"step="0.000001"value={locLat}
  onChange={(e) => setLocLat(parseFloat(e.target.value))}
@@ -1341,7 +1341,7 @@ export default function AttendanceSettingsPage() {
             </div>
 
             <div className="space-y-1">
-              <Label className="text-2xs text-muted-foreground font-semibold">{tBilingual('Longitude (°E)', 'দ্রাঘিমাংশ')}</Label>
+              <Label className="text-xs text-muted-foreground font-semibold">{tBilingual('Longitude (°E)', 'দ্রাঘিমাংশ')}</Label>
               <Input
  type="number"step="0.000001"value={locLng}
  onChange={(e) => setLocLng(parseFloat(e.target.value))}
@@ -1353,7 +1353,7 @@ export default function AttendanceSettingsPage() {
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5 p-3 rounded-xl bg-muted border border-border">
               <Label className="text-xs font-semibold text-foreground">
- Radius: <strong className="text-indigo-600 dark:text-indigo-400 tabular-nums">{locRadius}m</strong>
+ Radius: <strong className="text-primary text-primary tabular-nums">{locRadius}m</strong>
               </Label>
               <input
  type="range"min={20}
@@ -1396,7 +1396,7 @@ export default function AttendanceSettingsPage() {
             </Button>
             <Button
  type="submit"size="sm"disabled={isSubmitting}
- className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-sm">
+ className="bg-primary hover:bg-primary text-white font-bold text-xs rounded-xl shadow-sm">
               {isSubmitting ? tBilingual('Saving...', 'সংরক্ষণ হচ্ছে...') : tBilingual('Save Changes', 'সংরক্ষণ করুন')}
             </Button>
           </div>
@@ -1429,13 +1429,13 @@ export default function AttendanceSettingsPage() {
               <div className="space-y-1.5 text-xs flex-1 w-full">
                 <div className="flex justify-between border-b border-border pb-1">
                   <span className="text-muted-foreground">Token Status:</span>
-                  <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800 text-2xs font-bold">
+                  <Badge className="bg-success-surface text-success border-success-border bg-success-surface text-success border-success-border text-xs font-bold">
                     {selectedLocation.active_qr_token?.is_active ? 'ACTIVE & VERIFIED' : 'REVOKED'}
                   </Badge>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Token Prefix:</span>
-                  <span className="tabular-nums text-indigo-600 dark:text-indigo-300 font-bold">
+                  <span className="tabular-nums text-primary text-primary font-bold">
                     {selectedLocation.active_qr_token?.token_prefix || 'ACTIVE'}
                   </span>
                 </div>
@@ -1452,7 +1452,7 @@ export default function AttendanceSettingsPage() {
                   </span>
                 </div>
                 {selectedLocation.active_qr_token?.created_at && (
-                  <div className="flex justify-between pt-1 border-t border-border text-muted-foreground text-2xs">
+                  <div className="flex justify-between pt-1 border-t border-border text-muted-foreground text-xs">
                     <span>Generated:</span>
                     <span>{new Date(selectedLocation.active_qr_token.created_at).toLocaleString()}</span>
                   </div>
@@ -1466,14 +1466,14 @@ export default function AttendanceSettingsPage() {
  setIsQrDetailOpen(false)
  setIsPrintPosterOpen(true)
                 }}
- className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl">
+ className="bg-primary hover:bg-primary text-white text-xs font-bold rounded-xl">
                 <Printer className="h-3.5 w-3.5 mr-1"/>
                 <span>Print Poster</span>
               </Button>
 
               <Button
  type="button"variant="outline"size="sm"onClick={() => handleDownloadQrSvg(selectedLocation)}
- className="border-border text-emerald-600 dark:text-emerald-400 text-xs font-bold rounded-xl">
+ className="border-border text-success text-success text-xs font-bold rounded-xl">
                 <Download className="h-3.5 w-3.5 mr-1"/>
                 <span>Download</span>
               </Button>
@@ -1483,7 +1483,7 @@ export default function AttendanceSettingsPage() {
  setIsQrDetailOpen(false)
  setIsRegenerateConfirmOpen(true)
                 }}
- className="border-amber-200 dark:border-amber-500/30 text-amber-700 dark:text-amber-300 text-xs font-bold rounded-xl">
+ className="border-warning-border border-warning-border/30 text-warning text-warning text-xs font-bold rounded-xl">
                 <RefreshCw className="h-3.5 w-3.5 mr-1"/>
                 <span>Rotate</span>
               </Button>
@@ -1493,7 +1493,7 @@ export default function AttendanceSettingsPage() {
  setIsQrDetailOpen(false)
  setIsRevokeConfirmOpen(true)
                 }}
- className="border-rose-200 dark:border-rose-500/30 text-rose-700 dark:text-rose-400 text-xs font-bold rounded-xl">
+ className="border-danger-border border-danger-border/30 text-destructive text-destructive text-xs font-bold rounded-xl">
                 <Ban className="h-3.5 w-3.5 mr-1"/>
                 <span>Revoke</span>
               </Button>
@@ -1503,7 +1503,7 @@ export default function AttendanceSettingsPage() {
  setIsQrDetailOpen(false)
  openDeleteConfirm(selectedLocation)
                 }}
- className="border-rose-200 dark:border-rose-500/40 text-rose-700 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/50 text-xs font-bold rounded-xl">
+ className="border-danger-border border-danger-border/40 text-destructive text-destructive hover:bg-danger-surface dark:hover:bg-danger-surface text-xs font-bold rounded-xl">
                 <Trash2 className="h-3.5 w-3.5 mr-1"/>
                 <span>Delete</span>
               </Button>
@@ -1518,8 +1518,8 @@ export default function AttendanceSettingsPage() {
  onOpenChange={(v) => !v && setIsRegenerateConfirmOpen(false)}
  title="Regenerate QR Code?"description="Immediate cryptographic invalidation warning">
         <div className="space-y-4 pt-2">
-          <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-500/15 border border-amber-200 dark:border-amber-500/30 text-amber-800 dark:text-amber-300 text-xs flex items-start gap-3">
-            <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5"/>
+          <div className="p-4 rounded-xl bg-warning-surface bg-warning/15 border border-warning-border border-warning-border/30 text-warning text-warning text-xs flex items-start gap-3">
+            <AlertTriangle className="h-5 w-5 text-warning text-warning shrink-0 mt-0.5"/>
             <div className="space-y-1">
               <h4 className="font-bold text-foreground">Warning: Immediate Invalidation</h4>
               <p>
@@ -1541,7 +1541,7 @@ export default function AttendanceSettingsPage() {
             <Button
  type="button"size="sm"disabled={isSubmitting}
  onClick={handleRegenerateQr}
- className="bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-xl shadow-sm">
+ className="bg-warning hover:bg-warning/90 text-white font-bold text-xs rounded-xl shadow-sm">
               {isSubmitting ? 'Rotating...' : 'Confirm & Invalidate Previous QR'}
             </Button>
           </div>
@@ -1554,8 +1554,8 @@ export default function AttendanceSettingsPage() {
  onOpenChange={(v) => !v && setIsRevokeConfirmOpen(false)}
  title="Revoke QR Code?"description="Deactivates terminal until newly generated">
         <div className="space-y-4 pt-2">
-          <div className="p-4 rounded-xl bg-rose-50 dark:bg-rose-500/15 border border-rose-200 dark:border-rose-500/30 text-rose-800 dark:text-rose-300 text-xs flex items-start gap-3">
-            <AlertTriangle className="h-5 w-5 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5"/>
+          <div className="p-4 rounded-xl bg-danger-surface bg-destructive/15 border border-danger-border border-danger-border/30 text-destructive text-destructive text-xs flex items-start gap-3">
+            <AlertTriangle className="h-5 w-5 text-destructive text-destructive shrink-0 mt-0.5"/>
             <div className="space-y-1">
               <h4 className="font-bold text-foreground">Warning: Terminal Deactivation</h4>
               <p>
@@ -1573,7 +1573,7 @@ export default function AttendanceSettingsPage() {
             <Button
  type="button"size="sm"disabled={isSubmitting}
  onClick={handleRevokeQr}
- className="bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-xl shadow-sm">
+ className="bg-destructive hover:bg-destructive text-white font-bold text-xs rounded-xl shadow-sm">
               {isSubmitting ? 'Revoking...' : 'Confirm Revocation'}
             </Button>
           </div>
@@ -1591,8 +1591,8 @@ export default function AttendanceSettingsPage() {
         )}
       >
         <div className="space-y-4 pt-2">
-          <div className="p-4 rounded-xl bg-rose-50 dark:bg-rose-500/15 border border-rose-200 dark:border-rose-500/30 text-rose-800 dark:text-rose-300 text-xs flex items-start gap-3">
-            <AlertTriangle className="h-5 w-5 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5"/>
+          <div className="p-4 rounded-xl bg-danger-surface bg-destructive/15 border border-danger-border border-danger-border/30 text-destructive text-destructive text-xs flex items-start gap-3">
+            <AlertTriangle className="h-5 w-5 text-destructive text-destructive shrink-0 mt-0.5"/>
             <div className="space-y-1">
               <h4 className="font-bold text-foreground">{tBilingual('Permanent Deletion Warning', 'স্থায়ীভাবে মুছে ফেলার সতর্কতা')}</h4>
               <p>
@@ -1603,7 +1603,7 @@ export default function AttendanceSettingsPage() {
 
           <div className="p-3 bg-muted rounded-xl text-xs text-muted-foreground tabular-nums border border-border">
  Target Location: <strong className="text-foreground">{locationToDelete?.name}</strong> • Prefix:{' '}
-            <strong className="text-indigo-600 dark:text-indigo-300">
+            <strong className="text-primary text-primary">
               {locationToDelete?.active_qr_token?.token_prefix || 'ACTIVE'}
             </strong>
           </div>
@@ -1617,7 +1617,7 @@ export default function AttendanceSettingsPage() {
             <Button
  type="button"size="sm"disabled={isSubmitting}
  onClick={handleConfirmDeleteLocation}
- className="bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-xl shadow-sm">
+ className="bg-destructive hover:bg-destructive text-white font-bold text-xs rounded-xl shadow-sm">
               {isSubmitting ? tBilingual('Deleting...', 'মুছে ফেলা হচ্ছে...') : tBilingual('Confirm Delete', 'মুছে ফেলুন')}
             </Button>
           </div>

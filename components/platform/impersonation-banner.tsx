@@ -47,7 +47,7 @@ export function ImpersonationBanner({
             <span className="truncate">{tenantName}</span>
           </div>
           {tenantId && (
-            <Badge variant="outline" className="text-2xs font-mono py-0 px-1.5 h-4.5 bg-background/50">
+            <Badge variant="outline" className="text-xs font-mono py-0 px-1.5 h-4.5 bg-background/50">
               {tenantId}
             </Badge>
           )}
@@ -57,7 +57,7 @@ export function ImpersonationBanner({
             </span>
           )}
           {expiresIn && (
-            <span className="text-2xs text-muted-foreground hidden md:inline">
+            <span className="text-xs text-muted-foreground hidden md:inline">
               • {tBilingual('Ends in', 'বাকি')} {expiresIn}
             </span>
           )}

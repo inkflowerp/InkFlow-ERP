@@ -535,7 +535,7 @@ export default function JobCostingPage() {
 
  if (!mounted) {
  return (
-      <div className="space-y-6 max-w-7xl pb-20 animate-pulse">
+      <div className="space-y-6 pb-20 animate-pulse">
         <div className="h-10 bg-muted rounded-xl w-1/3"/>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map((i) => (
@@ -551,11 +551,11 @@ export default function JobCostingPage() {
     <PanelAccessGuard
  module="reports"action="view"panelTitle="Job Costing & Profitability Engine"panelTitleBn="কস্টিং ও লাভ-মার্জিন ইঞ্জিন">
       <FeatureGate feature="job_costing">
-        <div className="space-y-6 max-w-7xl pb-20">
+        <div className="space-y-6 pb-20">
         {/* Header with Cross-Module Navigation */}
         <PageHeader
  titleEn="Job Costing"titleBn="কস্টিং ও লাভ-মার্জিন ইঞ্জিন"descriptionEn="9-head cost tracking, pre vs post-production variance audits, and sensitive cost shielding during price negotiations."descriptionBn="৯টি খাতে ব্যয় ট্র্যাকিং, উৎপাদন-পূর্ব ও পরবর্তী খরচের তুলনা এবং দরদামের সময় গোপন ব্যয় সুরক্ষা।"icon={Calculator}
- iconColor="text-emerald-600"actions={
+ iconColor="text-success"actions={
             <div className="flex flex-wrap items-center gap-2">
               <Button
  variant="outline"size="sm"onClick={handleExportCSV}
@@ -576,8 +576,8 @@ export default function JobCostingPage() {
 
         {/* Notification Toast */}
         {notification && (
-          <div className="p-3 bg-emerald-50 text-emerald-800 rounded-xl text-xs font-semibold flex items-center gap-2 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800 animate-in fade-in-0 shadow-xs">
-            <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0"/>
+          <div className="p-3 bg-success-surface text-success rounded-xl text-xs font-semibold flex items-center gap-2 border border-success-border bg-success-surface text-success border-success-border animate-in fade-in-0 shadow-xs">
+            <CheckCircle2 className="h-4 w-4 text-success shrink-0"/>
             <span>{notification}</span>
           </div>
         )}
@@ -613,14 +613,14 @@ export default function JobCostingPage() {
 
         {/* Sensitive Cost Notice for Sales Mode */}
         {isSalesRoleShielded && (
-          <div className="p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-amber-900 dark:text-amber-200 shadow-xs">
+          <div className="p-3.5 rounded-xl bg-warning-surface bg-warning-surface border border-warning-border border-warning-border text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-warning text-warning shadow-xs">
             <div className="flex items-center gap-2">
-              <ShieldAlert className="h-4 w-4 text-amber-600 shrink-0"/>
+              <ShieldAlert className="h-4 w-4 text-warning shrink-0"/>
               <span>
                 <strong>{tBilingual('Sales Representative Protection Active: ', 'বিক্রয় প্রতিনিধি সুরক্ষা সক্রিয়: ')}</strong>{tBilingual('Factory internal substrate purchase rates, machine electricity costs, and raw margin % are hidden.', 'কারখানার নিজস্ব কাঁচামাল ক্রয় দর, মেশিনের বিদ্যুৎ খরচ এবং প্রকৃত মার্জিন শতাংশ আড়াল করা হয়েছে।')}
               </span>
             </div>
-            <span className="tabular-nums text-2xs uppercase font-bold bg-amber-200 text-amber-900 px-2 py-0.5 rounded shrink-0 self-start sm:self-auto">
+            <span className="tabular-nums text-xs uppercase font-bold bg-warning text-warning px-2 py-0.5 rounded shrink-0 self-start sm:self-auto">
  {tBilingual('Role: Sales Executive', 'পদবী: সেলস এক্সিকিউটিভ')}
             </span>
           </div>
@@ -651,25 +651,25 @@ export default function JobCostingPage() {
                   <button
  onClick={() => setStatusFilter('in_production')}
  className={`px-2.5 py-1 rounded-lg transition-all ${
- statusFilter === 'in_production' ? 'bg-card shadow-xs text-blue-600' : 'text-muted-foreground'
+ statusFilter === 'in_production' ? 'bg-card shadow-xs text-primary' : 'text-muted-foreground'
                     }`}
                   >{tBilingual('In Production', 'চলতি কাজ')}</button>
                   <button
  onClick={() => setStatusFilter('actualized')}
  className={`px-2.5 py-1 rounded-lg transition-all ${
- statusFilter === 'actualized' ? 'bg-card shadow-xs text-emerald-600' : 'text-muted-foreground'
+ statusFilter === 'actualized' ? 'bg-card shadow-xs text-success' : 'text-muted-foreground'
                     }`}
                   >{tBilingual('Audited', 'নিরীক্ষিত')}</button>
                   <button
  onClick={() => setStatusFilter('overrun')}
  className={`px-2.5 py-1 rounded-lg transition-all ${
- statusFilter === 'overrun' ? 'bg-card shadow-xs text-red-600' : 'text-muted-foreground'
+ statusFilter === 'overrun' ? 'bg-card shadow-xs text-destructive' : 'text-muted-foreground'
                     }`}
                   >{tBilingual('Overrun', 'বাজেট অতিরিক্ত')}</button>
                   <button
  onClick={() => setStatusFilter('saved')}
  className={`px-2.5 py-1 rounded-lg transition-all ${
- statusFilter === 'saved' ? 'bg-card shadow-xs text-teal-600' : 'text-muted-foreground'
+ statusFilter === 'saved' ? 'bg-card shadow-xs text-success' : 'text-muted-foreground'
                     }`}
                   >{tBilingual('Saved', 'সাশ্রয়ী')}</button>
                 </div>
@@ -707,7 +707,7 @@ export default function JobCostingPage() {
                       <td className="py-3.5 px-4">
                         <Link
  href={getTenantNavHref(`/costing/${cst.id}`, pathname, slug)}
- className="tabular-nums font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 group">
+ className="tabular-nums font-bold text-primary text-primary hover:underline flex items-center gap-1 group">
                           <span>{cst.job_number}</span>
                           <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity"/>
                         </Link>
@@ -719,7 +719,7 @@ export default function JobCostingPage() {
                         <div className="font-medium text-foreground max-w-[220px] truncate">
                           {cst.item_title}
                         </div>
-                        <div className="text-2xs tabular-nums text-muted-foreground max-w-[220px] truncate">{cst.dimensions_spec}</div>
+                        <div className="text-xs tabular-nums text-muted-foreground max-w-[220px] truncate">{cst.dimensions_spec}</div>
                       </td>
 
                       {/* Selling Price */}
@@ -746,44 +746,44 @@ export default function JobCostingPage() {
                       {/* Realized Margin */}
                       <td className="py-3.5 px-4 text-center tabular-nums">
                         {isSalesRoleShielded ? (
-                          <span className="px-2 py-0.5 rounded text-2xs font-bold bg-muted text-muted-foreground">{tBilingual('Shielded', 'সুরক্ষিত')}</span>
+                          <span className="px-2 py-0.5 rounded text-xs font-bold bg-muted text-muted-foreground">{tBilingual('Shielded', 'সুরক্ষিত')}</span>
                         ) : cst.status === 'actualized' ? (
                           <span
- className={`inline-flex items-center px-2 py-0.5 rounded text-2xs font-black ${
+ className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-black ${
  cst.act.margin_percentage >= 25
-                                ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                                ? 'bg-success-surface text-success bg-success-surface text-success'
                                 : cst.act.margin_percentage >= 15
-                                ? 'bg-blue-100 text-blue-800'
-                                : 'bg-red-100 text-red-800'
+                                ? 'bg-primary/10 text-primary'
+                                : 'bg-danger-surface text-destructive'
                             }`}
                           >
                             {cst.act.margin_percentage}%
                           </span>
                         ) : (
-                          <span className="text-muted-foreground text-2xs">{tBilingual('Est', 'আনুমানিক')}: {cst.est.margin_percentage}%</span>
+                          <span className="text-muted-foreground text-xs">{tBilingual('Est', 'আনুমানিক')}: {cst.est.margin_percentage}%</span>
                         )}
                       </td>
 
                       {/* Variance Status */}
                       <td className="py-3.5 px-4">
                         {isSalesRoleShielded ? (
-                          <span className="text-2xs text-muted-foreground tabular-nums">{tBilingual('Active', 'সক্রিয়')}</span>
+                          <span className="text-xs text-muted-foreground tabular-nums">{tBilingual('Active', 'সক্রিয়')}</span>
                         ) : cst.status === 'actualized' ? (
                           (cst.variances?.total_variance || 0) < 0 ? (
-                            <span className="inline-flex items-center gap-1 text-2xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-200">
-                              <TrendingDown className="h-3 w-3 text-emerald-600"/>
+                            <span className="inline-flex items-center gap-1 text-xs font-bold text-success bg-success-surface px-2 py-0.5 rounded-lg border border-success-border">
+                              <TrendingDown className="h-3 w-3 text-success"/>
  {tBilingual('Saved', 'সাশ্রয়')} {formatBDT(Math.abs(cst.variances?.total_variance || 0))}
                             </span>
                           ) : (cst.variances?.total_variance || 0) > 0 ? (
-                            <span className="inline-flex items-center gap-1 text-2xs font-bold text-red-700 bg-red-50 px-2 py-0.5 rounded-lg border border-red-200">
-                              <TrendingUp className="h-3 w-3 text-red-600"/>
+                            <span className="inline-flex items-center gap-1 text-xs font-bold text-destructive bg-danger-surface px-2 py-0.5 rounded-lg border border-danger-border">
+                              <TrendingUp className="h-3 w-3 text-destructive"/>
  {tBilingual('Overrun', 'অতিরিক্ত')} +{formatBDT(cst.variances.total_variance)}
                             </span>
                           ) : (
-                            <span className="text-2xs text-muted-foreground tabular-nums">{tBilingual('On Budget', 'বাজেট অনুযায়ী')}</span>
+                            <span className="text-xs text-muted-foreground tabular-nums">{tBilingual('On Budget', 'বাজেট অনুযায়ী')}</span>
                           )
                         ) : (
-                          <span className="text-2xs text-blue-600 tabular-nums font-medium">{tBilingual('In Production', 'প্রোডাকশনে')}</span>
+                          <span className="text-xs text-primary tabular-nums font-medium">{tBilingual('In Production', 'প্রোডাকশনে')}</span>
                         )}
                       </td>
 
@@ -795,7 +795,7 @@ export default function JobCostingPage() {
  setNegotiatingJob(cst)
  setDiscountPercent(5)
                             }}
- className="h-7 text-2xs px-2 text-foreground border-input hover:bg-muted rounded-lg">{tBilingual('Negotiate', 'দরদাম')}</Button>
+ className="h-7 text-xs px-2 text-foreground border-input hover:bg-muted rounded-lg">{tBilingual('Negotiate', 'দরদাম')}</Button>
 
                           {!isSalesRoleShielded && (
                             <Button
@@ -814,12 +814,12 @@ export default function JobCostingPage() {
  other_cost: cst.act?.other_cost || cst.est.other_cost,
                                 })
                               }}
- className="h-7 text-2xs px-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg">{tBilingual('Actuals', 'প্রকৃত ব্যয়')}</Button>
+ className="h-7 text-xs px-2 bg-success hover:bg-success text-white font-bold rounded-lg">{tBilingual('Actuals', 'প্রকৃত ব্যয়')}</Button>
                           )}
 
                           <Link
  href={getTenantNavHref(`/costing/${cst.id}`, pathname, slug)}
- className="inline-flex items-center px-2 py-1 rounded-lg text-xs font-semibold text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950">{tBilingual('Details', 'বিস্তারিত')}</Link>
+ className="inline-flex items-center px-2 py-1 rounded-lg text-xs font-semibold text-primary hover:bg-primary/10 dark:hover:bg-primary/10">{tBilingual('Details', 'বিস্তারিত')}</Link>
                         </div>
                       </td>
                     </tr>
@@ -862,7 +862,7 @@ export default function JobCostingPage() {
                     <div>
                       <Link
  href={getTenantNavHref(`/costing/${cst.id}`, pathname, slug)}
- className="tabular-nums font-bold text-xs text-blue-600 hover:underline">
+ className="tabular-nums font-bold text-xs text-primary hover:underline">
                         {cst.job_number}
                       </Link>
                       <div className="font-semibold text-sm text-foreground mt-0.5">
@@ -874,34 +874,34 @@ export default function JobCostingPage() {
                         {formatBDT(cst.selling_price)}
                       </div>
                       {isSalesRoleShielded ? (
-                        <span className="px-2 py-0.5 rounded text-2xs font-bold bg-muted text-muted-foreground">{tBilingual('Shielded', 'সুরক্ষিত')}</span>
+                        <span className="px-2 py-0.5 rounded text-xs font-bold bg-muted text-muted-foreground">{tBilingual('Shielded', 'সুরক্ষিত')}</span>
                       ) : cst.status === 'actualized' ? (
                         <span
- className={`inline-flex items-center px-1.5 py-0.5 rounded text-2xs font-black ${
+ className={`inline-flex items-center px-1.5 py-0.5 rounded text-xs font-black ${
  cst.act.margin_percentage >= 25
-                              ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                              ? 'bg-success-surface text-success bg-success-surface text-success'
                               : cst.act.margin_percentage >= 15
-                              ? 'bg-blue-100 text-blue-800'
-                              : 'bg-red-100 text-red-800'
+                              ? 'bg-primary/10 text-primary'
+                              : 'bg-danger-surface text-destructive'
                           }`}
                         >
                           {cst.act.margin_percentage}% {tBilingual('Margin', 'মার্জিন')}
                         </span>
                       ) : (
-                        <span className="text-muted-foreground text-2xs">{tBilingual('Est', 'আনুমানিক')}: {cst.est.margin_percentage}%</span>
+                        <span className="text-muted-foreground text-xs">{tBilingual('Est', 'আনুমানিক')}: {cst.est.margin_percentage}%</span>
                       )}
                     </div>
                   </div>
 
                   <div className="text-xs text-muted-foreground bg-muted p-2.5 rounded-xl border border-border /60">
                     <div className="font-medium text-foreground">{cst.item_title}</div>
-                    <div className="text-2xs tabular-nums text-muted-foreground mt-0.5">{cst.dimensions_spec}</div>
+                    <div className="text-xs tabular-nums text-muted-foreground mt-0.5">{cst.dimensions_spec}</div>
                   </div>
 
                   {/* Costs & Variance Grid */}
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     <div className="p-2 rounded-xl bg-muted border border-border">
-                      <span className="text-2xs text-muted-foreground block uppercase">{tBilingual('Est vs Act Cost', 'আনুমানিক বনাম প্রকৃত')}</span>
+                      <span className="text-xs text-muted-foreground block uppercase">{tBilingual('Est vs Act Cost', 'আনুমানিক বনাম প্রকৃত')}</span>
                       <span className="tabular-nums font-semibold">
                         {isSalesRoleShielded
                           ? '••••••'
@@ -909,21 +909,21 @@ export default function JobCostingPage() {
                       </span>
                     </div>
                     <div className="p-2 rounded-xl bg-muted border border-border">
-                      <span className="text-2xs text-muted-foreground block uppercase">{tBilingual('Variance', 'পার্থক্য')}</span>
+                      <span className="text-xs text-muted-foreground block uppercase">{tBilingual('Variance', 'পার্থক্য')}</span>
                       {isSalesRoleShielded ? (
                         <span className="tabular-nums text-muted-foreground">••••</span>
                       ) : cst.status === 'actualized' ? (
                         (cst.variances?.total_variance || 0) < 0 ? (
-                          <span className="text-2xs font-bold text-emerald-600 tabular-nums">{tBilingual('Saved', 'সাশ্রয়')} {formatBDT(Math.abs(cst.variances?.total_variance || 0))}</span>
+                          <span className="text-xs font-bold text-success tabular-nums">{tBilingual('Saved', 'সাশ্রয়')} {formatBDT(Math.abs(cst.variances?.total_variance || 0))}</span>
                         ) : (cst.variances?.total_variance || 0) > 0 ? (
-                          <span className="text-2xs font-bold text-red-600 tabular-nums">
+                          <span className="text-xs font-bold text-destructive tabular-nums">
                             +{formatBDT(cst.variances.total_variance)}
                           </span>
                         ) : (
-                          <span className="text-2xs text-muted-foreground tabular-nums">{tBilingual('On Budget', 'বাজেট অনুযায়ী')}</span>
+                          <span className="text-xs text-muted-foreground tabular-nums">{tBilingual('On Budget', 'বাজেট অনুযায়ী')}</span>
                         )
                       ) : (
-                        <span className="text-2xs text-blue-600 tabular-nums">{tBilingual('In Prod', 'প্রোডাকশনে')}</span>
+                        <span className="text-xs text-primary tabular-nums">{tBilingual('In Prod', 'প্রোডাকশনে')}</span>
                       )}
                     </div>
                   </div>
@@ -954,7 +954,7 @@ export default function JobCostingPage() {
  other_cost: cst.act?.other_cost || cst.est.other_cost,
                           })
                         }}
- className="flex-1 h-9 text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl">{tBilingual('Actuals', 'প্রকৃত ব্যয়')}</Button>
+ className="flex-1 h-9 text-xs bg-success hover:bg-success text-white font-bold rounded-xl">{tBilingual('Actuals', 'প্রকৃত ব্যয়')}</Button>
                     )}
 
                     <Link
@@ -999,16 +999,16 @@ export default function JobCostingPage() {
                   <button
  key={p.id}
  type="button"onClick={() => handleApplyPreset(p.id)}
- className="text-left p-3 rounded-xl border border-border hover:border-emerald-500 hover:bg-emerald-50/40 dark:hover:bg-emerald-950/20 text-xs transition-all group shadow-2xs hover:shadow-xs">
+ className="text-left p-3 rounded-xl border border-border hover:border-success-border hover:bg-success-surface/40 dark:hover:bg-success-surface text-xs transition-all group shadow-2xs hover:shadow-xs">
                     <div className="flex items-center justify-between gap-1">
-                      <span className="font-bold text-foreground group-hover:text-emerald-700 dark:group-hover:text-emerald-300 truncate">
+                      <span className="font-bold text-foreground group-hover:text-success dark:group-hover:text-success truncate">
                         {tBilingual(p.nameEn, p.nameBn || p.nameEn)}
                       </span>
-                      <span className="text-2xs tabular-nums font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100/80 dark:bg-emerald-950/80 px-2 py-0.5 rounded-full shrink-0">
+                      <span className="text-xs tabular-nums font-bold text-success text-success bg-success-surface/80 bg-success-surface/80 px-2 py-0.5 rounded-full shrink-0">
                         {formatBDT(p.selling)}
                       </span>
                     </div>
-                    <div className="text-2xs text-muted-foreground tabular-nums mt-1.5 truncate">{p.specs}</div>
+                    <div className="text-xs text-muted-foreground tabular-nums mt-1.5 truncate">{p.specs}</div>
                   </button>
                 ))}
               </div>
@@ -1073,7 +1073,7 @@ export default function JobCostingPage() {
 
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs">
                 <div className="space-y-1">
-                  <span className="text-2xs text-muted-foreground block truncate">1. {tBilingual('Print Media', 'মিডিয়া/বোর্ড')}</span>
+                  <span className="text-xs text-muted-foreground block truncate">1. {tBilingual('Print Media', 'মিডিয়া/বোর্ড')}</span>
                   <Input
  type="number"min="0"value={newEstHeads.material_cost}
  onChange={(e) => setNewEstHeads({ ...newEstHeads, material_cost: Number(e.target.value) })}
@@ -1081,7 +1081,7 @@ export default function JobCostingPage() {
                 </div>
 
                 <div className="space-y-1">
-                  <span className="text-2xs text-muted-foreground block truncate">2. Ink (কালি/ইঙ্ক)</span>
+                  <span className="text-xs text-muted-foreground block truncate">2. Ink (কালি/ইঙ্ক)</span>
                   <Input
  type="number"min="0"value={newEstHeads.ink_cost}
  onChange={(e) => setNewEstHeads({ ...newEstHeads, ink_cost: Number(e.target.value) })}
@@ -1089,7 +1089,7 @@ export default function JobCostingPage() {
                 </div>
 
                 <div className="space-y-1">
-                  <span className="text-2xs text-muted-foreground block truncate">3. Machine Power (বিদ্যুৎ)</span>
+                  <span className="text-xs text-muted-foreground block truncate">3. Machine Power (বিদ্যুৎ)</span>
                   <Input
  type="number"min="0"value={newEstHeads.machine_cost}
  onChange={(e) => setNewEstHeads({ ...newEstHeads, machine_cost: Number(e.target.value) })}
@@ -1097,7 +1097,7 @@ export default function JobCostingPage() {
                 </div>
 
                 <div className="space-y-1">
-                  <span className="text-2xs text-muted-foreground block truncate">4. Finishing (ল্যামিনেশন)</span>
+                  <span className="text-xs text-muted-foreground block truncate">4. Finishing (ল্যামিনেশন)</span>
                   <Input
  type="number"min="0"value={newEstHeads.finishing_cost}
  onChange={(e) => setNewEstHeads({ ...newEstHeads, finishing_cost: Number(e.target.value) })}
@@ -1105,7 +1105,7 @@ export default function JobCostingPage() {
                 </div>
 
                 <div className="space-y-1">
-                  <span className="text-2xs text-muted-foreground block truncate">5. Labor (মজুরি/অপারেটর)</span>
+                  <span className="text-xs text-muted-foreground block truncate">5. Labor (মজুরি/অপারেটর)</span>
                   <Input
  type="number"min="0"value={newEstHeads.labor_cost}
  onChange={(e) => setNewEstHeads({ ...newEstHeads, labor_cost: Number(e.target.value) })}
@@ -1113,7 +1113,7 @@ export default function JobCostingPage() {
                 </div>
 
                 <div className="space-y-1">
-                  <span className="text-2xs text-muted-foreground block truncate">6. Fabrication (ওয়েল্ডিং)</span>
+                  <span className="text-xs text-muted-foreground block truncate">6. Fabrication (ওয়েল্ডিং)</span>
                   <Input
  type="number"min="0"value={newEstHeads.fabrication_cost}
  onChange={(e) => setNewEstHeads({ ...newEstHeads, fabrication_cost: Number(e.target.value) })}
@@ -1121,7 +1121,7 @@ export default function JobCostingPage() {
                 </div>
 
                 <div className="space-y-1">
-                  <span className="text-2xs text-muted-foreground block truncate">7. Installation (ফিটিং/ক্রেন)</span>
+                  <span className="text-xs text-muted-foreground block truncate">7. Installation (ফিটিং/ক্রেন)</span>
                   <Input
  type="number"min="0"value={newEstHeads.installation_cost}
  onChange={(e) => setNewEstHeads({ ...newEstHeads, installation_cost: Number(e.target.value) })}
@@ -1129,7 +1129,7 @@ export default function JobCostingPage() {
                 </div>
 
                 <div className="space-y-1">
-                  <span className="text-2xs text-muted-foreground block truncate">8. Transport (ভ্যান/সিএনজি)</span>
+                  <span className="text-xs text-muted-foreground block truncate">8. Transport (ভ্যান/সিএনজি)</span>
                   <Input
  type="number"min="0"value={newEstHeads.transport_cost}
  onChange={(e) => setNewEstHeads({ ...newEstHeads, transport_cost: Number(e.target.value) })}
@@ -1137,7 +1137,7 @@ export default function JobCostingPage() {
                 </div>
 
                 <div className="space-y-1">
-                  <span className="text-2xs text-muted-foreground block truncate">9. Other (প্যাকেজিং/বাফার)</span>
+                  <span className="text-xs text-muted-foreground block truncate">9. Other (প্যাকেজিং/বাফার)</span>
                   <Input
  type="number"min="0"value={newEstHeads.other_cost}
  onChange={(e) => setNewEstHeads({ ...newEstHeads, other_cost: Number(e.target.value) })}
@@ -1161,7 +1161,7 @@ export default function JobCostingPage() {
 
               <div className="flex items-center justify-between text-xs pt-2 border-t border-border tabular-nums">
                 <span className="text-muted-foreground">{tBilingual('Estimated Gross Profit:', 'আনুমানিক মোট লাভ:')}</span>
-                <span className="font-bold text-blue-600">{formatBDT(newEstProfit)}</span>
+                <span className="font-bold text-primary">{formatBDT(newEstProfit)}</span>
               </div>
 
               <div className="flex items-center justify-between text-xs tabular-nums">
@@ -1169,10 +1169,10 @@ export default function JobCostingPage() {
                 <span
  className={`font-black px-2 py-0.5 rounded ${
  newEstMargin >= 25
-                      ? 'bg-emerald-100 text-emerald-800'
+                      ? 'bg-success-surface text-success'
                       : newEstMargin >= 15
-                      ? 'bg-blue-100 text-blue-800'
-                      : 'bg-red-100 text-red-800'
+                      ? 'bg-primary/10 text-primary'
+                      : 'bg-danger-surface text-destructive'
                   }`}
                 >
                   {newEstMargin}%
@@ -1184,7 +1184,7 @@ export default function JobCostingPage() {
               <Button type="button"variant="outline"onClick={() => setIsNewCostingOpen(false)} className="w-full sm:w-auto h-10 sm:h-9 rounded-xl">
  Cancel
               </Button>
-              <Button type="submit"className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold w-full sm:w-auto h-10 sm:h-9 rounded-xl">
+              <Button type="submit"className="bg-success hover:bg-success text-white font-bold w-full sm:w-auto h-10 sm:h-9 rounded-xl">
  Save & Initialize Job Costing
               </Button>
             </div>
@@ -1204,18 +1204,18 @@ export default function JobCostingPage() {
               <div className="p-3 bg-muted border border-border rounded-xl space-y-1 text-xs">
                 <div className="flex justify-between font-bold">
                   <span>Job: {negotiatingJob.job_number}</span>
-                  <span className="text-blue-600">{negotiatingJob.customer_name}</span>
+                  <span className="text-primary">{negotiatingJob.customer_name}</span>
                 </div>
                 <div className="text-muted-foreground">{negotiatingJob.item_title}</div>
               </div>
 
               {/* Discount Slider & Input */}
-              <div className="space-y-2 p-3 bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900 rounded-xl">
+              <div className="space-y-2 p-3 bg-primary/10/50 bg-primary/10 border border-primary/20 border-border rounded-xl">
                 <div className="flex justify-between items-center text-xs">
-                  <Label htmlFor="discSlider"className="font-bold text-blue-900 dark:text-blue-200">
+                  <Label htmlFor="discSlider"className="font-bold text-primary text-primary">
  {tBilingual('Proposed Discount Percentage (%)', 'প্রস্তাবিত ছাড়ের শতাংশ (%)')}
                   </Label>
-                  <div className="flex items-center gap-1 tabular-nums font-black text-sm text-blue-700">
+                  <div className="flex items-center gap-1 tabular-nums font-black text-sm text-primary">
                     <Input
  id="discSlider"type="number"min="0"max="50"value={discountPercent}
  onChange={(e) => setDiscountPercent(Number(e.target.value))}
@@ -1237,14 +1237,14 @@ export default function JobCostingPage() {
                   <span className="font-bold">{formatBDT(negotiatingJob.selling_price)}</span>
                 </div>
 
-                <div className="flex justify-between text-red-600 font-bold">
+                <div className="flex justify-between text-destructive font-bold">
                   <span>{tBilingual('(-) Proposed Discount:', '(-) প্রস্তাবিত ছাড়:')}</span>
                   <span>-{formatBDT(negotiationResult.discountAmount)} ({discountPercent}%)</span>
                 </div>
 
                 <div className="flex justify-between pt-2 border-t border-border font-black text-sm text-foreground">
                   <span>{tBilingual('Final Negotiated Price:', 'চূড়ান্ত দরদাম মূল্য:')}</span>
-                  <span className="text-blue-600">{formatBDT(negotiationResult.finalPrice)}</span>
+                  <span className="text-primary">{formatBDT(negotiationResult.finalPrice)}</span>
                 </div>
 
                 {/* Sensitive Margin Display (Hidden if sales rep is shielded) */}
@@ -1256,8 +1256,8 @@ export default function JobCostingPage() {
                     <span
  className={`font-black text-sm px-2 py-0.5 rounded ${
  negotiationResult.isSafeMargin
-                          ? 'bg-emerald-100 text-emerald-800'
-                          : 'bg-red-100 text-red-800 animate-pulse'
+                          ? 'bg-success-surface text-success'
+                          : 'bg-danger-surface text-destructive animate-pulse'
                       }`}
                     >
                       {negotiationResult.finalMargin}%
@@ -1268,8 +1268,8 @@ export default function JobCostingPage() {
 
               {/* Safety Threshold Alert */}
               {!negotiationResult.isSafeMargin && !isSalesRoleShielded && (
-                <div className="p-3 bg-red-50 text-red-900 rounded-xl text-xs font-semibold flex items-center gap-2 border border-red-200">
-                  <AlertTriangle className="h-4 w-4 text-red-600 shrink-0"/>
+                <div className="p-3 bg-danger-surface text-destructive rounded-xl text-xs font-semibold flex items-center gap-2 border border-danger-border">
+                  <AlertTriangle className="h-4 w-4 text-destructive shrink-0"/>
                   <span>
                     <strong>Margin Guard Triggered: </strong>
  The proposed price yields a margin below 15%. Requires Managing Director authorization.
@@ -1312,7 +1312,7 @@ export default function JobCostingPage() {
  setNegotiatingJob(null)
                   }}
  className={`font-bold text-white w-full sm:w-auto h-10 sm:h-9 rounded-xl ${
- negotiationResult.isSafeMargin ? 'bg-blue-600 hover:bg-blue-700' : 'bg-amber-600 hover:bg-amber-700'
+ negotiationResult.isSafeMargin ? 'bg-primary hover:bg-primary' : 'bg-warning hover:bg-warning/90'
                   }`}
                 >
  {tBilingual('Apply Negotiated Price', 'দরদাম মূল্য প্রয়োগ করুন')}
@@ -1339,93 +1339,93 @@ export default function JobCostingPage() {
               {/* 9-Head Actuals Grid */}
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs">
                 <div className="space-y-1">
-                  <Label className="text-2xs">1. Material (মিডিয়া)</Label>
+                  <Label className="text-xs">1. Material (মিডিয়া)</Label>
                   <Input
  type="number"min="0"value={actHeads.material_cost}
  onChange={(e) => setActHeads({ ...actHeads, material_cost: Number(e.target.value) })}
  className="h-7 text-xs tabular-nums"required
                   />
-                  <span className="text-2xs text-muted-foreground tabular-nums block">Est: {formatBDT(editingJob.est.material_cost)}</span>
+                  <span className="text-xs text-muted-foreground tabular-nums block">Est: {formatBDT(editingJob.est.material_cost)}</span>
                 </div>
 
                 <div className="space-y-1">
-                  <Label className="text-2xs">2. Ink (কালি)</Label>
+                  <Label className="text-xs">2. Ink (কালি)</Label>
                   <Input
  type="number"min="0"value={actHeads.ink_cost}
  onChange={(e) => setActHeads({ ...actHeads, ink_cost: Number(e.target.value) })}
  className="h-7 text-xs tabular-nums"required
                   />
-                  <span className="text-2xs text-muted-foreground tabular-nums block">Est: {formatBDT(editingJob.est.ink_cost)}</span>
+                  <span className="text-xs text-muted-foreground tabular-nums block">Est: {formatBDT(editingJob.est.ink_cost)}</span>
                 </div>
 
                 <div className="space-y-1">
-                  <Label className="text-2xs">3. Machine Power</Label>
+                  <Label className="text-xs">3. Machine Power</Label>
                   <Input
  type="number"min="0"value={actHeads.machine_cost}
  onChange={(e) => setActHeads({ ...actHeads, machine_cost: Number(e.target.value) })}
  className="h-7 text-xs tabular-nums"required
                   />
-                  <span className="text-2xs text-muted-foreground tabular-nums block">Est: {formatBDT(editingJob.est.machine_cost)}</span>
+                  <span className="text-xs text-muted-foreground tabular-nums block">Est: {formatBDT(editingJob.est.machine_cost)}</span>
                 </div>
 
                 <div className="space-y-1">
-                  <Label className="text-2xs">4. Finishing (ল্যামিনেশন)</Label>
+                  <Label className="text-xs">4. Finishing (ল্যামিনেশন)</Label>
                   <Input
  type="number"min="0"value={actHeads.finishing_cost}
  onChange={(e) => setActHeads({ ...actHeads, finishing_cost: Number(e.target.value) })}
  className="h-7 text-xs tabular-nums"required
                   />
-                  <span className="text-2xs text-muted-foreground tabular-nums block">Est: {formatBDT(editingJob.est.finishing_cost)}</span>
+                  <span className="text-xs text-muted-foreground tabular-nums block">Est: {formatBDT(editingJob.est.finishing_cost)}</span>
                 </div>
 
                 <div className="space-y-1">
-                  <Label className="text-2xs">5. Labor (মজুরি)</Label>
+                  <Label className="text-xs">5. Labor (মজুরি)</Label>
                   <Input
  type="number"min="0"value={actHeads.labor_cost}
  onChange={(e) => setActHeads({ ...actHeads, labor_cost: Number(e.target.value) })}
  className="h-7 text-xs tabular-nums"required
                   />
-                  <span className="text-2xs text-muted-foreground tabular-nums block">Est: {formatBDT(editingJob.est.labor_cost)}</span>
+                  <span className="text-xs text-muted-foreground tabular-nums block">Est: {formatBDT(editingJob.est.labor_cost)}</span>
                 </div>
 
                 <div className="space-y-1">
-                  <Label className="text-2xs">6. Fabrication (ওয়েল্ডিং)</Label>
+                  <Label className="text-xs">6. Fabrication (ওয়েল্ডিং)</Label>
                   <Input
  type="number"min="0"value={actHeads.fabrication_cost}
  onChange={(e) => setActHeads({ ...actHeads, fabrication_cost: Number(e.target.value) })}
  className="h-7 text-xs tabular-nums"required
                   />
-                  <span className="text-2xs text-muted-foreground tabular-nums block">Est: {formatBDT(editingJob.est.fabrication_cost)}</span>
+                  <span className="text-xs text-muted-foreground tabular-nums block">Est: {formatBDT(editingJob.est.fabrication_cost)}</span>
                 </div>
 
                 <div className="space-y-1">
-                  <Label className="text-2xs">7. Installation (ফিটিং)</Label>
+                  <Label className="text-xs">7. Installation (ফিটিং)</Label>
                   <Input
  type="number"min="0"value={actHeads.installation_cost}
  onChange={(e) => setActHeads({ ...actHeads, installation_cost: Number(e.target.value) })}
  className="h-7 text-xs tabular-nums"required
                   />
-                  <span className="text-2xs text-muted-foreground tabular-nums block">Est: {formatBDT(editingJob.est.installation_cost)}</span>
+                  <span className="text-xs text-muted-foreground tabular-nums block">Est: {formatBDT(editingJob.est.installation_cost)}</span>
                 </div>
 
                 <div className="space-y-1">
-                  <Label className="text-2xs">8. Transport (পরিবহন)</Label>
+                  <Label className="text-xs">8. Transport (পরিবহন)</Label>
                   <Input
  type="number"min="0"value={actHeads.transport_cost}
  onChange={(e) => setActHeads({ ...actHeads, transport_cost: Number(e.target.value) })}
  className="h-7 text-xs tabular-nums"required
                   />
-                  <span className="text-2xs text-muted-foreground tabular-nums block">Est: {formatBDT(editingJob.est.transport_cost)}</span>
+                  <span className="text-xs text-muted-foreground tabular-nums block">Est: {formatBDT(editingJob.est.transport_cost)}</span>
                 </div>
 
                 <div className="space-y-1">
-                  <Label className="text-2xs">9. Other (অন্যান্য)</Label>
+                  <Label className="text-xs">9. Other (অন্যান্য)</Label>
                   <Input
  type="number"min="0"value={actHeads.other_cost}
  onChange={(e) => setActHeads({ ...actHeads, other_cost: Number(e.target.value) })}
  className="h-7 text-xs tabular-nums"required
                   />
-                  <span className="text-2xs text-muted-foreground tabular-nums block">Est: {formatBDT(editingJob.est.other_cost)}</span>
+                  <span className="text-xs text-muted-foreground tabular-nums block">Est: {formatBDT(editingJob.est.other_cost)}</span>
                 </div>
               </div>
 
@@ -1433,7 +1433,7 @@ export default function JobCostingPage() {
                 <Button type="button"variant="outline"onClick={() => setEditingJob(null)} className="w-full sm:w-auto h-10 sm:h-9 rounded-xl">
  Cancel
                 </Button>
-                <Button type="submit"className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold w-full sm:w-auto h-10 sm:h-9 rounded-xl">
+                <Button type="submit"className="bg-success hover:bg-success text-white font-bold w-full sm:w-auto h-10 sm:h-9 rounded-xl">
  Compute Variance & Finalize Costing
                 </Button>
               </div>

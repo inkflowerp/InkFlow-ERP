@@ -380,20 +380,6 @@ function OnboardingWizard() {
 
       const companySlug = (res.data.slug || data.slug).toLowerCase().trim()
 
-      // Also ensure client-side Supabase auth session is synchronized if owner email & password were provided
-      if (data.owner_email && data.owner_password) {
-        try {
-          const { createBrowserClient } = await import('@supabase/ssr')
-          const supabase = createBrowserClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL!,
-            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-          )
-          await supabase.auth.signInWithPassword({
-            email: data.owner_email.toLowerCase().trim(),
-            password: data.owner_password,
-          })
-        } catch {}
-      }
 
       // Ensure the tenant's chosen default language is active and synchronized in browser
       if (typeof window !== 'undefined') {
@@ -518,14 +504,14 @@ function OnboardingWizard() {
   return (
     <div className="min-h-screen bg-muted flex flex-col justify-between p-4 sm:p-8">
       {/* Header */}
-      <header className="flex items-center justify-between max-w-4xl mx-auto w-full pb-6 border-b border-border dark:border-border">
+      <header className="flex items-center justify-between mx-auto w-full pb-6 border-b border-border dark:border-border">
         <div className="flex items-center gap-2.5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-500 via-blue-600 to-indigo-600 shadow-md text-white">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl shadow-md text-white">
             <Printer className="h-5 w-5" />
           </div>
           <div>
             <span className="font-black tracking-tight text-foreground dark:text-white text-base">PrintERP</span>
-            <span className="ml-1 text-xs font-semibold text-blue-600 dark:text-blue-400">Setup Wizard</span>
+            <span className="ml-1 text-xs font-semibold text-primary text-primary">Setup Wizard</span>
           </div>
         </div>
         <LanguageSwitcher />
@@ -545,7 +531,7 @@ function OnboardingWizard() {
             {/* Progress bar */}
             <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
               <div
-                className="h-full bg-gradient-to-r from-cyan-500 to-blue-600 transition-all duration-300 rounded-full"
+                className="h-full transition-all duration-300 rounded-full"
                 style={{ width: `${(currentStep / totalSteps) * 100}%` }}
               />
             </div>
@@ -558,20 +544,20 @@ function OnboardingWizard() {
                   className={cn(
                     'flex flex-col items-center gap-1 cursor-pointer transition-colors',
                     currentStep === st.step
-                      ? 'text-blue-600 font-bold'
+                      ? 'text-primary font-bold'
                       : currentStep > st.step
-                      ? 'text-emerald-600'
+                      ? 'text-success'
                       : 'text-muted-foreground'
                   )}
                   onClick={() => st.step < currentStep && setCurrentStep(st.step)}
                 >
                   <div
                     className={cn(
-                      'h-6 w-6 rounded-full flex items-center justify-center text-2xs font-bold border',
+                      'h-6 w-6 rounded-full flex items-center justify-center text-xs font-bold border',
                       currentStep === st.step
-                        ? 'border-blue-600 bg-blue-50 text-blue-600 dark:bg-blue-950'
+                        ? 'border-border bg-primary/10 text-primary bg-primary/10'
                         : currentStep > st.step
-                        ? 'border-emerald-600 bg-emerald-500 text-white'
+                        ? 'border-success-border bg-success text-white'
                         : 'border-input bg-card dark:bg-card'
                     )}
                   >
@@ -604,7 +590,7 @@ function OnboardingWizard() {
 
             <CardContent>
               {error && (
-                <div className="mb-5 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-400">
+                <div className="mb-5 rounded-lg border border-danger-border bg-danger-surface p-3 text-sm text-destructive border-danger-border/50 bg-danger-surface text-destructive">
                   {error}
                 </div>
               )}
@@ -647,21 +633,21 @@ function OnboardingWizard() {
                           Workspace Subdomain / URL (কাস্টম সাবডোমেইন)
                         </Label>
                         {slugStatus.checking ? (
-                          <span className="text-2xs text-muted-foreground animate-pulse">Checking availability...</span>
+                          <span className="text-xs text-muted-foreground animate-pulse">Checking availability...</span>
                         ) : slugStatus.status === 'available' ? (
-                          <span className="text-2xs font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                          <span className="text-xs font-semibold text-success text-success flex items-center gap-1">
                             <CheckCircle2 className="h-3 w-3" /> Subdomain Available
                           </span>
                         ) : slugStatus.status === 'unavailable' ? (
-                          <span className="text-2xs font-semibold text-rose-600 dark:text-rose-400 flex items-center gap-1">
+                          <span className="text-xs font-semibold text-destructive text-destructive flex items-center gap-1">
                             ✗ Subdomain Taken
                           </span>
                         ) : slugStatus.status === 'reserved' ? (
-                          <span className="text-2xs font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                          <span className="text-xs font-semibold text-warning text-warning flex items-center gap-1">
                             ⚠ Reserved Subdomain
                           </span>
                         ) : slugStatus.status === 'invalid' ? (
-                          <span className="text-2xs font-semibold text-rose-500 dark:text-rose-400 flex items-center gap-1">
+                          <span className="text-xs font-semibold text-destructive text-destructive flex items-center gap-1">
                             ✗ Invalid Subdomain
                           </span>
                         ) : null}
@@ -681,8 +667,8 @@ function OnboardingWizard() {
                           .{rootDomain}
                         </span>
                       </div>
-                      <p className="text-2xs text-muted-foreground break-all">
-                        Your team will access this workspace at: <strong className="text-blue-600 dark:text-blue-400 tabular-nums">https://{watchedSlug || 'your-company'}.{rootDomain}</strong>
+                      <p className="text-xs text-muted-foreground break-all">
+                        Your team will access this workspace at: <strong className="text-primary text-primary tabular-nums">https://{watchedSlug || 'your-company'}.{rootDomain}</strong>
                       </p>
                     </div>
                   </div>
@@ -701,7 +687,7 @@ function OnboardingWizard() {
                             className={cn(
                               'cursor-pointer rounded-xl border p-3 transition-all flex items-start gap-3 text-left',
                               isSelected
-                                ? 'border-blue-600 bg-blue-50/60 ring-2 ring-blue-600/20 dark:border-blue-500 dark:bg-blue-950/30'
+                                ? 'border-border bg-primary/10/60 ring-2 focus:ring-ring/20 border-primary/20 bg-primary/10'
                                 : 'border-border hover:border-input dark:hover:border-border'
                             )}
                           >
@@ -709,7 +695,7 @@ function OnboardingWizard() {
                               className={cn(
                                 'h-8 w-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5 text-xs font-bold',
                                 isSelected
-                                  ? 'bg-blue-600 text-white'
+                                  ? 'bg-primary text-white'
                                   : 'bg-muted text-muted-foreground dark:text-muted-foreground'
                               )}
                             >
@@ -718,9 +704,9 @@ function OnboardingWizard() {
                             <div className="flex-1 min-w-0">
                               <div className="font-semibold text-xs sm:text-sm text-foreground dark:text-white flex items-center justify-between bangla-text">
                                 {tBilingual(bt.nameEn, bt.nameBn)}
-                                {isSelected && <CheckCircle2 className="h-4 w-4 text-blue-600 shrink-0" />}
+                                {isSelected && <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />}
                               </div>
-                              <p className="text-2xs text-muted-foreground line-clamp-2 mt-0.5 bangla-text">
+                              <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5 bangla-text">
                                 {tBilingual(bt.descriptionEn, bt.descriptionBn)}
                               </p>
                             </div>
@@ -756,7 +742,7 @@ function OnboardingWizard() {
                         {...register('whatsapp')}
                         error={errors.whatsapp?.message}
                       />
-                      <span className="text-2xs text-muted-foreground">
+                      <span className="text-xs text-muted-foreground">
                         Used for sending automated job order proofs and delivery challan PDFs.
                       </span>
                     </div>
@@ -822,9 +808,9 @@ function OnboardingWizard() {
                 {/* STEP 5: CURRENCY */}
                 {currentStep === 5 && (
                   <div className="space-y-4 animate-in fade-in-0 duration-200">
-                    <div className="rounded-xl border border-blue-200 bg-blue-50/50 p-4 dark:border-blue-900/40 dark:bg-blue-950/20">
+                    <div className="rounded-xl border border-primary/20 bg-primary/10/50 p-4 border-border/40 bg-primary/10">
                       <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-lg">
+                        <div className="h-10 w-10 rounded-full bg-primary text-white flex items-center justify-center font-bold text-lg">
                           ৳
                         </div>
                         <div>
@@ -879,20 +865,20 @@ function OnboardingWizard() {
                           className={cn(
                             'cursor-pointer rounded-xl border p-4 transition-all flex items-center justify-between',
                             isSelected
-                              ? 'border-blue-600 bg-blue-50/70 ring-2 ring-blue-600/20 dark:border-blue-500 dark:bg-blue-950/30'
+                              ? 'border-border bg-primary/10/70 ring-2 focus:ring-ring/20 border-primary/20 bg-primary/10'
                               : 'border-border hover:border-input dark:border-border'
                           )}
                         >
                           <div>
                             <div className="font-bold text-sm text-foreground dark:text-white flex items-center gap-2">
                               {lang.title}
-                              <span className="text-2xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 font-semibold dark:bg-blue-900/50 dark:text-blue-300">
+                              <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary font-semibold bg-primary/50 text-primary">
                                 {lang.badge}
                               </span>
                             </div>
                             <p className="text-xs text-muted-foreground mt-1">{lang.desc}</p>
                           </div>
-                          {isSelected && <CheckCircle2 className="h-5 w-5 text-blue-600 shrink-0" />}
+                          {isSelected && <CheckCircle2 className="h-5 w-5 text-primary shrink-0" />}
                         </div>
                       )
                     })}
@@ -913,7 +899,7 @@ function OnboardingWizard() {
                             )}
                           </span>
                         </div>
-                        <span className="text-2xs font-semibold px-2 py-0.5 rounded-full bg-primary/20 text-primary shrink-0">
+                        <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-primary/20 text-primary shrink-0">
                           {tBilingual('Auto-Filled', 'স্বয়ংক্রিয়')}
                         </span>
                       </div>
@@ -990,7 +976,7 @@ function OnboardingWizard() {
                           {showOwnerPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                         </button>
                       </div>
-                      <span className="text-2xs text-muted-foreground">
+                      <span className="text-xs text-muted-foreground">
                         {tBilingual('Minimum 6 characters.', 'কমপক্ষে ৬ অক্ষর বা সংখ্যা।')}
                       </span>
                     </div>
@@ -999,11 +985,11 @@ function OnboardingWizard() {
                     <div className="mt-4 p-3.5 rounded-xl bg-muted border border-border text-xs space-y-2">
                       <div className="font-bold text-foreground flex items-center justify-between">
                         <span>Organization Summary</span>
-                        <span className="text-2xs tabular-nums px-2 py-0.5 rounded bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300 font-semibold">
+                        <span className="text-xs tabular-nums px-2 py-0.5 rounded bg-primary/10 text-primary bg-primary/10 text-primary font-semibold">
                           {isPaidPlan ? `${selectedPlan.toUpperCase()} Plan (Step 8: Payment)` : `${trialDays}-Day Free Trial`}
                         </span>
                       </div>
-                      <div className="grid grid-cols-2 gap-2 text-2xs text-muted-foreground dark:text-muted-foreground">
+                      <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground dark:text-muted-foreground">
                         <div>
                           <span className="text-muted-foreground block">Company:</span>
                           <span className="font-semibold text-foreground truncate block">
@@ -1012,7 +998,7 @@ function OnboardingWizard() {
                         </div>
                         <div>
                           <span className="text-muted-foreground block">Workspace Subdomain:</span>
-                          <span className="tabular-nums text-blue-600 dark:text-blue-400 truncate block font-bold">
+                          <span className="tabular-nums text-primary text-primary truncate block font-bold">
                             https://{watch('slug') || 'workspace'}.{rootDomain}
                           </span>
                         </div>
@@ -1045,7 +1031,7 @@ function OnboardingWizard() {
                           className={cn(
                             'px-4 py-1.5 rounded-lg text-xs font-bold transition-all',
                             billingInterval === 'monthly'
-                              ? 'bg-card text-blue-600 dark:text-blue-400 shadow-xs'
+                              ? 'bg-card text-primary text-primary shadow-xs'
                               : 'text-muted-foreground hover:text-foreground'
                           )}
                         >
@@ -1057,12 +1043,12 @@ function OnboardingWizard() {
                           className={cn(
                             'flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-bold transition-all',
                             billingInterval === 'yearly'
-                              ? 'bg-card text-blue-600 dark:text-blue-400 shadow-xs'
+                              ? 'bg-card text-primary text-primary shadow-xs'
                               : 'text-muted-foreground hover:text-foreground'
                           )}
                         >
                           <span>{tBilingual('Yearly Billing', 'বাৎসরিক বিলিং')}</span>
-                          <span className="bg-emerald-500 text-white text-2xs font-black px-1.5 py-0.2 rounded-full uppercase">
+                          <span className="bg-success text-white text-xs font-black px-1.5 py-0.2 rounded-full uppercase">
                             {tBilingual('2 Mo Free', '২ মাস ফ্রি')}
                           </span>
                         </button>
@@ -1083,12 +1069,12 @@ function OnboardingWizard() {
                             className={cn(
                               'relative rounded-xl border-2 p-3 cursor-pointer transition-all flex flex-col justify-between text-left',
                               isSelected
-                                ? 'border-blue-600 bg-blue-50/50 dark:bg-blue-950/30 shadow-md ring-2 ring-blue-600/20'
+                                ? 'border-border bg-primary/10/50 bg-primary/10 shadow-md ring-2 focus:ring-ring/20'
                                 : 'border-border bg-card hover:border-input'
                             )}
                           >
                             {isRecommended && (
-                              <div className="absolute -top-2.5 right-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-2xs font-black px-2 py-0.5 rounded-full uppercase tracking-wider shadow-xs">
+                              <div className="absolute -top-2.5 right-3 text-white text-xs font-black px-2 py-0.5 rounded-full uppercase tracking-wider shadow-xs">
                                 {tBilingual('Popular', 'জনপ্রিয়')}
                               </div>
                             )}
@@ -1099,7 +1085,7 @@ function OnboardingWizard() {
                                   {tBilingual(plan.name, plan.name_bn)}
                                 </h4>
                                 {isSelected && (
-                                  <div className="w-4 h-4 rounded-full bg-blue-600 text-white flex items-center justify-center shrink-0">
+                                  <div className="w-4 h-4 rounded-full bg-primary text-white flex items-center justify-center shrink-0">
                                     <Check className="h-2.5 w-2.5" />
                                   </div>
                                 )}
@@ -1110,24 +1096,24 @@ function OnboardingWizard() {
                                   <span className="text-base sm:text-lg font-black text-foreground dark:text-white">
                                     ৳{locale === 'bn' ? toBengaliDigits(price) : price.toLocaleString()}
                                   </span>
-                                  <span className="text-2xs text-muted-foreground">
+                                  <span className="text-xs text-muted-foreground">
                                     {billingInterval === 'yearly' ? tBilingual('/yr', '/বছর') : tBilingual('/mo', '/মাস')}
                                   </span>
                                 </div>
                               </div>
 
                               {/* Key Limits */}
-                              <div className="mt-2 pt-2 border-t border-border dark:border-border/80 space-y-1 text-2xs text-muted-foreground dark:text-muted-foreground">
+                              <div className="mt-2 pt-2 border-t border-border dark:border-border/80 space-y-1 text-xs text-muted-foreground dark:text-muted-foreground">
                                 <div className="flex items-center gap-1.5">
-                                  <Users className="h-3 w-3 text-blue-500 shrink-0" />
+                                  <Users className="h-3 w-3 text-primary shrink-0" />
                                   <span>{locale === 'bn' ? toBengaliDigits(plan.max_users) : plan.max_users} {tBilingual('Users', 'ইউজার')}</span>
                                 </div>
                                 <div className="flex items-center gap-1.5">
-                                  <Building2 className="h-3 w-3 text-indigo-500 shrink-0" />
+                                  <Building2 className="h-3 w-3 text-primary shrink-0" />
                                   <span>{locale === 'bn' ? toBengaliDigits(plan.max_branches) : plan.max_branches} {tBilingual('Branches', 'শাখা')}</span>
                                 </div>
                                 <div className="flex items-center gap-1.5">
-                                  <ShoppingCart className="h-3 w-3 text-emerald-500 shrink-0" />
+                                  <ShoppingCart className="h-3 w-3 text-success shrink-0" />
                                   <span>{locale === 'bn' ? toBengaliDigits(plan.monthly_orders) : plan.monthly_orders.toLocaleString()} {tBilingual('Orders', 'অর্ডার')}</span>
                                 </div>
                               </div>
@@ -1141,19 +1127,19 @@ function OnboardingWizard() {
                     <div className="rounded-xl bg-muted p-3.5 border border-border space-y-3">
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-1.5 bangla-text">
-                          <CreditCard className="h-3.5 w-3.5 text-blue-600" />
+                          <CreditCard className="h-3.5 w-3.5 text-primary" />
                           {tBilingual('Select Payment Method', 'পেমেন্ট গেটওয়ে নির্বাচন করুন')}
                         </span>
                         <span className="text-xs font-bold text-foreground dark:text-white">
                           {tBilingual('Amount: ', 'মোট প্রদেয়: ')}
-                          <span className="text-blue-600 dark:text-blue-400 font-black">
+                          <span className="text-primary text-primary font-black">
                             ৳{locale === 'bn' ? toBengaliDigits(payableAmount) : payableAmount.toLocaleString()} BDT
                           </span>
                         </span>
                       </div>
 
                       {gateways.length === 0 ? (
-                        <div className="p-3 text-center text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 rounded-xl border border-amber-200 dark:border-amber-800 bangla-text">
+                        <div className="p-3 text-center text-xs text-warning text-warning bg-warning-surface bg-warning-surface rounded-xl border border-warning-border border-warning-border bangla-text">
                           {tBilingual(
                             'No online payment gateway is currently active. You can continue and payment will be arranged manually.',
                             'বর্তমানে কোন অনলাইন পেমেন্ট গেটওয়ে সক্রিয় নেই। আপনি এগিয়ে যেতে পারেন, ম্যানুয়ালি পেমেন্ট সমন্বয় করা হবে।'
@@ -1170,23 +1156,23 @@ function OnboardingWizard() {
                                 className={cn(
                                   'p-2.5 rounded-xl border text-center transition-all flex flex-col items-center justify-center gap-1 cursor-pointer',
                                   isGWSelected
-                                    ? 'border-blue-600 bg-card shadow-sm ring-2 ring-blue-500/20'
+                                    ? 'border-border bg-card shadow-sm ring-2 focus:ring-ring/20'
                                     : 'border-border bg-card hover:bg-muted dark:hover:bg-muted'
                                 )}
                               >
                                 <div className="flex items-center gap-1">
                                   {g.id === 'bkash' && <Smartphone className="h-3.5 w-3.5 text-pink-600" />}
-                                  {g.id === 'sslcommerz' && <CreditCard className="h-3.5 w-3.5 text-blue-600" />}
-                                  {g.id === 'nagad' && <Smartphone className="h-3.5 w-3.5 text-amber-600" />}
-                                  {g.id === 'bank_wire' && <Landmark className="h-3.5 w-3.5 text-emerald-600" />}
+                                  {g.id === 'sslcommerz' && <CreditCard className="h-3.5 w-3.5 text-primary" />}
+                                  {g.id === 'nagad' && <Smartphone className="h-3.5 w-3.5 text-warning" />}
+                                  {g.id === 'bank_wire' && <Landmark className="h-3.5 w-3.5 text-success" />}
                                   {!['bkash', 'sslcommerz', 'nagad', 'bank_wire'].includes(g.id) && (
-                                    <CreditCard className="h-3.5 w-3.5 text-indigo-600" />
+                                    <CreditCard className="h-3.5 w-3.5 text-primary" />
                                   )}
                                   <span className="text-xs font-bold text-foreground bangla-text">
                                     {tBilingual(g.name, g.nameBn)}
                                   </span>
                                 </div>
-                                <span className="text-2xs text-muted-foreground truncate max-w-full">
+                                <span className="text-xs text-muted-foreground truncate max-w-full">
                                   {g.id === 'bkash' && 'Instant MFS'}
                                   {g.id === 'sslcommerz' && 'Cards / Net Banking'}
                                   {g.id === 'nagad' && 'Nagad Direct'}
@@ -1201,10 +1187,10 @@ function OnboardingWizard() {
 
                       {/* Selected Gateway Instruction Callout */}
                       {activeGatewayMeta?.instructions && activeGatewayMeta.instructions.length > 0 && (
-                        <div className="p-2.5 bg-blue-50/70 dark:bg-blue-950/40 rounded-lg border border-blue-100 dark:border-blue-900/60 text-2xs text-blue-900 dark:text-blue-200 space-y-1">
+                        <div className="p-2.5 bg-primary/10/70 bg-primary/10 rounded-lg border border-border border-border/60 text-xs text-primary text-primary space-y-1">
                           {activeGatewayMeta.instructions.map((ins, i) => (
                             <div key={i} className="flex items-start gap-1.5">
-                              <CheckCircle2 className="h-3.5 w-3.5 text-blue-600 shrink-0 mt-0.5" />
+                              <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
                               <span>{ins}</span>
                             </div>
                           ))}
@@ -1222,18 +1208,18 @@ function OnboardingWizard() {
                       </div>
                       <div className="flex items-center justify-between text-muted-foreground dark:text-muted-foreground">
                         <span>Workspace:</span>
-                        <span className="tabular-nums text-blue-600 dark:text-blue-400 font-semibold">
+                        <span className="tabular-nums text-primary text-primary font-semibold">
                           /{watch('slug') || 'workspace'}
                         </span>
                       </div>
                       <div className="pt-2 border-t border-border flex items-center justify-between text-xs font-bold text-foreground dark:text-white">
                         <span>Total Payable:</span>
-                        <span className="text-sm font-black text-blue-600 dark:text-blue-400">
+                        <span className="text-sm font-black text-primary text-primary">
                           ৳{locale === 'bn' ? toBengaliDigits(payableAmount) : payableAmount.toLocaleString()} BDT
                         </span>
                       </div>
-                      <div className="pt-1 flex items-center justify-center gap-1.5 text-2xs text-muted-foreground dark:text-muted-foreground">
-                        <Lock className="h-3 w-3 text-emerald-600" />
+                      <div className="pt-1 flex items-center justify-center gap-1.5 text-xs text-muted-foreground dark:text-muted-foreground">
+                        <Lock className="h-3 w-3 text-success" />
                         <span>256-bit SSL Encrypted & Automated Invoice Activation</span>
                       </div>
                     </div>
@@ -1274,13 +1260,13 @@ function OnboardingWizard() {
                       className={cn(
                         'font-bold px-6 shadow-md',
                         isPaidPlan
-                          ? 'bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white'
-                          : 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                          ? '    hover: hover: text-white'
+                          : 'bg-success hover:bg-success text-white'
                       )}
                     >
                       {isPaidPlan ? (
                         <>
-                          <Zap className="mr-1.5 h-4 w-4 text-amber-300" />
+                          <Zap className="mr-1.5 h-4 w-4 text-warning" />
                           <span>
                             {tBilingual(
                               `Pay & Launch (৳${payableAmount.toLocaleString()})`,

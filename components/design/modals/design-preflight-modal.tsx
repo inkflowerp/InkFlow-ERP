@@ -77,7 +77,7 @@ export const DesignPreflightModal = React.memo(function DesignPreflightModal({
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-2xl bg-card border border-border text-foreground p-6 shadow-lg">
         <DialogHeader className="border-b border-border pb-3">
-          <DialogTitle className="text-lg font-bold flex items-center gap-2 text-indigo-700 dark:text-indigo-400">
+          <DialogTitle className="text-lg font-bold flex items-center gap-2 text-primary text-primary">
             <ShieldCheck className="h-5 w-5"/>
             <span>Pre-Press Quality Health & Print Floor Routing (প্রি-ফ্লাইট ও মেশিন অনুমোদন)</span>
           </DialogTitle>
@@ -98,20 +98,20 @@ export const DesignPreflightModal = React.memo(function DesignPreflightModal({
  onClick={() => onToggleCheck(job.id, 'cmyk', job.design_number)}
  className={`p-3 rounded-lg border flex items-center gap-2.5 cursor-pointer transition-all ${
  currentPreflight.cmyk
-                    ? 'bg-emerald-50 border-emerald-400 text-emerald-950 dark:bg-emerald-950/40 dark:text-emerald-200'
+                    ? 'bg-success-surface border-success-border text-success bg-success-surface text-success'
                     : 'bg-muted border-border text-muted-foreground hover:border-input'
                 }`}
               >
                 <div
  className={`h-4 w-4 rounded flex items-center justify-center shrink-0 border ${
- currentPreflight.cmyk ? 'bg-emerald-600 text-white border-emerald-600' : 'border-input '
+ currentPreflight.cmyk ? 'bg-success text-white border-success-border' : 'border-input '
                   }`}
                 >
                   {currentPreflight.cmyk && <Check className="h-3 w-3"/>}
                 </div>
                 <div>
                   <div className="font-bold text-xs">Color Mode: CMYK Process</div>
-                  <div className="text-2xs opacity-80">RGB কালার শিফট এড়াতে CMYK নিশ্চিত</div>
+                  <div className="text-xs opacity-80">RGB কালার শিফট এড়াতে CMYK নিশ্চিত</div>
                 </div>
               </div>
 
@@ -120,20 +120,20 @@ export const DesignPreflightModal = React.memo(function DesignPreflightModal({
  onClick={() => onToggleCheck(job.id, 'dpi300', job.design_number)}
  className={`p-3 rounded-lg border flex items-center gap-2.5 cursor-pointer transition-all ${
  currentPreflight.dpi300
-                    ? 'bg-emerald-50 border-emerald-400 text-emerald-950 dark:bg-emerald-950/40 dark:text-emerald-200'
+                    ? 'bg-success-surface border-success-border text-success bg-success-surface text-success'
                     : 'bg-muted border-border text-muted-foreground hover:border-input'
                 }`}
               >
                 <div
  className={`h-4 w-4 rounded flex items-center justify-center shrink-0 border ${
- currentPreflight.dpi300 ? 'bg-emerald-600 text-white border-emerald-600' : 'border-input '
+ currentPreflight.dpi300 ? 'bg-success text-white border-success-border' : 'border-input '
                   }`}
                 >
                   {currentPreflight.dpi300 && <Check className="h-3 w-3"/>}
                 </div>
                 <div>
                   <div className="font-bold text-xs">Resolution: ≥ 300 DPI High-Res</div>
-                  <div className="text-2xs opacity-80">ফাটা/ব্লার ছবি বাদ দিয়ে হাই-রেজ আর্টওয়ার্ক</div>
+                  <div className="text-xs opacity-80">ফাটা/ব্লার ছবি বাদ দিয়ে হাই-রেজ আর্টওয়ার্ক</div>
                 </div>
               </div>
 
@@ -142,20 +142,20 @@ export const DesignPreflightModal = React.memo(function DesignPreflightModal({
  onClick={() => onToggleCheck(job.id, 'bleed', job.design_number)}
  className={`p-3 rounded-lg border flex items-center gap-2.5 cursor-pointer transition-all ${
  currentPreflight.bleed
-                    ? 'bg-emerald-50 border-emerald-400 text-emerald-950 dark:bg-emerald-950/40 dark:text-emerald-200'
+                    ? 'bg-success-surface border-success-border text-success bg-success-surface text-success'
                     : 'bg-muted border-border text-muted-foreground hover:border-input'
                 }`}
               >
                 <div
  className={`h-4 w-4 rounded flex items-center justify-center shrink-0 border ${
- currentPreflight.bleed ? 'bg-emerald-600 text-white border-emerald-600' : 'border-input '
+ currentPreflight.bleed ? 'bg-success text-white border-success-border' : 'border-input '
                   }`}
                 >
                   {currentPreflight.bleed && <Check className="h-3 w-3"/>}
                 </div>
                 <div>
                   <div className="font-bold text-xs">Bleed: 3mm / 2.0&quot; Margins</div>
-                  <div className="text-2xs opacity-80">কাটিং ও ফ্রেমিং মার্জিন সংরক্ষিত</div>
+                  <div className="text-xs opacity-80">কাটিং ও ফ্রেমিং মার্জিন সংরক্ষিত</div>
                 </div>
               </div>
 
@@ -164,28 +164,28 @@ export const DesignPreflightModal = React.memo(function DesignPreflightModal({
  onClick={() => onToggleCheck(job.id, 'curves', job.design_number)}
  className={`p-3 rounded-lg border flex items-center gap-2.5 cursor-pointer transition-all ${
  currentPreflight.curves
-                    ? 'bg-emerald-50 border-emerald-400 text-emerald-950 dark:bg-emerald-950/40 dark:text-emerald-200'
+                    ? 'bg-success-surface border-success-border text-success bg-success-surface text-success'
                     : 'bg-muted border-border text-muted-foreground hover:border-input'
                 }`}
               >
                 <div
  className={`h-4 w-4 rounded flex items-center justify-center shrink-0 border ${
- currentPreflight.curves ? 'bg-emerald-600 text-white border-emerald-600' : 'border-input '
+ currentPreflight.curves ? 'bg-success text-white border-success-border' : 'border-input '
                   }`}
                 >
                   {currentPreflight.curves && <Check className="h-3 w-3"/>}
                 </div>
                 <div>
                   <div className="font-bold text-xs">Fonts: Converted to Outlines/Curves</div>
-                  <div className="text-2xs opacity-80">ফন্ট মিসিং সমস্যা এড়াতে কার্ভ করা হয়েছে</div>
+                  <div className="text-xs opacity-80">ফন্ট মিসিং সমস্যা এড়াতে কার্ভ করা হয়েছে</div>
                 </div>
               </div>
             </div>
           </div>
 
           {!allPassed && (
-            <div className="flex items-center gap-2 p-2 rounded-md bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300 text-xs">
-              <AlertTriangle className="h-4 w-4 shrink-0 text-amber-600"/>
+            <div className="flex items-center gap-2 p-2 rounded-md bg-warning-surface bg-warning-surface border border-warning-border border-warning-border text-warning text-warning text-xs">
+              <AlertTriangle className="h-4 w-4 shrink-0 text-warning"/>
               <span>টিপস: চারটি কোয়ালিটি চেকবক্স পূরণ করলে প্রেসে কোনো টেকনিক্যাল ওয়েস্টেজ হবে না।</span>
             </div>
           )}
@@ -206,7 +206,7 @@ export const DesignPreflightModal = React.memo(function DesignPreflightModal({
               ))}
             </select>
             {selectedMachineObj && (
-              <div className="text-2xs text-muted-foreground bg-muted p-2 rounded border border-border">
+              <div className="text-xs text-muted-foreground bg-muted p-2 rounded border border-border">
                 <span className="font-bold text-foreground">স্পেসিফিকেশন:</span> {selectedMachineObj.specs} | <span className="font-bold text-foreground">ফ্লোর:</span> {selectedMachineObj.location}
               </div>
             )}
@@ -221,7 +221,7 @@ export const DesignPreflightModal = React.memo(function DesignPreflightModal({
             </Button>
             <Button
  type="submit"size="sm"disabled={isSubmitting}
- className="text-xs bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-xs">
+ className="text-xs bg-primary hover:bg-primary text-white font-bold shadow-xs">
               <Printer className="h-3.5 w-3.5 mr-1.5"/>
               <span>{isSubmitting ? 'প্রক্রিয়াধীন...' : 'অনুমোদন ও প্রেসে পাঠান (Authorize & Route)'}</span>
             </Button>

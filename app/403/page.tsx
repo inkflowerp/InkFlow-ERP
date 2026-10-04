@@ -13,14 +13,14 @@ function ForbiddenContent() {
   const isPlatform = type === 'platform'
 
   return (
-    <div className={`min-h-screen flex items-center justify-center p-4 font-sans ${isPlatform ? 'bg-slate-900 text-slate-100' : 'bg-muted text-foreground dark:text-foreground'}`}>
+    <div className={`min-h-screen flex items-center justify-center p-4 font-sans ${isPlatform ? 'bg-card text-foreground' : 'bg-muted text-foreground dark:text-foreground'}`}>
       <div className="max-w-md w-full text-center space-y-6">
-        <div className="inline-flex items-center justify-center h-16 w-16 rounded-2xl bg-red-100 dark:bg-red-950/60 text-red-600 dark:text-red-400 mx-auto shadow-xl ring-1 ring-red-300 dark:ring-red-900">
+        <div className="inline-flex items-center justify-center h-16 w-16 rounded-2xl bg-danger-surface bg-danger-surface/60 text-destructive text-destructive mx-auto shadow-xl ring-1 focus:ring-ring dark:focus:ring-ring">
           <ShieldAlert className="h-8 w-8" />
         </div>
 
         <div className="space-y-2">
-          <span className="tabular-nums text-xs uppercase tracking-widest text-red-600 dark:text-red-400 font-bold">
+          <span className="tabular-nums text-xs uppercase tracking-widest text-destructive text-destructive font-bold">
             403 Forbidden
           </span>
           <h1 className="text-2xl font-black tracking-tight">
@@ -36,7 +36,7 @@ function ForbiddenContent() {
         <div className="pt-2 flex flex-col sm:flex-row gap-3 justify-center">
           {isPlatform ? (
             <>
-              <Button asChild className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs">
+              <Button asChild className="bg-primary hover:bg-primary text-white font-bold text-xs">
                 <Link href="/platform/login">
                   <LogIn className="mr-1.5 h-4 w-4" />
                   <span>Platform Console Sign In</span>

@@ -197,4 +197,34 @@ export class ProductionRepository {
     PrintERPDataStore.set(STORAGE_KEYS.REWORKS, all)
     return payload as unknown as ProductionReworkRecord
   }
+
+  static async reportProductionProblemAtomic(params: {
+    companyId: string
+    taskId: string
+    reason: string
+    notes?: string | null
+    photoUrl?: string | null
+    reportedByName: string
+  }): Promise<{ success: boolean; problem_number?: string; problem_id?: string } | null> {
+    try {
+      const { createAdminClient } = await import('../supabase/admin.ts')
+      const admin = createAdminClient()
+      const { data: rpcRes, error: rpcErr } = await (admin as any).rpc('report_production_problem_atomic', {
+        p_company_id: params.companyId,
+        p_task_id: params.taskId,
+        p_reason: params.reason,
+        p_notes: params.notes || null,
+        p_photo_url: params.photoUrl || null,
+        p_reported_by_name: params.reportedByName,
+      })
+
+      if (!rpcErr && rpcRes && rpcRes.success) {
+        return rpcRes
+      }
+      return null
+    } catch (e: any) {
+      console.warn('[ProductionRepository.reportProductionProblemAtomic] RPC error:', e?.message)
+      return null
+    }
+  }
 }

@@ -344,7 +344,7 @@ export default function WorkflowAutomationsPage() {
 
  if (!mounted) {
  return (
-      <div className="space-y-6 max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 animate-pulse">
+      <div className="space-y-6 mx-auto p-4 sm:p-6 lg:p-8 animate-pulse">
         <div className="h-20 bg-muted rounded-xl w-full"/>
         <div className="h-12 bg-muted rounded-xl w-3/4"/>
         <div className="h-64 bg-muted rounded-xl w-full"/>
@@ -354,14 +354,14 @@ export default function WorkflowAutomationsPage() {
 
  return (
     <FeatureGate feature="custom_workflows">
-      <div className="space-y-6 max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 font-sans">
+      <div className="space-y-6 mx-auto p-4 sm:p-6 lg:p-8 font-sans">
         <PageHeader
  titleEn="Workflow Automations Engine"titleBn="কাজের অটোমেশন ও পাইপলাইন"descriptionEn="Automate quotation conversions, press job generation, delivery dispatching, and multi-channel client alerts without custom code."descriptionBn="কোটেশন রূপান্তর, প্রেস জব জেনারেশন এবং ক্লায়েন্ট অ্যালার্ট সম্পূর্ণ কোডহীনভাবে অটোমেট করুন।"icon={Workflow}
- iconColor="text-indigo-600 dark:text-indigo-400"actions={
+ iconColor="text-primary text-primary"actions={
             <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
               <Button
  size="sm"onClick={handleOpenNewModal}
- className="flex-1 sm:flex-none h-10 sm:h-9 text-xs bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl px-3.5 font-semibold shadow-xs shadow-indigo-600/20">
+ className="flex-1 sm:flex-none h-10 sm:h-9 text-xs bg-primary hover:bg-primary text-white rounded-xl px-3.5 font-semibold shadow-xs shadow-indigo-600/20">
                 <Plus className="h-3.5 w-3.5 mr-1.5"/>
                 {tBilingual('New Auto Rule', 'নতুন অটোমেশন রুল')}
               </Button>
@@ -378,13 +378,13 @@ export default function WorkflowAutomationsPage() {
 
         {/* Safety & Architecture Compliance Banner */}
         <div className="p-4 rounded-xl bg-card border border-border flex items-start gap-3.5 shadow-xs">
-          <div className="h-9 w-9 rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400 flex items-center justify-center shrink-0 mt-0.5">
+          <div className="h-9 w-9 rounded-lg bg-primary/10 text-primary bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-0.5">
             <ShieldCheck className="h-5 w-5"/>
           </div>
           <div className="text-xs space-y-1">
             <div className="font-bold text-foreground text-sm flex flex-wrap items-center gap-2">
               <span>{tBilingual('Declarative Trigger-Condition-Action Architecture', 'নিরাপদ ডিক্লারেটিভ ট্রিগার-শর্ত-অ্যাকশন ইঞ্জিন')}</span>
-              <span className="text-2xs tabular-nums px-2 py-0.5 rounded bg-muted text-muted-foreground border border-border font-bold">
+              <span className="text-xs tabular-nums px-2 py-0.5 rounded bg-muted text-muted-foreground border border-border font-bold">
  SAFE DETERMINISTIC PIPELINE
               </span>
             </div>
@@ -401,7 +401,7 @@ export default function WorkflowAutomationsPage() {
  onClick={() => setActiveTab('rules')}
  className={`flex-1 sm:flex-none px-3.5 py-2 sm:py-1.5 rounded-lg text-xs font-bold transition-all text-center whitespace-nowrap ${
  activeTab === 'rules'
-                  ? 'bg-indigo-600 text-white shadow-xs'
+                  ? 'bg-primary text-white shadow-xs'
                   : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
               }`}
             >
@@ -411,7 +411,7 @@ export default function WorkflowAutomationsPage() {
  onClick={() => setActiveTab('logs')}
  className={`flex-1 sm:flex-none px-3.5 py-2 sm:py-1.5 rounded-lg text-xs font-bold transition-all text-center whitespace-nowrap ${
  activeTab === 'logs'
-                  ? 'bg-indigo-600 text-white shadow-xs'
+                  ? 'bg-primary text-white shadow-xs'
                   : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
               }`}
             >
@@ -477,19 +477,19 @@ export default function WorkflowAutomationsPage() {
                   <CardHeader className="p-4 sm:p-5 pb-3 border-b border-border /80 bg-muted flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div className="space-y-1">
                       <div className="flex items-start gap-2.5">
-                        <div className="h-8 w-8 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-200/80 dark:border-indigo-500/20 flex items-center justify-center shrink-0 mt-0.5">
+                        <div className="h-8 w-8 rounded-xl bg-primary/10 bg-primary/10 text-primary text-primary border border-primary/20/80 border-primary/20/20 flex items-center justify-center shrink-0 mt-0.5">
                           <Zap className="h-4 w-4"/>
                         </div>
                         <div>
                           <CardTitle className="text-sm sm:text-base font-bold text-foreground flex flex-wrap items-center gap-2">
                             <span>{locale === 'bn' ? (rule.name_bn || rule.name) : rule.name}</span>
                             {rule.is_active ? (
-                              <span className="text-2xs tabular-nums px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 flex items-center gap-1 font-semibold">
-                                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"/>
+                              <span className="text-xs tabular-nums px-2 py-0.5 rounded-full bg-success-surface text-success bg-success-surface/60 text-success border border-success-border border-success-border flex items-center gap-1 font-semibold">
+                                <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse"/>
  ACTIVE
                               </span>
                             ) : (
-                              <span className="text-2xs tabular-nums px-2 py-0.5 rounded-full bg-muted text-muted-foreground border border-border">
+                              <span className="text-xs tabular-nums px-2 py-0.5 rounded-full bg-muted text-muted-foreground border border-border">
  {locale === 'bn' ? 'স্থগিত' : 'PAUSED'}
                               </span>
                             )}
@@ -508,7 +508,7 @@ export default function WorkflowAutomationsPage() {
                       <Button
  size="sm"variant="outline"disabled={simulatingRuleId === rule.id}
  onClick={() => handleTestRun(rule.id)}
- className="h-8 text-xs border-indigo-200 dark:border-indigo-800/80 bg-indigo-50/50 dark:bg-indigo-950/30 text-indigo-700 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 rounded-xl px-2.5 font-semibold"title="Simulate rule in sandbox">
+ className="h-8 text-xs border-primary/20 border-border/80 bg-primary/10/50 bg-primary/10 text-primary text-primary hover:bg-primary/10 dark:hover:bg-primary/50 rounded-xl px-2.5 font-semibold"title="Simulate rule in sandbox">
                         <Play
  className={`h-3 w-3 mr-1 ${
  simulatingRuleId === rule.id ? 'animate-spin' : ''
@@ -530,12 +530,12 @@ export default function WorkflowAutomationsPage() {
  type="checkbox"checked={rule.is_active}
  onChange={() => handleToggle(rule.id, rule.is_active)}
  className="sr-only peer"/>
-                          <div className="w-10 h-5 bg-muted peer-focus:outline-hidden rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-card after:border-input after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div>
+                          <div className="w-10 h-5 bg-muted peer-focus:outline-hidden rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-card after:border-input after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
                         </label>
 
                         <button
  onClick={() => handleDeleteRule(rule)}
- className="p-1.5 rounded-lg text-muted-foreground hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors"title="Delete Rule">
+ className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-danger-surface dark:hover:bg-danger-surface transition-colors"title="Delete Rule">
                           <Trash2 className="h-4 w-4"/>
                         </button>
                       </div>
@@ -546,12 +546,12 @@ export default function WorkflowAutomationsPage() {
                     {/* Visual Workflow Pipeline Diagram */}
                     <div className="flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-center gap-2 p-3 rounded-xl bg-muted border border-border /80">
                       {/* Trigger Badge */}
-                      <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/30 text-indigo-800 dark:text-indigo-300 font-bold">
-                        <span className="text-2xs uppercase text-indigo-600 dark:text-indigo-400 tabular-nums">
+                      <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 bg-primary/10 border border-primary/20 border-primary/20/30 text-primary text-primary font-bold">
+                        <span className="text-xs uppercase text-primary text-primary tabular-nums">
  Trigger:
                         </span>
                         <span className="capitalize">{rule.trigger_type.replace('_', ' ')}</span>
-                        <span className="tabular-nums text-2xs text-muted-foreground">
+                        <span className="tabular-nums text-xs text-muted-foreground">
                           ({rule.trigger_entity}
                           {rule.trigger_config?.to_status ? ` ➔ ${rule.trigger_config.to_status}` : ''})
                         </span>
@@ -567,12 +567,12 @@ export default function WorkflowAutomationsPage() {
  return (
                               <div
  key={cIdx}
- className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 text-amber-900 dark:text-amber-300 font-medium">
-                                <span className="text-2xs uppercase text-amber-600 dark:text-amber-400 tabular-nums font-bold">
+ className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-warning-surface bg-warning/10 border border-warning-border border-warning-border/30 text-warning text-warning font-medium">
+                                <span className="text-xs uppercase text-warning text-warning tabular-nums font-bold">
  IF:
                                 </span>
                                 <span className="tabular-nums text-xs">{cond.field}</span>
-                                <span className="font-bold tabular-nums px-1 py-0.5 rounded bg-amber-200/50 dark:bg-amber-900/40 text-2xs">
+                                <span className="font-bold tabular-nums px-1 py-0.5 rounded bg-warning/50 bg-warning/40 text-xs">
                                   {opDef?.symbol || cond.operator}
                                 </span>
                                 <span className="font-bold">{String(cond.value)}</span>
@@ -581,7 +581,7 @@ export default function WorkflowAutomationsPage() {
                           })}
                         </div>
                       ) : (
-                        <span className="text-2xs text-muted-foreground italic px-1">
+                        <span className="text-xs text-muted-foreground italic px-1">
  {locale === 'bn' ? 'সর্বদা কার্যকর (কোনো শর্ত নেই)' : 'Always matches (No conditions)'}
                         </span>
                       )}
@@ -593,13 +593,13 @@ export default function WorkflowAutomationsPage() {
                         {rule.actions.map((act, aIdx) => (
                           <div
  key={aIdx}
- className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30 text-emerald-900 dark:text-emerald-300 font-medium">
-                            <span className="text-2xs tabular-nums text-emerald-600 dark:text-emerald-400 font-bold">
+ className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-success-surface bg-success/10 border border-success-border border-success-border/30 text-success text-success font-medium">
+                            <span className="text-xs tabular-nums text-success text-success font-bold">
                               #{aIdx + 1}
                             </span>
                             <span className="capitalize">{act.type.replace('_', ' ')}</span>
                             {act.config?.target_document && (
-                              <span className="text-2xs tabular-nums text-emerald-700 dark:text-emerald-400 font-bold">
+                              <span className="text-xs tabular-nums text-success text-success font-bold">
                                 ({act.config.target_document})
                               </span>
                             )}
@@ -609,7 +609,7 @@ export default function WorkflowAutomationsPage() {
                     </div>
 
                     {/* Execution Metrics Footer */}
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1 text-2xs text-muted-foreground pt-1 tabular-nums">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1 text-xs text-muted-foreground pt-1 tabular-nums">
                       <div>
                         <span>{locale === 'bn' ? 'মোট সম্পাদন:' : 'Total Executions:'} </span>
                         <strong className="text-foreground">{rule.execution_count} {locale === 'bn' ? 'বার' : 'runs'}</strong>
@@ -635,7 +635,7 @@ export default function WorkflowAutomationsPage() {
           <Card className="bg-card border-border rounded-xl shadow-xs overflow-hidden">
             <CardHeader className="border-b border-border pb-3.5 bg-muted">
               <CardTitle className="text-base font-bold text-foreground flex items-center gap-2">
-                <History className="h-4 w-4 text-indigo-600 dark:text-indigo-400"/>
+                <History className="h-4 w-4 text-primary text-primary"/>
                 <span>{tBilingual('Workflow Execution Audit Stream', 'ওয়ার্কফ্লো এক্সিকিউশন অডিট স্ট্রিম')}</span>
               </CardTitle>
               <CardDescription className="text-xs text-muted-foreground">
@@ -646,7 +646,7 @@ export default function WorkflowAutomationsPage() {
               {/* Desktop Table View */}
               <div className="hidden md:block overflow-x-auto">
                 <table className="w-full text-left text-xs">
-                  <thead className="bg-muted text-muted-foreground border-b border-border font-semibold uppercase tracking-wider text-2xs">
+                  <thead className="bg-muted text-muted-foreground border-b border-border font-semibold uppercase tracking-wider text-xs">
                     <tr>
                       <th className="py-3 px-4 bangla-text">{tBilingual('Executed At', 'সম্পন্নের সময়')}</th>
                       <th className="py-3 px-4 bangla-text">{tBilingual('Workflow Rule', 'ওয়ার্কফ্লো রুল')}</th>
@@ -667,7 +667,7 @@ export default function WorkflowAutomationsPage() {
                         <tr key={log.id} className="hover:bg-muted dark:hover:bg-muted/50 transition-colors">
                           <td className="py-3 px-4 tabular-nums text-muted-foreground whitespace-nowrap">
                             {formatTime(log.executed_at, 'en', { second: '2-digit' })}
-                            <div className="text-2xs text-muted-foreground">
+                            <div className="text-xs text-muted-foreground">
                               {formatDate(log.executed_at)}
                             </div>
                           </td>
@@ -675,21 +675,21 @@ export default function WorkflowAutomationsPage() {
                             {log.rule_name}
                           </td>
                           <td className="py-3 px-4 tabular-nums text-xs">
-                            <span className="text-indigo-600 dark:text-indigo-400 font-bold capitalize">
+                            <span className="text-primary text-primary font-bold capitalize">
                               {log.trigger_type.replace('_', ' ')}
                             </span>
-                            <div className="text-2xs text-muted-foreground">
+                            <div className="text-xs text-muted-foreground">
                               {log.entity_type} {log.entity_id ? `(${log.entity_id})` : ''}
                             </div>
                           </td>
                           <td className="py-3 px-4">
                             <span
- className={`px-2 py-0.5 rounded-full text-2xs tabular-nums font-bold uppercase border ${
+ className={`px-2 py-0.5 rounded-full text-xs tabular-nums font-bold uppercase border ${
  log.status === 'success'
-                                  ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/30'
+                                  ? 'bg-success-surface text-success bg-success/10 text-success border-success-border border-success-border/30'
                                   : log.status === 'skipped'
-                                  ? 'bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400 border-amber-200 dark:border-amber-500/30'
-                                  : 'bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-400 border-rose-200 dark:border-rose-500/30'
+                                  ? 'bg-warning-surface text-warning bg-warning/10 text-warning border-warning-border border-warning-border/30'
+                                  : 'bg-danger-surface text-destructive bg-destructive/10 text-destructive border-danger-border border-danger-border/30'
                               }`}
                             >
                               {log.status}
@@ -697,14 +697,14 @@ export default function WorkflowAutomationsPage() {
                           </td>
                           <td className="py-3 px-4 space-y-1">
                             {log.actions_taken.map((act, i) => (
-                              <div key={i} className="text-2xs text-foreground flex items-center gap-1.5">
-                                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"/>
-                                <strong className="text-muted-foreground tabular-nums text-2xs uppercase">
+                              <div key={i} className="text-xs text-foreground flex items-center gap-1.5">
+                                <span className="h-1.5 w-1.5 rounded-full bg-success"/>
+                                <strong className="text-muted-foreground tabular-nums text-xs uppercase">
                                   {act.action_type}:
                                 </strong>
                                 <span>{act.detail}</span>
                                 {act.latency_ms !== undefined && (
-                                  <span className="text-2xs tabular-nums px-1 rounded bg-muted text-muted-foreground">
+                                  <span className="text-xs tabular-nums px-1 rounded bg-muted text-muted-foreground">
                                     {act.latency_ms}ms
                                   </span>
                                 )}
@@ -730,17 +730,17 @@ export default function WorkflowAutomationsPage() {
                       <div className="flex items-start justify-between gap-2">
                         <div>
                           <div className="text-sm font-bold text-foreground">{log.rule_name}</div>
-                          <div className="text-2xs tabular-nums text-muted-foreground mt-0.5">
+                          <div className="text-xs tabular-nums text-muted-foreground mt-0.5">
                             {formatDateTime(log.executed_at, 'en', { second: '2-digit' })}
                           </div>
                         </div>
                         <span
- className={`px-2 py-0.5 rounded-full text-2xs tabular-nums font-bold uppercase border ${
+ className={`px-2 py-0.5 rounded-full text-xs tabular-nums font-bold uppercase border ${
  log.status === 'success'
-                              ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/30'
+                              ? 'bg-success-surface text-success bg-success/10 text-success border-success-border border-success-border/30'
                               : log.status === 'skipped'
-                              ? 'bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400 border-amber-200 dark:border-amber-500/30'
-                              : 'bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-400 border-rose-200 dark:border-rose-500/30'
+                              ? 'bg-warning-surface text-warning bg-warning/10 text-warning border-warning-border border-warning-border/30'
+                              : 'bg-danger-surface text-destructive bg-destructive/10 text-destructive border-danger-border border-danger-border/30'
                           }`}
                         >
                           {log.status}
@@ -749,27 +749,27 @@ export default function WorkflowAutomationsPage() {
 
                       <div className="p-2.5 rounded-xl bg-muted border border-border /80 flex items-center justify-between text-xs">
                         <span className="text-muted-foreground">Trigger:</span>
-                        <span className="tabular-nums text-indigo-600 dark:text-indigo-400 font-bold capitalize">
+                        <span className="tabular-nums text-primary text-primary font-bold capitalize">
                           {log.trigger_type.replace('_', ' ')} ({log.entity_type} {log.entity_id ? `• ${log.entity_id}` : ''})
                         </span>
                       </div>
 
                       <div className="space-y-1.5 pt-1">
-                        <div className="text-2xs uppercase font-bold text-muted-foreground tracking-wider">
+                        <div className="text-xs uppercase font-bold text-muted-foreground tracking-wider">
  Actions Taken:
                         </div>
                         {log.actions_taken.map((act, i) => (
                           <div
  key={i}
  className="text-xs text-foreground flex items-start gap-1.5 p-2 rounded-lg bg-muted border border-border /60">
-                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 mt-1.5 shrink-0"/>
+                            <span className="h-1.5 w-1.5 rounded-full bg-success mt-1.5 shrink-0"/>
                             <div>
-                              <span className="text-muted-foreground tabular-nums text-2xs uppercase font-bold mr-1">
+                              <span className="text-muted-foreground tabular-nums text-xs uppercase font-bold mr-1">
                                 {act.action_type}:
                               </span>
                               <span>{act.detail}</span>
                               {act.latency_ms !== undefined && (
-                                <span className="ml-1 text-2xs tabular-nums px-1 rounded bg-muted text-muted-foreground">
+                                <span className="ml-1 text-xs tabular-nums px-1 rounded bg-muted text-muted-foreground">
                                   {act.latency_ms}ms
                                 </span>
                               )}
@@ -796,7 +796,7 @@ export default function WorkflowAutomationsPage() {
             }}
  size="3xl"title={
               <div className="flex items-center gap-2.5">
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-400 font-bold shrink-0">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary bg-primary/20 text-primary font-bold shrink-0">
                   <Workflow className="h-5 w-5"/>
                 </div>
                 <div>
@@ -805,11 +805,11 @@ export default function WorkflowAutomationsPage() {
                       {editingRule.id ? 'Edit Automation Rule' : 'Create Automation Workflow'}
                     </span>
                     <Badge
- variant="outline"className="text-2xs uppercase tabular-nums py-0.5 px-1.5 bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800">
+ variant="outline"className="text-xs uppercase tabular-nums py-0.5 px-1.5 bg-primary/10 bg-primary/10 text-primary text-primary border-primary/20 border-border">
  Pipeline Engine
                     </Badge>
                   </div>
-                  <p className="text-2xs text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
  Declarative triggers, conditions, and real-time action pipeline
                   </p>
                 </div>
@@ -820,7 +820,7 @@ export default function WorkflowAutomationsPage() {
               {/* Section 1: Rule Details */}
               <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
                 <div className="flex items-center gap-2">
-                  <div className="h-6 w-6 rounded-lg bg-indigo-100 text-indigo-700 dark:bg-indigo-900/60 dark:text-indigo-300 flex items-center justify-center font-bold text-xs">
+                  <div className="h-6 w-6 rounded-lg bg-primary/10 text-primary bg-primary/60 text-primary flex items-center justify-center font-bold text-xs">
                     1
                   </div>
                   <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
@@ -831,7 +831,7 @@ export default function WorkflowAutomationsPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <Label className="text-xs font-semibold mb-1 block">
- Rule Name (English) <span className="text-rose-500">*</span>
+ Rule Name (English) <span className="text-destructive">*</span>
                     </Label>
                     <Input
  placeholder={tBilingual("e.g. Quotation Approved ➔ Auto-Create Order", "যেমন: কোটেশন অনুমোদন ➔ স্বয়ংক্রিয় অর্ডার তৈরি")}value={editingRule.name || ''}
@@ -865,7 +865,7 @@ export default function WorkflowAutomationsPage() {
  type="checkbox"checked={editingRule.is_active ?? true}
  onChange={(e) => setEditingRule({ ...editingRule, is_active: e.target.checked })}
  className="sr-only peer"/>
-                    <div className="w-9 h-5 bg-muted peer-focus:outline-hidden rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-card after:border-input after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div>
+                    <div className="w-9 h-5 bg-muted peer-focus:outline-hidden rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-card after:border-input after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
                   </label>
                   <span className="text-xs font-semibold text-foreground">
  Rule is Active & Enabled
@@ -876,7 +876,7 @@ export default function WorkflowAutomationsPage() {
               {/* Section 2: Trigger Event & Config */}
               <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
                 <div className="flex items-center gap-2">
-                  <div className="h-6 w-6 rounded-lg bg-indigo-100 text-indigo-700 dark:bg-indigo-900/60 dark:text-indigo-300 flex items-center justify-center font-bold text-xs">
+                  <div className="h-6 w-6 rounded-lg bg-primary/10 text-primary bg-primary/60 text-primary flex items-center justify-center font-bold text-xs">
                     2
                   </div>
                   <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
@@ -941,7 +941,7 @@ export default function WorkflowAutomationsPage() {
               <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <div className="h-6 w-6 rounded-lg bg-amber-100 text-amber-700 dark:bg-amber-900/60 dark:text-amber-300 flex items-center justify-center font-bold text-xs">
+                    <div className="h-6 w-6 rounded-lg bg-warning-surface text-warning bg-warning/60 text-warning flex items-center justify-center font-bold text-xs">
                       3
                     </div>
                     <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
@@ -951,7 +951,7 @@ export default function WorkflowAutomationsPage() {
 
                   <Button
  type="button"size="sm"variant="outline"onClick={handleAddCondition}
- className="h-7 text-xs border-border text-foreground hover:bg-muted hover:bg-amber-50 dark:hover:bg-amber-950/40">
+ className="h-7 text-xs border-border text-foreground hover:bg-muted hover:bg-warning-surface dark:hover:bg-warning-surface">
                     <Plus className="h-3 w-3 mr-1"/>
  Add Condition
                   </Button>
@@ -967,7 +967,7 @@ export default function WorkflowAutomationsPage() {
                       <div
  key={cIdx}
  className="p-2.5 rounded-lg bg-muted border border-border flex flex-col sm:flex-row items-stretch sm:items-center gap-2 text-xs">
-                        <span className="text-2xs tabular-nums font-bold text-amber-600 dark:text-amber-400 shrink-0">
+                        <span className="text-xs tabular-nums font-bold text-warning text-warning shrink-0">
  IF #{cIdx + 1}
                         </span>
 
@@ -996,7 +996,7 @@ export default function WorkflowAutomationsPage() {
 
                         <button
  type="button"onClick={() => handleRemoveCondition(cIdx)}
- className="p-1 rounded text-muted-foreground hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30">
+ className="p-1 rounded text-muted-foreground hover:text-destructive hover:bg-danger-surface dark:hover:bg-danger-surface">
                           <Trash2 className="h-3.5 w-3.5"/>
                         </button>
                       </div>
@@ -1009,7 +1009,7 @@ export default function WorkflowAutomationsPage() {
               <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <div className="h-6 w-6 rounded-lg bg-emerald-100 text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-300 flex items-center justify-center font-bold text-xs">
+                    <div className="h-6 w-6 rounded-lg bg-success-surface text-success bg-success/60 text-success flex items-center justify-center font-bold text-xs">
                       4
                     </div>
                     <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
@@ -1025,7 +1025,7 @@ export default function WorkflowAutomationsPage() {
  className="p-3 rounded-lg bg-muted border border-border space-y-2 text-xs">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <span className="h-5 w-5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-300 tabular-nums text-2xs font-bold flex items-center justify-center shrink-0">
+                          <span className="h-5 w-5 rounded-full bg-success-surface text-success bg-success/60 text-success tabular-nums text-xs font-bold flex items-center justify-center shrink-0">
                             {idx + 1}
                           </span>
                           <span className="font-bold text-foreground capitalize">
@@ -1035,7 +1035,7 @@ export default function WorkflowAutomationsPage() {
 
                         <button
  type="button"onClick={() => handleRemoveAction(idx)}
- className="p-1 rounded text-muted-foreground hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30">
+ className="p-1 rounded text-muted-foreground hover:text-destructive hover:bg-danger-surface dark:hover:bg-danger-surface">
                           <Trash2 className="h-3.5 w-3.5"/>
                         </button>
                       </div>
@@ -1044,7 +1044,7 @@ export default function WorkflowAutomationsPage() {
                       {act.type === 'create_document' && (
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                           <div>
-                            <Label className="text-2xs font-medium text-muted-foreground mb-0.5 block">
+                            <Label className="text-xs font-medium text-muted-foreground mb-0.5 block">
  Target Document
                             </Label>
                             <select
@@ -1060,7 +1060,7 @@ export default function WorkflowAutomationsPage() {
                             </select>
                           </div>
                           <div>
-                            <Label className="text-2xs font-medium text-muted-foreground mb-0.5 block">
+                            <Label className="text-xs font-medium text-muted-foreground mb-0.5 block">
  Copy Line Items
                             </Label>
                             <select
@@ -1079,7 +1079,7 @@ export default function WorkflowAutomationsPage() {
                       {act.type === 'send_notification' && (
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                           <div>
-                            <Label className="text-2xs font-medium text-muted-foreground mb-0.5 block">
+                            <Label className="text-xs font-medium text-muted-foreground mb-0.5 block">
  Notification Title
                             </Label>
                             <Input
@@ -1088,7 +1088,7 @@ export default function WorkflowAutomationsPage() {
  className="h-8 text-xs"placeholder={tBilingual("e.g. Order Generated", "যেমন: নতুন অর্ডার তৈরি হয়েছে")}/>
                           </div>
                           <div>
-                            <Label className="text-2xs font-medium text-muted-foreground mb-0.5 block">
+                            <Label className="text-xs font-medium text-muted-foreground mb-0.5 block">
  Message Content
                             </Label>
                             <Input
@@ -1102,7 +1102,7 @@ export default function WorkflowAutomationsPage() {
                       {act.type === 'send_sms' && (
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                           <div>
-                            <Label className="text-2xs font-medium text-muted-foreground mb-0.5 block">
+                            <Label className="text-xs font-medium text-muted-foreground mb-0.5 block">
  SMS Message
                             </Label>
                             <Input
@@ -1111,7 +1111,7 @@ export default function WorkflowAutomationsPage() {
  className="h-8 text-xs"placeholder={tBilingual("e.g. Your order is ready.", "যেমন: আপনার অর্ডারটি প্রস্তুত হয়েছে।")}/>
                           </div>
                           <div>
-                            <Label className="text-2xs font-medium text-muted-foreground mb-0.5 block">
+                            <Label className="text-xs font-medium text-muted-foreground mb-0.5 block">
  Recipient Number / Context
                             </Label>
                             <Input
@@ -1125,7 +1125,7 @@ export default function WorkflowAutomationsPage() {
                       {act.type === 'change_status' && (
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                           <div>
-                            <Label className="text-2xs font-medium text-muted-foreground mb-0.5 block">
+                            <Label className="text-xs font-medium text-muted-foreground mb-0.5 block">
  Target Entity
                             </Label>
                             <Input
@@ -1134,7 +1134,7 @@ export default function WorkflowAutomationsPage() {
  className="h-8 text-xs"placeholder={tBilingual("order, job, invoice", "order, job, invoice")}/>
                           </div>
                           <div>
-                            <Label className="text-2xs font-medium text-muted-foreground mb-0.5 block">
+                            <Label className="text-xs font-medium text-muted-foreground mb-0.5 block">
  New Status
                             </Label>
                             <Input
@@ -1161,7 +1161,7 @@ export default function WorkflowAutomationsPage() {
                   </select>
                   <Button
  type="button"size="sm"variant="outline"onClick={handleAddAction}
- className="h-9 text-xs border-border text-foreground hover:bg-muted hover:bg-emerald-50 dark:hover:bg-emerald-950/30">
+ className="h-9 text-xs border-border text-foreground hover:bg-muted hover:bg-success-surface dark:hover:bg-success-surface">
                     <Plus className="h-3.5 w-3.5 mr-1"/>
  Append Action
                   </Button>
@@ -1176,7 +1176,7 @@ export default function WorkflowAutomationsPage() {
  Cancel
                 </Button>
                 <Button
- type="submit"className="w-full sm:w-auto min-h-[40px] text-xs bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-sm px-6">
+ type="submit"className="w-full sm:w-auto min-h-[40px] text-xs bg-primary hover:bg-primary text-white font-bold shadow-sm px-6">
  {tBilingual('Save Workflow Rule', 'ওয়ার্কফ্লো রুল সংরক্ষণ করুন')}
                 </Button>
               </div>
@@ -1191,14 +1191,14 @@ export default function WorkflowAutomationsPage() {
  onOpenChange={setIsSimulationModalOpen}
  size="lg"title={
               <div className="flex items-center gap-2">
-                <div className="h-8 w-8 rounded-xl bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 flex items-center justify-center">
+                <div className="h-8 w-8 rounded-xl bg-success/10 text-success border border-success-border/20 flex items-center justify-center">
                   <Play className="h-4 w-4"/>
                 </div>
                 <div>
                   <h3 className="text-sm font-bold text-foreground">
  Workflow Simulation Output
                   </h3>
-                  <p className="text-2xs text-muted-foreground tabular-nums">
+                  <p className="text-xs text-muted-foreground tabular-nums">
  Rule: {simulationLog.rule_name}
                   </p>
                 </div>
@@ -1208,35 +1208,35 @@ export default function WorkflowAutomationsPage() {
             <div className="space-y-3.5 text-xs">
               <div className="flex items-center justify-between p-3 rounded-xl bg-muted border border-border">
                 <div>
-                  <span className="text-2xs uppercase font-bold text-muted-foreground block tabular-nums">Status</span>
+                  <span className="text-xs uppercase font-bold text-muted-foreground block tabular-nums">Status</span>
                   <span
  className={`tabular-nums text-xs font-bold uppercase ${
  simulationLog.status === 'success'
-                        ? 'text-emerald-500'
+                        ? 'text-success'
                         : simulationLog.status === 'skipped'
-                        ? 'text-amber-500'
-                        : 'text-rose-500'
+                        ? 'text-warning'
+                        : 'text-destructive'
                     }`}
                   >
                     {simulationLog.status}
                   </span>
                 </div>
                 <div>
-                  <span className="text-2xs uppercase font-bold text-muted-foreground block tabular-nums">Timestamp</span>
+                  <span className="text-xs uppercase font-bold text-muted-foreground block tabular-nums">Timestamp</span>
                   <span className="tabular-nums text-foreground">
                     {formatTime(simulationLog.executed_at, 'en', { second: '2-digit' })}
                   </span>
                 </div>
                 <div>
-                  <span className="text-2xs uppercase font-bold text-muted-foreground block tabular-nums">Actions Fired</span>
-                  <span className="tabular-nums text-indigo-500 font-bold">
+                  <span className="text-xs uppercase font-bold text-muted-foreground block tabular-nums">Actions Fired</span>
+                  <span className="tabular-nums text-primary font-bold">
                     {simulationLog.actions_taken.length} steps
                   </span>
                 </div>
               </div>
 
               <div className="space-y-2">
-                <h4 className="text-2xs uppercase font-bold text-muted-foreground tracking-wider">
+                <h4 className="text-xs uppercase font-bold text-muted-foreground tracking-wider">
  Action Execution Trace:
                 </h4>
                 {simulationLog.actions_taken.map((act, i) => (
@@ -1244,16 +1244,16 @@ export default function WorkflowAutomationsPage() {
  key={i}
  className="p-2.5 rounded-lg bg-muted border border-border flex items-start justify-between gap-2">
                     <div className="flex items-start gap-2">
-                      <CheckCircle2 className="h-4 w-4 text-emerald-500 mt-0.5 shrink-0"/>
+                      <CheckCircle2 className="h-4 w-4 text-success mt-0.5 shrink-0"/>
                       <div>
-                        <div className="tabular-nums font-bold text-2xs uppercase text-muted-foreground">
+                        <div className="tabular-nums font-bold text-xs uppercase text-muted-foreground">
                           {act.action_type}
                         </div>
                         <div className="text-foreground mt-0.5">{act.detail}</div>
                       </div>
                     </div>
                     {act.latency_ms !== undefined && (
-                      <span className="text-2xs tabular-nums px-1.5 py-0.5 rounded bg-muted text-muted-foreground shrink-0">
+                      <span className="text-xs tabular-nums px-1.5 py-0.5 rounded bg-muted text-muted-foreground shrink-0">
                         {act.latency_ms}ms
                       </span>
                     )}
@@ -1264,7 +1264,7 @@ export default function WorkflowAutomationsPage() {
               <div className="pt-2 flex justify-end">
                 <Button
  size="sm"onClick={() => setIsSimulationModalOpen(false)}
- className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs px-4">
+ className="bg-primary hover:bg-primary text-white text-xs px-4">
  Close Diagnostic
                 </Button>
               </div>

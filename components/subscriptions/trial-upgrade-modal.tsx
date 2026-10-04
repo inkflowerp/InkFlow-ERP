@@ -182,7 +182,7 @@ export function TrialUpgradeModal() {
  size="6xl"hideFooter
  title={
         <div className="flex items-center gap-2.5 text-foreground">
-          <div className="p-2 rounded-xl bg-gradient-to-br from-amber-500 to-indigo-600 text-white shadow-sm shrink-0">
+          <div className="p-2 rounded-xl text-white shadow-sm shrink-0">
             <Crown className="h-5 w-5"/>
           </div>
           <div>
@@ -192,7 +192,7 @@ export function TrialUpgradeModal() {
                 : tBilingual('Upgrade Your PrintERP Plan', 'আপনার প্রিন্টইআরপি প্ল্যান আপগ্রেড করুন')}
             </div>
             {isTrial && (
-              <p className="text-xs text-amber-600 dark:text-amber-400 font-medium bangla-text mt-0.5">
+              <p className="text-xs text-warning text-warning font-medium bangla-text mt-0.5">
                 {tBilingual(
                   `Free trial active (${daysRemainingInTrial} days remaining). Upgrade now to keep full continuous access.`,
                   `ফ্রি ট্রায়াল সক্রিয় (আর ${locale === 'bn' ? toBengaliDigits(daysRemainingInTrial) : daysRemainingInTrial} দিন বাকি)। নিরবচ্ছিন্ন সেবার জন্য এখনই আপগ্রেড করুন।`
@@ -205,7 +205,7 @@ export function TrialUpgradeModal() {
     >
       {isSuccess ? (
         <div className="py-12 text-center space-y-4">
-          <div className="mx-auto w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-950 flex items-center justify-center text-emerald-600">
+          <div className="mx-auto w-16 h-16 rounded-full bg-success-surface bg-success-surface flex items-center justify-center text-success">
             <CheckCircle2 className="h-10 w-10 animate-bounce"/>
           </div>
           <div className="space-y-1">
@@ -223,8 +223,8 @@ export function TrialUpgradeModal() {
       ) : (
         <form onSubmit={handleInitiateCheckout} className="space-y-6 w-full">
           {errorMessage && (
-            <div className="p-3 bg-red-50 text-red-800 rounded-xl text-xs font-semibold flex items-center gap-2 border border-red-200 dark:bg-red-950/40 dark:text-red-300 dark:border-red-800">
-              <AlertCircle className="h-4 w-4 text-red-600 shrink-0"/>
+            <div className="p-3 bg-danger-surface text-destructive rounded-xl text-xs font-semibold flex items-center gap-2 border border-danger-border bg-danger-surface text-destructive border-danger-border">
+              <AlertCircle className="h-4 w-4 text-destructive shrink-0"/>
               <span>{errorMessage}</span>
             </div>
           )}
@@ -237,7 +237,7 @@ export function TrialUpgradeModal() {
  className={cn(
                   'px-4 py-1.5 rounded-lg text-xs font-bold transition-all',
  interval === 'monthly'
-                    ? 'bg-card text-blue-600 dark:text-blue-400 shadow-xs'
+                    ? 'bg-card text-primary text-primary shadow-xs'
                     : 'text-muted-foreground hover:text-foreground'
                 )}
               >
@@ -248,12 +248,12 @@ export function TrialUpgradeModal() {
  className={cn(
                   'flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-bold transition-all',
  interval === 'yearly'
-                    ? 'bg-card text-blue-600 dark:text-blue-400 shadow-xs'
+                    ? 'bg-card text-primary text-primary shadow-xs'
                     : 'text-muted-foreground hover:text-foreground'
                 )}
               >
                 <span>{tBilingual('Yearly Billing', 'বাৎসরিক বিলিং')}</span>
-                <span className="bg-emerald-500 text-white text-2xs font-black px-2 py-0.5 rounded-full uppercase">
+                <span className="bg-success text-white text-xs font-black px-2 py-0.5 rounded-full uppercase">
                   {tBilingual('2 Mo Free', '২ মাস ফ্রি')}
                 </span>
               </button>
@@ -302,12 +302,12 @@ export function TrialUpgradeModal() {
  className={cn(
                     'relative rounded-xl border-2 p-4 sm:p-5 cursor-pointer transition-all flex flex-col justify-between',
  isSelected
-                      ? 'border-blue-600 bg-blue-50/40 dark:bg-blue-950/30 shadow-xs shadow-blue-500/10'
+                      ? 'border-border bg-primary/10/40 bg-primary/10 shadow-xs shadow-blue-500/10'
                       : 'border-border bg-card hover:border-input dark:hover:border-border'
                   )}
                 >
                   {isRecommended && (
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-2xs font-bold px-3.5 py-0.5 rounded-full uppercase tracking-wider shadow-sm whitespace-nowrap z-10 bangla-text">
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 text-white text-xs font-bold px-3.5 py-0.5 rounded-full uppercase tracking-wider shadow-sm whitespace-nowrap z-10 bangla-text">
                       {tBilingual('Most Popular', 'জনপ্রিয় পছন্দ')}
                     </div>
                   )}
@@ -318,7 +318,7 @@ export function TrialUpgradeModal() {
                         {tBilingual(plan.name, plan.name_bn)}
                       </h4>
                       {isSelected && (
-                        <div className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center shrink-0">
+                        <div className="w-5 h-5 rounded-full bg-primary text-white flex items-center justify-center shrink-0">
                           <Check className="h-3 w-3"/>
                         </div>
                       )}
@@ -341,19 +341,19 @@ export function TrialUpgradeModal() {
                     {/* Limit items */}
                     <div className="pt-3 border-t border-border space-y-2 text-xs text-foreground bangla-text">
                       <div className="flex items-center gap-2 min-w-0">
-                        <Users className="h-4 w-4 text-blue-500 shrink-0"/>
+                        <Users className="h-4 w-4 text-primary shrink-0"/>
                         <span className="truncate">{usersLabel}</span>
                       </div>
                       <div className="flex items-center gap-2 min-w-0">
-                        <Building className="h-4 w-4 text-indigo-500 shrink-0"/>
+                        <Building className="h-4 w-4 text-primary shrink-0"/>
                         <span className="truncate">{branchesLabel}</span>
                       </div>
                       <div className="flex items-center gap-2 min-w-0">
-                        <ShoppingCart className="h-4 w-4 text-emerald-500 shrink-0"/>
+                        <ShoppingCart className="h-4 w-4 text-success shrink-0"/>
                         <span className="truncate">{ordersLabel}</span>
                       </div>
                       <div className="flex items-center gap-2 min-w-0">
-                        <HardDrive className="h-4 w-4 text-purple-500 shrink-0"/>
+                        <HardDrive className="h-4 w-4 text-primary shrink-0"/>
                         <span className="truncate">{storageLabel}</span>
                       </div>
                     </div>
@@ -381,7 +381,7 @@ export function TrialUpgradeModal() {
           <div className="rounded-xl bg-muted p-4 border border-border space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5 bangla-text">
-                <CreditCard className="h-4 w-4 text-blue-600"/>
+                <CreditCard className="h-4 w-4 text-primary"/>
                 {tBilingual('Select Payment Method (Bangladesh Gateways)', 'পেমেন্ট মেথড নির্বাচন করুন (বাংলাদেশ)')}
               </span>
               <span className="text-xs font-bold text-foreground">
@@ -391,7 +391,7 @@ export function TrialUpgradeModal() {
             </div>
 
             {providers.length === 0 ? (
-              <div className="p-3 text-center text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 rounded-xl border border-amber-200 dark:border-amber-800 bangla-text">
+              <div className="p-3 text-center text-xs text-warning text-warning bg-warning-surface bg-warning-surface rounded-xl border border-warning-border border-warning-border bangla-text">
                 {tBilingual(
                   'No online payment gateway is currently active. Please contact support.',
                   'বর্তমানে কোন অনলাইন পেমেন্ট গেটওয়ে সক্রিয় নেই। সাপোর্টের সাথে যোগাযোগ করুন।'
@@ -408,23 +408,23 @@ export function TrialUpgradeModal() {
  className={cn(
                         'p-2.5 rounded-xl border text-center transition-all flex flex-col items-center justify-center gap-1 cursor-pointer',
  isGWSelected
-                          ? 'border-blue-600 bg-card shadow-sm ring-2 ring-blue-500/20'
+                          ? 'border-border bg-card shadow-sm ring-2 focus:ring-ring/20'
                           : 'border-border bg-card hover:bg-muted dark:hover:bg-muted'
                       )}
                     >
                       <div className="flex items-center gap-1">
                         {p.id === 'bkash' && <Smartphone className="h-3.5 w-3.5 text-pink-600"/>}
-                        {p.id === 'sslcommerz' && <CreditCard className="h-3.5 w-3.5 text-blue-600"/>}
-                        {p.id === 'nagad' && <Smartphone className="h-3.5 w-3.5 text-amber-600"/>}
-                        {p.id === 'bank_wire' && <Landmark className="h-3.5 w-3.5 text-emerald-600"/>}
+                        {p.id === 'sslcommerz' && <CreditCard className="h-3.5 w-3.5 text-primary"/>}
+                        {p.id === 'nagad' && <Smartphone className="h-3.5 w-3.5 text-warning"/>}
+                        {p.id === 'bank_wire' && <Landmark className="h-3.5 w-3.5 text-success"/>}
                         {!['bkash', 'sslcommerz', 'nagad', 'bank_wire'].includes(p.id) && (
-                          <CreditCard className="h-3.5 w-3.5 text-indigo-600"/>
+                          <CreditCard className="h-3.5 w-3.5 text-primary"/>
                         )}
                         <span className="text-xs font-black text-foreground bangla-text">
                           {tBilingual(p.name, p.nameBn)}
                         </span>
                       </div>
-                      <span className="text-2xs text-muted-foreground capitalize truncate max-w-full">
+                      <span className="text-xs text-muted-foreground capitalize truncate max-w-full">
                         {p.id === 'bkash' && 'Instant MFS'}
                         {p.id === 'sslcommerz' && 'Cards / Net Banking'}
                         {p.id === 'nagad' && 'Nagad Direct'}
@@ -439,10 +439,10 @@ export function TrialUpgradeModal() {
 
             {/* Instruction / Reference Input */}
             {instructions && instructions.length > 0 && (
-              <div className="p-3 bg-blue-50 dark:bg-blue-950/40 rounded-xl border border-blue-200 dark:border-blue-800 space-y-1">
+              <div className="p-3 bg-primary/10 bg-primary/10 rounded-xl border border-primary/20 border-border space-y-1">
                 {instructions.map((ins, i) => (
-                  <div key={i} className="text-xs text-blue-900 dark:text-blue-200 flex items-center gap-1.5">
-                    <CheckCircle2 className="h-3.5 w-3.5 text-blue-600 shrink-0"/>
+                  <div key={i} className="text-xs text-primary text-primary flex items-center gap-1.5">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0"/>
                     <span>{ins}</span>
                   </div>
                 ))}
@@ -451,7 +451,7 @@ export function TrialUpgradeModal() {
 
             {currentTrxId && (
               <div className="pt-2 space-y-2">
-                <label className="text-2xs font-semibold text-muted-foreground bangla-text block">
+                <label className="text-xs font-semibold text-muted-foreground bangla-text block">
                   {tBilingual('Provider Transaction ID / Reference (For Server Verification):', 'প্রোভাইডার ট্রানজেকশন আইডি / রেফারেন্স নম্বর:')}
                 </label>
                 <div className="flex gap-2">
@@ -463,7 +463,7 @@ export function TrialUpgradeModal() {
                   <Button
  type="button"size="sm"onClick={handleManualVerify}
  disabled={isProcessing}
- className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shrink-0">
+ className="bg-success hover:bg-success text-white text-xs font-bold shrink-0">
                     {isProcessing ? 'Verifying...' : 'Verify Now'}
                   </Button>
                 </div>
@@ -482,12 +482,12 @@ export function TrialUpgradeModal() {
 
             <Button
  type="submit"size="sm"disabled={isProcessing}
- className="w-full sm:w-auto min-h-[44px] sm:min-h-[36px] bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold px-6 shadow-xs shadow-blue-500/20 bangla-text">
+ className="w-full sm:w-auto min-h-[44px] sm:min-h-[36px] hover: hover: text-white font-bold px-6 shadow-xs shadow-blue-500/20 bangla-text">
               {isProcessing ? (
                 <span>{tBilingual('Processing Checkout...', 'প্রক্রিয়াধীন...')}</span>
               ) : (
                 <>
-                  <Zap className="mr-1.5 h-4 w-4 text-amber-300"/>
+                  <Zap className="mr-1.5 h-4 w-4 text-warning"/>
                   <span>
                     {tBilingual(
                       `Upgrade to ${targetPlanObj.name} (৳${payableAmount.toLocaleString()})`,

@@ -1,3 +1,4 @@
+import '@/config/env'
 import type { Metadata, Viewport } from 'next'
 import { Inter, Hind_Siliguri } from 'next/font/google'
 import { ThemeProvider } from '@/components/providers/theme-provider'
@@ -83,12 +84,17 @@ export default async function RootLayout({
                   var key = 'printerp_theme';
                   var stored = localStorage.getItem(key);
                   var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                  if (stored === 'dark' || (!stored && prefersDark) || (stored === 'system' && prefersDark)) {
+                  var isDark = stored === 'dark' || (!stored && prefersDark) || (stored === 'system' && prefersDark);
+                  if (isDark) {
                     document.documentElement.classList.add('dark');
                     document.documentElement.style.colorScheme = 'dark';
                   } else {
                     document.documentElement.classList.remove('dark');
                     document.documentElement.style.colorScheme = 'light';
+                  }
+                  var meta = document.querySelector('meta[name="theme-color"]');
+                  if (meta) {
+                    meta.setAttribute('content', isDark ? '#0f172a' : '#f8fafc');
                   }
                 } catch (e) {}
               })();
@@ -96,7 +102,7 @@ export default async function RootLayout({
           }}
         />
       </head>
-      <body className="font-sans antialiased min-h-screen bg-background text-foreground selection:bg-blue-600 selection:text-white">
+      <body className="font-sans antialiased min-h-screen bg-background text-foreground selection:bg-primary selection:text-primary-foreground">
         <PlatformSettingsProvider initialSettings={initialSettings}>
           <ThemeProvider>
             <I18nProvider>{children}</I18nProvider>

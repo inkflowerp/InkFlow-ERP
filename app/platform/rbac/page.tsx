@@ -1,5 +1,9 @@
-import PlatformPermissionsPage from '../permissions/page'
+import { requirePlatformPermission } from '@/lib/auth/platform-auth'
+import PlatformRbacClient from './rbac-client'
 
-export default function PlatformRBACLegacyPage() {
- return <PlatformPermissionsPage />
+export const dynamic = 'force-dynamic'
+
+export default async function PlatformRbacPage() {
+  await requirePlatformPermission('platform_user.view')
+  return <PlatformRbacClient />
 }

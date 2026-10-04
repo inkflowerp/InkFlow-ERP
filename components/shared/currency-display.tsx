@@ -31,9 +31,9 @@ export function CurrencyDisplay({
 
  const colorClasses = {
  default: 'text-inherit',
- success: 'text-emerald-600 dark:text-emerald-400 font-semibold',
- danger: 'text-rose-600 dark:text-rose-400 font-semibold',
- warning: 'text-amber-600 dark:text-amber-400 font-semibold',
+ success: 'text-success text-success font-semibold',
+ danger: 'text-destructive text-destructive font-semibold',
+ warning: 'text-warning text-warning font-semibold',
  muted: 'text-muted-foreground ',
   }
 

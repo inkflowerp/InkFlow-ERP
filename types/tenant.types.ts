@@ -19,6 +19,7 @@ export type TenantRole =
   | 'designer'
   | 'installer'
   | 'business_owner'
+  | 'branch_manager'
   | 'sales_manager'
   | 'graphic_designer'
   | 'production_manager'
@@ -57,20 +58,25 @@ export interface LinkedEmployeeSummary {
   status: string
 }
 
-export interface CompanyUserWithProfile extends CompanyUserRow {
+export interface CompanyUserWithProfile
+  extends Omit<CompanyUserRow, 'data_scopes' | 'responsibilities' | 'department' | 'is_active' | 'raw_overrides' | 'invitation_expires_at'> {
+  data_scopes?: Record<string, DataScope>
+  responsibilities?: string[]
+  department?: string | null
+  is_active?: boolean
+  raw_overrides?: Record<string, unknown> | null
   profile?: UserProfileRow | null
   roles?: RoleRow[]
   role?: RoleRow | null
   branch?: BranchRow | null
-  department?: string | null
-  responsibilities?: string[]
   overrides?: Record<string, boolean>
-  data_scopes?: Record<string, DataScope>
   data_scope?: DataScope | string
   authorized_branch_ids?: string[]
-  user_branch_access?: any[]
+  user_branch_access?: unknown[]
   linked_employee?: LinkedEmployeeSummary | null
   last_login_at?: string | null
+  invitation_expires_at?: string | null
+  is_expired?: boolean
 }
 
 export interface TenantContextType {

@@ -24,7 +24,7 @@ interface OrderQuickStatusModalProps {
  onClose: () => void
  order: UnifiedOrderRecord | null
  onUpdateStage: (orderId: string, newStage: OrderStage, note?: string) => Promise<void>
- onUpdateLiveStatus?: (orderId: string, newStatus: OrderLiveStatus, note?: string) => Promise<void>
+ onUpdateLiveStatus?: (orderId: string, newStatus: OrderLiveStatus, note?: string, expectedVersion?: number) => Promise<void>
  onShowNotification?: (msg: string, type?: 'success' | 'warning' | 'info') => void
 }
 
@@ -54,7 +54,7 @@ export const OrderQuickStatusModal = React.memo(function OrderQuickStatusModal({
  try {
  const cfg = ORDER_LIVE_STATUSES.find((s) => s.id === selectedStatus)
  if (onUpdateLiveStatus) {
- await onUpdateLiveStatus(order.id, selectedStatus, stageNote)
+ await onUpdateLiveStatus(order.id, selectedStatus, stageNote, order.version)
       } else if (cfg) {
  await onUpdateStage(order.id, cfg.stage, stageNote)
       }
@@ -77,13 +77,13 @@ export const OrderQuickStatusModal = React.memo(function OrderQuickStatusModal({
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-xl bg-card border border-border text-foreground p-6 shadow-lg">
         <DialogHeader className="border-b border-border pb-3">
-          <DialogTitle className="text-base font-bold flex items-center gap-2 text-indigo-700 dark:text-indigo-400">
+          <DialogTitle className="text-base font-bold flex items-center gap-2 text-primary text-primary">
             <ArrowRight className="h-5 w-5"/>
             <span>{tBilingual('Update Order Live Status', 'অর্ডারের লাইভ স্ট্যাটাস আপডেট করুন')}</span>
           </DialogTitle>
           <DialogDescription className="text-xs text-muted-foreground">
             {tBilingual('Order #:', 'অর্ডার নং:')}{' '}
-            <span className="tabular-nums font-bold text-indigo-600">#{order.orderNumber}</span> |{' '}
+            <span className="tabular-nums font-bold text-primary">#{order.orderNumber}</span> |{' '}
             {tBilingual('Customer:', 'কাস্টমার:')} {order.customerName}
           </DialogDescription>
         </DialogHeader>
@@ -102,7 +102,7 @@ export const OrderQuickStatusModal = React.memo(function OrderQuickStatusModal({
  type="button"onClick={() => setSelectedStatus(opt.id)}
  className={`p-2.5 rounded-lg border text-left transition-all flex items-center justify-between ${
  isSelected
-                        ? 'bg-indigo-50 border-indigo-500 text-indigo-950 dark:bg-indigo-950/40 dark:text-indigo-200 shadow-sm ring-1 ring-indigo-400/30'
+                        ? 'bg-primary/10 border-primary/20 text-primary bg-primary/10 text-primary shadow-sm ring-1 focus:ring-ring/30'
                         : 'bg-muted border-border text-foreground hover:border-input'
                     }`}
                   >
@@ -112,7 +112,7 @@ export const OrderQuickStatusModal = React.memo(function OrderQuickStatusModal({
                         {tBilingual(opt.labelEn, opt.labelBn)}
                       </div>
                     </div>
-                    {isSelected && <CheckCircle2 className="h-4 w-4 text-indigo-600 dark:text-indigo-400 shrink-0"/>}
+                    {isSelected && <CheckCircle2 className="h-4 w-4 text-primary text-primary shrink-0"/>}
                   </button>
                 )
               })}
@@ -127,7 +127,7 @@ export const OrderQuickStatusModal = React.memo(function OrderQuickStatusModal({
             </Button>
             <Button
  type="submit"size="sm"disabled={isSubmitting}
- className="text-xs bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-xs">
+ className="text-xs bg-primary hover:bg-primary text-white font-bold shadow-xs">
               <span>{isSubmitting ? tBilingual('Updating...', 'আপডেট হচ্ছে...') : tBilingual('Save Status', 'স্ট্যাটাস সংরক্ষণ করুন')}</span>
             </Button>
           </div>

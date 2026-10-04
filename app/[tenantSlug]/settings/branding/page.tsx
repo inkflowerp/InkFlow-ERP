@@ -97,7 +97,7 @@ export default function BrandingSettingsPage() {
 
  if (!mounted) {
  return (
-      <div className="space-y-6 max-w-5xl animate-pulse">
+      <div className="space-y-6 animate-pulse">
         <div className="h-20 bg-muted rounded-xl w-full"/>
         <div className="h-12 bg-muted rounded-xl w-3/4"/>
         <div className="h-48 bg-muted rounded-xl w-full"/>
@@ -106,14 +106,14 @@ export default function BrandingSettingsPage() {
   }
 
  return (
-    <div className="space-y-6 max-w-5xl">
+    <div className="space-y-6">
       <PageHeader
  titleEn="Branding & Theme Settings"titleBn="ব্র্যান্ডিং ও থিম সেটিংস"descriptionEn="Customize company logos, primary theme palette, and document footer terms for professional output."descriptionBn="লোগো, প্রাতিষ্ঠানিক থিম কালার এবং ইনভয়েস/চালানের শর্তাবলী পরিচালনা করুন।"icon={Palette}
- iconColor="text-purple-600"/>
+ iconColor="text-primary"/>
 
       {isSaved && (
-        <div className="p-3 bg-emerald-50 text-emerald-800 rounded-lg text-xs font-semibold flex items-center gap-2 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800 animate-in fade-in-0">
-          <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0"/>
+        <div className="p-3 bg-success-surface text-success rounded-lg text-xs font-semibold flex items-center gap-2 border border-success-border bg-success-surface text-success border-success-border animate-in fade-in-0">
+          <CheckCircle2 className="h-4 w-4 text-success shrink-0"/>
           <span>{tBilingual('Branding settings updated and recorded in audit log.', 'ব্র্যান্ডিং সেটিংস আপডেট ও অডিট লগে সংরক্ষণ করা হয়েছে।')}</span>
         </div>
       )}
@@ -135,7 +135,7 @@ export default function BrandingSettingsPage() {
  type="button"onClick={() => setBranding({ ...branding, primary_color: c.hex })}
  className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-semibold transition-all ${
  branding.primary_color === c.hex
-                      ? 'border-border ring-2 ring-slate-900/20 dark:border-white shadow-xs'
+                      ? 'border-border ring-2 focus:ring-ring/20 dark:border-white shadow-xs'
                       : 'border-border hover:border-input '
                   }`}
                 >
@@ -161,7 +161,7 @@ export default function BrandingSettingsPage() {
           <Card>
             <CardHeader className="pb-2 border-b border-border">
               <CardTitle className="text-sm flex items-center gap-2">
-                <ImageIcon className="h-4 w-4 text-blue-600"/>
+                <ImageIcon className="h-4 w-4 text-primary"/>
                 {tBilingual('Main Company Logo', 'মূল কোম্পানির লোগো')}
               </CardTitle>
             </CardHeader>
@@ -186,7 +186,7 @@ export default function BrandingSettingsPage() {
           <Card>
             <CardHeader className="pb-2 border-b border-border">
               <CardTitle className="text-sm flex items-center gap-2">
-                <Receipt className="h-4 w-4 text-emerald-600"/>
+                <Receipt className="h-4 w-4 text-success"/>
                 {tBilingual('Invoice Header Logo', 'ইনভয়েস হেডার লোগো')}
               </CardTitle>
             </CardHeader>
@@ -211,7 +211,7 @@ export default function BrandingSettingsPage() {
           <Card>
             <CardHeader className="pb-2 border-b border-border">
               <CardTitle className="text-sm flex items-center gap-2">
-                <FileSpreadsheet className="h-4 w-4 text-purple-600"/>
+                <FileSpreadsheet className="h-4 w-4 text-primary"/>
                 {tBilingual('Quotation Header Logo', 'কোটেশন হেডার লোগো')}
               </CardTitle>
             </CardHeader>
@@ -265,7 +265,7 @@ export default function BrandingSettingsPage() {
         </Card>
 
         <div className="flex justify-end pt-2">
-          <Button type="submit"isLoading={isLoading} className="bg-purple-600 hover:bg-purple-700 text-white w-full sm:w-auto h-11 sm:h-9 text-xs font-semibold">
+          <Button type="submit"isLoading={isLoading} className="bg-primary hover:bg-primary text-white w-full sm:w-auto h-11 sm:h-9 text-xs font-semibold">
             <Save className="mr-1.5 h-4 w-4"/>
             {tBilingual('Save Branding Configuration', 'ব্র্যান্ডিং কনফিগারেশন সংরক্ষণ করুন')}
           </Button>

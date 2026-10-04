@@ -43,22 +43,22 @@ export function MachineQueueView({
  const getStatusBadge = (status: string) => {
  switch (status) {
  case 'available':
- return <Badge className="bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-950/50 dark:text-emerald-300">Available</Badge>
+ return <Badge className="bg-success-surface text-success border-success-border bg-success-surface text-success">Available</Badge>
  case 'in_use':
- return <Badge className="bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-950/50 dark:text-blue-300">In Use</Badge>
+ return <Badge className="bg-primary/10 text-primary border-primary/20 bg-primary/10 text-primary">In Use</Badge>
  case 'maintenance':
- return <Badge className="bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-950/50 dark:text-amber-300">Maintenance</Badge>
+ return <Badge className="bg-warning-surface text-warning border-warning-border bg-warning-surface text-warning">Maintenance</Badge>
  case 'breakdown':
- return <Badge className="bg-rose-100 text-rose-800 border-rose-300 dark:bg-rose-950/50 dark:text-rose-300">Breakdown</Badge>
+ return <Badge className="bg-danger-surface text-destructive border-danger-border bg-danger-surface text-destructive">Breakdown</Badge>
  default:
  return <Badge variant="outline">{status}</Badge>
     }
   }
 
  const getUtilizationColor = (percent: number) => {
- if (percent > 90) return 'bg-rose-500'
- if (percent > 70) return 'bg-amber-500'
- return 'bg-blue-500'
+ if (percent > 90) return 'bg-destructive'
+ if (percent > 70) return 'bg-warning'
+ return 'bg-primary'
   }
 
  if (queues.length === 0) {
@@ -94,7 +94,7 @@ export function MachineQueueView({
           <Card
  key={group.machine_id}
  className={`border transition-shadow hover:shadow-xs ${
- isBlocked ? 'border-amber-300 dark:border-amber-900 bg-amber-50/20 dark:bg-amber-950/10' : ''
+ isBlocked ? 'border-warning-border border-warning-border bg-warning-surface/20 bg-warning-surface/10' : ''
             }`}
           >
             <CardHeader className="p-4 pb-3 border-b border-border flex flex-row items-center justify-between">
@@ -102,22 +102,22 @@ export function MachineQueueView({
                 <div className="flex items-center gap-2">
                   <Link
  href={getTenantNavHref(`/production/machineries/${group.machine_id}`, pathname, tenantSlug)}
- className="font-bold text-sm text-foreground hover:text-blue-600 transition-colors">
+ className="font-bold text-sm text-foreground hover:text-primary transition-colors">
                     {group.machine_name}
                   </Link>
-                  <Badge variant="outline"className="text-2xs uppercase tabular-nums">
+                  <Badge variant="outline"className="text-xs uppercase tabular-nums">
                     {group.machine_code}
                   </Badge>
                   {getStatusBadge(group.operating_status)}
                 </div>
-                <div className="text-2xs text-muted-foreground flex items-center gap-2">
+                <div className="text-xs text-muted-foreground flex items-center gap-2">
                   <span className="capitalize">{group.machine_type.replace('_', ' ')}</span>
                   <span>•</span>
                   <span className="capitalize">{group.department}</span>
                   <span>•</span>
                   <Link
  href={getTenantNavHref(`/operator?machine=${group.machine_id}`, pathname, tenantSlug)}
- className="text-blue-600 hover:underline font-medium inline-flex items-center gap-1">
+ className="text-primary hover:underline font-medium inline-flex items-center gap-1">
  Floor Terminal
                   </Link>
                 </div>
@@ -127,7 +127,7 @@ export function MachineQueueView({
               <div className="text-right">
                 <div className="text-xs font-semibold text-foreground flex items-center gap-1.5 justify-end">
                   <span>{(group.total_scheduled_minutes_today / 60).toFixed(1)} hrs booked</span>
-                  <span className="text-2xs text-muted-foreground">({group.daily_utilization_percent}%)</span>
+                  <span className="text-xs text-muted-foreground">({group.daily_utilization_percent}%)</span>
                 </div>
                 <div className="w-28 h-1.5 bg-muted rounded-full mt-1 overflow-hidden">
                   <div
@@ -140,17 +140,17 @@ export function MachineQueueView({
 
             <CardContent className="p-4 space-y-3">
               {/* NOW SLOT */}
-              <div className="rounded-lg border border-blue-200 dark:border-blue-900/60 bg-blue-50/40 dark:bg-blue-950/20 p-3 space-y-1.5">
+              <div className="rounded-lg border border-primary/20 border-border/60 bg-primary/10/40 bg-primary/10 p-3 space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <span className="text-2xs font-bold uppercase tracking-wider text-blue-700 dark:text-blue-300 flex items-center gap-1">
-                    <Flame className="h-3 w-3 text-blue-600 animate-pulse"/>
+                  <span className="text-xs font-bold uppercase tracking-wider text-primary text-primary flex items-center gap-1">
+                    <Flame className="h-3 w-3 text-primary animate-pulse"/>
  NOW (চলমান কাজ)
                   </span>
                   {group.now && (
                     <Link
  href={getTenantNavHref(`/production/${group.now.task_id || group.now.job_number}`, pathname, tenantSlug)}
                     >
-                      <Badge variant="outline"className="text-2xs bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200 hover:bg-blue-200 cursor-pointer">
+                      <Badge variant="outline"className="text-xs bg-primary/10 bg-primary/50 text-primary text-primary hover:bg-primary cursor-pointer">
  Job #{group.now.job_number}
                       </Badge>
                     </Link>
@@ -161,10 +161,10 @@ export function MachineQueueView({
                   <div className="space-y-1">
                     <Link
  href={getTenantNavHref(`/production/${group.now.task_id || group.now.job_number}`, pathname, tenantSlug)}
- className="text-xs font-semibold text-foreground hover:text-blue-600 dark:hover:text-blue-400 block transition-colors">
+ className="text-xs font-semibold text-foreground hover:text-primary dark:hover:text-primary block transition-colors">
                       {group.now.task_name}
                     </Link>
-                    <div className="text-2xs text-muted-foreground flex items-center justify-between">
+                    <div className="text-xs text-muted-foreground flex items-center justify-between">
                       <span className="flex items-center gap-1">
                         <User className="h-3 w-3 text-muted-foreground"/>
                         {group.now.operator_name}
@@ -183,7 +183,7 @@ export function MachineQueueView({
               {/* NEXT SLOT */}
               <div className="rounded-lg border border-border bg-muted p-3 space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+                  <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
                     <ArrowRight className="h-3 w-3"/>
  NEXT (পরবর্তী কাজ)
                   </span>
@@ -191,7 +191,7 @@ export function MachineQueueView({
                     <Link
  href={getTenantNavHref(`/production/${group.next.task_id || group.next.job_number}`, pathname, tenantSlug)}
                     >
-                      <Badge variant="outline"className="text-2xs tabular-nums hover:bg-muted cursor-pointer">
+                      <Badge variant="outline"className="text-xs tabular-nums hover:bg-muted cursor-pointer">
  Job #{group.next.job_number}
                       </Badge>
                     </Link>
@@ -202,10 +202,10 @@ export function MachineQueueView({
                   <div className="space-y-1">
                     <Link
  href={getTenantNavHref(`/production/${group.next.task_id || group.next.job_number}`, pathname, tenantSlug)}
- className="text-xs font-semibold text-foreground hover:text-blue-600 dark:hover:text-blue-400 block transition-colors">
+ className="text-xs font-semibold text-foreground hover:text-primary dark:hover:text-primary block transition-colors">
                       {group.next.task_name}
                     </Link>
-                    <div className="text-2xs text-muted-foreground flex items-center justify-between">
+                    <div className="text-xs text-muted-foreground flex items-center justify-between">
                       <span className="flex items-center gap-1">
                         <User className="h-3 w-3 text-muted-foreground"/>
                         {group.next.operator_name}
@@ -224,14 +224,14 @@ export function MachineQueueView({
               {/* LATER QUEUE */}
               {group.later.length > 0 && (
                 <div className="pt-2 border-t border-border">
-                  <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground">
+                  <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
  LATER IN QUEUE ({group.later.length} Jobs)
                   </span>
                   <div className="mt-1.5 space-y-1 max-h-24 overflow-y-auto pr-1">
                     {group.later.map((later) => (
                       <div
  key={later.task_id}
- className="flex items-center justify-between text-2xs py-1 border-b border-border last:border-0">
+ className="flex items-center justify-between text-xs py-1 border-b border-border last:border-0">
                         <span className="font-medium truncate max-w-[160px]">
                           #{later.job_number}: {later.task_name}
                         </span>

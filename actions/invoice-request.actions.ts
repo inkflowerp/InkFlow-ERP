@@ -1,5 +1,8 @@
 'use server'
 
+import { withTenantAction } from '@/lib/actions/action-wrapper'
+
+
 import { revalidatePath } from 'next/cache'
 import { InvoiceRequestService, CreateInvoiceRequestInput } from '../services/invoice-request.service.ts'
 import { AuditService } from '../services/audit.service.ts'
@@ -15,12 +18,15 @@ export interface ServerActionResult<T> {
 /**
  * Server Action: Submit an invoice request from Designer or Sales
  */
-export async function createInvoiceRequestAction(
-  input: Omit<CreateInvoiceRequestInput, 'companyId' | 'requestedById' | 'requestedByName'> & {
+export const createInvoiceRequestAction = withTenantAction(
+  {
+    permission: "settings.view",
+    entityType: "invoice-request"
+  },
+  async (ctx, input: Omit<CreateInvoiceRequestInput, 'companyId' | 'requestedById' | 'requestedByName'> & {
     companyId?: string
     requestedByName?: string
-  }
-): Promise<ServerActionResult<InvoiceRequestRecord>> {
+  }) : Promise<ServerActionResult<InvoiceRequestRecord>> => {
   try {
     const tenant = await getCurrentTenant(input.companyId)
     if (!tenant || !tenant.companyId) {
@@ -64,21 +70,25 @@ export async function createInvoiceRequestAction(
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to create invoice request' }
   }
-}
+
+})
 
 /**
  * Server Action: Fetch invoice requests for current tenant
  */
-export async function getInvoiceRequestsAction(
-  filters?: {
+export const getInvoiceRequestsAction = withTenantAction(
+  {
+    permission: "settings.view",
+    entityType: "invoice-request"
+  },
+  async (ctx, filters?: {
     status?: 'pending' | 'invoice_created' | 'rejected' | 'cancelled'
     customerId?: string
     salesOrderId?: string
     jobOrderId?: string
     designJobId?: string
   },
-  requestedCompanyId?: string
-): Promise<ServerActionResult<InvoiceRequestRecord[]>> {
+  requestedCompanyId?: string) : Promise<ServerActionResult<InvoiceRequestRecord[]>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -89,16 +99,20 @@ export async function getInvoiceRequestsAction(
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to fetch invoice requests' }
   }
-}
+
+})
 
 /**
  * Server Action: Cancel an invoice request
  */
-export async function cancelInvoiceRequestAction(
-  requestId: string,
+export const cancelInvoiceRequestAction = withTenantAction(
+  {
+    permission: "settings.view",
+    entityType: "invoice-request"
+  },
+  async (ctx, requestId: string,
   reason?: string,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<boolean>> {
+  requestedCompanyId?: string) : Promise<ServerActionResult<boolean>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -111,4 +125,5 @@ export async function cancelInvoiceRequestAction(
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to cancel invoice request' }
   }
-}
+
+})

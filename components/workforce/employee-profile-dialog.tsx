@@ -69,9 +69,9 @@ export function EmployeeProfileDialog({
   }
 
  const getStatusBadge = (status: string) => {
- if (status === 'active') return 'bg-emerald-50 text-emerald-700 border-emerald-200'
- if (status === 'on_leave') return 'bg-amber-50 text-amber-700 border-amber-200'
- return 'bg-red-50 text-red-700 border-red-200'
+ if (status === 'active') return 'bg-success-surface text-success border-success-border'
+ if (status === 'on_leave') return 'bg-warning-surface text-warning border-warning-border'
+ return 'bg-danger-surface text-destructive border-danger-border'
   }
 
  return (
@@ -80,7 +80,7 @@ export function EmployeeProfileDialog({
         {/* Header Profile Bar */}
         <div className="bg-muted border-b border-border p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-xl bg-blue-600 text-white font-bold text-lg flex items-center justify-center shadow-sm shrink-0">
+            <div className="w-14 h-14 rounded-xl bg-primary text-white font-bold text-lg flex items-center justify-center shadow-sm shrink-0">
               {employee.name.slice(0, 2).toUpperCase()}
             </div>
             <div>
@@ -89,7 +89,7 @@ export function EmployeeProfileDialog({
                   {employee.name}
                 </h2>
                 <Badge
- variant="outline"className={`text-[10px] font-semibold uppercase px-2 py-0.5 rounded-full ${getStatusBadge(
+ variant="outline"className={`text-xs font-semibold uppercase px-2 py-0.5 rounded-full ${getStatusBadge(
  employee.status
                   )}`}
                 >
@@ -142,23 +142,23 @@ export function EmployeeProfileDialog({
           <div className="border-b border-border px-6 bg-card">
             <TabsList className="bg-transparent h-10 p-0 space-x-6 justify-start">
               <TabsTrigger
- value="overview"className="data-[state=active]:border-b-2 data-[state=active]:border-blue-600 data-[state=active]:text-blue-600 rounded-none bg-transparent px-1 pb-2 pt-2 text-xs font-medium text-muted-foreground shadow-none">
+ value="overview"className="data-[state=active]:border-b-2 data-[state=active]:border-border data-[state=active]:text-primary rounded-none bg-transparent px-1 pb-2 pt-2 text-xs font-medium text-muted-foreground shadow-none">
  Overview
               </TabsTrigger>
               <TabsTrigger
- value="compensation"className="data-[state=active]:border-b-2 data-[state=active]:border-blue-600 data-[state=active]:text-blue-600 rounded-none bg-transparent px-1 pb-2 pt-2 text-xs font-medium text-muted-foreground shadow-none">
+ value="compensation"className="data-[state=active]:border-b-2 data-[state=active]:border-border data-[state=active]:text-primary rounded-none bg-transparent px-1 pb-2 pt-2 text-xs font-medium text-muted-foreground shadow-none">
  Compensation
               </TabsTrigger>
               <TabsTrigger
- value="duty"className="data-[state=active]:border-b-2 data-[state=active]:border-blue-600 data-[state=active]:text-blue-600 rounded-none bg-transparent px-1 pb-2 pt-2 text-xs font-medium text-muted-foreground shadow-none">
+ value="duty"className="data-[state=active]:border-b-2 data-[state=active]:border-border data-[state=active]:text-primary rounded-none bg-transparent px-1 pb-2 pt-2 text-xs font-medium text-muted-foreground shadow-none">
  Duty & Shifts
               </TabsTrigger>
               <TabsTrigger
- value="advances"className="data-[state=active]:border-b-2 data-[state=active]:border-blue-600 data-[state=active]:text-blue-600 rounded-none bg-transparent px-1 pb-2 pt-2 text-xs font-medium text-muted-foreground shadow-none">
+ value="advances"className="data-[state=active]:border-b-2 data-[state=active]:border-border data-[state=active]:text-primary rounded-none bg-transparent px-1 pb-2 pt-2 text-xs font-medium text-muted-foreground shadow-none">
  Advances
               </TabsTrigger>
               <TabsTrigger
- value="access"className="data-[state=active]:border-b-2 data-[state=active]:border-blue-600 data-[state=active]:text-blue-600 rounded-none bg-transparent px-1 pb-2 pt-2 text-xs font-medium text-muted-foreground shadow-none">
+ value="access"className="data-[state=active]:border-b-2 data-[state=active]:border-border data-[state=active]:text-primary rounded-none bg-transparent px-1 pb-2 pt-2 text-xs font-medium text-muted-foreground shadow-none">
  Login Access
               </TabsTrigger>
             </TabsList>
@@ -170,7 +170,7 @@ export function EmployeeProfileDialog({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="p-3.5 rounded-xl border border-border bg-muted space-y-2">
                   <div className="font-semibold text-foreground flex items-center gap-1.5">
-                    <Phone className="w-3.5 h-3.5 text-blue-600"/>
+                    <Phone className="w-3.5 h-3.5 text-primary"/>
                     <span>Contact Info</span>
                   </div>
                   <div className="space-y-1 text-muted-foreground">
@@ -192,7 +192,7 @@ export function EmployeeProfileDialog({
 
                 <div className="p-3.5 rounded-xl border border-border bg-muted space-y-2">
                   <div className="font-semibold text-foreground flex items-center gap-1.5">
-                    <Briefcase className="w-3.5 h-3.5 text-blue-600"/>
+                    <Briefcase className="w-3.5 h-3.5 text-primary"/>
                     <span>Employment Terms</span>
                   </div>
                   <div className="space-y-1 text-muted-foreground">
@@ -217,7 +217,7 @@ export function EmployeeProfileDialog({
                 {employee.emergency_contact_name && (
                   <div className="p-3.5 rounded-xl border border-border bg-muted space-y-2 col-span-full">
                     <div className="font-semibold text-foreground flex items-center gap-1.5">
-                      <HeartPulse className="w-3.5 h-3.5 text-rose-600"/>
+                      <HeartPulse className="w-3.5 h-3.5 text-destructive"/>
                       <span>Emergency Contact</span>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-muted-foreground">
@@ -240,36 +240,36 @@ export function EmployeeProfileDialog({
             <TabsContent value="compensation"className="m-0 space-y-4 text-xs">
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 <div className="p-3.5 rounded-xl border border-border bg-card">
-                  <span className="text-[11px] text-muted-foreground block font-medium">Base Salary</span>
+                  <span className="text-xs text-muted-foreground block font-medium">Base Salary</span>
                   <span className="text-lg font-bold text-foreground tabular-nums">
                     ৳ {(employee.base_salary || 0).toLocaleString('en-IN')}
                   </span>
                 </div>
 
                 <div className="p-3.5 rounded-xl border border-border bg-card">
-                  <span className="text-[11px] text-muted-foreground block font-medium">Overtime Rate</span>
+                  <span className="text-xs text-muted-foreground block font-medium">Overtime Rate</span>
                   <span className="text-lg font-bold text-foreground tabular-nums">
                     ৳ {(employee.overtime_hourly_rate || 0).toLocaleString('en-IN')}/hr
                   </span>
                 </div>
 
                 <div className="p-3.5 rounded-xl border border-border bg-card">
-                  <span className="text-[11px] text-muted-foreground block font-medium">Daily Rate</span>
+                  <span className="text-xs text-muted-foreground block font-medium">Daily Rate</span>
                   <span className="text-lg font-bold text-foreground tabular-nums">
                     ৳ {(employee.daily_rate || 0).toLocaleString('en-IN')}/day
                   </span>
                 </div>
 
                 <div className="p-3.5 rounded-xl border border-border bg-card">
-                  <span className="text-[11px] text-muted-foreground block font-medium">Hourly Rate</span>
+                  <span className="text-xs text-muted-foreground block font-medium">Hourly Rate</span>
                   <span className="text-lg font-bold text-foreground tabular-nums">
                     ৳ {(employee.hourly_rate || 0).toLocaleString('en-IN')}/hr
                   </span>
                 </div>
 
                 <div className="p-3.5 rounded-xl border border-border bg-card col-span-2">
-                  <span className="text-[11px] text-muted-foreground block font-medium">Current Advance Balance</span>
-                  <span className="text-lg font-bold text-amber-600 tabular-nums">
+                  <span className="text-xs text-muted-foreground block font-medium">Current Advance Balance</span>
+                  <span className="text-lg font-bold text-warning tabular-nums">
                     ৳ {(employee.current_advance_balance || 0).toLocaleString('en-IN')}
                   </span>
                 </div>
@@ -331,11 +331,11 @@ export function EmployeeProfileDialog({
               <div className="p-4 rounded-xl border border-border bg-card flex items-center justify-between">
                 <div>
                   <span className="text-muted-foreground block">Outstanding Advance</span>
-                  <span className="text-2xl font-bold text-amber-600 tabular-nums">
+                  <span className="text-2xl font-bold text-warning tabular-nums">
                     ৳ {(employee.current_advance_balance || 0).toLocaleString('en-IN')}
                   </span>
                 </div>
-                <Button asChild size="sm"className="h-8 text-xs bg-blue-600 text-white hover:bg-blue-700">
+                <Button asChild size="sm"className="h-8 text-xs bg-primary text-white hover:bg-primary">
                   <Link href={`/${tenantSlug}/hr/advances?employee=${employee.id}`}>
                     <span>Manage Advances</span>
                     <ExternalLink className="w-3.5 h-3.5 ml-1.5"/>
@@ -349,10 +349,10 @@ export function EmployeeProfileDialog({
               <div className="p-4 rounded-xl border border-border bg-card space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="font-semibold text-foreground flex items-center gap-1.5">
-                    <Key className="w-3.5 h-3.5 text-blue-600"/>
+                    <Key className="w-3.5 h-3.5 text-primary"/>
                     <span>Portal Credentials & Access</span>
                   </div>
-                  <Badge variant="outline"className="bg-muted text-foreground text-[10px]">
+                  <Badge variant="outline"className="bg-muted text-foreground text-xs">
                     {employee.portal_credentials?.create_login ? 'Portal Active' : 'No Login'}
                   </Badge>
                 </div>
@@ -378,7 +378,7 @@ export function EmployeeProfileDialog({
 
                 {onSendInvitation && (
                   <div className="pt-3 border-t border-border flex items-center justify-between">
-                    <span className="text-[11px] text-muted-foreground">
+                    <span className="text-xs text-muted-foreground">
  Send login instructions via SMS / WhatsApp
                     </span>
                     <Button
@@ -387,12 +387,12 @@ export function EmployeeProfileDialog({
  className="h-8 text-xs border-border hover:bg-muted min-h-[32px]">
                       {inviteSent ? (
                         <>
-                          <CheckCircle2 className="w-3.5 h-3.5 mr-1 text-emerald-600"/>
+                          <CheckCircle2 className="w-3.5 h-3.5 mr-1 text-success"/>
                           <span>Invitation Sent</span>
                         </>
                       ) : (
                         <>
-                          <Send className="w-3.5 h-3.5 mr-1 text-blue-600"/>
+                          <Send className="w-3.5 h-3.5 mr-1 text-primary"/>
                           <span>{isSendingInvite ? 'Sending...' : 'Send Invitation'}</span>
                         </>
                       )}

@@ -117,10 +117,10 @@ export function UpgradePrompt({
  if (compact) {
  return (
       <div
- className={`flex items-center justify-between p-3.5 rounded-xl border border-amber-500/30 bg-amber-500/5 text-amber-900 dark:text-amber-200 ${className}`}
+ className={`flex items-center justify-between p-3.5 rounded-xl border border-warning-border/30 bg-warning/5 text-warning text-warning ${className}`}
       >
         <div className="flex items-center gap-2.5">
-          <div className="h-8 w-8 rounded-lg bg-amber-500/20 flex items-center justify-center text-amber-600 dark:text-amber-400 shrink-0">
+          <div className="h-8 w-8 rounded-lg bg-warning/20 flex items-center justify-center text-warning text-warning shrink-0">
             <Lock className="h-4 w-4"/>
           </div>
           <div className="text-xs bangla-text">
@@ -134,7 +134,7 @@ export function UpgradePrompt({
         </div>
 
         <Link href={getTenantNavHref('/settings/subscription', pathname, slug)}>
-          <Button size="sm"className="h-7 text-xs bg-amber-600 hover:bg-amber-700 text-white font-semibold bangla-text">
+          <Button size="sm"className="h-7 text-xs bg-warning hover:bg-warning/90 text-white font-semibold bangla-text">
             {tBilingual(isExpiredState ? 'Renew' : 'Upgrade', isExpiredState ? 'নবায়ন' : 'আপগ্রেড')}
             <ArrowRight className="ml-1 h-3 w-3"/>
           </Button>
@@ -144,22 +144,22 @@ export function UpgradePrompt({
   }
 
  return (
-    <Card className={`relative overflow-hidden border-indigo-200 dark:border-indigo-950/60 bg-gradient-to-b from-white via-indigo-50/30 to-white dark:from-slate-900 dark:via-indigo-950/20 dark:to-slate-900 shadow-xs ${className}`}>
+    <Card className={`relative overflow-hidden border-primary/20 border-border/60  from-white  to-white dark: dark: dark: shadow-xs ${className}`}>
       {/* Decorative gradient blur background */}
-      <div className="absolute top-0 right-0 -mt-12 -mr-12 w-64 h-64 rounded-full bg-indigo-500/10 blur-3xl pointer-events-none"/>
-      <div className="absolute bottom-0 left-0 -mb-12 -ml-12 w-64 h-64 rounded-full bg-purple-500/10 blur-3xl pointer-events-none"/>
+      <div className="absolute top-0 right-0 -mt-12 -mr-12 w-64 h-64 rounded-full bg-primary/10 blur-3xl pointer-events-none"/>
+      <div className="absolute bottom-0 left-0 -mb-12 -ml-12 w-64 h-64 rounded-full bg-primary/10 blur-3xl pointer-events-none"/>
 
       <CardHeader className="text-center pb-2 pt-8">
-        <div className="mx-auto h-16 w-16 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/25 mb-4">
+        <div className="mx-auto h-16 w-16 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-500/25 mb-4">
           <Lock className="h-8 w-8"/>
         </div>
 
         <div className="flex items-center justify-center gap-2 mb-2">
-          <Badge variant="outline"className="text-2xs tabular-nums border-indigo-300 dark:border-indigo-700 text-indigo-700 dark:text-indigo-300 bangla-text">
+          <Badge variant="outline"className="text-xs tabular-nums border-primary/20 border-border text-primary text-primary bangla-text">
             {tBilingual(`${currentPlan.name} (Current)`, `${currentPlan.name_bn} (বর্তমান)`)}
           </Badge>
           <ArrowRight className="h-3 w-3 text-muted-foreground"/>
-          <Badge className="text-2xs font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 text-white bangla-text">
+          <Badge className="text-xs font-semibold text-white bangla-text">
             <Crown className="h-3 w-3 mr-1"/>
             {tBilingual(statusTitleEn, statusTitleBn)}
           </Badge>
@@ -182,13 +182,13 @@ export function UpgradePrompt({
       <CardContent className="max-w-lg mx-auto pt-4 pb-6 space-y-4">
         <div className="rounded-xl bg-muted/80 p-4 border border-border space-y-2.5">
           <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5 bangla-text">
-            <Sparkles className="h-3.5 w-3.5 text-indigo-500"/>
+            <Sparkles className="h-3.5 w-3.5 text-primary"/>
             {tBilingual(`Included with ${targetPlan.name}:`, `${targetPlan.name_bn}-এর মূল সুবিধাসমূহ:`)}
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-foreground bangla-text">
             <div className="flex items-center gap-1.5">
-              <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0"/>
+              <CheckCircle2 className="h-4 w-4 text-success shrink-0"/>
               <span>
                 {targetPlan.max_users <= 0 || targetPlan.max_users >= 99999
                   ? tBilingual('Unlimited', 'আনলিমিটেড')
@@ -197,7 +197,7 @@ export function UpgradePrompt({
               </span>
             </div>
             <div className="flex items-center gap-1.5">
-              <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0"/>
+              <CheckCircle2 className="h-4 w-4 text-success shrink-0"/>
               <span>
                 {targetPlan.max_branches <= 0 || targetPlan.max_branches >= 99999
                   ? tBilingual('Unlimited', 'আনলিমিটেড')
@@ -206,7 +206,7 @@ export function UpgradePrompt({
               </span>
             </div>
             <div className="flex items-center gap-1.5">
-              <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0"/>
+              <CheckCircle2 className="h-4 w-4 text-success shrink-0"/>
               <span>
                 {targetPlan.storage_gb <= 0 || targetPlan.storage_gb >= 99999
                   ? tBilingual('Unlimited', 'আনলিমিটেড')
@@ -215,7 +215,7 @@ export function UpgradePrompt({
               </span>
             </div>
             <div className="flex items-center gap-1.5">
-              <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0"/>
+              <CheckCircle2 className="h-4 w-4 text-success shrink-0"/>
               <span>
                 {targetPlan.monthly_orders <= 0 || targetPlan.monthly_orders >= 99999
                   ? tBilingual('Unlimited', 'আনলিমিটেড')
@@ -241,7 +241,7 @@ export function UpgradePrompt({
 
       <CardFooter className="flex flex-col sm:flex-row items-center justify-center gap-3 pb-8">
         <Link href={getTenantNavHref('/settings/subscription', pathname, slug)} className="w-full sm:w-auto">
-          <Button className="w-full sm:w-auto bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold px-6 shadow-xs shadow-indigo-500/20 bangla-text">
+          <Button className="w-full sm:w-auto hover: hover: text-white font-bold px-6 shadow-xs shadow-indigo-500/20 bangla-text">
             <Zap className="mr-2 h-4 w-4"/>
             {tBilingual(ctaTextEn, ctaTextBn)}
           </Button>

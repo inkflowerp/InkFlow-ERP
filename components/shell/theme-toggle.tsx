@@ -141,7 +141,7 @@ export function ThemeToggle({
 
       {isOpen && (
         <div className="absolute right-0 mt-2 w-36 rounded-xl border border-border bg-popover text-popover-foreground p-1.5 shadow-xs z-50 animate-in fade-in-0 zoom-in-95">
-          <div className="px-2 py-1 text-2xs font-bold uppercase tracking-wider text-muted-foreground">
+          <div className="px-2 py-1 text-xs font-bold uppercase tracking-wider text-muted-foreground">
             {tBilingual('Theme', 'থিম')}
           </div>
           <div className="space-y-0.5">

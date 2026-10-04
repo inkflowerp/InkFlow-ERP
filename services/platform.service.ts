@@ -362,6 +362,55 @@ export const DEFAULT_PLATFORM_RBAC_TEMPLATES: PlatformRBACTemplate[] = [
 
 export class PlatformService {
   /**
+   * Resolves platform admin email from input identifier
+   */
+  static async resolvePlatformAdminEmail(emailInput: string): Promise<string> {
+    const { CompanyUsersRepository } = await import('../lib/repositories/company-users.repository.ts')
+    return CompanyUsersRepository.resolvePlatformAdminEmail(emailInput)
+  }
+
+  /**
+   * Authenticates platform admin credentials against Supabase Auth
+   */
+  static async authenticatePlatformAdmin(email: string, password: string) {
+    const { CompanyUsersRepository } = await import('../lib/repositories/company-users.repository.ts')
+    return CompanyUsersRepository.authenticateWithPassword(email, password)
+  }
+
+  /**
+   * Terminates platform admin session
+   */
+  static async signOutPlatformAdmin() {
+    const { CompanyUsersRepository } = await import('../lib/repositories/company-users.repository.ts')
+    return CompanyUsersRepository.signOutSession()
+  }
+
+  /**
+   * Verifies and synchronizes active platform admin membership
+   */
+  static async getAndSyncPlatformAdmin(authUserId: string, email?: string | null): Promise<any | null> {
+    const { CompanyUsersRepository } = await import('../lib/repositories/company-users.repository.ts')
+    return CompanyUsersRepository.getAndSyncPlatformAdmin(authUserId, email)
+  }
+
+  /**
+   * Records an active platform admin session
+   */
+  static async recordPlatformActiveSession(session: {
+    platform_admin_id: string
+    session_token_hash: string
+    ip_address: string | null
+    user_agent: string | null
+    device_name: string
+    location?: string
+    is_revoked?: boolean
+    last_seen_at?: string
+  }) {
+    const { CompanyUsersRepository } = await import('../lib/repositories/company-users.repository.ts')
+    return CompanyUsersRepository.recordPlatformActiveSession(session)
+  }
+
+  /**
    * 1. Global Platform Dashboard Overview with real metrics from PostgreSQL
    */
   static async getDashboardOverview(): Promise<
@@ -655,6 +704,74 @@ export class PlatformService {
         created_at: l.created_at,
       }))
 
+      // Trials ending in 7 days
+      const sevenDaysMs = 7 * 24 * 60 * 60 * 1000
+      const trialsEndingIn7Days = subList.filter((s: any) => {
+        if (s.status !== 'trial' || !s.trial_ends_at) return false
+        const diff = new Date(s.trial_ends_at).getTime() - nowTime
+        return diff >= 0 && diff <= sevenDaysMs
+      }).length
+
+      // Open incidents
+      let openIncidentsCount = 0
+      try {
+        const { count: incCount } = await (admin as any)
+          .from('platform_incidents')
+          .select('*', { count: 'exact', head: true })
+          .neq('status', 'resolved')
+        openIncidentsCount = incCount ?? unresolvedEvents.length
+      } catch {
+        openIncidentsCount = unresolvedEvents.length
+      }
+
+      // Support backlog
+      let supportBacklogCount = 0
+      try {
+        const { count: suppCount } = await (admin as any)
+          .from('support_conversations')
+          .select('*', { count: 'exact', head: true })
+          .neq('status', 'closed')
+        supportBacklogCount = suppCount ?? 0
+      } catch {
+        supportBacklogCount = 0
+      }
+
+      // Tenant Growth Trend (last 6 months)
+      const monthsList: string[] = []
+      const monthCountMap = new Map<string, number>()
+      for (let i = 5; i >= 0; i--) {
+        const d = new Date()
+        d.setDate(1)
+        d.setMonth(d.getMonth() - i)
+        const label = d.toLocaleString('en-US', { month: 'short', year: '2-digit' })
+        monthsList.push(label)
+        monthCountMap.set(label, 0)
+      }
+
+      compList.forEach((c: any) => {
+        if (c.created_at) {
+          const d = new Date(c.created_at)
+          const label = d.toLocaleString('en-US', { month: 'short', year: '2-digit' })
+          if (monthCountMap.has(label)) {
+            monthCountMap.set(label, (monthCountMap.get(label) || 0) + 1)
+          }
+        }
+      })
+
+      let runningCumulative = Math.max(
+        0,
+        totalCompanies - Array.from(monthCountMap.values()).reduce((a, b) => a + b, 0)
+      )
+      const tenantGrowth = monthsList.map((m) => {
+        const added = monthCountMap.get(m) || 0
+        runningCumulative += added
+        return {
+          month: m,
+          count: runningCumulative,
+          new_tenants: added,
+        }
+      })
+
       const metrics: PlatformDashboardMetrics & { needs_attention: NeedsAttentionItem[] } = {
         total_companies: totalCompanies,
         active_companies: activeCompanies,
@@ -693,6 +810,10 @@ export class PlatformService {
         },
         recent_audit_logs: recentAuditLogs,
         needs_attention: needsAttention,
+        trials_ending_in_7_days: trialsEndingIn7Days,
+        open_incidents: openIncidentsCount,
+        support_backlog: supportBacklogCount,
+        tenant_growth: tenantGrowth,
       }
 
       return { success: true, data: metrics }
@@ -1845,6 +1966,7 @@ export class PlatformService {
         'saas_subscription_invoice_items',
         'saas_subscription_invoices',
         'saas_tenant_storage_usage',
+        'tenant_dashboard_summaries',
         'platform_tenant_feature_flags',
         'platform_subscription_events',
         'platform_subscriptions',
@@ -1884,6 +2006,7 @@ export class PlatformService {
         'tenant_whatsapp_connections',
         'otp_requests',
         'notification_preferences',
+        'notification_business_rules',
         // RBAC & Users
         'user_permission_overrides',
         'user_branch_access',

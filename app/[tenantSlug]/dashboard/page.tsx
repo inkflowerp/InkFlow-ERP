@@ -1,23 +1,24 @@
 import { DashboardView } from '@/features/dashboard/dashboard-view'
 import { getOwnerDashboardDataAction } from '@/actions/dashboard.actions'
+import { requireTenantPermission } from '@/lib/auth/tenant-auth'
 
 interface DashboardPageProps {
- params: Promise<{ tenantSlug: string }>
+  params: Promise<{ tenantSlug: string }>
 }
 
 export default async function DashboardPage({ params }: DashboardPageProps) {
- const { tenantSlug } = await params
- let initialSnapshot = null
+  const { tenantSlug } = await params
+  await requireTenantPermission(tenantSlug, 'reports.view')
+  let initialSnapshot = null
 
- try {
- const res = await getOwnerDashboardDataAction()
- if (res.success && res.data) {
- initialSnapshot = res.data
+  try {
+    const res = await getOwnerDashboardDataAction()
+    if (res.success && res.data) {
+      initialSnapshot = res.data
     }
   } catch (err) {
     // Fail-open: Client Stale-While-Revalidate will hydrate if server-side fetch has network variance
   }
 
- return <DashboardView initialSnapshot={initialSnapshot} tenantSlug={tenantSlug} />
+  return <DashboardView initialSnapshot={initialSnapshot} tenantSlug={tenantSlug} />
 }
-

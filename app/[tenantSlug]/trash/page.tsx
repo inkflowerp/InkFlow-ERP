@@ -252,42 +252,42 @@ function TrashContent() {
  switch (category) {
  case 'quotations':
  return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-2xs font-bold bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/40 dark:text-blue-300">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-bold bg-primary/10 text-primary border border-primary/20 bg-primary/10 text-primary">
             <FileSpreadsheet className="h-3 w-3"/>
             {tBilingual('Quotation', 'কোটেশন')}
           </span>
         )
  case 'invoices':
  return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-2xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-bold bg-success-surface text-success border border-success-border bg-success-surface text-success">
             <Receipt className="h-3 w-3"/>
             {tBilingual('Invoice', 'ইনভয়েস')}
           </span>
         )
  case 'customers':
  return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-2xs font-bold bg-purple-50 text-purple-700 border border-purple-200 dark:bg-purple-950/40 dark:text-purple-300">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-bold bg-primary/10 text-primary border border-primary/20 bg-primary/10 text-primary">
             <Users className="h-3 w-3"/>
             {tBilingual('Customer', 'গ্রাহক')}
           </span>
         )
  case 'products':
  return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-2xs font-bold bg-cyan-50 text-cyan-700 border border-cyan-200 dark:bg-cyan-950/40 dark:text-cyan-300">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-bold bg-info-surface text-primary border border-primary/20 bg-primary/10 text-primary">
             <Package className="h-3 w-3"/>
             {tBilingual('Product', 'পণ্য')}
           </span>
         )
  case 'materials':
  return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-2xs font-bold bg-amber-50 text-amber-800 border border-amber-300 dark:bg-amber-950/40 dark:text-amber-300">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-bold bg-warning-surface text-warning border border-warning-border bg-warning-surface text-warning">
             <Boxes className="h-3 w-3"/>
             {tBilingual('Material / Stock', 'কাঁচামাল ও স্টক')}
           </span>
         )
  case 'suppliers':
  return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-2xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200 dark:bg-indigo-950/40 dark:text-indigo-300">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-bold bg-primary/10 text-primary border border-primary/20 bg-primary/10 text-primary">
             <Truck className="h-3 w-3"/>
             {tBilingual('Supplier', 'সরবরাহকারী')}
           </span>
@@ -298,11 +298,11 @@ function TrashContent() {
   }
 
  return (
-    <div className="space-y-6 max-w-7xl">
+    <div className="space-y-6">
       {/* Header */}
       <PageHeader
  titleEn="Trash & Recycle Bin"titleBn="রিসাইকেল বিন ও ট্র্যাশ"descriptionEn="Safely restore or permanently purge deleted quotations, invoices, customers, products, inventory items, and suppliers."descriptionBn="মুছে ফেলা কোটেশন, ইনভয়েস, গ্রাহক, পণ্য, কাঁচামাল ও সরবরাহকারীর তথ্য রিস্টোর বা স্থায়ীভাবে মুছে ফেলুন।"icon={Trash2}
- iconColor="text-rose-600"actions={
+ iconColor="text-destructive"actions={
           <div className="flex items-center gap-2">
             <Button
  size="sm"variant="outline"onClick={() => loadTrashData()}
@@ -315,8 +315,8 @@ function TrashContent() {
               <Button
  size="sm"variant="outline"onClick={() => setIsEmptyTrashModalOpen(true)}
  disabled={isActionPending}
- className="text-xs font-bold text-rose-700 hover:text-rose-800 hover:bg-rose-50 border-rose-200 dark:border-rose-900 dark:text-rose-300 dark:hover:bg-rose-950/40">
-                <Trash2 className="mr-1.5 h-3.5 w-3.5 text-rose-600"/>
+ className="text-xs font-bold text-destructive hover:text-destructive hover:bg-danger-surface border-danger-border border-danger-border text-destructive dark:hover:bg-danger-surface">
+                <Trash2 className="mr-1.5 h-3.5 w-3.5 text-destructive"/>
                 {tBilingual('Empty Trash', 'ট্র্যাশ খালি করুন')}
               </Button>
             )}
@@ -326,23 +326,23 @@ function TrashContent() {
 
       {/* Notification */}
       {notification && (
-        <div className="p-3 bg-emerald-50 text-emerald-800 rounded-lg text-xs font-semibold flex items-center gap-2 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800 animate-in fade-in-0">
-          <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0"/>
+        <div className="p-3 bg-success-surface text-success rounded-lg text-xs font-semibold flex items-center gap-2 border border-success-border bg-success-surface text-success border-success-border animate-in fade-in-0">
+          <CheckCircle2 className="h-4 w-4 text-success shrink-0"/>
           <span>{notification}</span>
         </div>
       )}
 
       {/* 30-DAY AUTO RETENTION POLICY BANNER */}
-      <div className="p-3.5 bg-amber-50/80 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/60 rounded-xl text-xs text-amber-900 dark:text-amber-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
+      <div className="p-3.5 bg-warning-surface/80 bg-warning-surface border border-warning-border border-warning-border/60 rounded-xl text-xs text-warning text-warning flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
         <div className="flex items-center gap-2.5">
-          <div className="p-2 bg-amber-100 dark:bg-amber-900/50 rounded-lg text-amber-800 dark:text-amber-300 shrink-0">
+          <div className="p-2 bg-warning-surface bg-warning/50 rounded-lg text-warning text-warning shrink-0">
             <Clock className="h-4 w-4"/>
           </div>
           <div>
             <span className="font-bold block sm:inline">
               {tBilingual('30-Day Auto Permanent Deletion Policy:', '৩০ দিনের স্বয়ংক্রিয় ডিলিট পলিসি:')}{' '}
             </span>
-            <span className="text-amber-800/90 dark:text-amber-300/90">
+            <span className="text-warning/90 text-warning/90">
               {tBilingual(
                 'Items in Trash are permanently deleted from database and backend automatically after 30 days.',
                 'ট্র্যাশে থাকা আইটেমসমূহ ৩০ দিন পর ডাটাবেজ ও ব্যাকএন্ড থেকে স্থায়ীভাবে স্বয়ংক্রিয়ভাবে মুছে যায়।'
@@ -351,8 +351,8 @@ function TrashContent() {
           </div>
         </div>
         <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
-          <Badge variant="outline"className="bg-card/80 dark:bg-amber-900/40 border-amber-300 dark:border-amber-800 text-amber-900 dark:text-amber-200 font-semibold text-2xs px-2.5 py-0.5">
-            <ShieldAlert className="h-3 w-3 mr-1 text-amber-600 dark:text-amber-400"/>
+          <Badge variant="outline"className="bg-card/80 bg-warning/40 border-warning-border border-warning-border text-warning text-warning font-semibold text-xs px-2.5 py-0.5">
+            <ShieldAlert className="h-3 w-3 mr-1 text-warning text-warning"/>
             {TRASH_RETENTION_DAYS} Days Retention
           </Badge>
         </div>
@@ -428,16 +428,16 @@ function TrashContent() {
  className={cn(
                 'px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5',
  selectedCategory === tab.id
-                  ? 'bg-rose-600 text-white shadow-sm'
+                  ? 'bg-destructive text-white shadow-sm'
                   : 'bg-muted text-foreground hover:bg-muted dark:hover:bg-card-elevated'
               )}
             >
               <span>{tBilingual(tab.labelEn, tab.labelBn)}</span>
               <span
  className={cn(
-                  'px-1.5 py-0.2 rounded-full text-2xs',
+                  'px-1.5 py-0.2 rounded-full text-xs',
  selectedCategory === tab.id
-                    ? 'bg-rose-800 text-rose-100'
+                    ? 'bg-destructive text-destructive'
                     : 'bg-muted text-muted-foreground '
                 )}
               >
@@ -539,10 +539,10 @@ function TrashContent() {
                         <td className="py-3.5 px-4 text-xs">
                           <span
  className={cn(
-                              'inline-flex items-center gap-1 font-semibold text-2xs px-2 py-0.5 rounded-full border',
+                              'inline-flex items-center gap-1 font-semibold text-xs px-2 py-0.5 rounded-full border',
  isUrgent
-                                ? 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-900'
-                                : 'bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-900'
+                                ? 'bg-danger-surface text-destructive border-danger-border bg-danger-surface text-destructive border-danger-border'
+                                : 'bg-warning-surface text-warning border-warning-border bg-warning-surface text-warning border-warning-border'
                             )}
  title={`Expires on ${new Date(item.expires_at || Date.now()).toLocaleDateString()}`}
                           >
@@ -570,14 +570,14 @@ function TrashContent() {
  setInspectedItem(item)
  setIsInspectModalOpen(true)
                               }}
- className="h-7 px-2 text-xs text-muted-foreground hover:text-indigo-600"title="Inspect Payload">
+ className="h-7 px-2 text-xs text-muted-foreground hover:text-primary"title="Inspect Payload">
                               <Eye className="h-3.5 w-3.5"/>
                             </Button>
 
                             {/* Restore Button */}
                             <Button
  size="sm"variant="outline"onClick={() => handleRestore(item)}
- className="h-7 px-2.5 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 hover:text-emerald-800 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800">
+ className="h-7 px-2.5 text-xs font-bold text-success bg-success-surface hover:bg-success-surface hover:text-success border-success-border bg-success-surface text-success border-success-border">
                               <RotateCcw className="h-3 w-3 mr-1"/>
                               {tBilingual('Restore', 'রিস্টোর')}
                             </Button>
@@ -588,7 +588,7 @@ function TrashContent() {
  setItemToPermanentDelete(item)
  setIsPermanentModalOpen(true)
                               }}
- className="h-7 px-2 text-xs text-rose-600 hover:bg-rose-50 hover:text-rose-700 border-rose-200 dark:border-rose-900"title="Permanent Delete">
+ className="h-7 px-2 text-xs text-destructive hover:bg-danger-surface hover:text-destructive border-danger-border border-danger-border"title="Permanent Delete">
                               <Trash2 className="h-3.5 w-3.5"/>
                             </Button>
                           </div>
@@ -619,17 +619,17 @@ function TrashContent() {
                         {getCategoryBadge(item.category)}
                         <span
  className={cn(
-                            'inline-flex items-center gap-1 text-2xs font-semibold px-2 py-0.2 rounded-full border',
+                            'inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.2 rounded-full border',
  isUrgent
-                              ? 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300'
-                              : 'bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300'
+                              ? 'bg-danger-surface text-destructive border-danger-border bg-danger-surface text-destructive'
+                              : 'bg-warning-surface text-warning border-warning-border bg-warning-surface text-warning'
                           )}
                         >
                           <Clock className="h-2.5 w-2.5"/>
                           {daysLeft === 0 ? 'Expires today' : `${daysLeft}d left`}
                         </span>
                       </div>
-                      <span className="text-2xs tabular-nums text-muted-foreground">
+                      <span className="text-xs tabular-nums text-muted-foreground">
                         {new Date(item.deleted_at).toLocaleDateString()}
                       </span>
                     </div>
@@ -638,20 +638,20 @@ function TrashContent() {
                       <div className="font-bold text-sm text-foreground">{item.title}</div>
                       {item.subtitle && <div className="text-xs text-muted-foreground">{item.subtitle}</div>}
                       {item.reference_number && (
-                        <div className="text-xs tabular-nums text-indigo-600 dark:text-indigo-400 mt-0.5">
+                        <div className="text-xs tabular-nums text-primary text-primary mt-0.5">
  Ref: {item.reference_number}
                         </div>
                       )}
                     </div>
 
                     <div className="flex items-center justify-between pt-2 border-t border-border">
-                      <span className="text-2xs text-muted-foreground">
+                      <span className="text-xs text-muted-foreground">
  By: {item.deleted_by_name || 'System User'}
                       </span>
                       <div className="flex items-center gap-1.5">
                         <Button
  size="sm"variant="outline"onClick={() => handleRestore(item)}
- className="h-7 px-2.5 text-xs font-bold text-emerald-700 bg-emerald-50 border-emerald-200">
+ className="h-7 px-2.5 text-xs font-bold text-success bg-success-surface border-success-border">
                           <RotateCcw className="h-3 w-3 mr-1"/>
  Restore
                         </Button>
@@ -660,7 +660,7 @@ function TrashContent() {
  setItemToPermanentDelete(item)
  setIsPermanentModalOpen(true)
                           }}
- className="h-7 px-2 text-xs text-rose-600 border-rose-200">
+ className="h-7 px-2 text-xs text-destructive border-danger-border">
                           <Trash2 className="h-3.5 w-3.5"/>
                         </Button>
                       </div>
@@ -681,11 +681,11 @@ function TrashContent() {
       >
         <div className="space-y-4 pt-1">
           {itemToPermanentDelete && (
-            <div className="p-3 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900 rounded-lg text-xs space-y-1">
-              <div className="font-bold text-rose-900 dark:text-rose-200">
+            <div className="p-3 bg-danger-surface bg-danger-surface border border-danger-border border-danger-border rounded-lg text-xs space-y-1">
+              <div className="font-bold text-destructive text-destructive">
                 {itemToPermanentDelete.title}
               </div>
-              <div className="text-rose-700 dark:text-rose-300">
+              <div className="text-destructive text-destructive">
  Category: {itemToPermanentDelete.category} | Ref: {itemToPermanentDelete.reference_number || 'N/A'}
               </div>
             </div>
@@ -697,7 +697,7 @@ function TrashContent() {
             </Button>
             <Button
  size="sm"onClick={handlePermanentDelete}
- className="bg-rose-600 hover:bg-rose-700 text-white font-semibold">
+ className="bg-destructive hover:bg-destructive text-white font-semibold">
               <Trash2 className="h-3.5 w-3.5 mr-1"/>
  Delete Permanently
             </Button>
@@ -712,7 +712,7 @@ function TrashContent() {
  title="Empty Trash? / ট্র্যাশ সম্পূর্ণ খালি করবেন?"description="Are you sure you want to permanently delete all items in this trash category? This action cannot be reversed."hideFooter
       >
         <div className="space-y-4 pt-1">
-          <div className="p-3 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded-lg text-xs text-amber-900 dark:text-amber-200">
+          <div className="p-3 bg-warning-surface bg-warning-surface border border-warning-border border-warning-border rounded-lg text-xs text-warning text-warning">
             <strong>Target Category:</strong> {selectedCategory === 'all' ? 'All Trashed Items' : selectedCategory} ({filteredItems.length} items to purge).
           </div>
 
@@ -722,7 +722,7 @@ function TrashContent() {
             </Button>
             <Button
  size="sm"onClick={handleEmptyTrash}
- className="bg-rose-600 hover:bg-rose-700 text-white font-semibold">
+ className="bg-destructive hover:bg-destructive text-white font-semibold">
               <Trash2 className="h-3.5 w-3.5 mr-1"/>
  Purge All Now
             </Button>
@@ -738,7 +738,7 @@ function TrashContent() {
  description="Raw snapshot preserved at the moment of deletion."hideFooter
       >
         <div className="space-y-4 pt-1 max-h-[60vh] overflow-y-auto">
-          <pre className="p-3 bg-surface-inset text-foreground rounded-lg text-2xs tabular-nums overflow-x-auto">
+          <pre className="p-3 bg-surface-inset text-foreground rounded-lg text-xs tabular-nums overflow-x-auto">
             {JSON.stringify(inspectedItem?.payload || {}, null, 2)}
           </pre>
           <div className="flex justify-end">

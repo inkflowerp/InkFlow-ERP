@@ -237,8 +237,8 @@ function QuotationDetailContent() {
  if (isLoading && !quote) {
  return (
       <FeatureGate feature="quotation_pdf">
-        <div className="space-y-6 max-w-6xl py-12 text-center">
-          <Loader2 className="h-8 w-8 animate-spin text-blue-600 mx-auto"/>
+        <div className="space-y-6 py-12 text-center">
+          <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto"/>
           <p className="text-xs text-muted-foreground font-medium">Loading quotation cockpit...</p>
         </div>
       </FeatureGate>
@@ -248,7 +248,7 @@ function QuotationDetailContent() {
  if (!quote) {
  return (
       <FeatureGate feature="quotation_pdf">
-        <div className="space-y-6 max-w-6xl">
+        <div className="space-y-6">
           <Link
  href={getTenantNavHref('/quotations', pathname, slug)}
  className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground dark:hover:text-foreground">
@@ -488,7 +488,7 @@ function QuotationDetailContent() {
 
  return (
     <FeatureGate feature="quotation_pdf">
-      <div className="space-y-6 max-w-6xl pb-16 print:max-w-none print:w-full print:bg-white print:text-foreground print:m-0 print:p-0">
+      <div className="space-y-6 pb-16 print:max-w-none print:w-full print:bg-white print:text-foreground print:m-0 print:p-0">
         {/* =========================================================================
  NON-PRINT CONTROLS: ACTION HIERARCHY HEADER
            ========================================================================= */}
@@ -515,7 +515,7 @@ function QuotationDetailContent() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-white/10">
               <div className="space-y-1">
                 <div className="flex flex-wrap items-center gap-2.5">
-                  <span className="tabular-nums font-black text-cyan-300 text-xl tracking-tight">
+                  <span className="tabular-nums font-black text-primary text-xl tracking-tight">
                     {quote.quotation_number}
                   </span>
                   <Badge variant="outline"className="bg-card/10 text-white border-white/20 text-xs font-bold capitalize">
@@ -523,14 +523,14 @@ function QuotationDetailContent() {
                   </Badge>
                   {quote.converted_order_id && (
                     <Link href={getTenantNavHref(`/orders?search=${quote.converted_order_id}`, pathname, slug)}>
-                      <Badge variant="outline"className="bg-purple-900/80 text-purple-200 border-purple-400/60 text-xs tabular-nums font-bold hover:bg-purple-800 transition-colors cursor-pointer flex items-center gap-1">
+                      <Badge variant="outline"className="bg-primary/80 text-primary border-border/60 text-xs tabular-nums font-bold hover:bg-primary transition-colors cursor-pointer flex items-center gap-1">
                         <span>Job Order #{quote.converted_order_id}</span>
                         <ArrowUpRight className="h-3 w-3"/>
                       </Badge>
                     </Link>
                   )}
                   {quote.converted_invoice_id && (
-                    <Badge variant="outline"className="bg-emerald-900/80 text-emerald-200 border-emerald-400/60 text-xs tabular-nums font-bold">
+                    <Badge variant="outline"className="bg-success/80 text-success border-success-border/60 text-xs tabular-nums font-bold">
  Invoice Converted
                     </Badge>
                   )}
@@ -541,29 +541,29 @@ function QuotationDetailContent() {
                   <span>•</span>
                   <span>Sales: <strong className="text-white">{quote.salesperson_name}</strong></span>
                   <span>•</span>
-                  <span className="tabular-nums text-cyan-200">Total: {formatBDT(quote.grand_total)}</span>
+                  <span className="tabular-nums text-primary">Total: {formatBDT(quote.grand_total)}</span>
                 </div>
               </div>
 
               {/* Next Action & Status Dropdown */}
               <div className="flex items-center gap-2 shrink-0">
                 <div className="text-right hidden sm:block">
-                  <span className="text-2xs text-muted-foreground uppercase font-semibold block">Recommended Next Action</span>
-                  <span className="text-xs font-bold text-amber-300">{nextAction}</span>
+                  <span className="text-xs text-muted-foreground uppercase font-semibold block">Recommended Next Action</span>
+                  <span className="text-xs font-bold text-warning">{nextAction}</span>
                 </div>
 
                 <select
  value={quote.status}
  onChange={(e) => handleStatusChange(e.target.value as QuotationStatus)}
- className="h-9 px-2.5 rounded-lg bg-card/10 text-white text-xs border border-white/20 font-semibold focus:ring-1 focus:ring-cyan-400">
-                  <option value="draft"className="text-black">Draft</option>
-                  <option value="sent"className="text-black">Sent</option>
-                  <option value="viewed"className="text-black">Viewed</option>
-                  <option value="negotiation"className="text-black">Negotiation</option>
-                  <option value="approved"className="text-black">Approved</option>
-                  <option value="rejected"className="text-black">Rejected</option>
-                  <option value="expired"className="text-black">Expired</option>
-                  <option value="converted"className="text-black">Converted</option>
+ className="h-9 px-2.5 rounded-lg bg-card/10 text-white text-xs border border-white/20 font-semibold focus:ring-1 focus:ring-ring">
+                  <option value="draft"className="text-foreground">Draft</option>
+                  <option value="sent"className="text-foreground">Sent</option>
+                  <option value="viewed"className="text-foreground">Viewed</option>
+                  <option value="negotiation"className="text-foreground">Negotiation</option>
+                  <option value="approved"className="text-foreground">Approved</option>
+                  <option value="rejected"className="text-foreground">Rejected</option>
+                  <option value="expired"className="text-foreground">Expired</option>
+                  <option value="converted"className="text-foreground">Converted</option>
                 </select>
               </div>
             </div>
@@ -571,22 +571,22 @@ function QuotationDetailContent() {
             {/* Commercial Advance Terms HUD Banner */}
             <div className="p-3 rounded-xl bg-card-elevated/80 border border-border/60 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
               <div>
-                <span className="text-2xs uppercase font-bold text-muted-foreground block">Total Quoted Value</span>
+                <span className="text-xs uppercase font-bold text-muted-foreground block">Total Quoted Value</span>
                 <span className="text-sm font-black tabular-nums text-white">{formatBDT(quote.grand_total)}</span>
               </div>
               <div>
-                <span className="text-2xs uppercase font-bold text-amber-300 block">
+                <span className="text-xs uppercase font-bold text-warning block">
  Advance Required ({advancePct}%)
                 </span>
-                <span className="text-sm font-black tabular-nums text-amber-400">{formatBDT(advanceAmt)}</span>
+                <span className="text-sm font-black tabular-nums text-warning">{formatBDT(advanceAmt)}</span>
               </div>
               <div>
-                <span className="text-2xs uppercase font-bold text-muted-foreground block">Balance on Delivery</span>
+                <span className="text-xs uppercase font-bold text-muted-foreground block">Balance on Delivery</span>
                 <span className="text-sm font-black tabular-nums text-foreground">{formatBDT(dueOnDeliv)}</span>
               </div>
               <div>
-                <span className="text-2xs uppercase font-bold text-muted-foreground block">Internal Margin Floor</span>
-                <span className={`text-sm font-black tabular-nums ${quote.margin_percent && quote.margin_percent >= 30 ? 'text-emerald-400' : 'text-amber-400'}`}>
+                <span className="text-xs uppercase font-bold text-muted-foreground block">Internal Margin Floor</span>
+                <span className={`text-sm font-black tabular-nums ${quote.margin_percent && quote.margin_percent >= 30 ? 'text-success' : 'text-warning'}`}>
                   {quote.margin_percent || 40}% ({formatBDT(quote.total_cost || Math.round(quote.subtotal * 0.55))})
                 </span>
               </div>
@@ -599,7 +599,7 @@ function QuotationDetailContent() {
                 {/* 1. PRIMARY ACTION: Follow Up */}
                 <Button
  size="sm"onClick={() => setIsFollowUpOpen(true)}
- className="h-9 text-xs bg-amber-500 hover:bg-amber-600 text-foreground font-black px-4 shadow-xs gap-1.5 cursor-pointer">
+ className="h-9 text-xs bg-warning hover:bg-warning text-foreground font-black px-4 shadow-xs gap-1.5 cursor-pointer">
                   <Clock className="h-4 w-4"/>
  Follow Up
                 </Button>
@@ -607,8 +607,8 @@ function QuotationDetailContent() {
                 {/* 2. WhatsApp Direct */}
                 <Button
  size="sm"variant="outline"onClick={handleSendWhatsApp}
- className="h-9 text-xs bg-emerald-500/20 text-emerald-200 border-emerald-400/40 hover:bg-emerald-500/30 gap-1.5 cursor-pointer">
-                  <MessageSquare className="h-4 w-4 text-emerald-400"/>
+ className="h-9 text-xs bg-success/20 text-success border-success-border/40 hover:bg-success/30 gap-1.5 cursor-pointer">
+                  <MessageSquare className="h-4 w-4 text-success"/>
  Send WhatsApp
                 </Button>
 
@@ -617,8 +617,8 @@ function QuotationDetailContent() {
                   <Button
  size="sm"variant="outline"onClick={handleSendEmail}
  disabled={isSendingEmail}
- className="h-9 text-xs bg-blue-500/20 text-blue-200 border-blue-400/40 hover:bg-blue-500/30 gap-1.5 cursor-pointer">
-                    <Mail className="h-4 w-4 text-blue-400"/>
+ className="h-9 text-xs bg-primary/20 text-primary border-border/40 hover:bg-primary/30 gap-1.5 cursor-pointer">
+                    <Mail className="h-4 w-4 text-primary"/>
                     {isSendingEmail ? 'Sending...' : 'Email PDF'}
                   </Button>
                 )}
@@ -627,7 +627,7 @@ function QuotationDetailContent() {
                 <Button
  size="sm"variant="outline"onClick={() => setIsNegotiationOpen(true)}
  className="h-9 text-xs bg-card/10 text-white border-white/20 hover:bg-card/20 gap-1.5 cursor-pointer">
-                  <Sliders className="h-3.5 w-3.5 text-cyan-300"/>
+                  <Sliders className="h-3.5 w-3.5 text-primary"/>
  Negotiate Margin
                 </Button>
 
@@ -666,14 +666,14 @@ function QuotationDetailContent() {
                   <Button
  size="sm"onClick={handleConvertToOrder}
  disabled={isConvertingOrder}
- className="h-9 text-xs bg-purple-600 hover:bg-purple-700 text-white font-bold gap-1.5 shadow-xs cursor-pointer">
+ className="h-9 text-xs bg-primary hover:bg-primary text-white font-bold gap-1.5 shadow-xs cursor-pointer">
                     <FileCheck className="h-4 w-4"/>
                     {isConvertingOrder ? 'Converting...' : 'Convert to Job Order'}
                   </Button>
                 ) : quote.converted_order_id ? (
                   <Link href={getTenantNavHref(`/orders?search=${quote.converted_order_id}`, pathname, slug)}>
                     <Button
- size="sm"className="h-9 text-xs bg-purple-700 hover:bg-purple-800 text-white font-bold gap-1.5 shadow-xs cursor-pointer">
+ size="sm"className="h-9 text-xs bg-primary hover:bg-primary text-white font-bold gap-1.5 shadow-xs cursor-pointer">
                       <ArrowUpRight className="h-4 w-4"/>
  View Job Order #{quote.converted_order_id} →
                     </Button>
@@ -685,7 +685,7 @@ function QuotationDetailContent() {
                   <Button
  size="sm"onClick={handleConvertToInvoice}
  disabled={isConvertingInvoice}
- className="h-9 text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-bold gap-1.5 shadow-xs cursor-pointer">
+ className="h-9 text-xs bg-success hover:bg-success text-white font-bold gap-1.5 shadow-xs cursor-pointer">
                     <Receipt className="h-4 w-4"/>
                     {isConvertingInvoice ? 'Converting...' : 'Convert to Invoice'}
                   </Button>
@@ -698,7 +698,7 @@ function QuotationDetailContent() {
           <div className="flex items-center justify-between p-3 rounded-xl bg-muted text-xs border border-border">
             <span className="font-semibold text-foreground flex items-center gap-2">
               <span>Document Presentation Language:</span>
-              <span className="text-2xs text-muted-foreground font-normal">
+              <span className="text-xs text-muted-foreground font-normal">
                 (Changes print/view typography between English and বাংলা)
               </span>
             </span>
@@ -721,8 +721,8 @@ function QuotationDetailContent() {
 
         {/* Notifications */}
         {notification && (
-          <div className="print:hidden p-3 bg-emerald-50 text-emerald-800 rounded-xl text-xs font-semibold flex items-center gap-2 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800 animate-in fade-in-0">
-            <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0"/>
+          <div className="print:hidden p-3 bg-success-surface text-success rounded-xl text-xs font-semibold flex items-center gap-2 border border-success-border bg-success-surface text-success border-success-border animate-in fade-in-0">
+            <CheckCircle2 className="h-4 w-4 text-success shrink-0"/>
             <span>{notification}</span>
           </div>
         )}
@@ -736,7 +736,7 @@ function QuotationDetailContent() {
           <div className="flex justify-between items-start border-b-2 border-border print:border-border pb-6">
             <div className="space-y-1">
               <div className="flex items-center gap-2.5">
-                <div className="h-11 w-11 rounded-xl bg-blue-700 text-white font-black text-2xl flex items-center justify-center shadow-xs">
+                <div className="h-11 w-11 rounded-xl bg-primary text-white font-black text-2xl flex items-center justify-center shadow-xs">
                   {(company?.name || 'I').charAt(0).toUpperCase()}
                 </div>
                 <div>
@@ -761,7 +761,7 @@ function QuotationDetailContent() {
             </div>
 
             <div className="text-right space-y-1">
-              <div className="text-2xl font-black text-blue-800 dark:text-blue-400 uppercase tracking-wide print:text-blue-800">
+              <div className="text-2xl font-black text-primary text-primary uppercase tracking-wide print:text-primary">
                 {languageMode === 'bn' ? 'উদ্ধৃতিপত্র / প্রাক্কলন' : 'OFFICIAL QUOTATION'}
               </div>
               <div className="text-sm tabular-nums font-bold text-foreground print:text-foreground">
@@ -770,7 +770,7 @@ function QuotationDetailContent() {
               <div className="text-xs text-muted-foreground print:text-muted-foreground">
  Date: <strong>{quote.quotation_date}</strong>
               </div>
-              <div className="text-xs text-red-600 dark:text-red-400 font-semibold print:text-red-600">
+              <div className="text-xs text-destructive text-destructive font-semibold print:text-destructive">
  Valid Until: <strong>{quote.valid_until}</strong>
               </div>
               {quote.reference_no && (
@@ -784,7 +784,7 @@ function QuotationDetailContent() {
           {/* Customer & Project Meta Box */}
           <div className="grid grid-cols-2 gap-6 my-6 p-4 rounded-xl bg-muted border border-border text-xs print:bg-muted print:border-border">
             <div className="space-y-1">
-              <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground print:text-muted-foreground">
+              <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground print:text-muted-foreground">
                 {languageMode === 'bn' ? 'গ্রাহকের তথ্য (বিল প্রাপক)' : 'Bill To / Client Details'}
               </span>
               <div className="text-sm font-bold text-foreground print:text-foreground">
@@ -797,14 +797,14 @@ function QuotationDetailContent() {
               <div className="text-muted-foreground print:text-muted-foreground tabular-nums">Mobile: {quote.customer_phone}</div>
               {quote.customer_email && <div className="text-muted-foreground print:text-muted-foreground">Email: {quote.customer_email}</div>}
               {quote.customer_type && (
-                <div className="text-muted-foreground print:text-muted-foreground uppercase text-2xs font-bold pt-0.5">
+                <div className="text-muted-foreground print:text-muted-foreground uppercase text-xs font-bold pt-0.5">
  Category: {quote.customer_type}
                 </div>
               )}
             </div>
 
             <div className="space-y-1 text-right sm:text-left">
-              <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground print:text-muted-foreground">
+              <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground print:text-muted-foreground">
                 {languageMode === 'bn' ? 'প্রকল্প ও ডেলিভারি বিবরণ' : 'Quotation Specifics'}
               </span>
               <div className="text-foreground print:text-foreground">
@@ -873,7 +873,7 @@ function QuotationDetailContent() {
                             {languageMode === 'bn' && item.description_bn ? item.description_bn : item.description}
                           </span>
                           {catPreset && (
-                            <span className="text-2xs font-bold px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/60 dark:text-blue-300 print:border-input">
+                            <span className="text-xs font-bold px-1.5 py-0.5 rounded bg-primary/10 text-primary border border-primary/20 bg-primary/10 text-primary print:border-input">
                               {catPreset === 'digital'
                                 ? 'Digital Flex/Vinyl'
                                 : catPreset === 'offset'
@@ -888,14 +888,14 @@ function QuotationDetailContent() {
                         </div>
 
                         {item.material_spec && (
-                          <div className="text-2xs text-muted-foreground print:text-muted-foreground">
+                          <div className="text-xs text-muted-foreground print:text-muted-foreground">
                             <strong>Material:</strong> {item.material_spec}
                           </div>
                         )}
 
                         {/* Specialized Offset Specs */}
                         {offsetSpecs && (
-                          <div className="text-2xs text-indigo-700 dark:text-indigo-300 print:text-indigo-800 bg-indigo-50/80 dark:bg-indigo-950/40 p-1.5 rounded mt-1">
+                          <div className="text-xs text-primary text-primary print:text-primary bg-primary/10/80 bg-primary/10 p-1.5 rounded mt-1">
                             <span>Offset Specs: </span>
                             {offsetSpecs.paper_gsm && <strong>{offsetSpecs.paper_gsm} GSM Paper • </strong>}
                             {offsetSpecs.print_mode && <span>{offsetSpecs.print_mode} • </span>}
@@ -906,7 +906,7 @@ function QuotationDetailContent() {
 
                         {/* Specialized Signage Specs */}
                         {signageSpecs && (
-                          <div className="text-2xs text-amber-800 dark:text-amber-300 print:text-amber-900 bg-amber-50/80 dark:bg-amber-950/40 p-1.5 rounded mt-1">
+                          <div className="text-xs text-warning text-warning print:text-warning bg-warning-surface/80 bg-warning-surface p-1.5 rounded mt-1">
                             <span>Signage Specs: </span>
                             {signageSpecs.lighting && <strong>Lighting: {signageSpecs.lighting} • </strong>}
                             {signageSpecs.structure && <span>Structure: {signageSpecs.structure} • </span>}
@@ -915,7 +915,7 @@ function QuotationDetailContent() {
                         )}
 
                         {item.finishing && item.finishing !== 'None' && (
-                          <div className="text-2xs text-blue-600 dark:text-blue-400 print:text-blue-600 font-medium mt-0.5">
+                          <div className="text-xs text-primary text-primary print:text-primary font-medium mt-0.5">
  Finishing: {item.finishing}
                           </div>
                         )}
@@ -944,20 +944,20 @@ function QuotationDetailContent() {
             {/* Terms, Notes & Bank Accounts */}
             <div className="space-y-3 text-xs">
               <div>
-                <span className="font-bold text-foreground uppercase tracking-wider text-2xs print:text-foreground">
+                <span className="font-bold text-foreground uppercase tracking-wider text-xs print:text-foreground">
                   {languageMode === 'bn' ? 'বিল ও ডেলিভারির শর্তাবলী:' : 'Commercial Terms & Conditions:'}
                 </span>
-                <pre className="font-sans whitespace-pre-line text-muted-foreground print:text-muted-foreground text-2xs leading-relaxed mt-1">
+                <pre className="font-sans whitespace-pre-line text-muted-foreground print:text-muted-foreground text-xs leading-relaxed mt-1">
                   {quote.terms_and_conditions || (languageMode === 'bn' ? DEFAULT_QUOTATION_TERMS_BN : DEFAULT_QUOTATION_TERMS)}
                 </pre>
               </div>
 
               {/* Payment Remittance Details */}
               <div className="p-3 rounded-xl bg-muted border border-border text-foreground print:bg-muted print:border-border print:text-foreground space-y-1">
-                <span className="font-bold block text-2xs uppercase text-foreground print:text-foreground">
+                <span className="font-bold block text-xs uppercase text-foreground print:text-foreground">
                   {languageMode === 'bn' ? 'পেমেন্ট ও ব্যাংক হিসাব (Payment Details):' : 'Official Payment Accounts:'}
                 </span>
-                <div className="text-2xs space-y-0.5">
+                <div className="text-xs space-y-0.5">
                   <div>• <strong>bKash / Nagad (Merchant):</strong> 01711-000000 (Counter 1)</div>
                   <div>• <strong>Bank:</strong> City Bank Ltd, Motijheel Branch, A/C: 1102938471001</div>
                   <div>• <strong>Account Name:</strong> {company?.name || 'InkFlow Solutions'}</div>
@@ -965,7 +965,7 @@ function QuotationDetailContent() {
               </div>
 
               {quote.notes && (
-                <div className="p-2.5 rounded-lg bg-amber-50/50 border border-amber-200 text-foreground print:bg-muted print:border-border print:text-foreground">
+                <div className="p-2.5 rounded-lg bg-warning-surface/50 border border-warning-border text-foreground print:bg-muted print:border-border print:text-foreground">
                   <strong>Special Note:</strong> {quote.notes}
                 </div>
               )}
@@ -979,7 +979,7 @@ function QuotationDetailContent() {
               </div>
 
               {quote.discount_amount > 0 && (
-                <div className="flex justify-between py-1 text-red-600 dark:text-red-400 font-semibold print:text-red-600">
+                <div className="flex justify-between py-1 text-destructive text-destructive font-semibold print:text-destructive">
                   <span>{languageMode === 'bn' ? 'বিশেষ ছাড় (Special Discount):' : 'Negotiated Discount:'}</span>
                   <span className="tabular-nums">- {formatBDT(quote.discount_amount)}</span>
                 </div>
@@ -992,12 +992,12 @@ function QuotationDetailContent() {
 
               <div className="flex justify-between py-2 border-t-2 border-border print:border-border font-black text-sm text-foreground print:text-foreground">
                 <span>{languageMode === 'bn' ? 'সর্বমোট প্রাক্কলন (Grand Total):' : 'Grand Total (BDT):'}</span>
-                <span className="tabular-nums text-base text-blue-700 dark:text-blue-400 print:text-blue-700">{formatBDT(quote.grand_total)}</span>
+                <span className="tabular-nums text-base text-primary text-primary print:text-primary">{formatBDT(quote.grand_total)}</span>
               </div>
 
               {/* Advance & Due Breakdown */}
               <div className="border-t border-dashed border-input print:border-input pt-2 space-y-1">
-                <div className="flex justify-between py-0.5 text-amber-700 dark:text-amber-400 font-bold print:text-amber-800">
+                <div className="flex justify-between py-0.5 text-warning text-warning font-bold print:text-warning">
                   <span>{languageMode === 'bn' ? `প্রয়োজনীয় অগ্রিম (${advancePct}% Advance Required):` : `Advance Required (${advancePct}%):`}</span>
                   <span className="tabular-nums">{formatBDT(advanceAmt)}</span>
                 </div>
@@ -1007,7 +1007,7 @@ function QuotationDetailContent() {
                 </div>
               </div>
 
-              <div className="text-2xs text-muted-foreground print:text-muted-foreground pt-1.5 italic border-t border-border">
+              <div className="text-xs text-muted-foreground print:text-muted-foreground pt-1.5 italic border-t border-border">
                 {languageMode === 'bn'
                   ? `কথায়: ${numberToWordsBangla(quote.grand_total)}`
                   : `In Words: ${numberToWordsBDT(quote.grand_total)}`}
@@ -1019,14 +1019,14 @@ function QuotationDetailContent() {
           <div className="grid grid-cols-2 gap-12 mt-16 pt-6 border-t border-dashed border-input print:border-input text-xs">
             <div className="text-center space-y-1">
               <div className="font-bold text-foreground print:text-foreground">{quote.salesperson_name}</div>
-              <div className="text-2xs text-muted-foreground print:text-muted-foreground">
+              <div className="text-xs text-muted-foreground print:text-muted-foreground">
                 {languageMode === 'bn' ? 'প্রস্তুতকারক (বিক্রয় বিভাগ)' : 'Prepared By (Sales Dept)'}
               </div>
             </div>
 
             <div className="text-center space-y-1">
               <div className="font-bold text-foreground print:text-foreground">Authorized Signatory</div>
-              <div className="text-2xs text-muted-foreground print:text-muted-foreground">
+              <div className="text-xs text-muted-foreground print:text-muted-foreground">
                 {languageMode === 'bn' ? 'অনুমোদনকারী কর্মকর্তা ও সিল' : `For ${company?.name || 'InkFlow Solutions'}`}
               </div>
             </div>
@@ -1040,7 +1040,7 @@ function QuotationDetailContent() {
           <Card>
             <CardHeader className="pb-3 border-b border-border">
               <CardTitle className="text-base font-bold flex items-center gap-2">
-                <History className="h-4 w-4 text-purple-600"/>
+                <History className="h-4 w-4 text-primary"/>
  Quotation Activity & Negotiation Timeline
               </CardTitle>
               <CardDescription className="text-xs">
@@ -1056,13 +1056,13 @@ function QuotationDetailContent() {
                 <div className="space-y-4">
                   {activities.map((act) => (
                     <div key={act.id} className="flex items-start gap-3 text-xs">
-                      <div className="h-2.5 w-2.5 rounded-full bg-blue-600 mt-1 shrink-0"/>
+                      <div className="h-2.5 w-2.5 rounded-full bg-primary mt-1 shrink-0"/>
                       <div className="flex-1 border-b border-border pb-3">
                         <div className="flex items-center justify-between">
                           <span className="font-bold capitalize text-foreground">
                             {act.action.replace('_', ' ')}
                           </span>
-                          <span className="text-muted-foreground tabular-nums text-2xs">
+                          <span className="text-muted-foreground tabular-nums text-xs">
                             {new Date(act.created_at).toLocaleString('en-BD')}
                           </span>
                         </div>
@@ -1071,7 +1071,7 @@ function QuotationDetailContent() {
                             {act.details}
                           </p>
                         )}
-                        <div className="text-2xs text-muted-foreground mt-0.5">By {act.actor_name}</div>
+                        <div className="text-xs text-muted-foreground mt-0.5">By {act.actor_name}</div>
                       </div>
                     </div>
                   ))}
@@ -1117,7 +1117,7 @@ export default function QuotationDetailPage() {
       <React.Suspense
  fallback={
           <div className="flex flex-col items-center justify-center min-h-[400px] space-y-3">
-            <FileSpreadsheet className="h-6 w-6 text-indigo-500 animate-pulse"/>
+            <FileSpreadsheet className="h-6 w-6 text-primary animate-pulse"/>
             <p className="text-xs text-muted-foreground">Loading Quotation...</p>
           </div>
         }

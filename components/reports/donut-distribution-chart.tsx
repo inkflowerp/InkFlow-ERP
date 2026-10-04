@@ -100,7 +100,7 @@ export function DonutDistributionChart({
                 <span className="text-xs 2xl:text-sm font-black text-foreground tabular-nums truncate max-w-[85px] 2xl:max-w-[100px]">
                   ৳ {activeItem.amount.toLocaleString()}
                 </span>
-                <span className="text-2xs text-blue-600 dark:text-blue-400 font-bold truncate max-w-[85px]">
+                <span className="text-xs text-primary text-primary font-bold truncate max-w-[85px]">
                   {activeItem.sharePercent}%
                 </span>
               </>
@@ -109,7 +109,7 @@ export function DonutDistributionChart({
                 <span className="text-xs 2xl:text-sm font-black text-foreground tabular-nums truncate max-w-[85px] 2xl:max-w-[100px]">
                   ৳ {totalAmount.toLocaleString()}
                 </span>
-                <span className="text-2xs text-muted-foreground font-medium">
+                <span className="text-xs text-muted-foreground font-medium">
                   {centerSubtext}
                 </span>
               </>
@@ -147,7 +147,7 @@ export function DonutDistributionChart({
                     <span className="tabular-nums font-bold text-foreground">
                       ৳ {item.amount.toLocaleString()}
                     </span>
-                    <span className="text-muted-foreground text-2xs w-7 text-right font-medium">
+                    <span className="text-muted-foreground text-xs w-7 text-right font-medium">
                       {item.sharePercent}%
                     </span>
                   </div>

@@ -313,11 +313,15 @@ export class PurchaseRepository {
       }
     })
 
-    const vatAmount = Number(data.vat_amount) || 0
-    const discountAmount = Number(data.discount_amount) || 0
+    const rawSubtotal = subtotal
     const shippingCost = Number(data.shipping_cost) || 0
     const otherCharges = Number(data.other_charges) || 0
-    const grandTotal = Math.max(0, subtotal + vatAmount + shippingCost + otherCharges - discountAmount)
+    const effectiveSubtotal = Math.round(rawSubtotal + shippingCost + otherCharges)
+    const discountAmount = Math.min(effectiveSubtotal, Math.max(0, Number(data.discount_amount) || 0))
+    const vatAmount = Math.max(0, Number(data.vat_amount) || 0)
+    const grandTotal = Math.max(0, effectiveSubtotal - discountAmount + vatAmount)
+    const paidAmount = Math.min(grandTotal, Math.max(0, Number(data.paid_amount) || 0))
+    const dueAmount = grandTotal - paidAmount
 
     const payload: PurchaseOrderRecord = {
       id: poId,
@@ -336,14 +340,14 @@ export class PurchaseRepository {
       currency: data.currency || 'BDT',
       payment_terms: data.payment_terms || 'credit_15',
       status: data.status || 'draft',
-      subtotal,
+      subtotal: effectiveSubtotal,
       vat_amount: vatAmount,
       discount_amount: discountAmount,
       shipping_cost: shippingCost,
       other_charges: otherCharges,
       grand_total: grandTotal,
-      paid_amount: Number(data.paid_amount) || 0,
-      due_amount: grandTotal - (Number(data.paid_amount) || 0),
+      paid_amount: paidAmount,
+      due_amount: dueAmount,
       notes: data.notes || null,
       terms_and_conditions: data.terms_and_conditions || null,
       created_by_name: data.created_by_name || 'Procurement Officer',

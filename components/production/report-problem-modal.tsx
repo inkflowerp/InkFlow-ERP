@@ -1,243 +1,233 @@
 'use client'
 
-import React, { useState } from 'react'
-import {
- AlertOctagon,
- AlertTriangle,
- Camera,
- Upload,
- CheckCircle2,
- X,
- Mic,
- Cpu,
- Layers,
- FileSpreadsheet,
- HelpCircle,
-} from 'lucide-react'
+import React, { useState, useRef } from 'react'
+import { AlertOctagon, Camera, Image as ImageIcon, X, Check, Loader2 } from 'lucide-react'
 import { useI18n } from '@/i18n/context'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Badge } from '@/components/ui/badge'
-import { ProductionTaskRecord } from '@/types/production.types'
+import { Textarea } from '@/components/ui/textarea'
 import { reportProductionProblemAction } from '@/actions/production-planning.actions'
-
-export type ProblemReasonCode =
-  | 'machine_problem'
-  | 'material_problem'
-  | 'design_problem'
-  | 'print_quality'
-  | 'customer_change'
-  | 'missing_material'
-  | 'other'
-
-interface ProblemReasonOption {
- code: ProblemReasonCode
- labelEn: string
- labelBn: string
- icon: React.ElementType
-}
-
-const PROBLEM_REASONS: ProblemReasonOption[] = [
-  { code: 'machine_problem', labelEn: 'Machine Breakdown / Head Strike', labelBn: 'মেশিন নষ্ট / হেড স্ট্রাইক', icon: Cpu },
-  { code: 'material_problem', labelEn: 'Defective / Damaged Material', labelBn: 'কাঁচামাল নষ্ট / ছেঁড়া মিডিয়া', icon: Layers },
-  { code: 'design_problem', labelEn: 'File / Artwork / Dimension Issue', labelBn: 'ডিজাইন বা সাইজে ভুল', icon: FileSpreadsheet },
-  { code: 'print_quality', labelEn: 'Color Mismatch / Banding Lines', labelBn: 'কালার মিসম্যাচ / প্রিন্ট দাগ', icon: AlertTriangle },
-  { code: 'customer_change', labelEn: 'Customer Requested Revision', labelBn: 'কাস্টমার পরিবর্তন চেয়েছে', icon: HelpCircle },
-  { code: 'missing_material', labelEn: 'Out of Stock / Media Shortage', labelBn: 'স্টকে মাল নেই / রোল শেষ', icon: AlertOctagon },
-  { code: 'other', labelEn: 'Other Operational Issue', labelBn: 'অন্যান্য সমস্যা', icon: AlertOctagon },
-]
+import type { ProductionTaskRecord } from '@/types/production.types'
 
 interface ReportProblemModalProps {
- isOpen: boolean
- onClose: () => void
- task: ProductionTaskRecord | null
- onSuccess?: (result: any) => void
+  isOpen: boolean
+  onClose: () => void
+  task: ProductionTaskRecord | null
+  onSuccess?: (updatedTask: ProductionTaskRecord) => void
 }
 
+const PROBLEM_REASONS = [
+  { code: 'machine_breakdown', labelEn: 'Machine Breakdown', labelBn: 'মেশিন নষ্ট / বিকল' },
+  { code: 'material_defect', labelEn: 'Material Defect / Shortage', labelBn: 'কাঁচামাল সমস্যা / ঘাটতি' },
+  { code: 'artwork_issue', labelEn: 'Artwork / Color Issue', labelBn: 'ডিজাইন বা রঙের ত্রুটি' },
+  { code: 'power_outage', labelEn: 'Power / Electricity Outage', labelBn: 'বিদ্যুৎ বিভ্রাট' },
+  { code: 'quality_issue', labelEn: 'Print Quality Issue', labelBn: 'ছাপার মান খারাপ' },
+  { code: 'other', labelEn: 'Other Emergency', labelBn: 'অন্যান্য জরুরি সমস্যা' },
+]
+
 export function ReportProblemModal({
- isOpen,
- onClose,
- task,
- onSuccess,
+  isOpen,
+  onClose,
+  task,
+  onSuccess,
 }: ReportProblemModalProps) {
- const { tBilingual } = useI18n()
+  const { tBilingual } = useI18n()
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
- const [selectedReason, setSelectedReason] = useState<ProblemReasonCode>('machine_problem')
- const [notes, setNotes] = useState<string>('')
- const [photoPreview, setPhotoPreview] = useState<string | null>(null)
- const [isSubmitting, setIsSubmitting] = useState(false)
- const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [reason, setReason] = useState<string>('machine_breakdown')
+  const [notes, setNotes] = useState<string>('')
+  const [photoDataUrl, setPhotoDataUrl] = useState<string | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
-  // Handle Photo Capture / File Selection
- const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
- const file = e.target.files?.[0]
- if (file) {
- const reader = new FileReader()
- reader.onloadend = () => {
- setPhotoPreview(reader.result as string)
-      }
- reader.readAsDataURL(file)
+  const handlePhotoCapture = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    if (file.size > 10 * 1024 * 1024) {
+      setErrorMessage(tBilingual('Photo size must be under 10MB', 'ছবির সাইজ ১০ মেগাবাইটের কম হতে হবে'))
+      return
     }
+
+    const reader = new FileReader()
+    reader.onload = () => {
+      setPhotoDataUrl(reader.result as string)
+      setErrorMessage(null)
+    }
+    reader.readAsDataURL(file)
   }
 
- const handleSubmit = async (e: React.FormEvent) => {
- e.preventDefault()
- if (!task) return
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!task) return
 
- setErrorMessage(null)
- setIsSubmitting(true)
+    setErrorMessage(null)
+    setIsSubmitting(true)
 
- try {
- const res = await reportProductionProblemAction({
- task_id: task.id,
- reason: selectedReason,
- notes: notes.trim() || undefined,
- photo_url: photoPreview || undefined,
- taskPayload: task,
+    try {
+      const res = await reportProductionProblemAction({
+        task_id: task.id,
+        reason,
+        notes: notes.trim() || undefined,
+        photo_url: photoDataUrl || undefined,
+        taskPayload: task,
       })
 
- if (!res.success) {
- setErrorMessage(res.error || 'Failed to submit problem report.')
- return
+      if (!res.success || !res.data) {
+        setErrorMessage(res.error || tBilingual('Failed to report problem', 'সমস্যা রিপোর্ট ব্যর্থ হয়েছে'))
+        return
       }
 
- onSuccess?.(res.data)
- onClose()
+      onSuccess?.(res.data.task || { ...task, status: 'on_hold' })
+      onClose()
     } catch (err: any) {
- setErrorMessage(err.message || 'An unexpected error occurred.')
+      setErrorMessage(err.message || tBilingual('An unexpected error occurred', 'একটি অপ্রত্যাশিত ত্রুটি ঘটেছে'))
     } finally {
- setIsSubmitting(false)
+      setIsSubmitting(false)
     }
   }
 
- if (!task) return null
+  if (!task) return null
 
- return (
+  return (
     <ModalDialog
- open={isOpen}
- onOpenChange={(open) => !open && onClose()}
- title={tBilingual('Report Floor Issue', 'সমস্যা রিপোর্ট করুন')}
- hideFooter={true}
- size="md">
+      open={isOpen}
+      onOpenChange={(open) => !open && onClose()}
+      title={tBilingual('Report Production Problem', 'উৎপাদন সমস্যা রিপোর্ট (জরুরি)')}
+      hideFooter={true}
+    >
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Task Summary Banner */}
-        <div className="p-3 bg-rose-50 dark:bg-rose-950/40 rounded-xl border border-rose-200 dark:border-rose-900 flex items-center justify-between">
-          <div className="space-y-0.5 min-w-0">
-            <div className="flex items-center gap-2">
-              <Badge className="bg-rose-600 text-white text-2xs font-bold">
-                {tBilingual(`Job #${task.job_number || 'N/A'}`, `কাজ #${task.job_number || 'N/A'}`)}
-              </Badge>
-              <span className="text-xs font-bold text-foreground truncate">
-                {task.task_name}
-              </span>
-            </div>
-            <p className="text-2xs text-muted-foreground">
-              {task.customer_name} • {task.quantity} {task.unit}
-            </p>
+        {/* Task Context Card */}
+        <div className="p-3 bg-destructive/10 rounded-xl border border-destructive/20 space-y-1">
+          <div className="text-xs font-bold text-destructive flex items-center gap-1.5">
+            <AlertOctagon className="h-4 w-4 shrink-0" />
+            <span className="truncate">{task.task_name} ({task.task_number})</span>
           </div>
-          <AlertOctagon className="h-6 w-6 text-rose-600 shrink-0"/>
+          <p className="text-xs text-muted-foreground bangla-text">
+            {tBilingual(
+              'Reporting a problem atomically pauses this task and notifies the production manager.',
+              'সমস্যা রিপোর্ট করলে কাজটি সাথে সাথে স্থগিত হবে এবং সুপারভাইজার নোটিফিকেশন পাবেন।'
+            )}
+          </p>
         </div>
 
         {errorMessage && (
-          <div className="p-3 bg-rose-50 border border-rose-200 rounded-lg text-rose-800 text-xs font-medium flex items-center gap-2 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800">
-            <AlertTriangle className="h-4 w-4 shrink-0 text-rose-600"/>
-            <span>{errorMessage}</span>
+          <div className="p-3 bg-destructive/15 text-destructive rounded-xl text-xs font-semibold border border-destructive/30">
+            {errorMessage}
           </div>
         )}
 
-        {/* Reason Picker Cards */}
+        {/* Reason Selector (Glove friendly touch buttons) */}
         <div className="space-y-1.5">
-          <Label className="text-xs font-bold">
-            {tBilingual('Select Problem Reason', 'সমস্যার কারণ নির্বাচন করুন')} <span className="text-rose-500">*</span>
+          <Label className="text-xs font-bold bangla-text text-foreground">
+            {tBilingual('Problem Category', 'সমস্যার ধরন নির্বাচন করুন')}
           </Label>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-52 overflow-y-auto pr-1">
+          <div className="grid grid-cols-2 gap-2">
             {PROBLEM_REASONS.map((r) => {
- const isSelected = selectedReason === r.code
- const IconComp = r.icon
- return (
-                <div
- key={r.code}
- onClick={() => setSelectedReason(r.code)}
- className={`p-2.5 rounded-xl border-2 text-xs cursor-pointer transition-all flex items-center gap-2.5 ${
- isSelected
-                      ? 'border-rose-500 bg-rose-50/70 text-rose-950 dark:bg-rose-950/50 dark:text-rose-100 font-bold shadow-xs'
-                      : 'border-border bg-card text-foreground hover:border-input'
+              const isSelected = reason === r.code
+              return (
+                <button
+                  key={r.code}
+                  type="button"
+                  onClick={() => setReason(r.code)}
+                  className={`min-h-[48px] p-2 rounded-xl text-left text-xs font-bold transition-all border ${
+                    isSelected
+                      ? 'bg-destructive text-destructive-foreground border-destructive shadow-xs'
+                      : 'bg-card text-foreground border-border hover:bg-muted active:scale-95'
                   }`}
                 >
-                  <IconComp className={`h-4 w-4 shrink-0 ${isSelected ? 'text-rose-600' : 'text-muted-foreground'}`} />
-                  <div className="min-w-0">
-                    <div className="truncate font-semibold">{tBilingual(r.labelEn, r.labelBn)}</div>
-                  </div>
-                </div>
+                  <div className="truncate">{r.labelBn}</div>
+                  <div className="text-xs opacity-80 font-normal truncate">{r.labelEn}</div>
+                </button>
               )
             })}
           </div>
         </div>
 
-        {/* Photo Upload / Camera Capture */}
+        {/* Notes */}
         <div className="space-y-1.5">
-          <Label className="text-xs font-bold">
-            {tBilingual('Add Photo of Problem', 'সমস্যার ছবি যুক্ত করুন')}
+          <Label className="text-xs font-bold bangla-text text-foreground">
+            {tBilingual('Problem Details / Notes', 'সমস্যার বিস্তারিত বিবরণ')}
+          </Label>
+          <Textarea
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            rows={2}
+            placeholder={tBilingual('Explain the issue clearly...', 'কী সমস্যা হয়েছে সংক্ষেপে লিখুন...')}
+            className="text-sm rounded-xl border-border bg-background"
+          />
+        </div>
+
+        {/* Photo Attachment (Camera Capture) */}
+        <div className="space-y-1.5">
+          <Label className="text-xs font-bold bangla-text text-foreground">
+            {tBilingual('Attach Photo (Optional)', 'সমস্যার ছবি তুলুন (ঐচ্ছিক)')}
           </Label>
 
-          {photoPreview ? (
-            <div className="relative rounded-xl border-2 border-border overflow-hidden max-h-36 flex items-center justify-center bg-surface-inset">
-              <img src={photoPreview} alt="Problem preview"className="max-h-36 object-contain"/>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            className="hidden"
+            onChange={handlePhotoCapture}
+          />
+
+          {photoDataUrl ? (
+            <div className="relative rounded-xl overflow-hidden border border-border bg-muted max-h-48 flex items-center justify-center">
+              <img
+                src={photoDataUrl}
+                alt="Problem preview"
+                className="max-h-48 w-full object-cover"
+              />
               <button
- type="button"onClick={() => setPhotoPreview(null)}
- className="absolute top-2 right-2 p-1 rounded-full bg-black/60 text-white hover:bg-black">
-                <X className="h-4 w-4"/>
+                type="button"
+                onClick={() => setPhotoDataUrl(null)}
+                className="absolute top-2 right-2 h-8 w-8 rounded-full bg-black/70 text-white flex items-center justify-center hover:bg-card cursor-pointer"
+              >
+                <X className="h-4 w-4" />
               </button>
             </div>
           ) : (
-            <label className="flex flex-col items-center justify-center p-3 border-2 border-dashed border-input rounded-xl cursor-pointer hover:bg-muted dark:hover:bg-muted/60 transition-all text-center">
-              <Camera className="h-6 w-6 text-muted-foreground mb-1"/>
-              <span className="text-xs font-semibold text-foreground">
-                {tBilingual('Take Photo or Upload Image', 'ক্যামেরা দিয়ে ছবি তুলুন বা আপলোড করুন')}
-              </span>
-              <span className="text-2xs text-muted-foreground">JPG, PNG up to 10MB</span>
-              <input type="file"accept="image/*"capture="environment"onChange={handleFileChange} className="hidden"/>
-            </label>
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="w-full min-h-[52px] rounded-xl border-2 border-dashed border-border bg-card hover:bg-muted active:scale-98 flex items-center justify-center gap-2 text-sm font-bold text-foreground bangla-text transition-colors cursor-pointer"
+            >
+              <Camera className="h-5 w-5 text-primary" />
+              <span>{tBilingual('Take Photo with Camera', 'ক্যামেরা দিয়ে ছবি তুলুন')}</span>
+            </button>
           )}
         </div>
 
-        {/* Detailed Notes */}
-        <div className="space-y-1.5">
-          <Label className="text-xs font-semibold">
-            {tBilingual('Additional Notes', 'বিস্তারিত বিবরণ')}
-          </Label>
-          <Input
- value={notes}
- onChange={(e) => setNotes(e.target.value)}
- placeholder={tBilingual('e.g. Media slipped after 10 feet / Need technician', 'যেমন: ১০ ফিট চলার পর মিডিয়া বাঁকা হয়ে গেছে')}
- className="h-10 text-xs"/>
-        </div>
-
-        {/* Warning Explanation */}
-        <p className="text-2xs text-muted-foreground bg-muted p-2.5 rounded-lg">
-          {tBilingual(
-            'Submitting this will pause this job, mark it as blocked, and immediately alert the Production Floor Manager.',
-            'এটি জমা দিলে কাজ সাময়িকভাবে স্থগিত হবে এবং প্রোডাকশন ম্যানেজারের কাছে তাৎক্ষণিক সতর্কতা চলে যাবে।'
-          )}
-        </p>
-
-        {/* Action Buttons */}
-        <div className="flex items-center justify-end gap-2 pt-2 border-t border-border">
-          <Button type="button"variant="outline"size="sm"onClick={onClose} disabled={isSubmitting} className="text-xs">
+        {/* Action Buttons (min-h-[48px]) */}
+        <div className="grid grid-cols-2 gap-2 pt-2">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onClose}
+            disabled={isSubmitting}
+            className="min-h-[48px] text-sm font-bold bangla-text border-border"
+          >
             {tBilingual('Cancel', 'বাতিল')}
           </Button>
+
           <Button
- type="submit"size="sm"disabled={isSubmitting}
- className="bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold h-10 px-5 shadow-sm">
+            type="submit"
+            disabled={isSubmitting}
+            className="min-h-[48px] text-sm font-bold bangla-text bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          >
             {isSubmitting ? (
-              <span>{tBilingual('Submitting...', 'জমা হচ্ছে...')}</span>
+              <>
+                <Loader2 className="h-4 w-4 animate-spin mr-1.5" />
+                {tBilingual('Reporting...', 'রিপোর্ট হচ্ছে...')}
+              </>
             ) : (
-              <span className="flex items-center gap-1.5">
-                <AlertOctagon className="h-4 w-4"/>
-                {tBilingual('Confirm & Pause Job', 'স্থগিত নিশ্চিত করুন')}
-              </span>
+              <>
+                <AlertOctagon className="h-4 w-4 mr-1.5" />
+                {tBilingual('Submit Report', 'রিপোর্ট জমা দিন')}
+              </>
             )}
           </Button>
         </div>

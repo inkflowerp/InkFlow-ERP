@@ -133,7 +133,7 @@ export const SUPPLIER_CATEGORY_META: Record<string, CategoryMeta> = {
  labelEn: 'Media (Flex / Vinyl / Banner)',
  labelBn: 'মিডিয়া (ফ্লেক্স / ভিনাইল / ব্যানার)',
  color: '#0284c7',
- badgeClass: 'bg-sky-50 text-sky-800 border-sky-200 dark:bg-sky-950/40 dark:text-sky-300 dark:border-sky-800',
+ badgeClass: 'bg-info-surface text-primary border-primary/20 bg-primary/10 text-primary border-border',
  icon: Layers,
   },
  acrylic: {
@@ -141,7 +141,7 @@ export const SUPPLIER_CATEGORY_META: Record<string, CategoryMeta> = {
  labelEn: 'Acrylic & Sheets (Cast / Mirror)',
  labelBn: 'এক্রিলিক ও শিট (কাস্ট / মিরর)',
  color: '#8b5cf6',
- badgeClass: 'bg-purple-50 text-purple-800 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-800',
+ badgeClass: 'bg-primary/10 text-primary border-primary/20 bg-primary/10 text-primary border-border',
  icon: Sparkles,
   },
  led: {
@@ -149,7 +149,7 @@ export const SUPPLIER_CATEGORY_META: Record<string, CategoryMeta> = {
  labelEn: 'LED & Power Supplies',
  labelBn: 'এলইডি ও পাওয়ার সাপ্লাই',
  color: '#f59e0b',
- badgeClass: 'bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800',
+ badgeClass: 'bg-warning-surface text-warning border-warning-border bg-warning-surface text-warning border-warning-border',
  icon: Zap,
   },
  hardware: {
@@ -173,7 +173,7 @@ export const SUPPLIER_CATEGORY_META: Record<string, CategoryMeta> = {
  labelEn: 'Paper & Board (Art / Offset)',
  labelBn: 'কাগজ ও বোর্ড (আর্ট / অফসেট)',
  color: '#10b981',
- badgeClass: 'bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800',
+ badgeClass: 'bg-success-surface text-success border-success-border bg-success-surface text-success border-success-border',
  icon: FileText,
   },
  pvc: {
@@ -181,7 +181,7 @@ export const SUPPLIER_CATEGORY_META: Record<string, CategoryMeta> = {
  labelEn: 'PVC & Foam Board (Celuka)',
  labelBn: 'পিভিসি ও ফোম বোর্ড (সেলুকা)',
  color: '#06b6d4',
- badgeClass: 'bg-cyan-50 text-cyan-800 border-cyan-200 dark:bg-cyan-950/40 dark:text-cyan-300 dark:border-cyan-800',
+ badgeClass: 'bg-info-surface text-primary border-primary/20 bg-primary/10 text-primary border-border',
  icon: Boxes,
   },
  aluminum: {
@@ -189,7 +189,7 @@ export const SUPPLIER_CATEGORY_META: Record<string, CategoryMeta> = {
  labelEn: 'Aluminum & ACP Panels',
  labelBn: 'অ্যালুমিনিয়াম ও এসিপি প্যানেল',
  color: '#6366f1',
- badgeClass: 'bg-indigo-50 text-indigo-800 border-indigo-200 dark:bg-indigo-950/40 dark:text-indigo-300 dark:border-indigo-800',
+ badgeClass: 'bg-primary/10 text-primary border-primary/20 bg-primary/10 text-primary border-border',
  icon: ShieldCheck,
   },
  other: {
@@ -197,7 +197,7 @@ export const SUPPLIER_CATEGORY_META: Record<string, CategoryMeta> = {
  labelEn: 'General & Other Consumables',
  labelBn: 'সাধারণ ও অন্যান্য সামগ্রী',
  color: '#6b7280',
- badgeClass: 'bg-gray-100 text-gray-800 border-gray-300 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700',
+ badgeClass: 'bg-muted text-foreground border-input bg-card text-foreground border-border',
  icon: Package,
   },
 }

@@ -130,7 +130,7 @@ export function NewConversationModal({
       }}
  size="2xl"title={
         <div className="flex items-center gap-2.5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 font-bold shrink-0">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary bg-primary/20 text-primary font-bold shrink-0">
             <LifeBuoy className="h-5 w-5"/>
           </div>
           <div>
@@ -138,11 +138,11 @@ export function NewConversationModal({
               <span className="text-base font-black text-foreground">
                 {tBilingual('Start Support Conversation', 'সহায়তা বার্তা শুরু করুন')}
               </span>
-              <Badge variant="outline"className="text-2xs uppercase tabular-nums py-0.5 px-1.5 bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800">
+              <Badge variant="outline"className="text-xs uppercase tabular-nums py-0.5 px-1.5 bg-primary/10 bg-primary/10 text-primary text-primary border-primary/20 border-border">
  Helpdesk
               </Badge>
             </div>
-            <p className="text-2xs text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
               {tBilingual('Our support team is online and ready to assist', 'আমাদের সাপোর্ট টিম আপনাকে সহায়তা করতে প্রস্তুত')}
             </p>
           </div>
@@ -151,7 +151,7 @@ export function NewConversationModal({
     >
       <form onSubmit={handleSubmit} className="space-y-4 pt-1">
         {error && (
-          <div className="p-3 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/50 text-red-700 dark:text-red-300 text-xs flex items-start gap-2">
+          <div className="p-3 rounded-xl bg-danger-surface bg-danger-surface border border-danger-border border-danger-border/50 text-destructive text-destructive text-xs flex items-start gap-2">
             <AlertCircle className="w-4 h-4 shrink-0 mt-0.5"/>
             <span>{error}</span>
           </div>
@@ -160,7 +160,7 @@ export function NewConversationModal({
         {/* Section 1: Classification */}
         <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
           <div className="flex items-center gap-2">
-            <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
+            <div className="h-6 w-6 rounded-lg bg-primary/10 text-primary bg-primary/60 text-primary flex items-center justify-center font-bold text-xs">
               1
             </div>
             <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
@@ -170,7 +170,7 @@ export function NewConversationModal({
 
           <div>
             <Label className="text-xs font-semibold mb-1 block">
-              {tBilingual('Subject / What do you need help with?', 'বিষয় / কী ধরণের সহায়তা প্রয়োজন?')} <span className="text-rose-500">*</span>
+              {tBilingual('Subject / What do you need help with?', 'বিষয় / কী ধরণের সহায়তা প্রয়োজন?')} <span className="text-destructive">*</span>
             </Label>
             <Input
  required
@@ -217,7 +217,7 @@ export function NewConversationModal({
         {/* Section 2: Message & Details */}
         <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
           <div className="flex items-center gap-2">
-            <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
+            <div className="h-6 w-6 rounded-lg bg-primary/10 text-primary bg-primary/60 text-primary flex items-center justify-center font-bold text-xs">
               2
             </div>
             <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
@@ -227,7 +227,7 @@ export function NewConversationModal({
 
           <div>
             <Label className="text-xs font-semibold mb-1 block">
-              {tBilingual('Message Description', 'বিস্তারিত বার্তা')} <span className="text-rose-500">*</span>
+              {tBilingual('Message Description', 'বিস্তারিত বার্তা')} <span className="text-destructive">*</span>
             </Label>
             <textarea
  required
@@ -246,17 +246,17 @@ export function NewConversationModal({
         <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
+              <div className="h-6 w-6 rounded-lg bg-primary/10 text-primary bg-primary/60 text-primary flex items-center justify-center font-bold text-xs">
                 3
               </div>
               <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
                 {tBilingual('Attachments (Optional)', 'ফাইল বা স্ক্রিনশট')}
               </h3>
             </div>
-            <span className="text-2xs text-muted-foreground tabular-nums">Max 10MB</span>
+            <span className="text-xs text-muted-foreground tabular-nums">Max 10MB</span>
           </div>
 
-          <label className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-dashed border-input hover:border-blue-400 dark:hover:border-blue-500 bg-muted/50 cursor-pointer transition-colors text-xs text-muted-foreground">
+          <label className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-dashed border-input hover:border-border dark:hover:border-primary/20 bg-muted/50 cursor-pointer transition-colors text-xs text-muted-foreground">
             <Paperclip className="w-4 h-4 text-muted-foreground"/>
             <span>{tBilingual('Upload screenshot, error log, or invoice PDF', 'স্ক্রিনশট বা পিডিএফ ফাইল আপলোড করুন')}</span>
             <input
@@ -273,18 +273,18 @@ export function NewConversationModal({
  className="flex items-center justify-between px-3 py-1.5 rounded-lg bg-muted text-xs text-foreground">
                   <div className="flex items-center gap-2 truncate">
                     {att.type.startsWith('image/') ? (
-                      <ImageIcon className="w-3.5 h-3.5 text-blue-500"/>
+                      <ImageIcon className="w-3.5 h-3.5 text-primary"/>
                     ) : (
-                      <FileText className="w-3.5 h-3.5 text-amber-500"/>
+                      <FileText className="w-3.5 h-3.5 text-warning"/>
                     )}
                     <span className="truncate max-w-[240px]">{att.name}</span>
-                    <span className="text-2xs text-muted-foreground">
+                    <span className="text-xs text-muted-foreground">
                       ({Math.round(att.size / 1024)} KB)
                     </span>
                   </div>
                   <button
  type="button"onClick={() => removeAttachment(att.id)}
- className="p-1 text-muted-foreground hover:text-red-500 transition-colors cursor-pointer">
+ className="p-1 text-muted-foreground hover:text-destructive transition-colors cursor-pointer">
                     <X className="w-3.5 h-3.5"/>
                   </button>
                 </div>

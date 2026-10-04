@@ -110,7 +110,7 @@ export function CashClosingModal({
     >
       <form onSubmit={handleSubmit} className="space-y-4 pt-2">
         {error && (
-          <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-xl text-red-700 dark:text-red-300 text-xs flex items-center gap-2">
+          <div className="p-3 bg-danger-surface bg-danger-surface border border-danger-border border-danger-border rounded-xl text-destructive text-destructive text-xs flex items-center gap-2">
             <AlertCircle className="w-4 h-4 shrink-0"/>
             <span>{error}</span>
           </div>
@@ -146,7 +146,7 @@ export function CashClosingModal({
 
           <div className="space-y-1.5">
             <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-              <Calculator className="w-3.5 h-3.5 text-purple-600"/>
+              <Calculator className="w-3.5 h-3.5 text-primary"/>
               <span>{tBilingual('Physical Cash Counted in Drawer', 'ড্রয়ারে গুনে পাওয়া নগদ টাকা')} *</span>
             </Label>
             <div className="relative">
@@ -157,7 +157,7 @@ export function CashClosingModal({
  type="number"step="any"required
  placeholder="0.00"value={countedCash}
  onChange={(e) => setCountedCash(e.target.value)}
- className="pl-8 text-xl font-bold h-12 rounded-xl bg-card border-purple-300 dark:border-purple-700"/>
+ className="pl-8 text-xl font-bold h-12 rounded-xl bg-card border-primary/20 border-border"/>
             </div>
           </div>
 
@@ -166,21 +166,21 @@ export function CashClosingModal({
             <div
  className={`p-2.5 rounded-xl text-xs flex items-center justify-between border ${
  Math.abs(variance) <= 0.01
-                  ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 text-emerald-800 dark:text-emerald-200'
+                  ? 'bg-success-surface bg-success-surface border-success-border text-success text-success'
                   : variance > 0
-                  ? 'bg-blue-50 dark:bg-blue-950/40 border-blue-300 text-blue-800 dark:text-blue-200'
-                  : 'bg-rose-50 dark:bg-rose-950/40 border-rose-300 text-rose-800 dark:text-rose-200'
+                  ? 'bg-primary/10 bg-primary/10 border-primary/20 text-primary text-primary'
+                  : 'bg-danger-surface bg-danger-surface border-danger-border text-destructive text-destructive'
               }`}
             >
               <div className="flex items-center gap-1.5 font-semibold">
                 {Math.abs(variance) <= 0.01 ? (
                   <>
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600"/>
+                    <CheckCircle2 className="w-4 h-4 text-success"/>
                     <span>{tBilingual('Exact Match (100% Balanced)', 'ক্যাশ নিখুঁত ও মিল আছে')}</span>
                   </>
                 ) : (
                   <>
-                    <AlertTriangle className="w-4 h-4 text-amber-600"/>
+                    <AlertTriangle className="w-4 h-4 text-warning"/>
                     <span>
                       {variance > 0
                         ? tBilingual('Surplus Cash in Drawer', 'ক্যাশে অতিরিক্ত টাকা আছে')
@@ -199,7 +199,7 @@ export function CashClosingModal({
         {/* Variance Explanation if non-zero */}
         {Math.abs(variance) > 0.01 && (
           <div className="space-y-1">
-            <Label className="text-xs font-semibold text-rose-700 dark:text-rose-300">
+            <Label className="text-xs font-semibold text-destructive text-destructive">
               {tBilingual('Reason for Variance (Required)', 'ক্যাশ কম/বেশির কারণ (বাধ্যতামূলক)')} *
             </Label>
             <Input
@@ -207,7 +207,7 @@ export function CashClosingModal({
  placeholder={tBilingual('e.g. Change return mistake / Pending petty expense', 'যেমন: খুচরা ফেরত দেওয়া ভুল হয়েছে / খরচের ভাউচার বাকি')}
  value={varianceReason}
  onChange={(e) => setVarianceReason(e.target.value)}
- className="h-10 text-sm rounded-xl border-rose-300 dark:border-rose-700"/>
+ className="h-10 text-sm rounded-xl border-danger-border border-danger-border"/>
           </div>
         )}
 
@@ -229,7 +229,7 @@ export function CashClosingModal({
           </Button>
           <Button
  type="submit"disabled={isSubmitting}
- className="bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-xl px-5">
+ className="bg-primary hover:bg-primary text-white font-semibold rounded-xl px-5">
             {isSubmitting ? tBilingual('Closing...', 'ক্লোজ হচ্ছে...') : tBilingual('Submit Cash Closing', 'ক্যাশ ক্লোজিং সম্পন্ন করুন')}
           </Button>
         </div>

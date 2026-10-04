@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation'
 
-export default function PlatformTenantAliasPage() {
- redirect('/platform/tenants')
+export default function PlatformTenantRedirect() {
+  redirect('/platform/tenants')
 }

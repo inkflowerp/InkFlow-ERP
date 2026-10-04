@@ -48,13 +48,13 @@ export function PayrollPeriodTable({
  case 'locked':
  return 'bg-muted text-foreground border-input'
  case 'paid':
- return 'bg-emerald-50 text-emerald-700 border-emerald-200'
+ return 'bg-success-surface text-success border-success-border'
  case 'approved':
- return 'bg-blue-50 text-blue-700 border-blue-200'
+ return 'bg-primary/10 text-primary border-primary/20'
  case 'review':
- return 'bg-purple-50 text-purple-700 border-purple-200'
+ return 'bg-primary/10 text-primary border-primary/20'
  default:
- return 'bg-amber-50 text-amber-700 border-amber-200'
+ return 'bg-warning-surface text-warning border-warning-border'
     }
   }
 
@@ -67,7 +67,7 @@ export function PayrollPeriodTable({
             <h4 className="text-xs font-bold text-foreground uppercase tracking-wider">
  {tBilingual('Payroll Processing Lifecycle', 'পেরোল প্রসেসিং লাইফসাইকেল')}
             </h4>
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
  {tBilingual('Standardized flow preventing accidental skips from draft to paid without review and lock', 'ড্রাফট থেকে অনুমোদনের পর্যায়ক্রমিক নিরাপদ ধাপসমূহ')}
             </p>
           </div>
@@ -85,11 +85,11 @@ export function PayrollPeriodTable({
           {LIFECYCLE_STEPS.map((s, idx) => (
             <React.Fragment key={s.step}>
               <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-muted border border-border shrink-0">
-                <span className="w-4 h-4 rounded-full bg-blue-100 text-blue-700 font-bold text-[10px] flex items-center justify-center">
+                <span className="w-4 h-4 rounded-full bg-primary/10 text-primary font-bold text-xs flex items-center justify-center">
                   {s.step}
                 </span>
                 <div className="text-left">
-                  <div className="text-[11px] font-semibold text-foreground whitespace-nowrap leading-tight">
+                  <div className="text-xs font-semibold text-foreground whitespace-nowrap leading-tight">
                     {locale === 'bn' ? s.labelBn : s.label}
                   </div>
                 </div>
@@ -133,7 +133,7 @@ export function PayrollPeriodTable({
         <Card className="bg-card border-border shadow-[0_1px_3px_rgba(0,0,0,0.02)] rounded-xl overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-muted border-b border-border text-muted-foreground uppercase tracking-wider font-semibold text-[11px]">
+              <thead className="bg-muted border-b border-border text-muted-foreground uppercase tracking-wider font-semibold text-xs">
                 <tr>
                   <th className="py-3 px-4">{tBilingual('Period', 'বেতন কাল')}</th>
                   <th className="py-3 px-3">{tBilingual('Date Range', 'সময়সীমা')}</th>
@@ -165,11 +165,11 @@ export function PayrollPeriodTable({
                       <td className="py-3.5 px-4">
                         <Link
  href={`/${tenantSlug}/hr/payroll/${period.id}`}
- className="font-bold text-foreground group-hover:text-blue-600 transition-colors block">
+ className="font-bold text-foreground group-hover:text-primary transition-colors block">
                           {period.period_name}
                         </Link>
                         {period.locked_at && (
-                          <div className="flex items-center gap-1 text-[10px] text-muted-foreground mt-0.5">
+                          <div className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5">
                             <Lock className="w-3 h-3 text-muted-foreground"/>
                             <span>{tBilingual('Locked', 'লক করা হয়েছে')} {new Date(period.locked_at).toLocaleDateString()}</span>
                           </div>
@@ -192,12 +192,12 @@ export function PayrollPeriodTable({
                       </td>
 
                       {/* OT */}
-                      <td className="py-3.5 px-3 text-right font-medium text-indigo-600 tabular-nums">
+                      <td className="py-3.5 px-3 text-right font-medium text-primary tabular-nums">
                         ৳ {ot.toLocaleString('en-IN')}
                       </td>
 
                       {/* Deductions */}
-                      <td className="py-3.5 px-3 text-right font-medium text-amber-600 tabular-nums">
+                      <td className="py-3.5 px-3 text-right font-medium text-warning tabular-nums">
                         ৳ {deductions.toLocaleString('en-IN')}
                       </td>
 
@@ -207,19 +207,19 @@ export function PayrollPeriodTable({
                       </td>
 
                       {/* Paid */}
-                      <td className="py-3.5 px-3 text-right font-bold text-emerald-600 tabular-nums">
+                      <td className="py-3.5 px-3 text-right font-bold text-success tabular-nums">
                         ৳ {paid.toLocaleString('en-IN')}
                       </td>
 
                       {/* Due */}
-                      <td className="py-3.5 px-3 text-right font-bold text-rose-600 tabular-nums">
+                      <td className="py-3.5 px-3 text-right font-bold text-destructive tabular-nums">
                         ৳ {due.toLocaleString('en-IN')}
                       </td>
 
                       {/* Status */}
                       <td className="py-3.5 px-3 text-center">
                         <Badge
- variant="outline"className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${getStatusBadge(
+ variant="outline"className={`text-xs font-bold uppercase px-2 py-0.5 rounded-full ${getStatusBadge(
  period.status
                           )}`}
                         >

@@ -1,5 +1,8 @@
 'use server'
 
+import { withTenantAction } from '@/lib/actions/action-wrapper'
+
+
 import { revalidatePath } from 'next/cache'
 import { SupplierService } from '@/services/supplier.service'
 import { getCurrentTenant } from '@/lib/auth/tenant-auth'
@@ -28,10 +31,13 @@ function checkSupplierPermission(tenant: any, requiredPerm: string): boolean {
 // SUPPLIER MASTER ACTIONS
 // ==========================================
 
-export async function getSuppliersAction(
-  requestedCompanyId?: string,
-  options?: { category?: string; isActive?: boolean; search?: string }
-): Promise<ServerActionResult<SupplierRecord[]>> {
+export const getSuppliersAction = withTenantAction(
+  {
+    permission: "supplier.view",
+    entityType: "supplier"
+  },
+  async (ctx, requestedCompanyId?: string,
+  options?: { category?: string; isActive?: boolean; search?: string }) : Promise<ServerActionResult<SupplierRecord[]>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -47,12 +53,16 @@ export async function getSuppliersAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to fetch suppliers.' }
   }
-}
 
-export async function getSupplierByIdAction(
-  id: string,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<SupplierRecord | null>> {
+})
+
+export const getSupplierByIdAction = withTenantAction(
+  {
+    permission: "supplier.view",
+    entityType: "supplier"
+  },
+  async (ctx, id: string,
+  requestedCompanyId?: string) : Promise<ServerActionResult<SupplierRecord | null>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -65,16 +75,20 @@ export async function getSupplierByIdAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to fetch supplier.' }
   }
-}
 
-export async function createSupplierAction(
-  data: Partial<SupplierRecord> & {
+})
+
+export const createSupplierAction = withTenantAction(
+  {
+    permission: "supplier.create",
+    entityType: "supplier"
+  },
+  async (ctx, data: Partial<SupplierRecord> & {
     supplier_name: string
     mobile: string
     category: any
   },
-  requestedCompanyId?: string
-): Promise<ServerActionResult<SupplierRecord>> {
+  requestedCompanyId?: string) : Promise<ServerActionResult<SupplierRecord>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -102,13 +116,17 @@ export async function createSupplierAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to create supplier.' }
   }
-}
 
-export async function updateSupplierAction(
-  id: string,
+})
+
+export const updateSupplierAction = withTenantAction(
+  {
+    permission: "supplier.edit",
+    entityType: "supplier"
+  },
+  async (ctx, id: string,
   data: Partial<SupplierRecord>,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<SupplierRecord>> {
+  requestedCompanyId?: string) : Promise<ServerActionResult<SupplierRecord>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -135,12 +153,18 @@ export async function updateSupplierAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to update supplier.' }
   }
-}
 
-export async function deleteSupplierAction(
-  id: string,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<boolean>> {
+})
+
+export const deleteSupplierAction = withTenantAction(
+  {
+    permission: "supplier.delete",
+    destructive: true,
+    auditAction: "supplier.deletesupplier",
+    entityType: "supplier"
+  },
+  async (ctx, id: string,
+  requestedCompanyId?: string) : Promise<ServerActionResult<boolean>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -158,17 +182,21 @@ export async function deleteSupplierAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to delete supplier.' }
   }
-}
+
+})
 
 // ==========================================
 // SUPPLIER ITEMS ACTIONS
 // ==========================================
 
-export async function getSupplierItemsAction(
-  supplierId?: string,
+export const getSupplierItemsAction = withTenantAction(
+  {
+    permission: "supplier.view",
+    entityType: "supplier"
+  },
+  async (ctx, supplierId?: string,
   materialId?: string,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<SupplierItemRecord[]>> {
+  requestedCompanyId?: string) : Promise<ServerActionResult<SupplierItemRecord[]>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -181,16 +209,20 @@ export async function getSupplierItemsAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to fetch supplier items.' }
   }
-}
 
-export async function createSupplierItemAction(
-  data: Partial<SupplierItemRecord> & {
+})
+
+export const createSupplierItemAction = withTenantAction(
+  {
+    permission: "supplier.create",
+    entityType: "supplier"
+  },
+  async (ctx, data: Partial<SupplierItemRecord> & {
     supplier_id: string
     material_id: string
     unit_price: number
   },
-  requestedCompanyId?: string
-): Promise<ServerActionResult<SupplierItemRecord>> {
+  requestedCompanyId?: string) : Promise<ServerActionResult<SupplierItemRecord>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -218,13 +250,19 @@ export async function createSupplierItemAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to create supplier item mapping.' }
   }
-}
 
-export async function deleteSupplierItemAction(
-  id: string,
+})
+
+export const deleteSupplierItemAction = withTenantAction(
+  {
+    permission: "supplier.delete",
+    destructive: true,
+    auditAction: "supplier.deletesupplieritem",
+    entityType: "supplier"
+  },
+  async (ctx, id: string,
   supplierId?: string,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<boolean>> {
+  requestedCompanyId?: string) : Promise<ServerActionResult<boolean>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -238,17 +276,21 @@ export async function deleteSupplierItemAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to delete supplier item.' }
   }
-}
+
+})
 
 // ==========================================
 // PRICE HISTORY & BENCHMARKS ACTIONS
 // ==========================================
 
-export async function getSupplierPriceHistoryAction(
-  materialId?: string,
+export const getSupplierPriceHistoryAction = withTenantAction(
+  {
+    permission: "supplier.view",
+    entityType: "supplier"
+  },
+  async (ctx, materialId?: string,
   supplierId?: string,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<SupplierPriceHistoryRecord[]>> {
+  requestedCompanyId?: string) : Promise<ServerActionResult<SupplierPriceHistoryRecord[]>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -261,12 +303,16 @@ export async function getSupplierPriceHistoryAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to fetch supplier price history.' }
   }
-}
 
-export async function getSupplierLedgerAction(
-  supplierId: string,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<SupplierLedgerEntryRecord[]>> {
+})
+
+export const getSupplierLedgerAction = withTenantAction(
+  {
+    permission: "supplier.view",
+    entityType: "supplier"
+  },
+  async (ctx, supplierId: string,
+  requestedCompanyId?: string) : Promise<ServerActionResult<SupplierLedgerEntryRecord[]>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -279,4 +325,5 @@ export async function getSupplierLedgerAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to fetch supplier ledger.' }
   }
-}
+
+})

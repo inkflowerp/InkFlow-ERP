@@ -180,7 +180,7 @@ export function SupplierMaterialRateModal({
  onOpenChange={onOpenChange}
  size="2xl"title={
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-teal-600/10 text-teal-600 dark:bg-teal-500/20 dark:text-teal-400 font-bold shrink-0">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-success/10 text-success bg-success/20 text-success font-bold shrink-0">
             <Tag className="h-5 w-5"/>
           </div>
           <div>
@@ -190,7 +190,7 @@ export function SupplierMaterialRateModal({
                   ? tBilingual('Update Material Contract Rate', 'মেটেরিয়াল চুক্তি দর আপডেট করুন')
                   : tBilingual('Add Negotiated Material Rate', 'নতুন মেটেরিয়াল চুক্তি দর যুক্ত করুন')}
               </span>
-              <Badge variant="outline"className="text-2xs uppercase tabular-nums py-0.5 px-2 bg-teal-50 dark:bg-teal-950/50 text-teal-700 dark:text-teal-300 border-teal-200 dark:border-teal-800">
+              <Badge variant="outline"className="text-xs uppercase tabular-nums py-0.5 px-2 bg-success-surface bg-success-surface text-success text-success border-success-border border-success-border">
                 {supplier.supplier_name}
               </Badge>
             </div>
@@ -230,7 +230,7 @@ export function SupplierMaterialRateModal({
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div className="sm:col-span-2">
               <Label className="text-xs font-semibold mb-1 block">
-                {tBilingual('Material Specification & Brand', 'মেটেরিয়াল স্পেসিফিকেশন ও ব্র্যান্ড')} <span className="text-rose-500">*</span>
+                {tBilingual('Material Specification & Brand', 'মেটেরিয়াল স্পেসিফিকেশন ও ব্র্যান্ড')} <span className="text-destructive">*</span>
               </Label>
               <Input
  placeholder="e.g. Star Flex Gloss 320gsm (10ft Roll)"value={formData.material_name}
@@ -239,11 +239,11 @@ export function SupplierMaterialRateModal({
  if (fieldErrors.material_name) setFieldErrors((prev) => ({ ...prev, material_name: '' }))
                 }}
  className={cn("text-xs h-9 font-medium",
- fieldErrors.material_name &&"border-rose-500 focus-visible:ring-rose-400 bg-rose-50/30 dark:bg-rose-950/20")}
+ fieldErrors.material_name &&"border-danger-border focus-visible:focus:ring-ring bg-danger-surface/30 bg-danger-surface")}
  required
               />
               {fieldErrors.material_name && (
-                <p className="text-2xs text-rose-600 dark:text-rose-400 font-medium mt-1 flex items-center gap-1">
+                <p className="text-xs text-destructive text-destructive font-medium mt-1 flex items-center gap-1">
                   <AlertCircle className="w-3.5 h-3.5 shrink-0"/>
                   <span>{fieldErrors.material_name}</span>
                 </p>
@@ -297,7 +297,7 @@ export function SupplierMaterialRateModal({
 
             <div>
               <Label className="text-xs font-semibold mb-1 block">
-                {tBilingual('Contract Buying Rate', 'চুক্তিভিত্তিক ক্রয় দর')} <span className="text-rose-500">*</span>
+                {tBilingual('Contract Buying Rate', 'চুক্তিভিত্তিক ক্রয় দর')} <span className="text-destructive">*</span>
               </Label>
               <div className="relative">
                 <span className="absolute left-3 top-2 text-xs font-bold text-muted-foreground">৳</span>
@@ -308,12 +308,12 @@ export function SupplierMaterialRateModal({
  if (fieldErrors.contract_price_bdt) setFieldErrors((prev) => ({ ...prev, contract_price_bdt: '' }))
                   }}
  className={cn("text-xs h-9 pl-7 tabular-nums font-bold",
- fieldErrors.contract_price_bdt &&"border-rose-500 focus-visible:ring-rose-400 bg-rose-50/30 dark:bg-rose-950/20")}
+ fieldErrors.contract_price_bdt &&"border-danger-border focus-visible:focus:ring-ring bg-danger-surface/30 bg-danger-surface")}
  required
                 />
               </div>
               {fieldErrors.contract_price_bdt && (
-                <p className="text-2xs text-rose-600 dark:text-rose-400 font-medium mt-1 flex items-center gap-1">
+                <p className="text-xs text-destructive text-destructive font-medium mt-1 flex items-center gap-1">
                   <AlertCircle className="w-3.5 h-3.5 shrink-0"/>
                   <span>{fieldErrors.contract_price_bdt}</span>
                 </p>
@@ -374,7 +374,7 @@ export function SupplierMaterialRateModal({
 
           <Button
  type="submit"disabled={loading}
- className="w-full sm:w-auto min-h-[40px] text-xs bg-teal-600 hover:bg-teal-700 text-white font-bold shadow-sm px-6">
+ className="w-full sm:w-auto min-h-[40px] text-xs bg-success hover:bg-success text-white font-bold shadow-sm px-6">
             {loading
               ? tBilingual('Saving...', 'সংরক্ষণ হচ্ছে...')
               : isEditing

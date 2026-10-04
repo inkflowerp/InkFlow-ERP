@@ -285,12 +285,12 @@ export function DesignerDashboard({ tasks, onRefresh }: DesignerDashboardProps) 
 
       {/* Hero Command Banner */}
       <div className="rounded-xl bg-card border border-border shadow-xs p-5 sm:p-6">
-        <div className="absolute -right-8 -top-8 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl pointer-events-none"/>
+        <div className="absolute -right-8 -top-8 w-64 h-64 bg-primary/10 rounded-full blur-3xl pointer-events-none"/>
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-5">
           <div className="space-y-1.5 max-w-2xl">
             <div className="flex items-center gap-2">
-              <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/30 text-xs font-semibold backdrop-blur-sm flex items-center gap-1.5 px-2.5 py-0.5">
-                <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"/>
+              <Badge className="bg-success/20 text-success border-success-border/30 text-xs font-semibold backdrop-blur-sm flex items-center gap-1.5 px-2.5 py-0.5">
+                <span className="h-2 w-2 rounded-full bg-success animate-pulse"/>
                 {tBilingual('Design Home', 'প্রি-প্রেস কমান্ড সেন্টার')}
               </Badge>
               <Badge className="bg-card/10 text-white border-border text-xs tabular-nums font-medium">
@@ -313,14 +313,14 @@ export function DesignerDashboard({ tasks, onRefresh }: DesignerDashboardProps) 
           <div className="flex flex-wrap items-center gap-2.5 shrink-0">
             <Button
  onClick={() => router.push(getTenantNavHref('/design', pathname, tenantSlug))}
- className="bg-card text-purple-950 hover:bg-purple-50 font-bold text-xs sm:text-sm shadow-xs transition-all flex items-center gap-2 h-10 px-4">
-              <Sparkles className="h-4 w-4 text-purple-600"/>
+ className="bg-card text-primary hover:bg-primary/10 font-bold text-xs sm:text-sm shadow-xs transition-all flex items-center gap-2 h-10 px-4">
+              <Sparkles className="h-4 w-4 text-primary"/>
               <span>{tBilingual('Open Design Studio', 'ডিজাইন স্টুডিও খুলুন')}</span>
             </Button>
 
             <Button
  onClick={() => router.push(getTenantNavHref('/orders', pathname, tenantSlug))}
- variant="outline"className="bg-purple-900/60 hover:bg-purple-800/80 text-white border-purple-400/30 font-bold text-xs sm:text-sm transition-all flex items-center gap-2 h-10 px-4">
+ variant="outline"className="bg-primary/60 hover:bg-primary/80 text-white border-border/30 font-bold text-xs sm:text-sm transition-all flex items-center gap-2 h-10 px-4">
               <Layers className="h-4 w-4 text-muted-foreground"/>
               <span>{tBilingual('Work Orders', 'কাজের অর্ডার')}</span>
             </Button>
@@ -359,13 +359,13 @@ export function DesignerDashboard({ tasks, onRefresh }: DesignerDashboardProps) 
       <Card className="border border-border bg-card shadow-xs">
         <div className="p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-start gap-3">
-            <div className="h-10 w-10 rounded-xl bg-purple-600/10 text-purple-700 flex items-center justify-center shrink-0">
+            <div className="h-10 w-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
               <ShieldCheck className="h-5 w-5"/>
             </div>
             <div>
               <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
                 <span>{tBilingual('Pre-Press Technical Reference & Specs', 'প্রি-প্রেস টেকনিক্যাল রেফারেন্স ও মাপ')}</span>
-                <Badge variant="outline"className="text-2xs uppercase font-bold text-purple-700 dark:text-purple-400 border-purple-300">
+                <Badge variant="outline"className="text-xs uppercase font-bold text-primary text-primary border-primary/20">
  Pre-Flight Standard
                 </Badge>
               </h2>
@@ -380,7 +380,7 @@ export function DesignerDashboard({ tasks, onRefresh }: DesignerDashboardProps) 
 
           <Button
  size="sm"variant="outline"onClick={() => setShowSpecsGuide(!showSpecsGuide)}
- className="text-xs font-bold text-purple-700 border-purple-300 dark:border-purple-700 hover:bg-purple-100/50 shrink-0 flex items-center gap-1.5">
+ className="text-xs font-bold text-primary border-primary/20 border-border hover:bg-primary/10/50 shrink-0 flex items-center gap-1.5">
             <SlidersHorizontal className="h-3.5 w-3.5"/>
             <span>{showSpecsGuide ? tBilingual('Hide Reference Specs', 'মাপ লুকান') : tBilingual('View Machine Specs Guide', 'মেশিনের মাপ দেখুন')}</span>
             {showSpecsGuide ? <ChevronUp className="h-3.5 w-3.5 ml-1"/> : <ChevronDown className="h-3.5 w-3.5 ml-1"/>}
@@ -389,11 +389,11 @@ export function DesignerDashboard({ tasks, onRefresh }: DesignerDashboardProps) 
 
         {/* Collapsible Specs Panel */}
         {showSpecsGuide && (
-          <div className="border-t border-purple-100 dark:border-purple-900/40 p-4 sm:p-5 bg-card/70 grid grid-cols-1 md:grid-cols-3 gap-4 text-xs animate-in fade-in-50 duration-200">
+          <div className="border-t border-border border-border/40 p-4 sm:p-5 bg-card/70 grid grid-cols-1 md:grid-cols-3 gap-4 text-xs animate-in fade-in-50 duration-200">
             {/* Offset Press Column */}
             <div className="p-3.5 rounded-xl border border-border bg-muted space-y-2">
               <div className="flex items-center gap-2 font-bold text-foreground">
-                <Printer className="h-4 w-4 text-indigo-600"/>
+                <Printer className="h-4 w-4 text-primary"/>
                 <span>Commercial Offset Press</span>
               </div>
               <ul className="space-y-1 text-muted-foreground">
@@ -409,7 +409,7 @@ export function DesignerDashboard({ tasks, onRefresh }: DesignerDashboardProps) 
             {/* Large Format & UV Column */}
             <div className="p-3.5 rounded-xl border border-border bg-muted space-y-2">
               <div className="flex items-center gap-2 font-bold text-foreground">
-                <Layers className="h-4 w-4 text-purple-600"/>
+                <Layers className="h-4 w-4 text-primary"/>
                 <span>Roland & UV Flatbed</span>
               </div>
               <ul className="space-y-1 text-muted-foreground">
@@ -424,7 +424,7 @@ export function DesignerDashboard({ tasks, onRefresh }: DesignerDashboardProps) 
             {/* Digital Laser Column */}
             <div className="p-3.5 rounded-xl border border-border bg-muted space-y-2">
               <div className="flex items-center gap-2 font-bold text-foreground">
-                <Sparkles className="h-4 w-4 text-amber-600"/>
+                <Sparkles className="h-4 w-4 text-warning"/>
                 <span>Digital Press (Konica/Xerox)</span>
               </div>
               <ul className="space-y-1 text-muted-foreground">
@@ -448,7 +448,7 @@ export function DesignerDashboard({ tasks, onRefresh }: DesignerDashboardProps) 
  onClick={() => setActiveFilterTab('all')}
  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
  activeFilterTab === 'all'
-                  ? 'bg-purple-700 text-white shadow-sm'
+                  ? 'bg-primary text-white shadow-sm'
                   : 'bg-muted hover:bg-muted text-foreground '
               }`}
             >
@@ -459,7 +459,7 @@ export function DesignerDashboard({ tasks, onRefresh }: DesignerDashboardProps) 
  onClick={() => setActiveFilterTab('needs_design')}
  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
  activeFilterTab === 'needs_design'
-                  ? 'bg-purple-700 text-white shadow-sm'
+                  ? 'bg-primary text-white shadow-sm'
                   : 'bg-muted hover:bg-muted text-foreground '
               }`}
             >
@@ -470,7 +470,7 @@ export function DesignerDashboard({ tasks, onRefresh }: DesignerDashboardProps) 
  onClick={() => setActiveFilterTab('awaiting_approval')}
  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
  activeFilterTab === 'awaiting_approval'
-                  ? 'bg-amber-600 text-white shadow-sm'
+                  ? 'bg-warning text-white shadow-sm'
                   : 'bg-muted hover:bg-muted text-foreground '
               }`}
             >
@@ -481,7 +481,7 @@ export function DesignerDashboard({ tasks, onRefresh }: DesignerDashboardProps) 
  onClick={() => setActiveFilterTab('revisions')}
  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
  activeFilterTab === 'revisions'
-                  ? 'bg-rose-600 text-white shadow-sm'
+                  ? 'bg-destructive text-white shadow-sm'
                   : 'bg-muted hover:bg-muted text-foreground '
               }`}
             >
@@ -492,7 +492,7 @@ export function DesignerDashboard({ tasks, onRefresh }: DesignerDashboardProps) 
  onClick={() => setActiveFilterTab('approved')}
  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
  activeFilterTab === 'approved'
-                  ? 'bg-emerald-600 text-white shadow-sm'
+                  ? 'bg-success text-white shadow-sm'
                   : 'bg-muted hover:bg-muted text-foreground '
               }`}
             >
@@ -515,7 +515,7 @@ export function DesignerDashboard({ tasks, onRefresh }: DesignerDashboardProps) 
         {isLoadingJobs ? (
           <Card className="border border-border p-12 text-center">
             <div className="flex flex-col items-center justify-center space-y-3">
-              <RefreshCw className="h-6 w-6 text-purple-600 animate-spin"/>
+              <RefreshCw className="h-6 w-6 text-primary animate-spin"/>
               <p className="text-xs font-semibold text-muted-foreground">
                 {tBilingual('Loading pre-press design queue...', 'ডিজাইন তালিকা লোড হচ্ছে...')}
               </p>
@@ -524,7 +524,7 @@ export function DesignerDashboard({ tasks, onRefresh }: DesignerDashboardProps) 
         ) : filteredJobs.length === 0 ? (
           <Card className="border border-dashed border-input p-12 text-center bg-muted">
             <div className="flex flex-col items-center justify-center space-y-3 max-w-sm mx-auto">
-              <div className="h-12 w-12 rounded-xl bg-purple-100 text-purple-700 dark:bg-purple-900/40 flex items-center justify-center">
+              <div className="h-12 w-12 rounded-xl bg-primary/10 text-primary bg-primary/40 flex items-center justify-center">
                 <Palette className="h-6 w-6"/>
               </div>
               <h3 className="text-sm font-bold text-foreground">
@@ -538,7 +538,7 @@ export function DesignerDashboard({ tasks, onRefresh }: DesignerDashboardProps) 
               </p>
               <Button
  onClick={() => router.push(getTenantNavHref('/design', pathname, tenantSlug))}
- className="bg-purple-700 hover:bg-purple-800 text-white font-bold text-xs mt-2">
+ className="bg-primary hover:bg-primary text-white font-bold text-xs mt-2">
                 <Sparkles className="h-3.5 w-3.5 mr-1.5"/>
                 {tBilingual('Go to Design Studio', 'ডিজাইন স্টুডিওতে যান')}
               </Button>
@@ -556,7 +556,7 @@ export function DesignerDashboard({ tasks, onRefresh }: DesignerDashboardProps) 
  return (
                 <Card
  key={job.id}
- className="border border-border hover:border-purple-300 dark:hover:border-purple-800 transition-all shadow-xs bg-card overflow-hidden">
+ className="border border-border hover:border-primary/20 dark:hover:border-border transition-all shadow-xs bg-card overflow-hidden">
                   <CardContent className="p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
                     {/* Left: Job Info */}
                     <div className="space-y-2 min-w-0 flex-1">
@@ -566,29 +566,29 @@ export function DesignerDashboard({ tasks, onRefresh }: DesignerDashboardProps) 
                         </Badge>
 
                         {job.order_number && (
-                          <Badge variant="outline"className="text-xs tabular-nums font-medium text-indigo-600 dark:text-indigo-400 border-indigo-200 dark:border-indigo-900">
+                          <Badge variant="outline"className="text-xs tabular-nums font-medium text-primary text-primary border-primary/20 border-border">
  Order: #{job.order_number}
                           </Badge>
                         )}
 
                         {/* Status Badge */}
                         {isApproved ? (
-                          <Badge className="bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border-emerald-300 text-xs font-bold">
+                          <Badge className="bg-success-surface text-success bg-success-surface text-success border-success-border text-xs font-bold">
                             <CheckCircle2 className="h-3 w-3 mr-1"/>
                             {tBilingual('Pre-Press Approved', 'প্রেসে অনুমোদিত')}
                           </Badge>
                         ) : isAwaitingProof ? (
-                          <Badge className="bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border-amber-300 text-xs font-bold">
+                          <Badge className="bg-warning-surface text-warning bg-warning-surface text-warning border-warning-border text-xs font-bold">
                             <Clock className="h-3 w-3 mr-1"/>
                             {tBilingual('Awaiting Proof Approval', 'প্রুফিংয়ের অপেক্ষায়')}
                           </Badge>
                         ) : isRevision ? (
-                          <Badge className="bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300 border-rose-300 text-xs font-bold">
+                          <Badge className="bg-danger-surface text-destructive bg-danger-surface text-destructive border-danger-border text-xs font-bold">
                             <AlertCircle className="h-3 w-3 mr-1"/>
                             {tBilingual('Revision Requested', 'সংশোধন প্রয়োজন')}
                           </Badge>
                         ) : isDesigning ? (
-                          <Badge className="bg-purple-100 text-purple-800 dark:bg-purple-950 border-purple-300 text-xs font-bold">
+                          <Badge className="bg-primary/10 text-primary bg-primary/10 border-primary/20 text-xs font-bold">
                             <Palette className="h-3 w-3 mr-1"/>
                             {tBilingual('Designing / Working', 'ডিজাইন চলছে')}
                           </Badge>
@@ -599,7 +599,7 @@ export function DesignerDashboard({ tasks, onRefresh }: DesignerDashboardProps) 
                         )}
 
                         {/* Version tag */}
-                        <Badge variant="outline"className="text-2xs tabular-nums font-medium text-muted-foreground">
+                        <Badge variant="outline"className="text-xs tabular-nums font-medium text-muted-foreground">
  v{latestVer?.version_number || job.current_version || 1}
                         </Badge>
                       </div>
@@ -624,7 +624,7 @@ export function DesignerDashboard({ tasks, onRefresh }: DesignerDashboardProps) 
                             </span>
                           )}
                           {job.deadline && (
-                            <span className="text-amber-600 dark:text-amber-400 font-medium">
+                            <span className="text-warning text-warning font-medium">
                               <strong>Due:</strong> {job.deadline}
                             </span>
                           )}
@@ -633,17 +633,17 @@ export function DesignerDashboard({ tasks, onRefresh }: DesignerDashboardProps) 
 
                       {/* Preflight Checklist Badges */}
                       <div className="flex flex-wrap items-center gap-1.5 pt-1">
-                        <span className="text-2xs uppercase font-bold text-muted-foreground mr-1">Preflight:</span>
-                        <span className="inline-flex items-center text-2xs font-semibold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                        <span className="text-xs uppercase font-bold text-muted-foreground mr-1">Preflight:</span>
+                        <span className="inline-flex items-center text-xs font-semibold px-2 py-0.5 rounded-md bg-success-surface text-success bg-success-surface/60 text-success border border-success-border border-success-border">
                           ✓ CMYK
                         </span>
-                        <span className="inline-flex items-center text-2xs font-semibold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                        <span className="inline-flex items-center text-xs font-semibold px-2 py-0.5 rounded-md bg-success-surface text-success bg-success-surface/60 text-success border border-success-border border-success-border">
                           ✓ 300 DPI
                         </span>
-                        <span className="inline-flex items-center text-2xs font-semibold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                        <span className="inline-flex items-center text-xs font-semibold px-2 py-0.5 rounded-md bg-success-surface text-success bg-success-surface/60 text-success border border-success-border border-success-border">
                           ✓ 3mm Bleed
                         </span>
-                        <span className="inline-flex items-center text-2xs font-semibold px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
+                        <span className="inline-flex items-center text-xs font-semibold px-2 py-0.5 rounded-md bg-primary/10 text-primary bg-primary/10 text-primary border border-primary/20 border-border">
                           ✓ Curves / Vector
                         </span>
                       </div>
@@ -654,7 +654,7 @@ export function DesignerDashboard({ tasks, onRefresh }: DesignerDashboardProps) 
                       {/* WhatsApp Proof Button */}
                       <Button
  size="sm"variant="outline"onClick={() => handleOpenWhatsAppModal(job)}
- className="text-xs font-bold text-emerald-700 dark:text-emerald-400 border-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 h-9">
+ className="text-xs font-bold text-success text-success border-success-border hover:bg-success-surface dark:hover:bg-success-surface h-9">
                         <Share2 className="h-3.5 w-3.5 mr-1.5"/>
                         {tBilingual('WhatsApp Proof', 'প্রুফ পাঠান')}
                       </Button>
@@ -665,7 +665,7 @@ export function DesignerDashboard({ tasks, onRefresh }: DesignerDashboardProps) 
  className={`text-xs font-bold text-white shadow-xs h-9 ${
  isApproved
                             ? 'bg-card-elevated hover:bg-card-elevated'
-                            : 'bg-purple-700 hover:bg-purple-800'
+                            : 'bg-primary hover:bg-primary'
                         }`}
                       >
                         <Printer className="h-3.5 w-3.5 mr-1.5"/>
@@ -691,7 +691,7 @@ export function DesignerDashboard({ tasks, onRefresh }: DesignerDashboardProps) 
       {productionDesignTasks.length > 0 && (
         <div className="space-y-3 pt-4 border-t border-border">
           <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
-            <Layers className="h-4 w-4 text-indigo-600"/>
+            <Layers className="h-4 w-4 text-primary"/>
             <span>{tBilingual('Production Floor Design Operations', 'ফ্লোর ডিজাইন ও কাটিং টাস্ক')}</span>
             <Badge variant="secondary"className="text-xs tabular-nums">{productionDesignTasks.length}</Badge>
           </h2>
@@ -700,17 +700,17 @@ export function DesignerDashboard({ tasks, onRefresh }: DesignerDashboardProps) 
             {productionDesignTasks.map((t) => (
               <Card key={t.id} className="border border-border p-3.5">
                 <div className="flex items-center justify-between gap-2">
-                  <Badge variant="outline"className="text-2xs tabular-nums font-bold">
+                  <Badge variant="outline"className="text-xs tabular-nums font-bold">
                     #{t.job_number || t.task_number}
                   </Badge>
-                  <Badge className="text-2xs uppercase font-bold"variant={t.status === 'completed' ? 'default' : 'secondary'}>
+                  <Badge className="text-xs uppercase font-bold"variant={t.status === 'completed' ? 'default' : 'secondary'}>
                     {t.status}
                   </Badge>
                 </div>
                 <h4 className="text-xs font-bold text-foreground mt-2 truncate">
                   {t.task_name}
                 </h4>
-                <p className="text-2xs text-muted-foreground mt-0.5 truncate">
+                <p className="text-xs text-muted-foreground mt-0.5 truncate">
  Client: {t.customer_name || 'Direct'} • Qty: {t.quantity} {t.unit || 'Pcs'}
                 </p>
               </Card>
@@ -725,7 +725,7 @@ export function DesignerDashboard({ tasks, onRefresh }: DesignerDashboardProps) 
           <DialogContent className="max-w-xl p-5 sm:p-6"onClose={() => setWhatsAppModalJob(null)}>
             <div className="space-y-4">
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0">
+                <div className="h-10 w-10 rounded-xl bg-success/10 text-success flex items-center justify-center shrink-0">
                   <Share2 className="h-5 w-5"/>
                 </div>
                 <div>
@@ -750,12 +750,12 @@ export function DesignerDashboard({ tasks, onRefresh }: DesignerDashboardProps) 
  onClick={() => setWhatsAppTemplate(tmpl.key)}
  type="button"className={`p-2.5 rounded-xl border text-left transition-all text-xs font-semibold ${
  whatsAppTemplate === tmpl.key
-                          ? 'border-emerald-500 bg-emerald-50/80 text-emerald-950 dark:bg-emerald-950/40 dark:text-emerald-200'
+                          ? 'border-success-border bg-success-surface/80 text-success bg-success-surface text-success'
                           : 'border-border hover:border-input text-foreground '
                       }`}
                     >
                       <div>{tmpl.title}</div>
-                      <span className="text-2xs text-muted-foreground font-normal">{tmpl.badge}</span>
+                      <span className="text-xs text-muted-foreground font-normal">{tmpl.badge}</span>
                     </button>
                   ))}
                 </div>
@@ -765,7 +765,7 @@ export function DesignerDashboard({ tasks, onRefresh }: DesignerDashboardProps) 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <label className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                    <Phone className="h-3.5 w-3.5 text-emerald-600"/>
+                    <Phone className="h-3.5 w-3.5 text-success"/>
                     <span>{tBilingual('Customer Mobile', 'মোবাইল নম্বর')}</span>
                   </label>
                   <Input
@@ -808,7 +808,7 @@ export function DesignerDashboard({ tasks, onRefresh }: DesignerDashboardProps) 
  className="text-xs font-bold">
                   {copiedText ? (
                     <>
-                      <Check className="h-3.5 w-3.5 text-emerald-600 mr-1"/>
+                      <Check className="h-3.5 w-3.5 text-success mr-1"/>
                       {tBilingual('Copied!', 'কপি হয়েছে!')}
                     </>
                   ) : (
@@ -821,7 +821,7 @@ export function DesignerDashboard({ tasks, onRefresh }: DesignerDashboardProps) 
 
                 <Button
  size="sm"onClick={handleLaunchWhatsApp}
- className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center gap-1.5">
+ className="bg-success hover:bg-success text-white font-bold text-xs flex items-center gap-1.5">
                   <Send className="h-3.5 w-3.5"/>
                   <span>{tBilingual('Open WhatsApp', 'ওয়াটসঅ্যাপে পাঠান')}</span>
                 </Button>
@@ -837,7 +837,7 @@ export function DesignerDashboard({ tasks, onRefresh }: DesignerDashboardProps) 
           <DialogContent className="max-w-lg p-5 sm:p-6"onClose={() => setReleaseModalJob(null)}>
             <div className="space-y-4">
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-xl bg-purple-500/10 text-purple-700 flex items-center justify-center shrink-0">
+                <div className="h-10 w-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
                   <Printer className="h-5 w-5"/>
                 </div>
                 <div>
@@ -862,35 +862,35 @@ export function DesignerDashboard({ tasks, onRefresh }: DesignerDashboardProps) 
  onClick={() => setSelectedMachineId(m.id)}
  className={`p-3 rounded-xl border text-xs cursor-pointer transition-all ${
  selectedMachineId === m.id
-                          ? 'border-purple-600 bg-purple-50/70 dark:bg-purple-950/40 dark:border-purple-500'
+                          ? 'border-border bg-primary/10/70 bg-primary/10 border-primary/20'
                           : 'border-border hover:border-input '
                       }`}
                     >
                       <div className="font-bold text-foreground">{m.name}</div>
-                      <div className="text-2xs text-muted-foreground mt-0.5">{m.specs}</div>
+                      <div className="text-xs text-muted-foreground mt-0.5">{m.specs}</div>
                     </div>
                   ))}
                 </div>
               </div>
 
               {/* Preflight Confirmation Gate */}
-              <div className="p-3 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/60 rounded-xl space-y-2">
-                <div className="flex items-center gap-2 text-xs font-bold text-amber-900 dark:text-amber-200">
-                  <AlertTriangle className="h-4 w-4 text-amber-600"/>
+              <div className="p-3 bg-warning-surface bg-warning-surface border border-warning-border border-warning-border/60 rounded-xl space-y-2">
+                <div className="flex items-center gap-2 text-xs font-bold text-warning text-warning">
+                  <AlertTriangle className="h-4 w-4 text-warning"/>
                   <span>{tBilingual('Mandatory Pre-Press Quality Check', 'প্রি-প্রেস কোয়ালিটি চেকলিস্ট')}</span>
                 </div>
-                <div className="space-y-1.5 pl-6 text-xs text-amber-800 dark:text-amber-300">
+                <div className="space-y-1.5 pl-6 text-xs text-warning text-warning">
                   <div>• Colors verified in CMYK mode (no unseparated RGB colors)</div>
                   <div>• Resolution is 300 DPI or lossless vector curves</div>
                   <div>• 3mm bleed included with trim/crop marks if offset</div>
                   <div>• All text converted to curves (Ctrl+Shift+O)</div>
                 </div>
 
-                <label className="flex items-center gap-2.5 pt-2 border-t border-amber-200/60 dark:border-amber-900/60 cursor-pointer">
+                <label className="flex items-center gap-2.5 pt-2 border-t border-warning-border/60 border-warning-border/60 cursor-pointer">
                   <input
  type="checkbox"checked={preflightConfirmed}
  onChange={(e) => setPreflightConfirmed(e.target.checked)}
- className="h-4 w-4 text-purple-600 rounded-sm border-input focus:ring-purple-500"/>
+ className="h-4 w-4 text-primary rounded-sm border-input focus:ring-ring"/>
                   <span className="text-xs font-bold text-foreground">
                     {tBilingual('I have verified all preflight items for this file', 'আমি সকল প্রি-ফ্লাইট চেক সঠিকভাবে যাচাই করেছি')}
                   </span>
@@ -908,7 +908,7 @@ export function DesignerDashboard({ tasks, onRefresh }: DesignerDashboardProps) 
                 <Button
  size="sm"disabled={!preflightConfirmed || isReleasing}
  onClick={handleConfirmRelease}
- className="bg-purple-700 hover:bg-purple-800 text-white font-bold text-xs flex items-center gap-1.5 disabled:opacity-50">
+ className="bg-primary hover:bg-primary text-white font-bold text-xs flex items-center gap-1.5 disabled:opacity-50">
                   {isReleasing ? (
                     <>
                       <RefreshCw className="h-3.5 w-3.5 animate-spin"/>

@@ -24,6 +24,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
+import { NumericKeypadModal } from '@/components/shared/numeric-keypad'
 import { useI18n } from '@/i18n/context'
 import {
  ProductionTaskRecord,
@@ -82,6 +83,7 @@ export function CompleteTaskModal({
  const [machineMeter, setMachineMeter] = useState<string>('')
  const [notes, setNotes] = useState('')
  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [keypadTarget, setKeypadTarget] = useState<'goodQty' | 'scrapQty' | 'bleedInches' | null>(null)
 
   // Dimensional Roll Feed States
  const [orientation, setOrientation] = useState<'normal' | 'rotated'>('normal')
@@ -331,30 +333,27 @@ export function CompleteTaskModal({
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Task Summary Banner */}
-        <div className="p-3.5 bg-gradient-to-br from-slate-50 to-blue-50/30 dark:from-slate-900 dark:to-slate-800/40 border border-border rounded-xl space-y-2 text-xs">
+        <div className="p-3.5 bg-card border border-border rounded-xl space-y-2 text-xs">
           <div className="flex items-center justify-between gap-2 flex-wrap font-bold text-foreground">
             <div className="flex items-center gap-2">
               <span className="text-sm font-black tracking-tight">{task.task_name}</span>
-              <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+              <Badge className="border-border text-foreground">
                 {task.department}
               </Badge>
             </div>
             <div className="flex items-center gap-1.5">
-              <Badge variant="outline"className="text-2xs tabular-nums font-bold">
+              <Badge variant="outline"className="text-xs tabular-nums font-bold">
                 {task.task_number}
               </Badge>
               <Badge className={
- task.status === 'in_progress' ? 'bg-emerald-500 text-white' :
- task.status === 'paused' ? 'bg-amber-500 text-white' :
- task.status === 'on_hold' ? 'bg-rose-500 text-white' :
-                'bg-muted text-foreground '
+ task.status === 'in_progress' ? 'bg-success-surface text-success border border-border' : task.status === 'paused' ? 'bg-warning-surface text-warning border border-border' : task.status === 'on_hold' ? 'bg-destructive/10 text-destructive border border-border' : 'bg-muted text-foreground'
               }>
                 {task.status.toUpperCase()}
               </Badge>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-2xs pt-1 border-t border-border">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs pt-1 border-t border-border">
             <div className="space-y-0.5">
               <span className="text-muted-foreground font-semibold uppercase tracking-wider block">Job / Invoice:</span>
               <strong className="text-foreground tabular-nums text-xs">{task.job_number || task.invoice_number || 'N/A'}</strong>
@@ -383,17 +382,17 @@ export function CompleteTaskModal({
           </div>
 
           {(task.required_material || (task as any).service_name) && (
-            <div className="flex items-center gap-3 text-2xs text-muted-foreground pt-1 border-t border-border /60 flex-wrap">
+            <div className="flex items-center gap-3 text-xs text-muted-foreground pt-1 border-t border-border /60 flex-wrap">
               {task.required_material && (
                 <span className="flex items-center gap-1">
                   <span className="font-semibold text-muted-foreground">Material:</span>
-                  <strong className="text-blue-700 dark:text-blue-300">{task.required_material}</strong>
+                  <strong className="text-foreground">{task.required_material}</strong>
                 </span>
               )}
               {(task as any).service_name && (
                 <span className="flex items-center gap-1">
                   <span className="font-semibold text-muted-foreground">Service:</span>
-                  <strong className="text-indigo-700 dark:text-indigo-300">{(task as any).service_name}</strong>
+                  <strong className="text-primary text-primary">{(task as any).service_name}</strong>
                 </span>
               )}
             </div>
@@ -402,15 +401,15 @@ export function CompleteTaskModal({
 
         {/* Next Workflow Destination Indicator */}
         {task && (task.department === 'printing' || task.task_type === 'printing') && (
-          <div className={`p-2.5 rounded-xl border text-2xs flex items-center justify-between gap-2 flex-wrap ${
+          <div className={`p-2.5 rounded-xl border text-xs flex items-center justify-between gap-2 flex-wrap ${
  hasNextFinishing
-              ? 'bg-indigo-50/70 dark:bg-indigo-950/40 border-indigo-200 dark:border-indigo-800 text-indigo-950 dark:text-indigo-200'
-              : 'bg-emerald-50/70 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800 text-emerald-950 dark:text-emerald-200'
+              ? 'bg-primary/10/70 bg-primary/10 border-primary/20 border-border text-primary text-primary'
+              : 'bg-success-surface/70 bg-success-surface border-success-border border-success-border text-success text-success'
           }`}>
             <div className="flex items-center gap-2">
               {hasNextFinishing ? (
                 <>
-                  <Scissors className="h-4 w-4 text-indigo-600 shrink-0"/>
+                  <Scissors className="h-4 w-4 text-primary shrink-0"/>
                   <span>
                     <strong>{isBn ? 'পরবর্তী গন্তব্য:' : 'Next Step:'}</strong>{' '}
                     {isBn
@@ -420,7 +419,7 @@ export function CompleteTaskModal({
                 </>
               ) : (
                 <>
-                  <Truck className="h-4 w-4 text-emerald-600 shrink-0"/>
+                  <Truck className="h-4 w-4 text-success shrink-0"/>
                   <span>
                     <strong>{isBn ? 'পরবর্তী গন্তব্য:' : 'Next Step:'}</strong>{' '}
                     {isBn
@@ -430,7 +429,7 @@ export function CompleteTaskModal({
                 </>
               )}
             </div>
-            <Badge className={hasNextFinishing ? 'bg-indigo-600 hover:bg-indigo-700 text-white text-2xs' : 'bg-emerald-600 hover:bg-emerald-700 text-white text-2xs'}>
+            <Badge className={hasNextFinishing ? 'bg-primary hover:bg-primary text-white text-xs' : 'bg-success hover:bg-success text-white text-xs'}>
               {hasNextFinishing ? (isBn ? 'ফিনিশিং ও ফেব্রিকেশন ফ্লোর' : 'Finishing & Fabrication Floor') : (isBn ? 'ডেলিভারি ও ডিসপ্যাচ' : 'Delivery & Dispatch')}
             </Badge>
           </div>
@@ -439,21 +438,37 @@ export function CompleteTaskModal({
         {/* Quantities Row */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
-            <Label className="text-xs font-bold text-foreground">
- Good Quantity Completed (সঠিক পরিমাণ)
-            </Label>
+            <div className="flex items-center justify-between">
+              <Label className="text-xs font-bold text-foreground">
+                Good Quantity Completed (সঠিক পরিমাণ)
+              </Label>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setKeypadTarget('goodQty')}
+                className="h-7 px-2 text-xs font-bold border-border text-foreground hover:bg-muted shrink-0 cursor-pointer"
+                title="Open Glove-friendly Keypad"
+              >
+                🔢 কিপ্যাড
+              </Button>
+            </div>
             <div className="flex items-center gap-2">
               <Input
- type="number"min="0"step="any"value={goodQty}
- onChange={(e) => setGoodQty(Number(e.target.value))}
- className="tabular-nums font-bold text-base h-10"required
+                type="number"
+                min="0"
+                step="any"
+                value={goodQty}
+                onChange={(e) => setGoodQty(Number(e.target.value))}
+                className="tabular-nums font-bold text-base h-10"
+                required
               />
               <span className="text-xs font-bold uppercase text-muted-foreground shrink-0">
                 {task.unit || 'pcs'}
               </span>
             </div>
             {taskAreaSft > 0 && (
-              <p className="text-2xs text-emerald-600 font-semibold tabular-nums">
+              <p className="text-xs text-success font-semibold tabular-nums">
                 ✓ Total Net Print Area: {taskAreaSft} Sq.Ft.
               </p>
             )}
@@ -463,13 +478,13 @@ export function CompleteTaskModal({
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
               <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                <Disc className="h-3.5 w-3.5 text-blue-600"/>
+                <Disc className="h-3.5 w-3.5 text-primary"/>
                 <span>Select Print Roll (রোল নির্বাচন)</span>
               </Label>
               <button
  type="button"onClick={handleRequestNewRoll}
  disabled={isRequestingRoll}
- className="text-2xs text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 font-bold flex items-center gap-1 cursor-pointer">
+ className="text-xs text-primary hover:text-primary text-primary font-bold flex items-center gap-1 cursor-pointer">
                 <Plus className="h-3 w-3"/>
                 <span>Request New Roll</span>
               </button>
@@ -490,14 +505,14 @@ export function CompleteTaskModal({
 
         {/* Requisition Status Notifications */}
         {requestRollSuccess && (
-          <div className="p-2.5 bg-emerald-50 text-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-300 rounded-lg text-xs font-bold flex items-center gap-2 border border-emerald-300 dark:border-emerald-800">
-            <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0"/>
+          <div className="p-2.5 bg-success-surface text-success bg-success-surface text-success rounded-lg text-xs font-bold flex items-center gap-2 border border-success-border border-success-border">
+            <CheckCircle2 className="h-4 w-4 text-success shrink-0"/>
             <span>{requestRollSuccess}</span>
           </div>
         )}
         {requestRollError && (
-          <div className="p-2.5 bg-rose-50 text-rose-900 dark:bg-rose-950/40 dark:text-rose-300 rounded-lg text-xs font-bold flex items-center gap-2 border border-rose-300 dark:border-rose-800">
-            <AlertTriangle className="h-4 w-4 text-rose-600 shrink-0"/>
+          <div className="p-2.5 bg-danger-surface text-destructive bg-danger-surface text-destructive rounded-lg text-xs font-bold flex items-center gap-2 border border-danger-border border-danger-border">
+            <AlertTriangle className="h-4 w-4 text-destructive shrink-0"/>
             <span>{requestRollError}</span>
           </div>
         )}
@@ -506,13 +521,13 @@ export function CompleteTaskModal({
         {/* DIMENSIONAL ROLL CONSUMPTION & ORIENTATION CALCULATOR */}
         {/* ========================================================= */}
         {selectedRoll && (
-          <div className="p-3.5 bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900/60 rounded-xl space-y-3">
+          <div className="p-3.5 bg-card border border-border rounded-xl space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-black uppercase text-blue-900 dark:text-blue-200 tracking-wider flex items-center gap-1.5">
-                <Scissors className="h-3.5 w-3.5 text-blue-600"/>
+              <span className="text-xs font-black uppercase text-foreground tracking-wider flex items-center gap-1.5">
+                <Scissors className="h-3.5 w-3.5 text-primary"/>
                 <span>Dimensional Roll Feed Engine ({selectedRoll.width_ft}ft Roll)</span>
               </span>
-              <span className="text-2xs tabular-nums font-bold text-blue-700 dark:text-blue-300">
+              <span className="text-xs tabular-nums font-bold text-primary text-primary">
  Available: {selectedRoll.current_length_ft ?? (selectedRoll.remaining_area_sft / selectedRoll.width_ft)} ft
               </span>
             </div>
@@ -524,7 +539,7 @@ export function CompleteTaskModal({
                 <Label className="text-xs font-semibold text-foreground flex items-center justify-between">
                   <span>Print Orientation</span>
                   {rollCalc && (
-                    <Badge variant={rollCalc.is_fit_across_width ? 'outline' : 'destructive'} className="text-2xs py-0">
+                    <Badge variant={rollCalc.is_fit_across_width ? 'outline' : 'destructive'} className="text-xs py-0">
                       {rollCalc.is_fit_across_width ? '✓ Fits Roll Width' : 'Multi-Panel / Tiling'}
                     </Badge>
                   )}
@@ -550,7 +565,7 @@ export function CompleteTaskModal({
               <div className="space-y-1">
                 <Label className="text-xs font-semibold text-foreground flex items-center justify-between">
                   <span>Bleed / Lead-in Allowance</span>
-                  <span className="text-2xs tabular-nums text-muted-foreground">
+                  <span className="text-xs tabular-nums text-muted-foreground">
                     = {(bleedInches / 12).toFixed(2)} ft
                   </span>
                 </Label>
@@ -566,11 +581,11 @@ export function CompleteTaskModal({
 
             {/* Warning if job exceeds single roll width — Informative, not blocking! */}
             {rollCalc && !rollCalc.is_fit_across_width && (
-              <div className="p-2.5 bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800 rounded-lg text-xs font-medium text-amber-900 dark:text-amber-200 flex items-start gap-2">
-                <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0 mt-0.5"/>
+              <div className="p-2.5 bg-warning-surface bg-warning-surface border border-warning-border border-warning-border rounded-lg text-xs font-medium text-warning text-warning flex items-start gap-2">
+                <AlertTriangle className="h-4 w-4 text-warning shrink-0 mt-0.5"/>
                 <div>
                   <span className="font-bold">Exceeds Single Roll Width ({orientation === 'normal' ? jobWidthFt : jobLengthFt}ft &gt; {selectedRoll.width_ft}ft):</span>
-                  <p className="text-2xs text-amber-800 dark:text-amber-300 mt-0.5">
+                  <p className="text-xs text-warning text-warning mt-0.5">
  Job will proceed as multi-panel tiling or manual custom feed. Full roll length deduction will still be logged.
                   </p>
                 </div>
@@ -579,32 +594,32 @@ export function CompleteTaskModal({
 
             {/* LIVE TELEMETRY CALCULATION HUD */}
             {rollCalc && (
-              <div className="p-2.5 bg-card rounded-lg border border-blue-100 dark:border-blue-900/40 text-xs space-y-1.5">
-                <div className="flex items-center justify-between tabular-nums text-2xs text-muted-foreground">
+              <div className="p-2.5 bg-card rounded-lg border border-border border-border/40 text-xs space-y-1.5">
+                <div className="flex items-center justify-between tabular-nums text-xs text-muted-foreground">
                   <span>Good Linear Feed:</span>
                   <strong className="text-foreground">{rollCalc.linear_feed_ft} ft</strong>
                 </div>
                 {rollCalc.bleed_allowance_ft > 0 && (
-                  <div className="flex items-center justify-between tabular-nums text-2xs text-muted-foreground">
+                  <div className="flex items-center justify-between tabular-nums text-xs text-muted-foreground">
                     <span>+ Bleed Allowance ({bleedInches}&quot;):</span>
-                    <strong className="text-blue-600">+{rollCalc.bleed_allowance_ft} ft</strong>
+                    <strong className="text-primary">+{rollCalc.bleed_allowance_ft} ft</strong>
                   </div>
                 )}
                 {rollCalc.wastage_length_ft > 0 && (
-                  <div className="flex items-center justify-between tabular-nums text-2xs text-rose-600">
+                  <div className="flex items-center justify-between tabular-nums text-xs text-destructive">
                     <span>+ Scrap Wastage Run:</span>
                     <strong>+{rollCalc.wastage_length_ft} ft</strong>
                   </div>
                 )}
                 <div className="pt-1.5 border-t border-border flex items-center justify-between tabular-nums text-xs">
                   <span className="font-bold text-foreground">Total Linear Deduction:</span>
-                  <span className="font-black text-rose-600 dark:text-rose-400 text-sm">
+                  <span className="font-black text-destructive text-destructive text-sm">
                     -{rollCalc.total_linear_deduction_ft} ft ({rollCalc.total_utilized_area_sft} SFT)
                   </span>
                 </div>
                 <div className="flex items-center justify-between tabular-nums text-xs pt-0.5">
                   <span className="font-bold text-foreground">Remaining Roll Length:</span>
-                  <span className="font-black text-emerald-600 dark:text-emerald-400">
+                  <span className="font-black text-success text-success">
                     {rollCalc.roll_current_length_ft} ft ➔ {rollCalc.new_remaining_length_ft} ft
                   </span>
                 </div>
@@ -613,14 +628,14 @@ export function CompleteTaskModal({
 
             {/* SHORTAGE WARNING & 1-CLICK REQUISITION TRIGGER */}
             {rollCalc?.is_shortage && (
-              <div className="p-3 bg-rose-50 dark:bg-rose-950/40 border-2 border-rose-300 dark:border-rose-900 rounded-xl space-y-2">
+              <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-xl space-y-2">
                 <div className="flex items-start gap-2">
-                  <AlertOctagon className="h-4 w-4 text-rose-600 shrink-0 mt-0.5"/>
+                  <AlertOctagon className="h-4 w-4 text-destructive shrink-0 mt-0.5"/>
                   <div className="text-xs">
-                    <strong className="text-rose-900 dark:text-rose-200 font-black block">
+                    <strong className="text-destructive font-black block">
  Roll Length Shortage Detected! (রোলে পর্যাপ্ত দৈর্ঘ্য নেই)
                     </strong>
-                    <p className="text-rose-800 dark:text-rose-300 tabular-nums mt-0.5">
+                    <p className="text-destructive tabular-nums mt-0.5">
  Required: <strong>{rollCalc.total_linear_deduction_ft}ft</strong> | Available: <strong>{rollCalc.roll_current_length_ft}ft</strong> (Shortage of <strong>{rollCalc.shortage_amount_ft}ft</strong>)
                     </p>
                   </div>
@@ -629,7 +644,7 @@ export function CompleteTaskModal({
                 <Button
  type="button"onClick={handleRequestNewRoll}
  disabled={isRequestingRoll}
- className="w-full bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold h-9 cursor-pointer shadow-xs gap-1.5">
+ className="w-full bg-destructive hover:bg-destructive/90 text-destructive-foreground text-xs font-bold h-9 cursor-pointer shadow-xs gap-1.5">
                   <Plus className="h-4 w-4"/>
                   <span>{isRequestingRoll ? 'Requisitioning Roll...' : `Request & Mount New ${selectedRoll.width_ft}ft Roll (164ft Master)`}</span>
                 </Button>
@@ -645,48 +660,63 @@ export function CompleteTaskModal({
               <input
  type="checkbox"id="hasScrap"checked={hasScrap}
  onChange={(e) => setHasScrap(e.target.checked)}
- className="h-4 w-4 rounded border-input text-rose-600 focus:ring-rose-500 cursor-pointer"/>
-              <Label htmlFor="hasScrap"className="text-xs font-bold text-rose-700 dark:text-rose-400 cursor-pointer flex items-center gap-1">
+ className="h-4 w-4 rounded border-input text-destructive focus:ring-ring cursor-pointer"/>
+              <Label htmlFor="hasScrap"className="text-xs font-bold text-destructive text-destructive cursor-pointer flex items-center gap-1">
                 <AlertTriangle className="h-3.5 w-3.5"/>
                 <span>Log Defect / Scrap Wastage (নষ্ট / স্ক্র্যাপ রেকর্ড করুন)</span>
               </Label>
             </div>
             {hasScrap && (
-              <span className="text-2xs font-bold text-rose-600 animate-pulse">
+              <span className="text-xs font-bold text-destructive animate-pulse">
  Wastage will be logged to inventory ledger
               </span>
             )}
           </div>
 
           {hasScrap && (
-            <div className="mt-3 p-3.5 bg-rose-50/50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/60 rounded-xl space-y-3">
+            <div className="mt-3 p-3.5 bg-destructive/10 border border-destructive/20 rounded-xl space-y-3">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {/* Scrap Quantity / Linear Length */}
                 <div className="space-y-1">
-                  <Label className="text-xs font-bold text-rose-900 dark:text-rose-200">
-                    {selectedRoll
-                      ? 'Scrap Wastage Length (Linear Feet)'
-                      : `Scrap / Defective Quantity (${task.unit || 'pcs'})`}
-                  </Label>
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs font-bold text-destructive">
+                      {selectedRoll
+                        ? 'Scrap Wastage Length (Linear Feet)'
+                        : `Scrap / Defective Quantity (${task.unit || 'pcs'})`}
+                    </Label>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setKeypadTarget('scrapQty')}
+                      className="h-7 px-2 text-xs font-bold border-border text-foreground hover:bg-muted shrink-0 cursor-pointer"
+                    >
+                      🔢 কিপ্যাড
+                    </Button>
+                  </div>
                   <Input
- type="number"min="0"step="any"value={selectedRoll ? (scrapWastageLengthFt || '') : (scrapQty || '')}
- onChange={(e) => {
- const val = Number(e.target.value) || 0
- setScrapWastageLengthFt(val)
- setScrapQty(val)
+                    type="number"
+                    min="0"
+                    step="any"
+                    value={selectedRoll ? (scrapWastageLengthFt || '') : (scrapQty || '')}
+                    onChange={(e) => {
+                      const val = Number(e.target.value) || 0
+                      setScrapWastageLengthFt(val)
+                      setScrapQty(val)
                     }}
- className="h-9 tabular-nums font-bold text-sm bg-card border-rose-300 dark:border-rose-800"placeholder={selectedRoll ? 'e.g. 2.5 ft' : 'e.g. 5'}
- required={hasScrap}
+                    className="h-9 tabular-nums font-bold text-sm bg-card border-border"
+                    placeholder={selectedRoll ? 'e.g. 2.5 ft' : 'e.g. 5'}
+                    required={hasScrap}
                   />
                   {scrapAreaSft > 0 && (
-                    <span className="text-2xs text-rose-700 tabular-nums block">
+                    <span className="text-xs text-destructive tabular-nums block">
                       = {scrapAreaSft} SFT Scrap Material
                     </span>
                   )}
                 </div>
 
                 <div className="space-y-1">
-                  <Label className="text-xs font-bold text-rose-900 dark:text-rose-200">
+                  <Label className="text-xs font-bold text-destructive text-destructive">
  Defect Reason (ত্রুটির কারণ)
                   </Label>
                   <select
@@ -695,7 +725,7 @@ export function CompleteTaskModal({
  setDefectReason(e.target.value as any)
  setScrapWastageReason(e.target.value)
                     }}
- className="w-full h-9 px-2.5 rounded-md border border-rose-300 dark:border-rose-800 bg-card text-xs font-semibold"required={hasScrap}
+ className="w-full h-9 px-2.5 rounded-md border border-danger-border border-danger-border bg-card text-xs font-semibold"required={hasScrap}
                   >
                     <option value="">-- Select Press Defect Reason --</option>
                     {Object.entries(DEFECT_REASON_LABELS).map(([code, labels]) => (
@@ -708,13 +738,13 @@ export function CompleteTaskModal({
               </div>
 
               <div className="space-y-1">
-                <Label className="text-xs font-semibold text-rose-900 dark:text-rose-200">
+                <Label className="text-xs font-semibold text-destructive text-destructive">
  Scrap Notes & Defect Description
                 </Label>
                 <Input
  value={scrapNotes}
  onChange={(e) => setScrapNotes(e.target.value)}
- placeholder="e.g. Head scratched middle 4ft of banner / Color banding during roll end"className="h-9 text-xs bg-card border-rose-300"/>
+ placeholder="e.g. Head scratched middle 4ft of banner / Color banding during roll end"className="h-9 text-xs bg-card border-danger-border"/>
               </div>
             </div>
           )}
@@ -746,28 +776,62 @@ export function CompleteTaskModal({
         {/* Action Buttons */}
         <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-border">
           <Button
- type="button"variant="outline"onClick={onClose}
- disabled={isSubmitting}
- className="text-xs h-9 px-4 cursor-pointer">
+            type="button"
+            variant="outline"
+            onClick={onClose}
+            disabled={isSubmitting}
+            className="text-xs min-h-[48px] h-12 px-4 cursor-pointer"
+          >
             {isBn ? 'বাতিল' : 'Cancel'}
           </Button>
           <Button
- type="submit"disabled={isSubmitting}
- className="text-xs font-bold h-9 px-5 bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs cursor-pointer gap-1.5 transition-all">
+            type="submit"
+            disabled={isSubmitting}
+            className="text-xs font-bold min-h-[48px] h-12 px-5 bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs cursor-pointer gap-1.5 transition-all"
+          >
             {isSubmitting ? (
               <>
-                <RotateCw className="h-4 w-4 animate-spin"/>
+                <RotateCw className="h-4 w-4 animate-spin" />
                 <span>{isBn ? 'সম্পন্ন হচ্ছে...' : 'Completing...'}</span>
               </>
             ) : (
               <>
-                <CheckCircle2 className="h-4 w-4"/>
+                <CheckCircle2 className="h-4 w-4" />
                 <span>{isBn ? 'সম্পন্ন ও আপডেট করুন' : 'Complete & Update Flow'}</span>
               </>
             )}
           </Button>
         </div>
       </form>
+
+      {/* Glove-friendly Numeric Keypad Modal */}
+      <NumericKeypadModal
+        isOpen={keypadTarget !== null}
+        onClose={() => setKeypadTarget(null)}
+        initialValue={
+          keypadTarget === 'goodQty' ? goodQty :
+          keypadTarget === 'scrapQty' ? (selectedRoll ? scrapWastageLengthFt : scrapQty) :
+          bleedInches
+        }
+        title={
+          keypadTarget === 'goodQty' ? 'Enter Good Quantity' :
+          keypadTarget === 'scrapQty' ? 'Enter Scrap Quantity' :
+          'Enter Bleed Allowance (Inches)'
+        }
+        titleBn={
+          keypadTarget === 'goodQty' ? 'সঠিক পরিমাণ লিখুন' :
+          keypadTarget === 'scrapQty' ? 'নষ্টের পরিমাণ লিখুন' :
+          'ব্লিড এলাউন্স (ইঞ্চি)'
+        }
+        unit={keypadTarget === 'bleedInches' ? 'in' : (task?.unit || 'pcs')}
+        onConfirm={(val) => {
+          if (keypadTarget === 'goodQty') setGoodQty(val)
+          else if (keypadTarget === 'scrapQty') {
+            setScrapQty(val)
+            setScrapWastageLengthFt(val)
+          } else if (keypadTarget === 'bleedInches') setBleedInches(val)
+        }}
+      />
     </ModalDialog>
   )
 }

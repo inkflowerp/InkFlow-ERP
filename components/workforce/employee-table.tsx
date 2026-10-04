@@ -117,20 +117,20 @@ export function EmployeeTable({
 
  const getDepartmentBadge = (dept: string) => {
  const d = dept?.toLowerCase() || ''
- if (d === 'printing') return 'bg-cyan-50 text-cyan-700 border-cyan-200'
- if (d === 'finishing') return 'bg-amber-50 text-amber-700 border-amber-200'
- if (d === 'fabrication') return 'bg-orange-50 text-orange-700 border-orange-200'
- if (d === 'design') return 'bg-purple-50 text-purple-700 border-purple-200'
- if (d === 'installation') return 'bg-emerald-50 text-emerald-700 border-emerald-200'
- if (d === 'accounts') return 'bg-emerald-50 text-emerald-800 border-emerald-200'
- if (d === 'sales') return 'bg-blue-50 text-blue-700 border-blue-200'
+ if (d === 'printing') return 'bg-info-surface text-primary border-primary/20'
+ if (d === 'finishing') return 'bg-warning-surface text-warning border-warning-border'
+ if (d === 'fabrication') return 'bg-warning-surface text-warning border-warning-border'
+ if (d === 'design') return 'bg-primary/10 text-primary border-primary/20'
+ if (d === 'installation') return 'bg-success-surface text-success border-success-border'
+ if (d === 'accounts') return 'bg-success-surface text-success border-success-border'
+ if (d === 'sales') return 'bg-primary/10 text-primary border-primary/20'
  return 'bg-muted text-foreground border-border'
   }
 
  const getStatusBadge = (status: string) => {
- if (status === 'active') return 'bg-emerald-50 text-emerald-700 border-emerald-200'
- if (status === 'on_leave') return 'bg-amber-50 text-amber-700 border-amber-200'
- return 'bg-red-50 text-red-700 border-red-200'
+ if (status === 'active') return 'bg-success-surface text-success border-success-border'
+ if (status === 'on_leave') return 'bg-warning-surface text-warning border-warning-border'
+ return 'bg-danger-surface text-destructive border-danger-border'
   }
 
  const getSalaryDisplay = (emp: EmployeeRecord) => {
@@ -180,7 +180,7 @@ export function EmployeeTable({
             <select
  value={selectedDept}
  onChange={(e) => setSelectedDept(e.target.value)}
- className="h-8 rounded-lg border border-border bg-card px-2.5 text-xs text-foreground focus:border-blue-500 focus:outline-none">
+ className="h-8 rounded-lg border border-border bg-card px-2.5 text-xs text-foreground focus:border-primary/20 focus:outline-none">
               {DEPARTMENTS.map((d) => (
                 <option key={d.id} value={d.id}>
                   {tBilingual(d.label, d.labelBn)}
@@ -192,7 +192,7 @@ export function EmployeeTable({
             <select
  value={selectedType}
  onChange={(e) => setSelectedType(e.target.value)}
- className="h-8 rounded-lg border border-border bg-card px-2.5 text-xs text-foreground focus:border-blue-500 focus:outline-none">
+ className="h-8 rounded-lg border border-border bg-card px-2.5 text-xs text-foreground focus:border-primary/20 focus:outline-none">
               <option value="all">{tBilingual('All Employment Types', 'সকল কর্মসংস্থান ধরন')}</option>
               <option value="permanent">{tBilingual('Permanent Staff', 'স্থায়ী কর্মী')}</option>
               <option value="contract">{tBilingual('Contract Worker', 'চুক্তিভিত্তিক কর্মী')}</option>
@@ -204,7 +204,7 @@ export function EmployeeTable({
             <select
  value={selectedStatus}
  onChange={(e) => setSelectedStatus(e.target.value)}
- className="h-8 rounded-lg border border-border bg-card px-2.5 text-xs text-foreground focus:border-blue-500 focus:outline-none">
+ className="h-8 rounded-lg border border-border bg-card px-2.5 text-xs text-foreground focus:border-primary/20 focus:outline-none">
               <option value="all">{tBilingual('All Statuses', 'সকল অবস্থা')}</option>
               <option value="active">{tBilingual('Active Only', 'শুধুমাত্র সক্রিয়')}</option>
               <option value="on_leave">{tBilingual('On Leave', 'ছুটিতে')}</option>
@@ -216,7 +216,7 @@ export function EmployeeTable({
               <select
  value={selectedBranch}
  onChange={(e) => setSelectedBranch(e.target.value)}
- className="h-8 rounded-lg border border-border bg-card px-2.5 text-xs text-foreground focus:border-blue-500 focus:outline-none">
+ className="h-8 rounded-lg border border-border bg-card px-2.5 text-xs text-foreground focus:border-primary/20 focus:outline-none">
                 <option value="all">{tBilingual('All Branches', 'সকল শাখা')}</option>
                 {branches.map((b) => (
                   <option key={b.id} value={b.id}>
@@ -291,7 +291,7 @@ export function EmployeeTable({
           {/* Desktop Table View */}
           <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-muted border-b border-border text-muted-foreground uppercase tracking-wider font-semibold text-[11px]">
+              <thead className="bg-muted border-b border-border text-muted-foreground uppercase tracking-wider font-semibold text-xs">
                 <tr>
                   <th className="py-3 px-4">{tBilingual('Employee', 'কর্মী')}</th>
                   <th className="py-3 px-3">{tBilingual('ID', 'আইডি')}</th>
@@ -318,10 +318,10 @@ export function EmployeeTable({
                             {emp.name.slice(0, 2).toUpperCase()}
                           </div>
                           <div>
-                            <div className="font-semibold text-foreground group-hover:text-blue-600 transition-colors">
+                            <div className="font-semibold text-foreground group-hover:text-primary transition-colors">
                               {locale === 'bn' ? (emp.name_bn || emp.name) : emp.name}
                             </div>
-                            <div className="text-[11px] text-muted-foreground flex items-center gap-1.5 mt-0.5">
+                            <div className="text-xs text-muted-foreground flex items-center gap-1.5 mt-0.5">
                               <span>{emp.mobile}</span>
                             </div>
                           </div>
@@ -329,14 +329,14 @@ export function EmployeeTable({
                       </td>
 
                       {/* ID */}
-                      <td className="py-3 px-3 font-mono text-[11px] text-muted-foreground">
+                      <td className="py-3 px-3 font-mono text-xs text-muted-foreground">
                         {emp.employee_id_number || '—'}
                       </td>
 
                       {/* Department */}
                       <td className="py-3 px-3">
                         <Badge
- variant="outline"className={`text-[10px] font-medium uppercase px-2 py-0.5 rounded-md ${getDepartmentBadge(
+ variant="outline"className={`text-xs font-medium uppercase px-2 py-0.5 rounded-md ${getDepartmentBadge(
  emp.department
                           )}`}
                         >
@@ -367,7 +367,7 @@ export function EmployeeTable({
                       {/* Status */}
                       <td className="py-3 px-3 text-center">
                         <Badge
- variant="outline"className={`text-[10px] font-medium capitalize px-2 py-0.5 rounded-full ${getStatusBadge(
+ variant="outline"className={`text-xs font-medium capitalize px-2 py-0.5 rounded-full ${getStatusBadge(
  emp.status
                           )}`}
                         >
@@ -399,28 +399,28 @@ export function EmployeeTable({
 
                             <DropdownMenuItem asChild className="cursor-pointer">
                               <Link href={`/${tenantSlug}/hr/attendance?employee=${emp.id}`}>
-                                <Clock className="w-3.5 h-3.5 mr-2 text-blue-600"/>
+                                <Clock className="w-3.5 h-3.5 mr-2 text-primary"/>
                                 <span>{tBilingual('Attendance Roster', 'হাজিরা রোস্টার')}</span>
                               </Link>
                             </DropdownMenuItem>
 
                             <DropdownMenuItem asChild className="cursor-pointer">
                               <Link href={`/${tenantSlug}/hr/payroll?employee=${emp.id}`}>
-                                <Wallet className="w-3.5 h-3.5 mr-2 text-emerald-600"/>
+                                <Wallet className="w-3.5 h-3.5 mr-2 text-success"/>
                                 <span>{tBilingual('Payroll & Slips', 'বেতন ও পে-স্লিপ')}</span>
                               </Link>
                             </DropdownMenuItem>
 
                             <DropdownMenuItem asChild className="cursor-pointer">
                               <Link href={`/${tenantSlug}/hr/advances?employee=${emp.id}`}>
-                                <Coins className="w-3.5 h-3.5 mr-2 text-amber-600"/>
+                                <Coins className="w-3.5 h-3.5 mr-2 text-warning"/>
                                 <span>{tBilingual('Salary Advance', 'বেতন অগ্রিম')}</span>
                               </Link>
                             </DropdownMenuItem>
 
                             {onManageAccess && (
                               <DropdownMenuItem onClick={() => onManageAccess(emp)} className="cursor-pointer">
-                                <Key className="w-3.5 h-3.5 mr-2 text-indigo-600"/>
+                                <Key className="w-3.5 h-3.5 mr-2 text-primary"/>
                                 <span>{tBilingual('Login Access', 'লগইন অ্যাক্সেস')}</span>
                               </DropdownMenuItem>
                             )}
@@ -431,7 +431,7 @@ export function EmployeeTable({
                                 <DropdownMenuItem
  onClick={() => onToggleStatus(emp)}
  className={`cursor-pointer ${
- emp.status === 'active' ? 'text-red-600 hover:text-red-700' : 'text-emerald-600 hover:text-emerald-700'
+ emp.status === 'active' ? 'text-destructive hover:text-destructive' : 'text-success hover:text-success'
                                   }`}
                                 >
                                   {emp.status === 'active' ? (
@@ -473,7 +473,7 @@ export function EmployeeTable({
                     <div>
                       <div className="font-semibold text-foreground text-sm">{emp.name}</div>
                       <div className="text-xs text-muted-foreground">{emp.role || 'Staff Member'}</div>
-                      <div className="text-[11px] text-muted-foreground font-mono mt-0.5">
+                      <div className="text-xs text-muted-foreground font-mono mt-0.5">
                         {emp.employee_id_number}
                       </div>
                     </div>
@@ -498,13 +498,13 @@ export function EmployeeTable({
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
                           <Link href={`/${tenantSlug}/hr/attendance?employee=${emp.id}`}>
-                            <Clock className="w-3.5 h-3.5 mr-2 text-blue-600"/>
+                            <Clock className="w-3.5 h-3.5 mr-2 text-primary"/>
                             <span>{tBilingual('Attendance', 'হাজিরা')}</span>
                           </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
                           <Link href={`/${tenantSlug}/hr/payroll?employee=${emp.id}`}>
-                            <Wallet className="w-3.5 h-3.5 mr-2 text-emerald-600"/>
+                            <Wallet className="w-3.5 h-3.5 mr-2 text-success"/>
                             <span>{tBilingual('Payroll', 'বেতন')}</span>
                           </Link>
                         </DropdownMenuItem>
@@ -515,7 +515,7 @@ export function EmployeeTable({
 
                 <div className="flex items-center justify-between text-xs pt-1 border-t border-border">
                   <Badge
- variant="outline"className={`text-[10px] font-medium uppercase px-2 py-0.5 ${getDepartmentBadge(
+ variant="outline"className={`text-xs font-medium uppercase px-2 py-0.5 ${getDepartmentBadge(
  emp.department
                     )}`}
                   >
@@ -525,7 +525,7 @@ export function EmployeeTable({
                     {getSalaryDisplay(emp)}
                   </span>
                   <Badge
- variant="outline"className={`text-[10px] font-medium capitalize px-2 py-0.5 ${getStatusBadge(
+ variant="outline"className={`text-xs font-medium capitalize px-2 py-0.5 ${getStatusBadge(
  emp.status
                     )}`}
                   >

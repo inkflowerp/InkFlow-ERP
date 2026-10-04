@@ -102,7 +102,7 @@ export function SalaryPaymentDialog({
       <DialogContent className="max-w-md p-6 bg-card border-border shadow-xs rounded-xl space-y-4">
         <DialogHeader>
           <DialogTitle className="text-base font-bold text-foreground flex items-center gap-2">
-            <Wallet className="w-5 h-5 text-emerald-600"/>
+            <Wallet className="w-5 h-5 text-success"/>
             <span>{tBilingual('Disburse Salary Payment', 'বেতন পরিশোধ রেকর্ড করুন')}</span>
           </DialogTitle>
           <p className="text-xs text-muted-foreground">
@@ -111,8 +111,8 @@ export function SalaryPaymentDialog({
         </DialogHeader>
 
         {errorMsg && (
-          <div className="p-3 rounded-lg bg-red-50 text-red-700 text-xs flex items-center gap-1.5">
-            <AlertCircle className="w-4 h-4 shrink-0 text-red-600"/>
+          <div className="p-3 rounded-lg bg-danger-surface text-destructive text-xs flex items-center gap-1.5">
+            <AlertCircle className="w-4 h-4 shrink-0 text-destructive"/>
             <span>{errorMsg}</span>
           </div>
         )}
@@ -121,13 +121,13 @@ export function SalaryPaymentDialog({
           {/* Due Info Card */}
           <div className="p-3.5 rounded-xl border border-border bg-muted flex items-center justify-between">
             <div>
-              <span className="text-muted-foreground block text-[11px]">Current Outstanding Due</span>
-              <span className="text-lg font-bold text-rose-600 tabular-nums">
+              <span className="text-muted-foreground block text-xs">Current Outstanding Due</span>
+              <span className="text-lg font-bold text-destructive tabular-nums">
                 ৳ {currentDue.toLocaleString('en-IN')}
               </span>
             </div>
             <div className="text-right">
-              <span className="text-muted-foreground block text-[11px]">Net Salary</span>
+              <span className="text-muted-foreground block text-xs">Net Salary</span>
               <span className="text-xs font-semibold text-foreground tabular-nums">
                 ৳ {Number(item.net_salary || 0).toLocaleString('en-IN')}
               </span>
@@ -159,9 +159,9 @@ export function SalaryPaymentDialog({
                 <button
  key={m}
  type="button"onClick={() => setMethod(m)}
- className={`p-2 rounded-lg border text-center uppercase font-bold text-[11px] transition-all ${
+ className={`p-2 rounded-lg border text-center uppercase font-bold text-xs transition-all ${
  method === m
-                      ? 'border-blue-600 bg-blue-50 text-blue-700 shadow-xs'
+                      ? 'border-border bg-primary/10 text-primary shadow-xs'
                       : 'border-border bg-card text-muted-foreground hover:bg-muted'
                   }`}
                 >
@@ -198,7 +198,7 @@ export function SalaryPaymentDialog({
             </Button>
             <Button
  type="submit"size="sm"disabled={isSubmitting}
- className="h-8 px-4 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white min-h-[32px]">
+ className="h-8 px-4 text-xs font-semibold bg-success hover:bg-success text-white min-h-[32px]">
               {isSubmitting ? 'Recording...' : `Confirm ৳ ${amount.toLocaleString('en-IN')}`}
             </Button>
           </div>

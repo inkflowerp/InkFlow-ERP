@@ -91,24 +91,24 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
             : undefined
 
  const iconMap = {
- success: <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5"/>,
- error: <AlertCircle className="h-4 w-4 text-rose-400 shrink-0 mt-0.5"/>,
- warning: <AlertTriangle className="h-4 w-4 text-amber-400 shrink-0 mt-0.5"/>,
- info: <Info className="h-4 w-4 text-indigo-400 shrink-0 mt-0.5"/>,
+ success: <CheckCircle2 className="h-4 w-4 text-success shrink-0 mt-0.5"/>,
+ error: <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5"/>,
+ warning: <AlertTriangle className="h-4 w-4 text-warning shrink-0 mt-0.5"/>,
+ info: <Info className="h-4 w-4 text-primary shrink-0 mt-0.5"/>,
           }
 
  const styleMap = {
- success: 'bg-surface-inset border-emerald-500/40 text-emerald-200 shadow-emerald-950/30',
- error: 'bg-surface-inset border-rose-500/40 text-rose-200 shadow-rose-950/30',
- warning: 'bg-surface-inset border-amber-500/40 text-amber-200 shadow-amber-950/30',
- info: 'bg-surface-inset border-indigo-500/40 text-indigo-200 shadow-indigo-950/30',
+ success: 'bg-surface-inset border-success-border/40 text-success shadow-emerald-950/30',
+ error: 'bg-surface-inset border-danger-border/40 text-destructive shadow-rose-950/30',
+ warning: 'bg-surface-inset border-warning-border/40 text-warning shadow-amber-950/30',
+ info: 'bg-surface-inset border-primary/20/40 text-primary shadow-indigo-950/30',
           }
 
  return (
             <div
  key={toast.id}
  role="alert"className={cn(
-                'pointer-events-auto p-3.5 rounded-xl border shadow-lg backdrop-blur-xl flex items-start justify-between gap-3 text-xs animate-in slide-in-from-bottom-2 fade-in-0 transition-all',
+                'pointer-events-auto p-3.5 rounded-xl border shadow-lg backdrop-blur-xl flex items-start justify-between gap-3 text-xs animate-in slide-in- fade-in-0 transition-all',
  styleMap[toast.type]
               )}
             >
@@ -117,7 +117,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                 <div className="space-y-0.5 min-w-0">
                   <div className="font-bold text-white bangla-text truncate">{displayTitle}</div>
                   {displayMessage && (
-                    <div className="text-2xs text-muted-foreground bangla-text leading-relaxed">
+                    <div className="text-xs text-muted-foreground bangla-text leading-relaxed">
                       {displayMessage}
                     </div>
                   )}

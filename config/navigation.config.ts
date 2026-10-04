@@ -1,5 +1,5 @@
-import type { PermissionAction, PermissionModule } from '@/types/rbac.types'
-import type { FeatureCode } from '@/types/subscription.types'
+import type { PermissionAction, PermissionModule } from '../types/rbac.types.ts'
+import type { FeatureCode } from '../types/subscription.types.ts'
 
 export interface NavItem {
   key: string
@@ -516,3 +516,202 @@ export function getNavigationConfig(_tenantSlug?: string): NavSection[] {
     },
   ]
 }
+
+/**
+ * Server-authoritative navigation filter.
+ * Ensures employees NEVER receive owner or management navigation items in the response payload.
+ */
+export function getServerFilteredNavigation(
+  role?: string | null,
+  permissions: string[] = [],
+  isOwner: boolean = false
+): NavSection[] {
+  const normRole = (role || '').toLowerCase().trim()
+
+  if (normRole === 'general_staff' || normRole === 'staff') {
+    const items: NavItem[] = [
+      {
+        key: 'portal',
+        title: 'Staff Portal',
+        titleBn: 'স্টাফ পোর্টাল',
+        href: '/portal',
+        icon: 'UserCheck',
+        exact: true,
+      },
+      {
+        key: 'attendance',
+        title: 'My Attendance',
+        titleBn: 'আমার হাজিরা',
+        href: '/attendance',
+        icon: 'Clock',
+      },
+    ]
+
+    if (permissions.includes('notifications.view') || permissions.includes('communications.view')) {
+      items.push({
+        key: 'communications',
+        title: 'Messages',
+        titleBn: 'মেসেজ',
+        href: '/communications',
+        icon: 'MessageSquare',
+      })
+    }
+
+    return [
+      {
+        id: 'today',
+        title: 'My Workspace',
+        titleBn: 'আমার কর্মক্ষেত্র',
+        items,
+      },
+    ]
+  }
+
+  if (
+    normRole === 'machine_operator' ||
+    normRole === 'operator' ||
+    normRole.includes('operat')
+  ) {
+    const items: NavItem[] = [
+      {
+        key: 'operator',
+        title: 'Operator Terminal',
+        titleBn: 'অপারেটর টার্মিনাল',
+        href: '/operator',
+        icon: 'Cpu',
+        exact: true,
+      },
+      {
+        key: 'attendance',
+        title: 'My Attendance',
+        titleBn: 'আমার হাজিরা',
+        href: '/attendance',
+        icon: 'Clock',
+      },
+      {
+        key: 'floor_consumption',
+        title: 'Used Materials',
+        titleBn: 'ব্যবহৃত কাঁচামাল',
+        href: '/production/floor-consumption',
+        icon: 'Flame',
+      },
+      {
+        key: 'portal',
+        title: 'Staff Portal',
+        titleBn: 'স্টাফ পোর্টাল',
+        href: '/portal',
+        icon: 'UserCheck',
+      },
+    ]
+
+    if (permissions.includes('notifications.view') || permissions.includes('communications.view')) {
+      items.push({
+        key: 'communications',
+        title: 'Messages',
+        titleBn: 'মেসেজ',
+        href: '/communications',
+        icon: 'MessageSquare',
+      })
+    }
+
+    return [
+      {
+        id: 'specialized',
+        title: 'Operator Station',
+        titleBn: 'অপারেটর স্টেশন',
+        items,
+      },
+    ]
+  }
+
+  if (
+    normRole === 'graphic_designer' ||
+    normRole === 'designer' ||
+    normRole.includes('design')
+  ) {
+    const items: NavItem[] = [
+      {
+        key: 'designer',
+        title: 'Designer Workbench',
+        titleBn: 'ডিজাইনার টার্মিনাল',
+        href: '/designer',
+        icon: 'Palette',
+        exact: true,
+      },
+      {
+        key: 'attendance',
+        title: 'My Attendance',
+        titleBn: 'আমার হাজিরা',
+        href: '/attendance',
+        icon: 'Clock',
+      },
+      {
+        key: 'portal',
+        title: 'Staff Portal',
+        titleBn: 'স্টাফ পোর্টাল',
+        href: '/portal',
+        icon: 'UserCheck',
+      },
+    ]
+
+    if (permissions.includes('orders.view') || permissions.includes('order.view')) {
+      items.push({
+        key: 'orders',
+        title: 'Orders & Jobs',
+        titleBn: 'কাজের অর্ডার ও জব',
+        href: '/orders',
+        icon: 'ShoppingBag',
+      })
+    }
+
+    if (permissions.includes('notifications.view') || permissions.includes('communications.view')) {
+      items.push({
+        key: 'communications',
+        title: 'Messages',
+        titleBn: 'মেসেজ',
+        href: '/communications',
+        icon: 'MessageSquare',
+      })
+    }
+
+    return [
+      {
+        id: 'work',
+        title: 'Design Studio',
+        titleBn: 'ডিজাইন স্টুডিও',
+        items,
+      },
+    ]
+  }
+
+  // Standard roles (owner, branch_manager, production_manager, sales_manager, accountant):
+  const rawSections = getNavigationConfig()
+  const isOwnerRole =
+    isOwner ||
+    normRole === 'business_owner' ||
+    normRole === 'owner' ||
+    permissions.includes('*')
+  if (isOwnerRole) return rawSections
+
+  return rawSections
+    .map((section) => {
+      const filteredItems = section.items.filter((item) => {
+        if (item.ownerOnly) return false
+        if (!item.permission) return true
+        const { action, resource } = item.permission
+        const permKey = `${resource}.${action}`
+        const altResource = resource.endsWith('s') ? resource.slice(0, -1) : `${resource}s`
+        const altPermKey = `${altResource}.${action}`
+        return (
+          permissions.includes(permKey) ||
+          permissions.includes(altPermKey) ||
+          permissions.includes(`${resource}.full_control`) ||
+          permissions.includes('all.manage')
+        )
+      })
+      return { ...section, items: filteredItems }
+    })
+}
+
+export const NAV_SECTIONS = getNavigationConfig()
+

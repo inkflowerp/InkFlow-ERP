@@ -1,113 +1,35 @@
-'use client'
+import React from 'react'
+import { headers } from 'next/headers'
+import { requirePlatformUser } from '@/lib/auth/platform-auth'
+import { PlatformShell } from '@/components/platform/platform-shell'
 
-import React, { useEffect, useState, useRef } from 'react'
-import { PlatformHeader } from '@/components/platform/platform-header'
-import { PlatformSidebar } from '@/components/platform/platform-sidebar'
-import { PlatformMobileBottomNav } from '@/components/platform/platform-mobile-bottom-nav'
-import { RealtimeNotificationPopup } from '@/components/shell/realtime-notification-popup'
-import { ToastProvider } from '@/components/shared/toast-feedback'
-import { usePathname, useRouter } from 'next/navigation'
-import { getPlatformSessionUserAction } from '@/actions/platform-auth.actions'
+export const dynamic = 'force-dynamic'
 
-import { useI18n } from '@/lib/i18n'
-
-export default function PlatformLayout({
+export default async function PlatformLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const { tBilingual } = useI18n()
-  const pathname = usePathname()
-  const router = useRouter()
+  const headerStore = await headers()
+  const currentPath = headerStore.get('x-current-path') || ''
   const isAuthPage =
-    pathname === '/platform/login' ||
-    pathname === '/platform/forgot-password' ||
-    pathname === '/platform/reset-password'
+    currentPath === '/platform/login' ||
+    currentPath === '/platform/forgot-password' ||
+    currentPath === '/platform/reset-password'
 
-  const [isAuthorized, setIsAuthorized] = useState(true)
-  const hasVerifiedRef = useRef(false)
-
-  useEffect(() => {
-    if (isAuthPage) {
-      setIsAuthorized(true)
-      return
-    }
-
-    // If already verified for this session, don't trigger loading state on route transitions
-    if (hasVerifiedRef.current && isAuthorized) {
-      return
-    }
-
-    let isMounted = true
-
-    getPlatformSessionUserAction()
-      .then((user) => {
-        if (!isMounted) return
-        hasVerifiedRef.current = true
-        if (!user || !user.is_active) {
-          setIsAuthorized(false)
-          router.replace(`/platform/login?error=unauthorized&redirectTo=${encodeURIComponent(pathname)}`)
-        } else {
-          setIsAuthorized(true)
-        }
-      })
-      .catch(() => {
-        if (!isMounted) return
-        hasVerifiedRef.current = true
-        setIsAuthorized(false)
-        router.replace('/platform/login?error=unauthorized')
-      })
-
-    return () => {
-      isMounted = false
-    }
-  }, [isAuthPage, isAuthorized, pathname, router])
-
+  // Public platform authentication pages do not require pre-authenticated session
   if (isAuthPage) {
     return <>{children}</>
   }
 
-  if (!isAuthorized) {
-    return (
-      <div className="h-screen max-h-screen bg-background text-foreground flex items-center justify-center font-sans">
-        <div className="flex flex-col items-center gap-3">
-          <div className="h-6 w-6 rounded-full border border-primary border-t-transparent animate-spin" />
-          <span className="text-xs tabular-nums uppercase tracking-wider text-muted-foreground">
-            {tBilingual('Redirecting to platform login...', 'প্ল্যাটফর্ম লগইনে পুনঃনির্দেশ করা হচ্ছে...')}
-          </span>
-        </div>
-      </div>
-    )
-  }
+  // 1. Authoritative Server-Side Guard
+  // Strictly verifies Supabase Auth, platform_admins PostgreSQL record, and MFA status.
+  // Throws server-side redirect to /platform/login if unauthorized or inactive.
+  const platformUser = await requirePlatformUser()
 
   return (
-    <ToastProvider>
-      <div className="h-screen max-h-screen bg-background text-foreground flex flex-col font-sans selection:bg-primary selection:text-primary-foreground overflow-hidden print:h-auto print:max-h-none print:overflow-visible print:bg-white print:text-foreground">
-        {/* Global Header */}
-        <div className="print:hidden">
-          <PlatformHeader />
-        </div>
-
-        {/* Main Body with Sidebar + Content Area */}
-        <div className="flex-1 min-h-0 flex flex-col lg:flex-row overflow-hidden print:overflow-visible print:h-auto print:min-h-0 print:block">
-          {/* Navigation Sidebar */}
-          <div className="print:hidden">
-            <PlatformSidebar />
-          </div>
-
-          {/* Page Content Container */}
-          <main className="flex-1 min-h-0 min-w-0 p-3 sm:p-5 lg:p-6 overflow-y-auto max-w-7xl pb-24 lg:pb-8 print:p-0 print:m-0 print:overflow-visible print:h-auto print:max-w-none">
-            {children}
-          </main>
-        </div>
-
-        {/* Mobile Bottom Navigation Bar */}
-        <div className="print:hidden">
-          <PlatformMobileBottomNav />
-          {/* Top-tier Realtime Notification Popups */}
-          <RealtimeNotificationPopup />
-        </div>
-      </div>
-    </ToastProvider>
+    <PlatformShell user={platformUser}>
+      {children}
+    </PlatformShell>
   )
 }

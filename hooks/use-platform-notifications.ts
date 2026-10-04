@@ -61,18 +61,19 @@ export function usePlatformNotifications(initialOptions?: UsePlatformNotificatio
         if (!isMountedRef.current) return
 
         if (res.success && res.data) {
+          const items: PlatformNotificationItem[] = res.data
           if (append) {
             setNotifications((prev) => {
               const existingIds = new Set(prev.map((n) => n.id))
-              const newItems = (res.data || []).filter((item) => !existingIds.has(item.id))
+              const newItems = items.filter((item) => !existingIds.has(item.id))
               return [...prev, ...newItems]
             })
           } else {
-            setNotifications(res.data)
+            setNotifications(items)
           }
 
-          setTotalCount(res.totalCount ?? res.data.length)
-          setUnreadCount(res.unreadCount ?? res.data.filter((n) => !n.is_read).length)
+          setTotalCount(res.totalCount ?? items.length)
+          setUnreadCount(res.unreadCount ?? items.filter((n) => !n.is_read).length)
           setHasMore(res.hasMore ?? false)
           setPage(targetPage)
         } else {

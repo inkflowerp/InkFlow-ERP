@@ -1,5 +1,8 @@
 'use server'
 
+import { withTenantAction } from '@/lib/actions/action-wrapper'
+
+
 // ==============================================================================
 // InkFlow SaaS - Authoritative Server Actions for Support Chat & Conversations
 // Server-Guarded: Enforces authenticated identity, tenant isolation, permissions,
@@ -8,6 +11,7 @@
 
 import { requireTenantUser } from '@/lib/auth/tenant-auth'
 import { requirePlatformUser, hasPlatformPermission } from '@/lib/auth/platform-auth'
+import { withPlatformAction } from '@/lib/actions/action-wrapper'
 import { SupportService } from '@/services/support.service'
 import {
   CreateConversationInput,
@@ -52,9 +56,12 @@ function sanitizeText(input: string): string {
 /**
  * Creates a new support conversation (Ticket) by verified tenant user
  */
-export async function createSupportConversationAction(
-  input: CreateConversationInput
-): Promise<ApiResponse<SupportConversationRecord>> {
+export const createSupportConversationAction = withTenantAction(
+  {
+    permission: "support.create",
+    entityType: "support"
+  },
+  async (ctx, input: CreateConversationInput) : Promise<ApiResponse<SupportConversationRecord>> => {
   try {
     const tenant = await requireTenantUser()
     if (!tenant || !tenant.companyId) {
@@ -108,14 +115,18 @@ export async function createSupportConversationAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to create support conversation' }
   }
-}
+
+})
 
 /**
  * Retrieves conversations belonging exclusively to the verified tenant
  */
-export async function getTenantSupportConversationsAction(
-  filters: TenantConversationFilters = {}
-): Promise<ApiResponse<SupportConversationRecord[]>> {
+export const getTenantSupportConversationsAction = withTenantAction(
+  {
+    permission: "support.view",
+    entityType: "support"
+  },
+  async (ctx, filters: TenantConversationFilters = {}) : Promise<ApiResponse<SupportConversationRecord[]>> => {
   try {
     const tenant = await requireTenantUser()
     if (!tenant || !tenant.companyId) {
@@ -126,15 +137,19 @@ export async function getTenantSupportConversationsAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to retrieve conversations' }
   }
-}
+
+})
 
 /**
  * Retrieves conversation details and messages for verified tenant.
  * Guaranteed to exclude platform internal notes.
  */
-export async function getTenantSupportConversationDetailsAction(
-  conversationId: string
-): Promise<ApiResponse<{ conversation: SupportConversationRecord; messages: SupportMessageRecord[] }>> {
+export const getTenantSupportConversationDetailsAction = withTenantAction(
+  {
+    permission: "support.view",
+    entityType: "support"
+  },
+  async (ctx, conversationId: string) : Promise<ApiResponse<{ conversation: SupportConversationRecord; messages: SupportMessageRecord[] }>> => {
   try {
     const tenant = await requireTenantUser()
     if (!tenant || !tenant.companyId) {
@@ -145,14 +160,18 @@ export async function getTenantSupportConversationDetailsAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to load conversation details' }
   }
-}
+
+})
 
 /**
  * Sends a message from tenant user into their conversation
  */
-export async function sendTenantSupportMessageAction(
-  input: SendMessageInput
-): Promise<ApiResponse<SupportMessageRecord>> {
+export const sendTenantSupportMessageAction = withTenantAction(
+  {
+    permission: "support.create",
+    entityType: "support"
+  },
+  async (ctx, input: SendMessageInput) : Promise<ApiResponse<SupportMessageRecord>> => {
   try {
     const tenant = await requireTenantUser()
     if (!tenant || !tenant.companyId) {
@@ -192,14 +211,18 @@ export async function sendTenantSupportMessageAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to send message' }
   }
-}
+
+})
 
 /**
  * Marks conversation as read by tenant user
  */
-export async function markConversationReadByTenantAction(
-  conversationId: string
-): Promise<ApiResponse<boolean>> {
+export const markConversationReadByTenantAction = withTenantAction(
+  {
+    permission: "support.create",
+    entityType: "support"
+  },
+  async (ctx, conversationId: string) : Promise<ApiResponse<boolean>> => {
   try {
     const tenant = await requireTenantUser()
     if (!tenant || !tenant.companyId) return { success: false, error: 'Unauthorized' }
@@ -208,14 +231,18 @@ export async function markConversationReadByTenantAction(
   } catch {
     return { success: false, error: 'Failed to update read state' }
   }
-}
+
+})
 
 /**
  * Closes conversation by tenant user
  */
-export async function closeConversationByTenantAction(
-  conversationId: string
-): Promise<ApiResponse<SupportConversationRecord>> {
+export const closeConversationByTenantAction = withTenantAction(
+  {
+    permission: "support.view",
+    entityType: "support"
+  },
+  async (ctx, conversationId: string) : Promise<ApiResponse<SupportConversationRecord>> => {
   try {
     const tenant = await requireTenantUser()
     if (!tenant || !tenant.companyId) return { success: false, error: 'Unauthorized' }
@@ -229,15 +256,19 @@ export async function closeConversationByTenantAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to close conversation' }
   }
-}
+
+})
 
 /**
  * Reopens conversation by tenant user
  */
-export async function reopenConversationByTenantAction(
-  conversationId: string,
-  reason?: string
-): Promise<ApiResponse<SupportConversationRecord>> {
+export const reopenConversationByTenantAction = withTenantAction(
+  {
+    permission: "support.view",
+    entityType: "support"
+  },
+  async (ctx, conversationId: string,
+  reason?: string) : Promise<ApiResponse<SupportConversationRecord>> => {
   try {
     const tenant = await requireTenantUser()
     if (!tenant || !tenant.companyId) return { success: false, error: 'Unauthorized' }
@@ -253,7 +284,8 @@ export async function reopenConversationByTenantAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to reopen conversation' }
   }
-}
+
+})
 
 // ==============================================================================
 // PLATFORM SUPPORT ACTIONS
@@ -262,54 +294,38 @@ export async function reopenConversationByTenantAction(
 /**
  * Retrieves all support conversations for platform agents
  */
-export async function getPlatformSupportConversationsAction(
-  filters: PlatformConversationFilters = {}
-): Promise<ApiResponse<SupportConversationRecord[]>> {
-  try {
-    const platformUser = await requirePlatformUser()
-    if (!hasPlatformPermission(platformUser, 'support.view')) {
-      return { success: false, error: 'Permission denied: support.view required' }
-    }
-
+export const getPlatformSupportConversationsAction = withPlatformAction(
+  { permission: 'support.view' },
+  async (_ctx, filters: PlatformConversationFilters = {}): Promise<ApiResponse<SupportConversationRecord[]>> => {
     return await SupportService.getPlatformConversations(filters)
-  } catch (err: any) {
-    return { success: false, error: err.message || 'Failed to load conversations' }
   }
-}
+)
 
 /**
  * Retrieves conversation details (with internal notes) for platform support staff
  */
-export async function getPlatformSupportConversationDetailsAction(
-  conversationId: string
-): Promise<ApiResponse<{ conversation: SupportConversationRecord; messages: SupportMessageRecord[] }>> {
-  try {
-    const platformUser = await requirePlatformUser()
-    if (!hasPlatformPermission(platformUser, 'support.view')) {
-      return { success: false, error: 'Permission denied' }
-    }
-
+export const getPlatformSupportConversationDetailsAction = withPlatformAction(
+  { permission: 'support.view' },
+  async (_ctx, conversationId: string): Promise<ApiResponse<{ conversation: SupportConversationRecord; messages: SupportMessageRecord[] }>> => {
     return await SupportService.getPlatformConversationDetails(conversationId)
-  } catch (err: any) {
-    return { success: false, error: err.message || 'Failed to load conversation details' }
   }
-}
+)
 
 /**
  * Sends a platform support reply or internal note
  */
-export async function sendPlatformSupportReplyAction(
-  input: SendMessageInput
-): Promise<ApiResponse<SupportMessageRecord>> {
-  try {
-    const platformUser = await requirePlatformUser()
+export const sendPlatformSupportReplyAction = withPlatformAction(
+  {
+    permission: 'support.reply',
+    audit: true,
+    actionName: 'support.reply',
+    entityType: 'support_ticket',
+  },
+  async (ctx, input: SendMessageInput): Promise<ApiResponse<SupportMessageRecord>> => {
     const isInternal = Boolean(input.isInternalNote)
 
-    if (isInternal && !hasPlatformPermission(platformUser, 'support.internal_note') && !hasPlatformPermission(platformUser, 'support.view')) {
+    if (isInternal && !hasPlatformPermission(ctx.platformUser, 'support.internal_note') && !hasPlatformPermission(ctx.platformUser, 'support.view')) {
       return { success: false, error: 'Permission denied for internal notes' }
-    }
-    if (!isInternal && !hasPlatformPermission(platformUser, 'support.reply') && !hasPlatformPermission(platformUser, 'support.view')) {
-      return { success: false, error: 'Permission denied for support reply' }
     }
 
     const cleanBody = sanitizeText(input.body || '')
@@ -318,9 +334,9 @@ export async function sendPlatformSupportReplyAction(
     }
 
     return await SupportService.sendPlatformReply(
-      platformUser.id,
-      platformUser.email,
-      platformUser.full_name,
+      ctx.platformUser.id,
+      ctx.platformUser.email,
+      ctx.platformUser.full_name,
       {
         conversationId: input.conversationId,
         body: cleanBody,
@@ -329,152 +345,112 @@ export async function sendPlatformSupportReplyAction(
         clientMutationId: input.clientMutationId,
       }
     )
-  } catch (err: any) {
-    return { success: false, error: err.message || 'Failed to send reply' }
   }
-}
+)
 
 /**
  * Assigns conversation to a support agent
  */
-export async function assignSupportConversationAction(
-  conversationId: string,
-  targetAdminId: string | null,
-  targetAdminName: string | null
-): Promise<ApiResponse<SupportConversationRecord>> {
-  try {
-    const platformUser = await requirePlatformUser()
-    if (!hasPlatformPermission(platformUser, 'support.assign') && !hasPlatformPermission(platformUser, 'support.view')) {
-      return { success: false, error: 'Permission denied' }
-    }
-
+export const assignSupportConversationAction = withPlatformAction(
+  {
+    permission: 'support.assign',
+    audit: true,
+    actionName: 'support.assign',
+    entityType: 'support_ticket',
+  },
+  async (ctx, conversationId: string, targetAdminId: string | null, targetAdminName: string | null): Promise<ApiResponse<SupportConversationRecord>> => {
     return await SupportService.assignConversation(
-      platformUser.id,
-      platformUser.email,
-      platformUser.full_name,
+      ctx.platformUser.id,
+      ctx.platformUser.email,
+      ctx.platformUser.full_name,
       conversationId,
       targetAdminId,
       targetAdminName
     )
-  } catch (err: any) {
-    return { success: false, error: err.message || 'Failed to assign conversation' }
   }
-}
+)
 
 /**
  * Updates conversation status
  */
-export async function updateSupportConversationStatusAction(
-  conversationId: string,
-  status: SupportStatus,
-  reason?: string
-): Promise<ApiResponse<SupportConversationRecord>> {
-  try {
-    const platformUser = await requirePlatformUser()
-    if (!hasPlatformPermission(platformUser, 'support.manage') && !hasPlatformPermission(platformUser, 'support.view')) {
-      return { success: false, error: 'Permission denied' }
-    }
-
+export const updateSupportConversationStatusAction = withPlatformAction(
+  {
+    permission: 'support.manage',
+    audit: true,
+    actionName: 'support.update_status',
+    entityType: 'support_ticket',
+  },
+  async (ctx, conversationId: string, status: SupportStatus, reason?: string): Promise<ApiResponse<SupportConversationRecord>> => {
     const cleanReason = sanitizeText(reason || '')
     return await SupportService.updateConversationStatus(
-      platformUser.id,
-      platformUser.email,
-      platformUser.full_name,
+      ctx.platformUser.id,
+      ctx.platformUser.email,
+      ctx.platformUser.full_name,
       conversationId,
       status,
       cleanReason
     )
-  } catch (err: any) {
-    return { success: false, error: err.message || 'Failed to update status' }
   }
-}
+)
 
 /**
  * Updates conversation priority
  */
-export async function updateSupportConversationPriorityAction(
-  conversationId: string,
-  priority: SupportPriority
-): Promise<ApiResponse<SupportConversationRecord>> {
-  try {
-    const platformUser = await requirePlatformUser()
-    if (!hasPlatformPermission(platformUser, 'support.manage') && !hasPlatformPermission(platformUser, 'support.view')) {
-      return { success: false, error: 'Permission denied' }
-    }
-
+export const updateSupportConversationPriorityAction = withPlatformAction(
+  {
+    permission: 'support.manage',
+    audit: true,
+    actionName: 'support.update_priority',
+    entityType: 'support_ticket',
+  },
+  async (ctx, conversationId: string, priority: SupportPriority): Promise<ApiResponse<SupportConversationRecord>> => {
     return await SupportService.updateConversationPriority(
-      platformUser.id,
-      platformUser.email,
-      platformUser.full_name,
+      ctx.platformUser.id,
+      ctx.platformUser.email,
+      ctx.platformUser.full_name,
       conversationId,
       priority
     )
-  } catch (err: any) {
-    return { success: false, error: err.message || 'Failed to update priority' }
   }
-}
+)
 
 /**
  * Updates conversation category
  */
-export async function updateSupportConversationCategoryAction(
-  conversationId: string,
-  category: SupportCategory
-): Promise<ApiResponse<SupportConversationRecord>> {
-  try {
-    const platformUser = await requirePlatformUser()
-    if (!hasPlatformPermission(platformUser, 'support.manage') && !hasPlatformPermission(platformUser, 'support.view')) {
-      return { success: false, error: 'Permission denied' }
-    }
-
+export const updateSupportConversationCategoryAction = withPlatformAction(
+  {
+    permission: 'support.manage',
+    audit: true,
+    actionName: 'support.update_category',
+    entityType: 'support_ticket',
+  },
+  async (ctx, conversationId: string, category: SupportCategory): Promise<ApiResponse<SupportConversationRecord>> => {
     return await SupportService.updateConversationCategory(
-      platformUser.id,
-      platformUser.email,
-      platformUser.full_name,
+      ctx.platformUser.id,
+      ctx.platformUser.email,
+      ctx.platformUser.full_name,
       conversationId,
       category
     )
-  } catch (err: any) {
-    return { success: false, error: err.message || 'Failed to update category' }
   }
-}
+)
 
 /**
  * Marks conversation read by platform staff
  */
-export async function markConversationReadByPlatformAction(
-  conversationId: string
-): Promise<ApiResponse<boolean>> {
-  try {
-    const platformUser = await requirePlatformUser()
-    if (!platformUser) return { success: false, error: 'Unauthorized' }
-
+export const markConversationReadByPlatformAction = withPlatformAction(
+  { permission: 'support.view' },
+  async (_ctx, conversationId: string): Promise<ApiResponse<boolean>> => {
     return await SupportService.markAsReadByPlatform(conversationId)
-  } catch {
-    return { success: false, error: 'Failed to mark read' }
   }
-}
+)
 
 /**
  * Retrieves platform support queue overview statistics & SLA metrics
  */
-export async function getPlatformSupportStatsAction(): Promise<SupportOverviewStats> {
-  try {
-    const platformUser = await requirePlatformUser()
-    return await SupportService.getPlatformSupportStats(platformUser?.id)
-  } catch {
-    return {
-      totalCount: 0,
-      openCount: 0,
-      inProgressCount: 0,
-      waitingCustomerCount: 0,
-      resolvedCount: 0,
-      closedCount: 0,
-      unassignedCount: 0,
-      assignedToMeCount: 0,
-      urgentCount: 0,
-      averageFirstResponseMinutes: 15,
-      averageResolutionMinutes: 120,
-    }
+export const getPlatformSupportStatsAction = withPlatformAction(
+  { permission: 'support.view' },
+  async (ctx): Promise<SupportOverviewStats> => {
+    return await SupportService.getPlatformSupportStats(ctx.platformUser.id)
   }
-}
+)

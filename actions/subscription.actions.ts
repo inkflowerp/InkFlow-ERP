@@ -1,12 +1,17 @@
 'use server'
 
+import { withTenantAction } from '@/lib/actions/action-wrapper'
+
+
 import { revalidatePath } from 'next/cache'
 import { SubscriptionService } from '@/services/subscription.service'
 import { EntitlementService } from '@/services/entitlement.service'
 import { PlatformService } from '@/services/platform.service'
 import { getCurrentTenant } from '@/lib/auth/tenant-auth'
 import { getCurrentPlatformUser } from '@/lib/auth/platform-auth'
+import { withPlatformAction } from '@/lib/actions/action-wrapper'
 import { GatewayService } from '@/services/gateway.service'
+import { NotificationService } from '@/services/notification.service'
 import { PAYMENT_GATEWAY_METADATA_LIST, PaymentGatewayMeta } from '@/lib/payments/types'
 import { DEFAULT_PLANS, DEFAULT_TRIAL_PLAN } from '@/lib/subscription/subscription-constants'
 import type {
@@ -42,10 +47,13 @@ export interface PublicPlansData {
 /**
  * Server Action: Fetches authoritative single-source SubscriptionSnapshot for a tenant
  */
-export async function getAuthoritativeSubscriptionSnapshotAction(
-  requestedCompanyId?: string,
-  companySlug?: string
-): Promise<ServerActionResult<SubscriptionSnapshot>> {
+export const getAuthoritativeSubscriptionSnapshotAction = withTenantAction(
+  {
+    permission: "settings.view",
+    entityType: "subscription"
+  },
+  async (ctx, requestedCompanyId?: string,
+  companySlug?: string) : Promise<ServerActionResult<SubscriptionSnapshot>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId || companySlug)
     if (!tenant || !tenant.companyId) {
@@ -59,15 +67,19 @@ export async function getAuthoritativeSubscriptionSnapshotAction(
   } catch (err: any) {
     return { success: false, error: err?.message || 'Failed to resolve authoritative subscription snapshot' }
   }
-}
+
+})
 
 /**
  * Server Action: Fetches authoritative tenant subscription record
  */
-export async function getTenantSubscriptionAction(
-  requestedCompanyId?: string,
-  companySlug?: string
-): Promise<ServerActionResult<CompanySubscriptionRecord>> {
+export const getTenantSubscriptionAction = withTenantAction(
+  {
+    permission: "settings.view",
+    entityType: "subscription"
+  },
+  async (ctx, requestedCompanyId?: string,
+  companySlug?: string) : Promise<ServerActionResult<CompanySubscriptionRecord>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId || companySlug)
     if (!tenant || !tenant.companyId) {
@@ -81,15 +93,19 @@ export async function getTenantSubscriptionAction(
   } catch (err: any) {
     return { success: false, error: err?.message || 'Failed to fetch subscription' }
   }
-}
+
+})
 
 /**
  * Server Action: Fetches authoritative tenant entitlements & quota limits
  */
-export async function getTenantEntitlementsAction(
-  requestedCompanyId?: string,
-  companySlug?: string
-): Promise<ServerActionResult<TenantEntitlements>> {
+export const getTenantEntitlementsAction = withTenantAction(
+  {
+    permission: "settings.view",
+    entityType: "subscription"
+  },
+  async (ctx, requestedCompanyId?: string,
+  companySlug?: string) : Promise<ServerActionResult<TenantEntitlements>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId || companySlug)
     if (!tenant || !tenant.companyId) {
@@ -103,15 +119,19 @@ export async function getTenantEntitlementsAction(
   } catch (err: any) {
     return { success: false, error: err?.message || 'Failed to fetch entitlements' }
   }
-}
+
+})
 
 /**
  * Server Action: Initiates real payment gateway checkout for plan purchase or upgrade
  */
-export async function initiateSubscriptionCheckoutAction(
-  input: Omit<SubscriptionCheckoutInput, 'companyId'> & { companyId?: string },
-  requestedCompanyId?: string
-): Promise<ServerActionResult<SubscriptionCheckoutResult>> {
+export const initiateSubscriptionCheckoutAction = withTenantAction(
+  {
+    permission: "settings.manage",
+    entityType: "subscription"
+  },
+  async (ctx, input: Omit<SubscriptionCheckoutInput, 'companyId'> & { companyId?: string },
+  requestedCompanyId?: string) : Promise<ServerActionResult<SubscriptionCheckoutResult>> => {
   try {
     const targetCompanyId = requestedCompanyId || input.companyId
     const tenant = await getCurrentTenant(targetCompanyId)
@@ -150,17 +170,23 @@ export async function initiateSubscriptionCheckoutAction(
   } catch (err: any) {
     return { success: false, error: err?.message || 'Failed to initiate checkout' }
   }
-}
+
+})
 
 /**
  * Server Action: Verifies payment with provider API and activates paid subscription
  */
-export async function verifySubscriptionPaymentAction(params: {
+export const verifySubscriptionPaymentAction = withTenantAction(
+  {
+    permission: "settings.manage",
+    entityType: "subscription"
+  },
+  async (ctx, params: {
   internalTrxId?: string
   providerTrxId?: string
   gatewayReference?: string
   provider?: string
-}): Promise<ServerActionResult<SubscriptionVerificationResult>> {
+}) : Promise<ServerActionResult<SubscriptionVerificationResult>> => {
   try {
     const tenant = await getCurrentTenant()
     const result = await SubscriptionService.verifyPaymentAndActivateSubscription({
@@ -168,20 +194,46 @@ export async function verifySubscriptionPaymentAction(params: {
       userId: tenant?.userId,
     })
 
+    if (result.success && tenant?.companyId) {
+      try {
+        await NotificationService.notify({
+          companyId: tenant.companyId,
+          role: 'business_owner',
+          type: 'subscription_state',
+          payload: {
+            title: 'Subscription Plan Activated',
+            title_bn: 'সাবস্ক্রিপশন প্ল্যান সক্রিয় করা হয়েছে',
+            message: `Your subscription has been successfully updated to the ${result.planCode || 'new'} plan.`,
+            message_bn: `আপনার সাবস্ক্রিপশন সফলভাবে ${result.planCode || 'নতুন'} প্ল্যানে উন্নীত করা হয়েছে।`,
+            plan_name: result.planCode,
+            status: 'active',
+            action_url: '/settings/subscription',
+          },
+          channels: ['in_app', 'email'],
+        })
+      } catch (notifErr) {
+        console.warn('[verifySubscriptionPaymentAction] Notification failed:', notifErr)
+      }
+    }
+
     revalidatePath('/', 'layout')
     return { success: result.success, data: result, error: result.error }
   } catch (err: any) {
     return { success: false, error: err?.message || 'Failed to verify payment' }
   }
-}
+
+})
 
 /**
  * Server Action: Schedules safe plan downgrade at the end of the billing cycle
  */
-export async function schedulePlanDowngradeAction(
-  nextPlanCode: PlanCode,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<{ effectiveAt?: string }>> {
+export const schedulePlanDowngradeAction = withTenantAction(
+  {
+    permission: "settings.view",
+    entityType: "subscription"
+  },
+  async (ctx, nextPlanCode: PlanCode,
+  requestedCompanyId?: string) : Promise<ServerActionResult<{ effectiveAt?: string }>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
 
@@ -213,16 +265,20 @@ export async function schedulePlanDowngradeAction(
   } catch (err: any) {
     return { success: false, error: err?.message || 'Failed to schedule downgrade' }
   }
-}
+
+})
 
 /**
  * Server Action: Cancels subscription (at period end or immediately)
  */
-export async function cancelSubscriptionAction(
-  immediately: boolean = false,
+export const cancelSubscriptionAction = withTenantAction(
+  {
+    permission: "settings.manage",
+    entityType: "subscription"
+  },
+  async (ctx, immediately: boolean = false,
   reason?: string,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<boolean>> {
+  requestedCompanyId?: string) : Promise<ServerActionResult<boolean>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
 
@@ -250,19 +306,45 @@ export async function cancelSubscriptionAction(
       tenant.userId
     )
 
+    if (result.success) {
+      try {
+        await NotificationService.notify({
+          companyId: tenant.companyId,
+          role: 'business_owner',
+          type: 'subscription_state',
+          payload: {
+            title: 'Subscription Cancelled',
+            title_bn: 'সাবস্ক্রিপশন বাতিল করা হয়েছে',
+            message: `Your subscription cancellation request has been processed. Reason: ${reason || 'Not specified'}`,
+            message_bn: `আপনার সাবস্ক্রিপশন বাতিলের অনুরোধ সম্পন্ন হয়েছে। কারণ: ${reason || 'উল্লেখ করা হয়নি'}`,
+            status: 'cancelled',
+            reason: reason || 'Requested by owner',
+            action_url: '/settings/subscription',
+          },
+          channels: ['in_app', 'email'],
+        })
+      } catch (notifErr) {
+        console.warn('[cancelSubscriptionAction] Notification failed:', notifErr)
+      }
+    }
+
     revalidatePath('/', 'layout')
     return { success: result.success, data: true, error: result.error }
   } catch (err: any) {
     return { success: false, error: err?.message || 'Failed to cancel subscription' }
   }
-}
+
+})
 
 /**
  * Server Action: Reactivates subscription with pending cancellation
  */
-export async function reactivateSubscriptionAction(
-  requestedCompanyId?: string
-): Promise<ServerActionResult<boolean>> {
+export const reactivateSubscriptionAction = withTenantAction(
+  {
+    permission: "settings.view",
+    entityType: "subscription"
+  },
+  async (ctx, requestedCompanyId?: string) : Promise<ServerActionResult<boolean>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
 
@@ -290,14 +372,18 @@ export async function reactivateSubscriptionAction(
   } catch (err: any) {
     return { success: false, error: err?.message || 'Failed to reactivate subscription' }
   }
-}
+
+})
 
 /**
  * Server Action: Fetches immutable subscription events audit ledger
  */
-export async function getSubscriptionEventsAction(
-  requestedCompanyId?: string
-): Promise<ServerActionResult<SubscriptionEventRecord[]>> {
+export const getSubscriptionEventsAction = withTenantAction(
+  {
+    permission: "settings.view",
+    entityType: "subscription"
+  },
+  async (ctx, requestedCompanyId?: string) : Promise<ServerActionResult<SubscriptionEventRecord[]>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -310,48 +396,47 @@ export async function getSubscriptionEventsAction(
   } catch (err: any) {
     return { success: false, error: err?.message || 'Failed to fetch subscription events' }
   }
-}
+
+})
 
 /**
  * Server Action: Platform reconciliation list
  */
-export async function getPlatformReconciliationAction(): Promise<ServerActionResult<any[]>> {
-  try {
-    const platformUser = await getCurrentPlatformUser()
-    if (!platformUser) {
-      return { success: false, error: 'Unauthorized: Platform administrator session required.' }
-    }
+export const getPlatformReconciliationAction = withPlatformAction(
+  { permission: 'billing.reconcile' },
+  async (_ctx): Promise<ServerActionResult<any[]>> => {
     const list = await SubscriptionService.getPlatformReconciliationList()
     return { success: true, data: list }
-  } catch (err: any) {
-    return { success: false, error: err?.message || 'Failed to fetch reconciliation' }
   }
-}
+)
 
 /**
  * Server Action: Triggers background lifecycle evaluation cron
  * Strictly protected: requires Platform Admin authorization
  */
-export async function triggerLifecycleCronAction(): Promise<ServerActionResult<any>> {
-  try {
-    const platformUser = await getCurrentPlatformUser()
-    if (!platformUser) {
-      return { success: false, error: 'Unauthorized: Platform administrator authorization required to trigger lifecycle cron.' }
-    }
+export const triggerLifecycleCronAction = withPlatformAction(
+  {
+    permission: 'subscription.manage',
+    audit: true,
+    actionName: 'subscription.cron',
+    entityType: 'subscription',
+  },
+  async (_ctx): Promise<ServerActionResult<any>> => {
     const result = await SubscriptionService.processLifecycleCron()
     revalidatePath('/', 'layout')
     return { success: true, data: result }
-  } catch (err: any) {
-    return { success: false, error: err?.message || 'Failed to execute lifecycle cron' }
   }
-}
+)
 
 /**
  * Server Action: Fetches authoritative tenant invoices and receipts
  */
-export async function getTenantSubscriptionInvoicesAction(
-  requestedCompanyId?: string
-): Promise<ServerActionResult<SubscriptionInvoiceRecord[]>> {
+export const getTenantSubscriptionInvoicesAction = withTenantAction(
+  {
+    permission: "settings.view",
+    entityType: "subscription"
+  },
+  async (ctx, requestedCompanyId?: string) : Promise<ServerActionResult<SubscriptionInvoiceRecord[]>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -364,12 +449,18 @@ export async function getTenantSubscriptionInvoicesAction(
   } catch (err: any) {
     return { success: false, error: err?.message || 'Failed to fetch tenant invoices' }
   }
-}
+
+})
 
 /**
  * Server Action: Fetches active, valid & integrated platform payment gateways for checkout
  */
-export async function getActivePaymentGatewaysAction(): Promise<ServerActionResult<PaymentGatewayMeta[]>> {
+export const getActivePaymentGatewaysAction = withTenantAction(
+  {
+    permission: "settings.view",
+    entityType: "subscription"
+  },
+  async (ctx) : Promise<ServerActionResult<PaymentGatewayMeta[]>> => {
   try {
     const rawGateways = await GatewayService.listGateways({ tenantId: null, category: 'payment' })
 
@@ -413,12 +504,18 @@ export async function getActivePaymentGatewaysAction(): Promise<ServerActionResu
     )
     return { success: true, data: fallbackActive }
   }
-}
+
+})
 
 /**
  * Server Action: Fetches public active subscription plans & trial parameters for marketing surfaces
  */
-export async function getPublicSubscriptionPlansAction(): Promise<ServerActionResult<PublicPlansData>> {
+export const getPublicSubscriptionPlansAction = withTenantAction(
+  {
+    permission: "settings.view",
+    entityType: "subscription"
+  },
+  async (ctx) : Promise<ServerActionResult<PublicPlansData>> => {
   try {
     const allPlans = await SubscriptionService.getPlans()
     const activePlans = allPlans.filter((p: SubscriptionPlanRecord) => p.is_active !== false)
@@ -452,6 +549,7 @@ export async function getPublicSubscriptionPlansAction(): Promise<ServerActionRe
       error: err?.message || 'Failed to load subscription plans',
     }
   }
-}
+
+})
 
 

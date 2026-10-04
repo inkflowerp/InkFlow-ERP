@@ -71,7 +71,7 @@ export const DesignTableView = React.memo(function DesignTableView({
     <div className="bg-card rounded-xl border border-border shadow-sm overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full text-left text-xs text-foreground">
-          <thead className="bg-muted border-b border-border text-2xs font-bold text-muted-foreground uppercase tracking-wider">
+          <thead className="bg-muted border-b border-border text-xs font-bold text-muted-foreground uppercase tracking-wider">
             <tr>
               <th className="py-3 px-4">জব আইডি / ইনভয়েস</th>
               <th className="py-3 px-4">কাস্টমার ও যোগাযোগ</th>
@@ -104,12 +104,12 @@ export const DesignTableView = React.memo(function DesignTableView({
                   <td className="py-3 px-4 align-middle">
                     <Link
  href={workbenchHref}
- className="tabular-nums font-bold text-indigo-600 dark:text-indigo-400 hover:underline inline-flex items-center gap-1">
+ className="tabular-nums font-bold text-primary text-primary hover:underline inline-flex items-center gap-1">
                       <span>#{job.design_number}</span>
                       <ExternalLink className="h-2.5 w-2.5 opacity-60"/>
                     </Link>
                     {job.invoice_number && (
-                      <div className="tabular-nums text-2xs text-muted-foreground">
+                      <div className="tabular-nums text-xs text-muted-foreground">
                         {invoiceHref ? (
                           <Link href={invoiceHref} className="hover:underline hover:text-foreground dark:hover:text-foreground">
  Inv: #{job.invoice_number}
@@ -129,7 +129,7 @@ export const DesignTableView = React.memo(function DesignTableView({
                     {(job.customer_phone || (job as any).mobile) && (
                       <button
  type="button"onClick={() => onOpenWhatsApp(job, 'proof')}
- className="text-2xs text-emerald-700 dark:text-emerald-400 tabular-nums hover:underline flex items-center gap-1 mt-0.5">
+ className="text-xs text-success text-success tabular-nums hover:underline flex items-center gap-1 mt-0.5">
                         <Phone className="h-3 w-3"/>
                         <span>{job.customer_phone || (job as any).mobile}</span>
                       </button>
@@ -140,14 +140,14 @@ export const DesignTableView = React.memo(function DesignTableView({
                   <td className="py-3 px-4 align-middle">
                     <Link
  href={workbenchHref}
- className="font-bold text-foreground hover:text-indigo-600 dark:hover:text-indigo-400 line-clamp-1 transition-colors block">
+ className="font-bold text-foreground hover:text-primary dark:hover:text-primary line-clamp-1 transition-colors block">
                       {specs.serviceName}
                     </Link>
-                    <div className="text-2xs text-muted-foreground tabular-nums mt-0.5">
+                    <div className="text-xs text-muted-foreground tabular-nums mt-0.5">
                       {specs.size} | {specs.quantity} | {specs.material}
                     </div>
                     {(specs.finishing !== 'None' || specs.addOn !== 'None') && (
-                      <div className="text-2xs text-amber-700 dark:text-amber-400 tabular-nums mt-0.5">
+                      <div className="text-xs text-warning text-warning tabular-nums mt-0.5">
                         {specs.finishing !== 'None' && `✨ ${specs.finishing}`}
                         {specs.finishing !== 'None' && specs.addOn !== 'None' && ' · '}
                         {specs.addOn !== 'None' && `➕ ${specs.addOn}`}
@@ -160,9 +160,9 @@ export const DesignTableView = React.memo(function DesignTableView({
                     <div className="flex items-center gap-1">
                       <span
  onClick={() => onTogglePreflight(job.id, 'cmyk', job.design_number)}
- className={`cursor-pointer px-1.5 py-0.5 rounded text-2xs font-bold border ${
+ className={`cursor-pointer px-1.5 py-0.5 rounded text-xs font-bold border ${
  pf.cmyk
-                            ? 'bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300'
+                            ? 'bg-success-surface text-success border-success-border bg-success-surface text-success'
                             : 'bg-muted text-muted-foreground border-border '
                         }`}
                       >
@@ -170,9 +170,9 @@ export const DesignTableView = React.memo(function DesignTableView({
                       </span>
                       <span
  onClick={() => onTogglePreflight(job.id, 'dpi300', job.design_number)}
- className={`cursor-pointer px-1.5 py-0.5 rounded text-2xs font-bold border ${
+ className={`cursor-pointer px-1.5 py-0.5 rounded text-xs font-bold border ${
  pf.dpi300
-                            ? 'bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300'
+                            ? 'bg-success-surface text-success border-success-border bg-success-surface text-success'
                             : 'bg-muted text-muted-foreground border-border '
                         }`}
                       >
@@ -180,9 +180,9 @@ export const DesignTableView = React.memo(function DesignTableView({
                       </span>
                       <span
  onClick={() => onTogglePreflight(job.id, 'bleed', job.design_number)}
- className={`cursor-pointer px-1.5 py-0.5 rounded text-2xs font-bold border ${
+ className={`cursor-pointer px-1.5 py-0.5 rounded text-xs font-bold border ${
  pf.bleed
-                            ? 'bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300'
+                            ? 'bg-success-surface text-success border-success-border bg-success-surface text-success'
                             : 'bg-muted text-muted-foreground border-border '
                         }`}
                       >
@@ -190,9 +190,9 @@ export const DesignTableView = React.memo(function DesignTableView({
                       </span>
                       <span
  onClick={() => onTogglePreflight(job.id, 'curves', job.design_number)}
- className={`cursor-pointer px-1.5 py-0.5 rounded text-2xs font-bold border ${
+ className={`cursor-pointer px-1.5 py-0.5 rounded text-xs font-bold border ${
  pf.curves
-                            ? 'bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300'
+                            ? 'bg-success-surface text-success border-success-border bg-success-surface text-success'
                             : 'bg-muted text-muted-foreground border-border '
                         }`}
                       >
@@ -230,7 +230,7 @@ export const DesignTableView = React.memo(function DesignTableView({
 
                       <Button
  type="button"size="sm"variant="outline"onClick={() => onOpenWhatsApp(job, 'proof')}
- className="h-7 px-2 text-xs border-emerald-300 text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-950">
+ className="h-7 px-2 text-xs border-success-border text-success hover:bg-success-surface dark:hover:bg-success-surface">
                         <MessageSquare className="h-3 w-3 mr-1"/>
                         <span>WhatsApp</span>
                       </Button>
@@ -246,7 +246,7 @@ export const DesignTableView = React.memo(function DesignTableView({
                           />
                           <Button
  type="button"size="sm"disabled
- className="h-7 px-2.5 text-xs bg-emerald-600/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 font-semibold cursor-default">
+ className="h-7 px-2.5 text-xs bg-success/15 text-success text-success border border-success-border/30 font-semibold cursor-default">
                             <Check className="h-3 w-3 mr-1 stroke-[2.5]"/>
                             <span>Sent to Production</span>
                           </Button>
@@ -261,7 +261,7 @@ export const DesignTableView = React.memo(function DesignTableView({
                           />
                           <Button
  type="button"size="sm"onClick={() => onConfirmToProduction(job)}
- className="h-7 px-2.5 text-xs bg-indigo-600 hover:bg-indigo-700 text-white font-bold cursor-pointer">
+ className="h-7 px-2.5 text-xs bg-primary hover:bg-primary text-white font-bold cursor-pointer">
                             <Send className="h-3 w-3 mr-1"/>
                             <span>Send to Production</span>
                           </Button>
@@ -274,7 +274,7 @@ export const DesignTableView = React.memo(function DesignTableView({
                           />
                           <Button
  type="button"size="sm"onClick={() => onCompleteDesign(job)}
- className="h-7 px-2.5 text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-bold cursor-pointer">
+ className="h-7 px-2.5 text-xs bg-success hover:bg-success text-white font-bold cursor-pointer">
                             <Check className="h-3 w-3 mr-1 stroke-[2.5]"/>
                             <span>Design Complete</span>
                           </Button>

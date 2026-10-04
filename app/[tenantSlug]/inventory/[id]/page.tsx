@@ -22,6 +22,7 @@ import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
 import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import { FeatureGate } from '@/components/subscriptions/feature-gate'
+import { PageContainer } from '@/components/ui/page-container'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -91,7 +92,7 @@ export default function MaterialDetailPage() {
 
  if (!mounted || loading) {
  return (
-      <div className="space-y-6 max-w-6xl p-6 animate-pulse">
+      <div className="space-y-6 p-6 animate-pulse">
         <div className="h-8 bg-muted rounded w-1/3"/>
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map((i) => (
@@ -124,7 +125,7 @@ export default function MaterialDetailPage() {
 
  return (
     <FeatureGate feature="inventory">
-      <div className="space-y-6 max-w-6xl">
+      <PageContainer className="space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
@@ -137,12 +138,12 @@ export default function MaterialDetailPage() {
               <h1 className="text-xl font-black text-foreground">{material.name}</h1>
               {material.name_bn && <p className="text-xs text-muted-foreground font-normal">{material.name_bn}</p>}
               <div className="flex items-center gap-2 mt-1">
-                <span className="tabular-nums text-2xs text-muted-foreground font-medium">SKU: {material.sku}</span>
-                <Badge variant="outline"className="capitalize text-2xs">
+                <span className="tabular-nums text-xs text-muted-foreground font-medium">SKU: {material.sku}</span>
+                <Badge variant="outline"className="capitalize text-xs">
                   {material.category.replace('_', ' ')}
                 </Badge>
                 {isLowStock && (
-                  <Badge className="bg-red-600 text-white text-2xs animate-pulse">Low Stock Alert</Badge>
+                  <Badge className="bg-destructive text-destructive-foreground text-xs animate-pulse">Low Stock Alert</Badge>
                 )}
               </div>
             </div>
@@ -152,12 +153,12 @@ export default function MaterialDetailPage() {
             <Button
  size="sm"variant="outline"onClick={() => setIsAdjustmentOpen(true)}
  className="text-xs">
-              <SlidersHorizontal className="h-3.5 w-3.5 mr-1 text-amber-600"/>
+              <SlidersHorizontal className="h-3.5 w-3.5 mr-1 text-warning"/>
  Reconcile
             </Button>
             <Button
  size="sm"onClick={() => setIsReceiveOpen(true)}
- className="bg-emerald-600 hover:bg-emerald-700 text-xs text-white">
+ className="bg-success hover:bg-success/90 text-xs text-success-foreground font-semibold">
               <Plus className="h-3.5 w-3.5 mr-1"/>
  Receive Stock
             </Button>
@@ -166,48 +167,48 @@ export default function MaterialDetailPage() {
 
         {/* Metrics Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-          <Card className="p-4 border-l-4 border-l-emerald-600">
+          <Card className="p-4 border-l-4 border-l-success">
             <span className="text-xs text-muted-foreground font-semibold">Total Stock Available</span>
             <div className="text-2xl font-black text-foreground mt-1">
               {breakdown.purchase_unit_display || `${material.current_stock} ${material.unit}`}
             </div>
             {breakdown.consumption_unit_display && breakdown.purchase_unit_display !== breakdown.consumption_unit_display && (
-              <span className="text-2xs text-emerald-600 font-semibold block mt-0.5">
+              <span className="text-xs text-success font-semibold block mt-0.5">
                 {breakdown.consumption_unit_display}
               </span>
             )}
-            <span className="text-2xs text-muted-foreground block mt-0.5">
+            <span className="text-xs text-muted-foreground block mt-0.5">
  Reorder threshold: {material.reorder_level || material.min_stock_level || 0} {material.unit}
             </span>
           </Card>
 
-          <Card className="p-4 border-l-4 border-l-blue-600">
+          <Card className="p-4 border-l-4 border-l-primary">
             <span className="text-xs text-muted-foreground font-semibold">Asset Valuation</span>
-            <div className="text-2xl font-black text-emerald-600 mt-1">
+            <div className="text-2xl font-black text-success mt-1">
               <CurrencyDisplay amount={breakdown.total_valuation} />
             </div>
-            <span className="text-2xs text-muted-foreground tabular-nums block mt-0.5">
+            <span className="text-xs text-muted-foreground tabular-nums block mt-0.5">
               {breakdown.cost_display_primary || `Avg Cost: ৳ ${material.average_cost} / ${material.unit}`}
             </span>
             {breakdown.cost_display_secondary && (
-              <span className="text-2xs text-muted-foreground font-sans block">
+              <span className="text-xs text-muted-foreground font-sans block">
                 {breakdown.cost_display_secondary}
               </span>
             )}
           </Card>
 
-          <Card className="p-4 border-l-4 border-l-purple-600">
+          <Card className="p-4 border-l-4 border-l-primary/60">
             <span className="text-xs text-muted-foreground font-semibold">Active Remnants</span>
-            <div className="text-2xl font-black text-purple-600 mt-1">{remnants.length}</div>
-            <span className="text-2xs text-muted-foreground">Reusable offcut rolls/sheets</span>
+            <div className="text-2xl font-black text-primary mt-1">{remnants.length}</div>
+            <span className="text-xs text-muted-foreground">Reusable offcut rolls/sheets</span>
           </Card>
 
-          <Card className="p-4 border-l-4 border-l-amber-600">
+          <Card className="p-4 border-l-4 border-l-warning">
             <span className="text-xs text-muted-foreground font-semibold">Specifications</span>
             <div className="text-sm font-bold text-foreground mt-1">
               {material.thickness || 'Standard'} {material.color ? `(${material.color})` : ''}
             </div>
-            <span className="text-2xs text-muted-foreground">
+            <span className="text-xs text-muted-foreground">
               {material.brand ? `Brand: ${material.brand}` : 'Generic Spec'}
             </span>
           </Card>
@@ -217,7 +218,7 @@ export default function MaterialDetailPage() {
         <Card>
           <CardHeader className="pb-3 border-b">
             <CardTitle className="text-sm font-bold flex items-center gap-2">
-              <MapPin className="h-4 w-4 text-emerald-600"/> Location-wise Stock Distribution
+              <MapPin className="h-4 w-4 text-success"/> Location-wise Stock Distribution
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
@@ -233,9 +234,9 @@ export default function MaterialDetailPage() {
                       <strong className="text-foreground">
                         {bal.location?.location_name || 'Warehouse Location'}
                       </strong>
-                      <div className="text-2xs text-muted-foreground tabular-nums">{bal.location?.location_code}</div>
+                      <div className="text-xs text-muted-foreground tabular-nums">{bal.location?.location_code}</div>
                     </div>
-                    <div className="tabular-nums font-bold text-sm text-emerald-600">
+                    <div className="tabular-nums font-bold text-sm text-success">
                       {bal.available_quantity} {bal.unit}
                     </div>
                   </div>
@@ -247,10 +248,10 @@ export default function MaterialDetailPage() {
 
         {/* Remnants Rack for this Material */}
         {remnants.length > 0 && (
-          <Card className="border-purple-200 dark:border-purple-900">
+          <Card className="border-primary/20">
             <CardHeader className="pb-3 border-b">
-              <CardTitle className="text-sm font-bold text-purple-900 dark:text-purple-200 flex items-center gap-2">
-                <Scissors className="h-4 w-4 text-purple-600"/> Reusable Remnants for this Substrate ({remnants.length})
+              <CardTitle className="text-sm font-bold text-primary flex items-center gap-2">
+                <Scissors className="h-4 w-4 text-primary"/> Reusable Remnants for this Substrate ({remnants.length})
               </CardTitle>
             </CardHeader>
             <CardContent className="p-0">
@@ -258,7 +259,7 @@ export default function MaterialDetailPage() {
                 {remnants.map((rem) => (
                   <div key={rem.id} className="p-3.5 flex items-center justify-between text-xs">
                     <div>
-                      <span className="tabular-nums text-purple-700 dark:text-purple-300 font-bold">
+                      <span className="tabular-nums text-primary font-bold">
                         {rem.remnant_code}
                       </span>
                       <div className="font-medium text-foreground">
@@ -266,10 +267,10 @@ export default function MaterialDetailPage() {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Badge variant="outline"className="capitalize text-2xs">
+                      <Badge variant="outline"className="capitalize text-xs">
                         {rem.condition}
                       </Badge>
-                      <Badge className="bg-emerald-600 text-white text-2xs uppercase">{rem.status}</Badge>
+                      <Badge className="bg-success-surface text-success border border-success-border text-xs uppercase">{rem.status}</Badge>
                     </div>
                   </div>
                 ))}
@@ -306,7 +307,7 @@ export default function MaterialDetailPage() {
                         <td className="py-2.5 px-4 text-muted-foreground">{new Date(l.created_at).toLocaleString()}</td>
                         <td className="py-2.5 px-4 font-bold uppercase">{l.transaction_type}</td>
                         <td className="py-2.5 px-4 tabular-nums font-bold">
-                          <span className={l.quantity_change >= 0 ? 'text-emerald-600' : 'text-red-600'}>
+                          <span className={l.quantity_change >= 0 ? 'text-success' : 'text-destructive'}>
                             {l.quantity_change >= 0 ? `+${l.quantity_change}` : l.quantity_change} {l.unit}
                           </span>
                         </td>
@@ -315,7 +316,7 @@ export default function MaterialDetailPage() {
                         </td>
                         <td className="py-2.5 px-4 text-muted-foreground">
                           <div>{l.performed_by_name}</div>
-                          {l.notes && <div className="text-2xs text-muted-foreground italic">{l.notes}</div>}
+                          {l.notes && <div className="text-xs text-muted-foreground italic">{l.notes}</div>}
                         </td>
                       </tr>
                     ))}
@@ -346,7 +347,7 @@ export default function MaterialDetailPage() {
  onSuccess={loadData}
  companyId={companyId}
         />
-      </div>
+      </PageContainer>
     </FeatureGate>
   )
 }

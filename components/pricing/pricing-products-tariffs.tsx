@@ -110,15 +110,15 @@ export function PricingProductsTariffs({
                   <div>
                     <div className="font-bold text-foreground text-sm">{p.name}</div>
                     {p.name_bn && (
-                      <div className="text-xs text-teal-700 dark:text-teal-400 font-medium bangla-text mt-0.5">
+                      <div className="text-xs text-success text-success font-medium bangla-text mt-0.5">
                         {p.name_bn}
                       </div>
                     )}
                     {p.sku && (
-                      <div className="text-2xs text-muted-foreground tabular-nums mt-0.5">SKU: {p.sku}</div>
+                      <div className="text-xs text-muted-foreground tabular-nums mt-0.5">SKU: {p.sku}</div>
                     )}
                   </div>
-                  <Badge variant="outline"className="text-2xs uppercase tabular-nums font-bold bg-purple-50 text-purple-800 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300 shrink-0">
+                  <Badge variant="outline"className="text-xs uppercase tabular-nums font-bold bg-primary/10 text-primary border-primary/20 bg-primary/10 text-primary shrink-0">
                     {p.unit || 'piece'}
                   </Badge>
                 </div>
@@ -127,15 +127,15 @@ export function PricingProductsTariffs({
                 <div className="p-4 space-y-3">
                   <div className="grid grid-cols-2 gap-2 bg-muted p-3 rounded-xl text-xs">
                     <div>
-                      <span className="text-2xs text-muted-foreground uppercase font-semibold">Retail Price</span>
+                      <span className="text-xs text-muted-foreground uppercase font-semibold">Retail Price</span>
                       <div className="text-base font-black text-foreground tabular-nums">
                         {formatBDT(baseSell)}
                       </div>
                     </div>
 
                     <div>
-                      <span className="text-2xs text-muted-foreground uppercase font-semibold">Wholesale Tier</span>
-                      <div className="text-base font-bold text-blue-700 dark:text-blue-400 tabular-nums">
+                      <span className="text-xs text-muted-foreground uppercase font-semibold">Wholesale Tier</span>
+                      <div className="text-base font-bold text-primary text-primary tabular-nums">
                         {formatBDT(resellerPrice)}
                       </div>
                     </div>
@@ -143,7 +143,7 @@ export function PricingProductsTariffs({
 
                   {/* Cost & Margin */}
                   <div className="space-y-1.5 text-xs">
-                    <div className="flex justify-between text-2xs text-muted-foreground">
+                    <div className="flex justify-between text-xs text-muted-foreground">
                       <span>Acquisition Cost:</span>
                       <span className="tabular-nums font-bold text-foreground">
                         {baseCost > 0 ? formatBDT(baseCost) : '—'}
@@ -151,9 +151,9 @@ export function PricingProductsTariffs({
                     </div>
 
                     {marginPct !== null && (
-                      <div className="flex justify-between text-2xs pt-1 border-t border-border">
+                      <div className="flex justify-between text-xs pt-1 border-t border-border">
                         <span className="text-muted-foreground">Gross Margin:</span>
-                        <span className="tabular-nums font-bold text-emerald-600 dark:text-emerald-400">
+                        <span className="tabular-nums font-bold text-success text-success">
                           {marginPct}%
                         </span>
                       </div>
@@ -164,11 +164,11 @@ export function PricingProductsTariffs({
 
               {/* Card Footer */}
               <div className="p-3 bg-muted/50 border-t border-border flex items-center justify-between">
-                <span className="text-2xs text-muted-foreground capitalize">{p.category || 'Hardware'}</span>
+                <span className="text-xs text-muted-foreground capitalize">{p.category || 'Hardware'}</span>
                 <Button
  size="sm"variant="outline"onClick={() => onOpenEditProductPrice(p)}
- className="h-7 px-2.5 text-xs font-bold text-teal-700 dark:text-teal-300 border-teal-200 dark:border-teal-800 bg-card">
-                  <Edit2 className="h-3 w-3 mr-1 text-teal-600"/>
+ className="h-7 px-2.5 text-xs font-bold text-success text-success border-success-border border-success-border bg-card">
+                  <Edit2 className="h-3 w-3 mr-1 text-success"/>
                   {tBilingual('Edit Tariff', 'দর পরিবর্তন')}
                 </Button>
               </div>

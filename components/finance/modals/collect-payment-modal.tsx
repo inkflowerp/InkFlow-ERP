@@ -159,7 +159,7 @@ export function CollectPaymentModal({
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
-          <div className="p-3 text-xs bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300 rounded-xl flex items-center gap-2 border border-rose-200 dark:border-rose-900">
+          <div className="p-3 text-xs bg-danger-surface text-destructive bg-danger-surface text-destructive rounded-xl flex items-center gap-2 border border-danger-border border-danger-border">
             <AlertCircle className="w-4 h-4 shrink-0"/>
             <span>{error}</span>
           </div>
@@ -173,11 +173,11 @@ export function CollectPaymentModal({
           {initialCustomerName ? (
             <div className="p-2.5 rounded-xl bg-muted text-xs font-bold text-foreground flex items-center justify-between">
               <span className="flex items-center gap-2">
-                <User className="w-3.5 h-3.5 text-blue-600"/>
+                <User className="w-3.5 h-3.5 text-primary"/>
                 {selectedCustomerName}
               </span>
               {initialDueAmount > 0 && (
-                <Badge variant="outline"className="text-rose-600 border-rose-200 tabular-nums">
+                <Badge variant="outline"className="text-destructive border-danger-border tabular-nums">
  Due: ৳{initialDueAmount.toLocaleString()}
                 </Badge>
               )}
@@ -201,10 +201,10 @@ export function CollectPaymentModal({
         {/* Optional Invoice ID */}
         {initialInvoiceId ? (
           <div>
-            <Label className="text-2xs font-semibold text-muted-foreground mb-1 block">
+            <Label className="text-xs font-semibold text-muted-foreground mb-1 block">
               {tBilingual('Invoice Reference', 'ইনভয়েস নম্বর')}
             </Label>
-            <div className="p-2 rounded-lg bg-blue-50/50 dark:bg-blue-950/30 text-xs tabular-nums font-medium text-blue-700 dark:text-blue-300 border border-blue-200/60 dark:border-blue-900/60">
+            <div className="p-2 rounded-lg bg-primary/10/50 bg-primary/10 text-xs tabular-nums font-medium text-primary text-primary border border-primary/20/60 border-border/60">
               #{invoiceId}
             </div>
           </div>
@@ -229,7 +229,7 @@ export function CollectPaymentModal({
             {initialDueAmount > 0 && (
               <button
  type="button"onClick={() => setAmount(String(initialDueAmount))}
- className="text-2xs text-blue-600 hover:underline font-semibold cursor-pointer">
+ className="text-xs text-primary hover:underline font-semibold cursor-pointer">
                 {tBilingual('Full Due: ৳', 'সম্পূর্ণ বাকি: ৳')}
                 {initialDueAmount.toLocaleString()}
               </button>
@@ -278,7 +278,7 @@ export function CollectPaymentModal({
         {/* Payment Date & Reference */}
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <Label className="text-2xs font-semibold text-muted-foreground mb-1 block">
+            <Label className="text-xs font-semibold text-muted-foreground mb-1 block">
               {tBilingual('Payment Date', 'জমার তারিখ')}
             </Label>
             <Input
@@ -288,7 +288,7 @@ export function CollectPaymentModal({
             />
           </div>
           <div>
-            <Label className="text-2xs font-semibold text-muted-foreground mb-1 block">
+            <Label className="text-xs font-semibold text-muted-foreground mb-1 block">
               {tBilingual('Receipt / TrxID #', 'রসিদ / ট্রানজেকশন আইডি')}
             </Label>
             <Input
@@ -300,7 +300,7 @@ export function CollectPaymentModal({
 
         {/* Notes */}
         <div>
-          <Label className="text-2xs font-semibold text-muted-foreground mb-1 block">
+          <Label className="text-xs font-semibold text-muted-foreground mb-1 block">
             {tBilingual('Narration / Note', 'মন্তব্য / নোট')}
           </Label>
           <Input
@@ -319,7 +319,7 @@ export function CollectPaymentModal({
           </Button>
           <Button
  type="submit"size="sm"disabled={isSubmitting}
- className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs h-8 rounded-xl font-semibold shadow-xs">
+ className="bg-success hover:bg-success text-white text-xs h-8 rounded-xl font-semibold shadow-xs">
             {isSubmitting ? tBilingual('Recording...', 'রেকর্ড হচ্ছে...') : tBilingual('Record Collection', 'টাকা জমা নিন')}
           </Button>
         </div>

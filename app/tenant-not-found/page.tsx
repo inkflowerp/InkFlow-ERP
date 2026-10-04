@@ -13,12 +13,12 @@ function TenantNotFoundContent() {
   return (
     <div className="min-h-screen flex items-center justify-center p-4 sm:p-6 bg-muted font-sans">
       <div className="max-w-lg w-full text-center space-y-6 bg-card p-6 sm:p-10 rounded-2xl border border-border shadow-xl">
-        <div className="inline-flex items-center justify-center h-16 w-16 rounded-2xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 mx-auto shadow-sm ring-1 ring-amber-200 dark:ring-amber-900/50">
+        <div className="inline-flex items-center justify-center h-16 w-16 rounded-2xl bg-warning-surface bg-warning-surface/60 text-warning text-warning mx-auto shadow-sm ring-1 focus:ring-ring dark:focus:ring-ring/50">
           <Building2 className="h-8 w-8" />
         </div>
 
         <div className="space-y-2">
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 tabular-nums">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-warning-surface bg-warning-surface text-warning text-warning tabular-nums">
             404 • WORKSPACE NOT FOUND
           </div>
           <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground dark:text-white">
@@ -30,7 +30,7 @@ function TenantNotFoundContent() {
           <p className="text-xs sm:text-sm text-muted-foreground max-w-sm mx-auto pt-1 leading-relaxed">
             {slug ? (
               <>
-                The tenant subdomain <code className="px-1.5 py-0.5 rounded bg-muted tabular-nums text-xs text-blue-600 dark:text-blue-400 font-bold">{slug}</code> is not registered, has been deleted, or may contain a typo.
+                The tenant subdomain <code className="px-1.5 py-0.5 rounded bg-muted tabular-nums text-xs text-primary text-primary font-bold">{slug}</code> is not registered, has been deleted, or may contain a typo.
               </>
             ) : (
               'The workspace subdomain you are trying to access does not exist or may have been moved.'

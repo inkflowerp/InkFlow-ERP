@@ -58,7 +58,7 @@ export function UserMenu() {
         <Avatar
  fallback={userName}
  src={currentUser?.profile?.avatar_url || undefined}
- className="h-8 w-8 text-xs font-bold shrink-0 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"/>
+ className="h-8 w-8 text-xs font-bold shrink-0 bg-primary/10 text-primary bg-primary text-primary"/>
         <div className="hidden 2xl:flex flex-col text-left shrink-0 whitespace-nowrap max-w-[140px]">
           <span className="text-xs sm:text-sm font-semibold text-foreground leading-tight whitespace-nowrap truncate bangla-text">
             {userName}
@@ -77,8 +77,8 @@ export function UserMenu() {
             </p>
             {userEmail && <p className="text-xs text-muted-foreground truncate">{userEmail}</p>}
             <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-              <Badge variant="outline"className="text-xs uppercase font-semibold py-0.5 px-2 border-blue-200 bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300 bangla-text">
-                <Shield className="h-3 w-3 mr-1 text-blue-600"/>
+              <Badge variant="outline"className="text-xs uppercase font-semibold py-0.5 px-2 border-primary/20 bg-primary/10 text-primary bg-primary/10 text-primary bangla-text">
+                <Shield className="h-3 w-3 mr-1 text-primary"/>
                 {roleName}
               </Badge>
               {currentBranch && (
@@ -91,12 +91,12 @@ export function UserMenu() {
 
           <div className="space-y-0.5 py-1">
             <button
- type="button"className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs text-indigo-600 dark:text-indigo-400 font-bold hover:bg-indigo-50 dark:hover:bg-indigo-950/40 cursor-pointer bangla-text"onClick={() => {
+ type="button"className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs text-primary text-primary font-bold hover:bg-primary/10 dark:hover:bg-primary/10 cursor-pointer bangla-text"onClick={() => {
  setIsOpen(false)
  router.push(getTenantNavHref('/portal/my-workforce', pathname, slug))
               }}
             >
-              <UserCheck className="h-3.5 w-3.5 text-indigo-500"/>
+              <UserCheck className="h-3.5 w-3.5 text-primary"/>
               <span>{tBilingual('My Attendance & Salary', 'আমার হাজিরা ও বেতন')}</span>
             </button>
 
@@ -129,7 +129,7 @@ export function UserMenu() {
  router.push(getTenantNavHref('/settings/subscription', pathname, slug))
                 }}
               >
-                <Shield className="h-3.5 w-3.5 text-amber-500"/>
+                <Shield className="h-3.5 w-3.5 text-warning"/>
                 <span>{tBilingual('Subscription & Plan', 'সাবস্ক্রিপশন ও প্ল্যান')}</span>
               </button>
             )}
@@ -139,7 +139,7 @@ export function UserMenu() {
  router.push(getTenantNavHref('/support', pathname, slug))
               }}
             >
-              <Headphones className="h-3.5 w-3.5 text-indigo-500"/>
+              <Headphones className="h-3.5 w-3.5 text-primary"/>
               <span>{tBilingual('Help & Support Desk', 'সহায়তা ও সাপোর্ট ডেস্ক')}</span>
             </button>
           </div>
@@ -192,7 +192,7 @@ export function UserMenu() {
  setIsOpen(false)
  signOut()
               }}
- className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 cursor-pointer bangla-text">
+ className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-destructive hover:bg-danger-surface dark:hover:bg-danger-surface cursor-pointer bangla-text">
               <LogOut className="h-3.5 w-3.5"/>
               <span>{tBilingual('Sign Out', 'লগ আউট')}</span>
             </button>

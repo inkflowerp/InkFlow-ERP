@@ -117,6 +117,7 @@ export interface InventoryStockBalanceRecord {
   issued_quantity: number
   unit: MaterialUnit
   updated_at: string
+  version?: number
   material?: Partial<MaterialRecord>
   location?: Partial<InventoryLocationRecord>
 }
@@ -343,6 +344,7 @@ export interface MaterialRecord {
   created_by?: string | null
   created_at: string
   updated_at: string
+  version?: number
 }
 
 export interface TaskMaterialRequirementRecord {

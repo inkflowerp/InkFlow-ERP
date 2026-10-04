@@ -64,14 +64,14 @@ export default function PublicContactPage() {
 
   return (
     <MarketingDemoProvider>
-      <div className="min-h-screen bg-muted text-foreground selection:bg-blue-600 selection:text-white font-sans antialiased overflow-x-hidden">
+      <div className="min-h-screen bg-muted text-foreground selection:bg-primary selection:text-white font-sans antialiased overflow-x-hidden">
         <MarketingNavbar />
 
         <main className="pt-20">
           {/* Banner */}
           <div className="py-16 sm:py-20 bg-card border-b border-border text-center px-4">
-            <div className="max-w-3xl mx-auto space-y-3">
-              <span className="text-xs font-bold text-blue-700 dark:text-blue-300 uppercase tracking-wider bg-blue-50 dark:bg-blue-950/60 px-3 py-1 rounded-full border border-blue-200/70 dark:border-blue-800/60">
+            <div className="mx-auto space-y-3">
+              <span className="text-xs font-bold text-primary text-primary uppercase tracking-wider bg-primary/10 bg-primary/10 px-3 py-1 rounded-full border border-primary/20/70 border-border/60">
                 Get in Touch
               </span>
               <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-foreground dark:text-white bangla-text tracking-tight">
@@ -87,7 +87,7 @@ export default function PublicContactPage() {
           </div>
 
           {/* Contact Layout */}
-          <div className="py-16 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="py-16 mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
               {/* Left Info Column (5 Cols) */}
               <div className="lg:col-span-5 space-y-6">
@@ -98,7 +98,7 @@ export default function PublicContactPage() {
 
                   <div className="space-y-4 text-xs sm:text-sm text-muted-foreground dark:text-muted-foreground">
                     <div className="flex items-start gap-3">
-                      <MapPin className="h-5 w-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
+                      <MapPin className="h-5 w-5 text-primary text-primary shrink-0 mt-0.5" />
                       <div>
                         <span className="font-bold text-foreground dark:text-white block">Official Address</span>
                         <span className="text-muted-foreground dark:text-muted-foreground">
@@ -108,17 +108,17 @@ export default function PublicContactPage() {
                     </div>
 
                     <div className="flex items-start gap-3">
-                      <Phone className="h-5 w-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
+                      <Phone className="h-5 w-5 text-primary text-primary shrink-0 mt-0.5" />
                       <div>
                         <span className="font-bold text-foreground dark:text-white block">Direct Phone & Support Helpline</span>
-                        <span className="text-blue-600 dark:text-blue-400 font-semibold tabular-nums">
+                        <span className="text-primary text-primary font-semibold tabular-nums">
                           {supportHelpline || contactPhone || '+880 1819-876543 / +880 1711-234567'}
                         </span>
                       </div>
                     </div>
 
                     <div className="flex items-start gap-3">
-                      <Mail className="h-5 w-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
+                      <Mail className="h-5 w-5 text-primary text-primary shrink-0 mt-0.5" />
                       <div>
                         <span className="font-bold text-foreground dark:text-white block">Email Inquiries</span>
                         <span className="text-muted-foreground tabular-nums">
@@ -128,7 +128,7 @@ export default function PublicContactPage() {
                     </div>
 
                     <div className="flex items-start gap-3">
-                      <Clock className="h-5 w-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
+                      <Clock className="h-5 w-5 text-primary text-primary shrink-0 mt-0.5" />
                       <div>
                         <span className="font-bold text-foreground dark:text-white block">Press Support Hours</span>
                         <span className="text-muted-foreground dark:text-muted-foreground">
@@ -143,7 +143,7 @@ export default function PublicContactPage() {
                       href={`https://wa.me/${(supportHelpline || contactPhone || '8801819876543').replace(/\D/g, '')}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center justify-center w-full gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm shadow-xs transition-colors cursor-pointer"
+                      className="inline-flex items-center justify-center w-full gap-2 px-4 py-2.5 rounded-xl bg-success hover:bg-success text-white font-bold text-xs sm:text-sm shadow-xs transition-colors cursor-pointer"
                     >
                       <MessageSquare className="h-4 w-4" />
                       <span>Chat on WhatsApp Directly</span>
@@ -157,7 +157,7 @@ export default function PublicContactPage() {
                 <div className="p-6 sm:p-8 rounded-2xl border border-border bg-card shadow-2xs space-y-6">
                   {submitted ? (
                     <div className="text-center py-12 space-y-4">
-                      <div className="h-16 w-16 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto border border-emerald-200 dark:border-emerald-800">
+                      <div className="h-16 w-16 rounded-full bg-success-surface bg-success-surface/60 text-success text-success flex items-center justify-center mx-auto border border-success-border border-success-border">
                         <CheckCircle2 className="h-8 w-8" />
                       </div>
                       <h3 className="text-2xl font-bold text-foreground dark:text-white bangla-text">
@@ -182,7 +182,7 @@ export default function PublicContactPage() {
                       </div>
 
                       {errorMessage && (
-                        <div className="p-3 rounded-lg bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50 flex items-center gap-2 text-rose-700 dark:text-rose-400 text-xs">
+                        <div className="p-3 rounded-lg bg-danger-surface bg-danger-surface border border-danger-border border-danger-border/50 flex items-center gap-2 text-destructive text-destructive text-xs">
                           <AlertCircle className="h-4 w-4 shrink-0" />
                           <span>{errorMessage}</span>
                         </div>
@@ -200,7 +200,7 @@ export default function PublicContactPage() {
                               placeholder="Kamrul Hasan"
                               value={form.name}
                               onChange={(e) => setForm({ ...form, name: e.target.value })}
-                              className="w-full px-3.5 py-2.5 rounded-xl bg-muted border border-border text-foreground dark:text-white focus:outline-none focus:border-blue-500 text-xs sm:text-sm"
+                              className="w-full px-3.5 py-2.5 rounded-xl bg-muted border border-border text-foreground dark:text-white focus:outline-none focus:border-primary/20 text-xs sm:text-sm"
                             />
                           </div>
 
@@ -214,7 +214,7 @@ export default function PublicContactPage() {
                               placeholder="e.g. Apex Digital Press"
                               value={form.pressName}
                               onChange={(e) => setForm({ ...form, pressName: e.target.value })}
-                              className="w-full px-3.5 py-2.5 rounded-xl bg-muted border border-border text-foreground dark:text-white focus:outline-none focus:border-blue-500 text-xs sm:text-sm"
+                              className="w-full px-3.5 py-2.5 rounded-xl bg-muted border border-border text-foreground dark:text-white focus:outline-none focus:border-primary/20 text-xs sm:text-sm"
                             />
                           </div>
                         </div>
@@ -230,7 +230,7 @@ export default function PublicContactPage() {
                               placeholder="01712-XXXXXX"
                               value={form.phone}
                               onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                              className="w-full px-3.5 py-2.5 rounded-xl bg-muted border border-border text-foreground dark:text-white focus:outline-none focus:border-blue-500 text-xs sm:text-sm tabular-nums"
+                              className="w-full px-3.5 py-2.5 rounded-xl bg-muted border border-border text-foreground dark:text-white focus:outline-none focus:border-primary/20 text-xs sm:text-sm tabular-nums"
                             />
                           </div>
 
@@ -243,7 +243,7 @@ export default function PublicContactPage() {
                               placeholder="info@yourpress.com.bd"
                               value={form.email}
                               onChange={(e) => setForm({ ...form, email: e.target.value })}
-                              className="w-full px-3.5 py-2.5 rounded-xl bg-muted border border-border text-foreground dark:text-white focus:outline-none focus:border-blue-500 text-xs sm:text-sm"
+                              className="w-full px-3.5 py-2.5 rounded-xl bg-muted border border-border text-foreground dark:text-white focus:outline-none focus:border-primary/20 text-xs sm:text-sm"
                             />
                           </div>
                         </div>
@@ -258,7 +258,7 @@ export default function PublicContactPage() {
                             placeholder="Tell us about your machine models, shop location, or specific requirements..."
                             value={form.message}
                             onChange={(e) => setForm({ ...form, message: e.target.value })}
-                            className="w-full px-3.5 py-2.5 rounded-xl bg-muted border border-border text-foreground dark:text-white focus:outline-none focus:border-blue-500 text-xs sm:text-sm resize-none"
+                            className="w-full px-3.5 py-2.5 rounded-xl bg-muted border border-border text-foreground dark:text-white focus:outline-none focus:border-primary/20 text-xs sm:text-sm resize-none"
                           />
                         </div>
 

@@ -27,6 +27,58 @@ const eslintConfig = defineConfig([
       "react-hooks/refs": "warn"
     }
   },
+  {
+    files: ["components/**/*.{ts,tsx}"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: ["@/services/*", "@/services", "**/services/*"],
+              message: "Layering Invariant: UI components must never import services directly. Use Server Actions or lib utilities instead."
+            },
+            {
+              group: ["@/lib/supabase/*", "@/lib/supabase", "@supabase/*", "**/lib/supabase/*"],
+              message: "Layering Invariant: UI components must never import Supabase clients directly."
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    files: ["actions/**/*.{ts,tsx}"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: ["@/lib/supabase/client", "@/lib/supabase/server", "@/lib/supabase/admin"],
+              message: "Layering Invariant: Server Actions must not touch DB directly. Delegate database operations to services or repositories."
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    files: ["services/**/*.{ts,tsx}"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: ["@/lib/supabase/client", "@/lib/supabase/server", "@/lib/supabase/admin"],
+              message: "Layering Invariant: Services must not touch DB directly. Repositories are the only place that touches the DB."
+            }
+          ]
+        }
+      ]
+    }
+  },
   globalIgnores([
     ".next/**",
     "out/**",

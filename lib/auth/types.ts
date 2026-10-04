@@ -27,6 +27,10 @@ export interface PlatformUserRecord {
   is_active: boolean
   mfa_enabled?: boolean
   mfaEnabled?: boolean
+  is_mfa_verified?: boolean
+  isMfaVerified?: boolean
+  mfa_verified_at?: number
+  mfaVerifiedAt?: number
   preferences?: {
     language?: string
     timezone?: string
@@ -50,9 +54,11 @@ export interface AuthenticatedPlatformContext {
   permissions: string[]
   isActive: boolean
   mfaEnabled?: boolean
+  isMfaVerified?: boolean
+  mfaVerifiedAt?: number
   phone?: string
   avatarUrl?: string
-  preferences?: Record<string, any>
+  preferences?: Record<string, unknown>
   createdAt: string
   lastLoginAt?: string
 }
@@ -80,6 +86,12 @@ export type TenantRole =
   | 'general_staff'
   | 'accountant'
   | 'delivery_coordinator'
+  | 'owner'
+  | 'admin'
+  | 'manager'
+  | 'operator'
+  | 'designer'
+  | 'installer'
 
 /**
  * Safely resolves a raw role string or responsibilities list to a canonical TenantRole.
@@ -143,12 +155,13 @@ export function resolveTenantRole(
 /**
  * Maps a TenantSessionData or raw role string to a client UI TenantRole ('owner', 'branch_manager', 'manager', 'designer', 'operator', 'accountant', 'installer').
  */
-export function mapSessionToTenantRole(sessionOrRole: TenantSessionData | string | null): any {
+export function mapSessionToTenantRole(sessionOrRole: TenantSessionData | string | null): TenantRole {
   if (!sessionOrRole) return 'owner'
+  const sessionObj = typeof sessionOrRole === 'object' && sessionOrRole !== null ? (sessionOrRole as unknown as Record<string, unknown>) : null
   const rawRole = (
     typeof sessionOrRole === 'string'
       ? sessionOrRole
-      : (sessionOrRole as any).role || sessionOrRole.primaryRole || sessionOrRole.responsibilities?.[0] || ''
+      : (sessionObj?.role as string) || sessionOrRole.primaryRole || sessionOrRole.responsibilities?.[0] || ''
   ).toLowerCase().trim()
 
   if (rawRole === 'business_owner' || rawRole === 'owner' || rawRole === 'platform_owner' || rawRole.includes('owner') || rawRole.includes('admin')) return 'owner'
@@ -189,15 +202,16 @@ export function mapSessionToTenantRole(sessionOrRole: TenantSessionData | string
   if (rawRole === 'accountant' || rawRole === 'accounts' || rawRole === 'billing' || rawRole.includes('account')) return 'accountant'
   if (rawRole === 'delivery_coordinator' || rawRole === 'delivery' || rawRole === 'installer' || rawRole.includes('deliver')) return 'installer'
   if (rawRole === 'general_staff' || rawRole === 'staff') return 'operator'
-  return rawRole || 'operator'
+  return (rawRole as TenantRole) || 'operator'
 }
 
-import type { CompanyRow } from '@/types/tenant.types'
+import type { CompanyRow } from '../../types/tenant.types.ts'
 
 export const TENANT_SESSION_COOKIE = 'printerp_tenant_session'
 
 export interface TenantSessionData {
   userId: string
+  sub?: string
   userEmail: string
   fullName: string
   fullNameBn?: string | null
@@ -258,3 +272,33 @@ export interface PlatformSupportSession {
   startedAt: string
   expiresAt: string
 }
+
+/**
+ * Resolves the designated home route for a given tenant role.
+ * Ensures employees land strictly on their operational terminal rather than the owner dashboard.
+ */
+export function getRoleDefaultPath(role?: TenantRole | string | null, tenantSlug?: string): string {
+  const normalized = (role || '').toLowerCase().trim()
+  let subPath = '/dashboard'
+  if (
+    normalized === 'machine_operator' ||
+    normalized === 'operator' ||
+    normalized.includes('operat')
+  ) {
+    subPath = '/operator'
+  } else if (
+    normalized === 'graphic_designer' ||
+    normalized === 'designer' ||
+    normalized.includes('design')
+  ) {
+    subPath = '/designer'
+  } else if (normalized === 'production_manager' || normalized.includes('production')) {
+    subPath = '/production'
+  } else if (normalized === 'sales_manager' || normalized.includes('sale')) {
+    subPath = '/orders'
+  } else if (normalized === 'general_staff' || normalized === 'staff') {
+    subPath = '/portal'
+  }
+  return tenantSlug ? `/${tenantSlug}${subPath}` : subPath
+}
+

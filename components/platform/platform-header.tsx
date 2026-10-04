@@ -28,22 +28,24 @@ import { platformLogoutAction, getPlatformSessionUserAction } from '@/actions/pl
 import { PlatformUserRecord } from '@/lib/auth/types'
 import { usePlatformSettings } from '@/hooks/use-platform-settings'
 
-export function PlatformHeader() {
+export function PlatformHeader({ initialUser }: { initialUser?: PlatformUserRecord | null } = {}) {
   const { appName, appLogoUrl } = usePlatformSettings()
   const { tBilingual } = useI18n()
   const [searchOpen, setSearchOpen] = useState(false)
   const [profileMenuOpen, setProfileMenuOpen] = useState(false)
-  const [currentUser, setCurrentUser] = useState<PlatformUserRecord | null>(null)
+  const [currentUser, setCurrentUser] = useState<PlatformUserRecord | null>(initialUser || null)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
-    getPlatformSessionUserAction().then((user) => {
-      if (user) {
-        setCurrentUser(user)
-      }
-    })
-  }, [])
+    if (!currentUser) {
+      getPlatformSessionUserAction().then((user) => {
+        if (user) {
+          setCurrentUser(user)
+        }
+      })
+    }
+  }, [currentUser])
 
   // Global keyboard shortcut '/' to open search, 'Escape' to close modals/menus
   useEffect(() => {
@@ -124,11 +126,11 @@ export function PlatformHeader() {
             <div className="hidden xs:block sm:block">
               <div className="text-xs font-bold tracking-tight text-foreground flex items-center gap-1.5">
                 {appName} SaaS
-                <span className="text-2xs px-1.5 py-0.5 rounded bg-primary/10 text-primary tabular-nums font-bold border border-primary/20">
+                <span className="text-xs px-1.5 py-0.5 rounded bg-primary/10 text-primary tabular-nums font-bold border border-primary/20">
                   ROOT
                 </span>
               </div>
-              <div className="text-2xs text-muted-foreground font-medium">
+              <div className="text-xs text-muted-foreground font-medium">
                 {tBilingual('Control Center', 'কন্ট্রোল সেন্টার')}
               </div>
             </div>
@@ -147,12 +149,12 @@ export function PlatformHeader() {
               <span className="truncate hidden sm:inline text-muted-foreground">
                 {tBilingual('Search clients, staff, activity...', 'ক্লায়েন্ট বা কাজ খুঁজুন...')}
               </span>
-              <span className="truncate sm:hidden text-2xs text-muted-foreground">
+              <span className="truncate sm:hidden text-xs text-muted-foreground">
                 {tBilingual('Search...', 'খুঁজুন...')}
               </span>
             </div>
             <div className="flex items-center gap-1 shrink-0">
-              <kbd className="hidden sm:inline-block px-1.5 py-0.5 text-2xs tabular-nums text-muted-foreground bg-card border border-border rounded font-semibold shadow-xs">
+              <kbd className="hidden sm:inline-block px-1.5 py-0.5 text-xs tabular-nums text-muted-foreground bg-card border border-border rounded font-semibold shadow-xs">
                 /
               </kbd>
             </div>
@@ -167,7 +169,7 @@ export function PlatformHeader() {
           {/* System Health Pill */}
           <Link
             href="/platform/health"
-            className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-success-surface border border-success/30 text-success text-2xs font-semibold hover:opacity-90 transition-opacity"
+            className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-success-surface border border-success/30 text-success text-xs font-semibold hover:opacity-90 transition-opacity"
             title={tBilingual('System OK', 'সব ঠিক আছে')}
           >
             <span className="h-2 w-2 rounded-full bg-success animate-pulse" />
@@ -199,8 +201,8 @@ export function PlatformHeader() {
                 <div className="absolute right-0 mt-2 w-64 max-w-xs bg-popover border border-border rounded-xl shadow-md z-50 p-2 text-xs divide-y divide-border animate-in fade-in-0 zoom-in-95 duration-150">
                   <div className="px-3 py-2">
                     <div className="font-bold text-foreground truncate">{userFullName}</div>
-                    <div className="text-2xs text-muted-foreground tabular-nums truncate font-mono">{userEmail}</div>
-                    <span className="inline-block mt-1 text-2xs font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">
+                    <div className="text-xs text-muted-foreground tabular-nums truncate font-mono">{userEmail}</div>
+                    <span className="inline-block mt-1 text-xs font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">
                       {formattedRole}
                     </span>
                   </div>

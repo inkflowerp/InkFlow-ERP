@@ -9,6 +9,7 @@ import {
 import { TENANT_SESSION_COOKIE } from '@/lib/auth/types'
 import { resolveRequestOrigin } from '@/lib/security/runtime-env'
 import { getAuthCookieOptions } from '@/lib/tenant/tenant-resolution'
+import { signSessionToken } from '@/lib/security/session-signer'
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
@@ -99,10 +100,11 @@ export async function GET(request: Request) {
     const requestHost = request.headers.get('x-forwarded-host') || request.headers.get('host') || undefined
     const cookieOpts = getAuthCookieOptions(requestHost)
 
+    const signedTenantToken = await signSessionToken(session, '7d')
     const redirectResponse = NextResponse.redirect(destination)
     redirectResponse.cookies.set(
       TENANT_SESSION_COOKIE,
-      encodeURIComponent(JSON.stringify(session)),
+      signedTenantToken,
       {
         path: '/',
         maxAge: 60 * 60 * 24 * 7,

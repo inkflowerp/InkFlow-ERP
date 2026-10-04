@@ -185,25 +185,25 @@ export function BranchManagerDashboard({
     <div className="space-y-6">
       {/* Hero Banner: Branch Identity & Quick Actions */}
       <div className="rounded-xl bg-card border border-border shadow-xs p-5 sm:p-6">
-        <div className="absolute -right-8 -top-8 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"/>
+        <div className="absolute -right-8 -top-8 w-64 h-64 bg-success/10 rounded-full blur-3xl pointer-events-none"/>
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-5">
           <div className="space-y-2 max-w-2xl">
             <div className="flex flex-wrap items-center gap-2">
-              <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/30 text-xs font-semibold backdrop-blur-sm flex items-center gap-1.5 px-2.5 py-0.5">
-                <Store className="h-3.5 w-3.5 text-emerald-400"/>
+              <Badge className="bg-success/20 text-success border-success-border/30 text-xs font-semibold backdrop-blur-sm flex items-center gap-1.5 px-2.5 py-0.5">
+                <Store className="h-3.5 w-3.5 text-success"/>
                 <span>{tBilingual('Branch Home', 'ব্রাঞ্চ কমান্ড সেন্টার')}</span>
               </Badge>
               <Badge className="bg-card/10 text-white border-border text-xs tabular-nums font-medium">
                 {branch?.code || 'BR-01'}
               </Badge>
-              <Badge className="bg-emerald-400/20 text-muted-foreground border-emerald-400/30 text-xs font-bold flex items-center gap-1">
-                <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"/>
+              <Badge className="bg-success/20 text-muted-foreground border-success-border/30 text-xs font-bold flex items-center gap-1">
+                <span className="h-2 w-2 rounded-full bg-success animate-pulse"/>
                 {tBilingual('Branch Operational', 'ব্রাঞ্চ সক্রিয়')}
               </Badge>
             </div>
 
             <h1 className="text-xl sm:text-2xl md:text-3xl font-black tracking-tight text-white flex items-center gap-2.5">
-              <Building2 className="h-7 w-7 text-emerald-300 shrink-0"/>
+              <Building2 className="h-7 w-7 text-success shrink-0"/>
               <span>{tBilingual(`${branchName} — Overview`, `${branchNameBn} — ড্যাশবোর্ড`)}</span>
             </h1>
 
@@ -211,13 +211,13 @@ export function BranchManagerDashboard({
               <span><strong>Manager:</strong> {userDisplayName}</span>
               {branch?.address && (
                 <span className="flex items-center gap-1">
-                  <MapPin className="h-3.5 w-3.5 text-emerald-300"/>
+                  <MapPin className="h-3.5 w-3.5 text-success"/>
                   {branch.address}
                 </span>
               )}
               {branch?.phone && (
                 <span className="flex items-center gap-1">
-                  <Phone className="h-3.5 w-3.5 text-emerald-300"/>
+                  <Phone className="h-3.5 w-3.5 text-success"/>
                   {branch.phone}
                 </span>
               )}
@@ -228,22 +228,22 @@ export function BranchManagerDashboard({
           <div className="flex flex-wrap items-center gap-2.5 shrink-0">
             <Button
  onClick={onOpenNewWork}
- className="bg-card text-emerald-950 hover:bg-emerald-50 font-bold text-xs sm:text-sm shadow-xs transition-all flex items-center gap-2 h-10 px-4">
-              <Plus className="h-4 w-4 text-emerald-700"/>
+ className="bg-card text-success hover:bg-success-surface font-bold text-xs sm:text-sm shadow-xs transition-all flex items-center gap-2 h-10 px-4">
+              <Plus className="h-4 w-4 text-success"/>
               <span>{tBilingual('New Counter Order', 'নতুন কাউন্টার অর্ডার')}</span>
             </Button>
 
             <Button
  onClick={onOpenPaymentModal}
- variant="outline"className="bg-emerald-900/60 hover:bg-emerald-800/80 text-white border-emerald-400/30 font-bold text-xs sm:text-sm transition-all flex items-center gap-2 h-10 px-4">
-              <CreditCard className="h-4 w-4 text-emerald-300"/>
+ variant="outline"className="bg-success/60 hover:bg-success/80 text-white border-success-border/30 font-bold text-xs sm:text-sm transition-all flex items-center gap-2 h-10 px-4">
+              <CreditCard className="h-4 w-4 text-success"/>
               <span>{tBilingual('Collect Payment', 'টাকা জমা নিন')}</span>
             </Button>
 
             <Button
  onClick={() => router.push(getTenantNavHref('/attendance', pathname, tenantSlug))}
- variant="outline"className="bg-emerald-900/60 hover:bg-emerald-800/80 text-white border-emerald-400/30 font-bold text-xs sm:text-sm transition-all flex items-center gap-2 h-10 px-4">
-              <Users className="h-4 w-4 text-emerald-300"/>
+ variant="outline"className="bg-success/60 hover:bg-success/80 text-white border-success-border/30 font-bold text-xs sm:text-sm transition-all flex items-center gap-2 h-10 px-4">
+              <Users className="h-4 w-4 text-success"/>
               <span>{tBilingual('Staff Attendance', 'স্টাফ হাজিরা')}</span>
             </Button>
 
@@ -283,13 +283,13 @@ export function BranchManagerDashboard({
       <Card className="border border-border bg-card shadow-xs">
         <div className="p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-start gap-3">
-            <div className="h-10 w-10 rounded-xl bg-emerald-600/10 text-emerald-700 dark:text-emerald-300 flex items-center justify-center shrink-0">
+            <div className="h-10 w-10 rounded-xl bg-success/10 text-success text-success flex items-center justify-center shrink-0">
               <ShieldCheck className="h-5 w-5"/>
             </div>
             <div>
               <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
                 <span>{tBilingual('Branch Scope & Security Governance', 'ব্রাঞ্চ এক্সেস সীমা ও নিরাপত্তা পলিসি')}</span>
-                <Badge variant="outline"className="text-2xs uppercase font-bold text-emerald-700 dark:text-emerald-400 border-emerald-300">
+                <Badge variant="outline"className="text-xs uppercase font-bold text-success text-success border-success-border">
                   {branch?.name || 'Branch-Scoped'}
                 </Badge>
               </h2>
@@ -304,69 +304,69 @@ export function BranchManagerDashboard({
 
           <Button
  size="sm"variant="outline"onClick={() => setShowRestrictionsDetail(!showRestrictionsDetail)}
- className="text-xs font-bold text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-700 hover:bg-emerald-100/50 shrink-0">
+ className="text-xs font-bold text-success text-success border-success-border border-success-border hover:bg-success-surface/50 shrink-0">
             {showRestrictionsDetail ? tBilingual('Hide Details', 'বিবরণ লুকান') : tBilingual('View Permissions & Limits', 'অনুমোদন ও সীমাবদ্ধতা দেখুন')}
           </Button>
         </div>
 
         {/* Collapsible Perimeter Details */}
         {showRestrictionsDetail && (
-          <div className="border-t border-emerald-100 dark:border-emerald-900/40 p-4 sm:p-5 bg-card/70 grid grid-cols-1 md:grid-cols-2 gap-4 text-xs animate-in fade-in-50 duration-200">
+          <div className="border-t border-success-border border-success-border/40 p-4 sm:p-5 bg-card/70 grid grid-cols-1 md:grid-cols-2 gap-4 text-xs animate-in fade-in-50 duration-200">
             {/* Granted Authorities */}
-            <div className="p-3.5 rounded-xl border border-emerald-200 dark:border-emerald-900/60 bg-emerald-50/40 dark:bg-emerald-950/20 space-y-2">
-              <div className="flex items-center gap-2 font-bold text-emerald-900">
-                <CheckCircle2 className="h-4 w-4 text-emerald-600"/>
+            <div className="p-3.5 rounded-xl border border-success-border border-success-border/60 bg-success-surface/40 bg-success-surface space-y-2">
+              <div className="flex items-center gap-2 font-bold text-success">
+                <CheckCircle2 className="h-4 w-4 text-success"/>
                 <span>{tBilingual('Branch Manager Permissions & Authorities', 'অনুমোদিত দায়িত্ব ও ক্ষমতা')}</span>
               </div>
               <ul className="space-y-1.5 text-foreground">
                 <li className="flex items-start gap-1.5">
-                  <span className="text-emerald-600 font-bold">✓</span>
+                  <span className="text-success font-bold">✓</span>
                   <span><strong>Counter Sales & Quotes:</strong> Create and approve walk-in client quotations and work orders for {branchName}.</span>
                 </li>
                 <li className="flex items-start gap-1.5">
-                  <span className="text-emerald-600 font-bold">✓</span>
+                  <span className="text-success font-bold">✓</span>
                   <span><strong>Invoicing & Collections:</strong> Issue VAT/POS invoices, print receipts, and accept cash/MFS counter payments.</span>
                 </li>
                 <li className="flex items-start gap-1.5">
-                  <span className="text-emerald-600 font-bold">✓</span>
+                  <span className="text-success font-bold">✓</span>
                   <span><strong>Petty Cash & Expenses:</strong> Record and track daily branch operational expenses and conveyance receipts.</span>
                 </li>
                 <li className="flex items-start gap-1.5">
-                  <span className="text-emerald-600 font-bold">✓</span>
+                  <span className="text-success font-bold">✓</span>
                   <span><strong>Branch Staff Roster:</strong> Log and verify attendance, daily shifts, and overtime for branch personnel.</span>
                 </li>
                 <li className="flex items-start gap-1.5">
-                  <span className="text-emerald-600 font-bold">✓</span>
+                  <span className="text-success font-bold">✓</span>
                   <span><strong>Inventory & Transfers:</strong> Record local floor stock consumption and request stock transfers from Central Store.</span>
                 </li>
               </ul>
             </div>
 
             {/* Strict Restrictions & Limitations */}
-            <div className="p-3.5 rounded-xl border border-rose-200 dark:border-rose-900/60 bg-rose-50/40 dark:bg-rose-950/20 space-y-2">
-              <div className="flex items-center gap-2 font-bold text-rose-900 dark:text-rose-200">
-                <Lock className="h-4 w-4 text-rose-600"/>
+            <div className="p-3.5 rounded-xl border border-danger-border border-danger-border/60 bg-danger-surface/40 bg-danger-surface space-y-2">
+              <div className="flex items-center gap-2 font-bold text-destructive text-destructive">
+                <Lock className="h-4 w-4 text-destructive"/>
                 <span>{tBilingual('Security Safeguards & Governance Limitations', 'নিরাপত্তা নিয়ন্ত্রণ ও সিস্টেম সীমাবদ্ধতা')}</span>
               </div>
               <ul className="space-y-1.5 text-foreground">
                 <li className="flex items-start gap-1.5">
-                  <span className="text-rose-600 font-bold">🚫</span>
+                  <span className="text-destructive font-bold">🚫</span>
                   <span><strong>Cross-Branch Isolation:</strong> Cannot access or query customers, sales orders, invoices, or staff from other branches.</span>
                 </li>
                 <li className="flex items-start gap-1.5">
-                  <span className="text-rose-600 font-bold">🚫</span>
+                  <span className="text-destructive font-bold">🚫</span>
                   <span><strong>Invoice Voiding Locked:</strong> Cannot void, cancel, or delete finalized invoices without Business Owner approval.</span>
                 </li>
                 <li className="flex items-start gap-1.5">
-                  <span className="text-rose-600 font-bold">🚫</span>
+                  <span className="text-destructive font-bold">🚫</span>
                   <span><strong>Payment Deletion Prohibited:</strong> Payment records cannot be deleted once entered into the branch cash register.</span>
                 </li>
                 <li className="flex items-start gap-1.5">
-                  <span className="text-rose-600 font-bold">🚫</span>
+                  <span className="text-destructive font-bold">🚫</span>
                   <span><strong>Pricing Formulas Read-Only:</strong> Cannot modify master unit cost charts, paper grammage formulas, or global discounts.</span>
                 </li>
                 <li className="flex items-start gap-1.5">
-                  <span className="text-rose-600 font-bold">🚫</span>
+                  <span className="text-destructive font-bold">🚫</span>
                   <span><strong>Company Settings Locked:</strong> Cannot change company bank accounts, SaaS subscriptions, or system users.</span>
                 </li>
               </ul>
@@ -384,7 +384,7 @@ export function BranchManagerDashboard({
  onClick={() => setActiveFilterTab('all')}
  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
  activeFilterTab === 'all'
-                  ? 'bg-emerald-700 text-white shadow-sm'
+                  ? 'bg-success text-white shadow-sm'
                   : 'bg-muted hover:bg-muted text-foreground '
               }`}
             >
@@ -395,7 +395,7 @@ export function BranchManagerDashboard({
  onClick={() => setActiveFilterTab('pending')}
  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
  activeFilterTab === 'pending'
-                  ? 'bg-amber-600 text-white shadow-sm'
+                  ? 'bg-warning text-white shadow-sm'
                   : 'bg-muted hover:bg-muted text-foreground '
               }`}
             >
@@ -406,7 +406,7 @@ export function BranchManagerDashboard({
  onClick={() => setActiveFilterTab('in_production')}
  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
  activeFilterTab === 'in_production'
-                  ? 'bg-purple-700 text-white shadow-sm'
+                  ? 'bg-primary text-white shadow-sm'
                   : 'bg-muted hover:bg-muted text-foreground '
               }`}
             >
@@ -417,7 +417,7 @@ export function BranchManagerDashboard({
  onClick={() => setActiveFilterTab('ready')}
  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
  activeFilterTab === 'ready'
-                  ? 'bg-teal-600 text-white shadow-sm'
+                  ? 'bg-success text-white shadow-sm'
                   : 'bg-muted hover:bg-muted text-foreground '
               }`}
             >
@@ -451,7 +451,7 @@ export function BranchManagerDashboard({
         {filteredOrders.length === 0 ? (
           <Card className="border border-dashed border-input p-10 text-center bg-muted">
             <div className="flex flex-col items-center justify-center space-y-3 max-w-sm mx-auto">
-              <div className="h-12 w-12 rounded-xl bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300 flex items-center justify-center">
+              <div className="h-12 w-12 rounded-xl bg-success-surface text-success bg-success/40 text-success flex items-center justify-center">
                 <FileText className="h-6 w-6"/>
               </div>
               <h3 className="text-sm font-bold text-foreground">
@@ -465,7 +465,7 @@ export function BranchManagerDashboard({
               </p>
               <Button
  onClick={onOpenNewWork}
- className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs mt-2">
+ className="bg-success hover:bg-success text-white font-bold text-xs mt-2">
                 <Plus className="h-3.5 w-3.5 mr-1.5"/>
                 {tBilingual('Create First Branch Order', 'নতুন অর্ডার তৈরি করুন')}
               </Button>
@@ -475,7 +475,7 @@ export function BranchManagerDashboard({
           <Card className="border border-border overflow-hidden shadow-xs bg-card">
             <div className="overflow-x-auto">
               <table className="w-full text-xs text-left">
-                <thead className="bg-muted text-muted-foreground border-b border-border uppercase text-2xs font-bold">
+                <thead className="bg-muted text-muted-foreground border-b border-border uppercase text-xs font-bold">
                   <tr>
                     <th className="px-4 py-3">Order #</th>
                     <th className="px-4 py-3">Customer</th>
@@ -494,12 +494,12 @@ export function BranchManagerDashboard({
 
  return (
                       <tr key={ord.id} className="hover:bg-muted dark:hover:bg-muted/40 transition-colors">
-                        <td className="px-4 py-3 tabular-nums font-bold text-emerald-700 dark:text-emerald-400 whitespace-nowrap">
+                        <td className="px-4 py-3 tabular-nums font-bold text-success text-success whitespace-nowrap">
                           #{ord.order_number || ord.id.slice(0, 8)}
                         </td>
                         <td className="px-4 py-3">
                           <div className="font-bold text-foreground">{ord.customer_name || 'Walk-in Client'}</div>
-                          <div className="text-2xs text-muted-foreground tabular-nums">{ord.customer_phone || '—'}</div>
+                          <div className="text-xs text-muted-foreground tabular-nums">{ord.customer_phone || '—'}</div>
                         </td>
                         <td className="px-4 py-3 max-w-xs truncate text-foreground">
                           {itemSummary}
@@ -509,21 +509,21 @@ export function BranchManagerDashboard({
                         </td>
                         <td className="px-4 py-3 text-right tabular-nums whitespace-nowrap">
                           {isDue ? (
-                            <span className="font-bold text-rose-600 dark:text-rose-400">{formatBDT(dueAmt)}</span>
+                            <span className="font-bold text-destructive text-destructive">{formatBDT(dueAmt)}</span>
                           ) : (
-                            <span className="text-emerald-600 dark:text-emerald-400 font-bold">Paid</span>
+                            <span className="text-success text-success font-bold">Paid</span>
                           )}
                         </td>
                         <td className="px-4 py-3 text-center whitespace-nowrap">
                           <Badge
- className={`text-2xs uppercase font-bold ${
+ className={`text-xs uppercase font-bold ${
  ord.status === 'ready_for_delivery' || (ord as any).status === 'ready_for_pickup'
-                                ? 'bg-teal-100 text-teal-800 dark:bg-teal-950 dark:text-teal-300 border-teal-300'
+                                ? 'bg-success-surface text-success bg-success-surface text-success border-success-border'
                                 : ord.status === 'in_production' || ord.status === 'finishing'
-                                ? 'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 border-purple-300'
+                                ? 'bg-primary/10 text-primary bg-primary/10 text-primary border-primary/20'
                                 : ord.status === 'delivered' || ord.status === 'completed'
                                 ? 'bg-muted text-foreground '
-                                : 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border-amber-300'
+                                : 'bg-warning-surface text-warning bg-warning-surface text-warning border-warning-border'
                             }`}
                           >
                             {ord.status}
@@ -544,7 +544,7 @@ export function BranchManagerDashboard({
  const msg = `সম্মানিত গ্রাহক, আপনার অর্ডার #${ord.order_number || ord.id.slice(0, 8)} (${branchName}) এ প্রক্রিয়াধীন রয়েছে। বর্তমান স্ট্যাটাস: ${ord.status}। ধন্যবাদ!`
  window.open(`https://wa.me/${clean}?text=${encodeURIComponent(msg)}`, '_blank')
                               }}
- className="h-8 w-8 p-0 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/40"title="WhatsApp Client">
+ className="h-8 w-8 p-0 text-success hover:bg-success-surface dark:hover:bg-success-surface"title="WhatsApp Client">
                               <Share2 className="h-3.5 w-3.5"/>
                             </Button>
                           </div>

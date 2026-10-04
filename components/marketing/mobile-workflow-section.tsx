@@ -48,7 +48,7 @@ export function MobileWorkflowSection() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12 sm:space-y-16">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto space-y-3 sm:space-y-4">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200/70 dark:border-blue-800/60 uppercase tracking-wider">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary bg-primary/10 text-primary border border-primary/20/70 border-border/60 uppercase tracking-wider">
             <Smartphone className="h-3.5 w-3.5"/>
             <span>{tBilingual('Anywhere Access', 'যেকোনো স্থান থেকে নিয়ন্ত্রণ')}</span>
           </div>
@@ -75,7 +75,7 @@ export function MobileWorkflowSection() {
               <div
  key={idx}
  className="p-4 sm:p-5 rounded-xl border border-border bg-card shadow-2xs hover:border-input transition-all flex items-start gap-4">
-                <div className="h-8 w-8 rounded-lg bg-blue-50 dark:bg-blue-950/80 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 mt-0.5 border border-blue-100 dark:border-blue-900/60 font-bold text-xs">
+                <div className="h-8 w-8 rounded-lg bg-primary/10 bg-primary/10 text-primary text-primary flex items-center justify-center shrink-0 mt-0.5 border border-border border-border/60 font-bold text-xs">
                   0{idx + 1}
                 </div>
                 <div>
@@ -96,24 +96,24 @@ export function MobileWorkflowSection() {
               {/* Phone Status Header */}
               <div className="flex items-center justify-between pb-3 border-b border-border text-xs">
                 <div className="flex items-center gap-1.5 font-bold text-foreground">
-                  <Printer className="h-4 w-4 text-blue-600"/>
+                  <Printer className="h-4 w-4 text-primary"/>
                   <span>PrintERP Mobile</span>
                 </div>
-                <span className="text-2xs font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
+                <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-success-surface text-success bg-success-surface text-success">
  Online Sync
                 </span>
               </div>
 
               {/* Quick Today's Sales Stat */}
-              <div className="p-3.5 rounded-xl bg-blue-50/60 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/40 space-y-1">
-                <span className="text-2xs text-blue-700 dark:text-blue-300 font-semibold block uppercase">
+              <div className="p-3.5 rounded-xl bg-primary/10/60 bg-primary/10 border border-border border-border/40 space-y-1">
+                <span className="text-xs text-primary text-primary font-semibold block uppercase">
                   {tBilingual("Today's Collections", 'আজকের কালেকশন')}
                 </span>
                 <div className="flex items-baseline justify-between">
                   <span className="text-lg font-black text-foreground tabular-nums">
                     ৳ 48,500
                   </span>
-                  <span className="text-2xs font-semibold text-emerald-600 dark:text-emerald-400">
+                  <span className="text-xs font-semibold text-success text-success">
                     6 Orders Settled
                   </span>
                 </div>
@@ -121,30 +121,30 @@ export function MobileWorkflowSection() {
 
               {/* Representative Active Machine Task */}
               <div className="p-3.5 rounded-xl border border-border bg-muted space-y-2">
-                <div className="flex items-center justify-between text-2xs">
+                <div className="flex items-center justify-between text-xs">
                   <span className="font-bold text-foreground">Flora 10ft Solvent #1</span>
-                  <span className="text-blue-600 font-semibold">Running</span>
+                  <span className="text-primary font-semibold">Running</span>
                 </div>
-                <div className="space-y-1 text-2xs text-muted-foreground">
+                <div className="space-y-1 text-xs text-muted-foreground">
                   <div className="flex justify-between">
                     <span>Job #084 (Star Flex):</span>
                     <span className="font-semibold text-foreground">200 SFT</span>
                   </div>
                   <div className="w-full bg-muted h-1.5 rounded-full overflow-hidden">
-                    <div className="bg-blue-600 h-full w-3/4 rounded-full"/>
+                    <div className="bg-primary h-full w-3/4 rounded-full"/>
                   </div>
                 </div>
               </div>
 
               {/* Outstanding Due Snapshot */}
               <div className="p-3.5 rounded-xl border border-border bg-muted space-y-1.5">
-                <div className="flex items-center justify-between text-2xs">
+                <div className="flex items-center justify-between text-xs">
                   <span className="font-bold text-foreground">Akram Advertising</span>
-                  <span className="text-rose-600 font-semibold">৳ 12,500 Due</span>
+                  <span className="text-destructive font-semibold">৳ 12,500 Due</span>
                 </div>
-                <div className="flex items-center justify-between text-2xs text-muted-foreground">
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
                   <span>14 days credit</span>
-                  <span className="text-blue-600 hover:underline font-semibold cursor-pointer">
+                  <span className="text-primary hover:underline font-semibold cursor-pointer">
  WhatsApp Reminder →
                   </span>
                 </div>
@@ -153,7 +153,7 @@ export function MobileWorkflowSection() {
               {/* Operator Station Button */}
               <div className="pt-2">
                 <div className="w-full h-10 rounded-xl bg-surface-inset text-foreground font-semibold text-xs flex items-center justify-center gap-1.5 shadow-sm">
-                  <UserCheck className="h-3.5 w-3.5 text-blue-400"/>
+                  <UserCheck className="h-3.5 w-3.5 text-primary"/>
                   <span>{tBilingual('Operator Floor Station Active', 'অপারেটর ফ্লোর স্টেশন সক্রিয়')}</span>
                 </div>
               </div>

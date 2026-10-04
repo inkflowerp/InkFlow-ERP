@@ -300,7 +300,7 @@ export default function CompanySettingsPage() {
 
  if (!mounted) {
  return (
-      <div className="space-y-6 max-w-5xl animate-pulse">
+      <div className="space-y-6 animate-pulse">
         <div className="h-20 bg-muted rounded-xl w-full"/>
         <div className="h-12 bg-muted rounded-xl w-3/4"/>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
@@ -315,14 +315,14 @@ export default function CompanySettingsPage() {
  return (
     <PanelAccessGuard
  module="settings"action="view"panelTitle="Company Profile & Settings"panelTitleBn="প্রতিষ্ঠান পরিচিতি ও সেটিংস">
-      <div className="space-y-6 max-w-5xl">
+      <div className="space-y-6">
       {/* Title & Actions */}
       <PageHeader
  titleEn="Company Profile & Settings"titleBn="প্রতিষ্ঠান পরিচিতি ও সেটিংস"descriptionEn="Manage corporate identity, legal entity details, NBR tax registrations, office hours, and official contact channels."descriptionBn="প্রাতিষ্ঠানিক তথ্য, আইনি সত্তা, এনবিআর ট্যাক্স নিবন্ধন, অফিস সময়সূচি এবং যোগাযোগের তথ্য পরিচালনা করুন।"icon={Building2}
- iconColor="text-blue-600"actions={
+ iconColor="text-primary"actions={
  isSaved ? (
-            <div className="flex items-center gap-2 text-xs font-semibold text-emerald-700 bg-emerald-50 dark:bg-emerald-950/40 dark:text-emerald-300 px-3 py-1.5 rounded-lg border border-emerald-200 dark:border-emerald-800 bangla-text">
-              <CheckCircle2 className="h-4 w-4 text-emerald-600"/>
+            <div className="flex items-center gap-2 text-xs font-semibold text-success bg-success-surface bg-success-surface text-success px-3 py-1.5 rounded-lg border border-success-border border-success-border bangla-text">
+              <CheckCircle2 className="h-4 w-4 text-success"/>
               {tBilingual('Settings saved successfully!', 'সেটিংস সফলভাবে সংরক্ষিত হয়েছে!')}
             </div>
           ) : undefined
@@ -339,7 +339,7 @@ export default function CompanySettingsPage() {
             descBn: 'আইনি সত্তা, অফিস সময়, যোগাযোগের তথ্য ও ট্রেড লাইসেন্স',
             path: '/settings/company',
             icon: Building2,
-            color: 'text-blue-600 bg-blue-50 dark:bg-blue-950/50',
+            color: 'text-primary bg-primary/10 bg-primary/10',
             badge: company?.name ? 'Configured' : 'Setup Required',
             badgeBn: company?.name ? 'সংরক্ষিত' : 'প্রয়োজন',
           },
@@ -350,7 +350,7 @@ export default function CompanySettingsPage() {
             descBn: 'নিজস্ব রঙ, হেডার লোগো এবং বিলের ফুটার শর্তাবলী',
             path: '/settings/branding',
             icon: Palette,
-            color: 'text-purple-600 bg-purple-50 dark:bg-purple-950/50',
+            color: 'text-primary bg-primary/10 bg-primary/10',
             badge: 'Theme Active',
             badgeBn: 'সক্রিয়',
           },
@@ -361,7 +361,7 @@ export default function CompanySettingsPage() {
             descBn: 'বিডিটি / ইউএসডি, তারিখ ফরম্যাট ও বাংলা/ইংরেজি ইন্টারফেস',
             path: '/settings/localization',
             icon: Globe2,
-            color: 'text-emerald-600 bg-emerald-50 dark:bg-emerald-950/50',
+            color: 'text-success bg-success-surface bg-success-surface',
             badge: `${company?.currency || 'BDT'} / ${company?.default_locale === 'en' ? 'EN' : 'BN'}`,
             badgeBn: `${company?.currency || 'BDT'} / ${company?.default_locale === 'en' ? 'EN' : 'BN'}`,
           },
@@ -372,7 +372,7 @@ export default function CompanySettingsPage() {
             descBn: 'চালান, কোটেশন ও ইনভয়েস নম্বর সিকোয়েন্স',
             path: '/settings/document-numbering',
             icon: Hash,
-            color: 'text-indigo-600 bg-indigo-50 dark:bg-indigo-950/50',
+            color: 'text-primary bg-primary/10 bg-primary/10',
             badge: 'PostgreSQL Safe',
             badgeBn: 'সুরক্ষিত',
           },
@@ -383,7 +383,7 @@ export default function CompanySettingsPage() {
             descBn: 'পিডিএফ ইনভয়েস, কোটেশন ডিজাইন ও হোয়াটসঅ্যাপ ভ্যারিয়েবল',
             path: '/settings/documents',
             icon: FileText,
-            color: 'text-cyan-600 bg-cyan-50 dark:bg-cyan-950/50',
+            color: 'text-primary bg-info-surface bg-primary/10',
             badge: 'Live Preview',
             badgeBn: 'লাইভ প্রিভিউ',
           },
@@ -405,7 +405,7 @@ export default function CompanySettingsPage() {
             descBn: 'শোরুম, প্রিন্ট ফ্লোর এবং আঞ্চলিক ফেব্রিকেশন হাব',
             path: '/settings/branches',
             icon: GitBranch,
-            color: 'text-teal-600 bg-teal-50 dark:bg-teal-950/50',
+            color: 'text-success bg-success-surface bg-success-surface',
             badge: 'Hubs Managed',
             badgeBn: 'পরিচালিত',
           },
@@ -416,7 +416,7 @@ export default function CompanySettingsPage() {
             descBn: 'কর্মস্থলের জিওফেন্স জিপিএস এবং ক্রিপ্টোগ্রাফিক কিউআর',
             path: '/settings/attendance',
             icon: QrCode,
-            color: 'text-indigo-600 bg-indigo-50 dark:bg-indigo-950/50',
+            color: 'text-primary bg-primary/10 bg-primary/10',
             badge: 'Geofence Active',
             badgeBn: 'সক্রিয়',
           },
@@ -427,7 +427,7 @@ export default function CompanySettingsPage() {
             descBn: 'মাস্কড এসএমএস, হোয়াটসঅ্যাপ নোটিফিকেশন ও অডিও অ্যালার্ট',
             path: '/settings/notifications',
             icon: Bell,
-            color: 'text-amber-600 bg-amber-50 dark:bg-amber-950/50',
+            color: 'text-warning bg-warning-surface bg-warning-surface',
             badge: 'Audio & SMS',
             badgeBn: 'এসএমএস',
           },
@@ -438,7 +438,7 @@ export default function CompanySettingsPage() {
             descBn: 'জিমেইল ও কাস্টম অথেনটিকেটেড এসএমটিপি গেটওয়ে',
             path: '/settings/email',
             icon: Mail,
-            color: 'text-blue-600 bg-blue-50 dark:bg-blue-950/50',
+            color: 'text-primary bg-primary/10 bg-primary/10',
             badge: 'Gmail / SMTP',
             badgeBn: 'কনফিগারড',
           },
@@ -449,7 +449,7 @@ export default function CompanySettingsPage() {
             descBn: 'টিম সদস্য, বিভাগ, পদবী ও অ্যাক্সেস পারমিশন ম্যাট্রিক্স',
             path: '/settings/users',
             icon: ShieldCheck,
-            color: 'text-violet-600 bg-violet-50 dark:bg-violet-950/50',
+            color: 'text-primary bg-primary/10 bg-primary/10',
             badge: 'RBAC Studio',
             badgeBn: 'আরবিএসি',
           },
@@ -460,7 +460,7 @@ export default function CompanySettingsPage() {
             descBn: 'প্ল্যান টায়ার, ৬টি রিসোর্স কোটা মিটার ও বিলিং হিস্ট্রি',
             path: '/settings/subscription',
             icon: Crown,
-            color: 'text-amber-600 bg-amber-50 dark:bg-amber-950/50',
+            color: 'text-warning bg-warning-surface bg-warning-surface',
             badge: 'Tier Status',
             badgeBn: 'প্ল্যান অবস্থা',
           },
@@ -471,20 +471,20 @@ export default function CompanySettingsPage() {
             <Link
               key={item.path}
               href={targetHref}
-              className="p-4 rounded-xl bg-card border border-border shadow-xs hover:shadow-xs hover:border-blue-400 dark:hover:border-blue-600 transition-all flex flex-col justify-between group min-h-[120px]">
+              className="p-4 rounded-xl bg-card border border-border shadow-xs hover:shadow-xs hover:border-border dark:hover:border-border transition-all flex flex-col justify-between group min-h-[120px]">
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <div className={`h-9 w-9 rounded-xl flex items-center justify-center ${item.color} shrink-0`}>
                     <Icon className="h-4.5 w-4.5"/>
                   </div>
-                  <Badge variant="outline" className="text-2xs tabular-nums font-semibold px-2 py-0.5">
+                  <Badge variant="outline" className="text-xs tabular-nums font-semibold px-2 py-0.5">
                     {locale === 'bn' ? item.badgeBn : item.badge}
                   </Badge>
                 </div>
                 <div>
-                  <div className="font-bold text-sm text-foreground group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors flex items-center gap-1.5">
+                  <div className="font-bold text-sm text-foreground group-hover:text-primary dark:group-hover:text-primary transition-colors flex items-center gap-1.5">
                     <span>{locale === 'bn' ? item.titleBn : item.title}</span>
-                    <ArrowRight className="h-3 w-3 opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all text-blue-600"/>
+                    <ArrowRight className="h-3 w-3 opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all text-primary"/>
                   </div>
                   <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed line-clamp-2">{locale === 'bn' ? item.descBn : item.desc}</p>
                 </div>
@@ -498,7 +498,7 @@ export default function CompanySettingsPage() {
       <div className="pt-4 border-t border-border">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-sm font-bold text-foreground uppercase tracking-wider flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-blue-600"/>
+            <Sparkles className="h-4 w-4 text-primary"/>
             <span>{tBilingual('Quick Settings Editor', 'কুইক সেটিংস এডিটর')}</span>
           </h2>
           <span className="text-xs text-muted-foreground">
@@ -522,7 +522,7 @@ export default function CompanySettingsPage() {
  type="button"onClick={() => setActiveTab(tab.id as typeof activeTab)}
  className={`flex items-center gap-2 px-4 py-2.5 text-xs font-semibold border-b-2 -mb-px transition-colors whitespace-nowrap h-10 sm:h-9 shrink-0 ${
  isActive
-                    ? 'border-blue-600 text-blue-600 dark:border-blue-500 dark:text-blue-400 font-bold'
+                    ? 'border-border text-primary border-primary/20 text-primary font-bold'
                     : 'border-transparent text-muted-foreground hover:text-foreground dark:hover:text-foreground'
                 }`}
               >
@@ -536,8 +536,8 @@ export default function CompanySettingsPage() {
 
       <form onSubmit={handleSubmit(onSubmit, onInvalid)}>
         {errorMessage && (
-          <div className="flex items-center gap-2 p-3.5 text-xs font-semibold text-rose-700 bg-rose-50 dark:bg-rose-950/50 dark:text-rose-300 rounded-xl border border-rose-200 dark:border-rose-800 bangla-text mb-4 shadow-xs">
-            <AlertCircle className="h-4 w-4 shrink-0 text-rose-600"/>
+          <div className="flex items-center gap-2 p-3.5 text-xs font-semibold text-destructive bg-danger-surface bg-danger-surface text-destructive rounded-xl border border-danger-border border-danger-border bangla-text mb-4 shadow-xs">
+            <AlertCircle className="h-4 w-4 shrink-0 text-destructive"/>
             <span>{errorMessage}</span>
           </div>
         )}
@@ -547,7 +547,7 @@ export default function CompanySettingsPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-base">
-                  <Building2 className="h-4 w-4 text-blue-600"/>
+                  <Building2 className="h-4 w-4 text-primary"/>
                   {tBilingual('Corporate Identity & Branding', 'প্রাতিষ্ঠানিক পরিচয় ও ব্র্যান্ডিং')}
                 </CardTitle>
                 <CardDescription>
@@ -579,14 +579,14 @@ export default function CompanySettingsPage() {
                     <Label htmlFor="legal_name">
                       {tBilingual('Registered Legal Entity Name (for NBR & Contracts)', 'নিবন্ধিত আইনি নাম (চুক্তি ও এনবিআর এর জন্য)')}
                     </Label>
-                    <span className="text-2xs text-blue-600 dark:text-blue-400 font-medium">
+                    <span className="text-xs text-primary text-primary font-medium">
                       {tBilingual('For contracts & VAT challans', 'চুক্তি ও ভ্যাট চালানের জন্য')}
                     </span>
                   </div>
                   <Input
  id="legal_name"placeholder={tBilingual("e.g. Rapid Print Solutions Limited", "যেমন: র‍্যাপিড প্রিন্ট সল্যুশনস লিমিটেড")}{...register('legal_name')}
                   />
-                  <p className="text-2xs text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
                     {tBilingual(
                       'Official registered company name used for formal contracts, legal tender submissions, and NBR Mushak forms.',
                       'অফিসিয়াল নিবন্ধিত নাম যা সরকারি চুক্তি, টেন্ডার এবং এনবিআর মূসক ফর্মে ব্যবহৃত হয়।'
@@ -612,7 +612,7 @@ export default function CompanySettingsPage() {
                       ) : (
                         <div className="text-center p-2">
                           <ImageIcon className="h-5 w-5 mx-auto text-muted-foreground"/>
-                          <span className="text-2xs text-muted-foreground block mt-0.5">
+                          <span className="text-xs text-muted-foreground block mt-0.5">
                             {tBilingual('No Logo', 'লোগো নেই')}
                           </span>
                         </div>
@@ -622,7 +622,7 @@ export default function CompanySettingsPage() {
                       <Input
  id="logo_url"placeholder="https://example.com/logo.png"{...register('logo_url')}
                       />
-                      <span className="text-2xs text-muted-foreground block">
+                      <span className="text-xs text-muted-foreground block">
                         {tBilingual(
                           'Will appear on header of printed quotations, job challans, and customer receipts.',
                           'প্রিন্টকৃত কোটেশন, ডেলিভারি চালান ও মানি রসিদের শীর্ষে প্রদর্শিত হবে।'
@@ -637,7 +637,7 @@ export default function CompanySettingsPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-base">
-                  <Phone className="h-4 w-4 text-emerald-600"/>
+                  <Phone className="h-4 w-4 text-success"/>
                   {tBilingual('Official Contact Channels', 'অফিশিয়াল যোগাযোগের মাধ্যম')}
                 </CardTitle>
                 <CardDescription>
@@ -676,7 +676,7 @@ export default function CompanySettingsPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-base">
-                  <MapPin className="h-4 w-4 text-rose-600"/>
+                  <MapPin className="h-4 w-4 text-destructive"/>
                   {tBilingual('Address & Production Hub', 'ঠিকানা ও উৎপাদন হাব')}
                 </CardTitle>
                 <CardDescription>
@@ -718,7 +718,7 @@ export default function CompanySettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
-                <Clock className="h-4 w-4 text-blue-600"/>
+                <Clock className="h-4 w-4 text-primary"/>
                 {tBilingual('Office Hours & Operational Holiday Schedule', 'অফিস সময়সূচি ও সাপ্তাহিক ছুটি')}
               </CardTitle>
               <CardDescription>
@@ -742,7 +742,7 @@ export default function CompanySettingsPage() {
                     <button
  key={preset}
  type="button"onClick={() => setValue('office_hours', preset, { shouldDirty: true })}
- className="text-2xs px-2.5 py-1 rounded-md bg-muted text-foreground hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-card-elevated transition-colors border border-border min-h-[32px]">
+ className="text-xs px-2.5 py-1 rounded-md bg-muted text-foreground hover:bg-primary/10 hover:text-primary dark:hover:bg-card-elevated transition-colors border border-border min-h-[32px]">
                       {preset}
                     </button>
                   ))}
@@ -763,7 +763,7 @@ export default function CompanySettingsPage() {
                     <button
  key={preset}
  type="button"onClick={() => setValue('holidays', preset, { shouldDirty: true })}
- className="text-2xs px-2.5 py-1 rounded-md bg-muted text-foreground hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-card-elevated transition-colors border border-border min-h-[32px]">
+ className="text-xs px-2.5 py-1 rounded-md bg-muted text-foreground hover:bg-primary/10 hover:text-primary dark:hover:bg-card-elevated transition-colors border border-border min-h-[32px]">
                       {preset}
                     </button>
                   ))}
@@ -778,7 +778,7 @@ export default function CompanySettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
-                <ShieldCheck className="h-4 w-4 text-emerald-600"/>
+                <ShieldCheck className="h-4 w-4 text-success"/>
                 {tBilingual('Government & Tax Registrations', 'সরকারি ও ট্যাক্স নিবন্ধন')}
               </CardTitle>
               <CardDescription>
@@ -802,7 +802,7 @@ export default function CompanySettingsPage() {
                     {tBilingual('BIN (Business Identification Number)', 'ভ্যাট নিবন্ধন নম্বর (বিআইএন)')}
                   </Label>
                   <Input id="bin_no"placeholder="e.g. 004819284-0101"{...register('bin_no')} />
-                  <span className="text-2xs text-muted-foreground">
+                  <span className="text-xs text-muted-foreground">
                     {tBilingual('NBR 9 or 13-digit registration', 'এনবিআর ৯ বা ১৩ ডিজিট নিবন্ধন')}
                   </span>
                 </div>
@@ -829,7 +829,7 @@ export default function CompanySettingsPage() {
                     </p>
                   </div>
                   <input
- type="checkbox"id="vat_enabled"className="h-5 w-5 rounded border-input text-blue-600 focus:ring-ring"{...register('vat_enabled')}
+ type="checkbox"id="vat_enabled"className="h-5 w-5 rounded border-input text-primary focus:ring-ring"{...register('vat_enabled')}
                   />
                 </div>
 
@@ -864,7 +864,7 @@ export default function CompanySettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
-                <FileText className="h-4 w-4 text-blue-600"/>
+                <FileText className="h-4 w-4 text-primary"/>
                 {tBilingual('Document Numbering & Sequences', 'ডকুমেন্ট নাম্বারিং ও সিকোয়েন্স')}
               </CardTitle>
               <CardDescription>
@@ -881,7 +881,7 @@ export default function CompanySettingsPage() {
                     {tBilingual('Quotation Prefix', 'কোটেশন প্রিফিক্স')}
                   </Label>
                   <Input id="quotation_prefix"placeholder="QT"{...register('quotation_prefix')} />
-                  <span className="text-2xs text-muted-foreground">Example: QT-2026-0012</span>
+                  <span className="text-xs text-muted-foreground">Example: QT-2026-0012</span>
                 </div>
 
                 <div className="space-y-1.5">
@@ -889,7 +889,7 @@ export default function CompanySettingsPage() {
                     {tBilingual('Invoice Prefix', 'ইনভয়েস প্রিফিক্স')}
                   </Label>
                   <Input id="invoice_prefix"placeholder={tBilingual("INV", "INV")}{...register('invoice_prefix')} />
-                  <span className="text-2xs text-muted-foreground">Example: INV-2026-0482</span>
+                  <span className="text-xs text-muted-foreground">Example: INV-2026-0482</span>
                 </div>
 
                 <div className="space-y-1.5">
@@ -897,7 +897,7 @@ export default function CompanySettingsPage() {
                     {tBilingual('Challan Prefix', 'চালান প্রিফিক্স')}
                   </Label>
                   <Input id="challan_prefix"placeholder="CH"{...register('challan_prefix')} />
-                  <span className="text-2xs text-muted-foreground">Example: CH-2026-0091</span>
+                  <span className="text-xs text-muted-foreground">Example: CH-2026-0091</span>
                 </div>
               </div>
             </CardContent>
@@ -909,7 +909,7 @@ export default function CompanySettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
-                <Globe className="h-4 w-4 text-purple-600"/>
+                <Globe className="h-4 w-4 text-primary"/>
                 {tBilingual('Regional & Language Preferences', 'আঞ্চলিক ও ভাষা পছন্দসমূহ')}
               </CardTitle>
               <CardDescription>
@@ -948,7 +948,7 @@ export default function CompanySettingsPage() {
         <div className="mt-6 flex items-center justify-end gap-3">
           <Button
  type="submit"isLoading={isLoading}
- className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto h-11 sm:h-9 text-xs font-semibold shadow-sm">
+ className="bg-primary hover:bg-primary w-full sm:w-auto h-11 sm:h-9 text-xs font-semibold shadow-sm">
             <Save className="mr-1.5 h-4 w-4"/>
             {tBilingual('Save Settings', 'সেটিংস সংরক্ষণ করুন')}
           </Button>

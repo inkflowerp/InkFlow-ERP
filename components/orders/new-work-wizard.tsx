@@ -394,9 +394,9 @@ export function NewWorkWizard({
  type="button"onClick={() => s.num < step && setStep(s.num)}
  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
  step === s.num
-                  ? 'bg-blue-600 text-white shadow-sm'
+                  ? 'bg-primary text-white shadow-sm'
                   : step > s.num
-                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300'
+                  ? 'bg-success-surface text-success border border-success-border bg-success-surface text-success'
                   : 'bg-muted text-muted-foreground '
               }`}
             >
@@ -408,15 +408,15 @@ export function NewWorkWizard({
 
         <button
  type="button"onClick={() => setShowAdvanced(!showAdvanced)}
- className="text-xs text-blue-600 dark:text-blue-400 font-semibold hover:underline flex items-center gap-1">
+ className="text-xs text-primary text-primary font-semibold hover:underline flex items-center gap-1">
           <Sparkles className="h-3.5 w-3.5"/>
           {showAdvanced ? tBilingual('Simple View', 'সহজ ভিউ') : tBilingual('Advanced View', 'বিস্তারিত ভিউ')}
         </button>
       </div>
 
       {errorMessage && (
-        <div className="p-3 bg-rose-50 border border-rose-200 rounded-lg text-rose-800 text-xs font-semibold flex items-center gap-2 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800">
-          <AlertCircle className="h-4 w-4 shrink-0 text-rose-600"/>
+        <div className="p-3 bg-danger-surface border border-danger-border rounded-lg text-destructive text-xs font-semibold flex items-center gap-2 bg-danger-surface text-destructive border-danger-border">
+          <AlertCircle className="h-4 w-4 shrink-0 text-destructive"/>
           <span>{errorMessage}</span>
         </div>
       )}
@@ -426,7 +426,7 @@ export function NewWorkWizard({
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-base font-bold text-foreground flex items-center gap-2">
-              <User className="h-5 w-5 text-blue-600"/>
+              <User className="h-5 w-5 text-primary"/>
               {tBilingual('1. Select or Add Customer', '১. কাস্টমার নির্বাচন করুন বা নতুন যোগ করুন')}
             </h3>
             <Button
@@ -438,7 +438,7 @@ export function NewWorkWizard({
           </div>
 
           {isCreatingCustomer ? (
-            <Card className="border-2 border-blue-500 bg-blue-50/20 dark:bg-blue-950/20">
+            <Card className="border-2 border-primary/20 bg-primary/10/20 bg-primary/10">
               <CardContent className="p-4 space-y-3">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <div className="space-y-1">
@@ -482,16 +482,16 @@ export function NewWorkWizard({
  className="h-12 text-sm bg-card border-input"/>
 
               {selectedCustomer && (
-                <div className="p-4 bg-emerald-50 dark:bg-emerald-950/30 border-2 border-emerald-500 rounded-xl flex items-center justify-between">
+                <div className="p-4 bg-success-surface bg-success-surface border-2 border-success-border rounded-xl flex items-center justify-between">
                   <div className="space-y-0.5">
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-bold text-emerald-900 dark:text-emerald-100">{selectedCustomer.name}</span>
-                      <Badge className="bg-emerald-600 text-white text-2xs">{tBilingual('Selected', 'নির্বাচিত')}</Badge>
+                      <span className="text-sm font-bold text-success text-success">{selectedCustomer.name}</span>
+                      <Badge className="bg-success text-white text-xs">{tBilingual('Selected', 'নির্বাচিত')}</Badge>
                     </div>
-                    <p className="text-xs text-emerald-700 dark:text-emerald-300 tabular-nums flex items-center gap-2">
+                    <p className="text-xs text-success text-success tabular-nums flex items-center gap-2">
                       <span>📞 {(selectedCustomer as any).phone || selectedCustomer.mobile}</span>
                       {(selectedCustomer as any).current_balance ? (
-                        <span className="text-rose-600 dark:text-rose-400 font-bold font-sans">
+                        <span className="text-destructive text-destructive font-bold font-sans">
                           (বাকি: ৳{Number((selectedCustomer as any).current_balance).toLocaleString()})
                         </span>
                       ) : null}
@@ -499,7 +499,7 @@ export function NewWorkWizard({
                   </div>
                   <Button
  type="button"size="sm"onClick={() => setStep(2)}
- className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold h-9 px-4">
+ className="bg-success hover:bg-success text-white text-xs font-bold h-9 px-4">
                     {tBilingual('Next Step', 'পরবর্তী ধাপ')} <ArrowRight className="h-3.5 w-3.5 ml-1"/>
                   </Button>
                 </div>
@@ -511,7 +511,7 @@ export function NewWorkWizard({
                     {tBilingual('No customer found.', 'কোনো কাস্টমার পাওয়া যায়নি।')}
                     <Button
  type="button"variant="link"onClick={() => setIsCreatingCustomer(true)}
- className="text-xs font-bold text-blue-600 pl-1">
+ className="text-xs font-bold text-primary pl-1">
                       {tBilingual('Create New', 'নতুন তৈরি করুন')}
                     </Button>
                   </div>
@@ -523,23 +523,23 @@ export function NewWorkWizard({
  setSelectedCustomer(c)
  setStep(2)
                       }}
- className={`p-3 rounded-lg border text-xs cursor-pointer transition-all flex items-center justify-between hover:bg-blue-50/50 dark:hover:bg-blue-950/30 ${
+ className={`p-3 rounded-lg border text-xs cursor-pointer transition-all flex items-center justify-between hover:bg-primary/10/50 dark:hover:bg-primary/10 ${
  selectedCustomer?.id === c.id
-                          ? 'border-blue-500 bg-blue-50/40 font-semibold'
+                          ? 'border-primary/20 bg-primary/10/40 font-semibold'
                           : 'border-border bg-card '
                       }`}
                     >
                       <div>
                         <div className="font-bold text-foreground">{c.name}</div>
-                        <div className="text-2xs text-muted-foreground tabular-nums">{(c as any).phone || c.mobile}</div>
+                        <div className="text-xs text-muted-foreground tabular-nums">{(c as any).phone || c.mobile}</div>
                       </div>
                       <div className="text-right">
                         {(c as any).current_balance && Number((c as any).current_balance) > 0 ? (
-                          <div className="text-rose-600 text-2xs font-bold">
+                          <div className="text-destructive text-xs font-bold">
                             বাকি: ৳{Number((c as any).current_balance).toLocaleString()}
                           </div>
                         ) : (
-                          <span className="text-2xs text-emerald-600 font-medium">ক্লিয়ার</span>
+                          <span className="text-xs text-success font-medium">ক্লিয়ার</span>
                         )}
                       </div>
                     </div>
@@ -556,7 +556,7 @@ export function NewWorkWizard({
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-base font-bold text-foreground flex items-center gap-2">
-              <Printer className="h-5 w-5 text-blue-600"/>
+              <Printer className="h-5 w-5 text-primary"/>
               {tBilingual('2. What do they want to make?', '২. কী কাজ বানাতে চান?')}
             </h3>
             {selectedCustomer && (
@@ -574,13 +574,13 @@ export function NewWorkWizard({
  onClick={() => handleSelectPreset(p)}
  className={`p-3 rounded-xl border-2 cursor-pointer transition-all text-center space-y-1 ${
  selectedPreset.id === p.id
-                    ? 'border-blue-600 bg-blue-50/50 dark:bg-blue-950/40 shadow-xs'
+                    ? 'border-border bg-primary/10/50 bg-primary/10 shadow-xs'
                     : 'border-border bg-card hover:border-input'
                 }`}
               >
                 <div className="text-sm font-bold text-foreground">{p.nameBn}</div>
-                <div className="text-2xs text-muted-foreground">{p.nameEn}</div>
-                <div className="text-xs font-semibold text-blue-600 dark:text-blue-400">
+                <div className="text-xs text-muted-foreground">{p.nameEn}</div>
+                <div className="text-xs font-semibold text-primary text-primary">
                   ৳{p.defaultRate}/{p.defaultUnit}
                 </div>
               </div>
@@ -624,12 +624,12 @@ export function NewWorkWizard({
                   <Input
  type="number"min="1"value={quantity}
  onChange={(e) => setQuantity(parseInt(e.target.value, 10) || 1)}
- className="h-11 text-base font-bold tabular-nums text-center text-blue-700"/>
+ className="h-11 text-base font-bold tabular-nums text-center text-primary"/>
                 </div>
               </div>
 
               {/* Calculated Size & Price Bar */}
-              <div className="p-3 bg-blue-50/70 dark:bg-blue-950/40 rounded-xl border border-blue-200 dark:border-blue-900 flex flex-wrap items-center justify-between gap-3 text-xs">
+              <div className="p-3 bg-primary/10/70 bg-primary/10 rounded-xl border border-primary/20 border-border flex flex-wrap items-center justify-between gap-3 text-xs">
                 <div>
                   <span className="text-muted-foreground">মোট মাপ: </span>
                   <span className="font-bold text-foreground tabular-nums text-sm">
@@ -647,7 +647,7 @@ export function NewWorkWizard({
 
                 <div>
                   <span className="text-muted-foreground">মোট বিল: </span>
-                  <span className="font-bold text-blue-700 dark:text-blue-300 tabular-nums text-base">
+                  <span className="font-bold text-primary text-primary tabular-nums text-base">
                     ৳{totalAmount.toLocaleString()}
                   </span>
                 </div>
@@ -671,10 +671,10 @@ export function NewWorkWizard({
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-base font-bold text-foreground flex items-center gap-2">
-              <Layers className="h-5 w-5 text-blue-600"/>
+              <Layers className="h-5 w-5 text-primary"/>
               {tBilingual('3. Material & Finishing Selection', '৩. ম্যাটেরিয়াল ও ফিনিশিং')}
             </h3>
-            <span className="text-xs text-blue-600 font-bold">{jobTitle}</span>
+            <span className="text-xs text-primary font-bold">{jobTitle}</span>
           </div>
 
           <div className="space-y-3">
@@ -706,11 +706,11 @@ export function NewWorkWizard({
  onClick={() => toggleFinishing(item.label)}
  className={`p-2.5 rounded-lg border text-xs font-medium cursor-pointer transition-all flex items-center gap-2 ${
  isSelected
-                          ? 'border-blue-500 bg-blue-50 text-blue-900 dark:bg-blue-950/40 dark:text-blue-200'
+                          ? 'border-primary/20 bg-primary/10 text-primary bg-primary/10 text-primary'
                           : 'border-border bg-card text-foreground '
                       }`}
                     >
-                      <input type="checkbox"checked={isSelected} readOnly className="rounded text-blue-600"/>
+                      <input type="checkbox"checked={isSelected} readOnly className="rounded text-primary"/>
                       <span className="truncate">{tBilingual(item.label, item.label_bn)}</span>
                     </div>
                   )
@@ -722,20 +722,20 @@ export function NewWorkWizard({
             {showAdvanced && (
               <div className="p-3 bg-muted rounded-xl border border-border space-y-3 pt-3">
                 <div className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                  <Sparkles className="h-4 w-4 text-blue-600"/>
+                  <Sparkles className="h-4 w-4 text-primary"/>
                   <span>{tBilingual('Advanced Production Controls', 'অ্যাডভান্সড প্রোডাকশন সেটিংস')}</span>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
                   <div className="space-y-1">
-                    <Label className="text-2xs">{tBilingual('Target Machine', 'মেশিন বরাদ্দ')}</Label>
+                    <Label className="text-xs">{tBilingual('Target Machine', 'মেশিন বরাদ্দ')}</Label>
                     <Input value={assignedMachine} onChange={(e) => setAssignedMachine(e.target.value)} className="h-8 text-xs"/>
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-2xs">{tBilingual('Color Profile', 'কালার প্রোফাইল')}</Label>
+                    <Label className="text-xs">{tBilingual('Color Profile', 'কালার প্রোফাইল')}</Label>
                     <Input value={colorProfile} onChange={(e) => setColorProfile(e.target.value)} className="h-8 text-xs"/>
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-2xs">{tBilingual('Priority', 'জরুরি কিনা')}</Label>
+                    <Label className="text-xs">{tBilingual('Priority', 'জরুরি কিনা')}</Label>
                     <select
  value={priority}
  onChange={(e) => setPriority(e.target.value as any)}
@@ -766,7 +766,7 @@ export function NewWorkWizard({
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-base font-bold text-foreground flex items-center gap-2">
-              <Truck className="h-5 w-5 text-blue-600"/>
+              <Truck className="h-5 w-5 text-primary"/>
               {tBilingual('4. Delivery, Advance Payment & Confirmation', '৪. ডেলিভারি ও অগ্রিম পেমেন্ট')}
             </h3>
           </div>
@@ -796,9 +796,9 @@ export function NewWorkWizard({
               </div>
 
               {/* Payment Advance */}
-              <div className="p-3 bg-amber-50/60 dark:bg-amber-950/30 rounded-xl border border-amber-200 dark:border-amber-900 space-y-3">
+              <div className="p-3 bg-warning-surface/60 bg-warning-surface rounded-xl border border-warning-border border-warning-border space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-amber-900 dark:text-amber-200">
+                  <span className="text-xs font-bold text-warning text-warning">
                     {tBilingual('Advance Payment Received', 'অগ্রিম টাকা জমা')}
                   </span>
                   <span className="text-xs tabular-nums font-bold text-muted-foreground">
@@ -808,16 +808,16 @@ export function NewWorkWizard({
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-1">
-                    <Label className="text-2xs font-semibold">{tBilingual('Advance Amount', 'জমা টাকা')}</Label>
+                    <Label className="text-xs font-semibold">{tBilingual('Advance Amount', 'জমা টাকা')}</Label>
                     <Input
  type="number"min="0"max={totalAmount}
  value={advancePaid}
  onChange={(e) => setAdvancePaid(parseFloat(e.target.value) || 0)}
- className="h-10 text-sm font-bold tabular-nums text-emerald-700"/>
+ className="h-10 text-sm font-bold tabular-nums text-success"/>
                   </div>
 
                   <div className="space-y-1">
-                    <Label className="text-2xs font-semibold">{tBilingual('Payment Channel', 'পেমেন্ট মাধ্যম')}</Label>
+                    <Label className="text-xs font-semibold">{tBilingual('Payment Channel', 'পেমেন্ট মাধ্যম')}</Label>
                     <select
  value={paymentMethod}
  onChange={(e) => setPaymentMethod(e.target.value as any)}
@@ -830,9 +830,9 @@ export function NewWorkWizard({
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between text-xs pt-1 border-t border-amber-200/60 dark:border-amber-900/60">
+                <div className="flex items-center justify-between text-xs pt-1 border-t border-warning-border/60 border-warning-border/60">
                   <span className="text-muted-foreground">বাকি থাকবে (Due):</span>
-                  <span className={`font-bold tabular-nums text-sm ${dueAmount > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
+                  <span className={`font-bold tabular-nums text-sm ${dueAmount > 0 ? 'text-destructive' : 'text-success'}`}>
                     ৳{dueAmount.toLocaleString()}
                   </span>
                 </div>
@@ -856,7 +856,7 @@ export function NewWorkWizard({
             <Button
  type="button"size="lg"disabled={isSubmitting}
  onClick={handleCreateNewWork}
- className="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold h-12 px-8 shadow-xs">
+ className="bg-success hover:bg-success text-white text-sm font-bold h-12 px-8 shadow-xs">
               {isSubmitting ? (
                 <span>{tBilingual('Saving Work...', 'সংরক্ষণ হচ্ছে...')}</span>
               ) : (

@@ -2,63 +2,58 @@
 
 import React from 'react'
 import {
- Wrench,
- MapPin,
- Users,
- CheckCircle2,
- Clock,
- ExternalLink,
- Phone,
- Calendar,
- Layers,
+  Wrench,
+  MapPin,
+  Users,
+  CheckCircle2,
+  Clock,
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { InstallationRecord, InstallationStatus } from '@/types/logistics.types'
-import { formatBDT } from '@/lib/formatters'
 import { useI18n } from '@/i18n/context'
 import { cn } from '@/lib/utils'
 
 export interface DeliveryInstallationTableProps {
- installations: InstallationRecord[]
- onUpdateStatus?: (installationId: string, status: InstallationStatus) => void
+  installations: InstallationRecord[]
+  onUpdateStatus?: (installationId: string, status: InstallationStatus) => void
 }
 
 export function DeliveryInstallationTable({
- installations,
- onUpdateStatus,
+  installations,
+  onUpdateStatus,
 }: DeliveryInstallationTableProps) {
- const { locale, tBilingual } = useI18n()
- const isBn = locale === 'bn'
+  const { locale, tBilingual } = useI18n()
+  const isBn = locale === 'bn'
 
- const getInstallationStatusBadge = (status: InstallationStatus) => {
- switch (status) {
- case 'completed':
- return (
-          <Badge variant="outline"className="bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300 font-bold gap-1">
-            <CheckCircle2 className="h-3 w-3 text-emerald-600"/>
+  const getInstallationStatusBadge = (status: InstallationStatus) => {
+    switch (status) {
+      case 'completed':
+        return (
+          <Badge variant="outline" className="bg-success-surface text-success border border-success-border font-bold gap-1">
+            <CheckCircle2 className="h-3 w-3 text-success" />
             <span>{isBn ? 'সম্পন্ন ও হস্তান্তরিত' : 'Completed & Signed'}</span>
           </Badge>
         )
- case 'on_site':
- return (
-          <Badge variant="outline"className="bg-purple-50 text-purple-800 border-purple-300 dark:bg-purple-950/60 dark:text-purple-300 font-bold gap-1 animate-pulse">
-            <Wrench className="h-3 w-3 text-purple-600"/>
+      case 'on_site':
+        return (
+          <Badge variant="outline" className="bg-primary/10 text-primary border border-primary/20 font-bold gap-1 animate-pulse">
+            <Wrench className="h-3 w-3 text-primary" />
             <span>{isBn ? 'সাইটে ফিটিং চলছে' : 'On Site Fitting'}</span>
           </Badge>
         )
- case 'scheduled':
- default:
- return (
-          <Badge variant="outline"className="bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300">
-            <Clock className="h-3 w-3 text-blue-500"/>
+      case 'scheduled':
+      default:
+        return (
+          <Badge variant="outline" className="bg-muted text-foreground border border-border">
+            <Clock className="h-3 w-3 text-muted-foreground" />
             <span>{isBn ? 'ক্রু শিডিউলকৃত' : 'Crew Scheduled'}</span>
           </Badge>
         )
     }
   }
 
- return (
+  return (
     <div>
       {/* Desktop Table */}
       <div className="hidden md:block overflow-x-auto">
@@ -74,16 +69,16 @@ export function DeliveryInstallationTable({
               <th className="py-3 px-4 text-right">{isBn ? 'অ্যাকশন' : 'Actions'}</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-border dark:divide-border">
+          <tbody className="divide-y divide-border">
             {installations.map((ins) => (
-              <tr key={ins.id} className="hover:bg-muted dark:hover:bg-muted/50 transition-colors">
+              <tr key={ins.id} className="hover:bg-muted transition-colors">
                 {/* Installation # */}
-                <td className="py-3.5 px-4 tabular-nums font-bold text-purple-600 dark:text-purple-400">
+                <td className="py-3.5 px-4 tabular-nums font-bold text-primary">
                   <div className="flex items-center gap-1">
                     <span>{ins.installation_number}</span>
                   </div>
                   {ins.order_number && (
-                    <span className="text-2xs text-muted-foreground font-normal block tabular-nums">
+                    <span className="text-xs text-muted-foreground font-normal block tabular-nums">
                       ({ins.order_number})
                     </span>
                   )}
@@ -94,8 +89,8 @@ export function DeliveryInstallationTable({
                   <div className="font-semibold text-xs text-foreground truncate">
                     {ins.customer_name}
                   </div>
-                  <div className="text-2xs text-muted-foreground flex items-center gap-1 mt-0.5 truncate">
-                    <MapPin className="h-3 w-3 shrink-0 text-muted-foreground"/>
+                  <div className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5 truncate">
+                    <MapPin className="h-3 w-3 shrink-0 text-muted-foreground" />
                     <span className="truncate">{ins.site_location || 'Customer Location'}</span>
                   </div>
                 </td>
@@ -103,12 +98,12 @@ export function DeliveryInstallationTable({
                 {/* Crew Lead & Riggers */}
                 <td className="py-3.5 px-4 text-xs">
                   <div className="font-medium text-foreground flex items-center gap-1">
-                    <Users className="h-3.5 w-3.5 text-purple-500"/>
+                    <Users className="h-3.5 w-3.5 text-primary" />
                     <span>{ins.installer_lead_name || 'Lead Rigging Officer'}</span>
                   </div>
                   {ins.crew_members && ins.crew_members.length > 0 && (
-                    <div className="text-2xs text-muted-foreground truncate max-w-[180px] mt-0.5">
- Crew: {ins.crew_members.join(', ')}
+                    <div className="text-xs text-muted-foreground truncate max-w-[180px] mt-0.5">
+                      Crew: {ins.crew_members.join(', ')}
                     </div>
                   )}
                 </td>
@@ -118,7 +113,7 @@ export function DeliveryInstallationTable({
                   <div className="font-semibold text-foreground">
                     {ins.installation_date}
                   </div>
-                  <div className="text-2xs text-muted-foreground">
+                  <div className="text-xs text-muted-foreground">
                     {ins.scheduled_time || '10:00 AM - 04:00 PM'}
                   </div>
                 </td>
@@ -137,12 +132,13 @@ export function DeliveryInstallationTable({
                 <td className="py-3.5 px-4 text-right">
                   {onUpdateStatus && ins.status !== 'completed' && (
                     <Button
- size="sm"onClick={() => onUpdateStatus(ins.id, ins.status === 'scheduled' ? 'on_site' : 'completed')}
- className={cn(
-                        'h-7 text-2xs px-2.5 font-bold shadow-xs cursor-pointer',
- ins.status === 'scheduled'
-                          ? 'bg-purple-600 hover:bg-purple-700 text-white'
-                          : 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                      size="sm"
+                      onClick={() => onUpdateStatus(ins.id, ins.status === 'scheduled' ? 'on_site' : 'completed')}
+                      className={cn(
+                        'h-7 text-xs px-2.5 font-bold shadow-xs cursor-pointer',
+                        ins.status === 'scheduled'
+                          ? 'bg-primary hover:bg-primary/90 text-primary-foreground'
+                          : 'bg-success hover:bg-success/90 text-success-foreground'
                       )}
                     >
                       {ins.status === 'scheduled' ? (isBn ? 'অন-সাইট শুরু' : 'Start On-Site') : (isBn ? 'সম্পন্ন করুন' : 'Mark Completed')}
@@ -156,11 +152,11 @@ export function DeliveryInstallationTable({
       </div>
 
       {/* Mobile Card View */}
-      <div className="md:hidden divide-y divide-border dark:divide-border">
+      <div className="md:hidden divide-y divide-border">
         {installations.map((ins) => (
-          <div key={ins.id} className="p-4 space-y-2.5 hover:bg-muted dark:hover:bg-muted/50 transition-colors">
+          <div key={ins.id} className="p-4 space-y-2.5 hover:bg-muted transition-colors">
             <div className="flex items-center justify-between">
-              <div className="tabular-nums font-bold text-sm text-purple-600 dark:text-purple-400">
+              <div className="tabular-nums font-bold text-sm text-primary">
                 {ins.installation_number}
               </div>
               {getInstallationStatusBadge(ins.status)}
@@ -169,18 +165,18 @@ export function DeliveryInstallationTable({
             <div>
               <div className="font-semibold text-sm text-foreground">{ins.customer_name}</div>
               <div className="text-xs text-muted-foreground flex items-start gap-1 mt-0.5">
-                <MapPin className="h-3.5 w-3.5 shrink-0 text-muted-foreground mt-0.5"/>
+                <MapPin className="h-3.5 w-3.5 shrink-0 text-muted-foreground mt-0.5" />
                 <span>{ins.site_location || 'Customer Site'}</span>
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-2 p-2.5 rounded-lg bg-muted text-xs border border-border">
               <div>
-                <span className="text-2xs uppercase font-semibold text-muted-foreground block">{isBn ? 'টিম লিড' : 'Crew Lead'}</span>
+                <span className="text-xs uppercase font-semibold text-muted-foreground block">{isBn ? 'টিম লিড' : 'Crew Lead'}</span>
                 <span className="font-medium text-foreground">{ins.installer_lead_name || 'Lead Officer'}</span>
               </div>
               <div>
-                <span className="text-2xs uppercase font-semibold text-muted-foreground block">{isBn ? 'তারিখ' : 'Date'}</span>
+                <span className="text-xs uppercase font-semibold text-muted-foreground block">{isBn ? 'তারিখ' : 'Date'}</span>
                 <span className="tabular-nums text-foreground">{ins.installation_date}</span>
               </div>
             </div>
@@ -188,12 +184,13 @@ export function DeliveryInstallationTable({
             {onUpdateStatus && ins.status !== 'completed' && (
               <div className="pt-1 flex justify-end">
                 <Button
- size="sm"onClick={() => onUpdateStatus(ins.id, ins.status === 'scheduled' ? 'on_site' : 'completed')}
- className={cn(
-                    'h-9 text-xs px-3 font-bold w-full',
- ins.status === 'scheduled'
-                      ? 'bg-purple-600 hover:bg-purple-700 text-white'
-                      : 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                  size="sm"
+                  onClick={() => onUpdateStatus(ins.id, ins.status === 'scheduled' ? 'on_site' : 'completed')}
+                  className={cn(
+                    'h-9 text-xs px-3 font-bold w-full cursor-pointer',
+                    ins.status === 'scheduled'
+                      ? 'bg-primary hover:bg-primary/90 text-primary-foreground'
+                      : 'bg-success hover:bg-success/90 text-success-foreground'
                   )}
                 >
                   {ins.status === 'scheduled' ? (isBn ? 'অন-সাইট ফিটিং শুরু' : 'Start On-Site') : (isBn ? 'কাজ সম্পন্ন ও সাইন-অফ' : 'Mark Completed')}

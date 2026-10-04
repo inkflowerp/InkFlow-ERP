@@ -132,7 +132,7 @@ export function TenantChatView({
  return (
       <div className="flex-1 flex flex-col items-center justify-center p-8 text-center text-muted-foreground bg-muted/50">
         <div className="w-16 h-16 rounded-3xl bg-muted flex items-center justify-center text-muted-foreground mb-3">
-          <Sparkles className="w-8 h-8 text-indigo-500"/>
+          <Sparkles className="w-8 h-8 text-primary"/>
         </div>
         <h3 className="text-sm font-semibold text-foreground">
           {tBilingual('Select a Support Conversation', 'একটি সহায়তা বার্তা নির্বাচন করুন')}
@@ -162,13 +162,13 @@ export function TenantChatView({
 
           <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <span className="tabular-nums font-bold text-xs text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 px-2 py-0.5 rounded-md border border-indigo-200/60 dark:border-indigo-900/50">
+              <span className="tabular-nums font-bold text-xs text-primary text-primary bg-primary/10 bg-primary/10 px-2 py-0.5 rounded-md border border-primary/20/60 border-border/50">
                 {conversation.ticket_number}
               </span>
-              <span className={cn('px-2 py-0.5 rounded-md text-2xs font-medium border', statusConfig.badgeClass)}>
+              <span className={cn('px-2 py-0.5 rounded-md text-xs font-medium border', statusConfig.badgeClass)}>
                 {statusConfig.labelEn}
               </span>
-              <span className={cn('hidden sm:inline-flex px-2 py-0.5 rounded-md text-2xs font-medium border', priorityConfig.badgeClass)}>
+              <span className={cn('hidden sm:inline-flex px-2 py-0.5 rounded-md text-xs font-medium border', priorityConfig.badgeClass)}>
                 {priorityConfig.labelEn}
               </span>
             </div>
@@ -183,22 +183,22 @@ export function TenantChatView({
           {/* Connection Pill */}
           <div
  className={cn(
-              'hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-2xs font-medium border',
+              'hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border',
  connectionState === 'connected'
-                ? 'bg-emerald-50 text-emerald-700 border-emerald-200/80 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800/80'
+                ? 'bg-success-surface text-success border-success-border/80 bg-success-surface text-success border-success-border/80'
                 : connectionState === 'connecting' || connectionState === 'reconnecting'
-                ? 'bg-amber-50 text-amber-700 border-amber-200/80 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800/80'
-                : 'bg-red-50 text-red-700 border-red-200/80 dark:bg-red-950/40 dark:text-red-400 dark:border-red-800/80'
+                ? 'bg-warning-surface text-warning border-warning-border/80 bg-warning-surface text-warning border-warning-border/80'
+                : 'bg-danger-surface text-destructive border-danger-border/80 bg-danger-surface text-destructive border-danger-border/80'
             )}
           >
             <span
  className={cn(
                 'w-1.5 h-1.5 rounded-full',
  connectionState === 'connected'
-                  ? 'bg-emerald-500 animate-pulse'
+                  ? 'bg-success animate-pulse'
                   : connectionState === 'connecting' || connectionState === 'reconnecting'
-                  ? 'bg-amber-500 animate-pulse'
-                  : 'bg-red-500'
+                  ? 'bg-warning animate-pulse'
+                  : 'bg-destructive'
               )}
             />
             <span className="capitalize">{connectionState}</span>
@@ -207,7 +207,7 @@ export function TenantChatView({
           {isClosed ? (
             <button
  onClick={() => onReopenTicket()}
- className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/50 hover:bg-indigo-100 rounded-xl border border-indigo-200 dark:border-indigo-800 transition-colors">
+ className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-primary text-primary bg-primary/10 bg-primary/10 hover:bg-primary/10 rounded-xl border border-primary/20 border-border transition-colors">
               <RotateCcw className="w-3.5 h-3.5"/>
               <span>{tBilingual('Reopen', 'পুনরায় চালু')}</span>
             </button>
@@ -215,7 +215,7 @@ export function TenantChatView({
             <button
  onClick={onCloseTicket}
  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-foreground bg-muted hover:bg-muted rounded-xl transition-colors">
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500"/>
+              <CheckCircle2 className="w-3.5 h-3.5 text-success"/>
               <span>{tBilingual('Mark Resolved', 'মীমাংসিত করুন')}</span>
             </button>
           )}
@@ -226,7 +226,7 @@ export function TenantChatView({
       <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
         {loading && messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center p-12 text-muted-foreground space-y-2">
-            <div className="w-6 h-6 rounded-full border-2 border-indigo-500 border-t-transparent animate-spin"/>
+            <div className="w-6 h-6 rounded-full border-2 border-primary/20 border-t-transparent animate-spin"/>
             <span className="text-xs">{tBilingual('Loading messages...', 'বার্তা লোড হচ্ছে...')}</span>
           </div>
         ) : (
@@ -235,10 +235,10 @@ export function TenantChatView({
  if (msg.message_type === 'system_event') {
  return (
                 <div key={msg.id} className="flex justify-center my-3">
-                  <div className="px-3 py-1 rounded-full bg-muted/70 text-2xs text-muted-foreground border border-input/40 /40 flex items-center gap-1.5 shadow-xs">
+                  <div className="px-3 py-1 rounded-full bg-muted/70 text-xs text-muted-foreground border border-input/40 /40 flex items-center gap-1.5 shadow-xs">
                     <Clock className="w-3 h-3"/>
                     <span>{msg.body}</span>
-                    <span className="text-2xs text-muted-foreground">· {formatTime(msg.created_at)}</span>
+                    <span className="text-xs text-muted-foreground">· {formatTime(msg.created_at)}</span>
                   </div>
                 </div>
               )
@@ -252,11 +252,11 @@ export function TenantChatView({
  className={cn('flex flex-col', isMe ? 'items-end' : 'items-start')}
               >
                 {/* Sender Tag */}
-                <div className="flex items-center gap-1.5 mb-1 px-1 text-2xs text-muted-foreground">
+                <div className="flex items-center gap-1.5 mb-1 px-1 text-xs text-muted-foreground">
                   {isMe ? (
                     <span>{tBilingual('You', 'আপনি')}</span>
                   ) : (
-                    <div className="flex items-center gap-1 text-indigo-600 dark:text-indigo-400 font-semibold">
+                    <div className="flex items-center gap-1 text-primary text-primary font-semibold">
                       <ShieldCheck className="w-3.5 h-3.5"/>
                       <span>{msg.sender_name}</span>
                     </div>
@@ -269,7 +269,7 @@ export function TenantChatView({
  className={cn(
                     'max-w-[85%] sm:max-w-[70%] rounded-xl p-3.5 text-xs sm:text-sm shadow-xs transition-all',
  isMe
-                      ? 'bg-indigo-600 text-white rounded-tr-xs'
+                      ? 'bg-primary text-white rounded-tr-xs'
                       : 'bg-card text-foreground rounded-tl-xs border border-border '
                   )}
                 >
@@ -277,25 +277,25 @@ export function TenantChatView({
 
                   {/* Attachments within Message */}
                   {msg.attachments && msg.attachments.length > 0 && (
-                    <div className="mt-2.5 pt-2 border-t border-indigo-500/30 space-y-1.5">
+                    <div className="mt-2.5 pt-2 border-t border-primary/20/30 space-y-1.5">
                       {msg.attachments.map((att) => (
                         <div
  key={att.id}
  className={cn(
                             'flex items-center justify-between gap-2 p-2 rounded-xl text-xs',
  isMe
-                              ? 'bg-indigo-700/60 text-indigo-50'
+                              ? 'bg-primary/60 text-primary'
                               : 'bg-muted text-foreground border border-border /60'
                           )}
                         >
                           <div className="flex items-center gap-2 truncate">
                             {att.type.startsWith('image/') ? (
-                              <ImageIcon className="w-4 h-4 shrink-0 text-blue-300"/>
+                              <ImageIcon className="w-4 h-4 shrink-0 text-primary"/>
                             ) : (
-                              <FileText className="w-4 h-4 shrink-0 text-amber-300"/>
+                              <FileText className="w-4 h-4 shrink-0 text-warning"/>
                             )}
                             <span className="truncate">{att.name}</span>
-                            <span className="text-2xs opacity-75">
+                            <span className="text-xs opacity-75">
                               ({Math.round(att.size / 1024)} KB)
                             </span>
                           </div>
@@ -320,16 +320,16 @@ export function TenantChatView({
 
       {/* Attachment Upload Preview Bar */}
       {attachments.length > 0 && (
-        <div className="px-4 py-2 bg-indigo-50/50 border-t border-border flex items-center gap-2 overflow-x-auto">
+        <div className="px-4 py-2 bg-primary/10/50 border-t border-border flex items-center gap-2 overflow-x-auto">
           {attachments.map((att) => (
             <div
  key={att.id}
  className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-card text-xs text-foreground border border-border shadow-xs shrink-0">
-              <Paperclip className="w-3 h-3 text-indigo-500"/>
+              <Paperclip className="w-3 h-3 text-primary"/>
               <span className="max-w-[150px] truncate">{att.name}</span>
               <button
  type="button"onClick={() => setAttachments((prev) => prev.filter((a) => a.id !== att.id))}
- className="p-0.5 text-muted-foreground hover:text-red-500">
+ className="p-0.5 text-muted-foreground hover:text-destructive">
                 <X className="w-3 h-3"/>
               </button>
             </div>
@@ -340,11 +340,11 @@ export function TenantChatView({
       {/* Message Composer */}
       {isClosed ? (
         <div className="p-4 border-t border-border bg-muted/80 text-center text-xs text-muted-foreground flex items-center justify-center gap-2">
-          <CheckCircle2 className="w-4 h-4 text-emerald-500"/>
+          <CheckCircle2 className="w-4 h-4 text-success"/>
           <span>{tBilingual('This support ticket is closed.', 'এই টিকেটটি সমাপ্ত করা হয়েছে।')}</span>
           <button
  onClick={() => onReopenTicket()}
- className="font-semibold text-indigo-600 dark:text-indigo-400 hover:underline ml-1">
+ className="font-semibold text-primary text-primary hover:underline ml-1">
             {tBilingual('Click here to reopen conversation', 'পুনরায় বার্তা পাঠাতে এখানে ক্লিক করুন')}
           </button>
         </div>
@@ -359,7 +359,7 @@ export function TenantChatView({
  className="hidden"/>
           </label>
 
-          <div className="flex-1 bg-muted rounded-xl border border-border focus-within:ring-2 focus-within:ring-indigo-500/20 focus-within:border-indigo-500 px-3 py-1.5 transition-all">
+          <div className="flex-1 bg-muted rounded-xl border border-border focus-within:ring-2 focus-within:focus:ring-ring/20 focus-within:border-primary/20 px-3 py-1.5 transition-all">
             <textarea
  ref={textareaRef}
  rows={1}
@@ -373,7 +373,7 @@ export function TenantChatView({
           <button
  type="button"onClick={handleSend}
  disabled={(!inputText.trim() && attachments.length === 0) || sending}
- className="p-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed text-white shadow-sm shadow-indigo-500/20 transition-all shrink-0 cursor-pointer">
+ className="p-2.5 rounded-xl bg-primary hover:bg-primary disabled:opacity-40 disabled:cursor-not-allowed text-white shadow-sm shadow-indigo-500/20 transition-all shrink-0 cursor-pointer">
             <Send className="w-5 h-5"/>
           </button>
         </div>

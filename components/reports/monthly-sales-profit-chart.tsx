@@ -48,11 +48,11 @@ export function MonthlySalesProfitChart({
           {/* Legend */}
           <div className="flex items-center gap-3 text-xs">
             <div className="flex items-center gap-1.5 font-medium text-muted-foreground">
-              <span className="h-2.5 w-2.5 rounded-full bg-emerald-500"/>
+              <span className="h-2.5 w-2.5 rounded-full bg-success"/>
               <span>{tBilingual('Sales', 'বিক্রয়')}</span>
             </div>
             <div className="flex items-center gap-1.5 font-medium text-muted-foreground">
-              <span className="h-2.5 w-2.5 rounded-full bg-blue-600"/>
+              <span className="h-2.5 w-2.5 rounded-full bg-primary"/>
               <span>{tBilingual('Profit', 'লাভ')}</span>
             </div>
           </div>
@@ -81,7 +81,7 @@ export function MonthlySalesProfitChart({
         ) : (
           <>
             {/* Y Axis Grid Labels */}
-            <div className="absolute left-0 top-0 bottom-6 w-14 flex flex-col justify-between text-2xs tabular-nums text-muted-foreground pointer-events-none select-none text-right pr-2">
+            <div className="absolute left-0 top-0 bottom-6 w-14 flex flex-col justify-between text-xs tabular-nums text-muted-foreground pointer-events-none select-none text-right pr-2">
               <span>{formatYAxis(maxVal)}</span>
               <span>{formatYAxis(maxVal * 0.75)}</span>
               <span>{formatYAxis(maxVal * 0.5)}</span>
@@ -113,17 +113,17 @@ export function MonthlySalesProfitChart({
  className="flex-1 flex items-end justify-center gap-1 h-full relative group cursor-pointer">
                     {/* Hover Tooltip */}
                     {isHovered && (
-                      <div className="absolute -top-16 left-1/2 -translate-x-1/2 z-30 bg-surface-inset text-foreground text-2xs py-2 px-3 rounded-xl whitespace-nowrap shadow-xs pointer-events-none border border-border">
+                      <div className="absolute -top-16 left-1/2 -translate-x-1/2 z-30 bg-surface-inset text-foreground text-xs py-2 px-3 rounded-xl whitespace-nowrap shadow-xs pointer-events-none border border-border">
                         <div className="font-bold text-foreground mb-0.5 flex items-center justify-between gap-2">
                           <span>{item.monthLabel}</span>
-                          <span className="text-2xs text-blue-300 tabular-nums">
+                          <span className="text-xs text-primary tabular-nums">
                             {item.margin}% {tBilingual('margin', 'মার্জিন')}
                           </span>
                         </div>
-                        <div className="text-emerald-400 tabular-nums">
+                        <div className="text-success tabular-nums">
  {tBilingual('Sales', 'বিক্রয়')}: ৳ {item.sales.toLocaleString()}
                         </div>
-                        <div className="text-blue-400 tabular-nums">
+                        <div className="text-primary tabular-nums">
  {tBilingual('Profit', 'লাভ')}: ৳ {item.profit.toLocaleString()}
                         </div>
                       </div>
@@ -133,8 +133,8 @@ export function MonthlySalesProfitChart({
                     <div
  style={{ height: `${Math.max(salesHeight > 0 ? 3 : 0, salesHeight)}%` }}
  className={cn(
-                        'w-1.5 sm:w-2.5 2xl:w-3 bg-emerald-500 rounded-t-xs transition-all duration-200',
- isHovered ? 'bg-emerald-400 brightness-110' : ''
+                        'w-1.5 sm:w-2.5 2xl:w-3 bg-success rounded-t-xs transition-all duration-200',
+ isHovered ? 'bg-success brightness-110' : ''
                       )}
                     />
 
@@ -142,8 +142,8 @@ export function MonthlySalesProfitChart({
                     <div
  style={{ height: `${Math.max(profitHeight > 0 ? 3 : 0, profitHeight)}%` }}
  className={cn(
-                        'w-1.5 sm:w-2.5 2xl:w-3 bg-blue-600 rounded-t-xs transition-all duration-200',
- isHovered ? 'bg-blue-500 brightness-110' : ''
+                        'w-1.5 sm:w-2.5 2xl:w-3 bg-primary rounded-t-xs transition-all duration-200',
+ isHovered ? 'bg-primary brightness-110' : ''
                       )}
                     />
                   </div>
@@ -152,7 +152,7 @@ export function MonthlySalesProfitChart({
             </div>
 
             {/* X Axis Month Labels */}
-            <div className="absolute left-16 right-0 bottom-0 flex justify-between text-2xs text-muted-foreground font-medium px-2">
+            <div className="absolute left-16 right-0 bottom-0 flex justify-between text-xs text-muted-foreground font-medium px-2">
               {data.map((c) => (
                 <span
  key={c.monthKey}

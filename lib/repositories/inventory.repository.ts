@@ -1253,11 +1253,19 @@ export class InventoryRepository {
     roll_sizes?: any[] | null
     sheet_sizes?: any[] | null
     variants?: any[] | null
+    expected_version?: number
   }): Promise<{ material: MaterialRecord; ledgerEntry: StockLedgerRecord }> {
     // 1. Fetch live material under tenant isolation
     const material = await this.getMaterialById(params.material_id, params.company_id)
     if (!material) {
       throw new Error(`Material with ID ${params.material_id} not found.`)
+    }
+
+    if (typeof params.expected_version === 'number' && material.version !== undefined && material.version !== params.expected_version) {
+      const conflictErr: any = new Error('Updated by someone else, reload?')
+      conflictErr.code = 'STALE_WRITE'
+      conflictErr.conflict = true
+      throw conflictErr
     }
 
     const currentStock = Number(material.current_stock ?? (material as any).stock ?? 0) || 0
@@ -1291,9 +1299,9 @@ export class InventoryRepository {
         ? material.variants
         : (material.material_config as any)?.variants || null)
 
-    // Try Supabase RPC or Direct Mutation
+    // Try Supabase RPC via Admin Client (service-role restricted) or Direct Mutation
     try {
-      const supabase = await createClient()
+      const supabase = createAdminClient() || (await createClient())
       const { data: rpcResult, error: rpcError } = await (supabase as any).rpc('mutate_inventory_stock_atomic', {
         p_company_id: params.company_id,
         p_branch_id: params.branch_id || null,
@@ -2291,6 +2299,7 @@ export class InventoryRepository {
         roll_sizes: updatedRollSizes,
         sheet_sizes: updatedSheetSizes,
         variants: updatedVariants,
+        expected_version: (it as any).expected_version,
       })
 
       // Transition physical rolls if applicable

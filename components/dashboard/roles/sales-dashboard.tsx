@@ -65,7 +65,7 @@ export function SalesDashboard({
           <h1 className="text-xl sm:text-2xl font-black">
             {tBilingual('Sales Home', 'সেলস ও বুকিং সেন্টার')}
           </h1>
-          <p className="text-xs text-blue-100/90">
+          <p className="text-xs text-primary/90">
             {tBilingual('Fast job order booking, customer quotations, dues follow-up, and billing.', 'দ্রুত কাজের বুকিং, কোটেশন, কাস্টমার বাকি টাকা আদায় এবং বিলিং।')}
           </p>
         </div>

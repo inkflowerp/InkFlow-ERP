@@ -199,15 +199,15 @@ export function EmployeeFormWizard({
                 <button
  key={s.id}
  onClick={() => setCurrentStep(s.id)}
- type="button"className={`flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-medium transition-colors shrink-0 ${
+ type="button"className={`flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium transition-colors shrink-0 ${
  isCurrent
-                      ? 'bg-blue-600 text-white shadow-sm'
+                      ? 'bg-primary text-white shadow-sm'
                       : isDone
-                      ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                      ? 'bg-success-surface text-success border border-success-border'
                       : 'bg-muted text-muted-foreground hover:bg-muted'
                   }`}
                 >
-                  {isDone ? <Check className="w-3 h-3 text-emerald-600"/> : <Icon className="w-3 h-3"/>}
+                  {isDone ? <Check className="w-3 h-3 text-success"/> : <Icon className="w-3 h-3"/>}
                   <span>{s.label}</span>
                 </button>
               )
@@ -218,8 +218,8 @@ export function EmployeeFormWizard({
         {/* Step Contents */}
         <div className="p-6 max-h-[60vh] overflow-y-auto space-y-4">
           {errorMsg && (
-            <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 shrink-0 text-red-600"/>
+            <div className="p-3 rounded-lg bg-danger-surface border border-danger-border text-destructive text-xs flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0 text-destructive"/>
               <span>{errorMsg}</span>
             </div>
           )}
@@ -457,7 +457,7 @@ export function EmployeeFormWizard({
  type="button"onClick={() => updateField('payment_method', method)}
  className={`p-2.5 rounded-lg border text-center uppercase font-bold text-xs transition-all ${
  formData.payment_method === method
-                          ? 'border-blue-600 bg-blue-50 text-blue-700 shadow-xs'
+                          ? 'border-border bg-primary/10 text-primary shadow-xs'
                           : 'border-border bg-card text-muted-foreground hover:bg-muted'
                       }`}
                     >
@@ -477,7 +477,7 @@ export function EmployeeFormWizard({
                   <input
  type="checkbox"checked={formData.portal_credentials?.create_login || false}
  onChange={(e) => updatePortal('create_login', e.target.checked)}
- className="rounded border-input text-blue-600 focus:ring-ring w-4 h-4"/>
+ className="rounded border-input text-primary focus:ring-ring w-4 h-4"/>
                   <span className="font-semibold text-foreground text-xs">
  Enable Web & Mobile App Access
                   </span>
@@ -517,7 +517,7 @@ export function EmployeeFormWizard({
               <div className="p-4 rounded-xl border border-border bg-card text-center space-y-2">
                 <FileText className="w-8 h-8 text-muted-foreground mx-auto"/>
                 <h4 className="font-semibold text-foreground text-xs">Identity & Contract Files</h4>
-                <p className="text-[11px] text-muted-foreground max-w-sm mx-auto">
+                <p className="text-xs text-muted-foreground max-w-sm mx-auto">
  National ID (NID), appointment letter, and resume attachments can be uploaded now or attached later.
                 </p>
               </div>
@@ -547,7 +547,7 @@ export function EmployeeFormWizard({
               <Button
  type="button"size="sm"onClick={handleSubmit}
  disabled={isSubmitting}
- className="h-8 px-5 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs min-h-[32px]">
+ className="h-8 px-5 text-xs font-semibold bg-success hover:bg-success text-white shadow-xs min-h-[32px]">
                 {isSubmitting ? 'Saving...' : initialData ? 'Update Employee' : 'Complete & Save'}
               </Button>
             )}

@@ -65,10 +65,11 @@ export class OrderService {
   static async updateOrder(
     id: string,
     data: Partial<SalesOrderRecord>,
-    companyId: string
+    companyId: string,
+    expectedVersion?: number
   ): Promise<SalesOrderRecord | null> {
     if (!id || !companyId) return null
-    const updated = await OrderRepository.updateOrder(id, data, companyId)
+    const updated = await OrderRepository.updateOrder(id, data, companyId, expectedVersion)
     if (updated && data.status) {
       try {
         const { WorkflowService } = await import('@/services/workflow.service')

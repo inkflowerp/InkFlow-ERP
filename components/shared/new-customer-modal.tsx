@@ -31,7 +31,7 @@ import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
 import { usePermissions } from '@/hooks/use-permissions'
 import { useSubscription } from '@/hooks/use-subscription'
-import { GeoService } from '@/services/geo.service'
+import { GeoService } from '@/lib/geo/geo-utils'
 import {
  createCustomerAction,
  checkCustomerDuplicateAction,
@@ -321,14 +321,14 @@ export function NewCustomerModal({
  onOpenChange={onOpenChange}
  size="4xl"title={
         <div className="flex items-center gap-2.5">
-          <div className="h-9 w-9 rounded-xl bg-blue-600/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 flex items-center justify-center">
+          <div className="h-9 w-9 rounded-xl bg-primary/10 text-primary bg-primary/20 text-primary flex items-center justify-center">
             <User className="h-5 w-5"/>
           </div>
           <div>
             <h2 className="text-base font-black text-foreground">
               {locale === 'bn' ? 'নতুন কাস্টমার নিবন্ধন' : 'New Customer Registration'}
             </h2>
-            <p className="text-2xs text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
  Fast walk-in customer creation, credit limits, delivery addresses, and customer-specific rates
             </p>
           </div>
@@ -367,7 +367,7 @@ export function NewCustomerModal({
                   }
  setActiveTab('rates')
                 }}
- className="h-10 px-4 rounded-xl font-bold border-blue-300 text-blue-700 dark:border-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-950/40 gap-1.5 cursor-pointer text-xs">
+ className="h-10 px-4 rounded-xl font-bold border-primary/20 text-primary border-border text-primary hover:bg-primary/10 dark:hover:bg-primary/10 gap-1.5 cursor-pointer text-xs">
                 <span>Next: Custom Rates</span>
                 <ChevronRight className="w-4 h-4"/>
               </Button>
@@ -399,7 +399,7 @@ export function NewCustomerModal({
  className={cn(
               'flex-1 py-1.5 px-3 rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer',
  activeTab === 'info'
-                ? 'bg-card text-blue-600 shadow-xs dark:text-blue-400'
+                ? 'bg-card text-primary shadow-xs text-primary'
                 : 'text-muted-foreground hover:text-foreground'
             )}
           >
@@ -412,7 +412,7 @@ export function NewCustomerModal({
  className={cn(
               'flex-1 py-1.5 px-3 rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer',
  activeTab === 'rates'
-                ? 'bg-card text-blue-600 shadow-xs dark:text-blue-400'
+                ? 'bg-card text-primary shadow-xs text-primary'
                 : 'text-muted-foreground hover:text-foreground'
             )}
           >
@@ -423,15 +423,15 @@ export function NewCustomerModal({
 
         {/* Duplicate Matches Alert */}
         {duplicateMatches.length > 0 && !dismissDuplicate && (
-          <div className="p-3.5 rounded-xl border border-amber-200 bg-amber-50/80 dark:border-amber-900 dark:bg-amber-950/40 text-xs space-y-2.5">
+          <div className="p-3.5 rounded-xl border border-warning-border bg-warning-surface/80 border-warning-border bg-warning-surface text-xs space-y-2.5">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1.5 font-bold text-amber-800 dark:text-amber-300">
-                <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0"/>
+              <div className="flex items-center gap-1.5 font-bold text-warning text-warning">
+                <AlertTriangle className="h-4 w-4 text-warning shrink-0"/>
                 <span>Possible Existing Customer Detected</span>
               </div>
               <button
  type="button"onClick={() => setDismissDuplicate(true)}
- className="text-2xs font-bold text-amber-800 dark:text-amber-300 hover:underline cursor-pointer">
+ className="text-xs font-bold text-warning text-warning hover:underline cursor-pointer">
  Continue Anyway &rarr;
               </button>
             </div>
@@ -440,13 +440,13 @@ export function NewCustomerModal({
               {duplicateMatches.map((m) => (
                 <div
  key={m.customer.id}
- className="p-2.5 rounded-lg bg-card/90 border border-amber-200/80 dark:border-amber-900/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+ className="p-2.5 rounded-lg bg-card/90 border border-warning-border/80 border-warning-border/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <div>
                     <div className="flex items-center gap-1.5 flex-wrap">
                       <span className="font-bold text-foreground">
                         {m.customer.name}
                       </span>
-                      <Badge variant="outline"className="tabular-nums text-2xs px-1.5 py-0 text-blue-700 bg-blue-50/50 border-blue-200 dark:border-blue-900 dark:text-blue-300">
+                      <Badge variant="outline"className="tabular-nums text-xs px-1.5 py-0 text-primary bg-primary/10/50 border-primary/20 border-border text-primary">
                         {formatCustomerIdNo(m.customer)}
                       </Badge>
                       {m.customer.company_name && (
@@ -455,10 +455,10 @@ export function NewCustomerModal({
                         </span>
                       )}
                     </div>
-                    <div className="text-2xs text-muted-foreground tabular-nums">
+                    <div className="text-xs text-muted-foreground tabular-nums">
                       {m.customer.mobile} {m.customer.whatsapp ? `• WA: ${m.customer.whatsapp}` : ''}
                     </div>
-                    <div className="text-2xs text-amber-700 dark:text-amber-300 font-medium mt-0.5">
+                    <div className="text-xs text-warning text-warning font-medium mt-0.5">
                       {m.matchReason}
                     </div>
                   </div>
@@ -485,7 +485,7 @@ export function NewCustomerModal({
             {/* Section 1: Identity & Category */}
             <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
               <div className="flex items-center gap-2">
-                <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
+                <div className="h-6 w-6 rounded-lg bg-primary/10 text-primary bg-primary/60 text-primary flex items-center justify-center font-bold text-xs">
                   1
                 </div>
                 <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
@@ -496,7 +496,7 @@ export function NewCustomerModal({
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 <div>
                   <Label className="text-xs font-semibold mb-1 block">
- Customer Name <span className="text-rose-500">*</span>
+ Customer Name <span className="text-destructive">*</span>
                   </Label>
                   <Input
  ref={nameInputRef}
@@ -507,10 +507,10 @@ export function NewCustomerModal({
  if (fieldErrors.name) setFieldErrors((prev) => ({ ...prev, name: '' }))
                     }}
  className={cn("text-xs h-9 font-medium",
- fieldErrors.name &&"border-rose-500 focus-visible:ring-rose-400 bg-rose-50/30 dark:bg-rose-950/20")}
+ fieldErrors.name &&"border-danger-border focus-visible:focus:ring-ring bg-danger-surface/30 bg-danger-surface")}
                   />
                   {fieldErrors.name && (
-                    <p className="text-2xs text-rose-600 dark:text-rose-400 font-medium mt-1 flex items-center gap-1">
+                    <p className="text-xs text-destructive text-destructive font-medium mt-1 flex items-center gap-1">
                       <AlertCircle className="w-3.5 h-3.5 shrink-0"/>
                       <span>{fieldErrors.name}</span>
                     </p>
@@ -529,7 +529,7 @@ export function NewCustomerModal({
 
                 <div>
                   <Label className="text-xs font-semibold mb-1 block">
- Customer Type <span className="text-rose-500">*</span>
+ Customer Type <span className="text-destructive">*</span>
                   </Label>
                   <select
  value={customerType}
@@ -552,7 +552,7 @@ export function NewCustomerModal({
  placeholder="Auto (e.g. CUST-0002)"value={customerIdNo}
  onChange={(e) => setCustomerIdNo(e.target.value)}
  className="text-xs h-9 tabular-nums"/>
-                  <p className="text-2xs text-muted-foreground mt-1">Leave empty to auto-generate</p>
+                  <p className="text-xs text-muted-foreground mt-1">Leave empty to auto-generate</p>
                 </div>
 
                 <div>
@@ -590,7 +590,7 @@ export function NewCustomerModal({
             {/* Section 2: Contact & Phone */}
             <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
               <div className="flex items-center gap-2">
-                <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
+                <div className="h-6 w-6 rounded-lg bg-primary/10 text-primary bg-primary/60 text-primary flex items-center justify-center font-bold text-xs">
                   2
                 </div>
                 <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
@@ -601,7 +601,7 @@ export function NewCustomerModal({
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
                   <Label className="text-xs font-semibold mb-1 block">
- Phone Number <span className="text-rose-500">*</span>
+ Phone Number <span className="text-destructive">*</span>
                   </Label>
                   <Input
  required
@@ -611,10 +611,10 @@ export function NewCustomerModal({
  if (fieldErrors.mobile) setFieldErrors((prev) => ({ ...prev, mobile: '' }))
                     }}
  className={cn("text-xs h-9 tabular-nums",
- fieldErrors.mobile &&"border-rose-500 focus-visible:ring-rose-400 bg-rose-50/30 dark:bg-rose-950/20")}
+ fieldErrors.mobile &&"border-danger-border focus-visible:focus:ring-ring bg-danger-surface/30 bg-danger-surface")}
                   />
                   {fieldErrors.mobile && (
-                    <p className="text-2xs text-rose-600 dark:text-rose-400 font-medium mt-1 flex items-center gap-1">
+                    <p className="text-xs text-destructive text-destructive font-medium mt-1 flex items-center gap-1">
                       <AlertCircle className="w-3.5 h-3.5 shrink-0"/>
                       <span>{fieldErrors.mobile}</span>
                     </p>
@@ -624,11 +624,11 @@ export function NewCustomerModal({
                 <div>
                   <div className="flex items-center justify-between mb-1">
                     <Label className="text-xs font-semibold">WhatsApp Number</Label>
-                    <label className="flex items-center gap-1 text-2xs text-muted-foreground cursor-pointer">
+                    <label className="flex items-center gap-1 text-xs text-muted-foreground cursor-pointer">
                       <input
  type="checkbox"checked={sameAsMobile}
  onChange={(e) => setSameAsMobile(e.target.checked)}
- className="rounded border-input text-blue-600 h-3 w-3"/>
+ className="rounded border-input text-primary h-3 w-3"/>
                       <span>Same as Phone</span>
                     </label>
                   </div>
@@ -654,7 +654,7 @@ export function NewCustomerModal({
             {/* Section 3: Location & Address */}
             <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
               <div className="flex items-center gap-2">
-                <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
+                <div className="h-6 w-6 rounded-lg bg-primary/10 text-primary bg-primary/60 text-primary flex items-center justify-center font-bold text-xs">
                   3
                 </div>
                 <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
@@ -730,7 +730,7 @@ export function NewCustomerModal({
                 </div>
                 <div className="sm:col-span-2">
                   <Label className="text-xs font-semibold mb-1 block">
- Street Address <span className="text-rose-500">*</span>
+ Street Address <span className="text-destructive">*</span>
                   </Label>
                   <Input
  placeholder="Holding / Road / Suite details..."value={fullAddress}
@@ -746,7 +746,7 @@ export function NewCustomerModal({
  type="button"onClick={() => setIsAdditionalOpen(!isAdditionalOpen)}
  className="w-full flex items-center justify-between p-4 font-bold text-xs text-foreground hover:bg-muted dark:hover:bg-muted/40 cursor-pointer">
                 <div className="flex items-center gap-2">
-                  <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
+                  <div className="h-6 w-6 rounded-lg bg-primary/10 text-primary bg-primary/60 text-primary flex items-center justify-center font-bold text-xs">
                     4
                   </div>
                   <span className="uppercase tracking-wider">Credit Terms, Tax IDs & Notes (Optional)</span>
@@ -813,8 +813,8 @@ export function NewCustomerModal({
         {/* TAB 2: Customer Rates */}
         {activeTab === 'rates' && (
           <div className="space-y-4">
-            <div className="p-3.5 rounded-xl bg-blue-50/70 dark:bg-blue-950/30 border border-blue-200/60 dark:border-blue-900/40 text-xs flex items-start gap-2.5">
-              <Sparkles className="h-4 w-4 text-blue-600 shrink-0 mt-0.5"/>
+            <div className="p-3.5 rounded-xl bg-primary/10/70 bg-primary/10 border border-primary/20/60 border-border/40 text-xs flex items-start gap-2.5">
+              <Sparkles className="h-4 w-4 text-primary shrink-0 mt-0.5"/>
               <div className="text-foreground text-xs leading-relaxed">
  Configure special contracted rates for this customer. When creating quotations or invoices, InkFlow automatically pulls these custom rates.
               </div>
@@ -822,7 +822,7 @@ export function NewCustomerModal({
 
             {isLoadingProducts ? (
               <div className="py-12 text-center text-xs text-muted-foreground">
-                <Loader2 className="h-5 w-5 animate-spin mx-auto mb-2 text-blue-600"/>
+                <Loader2 className="h-5 w-5 animate-spin mx-auto mb-2 text-primary"/>
  Loading products catalog...
               </div>
             ) : products.length === 0 ? (

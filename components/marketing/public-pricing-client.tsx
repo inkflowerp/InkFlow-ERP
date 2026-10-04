@@ -23,14 +23,14 @@ function PricingPageContent() {
  const { paidPlans, trialDays, trialDaysBn } = usePublicSubscriptionPlans()
 
  return (
-    <div className="min-h-screen bg-muted text-foreground selection:bg-blue-600 selection:text-white font-sans antialiased overflow-x-hidden">
+    <div className="min-h-screen bg-muted text-foreground selection:bg-primary selection:text-white font-sans antialiased overflow-x-hidden">
       <MarketingNavbar />
 
       <main className="pt-20">
         {/* Pricing Header Banner */}
         <div className="py-16 sm:py-20 bg-card border-b border-border text-center px-4">
           <div className="max-w-3xl mx-auto space-y-3">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200/70 dark:border-blue-800/60 uppercase tracking-wider">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary bg-primary/10 text-primary border border-primary/20/70 border-border/60 uppercase tracking-wider">
               <Zap className="h-3.5 w-3.5"/>
               <span>{tBilingual('Transparent Plans in BDT', 'স্বচ্ছ মূল্যতালিকা')}</span>
             </span>
@@ -70,7 +70,7 @@ function PricingPageContent() {
                         <th
  key={p.id || p.code}
  className={`p-4 text-center ${
- isBusiness ? 'text-blue-600 dark:text-blue-400 font-bold' : 'text-foreground'
+ isBusiness ? 'text-primary text-primary font-bold' : 'text-foreground'
                           }`}
                         >
                           {tBilingual(p.name, p.name_bn)}
@@ -88,7 +88,7 @@ function PricingPageContent() {
                         <td
  key={p.id || p.code}
  className={`p-4 text-center tabular-nums font-bold ${
- isBusiness ? 'text-blue-600 dark:text-blue-400 text-sm' : 'text-foreground text-sm'
+ isBusiness ? 'text-primary text-primary text-sm' : 'text-foreground text-sm'
                           }`}
                         >
                           ৳ {p.price_monthly.toLocaleString()}
@@ -132,7 +132,7 @@ function PricingPageContent() {
                     <td className="p-4">SFT Quotation Auto-Calculator</td>
                     {paidPlans.map((p) => (
                       <td key={p.id || p.code} className="p-4 text-center">
-                        <Check className="h-4 w-4 text-emerald-600 mx-auto"/>
+                        <Check className="h-4 w-4 text-success mx-auto"/>
                       </td>
                     ))}
                   </tr>
@@ -140,7 +140,7 @@ function PricingPageContent() {
                     <td className="p-4">Traditional Delivery Challan (NBR)</td>
                     {paidPlans.map((p) => (
                       <td key={p.id || p.code} className="p-4 text-center">
-                        <Check className="h-4 w-4 text-emerald-600 mx-auto"/>
+                        <Check className="h-4 w-4 text-success mx-auto"/>
                       </td>
                     ))}
                   </tr>
@@ -148,7 +148,7 @@ function PricingPageContent() {
                     <td className="p-4">WhatsApp Payment Reminders</td>
                     {paidPlans.map((p) => (
                       <td key={p.id || p.code} className="p-4 text-center">
-                        <Check className="h-4 w-4 text-emerald-600 mx-auto"/>
+                        <Check className="h-4 w-4 text-success mx-auto"/>
                       </td>
                     ))}
                   </tr>
@@ -159,7 +159,7 @@ function PricingPageContent() {
                         {p.code === 'starter' ? (
                           <span className="text-muted-foreground">—</span>
                         ) : (
-                          <Check className="h-4 w-4 text-emerald-600 mx-auto"/>
+                          <Check className="h-4 w-4 text-success mx-auto"/>
                         )}
                       </td>
                     ))}
@@ -171,7 +171,7 @@ function PricingPageContent() {
                         {p.code === 'starter' ? (
                           <span className="text-muted-foreground">—</span>
                         ) : (
-                          <Check className="h-4 w-4 text-emerald-600 mx-auto"/>
+                          <Check className="h-4 w-4 text-success mx-auto"/>
                         )}
                       </td>
                     ))}
@@ -183,7 +183,7 @@ function PricingPageContent() {
                         {p.code === 'starter' ? (
                           <span className="text-muted-foreground">—</span>
                         ) : (
-                          <Check className="h-4 w-4 text-emerald-600 mx-auto"/>
+                          <Check className="h-4 w-4 text-success mx-auto"/>
                         )}
                       </td>
                     ))}
@@ -193,7 +193,7 @@ function PricingPageContent() {
                     {paidPlans.map((p) => (
                       <td key={p.id || p.code} className="p-4 text-center">
                         {p.code === 'enterprise' ? (
-                          <span className="text-xs font-bold text-blue-600">Dedicated 24/7</span>
+                          <span className="text-xs font-bold text-primary">Dedicated 24/7</span>
                         ) : (
                           <span className="text-muted-foreground">Business Hours</span>
                         )}

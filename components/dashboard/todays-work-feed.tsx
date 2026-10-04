@@ -125,10 +125,10 @@ export function TodaysWorkFeed({ tasks = [], onRefresh, onOpenNewWork }: TodaysW
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <h2 className="text-base font-bold text-foreground flex items-center gap-2">
-            <Clock className="h-5 w-5 text-blue-600"/>
+            <Clock className="h-5 w-5 text-primary"/>
             <span>{tBilingual("Today's Schedule & Tasks", 'আজকের কাজের তালিকা')}</span>
           </h2>
-          <Badge variant="outline"className="text-xs tabular-nums font-bold bg-blue-50 text-blue-700 border-blue-200">
+          <Badge variant="outline"className="text-xs tabular-nums font-bold bg-primary/10 text-primary border-primary/20">
             {tasks.length}
           </Badge>
         </div>
@@ -157,7 +157,7 @@ export function TodaysWorkFeed({ tasks = [], onRefresh, onOpenNewWork }: TodaysW
       {filteredTasks.length === 0 ? (
         <Card className="border border-dashed border-input bg-muted">
           <CardContent className="p-8 text-center space-y-3">
-            <CheckCircle2 className="h-10 w-10 text-emerald-500 mx-auto"/>
+            <CheckCircle2 className="h-10 w-10 text-success mx-auto"/>
             <div>
               <div className="text-sm font-bold text-foreground">
                 {tBilingual('No active work in this filter', 'এই ফিল্টারে কোনো কাজ নেই')}
@@ -188,9 +188,9 @@ export function TodaysWorkFeed({ tasks = [], onRefresh, onOpenNewWork }: TodaysW
  key={task.id}
  className={`transition-all ${
  isRunning
-                    ? 'border-2 border-blue-500 bg-blue-50/20 dark:bg-blue-950/20 shadow-sm'
+                    ? 'border-2 border-primary/20 bg-primary/10/20 bg-primary/10 shadow-sm'
                     : isPaused
-                    ? 'border-2 border-amber-500 bg-amber-50/20 dark:bg-amber-950/20'
+                    ? 'border-2 border-warning-border bg-warning-surface/20 bg-warning-surface'
                     : 'border border-border bg-card '
                 }`}
               >
@@ -202,18 +202,18 @@ export function TodaysWorkFeed({ tasks = [], onRefresh, onOpenNewWork }: TodaysW
                         <Badge
  className={`text-xs font-bold uppercase tracking-wider ${
  isRunning
-                              ? 'bg-blue-600 text-white'
+                              ? 'bg-primary text-white'
                               : isPaused
-                              ? 'bg-amber-600 text-white'
+                              ? 'bg-warning text-white'
                               : isCompleted
-                              ? 'bg-emerald-600 text-white'
+                              ? 'bg-success text-white'
                               : 'bg-card-elevated text-foreground'
                           }`}
                         >
                           #{task.job_number || task.task_number}
                         </Badge>
                         {isUrgent && (
-                          <Badge className="bg-rose-600 text-white text-2xs font-bold animate-pulse">
+                          <Badge className="bg-destructive text-white text-xs font-bold animate-pulse">
                             {tBilingual('URGENT', 'জরুরি')}
                           </Badge>
                         )}
@@ -233,7 +233,7 @@ export function TodaysWorkFeed({ tasks = [], onRefresh, onOpenNewWork }: TodaysW
                         {task.quantity} <span className="text-xs font-normal text-muted-foreground">{task.unit}</span>
                       </div>
                       {task.assigned_machine_name && (
-                        <div className="text-2xs text-muted-foreground flex items-center justify-end gap-1">
+                        <div className="text-xs text-muted-foreground flex items-center justify-end gap-1">
                           <Printer className="h-3 w-3"/>
                           <span className="truncate max-w-[120px]">{task.assigned_machine_name}</span>
                         </div>
@@ -257,14 +257,14 @@ export function TodaysWorkFeed({ tasks = [], onRefresh, onOpenNewWork }: TodaysW
                           <Button
  type="button"variant="outline"size="sm"disabled={actionLoadingId === task.id}
  onClick={() => handlePause(task)}
- className="h-10 text-xs font-bold border-amber-300 text-amber-800 hover:bg-amber-50">
+ className="h-10 text-xs font-bold border-warning-border text-warning hover:bg-warning-surface">
                             <Pause className="h-4 w-4 mr-1"/>
                             {tBilingual('Pause', 'স্থগিত')}
                           </Button>
                           <Button
  type="button"variant="outline"size="sm"onClick={() => setProblemTask(task)}
- className="h-10 text-xs font-bold border-rose-300 text-rose-800 hover:bg-rose-50">
-                            <AlertOctagon className="h-4 w-4 mr-1 text-rose-600"/>
+ className="h-10 text-xs font-bold border-danger-border text-destructive hover:bg-danger-surface">
+                            <AlertOctagon className="h-4 w-4 mr-1 text-destructive"/>
                             {tBilingual('Report Issue', 'সমস্যা রিপোর্ট')}
                           </Button>
                         </div>
@@ -272,20 +272,20 @@ export function TodaysWorkFeed({ tasks = [], onRefresh, onOpenNewWork }: TodaysW
                         <Button
  type="button"size="sm"disabled={actionLoadingId === task.id}
  onClick={() => handleOpenComplete(task)}
- className="h-10 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white px-6 shadow-sm">
+ className="h-10 text-xs font-bold bg-success hover:bg-success text-white px-6 shadow-sm">
                           <CheckCircle2 className="h-4 w-4 mr-1.5"/>
                           {tBilingual('Complete', 'সম্পন্ন')}
                         </Button>
                       </div>
                     ) : isPaused ? (
                       <div className="flex items-center gap-2 w-full justify-between">
-                        <span className="text-xs font-semibold text-amber-700 dark:text-amber-300 truncate">
+                        <span className="text-xs font-semibold text-warning text-warning truncate">
                           {tBilingual('Paused: ', 'স্থগিত: ')}{task.hold_reason || tBilingual('Operator Pause', 'অপারেটর বিরতি')}
                         </span>
                         <div className="flex items-center gap-2">
                           <Button
  type="button"variant="outline"size="sm"onClick={() => setProblemTask(task)}
- className="h-9 text-xs font-semibold border-rose-200 text-rose-700">
+ className="h-9 text-xs font-semibold border-danger-border text-destructive">
                             <AlertOctagon className="h-3.5 w-3.5 mr-1"/>
                             {tBilingual('Report Issue', 'সমস্যা')}
                           </Button>
@@ -329,34 +329,34 @@ export function TodaysWorkFeed({ tasks = [], onRefresh, onOpenNewWork }: TodaysW
  hideFooter={true}
         >
           <div className="space-y-4">
-            <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 rounded-xl border border-emerald-200 dark:border-emerald-900">
-              <div className="font-bold text-emerald-900 dark:text-emerald-100 text-sm">
+            <div className="p-3 bg-success-surface bg-success-surface rounded-xl border border-success-border border-success-border">
+              <div className="font-bold text-success text-success text-sm">
                 {completingTask.task_name}
               </div>
-              <div className="text-xs text-emerald-700 dark:text-emerald-300">
+              <div className="text-xs text-success text-success">
  Customer: {completingTask.customer_name} • Target Qty: {completingTask.quantity} {completingTask.unit}
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <Label className="text-xs font-bold text-emerald-700">
+                <Label className="text-xs font-bold text-success">
                   {tBilingual('Good Quantity', 'সঠিক পরিমাণ')} *
                 </Label>
                 <Input
  type="number"min="0"value={goodQty}
  onChange={(e) => setGoodQty(parseInt(e.target.value, 10) || 0)}
- className="h-11 text-base font-bold tabular-nums text-center text-emerald-700"/>
+ className="h-11 text-base font-bold tabular-nums text-center text-success"/>
               </div>
 
               <div className="space-y-1">
-                <Label className="text-xs font-bold text-rose-700">
+                <Label className="text-xs font-bold text-destructive">
                   {tBilingual('Scrap / Wastage', 'অপচয় / নষ্ট')}
                 </Label>
                 <Input
  type="number"min="0"value={scrapQty}
  onChange={(e) => setScrapQty(parseInt(e.target.value, 10) || 0)}
- className="h-11 text-base font-bold tabular-nums text-center text-rose-700"/>
+ className="h-11 text-base font-bold tabular-nums text-center text-destructive"/>
               </div>
             </div>
 
@@ -367,7 +367,7 @@ export function TodaysWorkFeed({ tasks = [], onRefresh, onOpenNewWork }: TodaysW
               <Button
  type="button"size="sm"disabled={isSubmittingComplete}
  onClick={handleConfirmComplete}
- className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold h-10 px-6 shadow-sm">
+ className="bg-success hover:bg-success text-white text-xs font-bold h-10 px-6 shadow-sm">
                 {isSubmittingComplete ? tBilingual('Saving...', 'সংরক্ষণ হচ্ছে...') : tBilingual('Confirm Complete', 'সম্পন্ন নিশ্চিত করুন')}
               </Button>
             </div>

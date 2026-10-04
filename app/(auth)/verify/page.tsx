@@ -318,7 +318,7 @@ function VerifyEmailForm() {
   return (
     <Card className="border-border shadow-2xl dark:border-border">
       <CardHeader className="space-y-1.5 text-center pb-4">
-        <div className={`mx-auto flex h-12 w-12 items-center justify-center rounded-full ${isVerified ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400' : 'bg-cyan-100 text-cyan-600 dark:bg-cyan-950/60 dark:text-cyan-400'} mb-1 transition-colors`}>
+        <div className={`mx-auto flex h-12 w-12 items-center justify-center rounded-full ${isVerified ? 'bg-success-surface text-success bg-success-surface/60 text-success' : 'bg-info-surface text-primary bg-primary/10 text-primary'} mb-1 transition-colors`}>
           {isVerified ? <CheckCircle2 className="h-6 w-6" /> : <ShieldCheck className="h-6 w-6" />}
         </div>
         <CardTitle className="text-xl font-bold tracking-tight">
@@ -342,8 +342,8 @@ function VerifyEmailForm() {
       <form onSubmit={handleVerify}>
         <CardContent className="space-y-4 pt-1">
           {isLinkVerified && (
-            <div className="flex items-center gap-2 rounded-lg bg-cyan-50 p-3 text-xs text-cyan-800 dark:bg-cyan-950/60 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-800 font-semibold animate-pulse">
-              <Check className="h-4 w-4 text-cyan-600 shrink-0" />
+            <div className="flex items-center gap-2 rounded-lg bg-info-surface p-3 text-xs text-primary bg-primary/10 text-primary border border-primary/20 border-border font-semibold animate-pulse">
+              <Check className="h-4 w-4 text-primary shrink-0" />
               <span>
                 {locale === 'bn'
                   ? 'ভেরিফিকেশন লিংকের মাধ্যমে ইমেইল নিশ্চিত করা হয়েছে। ওটিপি ফর্ম স্বয়ংক্রিয়ভাবে বন্ধ করা হয়েছে।'
@@ -353,14 +353,14 @@ function VerifyEmailForm() {
           )}
 
           {error && (
-            <div className="flex items-start gap-2 rounded-lg bg-red-50 p-3 text-xs text-red-600 dark:bg-red-950/50 dark:text-red-300 border border-red-200 dark:border-red-900">
+            <div className="flex items-start gap-2 rounded-lg bg-danger-surface p-3 text-xs text-destructive bg-danger-surface text-destructive border border-danger-border border-danger-border">
               <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
               <span>{error}</span>
             </div>
           )}
 
           {successMsg && (
-            <div className="flex items-start gap-2 rounded-lg bg-emerald-50 p-3 text-xs text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900">
+            <div className="flex items-start gap-2 rounded-lg bg-success-surface p-3 text-xs text-success bg-success-surface text-success border border-success-border border-success-border">
               <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5" />
               <span>{successMsg}</span>
             </div>
@@ -370,7 +370,7 @@ function VerifyEmailForm() {
           <div className="space-y-2">
             <div className="flex items-center justify-center gap-1.5 text-xs font-semibold text-foreground dark:text-muted-foreground">
               {isVerified ? (
-                <span className="text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                <span className="text-success text-success flex items-center gap-1">
                   <Lock className="h-3 w-3" />
                   {locale === 'bn' ? 'ওটিপি ইনপুট সমাপ্ত' : 'OTP Code Expired / Verified'}
                 </span>
@@ -395,8 +395,8 @@ function VerifyEmailForm() {
                   disabled={isLoading || isVerified}
                   className={`h-12 w-10 sm:h-14 sm:w-12 rounded-lg border text-center text-xl font-bold shadow-sm transition-all focus:outline-none ${
                     isVerified
-                      ? 'border-emerald-300 bg-emerald-50/50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-300 cursor-not-allowed opacity-80'
-                      : 'border-input bg-card text-foreground focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/30 disabled:opacity-50'
+                      ? 'border-success-border bg-success-surface/50 text-success border-success-border bg-success-surface text-success cursor-not-allowed opacity-80'
+                      : 'border-input bg-card text-foreground focus:border-primary/20 focus:ring-2 focus:ring-ring/30 disabled:opacity-50'
                   }`}
                   aria-label={`Digit ${idx + 1}`}
                 />
@@ -405,7 +405,7 @@ function VerifyEmailForm() {
           </div>
 
           {!isVerified && (
-            <p className="text-center text-2xs text-muted-foreground dark:text-muted-foreground">
+            <p className="text-center text-xs text-muted-foreground dark:text-muted-foreground">
               {t('auth.use_link_instead') || 'Use the verification link sent to your email to verify automatically.'}
             </p>
           )}
@@ -416,8 +416,8 @@ function VerifyEmailForm() {
             type="submit"
             className={`w-full justify-center gap-2 font-bold h-11 text-sm shadow-md transition-all ${
               isVerified
-                ? 'bg-emerald-600 hover:bg-emerald-600 text-white cursor-default'
-                : 'bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 text-white'
+                ? 'bg-success hover:bg-success text-white cursor-default'
+                : '    hover: hover: text-white'
             }`}
             isLoading={isLoading}
             disabled={isLoading || isVerified}
@@ -450,7 +450,7 @@ function VerifyEmailForm() {
                   type="button"
                   onClick={handleResend}
                   disabled={isResending || isLoading}
-                  className="inline-flex items-center gap-1 font-bold text-cyan-600 hover:text-cyan-700 dark:text-cyan-400 hover:underline cursor-pointer disabled:opacity-50 bangla-text"
+                  className="inline-flex items-center gap-1 font-bold text-primary hover:text-primary text-primary hover:underline cursor-pointer disabled:opacity-50 bangla-text"
                 >
                   <RefreshCw className={`h-3.5 w-3.5 ${isResending ? 'animate-spin' : ''}`} />
                   <span>{isResending ? (locale === 'bn' ? 'পাঠানো হচ্ছে...' : 'Sending...') : t('auth.resend_code') || 'Resend Code'}</span>

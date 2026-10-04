@@ -16,6 +16,8 @@ import { MobileBottomNav } from '@/components/mobile/bottom-nav'
 import { useShortcuts } from '@/hooks/use-shortcuts'
 import { ToastProvider } from '@/components/shared/toast-feedback'
 import { PlatformSupportBanner } from './platform-support-banner'
+import type { SubscriptionSnapshot } from '@/types/subscription.types'
+import type { NavSection } from '@/config/navigation.config'
 
 const CommandPalette = dynamic(
   () => import('@/components/search/command-palette').then((mod) => mod.CommandPalette),
@@ -30,53 +32,53 @@ const PWAInstaller = dynamic(
   { ssr: false }
 )
 
-import type { SubscriptionSnapshot } from '@/types/subscription.types'
-
 export function AppShell({
- initialSubscriptionSnapshot,
- children,
+  initialSubscriptionSnapshot,
+  initialNavSections,
+  children,
 }: {
- initialSubscriptionSnapshot?: SubscriptionSnapshot | null
- children: React.ReactNode
+  initialSubscriptionSnapshot?: SubscriptionSnapshot | null
+  initialNavSections?: NavSection[]
+  children: React.ReactNode
 }) {
- const [syncDrawerOpen, setSyncDrawerOpen] = useState(false)
- const [searchOpen, setSearchOpen] = useState(false)
- const [searchMode, setSearchMode] = useState<'search' | 'quick-new'>('search')
+  const [syncDrawerOpen, setSyncDrawerOpen] = useState(false)
+  const [searchOpen, setSearchOpen] = useState(false)
+  const [searchMode, setSearchMode] = useState<'search' | 'quick-new'>('search')
 
   // Global keyboard shortcuts (/ and N)
- useShortcuts({
- onOpenSearch: () => {
- setSearchMode('search')
- setSearchOpen(true)
+  useShortcuts({
+    onOpenSearch: () => {
+      setSearchMode('search')
+      setSearchOpen(true)
     },
- onOpenNew: () => {
- setSearchMode('quick-new')
- setSearchOpen(true)
+    onOpenNew: () => {
+      setSearchMode('quick-new')
+      setSearchOpen(true)
     },
- onClose: () => setSearchOpen(false),
+    onClose: () => setSearchOpen(false),
   })
 
   // Custom DOM event triggers from TopNav or Mobile
- useEffect(() => {
- const handleOpenSearch = () => {
- setSearchMode('search')
- setSearchOpen(true)
+  useEffect(() => {
+    const handleOpenSearch = () => {
+      setSearchMode('search')
+      setSearchOpen(true)
     }
- const handleOpenNew = () => {
- setSearchMode('quick-new')
- setSearchOpen(true)
+    const handleOpenNew = () => {
+      setSearchMode('quick-new')
+      setSearchOpen(true)
     }
 
- window.addEventListener('printerp_open_search', handleOpenSearch)
- window.addEventListener('printerp_open_new', handleOpenNew)
+    window.addEventListener('printerp_open_search', handleOpenSearch)
+    window.addEventListener('printerp_open_new', handleOpenNew)
 
- return () => {
- window.removeEventListener('printerp_open_search', handleOpenSearch)
- window.removeEventListener('printerp_open_new', handleOpenNew)
+    return () => {
+      window.removeEventListener('printerp_open_search', handleOpenSearch)
+      window.removeEventListener('printerp_open_new', handleOpenNew)
     }
   }, [])
 
- return (
+  return (
     <RealtimeProvider>
       <SubscriptionProvider initialSnapshot={initialSubscriptionSnapshot}>
         <ToastProvider>
@@ -89,7 +91,7 @@ export function AppShell({
             <div className="flex flex-1 min-h-0 min-w-0 overflow-hidden print:overflow-visible print:h-auto print:min-h-0 print:block">
               <div className="print:hidden">
                 <React.Suspense fallback={null}>
-                  <Sidebar />
+                  <Sidebar initialNavSections={initialNavSections} />
                 </React.Suspense>
               </div>
               <div className="flex flex-1 flex-col min-w-0 min-h-0 overflow-hidden print:overflow-visible print:h-auto print:min-h-0 print:block">
@@ -103,15 +105,15 @@ export function AppShell({
             </div>
             <div className="print:hidden">
               <PWAInstaller />
-              <MobileBottomNav />
+              <MobileBottomNav initialNavSections={initialNavSections} />
               <OfflineSyncDrawer
- open={syncDrawerOpen}
- onClose={() => setSyncDrawerOpen(false)}
+                open={syncDrawerOpen}
+                onClose={() => setSyncDrawerOpen(false)}
               />
               <CommandPalette
- isOpen={searchOpen}
- onClose={() => setSearchOpen(false)}
- initialMode={searchMode}
+                isOpen={searchOpen}
+                onClose={() => setSearchOpen(false)}
+                initialMode={searchMode}
               />
               <TrialUpgradeModal />
               <LimitExceededModal />

@@ -85,7 +85,7 @@ export const OrdersFilterToolbar = React.memo(function OrdersFilterToolbar({
  disabled={isRefreshing}
  title={tBilingual('Refresh Orders', 'অর্ডার রিফ্রেশ করুন')}
  className="h-8 px-2.5 text-xs text-muted-foreground border-border rounded-lg hover:bg-muted cursor-pointer shadow-2xs">
-            <RefreshCw className={`h-3.5 w-3.5 ${isRefreshing ? 'animate-spin text-indigo-600' : ''}`} />
+            <RefreshCw className={`h-3.5 w-3.5 ${isRefreshing ? 'animate-spin text-primary' : ''}`} />
           </Button>
 
           {/* View Switcher */}
@@ -94,7 +94,7 @@ export const OrdersFilterToolbar = React.memo(function OrdersFilterToolbar({
  type="button"onClick={() => onFilterChange({ viewMode: 'cards' })}
  className={`px-2.5 py-1 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
  filters.viewMode === 'cards'
-                  ? 'bg-card text-indigo-600 dark:text-indigo-400 shadow-2xs font-bold'
+                  ? 'bg-card text-primary text-primary shadow-2xs font-bold'
                   : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
               }`}
             >
@@ -105,7 +105,7 @@ export const OrdersFilterToolbar = React.memo(function OrdersFilterToolbar({
  type="button"onClick={() => onFilterChange({ viewMode: 'table' })}
  className={`px-2.5 py-1 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
  filters.viewMode === 'table'
-                  ? 'bg-card text-indigo-600 dark:text-indigo-400 shadow-2xs font-bold'
+                  ? 'bg-card text-primary text-primary shadow-2xs font-bold'
                   : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
               }`}
             >

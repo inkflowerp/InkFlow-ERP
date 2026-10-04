@@ -1,5 +1,5 @@
-import PlatformTenantsPage from '../tenants/page'
+import { redirect } from 'next/navigation'
 
-export default function PlatformCompaniesPage() {
- return <PlatformTenantsPage />
+export default function PlatformCompaniesRedirect() {
+  redirect('/platform/tenants')
 }

@@ -190,8 +190,28 @@ export default function EmployeeAttendancePage() {
     }
   }
 
- useEffect(() => {
- loadAttendanceData()
+  useEffect(() => {
+    loadAttendanceData()
+
+    const handleSync = () => {
+      loadAttendanceData()
+    }
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('printerp_table_synced:attendance_records', handleSync)
+      window.addEventListener('printerp_table_synced:attendance', handleSync)
+      window.addEventListener('printerp_table_synced', handleSync)
+      window.addEventListener('printerp_data_sync', handleSync)
+    }
+
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('printerp_table_synced:attendance_records', handleSync)
+        window.removeEventListener('printerp_table_synced:attendance', handleSync)
+        window.removeEventListener('printerp_table_synced', handleSync)
+        window.removeEventListener('printerp_data_sync', handleSync)
+      }
+    }
   }, [company?.id, tenantSlug])
 
  const openPunchModal = (type: 'CHECK_IN' | 'CHECK_OUT') => {
@@ -245,14 +265,14 @@ export default function EmployeeAttendancePage() {
   })
 
  return (
-    <div className="max-w-4xl mx-auto space-y-6 pb-20 px-4 sm:px-0">
+    <div className="mx-auto space-y-6 pb-20 px-4 sm:px-0">
       {/* Page Header */}
       <PageHeader
  titleEn="Staff Attendance"titleBn="কর্মচারী উপস্থিতি ও শিফট পাঞ্চ"descriptionEn="Scan workplace QR code terminal within authorized GPS geofence boundary to record attendance."descriptionBn="অনুমোদিত জিপিএস সীমানার ভেতর কিউআর কোড স্ক্যান করে উপস্থিতি ও প্রস্থান নিশ্চিত করুন।"icon={UserCheck}
- iconColor="text-indigo-600 dark:text-indigo-400"actions={
+ iconColor="text-primary text-primary"actions={
           <div className="flex items-center gap-2">
             <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-muted border border-border text-xs tabular-nums font-bold text-foreground">
-              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"/>
+              <span className="h-2 w-2 rounded-full bg-success animate-pulse"/>
               <span>{currentTime || '00:00:00'}</span>
             </div>
 
@@ -262,7 +282,7 @@ export default function EmployeeAttendancePage() {
  className="border-border text-foreground hover:bg-muted h-9 w-9 p-0 rounded-xl flex items-center justify-center shrink-0 cursor-pointer"title={tBilingual('Refresh', 'রিফ্রেশ')}
  aria-label={tBilingual('Refresh', 'রিফ্রেশ')}
             >
-              <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? 'animate-spin text-indigo-500' : ''}`} />
+              <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? 'animate-spin text-primary' : ''}`} />
             </Button>
           </div>
         }
@@ -270,14 +290,14 @@ export default function EmployeeAttendancePage() {
 
       {/* Network / Load Error Alert */}
       {loadError && (
-        <div className="p-4 rounded-xl bg-rose-50 dark:bg-rose-950/80 border border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-300 text-xs flex items-center justify-between shadow-sm">
+        <div className="p-4 rounded-xl bg-danger-surface bg-danger-surface/80 border border-danger-border border-danger-border text-destructive text-destructive text-xs flex items-center justify-between shadow-sm">
           <div className="flex items-center gap-2">
-            <AlertCircle className="h-4 w-4 shrink-0 text-rose-600 dark:text-rose-400"/>
+            <AlertCircle className="h-4 w-4 shrink-0 text-destructive text-destructive"/>
             <span>{loadError}</span>
           </div>
           <Button
  type="button"size="sm"variant="ghost"onClick={loadAttendanceData}
- className="text-xs text-rose-700 dark:text-rose-200 hover:bg-rose-100 dark:hover:bg-rose-900/50 rounded-lg h-7">
+ className="text-xs text-destructive text-destructive hover:bg-danger-surface dark:hover:bg-destructive/50 rounded-lg h-7">
             {tBilingual('Retry', 'পুনরায় চেষ্টা')}
           </Button>
         </div>
@@ -293,10 +313,10 @@ export default function EmployeeAttendancePage() {
               <div
  className={`p-3.5 rounded-xl flex items-center justify-center shrink-0 ${
  todayStatus.hasCheckedOut
-                    ? 'bg-sky-50 text-sky-600 border border-sky-200 dark:bg-sky-500/20 dark:text-sky-400 dark:border-sky-500/30'
+                    ? 'bg-info-surface text-primary border border-primary/20 bg-primary/20 text-primary border-primary/20/30'
                     : todayStatus.hasCheckedIn
-                    ? 'bg-emerald-50 text-emerald-600 border border-emerald-200 dark:bg-emerald-500/20 dark:text-emerald-400 dark:border-emerald-500/30'
-                    : 'bg-amber-50 text-amber-600 border border-amber-200 dark:bg-amber-500/20 dark:text-amber-400 dark:border-amber-500/30'
+                    ? 'bg-success-surface text-success border border-success-border bg-success/20 text-success border-success-border/30'
+                    : 'bg-warning-surface text-warning border border-warning-border bg-warning/20 text-warning border-warning-border/30'
                 }`}
               >
                 {todayStatus.hasCheckedOut ? (
@@ -309,7 +329,7 @@ export default function EmployeeAttendancePage() {
               </div>
 
               <div>
-                <span className="text-2xs font-bold text-muted-foreground uppercase tracking-wider block">
+                <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block">
                   {tBilingual('Today\'s Shift Status', 'আজকের শিফট অবস্থা')}
                 </span>
                 <h3 className="text-base sm:text-lg font-bold text-foreground mt-0.5">
@@ -320,7 +340,7 @@ export default function EmployeeAttendancePage() {
                     : tBilingual('Not Checked In Yet', 'এখনো হাজিরা দেওয়া হয়নি')}
                 </h3>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  {currentDate} • <span className="tabular-nums text-indigo-600 dark:text-indigo-400 font-bold">{currentTime}</span>
+                  {currentDate} • <span className="tabular-nums text-primary text-primary font-bold">{currentTime}</span>
                 </p>
               </div>
             </div>
@@ -328,10 +348,10 @@ export default function EmployeeAttendancePage() {
             <Badge
  className={`text-xs px-3 py-1 font-bold shrink-0 ${
  todayStatus.hasCheckedOut
-                  ? 'bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-950 dark:text-sky-300 dark:border-sky-800'
+                  ? 'bg-info-surface text-primary border-primary/20 bg-primary/10 text-primary border-border'
                   : todayStatus.hasCheckedIn
-                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800'
-                  : 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-800'
+                  ? 'bg-success-surface text-success border-success-border bg-success-surface text-success border-success-border'
+                  : 'bg-warning-surface text-warning border-warning-border bg-warning-surface text-warning border-warning-border'
               }`}
             >
               {todayStatus.hasCheckedOut
@@ -364,7 +384,7 @@ export default function EmployeeAttendancePage() {
             <Button
  type="button"disabled={todayStatus.hasCheckedIn && !todayStatus.hasCheckedOut}
  onClick={() => openPunchModal('CHECK_IN')}
- className="h-14 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm shadow-xs shadow-emerald-600/10 flex items-center justify-center gap-2 cursor-pointer transition-transform active:scale-98 disabled:opacity-50">
+ className="h-14 rounded-xl bg-success hover:bg-success text-white font-black text-sm shadow-xs shadow-emerald-600/10 flex items-center justify-center gap-2 cursor-pointer transition-transform active:scale-98 disabled:opacity-50">
               <QrCode className="h-5 w-5"/>
               <span>{tBilingual('Scan QR to Check In', 'কিউআর স্ক্যান করে প্রবেশ')}</span>
             </Button>
@@ -372,7 +392,7 @@ export default function EmployeeAttendancePage() {
             <Button
  type="button"disabled={!todayStatus.hasCheckedIn || todayStatus.hasCheckedOut}
  onClick={() => openPunchModal('CHECK_OUT')}
- variant="outline"className="h-14 rounded-xl border-amber-300 dark:border-amber-500/40 bg-amber-50 dark:bg-amber-500/10 hover:bg-amber-100 dark:hover:bg-amber-500/20 text-amber-800 dark:text-amber-300 font-black text-sm shadow-xs shadow-amber-500/10 flex items-center justify-center gap-2 cursor-pointer transition-transform active:scale-98 disabled:opacity-50">
+ variant="outline"className="h-14 rounded-xl border-warning-border border-warning-border/40 bg-warning-surface bg-warning/10 hover:bg-warning-surface dark:hover:bg-warning/20 text-warning text-warning font-black text-sm shadow-xs shadow-amber-500/10 flex items-center justify-center gap-2 cursor-pointer transition-transform active:scale-98 disabled:opacity-50">
               <LogOut className="h-5 w-5"/>
               <span>{tBilingual('Scan QR & Check Out', 'কিউআর স্ক্যান করে প্রস্থান')}</span>
             </Button>
@@ -383,14 +403,14 @@ export default function EmployeeAttendancePage() {
             <div className="flex items-center gap-4">
               {/* Camera Status */}
               <div className="flex items-center gap-1.5">
-                <Camera className={`h-3.5 w-3.5 ${cameraPermission === 'denied' ? 'text-rose-500' : 'text-muted-foreground'}`} />
+                <Camera className={`h-3.5 w-3.5 ${cameraPermission === 'denied' ? 'text-destructive' : 'text-muted-foreground'}`} />
                 <span className="text-muted-foreground">Camera:</span>
                 <span className={`font-semibold ${
  cameraPermission === 'granted'
-                    ? 'text-emerald-600 dark:text-emerald-400'
+                    ? 'text-success text-success'
                     : cameraPermission === 'denied'
-                    ? 'text-rose-600 dark:text-rose-400'
-                    : 'text-amber-600 dark:text-amber-300'
+                    ? 'text-destructive text-destructive'
+                    : 'text-warning text-warning'
                 }`}>
                   {cameraPermission === 'granted' ? 'Ready' : cameraPermission === 'denied' ? 'Blocked' : 'Prompt'}
                 </span>
@@ -398,22 +418,22 @@ export default function EmployeeAttendancePage() {
 
               {/* GPS Status */}
               <div className="flex items-center gap-1.5">
-                <Navigation className={`h-3.5 w-3.5 ${gpsPermission === 'denied' ? 'text-rose-500' : 'text-muted-foreground'}`} />
+                <Navigation className={`h-3.5 w-3.5 ${gpsPermission === 'denied' ? 'text-destructive' : 'text-muted-foreground'}`} />
                 <span className="text-muted-foreground">GPS:</span>
                 <span className={`font-semibold ${
  gpsPermission === 'granted'
-                    ? 'text-emerald-600 dark:text-emerald-400'
+                    ? 'text-success text-success'
                     : gpsPermission === 'denied'
-                    ? 'text-rose-600 dark:text-rose-400'
-                    : 'text-amber-600 dark:text-amber-300'
+                    ? 'text-destructive text-destructive'
+                    : 'text-warning text-warning'
                 }`}>
                   {gpsPermission === 'granted' ? (liveGpsAccuracy ? `±${liveGpsAccuracy}m` : 'Ready') : gpsPermission === 'denied' ? 'Disabled' : 'Prompt'}
                 </span>
               </div>
             </div>
 
-            <div className="flex items-center gap-1.5 text-muted-foreground text-2xs">
-              <ShieldCheck className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400"/>
+            <div className="flex items-center gap-1.5 text-muted-foreground text-xs">
+              <ShieldCheck className="h-3.5 w-3.5 text-success text-success"/>
               <span>{tBilingual('Authoritative Geofence & QR Verified', 'কিউআর ও জিপিএস ভেরিফাইড')}</span>
             </div>
           </div>
@@ -429,7 +449,7 @@ export default function EmployeeAttendancePage() {
  setCorrectionRecord(null)
  setIsCorrectionOpen(true)
               }}
- className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-semibold cursor-pointer flex items-center gap-1 self-start sm:self-auto">
+ className="text-primary text-primary hover:text-primary dark:hover:text-primary font-semibold cursor-pointer flex items-center gap-1 self-start sm:self-auto">
               <FileEdit className="h-3.5 w-3.5"/>
               <span>{tBilingual('Request Correction', 'ভুল সংশোধনের আবেদন')}</span>
             </button>
@@ -442,7 +462,7 @@ export default function EmployeeAttendancePage() {
         <CardHeader className="p-5 pb-4 border-b border-border">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-2">
-              <History className="h-4 w-4 text-indigo-600 dark:text-indigo-400"/>
+              <History className="h-4 w-4 text-primary text-primary"/>
               <CardTitle className="text-foreground text-base">
                 {tBilingual('Your Attendance History', 'আপনার হাজিরা বিবরণ')}
               </CardTitle>
@@ -456,7 +476,7 @@ export default function EmployeeAttendancePage() {
  type="button"onClick={() => setHistoryFilter(filter)}
  className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
  historyFilter === filter
-                      ? 'bg-indigo-600 text-white shadow-xs'
+                      ? 'bg-primary text-white shadow-xs'
                       : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
                   }`}
                 >
@@ -487,10 +507,10 @@ export default function EmployeeAttendancePage() {
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
                     <Badge
- className={`text-2xs tabular-nums font-bold ${
+ className={`text-xs tabular-nums font-bold ${
  rec.attendance_type === 'CHECK_IN'
-                          ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800'
-                          : 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-800'
+                          ? 'bg-success-surface text-success border-success-border bg-success-surface text-success border-success-border'
+                          : 'bg-warning-surface text-warning border-warning-border bg-warning-surface text-warning border-warning-border'
                       }`}
                     >
                       {rec.attendance_type.replace('_', ' ')}
@@ -519,7 +539,7 @@ export default function EmployeeAttendancePage() {
                 </div>
 
                 <div className="flex items-center gap-2 self-end sm:self-auto">
-                  <Badge variant="outline"className="text-2xs bg-muted border-border text-muted-foreground">
+                  <Badge variant="outline"className="text-xs bg-muted border-border text-muted-foreground">
                     {rec.verification_status}
                   </Badge>
 
@@ -530,7 +550,7 @@ export default function EmployeeAttendancePage() {
  setCorrType(rec.attendance_type === 'CHECK_IN' ? 'CHECK_IN' : 'CHECK_OUT')
  setIsCorrectionOpen(true)
                     }}
- className="h-8 text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 hover:bg-muted rounded-lg">
+ className="h-8 text-xs text-primary text-primary hover:text-primary dark:hover:text-primary hover:bg-muted rounded-lg">
                     {tBilingual('Correction', 'সংশোধন')}
                   </Button>
                 </div>
@@ -566,15 +586,15 @@ export default function EmployeeAttendancePage() {
       >
         <form onSubmit={handleCorrectionSubmit} className="space-y-4 pt-2">
           {corrSuccessMsg ? (
-            <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-xs flex items-center gap-2">
-              <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600"/>
+            <div className="p-4 rounded-xl bg-success-surface bg-success-surface/60 border border-success-border border-success-border text-success text-success text-xs flex items-center gap-2">
+              <CheckCircle2 className="h-4 w-4 shrink-0 text-success"/>
               <span>{corrSuccessMsg}</span>
             </div>
           ) : (
             <>
               {corrErrorMsg && (
-                <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-300 text-xs flex items-center gap-2">
-                  <AlertCircle className="h-4 w-4 shrink-0 text-rose-600"/>
+                <div className="p-3 rounded-xl bg-danger-surface bg-danger-surface/60 border border-danger-border border-danger-border text-destructive text-destructive text-xs flex items-center gap-2">
+                  <AlertCircle className="h-4 w-4 shrink-0 text-destructive"/>
                   <span>{corrErrorMsg}</span>
                 </div>
               )}
@@ -631,7 +651,7 @@ export default function EmployeeAttendancePage() {
                 </Button>
                 <Button
  type="submit"disabled={corrSubmitting}
- className="w-full sm:w-auto h-10 sm:h-9 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-sm">
+ className="w-full sm:w-auto h-10 sm:h-9 bg-primary hover:bg-primary text-white font-bold text-xs rounded-xl shadow-sm">
                   {corrSubmitting ? tBilingual('Submitting...', 'জমা হচ্ছে...') : tBilingual('Submit Request', 'আবেদন জমা দিন')}
                 </Button>
               </div>

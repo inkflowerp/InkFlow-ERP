@@ -1026,7 +1026,7 @@ export function NewPurchaseModal({
  size="4xl"onSubmit={handleSubmit}
  title={
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-linear-to-br from-amber-500 to-amber-700 text-white shadow-xs flex items-center justify-center font-bold shrink-0">
+          <div className="h-10 w-10 rounded-xl bg-linear-to-br text-white shadow-xs flex items-center justify-center font-bold shrink-0">
             <ShoppingBag className="h-5 w-5"/>
           </div>
           <div>
@@ -1035,7 +1035,7 @@ export function NewPurchaseModal({
                 {tBilingual('Issue Purchase Order', 'নতুন ক্রয় আদেশ তৈরি করুন')}
               </h2>
               <Badge
- variant="outline"className="text-2xs uppercase tabular-nums py-0.5 px-2 bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-700">
+ variant="outline"className="text-xs uppercase tabular-nums py-0.5 px-2 bg-warning-surface bg-warning-surface/60 text-warning text-warning border-warning-border border-warning-border">
  Procurement
               </Badge>
             </div>
@@ -1070,14 +1070,14 @@ export function NewPurchaseModal({
             {activeStep < 3 ? (
               <Button
  type="button"onClick={handleNextStep}
- className="w-full sm:w-auto min-h-[40px] text-xs bg-amber-600 hover:bg-amber-700 text-white font-bold px-6 shadow-sm cursor-pointer">
+ className="w-full sm:w-auto min-h-[40px] text-xs bg-warning hover:bg-warning/90 text-white font-bold px-6 shadow-sm cursor-pointer">
                 <span>{tBilingual('Continue to Next Step', 'পরবর্তী ধাপ')}</span>
                 <ArrowRight className="h-4 w-4 ml-1.5"/>
               </Button>
             ) : (
               <Button
  type="submit"disabled={isSubmitting}
- className="w-full sm:w-auto min-h-[40px] text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-7 shadow-xs cursor-pointer">
+ className="w-full sm:w-auto min-h-[40px] text-xs bg-success hover:bg-success text-white font-bold px-7 shadow-xs cursor-pointer">
                 {isSubmitting ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-1.5 animate-spin"/>
@@ -1103,15 +1103,15 @@ export function NewPurchaseModal({
  className={cn(
               'flex items-center justify-center gap-2 py-2 px-3 rounded-lg font-bold transition-all text-center cursor-pointer',
  activeStep === 1
-                ? 'bg-card text-amber-700 dark:text-amber-400 shadow-xs'
+                ? 'bg-card text-warning text-warning shadow-xs'
                 : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
             )}
           >
             <div
  className={cn(
-                'h-5 w-5 rounded-full flex items-center justify-center text-2xs tabular-nums',
+                'h-5 w-5 rounded-full flex items-center justify-center text-xs tabular-nums',
  activeStep === 1
-                  ? 'bg-amber-600 text-white'
+                  ? 'bg-warning text-white'
                   : 'bg-muted text-foreground '
               )}
             >
@@ -1125,15 +1125,15 @@ export function NewPurchaseModal({
  className={cn(
               'flex items-center justify-center gap-2 py-2 px-3 rounded-lg font-bold transition-all text-center cursor-pointer',
  activeStep === 2
-                ? 'bg-card text-amber-700 dark:text-amber-400 shadow-xs'
+                ? 'bg-card text-warning text-warning shadow-xs'
                 : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
             )}
           >
             <div
  className={cn(
-                'h-5 w-5 rounded-full flex items-center justify-center text-2xs tabular-nums',
+                'h-5 w-5 rounded-full flex items-center justify-center text-xs tabular-nums',
  activeStep === 2
-                  ? 'bg-amber-600 text-white'
+                  ? 'bg-warning text-white'
                   : 'bg-muted text-foreground '
               )}
             >
@@ -1149,15 +1149,15 @@ export function NewPurchaseModal({
  className={cn(
               'flex items-center justify-center gap-2 py-2 px-3 rounded-lg font-bold transition-all text-center cursor-pointer',
  activeStep === 3
-                ? 'bg-card text-amber-700 dark:text-amber-400 shadow-xs'
+                ? 'bg-card text-warning text-warning shadow-xs'
                 : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
             )}
           >
             <div
  className={cn(
-                'h-5 w-5 rounded-full flex items-center justify-center text-2xs tabular-nums',
+                'h-5 w-5 rounded-full flex items-center justify-center text-xs tabular-nums',
  activeStep === 3
-                  ? 'bg-amber-600 text-white'
+                  ? 'bg-warning text-white'
                   : 'bg-muted text-foreground '
               )}
             >
@@ -1174,7 +1174,7 @@ export function NewPurchaseModal({
             <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Building className="h-4 w-4 text-amber-600 dark:text-amber-400"/>
+                  <Building className="h-4 w-4 text-warning text-warning"/>
                   <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
                     {tBilingual('Vendor & Supplier Intelligence', 'সরবরাহকারী নির্বাচন')}
                   </h3>
@@ -1184,9 +1184,9 @@ export function NewPurchaseModal({
                   <button
  type="button"onClick={() => setSupplierMode('existing')}
  className={cn(
-                      'px-2.5 py-1 rounded-md font-semibold transition-all cursor-pointer text-2xs',
+                      'px-2.5 py-1 rounded-md font-semibold transition-all cursor-pointer text-xs',
  supplierMode === 'existing'
-                        ? 'bg-card text-amber-700 dark:text-amber-300 shadow-xs'
+                        ? 'bg-card text-warning text-warning shadow-xs'
                         : 'text-muted-foreground hover:text-foreground'
                     )}
                   >
@@ -1195,9 +1195,9 @@ export function NewPurchaseModal({
                   <button
  type="button"onClick={() => setSupplierMode('new')}
  className={cn(
-                      'px-2.5 py-1 rounded-md font-semibold transition-all cursor-pointer text-2xs',
+                      'px-2.5 py-1 rounded-md font-semibold transition-all cursor-pointer text-xs',
  supplierMode === 'new'
-                        ? 'bg-card text-amber-700 dark:text-amber-300 shadow-xs'
+                        ? 'bg-card text-warning text-warning shadow-xs'
                         : 'text-muted-foreground hover:text-foreground'
                     )}
                   >
@@ -1210,7 +1210,7 @@ export function NewPurchaseModal({
                 <div className="space-y-3">
                   <div>
                     <Label className="text-xs font-semibold mb-1 block">
-                      {tBilingual('Select Registered Supplier', 'সাপ্লায়ার নির্বাচন')} <span className="text-rose-500">*</span>
+                      {tBilingual('Select Registered Supplier', 'সাপ্লায়ার নির্বাচন')} <span className="text-destructive">*</span>
                     </Label>
                     <select
  value={selectedSupplierId}
@@ -1219,7 +1219,7 @@ export function NewPurchaseModal({
  if (fieldErrors.supplier) setFieldErrors((prev) => ({ ...prev, supplier: '' }))
                       }}
  className={cn("w-full h-10 rounded-lg border border-input bg-card px-3 text-xs font-medium",
- fieldErrors.supplier &&"border-rose-500 focus-visible:ring-rose-400 bg-rose-50/30 dark:bg-rose-950/20")}
+ fieldErrors.supplier &&"border-danger-border focus-visible:focus:ring-ring bg-danger-surface/30 bg-danger-surface")}
  required
                     >
                       <option value="">-- Choose Registered Material Vendor --</option>
@@ -1230,7 +1230,7 @@ export function NewPurchaseModal({
                       ))}
                     </select>
                     {fieldErrors.supplier && (
-                      <p className="text-2xs text-rose-600 dark:text-rose-400 font-medium mt-1 flex items-center gap-1">
+                      <p className="text-xs text-destructive text-destructive font-medium mt-1 flex items-center gap-1">
                         <AlertCircle className="w-3.5 h-3.5 shrink-0"/>
                         <span>{fieldErrors.supplier}</span>
                       </p>
@@ -1239,25 +1239,25 @@ export function NewPurchaseModal({
 
                   {/* Supplier Intel Quick Card */}
                   {currentSupplier && (
-                    <div className="p-3 bg-amber-50/60 dark:bg-amber-950/30 rounded-xl border border-amber-200 dark:border-amber-800 grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+                    <div className="p-3 bg-warning-surface/60 bg-warning-surface rounded-xl border border-warning-border border-warning-border grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
                       <div>
-                        <span className="text-2xs text-muted-foreground block">Contact Person:</span>
+                        <span className="text-xs text-muted-foreground block">Contact Person:</span>
                         <div className="font-semibold text-foreground flex items-center gap-1.5 mt-0.5">
-                          <User className="h-3.5 w-3.5 text-amber-600"/>
+                          <User className="h-3.5 w-3.5 text-warning"/>
                           <span>{currentSupplier.contact_person || 'Managing Director'}</span>
                         </div>
                       </div>
                       <div>
-                        <span className="text-2xs text-muted-foreground block">Phone & Email:</span>
+                        <span className="text-xs text-muted-foreground block">Phone & Email:</span>
                         <div className="font-semibold text-foreground flex items-center gap-1.5 mt-0.5">
-                          <Phone className="h-3.5 w-3.5 text-amber-600"/>
+                          <Phone className="h-3.5 w-3.5 text-warning"/>
                           <span>{currentSupplier.mobile}</span>
                         </div>
                       </div>
                       <div>
-                        <span className="text-2xs text-muted-foreground block">Warehouse Address:</span>
+                        <span className="text-xs text-muted-foreground block">Warehouse Address:</span>
                         <div className="font-semibold text-foreground flex items-center gap-1.5 mt-0.5 truncate">
-                          <MapPin className="h-3.5 w-3.5 text-amber-600 shrink-0"/>
+                          <MapPin className="h-3.5 w-3.5 text-warning shrink-0"/>
                           <span className="truncate">{currentSupplier.address || '-'}</span>
                         </div>
                       </div>
@@ -1268,7 +1268,7 @@ export function NewPurchaseModal({
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <Label className="text-xs font-semibold mb-1 block">
- Supplier / Company Name <span className="text-rose-500">*</span>
+ Supplier / Company Name <span className="text-destructive">*</span>
                     </Label>
                     <Input
  placeholder="e.g. Bengal Paper & Board Mills Ltd."value={customSupplierName}
@@ -1277,11 +1277,11 @@ export function NewPurchaseModal({
  if (fieldErrors.customSupplierName) setFieldErrors((prev) => ({ ...prev, customSupplierName: '' }))
                       }}
  className={cn("text-xs h-9",
- fieldErrors.customSupplierName &&"border-rose-500 focus-visible:ring-rose-400 bg-rose-50/30 dark:bg-rose-950/20")}
+ fieldErrors.customSupplierName &&"border-danger-border focus-visible:focus:ring-ring bg-danger-surface/30 bg-danger-surface")}
  required
                     />
                     {fieldErrors.customSupplierName && (
-                      <p className="text-2xs text-rose-600 dark:text-rose-400 font-medium mt-1 flex items-center gap-1">
+                      <p className="text-xs text-destructive text-destructive font-medium mt-1 flex items-center gap-1">
                         <AlertCircle className="w-3.5 h-3.5 shrink-0"/>
                         <span>{fieldErrors.customSupplierName}</span>
                       </p>
@@ -1289,7 +1289,7 @@ export function NewPurchaseModal({
                   </div>
                   <div>
                     <Label className="text-xs font-semibold mb-1 block">
- Mobile Phone Number <span className="text-rose-500">*</span>
+ Mobile Phone Number <span className="text-destructive">*</span>
                     </Label>
                     <Input
  placeholder="+8801700000000"value={supplierPhone}
@@ -1298,11 +1298,11 @@ export function NewPurchaseModal({
  if (fieldErrors.supplierPhone) setFieldErrors((prev) => ({ ...prev, supplierPhone: '' }))
                       }}
  className={cn("text-xs h-9 tabular-nums",
- fieldErrors.supplierPhone &&"border-rose-500 focus-visible:ring-rose-400 bg-rose-50/30 dark:bg-rose-950/20")}
+ fieldErrors.supplierPhone &&"border-danger-border focus-visible:focus:ring-ring bg-danger-surface/30 bg-danger-surface")}
  required
                     />
                     {fieldErrors.supplierPhone && (
-                      <p className="text-2xs text-rose-600 dark:text-rose-400 font-medium mt-1 flex items-center gap-1">
+                      <p className="text-xs text-destructive text-destructive font-medium mt-1 flex items-center gap-1">
                         <AlertCircle className="w-3.5 h-3.5 shrink-0"/>
                         <span>{fieldErrors.supplierPhone}</span>
                       </p>
@@ -1336,7 +1336,7 @@ export function NewPurchaseModal({
             {/* Logistics & Delivery Specifications */}
             <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
               <div className="flex items-center gap-2">
-                <Truck className="h-4 w-4 text-amber-600 dark:text-amber-400"/>
+                <Truck className="h-4 w-4 text-warning text-warning"/>
                 <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
                   {tBilingual('Logistics, Destination & Schedule', 'ডেলিভারি লজিস্টিক ও গন্তব্য')}
                 </h3>
@@ -1345,7 +1345,7 @@ export function NewPurchaseModal({
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
                   <Label className="text-xs font-semibold mb-1 block">
-                    {tBilingual('Destination Store Location', 'গন্তব্য গোডাউন')} <span className="text-rose-500">*</span>
+                    {tBilingual('Destination Store Location', 'গন্তব্য গোডাউন')} <span className="text-destructive">*</span>
                   </Label>
                   <select
  value={targetLocationId}
@@ -1370,7 +1370,7 @@ export function NewPurchaseModal({
 
                 <div>
                   <Label className="text-xs font-semibold mb-1 block">
-                    {tBilingual('PO Issue Date', 'আদেশ জারির তারিখ')} <span className="text-rose-500">*</span>
+                    {tBilingual('PO Issue Date', 'আদেশ জারির তারিখ')} <span className="text-destructive">*</span>
                   </Label>
                   <Input
  type="date"value={poDate}
@@ -1381,7 +1381,7 @@ export function NewPurchaseModal({
 
                 <div>
                   <Label className="text-xs font-semibold mb-1 block">
-                    {tBilingual('Expected Delivery Date', 'প্রত্যাশিত ডেলিভারি')} <span className="text-rose-500">*</span>
+                    {tBilingual('Expected Delivery Date', 'প্রত্যাশিত ডেলিভারি')} <span className="text-destructive">*</span>
                   </Label>
                   <Input
  type="date"value={expectedDate}
@@ -1390,11 +1390,11 @@ export function NewPurchaseModal({
  if (fieldErrors.expectedDate) setFieldErrors((prev) => ({ ...prev, expectedDate: '' }))
                     }}
  className={cn("text-xs h-9",
- fieldErrors.expectedDate &&"border-rose-500 focus-visible:ring-rose-400 bg-rose-50/30 dark:bg-rose-950/20")}
+ fieldErrors.expectedDate &&"border-danger-border focus-visible:focus:ring-ring bg-danger-surface/30 bg-danger-surface")}
  required
                   />
                   {fieldErrors.expectedDate && (
-                    <p className="text-2xs text-rose-600 dark:text-rose-400 font-medium mt-1 flex items-center gap-1">
+                    <p className="text-xs text-destructive text-destructive font-medium mt-1 flex items-center gap-1">
                       <AlertCircle className="w-3.5 h-3.5 shrink-0"/>
                       <span>{fieldErrors.expectedDate}</span>
                     </p>
@@ -1451,7 +1451,7 @@ export function NewPurchaseModal({
             {/* Header & Action Bar */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5">
               <div className="flex items-center gap-2">
-                <Package className="h-4 w-4 text-amber-600 dark:text-amber-400"/>
+                <Package className="h-4 w-4 text-warning text-warning"/>
                 <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
                   {tBilingual('Purchasable Items & Roll Configurations', 'কাঁচামাল ও আইটেম সংযোজন')}
                 </h3>
@@ -1460,7 +1460,7 @@ export function NewPurchaseModal({
               <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
                 <Button
  type="button"size="sm"variant="outline"onClick={handleAddItem}
- className="h-7.5 text-xs font-bold text-foreground border-border hover:bg-muted dark:text-amber-300 dark:border-amber-700 cursor-pointer">
+ className="h-7.5 text-xs font-bold text-foreground border-border hover:bg-muted text-warning border-warning-border cursor-pointer">
                   <Plus className="h-3.5 w-3.5 mr-1"/>
                   {tBilingual('Add Line Item', 'নতুন আইটেম')}
                 </Button>
@@ -1475,14 +1475,14 @@ export function NewPurchaseModal({
  className="p-3.5 rounded-xl border border-border bg-card shadow-xs space-y-2.5 text-xs">
                   <div className="flex items-center justify-between gap-2 pb-1 border-b border-border">
                     <div className="flex items-center gap-2">
-                      <span className="h-5 w-5 rounded-md bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-200 tabular-nums font-bold flex items-center justify-center text-2xs">
+                      <span className="h-5 w-5 rounded-md bg-warning-surface text-warning bg-warning/60 text-warning tabular-nums font-bold flex items-center justify-center text-xs">
                         #{idx + 1}
                       </span>
                       <span className="font-bold text-foreground">
                         {item.material_name || 'Select Material or Hardware Item'}
                       </span>
                       {item.category && (
-                        <Badge variant="outline"className="text-2xs py-0 px-1.5 uppercase tabular-nums">
+                        <Badge variant="outline"className="text-xs py-0 px-1.5 uppercase tabular-nums">
                           {item.category}
                         </Badge>
                       )}
@@ -1497,7 +1497,7 @@ export function NewPurchaseModal({
                       {items.length > 1 && (
                         <button
  type="button"onClick={() => handleRemoveItem(idx)}
- className="text-rose-500 hover:text-rose-700 p-1 rounded hover:bg-rose-50 dark:hover:bg-rose-950/50 cursor-pointer"title="Remove item">
+ className="text-destructive hover:text-destructive p-1 rounded hover:bg-danger-surface dark:hover:bg-danger-surface cursor-pointer"title="Remove item">
                           <Trash2 className="h-3.5 w-3.5"/>
                         </button>
                       )}
@@ -1507,8 +1507,8 @@ export function NewPurchaseModal({
                   <div className="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
                     {/* Item Selector */}
                     <div className="sm:col-span-5">
-                      <Label className="text-2xs text-muted-foreground mb-0.5 block">
- Item / Substrate / Hardware <span className="text-rose-500">*</span>
+                      <Label className="text-xs text-muted-foreground mb-0.5 block">
+ Item / Substrate / Hardware <span className="text-destructive">*</span>
                       </Label>
                       <select
  value={
@@ -1589,8 +1589,8 @@ export function NewPurchaseModal({
 
                     {/* Quantity */}
                     <div className="sm:col-span-2">
-                      <Label className="text-2xs text-muted-foreground mb-0.5 block">
- Qty <span className="text-rose-500">*</span>
+                      <Label className="text-xs text-muted-foreground mb-0.5 block">
+ Qty <span className="text-destructive">*</span>
                       </Label>
                       <Input
  type="number"min="1"step="any"value={item.quantity}
@@ -1601,7 +1601,7 @@ export function NewPurchaseModal({
 
                     {/* Unit */}
                     <div className="sm:col-span-2">
-                      <Label className="text-2xs text-muted-foreground mb-0.5 block">Unit</Label>
+                      <Label className="text-xs text-muted-foreground mb-0.5 block">Unit</Label>
                       <Input
  type="text"value={item.unit}
  onChange={(e) => handleItemChange(idx, 'unit', e.target.value)}
@@ -1610,8 +1610,8 @@ export function NewPurchaseModal({
 
                     {/* Unit Cost */}
                     <div className="sm:col-span-3">
-                      <Label className="text-2xs text-muted-foreground mb-0.5 block">
- Unit Rate (৳) <span className="text-rose-500">*</span>
+                      <Label className="text-xs text-muted-foreground mb-0.5 block">
+ Unit Rate (৳) <span className="text-destructive">*</span>
                       </Label>
                       <Input
  type="number"min="0"step="any"value={item.unit_cost}
@@ -1622,7 +1622,7 @@ export function NewPurchaseModal({
                   </div>
 
                   {/* Line Detail Calculation & Stock Hints */}
-                  <div className="flex flex-wrap items-center justify-between gap-2 pt-1 text-2xs text-muted-foreground bg-muted p-2 rounded-lg border border-border">
+                  <div className="flex flex-wrap items-center justify-between gap-2 pt-1 text-xs text-muted-foreground bg-muted p-2 rounded-lg border border-border">
                     <div className="flex items-center gap-3">
                       {item.config_description && (
                         <span className="tabular-nums text-foreground">
@@ -1630,7 +1630,7 @@ export function NewPurchaseModal({
                         </span>
                       )}
                       {item.current_stock_hint !== undefined && (
-                        <span className="text-2xs">
+                        <span className="text-xs">
  Store Stock: <strong className="text-foreground">{item.current_stock_hint}</strong> (Min: {item.reorder_level_hint || 0})
                         </span>
                       )}
@@ -1650,16 +1650,16 @@ export function NewPurchaseModal({
             </div>
 
             {/* Quick Total Bar for Step 2 */}
-            <div className="p-3 rounded-xl bg-amber-50/70 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 flex justify-between items-center text-xs">
+            <div className="p-3 rounded-xl bg-warning-surface/70 bg-warning-surface border border-warning-border border-warning-border flex justify-between items-center text-xs">
               <div className="flex items-center gap-2">
-                <Badge variant="outline"className="tabular-nums text-2xs">
+                <Badge variant="outline"className="tabular-nums text-xs">
                   {items.length} Order Line(s)
                 </Badge>
                 <span className="text-muted-foreground">Total Quantities Configured</span>
               </div>
               <div className="text-right">
-                <span className="text-2xs text-muted-foreground uppercase font-bold tracking-wider">Subtotal:</span>{' '}
-                <span className="text-lg font-black text-amber-700 dark:text-amber-400 tabular-nums">
+                <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Subtotal:</span>{' '}
+                <span className="text-lg font-black text-warning text-warning tabular-nums">
                   {formatBDT(itemsSubtotal)}
                 </span>
               </div>
@@ -1673,7 +1673,7 @@ export function NewPurchaseModal({
             {/* Commercial Adjustments & Taxes */}
             <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
               <div className="flex items-center gap-2">
-                <Receipt className="h-4 w-4 text-amber-600 dark:text-amber-400"/>
+                <Receipt className="h-4 w-4 text-warning text-warning"/>
                 <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
                   {tBilingual('Discounts, NBR VAT & Freight Surcharge', 'ছাড়, মূসক/ভ্যাট ও পরিবহন খরচ')}
                 </h3>
@@ -1745,7 +1745,7 @@ export function NewPurchaseModal({
             {/* Payment Terms & Advance Commitment */}
             <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
               <div className="flex items-center gap-2">
-                <CreditCard className="h-4 w-4 text-amber-600 dark:text-amber-400"/>
+                <CreditCard className="h-4 w-4 text-warning text-warning"/>
                 <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
                   {tBilingual('Payment Terms & Advance Pay', 'পেমেন্ট শর্তাবলী ও অগ্রিম')}
                 </h3>
@@ -1754,7 +1754,7 @@ export function NewPurchaseModal({
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
                   <Label className="text-xs font-semibold mb-1 block">
-                    {tBilingual('Payment Terms', 'পরিশোধের শর্ত')} <span className="text-rose-500">*</span>
+                    {tBilingual('Payment Terms', 'পরিশোধের শর্ত')} <span className="text-destructive">*</span>
                   </Label>
                   <select
  value={paymentTerms}
@@ -1818,7 +1818,7 @@ export function NewPurchaseModal({
                   <button
  key={idx}
  type="button"onClick={() => setNotes((prev) => (prev ? `${prev}\n${tmpl}` : tmpl))}
- className="text-2xs font-medium bg-muted hover:bg-amber-100 dark:hover:bg-amber-950/60 text-foreground px-2 py-1 rounded-md border border-border transition-colors cursor-pointer">
+ className="text-xs font-medium bg-muted hover:bg-warning-surface dark:hover:bg-warning-surface/60 text-foreground px-2 py-1 rounded-md border border-border transition-colors cursor-pointer">
                     + {tmpl.split(' ')[0]} {tmpl.split(' ')[1]} {tmpl.split(' ')[2]}...
                   </button>
                 ))}
@@ -1828,13 +1828,13 @@ export function NewPurchaseModal({
  rows={2}
  placeholder="e.g. Deliver to Gate 2; inspect roll grammage before unloading; include Mushak 6.3 Challan..."value={notes}
  onChange={(e) => setNotes(e.target.value)}
- className="w-full rounded-lg border border-input bg-card p-2.5 text-xs text-foreground focus:outline-hidden focus:ring-2 focus:ring-amber-500"/>
+ className="w-full rounded-lg border border-input bg-card p-2.5 text-xs text-foreground focus:outline-hidden focus:ring-2 focus:ring-ring"/>
             </div>
 
             {/* Final Financial Commitment Summary */}
-            <div className="p-4 rounded-xl bg-linear-to-br from-amber-500/10 via-amber-500/5 to-slate-900/5 dark:from-amber-950/40 dark:to-slate-900 border border-amber-300 dark:border-amber-800 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+            <div className="p-4 rounded-xl bg-linear-to-br dark: dark: border border-warning-border border-warning-border grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
               <div>
-                <span className="text-2xs text-muted-foreground block font-semibold uppercase">
+                <span className="text-xs text-muted-foreground block font-semibold uppercase">
  Items Subtotal
                 </span>
                 <div className="text-sm font-bold tabular-nums text-foreground mt-0.5">
@@ -1843,7 +1843,7 @@ export function NewPurchaseModal({
               </div>
 
               <div>
-                <span className="text-2xs text-muted-foreground block font-semibold uppercase">
+                <span className="text-xs text-muted-foreground block font-semibold uppercase">
  VAT & Freight
                 </span>
                 <div className="text-sm font-bold tabular-nums text-foreground mt-0.5">
@@ -1852,19 +1852,19 @@ export function NewPurchaseModal({
               </div>
 
               <div>
-                <span className="text-2xs text-amber-700 dark:text-amber-300 block font-bold uppercase">
+                <span className="text-xs text-warning text-warning block font-bold uppercase">
  PO Grand Total
                 </span>
-                <div className="text-base font-black tabular-nums text-amber-700 dark:text-amber-400 mt-0.5">
+                <div className="text-base font-black tabular-nums text-warning text-warning mt-0.5">
                   {formatBDT(grandTotal)}
                 </div>
               </div>
 
               <div>
-                <span className="text-2xs text-rose-600 dark:text-rose-400 block font-bold uppercase">
+                <span className="text-xs text-destructive text-destructive block font-bold uppercase">
  Due on Delivery
                 </span>
-                <div className="text-base font-black tabular-nums text-rose-600 dark:text-rose-400 mt-0.5">
+                <div className="text-base font-black tabular-nums text-destructive text-destructive mt-0.5">
                   {formatBDT(dueAmount)}
                 </div>
               </div>

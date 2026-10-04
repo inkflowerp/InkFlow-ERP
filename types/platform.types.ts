@@ -115,6 +115,10 @@ export interface PlatformDashboardMetrics {
     notes?: string
   }[]
   recent_audit_logs?: PlatformAuditLogItem[]
+  trials_ending_in_7_days?: number
+  open_incidents?: number
+  support_backlog?: number
+  tenant_growth?: { month: string; count: number; new_tenants?: number }[]
 }
 
 export interface PlatformTenantCompany {

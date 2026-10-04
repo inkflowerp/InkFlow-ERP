@@ -421,16 +421,21 @@ export class ProductionPlanningService {
         }
       }
 
-      const updated = await ProductionTaskRepository.updateTask(task.id, companyId, {
-        assigned_machine_id: input.assigned_machine_id || null,
-        assigned_machine_name: machineName,
-        assigned_operator_id: input.assigned_operator_id || task.assigned_operator_id || null,
-        scheduled_start: startDate.toISOString(),
-        scheduled_end: endDate.toISOString(),
-        estimated_duration_minutes: durationMinutes,
-        status: task.status === 'queued' ? 'scheduled' : task.status,
-        notes: input.notes !== undefined ? input.notes : task.notes,
-      })
+      const updated = await ProductionTaskRepository.updateTask(
+        task.id,
+        companyId,
+        {
+          assigned_machine_id: input.assigned_machine_id || null,
+          assigned_machine_name: machineName,
+          assigned_operator_id: input.assigned_operator_id || task.assigned_operator_id || null,
+          scheduled_start: startDate.toISOString(),
+          scheduled_end: endDate.toISOString(),
+          estimated_duration_minutes: durationMinutes,
+          status: task.status === 'queued' ? 'scheduled' : task.status,
+          notes: input.notes !== undefined ? input.notes : task.notes,
+        },
+        input.expected_version
+      )
 
       return updated
     })

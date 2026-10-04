@@ -74,7 +74,7 @@ export function NewLocationModal({
     >
       <form onSubmit={handleSubmit} className="space-y-4 pt-1 max-h-[75vh] overflow-y-auto px-1">
         {error && (
-          <div className="p-3 bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-300 rounded-lg text-xs font-semibold border border-red-200 dark:border-red-800">
+          <div className="p-3 bg-danger-surface text-destructive bg-danger-surface text-destructive rounded-lg text-xs font-semibold border border-danger-border border-danger-border">
             {error}
           </div>
         )}
@@ -137,7 +137,7 @@ export function NewLocationModal({
           </Button>
           <Button
  type="submit"disabled={loading}
- className="w-full sm:w-auto min-h-[40px] bg-emerald-600 hover:bg-emerald-700 text-white font-bold">
+ className="w-full sm:w-auto min-h-[40px] bg-success hover:bg-success/90 text-success-foreground font-bold">
             {loading ? 'Creating...' : 'Create Location'}
           </Button>
         </div>

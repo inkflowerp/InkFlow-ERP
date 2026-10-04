@@ -334,7 +334,7 @@ export default function BranchesSettingsPage() {
 
  if (!mounted) {
  return (
-      <div className="space-y-6 max-w-5xl animate-pulse">
+      <div className="space-y-6 animate-pulse">
         <div className="h-20 bg-muted rounded-xl w-full"/>
         <div className="h-12 bg-muted rounded-xl w-3/4"/>
         <div className="h-48 bg-muted rounded-xl w-full"/>
@@ -346,8 +346,8 @@ export default function BranchesSettingsPage() {
  if (!isOwner && !can('manage', 'branches')) {
  return (
       <div className="max-w-2xl mx-auto py-16 px-4 text-center">
-        <div className="p-8 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 space-y-4 shadow-sm">
-          <div className="h-12 w-12 rounded-full bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center mx-auto text-amber-600 dark:text-amber-400 font-bold">
+        <div className="p-8 rounded-xl bg-warning-surface bg-warning-surface border border-warning-border border-warning-border/50 space-y-4 shadow-sm">
+          <div className="h-12 w-12 rounded-full bg-warning-surface bg-warning/50 flex items-center justify-center mx-auto text-warning text-warning font-bold">
             <ShieldAlert className="h-6 w-6"/>
           </div>
           <h2 className="text-xl font-bold text-foreground bangla-text">
@@ -370,14 +370,14 @@ export default function BranchesSettingsPage() {
   }
 
  return (
-    <div className="space-y-6 max-w-5xl">
+    <div className="space-y-6">
       <PageHeader
  titleEn="Branches, Factories & Hubs"titleBn="শাখা ও কারখানা ব্যবস্থাপনা"descriptionEn="Manage showroom sales counters, printing plants, and regional fabrication facilities."descriptionBn="শোরুম কাউন্টার, প্রিন্টিং কারখানা এবং আঞ্চলিক ফেব্রিকেশন সুবিধা পরিচালনা করুন।"icon={GitBranch}
- iconColor="text-blue-600"actions={
+ iconColor="text-primary"actions={
           <Button
  onClick={handleOpenAddBranch}
  title={!branchCheck.allowed ? branchCheck.reason : undefined}
- className="bg-blue-600 hover:bg-blue-700 bangla-text">
+ className="bg-primary hover:bg-primary bangla-text">
             <Plus className="mr-1.5 h-4 w-4"/>
             {tBilingual('Add New Branch', 'নতুন শাখা যোগ করুন')}
           </Button>
@@ -389,7 +389,7 @@ export default function BranchesSettingsPage() {
         <div className="flex items-center gap-2.5">
           <div className={cn(
             'p-1.5 rounded-lg text-white font-bold shrink-0',
- branchCheck.exceeded ? 'bg-red-500' : branchCheck.warning ? 'bg-amber-500' : 'bg-blue-600'
+ branchCheck.exceeded ? 'bg-destructive' : branchCheck.warning ? 'bg-warning' : 'bg-primary'
           )}>
             <Building className="h-4 w-4"/>
           </div>
@@ -405,7 +405,7 @@ export default function BranchesSettingsPage() {
                     `শাখা সীমা: ${toBengaliDigits(currentPlan.max_branches)} টির মধ্যে ${toBengaliDigits(branches.length)} টি শাখা সক্রিয়`
                   )}
             </div>
-            <p className="text-2xs text-muted-foreground bangla-text">
+            <p className="text-xs text-muted-foreground bangla-text">
               {branchCheck.exceeded
                 ? tBilingual('Branch limit reached. Upgrade to Enterprise to add multi-branch factory locations.', 'শাখার সর্বোচ্চ সীমা পূর্ণ হয়েছে। নতুন হাব/শাখা যোগ করতে প্ল্যান আপগ্রেড করুন।')
                 : tBilingual(`Configured for ${currentPlan.name}.`, `${currentPlan.name_bn}-এ পরিচালিত।`)}
@@ -416,16 +416,16 @@ export default function BranchesSettingsPage() {
         {currentPlan.code !== 'enterprise' && (
           <Button
  size="sm"variant="outline"onClick={() => openUpgradeModal('enterprise')}
- className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/40 bangla-text shrink-0">
-            <Crown className="mr-1.5 h-3.5 w-3.5 text-amber-500"/>
+ className="text-xs font-bold text-primary text-primary hover:bg-primary/10 dark:hover:bg-primary/10 bangla-text shrink-0">
+            <Crown className="mr-1.5 h-3.5 w-3.5 text-warning"/>
             {tBilingual('Expand Branch Limit', 'শাখা সীমা বৃদ্ধি')}
           </Button>
         )}
       </div>
 
       {notification && (
-        <div className="p-3 bg-emerald-50 text-emerald-800 rounded-lg text-xs font-semibold flex items-center gap-2 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800 animate-in fade-in-0">
-          <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0"/>
+        <div className="p-3 bg-success-surface text-success rounded-lg text-xs font-semibold flex items-center gap-2 border border-success-border bg-success-surface text-success border-success-border animate-in fade-in-0">
+          <CheckCircle2 className="h-4 w-4 text-success shrink-0"/>
           <span>{notification}</span>
         </div>
       )}
@@ -454,20 +454,20 @@ export default function BranchesSettingsPage() {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="space-y-1.5">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="tabular-nums text-xs font-bold px-2 py-0.5 rounded bg-muted text-blue-600 dark:text-blue-400">
+                    <span className="tabular-nums text-xs font-bold px-2 py-0.5 rounded bg-muted text-primary text-primary">
                       {branch.code}
                     </span>
                     <h3 className="font-bold text-base text-foreground">
                       {branch.name}
                     </h3>
                     {branch.isMain && (
-                      <Badge variant="default"className="text-2xs bg-blue-600">
+                      <Badge variant="default"className="text-xs bg-primary">
                         <Star className="h-3 w-3 mr-1 fill-white"/>
                         {tBilingual('Head Office', 'প্রধান কার্যালয়')}
                       </Badge>
                     )}
                     {!branch.isActive && (
-                      <Badge variant="outline"className="text-2xs border-rose-300 text-rose-700 bg-rose-50 dark:bg-rose-950/40 dark:text-rose-300">
+                      <Badge variant="outline"className="text-xs border-danger-border text-destructive bg-danger-surface bg-danger-surface text-destructive">
                         {tBilingual('Inactive', 'নিষ্ক্রিয়')}
                       </Badge>
                     )}
@@ -478,7 +478,7 @@ export default function BranchesSettingsPage() {
 
                   <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground pt-1">
                     {branch.phone && (
-                      <a href={`tel:${branch.phone}`} className="flex items-center gap-1 hover:text-blue-600">
+                      <a href={`tel:${branch.phone}`} className="flex items-center gap-1 hover:text-primary">
                         <Phone className="h-3.5 w-3.5 text-muted-foreground"/>
                         <span className="tabular-nums">{branch.phone}</span>
                       </a>
@@ -530,7 +530,7 @@ export default function BranchesSettingsPage() {
 
                   {branch.isActive && (
                     <Badge
- variant="outline"className="text-xs bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 py-1 sm:py-0.5 justify-center font-medium">
+ variant="outline"className="text-xs bg-success-surface text-success border-success-border bg-success-surface text-success py-1 sm:py-0.5 justify-center font-medium">
                       <Check className="h-3 w-3 mr-1"/>
                       {tBilingual('Operational', 'চলমান')}
                     </Badge>
@@ -626,7 +626,7 @@ export default function BranchesSettingsPage() {
             </Button>
             <Button
  type="submit"isLoading={isSubmitting}
- className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto h-9 text-xs font-semibold">
+ className="bg-primary hover:bg-primary w-full sm:w-auto h-9 text-xs font-semibold">
               {tBilingual('Create Branch', 'শাখা তৈরি করুন')}
             </Button>
           </div>
@@ -716,7 +716,7 @@ export default function BranchesSettingsPage() {
               </Button>
               <Button
  type="submit"isLoading={isSubmitting}
- className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto h-9 text-xs font-semibold">
+ className="bg-primary hover:bg-primary w-full sm:w-auto h-9 text-xs font-semibold">
                 {tBilingual('Save Changes', 'সংরক্ষণ করুন')}
               </Button>
             </div>

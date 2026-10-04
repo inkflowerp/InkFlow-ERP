@@ -83,12 +83,12 @@ export function PdfViewerModal({
       <DialogContent onClose={onClose} className="max-w-5xl h-[90vh] flex flex-col p-0 gap-0 overflow-hidden bg-surface-inset text-foreground border-border">
         <DialogHeader className="p-4 border-b border-border flex flex-row items-center justify-between space-y-0 bg-surface-inset text-foreground pr-14">
           <div className="flex items-center gap-2.5">
-            <div className="h-8 w-8 rounded-lg bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400">
+            <div className="h-8 w-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary">
               <FileText className="h-4 w-4"/>
             </div>
             <div>
               <DialogTitle className="text-sm font-bold text-foreground">{title}</DialogTitle>
-              <DialogDescription className="text-2xs text-muted-foreground">
+              <DialogDescription className="text-xs text-muted-foreground">
  Vector PDF Rendering Engine (pdfcn + Forme WASM)
               </DialogDescription>
             </div>
@@ -106,7 +106,7 @@ export function PdfViewerModal({
             <Button
  size="sm"disabled={!blobUrl || isLoading}
  onClick={handleDownload}
- className="h-8 text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white">
+ className="h-8 text-xs font-bold bg-primary hover:bg-primary/90 text-primary-foreground">
               <Download className="mr-1.5 h-3.5 w-3.5"/>
  Download .pdf
             </Button>
@@ -116,14 +116,14 @@ export function PdfViewerModal({
         <div className="flex-1 bg-surface-inset relative overflow-hidden flex items-center justify-center">
           {isLoading && (
             <div className="flex flex-col items-center gap-3 text-muted-foreground">
-              <Loader2 className="h-8 w-8 animate-spin text-blue-500"/>
+              <Loader2 className="h-8 w-8 animate-spin text-primary"/>
               <p className="text-xs font-medium">Generating high-fidelity vector PDF...</p>
             </div>
           )}
 
           {error && (
             <div className="text-center p-6 max-w-md">
-              <p className="text-sm font-semibold text-rose-400 mb-2">Generation Failed</p>
+              <p className="text-sm font-semibold text-destructive mb-2">Generation Failed</p>
               <p className="text-xs text-muted-foreground mb-4">{error}</p>
               <Button size="sm"variant="outline"onClick={() => window.print()}>
  Fallback to Browser Print

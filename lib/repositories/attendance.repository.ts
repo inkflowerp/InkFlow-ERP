@@ -1227,4 +1227,27 @@ export class AttendanceRepository {
       return true
     })
   }
+
+  static async getEmployeeDailyAttendance(employeeId: string, dateStr: string): Promise<any | null> {
+    try {
+      const admin = createAdminClient()
+      const { data } = await (admin as any)
+        .from('attendances')
+        .select('check_in_time, check_out_time, status')
+        .eq('employee_id', employeeId)
+        .eq('attendance_date', dateStr)
+        .maybeSingle()
+
+      if (data) return data
+    } catch {}
+
+    const all = PrintERPDataStore.get<any[]>(STORAGE_KEYS.ATTENDANCE) || []
+    return (
+      all.find(
+        (a) =>
+          a.employee_id === employeeId &&
+          (a.attendance_date === dateStr || a.date === dateStr)
+      ) || null
+    )
+  }
 }

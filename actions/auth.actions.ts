@@ -5,13 +5,12 @@ import { redirect } from 'next/navigation'
 import { cookies, headers } from 'next/headers'
 import { AuthService } from '@/services/auth.service'
 import { AuditService } from '@/services/audit.service'
-import { checkRateLimit } from '@/lib/security/rate-limiter'
+import { checkRateLimit, checkRateLimitAsync } from '@/lib/security/rate-limiter'
 import { TENANT_SESSION_COOKIE } from '@/lib/auth/types'
 import { getCurrentTenant } from '@/lib/auth/tenant-auth'
 import { resolveRequestOrigin } from '@/lib/security/runtime-env'
 import { getAuthCookieOptions, resolveHostname, resolveTenant, isReservedSlug } from '@/lib/tenant/tenant-resolution'
 import { getTenantLink } from '@/lib/tenant/tenant-url'
-import { createClient, establishServerSession } from '@/lib/supabase/server'
 
 async function getRequestBaseUrl(): Promise<string> {
   try {
@@ -80,7 +79,7 @@ export async function loginAction(formData: FormData) {
   }
 
   // Enforce sliding window rate limit on auth attempts
-  const rateLimit = checkRateLimit(email.toLowerCase(), 'auth')
+  const rateLimit = await checkRateLimitAsync(email.toLowerCase(), 'auth')
   if (!rateLimit.success) {
     return {
       success: false,
@@ -169,7 +168,7 @@ export async function signInAction(email: string, pass: string) {
     return { success: false, error: 'Email and password are required' }
   }
 
-  const rateLimit = checkRateLimit(email.toLowerCase(), 'auth')
+  const rateLimit = await checkRateLimitAsync(email.toLowerCase(), 'auth')
   if (!rateLimit.success) {
     return {
       success: false,
@@ -241,7 +240,7 @@ export async function signUpAction(data: {
     return { success: false, error: 'Password must be at least 8 characters long.' }
   }
 
-  const rateLimit = checkRateLimit(data.email.toLowerCase(), 'auth')
+  const rateLimit = await checkRateLimitAsync(data.email.toLowerCase(), 'auth')
   if (!rateLimit.success) {
     return {
       success: false,
@@ -283,7 +282,7 @@ export async function verifyRegistrationOtpAction(email: string, otp: string) {
     return { success: false, error: 'Email and verification code are required' }
   }
 
-  const rateLimit = checkRateLimit(email.toLowerCase(), 'auth')
+  const rateLimit = await checkRateLimitAsync(email.toLowerCase(), 'auth')
   if (!rateLimit.success) {
     return {
       success: false,
@@ -302,7 +301,7 @@ export async function verifyRegistrationOtpAction(email: string, otp: string) {
   cookieStore.set(TENANT_SESSION_COOKIE, encodeURIComponent(JSON.stringify(session)), cookieOpts)
 
   // Establish Supabase SSR auth token cookies on server
-  await establishServerSession(email, cookieOpts.domain)
+  await AuthService.establishServerSession(email, cookieOpts.domain)
 
   revalidatePath('/', 'layout')
   return result
@@ -325,7 +324,7 @@ export async function verifyRegistrationTokenAction(token: string, email?: strin
 
   // Establish Supabase SSR auth token cookies on server
   if (session.userEmail) {
-    await establishServerSession(session.userEmail, cookieOpts.domain)
+    await AuthService.establishServerSession(session.userEmail, cookieOpts.domain)
   }
 
   revalidatePath('/', 'layout')
@@ -345,7 +344,7 @@ export async function checkEmailVerificationStatusAction(email: string) {
     cookieStore.set(TENANT_SESSION_COOKIE, encodeURIComponent(JSON.stringify(session)), cookieOpts)
 
     // Establish Supabase SSR auth token cookies on server
-    await establishServerSession(email, cookieOpts.domain)
+    await AuthService.establishServerSession(email, cookieOpts.domain)
     revalidatePath('/', 'layout')
   }
 
@@ -360,7 +359,7 @@ export async function resendVerificationOtpAction(
     return { success: false, error: 'Email address is required' }
   }
 
-  const rateLimit = checkRateLimit(email.toLowerCase(), 'auth')
+  const rateLimit = await checkRateLimitAsync(email.toLowerCase(), 'auth')
   if (!rateLimit.success) {
     return {
       success: false,
@@ -377,7 +376,7 @@ export async function forgotPasswordAction(email: string) {
     return { success: false, error: 'Email address is required' }
   }
 
-  const rateLimit = checkRateLimit(email.toLowerCase(), 'auth')
+  const rateLimit = await checkRateLimitAsync(email.toLowerCase(), 'auth')
   if (!rateLimit.success) {
     return {
       success: false,
@@ -394,7 +393,7 @@ export async function verifyPasswordResetOtpAction(email: string, otp: string) {
     return { success: false, error: 'Email and verification code are required' }
   }
 
-  const rateLimit = checkRateLimit(email.toLowerCase(), 'auth')
+  const rateLimit = await checkRateLimitAsync(email.toLowerCase(), 'auth')
   if (!rateLimit.success) {
     return {
       success: false,
@@ -422,7 +421,7 @@ export async function confirmPasswordResetAction(
     return { success: false, error: 'Email, reset authorization token, and new password are required' }
   }
 
-  const rateLimit = checkRateLimit(email.toLowerCase(), 'auth')
+  const rateLimit = await checkRateLimitAsync(email.toLowerCase(), 'auth')
   if (!rateLimit.success) {
     return {
       success: false,
@@ -482,15 +481,8 @@ export async function signInWithGoogleAction(redirectTo?: string) {
     }
 
     // 2. Fallback: Supabase Client OAuth Provider Flow
-    const supabase = await createClient()
     const callbackUrl = redirectTo || `${appUrl}/auth/callback`
-
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: callbackUrl,
-      },
-    })
+    const { data, error } = await AuthService.signInWithOAuth('google', callbackUrl)
 
     if (error) {
       return { success: false, error: error.message }

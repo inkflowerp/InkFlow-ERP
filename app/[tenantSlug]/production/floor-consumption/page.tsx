@@ -27,6 +27,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { PageHeader } from '@/components/shared/page-header'
 import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
+import { PageContainer } from '@/components/ui/page-container'
 import { Card, CardContent } from '@/components/ui/card'
 import { PrintFloorConsumptionUnit } from '@/components/inventory/print-floor-consumption-unit'
 import { LogConsumptionModal } from '@/components/inventory/log-consumption-modal'
@@ -138,11 +139,11 @@ export default function FloorConsumptionPage() {
  return (
     <PanelAccessGuard
  module="production"action="view"panelTitle="Materials & Consumption"panelTitleBn="কাঁচামাল ও খরচ">
-      <div className="space-y-6 p-4 sm:p-6 max-w-[1600px] mx-auto min-h-screen">
+      <PageContainer className="space-y-6">
       {/* Page Header */}
       <PageHeader
  titleEn="Materials & Consumption"titleBn="কাঁচামাল ও ফ্লোর খরচ"descriptionEn="Real-time press floor material usage, physical roll off-cut tracking, job-linked substrate consumption & live scrap telemetry"descriptionBn="প্রিন্ট ফ্লোর রিয়েল-টাইম মেটেরিয়াল ব্যবহার, রোল কাটিং ট্র্যাকিং, জব ভিত্তিক মেটেরিয়াল কনজাম্পশন ও স্ক্র্যাপ অডিট"icon={Flame}
- iconColor="text-amber-500"actions={
+ iconColor="text-warning"actions={
           <div className="flex flex-wrap items-center gap-2">
             <Button
  variant="outline"size="sm"onClick={() => loadFloorData()}
@@ -156,14 +157,14 @@ export default function FloorConsumptionPage() {
             <Button
  variant="outline"size="sm"onClick={() => setIsMaterialRequestOpen(true)}
  className="gap-2 border-border text-foreground hover:bg-muted font-semibold shadow-xs cursor-pointer transition-colors">
-              <Plus className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0"/>
+              <Plus className="h-4 w-4 text-warning shrink-0"/>
               <span>{isBn ? 'স্টোর থেকে রিকুইজিশন পাঠান' : 'Request Material'}</span>
             </Button>
 
             <Button
  size="sm"onClick={() => setIsIssueMasterRollOpen(true)}
- className="gap-2 bg-cyan-600 hover:bg-cyan-700 text-white font-semibold shadow-xs cursor-pointer transition-colors">
-              <Disc className="h-4 w-4 text-white shrink-0"/>
+ className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-xs cursor-pointer transition-colors">
+              <Disc className="h-4 w-4 text-primary-foreground shrink-0"/>
               <span>{isBn ? 'সরাসরি রোল ইস্যু করুন' : 'Direct Issue to Floor'}</span>
             </Button>
           </div>
@@ -172,15 +173,15 @@ export default function FloorConsumptionPage() {
 
       {/* Error Alert */}
       {error && (
-        <Card className="border-red-500/30 bg-red-950/20 text-red-300">
+        <Card className="border-danger-border/30 bg-danger-surface text-destructive">
           <CardContent className="p-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <AlertTriangle className="h-5 w-5 text-red-400 shrink-0"/>
+              <AlertTriangle className="h-5 w-5 text-destructive shrink-0"/>
               <p className="text-sm">{error}</p>
             </div>
             <Button
  variant="ghost"size="sm"onClick={() => loadFloorData()}
- className="text-red-300 hover:bg-red-900/40">
+ className="text-destructive hover:bg-destructive/40">
               {isBn ? 'পুনরায় চেষ্টা করুন' : 'Retry'}
             </Button>
           </CardContent>
@@ -268,7 +269,7 @@ export default function FloorConsumptionPage() {
  companyId={companyId}
         />
       )}
-    </div>
+    </PageContainer>
     </PanelAccessGuard>
   )
 }

@@ -29,9 +29,14 @@ export function isSupabaseConfigured(): boolean {
   )
 }
 
+type GlobalClientHolder = typeof globalThis & {
+  [GLOBAL_CLIENT_KEY]?: ReturnType<typeof createBrowserClient<Database>>
+}
+
 export function createClient() {
-  if (typeof window !== 'undefined' && (globalThis as any)[GLOBAL_CLIENT_KEY]) {
-    return (globalThis as any)[GLOBAL_CLIENT_KEY]
+  const globalHolder = globalThis as GlobalClientHolder
+  if (typeof window !== 'undefined' && globalHolder[GLOBAL_CLIENT_KEY]) {
+    return globalHolder[GLOBAL_CLIENT_KEY]
   }
 
   const supabaseUrl =
@@ -56,7 +61,7 @@ export function createClient() {
       supabaseAnonKey || 'dummy-anon-key'
     )
     if (typeof window !== 'undefined') {
-      ;(globalThis as any)[GLOBAL_CLIENT_KEY] = fallbackClient
+      globalHolder[GLOBAL_CLIENT_KEY] = fallbackClient
     }
     return fallbackClient
   }
@@ -70,7 +75,7 @@ export function createClient() {
   )
 
   if (typeof window !== 'undefined') {
-    ;(globalThis as any)[GLOBAL_CLIENT_KEY] = client
+    globalHolder[GLOBAL_CLIENT_KEY] = client
   }
 
   return client

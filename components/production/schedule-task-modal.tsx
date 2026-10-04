@@ -28,6 +28,7 @@ import {
 import { MachineryRecord } from '@/types/machinery.types'
 import { getMachineriesAction } from '@/actions/machinery.actions'
 import { scheduleProductionTaskAction } from '@/actions/production-planning.actions'
+import { usePresence } from '@/components/providers/realtime-provider'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 
 interface ScheduleTaskModalProps {
@@ -44,6 +45,13 @@ export function ScheduleTaskModal({
  onSuccess,
 }: ScheduleTaskModalProps) {
  const { tBilingual } = useI18n()
+ const { users: presenceUsers, setEditing } = usePresence('production', task?.id)
+ useEffect(() => {
+   if (isOpen && task?.id) {
+     setEditing(true)
+     return () => setEditing(false)
+   }
+ }, [isOpen, task?.id, setEditing])
 
  const [machineries, setMachineries] = useState<MachineryRecord[]>([])
  const [selectedMachineId, setSelectedMachineId] = useState<string>('')
@@ -150,11 +158,16 @@ export function ScheduleTaskModal({
  scheduled_start: new Date(scheduledStart).toISOString(),
  estimated_duration_minutes: durationMinutes,
  notes: notes.trim() || undefined,
+        expected_version: task.version,
       }
 
  const res = await scheduleProductionTaskAction(input, undefined, task)
  if (!res.success || !res.data) {
- setErrorMessage(res.error || 'Failed to schedule task.')
+ if (res.conflict) {
+          setErrorMessage(tBilingual('Updated by someone else, reload?', 'অন্য কেউ ইতিমধ্যে আপডেট করেছে, রিলোড করবেন?'))
+        } else {
+          setErrorMessage(res.error || 'Failed to schedule task.')
+        }
  return
       }
 
@@ -177,17 +190,23 @@ export function ScheduleTaskModal({
  hideFooter={true}
     >
       <form onSubmit={handleFormSubmit} className="space-y-4">
+        {presenceUsers.length > 0 && (
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-warning-surface text-xs text-warning border border-warning/30">
+            <span className="w-2 h-2 rounded-full bg-warning shrink-0" />
+            <span>{tBilingual('Also active here:', 'অন্য ইউজার সক্রিয় আছেন:')} {presenceUsers.map((u: any) => u.userName).join(', ')}</span>
+          </div>
+        )}
         {/* Task Summary Card */}
         <div className="p-3 bg-muted rounded-lg border border-border space-y-1">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-foreground">
               {task.task_name}
             </span>
-            <Badge variant="outline"className="text-2xs uppercase tabular-nums">
+            <Badge variant="outline"className="text-xs uppercase tabular-nums">
               {task.task_number}
             </Badge>
           </div>
-          <div className="text-2xs text-muted-foreground flex items-center gap-3 flex-wrap">
+          <div className="text-xs text-muted-foreground flex items-center gap-3 flex-wrap">
             <span>Job #{task.job_number || 'N/A'}</span>
             <span>•</span>
             <span>Qty: {task.quantity} {task.unit}</span>
@@ -204,8 +223,8 @@ export function ScheduleTaskModal({
 
         {/* Error Alert */}
         {errorMessage && (
-          <div className="p-3 bg-rose-50 text-rose-800 rounded-lg text-xs font-medium flex items-start gap-2 border border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800 animate-in fade-in-0">
-            <AlertTriangle className="h-4 w-4 text-rose-600 shrink-0 mt-0.5"/>
+          <div className="p-3 bg-destructive/10 text-destructive rounded-lg text-xs font-medium flex items-start gap-2 border border-destructive/20 animate-in fade-in-0">
+            <AlertTriangle className="h-4 w-4 text-destructive shrink-0 mt-0.5"/>
             <span>{errorMessage}</span>
           </div>
         )}
@@ -214,13 +233,13 @@ export function ScheduleTaskModal({
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
             <Label className="text-xs font-semibold flex items-center gap-1.5">
-              <Cpu className="h-3.5 w-3.5 text-blue-600"/>
+              <Cpu className="h-3.5 w-3.5 text-primary"/>
               {tBilingual('Target Machinery', 'বরাদ্দকৃত মেশিন')}
             </Label>
             {selectedMachine && selectedMachine.estimated_speed && (
               <button
  type="button"onClick={handleAutoEstimateDuration}
- className="text-2xs text-blue-600 hover:text-blue-700 dark:text-blue-400 font-medium flex items-center gap-1">
+ className="text-xs text-primary hover:text-primary/80 font-medium flex items-center gap-1">
                 <Sparkles className="h-3 w-3"/>
                 {tBilingual('Auto-calc Duration from Speed', 'গতি থেকে সময় হিসাব')}
               </button>
@@ -231,7 +250,7 @@ export function ScheduleTaskModal({
  value={selectedMachineId}
  onChange={(e) => setSelectedMachineId(e.target.value)}
  disabled={loadingMachines}
- className="w-full text-xs rounded-md border border-input bg-card px-3 py-2 text-foreground shadow-xs focus:border-blue-500 focus:outline-hidden">
+ className="w-full text-xs rounded-md border border-input bg-card px-3 py-2 text-foreground shadow-xs focus:border-ring focus:outline-hidden">
             <option value="">-- No Machine Required (Manual / Hand Work) --</option>
             {machineries.map((m) => {
  const isCompatible = (!task.width || !m.max_width || task.width <= m.max_width) && m.status !== 'breakdown'
@@ -245,21 +264,21 @@ export function ScheduleTaskModal({
 
           {/* Machine Compatibility Banner */}
           {machineCompatibility && (
-            <div className={`p-2.5 rounded text-2xs flex items-start gap-2 border ${
+            <div className={`p-2.5 rounded text-xs flex items-start gap-2 border ${
  machineCompatibility.isCompatible
-                ? 'bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800'
-                : 'bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800'
+                ? 'bg-success-surface text-success border-success/30'
+                : 'bg-warning-surface text-warning border-warning/30'
             }`}>
               {machineCompatibility.isCompatible ? (
                 <>
-                  <Check className="h-3.5 w-3.5 text-emerald-600 shrink-0 mt-0.5"/>
+                  <Check className="h-3.5 w-3.5 text-success shrink-0 mt-0.5"/>
                   <span>
  Machine is compatible with task specifications. Speed: {selectedMachine?.estimated_speed || 80} {selectedMachine?.speed_unit || 'sqft/hr'}.
                   </span>
                 </>
               ) : (
                 <>
-                  <AlertTriangle className="h-3.5 w-3.5 text-amber-600 shrink-0 mt-0.5"/>
+                  <AlertTriangle className="h-3.5 w-3.5 text-warning shrink-0 mt-0.5"/>
                   <div>
                     <span className="font-semibold">Compatibility Notice:</span>
                     <ul className="list-disc list-inside mt-0.5 space-y-0.5">
@@ -283,7 +302,7 @@ export function ScheduleTaskModal({
           <select
  value={selectedOperatorId}
  onChange={(e) => setSelectedOperatorId(e.target.value)}
- className="w-full text-xs rounded-md border border-input bg-card px-3 py-2 text-foreground shadow-xs focus:border-blue-500 focus:outline-hidden">
+ className="w-full text-xs rounded-md border border-input bg-card px-3 py-2 text-foreground shadow-xs focus:border-ring focus:outline-hidden">
             <option value="">-- Unassigned (Available for Any Floor Operator) --</option>
             {operators.map((op) => (
               <option key={op.id} value={op.id}>

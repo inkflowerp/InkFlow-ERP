@@ -2,8 +2,7 @@
 
 import React from 'react'
 import { LucideIcon } from 'lucide-react'
-import { Card } from '@/components/ui/card'
-import { cn } from '@/lib/utils'
+import { KpiCard, type KpiDelta } from '@/components/ui/kpi-card'
 
 export interface StatCardProps {
   title: string
@@ -20,59 +19,36 @@ export interface StatCardProps {
   onClick?: () => void
 }
 
+/**
+ * @deprecated Use `KpiCard` from `@/components/ui/kpi-card` directly.
+ */
 export function StatCard({
   title,
   value,
   subtitle,
-  icon: Icon,
-  iconColor,
+  icon,
   trend,
   className,
   onClick,
 }: StatCardProps) {
-  return (
-    <Card
-      onClick={onClick}
-      className={cn(
-        'p-4 rounded-xl border border-border bg-card text-card-foreground shadow-xs flex items-center justify-between min-h-24',
-        onClick && 'cursor-pointer hover:bg-muted/50 transition-colors',
-        className
-      )}
-    >
-      <div className="space-y-1 min-w-0 flex-1 pr-3">
-        <div className="text-xs font-medium text-muted-foreground truncate uppercase tracking-wider">
-          {title}
-        </div>
-        <div className="text-2xl font-bold text-foreground tabular-nums tracking-tight truncate">
-          {value}
-        </div>
-        {(subtitle || trend) && (
-          <div className="text-2xs text-muted-foreground flex items-center gap-1.5 truncate">
-            {trend && (
-              <span
-                className={cn(
-                  'font-semibold tabular-nums',
-                  trend.isPositive ? 'text-success' : 'text-destructive'
-                )}
-              >
-                {trend.isPositive ? '+' : ''}{trend.value}
-              </span>
-            )}
-            {subtitle && <span>{subtitle}</span>}
-          </div>
-        )}
-      </div>
+  const delta: KpiDelta | undefined = trend
+    ? {
+        value: trend.value,
+        direction: trend.isPositive ? 'up' : 'down',
+        isGood: trend.isPositive,
+        label: trend.label,
+      }
+    : undefined
 
-      {Icon && (
-        <div
-          className={cn(
-            'h-10 w-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 border border-primary/20',
-            iconColor
-          )}
-        >
-          <Icon className="h-5 w-5" />
-        </div>
-      )}
-    </Card>
+  return (
+    <KpiCard
+      label={title}
+      value={value}
+      subtitle={subtitle}
+      icon={icon}
+      delta={delta}
+      className={className}
+      onClick={onClick}
+    />
   )
 }

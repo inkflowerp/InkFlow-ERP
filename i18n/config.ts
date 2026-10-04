@@ -1,4 +1,4 @@
-import { LocaleMode } from '@/types/common.types'
+import type { LocaleMode } from '../types/common.types.ts'
 
 export const LOCALES: { code: LocaleMode; label: string; labelNative: string }[] = [
   { code: 'bn', label: 'Bengali', labelNative: 'বাংলা' },

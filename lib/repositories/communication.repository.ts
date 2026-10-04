@@ -409,4 +409,25 @@ export class CommunicationRepository {
 
     return defaults
   }
+
+  static async createInAppNotification(notification: {
+    company_id: string
+    type: string
+    title: string
+    title_bn?: string | null
+    message: string
+    message_bn?: string | null
+    action_url?: string | null
+    created_at?: string
+  }) {
+    try {
+      const supabase = await createClient()
+      await (supabase.from('in_app_notifications' as any) as any).insert({
+        ...notification,
+        created_at: notification.created_at || new Date().toISOString(),
+      })
+    } catch (err) {
+      console.warn('[CommunicationRepository.createInAppNotification] error:', err)
+    }
+  }
 }

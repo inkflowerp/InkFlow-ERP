@@ -226,9 +226,16 @@ export class OrderRepository {
       }
     }
 
-    const finalPrice = order.final_price || order.subtotal || 0
-    const advancePaid = order.advance_amount || 0
-    const balanceDue = Math.max(0, finalPrice - advancePaid)
+    let computedSubtotal = 0
+    if (order.items && order.items.length > 0) {
+      computedSubtotal = order.items.reduce((acc: number, it: any) => acc + (Number(it.total_price) || (Number(it.quantity) || 1) * (Number(it.unit_price) || 0)), 0)
+    }
+    const effectiveSubtotal = computedSubtotal || Number(order.subtotal) || Number(order.final_price) || 0
+    const discountAmount = Math.min(effectiveSubtotal, Math.max(0, Number(order.discount_amount) || 0))
+    const vatAmount = Math.max(0, Number(order.vat_amount) || 0)
+    const finalPrice = Math.max(0, effectiveSubtotal - discountAmount + vatAmount)
+    const advancePaid = Math.min(finalPrice, Math.max(0, Number(order.advance_amount) || 0))
+    const balanceDue = finalPrice - advancePaid
 
     const workflowRouting = order.workflow_routing || 'design_required'
     const commercialStatus = order.commercial_status || (order.invoice_id ? 'invoice_created' : 'invoice_required')
@@ -266,9 +273,9 @@ export class OrderRepository {
       production_gate_status: productionGateStatus,
       invoice_id: order.invoice_id || null,
       invoice_number: order.invoice_number || null,
-      subtotal: order.subtotal || finalPrice,
-      discount_amount: order.discount_amount || 0,
-      vat_amount: order.vat_amount || 0,
+      subtotal: effectiveSubtotal,
+      discount_amount: discountAmount,
+      vat_amount: vatAmount,
       final_price: finalPrice,
       advance_amount: advancePaid,
       due_amount: balanceDue,
@@ -523,13 +530,19 @@ export class OrderRepository {
     return localOrder
   }
 
-  static async updateOrder(id: string, updates: Partial<SalesOrderRecord>, companyId: string): Promise<SalesOrderRecord> {
+  static async updateOrder(
+    id: string,
+    updates: Partial<SalesOrderRecord>,
+    companyId: string,
+    expectedVersion?: number
+  ): Promise<SalesOrderRecord> {
     try {
       const supabase = await createClient()
       const payload: any = { ...updates, updated_at: new Date().toISOString() }
       delete payload.id
       delete payload.company_id
       delete payload.items
+      delete payload.version
 
       const isUuid = Boolean(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id))
       let query = (supabase as any).from('sales_orders').update(payload).eq('company_id', companyId)
@@ -539,17 +552,49 @@ export class OrderRepository {
         query = query.eq('order_number', id)
       }
 
+      if (typeof expectedVersion === 'number') {
+        query = query.eq('version', expectedVersion)
+      }
+
       const { data, error } = await query.select().maybeSingle()
 
       if (!error && data) {
         return data as unknown as SalesOrderRecord
       }
-    } catch {}
+
+      // Check if stale write occurred due to version mismatch
+      if (typeof expectedVersion === 'number') {
+        let checkQuery = (supabase as any).from('sales_orders').select('id, version').eq('company_id', companyId)
+        if (isUuid) {
+          checkQuery = checkQuery.or(`id.eq.${id},order_number.eq.${id}`)
+        } else {
+          checkQuery = checkQuery.eq('order_number', id)
+        }
+        const { data: existingRow } = await checkQuery.maybeSingle()
+        if (existingRow && existingRow.version !== expectedVersion) {
+          const conflictErr: any = new Error('Updated by someone else, reload?')
+          conflictErr.code = 'STALE_WRITE'
+          conflictErr.conflict = true
+          throw conflictErr
+        }
+      }
+    } catch (err: any) {
+      if (err?.conflict || err?.code === 'STALE_WRITE') {
+        throw err
+      }
+    }
 
     const all = PrintERPDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS) || []
     const idx = all.findIndex((o) => (o.id === id || o.order_number === id) && (o.company_id === companyId || !companyId || companyId === 'default'))
     if (idx >= 0) {
-      all[idx] = { ...all[idx], ...updates, updated_at: new Date().toISOString() }
+      if (typeof expectedVersion === 'number' && all[idx].version !== undefined && all[idx].version !== expectedVersion) {
+        const conflictErr: any = new Error('Updated by someone else, reload?')
+        conflictErr.code = 'STALE_WRITE'
+        conflictErr.conflict = true
+        throw conflictErr
+      }
+      const nextVersion = (all[idx].version || 1) + 1
+      all[idx] = { ...all[idx], ...updates, version: nextVersion, updated_at: new Date().toISOString() }
       PrintERPDataStore.set(STORAGE_KEYS.ORDERS, all)
       return all[idx]
     }

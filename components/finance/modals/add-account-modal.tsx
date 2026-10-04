@@ -147,7 +147,7 @@ export function AddAccountModal({
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
-          <div className="p-3 text-xs bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300 rounded-xl flex items-center gap-2 border border-rose-200 dark:border-rose-900">
+          <div className="p-3 text-xs bg-danger-surface text-destructive bg-danger-surface text-destructive rounded-xl flex items-center gap-2 border border-danger-border border-danger-border">
             <AlertCircle className="w-4 h-4 shrink-0"/>
             <span>{error}</span>
           </div>
@@ -166,11 +166,11 @@ export function AddAccountModal({
               }}
  className={`p-3 rounded-xl border flex flex-col items-center gap-1 text-xs font-semibold transition-all cursor-pointer ${
  accountType === 'CASH'
-                  ? 'border-emerald-500 bg-emerald-50 text-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-300 shadow-xs'
+                  ? 'border-success-border bg-success-surface text-success bg-success-surface text-success shadow-xs'
                   : 'border-border hover:bg-muted text-muted-foreground '
               }`}
             >
-              <Wallet className="w-5 h-5 text-emerald-600"/>
+              <Wallet className="w-5 h-5 text-success"/>
               <span>{tBilingual('Cash', 'নগদ ক্যাশ')}</span>
             </button>
 
@@ -181,11 +181,11 @@ export function AddAccountModal({
               }}
  className={`p-3 rounded-xl border flex flex-col items-center gap-1 text-xs font-semibold transition-all cursor-pointer ${
  accountType === 'BANK'
-                  ? 'border-blue-500 bg-blue-50 text-blue-900 dark:bg-blue-950/40 dark:text-blue-300 shadow-xs'
+                  ? 'border-primary/20 bg-primary/10 text-primary bg-primary/10 text-primary shadow-xs'
                   : 'border-border hover:bg-muted text-muted-foreground '
               }`}
             >
-              <Building2 className="w-5 h-5 text-blue-600"/>
+              <Building2 className="w-5 h-5 text-primary"/>
               <span>{tBilingual('Bank Account', 'ব্যাংক হিসাব')}</span>
             </button>
 
@@ -240,7 +240,7 @@ export function AddAccountModal({
         {accountType === 'BANK' && (
           <div className="space-y-3 p-3 rounded-xl bg-muted dark:bg-muted/60 border border-border">
             <div>
-              <Label className="text-2xs font-semibold text-muted-foreground mb-1 block">
+              <Label className="text-xs font-semibold text-muted-foreground mb-1 block">
                 {tBilingual('Bank Name', 'ব্যাংকের নাম')}
               </Label>
               <Input
@@ -250,7 +250,7 @@ export function AddAccountModal({
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <Label className="text-2xs font-semibold text-muted-foreground mb-1 block">
+                <Label className="text-xs font-semibold text-muted-foreground mb-1 block">
                   {tBilingual('Account Number', 'হিসাব নম্বর')}
                 </Label>
                 <Input
@@ -259,7 +259,7 @@ export function AddAccountModal({
  placeholder="e.g. 12010500..."className="h-8 text-xs rounded-lg bg-card"/>
               </div>
               <div>
-                <Label className="text-2xs font-semibold text-muted-foreground mb-1 block">
+                <Label className="text-xs font-semibold text-muted-foreground mb-1 block">
                   {tBilingual('Branch Name', 'শাখা')}
                 </Label>
                 <Input
@@ -276,7 +276,7 @@ export function AddAccountModal({
           <div className="space-y-3 p-3 rounded-xl bg-muted dark:bg-muted/60 border border-border">
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <Label className="text-2xs font-semibold text-muted-foreground mb-1 block">
+                <Label className="text-xs font-semibold text-muted-foreground mb-1 block">
                   {tBilingual('Provider', 'প্রোভাইডার')}
                 </Label>
                 <select
@@ -291,7 +291,7 @@ export function AddAccountModal({
                 </select>
               </div>
               <div>
-                <Label className="text-2xs font-semibold text-muted-foreground mb-1 block">
+                <Label className="text-xs font-semibold text-muted-foreground mb-1 block">
                   {tBilingual('Account Category', 'ধরন')}
                 </Label>
                 <select
@@ -305,7 +305,7 @@ export function AddAccountModal({
               </div>
             </div>
             <div>
-              <Label className="text-2xs font-semibold text-muted-foreground mb-1 block">
+              <Label className="text-xs font-semibold text-muted-foreground mb-1 block">
                 {tBilingual('Wallet Phone Number', 'ওয়ালেট মোবাইল নম্বর')}
               </Label>
               <Input
@@ -328,7 +328,7 @@ export function AddAccountModal({
  onChange={(e) => setOpeningBalance(e.target.value)}
  placeholder="0.00"className="h-9 pl-7 text-xs rounded-xl tabular-nums font-bold"/>
           </div>
-          <p className="text-3xs text-muted-foreground mt-1">
+          <p className="text-xs text-muted-foreground mt-1">
             {tBilingual(
               'Initial money in this drawer or account when starting PrintERP.',
               'সফটওয়্যার চালুর সময় এই ড্রয়ার বা একাউন্টে থাকা বর্তমান নগদ টাকা।'

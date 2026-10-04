@@ -97,7 +97,7 @@ export default function PayrollPage() {
  return (
     <PanelAccessGuard module="payroll"action="view"panelTitle="Payroll"panelTitleBn="বেতন">
       <div className="min-h-screen bg-muted pb-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-6">
+        <div className="mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-6">
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border">
                         <div>
@@ -131,7 +131,7 @@ export default function PayrollPage() {
             <DialogContent className="max-w-md p-6 bg-card border-border shadow-xs rounded-xl space-y-4">
               <DialogHeader>
                 <DialogTitle className="text-base font-bold text-foreground flex items-center gap-2">
-                  <Wallet className="w-5 h-5 text-blue-600"/>
+                  <Wallet className="w-5 h-5 text-primary"/>
                   <span>{tBilingual('Generate Monthly Payroll Draft', 'মাসিক বেতনের ড্রাফট তৈরি করুন')}</span>
                 </DialogTitle>
                 <p className="text-xs text-muted-foreground">
@@ -140,8 +140,8 @@ export default function PayrollPage() {
               </DialogHeader>
 
               {errorMsg && (
-                <div className="p-3 rounded-lg bg-red-50 text-red-700 text-xs flex items-center gap-1.5">
-                  <AlertCircle className="w-4 h-4 shrink-0 text-red-600"/>
+                <div className="p-3 rounded-lg bg-danger-surface text-destructive text-xs flex items-center gap-1.5">
+                  <AlertCircle className="w-4 h-4 shrink-0 text-destructive"/>
                   <span>{errorMsg}</span>
                 </div>
               )}

@@ -199,6 +199,7 @@ export const TABLE_STORAGE_KEY_MAP: Record<string, StorageKey> = {
   // HR & Payroll
   employees: STORAGE_KEYS.EMPLOYEES,
   attendance: STORAGE_KEYS.ATTENDANCE,
+  attendance_records: STORAGE_KEYS.ATTENDANCE,
   shifts: STORAGE_KEYS.SHIFTS,
   employee_shifts: STORAGE_KEYS.EMPLOYEE_SHIFTS,
   salary_advances: STORAGE_KEYS.SALARY_ADVANCES,
@@ -263,6 +264,41 @@ export function isSingleObjectStorageKey(key: StorageKey): boolean {
   )
 }
 
+export const LIVE_OPERATIONAL_TABLES = [
+  'invoices',
+  'payments',
+  'sales_orders',
+  'quotations',
+  'job_orders',
+  'production_tasks',
+  'design_jobs',
+  'inventory_stock_balances',
+  'stock_ledger',
+  'in_app_notifications',
+  'support_messages',
+  'attendance_records',
+  'delivery_challans',
+] as const
+
+export type LiveOperationalTable = (typeof LIVE_OPERATIONAL_TABLES)[number]
+
+export type TableSyncHandler = (event: {
+  table: string
+  eventType: 'INSERT' | 'UPDATE' | 'DELETE' | 'SYNC'
+  record: any
+  oldRecord?: any
+  isEcho: boolean
+}) => void
+
+export interface PresenceState {
+  userId: string
+  userName: string
+  module: string
+  targetId?: string
+  isEditing?: boolean
+  timestamp: number
+}
+
 class RealtimeSubscriptionManager {
   private activeChannels = new Map<string, { channel: RealtimeChannel; refCount: number; status: RealtimeConnectionStatus }>()
   private statusListeners = new Set<(status: RealtimeConnectionStatus) => void>()
@@ -271,6 +307,11 @@ class RealtimeSubscriptionManager {
   private currentTenantCompanyId: string | null = null
   private reconnectTimers = new Map<string, NodeJS.Timeout>()
   private reconnectAttempts = new Map<string, number>()
+  private tableHandlers = new Map<string, Set<TableSyncHandler>>()
+  private processedEventFingerprints = new Map<string, number>()
+  private pendingOptimisticMutations = new Map<string, { timestamp: number; payload?: any }>()
+  private presenceUsers = new Map<string, PresenceState>()
+  private presenceListeners = new Set<(users: PresenceState[]) => void>()
 
   constructor() {
     this.initLocalBroadcast()
@@ -314,7 +355,7 @@ class RealtimeSubscriptionManager {
   }
 
   /**
-   * Handles browser network reconnection & tab visibility switches
+   * Handles browser network reconnection, tab visibility switches, and auth token refresh
    */
   private initBrowserLifecycleListeners() {
     if (typeof window === 'undefined') return
@@ -322,17 +363,182 @@ class RealtimeSubscriptionManager {
     // Auto-reconnect when device comes back online
     window.addEventListener('online', () => {
       console.log('[RealtimeManager] Network online restored. Re-verifying active channels...')
+      this.setStatus('reconnecting')
       this.reconnectAllChannels()
+    })
+
+    // Update status when device goes offline
+    window.addEventListener('offline', () => {
+      console.log('[RealtimeManager] Device offline.')
+      this.setStatus('disconnected')
     })
 
     // Re-verify when user switches back to this tab
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') {
-        if (this.currentStatus === 'disconnected' || this.currentStatus === 'error') {
+        if (this.currentStatus !== 'connected') {
           console.log('[RealtimeManager] Tab focused. Restoring realtime connections...')
           this.reconnectAllChannels()
         }
       }
+    })
+
+    // Automatic token refresh subscription: keep realtime WebSocket authenticated
+    if (isSupabaseConfigured()) {
+      try {
+        const supabase = createClient()
+        supabase.auth.onAuthStateChange((event, session) => {
+          if (event === 'TOKEN_REFRESHED' || event === 'SIGNED_IN') {
+            if (session?.access_token) {
+              try {
+                supabase.realtime.setAuth(session.access_token)
+                console.log('[RealtimeManager] Supabase Realtime auth token refreshed')
+              } catch (e) {
+                console.warn('[RealtimeManager] Failed to set realtime auth token:', e)
+              }
+            }
+          }
+        })
+      } catch (err) {
+        console.warn('[RealtimeManager] Auth state listener init warning:', err)
+      }
+    }
+  }
+
+  /**
+   * De-duplicates realtime events within a 1500ms sliding window
+   */
+  public isDuplicateEvent(table: string, eventType: string, record: any): boolean {
+    const recordId = record?.id || record?.task_number || record?.order_number || 'unknown'
+    const recordVersion = record?.version ?? record?.updated_at ?? ''
+    const fingerprint = `${table}:${eventType}:${recordId}:${recordVersion}`
+    const now = Date.now()
+    const lastTime = this.processedEventFingerprints.get(fingerprint)
+    if (lastTime && now - lastTime < 1500) {
+      return true
+    }
+    this.processedEventFingerprints.set(fingerprint, now)
+    if (this.processedEventFingerprints.size > 500) {
+      for (const [k, t] of this.processedEventFingerprints.entries()) {
+        if (now - t > 10000) this.processedEventFingerprints.delete(k)
+      }
+    }
+    return false
+  }
+
+  /**
+   * Registers a client-side optimistic mutation so incoming server echoes are recognized
+   */
+  public registerOptimisticMutation(table: string, recordId: string, payload?: any) {
+    const key = `${table}:${recordId}`
+    this.pendingOptimisticMutations.set(key, { timestamp: Date.now(), payload })
+  }
+
+  /**
+   * Checks if an incoming event is an echo of the local client's recent optimistic mutation
+   */
+  public isLocalOptimisticEcho(table: string, recordId: string): boolean {
+    const key = `${table}:${recordId}`
+    const entry = this.pendingOptimisticMutations.get(key)
+    if (entry) {
+      const elapsed = Date.now() - entry.timestamp
+      if (elapsed < 5000) {
+        this.pendingOptimisticMutations.delete(key)
+        return true
+      }
+      this.pendingOptimisticMutations.delete(key)
+    }
+    return false
+  }
+
+  /**
+   * Modules register custom table event handlers
+   */
+  public registerTableHandler(table: string, handler: TableSyncHandler): () => void {
+    let handlers = this.tableHandlers.get(table)
+    if (!handlers) {
+      handlers = new Set()
+      this.tableHandlers.set(table, handlers)
+    }
+    handlers.add(handler)
+    return () => {
+      handlers?.delete(handler)
+      if (handlers?.size === 0) {
+        this.tableHandlers.delete(table)
+      }
+    }
+  }
+
+  /**
+   * Dispatches events to all registered module table handlers
+   */
+  public notifyTableHandlers(event: {
+    table: string
+    eventType: 'INSERT' | 'UPDATE' | 'DELETE' | 'SYNC'
+    record: any
+    oldRecord?: any
+    isEcho: boolean
+  }) {
+    const handlers = this.tableHandlers.get(event.table)
+    if (handlers) {
+      handlers.forEach((fn) => {
+        try {
+          fn(event)
+        } catch (err) {
+          console.warn(`[RealtimeManager] Handler error on ${event.table}:`, err)
+        }
+      })
+    }
+    const wildcardHandlers = this.tableHandlers.get('*')
+    if (wildcardHandlers) {
+      wildcardHandlers.forEach((fn) => {
+        try {
+          fn(event)
+        } catch (err) {
+          console.warn(`[RealtimeManager] Wildcard handler error:`, err)
+        }
+      })
+    }
+  }
+
+  /**
+   * Presence: Track who is viewing / editing which module / entity
+   */
+  public trackPresence(
+    companyId: string,
+    presence: Omit<PresenceState, 'timestamp'>
+  ) {
+    const channelName = `company:${companyId}:realtime`
+    const channelRef = this.activeChannels.get(channelName)
+    if (channelRef && channelRef.status === 'connected') {
+      channelRef.channel.track({
+        ...presence,
+        timestamp: Date.now(),
+      })
+    }
+  }
+
+  /**
+   * Subscribe to presence state changes
+   */
+  public onPresenceChange(listener: (users: PresenceState[]) => void): () => void {
+    this.presenceListeners.add(listener)
+    listener(Array.from(this.presenceUsers.values()))
+    return () => {
+      this.presenceListeners.delete(listener)
+    }
+  }
+
+  /**
+   * Get active presence users filtered by module and targetId
+   */
+  public getPresenceUsers(module?: string, targetId?: string): PresenceState[] {
+    const all = Array.from(this.presenceUsers.values())
+    if (!module && !targetId) return all
+    return all.filter((u) => {
+      if (module && u.module !== module) return false
+      if (targetId && u.targetId !== targetId) return false
+      return true
     })
   }
 
@@ -760,19 +966,20 @@ class RealtimeSubscriptionManager {
   }
 
   /**
-   * Schedules an automatic backoff reconnection attempt for a channel
+   * Schedules an automatic backoff reconnection attempt for a channel with exponential backoff and jitter
    */
   private scheduleReconnect(companyId: string, channelName: string) {
     if (this.reconnectTimers.has(channelName)) return
     const attempts = this.reconnectAttempts.get(channelName) || 0
-    if (attempts > 5) {
-      console.warn(`[RealtimeManager] Max reconnect attempts reached for ${channelName}. Waiting for next window event.`)
+    if (attempts > 8) {
+      console.warn(`[RealtimeManager] Max reconnect attempts reached for ${channelName}. Pausing until next window/network event.`)
       return
     }
 
-    const backoffMs = Math.min(1000 * Math.pow(2, attempts), 10000)
+    // Exponential backoff with jitter: 1s, 1.5s, 2.25s, ... capped at 30s
+    const backoffMs = Math.min(1000 * Math.pow(1.5, attempts) + Math.random() * 500, 30000)
     this.reconnectAttempts.set(channelName, attempts + 1)
-    console.log(`[RealtimeManager] Scheduling reconnect in ${backoffMs}ms (attempt ${attempts + 1}) for ${channelName}...`)
+    console.log(`[RealtimeManager] Scheduling reconnect in ${Math.round(backoffMs)}ms (attempt ${attempts + 1}) for ${channelName}...`)
 
     const timer = setTimeout(() => {
       this.reconnectTimers.delete(channelName)
@@ -794,7 +1001,7 @@ class RealtimeSubscriptionManager {
    */
   subscribeToTenantSync(
     companyId: string,
-    onSyncEvent?: (event: { topic: string; eventType: string; record: any }) => void
+    onSyncEvent?: (event: { topic: string; eventType: string; record: any; isEcho?: boolean }) => void
   ): () => void {
     if (!companyId || !isSupabaseConfigured()) return () => {}
 
@@ -808,11 +1015,43 @@ class RealtimeSubscriptionManager {
 
       const channel = supabase.channel(channelName)
 
+      // Handle presence sync on the tenant channel
+      channel.on('presence', { event: 'sync' }, () => {
+        const state = channel.presenceState()
+        const users: PresenceState[] = []
+        Object.values(state).forEach((presences: any) => {
+          if (Array.isArray(presences)) {
+            presences.forEach((p) => {
+              if (p?.userId && p?.userName) {
+                users.push(p)
+              }
+            })
+          }
+        })
+        this.presenceUsers.clear()
+        users.forEach((u) => {
+          this.presenceUsers.set(`${u.userId}:${u.module || 'general'}:${u.targetId || ''}`, u)
+        })
+        this.presenceListeners.forEach((fn) => {
+          try {
+            fn(users)
+          } catch {}
+        })
+      })
+
       // 1. Listen to broadcast live-sync events (peer-to-peer fast path)
       channel.on('broadcast', { event: 'tenant_sync_event' }, (response: any) => {
         const payload = response.payload
         const table = payload?.table
         const storageKey = table ? TABLE_STORAGE_KEY_MAP[table] : payload?.storageKey
+        const record = payload?.record
+
+        if (table && this.isDuplicateEvent(table, payload?.eventType || 'SYNC', record)) {
+          return
+        }
+
+        const isEcho = record?.id ? this.isLocalOptimisticEcho(table || '', record.id) : false
+
         if (storageKey || (table && CHILD_PARENT_TABLE_MAP[table])) {
           this.reconcileRecord(
             storageKey || CHILD_PARENT_TABLE_MAP[table].parentKey,
@@ -822,6 +1061,7 @@ class RealtimeSubscriptionManager {
             table
           )
         }
+
         if (typeof window !== 'undefined') {
           const enrichedDetail = {
             ...payload,
@@ -830,6 +1070,7 @@ class RealtimeSubscriptionManager {
             eventType: payload?.eventType || 'SYNC',
             record: payload?.record,
             oldRecord: payload?.oldRecord,
+            isEcho,
             timestamp: Date.now(),
           }
           window.dispatchEvent(
@@ -852,11 +1093,23 @@ class RealtimeSubscriptionManager {
             )
           }
         }
+
+        if (table) {
+          this.notifyTableHandlers({
+            table,
+            eventType: payload?.eventType || 'SYNC',
+            record: payload?.record,
+            oldRecord: payload?.oldRecord,
+            isEcho,
+          })
+        }
+
         if (onSyncEvent) {
           onSyncEvent({
             topic: table || payload?.topic || 'general',
             eventType: payload?.eventType || 'SYNC',
             record: payload?.record,
+            isEcho,
           })
         }
       })
@@ -868,69 +1121,95 @@ class RealtimeSubscriptionManager {
         }
       })
 
-      // 3. Listen to all PostgreSQL table mutations for this company
-      channel.on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          filter: `company_id=eq.${companyId}`,
-        },
-        (payload: any) => {
-          const table = payload.table
-          const storageKey = TABLE_STORAGE_KEY_MAP[table]
-          if (storageKey || CHILD_PARENT_TABLE_MAP[table]) {
-            this.reconcileRecord(
-              storageKey || CHILD_PARENT_TABLE_MAP[table].parentKey,
-              payload.eventType,
-              payload.new,
-              payload.old,
-              table
-            )
+      // 3. Centralized Postgres mutation handler
+      const handleIncomingPostgresChange = (payload: any) => {
+        const table = payload.table
+        const record = payload.new || payload.old
+        if (!table || !record) return
+
+        if (this.isDuplicateEvent(table, payload.eventType, record)) {
+          return
+        }
+
+        const isEcho = record?.id ? this.isLocalOptimisticEcho(table, record.id) : false
+        const storageKey = TABLE_STORAGE_KEY_MAP[table]
+
+        if (storageKey || CHILD_PARENT_TABLE_MAP[table]) {
+          this.reconcileRecord(
+            storageKey || CHILD_PARENT_TABLE_MAP[table].parentKey,
+            payload.eventType,
+            payload.new,
+            payload.old,
+            table
+          )
+        }
+
+        if (typeof window !== 'undefined') {
+          const detail = {
+            table,
+            storageKey: storageKey || (CHILD_PARENT_TABLE_MAP[table] ? CHILD_PARENT_TABLE_MAP[table].parentKey : undefined),
+            eventType: payload.eventType,
+            record: payload.new || payload.old,
+            oldRecord: payload.old,
+            isEcho,
+            timestamp: Date.now(),
           }
-
-          // Dispatch window events so non-data-store pages (e.g. settings/users) and useDataStore update in place
-          if (typeof window !== 'undefined') {
-            const detail = {
-              table,
-              storageKey: storageKey || (CHILD_PARENT_TABLE_MAP[table] ? CHILD_PARENT_TABLE_MAP[table].parentKey : undefined),
-              eventType: payload.eventType,
-              record: payload.new || payload.old,
-              oldRecord: payload.old,
-              timestamp: Date.now(),
-            }
-            window.dispatchEvent(
-              new CustomEvent('printerp_table_synced', {
-                detail,
-              })
-            )
-            window.dispatchEvent(
-              new CustomEvent(`printerp_table_synced:${table}`, {
-                detail,
-              })
-            )
-            if (storageKey) {
-              window.dispatchEvent(
-                new CustomEvent(`printerp_table_synced:${storageKey}`, {
-                  detail,
-                })
-              )
-            }
-          }
-
-          this.handleIncomingNotification(table, payload.eventType, payload.new)
-
-          if (onSyncEvent) {
-            onSyncEvent({
-              topic: table,
-              eventType: payload.eventType,
-              record: payload.new || payload.old,
+          window.dispatchEvent(
+            new CustomEvent('printerp_table_synced', {
+              detail,
             })
+          )
+          window.dispatchEvent(
+            new CustomEvent(`printerp_table_synced:${table}`, {
+              detail,
+            })
+          )
+          if (storageKey) {
+            window.dispatchEvent(
+              new CustomEvent(`printerp_table_synced:${storageKey}`, {
+                detail,
+              })
+            )
           }
         }
-      )
 
-      // 4. Listen to company table changes (where id = companyId)
+        this.notifyTableHandlers({
+          table,
+          eventType: payload.eventType,
+          record: payload.new || payload.old,
+          oldRecord: payload.old,
+          isEcho,
+        })
+
+        if (!isEcho) {
+          this.handleIncomingNotification(table, payload.eventType, payload.new)
+        }
+
+        if (onSyncEvent) {
+          onSyncEvent({
+            topic: table,
+            eventType: payload.eventType,
+            record: payload.new || payload.old,
+            isEcho,
+          })
+        }
+      }
+
+      // Explicitly register each live operational table with company_id filter
+      LIVE_OPERATIONAL_TABLES.forEach((table) => {
+        channel.on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table,
+            filter: `company_id=eq.${companyId}`,
+          },
+          handleIncomingPostgresChange
+        )
+      })
+
+      // Also listen to company record changes (where id = companyId)
       channel.on(
         'postgres_changes',
         {
@@ -948,6 +1227,7 @@ class RealtimeSubscriptionManager {
               eventType: payload.eventType,
               record: payload.new || payload.old,
               oldRecord: payload.old,
+              isEcho: false,
               timestamp: Date.now(),
             }
             window.dispatchEvent(
@@ -966,7 +1246,25 @@ class RealtimeSubscriptionManager {
               })
             )
           }
+          this.notifyTableHandlers({
+            table: 'companies',
+            eventType: payload.eventType,
+            record: payload.new || payload.old,
+            oldRecord: payload.old,
+            isEcho: false,
+          })
         }
+      )
+
+      // Also attach general table-less listener as fallback
+      channel.on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          filter: `company_id=eq.${companyId}`,
+        },
+        handleIncomingPostgresChange
       )
 
       // Subscribe and manage connection lifecycle
@@ -1172,3 +1470,4 @@ class RealtimeSubscriptionManager {
 }
 
 export const realtimeManager = new RealtimeSubscriptionManager()
+export const subscriptionManager = realtimeManager

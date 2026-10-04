@@ -952,8 +952,8 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
       (job.status === 'completed' && !hasFinishingAvailable)
     ) {
  return (
-        <span className="text-2xs font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 px-2 py-0.5 rounded-lg flex items-center gap-1 border border-emerald-300 dark:border-emerald-800">
-          <Truck className="h-3 w-3 text-emerald-600"/>
+        <span className="text-xs font-bold bg-success-surface text-success bg-success-surface text-success px-2 py-0.5 rounded-lg flex items-center gap-1 border border-success-border border-success-border">
+          <Truck className="h-3 w-3 text-success"/>
           <span>{isBn ? 'ডেলিভারি ও ডিসপ্যাচে প্রেরিত' : 'Sent to Delivery and Dispatch'}</span>
         </span>
       )
@@ -965,8 +965,8 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
       (isPrintCompleted && hasFinishingAvailable)
     ) {
  return (
-        <span className="text-2xs font-bold bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300 px-2 py-0.5 rounded-lg flex items-center gap-1 border border-indigo-300 dark:border-indigo-800">
-          <Scissors className="h-3 w-3 text-indigo-600"/>
+        <span className="text-xs font-bold bg-primary/10 text-primary bg-primary/10 text-primary px-2 py-0.5 rounded-lg flex items-center gap-1 border border-primary/20 border-border">
+          <Scissors className="h-3 w-3 text-primary"/>
           <span>{isBn ? 'ফিনিশিং ফ্লোরে প্রেরিত' : 'Sent to Finishing Floor'}</span>
         </span>
       )
@@ -974,8 +974,8 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
 
  if (isTimerRunning) {
  return (
-        <span className="text-2xs font-bold bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300 px-2 py-0.5 rounded-lg flex items-center gap-1 border border-blue-300 dark:border-blue-800 animate-pulse">
-          <Printer className="h-3 w-3 text-blue-600"/>
+        <span className="text-xs font-bold bg-primary/10 text-primary bg-primary/10 text-primary px-2 py-0.5 rounded-lg flex items-center gap-1 border border-primary/20 border-border animate-pulse">
+          <Printer className="h-3 w-3 text-primary"/>
           <span>{isBn ? 'প্রিন্ট রানিং' : 'Printing in Progress'}</span>
         </span>
       )
@@ -983,8 +983,8 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
 
  if (isHold) {
  return (
-        <span className="text-2xs font-bold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 px-2 py-0.5 rounded-lg flex items-center gap-1 border border-amber-300 dark:border-amber-800">
-          <Pause className="h-3 w-3 text-amber-600"/>
+        <span className="text-xs font-bold bg-warning-surface text-warning bg-warning-surface text-warning px-2 py-0.5 rounded-lg flex items-center gap-1 border border-warning-border border-warning-border">
+          <Pause className="h-3 w-3 text-warning"/>
           <span>{isBn ? 'স্থগিতাদেশ (On Hold)' : 'On Hold'}</span>
         </span>
       )
@@ -992,15 +992,15 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
 
  if (activeTask?.status === 'scheduled') {
  return (
-        <span className="text-2xs font-bold bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 px-2 py-0.5 rounded-lg flex items-center gap-1 border border-purple-300 dark:border-purple-800">
-          <Calendar className="h-3 w-3 text-purple-600"/>
+        <span className="text-xs font-bold bg-primary/10 text-primary bg-primary/10 text-primary px-2 py-0.5 rounded-lg flex items-center gap-1 border border-primary/20 border-border">
+          <Calendar className="h-3 w-3 text-primary"/>
           <span>{isBn ? 'শিডিউল্ড (Scheduled)' : 'Scheduled'}</span>
         </span>
       )
     }
 
  return (
-      <span className="text-2xs font-bold bg-muted text-foreground px-2 py-0.5 rounded-lg flex items-center gap-1 border border-input">
+      <span className="text-xs font-bold bg-muted text-foreground px-2 py-0.5 rounded-lg flex items-center gap-1 border border-input">
         <Clock className="h-3 w-3 text-muted-foreground"/>
         <span>{isBn ? 'অপেক্ষমাণ কিউ (Queued)' : 'Queued'}</span>
       </span>
@@ -1011,31 +1011,31 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
     <div
  className={`rounded-xl border transition-all duration-200 overflow-hidden bg-card/95 backdrop-blur-sm shadow-xs ${
  isUrgent
-          ? 'border-rose-300 dark:border-rose-900/60 ring-1 ring-rose-400/20'
+          ? 'border-danger-border border-danger-border/60 ring-1 focus:ring-ring/20'
           : 'border-border /80 hover:border-input dark:hover:border-border'
       }`}
     >
       {/* Top Banner for Urgent / Walk-in / Due Today */}
       {(isUrgent || isWalkIn || isDueToday) && (
-        <div className="bg-gradient-to-r from-amber-500/10 via-rose-500/10 to-transparent px-4 py-1.5 border-b border-amber-200/50 dark:border-amber-900/40 flex items-center justify-between text-2xs font-bold">
+        <div className=" to-transparent px-4 py-1.5 border-b border-warning-border/50 border-warning-border/40 flex items-center justify-between text-xs font-bold">
           <div className="flex items-center gap-2">
             {isWalkIn && (
-              <span className="bg-orange-600 text-white px-2 py-0.5 rounded text-2xs uppercase tracking-wide">
+              <span className="bg-warning text-white px-2 py-0.5 rounded text-xs uppercase tracking-wide">
                 🏃 {isBn ? 'দোকানে বসা কাস্টমার (Walk-in)' : 'Walk-in Client'}
               </span>
             )}
             {isDueToday && (
-              <span className="bg-rose-600 text-white px-2 py-0.5 rounded text-2xs uppercase tracking-wide">
+              <span className="bg-destructive text-white px-2 py-0.5 rounded text-xs uppercase tracking-wide">
                 ⏰ {isBn ? 'আজকের ডেলিভারি (Due Today)' : 'Due Today'}
               </span>
             )}
             {isUrgent && !isDueToday && (
-              <span className="bg-red-600 text-white px-2 py-0.5 rounded text-2xs uppercase tracking-wide">
+              <span className="bg-destructive text-white px-2 py-0.5 rounded text-xs uppercase tracking-wide">
                 🚨 {isBn ? 'জরুরী কাজ (Urgent)' : 'Urgent Job'}
               </span>
             )}
           </div>
-          <span className="text-muted-foreground text-2xs tabular-nums">
+          <span className="text-muted-foreground text-xs tabular-nums">
             {job.deadline ? `টার্গেট: ${job.deadline.split('T')[0]}` : ''}
           </span>
         </div>
@@ -1051,7 +1051,7 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
               <div className="flex items-center gap-1.5 flex-wrap">
                 <Link
  href={jobDetailHref}
- className="tabular-nums text-xs font-bold text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-2 py-0.5 rounded-lg border border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors inline-flex items-center gap-1">
+ className="tabular-nums text-xs font-bold text-primary text-primary bg-primary/10 bg-primary/10 px-2 py-0.5 rounded-lg border border-primary/20 border-border hover:bg-primary/10 dark:hover:bg-primary transition-colors inline-flex items-center gap-1">
                   <span>#{job.jobNumber}</span>
                   <ExternalLink className="h-2.5 w-2.5 opacity-60"/>
                 </Link>
@@ -1059,7 +1059,7 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
                 {job.orderNumber && orderHref && job.orderNumber !== job.jobNumber && (
                   <Link
  href={orderHref}
- className="tabular-nums text-xs font-semibold text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 px-2 py-0.5 rounded-lg border border-indigo-200 dark:border-indigo-800 hover:bg-indigo-100 dark:hover:bg-indigo-900 transition-colors">
+ className="tabular-nums text-xs font-semibold text-primary text-primary bg-primary/10 bg-primary/10 px-2 py-0.5 rounded-lg border border-primary/20 border-border hover:bg-primary/10 dark:hover:bg-primary transition-colors">
  Ord: #{job.orderNumber}
                   </Link>
                 )}
@@ -1083,10 +1083,10 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
               <div className="flex items-center gap-1.5">
                 <Link
  href={jobDetailHref}
- className="text-2xs font-bold text-blue-600 dark:text-blue-400 hover:underline inline-flex items-center gap-0.5">
+ className="text-xs font-bold text-primary text-primary hover:underline inline-flex items-center gap-0.5">
                   <span>Floor View ➔</span>
                 </Link>
-                <span className="text-2xs tabular-nums text-muted-foreground">
+                <span className="text-xs tabular-nums text-muted-foreground">
                   {visibleTasks.length} {isBn ? 'ধাপ' : visibleTasks.length === 1 ? 'step' : 'steps'}
                 </span>
               </div>
@@ -1096,7 +1096,7 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
             <h3 className="text-sm font-bold text-foreground line-clamp-1 leading-snug">
               <Link
  href={jobDetailHref}
- className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+ className="hover:text-primary dark:hover:text-primary transition-colors">
                 {job.title}
               </Link>
             </h3>
@@ -1108,19 +1108,19 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
               {job.customerPhone && onSendWhatsApp && activeTask && (
                 <button
  type="button"onClick={() => onSendWhatsApp(activeTask)}
- className="inline-flex items-center gap-1 text-2xs font-bold text-emerald-700 dark:text-emerald-400 hover:underline cursor-pointer"title="WhatsApp Update">
-                  <Phone className="h-3 w-3 text-emerald-600"/>
+ className="inline-flex items-center gap-1 text-xs font-bold text-success text-success hover:underline cursor-pointer"title="WhatsApp Update">
+                  <Phone className="h-3 w-3 text-success"/>
                   <span>{job.customerPhone}</span>
                 </button>
               )}
             </div>
 
             {/* Job Specifications Strip: Prominently Highlights Service Name, Size, Quantity, Material Name, Finishing, Add-on */}
-            <div className="mt-2.5 bg-gradient-to-r from-slate-50 via-blue-50/20 to-slate-50 dark:from-slate-800/80 dark:via-blue-950/20 dark:to-slate-800/80 p-3 rounded-xl border border-border /80 text-2xs space-y-2.5 shadow-2xs">
+            <div className="mt-2.5 dark: dark: dark: p-3 rounded-xl border border-border /80 text-xs space-y-2.5 shadow-2xs">
               {/* Product Title Bar with HIGHLIGHTED Service Name */}
               <div className="flex items-center justify-between gap-2 flex-wrap pb-2 border-b border-border /80">
                 <div className="flex items-center gap-1.5 truncate max-w-[65%]">
-                  <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground shrink-0">
+                  <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground shrink-0">
                     {isBn ? 'প্রোডাক্ট:' : 'Product:'}
                   </span>
                   <span
@@ -1132,11 +1132,11 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
 
                 {/* 1. HIGHLIGHTED Service Name */}
                 <div className="flex items-center gap-1.5 shrink-0">
-                  <span className="text-2xs font-semibold text-muted-foreground">
+                  <span className="text-xs font-semibold text-muted-foreground">
                     {isBn ? 'সার্ভিস:' : 'Service:'}
                   </span>
-                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg font-bold text-2xs bg-blue-100 text-blue-900 dark:bg-blue-950 dark:text-blue-200 border border-blue-300 dark:border-blue-700 shadow-2xs">
-                    <Layers className="h-3 w-3 text-blue-600 dark:text-blue-400 shrink-0"/>
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg font-bold text-xs bg-primary/10 text-primary bg-primary/10 text-primary border border-primary/20 border-border shadow-2xs">
+                    <Layers className="h-3 w-3 text-primary text-primary shrink-0"/>
                     <span className="truncate max-w-[150px]">
                       {job.serviceName || 'Commercial Printing'}
                     </span>
@@ -1147,8 +1147,8 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
               {/* 5-Tile High-Visibility Specification Grid */}
               <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
                 {/* 1. SIZE / DIMENSIONS */}
-                <div className="p-2 rounded-xl bg-card border border-amber-300/80 dark:border-amber-800/60 shadow-2xs flex flex-col justify-between">
-                  <span className="text-2xs font-bold text-amber-800 dark:text-amber-400 uppercase tracking-wide flex items-center gap-1">
+                <div className="p-2 rounded-xl bg-card border border-warning-border/80 border-warning-border/60 shadow-2xs flex flex-col justify-between">
+                  <span className="text-xs font-bold text-warning text-warning uppercase tracking-wide flex items-center gap-1">
                     <span>📐</span>
                     <span>{isBn ? 'সাইজ / মাপ:' : 'Size / Dimensions:'}</span>
                   </span>
@@ -1160,44 +1160,44 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
                 </div>
 
                 {/* 2. QUANTITY (QTY) */}
-                <div className="p-2 rounded-xl bg-card border border-emerald-300/80 dark:border-emerald-800/60 shadow-2xs flex flex-col justify-between">
-                  <span className="text-2xs font-bold text-emerald-800 dark:text-emerald-400 uppercase tracking-wide flex items-center gap-1">
-                    <Package className="h-3 w-3 text-emerald-600 dark:text-emerald-400 shrink-0"/>
+                <div className="p-2 rounded-xl bg-card border border-success-border/80 border-success-border/60 shadow-2xs flex flex-col justify-between">
+                  <span className="text-xs font-bold text-success text-success uppercase tracking-wide flex items-center gap-1">
+                    <Package className="h-3 w-3 text-success text-success shrink-0"/>
                     <span>{isBn ? 'পরিমাণ (Qty):' : 'Quantity (Qty):'}</span>
                   </span>
-                  <span className="tabular-nums font-bold text-emerald-800 dark:text-emerald-300 text-xs mt-1">
+                  <span className="tabular-nums font-bold text-success text-success text-xs mt-1">
                     {job.quantity} {job.unit || 'pcs'}
                   </span>
                 </div>
 
                 {/* 3. MATERIAL NAME */}
-                <div className="p-2 rounded-xl bg-card border border-blue-300/80 dark:border-blue-800/60 shadow-2xs flex flex-col justify-between">
-                  <span className="text-2xs font-bold text-blue-800 dark:text-blue-400 uppercase tracking-wide flex items-center gap-1">
-                    <Layers className="h-3 w-3 text-blue-600 dark:text-blue-400 shrink-0"/>
+                <div className="p-2 rounded-xl bg-card border border-primary/20/80 border-border/60 shadow-2xs flex flex-col justify-between">
+                  <span className="text-xs font-bold text-primary text-primary uppercase tracking-wide flex items-center gap-1">
+                    <Layers className="h-3 w-3 text-primary text-primary shrink-0"/>
                     <span>{isBn ? 'মেটেরিয়াল:' : 'Material Name:'}</span>
                   </span>
                   <span
- className="font-bold text-blue-900 dark:text-blue-200 text-2xs mt-1 truncate block leading-tight"title={selectedMaterial || job.material || 'Star Flex (320 GSM)'}
+ className="font-bold text-primary text-primary text-xs mt-1 truncate block leading-tight"title={selectedMaterial || job.material || 'Star Flex (320 GSM)'}
                   >
                     {selectedMaterial || job.material || 'Star Flex (320 GSM)'}
                   </span>
                 </div>
 
                 {/* 4. FINISHING */}
-                <div className="p-2 rounded-xl bg-card border border-teal-300/80 dark:border-teal-800/60 shadow-2xs flex flex-col justify-between">
-                  <span className="text-2xs font-bold text-teal-800 dark:text-teal-400 uppercase tracking-wide flex items-center gap-1">
-                    <Scissors className="h-3 w-3 text-teal-600 dark:text-teal-400 shrink-0"/>
+                <div className="p-2 rounded-xl bg-card border border-success-border/80 border-success-border/60 shadow-2xs flex flex-col justify-between">
+                  <span className="text-xs font-bold text-success text-success uppercase tracking-wide flex items-center gap-1">
+                    <Scissors className="h-3 w-3 text-success text-success shrink-0"/>
                     <span>{isBn ? 'ফিনিশিং:' : 'Finishing:'}</span>
                   </span>
                   <div className="mt-1">
                     {job.finishing && job.finishing.toLowerCase() !== 'none' ? (
                       <span
- className="font-bold text-teal-900 dark:text-teal-200 text-2xs truncate block leading-tight"title={job.finishing}
+ className="font-bold text-success text-success text-xs truncate block leading-tight"title={job.finishing}
                       >
                         {job.finishing}
                       </span>
                     ) : (
-                      <span className="text-muted-foreground text-2xs italic">
+                      <span className="text-muted-foreground text-xs italic">
                         {isBn ? 'কোন ফিনিশিং নেই' : 'None'}
                       </span>
                     )}
@@ -1205,20 +1205,20 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
                 </div>
 
                 {/* 5. ADD-ON */}
-                <div className="p-2 rounded-xl bg-card border border-purple-300/80 dark:border-purple-800/60 shadow-2xs flex flex-col justify-between">
-                  <span className="text-2xs font-bold text-purple-800 dark:text-purple-400 uppercase tracking-wide flex items-center gap-1">
-                    <Sparkles className="h-3 w-3 text-purple-600 dark:text-purple-400 shrink-0"/>
+                <div className="p-2 rounded-xl bg-card border border-primary/20/80 border-border/60 shadow-2xs flex flex-col justify-between">
+                  <span className="text-xs font-bold text-primary text-primary uppercase tracking-wide flex items-center gap-1">
+                    <Sparkles className="h-3 w-3 text-primary text-primary shrink-0"/>
                     <span>{isBn ? 'অ্যাড-অন:' : 'Add-on:'}</span>
                   </span>
                   <div className="mt-1">
                     {job.addOns ? (
                       <span
- className="font-bold text-purple-900 dark:text-purple-200 text-2xs truncate block leading-tight"title={job.addOns}
+ className="font-bold text-primary text-primary text-xs truncate block leading-tight"title={job.addOns}
                       >
                         {job.addOns}
                       </span>
                     ) : (
-                      <span className="text-muted-foreground text-2xs italic">
+                      <span className="text-muted-foreground text-xs italic">
                         {isBn ? 'কোন অ্যাড-অন নেই' : 'None'}
                       </span>
                     )}
@@ -1228,10 +1228,10 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
 
               {job.instructions && (
                 <div className="border-t border-border /80 pt-1.5 text-muted-foreground">
-                  <span className="text-2xs font-bold text-muted-foreground block">
+                  <span className="text-xs font-bold text-muted-foreground block">
                     {isBn ? 'কাস্টমার নির্দেশনা:' : 'Instructions:'}
                   </span>
-                  <p className="line-clamp-2 text-2xs italic">{job.instructions}</p>
+                  <p className="line-clamp-2 text-xs italic">{job.instructions}</p>
                 </div>
               )}
             </div>
@@ -1240,12 +1240,12 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
           {/* Sequential Production Stages Pipeline Strip */}
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground">
+              <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                 {isBn
                   ? 'প্রোডাকশন ধাপ ও ফ্লোর অগ্রগতি (Production Pipeline):'
                   : 'Production Stages & Progression:'}
               </span>
-              <span className="text-2xs text-muted-foreground tabular-nums">
+              <span className="text-xs text-muted-foreground tabular-nums">
                 {visibleTasks.filter((t) => t.status === 'completed').length}/{visibleTasks.length}{' '}
                 {isBn ? 'সম্পন্ন' : 'Done'}
               </span>
@@ -1261,23 +1261,23 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
  return (
                   <div
  key={task.id}
- className={`p-2 rounded-lg text-2xs border transition-all flex items-center justify-between gap-2 ${
+ className={`p-2 rounded-lg text-xs border transition-all flex items-center justify-between gap-2 ${
  isRunning
-                        ? 'bg-blue-50/80 border-blue-400 dark:bg-blue-950/40 dark:border-blue-700'
+                        ? 'bg-primary/10/80 border-border bg-primary/10 border-border'
                         : isDone
-                          ? 'bg-emerald-50/60 border-emerald-300 dark:bg-emerald-950/20 dark:border-emerald-800 text-muted-foreground '
+                          ? 'bg-success-surface/60 border-success-border bg-success-surface border-success-border text-muted-foreground '
                           : isHoldState
-                            ? 'bg-amber-50/60 border-amber-300 dark:bg-amber-950/20 dark:border-amber-800'
+                            ? 'bg-warning-surface/60 border-warning-border bg-warning-surface border-warning-border'
                             : 'bg-muted border-border text-muted-foreground '
                     }`}
                   >
                     <div className="flex items-center gap-2 truncate">
                       <span
- className={`h-5 w-5 rounded-full flex items-center justify-center text-2xs font-bold shrink-0 ${
+ className={`h-5 w-5 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
  isDone
-                            ? 'bg-emerald-600 text-white'
+                            ? 'bg-success text-white'
                             : isRunning
-                              ? 'bg-blue-600 text-white animate-pulse'
+                              ? 'bg-primary text-white animate-pulse'
                               : 'bg-muted text-foreground '
                         }`}
                       >
@@ -1287,7 +1287,7 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
                         <span className="font-bold text-foreground block truncate">
                           {task.task_name}
                         </span>
-                        <span className="text-muted-foreground tabular-nums text-2xs">
+                        <span className="text-muted-foreground tabular-nums text-xs">
                           {task.assigned_machine_name || 'Manual (No Machine)'} •{' '}
                           {task.estimated_duration_minutes || 30}m
                         </span>
@@ -1296,17 +1296,17 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
 
                     <div className="shrink-0 flex items-center gap-1.5">
                       {isDone ? (
-                        <span className="text-2xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1 tabular-nums">
+                        <span className="text-xs font-bold text-success text-success flex items-center gap-1 tabular-nums">
                           <CheckCircle2 className="h-3 w-3"/>
                           <span>Done</span>
                         </span>
                       ) : isRunning ? (
-                        <span className="text-2xs font-bold text-blue-600 dark:text-blue-400 flex items-center gap-1 tabular-nums animate-pulse">
+                        <span className="text-xs font-bold text-primary text-primary flex items-center gap-1 tabular-nums animate-pulse">
                           <Printer className="h-3 w-3"/>
                           <span>Printing</span>
                         </span>
                       ) : (
-                        <span className="text-2xs text-muted-foreground tabular-nums">Queued</span>
+                        <span className="text-xs text-muted-foreground tabular-nums">Queued</span>
                       )}
                     </div>
                   </div>
@@ -1321,12 +1321,12 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
           {/* Top of right col: Active Execution Box & Blocking Warnings */}
           <div className="space-y-2.5">
             {/* Active Machine & Operator Execution Card */}
-            <div className="p-3 bg-gradient-to-br from-slate-50 to-blue-50/40 dark:from-slate-800/80 dark:to-slate-800/40 rounded-xl border border-border text-xs space-y-2">
-              <div className="flex items-center justify-between text-muted-foreground text-2xs uppercase font-bold tracking-wider">
+            <div className="p-3 dark: dark: rounded-xl border border-border text-xs space-y-2">
+              <div className="flex items-center justify-between text-muted-foreground text-xs uppercase font-bold tracking-wider">
                 <span>{isBn ? 'বর্তমান সক্রিয় ধাপ ও মেশিন:' : 'Active Machine & Station:'}</span>
                 {isTimerRunning && (
-                  <span className="text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1 animate-pulse">
-                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"/>
+                  <span className="text-success text-success font-bold flex items-center gap-1 animate-pulse">
+                    <span className="h-1.5 w-1.5 rounded-full bg-success"/>
  LIVE
                   </span>
                 )}
@@ -1334,31 +1334,31 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
 
               <div className="grid grid-cols-2 gap-2">
                 <div className="flex items-start gap-1.5">
-                  <Cpu className="h-3.5 w-3.5 text-blue-600 mt-0.5 shrink-0"/>
+                  <Cpu className="h-3.5 w-3.5 text-primary mt-0.5 shrink-0"/>
                   <div className="truncate">
-                    <span className="text-muted-foreground block text-2xs">
+                    <span className="text-muted-foreground block text-xs">
                       {isBn ? 'মেশিনারি বহর:' : 'Assigned Machine:'}
                     </span>
-                    <strong className="text-foreground truncate block text-2xs">
+                    <strong className="text-foreground truncate block text-xs">
                       {activeTask?.assigned_machine_name || 'Manual Bench'}
                     </strong>
                   </div>
                 </div>
 
                 <div className="flex items-start gap-1.5">
-                  <User className="h-3.5 w-3.5 text-indigo-600 mt-0.5 shrink-0"/>
+                  <User className="h-3.5 w-3.5 text-primary mt-0.5 shrink-0"/>
                   <div className="truncate">
-                    <span className="text-muted-foreground block text-2xs">
+                    <span className="text-muted-foreground block text-xs">
                       {isBn ? 'দায়িত্বপ্রাপ্ত অপারেটর:' : 'Operator:'}
                     </span>
-                    <strong className="text-foreground truncate block text-2xs">
+                    <strong className="text-foreground truncate block text-xs">
                       {activeTask?.assigned_operator_name || 'Unassigned'}
                     </strong>
                   </div>
                 </div>
               </div>
 
-              <div className="pt-2 border-t border-border /80 flex items-center justify-between text-2xs text-muted-foreground tabular-nums">
+              <div className="pt-2 border-t border-border /80 flex items-center justify-between text-xs text-muted-foreground tabular-nums">
                 <div className="flex items-center gap-1">
                   <Clock className="h-3 w-3 text-muted-foreground"/>
                   <span>{activeTask?.estimated_duration_minutes || 30} mins</span>
@@ -1370,17 +1370,17 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
 
               {/* Printing Material Selection with Available Stock in Floor Consumption */}
               <div className="pt-2 border-t border-border /80 space-y-1.5">
-                <div className="flex items-center justify-between text-2xs">
+                <div className="flex items-center justify-between text-xs">
                   <span className="text-muted-foreground font-bold uppercase tracking-wider flex items-center gap-1">
-                    <Layers className="h-3 w-3 text-blue-600 shrink-0"/>
+                    <Layers className="h-3 w-3 text-primary shrink-0"/>
                     <span>{isBn ? 'প্রিন্টিং মেটেরিয়াল:' : 'Printing Material Selection:'}</span>
                   </span>
                   {selectedMaterialStock ? (
-                    <span className="text-2xs text-emerald-600 dark:text-emerald-400 font-bold">
+                    <span className="text-xs text-success text-success font-bold">
  Floor Available ✓
                     </span>
                   ) : (
-                    <span className="text-2xs text-amber-600 dark:text-amber-400 font-medium">
+                    <span className="text-xs text-warning text-warning font-medium">
                       {isBn ? 'ফ্লোরে অমজুদ' : 'Not on Floor'}
                     </span>
                   )}
@@ -1410,16 +1410,16 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
                 </select>
 
                 {/* Available Floor Material Status (Show width and length, NOT sft) */}
-                <div className="p-2 bg-blue-50/70 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/60 rounded-lg text-2xs flex items-center justify-between tabular-nums">
+                <div className="p-2 bg-primary/10/70 bg-primary/10 border border-primary/20 border-border/60 rounded-lg text-xs flex items-center justify-between tabular-nums">
                   <div className="flex items-center gap-1 text-muted-foreground truncate">
-                    <Package className="h-3 w-3 text-blue-600 shrink-0"/>
+                    <Package className="h-3 w-3 text-primary shrink-0"/>
                     <span>{isBn ? 'মজুদ:' : 'In Stock:'}</span>
                     {selectedMaterialStock ? (
-                      <strong className="text-blue-700 dark:text-blue-300">
+                      <strong className="text-primary text-primary">
                         {selectedMaterialStock.width_ft} ft × {selectedMaterialStock.length_ft} ft
                       </strong>
                     ) : (
-                      <span className="text-amber-600 dark:text-amber-400 font-semibold">
+                      <span className="text-warning text-warning font-semibold">
                         {isBn ? '০ ft × ০ ft (ফ্লোরে নেই)' : '0 ft × 0 ft (Not on Floor)'}
                       </span>
                     )}
@@ -1427,11 +1427,11 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
                   <div className="flex items-center gap-2 shrink-0">
                     <div className="text-muted-foreground shrink-0">
                       <span>{isBn ? 'প্রয়োজন:' : 'Required:'}</span>{' '}
-                      <strong className="text-emerald-600 dark:text-emerald-400">
+                      <strong className="text-success text-success">
                         {consumedQty} {productionUnit}
                       </strong>
                       {wastageQty > 0 && (
-                        <span className="text-amber-600 dark:text-amber-400 ml-1">
+                        <span className="text-warning text-warning ml-1">
                           (+{wastageQty} {productionUnit})
                         </span>
                       )}
@@ -1439,7 +1439,7 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
                     {materialStockList.length === 0 && (
                       <Link
  href={getTenantNavHref(tenantSlug, '/production/floor-consumption')}
- className="text-2xs text-blue-600 dark:text-blue-400 hover:underline font-sans font-bold flex items-center gap-0.5"title={isBn ? 'ফ্লোর ট্র্যাকিং ওপেন করুন' : 'Open Factory Floor Consumption & Tracking'}
+ className="text-xs text-primary text-primary hover:underline font-sans font-bold flex items-center gap-0.5"title={isBn ? 'ফ্লোর ট্র্যাকিং ওপেন করুন' : 'Open Factory Floor Consumption & Tracking'}
                       >
                         <span>{isBn ? 'ফ্লোরে ইস্যু করুন →' : 'Issue to Floor →'}</span>
                       </Link>
@@ -1449,15 +1449,15 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
               </div>
 
               {/* Wastage / Scrap Field (Unit dynamically matches production unit) */}
-              <div className="pt-2 border-t border-border /80 space-y-1.5 bg-amber-50/60 dark:bg-amber-950/30 p-2 rounded-xl border border-amber-200 dark:border-amber-800/50">
-                <div className="flex items-center justify-between text-2xs">
-                  <span className="font-bold text-amber-900 dark:text-amber-200 flex items-center gap-1">
-                    <AlertTriangle className="h-3 w-3 text-amber-600 shrink-0"/>
+              <div className="pt-2 border-t border-border /80 space-y-1.5 bg-warning-surface/60 bg-warning-surface p-2 rounded-xl border border-warning-border border-warning-border/50">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-bold text-warning text-warning flex items-center gap-1">
+                    <AlertTriangle className="h-3 w-3 text-warning shrink-0"/>
                     <span>
                       {isBn ? 'ওয়েস্টেজ ও অপচয় (Wastage / Scrap):' : 'Wastage / Scrap Field:'}
                     </span>
                   </span>
-                  <span className="text-2xs tabular-nums font-bold text-amber-800 dark:text-amber-300 bg-amber-100 dark:bg-amber-900/60 px-1.5 py-0.5 rounded">
+                  <span className="text-xs tabular-nums font-bold text-warning text-warning bg-warning-surface bg-warning/60 px-1.5 py-0.5 rounded">
                     {productionUnit}
                   </span>
                 </div>
@@ -1472,13 +1472,13 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
                           ? `অপচয় পরিমাণ (${productionUnit})`
                           : `Wastage qty (${productionUnit})`
                       }
- className="h-7 text-xs tabular-nums bg-card border-amber-300 dark:border-amber-700"/>
+ className="h-7 text-xs tabular-nums bg-card border-warning-border border-warning-border"/>
                   </div>
                   <div>
                     <select
  value={wastageReason}
  onChange={(e) => setWastageReason(e.target.value)}
- className="h-7 w-full text-2xs rounded-lg border border-amber-300 dark:border-amber-700 bg-card px-1 text-foreground focus:outline-hidden cursor-pointer">
+ className="h-7 w-full text-xs rounded-lg border border-warning-border border-warning-border bg-card px-1 text-foreground focus:outline-hidden cursor-pointer">
                       <option value="banding">Color Banding (ব্যান্ডিং)</option>
                       <option value="head_strike">Head Strike (হেড স্ট্রাইক)</option>
                       <option value="media_wrinkle">Media Wrinkle (মিডিয়া কুঁচকানো)</option>
@@ -1495,8 +1495,8 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
 
             {/* Commercial Hold Warning */}
             {activeTask?.is_blocked_by_commercial_gate && activeTask?.status !== 'completed' && (
-              <div className="p-2.5 bg-rose-50 dark:bg-rose-950/40 border border-rose-300 dark:border-rose-800 rounded-xl text-2xs text-rose-900 dark:text-rose-200 flex items-start gap-2">
-                <Lock className="h-3.5 w-3.5 text-rose-600 shrink-0 mt-0.5"/>
+              <div className="p-2.5 bg-danger-surface bg-danger-surface border border-danger-border border-danger-border rounded-xl text-xs text-destructive text-destructive flex items-start gap-2">
+                <Lock className="h-3.5 w-3.5 text-destructive shrink-0 mt-0.5"/>
                 <div>
                   <span className="font-bold">COMMERCIAL HOLD:</span>{' '}
                   {activeTask?.commercial_gate_reason ||
@@ -1509,8 +1509,8 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
             {activeTask?.is_blocked_by_design_gate &&
               !activeTask?.is_blocked_by_commercial_gate &&
  activeTask?.status !== 'completed' && (
-                <div className="p-2.5 bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800 rounded-xl text-2xs text-amber-900 dark:text-amber-200 flex items-start gap-2">
-                  <Lock className="h-3.5 w-3.5 text-amber-600 shrink-0 mt-0.5"/>
+                <div className="p-2.5 bg-warning-surface bg-warning-surface border border-warning-border border-warning-border rounded-xl text-xs text-warning text-warning flex items-start gap-2">
+                  <Lock className="h-3.5 w-3.5 text-warning shrink-0 mt-0.5"/>
                   <div>
                     <span className="font-bold">DESIGN HOLD:</span>{' '}
                     {activeTask?.design_gate_reason || 'Customer design approval required.'}
@@ -1520,13 +1520,13 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
 
             {/* Hold Reason Alert */}
             {isHold && activeTask?.hold_reason && (
-              <div className="p-2.5 bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800 rounded-xl text-2xs text-amber-900 dark:text-amber-200 flex items-start gap-2">
-                <AlertOctagon className="h-3.5 w-3.5 text-amber-600 shrink-0 mt-0.5"/>
+              <div className="p-2.5 bg-warning-surface bg-warning-surface border border-warning-border border-warning-border rounded-xl text-xs text-warning text-warning flex items-start gap-2">
+                <AlertOctagon className="h-3.5 w-3.5 text-warning shrink-0 mt-0.5"/>
                 <div>
                   <span className="font-bold">ON HOLD:</span>{' '}
                   {HOLD_REASON_LABELS[activeTask.hold_reason]?.labelEn || activeTask.hold_reason}
                   {activeTask.hold_notes && (
-                    <p className="text-2xs opacity-90 mt-0.5">{activeTask.hold_notes}</p>
+                    <p className="text-xs opacity-90 mt-0.5">{activeTask.hold_notes}</p>
                   )}
                 </div>
               </div>
@@ -1547,7 +1547,7 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
               {onSendWhatsApp && activeTask && (
                 <Button
  size="sm"variant="outline"onClick={() => onSendWhatsApp(activeTask)}
- title="Send Floor WhatsApp Update"className="h-8 w-8 p-0 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 rounded-lg cursor-pointer">
+ title="Send Floor WhatsApp Update"className="h-8 w-8 p-0 text-success hover:text-success hover:bg-success-surface dark:hover:bg-success-surface rounded-lg cursor-pointer">
                   <MessageSquare className="h-4 w-4"/>
                 </Button>
               )}
@@ -1570,15 +1570,15 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
  job.status === 'sent_to_finishing' ||
               (job.status === 'completed' && !hasFinishingAvailable) ? (
                 <div className="flex items-center gap-1.5 flex-wrap">
-                  <div className="h-8 px-3 rounded-xl bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 font-bold text-xs flex items-center gap-1.5 border border-emerald-300 dark:border-emerald-800">
+                  <div className="h-8 px-3 rounded-xl bg-success-surface bg-success-surface text-success text-success font-bold text-xs flex items-center gap-1.5 border border-success-border border-success-border">
                     {hasFinishingAvailable ? (
                       <>
-                        <Scissors className="h-3.5 w-3.5 text-emerald-600 shrink-0"/>
+                        <Scissors className="h-3.5 w-3.5 text-success shrink-0"/>
                         <span>{isBn ? 'ফিনিশিং ফ্লোরে প্রেরিত' : 'Sent to Finishing Floor'}</span>
                       </>
                     ) : (
                       <>
-                        <Truck className="h-3.5 w-3.5 text-emerald-600 shrink-0"/>
+                        <Truck className="h-3.5 w-3.5 text-success shrink-0"/>
                         <span>
                           {isBn ? 'ডেলিভারি ও ডিসপ্যাচে প্রেরিত' : 'Sent to Delivery and Dispatch'}
                         </span>
@@ -1599,7 +1599,7 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
                   {hasFinishingAvailable ? (
                     <Button
  size="sm"onClick={handleSendToNextStage}
- className="h-8 text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white px-3.5 rounded-xl shadow-xs cursor-pointer flex items-center gap-1.5">
+ className="h-8 text-xs font-bold bg-primary hover:bg-primary text-white px-3.5 rounded-xl shadow-xs cursor-pointer flex items-center gap-1.5">
                       <Scissors className="h-3.5 w-3.5"/>
                       <span>
                         {isBn ? 'ফিনিশিং এ পাঠান (Send to Finishing)' : 'Send to Finishing'}
@@ -1608,7 +1608,7 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
                   ) : (
                     <Button
  size="sm"onClick={handleSendToNextStage}
- className="h-8 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 rounded-xl shadow-xs cursor-pointer flex items-center gap-1.5">
+ className="h-8 text-xs font-bold bg-success hover:bg-success text-white px-3.5 rounded-xl shadow-xs cursor-pointer flex items-center gap-1.5">
                       <Truck className="h-3.5 w-3.5"/>
                       <span>
                         {isBn ? 'ডেলিভারিতে পাঠান (Send to Delivery)' : 'Send to Delivery'}
@@ -1637,14 +1637,14 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
 
                   <Button
  size="sm"onClick={handlePrintComplete}
- className="h-8 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white px-3 rounded-xl shadow-xs cursor-pointer flex items-center gap-1.5">
+ className="h-8 text-xs font-bold bg-success hover:bg-success text-white px-3 rounded-xl shadow-xs cursor-pointer flex items-center gap-1.5">
                     <CheckCircle2 className="h-3.5 w-3.5"/>
                     <span>{isBn ? 'প্রিন্ট সম্পন্ন (Print Complete)' : 'Print Complete'}</span>
                   </Button>
 
                   <Button
  size="sm"variant="ghost"onClick={handleCancel}
- className="h-8 text-xs font-semibold px-2 text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl cursor-pointer">
+ className="h-8 text-xs font-semibold px-2 text-destructive hover:text-destructive hover:bg-danger-surface dark:hover:bg-danger-surface rounded-xl cursor-pointer">
  Cancel
                   </Button>
                 </div>
@@ -1654,7 +1654,7 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
                   {onScheduleTask && activeTask?.status === 'queued' && (
                     <Button
  size="sm"variant="outline"onClick={() => onScheduleTask(activeTask)}
- className="h-8 text-xs font-semibold px-2.5 text-blue-600 border-blue-200 hover:bg-blue-50 dark:border-blue-800 dark:text-blue-300 rounded-xl cursor-pointer">
+ className="h-8 text-xs font-semibold px-2.5 text-primary border-primary/20 hover:bg-primary/10 border-border text-primary rounded-xl cursor-pointer">
                       <Calendar className="h-3 w-3 mr-1"/>
                       <span>Schedule</span>
                     </Button>

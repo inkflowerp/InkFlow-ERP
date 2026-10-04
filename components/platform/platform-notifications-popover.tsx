@@ -97,7 +97,7 @@ export function PlatformNotificationsPopover() {
       {open && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-popover border border-border rounded-xl shadow-lg z-50 overflow-hidden text-xs animate-in fade-in-0 zoom-in-95 duration-150 font-sans">
+          <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-popover border border-border rounded-xl shadow-xs z-50 overflow-hidden text-xs animate-in fade-in-0 zoom-in-95 duration-150 font-sans">
             {/* Header */}
             <div className="px-4 py-3 border-b border-border flex items-center justify-between bg-card">
               <div className="flex items-center gap-2">
@@ -105,11 +105,11 @@ export function PlatformNotificationsPopover() {
                   {tBilingual('Alerts', 'বিজ্ঞপ্তি')}
                 </span>
                 {unreadCount > 0 ? (
-                  <span className="px-1.5 py-0.5 rounded-full bg-destructive/10 text-destructive text-2xs font-semibold border border-destructive/20">
+                  <span className="px-1.5 py-0.5 rounded-full bg-destructive/10 text-destructive text-xs font-semibold border border-destructive/20">
                     {unreadCount} {tBilingual('new', 'নতুন')}
                   </span>
                 ) : (
-                  <span className="px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground text-2xs font-medium border border-border">
+                  <span className="px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground text-xs font-medium border border-border">
                     {totalCount} {tBilingual('total', 'মোট')}
                   </span>
                 )}
@@ -127,7 +127,7 @@ export function PlatformNotificationsPopover() {
                   <button
                     type="button"
                     onClick={() => markAllAsRead()}
-                    className="text-2xs font-semibold text-primary hover:underline transition-colors cursor-pointer"
+                    className="text-xs font-semibold text-primary hover:underline transition-colors cursor-pointer"
                   >
                     {tBilingual('Mark all read', 'সব পড়া হয়েছে')}
                   </button>
@@ -136,7 +136,7 @@ export function PlatformNotificationsPopover() {
             </div>
 
             {/* Category Filter Sub-Tabs */}
-            <div className="flex items-center gap-1 p-1.5 bg-muted/40 border-b border-border overflow-x-auto scrollbar-none text-2xs">
+            <div className="flex items-center gap-1 p-1.5 bg-muted/40 border-b border-border overflow-x-auto scrollbar-none text-xs">
               {[
                 { id: 'all', label: tBilingual('All', 'সব') },
                 { id: 'support', label: tBilingual('Support', 'সহায়তা') },
@@ -172,11 +172,11 @@ export function PlatformNotificationsPopover() {
                   <div className="font-semibold text-destructive text-xs">
                     {tBilingual('Could not load', 'লোড করা যায়নি')}
                   </div>
-                  <p className="text-2xs text-muted-foreground">{error}</p>
+                  <p className="text-xs text-muted-foreground">{error}</p>
                   <button
                     type="button"
                     onClick={() => refetch()}
-                    className="mt-2 px-3 py-1 bg-muted hover:bg-muted/80 text-foreground text-2xs rounded-md cursor-pointer border border-border font-medium"
+                    className="mt-2 px-3 py-1 bg-muted hover:bg-muted/80 text-foreground text-xs rounded-md cursor-pointer border border-border font-medium"
                   >
                     {tBilingual('Retry', 'আবার চেষ্টা করুন')}
                   </button>
@@ -187,7 +187,7 @@ export function PlatformNotificationsPopover() {
                   <div className="font-semibold text-foreground text-xs">
                     {tBilingual('No alerts', 'কোনো বিজ্ঞপ্তি নেই')}
                   </div>
-                  <p className="text-2xs text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
                     {tBilingual('Nothing here right now.', 'এই বিভাগে কিছু নেই।')}
                   </p>
                 </div>
@@ -224,8 +224,8 @@ export function PlatformNotificationsPopover() {
                             <span className="truncate">{notif.title}</span>
                             <ArrowRight className="h-3 w-3 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity text-primary" />
                           </Link>
-                          <p className="text-2xs text-muted-foreground leading-relaxed line-clamp-2">{notif.message}</p>
-                          <div className="flex items-center gap-2 text-2xs text-muted-foreground pt-0.5 flex-wrap">
+                          <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">{notif.message}</p>
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground pt-0.5 flex-wrap">
                             <span className="flex items-center gap-1 tabular-nums">
                               <Clock className="w-3 h-3 text-muted-foreground" />
                               {formatTime(notif.created_at)}
@@ -235,7 +235,7 @@ export function PlatformNotificationsPopover() {
                                 {notif.company_name}
                               </span>
                             )}
-                            <span className="uppercase text-2xs font-semibold text-muted-foreground px-1 py-0.5 rounded bg-muted border border-border">
+                            <span className="uppercase text-xs font-semibold text-muted-foreground px-1 py-0.5 rounded bg-muted border border-border">
                               {notif.type}
                             </span>
                           </div>
@@ -263,7 +263,7 @@ export function PlatformNotificationsPopover() {
               <Link
                 href="/platform/notifications"
                 onClick={() => setOpen(false)}
-                className="text-2xs font-semibold text-primary hover:underline transition-colors flex items-center gap-1"
+                className="text-xs font-semibold text-primary hover:underline transition-colors flex items-center gap-1"
               >
                 <span>{tBilingual('All Alerts', 'সব বিজ্ঞপ্তি')}</span>
                 <ArrowRight className="w-3 h-3" />
@@ -271,7 +271,7 @@ export function PlatformNotificationsPopover() {
               <Link
                 href="/platform/audit"
                 onClick={() => setOpen(false)}
-                className="text-2xs text-muted-foreground hover:text-foreground transition-colors font-medium"
+                className="text-xs text-muted-foreground hover:text-foreground transition-colors font-medium"
               >
                 {tBilingual('Activity Log →', 'কাজের ইতিহাস →')}
               </Link>

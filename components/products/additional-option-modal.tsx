@@ -136,7 +136,7 @@ export function AdditionalOptionModal({
  onOpenChange={onOpenChange}
  size="lg"title={
         <div className="flex items-center gap-2.5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-cyan-600/10 text-cyan-600 dark:bg-cyan-500/20 dark:text-cyan-400 font-bold shrink-0">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary bg-primary/20 text-primary font-bold shrink-0">
             <PlusCircle className="h-5 w-5"/>
           </div>
           <div>
@@ -144,7 +144,7 @@ export function AdditionalOptionModal({
               <span className="text-base font-bold text-foreground">
                 {additional ? 'Edit Additional Work' : 'Add Additional Work'}
               </span>
-              <Badge variant="outline"className="text-2xs uppercase tabular-nums py-0.5 px-1.5 bg-cyan-50 text-cyan-700 border-cyan-200 dark:bg-cyan-950/40 dark:text-cyan-300 dark:border-cyan-800">
+              <Badge variant="outline"className="text-xs uppercase tabular-nums py-0.5 px-1.5 bg-info-surface text-primary border-primary/20 bg-primary/10 text-primary border-border">
  Substrate & Addon Master
               </Badge>
             </div>
@@ -158,29 +158,29 @@ export function AdditionalOptionModal({
     >
       <form onSubmit={handleSubmit} className="space-y-4 py-1">
         {error && (
-          <div className="p-3 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 rounded-xl text-rose-800 dark:text-rose-300 text-xs flex items-center gap-2 font-medium">
-            <AlertCircle className="w-4 h-4 shrink-0 text-rose-600"/>
+          <div className="p-3 bg-danger-surface bg-danger-surface border border-danger-border border-danger-border rounded-xl text-destructive text-destructive text-xs flex items-center gap-2 font-medium">
+            <AlertCircle className="w-4 h-4 shrink-0 text-destructive"/>
             <span>{error}</span>
           </div>
         )}
 
         {/* Quick Presets Picker */}
         {!additional && (
-          <div className="p-3 bg-cyan-50/60 dark:bg-cyan-950/20 border border-cyan-200/60 dark:border-cyan-900/40 rounded-xl space-y-2">
+          <div className="p-3 bg-info-surface/60 bg-primary/10 border border-primary/20/60 border-border/40 rounded-xl space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-2xs font-bold text-cyan-900 dark:text-cyan-200 flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-cyan-600"/>
+              <span className="text-xs font-bold text-primary text-primary flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-primary"/>
  Popular Substrate & Addon Templates:
               </span>
-              <span className="text-2xs text-cyan-600 dark:text-cyan-400 font-medium">Click to fill rates</span>
+              <span className="text-xs text-primary text-primary font-medium">Click to fill rates</span>
             </div>
             <div className="flex flex-wrap gap-1.5">
               {COMMON_ADDITIONAL_PRESETS.map((p) => (
                 <button
  key={p.name}
  type="button"onClick={() => handleApplyPreset(p)}
- className="px-2.5 py-1 rounded-lg border border-cyan-200 dark:border-cyan-800 bg-card text-foreground font-medium text-2xs hover:border-cyan-500 hover:text-cyan-600 transition-all cursor-pointer flex items-center gap-1">
-                  <Zap className="w-3 h-3 text-amber-500 shrink-0"/>
+ className="px-2.5 py-1 rounded-lg border border-primary/20 border-border bg-card text-foreground font-medium text-xs hover:border-primary/20 hover:text-primary transition-all cursor-pointer flex items-center gap-1">
+                  <Zap className="w-3 h-3 text-warning shrink-0"/>
                   <span>{p.name}</span>
                 </button>
               ))}
@@ -192,7 +192,7 @@ export function AdditionalOptionModal({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <Label className="text-xs font-semibold mb-1 block">
- Option Name <span className="text-rose-500">*</span>
+ Option Name <span className="text-destructive">*</span>
               </Label>
               <Input
  type="text"required
@@ -267,7 +267,7 @@ export function AdditionalOptionModal({
               <Input
  type="number"step="0.01"min="0"value={sellingPrice}
  onChange={(e) => setSellingPrice(e.target.value)}
- placeholder="e.g. 45.00"className="h-9 text-xs tabular-nums font-bold text-blue-600 dark:text-blue-400"/>
+ placeholder="e.g. 45.00"className="h-9 text-xs tabular-nums font-bold text-primary text-primary"/>
             </div>
 
             <div>
@@ -284,21 +284,21 @@ export function AdditionalOptionModal({
           {/* Live Margin Calculation Card */}
           <div className="p-3 rounded-xl bg-muted border border-border /60 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-emerald-600 dark:text-emerald-400"/>
+              <TrendingUp className="w-4 h-4 text-success text-success"/>
               <span className="text-xs font-semibold text-foreground">
  Gross Profit: <span className="tabular-nums font-bold text-foreground">৳{marginMath.grossProfit.toFixed(2)}</span>
               </span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-2xs text-muted-foreground">Margin:</span>
+              <span className="text-xs text-muted-foreground">Margin:</span>
               <Badge
  variant="outline"className={cn(
                   'tabular-nums font-bold text-xs py-0.5 px-2',
  marginMath.grossMarginPercent >= 30
-                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300'
+                    ? 'bg-success-surface text-success border-success-border bg-success-surface text-success'
                     : marginMath.grossMarginPercent >= 15
-                    ? 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300'
-                    : 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300'
+                    ? 'bg-warning-surface text-warning border-warning-border bg-warning-surface text-warning'
+                    : 'bg-danger-surface text-destructive border-danger-border bg-danger-surface text-destructive'
                 )}
               >
                 {marginMath.grossMarginPercent.toFixed(1)}%
@@ -311,7 +311,7 @@ export function AdditionalOptionModal({
               <input
  type="checkbox"checked={isActive}
  onChange={(e) => setIsActive(e.target.checked)}
- className="w-4 h-4 rounded text-blue-600 focus:ring-ring"/>
+ className="w-4 h-4 rounded text-primary focus:ring-ring"/>
               <span>Active for quotation and service configuration</span>
             </label>
           </div>

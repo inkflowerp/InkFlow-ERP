@@ -12,14 +12,14 @@ export default function TermsOfServicePage() {
   const { tBilingual } = useI18n()
 
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100 selection:bg-cyan-500 selection:text-white font-sans antialiased overflow-x-hidden">
+    <div className="min-h-screen bg-card text-foreground selection:bg-primary selection:text-white font-sans antialiased overflow-x-hidden">
       <MarketingNavbar onOpenDemo={() => setDemoOpen(true)} />
 
       <main className="pt-20">
         {/* Banner */}
-        <div className="py-16 bg-gradient-to-b from-slate-900 to-slate-950 border-b border-border text-center px-4">
-          <div className="max-w-3xl mx-auto space-y-3">
-            <span className="text-xs font-bold text-cyan-400 uppercase tracking-wider bg-cyan-950/60 px-3 py-1 rounded-full border border-cyan-500/30">
+        <div className="py-16 border-b border-border text-center px-4">
+          <div className="mx-auto space-y-3">
+            <span className="text-xs font-bold text-primary uppercase tracking-wider bg-primary/10 px-3 py-1 rounded-full border border-primary/20/30">
               Terms & Agreements
             </span>
             <h1 className="text-4xl sm:text-5xl font-black text-white bangla-text">
@@ -35,10 +35,10 @@ export default function TermsOfServicePage() {
         </div>
 
         {/* Content */}
-        <div className="py-16 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10 text-sm text-muted-foreground leading-relaxed">
+        <div className="py-16 mx-auto px-4 sm:px-6 lg:px-8 space-y-10 text-sm text-muted-foreground leading-relaxed">
           <section className="space-y-3">
             <h2 className="text-xl font-bold text-white flex items-center gap-2">
-              <Scale className="h-5 w-5 text-cyan-400" />
+              <Scale className="h-5 w-5 text-primary" />
               <span>1. SaaS Subscription & Free Trial</span>
             </h2>
             <p>
@@ -48,7 +48,7 @@ export default function TermsOfServicePage() {
 
           <section className="space-y-3">
             <h2 className="text-xl font-bold text-white flex items-center gap-2">
-              <DollarSign className="h-5 w-5 text-emerald-400" />
+              <DollarSign className="h-5 w-5 text-success" />
               <span>2. Billing, Upgrades & Cancellations</span>
             </h2>
             <p>

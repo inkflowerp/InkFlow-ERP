@@ -59,29 +59,29 @@ export function JobFlowStepper({ workflow, tenantSlug, className = '' }: JobFlow
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5 pb-4 border-b border-border">
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground">
+              <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                 {tBilingual('Order-to-Delivery Journey', 'কাজের সামগ্রিক অগ্রগতি')}
               </span>
               <Badge
- variant="outline"className={`text-2xs font-bold ${
+ variant="outline"className={`text-xs font-bold ${
  workflow.isBlocked
-                    ? 'bg-rose-50 text-rose-700 border-rose-300 dark:bg-rose-950/40 dark:text-rose-300'
+                    ? 'bg-danger-surface text-destructive border-danger-border bg-danger-surface text-destructive'
                     : workflow.overallStage === 'completed'
-                    ? 'bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-300'
-                    : 'bg-blue-50 text-blue-700 border-blue-300 dark:bg-blue-950/40 dark:text-blue-300'
+                    ? 'bg-success-surface text-success border-success-border bg-success-surface text-success'
+                    : 'bg-primary/10 text-primary border-primary/20 bg-primary/10 text-primary'
                 }`}
               >
                 {tBilingual(workflow.overallStageLabelEn, workflow.overallStageLabelBn)}
               </Badge>
               {workflow.isPartiallyDelivered && (
-                <Badge className="bg-amber-500 text-white text-2xs font-bold">
+                <Badge className="bg-warning text-white text-xs font-bold">
                   {tBilingual('Partial Dispatch', 'আংশিক ডেলিভারি')}
                 </Badge>
               )}
             </div>
             <h3 className="text-sm font-bold text-foreground mt-1">
               {tBilingual('Active Phase:', 'বর্তমান ধাপ:')}{' '}
-              <span className="text-blue-600 dark:text-blue-400">
+              <span className="text-primary text-primary">
                 {tBilingual(workflow.overallStageLabelEn, workflow.overallStageLabelBn)}
               </span>
             </h3>
@@ -89,7 +89,7 @@ export function JobFlowStepper({ workflow, tenantSlug, className = '' }: JobFlow
 
           <div className="flex items-center gap-3">
             <div className="text-right">
-              <span className="text-2xs font-bold text-muted-foreground block">
+              <span className="text-xs font-bold text-muted-foreground block">
                 {tBilingual('Stage Completion', 'সম্পন্নতার হার')}
               </span>
               <span className="text-sm font-black text-foreground tabular-nums">
@@ -101,10 +101,10 @@ export function JobFlowStepper({ workflow, tenantSlug, className = '' }: JobFlow
               <div
  className={`h-full transition-all duration-500 ${
  workflow.isBlocked
-                    ? 'bg-rose-500'
+                    ? 'bg-destructive'
                     : workflow.progressPercentage === 100
-                    ? 'bg-emerald-500'
-                    : 'bg-blue-600'
+                    ? 'bg-success'
+                    : 'bg-primary'
                 }`}
  style={{ width: `${workflow.progressPercentage}%` }}
               />
@@ -129,11 +129,11 @@ export function JobFlowStepper({ workflow, tenantSlug, className = '' }: JobFlow
                   <div
  className={`h-8 w-8 rounded-full flex items-center justify-center transition-all ${
  isBlocked
-                        ? 'bg-rose-600 text-white ring-4 ring-rose-100 dark:ring-rose-950 animate-pulse'
+                        ? 'bg-destructive text-white ring-4 focus:ring-ring dark:focus:ring-ring animate-pulse'
                         : isCompleted
-                        ? 'bg-emerald-600 text-white shadow-xs'
+                        ? 'bg-success text-white shadow-xs'
                         : isInProgress
-                        ? 'bg-blue-600 text-white ring-4 ring-blue-100 dark:ring-blue-950 shadow-xs'
+                        ? 'bg-primary text-white ring-4 focus:ring-ring dark:focus:ring-ring shadow-xs'
                         : isSkipped
                         ? 'bg-muted text-muted-foreground border border-dashed border-input '
                         : 'bg-muted text-muted-foreground border border-border '
@@ -142,11 +142,11 @@ export function JobFlowStepper({ workflow, tenantSlug, className = '' }: JobFlow
                     {getStepIcon(stage, idx)}
                   </div>
                   <span
- className={`text-2xs mt-2 font-semibold whitespace-nowrap block ${
+ className={`text-xs mt-2 font-semibold whitespace-nowrap block ${
  isBlocked
-                        ? 'text-rose-600 dark:text-rose-400 font-bold'
+                        ? 'text-destructive text-destructive font-bold'
                         : isInProgress
-                        ? 'text-blue-600 dark:text-blue-400 font-bold'
+                        ? 'text-primary text-primary font-bold'
                         : isCompleted
                         ? 'text-foreground '
                         : isSkipped
@@ -165,21 +165,21 @@ export function JobFlowStepper({ workflow, tenantSlug, className = '' }: JobFlow
 
       {/* 2. Explicit Blocker Alert Banner */}
       {workflow.isBlocked && (
-        <div className="p-4 rounded-xl border border-rose-300 dark:border-rose-900 bg-rose-50/80 dark:bg-rose-950/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs animate-in fade-in-0 duration-200">
+        <div className="p-4 rounded-xl border border-danger-border border-danger-border bg-danger-surface/80 bg-danger-surface flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs animate-in fade-in-0 duration-200">
           <div className="flex items-start gap-3">
-            <div className="p-2 bg-rose-100 dark:bg-rose-900/60 text-rose-700 dark:text-rose-300 rounded-lg shrink-0 mt-0.5">
+            <div className="p-2 bg-danger-surface bg-destructive/60 text-destructive text-destructive rounded-lg shrink-0 mt-0.5">
               <ShieldAlert className="h-5 w-5"/>
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h4 className="text-xs font-bold text-rose-900 dark:text-rose-200">
+                <h4 className="text-xs font-bold text-destructive text-destructive">
                   {tBilingual('Workflow Gate Blocked', 'কাজের প্রবাহ সাময়িক স্থগিত')}
                 </h4>
-                <Badge variant="outline"className="text-3xs bg-rose-100 text-rose-800 border-rose-300 font-black">
+                <Badge variant="outline"className="text-xs bg-danger-surface text-destructive border-danger-border font-black">
  ACTION REQUIRED
                 </Badge>
               </div>
-              <p className="text-xs text-rose-800 dark:text-rose-300 mt-0.5">
+              <p className="text-xs text-destructive text-destructive mt-0.5">
                 {tBilingual(workflow.blockedReasonEn || '', workflow.blockedReasonBn || '')}
               </p>
             </div>
@@ -188,7 +188,7 @@ export function JobFlowStepper({ workflow, tenantSlug, className = '' }: JobFlow
           <div className="shrink-0 flex items-center gap-2">
             <Link href={workflow.nextActionHref}>
               <Button
- size="sm"className="bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-xs">
+ size="sm"className="bg-destructive hover:bg-destructive text-white text-xs font-bold flex items-center gap-1.5 shadow-xs">
                 <span>{tBilingual(workflow.nextActionEn, workflow.nextActionBn)}</span>
                 <ArrowRight className="h-3.5 w-3.5"/>
               </Button>
@@ -199,13 +199,13 @@ export function JobFlowStepper({ workflow, tenantSlug, className = '' }: JobFlow
 
       {/* 3. Recommended Next Step Banner (When not blocked and not completed) */}
       {!workflow.isBlocked && workflow.overallStage !== 'completed' && (
-        <div className="p-3.5 rounded-xl border border-blue-200 dark:border-blue-900/80 bg-blue-50/60 dark:bg-blue-950/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+        <div className="p-3.5 rounded-xl border border-primary/20 border-border/80 bg-primary/10/60 bg-primary/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
           <div className="flex items-center gap-3">
-            <div className="p-1.5 bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 rounded-lg shrink-0">
+            <div className="p-1.5 bg-primary/10 bg-primary/60 text-primary text-primary rounded-lg shrink-0">
               <Sparkles className="h-4 w-4"/>
             </div>
             <div>
-              <span className="text-2xs font-bold text-blue-800 dark:text-blue-300 uppercase tracking-wide block">
+              <span className="text-xs font-bold text-primary text-primary uppercase tracking-wide block">
                 {tBilingual('Next Operational Step', 'পরবর্তী করণীয়')}
               </span>
               <span className="text-xs font-semibold text-foreground">
@@ -226,16 +226,16 @@ export function JobFlowStepper({ workflow, tenantSlug, className = '' }: JobFlow
 
       {/* 4. Settlement Notice (When completed & fully paid) */}
       {workflow.overallStage === 'completed' && workflow.isFullyPaid && (
-        <div className="p-3.5 rounded-xl border border-emerald-200 dark:border-emerald-900 bg-emerald-50/60 dark:bg-emerald-950/20 flex items-center justify-between gap-3 shadow-2xs">
+        <div className="p-3.5 rounded-xl border border-success-border border-success-border bg-success-surface/60 bg-success-surface flex items-center justify-between gap-3 shadow-2xs">
           <div className="flex items-center gap-3">
-            <div className="p-1.5 bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 rounded-lg shrink-0">
+            <div className="p-1.5 bg-success-surface bg-success/60 text-success text-success rounded-lg shrink-0">
               <CheckCircle2 className="h-4 w-4"/>
             </div>
             <div>
-              <span className="text-xs font-bold text-emerald-900 dark:text-emerald-200 block">
+              <span className="text-xs font-bold text-success text-success block">
                 {tBilingual('Order Fully Delivered & Settled', 'অর্ডার সম্পূর্ণ ডেলিভারি ও পরিশোধিত')}
               </span>
-              <span className="text-2xs text-emerald-700 dark:text-emerald-400">
+              <span className="text-xs text-success text-success">
                 {tBilingual('All items dispatched and payment fully cleared.', 'সকল পণ্য সরবরাহ সম্পন্ন ও বিল পরিশোধিত।')}
               </span>
             </div>

@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '../../types/database.types.ts'
 
 import { isTestEnvironment } from '../security/runtime-env.ts'
@@ -75,5 +75,83 @@ export function createAdminClient() {
   })
 
   return cachedAdminClient
+}
+
+/**
+ * Wraps a Supabase admin client to strictly enforce tenant isolation by automatically
+ * scoping queries to a given companyId.
+ * For tenant tables (or 'companies' with 'id'), queries will automatically have
+ * .eq('company_id', companyId) or .eq('id', companyId) applied.
+ */
+export function tenantScoped(adminClient: SupabaseClient<Database>, companyId: string): SupabaseClient<Database> {
+  if (!companyId || typeof companyId !== 'string' || companyId.trim() === '') {
+    throw new Error('FAIL CLOSED: tenantScoped requires a valid non-empty companyId string.')
+  }
+
+  const cleanCompanyId = companyId.trim()
+
+  return new Proxy(adminClient, {
+    get(target, prop, receiver) {
+      if (prop === 'from') {
+        return (table: string) => {
+          type QueryWithEq = { eq: (col: string, val: string) => unknown }
+          type AnyCallable = (...args: unknown[]) => unknown
+
+          const builder = target.from(table as never)
+          const isCompaniesTable = table === 'companies'
+          const filterCol = isCompaniesTable ? 'id' : 'company_id'
+
+          return new Proxy(builder, {
+            get(bTarget, bProp, bReceiver) {
+              if (bProp === 'select') {
+                return (...args: unknown[]) => {
+                  const query = (bTarget.select as AnyCallable)(...args) as QueryWithEq
+                  return query.eq(filterCol, cleanCompanyId)
+                }
+              }
+              if (bProp === 'update') {
+                return (values: Record<string, unknown>, ...args: unknown[]) => {
+                  const query = (bTarget.update as AnyCallable)(values, ...args) as QueryWithEq
+                  return query.eq(filterCol, cleanCompanyId)
+                }
+              }
+              if (bProp === 'delete') {
+                return (...args: unknown[]) => {
+                  const query = (bTarget.delete as AnyCallable)(...args) as QueryWithEq
+                  return query.eq(filterCol, cleanCompanyId)
+                }
+              }
+              if (bProp === 'insert') {
+                return (values: Record<string, unknown> | Record<string, unknown>[], ...args: unknown[]) => {
+                  if (isCompaniesTable) {
+                    return (bTarget.insert as AnyCallable)(values, ...args)
+                  }
+                  const withCompany = Array.isArray(values)
+                    ? values.map((v) => ({ ...v, company_id: cleanCompanyId }))
+                    : { ...values, company_id: cleanCompanyId }
+                  return (bTarget.insert as AnyCallable)(withCompany, ...args)
+                }
+              }
+              if (bProp === 'upsert') {
+                return (values: Record<string, unknown> | Record<string, unknown>[], ...args: unknown[]) => {
+                  if (isCompaniesTable) {
+                    return (bTarget.upsert as AnyCallable)(values, ...args)
+                  }
+                  const withCompany = Array.isArray(values)
+                    ? values.map((v) => ({ ...v, company_id: cleanCompanyId }))
+                    : { ...values, company_id: cleanCompanyId }
+                  return (bTarget.upsert as AnyCallable)(withCompany, ...args)
+                }
+              }
+              const orig = Reflect.get(bTarget, bProp, bReceiver)
+              return typeof orig === 'function' ? orig.bind(bTarget) : orig
+            }
+          })
+        }
+      }
+      const orig = Reflect.get(target, prop, receiver)
+      return typeof orig === 'function' ? orig.bind(target) : orig
+    }
+  })
 }
 

@@ -1,7 +1,7 @@
 import { CompanyRow, CompanySettingsRow } from '@/types/tenant.types'
 import { ApiResponse } from '@/types/common.types'
 import { TenantRepository } from '@/lib/repositories/tenant.repository'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { CompanyUsersRepository } from '@/lib/repositories/company-users.repository'
 import { isValidSlugFormat, isReservedSlug } from '@/lib/tenant/tenant-resolution'
 import { PrintERPDataStore } from '@/lib/db/data-store'
 
@@ -65,7 +65,6 @@ export class TenantService {
         }
       }
 
-      const admin = createAdminClient()
       let resolvedOwnerId = ownerUserId || null
       const normalizedOwnerEmail = data.owner_email ? data.owner_email.toLowerCase().trim() : null
       const existingCompany = await TenantRepository.getCompanyBySlug(normalizedSlug)
@@ -73,17 +72,10 @@ export class TenantService {
       if (existingCompany) {
         let isOwnerOfExisting = false
         if (resolvedOwnerId) {
-          try {
-            const { data: userMembership } = await (admin as any)
-              .from('company_users')
-              .select('id')
-              .eq('company_id', existingCompany.id)
-              .eq('user_id', resolvedOwnerId)
-              .maybeSingle()
-            if (userMembership?.id) {
-              isOwnerOfExisting = true
-            }
-          } catch {}
+          const userMembership = await TenantRepository.getUserMembership(existingCompany.id, resolvedOwnerId)
+          if (userMembership?.id) {
+            isOwnerOfExisting = true
+          }
         }
 
         const isSameEmail = existingCompany.email && normalizedOwnerEmail && existingCompany.email.toLowerCase().trim() === normalizedOwnerEmail
@@ -124,6 +116,7 @@ export class TenantService {
       }
 
       // If ownerUserId is not provided or not a valid UUID, but owner_email is supplied, resolve/create the auth user
+      const admin = CompanyUsersRepository.getAdminClient()
       if (!resolvedOwnerId && normalizedOwnerEmail) {
         // 1. Check if user already exists in user_profiles
         try {
@@ -399,104 +392,13 @@ export class TenantService {
         return { success: false, error: 'Company not found' }
       }
 
-      const admin = createAdminClient()
       const aliases = [company.slug, `comp-${company.slug}`, `co-${company.slug}`]
 
       // 1. Reset local memory and browser storage
       PrintERPDataStore.resetTenantData(company.id, aliases)
 
-      // 2. Clean database tables if Supabase is connected
-      try {
-        const tablesToClear = [
-          'sales_order_items',
-          'order_items',
-          'sales_orders',
-          'orders',
-          'job_orders',
-          'order_timeline_events',
-          'quotation_items',
-          'quotations',
-          'quotation_activities',
-          'invoice_items',
-          'invoices',
-          'invoice_requests',
-          'payments',
-          'payment_adjustments',
-          'expenses',
-          'cash_book_entries',
-          'cash_book',
-          'financial_transactions',
-          'journal_entry_lines',
-          'cash_closings',
-          'account_transfers',
-          'production_tasks',
-          'production_jobs',
-          'production_reworks',
-          'delivery_challans',
-          'installations',
-          'attendance',
-          'salary_advances',
-          'daily_labor_logs',
-          'payroll_items',
-          'payroll',
-          'payroll_periods',
-          'stock_transactions',
-          'stock_ledger',
-          'inventory_rolls',
-          'material_wastages',
-          'material_requests',
-          'material_issues',
-          'inventory_transfers',
-          'inventory_adjustments',
-          'materials',
-          'customers',
-          'customer_communications',
-          'suppliers',
-          'supplier_prices',
-          'supplier_returns',
-          'supplier_ledger_entries',
-          'purchase_orders',
-          'purchase_requests',
-          'pricing_rules',
-          'price_overrides',
-          'customer_rates',
-          'price_list_items',
-          'price_lists',
-          'product_supplier_prices',
-          'product_price_history',
-          'product_formulas',
-          'product_variants',
-          'products',
-          'product_categories',
-          'finishing_options',
-          'additional_options',
-          'installation_options',
-          'printing_methods',
-          'material_purchase_configs',
-          'inventory_locations',
-          'inventory_stock_balances',
-          'inventory_remnants',
-          'machineries',
-          'machinery_assignments',
-          'machinery_breakdowns',
-          'machinery_maintenances',
-          'shifts',
-          'employee_shifts',
-          'tax_transaction_lines',
-          'design_jobs',
-          'design_versions',
-          'in_app_notifications',
-          'trash_items',
-          'audit_logs',
-          'communication_logs',
-        ]
-
-        for (const tbl of tablesToClear) {
-          try {
-            await (admin as any).from(tbl).delete().eq('company_id', company.id)
-          } catch {}
-        }
-      } catch {}
+      // 2. Clean database tables via repository
+      await TenantRepository.resetTenantTables(company.id)
 
       return {
         success: true,

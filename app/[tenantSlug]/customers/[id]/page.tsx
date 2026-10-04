@@ -903,7 +903,7 @@ export default function CustomerProfilePage() {
 
  if (!isMounted || isLoading) {
  return (
-      <div className="space-y-6 max-w-7xl mx-auto pb-12">
+      <div className="space-y-6 mx-auto pb-12">
         <div className="h-8 w-48 bg-muted rounded-lg animate-pulse"/>
         <div className="h-40 rounded-xl bg-muted animate-pulse"/>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
@@ -917,9 +917,9 @@ export default function CustomerProfilePage() {
 
  if (isError || !customer) {
  return (
-      <div className="space-y-6 max-w-5xl mx-auto py-8 text-center">
-        <Card className="p-12 space-y-4 border-rose-200 dark:border-rose-900">
-          <AlertCircle className="h-10 w-10 text-rose-500 mx-auto"/>
+      <div className="space-y-6 mx-auto py-8 text-center">
+        <Card className="p-12 space-y-4 border-danger-border border-danger-border">
+          <AlertCircle className="h-10 w-10 text-destructive mx-auto"/>
           <h2 className="text-lg font-bold text-foreground">
             {errorText || 'Customer Profile Not Found'}
           </h2>
@@ -932,7 +932,7 @@ export default function CustomerProfilePage() {
  Retry
             </Button>
             <Link href={getTenantNavHref('/customers', pathname, slug)}>
-              <Button size="sm"className="bg-blue-600 hover:bg-blue-700">
+              <Button size="sm"className="bg-primary hover:bg-primary">
  Back to Customer Directory
               </Button>
             </Link>
@@ -959,7 +959,7 @@ export default function CustomerProfilePage() {
  return (
     <PanelAccessGuard
  module="customers"action="view"panelTitle="Customer 360 Profile"panelTitleBn="গ্রাহক ৩৬০ প্রোফাইল">
-      <div className="space-y-6 max-w-7xl mx-auto pb-16">
+      <div className="space-y-6 mx-auto pb-16">
       {/* Back to Customer Directory link */}
       <div className="flex items-center justify-between">
         <Link
@@ -970,7 +970,7 @@ export default function CustomerProfilePage() {
         </Link>
 
         {customer.created_at && (
-          <span className="text-2xs text-muted-foreground">
+          <span className="text-xs text-muted-foreground">
  Customer since {new Date(customer.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
           </span>
         )}
@@ -978,7 +978,7 @@ export default function CustomerProfilePage() {
 
       {/* Notification */}
       {notification && (
-        <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 dark:bg-emerald-950/40 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-xs font-semibold flex items-center gap-2 animate-in fade-in duration-150">
+        <div className="p-3.5 rounded-xl bg-success-surface border border-success-border bg-success-surface border-success-border text-success text-success text-xs font-semibold flex items-center gap-2 animate-in fade-in duration-150">
           <CheckCircle2 className="h-4 w-4 shrink-0"/>
           <span>{notification}</span>
         </div>
@@ -1005,11 +1005,11 @@ export default function CustomerProfilePage() {
                 <Badge
  variant="outline"className={cn(
                     'text-xs font-bold uppercase tracking-wider',
- custType === 'corporate' && 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950 dark:text-purple-300',
- custType === 'agency' && 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-300',
- custType === 'reseller' && 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950 dark:text-indigo-300',
- custType === 'government' && 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950 dark:text-amber-300',
- custType === 'retail' && 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300'
+ custType === 'corporate' && 'bg-primary/10 text-primary border-primary/20 bg-primary/10 text-primary',
+ custType === 'agency' && 'bg-primary/10 text-primary border-primary/20 bg-primary/10 text-primary',
+ custType === 'reseller' && 'bg-primary/10 text-primary border-primary/20 bg-primary/10 text-primary',
+ custType === 'government' && 'bg-warning-surface text-warning border-warning-border bg-warning-surface text-warning',
+ custType === 'retail' && 'bg-success-surface text-success border-success-border bg-success-surface text-success'
                   )}
                 >
                   {custType === 'corporate'
@@ -1023,7 +1023,7 @@ export default function CustomerProfilePage() {
                     : tBilingual('Retail', 'খুচরা')}
                 </Badge>
                 {customer.is_active === false && (
-                  <Badge variant="destructive"className="text-xs font-bold uppercase tracking-wider bg-rose-100 text-rose-800 border-rose-200">
+                  <Badge variant="destructive"className="text-xs font-bold uppercase tracking-wider bg-danger-surface text-destructive border-danger-border">
                     {tBilingual('Inactive', 'নিষ্ক্রিয়')}
                   </Badge>
                 )}
@@ -1064,7 +1064,7 @@ export default function CustomerProfilePage() {
               <a
  href={`tel:${customer.mobile}`}
  className="flex items-center gap-1.5 py-2 px-3 rounded-xl bg-muted hover:bg-muted font-bold text-xs text-foreground"title="Call Customer">
-                <Phone className="h-3.5 w-3.5 text-blue-600"/>
+                <Phone className="h-3.5 w-3.5 text-primary"/>
                 <span>{customer.mobile}</span>
               </a>
 
@@ -1072,8 +1072,8 @@ export default function CustomerProfilePage() {
               {customer.whatsapp && (
                 <a
  href={`https://wa.me/${customer.whatsapp.replace(/\D/g, '')}`}
- target="_blank"rel="noreferrer"className="flex items-center gap-1.5 py-2 px-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 border border-emerald-200 dark:border-emerald-800 font-bold text-xs"title="Direct WhatsApp Chat">
-                  <MessageSquare className="h-3.5 w-3.5 text-emerald-600"/>
+ target="_blank"rel="noreferrer"className="flex items-center gap-1.5 py-2 px-3 rounded-xl bg-success-surface bg-success-surface/60 text-success text-success hover:bg-success-surface border border-success-border border-success-border font-bold text-xs"title="Direct WhatsApp Chat">
+                  <MessageSquare className="h-3.5 w-3.5 text-success"/>
                   <span>WhatsApp</span>
                 </a>
               )}
@@ -1096,8 +1096,8 @@ export default function CustomerProfilePage() {
  className={cn(
                     'h-9 text-xs font-semibold transition-colors',
  customer.is_active === false
-                      ? 'text-emerald-700 border-emerald-300 hover:bg-emerald-50 dark:text-emerald-400 dark:border-emerald-800'
-                      : 'text-muted-foreground border-border hover:bg-rose-50 hover:text-rose-700 hover:border-rose-200 dark:hover:bg-rose-950/30'
+                      ? 'text-success border-success-border hover:bg-success-surface text-success border-success-border'
+                      : 'text-muted-foreground border-border hover:bg-danger-surface hover:text-destructive hover:border-danger-border dark:hover:bg-danger-surface'
                   )}
                 >
                   {customer.is_active === false
@@ -1127,7 +1127,7 @@ export default function CustomerProfilePage() {
             {hasDue && (
               <Button
  size="sm"variant="outline"onClick={() => setIsRecordPayOpen(true)}
- className="text-xs font-bold text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-900 bg-emerald-50/50 dark:bg-emerald-950/30 h-8">
+ className="text-xs font-bold text-success text-success border-success-border border-success-border bg-success-surface/50 bg-success-surface h-8">
                 <CreditCard className="h-3.5 w-3.5 mr-1.5"/>
                 <span>{tBilingual('Record Payment', 'পেমেন্ট গ্রহণ')}</span>
               </Button>
@@ -1167,7 +1167,7 @@ export default function CustomerProfilePage() {
  className={cn(
                 'py-2 px-3.5 rounded-lg font-bold flex items-center gap-1.5 shrink-0 transition-colors',
  isActive
-                  ? 'bg-blue-600 text-white shadow-xs'
+                  ? 'bg-primary text-white shadow-xs'
                   : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground hover:bg-muted dark:hover:bg-muted'
               )}
             >
@@ -1187,19 +1187,19 @@ export default function CustomerProfilePage() {
           <Card className="border-border shadow-sm bg-card overflow-hidden">
             <CardHeader className="p-4 bg-muted border-b border-border flex flex-row items-center justify-between">
               <div className="flex items-center gap-2">
-                <AlertCircle className={cn("h-4 w-4", hasDue ?"text-amber-500":"text-blue-600")} />
+                <AlertCircle className={cn("h-4 w-4", hasDue ?"text-warning":"text-primary")} />
                 <CardTitle className="text-sm font-bold text-foreground">
  Open Business & Action Items
                 </CardTitle>
               </div>
-              <Badge variant="outline"className="text-2xs font-semibold">
+              <Badge variant="outline"className="text-xs font-semibold">
                 {unpaidInvoices.length} Unpaid • {openQuotations.length} Open Quotes • {activeOrders.length} Active Orders
               </Badge>
             </CardHeader>
             <CardContent className="p-4">
               {!hasOpenWork ? (
-                <div className="p-4 text-center text-xs text-emerald-600 dark:text-emerald-400 font-medium flex items-center justify-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-500"/>
+                <div className="p-4 text-center text-xs text-success text-success font-medium flex items-center justify-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-success"/>
                   <span>All customer accounts are settled — no outstanding dues, open quotes or active orders.</span>
                 </div>
               ) : (
@@ -1208,19 +1208,19 @@ export default function CustomerProfilePage() {
                   <div className="rounded-xl border border-border p-3 bg-muted space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                        <FileText className="h-3.5 w-3.5 text-rose-500"/>
+                        <FileText className="h-3.5 w-3.5 text-destructive"/>
  Unpaid Invoices ({unpaidInvoices.length})
                       </span>
                       {unpaidInvoices.length > 0 && (
                         <button
  onClick={() => setIsRecordPayOpen(true)}
- className="text-2xs font-bold text-emerald-600 hover:underline">
+ className="text-xs font-bold text-success hover:underline">
                           {tBilingual('Pay', 'পরিশোধ')}
                         </button>
                       )}
                     </div>
                     {unpaidInvoices.length === 0 ? (
-                      <p className="text-2xs text-emerald-600 dark:text-emerald-400 font-medium py-2 flex items-center gap-1">
+                      <p className="text-xs text-success text-success font-medium py-2 flex items-center gap-1">
                         <CheckCircle2 className="h-3 w-3"/> Account Settled (No unpaid invoices)
                       </p>
                     ) : (
@@ -1232,18 +1232,18 @@ export default function CustomerProfilePage() {
                             <div>
                               <Link
  href={getTenantNavHref(`/billing/${inv.id}`, pathname, slug)}
- className="font-bold text-blue-600 hover:underline flex items-center gap-1">
+ className="font-bold text-primary hover:underline flex items-center gap-1">
                                 {inv.invoice_number}
                               </Link>
-                              <div className="text-2xs text-muted-foreground">
+                              <div className="text-xs text-muted-foreground">
                                 {inv.invoice_date}
                               </div>
                             </div>
                             <div className="text-right">
-                              <div className="font-bold text-rose-600 text-xs">
+                              <div className="font-bold text-destructive text-xs">
  Due ৳{Number(inv.due_amount).toLocaleString('en-IN')}
                               </div>
-                              <div className="text-2xs text-muted-foreground">
+                              <div className="text-xs text-muted-foreground">
  Total ৳{Number(inv.grand_total).toLocaleString('en-IN')}
                               </div>
                             </div>
@@ -1257,17 +1257,17 @@ export default function CustomerProfilePage() {
                   <div className="rounded-xl border border-border p-3 bg-muted space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                        <Send className="h-3.5 w-3.5 text-amber-500"/>
+                        <Send className="h-3.5 w-3.5 text-warning"/>
  Open Quotations ({openQuotations.length})
                       </span>
                       <Link
  href={getTenantNavHref(`/quotations/new?customerId=${customer.id}`, pathname, slug)}
- className="text-2xs font-bold text-blue-600 hover:underline">
+ className="text-xs font-bold text-primary hover:underline">
                         {tBilingual('New Quote', 'নতুন কোটেশন')}
                       </Link>
                     </div>
                     {openQuotations.length === 0 ? (
-                      <p className="text-2xs text-muted-foreground py-2">No pending quotations</p>
+                      <p className="text-xs text-muted-foreground py-2">No pending quotations</p>
                     ) : (
                       <div className="space-y-1.5 max-h-48 overflow-y-auto">
                         {openQuotations.map((q) => (
@@ -1277,10 +1277,10 @@ export default function CustomerProfilePage() {
                             <div>
                               <Link
  href={getTenantNavHref('/quotations', pathname, slug)}
- className="font-bold text-foreground hover:text-blue-600 flex items-center gap-1">
+ className="font-bold text-foreground hover:text-primary flex items-center gap-1">
                                 {q.quotation_number}
                               </Link>
-                              <div className="text-2xs text-muted-foreground capitalize">
+                              <div className="text-xs text-muted-foreground capitalize">
  Status: {q.status}
                               </div>
                             </div>
@@ -1297,17 +1297,17 @@ export default function CustomerProfilePage() {
                   <div className="rounded-xl border border-border p-3 bg-muted space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                        <ShoppingBag className="h-3.5 w-3.5 text-cyan-500"/>
+                        <ShoppingBag className="h-3.5 w-3.5 text-primary"/>
  Active Orders ({activeOrders.length})
                       </span>
                       <Link
  href={getTenantNavHref('/orders', pathname, slug)}
- className="text-2xs font-bold text-blue-600 hover:underline">
+ className="text-xs font-bold text-primary hover:underline">
  View
                       </Link>
                     </div>
                     {activeOrders.length === 0 ? (
-                      <p className="text-2xs text-muted-foreground py-2">No active production orders</p>
+                      <p className="text-xs text-muted-foreground py-2">No active production orders</p>
                     ) : (
                       <div className="space-y-1.5 max-h-48 overflow-y-auto">
                         {activeOrders.map((ord) => (
@@ -1317,10 +1317,10 @@ export default function CustomerProfilePage() {
                             <div>
                               <Link
  href={getTenantNavHref('/orders', pathname, slug)}
- className="font-bold text-foreground hover:text-blue-600 flex items-center gap-1">
+ className="font-bold text-foreground hover:text-primary flex items-center gap-1">
                                 {ord.order_number}
                               </Link>
-                              <div className="text-2xs text-cyan-600 dark:text-cyan-400 capitalize">
+                              <div className="text-xs text-primary text-primary capitalize">
                                 {ord.status.replace('_', ' ')}
                               </div>
                             </div>
@@ -1344,12 +1344,12 @@ export default function CustomerProfilePage() {
               <Card className="border-border shadow-sm bg-card">
                 <CardHeader className="p-4 border-b border-border flex flex-row items-center justify-between">
                   <CardTitle className="text-sm font-bold text-foreground flex items-center gap-2">
-                    <FileText className="h-4 w-4 text-blue-600"/>
+                    <FileText className="h-4 w-4 text-primary"/>
                     <span>Recent Invoices</span>
                   </CardTitle>
                   <button
  onClick={() => setActiveTab('invoices')}
- className="text-xs font-semibold text-blue-600 hover:underline flex items-center">
+ className="text-xs font-semibold text-primary hover:underline flex items-center">
  View All &rarr;
                   </button>
                 </CardHeader>
@@ -1366,7 +1366,7 @@ export default function CustomerProfilePage() {
                             <div className="font-bold text-foreground">
                               {inv.invoice_number}
                             </div>
-                            <div className="text-2xs text-muted-foreground">
+                            <div className="text-xs text-muted-foreground">
                               {inv.invoice_date}
                             </div>
                           </div>
@@ -1377,7 +1377,7 @@ export default function CustomerProfilePage() {
                                 ৳{Number(inv.grand_total).toLocaleString('en-IN')}
                               </div>
                               {Number(inv.due_amount) > 0 && (
-                                <div className="text-2xs text-rose-500 font-semibold">
+                                <div className="text-xs text-destructive font-semibold">
  Due: ৳{Number(inv.due_amount).toLocaleString('en-IN')}
                                 </div>
                               )}
@@ -1385,10 +1385,10 @@ export default function CustomerProfilePage() {
 
                             <Badge
  variant="outline"className={cn(
-                                'text-2xs capitalize',
- inv.status === 'paid' && 'bg-emerald-50 text-emerald-700 border-emerald-200',
- inv.status === 'unpaid' && 'bg-rose-50 text-rose-700 border-rose-200',
- inv.status === 'partially_paid' && 'bg-amber-50 text-amber-700 border-amber-200'
+                                'text-xs capitalize',
+ inv.status === 'paid' && 'bg-success-surface text-success border-success-border',
+ inv.status === 'unpaid' && 'bg-danger-surface text-destructive border-danger-border',
+ inv.status === 'partially_paid' && 'bg-warning-surface text-warning border-warning-border'
                               )}
                             >
                               {inv.status.replace('_', ' ')}
@@ -1405,12 +1405,12 @@ export default function CustomerProfilePage() {
               <Card className="border-border shadow-sm bg-card">
                 <CardHeader className="p-4 border-b border-border flex flex-row items-center justify-between">
                   <CardTitle className="text-sm font-bold text-foreground flex items-center gap-2">
-                    <CreditCard className="h-4 w-4 text-emerald-600"/>
+                    <CreditCard className="h-4 w-4 text-success"/>
                     <span>Recent Payments</span>
                   </CardTitle>
                   <button
  onClick={() => setActiveTab('payments')}
- className="text-xs font-semibold text-blue-600 hover:underline flex items-center">
+ className="text-xs font-semibold text-primary hover:underline flex items-center">
  View All &rarr;
                   </button>
                 </CardHeader>
@@ -1427,12 +1427,12 @@ export default function CustomerProfilePage() {
                             <div className="font-bold text-foreground">
  MR #{pay.receipt_number}
                             </div>
-                            <div className="text-2xs text-muted-foreground">
+                            <div className="text-xs text-muted-foreground">
                               {pay.payment_date} • via {pay.payment_method.toUpperCase()}
                             </div>
                           </div>
 
-                          <div className="font-black text-emerald-600 dark:text-emerald-400 text-sm">
+                          <div className="font-black text-success text-success text-sm">
                             ৳{Number(pay.amount).toLocaleString('en-IN')}
                           </div>
                         </div>
@@ -1449,12 +1449,12 @@ export default function CustomerProfilePage() {
               <Card className="border-border shadow-sm bg-card">
                 <CardHeader className="p-4 border-b border-border flex flex-row items-center justify-between">
                   <CardTitle className="text-sm font-bold text-foreground flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-purple-600"/>
+                    <Clock className="h-4 w-4 text-primary"/>
                     <span>Recent Activity</span>
                   </CardTitle>
                   <button
  onClick={() => setActiveTab('activity')}
- className="text-xs font-semibold text-blue-600 hover:underline">
+ className="text-xs font-semibold text-primary hover:underline">
  Full History &rarr;
                   </button>
                 </CardHeader>
@@ -1467,21 +1467,21 @@ export default function CustomerProfilePage() {
               <Card className="border-border shadow-sm bg-card p-4 space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="font-bold text-xs text-foreground flex items-center gap-1.5">
-                    <Tag className="h-3.5 w-3.5 text-blue-600"/>
+                    <Tag className="h-3.5 w-3.5 text-primary"/>
                     <span>Special Pricing Configured</span>
                   </div>
-                  <Badge variant="outline"className="text-2xs">
+                  <Badge variant="outline"className="text-xs">
                     {rates.filter((r) => r.hasCustomRate).length} Custom Rates
                   </Badge>
                 </div>
 
-                <p className="text-2xs text-muted-foreground leading-relaxed">
+                <p className="text-xs text-muted-foreground leading-relaxed">
  Automated rate fallback ensures this customer always gets their agreed rate on new quotations and invoices.
                 </p>
 
                 <Button
  variant="outline"size="sm"onClick={() => setActiveTab('rates')}
- className="w-full text-xs font-semibold h-8 text-blue-600">
+ className="w-full text-xs font-semibold h-8 text-primary">
  Open Rates Sheet
                 </Button>
               </Card>
@@ -1500,7 +1500,7 @@ export default function CustomerProfilePage() {
             </div>
             <Button
  size="sm"onClick={() => setIsNewInvoiceOpen(true)}
- className="bg-blue-600 hover:bg-blue-700 text-xs font-bold h-8">
+ className="bg-primary hover:bg-primary text-xs font-bold h-8">
               <Receipt className="h-3.5 w-3.5 mr-1.5"/>
               <span>{tBilingual('Create Invoice', 'ইনভয়েস তৈরি')}</span>
             </Button>
@@ -1536,19 +1536,19 @@ export default function CustomerProfilePage() {
                       <td className="py-3 px-3 text-right font-semibold text-foreground">
                         ৳{Number(inv.grand_total).toLocaleString('en-IN')}
                       </td>
-                      <td className="py-3 px-3 text-right font-medium text-emerald-600">
+                      <td className="py-3 px-3 text-right font-medium text-success">
                         ৳{Number(inv.paid_amount).toLocaleString('en-IN')}
                       </td>
-                      <td className="py-3 px-3 text-right font-bold text-rose-600">
+                      <td className="py-3 px-3 text-right font-bold text-destructive">
                         ৳{Number(inv.due_amount).toLocaleString('en-IN')}
                       </td>
                       <td className="py-3 px-3 text-center">
                         <Badge
  variant="outline"className={cn(
-                            'text-2xs capitalize',
- inv.status === 'paid' && 'bg-emerald-50 text-emerald-700 border-emerald-200',
- inv.status === 'unpaid' && 'bg-rose-50 text-rose-700 border-rose-200',
- inv.status === 'partially_paid' && 'bg-amber-50 text-amber-700 border-amber-200'
+                            'text-xs capitalize',
+ inv.status === 'paid' && 'bg-success-surface text-success border-success-border',
+ inv.status === 'unpaid' && 'bg-danger-surface text-destructive border-danger-border',
+ inv.status === 'partially_paid' && 'bg-warning-surface text-warning border-warning-border'
                           )}
                         >
                           {inv.status.replace('_', ' ')}
@@ -1557,7 +1557,7 @@ export default function CustomerProfilePage() {
                       <td className="py-3 px-4 text-center">
                         <Link
  href={getTenantNavHref(`/billing/${inv.id}`, pathname, slug)}
- className="inline-flex items-center text-blue-600 hover:underline font-semibold">
+ className="inline-flex items-center text-primary hover:underline font-semibold">
  View &rarr;
                         </Link>
                       </td>
@@ -1580,7 +1580,7 @@ export default function CustomerProfilePage() {
             </div>
             <Button
  size="sm"onClick={() => setIsRecordPayOpen(true)}
- className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold h-8">
+ className="bg-success hover:bg-success text-white text-xs font-bold h-8">
               <CreditCard className="h-3.5 w-3.5 mr-1.5"/>
               <span>{tBilingual('Record Payment', 'পেমেন্ট গ্রহণ')}</span>
             </Button>
@@ -1615,14 +1615,14 @@ export default function CustomerProfilePage() {
                       <td className="py-3 px-3 uppercase font-medium text-foreground">
                         {p.payment_method}
                       </td>
-                      <td className="py-3 px-3 text-right font-black text-emerald-600 text-sm">
+                      <td className="py-3 px-3 text-right font-black text-success text-sm">
                         ৳{Number(p.amount).toLocaleString('en-IN')}
                       </td>
                       <td className="py-3 px-3 text-muted-foreground">{p.received_by_name}</td>
                       <td className="py-3 px-4 text-center">
                         <Button
  size="sm"variant="outline"onClick={() => setSelectedPaymentForReceipt(p as any)}
- className="h-7 text-xs font-bold text-emerald-700 border-emerald-300 hover:bg-emerald-50 dark:border-emerald-800 dark:text-emerald-400 gap-1">
+ className="h-7 text-xs font-bold text-success border-success-border hover:bg-success-surface border-success-border text-success gap-1">
                           <Receipt className="h-3 w-3"/>
  View MR
                         </Button>
@@ -1683,14 +1683,14 @@ export default function CustomerProfilePage() {
                         ৳{Number(q.grand_total).toLocaleString('en-IN')}
                       </td>
                       <td className="py-3 px-3 text-center">
-                        <Badge variant="outline"className="text-2xs capitalize">
+                        <Badge variant="outline"className="text-xs capitalize">
                           {q.status}
                         </Badge>
                       </td>
                       <td className="py-3 px-4 text-center">
                         <Link
  href={getTenantNavHref('/quotations', pathname, slug)}
- className="text-blue-600 hover:underline font-semibold">
+ className="text-primary hover:underline font-semibold">
  View &rarr;
                         </Link>
                       </td>
@@ -1840,7 +1840,7 @@ export default function CustomerProfilePage() {
                 <Button type="button"variant="outline"size="sm"onClick={() => setIsEditOpen(false)}>
  Cancel
                 </Button>
-                <Button type="submit"size="sm"disabled={isSavingEdit} className="bg-blue-600 hover:bg-blue-700 font-bold">
+                <Button type="submit"size="sm"disabled={isSavingEdit} className="bg-primary hover:bg-primary font-bold">
                   {isSavingEdit ? 'Saving...' : 'Save Changes'}
                 </Button>
               </div>
@@ -1919,7 +1919,7 @@ export default function CustomerProfilePage() {
                 <Button type="button"variant="outline"size="sm"onClick={() => setIsLogCommOpen(false)}>
  Cancel
                 </Button>
-                <Button type="submit"size="sm"disabled={isLoggingComm} className="bg-blue-600 hover:bg-blue-700 font-bold">
+                <Button type="submit"size="sm"disabled={isLoggingComm} className="bg-primary hover:bg-primary font-bold">
                   {isLoggingComm ? 'Saving...' : 'Save Interaction Log'}
                 </Button>
               </div>

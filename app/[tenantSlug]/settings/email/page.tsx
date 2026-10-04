@@ -60,7 +60,7 @@ import type {
  EmailTemplateRecord,
  EmailLogRecord,
 } from '@/types/communication.types'
-import { interpolateVariables } from '@/services/email-template.service'
+import { interpolateVariables } from '@/lib/email/interpolate'
 
 const getTemplateDisplayName = (tpl: EmailTemplateRecord, isBn: boolean) => {
   if (isBn) {
@@ -343,7 +343,7 @@ export default function TenantEmailSettingsPage() {
 
  if (!mounted) {
  return (
-      <div className="space-y-6 max-w-5xl animate-pulse">
+      <div className="space-y-6 animate-pulse">
         <div className="h-20 bg-muted rounded-xl"/>
         <div className="h-12 bg-muted rounded-xl"/>
         <div className="h-48 bg-muted rounded-xl"/>
@@ -353,11 +353,11 @@ export default function TenantEmailSettingsPage() {
   }
 
  return (
-    <div className="space-y-6 max-w-5xl">
+    <div className="space-y-6">
       {/* Header */}
       <PageHeader
  titleEn="Email Settings"titleBn="প্রতিষ্ঠান ইমেইল ও গ্রাহক যোগাযোগ"descriptionEn="Connect your Gmail account or standard SMTP server to deliver branded customer quotations, invoices, and vouchers."descriptionBn="ব্র্যান্ডেড কোটেশন ও ইনভয়েস পাঠাতে জিমেইল বা এসটিএমটিপি সার্ভার সংযুক্ত করুন।"icon={Mail}
- iconColor="text-blue-600"actions={
+ iconColor="text-primary"actions={
           <div className="flex items-center gap-2">
             <Button
  size="sm"variant="outline"onClick={() => setIsTestModalOpen(true)}
@@ -375,8 +375,8 @@ export default function TenantEmailSettingsPage() {
         <div
  className={`p-4 rounded-xl text-xs font-semibold flex items-center gap-2.5 border transition-all ${
  notification.type === 'success'
-              ? 'bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800'
-              : 'bg-rose-50 text-rose-800 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800'
+              ? 'bg-success-surface text-success border-success-border bg-success-surface text-success border-success-border'
+              : 'bg-danger-surface text-destructive border-danger-border bg-danger-surface text-destructive border-danger-border'
           }`}
         >
           <Info className="h-4 w-4 shrink-0"/>
@@ -390,7 +390,7 @@ export default function TenantEmailSettingsPage() {
  type="button"onClick={() => setActiveTab('gateway')}
  className={`flex items-center gap-2 px-4 py-2.5 text-xs font-semibold border-b-2 -mb-px transition-colors whitespace-nowrap min-h-[44px] ${
  activeTab === 'gateway'
-              ? 'border-blue-600 text-blue-600 dark:border-blue-500 dark:text-blue-400'
+              ? 'border-border text-primary border-primary/20 text-primary'
               : 'border-transparent text-muted-foreground hover:text-foreground dark:hover:text-foreground'
           }`}
         >
@@ -402,7 +402,7 @@ export default function TenantEmailSettingsPage() {
  type="button"onClick={() => setActiveTab('templates')}
  className={`flex items-center gap-2 px-4 py-2.5 text-xs font-semibold border-b-2 -mb-px transition-colors whitespace-nowrap min-h-[44px] ${
  activeTab === 'templates'
-              ? 'border-blue-600 text-blue-600 dark:border-blue-500 dark:text-blue-400'
+              ? 'border-border text-primary border-primary/20 text-primary'
               : 'border-transparent text-muted-foreground hover:text-foreground dark:hover:text-foreground'
           }`}
         >
@@ -414,7 +414,7 @@ export default function TenantEmailSettingsPage() {
  type="button"onClick={() => setActiveTab('logs')}
  className={`flex items-center gap-2 px-4 py-2.5 text-xs font-semibold border-b-2 -mb-px transition-colors whitespace-nowrap min-h-[44px] ${
  activeTab === 'logs'
-              ? 'border-blue-600 text-blue-600 dark:border-blue-500 dark:text-blue-400'
+              ? 'border-border text-primary border-primary/20 text-primary'
               : 'border-transparent text-muted-foreground hover:text-foreground dark:hover:text-foreground'
           }`}
         >
@@ -436,12 +436,12 @@ export default function TenantEmailSettingsPage() {
                   <CardTitle className="text-base flex items-center gap-2">
                     {hasConfiguredGateway ? (
                       <>
-                        <CheckCircle2 className="h-5 w-5 text-emerald-600"/>
+                        <CheckCircle2 className="h-5 w-5 text-success"/>
                         {gateway?.provider === 'gmail' ? tBilingual('Gmail Active & Connected', 'জিমেইল সক্রিয় ও সংযুক্ত') : tBilingual('Custom SMTP Active & Connected', 'কাস্টম এসএমটিপি সক্রিয় ও সংযুক্ত')}
                       </>
                     ) : (
                       <>
-                        <AlertTriangle className="h-5 w-5 text-amber-500"/>
+                        <AlertTriangle className="h-5 w-5 text-warning"/>
                         {tBilingual('No Email Provider Configured', 'কোনো ইমেইল প্রোভাইডার কনফিগার করা নেই')}
                       </>
                     )}
@@ -454,10 +454,10 @@ export default function TenantEmailSettingsPage() {
                 </div>
 
                 <Badge
- className={`text-2xs uppercase font-bold self-start sm:self-center ${
+ className={`text-xs uppercase font-bold self-start sm:self-center ${
  hasConfiguredGateway
-                      ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300'
-                      : 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300'
+                      ? 'bg-success-surface text-success bg-success/40 text-success'
+                      : 'bg-warning-surface text-warning bg-warning/40 text-warning'
                   }`}
                 >
                   {hasConfiguredGateway ? tBilingual('Active & Ready', 'সক্রিয় ও প্রস্তুত') : tBilingual('Setup Required', 'সেটআপ প্রয়োজন')}
@@ -473,7 +473,7 @@ export default function TenantEmailSettingsPage() {
  onClick={() => setProviderMode('gmail')}
  className={`p-4 rounded-xl border-2 transition-all cursor-pointer flex flex-col justify-between ${
  providerMode === 'gmail'
-                  ? 'border-blue-600 bg-blue-50/50 dark:bg-blue-950/30 dark:border-blue-500 shadow-sm'
+                  ? 'border-border bg-primary/10/50 bg-primary/10 border-primary/20 shadow-sm'
                   : 'border-border hover:border-input'
               }`}
             >
@@ -481,17 +481,17 @@ export default function TenantEmailSettingsPage() {
                 <div className="flex items-center justify-between mb-1">
                   <div className="flex items-center gap-2">
                     <span className="font-bold text-sm text-foreground">Gmail (Google OAuth 2.0)</span>
-                    <Badge className="text-2xs bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">
+                    <Badge className="text-xs bg-primary/10 text-primary bg-primary/40 text-primary">
                         {tBilingual('Recommended', 'প্রস্তাবিত')}
                       </Badge>
                   </div>
-                  {providerMode === 'gmail' && <Check className="h-4 w-4 text-blue-600"/>}
+                  {providerMode === 'gmail' && <Check className="h-4 w-4 text-primary"/>}
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
                   {tBilingual('One-click sign in with Google. 100% secure, zero password sharing, and high inbox delivery.', 'গুগলের মাধ্যমে ১-ক্লিকে সাইন ইন করুন। ১০০% নিরাপদ, কোনো পাসওয়ার্ড শেয়ার করতে হয় না এবং দ্রুত ইনবক্সে পৌঁছে।')}
                 </p>
               </div>
-              <div className="mt-3 text-2xs tabular-nums text-muted-foreground">
+              <div className="mt-3 text-xs tabular-nums text-muted-foreground">
                 {tBilingual('Protocol: Google Gmail API (OAuth2)', 'প্রোটোকল: গুগল জিমেইল এপিআই (OAuth2)')}
               </div>
             </div>
@@ -501,20 +501,20 @@ export default function TenantEmailSettingsPage() {
  onClick={() => setProviderMode('smtp')}
  className={`p-4 rounded-xl border-2 transition-all cursor-pointer flex flex-col justify-between ${
  providerMode === 'smtp'
-                  ? 'border-blue-600 bg-blue-50/50 dark:bg-blue-950/30 dark:border-blue-500 shadow-sm'
+                  ? 'border-border bg-primary/10/50 bg-primary/10 border-primary/20 shadow-sm'
                   : 'border-border hover:border-input'
               }`}
             >
               <div>
                 <div className="flex items-center justify-between mb-1">
                   <span className="font-bold text-sm text-foreground">{tBilingual('Custom SMTP Host', 'কাস্টম এসএমটিপি হোস্ট')}</span>
-                  {providerMode === 'smtp' && <Check className="h-4 w-4 text-blue-600"/>}
+                  {providerMode === 'smtp' && <Check className="h-4 w-4 text-primary"/>}
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
                   {tBilingual('Connect any standard SMTP host (cPanel, Google Workspace, Office 365, Zoho Mail, Mailgun).', 'যেকোনো স্ট্যান্ডার্ড এসএমটিপি হোস্ট সংযুক্ত করুন (cPanel, Google Workspace, Office 365, Zoho Mail, Mailgun)।')}
                 </p>
               </div>
-              <div className="mt-3 text-2xs tabular-nums text-muted-foreground">
+              <div className="mt-3 text-xs tabular-nums text-muted-foreground">
                 {tBilingual('Protocol: TLS / SSL / STARTTLS', 'প্রোটোকল: TLS / SSL / STARTTLS')}
               </div>
             </div>
@@ -527,7 +527,7 @@ export default function TenantEmailSettingsPage() {
             <Card>
               <CardHeader className="border-b border-border pb-4">
                 <CardTitle className="text-sm font-bold flex items-center gap-2">
-                  <Globe className="h-4 w-4 text-blue-600"/>
+                  <Globe className="h-4 w-4 text-primary"/>
                   {tBilingual('Google Gmail Integration', 'গুগল জিমেইল ইন্টিগ্রেশন')}
                 </CardTitle>
                 <CardDescription className="text-xs">
@@ -537,16 +537,16 @@ export default function TenantEmailSettingsPage() {
               <CardContent className="p-6">
                 {gateway?.provider === 'gmail' && gateway.status === 'active' ? (
                   <div className="space-y-4">
-                    <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="p-4 rounded-xl bg-success-surface bg-success-surface border border-success-border border-success-border flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                       <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-sm">
+                        <div className="h-10 w-10 rounded-full bg-success text-white flex items-center justify-center font-bold text-sm">
                           ✓
                         </div>
                         <div>
                           <div className="font-bold text-xs text-foreground">
  Connected Account: {gateway.gmail_account_email || gateway.sender_email}
                           </div>
-                          <div className="text-2xs text-muted-foreground">
+                          <div className="text-xs text-muted-foreground">
  Display Name: {gateway.gmail_display_name || gateway.sender_name}
                           </div>
                         </div>
@@ -571,7 +571,7 @@ export default function TenantEmailSettingsPage() {
 
                     <div className="p-3 bg-muted rounded-xl border text-xs text-muted-foreground space-y-1">
                       <span className="font-semibold text-foreground block">Security Guarantee:</span>
-                      <p className="text-2xs leading-relaxed">
+                      <p className="text-xs leading-relaxed">
  InkFlow uses official Google OAuth 2.0 with limited `gmail.send` scope. We never have access to read your inbox messages, and tokens are encrypted at rest with AES-256-GCM.
                       </p>
                     </div>
@@ -579,7 +579,7 @@ export default function TenantEmailSettingsPage() {
                 ) : (
                   <div className="p-6 text-center space-y-4">
                     <div className="max-w-md mx-auto space-y-2">
-                      <div className="h-12 w-12 rounded-xl bg-blue-100 dark:bg-blue-900/40 text-blue-600 mx-auto flex items-center justify-center">
+                      <div className="h-12 w-12 rounded-xl bg-primary/10 bg-primary/40 text-primary mx-auto flex items-center justify-center">
                         <Mail className="h-6 w-6"/>
                       </div>
                       <h3 className="font-bold text-sm text-foreground">{tBilingual('Connect Your Gmail Account', 'আপনার জিমেইল অ্যাকাউন্ট সংযুক্ত করুন')}</h3>
@@ -596,43 +596,43 @@ export default function TenantEmailSettingsPage() {
                     </Button>
 
                     {googleOAuthStatus && !googleOAuthStatus.isConfigured && (
-                      <div className="max-w-xl mx-auto text-left p-4 rounded-xl border border-amber-200 bg-amber-50/70 dark:bg-amber-950/30 dark:border-amber-800 text-xs space-y-2 mt-4">
-                        <div className="flex items-center gap-2 font-bold text-amber-800 dark:text-amber-300">
+                      <div className="max-w-xl mx-auto text-left p-4 rounded-xl border border-warning-border bg-warning-surface/70 bg-warning-surface border-warning-border text-xs space-y-2 mt-4">
+                        <div className="flex items-center gap-2 font-bold text-warning text-warning">
                           <AlertTriangle className="h-4 w-4 shrink-0"/>
                           <span>Google Cloud OAuth Setup Note</span>
                         </div>
-                        <p className="text-2xs text-amber-700 dark:text-amber-400 leading-relaxed">
+                        <p className="text-xs text-warning text-warning leading-relaxed">
  To enable 1-click Gmail connection, configure Google Cloud OAuth 2.0 Web Application credentials in your server environment (<code>.env.local</code> or Vercel Environment Variables):
                         </p>
-                        <div className="bg-card/80 p-2.5 rounded-lg border border-amber-200/60 dark:border-amber-900/60 tabular-nums text-2xs text-foreground space-y-1">
+                        <div className="bg-card/80 p-2.5 rounded-lg border border-warning-border/60 border-warning-border/60 tabular-nums text-xs text-foreground space-y-1">
                           <div className="flex items-center justify-between">
                             <span>GOOGLE_CLIENT_ID</span>
-                            <span className={googleOAuthStatus.hasClientId ? 'text-emerald-600 font-bold' : 'text-rose-500 font-bold'}>
+                            <span className={googleOAuthStatus.hasClientId ? 'text-success font-bold' : 'text-destructive font-bold'}>
                               {googleOAuthStatus.hasClientId ? '✓ Configured' : '✗ Missing'}
                             </span>
                           </div>
                           <div className="flex items-center justify-between">
                             <span>GOOGLE_CLIENT_SECRET</span>
-                            <span className={googleOAuthStatus.hasClientSecret ? 'text-emerald-600 font-bold' : 'text-rose-500 font-bold'}>
+                            <span className={googleOAuthStatus.hasClientSecret ? 'text-success font-bold' : 'text-destructive font-bold'}>
                               {googleOAuthStatus.hasClientSecret ? '✓ Configured' : '✗ Missing'}
                             </span>
                           </div>
                           <div className="flex items-center justify-between">
                             <span>GOOGLE_GMAIL_REDIRECT_URI</span>
-                            <span className={googleOAuthStatus.hasRedirectUri ? 'text-emerald-600 font-bold' : 'text-muted-foreground'}>
+                            <span className={googleOAuthStatus.hasRedirectUri ? 'text-success font-bold' : 'text-muted-foreground'}>
                               {googleOAuthStatus.hasRedirectUri ? '✓ Configured' : '(Auto-resolved)'}
                             </span>
                           </div>
                         </div>
                         {googleOAuthStatus.redirectUri && (
-                          <div className="text-2xs text-muted-foreground">
+                          <div className="text-xs text-muted-foreground">
                             <strong>Google Cloud Authorized Redirect URI:</strong>
-                            <code className="block mt-1 p-2 bg-muted rounded tabular-nums text-2xs break-all select-all">
+                            <code className="block mt-1 p-2 bg-muted rounded tabular-nums text-xs break-all select-all">
                               {googleOAuthStatus.redirectUri}
                             </code>
                           </div>
                         )}
-                        <p className="text-2xs text-muted-foreground pt-1">
+                        <p className="text-xs text-muted-foreground pt-1">
  Tip: You can use standard <strong>Custom SMTP</strong> immediately below without any Google Cloud project setup.
                         </p>
                       </div>
@@ -701,7 +701,7 @@ export default function TenantEmailSettingsPage() {
                       <Label className="text-xs">Password</Label>
                       <button
  type="button"onClick={() => setShowSecret(!showSecret)}
- className="text-2xs text-blue-600 hover:underline flex items-center gap-1">
+ className="text-xs text-primary hover:underline flex items-center gap-1">
                         {showSecret ? <EyeOff className="h-3 w-3"/> : <Eye className="h-3 w-3"/>}
                         {showSecret ? 'Hide' : 'Reveal'}
                       </button>
@@ -720,14 +720,14 @@ export default function TenantEmailSettingsPage() {
  type="button"variant="outline"size="sm"disabled={testing}
  onClick={handleTestSmtpConnection}
  className="text-xs h-9 min-h-[38px]">
-                      <RotateCw className={`h-3.5 w-3.5 mr-1.5 ${testing ? 'animate-spin text-blue-600' : ''}`} />
+                      <RotateCw className={`h-3.5 w-3.5 mr-1.5 ${testing ? 'animate-spin text-primary' : ''}`} />
                       {testing ? 'Testing...' : 'Test Connection'}
                     </Button>
 
                     {testResult && (
                       <span
  className={`text-xs font-semibold flex items-center gap-1.5 ${
- testResult.success ? 'text-emerald-600' : 'text-rose-600'
+ testResult.success ? 'text-success' : 'text-destructive'
                         }`}
                       >
                         {testResult.success ? <CheckCircle2 className="h-3.5 w-3.5"/> : <AlertTriangle className="h-3.5 w-3.5"/>}
@@ -779,7 +779,7 @@ export default function TenantEmailSettingsPage() {
                     <Button
  size="sm"variant="ghost"disabled={disconnecting}
  onClick={handleDisableSmtp}
- className="text-xs text-rose-600 hover:bg-rose-50">
+ className="text-xs text-destructive hover:bg-danger-surface">
  Disable SMTP
                     </Button>
                   )}
@@ -811,12 +811,12 @@ export default function TenantEmailSettingsPage() {
  type="button"onClick={() => setSelectedTemplate(tpl)}
  className={`w-full text-left p-2.5 rounded-lg text-xs transition-all flex flex-col gap-0.5 min-h-[44px] ${
  isSelected
-                      ? 'bg-blue-600 text-white font-bold shadow-xs'
+                      ? 'bg-primary text-white font-bold shadow-xs'
                       : 'text-foreground hover:bg-muted dark:hover:bg-muted'
                   }`}
                 >
                   <span className="truncate">{getTemplateDisplayName(tpl, locale === 'bn')}</span>
-                  <span className={`text-2xs tabular-nums ${isSelected ? 'text-blue-100' : 'text-muted-foreground'}`}>
+                  <span className={`text-xs tabular-nums ${isSelected ? 'text-primary' : 'text-muted-foreground'}`}>
                     {tpl.event_type}
                   </span>
                 </button>
@@ -829,23 +829,23 @@ export default function TenantEmailSettingsPage() {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b gap-2">
                 <div>
                   <h4 className="font-bold text-sm text-foreground">{getTemplateDisplayName(selectedTemplate, locale === 'bn')}</h4>
-                  <span className="text-2xs tabular-nums text-blue-600">{selectedTemplate.event_type}</span>
+                  <span className="text-xs tabular-nums text-primary">{selectedTemplate.event_type}</span>
                 </div>
 
                 <div className="flex items-center gap-2">
                   <div className="inline-flex p-0.5 bg-muted rounded-lg border">
                     <button
  type="button"onClick={() => setTemplateLang('en')}
- className={`px-2.5 py-1 text-2xs font-bold rounded-md ${
- templateLang === 'en' ? 'bg-blue-600 text-white' : 'text-muted-foreground '
+ className={`px-2.5 py-1 text-xs font-bold rounded-md ${
+ templateLang === 'en' ? 'bg-primary text-white' : 'text-muted-foreground '
                       }`}
                     >
  English
                     </button>
                     <button
  type="button"onClick={() => setTemplateLang('bn')}
- className={`px-2.5 py-1 text-2xs font-bold rounded-md ${
- templateLang === 'bn' ? 'bg-blue-600 text-white' : 'text-muted-foreground '
+ className={`px-2.5 py-1 text-xs font-bold rounded-md ${
+ templateLang === 'bn' ? 'bg-primary text-white' : 'text-muted-foreground '
                       }`}
                     >
                       বাংলা
@@ -900,7 +900,7 @@ export default function TenantEmailSettingsPage() {
 
               {/* Rendered Preview */}
               <div className="p-3 bg-muted rounded-xl border space-y-1">
-                <span className="text-2xs font-bold uppercase text-muted-foreground">{locale === 'bn' ? 'লাইভ প্রিভিউ:' : 'LIVE PREVIEW:'}</span>
+                <span className="text-xs font-bold uppercase text-muted-foreground">{locale === 'bn' ? 'লাইভ প্রিভিউ:' : 'LIVE PREVIEW:'}</span>
                 <div
  className="p-3 bg-card text-foreground text-xs rounded border max-h-40 overflow-y-auto"dangerouslySetInnerHTML={{
                     __html: interpolateVariables(
@@ -965,7 +965,7 @@ export default function TenantEmailSettingsPage() {
                       )
                       .map((log) => (
                         <tr key={log.id} className="hover:bg-muted dark:hover:bg-muted/40">
-                          <td className="py-2.5 px-3 tabular-nums text-2xs">
+                          <td className="py-2.5 px-3 tabular-nums text-xs">
                             <div>{new Date(log.created_at).toLocaleDateString()}</div>
                             <span className="text-muted-foreground">{log.event_type}</span>
                           </td>
@@ -977,12 +977,12 @@ export default function TenantEmailSettingsPage() {
                           </td>
                           <td className="py-2.5 px-3 text-center">
                             <Badge
- className={`text-2xs uppercase ${
+ className={`text-xs uppercase ${
  log.status === 'sent'
-                                  ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300'
+                                  ? 'bg-success-surface text-success bg-success/40 text-success'
                                   : log.status === 'failed'
-                                  ? 'bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-300'
-                                  : 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300'
+                                  ? 'bg-danger-surface text-destructive bg-destructive/40 text-destructive'
+                                  : 'bg-warning-surface text-warning bg-warning/40 text-warning'
                               }`}
                             >
                               {log.status}

@@ -92,7 +92,7 @@ export default function LocalizationSettingsPage() {
 
  if (!mounted) {
  return (
-      <div className="space-y-6 max-w-5xl animate-pulse">
+      <div className="space-y-6 animate-pulse">
         <div className="h-20 bg-muted rounded-xl w-full"/>
         <div className="h-12 bg-muted rounded-xl w-3/4"/>
         <div className="h-48 bg-muted rounded-xl w-full"/>
@@ -101,14 +101,14 @@ export default function LocalizationSettingsPage() {
   }
 
  return (
-    <div className="space-y-6 max-w-5xl">
+    <div className="space-y-6">
       <PageHeader
  titleEn="Localization, Language & Formats"titleBn="আঞ্চলিক ভাষা ও মুদ্রা সেটিংস"descriptionEn="Configure interface presentation mode, base currency, and standard Bangladeshi date numbering conventions."descriptionBn="ইন্টারফেসের ভাষা মোড, মূল মুদ্রা এবং বাংলাদেশি তারিখ ও নম্বর ফরম্যাট কনফিগার করুন।"icon={Globe2}
- iconColor="text-emerald-600"/>
+ iconColor="text-success"/>
 
       {isSaved && (
-        <div className="p-3 bg-emerald-50 text-emerald-800 rounded-lg text-xs font-semibold flex items-center gap-2 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800 animate-in fade-in-0">
-          <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0"/>
+        <div className="p-3 bg-success-surface text-success rounded-lg text-xs font-semibold flex items-center gap-2 border border-success-border bg-success-surface text-success border-success-border animate-in fade-in-0">
+          <CheckCircle2 className="h-4 w-4 text-success shrink-0"/>
           <span>Localization preferences updated and applied across document engines.</span>
         </div>
       )}
@@ -119,7 +119,7 @@ export default function LocalizationSettingsPage() {
           <CardHeader className="pb-3 border-b border-border flex flex-row items-center justify-between">
             <div>
               <CardTitle className="text-base flex items-center gap-2 bangla-text">
-                <Languages className="h-4 w-4 text-blue-600"/>
+                <Languages className="h-4 w-4 text-primary"/>
                 {tBilingual('Default Language & Display Mode', 'ডিফল্ট ভাষা ও ডিসপ্লে')}
               </CardTitle>
               <CardDescription className="text-xs bangla-text">
@@ -150,7 +150,7 @@ export default function LocalizationSettingsPage() {
                   }}
  className={`p-4 rounded-xl border cursor-pointer transition-all ${
  locale === item.id || languageMode === item.id
-                      ? 'border-blue-600 bg-blue-50/70 ring-2 ring-blue-600/20 dark:bg-blue-950/40 dark:border-blue-500'
+                      ? 'border-border bg-primary/10/70 ring-2 focus:ring-ring/20 bg-primary/10 border-primary/20'
                       : 'border-border hover:border-input '
                   }`}
                 >
@@ -169,7 +169,7 @@ export default function LocalizationSettingsPage() {
           <Card>
             <CardHeader className="pb-3 border-b border-border">
               <CardTitle className="text-base flex items-center gap-2 bangla-text">
-                <DollarSign className="h-4 w-4 text-emerald-600"/>
+                <DollarSign className="h-4 w-4 text-success"/>
                 {tBilingual('Base Currency', 'মূল মুদ্রা')}
               </CardTitle>
             </CardHeader>
@@ -194,7 +194,7 @@ export default function LocalizationSettingsPage() {
           <Card>
             <CardHeader className="pb-3 border-b border-border">
               <CardTitle className="text-base flex items-center gap-2 bangla-text">
-                <Calendar className="h-4 w-4 text-purple-600"/>
+                <Calendar className="h-4 w-4 text-primary"/>
                 {tBilingual('Date Format', 'তারিখ ফরম্যাট')}
               </CardTitle>
             </CardHeader>
@@ -219,7 +219,7 @@ export default function LocalizationSettingsPage() {
         </div>
 
         <div className="flex justify-end pt-2">
-          <Button type="submit"isLoading={isLoading} className="bg-emerald-600 hover:bg-emerald-700 text-white w-full sm:w-auto h-11 sm:h-9 text-xs font-semibold bangla-text">
+          <Button type="submit"isLoading={isLoading} className="bg-success hover:bg-success text-white w-full sm:w-auto h-11 sm:h-9 text-xs font-semibold bangla-text">
             <Save className="mr-1.5 h-4 w-4"/>
             {tBilingual('Save Localization Settings', 'ভাষা ও মুদ্রা সেটিংস সংরক্ষণ করুন')}
           </Button>

@@ -4,7 +4,12 @@ import { getAuthCookieOptions } from '../tenant/tenant-resolution.ts'
 
 export async function createClient() {
 
-  let cookieStore: any = {
+  let cookieStore:
+    | Awaited<ReturnType<typeof import('next/headers').cookies>>
+    | {
+        getAll: () => Array<{ name: string; value: string }>
+        set?: (name: string, value: string, options?: Record<string, unknown>) => void
+      } = {
     getAll: () => [],
     set: () => {},
   }
@@ -51,9 +56,10 @@ export async function createClient() {
         },
         setAll(cookiesToSet) {
           try {
-            if (typeof cookieStore.set === 'function') {
+            const setter = 'set' in cookieStore && typeof cookieStore.set === 'function' ? cookieStore.set.bind(cookieStore) : null
+            if (setter) {
               cookiesToSet.forEach(({ name, value, options }) =>
-                cookieStore.set(name, value, {
+                setter(name, value, {
                   ...options,
                   domain: baseCookieOptions.domain || undefined,
                 })
@@ -115,7 +121,7 @@ export function createClientForResponse(response: import('next/server').NextResp
  * Establishes an authoritative Supabase SSR auth session on the server for a verified user.
  * Mints the session cookies into next/headers cookies(), fixing production session loss.
  */
-export async function establishServerSession(email: string, customDomain?: string): Promise<boolean> {
+export async function establishServerSession(email: string, _customDomain?: string): Promise<boolean> {
   const { isTestEnvironment } = await import('../security/runtime-env.ts')
   if (isTestEnvironment()) {
     return true
@@ -136,8 +142,9 @@ export async function establishServerSession(email: string, customDomain?: strin
     }
 
     const supabase = await createClient()
-    const hashedToken = (linkData.properties as any).hashed_token
-    const emailOtp = (linkData.properties as any).email_otp
+    const props = linkData.properties as { hashed_token?: string; email_otp?: string } | undefined
+    const hashedToken = props?.hashed_token
+    const emailOtp = props?.email_otp
 
     if (hashedToken) {
       const { error: verifyErr } = await supabase.auth.verifyOtp({
@@ -198,8 +205,9 @@ export async function establishResponseSession(
     }
 
     const supabase = createClientForResponse(response, requestHost)
-    const hashedToken = (linkData.properties as any).hashed_token
-    const emailOtp = (linkData.properties as any).email_otp
+    const respProps = linkData.properties as { hashed_token?: string; email_otp?: string } | undefined
+    const hashedToken = respProps?.hashed_token
+    const emailOtp = respProps?.email_otp
 
     if (hashedToken) {
       const { error: verifyErr } = await supabase.auth.verifyOtp({

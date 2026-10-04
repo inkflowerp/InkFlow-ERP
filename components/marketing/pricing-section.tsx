@@ -32,7 +32,7 @@ export function PricingSection() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12 sm:space-y-14">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto space-y-3 sm:space-y-4">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200/70 dark:border-blue-800/60 uppercase tracking-wider">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary bg-primary/10 text-primary border border-primary/20/70 border-border/60 uppercase tracking-wider">
             <Zap className="h-3.5 w-3.5"/>
             <span>{tBilingual('Authoritative Pricing in BDT', 'স্বচ্ছ ও সাশ্রয়ী মূল্যতালিকা')}</span>
           </div>
@@ -67,7 +67,7 @@ export function PricingSection() {
  className="relative inline-flex h-6 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent bg-muted p-0.5 transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-ring"role="switch"aria-checked={interval === 'yearly'}
             >
               <span
- className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-card dark:bg-blue-400 shadow-sm transition duration-200 ease-in-out ${
+ className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-card bg-primary shadow-sm transition duration-200 ease-in-out ${
  interval === 'yearly' ? 'translate-x-6' : 'translate-x-0'
                 }`}
               />
@@ -80,7 +80,7 @@ export function PricingSection() {
  onClick={() => setInterval('yearly')}
             >
               <span>{tBilingual('Yearly Billing', 'বার্ষিক বিলিং')}</span>
-              <span className="px-2 py-0.5 rounded-full text-2xs font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+              <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-success-surface text-success bg-success-surface text-success border border-success-border border-success-border">
                 {tBilingual('Save ~20%', '২০% পর্যন্ত ছাড়')}
               </span>
             </span>
@@ -163,13 +163,13 @@ export function PricingSection() {
  key={p.id || p.code}
  className={`relative rounded-xl p-6 sm:p-7 flex flex-col justify-between transition-all ${
  isPopular
-                      ? 'border-2 border-blue-600 dark:border-blue-500 bg-card shadow-xs ring-1 ring-blue-600/10'
+                      ? 'border-2 border-border border-primary/20 bg-card shadow-xs ring-1 focus:ring-ring/10'
                       : 'border border-border bg-card hover:border-input shadow-sm'
                   }`}
                 >
                   {/* Popular Tag */}
                   {isPopular && (
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full bg-blue-600 text-white font-bold text-2xs uppercase tracking-wider shadow-sm whitespace-nowrap">
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full bg-primary text-white font-bold text-xs uppercase tracking-wider shadow-sm whitespace-nowrap">
                       {tBilingual('Most Popular for BD Press', 'প্রেসের জন্য সেরা পছন্দ')}
                     </div>
                   )}
@@ -182,7 +182,7 @@ export function PricingSection() {
                           {tBilingual(p.name, p.name_bn)}
                         </h3>
                         {p.code === 'enterprise' && (
-                          <Crown className="h-5 w-5 text-amber-500 shrink-0"/>
+                          <Crown className="h-5 w-5 text-warning shrink-0"/>
                         )}
                       </div>
                       <p className="text-xs text-muted-foreground mt-1 min-h-0 sm:min-h-[32px] leading-relaxed bangla-text">
@@ -200,7 +200,7 @@ export function PricingSection() {
                           / month {interval === 'yearly' && '(billed yearly)'}
                         </span>
                       </div>
-                      <div className="text-2xs font-semibold text-blue-600 dark:text-blue-400 mt-1">
+                      <div className="text-xs font-semibold text-primary text-primary mt-1">
                         {interval === 'yearly'
                           ? `৳ ${p.price_yearly.toLocaleString()} BDT per year ${
  annualSavings > 0 ? `(~${annualSavings}% savings)` : ''
@@ -240,30 +240,30 @@ export function PricingSection() {
                     {/* Features List */}
                     <div className="space-y-2 text-xs pt-1">
                       <div className="flex items-center gap-2 text-foreground">
-                        <Check className="h-4 w-4 text-emerald-600 shrink-0"/>
+                        <Check className="h-4 w-4 text-success shrink-0"/>
                         <span>Instant SFT Quotation Generator</span>
                       </div>
                       <div className="flex items-center gap-2 text-foreground">
-                        <Check className="h-4 w-4 text-emerald-600 shrink-0"/>
+                        <Check className="h-4 w-4 text-success shrink-0"/>
                         <span>Customer Dues & WhatsApp Reminders</span>
                       </div>
                       <div className="flex items-center gap-2 text-foreground">
-                        <Check className="h-4 w-4 text-emerald-600 shrink-0"/>
+                        <Check className="h-4 w-4 text-success shrink-0"/>
                         <span>Traditional NBR Delivery Challans</span>
                       </div>
 
                       {p.code !== 'starter' && (
                         <>
                           <div className="flex items-center gap-2 text-foreground">
-                            <Check className="h-4 w-4 text-emerald-600 shrink-0"/>
+                            <Check className="h-4 w-4 text-success shrink-0"/>
                             <span>Interactive Production Floor Queue</span>
                           </div>
                           <div className="flex items-center gap-2 text-foreground">
-                            <Check className="h-4 w-4 text-emerald-600 shrink-0"/>
+                            <Check className="h-4 w-4 text-success shrink-0"/>
                             <span>Flex & Roll Media Stock Tracker</span>
                           </div>
                           <div className="flex items-center gap-2 text-foreground">
-                            <Check className="h-4 w-4 text-emerald-600 shrink-0"/>
+                            <Check className="h-4 w-4 text-success shrink-0"/>
                             <span>Job BOM Costing & Net Profit</span>
                           </div>
                         </>
@@ -271,12 +271,12 @@ export function PricingSection() {
 
                       {p.code === 'enterprise' && (
                         <>
-                          <div className="flex items-center gap-2 text-amber-700 dark:text-amber-300 font-semibold">
-                            <Check className="h-4 w-4 text-amber-600 shrink-0"/>
+                          <div className="flex items-center gap-2 text-warning text-warning font-semibold">
+                            <Check className="h-4 w-4 text-warning shrink-0"/>
                             <span>Custom Multi-Branch Hierarchy</span>
                           </div>
-                          <div className="flex items-center gap-2 text-amber-700 dark:text-amber-300 font-semibold">
-                            <Check className="h-4 w-4 text-amber-600 shrink-0"/>
+                          <div className="flex items-center gap-2 text-warning text-warning font-semibold">
+                            <Check className="h-4 w-4 text-warning shrink-0"/>
                             <span>Priority Phone & On-Site Support</span>
                           </div>
                         </>
@@ -298,7 +298,7 @@ export function PricingSection() {
                         <ArrowRight className="ml-1.5 h-4 w-4"/>
                       </Button>
                     </Link>
-                    <p className="text-2xs text-center text-muted-foreground mt-2">
+                    <p className="text-xs text-center text-muted-foreground mt-2">
                       {tBilingual('Instant account activation • BDT billing', 'ইনস্ট্যান্ট একাউন্ট অ্যাক্টিভেশন • টাকা বিলিং')}
                     </p>
                   </div>
@@ -309,9 +309,9 @@ export function PricingSection() {
         )}
 
         {/* Dedicated Free Trial Banner */}
-        <div className="max-w-4xl mx-auto rounded-xl border border-blue-200/90 dark:border-blue-900/60 bg-blue-50/50 dark:bg-blue-950/20 p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm">
+        <div className="max-w-4xl mx-auto rounded-xl border border-primary/20/90 border-border/60 bg-primary/10/50 bg-primary/10 p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm">
           <div className="space-y-1.5 text-center md:text-left">
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/60 dark:text-blue-200 text-2xs font-bold uppercase tracking-wider">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-primary/10 text-primary bg-primary/60 text-primary text-xs font-bold uppercase tracking-wider">
               <Sparkles className="h-3 w-3"/>
               <span>{tBilingual('Dedicated Free Evaluation Trial', 'ডেডিকেটেড ফ্রি মূল্যায়ন ট্রায়াল')}</span>
             </div>
@@ -336,7 +336,7 @@ export function PricingSection() {
                 <ArrowRight className="ml-2 h-4 w-4"/>
               </Button>
             </Link>
-            <span className="text-2xs text-muted-foreground">
+            <span className="text-xs text-muted-foreground">
               {tBilingual('No credit card • 60-second setup', 'কোনো কার্ড লাগবে না • ১ মিনিটে সেটআপ')}
             </span>
           </div>

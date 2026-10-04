@@ -127,7 +127,7 @@ export function CashClosingView({
       <div className="p-5 rounded-xl bg-card shadow-xs border border-border flex flex-col md:flex-row md:items-center justify-between gap-5">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <Badge className="bg-purple-500/20 text-purple-300 border-none text-2xs uppercase tracking-wider flex items-center gap-1">
+            <Badge className="bg-primary/20 text-primary border-none text-xs uppercase tracking-wider flex items-center gap-1">
               <Clock className="w-3.5 h-3.5"/>
               <span>{tBilingual('Print Shop Day Closing', 'দৈনিক ক্যাশ ক্লোজিং ও ড্রয়ার অডিট')}</span>
             </Badge>
@@ -144,11 +144,11 @@ export function CashClosingView({
         </div>
 
         {todayClosing ? (
-          <div className="flex items-center gap-2 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300">
-            <Lock className="w-5 h-5 text-emerald-400"/>
+          <div className="flex items-center gap-2 p-3 rounded-xl bg-success/10 border border-success-border/30 text-success">
+            <Lock className="w-5 h-5 text-success"/>
             <div className="text-xs">
               <span className="font-bold block">{tBilingual('Register Locked', 'ক্লোজিং লক করা আছে')}</span>
-              <span className="text-3xs text-muted-foreground tabular-nums">Closed by: {todayClosing.closed_by_name}</span>
+              <span className="text-xs text-muted-foreground tabular-nums">Closed by: {todayClosing.closed_by_name}</span>
             </div>
           </div>
         ) : (
@@ -163,8 +163,8 @@ export function CashClosingView({
       </div>
 
       {feedbackMsg && (
-        <div className="p-3 text-xs bg-emerald-50 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 rounded-xl border border-emerald-200 dark:border-emerald-800 flex items-center gap-2">
-          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0"/>
+        <div className="p-3 text-xs bg-success-surface text-success bg-success-surface text-success rounded-xl border border-success-border border-success-border flex items-center gap-2">
+          <CheckCircle2 className="w-4 h-4 text-success shrink-0"/>
           <span>{feedbackMsg}</span>
         </div>
       )}
@@ -175,7 +175,7 @@ export function CashClosingView({
  type="button"onClick={() => setActiveSubTab('daily')}
  className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
  activeSubTab === 'daily'
-              ? 'bg-card text-purple-600 dark:text-purple-400 shadow-xs'
+              ? 'bg-card text-primary text-primary shadow-xs'
               : 'text-muted-foreground hover:text-foreground'
           }`}
         >
@@ -186,7 +186,7 @@ export function CashClosingView({
  type="button"onClick={() => setActiveSubTab('history')}
  className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
  activeSubTab === 'history'
-              ? 'bg-card text-blue-600 dark:text-blue-400 shadow-xs'
+              ? 'bg-card text-primary text-primary shadow-xs'
               : 'text-muted-foreground hover:text-foreground'
           }`}
         >
@@ -197,7 +197,7 @@ export function CashClosingView({
  type="button"onClick={() => setActiveSubTab('variance')}
  className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
  activeSubTab === 'variance'
-              ? 'bg-card text-amber-600 dark:text-amber-400 shadow-xs'
+              ? 'bg-card text-warning text-warning shadow-xs'
               : 'text-muted-foreground hover:text-foreground'
           }`}
         >
@@ -226,7 +226,7 @@ export function CashClosingView({
                   <span className="font-semibold text-foreground block">
                     {tBilingual('Opening Cash in Drawer', 'সকালে ড্রয়ারে থাকা নগদ ক্যাশ')}
                   </span>
-                  <span className="text-3xs text-muted-foreground">
+                  <span className="text-xs text-muted-foreground">
                     {tBilingual('Carried forward from yesterday', 'পূর্ববর্তী দিনের অবশিষ্ট নগদ')}
                   </span>
                 </div>
@@ -236,12 +236,12 @@ export function CashClosingView({
               </div>
 
               {/* + Cash Received */}
-              <div className="py-3 flex items-center justify-between text-emerald-600 dark:text-emerald-400">
+              <div className="py-3 flex items-center justify-between text-success text-success">
                 <div>
                   <span className="font-semibold block">
                     {tBilingual('(+) Cash Received Today', '(+) আজকের নগদ কালেকশন / জমা')}
                   </span>
-                  <span className="text-3xs text-emerald-600/70">
+                  <span className="text-xs text-success/70">
                     {tBilingual('Invoice payments, advances, and spot receipts', 'ইনভয়েস পরিশোধ ও অগ্রিম নগদ')}
                   </span>
                 </div>
@@ -251,12 +251,12 @@ export function CashClosingView({
               </div>
 
               {/* - Cash Expenses */}
-              <div className="py-3 flex items-center justify-between text-rose-600 dark:text-rose-400">
+              <div className="py-3 flex items-center justify-between text-destructive text-destructive">
                 <div>
                   <span className="font-semibold block">
                     {tBilingual('(-) Cash Expenses Today', '(-) আজকের নগদ খরচ ও বিল')}
                   </span>
-                  <span className="text-3xs text-rose-600/70">
+                  <span className="text-xs text-destructive/70">
                     {tBilingual('Tea, electricity, transport, emergency items', 'চা-নাস্তা, যাতায়াত ও খুচরা খরচ')}
                   </span>
                 </div>
@@ -266,12 +266,12 @@ export function CashClosingView({
               </div>
 
               {/* - Cash Transfers */}
-              <div className="py-3 flex items-center justify-between text-blue-600 dark:text-blue-400">
+              <div className="py-3 flex items-center justify-between text-primary text-primary">
                 <div>
                   <span className="font-semibold block">
                     {tBilingual('(-) Cash Transfers Out', '(-) ব্যাংক বা ওয়ালেটে স্থানান্তর')}
                   </span>
-                  <span className="text-3xs text-blue-600/70">
+                  <span className="text-xs text-primary/70">
                     {tBilingual('Deposited into bank account or bKash wallet', 'ড্রয়ার থেকে ব্যাংকে জমা')}
                   </span>
                 </div>
@@ -286,11 +286,11 @@ export function CashClosingView({
                   <span className="font-bold text-foreground text-sm block">
                     {tBilingual('Expected Cash in Drawer', 'হিসাবমতে ড্রয়ারে থাকা উচিত (Expected)')}
                   </span>
-                  <span className="text-3xs text-muted-foreground">
+                  <span className="text-xs text-muted-foreground">
                     {tBilingual('Opening + Received - Expenses - Transfers', 'ওপেনিং + জমা - খরচ - স্থানান্তর')}
                   </span>
                 </div>
-                <span className="tabular-nums font-black text-xl text-purple-600 dark:text-purple-400">
+                <span className="tabular-nums font-black text-xl text-primary text-primary">
                   ৳{expectedCash.toLocaleString()}
                 </span>
               </div>
@@ -306,7 +306,7 @@ export function CashClosingView({
                 </span>
                 <button
  type="button"onClick={() => setUseDenominations(!useDenominations)}
- className="text-3xs text-blue-600 dark:text-blue-400 font-semibold hover:underline cursor-pointer">
+ className="text-xs text-primary text-primary font-semibold hover:underline cursor-pointer">
                   {useDenominations ? tBilingual('Direct Input', 'সরাসরি লিখুন') : tBilingual('Use Note Counter', 'নোট গুনে লিখুন')}
                 </button>
               </div>
@@ -315,7 +315,7 @@ export function CashClosingView({
               {useDenominations ? (
                 <div className="space-y-2 p-3 rounded-xl bg-muted dark:bg-muted mb-3 border border-border">
                   {[1000, 500, 200, 100, 50, 20].map((denom) => (
-                    <div key={denom} className="flex items-center justify-between text-2xs">
+                    <div key={denom} className="flex items-center justify-between text-xs">
                       <span className="tabular-nums font-bold text-muted-foreground w-16">
                         ৳{denom} ×
                       </span>
@@ -344,14 +344,14 @@ export function CashClosingView({
               <div
  className={`p-4 rounded-xl border flex items-center justify-between mb-4 ${
  isBalanced
-                    ? 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 text-emerald-800 dark:text-emerald-300'
+                    ? 'bg-success-surface bg-success-surface border-success-border text-success text-success'
                     : variance < 0
-                    ? 'bg-rose-50 dark:bg-rose-950/30 border-rose-200 text-rose-800 dark:text-rose-300'
-                    : 'bg-amber-50 dark:bg-amber-950/30 border-amber-200 text-amber-800 dark:text-amber-300'
+                    ? 'bg-danger-surface bg-danger-surface border-danger-border text-destructive text-destructive'
+                    : 'bg-warning-surface bg-warning-surface border-warning-border text-warning text-warning'
                 }`}
               >
                 <div>
-                  <span className="text-3xs uppercase font-bold block">
+                  <span className="text-xs uppercase font-bold block">
                     {tBilingual('Discrepancy / Variance', 'অমিল / ভ্যারিয়েন্স')}
                   </span>
                   <span className="text-xs font-semibold">
@@ -371,7 +371,7 @@ export function CashClosingView({
 
               {/* Variance Notes Input */}
               <div className="mb-4">
-                <Label className="text-2xs font-semibold text-muted-foreground mb-1 block">
+                <Label className="text-xs font-semibold text-muted-foreground mb-1 block">
                   {tBilingual('Variance Reason / Closing Note', 'অমিলের কারণ বা সমাপনী নোট')}
                 </Label>
                 <Input
@@ -392,7 +392,7 @@ export function CashClosingView({
                 </Button>
               ) : (
                 <div className="p-3 text-center rounded-xl bg-muted text-muted-foreground text-xs font-semibold flex items-center justify-center gap-2">
-                  <ShieldCheck className="w-4 h-4 text-emerald-500"/>
+                  <ShieldCheck className="w-4 h-4 text-success"/>
                   <span>{tBilingual('Day records locked by Cashier', 'ক্যাশিয়ার কর্তৃক এই দিনের হিসাব লক করা আছে')}</span>
                 </div>
               )}
@@ -427,16 +427,16 @@ export function CashClosingView({
                       <td className="p-3 tabular-nums text-muted-foreground whitespace-nowrap">
                         {c.closing_date}
                       </td>
-                      <td className="p-3 tabular-nums font-medium text-purple-600 dark:text-purple-400">
+                      <td className="p-3 tabular-nums font-medium text-primary text-primary">
                         {c.closing_number}
                       </td>
                       <td className="p-3 text-right tabular-nums text-muted-foreground">
                         ৳{Number(c.opening_cash || 0).toLocaleString()}
                       </td>
-                      <td className="p-3 text-right tabular-nums text-emerald-600">
+                      <td className="p-3 text-right tabular-nums text-success">
                         +৳{Number(c.cash_inflows || 0).toLocaleString()}
                       </td>
-                      <td className="p-3 text-right tabular-nums text-rose-600">
+                      <td className="p-3 text-right tabular-nums text-destructive">
                         -৳{Number(c.cash_outflows || 0).toLocaleString()}
                       </td>
                       <td className="p-3 text-right tabular-nums font-bold text-foreground">
@@ -445,14 +445,14 @@ export function CashClosingView({
                       <td className="p-3 text-right tabular-nums font-bold text-foreground">
                         ৳{Number(c.counted_cash || 0).toLocaleString()}
                       </td>
-                      <td className={`p-3 text-right tabular-nums font-bold ${Math.abs(c.variance) <= 0.01 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                      <td className={`p-3 text-right tabular-nums font-bold ${Math.abs(c.variance) <= 0.01 ? 'text-success' : 'text-destructive'}`}>
                         {c.variance > 0 ? `+৳${c.variance}` : `৳${c.variance}`}
                       </td>
                       <td className="p-3 text-muted-foreground">
                         {c.closed_by_name}
                       </td>
                       <td className="p-3 text-center">
-                        <Badge className="bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 text-3xs font-semibold">
+                        <Badge className="bg-success-surface text-success border border-success-border bg-success-surface text-xs font-semibold">
  Locked ✓
                         </Badge>
                       </td>
@@ -477,33 +477,33 @@ export function CashClosingView({
       {activeSubTab === 'variance' && (
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <Card className="rounded-xl border-border p-5 bg-card">
-            <span className="text-3xs uppercase font-semibold text-muted-foreground block">
+            <span className="text-xs uppercase font-semibold text-muted-foreground block">
               {tBilingual('Total Days Audited', 'মোট অডিটকৃত দিন')}
             </span>
             <span className="text-3xl font-black tabular-nums text-foreground mt-1 block">
               {cashClosings.length} {tBilingual('Days', 'দিন')}
             </span>
-            <p className="text-3xs text-muted-foreground mt-1">{tBilingual('100% daily register compliance', 'শতভাগ দৈনিক রেজিস্টার সম্পন্নের রেকর্ড')}</p>
+            <p className="text-xs text-muted-foreground mt-1">{tBilingual('100% daily register compliance', 'শতভাগ দৈনিক রেজিস্টার সম্পন্নের রেকর্ড')}</p>
           </Card>
 
           <Card className="rounded-xl border-border p-5 bg-card">
-            <span className="text-3xs uppercase font-semibold text-muted-foreground block">
+            <span className="text-xs uppercase font-semibold text-muted-foreground block">
               {tBilingual('Perfect Closings', 'নিখুঁত মিল')}
             </span>
-            <span className="text-3xl font-black tabular-nums text-emerald-600 dark:text-emerald-400 mt-1 block">
+            <span className="text-3xl font-black tabular-nums text-success text-success mt-1 block">
               {cashClosings.filter((c) => Math.abs(c.variance) <= 0.01).length} / {cashClosings.length || 1}
             </span>
-            <p className="text-3xs text-emerald-600 mt-1">{tBilingual('Zero variance audit days', 'কোনো অমিল ছাড়া দিন')}</p>
+            <p className="text-xs text-success mt-1">{tBilingual('Zero variance audit days', 'কোনো অমিল ছাড়া দিন')}</p>
           </Card>
 
           <Card className="rounded-xl border-border p-5 bg-card">
-            <span className="text-3xs uppercase font-semibold text-muted-foreground block">
+            <span className="text-xs uppercase font-semibold text-muted-foreground block">
               {tBilingual('Net Monthly Variance', 'নিট মাসিক অমিল')}
             </span>
-            <span className="text-3xl font-black tabular-nums text-rose-600 dark:text-rose-400 mt-1 block">
+            <span className="text-3xl font-black tabular-nums text-destructive text-destructive mt-1 block">
               ৳{cashClosings.reduce((s, c) => s + Number(c.variance || 0), 0).toLocaleString()}
             </span>
-            <p className="text-3xs text-muted-foreground mt-1">{tBilingual('Cumulative drawer discrepancy', 'মাসিক পুঞ্জীভূত ক্যাশ অমিল')}</p>
+            <p className="text-xs text-muted-foreground mt-1">{tBilingual('Cumulative drawer discrepancy', 'মাসিক পুঞ্জীভূত ক্যাশ অমিল')}</p>
           </Card>
         </div>
       )}

@@ -82,8 +82,8 @@ export function LimitExceededModal() {
  onOpenChange={(open) => !open && closeLimitExceededModal()}
  size="md"hideFooter
  title={
-        <div className="flex items-center gap-3 text-amber-600 dark:text-amber-400">
-          <div className="p-2.5 rounded-xl bg-amber-500/10 dark:bg-amber-950/60 border border-amber-500/20 text-amber-600 dark:text-amber-400 shadow-sm shrink-0">
+        <div className="flex items-center gap-3 text-warning text-warning">
+          <div className="p-2.5 rounded-xl bg-warning/10 bg-warning-surface/60 border border-warning-border/20 text-warning text-warning shadow-sm shrink-0">
             <Lock className="h-5 w-5"/>
           </div>
           <div>
@@ -102,19 +102,19 @@ export function LimitExceededModal() {
     >
       <div className="space-y-4 pt-1">
         {/* Quota Gauge */}
-        <div className="rounded-xl bg-gradient-to-b from-amber-50/80 to-amber-100/40 dark:from-amber-950/30 dark:to-amber-900/10 border border-amber-200/80 dark:border-amber-800/60 p-4 space-y-3 shadow-sm">
+        <div className="rounded-xl dark: dark: border border-warning-border/80 border-warning-border/60 p-4 space-y-3 shadow-sm">
           <div className="flex items-center justify-between text-xs font-semibold text-foreground bangla-text">
             <span className="flex items-center gap-1.5">
-              <Icon className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400"/>
+              <Icon className="h-3.5 w-3.5 text-warning text-warning"/>
               {tBilingual('Current Usage:', 'বর্তমান ব্যবহারের পরিমাণ:')}
             </span>
-            <Badge className="bg-amber-500 hover:bg-amber-500 text-foreground font-bold px-2.5 py-0.5 shadow-sm text-xs">
+            <Badge className="bg-warning hover:bg-warning text-foreground font-bold px-2.5 py-0.5 shadow-sm text-xs">
               {currentDisplay} / {limitDisplay} ({status.percentage}%)
             </Badge>
           </div>
 
-          <div className="w-full bg-amber-200/80 dark:bg-amber-950/80 rounded-full h-2.5 overflow-hidden p-0.5 border border-amber-300/40 dark:border-amber-800/40">
-            <div className="bg-gradient-to-r from-amber-500 to-orange-500 h-1.5 rounded-full w-full transition-all duration-500 shadow-sm"/>
+          <div className="w-full bg-warning/80 bg-warning-surface/80 rounded-full h-2.5 overflow-hidden p-0.5 border border-warning-border/40 border-warning-border/40">
+            <div className=" h-1.5 rounded-full w-full transition-all duration-500 shadow-sm"/>
           </div>
 
           <p className="text-xs font-medium text-foreground bangla-text leading-relaxed">
@@ -126,17 +126,17 @@ export function LimitExceededModal() {
         </div>
 
         {/* Upgrade Suggestion Box */}
-        <div className="rounded-xl bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-950 text-white p-4 space-y-2.5 shadow-xs border border-indigo-500/20 relative overflow-hidden">
+        <div className="rounded-xl text-white p-4 space-y-2.5 shadow-xs border border-primary/20/20 relative overflow-hidden">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="p-1 rounded-lg bg-amber-400/20 text-amber-400">
+              <div className="p-1 rounded-lg bg-warning/20 text-warning">
                 <Sparkles className="h-3.5 w-3.5"/>
               </div>
               <span className="text-xs font-bold uppercase tracking-wider text-foreground bangla-text">
                 {tBilingual('Recommended Upgrade', 'প্রস্তাবিত আপগ্রেড')}
               </span>
             </div>
-            <Badge className="bg-blue-600 hover:bg-blue-600 text-white text-2xs font-bold px-2.5 py-0.5 border border-blue-400/30 shadow-sm">
+            <Badge className="bg-primary hover:bg-primary text-white text-xs font-bold px-2.5 py-0.5 border border-border/30 shadow-sm">
               {tBilingual(nextPlan.name, nextPlan.name_bn)}
             </Badge>
           </div>
@@ -161,8 +161,8 @@ export function LimitExceededModal() {
 
           <Button
  type="button"size="sm"onClick={handleUpgradeClick}
- className="h-9 px-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs bangla-text shadow-xs shadow-blue-600/20 rounded-xl transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] cursor-pointer">
-            <Zap className="mr-1.5 h-3.5 w-3.5 text-amber-300 fill-amber-300"/>
+ className="h-9 px-4 hover: hover: text-white font-bold text-xs bangla-text shadow-xs shadow-blue-600/20 rounded-xl transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] cursor-pointer">
+            <Zap className="mr-1.5 h-3.5 w-3.5 text-warning fill-amber-300"/>
             {tBilingual(`Upgrade to ${nextPlan.name}`, `${nextPlan.name_bn} এ আপগ্রেড করুন`)}
             <ArrowRight className="ml-1.5 h-3.5 w-3.5"/>
           </Button>

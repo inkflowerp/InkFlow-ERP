@@ -83,6 +83,9 @@ begin
     if exists (select 1 from information_schema.tables where table_schema = 'public' and table_name = 'saas_tenant_storage_usage') then
         delete from public.saas_tenant_storage_usage where company_id = p_company_id;
     end if;
+    if exists (select 1 from information_schema.tables where table_schema = 'public' and table_name = 'tenant_dashboard_summaries') then
+        delete from public.tenant_dashboard_summaries where company_id = p_company_id;
+    end if;
     if exists (select 1 from information_schema.tables where table_schema = 'public' and table_name = 'platform_tenant_feature_flags') then
         delete from public.platform_tenant_feature_flags where company_id = p_company_id;
     end if;
@@ -197,6 +200,9 @@ begin
     end if;
     if exists (select 1 from information_schema.tables where table_schema = 'public' and table_name = 'notification_preferences') then
         delete from public.notification_preferences where tenant_id = p_company_id;
+    end if;
+    if exists (select 1 from information_schema.tables where table_schema = 'public' and table_name = 'notification_business_rules') then
+        delete from public.notification_business_rules where company_id = p_company_id;
     end if;
 
     -- E. Workforce, Shifts, Attendance & Payroll

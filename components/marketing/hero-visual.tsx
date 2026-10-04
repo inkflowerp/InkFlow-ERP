@@ -36,13 +36,13 @@ export function HeroVisual() {
             <span className="h-2.5 w-2.5 rounded-full bg-muted"/>
             <span className="h-2.5 w-2.5 rounded-full bg-muted"/>
           </div>
-          <span className="text-2xs font-semibold text-muted-foreground pl-2">
+          <span className="text-xs font-semibold text-muted-foreground pl-2">
  PrintERP • Connected Job Hub
           </span>
         </div>
 
-        <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-2xs font-semibold bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200/60 dark:border-blue-800/60">
-          <span className="h-1.5 w-1.5 rounded-full bg-blue-600 animate-pulse"/>
+        <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary/10 text-primary bg-primary/10 text-primary border border-primary/20/60 border-border/60">
+          <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse"/>
           <span>{tBilingual('Live Workflow Engine', 'লাইভ ওয়ার্কফ্লো ইঞ্জিন')}</span>
         </div>
       </div>
@@ -59,7 +59,7 @@ export function HeroVisual() {
  key={idx}
  className={`p-3 rounded-xl border flex flex-col justify-between transition-all ${
  isCurrent
-                    ? 'border-blue-500 bg-blue-50/50 dark:bg-blue-950/30 text-blue-900 dark:text-blue-100 shadow-sm ring-1 ring-blue-500/20'
+                    ? 'border-primary/20 bg-primary/10/50 bg-primary/10 text-primary text-primary shadow-sm ring-1 focus:ring-ring/20'
                     : 'border-border bg-muted text-foreground '
                 }`}
               >
@@ -67,13 +67,13 @@ export function HeroVisual() {
                   <div
  className={`h-7 w-7 rounded-lg flex items-center justify-center shrink-0 ${
  isCurrent
-                        ? 'bg-blue-600 text-white'
+                        ? 'bg-primary text-white'
                         : 'bg-muted text-muted-foreground '
                     }`}
                   >
                     <Icon className="h-3.5 w-3.5"/>
                   </div>
-                  <span className="text-2xs font-bold text-muted-foreground tabular-nums">
+                  <span className="text-xs font-bold text-muted-foreground tabular-nums">
                     0{idx + 1}
                   </span>
                 </div>
@@ -81,7 +81,7 @@ export function HeroVisual() {
                   <h4 className="text-xs font-bold truncate">
                     {tBilingual(stg.labelEn, stg.labelBn)}
                   </h4>
-                  <span className="text-2xs font-medium text-muted-foreground block truncate">
+                  <span className="text-xs font-medium text-muted-foreground block truncate">
                     {stg.status}
                   </span>
                 </div>
@@ -95,7 +95,7 @@ export function HeroVisual() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border">
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/80 px-2 py-0.5 rounded">
+                <span className="text-xs font-bold text-primary text-primary bg-primary/10 bg-primary/10 px-2 py-0.5 rounded">
  JOB-2026-084
                 </span>
                 <span className="text-xs font-semibold text-foreground">
@@ -111,8 +111,8 @@ export function HeroVisual() {
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"/>
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-success-surface text-success bg-success-surface/60 text-success border border-success-border border-success-border">
+                <span className="h-1.5 w-1.5 rounded-full bg-success"/>
                 {tBilingual('In Production (Flora Solvent)', 'মেশিনে রানিং (ফ্লোরা সলভেন্ট)')}
               </span>
             </div>
@@ -121,41 +121,41 @@ export function HeroVisual() {
           {/* 4 Representative Metrics */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
             <div className="p-3 rounded-lg bg-muted border border-border">
-              <span className="text-2xs text-muted-foreground block uppercase font-medium">Dimensions & Area</span>
+              <span className="text-xs text-muted-foreground block uppercase font-medium">Dimensions & Area</span>
               <span className="font-bold text-foreground text-sm tabular-nums mt-0.5 block">
                 20ft × 10ft (200 SFT)
               </span>
-              <span className="text-2xs text-muted-foreground">Star Flex 380 GSM</span>
+              <span className="text-xs text-muted-foreground">Star Flex 380 GSM</span>
             </div>
 
             <div className="p-3 rounded-lg bg-muted border border-border">
-              <span className="text-2xs text-muted-foreground block uppercase font-medium">Roll Deduction</span>
+              <span className="text-xs text-muted-foreground block uppercase font-medium">Roll Deduction</span>
               <span className="font-bold text-foreground text-sm tabular-nums mt-0.5 block">
  Roll #SF-10-04
               </span>
-              <span className="text-2xs text-emerald-600 dark:text-emerald-400 font-medium">200 SFT deducted + 5% scrap</span>
+              <span className="text-xs text-success text-success font-medium">200 SFT deducted + 5% scrap</span>
             </div>
 
             <div className="p-3 rounded-lg bg-muted border border-border">
-              <span className="text-2xs text-muted-foreground block uppercase font-medium">Delivery Challan</span>
+              <span className="text-xs text-muted-foreground block uppercase font-medium">Delivery Challan</span>
               <span className="font-bold text-foreground text-sm tabular-nums mt-0.5 block">
  CH-084 (Ready)
               </span>
-              <span className="text-2xs text-muted-foreground">Dispatch with fitting team</span>
+              <span className="text-xs text-muted-foreground">Dispatch with fitting team</span>
             </div>
 
             <div className="p-3 rounded-lg bg-muted border border-border">
-              <span className="text-2xs text-muted-foreground block uppercase font-medium">Account Status</span>
+              <span className="text-xs text-muted-foreground block uppercase font-medium">Account Status</span>
               <span className="font-bold text-foreground text-sm tabular-nums mt-0.5 block">
                 ৳ 18,500 Total
               </span>
-              <span className="text-2xs text-blue-600 dark:text-blue-400 font-medium">৳ 10,000 Paid • ৳ 8,500 Due</span>
+              <span className="text-xs text-primary text-primary font-medium">৳ 10,000 Paid • ৳ 8,500 Due</span>
             </div>
           </div>
         </div>
 
         {/* Representative Notice Tag */}
-        <div className="flex items-center justify-between text-2xs text-muted-foreground pt-1">
+        <div className="flex items-center justify-between text-xs text-muted-foreground pt-1">
           <span>* Representative workflow structure illustrating actual application data models.</span>
           <span className="hidden sm:inline">No fabricated statistics or vanity metrics.</span>
         </div>

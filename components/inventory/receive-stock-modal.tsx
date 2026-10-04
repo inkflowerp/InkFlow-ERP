@@ -285,49 +285,49 @@ export function getPhysicalFormBadge(form: MasterPhysicalForm) {
  label: 'Roll Media',
  labelBn: 'রোল মিডিয়া',
  icon: Disc,
- badgeStyle: 'bg-cyan-50 text-cyan-800 border-cyan-200 dark:bg-cyan-950/60 dark:text-cyan-300 dark:border-cyan-800',
+ badgeStyle: 'bg-info-surface text-primary border-primary/20 bg-primary/10 text-primary border-border',
       }
  case 'sheet':
  return {
  label: 'Rigid Sheet',
  labelBn: 'রিজিড শিট',
  icon: Layers,
- badgeStyle: 'bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800',
+ badgeStyle: 'bg-warning-surface text-warning border-warning-border bg-warning-surface/60 text-warning border-warning-border',
       }
  case 'liquid':
  return {
  label: 'Inks & Chemistry',
  labelBn: 'কালি ও কেমিক্যাল',
  icon: Droplets,
- badgeStyle: 'bg-purple-50 text-purple-800 border-purple-200 dark:bg-purple-950/60 dark:text-purple-300 dark:border-purple-800',
+ badgeStyle: 'bg-primary/10 text-primary border-primary/20 bg-primary/10 text-primary border-border',
       }
  case 'hardware':
  return {
  label: 'Display Hardware',
  labelBn: 'ডিসপ্লে হার্ডওয়্যার',
  icon: Wrench,
- badgeStyle: 'bg-indigo-50 text-indigo-800 border-indigo-200 dark:bg-indigo-950/60 dark:text-indigo-300 dark:border-indigo-800',
+ badgeStyle: 'bg-primary/10 text-primary border-primary/20 bg-primary/10 text-primary border-border',
       }
  case 'piece':
  return {
  label: 'Piece Item',
  labelBn: 'পিস আইটেম',
  icon: Package,
- badgeStyle: 'bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800',
+ badgeStyle: 'bg-success-surface text-success border-success-border bg-success-surface/60 text-success border-success-border',
       }
  case 'box_pack':
  return {
  label: 'Boxed / Pack',
  labelBn: 'প্যাকেট ও বক্স',
  icon: Box,
- badgeStyle: 'bg-blue-50 text-blue-800 border-blue-200 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800',
+ badgeStyle: 'bg-primary/10 text-primary border-primary/20 bg-primary/10 text-primary border-border',
       }
  case 'weight':
  return {
  label: 'Weight / Mass',
  labelBn: 'ওজন ভিত্তিক',
  icon: Ruler,
- badgeStyle: 'bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800',
+ badgeStyle: 'bg-success-surface text-success border-success-border bg-success-surface/60 text-success border-success-border',
       }
  default:
  return {
@@ -1823,7 +1823,7 @@ export function ReceiveStockModal({
  size="4xl"onSubmit={handleSubmit}
  title={
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-linear-to-br from-emerald-500 to-teal-700 text-white shadow-xs flex items-center justify-center font-bold shrink-0">
+          <div className="h-10 w-10 rounded-xl bg-primary text-primary-foreground shadow-xs flex items-center justify-center font-bold shrink-0">
             <Truck className="h-5 w-5"/>
           </div>
           <div>
@@ -1836,7 +1836,7 @@ export function ReceiveStockModal({
                   : tBilingual('Direct Stock Intake & Price Intelligence', 'সরাসরি পণ্য বা কাঁচামাল গ্রহণ')}
               </h2>
               <Badge
- variant="outline"className="text-2xs uppercase tabular-nums py-0.5 px-2 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-700">
+ variant="outline"className="text-xs uppercase tabular-nums py-0.5 px-2 bg-success-surface bg-success-surface/60 text-success text-success border-success-border border-success-border">
  Inward Gate & Master Sync
               </Badge>
             </div>
@@ -1862,7 +1862,7 @@ export function ReceiveStockModal({
           <div className="flex items-center gap-3 w-full sm:w-auto">
             <Button
  type="submit"disabled={loading}
- className="w-full sm:w-auto min-h-[40px] text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-7 shadow-xs cursor-pointer">
+ className="w-full sm:w-auto min-h-[40px] text-xs bg-success hover:bg-success/90 text-success-foreground font-bold px-7 shadow-xs cursor-pointer">
               {loading ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-1.5 animate-spin"/>
@@ -1888,16 +1888,16 @@ export function ReceiveStockModal({
       <div className="space-y-4 pt-1 pb-2">
         {/* Success Alert */}
         {successMsg && (
-          <div className="p-3.5 bg-emerald-50 text-emerald-900 dark:bg-emerald-950/50 dark:text-emerald-200 rounded-xl border border-emerald-300 dark:border-emerald-800 text-xs flex items-center gap-2 animate-in fade-in-0">
-            <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0"/>
+          <div className="p-3.5 bg-success-surface text-success bg-success-surface text-success rounded-xl border border-success-border border-success-border text-xs flex items-center gap-2 animate-in fade-in-0">
+            <CheckCircle2 className="h-4 w-4 text-success shrink-0"/>
             <span className="font-semibold">{successMsg}</span>
           </div>
         )}
 
         {/* Error Alert */}
         {error && (
-          <div className="p-3.5 bg-rose-50 text-rose-900 dark:bg-rose-950/50 dark:text-rose-200 rounded-xl border border-rose-300 dark:border-rose-800 text-xs flex items-center gap-2 animate-in fade-in-0">
-            <AlertTriangle className="h-4 w-4 text-rose-600 shrink-0"/>
+          <div className="p-3.5 bg-danger-surface text-destructive bg-danger-surface text-destructive rounded-xl border border-danger-border border-danger-border text-xs flex items-center gap-2 animate-in fade-in-0">
+            <AlertTriangle className="h-4 w-4 text-destructive shrink-0"/>
             <span className="font-medium">{error}</span>
           </div>
         )}
@@ -1919,7 +1919,7 @@ export function ReceiveStockModal({
  className={cn(
               'flex items-center justify-center gap-2 py-2 px-3 rounded-lg font-bold transition-all text-center cursor-pointer',
  mode === 'po'
-                ? 'bg-card text-emerald-700 dark:text-emerald-400 shadow-xs'
+                ? 'bg-card text-success text-success shadow-xs'
                 : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
             )}
           >
@@ -1932,7 +1932,7 @@ export function ReceiveStockModal({
  className={cn(
               'flex items-center justify-center gap-2 py-2 px-3 rounded-lg font-bold transition-all text-center cursor-pointer',
  mode === 'direct'
-                ? 'bg-card text-emerald-700 dark:text-emerald-400 shadow-xs'
+                ? 'bg-card text-success text-success shadow-xs'
                 : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
             )}
           >
@@ -1945,7 +1945,7 @@ export function ReceiveStockModal({
  className={cn(
               'flex items-center justify-center gap-2 py-2 px-3 rounded-lg font-bold transition-all text-center cursor-pointer',
  mode === 'opening'
-                ? 'bg-card text-emerald-700 dark:text-emerald-400 shadow-xs'
+                ? 'bg-card text-success text-success shadow-xs'
                 : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
             )}
           >
@@ -1962,7 +1962,7 @@ export function ReceiveStockModal({
           <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs animate-in fade-in-50 duration-200">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
               <div className="flex items-center gap-2">
-                <FileText className="h-4 w-4 text-emerald-600 dark:text-emerald-400"/>
+                <FileText className="h-4 w-4 text-success text-success"/>
                 <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
                   {tBilingual('Select Inward Purchase Order', 'ক্রয় আদেশ নির্বাচন')}
                 </h3>
@@ -1972,13 +1972,13 @@ export function ReceiveStockModal({
                 <div className="flex items-center gap-2">
                   <Button
  type="button"size="sm"variant="outline"onClick={handleReceiveAllRemaining}
- className="h-7 text-2xs font-semibold text-foreground border-border hover:bg-muted dark:text-emerald-300 dark:border-emerald-700 cursor-pointer">
+ className="h-7 text-xs font-semibold text-foreground border-border hover:bg-muted text-success border-success-border cursor-pointer">
                     <CheckCheck className="h-3.5 w-3.5 mr-1"/>
                     {tBilingual('Receive All Remaining', 'সব গ্রহণ')}
                   </Button>
                   <Button
  type="button"size="sm"variant="ghost"onClick={handleClearAllPo}
- className="h-7 text-2xs font-medium text-muted-foreground hover:text-foreground cursor-pointer">
+ className="h-7 text-xs font-medium text-muted-foreground hover:text-foreground cursor-pointer">
                     <RotateCcw className="h-3.5 w-3.5 mr-1"/>
                     {tBilingual('Clear All', 'মুছুন')}
                   </Button>
@@ -1989,7 +1989,7 @@ export function ReceiveStockModal({
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div className="sm:col-span-1">
                 <Label className="text-xs font-semibold mb-1 block">
-                  {tBilingual('Intake / Received Date', 'গ্রহণের তারিখ')} <span className="text-rose-500">*</span>
+                  {tBilingual('Intake / Received Date', 'গ্রহণের তারিখ')} <span className="text-destructive">*</span>
                 </Label>
                 <Input
  type="date"value={receivedDate}
@@ -1999,7 +1999,7 @@ export function ReceiveStockModal({
               </div>
               <div className="sm:col-span-2">
                 <Label className="text-xs font-semibold mb-1 block">
-                  {tBilingual('Inward Purchase Order (PO)', 'ক্রয় আদেশ')} <span className="text-rose-500">*</span>
+                  {tBilingual('Inward Purchase Order (PO)', 'ক্রয় আদেশ')} <span className="text-destructive">*</span>
                 </Label>
                 <select
  value={selectedPoId || currentPo?.id || ''}
@@ -2018,27 +2018,27 @@ export function ReceiveStockModal({
 
             {/* PO Intel Banner */}
             {currentPo && (
-              <div className="p-3 bg-emerald-50/60 dark:bg-emerald-950/30 rounded-xl border border-emerald-200 dark:border-emerald-800 grid grid-cols-1 sm:grid-cols-4 gap-2 text-xs">
+              <div className="p-3 bg-success-surface/60 bg-success-surface rounded-xl border border-success-border border-success-border grid grid-cols-1 sm:grid-cols-4 gap-2 text-xs">
                 <div>
-                  <span className="text-2xs text-muted-foreground block font-semibold">Vendor:</span>
+                  <span className="text-xs text-muted-foreground block font-semibold">Vendor:</span>
                   <span className="font-bold text-foreground mt-0.5 block truncate">
                     {currentPo.supplier_name}
                   </span>
                 </div>
                 <div>
-                  <span className="text-2xs text-muted-foreground block font-semibold">PO Number:</span>
-                  <span className="tabular-nums font-bold text-emerald-700 dark:text-emerald-400 mt-0.5 block">
+                  <span className="text-xs text-muted-foreground block font-semibold">PO Number:</span>
+                  <span className="tabular-nums font-bold text-success text-success mt-0.5 block">
                     {currentPo.po_number}
                   </span>
                 </div>
                 <div>
-                  <span className="text-2xs text-muted-foreground block font-semibold">Expected Date:</span>
+                  <span className="text-xs text-muted-foreground block font-semibold">Expected Date:</span>
                   <span className="tabular-nums text-foreground mt-0.5 block">
                     {currentPo.expected_delivery_date || currentPo.po_date}
                   </span>
                 </div>
                 <div>
-                  <span className="text-2xs text-muted-foreground block font-semibold">PO Total Value:</span>
+                  <span className="text-xs text-muted-foreground block font-semibold">PO Total Value:</span>
                   <span className="tabular-nums font-bold text-foreground mt-0.5 block">
                     {formatBDT(currentPo.grand_total)}
                   </span>
@@ -2065,19 +2065,19 @@ export function ReceiveStockModal({
                         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                           <div>
                             <div className="font-bold text-foreground text-sm">{row.material_name}</div>
-                            <div className="text-2xs text-muted-foreground tabular-nums mt-0.5">
+                            <div className="text-xs text-muted-foreground tabular-nums mt-0.5">
  PO Order: {row.quantity_ordered} {row.unit} | Received: {row.quantity_received} | Remaining:{' '}
-                              <span className="font-bold text-emerald-600">{row.quantity_remaining} {row.unit}</span>
+                              <span className="font-bold text-success">{row.quantity_remaining} {row.unit}</span>
                             </div>
                           </div>
 
                           <div className="flex items-center gap-2">
                             {row.roll_width_ft ? (
-                              <Badge variant="outline"className="text-2xs tabular-nums text-cyan-700 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-950/40 border-cyan-200 dark:border-cyan-800">
+                              <Badge variant="outline"className="text-xs tabular-nums text-primary text-primary bg-info-surface bg-primary/10 border-primary/20 border-border">
  Roll: {row.roll_width_ft}ft × {row.roll_length_ft || 164}ft
                               </Badge>
                             ) : null}
-                            <Badge variant="outline"className="text-2xs tabular-nums">
+                            <Badge variant="outline"className="text-xs tabular-nums">
  Rate: {formatBDT(row.unit_cost)} / {row.unit}
                             </Badge>
                           </div>
@@ -2087,34 +2087,34 @@ export function ReceiveStockModal({
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                           <div>
                             <div className="flex items-center justify-between mb-0.5">
-                              <Label className="text-2xs text-muted-foreground block">Accepted Qty ({row.unit})</Label>
+                              <Label className="text-xs text-muted-foreground block">Accepted Qty ({row.unit})</Label>
                               {row.quantity_remaining > 0 && Number(row.accepted_quantity || 0) > row.quantity_remaining && (
-                                <span className="text-3xs font-semibold text-amber-600 bg-amber-50 dark:bg-amber-950/40 px-1 rounded">Over-receipt</span>
+                                <span className="text-xs font-semibold text-warning bg-warning-surface bg-warning-surface px-1 rounded">Over-receipt</span>
                               )}
                             </div>
                             <Input
  type="number"step="any"min="0"value={row.accepted_quantity ?? ''}
  onChange={(e) => handlePoRowChange(idx, 'accepted_quantity', e.target.value)}
- className="h-8 text-xs tabular-nums font-bold border-emerald-300 dark:border-emerald-700"placeholder={String(row.quantity_remaining || 0)}
+ className="h-8 text-xs tabular-nums font-bold border-success-border border-success-border"placeholder={String(row.quantity_remaining || 0)}
                             />
                           </div>
                           <div>
-                            <Label className="text-2xs text-muted-foreground mb-0.5 block">Rejected Qty</Label>
+                            <Label className="text-xs text-muted-foreground mb-0.5 block">Rejected Qty</Label>
                             <Input
  type="number"step="any"min="0"value={row.rejected_quantity ?? ''}
  onChange={(e) => handlePoRowChange(idx, 'rejected_quantity', e.target.value)}
- className="h-8 text-xs tabular-nums text-rose-600"placeholder="0"/>
+ className="h-8 text-xs tabular-nums text-destructive"placeholder="0"/>
                           </div>
                           <div>
-                            <Label className="text-2xs text-muted-foreground mb-0.5 block">Batch / Roll Lot #</Label>
+                            <Label className="text-xs text-muted-foreground mb-0.5 block">Batch / Roll Lot #</Label>
                             <Input
  placeholder="e.g. Lot-108"value={row.batch_lot_number || ''}
  onChange={(e) => handlePoRowChange(idx, 'batch_lot_number', e.target.value)}
  className="h-8 text-xs tabular-nums"/>
                           </div>
                           <div>
-                            <Label className="text-2xs text-muted-foreground mb-0.5 block">Inward Value (৳)</Label>
-                            <div className="h-8 px-3 rounded-md bg-emerald-50/80 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 flex items-center tabular-nums font-bold text-emerald-700 dark:text-emerald-300">
+                            <Label className="text-xs text-muted-foreground mb-0.5 block">Inward Value (৳)</Label>
+                            <div className="h-8 px-3 rounded-md bg-success-surface/80 bg-success-surface/60 border border-success-border border-success-border flex items-center tabular-nums font-bold text-success text-success">
                               {formatBDT(lineAcceptedVal)}
                             </div>
                           </div>
@@ -2123,40 +2123,40 @@ export function ReceiveStockModal({
                         {/* COST & PRICING INTELLIGENCE PANEL */}
                         <div className="p-3 bg-card rounded-lg border border-border space-y-2">
                           <div className="flex items-center justify-between">
-                            <span className="text-2xs font-bold text-foreground flex items-center gap-1.5">
-                              <Sparkles className="h-3.5 w-3.5 text-amber-500"/>
+                            <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                              <Sparkles className="h-3.5 w-3.5 text-warning"/>
  Commercial Master Price Intelligence & Sync
                             </span>
-                            <label className="flex items-center gap-1.5 text-2xs font-semibold text-emerald-700 dark:text-emerald-400 cursor-pointer">
+                            <label className="flex items-center gap-1.5 text-xs font-semibold text-success text-success cursor-pointer">
                               <input
  type="checkbox"checked={row.update_master_pricing}
  onChange={(e) => handlePoRowChange(idx, 'update_master_pricing', e.target.checked)}
- className="rounded text-emerald-600 focus:ring-emerald-500 h-3.5 w-3.5"/>
+ className="rounded text-success focus:ring-ring h-3.5 w-3.5"/>
  Sync Master Pricing
                             </label>
                           </div>
 
                           <div className="grid grid-cols-1 sm:grid-cols-4 gap-2 pt-1">
                             <div>
-                              <span className="text-2xs text-muted-foreground block">Previous Cost:</span>
+                              <span className="text-xs text-muted-foreground block">Previous Cost:</span>
                               <div className="tabular-nums text-xs font-semibold text-foreground">
                                 {formatBDT(row.previous_cost)} / {row.unit}
                               </div>
                             </div>
 
                             <div>
-                              <span className="text-2xs text-muted-foreground block">PO Inward Cost:</span>
+                              <span className="text-xs text-muted-foreground block">PO Inward Cost:</span>
                               <div className="flex items-center gap-1.5">
-                                <span className="tabular-nums text-xs font-bold text-emerald-600">
+                                <span className="tabular-nums text-xs font-bold text-success">
                                   {formatBDT(row.unit_cost)}
                                 </span>
                                 {costVariance !== 0 && (
                                   <Badge
  variant="outline"className={cn(
-                                      'text-2xs px-1 py-0 tabular-nums font-bold',
+                                      'text-xs px-1 py-0 tabular-nums font-bold',
  costVariance > 0
-                                        ? 'bg-rose-50 text-rose-700 border-rose-200'
-                                        : 'bg-emerald-50 text-foreground border-border'
+                                        ? 'bg-danger-surface text-destructive border-danger-border'
+                                        : 'bg-success-surface text-foreground border-border'
                                     )}
                                   >
                                     {costVariance > 0 ? `+${costVariance}% ↗` : `${costVariance}% ↘`}
@@ -2166,20 +2166,20 @@ export function ReceiveStockModal({
                             </div>
 
                             <div>
-                              <span className="text-2xs text-muted-foreground block">Previous Price:</span>
+                              <span className="text-xs text-muted-foreground block">Previous Price:</span>
                               <div className="tabular-nums text-xs text-muted-foreground">
                                 {formatBDT(row.previous_selling_price)}
                               </div>
                             </div>
 
                             <div>
-                              <span className="text-2xs text-muted-foreground block">New Selling Price:</span>
+                              <span className="text-xs text-muted-foreground block">New Selling Price:</span>
                               <div className="flex items-center gap-1.5">
                                 <Input
  type="number"step="any"min="0"value={row.new_selling_price ?? ''}
  onChange={(e) => handlePoRowChange(idx, 'new_selling_price', e.target.value)}
  className="h-7 text-xs tabular-nums font-bold w-24"/>
-                                <Badge variant="secondary"className="text-2xs px-1.5 py-0 tabular-nums">
+                                <Badge variant="secondary"className="text-xs px-1.5 py-0 tabular-nums">
  Margin: {row.target_margin_percent}%
                                 </Badge>
                               </div>
@@ -2192,7 +2192,7 @@ export function ReceiveStockModal({
                 </div>
 
                 {/* GRN Summary Banner */}
-                <div className="p-3.5 rounded-xl bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 flex justify-between items-center text-xs">
+                <div className="p-3.5 rounded-xl bg-success-surface/70 bg-success-surface border border-success-border border-success-border flex justify-between items-center text-xs">
                   <div>
                     <span className="text-muted-foreground">Intake Lines Accepted:</span>
                     <div className="tabular-nums text-foreground font-bold">
@@ -2200,8 +2200,8 @@ export function ReceiveStockModal({
                     </div>
                   </div>
                   <div className="text-right">
-                    <span className="text-2xs text-muted-foreground uppercase font-bold tracking-wider">Accepted GRN Value</span>
-                    <div className="text-xl font-black text-emerald-700 dark:text-emerald-400 tabular-nums">
+                    <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Accepted GRN Value</span>
+                    <div className="text-xl font-black text-success text-success tabular-nums">
                       {formatBDT(poTotalAcceptedValuation)}
                     </div>
                   </div>
@@ -2218,7 +2218,7 @@ export function ReceiveStockModal({
           <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs animate-in fade-in-50 duration-200">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5">
               <div className="flex items-center gap-2">
-                <Package className="h-4 w-4 text-emerald-600 dark:text-emerald-400"/>
+                <Package className="h-4 w-4 text-success text-success"/>
                 <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
                   {mode === 'opening'
                     ? tBilingual('Opening Stock Items & Valuation Masters', 'প্রারম্ভিক স্টক আইটেম ও দরপত্র মাস্টার')
@@ -2228,7 +2228,7 @@ export function ReceiveStockModal({
 
               <Button
  type="button"size="sm"variant="outline"onClick={handleAddDirectItem}
- className="h-7 text-xs font-bold text-foreground border-border hover:bg-muted dark:text-emerald-300 dark:border-emerald-700 cursor-pointer">
+ className="h-7 text-xs font-bold text-foreground border-border hover:bg-muted text-success border-success-border cursor-pointer">
                 <Plus className="h-3.5 w-3.5 mr-1"/>
                 {tBilingual('Add Line', 'নতুন আইটেম')}
               </Button>
@@ -2239,7 +2239,7 @@ export function ReceiveStockModal({
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pb-3 border-b border-border">
                 <div>
                   <Label className="text-xs font-semibold mb-1 block">
-                    {tBilingual('Intake / Received Date', 'গ্রহণের তারিখ')} <span className="text-rose-500">*</span>
+                    {tBilingual('Intake / Received Date', 'গ্রহণের তারিখ')} <span className="text-destructive">*</span>
                   </Label>
                   <Input
  type="date"value={receivedDate}
@@ -2279,7 +2279,7 @@ export function ReceiveStockModal({
             {mode === 'opening' && (
               <div className="max-w-xs pb-3 border-b border-border">
                 <Label className="text-xs font-semibold mb-1 block">
-                  {tBilingual('Opening Balance Date', 'প্রারম্ভিক ব্যালেন্সের তারিখ')} <span className="text-rose-500">*</span>
+                  {tBilingual('Opening Balance Date', 'প্রারম্ভিক ব্যালেন্সের তারিখ')} <span className="text-destructive">*</span>
                 </Label>
                 <Input
  type="date"value={receivedDate}
@@ -2313,7 +2313,7 @@ export function ReceiveStockModal({
                     {/* Item Header (Clean, top badges removed) */}
                     <div className="flex items-center justify-between gap-2 border-b border-border /80 pb-2">
                       <div className="flex items-center gap-2">
-                        <span className="h-5 w-5 rounded-md bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-200 tabular-nums font-bold flex items-center justify-center text-2xs">
+                        <span className="h-5 w-5 rounded-md bg-success-surface text-success bg-success/60 text-success tabular-nums font-bold flex items-center justify-center text-xs">
                           #{idx + 1}
                         </span>
                         <span className="font-bold text-foreground">
@@ -2324,7 +2324,7 @@ export function ReceiveStockModal({
                       {directItems.length > 1 && (
                         <button
  type="button"onClick={() => handleRemoveDirectItem(idx)}
- className="text-rose-500 hover:text-rose-700 p-1 rounded hover:bg-rose-50 dark:hover:bg-rose-950/50 cursor-pointer"title="Remove item">
+ className="text-destructive hover:text-destructive p-1 rounded hover:bg-danger-surface dark:hover:bg-danger-surface cursor-pointer"title="Remove item">
                           <Trash2 className="h-3.5 w-3.5"/>
                         </button>
                       )}
@@ -2334,13 +2334,13 @@ export function ReceiveStockModal({
                     <div className="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
                       {/* 1. Registered Material Master Dropdown (No Free-Text) */}
                       <div className="sm:col-span-6">
-                        <Label className="text-2xs font-semibold text-foreground mb-0.5 block">
- Material Name (Registered Master) <span className="text-rose-500">*</span>
+                        <Label className="text-xs font-semibold text-foreground mb-0.5 block">
+ Material Name (Registered Master) <span className="text-destructive">*</span>
                         </Label>
                         <select
  value={item.material_id}
  onChange={(e) => handleDirectItemChange(idx, 'material_id', e.target.value)}
- className="w-full h-9 rounded-lg border border-input bg-card px-2.5 text-xs font-medium focus:ring-2 focus:ring-emerald-500"required
+ className="w-full h-9 rounded-lg border border-input bg-card px-2.5 text-xs font-medium focus:ring-2 focus:ring-ring"required
                         >
                           <option value="">-- Select Registered Material Master --</option>
                           {Object.entries(groupedCatalog).map(([grpName, grpItems]) => (
@@ -2367,14 +2367,14 @@ export function ReceiveStockModal({
 
                       {/* 2. Active Configured Roll/Sheet Sizes & Discrete Economics Dropdown */}
                       <div className="sm:col-span-6">
-                        <Label className="text-2xs font-semibold text-foreground mb-0.5 block">
- Active Configured Size & Economics <span className="text-rose-500">*</span>
+                        <Label className="text-xs font-semibold text-foreground mb-0.5 block">
+ Active Configured Size & Economics <span className="text-destructive">*</span>
                         </Label>
                         {item.configured_sizes && item.configured_sizes.length > 0 ? (
                           <select
  value={item.selected_size_id || item.configured_sizes[0]?.id}
  onChange={(e) => handleSelectConfiguredSize(idx, e.target.value)}
- className="w-full h-9 rounded-lg border border-indigo-200 dark:border-indigo-800 bg-indigo-50/40 dark:bg-indigo-950/30 px-2.5 text-xs font-semibold text-indigo-950 dark:text-indigo-200">
+ className="w-full h-9 rounded-lg border border-primary/20 border-border bg-primary/10/40 bg-primary/10 px-2.5 text-xs font-semibold text-primary text-primary">
                             {item.configured_sizes.map((sz) => {
  let ecoDetail = ''
  if (sz.default_supplier_price && sz.default_supplier_price > 0) {
@@ -2409,29 +2409,29 @@ export function ReceiveStockModal({
                     <div className="grid grid-cols-1 sm:grid-cols-4 gap-2.5">
                       {/* Quantity */}
                       <div>
-                        <Label className="text-2xs font-semibold text-muted-foreground mb-0.5 block">
- Quantity ({item.unit || 'Roll'}) <span className="text-rose-500">*</span>
+                        <Label className="text-xs font-semibold text-muted-foreground mb-0.5 block">
+ Quantity ({item.unit || 'Roll'}) <span className="text-destructive">*</span>
                         </Label>
                         <Input
  type="number"step="any"min="0.01"value={item.quantity === 0 ? '' : item.quantity}
  onChange={(e) => handleDirectItemChange(idx, 'quantity', e.target.value === '' ? 0 : Number(e.target.value))}
- placeholder="1"className="h-9 text-xs font-bold tabular-nums border-emerald-300 dark:border-emerald-700"required
+ placeholder="1"className="h-9 text-xs font-bold tabular-nums border-success-border border-success-border"required
                         />
                       </div>
 
                       {/* Unit Purchase Price (Discrete Supplier Rate) */}
                       <div>
                         <div className="flex items-center justify-between mb-0.5">
-                          <Label className="text-2xs font-semibold text-muted-foreground block">
- Unit Purchase Price (৳) <span className="text-rose-500">*</span>
+                          <Label className="text-xs font-semibold text-muted-foreground block">
+ Unit Purchase Price (৳) <span className="text-destructive">*</span>
                           </Label>
                           {item.cost_variance_percent !== 0 && (
                             <Badge
  variant="outline"className={cn(
-                                'text-2xs px-1 py-0 tabular-nums font-bold',
+                                'text-xs px-1 py-0 tabular-nums font-bold',
  isVariancePositive
-                                  ? 'bg-rose-50 text-rose-700 border-rose-200'
-                                  : 'bg-emerald-50 text-foreground border-border'
+                                  ? 'bg-danger-surface text-destructive border-danger-border'
+                                  : 'bg-success-surface text-foreground border-border'
                               )}
                             >
                               {isVariancePositive ? `+${item.cost_variance_percent}% ↗` : `${item.cost_variance_percent}% ↘`}
@@ -2441,23 +2441,23 @@ export function ReceiveStockModal({
                         <Input
  type="number"step="any"min="0"value={item.unit_cost === 0 ? '' : item.unit_cost}
  onChange={(e) => handleDirectItemChange(idx, 'unit_cost', e.target.value === '' ? 0 : Number(e.target.value))}
- placeholder="0.00"className="h-9 text-xs font-bold tabular-nums bg-card border-emerald-300 dark:border-emerald-700"required
+ placeholder="0.00"className="h-9 text-xs font-bold tabular-nums bg-card border-success-border border-success-border"required
                         />
                       </div>
 
                       {/* Inward Total Cost */}
                       <div>
-                        <Label className="text-2xs font-semibold text-muted-foreground mb-0.5 block">
+                        <Label className="text-xs font-semibold text-muted-foreground mb-0.5 block">
  Total Value (৳)
                         </Label>
-                        <div className="h-9 px-3 rounded-lg bg-emerald-50/80 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 flex items-center tabular-nums font-bold text-emerald-700 dark:text-emerald-300 text-sm">
+                        <div className="h-9 px-3 rounded-lg bg-success-surface/80 bg-success-surface/60 border border-success-border border-success-border flex items-center tabular-nums font-bold text-success text-success text-sm">
                           {formatBDT(item.total_cost)}
                         </div>
                       </div>
 
                       {/* Batch / Lot / Challan Tag */}
                       <div>
-                        <Label className="text-2xs text-muted-foreground mb-0.5 block">Batch / Lot / Roll Tag</Label>
+                        <Label className="text-xs text-muted-foreground mb-0.5 block">Batch / Lot / Roll Tag</Label>
                         <Input
  placeholder="e.g. Lot-1024"value={item.batch_lot_number}
  onChange={(e) => handleDirectItemChange(idx, 'batch_lot_number', e.target.value)}
@@ -2479,7 +2479,7 @@ export function ReceiveStockModal({
             </div>
 
             {/* Direct Total Summary Banner */}
-            <div className="p-3.5 rounded-xl bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 flex justify-between items-center text-xs">
+            <div className="p-3.5 rounded-xl bg-success-surface/70 bg-success-surface border border-success-border border-success-border flex justify-between items-center text-xs">
               <div>
                 <span className="text-muted-foreground">Total Lines Configured:</span>
                 <div className="tabular-nums text-foreground font-bold">
@@ -2487,8 +2487,8 @@ export function ReceiveStockModal({
                 </div>
               </div>
               <div className="text-right">
-                <span className="text-2xs text-muted-foreground uppercase font-bold tracking-wider">Total Inward Valuation</span>
-                <div className="text-xl font-black text-emerald-700 dark:text-emerald-400 tabular-nums">
+                <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Total Inward Valuation</span>
+                <div className="text-xl font-black text-success text-success tabular-nums">
                   {formatBDT(directTotalValuation)}
                 </div>
               </div>
@@ -2505,7 +2505,7 @@ export function ReceiveStockModal({
  rows={2}
  placeholder="e.g. Physical stock inspected; rates cross-checked against market invoices; verified by store officer..."value={notes}
  onChange={(e) => setNotes(e.target.value)}
- className="w-full rounded-lg border border-input bg-card p-2.5 text-xs text-foreground focus:outline-hidden focus:ring-2 focus:ring-emerald-500"/>
+ className="w-full rounded-lg border border-input bg-card p-2.5 text-xs text-foreground focus:outline-hidden focus:ring-2 focus:ring-ring"/>
         </div>
       </div>
     </ModalDialog>

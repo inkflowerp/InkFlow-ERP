@@ -22,6 +22,8 @@ export const DEFAULT_SYSTEM_ROLES: RoleRow[] = [
     slug: 'business_owner',
     description: 'Universal administrative authority and organization governance.',
     is_system: true,
+    is_active: true,
+    permissions_count: 0,
     created_at: '2026-01-01T00:00:00.000Z',
   },
   {
@@ -32,6 +34,8 @@ export const DEFAULT_SYSTEM_ROLES: RoleRow[] = [
     slug: 'sales_manager',
     description: 'Quotations, pricing, customer relations, invoicing, and order handling.',
     is_system: true,
+    is_active: true,
+    permissions_count: 0,
     created_at: '2026-01-01T00:00:00.000Z',
   },
   {
@@ -42,6 +46,8 @@ export const DEFAULT_SYSTEM_ROLES: RoleRow[] = [
     slug: 'designer',
     description: 'Artwork proofs, customer approvals, pre-press checks, and design revisions.',
     is_system: true,
+    is_active: true,
+    permissions_count: 0,
     created_at: '2026-01-01T00:00:00.000Z',
   },
   {
@@ -52,6 +58,8 @@ export const DEFAULT_SYSTEM_ROLES: RoleRow[] = [
     slug: 'production_manager',
     description: 'Plant machine queues, raw media allocation, stages, and quality control.',
     is_system: true,
+    is_active: true,
+    permissions_count: 0,
     created_at: '2026-01-01T00:00:00.000Z',
   },
   {
@@ -62,6 +70,8 @@ export const DEFAULT_SYSTEM_ROLES: RoleRow[] = [
     slug: 'operator',
     description: 'Floor press runs, finishing works, task completions, and machine logs.',
     is_system: true,
+    is_active: true,
+    permissions_count: 0,
     created_at: '2026-01-01T00:00:00.000Z',
   },
   {
@@ -72,6 +82,8 @@ export const DEFAULT_SYSTEM_ROLES: RoleRow[] = [
     slug: 'store_manager',
     description: 'Raw media rolls, inks, boards, store ledger, and material dispatches.',
     is_system: true,
+    is_active: true,
+    permissions_count: 0,
     created_at: '2026-01-01T00:00:00.000Z',
   },
   {
@@ -82,6 +94,8 @@ export const DEFAULT_SYSTEM_ROLES: RoleRow[] = [
     slug: 'accountant',
     description: 'Invoicing, receipts, payment recording, banking, and financial reports.',
     is_system: true,
+    is_active: true,
+    permissions_count: 0,
     created_at: '2026-01-01T00:00:00.000Z',
   },
   {
@@ -92,6 +106,8 @@ export const DEFAULT_SYSTEM_ROLES: RoleRow[] = [
     slug: 'delivery_coordinator',
     description: 'Delivery challans, site installation sign-offs, and dispatch routing.',
     is_system: true,
+    is_active: true,
+    permissions_count: 0,
     created_at: '2026-01-01T00:00:00.000Z',
   },
   {
@@ -102,6 +118,8 @@ export const DEFAULT_SYSTEM_ROLES: RoleRow[] = [
     slug: 'general_staff',
     description: 'Standard workspace member with basic operational view access.',
     is_system: true,
+    is_active: true,
+    permissions_count: 0,
     created_at: '2026-01-01T00:00:00.000Z',
   },
 ]
@@ -458,6 +476,67 @@ export class TenantRepository {
     }
   }
 
+  static async getUserMembership(companyId: string, userId: string): Promise<{ id: string } | null> {
+    try {
+      const admin = createAdminClient()
+      const { data } = await admin
+        .from('company_users')
+        .select('id')
+        .eq('company_id', companyId)
+        .eq('user_id', userId)
+        .maybeSingle()
+      return data || null
+    } catch {
+      return null
+    }
+  }
+
+  static async resetTenantTables(companyId: string): Promise<void> {
+    const admin = createAdminClient()
+    const tablesToClear = [
+      'sales_order_items',
+      'order_items',
+      'sales_orders',
+      'orders',
+      'job_orders',
+      'order_timeline_events',
+      'quotation_items',
+      'quotations',
+      'quotation_activities',
+      'invoice_items',
+      'invoices',
+      'invoice_requests',
+      'payments',
+      'payment_adjustments',
+      'expenses',
+      'cash_book_entries',
+      'delivery_challan_items',
+      'delivery_challans',
+      'production_tasks',
+      'production_jobs',
+      'inventory_transactions',
+      'material_stock_ledger',
+      'notifications',
+      'audit_logs',
+      'activity_logs',
+      'customer_contacts',
+      'customers',
+      'customer_segments',
+      'suppliers',
+      'design_files',
+      'design_proofs',
+      'design_jobs',
+    ]
+
+    for (const table of tablesToClear) {
+      try {
+        await (admin as any).from(table).delete().eq('company_id', companyId)
+      } catch (tableErr) {
+        console.warn(`[TenantRepository.resetTenantTables] Reset failed for ${table}:`, tableErr)
+      }
+    }
+  }
+
   static async getAllCompanies(): Promise<CompanyRow[]> {
     const admin = createAdminClient()
     const { data, error } = await admin
@@ -631,22 +710,29 @@ export class TenantRepository {
             inventory: 'company',
           }
 
-      return {
-        id: cu.id,
-        company_id: cu.company_id,
-        user_id: cu.user_id,
-        branch_id: cu.branch_id,
-        status: cu.status,
-        department: cu.department || 'General',
-        responsibilities,
-        overrides,
-        data_scopes: dataScopes,
-        authorized_branch_ids: authorizedBranches,
-        invited_email: cu.invited_email,
-        created_at: cu.created_at,
-        updated_at: cu.updated_at,
-        linked_employee: linkedEmployee,
-        last_login_at: lastLoginAt,
+        const isExpired =
+          cu.status === 'invited' &&
+          cu.invitation_expires_at &&
+          new Date(cu.invitation_expires_at).getTime() < Date.now()
+
+        return {
+          id: cu.id,
+          company_id: cu.company_id,
+          user_id: cu.user_id,
+          branch_id: cu.branch_id,
+          status: cu.status,
+          department: cu.department || 'General',
+          responsibilities,
+          overrides,
+          data_scopes: dataScopes,
+          authorized_branch_ids: authorizedBranches,
+          invited_email: cu.invited_email,
+          created_at: cu.created_at,
+          updated_at: cu.updated_at,
+          invitation_expires_at: cu.invitation_expires_at || null,
+          is_expired: Boolean(isExpired),
+          linked_employee: linkedEmployee,
+          last_login_at: lastLoginAt,
         profile: prof || {
           id: cu.user_id,
           email: cu.invited_email || '',
@@ -797,6 +883,7 @@ export class TenantRepository {
     companyUserId: string
     department?: string | null
     branchId?: string | null
+    roleId?: string
     responsibilities?: string[]
     overrides?: Record<string, boolean>
     dataScopes?: Record<string, DataScope>
@@ -823,11 +910,15 @@ export class TenantRepository {
     const companyId = targetCU.company_id
     const userId = targetCU.user_id
 
-    // 1. Sync User Roles if responsibilities provided
-    if (params.responsibilities && Array.isArray(params.responsibilities)) {
-      const allRoles = await TenantRepository.getRoles(companyId)
-      const roleIdSet = new Set<string>()
+    // 1. Sync User Roles if roleId or responsibilities provided
+    const allRoles = await TenantRepository.getRoles(companyId)
+    const roleIdSet = new Set<string>()
 
+    if (params.roleId) {
+      roleIdSet.add(params.roleId)
+    }
+
+    if (params.responsibilities && Array.isArray(params.responsibilities)) {
       for (const resp of params.responsibilities) {
         const matchedRole = allRoles.find(
           (r) => r.slug === resp || r.name.toLowerCase() === resp.toLowerCase()
@@ -836,8 +927,10 @@ export class TenantRepository {
           roleIdSet.add(matchedRole.id)
         }
       }
+    }
 
-      // Reassign user_roles
+    // Only update user_roles if roles were explicitly identified
+    if (roleIdSet.size > 0) {
       await (admin as any).from('user_roles').delete().eq('company_user_id', params.companyUserId)
       for (const rId of Array.from(roleIdSet)) {
         await (admin as any).from('user_roles').insert({
@@ -1024,6 +1117,11 @@ export class TenantRepository {
     details?: { name?: string; nameBn?: string; description?: string }
   ) {
     const admin = createAdminClient()
+
+    const { data: targetRole } = await (admin as any).from('roles').select('slug, name').eq('id', roleId).maybeSingle()
+    if (targetRole && (targetRole.slug === 'business_owner' || targetRole.slug === 'owner' || targetRole.name?.toLowerCase().includes('owner'))) {
+      throw new Error('Business Owner role permissions are immutable and cannot be modified.')
+    }
 
     if (details) {
       await (admin as any)
@@ -1346,6 +1444,8 @@ export class TenantRepository {
       responsibilities: responsibilities.length > 0 ? responsibilities : ['general_staff'],
       overrides,
       data_scopes: dataScopes,
+      is_active: cu.is_active ?? true,
+      raw_overrides: cu.raw_overrides ?? null,
       invited_email: cu.invited_email,
       created_at: cu.created_at,
       updated_at: cu.updated_at,

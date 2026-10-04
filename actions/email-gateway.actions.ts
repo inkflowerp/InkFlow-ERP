@@ -1,5 +1,8 @@
 'use server'
 
+import { withTenantAction } from '@/lib/actions/action-wrapper'
+
+
 // ==============================================================================
 // PrintERP SaaS - Multi-Tenant Email Gateway Server Actions
 // Enforces strict platform vs tenant authorization boundaries.
@@ -9,6 +12,7 @@
 import { createAdminClient } from '../lib/supabase/admin.ts'
 import { getAuthenticatedPlatformContext } from '../lib/auth/platform-auth.ts'
 import { requireTenantPermission, requireTenantUser } from '../lib/auth/tenant-auth.ts'
+import { withPlatformAction } from '../lib/actions/action-wrapper.ts'
 import type {
   EmailGatewayRecord,
   EmailGatewayFormData,
@@ -34,17 +38,9 @@ import { AuditService } from '../services/audit.service.ts'
 /**
  * Retrieves the global Platform Default Email Gateway configuration
  */
-export async function getPlatformEmailGatewayAction(): Promise<{
-  success: boolean
-  data?: EmailGatewayRecord | null
-  error?: string
-}> {
-  try {
-    const platformUser = await getAuthenticatedPlatformContext()
-    if (!platformUser || !platformUser.isActive) {
-      return { success: false, error: 'Unauthorized: Platform admin credentials required' }
-    }
-
+export const getPlatformEmailGatewayAction = withPlatformAction(
+  { permission: 'system.view' },
+  async (_ctx): Promise<EmailGatewayRecord | null> => {
     const adminClient = createAdminClient()
     const { data, error } = await (adminClient as any)
       .from('email_gateways')
@@ -54,7 +50,7 @@ export async function getPlatformEmailGatewayAction(): Promise<{
       .maybeSingle()
 
     if (!error && data) {
-      return { success: true, data: sanitizeGatewayRecord(data) }
+      return sanitizeGatewayRecord(data)
     }
 
     // Check environment SMTP fallback
@@ -79,7 +75,7 @@ export async function getPlatformEmailGatewayAction(): Promise<{
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       }
-      return { success: true, data: sanitizeGatewayRecord(envSmtp) }
+      return sanitizeGatewayRecord(envSmtp)
     }
 
     // Check local data store (development/tests only)
@@ -87,28 +83,25 @@ export async function getPlatformEmailGatewayAction(): Promise<{
       const localGateways = EmailDataStore.get<EmailGatewayRecord[]>('printerp_email_gateways') || []
       const platLocal = localGateways.find((g) => !g.tenant_id && g.is_default && g.status === 'active')
       if (platLocal) {
-        return { success: true, data: sanitizeGatewayRecord(platLocal) }
+        return sanitizeGatewayRecord(platLocal)
       }
     }
 
-    return { success: true, data: null }
-  } catch (err: any) {
-    return { success: false, error: err?.message || 'Failed to retrieve platform gateway' }
+    return null
   }
-}
+)
 
 /**
  * Creates or updates the Platform Default Email Gateway with encrypted credentials
  */
-export async function savePlatformEmailGatewayAction(
-  formData: EmailGatewayFormData
-): Promise<{ success: boolean; data?: EmailGatewayRecord; error?: string }> {
-  try {
-    const platformUser = await getAuthenticatedPlatformContext()
-    if (!platformUser || !platformUser.isActive) {
-      return { success: false, error: 'Unauthorized: Platform admin access required' }
-    }
-
+export const savePlatformEmailGatewayAction = withPlatformAction(
+  {
+    permission: 'system.manage',
+    audit: true,
+    actionName: 'email.save_platform_gateway',
+    entityType: 'email_gateway',
+  },
+  async (ctx, formData: EmailGatewayFormData): Promise<EmailGatewayRecord> => {
     const adminClient = createAdminClient()
 
     // Encrypt password or API key if provided
@@ -167,7 +160,7 @@ export async function savePlatformEmailGatewayAction(
         .from('email_gateways')
         .insert({
           ...gatewayPayload,
-          created_by: platformUser.userId,
+          created_by: ctx.platformUser.id,
           created_at: new Date().toISOString(),
         })
         .select()
@@ -201,8 +194,8 @@ export async function savePlatformEmailGatewayAction(
     try {
       await AuditService.logEvent(
         'platform',
-        platformUser.userId,
-        platformUser.email || 'Platform Admin',
+        ctx.platformUser.id,
+        ctx.platformUser.email || 'Platform Admin',
         'email.platform_gateway_updated',
         'email_gateway',
         savedRecord.id,
@@ -212,25 +205,21 @@ export async function savePlatformEmailGatewayAction(
       )
     } catch {}
 
-    return { success: true, data: sanitizeGatewayRecord(savedRecord) }
-  } catch (err: any) {
-    return { success: false, error: err?.message || 'Failed to save platform email gateway' }
+    return sanitizeGatewayRecord(savedRecord)
   }
-}
+)
 
 /**
  * Disconnects Platform Gmail Gateway, revoking tokens with Google and removing record
  */
-export async function disconnectPlatformGmailAction(): Promise<{
-  success: boolean
-  error?: string
-}> {
-  try {
-    const platformUser = await getAuthenticatedPlatformContext()
-    if (!platformUser || !platformUser.isActive) {
-      return { success: false, error: 'Unauthorized: Platform Owner privilege required' }
-    }
-
+export const disconnectPlatformGmailAction = withPlatformAction(
+  {
+    permission: 'system.manage',
+    audit: true,
+    actionName: 'email.disconnect_platform_gmail',
+    entityType: 'email_gateway',
+  },
+  async (ctx) => {
     const adminClient = createAdminClient()
 
     // 1. Fetch existing platform gmail gateway to get tokens for revocation
@@ -267,8 +256,8 @@ export async function disconnectPlatformGmailAction(): Promise<{
     try {
       await AuditService.logEvent(
         'platform',
-        platformUser.userId,
-        platformUser.email || 'Platform Admin',
+        ctx.platformUser.id,
+        ctx.platformUser.email || 'Platform Admin',
         'email.platform_gmail_disconnected',
         'email_gateway',
         existing?.id || 'platform-gmail',
@@ -279,28 +268,15 @@ export async function disconnectPlatformGmailAction(): Promise<{
     } catch {}
 
     return { success: true }
-  } catch (err: any) {
-    return { success: false, error: err?.message || 'Failed to disconnect Gmail' }
   }
-}
+)
 
 /**
  * Tests live connection for a platform gateway configuration
  */
-export async function testPlatformEmailGatewayAction(
-  formData: EmailGatewayFormData
-): Promise<ConnectionTestResult> {
-  try {
-    const platformUser = await getAuthenticatedPlatformContext()
-    if (!platformUser || !platformUser.isActive) {
-      return {
-        success: false,
-        provider: formData.provider,
-        latencyMs: 0,
-        message: 'Unauthorized: Platform admin credentials required',
-      }
-    }
-
+export const testPlatformEmailGatewayAction = withPlatformAction(
+  { permission: 'system.manage' },
+  async (_ctx, formData: EmailGatewayFormData): Promise<ConnectionTestResult> => {
     const tempGatewayRecord: EmailGatewayRecord = {
       id: formData.id || 'temp-test-gw',
       tenant_id: null,
@@ -327,28 +303,20 @@ export async function testPlatformEmailGatewayAction(
     }
 
     return await EmailGatewayService.testConnection(tempGatewayRecord)
-  } catch (err: any) {
-    return {
-      success: false,
-      provider: formData.provider,
-      latencyMs: 0,
-      message: err?.message || 'Connection test failed',
-    }
   }
-}
+)
 
 /**
  * Sends a real test email using the Platform Default Gateway
  */
-export async function sendTestPlatformEmailAction(
-  recipientEmail: string
-): Promise<SendEmailResult> {
-  try {
-    const platformUser = await getAuthenticatedPlatformContext()
-    if (!platformUser || !platformUser.isActive) {
-      return { success: false, status: 'failed', error: 'Unauthorized: Platform admin credentials required' }
-    }
-
+export const sendTestPlatformEmailAction = withPlatformAction(
+  {
+    permission: 'system.manage',
+    audit: true,
+    actionName: 'email.send_platform_test',
+    entityType: 'email',
+  },
+  async (ctx, recipientEmail: string): Promise<SendEmailResult> => {
     return await EmailGatewayService.sendEmail({
       scopeType: 'PLATFORM',
       tenantId: null,
@@ -361,54 +329,49 @@ export async function sendTestPlatformEmailAction(
         provider_name: 'Platform Email Gateway',
         timestamp: new Date().toLocaleString(),
       },
-      sentBy: platformUser.userId,
+      sentBy: ctx.platformUser.id,
     })
-  } catch (err: any) {
-    return {
-      success: false,
-      status: 'failed',
-      error: err?.message || 'Failed to dispatch platform test email',
-    }
   }
-}
+)
+
+export const sendPlatformTestEmailAction = sendTestPlatformEmailAction
 
 /**
  * Fetches all Platform Default Email Templates
  */
-export async function getPlatformEmailTemplatesAction(): Promise<{
-  success: boolean
-  data: EmailTemplateRecord[]
-}> {
-  try {
-    const adminClient = createAdminClient()
-    const { data } = await (adminClient as any)
-      .from('email_templates')
-      .select('*')
-      .is('tenant_id', null)
-      .order('name', { ascending: true })
+export const getPlatformEmailTemplatesAction = withPlatformAction(
+  { permission: 'system.view' },
+  async (_ctx): Promise<EmailTemplateRecord[]> => {
+    try {
+      const adminClient = createAdminClient()
+      const { data } = await (adminClient as any)
+        .from('email_templates')
+        .select('*')
+        .is('tenant_id', null)
+        .order('name', { ascending: true })
 
-    if (data && data.length > 0) {
-      return { success: true, data }
+      if (data && data.length > 0) {
+        return data
+      }
+
+      return DEFAULT_EMAIL_TEMPLATES
+    } catch {
+      return DEFAULT_EMAIL_TEMPLATES
     }
-
-    return { success: true, data: DEFAULT_EMAIL_TEMPLATES }
-  } catch {
-    return { success: true, data: DEFAULT_EMAIL_TEMPLATES }
   }
-}
+)
 
 /**
  * Saves a Platform Email Template
  */
-export async function savePlatformEmailTemplateAction(
-  template: Partial<EmailTemplateRecord>
-): Promise<{ success: boolean; data?: EmailTemplateRecord; error?: string }> {
-  try {
-    const platformUser = await getAuthenticatedPlatformContext()
-    if (!platformUser || !platformUser.isActive) {
-      return { success: false, error: 'Unauthorized: Platform admin credentials required' }
-    }
-
+export const savePlatformEmailTemplateAction = withPlatformAction(
+  {
+    permission: 'system.manage',
+    audit: true,
+    actionName: 'email.save_template',
+    entityType: 'email_template',
+  },
+  async (_ctx, template: Partial<EmailTemplateRecord>): Promise<EmailTemplateRecord> => {
     const adminClient = createAdminClient()
     const payload = {
       tenant_id: null,
@@ -451,70 +414,71 @@ export async function savePlatformEmailTemplateAction(
       saved = data
     }
 
-    return { success: true, data: saved }
-  } catch (err: any) {
-    return { success: false, error: err?.message || 'Failed to save template' }
+    return saved
   }
-}
+)
 
 /**
  * Retrieves platform-wide email transmission logs
  */
-export async function getPlatformEmailLogsAction(filters?: {
-  status?: string
-  search?: string
-  limit?: number
-}): Promise<{ success: boolean; data: EmailLogRecord[] }> {
-  try {
-    const platformUser = await getAuthenticatedPlatformContext()
-    if (!platformUser || !platformUser.isActive) {
-      return { success: false, data: [] }
-    }
+export const getPlatformEmailLogsAction = withPlatformAction(
+  { permission: 'system.view' },
+  async (_ctx, filters?: {
+    status?: string
+    search?: string
+    limit?: number
+  }): Promise<EmailLogRecord[]> => {
+    try {
+      const adminClient = createAdminClient()
+      let query = (adminClient as any)
+        .from('email_logs')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(filters?.limit || 50)
 
-    const adminClient = createAdminClient()
-    let query = (adminClient as any)
-      .from('email_logs')
-      .select('*')
-      .order('created_at', { ascending: false })
-      .limit(filters?.limit || 50)
+      if (filters?.status && filters.status !== 'all') {
+        query = query.eq('status', filters.status)
+      }
+      if (filters?.search) {
+        query = query.or(`recipient.ilike.%${filters.search}%,subject.ilike.%${filters.search}%`)
+      }
 
-    if (filters?.status && filters.status !== 'all') {
-      query = query.eq('status', filters.status)
-    }
-    if (filters?.search) {
-      query = query.or(`recipient.ilike.%${filters.search}%,subject.ilike.%${filters.search}%`)
-    }
+      const { data } = await query
+      if (data && data.length > 0) {
+        return data
+      }
 
-    const { data } = await query
-    if (data && data.length > 0) {
-      return { success: true, data }
+      // Local DataStore fallback
+      return EmailDataStore.get<EmailLogRecord[]>('printerp_email_logs') || []
+    } catch {
+      return EmailDataStore.get<EmailLogRecord[]>('printerp_email_logs') || []
     }
-
-    // Local DataStore fallback
-    const localLogs = EmailDataStore.get<EmailLogRecord[]>('printerp_email_logs') || []
-    return { success: true, data: localLogs }
-  } catch {
-    const localLogs = EmailDataStore.get<EmailLogRecord[]>('printerp_email_logs') || []
-    return { success: true, data: localLogs }
   }
-}
+)
 
 /**
- * Triggers background queue runner
+ * Triggers background queue runner (authenticated platform admin only)
  */
-export async function processEmailQueueAction(): Promise<{
-  success: boolean
-  processed: number
-  succeeded: number
-  failed: number
-}> {
-  try {
-    const res = await EmailGatewayService.processQueue(20)
-    return { success: true, ...res }
-  } catch {
-    return { success: false, processed: 0, succeeded: 0, failed: 0 }
+export const processEmailQueueAction = withPlatformAction(
+  {
+    permission: 'system.manage',
+    actionName: 'system.process_email_queue',
+    entityType: 'system_job',
+  },
+  async (_ctx): Promise<{
+    success: boolean
+    processed: number
+    succeeded: number
+    failed: number
+  }> => {
+    try {
+      const res = await EmailGatewayService.processQueue(20)
+      return { success: true, ...res }
+    } catch {
+      return { success: false, processed: 0, succeeded: 0, failed: 0 }
+    }
   }
-}
+)
 
 // -----------------------------------------------------------------------------
 // TENANT ACTIONS (Tenant Settings -> Communication -> Email)
@@ -523,12 +487,17 @@ export async function processEmailQueueAction(): Promise<{
 /**
  * Retrieves the tenant's email gateway configuration (credentials sanitized)
  */
-export async function getTenantEmailGatewayAction(companyId: string): Promise<{
+export const getTenantEmailGatewayAction = withTenantAction(
+  {
+    permission: "settings.view",
+    entityType: "email-gateway"
+  },
+  async (ctx, companyId: string) : Promise<{
   success: boolean
   customGateway?: EmailGatewayRecord | null
   hasConfiguredGateway: boolean
   error?: string
-}> {
+}> => {
   try {
     await requireTenantUser(companyId)
 
@@ -558,15 +527,19 @@ export async function getTenantEmailGatewayAction(companyId: string): Promise<{
       error: err?.message || 'Failed to retrieve tenant email configuration',
     }
   }
-}
+
+})
 
 /**
  * Saves or updates tenant custom email gateway (SMTP or Custom)
  */
-export async function saveTenantEmailGatewayAction(
-  companyId: string,
-  formData: EmailGatewayFormData
-): Promise<{ success: boolean; data?: EmailGatewayRecord; error?: string }> {
+export const saveTenantEmailGatewayAction = withTenantAction(
+  {
+    permission: "settings.manage",
+    entityType: "email-gateway"
+  },
+  async (ctx, companyId: string,
+  formData: EmailGatewayFormData) : Promise<{ success: boolean; data?: EmailGatewayRecord; error?: string }> => {
   try {
     const tenantUser = await requireTenantPermission(companyId, 'settings.edit')
 
@@ -674,14 +647,20 @@ export async function saveTenantEmailGatewayAction(
   } catch (err: any) {
     return { success: false, error: err?.message || 'Failed to save tenant email gateway' }
   }
-}
+
+})
 
 /**
  * Disconnects Tenant Gmail provider and revokes OAuth tokens
  */
-export async function disconnectTenantGmailAction(
-  companyId: string
-): Promise<{ success: boolean; error?: string }> {
+export const disconnectTenantGmailAction = withTenantAction(
+  {
+    permission: "settings.manage",
+    destructive: true,
+    auditAction: "email-gateway.disconnecttenantgmail",
+    entityType: "email-gateway"
+  },
+  async (ctx, companyId: string) : Promise<{ success: boolean; error?: string }> => {
   try {
     const tenantUser = await requireTenantPermission(companyId, 'settings.edit')
 
@@ -734,14 +713,20 @@ export async function disconnectTenantGmailAction(
   } catch (err: any) {
     return { success: false, error: err?.message || 'Failed to disconnect Gmail' }
   }
-}
+
+})
 
 /**
  * Removes custom tenant gateway and disables email sending
  */
-export async function deleteTenantEmailGatewayAction(
-  companyId: string
-): Promise<{ success: boolean; error?: string }> {
+export const deleteTenantEmailGatewayAction = withTenantAction(
+  {
+    permission: "settings.manage",
+    destructive: true,
+    auditAction: "email-gateway.deletetenantemailgateway",
+    entityType: "email-gateway"
+  },
+  async (ctx, companyId: string) : Promise<{ success: boolean; error?: string }> => {
   try {
     const tenantUser = await requireTenantPermission(companyId, 'settings.edit')
 
@@ -773,15 +758,19 @@ export async function deleteTenantEmailGatewayAction(
   } catch (err: any) {
     return { success: false, error: err?.message || 'Failed to reset gateway' }
   }
-}
+
+})
 
 /**
  * Tests live connection for a tenant gateway configuration
  */
-export async function testTenantEmailGatewayAction(
-  companyId: string,
-  formData: EmailGatewayFormData
-): Promise<ConnectionTestResult> {
+export const testTenantEmailGatewayAction = withTenantAction(
+  {
+    permission: "settings.manage",
+    entityType: "email-gateway"
+  },
+  async (ctx, companyId: string,
+  formData: EmailGatewayFormData) : Promise<ConnectionTestResult> => {
   try {
     await requireTenantPermission(companyId, 'settings.edit')
 
@@ -819,15 +808,19 @@ export async function testTenantEmailGatewayAction(
       message: err?.message || 'Connection test failed',
     }
   }
-}
+
+})
 
 /**
  * Sends a real test email using the tenant's active gateway (Gmail or SMTP)
  */
-export async function sendTestTenantEmailAction(
-  companyId: string,
-  recipientEmail: string
-): Promise<SendEmailResult> {
+export const sendTestTenantEmailAction = withTenantAction(
+  {
+    permission: "settings.manage",
+    entityType: "email-gateway"
+  },
+  async (ctx, companyId: string,
+  recipientEmail: string) : Promise<SendEmailResult> => {
   try {
     const tenant = await requireTenantPermission(companyId, 'settings.edit')
 
@@ -854,14 +847,18 @@ export async function sendTestTenantEmailAction(
       error: err?.message || 'Failed to dispatch test email',
     }
   }
-}
+
+})
 
 /**
  * Retrieves tenant customized templates merged with platform defaults
  */
-export async function getTenantEmailTemplatesAction(
-  companyId: string
-): Promise<{ success: boolean; data: EmailTemplateRecord[] }> {
+export const getTenantEmailTemplatesAction = withTenantAction(
+  {
+    permission: "settings.view",
+    entityType: "email-gateway"
+  },
+  async (ctx, companyId: string) : Promise<{ success: boolean; data: EmailTemplateRecord[] }> => {
   try {
     await requireTenantUser(companyId)
 
@@ -893,15 +890,19 @@ export async function getTenantEmailTemplatesAction(
   } catch {
     return { success: true, data: DEFAULT_EMAIL_TEMPLATES }
   }
-}
+
+})
 
 /**
  * Saves a customized email template for a specific tenant
  */
-export async function saveTenantEmailTemplateAction(
-  companyId: string,
-  template: Partial<EmailTemplateRecord>
-): Promise<{ success: boolean; data?: EmailTemplateRecord; error?: string }> {
+export const saveTenantEmailTemplateAction = withTenantAction(
+  {
+    permission: "settings.manage",
+    entityType: "email-gateway"
+  },
+  async (ctx, companyId: string,
+  template: Partial<EmailTemplateRecord>) : Promise<{ success: boolean; data?: EmailTemplateRecord; error?: string }> => {
   try {
     await requireTenantPermission(companyId, 'settings.edit')
 
@@ -951,15 +952,19 @@ export async function saveTenantEmailTemplateAction(
   } catch (err: any) {
     return { success: false, error: err?.message || 'Failed to save template' }
   }
-}
+
+})
 
 /**
  * Retrieves tenant-isolated email transmission logs
  */
-export async function getTenantEmailLogsAction(
-  companyId: string,
-  filters?: { status?: string; search?: string }
-): Promise<{ success: boolean; data: EmailLogRecord[] }> {
+export const getTenantEmailLogsAction = withTenantAction(
+  {
+    permission: "settings.view",
+    entityType: "email-gateway"
+  },
+  async (ctx, companyId: string,
+  filters?: { status?: string; search?: string }) : Promise<{ success: boolean; data: EmailLogRecord[] }> => {
   try {
     await requireTenantUser(companyId)
 
@@ -993,13 +998,18 @@ export async function getTenantEmailLogsAction(
     )
     return { success: true, data: localLogs }
   }
-}
+
+})
 
 /**
  * Dispatches an automated workflow email
  */
-export async function dispatchWorkflowEmailAction(
-  companyId: string,
+export const dispatchWorkflowEmailAction = withTenantAction(
+  {
+    permission: "settings.view",
+    entityType: "email-gateway"
+  },
+  async (ctx, companyId: string,
   eventType: string,
   recipientEmail: string,
   payload: {
@@ -1008,8 +1018,7 @@ export async function dispatchWorkflowEmailAction(
     customHtmlBody?: string
     idempotencyKey?: string
     attachments?: Array<{ filename: string; content?: string; path?: string }>
-  }
-): Promise<SendEmailResult> {
+  }) : Promise<SendEmailResult> => {
   try {
     const tenantUser = await requireTenantUser(companyId)
 
@@ -1035,12 +1044,18 @@ export async function dispatchWorkflowEmailAction(
       error: err?.message || 'Failed to dispatch workflow email',
     }
   }
-}
+
+})
 
 /**
  * Safe server-side diagnostic: checks whether Google OAuth credentials exist without exposing secrets
  */
-export async function getGoogleOAuthStatusAction(): Promise<{
+export const getGoogleOAuthStatusAction = withTenantAction(
+  {
+    permission: "settings.view",
+    entityType: "email-gateway"
+  },
+  async (ctx) : Promise<{
   success: boolean
   isConfigured: boolean
   hasClientId: boolean
@@ -1048,7 +1063,7 @@ export async function getGoogleOAuthStatusAction(): Promise<{
   hasRedirectUri: boolean
   redirectUri: string
   issues: string[]
-}> {
+}> => {
   try {
     const diag = getGoogleOAuthDiagnostics()
     return {
@@ -1071,4 +1086,5 @@ export async function getGoogleOAuthStatusAction(): Promise<{
       issues: [err?.message || 'Failed to check Google OAuth configuration status'],
     }
   }
-}
+
+})

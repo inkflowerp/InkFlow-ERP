@@ -21,7 +21,7 @@ export function OperationalAdvantagesSection() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12 sm:space-y-16">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto space-y-3 sm:space-y-4">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200/70 dark:border-blue-800/60 uppercase tracking-wider">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary bg-primary/10 text-primary border border-primary/20/70 border-border/60 uppercase tracking-wider">
             <span>{tBilingual('Print-Native Architecture', 'প্রিন্ট-বান্ধব স্থাপত্য')}</span>
           </div>
 
@@ -47,9 +47,9 @@ export function OperationalAdvantagesSection() {
  return (
               <div
  key={idx}
- className="p-6 rounded-xl border border-border bg-card shadow-sm hover:border-blue-300 dark:hover:border-blue-700 transition-all flex flex-col justify-between">
+ className="p-6 rounded-xl border border-border bg-card shadow-sm hover:border-primary/20 dark:hover:border-border transition-all flex flex-col justify-between">
                 <div>
-                  <div className="h-10 w-10 rounded-xl bg-blue-50 dark:bg-blue-950/80 text-blue-600 dark:text-blue-400 flex items-center justify-center mb-4 border border-blue-100 dark:border-blue-900/60">
+                  <div className="h-10 w-10 rounded-xl bg-primary/10 bg-primary/10 text-primary text-primary flex items-center justify-center mb-4 border border-border border-border/60">
                     <Icon className="h-5 w-5"/>
                   </div>
 
@@ -62,7 +62,7 @@ export function OperationalAdvantagesSection() {
                   </p>
                 </div>
 
-                <div className="pt-4 mt-4 border-t border-border flex items-center gap-1.5 text-2xs font-semibold text-emerald-600 dark:text-emerald-400">
+                <div className="pt-4 mt-4 border-t border-border flex items-center gap-1.5 text-xs font-semibold text-success text-success">
                   <CheckCircle2 className="h-3.5 w-3.5"/>
                   <span>{tBilingual('Print-Specific Logic', 'প্রেসের নিজস্ব লজিক')}</span>
                 </div>

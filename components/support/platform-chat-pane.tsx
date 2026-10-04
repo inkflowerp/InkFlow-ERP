@@ -201,7 +201,7 @@ export function PlatformChatPane({
  return (
       <div className="flex-1 flex flex-col items-center justify-center p-8 text-center text-muted-foreground bg-surface-inset select-none">
         <div className="w-16 h-16 rounded-3xl bg-surface-inset border border-border flex items-center justify-center text-muted-foreground mb-3 shadow-inner">
-          <MessageSquare className="w-8 h-8 text-indigo-400"/>
+          <MessageSquare className="w-8 h-8 text-primary"/>
         </div>
         <h3 className="text-sm font-bold text-foreground">Select a Support Conversation</h3>
         <p className="text-xs text-muted-foreground mt-1 max-w-[320px]">
@@ -227,14 +227,14 @@ export function PlatformChatPane({
             </button>
           )}
 
-          <span className="tabular-nums font-bold text-xs text-indigo-400 bg-indigo-950/80 px-2 py-0.5 rounded-md border border-indigo-800/80 shrink-0">
+          <span className="tabular-nums font-bold text-xs text-primary bg-primary/10 px-2 py-0.5 rounded-md border border-border/80 shrink-0">
             {conversation.ticket_number}
           </span>
           <div className="min-w-0">
             <h2 className="text-xs sm:text-sm font-bold text-foreground truncate"title={conversation.subject}>
               {conversation.subject}
             </h2>
-            <div className="flex items-center gap-1.5 text-2xs text-muted-foreground mt-0.5 truncate">
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-0.5 truncate">
               <span className="font-semibold text-foreground truncate">{conversation.company_name || 'Tenant'}</span>
               <span>·</span>
               <span className="truncate">{conversation.created_by_name}</span>
@@ -248,7 +248,7 @@ export function PlatformChatPane({
           <select
  value={conversation.category}
  onChange={(e) => onUpdateCategory(e.target.value as SupportCategory)}
- className="hidden sm:inline-block px-2.5 py-1 text-2xs rounded-lg font-medium bg-card-elevated text-foreground border border-border focus:outline-none focus:ring-1 focus:ring-ring cursor-pointer max-w-[130px] truncate"title="Ticket Category">
+ className="hidden sm:inline-block px-2.5 py-1 text-xs rounded-lg font-medium bg-card-elevated text-foreground border border-border focus:outline-none focus:ring-1 focus:ring-ring cursor-pointer max-w-[130px] truncate"title="Ticket Category">
             {SUPPORT_CATEGORIES.map((cat) => (
               <option key={cat.key} value={cat.key}>
                 {cat.labelEn}
@@ -261,7 +261,7 @@ export function PlatformChatPane({
  value={conversation.status}
  onChange={(e) => onUpdateStatus(e.target.value as SupportStatus)}
  className={cn(
-              'px-2.5 py-1 text-2xs rounded-lg font-semibold border focus:outline-none focus:ring-1 focus:ring-ring cursor-pointer',
+              'px-2.5 py-1 text-xs rounded-lg font-semibold border focus:outline-none focus:ring-1 focus:ring-ring cursor-pointer',
  statusConfig.badgeClass
             )}
  title="Ticket Status">
@@ -277,7 +277,7 @@ export function PlatformChatPane({
  value={conversation.priority}
  onChange={(e) => onUpdatePriority(e.target.value as SupportPriority)}
  className={cn(
-              'px-2 py-1 text-2xs rounded-lg font-semibold border focus:outline-none focus:ring-1 focus:ring-ring cursor-pointer',
+              'px-2 py-1 text-xs rounded-lg font-semibold border focus:outline-none focus:ring-1 focus:ring-ring cursor-pointer',
  priorityConfig.badgeClass
             )}
  title="Ticket Priority">
@@ -291,8 +291,8 @@ export function PlatformChatPane({
           {conversation.assigned_to !== currentAdminId && currentAdminId && (
             <button
  onClick={() => onAssignTicket(currentAdminId, currentAdminName || 'Staff')}
- className="inline-flex items-center gap-1 px-2.5 py-1 text-2xs font-semibold text-indigo-300 bg-indigo-950/70 hover:bg-indigo-900/80 border border-indigo-800 rounded-lg transition-colors cursor-pointer"title="Assign this ticket to yourself">
-              <UserCheck className="w-3.5 h-3.5 text-indigo-400"/>
+ className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-primary bg-primary/10 hover:bg-primary/80 border border-border rounded-lg transition-colors cursor-pointer"title="Assign this ticket to yourself">
+              <UserCheck className="w-3.5 h-3.5 text-primary"/>
               <span>Claim</span>
             </button>
           )}
@@ -304,7 +304,7 @@ export function PlatformChatPane({
  className={cn(
                 'p-1.5 rounded-lg border text-xs font-semibold transition-all cursor-pointer',
  showDetails
-                  ? 'bg-indigo-600 text-white border-indigo-500 shadow-xs'
+                  ? 'bg-primary text-white border-primary/20 shadow-xs'
                   : 'bg-card-elevated text-muted-foreground hover:text-foreground border-border'
               )}
  title="Toggle Ticket & Tenant Details">
@@ -318,7 +318,7 @@ export function PlatformChatPane({
       <div className="flex-1 overflow-y-auto p-3 sm:p-5 space-y-4 scrollbar-thin scrollbar-thumb-slate-800">
         {loading && messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center p-12 text-muted-foreground space-y-2">
-            <div className="w-6 h-6 rounded-full border-2 border-indigo-500 border-t-transparent animate-spin"/>
+            <div className="w-6 h-6 rounded-full border-2 border-primary/20 border-t-transparent animate-spin"/>
             <span className="text-xs tabular-nums">Loading message stream...</span>
           </div>
         ) : (
@@ -326,7 +326,7 @@ export function PlatformChatPane({
             <div key={group.dateKey} className="space-y-4">
               {/* Date Group Header */}
               <div className="flex justify-center my-3">
-                <span className="px-3 py-0.5 rounded-full bg-surface-inset border border-border text-2xs font-bold uppercase tracking-wider text-muted-foreground shadow-xs">
+                <span className="px-3 py-0.5 rounded-full bg-surface-inset border border-border text-xs font-bold uppercase tracking-wider text-muted-foreground shadow-xs">
                   {group.dateLabel}
                 </span>
               </div>
@@ -336,10 +336,10 @@ export function PlatformChatPane({
  if (msg.message_type === 'system_event') {
  return (
                     <div key={msg.id} className="flex justify-center my-2">
-                      <div className="px-3.5 py-1 rounded-full bg-surface-inset text-2xs text-muted-foreground border border-border flex items-center gap-1.5 shadow-xs">
+                      <div className="px-3.5 py-1 rounded-full bg-surface-inset text-xs text-muted-foreground border border-border flex items-center gap-1.5 shadow-xs">
                         <Clock className="w-3 h-3 text-muted-foreground"/>
                         <span>{msg.body}</span>
-                        <span className="text-2xs text-muted-foreground">· {formatTime(msg.created_at)}</span>
+                        <span className="text-xs text-muted-foreground">· {formatTime(msg.created_at)}</span>
                       </div>
                     </div>
                   )
@@ -349,17 +349,17 @@ export function PlatformChatPane({
  if (msg.message_type === 'internal_note') {
  return (
                     <div key={msg.id} className="flex flex-col items-center my-2.5 w-full">
-                      <div className="w-full max-w-2xl rounded-xl p-4 bg-amber-950/30 border border-amber-800/70 text-amber-200 shadow-sm">
-                        <div className="flex items-center justify-between pb-2 mb-2 border-b border-amber-900/60 text-xs">
-                          <div className="flex items-center gap-1.5 font-bold text-amber-400">
-                            <Lock className="w-3.5 h-3.5 text-amber-400"/>
+                      <div className="w-full max-w-2xl rounded-xl p-4 bg-warning-surface border border-warning-border/70 text-warning shadow-sm">
+                        <div className="flex items-center justify-between pb-2 mb-2 border-b border-warning-border/60 text-xs">
+                          <div className="flex items-center gap-1.5 font-bold text-warning">
+                            <Lock className="w-3.5 h-3.5 text-warning"/>
                             <span>INTERNAL NOTE (Platform Staff Only)</span>
                           </div>
-                          <span className="text-2xs text-amber-400/80">
+                          <span className="text-xs text-warning/80">
                             {msg.sender_name} · {formatTime(msg.created_at)}
                           </span>
                         </div>
-                        <p className="whitespace-pre-wrap text-xs sm:text-sm text-amber-100/90 leading-relaxed select-text font-normal">
+                        <p className="whitespace-pre-wrap text-xs sm:text-sm text-warning/90 leading-relaxed select-text font-normal">
                           {msg.body}
                         </p>
                       </div>
@@ -375,18 +375,18 @@ export function PlatformChatPane({
  className={cn('flex flex-col', isCustomer ? 'items-start' : 'items-end')}
                   >
                     {/* Sender Header */}
-                    <div className="flex items-center gap-1.5 mb-1 px-1 text-2xs text-muted-foreground">
+                    <div className="flex items-center gap-1.5 mb-1 px-1 text-xs text-muted-foreground">
                       {isCustomer ? (
                         <div className="flex items-center gap-1 font-semibold text-muted-foreground">
                           <User className="w-3.5 h-3.5 text-muted-foreground"/>
                           <span>{msg.sender_name}</span>
-                          <span className="text-2xs text-muted-foreground font-normal">(Customer)</span>
+                          <span className="text-xs text-muted-foreground font-normal">(Customer)</span>
                         </div>
                       ) : (
-                        <div className="flex items-center gap-1 text-indigo-400 font-semibold">
-                          <ShieldCheck className="w-3.5 h-3.5 text-indigo-400"/>
+                        <div className="flex items-center gap-1 text-primary font-semibold">
+                          <ShieldCheck className="w-3.5 h-3.5 text-primary"/>
                           <span>{msg.sender_name}</span>
-                          <span className="text-2xs text-indigo-300/80 font-normal">(Platform Staff)</span>
+                          <span className="text-xs text-primary/80 font-normal">(Platform Staff)</span>
                         </div>
                       )}
                       <span>· {formatTime(msg.created_at)}</span>
@@ -398,7 +398,7 @@ export function PlatformChatPane({
                         'max-w-[88%] sm:max-w-[75%] rounded-xl p-3.5 text-xs sm:text-sm shadow-xs transition-all',
  isCustomer
                           ? 'bg-surface-inset text-foreground rounded-tl-xs border border-border'
-                          : 'bg-indigo-600 text-white rounded-tr-xs shadow-indigo-600/20 shadow-xs'
+                          : 'bg-primary text-white rounded-tr-xs shadow-indigo-600/20 shadow-xs'
                       )}
                     >
                       <p className="whitespace-pre-wrap leading-relaxed select-text">{msg.body}</p>
@@ -412,12 +412,12 @@ export function PlatformChatPane({
  className="flex items-center justify-between gap-2 p-2 rounded-xl text-xs bg-surface-inset border border-border text-foreground">
                               <div className="flex items-center gap-2 truncate">
                                 {att.type.startsWith('image/') ? (
-                                  <ImageIcon className="w-4 h-4 text-cyan-400 shrink-0"/>
+                                  <ImageIcon className="w-4 h-4 text-primary shrink-0"/>
                                 ) : (
-                                  <FileText className="w-4 h-4 text-amber-400 shrink-0"/>
+                                  <FileText className="w-4 h-4 text-warning shrink-0"/>
                                 )}
                                 <span className="truncate font-medium">{att.name}</span>
-                                <span className="text-2xs text-muted-foreground">
+                                <span className="text-xs text-muted-foreground">
                                   ({Math.round(att.size / 1024)} KB)
                                 </span>
                               </div>
@@ -452,7 +452,7 @@ export function PlatformChatPane({
  className={cn(
                 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer',
                 !isInternalNote
-                  ? 'bg-indigo-600 text-white shadow-xs'
+                  ? 'bg-primary text-white shadow-xs'
                   : 'text-muted-foreground hover:text-foreground'
               )}
             >
@@ -464,7 +464,7 @@ export function PlatformChatPane({
  className={cn(
                 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer',
  isInternalNote
-                  ? 'bg-amber-600 text-white shadow-xs'
+                  ? 'bg-warning text-white shadow-xs'
                   : 'text-muted-foreground hover:text-foreground'
               )}
             >
@@ -479,7 +479,7 @@ export function PlatformChatPane({
               <button
  key={idx}
  type="button"onClick={() => insertSnippet(chip.text)}
- className="px-2 py-1 rounded-md text-2xs font-medium text-muted-foreground hover:text-foreground hover:bg-card-elevated whitespace-nowrap border border-border transition-colors">
+ className="px-2 py-1 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-card-elevated whitespace-nowrap border border-border transition-colors">
                 {chip.label}
               </button>
             ))}
@@ -488,8 +488,8 @@ export function PlatformChatPane({
 
         {/* Private Note Warning Banner */}
         {isInternalNote && (
-          <div className="px-3 py-1.5 rounded-xl bg-amber-950/40 border border-amber-800/60 text-amber-300 text-2xs flex items-center gap-2">
-            <Lock className="w-3.5 h-3.5 shrink-0 text-amber-400"/>
+          <div className="px-3 py-1.5 rounded-xl bg-warning-surface border border-warning-border/60 text-warning text-xs flex items-center gap-2">
+            <Lock className="w-3.5 h-3.5 shrink-0 text-warning"/>
             <span>Private note mode active: Customer will NOT see this message or receive any notifications.</span>
           </div>
         )}
@@ -501,11 +501,11 @@ export function PlatformChatPane({
               <div
  key={att.id}
  className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-surface-inset text-xs text-muted-foreground border border-border">
-                <Paperclip className="w-3 h-3 text-indigo-400"/>
+                <Paperclip className="w-3 h-3 text-primary"/>
                 <span className="max-w-[150px] truncate">{att.name}</span>
                 <button
  type="button"onClick={() => setAttachments((prev) => prev.filter((a) => a.id !== att.id))}
- className="p-0.5 text-muted-foreground hover:text-red-400 cursor-pointer">
+ className="p-0.5 text-muted-foreground hover:text-destructive cursor-pointer">
                   <X className="w-3 h-3"/>
                 </button>
               </div>
@@ -518,8 +518,8 @@ export function PlatformChatPane({
  className={cn(
             'flex items-end gap-2 p-2 rounded-xl border transition-all',
  isInternalNote
-              ? 'bg-amber-950/20 border-amber-700/60 focus-within:ring-2 focus-within:ring-amber-500/20'
-              : 'bg-surface-inset border-border focus-within:ring-2 focus-within:ring-indigo-500/20 focus-within:border-indigo-500'
+              ? 'bg-warning-surface border-warning-border/60 focus-within:ring-2 focus-within:focus:ring-ring/20'
+              : 'bg-surface-inset border-border focus-within:ring-2 focus-within:focus:ring-ring/20 focus-within:border-primary/20'
           )}
         >
           <label
@@ -550,8 +550,8 @@ export function PlatformChatPane({
  className={cn(
               'p-2.5 rounded-xl text-white disabled:opacity-40 disabled:cursor-not-allowed shadow-sm transition-all shrink-0 cursor-pointer flex items-center justify-center',
  isInternalNote
-                ? 'bg-amber-600 hover:bg-amber-500 shadow-amber-600/20'
-                : 'bg-indigo-600 hover:bg-indigo-500 shadow-indigo-600/20'
+                ? 'bg-warning hover:bg-warning shadow-amber-600/20'
+                : 'bg-primary hover:bg-primary shadow-indigo-600/20'
             )}
  title="Send Message">
             <Send className="w-4 h-4"/>

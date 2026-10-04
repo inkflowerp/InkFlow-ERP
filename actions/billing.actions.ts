@@ -1,11 +1,15 @@
 'use server'
 
+import { withTenantAction } from '@/lib/actions/action-wrapper'
+
+
 import { revalidatePath } from 'next/cache.js'
 import { BillingService } from '../services/billing.service.ts'
 import { AuditService } from '../services/audit.service.ts'
 import { CustomerRepository } from '../lib/repositories/customer.repository.ts'
 import { ProductRepository } from '../lib/repositories/product.repository.ts'
 import { CrmService } from '../services/crm.service.ts'
+import { NotificationService } from '../services/notification.service.ts'
 import { getCurrentTenant } from '../lib/auth/tenant-auth.ts'
 import type {
   InvoiceRecord,
@@ -86,10 +90,13 @@ export interface CreateInvoicePayload {
 /**
  * Server Action: Search existing customers for invoice dropdown
  */
-export async function searchInvoiceCustomersAction(
-  query: string,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<CustomerRecord[]>> {
+export const searchInvoiceCustomersAction = withTenantAction(
+  {
+    permission: "invoices.view",
+    entityType: "billing"
+  },
+  async (ctx, query: string,
+  requestedCompanyId?: string) : Promise<ServerActionResult<CustomerRecord[]>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -102,15 +109,19 @@ export async function searchInvoiceCustomersAction(
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to search customers.' }
   }
-}
+
+})
 
 /**
  * Server Action: Resolve 3-tier rates for a selected customer
  */
-export async function resolveCustomerPricingAction(
-  customerId: string,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<ResolvedProductRate[]>> {
+export const resolveCustomerPricingAction = withTenantAction(
+  {
+    permission: "products.view",
+    entityType: "billing"
+  },
+  async (ctx, customerId: string,
+  requestedCompanyId?: string) : Promise<ServerActionResult<ResolvedProductRate[]>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -123,14 +134,18 @@ export async function resolveCustomerPricingAction(
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to resolve customer pricing.' }
   }
-}
+
+})
 
 /**
  * Server Action: Fetch active products for invoice line items
  */
-export async function getInvoiceProductsAction(
-  requestedCompanyId?: string
-): Promise<ServerActionResult<any[]>> {
+export const getInvoiceProductsAction = withTenantAction(
+  {
+    permission: "products.view",
+    entityType: "billing"
+  },
+  async (ctx, requestedCompanyId?: string) : Promise<ServerActionResult<any[]>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -143,16 +158,20 @@ export async function getInvoiceProductsAction(
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to fetch invoice products.' }
   }
-}
+
+})
 
 /**
  * Server Action: Check customer credit limit before issuing an invoice
  */
-export async function checkCustomerCreditLimitAction(
-  customerId: string,
+export const checkCustomerCreditLimitAction = withTenantAction(
+  {
+    permission: "invoices.view",
+    entityType: "billing"
+  },
+  async (ctx, customerId: string,
   newInvoiceAmount: number,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<CreditLimitWarningInfo>> {
+  requestedCompanyId?: string) : Promise<ServerActionResult<CreditLimitWarningInfo>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -165,15 +184,19 @@ export async function checkCustomerCreditLimitAction(
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to check customer credit limit.' }
   }
-}
+
+})
 
 /**
  * Server Action: Securely creates an invoice in PostgreSQL with full Save-First guarantees
  */
-export async function createInvoiceAction(
-  payload: CreateInvoicePayload,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<InvoiceRecord>> {
+export const createInvoiceAction = withTenantAction(
+  {
+    permission: "invoices.create",
+    entityType: "billing"
+  },
+  async (ctx, payload: CreateInvoicePayload,
+  requestedCompanyId?: string) : Promise<ServerActionResult<InvoiceRecord>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -431,6 +454,29 @@ export async function createInvoiceAction(
       createdInvoice.customer_name
     )
 
+    // Trigger Preference-Aware Multi-Channel Notification
+    try {
+      await NotificationService.notify({
+        companyId,
+        role: 'accountant',
+        type: 'invoice_created',
+        entity: { type: 'invoice', id: createdInvoice.id, number: createdInvoice.invoice_number },
+        payload: {
+          invoice_number: createdInvoice.invoice_number,
+          customer_name: createdInvoice.customer_name,
+          amount: createdInvoice.grand_total,
+          due_amount: createdInvoice.due_amount,
+          recipientPhone: createdInvoice.customer_phone || undefined,
+          recipientEmail: createdInvoice.customer_email || undefined,
+          recipientCustomerId: createdInvoice.customer_id || undefined,
+          action_url: `/invoices/${createdInvoice.id}`,
+        },
+        channels: ['in_app', 'whatsapp', 'email'],
+      })
+    } catch (notifErr) {
+      console.warn('[createInvoiceAction] Notification dispatch warning:', notifErr)
+    }
+
     try {
       revalidatePath('/[tenantSlug]/invoices', 'page')
       revalidatePath('/[tenantSlug]/billing', 'page')
@@ -446,15 +492,19 @@ export async function createInvoiceAction(
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to create invoice' }
   }
-}
+
+})
 
 /**
  * Server Action: Fetch single invoice by ID or Invoice Number
  */
-export async function getInvoiceByIdAction(
-  invoiceId: string,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<InvoiceRecord>> {
+export const getInvoiceByIdAction = withTenantAction(
+  {
+    permission: "invoices.view",
+    entityType: "billing"
+  },
+  async (ctx, invoiceId: string,
+  requestedCompanyId?: string) : Promise<ServerActionResult<InvoiceRecord>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -471,21 +521,25 @@ export async function getInvoiceByIdAction(
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to fetch invoice.' }
   }
-}
+
+})
 
 /**
  * Server Action: Fetch period-aware billing & collections overview metrics
  */
-export async function getBillingOverviewAction(
-  period: BillingPeriod = 'this_month',
+export const getBillingOverviewAction = withTenantAction(
+  {
+    permission: "invoices.view",
+    entityType: "billing"
+  },
+  async (ctx, period: BillingPeriod = 'this_month',
   customRange?: { start: string; end: string },
-  requestedCompanyId?: string
-): Promise<ServerActionResult<{
+  requestedCompanyId?: string) : Promise<ServerActionResult<{
   metrics: BillingOverviewMetrics
   priorityItems: CollectionPriorityItem[]
   paymentMethods: PaymentMethodSummaryItem[]
   salespersonStats: SalespersonCollectionStat[]
-}>> {
+}>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -498,21 +552,25 @@ export async function getBillingOverviewAction(
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to fetch billing overview.' }
   }
-}
+
+})
 
 /**
  * Server Action: Fetch invoices list with flexible filters
  */
-export async function getInvoicesAction(
-  filters?: {
+export const getInvoicesAction = withTenantAction(
+  {
+    permission: "invoices.view",
+    entityType: "billing"
+  },
+  async (ctx, filters?: {
     status?: string
     customerId?: string
     search?: string
     startDate?: string
     endDate?: string
   },
-  requestedCompanyId?: string
-): Promise<ServerActionResult<InvoiceRecord[]>> {
+  requestedCompanyId?: string) : Promise<ServerActionResult<InvoiceRecord[]>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -525,15 +583,19 @@ export async function getInvoicesAction(
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to fetch invoices.' }
   }
-}
+
+})
 
 /**
  * Server Action: Fetch payment records
  */
-export async function getPaymentsAction(
-  customerId?: string,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<PaymentRecord[]>> {
+export const getPaymentsAction = withTenantAction(
+  {
+    permission: "payments.create",
+    entityType: "billing"
+  },
+  async (ctx, customerId?: string,
+  requestedCompanyId?: string) : Promise<ServerActionResult<PaymentRecord[]>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -546,14 +608,18 @@ export async function getPaymentsAction(
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to fetch payments.' }
   }
-}
+
+})
 
 /**
  * Server Action: Fetch Receivables Aging summary
  */
-export async function getReceivablesAgingAction(
-  requestedCompanyId?: string
-): Promise<ServerActionResult<ReceivablesAgingSummary>> {
+export const getReceivablesAgingAction = withTenantAction(
+  {
+    permission: "reports.view",
+    entityType: "billing"
+  },
+  async (ctx, requestedCompanyId?: string) : Promise<ServerActionResult<ReceivablesAgingSummary>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -566,16 +632,20 @@ export async function getReceivablesAgingAction(
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to fetch receivables aging.' }
   }
-}
+
+})
 
 /**
  * Server Action: Reconciles customer debt balances against invoices, payments, and write-offs
  */
-export async function reconcileCustomerBalancesAction(
-  customerId?: string,
+export const reconcileCustomerBalancesAction = withTenantAction(
+  {
+    permission: "invoices.edit",
+    entityType: "billing"
+  },
+  async (ctx, customerId?: string,
   autoFix: boolean = false,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<any>> {
+  requestedCompanyId?: string) : Promise<ServerActionResult<any>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -588,15 +658,19 @@ export async function reconcileCustomerBalancesAction(
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to reconcile customer balances.' }
   }
-}
+
+})
 
 /**
  * Server Action: Securely records a multi-invoice payment allocation
  */
-export async function recordMultiInvoicePaymentAction(
-  payload: MultiInvoicePaymentInput,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<PaymentRecord>> {
+export const recordMultiInvoicePaymentAction = withTenantAction(
+  {
+    permission: "payments.create",
+    entityType: "billing"
+  },
+  async (ctx, payload: MultiInvoicePaymentInput,
+  requestedCompanyId?: string) : Promise<ServerActionResult<PaymentRecord>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -652,6 +726,28 @@ export async function recordMultiInvoicePaymentAction(
       payment.payment_method
     )
 
+    // Trigger Preference-Aware Multi-Channel Notification
+    try {
+      await NotificationService.notify({
+        companyId,
+        role: 'accountant',
+        type: 'payment_received',
+        entity: { type: 'payment', id: payment.id, number: payment.receipt_number },
+        payload: {
+          amount: payment.amount,
+          due_amount: (payment as any).balance_after || 0,
+          customer_name: payload.customerName || (payment as any).customer_name || 'Customer',
+          recipientPhone: (payment as any).customer_phone || undefined,
+          recipientEmail: (payment as any).customer_email || undefined,
+          recipientCustomerId: payload.customerId || undefined,
+          action_url: `/billing`,
+        },
+        channels: ['in_app', 'whatsapp', 'email'],
+      })
+    } catch (notifErr) {
+      console.warn('[recordMultiInvoicePaymentAction] Notification dispatch warning:', notifErr)
+    }
+
     try {
       revalidatePath('/[tenantSlug]/invoices', 'page')
       revalidatePath('/[tenantSlug]/billing', 'page')
@@ -662,13 +758,18 @@ export async function recordMultiInvoicePaymentAction(
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to record multi-invoice payment.' }
   }
-}
+
+})
 
 /**
  * Server Action: Records single payment (backwards-compatible wrapper)
  */
-export async function recordPaymentAction(
-  data: {
+export const recordPaymentAction = withTenantAction(
+  {
+    permission: "payments.create",
+    entityType: "billing"
+  },
+  async (ctx, data: {
     invoiceId?: string
     invoice_id?: string
     customerId?: string
@@ -692,8 +793,7 @@ export async function recordPaymentAction(
     idempotencyKey?: string
     idempotency_key?: string
   },
-  requestedCompanyId?: string
-): Promise<ServerActionResult<PaymentRecord>> {
+  requestedCompanyId?: string) : Promise<ServerActionResult<PaymentRecord>> => {
   const customerId = data.customerId || data.customer_id || ''
   const customerName = data.customerName || data.customer_name || ''
   const paymentMethod = data.paymentMethod || data.payment_method || 'cash'
@@ -717,20 +817,26 @@ export async function recordPaymentAction(
     },
     requestedCompanyId
   )
-}
+
+})
 
 /**
  * Server Action: Records financial write-off / waiver with non-destructive audit logging
  */
-export async function recordWriteOffAction(
-  writeOffData: {
+export const recordWriteOffAction = withTenantAction(
+  {
+    permission: "payments.create",
+    destructive: true,
+    auditAction: "billing.recordwriteoff",
+    entityType: "billing"
+  },
+  async (ctx, writeOffData: {
     invoice_id: string
     amount: number
     reason: string
     authorized_by_name?: string
   },
-  requestedCompanyId?: string
-): Promise<ServerActionResult<FinancialWriteOffRecord>> {
+  requestedCompanyId?: string) : Promise<ServerActionResult<FinancialWriteOffRecord>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -774,16 +880,20 @@ export async function recordWriteOffAction(
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to record financial write-off.' }
   }
-}
+
+})
 
 /**
  * Server Action: Voids / cancels an invoice
  */
-export async function cancelInvoiceAction(
-  invoiceId: string,
+export const cancelInvoiceAction = withTenantAction(
+  {
+    permission: "invoices.cancel",
+    entityType: "billing"
+  },
+  async (ctx, invoiceId: string,
   reason: string,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<boolean>> {
+  requestedCompanyId?: string) : Promise<ServerActionResult<boolean>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -819,16 +929,22 @@ export async function cancelInvoiceAction(
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to cancel invoice.' }
   }
-}
+
+})
 
 /**
  * Server Action: Safely deletes/cancels an unpaid invoice without reducing subscription creation quota
  */
-export async function deleteInvoiceAction(
-  invoiceId: string,
+export const deleteInvoiceAction = withTenantAction(
+  {
+    permission: "invoices.delete",
+    destructive: true,
+    auditAction: "billing.deleteinvoice",
+    entityType: "billing"
+  },
+  async (ctx, invoiceId: string,
   reason: string = 'Deleted by user',
-  requestedCompanyId?: string
-): Promise<ServerActionResult<boolean>> {
+  requestedCompanyId?: string) : Promise<ServerActionResult<boolean>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -863,16 +979,20 @@ export async function deleteInvoiceAction(
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to delete invoice.' }
   }
-}
+
+})
 
 /**
  * Server Action: Generates payment reminder WhatsApp link
  */
-export async function sendPaymentReminderAction(
-  invoiceId: string,
+export const sendPaymentReminderAction = withTenantAction(
+  {
+    permission: "payments.create",
+    entityType: "billing"
+  },
+  async (ctx, invoiceId: string,
   channelOrCompanyId?: string,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<{ whatsappUrl?: string }>> {
+  requestedCompanyId?: string) : Promise<ServerActionResult<{ whatsappUrl?: string }>> => {
   try {
     const effectiveCompanyId = requestedCompanyId || (channelOrCompanyId?.startsWith('comp-') ? channelOrCompanyId : undefined)
     const tenant = await getCurrentTenant(effectiveCompanyId)
@@ -897,20 +1017,24 @@ export async function sendPaymentReminderAction(
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to dispatch payment reminder.' }
   }
-}
+
+})
 
 /**
  * Server Action: Dispatches invoice communication (WhatsApp / Email)
  */
-export async function sendInvoiceAction(
-  params: {
+export const sendInvoiceAction = withTenantAction(
+  {
+    permission: "invoices.send",
+    entityType: "billing"
+  },
+  async (ctx, params: {
     invoiceId: string
     channel: 'whatsapp' | 'email' | 'sms'
     format?: 'pdf' | 'text'
     recipientOverride?: string
   },
-  requestedCompanyId?: string
-): Promise<ServerActionResult<{ messageId: string; whatsappUrl?: string }>> {
+  requestedCompanyId?: string) : Promise<ServerActionResult<{ messageId: string; whatsappUrl?: string }>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -948,4 +1072,5 @@ export async function sendInvoiceAction(
   } catch (error: any) {
     return { success: false, error: error.message || 'Communication dispatch error' }
   }
-}
+
+})

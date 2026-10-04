@@ -150,6 +150,29 @@ export class QuotationService {
           reason,
           actorName,
         })
+
+        if (newStatus === 'approved') {
+          try {
+            const { NotificationService } = await import('@/services/notification.service')
+            await NotificationService.notify({
+              companyId,
+              role: 'owner',
+              type: 'quotation_approved',
+              entity: { type: 'quotation', id: updated.id, number: updated.quotation_number },
+              payload: {
+                quotation_number: updated.quotation_number,
+                customer_name: updated.customer_name,
+                amount: updated.grand_total,
+                recipientPhone: updated.customer_phone || undefined,
+                recipientEmail: updated.customer_email || undefined,
+                action_url: `/quotations/${updated.id}`,
+              },
+              channels: ['in_app', 'whatsapp'],
+            })
+          } catch (notifErr) {
+            console.warn('[QuotationService] Notification dispatch error:', notifErr)
+          }
+        }
       } catch (e) {
         console.error('[QuotationService] Workflow dispatch error:', e)
       }

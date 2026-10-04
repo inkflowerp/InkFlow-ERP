@@ -104,7 +104,7 @@ export function WorkforceOverview({ tenantSlug }: WorkforceOverviewProps) {
  asChild
  variant="outline"size="sm"className="h-9 px-3 text-xs font-medium text-foreground bg-card border-border hover:bg-muted min-h-[36px]">
                 <Link href={`/${tenantSlug}/hr/attendance?mode=qr`}>
-                  <QrCode className="w-3.5 h-3.5 mr-1.5 text-blue-600"/>
+                  <QrCode className="w-3.5 h-3.5 mr-1.5 text-primary"/>
                   <span>{tBilingual('QR Punch', 'কিউআর পাঞ্চ')}</span>
                 </Link>
               </Button>
@@ -122,9 +122,9 @@ export function WorkforceOverview({ tenantSlug }: WorkforceOverviewProps) {
 
           {/* Error State */}
           {error && (
-            <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm flex items-center justify-between">
+            <div className="p-4 rounded-xl bg-danger-surface border border-danger-border text-destructive text-sm flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 shrink-0 text-red-600"/>
+                <AlertCircle className="w-4 h-4 shrink-0 text-destructive"/>
                 <span>{error}</span>
               </div>
               <Button

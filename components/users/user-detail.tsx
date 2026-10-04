@@ -291,10 +291,10 @@ export function UserDetailDrawer({
 
  const statusColor =
  status === 'active'
-      ? 'bg-emerald-500'
+      ? 'bg-success'
       : status === 'invited'
-      ? 'bg-amber-500'
-      : 'bg-red-500'
+      ? 'bg-warning'
+      : 'bg-destructive'
 
  const statusText = isBn ? (status === 'active' ? 'সক্রিয়' : status === 'invited' ? 'আমন্ত্রিত' : 'নিষ্ক্রিয়') : (status === 'active' ? 'Active' : status === 'invited' ? 'Invited' : 'Disabled')
 
@@ -312,7 +312,7 @@ export function UserDetailDrawer({
         {/* HEADER */}
         <div className="p-4 sm:p-5 border-b border-border flex items-start justify-between gap-3 bg-muted/50">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="h-12 w-12 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 font-bold text-lg flex items-center justify-center shrink-0 border border-blue-200 dark:border-blue-800">
+            <div className="h-12 w-12 rounded-full bg-primary/10 bg-primary/40 text-primary text-primary font-bold text-lg flex items-center justify-center shrink-0 border border-primary/20 border-border">
               {fullName.charAt(0).toUpperCase()}
             </div>
 
@@ -333,7 +333,7 @@ export function UserDetailDrawer({
                 </Badge>
 
                 {linkedEmployee ? (
-                  <span className="flex items-center gap-1 text-blue-600 dark:text-blue-400 font-medium">
+                  <span className="flex items-center gap-1 text-primary text-primary font-medium">
                     <UserCheck className="h-3 w-3"/>
                     <span>EMP: {linkedEmployee.employee_id_number || linkedEmployee.name}</span>
                   </span>
@@ -366,7 +366,7 @@ export function UserDetailDrawer({
  type="button"onClick={() => setActiveTab(tab.id as DetailTab)}
  className={`py-3 px-3 border-b-2 font-medium whitespace-nowrap transition-colors ${
  activeTab === tab.id
-                  ? 'border-blue-600 text-blue-600 dark:text-blue-400 font-bold'
+                  ? 'border-border text-primary text-primary font-bold'
                   : 'border-transparent text-muted-foreground hover:text-foreground dark:hover:text-foreground'
               }`}
             >
@@ -447,7 +447,7 @@ export function UserDetailDrawer({
                   {linkedEmployee ? (
                     <Button
  variant="ghost"size="sm"onClick={() => setIsUnlinkConfirmOpen(true)}
- className="text-xs text-red-600 hover:text-red-700 h-6 px-2">
+ className="text-xs text-destructive hover:text-destructive h-6 px-2">
  Unlink
                     </Button>
                   ) : (
@@ -461,7 +461,7 @@ export function UserDetailDrawer({
                 </div>
 
                 {linkedEmployee ? (
-                  <div className="p-3 bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900/40 rounded-lg text-xs flex items-center justify-between">
+                  <div className="p-3 bg-primary/10/50 bg-primary/10 border border-primary/20 border-border/40 rounded-lg text-xs flex items-center justify-between">
                     <div>
                       <div className="font-bold text-foreground text-sm">
                         {linkedEmployee.name}
@@ -478,7 +478,7 @@ export function UserDetailDrawer({
                         )}
                       </div>
                     </div>
-                    <Badge variant="outline"className="text-[11px] text-blue-700 dark:text-blue-300">
+                    <Badge variant="outline"className="text-xs text-primary text-primary">
  Linked
                     </Badge>
                   </div>
@@ -501,14 +501,14 @@ export function UserDetailDrawer({
                 {status === 'active' ? (
                   <Button
  variant="outline"size="sm"onClick={() => setIsDisableConfirmOpen(true)}
- className="text-xs text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30 gap-1.5">
+ className="text-xs text-destructive hover:text-destructive hover:bg-danger-surface dark:hover:bg-danger-surface gap-1.5">
                     <UserX className="h-3.5 w-3.5"/>
                     <span>Disable Login</span>
                   </Button>
                 ) : (
                   <Button
  variant="outline"size="sm"onClick={() => setIsEnableConfirmOpen(true)}
- className="text-xs text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 gap-1.5">
+ className="text-xs text-success hover:text-success hover:bg-success-surface dark:hover:bg-success-surface gap-1.5">
                     <Check className="h-3.5 w-3.5"/>
                     <span>Enable Login</span>
                   </Button>
@@ -570,7 +570,7 @@ export function UserDetailDrawer({
                     <span className="font-semibold text-foreground">
  Granular Permission Overrides
                     </span>
-                    <div className="text-muted-foreground text-[11px] mt-0.5">
+                    <div className="text-muted-foreground text-xs mt-0.5">
  Explicit Allow/Deny controls for advanced administrators
                     </div>
                   </div>
@@ -604,8 +604,8 @@ export function UserDetailDrawer({
               </div>
 
               {user.data_scopes?.orders === 'company' && (
-                <div className="p-3 bg-blue-50/70 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/40 rounded-lg text-xs text-blue-900 dark:text-blue-300 flex items-start gap-2">
-                  <Shield className="h-4 w-4 shrink-0 text-blue-600 dark:text-blue-400 mt-0.5"/>
+                <div className="p-3 bg-primary/10/70 bg-primary/10 border border-primary/20 border-border/40 rounded-lg text-xs text-primary text-primary flex items-start gap-2">
+                  <Shield className="h-4 w-4 shrink-0 text-primary text-primary mt-0.5"/>
                   <div>
                     <strong>Company-Wide Visibility:</strong> This user may access records across all branches allowed by their role permissions.
                   </div>
@@ -656,7 +656,7 @@ export function UserDetailDrawer({
                   {isLoadingHealth ? (
                     <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground"/>
                   ) : (
-                    <span className="text-[11px] text-muted-foreground">Real-time check</span>
+                    <span className="text-xs text-muted-foreground">Real-time check</span>
                   )}
                 </div>
 
@@ -664,11 +664,11 @@ export function UserDetailDrawer({
                   <div className="flex items-center justify-between py-1">
                     <span className="text-muted-foreground">Auth Identity (auth.users)</span>
                     {healthData?.authOk ? (
-                      <span className="text-emerald-600 flex items-center gap-1 font-medium">
+                      <span className="text-success flex items-center gap-1 font-medium">
                         <Check className="h-3.5 w-3.5"/> Verified
                       </span>
                     ) : (
-                      <span className="text-red-500 flex items-center gap-1 font-medium">
+                      <span className="text-destructive flex items-center gap-1 font-medium">
                         <XCircle className="h-3.5 w-3.5"/> Missing
                       </span>
                     )}
@@ -677,11 +677,11 @@ export function UserDetailDrawer({
                   <div className="flex items-center justify-between py-1">
                     <span className="text-muted-foreground">Profile Record (user_profiles)</span>
                     {healthData?.profileOk ? (
-                      <span className="text-emerald-600 flex items-center gap-1 font-medium">
+                      <span className="text-success flex items-center gap-1 font-medium">
                         <Check className="h-3.5 w-3.5"/> Verified
                       </span>
                     ) : (
-                      <span className="text-amber-500 flex items-center gap-1 font-medium">
+                      <span className="text-warning flex items-center gap-1 font-medium">
                         <AlertTriangle className="h-3.5 w-3.5"/> Incomplete
                       </span>
                     )}
@@ -690,7 +690,7 @@ export function UserDetailDrawer({
                   <div className="flex items-center justify-between py-1">
                     <span className="text-muted-foreground">Company Membership</span>
                     {healthData?.membershipOk ? (
-                      <span className="text-emerald-600 flex items-center gap-1 font-medium">
+                      <span className="text-success flex items-center gap-1 font-medium">
                         <Check className="h-3.5 w-3.5"/> Active
                       </span>
                     ) : (
@@ -701,11 +701,11 @@ export function UserDetailDrawer({
                   <div className="flex items-center justify-between py-1">
                     <span className="text-muted-foreground">Workforce Link (employees)</span>
                     {healthData?.employeeOk ? (
-                      <span className="text-emerald-600 flex items-center gap-1 font-medium">
+                      <span className="text-success flex items-center gap-1 font-medium">
                         <Check className="h-3.5 w-3.5"/> Linked ({healthData.linkedEmployee?.employee_id_number || 'EMP'})
                       </span>
                     ) : (
-                      <span className="text-amber-600 dark:text-amber-400 flex items-center gap-1 font-medium">
+                      <span className="text-warning text-warning flex items-center gap-1 font-medium">
                         <AlertTriangle className="h-3.5 w-3.5"/> Not Linked
                       </span>
                     )}
@@ -714,11 +714,11 @@ export function UserDetailDrawer({
                   <div className="flex items-center justify-between py-1">
                     <span className="text-muted-foreground">Role Assignment</span>
                     {healthData?.roleOk ? (
-                      <span className="text-emerald-600 flex items-center gap-1 font-medium">
+                      <span className="text-success flex items-center gap-1 font-medium">
                         <Check className="h-3.5 w-3.5"/> Assigned
                       </span>
                     ) : (
-                      <span className="text-red-500 flex items-center gap-1 font-medium">
+                      <span className="text-destructive flex items-center gap-1 font-medium">
                         <XCircle className="h-3.5 w-3.5"/> No Role
                       </span>
                     )}
@@ -727,11 +727,11 @@ export function UserDetailDrawer({
                   <div className="flex items-center justify-between py-1">
                     <span className="text-muted-foreground">Branch Allocation</span>
                     {healthData?.branchOk ? (
-                      <span className="text-emerald-600 flex items-center gap-1 font-medium">
+                      <span className="text-success flex items-center gap-1 font-medium">
                         <Check className="h-3.5 w-3.5"/> Configured
                       </span>
                     ) : (
-                      <span className="text-amber-500 flex items-center gap-1 font-medium">
+                      <span className="text-warning flex items-center gap-1 font-medium">
                         <AlertTriangle className="h-3.5 w-3.5"/> Unassigned
                       </span>
                     )}
@@ -740,8 +740,8 @@ export function UserDetailDrawer({
               </div>
 
               {/* High-Risk Actions (Prompt Sec 50-53) */}
-              <div className="border border-red-200 dark:border-red-900/40 rounded-lg p-4 space-y-3 bg-red-50/20 dark:bg-red-950/10">
-                <span className="text-xs font-bold uppercase tracking-wider text-red-700 dark:text-red-400">
+              <div className="border border-danger-border border-danger-border/40 rounded-lg p-4 space-y-3 bg-danger-surface/20 bg-danger-surface/10">
+                <span className="text-xs font-bold uppercase tracking-wider text-destructive text-destructive">
  High-Risk Management
                 </span>
 
@@ -751,13 +751,13 @@ export function UserDetailDrawer({
                       <div className="font-semibold text-foreground">
  Remove System Login
                       </div>
-                      <div className="text-muted-foreground text-[11px]">
+                      <div className="text-muted-foreground text-xs">
  Detaches login access. Employee records, attendance, and payroll are preserved.
                       </div>
                     </div>
                     <Button
  variant="outline"size="sm"onClick={() => setIsRemoveLoginConfirmOpen(true)}
- className="text-xs text-red-600 border-red-300 hover:bg-red-50 dark:hover:bg-red-950/40 shrink-0">
+ className="text-xs text-destructive border-danger-border hover:bg-danger-surface dark:hover:bg-danger-surface shrink-0">
  Remove Login
                     </Button>
                   </div>
@@ -770,7 +770,7 @@ export function UserDetailDrawer({
           {activeTab === 'activity' && (
             <div className="space-y-4 text-xs">
               <div className="flex items-center justify-between">
-                <span className="font-semibold uppercase tracking-wider text-muted-foreground text-[11px]">
+                <span className="font-semibold uppercase tracking-wider text-muted-foreground text-xs">
  Recent Access Events
                 </span>
                 {isLoadingActivities && <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground"/>}
@@ -788,11 +788,11 @@ export function UserDetailDrawer({
                         <span className="font-semibold text-foreground">
                           {log.action || 'Access Updated'}
                         </span>
-                        <span className="text-[11px] text-muted-foreground">
+                        <span className="text-xs text-muted-foreground">
                           {formatDateTime(log.created_at)}
                         </span>
                       </div>
-                      <div className="text-muted-foreground text-[11px]">
+                      <div className="text-muted-foreground text-xs">
                         {log.details?.message || log.description || `Performed by ${log.actor_name || 'Admin'}`}
                       </div>
                     </div>

@@ -55,7 +55,7 @@ export function UsageMeter({
             {max.toLocaleString()}{unit ? ` ${unit}` : ''}
           </span>
           {showPercentage && (
-            <span className={cn('text-2xs font-semibold px-1 py-0.5 rounded ml-1 bg-muted', textColor)}>
+            <span className={cn('text-xs font-semibold px-1 py-0.5 rounded ml-1 bg-muted', textColor)}>
               {percentage}%
             </span>
           )}
@@ -71,7 +71,7 @@ export function UsageMeter({
       </div>
 
       {description && (
-        <div className="text-2xs text-muted-foreground">{description}</div>
+        <div className="text-xs text-muted-foreground">{description}</div>
       )}
     </div>
   )

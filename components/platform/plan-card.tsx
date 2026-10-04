@@ -84,12 +84,12 @@ export function PlanCard({
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-base font-bold text-foreground">{name}</span>
             {code && (
-              <Badge variant="outline" className="text-2xs font-mono uppercase tracking-wider py-0 px-1.5 h-4.5">
+              <Badge variant="outline" className="text-xs font-mono uppercase tracking-wider py-0 px-1.5 h-4.5">
                 {code}
               </Badge>
             )}
             {isPopular && (
-              <Badge className="bg-primary text-primary-foreground text-2xs py-0 px-2 h-4.5 font-medium">
+              <Badge className="bg-primary text-primary-foreground text-xs py-0 px-2 h-4.5 font-medium">
                 {tBilingual('Popular', 'জনপ্রিয়')}
               </Badge>
             )}
@@ -99,7 +99,7 @@ export function PlanCard({
             <Badge
               variant={isStatusActive ? 'default' : 'secondary'}
               className={cn(
-                'text-2xs py-0 px-2 h-5 font-normal capitalize',
+                'text-xs py-0 px-2 h-5 font-normal capitalize',
                 isStatusActive
                   ? 'bg-success-surface text-success-foreground border-border'
                   : 'bg-muted text-muted-foreground'
@@ -111,7 +111,7 @@ export function PlanCard({
             {(onEdit || onDuplicate || onArchive || onDelete) && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-foreground">
+                  <Button variant="ghost" size="icon" aria-label="Plan actions" className="h-7 w-7 text-muted-foreground hover:text-foreground">
                     <MoreHorizontal className="h-4 w-4" />
                     <span className="sr-only">{tBilingual('Actions', 'কাজ')}</span>
                   </Button>
@@ -170,7 +170,7 @@ export function PlanCard({
             <span className="text-xs text-muted-foreground">{billingCycle}</span>
           </div>
           {subscriberCount !== undefined && (
-            <div className="text-2xs text-muted-foreground mt-1 flex items-center gap-1">
+            <div className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
               <Users className="h-3 w-3" />
               <span>{subscriberCount} {tBilingual('clients', 'ক্লায়েন্ট')}</span>
             </div>
@@ -180,13 +180,13 @@ export function PlanCard({
         {/* Limits */}
         {limits.length > 0 && (
           <div className="mb-4 space-y-1.5 bg-muted/40 p-2.5 rounded-lg border border-border/50">
-            <div className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider">
+            <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               {tBilingual('Limits', 'সীমা')}
             </div>
             <div className="grid grid-cols-2 gap-2 pt-1">
               {limits.map((limit, idx) => (
                 <div key={idx} className="text-xs">
-                  <div className="text-muted-foreground text-2xs truncate">{limit.label}</div>
+                  <div className="text-muted-foreground text-xs truncate">{limit.label}</div>
                   <div className="font-semibold text-foreground tabular-nums">{limit.value}</div>
                 </div>
               ))}
@@ -197,7 +197,7 @@ export function PlanCard({
         {/* Features list */}
         {features.length > 0 && (
           <div className="space-y-2 mb-4">
-            <div className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider">
+            <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               {tBilingual('Features', 'ফিচার')}
             </div>
             <ul className="space-y-1.5">

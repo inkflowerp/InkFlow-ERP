@@ -1,0 +1,110 @@
+import type {
+  InAppNotificationRecord,
+  ChannelConfigRecord,
+  MessageTemplateRecord,
+  CommunicationLogRecord,
+  SmsProvider,
+  SmsProviderType,
+} from '@/types/communication.types'
+
+export function renderTemplate(template: string, variables: Record<string, string>): string {
+  let output = template
+  for (const [key, val] of Object.entries(variables)) {
+    output = output.replace(new RegExp(`{{${key}}}`, 'g'), val || '')
+  }
+  return output
+}
+
+export function createSmsProvider(type: SmsProviderType): SmsProvider {
+  return {
+    providerName: type,
+    async sendSms(_to: string, _message: string) {
+      return {
+        success: true,
+        messageId: `sms-${Date.now()}`,
+      }
+    },
+    async checkBalance() {
+      switch (type) {
+        case 'bulksmsbd':
+          return { balance: 1450.5, currency: 'BDT' }
+        case 'ssl_wireless':
+          return { balance: 3200.0, currency: 'BDT' }
+        case 'alpha':
+          return { balance: 890.0, currency: 'BDT' }
+        case 'mim':
+          return { balance: 1120.0, currency: 'BDT' }
+        default:
+          return { balance: 5000.0, currency: 'BDT' }
+      }
+    },
+  }
+}
+
+export const DEFAULT_IN_APP_NOTIFICATIONS: InAppNotificationRecord[] = []
+export const DEMO_IN_APP_NOTIFICATIONS = DEFAULT_IN_APP_NOTIFICATIONS
+
+export const DEFAULT_CHANNEL_CONFIGS: ChannelConfigRecord[] = []
+export const DEMO_CHANNEL_CONFIGS = DEFAULT_CHANNEL_CONFIGS
+
+export const DEFAULT_MESSAGE_TEMPLATES: MessageTemplateRecord[] = [
+  {
+    id: 'tpl-01',
+    company_id: 'default',
+    template_key: 'quotation_sent',
+    name: 'Quotation Submission ',
+    channel: 'all',
+    body_en: 'Dear {{customer_name}}, your quotation #{{invoice_number}} for ৳ {{amount}} from {{company_name}} is ready.',
+    body_bn: 'প্রিয় {{customer_name}}, {{company_name}} থেকে আপনার কোটেশন #{{invoice_number}} (৳ {{amount}}) তৈরি হয়েছে।',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+  {
+    id: 'tpl-02',
+    company_id: 'default',
+    template_key: 'order_confirmed',
+    name: 'Sales Order Confirmation ',
+    channel: 'all',
+    body_en: 'Dear {{customer_name}}, your order #{{order_number}} is confirmed in production. Estimated delivery: {{delivery_date}}. Thank you!',
+    body_bn: 'প্রিয় {{customer_name}}, আপনার অর্ডার #{{order_number}} নিশ্চিত করে প্রোডাকশনে দেওয়া হয়েছে। আনুমানিক ডেলিভারি তারিখ: {{delivery_date}}। ধন্যবাদ!',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+  {
+    id: 'tpl-03',
+    company_id: 'default',
+    template_key: 'payment_received',
+    name: 'Payment Receipt Acknowledgement ',
+    channel: 'all',
+    body_en: 'Payment Received: ৳ {{amount}} acknowledged for Invoice #{{invoice_number}} by {{company_name}}. Remaining Due: ৳ {{due_amount}}.',
+    body_bn: 'পেমেন্ট রিসিভ: {{company_name}} ইনভয়েস #{{invoice_number}} বাবদ ৳ {{amount}} গ্রহণ করেছে। অবশিষ্ট বাকি: ৳ {{due_amount}}।',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+  {
+    id: 'tpl-04',
+    company_id: 'default',
+    template_key: 'delivery_dispatched',
+    name: 'Delivery Challan Dispatch ',
+    channel: 'all',
+    body_en: 'Dear {{customer_name}}, your finished job under Order #{{order_number}} is out for delivery today ({{delivery_date}}). Driver will contact on arrival.',
+    body_bn: 'প্রিয় {{customer_name}}, অর্ডার #{{order_number}} এর মালামাল আজ ({{delivery_date}}) ডেলিভারির জন্য গাড়িতে উঠানো হয়েছে। পৌঁছানোর পর চালক যোগাযোগ করবেন।',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+  {
+    id: 'tpl-05',
+    company_id: 'default',
+    template_key: 'overdue_reminder',
+    name: 'Overdue Payment Reminder ',
+    channel: 'all',
+    body_en: 'Urgent: Invoice #{{invoice_number}} has an overdue balance of ৳ {{due_amount}} for {{customer_name}}. Kindly settle at your earliest convenience.',
+    body_bn: 'জরুরী তাগাদা: ইনভয়েস #{{invoice_number}} এর বকেয়া ৳ {{due_amount}} মেয়াদোত্তীর্ণ হয়েছে। অনুগ্রহপূর্বক দ্রুত পরিশোধের অনুরোধ করা হচ্ছে।',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+]
+export const DEMO_MESSAGE_TEMPLATES = DEFAULT_MESSAGE_TEMPLATES
+
+export const DEFAULT_COMMUNICATION_LOGS: CommunicationLogRecord[] = []
+export const DEMO_COMMUNICATION_LOGS = DEFAULT_COMMUNICATION_LOGS

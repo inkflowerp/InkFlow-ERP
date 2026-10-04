@@ -208,6 +208,7 @@ export interface ProductionTaskRecord {
   notes?: string | null
   created_at: string
   updated_at: string
+  version?: number
 
   // Computed/Hydrated fields
   job_number?: string | null
@@ -339,6 +340,7 @@ export interface ScheduleTaskInput {
   scheduled_start: string
   estimated_duration_minutes: number
   notes?: string | null
+  expected_version?: number
 }
 
 export interface CompleteTaskInput {
@@ -423,4 +425,15 @@ export interface ProductionBoardColumn {
   title: string
   titleBn: string
   statuses: ProductionTaskStatus[]
+}
+
+export interface ProductionKpiMetrics {
+  totalTasks: number
+  runningNow: number
+  queuedReady: number
+  onHold: number
+  completedToday: number
+  activeMachines: number
+  totalMachines: number
+  urgentCount: number
 }

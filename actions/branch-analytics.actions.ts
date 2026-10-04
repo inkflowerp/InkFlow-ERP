@@ -1,9 +1,17 @@
 'use server'
 
+import { withTenantAction } from '@/lib/actions/action-wrapper'
+
+
 import { BranchAnalyticsService } from '../services/branch-analytics.service.ts'
 import { requireTenantUser } from '../lib/auth/tenant-auth.ts'
 
-export async function getBranchKPIsAction(branchId: string) {
+export const getBranchKPIsAction = withTenantAction(
+  {
+    permission: "reports.view",
+    entityType: "branch-analytics"
+  },
+  async (ctx, branchId: string) => {
   const tenant = await requireTenantUser()
   try {
     const kpis = await BranchAnalyticsService.getBranchKPIs(tenant.companyId, branchId)
@@ -11,9 +19,15 @@ export async function getBranchKPIsAction(branchId: string) {
   } catch (error: any) {
     return { success: false, error: error.message }
   }
-}
 
-export async function getBranchComparisonAction(period: string = 'this_month') {
+})
+
+export const getBranchComparisonAction = withTenantAction(
+  {
+    permission: "reports.view",
+    entityType: "branch-analytics"
+  },
+  async (ctx, period: string = 'this_month') => {
   const tenant = await requireTenantUser()
   try {
     const comparison = await BranchAnalyticsService.getBranchComparison(
@@ -24,11 +38,15 @@ export async function getBranchComparisonAction(period: string = 'this_month') {
   } catch (error: any) {
     return { success: false, error: error.message }
   }
-}
 
-export async function getConsolidatedDashboardAction(
-  period: string = 'this_month'
-) {
+})
+
+export const getConsolidatedDashboardAction = withTenantAction(
+  {
+    permission: "reports.view",
+    entityType: "branch-analytics"
+  },
+  async (ctx, period: string = 'this_month') => {
   const tenant = await requireTenantUser()
   try {
     const dashboard = await BranchAnalyticsService.getConsolidatedDashboard(
@@ -39,4 +57,5 @@ export async function getConsolidatedDashboardAction(
   } catch (error: any) {
     return { success: false, error: error.message }
   }
-}
+
+})

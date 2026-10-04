@@ -75,19 +75,19 @@ export function HoldTaskModal({
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Task Summary */}
-        <div className="p-3 bg-amber-50/60 dark:bg-amber-950/30 rounded-lg border border-amber-200 dark:border-amber-800 space-y-1">
-          <div className="text-xs font-bold text-amber-900 dark:text-amber-200 flex items-center gap-1.5">
-            <AlertOctagon className="h-4 w-4 text-amber-600"/>
+        <div className="p-3 bg-warning-surface/60 bg-warning-surface rounded-lg border border-warning-border border-warning-border space-y-1">
+          <div className="text-xs font-bold text-warning text-warning flex items-center gap-1.5">
+            <AlertOctagon className="h-4 w-4 text-warning"/>
             <span>{task.task_name}</span>
           </div>
-          <p className="text-2xs text-amber-800/80 dark:text-amber-300/80">
+          <p className="text-xs text-warning/80 text-warning/80">
  Placing this task on hold will mark it as blocked on the production board and notify the assigned operator.
           </p>
         </div>
 
         {errorMessage && (
-          <div className="p-3 bg-rose-50 text-rose-800 rounded-lg text-xs font-medium flex items-center gap-2 border border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800">
-            <AlertTriangle className="h-4 w-4 text-rose-600 shrink-0"/>
+          <div className="p-3 bg-danger-surface text-destructive rounded-lg text-xs font-medium flex items-center gap-2 border border-danger-border bg-danger-surface text-destructive border-danger-border">
+            <AlertTriangle className="h-4 w-4 text-destructive shrink-0"/>
             <span>{errorMessage}</span>
           </div>
         )}
@@ -100,7 +100,7 @@ export function HoldTaskModal({
           <select
  value={holdReason}
  onChange={(e) => setHoldReason(e.target.value as HoldReason)}
- className="w-full text-xs rounded-md border border-input bg-card px-3 py-2 text-foreground shadow-xs focus:border-amber-500 focus:outline-hidden">
+ className="w-full text-xs rounded-md border border-input bg-card px-3 py-2 text-foreground shadow-xs focus:border-warning-border focus:outline-hidden">
             {Object.entries(HOLD_REASON_LABELS).map(([key, item]) => (
               <option key={key} value={key}>
                 {item.labelEn} ({item.labelBn})
@@ -130,7 +130,7 @@ export function HoldTaskModal({
           </Button>
           <Button
  type="submit"variant="destructive"size="sm"disabled={isSubmitting}
- className="text-xs bg-amber-600 hover:bg-amber-700 text-white font-semibold">
+ className="text-xs bg-warning hover:bg-warning/90 text-white font-semibold">
             {isSubmitting ? tBilingual('Saving...', 'সংরক্ষণ হচ্ছে...') : tBilingual('Confirm Hold', 'স্থগিত নিশ্চিত করুন')}
           </Button>
         </div>

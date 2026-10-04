@@ -413,18 +413,87 @@ export interface OtpRequestRecord {
   created_at: string
 }
 
+export type NotificationEventType =
+  | 'invoice_created'
+  | 'invoice_overdue'
+  | 'payment_received'
+  | 'quotation_approved'
+  | 'design_feedback'
+  | 'production_delay'
+  | 'production_problem'
+  | 'low_stock'
+  | 'attendance_exception'
+  | 'subscription_state'
+  | 'support_reply'
+  | string
+
 export interface NotificationPreferenceRecord {
   id: string
   tenant_id: string
-  event_type: string
+  user_id?: string | null
+  event_type: NotificationEventType
   whatsapp_enabled: boolean
   sms_enabled: boolean
   email_enabled: boolean
   in_app_enabled: boolean
+  quiet_hours_enabled?: boolean
+  quiet_hours_start?: string
+  quiet_hours_end?: string
   whatsapp_template?: string | null
   sms_template?: string | null
   email_template?: string | null
-  recipient_roles: string[]
+  recipient_roles?: string[]
   created_at: string
   updated_at: string
 }
+
+export interface NotifyInput {
+  companyId: string
+  userId?: string
+  role?: string
+  type: NotificationEventType
+  entity?: {
+    type: string
+    id: string
+    number?: string
+  }
+  payload: {
+    title?: string
+    title_bn?: string
+    message?: string
+    message_bn?: string
+    action_url?: string
+    metadata?: Record<string, any>
+    variables?: Record<string, any>
+    recipientName?: string
+    recipientPhone?: string
+    recipientEmail?: string
+    recipientCustomerId?: string
+    recipientUserId?: string
+    idempotencyKey?: string
+    [key: string]: any
+  }
+  channels?: Array<'in_app' | 'email' | 'whatsapp' | 'sms'>
+}
+
+export interface NotifyResult {
+  success: boolean
+  inAppDeliveredCount: number
+  jobsEnqueuedCount: number
+  skippedChannels: string[]
+  delayedForQuietHours?: boolean
+  error?: string
+}
+
+export interface NotificationBusinessRuleRecord {
+  id: string
+  company_id: string
+  rule_type: 'overdue_invoice' | 'low_stock' | 'production_deadline' | string
+  is_enabled: boolean
+  config: Record<string, any>
+  channels: Array<'in_app' | 'whatsapp' | 'email' | 'sms'>
+  last_evaluated_at?: string | null
+  created_at: string
+  updated_at: string
+}
+

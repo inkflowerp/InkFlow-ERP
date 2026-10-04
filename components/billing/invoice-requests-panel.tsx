@@ -152,8 +152,8 @@ export function InvoiceRequestsPanel({
  const getStatusBadge = (status: InvoiceRequestStatus, invoiceNumber?: string | null) => {
  if (status === 'pending') {
  return (
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-50 text-amber-800 border border-amber-300 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800 animate-pulse">
-          <span className="h-2 w-2 rounded-full bg-amber-500"/>
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-warning-surface text-warning border border-warning-border bg-warning-surface/60 text-warning border-warning-border animate-pulse">
+          <span className="h-2 w-2 rounded-full bg-warning"/>
           <span>Pending Billed / কমার্শিয়াল হোল্ড</span>
         </span>
       )
@@ -161,8 +161,8 @@ export function InvoiceRequestsPanel({
 
  if (status === 'invoice_created') {
  return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800">
-          <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600"/>
+        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-success-surface text-success border border-success-border bg-success-surface/60 text-success border-success-border">
+          <CheckCircle2 className="h-3.5 w-3.5 text-success"/>
           <span>Invoiced: #{invoiceNumber || 'Created'}</span>
         </span>
       )
@@ -182,7 +182,7 @@ export function InvoiceRequestsPanel({
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {/* Total Requests */}
         <Card className="p-3.5 bg-card border-border shadow-xs">
-          <div className="text-2xs font-bold text-muted-foreground uppercase tracking-wider flex items-center justify-between">
+          <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center justify-between">
             <span>Total Requests</span>
             <FileText className="h-3.5 w-3.5 text-muted-foreground"/>
           </div>
@@ -193,41 +193,41 @@ export function InvoiceRequestsPanel({
         </Card>
 
         {/* Pending Action (Commercial Hold) */}
-        <Card className="p-3.5 bg-card border-amber-300 dark:border-amber-900/80 shadow-xs bg-amber-50/20">
-          <div className="text-2xs font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider flex items-center justify-between">
+        <Card className="p-3.5 bg-card border-warning-border border-warning-border/80 shadow-xs bg-warning-surface/20">
+          <div className="text-xs font-bold text-warning text-warning uppercase tracking-wider flex items-center justify-between">
             <span>Pending Action</span>
             {metrics.pendingCount > 0 && (
-              <span className="h-2 w-2 rounded-full bg-amber-500 animate-ping"/>
+              <span className="h-2 w-2 rounded-full bg-warning animate-ping"/>
             )}
           </div>
-          <div className="text-xl font-bold font-numeric tabular-nums text-amber-600 dark:text-amber-400 mt-1">
+          <div className="text-xl font-bold font-numeric tabular-nums text-warning text-warning mt-1">
             {metrics.pendingCount}
           </div>
-          <div className="text-xs text-amber-600/90 mt-0.5 font-medium">Production on hold</div>
+          <div className="text-xs text-warning/90 mt-0.5 font-medium">Production on hold</div>
         </Card>
 
         {/* Fulfilled / Invoiced */}
-        <Card className="p-3.5 bg-card border-emerald-200 dark:border-emerald-900/60 shadow-xs">
-          <div className="text-2xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider flex items-center justify-between">
+        <Card className="p-3.5 bg-card border-success-border border-success-border/60 shadow-xs">
+          <div className="text-xs font-bold text-success text-success uppercase tracking-wider flex items-center justify-between">
             <span>Invoices Created</span>
-            <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500"/>
+            <CheckCircle2 className="h-3.5 w-3.5 text-success"/>
           </div>
-          <div className="text-xl font-bold font-numeric tabular-nums text-emerald-600 dark:text-emerald-400 mt-1">
+          <div className="text-xl font-bold font-numeric tabular-nums text-success text-success mt-1">
             {metrics.fulfilledCount}
           </div>
-          <div className="text-xs text-emerald-600/90 mt-0.5">Gates reconnected</div>
+          <div className="text-xs text-success/90 mt-0.5">Gates reconnected</div>
         </Card>
 
         {/* Estimated Pipeline Value */}
-        <Card className="p-3.5 bg-card border-blue-200 dark:border-blue-900/60 shadow-xs">
-          <div className="text-2xs font-bold text-blue-700 dark:text-blue-400 uppercase tracking-wider flex items-center justify-between">
+        <Card className="p-3.5 bg-card border-primary/20 border-border/60 shadow-xs">
+          <div className="text-xs font-bold text-primary text-primary uppercase tracking-wider flex items-center justify-between">
             <span>Estimated Value</span>
-            <Sparkles className="h-3.5 w-3.5 text-blue-500"/>
+            <Sparkles className="h-3.5 w-3.5 text-primary"/>
           </div>
-          <div className="text-xl font-bold font-numeric tabular-nums text-blue-600 dark:text-blue-400 mt-1">
+          <div className="text-xl font-bold font-numeric tabular-nums text-primary text-primary mt-1">
             {formatBDT(metrics.totalEstimatedValue)}
           </div>
-          <div className="text-xs text-blue-600/90 mt-0.5">Estimated pipeline</div>
+          <div className="text-xs text-primary/90 mt-0.5">Estimated pipeline</div>
         </Card>
       </div>
 
@@ -236,7 +236,7 @@ export function InvoiceRequestsPanel({
         <CardHeader className="p-4 bg-muted border-b border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <div className="flex items-center gap-2">
-              <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
+              <div className="h-6 w-6 rounded-lg bg-primary/10 text-primary bg-primary/60 text-primary flex items-center justify-center font-bold text-xs">
                 📋
               </div>
               <CardTitle className="text-sm font-black text-foreground uppercase tracking-wider">
@@ -264,7 +264,7 @@ export function InvoiceRequestsPanel({
                     'px-2.5 py-1 rounded-md transition-all cursor-pointer flex items-center gap-1.5',
  activeSubFilter === tab.id
                       ? tab.id === 'pending'
-                        ? 'bg-amber-600 text-white shadow-xs font-bold'
+                        ? 'bg-warning text-white shadow-xs font-bold'
                         : 'bg-surface-inset text-foreground shadow-xs font-bold'
                       : 'text-muted-foreground hover:text-foreground'
                   )}
@@ -272,11 +272,11 @@ export function InvoiceRequestsPanel({
                   <span>{tab.label}</span>
                   <span
  className={cn(
-                      'text-2xs px-1 py-0.2 rounded-full tabular-nums font-bold',
+                      'text-xs px-1 py-0.2 rounded-full tabular-nums font-bold',
  activeSubFilter === tab.id
                         ? 'bg-card/20 text-white'
                         : tab.alert
-                        ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
+                        ? 'bg-warning-surface text-warning bg-warning-surface text-warning'
                         : 'bg-muted text-muted-foreground '
                     )}
                   >
@@ -344,7 +344,7 @@ export function InvoiceRequestsPanel({
                         #{req.request_number}
                       </span>
                       {getStatusBadge(req.status, req.invoice_number)}
-                      <span className="text-2xs text-muted-foreground flex items-center gap-1">
+                      <span className="text-xs text-muted-foreground flex items-center gap-1">
                         <Clock className="h-3 w-3"/>
                         <span>{timeAgo(req.created_at)}</span>
                       </span>
@@ -354,28 +354,28 @@ export function InvoiceRequestsPanel({
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 text-xs">
                       {/* Customer Info */}
                       <div className="space-y-0.5">
-                        <div className="text-2xs font-bold uppercase tracking-wider text-muted-foreground">Customer</div>
+                        <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Customer</div>
                         <div className="font-bold text-foreground flex items-center gap-1.5">
                           <User className="h-3.5 w-3.5 text-muted-foreground shrink-0"/>
                           <span>{req.customer_name}</span>
                         </div>
                         {req.company_name && (
-                          <div className="text-2xs text-muted-foreground font-medium">
+                          <div className="text-xs text-muted-foreground font-medium">
                             {req.company_name}
                           </div>
                         )}
                         {req.customer_phone && (
-                          <div className="text-2xs text-muted-foreground tabular-nums flex items-center gap-1">
+                          <div className="text-xs text-muted-foreground tabular-nums flex items-center gap-1">
                             <Phone className="h-3 w-3 text-muted-foreground shrink-0"/>
                             <a
  href={`tel:${req.customer_phone}`}
- className="hover:underline hover:text-blue-600">
+ className="hover:underline hover:text-primary">
                               {req.customer_phone}
                             </a>
                           </div>
                         )}
                         {req.customer_address && (
-                          <div className="text-2xs text-muted-foreground truncate max-w-xs"title={req.customer_address}>
+                          <div className="text-xs text-muted-foreground truncate max-w-xs"title={req.customer_address}>
                             📍 {req.customer_address}
                           </div>
                         )}
@@ -383,26 +383,26 @@ export function InvoiceRequestsPanel({
 
                       {/* Linked Orders / Design */}
                       <div className="space-y-0.5">
-                        <div className="text-2xs font-bold uppercase tracking-wider text-muted-foreground">
+                        <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
  Linked Documents
                         </div>
                         <div className="flex flex-wrap items-center gap-1.5">
                           {req.order_number && (
                             <Link href={getTenantNavHref(`/orders/${req.sales_order_id || ''}`, pathname, tenantSlug)}>
-                              <Badge variant="outline"className="text-2xs tabular-nums hover:bg-muted dark:hover:bg-muted">
+                              <Badge variant="outline"className="text-xs tabular-nums hover:bg-muted dark:hover:bg-muted">
  Order #{req.order_number}
                               </Badge>
                             </Link>
                           )}
                           {req.design_number && (
                             <Link href={getTenantNavHref(`/design/${req.design_job_id || ''}`, pathname, tenantSlug)}>
-                              <Badge variant="outline"className="text-2xs tabular-nums hover:bg-muted dark:hover:bg-muted">
+                              <Badge variant="outline"className="text-xs tabular-nums hover:bg-muted dark:hover:bg-muted">
  Design #{req.design_number}
                               </Badge>
                             </Link>
                           )}
                           {req.job_number && (
-                            <Badge variant="outline"className="text-2xs tabular-nums">
+                            <Badge variant="outline"className="text-xs tabular-nums">
  Job #{req.job_number}
                             </Badge>
                           )}
@@ -414,14 +414,14 @@ export function InvoiceRequestsPanel({
 
                       {/* Requested By & Value */}
                       <div className="space-y-0.5">
-                        <div className="text-2xs font-bold uppercase tracking-wider text-muted-foreground">
+                        <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
  Requested By
                         </div>
                         <div className="font-medium text-foreground">
                           {req.requested_by_name || 'Prepress Designer'}
                         </div>
                         {Number(req.estimated_amount) > 0 && (
-                          <div className="text-2xs tabular-nums font-bold text-blue-600 dark:text-blue-400">
+                          <div className="text-xs tabular-nums font-bold text-primary text-primary">
  Est: {formatBDT(req.estimated_amount)}
                           </div>
                         )}
@@ -430,7 +430,7 @@ export function InvoiceRequestsPanel({
 
                     {/* Notes & Summary Callout */}
                     {(req.items_summary || req.notes) && (
-                      <div className="p-2.5 bg-muted rounded-xl border border-border text-2xs text-muted-foreground space-y-0.5 tabular-nums">
+                      <div className="p-2.5 bg-muted rounded-xl border border-border text-xs text-muted-foreground space-y-0.5 tabular-nums">
                         {req.items_summary && (
                           <div>
                             <strong className="text-foreground">Items:</strong> {req.items_summary}
@@ -461,7 +461,7 @@ export function InvoiceRequestsPanel({
  setSelectedRequestForCancel(req)
  setCancelReason('')
                           }}
- className="h-8 px-2.5 text-xs text-muted-foreground hover:text-rose-600 hover:border-rose-300 dark:hover:text-rose-400 gap-1 cursor-pointer">
+ className="h-8 px-2.5 text-xs text-muted-foreground hover:text-destructive hover:border-danger-border dark:hover:text-destructive gap-1 cursor-pointer">
                           <Ban className="h-3 w-3"/>
                           <span>Cancel</span>
                         </Button>
@@ -471,13 +471,13 @@ export function InvoiceRequestsPanel({
                         {req.invoice_id ? (
                           <Link href={getTenantNavHref(`/billing/${req.invoice_id}`, pathname, tenantSlug)}>
                             <Button
- size="sm"variant="outline"className="h-8 text-xs font-bold border-emerald-300 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-700 dark:text-emerald-300 gap-1">
+ size="sm"variant="outline"className="h-8 text-xs font-bold border-success-border text-success hover:bg-success-surface border-success-border text-success gap-1">
                               <ExternalLink className="h-3.5 w-3.5"/>
                               <span>View Invoice</span>
                             </Button>
                           </Link>
                         ) : (
-                          <Badge className="bg-emerald-100 text-emerald-800 border-emerald-300">
+                          <Badge className="bg-success-surface text-success border-success-border">
                             #{req.invoice_number || 'Invoiced'}
                           </Badge>
                         )}
@@ -532,7 +532,7 @@ export function InvoiceRequestsPanel({
               </Button>
               <Button
  type="submit"size="sm"disabled={isSubmittingCancel}
- className="bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs">
+ className="bg-destructive hover:bg-destructive text-white font-bold text-xs">
                 {isSubmittingCancel ? 'Cancelling...' : 'Confirm Cancellation'}
               </Button>
             </div>

@@ -10,18 +10,23 @@ import type { ProductionTaskRecord } from '../types/production.types.ts'
 import type { DesignJobRecord } from '../types/design.types.ts'
 import type { DeliveryChallanRecord } from '../types/logistics.types.ts'
 import { SalesOrderCreateSchema } from '../lib/security/input-validation.ts'
+import { withTenantAction } from '../lib/actions/action-wrapper.ts'
 
 export interface ServerActionResult<T> {
   success: boolean
   data?: T
   error?: string
+  conflict?: boolean
 }
 
 /**
  * Server Action: Securely creates a sales order with linked items and timeline in PostgreSQL
  */
-export async function createSalesOrderAction(
-  orderData: {
+export const createSalesOrderAction = withTenantAction(
+  { permission: 'orders.create', auditAction: 'order.create', entityType: 'order' },
+  async (
+    ctx,
+    orderData: {
     customer_id: string
     customer_name: string
     customer_phone?: string
@@ -52,7 +57,7 @@ export async function createSalesOrderAction(
     }>
   },
   requestedCompanyId?: string
-): Promise<ServerActionResult<SalesOrderRecord>> {
+): Promise<ServerActionResult<SalesOrderRecord>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -128,15 +133,20 @@ export async function createSalesOrderAction(
     return { success: false, error: error.message || 'Failed to create sales order' }
   }
 }
+)
 
 /**
  * Server Action: Update order status
  */
-export async function updateOrderStatusAction(
-  orderId: string,
-  status: 'draft' | 'confirmed' | 'in_production' | 'completed' | 'delivered' | 'cancelled',
-  requestedCompanyId?: string
-): Promise<ServerActionResult<SalesOrderRecord>> {
+export const updateOrderStatusAction = withTenantAction(
+  { permission: 'orders.edit', auditAction: 'order.update_status', entityType: 'order' },
+  async (
+    ctx,
+    orderId: string,
+    status: 'draft' | 'confirmed' | 'in_production' | 'completed' | 'delivered' | 'cancelled',
+    expectedVersion?: number,
+    requestedCompanyId?: string
+  ): Promise<ServerActionResult<SalesOrderRecord>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -144,16 +154,24 @@ export async function updateOrderStatusAction(
     }
     const companyId = tenant.companyId
 
-    const updated = await OrderService.updateOrder(orderId, { status }, companyId)
+    const updated = await OrderService.updateOrder(orderId, { status }, companyId, expectedVersion)
     if (!updated) {
       return { success: false, error: 'Failed to update order status: order not found.' }
     }
     revalidatePath('/', 'layout')
     return { success: true, data: updated }
   } catch (error: any) {
+    if (error?.conflict || error?.code === 'STALE_WRITE' || error?.message?.includes('Updated by someone else')) {
+      return {
+        success: false,
+        conflict: true,
+        error: 'Updated by someone else, reload?',
+      }
+    }
     return { success: false, error: error.message || 'Failed to update order status' }
   }
 }
+)
 
 export interface NewWorkIntakeInput {
   customerId: string
@@ -192,9 +210,12 @@ export interface NewWorkIntakeResult {
 /**
  * Server Action: Frictionless New Work order intake, invoice generation & production task creation
  */
-export async function createNewWorkIntakeAction(
-  input: NewWorkIntakeInput
-): Promise<ServerActionResult<NewWorkIntakeResult>> {
+export const createNewWorkIntakeAction = withTenantAction(
+  { permission: 'orders.create', auditAction: 'order.new_intake', entityType: 'order' },
+  async (
+    ctx,
+    input: NewWorkIntakeInput
+  ): Promise<ServerActionResult<NewWorkIntakeResult>> => {
   try {
     const tenant = await getCurrentTenant(input.companyId)
     if (!tenant || !tenant.companyId) {
@@ -404,82 +425,76 @@ export async function createNewWorkIntakeAction(
     return { success: false, error: error.message || 'Failed to create work intake' }
   }
 }
+)
 
 /**
  * Server Action: Fetch sales orders for tenant
  */
-export async function getOrdersAction(
-  requestedCompanyId?: string
-): Promise<ServerActionResult<SalesOrderRecord[]>> {
-  try {
-    const tenant = await getCurrentTenant(requestedCompanyId)
-    if (!tenant || !tenant.companyId) {
-      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
+export const getOrdersAction = withTenantAction(
+  { permission: 'orders.view' },
+  async (
+    ctx,
+    requestedCompanyId?: string
+  ): Promise<ServerActionResult<SalesOrderRecord[]>> => {
+    try {
+      const data = await OrderService.getOrders(ctx.companyId)
+      return { success: true, data }
+    } catch (error: any) {
+      return { success: false, error: error.message || 'Failed to fetch orders' }
     }
-    const data = await OrderService.getOrders(tenant.companyId)
-    return { success: true, data }
-  } catch (error: any) {
-    return { success: false, error: error.message || 'Failed to fetch orders' }
   }
-}
+)
 
 /**
  * Server Action: Fetch job orders for tenant
  */
-export async function getJobOrdersAction(
-  requestedCompanyId?: string,
-  orderId?: string
-): Promise<ServerActionResult<JobOrderRecord[]>> {
-  try {
-    const tenant = await getCurrentTenant(requestedCompanyId)
-    if (!tenant || !tenant.companyId) {
-      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
+export const getJobOrdersAction = withTenantAction(
+  { permission: 'orders.view' },
+  async (
+    ctx,
+    requestedCompanyId?: string,
+    orderId?: string
+  ): Promise<ServerActionResult<JobOrderRecord[]>> => {
+    try {
+      const data = await OrderService.getJobs(ctx.companyId, orderId)
+      return { success: true, data }
+    } catch (error: any) {
+      return { success: false, error: error.message || 'Failed to fetch job orders' }
     }
-    const data = await OrderService.getJobs(tenant.companyId, orderId)
-    return { success: true, data }
-  } catch (error: any) {
-    return { success: false, error: error.message || 'Failed to fetch job orders' }
   }
-}
+)
 
 /**
  * Server Action: Purge all sales orders and job orders for tenant
  */
-export async function purgeAllOrdersAction(
-  requestedCompanyId?: string
-): Promise<ServerActionResult<boolean>> {
-  try {
-    const tenant = await getCurrentTenant(requestedCompanyId)
-    if (!tenant || !tenant.companyId) {
-      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
-    }
-    const companyId = tenant.companyId
-
-    const ok = await OrderService.purgeAllOrders(companyId)
-    if (!ok) {
-      return { success: false, error: 'Failed to purge orders.' }
-    }
-
+export const purgeAllOrdersAction = withTenantAction(
+  {
+    permission: 'orders.delete',
+    destructive: true,
+    requirePasswordConfirm: true,
+    auditAction: 'order.purge_all',
+    entityType: 'order',
+  },
+  async (
+    ctx,
+    requestedCompanyId?: string,
+    confirmName?: string,
+    password?: string
+  ): Promise<ServerActionResult<boolean>> => {
     try {
-      await AuditService.logEvent(
-        companyId,
-        tenant.userId,
-        tenant.userEmail,
-        'order.purge_all',
-        'order',
-        null,
-        null,
-        {},
-        `Purged all sales orders and job orders for company ${companyId}`
-      )
-    } catch {}
+      const ok = await OrderService.purgeAllOrders(ctx.companyId)
+      if (!ok) {
+        return { success: false, error: 'Failed to purge orders.' }
+      }
 
-    revalidatePath('/', 'layout')
-    return { success: true, data: true }
-  } catch (error: any) {
-    return { success: false, error: error.message || 'Failed to purge orders' }
+      revalidatePath('/', 'layout')
+      return { success: true, data: true }
+    } catch (error: any) {
+      return { success: false, error: error.message || 'Failed to purge orders' }
+    }
   }
-}
+)
+
 
 export interface OrderWithDetailsResult {
   order: SalesOrderRecord
@@ -492,10 +507,13 @@ export interface OrderWithDetailsResult {
 /**
  * Server Action: Authoritatively fetches full order details with child jobs, production tasks, design jobs, and delivery challans
  */
-export async function getOrderWithDetailsAction(
-  orderIdOrNumber: string,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<OrderWithDetailsResult>> {
+export const getOrderWithDetailsAction = withTenantAction(
+  { permission: 'orders.view' },
+  async (
+    ctx,
+    orderIdOrNumber: string,
+    requestedCompanyId?: string
+  ): Promise<ServerActionResult<OrderWithDetailsResult>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -651,6 +669,7 @@ export async function getOrderWithDetailsAction(
     return { success: false, error: error.message || 'Failed to fetch order details' }
   }
 }
+)
 
 
 

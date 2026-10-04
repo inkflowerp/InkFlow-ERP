@@ -574,7 +574,7 @@ export function OutsourceProductModal({
  size="5xl"onSubmit={handleSubmit}
  title={
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-600/10 text-purple-600 dark:bg-purple-500/20 dark:text-purple-400 font-bold shrink-0 ring-1 ring-purple-500/20">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary bg-primary/20 text-primary font-bold shrink-0 ring-1 focus:ring-ring/20">
             <Share2 className="h-5 w-5"/>
           </div>
           <div>
@@ -582,11 +582,11 @@ export function OutsourceProductModal({
               <span className="text-base font-bold text-foreground">
                 {initialData ? `Edit Outsource Product: ${initialData.name}` : 'New Outsource Product'}
               </span>
-              <Badge variant="outline"className="text-2xs uppercase tabular-nums py-0.5 px-2 bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-800">
+              <Badge variant="outline"className="text-xs uppercase tabular-nums py-0.5 px-2 bg-primary/10 text-primary border-primary/20 bg-primary/10 text-primary border-border">
  Non-Inventory Item
               </Badge>
               {sellingPrice !== '' && Number(sellingPrice) > 0 && (
-                <Badge variant="outline"className="text-2xs tabular-nums py-0.5 px-2 bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800">
+                <Badge variant="outline"className="text-xs tabular-nums py-0.5 px-2 bg-success-surface text-success border-success-border bg-success-surface text-success border-success-border">
                   ৳{Number(sellingPrice).toFixed(2)} / {unit}
                 </Badge>
               )}
@@ -626,7 +626,7 @@ export function OutsourceProductModal({
  setFieldErrors({})
  setActiveTab(TABS_CONFIG[currentTabIndex + 1].id)
                 }}
- className="h-10 px-4 rounded-xl font-bold border-purple-300 text-purple-700 dark:border-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-950/40 gap-1.5 cursor-pointer">
+ className="h-10 px-4 rounded-xl font-bold border-primary/20 text-primary border-border text-primary hover:bg-primary/10 dark:hover:bg-primary/10 gap-1.5 cursor-pointer">
                 <span>Next Step</span>
                 <ChevronRight className="w-4 h-4"/>
               </Button>
@@ -635,7 +635,7 @@ export function OutsourceProductModal({
             {currentTabIndex === TABS_CONFIG.length - 1 && (
               <Button
  type="submit"disabled={isSubmitting}
- className="h-10 px-5 rounded-xl font-bold bg-purple-600 hover:bg-purple-700 text-white shadow-xs flex items-center justify-center gap-2 cursor-pointer">
+ className="h-10 px-5 rounded-xl font-bold bg-primary hover:bg-primary text-white shadow-xs flex items-center justify-center gap-2 cursor-pointer">
                 {isSubmitting ? (
                   <>
                     <RefreshCw className="h-4 w-4 animate-spin"/>
@@ -666,11 +666,11 @@ export function OutsourceProductModal({
  className={cn(
                   'px-2 py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap text-xs relative',
  isSelected
-                    ? 'bg-card text-foreground shadow-xs font-bold ring-1 ring-slate-200 dark:ring-slate-600'
+                    ? 'bg-card text-foreground shadow-xs font-bold ring-1 focus:ring-ring dark:focus:ring-ring'
                     : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground font-medium'
                 )}
               >
-                <Icon className={cn('w-3.5 h-3.5 shrink-0', isSelected ? 'text-purple-600 dark:text-purple-400' : 'text-muted-foreground')} />
+                <Icon className={cn('w-3.5 h-3.5 shrink-0', isSelected ? 'text-primary text-primary' : 'text-muted-foreground')} />
                 <span>{tab.label}</span>
               </button>
             )
@@ -687,7 +687,7 @@ export function OutsourceProductModal({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <Label className="text-xs font-bold text-foreground">
- Outsource Product Name <span className="text-rose-500">*</span>
+ Outsource Product Name <span className="text-destructive">*</span>
                   </Label>
                   <Input
  value={name}
@@ -697,12 +697,12 @@ export function OutsourceProductModal({
                     }}
  placeholder="e.g. Offset Leaflet A4 120 GSM (1,000 pcs)"className={cn(
                       'mt-1 h-9 text-xs font-medium transition-colors',
- fieldErrors.name && 'border-rose-500 focus-visible:ring-rose-400 bg-rose-50/30 dark:bg-rose-950/20'
+ fieldErrors.name && 'border-danger-border focus-visible:focus:ring-ring bg-danger-surface/30 bg-danger-surface'
                     )}
  required
                   />
                   {fieldErrors.name && (
-                    <p className="text-2xs text-rose-600 dark:text-rose-400 font-medium mt-1 flex items-center gap-1">
+                    <p className="text-xs text-destructive text-destructive font-medium mt-1 flex items-center gap-1">
                       <AlertCircle className="w-3.5 h-3.5 shrink-0"/>
                       <span>{fieldErrors.name}</span>
                     </p>
@@ -734,7 +734,7 @@ export function OutsourceProductModal({
                   <select
  value={category}
  onChange={(e) => setCategory(e.target.value)}
- className="mt-1 w-full h-9 px-3 rounded-lg border border-input bg-card text-xs font-medium focus:ring-1 focus:ring-purple-500">
+ className="mt-1 w-full h-9 px-3 rounded-lg border border-input bg-card text-xs font-medium focus:ring-1 focus:ring-ring">
                     {OUTSOURCE_CATEGORIES.map((c) => (
                       <option key={c.id} value={c.id}>
                         {c.name}
@@ -752,7 +752,7 @@ export function OutsourceProductModal({
  setUnit(val)
  setPurchaseUnit(val)
                     }}
- className="mt-1 w-full h-9 px-3 rounded-lg border border-input bg-card text-xs font-medium focus:ring-1 focus:ring-purple-500 tabular-nums">
+ className="mt-1 w-full h-9 px-3 rounded-lg border border-input bg-card text-xs font-medium focus:ring-1 focus:ring-ring tabular-nums">
                     {OUTSOURCE_PRODUCT_UNITS.map((u) => (
                       <option key={u.value} value={u.value}>
                         {u.label}
@@ -765,7 +765,7 @@ export function OutsourceProductModal({
               {/* Vendor Mapping Section */}
               <div className="pt-3 border-t border-border space-y-3">
                 <div className="flex items-center gap-2">
-                  <Building className="w-4 h-4 text-purple-600"/>
+                  <Building className="w-4 h-4 text-primary"/>
                   <span className="text-xs font-bold text-foreground">
  Preferred Outsource Vendor & Contact
                   </span>
@@ -778,7 +778,7 @@ export function OutsourceProductModal({
                       <select
  value={preferredVendorId}
  onChange={(e) => handleSupplierSelect(e.target.value)}
- className="mt-1 w-full h-9 px-3 rounded-lg border border-input bg-card text-xs font-medium focus:ring-1 focus:ring-purple-500">
+ className="mt-1 w-full h-9 px-3 rounded-lg border border-input bg-card text-xs font-medium focus:ring-1 focus:ring-ring">
                         <option value="">-- Choose Vendor / Press --</option>
                         {suppliers.map((s) => (
                           <option key={s.id} value={s.id}>
@@ -842,37 +842,37 @@ export function OutsourceProductModal({
           <div className="space-y-4">
             <div className="p-4 rounded-xl border border-border bg-card space-y-4">
               {/* Live Commercial Margin Bar */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3 rounded-xl bg-purple-50/50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800/80">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3 rounded-xl bg-primary/10/50 bg-primary/10 border border-primary/20 border-border/80">
                 <div>
-                  <span className="text-2xs font-bold uppercase text-purple-700 dark:text-purple-300 tracking-wider block">Vendor Cost (Buy)</span>
+                  <span className="text-xs font-bold uppercase text-primary text-primary tracking-wider block">Vendor Cost (Buy)</span>
                   <div className="text-lg font-bold tabular-nums text-foreground mt-0.5">
                     ৳{Number(vendorCost) || 0}
                   </div>
-                  <span className="text-2xs text-muted-foreground">per {unit}</span>
+                  <span className="text-xs text-muted-foreground">per {unit}</span>
                 </div>
 
                 <div>
-                  <span className="text-2xs font-bold uppercase text-purple-700 dark:text-purple-300 tracking-wider block">Selling Price</span>
-                  <div className="text-lg font-bold tabular-nums text-blue-600 mt-0.5">
+                  <span className="text-xs font-bold uppercase text-primary text-primary tracking-wider block">Selling Price</span>
+                  <div className="text-lg font-bold tabular-nums text-primary mt-0.5">
                     ৳{Number(sellingPrice) || 0}
                   </div>
-                  <span className="text-2xs text-muted-foreground">per {unit}</span>
+                  <span className="text-xs text-muted-foreground">per {unit}</span>
                 </div>
 
                 <div>
-                  <span className="text-2xs font-bold uppercase text-purple-700 dark:text-purple-300 tracking-wider block">Gross Profit</span>
-                  <div className="text-lg font-bold tabular-nums text-emerald-600 mt-0.5">
+                  <span className="text-xs font-bold uppercase text-primary text-primary tracking-wider block">Gross Profit</span>
+                  <div className="text-lg font-bold tabular-nums text-success mt-0.5">
                     ৳{marginMetrics.grossProfit}
                   </div>
-                  <span className="text-2xs text-muted-foreground">Markup: {marginMetrics.markupPercent}%</span>
+                  <span className="text-xs text-muted-foreground">Markup: {marginMetrics.markupPercent}%</span>
                 </div>
 
                 <div>
-                  <span className="text-2xs font-bold uppercase text-purple-700 dark:text-purple-300 tracking-wider block">Gross Margin %</span>
-                  <div className="text-lg font-bold tabular-nums text-emerald-600 mt-0.5">
+                  <span className="text-xs font-bold uppercase text-primary text-primary tracking-wider block">Gross Margin %</span>
+                  <div className="text-lg font-bold tabular-nums text-success mt-0.5">
                     {marginMetrics.grossMarginPercent}%
                   </div>
-                  <span className="text-2xs text-muted-foreground">Target: {targetMargin}%</span>
+                  <span className="text-xs text-muted-foreground">Target: {targetMargin}%</span>
                 </div>
               </div>
 
@@ -880,13 +880,13 @@ export function OutsourceProductModal({
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
                   <Label className="text-xs font-bold text-foreground">
- Vendor Purchase Cost (৳) <span className="text-rose-500">*</span>
+ Vendor Purchase Cost (৳) <span className="text-destructive">*</span>
                   </Label>
                   <Input
  type="number"min="0"step="0.01"value={vendorCost}
  onChange={(e) => setVendorCost(e.target.value === '' ? '' : Number(e.target.value))}
  placeholder="e.g. 1800"className="mt-1 h-9 text-xs tabular-nums font-bold"/>
-                  <span className="text-2xs text-muted-foreground mt-0.5 block">Price paid to third-party subcontractor</span>
+                  <span className="text-xs text-muted-foreground mt-0.5 block">Price paid to third-party subcontractor</span>
                 </div>
 
                 <div>
@@ -894,9 +894,9 @@ export function OutsourceProductModal({
                   <Input
  type="number"min="1"max="99"value={targetMargin}
  onChange={(e) => setTargetMargin(Number(e.target.value))}
- placeholder="35"className="mt-1 h-9 text-xs tabular-nums font-bold text-purple-600"/>
+ placeholder="35"className="mt-1 h-9 text-xs tabular-nums font-bold text-primary"/>
                   {suggestedSellingPrice > 0 && (
-                    <span className="text-2xs text-purple-600 mt-0.5 block font-semibold">
+                    <span className="text-xs text-primary mt-0.5 block font-semibold">
  Suggested: ৳{suggestedSellingPrice} (Click to apply)
                     </span>
                   )}
@@ -904,7 +904,7 @@ export function OutsourceProductModal({
 
                 <div>
                   <Label className="text-xs font-bold text-foreground">
- Catalog Base Selling Price (৳) <span className="text-rose-500">*</span>
+ Catalog Base Selling Price (৳) <span className="text-destructive">*</span>
                   </Label>
                   <Input
  type="number"min="0"step="0.01"value={sellingPrice}
@@ -913,18 +913,18 @@ export function OutsourceProductModal({
  if (fieldErrors.sellingPrice) setFieldErrors((prev) => ({ ...prev, sellingPrice: '' }))
                     }}
  placeholder="e.g. 2800"className={cn(
-                      'mt-1 h-9 text-xs tabular-nums font-bold text-blue-600 transition-colors',
- fieldErrors.sellingPrice && 'border-rose-500 focus-visible:ring-rose-400 bg-rose-50/30 dark:bg-rose-950/20'
+                      'mt-1 h-9 text-xs tabular-nums font-bold text-primary transition-colors',
+ fieldErrors.sellingPrice && 'border-danger-border focus-visible:focus:ring-ring bg-danger-surface/30 bg-danger-surface'
                     )}
  required
                   />
                   {fieldErrors.sellingPrice && (
-                    <p className="text-2xs text-rose-600 dark:text-rose-400 font-medium mt-1 flex items-center gap-1">
+                    <p className="text-xs text-destructive text-destructive font-medium mt-1 flex items-center gap-1">
                       <AlertCircle className="w-3.5 h-3.5 shrink-0"/>
                       <span>{fieldErrors.sellingPrice}</span>
                     </p>
                   )}
-                  <span className="text-2xs text-muted-foreground mt-0.5 block">Default selling price billed to clients</span>
+                  <span className="text-xs text-muted-foreground mt-0.5 block">Default selling price billed to clients</span>
                 </div>
               </div>
 
@@ -932,14 +932,14 @@ export function OutsourceProductModal({
               <div className="pt-3 border-t border-border space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Tag className="w-4 h-4 text-purple-600"/>
+                    <Tag className="w-4 h-4 text-primary"/>
                     <span className="text-xs font-bold text-foreground">
  Multi-Tier Customer Pricing (৳ / {unit})
                     </span>
                   </div>
                   <Button
  type="button"variant="outline"size="sm"onClick={handleAutoFillTiers}
- className="h-7 px-2.5 text-2xs font-bold text-foreground border-border hover:bg-muted cursor-pointer">
+ className="h-7 px-2.5 text-xs font-bold text-foreground border-border hover:bg-muted cursor-pointer">
                     <Sparkles className="w-3 h-3 mr-1"/>
  Auto-Calculate Tiers
                   </Button>
@@ -947,7 +947,7 @@ export function OutsourceProductModal({
 
                 <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
                   <div>
-                    <Label className="text-2xs font-semibold text-muted-foreground">Retail Rate (৳)</Label>
+                    <Label className="text-xs font-semibold text-muted-foreground">Retail Rate (৳)</Label>
                     <Input
  type="number"value={priceTiers.retail}
  onChange={(e) => setPriceTiers({ ...priceTiers, retail: e.target.value === '' ? '' : Number(e.target.value) })}
@@ -955,35 +955,35 @@ export function OutsourceProductModal({
                   </div>
 
                   <div>
-                    <Label className="text-2xs font-semibold text-muted-foreground">Corporate (-5%)</Label>
+                    <Label className="text-xs font-semibold text-muted-foreground">Corporate (-5%)</Label>
                     <Input
  type="number"value={priceTiers.corporate}
  onChange={(e) => setPriceTiers({ ...priceTiers, corporate: e.target.value === '' ? '' : Number(e.target.value) })}
- placeholder="Corporate"className="mt-1 h-8 text-xs tabular-nums text-indigo-600 font-semibold"/>
+ placeholder="Corporate"className="mt-1 h-8 text-xs tabular-nums text-primary font-semibold"/>
                   </div>
 
                   <div>
-                    <Label className="text-2xs font-semibold text-muted-foreground">Dealer (-10%)</Label>
+                    <Label className="text-xs font-semibold text-muted-foreground">Dealer (-10%)</Label>
                     <Input
  type="number"value={priceTiers.dealer}
  onChange={(e) => setPriceTiers({ ...priceTiers, dealer: e.target.value === '' ? '' : Number(e.target.value) })}
- placeholder="Dealer"className="mt-1 h-8 text-xs tabular-nums text-amber-600 font-semibold"/>
+ placeholder="Dealer"className="mt-1 h-8 text-xs tabular-nums text-warning font-semibold"/>
                   </div>
 
                   <div>
-                    <Label className="text-2xs font-semibold text-muted-foreground">Wholesale (-15%)</Label>
+                    <Label className="text-xs font-semibold text-muted-foreground">Wholesale (-15%)</Label>
                     <Input
  type="number"value={priceTiers.wholesale}
  onChange={(e) => setPriceTiers({ ...priceTiers, wholesale: e.target.value === '' ? '' : Number(e.target.value) })}
- placeholder="Wholesale"className="mt-1 h-8 text-xs tabular-nums text-emerald-600 font-semibold"/>
+ placeholder="Wholesale"className="mt-1 h-8 text-xs tabular-nums text-success font-semibold"/>
                   </div>
 
                   <div>
-                    <Label className="text-2xs font-semibold text-muted-foreground">Custom / VIP</Label>
+                    <Label className="text-xs font-semibold text-muted-foreground">Custom / VIP</Label>
                     <Input
  type="number"value={priceTiers.custom}
  onChange={(e) => setPriceTiers({ ...priceTiers, custom: e.target.value === '' ? '' : Number(e.target.value) })}
- placeholder="Custom"className="mt-1 h-8 text-xs tabular-nums text-purple-600 font-semibold"/>
+ placeholder="Custom"className="mt-1 h-8 text-xs tabular-nums text-primary font-semibold"/>
                   </div>
                 </div>
               </div>
@@ -1003,7 +1003,7 @@ export function OutsourceProductModal({
                   <Input
  type="number"min="0"max="90"value={minAllowedMargin}
  onChange={(e) => setMinAllowedMargin(Number(e.target.value))}
- className="mt-1 h-8 text-xs tabular-nums text-rose-600 font-semibold"/>
+ className="mt-1 h-8 text-xs tabular-nums text-destructive font-semibold"/>
                 </div>
 
                 <div>
@@ -1025,15 +1025,15 @@ export function OutsourceProductModal({
           <div className="space-y-4">
             <div className="p-4 rounded-xl border border-border bg-card space-y-4">
               {/* Non-Inventory Clarification Banner */}
-              <div className="p-3.5 rounded-xl border border-purple-200 dark:border-purple-900/60 bg-purple-50/50 dark:bg-purple-950/20 flex items-start gap-3">
-                <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300 shrink-0 mt-0.5">
+              <div className="p-3.5 rounded-xl border border-primary/20 border-border/60 bg-primary/10/50 bg-primary/10 flex items-start gap-3">
+                <div className="p-2 rounded-lg bg-primary/10 bg-primary/50 text-primary text-primary shrink-0 mt-0.5">
                   <ShieldCheck className="w-4 h-4"/>
                 </div>
                 <div className="text-xs space-y-1">
-                  <span className="font-bold text-purple-900 dark:text-purple-200 block">
+                  <span className="font-bold text-primary text-primary block">
  Non-Inventory Item Routing Architecture
                   </span>
-                  <p className="text-muted-foreground leading-relaxed text-2xs">
+                  <p className="text-muted-foreground leading-relaxed text-xs">
  This product is configured as a <strong>Non-Inventory Item</strong>. When included in quotations and job orders, it will <strong>not</strong> consume internal warehouse stock rolls (e.g. flex banner or vinyl rolls) and will bypass internal machine queues, routing directly into vendor procurement and dispatch tickets.
                   </p>
                 </div>
@@ -1058,7 +1058,7 @@ export function OutsourceProductModal({
                   <select
  value={deliveryMethod}
  onChange={(e) => setDeliveryMethod(e.target.value)}
- className="mt-1 w-full h-9 px-3 rounded-lg border border-input bg-card text-xs font-medium focus:ring-1 focus:ring-purple-500">
+ className="mt-1 w-full h-9 px-3 rounded-lg border border-input bg-card text-xs font-medium focus:ring-1 focus:ring-ring">
                     <option value="vendor_delivery">Vendor delivers to our print shop (ভেন্ডর শপে ডেলিভারি করবে)</option>
                     <option value="shop_pickup">Our shop representative picks up from vendor (আমাদের লোক ভেন্ডর থেকে পিকআপ করবে)</option>
                     <option value="direct_customer_dispatch">Vendor dispatches directly to client (ভেন্ডর সরাসরি ক্লায়েন্টকে পাঠাবে)</option>
@@ -1074,7 +1074,7 @@ export function OutsourceProductModal({
  value={specifications}
  onChange={(e) => setSpecifications(e.target.value)}
  placeholder="e.g. 120 GSM Art paper, 4-color offset print, 3mm bleed margin, CMYK color space, vector outline font..."rows={3}
- className="mt-1 w-full p-2.5 rounded-lg border border-input bg-card text-xs font-medium focus:ring-1 focus:ring-purple-500"/>
+ className="mt-1 w-full p-2.5 rounded-lg border border-input bg-card text-xs font-medium focus:ring-1 focus:ring-ring"/>
               </div>
 
               <div>
@@ -1085,7 +1085,7 @@ export function OutsourceProductModal({
  value={vendorNotes}
  onChange={(e) => setVendorNotes(e.target.value)}
  placeholder="Special instructions communicated to the vendor when issuing purchase order..."rows={2}
- className="mt-1 w-full p-2.5 rounded-lg border border-input bg-card text-xs font-medium focus:ring-1 focus:ring-purple-500"/>
+ className="mt-1 w-full p-2.5 rounded-lg border border-input bg-card text-xs font-medium focus:ring-1 focus:ring-ring"/>
               </div>
             </div>
           </div>
@@ -1105,7 +1105,7 @@ export function OutsourceProductModal({
                     <input
  type="checkbox"id="vat_app"checked={vatApplicable}
  onChange={(e) => setVatApplicable(e.target.checked)}
- className="rounded text-purple-600 focus:ring-purple-500 h-4 w-4 cursor-pointer"/>
+ className="rounded text-primary focus:ring-ring h-4 w-4 cursor-pointer"/>
                     <Label htmlFor="vat_app"className="text-xs font-medium cursor-pointer">
  VAT Applicable on this Outsource Product
                     </Label>
@@ -1125,7 +1125,7 @@ export function OutsourceProductModal({
                         <input
  type="checkbox"id="tax_inc"checked={isTaxInclusive}
  onChange={(e) => setIsTaxInclusive(e.target.checked)}
- className="rounded text-purple-600 focus:ring-purple-500 h-4 w-4 cursor-pointer"/>
+ className="rounded text-primary focus:ring-ring h-4 w-4 cursor-pointer"/>
                         <Label htmlFor="tax_inc"className="text-xs font-medium cursor-pointer">
  Selling Price is Tax Inclusive (VAT অন্তর্ভুক্ত)
                         </Label>
@@ -1141,7 +1141,7 @@ export function OutsourceProductModal({
                     <input
  type="checkbox"id="allow_override"checked={allowManualOverride}
  onChange={(e) => setAllowManualOverride(e.target.checked)}
- className="rounded text-purple-600 focus:ring-purple-500 h-4 w-4 cursor-pointer"/>
+ className="rounded text-primary focus:ring-ring h-4 w-4 cursor-pointer"/>
                     <Label htmlFor="allow_override"className="text-xs font-medium cursor-pointer">
  Allow Sales Staff to Override Price on Quotation / Invoice
                     </Label>
@@ -1151,7 +1151,7 @@ export function OutsourceProductModal({
                     <input
  type="checkbox"id="is_active_check"checked={isActive}
  onChange={(e) => setIsActive(e.target.checked)}
- className="rounded text-emerald-600 focus:ring-emerald-500 h-4 w-4 cursor-pointer"/>
+ className="rounded text-success focus:ring-ring h-4 w-4 cursor-pointer"/>
                     <Label htmlFor="is_active_check"className="text-xs font-medium cursor-pointer">
  Active & Available in Quotation Catalog
                     </Label>
@@ -1167,7 +1167,7 @@ export function OutsourceProductModal({
  value={internalNotes}
  onChange={(e) => setInternalNotes(e.target.value)}
  placeholder="Private internal notes regarding vendor negotiation, margin caps, or courier contacts..."rows={3}
- className="mt-1 w-full p-2.5 rounded-lg border border-input bg-card text-xs font-medium focus:ring-1 focus:ring-purple-500"/>
+ className="mt-1 w-full p-2.5 rounded-lg border border-input bg-card text-xs font-medium focus:ring-1 focus:ring-ring"/>
               </div>
             </div>
           </div>

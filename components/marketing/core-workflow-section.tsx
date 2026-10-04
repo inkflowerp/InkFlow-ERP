@@ -26,7 +26,7 @@ export function CoreWorkflowSection() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12 sm:space-y-16">
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto space-y-3 sm:space-y-4">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200/70 dark:border-blue-800/60 uppercase tracking-wider">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary bg-primary/10 text-primary border border-primary/20/70 border-border/60 uppercase tracking-wider">
             <span>{tBilingual('End-to-End Lifecycle', 'সম্পূর্ণ কাজের চক্র')}</span>
           </div>
 
@@ -47,8 +47,8 @@ export function CoreWorkflowSection() {
 
         {/* 2 Crucial Real-World Highlights (Flexible Gates & Multi-Job Fan-Out) */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 max-w-5xl mx-auto">
-          <div className="p-5 sm:p-6 rounded-xl border border-blue-200/80 dark:border-blue-900/60 bg-blue-50/40 dark:bg-blue-950/20 space-y-2">
-            <div className="flex items-center gap-2 text-blue-700 dark:text-blue-300 font-bold text-sm">
+          <div className="p-5 sm:p-6 rounded-xl border border-primary/20/80 border-border/60 bg-primary/10/40 bg-primary/10 space-y-2">
+            <div className="flex items-center gap-2 text-primary text-primary font-bold text-sm">
               <CheckCircle2 className="h-4 w-4"/>
               <span>{tBilingual('Not Every Job Needs Every Stage', 'সব কাজে সব ধাপের প্রয়োজন নেই')}</span>
             </div>
@@ -60,8 +60,8 @@ export function CoreWorkflowSection() {
             </p>
           </div>
 
-          <div className="p-5 sm:p-6 rounded-xl border border-indigo-200/80 dark:border-indigo-900/60 bg-indigo-50/40 dark:bg-indigo-950/20 space-y-2">
-            <div className="flex items-center gap-2 text-indigo-700 dark:text-indigo-300 font-bold text-sm">
+          <div className="p-5 sm:p-6 rounded-xl border border-primary/20/80 border-border/60 bg-primary/10/40 bg-primary/10 space-y-2">
+            <div className="flex items-center gap-2 text-primary text-primary font-bold text-sm">
               <GitFork className="h-4 w-4"/>
               <span>{tBilingual('1 Invoice → Multiple Production Jobs', '১টি ইনভয়েস থেকে একাধিক প্রোডাকশন জব')}</span>
             </div>
@@ -84,7 +84,7 @@ export function CoreWorkflowSection() {
  onClick={() => setSelectedStage(idx)}
  className={`p-4 sm:p-5 rounded-xl border text-left cursor-pointer transition-all ${
  isSelected
-                    ? 'border-blue-600 bg-blue-50/60 dark:bg-blue-950/40 shadow-sm ring-1 ring-blue-500/30'
+                    ? 'border-border bg-primary/10/60 bg-primary/10 shadow-sm ring-1 focus:ring-ring/30'
                     : 'border-border bg-muted hover:border-input dark:hover:border-border'
                 }`}
               >
@@ -92,20 +92,20 @@ export function CoreWorkflowSection() {
                   <span
  className={`h-6 w-6 rounded-full flex items-center justify-center text-xs font-bold ${
  isSelected
-                        ? 'bg-blue-600 text-white'
+                        ? 'bg-primary text-white'
                         : 'bg-muted text-muted-foreground '
                     }`}
                   >
                     {idx + 1}
                   </span>
-                  <span className="text-2xs text-muted-foreground uppercase font-semibold">STAGE</span>
+                  <span className="text-xs text-muted-foreground uppercase font-semibold">STAGE</span>
                 </div>
 
                 <h3 className="text-xs sm:text-sm font-bold text-foreground bangla-text mb-1">
                   {tBilingual(stage.titleEn, stage.titleBn)}
                 </h3>
 
-                <p className="text-2xs sm:text-xs text-muted-foreground leading-relaxed bangla-text">
+                <p className="text-xs sm:text-xs text-muted-foreground leading-relaxed bangla-text">
                   {tBilingual(stage.descEn, stage.descBn)}
                 </p>
               </div>

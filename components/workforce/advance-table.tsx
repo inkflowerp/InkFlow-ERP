@@ -121,13 +121,13 @@ export function AdvanceTable({
  const getStatusBadge = (status: SalaryAdvanceStatus) => {
  switch (status) {
  case 'disbursed':
- return 'bg-blue-50 text-blue-700 border-blue-200'
+ return 'bg-primary/10 text-primary border-primary/20'
  case 'approved':
- return 'bg-emerald-50 text-emerald-700 border-emerald-200'
+ return 'bg-success-surface text-success border-success-border'
  case 'rejected':
- return 'bg-red-50 text-red-700 border-red-200'
+ return 'bg-danger-surface text-destructive border-danger-border'
  default:
- return 'bg-amber-50 text-amber-700 border-amber-200'
+ return 'bg-warning-surface text-warning border-warning-border'
     }
   }
 
@@ -148,7 +148,7 @@ export function AdvanceTable({
             <h4 className="text-xs font-bold text-foreground uppercase tracking-wider">
  {tBilingual('Salary Advance Flow', 'বেতন অগ্রিম ও ঋণ সমন্বয়')}
             </h4>
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
  {tBilingual('Request → Approval → Disbursement → Outstanding Balance → Payroll Deduction → Settled', 'আবেদন → অনুমোদন → বিতরণ → বকেয়া ব্যালেন্স → পেরোল কর্তন → সমন্বয়')}
             </p>
           </div>
@@ -166,22 +166,22 @@ export function AdvanceTable({
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 text-xs">
           <div className="p-3 rounded-lg border border-border bg-muted">
-            <span className="text-muted-foreground block text-[11px]">{tBilingual('Outstanding Balance', 'মোট বকেয়া ব্যালেন্স')}</span>
-            <span className="text-base font-bold text-amber-600 tabular-nums">
+            <span className="text-muted-foreground block text-xs">{tBilingual('Outstanding Balance', 'মোট বকেয়া ব্যালেন্স')}</span>
+            <span className="text-base font-bold text-warning tabular-nums">
               ৳ {totalOutstanding.toLocaleString('en-IN')}
             </span>
           </div>
 
           <div className="p-3 rounded-lg border border-border bg-muted">
-            <span className="text-muted-foreground block text-[11px]">{tBilingual('Total Disbursed', 'মোট বিতরণকৃত')}</span>
+            <span className="text-muted-foreground block text-xs">{tBilingual('Total Disbursed', 'মোট বিতরণকৃত')}</span>
             <span className="text-base font-bold text-foreground tabular-nums">
               ৳ {totalDisbursed.toLocaleString('en-IN')}
             </span>
           </div>
 
           <div className="p-3 rounded-lg border border-border bg-muted">
-            <span className="text-muted-foreground block text-[11px]">{tBilingual('Recovered via Payroll', 'পেরোলে আদায়কৃত')}</span>
-            <span className="text-base font-bold text-emerald-600 tabular-nums">
+            <span className="text-muted-foreground block text-xs">{tBilingual('Recovered via Payroll', 'পেরোলে আদায়কৃত')}</span>
+            <span className="text-base font-bold text-success tabular-nums">
               ৳ {totalDeducted.toLocaleString('en-IN')}
             </span>
           </div>
@@ -206,7 +206,7 @@ export function AdvanceTable({
         <Card className="bg-card border-border shadow-[0_1px_3px_rgba(0,0,0,0.02)] rounded-xl overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-muted border-b border-border text-muted-foreground uppercase tracking-wider font-semibold text-[11px]">
+              <thead className="bg-muted border-b border-border text-muted-foreground uppercase tracking-wider font-semibold text-xs">
                 <tr>
                   <th className="py-3 px-4">{tBilingual('Employee', 'কর্মী')}</th>
                   <th className="py-3 px-3">{tBilingual('Voucher #', 'ভাউচার নং')}</th>
@@ -235,21 +235,21 @@ export function AdvanceTable({
                       <td className="py-3 px-3 text-right font-bold text-foreground tabular-nums">
                         ৳ {Number(adv.amount || 0).toLocaleString('en-IN')}
                       </td>
-                      <td className="py-3 px-3 text-right font-medium text-emerald-600 tabular-nums">
+                      <td className="py-3 px-3 text-right font-medium text-success tabular-nums">
                         ৳ {Number(adv.deducted_amount || 0).toLocaleString('en-IN')}
                       </td>
-                      <td className="py-3 px-3 text-right font-bold text-amber-600 tabular-nums">
+                      <td className="py-3 px-3 text-right font-bold text-warning tabular-nums">
                         ৳ {remaining.toLocaleString('en-IN')}
                       </td>
                       <td className="py-3 px-3 font-mono text-muted-foreground">
                         {adv.disbursed_date || '—'}
                       </td>
-                      <td className="py-3 px-3 uppercase text-[11px] font-semibold text-muted-foreground">
+                      <td className="py-3 px-3 uppercase text-xs font-semibold text-muted-foreground">
                         {adv.payment_method}
                       </td>
                       <td className="py-3 px-3 text-center">
                         <Badge
- variant="outline"className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${
+ variant="outline"className={`text-xs font-bold uppercase px-2 py-0.5 rounded-full ${
  adv.is_settled
                               ? 'bg-muted text-foreground border-input'
                               : getStatusBadge(adv.status)
@@ -263,7 +263,7 @@ export function AdvanceTable({
                           <Button
  size="sm"disabled={isProcessing}
  onClick={() => handleApprove(adv.id)}
- className="h-7 px-2.5 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white min-h-[28px]">
+ className="h-7 px-2.5 text-xs font-semibold bg-success hover:bg-success text-white min-h-[28px]">
                             <Check className="w-3 h-3 mr-1"/>
                             <span>Approve</span>
                           </Button>
@@ -280,7 +280,7 @@ export function AdvanceTable({
                         )}
 
                         {adv.status === 'disbursed' && (
-                          <span className="text-[11px] text-muted-foreground">
+                          <span className="text-xs text-muted-foreground">
                             {adv.is_settled ? 'Recovered' : 'Active Balance'}
                           </span>
                         )}
@@ -299,14 +299,14 @@ export function AdvanceTable({
         <DialogContent className="max-w-md p-6 bg-card border-border shadow-xs rounded-xl space-y-4">
           <DialogHeader>
             <DialogTitle className="text-base font-bold text-foreground flex items-center gap-2">
-              <Coins className="w-5 h-5 text-amber-600"/>
+              <Coins className="w-5 h-5 text-warning"/>
               <span>Request Salary Advance</span>
             </DialogTitle>
           </DialogHeader>
 
           {errorMsg && (
-            <div className="p-3 rounded-lg bg-red-50 text-red-700 text-xs flex items-center gap-1.5">
-              <AlertCircle className="w-4 h-4 shrink-0 text-red-600"/>
+            <div className="p-3 rounded-lg bg-danger-surface text-destructive text-xs flex items-center gap-1.5">
+              <AlertCircle className="w-4 h-4 shrink-0 text-destructive"/>
               <span>{errorMsg}</span>
             </div>
           )}
@@ -341,9 +341,9 @@ export function AdvanceTable({
                   <button
  key={m}
  type="button"onClick={() => setMethod(m)}
- className={`p-2 rounded-lg border text-center uppercase font-bold text-[11px] transition-all ${
+ className={`p-2 rounded-lg border text-center uppercase font-bold text-xs transition-all ${
  method === m
-                        ? 'border-blue-600 bg-blue-50 text-blue-700 shadow-xs'
+                        ? 'border-border bg-primary/10 text-primary shadow-xs'
                         : 'border-border bg-card text-muted-foreground hover:bg-muted'
                     }`}
                   >

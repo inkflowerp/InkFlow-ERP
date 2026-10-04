@@ -46,7 +46,7 @@ export function StoreDashboard({ metrics, onRefresh }: StoreDashboardProps) {
           <h1 className="text-xl sm:text-2xl font-black">
             {tBilingual('Inventory Requisitions & Stock Control', 'স্টক বিলি ও কাঁচামাল স্টোর')}
           </h1>
-          <p className="text-xs text-amber-100/90">
+          <p className="text-xs text-warning/90">
             {tBilingual('Issue materials to production floor, monitor roll remnants, and receive supplier shipments.', 'ফ্লোরে মাল বিলি করুন, অবশিষ্ট রোল ট্র্যাক করুন এবং চালান গ্রহণ করুন।')}
           </p>
         </div>

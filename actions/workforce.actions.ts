@@ -1,5 +1,8 @@
 'use server'
 
+import { withTenantAction } from '@/lib/actions/action-wrapper'
+
+
 // ==============================================================================
 // InkFlow ERP - Authoritative Workforce, Attendance, Overtime & Payroll Server Actions
 // Strict Multi-Tenant Isolation, RBAC Permission Checks, and Audit Logging
@@ -96,9 +99,12 @@ function hasAnyPermission(tenant: any, permissions: string[]): boolean {
 // 1. WORKFORCE DASHBOARD & KPIS
 // ============================================================================
 
-export async function getWorkforceSummaryAction(
-  companyIdParam?: string
-): Promise<ServerActionResult<WorkforceSummaryKPIs>> {
+export const getWorkforceSummaryAction = withTenantAction(
+  {
+    permission: "hr.view",
+    entityType: "workforce"
+  },
+  async (ctx, companyIdParam?: string) : Promise<ServerActionResult<WorkforceSummaryKPIs>> => {
   try {
     const tenant = await requireTenantUser(companyIdParam)
     const summary = await WorkforceService.getWorkforceSummary(tenant.companyId)
@@ -106,11 +112,15 @@ export async function getWorkforceSummaryAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to fetch workforce summary.' }
   }
-}
 
-export async function getWorkforceOverviewSummaryAction(
-  companyIdParam?: string
-): Promise<ServerActionResult<WorkforceOverviewSummary>> {
+})
+
+export const getWorkforceOverviewSummaryAction = withTenantAction(
+  {
+    permission: "hr.view",
+    entityType: "workforce"
+  },
+  async (ctx, companyIdParam?: string) : Promise<ServerActionResult<WorkforceOverviewSummary>> => {
   try {
     const tenant = await requireTenantUser(companyIdParam)
     const todayStr = new Date().toISOString().split('T')[0]
@@ -250,16 +260,20 @@ export async function getWorkforceOverviewSummaryAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to fetch workforce overview summary.' }
   }
-}
+
+})
 
 // ============================================================================
 // 2. EMPLOYEES ACTIONS
 // ============================================================================
 
-export async function getEmployeesAction(
-  options?: { branchId?: string; status?: string; department?: string; isDailyWorker?: boolean },
-  companyIdParam?: string
-): Promise<ServerActionResult<EmployeeRecord[]>> {
+export const getEmployeesAction = withTenantAction(
+  {
+    permission: "hr.view",
+    entityType: "workforce"
+  },
+  async (ctx, options?: { branchId?: string; status?: string; department?: string; isDailyWorker?: boolean },
+  companyIdParam?: string) : Promise<ServerActionResult<EmployeeRecord[]>> => {
   try {
     const tenant = await requireTenantUser(companyIdParam)
     const employees = await WorkforceService.getEmployees(tenant.companyId, options)
@@ -267,12 +281,16 @@ export async function getEmployeesAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to fetch employees.' }
   }
-}
 
-export async function getEmployeeByIdAction(
-  id: string,
-  companyIdParam?: string
-): Promise<ServerActionResult<EmployeeRecord | null>> {
+})
+
+export const getEmployeeByIdAction = withTenantAction(
+  {
+    permission: "hr.view",
+    entityType: "workforce"
+  },
+  async (ctx, id: string,
+  companyIdParam?: string) : Promise<ServerActionResult<EmployeeRecord | null>> => {
   try {
     const tenant = await requireTenantUser(companyIdParam)
     const employee = await WorkforceService.getEmployeeById(id, tenant.companyId)
@@ -280,12 +298,16 @@ export async function getEmployeeByIdAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to fetch employee.' }
   }
-}
 
-export async function createEmployeeAction(
-  input: Partial<EmployeeRecord> & { name: string },
-  companyIdParam?: string
-): Promise<ServerActionResult<EmployeeRecord>> {
+})
+
+export const createEmployeeAction = withTenantAction(
+  {
+    permission: "hr.create",
+    entityType: "workforce"
+  },
+  async (ctx, input: Partial<EmployeeRecord> & { name: string },
+  companyIdParam?: string) : Promise<ServerActionResult<EmployeeRecord>> => {
   try {
     const tenant = await requireTenantUser(companyIdParam)
     if (!hasAnyPermission(tenant, ['hr.create', 'hr.edit', 'hr.manage', 'hr.full_control', 'settings.manage'])) {
@@ -306,13 +328,17 @@ export async function createEmployeeAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to create employee.' }
   }
-}
 
-export async function updateEmployeeAction(
-  id: string,
+})
+
+export const updateEmployeeAction = withTenantAction(
+  {
+    permission: "hr.edit",
+    entityType: "workforce"
+  },
+  async (ctx, id: string,
   updates: Partial<EmployeeRecord>,
-  companyIdParam?: string
-): Promise<ServerActionResult<EmployeeRecord | null>> {
+  companyIdParam?: string) : Promise<ServerActionResult<EmployeeRecord | null>> => {
   try {
     const tenant = await requireTenantUser(companyIdParam)
     if (!hasAnyPermission(tenant, ['hr.edit', 'hr.manage', 'hr.full_control', 'settings.manage'])) {
@@ -335,12 +361,18 @@ export async function updateEmployeeAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to update employee.' }
   }
-}
 
-export async function deleteEmployeeAction(
-  id: string,
-  companyIdParam?: string
-): Promise<ServerActionResult<boolean>> {
+})
+
+export const deleteEmployeeAction = withTenantAction(
+  {
+    permission: "hr.delete",
+    destructive: true,
+    auditAction: "workforce.deleteemployee",
+    entityType: "workforce"
+  },
+  async (ctx, id: string,
+  companyIdParam?: string) : Promise<ServerActionResult<boolean>> => {
   try {
     const tenant = await requireTenantUser(companyIdParam)
     if (!hasAnyPermission(tenant, ['hr.delete', 'hr.full_control', 'settings.manage'])) {
@@ -356,13 +388,17 @@ export async function deleteEmployeeAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to delete employee.' }
   }
-}
 
-export async function sendEmployeeInvitationAction(
-  employeeId: string,
+})
+
+export const sendEmployeeInvitationAction = withTenantAction(
+  {
+    permission: "hr.view",
+    entityType: "workforce"
+  },
+  async (ctx, employeeId: string,
   companyIdParam?: string,
-  overrideEmail?: string
-): Promise<ServerActionResult<{ inviteUrl?: string; email?: string }>> {
+  overrideEmail?: string) : Promise<ServerActionResult<{ inviteUrl?: string; email?: string }>> => {
   try {
     const tenant = await requireTenantUser(companyIdParam)
     if (!hasAnyPermission(tenant, ['hr.edit', 'hr.manage', 'hr.full_control', 'settings.manage'])) {
@@ -390,13 +426,19 @@ export async function sendEmployeeInvitationAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to send employee invitation.' }
   }
-}
 
-export async function updateEmployeeLoginCredentialsAction(
-  employeeId: string,
+})
+
+export const updateEmployeeLoginCredentialsAction = withTenantAction(
+  {
+    permission: "users.edit",
+    destructive: true,
+    auditAction: "workforce.updateemployeelogincredentials",
+    entityType: "workforce"
+  },
+  async (ctx, employeeId: string,
   credentials: PortalCredentials,
-  companyIdParam?: string
-): Promise<ServerActionResult<EmployeeRecord>> {
+  companyIdParam?: string) : Promise<ServerActionResult<EmployeeRecord>> => {
   try {
     const tenant = await requireTenantUser(companyIdParam)
     if (!hasAnyPermission(tenant, ['hr.edit', 'hr.manage', 'hr.full_control', 'settings.manage'])) {
@@ -421,16 +463,20 @@ export async function updateEmployeeLoginCredentialsAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to update employee login credentials.' }
   }
-}
+
+})
 
 // ============================================================================
 // 3. SHIFTS ACTIONS
 // ============================================================================
 
-export async function getShiftsAction(
-  branchId?: string,
-  companyIdParam?: string
-): Promise<ServerActionResult<ShiftRecord[]>> {
+export const getShiftsAction = withTenantAction(
+  {
+    permission: "hr.view",
+    entityType: "workforce"
+  },
+  async (ctx, branchId?: string,
+  companyIdParam?: string) : Promise<ServerActionResult<ShiftRecord[]>> => {
   try {
     const tenant = await requireTenantUser(companyIdParam)
     const shifts = await WorkforceService.getShifts(tenant.companyId, branchId)
@@ -438,12 +484,16 @@ export async function getShiftsAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to fetch shifts.' }
   }
-}
 
-export async function createShiftAction(
-  input: Partial<ShiftRecord> & { shift_name: string; start_time: string; end_time: string },
-  companyIdParam?: string
-): Promise<ServerActionResult<ShiftRecord>> {
+})
+
+export const createShiftAction = withTenantAction(
+  {
+    permission: "hr.create",
+    entityType: "workforce"
+  },
+  async (ctx, input: Partial<ShiftRecord> & { shift_name: string; start_time: string; end_time: string },
+  companyIdParam?: string) : Promise<ServerActionResult<ShiftRecord>> => {
   try {
     const tenant = await requireTenantUser(companyIdParam)
     if (!hasAnyPermission(tenant, ['hr.edit', 'hr.create', 'settings.manage'])) {
@@ -456,14 +506,19 @@ export async function createShiftAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to create shift.' }
   }
-}
+
+})
 
 // ============================================================================
 // 4. DAILY ATTENDANCE ACTIONS
 // ============================================================================
 
-export async function getDailyAttendanceAction(
-  options?: {
+export const getDailyAttendanceAction = withTenantAction(
+  {
+    permission: "hr.view",
+    entityType: "workforce"
+  },
+  async (ctx, options?: {
     date?: string
     startDate?: string
     endDate?: string
@@ -472,8 +527,7 @@ export async function getDailyAttendanceAction(
     status?: string
     branchId?: string
   },
-  companyIdParam?: string
-): Promise<ServerActionResult<AttendanceDailySummaryRecord[]>> {
+  companyIdParam?: string) : Promise<ServerActionResult<AttendanceDailySummaryRecord[]>> => {
   try {
     const tenant = await requireTenantUser(companyIdParam)
     const summaries = await WorkforceService.getDailyAttendance(tenant.companyId, options)
@@ -481,10 +535,15 @@ export async function getDailyAttendanceAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to fetch daily attendance.' }
   }
-}
 
-export async function recordAttendanceSummaryAction(
-  params: {
+})
+
+export const recordAttendanceSummaryAction = withTenantAction(
+  {
+    permission: "hr.view",
+    entityType: "workforce"
+  },
+  async (ctx, params: {
     employeeId: string
     attendanceDate: string
     status: AttendanceDailySummaryRecord['status']
@@ -496,8 +555,7 @@ export async function recordAttendanceSummaryAction(
     attendanceSource?: AttendanceDailySummaryRecord['attendance_source']
     notes?: string
   },
-  companyIdParam?: string
-): Promise<ServerActionResult<AttendanceDailySummaryRecord>> {
+  companyIdParam?: string) : Promise<ServerActionResult<AttendanceDailySummaryRecord>> => {
   try {
     const tenant = await requireTenantUser(companyIdParam)
     if (!hasAnyPermission(tenant, ['hr.create', 'hr.edit', 'production.edit', 'hr.manage'])) {
@@ -520,16 +578,20 @@ export async function recordAttendanceSummaryAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to record attendance.' }
   }
-}
+
+})
 
 // ============================================================================
 // 5. OVERTIME ACTIONS
 // ============================================================================
 
-export async function getOvertimeRecordsAction(
-  options?: { employeeId?: string; status?: string; otDate?: string; payrollPeriodId?: string },
-  companyIdParam?: string
-): Promise<ServerActionResult<OvertimeRecord[]>> {
+export const getOvertimeRecordsAction = withTenantAction(
+  {
+    permission: "hr.view",
+    entityType: "workforce"
+  },
+  async (ctx, options?: { employeeId?: string; status?: string; otDate?: string; payrollPeriodId?: string },
+  companyIdParam?: string) : Promise<ServerActionResult<OvertimeRecord[]>> => {
   try {
     const tenant = await requireTenantUser(companyIdParam)
     const records = await WorkforceService.getOvertimeRecords(tenant.companyId, options)
@@ -537,18 +599,22 @@ export async function getOvertimeRecordsAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to fetch overtime records.' }
   }
-}
 
-export async function createOvertimeRequestAction(
-  params: {
+})
+
+export const createOvertimeRequestAction = withTenantAction(
+  {
+    permission: "hr.create",
+    entityType: "workforce"
+  },
+  async (ctx, params: {
     employeeId: string
     otDate: string
     durationMinutes: number
     otType?: OvertimeRecord['ot_type']
     reason: string
   },
-  companyIdParam?: string
-): Promise<ServerActionResult<OvertimeRecord>> {
+  companyIdParam?: string) : Promise<ServerActionResult<OvertimeRecord>> => {
   try {
     const tenant = await requireTenantUser(companyIdParam)
     const record = await WorkforceService.createOvertimeRequest({
@@ -565,17 +631,21 @@ export async function createOvertimeRequestAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to submit overtime request.' }
   }
-}
 
-export async function reviewOvertimeAction(
-  params: {
+})
+
+export const reviewOvertimeAction = withTenantAction(
+  {
+    permission: "hr.view",
+    entityType: "workforce"
+  },
+  async (ctx, params: {
     id: string
     status: 'approved' | 'rejected'
     multiplier?: number
     rejectionReason?: string
   },
-  companyIdParam?: string
-): Promise<ServerActionResult<OvertimeRecord>> {
+  companyIdParam?: string) : Promise<ServerActionResult<OvertimeRecord>> => {
   try {
     const tenant = await requireTenantUser(companyIdParam)
     if (!hasAnyPermission(tenant, ['hr.approve', 'hr.edit', 'hr.manage', 'settings.manage'])) {
@@ -596,16 +666,20 @@ export async function reviewOvertimeAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to review overtime record.' }
   }
-}
+
+})
 
 // ============================================================================
 // 6. SALARY ADVANCES ACTIONS
 // ============================================================================
 
-export async function getSalaryAdvancesAction(
-  options?: { employeeId?: string; status?: string; isSettled?: boolean },
-  companyIdParam?: string
-): Promise<ServerActionResult<SalaryAdvanceRecord[]>> {
+export const getSalaryAdvancesAction = withTenantAction(
+  {
+    permission: "hr.view",
+    entityType: "workforce"
+  },
+  async (ctx, options?: { employeeId?: string; status?: string; isSettled?: boolean },
+  companyIdParam?: string) : Promise<ServerActionResult<SalaryAdvanceRecord[]>> => {
   try {
     const tenant = await requireTenantUser(companyIdParam)
     const advances = await WorkforceService.getSalaryAdvances(tenant.companyId, options)
@@ -613,17 +687,21 @@ export async function getSalaryAdvancesAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to fetch salary advances.' }
   }
-}
 
-export async function disburseSalaryAdvanceAction(
-  params: {
+})
+
+export const disburseSalaryAdvanceAction = withTenantAction(
+  {
+    permission: "hr.view",
+    entityType: "workforce"
+  },
+  async (ctx, params: {
     employeeId: string
     amount: number
     paymentMethod: PaymentMethod
     reason?: string
   },
-  companyIdParam?: string
-): Promise<ServerActionResult<SalaryAdvanceRecord>> {
+  companyIdParam?: string) : Promise<ServerActionResult<SalaryAdvanceRecord>> => {
   try {
     const tenant = await requireTenantUser(companyIdParam)
     if (!hasAnyPermission(tenant, ['hr.edit', 'finance.edit', 'hr.manage', 'finance.manage', 'settings.manage'])) {
@@ -645,16 +723,20 @@ export async function disburseSalaryAdvanceAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to disburse salary advance.' }
   }
-}
+
+})
 
 // ============================================================================
 // 7. PAYROLL PERIODS ACTIONS
 // ============================================================================
 
-export async function getPayrollPeriodsAction(
-  options?: { status?: string },
-  companyIdParam?: string
-): Promise<ServerActionResult<PayrollPeriodRecord[]>> {
+export const getPayrollPeriodsAction = withTenantAction(
+  {
+    permission: "hr.view",
+    entityType: "workforce"
+  },
+  async (ctx, options?: { status?: string },
+  companyIdParam?: string) : Promise<ServerActionResult<PayrollPeriodRecord[]>> => {
   try {
     const tenant = await requireTenantUser(companyIdParam)
     const periods = await WorkforceService.getPayrollPeriods(tenant.companyId, options)
@@ -662,12 +744,16 @@ export async function getPayrollPeriodsAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to fetch payroll periods.' }
   }
-}
 
-export async function getPayrollPeriodDetailAction(
-  id: string,
-  companyIdParam?: string
-): Promise<ServerActionResult<PayrollPeriodRecord | null>> {
+})
+
+export const getPayrollPeriodDetailAction = withTenantAction(
+  {
+    permission: "hr.view",
+    entityType: "workforce"
+  },
+  async (ctx, id: string,
+  companyIdParam?: string) : Promise<ServerActionResult<PayrollPeriodRecord | null>> => {
   try {
     const tenant = await requireTenantUser(companyIdParam)
     const period = await WorkforceService.getPayrollPeriodById(id, tenant.companyId)
@@ -675,18 +761,22 @@ export async function getPayrollPeriodDetailAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to fetch payroll period.' }
   }
-}
 
-export async function generatePayrollDraftAction(
-  params: {
+})
+
+export const generatePayrollDraftAction = withTenantAction(
+  {
+    permission: "hr.view",
+    entityType: "workforce"
+  },
+  async (ctx, params: {
     periodName: string
     startDate: string
     endDate: string
     workingDaysCount?: number
     branchId?: string
   },
-  companyIdParam?: string
-): Promise<ServerActionResult<PayrollPeriodRecord>> {
+  companyIdParam?: string) : Promise<ServerActionResult<PayrollPeriodRecord>> => {
   try {
     const tenant = await requireTenantUser(companyIdParam)
     if (!hasAnyPermission(tenant, ['payroll.edit', 'payroll.manage', 'hr.manage', 'settings.manage'])) {
@@ -707,12 +797,16 @@ export async function generatePayrollDraftAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to generate payroll sheet.' }
   }
-}
 
-export async function approvePayrollAction(
-  periodId: string,
-  companyIdParam?: string
-): Promise<ServerActionResult<PayrollPeriodRecord>> {
+})
+
+export const approvePayrollAction = withTenantAction(
+  {
+    permission: "hr.view",
+    entityType: "workforce"
+  },
+  async (ctx, periodId: string,
+  companyIdParam?: string) : Promise<ServerActionResult<PayrollPeriodRecord>> => {
   try {
     const tenant = await requireTenantUser(companyIdParam)
     if (!hasAnyPermission(tenant, ['payroll.approve', 'payroll.manage', 'settings.manage'])) {
@@ -733,12 +827,16 @@ export async function approvePayrollAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to approve payroll period.' }
   }
-}
 
-export async function lockPayrollAction(
-  periodId: string,
-  companyIdParam?: string
-): Promise<ServerActionResult<PayrollPeriodRecord>> {
+})
+
+export const lockPayrollAction = withTenantAction(
+  {
+    permission: "hr.view",
+    entityType: "workforce"
+  },
+  async (ctx, periodId: string,
+  companyIdParam?: string) : Promise<ServerActionResult<PayrollPeriodRecord>> => {
   try {
     const tenant = await requireTenantUser(companyIdParam)
     if (!hasAnyPermission(tenant, ['payroll.approve', 'payroll.manage', 'settings.manage'])) {
@@ -759,10 +857,15 @@ export async function lockPayrollAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to lock payroll period.' }
   }
-}
 
-export async function recordSalaryPaymentAction(
-  params: {
+})
+
+export const recordSalaryPaymentAction = withTenantAction(
+  {
+    permission: "hr.view",
+    entityType: "workforce"
+  },
+  async (ctx, params: {
     payrollPeriodId: string
     payrollItemId: string
     employeeId: string
@@ -771,8 +874,7 @@ export async function recordSalaryPaymentAction(
     referenceNumber?: string
     notes?: string
   },
-  companyIdParam?: string
-): Promise<ServerActionResult<SalaryPaymentRecord>> {
+  companyIdParam?: string) : Promise<ServerActionResult<SalaryPaymentRecord>> => {
   try {
     const tenant = await requireTenantUser(companyIdParam)
     if (!hasAnyPermission(tenant, ['payroll.pay', 'finance.edit', 'payroll.manage', 'settings.manage'])) {
@@ -793,4 +895,5 @@ export async function recordSalaryPaymentAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to record salary payment.' }
   }
-}
+
+})

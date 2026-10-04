@@ -120,7 +120,7 @@ export function LoadingState({
  className
       )}
     >
-      <div className="h-10 w-10 rounded-xl bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-800 flex items-center justify-center">
+      <div className="h-10 w-10 rounded-xl bg-primary/10 bg-primary/10 border border-primary/20 border-border flex items-center justify-center">
         <Loader2 className="h-5 w-5 animate-spin text-primary"/>
       </div>
       <span className="text-sm font-medium text-muted-foreground bangla-text">

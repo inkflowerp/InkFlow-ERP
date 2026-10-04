@@ -30,6 +30,7 @@ import {
  toggleUserStatusAction,
  resetUserAccessAction,
  removeLoginAction,
+  resendInvitationAction,
 } from '@/actions/company-users.actions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -42,10 +43,12 @@ import { CreateUserWizard } from '@/components/users/create-user-wizard'
 import { EditUserAccessDialog } from '@/components/users/edit-user-access-dialog'
 import { LinkEmployeeDialog } from '@/components/users/link-employee-dialog'
 import { UserDetailDrawer } from '@/components/users/user-detail'
+import { UserPermissionOverridesDialog } from '@/components/users/user-permission-overrides-dialog'
 import { useParams } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { formatBranchName } from '@/lib/formatters'
 import { resolveUserRole } from './user-resolvers'
+import { isUserBusinessOwner } from '@/lib/auth/rbac.client'
 
 export function TeamUsersPage() {
   const { locale, tBilingual } = useI18n()
@@ -85,13 +88,46 @@ export function TeamUsersPage() {
  const [isAccessOpen, setIsAccessOpen] = useState(false)
 
  const [selectedUserForLink, setSelectedUserForLink] = useState<CompanyUserWithProfile | null>(null)
- const [isLinkOpen, setIsLinkOpen] = useState(false)
+  const [isLinkOpen, setIsLinkOpen] = useState(false)
+  const [selectedUserForOverrides, setSelectedUserForOverrides] = useState<CompanyUserWithProfile | null>(null)
+  const [isOverridesOpen, setIsOverridesOpen] = useState(false)
 
   // Quick Action Confirmation Dialogs
  const [userToToggleStatus, setUserToToggleStatus] = useState<CompanyUserWithProfile | null>(null)
  const [userToResetPassword, setUserToResetPassword] = useState<CompanyUserWithProfile | null>(null)
  const [userToRemoveLogin, setUserToRemoveLogin] = useState<CompanyUserWithProfile | null>(null)
  const [isActionSubmitting, setIsActionSubmitting] = useState(false)
+  const handleResendInvitation = async (user: CompanyUserWithProfile) => {
+    try {
+      showToast({
+        type: 'info',
+        title: isBn ? 'আমন্ত্রণ পাঠানো হচ্ছে...' : 'Sending invitation...',
+        message: isBn ? 'অনুগ্রহ করে অপেক্ষা করুন।' : 'Please wait.',
+      })
+      const res = await resendInvitationAction(user.id, tenantSlug)
+      if (res.success) {
+        showToast({
+          type: 'success',
+          title: isBn ? 'আমন্ত্রণ পুনরায় পাঠানো হয়েছে' : 'Invitation Resent',
+          message: res.message || (isBn ? 'আমন্ত্রণের মেয়াদ ৭ দিন বাড়ানো হয়েছে।' : 'Invitation expiry renewed for 7 days.'),
+        })
+        loadData(false)
+      } else {
+        showToast({
+          type: 'error',
+          title: isBn ? 'আমন্ত্রণ ব্যর্থ হয়েছে' : 'Invitation Failed',
+          message: res.message || (res as any).error || 'Failed to resend invitation',
+        })
+      }
+    } catch (err: any) {
+      showToast({
+        type: 'error',
+        title: isBn ? 'ত্রুটি' : 'Error',
+        message: err?.message || 'Failed to resend invitation',
+      })
+    }
+  }
+
 
   // Data loader
  const loadData = useCallback(
@@ -221,6 +257,10 @@ export function TeamUsersPage() {
     })
   }, [users, statusFilter, roleFilter, branchFilter, searchQuery])
 
+  const activeOwnersCount = useMemo(() => {
+    return users.filter((u) => u.status === 'active' && isUserBusinessOwner(u)).length
+  }, [users])
+
   // Action: Toggle Status
  const handleConfirmToggleStatus = async () => {
  if (!userToToggleStatus) return
@@ -329,7 +369,7 @@ export function TeamUsersPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-1 border-b border-border">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
-            <Users className="w-6 h-6 text-blue-600"/>
+            <Users className="w-6 h-6 text-primary"/>
             <span>{tBilingual('Team Users', 'টিম সদস্য ও অ্যাক্সেস')}</span>
           </h1>
           <p className="text-xs sm:text-sm text-muted-foreground mt-1">
@@ -364,9 +404,9 @@ export function TeamUsersPage() {
             <p className="text-2xl font-bold text-foreground mt-1">
               {isLoading ? '...' : kpis.total}
             </p>
-            <p className="text-[11px] text-muted-foreground mt-0.5">{tBilingual('All authorized identities', 'সকল অনুমোদিত প্রোফাইল')}</p>
+            <p className="text-xs text-muted-foreground mt-0.5">{tBilingual('All authorized identities', 'সকল অনুমোদিত প্রোফাইল')}</p>
           </div>
-          <div className="w-10 h-10 rounded-lg bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center border border-blue-100 dark:border-blue-900/50">
+          <div className="w-10 h-10 rounded-lg bg-primary/10 bg-primary/10 text-primary text-primary flex items-center justify-center border border-border border-border/50">
             <Users className="w-5 h-5"/>
           </div>
         </div>
@@ -375,12 +415,12 @@ export function TeamUsersPage() {
         <div className="bg-card rounded-xl p-4 border border-border shadow-sm flex items-center justify-between">
           <div>
             <p className="text-xs font-medium text-muted-foreground">{tBilingual('Active Logins', 'সক্রিয় ব্যবহারকারী')}</p>
-            <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 mt-1">
+            <p className="text-2xl font-bold text-success text-success mt-1">
               {isLoading ? '...' : kpis.active}
             </p>
-            <p className="text-[11px] text-muted-foreground mt-0.5">{tBilingual('Can authenticate now', 'বর্তমানে লগইন অনুমোদিত')}</p>
+            <p className="text-xs text-muted-foreground mt-0.5">{tBilingual('Can authenticate now', 'বর্তমানে লগইন অনুমোদিত')}</p>
           </div>
-          <div className="w-10 h-10 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-100 dark:border-emerald-900/50">
+          <div className="w-10 h-10 rounded-lg bg-success-surface bg-success-surface text-success text-success flex items-center justify-center border border-success-border border-success-border/50">
             <CheckCircle2 className="w-5 h-5"/>
           </div>
         </div>
@@ -389,12 +429,12 @@ export function TeamUsersPage() {
         <div className="bg-card rounded-xl p-4 border border-border shadow-sm flex items-center justify-between">
           <div>
             <p className="text-xs font-medium text-muted-foreground">{tBilingual('Invited / Pending', 'আমন্ত্রিত / অপেক্ষমাণ')}</p>
-            <p className="text-2xl font-bold text-amber-600 dark:text-amber-400 mt-1">
+            <p className="text-2xl font-bold text-warning text-warning mt-1">
               {isLoading ? '...' : kpis.invited}
             </p>
-            <p className="text-[11px] text-muted-foreground mt-0.5">{tBilingual('Invitation link pending', 'আমন্ত্রণ লিংক অপেক্ষমাণ')}</p>
+            <p className="text-xs text-muted-foreground mt-0.5">{tBilingual('Invitation link pending', 'আমন্ত্রণ লিংক অপেক্ষমাণ')}</p>
           </div>
-          <div className="w-10 h-10 rounded-lg bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 flex items-center justify-center border border-amber-100 dark:border-amber-900/50">
+          <div className="w-10 h-10 rounded-lg bg-warning-surface bg-warning-surface text-warning text-warning flex items-center justify-center border border-warning-border border-warning-border/50">
             <Clock className="w-5 h-5"/>
           </div>
         </div>
@@ -406,7 +446,7 @@ export function TeamUsersPage() {
             <p className="text-2xl font-bold text-foreground mt-1">
               {isLoading ? '...' : kpis.disabled}
             </p>
-            <p className="text-[11px] text-muted-foreground mt-0.5">{tBilingual('Access suspended', 'অ্যাক্সেস স্থগিত করা হয়েছে')}</p>
+            <p className="text-xs text-muted-foreground mt-0.5">{tBilingual('Access suspended', 'অ্যাক্সেস স্থগিত করা হয়েছে')}</p>
           </div>
           <div className="w-10 h-10 rounded-lg bg-muted text-muted-foreground flex items-center justify-center border border-border">
             <UserX className="w-5 h-5"/>
@@ -451,7 +491,7 @@ export function TeamUsersPage() {
  className={cn(
                 'px-2.5 py-1 text-xs font-medium rounded-md transition-all whitespace-nowrap',
  statusFilter === 'active'
-                  ? 'bg-card text-emerald-700 dark:text-emerald-400 shadow-xs'
+                  ? 'bg-card text-success text-success shadow-xs'
                   : 'text-muted-foreground hover:text-foreground'
               )}
             >
@@ -462,7 +502,7 @@ export function TeamUsersPage() {
  className={cn(
                 'px-2.5 py-1 text-xs font-medium rounded-md transition-all whitespace-nowrap',
  statusFilter === 'invited'
-                  ? 'bg-card text-amber-700 dark:text-amber-400 shadow-xs'
+                  ? 'bg-card text-warning text-warning shadow-xs'
                   : 'text-muted-foreground hover:text-foreground'
               )}
             >
@@ -524,7 +564,7 @@ export function TeamUsersPage() {
  setRoleFilter('all')
  setBranchFilter('all')
               }}
- className="text-xs text-blue-600 hover:text-blue-700 dark:text-blue-400 font-medium ml-auto">{tBilingual('Reset Filters', 'ফিল্টার রিসেট')}</button>
+ className="text-xs text-primary hover:text-primary text-primary font-medium ml-auto">{tBilingual('Reset Filters', 'ফিল্টার রিসেট')}</button>
           )}
         </div>
       </div>
@@ -543,10 +583,10 @@ export function TeamUsersPage() {
           </div>
         </div>
       ) : error ? (
-        <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 rounded-xl p-6 text-center space-y-3">
-          <AlertCircle className="w-8 h-8 text-red-600 dark:text-red-400 mx-auto"/>
+        <div className="bg-danger-surface bg-danger-surface border border-danger-border border-danger-border rounded-xl p-6 text-center space-y-3">
+          <AlertCircle className="w-8 h-8 text-destructive text-destructive mx-auto"/>
           <h3 className="font-semibold text-foreground text-sm">{tBilingual('Failed to Load Team Users', 'টিম ব্যবহারকারী লোড করা যায়নি')}</h3>
-          <p className="text-xs text-red-700 dark:text-red-300 max-w-md mx-auto">{error}</p>
+          <p className="text-xs text-destructive text-destructive max-w-md mx-auto">{error}</p>
           <Button variant="outline" size="sm" onClick={() => loadData(true)} className="h-8 text-xs">{tBilingual('Retry', 'পুনরায় চেষ্টা করুন')}</Button>
         </div>
       ) : filteredUsers.length === 0 ? (
@@ -603,39 +643,54 @@ export function TeamUsersPage() {
               }}
  onToggleStatus={(u) => setUserToToggleStatus(u)}
  onResetPassword={(u) => setUserToResetPassword(u)}
- onRemoveLogin={(u) => setUserToRemoveLogin(u)}
+  onResendInvitation={handleResendInvitation}
+  onCustomizePermissions={(u) => {
+    setSelectedUserForOverrides(u)
+    setIsOverridesOpen(true)
+  }}
+  onRemoveLogin={(u) => setUserToRemoveLogin(u)}
  onRefresh={() => loadData(false)}
             />
           </div>
 
           {/* Mobile Card View */}
           <div className="block md:hidden space-y-3">
-            {filteredUsers.map((u) => (
-              <UserCard
- key={u.id}
- user={u}
- roles={roles}
- branches={branches}
- currentUserId={currentUserId}
- tenantSlug={tenantSlug}
- companyId={companyId}
- onViewDetails={(usr) => {
- setSelectedUserForDetail(usr)
- setIsDetailOpen(true)
-                }}
- onEditAccess={(usr) => {
- setSelectedUserForAccess(usr)
- setIsAccessOpen(true)
-                }}
- onLinkEmployee={(usr) => {
- setSelectedUserForLink(usr)
- setIsLinkOpen(true)
-                }}
- onToggleStatus={(usr) => setUserToToggleStatus(usr)}
- onResetPassword={(usr) => setUserToResetPassword(usr)}
- onRemoveLogin={(usr) => setUserToRemoveLogin(usr)}
-              />
-            ))}
+            {filteredUsers.map((u) => {
+              const isRowOwner = isUserBusinessOwner(u)
+              const isLastActiveOwner = isRowOwner && u.status === 'active' && activeOwnersCount <= 1
+              return (
+                <UserCard
+                  key={u.id}
+                  user={u}
+                  roles={roles}
+                  branches={branches}
+                  currentUserId={currentUserId}
+                  tenantSlug={tenantSlug}
+                  companyId={companyId}
+                  isLastActiveOwner={isLastActiveOwner}
+                  onViewDetails={(usr) => {
+                    setSelectedUserForDetail(usr)
+                    setIsDetailOpen(true)
+                  }}
+                  onEditAccess={(usr) => {
+                    setSelectedUserForAccess(usr)
+                    setIsAccessOpen(true)
+                  }}
+                  onLinkEmployee={(usr) => {
+                    setSelectedUserForLink(usr)
+                    setIsLinkOpen(true)
+                  }}
+                  onToggleStatus={(usr) => setUserToToggleStatus(usr)}
+                  onResetPassword={(usr) => setUserToResetPassword(usr)}
+                   onResendInvitation={handleResendInvitation}
+  onCustomizePermissions={(u) => {
+    setSelectedUserForOverrides(u)
+    setIsOverridesOpen(true)
+  }}
+                   onRemoveLogin={(usr) => setUserToRemoveLogin(usr)}
+                />
+              )
+            })}
           </div>
         </>
       )}
@@ -691,7 +746,8 @@ export function TeamUsersPage() {
  roles={roles}
  branches={branches}
  companyId={companyId}
- tenantSlug={tenantSlug}
+        tenantSlug={tenantSlug}
+        allUsers={users}
  onSuccess={() => {
  setIsAccessOpen(false)
  setSelectedUserForAccess(null)

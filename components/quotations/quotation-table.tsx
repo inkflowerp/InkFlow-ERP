@@ -75,17 +75,17 @@ export function QuotationTable({
  case 'draft':
  return <Badge variant="outline"className="bg-muted text-foreground border-input">{isBn ? 'খসড়া' : 'Draft'}</Badge>
  case 'sent':
- return <Badge variant="outline"className="bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800">{isBn ? 'পাঠানো হয়েছে' : 'Sent'}</Badge>
+ return <Badge variant="outline"className="bg-primary/10 text-primary border-primary/20 bg-primary/10 text-primary border-border">{isBn ? 'পাঠানো হয়েছে' : 'Sent'}</Badge>
  case 'viewed':
- return <Badge variant="outline"className="bg-cyan-50 text-cyan-700 border-cyan-200 dark:bg-cyan-950/60 dark:text-cyan-300 dark:border-cyan-800">{isBn ? 'দেখা হয়েছে' : 'Viewed'}</Badge>
+ return <Badge variant="outline"className="bg-info-surface text-primary border-primary/20 bg-primary/10 text-primary border-border">{isBn ? 'দেখা হয়েছে' : 'Viewed'}</Badge>
  case 'negotiation':
- return <Badge variant="outline"className="bg-amber-50 text-amber-800 border-amber-300 font-bold dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800">{isBn ? 'আলোচনা চলছে' : 'Negotiation'}</Badge>
+ return <Badge variant="outline"className="bg-warning-surface text-warning border-warning-border font-bold bg-warning-surface/60 text-warning border-warning-border">{isBn ? 'আলোচনা চলছে' : 'Negotiation'}</Badge>
  case 'approved':
- return <Badge variant="outline"className="bg-emerald-50 text-emerald-700 border-emerald-300 font-bold dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800">{isBn ? 'অনুমোদিত' : 'Approved'}</Badge>
+ return <Badge variant="outline"className="bg-success-surface text-success border-success-border font-bold bg-success-surface/60 text-success border-success-border">{isBn ? 'অনুমোদিত' : 'Approved'}</Badge>
  case 'converted':
- return <Badge variant="outline"className="bg-purple-50 text-purple-700 border-purple-300 font-bold dark:bg-purple-950/60 dark:text-purple-300 dark:border-purple-800">{isBn ? 'অর্ডারে রূপান্তর' : 'Converted'}</Badge>
+ return <Badge variant="outline"className="bg-primary/10 text-primary border-primary/20 font-bold bg-primary/10 text-primary border-border">{isBn ? 'অর্ডারে রূপান্তর' : 'Converted'}</Badge>
  case 'rejected':
- return <Badge variant="outline"className="bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800">{isBn ? 'বাতিল' : 'Rejected'}</Badge>
+ return <Badge variant="outline"className="bg-danger-surface text-destructive border-danger-border bg-danger-surface/60 text-destructive border-danger-border">{isBn ? 'বাতিল' : 'Rejected'}</Badge>
  case 'expired':
  return <Badge variant="outline"className="bg-muted text-muted-foreground">{isBn ? 'মেয়াদোত্তীর্ণ' : 'Expired'}</Badge>
  default:
@@ -96,19 +96,19 @@ export function QuotationTable({
  const getNextActionBadge = (nextAction: string, status: QuotationStatus) => {
  let colorClasses = 'bg-muted text-foreground '
  if (nextAction.includes('Follow up today') || nextAction.includes('Urgent')) {
- colorClasses = 'bg-amber-100 text-amber-900 border border-amber-300 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800 font-bold'
+ colorClasses = 'bg-warning-surface text-warning border border-warning-border bg-warning-surface/60 text-warning border-warning-border font-bold'
     } else if (nextAction.includes('Approved')) {
- colorClasses = 'bg-emerald-100 text-emerald-900 border border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800 font-bold'
+ colorClasses = 'bg-success-surface text-success border border-success-border bg-success-surface/60 text-success border-success-border font-bold'
     } else if (nextAction.includes('Converted')) {
- colorClasses = 'bg-purple-100 text-purple-900 border border-purple-300 dark:bg-purple-950/60 dark:text-purple-300 dark:border-purple-800'
+ colorClasses = 'bg-primary/10 text-primary border border-primary/20 bg-primary/10 text-primary border-border'
     } else if (nextAction.includes('Negotiating') || nextAction.includes('negotiating')) {
- colorClasses = 'bg-cyan-100 text-cyan-900 border border-cyan-300 dark:bg-cyan-950/60 dark:text-cyan-300 dark:border-cyan-800 font-bold'
+ colorClasses = 'bg-info-surface text-primary border border-primary/20 bg-primary/10 text-primary border-border font-bold'
     } else if (nextAction.includes('Expired')) {
- colorClasses = 'bg-rose-100 text-rose-900 border border-rose-300 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800'
+ colorClasses = 'bg-danger-surface text-destructive border border-danger-border bg-danger-surface/60 text-destructive border-danger-border'
     }
 
  return (
-      <span className={cn('inline-flex items-center px-2 py-0.5 rounded text-2xs truncate max-w-[200px]', colorClasses)}>
+      <span className={cn('inline-flex items-center px-2 py-0.5 rounded text-xs truncate max-w-[200px]', colorClasses)}>
         {nextAction}
       </span>
     )
@@ -117,15 +117,15 @@ export function QuotationTable({
  const getExpiryBadge = (validUntil: string) => {
  const exp = QuotationService.calculateExpiryUrgency(validUntil)
  if (exp.urgency === 'expired') {
- return <span className="text-2xs text-muted-foreground font-medium">{exp.label}</span>
+ return <span className="text-xs text-muted-foreground font-medium">{exp.label}</span>
     }
  if (exp.urgency === 'critical') {
- return <span className="text-2xs text-rose-600 dark:text-rose-400 font-bold">{exp.label}</span>
+ return <span className="text-xs text-destructive text-destructive font-bold">{exp.label}</span>
     }
  if (exp.urgency === 'warning') {
- return <span className="text-2xs text-amber-700 dark:text-amber-400 font-semibold">{exp.label}</span>
+ return <span className="text-xs text-warning text-warning font-semibold">{exp.label}</span>
     }
- return <span className="text-2xs text-muted-foreground">{exp.label}</span>
+ return <span className="text-xs text-muted-foreground">{exp.label}</span>
   }
 
  return (
@@ -168,7 +168,7 @@ export function QuotationTable({
  return (
                 <tr key={q.id} className="hover:bg-muted dark:hover:bg-muted/50 transition-colors">
                   {/* Quote Number */}
-                  <td className="py-3.5 px-4 tabular-nums font-bold text-blue-600">
+                  <td className="py-3.5 px-4 tabular-nums font-bold text-primary">
                     <Link
  href={getTenantNavHref(`/quotations/${q.id}`, pathname, tenantSlug)}
  className="hover:underline flex items-center gap-1 group">
@@ -187,9 +187,9 @@ export function QuotationTable({
                         </span>
                       )}
                     </div>
-                    <div className="flex items-center gap-1.5 text-2xs tabular-nums text-muted-foreground">
+                    <div className="flex items-center gap-1.5 text-xs tabular-nums text-muted-foreground">
                       {q.customer_phone && (
-                        <a href={`tel:${q.customer_phone}`} className="hover:text-blue-600 hover:underline">
+                        <a href={`tel:${q.customer_phone}`} className="hover:text-primary hover:underline">
                           {q.customer_phone}
                         </a>
                       )}
@@ -201,7 +201,7 @@ export function QuotationTable({
                     <div className="flex items-center gap-1.5 truncate font-medium">
                       <span className="truncate">{primaryItem?.description || 'Custom Print Job'}</span>
                     </div>
-                    <div className="text-2xs text-muted-foreground">
+                    <div className="text-xs text-muted-foreground">
                       {primaryItem && primaryItem.width > 0 && primaryItem.height > 0 ? (
                         <span>
                           {primaryItem.width}×{primaryItem.height} {primaryItem.dimension_unit} ({primaryItem.area_sft} sft)
@@ -222,7 +222,7 @@ export function QuotationTable({
                     <div className="tabular-nums font-bold text-foreground">
                       <CurrencyDisplay amount={q.grand_total} />
                     </div>
-                    <div className="text-2xs text-amber-600 dark:text-amber-400 font-medium">
+                    <div className="text-xs text-warning text-warning font-medium">
  Adv: ৳{Number(advAmt).toLocaleString()} ({advPct}%)
                     </div>
                   </td>
@@ -281,7 +281,7 @@ export function QuotationTable({
  href={getTenantNavHref(`/quotations/${q.id}`, pathname, tenantSlug)}
  onClick={() => setActiveMenuQuoteId(null)}
  className="w-full text-left px-3 py-2 hover:bg-muted flex items-center gap-2.5 text-foreground transition-colors">
-                            <Eye className="h-3.5 w-3.5 text-blue-500 shrink-0"/>
+                            <Eye className="h-3.5 w-3.5 text-primary shrink-0"/>
                             <span className="font-medium">
                               {isBn ? 'কোটেশন ককপিট খুলুন' : 'Open Quotation Cockpit'}
                             </span>
@@ -293,8 +293,8 @@ export function QuotationTable({
  setActiveMenuQuoteId(null)
  onOpenFollowUp(q)
                             }}
- className="w-full text-left px-3 py-2 hover:bg-blue-50 dark:hover:bg-blue-950/40 flex items-center gap-2.5 text-foreground hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer">
-                            <Clock className="h-3.5 w-3.5 text-amber-500 shrink-0"/>
+ className="w-full text-left px-3 py-2 hover:bg-primary/10 dark:hover:bg-primary/10 flex items-center gap-2.5 text-foreground hover:text-primary dark:hover:text-primary transition-colors cursor-pointer">
+                            <Clock className="h-3.5 w-3.5 text-warning shrink-0"/>
                             <span>{isBn ? 'ফলো-আপ রেকর্ড করুন' : 'Log Follow-Up'}</span>
                           </button>
 
@@ -303,8 +303,8 @@ export function QuotationTable({
                             <a
  href={waUrl}
  target="_blank"rel="noopener noreferrer"onClick={() => setActiveMenuQuoteId(null)}
- className="w-full text-left px-3 py-2 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 flex items-center gap-2.5 text-emerald-700 dark:text-emerald-400 transition-colors cursor-pointer">
-                              <MessageSquare className="h-3.5 w-3.5 text-emerald-600 shrink-0"/>
+ className="w-full text-left px-3 py-2 hover:bg-success-surface dark:hover:bg-success-surface flex items-center gap-2.5 text-success text-success transition-colors cursor-pointer">
+                              <MessageSquare className="h-3.5 w-3.5 text-success shrink-0"/>
                               <span>{isBn ? 'হোয়াটসঅ্যাপে পাঠান' : 'Share on WhatsApp'}</span>
                             </a>
                           ) : null}
@@ -318,7 +318,7 @@ export function QuotationTable({
                               <Phone className="h-3.5 w-3.5 text-muted-foreground shrink-0"/>
                               <div className="flex flex-col text-left">
                                 <span>{isBn ? 'কল করুন' : 'Call Customer'}</span>
-                                <span className="text-2xs text-muted-foreground tabular-nums">{q.customer_phone}</span>
+                                <span className="text-xs text-muted-foreground tabular-nums">{q.customer_phone}</span>
                               </div>
                             </a>
                           ) : null}
@@ -335,8 +335,8 @@ export function QuotationTable({
  setActiveMenuQuoteId(null)
  onTrash(q)
                               }}
- className="w-full text-left px-3 py-2 hover:bg-rose-50 dark:hover:bg-rose-950/40 flex items-center gap-2.5 text-rose-600 dark:text-rose-400 transition-colors cursor-pointer">
-                              <Trash2 className="h-3.5 w-3.5 text-rose-500 shrink-0"/>
+ className="w-full text-left px-3 py-2 hover:bg-danger-surface dark:hover:bg-danger-surface flex items-center gap-2.5 text-destructive text-destructive transition-colors cursor-pointer">
+                              <Trash2 className="h-3.5 w-3.5 text-destructive shrink-0"/>
                               <span>{isBn ? 'ট্র্যাশে পাঠান' : 'Move to Trash'}</span>
                             </button>
                           ) : null}
@@ -377,7 +377,7 @@ export function QuotationTable({
                 <div className="flex items-center gap-1.5">
                   <Link
  href={getTenantNavHref(`/quotations/${q.id}`, pathname, tenantSlug)}
- className="tabular-nums font-bold text-sm text-blue-600 hover:underline flex items-center gap-1">
+ className="tabular-nums font-bold text-sm text-primary hover:underline flex items-center gap-1">
                     <span>{q.quotation_number}</span>
                     <ExternalLink className="h-3.5 w-3.5 opacity-70"/>
                   </Link>
@@ -394,17 +394,17 @@ export function QuotationTable({
                     {q.customer_name} {q.customer_company && `(${q.customer_company})`}
                   </div>
                   {q.customer_phone && (
-                    <a href={`tel:${q.customer_phone}`} className="text-xs tabular-nums text-blue-600 hover:underline">
+                    <a href={`tel:${q.customer_phone}`} className="text-xs tabular-nums text-primary hover:underline">
                       {q.customer_phone}
                     </a>
                   )}
                 </div>
                 <div className="text-right shrink-0">
-                  <span className="text-2xs uppercase font-semibold text-muted-foreground block">Grand Total</span>
+                  <span className="text-xs uppercase font-semibold text-muted-foreground block">Grand Total</span>
                   <span className="text-base font-black text-foreground tabular-nums">
                     {formatBDT(q.grand_total)}
                   </span>
-                  <span className="text-2xs text-amber-600 block">
+                  <span className="text-xs text-warning block">
  Adv ({advPct}%): ৳{Number(advAmt).toLocaleString()}
                   </span>
                 </div>
@@ -415,7 +415,7 @@ export function QuotationTable({
                 <div className="text-foreground font-medium line-clamp-2">
                   {primaryItem?.description || 'Custom Print Job'}
                 </div>
-                <div className="flex items-center justify-between text-2xs text-muted-foreground pt-1 border-t border-border">
+                <div className="flex items-center justify-between text-xs text-muted-foreground pt-1 border-t border-border">
                   <span>
                     {primaryItem && primaryItem.width > 0 && primaryItem.height > 0
                       ? `${primaryItem.width}×{primaryItem.height} ${primaryItem.dimension_unit} (${primaryItem.area_sft} sft)`
@@ -427,7 +427,7 @@ export function QuotationTable({
 
               {/* Next Action Prompt */}
               <div className="flex items-center justify-between text-xs pt-0.5">
-                <span className="text-2xs text-muted-foreground font-medium">Next Action:</span>
+                <span className="text-xs text-muted-foreground font-medium">Next Action:</span>
                 {getNextActionBadge(nextAction, q.status)}
               </div>
 
@@ -436,7 +436,7 @@ export function QuotationTable({
                 {cleanPhone ? (
                   <a
  href={waUrl}
- target="_blank"rel="noopener noreferrer"className="inline-flex items-center justify-center gap-1 h-9 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800"title="Send Proposal on WhatsApp">
+ target="_blank"rel="noopener noreferrer"className="inline-flex items-center justify-center gap-1 h-9 rounded-lg text-xs font-bold bg-success-surface text-success hover:bg-success-surface bg-success-surface text-success border border-success-border border-success-border"title="Send Proposal on WhatsApp">
                     <MessageSquare className="h-3.5 w-3.5"/>
                     <span>WA</span>
                   </a>
@@ -462,7 +462,7 @@ export function QuotationTable({
                 {onTrash ? (
                   <Button
  size="sm"variant="ghost"onClick={() => onTrash(q)}
- className="h-9 text-xs text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40"title="Move to Trash">
+ className="h-9 text-xs text-destructive hover:bg-danger-surface dark:hover:bg-danger-surface"title="Move to Trash">
                     <Trash2 className="h-4 w-4"/>
                   </Button>
                 ) : (

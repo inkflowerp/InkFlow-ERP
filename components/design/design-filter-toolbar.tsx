@@ -68,16 +68,16 @@ export const DesignFilterToolbar = React.memo(function DesignFilterToolbar({
  className={cn(
                 'px-4 py-1.5 rounded-full text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer shadow-2xs',
  isActive
-                  ? 'bg-blue-600 dark:bg-blue-600 text-white shadow-xs'
+                  ? 'bg-primary bg-primary text-white shadow-xs'
                   : 'bg-card border border-border /80 text-foreground hover:bg-muted dark:hover:bg-muted/80'
               )}
             >
               <span className="bangla-text">{tab.label}</span>
               <span
  className={cn(
-                  'text-2xs px-2 py-0.5 rounded-full font-bold tabular-nums',
+                  'text-xs px-2 py-0.5 rounded-full font-bold tabular-nums',
  isActive
-                    ? 'bg-card text-blue-600 dark:text-blue-600'
+                    ? 'bg-card text-primary text-primary'
                     : 'bg-muted text-muted-foreground '
                 )}
               >
@@ -141,7 +141,7 @@ export const DesignFilterToolbar = React.memo(function DesignFilterToolbar({
  type="button"variant="outline"size="sm"onClick={onRefresh}
  disabled={isRefreshing}
  className="h-8 w-8 p-0 rounded-lg border-border text-muted-foreground hover:text-foreground cursor-pointer shadow-none"title="Refresh">
-            <RotateCw className={cn('h-3.5 w-3.5', isRefreshing && 'animate-spin text-blue-600')} />
+            <RotateCw className={cn('h-3.5 w-3.5', isRefreshing && 'animate-spin text-primary')} />
           </Button>
         </div>
       </div>

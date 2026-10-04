@@ -264,12 +264,12 @@ export function PricingCalculatorSimulator({
         <Card className="rounded-xl shadow-xs border-border p-5 space-y-4">
           <div className="flex items-center justify-between border-b border-border pb-3">
             <div className="flex items-center gap-2">
-              <Calculator className="h-4 w-4 text-teal-600"/>
+              <Calculator className="h-4 w-4 text-success"/>
               <h3 className="text-sm font-bold text-foreground uppercase tracking-wider">
                 {tBilingual('Commercial Job Specification', 'বাণিজ্যিক কাজের স্পেসিফিকেশন')}
               </h3>
             </div>
-            <Badge variant="outline"className="text-xs tabular-nums font-bold bg-teal-50 text-teal-800 border-teal-200 dark:bg-teal-950/40 dark:text-teal-300">
+            <Badge variant="outline"className="text-xs tabular-nums font-bold bg-success-surface text-success border-success-border bg-success-surface text-success">
  Live Estimator
             </Badge>
           </div>
@@ -344,14 +344,14 @@ export function PricingCalculatorSimulator({
  type="button"onClick={() => setCustomerType(key as PricingCustomerType)}
  className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
  isSelected
-                        ? 'border-teal-600 bg-teal-50/80 dark:bg-teal-950/60 ring-1 ring-teal-500 shadow-xs font-bold'
+                        ? 'border-success-border bg-success-surface/80 bg-success-surface ring-1 focus:ring-ring shadow-xs font-bold'
                         : 'border-border bg-card hover:border-input dark:hover:border-border'
                     }`}
                   >
                     <div className="text-xs font-bold text-foreground truncate">
                       {meta.label}
                     </div>
-                    <div className="text-2xs text-teal-700 dark:text-teal-400 truncate font-medium">
+                    <div className="text-xs text-success text-success truncate font-medium">
                       {meta.labelBn}
                     </div>
                   </button>
@@ -397,12 +397,12 @@ export function PricingCalculatorSimulator({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
               <div className="p-3 bg-muted rounded-xl border border-border flex items-center justify-between">
                 <div>
-                  <span className="text-2xs font-bold text-muted-foreground uppercase block">Billing Unit</span>
+                  <span className="text-xs font-bold text-muted-foreground uppercase block">Billing Unit</span>
                   <span className="text-sm font-black text-foreground uppercase tabular-nums">
  Per {selectedProduct?.unit || 'Piece'} (Fixed Unit)
                   </span>
                 </div>
-                <Badge variant="outline"className="text-2xs font-medium text-muted-foreground bg-card">
+                <Badge variant="outline"className="text-xs font-medium text-muted-foreground bg-card">
  No Dimensions Needed
                 </Badge>
               </div>
@@ -454,7 +454,7 @@ export function PricingCalculatorSimulator({
  type="button"onClick={() => toggleFinishing(fin.id)}
  className={`p-2.5 rounded-xl border text-left flex items-center justify-between transition-all cursor-pointer ${
  isChecked
-                          ? 'border-teal-600 bg-teal-50/70 dark:bg-teal-950/50 ring-1 ring-teal-500'
+                          ? 'border-success-border bg-success-surface/70 bg-success-surface ring-1 focus:ring-ring'
                           : 'border-border bg-card hover:border-input dark:hover:border-border'
                       }`}
                     >
@@ -462,13 +462,13 @@ export function PricingCalculatorSimulator({
                         <div className="text-xs font-bold text-foreground truncate">
                           {fin.name}
                         </div>
-                        <div className="text-2xs text-muted-foreground tabular-nums">
+                        <div className="text-xs text-muted-foreground tabular-nums">
                           + ৳{fin.selling_price || (fin as any).price_per_unit || 0} / {fin.pricing_method || 'sft'}
                         </div>
                       </div>
                       <div
  className={`h-4 w-4 rounded-md border flex items-center justify-center shrink-0 ${
- isChecked ? 'bg-teal-600 border-teal-600 text-white' : 'border-input '
+ isChecked ? 'bg-success border-success-border text-white' : 'border-input '
                         }`}
                       >
                         {isChecked && <CheckCircle2 className="h-3 w-3"/>}
@@ -484,10 +484,10 @@ export function PricingCalculatorSimulator({
 
       {/* RIGHT: REAL-TIME PRICING BREAKDOWN & MARGIN HUD */}
       <div className="lg:col-span-5 space-y-4">
-        <Card className="rounded-xl shadow-xs border-border bg-gradient-to-br from-slate-900 to-slate-950 text-white p-5 space-y-4">
+        <Card className="rounded-xl shadow-xs border-border text-white p-5 space-y-4">
           <div className="flex items-center justify-between border-b border-border pb-3">
             <div>
-              <span className="text-2xs text-teal-400 uppercase font-bold tracking-wider">
+              <span className="text-xs text-success uppercase font-bold tracking-wider">
                 {tBilingual('Calculated Commercial Tariff', 'গণনাকৃত বাণিজ্যিক মূল্য')}
               </span>
               <div className="text-3xl font-black tabular-nums text-white mt-0.5">
@@ -495,10 +495,10 @@ export function PricingCalculatorSimulator({
               </div>
             </div>
             <div className="text-right">
-              <span className="text-2xs text-muted-foreground uppercase font-bold">Gross Margin</span>
+              <span className="text-xs text-muted-foreground uppercase font-bold">Gross Margin</span>
               <div
  className={`text-lg font-black tabular-nums ${
- simulation.marginPct >= 35 ? 'text-emerald-400' : 'text-amber-400'
+ simulation.marginPct >= 35 ? 'text-success' : 'text-warning'
                 }`}
               >
                 {simulation.marginPct}%
@@ -521,7 +521,7 @@ export function PricingCalculatorSimulator({
 
             <div className="flex justify-between py-1 border-b border-border">
               <span className="text-muted-foreground">Resolved Tier Rate ({customerType.toUpperCase()}):</span>
-              <span className="tabular-nums font-bold text-teal-300">
+              <span className="tabular-nums font-bold text-success">
                 {formatBDT(simulation.tierUnitPrice)} / {isAreaBased ? 'sft' : (selectedProduct?.unit || 'pcs')}
               </span>
             </div>
@@ -551,8 +551,8 @@ export function PricingCalculatorSimulator({
             </div>
 
             <div className="flex justify-between py-1 pt-1.5 text-sm font-bold">
-              <span className="text-emerald-400">Estimated Net Gross Profit:</span>
-              <span className="tabular-nums text-emerald-400">{formatBDT(simulation.grossProfit)}</span>
+              <span className="text-success">Estimated Net Gross Profit:</span>
+              <span className="tabular-nums text-success">{formatBDT(simulation.grossProfit)}</span>
             </div>
           </div>
 
@@ -561,7 +561,7 @@ export function PricingCalculatorSimulator({
             <Button
  asChild
  onClick={handleSaveToQuoteSession}
- className="w-full h-10 bg-teal-600 hover:bg-teal-500 text-white font-bold rounded-xl shadow-xs text-xs cursor-pointer">
+ className="w-full h-10 bg-success hover:bg-success text-white font-bold rounded-xl shadow-xs text-xs cursor-pointer">
               <Link href={getTenantNavHref('/quotations?new=true', pathname, tenantSlug)}>
                 <span>{tBilingual('Create Quotation with this Tariff', 'এই দর দিয়ে কোটেশন তৈরি করুন')}</span>
                 <ArrowRight className="h-4 w-4 ml-1.5"/>

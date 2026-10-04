@@ -1,5 +1,8 @@
 'use server'
 
+import { withTenantAction } from '@/lib/actions/action-wrapper'
+
+
 // ==============================================================================
 // InkFlow ERP - Authoritative Unified Communication Server Actions (V8)
 // Protected, Multi-Tenant WhatsApp, SMS, Email & In-App Actions
@@ -12,9 +15,12 @@ import {
 import { CommunicationRepository } from '../lib/repositories/communication.repository.ts'
 import { getTenantCompanyId } from '../lib/auth/tenant-auth.ts'
 
-export async function sendUnifiedMessageAction(
-  options: Omit<DispatchMessageOptions, 'companyId'>
-) {
+export const sendUnifiedMessageAction = withTenantAction(
+  {
+    permission: "whatsapp.send",
+    entityType: "communication"
+  },
+  async (ctx, options: Omit<DispatchMessageOptions, 'companyId'>) => {
   try {
     const companyId = await getTenantCompanyId()
     const result = await UnifiedCommunicationService.sendTransactionalMessage({
@@ -25,14 +31,20 @@ export async function sendUnifiedMessageAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to dispatch communication.' }
   }
-}
 
-export async function getCommunicationLogsAction(options?: {
+})
+
+export const getCommunicationLogsAction = withTenantAction(
+  {
+    permission: "whatsapp.view",
+    entityType: "communication"
+  },
+  async (ctx, options?: {
   channel?: string
   status?: string
   limit?: number
   offset?: number
-}) {
+}) => {
   try {
     const companyId = await getTenantCompanyId()
     const logs = await CommunicationRepository.getMessages(companyId, options)
@@ -40,9 +52,15 @@ export async function getCommunicationLogsAction(options?: {
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to fetch communication logs.' }
   }
-}
 
-export async function getCommunicationTemplatesAction(channel?: string) {
+})
+
+export const getCommunicationTemplatesAction = withTenantAction(
+  {
+    permission: "whatsapp.view",
+    entityType: "communication"
+  },
+  async (ctx, channel?: string) => {
   try {
     const companyId = await getTenantCompanyId()
     const templates = await CommunicationRepository.getTemplates(companyId, channel)
@@ -50,9 +68,15 @@ export async function getCommunicationTemplatesAction(channel?: string) {
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to fetch communication templates.' }
   }
-}
 
-export async function seedCommunicationTemplatesAction() {
+})
+
+export const seedCommunicationTemplatesAction = withTenantAction(
+  {
+    permission: "whatsapp.send",
+    entityType: "communication"
+  },
+  async (ctx) => {
   try {
     const companyId = await getTenantCompanyId()
     const templates = await CommunicationRepository.seedDefaultTemplates(companyId)
@@ -60,4 +84,5 @@ export async function seedCommunicationTemplatesAction() {
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to seed communication templates.' }
   }
-}
+
+})

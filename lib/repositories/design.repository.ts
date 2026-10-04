@@ -1329,6 +1329,26 @@ export class DesignRepository {
     PrintERPDataStore.set(STORAGE_KEYS.DESIGN_JOBS, filtered)
     return true
   }
+
+  static async createSignedUrl(storagePath: string, expiresIn = 3600): Promise<string | null> {
+    try {
+      let supabase: any
+      if (typeof window === 'undefined') {
+        const { createAdminClient } = await import('../supabase/admin.ts')
+        supabase = createAdminClient()
+      } else {
+        supabase = await createClient()
+      }
+      const { data, error } = await (supabase.storage.from('design-files') as any)
+        .createSignedUrl(storagePath, expiresIn)
+      if (!error && data?.signedUrl) {
+        return data.signedUrl
+      }
+    } catch {
+      // Storage offline or fallback
+    }
+    return null
+  }
 }
 
 

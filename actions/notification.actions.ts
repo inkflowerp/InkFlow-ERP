@@ -1,8 +1,18 @@
 'use server'
 
+import { withTenantAction } from '@/lib/actions/action-wrapper'
+
+
 import { createClient } from '../lib/supabase/server.ts'
+import { createAdminClient } from '../lib/supabase/admin.ts'
 import { getCurrentTenant } from '../lib/auth/tenant-auth.ts'
-import type { InAppNotificationRecord } from '../types/communication.types.ts'
+import { NotificationService } from '@/services/notification.service'
+import type {
+  InAppNotificationRecord,
+  NotifyInput,
+  NotifyResult,
+  NotificationPreferenceRecord,
+} from '../types/communication.types.ts'
 
 export interface ServerActionResult<T> {
   success: boolean
@@ -13,10 +23,13 @@ export interface ServerActionResult<T> {
 /**
  * Server Action: Fetches authorized in-app notifications for the tenant user
  */
-export async function getInAppNotificationsAction(
-  requestedCompanyId?: string,
-  limit: number = 30
-): Promise<ServerActionResult<InAppNotificationRecord[]>> {
+export const getInAppNotificationsAction = withTenantAction(
+  {
+    permission: "notifications.view",
+    entityType: "notification"
+  },
+  async (ctx, requestedCompanyId?: string,
+  limit: number = 30) : Promise<ServerActionResult<InAppNotificationRecord[]>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -57,15 +70,19 @@ export async function getInAppNotificationsAction(
       error: err?.message || 'Failed to fetch notifications.',
     }
   }
-}
+
+})
 
 /**
  * Server Action: Marks a single notification as read
  */
-export async function markNotificationReadAction(
-  notificationId: string,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<boolean>> {
+export const markNotificationReadAction = withTenantAction(
+  {
+    permission: "notifications.view",
+    entityType: "notification"
+  },
+  async (ctx, notificationId: string,
+  requestedCompanyId?: string) : Promise<ServerActionResult<boolean>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -96,14 +113,18 @@ export async function markNotificationReadAction(
       error: err?.message || 'Failed to mark notification as read.',
     }
   }
-}
+
+})
 
 /**
  * Server Action: Marks all notifications as read for current tenant/user
  */
-export async function markAllNotificationsReadAction(
-  requestedCompanyId?: string
-): Promise<ServerActionResult<boolean>> {
+export const markAllNotificationsReadAction = withTenantAction(
+  {
+    permission: "notifications.view",
+    entityType: "notification"
+  },
+  async (ctx, requestedCompanyId?: string) : Promise<ServerActionResult<boolean>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -140,15 +161,21 @@ export async function markAllNotificationsReadAction(
       error: err?.message || 'Failed to mark all notifications as read.',
     }
   }
-}
+
+})
 
 /**
  * Server Action: Deletes a single notification
  */
-export async function deleteNotificationAction(
-  notificationId: string,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<boolean>> {
+export const deleteNotificationAction = withTenantAction(
+  {
+    permission: "notifications.view",
+    destructive: true,
+    auditAction: "notification.deletenotification",
+    entityType: "notification"
+  },
+  async (ctx, notificationId: string,
+  requestedCompanyId?: string) : Promise<ServerActionResult<boolean>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -176,14 +203,21 @@ export async function deleteNotificationAction(
       error: err?.message || 'Failed to delete notification.',
     }
   }
-}
+
+})
 
 /**
  * Server Action: Purge all notifications for tenant
  */
-export async function purgeAllNotificationsAction(
-  requestedCompanyId?: string
-): Promise<ServerActionResult<boolean>> {
+export const purgeAllNotificationsAction = withTenantAction(
+  {
+    permission: "notifications.view",
+    destructive: true,
+    requirePasswordConfirm: true,
+    auditAction: "notification.purgeallnotifications",
+    entityType: "notification"
+  },
+  async (ctx, requestedCompanyId?: string) : Promise<ServerActionResult<boolean>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -210,5 +244,181 @@ export async function purgeAllNotificationsAction(
       error: err?.message || 'Failed to purge notifications.',
     }
   }
-}
+
+})
+
+/**
+ * Server Action: Triggers preference-aware notification across channels
+ */
+export const notifyAction = withTenantAction(
+  {
+    permission: 'notifications.view',
+    entityType: 'notification',
+  },
+  async (ctx, input: NotifyInput): Promise<ServerActionResult<NotifyResult>> => {
+    try {
+      const tenant = await getCurrentTenant(input.companyId)
+      if (!tenant || !tenant.companyId) {
+        return { success: false, error: 'Unauthorized tenant session' }
+      }
+      const res = await NotificationService.notify({
+        ...input,
+        companyId: tenant.companyId,
+      })
+      return { success: res.success, data: res, error: res.error }
+    } catch (err: any) {
+      return { success: false, error: err?.message || 'Failed to dispatch notification' }
+    }
+  }
+)
+
+/**
+ * Server Action: Fetches notification preferences for current tenant user
+ */
+export const getUserNotificationPreferencesAction = withTenantAction(
+  {
+    permission: 'notifications.view',
+    entityType: 'notification',
+  },
+  async (ctx, requestedCompanyId?: string): Promise<ServerActionResult<NotificationPreferenceRecord[]>> => {
+    try {
+      const tenant = await getCurrentTenant(requestedCompanyId)
+      if (!tenant || !tenant.companyId || !tenant.userId) {
+        return { success: false, error: 'Valid user session required' }
+      }
+      const prefs = await NotificationService.getUserPreferences(tenant.companyId, tenant.userId)
+      return { success: true, data: prefs }
+    } catch (err: any) {
+      return { success: false, error: err?.message || 'Failed to load preferences' }
+    }
+  }
+)
+
+/**
+ * Server Action: Saves user notification preferences
+ */
+export const saveUserNotificationPreferencesAction = withTenantAction(
+  {
+    permission: 'notifications.view',
+    entityType: 'notification',
+  },
+  async (
+    ctx,
+    preferences: Partial<NotificationPreferenceRecord>[],
+    requestedCompanyId?: string
+  ): Promise<ServerActionResult<boolean>> => {
+    try {
+      const tenant = await getCurrentTenant(requestedCompanyId)
+      if (!tenant || !tenant.companyId || !tenant.userId) {
+        return { success: false, error: 'Valid user session required' }
+      }
+      const ok = await NotificationService.saveUserPreferences(tenant.companyId, tenant.userId, preferences)
+      return { success: ok, data: ok }
+    } catch (err: any) {
+      return { success: false, error: err?.message || 'Failed to save preferences' }
+    }
+  }
+)
+
+/**
+ * Server Action: Retrieves communication delivery logs
+ */
+export const getDeliveryLogsAction = withTenantAction(
+  {
+    permission: 'notifications.view',
+    entityType: 'notification',
+  },
+  async (
+    ctx,
+    filters?: { status?: string; channel?: string; recipient?: string; limit?: number; offset?: number },
+    requestedCompanyId?: string
+  ): Promise<ServerActionResult<{ logs: any[]; total: number }>> => {
+    try {
+      const tenant = await getCurrentTenant(requestedCompanyId)
+      if (!tenant || !tenant.companyId) {
+        return { success: false, error: 'Unauthorized tenant session' }
+      }
+      const result = await NotificationService.getDeliveryLogs(tenant.companyId, filters)
+      return { success: true, data: result }
+    } catch (err: any) {
+      return { success: false, error: err?.message || 'Failed to fetch delivery logs' }
+    }
+  }
+)
+
+/**
+ * Server Action: Resends a failed or historical delivery job
+ */
+export const resendDeliveryJobAction = withTenantAction(
+  {
+    permission: 'notifications.view',
+    entityType: 'notification',
+  },
+  async (ctx, jobId: string, requestedCompanyId?: string): Promise<ServerActionResult<boolean>> => {
+    try {
+      const tenant = await getCurrentTenant(requestedCompanyId)
+      if (!tenant || !tenant.companyId) {
+        return { success: false, error: 'Unauthorized tenant session' }
+      }
+      const result = await NotificationService.resendJob(jobId, tenant.companyId)
+      return { success: result.success, data: result.success, error: result.error }
+    } catch (err: any) {
+      return { success: false, error: err?.message || 'Failed to resend message' }
+    }
+  }
+)
+
+/**
+ * Server Action: Triggers dynamic business rules evaluation (overdue invoices, low stock, etc.)
+ */
+export const triggerBusinessRulesEvaluationAction = withTenantAction(
+  {
+    permission: 'notifications.view',
+    entityType: 'notification',
+  },
+  async (ctx, requestedCompanyId?: string): Promise<ServerActionResult<any>> => {
+    try {
+      const tenant = await getCurrentTenant(requestedCompanyId)
+      if (!tenant || !tenant.companyId) {
+        return { success: false, error: 'Unauthorized tenant session' }
+      }
+      const result = await NotificationService.evaluateBusinessRules(tenant.companyId)
+      return { success: true, data: result }
+    } catch (err: any) {
+      return { success: false, error: err?.message || 'Failed to evaluate business rules' }
+    }
+  }
+)
+
+/**
+ * Server Action: Fetches bilingual message templates for current tenant
+ */
+export const getNotificationTemplatesAction = withTenantAction(
+  {
+    permission: 'notifications.view',
+    entityType: 'notification',
+  },
+  async (ctx, requestedCompanyId?: string): Promise<ServerActionResult<any[]>> => {
+    try {
+      const tenant = await getCurrentTenant(requestedCompanyId)
+      if (!tenant || !tenant.companyId) {
+        return { success: false, error: 'Unauthorized tenant session' }
+      }
+      const adminClient = createAdminClient()
+      const { data, error } = await (adminClient as any)
+        .from('message_templates')
+        .select('*')
+        .eq('company_id', tenant.companyId)
+        .order('template_key', { ascending: true })
+
+      if (error) {
+        return { success: true, data: [] }
+      }
+      return { success: true, data: data || [] }
+    } catch (err: any) {
+      return { success: false, error: err?.message || 'Failed to load templates' }
+    }
+  }
+)
+
 

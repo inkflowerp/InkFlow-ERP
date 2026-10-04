@@ -99,10 +99,10 @@ export class PhoneOtpProvider implements IAuthProvider {
         data: { trackingId: `sms-${Date.now()}` },
         message: `OTP sent to ${formattedPhone}`,
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       return {
         success: false,
-        error: err?.message || 'Failed to dispatch SMS OTP',
+        error: err instanceof Error ? err.message : 'Failed to dispatch SMS OTP',
       }
     }
   }

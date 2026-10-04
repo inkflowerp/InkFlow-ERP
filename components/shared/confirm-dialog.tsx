@@ -61,11 +61,11 @@ export function ConfirmDialog({
     >
       <div className="flex items-start gap-3.5 py-2">
         {isDestructive ? (
-          <div className="rounded-xl bg-rose-500/10 p-3 text-rose-500 dark:bg-rose-500/20 border border-rose-500/30 shrink-0">
+          <div className="rounded-xl bg-destructive/10 p-3 text-destructive bg-destructive/20 border border-danger-border/30 shrink-0">
             <AlertTriangle className="h-5 w-5"/>
           </div>
         ) : (
-          <div className="rounded-xl bg-indigo-500/10 p-3 text-indigo-500 dark:bg-indigo-500/20 border border-indigo-500/30 shrink-0">
+          <div className="rounded-xl bg-primary/10 p-3 text-primary bg-primary/20 border border-primary/20/30 shrink-0">
             <HelpCircle className="h-5 w-5"/>
           </div>
         )}

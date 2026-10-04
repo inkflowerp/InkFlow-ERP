@@ -6,7 +6,6 @@
 // into platform_notifications ledger via Supabase Admin client.
 // ==============================================================================
 
-import { createAdminClient } from '@/lib/supabase/admin'
 import { normalizeBdPhoneNumber, isValidEmail } from '@/lib/gateway/phone-utils'
 import { PlatformService } from '@/services/platform.service'
 

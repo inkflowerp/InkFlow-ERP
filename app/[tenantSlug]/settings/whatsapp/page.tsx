@@ -219,10 +219,10 @@ export default function TenantWhatsAppSettingsPage() {
  const isConnected = connection?.status === 'connected'
 
  return (
-    <div className="space-y-6 max-w-6xl mx-auto pb-12">
+    <div className="space-y-6 mx-auto pb-12">
       <PageHeader
  titleEn="WhatsApp Gateway Integration"titleBn="হোয়াটসঅ্যাপ গেটওয়ে ইন্টিগ্রেশন"descriptionEn="Connect your business WhatsApp number via dedicated OpenWA gateway. Enables automated order updates, invoice PDFs, and customer chat."descriptionBn="ডেডিকেটেড OpenWA গেটওয়ের মাধ্যমে আপনার ব্যবসায়িক হোয়াটসঅ্যাপ নম্বর সংযুক্ত করুন।"icon={MessageSquare}
- iconColor="text-emerald-600"actions={
+ iconColor="text-success"actions={
           <Button
  variant="outline"size="sm"onClick={() => {
  setRefreshing(true)
@@ -238,8 +238,8 @@ export default function TenantWhatsAppSettingsPage() {
 
       {/* Top Banner Alert if Disconnected */}
       {!isConnected && !loading && (
-        <div className="p-4 rounded-xl border border-amber-500/20 bg-amber-500/10 text-amber-900 dark:text-amber-200 flex items-start gap-3">
-          <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0"/>
+        <div className="p-4 rounded-xl border border-warning-border/20 bg-warning/10 text-warning text-warning flex items-start gap-3">
+          <AlertTriangle className="w-5 h-5 text-warning text-warning mt-0.5 shrink-0"/>
           <div className="flex-1 text-sm">
             <p className="font-semibold">
               {locale === 'bn' ? 'হোয়াটসঅ্যাপ সংযোগ নেই' : 'WhatsApp Gateway is Not Connected'}
@@ -264,7 +264,7 @@ export default function TenantWhatsAppSettingsPage() {
             <div className="flex items-center gap-3">
               <div
  className={`p-2.5 rounded-xl ${
- isConnected ? 'bg-emerald-500/15 text-emerald-600' : 'bg-muted text-muted-foreground'
+ isConnected ? 'bg-success/15 text-success' : 'bg-muted text-muted-foreground'
                 }`}
               >
                 <Smartphone className="w-6 h-6"/>
@@ -282,9 +282,9 @@ export default function TenantWhatsAppSettingsPage() {
                     }
  className={`capitalize font-medium ${
  isConnected
-                        ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                        ? 'bg-success hover:bg-success text-white'
                         : connection?.status === 'qr_ready'
-                        ? 'bg-amber-600 text-white'
+                        ? 'bg-warning text-white'
                         : ''
                     }`}
                   >
@@ -310,7 +310,7 @@ export default function TenantWhatsAppSettingsPage() {
                 <Button
  variant="default"size="sm"onClick={handleInitiateConnection}
  disabled={connecting}
- className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white">
+ className="gap-2 bg-success hover:bg-success text-white">
                   <QrCode className="w-4 h-4"/>
                   {connecting ? 'Initializing...' : locale === 'bn' ? 'QR কোড স্ক্যান করুন' : 'Pair Device (QR)'}
                 </Button>
@@ -407,8 +407,8 @@ export default function TenantWhatsAppSettingsPage() {
                 <div
  className={`p-3 rounded-lg text-xs flex items-center gap-2 ${
  testFeedback.success
-                      ? 'bg-emerald-500/10 text-emerald-800 dark:text-emerald-200 border border-emerald-500/20'
-                      : 'bg-rose-500/10 text-rose-800 dark:text-rose-200 border border-rose-500/20'
+                      ? 'bg-success/10 text-success text-success border border-success-border/20'
+                      : 'bg-destructive/10 text-destructive text-destructive border border-danger-border/20'
                   }`}
                 >
                   {testFeedback.success ? (
@@ -422,7 +422,7 @@ export default function TenantWhatsAppSettingsPage() {
 
               <Button
  type="submit"disabled={!isConnected || sendingTest}
- className="w-full gap-2 bg-emerald-600 hover:bg-emerald-700 text-white">
+ className="w-full gap-2 bg-success hover:bg-success text-white">
                 <Send className={`w-4 h-4 ${sendingTest ? 'animate-pulse' : ''}`} />
                 {sendingTest
                   ? 'Dispatching...'
@@ -466,7 +466,7 @@ export default function TenantWhatsAppSettingsPage() {
  value={dailyLimit}
  onChange={(e) => setDailyLimit(Number(e.target.value))}
                   />
-                  <p className="text-[11px] text-muted-foreground">Default: 500/day</p>
+                  <p className="text-xs text-muted-foreground">Default: 500/day</p>
                 </div>
 
                 <div className="space-y-1.5">
@@ -479,17 +479,17 @@ export default function TenantWhatsAppSettingsPage() {
  value={sendDelay}
  onChange={(e) => setSendDelay(Number(e.target.value))}
                   />
-                  <p className="text-[11px] text-muted-foreground">Recommended: 3 - 5s</p>
+                  <p className="text-xs text-muted-foreground">Recommended: 3 - 5s</p>
                 </div>
               </div>
 
               {/* Anti-Ban Best Practices Notice */}
-              <div className="p-3.5 rounded-lg border border-blue-500/20 bg-blue-500/5 text-xs text-blue-900 dark:text-blue-200 space-y-1.5">
-                <div className="font-semibold flex items-center gap-1.5 text-blue-600 dark:text-blue-400">
+              <div className="p-3.5 rounded-lg border border-primary/20/20 bg-primary/5 text-xs text-primary text-primary space-y-1.5">
+                <div className="font-semibold flex items-center gap-1.5 text-primary text-primary">
                   <ShieldCheck className="w-4 h-4"/>
                   {locale === 'bn' ? 'হোয়াটসঅ্যাপ অ্যাকাউন্ট সুরক্ষা নির্দেশিকা' : 'Anti-Ban Safety Best Practices'}
                 </div>
-                <ul className="list-disc list-inside space-y-1 opacity-90 text-[11px]">
+                <ul className="list-disc list-inside space-y-1 opacity-90 text-xs">
                   <li>Warm up new numbers gradually (start with 50-100 messages/day).</li>
                   <li>Only send to customers who have an active order or transaction.</li>
                   <li>Do not blast unrequested marketing messages to cold contact lists.</li>
@@ -498,7 +498,7 @@ export default function TenantWhatsAppSettingsPage() {
               </div>
 
               {settingsFeedback && (
-                <div className="p-2.5 rounded-lg bg-emerald-500/10 text-emerald-800 dark:text-emerald-200 text-xs flex items-center gap-2">
+                <div className="p-2.5 rounded-lg bg-success/10 text-success text-success text-xs flex items-center gap-2">
                   <Check className="w-4 h-4"/>
                   {settingsFeedback}
                 </div>
@@ -541,7 +541,7 @@ export default function TenantWhatsAppSettingsPage() {
  alt="WhatsApp Pairing QR Code"className="w-56 h-56 object-contain"/>
               ) : (
                 <div className="flex flex-col items-center justify-center space-y-3 text-muted-foreground">
-                  <RefreshCw className="w-8 h-8 animate-spin text-emerald-600"/>
+                  <RefreshCw className="w-8 h-8 animate-spin text-success"/>
                   <p className="text-xs">Generating secure QR code...</p>
                 </div>
               )}
@@ -562,7 +562,7 @@ export default function TenantWhatsAppSettingsPage() {
 
             <div className="flex items-center justify-between text-xs text-muted-foreground pt-1">
               <span className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"/>
+                <span className="w-2 h-2 rounded-full bg-success animate-pulse"/>
  Listening for device pairing...
               </span>
               <Button

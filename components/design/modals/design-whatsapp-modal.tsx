@@ -108,12 +108,12 @@ export const DesignWhatsAppModal = React.memo(function DesignWhatsAppModal({
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-2xl bg-card border border-border text-foreground p-6 shadow-lg">
         <DialogHeader className="border-b border-border pb-3">
-          <DialogTitle className="text-lg font-bold flex items-center gap-2 text-emerald-700 dark:text-emerald-400">
+          <DialogTitle className="text-lg font-bold flex items-center gap-2 text-success text-success">
             <MessageSquare className="h-5 w-5"/>
             <span>Bangladeshi WhatsApp Communication Hub (গ্রাহক যোগাযোগ ও প্রুফ)</span>
           </DialogTitle>
           <DialogDescription className="text-xs text-muted-foreground">
-            কাজের নাম: <span className="font-semibold text-foreground">{job.title}</span> | জব নং: <span className="tabular-nums font-bold text-indigo-600">#{job.design_number}</span>
+            কাজের নাম: <span className="font-semibold text-foreground">{job.title}</span> | জব নং: <span className="tabular-nums font-bold text-primary">#{job.design_number}</span>
           </DialogDescription>
         </DialogHeader>
 
@@ -130,12 +130,12 @@ export const DesignWhatsAppModal = React.memo(function DesignWhatsAppModal({
  type="button"onClick={() => handleTemplateChange(t.key)}
  className={`p-2.5 rounded-lg border text-left text-xs font-semibold transition-all flex flex-col justify-between ${
  selectedTemplate === t.key
-                      ? 'bg-emerald-50 border-emerald-500 text-emerald-950 dark:bg-emerald-950/50 dark:text-emerald-200 shadow-sm'
-                      : 'bg-muted border-border text-foreground hover:border-emerald-300'
+                      ? 'bg-success-surface border-success-border text-success bg-success-surface text-success shadow-sm'
+                      : 'bg-muted border-border text-foreground hover:border-success-border'
                   }`}
                 >
                   <span className="truncate">{t.title}</span>
-                  <span className="text-2xs font-normal opacity-70 mt-1">{t.badge}</span>
+                  <span className="text-xs font-normal opacity-70 mt-1">{t.badge}</span>
                 </button>
               ))}
             </div>
@@ -145,7 +145,7 @@ export const DesignWhatsAppModal = React.memo(function DesignWhatsAppModal({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-end">
             <div className="space-y-1">
               <Label className="text-xs font-bold flex items-center gap-1.5 text-foreground">
-                <Phone className="h-3.5 w-3.5 text-emerald-600"/>
+                <Phone className="h-3.5 w-3.5 text-success"/>
                 <span>গ্রাহকের হোয়াটসঅ্যাপ নম্বর (WhatsApp Number):</span>
               </Label>
               <Input
@@ -153,15 +153,15 @@ export const DesignWhatsAppModal = React.memo(function DesignWhatsAppModal({
  onChange={(e) => setPhoneNumber(e.target.value)}
  placeholder="01711-XXXXXX বা +8801..."className="tabular-nums text-xs bg-muted border-input"/>
             </div>
-            <div className="text-2xs text-muted-foreground bg-muted p-2 rounded-md border border-border">
+            <div className="text-xs text-muted-foreground bg-muted p-2 rounded-md border border-border">
               <span className="font-semibold text-foreground">অটো ৮৮ ফরম্যাট:</span> +{sanitizeBangladeshiPhone(phoneNumber)}
             </div>
           </div>
 
           {/* Legal Disclaimer Box for Draft Proof */}
           {selectedTemplate === 'proof' && (
-            <div className="flex items-start gap-2.5 p-2.5 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800/60 text-amber-900 dark:text-amber-200 text-xs">
-              <AlertTriangle className="h-4 w-4 shrink-0 text-amber-600 mt-0.5"/>
+            <div className="flex items-start gap-2.5 p-2.5 rounded-lg bg-warning-surface bg-warning-surface border border-warning-border border-warning-border/60 text-warning text-warning text-xs">
+              <AlertTriangle className="h-4 w-4 shrink-0 text-warning mt-0.5"/>
               <div>
                 <span className="font-bold">আইনগত সুরক্ষা ক্লজ সংযুক্ত:</span> এই টেমপ্লেটে প্রেস স্ট্যান্ডার্ড শর্তাবলী আছে যাতে ভুল বানানের কারণে প্রিন্টিং লস হলে গ্রাহক দায় স্বীকার করেন।
               </div>
@@ -172,13 +172,13 @@ export const DesignWhatsAppModal = React.memo(function DesignWhatsAppModal({
           <div className="space-y-1">
             <div className="flex items-center justify-between">
               <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                <Sparkles className="h-3.5 w-3.5 text-indigo-600"/>
+                <Sparkles className="h-3.5 w-3.5 text-primary"/>
                 <span>মেসেজ প্রিভিউ ও এডিটর (Message Body):</span>
               </Label>
               <button
  type="button"onClick={handleCopy}
- className="text-2xs text-emerald-700 dark:text-emerald-400 hover:underline flex items-center gap-1 font-semibold">
-                {isCopied ? <Check className="h-3 w-3 text-emerald-600"/> : <Copy className="h-3 w-3"/>}
+ className="text-xs text-success text-success hover:underline flex items-center gap-1 font-semibold">
+                {isCopied ? <Check className="h-3 w-3 text-success"/> : <Copy className="h-3 w-3"/>}
                 <span>{isCopied ? 'কপি হয়েছে' : 'কপি করুন'}</span>
               </button>
             </div>
@@ -199,13 +199,13 @@ export const DesignWhatsAppModal = React.memo(function DesignWhatsAppModal({
             <div className="flex items-center gap-2">
               <Button
  type="button"variant="outline"size="sm"onClick={handleCopy}
- className="text-xs border-border text-foreground hover:bg-muted hover:bg-emerald-50 dark:hover:bg-emerald-950">
+ className="text-xs border-border text-foreground hover:bg-muted hover:bg-success-surface dark:hover:bg-success-surface">
                 {isCopied ? <Check className="h-3.5 w-3.5 mr-1"/> : <Copy className="h-3.5 w-3.5 mr-1"/>}
                 <span>{isCopied ? 'কপি সম্পন্ন' : 'টেক্সট কপি করুন'}</span>
               </Button>
               <Button
  type="button"size="sm"onClick={handleOpenWhatsAppWeb}
- className="text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-xs">
+ className="text-xs bg-success hover:bg-success text-white font-bold shadow-xs">
                 <ExternalLink className="h-3.5 w-3.5 mr-1.5"/>
                 <span>হোয়াটসঅ্যাপে পাঠান (Send WhatsApp Web)</span>
               </Button>

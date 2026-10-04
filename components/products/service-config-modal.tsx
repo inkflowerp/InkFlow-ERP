@@ -3579,7 +3579,7 @@ export function ServiceConfigModal({
  size="5xl"onSubmit={handleSubmit}
  title={
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 font-bold shrink-0 ring-1 ring-blue-500/20">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary bg-primary/20 text-primary font-bold shrink-0 ring-1 focus:ring-ring/20">
             <Printer className="h-5 w-5"/>
           </div>
           <div>
@@ -3587,11 +3587,11 @@ export function ServiceConfigModal({
               <span className="text-base font-bold text-foreground">
                 {initialData ? `Configure Service: ${initialData.name}` : 'New Printing & Production Service'}
               </span>
-              <Badge variant="outline"className="text-2xs uppercase tabular-nums py-0.5 px-2 bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800">
+              <Badge variant="outline"className="text-xs uppercase tabular-nums py-0.5 px-2 bg-primary/10 text-primary border-primary/20 bg-primary/10 text-primary border-border">
                 {serviceType.toUpperCase()}
               </Badge>
               {sellingUnit && (
-                <Badge variant="outline"className="text-2xs uppercase tabular-nums py-0.5 px-2 bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800">
+                <Badge variant="outline"className="text-xs uppercase tabular-nums py-0.5 px-2 bg-success-surface text-success border-success-border bg-success-surface text-success border-success-border">
                   {sellingUnit} Billing
                 </Badge>
               )}
@@ -3641,7 +3641,7 @@ export function ServiceConfigModal({
  else if (activeTab === 'finishing') setActiveTab('additionals')
  else if (activeTab === 'additionals') setActiveTab('pricing')
                 }}
- className="h-10 px-4 rounded-xl font-bold border-blue-300 text-blue-700 dark:border-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-950/40 gap-1.5 cursor-pointer">
+ className="h-10 px-4 rounded-xl font-bold border-primary/20 text-primary border-border text-primary hover:bg-primary/10 dark:hover:bg-primary/10 gap-1.5 cursor-pointer">
                 <span>Next Step</span>
                 <ChevronRight className="w-4 h-4"/>
               </Button>
@@ -3687,16 +3687,16 @@ export function ServiceConfigModal({
  className={cn(
                   'px-2 py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap text-xs relative',
  isSelected
-                    ? 'bg-card text-foreground shadow-xs font-bold ring-1 ring-slate-200 dark:ring-slate-600'
+                    ? 'bg-card text-foreground shadow-xs font-bold ring-1 focus:ring-ring dark:focus:ring-ring'
                     : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground font-medium'
                 )}
               >
-                <Icon className={cn('w-3.5 h-3.5 shrink-0', isSelected ? 'text-blue-600 dark:text-blue-400' : 'text-muted-foreground')} />
+                <Icon className={cn('w-3.5 h-3.5 shrink-0', isSelected ? 'text-primary text-primary' : 'text-muted-foreground')} />
                 <span>{tab.label}</span>
                 {tab.count && (
                   <span className={cn(
-                    'text-2xs px-1 py-0.2 rounded-full tabular-nums font-bold leading-tight',
- isSelected ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300' : 'bg-muted text-muted-foreground '
+                    'text-xs px-1 py-0.2 rounded-full tabular-nums font-bold leading-tight',
+ isSelected ? 'bg-primary/10 text-primary bg-primary text-primary' : 'bg-muted text-muted-foreground '
                   )}>
                     {tab.count}
                   </span>
@@ -3715,20 +3715,20 @@ export function ServiceConfigModal({
             <div className="space-y-3 pb-3 border-b border-border">
               <div className="flex items-center justify-between pb-1.5 border-b border-border">
                 <div className="flex items-center gap-2">
-                  <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
+                  <div className="h-6 w-6 rounded-lg bg-primary/10 text-primary bg-primary/60 text-primary flex items-center justify-center font-bold text-xs">
                     1
                   </div>
                   <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
  Basic Information & Classification
                   </h3>
                 </div>
-                <span className="text-2xs text-muted-foreground font-medium">Bilingual naming & 4-level classification</span>
+                <span className="text-xs text-muted-foreground font-medium">Bilingual naming & 4-level classification</span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="sm:col-span-2">
                   <Label className="text-xs font-semibold mb-1 block">
- Service Name (English) <span className="text-rose-500">*</span>
+ Service Name (English) <span className="text-destructive">*</span>
                   </Label>
                   <Input
  placeholder="e.g. UV Vinyl Sticker Printing (High Density), Eco PVC Frontlit Banner Print..."value={name}
@@ -3739,12 +3739,12 @@ export function ServiceConfigModal({
  required
  className={cn(
                       'h-9 text-xs font-medium transition-colors',
- fieldErrors.name && 'border-rose-500 focus-visible:ring-rose-400 bg-rose-50/30 dark:bg-rose-950/20'
+ fieldErrors.name && 'border-danger-border focus-visible:focus:ring-ring bg-danger-surface/30 bg-danger-surface'
                     )}
  autoFocus
                   />
                   {fieldErrors.name && (
-                    <p className="text-2xs text-rose-600 dark:text-rose-400 font-medium mt-1 flex items-center gap-1">
+                    <p className="text-xs text-destructive text-destructive font-medium mt-1 flex items-center gap-1">
                       <AlertCircle className="w-3.5 h-3.5 shrink-0"/>
                       <span>{fieldErrors.name}</span>
                     </p>
@@ -3763,7 +3763,7 @@ export function ServiceConfigModal({
 
                 <div>
                   <Label className="text-xs font-semibold mb-1 block">
- Service Code / SKU <span className="text-rose-500">*</span>
+ Service Code / SKU <span className="text-destructive">*</span>
                   </Label>
                   <Input
  placeholder="e.g. SRV-UV-VINYL-01"value={sku}
@@ -3777,12 +3777,12 @@ export function ServiceConfigModal({
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
                     <Label className="text-xs font-semibold mb-1 block text-foreground">
- Service Type <span className="text-rose-500">*</span>
+ Service Type <span className="text-destructive">*</span>
                     </Label>
                     <select
  value={serviceType}
  onChange={(e) => handleSelectServiceType(e.target.value as any)}
- className="w-full h-9 text-xs rounded-md border border-blue-300 dark:border-blue-700 bg-blue-50/50 dark:bg-blue-950/30 px-2.5 font-bold text-blue-900 dark:text-blue-200">
+ className="w-full h-9 text-xs rounded-md border border-primary/20 border-border bg-primary/10/50 bg-primary/10 px-2.5 font-bold text-primary text-primary">
                       <option value="printing">🖨️ Printing & Production Service</option>
                       <option value="production">🏗️ Fabrication & Assembly</option>
                       <option value="finishing">✂️ Finishing & Lamination</option>
@@ -3795,9 +3795,9 @@ export function ServiceConfigModal({
                   <div>
                     <div className="flex items-center justify-between mb-1">
                       <Label className="text-xs font-semibold block text-foreground">
- Category <span className="text-rose-500">*</span>
+ Category <span className="text-destructive">*</span>
                       </Label>
-                      <span className="text-2xs text-blue-600 dark:text-blue-400 font-semibold uppercase">
+                      <span className="text-xs text-primary text-primary font-semibold uppercase">
                         {filteredCatalogCategories.length} Options
                       </span>
                     </div>
@@ -3837,16 +3837,16 @@ export function ServiceConfigModal({
                 {/* Sub-category Clickable Suggestions Pills */}
                 {(CATEGORY_SUBCATEGORY_MAP[category] || []).length > 0 && (
                   <div className="flex flex-wrap items-center gap-1 pt-0.5">
-                    <span className="text-2xs text-muted-foreground font-semibold uppercase mr-1">Suggestions:</span>
+                    <span className="text-xs text-muted-foreground font-semibold uppercase mr-1">Suggestions:</span>
                     {(CATEGORY_SUBCATEGORY_MAP[category] || []).slice(0, 5).map((preset) => (
                       <button
  key={preset}
  type="button"onClick={() => setSubCategory(preset)}
  className={cn(
-                          'px-2 py-0.5 rounded text-2xs font-medium border transition-colors cursor-pointer',
+                          'px-2 py-0.5 rounded text-xs font-medium border transition-colors cursor-pointer',
  subCategory === preset
-                            ? 'bg-blue-600 text-white border-blue-600 font-bold shadow-xs'
-                            : 'bg-card text-foreground border-border hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/30'
+                            ? 'bg-primary text-white border-border font-bold shadow-xs'
+                            : 'bg-card text-foreground border-border hover:border-border hover:bg-primary/10 dark:hover:bg-primary/10'
                         )}
                       >
                         {preset}
@@ -3867,15 +3867,15 @@ export function ServiceConfigModal({
             {serviceType === 'printing' && (
               <>
                 {/* 1.2 Print & Production Configuration */}
-                <div className="space-y-3 p-3.5 rounded-xl border border-blue-200 dark:border-blue-900/60 bg-blue-50/30 dark:bg-blue-950/20">
-                  <div className="flex items-center justify-between pb-1.5 border-b border-blue-200/60 dark:border-blue-900/60">
+                <div className="space-y-3 p-3.5 rounded-xl border border-primary/20 border-border/60 bg-primary/10/30 bg-primary/10">
+                  <div className="flex items-center justify-between pb-1.5 border-b border-primary/20/60 border-border/60">
                     <div className="flex items-center gap-2">
-                      <Printer className="w-4 h-4 text-blue-600 dark:text-blue-400"/>
+                      <Printer className="w-4 h-4 text-primary text-primary"/>
                       <h4 className="text-xs font-bold text-foreground uppercase tracking-wider">
  Print & Production Configuration
                       </h4>
                     </div>
-                    <span className="text-2xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-100/60 dark:bg-blue-900/40 px-2 py-0.5 rounded">
+                    <span className="text-xs font-semibold text-primary text-primary bg-primary/10/60 bg-primary/40 px-2 py-0.5 rounded">
  Large Format & Digital Press
                     </span>
                   </div>
@@ -3883,7 +3883,7 @@ export function ServiceConfigModal({
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
                     <div>
                       <Label className="text-xs font-semibold mb-1 block">
- Print Category <span className="text-rose-500">*</span>
+ Print Category <span className="text-destructive">*</span>
                       </Label>
                       <select
  value={printCategory}
@@ -3907,7 +3907,7 @@ export function ServiceConfigModal({
 
                     <div>
                       <Label className="text-xs font-semibold mb-1 block">
- Technology (প্রযুক্তি) <span className="text-rose-500">*</span>
+ Technology (প্রযুক্তি) <span className="text-destructive">*</span>
                       </Label>
                       <select
  value={printTechnology}
@@ -3923,7 +3923,7 @@ export function ServiceConfigModal({
 
                     <div>
                       <Label className="text-xs font-semibold mb-1 block">
- Production Method <span className="text-rose-500">*</span>
+ Production Method <span className="text-destructive">*</span>
                       </Label>
                       <select
  value={productionMethod}
@@ -3939,7 +3939,7 @@ export function ServiceConfigModal({
 
                     <div>
                       <Label className="text-xs font-semibold mb-1 block">
- Default Department <span className="text-rose-500">*</span>
+ Default Department <span className="text-destructive">*</span>
                       </Label>
                       <select
  value={defaultDepartment}
@@ -3956,13 +3956,13 @@ export function ServiceConfigModal({
 
                   {/* Machinery Fleet Pre-selection */}
                   {machineries.length > 0 && (
-                    <div className="p-2.5 bg-card rounded-lg border border-blue-200/80 dark:border-blue-900/60 space-y-1.5">
+                    <div className="p-2.5 bg-card rounded-lg border border-primary/20/80 border-border/60 space-y-1.5">
                       <div className="flex items-center justify-between">
                         <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                          <Cpu className="w-3.5 h-3.5 text-blue-600"/>
+                          <Cpu className="w-3.5 h-3.5 text-primary"/>
  Assigned Machinery Fleet Routing
                         </Label>
-                        <span className="text-2xs text-blue-600 dark:text-blue-400 font-medium">Auto-populates speed & machine cost</span>
+                        <span className="text-xs text-primary text-primary font-medium">Auto-populates speed & machine cost</span>
                       </div>
                       <select
  value={selectedMachineId}
@@ -3977,10 +3977,10 @@ export function ServiceConfigModal({
                       </select>
 
                       {selectedMachineId && (
-                        <div className="flex items-center gap-3 text-2xs text-muted-foreground pt-0.5">
+                        <div className="flex items-center gap-3 text-xs text-muted-foreground pt-0.5">
                           <span>Hourly Rate: <strong className="text-foreground tabular-nums">৳{machineHourlyRate || 0}/hr</strong></span>
-                          <span>Speed: <strong className="text-blue-600 dark:text-blue-400 tabular-nums">{estimatedSpeed || 'Auto'} {speedUnit === 'sheet_per_hr' ? 'Sheets/hr' : 'Sqft/hr'}</strong></span>
-                          <span>Unit Machine Cost: <strong className="text-emerald-600 dark:text-emerald-400 tabular-nums">৳{machineCost || 0}/sft</strong></span>
+                          <span>Speed: <strong className="text-primary text-primary tabular-nums">{estimatedSpeed || 'Auto'} {speedUnit === 'sheet_per_hr' ? 'Sheets/hr' : 'Sqft/hr'}</strong></span>
+                          <span>Unit Machine Cost: <strong className="text-success text-success tabular-nums">৳{machineCost || 0}/sft</strong></span>
                         </div>
                       )}
                     </div>
@@ -3988,16 +3988,16 @@ export function ServiceConfigModal({
                 </div>
 
                 {/* 1.3 Primary Substrate & Material Info Card */}
-                <div className="space-y-3 p-3.5 rounded-xl border border-emerald-200 dark:border-emerald-900/60 bg-emerald-50/30 dark:bg-emerald-950/20">
-                  <div className="flex items-center justify-between pb-1.5 border-b border-emerald-200/60 dark:border-emerald-900/60">
+                <div className="space-y-3 p-3.5 rounded-xl border border-success-border border-success-border/60 bg-success-surface/30 bg-success-surface">
+                  <div className="flex items-center justify-between pb-1.5 border-b border-success-border/60 border-success-border/60">
                     <div className="flex items-center gap-2">
-                      <Boxes className="w-4 h-4 text-emerald-600 dark:text-emerald-400"/>
+                      <Boxes className="w-4 h-4 text-success text-success"/>
                       <h4 className="text-xs font-bold text-foreground uppercase tracking-wider">
  Primary Substrate (Raw Material Isolation)
                       </h4>
                     </div>
                     {printableMaterialId && (
-                      <span className="text-2xs text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-0.5">
+                      <span className="text-xs text-success text-success font-semibold flex items-center gap-0.5">
                         <CheckCircle2 className="w-3.5 h-3.5"/> Inventory Linked (item_type = raw_material)
                       </span>
                     )}
@@ -4005,7 +4005,7 @@ export function ServiceConfigModal({
 
                   <div>
                     <Label className="text-xs font-semibold mb-1 block">
- Primary Raw Material Substrate <span className="text-rose-500">*</span>
+ Primary Raw Material Substrate <span className="text-destructive">*</span>
                     </Label>
                     <select
  value={printableMaterialId}
@@ -4013,7 +4013,7 @@ export function ServiceConfigModal({
  className={cn(
                         'w-full h-9 text-xs rounded-md border px-2.5 font-medium transition-colors',
  printableMaterialId
-                          ? 'border-emerald-500 bg-emerald-50/60 dark:bg-emerald-950/40 text-emerald-950 dark:text-emerald-200 font-bold'
+                          ? 'border-success-border bg-success-surface/60 bg-success-surface text-success text-success font-bold'
                           : 'border-input bg-card text-foreground '
                       )}
                     >
@@ -4032,33 +4032,33 @@ export function ServiceConfigModal({
 
                   {/* Substrate Details Card */}
                   {selectedMaterialRecord && (
-                    <div className="p-3 bg-card rounded-lg border border-emerald-300 dark:border-emerald-800 grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs">
+                    <div className="p-3 bg-card rounded-lg border border-success-border border-success-border grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs">
                       <div>
-                        <span className="text-2xs text-muted-foreground uppercase block font-medium">Material / SKU</span>
+                        <span className="text-xs text-muted-foreground uppercase block font-medium">Material / SKU</span>
                         <span className="font-bold text-foreground truncate block">{selectedMaterialRecord.name}</span>
-                        <span className="text-2xs tabular-nums text-muted-foreground">{selectedMaterialRecord.sku}</span>
+                        <span className="text-xs tabular-nums text-muted-foreground">{selectedMaterialRecord.sku}</span>
                       </div>
                       <div>
-                        <span className="text-2xs text-muted-foreground uppercase block font-medium">Purchase / Stock Unit</span>
-                        <span className="tabular-nums font-bold text-emerald-700 dark:text-emerald-300 uppercase">
+                        <span className="text-xs text-muted-foreground uppercase block font-medium">Purchase / Stock Unit</span>
+                        <span className="tabular-nums font-bold text-success text-success uppercase">
                           {purchaseUnit} / {selectedMaterialRecord.unit || 'roll'}
                         </span>
                       </div>
                       <div>
-                        <span className="text-2xs text-muted-foreground uppercase block font-medium">Roll Widths</span>
+                        <span className="text-xs text-muted-foreground uppercase block font-medium">Roll Widths</span>
                         <span className="tabular-nums font-bold text-foreground">
                           {availableRollWidths.join(', ')} ft
                         </span>
                       </div>
                       <div>
-                        <span className="text-2xs text-muted-foreground uppercase block font-medium">Roll Length</span>
+                        <span className="text-xs text-muted-foreground uppercase block font-medium">Roll Length</span>
                         <span className="tabular-nums font-bold text-foreground">
                           {standardRollLength} ft
                         </span>
                       </div>
                       <div>
-                        <span className="text-2xs text-muted-foreground uppercase block font-medium">Average Cost</span>
-                        <span className="tabular-nums font-bold text-emerald-600 dark:text-emerald-400">
+                        <span className="text-xs text-muted-foreground uppercase block font-medium">Average Cost</span>
+                        <span className="tabular-nums font-bold text-success text-success">
                           ৳{getMaterialCost(selectedMaterialRecord)} / {getMaterialUnitDetails(selectedMaterialRecord).consumeUnit}
                         </span>
                       </div>
@@ -4070,7 +4070,7 @@ export function ServiceConfigModal({
                 <div className="space-y-3 p-3.5 rounded-xl border border-border bg-muted">
                   <div className="flex items-center justify-between pb-1.5 border-b border-border">
                     <div className="flex items-center gap-2">
-                      <Maximize2 className="w-4 h-4 text-blue-600 dark:text-blue-400"/>
+                      <Maximize2 className="w-4 h-4 text-primary text-primary"/>
                       <h4 className="text-xs font-bold text-foreground uppercase tracking-wider">
  Dimension Rules & Media Nesting
                       </h4>
@@ -4091,7 +4091,7 @@ export function ServiceConfigModal({
                           {availableRollWidths.length > 1 && (
                             <button
  type="button"onClick={() => handleRemoveRollWidth(w)}
- className="text-muted-foreground hover:text-rose-500 ml-0.5 cursor-pointer">
+ className="text-muted-foreground hover:text-destructive ml-0.5 cursor-pointer">
                               ×
                             </button>
                           )}
@@ -4124,7 +4124,7 @@ export function ServiceConfigModal({
  type="number"step="any"min="0"value={trimAllowanceIn}
  onChange={(e) => setTrimAllowanceIn(parseFloat(e.target.value) || 0)}
  className="h-9 text-xs tabular-nums pr-8"/>
-                        <span className="absolute right-3 top-2 text-2xs font-bold text-muted-foreground">in</span>
+                        <span className="absolute right-3 top-2 text-xs font-bold text-muted-foreground">in</span>
                       </div>
                     </div>
 
@@ -4137,7 +4137,7 @@ export function ServiceConfigModal({
  type="number"step="any"min="0"value={productionBleedInches}
  onChange={(e) => setProductionBleedInches(parseFloat(e.target.value) || 0)}
  className="h-9 text-xs tabular-nums pr-8"/>
-                        <span className="absolute right-3 top-2 text-2xs font-bold text-muted-foreground">in</span>
+                        <span className="absolute right-3 top-2 text-xs font-bold text-muted-foreground">in</span>
                       </div>
                     </div>
 
@@ -4150,13 +4150,13 @@ export function ServiceConfigModal({
  type="number"step="any"min="0"value={extraWidthAllowance}
  onChange={(e) => setExtraWidthAllowance(e.target.value)}
  className="h-9 text-xs tabular-nums pr-8"/>
-                        <span className="absolute right-3 top-2 text-2xs font-bold text-muted-foreground">ft</span>
+                        <span className="absolute right-3 top-2 text-xs font-bold text-muted-foreground">ft</span>
                       </div>
                     </div>
 
                     <div>
                       <Label className="text-xs font-semibold mb-1 block">
- Nesting Rule <span className="text-rose-500">*</span>
+ Nesting Rule <span className="text-destructive">*</span>
                       </Label>
                       <select
  value={nestingRule}
@@ -4173,16 +4173,16 @@ export function ServiceConfigModal({
                 </div>
 
                 {/* 1.5 Ink Configuration */}
-                <div className="space-y-3 p-3.5 rounded-xl border border-indigo-200 dark:border-indigo-900/60 bg-indigo-50/30 dark:bg-indigo-950/20">
-                  <div className="flex items-center justify-between pb-1.5 border-b border-indigo-200/60 dark:border-indigo-900/60">
+                <div className="space-y-3 p-3.5 rounded-xl border border-primary/20 border-border/60 bg-primary/10/30 bg-primary/10">
+                  <div className="flex items-center justify-between pb-1.5 border-b border-primary/20/60 border-border/60">
                     <div className="flex items-center gap-2">
-                      <Droplets className="w-4 h-4 text-indigo-600 dark:text-indigo-400"/>
+                      <Droplets className="w-4 h-4 text-primary text-primary"/>
                       <h4 className="text-xs font-bold text-foreground uppercase tracking-wider">
  Ink Configuration & Chemistry
                       </h4>
                     </div>
-                    <span className="text-2xs text-muted-foreground tabular-nums font-medium">
- Ink Cost: <strong className="text-indigo-600 dark:text-indigo-400">৳{inkCost || 0}/sft</strong>
+                    <span className="text-xs text-muted-foreground tabular-nums font-medium">
+ Ink Cost: <strong className="text-primary text-primary">৳{inkCost || 0}/sft</strong>
                     </span>
                   </div>
 
@@ -4201,14 +4201,14 @@ export function ServiceConfigModal({
  className={cn(
                               'p-2 rounded-lg border text-left text-xs transition-all cursor-pointer',
  isSel
-                                ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-950/60 shadow-xs'
+                                ? 'border-border bg-primary/10 bg-primary/10 shadow-xs'
                                 : 'border-border bg-card hover:border-input'
                             )}
                           >
                             <div className="font-bold text-foreground truncate">
                               {prof.name.split(' (')[0]}
                             </div>
-                            <div className="text-2xs text-muted-foreground tabular-nums mt-0.5">
+                            <div className="text-xs text-muted-foreground tabular-nums mt-0.5">
                               {prof.channels.length} Channels ({prof.channels.map((c) => c.channel[0]).join('')})
                             </div>
                           </button>
@@ -4225,7 +4225,7 @@ export function ServiceConfigModal({
                       </Label>
                       <Button
  type="button"size="sm"variant="ghost"onClick={handleAddInkChannel}
- className="h-6 px-2 text-2xs text-indigo-600 dark:text-indigo-400">
+ className="h-6 px-2 text-xs text-primary text-primary">
                         + Add Custom Channel
                       </Button>
                     </div>
@@ -4249,7 +4249,7 @@ export function ServiceConfigModal({
                               {selectedInks.length > 1 && (
                                 <button
  type="button"onClick={() => handleRemoveInkChannel(idx)}
- className="text-muted-foreground hover:text-rose-500 text-xs">
+ className="text-muted-foreground hover:text-destructive text-xs">
                                   ×
                                 </button>
                               )}
@@ -4258,7 +4258,7 @@ export function ServiceConfigModal({
                             <select
  value={ink.material_id || ''}
  onChange={(e) => handleChannelInkChange(idx, e.target.value)}
- className="w-full h-7 text-2xs rounded border border-input bg-muted px-1.5 font-medium">
+ className="w-full h-7 text-xs rounded border border-input bg-muted px-1.5 font-medium">
                               <option value="">-- Generic ৳{ink.unit_price || 2800}/L --</option>
                               {inkMaterials.map((im) => {
  const literPrice = Number((im as any).purchase_price || (im as any).cost_per_unit || (im as any).base_cost || 2800)
@@ -4270,9 +4270,9 @@ export function ServiceConfigModal({
                               })}
                             </select>
 
-                            <div className="flex items-center justify-between text-2xs text-muted-foreground tabular-nums pt-0.5 border-t border-border">
+                            <div className="flex items-center justify-between text-xs text-muted-foreground tabular-nums pt-0.5 border-t border-border">
                               <span>Allocation: <strong>{brk ? brk.allocatedMl : autoCalculatedInkMetrics.perChannelMl} ml</strong></span>
-                              <span className="text-indigo-600 dark:text-indigo-400 font-bold">৳{brk ? brk.channelCost.toFixed(3) : 0}</span>
+                              <span className="text-primary text-primary font-bold">৳{brk ? brk.channelCost.toFixed(3) : 0}</span>
                             </div>
                           </div>
                         )
@@ -4281,12 +4281,12 @@ export function ServiceConfigModal({
                   </div>
 
                   {/* Total Ink Consumption & Per-Channel Equal Distribution Formula Banner */}
-                  <div className="p-2.5 bg-indigo-100/50 dark:bg-indigo-950/40 rounded-lg border border-indigo-200 dark:border-indigo-900/50 text-2xs text-indigo-950 dark:text-indigo-200 space-y-1">
+                  <div className="p-2.5 bg-primary/10/50 bg-primary/10 rounded-lg border border-primary/20 border-border/50 text-xs text-primary text-primary space-y-1">
                     <div className="flex items-center justify-between font-medium">
                       <span>💡 <strong>Ink Channel Consumption Formula:</strong> Total ml/sft divided equally across active channels (Qi = total_ml / {selectedInks.length || 4})</span>
-                      <span className="tabular-nums font-bold text-indigo-700 dark:text-indigo-300">{autoCalculatedInkMetrics.perChannelMl} ml / channel / sft</span>
+                      <span className="tabular-nums font-bold text-primary text-primary">{autoCalculatedInkMetrics.perChannelMl} ml / channel / sft</span>
                     </div>
-                    <div className="text-2xs text-indigo-800/80 dark:text-indigo-300/80 tabular-nums">
+                    <div className="text-xs text-primary/80 text-primary/80 tabular-nums">
  Formula: {selectedInks.map((c) => `${c.channel} (${autoCalculatedInkMetrics.perChannelMl}ml)`).join(' + ')} = {consumePerUnitMl || 1.2} ml/sft
                     </div>
                   </div>
@@ -4295,14 +4295,14 @@ export function ServiceConfigModal({
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 pt-1">
                     <div>
                       <Label className="text-xs font-semibold mb-1 block">
- Total Ink Consumption (ml/sft) <span className="text-rose-500">*</span>
+ Total Ink Consumption (ml/sft) <span className="text-destructive">*</span>
                       </Label>
                       <div className="relative">
                         <Input
  type="number"step="0.1"min="0.1"value={consumePerUnitMl}
  onChange={(e) => setConsumePerUnitMl(e.target.value)}
  className="h-9 text-xs tabular-nums pr-12 font-bold"/>
-                        <span className="absolute right-3 top-2 text-2xs font-bold text-muted-foreground">ml/sft</span>
+                        <span className="absolute right-3 top-2 text-xs font-bold text-muted-foreground">ml/sft</span>
                       </div>
                     </div>
 
@@ -4318,11 +4318,11 @@ export function ServiceConfigModal({
  className={cn(
                             'h-9 text-xs tabular-nums pr-8 font-bold',
  autoCalculateInkCost
-                              ? 'bg-indigo-50/80 dark:bg-indigo-950/60 text-indigo-950 dark:text-indigo-200 border-indigo-300 dark:border-indigo-800'
+                              ? 'bg-primary/10/80 bg-primary/10 text-primary text-primary border-primary/20 border-border'
                               : 'bg-card '
                           )}
                         />
-                        <span className="absolute right-3 top-2 text-2xs font-bold text-muted-foreground">৳</span>
+                        <span className="absolute right-3 top-2 text-xs font-bold text-muted-foreground">৳</span>
                       </div>
                     </div>
 
@@ -4331,7 +4331,7 @@ export function ServiceConfigModal({
                         <input
  type="checkbox"checked={autoCalculateInkCost}
  onChange={(e) => setAutoCalculateInkCost(e.target.checked)}
- className="w-4 h-4 rounded text-indigo-600 focus:ring-ring cursor-pointer"/>
+ className="w-4 h-4 rounded text-primary focus:ring-ring cursor-pointer"/>
                         <span>Auto-calculate ink cost from channels</span>
                       </label>
                     </div>
@@ -4346,15 +4346,15 @@ export function ServiceConfigModal({
             {serviceType === 'production' && (
               <>
                 {/* 1.2 Fabrication & Structural Configuration */}
-                <div className="space-y-3 p-3.5 rounded-xl border border-amber-200 dark:border-amber-900/60 bg-amber-50/30 dark:bg-amber-950/20">
-                  <div className="flex items-center justify-between pb-1.5 border-b border-amber-200/60 dark:border-amber-900/60">
+                <div className="space-y-3 p-3.5 rounded-xl border border-warning-border border-warning-border/60 bg-warning-surface/30 bg-warning-surface">
+                  <div className="flex items-center justify-between pb-1.5 border-b border-warning-border/60 border-warning-border/60">
                     <div className="flex items-center gap-2">
-                      <Hammer className="w-4 h-4 text-amber-600 dark:text-amber-400"/>
+                      <Hammer className="w-4 h-4 text-warning text-warning"/>
                       <h4 className="text-xs font-bold text-foreground uppercase tracking-wider">
  Fabrication & Structural Configuration
                       </h4>
                     </div>
-                    <span className="text-2xs font-semibold text-amber-700 dark:text-amber-300 bg-amber-100/60 dark:bg-amber-900/40 px-2 py-0.5 rounded">
+                    <span className="text-xs font-semibold text-warning text-warning bg-warning-surface/60 bg-warning/40 px-2 py-0.5 rounded">
  Signage, 3D Letters & Metal Structure
                     </span>
                   </div>
@@ -4362,7 +4362,7 @@ export function ServiceConfigModal({
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
                     <div>
                       <Label className="text-xs font-semibold mb-1 block">
- Fabrication Category <span className="text-rose-500">*</span>
+ Fabrication Category <span className="text-destructive">*</span>
                       </Label>
                       <select
  value={productionCategory}
@@ -4379,7 +4379,7 @@ export function ServiceConfigModal({
 
                     <div>
                       <Label className="text-xs font-semibold mb-1 block">
- Structural Framework Method <span className="text-rose-500">*</span>
+ Structural Framework Method <span className="text-destructive">*</span>
                       </Label>
                       <select
  value={structureFrameType}
@@ -4396,7 +4396,7 @@ export function ServiceConfigModal({
 
                     <div>
                       <Label className="text-xs font-semibold mb-1 block">
- Frame Depth / Return (ইঞ্চি) <span className="text-rose-500">*</span>
+ Frame Depth / Return (ইঞ্চি) <span className="text-destructive">*</span>
                       </Label>
                       <select
  value={frameDepth}
@@ -4415,7 +4415,7 @@ export function ServiceConfigModal({
 
                     <div>
                       <Label className="text-xs font-semibold mb-1 block">
- Lighting & Electrical <span className="text-rose-500">*</span>
+ Lighting & Electrical <span className="text-destructive">*</span>
                       </Label>
                       <select
  value={lightingType}
@@ -4432,13 +4432,13 @@ export function ServiceConfigModal({
 
                   {/* Workshop Machinery & Equipment Pre-selection */}
                   {machineries.length > 0 && (
-                    <div className="p-2.5 bg-card rounded-lg border border-amber-200/80 dark:border-amber-900/60 space-y-1.5">
+                    <div className="p-2.5 bg-card rounded-lg border border-warning-border/80 border-warning-border/60 space-y-1.5">
                       <div className="flex items-center justify-between">
                         <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                          <Cpu className="w-3.5 h-3.5 text-amber-600"/>
+                          <Cpu className="w-3.5 h-3.5 text-warning"/>
  Assigned Workshop Machinery (CNC / Laser / Welding)
                         </Label>
-                        <span className="text-2xs text-amber-700 dark:text-amber-300 font-medium">Auto-populates hourly rate & tool cost</span>
+                        <span className="text-xs text-warning text-warning font-medium">Auto-populates hourly rate & tool cost</span>
                       </div>
                       <select
  value={selectedMachineId}
@@ -4456,16 +4456,16 @@ export function ServiceConfigModal({
                 </div>
 
                 {/* 1.3 Primary Structural Material (Raw Material Isolation) */}
-                <div className="space-y-3 p-3.5 rounded-xl border border-amber-200 dark:border-amber-900/60 bg-amber-50/30 dark:bg-amber-950/20">
-                  <div className="flex items-center justify-between pb-1.5 border-b border-amber-200/60 dark:border-amber-900/60">
+                <div className="space-y-3 p-3.5 rounded-xl border border-warning-border border-warning-border/60 bg-warning-surface/30 bg-warning-surface">
+                  <div className="flex items-center justify-between pb-1.5 border-b border-warning-border/60 border-warning-border/60">
                     <div className="flex items-center gap-2">
-                      <Boxes className="w-4 h-4 text-amber-600 dark:text-amber-400"/>
+                      <Boxes className="w-4 h-4 text-warning text-warning"/>
                       <h4 className="text-xs font-bold text-foreground uppercase tracking-wider">
  Primary Structural Raw Material (Pipe / Sheet / Acrylic)
                       </h4>
                     </div>
                     {productionMaterialId && (
-                      <span className="text-2xs text-amber-700 dark:text-amber-300 font-semibold flex items-center gap-0.5">
+                      <span className="text-xs text-warning text-warning font-semibold flex items-center gap-0.5">
                         <CheckCircle2 className="w-3.5 h-3.5"/> Inventory Linked
                       </span>
                     )}
@@ -4473,7 +4473,7 @@ export function ServiceConfigModal({
 
                   <div>
                     <Label className="text-xs font-semibold mb-1 block">
- Primary Structural Material <span className="text-rose-500">*</span>
+ Primary Structural Material <span className="text-destructive">*</span>
                     </Label>
                     <select
  value={productionMaterialId}
@@ -4481,7 +4481,7 @@ export function ServiceConfigModal({
  className={cn(
                         'w-full h-9 text-xs rounded-md border px-2.5 font-medium transition-colors',
  productionMaterialId
-                          ? 'border-amber-500 bg-amber-50/60 dark:bg-amber-950/40 text-amber-950 dark:text-amber-200 font-bold'
+                          ? 'border-warning-border bg-warning-surface/60 bg-warning-surface text-warning text-warning font-bold'
                           : 'border-input bg-card text-foreground '
                       )}
                     >
@@ -4499,7 +4499,7 @@ export function ServiceConfigModal({
                 <div className="space-y-3 p-3.5 rounded-xl border border-border bg-muted">
                   <div className="flex items-center justify-between pb-1.5 border-b border-border">
                     <div className="flex items-center gap-2">
-                      <Maximize2 className="w-4 h-4 text-amber-600 dark:text-amber-400"/>
+                      <Maximize2 className="w-4 h-4 text-warning text-warning"/>
                       <h4 className="text-xs font-bold text-foreground uppercase tracking-wider">
  Structural Dimensions & Fabrication Rules
                       </h4>
@@ -4509,7 +4509,7 @@ export function ServiceConfigModal({
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
                     <div>
                       <Label className="text-xs font-semibold mb-1 block">
- Fabrication Method <span className="text-rose-500">*</span>
+ Fabrication Method <span className="text-destructive">*</span>
                       </Label>
                       <select
  value={fabricationMethod}
@@ -4524,7 +4524,7 @@ export function ServiceConfigModal({
 
                     <div>
                       <Label className="text-xs font-semibold mb-1 block">
- Default Department <span className="text-rose-500">*</span>
+ Default Department <span className="text-destructive">*</span>
                       </Label>
                       <select
  value={defaultDepartment}
@@ -4568,15 +4568,15 @@ export function ServiceConfigModal({
             {serviceType === 'finishing' && (
               <>
                 {/* 1.2 Post-Press Finishing & Surface Treatment Configuration */}
-                <div className="space-y-3 p-3.5 rounded-xl border border-rose-200 dark:border-rose-900/60 bg-rose-50/30 dark:bg-rose-950/20">
-                  <div className="flex items-center justify-between pb-1.5 border-b border-rose-200/60 dark:border-rose-900/60">
+                <div className="space-y-3 p-3.5 rounded-xl border border-danger-border border-danger-border/60 bg-danger-surface/30 bg-danger-surface">
+                  <div className="flex items-center justify-between pb-1.5 border-b border-danger-border/60 border-danger-border/60">
                     <div className="flex items-center gap-2">
-                      <Scissors className="w-4 h-4 text-rose-600 dark:text-rose-400"/>
+                      <Scissors className="w-4 h-4 text-destructive text-destructive"/>
                       <h4 className="text-xs font-bold text-foreground uppercase tracking-wider">
  Post-Press Finishing & Surface Treatment Configuration
                       </h4>
                     </div>
-                    <span className="text-2xs font-semibold text-rose-700 dark:text-rose-300 bg-rose-100/60 dark:bg-rose-900/40 px-2 py-0.5 rounded">
+                    <span className="text-xs font-semibold text-destructive text-destructive bg-danger-surface/60 bg-destructive/40 px-2 py-0.5 rounded">
  Lamination, Binding & Post-Press
                     </span>
                   </div>
@@ -4584,7 +4584,7 @@ export function ServiceConfigModal({
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
                     <div>
                       <Label className="text-xs font-semibold mb-1 block">
- Finishing Category <span className="text-rose-500">*</span>
+ Finishing Category <span className="text-destructive">*</span>
                       </Label>
                       <select
  value={finishingCategory}
@@ -4604,7 +4604,7 @@ export function ServiceConfigModal({
 
                     <div>
                       <Label className="text-xs font-semibold mb-1 block">
- Application Method <span className="text-rose-500">*</span>
+ Application Method <span className="text-destructive">*</span>
                       </Label>
                       <select
  value={finishingMethod}
@@ -4623,7 +4623,7 @@ export function ServiceConfigModal({
 
                     <div>
                       <Label className="text-xs font-semibold mb-1 block">
- Micron / Grade Spec <span className="text-rose-500">*</span>
+ Micron / Grade Spec <span className="text-destructive">*</span>
                       </Label>
                       <Input
  placeholder="e.g. 32 Micron / 80 Micron / 3mm Board"value={laminationMicron}
@@ -4633,7 +4633,7 @@ export function ServiceConfigModal({
 
                     <div>
                       <Label className="text-xs font-semibold mb-1 block">
- Default Department <span className="text-rose-500">*</span>
+ Default Department <span className="text-destructive">*</span>
                       </Label>
                       <select
  value={defaultDepartment}
@@ -4650,16 +4650,16 @@ export function ServiceConfigModal({
                 </div>
 
                 {/* 1.3 Primary Finishing Consumable (Raw Material Isolation) */}
-                <div className="space-y-3 p-3.5 rounded-xl border border-rose-200 dark:border-rose-900/60 bg-rose-50/30 dark:bg-rose-950/20">
-                  <div className="flex items-center justify-between pb-1.5 border-b border-rose-200/60 dark:border-rose-900/60">
+                <div className="space-y-3 p-3.5 rounded-xl border border-danger-border border-danger-border/60 bg-danger-surface/30 bg-danger-surface">
+                  <div className="flex items-center justify-between pb-1.5 border-b border-danger-border/60 border-danger-border/60">
                     <div className="flex items-center gap-2">
-                      <Boxes className="w-4 h-4 text-rose-600 dark:text-rose-400"/>
+                      <Boxes className="w-4 h-4 text-destructive text-destructive"/>
                       <h4 className="text-xs font-bold text-foreground uppercase tracking-wider">
  Primary Finishing Film / Consumable (Raw Material Isolation)
                       </h4>
                     </div>
                     {finishingMaterialId && (
-                      <span className="text-2xs text-rose-700 dark:text-rose-300 font-semibold flex items-center gap-0.5">
+                      <span className="text-xs text-destructive text-destructive font-semibold flex items-center gap-0.5">
                         <CheckCircle2 className="w-3.5 h-3.5"/> Inventory Linked
                       </span>
                     )}
@@ -4667,7 +4667,7 @@ export function ServiceConfigModal({
 
                   <div>
                     <Label className="text-xs font-semibold mb-1 block">
- Primary Finishing Consumable <span className="text-rose-500">*</span>
+ Primary Finishing Consumable <span className="text-destructive">*</span>
                     </Label>
                     <select
  value={finishingMaterialId}
@@ -4675,7 +4675,7 @@ export function ServiceConfigModal({
  className={cn(
                         'w-full h-9 text-xs rounded-md border px-2.5 font-medium transition-colors',
  finishingMaterialId
-                          ? 'border-rose-500 bg-rose-50/60 dark:bg-rose-950/40 text-rose-950 dark:text-rose-200 font-bold'
+                          ? 'border-danger-border bg-danger-surface/60 bg-danger-surface text-destructive text-destructive font-bold'
                           : 'border-input bg-card text-foreground '
                       )}
                     >
@@ -4697,15 +4697,15 @@ export function ServiceConfigModal({
             {serviceType === 'installation' && (
               <>
                 {/* 1.2 Site Installation & Field Operations Configuration */}
-                <div className="space-y-3 p-3.5 rounded-xl border border-teal-200 dark:border-teal-900/60 bg-teal-50/30 dark:bg-teal-950/20">
-                  <div className="flex items-center justify-between pb-1.5 border-b border-teal-200/60 dark:border-teal-900/60">
+                <div className="space-y-3 p-3.5 rounded-xl border border-success-border border-success-border/60 bg-success-surface/30 bg-success-surface">
+                  <div className="flex items-center justify-between pb-1.5 border-b border-success-border/60 border-success-border/60">
                     <div className="flex items-center gap-2">
-                      <Wrench className="w-4 h-4 text-teal-600 dark:text-teal-400"/>
+                      <Wrench className="w-4 h-4 text-success text-success"/>
                       <h4 className="text-xs font-bold text-foreground uppercase tracking-wider">
  Site Installation & Field Operations Configuration
                       </h4>
                     </div>
-                    <span className="text-2xs font-semibold text-teal-700 dark:text-teal-300 bg-teal-100/60 dark:bg-teal-900/40 px-2 py-0.5 rounded">
+                    <span className="text-xs font-semibold text-success text-success bg-success-surface/60 bg-success/40 px-2 py-0.5 rounded">
  Pasting, Fitting & Site Mounting
                     </span>
                   </div>
@@ -4713,7 +4713,7 @@ export function ServiceConfigModal({
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
                     <div>
                       <Label className="text-xs font-semibold mb-1 block">
- Installation Category <span className="text-rose-500">*</span>
+ Installation Category <span className="text-destructive">*</span>
                       </Label>
                       <select
  value={installationCategory}
@@ -4729,7 +4729,7 @@ export function ServiceConfigModal({
 
                     <div>
                       <Label className="text-xs font-semibold mb-1 block">
- Height & Access Tier <span className="text-rose-500">*</span>
+ Height & Access Tier <span className="text-destructive">*</span>
                       </Label>
                       <select
  value={installationHeightTier}
@@ -4744,7 +4744,7 @@ export function ServiceConfigModal({
 
                     <div>
                       <Label className="text-xs font-semibold mb-1 block">
- Standard Crew Size <span className="text-rose-500">*</span>
+ Standard Crew Size <span className="text-destructive">*</span>
                       </Label>
                       <select
  value={installationCrewSize}
@@ -4760,7 +4760,7 @@ export function ServiceConfigModal({
 
                     <div>
                       <Label className="text-xs font-semibold mb-1 block">
- Default Department <span className="text-rose-500">*</span>
+ Default Department <span className="text-destructive">*</span>
                       </Label>
                       <select
  value={defaultDepartment}
@@ -4777,16 +4777,16 @@ export function ServiceConfigModal({
                 </div>
 
                 {/* 1.3 Fasteners, Anchors & Adhesives (Raw Material Isolation) */}
-                <div className="space-y-3 p-3.5 rounded-xl border border-teal-200 dark:border-teal-900/60 bg-teal-50/30 dark:bg-teal-950/20">
-                  <div className="flex items-center justify-between pb-1.5 border-b border-teal-200/60 dark:border-teal-900/60">
+                <div className="space-y-3 p-3.5 rounded-xl border border-success-border border-success-border/60 bg-success-surface/30 bg-success-surface">
+                  <div className="flex items-center justify-between pb-1.5 border-b border-success-border/60 border-success-border/60">
                     <div className="flex items-center gap-2">
-                      <Boxes className="w-4 h-4 text-teal-600 dark:text-teal-400"/>
+                      <Boxes className="w-4 h-4 text-success text-success"/>
                       <h4 className="text-xs font-bold text-foreground uppercase tracking-wider">
  Fasteners, Anchors & Adhesives (Raw Material Isolation)
                       </h4>
                     </div>
                     {installationHardwareId && (
-                      <span className="text-2xs text-teal-700 dark:text-teal-300 font-semibold flex items-center gap-0.5">
+                      <span className="text-xs text-success text-success font-semibold flex items-center gap-0.5">
                         <CheckCircle2 className="w-3.5 h-3.5"/> Inventory Linked
                       </span>
                     )}
@@ -4818,15 +4818,15 @@ export function ServiceConfigModal({
             {serviceType === 'delivery' && (
               <>
                 {/* 1.2 Logistics, Packaging & Transport Configuration */}
-                <div className="space-y-3 p-3.5 rounded-xl border border-sky-200 dark:border-sky-900/60 bg-sky-50/30 dark:bg-sky-950/20">
-                  <div className="flex items-center justify-between pb-1.5 border-b border-sky-200/60 dark:border-sky-900/60">
+                <div className="space-y-3 p-3.5 rounded-xl border border-primary/20 border-border/60 bg-info-surface/30 bg-primary/10">
+                  <div className="flex items-center justify-between pb-1.5 border-b border-primary/20/60 border-border/60">
                     <div className="flex items-center gap-2">
-                      <Truck className="w-4 h-4 text-sky-600 dark:text-sky-400"/>
+                      <Truck className="w-4 h-4 text-primary text-primary"/>
                       <h4 className="text-xs font-bold text-foreground uppercase tracking-wider">
  Logistics, Packaging & Transport Configuration
                       </h4>
                     </div>
-                    <span className="text-2xs font-semibold text-sky-700 dark:text-sky-300 bg-sky-100/60 dark:bg-sky-900/40 px-2 py-0.5 rounded">
+                    <span className="text-xs font-semibold text-primary text-primary bg-info-surface/60 bg-primary/40 px-2 py-0.5 rounded">
  Courier, Van & Freight Dispatch
                     </span>
                   </div>
@@ -4834,7 +4834,7 @@ export function ServiceConfigModal({
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
                     <div>
                       <Label className="text-xs font-semibold mb-1 block">
- Logistics Category <span className="text-rose-500">*</span>
+ Logistics Category <span className="text-destructive">*</span>
                       </Label>
                       <select
  value={deliveryCategory}
@@ -4849,7 +4849,7 @@ export function ServiceConfigModal({
 
                     <div>
                       <Label className="text-xs font-semibold mb-1 block">
- Vehicle / Transport Mode <span className="text-rose-500">*</span>
+ Vehicle / Transport Mode <span className="text-destructive">*</span>
                       </Label>
                       <select
  value={deliveryVehicleType}
@@ -4864,7 +4864,7 @@ export function ServiceConfigModal({
 
                     <div>
                       <Label className="text-xs font-semibold mb-1 block">
- Distance Zone <span className="text-rose-500">*</span>
+ Distance Zone <span className="text-destructive">*</span>
                       </Label>
                       <select
  value={deliveryDistanceZone}
@@ -4878,7 +4878,7 @@ export function ServiceConfigModal({
 
                     <div>
                       <Label className="text-xs font-semibold mb-1 block">
- Default Department <span className="text-rose-500">*</span>
+ Default Department <span className="text-destructive">*</span>
                       </Label>
                       <select
  value={defaultDepartment}
@@ -4895,16 +4895,16 @@ export function ServiceConfigModal({
                 </div>
 
                 {/* 1.3 Primary Packaging Consumable (Raw Material Isolation) */}
-                <div className="space-y-3 p-3.5 rounded-xl border border-sky-200 dark:border-sky-900/60 bg-sky-50/30 dark:bg-sky-950/20">
-                  <div className="flex items-center justify-between pb-1.5 border-b border-sky-200/60 dark:border-sky-900/60">
+                <div className="space-y-3 p-3.5 rounded-xl border border-primary/20 border-border/60 bg-info-surface/30 bg-primary/10">
+                  <div className="flex items-center justify-between pb-1.5 border-b border-primary/20/60 border-border/60">
                     <div className="flex items-center gap-2">
-                      <Boxes className="w-4 h-4 text-sky-600 dark:text-sky-400"/>
+                      <Boxes className="w-4 h-4 text-primary text-primary"/>
                       <h4 className="text-xs font-bold text-foreground uppercase tracking-wider">
  Packaging Consumables (Bubble Wrap / Carton / Stretch Film)
                       </h4>
                     </div>
                     {packagingMaterialId && (
-                      <span className="text-2xs text-sky-700 dark:text-sky-300 font-semibold flex items-center gap-0.5">
+                      <span className="text-xs text-primary text-primary font-semibold flex items-center gap-0.5">
                         <CheckCircle2 className="w-3.5 h-3.5"/> Inventory Linked
                       </span>
                     )}
@@ -4936,15 +4936,15 @@ export function ServiceConfigModal({
             {serviceType === 'general' && (
               <>
                 {/* 1.2 Creative Design & Technical Service Configuration */}
-                <div className="space-y-3 p-3.5 rounded-xl border border-purple-200 dark:border-purple-900/60 bg-purple-50/30 dark:bg-purple-950/20">
-                  <div className="flex items-center justify-between pb-1.5 border-b border-purple-200/60 dark:border-purple-900/60">
+                <div className="space-y-3 p-3.5 rounded-xl border border-primary/20 border-border/60 bg-primary/10/30 bg-primary/10">
+                  <div className="flex items-center justify-between pb-1.5 border-b border-primary/20/60 border-border/60">
                     <div className="flex items-center gap-2">
-                      <Sparkles className="w-4 h-4 text-purple-600 dark:text-purple-400"/>
+                      <Sparkles className="w-4 h-4 text-primary text-primary"/>
                       <h4 className="text-xs font-bold text-foreground uppercase tracking-wider">
  Creative Design & Technical Service Configuration
                       </h4>
                     </div>
-                    <span className="text-2xs font-semibold text-purple-700 dark:text-purple-300 bg-purple-100/60 dark:bg-purple-900/40 px-2 py-0.5 rounded">
+                    <span className="text-xs font-semibold text-primary text-primary bg-primary/10/60 bg-primary/40 px-2 py-0.5 rounded">
  Graphic Design, Survey & Maintenance
                     </span>
                   </div>
@@ -4952,7 +4952,7 @@ export function ServiceConfigModal({
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
                     <div>
                       <Label className="text-xs font-semibold mb-1 block">
- Service Category <span className="text-rose-500">*</span>
+ Service Category <span className="text-destructive">*</span>
                       </Label>
                       <select
  value={generalCategory}
@@ -4967,7 +4967,7 @@ export function ServiceConfigModal({
 
                     <div>
                       <Label className="text-xs font-semibold mb-1 block">
- Deliverable Format <span className="text-rose-500">*</span>
+ Deliverable Format <span className="text-destructive">*</span>
                       </Label>
                       <select
  value={deliverableFormat}
@@ -4982,7 +4982,7 @@ export function ServiceConfigModal({
 
                     <div>
                       <Label className="text-xs font-semibold mb-1 block">
- Turnaround Time (Hours) <span className="text-rose-500">*</span>
+ Turnaround Time (Hours) <span className="text-destructive">*</span>
                       </Label>
                       <Input
  type="number"min="1"value={turnaroundHours}
@@ -4992,7 +4992,7 @@ export function ServiceConfigModal({
 
                     <div>
                       <Label className="text-xs font-semibold mb-1 block">
- Default Department <span className="text-rose-500">*</span>
+ Default Department <span className="text-destructive">*</span>
                       </Label>
                       <select
  value={defaultDepartment}
@@ -5014,7 +5014,7 @@ export function ServiceConfigModal({
             {/* 1.6 Commercial Billing & Scope */}
             <div className="space-y-3 p-3.5 rounded-xl border border-border bg-muted">
               <div className="flex items-center gap-2 pb-1.5 border-b border-border">
-                <Calculator className="w-4 h-4 text-blue-600 dark:text-blue-400"/>
+                <Calculator className="w-4 h-4 text-primary text-primary"/>
                 <h4 className="text-xs font-bold text-foreground uppercase tracking-wider">
  Commercial Billing & Scope
                 </h4>
@@ -5023,7 +5023,7 @@ export function ServiceConfigModal({
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
                 <div>
                   <Label className="text-xs font-semibold mb-1 block">
- Selling Unit (বিলিং একক) <span className="text-rose-500">*</span>
+ Selling Unit (বিলিং একক) <span className="text-destructive">*</span>
                   </Label>
                   <select
  value={sellingUnit}
@@ -5044,7 +5044,7 @@ export function ServiceConfigModal({
 
                 <div>
                   <Label className="text-xs font-semibold mb-1 block">
- Quantity Calculation Method <span className="text-rose-500">*</span>
+ Quantity Calculation Method <span className="text-destructive">*</span>
                   </Label>
                   <select
  value={quantityCalculationMethod}
@@ -5067,7 +5067,7 @@ export function ServiceConfigModal({
  type="number"step="any"min="0.1"value={minBillableQty}
  onChange={(e) => setMinBillableQty(parseFloat(e.target.value) || 1)}
  className="h-9 text-xs tabular-nums pr-10"/>
-                    <span className="absolute right-3 top-2 text-2xs font-bold text-muted-foreground uppercase">
+                    <span className="absolute right-3 top-2 text-xs font-bold text-muted-foreground uppercase">
                       {sellingUnit}
                     </span>
                   </div>
@@ -5105,13 +5105,13 @@ export function ServiceConfigModal({
                 <input
  type="checkbox"checked={isActive}
  onChange={(e) => setIsActive(e.target.checked)}
- className="w-4 h-4 rounded text-blue-600 focus:ring-ring"/>
+ className="w-4 h-4 rounded text-primary focus:ring-ring"/>
                 <span>Active in Quotations, POS & Job Orders Catalog</span>
               </label>
 
               <Button
  type="button"variant="outline"size="sm"onClick={() => setActiveTab('materials')}
- className="h-8 text-xs font-bold border-blue-200 text-blue-700 hover:bg-blue-50 dark:border-blue-800 dark:text-blue-300 gap-1 cursor-pointer">
+ className="h-8 text-xs font-bold border-primary/20 text-primary hover:bg-primary/10 border-border text-primary gap-1 cursor-pointer">
                 <span>Next: Additional BOM</span>
                 <ArrowRight className="w-3.5 h-3.5"/>
               </Button>
@@ -5127,24 +5127,24 @@ export function ServiceConfigModal({
             {/* Header with Title and Summary Badges */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-border gap-2">
               <div className="flex items-center gap-2.5">
-                <div className="h-7 w-7 rounded-lg bg-amber-100 text-amber-700 dark:bg-amber-900/60 dark:text-amber-300 flex items-center justify-center font-bold text-xs shrink-0">
+                <div className="h-7 w-7 rounded-lg bg-warning-surface text-warning bg-warning/60 text-warning flex items-center justify-center font-bold text-xs shrink-0">
                   <Boxes className="w-4 h-4"/>
                 </div>
                 <div>
                   <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
  Raw Materials & Bill of Materials (BOM) — কাঁচামাল ও রেসিপি কাঠামো
                   </h3>
-                  <p className="text-2xs text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
  Connect substrate media, rigid sheets, inks, structural metals & hardware to build the production recipe.
                   </p>
                 </div>
               </div>
 
               <div className="flex items-center gap-1.5 flex-wrap">
-                <Badge variant="outline"className="text-2xs tabular-nums uppercase bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300">
+                <Badge variant="outline"className="text-xs tabular-nums uppercase bg-warning-surface text-warning border-warning-border bg-warning-surface text-warning">
                   {requiredMaterials.length} In Recipe
                 </Badge>
-                <Badge className="bg-emerald-600 text-white text-2xs tabular-nums py-0.5">
+                <Badge className="bg-success text-white text-xs tabular-nums py-0.5">
  BOM Direct Cost: ৳{totalBOMCost.toFixed(2)} / {sellingUnit || 'sft'}
                 </Badge>
               </div>
@@ -5152,11 +5152,11 @@ export function ServiceConfigModal({
 
             {/* Section 1: Interactive Configured Bill of Materials (BOM) Table */}
             {requiredMaterials.length > 0 && (
-              <div className="p-3.5 rounded-xl border border-amber-200 dark:border-amber-800/80 bg-amber-50/40 dark:bg-amber-950/20 space-y-3">
+              <div className="p-3.5 rounded-xl border border-warning-border border-warning-border/80 bg-warning-surface/40 bg-warning-surface space-y-3">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
-                    <Star className="w-4 h-4 text-amber-500 fill-amber-500"/>
-                    <span className="text-xs font-bold text-amber-950 dark:text-amber-200 uppercase tracking-wider">
+                    <Star className="w-4 h-4 text-warning fill-amber-500"/>
+                    <span className="text-xs font-bold text-warning text-warning uppercase tracking-wider">
  Configured BOM Recipe Components ({requiredMaterials.length})
                     </span>
                   </div>
@@ -5164,7 +5164,7 @@ export function ServiceConfigModal({
                   <div className="flex items-center gap-2">
                     <Button
  type="button"size="sm"onClick={handleSyncBOMToDirectCost}
- className="h-7 text-2xs font-bold bg-amber-600 hover:bg-amber-700 text-white gap-1 shadow-2xs cursor-pointer">
+ className="h-7 text-xs font-bold bg-warning hover:bg-warning/90 text-white gap-1 shadow-2xs cursor-pointer">
                       <Zap className="w-3.5 h-3.5"/>
                       <span>Sync BOM Total (৳{totalBOMCost.toFixed(2)}) to Media Cost</span>
                     </Button>
@@ -5172,10 +5172,10 @@ export function ServiceConfigModal({
                 </div>
 
                 {/* BOM Table */}
-                <div className="overflow-x-auto rounded-lg border border-amber-200 dark:border-amber-900 bg-card">
+                <div className="overflow-x-auto rounded-lg border border-warning-border border-warning-border bg-card">
                   <table className="w-full text-left text-xs border-collapse">
                     <thead>
-                      <tr className="border-b border-amber-100 bg-amber-50/60 text-2xs uppercase font-bold text-muted-foreground">
+                      <tr className="border-b border-warning-border bg-warning-surface/60 text-xs uppercase font-bold text-muted-foreground">
                         <th className="py-2 px-2 text-center w-10">Primary</th>
                         <th className="py-2 px-3">Raw Material / Substrate</th>
                         <th className="py-2 px-2 w-28">Qty / {sellingUnit || 'Unit'}</th>
@@ -5199,7 +5199,7 @@ export function ServiceConfigModal({
  key={item.id || idx}
  className={cn(
                               'hover:bg-muted dark:hover:bg-muted/60 transition-colors',
- isPrimary && 'bg-amber-50/30 dark:bg-amber-950/20 font-medium'
+ isPrimary && 'bg-warning-surface/30 bg-warning-surface font-medium'
                             )}
                           >
                             {/* Primary Toggle */}
@@ -5210,8 +5210,8 @@ export function ServiceConfigModal({
  className={cn(
                                   'p-1 rounded-md transition-colors cursor-pointer',
  isPrimary
-                                    ? 'text-amber-500 hover:text-amber-600'
-                                    : 'text-muted-foreground hover:text-amber-400'
+                                    ? 'text-warning hover:text-warning'
+                                    : 'text-muted-foreground hover:text-warning'
                                 )}
                               >
                                 <Star className={cn('w-4 h-4', isPrimary && 'fill-amber-500')} />
@@ -5225,12 +5225,12 @@ export function ServiceConfigModal({
                                   {item.material_name}
                                 </span>
                                 {item.sku && (
-                                  <span className="text-2xs text-muted-foreground tabular-nums">
+                                  <span className="text-xs text-muted-foreground tabular-nums">
                                     [{item.sku}]
                                   </span>
                                 )}
                                 {isPrimary && (
-                                  <Badge className="bg-amber-500 text-white text-2xs px-1.5 py-0">
+                                  <Badge className="bg-warning text-white text-xs px-1.5 py-0">
  Primary Base
                                   </Badge>
                                 )}
@@ -5250,7 +5250,7 @@ export function ServiceConfigModal({
                               <select
  value={item.unit || 'sft'}
  onChange={(e) => handleUpdateBOMItem(idx, 'unit', e.target.value)}
- className="h-7 w-full text-2xs tabular-nums font-semibold bg-card border border-border rounded px-1 text-foreground focus:outline-hidden focus:ring-1 focus:ring-amber-500 uppercase cursor-pointer">
+ className="h-7 w-full text-xs tabular-nums font-semibold bg-card border border-border rounded px-1 text-foreground focus:outline-hidden focus:ring-1 focus:ring-ring uppercase cursor-pointer">
                                 {COMMON_BOM_UNITS.map((u) => (
                                   <option key={u.value} value={u.value}>
                                     {u.label}
@@ -5267,7 +5267,7 @@ export function ServiceConfigModal({
                             {/* Unit Cost */}
                             <td className="py-2 px-2">
                               <div className="relative">
-                                <span className="absolute left-1.5 top-1.5 text-2xs text-muted-foreground">৳</span>
+                                <span className="absolute left-1.5 top-1.5 text-xs text-muted-foreground">৳</span>
                                 <Input
  type="number"step="any"min="0"value={item.unit_cost ?? 0}
  onChange={(e) => handleUpdateBOMItem(idx, 'unit_cost', parseFloat(e.target.value) || 0)}
@@ -5282,13 +5282,13 @@ export function ServiceConfigModal({
  type="number"min="0"max="50"value={item.waste_percent ?? 5}
  onChange={(e) => handleUpdateBOMItem(idx, 'waste_percent', parseFloat(e.target.value) || 0)}
  className="h-7 text-xs tabular-nums pr-4 text-center"/>
-                                <span className="absolute right-1.5 top-1.5 text-2xs text-muted-foreground font-bold">%</span>
+                                <span className="absolute right-1.5 top-1.5 text-xs text-muted-foreground font-bold">%</span>
                               </div>
                             </td>
 
                             {/* Subtotal Contribution */}
                             <td className="py-2 px-3 text-right">
-                              <span className="text-xs tabular-nums font-bold text-amber-700 dark:text-amber-300">
+                              <span className="text-xs tabular-nums font-bold text-warning text-warning">
                                 ৳{Number(lineSubtotal).toFixed(2)}
                               </span>
                             </td>
@@ -5297,7 +5297,7 @@ export function ServiceConfigModal({
                             <td className="py-2 px-2 text-center">
                               <button
  type="button"onClick={() => handleRemoveBOMItem(idx)}
- className="text-muted-foreground hover:text-rose-600 p-1 cursor-pointer transition-colors"title="Remove component">
+ className="text-muted-foreground hover:text-destructive p-1 cursor-pointer transition-colors"title="Remove component">
                                 <Trash2 className="w-3.5 h-3.5"/>
                               </button>
                             </td>
@@ -5306,11 +5306,11 @@ export function ServiceConfigModal({
                       })}
                     </tbody>
                     <tfoot>
-                      <tr className="border-t-2 border-amber-200 bg-amber-50/80 font-bold text-xs">
+                      <tr className="border-t-2 border-warning-border bg-warning-surface/80 font-bold text-xs">
                         <td colSpan={6} className="py-2 px-3 text-right text-foreground">
  Total Direct Material BOM Cost (per {sellingUnit || 'sft'}):
                         </td>
-                        <td className="py-2 px-3 text-right tabular-nums text-sm text-emerald-700 dark:text-emerald-300">
+                        <td className="py-2 px-3 text-right tabular-nums text-sm text-success text-success">
                           ৳{totalBOMCost.toFixed(2)}
                         </td>
                         <td></td>
@@ -5327,7 +5327,7 @@ export function ServiceConfigModal({
                 <Label className="text-xs font-bold text-foreground uppercase tracking-wider">
  Raw Materials Inventory Catalog (কাঁচামাল ক্যাটালগ ব্রাউজার)
                 </Label>
-                <span className="text-2xs text-muted-foreground font-medium">
+                <span className="text-xs text-muted-foreground font-medium">
                   {filteredMaterials.length} materials matching filter
                 </span>
               </div>
@@ -5341,9 +5341,9 @@ export function ServiceConfigModal({
  key={tab.id}
  type="button"onClick={() => setMaterialCategoryFilter(tab.id)}
  className={cn(
-                        'px-2.5 py-1 rounded-lg text-2xs font-bold border transition-all cursor-pointer flex items-center gap-1',
+                        'px-2.5 py-1 rounded-lg text-xs font-bold border transition-all cursor-pointer flex items-center gap-1',
  isSelected
-                          ? 'bg-amber-600 text-white border-amber-600 shadow-2xs'
+                          ? 'bg-warning text-white border-warning-border shadow-2xs'
                           : 'bg-muted border-border text-foreground hover:border-input'
                       )}
                     >
@@ -5396,7 +5396,7 @@ export function ServiceConfigModal({
  className={cn(
                           'p-3 rounded-xl border text-xs transition-all flex flex-col justify-between gap-2',
  isSelected
-                            ? 'border-amber-500 bg-amber-50/70 dark:bg-amber-950/40 text-amber-950 dark:text-amber-100 ring-1 ring-amber-500 shadow-xs'
+                            ? 'border-warning-border bg-warning-surface/70 bg-warning-surface text-warning text-warning ring-1 focus:ring-ring shadow-xs'
                             : 'border-border bg-card hover:border-input dark:hover:border-border'
                         )}
                       >
@@ -5405,34 +5405,34 @@ export function ServiceConfigModal({
                             <span className="font-bold text-foreground line-clamp-1">
                               {mat.name}
                             </span>
-                            <Badge variant="outline"className="text-2xs uppercase px-1 py-0 tabular-nums shrink-0">
+                            <Badge variant="outline"className="text-xs uppercase px-1 py-0 tabular-nums shrink-0">
                               {mat.category || 'material'}
                             </Badge>
                           </div>
 
                           {(mat as any).name_bn && (
-                            <span className="text-2xs text-muted-foreground font-bengali block">
+                            <span className="text-xs text-muted-foreground font-bengali block">
                               {(mat as any).name_bn}
                             </span>
                           )}
 
-                          <span className="text-2xs text-muted-foreground tabular-nums block mt-0.5">
+                          <span className="text-xs text-muted-foreground tabular-nums block mt-0.5">
                             {mat.sku} • {stockSubtitle}
                           </span>
                         </div>
 
                         <div className="flex items-center justify-between pt-1.5 border-t border-border /60">
-                          <span className="text-2xs tabular-nums font-bold text-amber-700 dark:text-amber-300">
+                          <span className="text-xs tabular-nums font-bold text-warning text-warning">
                             {rateDisplay}
                           </span>
 
                           <button
  type="button"onClick={() => handleToggleMaterial(mat)}
  className={cn(
-                              'px-2 py-1 rounded text-2xs font-bold transition-all flex items-center gap-1 cursor-pointer',
+                              'px-2 py-1 rounded text-xs font-bold transition-all flex items-center gap-1 cursor-pointer',
  isSelected
-                                ? 'bg-amber-600 text-white hover:bg-amber-700'
-                                : 'bg-amber-100 text-amber-800 hover:bg-amber-200 dark:bg-amber-900/60 dark:text-amber-200'
+                                ? 'bg-warning text-white hover:bg-warning/90'
+                                : 'bg-warning-surface text-warning hover:bg-warning bg-warning/60 text-warning'
                             )}
                           >
                             {isSelected ? (
@@ -5457,13 +5457,13 @@ export function ServiceConfigModal({
 
             {/* Bottom Nav */}
             <div className="pt-2 border-t border-border flex items-center justify-between">
-              <span className="text-2xs text-muted-foreground font-medium">
+              <span className="text-xs text-muted-foreground font-medium">
                 {requiredMaterials.length > 0 ? `✓ ${requiredMaterials.length} raw materials connected to this service recipe.` : 'Select raw materials from the catalog above.'}
               </span>
 
               <Button
  type="button"variant="outline"size="sm"onClick={() => setActiveTab('finishing')}
- className="h-8 text-xs font-bold border-purple-200 text-purple-700 hover:bg-purple-50 dark:border-purple-800 dark:text-purple-300 gap-1">
+ className="h-8 text-xs font-bold border-primary/20 text-primary hover:bg-primary/10 border-border text-primary gap-1">
                 <span>Next: Finishing Operations</span>
                 <ArrowRight className="w-3.5 h-3.5"/>
               </Button>
@@ -5478,30 +5478,30 @@ export function ServiceConfigModal({
           <div className="rounded-xl border border-border bg-card p-4 space-y-4 shadow-xs animate-in fade-in-0">
             <div className="flex items-center justify-between pb-2 border-b border-border">
               <div className="flex items-center gap-2">
-                <div className="h-6 w-6 rounded-lg bg-purple-100 text-purple-700 dark:bg-purple-900/60 dark:text-purple-300 flex items-center justify-center font-bold text-xs">
+                <div className="h-6 w-6 rounded-lg bg-primary/10 text-primary bg-primary/60 text-primary flex items-center justify-center font-bold text-xs">
                   3
                 </div>
                 <div>
                   <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
  Post-Press Finishing Operations & Raw Materials
                   </h3>
-                  <p className="text-2xs text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
  Select raw materials from inventory (Raw Product — Finishing) or add custom finishing operations.
                   </p>
                 </div>
               </div>
-              <Badge variant="outline"className="text-2xs tabular-nums uppercase bg-purple-50 text-purple-700 border-purple-200">
+              <Badge variant="outline"className="text-xs tabular-nums uppercase bg-primary/10 text-primary border-primary/20">
                 {finishingOptions.length} Configured
               </Badge>
             </div>
 
             <div className="space-y-4">
               {/* Section A: Available Raw Materials from Inventory (Raw Product - Finishing) */}
-              <div className="p-3.5 rounded-xl border border-purple-200 dark:border-purple-800/80 bg-purple-50/40 dark:bg-purple-950/20 space-y-3">
+              <div className="p-3.5 rounded-xl border border-primary/20 border-border/80 bg-primary/10/40 bg-primary/10 space-y-3">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
-                    <Scissors className="w-4 h-4 text-purple-600 dark:text-purple-400"/>
-                    <span className="text-xs font-bold text-purple-950 dark:text-purple-200 uppercase tracking-wider">
+                    <Scissors className="w-4 h-4 text-primary text-primary"/>
+                    <span className="text-xs font-bold text-primary text-primary uppercase tracking-wider">
  Available Raw Materials (Raw Product — Finishing)
                     </span>
                   </div>
@@ -5510,9 +5510,9 @@ export function ServiceConfigModal({
                     <button
  type="button"onClick={() => setFinishingFilterTab('finishing_only')}
  className={cn(
-                        'px-2 py-1 rounded text-2xs font-bold border transition-colors cursor-pointer',
+                        'px-2 py-1 rounded text-xs font-bold border transition-colors cursor-pointer',
  finishingFilterTab === 'finishing_only'
-                          ? 'bg-purple-600 text-white border-purple-600'
+                          ? 'bg-primary text-white border-border'
                           : 'bg-card border-border text-foreground '
                       )}
                     >
@@ -5521,9 +5521,9 @@ export function ServiceConfigModal({
                     <button
  type="button"onClick={() => setFinishingFilterTab('all_materials')}
  className={cn(
-                        'px-2 py-1 rounded text-2xs font-bold border transition-colors cursor-pointer',
+                        'px-2 py-1 rounded text-xs font-bold border transition-colors cursor-pointer',
  finishingFilterTab === 'all_materials'
-                          ? 'bg-purple-600 text-white border-purple-600'
+                          ? 'bg-primary text-white border-border'
                           : 'bg-card border-border text-foreground '
                       )}
                     >
@@ -5581,7 +5581,7 @@ export function ServiceConfigModal({
  className={cn(
                             'p-2.5 rounded-xl border text-xs transition-all flex flex-col justify-between gap-2',
  isLinked
-                              ? 'border-purple-600 bg-purple-50 dark:bg-purple-950/60 text-purple-950 dark:text-purple-100 ring-1 ring-purple-500 shadow-xs'
+                              ? 'border-border bg-primary/10 bg-primary/10 text-primary text-primary ring-1 focus:ring-ring shadow-xs'
                               : 'border-border bg-card hover:border-input'
                           )}
                         >
@@ -5590,22 +5590,22 @@ export function ServiceConfigModal({
                               <span className="font-bold text-foreground line-clamp-1">
                                 {mat.name}
                               </span>
-                              <Badge variant="outline"className="text-2xs uppercase px-1 py-0 tabular-nums shrink-0">
+                              <Badge variant="outline"className="text-xs uppercase px-1 py-0 tabular-nums shrink-0">
                                 {mat.category || 'material'}
                               </Badge>
                             </div>
-                            <span className="text-2xs text-muted-foreground tabular-nums block mt-0.5">
+                            <span className="text-xs text-muted-foreground tabular-nums block mt-0.5">
                               {mat.sku} • {stockSubtitle}{sellVal > 0 ? ` • Sell: ৳${sellVal}/${consumeUnit}` : ''}
                             </span>
                           </div>
 
                           <div className="flex items-center justify-between pt-1 border-t border-border /60">
-                            <div className="flex items-center gap-1.5 tabular-nums text-2xs font-bold">
-                              <span className="text-purple-700 dark:text-purple-300">
+                            <div className="flex items-center gap-1.5 tabular-nums text-xs font-bold">
+                              <span className="text-primary text-primary">
                                 {costVal > 0 ? `Cost: ৳${costVal}/${consumeUnit}` : 'Raw Item'}
                               </span>
                               {sellVal > 0 && (
-                                <span className="text-emerald-600 dark:text-emerald-400 text-2xs">
+                                <span className="text-success text-success text-xs">
                                   • Sell: ৳{sellVal}
                                 </span>
                               )}
@@ -5613,10 +5613,10 @@ export function ServiceConfigModal({
                             <button
  type="button"onClick={() => handleToggleFinishingRawMaterial(mat)}
  className={cn(
-                                'px-2 py-1 rounded text-2xs font-bold transition-all flex items-center gap-1 cursor-pointer',
+                                'px-2 py-1 rounded text-xs font-bold transition-all flex items-center gap-1 cursor-pointer',
  isLinked
-                                  ? 'bg-purple-600 text-white hover:bg-purple-700'
-                                  : 'bg-purple-100 text-purple-800 hover:bg-purple-200 dark:bg-purple-900/60 dark:text-purple-200'
+                                  ? 'bg-primary text-white hover:bg-primary'
+                                  : 'bg-primary/10 text-primary hover:bg-primary bg-primary/60 text-primary'
                               )}
                             >
                               {isLinked ? (
@@ -5646,7 +5646,7 @@ export function ServiceConfigModal({
                     <Label className="text-xs font-bold text-foreground uppercase tracking-wider">
  Configured Finishing Operations for this Service ({finishingOptions.length})
                     </Label>
-                    <span className="text-2xs text-muted-foreground">
+                    <span className="text-xs text-muted-foreground">
  Customize billing rate & unit cost
                     </span>
                   </div>
@@ -5662,17 +5662,17 @@ export function ServiceConfigModal({
                               {opt.name}
                             </span>
                             {opt.material_name && (
-                              <Badge variant="outline"className="text-2xs bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300">
+                              <Badge variant="outline"className="text-xs bg-primary/10 text-primary border-primary/20 bg-primary/10 text-primary">
                                 🔗 {opt.material_name}
                               </Badge>
                             )}
                             {opt.unit && (
-                              <Badge variant="outline"className="text-2xs bg-muted text-muted-foreground border-border">
+                              <Badge variant="outline"className="text-xs bg-muted text-muted-foreground border-border">
  Unit: {opt.unit}
                               </Badge>
                             )}
                             {opt.is_default && (
-                              <Badge className="bg-emerald-600 text-white text-2xs px-1.5 py-0">
+                              <Badge className="bg-success text-white text-xs px-1.5 py-0">
  Default
                               </Badge>
                             )}
@@ -5681,7 +5681,7 @@ export function ServiceConfigModal({
 
                         <div className="flex items-center gap-2 flex-wrap shrink-0">
                           <div>
-                            <Label className="text-2xs text-muted-foreground block mb-0.5">Method</Label>
+                            <Label className="text-xs text-muted-foreground block mb-0.5">Method</Label>
                             <select
  value={opt.pricing_method}
  onChange={(e) => {
@@ -5699,7 +5699,7 @@ export function ServiceConfigModal({
                           </div>
 
                           <div>
-                            <Label className="text-2xs text-muted-foreground block mb-0.5">Selling Price (৳)</Label>
+                            <Label className="text-xs text-muted-foreground block mb-0.5">Selling Price (৳)</Label>
                             <Input
  type="number"value={opt.unit_price ?? opt.price ?? ''}
  onChange={(e) => {
@@ -5713,7 +5713,7 @@ export function ServiceConfigModal({
                           </div>
 
                           <div>
-                            <Label className="text-2xs text-muted-foreground block mb-0.5">Unit Cost (৳)</Label>
+                            <Label className="text-xs text-muted-foreground block mb-0.5">Unit Cost (৳)</Label>
                             <Input
  type="number"value={opt.unit_cost ?? opt.cost ?? ''}
  onChange={(e) => {
@@ -5726,7 +5726,7 @@ export function ServiceConfigModal({
  className="w-20 h-7 text-xs tabular-nums"/>
                           </div>
 
-                          <label className="flex items-center gap-1 text-2xs font-medium text-foreground cursor-pointer pt-3">
+                          <label className="flex items-center gap-1 text-xs font-medium text-foreground cursor-pointer pt-3">
                             <input
  type="checkbox"checked={Boolean(opt.is_default)}
  onChange={(e) => {
@@ -5734,13 +5734,13 @@ export function ServiceConfigModal({
  next[idx].is_default = e.target.checked
  setFinishingOptions(next)
                               }}
- className="w-3.5 h-3.5 rounded text-purple-600"/>
+ className="w-3.5 h-3.5 rounded text-primary"/>
                             <span>Default</span>
                           </label>
 
                           <button
  type="button"onClick={() => handleRemoveFinishing(idx)}
- className="text-muted-foreground hover:text-rose-600 p-1 cursor-pointer pt-3"title="Remove option">
+ className="text-muted-foreground hover:text-destructive p-1 cursor-pointer pt-3"title="Remove option">
                             <Trash2 className="w-4 h-4"/>
                           </button>
                         </div>
@@ -5753,13 +5753,13 @@ export function ServiceConfigModal({
               {/* Section D: Custom Finishing Form */}
               <div className="pt-2">
                 {showCustomFinishingForm ? (
-                  <div className="p-3.5 bg-muted border border-purple-200 dark:border-purple-800/60 rounded-xl space-y-3">
+                  <div className="p-3.5 bg-muted border border-primary/20 border-border/60 rounded-xl space-y-3">
                     <span className="text-xs font-bold text-foreground block uppercase">
  Add Custom Finishing Option
                     </span>
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5 text-xs">
                       <div className="sm:col-span-2">
-                        <Label className="text-2xs mb-1 block">Finishing Name <span className="text-rose-500">*</span></Label>
+                        <Label className="text-xs mb-1 block">Finishing Name <span className="text-destructive">*</span></Label>
                         <Input
  placeholder="e.g. 5mm Sunboard Mounting, Spot Foil..."value={customFinishingName}
  onChange={(e) => setCustomFinishingName(e.target.value)}
@@ -5767,7 +5767,7 @@ export function ServiceConfigModal({
                       </div>
 
                       <div className="sm:col-span-2">
-                        <Label className="text-2xs mb-1 block">Link Raw Inventory Item (Optional)</Label>
+                        <Label className="text-xs mb-1 block">Link Raw Inventory Item (Optional)</Label>
                         <select
  value={customFinishingMaterialId}
  onChange={(e) => {
@@ -5838,7 +5838,7 @@ export function ServiceConfigModal({
                       </div>
 
                       <div>
-                        <Label className="text-2xs mb-1 block">Pricing Method</Label>
+                        <Label className="text-xs mb-1 block">Pricing Method</Label>
                         <select
  value={customFinishingMethod}
  onChange={(e) => setCustomFinishingMethod(e.target.value)}
@@ -5852,7 +5852,7 @@ export function ServiceConfigModal({
                       </div>
 
                       <div>
-                        <Label className="text-2xs mb-1 block">Selling Price (৳)</Label>
+                        <Label className="text-xs mb-1 block">Selling Price (৳)</Label>
                         <Input
  type="number"placeholder="25"value={customFinishingPrice}
  onChange={(e) => setCustomFinishingPrice(e.target.value === '' ? '' : parseFloat(e.target.value))}
@@ -5860,7 +5860,7 @@ export function ServiceConfigModal({
                       </div>
 
                       <div>
-                        <Label className="text-2xs mb-1 block">Unit Cost (৳)</Label>
+                        <Label className="text-xs mb-1 block">Unit Cost (৳)</Label>
                         <Input
  type="number"placeholder="15"value={customFinishingCost}
  onChange={(e) => setCustomFinishingCost(e.target.value === '' ? '' : parseFloat(e.target.value))}
@@ -5872,7 +5872,7 @@ export function ServiceConfigModal({
                       <Button type="button"size="sm"variant="ghost"onClick={() => setShowCustomFinishingForm(false)} className="h-7 text-xs">
  Cancel
                       </Button>
-                      <Button type="button"size="sm"onClick={handleAddCustomFinishing} className="h-7 text-xs bg-purple-600 text-white font-bold hover:bg-purple-700">
+                      <Button type="button"size="sm"onClick={handleAddCustomFinishing} className="h-7 text-xs bg-primary text-white font-bold hover:bg-primary">
  Save Finishing Option
                       </Button>
                     </div>
@@ -5880,7 +5880,7 @@ export function ServiceConfigModal({
                 ) : (
                   <Button
  type="button"variant="outline"size="sm"onClick={() => setShowCustomFinishingForm(true)}
- className="text-xs border-dashed border-purple-300 text-purple-700 hover:bg-purple-50 dark:text-purple-300 gap-1">
+ className="text-xs border-dashed border-primary/20 text-primary hover:bg-primary/10 text-primary gap-1">
                     <Plus className="w-3.5 h-3.5"/> Add Custom Finishing Option
                   </Button>
                 )}
@@ -5896,14 +5896,14 @@ export function ServiceConfigModal({
           <div className="rounded-xl border border-border bg-card p-4 space-y-4 shadow-xs animate-in fade-in-0">
             <div className="flex items-center justify-between pb-2 border-b border-border">
               <div className="flex items-center gap-2">
-                <div className="h-6 w-6 rounded-lg bg-teal-100 text-teal-700 dark:bg-teal-900/60 dark:text-teal-300 flex items-center justify-center font-bold text-xs">
+                <div className="h-6 w-6 rounded-lg bg-success-surface text-success bg-success/60 text-success flex items-center justify-center font-bold text-xs">
                   4
                 </div>
                 <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
  Add-on Accessories & Site Installation
                 </h3>
               </div>
-              <Badge variant="outline"className="text-2xs tabular-nums uppercase bg-teal-50 text-teal-700 border-teal-200">
+              <Badge variant="outline"className="text-xs tabular-nums uppercase bg-success-surface text-success border-success-border">
                 {additionalOptions.length + installationOptions.length} Configured
               </Badge>
             </div>
@@ -5933,17 +5933,17 @@ export function ServiceConfigModal({
  className={cn(
                           'p-2.5 rounded-xl border text-xs cursor-pointer transition-all flex items-center justify-between',
  isSelected
-                            ? 'border-teal-600 bg-teal-50/70 dark:bg-teal-950/40 text-teal-950 dark:text-teal-200 shadow-2xs font-semibold'
+                            ? 'border-success-border bg-success-surface/70 bg-success-surface text-success text-success shadow-2xs font-semibold'
                             : 'border-border bg-card hover:border-input'
                         )}
                       >
                         <div>
                           <span className="block font-bold">{opt.name}</span>
-                          <span className="text-2xs text-muted-foreground tabular-nums">
+                          <span className="text-xs text-muted-foreground tabular-nums">
                             ৳{opt.selling_price}/{opt.pricing_method === 'per_piece' ? 'pc' : opt.pricing_method === 'fixed' ? 'job' : 'sft'}
                           </span>
                         </div>
-                        <div className={cn('p-1 rounded-md', isSelected ? 'bg-teal-600 text-white' : 'text-muted-foreground')}>
+                        <div className={cn('p-1 rounded-md', isSelected ? 'bg-success text-white' : 'text-muted-foreground')}>
                           {isSelected ? <Check className="w-3.5 h-3.5"/> : <Plus className="w-3.5 h-3.5"/>}
                         </div>
                       </div>
@@ -5962,14 +5962,14 @@ export function ServiceConfigModal({
           <div className="rounded-xl border border-border bg-card p-4 space-y-4 shadow-xs animate-in fade-in-0">
             <div className="flex items-center justify-between pb-2 border-b border-border">
               <div className="flex items-center gap-2">
-                <div className="h-6 w-6 rounded-lg bg-emerald-100 text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-300 flex items-center justify-center font-bold text-xs">
+                <div className="h-6 w-6 rounded-lg bg-success-surface text-success bg-success/60 text-success flex items-center justify-center font-bold text-xs">
                   5
                 </div>
                 <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
  Pricing, 9-Head Direct Cost Breakdown & Margins
                 </h3>
               </div>
-              <Badge variant="outline"className="text-2xs tabular-nums uppercase bg-emerald-50 text-emerald-700 border-emerald-200">
+              <Badge variant="outline"className="text-xs tabular-nums uppercase bg-success-surface text-success border-success-border">
  Direct Unit Cost: ৳{totalDirectCost.toFixed(2)} / {sellingUnit || 'sft'}
               </Badge>
             </div>
@@ -5978,7 +5978,7 @@ export function ServiceConfigModal({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3.5 rounded-xl bg-muted border border-border">
               <div>
                 <Label className="text-xs font-bold mb-1 block text-foreground">
- Base Selling Rate (৳ / {sellingUnit || 'sft'}) <span className="text-rose-500">*</span>
+ Base Selling Rate (৳ / {sellingUnit || 'sft'}) <span className="text-destructive">*</span>
                 </Label>
                 <div className="relative">
                   <span className="absolute left-3 top-2 text-xs font-bold text-muted-foreground">৳</span>
@@ -5991,13 +5991,13 @@ export function ServiceConfigModal({
                     }}
  required
  className={cn(
-                      'h-9 text-xs tabular-nums font-bold pl-7 bg-card text-emerald-700 dark:text-emerald-300 transition-colors',
- fieldErrors.sellingPrice && 'border-rose-500 focus-visible:ring-rose-400 bg-rose-50/30 dark:bg-rose-950/20'
+                      'h-9 text-xs tabular-nums font-bold pl-7 bg-card text-success text-success transition-colors',
+ fieldErrors.sellingPrice && 'border-danger-border focus-visible:focus:ring-ring bg-danger-surface/30 bg-danger-surface'
                     )}
                   />
                 </div>
                 {fieldErrors.sellingPrice && (
-                  <p className="text-2xs text-rose-600 dark:text-rose-400 font-medium mt-1 flex items-center gap-1">
+                  <p className="text-xs text-destructive text-destructive font-medium mt-1 flex items-center gap-1">
                     <AlertCircle className="w-3.5 h-3.5 shrink-0"/>
                     <span>{fieldErrors.sellingPrice}</span>
                   </p>
@@ -6019,15 +6019,15 @@ export function ServiceConfigModal({
             </div>
 
             {/* 9-Point Direct Cost Breakdown Panel */}
-            <div className="p-3.5 rounded-xl border border-blue-200 dark:border-blue-800/80 bg-blue-50/40 dark:bg-blue-950/20 space-y-3 shadow-2xs">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-2 border-b border-blue-200/60 dark:border-blue-800/60 gap-2">
+            <div className="p-3.5 rounded-xl border border-primary/20 border-border/80 bg-primary/10/40 bg-primary/10 space-y-3 shadow-2xs">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-2 border-b border-primary/20/60 border-border/60 gap-2">
                 <div className="flex items-center gap-2">
-                  <Coins className="w-4 h-4 text-blue-600 dark:text-blue-400"/>
+                  <Coins className="w-4 h-4 text-primary text-primary"/>
                   <div>
                     <span className="text-xs font-bold text-foreground uppercase tracking-wider block">
  Direct Unit Cost Breakdown (9 Cost Heads)
                     </span>
-                    <span className="text-2xs text-muted-foreground">
+                    <span className="text-xs text-muted-foreground">
  Material BOM, ink chemistry, machinery & labor contributions
                     </span>
                   </div>
@@ -6036,12 +6036,12 @@ export function ServiceConfigModal({
                 <div className="flex items-center gap-2">
                   <Button
  type="button"size="sm"onClick={handleAutoCalculateAllDirectCosts}
- className="h-7 text-2xs font-bold bg-primary hover:bg-primary/90 text-primary-foreground gap-1 shadow-2xs cursor-pointer">
+ className="h-7 text-xs font-bold bg-primary hover:bg-primary/90 text-primary-foreground gap-1 shadow-2xs cursor-pointer">
                     <RefreshCw className="w-3 h-3"/>
                     <span>Auto-Calculate Direct Costs from BOM</span>
                   </Button>
 
-                  <span className="text-2xs tabular-nums font-bold text-blue-700 dark:text-blue-300 bg-card px-2 py-1 rounded border border-blue-200 shadow-2xs">
+                  <span className="text-xs tabular-nums font-bold text-primary text-primary bg-card px-2 py-1 rounded border border-primary/20 shadow-2xs">
  Total: ৳{totalDirectCost.toFixed(2)} / {sellingUnit || 'sft'}
                   </span>
                 </div>
@@ -6050,11 +6050,11 @@ export function ServiceConfigModal({
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2.5">
                 {/* 1. Substrate Material */}
                 <div className="p-2 rounded-lg bg-card border border-border">
-                  <Label className="text-2xs font-bold text-muted-foreground uppercase block mb-1">
+                  <Label className="text-xs font-bold text-muted-foreground uppercase block mb-1">
                     1. Media Material
                   </Label>
                   <div className="relative">
-                    <span className="absolute left-1.5 top-1 text-2xs text-muted-foreground">৳</span>
+                    <span className="absolute left-1.5 top-1 text-xs text-muted-foreground">৳</span>
                     <Input
  type="number"step="any"min="0"value={materialCost}
  onChange={(e) => setMaterialCost(e.target.value === '' ? '' : parseFloat(e.target.value))}
@@ -6064,25 +6064,25 @@ export function ServiceConfigModal({
 
                 {/* 2. Ink Cost */}
                 <div className="p-2 rounded-lg bg-card border border-border">
-                  <Label className="text-2xs font-bold text-muted-foreground uppercase block mb-1">
+                  <Label className="text-xs font-bold text-muted-foreground uppercase block mb-1">
                     2. Ink Cost
                   </Label>
                   <div className="relative">
-                    <span className="absolute left-1.5 top-1 text-2xs text-muted-foreground">৳</span>
+                    <span className="absolute left-1.5 top-1 text-xs text-muted-foreground">৳</span>
                     <Input
  type="number"step="any"min="0"value={inkCost}
  onChange={(e) => setInkCost(e.target.value === '' ? '' : parseFloat(e.target.value))}
- className="h-7 text-xs tabular-nums pl-4 text-blue-600 dark:text-blue-400 font-bold"/>
+ className="h-7 text-xs tabular-nums pl-4 text-primary text-primary font-bold"/>
                   </div>
                 </div>
 
                 {/* 3. Machine & Power */}
                 <div className="p-2 rounded-lg bg-card border border-border">
-                  <Label className="text-2xs font-bold text-muted-foreground uppercase block mb-1">
+                  <Label className="text-xs font-bold text-muted-foreground uppercase block mb-1">
                     3. Machine & Power
                   </Label>
                   <div className="relative">
-                    <span className="absolute left-1.5 top-1 text-2xs text-muted-foreground">৳</span>
+                    <span className="absolute left-1.5 top-1 text-xs text-muted-foreground">৳</span>
                     <Input
  type="number"step="any"min="0"value={machineCost}
  onChange={(e) => setMachineCost(e.target.value === '' ? '' : parseFloat(e.target.value))}
@@ -6092,11 +6092,11 @@ export function ServiceConfigModal({
 
                 {/* 4. Operator Labor */}
                 <div className="p-2 rounded-lg bg-card border border-border">
-                  <Label className="text-2xs font-bold text-muted-foreground uppercase block mb-1">
+                  <Label className="text-xs font-bold text-muted-foreground uppercase block mb-1">
                     4. Operator Labor
                   </Label>
                   <div className="relative">
-                    <span className="absolute left-1.5 top-1 text-2xs text-muted-foreground">৳</span>
+                    <span className="absolute left-1.5 top-1 text-xs text-muted-foreground">৳</span>
                     <Input
  type="number"step="any"min="0"value={laborCost}
  onChange={(e) => setLaborCost(e.target.value === '' ? '' : parseFloat(e.target.value))}
@@ -6106,11 +6106,11 @@ export function ServiceConfigModal({
 
                 {/* 5. Finishing & Eyelets */}
                 <div className="p-2 rounded-lg bg-card border border-border">
-                  <Label className="text-2xs font-bold text-muted-foreground uppercase block mb-1">
+                  <Label className="text-xs font-bold text-muted-foreground uppercase block mb-1">
                     5. Finishing
                   </Label>
                   <div className="relative">
-                    <span className="absolute left-1.5 top-1 text-2xs text-muted-foreground">৳</span>
+                    <span className="absolute left-1.5 top-1 text-xs text-muted-foreground">৳</span>
                     <Input
  type="number"step="any"min="0"value={finishingCost}
  onChange={(e) => setFinishingCost(e.target.value === '' ? '' : parseFloat(e.target.value))}
@@ -6120,11 +6120,11 @@ export function ServiceConfigModal({
 
                 {/* 6. Fabrication */}
                 <div className="p-2 rounded-lg bg-card border border-border">
-                  <Label className="text-2xs font-bold text-muted-foreground uppercase block mb-1">
+                  <Label className="text-xs font-bold text-muted-foreground uppercase block mb-1">
                     6. Fabrication
                   </Label>
                   <div className="relative">
-                    <span className="absolute left-1.5 top-1 text-2xs text-muted-foreground">৳</span>
+                    <span className="absolute left-1.5 top-1 text-xs text-muted-foreground">৳</span>
                     <Input
  type="number"step="any"min="0"value={fabricationCost}
  onChange={(e) => setFabricationCost(e.target.value === '' ? '' : parseFloat(e.target.value))}
@@ -6134,11 +6134,11 @@ export function ServiceConfigModal({
 
                 {/* 7. Installation */}
                 <div className="p-2 rounded-lg bg-card border border-border">
-                  <Label className="text-2xs font-bold text-muted-foreground uppercase block mb-1">
+                  <Label className="text-xs font-bold text-muted-foreground uppercase block mb-1">
                     7. Installation
                   </Label>
                   <div className="relative">
-                    <span className="absolute left-1.5 top-1 text-2xs text-muted-foreground">৳</span>
+                    <span className="absolute left-1.5 top-1 text-xs text-muted-foreground">৳</span>
                     <Input
  type="number"step="any"min="0"value={installationCost}
  onChange={(e) => setInstallationCost(e.target.value === '' ? '' : parseFloat(e.target.value))}
@@ -6148,11 +6148,11 @@ export function ServiceConfigModal({
 
                 {/* 8. Delivery */}
                 <div className="p-2 rounded-lg bg-card border border-border">
-                  <Label className="text-2xs font-bold text-muted-foreground uppercase block mb-1">
+                  <Label className="text-xs font-bold text-muted-foreground uppercase block mb-1">
                     8. Delivery
                   </Label>
                   <div className="relative">
-                    <span className="absolute left-1.5 top-1 text-2xs text-muted-foreground">৳</span>
+                    <span className="absolute left-1.5 top-1 text-xs text-muted-foreground">৳</span>
                     <Input
  type="number"step="any"min="0"value={deliveryCost}
  onChange={(e) => setDeliveryCost(e.target.value === '' ? '' : parseFloat(e.target.value))}
@@ -6162,11 +6162,11 @@ export function ServiceConfigModal({
 
                 {/* 9. Other Direct */}
                 <div className="p-2 rounded-lg bg-card border border-border">
-                  <Label className="text-2xs font-bold text-muted-foreground uppercase block mb-1">
+                  <Label className="text-xs font-bold text-muted-foreground uppercase block mb-1">
                     9. Other Direct
                   </Label>
                   <div className="relative">
-                    <span className="absolute left-1.5 top-1 text-2xs text-muted-foreground">৳</span>
+                    <span className="absolute left-1.5 top-1 text-xs text-muted-foreground">৳</span>
                     <Input
  type="number"step="any"min="0"value={otherDirectCost}
  onChange={(e) => setOtherDirectCost(e.target.value === '' ? '' : parseFloat(e.target.value))}
@@ -6179,24 +6179,24 @@ export function ServiceConfigModal({
             {/* Live Profit Margin Metrics Banner */}
             <div className={cn("p-3.5 rounded-xl border flex flex-wrap items-center justify-between gap-3 text-xs transition-colors",
  marginMetrics.grossMarginPercent < 0
-                ?"border-rose-300 dark:border-rose-800 bg-rose-50/70 dark:bg-rose-950/30":"border-emerald-200 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-950/30")}>
+                ?"border-danger-border border-danger-border bg-danger-surface/70 bg-danger-surface":"border-success-border border-success-border bg-success-surface/50 bg-success-surface")}>
               <div className="flex items-center gap-3">
                 {marginMetrics.grossMarginPercent < 0 ? (
-                  <AlertTriangle className="w-5 h-5 text-rose-600 dark:text-rose-400 shrink-0"/>
+                  <AlertTriangle className="w-5 h-5 text-destructive text-destructive shrink-0"/>
                 ) : (
-                  <TrendingUp className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0"/>
+                  <TrendingUp className="w-5 h-5 text-success text-success shrink-0"/>
                 )}
                 <div>
                   <span className={cn("font-bold block",
- marginMetrics.grossMarginPercent < 0 ?"text-rose-700 dark:text-rose-300":"text-foreground")}>
+ marginMetrics.grossMarginPercent < 0 ?"text-destructive text-destructive":"text-foreground")}>
  Gross Profit Margin: {marginMetrics.grossMarginPercent.toFixed(1)}%
                     {marginMetrics.grossMarginPercent < 0 && (
-                      <span className="ml-2 text-2xs px-1.5 py-0.5 rounded bg-rose-200 dark:bg-rose-900 text-rose-800 dark:text-rose-200 font-bold uppercase">
+                      <span className="ml-2 text-xs px-1.5 py-0.5 rounded bg-destructive bg-destructive text-destructive text-destructive font-bold uppercase">
  Selling at a Loss
                       </span>
                     )}
                   </span>
-                  <span className="text-2xs text-muted-foreground tabular-nums">
+                  <span className="text-xs text-muted-foreground tabular-nums">
  Unit Profit: ৳{(marginMetrics.grossProfit).toFixed(2)} / {sellingUnit || 'sft'} (Cost: ৳{totalDirectCost.toFixed(2)} | Sell: ৳{Number(sellingPrice || 0).toFixed(2)})
                   </span>
                 </div>
@@ -6211,13 +6211,13 @@ export function ServiceConfigModal({
  setSellingPrice(suggested)
  handleAutoFillTiers('standard')
                     }}
- className="h-8 text-xs font-bold border-rose-300 text-rose-800 dark:text-rose-200 bg-rose-100/60 hover:bg-rose-200 dark:bg-rose-950/40 dark:hover:bg-rose-900/60 cursor-pointer">
+ className="h-8 text-xs font-bold border-danger-border text-destructive text-destructive bg-danger-surface/60 hover:bg-destructive bg-danger-surface dark:hover:bg-destructive/60 cursor-pointer">
                     ⚡ Fix Base Rate to ৳{Math.ceil(totalDirectCost * (1 + (targetMargin || 35) / 100))} ({targetMargin || 35}% Margin)
                   </Button>
                 )}
                 <Button
  type="button"variant="outline"size="sm"onClick={() => handleAutoFillTiers('standard')}
- className="h-8 text-xs font-bold border-emerald-300 text-emerald-800 dark:text-emerald-200 hover:bg-emerald-100 cursor-pointer">
+ className="h-8 text-xs font-bold border-success-border text-success text-success hover:bg-success-surface cursor-pointer">
  Auto-Fill Price Tiers (15% Wholesale)
                 </Button>
               </div>
@@ -6230,17 +6230,17 @@ export function ServiceConfigModal({
  Customer Category Price Tiers (৳ / {sellingUnit || 'sft'}):
                 </Label>
                 {totalDirectCost > 0 && (
-                  <span className="text-2xs text-muted-foreground font-medium">
- Break-Even Floor: <strong className="tabular-nums text-emerald-700 dark:text-emerald-300 font-bold">≥ ৳{totalDirectCost.toFixed(2)}</strong> (Prevents Selling at a Loss)
+                  <span className="text-xs text-muted-foreground font-medium">
+ Break-Even Floor: <strong className="tabular-nums text-success text-success font-bold">≥ ৳{totalDirectCost.toFixed(2)}</strong> (Prevents Selling at a Loss)
                   </span>
                 )}
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">
                 <div>
                   <div className="flex items-center justify-between mb-1">
-                    <Label className="text-2xs">Retail (খুচরা)</Label>
+                    <Label className="text-xs">Retail (খুচরা)</Label>
                     {priceTiers.retail !== '' && Number(priceTiers.retail) < totalDirectCost && totalDirectCost > 0 && (
-                      <span className="text-2xs font-bold text-rose-600 dark:text-rose-400">Below Cost</span>
+                      <span className="text-xs font-bold text-destructive text-destructive">Below Cost</span>
                     )}
                   </div>
                   <Input
@@ -6248,21 +6248,21 @@ export function ServiceConfigModal({
  onChange={(e) => setPriceTiers({ ...priceTiers, retail: e.target.value === '' ? '' : parseFloat(e.target.value) })}
  className={`h-8 text-xs tabular-nums ${
  priceTiers.retail !== '' && Number(priceTiers.retail) < totalDirectCost && totalDirectCost > 0
-                        ? 'border-rose-500 bg-rose-50/50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-300 font-bold'
+                        ? 'border-danger-border bg-danger-surface/50 bg-danger-surface text-destructive text-destructive font-bold'
                         : ''
                     }`}
                   />
                   {priceTiers.retail !== '' && Number(priceTiers.retail) < totalDirectCost && totalDirectCost > 0 && (
-                    <span className="text-2xs text-rose-500 block mt-0.5 leading-tight">
+                    <span className="text-xs text-destructive block mt-0.5 leading-tight">
  Min: ৳{totalDirectCost.toFixed(2)}
                     </span>
                   )}
                 </div>
                 <div>
                   <div className="flex items-center justify-between mb-1">
-                    <Label className="text-2xs">Reseller (পাইকারি)</Label>
+                    <Label className="text-xs">Reseller (পাইকারি)</Label>
                     {priceTiers.reseller !== '' && Number(priceTiers.reseller) < totalDirectCost && totalDirectCost > 0 && (
-                      <span className="text-2xs font-bold text-rose-600 dark:text-rose-400">Below Cost</span>
+                      <span className="text-xs font-bold text-destructive text-destructive">Below Cost</span>
                     )}
                   </div>
                   <Input
@@ -6270,21 +6270,21 @@ export function ServiceConfigModal({
  onChange={(e) => setPriceTiers({ ...priceTiers, reseller: e.target.value === '' ? '' : parseFloat(e.target.value) })}
  className={`h-8 text-xs tabular-nums ${
  priceTiers.reseller !== '' && Number(priceTiers.reseller) < totalDirectCost && totalDirectCost > 0
-                        ? 'border-rose-500 bg-rose-50/50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-300 font-bold'
+                        ? 'border-danger-border bg-danger-surface/50 bg-danger-surface text-destructive text-destructive font-bold'
                         : ''
                     }`}
                   />
                   {priceTiers.reseller !== '' && Number(priceTiers.reseller) < totalDirectCost && totalDirectCost > 0 && (
-                    <span className="text-2xs text-rose-500 block mt-0.5 leading-tight">
+                    <span className="text-xs text-destructive block mt-0.5 leading-tight">
  Min: ৳{totalDirectCost.toFixed(2)}
                     </span>
                   )}
                 </div>
                 <div>
                   <div className="flex items-center justify-between mb-1">
-                    <Label className="text-2xs">Corporate (কর্পোরেট)</Label>
+                    <Label className="text-xs">Corporate (কর্পোরেট)</Label>
                     {priceTiers.corporate !== '' && Number(priceTiers.corporate) < totalDirectCost && totalDirectCost > 0 && (
-                      <span className="text-2xs font-bold text-rose-600 dark:text-rose-400">Below Cost</span>
+                      <span className="text-xs font-bold text-destructive text-destructive">Below Cost</span>
                     )}
                   </div>
                   <Input
@@ -6292,21 +6292,21 @@ export function ServiceConfigModal({
  onChange={(e) => setPriceTiers({ ...priceTiers, corporate: e.target.value === '' ? '' : parseFloat(e.target.value) })}
  className={`h-8 text-xs tabular-nums ${
  priceTiers.corporate !== '' && Number(priceTiers.corporate) < totalDirectCost && totalDirectCost > 0
-                        ? 'border-rose-500 bg-rose-50/50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-300 font-bold'
+                        ? 'border-danger-border bg-danger-surface/50 bg-danger-surface text-destructive text-destructive font-bold'
                         : ''
                     }`}
                   />
                   {priceTiers.corporate !== '' && Number(priceTiers.corporate) < totalDirectCost && totalDirectCost > 0 && (
-                    <span className="text-2xs text-rose-500 block mt-0.5 leading-tight">
+                    <span className="text-xs text-destructive block mt-0.5 leading-tight">
  Min: ৳{totalDirectCost.toFixed(2)}
                     </span>
                   )}
                 </div>
                 <div>
                   <div className="flex items-center justify-between mb-1">
-                    <Label className="text-2xs">Agency (বিজ্ঞাপনী সংস্থা)</Label>
+                    <Label className="text-xs">Agency (বিজ্ঞাপনী সংস্থা)</Label>
                     {priceTiers.agency !== '' && Number(priceTiers.agency) < totalDirectCost && totalDirectCost > 0 && (
-                      <span className="text-2xs font-bold text-rose-600 dark:text-rose-400">Below Cost</span>
+                      <span className="text-xs font-bold text-destructive text-destructive">Below Cost</span>
                     )}
                   </div>
                   <Input
@@ -6314,21 +6314,21 @@ export function ServiceConfigModal({
  onChange={(e) => setPriceTiers({ ...priceTiers, agency: e.target.value === '' ? '' : parseFloat(e.target.value) })}
  className={`h-8 text-xs tabular-nums ${
  priceTiers.agency !== '' && Number(priceTiers.agency) < totalDirectCost && totalDirectCost > 0
-                        ? 'border-rose-500 bg-rose-50/50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-300 font-bold'
+                        ? 'border-danger-border bg-danger-surface/50 bg-danger-surface text-destructive text-destructive font-bold'
                         : ''
                     }`}
                   />
                   {priceTiers.agency !== '' && Number(priceTiers.agency) < totalDirectCost && totalDirectCost > 0 && (
-                    <span className="text-2xs text-rose-500 block mt-0.5 leading-tight">
+                    <span className="text-xs text-destructive block mt-0.5 leading-tight">
  Min: ৳{totalDirectCost.toFixed(2)}
                     </span>
                   )}
                 </div>
                 <div>
                   <div className="flex items-center justify-between mb-1">
-                    <Label className="text-2xs">Regular (নিয়মিত)</Label>
+                    <Label className="text-xs">Regular (নিয়মিত)</Label>
                     {priceTiers.regular !== '' && Number(priceTiers.regular) < totalDirectCost && totalDirectCost > 0 && (
-                      <span className="text-2xs font-bold text-rose-600 dark:text-rose-400">Below Cost</span>
+                      <span className="text-xs font-bold text-destructive text-destructive">Below Cost</span>
                     )}
                   </div>
                   <Input
@@ -6336,21 +6336,21 @@ export function ServiceConfigModal({
  onChange={(e) => setPriceTiers({ ...priceTiers, regular: e.target.value === '' ? '' : parseFloat(e.target.value) })}
  className={`h-8 text-xs tabular-nums ${
  priceTiers.regular !== '' && Number(priceTiers.regular) < totalDirectCost && totalDirectCost > 0
-                        ? 'border-rose-500 bg-rose-50/50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-300 font-bold'
+                        ? 'border-danger-border bg-danger-surface/50 bg-danger-surface text-destructive text-destructive font-bold'
                         : ''
                     }`}
                   />
                   {priceTiers.regular !== '' && Number(priceTiers.regular) < totalDirectCost && totalDirectCost > 0 && (
-                    <span className="text-2xs text-rose-500 block mt-0.5 leading-tight">
+                    <span className="text-xs text-destructive block mt-0.5 leading-tight">
  Min: ৳{totalDirectCost.toFixed(2)}
                     </span>
                   )}
                 </div>
                 <div>
                   <div className="flex items-center justify-between mb-1">
-                    <Label className="text-2xs">Special / VIP</Label>
+                    <Label className="text-xs">Special / VIP</Label>
                     {priceTiers.custom !== '' && Number(priceTiers.custom) < totalDirectCost && totalDirectCost > 0 && (
-                      <span className="text-2xs font-bold text-rose-600 dark:text-rose-400">Below Cost</span>
+                      <span className="text-xs font-bold text-destructive text-destructive">Below Cost</span>
                     )}
                   </div>
                   <Input
@@ -6358,12 +6358,12 @@ export function ServiceConfigModal({
  onChange={(e) => setPriceTiers({ ...priceTiers, custom: e.target.value === '' ? '' : parseFloat(e.target.value) })}
  className={`h-8 text-xs tabular-nums ${
  priceTiers.custom !== '' && Number(priceTiers.custom) < totalDirectCost && totalDirectCost > 0
-                        ? 'border-rose-500 bg-rose-50/50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-300 font-bold'
+                        ? 'border-danger-border bg-danger-surface/50 bg-danger-surface text-destructive text-destructive font-bold'
                         : ''
                     }`}
                   />
                   {priceTiers.custom !== '' && Number(priceTiers.custom) < totalDirectCost && totalDirectCost > 0 && (
-                    <span className="text-2xs text-rose-500 block mt-0.5 leading-tight">
+                    <span className="text-xs text-destructive block mt-0.5 leading-tight">
  Min: ৳{totalDirectCost.toFixed(2)}
                     </span>
                   )}

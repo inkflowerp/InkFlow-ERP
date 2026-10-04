@@ -15,6 +15,7 @@ import {
  Play,
  Check,
  Send,
+  Upload,
  MoreVertical,
  ExternalLink,
  MessageSquare,
@@ -63,6 +64,7 @@ interface DesignInvoiceGroupCardProps {
  onPauseProduction?: (job: DesignJobRecord) => void
  onResumeProduction?: (job: DesignJobRecord) => void
  onRequestRevision: (job: DesignJobRecord) => void
+  onUploadVersion?: (job: DesignJobRecord) => void
 }
 
 function getDesignerInitials(name?: string): string {
@@ -83,8 +85,8 @@ function renderStatusBadge(status?: string) {
  case 'new':
  return (
         <Badge
- variant="outline"className="bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/80 dark:text-blue-300 font-semibold px-2.5 py-0.5 rounded-full text-xs flex items-center gap-1.5">
-          <span className="w-1.5 h-1.5 rounded-full bg-blue-600 inline-block"/>
+ variant="outline"className="bg-primary/10 text-primary border-primary/20 bg-primary/10 text-primary font-semibold px-2.5 py-0.5 rounded-full text-xs flex items-center gap-1.5">
+          <span className="w-1.5 h-1.5 rounded-full bg-primary inline-block"/>
           <span>New</span>
         </Badge>
       )
@@ -92,8 +94,8 @@ function renderStatusBadge(status?: string) {
  case 'in_progress':
  return (
         <Badge
- variant="outline"className="bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/80 dark:text-purple-300 font-semibold px-2.5 py-0.5 rounded-full text-xs flex items-center gap-1.5">
-          <span className="w-1.5 h-1.5 rounded-full bg-purple-600 inline-block"/>
+ variant="outline"className="bg-primary/10 text-primary border-primary/20 bg-primary/10 text-primary font-semibold px-2.5 py-0.5 rounded-full text-xs flex items-center gap-1.5">
+          <span className="w-1.5 h-1.5 rounded-full bg-primary inline-block"/>
           <span>Designing</span>
         </Badge>
       )
@@ -101,24 +103,24 @@ function renderStatusBadge(status?: string) {
  case 'waiting_approval':
  return (
         <Badge
- variant="outline"className="bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/80 dark:text-amber-300 font-semibold px-2.5 py-0.5 rounded-full text-xs flex items-center gap-1.5">
-          <span className="w-1.5 h-1.5 rounded-full bg-amber-500 inline-block"/>
+ variant="outline"className="bg-warning-surface text-warning border-warning-border bg-warning-surface/80 text-warning font-semibold px-2.5 py-0.5 rounded-full text-xs flex items-center gap-1.5">
+          <span className="w-1.5 h-1.5 rounded-full bg-warning inline-block"/>
           <span>Waiting Approval</span>
         </Badge>
       )
  case 'revision':
  return (
         <Badge
- variant="outline"className="bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/80 dark:text-rose-300 font-semibold px-2.5 py-0.5 rounded-full text-xs flex items-center gap-1.5">
-          <span className="w-1.5 h-1.5 rounded-full bg-rose-600 inline-block"/>
+ variant="outline"className="bg-danger-surface text-destructive border-danger-border bg-danger-surface/80 text-destructive font-semibold px-2.5 py-0.5 rounded-full text-xs flex items-center gap-1.5">
+          <span className="w-1.5 h-1.5 rounded-full bg-destructive inline-block"/>
           <span>Revision Required</span>
         </Badge>
       )
  case 'approved':
  return (
         <Badge
- variant="outline"className="bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/80 dark:text-emerald-300 font-semibold px-2.5 py-0.5 rounded-full text-xs flex items-center gap-1.5">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 inline-block"/>
+ variant="outline"className="bg-success-surface text-success border-success-border bg-success-surface/80 text-success font-semibold px-2.5 py-0.5 rounded-full text-xs flex items-center gap-1.5">
+          <span className="w-1.5 h-1.5 rounded-full bg-success inline-block"/>
           <span>Approved</span>
         </Badge>
       )
@@ -147,6 +149,7 @@ export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard
  onPauseProduction,
  onResumeProduction,
  onRequestRevision,
+  onUploadVersion,
 }: DesignInvoiceGroupCardProps) {
  const [isExpanded, setIsExpanded] = useState(true)
  const [activeMenuJobId, setActiveMenuJobId] = useState<string | null>(null)
@@ -219,29 +222,29 @@ export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard
             <div className="flex items-center gap-3 shrink-0">
               <button
  type="button"onClick={() => setIsExpanded(!isExpanded)}
- className="text-blue-600 hover:text-blue-700 transition-colors cursor-pointer p-1 -ml-1 rounded-md hover:bg-muted dark:hover:bg-muted"title={isExpanded ? 'Collapse Specifications' : 'Expand Specifications'}
+ className="text-primary hover:text-primary transition-colors cursor-pointer p-1 -ml-1 rounded-md hover:bg-muted dark:hover:bg-muted"title={isExpanded ? 'Collapse Specifications' : 'Expand Specifications'}
               >
                 {isExpanded ? (
-                  <ChevronDown className="w-5 h-5 text-blue-600"/>
+                  <ChevronDown className="w-5 h-5 text-primary"/>
                 ) : (
-                  <ChevronRight className="w-5 h-5 text-blue-600"/>
+                  <ChevronRight className="w-5 h-5 text-primary"/>
                 )}
               </button>
 
-              <div className="w-10 h-10 rounded-xl bg-violet-100 dark:bg-violet-950/60 text-violet-600 dark:text-violet-400 flex items-center justify-center shrink-0">
+              <div className="w-10 h-10 rounded-xl bg-primary/10 bg-primary/10 text-primary text-primary flex items-center justify-center shrink-0">
                 <FileText className="w-5 h-5"/>
               </div>
 
               <div className="min-w-0">
                 <Link
  href={invoiceHref}
- className="tabular-nums text-sm font-bold text-foreground hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center gap-1.5 whitespace-nowrap">
+ className="tabular-nums text-sm font-bold text-foreground hover:text-primary dark:hover:text-primary transition-colors flex items-center gap-1.5 whitespace-nowrap">
                   <span>{invoiceNumber}</span>
                 </Link>
                 <div className="font-bold text-xs text-foreground truncate mt-0.5 max-w-[170px]"title={customerName}>
                   {customerName}
                 </div>
-                <div className="flex items-center gap-2.5 text-2xs text-muted-foreground mt-0.5 whitespace-nowrap">
+                <div className="flex items-center gap-2.5 text-xs text-muted-foreground mt-0.5 whitespace-nowrap">
                   {customerPhone && (
                     <span className="flex items-center gap-1 tabular-nums">
                       <Phone className="w-3 h-3 text-muted-foreground"/>
@@ -282,7 +285,7 @@ export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard
                 {singleJobSpecs?.finishing && singleJobSpecs.finishing !== 'None' && (
                   <>
                     <span className="text-muted-foreground select-none">·</span>
-                    <span className="text-amber-700 dark:text-amber-400 font-semibold whitespace-nowrap truncate max-w-[150px]"title={singleJobSpecs?.finishing}>
+                    <span className="text-warning text-warning font-semibold whitespace-nowrap truncate max-w-[150px]"title={singleJobSpecs?.finishing}>
                       ✨ {singleJobSpecs.finishing}
                     </span>
                   </>
@@ -290,7 +293,7 @@ export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard
                 {singleJobSpecs?.addOn && singleJobSpecs.addOn !== 'None' && (
                   <>
                     <span className="text-muted-foreground select-none">·</span>
-                    <span className="text-indigo-700 dark:text-indigo-400 font-semibold whitespace-nowrap truncate max-w-[150px]"title={singleJobSpecs?.addOn}>
+                    <span className="text-primary text-primary font-semibold whitespace-nowrap truncate max-w-[150px]"title={singleJobSpecs?.addOn}>
                       ➕ {singleJobSpecs.addOn}
                     </span>
                   </>
@@ -307,7 +310,7 @@ export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard
                   <span>{displayDueDate}</span>
                 </div>
                 {dueText ? (
-                  <div className="text-2xs font-bold text-rose-600 dark:text-rose-400 text-right whitespace-nowrap">
+                  <div className="text-xs font-bold text-destructive text-destructive text-right whitespace-nowrap">
                     {dueText}
                   </div>
                 ) : null}
@@ -325,7 +328,7 @@ export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard
                     />
                     <Button
  size="sm"disabled
- className="h-8 px-3.5 text-xs bg-emerald-600/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 font-semibold rounded-lg flex items-center gap-1.5 cursor-default">
+ className="h-8 px-3.5 text-xs bg-success/15 text-success text-success border border-success-border/30 font-semibold rounded-lg flex items-center gap-1.5 cursor-default">
                       <Check className="w-3.5 h-3.5 stroke-[2.5]"/>
                       <span>Sent to Production</span>
                     </Button>
@@ -340,7 +343,7 @@ export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard
                     />
                     <Button
  size="sm"onClick={() => onConfirmToProduction(singleJob)}
- className="h-8 px-3.5 text-xs bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg shadow-xs flex items-center gap-1.5 transition-transform active:scale-[0.98] cursor-pointer">
+ className="h-8 px-3.5 text-xs bg-primary hover:bg-primary text-white font-semibold rounded-lg shadow-xs flex items-center gap-1.5 transition-transform active:scale-[0.98] cursor-pointer">
                       <Send className="w-3.5 h-3.5"/>
                       <span>Send to Production</span>
                     </Button>
@@ -353,7 +356,7 @@ export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard
                     />
                     <Button
  size="sm"onClick={() => onCompleteDesign(singleJob)}
- className="h-8 px-3.5 text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg shadow-xs flex items-center gap-1.5 transition-transform active:scale-[0.98] cursor-pointer">
+ className="h-8 px-3.5 text-xs bg-success hover:bg-success text-white font-semibold rounded-lg shadow-xs flex items-center gap-1.5 transition-transform active:scale-[0.98] cursor-pointer">
                       <Check className="w-3.5 h-3.5 stroke-[2.5]"/>
                       <span>Design Complete</span>
                     </Button>
@@ -384,7 +387,7 @@ export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard
                       <Link
  href={getTenantNavHref(`/design/${singleJob.id}`, pathname, tenantSlug)}
  className="w-full text-left px-3 py-1.5 hover:bg-muted flex items-center gap-2 text-foreground">
-                        <ExternalLink className="w-3.5 h-3.5 text-blue-500"/>
+                        <ExternalLink className="w-3.5 h-3.5 text-primary"/>
                         <span>Open Studio Workbench</span>
                       </Link>
                       <button
@@ -392,7 +395,7 @@ export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard
  setActiveMenuJobId(null)
  onOpenWhatsApp(singleJob, 'proof')
                         }}
- className="w-full text-left px-3 py-1.5 hover:bg-muted flex items-center gap-2 text-emerald-600">
+ className="w-full text-left px-3 py-1.5 hover:bg-muted flex items-center gap-2 text-success">
                         <MessageSquare className="w-3.5 h-3.5"/>
                         <span>Send WhatsApp Proof</span>
                       </button>
@@ -410,7 +413,7 @@ export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard
  setActiveMenuJobId(null)
  onRequestRevision(singleJob)
                         }}
- className="w-full text-left px-3 py-1.5 hover:bg-muted flex items-center gap-2 text-rose-600">
+ className="w-full text-left px-3 py-1.5 hover:bg-muted flex items-center gap-2 text-destructive">
                         <AlertCircle className="w-3.5 h-3.5"/>
                         <span>Request Revision</span>
                       </button>
@@ -419,7 +422,7 @@ export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard
  setActiveMenuJobId(null)
  onOpenPreflightModal(singleJob)
                         }}
- className="w-full text-left px-3 py-1.5 hover:bg-muted flex items-center gap-2 text-purple-600">
+ className="w-full text-left px-3 py-1.5 hover:bg-muted flex items-center gap-2 text-primary">
                         <Sliders className="w-3.5 h-3.5"/>
                         <span>Preflight Quality Check</span>
                       </button>
@@ -435,11 +438,11 @@ export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard
             <div className="px-5 pb-5 pt-0 border-t border-border /80 bg-muted">
               <div className="rounded-xl bg-card border border-border p-4 text-xs tabular-nums space-y-3 mt-3 shadow-2xs">
                 <div className="flex items-center justify-between border-b border-border pb-2">
-                  <div className="text-2xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                    <Sliders className="w-3.5 h-3.5 text-blue-500"/>
+                  <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                    <Sliders className="w-3.5 h-3.5 text-primary"/>
                     <span>{tBilingual('Technical Specifications (6-Field Specs)', 'টেকনিক্যাল স্পেসিফিকেশন (৬-ফিল্ড স্পেক্স)')}:</span>
                   </div>
-                  <span className="text-2xs text-muted-foreground font-sans">
+                  <span className="text-xs text-muted-foreground font-sans">
                     {invoiceNumber} · {singleJob.title || singleJob.product_name}
                   </span>
                 </div>
@@ -462,15 +465,15 @@ export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard
                   </div>
                   <div className="flex items-baseline gap-2 min-w-0">
                     <span className="font-semibold text-muted-foreground shrink-0">{tBilingual('Finishing:', 'ফিনিশিং:')}</span>
-                    <span className={`font-semibold break-words ${singleJobSpecs.finishing !== 'None' ? 'text-amber-700 dark:text-amber-400 font-bold' : 'text-muted-foreground'}`}>{singleJobSpecs.finishing}</span>
+                    <span className={`font-semibold break-words ${singleJobSpecs.finishing !== 'None' ? 'text-warning text-warning font-bold' : 'text-muted-foreground'}`}>{singleJobSpecs.finishing}</span>
                   </div>
                   <div className="flex items-baseline gap-2 min-w-0">
                     <span className="font-semibold text-muted-foreground shrink-0">{tBilingual('Add-on:', 'অ্যাড-অন:')}</span>
-                    <span className={`font-semibold break-words ${singleJobSpecs.addOn !== 'None' ? 'text-indigo-700 dark:text-indigo-400 font-bold' : 'text-muted-foreground'}`}>{singleJobSpecs.addOn}</span>
+                    <span className={`font-semibold break-words ${singleJobSpecs.addOn !== 'None' ? 'text-primary text-primary font-bold' : 'text-muted-foreground'}`}>{singleJobSpecs.addOn}</span>
                   </div>
                 </div>
                 {singleJob.instructions && (
-                  <div className="pt-2.5 border-t border-border text-2xs text-muted-foreground">
+                  <div className="pt-2.5 border-t border-border text-xs text-muted-foreground">
                     <span className="font-semibold text-muted-foreground">{tBilingual('Instructions / Notes:', 'নির্দেশনা / নোট:')}</span> {singleJob.instructions}
                   </div>
                 )}
@@ -489,28 +492,28 @@ export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard
             <div className="flex items-center gap-3 shrink-0">
               <button
  type="button"onClick={() => setIsExpanded(!isExpanded)}
- className="text-blue-600 hover:text-blue-700 transition-colors cursor-pointer p-1 -ml-1 rounded-md hover:bg-muted dark:hover:bg-muted">
+ className="text-primary hover:text-primary transition-colors cursor-pointer p-1 -ml-1 rounded-md hover:bg-muted dark:hover:bg-muted">
                 {isExpanded ? (
-                  <ChevronDown className="w-5 h-5 text-blue-600"/>
+                  <ChevronDown className="w-5 h-5 text-primary"/>
                 ) : (
-                  <ChevronRight className="w-5 h-5 text-blue-600"/>
+                  <ChevronRight className="w-5 h-5 text-primary"/>
                 )}
               </button>
 
-              <div className="w-10 h-10 rounded-xl bg-violet-100 dark:bg-violet-950/60 text-violet-600 dark:text-violet-400 flex items-center justify-center shrink-0">
+              <div className="w-10 h-10 rounded-xl bg-primary/10 bg-primary/10 text-primary text-primary flex items-center justify-center shrink-0">
                 <FileText className="w-5 h-5"/>
               </div>
 
               <div className="min-w-0">
                 <Link
  href={invoiceHref}
- className="tabular-nums text-sm font-bold text-foreground hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center gap-1.5 whitespace-nowrap">
+ className="tabular-nums text-sm font-bold text-foreground hover:text-primary dark:hover:text-primary transition-colors flex items-center gap-1.5 whitespace-nowrap">
                   <span>{invoiceNumber}</span>
                 </Link>
                 <div className="font-bold text-xs text-foreground truncate mt-0.5 max-w-[170px]"title={customerName}>
                   {customerName}
                 </div>
-                <div className="flex items-center gap-2.5 text-2xs text-muted-foreground mt-0.5 whitespace-nowrap">
+                <div className="flex items-center gap-2.5 text-xs text-muted-foreground mt-0.5 whitespace-nowrap">
                   {customerPhone && (
                     <span className="flex items-center gap-1 tabular-nums">
                       <Phone className="w-3 h-3 text-muted-foreground"/>
@@ -539,7 +542,7 @@ export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard
                   <span>{displayDueDate}</span>
                 </div>
                 {dueText ? (
-                  <div className="text-2xs font-bold text-rose-600 dark:text-rose-400 text-right">
+                  <div className="text-xs font-bold text-destructive text-destructive text-right">
                     {dueText}
                   </div>
                 ) : null}
@@ -552,7 +555,7 @@ export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard
                 </div>
                 <div className="w-full h-2 bg-muted rounded-full overflow-hidden mt-1.5">
                   <div
- className="bg-blue-600 h-full rounded-full transition-all duration-300"style={{ width: `${progressPercent}%` }}
+ className="bg-primary h-full rounded-full transition-all duration-300"style={{ width: `${progressPercent}%` }}
                   />
                 </div>
               </div>
@@ -575,7 +578,7 @@ export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
                 <thead>
-                  <tr className="border-b border-border /80 bg-muted text-muted-foreground text-2xs font-semibold">
+                  <tr className="border-b border-border /80 bg-muted text-muted-foreground text-xs font-semibold">
                     <th className="py-2.5 px-4 w-10 text-center">#</th>
                     <th className="py-2.5 px-3 w-24">Job</th>
                     <th className="py-2.5 px-3">Product / Service</th>
@@ -612,7 +615,7 @@ export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard
                         <td className="py-3 px-3 tabular-nums font-bold text-foreground text-xs">
                           <Link
  href={getTenantNavHref(`/design/${job.id}`, pathname, tenantSlug)}
- className="hover:underline hover:text-blue-600">
+ className="hover:underline hover:text-primary">
                             {jobCode}
                           </Link>
                         </td>
@@ -622,7 +625,7 @@ export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard
                           <div className="font-bold text-foreground">
                             {jobSpecs.serviceName}
                           </div>
-                          <div className="text-2xs text-muted-foreground truncate max-w-[200px]"title={jobSpecs.material}>
+                          <div className="text-xs text-muted-foreground truncate max-w-[200px]"title={jobSpecs.material}>
                             📄 {jobSpecs.material}
                           </div>
                         </td>
@@ -633,7 +636,7 @@ export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard
                             {jobSpecs.size} · {jobSpecs.quantity}
                           </div>
                           {(jobSpecs.finishing !== 'None' || jobSpecs.addOn !== 'None') && (
-                            <div className="text-2xs text-amber-700 dark:text-amber-400 truncate max-w-[200px]">
+                            <div className="text-xs text-warning text-warning truncate max-w-[200px]">
                               {jobSpecs.finishing !== 'None' && `✨ ${jobSpecs.finishing}`}
                               {jobSpecs.finishing !== 'None' && jobSpecs.addOn !== 'None' && ' · '}
                               {jobSpecs.addOn !== 'None' && `➕ ${jobSpecs.addOn}`}
@@ -644,7 +647,7 @@ export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard
                         {/* 5. Designer with Avatar */}
                         <td className="py-3 px-3">
                           <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300 font-bold text-2xs flex items-center justify-center shrink-0">
+                            <div className="w-6 h-6 rounded-full bg-primary/10 text-primary bg-primary/10 text-primary font-bold text-xs flex items-center justify-center shrink-0">
                               {designerInitials}
                             </div>
                             <span className="text-xs text-foreground font-medium">
@@ -674,7 +677,7 @@ export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard
                                 />
                                 <Button
  size="sm"disabled
- className="h-7 px-2.5 text-2xs bg-emerald-600/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 font-semibold rounded-md flex items-center gap-1 cursor-default">
+ className="h-7 px-2.5 text-xs bg-success/15 text-success text-success border border-success-border/30 font-semibold rounded-md flex items-center gap-1 cursor-default">
                                   <Check className="w-3 h-3 stroke-[2.5]"/>
                                   <span>Sent to Production</span>
                                 </Button>
@@ -689,7 +692,7 @@ export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard
                                 />
                                 <Button
  size="sm"onClick={() => onConfirmToProduction(job)}
- className="h-7 px-2.5 text-2xs bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-md shadow-xs flex items-center gap-1 cursor-pointer">
+ className="h-7 px-2.5 text-xs bg-primary hover:bg-primary text-white font-semibold rounded-md shadow-xs flex items-center gap-1 cursor-pointer">
                                   <Send className="w-3 h-3"/>
                                   <span>Send to Production</span>
                                 </Button>
@@ -702,7 +705,7 @@ export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard
                                 />
                                 <Button
  size="sm"onClick={() => onCompleteDesign(job)}
- className="h-7 px-2.5 text-2xs bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-md shadow-xs flex items-center gap-1 cursor-pointer">
+ className="h-7 px-2.5 text-xs bg-success hover:bg-success text-white font-semibold rounded-md shadow-xs flex items-center gap-1 cursor-pointer">
                                   <Check className="w-3 h-3 stroke-[2.5]"/>
                                   <span>Design Complete</span>
                                 </Button>
@@ -710,7 +713,7 @@ export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard
                             ) : (
                               <Button
  size="sm"onClick={() => onStartDesign(job)}
- className="h-7 px-2.5 text-2xs bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-md shadow-xs flex items-center gap-1 cursor-pointer">
+ className="h-7 px-2.5 text-xs bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-md shadow-xs flex items-center gap-1 cursor-pointer">
                                 <Play className="w-2.5 h-2.5 fill-current"/>
                                 <span>Start Design</span>
                               </Button>
@@ -733,7 +736,7 @@ export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard
                                   <Link
  href={getTenantNavHref(`/design/${job.id}`, pathname, tenantSlug)}
  className="w-full text-left px-3 py-1.5 hover:bg-muted flex items-center gap-2 text-foreground">
-                                    <ExternalLink className="w-3.5 h-3.5 text-blue-500"/>
+                                    <ExternalLink className="w-3.5 h-3.5 text-primary"/>
                                     <span>Open Workbench</span>
                                   </Link>
                                   <button
@@ -741,7 +744,7 @@ export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard
  setActiveMenuJobId(null)
  onOpenWhatsApp(job, 'proof')
                                     }}
- className="w-full text-left px-3 py-1.5 hover:bg-muted flex items-center gap-2 text-emerald-600">
+ className="w-full text-left px-3 py-1.5 hover:bg-muted flex items-center gap-2 text-success">
                                     <MessageSquare className="w-3.5 h-3.5"/>
                                     <span>WhatsApp Proof</span>
                                   </button>
@@ -759,7 +762,7 @@ export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard
  setActiveMenuJobId(null)
  onRequestRevision(job)
                                     }}
- className="w-full text-left px-3 py-1.5 hover:bg-muted flex items-center gap-2 text-rose-600">
+ className="w-full text-left px-3 py-1.5 hover:bg-muted flex items-center gap-2 text-destructive">
                                     <AlertCircle className="w-3.5 h-3.5"/>
                                     <span>Request Revision</span>
                                   </button>

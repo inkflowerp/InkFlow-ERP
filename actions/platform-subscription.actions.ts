@@ -2,7 +2,7 @@
 
 // ==============================================================================
 // InkFlow / PrintERP SaaS - Server Actions for Platform SaaS Billing & Subscriptions
-// Strict server-side authorization: accessible ONLY by Platform Super Admins.
+// Strict server-side authorization: accessible ONLY by Platform Admins with proper RBAC.
 // ==============================================================================
 
 import { PlatformSubscriptionService, InitiatePlatformCheckoutInput } from '../services/platform-subscription.service.ts'
@@ -16,59 +16,43 @@ import type {
   PlatformEntitlementSummary,
   PlatformReconciliationItem,
 } from '../types/platform-subscription.types.ts'
-import { createAdminClient } from '../lib/supabase/admin.ts'
-import { cookies } from 'next/headers'
-import { getCurrentPlatformUser, hasPlatformPermission } from '../lib/auth/platform-auth.ts'
+import { withPlatformAction } from '../lib/actions/action-wrapper.ts'
 
-/**
- * Helper to assert platform owner authorization server-side
- * Strictly fails closed if platform user is not authenticated.
- */
-async function assertPlatformAdmin(): Promise<boolean> {
-  const platformUser = await getCurrentPlatformUser()
-  if (!platformUser) {
-    throw new Error('Unauthorized: Platform administrator session required.')
-  }
-  return true
-}
-
-export async function getPlatformSubscriptionAction(): Promise<ApiResponse<PlatformSubscriptionRecord>> {
-  try {
-    await assertPlatformAdmin()
+export const getPlatformSubscriptionAction = withPlatformAction(
+  { permission: 'subscription.view' },
+  async (_ctx): Promise<ApiResponse<PlatformSubscriptionRecord>> => {
     const data = await PlatformSubscriptionService.getPlatformSubscription('platform_root')
     return { success: true, data }
-  } catch (error: any) {
-    return { success: false, error: error.message || 'Failed to fetch platform subscription.' }
   }
-}
+)
 
-export async function getPlatformPlansAction(): Promise<ApiResponse<PlatformSaasPlanRecord[]>> {
-  try {
+export const getPlatformPlansAction = withPlatformAction(
+  { permission: 'plan.view' },
+  async (_ctx): Promise<ApiResponse<PlatformSaasPlanRecord[]>> => {
     const data = await PlatformSubscriptionService.getPlatformPlans()
     return { success: true, data }
-  } catch (error: any) {
-    return { success: false, error: error.message || 'Failed to fetch platform plans.' }
   }
-}
+)
 
-export async function getPlatformEntitlementSummaryAction(): Promise<ApiResponse<PlatformEntitlementSummary>> {
-  try {
-    await assertPlatformAdmin()
+export const getPlatformEntitlementSummaryAction = withPlatformAction(
+  { permission: 'subscription.view' },
+  async (_ctx): Promise<ApiResponse<PlatformEntitlementSummary>> => {
     const data = await PlatformEntitlementService.getPlatformEntitlementSummary('platform_root')
     return { success: true, data }
-  } catch (error: any) {
-    return { success: false, error: error.message || 'Failed to fetch platform entitlements.' }
   }
-}
+)
 
-export async function initiatePlatformCheckoutAction(
-  input: InitiatePlatformCheckoutInput
-): Promise<ApiResponse<{ internalTrxId?: string; checkoutUrl?: string; amount?: number; currency?: string }>> {
-  try {
-    await assertPlatformAdmin()
+export const initiatePlatformCheckoutAction = withPlatformAction(
+  {
+    permission: 'subscription.manage',
+    audit: true,
+    actionName: 'subscription.initiate_checkout',
+    entityType: 'platform_subscription',
+  },
+  async (_ctx, input: InitiatePlatformCheckoutInput): Promise<ApiResponse<{ internalTrxId?: string; checkoutUrl?: string; amount?: number; currency?: string }>> => {
     const res = await PlatformSubscriptionService.createPlatformBillingTransaction(input)
     if (!res.success) {
-      return { success: false, error: res.error || 'Failed to initiate platform checkout.' }
+      throw new Error(res.error || 'Failed to initiate platform checkout.')
     }
     return {
       success: true,
@@ -79,26 +63,23 @@ export async function initiatePlatformCheckoutAction(
         currency: res.currency,
       },
     }
-  } catch (error: any) {
-    return { success: false, error: error.message || 'Error creating platform checkout.' }
   }
-}
+)
 
-export async function verifyPlatformPaymentAction(
-  internalTrxId: string,
-  verificationPayload?: Record<string, any>
-): Promise<ApiResponse<{ isVerified: boolean; message?: string }>> {
-  try {
-    await assertPlatformAdmin()
+export const verifyPlatformPaymentAction = withPlatformAction(
+  {
+    permission: 'subscription.manage',
+    audit: true,
+    actionName: 'subscription.verify_payment',
+    entityType: 'platform_subscription',
+  },
+  async (_ctx, internalTrxId: string, verificationPayload?: Record<string, any>): Promise<ApiResponse<{ isVerified: boolean; message?: string }>> => {
     const res = await PlatformSubscriptionService.verifyPlatformPaymentAndActivateSubscription(
       internalTrxId,
       verificationPayload
     )
     if (!res.isVerified) {
-      return {
-        success: false,
-        error: res.failureReason || 'Payment verification failed with provider.',
-      }
+      throw new Error(res.failureReason || 'Payment verification failed with provider.')
     }
     return {
       success: true,
@@ -107,74 +88,71 @@ export async function verifyPlatformPaymentAction(
         message: res.message,
       },
     }
-  } catch (error: any) {
-    return { success: false, error: error.message || 'Error verifying platform payment.' }
   }
-}
+)
 
-export async function schedulePlatformDowngradeAction(
-  newPlanId: string
-): Promise<ApiResponse<{ effectiveDate?: string }>> {
-  try {
-    await assertPlatformAdmin()
+export const schedulePlatformDowngradeAction = withPlatformAction(
+  {
+    permission: 'subscription.manage',
+    audit: true,
+    actionName: 'subscription.schedule_downgrade',
+    entityType: 'platform_subscription',
+  },
+  async (_ctx, newPlanId: string): Promise<ApiResponse<{ effectiveDate?: string }>> => {
     const res = await PlatformSubscriptionService.schedulePlatformPlanDowngrade('platform_root', newPlanId)
     if (!res.success) {
-      return { success: false, error: res.error || 'Failed to schedule plan downgrade.' }
+      throw new Error(res.error || 'Failed to schedule plan downgrade.')
     }
     return { success: true, data: { effectiveDate: res.effectiveDate } }
-  } catch (error: any) {
-    return { success: false, error: error.message || 'Error scheduling plan downgrade.' }
   }
-}
+)
 
-export async function cancelPlatformSubscriptionAction(
-  atPeriodEnd: boolean = true
-): Promise<ApiResponse<{ message: string }>> {
-  try {
-    await assertPlatformAdmin()
+export const cancelPlatformSubscriptionAction = withPlatformAction(
+  {
+    permission: 'subscription.manage',
+    audit: true,
+    actionName: 'subscription.cancel',
+    entityType: 'platform_subscription',
+  },
+  async (_ctx, atPeriodEnd: boolean = true): Promise<ApiResponse<{ message: string }>> => {
     const res = await PlatformSubscriptionService.cancelPlatformSubscription('platform_root', atPeriodEnd)
     return { success: true, data: { message: res.message } }
-  } catch (error: any) {
-    return { success: false, error: error.message || 'Error cancelling platform subscription.' }
   }
-}
+)
 
-export async function reactivatePlatformSubscriptionAction(): Promise<ApiResponse<{ message: string }>> {
-  try {
-    await assertPlatformAdmin()
+export const reactivatePlatformSubscriptionAction = withPlatformAction(
+  {
+    permission: 'subscription.manage',
+    audit: true,
+    actionName: 'subscription.reactivate',
+    entityType: 'platform_subscription',
+  },
+  async (_ctx): Promise<ApiResponse<{ message: string }>> => {
     const res = await PlatformSubscriptionService.reactivatePlatformSubscription('platform_root')
     return { success: true, data: { message: res.message } }
-  } catch (error: any) {
-    return { success: false, error: error.message || 'Error reactivating platform subscription.' }
   }
-}
+)
 
-export async function getPlatformBillingHistoryAction(): Promise<ApiResponse<PlatformBillingTransactionRecord[]>> {
-  try {
-    await assertPlatformAdmin()
+export const getPlatformBillingHistoryAction = withPlatformAction(
+  { permission: 'subscription.view' },
+  async (_ctx): Promise<ApiResponse<PlatformBillingTransactionRecord[]>> => {
     const data = await PlatformSubscriptionService.getPlatformBillingHistory('platform_root')
     return { success: true, data }
-  } catch (error: any) {
-    return { success: false, error: error.message || 'Failed to fetch platform billing history.' }
   }
-}
+)
 
-export async function getPlatformSubscriptionEventsAction(): Promise<ApiResponse<PlatformSubscriptionEventRecord[]>> {
-  try {
-    await assertPlatformAdmin()
+export const getPlatformSubscriptionEventsAction = withPlatformAction(
+  { permission: 'subscription.view' },
+  async (_ctx): Promise<ApiResponse<PlatformSubscriptionEventRecord[]>> => {
     const data = await PlatformSubscriptionService.getPlatformSubscriptionEvents('platform_root')
     return { success: true, data }
-  } catch (error: any) {
-    return { success: false, error: error.message || 'Failed to fetch subscription events.' }
   }
-}
+)
 
-export async function getPlatformSubscriptionReconciliationAction(): Promise<ApiResponse<PlatformReconciliationItem[]>> {
-  try {
-    await assertPlatformAdmin()
+export const getPlatformSubscriptionReconciliationAction = withPlatformAction(
+  { permission: 'billing.reconcile' },
+  async (_ctx): Promise<ApiResponse<PlatformReconciliationItem[]>> => {
     const data = await PlatformSubscriptionService.getPlatformSubscriptionReconciliation()
     return { success: true, data }
-  } catch (error: any) {
-    return { success: false, error: error.message || 'Failed to fetch reconciliation data.' }
   }
-}
+)

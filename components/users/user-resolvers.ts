@@ -1,5 +1,5 @@
 import { CompanyUserWithProfile, RoleRow } from '@/types/tenant.types'
-import { getResponsibilityPresetsForRole, getPracticalDefaultDataScope } from '@/lib/auth/rbac.client'
+import { getResponsibilityPresetsForRole, getPracticalDefaultDataScope, isUserBusinessOwner } from '@/lib/auth/rbac.client'
 import { ROLE_NAMES_BN } from './roles-matrix-tab'
 
 export interface ResolvedRole {
@@ -10,16 +10,26 @@ export interface ResolvedRole {
 
 /**
  * Resolves the user's role consistently, properly inspecting:
- * 1. Explicit joined role (u.roles or u.role)
- * 2. User responsibilities list (e.g. ['business_owner'])
- * 3. Matched roles in company
- * 4. Default fallback to General Staff
+ * 1. Business Owner checks (universal authority)
+ * 2. Explicit joined role (u.roles or u.role)
+ * 3. User responsibilities list (e.g. ['business_owner'])
+ * 4. Matched roles in company
+ * 5. Default fallback to General Staff
  */
 export function resolveUserRole(
   u: CompanyUserWithProfile,
   rolesList?: RoleRow[]
 ): ResolvedRole {
-  // 1. If explicit role object exists on user
+  // 1. Check if user represents a Business Owner
+  if (isUserBusinessOwner(u)) {
+    return {
+      name: 'Business Owner',
+      nameBn: 'ব্যবসা স্বত্বাধিকারী',
+      slug: 'business_owner',
+    }
+  }
+
+  // 2. If explicit role object exists on user
   const primaryRole = u.roles?.[0] || u.role
   if (primaryRole?.name) {
     const slug = (primaryRole.slug || primaryRole.name).toLowerCase().replace(/\s+/g, '_')
@@ -31,7 +41,7 @@ export function resolveUserRole(
     return { name: primaryRole.name, nameBn, slug }
   }
 
-  // 2. Check user's responsibilities array
+  // 3. Check user's responsibilities array
   const resps = u.responsibilities || []
   if (resps.includes('business_owner') || resps.includes('owner')) {
     return {
@@ -75,6 +85,10 @@ export function resolveUserDataScope(
   u: CompanyUserWithProfile,
   roleSlug?: string
 ): string {
+  if (isUserBusinessOwner(u) || roleSlug === 'business_owner' || roleSlug === 'owner') {
+    return 'company'
+  }
+
   if (u.data_scope) return u.data_scope
   if ((u as any).dataScope) return (u as any).dataScope
 
@@ -85,8 +99,6 @@ export function resolveUserDataScope(
     if (scopes.includes('department')) return 'department'
     if (scopes.includes('assigned')) return 'assigned'
   }
-
-  if (roleSlug === 'business_owner' || roleSlug === 'owner') return 'company'
 
   if (roleSlug) {
     return getPracticalDefaultDataScope(roleSlug)

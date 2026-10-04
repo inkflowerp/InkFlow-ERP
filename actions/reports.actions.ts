@@ -1,5 +1,8 @@
 'use server'
 
+import { withTenantAction } from '@/lib/actions/action-wrapper'
+
+
 import { getCurrentTenant } from '@/lib/auth/tenant-auth'
 import { BillingRepository } from '@/lib/repositories/billing.repository'
 import { OrderRepository } from '@/lib/repositories/order.repository'
@@ -40,9 +43,12 @@ export interface ServerActionResult<T> {
 /**
  * Server Action: Authoritatively fetches real business report dataset from PostgreSQL repositories
  */
-export async function getBusinessReportDataAction(
-  branchId?: string | null
-): Promise<ServerActionResult<BusinessReportDataPayload>> {
+export const getBusinessReportDataAction = withTenantAction(
+  {
+    permission: "reports.view",
+    entityType: "reports"
+  },
+  async (ctx, branchId?: string | null) : Promise<ServerActionResult<BusinessReportDataPayload>> => {
   try {
     const tenant = await getCurrentTenant()
     if (!tenant?.companyId) {
@@ -132,4 +138,5 @@ export async function getBusinessReportDataAction(
       error: err.message || 'Failed to fetch business report dataset.',
     }
   }
-}
+
+})

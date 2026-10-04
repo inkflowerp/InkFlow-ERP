@@ -54,10 +54,10 @@ export function SubscriptionStatusBanner() {
 
  if (isSuspended) {
  return (
-      <div className="bg-red-600 text-white px-4 py-2.5 shadow-xs">
+      <div className="bg-destructive text-white px-4 py-2.5 shadow-xs">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-xs font-medium">
           <div className="flex items-center gap-2">
-            <Ban className="h-4 w-4 shrink-0 animate-pulse text-red-200"/>
+            <Ban className="h-4 w-4 shrink-0 animate-pulse text-destructive"/>
             <span className="bangla-text">
               {tBilingual(
                 'Account Suspended: Your tenant workspace has been suspended by the platform administrator. Operational write actions are restricted.',
@@ -79,10 +79,10 @@ export function SubscriptionStatusBanner() {
 
  if (isPastDue) {
  return (
-      <div className="bg-amber-600 text-white px-4 py-2.5 shadow-xs">
+      <div className="bg-warning text-white px-4 py-2.5 shadow-xs">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-xs font-medium">
           <div className="flex items-center gap-2">
-            <AlertTriangle className="h-4 w-4 shrink-0 text-amber-200 animate-bounce"/>
+            <AlertTriangle className="h-4 w-4 shrink-0 text-warning animate-bounce"/>
             <span className="bangla-text font-bold">
               {tBilingual(
                 'Subscription Payment Past Due: Your renewal invoice has not been settled. Please complete payment to avoid service suspension.',
@@ -94,7 +94,7 @@ export function SubscriptionStatusBanner() {
           <Link href={getTenantNavHref('/settings/subscription', pathname, slug)}>
             <Button
  size="sm" variant="secondary" className="h-7 text-xs bg-card text-foreground hover:bg-muted font-bold bangla-text border border-border shadow-xs">
-              <CreditCard className="mr-1 h-3.5 w-3.5 text-amber-600"/>
+              <CreditCard className="mr-1 h-3.5 w-3.5 text-warning"/>
               {tBilingual('Pay Invoice Now', 'এখনই পরিশোধ করুন')}
               <ArrowRight className="ml-1 h-3 w-3"/>
             </Button>
@@ -110,7 +110,7 @@ export function SubscriptionStatusBanner() {
 
  if (isTrialExpired) {
  return (
-      <div className="bg-red-600 text-white px-4 py-2.5 shadow-xs">
+      <div className="bg-destructive text-white px-4 py-2.5 shadow-xs">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-xs font-medium">
           <div className="flex items-center gap-2">
             <AlertTriangle className="h-4 w-4 shrink-0 text-white animate-bounce"/>
@@ -125,7 +125,7 @@ export function SubscriptionStatusBanner() {
           <Button
  size="sm"onClick={() => openUpgradeModal('business')}
  variant="secondary" className="h-7 text-xs bg-card text-foreground hover:bg-muted font-bold bangla-text border border-border shadow-xs">
-            <Crown className="mr-1 h-3.5 w-3.5 text-amber-500"/>
+            <Crown className="mr-1 h-3.5 w-3.5 text-warning"/>
             {tBilingual('Upgrade Plan Now', 'এখনই আপগ্রেড করুন')}
             <ArrowRight className="ml-1 h-3 w-3"/>
           </Button>
@@ -140,13 +140,13 @@ export function SubscriptionStatusBanner() {
       <div
  className={
  isEndingSoon
-            ? 'bg-amber-600 text-white px-4 py-2 shadow-xs'
+            ? 'bg-warning text-white px-4 py-2 shadow-xs'
             : 'bg-primary text-primary-foreground px-4 py-2 shadow-xs'
         }
       >
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-xs font-medium">
           <div className="flex items-center gap-2">
-            <Clock className="h-4 w-4 shrink-0 text-amber-200"/>
+            <Clock className="h-4 w-4 shrink-0 text-warning"/>
             <span className="bangla-text">
               {isEndingSoon
                 ? tBilingual(
@@ -172,7 +172,7 @@ export function SubscriptionStatusBanner() {
             <Button
  size="sm"variant="secondary"onClick={() => openUpgradeModal('business')}
  className="h-7 text-xs bg-card text-foreground hover:bg-muted font-bold bangla-text border border-border shadow-xs">
-              <Crown className="mr-1 h-3 w-3 text-amber-500"/>
+              <Crown className="mr-1 h-3 w-3 text-warning"/>
               {tBilingual('Upgrade Plan', 'প্ল্যান আপগ্রেড')}
             </Button>
           </div>
@@ -183,7 +183,7 @@ export function SubscriptionStatusBanner() {
 
  if (isPlanExpired || subscription.status === 'expired' || subscription.status === 'cancelled') {
  return (
-      <div className="bg-red-600 text-white px-4 py-2.5 shadow-xs">
+      <div className="bg-destructive text-white px-4 py-2.5 shadow-xs">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-xs font-medium">
           <div className="flex items-center gap-2">
             <AlertTriangle className="h-4 w-4 shrink-0 text-white animate-bounce"/>
@@ -198,7 +198,7 @@ export function SubscriptionStatusBanner() {
           <Button
  size="sm"onClick={() => openUpgradeModal(currentPlan?.code || 'business')}
  variant="secondary" className="h-7 text-xs bg-card text-foreground hover:bg-muted font-bold bangla-text border border-border shadow-xs">
-            <Crown className="mr-1 h-3.5 w-3.5 text-amber-500"/>
+            <Crown className="mr-1 h-3.5 w-3.5 text-warning"/>
             {tBilingual('Renew / Upgrade Plan', 'প্ল্যান নবায়ন / আপগ্রেড')}
             <ArrowRight className="ml-1 h-3 w-3"/>
           </Button>

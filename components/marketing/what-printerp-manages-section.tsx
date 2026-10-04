@@ -30,7 +30,7 @@ export function WhatPrintErpManagesSection() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12 sm:space-y-16">
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto space-y-3 sm:space-y-4">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200/70 dark:border-blue-800/60 uppercase tracking-wider">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary bg-primary/10 text-primary border border-primary/20/70 border-border/60 uppercase tracking-wider">
             <span>{tBilingual('Operations Map', 'অপারেশনস ম্যাপ')}</span>
           </div>
 
@@ -62,14 +62,14 @@ export function WhatPrintErpManagesSection() {
  className="rounded-xl border border-border bg-card p-6 space-y-4 shadow-sm hover:border-input transition-all flex flex-col justify-between">
                 <div>
                   <div className="flex items-center gap-3 pb-3 border-b border-border">
-                    <div className="h-10 w-10 rounded-xl bg-blue-50 dark:bg-blue-950/80 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 border border-blue-100 dark:border-blue-900/60">
+                    <div className="h-10 w-10 rounded-xl bg-primary/10 bg-primary/10 text-primary text-primary flex items-center justify-center shrink-0 border border-border border-border/60">
                       <Icon className="h-5 w-5"/>
                     </div>
                     <div>
                       <h3 className="text-base font-bold text-foreground bangla-text">
                         {tBilingual(cat.titleEn, cat.titleBn)}
                       </h3>
-                      <span className="text-2xs text-muted-foreground uppercase font-semibold">
+                      <span className="text-xs text-muted-foreground uppercase font-semibold">
                         {tBilingual('Core Operations', 'মূল কার্যপরিধি')}
                       </span>
                     </div>
@@ -78,16 +78,16 @@ export function WhatPrintErpManagesSection() {
                   <ul className="mt-4 space-y-2.5">
                     {parsedItems.map((item, i) => (
                       <li key={i} className="flex items-start gap-2 text-xs text-muted-foreground">
-                        <CheckCircle2 className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5"/>
+                        <CheckCircle2 className="h-3.5 w-3.5 text-primary text-primary shrink-0 mt-0.5"/>
                         <span className="leading-snug bangla-text">{item}</span>
                       </li>
                     ))}
                   </ul>
                 </div>
 
-                <div className="pt-3 border-t border-border text-2xs font-semibold text-muted-foreground flex items-center justify-between">
+                <div className="pt-3 border-t border-border text-xs font-semibold text-muted-foreground flex items-center justify-between">
                   <span>{tBilingual('Fully Connected', 'সম্পূর্ণ সমন্বিত')}</span>
-                  <span className="text-blue-600 dark:text-blue-400 font-bold">PrintERP Core</span>
+                  <span className="text-primary text-primary font-bold">PrintERP Core</span>
                 </div>
               </div>
             )

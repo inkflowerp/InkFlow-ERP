@@ -1,10 +1,48 @@
 import { createServerClient } from '@supabase/ssr'
+import type { User } from '@supabase/supabase-js'
 import { NextResponse, type NextRequest } from 'next/server'
 import { Database } from '@/types/database.types'
-import { TENANT_SESSION_COOKIE, PLATFORM_SESSION_COOKIE } from '@/lib/auth/types'
+import { TENANT_SESSION_COOKIE, PLATFORM_SESSION_COOKIE, type TenantSessionData } from '@/lib/auth/types'
 import { resolveTenant, resolveHostname, isReservedSlug, isValidSlugFormat, getAuthCookieOptions } from '@/lib/tenant/tenant-resolution'
 import { getTenantLink } from '@/lib/tenant/tenant-url'
-import { isTestEnvironment } from '@/lib/security/runtime-env'
+import { verifySessionToken } from '@/lib/security/session-signer'
+
+// Canonical root-level tenant application routes redirected dynamically
+export const TENANT_APP_ROUTES = new Set([
+  'accounting',
+  'app',
+  'attendance',
+  'audit',
+  'automations',
+  'billing',
+  'communications',
+  'costing',
+  'customers',
+  'dashboard',
+  'delivery',
+  'design',
+  'designer',
+  'finishing',
+  'hr',
+  'inventory',
+  'invoices',
+  'logistics',
+  'machineries',
+  'machinery',
+  'operator',
+  'orders',
+  'production',
+  'products',
+  'purchases',
+  'quotations',
+  'reports',
+  'sales',
+  'settings',
+  'suppliers',
+  'support',
+  'tax',
+  'trash',
+])
 
 export async function updateSession(request: NextRequest) {
   try {
@@ -27,10 +65,8 @@ export async function updateSession(request: NextRequest) {
     const pathname = request.nextUrl.pathname
     const search = request.nextUrl.search
 
-    // 0. Next.js Server Actions: NEVER redirect or block Server Actions!
-    // Next.js App Router Server Actions authenticate internally via getVerifiedTenant/getOptionalTenant.
-    // Returning a redirect on Server Action breaks client with "An unexpected response was received from the server".
-    // HOWEVER, on tenant subdomains (e.g. rangao.inkflow-erp.vercel.app), routes are compiled inside app/[tenantSlug]/...
+    // 0. Next.js Server Actions:
+    // On tenant subdomains (e.g. rangao.inkflow-erp.vercel.app), routes are compiled inside app/[tenantSlug]/...
     // Clean subdomain paths (e.g. /hr/employees) MUST be rewritten to /[tenantSlug]/hr/employees with tenant headers
     // so Next.js matches the action in the route manifest without 404ing!
     if (request.headers.has('next-action')) {
@@ -62,14 +98,13 @@ export async function updateSession(request: NextRequest) {
       return NextResponse.next({ request })
     }
 
-    const responseCookies: { name: string; value: string; options?: any }[] = []
+    const responseCookies: { name: string; value: string; options?: Parameters<NextResponse['cookies']['set']>[2] }[] = []
 
     // Helper: Anti-cache and security headers
     const applySecurityHeaders = (response: NextResponse) => {
       response.headers.set('X-Content-Type-Options', 'nosniff')
       response.headers.set('X-Frame-Options', 'DENY')
       response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
-      response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()')
       return response
     }
 
@@ -153,43 +188,38 @@ export async function updateSession(request: NextRequest) {
       pathname.startsWith('/privacy') ||
       pathname === '/logout'
 
-    // Check Platform Session Cookie
+    // Cryptographically verify Platform Session Cookie with HMAC-SHA256
+    interface PlatformSessionPayload {
+      userId?: string
+      sub?: string
+      adminId?: string
+      role?: string
+      email?: string
+    }
     const platformSessionCookie = request.cookies.get(PLATFORM_SESSION_COOKIE)?.value
+    let platformSessionData: PlatformSessionPayload | null = null
     let hasValidPlatformCookie = false
     if (platformSessionCookie) {
-      try {
-        const parsed = JSON.parse(decodeURIComponent(platformSessionCookie))
-        if (parsed?.userId && parsed?.adminId) hasValidPlatformCookie = true
-      } catch {
-        try {
-          const parsed = JSON.parse(platformSessionCookie)
-          if (parsed?.userId && parsed?.adminId) hasValidPlatformCookie = true
-        } catch {}
+      platformSessionData = await verifySessionToken<PlatformSessionPayload>(platformSessionCookie)
+      if (platformSessionData && (platformSessionData.userId || platformSessionData.sub) && platformSessionData.adminId) {
+        hasValidPlatformCookie = true
       }
     }
 
-    // Check Tenant Session Cookie
+    // Cryptographically verify Tenant Session Cookie with HMAC-SHA256
     const tenantSessionCookie = request.cookies.get(TENANT_SESSION_COOKIE)?.value
+    let tenantSessionData: TenantSessionData | null = null
     let hasValidTenantCookie = false
-    let tenantSessionData: any = null
     if (tenantSessionCookie) {
-      try {
-        tenantSessionData = JSON.parse(decodeURIComponent(tenantSessionCookie))
-        if (tenantSessionData && (tenantSessionData.userId || tenantSessionData.companySlug || tenantSessionData.companyId)) {
-          hasValidTenantCookie = true
-        }
-      } catch {
-        try {
-          tenantSessionData = JSON.parse(tenantSessionCookie)
-          if (tenantSessionData && (tenantSessionData.userId || tenantSessionData.companySlug || tenantSessionData.companyId)) {
-            hasValidTenantCookie = true
-          }
-        } catch {}
+      tenantSessionData = await verifySessionToken<TenantSessionData>(tenantSessionCookie)
+      if (tenantSessionData && (tenantSessionData.userId || tenantSessionData.sub) && tenantSessionData.companySlug) {
+        hasValidTenantCookie = true
       }
     }
 
-    // Setup Supabase SSR client for cookie revalidation
-    let user: any = null
+    // Setup Supabase SSR client for authoritative session verification
+    let user: User | null = null
+    let supabase: ReturnType<typeof createServerClient<Database>> | null = null
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || ''
     const supabaseAnonKey =
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
@@ -204,7 +234,7 @@ export async function updateSession(request: NextRequest) {
     if (supabaseUrl && supabaseAnonKey && hasSupabaseAuthCookies) {
       try {
         const cookieOpts = getAuthCookieOptions(rawHost)
-        const supabase = createServerClient<Database>(supabaseUrl, supabaseAnonKey, {
+        supabase = createServerClient<Database>(supabaseUrl, supabaseAnonKey, {
           cookieOptions: cookieOpts.domain ? { domain: cookieOpts.domain } : undefined,
           cookies: {
             getAll() {
@@ -227,22 +257,49 @@ export async function updateSession(request: NextRequest) {
       }
     }
 
-    const isTenantAuthenticated = Boolean(user) || (isTestEnvironment() && hasValidTenantCookie)
+    // Authoritative Tenant Authentication: Strictly requires authenticated user session.
+    // Invariant: Cookie presence alone NEVER grants authentication!
+    const isTenantAuthenticated = Boolean(user)
 
     // --------------------------------------------------------------------------
     // A. PLATFORM PORTAL GUARDS
     // --------------------------------------------------------------------------
     if (isPlatformProtectedPage) {
-      if (!user || !hasValidPlatformCookie) {
+      if (!user) {
         const url = request.nextUrl.clone()
         url.pathname = '/platform/login'
         url.searchParams.set('redirectTo', pathname)
         return applyNoCacheHeaders(NextResponse.redirect(url))
       }
+
+      // Verify active platform administrator status
+      let isVerifiedPlatformAdmin = false
+      if (hasValidPlatformCookie && platformSessionData && user && (platformSessionData.userId === user.id || platformSessionData.sub === user.id)) {
+        isVerifiedPlatformAdmin = true
+      } else if (supabase && user) {
+        try {
+          const { data: adminRecord } = await supabase
+            .from('platform_admins')
+            .select('id, role, is_active')
+            .eq('user_id', user.id)
+            .eq('is_active', true)
+            .maybeSingle()
+          if (adminRecord) {
+            isVerifiedPlatformAdmin = true
+          }
+        } catch {}
+      }
+
+      if (!isVerifiedPlatformAdmin) {
+        const url = request.nextUrl.clone()
+        url.pathname = '/platform/login'
+        url.searchParams.set('error', 'unauthorized')
+        return applyNoCacheHeaders(NextResponse.redirect(url))
+      }
     }
 
     if (isPlatformAuthPage && pathname === '/platform/login') {
-      if (user && hasValidPlatformCookie) {
+      if (user && hasValidPlatformCookie && (platformSessionData?.userId === user.id || platformSessionData?.sub === user.id)) {
         const redirectTo = request.nextUrl.searchParams.get('redirectTo') || '/platform'
         const url = request.nextUrl.clone()
         url.pathname = redirectTo.startsWith('/platform') ? redirectTo : '/platform'
@@ -265,7 +322,6 @@ export async function updateSession(request: NextRequest) {
       // 2. Canonical Subdomain URL Normalization:
       // If a request arrives with redundant tenant slug in pathname on a tenant subdomain
       // e.g. https://rangao.inkflow-erp.vercel.app/rangao/dashboard -> 307 redirect to https://rangao.inkflow-erp.vercel.app/dashboard
-      // e.g. https://rangao.inkflow-erp.vercel.app/rangao -> 307 redirect to https://rangao.inkflow-erp.vercel.app/dashboard
       if (pathname === `/${tenantSlug}` || pathname === `/${tenantSlug}/`) {
         const cleanUrl = new URL(`/dashboard${search}`, request.url)
         return applyNoCacheHeaders(NextResponse.redirect(cleanUrl, 307))
@@ -277,8 +333,6 @@ export async function updateSession(request: NextRequest) {
       }
 
       // 2b. Redundant duplicate segment normalization:
-      // e.g. /settings/settings/tax -> /settings/tax
-      // e.g. /settings/settings -> /settings
       if (pathname.includes('/settings/settings')) {
         const cleanPath = pathname.replace(/\/settings\/settings(\/|$)/, '/settings$1')
         const cleanUrl = new URL(`${cleanPath}${search}`, request.url)
@@ -289,8 +343,14 @@ export async function updateSession(request: NextRequest) {
       if (isAuthPage) {
         if (pathname === '/login') {
           const hasAuthError = request.nextUrl.searchParams.has('error') || request.nextUrl.searchParams.has('logged_out')
-          // If actively authenticated in this tenant, redirect to dashboard
-          if (user && hasValidTenantCookie && !hasAuthError && tenantSessionData?.companySlug === tenantSlug) {
+          // If actively authenticated in THIS tenant, redirect to dashboard
+          if (
+            user &&
+            hasValidTenantCookie &&
+            !hasAuthError &&
+            tenantSessionData?.companySlug?.toLowerCase() === tenantSlug.toLowerCase() &&
+            (tenantSessionData.userId === user.id || tenantSessionData.sub === user.id)
+          ) {
             const redirectTo = request.nextUrl.searchParams.get('redirectTo')
             const targetPath = redirectTo && redirectTo.startsWith('/') && !redirectTo.startsWith('/login')
               ? redirectTo
@@ -330,14 +390,48 @@ export async function updateSession(request: NextRequest) {
         return applyNoCacheHeaders(NextResponse.redirect(loginUrl))
       }
 
-      // 5. Internal URL Rewrite: Map clean subdomain path to Next.js App Router app/[tenantSlug]/...
+      // 5. Tenant ↔ Host Binding Verification (Fail-Closed)
+      // On [slug].domain, the authenticated user's active membership must match slug!
+      let isMemberOfTargetTenant = false
+      if (
+        hasValidTenantCookie &&
+        tenantSessionData &&
+        user &&
+        (tenantSessionData.userId === user.id || tenantSessionData.sub === user.id) &&
+        tenantSessionData.companySlug?.toLowerCase() === tenantSlug.toLowerCase()
+      ) {
+        isMemberOfTargetTenant = true
+      } else if (supabase && user) {
+        try {
+          const { data: member } = await supabase
+            .from('company_users')
+            .select('id, company_id, companies!inner(slug, is_active)')
+            .eq('user_id', user.id)
+            .eq('companies.slug', tenantSlug)
+            .eq('is_active', true)
+            .maybeSingle()
+          if (member) {
+            isMemberOfTargetTenant = true
+          }
+        } catch {}
+      }
+
+      if (!isMemberOfTargetTenant) {
+        // Cross-Tenant Access Denied: User belongs to a different tenant!
+        const res = applyNoCacheHeaders(
+          NextResponse.redirect(new URL(`/403?type=tenant&tenant=${encodeURIComponent(tenantSlug)}`, request.url))
+        )
+        res.cookies.delete(TENANT_SESSION_COOKIE)
+        return res
+      }
+
+      // 6. Internal URL Rewrite: Map clean subdomain path to Next.js App Router app/[tenantSlug]/...
       const rewriteUrl = request.nextUrl.clone()
       let internalPath: string
 
       if (pathname === '/' || pathname === '') {
         internalPath = `/${tenantSlug}/dashboard`
       } else {
-        // Standard clean subdomain route: /invoices -> /[tenantSlug]/invoices
         internalPath = `/${tenantSlug}${pathname}`
       }
 
@@ -365,13 +459,49 @@ export async function updateSession(request: NextRequest) {
     }
 
     // --------------------------------------------------------------------------
-    // C. ROOT DOMAIN ROUTING (e.g. inkflow.com.bd, localhost:3000)
+    // C. ROOT DOMAIN ROUTING (e.g. inkflowerp.com, localhost:3000)
     // --------------------------------------------------------------------------
     if (hostType === 'root') {
-      // 1. If actively authenticated tenant user visits /login on root domain -> redirect to their tenant workspace
+      const pathParts = pathname.split('/').filter(Boolean)
+      const firstSegment = (pathParts[0] || '').toLowerCase().trim()
+
+      // 1. Dynamic Root Redirect for Tenant Application Routes (e.g. /accounting, /invoices, /customers)
+      if (TENANT_APP_ROUTES.has(firstSegment)) {
+        if (user) {
+          let userTenantSlug = tenantSessionData?.companySlug
+          if (!userTenantSlug && supabase) {
+            try {
+              const { data: member } = await supabase
+                .from('company_users')
+                .select('companies!inner(slug, is_active)')
+                .eq('user_id', user.id)
+                .eq('is_active', true)
+                .limit(1)
+                .maybeSingle()
+              const comp = Array.isArray(member?.companies) ? member.companies[0] : member?.companies
+              if (comp && typeof comp === 'object' && 'slug' in comp && typeof (comp as { slug: unknown }).slug === 'string') {
+                userTenantSlug = (comp as { slug: string }).slug
+              }
+            } catch {}
+          }
+
+          if (userTenantSlug) {
+            const redirectUrl = new URL(`/${userTenantSlug}${pathname}${search}`, request.url)
+            return applyNoCacheHeaders(NextResponse.redirect(redirectUrl, 307))
+          } else {
+            return applyNoCacheHeaders(NextResponse.redirect(new URL('/onboarding', request.url), 307))
+          }
+        } else {
+          const loginUrl = new URL('/login', request.url)
+          loginUrl.searchParams.set('redirectTo', `${pathname}${search}`)
+          return applyNoCacheHeaders(NextResponse.redirect(loginUrl, 307))
+        }
+      }
+
+      // 2. If actively authenticated tenant user visits /login on root domain -> redirect to their workspace
       if (pathname === '/login') {
         const hasAuthError = request.nextUrl.searchParams.has('error') || request.nextUrl.searchParams.has('logged_out')
-        if ((user || hasValidTenantCookie) && tenantSessionData?.companySlug && !hasAuthError && !hasValidPlatformCookie) {
+        if (user && tenantSessionData?.companySlug && !hasAuthError && !hasValidPlatformCookie) {
           const targetSlug = tenantSessionData.companySlug
           if (isPslOrLocal) {
             const redirectUrl = new URL(`/${targetSlug}/dashboard`, request.url)
@@ -380,7 +510,6 @@ export async function updateSession(request: NextRequest) {
           const tenantUrl = getTenantLink(targetSlug, `/dashboard`, rootDomain)
           return applyNoCacheHeaders(NextResponse.redirect(new URL(tenantUrl), 307))
         } else if (hasAuthError && hasValidTenantCookie) {
-          // Explicit logout or authentication error: purge cookie to prevent redirect loops
           const res = NextResponse.next({ request })
           res.cookies.delete(TENANT_SESSION_COOKIE)
           responseCookies.forEach(({ name, value, options }) => res.cookies.set(name, value, options))
@@ -388,11 +517,9 @@ export async function updateSession(request: NextRequest) {
         }
       }
 
-      // 2. If user visits /dashboard on root domain:
-      // If logged in as tenant -> redirect to their actual tenant workspace (e.g. vision.inkflow.com.bd/dashboard)
-      // Otherwise redirect to /login
+      // 3. If user visits /dashboard on root domain:
       if (pathname === '/dashboard') {
-        if ((user || hasValidTenantCookie) && tenantSessionData?.companySlug) {
+        if (user && tenantSessionData?.companySlug) {
           const targetSlug = tenantSessionData.companySlug
           if (isPslOrLocal) {
             const redirectUrl = new URL(`/${targetSlug}/dashboard`, request.url)
@@ -411,11 +538,7 @@ export async function updateSession(request: NextRequest) {
         }
       }
 
-      // 3. If user visits path with legitimate tenant slug on root domain (e.g. inkflow-erp.vercel.app/rangao/invoices):
-      // Redirect to canonical tenant subdomain https://rangao.inkflow-erp.vercel.app/invoices
-      const pathParts = pathname.split('/').filter(Boolean)
-      const firstSegment = pathParts[0] || ''
-
+      // 4. If user visits explicit path with tenant slug on root domain (e.g. inkflowerp.com/alpha-print/invoices)
       const isKnownRootSegment =
         firstSegment === '' ||
         isReservedSlug(firstSegment) ||
@@ -428,12 +551,50 @@ export async function updateSession(request: NextRequest) {
         firstSegment.startsWith('_')
 
       if (!isKnownRootSegment && pathParts.length > 0 && isValidSlugFormat(firstSegment)) {
-        const potentialSlug = firstSegment.toLowerCase().trim()
+        const potentialSlug = firstSegment
         const subPath = pathParts.slice(1).join('/')
 
-        // On localhost or PSL domains (e.g. *.vercel.app, *.pages.dev):
-        // Wildcard cookies cannot cross subdomains on PSL domains, so pass through directly to Next.js path-based routing app/[tenantSlug]/...
+        // On localhost or PSL domains, routes are served via app/[tenantSlug]/...
         if (isPslOrLocal) {
+          // If accessing protected path under tenant slug, verify authenticated membership
+          const isSubPathAuth =
+            subPath === 'login' ||
+            subPath === 'register' ||
+            subPath === 'verify' ||
+            subPath === 'forgot-password' ||
+            subPath === 'reset-password'
+
+          if (user && !isSubPathAuth) {
+            let isMember = false
+            if (
+              hasValidTenantCookie &&
+              tenantSessionData &&
+              (tenantSessionData.userId === user.id || tenantSessionData.sub === user.id) &&
+              tenantSessionData.companySlug?.toLowerCase() === potentialSlug
+            ) {
+              isMember = true
+            } else if (supabase) {
+              try {
+                const { data: member } = await supabase
+                  .from('company_users')
+                  .select('id, company_id, companies!inner(slug, is_active)')
+                  .eq('user_id', user.id)
+                  .eq('companies.slug', potentialSlug)
+                  .eq('is_active', true)
+                  .maybeSingle()
+                if (member) isMember = true
+              } catch {}
+            }
+
+            if (!isMember) {
+              const res = applyNoCacheHeaders(
+                NextResponse.redirect(new URL(`/403?type=tenant&tenant=${encodeURIComponent(potentialSlug)}`, request.url))
+              )
+              res.cookies.delete(TENANT_SESSION_COOKIE)
+              return res
+            }
+          }
+
           const requestHeaders = new Headers(request.headers)
           requestHeaders.set('x-tenant-slug', potentialSlug)
           requestHeaders.set('x-tenant-hostname', rawHost)
@@ -459,12 +620,55 @@ export async function updateSession(request: NextRequest) {
       return res
     }
 
-    // Default pass-through
-    const res = NextResponse.next({ request })
+    // Default pass-through with forwarded request path
+    const requestHeaders = new Headers(request.headers)
+    requestHeaders.set('x-current-path', pathname)
+    const res = NextResponse.next({ request: { headers: requestHeaders } })
     responseCookies.forEach(({ name, value, options }) => res.cookies.set(name, value, options))
     return res
   } catch (error) {
-    console.error('[Middleware] Unhandled error in tenant routing session update:', error)
-    return NextResponse.next({ request })
+    const requestId = crypto.randomUUID()
+    console.error(`[Middleware][${requestId}] Unhandled error in tenant routing session update:`, error)
+
+    if (request.nextUrl.pathname.startsWith('/api/')) {
+      return NextResponse.json(
+        { error: 'Service Unavailable', message: 'Internal security gateway error', requestId },
+        { status: 503, headers: { 'Retry-After': '5', 'X-Request-Id': requestId } }
+      )
+    }
+
+    const isPublic =
+      request.nextUrl.pathname === '/' ||
+      request.nextUrl.pathname.startsWith('/login') ||
+      request.nextUrl.pathname.startsWith('/register') ||
+      request.nextUrl.pathname.startsWith('/verify') ||
+      request.nextUrl.pathname.startsWith('/forgot-password') ||
+      request.nextUrl.pathname.startsWith('/reset-password') ||
+      request.nextUrl.pathname.startsWith('/onboarding') ||
+      request.nextUrl.pathname.startsWith('/features') ||
+      request.nextUrl.pathname.startsWith('/solutions') ||
+      request.nextUrl.pathname.startsWith('/pricing') ||
+      request.nextUrl.pathname.startsWith('/about') ||
+      request.nextUrl.pathname.startsWith('/contact') ||
+      request.nextUrl.pathname.startsWith('/faq') ||
+      request.nextUrl.pathname.startsWith('/terms') ||
+      request.nextUrl.pathname.startsWith('/privacy') ||
+      request.nextUrl.pathname.startsWith('/403') ||
+      request.nextUrl.pathname.startsWith('/404') ||
+      request.nextUrl.pathname.startsWith('/tenant-not-found') ||
+      request.nextUrl.pathname.startsWith('/tenant-suspended')
+
+    if (isPublic) {
+      const res = NextResponse.next({ request })
+      res.headers.set('X-Request-Id', requestId)
+      return res
+    }
+
+    const loginUrl = new URL('/login', request.url)
+    loginUrl.searchParams.set('error', 'gateway_error')
+    loginUrl.searchParams.set('requestId', requestId)
+    const res = NextResponse.redirect(loginUrl)
+    res.headers.set('X-Request-Id', requestId)
+    return res
   }
 }

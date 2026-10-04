@@ -152,7 +152,7 @@ export function PaySupplierVoucherModal({
  onOpenChange={onOpenChange}
  size="2xl"title={
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-teal-600/10 text-teal-600 dark:bg-teal-500/20 dark:text-teal-400 font-bold shrink-0">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-success/10 text-success bg-success/20 text-success font-bold shrink-0">
             <Receipt className="h-5 w-5"/>
           </div>
           <div>
@@ -160,7 +160,7 @@ export function PaySupplierVoucherModal({
               <span className="text-base font-black text-foreground">
                 {tBilingual('Issue Payment Voucher to Supplier', 'মহাজনকে বিল পরিশোধ / পেমেন্ট ভাউচার')}
               </span>
-              <Badge variant="outline"className="text-2xs tabular-nums py-0.5 px-2 bg-teal-50 dark:bg-teal-950/50 text-teal-700 dark:text-teal-300 border-teal-200 dark:border-teal-800">
+              <Badge variant="outline"className="text-xs tabular-nums py-0.5 px-2 bg-success-surface bg-success-surface text-success text-success border-success-border border-success-border">
                 {voucherNumber || 'PV-NEW'}
               </Badge>
             </div>
@@ -178,27 +178,27 @@ export function PaySupplierVoucherModal({
         {/* VENDOR BALANCE SUMMARY BANNER */}
         <div className="p-4 rounded-xl bg-card border border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
           <div>
-            <span className="text-2xs uppercase font-bold text-muted-foreground tracking-wider">
+            <span className="text-xs uppercase font-bold text-muted-foreground tracking-wider">
               {tBilingual('Current Payable Balance', 'বর্তমান বকেয়া পাওনা')}
             </span>
             <div className="text-2xl font-bold text-foreground font-sans tabular-nums mt-0.5">
               {formatBDT(currentBalance)}
             </div>
-            <div className="text-2xs text-muted-foreground mt-0.5">
+            <div className="text-xs text-muted-foreground mt-0.5">
  Terms: <strong className="text-foreground">{supplier.payment_terms.replace('_', ' ').toUpperCase()}</strong>
               {supplier.market_hub && ` • 📍 ${supplier.market_hub}`}
             </div>
           </div>
 
           <div className="text-left sm:text-right border-t sm:border-t-0 sm:border-l border-border pt-2 sm:pt-0 sm:pl-4">
-            <span className="text-2xs uppercase font-bold text-muted-foreground">
+            <span className="text-xs uppercase font-bold text-muted-foreground">
               {tBilingual('Balance After Payment', 'পেমেন্ট পরবর্তী অবশিষ্ট')}
             </span>
             <div className="text-xl font-bold tabular-nums text-foreground mt-0.5">
               {formatBDT(remainingBalance)}
             </div>
             {numAmount > 0 && numAmount >= currentBalance && (
-              <Badge className="bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 text-2xs mt-1 border-0">
+              <Badge className="bg-success-surface text-success bg-success-surface/60 text-success text-xs mt-1 border-0">
                 {tBilingual('Full Due Settled', 'সম্পূর্ণ পরিশোধিত')}
               </Badge>
             )}
@@ -209,7 +209,7 @@ export function PaySupplierVoucherModal({
         <div className="rounded-xl border border-border bg-card p-4 space-y-3 shadow-xs">
           <div className="flex items-center justify-between">
             <Label className="text-xs font-bold text-foreground uppercase tracking-wider block">
-              {tBilingual('Payment Amount', 'প্রদেয় টাকার পরিমাণ')} <span className="text-rose-500">*</span>
+              {tBilingual('Payment Amount', 'প্রদেয় টাকার পরিমাণ')} <span className="text-destructive">*</span>
             </Label>
             <div className="flex items-center gap-1.5">
               {[
@@ -221,7 +221,7 @@ export function PaySupplierVoucherModal({
                 <button
  key={p.pct}
  type="button"onClick={() => handleSetPresetPercentage(p.pct)}
- className="text-2xs font-bold bg-muted hover:bg-teal-100 dark:hover:bg-teal-950 text-foreground px-2 py-0.5 rounded border border-border transition-colors cursor-pointer">
+ className="text-xs font-bold bg-muted hover:bg-success-surface dark:hover:bg-success-surface text-foreground px-2 py-0.5 rounded border border-border transition-colors cursor-pointer">
                   {p.label}
                 </button>
               ))}
@@ -237,12 +237,12 @@ export function PaySupplierVoucherModal({
  if (fieldErrors.amount) setFieldErrors((prev) => ({ ...prev, amount: '' }))
               }}
  className={cn("text-base h-11 pl-9 tabular-nums font-black text-foreground",
- fieldErrors.amount &&"border-rose-500 focus-visible:ring-rose-400 bg-rose-50/30 dark:bg-rose-950/20")}
+ fieldErrors.amount &&"border-danger-border focus-visible:focus:ring-ring bg-danger-surface/30 bg-danger-surface")}
  required
             />
           </div>
           {fieldErrors.amount && (
-            <p className="text-2xs text-rose-600 dark:text-rose-400 font-medium mt-1 flex items-center gap-1">
+            <p className="text-xs text-destructive text-destructive font-medium mt-1 flex items-center gap-1">
               <AlertCircle className="w-3.5 h-3.5 shrink-0"/>
               <span>{fieldErrors.amount}</span>
             </p>
@@ -270,13 +270,13 @@ export function PaySupplierVoucherModal({
  type="button"onClick={() => setMethod(m.id as PaymentMethodType)}
  className={`p-3 rounded-xl border text-center flex flex-col items-center gap-1.5 transition-all cursor-pointer ${
  isSelected
-                      ? 'border-teal-600 bg-teal-50/70 dark:bg-teal-950/50 ring-1 ring-teal-500 text-teal-800 dark:text-teal-200 shadow-xs'
+                      ? 'border-success-border bg-success-surface/70 bg-success-surface ring-1 focus:ring-ring text-success text-success shadow-xs'
                       : 'border-border bg-card hover:border-input text-muted-foreground '
                   }`}
                 >
                   <Icon className="h-4 w-4"/>
                   <div className="text-xs font-bold">{m.labelEn}</div>
-                  <div className="text-2xs text-muted-foreground">{m.labelBn}</div>
+                  <div className="text-xs text-muted-foreground">{m.labelBn}</div>
                 </button>
               )
             })}
@@ -303,7 +303,7 @@ export function PaySupplierVoucherModal({
 
               <div>
                 <Label className="text-xs font-semibold mb-1 block">
-                  {tBilingual('Cheque Number', 'চেক নম্বর')} <span className="text-rose-500">*</span>
+                  {tBilingual('Cheque Number', 'চেক নম্বর')} <span className="text-destructive">*</span>
                 </Label>
                 <Input
  placeholder="e.g. 9821043"value={chequeNumber}
@@ -312,11 +312,11 @@ export function PaySupplierVoucherModal({
  if (fieldErrors.chequeNumber) setFieldErrors((prev) => ({ ...prev, chequeNumber: '' }))
                   }}
  className={cn("text-xs h-9 tabular-nums",
- fieldErrors.chequeNumber &&"border-rose-500 focus-visible:ring-rose-400 bg-rose-50/30 dark:bg-rose-950/20")}
+ fieldErrors.chequeNumber &&"border-danger-border focus-visible:focus:ring-ring bg-danger-surface/30 bg-danger-surface")}
  required
                 />
                 {fieldErrors.chequeNumber && (
-                  <p className="text-2xs text-rose-600 dark:text-rose-400 font-medium mt-1 flex items-center gap-1">
+                  <p className="text-xs text-destructive text-destructive font-medium mt-1 flex items-center gap-1">
                     <AlertCircle className="w-3.5 h-3.5 shrink-0"/>
                     <span>{fieldErrors.chequeNumber}</span>
                   </p>
@@ -390,7 +390,7 @@ export function PaySupplierVoucherModal({
           )}
 
           {method === 'cash' && (
-            <div className="p-2.5 rounded-lg bg-amber-50/70 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-xs text-amber-800 dark:text-amber-300">
+            <div className="p-2.5 rounded-lg bg-warning-surface/70 bg-warning-surface border border-warning-border border-warning-border text-xs text-warning text-warning">
               💵 This transaction will automatically create a <strong>Cash-Out Entry</strong> in the Petty Cash & Cash Book ledger.
             </div>
           )}
@@ -431,7 +431,7 @@ export function PaySupplierVoucherModal({
 
           <Button
  type="submit"disabled={loading}
- className="w-full sm:w-auto min-h-[40px] text-xs bg-teal-600 hover:bg-teal-700 text-white font-bold shadow-sm px-6">
+ className="w-full sm:w-auto min-h-[40px] text-xs bg-success hover:bg-success text-white font-bold shadow-sm px-6">
             {loading
               ? tBilingual('Processing...', 'প্রক্রিয়াধীন...')
               : tBilingual('Pay Supplier', 'পেমেন্ট ভাউচার নিশ্চিত করুন')}

@@ -10,10 +10,10 @@ export default function NewWorkPage() {
  return (
     <PanelAccessGuard
  module="orders"action="create"panelTitle="New Work POS"panelTitleBn="নতুন কাজ">
-      <div className="space-y-6 max-w-4xl mx-auto pb-16">
+      <div className="space-y-6 mx-auto pb-16">
         <PageHeader
  titleEn="New Work"titleBn="নতুন কাজ"descriptionEn="Frictionless order intake: select customer, dimensions, material, and send straight to the floor."descriptionBn="সহজ ও দ্রুত কাজের এন্ট্রি: কাস্টমার, সাইজ, মিডিয়া নির্বাচন করুন এবং সরাসরি প্রোডাকশনে পাঠান।"icon={Plus}
- iconColor="text-blue-600"/>
+ iconColor="text-primary"/>
 
         <div className="bg-card border border-border rounded-xl p-4 sm:p-6 shadow-xs">
           <NewWorkWizard isInlineModal={false} />

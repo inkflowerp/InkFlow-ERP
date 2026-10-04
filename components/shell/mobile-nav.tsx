@@ -346,10 +346,10 @@ export function MobileNav() {
  alt={appName}
  className="h-8 w-8 rounded-lg object-contain bg-surface-inset border border-border/60 p-0.5 shadow-xs shrink-0"/>
               ) : (
-                <div className="grid grid-cols-2 gap-0.5 p-1 rounded-lg bg-surface-inset shadow-xs ring-1 ring-slate-800 group-hover:scale-105 transition-transform shrink-0">
-                  <span className="h-2 w-2 rounded-full bg-cyan-400"/>
+                <div className="grid grid-cols-2 gap-0.5 p-1 rounded-lg bg-surface-inset shadow-xs ring-1 focus:ring-ring group-hover:scale-105 transition-transform shrink-0">
+                  <span className="h-2 w-2 rounded-full bg-primary"/>
                   <span className="h-2 w-2 rounded-full bg-pink-500"/>
-                  <span className="h-2 w-2 rounded-full bg-yellow-400"/>
+                  <span className="h-2 w-2 rounded-full bg-warning"/>
                   <span className="h-2 w-2 rounded-full bg-muted"/>
                 </div>
               )}
@@ -357,7 +357,7 @@ export function MobileNav() {
                 <span className="font-black text-base text-foreground leading-tight">
                   {appName}
                 </span>
-                <span className="text-2xs font-bold text-muted-foreground uppercase tracking-wider leading-none">
+                <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider leading-none">
                   {tagline || 'Print ERP'}
                 </span>
               </div>
@@ -380,7 +380,7 @@ export function MobileNav() {
                   <Avatar
  fallback={userName}
  src={currentUser?.profile?.avatar_url || undefined}
- className="h-8 w-8 text-xs font-bold shrink-0 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 ring-1 ring-blue-500/20"/>
+ className="h-8 w-8 text-xs font-bold shrink-0 bg-primary/10 text-primary bg-primary text-primary ring-1 focus:ring-ring/20"/>
                   <div className="truncate">
                     <span className="block font-bold text-xs sm:text-sm text-foreground truncate leading-tight bangla-text">
                       {userName}
@@ -392,8 +392,8 @@ export function MobileNav() {
                 </div>
 
                 <Badge
- variant="outline"className="text-xs uppercase font-semibold py-0.5 px-2 border-blue-200 bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 shrink-0">
-                  <Shield className="h-3 w-3 mr-1 text-blue-600"/>
+ variant="outline"className="text-xs uppercase font-semibold py-0.5 px-2 border-primary/20 bg-primary/10 text-primary bg-primary/10 text-primary shrink-0">
+                  <Shield className="h-3 w-3 mr-1 text-primary"/>
                   {currentRole || 'Staff'}
                 </Badge>
               </div>
@@ -401,19 +401,19 @@ export function MobileNav() {
               {/* Status / Plan Badge */}
               <div className="flex items-center justify-between pt-1 border-t border-border /60 text-xs">
                 <div className="flex items-center gap-1.5 text-muted-foreground">
-                  <Building className="h-3.5 w-3.5 text-blue-600"/>
+                  <Building className="h-3.5 w-3.5 text-primary"/>
                   <span className="font-medium text-xs truncate max-w-[140px]">
                     {currentBranch ? currentBranch.name.split('(')[0].trim() : currentPlan?.name || 'Main Branch'}
                   </span>
                 </div>
                 {isTrial ? (
-                  <Badge suppressHydrationWarning className="bg-amber-500/20 text-amber-800 dark:text-amber-300 text-xs font-bold border-amber-300 shrink-0 px-1.5 py-0.5">
+                  <Badge suppressHydrationWarning className="bg-warning/20 text-warning text-warning text-xs font-bold border-warning-border shrink-0 px-1.5 py-0.5">
                     {timeRemainingInTrial ? (tBilingual(timeRemainingInTrial.statusBadgeEn, timeRemainingInTrial.statusBadgeBn || timeRemainingInTrial.statusBadgeEn)) : `${daysRemainingInTrial} ${tBilingual('d trial', 'দিন ট্রায়াল')}`}
                   </Badge>
                 ) : (
  currentPlan && (
-                    <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"/>
+                    <span className="text-xs font-semibold text-success text-success flex items-center gap-1">
+                      <span className="h-1.5 w-1.5 rounded-full bg-success"/>
                       {tBilingual(currentPlan.name, currentPlan.name_bn)}
                     </span>
                   )
@@ -512,9 +512,9 @@ export function MobileNav() {
                                         ? 'bg-primary text-primary-foreground font-bold shadow-xs'
                                         : 'bg-primary text-primary-foreground font-semibold hover:bg-primary/90'
                                       : isActive && !hasChildren
-                                      ? 'bg-blue-50 text-blue-600 font-semibold dark:bg-blue-950/50 dark:text-blue-400'
+                                      ? 'bg-primary/10 text-primary font-semibold bg-primary/10 text-primary'
                                       : isChildActive
-                                      ? 'bg-blue-50/70 text-blue-600 font-semibold dark:bg-blue-950/40 dark:text-blue-400'
+                                      ? 'bg-primary/10/70 text-primary font-semibold bg-primary/10 text-primary'
                                       : 'text-muted-foreground hover:bg-muted hover:text-foreground dark:hover:bg-muted'
                                   )}
                                 >
@@ -524,17 +524,17 @@ export function MobileNav() {
  isPrimary
                                         ? 'text-white'
                                         : isActive && !hasChildren
-                                        ? 'text-blue-600 dark:text-blue-400'
+                                        ? 'text-primary text-primary'
                                         : isChildActive
-                                        ? 'text-blue-600 dark:text-blue-400'
-                                        : 'text-muted-foreground group-hover:text-blue-600 dark:group-hover:text-blue-400'
+                                        ? 'text-primary text-primary'
+                                        : 'text-muted-foreground group-hover:text-primary dark:group-hover:text-primary'
                                     )}
                                   />
                                   <span className="flex-1 truncate">{itemTitle}</span>
                                   {item.badge && (
                                     <Badge
  variant={isActive || isPrimary ? 'secondary' : 'default'}
- className="text-2xs px-2 py-0.5 h-4.5 font-bold shrink-0 ml-1.5">
+ className="text-xs px-2 py-0.5 h-4.5 font-bold shrink-0 ml-1.5">
                                       {item.badge}
                                     </Badge>
                                   )}
@@ -575,14 +575,14 @@ export function MobileNav() {
  className={cn(
                                           'flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-medium transition-colors min-h-[36px] bangla-text',
  isSubActive
-                                            ? 'bg-blue-50 text-blue-600 font-semibold dark:bg-blue-950/50 dark:text-blue-400'
+                                            ? 'bg-primary/10 text-primary font-semibold bg-primary/10 text-primary'
                                             : 'text-muted-foreground hover:bg-muted hover:text-foreground dark:hover:bg-muted'
                                         )}
                                       >
-                                        <ChildIcon className={cn('h-3.5 w-3.5 shrink-0', isSubActive ? 'text-blue-600 dark:text-blue-400' : 'text-muted-foreground')} />
+                                        <ChildIcon className={cn('h-3.5 w-3.5 shrink-0', isSubActive ? 'text-primary text-primary' : 'text-muted-foreground')} />
                                         <span className="flex-1 truncate">{childTitle}</span>
                                         {child.badge && (
-                                          <Badge className="text-3xs px-1.5 py-0 h-4">
+                                          <Badge className="text-xs px-1.5 py-0 h-4">
                                             {child.badge}
                                           </Badge>
                                         )}
@@ -611,10 +611,10 @@ export function MobileNav() {
               <div className="rounded-lg bg-muted/40 p-3.5 border border-border space-y-2 shadow-xs">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-foreground flex items-center gap-1.5 bangla-text">
-                    <Crown className="h-4 w-4 text-amber-500"/>
+                    <Crown className="h-4 w-4 text-warning"/>
                     <span>{tBilingual('Free Trial Active', 'ফ্রি ট্রায়াল চলছে')}</span>
                   </span>
-                  <Badge suppressHydrationWarning className="text-xs bg-amber-50 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 font-bold border-amber-200 dark:border-amber-800 px-2 py-0.5">
+                  <Badge suppressHydrationWarning className="text-xs bg-warning-surface text-warning bg-warning-surface text-warning font-bold border-warning-border border-warning-border px-2 py-0.5">
                     {timeRemainingInTrial ? timeRemainingInTrial.statusBadgeEn : `${daysRemainingInTrial}d left`}
                   </Badge>
                 </div>
@@ -627,7 +627,7 @@ export function MobileNav() {
  openUpgradeModal('business')
                   }}
  className="w-full py-2 px-3 rounded-lg bg-primary text-primary-foreground text-xs font-semibold text-center shadow-xs hover:bg-primary/90 transition-colors cursor-pointer bangla-text min-h-[40px] flex items-center justify-center gap-1.5">
-                  <Crown className="h-3.5 w-3.5 text-amber-300"/>
+                  <Crown className="h-3.5 w-3.5 text-warning"/>
                   <span>{tBilingual('Upgrade Plan', 'প্ল্যান আপগ্রেড করুন')}</span>
                 </button>
               </div>
@@ -641,7 +641,7 @@ export function MobileNav() {
             <Link
  href={getTenantNavHref('/support', pathname, company?.slug)}
  onClick={() => setOpen(false)}
- className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400 font-semibold hover:underline">
+ className="flex items-center gap-1.5 text-primary text-primary font-semibold hover:underline">
               <Headphones className="h-3.5 w-3.5"/>
               <span>{company?.phone || '24/7 Live Desk'}</span>
             </Link>
@@ -654,7 +654,7 @@ export function MobileNav() {
  setOpen(false)
  setResetModalOpen(true)
               }}
- className="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl border border-rose-200/80 dark:border-rose-900/60 bg-rose-50/80 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 text-xs font-semibold hover:bg-rose-100 dark:hover:bg-rose-950/60 active:scale-98 transition-all cursor-pointer min-h-[42px] bangla-text shadow-xs">
+ className="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl border border-danger-border/80 border-danger-border/60 bg-danger-surface/80 bg-danger-surface text-destructive text-destructive text-xs font-semibold hover:bg-danger-surface dark:hover:bg-danger-surface/60 active:scale-98 transition-all cursor-pointer min-h-[42px] bangla-text shadow-xs">
               <RotateCcw className="h-3.5 w-3.5 shrink-0"/>
               <span className="truncate">{tBilingual('Reset Data', 'ডাটা রিসেট')}</span>
             </button>
@@ -664,7 +664,7 @@ export function MobileNav() {
  setOpen(false)
  signOut()
               }}
- className="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl border border-red-200/80 dark:border-red-900/60 bg-red-50/80 dark:bg-red-950/40 text-red-600 dark:text-red-400 text-xs font-semibold hover:bg-red-100 dark:hover:bg-red-950/60 active:scale-98 transition-all cursor-pointer min-h-[42px] bangla-text shadow-xs">
+ className="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl border border-danger-border/80 border-danger-border/60 bg-danger-surface/80 bg-danger-surface text-destructive text-destructive text-xs font-semibold hover:bg-danger-surface dark:hover:bg-danger-surface/60 active:scale-98 transition-all cursor-pointer min-h-[42px] bangla-text shadow-xs">
               <LogOut className="h-3.5 w-3.5 shrink-0"/>
               <span className="truncate">{tBilingual('Sign Out', 'লগ আউট')}</span>
             </button>

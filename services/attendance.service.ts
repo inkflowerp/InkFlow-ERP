@@ -16,6 +16,7 @@ import {
   AttendanceAuditLogRecord,
 } from '@/types/attendance.types'
 import { CommunicationService } from '@/services/communication-server.service'
+import { NotificationService } from '@/services/notification.service'
 import {
   calculateHaversineDistance,
   generateSecureQrToken,
@@ -546,15 +547,19 @@ export class AttendanceService {
     try {
       const punchTime = formatAttendanceTime(nowIso, 'Asia/Dhaka')
 
-      await CommunicationService.createInAppNotification(companyId, {
-        user_id: userId || '',
-        type: 'attendance_event' as any,
-        title: `${attendanceType === 'CHECK_IN' ? 'Check-In' : 'Check-Out'} Verified`,
-        title_bn: `${attendanceType === 'CHECK_IN' ? 'হাজিরা প্রবেশ' : 'প্রস্থান'} নিশ্চিত`,
-        message: `${employeeName || 'Employee'} punched ${attendanceType === 'CHECK_IN' ? 'IN' : 'OUT'} at ${location.name} (${punchTime}, ${Math.round(distanceMeters)}m)`,
-        message_bn: `${employeeName || 'কর্মী'} ${location.name}-এ ${punchTime}-এ সফলভাবে হাজিরা দিয়েছেন।`,
-        action_url: `/hr`,
-        is_read: false,
+      await NotificationService.notify({
+        companyId,
+        role: 'business_owner',
+        type: 'attendance_exception',
+        entity: { id: record.id, type: 'attendance_record' },
+        payload: {
+          title: `${attendanceType === 'CHECK_IN' ? 'Check-In' : 'Check-Out'} Verified`,
+          title_bn: `${attendanceType === 'CHECK_IN' ? 'হাজিরা প্রবেশ' : 'প্রস্থান'} নিশ্চিত`,
+          message: `${employeeName || 'Employee'} punched ${attendanceType === 'CHECK_IN' ? 'IN' : 'OUT'} at ${location.name} (${punchTime}, ${Math.round(distanceMeters)}m)`,
+          message_bn: `${employeeName || 'কর্মী'} ${location.name}-এ ${punchTime}-এ সফলভাবে হাজিরা দিয়েছেন।`,
+          action_url: `/hr`,
+        },
+        channels: ['in_app'],
       })
     } catch (notifErr) {
       // Non-blocking notification failure
@@ -604,6 +609,24 @@ export class AttendanceService {
         reason: params.reason,
       },
     })
+
+    try {
+      await NotificationService.notify({
+        companyId: params.companyId,
+        role: 'business_owner',
+        type: 'attendance_exception',
+        entity: { id: correction.id, type: 'attendance_correction' },
+        payload: {
+          title: `Attendance Correction Requested`,
+          title_bn: `হাজিরা সংশোধনের আবেদন`,
+          message: `Employee requested correction for ${params.attendanceDate}: ${params.reason}`,
+          message_bn: `${params.attendanceDate}-এর জন্য হাজিরা সংশোধনের আবেদন: ${params.reason}`,
+          reason: params.reason,
+          action_url: `/hr/attendance`,
+        },
+        channels: ['in_app', 'email'],
+      })
+    } catch {}
 
     return correction
   }

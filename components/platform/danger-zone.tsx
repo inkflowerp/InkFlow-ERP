@@ -115,7 +115,7 @@ export function DangerZone({
                 <div className="text-xs font-semibold text-foreground">
                   {act.title}
                 </div>
-                <div className="text-2xs text-muted-foreground leading-normal">
+                <div className="text-xs text-muted-foreground leading-normal">
                   {act.description}
                 </div>
               </div>

@@ -8,8 +8,8 @@ import { Palette } from 'lucide-react'
 function DesignPanelLoading() {
  return (
     <div className="flex flex-col items-center justify-center min-h-[400px] space-y-3">
-      <div className="h-10 w-10 rounded-xl bg-pink-600 text-white flex items-center justify-center animate-pulse">
-        <Palette className="h-5 w-5 animate-spin"/>
+      <div className="h-10 w-10 rounded-xl bg-primary text-primary-foreground flex items-center justify-center animate-pulse">
+        <Palette className="h-5 w-5 animate-spin" />
       </div>
       <p className="text-sm font-semibold text-muted-foreground">Loading Design Panel...</p>
     </div>

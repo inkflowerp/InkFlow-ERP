@@ -1,6 +1,7 @@
 'use client'
 
-import React, { useMemo } from 'react'
+import React, { useMemo, useState } from 'react'
+import { Button } from '@/components/ui/button'
 import {
  ResponsiveContainer,
  BarChart,
@@ -74,9 +75,11 @@ export function DashboardCharts() {
  const [payments] = useDataStore<PaymentRecord[]>(STORAGE_KEYS.PAYMENTS, [])
  const [productionJobs] = useDataStore<ProductionJobRecord[]>(STORAGE_KEYS.PRODUCTION_JOBS, [])
 
-  // 1. Compute dynamic 7-day sales and collections trend using Bangladesh Date Range
+  const [trendDays, setTrendDays] = useState<7 | 30>(7)
+
+  // 1. Compute dynamic sales and collections trend using Bangladesh Date Range
  const salesTrendData = useMemo(() => {
- const range = getBangladeshDateRange(7)
+ const range = getBangladeshDateRange(trendDays)
 
  return range.map((item) => {
       // Aggregate invoices for this day
@@ -97,10 +100,11 @@ export function DashboardCharts() {
         .reduce((sum, p) => sum + (Number(p.amount) || 0), 0)
 
  return {
- day: item.dayOfWeek,
- dateStr: item.dateStr,
- sales: daySales,
- collections: dayCollections,
+        day: item.dayOfWeek,
+        dateStr: item.dateStr,
+        shortDate: item.labelEn,
+        sales: daySales,
+        collections: dayCollections,
       }
     })
   }, [invoices, payments])
@@ -231,11 +235,16 @@ export function DashboardCharts() {
                     {tBilingual('Daily Sales & Collections', 'দৈনিক বিক্রি ও জমা')}
                   </CardTitle>
                   <CardDescription className="text-xs bangla-text">
-                    {tBilingual('Past 7 days sales and collection comparison', 'গত ৭ দিনের বিক্রি ও জমার তুলনা')}
+                    {trendDays === 7 ? tBilingual('Past 7 days sales and collection comparison', 'গত ৭ দিনের বিক্রি ও জমার তুলনা') : tBilingual('Past 30 days sales and collection comparison', 'গত ৩০ দিনের বিক্রি ও জমার তুলনা')}
                   </CardDescription>
                 </div>
-                {hasSalesTrendData && (
-                  <div className="flex items-center gap-3 text-xs font-medium">
+                <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-1 bg-muted p-0.5 rounded-lg border border-border">
+                      <Button type="button" size="sm" variant={trendDays === 7 ? 'default' : 'ghost'} onClick={() => setTrendDays(7)} className="h-7 px-2 text-xs font-semibold">7D</Button>
+                      <Button type="button" size="sm" variant={trendDays === 30 ? 'default' : 'ghost'} onClick={() => setTrendDays(30)} className="h-7 px-2 text-xs font-semibold">30D</Button>
+                    </div>
+                    {hasSalesTrendData && (
+                      <div className="flex items-center gap-3 text-xs font-medium">
                     <span className="flex items-center gap-1 bangla-text">
                       <span className="h-2.5 w-2.5 rounded-full bg-blue-600"/> {tBilingual('Sales', 'বিক্রি')}
                     </span>
@@ -243,9 +252,10 @@ export function DashboardCharts() {
                       <span className="h-2.5 w-2.5 rounded-full bg-emerald-500"/> {tBilingual('Collections', 'জমা')}
                     </span>
                   </div>
-                )}
-              </div>
-            </CardHeader>
+                    )}
+                  </div>
+                </div>
+              </CardHeader>
             <CardContent className="p-0">
               {!hasSalesTrendData ? (
                 <EmptyChartState />
@@ -264,7 +274,7 @@ export function DashboardCharts() {
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="3 3"vertical={false} opacity={0.2} />
-                      <XAxis dataKey="day"tickLine={false} axisLine={false} fontSize={12} />
+                      <XAxis dataKey={trendDays === 7 ? "day" : "shortDate"}tickLine={false} axisLine={false} fontSize={12} />
                       <YAxis tickLine={false} axisLine={false} fontSize={11} tickFormatter={(val) => `৳${val / 1000}k`} />
                       <Tooltip formatter={(value: any) => [formatBDT(Number(value)), '']} />
                       <Area type="monotone"dataKey="sales"stroke="#2563eb"strokeWidth={2.5} fillOpacity={1} fill="url(#salesGrad)"name="Sales"/>

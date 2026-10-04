@@ -185,34 +185,34 @@ export function TransactionsLedgerView({
         <div className="p-4 rounded-xl bg-card border border-border shadow-xs">
           <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
             <span className="font-semibold">{tBilingual('Total Money In (Income)', 'মোট জমা (ইনকাম)')}</span>
-            <ArrowDownLeft className="w-4 h-4 text-emerald-500"/>
+            <ArrowDownLeft className="w-4 h-4 text-success"/>
           </div>
-          <div className="text-xl sm:text-2xl font-black tabular-nums text-emerald-600 dark:text-emerald-400">
+          <div className="text-xl sm:text-2xl font-black tabular-nums text-success text-success">
             +৳{totals.income.toLocaleString()}
           </div>
-          <span className="text-3xs text-muted-foreground block mt-1">{tBilingual('Collections & receipts', 'আদায় ও জমা')}</span>
+          <span className="text-xs text-muted-foreground block mt-1">{tBilingual('Collections & receipts', 'আদায় ও জমা')}</span>
         </div>
 
         <div className="p-4 rounded-xl bg-card border border-border shadow-xs">
           <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
             <span className="font-semibold">{tBilingual('Total Money Out (Expense)', 'মোট খরচ (ব্যয়)')}</span>
-            <ArrowUpRight className="w-4 h-4 text-rose-500"/>
+            <ArrowUpRight className="w-4 h-4 text-destructive"/>
           </div>
-          <div className="text-xl sm:text-2xl font-black tabular-nums text-rose-600 dark:text-rose-400">
+          <div className="text-xl sm:text-2xl font-black tabular-nums text-destructive text-destructive">
             -৳{totals.expense.toLocaleString()}
           </div>
-          <span className="text-3xs text-muted-foreground block mt-1">{tBilingual('Overheads & payouts', 'পরিচালন ও মহাজন বিল')}</span>
+          <span className="text-xs text-muted-foreground block mt-1">{tBilingual('Overheads & payouts', 'পরিচালন ও মহাজন বিল')}</span>
         </div>
 
         <div className="p-4 rounded-xl bg-card border border-border shadow-xs">
           <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
             <span className="font-semibold">{tBilingual('Total Transfers', 'অ্যাকাউন্ট ট্রান্সফার')}</span>
-            <ArrowLeftRight className="w-4 h-4 text-blue-500"/>
+            <ArrowLeftRight className="w-4 h-4 text-primary"/>
           </div>
-          <div className="text-xl sm:text-2xl font-black tabular-nums text-blue-600 dark:text-blue-400">
+          <div className="text-xl sm:text-2xl font-black tabular-nums text-primary text-primary">
             ৳{totals.transfer.toLocaleString()}
           </div>
-          <span className="text-3xs text-muted-foreground block mt-1">{tBilingual('Internal movements', 'অভ্যন্তরীণ স্থানান্তর')}</span>
+          <span className="text-xs text-muted-foreground block mt-1">{tBilingual('Internal movements', 'অভ্যন্তরীণ স্থানান্তর')}</span>
         </div>
 
         <div className="p-4 rounded-xl bg-card border border-border shadow-xs">
@@ -220,10 +220,10 @@ export function TransactionsLedgerView({
             <span className="font-semibold">{tBilingual('Net Cash Movement', 'নিট নগদ প্রবাহ')}</span>
             <Receipt className="w-4 h-4 text-muted-foreground"/>
           </div>
-          <div className={`text-xl sm:text-2xl font-black tabular-nums ${totals.net >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
+          <div className={`text-xl sm:text-2xl font-black tabular-nums ${totals.net >= 0 ? 'text-success text-success' : 'text-destructive text-destructive'}`}>
             {totals.net >= 0 ? '+' : ''}৳{totals.net.toLocaleString()}
           </div>
-          <span className="text-3xs text-muted-foreground block mt-1">{totals.net >= 0 ? tBilingual('Net surplus', 'নগদ উদ্বৃত্ত') : tBilingual('Net deficit', 'ঘাটতি')}</span>
+          <span className="text-xs text-muted-foreground block mt-1">{totals.net >= 0 ? tBilingual('Net surplus', 'নগদ উদ্বৃত্ত') : tBilingual('Net deficit', 'ঘাটতি')}</span>
         </div>
       </div>
 
@@ -235,7 +235,7 @@ export function TransactionsLedgerView({
  type="button"onClick={() => setFilterType('ALL')}
  className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
  filterType === 'ALL'
-                ? 'bg-card text-blue-600 dark:text-blue-400 shadow-xs'
+                ? 'bg-card text-primary text-primary shadow-xs'
                 : 'text-muted-foreground hover:text-foreground'
             }`}
           >
@@ -246,11 +246,11 @@ export function TransactionsLedgerView({
  type="button"onClick={() => setFilterType('INCOME')}
  className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
  filterType === 'INCOME'
-                ? 'bg-card text-emerald-600 dark:text-emerald-400 shadow-xs'
+                ? 'bg-card text-success text-success shadow-xs'
                 : 'text-muted-foreground hover:text-foreground'
             }`}
           >
-            <ArrowDownLeft className="w-3.5 h-3.5 text-emerald-500"/>
+            <ArrowDownLeft className="w-3.5 h-3.5 text-success"/>
             <span>{tBilingual('Money In (Income)', 'Money In (জমা)')}</span>
           </button>
 
@@ -258,11 +258,11 @@ export function TransactionsLedgerView({
  type="button"onClick={() => setFilterType('EXPENSE')}
  className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
  filterType === 'EXPENSE'
-                ? 'bg-card text-rose-600 dark:text-rose-400 shadow-xs'
+                ? 'bg-card text-destructive text-destructive shadow-xs'
                 : 'text-muted-foreground hover:text-foreground'
             }`}
           >
-            <ArrowUpRight className="w-3.5 h-3.5 text-rose-500"/>
+            <ArrowUpRight className="w-3.5 h-3.5 text-destructive"/>
             <span>{tBilingual('Money Out (Expense)', 'Money Out (খরচ)')}</span>
           </button>
 
@@ -270,11 +270,11 @@ export function TransactionsLedgerView({
  type="button"onClick={() => setFilterType('TRANSFER')}
  className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
  filterType === 'TRANSFER'
-                ? 'bg-card text-blue-600 dark:text-blue-400 shadow-xs'
+                ? 'bg-card text-primary text-primary shadow-xs'
                 : 'text-muted-foreground hover:text-foreground'
             }`}
           >
-            <ArrowLeftRight className="w-3.5 h-3.5 text-blue-500"/>
+            <ArrowLeftRight className="w-3.5 h-3.5 text-primary"/>
             <span>{tBilingual('Transfer', 'ট্রান্সফার')}</span>
           </button>
         </div>
@@ -346,10 +346,10 @@ export function TransactionsLedgerView({
                         <Badge
  variant="outline"className={
  isIncome
-                              ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 text-3xs font-semibold'
+                              ? 'bg-success-surface text-success border-success-border bg-success-surface text-success text-xs font-semibold'
                               : isExpense
-                              ? 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 text-3xs font-semibold'
-                              : 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 text-3xs font-semibold'
+                              ? 'bg-danger-surface text-destructive border-danger-border bg-danger-surface text-destructive text-xs font-semibold'
+                              : 'bg-primary/10 text-primary border-primary/20 bg-primary/10 text-primary text-xs font-semibold'
                           }
                         >
                           {isIncome ? 'Money In' : isExpense ? 'Money Out' : 'Transfer'}
@@ -359,33 +359,33 @@ export function TransactionsLedgerView({
                         <div className="font-semibold text-foreground">
                           {entry.description}
                         </div>
-                        <div className="flex items-center gap-2 mt-0.5 text-3xs text-muted-foreground tabular-nums">
+                        <div className="flex items-center gap-2 mt-0.5 text-xs text-muted-foreground tabular-nums">
                           <span>{entry.number}</span>
                           {entry.referenceId && <span>• Ref: {entry.referenceId}</span>}
                         </div>
                       </td>
-                      <td className="p-3 tabular-nums text-2xs text-muted-foreground">
+                      <td className="p-3 tabular-nums text-xs text-muted-foreground">
                         {entry.accountDisplay}
                       </td>
                       <td className="p-3 text-right tabular-nums font-bold text-sm">
                         {isIncome && (
-                          <span className="text-emerald-600 dark:text-emerald-400">
+                          <span className="text-success text-success">
                             +৳{entry.amount.toLocaleString()}
                           </span>
                         )}
                         {isExpense && (
-                          <span className="text-rose-600 dark:text-rose-400">
+                          <span className="text-destructive text-destructive">
                             -৳{entry.amount.toLocaleString()}
                           </span>
                         )}
                         {isTransfer && (
-                          <span className="text-blue-600 dark:text-blue-400">
+                          <span className="text-primary text-primary">
                             ৳{entry.amount.toLocaleString()}
                           </span>
                         )}
                       </td>
                       <td className="p-3 text-center">
-                        <Badge variant="outline"className="text-3xs uppercase tabular-nums px-1.5 py-0 h-4">
+                        <Badge variant="outline"className="text-xs uppercase tabular-nums px-1.5 py-0 h-4">
                           {entry.status}
                         </Badge>
                       </td>

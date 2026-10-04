@@ -1,5 +1,7 @@
 'use client'
 
+import { interpolateVariables } from '@/lib/email/interpolate'
+
 import React, { useState, useMemo, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useParams } from 'next/navigation'
@@ -37,21 +39,18 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { formatDate } from '@/lib/formatters'
+import { DEFAULT_DOCUMENT_TEMPLATES } from '@/lib/communication/document-templates'
 import {
- DEFAULT_DOCUMENT_TEMPLATES,
- DEFAULT_TAX_SETTINGS,
-} from '@/services/tax-and-docs.service'
-import {
- DocumentType,
- DocumentLanguageMode,
- DocumentTemplateConfigRecord,
- CompanyTaxSettingsRecord,
+  DocumentType,
+  DocumentLanguageMode,
+  DocumentTemplateConfigRecord,
+  CompanyTaxSettingsRecord,
+  DEFAULT_TAX_SETTINGS,
 } from '@/types/tax-and-docs.types'
 import {
- CommunicationTemplateService,
- SUPPORTED_TEMPLATE_VARIABLES,
- TemplateVariableDefinition,
-} from '@/services/communication-templates.service'
+  SUPPORTED_TEMPLATE_VARIABLES,
+  type TemplateVariableDefinition,
+} from '@/lib/communication/variables'
 import { formatBDT } from '@/lib/formatters'
 import { useDataStore } from '@/hooks/use-data-store'
 import { STORAGE_KEYS } from '@/lib/db/data-store'
@@ -239,9 +238,9 @@ export default function DocumentDesignerPage() {
       : activeTpl.whatsapp_template || (selectedDoc === 'quotation' ? '*OFFICIAL QUOTATION - {{company_name}}*\n\nDear {{customer_name}},\n📄 Quotation No: #{{quotation_number}}\n💵 Grand Total: ৳ {{grand_total}}\n🔗 View & Approve: {{document_link}}' : '*COMMERCIAL INVOICE - {{company_name}}*\n\nDear {{customer_name}},\n📄 Invoice No: #{{invoice_number}}\n💰 Grand Total: ৳ {{grand_total}}\n⚠️ Due: ৳ {{due_amount}}\n🔗 Download: {{document_link}}')
 
   // Rendered Live Interpolations for Preview
- const liveSubject = CommunicationTemplateService.interpolate(currentEmailSubject, sampleVariables)
- const liveEmailHtml = CommunicationTemplateService.interpolate(currentEmailBody, sampleVariables)
- const liveWhatsapp = CommunicationTemplateService.interpolate(currentWhatsappText, sampleVariables)
+ const liveSubject = interpolateVariables(currentEmailSubject, sampleVariables)
+ const liveEmailHtml = interpolateVariables(currentEmailBody, sampleVariables)
+ const liveWhatsapp = interpolateVariables(currentWhatsappText, sampleVariables)
 
  const availableVariables = [
     { tag: '{{customer_name}}', desc: 'Customer Name' },
@@ -258,7 +257,7 @@ export default function DocumentDesignerPage() {
 
  if (!mounted) {
  return (
-      <div className="space-y-6 max-w-6xl animate-pulse">
+      <div className="space-y-6 animate-pulse">
         <div className="h-20 bg-muted rounded-xl w-full"/>
         <div className="h-12 bg-muted rounded-xl w-3/4"/>
         <div className="h-96 bg-muted rounded-xl w-full"/>
@@ -267,12 +266,12 @@ export default function DocumentDesignerPage() {
   }
 
  return (
-    <div className="space-y-6 max-w-6xl print:max-w-none print:m-0 print:p-0">
+    <div className="space-y-6 print:max-w-none print:m-0 print:p-0">
       {/* Non-Print Action Bar */}
       <div className="print:hidden space-y-4">
         <PageHeader
  titleEn="Print & SMS Formats"titleBn="ডকুমেন্ট ডিজাইন ও মেসেজ টেমপ্লেট"descriptionEn="Customize print layouts, quotation & invoice email subjects, HTML email bodies, WhatsApp messages, and PDF attachments."descriptionBn="প্রিন্ট লেআউট, কোটেশন ও ইনভয়েস পিডিএফ স্টাইল, ইমেইল বডি এবং হোয়াটসঅ্যাপ নোটিফিকেশন টেমপ্লেট পরিচালনা করুন।"icon={FileText}
- iconColor="text-blue-600 dark:text-blue-400"actions={
+ iconColor="text-primary text-primary"actions={
             <Button
               size="sm"
               variant="outline"
@@ -287,8 +286,8 @@ export default function DocumentDesignerPage() {
 
         {/* Notification */}
         {notification && (
-          <div className="p-3 bg-emerald-50 text-emerald-800 rounded-lg text-xs font-semibold flex items-center gap-2 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800 animate-in fade-in-0">
-            <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0"/>
+          <div className="p-3 bg-success-surface text-success rounded-lg text-xs font-semibold flex items-center gap-2 border border-success-border bg-success-surface text-success border-success-border animate-in fade-in-0">
+            <CheckCircle2 className="h-4 w-4 text-success shrink-0"/>
             <span>{notification}</span>
           </div>
         )}
@@ -310,7 +309,7 @@ export default function DocumentDesignerPage() {
  size="sm"variant={selectedDoc === doc.id ? 'default' : 'ghost'}
  onClick={() => setSelectedDoc(doc.id as DocumentType)}
  className={`text-xs h-9 sm:h-7 px-3 whitespace-nowrap shrink-0 ${
- selectedDoc === doc.id ? 'bg-blue-600 text-white shadow-xs font-bold' : 'text-muted-foreground '
+ selectedDoc === doc.id ? 'bg-primary text-white shadow-xs font-bold' : 'text-muted-foreground '
                 }`}
               >
                 {tBilingual(doc.label, doc.label_bn)}
@@ -322,7 +321,7 @@ export default function DocumentDesignerPage() {
           <div className="flex items-center justify-between sm:justify-start gap-1 bg-card p-1 rounded-lg border shrink-0">
             <div className="flex items-center">
               <Languages className="h-3.5 w-3.5 text-muted-foreground ml-1.5 mr-1"/>
-              <span className="text-2xs text-muted-foreground mr-2 sm:hidden">Language:</span>
+              <span className="text-xs text-muted-foreground mr-2 sm:hidden">Language:</span>
             </div>
             <div className="flex items-center gap-1">
               {[
@@ -370,7 +369,7 @@ export default function DocumentDesignerPage() {
  type="button"onClick={() => setActiveControlTab('communication')}
  className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 ${
  activeControlTab === 'communication'
-                      ? 'bg-card text-blue-600 dark:text-blue-400 shadow-xs'
+                      ? 'bg-card text-primary text-primary shadow-xs'
                       : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
                   }`}
                 >
@@ -438,10 +437,10 @@ export default function DocumentDesignerPage() {
                 <div className="space-y-1.5 p-3 bg-muted rounded-xl border border-border">
                   <div className="flex items-center justify-between">
                     <Label className="font-bold flex items-center gap-1.5 text-foreground">
-                      <Mail className="h-3.5 w-3.5 text-blue-600"/>
+                      <Mail className="h-3.5 w-3.5 text-primary"/>
  Email Subject Template ({langMode === 'bengali' ? 'বাংলা' : 'English'})
                     </Label>
-                    <Badge variant="outline"className="text-2xs bg-red-50 text-red-700 border-red-200 dark:bg-red-950 dark:text-red-300">
+                    <Badge variant="outline"className="text-xs bg-danger-surface text-destructive border-danger-border bg-danger-surface text-destructive">
  PDF Attached
                     </Badge>
                   </div>
@@ -461,7 +460,7 @@ export default function DocumentDesignerPage() {
  placeholder={tBilingual("e.g. Official Quotation #{{quotation_number}} [৳ {{quotation_total}}]", "যেমন: অফিশিয়াল কোটেশন #{{quotation_number}} [৳ {{quotation_total}}]")}className="h-9 text-xs font-medium bg-card"/>
                   {/* Quick-insert tags for Subject */}
                   <div className="flex flex-wrap items-center gap-1 pt-1">
-                    <span className="text-2xs text-muted-foreground font-medium mr-1">Quick Add:</span>
+                    <span className="text-xs text-muted-foreground font-medium mr-1">Quick Add:</span>
                     {[
  selectedDoc === 'quotation' ? '{{quotation_number}}' : '{{invoice_number}}',
                       '{{company_name}}',
@@ -472,7 +471,7 @@ export default function DocumentDesignerPage() {
                       <button
  key={tag}
  type="button"onClick={() => handleInsertTag('email_subject', tag)}
- className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-card border border-border text-2xs tabular-nums text-foreground hover:border-blue-400 hover:text-blue-600 transition-colors"title={`Insert ${tag}`}
+ className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-card border border-border text-xs tabular-nums text-foreground hover:border-border hover:text-primary transition-colors"title={`Insert ${tag}`}
                       >
                         + {tag}
                       </button>
@@ -484,10 +483,10 @@ export default function DocumentDesignerPage() {
                 <div className="space-y-1.5 p-3 bg-muted rounded-xl border border-border">
                   <div className="flex items-center justify-between">
                     <Label className="font-bold flex items-center gap-1.5 text-foreground">
-                      <Code2 className="h-3.5 w-3.5 text-blue-600"/>
+                      <Code2 className="h-3.5 w-3.5 text-primary"/>
  Email Body Template (HTML Supported)
                     </Label>
-                    <span className="text-2xs text-muted-foreground">PDF attached automatically</span>
+                    <span className="text-xs text-muted-foreground">PDF attached automatically</span>
                   </div>
                   <textarea
  rows={6}
@@ -506,7 +505,7 @@ export default function DocumentDesignerPage() {
  placeholder={tBilingual("<p>Dear {{customer_name}},</p><p>Please find attached...</p>", "<p>প্রিয় {{customer_name}},</p><p>অনুগ্রহ করে সংযুক্ত ফাইলটি দেখুন...</p>")}className="w-full p-2.5 rounded-xl border text-xs tabular-nums bg-card focus:outline-none focus:ring-1 focus:ring-ring"/>
                   {/* Quick-insert tags for Email Body */}
                   <div className="flex flex-wrap items-center gap-1 pt-1">
-                    <span className="text-2xs text-muted-foreground font-medium mr-1">Quick Add:</span>
+                    <span className="text-xs text-muted-foreground font-medium mr-1">Quick Add:</span>
                     {[
                       '{{customer_name}}',
                       '{{company_name}}',
@@ -518,7 +517,7 @@ export default function DocumentDesignerPage() {
                       <button
  key={tag}
  type="button"onClick={() => handleInsertTag('email_body', tag)}
- className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-card border border-border text-2xs tabular-nums text-foreground hover:border-blue-400 hover:text-blue-600 transition-colors"title={`Insert ${tag}`}
+ className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-card border border-border text-xs tabular-nums text-foreground hover:border-border hover:text-primary transition-colors"title={`Insert ${tag}`}
                       >
                         + {tag}
                       </button>
@@ -529,11 +528,11 @@ export default function DocumentDesignerPage() {
                 {/* WhatsApp Message Template */}
                 <div className="space-y-1.5 p-3 bg-muted rounded-xl border border-border">
                   <div className="flex items-center justify-between">
-                    <Label className="font-bold flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400">
+                    <Label className="font-bold flex items-center gap-1.5 text-success text-success">
                       <MessageSquare className="h-3.5 w-3.5"/>
  WhatsApp Message Template ({langMode === 'bengali' ? 'বাংলা' : 'English'})
                     </Label>
-                    <span className="text-2xs text-muted-foreground">*bold* _italic_</span>
+                    <span className="text-xs text-muted-foreground">*bold* _italic_</span>
                   </div>
                   <textarea
  rows={6}
@@ -549,10 +548,10 @@ export default function DocumentDesignerPage() {
  handleUpdateTemplate({ whatsapp_template: e.target.value })
                       }
                     }}
- placeholder={tBilingual("*QUOTATION - {{company_name}}*\nDear {{customer_name}},\nTotal: ৳ {{quotation_total}}...", "*কোটেশন - {{company_name}}*\nপ্রিয় {{customer_name}},\nমোট: ৳ {{quotation_total}}...")}className="w-full p-2.5 rounded-xl border text-xs tabular-nums bg-card focus:outline-none focus:ring-1 focus:ring-emerald-500"/>
+ placeholder={tBilingual("*QUOTATION - {{company_name}}*\nDear {{customer_name}},\nTotal: ৳ {{quotation_total}}...", "*কোটেশন - {{company_name}}*\nপ্রিয় {{customer_name}},\nমোট: ৳ {{quotation_total}}...")}className="w-full p-2.5 rounded-xl border text-xs tabular-nums bg-card focus:outline-none focus:ring-1 focus:ring-ring"/>
                   {/* Quick-insert tags for WhatsApp */}
                   <div className="flex flex-wrap items-center gap-1 pt-1">
-                    <span className="text-2xs text-muted-foreground font-medium mr-1">Quick Add:</span>
+                    <span className="text-xs text-muted-foreground font-medium mr-1">Quick Add:</span>
                     {[
                       '{{customer_name}}',
                       '{{company_name}}',
@@ -563,7 +562,7 @@ export default function DocumentDesignerPage() {
                       <button
  key={tag}
  type="button"onClick={() => handleInsertTag('whatsapp', tag)}
- className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-card border border-border text-2xs tabular-nums text-foreground hover:border-emerald-400 hover:text-emerald-600 transition-colors"title={`Insert ${tag}`}
+ className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-card border border-border text-xs tabular-nums text-foreground hover:border-success-border hover:text-success transition-colors"title={`Insert ${tag}`}
                       >
                         + {tag}
                       </button>
@@ -577,15 +576,15 @@ export default function DocumentDesignerPage() {
                 <div className="p-3.5 rounded-xl bg-muted border border-border space-y-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-1.5">
-                      <Sparkles className="h-3.5 w-3.5 text-blue-600"/>
+                      <Sparkles className="h-3.5 w-3.5 text-primary"/>
                       <span className="font-bold text-xs text-foreground">Available Variables Helper</span>
                     </div>
                     {copiedVar ? (
-                      <Badge variant="outline"className="text-2xs bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300">
+                      <Badge variant="outline"className="text-xs bg-success-surface text-success border-success-border bg-success-surface text-success">
  Copied {copiedVar}!
                       </Badge>
                     ) : (
-                      <span className="text-2xs text-muted-foreground">{filteredVariables.length} supported tags</span>
+                      <span className="text-xs text-muted-foreground">{filteredVariables.length} supported tags</span>
                     )}
                   </div>
 
@@ -595,11 +594,11 @@ export default function DocumentDesignerPage() {
                     <input
  type="text"value={variableSearch}
  onChange={(e) => setVariableSearch(e.target.value)}
- placeholder={tBilingual('Search variables (e.g. phone, vat, due)...', 'ভ্যারিয়েবল খুঁজুন (যেমন: phone, vat, due)...')}className="w-full pl-7 pr-3 py-1 text-2xs rounded-lg border border-border bg-card focus:outline-none focus:ring-1 focus:ring-ring text-foreground"/>
+ placeholder={tBilingual('Search variables (e.g. phone, vat, due)...', 'ভ্যারিয়েবল খুঁজুন (যেমন: phone, vat, due)...')}className="w-full pl-7 pr-3 py-1 text-xs rounded-lg border border-border bg-card focus:outline-none focus:ring-1 focus:ring-ring text-foreground"/>
                   </div>
 
                   {/* Category Filter Tabs */}
-                  <div className="flex items-center gap-1 overflow-x-auto pb-1 text-2xs">
+                  <div className="flex items-center gap-1 overflow-x-auto pb-1 text-xs">
                     {[
                       { id: 'all', label: 'All' },
                       { id: 'company', label: '🏢 Company' },
@@ -612,7 +611,7 @@ export default function DocumentDesignerPage() {
  type="button"onClick={() => setVariableCategory(cat.id as any)}
  className={`px-2 py-1 rounded-md font-semibold whitespace-nowrap transition-colors ${
  variableCategory === cat.id
-                            ? 'bg-blue-600 text-white shadow-xs'
+                            ? 'bg-primary text-white shadow-xs'
                             : 'bg-card text-muted-foreground border border-border hover:border-input'
                         }`}
                       >
@@ -626,31 +625,31 @@ export default function DocumentDesignerPage() {
                     {filteredVariables.map((v) => (
                       <div
  key={v.tag}
- className="p-2 rounded-xl bg-card border border-border hover:border-blue-300 dark:hover:border-blue-700 transition-colors flex items-center justify-between gap-2 text-2xs">
+ className="p-2 rounded-xl bg-card border border-border hover:border-primary/20 dark:hover:border-border transition-colors flex items-center justify-between gap-2 text-xs">
                         <div className="min-w-0 space-y-0.5">
                           <div className="flex items-center gap-1.5">
-                            <span className="tabular-nums font-bold text-blue-700 dark:text-blue-400 text-2xs">
+                            <span className="tabular-nums font-bold text-primary text-primary text-xs">
                               {v.tag}
                             </span>
-                            <span className="text-2xs font-semibold text-foreground">
+                            <span className="text-xs font-semibold text-foreground">
                               {v.name}
                             </span>
                           </div>
-                          <p className="text-2xs text-muted-foreground truncate"title={v.description}>
+                          <p className="text-xs text-muted-foreground truncate"title={v.description}>
                             {v.description}
                           </p>
                         </div>
                         <div className="flex items-center gap-1 shrink-0">
                           <button
  type="button"onClick={() => copyToClipboard(v.tag)}
- className="p-1 rounded bg-muted text-muted-foreground hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950 transition-colors"title="Copy variable tag">
+ className="p-1 rounded bg-muted text-muted-foreground hover:text-primary hover:bg-primary/10 dark:hover:bg-primary/10 transition-colors"title="Copy variable tag">
                             <Copy className="h-3 w-3"/>
                           </button>
                         </div>
                       </div>
                     ))}
                     {filteredVariables.length === 0 && (
-                      <div className="p-4 text-center text-muted-foreground text-2xs">
+                      <div className="p-4 text-center text-muted-foreground text-xs">
  {tBilingual('No supported variables found matching', 'মিলছে এমন কোনো ভ্যারিয়েবল পাওয়া যায়নি')} &ldquo;{variableSearch}&rdquo;.
                       </div>
                     )}
@@ -689,7 +688,7 @@ export default function DocumentDesignerPage() {
                 onClick={() => setPreviewMode('email')}
                 className={`text-xs h-7 px-3 rounded-lg font-bold transition-all flex items-center gap-1 cursor-pointer ${
                   previewMode === 'email'
-                    ? 'bg-blue-600 text-white shadow-xs'
+                    ? 'bg-primary text-white shadow-xs'
                     : 'text-muted-foreground hover:text-foreground hover:bg-card/70'
                 }`}
               >
@@ -701,7 +700,7 @@ export default function DocumentDesignerPage() {
                 onClick={() => setPreviewMode('whatsapp')}
                 className={`text-xs h-7 px-3 rounded-lg font-bold transition-all flex items-center gap-1 cursor-pointer ${
                   previewMode === 'whatsapp'
-                    ? 'bg-emerald-600 text-white shadow-xs'
+                    ? 'bg-success text-white shadow-xs'
                     : 'text-muted-foreground hover:text-foreground hover:bg-card/70'
                 }`}
               >
@@ -713,7 +712,7 @@ export default function DocumentDesignerPage() {
                 onClick={() => setPreviewMode('variables')}
                 className={`text-xs h-7 px-3 rounded-lg font-bold transition-all flex items-center gap-1 cursor-pointer ${
                   previewMode === 'variables'
-                    ? 'bg-indigo-600 text-white shadow-xs'
+                    ? 'bg-primary text-white shadow-xs'
                     : 'text-muted-foreground hover:text-foreground hover:bg-card/70'
                 }`}
               >
@@ -734,12 +733,12 @@ export default function DocumentDesignerPage() {
                     : company?.name || 'Company Name'}
                 </h1>
 
-                <p className="text-muted-foreground print:text-muted-foreground text-2xs">
+                <p className="text-muted-foreground print:text-muted-foreground text-xs">
                   {company?.address || 'Company Address'} • Phone: {company?.phone || 'Phone Number'} • Email: {company?.email || 'billing@company.com'}
                 </p>
 
                 {/* NBR Tax Credentials */}
-                <div className="pt-1 text-2xs tabular-nums text-muted-foreground print:text-muted-foreground flex flex-wrap items-center justify-center gap-2 sm:gap-3">
+                <div className="pt-1 text-xs tabular-nums text-muted-foreground print:text-muted-foreground flex flex-wrap items-center justify-center gap-2 sm:gap-3">
                   <span>BIN: <strong className="print:text-foreground">{taxSettings.bin_number || '18291004821'}</strong></span>
                   <span>•</span>
                   <span>TIN: <strong className="print:text-foreground">{taxSettings.tin_number || 'N/A'}</strong></span>
@@ -748,7 +747,7 @@ export default function DocumentDesignerPage() {
                 </div>
 
                 {/* Document Banner */}
-                <div className="inline-block mt-3 px-4 sm:px-6 py-1 rounded-full bg-muted print:bg-muted font-black text-2xs sm:text-xs tracking-wider uppercase border border-input print:border-input print:text-foreground">
+                <div className="inline-block mt-3 px-4 sm:px-6 py-1 rounded-full bg-muted print:bg-muted font-black text-xs sm:text-xs tracking-wider uppercase border border-input print:border-input print:text-foreground">
                   {selectedDoc === 'quotation' && (langMode === 'bengali' ? 'আনুষ্ঠানিক বাণিজ্যিক দরপত্র' : 'COMMERCIAL QUOTATION')}
                   {selectedDoc === 'invoice' && (langMode === 'bengali' ? 'বাণিজ্যিক বিক্রয় চালান বিল' : 'COMMERCIAL SALES INVOICE')}
                   {selectedDoc === 'vat_mushak' && 'গণপ্রজাতন্ত্রী বাংলাদেশ সরকার — কর চালানপত্র [মূসক-৬.৩]'}
@@ -761,16 +760,16 @@ export default function DocumentDesignerPage() {
               {/* Recipient & Document Meta */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-xl bg-muted print:bg-muted border border-border print:border-input text-xs print:text-foreground">
                 <div className="space-y-1">
-                  <span className="text-2xs uppercase font-bold text-muted-foreground print:text-muted-foreground">
+                  <span className="text-xs uppercase font-bold text-muted-foreground print:text-muted-foreground">
                     {langMode === 'bengali' ? 'প্রাপকের বিবরণ:' : 'Customer / Consignee:'}
                   </span>
                   <div className="font-bold text-sm text-foreground print:text-foreground">Metro Advertising Ltd.</div>
                   <div className="text-muted-foreground print:text-foreground">12 Motijheel C/A, Dhaka-1000</div>
-                  <div className="text-muted-foreground print:text-muted-foreground tabular-nums text-2xs">BIN: 0029104821 • Contact: +880 1711-223344</div>
+                  <div className="text-muted-foreground print:text-muted-foreground tabular-nums text-xs">BIN: 0029104821 • Contact: +880 1711-223344</div>
                 </div>
 
                 <div className="space-y-1 sm:text-right tabular-nums print:text-foreground">
-                  <div>Document No: <strong className="text-blue-600 print:text-foreground font-black">{selectedDoc === 'quotation' ? 'Q-2026-0842' : 'INV-2026-1055'}</strong></div>
+                  <div>Document No: <strong className="text-primary print:text-foreground font-black">{selectedDoc === 'quotation' ? 'Q-2026-0842' : 'INV-2026-1055'}</strong></div>
                   <div>Date: <strong className="print:text-foreground">{formatDate(new Date(), locale)}</strong></div>
                   <div>Payment Terms: <strong className="print:text-foreground">Agreed Terms</strong></div>
                   <div>Pricing Mode: <strong className="uppercase print:text-foreground">{taxSettings.pricing_mode}</strong></div>
@@ -814,14 +813,14 @@ export default function DocumentDesignerPage() {
                     <tr className="bg-muted print:bg-muted font-black text-sm print:text-foreground">
                       <td colSpan={3} className="border"/>
                       <td className="p-2 border text-right">Net Payable:</td>
-                      <td className="p-2 border text-right text-emerald-600 print:text-foreground font-bold">৳ 45,500</td>
+                      <td className="p-2 border text-right text-success print:text-foreground font-bold">৳ 45,500</td>
                     </tr>
                   </tfoot>
                 </table>
               </div>
 
               {/* Terms and Conditions */}
-              <div className="p-3 bg-muted print:bg-muted rounded-lg text-2xs text-muted-foreground print:text-foreground space-y-1 border border-border print:border-input page-break-inside-avoid print-avoid-break">
+              <div className="p-3 bg-muted print:bg-muted rounded-lg text-xs text-muted-foreground print:text-foreground space-y-1 border border-border print:border-input page-break-inside-avoid print-avoid-break">
                 <strong className="block text-foreground print:text-foreground">
                   {langMode === 'bengali' ? 'শর্তাবলী:' : 'Terms & Conditions:'}
                 </strong>
@@ -841,7 +840,7 @@ export default function DocumentDesignerPage() {
                 </div>
 
                 <div className="text-center space-y-2 w-full sm:w-auto">
-                  <div className="tabular-nums text-muted-foreground print:text-muted-foreground text-2xs">{activeTpl.authorized_signatory_title}</div>
+                  <div className="tabular-nums text-muted-foreground print:text-muted-foreground text-xs">{activeTpl.authorized_signatory_title}</div>
                   <div className="border-t border-input w-full sm:w-60 pt-1 font-bold print:text-foreground">
                     {langMode === 'bengali' ? 'অনুমোদিত স্বাক্ষর ও সিল' : 'Authorized Signature & Seal'}
                   </div>
@@ -860,7 +859,7 @@ export default function DocumentDesignerPage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="font-bold text-muted-foreground w-16">Attachment:</span>
-                  <Badge variant="outline"className="text-2xs bg-red-50 text-red-700 border-red-200 tabular-nums">
+                  <Badge variant="outline"className="text-xs bg-danger-surface text-destructive border-danger-border tabular-nums">
                     <FileText className="h-3 w-3 mr-1"/>
                     {selectedDoc === 'quotation' ? 'Quotation-Q-2026-0842.pdf' : 'Invoice-INV-2026-1055.pdf'} (A4 PDF)
                   </Badge>
@@ -868,7 +867,7 @@ export default function DocumentDesignerPage() {
               </div>
               <div className="p-6 bg-card text-foreground text-sm">
                 <div
- className="prose prose-sm dark:prose-invert max-w-none [&_.info-card]:p-3 [&_.info-card]:bg-muted [&_.info-card]: [&_.info-card]:rounded-xl [&_.info-card]:border [&_.info-card]:border-border [&_.info-card]:my-3 [&_.btn]:inline-block [&_.btn]:px-4 [&_.btn]:py-2 [&_.btn]:bg-blue-600 [&_.btn]:text-white [&_.btn]:rounded-lg [&_.btn]:font-bold [&_.btn]:no-underline [&_.btn]:my-2"dangerouslySetInnerHTML={{ __html: liveEmailHtml }}
+ className="prose prose-sm dark:prose-invert max-w-none [&_.info-card]:p-3 [&_.info-card]:bg-muted [&_.info-card]: [&_.info-card]:rounded-xl [&_.info-card]:border [&_.info-card]:border-border [&_.info-card]:my-3 [&_.btn]:inline-block [&_.btn]:px-4 [&_.btn]:py-2 [&_.btn]:bg-primary [&_.btn]:text-primary-foreground [&_.btn]:rounded-lg [&_.btn]:font-bold [&_.btn]:no-underline [&_.btn]:my-2"dangerouslySetInnerHTML={{ __html: liveEmailHtml }}
                 />
               </div>
             </Card>
@@ -876,16 +875,16 @@ export default function DocumentDesignerPage() {
 
           {/* VIEW 3: WHATSAPP PREVIEW */}
           {previewMode === 'whatsapp' && (
-            <Card className="border-border rounded-xl overflow-hidden shadow-xs bg-[#e5ddd5] p-4">
-              <div className="max-w-md mx-auto bg-card p-4 rounded-xl shadow-sm border border-emerald-100 space-y-2">
-                <div className="flex items-center gap-2 pb-2 border-b border-border text-xs font-bold text-emerald-700 dark:text-emerald-400">
+            <Card className="border-border rounded-xl overflow-hidden shadow-xs bg-surface-inset p-4">
+              <div className="max-w-md mx-auto bg-card p-4 rounded-xl shadow-sm border border-success-border space-y-2">
+                <div className="flex items-center gap-2 pb-2 border-b border-border text-xs font-bold text-success text-success">
                   <MessageSquare className="h-4 w-4"/>
                   <span>WhatsApp Message Preview</span>
                 </div>
                 <div className="text-xs whitespace-pre-wrap font-sans text-foreground leading-relaxed">
                   {liveWhatsapp}
                 </div>
-                <div className="text-2xs text-right text-muted-foreground pt-1">
+                <div className="text-xs text-right text-muted-foreground pt-1">
                   10:45 AM • Delivered
                 </div>
               </div>
@@ -898,7 +897,7 @@ export default function DocumentDesignerPage() {
               <div className="p-4 bg-muted border-b border-border flex items-center justify-between">
                 <div>
                   <h3 className="font-bold text-sm text-foreground flex items-center gap-2">
-                    <Sparkles className="h-4 w-4 text-indigo-600"/>
+                    <Sparkles className="h-4 w-4 text-primary"/>
  Supported Backend Template Variables
                   </h3>
                   <p className="text-xs text-muted-foreground">
@@ -913,7 +912,7 @@ export default function DocumentDesignerPage() {
               <div className="p-4 overflow-x-auto">
                 <table className="w-full text-left text-xs border-collapse">
                   <thead>
-                    <tr className="border-b border-border text-muted-foreground font-bold uppercase text-2xs">
+                    <tr className="border-b border-border text-muted-foreground font-bold uppercase text-xs">
                       <th className="pb-2 tabular-nums bangla-text">{tBilingual('Variable Tag', 'ভ্যারিয়েবল ট্যাগ')}</th>
                       <th className="pb-2 bangla-text">{tBilingual('Name', 'নাম')}</th>
                       <th className="pb-2 bangla-text">{tBilingual('Category', 'ক্যাটাগরি')}</th>
@@ -925,14 +924,14 @@ export default function DocumentDesignerPage() {
                   <tbody className="divide-y divide-border dark:divide-border/60">
                     {activeDocVariables.map((v) => (
                       <tr key={v.tag} className="hover:bg-muted dark:hover:bg-muted/50 transition-colors">
-                        <td className="py-2.5 tabular-nums font-bold text-blue-600 dark:text-blue-400">
+                        <td className="py-2.5 tabular-nums font-bold text-primary text-primary">
                           {v.tag}
                         </td>
                         <td className="py-2.5 font-semibold text-foreground">
                           {v.name}
                         </td>
                         <td className="py-2.5">
-                          <span className="capitalize px-2 py-0.5 rounded-full text-2xs font-semibold bg-muted text-muted-foreground">
+                          <span className="capitalize px-2 py-0.5 rounded-full text-xs font-semibold bg-muted text-muted-foreground">
                             {v.category}
                           </span>
                         </td>
@@ -945,7 +944,7 @@ export default function DocumentDesignerPage() {
                         <td className="py-2.5 text-right">
                           <Button
  size="sm"variant="outline"onClick={() => copyToClipboard(v.tag)}
- className="h-6 text-2xs px-2">
+ className="h-6 text-xs px-2">
                             <Copy className="h-2.5 w-2.5 mr-1"/>
  Copy
                           </Button>

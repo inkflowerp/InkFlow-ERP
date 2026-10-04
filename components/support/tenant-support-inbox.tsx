@@ -89,7 +89,7 @@ export function TenantSupportInbox({
               {tBilingual('Support Inbox', 'সহায়তা ইনবক্স')}
             </h1>
             {unreadCount > 0 && (
-              <span className="px-2 py-0.5 rounded-full text-2xs font-bold bg-indigo-600 text-white animate-pulse">
+              <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-primary text-white animate-pulse">
                 {unreadCount} {tBilingual('New', 'নতুন')}
               </span>
             )}
@@ -102,7 +102,7 @@ export function TenantSupportInbox({
             </button>
             <button
  onClick={onOpenNewModal}
- className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-sm shadow-indigo-500/20 transition-all cursor-pointer">
+ className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-primary hover:bg-primary rounded-xl shadow-sm shadow-indigo-500/20 transition-all cursor-pointer">
               <Plus className="w-3.5 h-3.5"/>
               <span>{tBilingual('New Ticket', 'নতুন টিকেট')}</span>
             </button>
@@ -116,7 +116,7 @@ export function TenantSupportInbox({
  type="text"placeholder={tBilingual('Search tickets by ID or keyword...', 'টিকেট বা বিষয় দিয়ে খুঁজুন...')}
  value={searchQuery}
  onChange={(e) => setSearchQuery(e.target.value)}
- className="w-full pl-8 pr-3 py-2 text-xs rounded-xl border border-border bg-muted/70 text-foreground focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-indigo-500 transition-all placeholder:text-muted-foreground"/>
+ className="w-full pl-8 pr-3 py-2 text-xs rounded-xl border border-border bg-muted/70 text-foreground focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-primary/20 transition-all placeholder:text-muted-foreground"/>
         </div>
 
         {/* Filter Tabs */}
@@ -155,7 +155,7 @@ export function TenantSupportInbox({
               {tab.count > 0 && (
                 <span
  className={cn(
-                    'text-2xs px-1.5 py-0.2 rounded-full font-bold',
+                    'text-xs px-1.5 py-0.2 rounded-full font-bold',
  activeTab === tab.key
                       ? 'bg-card-elevated text-foreground dark:bg-muted '
                       : 'bg-muted/80 text-muted-foreground '
@@ -209,26 +209,26 @@ export function TenantSupportInbox({
  className={cn(
                   'w-full text-left p-3.5 transition-all flex flex-col gap-1.5 cursor-pointer relative',
  isSelected
-                    ? 'bg-indigo-50/70 dark:bg-indigo-950/30 border-l-4 border-indigo-600'
+                    ? 'bg-primary/10/70 bg-primary/10 border-l-4 border-border'
                     : 'hover:bg-muted/80 dark:hover:bg-muted/40'
                 )}
               >
                 {/* Line 1: Ticket number + Status badge + Time */}
                 <div className="flex items-center justify-between text-xs">
                   <div className="flex items-center gap-1.5">
-                    <span className="tabular-nums font-bold text-foreground text-2xs">
+                    <span className="tabular-nums font-bold text-foreground text-xs">
                       {conv.ticket_number}
                     </span>
                     <span
  className={cn(
-                        'px-2 py-0.5 rounded-md text-2xs font-medium border',
+                        'px-2 py-0.5 rounded-md text-xs font-medium border',
  statusConfig.badgeClass
                       )}
                     >
                       {statusConfig.labelEn}
                     </span>
                   </div>
-                  <div className="flex items-center gap-1.5 text-2xs text-muted-foreground">
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                     <Clock className="w-3 h-3"/>
                     <span>{formatDate(conv.last_message_at)}</span>
                   </div>
@@ -247,12 +247,12 @@ export function TenantSupportInbox({
                     {conv.subject}
                   </h3>
                   {hasUnread && (
-                    <span className="w-2 h-2 rounded-full bg-indigo-600 shrink-0"/>
+                    <span className="w-2 h-2 rounded-full bg-primary shrink-0"/>
                   )}
                 </div>
 
                 {/* Line 3: Last Message Preview */}
-                <p className="text-2xs text-muted-foreground truncate line-clamp-1">
+                <p className="text-xs text-muted-foreground truncate line-clamp-1">
                   {conv.last_message_by && (
                     <span className="font-medium text-foreground">
                       {conv.last_message_by}:{' '}

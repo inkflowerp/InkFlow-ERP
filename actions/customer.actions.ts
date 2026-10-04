@@ -1,5 +1,8 @@
 'use server'
 
+import { withTenantAction } from '@/lib/actions/action-wrapper'
+
+
 import { revalidatePath } from 'next/cache'
 import { CrmService, DuplicateCheckResponse } from '@/services/crm.service'
 import { AuditService } from '@/services/audit.service'
@@ -62,9 +65,12 @@ export interface ServerActionResult<T> {
 /**
  * Server Action: Securely creates a customer profile
  */
-export async function createCustomerAction(
-  input: CreateCustomerInput
-): Promise<ServerActionResult<CustomerRecord>> {
+export const createCustomerAction = withTenantAction(
+  {
+    permission: "customers.create",
+    entityType: "customer"
+  },
+  async (ctx, input: CreateCustomerInput) : Promise<ServerActionResult<CustomerRecord>> => {
   try {
     const tenant = await getCurrentTenant(input.company_id)
     if (!tenant || !tenant.companyId) {
@@ -171,15 +177,19 @@ export async function createCustomerAction(
       error: err?.message || 'Unable to save customer. Please try again.',
     }
   }
-}
+
+})
 
 /**
  * Server Action: Search customer records
  */
-export async function searchCustomersAction(
-  query: string,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<CustomerRecord[]>> {
+export const searchCustomersAction = withTenantAction(
+  {
+    permission: "customers.view",
+    entityType: "customer"
+  },
+  async (ctx, query: string,
+  requestedCompanyId?: string) : Promise<ServerActionResult<CustomerRecord[]>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) return { success: true, data: [] }
@@ -195,21 +205,25 @@ export async function searchCustomersAction(
       error: err?.message || 'Search failed',
     }
   }
-}
+
+})
 
 /**
  * Server Action: Check potential duplicates
  */
-export async function checkCustomerDuplicateAction(
-  candidate: {
+export const checkCustomerDuplicateAction = withTenantAction(
+  {
+    permission: "customers.view",
+    entityType: "customer"
+  },
+  async (ctx, candidate: {
     mobile?: string
     whatsapp?: string
     name?: string
     company_name?: string
     excludeId?: string
   },
-  requestedCompanyId?: string
-): Promise<ServerActionResult<DuplicateCheckResponse>> {
+  requestedCompanyId?: string) : Promise<ServerActionResult<DuplicateCheckResponse>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -230,13 +244,18 @@ export async function checkCustomerDuplicateAction(
       error: err?.message || 'Duplicate check failed',
     }
   }
-}
+
+})
 
 /**
  * Server Action: Paginated and Filtered Customers
  */
-export async function getPaginatedCustomersAction(
-  options: {
+export const getPaginatedCustomersAction = withTenantAction(
+  {
+    permission: "customers.view",
+    entityType: "customer"
+  },
+  async (ctx, options: {
     page?: number
     pageSize?: number
     search?: string
@@ -246,8 +265,7 @@ export async function getPaginatedCustomersAction(
     sortBy?: 'newest' | 'billed' | 'due' | 'latest_order' | 'name'
     sortOrder?: 'asc' | 'desc'
   } = {},
-  requestedCompanyId?: string
-): Promise<ServerActionResult<PaginatedResult<CustomerRecord>>> {
+  requestedCompanyId?: string) : Promise<ServerActionResult<PaginatedResult<CustomerRecord>>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -269,14 +287,18 @@ export async function getPaginatedCustomersAction(
       error: err?.message || 'Failed to fetch customer list',
     }
   }
-}
+
+})
 
 /**
  * Server Action: Customer Summary KPI stats
  */
-export async function getCustomersSummaryAction(
-  requestedCompanyId?: string
-): Promise<ServerActionResult<CustomerSummaryStatistics>> {
+export const getCustomersSummaryAction = withTenantAction(
+  {
+    permission: "customers.view",
+    entityType: "customer"
+  },
+  async (ctx, requestedCompanyId?: string) : Promise<ServerActionResult<CustomerSummaryStatistics>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -298,16 +320,20 @@ export async function getCustomersSummaryAction(
       error: err?.message || 'Failed to calculate customer statistics',
     }
   }
-}
+
+})
 
 /**
  * Server Action: Update customer profile
  */
-export async function updateCustomerAction(
-  id: string,
+export const updateCustomerAction = withTenantAction(
+  {
+    permission: "customers.edit",
+    entityType: "customer"
+  },
+  async (ctx, id: string,
   input: Partial<CreateCustomerInput>,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<CustomerRecord>> {
+  requestedCompanyId?: string) : Promise<ServerActionResult<CustomerRecord>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -361,15 +387,21 @@ export async function updateCustomerAction(
       error: err?.message || 'Failed to update customer.',
     }
   }
-}
+
+})
 
 /**
  * Server Action: Delete / Deactivate Customer
  */
-export async function deleteCustomerAction(
-  id: string,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<boolean>> {
+export const deleteCustomerAction = withTenantAction(
+  {
+    permission: "customers.delete",
+    destructive: true,
+    auditAction: "customer.deletecustomer",
+    entityType: "customer"
+  },
+  async (ctx, id: string,
+  requestedCompanyId?: string) : Promise<ServerActionResult<boolean>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -406,16 +438,20 @@ export async function deleteCustomerAction(
       error: err?.message || 'Failed to delete customer.',
     }
   }
-}
+
+})
 
 /**
  * Server Action: Toggle Customer Active/Inactive
  */
-export async function toggleCustomerActiveAction(
-  id: string,
+export const toggleCustomerActiveAction = withTenantAction(
+  {
+    permission: "customers.edit",
+    entityType: "customer"
+  },
+  async (ctx, id: string,
   isActive: boolean,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<CustomerRecord>> {
+  requestedCompanyId?: string) : Promise<ServerActionResult<CustomerRecord>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -476,15 +512,19 @@ export async function toggleCustomerActiveAction(
       error: err?.message || 'Failed to update customer status.',
     }
   }
-}
+
+})
 
 /**
  * Server Action: Resolve Customer Rates (3-Tier Priority)
  */
-export async function resolveCustomerRatesAction(
-  customerId: string,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<ResolvedProductRate[]>> {
+export const resolveCustomerRatesAction = withTenantAction(
+  {
+    permission: "pricing.edit",
+    entityType: "customer"
+  },
+  async (ctx, customerId: string,
+  requestedCompanyId?: string) : Promise<ServerActionResult<ResolvedProductRate[]>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -506,18 +546,22 @@ export async function resolveCustomerRatesAction(
       error: err?.message || 'Failed to resolve customer rates.',
     }
   }
-}
+
+})
 
 /**
  * Server Action: Save / Override Customer Rate
  */
-export async function saveCustomerRateAction(
-  customerId: string,
+export const saveCustomerRateAction = withTenantAction(
+  {
+    permission: "pricing.edit",
+    entityType: "customer"
+  },
+  async (ctx, customerId: string,
   productId: string,
   rate: number,
   notes?: string | null,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<CustomerRateRecord>> {
+  requestedCompanyId?: string) : Promise<ServerActionResult<CustomerRateRecord>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -578,16 +622,22 @@ export async function saveCustomerRateAction(
       error: err?.message || 'Failed to save customer rate.',
     }
   }
-}
+
+})
 
 /**
  * Server Action: Delete Customer Custom Rate
  */
-export async function deleteCustomerRateAction(
-  customerId: string,
+export const deleteCustomerRateAction = withTenantAction(
+  {
+    permission: "customers.delete",
+    destructive: true,
+    auditAction: "customer.deletecustomerrate",
+    entityType: "customer"
+  },
+  async (ctx, customerId: string,
   productId: string,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<boolean>> {
+  requestedCompanyId?: string) : Promise<ServerActionResult<boolean>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -624,15 +674,19 @@ export async function deleteCustomerRateAction(
       error: err?.message || 'Failed to delete customer rate override.',
     }
   }
-}
+
+})
 
 /**
  * Server Action: Customer Financial Summary
  */
-export async function getCustomerFinancialSummaryAction(
-  customerId: string,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<CustomerFinancialSummary>> {
+export const getCustomerFinancialSummaryAction = withTenantAction(
+  {
+    permission: "customers.view",
+    entityType: "customer"
+  },
+  async (ctx, customerId: string,
+  requestedCompanyId?: string) : Promise<ServerActionResult<CustomerFinancialSummary>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -654,13 +708,18 @@ export async function getCustomerFinancialSummaryAction(
       error: err?.message || 'Failed to calculate customer financial summary.',
     }
   }
-}
+
+})
 
 /**
  * Server Action: Product Purchase Analytics
  */
-export async function getCustomerProductAnalyticsAction(
-  customerId: string,
+export const getCustomerProductAnalyticsAction = withTenantAction(
+  {
+    permission: "customers.view",
+    entityType: "customer"
+  },
+  async (ctx, customerId: string,
   options?: {
     timeframe?: 'week' | 'month' | 'year' | 'all' | 'custom'
     startDate?: string
@@ -668,8 +727,7 @@ export async function getCustomerProductAnalyticsAction(
     sortBy?: 'quantity' | 'amount' | 'recent' | 'name'
     sortOrder?: 'asc' | 'desc'
   },
-  requestedCompanyId?: string
-): Promise<ServerActionResult<CustomerProductPurchaseStat[]>> {
+  requestedCompanyId?: string) : Promise<ServerActionResult<CustomerProductPurchaseStat[]>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -691,15 +749,19 @@ export async function getCustomerProductAnalyticsAction(
       error: err?.message || 'Failed to fetch customer product analytics.',
     }
   }
-}
+
+})
 
 /**
  * Server Action: Customer Activity Timeline
  */
-export async function getCustomerTimelineAction(
-  customerId: string,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<CustomerTimelineEvent[]>> {
+export const getCustomerTimelineAction = withTenantAction(
+  {
+    permission: "customers.view",
+    entityType: "customer"
+  },
+  async (ctx, customerId: string,
+  requestedCompanyId?: string) : Promise<ServerActionResult<CustomerTimelineEvent[]>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -721,14 +783,18 @@ export async function getCustomerTimelineAction(
       error: err?.message || 'Failed to load customer timeline.',
     }
   }
-}
+
+})
 
 /**
  * Server Action: Get all active customers for a company
  */
-export async function getCustomersAction(
-  requestedCompanyId?: string
-): Promise<ServerActionResult<CustomerRecord[]>> {
+export const getCustomersAction = withTenantAction(
+  {
+    permission: "customers.view",
+    entityType: "customer"
+  },
+  async (ctx, requestedCompanyId?: string) : Promise<ServerActionResult<CustomerRecord[]>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -751,7 +817,8 @@ export async function getCustomersAction(
       error: err?.message || 'Failed to fetch customer list.',
     }
   }
-}
+
+})
 
 export interface CustomerFullDetails {
   customer: CustomerRecord
@@ -767,10 +834,13 @@ export interface CustomerFullDetails {
 /**
  * Server Action: Full 360-degree Customer Details & Associated Records
  */
-export async function getCustomerFullDetailsAction(
-  customerId: string,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<CustomerFullDetails>> {
+export const getCustomerFullDetailsAction = withTenantAction(
+  {
+    permission: "customers.view",
+    entityType: "customer"
+  },
+  async (ctx, customerId: string,
+  requestedCompanyId?: string) : Promise<ServerActionResult<CustomerFullDetails>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -814,20 +884,24 @@ export async function getCustomerFullDetailsAction(
   } catch (err: any) {
     return { success: false, error: err?.message || 'Failed to fetch customer full details.' }
   }
-}
+
+})
 
 /**
  * Server Action: Log Customer Communication
  */
-export async function logCustomerCommunicationAction(
-  payload: {
+export const logCustomerCommunicationAction = withTenantAction(
+  {
+    permission: "customers.edit",
+    entityType: "customer"
+  },
+  async (ctx, payload: {
     customerId: string
     type: string
     summary: string
     details?: string | null
   },
-  requestedCompanyId?: string
-): Promise<ServerActionResult<any>> {
+  requestedCompanyId?: string) : Promise<ServerActionResult<any>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -856,5 +930,6 @@ export async function logCustomerCommunicationAction(
   } catch (err: any) {
     return { success: false, error: err?.message || 'Failed to log communication.' }
   }
-}
+
+})
 

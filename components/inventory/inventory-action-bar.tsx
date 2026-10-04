@@ -45,7 +45,7 @@ export function InventoryActionBar({
         {/* Receive Stock (GRN) */}
         <Button
  size="sm"onClick={onReceiveStock}
- className="bg-emerald-600 hover:bg-emerald-700 text-xs text-white h-9 px-3.5 shadow-xs font-bold cursor-pointer gap-1.5"title="Receive raw materials or ready products into warehouse">
+ className="bg-success hover:bg-success/90 text-xs text-success-foreground h-9 px-3.5 shadow-xs font-bold cursor-pointer gap-1.5"title="Receive raw materials or ready products into warehouse">
           <Plus className="h-4 w-4"/>
           <span>{isBn ? 'মালামাল গ্রহণ (GRN)' : 'Receive Stock (GRN)'}</span>
         </Button>
@@ -53,8 +53,8 @@ export function InventoryActionBar({
         {/* Floor Issue */}
         <Button
  size="sm"variant="outline"onClick={onFloorIssue}
- className="text-xs h-9 px-3 border-border text-foreground hover:bg-muted hover:bg-indigo-50 dark:hover:bg-indigo-950/40 cursor-pointer gap-1.5 font-semibold"title="Issue materials to printing or fabrication floor">
-          <Scissors className="h-3.5 w-3.5 text-indigo-600"/>
+ className="text-xs h-9 px-3 border-border text-foreground hover:bg-muted hover:bg-primary/10 dark:hover:bg-primary/10 cursor-pointer gap-1.5 font-semibold"title="Issue materials to printing or fabrication floor">
+          <Scissors className="h-3.5 w-3.5 text-primary"/>
           <span>{isBn ? 'ফ্লোরে ইস্যু' : 'Floor Issue'}</span>
         </Button>
 
@@ -62,8 +62,8 @@ export function InventoryActionBar({
         {onLogConsumption && (
           <Button
  size="sm"variant="outline"onClick={onLogConsumption}
- className="text-xs h-9 px-3 border-border text-foreground hover:bg-muted hover:bg-amber-500/20 cursor-pointer gap-1.5 font-semibold"title="Log actual floor consumption, scrap, and remnants">
-            <Printer className="h-3.5 w-3.5 text-amber-600"/>
+ className="text-xs h-9 px-3 border-border text-foreground hover:bg-muted hover:bg-warning/20 cursor-pointer gap-1.5 font-semibold"title="Log actual floor consumption, scrap, and remnants">
+            <Printer className="h-3.5 w-3.5 text-warning"/>
             <span>{isBn ? 'কনজাম্পশন হিসাব' : 'Log Consumption'}</span>
           </Button>
         )}
@@ -71,16 +71,16 @@ export function InventoryActionBar({
         {/* Stock Audit / Adjustment */}
         <Button
  size="sm"variant="outline"onClick={onAdjustment}
- className="text-xs h-9 px-3 border-border text-foreground hover:bg-muted hover:bg-amber-50 dark:hover:bg-amber-950/40 cursor-pointer gap-1.5 font-semibold"title="Audit physical count and adjust stock variance">
-          <RotateCcw className="h-3.5 w-3.5 text-amber-600"/>
+ className="text-xs h-9 px-3 border-border text-foreground hover:bg-muted hover:bg-warning-surface dark:hover:bg-warning-surface cursor-pointer gap-1.5 font-semibold"title="Audit physical count and adjust stock variance">
+          <RotateCcw className="h-3.5 w-3.5 text-warning"/>
           <span>{isBn ? 'স্টক অডিট / সমন্বয়' : 'Audit / Adjust'}</span>
         </Button>
 
         {/* New Purchase Order */}
         <Button
  size="sm"variant="outline"onClick={onNewPurchase}
- className="text-xs h-9 px-3 border-violet-200 dark:border-violet-800 text-violet-700 dark:text-violet-300 hover:bg-violet-50 dark:hover:bg-violet-950/40 cursor-pointer gap-1.5 font-semibold"title="Create a new Purchase Order to suppliers">
-          <ShoppingBag className="h-3.5 w-3.5 text-violet-600"/>
+ className="text-xs h-9 px-3 border-primary/20 border-border text-primary text-primary hover:bg-primary/10 dark:hover:bg-primary/10 cursor-pointer gap-1.5 font-semibold"title="Create a new Purchase Order to suppliers">
+          <ShoppingBag className="h-3.5 w-3.5 text-primary"/>
           <span>{isBn ? 'নতুন PO' : 'New PO'}</span>
         </Button>
       </div>

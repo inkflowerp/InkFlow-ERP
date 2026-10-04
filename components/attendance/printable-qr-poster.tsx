@@ -62,7 +62,7 @@ export function PrintableQrPoster({
       {/* Top Action Bar (hidden when printing) */}
       <div className="flex flex-wrap items-center justify-between gap-2 p-3 bg-surface-inset border border-border rounded-xl print:hidden">
         <div className="flex items-center gap-2 text-muted-foreground text-xs">
-          <QrCode className="h-4 w-4 text-indigo-400"/>
+          <QrCode className="h-4 w-4 text-primary"/>
           <span>{tBilingual('Printable QR Poster for Location Entrance', 'লোকেশন প্রবেশদ্বারের জন্য প্রিন্ট উপযোগী পোস্টার')}</span>
         </div>
         <div className="flex items-center gap-2">
@@ -73,13 +73,13 @@ export function PrintableQrPoster({
           )}
           <Button
  type="button"variant="outline"onClick={handleDownloadSvg}
- className="h-8 text-xs border-indigo-500/40 bg-card-elevated hover:bg-card-elevated text-indigo-300 font-bold flex items-center gap-1.5 cursor-pointer">
+ className="h-8 text-xs border-primary/40 bg-card-elevated hover:bg-card-elevated text-primary font-bold flex items-center gap-1.5 cursor-pointer">
             <Download className="h-3.5 w-3.5"/>
             <span>Download SVG</span>
           </Button>
           <Button
  type="button"onClick={handlePrint}
- className="h-8 text-xs bg-indigo-600 hover:bg-indigo-500 text-white font-bold flex items-center gap-1.5 cursor-pointer shadow-xs">
+ className="h-8 text-xs bg-primary hover:bg-primary/90 text-primary-foreground font-bold flex items-center gap-1.5 cursor-pointer shadow-xs">
             <Printer className="h-3.5 w-3.5"/>
             <span>Print Poster (প্রিন্ট করুন)</span>
           </Button>
@@ -89,10 +89,10 @@ export function PrintableQrPoster({
       {/* Printable Poster Sheet (A4 format) */}
       <div
  ref={posterRef}
- className="bg-card text-foreground print:bg-white print: print:text-foreground print: p-8 sm:p-12 rounded-xl border border-input shadow-lg max-w-lg mx-auto print:max-w-none print:w-full print:p-8 print:shadow-none print:border-none print:rounded-none">
+ className="bg-card text-foreground print:bg-background print:text-foreground p-8 sm:p-12 rounded-xl border border-input shadow-lg max-w-lg mx-auto print:max-w-none print:w-full print:p-8 print:shadow-none print:border-none print:rounded-none">
         {/* Poster Header */}
         <div className="text-center space-y-2 border-b-2 border-border pb-6">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200 text-xs font-bold tracking-wider uppercase">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary border border-primary/20 text-xs font-bold tracking-wider uppercase">
             <ShieldCheck className="h-4 w-4"/>
             <span>InkFlow ERP • Smart Attendance</span>
           </div>
@@ -107,7 +107,7 @@ export function PrintableQrPoster({
 
         {/* Location Badge */}
         <div className="my-6 text-center space-y-1">
-          <span className="text-2xs font-bold text-indigo-600 uppercase tracking-widest block">
+          <span className="text-xs font-bold text-primary uppercase tracking-widest block">
  Official Attendance Terminal (হাজিরা পয়েন্ট)
           </span>
           <h2 className="text-xl sm:text-2xl font-black text-foreground tracking-tight">
@@ -130,10 +130,10 @@ export function PrintableQrPoster({
  bgColor="#FFFFFF"fgColor="#0F172A"includeMargin={false}
  className="rounded-xl"/>
             {/* Corner Target Markers */}
-            <div className="absolute -top-2 -left-2 w-6 h-6 border-t-4 border-l-4 border-indigo-600"/>
-            <div className="absolute -top-2 -right-2 w-6 h-6 border-t-4 border-r-4 border-indigo-600"/>
-            <div className="absolute -bottom-2 -left-2 w-6 h-6 border-b-4 border-l-4 border-indigo-600"/>
-            <div className="absolute -bottom-2 -right-2 w-6 h-6 border-b-4 border-r-4 border-indigo-600"/>
+            <div className="absolute -top-2 -left-2 w-6 h-6 border-t-4 border-l-4 border-primary"/>
+            <div className="absolute -top-2 -right-2 w-6 h-6 border-t-4 border-r-4 border-primary"/>
+            <div className="absolute -bottom-2 -left-2 w-6 h-6 border-b-4 border-l-4 border-primary"/>
+            <div className="absolute -bottom-2 -right-2 w-6 h-6 border-b-4 border-r-4 border-primary"/>
           </div>
 
           <div className="mt-4 text-center space-y-1">
@@ -160,11 +160,11 @@ export function PrintableQrPoster({
         </div>
 
         {/* Footer Meta */}
-        <div className="mt-8 pt-4 border-t border-border flex items-center justify-between text-2xs text-muted-foreground tabular-nums">
+        <div className="mt-8 pt-4 border-t border-border flex items-center justify-between text-xs text-muted-foreground tabular-nums">
           <div>
             <span>Generated: {generatedDate}</span>
           </div>
-          <div className="flex items-center gap-1 text-emerald-600 font-bold">
+          <div className="flex items-center gap-1 text-success font-bold">
             <ShieldCheck className="h-3.5 w-3.5"/>
             <span>Server Verified • Geofenced</span>
           </div>

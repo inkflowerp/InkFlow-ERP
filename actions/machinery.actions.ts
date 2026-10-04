@@ -1,10 +1,13 @@
 'use server'
 
+import { withTenantAction } from '@/lib/actions/action-wrapper'
+
+
 import { revalidatePath } from 'next/cache'
 import { MachineryService } from '@/services/machinery.service'
 import { AuditService } from '@/services/audit.service'
 import { getCurrentTenant } from '@/lib/auth/tenant-auth'
-import { createClient } from '@/lib/supabase/server'
+import { CommunicationRepository } from '@/lib/repositories/communication.repository'
 import {
   MachineryRecord,
   MachineryAssignmentRecord,
@@ -47,10 +50,13 @@ async function resolveTenantContext(requestedCompanyId?: string) {
 /**
  * Server Action: Fetches filtered list of machineries
  */
-export async function getMachineriesAction(
-  filters?: MachineryFilterOptions,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<MachineryRecord[]>> {
+export const getMachineriesAction = withTenantAction(
+  {
+    permission: "machineries.view",
+    entityType: "machinery"
+  },
+  async (ctx, filters?: MachineryFilterOptions,
+  requestedCompanyId?: string) : Promise<ServerActionResult<MachineryRecord[]>> => {
   try {
     const { companyId } = await resolveTenantContext(requestedCompanyId)
     const machineries = await MachineryService.getMachineries(companyId, filters)
@@ -58,15 +64,19 @@ export async function getMachineriesAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to fetch machineries.' }
   }
-}
+
+})
 
 /**
  * Server Action: Fetches a single machinery by ID
  */
-export async function getMachineryByIdAction(
-  id: string,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<MachineryRecord | null>> {
+export const getMachineryByIdAction = withTenantAction(
+  {
+    permission: "machineries.view",
+    entityType: "machinery"
+  },
+  async (ctx, id: string,
+  requestedCompanyId?: string) : Promise<ServerActionResult<MachineryRecord | null>> => {
   try {
     const { companyId } = await resolveTenantContext(requestedCompanyId)
     const machine = await MachineryService.getMachineryById(id, companyId)
@@ -78,17 +88,21 @@ export async function getMachineryByIdAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to fetch machinery details.' }
   }
-}
+
+})
 
 import { EntitlementService } from '@/services/entitlement.service'
 
 /**
  * Server Action: Creates a new machinery record
  */
-export async function createMachineryAction(
-  input: CreateMachineryInput,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<MachineryRecord>> {
+export const createMachineryAction = withTenantAction(
+  {
+    permission: "machineries.status",
+    entityType: "machinery"
+  },
+  async (ctx, input: CreateMachineryInput,
+  requestedCompanyId?: string) : Promise<ServerActionResult<MachineryRecord>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId || input.company_id)
     if (!tenant || !tenant.companyId) {
@@ -130,16 +144,20 @@ export async function createMachineryAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to create machinery.' }
   }
-}
+
+})
 
 /**
  * Server Action: Updates an existing machinery record
  */
-export async function updateMachineryAction(
-  id: string,
+export const updateMachineryAction = withTenantAction(
+  {
+    permission: "machineries.status",
+    entityType: "machinery"
+  },
+  async (ctx, id: string,
   updates: UpdateMachineryInput,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<MachineryRecord>> {
+  requestedCompanyId?: string) : Promise<ServerActionResult<MachineryRecord>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -179,17 +197,21 @@ export async function updateMachineryAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to update machinery.' }
   }
-}
+
+})
 
 /**
  * Server Action: Changes status of a machine
  */
-export async function changeMachineryStatusAction(
-  id: string,
+export const changeMachineryStatusAction = withTenantAction(
+  {
+    permission: "machineries.status",
+    entityType: "machinery"
+  },
+  async (ctx, id: string,
   newStatus: MachineryStatus,
   notes?: string | null,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<MachineryRecord>> {
+  requestedCompanyId?: string) : Promise<ServerActionResult<MachineryRecord>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -222,15 +244,19 @@ export async function changeMachineryStatusAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to change machinery status.' }
   }
-}
+
+})
 
 /**
  * Server Action: Archives / Retires a machine
  */
-export async function archiveMachineryAction(
-  id: string,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<MachineryRecord>> {
+export const archiveMachineryAction = withTenantAction(
+  {
+    permission: "machineries.view",
+    entityType: "machinery"
+  },
+  async (ctx, id: string,
+  requestedCompanyId?: string) : Promise<ServerActionResult<MachineryRecord>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -269,18 +295,22 @@ export async function archiveMachineryAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to archive machinery.' }
   }
-}
+
+})
 
 /**
  * Server Action: Checks for assignment conflicts
  */
-export async function checkMachineryConflictAction(
-  machineId: string,
+export const checkMachineryConflictAction = withTenantAction(
+  {
+    permission: "machineries.view",
+    entityType: "machinery"
+  },
+  async (ctx, machineId: string,
   scheduledStart: string,
   scheduledEnd: string,
   excludeAssignmentId?: string,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<ConflictCheckResult>> {
+  requestedCompanyId?: string) : Promise<ServerActionResult<ConflictCheckResult>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -300,15 +330,19 @@ export async function checkMachineryConflictAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to check assignment conflicts.' }
   }
-}
+
+})
 
 /**
  * Server Action: Assigns a machine to a job order / task
  */
-export async function assignMachineryAction(
-  input: CreateMachineryAssignmentInput,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<MachineryAssignmentRecord>> {
+export const assignMachineryAction = withTenantAction(
+  {
+    permission: "machineries.view",
+    entityType: "machinery"
+  },
+  async (ctx, input: CreateMachineryAssignmentInput,
+  requestedCompanyId?: string) : Promise<ServerActionResult<MachineryAssignmentRecord>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId || input.company_id)
     if (!tenant || !tenant.companyId) {
@@ -352,16 +386,20 @@ export async function assignMachineryAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to assign machinery.' }
   }
-}
+
+})
 
 /**
  * Server Action: Updates assignment status
  */
-export async function updateAssignmentStatusAction(
-  assignmentId: string,
+export const updateAssignmentStatusAction = withTenantAction(
+  {
+    permission: "machineries.status",
+    entityType: "machinery"
+  },
+  async (ctx, assignmentId: string,
   status: AssignmentStatus,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<MachineryAssignmentRecord>> {
+  requestedCompanyId?: string) : Promise<ServerActionResult<MachineryAssignmentRecord>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -381,13 +419,18 @@ export async function updateAssignmentStatusAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to update assignment status.' }
   }
-}
+
+})
 
 /**
  * Server Action: Schedules maintenance for a machine
  */
-export async function scheduleMaintenanceAction(
-  input: {
+export const scheduleMaintenanceAction = withTenantAction(
+  {
+    permission: "machineries.view",
+    entityType: "machinery"
+  },
+  async (ctx, input: {
     machine_id: string
     maintenance_type: any
     scheduled_date: string
@@ -401,8 +444,7 @@ export async function scheduleMaintenanceAction(
     attachment_url?: string | null
     next_maintenance_date?: string | null
   },
-  requestedCompanyId?: string
-): Promise<ServerActionResult<MachineryMaintenanceRecord>> {
+  requestedCompanyId?: string) : Promise<ServerActionResult<MachineryMaintenanceRecord>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -438,13 +480,18 @@ export async function scheduleMaintenanceAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to schedule maintenance.' }
   }
-}
+
+})
 
 /**
  * Server Action: Completes maintenance for a machine
  */
-export async function completeMaintenanceAction(
-  maintenanceId: string,
+export const completeMaintenanceAction = withTenantAction(
+  {
+    permission: "machineries.view",
+    entityType: "machinery"
+  },
+  async (ctx, maintenanceId: string,
   machineId: string,
   completionData: {
     work_performed: string
@@ -454,8 +501,7 @@ export async function completeMaintenanceAction(
     technician_name?: string | null
     notes?: string | null
   },
-  requestedCompanyId?: string
-): Promise<ServerActionResult<MachineryMaintenanceRecord>> {
+  requestedCompanyId?: string) : Promise<ServerActionResult<MachineryMaintenanceRecord>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -484,21 +530,16 @@ export async function completeMaintenanceAction(
     )
 
     // Notification
-    try {
-      const supabase = await createClient()
-      await (supabase.from('in_app_notifications' as any) as any).insert({
-        company_id: companyId,
-        type: 'production_completed',
-        title: 'Maintenance Completed',
-        title_bn: 'মেশিন রক্ষণাবেক্ষণ সম্পন্ন',
-        message: `Maintenance completed for machine. Machine is now available for production.`,
-        message_bn: `মেশিনের রক্ষণাবেক্ষণ সম্পন্ন হয়েছে এবং তা প্রোডাকশনের জন্য প্রস্তুত।`,
-        action_url: `/${tenant?.companySlug || 'app'}/production/machineries/${machineId}`,
-        created_at: new Date().toISOString(),
-      })
-    } catch {
-      // Non-blocking notification
-    }
+    await CommunicationRepository.createInAppNotification({
+      company_id: companyId,
+      type: 'production_completed',
+      title: 'Maintenance Completed',
+      title_bn: 'মেশিন রক্ষণাবেক্ষণ সম্পন্ন',
+      message: `Maintenance completed for machine. Machine is now available for production.`,
+      message_bn: `মেশিনের রক্ষণাবেক্ষণ সম্পন্ন হয়েছে এবং তা প্রোডাকশনের জন্য প্রস্তুত।`,
+      action_url: `/${tenant?.companySlug || 'app'}/production/machineries/${machineId}`,
+      created_at: new Date().toISOString(),
+    })
 
     if (tenant?.companySlug) {
       revalidatePath(`/${tenant.companySlug}/production/machineries`)
@@ -509,13 +550,18 @@ export async function completeMaintenanceAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to complete maintenance.' }
   }
-}
+
+})
 
 /**
  * Server Action: Reports machine breakdown
  */
-export async function reportBreakdownAction(
-  input: {
+export const reportBreakdownAction = withTenantAction(
+  {
+    permission: "machineries.view",
+    entityType: "machinery"
+  },
+  async (ctx, input: {
     machine_id: string
     reported_by_name?: string
     problem_title: string
@@ -526,8 +572,7 @@ export async function reportBreakdownAction(
     affected_production_job_id?: string | null
     attachment_url?: string | null
   },
-  requestedCompanyId?: string
-): Promise<ServerActionResult<MachineryBreakdownRecord>> {
+  requestedCompanyId?: string) : Promise<ServerActionResult<MachineryBreakdownRecord>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -558,21 +603,16 @@ export async function reportBreakdownAction(
     )
 
     // Dispatch High Priority In-App Notification
-    try {
-      const supabase = await createClient()
-      await (supabase.from('in_app_notifications' as any) as any).insert({
-        company_id: companyId,
-        type: 'low_stock', // Uses urgent notification style
-        title: `🚨 Machine Breakdown Alert: ${input.problem_title}`,
-        title_bn: `🚨 মেশিন ব্রেকডাউন অ্যালার্ট: ${input.problem_title}`,
-        message: `Machine has been reported as broken down by ${reporterName}. Impact: ${input.production_impact || 'delay'}.`,
-        message_bn: `${reporterName} মেশিন ব্রেকডাউন রিপোর্ট করেছেন। প্রভাব: ${input.production_impact || 'delay'}।`,
-        action_url: `/${tenant?.companySlug || 'app'}/production/machineries/${input.machine_id}`,
-        created_at: new Date().toISOString(),
-      })
-    } catch {
-      // Non-blocking
-    }
+    await CommunicationRepository.createInAppNotification({
+      company_id: companyId,
+      type: 'low_stock', // Uses urgent notification style
+      title: `🚨 Machine Breakdown Alert: ${input.problem_title}`,
+      title_bn: `🚨 মেশিন ব্রেকডাউন অ্যালার্ট: ${input.problem_title}`,
+      message: `Machine has been reported as broken down by ${reporterName}. Impact: ${input.production_impact || 'delay'}.`,
+      message_bn: `${reporterName} মেশিন ব্রেকডাউন রিপোর্ট করেছেন। প্রভাব: ${input.production_impact || 'delay'}।`,
+      action_url: `/${tenant?.companySlug || 'app'}/production/machineries/${input.machine_id}`,
+      created_at: new Date().toISOString(),
+    })
 
     if (tenant?.companySlug) {
       revalidatePath(`/${tenant.companySlug}/production/machineries`)
@@ -584,13 +624,18 @@ export async function reportBreakdownAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to report breakdown.' }
   }
-}
+
+})
 
 /**
  * Server Action: Resolves machine breakdown
  */
-export async function resolveBreakdownAction(
-  breakdownId: string,
+export const resolveBreakdownAction = withTenantAction(
+  {
+    permission: "machineries.view",
+    entityType: "machinery"
+  },
+  async (ctx, breakdownId: string,
   machineId: string,
   resolution: {
     diagnosis: string
@@ -602,8 +647,7 @@ export async function resolveBreakdownAction(
     resolution_notes?: string | null
     targetStatus?: MachineryStatus
   },
-  requestedCompanyId?: string
-): Promise<ServerActionResult<MachineryBreakdownRecord>> {
+  requestedCompanyId?: string) : Promise<ServerActionResult<MachineryBreakdownRecord>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -637,21 +681,16 @@ export async function resolveBreakdownAction(
     )
 
     // Notification
-    try {
-      const supabase = await createClient()
-      await (supabase.from('in_app_notifications' as any) as any).insert({
-        company_id: companyId,
-        type: 'production_completed',
-        title: 'Machine Repaired & Available',
-        title_bn: 'মেশিন মেরামত সম্পন্ন',
-        message: `Machine repair completed by ${resolverName}. Machine is restored to available status.`,
-        message_bn: `মেশিন সফলভাবে মেরামত করা হয়েছে এবং কাজের জন্য উন্মুক্ত রয়েছে।`,
-        action_url: `/${tenant?.companySlug || 'app'}/production/machineries/${machineId}`,
-        created_at: new Date().toISOString(),
-      })
-    } catch {
-      // Non-blocking
-    }
+    await CommunicationRepository.createInAppNotification({
+      company_id: companyId,
+      type: 'production_completed',
+      title: 'Machine Repaired & Available',
+      title_bn: 'মেশিন মেরামত সম্পন্ন',
+      message: `Machine repair completed by ${resolverName}. Machine is restored to available status.`,
+      message_bn: `মেশিন সফলভাবে মেরামত করা হয়েছে এবং কাজের জন্য উন্মুক্ত রয়েছে।`,
+      action_url: `/${tenant?.companySlug || 'app'}/production/machineries/${machineId}`,
+      created_at: new Date().toISOString(),
+    })
 
     if (tenant?.companySlug) {
       revalidatePath(`/${tenant.companySlug}/production/machineries`)
@@ -663,14 +702,18 @@ export async function resolveBreakdownAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to resolve breakdown.' }
   }
-}
+
+})
 
 /**
  * Server Action: Fetches dashboard summary metrics
  */
-export async function getMachineryDashboardMetricsAction(
-  requestedCompanyId?: string
-): Promise<ServerActionResult<MachinerySummaryMetrics>> {
+export const getMachineryDashboardMetricsAction = withTenantAction(
+  {
+    permission: "machineries.view",
+    entityType: "machinery"
+  },
+  async (ctx, requestedCompanyId?: string) : Promise<ServerActionResult<MachinerySummaryMetrics>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -683,15 +726,19 @@ export async function getMachineryDashboardMetricsAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to calculate summary metrics.' }
   }
-}
+
+})
 
 /**
  * Server Action: Intelligently resolves eligible machines for a job order task / production context
  */
-export async function getEligibleMachineriesAction(
-  params: MachineEligibilityParams,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<EligibleMachineSummary>> {
+export const getEligibleMachineriesAction = withTenantAction(
+  {
+    permission: "machineries.view",
+    entityType: "machinery"
+  },
+  async (ctx, params: MachineEligibilityParams,
+  requestedCompanyId?: string) : Promise<ServerActionResult<EligibleMachineSummary>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -704,15 +751,19 @@ export async function getEligibleMachineriesAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to resolve eligible machineries.' }
   }
-}
+
+})
 
 /**
  * Server Action: Fetches all machine assignments for a given Job Order
  */
-export async function getJobOrderAssignmentsAction(
-  jobOrderId: string,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<MachineryAssignmentRecord[]>> {
+export const getJobOrderAssignmentsAction = withTenantAction(
+  {
+    permission: "machineries.view",
+    entityType: "machinery"
+  },
+  async (ctx, jobOrderId: string,
+  requestedCompanyId?: string) : Promise<ServerActionResult<MachineryAssignmentRecord[]>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -725,15 +776,19 @@ export async function getJobOrderAssignmentsAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to fetch job order assignments.' }
   }
-}
+
+})
 
 /**
  * Server Action: Reassigns an affected job order task from a broken machine to an alternate eligible machine
  */
-export async function reassignBreakdownJobAction(
-  input: ReassignBreakdownInput,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<MachineryAssignmentRecord>> {
+export const reassignBreakdownJobAction = withTenantAction(
+  {
+    permission: "machineries.view",
+    entityType: "machinery"
+  },
+  async (ctx, input: ReassignBreakdownInput,
+  requestedCompanyId?: string) : Promise<ServerActionResult<MachineryAssignmentRecord>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -773,5 +828,6 @@ export async function reassignBreakdownJobAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to reassign breakdown job.' }
   }
-}
+
+})
 

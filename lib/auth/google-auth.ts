@@ -307,10 +307,10 @@ export async function exchangeGoogleAuthCode(
         refresh_token: data.refresh_token,
       },
     }
-  } catch (err: any) {
+  } catch (err: unknown) {
     return {
       success: false,
-      error: err?.message || 'Network failure communicating with Google OAuth server.',
+      error: err instanceof Error ? err.message : 'Network failure communicating with Google OAuth server.',
     }
   }
 }
@@ -377,10 +377,10 @@ export async function verifyGoogleTokenIdentity(
         picture: info.picture,
       },
     }
-  } catch (err: any) {
+  } catch (err: unknown) {
     return {
       success: false,
-      error: err?.message || 'Failed to fetch Google user identity',
+      error: err instanceof Error ? err.message : 'Failed to fetch Google user identity',
     }
   }
 }
@@ -414,7 +414,7 @@ export async function authenticateGoogleUser(
         let existingUser: { id: string; email_confirmed?: boolean } | null = null
 
         // Primary lookup: direct query on public.user_profiles (1:1 with auth.users, indexed by email)
-        const { data: profile } = await (admin as any)
+        const { data: profile } = await admin
           .from('user_profiles')
           .select('id, email')
           .ilike('email', normalizedEmail)
@@ -457,8 +457,8 @@ export async function authenticateGoogleUser(
 
           if (createErr || !created.user) {
             // Handle case where user already exists in auth.users
-            if (createErr?.message?.toLowerCase().includes('already') || (createErr as any)?.status === 422) {
-              const { data: retryProf } = await (admin as any)
+            if (createErr?.message?.toLowerCase().includes('already') || (createErr as { status?: number })?.status === 422) {
+              const { data: retryProf } = await admin
                 .from('user_profiles')
                 .select('id')
                 .ilike('email', normalizedEmail)
@@ -479,7 +479,7 @@ export async function authenticateGoogleUser(
             isNewUser = true
           }
         }
-      } catch (e: any) {
+      } catch (e: unknown) {
         console.error('[GoogleAuth] Supabase auth user lookup/create error:', e)
       }
     } else {
@@ -495,7 +495,7 @@ export async function authenticateGoogleUser(
 
     // 2. Guarantee user_profiles record is persisted and active
     try {
-      await (admin as any).from('user_profiles').upsert(
+      await admin.from('user_profiles').upsert(
         {
           id: userId,
           email: normalizedEmail,
@@ -512,19 +512,19 @@ export async function authenticateGoogleUser(
 
     // 3. Reconcile invited or pre-created company memberships matching user's verified Google email
     try {
-      await (admin as any)
+      await admin
         .from('company_users')
         .update({ user_id: userId, status: 'active', updated_at: new Date().toISOString() })
         .ilike('invited_email', normalizedEmail)
 
-      const { data: matchedCompanies } = await (admin as any)
+      const { data: matchedCompanies } = await admin
         .from('companies')
         .select('id')
         .ilike('email', normalizedEmail)
 
       if (matchedCompanies && matchedCompanies.length > 0) {
         for (const comp of matchedCompanies) {
-          await (admin as any)
+          await admin
             .from('company_users')
             .update({ user_id: userId, status: 'active', updated_at: new Date().toISOString() })
             .eq('company_id', comp.id)
@@ -536,7 +536,7 @@ export async function authenticateGoogleUser(
 
     // 4. Hard Security Boundary: Platform Administrator Accounts
     try {
-      const { data: platformAdmin } = await (admin as any)
+      const { data: platformAdmin } = await admin
         .from('platform_admins')
         .select('id, is_active')
         .eq('user_id', userId)
@@ -569,7 +569,7 @@ export async function authenticateGoogleUser(
         }
       }
 
-      const isOwner = (company as any)?.owner_id === userId || primaryRole === 'business_owner'
+      const isOwner = company.owner_id === userId || primaryRole === 'business_owner'
       const tenantRole: TenantRole = resolveTenantRole(primaryRole, companyUser.responsibilities, isOwner)
 
       const sessionData: TenantSessionData = {

@@ -235,15 +235,15 @@ export default function MachineriesListPage() {
             <Link href={getTenantNavHref('/production', pathname, tenantSlug)}>
               <Button
  variant="outline"size="sm"className="gap-1.5 border-border text-foreground font-bold">
-                <LayoutGrid className="h-4 w-4 text-indigo-600"/>
+                <LayoutGrid className="h-4 w-4 text-primary"/>
                 <span>{tBilingual('Production Board', 'প্রোডাকশন বোর্ড')}</span>
               </Button>
             </Link>
 
             <Link href={getTenantNavHref('/operator', pathname, tenantSlug)}>
               <Button
- variant="outline"size="sm"className="gap-1.5 border-blue-300 dark:border-blue-800 text-blue-700 dark:text-blue-300 bg-blue-50/50 dark:bg-blue-950/30 font-bold">
-                <PlayCircle className="h-4 w-4 text-blue-600 dark:text-blue-400"/>
+ variant="outline"size="sm"className="gap-1.5 border-primary/20 border-border text-primary text-primary bg-primary/10/50 bg-primary/10 font-bold">
+                <PlayCircle className="h-4 w-4 text-primary text-primary"/>
                 <span>{tBilingual('Shop Floor Terminal', 'শপ ফ্লোর টার্মিনাল')}</span>
               </Button>
             </Link>
@@ -251,7 +251,7 @@ export default function MachineriesListPage() {
             <Link href={getTenantNavHref('/finishing', pathname, tenantSlug)}>
               <Button
  variant="outline"size="sm"className="gap-1.5 border-border text-foreground font-bold">
-                <Scissors className="h-4 w-4 text-indigo-600"/>
+                <Scissors className="h-4 w-4 text-primary"/>
                 <span>{tBilingual('Finishing Floor', 'ফিনিশিং ফ্লোর')}</span>
               </Button>
             </Link>
@@ -282,7 +282,7 @@ export default function MachineriesListPage() {
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2.5 sm:gap-3">
         <Card className="py-2 px-3 sm:py-2.5 sm:px-3.5 bg-card border border-border shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-2xs sm:text-xs font-bold text-muted-foreground uppercase tracking-wider">{tBilingual("Total", "মোট মেশিন")}</span>
+            <span className="text-xs sm:text-xs font-bold text-muted-foreground uppercase tracking-wider">{tBilingual("Total", "মোট মেশিন")}</span>
             <Cpu className="h-3.5 w-3.5 text-muted-foreground"/>
           </div>
           <p className="text-lg sm:text-xl font-black text-foreground mt-0.5 leading-tight">
@@ -290,59 +290,59 @@ export default function MachineriesListPage() {
           </p>
         </Card>
 
-        <Card className="py-2 px-3 sm:py-2.5 sm:px-3.5 bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800 shadow-xs">
+        <Card className="py-2 px-3 sm:py-2.5 sm:px-3.5 bg-success-surface/50 bg-success-surface border border-success-border border-success-border shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-2xs sm:text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">{tBilingual("Available", "প্রস্তুত / সচল")}</span>
-            <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600"/>
+            <span className="text-xs sm:text-xs font-bold text-success text-success uppercase tracking-wider">{tBilingual("Available", "প্রস্তুত / সচল")}</span>
+            <CheckCircle2 className="h-3.5 w-3.5 text-success"/>
           </div>
-          <p className="text-lg sm:text-xl font-black text-emerald-700 dark:text-emerald-400 mt-0.5 leading-tight">
+          <p className="text-lg sm:text-xl font-black text-success text-success mt-0.5 leading-tight">
             {metrics?.available ?? machineries.filter((m) => m.status === 'available').length}
           </p>
         </Card>
 
-        <Card className="py-2 px-3 sm:py-2.5 sm:px-3.5 bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 shadow-xs">
+        <Card className="py-2 px-3 sm:py-2.5 sm:px-3.5 bg-primary/10/50 bg-primary/10 border border-primary/20 border-border shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-2xs sm:text-xs font-bold text-blue-700 dark:text-blue-400 uppercase tracking-wider">{tBilingual("In Use", "চলমান")}</span>
-            <PlayCircle className="h-3.5 w-3.5 text-blue-600"/>
+            <span className="text-xs sm:text-xs font-bold text-primary text-primary uppercase tracking-wider">{tBilingual("In Use", "চলমান")}</span>
+            <PlayCircle className="h-3.5 w-3.5 text-primary"/>
           </div>
-          <p className="text-lg sm:text-xl font-black text-blue-700 dark:text-blue-400 mt-0.5 leading-tight">
+          <p className="text-lg sm:text-xl font-black text-primary text-primary mt-0.5 leading-tight">
             {metrics?.inUse ?? machineries.filter((m) => m.status === 'in_use').length}
           </p>
         </Card>
 
-        <Card className="py-2 px-3 sm:py-2.5 sm:px-3.5 bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-200 dark:border-indigo-800 shadow-xs">
+        <Card className="py-2 px-3 sm:py-2.5 sm:px-3.5 bg-primary/10/50 bg-primary/10 border border-primary/20 border-border shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-2xs sm:text-xs font-bold text-indigo-700 dark:text-indigo-400 uppercase tracking-wider">{tBilingual("Scheduled", "নির্ধারিত")}</span>
-            <Clock className="h-3.5 w-3.5 text-indigo-600"/>
+            <span className="text-xs sm:text-xs font-bold text-primary text-primary uppercase tracking-wider">{tBilingual("Scheduled", "নির্ধারিত")}</span>
+            <Clock className="h-3.5 w-3.5 text-primary"/>
           </div>
-          <p className="text-lg sm:text-xl font-black text-indigo-700 dark:text-indigo-400 mt-0.5 leading-tight">
+          <p className="text-lg sm:text-xl font-black text-primary text-primary mt-0.5 leading-tight">
             {metrics?.scheduled ?? machineries.filter((m) => m.status === 'scheduled').length}
           </p>
         </Card>
 
-        <Card className="py-2 px-3 sm:py-2.5 sm:px-3.5 bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 shadow-xs">
+        <Card className="py-2 px-3 sm:py-2.5 sm:px-3.5 bg-warning-surface/50 bg-warning-surface border border-warning-border border-warning-border shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-2xs sm:text-xs font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider">{tBilingual("Maintenance", "রক্ষণাবেক্ষণে")}</span>
-            <Wrench className="h-3.5 w-3.5 text-amber-600"/>
+            <span className="text-xs sm:text-xs font-bold text-warning text-warning uppercase tracking-wider">{tBilingual("Maintenance", "রক্ষণাবেক্ষণে")}</span>
+            <Wrench className="h-3.5 w-3.5 text-warning"/>
           </div>
-          <p className="text-lg sm:text-xl font-black text-amber-700 dark:text-amber-400 mt-0.5 leading-tight">
+          <p className="text-lg sm:text-xl font-black text-warning text-warning mt-0.5 leading-tight">
             {metrics?.maintenance ?? machineries.filter((m) => m.status === 'maintenance').length}
           </p>
         </Card>
 
-        <Card className="py-2 px-3 sm:py-2.5 sm:px-3.5 bg-red-50/50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 shadow-xs">
+        <Card className="py-2 px-3 sm:py-2.5 sm:px-3.5 bg-danger-surface/50 bg-danger-surface border border-danger-border border-danger-border shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-2xs sm:text-xs font-bold text-red-700 dark:text-red-400 uppercase tracking-wider">{tBilingual("Breakdown", "ত্রুটিযুক্ত")}</span>
-            <AlertTriangle className="h-3.5 w-3.5 text-red-600"/>
+            <span className="text-xs sm:text-xs font-bold text-destructive text-destructive uppercase tracking-wider">{tBilingual("Breakdown", "ত্রুটিযুক্ত")}</span>
+            <AlertTriangle className="h-3.5 w-3.5 text-destructive"/>
           </div>
-          <p className="text-lg sm:text-xl font-black text-red-700 dark:text-red-400 mt-0.5 leading-tight">
+          <p className="text-lg sm:text-xl font-black text-destructive text-destructive mt-0.5 leading-tight">
             {metrics?.breakdown ?? machineries.filter((m) => m.status === 'breakdown').length}
           </p>
         </Card>
 
         <Card className="py-2 px-3 sm:py-2.5 sm:px-3.5 bg-muted border border-input shadow-xs col-span-2 sm:col-span-1">
           <div className="flex items-center justify-between">
-            <span className="text-2xs sm:text-xs font-bold text-muted-foreground uppercase tracking-wider">{tBilingual("Offline", "অফলাইন")}</span>
+            <span className="text-xs sm:text-xs font-bold text-muted-foreground uppercase tracking-wider">{tBilingual("Offline", "অফলাইন")}</span>
             <PowerOff className="h-3.5 w-3.5 text-muted-foreground"/>
           </div>
           <p className="text-lg sm:text-xl font-black text-foreground mt-0.5 leading-tight">
@@ -410,9 +410,9 @@ export default function MachineriesListPage() {
 
       {/* Error State */}
       {error && (
-        <Card className="p-4 border-red-300 bg-red-50 dark:bg-red-950/30 text-red-900 dark:text-red-300 flex items-center justify-between">
+        <Card className="p-4 border-danger-border bg-danger-surface bg-danger-surface text-destructive text-destructive flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-red-600 shrink-0"/>
+            <AlertTriangle className="h-5 w-5 text-destructive shrink-0"/>
             <span className="text-xs font-medium">{error}</span>
           </div>
           <Button size="sm"variant="outline"onClick={() => loadData()}>{tBilingual('Retry', 'পুনরায় চেষ্টা করুন')}</Button>
@@ -433,7 +433,7 @@ export default function MachineriesListPage() {
       ) : machineries.length === 0 ? (
         /* Empty State */
         <Card className="p-12 text-center border-dashed border-2 border-input bg-card">
-          <div className="mx-auto w-12 h-12 rounded-full bg-blue-50 dark:bg-blue-950/40 text-blue-600 flex items-center justify-center mb-3">
+          <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 bg-primary/10 text-primary flex items-center justify-center mb-3">
             <Cpu className="h-6 w-6"/>
           </div>
           <h3 className="text-base font-bold text-foreground">
@@ -459,14 +459,14 @@ export default function MachineriesListPage() {
           {machineries.map((m) => (
             <Card
  key={m.id}
- className="bg-card border border-border shadow-xs hover:border-blue-400 dark:hover:border-blue-700 transition-all flex flex-col justify-between overflow-hidden">
+ className="bg-card border border-border shadow-xs hover:border-border dark:hover:border-border transition-all flex flex-col justify-between overflow-hidden">
               <div className="p-4 space-y-3">
                 {/* Header: Name, Code & Badge */}
                 <div className="flex items-start justify-between gap-2">
                   <div className="space-y-0.5">
                     <Link
  href={getTenantNavHref(`/production/machineries/${m.id}`, pathname, tenantSlug)}
- className="font-black text-sm text-foreground hover:text-blue-600 dark:hover:text-blue-400 transition-colors line-clamp-1">
+ className="font-black text-sm text-foreground hover:text-primary dark:hover:text-primary transition-colors line-clamp-1">
                       {m.name}
                     </Link>
                     <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
@@ -489,13 +489,13 @@ export default function MachineriesListPage() {
                 {/* Specs / Capacity Bar */}
                 <div className="grid grid-cols-2 gap-2 p-2.5 rounded-lg bg-muted border border-border text-xs">
                   <div>
-                    <span className="text-muted-foreground block text-2xs uppercase font-bold">Capacity</span>
+                    <span className="text-muted-foreground block text-xs uppercase font-bold">Capacity</span>
                     <span className="font-bold text-foreground">
                       {m.production_capacity ? `${m.production_capacity} ${m.capacity_unit}` : 'Standard'}
                     </span>
                   </div>
                   <div>
-                    <span className="text-muted-foreground block text-2xs uppercase font-bold">Dimensions</span>
+                    <span className="text-muted-foreground block text-xs uppercase font-bold">Dimensions</span>
                     <span className="font-bold text-foreground">
                       {m.max_width ? `Max: ${m.max_width}"W` : 'Continuous'}
                     </span>
@@ -504,12 +504,12 @@ export default function MachineriesListPage() {
 
                 {/* Active Mounted Roll Banner */}
                 {m.active_mounted_roll_tag && (
-                  <div className="p-2 rounded bg-indigo-50/80 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-900 text-xs flex items-center justify-between">
-                    <span className="text-indigo-800 dark:text-indigo-300 font-bold flex items-center gap-1.5 truncate">
-                      <Disc className="h-3.5 w-3.5 text-indigo-600 shrink-0"/>
+                  <div className="p-2 rounded bg-primary/10/80 bg-primary/10 border border-primary/20 border-border text-xs flex items-center justify-between">
+                    <span className="text-primary text-primary font-bold flex items-center gap-1.5 truncate">
+                      <Disc className="h-3.5 w-3.5 text-primary shrink-0"/>
  Roll: {m.active_mounted_roll_tag}
                     </span>
-                    <Badge variant="outline"className="text-2xs bg-indigo-100/60 text-indigo-700 border-indigo-300 shrink-0">
+                    <Badge variant="outline"className="text-xs bg-primary/10/60 text-primary border-primary/20 shrink-0">
  Mounted
                     </Badge>
                   </div>
@@ -517,7 +517,7 @@ export default function MachineriesListPage() {
 
                 {/* Lifetime Production Meters */}
                 {(Number(m.total_sft_produced || 0) > 0 || Number(m.total_impressions || 0) > 0) && (
-                  <div className="flex items-center justify-between text-2xs px-2 py-1 rounded bg-muted tabular-nums text-muted-foreground">
+                  <div className="flex items-center justify-between text-xs px-2 py-1 rounded bg-muted tabular-nums text-muted-foreground">
                     <span>Meter:</span>
                     <span className="font-bold text-foreground">
                       {m.total_sft_produced ? `${Number(m.total_sft_produced).toLocaleString()} SFT` : `${Number(m.total_impressions).toLocaleString()} Imp`}
@@ -527,25 +527,25 @@ export default function MachineriesListPage() {
 
                 {/* Current Active Assignment or Location */}
                 {m.status === 'in_use' && m.current_assignment ? (
-                  <div className="p-2 rounded bg-blue-50/80 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900 text-xs space-y-0.5">
+                  <div className="p-2 rounded bg-primary/10/80 bg-primary/10 border border-primary/20 border-border text-xs space-y-0.5">
                     <Link
  href={getTenantNavHref(`/production/${m.current_assignment.job_order_id || m.current_assignment.production_job_id || m.current_assignment.job_order?.job_number || ''}`, pathname, tenantSlug)}
- className="text-blue-700 dark:text-blue-300 font-bold block hover:underline">
+ className="text-primary text-primary font-bold block hover:underline">
                       ⚡ Active Job: {m.current_assignment.job_order?.job_number || m.current_assignment.production_job?.production_job_number || 'Running'}
                     </Link>
-                    <span className="text-muted-foreground text-2xs block">
+                    <span className="text-muted-foreground text-xs block">
  Operator: {m.current_assignment.operator_name || 'Assigned Operator'}
                     </span>
                   </div>
                 ) : m.status === 'breakdown' ? (
-                  <div className="p-2 rounded bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 text-xs text-red-700 dark:text-red-400 font-semibold">
+                  <div className="p-2 rounded bg-danger-surface bg-danger-surface border border-danger-border border-danger-border text-xs text-destructive text-destructive font-semibold">
                     🚨 Problem: {m.latest_breakdown?.problem_title || 'Machine Malfunction'}
                   </div>
                 ) : (
                   <div className="text-xs text-muted-foreground flex items-center justify-between">
                     <span>Location: <strong>{m.location || 'Main Floor'}</strong></span>
                     {m.next_maintenance && (
-                      <span className="text-2xs text-amber-600 dark:text-amber-400 font-medium">
+                      <span className="text-xs text-warning text-warning font-medium">
  Maint: {new Date(m.next_maintenance.scheduled_date).toLocaleDateString()}
                       </span>
                     )}
@@ -558,15 +558,15 @@ export default function MachineriesListPage() {
                 <div className="flex items-center gap-2">
                   <Link
  href={getTenantNavHref(`/production/machineries/${m.id}`, pathname, tenantSlug)}
- className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline inline-flex items-center gap-1 min-h-[36px] py-1">
+ className="text-xs font-bold text-primary text-primary hover:underline inline-flex items-center gap-1 min-h-[36px] py-1">
                     <Eye className="h-3.5 w-3.5"/>
                     <span>Details</span>
                   </Link>
 
                   <Link
  href={getTenantNavHref(`/operator?machine=${m.id}`, pathname, tenantSlug)}
- className="text-xs font-bold text-foreground hover:text-blue-600 dark:hover:text-blue-400 hover:underline inline-flex items-center gap-1 min-h-[36px] py-1"title="Launch Workstation Terminal">
-                    <PlayCircle className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400"/>
+ className="text-xs font-bold text-foreground hover:text-primary dark:hover:text-primary hover:underline inline-flex items-center gap-1 min-h-[36px] py-1"title="Launch Workstation Terminal">
+                    <PlayCircle className="h-3.5 w-3.5 text-primary text-primary"/>
                     <span>Terminal</span>
                   </Link>
                 </div>
@@ -575,7 +575,7 @@ export default function MachineriesListPage() {
                   {canAssign && m.status !== 'breakdown' && m.status !== 'maintenance' && m.status !== 'retired' && (
                     <Button
  size="sm"variant="outline"onClick={() => setAssigningMachine(m)}
- className="h-8 text-xs font-bold text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-900">
+ className="h-8 text-xs font-bold text-primary text-primary border-primary/20 border-border">
  Assign
                     </Button>
                   )}
@@ -591,7 +591,7 @@ export default function MachineriesListPage() {
                   {canBreakdown && m.status !== 'breakdown' && (
                     <Button
  size="sm"variant="ghost"onClick={() => setBreakingMachine(m)}
- title="Report Breakdown"className="h-8 px-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40">
+ title="Report Breakdown"className="h-8 px-2 text-destructive hover:bg-danger-surface dark:hover:bg-danger-surface">
                       <AlertTriangle className="h-3.5 w-3.5"/>
                     </Button>
                   )}
@@ -632,12 +632,12 @@ export default function MachineriesListPage() {
                   <td className="p-3">
                     <Link
  href={getTenantNavHref(`/production/machineries/${m.id}`, pathname, tenantSlug)}
- className="font-bold text-foreground hover:text-blue-600">
+ className="font-bold text-foreground hover:text-primary">
                       {m.name}
                     </Link>
-                    <span className="block tabular-nums text-2xs text-muted-foreground">{m.code}</span>
+                    <span className="block tabular-nums text-xs text-muted-foreground">{m.code}</span>
                     {m.active_mounted_roll_tag && (
-                      <span className="inline-flex items-center gap-1 text-2xs text-indigo-700 dark:text-indigo-300 font-bold bg-indigo-50 dark:bg-indigo-950/40 px-1.5 py-0.5 rounded border border-indigo-200 dark:border-indigo-800 mt-1">
+                      <span className="inline-flex items-center gap-1 text-xs text-primary text-primary font-bold bg-primary/10 bg-primary/10 px-1.5 py-0.5 rounded border border-primary/20 border-border mt-1">
                         <Disc className="h-3 w-3"/>
                         {m.active_mounted_roll_tag}
                       </span>
@@ -656,20 +656,20 @@ export default function MachineriesListPage() {
                     <div className="flex items-center justify-end gap-1">
                       <Link
  href={getTenantNavHref(`/production/machineries/${m.id}`, pathname, tenantSlug)}
- className="p-1.5 rounded hover:bg-muted text-blue-600 font-bold"title="View Details">
+ className="p-1.5 rounded hover:bg-muted text-primary font-bold"title="View Details">
                         <Eye className="h-4 w-4"/>
                       </Link>
 
                       <Link
  href={getTenantNavHref(`/operator?machine=${m.id}`, pathname, tenantSlug)}
- className="p-1.5 rounded hover:bg-muted text-foreground hover:text-blue-600 font-bold"title="Launch Workstation Terminal">
-                        <PlayCircle className="h-4 w-4 text-blue-600"/>
+ className="p-1.5 rounded hover:bg-muted text-foreground hover:text-primary font-bold"title="Launch Workstation Terminal">
+                        <PlayCircle className="h-4 w-4 text-primary"/>
                       </Link>
 
                       {canAssign && (
                         <button
  type="button"onClick={() => setAssigningMachine(m)}
- className="p-1.5 rounded hover:bg-muted text-indigo-600 font-bold"title="Assign">
+ className="p-1.5 rounded hover:bg-muted text-primary font-bold"title="Assign">
                           <Clock className="h-4 w-4"/>
                         </button>
                       )}
@@ -677,7 +677,7 @@ export default function MachineriesListPage() {
                       {canMaintain && (
                         <button
  type="button"onClick={() => setMaintainingMachine(m)}
- className="p-1.5 rounded hover:bg-muted text-amber-600"title="Maintenance">
+ className="p-1.5 rounded hover:bg-muted text-warning"title="Maintenance">
                           <Wrench className="h-4 w-4"/>
                         </button>
                       )}

@@ -41,6 +41,7 @@ import {
 import {
  getPermissionDetail,
  extractResponsibilities,
+ isUserBusinessOwner,
  DEFAULT_RESPONSIBILITY_MATRICES,
 } from '@/lib/auth/rbac.client'
 import { formatBranchName } from '@/lib/formatters'
@@ -198,41 +199,37 @@ export function PermissionSimulator({
  const evaluationResult = useMemo(() => {
  if (!selectedUser) return null
 
- const responsibilities = extractResponsibilities(selectedUser)
- const primaryRoleSlug = selectedUser.roles?.[0]?.slug || (selectedUser as any).role || ''
- const isOwner =
- primaryRoleSlug === 'owner' ||
- primaryRoleSlug === 'business_owner' ||
- responsibilities.includes('business_owner')
+  const responsibilities = extractResponsibilities(selectedUser)
+  const isOwner = isUserBusinessOwner(selectedUser)
 
- const detail = getPermissionDetail(selectedUser, selectedModule, selectedAction)
- const dataScopes = (selectedUser.data_scopes as Record<string, DataScope>) || {}
- const moduleScope: DataScope = dataScopes[selectedModule] || (MODULE_ACTION_SPECS[selectedModule]?.defaultScope || 'assigned')
+  const detail = getPermissionDetail(selectedUser, selectedModule, selectedAction)
+  const dataScopes = (selectedUser.data_scopes as Record<string, DataScope>) || {}
+  const moduleScope: DataScope = isOwner ? 'company' : (dataScopes[selectedModule] || (MODULE_ACTION_SPECS[selectedModule]?.defaultScope || 'assigned'))
 
     // Branch Isolation Verification
- const authorizedBranches = selectedUser.authorized_branch_ids || []
- let branchAccessGranted = true
- let branchReason = 'No specific branch constraint'
+  const authorizedBranches = selectedUser.authorized_branch_ids || []
+  let branchAccessGranted = true
+  let branchReason = 'No specific branch constraint'
 
- if (selectedBranchId !== 'all') {
- if (isOwner) {
- branchAccessGranted = true
- branchReason = 'Business Owner has universal branch clearance'
-      } else if (moduleScope === 'all_branches' || moduleScope === 'company') {
- branchAccessGranted = true
- branchReason = 'Data scope allows cross-branch operations'
-      } else if (authorizedBranches.length > 0) {
- branchAccessGranted = authorizedBranches.includes(selectedBranchId)
- branchReason = branchAccessGranted
+  if (isOwner) {
+    branchAccessGranted = true
+    branchReason = 'Business Owner has universal branch clearance'
+  } else if (selectedBranchId !== 'all') {
+    if (moduleScope === 'all_branches' || moduleScope === 'company') {
+      branchAccessGranted = true
+      branchReason = 'Data scope allows cross-branch operations'
+    } else if (authorizedBranches.length > 0) {
+      branchAccessGranted = authorizedBranches.includes(selectedBranchId)
+      branchReason = branchAccessGranted
           ? 'Explicitly authorized for this branch'
           : 'Branch not in user authorized branch list'
-      } else if (selectedUser.branch_id) {
- branchAccessGranted = selectedUser.branch_id === selectedBranchId
- branchReason = branchAccessGranted ? 'Assigned Primary Branch' : 'Restricted to primary branch only'
-      }
+    } else if (selectedUser.branch_id) {
+      branchAccessGranted = selectedUser.branch_id === selectedBranchId
+      branchReason = branchAccessGranted ? 'Assigned Primary Branch' : 'Restricted to primary branch only'
     }
+  }
 
- const finalGranted = detail.isGranted && branchAccessGranted
+  const finalGranted = isOwner ? true : (detail.isGranted && branchAccessGranted)
 
  return {
  detail,
@@ -324,12 +321,12 @@ export function PermissionSimulator({
  size="sm"onClick={() => setActiveMode('audit')}
  className={cn(
               'gap-2 rounded-lg font-medium text-xs sm:text-sm cursor-pointer',
- activeMode === 'audit' ? 'bg-amber-600 hover:bg-amber-500 text-white shadow-sm' : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
+ activeMode === 'audit' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
             )}
           >
             <ShieldAlert className="w-4 h-4"/>
  {tBilingual('Reverse Permission Auditor', 'রিভার্স পারমিশন অডিটর')}
-            <Badge variant="outline"className="ml-1 bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30 text-2xs">
+            <Badge variant="outline"className="ml-1 bg-warning/15 text-warning text-warning border-warning-border/30 text-xs">
               {HIGH_RISK_ACTIONS.length}
             </Badge>
           </Button>
@@ -349,7 +346,7 @@ export function PermissionSimulator({
             <Card className="border-border bg-card backdrop-blur-md shadow-xs">
               <CardHeader className="pb-4">
                 <CardTitle className="text-base font-semibold text-foreground flex items-center gap-2">
-                  <User className="w-4 h-4 text-sky-600 dark:text-sky-400"/>
+                  <User className="w-4 h-4 text-primary text-primary"/>
  {tBilingual('Select Test Context', 'টেস্ট কনটেক্সট নির্বাচন করুন')}
                 </CardTitle>
                 <CardDescription className="text-xs text-muted-foreground">
@@ -403,12 +400,12 @@ export function PermissionSimulator({
                             'px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-all text-center flex items-center justify-center gap-1 cursor-pointer',
  isSelected
                               ? isDestructive
-                                ? 'bg-rose-50 dark:bg-rose-500/20 border-rose-300 dark:border-rose-500 text-rose-800 dark:text-rose-300 shadow-xs'
+                                ? 'bg-danger-surface bg-destructive/20 border-danger-border border-danger-border text-destructive text-destructive shadow-xs'
                                 : 'bg-primary/10 dark:bg-primary/20 border-primary/40 dark:border-primary text-primary dark:text-primary-foreground shadow-xs font-semibold'
                               : 'bg-muted border-border text-muted-foreground hover:text-foreground hover:border-input dark:hover:border-border'
                           )}
                         >
-                          <span className={isSelected ? (isDestructive ? 'text-rose-800 dark:text-rose-300 font-bold' : 'text-primary dark:text-sky-300 font-bold') : 'text-muted-foreground'}>{locale === 'bn' ? (ACTION_LABELS[act]?.labelBn || act) : (ACTION_LABELS[act]?.label || act)}</span>
+                          <span className={isSelected ? (isDestructive ? 'text-destructive text-destructive font-bold' : 'text-primary text-primary font-bold') : 'text-muted-foreground'}>{locale === 'bn' ? (ACTION_LABELS[act]?.labelBn || act) : (ACTION_LABELS[act]?.label || act)}</span>
                         </button>
                       )
                     })}
@@ -452,17 +449,17 @@ export function PermissionSimulator({
  className={cn(
                     'p-4 border-b flex items-center justify-between',
  evaluationResult.finalGranted
-                      ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-800 dark:text-emerald-300'
-                      : 'bg-rose-500/10 border-rose-500/30 text-rose-800 dark:text-rose-300'
+                      ? 'bg-success/10 border-success-border/30 text-success text-success'
+                      : 'bg-destructive/10 border-danger-border/30 text-destructive text-destructive'
                   )}
                 >
                   <div className="flex items-center gap-3">
                     {evaluationResult.finalGranted ? (
-                      <div className="p-2 rounded-xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/40">
+                      <div className="p-2 rounded-xl bg-success/20 text-success text-success border border-success-border/40">
                         <CheckCircle2 className="w-6 h-6"/>
                       </div>
                     ) : (
-                      <div className="p-2 rounded-xl bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/40">
+                      <div className="p-2 rounded-xl bg-destructive/20 text-destructive text-destructive border border-danger-border/40">
                         <XCircle className="w-6 h-6"/>
                       </div>
                     )}
@@ -473,7 +470,7 @@ export function PermissionSimulator({
                       <div className="text-xs opacity-90 text-muted-foreground">
  User <span className="font-semibold text-foreground">{getUserDisplayName(selectedUser)}</span> is{' '}
                         {evaluationResult.finalGranted ? 'authorized' : 'not permitted'} to execute{' '}
-                        <Badge variant="outline"className="mx-1 px-1.5 py-0 text-2xs uppercase tabular-nums">
+                        <Badge variant="outline"className="mx-1 px-1.5 py-0 text-xs uppercase tabular-nums">
                           {selectedModule}.{selectedAction}
                         </Badge>
                       </div>
@@ -484,8 +481,8 @@ export function PermissionSimulator({
  variant="outline"className={cn(
                       'text-xs font-bold px-2.5 py-1',
  evaluationResult.finalGranted
-                        ? 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border-emerald-500/40'
-                        : 'bg-rose-500/20 text-rose-700 dark:text-rose-400 border-rose-500/40'
+                        ? 'bg-success/20 text-success text-success border-success-border/40'
+                        : 'bg-destructive/20 text-destructive text-destructive border-danger-border/40'
                     )}
                   >
                     {locale === 'bn' ? (evaluationResult.detail.source === 'owner' ? 'মালিক' : evaluationResult.detail.source.startsWith('override') ? 'ওভাররাইড' : evaluationResult.detail.source === 'inherited' ? 'রোল ম্যাট্রিক্স' : 'সিস্টেম') : evaluationResult.detail.source.toUpperCase()}
@@ -496,7 +493,7 @@ export function PermissionSimulator({
                   {/* Step-by-Step Resolution Pathway */}
                   <div className="space-y-3">
                     <div className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                      <Layers className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400"/>
+                      <Layers className="w-3.5 h-3.5 text-primary text-primary"/>
  {tBilingual('Evaluation Decision Tree', 'মূল্যায়ন সিদ্ধান্ত ট্রি')}
                     </div>
 
@@ -504,39 +501,39 @@ export function PermissionSimulator({
                       {/* Step 1: User Account & Ownership */}
                       <div className="p-3 rounded-lg bg-muted border border-border flex items-start justify-between gap-3">
                         <div className="flex items-start gap-2.5">
-                          <div className="p-1 rounded bg-muted text-foreground tabular-nums text-2xs mt-0.5">01</div>
+                          <div className="p-1 rounded bg-muted text-foreground tabular-nums text-xs mt-0.5">01</div>
                           <div>
                             <div className="font-medium text-foreground">Account Status & Base Role</div>
-                            <div className="text-muted-foreground text-2xs">
- Status: <span className={selectedUser.status === 'active' ? 'text-emerald-600 dark:text-emerald-400 font-medium' : 'text-rose-600 dark:text-rose-400 font-medium'}>{selectedUser.status || 'active'}</span> • Primary Role: <span className="text-sky-700 dark:text-sky-300 font-medium">{getUserRoleLabel(selectedUser)}</span>
+                            <div className="text-muted-foreground text-xs">
+ Status: <span className={selectedUser.status === 'active' ? 'text-success text-success font-medium' : 'text-destructive text-destructive font-medium'}>{selectedUser.status || 'active'}</span> • Primary Role: <span className="text-primary text-primary font-medium">{getUserRoleLabel(selectedUser)}</span>
                             </div>
                           </div>
                         </div>
                         {selectedUser.status === 'disabled' ? (
-                          <Badge variant="destructive"className="text-2xs">Account Disabled</Badge>
+                          <Badge variant="destructive"className="text-xs">Account Disabled</Badge>
                         ) : evaluationResult.isOwner ? (
-                          <Badge className="bg-amber-500/20 text-amber-700 dark:text-amber-300 border-amber-500/30 text-2xs">Owner Full Access</Badge>
+                          <Badge className="bg-warning/20 text-warning text-warning border-warning-border/30 text-xs">Owner Full Access</Badge>
                         ) : (
-                          <Badge variant="outline"className="bg-muted text-foreground border-border text-2xs">Active Member</Badge>
+                          <Badge variant="outline"className="bg-muted text-foreground border-border text-xs">Active Member</Badge>
                         )}
                       </div>
 
                       {/* Step 2: Inherited Responsibilities */}
                       <div className="p-3 rounded-lg bg-muted border border-border flex items-start justify-between gap-3">
                         <div className="flex items-start gap-2.5">
-                          <div className="p-1 rounded bg-muted text-foreground tabular-nums text-2xs mt-0.5">02</div>
+                          <div className="p-1 rounded bg-muted text-foreground tabular-nums text-xs mt-0.5">02</div>
                           <div>
                             <div className="font-medium text-foreground">Role & Responsibilities Matrix</div>
-                            <div className="text-muted-foreground text-2xs">
+                            <div className="text-muted-foreground text-xs">
  Assigned: {evaluationResult.responsibilities.join(', ')}
                             </div>
                           </div>
                         </div>
                         <Badge
  variant="outline"className={cn(
-                            'text-2xs',
+                            'text-xs',
  evaluationResult.detail.source === 'inherited'
-                              ? 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border-emerald-500/30 font-medium'
+                              ? 'bg-success/20 text-success text-success border-success-border/30 font-medium'
                               : 'bg-muted text-muted-foreground border-border '
                           )}
                         >
@@ -547,10 +544,10 @@ export function PermissionSimulator({
                       {/* Step 3: Explicit User Overrides */}
                       <div className="p-3 rounded-lg bg-muted border border-border flex items-start justify-between gap-3">
                         <div className="flex items-start gap-2.5">
-                          <div className="p-1 rounded bg-muted text-foreground tabular-nums text-2xs mt-0.5">03</div>
+                          <div className="p-1 rounded bg-muted text-foreground tabular-nums text-xs mt-0.5">03</div>
                           <div>
                             <div className="font-medium text-foreground">{tBilingual('Direct User Overrides (+Grant / -Deny)', 'সরাসরি ব্যবহারকারী ওভাররাইড (+অনুমোদন / -বাতিল)')}</div>
-                            <div className="text-muted-foreground text-2xs">
+                            <div className="text-muted-foreground text-xs">
                               {evaluationResult.detail.source === 'override_allow' && tBilingual('Explicit user grant override applied', 'সরাসরি ব্যবহারকারী অনুমোদন প্রয়োগ করা হয়েছে')}
                               {evaluationResult.detail.source === 'override_deny' && tBilingual('Explicit user revoke override applied', 'সরাসরি ব্যবহারকারী বাতিল প্রয়োগ করা হয়েছে')}
                               {!evaluationResult.detail.source.startsWith('override') && tBilingual('No specific override for this action', 'এই অ্যাকশনের জন্য কোনো নির্দিষ্ট ওভাররাইড নেই')}
@@ -559,11 +556,11 @@ export function PermissionSimulator({
                         </div>
                         <Badge
  variant="outline"className={cn(
-                            'text-2xs',
+                            'text-xs',
  evaluationResult.detail.source === 'override_allow'
-                              ? 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border-emerald-500/30 font-bold'
+                              ? 'bg-success/20 text-success text-success border-success-border/30 font-bold'
                               : evaluationResult.detail.source === 'override_deny'
-                              ? 'bg-rose-500/20 text-rose-700 dark:text-rose-300 border-rose-500/30 font-bold'
+                              ? 'bg-destructive/20 text-destructive text-destructive border-danger-border/30 font-bold'
                               : 'bg-muted text-muted-foreground border-border '
                           )}
                         >
@@ -578,20 +575,20 @@ export function PermissionSimulator({
                       {/* Step 4: Branch Scope & Data Isolation */}
                       <div className="p-3 rounded-lg bg-muted border border-border flex items-start justify-between gap-3">
                         <div className="flex items-start gap-2.5">
-                          <div className="p-1 rounded bg-muted text-foreground tabular-nums text-2xs mt-0.5">04</div>
+                          <div className="p-1 rounded bg-muted text-foreground tabular-nums text-xs mt-0.5">04</div>
                           <div>
                             <div className="font-medium text-foreground">Branch & Data Scope Filter</div>
-                            <div className="text-muted-foreground text-2xs">
- Scope: <span className="text-sky-700 dark:text-sky-300 font-semibold uppercase">{evaluationResult.moduleScope}</span> • {evaluationResult.branchReason}
+                            <div className="text-muted-foreground text-xs">
+ Scope: <span className="text-primary text-primary font-semibold uppercase">{evaluationResult.moduleScope}</span> • {evaluationResult.branchReason}
                             </div>
                           </div>
                         </div>
                         <Badge
  variant="outline"className={cn(
-                            'text-2xs',
+                            'text-xs',
  evaluationResult.branchAccessGranted
-                              ? 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border-emerald-500/30'
-                              : 'bg-rose-500/20 text-rose-700 dark:text-rose-300 border-rose-500/30'
+                              ? 'bg-success/20 text-success text-success border-success-border/30'
+                              : 'bg-destructive/20 text-destructive text-destructive border-danger-border/30'
                           )}
                         >
                           {evaluationResult.branchAccessGranted ? tBilingual('Branch Passed', 'শাখা অনুমোদিত') : tBilingual('Branch Restricted', 'শাখা সীমাবদ্ধ')}
@@ -605,7 +602,7 @@ export function PermissionSimulator({
                     <div className="text-muted-foreground">
  {tBilingual('Authoritative resolution:', 'চূড়ান্ত সিদ্ধান্ত:')} <span className="font-semibold text-foreground">{translateSourceDetail(evaluationResult.detail.sourceDetail, locale === 'bn')}</span>
                     </div>
-                    <div className="text-muted-foreground text-2xs">
+                    <div className="text-muted-foreground text-xs">
  {tBilingual('Module:', 'মডিউল:')} <span className="text-foreground tabular-nums font-medium">{locale === 'bn' ? (MODULE_ACTION_SPECS[selectedModule]?.labelBn || selectedModule) : selectedModule}</span>
                     </div>
                   </div>
@@ -624,7 +621,7 @@ export function PermissionSimulator({
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                   <CardTitle className="text-base font-semibold text-foreground flex items-center gap-2">
-                    <ShieldAlert className="w-4 h-4 text-amber-500"/>
+                    <ShieldAlert className="w-4 h-4 text-warning"/>
  {tBilingual('High-Risk Permission Security Audit', 'উচ্চ-ঝুঁকিপূর্ণ পারমিশন অডিট')}
                   </CardTitle>
                   <CardDescription className="text-xs text-muted-foreground">
@@ -655,17 +652,17 @@ export function PermissionSimulator({
  className={cn(
                           'p-2.5 rounded-xl border text-left transition-all relative cursor-pointer',
  isSelected
-                            ? 'bg-amber-500/10 border-amber-500/50 text-foreground shadow-xs ring-1 ring-amber-500/30'
+                            ? 'bg-warning/10 border-warning-border/50 text-foreground shadow-xs ring-1 focus:ring-ring/30'
                             : 'bg-muted border-border text-muted-foreground hover:border-input hover:text-foreground dark:hover:text-foreground'
                         )}
                       >
                         <div className="flex items-center justify-between gap-1">
                           <span className="font-semibold text-xs text-foreground">{locale === 'bn' ? item.labelBn : item.label}</span>
-                          <Badge variant="outline"className="text-2xs tabular-nums px-1 py-0 uppercase bg-muted border-border text-muted-foreground">
+                          <Badge variant="outline"className="text-xs tabular-nums px-1 py-0 uppercase bg-muted border-border text-muted-foreground">
                             {item.code}
                           </Badge>
                         </div>
-                        <div className="text-2xs text-muted-foreground mt-1 line-clamp-1">{locale === 'bn' ? item.descBn : item.desc}</div>
+                        <div className="text-xs text-muted-foreground mt-1 line-clamp-1">{locale === 'bn' ? item.descBn : item.desc}</div>
                       </button>
                     )
                   })}
@@ -683,7 +680,7 @@ export function PermissionSimulator({
                 </div>
 
                 <div className="text-xs text-muted-foreground">
- {locale === 'bn' ? <>পাওয়া গেছে <span className="font-bold text-amber-600 dark:text-amber-400">{auditResults.length}</span> জন সদস্য এই অনুমতিপ্রাপ্ত</> : <>Found <span className="font-bold text-amber-600 dark:text-amber-400">{auditResults.length}</span> user(s) with this privilege</>}
+ {locale === 'bn' ? <>পাওয়া গেছে <span className="font-bold text-warning text-warning">{auditResults.length}</span> জন সদস্য এই অনুমতিপ্রাপ্ত</> : <>Found <span className="font-bold text-warning text-warning">{auditResults.length}</span> user(s) with this privilege</>}
                 </div>
               </div>
 
@@ -691,7 +688,7 @@ export function PermissionSimulator({
               <div className="rounded-xl border border-border overflow-hidden bg-card shadow-xs">
                 <div className="overflow-x-auto">
                   <table className="w-full text-xs text-left">
-                    <thead className="bg-muted text-muted-foreground uppercase tracking-wider text-2xs border-b border-border">
+                    <thead className="bg-muted text-muted-foreground uppercase tracking-wider text-xs border-b border-border">
                       <tr>
                         <th className="px-4 py-3">{tBilingual('Team Member', 'টিম সদস্য')}</th>
                         <th className="px-4 py-3">{tBilingual('Role / Department', 'রোল / বিভাগ')}</th>
@@ -712,25 +709,25 @@ export function PermissionSimulator({
                           <tr key={user.id} className="hover:bg-muted dark:hover:bg-muted/40 transition-colors">
                             <td className="px-4 py-3">
                               <div className="font-semibold text-foreground">{getUserDisplayName(user)}</div>
-                              <div className="text-muted-foreground text-2xs tabular-nums">{getUserEmail(user)}</div>
+                              <div className="text-muted-foreground text-xs tabular-nums">{getUserEmail(user)}</div>
                             </td>
 
                             <td className="px-4 py-3">
-                              <Badge variant="outline"className="bg-muted border-border text-foreground text-2xs">
+                              <Badge variant="outline"className="bg-muted border-border text-foreground text-xs">
                                 {getUserRoleLabel(user)}
                               </Badge>
                               {user.department && (
-                                <div className="text-2xs text-muted-foreground mt-0.5">{user.department}</div>
+                                <div className="text-xs text-muted-foreground mt-0.5">{user.department}</div>
                               )}
                             </td>
 
                             <td className="px-4 py-3">
                               <Badge
  variant="outline"className={cn(
-                                  'text-2xs',
+                                  'text-xs',
  user.status === 'active'
-                                    ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30'
-                                    : 'bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-500/30'
+                                    ? 'bg-success/10 text-success text-success border-success-border/30'
+                                    : 'bg-destructive/10 text-destructive text-destructive border-danger-border/30'
                                 )}
                               >
                                 {translateStatus(user.status || 'active', locale === 'bn')}
@@ -741,11 +738,11 @@ export function PermissionSimulator({
                               <div className="flex items-center gap-1.5">
                                 <Badge
  variant="outline"className={cn(
-                                    'text-2xs',
+                                    'text-xs',
  sourceType === 'owner'
-                                      ? 'bg-amber-500/20 text-amber-700 dark:text-amber-300 border-amber-500/30'
+                                      ? 'bg-warning/20 text-warning text-warning border-warning-border/30'
                                       : isExplicitOverride
-                                      ? 'bg-purple-500/20 text-purple-700 dark:text-purple-300 border-purple-500/30 font-bold'
+                                      ? 'bg-primary/20 text-primary text-primary border-primary/20/30 font-bold'
                                       : 'bg-muted text-foreground border-border '
                                   )}
                                 >
@@ -758,7 +755,7 @@ export function PermissionSimulator({
                               {onEditUserPermissions && (
                                 <Button
  variant="ghost"size="sm"onClick={() => onEditUserPermissions(user)}
- className="h-7 px-2.5 text-xs text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 hover:bg-sky-50 dark:hover:bg-sky-500/10">
+ className="h-7 px-2.5 text-xs text-primary text-primary hover:text-primary dark:hover:text-primary hover:bg-info-surface dark:hover:bg-primary/10">
  {tBilingual('Modify Access', 'অ্যাক্সেস সংশোধন')}
                                 </Button>
                               )}

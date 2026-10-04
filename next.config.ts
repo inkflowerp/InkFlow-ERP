@@ -3,27 +3,42 @@ import type { NextConfig } from "next";
 const configuredRoot = process.env.ROOT_DOMAIN || process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'inkflowerp.com'
 const cleanRoot = configuredRoot.replace(/^https?:\/\//i, '').split('/')[0].split(':')[0].toLowerCase()
 
+const isDev = process.env.NODE_ENV !== 'production'
+
 const allowedActionOrigins = Array.from(
   new Set([
-    'localhost:3000',
-    'localhost',
-    '*.localhost:3000',
-    '*.localhost',
-    '*.vercel.app',
+    ...(isDev ? ['localhost:3000', 'localhost', '*.localhost:3000', '*.localhost'] : []),
     'inkflowerp.com',
     '*.inkflowerp.com',
     'inkflow.com.bd',
     '*.inkflow.com.bd',
     cleanRoot,
     `*.${cleanRoot}`,
-  ])
+  ].filter(Boolean))
 )
 
 const nextConfig: NextConfig = {
   serverExternalPackages: ['nodemailer', 'pg'],
   compress: true,
   poweredByHeader: false,
-  reactStrictMode: false,
+  reactStrictMode: true,
+  images: {
+    formats: ['image/avif', 'image/webp'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**.supabase.co',
+      },
+      {
+        protocol: 'https',
+        hostname: '**.supabase.in',
+      },
+      {
+        protocol: 'https',
+        hostname: '**.supabase.com',
+      },
+    ],
+  },
   experimental: {
     serverActions: {
       allowedOrigins: allowedActionOrigins,
@@ -106,15 +121,100 @@ const nextConfig: NextConfig = {
             value: 'DENY',
           },
           {
+            key: 'X-XSS-Protection',
+            value: '1; mode=block',
+          },
+          {
             key: 'Referrer-Policy',
             value: 'strict-origin-when-cross-origin',
+          },
+          {
+            key: 'Strict-Transport-Security',
+            value: 'max-age=63072000; includeSubDomains; preload',
           },
           {
             key: 'Permissions-Policy',
             value: 'camera=(), microphone=(), geolocation=()',
           },
+          {
+            key: 'Content-Security-Policy-Report-Only',
+            value: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' blob: data: https:; font-src 'self' data: https:; connect-src 'self' https: wss:; frame-ancestors 'none';",
+          },
         ],
       },
+      {
+        source: '/:tenantSlug/attendance/:path*',
+        headers: [
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(self), microphone=(), geolocation=(self)',
+          },
+        ],
+      },
+      {
+        source: '/:tenantSlug/attendance',
+        headers: [
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(self), microphone=(), geolocation=(self)',
+          },
+        ],
+      },
+      {
+        source: '/:tenantSlug/portal/:path*',
+        headers: [
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(self), microphone=(), geolocation=(self)',
+          },
+        ],
+      },
+      {
+        source: '/:tenantSlug/portal',
+        headers: [
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(self), microphone=(), geolocation=(self)',
+          },
+        ],
+      },
+      {
+        source: '/:tenantSlug/operator/:path*',
+        headers: [
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(self), microphone=(), geolocation=(self)',
+          },
+        ],
+      },
+      {
+        source: '/:tenantSlug/operator',
+        headers: [
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(self), microphone=(), geolocation=(self)',
+          },
+        ],
+      },
+      {
+        source: '/:tenantSlug/hr/attendance/:path*',
+        headers: [
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(self), microphone=(), geolocation=(self)',
+          },
+        ],
+      },
+      {
+        source: '/:tenantSlug/hr/attendance',
+        headers: [
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(self), microphone=(), geolocation=(self)',
+          },
+        ],
+      },
+
       {
         source: '/platform/:path*',
         headers: [

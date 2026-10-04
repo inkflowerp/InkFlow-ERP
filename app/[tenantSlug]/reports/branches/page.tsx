@@ -43,7 +43,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { KpiCard, KpiGrid } from '@/components/shared/kpi-card'
-import { exportToCsv } from '@/services/reports.service'
+import { exportToCsv } from '@/lib/export/csv'
 
 export default function MultiBranchReportingPage() {
  const { currentBranch, company } = useTenant()
@@ -179,7 +179,7 @@ export default function MultiBranchReportingPage() {
 
  if (!mounted) {
  return (
-      <div className="space-y-6 max-w-7xl mx-auto p-4 sm:p-6 animate-pulse">
+      <div className="space-y-6 mx-auto p-4 sm:p-6 animate-pulse">
         <div className="h-20 bg-muted rounded-xl w-full"/>
         <div className="h-12 bg-muted rounded-xl w-3/4"/>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -194,8 +194,8 @@ export default function MultiBranchReportingPage() {
  if (!isOwner && !can('view', 'reports')) {
  return (
       <div className="max-w-2xl mx-auto py-16 px-4 text-center">
-        <div className="p-8 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 space-y-4 shadow-sm">
-          <div className="h-12 w-12 rounded-full bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center mx-auto text-amber-600 dark:text-amber-400 font-bold">
+        <div className="p-8 rounded-xl bg-warning-surface bg-warning-surface border border-warning-border border-warning-border/50 space-y-4 shadow-sm">
+          <div className="h-12 w-12 rounded-full bg-warning-surface bg-warning/50 flex items-center justify-center mx-auto text-warning text-warning font-bold">
             <ShieldAlert className="h-6 w-6"/>
           </div>
           <h2 className="text-xl font-bold text-foreground bangla-text">
@@ -220,7 +220,7 @@ export default function MultiBranchReportingPage() {
  return (
     <PanelAccessGuard
  module="reports"action="view"panelTitle="Branch Performance & Multi-Outlet Analytics"panelTitleBn="মাল্টি-ব্রাঞ্চ অ্যানালিটিক্স ও শাখা তুলনা">
-      <div className="space-y-6 max-w-7xl mx-auto p-4 sm:p-6 print:p-0 print:max-w-none">
+      <div className="space-y-6 mx-auto p-4 sm:p-6 print:p-0 print:max-w-none">
       {/* Navigation shortcuts / Breadcrumbs */}
       <div className="flex flex-wrap items-center justify-between gap-3 text-sm print:hidden">
         <div className="flex items-center gap-2">
@@ -232,7 +232,7 @@ export default function MultiBranchReportingPage() {
           </Link>
           <span className="text-muted-foreground">/</span>
           <span className="text-xs font-semibold text-foreground flex items-center gap-1">
-            <GitBranch className="w-3.5 h-3.5 text-blue-600"/>
+            <GitBranch className="w-3.5 h-3.5 text-primary"/>
             {tBilingual('Multi-Branch Telemetry', 'মাল্টি-ব্রাঞ্চ টেলিমেট্রি')}
           </span>
         </div>
@@ -261,7 +261,7 @@ export default function MultiBranchReportingPage() {
 
       <PageHeader
  titleEn="Multi-Branch Management & Analytics"titleBn="মাল্টি-ব্রাঞ্চ ব্যবস্থাপনা ও অ্যানালিটিক্স"descriptionEn="Live telemetry, performance KPIs, branch comparison matrix and cross-branch logistics across Dhaka printing hubs."descriptionBn="আরামবাগ, নীলক্ষেত, তেজগাঁও ও নয়াবাজার শাখা সমূহের লাইভ টেলিমেট্রি, পারফরম্যান্স তুলনা এবং সমন্বিত ড্যাশবোর্ড।"icon={GitBranch}
- iconColor="text-blue-600"actions={
+ iconColor="text-primary"actions={
           <div className="flex flex-wrap items-center gap-2.5 print:hidden">
             <BranchSwitcher
  branches={branches}
@@ -287,7 +287,7 @@ export default function MultiBranchReportingPage() {
               <Button
  variant="outline"size="sm"onClick={handleExportComparison}
  className="h-10 text-xs font-semibold gap-1.5 border-input">
-                <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600"/>
+                <FileSpreadsheet className="w-3.5 h-3.5 text-success"/>
                 <span className="hidden sm:inline">{tBilingual('Export CSV', 'এক্সপোর্ট')}</span>
               </Button>
             )}

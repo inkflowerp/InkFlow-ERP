@@ -234,3 +234,76 @@ export const getScopedDbClient = async () => { ... } // Returns Supabase client 
    Add explicit RLS policies for `sales_order_items`, `goods_received_notes`, `document_number_counters`, and `material_issue_items`.
 3. **Tenant Immutability Trigger:**
    Add a PostgreSQL trigger on every tenant table preventing updates to `company_id` / `tenant_id` once a row has been created.
+
+---
+
+## 12. End-to-End Request Lifecycle & Layering Architecture
+
+InkFlow ERP strictly enforces physical and architectural boundaries across all application tiers. The request lifecycle follows a strict unidirectional data flow:
+
+```
++---------------------------------------------------------------------------------------------------+
+| 1. INCOMING HOST & DNS RESOLUTION                                                                 |
+|    - Verified Host / Subdomain / Custom Domain Resolution (e.g. acme.inkflowerp.com)             |
+|    - Rejects invalid / reserved / mismatched tenant hosts                                        |
++---------------------------------------------------------------------------------------------------+
+                                                  |
+                                                  v
++---------------------------------------------------------------------------------------------------+
+| 2. EDGE ROUTING MIDDLEWARE (lib/supabase/middleware.ts)                                          |
+|    - Reconstructs internal routing / rewrites (e.g. acme.inkflowerp.com/sales -> /acme/sales)    |
+|    - Verifies cryptographic session tokens (HMAC-SHA256 session signer)                          |
+|    - Injects anti-cache headers & x-forwarded-tenant headers                                      |
++---------------------------------------------------------------------------------------------------+
+                                                  |
+                                                  v
++---------------------------------------------------------------------------------------------------+
+| 3. NEXT.JS SERVER LAYOUT GUARD (app/[tenantSlug]/layout.tsx & Module Layout Guards)               |
+|    - Invokes Data Access Layer (lib/auth/dal.ts) to verify active membership & tenant state      |
+|    - Checks immediate account revocation (<5s) & company activation status                        |
+|    - Guards role & permission hierarchy before rendering any component tree                      |
++---------------------------------------------------------------------------------------------------+
+                                                  |
+                                                  v
++---------------------------------------------------------------------------------------------------+
+| 4. SERVER ACTION WRAPPER (lib/actions/action-wrapper.ts & actions/*.actions.ts)                   |
+|    - Validates request payload using strict Zod schemas                                           |
+|    - Validates caller authentication, tenant context, and required permission code                 |
+|    - Catches domain errors and serializes into unified bilingual AppError responses              |
+|    - INVARIANT: Actions NEVER import Supabase or execute direct DB queries                        |
++---------------------------------------------------------------------------------------------------+
+                                                  |
+                                                  v
++---------------------------------------------------------------------------------------------------+
+| 5. DOMAIN SERVICE LAYER (services/*.service.ts)                                                   |
+|    - Implements business logic, multi-step orchestration, audit logs, and notification dispatch  |
+|    - Enforces domain invariants, calculations, and state machines                                 |
+|    - INVARIANT: Services NEVER import Supabase directly; all data operations go to Repositories   |
++---------------------------------------------------------------------------------------------------+
+                                                  |
+                                                  v
++---------------------------------------------------------------------------------------------------+
+| 6. DATA ACCESS REPOSITORIES (lib/repositories/*.repository.ts)                                    |
+|    - Sole physical touchpoint in the application that imports @/lib/supabase/*                   |
+|    - Executes strongly typed PostgREST queries against Database['public']['Tables']               |
+|    - Enforces tenant isolation via tenantScoped() admin client or RLS user client                 |
++---------------------------------------------------------------------------------------------------+
+                                                  |
+                                                  v
++---------------------------------------------------------------------------------------------------+
+| 7. POSTGRESQL ATOMIC RPCs & ROW-LEVEL SECURITY (RLS)                                              |
+|    - Atomic database stored procedures (e.g. func_create_invoice_atomic_978, reconcile_*_atomic)  |
+|    - ACID transactions for financial ledger, inventory depletion, and counter numbering           |
+|    - Non-bypassable PostgreSQL RLS policies (FORCE ROW LEVEL SECURITY across all tenant tables)   |
++---------------------------------------------------------------------------------------------------+
+```
+
+### Layer Invariants & Forbidden Imports
+| Layer | May Import | Forbidden Imports | Responsibilities |
+| :--- | :--- | :--- | :--- |
+| **UI Components (`components/`, `app/`)** | Hooks, actions, types, utils | `@/lib/supabase/*`, `services/*`, direct DB | Pure presentation & user interaction |
+| **Server Actions (`actions/`)** | Services, Repositories, Zod schemas, DAL | `@/lib/supabase/*`, direct DB | Input validation, auth guard, orchestration |
+| **Domain Services (`services/`)** | Repositories, business utils, domain types | `@/lib/supabase/*`, UI components | Business logic, workflows, notifications |
+| **Repositories (`lib/repositories/`)** | Supabase client, database types | UI components, actions | Sole database touchpoint, SQL/RPC execution |
+| **Database (`supabase/migrations/`)** | PostgreSQL functions, tables, triggers | - | ACID atomicity, data integrity, RLS enforcement |
+

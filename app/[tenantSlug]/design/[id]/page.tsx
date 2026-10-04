@@ -137,8 +137,8 @@ export interface SiblingWorkItem {
 function DesignDetailPageLoading() {
  return (
     <div className="flex flex-col items-center justify-center min-h-[400px] space-y-3">
-      <div className="h-10 w-10 rounded-xl bg-pink-600 text-white flex items-center justify-center animate-pulse">
-        <Palette className="h-5 w-5 animate-spin"/>
+      <div className="h-10 w-10 rounded-xl bg-primary text-primary-foreground flex items-center justify-center animate-pulse">
+        <Palette className="h-5 w-5 animate-spin" />
       </div>
       <p className="text-sm font-semibold text-muted-foreground">Loading Design Workbench...</p>
     </div>
@@ -171,8 +171,8 @@ class DesignDetailErrorBoundary extends React.Component<ErrorBoundaryProps, Erro
  render() {
  if (this.state.hasError) {
  return (
-        <div className="p-8 text-center space-y-4 max-w-lg mx-auto my-12 bg-card rounded-xl border border-red-200 dark:border-red-900/50 shadow-xs">
-          <div className="h-12 w-12 rounded-xl bg-red-100 dark:bg-red-950/50 text-red-600 dark:text-red-400 flex items-center justify-center mx-auto">
+        <div className="p-8 text-center space-y-4 max-w-lg mx-auto my-12 bg-card rounded-xl border border-danger-border border-danger-border/50 shadow-xs">
+          <div className="h-12 w-12 rounded-xl bg-danger-surface bg-danger-surface text-destructive text-destructive flex items-center justify-center mx-auto">
             <AlertTriangle className="h-6 w-6"/>
           </div>
           <div className="space-y-1">
@@ -975,7 +975,7 @@ function DesignDetailContent() {
 
  if (!job) {
  return (
-      <div className="space-y-6 max-w-7xl">
+      <div className="space-y-6">
         <Link
  href={backHref}
  className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground dark:hover:text-foreground">
@@ -1421,7 +1421,7 @@ function DesignDetailContent() {
     'png'
 
  return (
-    <div className="space-y-6 max-w-7xl pb-16">
+    <div className="space-y-6 pb-16">
       {/* 1. TOP HEADER & WORKBENCH BREADCRUMB */}
       <div>
         <div className="flex items-center justify-between gap-3 mb-2">
@@ -1434,8 +1434,8 @@ function DesignDetailContent() {
 
           {/* Sibling Works Indicator Badge */}
           {totalWorksCount > 1 && (
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold bg-indigo-50 text-indigo-700 border border-indigo-200 dark:bg-indigo-950/60 dark:text-indigo-300 dark:border-indigo-800 animate-pulse">
-              <Layers className="h-3.5 w-3.5 text-indigo-500"/>
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold bg-primary/10 text-primary border border-primary/20 bg-primary/10 text-primary border-border animate-pulse">
+              <Layers className="h-3.5 w-3.5 text-primary"/>
               <span>
                 {tBilingual(
                   `Multi-Work Invoice: ${totalWorksCount} Design Works in Group`,
@@ -1457,10 +1457,10 @@ function DesignDetailContent() {
  variant="outline"className={cn(
                   'capitalize text-xs font-bold px-2.5 py-0.5',
  job.status === 'approved'
-                    ? 'bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950/50 dark:text-emerald-300'
+                    ? 'bg-success-surface text-success border-success-border bg-success-surface text-success'
                     : job.status === 'revision'
-                    ? 'bg-purple-50 text-purple-700 border-purple-300 dark:bg-purple-950/50 dark:text-purple-300'
-                    : 'bg-amber-50 text-amber-700 border-amber-300 dark:bg-amber-950/50 dark:text-amber-300'
+                    ? 'bg-primary/10 text-primary border-primary/20 bg-primary/10 text-primary'
+                    : 'bg-warning-surface text-warning border-warning-border bg-warning-surface text-warning'
                 )}
               >
                 {job.status.replace('_', ' ')}
@@ -1470,24 +1470,24 @@ function DesignDetailContent() {
               {hasInvoice ? (
                 <Link
  href={getTenantNavHref(`/billing/${linkedInvoice?.id || job.invoice_id}`, pathname, slug)}
- className="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 hover:bg-emerald-200 transition-colors">
+ className="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-0.5 rounded-full bg-success-surface text-success border border-success-border hover:bg-success transition-colors">
                   <Receipt className="h-3.5 w-3.5"/>
                   <span>Invoice Linked: #{invoiceNumber}</span>
                 </Link>
               ) : hasPendingRequest ? (
-                <span className="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300">
+                <span className="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-0.5 rounded-full bg-warning-surface text-warning border border-warning-border">
                   <Clock className="h-3.5 w-3.5 animate-spin"/>
                   <span>Invoice Requested</span>
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-800 border border-rose-300">
+                <span className="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-0.5 rounded-full bg-danger-surface text-destructive border border-danger-border">
                   <AlertCircle className="h-3.5 w-3.5"/>
                   <span>Invoice Required</span>
                 </span>
               )}
 
               {job.is_locked && (
-                <span className="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded bg-emerald-600 text-white shadow-xs">
+                <span className="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded bg-success text-white shadow-xs">
                   <Lock className="h-3 w-3"/> Locked for Production
                 </span>
               )}
@@ -1506,7 +1506,7 @@ function DesignDetailContent() {
             {/* WhatsApp Proof Share */}
             <Button
  size="sm"variant="outline"onClick={() => setIsWhatsAppModalOpen(true)}
- className="h-8 text-xs font-bold bg-emerald-50 text-emerald-700 border-emerald-300 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-300">
+ className="h-8 text-xs font-bold bg-success-surface text-success border-success-border hover:bg-success-surface bg-success-surface text-success">
               <Share2 className="h-3.5 w-3.5 mr-1"/>
  WhatsApp Proof
             </Button>
@@ -1514,7 +1514,7 @@ function DesignDetailContent() {
             {/* Prepress Checklist */}
             <Button
  size="sm"variant="outline"onClick={() => setIsPrepressModalOpen(true)}
- className="h-8 text-xs font-bold text-indigo-700 border-indigo-200 hover:bg-indigo-50 dark:text-indigo-300 dark:border-indigo-800">
+ className="h-8 text-xs font-bold text-primary border-primary/20 hover:bg-primary/10 text-primary border-border">
               <Sliders className="h-3.5 w-3.5 mr-1"/>
  Prepress Checks
             </Button>
@@ -1523,7 +1523,7 @@ function DesignDetailContent() {
             {!job.is_locked && (
               <Button
  size="sm"variant="outline"onClick={() => setIsUploadOpen(true)}
- className="h-8 text-xs font-bold text-blue-700 border-blue-200 bg-blue-50/50 hover:bg-blue-100 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800">
+ className="h-8 text-xs font-bold text-primary border-primary/20 bg-primary/10/50 hover:bg-primary/10 bg-primary/10 text-primary border-border">
                 <Upload className="h-3.5 w-3.5 mr-1"/>
  Upload / Paste
               </Button>
@@ -1533,7 +1533,7 @@ function DesignDetailContent() {
             {!job.is_locked ? (
               <Button
  size="sm"onClick={() => setIsApproveOpen(true)}
- className="h-8 text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-xs">
+ className="h-8 text-xs bg-success hover:bg-success text-white font-bold shadow-xs">
                 <CheckCircle2 className="h-3.5 w-3.5 mr-1"/>
  Approve & Lock
               </Button>
@@ -1565,14 +1565,14 @@ function DesignDetailContent() {
         <div
  className={`p-3.5 rounded-xl text-xs font-semibold flex items-center gap-2 border animate-in fade-in-0 ${
  notification.type === 'warning'
-              ? 'bg-amber-50 text-amber-900 border-amber-300 dark:bg-amber-950/40 dark:text-amber-200 dark:border-amber-800'
-              : 'bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800'
+              ? 'bg-warning-surface text-warning border-warning-border bg-warning-surface text-warning border-warning-border'
+              : 'bg-success-surface text-success border-success-border bg-success-surface text-success border-success-border'
           }`}
         >
           {notification.type === 'warning' ? (
-            <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0"/>
+            <AlertTriangle className="h-4 w-4 text-warning shrink-0"/>
           ) : (
-            <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0"/>
+            <CheckCircle2 className="h-4 w-4 text-success shrink-0"/>
           )}
           <span>{notification.text}</span>
         </div>
@@ -1580,20 +1580,20 @@ function DesignDetailContent() {
 
       {/* 3. MULTI-WORK SIBLING NAVIGATION BAR (When Invoice has multiple works) */}
       {totalWorksCount > 1 && (
-        <Card className="border-2 border-indigo-200 dark:border-indigo-900/60 bg-indigo-50/20 dark:bg-indigo-950/10 overflow-hidden shadow-xs">
-          <div className="p-3.5 bg-indigo-100/50 dark:bg-indigo-950/40 border-b border-indigo-200 dark:border-indigo-900/60 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <Card className="border-2 border-primary/20 border-border/60 bg-primary/10/20 bg-primary/10 overflow-hidden shadow-xs">
+          <div className="p-3.5 bg-primary/10/50 bg-primary/10 border-b border-primary/20 border-border/60 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <div className="h-7 w-7 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-black text-xs">
+              <div className="h-7 w-7 rounded-lg bg-primary text-white flex items-center justify-center font-black text-xs">
                 {totalWorksCount}
               </div>
               <div>
-                <h3 className="text-xs font-black text-indigo-950 dark:text-indigo-200 uppercase tracking-wide">
+                <h3 className="text-xs font-black text-primary text-primary uppercase tracking-wide">
                   {tBilingual(
                     `Grouped Invoice Works (${totalWorksCount} Total Items)`,
                     `ইনভয়েস ভিত্তিক কাজের তালিকা (মোট ${toBengaliNumerals(totalWorksCount)} টি কাজ)`
                   )}
                 </h3>
-                <p className="text-2xs text-indigo-700 dark:text-indigo-400">
+                <p className="text-xs text-primary text-primary">
                   {tBilingual(
                     `Invoice #${invoiceNumber} • Switch between design works in this group instantly:`,
                     `ইনভয়েস #${invoiceNumber} • এই গ্রুপের প্রতিটি ডিজাইনে দ্রুত সুইচ করুন:`
@@ -1622,25 +1622,25 @@ function DesignDetailContent() {
  className={cn(
                     'text-left p-3 rounded-xl border transition-all relative group flex flex-col justify-between space-y-2',
  isActive
-                      ? 'bg-card border-indigo-500 dark:border-indigo-400 shadow-xs ring-2 ring-indigo-500/20'
-                      : 'bg-card/70 border-border hover:border-indigo-300 hover:bg-card shadow-2xs'
+                      ? 'bg-card border-primary/20 border-border shadow-xs ring-2 focus:ring-ring/20'
+                      : 'bg-card/70 border-border hover:border-primary/20 hover:bg-card shadow-2xs'
                   )}
                 >
                   <div>
                     <div className="flex items-center justify-between gap-1.5 mb-1">
                       <div className="flex items-center gap-1.5">
-                        <span className="h-5 w-5 rounded bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300 flex items-center justify-center text-2xs font-black">
+                        <span className="h-5 w-5 rounded bg-primary/10 text-primary bg-primary/10 text-primary flex items-center justify-center text-xs font-black">
                           #{work.index + 1}
                         </span>
-                        <span className="tabular-nums text-2xs font-bold text-indigo-600 dark:text-indigo-400 truncate">
+                        <span className="tabular-nums text-xs font-bold text-primary text-primary truncate">
                           {work.designNumber}
                         </span>
                       </div>
                       <Badge
  variant="outline"className={cn(
-                          'text-2xs px-1.5 py-0 capitalize shrink-0',
+                          'text-xs px-1.5 py-0 capitalize shrink-0',
  work.status === 'approved'
-                            ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
+                            ? 'bg-success-surface text-success border-success-border'
                             : 'bg-muted text-foreground border-border'
                         )}
                       >
@@ -1652,22 +1652,22 @@ function DesignDetailContent() {
                       {work.title}
                     </div>
 
-                    <div className="flex items-center gap-1.5 text-2xs text-muted-foreground mt-1">
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-1">
                       <span className="truncate font-medium">{work.dimensions}</span>
                       {work.areaSft && (
                         <>
                           <span>•</span>
-                          <span className="tabular-nums font-semibold text-indigo-600 dark:text-indigo-400">{work.areaSft} SFT</span>
+                          <span className="tabular-nums font-semibold text-primary text-primary">{work.areaSft} SFT</span>
                         </>
                       )}
                     </div>
 
-                    <div className="text-2xs text-muted-foreground truncate mt-0.5">
+                    <div className="text-xs text-muted-foreground truncate mt-0.5">
                       {work.material}
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between pt-1 border-t border-border text-2xs">
+                  <div className="flex items-center justify-between pt-1 border-t border-border text-xs">
                     <span className="font-semibold text-muted-foreground">
  Qty: {work.quantity} {work.unit}
                     </span>
@@ -1679,7 +1679,7 @@ function DesignDetailContent() {
                   </div>
 
                   {isActive && (
-                    <div className="absolute -top-1.5 -right-1.5 h-4 w-4 rounded-full bg-indigo-600 text-white flex items-center justify-center text-2xs shadow-sm">
+                    <div className="absolute -top-1.5 -right-1.5 h-4 w-4 rounded-full bg-primary text-white flex items-center justify-center text-xs shadow-sm">
                       <Check className="h-2.5 w-2.5 stroke-[3]"/>
                     </div>
                   )}
@@ -1701,7 +1701,7 @@ function DesignDetailContent() {
                   <CardTitle className="text-sm font-bold flex items-center gap-2">
                     <span>{activeVersion.version_label}</span>
                     {activeVersion.is_approved && (
-                      <span className="text-xs text-emerald-600 font-bold flex items-center gap-1">
+                      <span className="text-xs text-success font-bold flex items-center gap-1">
                         <CheckCircle2 className="h-3.5 w-3.5"/> (Approved)
                       </span>
                     )}
@@ -1733,7 +1733,7 @@ function DesignDetailContent() {
                   {!job.is_locked && (
                     <Button
  size="sm"variant="outline"onClick={() => setIsUploadOpen(true)}
- className="h-7 text-xs font-bold gap-1 bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100 dark:bg-indigo-950/50 dark:text-indigo-300 dark:border-indigo-800">
+ className="h-7 text-xs font-bold gap-1 bg-primary/10 text-primary border-primary/20 hover:bg-primary/10 bg-primary/10 text-primary border-border">
                       <Upload className="h-3 w-3"/>
  Paste / Upload (Ctrl+V)
                     </Button>
@@ -1760,7 +1760,7 @@ function DesignDetailContent() {
                   }}
  className={cn(
                     'rounded-xl overflow-hidden border border-border bg-surface-inset flex items-center justify-center min-h-[380px] relative group transition-all',
- isDraggingOver && 'ring-4 ring-indigo-500 ring-offset-2'
+ isDraggingOver && 'ring-4 focus:ring-ring ring-offset-2'
                   )}
                 >
                   <img
@@ -1771,8 +1771,8 @@ function DesignDetailContent() {
 
                   {/* Top-Right Paste Helper Badge */}
                   <div className="absolute top-3 right-3 flex items-center gap-2">
-                    <span className="inline-flex items-center gap-1 text-2xs font-bold px-2 py-1 rounded bg-black/70 text-white backdrop-blur-sm border border-white/10">
-                      <Clipboard className="h-3 w-3 text-indigo-400"/> Paste (<kbd className="tabular-nums text-2xs">Ctrl+V</kbd>)
+                    <span className="inline-flex items-center gap-1 text-xs font-bold px-2 py-1 rounded bg-black/70 text-white backdrop-blur-sm border border-white/10">
+                      <Clipboard className="h-3 w-3 text-primary"/> Paste (<kbd className="tabular-nums text-xs">Ctrl+V</kbd>)
                     </span>
                   </div>
 
@@ -1780,13 +1780,13 @@ function DesignDetailContent() {
                   <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-2">
                     <button
  onClick={() => setIsLightboxOpen(true)}
- className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-black/80 text-white text-xs font-bold hover:bg-black transition-colors">
+ className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-black/80 text-white text-xs font-bold hover:bg-card transition-colors">
                       <ZoomIn className="h-3.5 w-3.5"/>
  Inspector Lightbox
                     </button>
                     <a
  href={activeVersion.proof_file_url}
- target="_blank"rel="noopener noreferrer"className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-black/80 text-white text-xs font-bold hover:bg-black transition-colors">
+ target="_blank"rel="noopener noreferrer"className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-black/80 text-white text-xs font-bold hover:bg-card transition-colors">
                       <ExternalLink className="h-3.5 w-3.5"/>
  Full Image
                     </a>
@@ -1795,8 +1795,8 @@ function DesignDetailContent() {
               ) : (
                 <div
  onClick={() => setIsUploadOpen(true)}
- className="p-10 rounded-xl border-2 border-dashed border-indigo-300 dark:border-indigo-800 bg-indigo-50/40 dark:bg-indigo-950/20 text-center space-y-3 cursor-pointer hover:bg-indigo-50/70 transition-all">
-                  <div className="h-14 w-14 mx-auto rounded-xl bg-indigo-100 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400 flex items-center justify-center font-black">
+ className="p-10 rounded-xl border-2 border-dashed border-primary/20 border-border bg-primary/10/40 bg-primary/10 text-center space-y-3 cursor-pointer hover:bg-primary/10/70 transition-all">
+                  <div className="h-14 w-14 mx-auto rounded-xl bg-primary/10 text-primary bg-primary/10 text-primary flex items-center justify-center font-black">
                     <Upload className="h-7 w-7"/>
                   </div>
                   <div className="space-y-1">
@@ -1814,7 +1814,7 @@ function DesignDetailContent() {
               <div className="flex flex-wrap items-center justify-between gap-2 p-3 bg-muted rounded-xl text-xs border border-border">
                 <div className="space-y-0.5">
                   <div className="font-bold text-foreground">File Reference:</div>
-                  <code className="text-2xs text-muted-foreground tabular-nums">
+                  <code className="text-xs text-muted-foreground tabular-nums">
                     {activeVersion.source_file_name || activeVersion.proof_file_name || 'proof.png'}
                   </code>
                 </div>
@@ -1860,7 +1860,7 @@ function DesignDetailContent() {
                           <div className="font-bold text-xs text-foreground truncate">
                             {att.name}
                           </div>
-                          <div className="text-2xs text-muted-foreground tabular-nums">{att.size || 'Attachment'}</div>
+                          <div className="text-xs text-muted-foreground tabular-nums">{att.size || 'Attachment'}</div>
                         </div>
                       </div>
 
@@ -1884,7 +1884,7 @@ function DesignDetailContent() {
                 <div className="py-6 text-center border border-dashed rounded-xl border-border text-xs text-muted-foreground space-y-1">
                   <Paperclip className="h-6 w-6 mx-auto text-muted-foreground mb-1"/>
                   <p>No extra reference attachments uploaded with this work item.</p>
-                  <p className="text-2xs text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
  You can attach client logos, fonts, vectors, or reference photos anytime.
                   </p>
                 </div>
@@ -1900,10 +1900,10 @@ function DesignDetailContent() {
             <CardHeader className="pb-3 border-b border-border bg-muted">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm font-bold flex items-center gap-2">
-                  <User className="h-4 w-4 text-indigo-600"/>
+                  <User className="h-4 w-4 text-primary"/>
                   <span>{tBilingual('Customer Contact & Profile', 'গ্রাহকের বিবরণ ও যোগাযোগ')}</span>
                 </CardTitle>
-                <Badge variant="outline"className="text-2xs uppercase font-bold">
+                <Badge variant="outline"className="text-xs uppercase font-bold">
                   {customerProfile?.customer_category || customerProfile?.customer_type || 'Customer'}
                 </Badge>
               </div>
@@ -1941,7 +1941,7 @@ function DesignDetailContent() {
                   <div className="flex items-center gap-2 pt-1 border-t border-border">
                     <Button
  size="sm"variant="outline"asChild
- className="h-7 text-xs flex-1 font-bold text-emerald-700 border-emerald-300 hover:bg-emerald-50 dark:text-emerald-300 dark:border-emerald-800">
+ className="h-7 text-xs flex-1 font-bold text-success border-success-border hover:bg-success-surface text-success border-success-border">
                       <a href={`tel:${customerPhone}`}>
                         <Phone className="h-3 w-3 mr-1"/>
  Call
@@ -1950,7 +1950,7 @@ function DesignDetailContent() {
 
                     <Button
  size="sm"variant="outline"onClick={() => setIsWhatsAppModalOpen(true)}
- className="h-7 text-xs flex-1 font-bold bg-emerald-600 hover:bg-emerald-700 text-white border-transparent">
+ className="h-7 text-xs flex-1 font-bold bg-success hover:bg-success text-white border-transparent">
                       <Share2 className="h-3 w-3 mr-1"/>
  WhatsApp
                     </Button>
@@ -1959,7 +1959,7 @@ function DesignDetailContent() {
  size="sm"variant="outline"onClick={handleCopyPhone}
  className="h-7 text-xs px-2.5 font-bold"title="Copy Number">
                       {copiedPhone ? (
-                        <Check className="h-3.5 w-3.5 text-emerald-600"/>
+                        <Check className="h-3.5 w-3.5 text-success"/>
                       ) : (
                         <Copy className="h-3.5 w-3.5 text-muted-foreground"/>
                       )}
@@ -1985,9 +1985,9 @@ function DesignDetailContent() {
                       {formatBDT((linkedInvoice as any).total_amount || linkedInvoice.grand_total || 0)}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between text-2xs">
-                    <span className="text-emerald-600 font-semibold">Paid: {formatBDT(linkedInvoice.paid_amount || 0)}</span>
-                    <span className="text-rose-600 font-semibold">Due: {formatBDT(linkedInvoice.due_amount || 0)}</span>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-success font-semibold">Paid: {formatBDT(linkedInvoice.paid_amount || 0)}</span>
+                    <span className="text-destructive font-semibold">Due: {formatBDT(linkedInvoice.due_amount || 0)}</span>
                   </div>
                 </div>
               )}
@@ -1999,17 +1999,17 @@ function DesignDetailContent() {
             <CardHeader className="pb-3 border-b border-border bg-muted">
               <div className="flex items-center justify-between gap-2">
                 <CardTitle className="text-sm font-bold flex items-center gap-2">
-                  <FileText className="h-4 w-4 text-purple-600"/>
+                  <FileText className="h-4 w-4 text-primary"/>
                   <span>{tBilingual('Item Specs & Requirements', 'আইটেমের তথ্য ও টেকনিক্যাল স্পেসিফিকেশন')}</span>
                 </CardTitle>
                 <div className="flex items-center gap-1.5">
                   {totalWorksCount > 1 && (
-                    <Badge variant="outline"className="text-2xs font-bold bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950 dark:text-indigo-300">
+                    <Badge variant="outline"className="text-xs font-bold bg-primary/10 text-primary border-primary/20 bg-primary/10 text-primary">
  Item #{((currentWork?.index ?? 0) + 1)} of {totalWorksCount}
                     </Badge>
                   )}
                   {currentWork?.itemKind && (
-                    <Badge variant="outline"className="text-2xs uppercase font-bold text-foreground">
+                    <Badge variant="outline"className="text-xs uppercase font-bold text-foreground">
                       {currentWork.itemKind}
                     </Badge>
                   )}
@@ -2022,7 +2022,7 @@ function DesignDetailContent() {
               <div className="p-3 rounded-lg bg-muted/40 border border-border">
                 <div className="flex items-start justify-between gap-2">
                   <div>
-                    <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground">
+                    <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
  Current Work Item
                     </span>
                     <h4 className="font-bold text-sm text-foreground mt-0.5">
@@ -2036,10 +2036,10 @@ function DesignDetailContent() {
                   </div>
                   <Badge
  variant="outline"className={cn(
-                      'text-2xs font-bold capitalize shrink-0',
+                      'text-xs font-bold capitalize shrink-0',
  currentWork?.routing === 'design_ok'
-                        ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
-                        : 'bg-indigo-50 text-indigo-700 border-indigo-200'
+                        ? 'bg-success-surface text-success border-success-border'
+                        : 'bg-primary/10 text-primary border-primary/20'
                     )}
                   >
                     {currentWork?.routing === 'design_ok' ? 'Design OK' : 'Design Required'}
@@ -2051,7 +2051,7 @@ function DesignDetailContent() {
               <div className="grid grid-cols-2 gap-2 text-xs">
                 {/* Dimensions & Area */}
                 <div className="p-2.5 rounded-lg border border-border bg-muted flex flex-col justify-between">
-                  <span className="text-2xs font-bold text-muted-foreground uppercase flex items-center gap-1">
+                  <span className="text-xs font-bold text-muted-foreground uppercase flex items-center gap-1">
                     <Ruler className="h-3 w-3 text-muted-foreground"/>
  Target Dimensions
                   </span>
@@ -2060,7 +2060,7 @@ function DesignDetailContent() {
                       {currentWork?.dimensions || job.dimensions_spec || 'Standard'}
                     </p>
                     {(currentWork?.areaSft || (job as any).area_sft) && (
-                      <span className="inline-block mt-0.5 text-2xs tabular-nums font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 px-1.5 py-0.5 rounded border border-indigo-100 dark:border-indigo-900">
+                      <span className="inline-block mt-0.5 text-xs tabular-nums font-bold text-primary text-primary bg-primary/10 bg-primary/10 px-1.5 py-0.5 rounded border border-border border-border">
  Area: {currentWork?.areaSft || (job as any).area_sft} SFT
                       </span>
                     )}
@@ -2069,7 +2069,7 @@ function DesignDetailContent() {
 
                 {/* Quantity & Unit */}
                 <div className="p-2.5 rounded-lg border border-border bg-muted flex flex-col justify-between">
-                  <span className="text-2xs font-bold text-muted-foreground uppercase flex items-center gap-1">
+                  <span className="text-xs font-bold text-muted-foreground uppercase flex items-center gap-1">
                     <Box className="h-3 w-3 text-muted-foreground"/>
  Quantity & Unit
                   </span>
@@ -2078,7 +2078,7 @@ function DesignDetailContent() {
                       {currentWork?.quantity || job.quantity || 1} {currentWork?.unit || job.unit || 'pcs'}
                     </p>
                     {(currentWork?.unitPrice || (job as any).unit_price) && (
-                      <span className="inline-block mt-0.5 text-2xs text-muted-foreground font-medium">
+                      <span className="inline-block mt-0.5 text-xs text-muted-foreground font-medium">
  Rate: {formatBDT(currentWork?.unitPrice || (job as any).unit_price)} / {currentWork?.unit || job.unit || 'pcs'}
                       </span>
                     )}
@@ -2087,7 +2087,7 @@ function DesignDetailContent() {
 
                 {/* Material / Substrate */}
                 <div className="p-2.5 rounded-lg border border-border bg-muted col-span-2">
-                  <span className="text-2xs font-bold text-muted-foreground uppercase flex items-center gap-1">
+                  <span className="text-xs font-bold text-muted-foreground uppercase flex items-center gap-1">
                     <Layers className="h-3 w-3 text-muted-foreground"/>
  Media / Substrate Material
                   </span>
@@ -2105,7 +2105,7 @@ function DesignDetailContent() {
  Finishing & Post-Press Requirements:
                   </span>
                   {finishingItems.length > 0 && (
-                    <span className="text-2xs font-bold text-muted-foreground">
+                    <span className="text-xs font-bold text-muted-foreground">
                       {finishingItems.length} selected
                     </span>
                   )}
@@ -2120,7 +2120,7 @@ function DesignDetailContent() {
                         <span>{getFinishingBadgeEmoji(fin.name)}</span>
                         <span>{fin.name}</span>
                         {fin.cost && fin.cost > 0 && (
-                          <span className="tabular-nums text-2xs text-pink-700 dark:text-pink-300 font-bold">
+                          <span className="tabular-nums text-xs text-pink-700 dark:text-pink-300 font-bold">
                             (+{formatBDT(fin.cost)})
                           </span>
                         )}
@@ -2128,8 +2128,8 @@ function DesignDetailContent() {
                     ))}
                   </div>
                 ) : (
-                  <div className="p-2 rounded-lg bg-muted border border-border text-2xs text-muted-foreground font-medium flex items-center gap-1.5">
-                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0"/>
+                  <div className="p-2 rounded-lg bg-muted border border-border text-xs text-muted-foreground font-medium flex items-center gap-1.5">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-success shrink-0"/>
                     <span>Standard finishing (No extra post-press required).</span>
                   </div>
                 )}
@@ -2139,18 +2139,18 @@ function DesignDetailContent() {
               {addOnItems.length > 0 && (
                 <div className="space-y-1.5 pt-1">
                   <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                    <Package className="h-3.5 w-3.5 text-amber-600"/>
+                    <Package className="h-3.5 w-3.5 text-warning"/>
  Add-ons & Hardware Accessories:
                   </span>
                   <div className="flex flex-wrap gap-1.5">
                     {addOnItems.map((addon, aIdx) => (
                       <span
  key={aIdx}
- className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-amber-50 text-amber-900 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-200 dark:border-amber-800/60">
+ className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-warning-surface text-warning border border-warning-border bg-warning-surface text-warning border-warning-border/60">
                         <span>📦</span>
                         <span>{addon.name}</span>
                         {addon.cost && addon.cost > 0 && (
-                          <span className="tabular-nums text-2xs text-amber-700 dark:text-amber-300 font-bold">
+                          <span className="tabular-nums text-xs text-warning text-warning font-bold">
                             (+{formatBDT(addon.cost)})
                           </span>
                         )}
@@ -2161,29 +2161,29 @@ function DesignDetailContent() {
               )}
 
               {/* Customer Brief / Special Remarks Callout */}
-              <div className="p-3.5 rounded-xl bg-purple-50/60 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-900/60 space-y-1.5">
-                <div className="font-bold text-xs text-purple-900 dark:text-purple-200 flex items-center gap-1.5">
-                  <Sparkles className="h-3.5 w-3.5 text-purple-600 shrink-0"/>
+              <div className="p-3.5 rounded-xl bg-primary/10/60 bg-primary/10 border border-primary/20 border-border/60 space-y-1.5">
+                <div className="font-bold text-xs text-primary text-primary flex items-center gap-1.5">
+                  <Sparkles className="h-3.5 w-3.5 text-primary shrink-0"/>
                   <span>Customer Brief & Special Remarks:</span>
                 </div>
-                <p className="text-xs text-purple-950 dark:text-purple-300 leading-relaxed font-medium">
+                <p className="text-xs text-primary text-primary leading-relaxed font-medium">
                   {currentWork?.brief || job.instructions || 'Standard print specifications as per invoice.'}
                 </p>
               </div>
 
               {/* Prepress & Technical Quality Checklist (Interactive In-Place) */}
-              <div className="p-3.5 rounded-xl border border-indigo-200 dark:border-indigo-900/60 bg-indigo-50/30 dark:bg-indigo-950/20 space-y-2.5">
+              <div className="p-3.5 rounded-xl border border-primary/20 border-border/60 bg-primary/10/30 bg-primary/10 space-y-2.5">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-indigo-950 dark:text-indigo-200 flex items-center gap-1.5">
-                    <ShieldCheck className="h-4 w-4 text-indigo-600"/>
+                  <span className="text-xs font-bold text-primary text-primary flex items-center gap-1.5">
+                    <ShieldCheck className="h-4 w-4 text-primary"/>
  Prepress & Machine Readiness:
                   </span>
                   <Badge
  variant="outline"className={cn(
-                      'text-2xs font-bold px-1.5 py-0',
+                      'text-xs font-bold px-1.5 py-0',
  isAllPrepressPassed
-                        ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
-                        : 'bg-indigo-100 text-indigo-800 border-indigo-300'
+                        ? 'bg-success-surface text-success border-success-border'
+                        : 'bg-primary/10 text-primary border-primary/20'
                     )}
                   >
                     {prepressPassedCount} / 5 Passed
@@ -2193,10 +2193,10 @@ function DesignDetailContent() {
                 <div className="space-y-1.5 pt-1 text-xs">
                   <button
  type="button"onClick={() => togglePrepressCheck('dimensions')}
- className="w-full flex items-center justify-between p-2 rounded-lg bg-card border border-border hover:border-indigo-300 transition-colors text-left">
+ className="w-full flex items-center justify-between p-2 rounded-lg bg-card border border-border hover:border-primary/20 transition-colors text-left">
                     <div className="flex items-center gap-2">
                       {prepressChecks.dimensions ? (
-                        <CheckSquare className="h-4 w-4 text-emerald-600 shrink-0"/>
+                        <CheckSquare className="h-4 w-4 text-success shrink-0"/>
                       ) : (
                         <Square className="h-4 w-4 text-muted-foreground shrink-0"/>
                       )}
@@ -2204,17 +2204,17 @@ function DesignDetailContent() {
  Dimensions Match ({currentWork?.dimensions || job.dimensions_spec || 'Standard'})
                       </span>
                     </div>
-                    <span className="text-2xs font-bold text-emerald-600">
+                    <span className="text-xs font-bold text-success">
                       {prepressChecks.dimensions ? 'Verified' : 'Pending'}
                     </span>
                   </button>
 
                   <button
  type="button"onClick={() => togglePrepressCheck('colorProfile')}
- className="w-full flex items-center justify-between p-2 rounded-lg bg-card border border-border hover:border-indigo-300 transition-colors text-left">
+ className="w-full flex items-center justify-between p-2 rounded-lg bg-card border border-border hover:border-primary/20 transition-colors text-left">
                     <div className="flex items-center gap-2">
                       {prepressChecks.colorProfile ? (
-                        <CheckSquare className="h-4 w-4 text-emerald-600 shrink-0"/>
+                        <CheckSquare className="h-4 w-4 text-success shrink-0"/>
                       ) : (
                         <Square className="h-4 w-4 text-muted-foreground shrink-0"/>
                       )}
@@ -2222,17 +2222,17 @@ function DesignDetailContent() {
  High-Res CMYK 300 DPI Profile
                       </span>
                     </div>
-                    <span className="text-2xs font-bold text-emerald-600">
+                    <span className="text-xs font-bold text-success">
                       {prepressChecks.colorProfile ? 'Verified' : 'Pending'}
                     </span>
                   </button>
 
                   <button
  type="button"onClick={() => togglePrepressCheck('bleedMargin')}
- className="w-full flex items-center justify-between p-2 rounded-lg bg-card border border-border hover:border-indigo-300 transition-colors text-left">
+ className="w-full flex items-center justify-between p-2 rounded-lg bg-card border border-border hover:border-primary/20 transition-colors text-left">
                     <div className="flex items-center gap-2">
                       {prepressChecks.bleedMargin ? (
-                        <CheckSquare className="h-4 w-4 text-emerald-600 shrink-0"/>
+                        <CheckSquare className="h-4 w-4 text-success shrink-0"/>
                       ) : (
                         <Square className="h-4 w-4 text-muted-foreground shrink-0"/>
                       )}
@@ -2240,17 +2240,17 @@ function DesignDetailContent() {
  Bleed / Hemming Margins Reserved
                       </span>
                     </div>
-                    <span className="text-2xs font-bold text-emerald-600">
+                    <span className="text-xs font-bold text-success">
                       {prepressChecks.bleedMargin ? 'Verified' : 'Pending'}
                     </span>
                   </button>
 
                   <button
  type="button"onClick={() => togglePrepressCheck('outlines')}
- className="w-full flex items-center justify-between p-2 rounded-lg bg-card border border-border hover:border-indigo-300 transition-colors text-left">
+ className="w-full flex items-center justify-between p-2 rounded-lg bg-card border border-border hover:border-primary/20 transition-colors text-left">
                     <div className="flex items-center gap-2">
                       {prepressChecks.outlines ? (
-                        <CheckSquare className="h-4 w-4 text-emerald-600 shrink-0"/>
+                        <CheckSquare className="h-4 w-4 text-success shrink-0"/>
                       ) : (
                         <Square className="h-4 w-4 text-muted-foreground shrink-0"/>
                       )}
@@ -2258,17 +2258,17 @@ function DesignDetailContent() {
  Vector Curves & Fonts Outlined
                       </span>
                     </div>
-                    <span className="text-2xs font-bold text-emerald-600">
+                    <span className="text-xs font-bold text-success">
                       {prepressChecks.outlines ? 'Verified' : 'Check'}
                     </span>
                   </button>
 
                   <button
  type="button"onClick={() => togglePrepressCheck('proofApproved')}
- className="w-full flex items-center justify-between p-2 rounded-lg bg-card border border-border hover:border-indigo-300 transition-colors text-left">
+ className="w-full flex items-center justify-between p-2 rounded-lg bg-card border border-border hover:border-primary/20 transition-colors text-left">
                     <div className="flex items-center gap-2">
                       {prepressChecks.proofApproved ? (
-                        <CheckSquare className="h-4 w-4 text-emerald-600 shrink-0"/>
+                        <CheckSquare className="h-4 w-4 text-success shrink-0"/>
                       ) : (
                         <Square className="h-4 w-4 text-muted-foreground shrink-0"/>
                       )}
@@ -2276,15 +2276,15 @@ function DesignDetailContent() {
  Client Proof Approval Gate
                       </span>
                     </div>
-                    <span className={`text-2xs font-bold ${prepressChecks.proofApproved ? 'text-emerald-600' : 'text-amber-600'}`}>
+                    <span className={`text-xs font-bold ${prepressChecks.proofApproved ? 'text-success' : 'text-warning'}`}>
                       {prepressChecks.proofApproved ? 'Approved' : 'Pending Gate'}
                     </span>
                   </button>
                 </div>
 
                 {isAllPrepressPassed && (
-                  <div className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-2xs font-bold text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5 animate-in fade-in-0">
-                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0"/>
+                  <div className="p-2 rounded-lg bg-success-surface bg-success-surface border border-success-border border-success-border text-xs font-bold text-success text-success flex items-center gap-1.5 animate-in fade-in-0">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-success shrink-0"/>
                     <span>All Prepress Checks Passed • Ready for Print Floor</span>
                   </div>
                 )}
@@ -2297,7 +2297,7 @@ function DesignDetailContent() {
  type="button"onClick={() => setIsInvoiceMatrixOpen((prev) => !prev)}
  className="w-full flex items-center justify-between p-2.5 rounded-xl border border-border bg-muted hover:bg-muted text-xs font-bold text-foreground transition-colors">
                     <span className="flex items-center gap-1.5">
-                      <Layers className="h-3.5 w-3.5 text-indigo-600"/>
+                      <Layers className="h-3.5 w-3.5 text-primary"/>
  View All {totalWorksCount} Invoice Items Matrix
                     </span>
                     {isInvoiceMatrixOpen ? (
@@ -2320,17 +2320,17 @@ function DesignDetailContent() {
  className={cn(
                             'p-2.5 rounded-lg border transition-all cursor-pointer flex items-center justify-between gap-2',
  sw.isCurrent
-                              ? 'bg-indigo-50/60 border-indigo-300 dark:bg-indigo-950/40 dark:border-indigo-800'
+                              ? 'bg-primary/10/60 border-primary/20 bg-primary/10 border-border'
                               : 'bg-muted border-border hover:bg-muted '
                           )}
                         >
                           <div className="truncate">
                             <div className="flex items-center gap-1.5">
-                              <span className="tabular-nums text-2xs font-bold text-indigo-600">
+                              <span className="tabular-nums text-xs font-bold text-primary">
                                 #{sw.index + 1} • {sw.designNumber}
                               </span>
                               {sw.isCurrent && (
-                                <Badge className="bg-indigo-600 text-white text-2xs px-1 py-0 h-3.5">
+                                <Badge className="bg-primary text-white text-xs px-1 py-0 h-3.5">
  Current
                                 </Badge>
                               )}
@@ -2338,7 +2338,7 @@ function DesignDetailContent() {
                             <div className="font-semibold text-xs text-foreground truncate">
                               {sw.title}
                             </div>
-                            <div className="text-2xs text-muted-foreground">
+                            <div className="text-xs text-muted-foreground">
                               {sw.dimensions} • {sw.quantity} {sw.unit} • {sw.material}
                             </div>
                           </div>
@@ -2346,16 +2346,16 @@ function DesignDetailContent() {
                           <div className="text-right shrink-0">
                             <Badge
  variant="outline"className={cn(
-                                'text-2xs px-1 py-0 capitalize',
+                                'text-xs px-1 py-0 capitalize',
  sw.status === 'approved'
-                                  ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
+                                  ? 'bg-success-surface text-success border-success-border'
                                   : 'bg-muted text-muted-foreground border-border'
                               )}
                             >
                               {sw.status.replace('_', ' ')}
                             </Badge>
                             {sw.totalPrice && (
-                              <div className="text-2xs tabular-nums font-bold text-foreground mt-0.5">
+                              <div className="text-xs tabular-nums font-bold text-foreground mt-0.5">
                                 {formatBDT(sw.totalPrice)}
                               </div>
                             )}
@@ -2389,7 +2389,7 @@ function DesignDetailContent() {
  onClick={() => setActiveVersionNumber(ver.version_number)}
  className={`w-full text-left p-3 rounded-xl border transition-all ${
  ver.version_number === activeVersionNumber
-                      ? 'border-indigo-500 bg-indigo-50/50 dark:bg-indigo-950/30 dark:border-indigo-700 ring-1 ring-indigo-500'
+                      ? 'border-primary/20 bg-primary/10/50 bg-primary/10 border-border ring-1 focus:ring-ring'
                       : 'border-border hover:bg-muted dark:hover:bg-muted'
                   }`}
                 >
@@ -2399,21 +2399,21 @@ function DesignDetailContent() {
                         {ver.version_label}
                       </span>
                       {ver.is_approved && (
-                        <Badge className="bg-emerald-600 text-white text-2xs px-1.5 py-0 h-4">
+                        <Badge className="bg-success text-white text-xs px-1.5 py-0 h-4">
  Approved
                         </Badge>
                       )}
                     </div>
-                    <span className="text-2xs tabular-nums text-muted-foreground uppercase">
+                    <span className="text-xs tabular-nums text-muted-foreground uppercase">
                       .{ver.file_format}
                     </span>
                   </div>
                   {ver.change_notes && (
-                    <p className="text-2xs text-muted-foreground line-clamp-2 mt-1">
+                    <p className="text-xs text-muted-foreground line-clamp-2 mt-1">
                       {ver.change_notes}
                     </p>
                   )}
-                  <div className="text-2xs text-muted-foreground mt-1">
+                  <div className="text-xs text-muted-foreground mt-1">
  Uploaded by {ver.uploaded_by_name} • {ver.created_at}
                   </div>
                 </button>
@@ -2428,7 +2428,7 @@ function DesignDetailContent() {
  open={isLightboxOpen}
  onOpenChange={setIsLightboxOpen}
  title={`Artwork Lightbox: ${job.design_number} - ${activeVersion.version_label}`}
- description="Inspect high-resolution artwork proof with zoom and aspect verification."className="max-w-4xl">
+ description="Inspect high-resolution artwork proof with zoom and aspect verification."className="">
         <div className="space-y-4 pt-1">
           <div className="flex items-center justify-between gap-2 p-2 bg-surface-inset text-foreground rounded-lg text-xs">
             <div className="flex items-center gap-2">
@@ -2450,7 +2450,7 @@ function DesignDetailContent() {
               </Button>
             </div>
 
-            <div className="text-muted-foreground text-2xs tabular-nums">
+            <div className="text-muted-foreground text-xs tabular-nums">
  Target: {currentWork?.dimensions || job.dimensions_spec || 'Standard'}
             </div>
           </div>
@@ -2491,7 +2491,7 @@ function DesignDetailContent() {
             </Button>
             <Button
  asChild
- className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold">
+ className="bg-success hover:bg-success text-white font-bold">
               <a
  href={`https://wa.me/${whatsAppPhone.replace(/\D/g, '')}?text=${encodeURIComponent(
                   `Hello ${job.customer_name}, your artwork proof for"${job.title}"(#${job.design_number}, Invoice #${invoiceNumber}) is ready for review. Please check: ${activeVersion.proof_file_url}`
@@ -2514,7 +2514,7 @@ function DesignDetailContent() {
           <div className="space-y-2.5">
             <div className="flex items-center justify-between p-2.5 rounded-lg bg-muted border border-border">
               <span className="font-bold text-foreground">Dimensions Check:</span>
-              <span className="tabular-nums font-bold text-emerald-600">
+              <span className="tabular-nums font-bold text-success">
                 {currentWork?.dimensions || job.dimensions_spec || 'Standard'} (Verified)
               </span>
             </div>
@@ -2526,12 +2526,12 @@ function DesignDetailContent() {
 
             <div className="flex items-center justify-between p-2.5 rounded-lg bg-muted border border-border">
               <span className="font-bold text-foreground">Target Material:</span>
-              <span className="font-bold text-indigo-600">{currentWork?.material || job.material || 'Standard Media'}</span>
+              <span className="font-bold text-primary">{currentWork?.material || job.material || 'Standard Media'}</span>
             </div>
 
             <div className="flex items-center justify-between p-2.5 rounded-lg bg-muted border border-border">
               <span className="font-bold text-foreground">Commercial Gate:</span>
-              <span className={`font-bold ${hasInvoice ? 'text-emerald-600' : 'text-rose-600'}`}>
+              <span className={`font-bold ${hasInvoice ? 'text-success' : 'text-destructive'}`}>
                 {hasInvoice ? 'Cleared (Invoice Linked)' : 'Blocked (Invoice Required)'}
               </span>
             </div>
@@ -2600,8 +2600,8 @@ function DesignDetailContent() {
  className={cn(
               'border-2 border-dashed rounded-xl p-6 text-center space-y-2 cursor-pointer transition-all',
  isDraggingOver
-                ? 'border-indigo-500 bg-indigo-50/50 dark:bg-indigo-950/30'
-                : 'border-input hover:border-indigo-400 bg-muted '
+                ? 'border-primary/20 bg-primary/10/50 bg-primary/10'
+                : 'border-input hover:border-border bg-muted '
             )}
           >
             {newVersionProofUrl ? (
@@ -2609,7 +2609,7 @@ function DesignDetailContent() {
                 <img
  src={newVersionProofUrl}
  alt="Proof Preview"className="max-h-48 mx-auto rounded-lg object-contain shadow-xs"/>
-                <p className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center justify-center gap-1">
+                <p className="text-xs font-bold text-success text-success flex items-center justify-center gap-1">
                   <CheckCircle2 className="h-4 w-4"/> Ready to Save ({newVersionFormat.toUpperCase()})
                 </p>
               </div>
@@ -2619,7 +2619,7 @@ function DesignDetailContent() {
                 <p className="text-xs font-bold text-foreground">
  Drag & Drop Image, Click to Browse, or Press Ctrl+V
                 </p>
-                <p className="text-2xs text-muted-foreground">Supports .JPG, .JPEG, and .PNG</p>
+                <p className="text-xs text-muted-foreground">Supports .JPG, .JPEG, and .PNG</p>
               </div>
             )}
             <input
@@ -2649,7 +2649,7 @@ function DesignDetailContent() {
             </Button>
             <Button
  type="submit"disabled={!newVersionProofUrl}
- className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold">
+ className="bg-primary hover:bg-primary text-white font-bold">
  Save Version {(job.versions?.length || 0) + 1}
             </Button>
           </div>
@@ -2683,7 +2683,7 @@ function DesignDetailContent() {
             <Button type="button"variant="outline"onClick={() => setIsApproveOpen(false)}>
  Cancel
             </Button>
-            <Button type="submit"className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold">
+            <Button type="submit"className="bg-success hover:bg-success text-white font-bold">
  Confirm & Lock Version
             </Button>
           </div>
@@ -2719,7 +2719,7 @@ function DesignDetailContent() {
             <Button type="button"variant="outline"onClick={() => setIsInvoiceRequestOpen(false)}>
  Cancel
             </Button>
-            <Button type="submit"disabled={isPending} className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold">
+            <Button type="submit"disabled={isPending} className="bg-primary hover:bg-primary text-white font-bold">
  Dispatch Request & Notify Sales
             </Button>
           </div>

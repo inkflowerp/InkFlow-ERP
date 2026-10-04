@@ -1,5 +1,8 @@
 'use server'
 
+import { withTenantAction } from '@/lib/actions/action-wrapper'
+
+
 // ==============================================================================
 // PrintERP SaaS - WhatsApp Campaigns & Chat Server Actions
 // Supports safe controlled bulk broadcasts, contact management, and live chat replies.
@@ -40,14 +43,19 @@ async function resolveTenant(requestedCompanyId?: string, action: 'view' | 'send
 /**
  * Server Action: Dispatch Controlled WhatsApp Campaign
  */
-export async function dispatchWhatsAppCampaignAction(params: {
+export const dispatchWhatsAppCampaignAction = withTenantAction(
+  {
+    permission: "whatsapp.send",
+    entityType: "whatsapp-campaign"
+  },
+  async (ctx, params: {
   name: string
   messageTemplate: string
   recipientFilter: 'all_customers' | 'active_customers' | 'employees' | 'custom'
   customNumbers?: string[]
   acknowledgeSpamRisk: boolean
   requestedCompanyId?: string
-}): Promise<ServerActionResult<{ queuedCount: number; campaignName: string }>> {
+}) : Promise<ServerActionResult<{ queuedCount: number; campaignName: string }>> => {
   try {
     const tenant = await resolveTenant(params.requestedCompanyId, 'manage')
     const tenantId = tenant.companyId
@@ -189,16 +197,22 @@ export async function dispatchWhatsAppCampaignAction(params: {
       error: err?.message || 'Failed to dispatch WhatsApp campaign.',
     }
   }
-}
+
+})
 
 /**
  * Server Action: Fetch WhatsApp Contacts for Tenant
  */
-export async function getWhatsAppContactsAction(options?: {
+export const getWhatsAppContactsAction = withTenantAction(
+  {
+    permission: "whatsapp.view",
+    entityType: "whatsapp-campaign"
+  },
+  async (ctx, options?: {
   requestedCompanyId?: string
   search?: string
   limit?: number
-}): Promise<ServerActionResult<WhatsAppContactRecord[]>> {
+}) : Promise<ServerActionResult<WhatsAppContactRecord[]>> => {
   try {
     const tenant = await resolveTenant(options?.requestedCompanyId, 'view')
     const supabase = await createClient()
@@ -222,15 +236,21 @@ export async function getWhatsAppContactsAction(options?: {
   } catch (err: any) {
     return { success: false, error: err?.message || 'Failed to fetch WhatsApp contacts.' }
   }
-}
+
+})
 
 /**
  * Server Action: Fetch WhatsApp Chats (Conversation Threads)
  */
-export async function getWhatsAppChatsAction(options?: {
+export const getWhatsAppChatsAction = withTenantAction(
+  {
+    permission: "whatsapp.view",
+    entityType: "whatsapp-campaign"
+  },
+  async (ctx, options?: {
   requestedCompanyId?: string
   limit?: number
-}): Promise<ServerActionResult<Array<WhatsAppChatRecord & { contact?: WhatsAppContactRecord }>>> {
+}) : Promise<ServerActionResult<Array<WhatsAppChatRecord & { contact?: WhatsAppContactRecord }>>> => {
   try {
     const tenant = await resolveTenant(options?.requestedCompanyId, 'view')
     const adminClient = createAdminClient()
@@ -250,15 +270,19 @@ export async function getWhatsAppChatsAction(options?: {
   } catch (err: any) {
     return { success: false, error: err?.message || 'Failed to fetch WhatsApp conversations.' }
   }
-}
+
+})
 
 /**
  * Server Action: Fetch Chat Message History
  */
-export async function getWhatsAppChatMessagesAction(
-  chatId: string,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<WhatsAppMessageRecord[]>> {
+export const getWhatsAppChatMessagesAction = withTenantAction(
+  {
+    permission: "whatsapp.view",
+    entityType: "whatsapp-campaign"
+  },
+  async (ctx, chatId: string,
+  requestedCompanyId?: string) : Promise<ServerActionResult<WhatsAppMessageRecord[]>> => {
   try {
     const tenant = await resolveTenant(requestedCompanyId, 'view')
     const adminClient = createAdminClient()
@@ -286,16 +310,22 @@ export async function getWhatsAppChatMessagesAction(
   } catch (err: any) {
     return { success: false, error: err?.message || 'Failed to fetch chat messages.' }
   }
-}
+
+})
 
 /**
  * Server Action: Send Live WhatsApp Reply in Chat Thread
  */
-export async function sendWhatsAppReplyAction(params: {
+export const sendWhatsAppReplyAction = withTenantAction(
+  {
+    permission: "whatsapp.send",
+    entityType: "whatsapp-campaign"
+  },
+  async (ctx, params: {
   chatId: string
   messageText: string
   requestedCompanyId?: string
-}): Promise<ServerActionResult<WhatsAppMessageRecord>> {
+}) : Promise<ServerActionResult<WhatsAppMessageRecord>> => {
   try {
     const tenant = await resolveTenant(params.requestedCompanyId, 'send')
     const tenantId = tenant.companyId
@@ -366,4 +396,5 @@ export async function sendWhatsAppReplyAction(params: {
       error: err?.message || 'Failed to send WhatsApp reply.',
     }
   }
-}
+
+})

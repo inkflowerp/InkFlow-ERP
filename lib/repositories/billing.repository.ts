@@ -28,7 +28,7 @@ import type { CustomerRecord } from '../../types/crm.types.ts'
 
 export function isValidUUID(str?: string | null): boolean {
   if (!str) return false
-  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(str)
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str)
 }
 
 export function generateUUID(): string {
@@ -139,10 +139,11 @@ export class BillingRepository {
 
     if (isValidUUID(effectiveCompanyId)) {
       try {
-        const supabase = await createClient()
-        const { data, error } = await (supabase as any).rpc('get_next_document_number', {
+        const client = createAdminClient() || (await createClient())
+        const { data, error } = await (client as any).rpc('get_next_document_number', {
           p_company_id: effectiveCompanyId,
           p_doc_type: docType,
+          p_fiscal_year: null,
         })
 
         if (!error && data) {
@@ -154,6 +155,7 @@ export class BillingRepository {
         const { data: adminData, error: adminErr } = await (admin as any).rpc('get_next_document_number', {
           p_company_id: effectiveCompanyId,
           p_doc_type: docType,
+          p_fiscal_year: null,
         })
 
         if (!adminErr && adminData) {
@@ -222,6 +224,9 @@ export class BillingRepository {
 
           if (isEffectiveUuid) {
             q = q.eq('company_id', effectiveCompanyId)
+          } else {
+            // Fail closed: Never query without tenant filter if company ID cannot be resolved
+            q = q.eq('company_id', '00000000-0000-0000-0000-000000000000')
           }
 
           if (filters?.status && filters.status !== 'all') {
@@ -309,7 +314,7 @@ export class BillingRepository {
       }
 
       const all = PrintERPDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []
-      let list = all.filter((inv) => !inv.company_id || inv.company_id === companyId)
+      let list = all.filter((inv) => inv.company_id === companyId || (effectiveCompanyId && inv.company_id === effectiveCompanyId))
 
       if (filters?.status && filters.status !== 'all') {
         if (filters.status === 'overdue') {
@@ -494,24 +499,24 @@ export class BillingRepository {
       return sum + Math.round(qty * rate)
     }, 0)
 
-    const subtotal = Number(invoice.subtotal) || itemSubtotal || Number(invoice.grand_total) || 0
-    const vatPct = Number(invoice.vat_percentage) || Number((invoice as any).tax_rate) || 0
-    const discountAmt = Number(invoice.discount_amount) || 0
+    const subtotal = itemSubtotal || Number(invoice.subtotal) || 0
+    const discountAmt = Math.min(subtotal, Math.max(0, Number(invoice.discount_amount) || 0))
     const subtotalAfterDiscount = Math.max(0, subtotal - discountAmt)
-    const vatAmt = Number(invoice.vat_amount) || Number((invoice as any).tax_amount) || Math.round((subtotalAfterDiscount * vatPct) / 100)
-    const grandTotal = Number(invoice.grand_total) || (subtotalAfterDiscount + vatAmt)
-    const paidAmount = Number(invoice.paid_amount) || 0
-    const dueAmount = Math.max(0, grandTotal - paidAmount)
+    const vatPct = Number(invoice.vat_percentage) || Number((invoice as any).tax_rate) || 0
+    const vatAmt = invoice.vat_amount !== undefined
+      ? Math.max(0, Number(invoice.vat_amount))
+      : Math.round((subtotalAfterDiscount * vatPct) / 100)
+    const grandTotal = Math.round((subtotalAfterDiscount + vatAmt) * 100) / 100
+    const paidAmount = Math.min(grandTotal, Math.max(0, Number(invoice.paid_amount) || 0))
+    const dueAmount = Math.round((grandTotal - paidAmount) * 100) / 100
 
     const advancePct = invoice.advance_percentage !== undefined && invoice.advance_percentage !== null
       ? Number(invoice.advance_percentage)
       : (grandTotal > 0 && paidAmount > 0 ? Math.round((paidAmount / grandTotal) * 100) : 50)
     const advanceAmt = invoice.advance_amount !== undefined && invoice.advance_amount !== null
-      ? Number(invoice.advance_amount)
+      ? Math.min(grandTotal, Math.max(0, Number(invoice.advance_amount)))
       : (paidAmount > 0 ? paidAmount : Math.round((grandTotal * advancePct) / 100))
-    const dueOnDelivery = invoice.due_on_delivery !== undefined && invoice.due_on_delivery !== null
-      ? Number(invoice.due_on_delivery)
-      : (grandTotal - advanceAmt)
+    const dueOnDelivery = grandTotal - advanceAmt
 
     const payload: any = {
       id: invoiceId,
@@ -2072,6 +2077,13 @@ export class BillingRepository {
       throw new Error('Payment amount must be greater than zero.')
     }
 
+    const formattedAllocations = (params.allocations || []).map((a: any) => ({
+      invoice_id: a.invoice_id || a.invoiceId,
+      invoiceId: a.invoice_id || a.invoiceId,
+      amount: Number(a.amount || a.allocated_amount || 0),
+      allocated_amount: Number(a.amount || a.allocated_amount || 0),
+    }))
+
     try {
       let supabase: any
       try {
@@ -2081,7 +2093,7 @@ export class BillingRepository {
       }
       let { data, error } = await (supabase as any).rpc('record_multi_invoice_payment_atomic', {
         p_company_id: params.companyId,
-        p_customer_id: params.customerId,
+        p_customer_id: params.customerId && isValidUUID(params.customerId) ? params.customerId : null,
         p_customer_name: params.customerName,
         p_amount: params.amount,
         p_payment_method: params.paymentMethod,
@@ -2092,7 +2104,7 @@ export class BillingRepository {
         p_mfs_transaction_id: params.mfsTransactionId || null,
         p_notes: params.notes || null,
         p_received_by_name: params.receivedByName,
-        p_allocations: params.allocations || [],
+        p_allocations: formattedAllocations,
         p_branch_id: params.branchId || null,
         p_idempotency_key: params.idempotencyKey || null,
         p_actor_user_id: params.actorUserId || null,
@@ -2102,7 +2114,7 @@ export class BillingRepository {
         const admin = createAdminClient()
         const adminRes = await (admin as any).rpc('record_multi_invoice_payment_atomic', {
           p_company_id: params.companyId,
-          p_customer_id: params.customerId,
+          p_customer_id: params.customerId && isValidUUID(params.customerId) ? params.customerId : null,
           p_customer_name: params.customerName,
           p_amount: params.amount,
           p_payment_method: params.paymentMethod,
@@ -2113,7 +2125,7 @@ export class BillingRepository {
           p_mfs_transaction_id: params.mfsTransactionId || null,
           p_notes: params.notes || null,
           p_received_by_name: params.receivedByName,
-          p_allocations: params.allocations || [],
+          p_allocations: formattedAllocations,
           p_branch_id: params.branchId || null,
           p_idempotency_key: params.idempotencyKey || null,
           p_actor_user_id: params.actorUserId || null,
@@ -2288,7 +2300,7 @@ export class BillingRepository {
           company_id: params.companyId,
           branch_id: params.branchId || null,
           receipt_number: receiptNumber,
-          customer_id: params.customerId,
+          customer_id: params.customerId && isValidUUID(params.customerId) ? params.customerId : null,
           customer_name: params.customerName,
           payment_date: params.paymentDate || getTodayDateString(),
           payment_type: (params.allocations && params.allocations.length > 0 ? 'due_payment' : 'advance_payment') as PaymentType,
@@ -2350,7 +2362,7 @@ export class BillingRepository {
           }
         } catch (_) {}
 
-        if (params.customerId) {
+        if (params.customerId && isValidUUID(params.customerId)) {
           try {
             const { error: rpcErr } = await (client as any).rpc('increment_customer_balance_atomic', {
               p_company_id: params.companyId,
@@ -2731,34 +2743,55 @@ export class BillingRepository {
       }
 
       if (error) {
+        // Business rule: Do not bypass or swallow validation/authorization errors
+        if (
+          error.message?.toLowerCase().includes('exceed') ||
+          error.message?.toLowerCase().includes('not found') ||
+          error.message?.toLowerCase().includes('unauthorized') ||
+          error.message?.toLowerCase().includes('permission')
+        ) {
+          throw new Error(error.message)
+        }
+
         console.warn(`[BillingRepository] RPC record_financial_write_off_atomic failed (${error.message}). Executing direct table-level PostgreSQL write-off...`)
         const client = createAdminClient() || supabase
-        const { data: inv, error: invErr } = await (client as any).from('invoices').select('*').eq('id', writeOff.invoice_id).maybeSingle()
-        if (inv) {
-          const newWriteOff = Number(inv.write_off_amount || 0) + writeOff.amount
-          const newDue = Math.max(0, Number(inv.grand_total) - Number(inv.paid_amount || 0) - newWriteOff)
-          const newStatus = newDue <= 0 ? 'written_off' : inv.status
-          await (client as any).from('invoices').update({
-            write_off_amount: newWriteOff,
-            due_amount: newDue,
-            status: newStatus,
-            updated_at: new Date().toISOString(),
-          }).eq('id', inv.id)
+        const { data: inv, error: invErr } = await (client as any)
+          .from('invoices')
+          .select('*')
+          .eq('id', writeOff.invoice_id)
+          .eq('company_id', writeOff.company_id)
+          .maybeSingle()
 
-          const writeOffId = generateUUID()
-          const writeOffRow: FinancialWriteOffRecord = {
-            id: writeOffId,
-            company_id: writeOff.company_id,
-            invoice_id: writeOff.invoice_id,
-            amount: writeOff.amount,
-            reason: writeOff.reason,
-            authorized_by_name: writeOff.authorized_by_name,
-            actor_user_id: writeOff.actor_user_id || null,
-            created_at: new Date().toISOString(),
-          }
-          await (client as any).from('financial_write_offs').insert(writeOffRow)
-          return writeOffRow
+        if (!inv) {
+          throw new Error('Invoice not found in company context')
         }
+        const currentDue = Number(inv.due_amount ?? (inv.grand_total - (inv.paid_amount || 0)))
+        if (writeOff.amount > currentDue) {
+          throw new Error(`Write-off amount (৳${writeOff.amount}) cannot exceed outstanding invoice balance (৳${currentDue})`)
+        }
+        const newWriteOff = Number(inv.write_off_amount || 0) + writeOff.amount
+        const newDue = Math.max(0, Number(inv.grand_total) - Number(inv.paid_amount || 0) - newWriteOff)
+        const newStatus = newDue <= 0 ? 'written_off' : inv.status
+        await (client as any).from('invoices').update({
+          write_off_amount: newWriteOff,
+          due_amount: newDue,
+          status: newStatus,
+          updated_at: new Date().toISOString(),
+        }).eq('id', inv.id)
+
+        const writeOffId = generateUUID()
+        const writeOffRow: FinancialWriteOffRecord = {
+          id: writeOffId,
+          company_id: writeOff.company_id,
+          invoice_id: writeOff.invoice_id,
+          amount: writeOff.amount,
+          reason: writeOff.reason,
+          authorized_by_name: writeOff.authorized_by_name,
+          actor_user_id: writeOff.actor_user_id || null,
+          created_at: new Date().toISOString(),
+        }
+        await (client as any).from('financial_write_offs').insert(writeOffRow)
+        return writeOffRow
         if (invErr && mode === 'production') {
           throw new Error(`Write-off transaction failed in PostgreSQL: ${error.message}`)
         }

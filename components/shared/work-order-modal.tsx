@@ -855,7 +855,7 @@ export function WorkOrderModal({
       }}
  size="4xl"title={
         <div className="flex items-center gap-2.5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 font-bold shrink-0">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary bg-primary/20 text-primary font-bold shrink-0">
             <Layers className="h-5 w-5"/>
           </div>
           <div>
@@ -864,11 +864,11 @@ export function WorkOrderModal({
                 {tBilingual('Add Work Order', 'নতুন ওয়ার্ক অর্ডার যোগ করুন')}
               </span>
               <Badge
- variant="outline"className="text-2xs uppercase tabular-nums py-0.5 px-1.5 bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800">
+ variant="outline"className="text-xs uppercase tabular-nums py-0.5 px-1.5 bg-primary/10 bg-primary/10 text-primary text-primary border-primary/20 border-border">
  Pre-Press Flow
               </Badge>
             </div>
-            <p className="text-2xs text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
               {tBilingual(
                 'Fast pre-press booking with instant invoice dispatch to manager',
                 'দ্রুত প্রি-প্রেস বুকিং ও ম্যানেজারের নিকট তাৎক্ষণিক ইনভয়েস প্রেরণের সুবিধা'
@@ -880,31 +880,31 @@ export function WorkOrderModal({
     >
       <div className="space-y-4 pt-1">
         {errorMessage && (
-          <div className="flex items-center gap-2 p-3 text-xs rounded-xl bg-red-50 text-red-700 border border-red-200 dark:bg-red-950/40 dark:border-red-900 dark:text-red-300">
+          <div className="flex items-center gap-2 p-3 text-xs rounded-xl bg-danger-surface text-destructive border border-danger-border bg-danger-surface border-danger-border text-destructive">
             <AlertCircle className="h-4 w-4 shrink-0"/>
             <span>{errorMessage}</span>
           </div>
         )}
 
         {successMessage && (
-          <div className="flex items-center gap-2 p-3 text-xs rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:border-emerald-900 dark:text-emerald-300">
+          <div className="flex items-center gap-2 p-3 text-xs rounded-xl bg-success-surface text-success border border-success-border bg-success-surface border-success-border text-success">
             <CheckCircle2 className="h-4 w-4 shrink-0"/>
             <span>{successMessage}</span>
           </div>
         )}
 
         {/* Section 0: Production Workflow Routing */}
-        <div className="rounded-xl border border-indigo-200 dark:border-indigo-800/80 bg-indigo-50/40 dark:bg-indigo-950/20 p-4 space-y-3 shadow-xs">
+        <div className="rounded-xl border border-primary/20 border-border/80 bg-primary/10/40 bg-primary/10 p-4 space-y-3 shadow-xs">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="h-6 w-6 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold text-xs">
+              <div className="h-6 w-6 rounded-lg bg-primary text-white flex items-center justify-center font-bold text-xs">
                 ★
               </div>
-              <h3 className="text-xs font-bold text-indigo-950 dark:text-indigo-200 uppercase tracking-wider">
+              <h3 className="text-xs font-bold text-primary text-primary uppercase tracking-wider">
                 {tBilingual('Production Workflow Routing', 'প্রোডাকশন ওয়ার্কফ্লো রাউটিং')}
               </h3>
             </div>
-            <span className="text-2xs text-indigo-700 dark:text-indigo-400 font-medium">
+            <span className="text-xs text-primary text-primary font-medium">
               {workflowRouting === 'design_required' && '🎨 Designer ➔ Proof ➔ Customer Approval ➔ Print'}
               {workflowRouting === 'design_ok' && '⚡ Artwork Verified ➔ Direct Machine Queue'}
               {workflowRouting === 'ready_production' && '🚀 Fast-Track ➔ Direct Production & Delivery Dispatch'}
@@ -917,7 +917,7 @@ export function WorkOrderModal({
  className={cn(
                 'p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between',
  workflowRouting === 'ready_production'
-                  ? 'border-blue-600 bg-card shadow-xs ring-2 ring-blue-500/20'
+                  ? 'border-border bg-card shadow-xs ring-2 focus:ring-ring/20'
                   : 'border-border bg-card/70 opacity-70 hover:opacity-100'
               )}
             >
@@ -925,9 +925,9 @@ export function WorkOrderModal({
                 <span className="font-bold text-xs text-foreground flex items-center gap-1.5">
                   🚀 Ready Production
                 </span>
-                {workflowRouting === 'ready_production' && <CheckCircle2 className="h-4 w-4 text-blue-600"/>}
+                {workflowRouting === 'ready_production' && <CheckCircle2 className="h-4 w-4 text-primary"/>}
               </div>
-              <p className="text-2xs text-muted-foreground mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
  Fast-track. Auto-routes custom items to Production Planning and ready items to Delivery.
               </p>
             </button>
@@ -937,7 +937,7 @@ export function WorkOrderModal({
  className={cn(
                 'p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between',
  workflowRouting === 'design_ok'
-                  ? 'border-emerald-600 bg-card shadow-xs ring-2 ring-emerald-500/20'
+                  ? 'border-success-border bg-card shadow-xs ring-2 focus:ring-ring/20'
                   : 'border-border bg-card/70 opacity-70 hover:opacity-100'
               )}
             >
@@ -945,9 +945,9 @@ export function WorkOrderModal({
                 <span className="font-bold text-xs text-foreground flex items-center gap-1.5">
                   ⚡ Design OK (Print Ready)
                 </span>
-                {workflowRouting === 'design_ok' && <CheckCircle2 className="h-4 w-4 text-emerald-600"/>}
+                {workflowRouting === 'design_ok' && <CheckCircle2 className="h-4 w-4 text-success"/>}
               </div>
-              <p className="text-2xs text-muted-foreground mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
  Print-ready file verified. Routes straight to prepress flightcheck & print floor.
               </p>
             </button>
@@ -957,7 +957,7 @@ export function WorkOrderModal({
  className={cn(
                 'p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between',
  workflowRouting === 'design_required'
-                  ? 'border-indigo-600 bg-card shadow-xs ring-2 ring-indigo-500/20'
+                  ? 'border-border bg-card shadow-xs ring-2 focus:ring-ring/20'
                   : 'border-border bg-card/70 opacity-70 hover:opacity-100'
               )}
             >
@@ -965,9 +965,9 @@ export function WorkOrderModal({
                 <span className="font-bold text-xs text-foreground flex items-center gap-1.5">
                   🎨 Design Required
                 </span>
-                {workflowRouting === 'design_required' && <CheckCircle2 className="h-4 w-4 text-indigo-600"/>}
+                {workflowRouting === 'design_required' && <CheckCircle2 className="h-4 w-4 text-primary"/>}
               </div>
-              <p className="text-2xs text-muted-foreground mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
  Creates Designer task. Requires customer proof approval before printing.
               </p>
             </button>
@@ -980,7 +980,7 @@ export function WorkOrderModal({
         <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
             <div className="flex items-center gap-2">
-              <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
+              <div className="h-6 w-6 rounded-lg bg-primary/10 text-primary bg-primary/60 text-primary flex items-center justify-center font-bold text-xs">
                 1
               </div>
               <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
@@ -995,7 +995,7 @@ export function WorkOrderModal({
  className={cn(
                   'px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer',
  customerType === 'retail'
-                    ? 'bg-card text-blue-600 shadow-xs'
+                    ? 'bg-card text-primary shadow-xs'
                     : 'text-muted-foreground hover:text-foreground'
                 )}
               >
@@ -1006,7 +1006,7 @@ export function WorkOrderModal({
  className={cn(
                   'px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer',
  customerType === 'corporate'
-                    ? 'bg-card text-purple-600 shadow-xs'
+                    ? 'bg-card text-primary shadow-xs'
                     : 'text-muted-foreground hover:text-foreground'
                 )}
               >
@@ -1017,7 +1017,7 @@ export function WorkOrderModal({
  className={cn(
                   'px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer',
  customerType === 'reseller'
-                    ? 'bg-card text-emerald-600 shadow-xs'
+                    ? 'bg-card text-success shadow-xs'
                     : 'text-muted-foreground hover:text-foreground'
                 )}
               >
@@ -1028,7 +1028,7 @@ export function WorkOrderModal({
  className={cn(
                   'px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer',
  customerType === 'government'
-                    ? 'bg-card text-amber-600 shadow-xs'
+                    ? 'bg-card text-warning shadow-xs'
                     : 'text-muted-foreground hover:text-foreground'
                 )}
               >
@@ -1042,7 +1042,7 @@ export function WorkOrderModal({
             {/* Customer Name * */}
             <div className="relative"ref={searchContainerRef}>
               <Label className="text-xs font-semibold mb-1 block">
- Customer Name <span className="text-rose-500">*</span>
+ Customer Name <span className="text-destructive">*</span>
               </Label>
               <div className="relative">
                 <Input
@@ -1076,17 +1076,17 @@ export function WorkOrderModal({
  className={cn(
                         'p-2.5 cursor-pointer text-xs transition-colors flex items-center justify-between',
  idx === customerHighlightedIndex
-                          ? 'bg-blue-50 dark:bg-blue-950/70 text-blue-900 dark:text-blue-100 font-bold'
+                          ? 'bg-primary/10 bg-primary/10 text-primary text-primary font-bold'
                           : 'hover:bg-muted text-foreground '
                       )}
                     >
                       <div>
                         <div className="font-bold text-foreground">{c.name}</div>
-                        <div className="text-2xs text-muted-foreground tabular-nums">
+                        <div className="text-xs text-muted-foreground tabular-nums">
                           {c.mobile} {c.company_name ? `• ${c.company_name}` : ''}
                         </div>
                       </div>
-                      <Badge variant="outline"className="text-2xs uppercase tabular-nums">
+                      <Badge variant="outline"className="text-xs uppercase tabular-nums">
                         {c.customer_type || 'Retail'}
                       </Badge>
                     </div>
@@ -1098,7 +1098,7 @@ export function WorkOrderModal({
             {/* Phone Number * */}
             <div ref={phoneSearchRef}>
               <Label className="text-xs font-semibold mb-1 block">
- Phone Number <span className="text-rose-500">*</span>
+ Phone Number <span className="text-destructive">*</span>
               </Label>
               <Input
  placeholder="01XXXXXXXXX"value={customerPhone}
@@ -1130,7 +1130,7 @@ export function WorkOrderModal({
             {/* Billing / Delivery Address * */}
             <div className="sm:col-span-2">
               <Label className="text-xs font-semibold mb-1 block">
- Billing / Delivery Address <span className="text-rose-500">*</span>
+ Billing / Delivery Address <span className="text-destructive">*</span>
               </Label>
               <Input
  placeholder="Full address for delivery & invoice"value={customerAddress}
@@ -1157,7 +1157,7 @@ export function WorkOrderModal({
         <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-1 border-b border-border">
             <div className="flex items-center gap-2">
-              <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
+              <div className="h-6 w-6 rounded-lg bg-primary/10 text-primary bg-primary/60 text-primary flex items-center justify-center font-bold text-xs">
                 2
               </div>
               <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
@@ -1165,7 +1165,7 @@ export function WorkOrderModal({
               </h3>
               {totalSft > 0 && (
                 <Badge
- variant="outline"className="text-xs tabular-nums bg-blue-50/50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800 ml-1">
+ variant="outline"className="text-xs tabular-nums bg-primary/10/50 bg-primary/10 text-primary text-primary border-primary/20 border-border ml-1">
  Total Area: {totalSft.toFixed(1)} SFT
                 </Badge>
               )}
@@ -1175,19 +1175,19 @@ export function WorkOrderModal({
             <div className="flex flex-wrap items-center gap-2">
               <Button
  type="button"variant="outline"size="sm"onClick={() => handleAddItem('service')}
- className="h-7 text-xs font-bold gap-1 text-blue-700 border-blue-300 bg-blue-50/50 hover:bg-blue-100 dark:bg-blue-950/30 cursor-pointer">
+ className="h-7 text-xs font-bold gap-1 text-primary border-primary/20 bg-primary/10/50 hover:bg-primary/10 bg-primary/10 cursor-pointer">
                 <Plus className="h-3.5 w-3.5"/>
  Add Service / Catalog Item
               </Button>
               <Button
  type="button"variant="outline"size="sm"onClick={() => handleAddItem('ready_product')}
- className="h-7 text-xs font-bold gap-1 text-emerald-700 border-emerald-300 bg-emerald-50/50 hover:bg-emerald-100 dark:bg-emerald-950/30 cursor-pointer">
+ className="h-7 text-xs font-bold gap-1 text-success border-success-border bg-success-surface/50 hover:bg-success-surface bg-success-surface cursor-pointer">
                 <Plus className="h-3.5 w-3.5"/>
  Add Ready Product
               </Button>
               <Button
  type="button"variant="outline"size="sm"onClick={() => handleAddItem('custom')}
- className="h-7 text-xs font-bold gap-1 text-amber-700 border-amber-300 bg-amber-50/50 hover:bg-amber-100 dark:bg-amber-950/30 cursor-pointer">
+ className="h-7 text-xs font-bold gap-1 text-warning border-warning-border bg-warning-surface/50 hover:bg-warning-surface bg-warning-surface cursor-pointer">
                 <Sparkles className="h-3.5 w-3.5"/>
  Add Custom Item
               </Button>
@@ -1219,25 +1219,25 @@ export function WorkOrderModal({
                       {/* Item Kind Badge */}
                       {isService && (
                         <Badge
- variant="outline"className="bg-indigo-50 text-indigo-700 border-indigo-300 dark:bg-indigo-950/40 dark:text-indigo-300 text-2xs font-bold">
+ variant="outline"className="bg-primary/10 text-primary border-primary/20 bg-primary/10 text-primary text-xs font-bold">
                           🖨️ Printing & Service
                         </Badge>
                       )}
                       {isReadyProduct && (
                         <Badge
- variant="outline"className="bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-300 text-2xs font-bold">
+ variant="outline"className="bg-success-surface text-success border-success-border bg-success-surface text-success text-xs font-bold">
                           📦 Ready Product
                         </Badge>
                       )}
                       {isMaterial && (
                         <Badge
- variant="outline"className="bg-purple-50 text-purple-700 border-purple-300 dark:bg-purple-950/40 dark:text-purple-300 text-2xs font-bold">
+ variant="outline"className="bg-primary/10 text-primary border-primary/20 bg-primary/10 text-primary text-xs font-bold">
                           🧵 Raw Material
                         </Badge>
                       )}
                       {isCustom && (
                         <Badge
- variant="outline"className="bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-950/40 dark:text-amber-300 text-2xs font-bold">
+ variant="outline"className="bg-warning-surface text-warning border-warning-border bg-warning-surface text-warning text-xs font-bold">
  Manual
                         </Badge>
                       )}
@@ -1253,7 +1253,7 @@ export function WorkOrderModal({
                       {items.length > 1 && (
                         <Button
  type="button"variant="ghost"size="sm"onClick={() => handleRemoveItem(index)}
- className="h-7 px-2 text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-xs font-bold cursor-pointer gap-1">
+ className="h-7 px-2 text-destructive hover:text-destructive hover:bg-danger-surface dark:hover:bg-danger-surface text-xs font-bold cursor-pointer gap-1">
                           <Trash2 className="h-3.5 w-3.5"/>
  Remove
                         </Button>
@@ -1306,16 +1306,16 @@ export function WorkOrderModal({
                     <div className="sm:col-span-7">
                       <div className="flex items-center justify-between mb-1">
                         <Label className="text-xs font-semibold block">
- Item Description / Service Name <span className="text-rose-500">*</span>
+ Item Description / Service Name <span className="text-destructive">*</span>
                         </Label>
                         {isCustom && (
                           <div className="flex items-center gap-1">
-                            <span className="text-2xs text-muted-foreground mr-1">Mode:</span>
+                            <span className="text-xs text-muted-foreground mr-1">Mode:</span>
                             <button
  type="button"onClick={() => handleToggleItemKind(index, 'service')}
  className={cn(
-                                'px-1.5 py-0.5 rounded text-2xs font-bold transition-all cursor-pointer',
- isService ? 'bg-indigo-600 text-white' : 'bg-muted text-muted-foreground'
+                                'px-1.5 py-0.5 rounded text-xs font-bold transition-all cursor-pointer',
+ isService ? 'bg-primary text-white' : 'bg-muted text-muted-foreground'
                               )}
                             >
                               📐 Sqft Area
@@ -1323,8 +1323,8 @@ export function WorkOrderModal({
                             <button
  type="button"onClick={() => handleToggleItemKind(index, 'ready_product')}
  className={cn(
-                                'px-1.5 py-0.5 rounded text-2xs font-bold transition-all cursor-pointer',
- isReadyProduct ? 'bg-emerald-600 text-white' : 'bg-muted text-muted-foreground'
+                                'px-1.5 py-0.5 rounded text-xs font-bold transition-all cursor-pointer',
+ isReadyProduct ? 'bg-success text-white' : 'bg-muted text-muted-foreground'
                               )}
                             >
                               📦 Unit
@@ -1343,16 +1343,16 @@ export function WorkOrderModal({
                   {/* Dimension Presets for Services */}
                   {isService && Array.isArray(item.available_dimension_presets) && item.available_dimension_presets.length > 0 && (
                     <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
-                      <span className="text-2xs font-bold text-muted-foreground mr-1">Standard Sizes:</span>
+                      <span className="text-xs font-bold text-muted-foreground mr-1">Standard Sizes:</span>
                       {item.available_dimension_presets.map((preset, pIdx) => (
                         <button
  key={pIdx}
  type="button"onClick={() => handleApplyPreset(index, preset)}
  className={cn(
-                            'px-2 py-0.5 rounded-md text-2xs font-semibold border transition-all cursor-pointer',
+                            'px-2 py-0.5 rounded-md text-xs font-semibold border transition-all cursor-pointer',
  item.width === String(preset.width) && item.height === String(preset.length)
-                              ? 'bg-blue-600 text-white border-blue-600'
-                              : 'bg-card border-input text-foreground hover:border-blue-400'
+                              ? 'bg-primary text-white border-border'
+                              : 'bg-card border-input text-foreground hover:border-border'
                           )}
                         >
                           {preset.label || `${preset.width} × ${preset.length} ${preset.unit || 'ft'}`}
@@ -1365,7 +1365,7 @@ export function WorkOrderModal({
                   {isService && (
                     <div className="grid grid-cols-2 sm:grid-cols-6 gap-2.5">
                       <div>
-                        <Label className="text-2xs font-semibold mb-1 block">Width</Label>
+                        <Label className="text-xs font-semibold mb-1 block">Width</Label>
                         <Input
  type="number"step="0.1"placeholder="0"value={item.width}
  onChange={(e) => handleItemChange(index, 'width', e.target.value)}
@@ -1373,7 +1373,7 @@ export function WorkOrderModal({
                       </div>
 
                       <div>
-                        <Label className="text-2xs font-semibold mb-1 block">Height</Label>
+                        <Label className="text-xs font-semibold mb-1 block">Height</Label>
                         <Input
  type="number"step="0.1"placeholder="0"value={item.height}
  onChange={(e) => handleItemChange(index, 'height', e.target.value)}
@@ -1381,7 +1381,7 @@ export function WorkOrderModal({
                       </div>
 
                       <div>
-                        <Label className="text-2xs font-semibold mb-1 block">Dim. Unit</Label>
+                        <Label className="text-xs font-semibold mb-1 block">Dim. Unit</Label>
                         <select
  value={item.dimension_unit || 'ft'}
  onChange={(e) => handleItemChange(index, 'dimension_unit', e.target.value)}
@@ -1394,7 +1394,7 @@ export function WorkOrderModal({
                       </div>
 
                       <div>
-                        <Label className="text-2xs font-semibold mb-1 block">Qty (Prints)</Label>
+                        <Label className="text-xs font-semibold mb-1 block">Qty (Prints)</Label>
                         <Input
  type="number"min="1"value={item.quantity}
  onChange={(e) => handleItemChange(index, 'quantity', Number(e.target.value) || 1)}
@@ -1403,7 +1403,7 @@ export function WorkOrderModal({
                       </div>
 
                       <div>
-                        <Label className="text-2xs font-semibold mb-1 block">Finishing</Label>
+                        <Label className="text-xs font-semibold mb-1 block">Finishing</Label>
                         <select
  value={item.finishing || 'None'}
  onChange={(e) => handleItemChange(index, 'finishing', e.target.value)}
@@ -1426,7 +1426,7 @@ export function WorkOrderModal({
                       </div>
 
                       <div>
-                        <Label className="text-2xs font-semibold mb-1 block">Add-ons</Label>
+                        <Label className="text-xs font-semibold mb-1 block">Add-ons</Label>
                         <select
  value={item.add_on || 'None'}
  onChange={(e) => handleItemChange(index, 'add_on', e.target.value)}
@@ -1446,22 +1446,22 @@ export function WorkOrderModal({
                   {isReadyProduct && (
                     <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 p-3 bg-card rounded-xl border border-border">
                       <div className="sm:col-span-6 flex flex-col justify-center">
-                        <span className="text-2xs uppercase font-bold text-muted-foreground block mb-0.5">
+                        <span className="text-xs uppercase font-bold text-muted-foreground block mb-0.5">
  Physical Specs & Packaging
                         </span>
                         <div className="flex flex-wrap items-center gap-1.5 text-xs text-foreground font-medium">
                           {item.dimensions_spec ? (
-                            <span className="bg-muted px-2 py-0.5 rounded tabular-nums text-2xs">
+                            <span className="bg-muted px-2 py-0.5 rounded tabular-nums text-xs">
                               📐 {item.dimensions_spec}
                             </span>
                           ) : (
-                            <span className="text-muted-foreground italic text-2xs">Standard Factory Size</span>
+                            <span className="text-muted-foreground italic text-xs">Standard Factory Size</span>
                           )}
                         </div>
                       </div>
 
                       <div className="sm:col-span-3">
-                        <Label className="text-2xs font-semibold mb-1 block">Quantity</Label>
+                        <Label className="text-xs font-semibold mb-1 block">Quantity</Label>
                         <Input
  type="number"min="1"value={item.quantity}
  onChange={(e) => handleItemChange(index, 'quantity', Number(e.target.value) || 1)}
@@ -1470,7 +1470,7 @@ export function WorkOrderModal({
                       </div>
 
                       <div className="sm:col-span-3">
-                        <Label className="text-2xs font-semibold mb-1 block">Unit</Label>
+                        <Label className="text-xs font-semibold mb-1 block">Unit</Label>
                         <select
  value={item.unit}
  onChange={(e) => handleItemChange(index, 'unit', e.target.value)}
@@ -1503,7 +1503,7 @@ export function WorkOrderModal({
                   {isMaterial && (
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                       <div>
-                        <Label className="text-2xs font-semibold mb-1 block">Quantity</Label>
+                        <Label className="text-xs font-semibold mb-1 block">Quantity</Label>
                         <Input
  type="number"min="0.1"step="0.1"value={item.quantity}
  onChange={(e) => handleItemChange(index, 'quantity', Number(e.target.value) || 1)}
@@ -1512,7 +1512,7 @@ export function WorkOrderModal({
                       </div>
 
                       <div>
-                        <Label className="text-2xs font-semibold mb-1 block">Usage Unit</Label>
+                        <Label className="text-xs font-semibold mb-1 block">Usage Unit</Label>
                         <select
  value={item.unit}
  onChange={(e) => handleItemChange(index, 'unit', e.target.value)}
@@ -1528,7 +1528,7 @@ export function WorkOrderModal({
                       </div>
 
                       <div>
-                        <Label className="text-2xs font-semibold mb-1 block">Material Spec</Label>
+                        <Label className="text-xs font-semibold mb-1 block">Material Spec</Label>
                         <Input
  placeholder="e.g. 280 GSM Frontlit"value={item.dimensions_spec || ''}
  onChange={(e) => handleItemChange(index, 'dimensions_spec', e.target.value)}
@@ -1539,8 +1539,8 @@ export function WorkOrderModal({
 
                   {/* Substrate / Printable Material pill for service */}
                   {isService && item.printable_material_name && (
-                    <div className="flex items-center gap-2 text-2xs text-muted-foreground bg-card px-3 py-1.5 rounded-lg border border-border">
-                      <Layers className="h-3.5 w-3.5 text-indigo-500 shrink-0"/>
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground bg-card px-3 py-1.5 rounded-lg border border-border">
+                      <Layers className="h-3.5 w-3.5 text-primary shrink-0"/>
                       <span>
  Linked Substrate: <strong>{item.printable_material_name}</strong>
                       </span>
@@ -1550,19 +1550,19 @@ export function WorkOrderModal({
                   {/* Advanced Specs Drawer */}
                   {item.showAdvanced && (
                     <div className="p-3 rounded-xl bg-card border border-border space-y-2 text-xs animate-in fade-in-0">
-                      <span className="text-2xs uppercase font-bold text-muted-foreground block">
+                      <span className="text-xs uppercase font-bold text-muted-foreground block">
  Advanced Production Specs
                       </span>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
-                          <Label className="text-2xs font-semibold mb-1 block">Material / Structure Spec</Label>
+                          <Label className="text-xs font-semibold mb-1 block">Material / Structure Spec</Label>
                           <Input
  placeholder="e.g. 3mm Cast Acrylic, 280 GSM Frontlit"value={item.dimensions_spec || ''}
  onChange={(e) => handleItemChange(index, 'dimensions_spec', e.target.value)}
  className="text-xs h-9"/>
                         </div>
                         <div>
-                          <Label className="text-2xs font-semibold mb-1 block">Item Special Instructions</Label>
+                          <Label className="text-xs font-semibold mb-1 block">Item Special Instructions</Label>
                           <Input
  placeholder="e.g. 1-inch extra margin for framing..."value={item.notes || ''}
  onChange={(e) => handleItemChange(index, 'notes', e.target.value)}
@@ -1580,7 +1580,7 @@ export function WorkOrderModal({
         {/* Section 3: Reference Artwork & Pre-Press Notes */}
         <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
           <div className="flex items-center gap-2">
-            <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
+            <div className="h-6 w-6 rounded-lg bg-primary/10 text-primary bg-primary/60 text-primary flex items-center justify-center font-bold text-xs">
               3
             </div>
             <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
@@ -1606,7 +1606,7 @@ export function WorkOrderModal({
  className={cn(
               'p-3.5 rounded-xl border-2 border-dashed transition-all cursor-pointer text-center',
  isRefDragging
-                ? 'border-blue-500 bg-blue-50/60 dark:bg-blue-950/40'
+                ? 'border-primary/20 bg-primary/10/60 bg-primary/10'
                 : 'border-input bg-muted hover:bg-muted dark:hover:bg-muted'
             )}
           >
@@ -1624,25 +1624,25 @@ export function WorkOrderModal({
  src={referenceProofUrl}
  alt="Reference Artwork"className="max-h-32 object-contain mx-auto"/>
                 </div>
-                <div className="flex items-center justify-center gap-1.5 text-xs text-emerald-600 font-semibold">
+                <div className="flex items-center justify-center gap-1.5 text-xs text-success font-semibold">
                   <CheckCircle2 className="h-3.5 w-3.5"/>
                   <span>{referenceFileName} — Click to replace or paste another</span>
                 </div>
               </div>
             ) : (
               <div className="py-2 space-y-1">
-                <div className="h-8 w-8 mx-auto rounded-full bg-blue-100 text-blue-600 dark:bg-blue-950 dark:text-blue-400 flex items-center justify-center">
+                <div className="h-8 w-8 mx-auto rounded-full bg-primary/10 text-primary bg-primary/10 text-primary flex items-center justify-center">
                   <Upload className="h-4 w-4"/>
                 </div>
                 <div>
                   <p className="text-xs font-bold text-foreground">
                     {tBilingual('Click to browse or Drag & Drop .JPG / .PNG', 'ফাইল নির্বাচন করুন অথবা ড্র্যাগ করুন')}
                   </p>
-                  <p className="text-2xs text-blue-600 dark:text-blue-400 font-semibold">
-                    💡 Tip: Press <kbd className="px-1 py-0.5 rounded bg-muted tabular-nums text-2xs">Ctrl+V</kbd> anywhere to paste screenshot
+                  <p className="text-xs text-primary text-primary font-semibold">
+                    💡 Tip: Press <kbd className="px-1 py-0.5 rounded bg-muted tabular-nums text-xs">Ctrl+V</kbd> anywhere to paste screenshot
                   </p>
                 </div>
-                <p className="text-2xs text-muted-foreground">
+                <p className="text-xs text-muted-foreground">
  Supported formats: <strong>.JPG, .JPEG, .PNG</strong>
                 </p>
               </div>

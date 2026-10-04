@@ -156,16 +156,16 @@ export function InventoryTabsNavigation({
             <Icon
  className={cn(
                 'h-3.5 w-3.5',
- isActive ? 'text-emerald-400 dark:text-emerald-600' : 'text-muted-foreground'
+ isActive ? 'text-success text-success' : 'text-muted-foreground'
               )}
             />
             <span>{tBilingual(tab.labelEn, tab.labelBn)}</span>
             {tab.count !== undefined && (
               <span
  className={cn(
-                  'px-1.5 py-0.5 rounded-full text-2xs tabular-nums font-bold',
+                  'px-1.5 py-0.5 rounded-full text-xs tabular-nums font-bold',
  tab.alert
-                    ? 'bg-amber-500 text-white animate-pulse'
+                    ? 'bg-warning text-white animate-pulse'
                     : isActive
                     ? 'bg-card/20 text-white '
                     : 'bg-muted text-muted-foreground '

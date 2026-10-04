@@ -45,6 +45,7 @@ import {
  ShoppingCart,
  Settings,
  Coins,
+ Award,
 } from 'lucide-react'
 import { useI18n } from '@/i18n/context'
 import { useTenant } from '@/hooks/use-tenant'
@@ -55,7 +56,10 @@ import { KpiCard, KpiGrid } from '@/components/shared/kpi-card'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import { LiveDhakaClock } from '@/components/shared/live-dhaka-clock'
 import { QuickActionsBar } from '@/components/dashboard/quick-actions-bar'
-import { NewPurchaseModal } from '@/components/purchases/new-purchase-modal'
+const NewPurchaseModal = dynamic(
+  () => import('@/components/purchases/new-purchase-modal').then((mod) => mod.NewPurchaseModal),
+  { ssr: false }
+)
 import { formatBDT, toBengaliNumerals } from '@/lib/formatters'
 import { getBangladeshGreeting, formatBangladeshDate, getBangladeshTodayDateString } from '@/lib/utils/business-date'
 import { getTenantNavHref } from '@/lib/tenant/tenant-url'
@@ -66,20 +70,19 @@ import type {
  SegmentMetrics,
  LiquiditySummary,
  MachineryFloorSummary,
-} from '@/services/dashboard.service'
+ TopCustomerSummary,
+} from '@/types/dashboard.types'
 import type { EvaluatedJobRisk, NeedsAttentionItem } from '@/lib/dashboard/job-risk-engine'
 import type { OverdueReceivableSummary } from '@/lib/finance/canonical-finance'
-import {
- ResponsiveContainer,
- AreaChart,
- Area,
- BarChart,
- Bar,
- XAxis,
- YAxis,
- Tooltip,
- CartesianGrid,
-} from 'recharts'
+import dynamic from 'next/dynamic'
+
+const DashboardTrendChart = dynamic(
+  () => import('@/components/dashboard/dashboard-trend-chart').then((mod) => mod.DashboardTrendChart),
+  {
+    ssr: false,
+    loading: () => <div className="h-64 w-full animate-pulse bg-muted rounded-xl" />,
+  }
+)
 
 interface OwnerDashboardProps {
  data: OwnerDashboardSnapshot
@@ -116,6 +119,7 @@ export function OwnerDashboard({
   // Reminder Modal State
  const [reminderItem, setReminderItem] = useState<OverdueReceivableSummary | null>(null)
  const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false)
+ const [trendDays, setTrendDays] = useState<7 | 30>(7)
 
   // Fail-Safe Data Normalization
  const safeData = useMemo(() => {
@@ -306,9 +310,18 @@ export function OwnerDashboard({
  delivered: raw.pipelineCounts?.delivered ?? 0,
       },
  trendData: Array.isArray(raw.trendData) ? raw.trendData : [],
+ topCustomers: Array.isArray(raw.topCustomers) ? raw.topCustomers : [],
  branchCount: raw.branchCount ?? 1,
     }
   }, [data, company?.id])
+
+  // Filtered Trend Data based on 7D / 30D toggle
+ const activeTrendData = useMemo(() => {
+   if (trendDays === 7) {
+     return safeData.trendData.slice(-7)
+   }
+   return safeData.trendData
+ }, [safeData.trendData, trendDays])
 
   // Real Computed Operations & Pipeline Metrics (Zero demo data fallbacks)
  const realTotalOrders = useMemo(() => {
@@ -421,14 +434,14 @@ export function OwnerDashboard({
               </span>
 
               <Badge
- variant="outline"className="font-semibold text-2xs sm:text-xs py-0.5 px-2.5">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse"/>
+ variant="outline"className="font-semibold text-xs sm:text-xs py-0.5 px-2.5">
+                <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse"/>
                 <span>{tBilingual('Owner Dashboard', 'ডিজিটাল • অফসেট • সাইনেজ নিয়ন্ত্রণ কেন্দ্র')}</span>
               </Badge>
 
               {currentBranch && (
-                <Badge variant="outline"className="text-2xs py-0.5 px-2">
-                  <Building className="h-3 w-3 mr-1 text-blue-200"/>
+                <Badge variant="outline"className="text-xs py-0.5 px-2">
+                  <Building className="h-3 w-3 mr-1 text-primary"/>
                   {currentBranch.name.split('(')[0].trim()}
                 </Badge>
               )}
@@ -459,11 +472,11 @@ export function OwnerDashboard({
           <div className="flex flex-col md:items-end justify-center shrink-0 pt-3 md:pt-0 border-t border-border md:border-t-0">
             <div className="flex items-center gap-2 md:justify-end text-muted-foreground mb-1">
               <Clock className="h-4 w-4 text-muted-foreground shrink-0"/>
-              <span className="text-2xs sm:text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+              <span className="text-xs sm:text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                 {tBilingual('Current Time', 'বর্তমান সময়')}
               </span>
               {isUpdating && (
-                <span className="flex items-center gap-1 text-2xs font-semibold text-muted-foreground bg-muted px-2 py-0.5 rounded-full border border-border animate-pulse">
+                <span className="flex items-center gap-1 text-xs font-semibold text-muted-foreground bg-muted px-2 py-0.5 rounded-full border border-border animate-pulse">
                   <RefreshCw className="h-2.5 w-2.5 animate-spin"/>
                   <span>{tBilingual('Syncing', 'সিঙ্ক হচ্ছে')}</span>
                 </span>
@@ -475,7 +488,7 @@ export function OwnerDashboard({
  showIcon={false}
  className="inline-flex items-center"timeClassName="text-3xl sm:text-4xl font-bold font-numeric tabular-nums tracking-normal text-foreground leading-none"/>
 
-            <span className="text-2xs text-muted-foreground font-medium mt-1">
+            <span className="text-xs text-muted-foreground font-medium mt-1">
               {tBilingual('Asia/Dhaka (UTC+6)', 'বাংলাদেশ সময়')}
             </span>
           </div>
@@ -483,7 +496,52 @@ export function OwnerDashboard({
       </div>
 
       {/* ========================================================================= */}
-      {/* 2. TWO-COLUMN DASHBOARD SECTION: QUICK ACTIONS + NEEDS YOUR ATTENTION     */}
+      {/* 2. CANONICAL 4 CORE KPIS (Immediate Situational Awareness in <= 2s)       */}
+      {/* ========================================================================= */}
+      <KpiGrid columns={4}>
+        <KpiCard
+          titleEn="Today's Collections"
+          titleBn="আজকের কালেকশন"
+          value={safeData.collectionMetrics?.todayCollection ?? safeData.liquiditySummary?.cashInHand ?? 0}
+          isCurrency={true}
+          icon={Wallet}
+          colorVariant="emerald"
+          subtitleEn="Cash in box, bKash & Bank"
+          subtitleBn="কাউন্টার ক্যাশ, বিকাশ ও ব্যাংক"
+        />
+        <KpiCard
+          titleEn="Today's Booked Sales"
+          titleBn="আজকের বুকিং বিক্রয়"
+          value={safeData.salesMetrics?.todaySales ?? safeData.profitMetrics?.totalRevenue ?? 0}
+          isCurrency={true}
+          icon={BarChart3}
+          colorVariant="blue"
+          trend={salesTrend}
+          subtitleEn={`${realTotalOrders} orders finalized`}
+          subtitleBn={`${realTotalOrders}টি অর্ডার বুকিং`}
+        />
+        <KpiCard
+          titleEn="Active Production"
+          titleBn="চলমান প্রোডাকশন"
+          value={realProductionCount}
+          icon={Settings}
+          colorVariant="indigo"
+          subtitleEn={`${safeData.productionSummary?.atRiskCount || 0} urgent / at risk`}
+          subtitleBn={`${safeData.productionSummary?.atRiskCount || 0}টি কাজ ঝুঁকিপূর্ণ`}
+        />
+        <KpiCard
+          titleEn="Needs Attention"
+          titleBn="জরুরি মনোযোগ প্রয়োজন"
+          value={safeData.attentionItems?.length || 0}
+          icon={AlertTriangle}
+          colorVariant={safeData.attentionItems?.length > 0 ? 'rose' : 'emerald'}
+          subtitleEn={safeData.attentionItems?.length > 0 ? "Overdue dues & blockers" : "All operations on track"}
+          subtitleBn={safeData.attentionItems?.length > 0 ? "বকেয়া বিল ও বিলম্বিত কাজ" : "সকল কার্যক্রম স্বাভাবিক"}
+        />
+      </KpiGrid>
+
+      {/* ========================================================================= */}
+      {/* 3. TWO-COLUMN DASHBOARD SECTION: QUICK ACTIONS + NEEDS YOUR ATTENTION     */}
       {/* ========================================================================= */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
         {/* LEFT COLUMN: Quick Actions (7 cols on desktop for comfortable 3x2 cards) */}
@@ -502,7 +560,7 @@ export function OwnerDashboard({
               {/* Header Label Row */}
               <div className="flex items-center justify-between mb-3 px-1">
                 <div className="flex items-center gap-2">
-                  <span className="p-1.5 rounded-lg bg-amber-50 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400 shrink-0">
+                  <span className="p-1.5 rounded-lg bg-warning-surface text-warning bg-warning-surface/60 text-warning shrink-0">
                     <AlertTriangle className="h-3.5 w-3.5"/>
                   </span>
                   <h2 className="text-xs font-black uppercase tracking-wider text-foreground bangla-text">
@@ -512,8 +570,8 @@ export function OwnerDashboard({
                 <Badge
  variant="outline"className={`text-xs tabular-nums font-bold ${
  safeData.attentionItems.length > 0
-                      ? 'bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950/40 dark:text-amber-300'
-                      : 'bg-emerald-50 text-emerald-800 border-emerald-300'
+                      ? 'bg-warning-surface text-warning border-warning-border bg-warning-surface text-warning'
+                      : 'bg-success-surface text-success border-success-border'
                   }`}
                 >
                   {safeData.attentionItems.length} {tBilingual('Items', 'টি সমস্যা')}
@@ -522,13 +580,13 @@ export function OwnerDashboard({
 
               {/* Content Area */}
               {safeData.attentionItems.length === 0 ? (
-                <div className="p-4 bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900 rounded-xl sm:rounded-xl flex items-center gap-3">
-                  <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0"/>
+                <div className="p-4 bg-success-surface/60 bg-success-surface border border-success-border border-success-border rounded-xl sm:rounded-xl flex items-center gap-3">
+                  <CheckCircle2 className="h-5 w-5 text-success shrink-0"/>
                   <div>
-                    <div className="text-xs font-bold text-emerald-900 dark:text-emerald-100 bangla-text">
+                    <div className="text-xs font-bold text-success bangla-text">
                       {tBilingual('Operations are healthy and on track!', 'ব্যবসার সকল কার্যক্রম স্বাভাবিক ও নিয়মতান্ত্রিকভাবে চলছে!')}
                     </div>
-                    <p className="text-2xs text-emerald-700 dark:text-emerald-300 bangla-text mt-0.5">
+                    <p className="text-xs text-success bangla-text mt-0.5">
                       {tBilingual('No overdue invoices, delayed jobs, or pending customer proof blocks.', 'কোনো বিলম্বিত কাজ, বকেয়া বিল বা আটকে থাকা আর্টওয়ার্ক নেই।')}
                     </p>
                   </div>
@@ -542,13 +600,13 @@ export function OwnerDashboard({
  key={item.id}
  className={`p-3 rounded-xl sm:rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 shadow-xs transition-all ${
  isUrgent
-                            ? 'bg-rose-50/70 border-rose-200 dark:bg-rose-950/20 dark:border-rose-900/60'
-                            : 'bg-amber-50/70 border-amber-200 dark:bg-amber-950/20 dark:border-amber-900/60'
+                            ? 'bg-danger-surface/70 border-danger-border bg-danger-surface border-danger-border/60'
+                            : 'bg-warning-surface/70 border-warning-border bg-warning-surface border-warning-border/60'
                         }`}
                       >
                         <div className="space-y-1 min-w-0 flex-1">
                           <div className="flex items-center gap-2">
-                            <span className={`h-2 w-2 rounded-full shrink-0 ${isUrgent ? 'bg-rose-600' : 'bg-amber-500'}`} />
+                            <span className={`h-2 w-2 rounded-full shrink-0 ${isUrgent ? 'bg-destructive' : 'bg-warning'}`} />
                             <h3 className="font-bold text-xs sm:text-sm text-foreground bangla-text truncate">
                               {tBilingual(item.titleEn, item.titleBn)}
                             </h3>
@@ -559,8 +617,8 @@ export function OwnerDashboard({
                           </p>
 
                           {item.recordCode && (
-                            <div className="pl-4 flex items-center gap-2 text-2xs text-muted-foreground tabular-nums">
-                              <span className="font-bold text-blue-600">{item.recordCode}</span>
+                            <div className="pl-4 flex items-center gap-2 text-xs text-muted-foreground tabular-nums">
+                              <span className="font-bold text-primary">{item.recordCode}</span>
                               {item.status && <span>• {item.status}</span>}
                               {item.ageOrDeadline && <span>• {item.ageOrDeadline}</span>}
                             </div>
@@ -575,8 +633,8 @@ export function OwnerDashboard({
                           }}
  className={`h-8 sm:h-9 px-3 text-xs font-bold shrink-0 bangla-text cursor-pointer self-start sm:self-center ${
  isUrgent
-                              ? 'bg-rose-600 text-white hover:bg-rose-700 border-rose-600'
-                              : 'bg-amber-600 text-white hover:bg-amber-700 border-amber-600'
+                              ? 'bg-destructive text-destructive-foreground hover:bg-destructive/90 border-danger-border'
+                              : 'bg-warning text-warning-foreground hover:bg-warning/90 border-warning-border'
                           }`}
                         >
                           <span>{tBilingual(item.actionLabelEn, item.actionLabelBn)}</span>
@@ -614,7 +672,7 @@ export function OwnerDashboard({
 
             <div className="flex items-center gap-2 bg-muted px-3.5 py-1.5 rounded-full border border-border">
               <span className="text-xs text-muted-foreground font-semibold">{tBilingual('Total Cash:', 'মোট ক্যাশ ব্যালেন্স:')}</span>
-              <span className="text-base font-black tabular-nums text-emerald-600 dark:text-emerald-400">
+              <span className="text-base font-black tabular-nums text-success">
                 {formatBDT(safeData.liquiditySummary.totalLiquidAssets)}
               </span>
             </div>
@@ -623,74 +681,74 @@ export function OwnerDashboard({
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4">
             {/* 1. Cash in Counter Drawer */}
             <div className="p-3 bg-muted/50 rounded-xl border border-border hover:bg-muted transition-all space-y-1">
-              <div className="flex items-center justify-between text-xs text-emerald-600 dark:text-emerald-400 font-medium">
+              <div className="flex items-center justify-between text-xs text-success font-medium">
                 <span className="flex items-center gap-1.5">
                   <Wallet className="h-3.5 w-3.5"/>
                   {tBilingual('Cash in Drawer', 'ক্যাশ ড্রয়ার')}
                 </span>
-                <span className="text-2xs tabular-nums opacity-80">1001</span>
+                <span className="text-xs tabular-nums opacity-80">1001</span>
               </div>
               <div className="text-lg font-black tabular-nums text-foreground">
                 {formatBDT(safeData.liquiditySummary.cashInHand)}
               </div>
-              <div className="text-2xs text-emerald-600 dark:text-emerald-400 font-medium">
+              <div className="text-xs text-success font-medium">
                 {tBilingual('Main Counter Cash', 'প্রধান ক্যাশ কাউন্টার')}
               </div>
             </div>
 
             {/* 2. bKash / Nagad / MFS */}
             <div className="p-3 bg-muted/50 rounded-xl border border-border hover:bg-muted transition-all space-y-1">
-              <div className="flex items-center justify-between text-xs text-pink-600 dark:text-pink-400 font-medium">
+              <div className="flex items-center justify-between text-xs text-primary font-medium">
                 <span className="flex items-center gap-1.5">
                   <Smartphone className="h-3.5 w-3.5"/>
                   {tBilingual('bKash / Nagad MFS', 'বিকাশ / নগদ')}
                 </span>
-                <span className="text-2xs tabular-nums opacity-80">1003</span>
+                <span className="text-xs tabular-nums opacity-80">1003</span>
               </div>
               <div className="text-lg font-black tabular-nums text-foreground">
                 {formatBDT(safeData.liquiditySummary.mfsBalance)}
               </div>
-              <div className="text-2xs text-pink-600 dark:text-pink-400 font-medium">
+              <div className="text-xs text-primary font-medium">
                 {tBilingual('Merchant Accounts', 'মার্চেন্ট ওয়ালেট')}
               </div>
             </div>
 
             {/* 3. Bank Accounts */}
             <div className="p-3 bg-muted/50 rounded-xl border border-border hover:bg-muted transition-all space-y-1">
-              <div className="flex items-center justify-between text-xs text-blue-600 dark:text-blue-400 font-medium">
+              <div className="flex items-center justify-between text-xs text-primary text-primary font-medium">
                 <span className="flex items-center gap-1.5">
                   <Landmark className="h-3.5 w-3.5"/>
                   {tBilingual('Bank Accounts', 'ব্যাংক একাউন্ট')}
                 </span>
-                <span className="text-2xs tabular-nums opacity-80">1002</span>
+                <span className="text-xs tabular-nums opacity-80">1002</span>
               </div>
               <div className="text-lg font-black tabular-nums text-foreground">
                 {formatBDT(safeData.liquiditySummary.bankBalance)}
               </div>
-              <div className="text-2xs text-blue-600 dark:text-blue-400 font-medium">
+              <div className="text-xs text-primary text-primary font-medium">
                 {tBilingual('Current / CD Accounts', 'চলতি হিসাব')}
               </div>
             </div>
 
             {/* 4. Today's Net Cash Flow (Collection vs Expenses) */}
             <div className="p-3 bg-muted/50 rounded-xl border border-border hover:bg-muted transition-all space-y-1">
-              <div className="flex items-center justify-between text-xs text-amber-600 dark:text-amber-400 font-medium">
+              <div className="flex items-center justify-between text-xs text-warning text-warning font-medium">
                 <span className="flex items-center gap-1.5">
                   <TrendingUp className="h-3.5 w-3.5"/>
                   {tBilingual('Today Net Flow', 'আজকের নিট জমা')}
                 </span>
-                <span className="text-2xs tabular-nums font-bold text-emerald-600 dark:text-emerald-400">
+                <span className="text-xs tabular-nums font-bold text-success">
                   +{formatBDT(safeData.liquiditySummary.todayCollection)}
                 </span>
               </div>
               <div className="text-lg font-black tabular-nums text-foreground">
                 {formatBDT(safeData.liquiditySummary.todayNetCashFlow)}
               </div>
-              <div className="flex items-center justify-between text-2xs font-medium pt-0.5">
-                <span className="text-rose-600 dark:text-rose-400">
+              <div className="flex items-center justify-between text-xs font-medium pt-0.5">
+                <span className="text-destructive text-destructive">
                   {tBilingual('Expense:', 'খরচ:')} -{formatBDT(safeData.liquiditySummary.todayExpenses)}
                 </span>
-                <span className="text-emerald-600 dark:text-emerald-400 font-semibold">
+                <span className="text-success font-semibold">
                   {tBilingual('Net Drawer', 'নিট জমা')}
                 </span>
               </div>
@@ -705,12 +763,12 @@ export function OwnerDashboard({
       <div className="space-y-2">
         <div className="flex items-center justify-between px-1">
           <div className="flex items-center gap-2">
-            <span className="h-2.5 w-2.5 rounded-full bg-blue-600"/>
+            <span className="h-2.5 w-2.5 rounded-full bg-primary"/>
             <h2 className="text-xs font-bold uppercase tracking-wider text-foreground bangla-text">
               {tBilingual('Business Today (Core Financials)', 'আজকের ব্যবসায়িক সারসংক্ষেপ')}
             </h2>
           </div>
-          <span className="text-2xs text-muted-foreground tabular-nums">
+          <span className="text-xs text-muted-foreground tabular-nums">
             {tBilingual('Timezone: Asia/Dhaka (UTC+6)', 'বাংলাদেশ সময়')}
           </span>
         </div>
@@ -732,64 +790,57 @@ export function OwnerDashboard({
           </Card>
         ) : (
           <KpiGrid columns={4}>
-            {/* ROW 1: Operations */}
-            {/* 1. Total Orders */}
+            {/* 1. Total Revenue / Sales */}
             <KpiCard
- titleEn="Total Orders"titleBn="মোট অর্ডার"value={realTotalOrders}
- icon={ShoppingCart}
- colorVariant="blue"trend={salesTrend}
+              titleEn="Total Revenue"
+              titleBn="মোট রাজস্ব বিক্রয়"
+              value={safeData.profitMetrics.totalRevenue || safeData.salesMetrics.todaySales || 0}
+              isCurrency={true}
+              icon={BarChart3}
+              colorVariant="emerald"
+              trend={salesTrend}
+              subtitleEn="Total invoiced book"
+              subtitleBn="মোট ইনভয়েস মূল্য"
             />
 
-            {/* 2. Pending Orders */}
+            {/* 2. Outstanding Receivables */}
             <KpiCard
- titleEn="Pending Orders"titleBn="অপেক্ষমান অর্ডার"value={realPendingOrders}
- icon={Clock}
- colorVariant="amber"/>
-
-            {/* 3. Production */}
-            <KpiCard
- titleEn="Production"titleBn="চলমান প্রোডাকশন"value={realProductionCount}
- icon={Settings}
- colorVariant="indigo"/>
-
-            {/* 4. Ready for Delivery */}
-            <KpiCard
- titleEn="Ready for Delivery"titleBn="ডেলিভারি প্রস্তুত"value={realReadyForDeliveryCount}
- icon={Truck}
- colorVariant="emerald"/>
-
-            {/* ROW 2: Financials */}
-            {/* 5. Total Sales */}
-            <KpiCard
- titleEn="Total Sales"titleBn="মোট বিক্রয়"value={safeData.profitMetrics.totalRevenue || safeData.salesMetrics.todaySales || 0}
- isCurrency={true}
- icon={BarChart3}
- colorVariant="emerald"trend={salesTrend}
+              titleEn="Outstanding Due"
+              titleBn="মোট বকেয়া পাওনা"
+              value={safeData.receivablesMetrics.totalDue ?? 0}
+              isCurrency={true}
+              icon={FileText}
+              colorVariant="rose"
+              subtitleEn="Customer dues to collect"
+              subtitleBn="গ্রাহকদের কাছে মোট পাওনা"
             />
 
-            {/* 6. Outstanding */}
+            {/* 3. Production Cost */}
             <KpiCard
- titleEn="Outstanding"titleBn="বকেয়া বাকি"value={safeData.receivablesMetrics.totalDue ?? 0}
- isCurrency={true}
- icon={FileText}
- colorVariant="rose"/>
+              titleEn="Production Cost"
+              titleBn="উৎপাদন খরচ"
+              value={safeData.profitMetrics.totalCost ?? 0}
+              isCurrency={true}
+              icon={Coins}
+              colorVariant="slate"
+              subtitleEn="Paper, ink, press & labor"
+              subtitleBn="কাঁচামাল, কালি ও মজুরি"
+            />
 
-            {/* 7. Production Cost */}
+            {/* 4. Gross Profit & Margin */}
             <KpiCard
- titleEn="Production Cost"titleBn="উৎপাদন খরচ"value={safeData.profitMetrics.totalCost ?? 0}
- isCurrency={true}
- icon={Coins}
- colorVariant="slate"/>
-
-            {/* 8. Net Profit */}
-            <KpiCard
- titleEn="Net Profit"titleBn="নিট লাভ"value={
- safeData.profitMetrics.grossProfit ||
+              titleEn="Gross Profit"
+              titleBn="মোট অর্জিত লাভ"
+              value={
+                safeData.profitMetrics.grossProfit ||
                 (safeData.profitMetrics.totalRevenue ? safeData.profitMetrics.totalRevenue - safeData.profitMetrics.totalCost : 0)
               }
- isCurrency={true}
- icon={TrendingUp}
- colorVariant="emerald"/>
+              isCurrency={true}
+              icon={TrendingUp}
+              colorVariant="emerald"
+              subtitleEn="Revenue minus direct costs"
+              subtitleBn="খরচ বাদে মোট লাভ"
+            />
           </KpiGrid>
         )}
       </div>
@@ -804,13 +855,13 @@ export function OwnerDashboard({
  type="button"onClick={() => setProdFilter((prev) => (prev === 'digital' ? 'all' : 'digital'))}
  className={`p-4 rounded-xl text-left border transition-all cursor-pointer space-y-2 select-none ${
  prodFilter === 'digital'
-                ? 'bg-blue-100/70 border-blue-500 dark:bg-blue-950/60 dark:border-blue-400 ring-2 ring-blue-500/30 shadow-xs'
-                : 'bg-blue-50/40 border-blue-200 dark:bg-blue-950/20 dark:border-blue-900/60 hover:border-blue-400 hover:shadow-xs'
+                ? 'bg-primary/10/70 border-primary/20 bg-primary/10 border-border ring-2 focus:ring-ring/30 shadow-xs'
+                : 'bg-primary/10/40 border-primary/20 bg-primary/10 border-border/60 hover:border-border hover:shadow-xs'
             }`}
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div className="p-2 rounded-xl bg-blue-600 text-white shadow-xs">
+                <div className="p-2 rounded-xl bg-primary text-white shadow-xs">
                   <Printer className="h-4.5 w-4.5"/>
                 </div>
                 <div>
@@ -819,22 +870,22 @@ export function OwnerDashboard({
                       {tBilingual('Digital Printing', 'ডিজিটাল প্রিন্টিং')}
                     </h3>
                     {prodFilter === 'digital' && (
-                      <Badge className="bg-blue-600 text-white text-2xs py-0 px-1">Active Filter</Badge>
+                      <Badge className="bg-primary text-white text-xs py-0 px-1">Active Filter</Badge>
                     )}
                   </div>
-                  <p className="text-2xs text-muted-foreground">Fast Laser, ID, Cards, Mugs, Crests</p>
+                  <p className="text-xs text-muted-foreground">Fast Laser, ID, Cards, Mugs, Crests</p>
                 </div>
               </div>
-              <Badge className="bg-blue-600 text-white text-2xs py-0.5 px-2">
+              <Badge className="bg-primary text-white text-xs py-0.5 px-2">
                 {safeData.segmentMetrics.digital.activeJobsCount} {tBilingual('Active', 'চলমান')}
               </Badge>
             </div>
 
-            <div className="pt-2 border-t border-blue-100 dark:border-blue-900/80 flex items-center justify-between text-xs tabular-nums">
+            <div className="pt-2 border-t border-border border-border/80 flex items-center justify-between text-xs tabular-nums">
               <span className="text-muted-foreground">
                 {tBilingual('Done Today:', 'আজকে সম্পন্ন:')} <strong className="text-foreground">{safeData.segmentMetrics.digital.completedTodayCount}</strong>
               </span>
-              <span className="font-bold text-blue-600 dark:text-blue-400">
+              <span className="font-bold text-primary text-primary">
                 {formatBDT(safeData.segmentMetrics.digital.todaySales)}
               </span>
             </div>
@@ -845,13 +896,13 @@ export function OwnerDashboard({
  type="button"onClick={() => setProdFilter((prev) => (prev === 'offset' ? 'all' : 'offset'))}
  className={`p-4 rounded-xl text-left border transition-all cursor-pointer space-y-2 select-none ${
  prodFilter === 'offset'
-                ? 'bg-purple-100/70 border-purple-500 dark:bg-purple-950/60 dark:border-purple-400 ring-2 ring-purple-500/30 shadow-xs'
-                : 'bg-purple-50/40 border-purple-200 dark:bg-purple-950/20 dark:border-purple-900/60 hover:border-purple-400 hover:shadow-xs'
+                ? 'bg-primary/10/70 border-primary/20 bg-primary/10 border-border ring-2 focus:ring-ring/30 shadow-xs'
+                : 'bg-primary/10/40 border-primary/20 bg-primary/10 border-border/60 hover:border-border hover:shadow-xs'
             }`}
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div className="p-2 rounded-xl bg-purple-600 text-white shadow-xs">
+                <div className="p-2 rounded-xl bg-primary text-white shadow-xs">
                   <Layers className="h-4.5 w-4.5"/>
                 </div>
                 <div>
@@ -860,22 +911,22 @@ export function OwnerDashboard({
                       {tBilingual('Offset Printing', 'অফসেট প্রিন্টিং')}
                     </h3>
                     {prodFilter === 'offset' && (
-                      <Badge className="bg-purple-600 text-white text-2xs py-0 px-1">Active Filter</Badge>
+                      <Badge className="bg-primary text-white text-xs py-0 px-1">Active Filter</Badge>
                     )}
                   </div>
-                  <p className="text-2xs text-muted-foreground">Books, Packaging, Cartons, Memos, Pads</p>
+                  <p className="text-xs text-muted-foreground">Books, Packaging, Cartons, Memos, Pads</p>
                 </div>
               </div>
-              <Badge className="bg-purple-600 text-white text-2xs py-0.5 px-2">
+              <Badge className="bg-primary text-white text-xs py-0.5 px-2">
                 {safeData.segmentMetrics.offset.activeJobsCount} {tBilingual('Active', 'চলমান')}
               </Badge>
             </div>
 
-            <div className="pt-2 border-t border-purple-100 dark:border-purple-900/80 flex items-center justify-between text-xs tabular-nums">
+            <div className="pt-2 border-t border-border border-border/80 flex items-center justify-between text-xs tabular-nums">
               <span className="text-muted-foreground">
                 {tBilingual('Plates / CTP:', 'প্লেট / সিটিপি:')} <strong className="text-foreground">{safeData.segmentMetrics.offset.platesPending}</strong>
               </span>
-              <span className="font-bold text-purple-600 dark:text-purple-400">
+              <span className="font-bold text-primary text-primary">
                 {formatBDT(safeData.segmentMetrics.offset.todaySales)}
               </span>
             </div>
@@ -886,13 +937,13 @@ export function OwnerDashboard({
  type="button"onClick={() => setProdFilter((prev) => (prev === 'signage' ? 'all' : 'signage'))}
  className={`p-4 rounded-xl text-left border transition-all cursor-pointer space-y-2 select-none ${
  prodFilter === 'signage'
-                ? 'bg-amber-100/70 border-amber-500 dark:bg-amber-950/60 dark:border-amber-400 ring-2 ring-amber-500/30 shadow-xs'
-                : 'bg-amber-50/40 border-amber-200 dark:bg-amber-950/20 dark:border-amber-900/60 hover:border-amber-400 hover:shadow-xs'
+                ? 'bg-warning-surface/70 border-warning-border bg-warning-surface/60 border-warning-border ring-2 focus:ring-ring/30 shadow-xs'
+                : 'bg-warning-surface/40 border-warning-border bg-warning-surface border-warning-border/60 hover:border-warning-border hover:shadow-xs'
             }`}
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div className="p-2 rounded-xl bg-amber-600 text-white shadow-xs">
+                <div className="p-2 rounded-xl bg-warning text-white shadow-xs">
                   <Gauge className="h-4.5 w-4.5"/>
                 </div>
                 <div>
@@ -901,22 +952,22 @@ export function OwnerDashboard({
                       {tBilingual('Signage & Large Format', 'সাইনেজ ও লার্জ ফরম্যাট')}
                     </h3>
                     {prodFilter === 'signage' && (
-                      <Badge className="bg-amber-600 text-white text-2xs py-0 px-1">Active Filter</Badge>
+                      <Badge className="bg-warning text-white text-xs py-0 px-1">Active Filter</Badge>
                     )}
                   </div>
-                  <p className="text-2xs text-muted-foreground">Banner, Vinyl, Acrylic 3D, LED, Boards</p>
+                  <p className="text-xs text-muted-foreground">Banner, Vinyl, Acrylic 3D, LED, Boards</p>
                 </div>
               </div>
-              <Badge className="bg-amber-600 text-white text-2xs py-0.5 px-2">
+              <Badge className="bg-warning text-white text-xs py-0.5 px-2">
                 {safeData.segmentMetrics.signage.activeJobsCount} {tBilingual('Active', 'চলমান')}
               </Badge>
             </div>
 
-            <div className="pt-2 border-t border-amber-100 dark:border-amber-900/80 flex items-center justify-between text-xs tabular-nums">
+            <div className="pt-2 border-t border-warning-border border-warning-border/80 flex items-center justify-between text-xs tabular-nums">
               <span className="text-muted-foreground">
                 {tBilingual('Volume:', 'সাইজ:')} <strong className="text-foreground">{safeData.segmentMetrics.signage.totalSqFt} sft</strong>
               </span>
-              <span className="font-bold text-amber-600 dark:text-amber-400">
+              <span className="font-bold text-warning text-warning">
                 {formatBDT(safeData.segmentMetrics.signage.todaySales)}
               </span>
             </div>
@@ -928,17 +979,17 @@ export function OwnerDashboard({
       {/* 6. CRITICAL RAW MATERIAL LOW-STOCK ACTION WATCHLIST                       */}
       {/* ========================================================================= */}
       {safeData.criticalStockAlerts && safeData.criticalStockAlerts.length > 0 && (
-        <Card className="border-rose-200 dark:border-rose-900/60 bg-rose-50/30 dark:bg-rose-950/20 rounded-xl p-4 space-y-3">
+        <Card className="border-danger-border border-danger-border/60 bg-danger-surface/30 bg-danger-surface rounded-xl p-4 space-y-3">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <span className="p-1 rounded-md bg-rose-600 text-white">
+              <span className="p-1 rounded-md bg-destructive text-white">
                 <AlertCircle className="h-4 w-4"/>
               </span>
               <div>
-                <h3 className="text-xs font-black uppercase tracking-wider text-rose-900 dark:text-rose-200 bangla-text">
+                <h3 className="text-xs font-black uppercase tracking-wider text-destructive text-destructive bangla-text">
                   {tBilingual('Critical Raw Material Shortage Alert', 'কাঁচামাল সংকট সতর্কতা (পেপার, ব্যানার, কালি ও প্লেট)')}
                 </h3>
-                <p className="text-2xs text-rose-700 dark:text-rose-600 dark:text-rose-400 bangla-text">
+                <p className="text-xs text-destructive text-destructive text-destructive bangla-text">
                   {tBilingual('Items below minimum stock level that may stall print machine operations.', 'স্টক ফুরিয়ে যাওয়া কাঁচামাল যা চলমান উৎপাদন ব্যাহত করতে পারে।')}
                 </p>
               </div>
@@ -946,7 +997,7 @@ export function OwnerDashboard({
 
             <Button
  size="sm"onClick={() => setIsPurchaseModalOpen(true)}
- className="bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shrink-0 self-start sm:self-center">
+ className="bg-destructive hover:bg-destructive text-white text-xs font-bold shrink-0 self-start sm:self-center">
               <Plus className="h-3.5 w-3.5 mr-1"/>
               {tBilingual('+ Buy Materials (Purchase PO)', '+ কাঁচামাল ক্রয় আদেশ')}
             </Button>
@@ -956,15 +1007,15 @@ export function OwnerDashboard({
             {safeData.criticalStockAlerts.map((mat) => (
               <div
  key={mat.id}
- className="p-2.5 bg-card rounded-xl border border-rose-200 dark:border-rose-900 flex items-center justify-between gap-2 text-xs">
+ className="p-2.5 bg-card rounded-xl border border-danger-border border-danger-border flex items-center justify-between gap-2 text-xs">
                 <div className="min-w-0 flex-1">
                   <div className="font-bold text-foreground truncate">{mat.name}</div>
-                  <div className="text-2xs text-muted-foreground tabular-nums">
+                  <div className="text-xs text-muted-foreground tabular-nums">
  SKU: {mat.sku} • Min: {mat.minStockLevel} {mat.unit}
                   </div>
                 </div>
                 <div className="text-right shrink-0">
-                  <Badge className="bg-rose-100 text-rose-800 dark:bg-rose-900 dark:text-rose-200 tabular-nums text-2xs py-0.5">
+                  <Badge className="bg-danger-surface text-destructive bg-destructive text-destructive tabular-nums text-xs py-0.5">
                     {mat.currentStock} {mat.unit} left
                   </Badge>
                 </div>
@@ -982,11 +1033,11 @@ export function OwnerDashboard({
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="space-y-0.5">
               <div className="flex items-center gap-2">
-                <Printer className="h-4 w-4 text-purple-600"/>
+                <Printer className="h-4 w-4 text-primary"/>
                 <CardTitle className="text-base font-bold bangla-text">
                   {tBilingual('Production Floor & Machine Runs', 'আজকের প্রোডাকশন ও মেশিন ফ্লোর')}
                 </CardTitle>
-                <Badge variant="outline"className="text-xs tabular-nums font-bold bg-purple-50 text-purple-700 border-purple-200">
+                <Badge variant="outline"className="text-xs tabular-nums font-bold bg-primary/10 text-primary border-primary/20">
                   {safeData.productionSummary.activeCount} {tBilingual('Active', 'চলতি')}
                 </Badge>
               </div>
@@ -1010,7 +1061,7 @@ export function OwnerDashboard({
  type="button"onClick={() => setProdFilter(pill.key as any)}
  className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
  prodFilter === pill.key
-                      ? 'bg-purple-600 text-white shadow-xs'
+                      ? 'bg-primary text-white shadow-xs'
                       : 'bg-muted text-muted-foreground hover:bg-muted '
                   }`}
                 >
@@ -1042,24 +1093,24 @@ export function OwnerDashboard({
  key={job.jobId}
  className={`p-3.5 rounded-xl border flex flex-col justify-between gap-2.5 transition-all bg-card ${
  isCritical
-                        ? 'border-rose-400 bg-rose-50/20'
+                        ? 'border-danger-border bg-danger-surface/20'
                         : isAtRisk
-                        ? 'border-amber-300 bg-amber-50/20'
+                        ? 'border-warning-border bg-warning-surface/20'
                         : 'border-border '
                     }`}
                   >
                     <div className="space-y-1.5">
                       <div className="flex items-center justify-between gap-2">
-                        <span className="tabular-nums text-xs font-bold text-blue-600 dark:text-blue-400">
+                        <span className="tabular-nums text-xs font-bold text-primary text-primary">
                           {job.jobNumber}
                         </span>
                         <div className="flex items-center gap-1">
                           {isCritical && (
-                            <Badge className="bg-rose-600 text-white text-2xs py-0 px-1.5">
+                            <Badge className="bg-destructive text-white text-xs py-0 px-1.5">
                               {tBilingual('Critical', 'ঝুঁকিপূর্ণ')}
                             </Badge>
                           )}
-                          <Badge variant="outline"className="text-2xs py-0 capitalize">
+                          <Badge variant="outline"className="text-xs py-0 capitalize">
                             {job.currentStage}
                           </Badge>
                         </div>
@@ -1074,7 +1125,7 @@ export function OwnerDashboard({
                       </p>
 
                       {job.blockedReason && (
-                        <div className="text-2xs text-amber-700 dark:text-amber-300 font-semibold bg-amber-50 dark:bg-amber-950/40 p-1.5 rounded flex items-center gap-1">
+                        <div className="text-xs text-warning text-warning font-semibold bg-warning-surface bg-warning-surface p-1.5 rounded flex items-center gap-1">
                           <AlertTriangle className="h-3 w-3 shrink-0"/>
                           <span className="truncate">{tBilingual(job.blockedReason, job.blockedReasonBn || job.blockedReason)}</span>
                         </div>
@@ -1088,7 +1139,7 @@ export function OwnerDashboard({
                       </span>
                       <Button
  size="sm"variant="ghost"onClick={() => router.push(getTenantNavHref('/production', pathname, company?.slug))}
- className="h-7 text-xs font-bold text-blue-600 hover:text-blue-700 p-0">
+ className="h-7 text-xs font-bold text-primary hover:text-primary p-0">
                         {tBilingual('Open Job', 'বিস্তারিত')} <ArrowRight className="h-3 w-3 ml-0.5"/>
                       </Button>
                     </div>
@@ -1109,16 +1160,16 @@ export function OwnerDashboard({
           <CardHeader className="pb-3 border-b border-border">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Truck className="h-4 w-4 text-cyan-600"/>
+                <Truck className="h-4 w-4 text-primary"/>
                 <CardTitle className="text-base font-bold bangla-text">
                   {tBilingual('Delivery Today', 'আজকের ডেলিভারি ও গেট পাস')}
                 </CardTitle>
               </div>
               <div className="flex items-center gap-1.5 text-xs">
-                <Badge variant="outline"className="bg-cyan-50 text-cyan-800 border-cyan-200 font-bold">
+                <Badge variant="outline"className="bg-info-surface text-primary border-primary/20 font-bold">
                   {safeData.deliverySummary.outForDeliveryCount} {tBilingual('Out', 'রাস্তায়')}
                 </Badge>
-                <Badge variant="outline"className="bg-emerald-50 text-emerald-800 border-emerald-200 font-bold">
+                <Badge variant="outline"className="bg-success-surface text-success border-success-border font-bold">
                   {safeData.deliverySummary.deliveredCount} {tBilingual('Done', 'ডেলিভার্ড')}
                 </Badge>
               </div>
@@ -1136,16 +1187,16 @@ export function OwnerDashboard({
  key={del.id}
  className="p-3 bg-muted rounded-xl border border-border flex items-center justify-between gap-3 text-xs">
                     <div className="space-y-0.5 min-w-0">
-                      <div className="flex items-center gap-1.5 tabular-nums font-bold text-blue-600">
+                      <div className="flex items-center gap-1.5 tabular-nums font-bold text-primary">
                         <span>{del.challanNumber}</span>
                         {del.isDelayed && (
-                          <Badge className="bg-rose-600 text-white text-2xs py-0 px-1 font-sans">
+                          <Badge className="bg-destructive text-white text-xs py-0 px-1 font-sans">
                             {tBilingual('Delayed', 'বিলম্বিত')}
                           </Badge>
                         )}
                       </div>
                       <div className="font-bold text-foreground truncate">{del.customerName}</div>
-                      <div className="text-2xs text-muted-foreground truncate">{del.deliveryAddress}</div>
+                      <div className="text-xs text-muted-foreground truncate">{del.deliveryAddress}</div>
                     </div>
 
                     <Button
@@ -1165,14 +1216,14 @@ export function OwnerDashboard({
           <CardHeader className="pb-3 border-b border-border">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Receipt className="h-4 w-4 text-emerald-600"/>
+                <Receipt className="h-4 w-4 text-success"/>
                 <CardTitle className="text-base font-bold bangla-text">
                   {tBilingual('Money to Collect', 'বকেয়া টাকা আদায়')}
                 </CardTitle>
               </div>
               <Button
  size="sm"variant="ghost"onClick={() => router.push(getTenantNavHref('/billing?tab=due', pathname, company?.slug))}
- className="text-xs font-bold text-blue-600 h-7">
+ className="text-xs font-bold text-primary h-7">
                 {tBilingual('View All Dues', 'সকল বাকি')} <ChevronRight className="h-3.5 w-3.5 ml-0.5"/>
               </Button>
             </div>
@@ -1183,7 +1234,7 @@ export function OwnerDashboard({
                 {tBilingual('Customer due data is restricted.', 'আর্থিক বাকি তথ্য দেখতে বিশেষ অনুমতি প্রয়োজন।')}
               </div>
             ) : safeData.moneyToCollect.length === 0 ? (
-              <div className="py-6 text-center text-xs text-emerald-600 font-semibold bangla-text">
+              <div className="py-6 text-center text-xs text-success font-semibold bangla-text">
                 {tBilingual('All accounts are clear! No overdue invoices found.', 'সকল বাকি পরিশোধিত! কোনো মেয়াদোত্তীর্ণ বিল নেই।')}
               </div>
             ) : (
@@ -1191,16 +1242,16 @@ export function OwnerDashboard({
                 {safeData.moneyToCollect.map((item) => (
                   <div
  key={item.invoiceId}
- className="p-3 bg-rose-50/40 dark:bg-rose-950/20 rounded-xl border border-rose-200 dark:border-rose-900 flex items-center justify-between gap-3 text-xs">
+ className="p-3 bg-danger-surface/40 bg-danger-surface rounded-xl border border-danger-border border-danger-border flex items-center justify-between gap-3 text-xs">
                     <div className="space-y-0.5 min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="font-bold text-foreground truncate">{item.customerName}</span>
-                        <span className="tabular-nums text-2xs text-blue-600">#{item.invoiceNumber}</span>
+                        <span className="tabular-nums text-xs text-primary">#{item.invoiceNumber}</span>
                       </div>
-                      <div className="flex items-center gap-2 tabular-nums text-2xs">
-                        <span className="font-bold text-rose-600 text-sm">{formatBDT(item.dueAmount)}</span>
+                      <div className="flex items-center gap-2 tabular-nums text-xs">
+                        <span className="font-bold text-destructive text-sm">{formatBDT(item.dueAmount)}</span>
                         {item.daysOverdue > 0 && (
-                          <Badge className="bg-rose-100 text-rose-800 dark:bg-rose-900 dark:text-rose-200 text-2xs py-0">
+                          <Badge className="bg-danger-surface text-destructive bg-destructive text-destructive text-xs py-0">
                             {item.daysOverdue}d overdue
                           </Badge>
                         )}
@@ -1212,14 +1263,14 @@ export function OwnerDashboard({
                         <>
                           <a
  href={`tel:${item.customerPhone}`}
- className="h-8 w-8 rounded-lg border border-input flex items-center justify-center text-muted-foreground hover:text-blue-600 hover:bg-muted transition-colors"title={tBilingual('Call Customer', 'কল করুন')}
+ className="h-8 w-8 rounded-lg border border-input flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-muted transition-colors"title={tBilingual('Call Customer', 'কল করুন')}
                           >
                             <Phone className="h-3.5 w-3.5"/>
                           </a>
 
                           <Button
  size="sm"variant="outline"onClick={() => setReminderItem(item)}
- className="h-8 px-2 text-xs font-semibold text-emerald-700 border-emerald-300 hover:bg-emerald-50"title={tBilingual('Send WhatsApp Reminder', 'হোয়াটসঅ্যাপ তাগাদা পাঠান')}
+ className="h-8 px-2 text-xs font-semibold text-success border-success-border hover:bg-success-surface"title={tBilingual('Send WhatsApp Reminder', 'হোয়াটসঅ্যাপ তাগাদা পাঠান')}
                           >
                             <MessageSquare className="h-3.5 w-3.5 mr-1"/>
                             <span className="hidden sm:inline">{tBilingual('Remind', 'তাগাদা')}</span>
@@ -1229,7 +1280,7 @@ export function OwnerDashboard({
 
                       <Button
  size="sm"onClick={() => onOpenPaymentModal(item.invoiceId)}
- className="h-8 px-2.5 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white">
+ className="h-8 px-2.5 text-xs font-bold bg-success hover:bg-success text-white">
                         <DollarSign className="h-3.5 w-3.5 mr-0.5"/>
                         {tBilingual('Collect', 'আদায়')}
                       </Button>
@@ -1249,7 +1300,7 @@ export function OwnerDashboard({
         <CardHeader className="pb-3 border-b border-border">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Layers className="h-4 w-4 text-indigo-600"/>
+              <Layers className="h-4 w-4 text-primary"/>
               <CardTitle className="text-base font-bold bangla-text">
                 {tBilingual('Workflow Pipeline', 'ব্যবসায়িক পাইপলাইন')}
               </CardTitle>
@@ -1273,8 +1324,8 @@ export function OwnerDashboard({
               <div
  key={stage.labelEn}
  onClick={() => router.push(getTenantNavHref(stage.route, pathname, company?.slug))}
- className="p-3 bg-card rounded-xl border border-border text-center cursor-pointer hover:border-blue-400 hover:shadow-xs transition-all space-y-1">
-                <div className="text-2xs text-muted-foreground font-semibold bangla-text">
+ className="p-3 bg-card rounded-xl border border-border text-center cursor-pointer hover:border-border hover:shadow-xs transition-all space-y-1">
+                <div className="text-xs text-muted-foreground font-semibold bangla-text">
                   {tBilingual(stage.labelEn, stage.labelBn)}
                 </div>
                 <div className="text-lg font-black text-foreground tabular-nums">
@@ -1295,48 +1346,149 @@ export function OwnerDashboard({
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div>
                 <CardTitle className="text-base font-bold bangla-text">
-                  {tBilingual('Sales vs Collection (Past 7 Days)', 'বিক্রয় বনাম আদায় ট্রেন্ড (বিগত ৭ দিন)')}
+                  {trendDays === 7
+                    ? tBilingual('Sales vs Collection (Past 7 Days)', 'বিক্রয় বনাম আদায় ট্রেন্ড (বিগত ৭ দিন)')
+                    : tBilingual('Sales vs Collection (Past 30 Days)', 'বিক্রয় বনাম আদায় ট্রেন্ড (বিগত ৩০ দিন)')}
                 </CardTitle>
                 <CardDescription className="text-xs bangla-text">
                   {tBilingual('Authoritative daily financial trends in BDT', 'দৈনিক মোট বুকিং ও নগদ কালেকশনের তুলনা')}
                 </CardDescription>
               </div>
-              <div className="flex items-center gap-3 text-xs font-medium">
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-1 bg-muted p-0.5 rounded-lg border border-border">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={trendDays === 7 ? 'default' : 'ghost'}
+                    onClick={() => setTrendDays(7)}
+                    className="h-7 px-2.5 text-xs font-semibold"
+                  >
+                    7D
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={trendDays === 30 ? 'default' : 'ghost'}
+                    onClick={() => setTrendDays(30)}
+                    className="h-7 px-2.5 text-xs font-semibold"
+                  >
+                    30D
+                  </Button>
+                </div>
+                <div className="flex items-center gap-3 text-xs font-medium">
                 <span className="flex items-center gap-1">
-                  <span className="h-2.5 w-2.5 rounded-full bg-blue-600"/> {tBilingual('Sales', 'সেলস')}
+                  <span className="h-2.5 w-2.5 rounded-full bg-primary"/> {tBilingual('Sales', 'সেলস')}
                 </span>
                 <span className="flex items-center gap-1">
-                  <span className="h-2.5 w-2.5 rounded-full bg-emerald-500"/> {tBilingual('Collections', 'আদায়')}
+                  <span className="h-2.5 w-2.5 rounded-full bg-success"/> {tBilingual('Collections', 'আদায়')}
                 </span>
               </div>
+            </div>
             </div>
           </CardHeader>
           <CardContent className="p-4">
             <div className="h-64 w-full">
-              {isMounted ? (
-                <ResponsiveContainer width="100%"height="100%">
-                  <AreaChart data={safeData.trendData}>
-                    <defs>
-                      <linearGradient id="ownerSalesGrad"x1="0"y1="0"x2="0"y2="1">
-                        <stop offset="5%"stopColor="#2563eb"stopOpacity={0.3} />
-                        <stop offset="95%"stopColor="#2563eb"stopOpacity={0} />
-                      </linearGradient>
-                      <linearGradient id="ownerColGrad"x1="0"y1="0"x2="0"y2="1">
-                        <stop offset="5%"stopColor="#10b981"stopOpacity={0.3} />
-                        <stop offset="95%"stopColor="#10b981"stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3"vertical={false} opacity={0.2} />
-                    <XAxis dataKey="dayLabelEn"tickLine={false} axisLine={false} fontSize={12} />
-                    <YAxis tickLine={false} axisLine={false} fontSize={11} tickFormatter={(val) => `৳${val / 1000}k`} />
-                    <Tooltip formatter={(value: any) => [formatBDT(Number(value)), '']} />
-                    <Area type="monotone"dataKey="sales"stroke="#2563eb"strokeWidth={2.5} fillOpacity={1} fill="url(#ownerSalesGrad)"name="Sales"/>
-                    <Area type="monotone"dataKey="collections"stroke="#10b981"strokeWidth={2.5} fillOpacity={1} fill="url(#ownerColGrad)"name="Collections"/>
-                  </AreaChart>
-                </ResponsiveContainer>
-              ) : (
-                <div className="h-full w-full animate-pulse bg-muted rounded-lg"/>
-              )}
+              <DashboardTrendChart data={activeTrendData} trendDays={trendDays} />
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* ========================================================================= */}
+      {/* 11. TOP 5 CUSTOMERS BY REVENUE                                            */}
+      {/* ========================================================================= */}
+      {safeData.hasFinancialPermission !== false && safeData.topCustomers.length > 0 && (
+        <Card className="border-border shadow-xs bg-card">
+          <CardHeader className="pb-3 border-b border-border">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <div className="p-1.5 rounded-lg bg-muted text-foreground">
+                  <Award className="h-4 w-4" />
+                </div>
+                <div>
+                  <CardTitle className="text-base font-bold bangla-text">
+                    {tBilingual('Top 5 Customers by Revenue', 'শীর্ষ ৫ গ্রাহক (সর্বোচ্চ বিক্রয়)')}
+                  </CardTitle>
+                  <CardDescription className="text-xs bangla-text">
+                    {tBilingual('Key customer accounts contributing to total sales volume and active receivables', 'ব্যবসার মূল কাস্টমার অ্যাকাউন্ট ও তাদের মোট বিক্রয় ও বকেয়া ব্যালেন্স')}
+                  </CardDescription>
+                </div>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => router.push(getTenantNavHref('/customers', pathname, company?.slug))}
+                className="h-8 text-xs font-semibold shrink-0"
+              >
+                <span>{tBilingual('View All Customers', 'সব গ্রাহক দেখুন')}</span>
+                <ChevronRight className="h-3.5 w-3.5 ml-1" />
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="divide-y divide-border">
+              {safeData.topCustomers.map((cust, idx) => (
+                <div
+                  key={cust.customerId || cust.customerName || idx}
+                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 hover:bg-muted/50 transition-colors"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-bold text-foreground">
+                      #{idx + 1}
+                    </span>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-sm text-foreground truncate">
+                          {cust.customerName}
+                        </span>
+                        {cust.companyName && (
+                          <Badge variant="outline" className="text-xs font-normal text-muted-foreground border-border">
+                            {cust.companyName}
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5">
+                        <span className="tabular-nums">
+                          {cust.ordersCount} {tBilingual(cust.ordersCount === 1 ? 'order' : 'orders', 'টি অর্ডার')}
+                        </span>
+                        {cust.dueBalance > 0 && (
+                          <span className="flex items-center gap-1 text-destructive font-medium tabular-nums">
+                            • {tBilingual('Due:', 'বকেয়া:')} {formatBDT(cust.dueBalance)}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between sm:justify-end gap-4 shrink-0 pl-10 sm:pl-0">
+                    <div className="text-left sm:text-right">
+                      <div className="text-xs text-muted-foreground">
+                        {tBilingual('Total Sales', 'মোট বিক্রয়')}
+                      </div>
+                      <div className="text-sm font-bold text-foreground tabular-nums">
+                        {formatBDT(cust.totalSales)}
+                      </div>
+                    </div>
+
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => {
+                        const targetUrl = cust.customerId
+                          ? `/customers/${cust.customerId}`
+                          : `/customers?search=${encodeURIComponent(cust.customerName)}`
+                        router.push(getTenantNavHref(targetUrl, pathname, company?.slug))
+                      }}
+                      className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
+                      title={tBilingual('View Customer Details', 'গ্রাহকের বিস্তারিত দেখুন')}
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
             </div>
           </CardContent>
         </Card>
@@ -1369,7 +1521,7 @@ export function OwnerDashboard({
  window.open(getWhatsAppReminderUrl(reminderItem), '_blank')
  setReminderItem(null)
                 }}
- className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold">
+ className="bg-success hover:bg-success text-white text-xs font-bold">
                 <MessageSquare className="h-4 w-4 mr-1.5"/>
                 {tBilingual('Open in WhatsApp', 'হোয়াটসঅ্যাপে পাঠান')}
               </Button>

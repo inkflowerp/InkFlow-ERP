@@ -146,7 +146,7 @@ export default function InvoiceCockpitPage() {
 
  if (!isMounted || isLoading) {
  return (
-      <div className="space-y-6 max-w-5xl">
+      <div className="space-y-6">
         <div className="p-12 text-center text-sm font-semibold text-muted-foreground">
  Loading invoice details...
         </div>
@@ -156,7 +156,7 @@ export default function InvoiceCockpitPage() {
 
  if (!invoice) {
  return (
-      <div className="space-y-6 max-w-5xl">
+      <div className="space-y-6">
         <Link
  href={getTenantNavHref('/billing', pathname, slug)}
  className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground dark:hover:text-foreground">
@@ -171,7 +171,7 @@ export default function InvoiceCockpitPage() {
           <div>
             <Link
  href={getTenantNavHref('/billing', pathname, slug)}
- className="inline-flex items-center text-xs font-bold text-blue-600 hover:underline">
+ className="inline-flex items-center text-xs font-bold text-primary hover:underline">
  Return to Invoices &rarr;
             </Link>
           </div>
@@ -184,11 +184,11 @@ export default function InvoiceCockpitPage() {
  const isOverdue = invoice.due_amount > 0 && daysOverdue > 0
 
  return (
-    <div className="space-y-6 max-w-5xl print:max-w-none print:m-0 print:p-0 pb-12">
+    <div className="space-y-6 print:max-w-none print:m-0 print:p-0 pb-12">
       {/* Notification */}
       {notification && (
-        <div className="print:hidden p-3 bg-emerald-50 text-emerald-800 rounded-xl text-xs font-semibold flex items-center gap-2 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800 animate-in fade-in-0">
-          <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0"/>
+        <div className="print:hidden p-3 bg-success-surface text-success rounded-xl text-xs font-semibold flex items-center gap-2 border border-success-border bg-success-surface text-success border-success-border animate-in fade-in-0">
+          <CheckCircle2 className="h-4 w-4 text-success shrink-0"/>
           <span>{notification}</span>
         </div>
       )}
@@ -220,7 +220,7 @@ export default function InvoiceCockpitPage() {
  onClick={() => setDocMode('vat_invoice')}
  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
  docMode === 'vat_invoice'
-                    ? 'bg-purple-600 text-white shadow-xs'
+                    ? 'bg-primary text-white shadow-xs'
                     : 'text-muted-foreground'
                 }`}
               >
@@ -230,7 +230,7 @@ export default function InvoiceCockpitPage() {
  onClick={() => setDocMode('payment_receipt')}
  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
  docMode === 'payment_receipt'
-                    ? 'bg-emerald-600 text-white shadow-xs'
+                    ? 'bg-success text-white shadow-xs'
                     : 'text-muted-foreground'
                 }`}
               >
@@ -244,15 +244,15 @@ export default function InvoiceCockpitPage() {
               <>
                 <Button
  size="sm"onClick={() => setIsRecordPayOpen(true)}
- className="bg-emerald-600 hover:bg-emerald-700 text-xs text-white font-bold gap-1 h-9">
+ className="bg-success hover:bg-success text-xs text-white font-bold gap-1 h-9">
                   <DollarSign className="h-3.5 w-3.5"/>
  Collect Due (MR)
                 </Button>
 
                 <Button
  size="sm"variant="outline"onClick={handleSendReminder}
- className="h-9 text-xs font-bold text-amber-700 border-amber-300 hover:bg-amber-50 dark:hover:bg-amber-950/30">
-                  <MessageSquare className="mr-1.5 h-3.5 w-3.5 text-amber-600"/>
+ className="h-9 text-xs font-bold text-warning border-warning-border hover:bg-warning-surface dark:hover:bg-warning-surface">
+                  <MessageSquare className="mr-1.5 h-3.5 w-3.5 text-warning"/>
  Remind on WhatsApp
                 </Button>
               </>
@@ -267,8 +267,8 @@ export default function InvoiceCockpitPage() {
 
             <Button
  size="sm"variant="outline"onClick={() => handleQuickSend('whatsapp')}
- className="h-9 text-xs font-semibold text-emerald-700 border-emerald-300 hover:bg-emerald-50">
-              <Send className="mr-1.5 h-3.5 w-3.5 text-emerald-600"/>
+ className="h-9 text-xs font-semibold text-success border-success-border hover:bg-success-surface">
+              <Send className="mr-1.5 h-3.5 w-3.5 text-success"/>
  WhatsApp
             </Button>
 
@@ -297,55 +297,55 @@ export default function InvoiceCockpitPage() {
       {/* Operational Traceability Flow (Quotation -> Sales Order -> Job Order -> Production -> Delivery -> Invoice -> Payment) */}
       <div className="print:hidden">
         <Card className="p-4 border-border bg-card">
-          <div className="text-2xs font-bold text-muted-foreground uppercase tracking-wider mb-2">
+          <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">
  Commercial & Operational Lifecycle Traceability
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2 text-xs">
             <div className="p-2.5 rounded-lg border border-border bg-muted">
-              <span className="text-2xs text-muted-foreground block font-semibold">1. Quotation</span>
+              <span className="text-xs text-muted-foreground block font-semibold">1. Quotation</span>
               <strong className="tabular-nums font-bold text-foreground">
                 {invoice.notes?.includes('QUO-') ? 'Linked' : 'Direct'}
               </strong>
             </div>
 
             <div className="p-2.5 rounded-lg border border-border bg-muted">
-              <span className="text-2xs text-muted-foreground block font-semibold">2. Sales Order</span>
-              <strong className="tabular-nums font-bold text-blue-600">
+              <span className="text-xs text-muted-foreground block font-semibold">2. Sales Order</span>
+              <strong className="tabular-nums font-bold text-primary">
                 {invoice.order_number || 'SO-Direct'}
               </strong>
             </div>
 
             <div className="p-2.5 rounded-lg border border-border bg-muted">
-              <span className="text-2xs text-muted-foreground block font-semibold">3. Job Order</span>
+              <span className="text-xs text-muted-foreground block font-semibold">3. Job Order</span>
               <strong className="tabular-nums font-bold text-foreground">
  Job-{invoice.invoice_number.replace('INV-', '')}
               </strong>
             </div>
 
             <div className="p-2.5 rounded-lg border border-border bg-muted">
-              <span className="text-2xs text-muted-foreground block font-semibold">4. Production</span>
-              <strong className="font-bold text-emerald-600 flex items-center gap-1">
+              <span className="text-xs text-muted-foreground block font-semibold">4. Production</span>
+              <strong className="font-bold text-success flex items-center gap-1">
                 <CheckCircle2 className="h-3 w-3"/> Ready / Done
               </strong>
             </div>
 
             <div className="p-2.5 rounded-lg border border-border bg-muted">
-              <span className="text-2xs text-muted-foreground block font-semibold">5. Delivery</span>
+              <span className="text-xs text-muted-foreground block font-semibold">5. Delivery</span>
               <strong className="font-bold text-foreground flex items-center gap-1">
                 <Truck className="h-3 w-3"/> Dispatched
               </strong>
             </div>
 
-            <div className="p-2.5 rounded-lg border-2 border-blue-500 bg-blue-50 dark:bg-blue-950/30">
-              <span className="text-2xs text-blue-600 dark:text-blue-400 block font-bold">6. Invoice</span>
-              <strong className="tabular-nums font-black text-blue-700 dark:text-blue-300">
+            <div className="p-2.5 rounded-lg border-2 border-primary/20 bg-primary/10 bg-primary/10">
+              <span className="text-xs text-primary text-primary block font-bold">6. Invoice</span>
+              <strong className="tabular-nums font-black text-primary text-primary">
                 {invoice.invoice_number}
               </strong>
             </div>
 
-            <div className={`p-2.5 rounded-lg border ${invoice.due_amount === 0 ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/30' : 'border-amber-400 bg-amber-50 dark:bg-amber-950/30'}`}>
-              <span className="text-2xs text-muted-foreground block font-semibold">7. Payment</span>
-              <strong className={`font-bold ${invoice.due_amount === 0 ? 'text-emerald-700 dark:text-emerald-300' : 'text-amber-700 dark:text-amber-300'}`}>
+            <div className={`p-2.5 rounded-lg border ${invoice.due_amount === 0 ? 'border-success-border bg-success-surface bg-success-surface' : 'border-warning-border bg-warning-surface bg-warning-surface'}`}>
+              <span className="text-xs text-muted-foreground block font-semibold">7. Payment</span>
+              <strong className={`font-bold ${invoice.due_amount === 0 ? 'text-success text-success' : 'text-warning text-warning'}`}>
                 {invoice.due_amount === 0 ? 'Fully Settled' : `Due ${formatBDT(invoice.due_amount)}`}
               </strong>
             </div>
@@ -364,21 +364,21 @@ export default function InvoiceCockpitPage() {
             <div className="text-center space-y-1 pb-4 border-b-2 border-border">
               <div className="font-bold text-sm">গণপ্রজাতন্ত্রী বাংলাদেশ সরকার, জাতীয় রাজস্ব বোর্ড</div>
               <div className="text-lg font-black tracking-wide">কর চালানপত্র</div>
-              <div className="text-2xs text-muted-foreground">
+              <div className="text-xs text-muted-foreground">
                 [বিধি ৪০ এর উপ-বিধি (১) এর দফা (গ) ও দফা (চ) দ্রষ্টব্য]
               </div>
-              <div className="text-sm font-bold mt-1 text-purple-700 dark:text-purple-400">
+              <div className="text-sm font-bold mt-1 text-primary text-primary">
                 মূসক-৬.৩
               </div>
             </div>
 
             {/* Seller & Buyer Meta */}
-            <div className="grid grid-cols-2 gap-6 p-4 rounded-xl bg-purple-50/40 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800">
+            <div className="grid grid-cols-2 gap-6 p-4 rounded-xl bg-primary/10/40 bg-primary/10 border border-primary/20 border-border">
               <div className="space-y-1">
                 <div className="font-bold text-foreground">নিবন্ধিত ব্যক্তির নাম (Seller):</div>
                 <div className="font-black text-sm">{company?.name || 'InkFlow Printing Enterprise'}</div>
                 {company?.address ? <div>ঠিকানা: {company.address}</div> : null}
-                <div className="tabular-nums font-bold text-purple-800 dark:text-purple-300">
+                <div className="tabular-nums font-bold text-primary text-primary">
                   বিক্রেতার মূসক নিবন্ধন / BIN: <strong>{company?.bin_no || '002938172-0101'}</strong>
                 </div>
               </div>
@@ -387,7 +387,7 @@ export default function InvoiceCockpitPage() {
                 <div>চালানপত্র নম্বর: <strong className="tabular-nums text-sm">{invoice.invoice_number}</strong></div>
                 <div>ইস্যুর তারিখ: <strong className="tabular-nums">{invoice.invoice_date}</strong></div>
                 <div>ক্রেতার নাম: <strong>{invoice.customer_name}</strong></div>
-                <div className="tabular-nums font-bold text-purple-800 dark:text-purple-300">
+                <div className="tabular-nums font-bold text-primary text-primary">
                   ক্রেতার BIN/NID: <strong>{invoice.customer_bin || 'অনিবন্ধিত / Non-registered'}</strong>
                 </div>
                 {invoice.customer_address ? <div>গন্তব্যস্থল: {invoice.customer_address}</div> : null}
@@ -396,7 +396,7 @@ export default function InvoiceCockpitPage() {
 
             {/* Mushak Table */}
             <table className="w-full text-left border-collapse border border-input">
-              <thead className="bg-muted font-bold text-2xs">
+              <thead className="bg-muted font-bold text-xs">
                 <tr>
                   <th className="p-2 border border-input text-center">ক্রমিক</th>
                   <th className="p-2 border border-input">পণ্য বা সেবার বর্ণনা</th>
@@ -416,8 +416,8 @@ export default function InvoiceCockpitPage() {
                       <td className="p-2 border border-input text-center tabular-nums">{idx + 1}</td>
                       <td className="p-2 border border-input">
                         <div className="font-bold">{item.item_name || item.item_description}</div>
-                        {item.description_bn && <div className="text-2xs text-muted-foreground">{item.description_bn}</div>}
-                        {item.material_spec && <div className="text-2xs text-muted-foreground">ম্যাটেরিয়াল: {item.material_spec}</div>}
+                        {item.description_bn && <div className="text-xs text-muted-foreground">{item.description_bn}</div>}
+                        {item.material_spec && <div className="text-xs text-muted-foreground">ম্যাটেরিয়াল: {item.material_spec}</div>}
                       </td>
                       <td className="p-2 border border-input text-center tabular-nums">{item.dimensions_spec || '—'}</td>
                       <td className="p-2 border border-input text-center tabular-nums font-bold">{item.quantity} {item.unit}</td>
@@ -438,9 +438,9 @@ export default function InvoiceCockpitPage() {
                   <td className="p-2 border border-input text-right">{invoice.vat_percentage}%</td>
                   <td className="p-2 border border-input text-right tabular-nums">{formatBDT(invoice.vat_amount)}</td>
                 </tr>
-                <tr className="bg-purple-100 dark:bg-purple-950/40 font-black text-sm">
+                <tr className="bg-primary/10 bg-primary/10 font-black text-sm">
                   <td colSpan={7} className="p-2 border border-input text-right">করসহ সর্বমোট প্রদেয় মূল্য (Grand Total Payable):</td>
-                  <td className="p-2 border border-input text-right tabular-nums text-purple-900 dark:text-purple-300">
+                  <td className="p-2 border border-input text-right tabular-nums text-primary text-primary">
                     {formatBDT(invoice.grand_total)}
                   </td>
                 </tr>
@@ -448,9 +448,9 @@ export default function InvoiceCockpitPage() {
             </table>
 
             {/* In Words */}
-            <div className="p-3 bg-purple-50/60 dark:bg-purple-950/30 rounded-lg border border-purple-200 text-xs font-semibold">
+            <div className="p-3 bg-primary/10/60 bg-primary/10 rounded-lg border border-primary/20 text-xs font-semibold">
               <span>কথায় (In Words): </span>
-              <span className="font-bold text-purple-900 dark:text-purple-300 italic">
+              <span className="font-bold text-primary text-primary italic">
                 {numberToWordsBDT(invoice.grand_total)}
               </span>
             </div>
@@ -473,7 +473,7 @@ export default function InvoiceCockpitPage() {
             <div className="flex justify-between items-start pb-6 border-b border-border">
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
-                  <div className="h-8 w-8 rounded-lg bg-blue-600 text-white flex items-center justify-center font-black text-base">
+                  <div className="h-8 w-8 rounded-lg bg-primary text-white flex items-center justify-center font-black text-base">
  P
                   </div>
                   <h1 className="text-xl font-black tracking-tight">{company?.name || 'InkFlow Enterprise'}</h1>
@@ -486,10 +486,10 @@ export default function InvoiceCockpitPage() {
                   </p>
                 )}
                 {company?.email && <p className="text-muted-foreground">Email: {company.email}</p>}
-                {company?.bin_no && <p className="text-muted-foreground tabular-nums text-2xs">BIN: <strong>{company.bin_no}</strong></p>}
+                {company?.bin_no && <p className="text-muted-foreground tabular-nums text-xs">BIN: <strong>{company.bin_no}</strong></p>}
               </div>
               <div className="text-right space-y-1">
-                <div className="text-2xl font-black tabular-nums text-blue-600 dark:text-blue-400">
+                <div className="text-2xl font-black tabular-nums text-primary text-primary">
                   {tBilingual('INVOICE', 'চালান')}
                 </div>
                 <div className="tabular-nums font-bold text-sm text-foreground">
@@ -498,11 +498,11 @@ export default function InvoiceCockpitPage() {
                 <div className="text-muted-foreground">
                   {tBilingual('Date:', 'তারিখ:')} <strong className="text-foreground tabular-nums">{invoice.invoice_date}</strong>
                 </div>
-                <div className="text-red-600 font-bold">
+                <div className="text-destructive font-bold">
  Due Date: <span className="tabular-nums">{invoice.due_date}</span>
                 </div>
                 {invoice.reference_no && (
-                  <div className="text-muted-foreground text-2xs">
+                  <div className="text-muted-foreground text-xs">
  Ref / PO No: <strong className="tabular-nums text-foreground">{invoice.reference_no}</strong>
                   </div>
                 )}
@@ -512,7 +512,7 @@ export default function InvoiceCockpitPage() {
             {/* Bill To & Dispatch Details */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-xl bg-muted border border-border">
               <div>
-                <span className="text-2xs uppercase font-bold text-muted-foreground tracking-wider block mb-1">
+                <span className="text-xs uppercase font-bold text-muted-foreground tracking-wider block mb-1">
  Billed To / গ্রাহকের বিবরণ:
                 </span>
                 <div className="font-bold text-sm text-foreground">{invoice.customer_name}</div>
@@ -522,7 +522,7 @@ export default function InvoiceCockpitPage() {
                   {invoice.customer_phone ? (
                     <a
  href={`tel:${invoice.customer_phone}`}
- className="text-blue-600 dark:text-blue-400 hover:underline inline-flex items-center gap-1 font-bold"title="Call Customer">
+ className="text-primary text-primary hover:underline inline-flex items-center gap-1 font-bold"title="Call Customer">
                       <span>📞</span>
                       <span>{invoice.customer_phone}</span>
                     </a>
@@ -531,14 +531,14 @@ export default function InvoiceCockpitPage() {
                   )}
                 </div>
                 {invoice.customer_address && <div className="text-muted-foreground mt-0.5">📍 {invoice.customer_address}</div>}
-                {invoice.customer_bin && <div className="text-muted-foreground tabular-nums text-2xs mt-0.5">BIN: {invoice.customer_bin}</div>}
+                {invoice.customer_bin && <div className="text-muted-foreground tabular-nums text-xs mt-0.5">BIN: {invoice.customer_bin}</div>}
               </div>
 
               <div className="text-left sm:text-right space-y-1">
-                <span className="text-2xs uppercase font-bold text-muted-foreground tracking-wider block mb-1">
+                <span className="text-xs uppercase font-bold text-muted-foreground tracking-wider block mb-1">
  Fulfillment & Delivery:
                 </span>
-                <div className="tabular-nums font-bold text-blue-600">
+                <div className="tabular-nums font-bold text-primary">
                   {invoice.order_number ? `Order #${invoice.order_number}` : 'Direct Contract'}
                 </div>
                 {invoice.delivery_date && (
@@ -547,12 +547,12 @@ export default function InvoiceCockpitPage() {
                   </div>
                 )}
                 {invoice.delivery_method && (
-                  <div className="text-muted-foreground text-2xs">
+                  <div className="text-muted-foreground text-xs">
  Method: <strong className="capitalize">{invoice.delivery_method.replace('_', ' ')}</strong>
                   </div>
                 )}
                 {isOverdue && (
-                  <div className="text-xs font-bold text-red-600 bg-red-100 dark:bg-red-950 px-2 py-0.5 rounded inline-block">
+                  <div className="text-xs font-bold text-destructive bg-danger-surface bg-danger-surface px-2 py-0.5 rounded inline-block">
                     ⚠️ {daysOverdue} Days Overdue
                   </div>
                 )}
@@ -561,7 +561,7 @@ export default function InvoiceCockpitPage() {
 
             {/* Items Table with Domain Specifications */}
             <table className="w-full text-left">
-              <thead className="bg-muted font-bold text-2xs text-muted-foreground border-b">
+              <thead className="bg-muted font-bold text-xs text-muted-foreground border-b">
                 <tr>
                   <th className="py-2.5 px-3">SL</th>
                   <th className="py-2.5 px-3">Item Description & Specifications</th>
@@ -580,17 +580,17 @@ export default function InvoiceCockpitPage() {
                         {item.item_name || item.item_description}
                       </div>
                       {item.description_bn && (
-                        <div className="text-2xs text-muted-foreground">{item.description_bn}</div>
+                        <div className="text-xs text-muted-foreground">{item.description_bn}</div>
                       )}
                       {item.material_spec && (
-                        <div className="text-2xs text-muted-foreground font-medium">
+                        <div className="text-xs text-muted-foreground font-medium">
                           • Substrate: {item.material_spec}
                         </div>
                       )}
 
                       {/* Offset Specs */}
                       {item.offset_specs && (
-                        <div className="flex flex-wrap items-center gap-1.5 text-2xs tabular-nums text-muted-foreground">
+                        <div className="flex flex-wrap items-center gap-1.5 text-xs tabular-nums text-muted-foreground">
                           {item.offset_specs.paper_gsm && <span className="bg-muted px-1.5 py-0.5 rounded">GSM: {item.offset_specs.paper_gsm}</span>}
                           {item.offset_specs.color_mode && <span className="bg-muted px-1.5 py-0.5 rounded">Color: {item.offset_specs.color_mode}</span>}
                           {item.offset_specs.binding_type && <span className="bg-muted px-1.5 py-0.5 rounded">Binding: {item.offset_specs.binding_type}</span>}
@@ -600,7 +600,7 @@ export default function InvoiceCockpitPage() {
 
                       {/* 3D Signage Specs */}
                       {item.signage_specs && (
-                        <div className="flex flex-wrap items-center gap-1.5 text-2xs tabular-nums text-muted-foreground">
+                        <div className="flex flex-wrap items-center gap-1.5 text-xs tabular-nums text-muted-foreground">
                           {item.signage_specs.letter_height_inch && <span className="bg-muted px-1.5 py-0.5 rounded">Height: {item.signage_specs.letter_height_inch}&quot;</span>}
                           {item.signage_specs.led_module_type && <span className="bg-muted px-1.5 py-0.5 rounded">LED: {item.signage_specs.led_module_type}</span>}
                           {item.signage_specs.frame_structure && <span className="bg-muted px-1.5 py-0.5 rounded">Frame: {item.signage_specs.frame_structure}</span>}
@@ -608,7 +608,7 @@ export default function InvoiceCockpitPage() {
                       )}
 
                       {item.finishing && item.finishing !== 'None' && (
-                        <div className="text-2xs text-indigo-600 dark:text-indigo-400 font-semibold">
+                        <div className="text-xs text-primary text-primary font-semibold">
                           ✨ Finishing: {item.finishing}
                         </div>
                       )}
@@ -631,19 +631,19 @@ export default function InvoiceCockpitPage() {
               {/* Left Column: In Words & Remittance Accounts */}
               <div className="sm:col-span-7 space-y-3">
                 <div className="p-3 bg-muted rounded-xl border border-border text-xs">
-                  <span className="text-2xs uppercase font-bold text-muted-foreground block mb-0.5">টাকায় ও কথায় (In Words):</span>
+                  <span className="text-xs uppercase font-bold text-muted-foreground block mb-0.5">টাকায় ও কথায় (In Words):</span>
                   <div className="font-bold text-foreground italic">
                     {numberToWordsBDT(invoice.grand_total)}
                   </div>
                 </div>
 
                 {/* Company Payment Remittance Details */}
-                <div className="p-3 bg-blue-50/50 dark:bg-blue-950/20 rounded-xl border border-blue-200 dark:border-blue-900/50 space-y-1.5 text-xs">
-                  <div className="font-bold text-blue-900 dark:text-blue-200 flex items-center gap-1.5">
-                    <CreditCard className="h-3.5 w-3.5 text-blue-600"/>
+                <div className="p-3 bg-primary/10/50 bg-primary/10 rounded-xl border border-primary/20 border-border/50 space-y-1.5 text-xs">
+                  <div className="font-bold text-primary text-primary flex items-center gap-1.5">
+                    <CreditCard className="h-3.5 w-3.5 text-primary"/>
                     <span>{tBilingual('Official Payment:', 'মূল্য পরিশোধের তথ্য:')}</span>
                   </div>
-                  <div className="grid grid-cols-2 gap-2 text-2xs text-muted-foreground tabular-nums">
+                  <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground tabular-nums">
                     <div>
                       <span>bKash Merchant:</span> <strong>{company?.phone || '01700-000000'}</strong> (Make Payment)
                     </div>
@@ -655,7 +655,7 @@ export default function InvoiceCockpitPage() {
                     </div>
                   </div>
                   {invoice.payment_method_note && (
-                    <div className="text-2xs text-blue-700 dark:text-blue-300 pt-1 border-t border-blue-200/60 font-medium">
+                    <div className="text-xs text-primary text-primary pt-1 border-t border-primary/20/60 font-medium">
  Note: {invoice.payment_method_note}
                     </div>
                   )}
@@ -669,7 +669,7 @@ export default function InvoiceCockpitPage() {
                   <span>{formatBDT(invoice.subtotal)}</span>
                 </div>
                 {invoice.discount_amount > 0 && (
-                  <div className="flex justify-between text-amber-600 font-medium">
+                  <div className="flex justify-between text-warning font-medium">
                     <span>{tBilingual('Discount:', 'ছাড়:')}</span>
                     <span>- {formatBDT(invoice.discount_amount)}</span>
                   </div>
@@ -684,7 +684,7 @@ export default function InvoiceCockpitPage() {
                   <span>{tBilingual('Grand Total:', 'সর্বমোট বিল:')}</span>
                   <span>{formatBDT(invoice.grand_total)}</span>
                 </div>
-                <div className="flex justify-between text-blue-700 dark:text-blue-400 font-bold">
+                <div className="flex justify-between text-primary text-primary font-bold">
                   <span>{tBilingual('Advance / Paid:', 'অগ্রিম পরিশোধ:')}</span>
                   <span>{formatBDT(invoice.paid_amount)}</span>
                 </div>
@@ -696,7 +696,7 @@ export default function InvoiceCockpitPage() {
                 )}
                 <div className={cn(
                   'flex justify-between font-black text-sm pt-1.5 border-t',
- invoice.due_amount > 0 ? 'text-red-600 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400'
+ invoice.due_amount > 0 ? 'text-destructive text-destructive' : 'text-success text-success'
                 )}>
                   <span>{tBilingual('Due Balance:', 'বকেয়া বিল:')}</span>
                   <span>{formatBDT(invoice.due_amount)}</span>
@@ -706,7 +706,7 @@ export default function InvoiceCockpitPage() {
 
             {/* Terms & Signatures */}
             {invoice.terms_and_conditions && (
-              <div className="p-3 bg-muted rounded-lg text-2xs text-muted-foreground">
+              <div className="p-3 bg-muted rounded-lg text-xs text-muted-foreground">
                 <strong>{tBilingual('Terms & Conditions: ', 'শর্তাবলী ও নির্দেশিকা: ')}</strong> {invoice.terms_and_conditions}
               </div>
             )}
@@ -730,7 +730,7 @@ export default function InvoiceCockpitPage() {
         {docMode === 'payment_receipt' && (
           <div className="space-y-6 text-xs text-foreground">
             {/* Header */}
-            <div className="text-center space-y-1 pb-4 border-b-2 border-emerald-600">
+            <div className="text-center space-y-1 pb-4 border-b-2 border-success-border">
               <h1 className="text-xl font-black">{company?.name || 'Printing & Signage Solutions'}</h1>
               {(company?.address || company?.phone) && (
                 <div className="text-muted-foreground">
@@ -739,14 +739,14 @@ export default function InvoiceCockpitPage() {
                   {company?.phone ? `Phone: ${company.phone}` : ''}
                 </div>
               )}
-              <div className="inline-block mt-2 px-4 py-1 rounded-full bg-emerald-100 text-emerald-900 font-black text-sm tracking-wider uppercase">
+              <div className="inline-block mt-2 px-4 py-1 rounded-full bg-success-surface text-success font-black text-sm tracking-wider uppercase">
                 {tBilingual('Official Money Receipt', 'অফিসিয়াল মানি রিসিট')}
               </div>
             </div>
 
             {/* Receipt Meta */}
             <div className="flex justify-between items-center tabular-nums">
-              <div>Receipt Ref: <strong className="text-emerald-700 dark:text-emerald-400 text-sm">MR-{invoice.invoice_number.replace('INV-', '')}</strong></div>
+              <div>Receipt Ref: <strong className="text-success text-success text-sm">MR-{invoice.invoice_number.replace('INV-', '')}</strong></div>
               <div>Date: <strong>{invoice.invoice_date}</strong></div>
             </div>
 
@@ -758,7 +758,7 @@ export default function InvoiceCockpitPage() {
 
               <div className="flex">
                 <span className="text-muted-foreground w-44 shrink-0">The sum of Taka (in words):</span>
-                <span className="font-bold text-emerald-800 dark:text-emerald-300 italic">
+                <span className="font-bold text-success text-success italic">
                   {numberToWordsBDT(invoice.paid_amount || invoice.grand_total)}
                 </span>
               </div>
@@ -776,9 +776,9 @@ export default function InvoiceCockpitPage() {
 
             {/* Cash Box */}
             <div className="flex justify-between items-center pt-4">
-              <div className="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 tabular-nums">
-                <span className="text-2xs text-muted-foreground block">Total Amount Collected</span>
-                <div className="text-xl font-black text-emerald-700 dark:text-emerald-300">
+              <div className="p-3 rounded-lg bg-success-surface bg-success-surface border border-success-border tabular-nums">
+                <span className="text-xs text-muted-foreground block">Total Amount Collected</span>
+                <div className="text-xl font-black text-success text-success">
                   {formatBDT(invoice.paid_amount || invoice.grand_total)}
                 </div>
               </div>
@@ -797,7 +797,7 @@ export default function InvoiceCockpitPage() {
         <Card>
           <CardHeader className="pb-3 border-b border-border">
             <CardTitle className="text-sm font-bold flex items-center gap-2">
-              <DollarSign className="h-4 w-4 text-emerald-600"/>
+              <DollarSign className="h-4 w-4 text-success"/>
  Allocated Payments on this Invoice
             </CardTitle>
           </CardHeader>
@@ -806,8 +806,8 @@ export default function InvoiceCockpitPage() {
  invoice.payments.map((p: any) => (
                 <div key={p.id} className="p-3 rounded-lg border border-border bg-muted flex justify-between items-center">
                   <div>
-                    <span className="tabular-nums font-bold text-emerald-600">{p.payment_id || p.id}</span>
-                    <div className="text-2xs text-muted-foreground">{p.created_at || p.payment_date}</div>
+                    <span className="tabular-nums font-bold text-success">{p.payment_id || p.id}</span>
+                    <div className="text-xs text-muted-foreground">{p.created_at || p.payment_date}</div>
                   </div>
                   <div className="text-right tabular-nums font-bold text-sm">
                     {formatBDT(p.allocated_amount || p.amount)}
@@ -824,22 +824,22 @@ export default function InvoiceCockpitPage() {
         <Card>
           <CardHeader className="pb-3 border-b border-border">
             <CardTitle className="text-sm font-bold flex items-center gap-2">
-              <ShieldCheck className="h-4 w-4 text-purple-600"/>
+              <ShieldCheck className="h-4 w-4 text-primary"/>
  Write-Off & Adjustment Audit Trail
             </CardTitle>
           </CardHeader>
           <CardContent className="p-4 space-y-2 text-xs">
             {invoice.write_offs && invoice.write_offs.length > 0 ? (
  invoice.write_offs.map((wo: any) => (
-                <div key={wo.id} className="p-3 rounded-lg border border-red-200 dark:border-red-900 bg-red-50/30 dark:bg-red-950/20 space-y-1">
+                <div key={wo.id} className="p-3 rounded-lg border border-danger-border border-danger-border bg-danger-surface/30 bg-danger-surface space-y-1">
                   <div className="flex justify-between font-bold">
-                    <span className="text-red-600 tabular-nums">Waiver: {formatBDT(wo.amount)}</span>
-                    <span className="text-muted-foreground text-2xs">{wo.created_at}</span>
+                    <span className="text-destructive tabular-nums">Waiver: {formatBDT(wo.amount)}</span>
+                    <span className="text-muted-foreground text-xs">{wo.created_at}</span>
                   </div>
                   <div className="text-foreground font-medium">
  Reason: {wo.reason}
                   </div>
-                  <div className="text-2xs text-muted-foreground tabular-nums">
+                  <div className="text-xs text-muted-foreground tabular-nums">
  Authorized By: {wo.authorized_by_name}
                   </div>
                 </div>

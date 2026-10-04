@@ -1,1 +1,140 @@
-[]
+[
+  {
+    "type": "BANNED_WORD_IN_CODE",
+    "file": "app\\[tenantSlug]\\accounting\\page.tsx",
+    "value": "Reconciliation",
+    "word": "reconciliation"
+  },
+  {
+    "type": "BANNED_WORD_IN_CODE",
+    "file": "app\\[tenantSlug]\\billing\\error.tsx",
+    "value": "Billing Ledger Feed Interrupted",
+    "word": "ledger"
+  },
+  {
+    "type": "BANNED_WORD_IN_CODE",
+    "file": "app\\[tenantSlug]\\communications\\page.tsx",
+    "value": "Real-time audit trail of all in-app, WhatsApp, and Email dispatches with provider responses.",
+    "word": "real-time"
+  },
+  {
+    "type": "BANNED_WORD_IN_CODE",
+    "file": "app\\[tenantSlug]\\hr\\attendance\\page.tsx",
+    "value": "Daily shop-floor roster, punch tracking & overtime ledger.",
+    "word": "ledger"
+  },
+  {
+    "type": "BANNED_WORD_IN_CODE",
+    "file": "app\\[tenantSlug]\\hr\\payroll\\page.tsx",
+    "value": "Generate, review, approve, lock and disburse workforce compensation.",
+    "word": "disburse"
+  },
+  {
+    "type": "TITLE_TOO_LONG",
+    "file": "app\\[tenantSlug]\\quotations\\page.tsx",
+    "value": "Client calls & WhatsApp due",
+    "count": 5
+  },
+  {
+    "type": "BANNED_WORD_IN_CODE",
+    "file": "app\\[tenantSlug]\\settings\\email\\page.tsx",
+    "value": "Tenant Email Delivery History",
+    "word": "tenant"
+  },
+  {
+    "type": "BANNED_WORD_IN_CODE",
+    "file": "app\\platform\\dashboard-client.tsx",
+    "value": "MRR",
+    "word": "mrr"
+  },
+  {
+    "type": "BANNED_WORD_IN_CODE",
+    "file": "app\\platform\\dashboard-client.tsx",
+    "value": "Tenant Growth Velocity",
+    "word": "tenant"
+  },
+  {
+    "type": "BANNED_WORD_IN_CODE",
+    "file": "app\\platform\\dashboard-client.tsx",
+    "value": "Cumulative and monthly newly onboarded tenant companies over the last 6 months.",
+    "word": "tenant"
+  },
+  {
+    "type": "TITLE_TOO_LONG",
+    "file": "components\\dashboard\\roles\\owner-dashboard.tsx",
+    "value": "Cash in box, bKash & Bank",
+    "count": 6
+  },
+  {
+    "type": "TITLE_TOO_LONG",
+    "file": "components\\dashboard\\roles\\owner-dashboard.tsx",
+    "value": "Paper, ink, press & labor",
+    "count": 5
+  },
+  {
+    "type": "BANNED_WORD_IN_CODE",
+    "file": "components\\dashboard\\roles\\owner-dashboard.tsx",
+    "value": "Key customer accounts contributing to total sales volume and active receivables",
+    "word": "receivables"
+  },
+  {
+    "type": "BANNED_WORD_IN_CODE",
+    "file": "components\\finance\\reconciliation-tab-view.tsx",
+    "value": "Ledger Integrity & Drift Reconciliation",
+    "word": "reconciliation"
+  },
+  {
+    "type": "BANNED_WORD_IN_CODE",
+    "file": "components\\finance\\reconciliation-tab-view.tsx",
+    "value": "Ledger Integrity & Drift Reconciliation",
+    "word": "ledger"
+  },
+  {
+    "type": "BANNED_WORD_IN_CODE",
+    "file": "components\\finance\\reconciliation-tab-view.tsx",
+    "value": "Run Reconciliation",
+    "word": "reconciliation"
+  },
+  {
+    "type": "BANNED_WORD_IN_CODE",
+    "file": "components\\finance\\reconciliation-tab-view.tsx",
+    "value": "Ledger Balance",
+    "word": "ledger"
+  },
+  {
+    "type": "BANNED_WORD_IN_CODE",
+    "file": "components\\finance\\reconciliation-tab-view.tsx",
+    "value": "Ledger Stock",
+    "word": "ledger"
+  },
+  {
+    "type": "TITLE_TOO_LONG",
+    "file": "components\\inventory\\inventory-kpi-bar.tsx",
+    "value": "Awaiting dock receipt & QC",
+    "count": 5
+  },
+  {
+    "type": "BANNED_WORD_IN_CODE",
+    "file": "components\\workforce\\advance-table.tsx",
+    "value": "Request → Approval → Disbursement → Outstanding Balance → Payroll Deduction → Settled",
+    "word": "disbursement"
+  },
+  {
+    "type": "BANNED_WORD_IN_CODE",
+    "file": "components\\workforce\\advance-table.tsx",
+    "value": "Payment / Disburse Method",
+    "word": "disburse"
+  },
+  {
+    "type": "BANNED_WORD_IN_CODE",
+    "file": "components\\workforce\\salary-payment-dialog.tsx",
+    "value": "Disburse Salary Payment",
+    "word": "disburse"
+  },
+  {
+    "type": "BANNED_WORD_IN_CODE",
+    "file": "components\\workforce\\workforce-report.tsx",
+    "value": "Advance Disbursement & Recovery",
+    "word": "disbursement"
+  }
+]

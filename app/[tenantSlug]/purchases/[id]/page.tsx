@@ -32,6 +32,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import { CurrencyDisplay } from '@/components/shared/currency-display'
+import { PageContainer } from '@/components/ui/page-container'
 import {
  PurchaseOrderRecord,
  PurchaseOrderStatus,
@@ -83,7 +84,7 @@ export default function PurchaseOrderDetailPage() {
 
  if (!po) {
  return (
-      <div className="space-y-6 max-w-7xl">
+      <div className="space-y-6">
         <Link
  href={getTenantNavHref('/inventory?view=purchases', pathname, slug)}
  className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground dark:hover:text-foreground">
@@ -249,7 +250,7 @@ export default function PurchaseOrderDetailPage() {
   }
 
  return (
-    <div className="space-y-6 max-w-6xl print:max-w-none print:w-full print:bg-white print:text-foreground print: print: print:m-0 print:p-0">
+    <PageContainer className="space-y-6 print:max-w-none print:w-full print:bg-white print:text-foreground print:m-0 print:p-0">
       {/* Back Link & Header */}
       <div>
         <Link
@@ -265,7 +266,7 @@ export default function PurchaseOrderDetailPage() {
               <h1 className="text-2xl font-black tracking-tight text-foreground tabular-nums print:text-foreground">
                 {po.po_number}
               </h1>
-              <span className="capitalize px-2 py-0.5 rounded text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200 dark:bg-indigo-950/40 dark:text-indigo-300 print:border-input print:text-foreground print:bg-muted">
+              <span className="capitalize px-2 py-0.5 rounded text-xs font-bold bg-primary/10 text-primary border border-primary/20 bg-primary/10 text-primary print:border-input print:text-foreground print:bg-muted">
                 {po.status.replace('_', ' ')}
               </span>
             </div>
@@ -275,7 +276,7 @@ export default function PurchaseOrderDetailPage() {
             <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground pt-0.5 print:text-foreground">
               <span>Date Issued: <strong>{po.po_date}</strong></span>
               <span>•</span>
-              <span>Expected Delivery: <strong className="text-indigo-600 print:text-indigo-800">{po.expected_delivery_date}</strong></span>
+              <span>Expected Delivery: <strong className="text-primary print:text-primary">{po.expected_delivery_date}</strong></span>
               <span>•</span>
               <span>Created By: {po.created_by_name}</span>
             </div>
@@ -289,7 +290,7 @@ export default function PurchaseOrderDetailPage() {
  setReceivingQty(primaryItem?.quantity_remaining || 1)
  setIsReceiveOpen(true)
                 }}
- className="bg-blue-600 hover:bg-blue-700 text-xs text-white h-9 px-3">
+ className="bg-primary hover:bg-primary/90 text-xs text-primary-foreground font-semibold h-9 px-3">
                 <ArrowDownLeft className="mr-1.5 h-3.5 w-3.5"/>
  Receive Material (GRN)
               </Button>
@@ -302,7 +303,7 @@ export default function PurchaseOrderDetailPage() {
  setPayAmount(po.due_amount)
  setIsPayOpen(true)
                 }}
- className="bg-emerald-600 hover:bg-emerald-700 text-xs text-white h-9 px-3">
+ className="bg-success hover:bg-success/90 text-xs text-success-foreground font-semibold h-9 px-3">
                 <DollarSign className="mr-1.5 h-3.5 w-3.5"/>
  Record Payment
               </Button>
@@ -320,38 +321,38 @@ export default function PurchaseOrderDetailPage() {
 
       {/* Notification */}
       {notification && (
-        <div className="p-3 bg-emerald-50 text-emerald-800 rounded-lg text-xs font-semibold flex items-center gap-2 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800 animate-in fade-in-0">
-          <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0"/>
+        <div className="p-3 bg-success-surface text-success rounded-lg text-xs font-semibold flex items-center gap-2 border border-success-border bg-success-surface text-success animate-in fade-in-0">
+          <CheckCircle2 className="h-4 w-4 text-success shrink-0"/>
           <span>{notification}</span>
         </div>
       )}
 
       {/* Financial Bar */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Card className="p-4 border-l-4 border-l-indigo-600">
+        <Card className="p-4 border-l-4 border-l-primary">
           <span className="text-xs font-semibold text-muted-foreground">Total Purchase Commitment</span>
           <div className="text-2xl font-black text-foreground mt-1">
             <CurrencyDisplay amount={po.grand_total} />
           </div>
-          <span className="text-2xs text-muted-foreground tabular-nums">Agreed Contract Rate</span>
+          <span className="text-xs text-muted-foreground tabular-nums">Agreed Contract Rate</span>
         </Card>
 
-        <Card className="p-4 border-l-4 border-l-emerald-500">
+        <Card className="p-4 border-l-4 border-l-success">
           <span className="text-xs font-semibold text-muted-foreground">Paid to Supplier (পরিশোধিত)</span>
-          <div className="text-2xl font-black text-emerald-600 mt-1">
+          <div className="text-2xl font-black text-success mt-1">
             <CurrencyDisplay amount={po.paid_amount} />
           </div>
-          <span className="text-2xs text-emerald-600 font-medium">
+          <span className="text-xs text-success font-medium">
             {po.grand_total > 0 ? Math.round((po.paid_amount / po.grand_total) * 100) : 0}% settled
           </span>
         </Card>
 
-        <Card className={`p-4 border-l-4 ${po.due_amount > 0 ? 'border-l-red-500 bg-red-50/20 dark:bg-red-950/10' : 'border-l-slate-300'}`}>
+        <Card className={`p-4 border-l-4 ${po.due_amount > 0 ? 'border-l-destructive bg-danger-surface' : 'border-l-border'}`}>
           <span className="text-xs font-semibold text-muted-foreground">Outstanding Due (বাকি বিল)</span>
-          <div className="text-2xl font-black text-red-600 mt-1">
+          <div className="text-2xl font-black text-destructive mt-1">
             <CurrencyDisplay amount={po.due_amount} />
           </div>
-          <span className="text-2xs text-muted-foreground">Payable against received challans</span>
+          <span className="text-xs text-muted-foreground">Payable against received challans</span>
         </Card>
       </div>
 
@@ -362,7 +363,7 @@ export default function PurchaseOrderDetailPage() {
         <CardHeader className="pb-3 border-b border-border">
           <div className="flex items-center justify-between">
             <CardTitle className="text-base font-bold flex items-center gap-2">
-              <Layers className="h-4 w-4 text-indigo-600"/>
+              <Layers className="h-4 w-4 text-primary"/>
  Line Items & Partial Receiving Ledger
             </CardTitle>
             <span className="text-xs text-muted-foreground">Stock updates strictly for received units</span>
@@ -395,12 +396,12 @@ export default function PurchaseOrderDetailPage() {
                     </td>
 
                     {/* Received */}
-                    <td className="py-3.5 px-4 text-center tabular-nums font-bold text-emerald-600 bg-emerald-50/40 dark:bg-emerald-950/20 print:bg-transparent print:text-emerald-800">
+                    <td className="py-3.5 px-4 text-center tabular-nums font-bold text-success bg-success-surface/40 bg-success-surface print:bg-transparent print:text-success">
                       {item.quantity_received} {item.unit}
                     </td>
 
                     {/* Remaining */}
-                    <td className="py-3.5 px-4 text-center tabular-nums font-bold text-red-600 bg-red-50/40 dark:bg-red-950/20 print:bg-transparent print:text-red-800">
+                    <td className="py-3.5 px-4 text-center tabular-nums font-bold text-destructive bg-danger-surface/40 bg-danger-surface print:bg-transparent print:text-destructive">
                       {item.quantity_remaining} {item.unit}
                     </td>
 
@@ -425,25 +426,25 @@ export default function PurchaseOrderDetailPage() {
               <div key={item.id} className="p-3 bg-muted rounded-lg space-y-2 text-xs">
                 <div className="flex items-center justify-between">
                   <strong className="text-foreground font-bold text-sm">{item.material_name}</strong>
-                  <span className="tabular-nums font-bold text-indigo-600 dark:text-indigo-400">
+                  <span className="tabular-nums font-bold text-primary text-primary">
                     {formatBDT(item.total_cost)}
                   </span>
                 </div>
                 <div className="grid grid-cols-3 gap-2 text-center pt-1 border-t border-border">
                   <div className="p-1.5 rounded bg-card border border-border">
-                    <div className="text-2xs text-muted-foreground">Ordered</div>
+                    <div className="text-xs text-muted-foreground">Ordered</div>
                     <div className="tabular-nums font-bold text-foreground">{item.quantity_ordered} {item.unit}</div>
                   </div>
-                  <div className="p-1.5 rounded bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800">
-                    <div className="text-2xs text-emerald-600">Received</div>
-                    <div className="tabular-nums font-bold text-emerald-700 dark:text-emerald-300">{item.quantity_received} {item.unit}</div>
+                  <div className="p-1.5 rounded bg-success-surface bg-success-surface border border-success-border border-success-border">
+                    <div className="text-xs text-success">Received</div>
+                    <div className="tabular-nums font-bold text-success text-success">{item.quantity_received} {item.unit}</div>
                   </div>
-                  <div className="p-1.5 rounded bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800">
-                    <div className="text-2xs text-red-600">Remaining</div>
-                    <div className="tabular-nums font-bold text-red-700 dark:text-red-300">{item.quantity_remaining} {item.unit}</div>
+                  <div className="p-1.5 rounded bg-danger-surface bg-danger-surface border border-danger-border border-danger-border">
+                    <div className="text-xs text-destructive">Remaining</div>
+                    <div className="tabular-nums font-bold text-destructive text-destructive">{item.quantity_remaining} {item.unit}</div>
                   </div>
                 </div>
-                <div className="text-2xs text-muted-foreground text-right tabular-nums">
+                <div className="text-xs text-muted-foreground text-right tabular-nums">
  Unit Cost: {formatBDT(item.unit_cost)} / {item.unit}
                 </div>
               </div>
@@ -456,14 +457,14 @@ export default function PurchaseOrderDetailPage() {
  SUPPLIER PRICE HISTORY & BENCHMARKS (Core Requirement)
          ========================================================================= */}
       {benchmark && (
-        <Card className="border-blue-200 dark:border-blue-900 shadow-xs">
-          <CardHeader className="pb-3 border-b border-border bg-blue-50/30 dark:bg-blue-950/20">
+        <Card className="border-primary/20 border-border shadow-xs">
+          <CardHeader className="pb-3 border-b border-border bg-primary/10/30 bg-primary/10">
             <div className="flex items-center justify-between">
               <CardTitle className="text-sm font-bold flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-blue-600"/>
+                <TrendingUp className="h-4 w-4 text-primary"/>
  Procurement Price Benchmarks: {benchmark.material_name}
               </CardTitle>
-              <Badge variant="outline"className="bg-blue-100 text-blue-800 border-blue-300 text-2xs">
+              <Badge variant="outline"className="bg-primary/10 text-primary border-primary/20 text-xs">
  Procurement Intelligence
               </Badge>
             </div>
@@ -478,31 +479,31 @@ export default function PurchaseOrderDetailPage() {
                 <div className="text-lg font-black text-foreground mt-0.5">
                   {formatBDT(benchmark.last_price)}
                 </div>
-                <span className="text-2xs text-muted-foreground">Most recent order</span>
+                <span className="text-xs text-muted-foreground">Most recent order</span>
               </div>
 
               <div className="p-3 rounded-lg border border-border text-xs">
                 <span className="text-muted-foreground">Average Price</span>
-                <div className="text-lg font-black text-blue-600 mt-0.5">
+                <div className="text-lg font-black text-primary mt-0.5">
                   {formatBDT(benchmark.average_price)}
                 </div>
-                <span className="text-2xs text-blue-600">Weighted market avg</span>
+                <span className="text-xs text-primary">Weighted market avg</span>
               </div>
 
               <div className="p-3 rounded-lg border border-border text-xs">
                 <span className="text-muted-foreground">Lowest Price Paid</span>
-                <div className="text-lg font-black text-emerald-600 mt-0.5">
+                <div className="text-lg font-black text-success mt-0.5">
                   {formatBDT(benchmark.lowest_price)}
                 </div>
-                <span className="text-2xs text-emerald-600">Best historical rate</span>
+                <span className="text-xs text-success">Best historical rate</span>
               </div>
 
               <div className="p-3 rounded-lg border border-border text-xs">
                 <span className="text-muted-foreground">Highest Price Paid</span>
-                <div className="text-lg font-black text-red-600 mt-0.5">
+                <div className="text-lg font-black text-destructive mt-0.5">
                   {formatBDT(benchmark.highest_price)}
                 </div>
-                <span className="text-2xs text-red-500">Ceiling market rate</span>
+                <span className="text-xs text-destructive">Ceiling market rate</span>
               </div>
             </div>
           </CardContent>
@@ -515,7 +516,7 @@ export default function PurchaseOrderDetailPage() {
         <Card>
           <CardHeader className="pb-3 border-b border-border">
             <CardTitle className="text-sm font-bold flex items-center gap-2">
-              <FileCheck2 className="h-4 w-4 text-emerald-600"/>
+              <FileCheck2 className="h-4 w-4 text-success"/>
  Goods Received Notes (GRN Batches)
             </CardTitle>
           </CardHeader>
@@ -524,13 +525,13 @@ export default function PurchaseOrderDetailPage() {
  po.grns.map((grn) => (
                 <div key={grn.id} className="p-3 rounded-lg border border-border bg-muted space-y-1">
                   <div className="flex justify-between font-bold">
-                    <span className="tabular-nums text-emerald-600">{grn.grn_number}</span>
+                    <span className="tabular-nums text-success">{grn.grn_number}</span>
                     <span className="text-muted-foreground">{grn.received_date}</span>
                   </div>
                   <div className="text-foreground font-medium">
  Challan: <strong>{grn.challan_number || 'N/A'}</strong> • Receiver: {grn.received_by_name}
                   </div>
-                  {grn.notes && <p className="text-2xs text-muted-foreground">{grn.notes}</p>}
+                  {grn.notes && <p className="text-xs text-muted-foreground">{grn.notes}</p>}
                 </div>
               ))
             ) : (
@@ -543,7 +544,7 @@ export default function PurchaseOrderDetailPage() {
         <Card>
           <CardHeader className="pb-3 border-b border-border">
             <CardTitle className="text-sm font-bold flex items-center gap-2">
-              <Receipt className="h-4 w-4 text-purple-600"/>
+              <Receipt className="h-4 w-4 text-primary"/>
  Supplier Payment Vouchers
             </CardTitle>
           </CardHeader>
@@ -552,12 +553,12 @@ export default function PurchaseOrderDetailPage() {
  po.payments.map((p) => (
                 <div key={p.id} className="p-3 rounded-lg border border-border bg-muted space-y-1">
                   <div className="flex justify-between font-bold">
-                    <span className="text-emerald-600 tabular-nums">{formatBDT(p.amount)}</span>
-                    <span className="uppercase text-2xs px-1.5 py-0.5 rounded bg-muted">
+                    <span className="text-success tabular-nums">{formatBDT(p.amount)}</span>
+                    <span className="uppercase text-xs px-1.5 py-0.5 rounded bg-muted">
                       {p.payment_method}
                     </span>
                   </div>
-                  <div className="text-muted-foreground text-2xs">
+                  <div className="text-muted-foreground text-xs">
                     {p.payment_date} • {p.bank_name || p.mfs_transaction_id || 'Cash Counter'}
                     {p.cheque_number && ` (Cheque: ${p.cheque_number})`}
                   </div>
@@ -577,7 +578,7 @@ export default function PurchaseOrderDetailPage() {
  title="Receive Goods & Partial Shipment (GRN)"description="Records incoming material arrival. Inventory stock is updated ONLY for the received quantity.">
         <form onSubmit={handleApplyReceiving} className="space-y-4 pt-1 max-h-[75vh] overflow-y-auto px-1">
           {primaryItem && (
-            <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 text-xs space-y-1">
+            <div className="p-3 rounded-lg bg-primary/10 bg-primary/10 border border-primary/20 border-border text-xs space-y-1">
               <div className="flex justify-between">
                 <span>Material:</span>
                 <strong>{primaryItem.material_name}</strong>
@@ -588,11 +589,11 @@ export default function PurchaseOrderDetailPage() {
               </div>
               <div className="flex justify-between">
                 <span>Currently Received:</span>
-                <strong className="text-emerald-600">{primaryItem.quantity_received} {primaryItem.unit}</strong>
+                <strong className="text-success">{primaryItem.quantity_received} {primaryItem.unit}</strong>
               </div>
-              <div className="flex justify-between border-t border-blue-200 dark:border-blue-800 pt-1">
+              <div className="flex justify-between border-t border-primary/20 border-border pt-1">
                 <span>Pending Remaining:</span>
-                <strong className="text-red-600">{primaryItem.quantity_remaining} {primaryItem.unit}</strong>
+                <strong className="text-destructive">{primaryItem.quantity_remaining} {primaryItem.unit}</strong>
               </div>
             </div>
           )}
@@ -707,12 +708,12 @@ export default function PurchaseOrderDetailPage() {
             <Button type="button"variant="outline"onClick={() => setIsPayOpen(false)} className="w-full sm:w-auto h-10 sm:h-9">
  Cancel
             </Button>
-            <Button type="submit"className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold w-full sm:w-auto h-10 sm:h-9">
+            <Button type="submit"className="bg-success hover:bg-success text-white font-bold w-full sm:w-auto h-10 sm:h-9">
  Issue Payment Voucher
             </Button>
           </div>
         </form>
       </ModalDialog>
-    </div>
+    </PageContainer>
   )
 }

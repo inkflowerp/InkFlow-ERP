@@ -67,12 +67,12 @@ export function DesignTimerBadge({
  return (
       <div
  className={cn(
-          'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs tabular-nums font-bold bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/25 animate-pulse shadow-2xs',
+          'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs tabular-nums font-bold bg-warning/10 text-warning text-warning border border-warning-border/25 animate-pulse shadow-2xs',
  className
         )}
  title="Design timer is actively running">
-        <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-ping shrink-0"/>
-        <Clock className="w-3 h-3 text-amber-500 shrink-0"/>
+        <span className="w-1.5 h-1.5 rounded-full bg-warning animate-ping shrink-0"/>
+        <Clock className="w-3 h-3 text-warning shrink-0"/>
         <span>{formatElapsedSeconds(elapsed)}</span>
       </div>
     )
@@ -83,12 +83,12 @@ export function DesignTimerBadge({
  return (
       <div
  className={cn(
-          'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs tabular-nums font-medium bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 shadow-2xs',
+          'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs tabular-nums font-medium bg-success/10 text-success text-success border border-success-border/20 shadow-2xs',
  className
         )}
  title={`Design completed in ${formatDurationSummary(sec)}`}
       >
-        <Clock className="w-3 h-3 text-emerald-500 shrink-0"/>
+        <Clock className="w-3 h-3 text-success shrink-0"/>
         <span>{formatDurationSummary(sec)}</span>
       </div>
     )

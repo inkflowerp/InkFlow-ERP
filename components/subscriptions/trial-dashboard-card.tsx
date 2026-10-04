@@ -71,12 +71,12 @@ export function TrialDashboardCard() {
  className={cn(
         'relative overflow-hidden rounded-xl border p-5 transition-all shadow-sm mb-6',
  isUrgent
-          ? 'bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-red-500/10 border-amber-400 dark:border-amber-700/60'
-          : 'bg-gradient-to-br from-indigo-500/10 via-purple-500/5 to-blue-500/10 border-indigo-200 dark:border-indigo-900/60'
+          ? '    border-warning-border border-warning-border/60'
+          : '    border-primary/20 border-border/60'
       )}
     >
       {/* Decorative Blur */}
-      <div className="absolute top-0 right-0 -mt-10 -mr-10 w-48 h-48 rounded-full bg-indigo-500/10 blur-2xl pointer-events-none"/>
+      <div className="absolute top-0 right-0 -mt-10 -mr-10 w-48 h-48 rounded-full bg-primary/10 blur-2xl pointer-events-none"/>
 
       <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
         {/* Left: Trial details & countdown */}
@@ -86,8 +86,8 @@ export function TrialDashboardCard() {
  className={cn(
                 'text-xs font-bold uppercase tracking-wider px-2.5 py-0.5',
  isUrgent
-                  ? 'bg-amber-600 text-white'
-                  : 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white'
+                  ? 'bg-warning text-white'
+                  : '   text-white'
               )}
             >
               <Crown className="h-3 w-3 mr-1"/>
@@ -95,7 +95,7 @@ export function TrialDashboardCard() {
             </Badge>
 
             <span className="text-xs font-bold text-foreground flex items-center gap-1 bangla-text">
-              <Clock className="h-3.5 w-3.5 text-amber-500"/>
+              <Clock className="h-3.5 w-3.5 text-warning"/>
               {isTrialExpired
                 ? tBilingual('Trial Expired', 'ট্রায়াল মেয়াদ শেষ')
                 : timeRemainingInTrial && timeRemainingInTrial.days === 0
@@ -129,7 +129,7 @@ export function TrialDashboardCard() {
               <div
  className={cn(
                   'h-2 rounded-full transition-all',
- isUrgent ? 'bg-amber-500' : 'bg-gradient-to-r from-indigo-500 to-purple-500'
+ isUrgent ? 'bg-warning' : '  '
                 )}
  style={{ width: `${trialProgressPercent}%` }}
               />
@@ -142,19 +142,19 @@ export function TrialDashboardCard() {
           {/* 4 Mini Limit Pills */}
           <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-2 gap-1.5 w-full text-left">
             <div className="bg-card/80 px-2.5 py-1.5 rounded-lg border border-border text-xs">
-              <span className="text-muted-foreground block text-2xs uppercase font-semibold bangla-text">{tBilingual('Users', 'ইউজার')}</span>
+              <span className="text-muted-foreground block text-xs uppercase font-semibold bangla-text">{tBilingual('Users', 'ইউজার')}</span>
               <span className="font-bold text-foreground text-xs sm:text-sm">{formatLimit(usage.users_count, usage.users_limit)}</span>
             </div>
             <div className="bg-card/80 px-2.5 py-1.5 rounded-lg border border-border text-xs">
-              <span className="text-muted-foreground block text-2xs uppercase font-semibold bangla-text">{tBilingual('Orders / Mo', 'অর্ডার / মাস')}</span>
+              <span className="text-muted-foreground block text-xs uppercase font-semibold bangla-text">{tBilingual('Orders / Mo', 'অর্ডার / মাস')}</span>
               <span className="font-bold text-foreground text-xs sm:text-sm">{formatLimit(usage.orders_this_month, usage.orders_limit)}</span>
             </div>
             <div className="bg-card/80 px-2.5 py-1.5 rounded-lg border border-border text-xs">
-              <span className="text-muted-foreground block text-2xs uppercase font-semibold bangla-text">{tBilingual('Customers', 'কাস্টমার')}</span>
+              <span className="text-muted-foreground block text-xs uppercase font-semibold bangla-text">{tBilingual('Customers', 'কাস্টমার')}</span>
               <span className="font-bold text-foreground text-xs sm:text-sm">{formatLimit(usage.customers_count, usage.customers_limit)}</span>
             </div>
             <div className="bg-card/80 px-2.5 py-1.5 rounded-lg border border-border text-xs">
-              <span className="text-muted-foreground block text-2xs uppercase font-semibold bangla-text">{tBilingual('Branches', 'শাখা')}</span>
+              <span className="text-muted-foreground block text-xs uppercase font-semibold bangla-text">{tBilingual('Branches', 'শাখা')}</span>
               <span className="font-bold text-foreground text-xs sm:text-sm">{formatLimit(usage.branches_count, usage.branches_limit)}</span>
             </div>
           </div>
@@ -165,11 +165,11 @@ export function TrialDashboardCard() {
  className={cn(
                 'w-full sm:w-auto font-bold shadow-sm bangla-text',
  isUrgent
-                  ? 'bg-amber-600 hover:bg-amber-700 text-white'
-                  : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white'
+                  ? 'bg-warning hover:bg-warning/90 text-white'
+                  : '   hover: hover: text-white'
               )}
             >
-              <Crown className="mr-1.5 h-3.5 w-3.5 text-amber-300"/>
+              <Crown className="mr-1.5 h-3.5 w-3.5 text-warning"/>
               {tBilingual('Upgrade Plan Now', 'এখনই প্ল্যান আপগ্রেড করুন')}
               <ArrowRight className="ml-1.5 h-3.5 w-3.5"/>
             </Button>

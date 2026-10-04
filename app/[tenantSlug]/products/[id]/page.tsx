@@ -485,7 +485,7 @@ export default function ProductDetailPage() {
 
  if (!mounted || isLoading) {
  return (
-      <div className="space-y-6 max-w-6xl pb-12">
+      <div className="space-y-6 pb-12">
         <div className="h-6 w-32 bg-muted rounded animate-pulse"/>
         <div className="h-20 bg-muted rounded-xl animate-pulse"/>
         <div className="grid grid-cols-4 gap-4">
@@ -499,7 +499,7 @@ export default function ProductDetailPage() {
 
  if (fetchError || !product) {
  return (
-      <div className="space-y-6 max-w-6xl pb-12">
+      <div className="space-y-6 pb-12">
         <Link
  href={getTenantNavHref('/products', pathname, slug)}
  className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground dark:hover:text-foreground mb-3">
@@ -516,7 +516,7 @@ export default function ProductDetailPage() {
             <Button size="sm"onClick={loadProductData} variant="outline"className="text-xs">
               <RefreshCw className="mr-1.5 h-3.5 w-3.5"/> Retry
             </Button>
-            <Button asChild size="sm"className="text-xs bg-blue-600 hover:bg-blue-700">
+            <Button asChild size="sm"className="text-xs bg-primary hover:bg-primary">
               <Link href={getTenantNavHref('/products', pathname, slug)}>View All Products</Link>
             </Button>
           </div>
@@ -528,7 +528,7 @@ export default function ProductDetailPage() {
  const formula = product.pricing_formula
 
  return (
-    <div className="space-y-6 max-w-6xl pb-12">
+    <div className="space-y-6 pb-12">
       {/* Back Link */}
       <div>
         <Link
@@ -549,23 +549,23 @@ export default function ProductDetailPage() {
  className={cn(
                   'capitalize px-2 py-0.5 rounded text-xs font-bold border',
  isOutsourceProduct(product)
-                    ? 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300'
+                    ? 'bg-primary/10 text-primary border-primary/20 bg-primary/10 text-primary'
                     : isServiceProduct(product)
-                    ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300'
+                    ? 'bg-primary/10 text-primary border-primary/20 bg-primary/10 text-primary'
                     : isMaterialProduct(product)
-                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300'
-                    : 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950/40 dark:text-indigo-300'
+                    ? 'bg-success-surface text-success border-success-border bg-success-surface text-success'
+                    : 'bg-primary/10 text-primary border-primary/20 bg-primary/10 text-primary'
                 )}
               >
                 {getProductEntityKindLabel(product, locale)}
               </span>
-              <span className="px-2 py-0.5 rounded text-xs font-bold bg-purple-50 text-purple-700 border border-purple-200 dark:bg-purple-950/40 dark:text-purple-300 uppercase">
+              <span className="px-2 py-0.5 rounded text-xs font-bold bg-primary/10 text-primary border border-primary/20 bg-primary/10 text-primary uppercase">
                 {commercialEconomics?.pricingMethod?.replace('_', ' ') || 'Per Area'}
               </span>
               {product.is_active !== false ? (
-                <Badge className="bg-emerald-500 text-white text-2xs">{tBilingual('Active', 'সক্রিয়')}</Badge>
+                <Badge className="bg-success text-white text-xs">{tBilingual('Active', 'সক্রিয়')}</Badge>
               ) : (
-                <Badge variant="outline" className="text-muted-foreground border-input text-2xs">{tBilingual('Archived', 'আর্কাইভড')}</Badge>
+                <Badge variant="outline" className="text-muted-foreground border-input text-xs">{tBilingual('Archived', 'আর্কাইভড')}</Badge>
               )}
             </div>
 
@@ -576,7 +576,7 @@ export default function ProductDetailPage() {
               <span>•</span>
               <span className="capitalize">{product.category?.replace('_', ' ')}</span>
               <span>•</span>
-              <span className="uppercase tabular-nums font-semibold text-blue-600">
+              <span className="uppercase tabular-nums font-semibold text-primary">
  {tBilingual('Sell:', 'বিক্রয়:')} {product.selling_unit || product.unit}
               </span>
               {product.purchase_price && product.purchase_price > 0 ? (
@@ -608,7 +608,7 @@ export default function ProductDetailPage() {
 
             <Link href={getTenantNavHref(`/pricing?tab=calculator&productId=${product.id}`, pathname, slug)}>
               <Button size="sm"variant="outline"className="text-xs font-bold gap-1.5">
-                <Calculator className="h-3.5 w-3.5 text-blue-600"/>
+                <Calculator className="h-3.5 w-3.5 text-primary"/>
                 <span>{tBilingual('Live Estimator', 'লাইভ এস্টিমেটর')}</span>
               </Button>
             </Link>
@@ -622,7 +622,7 @@ export default function ProductDetailPage() {
 
             <Button
  size="sm"variant="ghost"onClick={handleInitiateDelete}
- className="text-xs text-rose-600 hover:text-rose-700 hover:bg-rose-50">
+ className="text-xs text-destructive hover:text-destructive hover:bg-danger-surface">
               <Trash2 className="h-3.5 w-3.5"/>
             </Button>
           </div>
@@ -635,14 +635,14 @@ export default function ProductDetailPage() {
  className={cn(
             'p-3.5 rounded-xl text-xs font-semibold flex items-center gap-2.5 border shadow-xs animate-in fade-in-0',
  notification.type === 'success'
-              ? 'bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300'
-              : 'bg-rose-50 text-rose-800 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300'
+              ? 'bg-success-surface text-success border-success-border bg-success-surface text-success'
+              : 'bg-danger-surface text-destructive border-danger-border bg-danger-surface text-destructive'
           )}
         >
           {notification.type === 'success' ? (
-            <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0"/>
+            <CheckCircle2 className="h-4 w-4 text-success shrink-0"/>
           ) : (
-            <AlertTriangle className="h-4 w-4 text-rose-600 shrink-0"/>
+            <AlertTriangle className="h-4 w-4 text-destructive shrink-0"/>
           )}
           <span>{notification.message}</span>
         </div>
@@ -698,7 +698,7 @@ export default function ProductDetailPage() {
  onClick={() => setActiveTab(tab.id as any)}
  className={cn(
               'px-3 py-1.5 rounded-lg transition-all whitespace-nowrap',
- activeTab === tab.id ? 'bg-card text-blue-600 shadow-xs' : 'text-muted-foreground'
+ activeTab === tab.id ? 'bg-card text-primary shadow-xs' : 'text-muted-foreground'
             )}
           >
             {tab.label}
@@ -734,7 +734,7 @@ export default function ProductDetailPage() {
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs pt-2">
               <div className="p-3 rounded-lg bg-muted border border-border">
                 <span className="text-muted-foreground block">Pricing Method</span>
-                <span className="tabular-nums font-bold text-blue-700 uppercase">{commercialEconomics?.pricingMethod?.replace('_', ' ')}</span>
+                <span className="tabular-nums font-bold text-primary uppercase">{commercialEconomics?.pricingMethod?.replace('_', ' ')}</span>
               </div>
 
               <div className="p-3 rounded-lg bg-muted border border-border">
@@ -754,79 +754,79 @@ export default function ProductDetailPage() {
             </div>
 
             {/* Low-Margin Protection Summary */}
-            <div className="p-3.5 bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800/60 rounded-xl text-xs space-y-1">
-              <strong className="text-blue-900 dark:text-blue-300 font-bold block">Commercial Governance:</strong>
+            <div className="p-3.5 bg-primary/10/50 bg-primary/10 border border-primary/20 border-border/60 rounded-xl text-xs space-y-1">
+              <strong className="text-primary text-primary font-bold block">Commercial Governance:</strong>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-foreground pt-1">
                 <div>Allow Manual Price Override: <strong className="text-foreground">{product.allow_manual_override !== false ? 'Yes' : 'No'}</strong></div>
-                <div>Min Allowed Margin Floor: <strong className="text-emerald-700">{product.min_allowed_margin_percent || 15}%</strong></div>
+                <div>Min Allowed Margin Floor: <strong className="text-success">{product.min_allowed_margin_percent || 15}%</strong></div>
                 <div>Min Order Quantity (MOQ): <strong className="text-foreground">{product.min_order_quantity || 1} {product.selling_unit}</strong></div>
               </div>
             </div>
 
             {/* Outsource Subcontract Details (if Outsource Product) */}
             {(isOutsourceProduct(product) || product.is_outsource) && (
-              <div className="p-4 bg-purple-50/60 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800/60 rounded-xl text-xs space-y-3">
+              <div className="p-4 bg-primary/10/60 bg-primary/10 border border-primary/20 border-border/60 rounded-xl text-xs space-y-3">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-purple-900 dark:text-purple-300 font-bold text-sm">
-                    <Building2 className="h-4 w-4 text-purple-600"/>
+                  <div className="flex items-center gap-2 text-primary text-primary font-bold text-sm">
+                    <Building2 className="h-4 w-4 text-primary"/>
                     <span>Outsource Vendor & Subcontract Production</span>
                   </div>
-                  <Badge className="bg-purple-600 text-white text-2xs">Non-Inventory Item</Badge>
+                  <Badge className="bg-primary text-white text-xs">Non-Inventory Item</Badge>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-foreground">
-                  <div className="p-2.5 bg-card rounded-lg border border-purple-100 dark:border-purple-900/40">
-                    <span className="text-2xs text-muted-foreground uppercase tracking-wider block">Vendor Name</span>
+                  <div className="p-2.5 bg-card rounded-lg border border-border border-border/40">
+                    <span className="text-xs text-muted-foreground uppercase tracking-wider block">Vendor Name</span>
                     <strong className="text-foreground text-xs block mt-0.5">
                       {product.vendor_name || product.outsource_config?.vendor_name || 'Third-Party Vendor'}
                     </strong>
                     {(product.vendor_phone || product.outsource_config?.vendor_phone) && (
-                      <span className="text-2xs text-muted-foreground tabular-nums">
+                      <span className="text-xs text-muted-foreground tabular-nums">
                         📞 {product.vendor_phone || product.outsource_config?.vendor_phone}
                       </span>
                     )}
                   </div>
 
-                  <div className="p-2.5 bg-card rounded-lg border border-purple-100 dark:border-purple-900/40">
-                    <span className="text-2xs text-muted-foreground uppercase tracking-wider block">Turnaround Lead Time</span>
-                    <strong className="text-amber-700 dark:text-amber-400 text-xs block mt-0.5">
+                  <div className="p-2.5 bg-card rounded-lg border border-border border-border/40">
+                    <span className="text-xs text-muted-foreground uppercase tracking-wider block">Turnaround Lead Time</span>
+                    <strong className="text-warning text-warning text-xs block mt-0.5">
                       ⏱️ {product.turnaround_days ?? product.outsource_config?.turnaround_days ?? 3} Business Days
                     </strong>
-                    <span className="text-2xs text-muted-foreground">Target Fulfillment Time</span>
+                    <span className="text-xs text-muted-foreground">Target Fulfillment Time</span>
                   </div>
 
-                  <div className="p-2.5 bg-card rounded-lg border border-purple-100 dark:border-purple-900/40">
-                    <span className="text-2xs text-muted-foreground uppercase tracking-wider block">Vendor Item Code / Ref</span>
+                  <div className="p-2.5 bg-card rounded-lg border border-border border-border/40">
+                    <span className="text-xs text-muted-foreground uppercase tracking-wider block">Vendor Item Code / Ref</span>
                     <strong className="text-foreground tabular-nums text-xs block mt-0.5">
                       {product.vendor_item_code || product.outsource_config?.vendor_item_code || '—'}
                     </strong>
-                    <span className="text-2xs text-muted-foreground">Supplier Reference ID</span>
+                    <span className="text-xs text-muted-foreground">Supplier Reference ID</span>
                   </div>
                 </div>
 
                 {(product.vendor_address || product.outsource_config?.vendor_address) && (
-                  <div className="text-2xs text-muted-foreground">
+                  <div className="text-xs text-muted-foreground">
                     <span className="font-semibold">Vendor Address / Delivery Point:</span> {product.vendor_address || product.outsource_config?.vendor_address}
                   </div>
                 )}
 
                 {(product.outsource_notes || product.outsource_config?.vendor_notes) && (
-                  <div className="p-2.5 bg-purple-100/50 dark:bg-purple-900/30 rounded-lg text-purple-900 dark:text-purple-200 text-2xs">
+                  <div className="p-2.5 bg-primary/10/50 bg-primary/30 rounded-lg text-primary text-primary text-xs">
                     <span className="font-bold">Subcontract Instructions / Spec: </span>
                     {product.outsource_notes || product.outsource_config?.vendor_notes}
                   </div>
                 )}
 
-                <p className="text-2xs text-purple-700 dark:text-purple-300 italic">
+                <p className="text-xs text-primary text-primary italic">
                   💡 Non-Inventory Rule: Subcontracted on-demand from third-party vendor upon order placement. Does not track warehouse bin stock or consume raw material media rolls.
                 </p>
               </div>
             )}
 
             {product.internal_notes && (
-              <div className="p-3.5 bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/60 rounded-xl text-xs space-y-1">
-                <strong className="text-amber-800 dark:text-amber-300 font-bold block">Internal Workshop Notes:</strong>
-                <p className="text-amber-900 dark:text-amber-200">{product.internal_notes}</p>
+              <div className="p-3.5 bg-warning-surface/50 bg-warning-surface border border-warning-border border-warning-border/60 rounded-xl text-xs space-y-1">
+                <strong className="text-warning text-warning font-bold block">Internal Workshop Notes:</strong>
+                <p className="text-warning text-warning">{product.internal_notes}</p>
               </div>
             )}
           </CardContent>
@@ -840,7 +840,7 @@ export default function ProductDetailPage() {
         <Card className="shadow-xs">
           <CardHeader className="pb-3 border-b border-border">
             <CardTitle className="text-sm font-bold flex items-center gap-2">
-              <Boxes className="h-4 w-4 text-blue-600"/>
+              <Boxes className="h-4 w-4 text-primary"/>
  Commercial Purchase Economics, Conversion & Usable Yield
             </CardTitle>
             <CardDescription className="text-xs">
@@ -851,63 +851,63 @@ export default function ProductDetailPage() {
             {!commercialEconomics.isService ? (
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <div className="p-3.5 rounded-xl border border-border bg-muted">
-                  <span className="text-muted-foreground uppercase text-2xs tracking-wider block">Purchase Tariff</span>
+                  <span className="text-muted-foreground uppercase text-xs tracking-wider block">Purchase Tariff</span>
                   <div className="text-lg font-bold tabular-nums text-foreground mt-1">
                     ৳{commercialEconomics.purchasePrice}
                   </div>
-                  <span className="text-2xs text-muted-foreground">per 1 {commercialEconomics.purchaseUnit}</span>
+                  <span className="text-xs text-muted-foreground">per 1 {commercialEconomics.purchaseUnit}</span>
                 </div>
 
                 <div className="p-3.5 rounded-xl border border-border bg-muted">
-                  <span className="text-muted-foreground uppercase text-2xs tracking-wider block">Conversion Ratio</span>
-                  <div className="text-lg font-bold tabular-nums text-blue-600 mt-1">
+                  <span className="text-muted-foreground uppercase text-xs tracking-wider block">Conversion Ratio</span>
+                  <div className="text-lg font-bold tabular-nums text-primary mt-1">
                     1 : {commercialEconomics.conversionRatio}
                   </div>
-                  <span className="text-2xs text-muted-foreground">{commercialEconomics.sellingUnit} per {commercialEconomics.purchaseUnit}</span>
+                  <span className="text-xs text-muted-foreground">{commercialEconomics.sellingUnit} per {commercialEconomics.purchaseUnit}</span>
                 </div>
 
                 <div className="p-3.5 rounded-xl border border-border bg-muted">
-                  <span className="text-muted-foreground uppercase text-2xs tracking-wider block">Expected Wastage</span>
-                  <div className="text-lg font-bold tabular-nums text-amber-600 mt-1">
+                  <span className="text-muted-foreground uppercase text-xs tracking-wider block">Expected Wastage</span>
+                  <div className="text-lg font-bold tabular-nums text-warning mt-1">
                     {commercialEconomics.wastage}%
                   </div>
-                  <span className="text-2xs text-muted-foreground">Yield: {commercialEconomics.usableUnits} usable {commercialEconomics.sellingUnit}</span>
+                  <span className="text-xs text-muted-foreground">Yield: {commercialEconomics.usableUnits} usable {commercialEconomics.sellingUnit}</span>
                 </div>
 
                 <div className="p-3.5 rounded-xl border border-border bg-muted">
-                  <span className="text-muted-foreground uppercase text-2xs tracking-wider block">Effective Material Cost</span>
-                  <div className="text-lg font-bold tabular-nums text-emerald-600 mt-1">
+                  <span className="text-muted-foreground uppercase text-xs tracking-wider block">Effective Material Cost</span>
+                  <div className="text-lg font-bold tabular-nums text-success mt-1">
                     ৳{commercialEconomics.effectiveMaterialCost}
                   </div>
-                  <span className="text-2xs text-muted-foreground">per {commercialEconomics.sellingUnit} (yield-adjusted)</span>
+                  <span className="text-xs text-muted-foreground">per {commercialEconomics.sellingUnit} (yield-adjusted)</span>
                 </div>
               </div>
             ) : (
-              <div className="p-4 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900 rounded-xl text-blue-900 dark:text-blue-300">
+              <div className="p-4 bg-primary/10 bg-primary/10 border border-primary/20 border-border rounded-xl text-primary text-primary">
                 <strong>Service / Installation Item:</strong> Direct billing without raw material roll conversion. Selling Unit: <strong>{commercialEconomics.sellingUnit}</strong>.
               </div>
             )}
 
             {/* 3 Minimums Rule Explanation */}
-            <div className="p-4 bg-amber-50/50 dark:bg-amber-950/20 rounded-xl border border-amber-200 dark:border-amber-800 space-y-2">
-              <strong className="text-amber-900 dark:text-amber-300 font-bold block text-xs">
+            <div className="p-4 bg-warning-surface/50 bg-warning-surface rounded-xl border border-warning-border border-warning-border space-y-2">
+              <strong className="text-warning text-warning font-bold block text-xs">
  Three Distinct Commercial Minimum Rules:
               </strong>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-                <div className="p-2.5 bg-card rounded-lg border border-amber-200">
-                  <span className="text-muted-foreground block text-2xs uppercase font-bold">1. Physical MOQ</span>
+                <div className="p-2.5 bg-card rounded-lg border border-warning-border">
+                  <span className="text-muted-foreground block text-xs uppercase font-bold">1. Physical MOQ</span>
                   <div className="text-sm font-bold tabular-nums mt-0.5">{product.min_order_quantity || 1} {commercialEconomics.sellingUnit}</div>
-                  <p className="text-2xs text-muted-foreground mt-1">Minimum physical quantity the workshop accepts.</p>
+                  <p className="text-xs text-muted-foreground mt-1">Minimum physical quantity the workshop accepts.</p>
                 </div>
-                <div className="p-2.5 bg-card rounded-lg border border-amber-200">
-                  <span className="text-muted-foreground block text-2xs uppercase font-bold">2. Min Billable Qty</span>
-                  <div className="text-sm font-bold tabular-nums mt-0.5 text-blue-600">{product.min_billable_quantity || 0} {commercialEconomics.sellingUnit}</div>
-                  <p className="text-2xs text-muted-foreground mt-1">Minimum quantity used for invoice billing.</p>
+                <div className="p-2.5 bg-card rounded-lg border border-warning-border">
+                  <span className="text-muted-foreground block text-xs uppercase font-bold">2. Min Billable Qty</span>
+                  <div className="text-sm font-bold tabular-nums mt-0.5 text-primary">{product.min_billable_quantity || 0} {commercialEconomics.sellingUnit}</div>
+                  <p className="text-xs text-muted-foreground mt-1">Minimum quantity used for invoice billing.</p>
                 </div>
-                <div className="p-2.5 bg-card rounded-lg border border-amber-200">
-                  <span className="text-muted-foreground block text-2xs uppercase font-bold">3. Minimum Charge</span>
-                  <div className="text-sm font-bold tabular-nums mt-0.5 text-emerald-600">৳{product.minimum_charge || 0}</div>
-                  <p className="text-2xs text-muted-foreground mt-1">Minimum monetary amount charged per item.</p>
+                <div className="p-2.5 bg-card rounded-lg border border-warning-border">
+                  <span className="text-muted-foreground block text-xs uppercase font-bold">3. Minimum Charge</span>
+                  <div className="text-sm font-bold tabular-nums mt-0.5 text-success">৳{product.minimum_charge || 0}</div>
+                  <p className="text-xs text-muted-foreground mt-1">Minimum monetary amount charged per item.</p>
                 </div>
               </div>
             </div>
@@ -916,7 +916,7 @@ export default function ProductDetailPage() {
             <div className="p-4 bg-muted rounded-xl border border-border space-y-3">
               <div className="flex justify-between items-center text-xs">
                 <span className="text-muted-foreground font-semibold">Pricing Method:</span>
-                <span className="tabular-nums font-bold text-purple-700 uppercase">{commercialEconomics.pricingMethod.replace('_', ' ')}</span>
+                <span className="tabular-nums font-bold text-primary uppercase">{commercialEconomics.pricingMethod.replace('_', ' ')}</span>
               </div>
               <div className="flex justify-between items-center text-xs">
                 <span className="text-muted-foreground font-semibold">Target Gross Margin %:</span>
@@ -924,17 +924,17 @@ export default function ProductDetailPage() {
               </div>
               <div className="flex justify-between items-center text-xs">
                 <span className="text-muted-foreground font-semibold">Suggested Selling Price:</span>
-                <span className="tabular-nums font-bold text-emerald-600">৳{commercialEconomics.suggestedSellingPrice} / {commercialEconomics.sellingUnit}</span>
+                <span className="tabular-nums font-bold text-success">৳{commercialEconomics.suggestedSellingPrice} / {commercialEconomics.sellingUnit}</span>
               </div>
               <div className="flex justify-between items-center text-xs">
                 <span className="text-muted-foreground font-semibold">Actual Catalog Selling Rate:</span>
-                <span className="tabular-nums font-bold text-blue-600 text-sm">৳{product.selling_price} / {commercialEconomics.sellingUnit}</span>
+                <span className="tabular-nums font-bold text-primary text-sm">৳{product.selling_price} / {commercialEconomics.sellingUnit}</span>
               </div>
               <div className="flex justify-between items-center text-xs">
                 <span className="text-muted-foreground font-semibold">
  Calculated Margin ({commercialEconomics.costBasisType === 'direct_cost' ? 'Direct Cost Basis' : 'Material Cost Basis'}):
                 </span>
-                <span className="tabular-nums font-bold text-emerald-600 text-sm">{commercialEconomics.grossMarginPercent}%</span>
+                <span className="tabular-nums font-bold text-success text-sm">{commercialEconomics.grossMarginPercent}%</span>
               </div>
             </div>
           </CardContent>
@@ -948,7 +948,7 @@ export default function ProductDetailPage() {
         <Card className="shadow-xs">
           <CardHeader className="pb-3 border-b border-border">
             <CardTitle className="text-sm font-bold flex items-center gap-2">
-              <Tag className="h-4 w-4 text-blue-600"/>
+              <Tag className="h-4 w-4 text-primary"/>
  Multi-Tier Pricing Architecture
             </CardTitle>
             <CardDescription className="text-xs">
@@ -968,11 +968,11 @@ export default function ProductDetailPage() {
  const tierMargin = calculateGrossMargin(commercialEconomics?.activeCostBasis || product.base_cost, tierPrice)
  return (
                   <div key={tier.key} className={cn('p-3.5 rounded-xl border bg-muted border-l-4 shadow-xs', tier.color)}>
-                    <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground block">{tier.label}</span>
+                    <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">{tier.label}</span>
                     <div className="text-lg font-black tabular-nums text-foreground mt-1">
                       ৳{tierPrice}
                     </div>
-                    <div className="text-2xs text-emerald-600 font-semibold mt-1">
+                    <div className="text-xs text-success font-semibold mt-1">
                       {tierMargin.grossMarginPercent}% Margin
                     </div>
                   </div>
@@ -990,7 +990,7 @@ export default function ProductDetailPage() {
         <Card className="shadow-xs">
           <CardHeader className="pb-3 border-b border-border">
             <CardTitle className="text-sm font-bold flex items-center gap-2">
-              <Calculator className="h-4 w-4 text-emerald-600"/>
+              <Calculator className="h-4 w-4 text-success"/>
  Estimated Direct Job Cost Breakdown
             </CardTitle>
             <CardDescription className="text-xs">
@@ -1033,18 +1033,18 @@ export default function ProductDetailPage() {
               </div>
             </div>
 
-            <div className="p-4 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-xl flex justify-between items-center text-xs">
+            <div className="p-4 bg-success-surface bg-success-surface border border-success-border border-success-border rounded-xl flex justify-between items-center text-xs">
               <div>
-                <strong className="text-emerald-900 dark:text-emerald-300 font-bold block">
+                <strong className="text-success text-success font-bold block">
  Total Estimated Direct Unit Cost: ৳{commercialEconomics?.totalDirectCost} / {product.selling_unit}
                 </strong>
-                <span className="text-emerald-700 dark:text-emerald-400">
+                <span className="text-success text-success">
  Margin calculation basis: <strong>{commercialEconomics?.costBasisType === 'direct_cost' ? 'Estimated Direct Cost' : 'Estimated Material Cost'}</strong>
                 </span>
               </div>
               <div className="text-right tabular-nums">
-                <span className="text-muted-foreground block text-2xs uppercase">Selling Tariff</span>
-                <span className="text-base font-bold text-blue-600">৳{product.selling_price}</span>
+                <span className="text-muted-foreground block text-xs uppercase">Selling Tariff</span>
+                <span className="text-base font-bold text-primary">৳{product.selling_price}</span>
               </div>
             </div>
           </CardContent>
@@ -1058,7 +1058,7 @@ export default function ProductDetailPage() {
         <Card className="shadow-xs">
           <CardHeader className="pb-3 border-b border-border">
             <CardTitle className="text-sm font-bold flex items-center gap-2">
-              <Layers className="h-4 w-4 text-purple-600"/>
+              <Layers className="h-4 w-4 text-primary"/>
  Bill of Materials (BOM) & Component Recipe
             </CardTitle>
             <CardDescription className="text-xs">
@@ -1094,9 +1094,9 @@ export default function ProductDetailPage() {
                         <td className="py-3 px-3 capitalize text-muted-foreground">{c.production_role || 'material'}</td>
                         <td className="py-3 px-3 tabular-nums">{c.quantity}</td>
                         <td className="py-3 px-3 tabular-nums uppercase">{c.unit}</td>
-                        <td className="py-3 px-3 tabular-nums text-amber-600">{c.waste_percent || 0}%</td>
+                        <td className="py-3 px-3 tabular-nums text-warning">{c.waste_percent || 0}%</td>
                         <td className="py-3 px-3 tabular-nums">৳{c.unit_cost}</td>
-                        <td className="py-3 px-4 text-right tabular-nums font-bold text-emerald-600">৳{lineCost.toFixed(2)}</td>
+                        <td className="py-3 px-4 text-right tabular-nums font-bold text-success">৳{lineCost.toFixed(2)}</td>
                       </tr>
                     )
                   })
@@ -1114,7 +1114,7 @@ export default function ProductDetailPage() {
         <Card className="shadow-xs">
           <CardHeader className="pb-3 border-b border-border">
             <CardTitle className="text-sm font-bold flex items-center gap-2">
-              <Building2 className="h-4 w-4 text-blue-600"/>
+              <Building2 className="h-4 w-4 text-primary"/>
  Supplier-Specific Purchase Economics
             </CardTitle>
             <CardDescription className="text-xs">
@@ -1147,14 +1147,14 @@ export default function ProductDetailPage() {
                       <td className="py-3 px-4 font-bold text-foreground">{sp.supplier_name}</td>
                       <td className="py-3 px-3 tabular-nums text-muted-foreground">{sp.notes || '-'}</td>
                       <td className="py-3 px-3 uppercase tabular-nums">{sp.purchase_unit}</td>
-                      <td className="py-3 px-3 tabular-nums font-bold text-blue-600">৳{sp.purchase_price}</td>
+                      <td className="py-3 px-3 tabular-nums font-bold text-primary">৳{sp.purchase_price}</td>
                       <td className="py-3 px-3 tabular-nums">{sp.moq || 1}</td>
                       <td className="py-3 px-3 tabular-nums">{sp.lead_time_days ? `${sp.lead_time_days} days` : '-'}</td>
                       <td className="py-3 px-4 text-right">
                         {sp.is_preferred ? (
-                          <Badge className="bg-emerald-500 text-white text-2xs">Preferred Vendor</Badge>
+                          <Badge className="bg-success text-white text-xs">Preferred Vendor</Badge>
                         ) : (
-                          <Badge variant="outline"className="text-muted-foreground text-2xs">Secondary</Badge>
+                          <Badge variant="outline"className="text-muted-foreground text-xs">Secondary</Badge>
                         )}
                       </td>
                     </tr>
@@ -1216,11 +1216,11 @@ export default function ProductDetailPage() {
  className={cn(
                       'p-2.5 rounded-lg border flex items-center gap-2',
  st.active
-                        ? 'bg-blue-50/60 border-blue-200 text-blue-900 dark:bg-blue-950/30 dark:border-blue-800 dark:text-blue-300 font-semibold'
+                        ? 'bg-primary/10/60 border-primary/20 text-primary bg-primary/10 border-border text-primary font-semibold'
                         : 'bg-muted border-border text-muted-foreground '
                     )}
                   >
-                    <div className={cn('h-2 w-2 rounded-full', st.active ? 'bg-blue-600' : 'bg-muted')} />
+                    <div className={cn('h-2 w-2 rounded-full', st.active ? 'bg-primary' : 'bg-muted')} />
                     <span>{st.label}</span>
                   </div>
                 ))}
@@ -1249,7 +1249,7 @@ export default function ProductDetailPage() {
  Thickness, GSM, color, finish, and price/cost adjustments.
               </CardDescription>
             </div>
-            <Button size="sm"onClick={() => setIsAddVariantOpen(true)} className="text-xs bg-blue-600 hover:bg-blue-700">
+            <Button size="sm"onClick={() => setIsAddVariantOpen(true)} className="text-xs bg-primary hover:bg-primary">
               <Plus className="h-3.5 w-3.5 mr-1"/> Add Variant
             </Button>
           </CardHeader>
@@ -1282,7 +1282,7 @@ export default function ProductDetailPage() {
                         {v.gsm ? `${v.gsm} GSM` : ''} {v.thickness_mm ? `${v.thickness_mm}mm` : ''}
                       </td>
                       <td className="py-3 px-3 text-muted-foreground">{v.finish || v.color || 'Standard'}</td>
-                      <td className="py-3 px-3 tabular-nums font-bold text-blue-600">
+                      <td className="py-3 px-3 tabular-nums font-bold text-primary">
                         {v.price_adjustment > 0 ? `+৳${v.price_adjustment}` : `৳${v.price_adjustment}`}
                       </td>
                       <td className="py-3 px-3 tabular-nums text-muted-foreground">
@@ -1291,7 +1291,7 @@ export default function ProductDetailPage() {
                       <td className="py-3 px-4 text-right">
                         <Button
  size="sm"variant="ghost"onClick={() => handleDeleteVariant(v.id)}
- className="h-7 w-7 p-0 text-rose-500 hover:text-rose-700">
+ className="h-7 w-7 p-0 text-destructive hover:text-destructive">
                           <Trash2 className="h-3.5 w-3.5"/>
                         </Button>
                       </td>
@@ -1312,7 +1312,7 @@ export default function ProductDetailPage() {
           <Card className="shadow-xs">
             <CardHeader className="pb-3 border-b border-border">
               <CardTitle className="text-sm font-bold flex items-center gap-2">
-                <History className="h-4 w-4 text-purple-600"/>
+                <History className="h-4 w-4 text-primary"/>
  Price Adjustment Audit Trail
               </CardTitle>
               <CardDescription className="text-xs">
@@ -1347,7 +1347,7 @@ export default function ProductDetailPage() {
                         <td className="py-3 px-3 line-through text-muted-foreground tabular-nums">
                           <CurrencyDisplay amount={h.old_price} />
                         </td>
-                        <td className="py-3 px-3 font-bold text-blue-600 tabular-nums">
+                        <td className="py-3 px-3 font-bold text-primary tabular-nums">
                           <CurrencyDisplay amount={h.new_price} />
                         </td>
                         <td className="py-3 px-3 tabular-nums text-muted-foreground">
@@ -1367,7 +1367,7 @@ export default function ProductDetailPage() {
           <Card className="shadow-xs">
             <CardHeader className="pb-3 border-b border-border">
               <CardTitle className="text-sm font-bold flex items-center gap-2">
-                <AlertTriangle className="h-4 w-4 text-amber-600"/>
+                <AlertTriangle className="h-4 w-4 text-warning"/>
  Low-Margin Quotation & Line Override Audit Trail
               </CardTitle>
               <CardDescription className="text-xs">
@@ -1403,13 +1403,13 @@ export default function ProductDetailPage() {
                         <td className="py-3 px-3 tabular-nums line-through text-muted-foreground">
                           ৳{po.original_price}
                         </td>
-                        <td className="py-3 px-3 font-bold tabular-nums text-rose-600">
+                        <td className="py-3 px-3 font-bold tabular-nums text-destructive">
                           ৳{po.overridden_price}
                         </td>
                         <td className="py-3 px-3 tabular-nums text-muted-foreground">
                           {po.original_margin_percent ? `${po.original_margin_percent}%` : '-'}
                         </td>
-                        <td className="py-3 px-3 tabular-nums font-bold text-rose-600">
+                        <td className="py-3 px-3 tabular-nums font-bold text-destructive">
                           {po.overridden_margin_percent ? `${po.overridden_margin_percent}%` : '-'}
                         </td>
                         <td className="py-3 px-4 text-foreground font-medium">
@@ -1433,35 +1433,35 @@ export default function ProductDetailPage() {
         <div className="space-y-4">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <Card className="p-4 shadow-xs">
-              <span className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider block">Used in Quotations</span>
+              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block">Used in Quotations</span>
               <div className="text-2xl font-black text-foreground mt-1 tabular-nums">
                 {usageStats?.quotationCount || 0}
               </div>
-              <span className="text-2xs text-muted-foreground">Formal quotes created</span>
+              <span className="text-xs text-muted-foreground">Formal quotes created</span>
             </Card>
 
             <Card className="p-4 shadow-xs">
-              <span className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider block">Used in Invoices</span>
-              <div className="text-2xl font-black text-blue-600 mt-1 tabular-nums">
+              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block">Used in Invoices</span>
+              <div className="text-2xl font-black text-primary mt-1 tabular-nums">
                 {usageStats?.invoiceCount || 0}
               </div>
-              <span className="text-2xs text-blue-600/80 font-medium">Billed commercial sales</span>
+              <span className="text-xs text-primary/80 font-medium">Billed commercial sales</span>
             </Card>
 
             <Card className="p-4 shadow-xs">
-              <span className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider block">Active Job Orders</span>
-              <div className="text-2xl font-black text-amber-600 mt-1 tabular-nums">
+              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block">Active Job Orders</span>
+              <div className="text-2xl font-black text-warning mt-1 tabular-nums">
                 {usageStats?.jobCount || 0}
               </div>
-              <span className="text-2xs text-muted-foreground">Production floor tasks</span>
+              <span className="text-xs text-muted-foreground">Production floor tasks</span>
             </Card>
 
             <Card className="p-4 shadow-xs">
-              <span className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider block">Total Billed Revenue</span>
-              <div className="text-2xl font-black text-emerald-600 mt-1 tabular-nums">
+              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block">Total Billed Revenue</span>
+              <div className="text-2xl font-black text-success mt-1 tabular-nums">
                 ৳{(usageStats?.totalRevenueBDT || 0).toLocaleString()}
               </div>
-              <span className="text-2xs text-emerald-600/80 font-medium">
+              <span className="text-xs text-success/80 font-medium">
  Last sold: {usageStats?.lastSoldDate || 'Never'}
               </span>
             </Card>
@@ -1478,24 +1478,24 @@ export default function ProductDetailPage() {
  size="md"hideFooter={true}
  title={
           <div className="flex items-center gap-2">
-            <Tag className="h-5 w-5 text-blue-600"/>
+            <Tag className="h-5 w-5 text-primary"/>
             <span className="font-bold text-base">Adjust Commercial Price & Tariffs</span>
           </div>
         }
       >
         <form onSubmit={handleUpdatePrice} className="space-y-4 pt-1">
-          <div className="p-3 bg-blue-50/50 dark:bg-blue-950/30 rounded-xl text-xs space-y-1.5 border border-blue-200 dark:border-blue-800">
+          <div className="p-3 bg-primary/10/50 bg-primary/10 rounded-xl text-xs space-y-1.5 border border-primary/20 border-border">
             <div className="flex justify-between">
               <span className="text-muted-foreground">Current Base Cost:</span>
               <span className="tabular-nums font-bold">৳{product.base_cost}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Current Selling Price:</span>
-              <span className="tabular-nums font-bold text-blue-600">৳{product.selling_price} / {product.selling_unit || product.unit}</span>
+              <span className="tabular-nums font-bold text-primary">৳{product.selling_price} / {product.selling_unit || product.unit}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Minimum Floor Price:</span>
-              <span className="tabular-nums font-bold text-amber-600">৳{product.min_price}</span>
+              <span className="tabular-nums font-bold text-warning">৳{product.min_price}</span>
             </div>
           </div>
 
@@ -1508,17 +1508,17 @@ export default function ProductDetailPage() {
  className="text-xs h-9 tabular-nums font-semibold"/>
             </div>
             <div>
-              <Label className="text-xs font-semibold mb-1 block">New Selling Price (৳) <span className="text-rose-500">*</span></Label>
+              <Label className="text-xs font-semibold mb-1 block">New Selling Price (৳) <span className="text-destructive">*</span></Label>
               <Input
  type="number"step="0.1"value={newPrice}
  onChange={(e) => setNewPrice(Number(e.target.value))}
- className="text-xs h-9 tabular-nums font-bold text-blue-600"required
+ className="text-xs h-9 tabular-nums font-bold text-primary"required
               />
             </div>
           </div>
 
           <div>
-            <Label className="text-xs font-semibold mb-1 block">Reason for Revision (Audit Trail) <span className="text-rose-500">*</span></Label>
+            <Label className="text-xs font-semibold mb-1 block">Reason for Revision (Audit Trail) <span className="text-destructive">*</span></Label>
             <Input
  placeholder="e.g. Supplier flex roll raw material price increase"value={priceReason}
  onChange={(e) => setPriceReason(e.target.value)}
@@ -1530,7 +1530,7 @@ export default function ProductDetailPage() {
             <Button type="button"variant="outline"size="sm"onClick={() => setIsPriceModalOpen(false)} className="text-xs">
  Cancel
             </Button>
-            <Button type="submit"size="sm"disabled={isPending} className="text-xs bg-blue-600 hover:bg-blue-700 font-bold">
+            <Button type="submit"size="sm"disabled={isPending} className="text-xs bg-primary hover:bg-primary font-bold">
               {isPending ? 'Saving...' : 'Save & Log Audit History'}
             </Button>
           </div>
@@ -1546,14 +1546,14 @@ export default function ProductDetailPage() {
  size="md"hideFooter={true}
  title={
           <div className="flex items-center gap-2">
-            <Plus className="h-5 w-5 text-blue-600"/>
+            <Plus className="h-5 w-5 text-primary"/>
             <span className="font-bold text-base">Add Product Variant</span>
           </div>
         }
       >
         <form onSubmit={handleCreateVariant} className="space-y-3.5 pt-1 text-xs">
           <div>
-            <Label className="text-xs font-semibold mb-1 block">Variant Name <span className="text-rose-500">*</span></Label>
+            <Label className="text-xs font-semibold mb-1 block">Variant Name <span className="text-destructive">*</span></Label>
             <Input
  placeholder="e.g. 440 GSM Heavy Duty or 5mm Cast Acrylic"value={newVariant.variant_name}
  onChange={(e) => setNewVariant({ ...newVariant, variant_name: e.target.value })}
@@ -1584,7 +1584,7 @@ export default function ProductDetailPage() {
               <Input
  type="number"placeholder="+5"value={newVariant.price_adjustment || ''}
  onChange={(e) => setNewVariant({ ...newVariant, price_adjustment: Number(e.target.value) })}
- className="text-xs h-9 tabular-nums font-bold text-blue-600"/>
+ className="text-xs h-9 tabular-nums font-bold text-primary"/>
             </div>
             <div>
               <Label className="text-xs font-semibold mb-1 block">Cost Adjustment (৳)</Label>
@@ -1599,7 +1599,7 @@ export default function ProductDetailPage() {
             <Button type="button"variant="outline"size="sm"onClick={() => setIsAddVariantOpen(false)} className="text-xs">
  Cancel
             </Button>
-            <Button type="submit"size="sm"disabled={isPending} className="text-xs bg-blue-600 hover:bg-blue-700 font-bold">
+            <Button type="submit"size="sm"disabled={isPending} className="text-xs bg-primary hover:bg-primary font-bold">
               {isPending ? 'Saving...' : 'Add Variant'}
             </Button>
           </div>
@@ -1614,7 +1614,7 @@ export default function ProductDetailPage() {
  onOpenChange={setIsDeleteOpen}
  size="md"hideFooter={true}
  title={
-          <div className="flex items-center gap-2 text-rose-600 font-bold text-base">
+          <div className="flex items-center gap-2 text-destructive font-bold text-base">
             <AlertTriangle className="h-5 w-5"/>
             <span>Confirm Deletion / Archive</span>
           </div>
@@ -1626,10 +1626,10 @@ export default function ProductDetailPage() {
           </p>
 
           {deletionSafety && !deletionSafety.isSafe && (
-            <div className="p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg text-amber-800 dark:text-amber-300 space-y-1">
+            <div className="p-3 bg-warning-surface bg-warning-surface border border-warning-border border-warning-border rounded-lg text-warning text-warning space-y-1">
               <strong className="block">Protected Historical Record</strong>
               <p>{deletionSafety.reason}</p>
-              <p className="text-2xs text-amber-700 dark:text-amber-400 pt-1">
+              <p className="text-xs text-warning text-warning pt-1">
  Clicking confirm will safely <strong>Archive / Deactivate</strong> this item instead of deleting it.
               </p>
             </div>
@@ -1642,7 +1642,7 @@ export default function ProductDetailPage() {
             <Button
  size="sm"onClick={handleConfirmDelete}
  disabled={isPending}
- className="text-xs bg-rose-600 hover:bg-rose-700 text-white font-bold">
+ className="text-xs bg-destructive hover:bg-destructive text-white font-bold">
               {isPending ? 'Processing...' : deletionSafety?.isSafe ? 'Permanently Delete' : 'Archive Product'}
             </Button>
           </div>

@@ -137,7 +137,7 @@ export const DesignNewJobModal = React.memo(function DesignNewJobModal({
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-2xl bg-card border border-border text-foreground p-6 shadow-lg">
         <DialogHeader className="border-b border-border pb-3">
-          <DialogTitle className="text-lg font-bold flex items-center gap-2 text-indigo-700 dark:text-indigo-400">
+          <DialogTitle className="text-lg font-bold flex items-center gap-2 text-primary text-primary">
             <PlusCircle className="h-5 w-5"/>
             <span>নতুন আর্টওয়ার্ক বা ডিজাইন জব এন্ট্রি (New Design Entry)</span>
           </DialogTitle>
@@ -225,12 +225,12 @@ export const DesignNewJobModal = React.memo(function DesignNewJobModal({
           <div className="space-y-1 bg-muted p-3 rounded-lg border border-border">
             <div className="flex items-center justify-between">
               <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                <Sparkles className="h-3.5 w-3.5 text-amber-500"/>
+                <Sparkles className="h-3.5 w-3.5 text-warning"/>
                 <span>রেফারেন্স আর্টওয়ার্ক বা প্রিভিউ (Artwork Image / Proof):</span>
               </Label>
               <button
  type="button"onClick={handlePasteClipboard}
- className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1 font-bold">
+ className="text-xs text-primary text-primary hover:underline flex items-center gap-1 font-bold">
                 <ClipboardPaste className="h-3.5 w-3.5"/>
                 <span>ক্লিপবোর্ড থেকে পেস্ট (Ctrl+V)</span>
               </button>
@@ -250,7 +250,7 @@ export const DesignNewJobModal = React.memo(function DesignNewJobModal({
             </Button>
             <Button
  type="submit"size="sm"disabled={isSubmitting}
- className="text-xs bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-xs">
+ className="text-xs bg-primary hover:bg-primary text-white font-bold shadow-xs">
               <PlusCircle className="h-3.5 w-3.5 mr-1.5"/>
               <span>{isSubmitting ? 'সেভ হচ্ছে...' : 'কাজ শুরু করুন (Create Design Job)'}</span>
             </Button>

@@ -293,11 +293,11 @@ export function AssignMachineryModal({
 
         {/* Manual / No-Machine Banner */}
         {isNoMachineTask ? (
-          <div className="p-3.5 rounded-lg bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900 flex items-start gap-2.5 text-xs text-blue-900 dark:text-blue-200">
-            <Info className="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5"/>
+          <div className="p-3.5 rounded-lg bg-primary/10 bg-primary/10 border border-primary/20 border-border flex items-start gap-2.5 text-xs text-primary text-primary">
+            <Info className="h-4 w-4 text-primary text-primary shrink-0 mt-0.5"/>
             <div className="space-y-1">
               <p className="font-bold">Manual / Outsourced Production Step</p>
-              <p className="text-2xs opacity-90">
+              <p className="text-xs opacity-90">
  This task does not require physical machinery fleet allocation. You can proceed with
  manual team scheduling or outsourced service tracking.
               </p>
@@ -310,14 +310,14 @@ export function AssignMachineryModal({
               <div
  className={`p-3 rounded-lg border text-xs flex items-start gap-2 ${
  eligibilitySummary.singleMachineNotice.isAvailable
-                    ? 'bg-blue-50/80 dark:bg-blue-950/30 border-blue-200 dark:border-blue-900 text-blue-900 dark:text-blue-200'
-                    : 'bg-amber-50 dark:bg-amber-950/30 border-amber-300 dark:border-amber-800 text-amber-900 dark:text-amber-200'
+                    ? 'bg-primary/10/80 bg-primary/10 border-primary/20 border-border text-primary text-primary'
+                    : 'bg-warning-surface bg-warning-surface border-warning-border border-warning-border text-warning text-warning'
                 }`}
               >
                 {eligibilitySummary.singleMachineNotice.isAvailable ? (
-                  <Sparkles className="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5"/>
+                  <Sparkles className="h-4 w-4 text-primary text-primary shrink-0 mt-0.5"/>
                 ) : (
-                  <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5"/>
+                  <AlertTriangle className="h-4 w-4 text-warning text-warning shrink-0 mt-0.5"/>
                 )}
                 <div className="space-y-0.5">
                   <p className="font-bold">
@@ -325,7 +325,7 @@ export function AssignMachineryModal({
                       ? 'Smart Preselection:'
                       : 'Notice:'}
                   </p>
-                  <p className="text-2xs">
+                  <p className="text-xs">
                     {eligibilitySummary.singleMachineNotice.message}
                   </p>
                 </div>
@@ -336,7 +336,7 @@ export function AssignMachineryModal({
             {eligibilitySummary && eligibilitySummary.totalFleetCount === 0 && (
               <div className="p-3 rounded-lg bg-muted border border-border text-xs text-muted-foreground">
                 <p className="font-bold text-foreground">No registered machinery</p>
-                <p className="text-2xs mt-0.5">
+                <p className="text-xs mt-0.5">
  Your company currently operates with 0 machines registered. Work orders will continue seamlessly as manual fabrication or outsourced workflows.
                 </p>
               </div>
@@ -396,8 +396,8 @@ export function AssignMachineryModal({
             {/* Conflict Alert Banner */}
             {conflict?.hasConflict ? (
               <Alert
- variant="destructive"className="py-2.5 border-red-300 bg-red-50 dark:bg-red-950/40 text-red-900 dark:text-red-300">
-                <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-400"/>
+ variant="destructive"className="py-2.5 border-danger-border bg-danger-surface bg-danger-surface text-destructive text-destructive">
+                <AlertTriangle className="h-4 w-4 text-destructive text-destructive"/>
                 <AlertDescription className="text-xs space-y-1">
                   <p className="font-bold">⚠️ Schedule Conflict Detected:</p>
                   <p>{conflict.reason}</p>
@@ -411,8 +411,8 @@ export function AssignMachineryModal({
                 </AlertDescription>
               </Alert>
             ) : selectedMachine && scheduledStart && scheduledEnd && !checkingConflict ? (
-              <div className="p-2.5 rounded-md bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-xs flex items-center gap-1.5 font-semibold">
-                <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0"/>
+              <div className="p-2.5 rounded-md bg-success-surface bg-success-surface border border-success-border border-success-border text-success text-success text-xs flex items-center gap-1.5 font-semibold">
+                <CheckCircle2 className="h-4 w-4 text-success text-success shrink-0"/>
                 <span>Schedule Slot is Open & Available for Allocation.</span>
               </div>
             ) : null}

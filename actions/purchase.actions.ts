@@ -1,5 +1,8 @@
 'use server'
 
+import { withTenantAction } from '@/lib/actions/action-wrapper'
+
+
 import { revalidatePath } from 'next/cache'
 import { PurchaseService } from '@/services/purchase.service'
 import { getCurrentTenant } from '@/lib/auth/tenant-auth'
@@ -30,10 +33,13 @@ function checkPurchasePermission(tenant: any, requiredPerm: string): boolean {
 // 1. PURCHASE REQUESTS ACTIONS
 // ==========================================
 
-export async function getPurchaseRequestsAction(
-  requestedCompanyId?: string,
-  options?: { status?: string; search?: string }
-): Promise<ServerActionResult<PurchaseRequestRecord[]>> {
+export const getPurchaseRequestsAction = withTenantAction(
+  {
+    permission: "purchase.view",
+    entityType: "purchase"
+  },
+  async (ctx, requestedCompanyId?: string,
+  options?: { status?: string; search?: string }) : Promise<ServerActionResult<PurchaseRequestRecord[]>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -49,12 +55,16 @@ export async function getPurchaseRequestsAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to fetch purchase requests.' }
   }
-}
 
-export async function getPurchaseRequestByIdAction(
-  id: string,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<PurchaseRequestRecord | null>> {
+})
+
+export const getPurchaseRequestByIdAction = withTenantAction(
+  {
+    permission: "purchase.view",
+    entityType: "purchase"
+  },
+  async (ctx, id: string,
+  requestedCompanyId?: string) : Promise<ServerActionResult<PurchaseRequestRecord | null>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -67,14 +77,18 @@ export async function getPurchaseRequestByIdAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to fetch purchase request.' }
   }
-}
 
-export async function createPurchaseRequestAction(
-  data: Partial<PurchaseRequestRecord> & {
+})
+
+export const createPurchaseRequestAction = withTenantAction(
+  {
+    permission: "purchase.create",
+    entityType: "purchase"
+  },
+  async (ctx, data: Partial<PurchaseRequestRecord> & {
     items: PurchaseRequestItemRecord[]
   },
-  requestedCompanyId?: string
-): Promise<ServerActionResult<PurchaseRequestRecord>> {
+  requestedCompanyId?: string) : Promise<ServerActionResult<PurchaseRequestRecord>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -104,13 +118,17 @@ export async function createPurchaseRequestAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to create purchase request.' }
   }
-}
 
-export async function approvePurchaseRequestAction(
-  id: string,
+})
+
+export const approvePurchaseRequestAction = withTenantAction(
+  {
+    permission: "purchase.approve",
+    entityType: "purchase"
+  },
+  async (ctx, id: string,
   autoCreatePO: boolean = true,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<{ request: PurchaseRequestRecord; po?: PurchaseOrderRecord }>> {
+  requestedCompanyId?: string) : Promise<ServerActionResult<{ request: PurchaseRequestRecord; po?: PurchaseOrderRecord }>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -140,13 +158,17 @@ export async function approvePurchaseRequestAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to approve purchase request.' }
   }
-}
 
-export async function rejectPurchaseRequestAction(
-  id: string,
+})
+
+export const rejectPurchaseRequestAction = withTenantAction(
+  {
+    permission: "purchase.approve",
+    entityType: "purchase"
+  },
+  async (ctx, id: string,
   reason: string,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<PurchaseRequestRecord>> {
+  requestedCompanyId?: string) : Promise<ServerActionResult<PurchaseRequestRecord>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -175,16 +197,20 @@ export async function rejectPurchaseRequestAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to reject purchase request.' }
   }
-}
+
+})
 
 // ==========================================
 // 2. PURCHASE ORDERS ACTIONS
 // ==========================================
 
-export async function getPurchaseOrdersAction(
-  requestedCompanyId?: string,
-  options?: { status?: string; supplierId?: string; search?: string }
-): Promise<ServerActionResult<PurchaseOrderRecord[]>> {
+export const getPurchaseOrdersAction = withTenantAction(
+  {
+    permission: "purchase.view",
+    entityType: "purchase"
+  },
+  async (ctx, requestedCompanyId?: string,
+  options?: { status?: string; supplierId?: string; search?: string }) : Promise<ServerActionResult<PurchaseOrderRecord[]>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -200,12 +226,16 @@ export async function getPurchaseOrdersAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to fetch purchase orders.' }
   }
-}
 
-export async function getPurchaseOrderByIdAction(
-  id: string,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<PurchaseOrderRecord | null>> {
+})
+
+export const getPurchaseOrderByIdAction = withTenantAction(
+  {
+    permission: "purchase.view",
+    entityType: "purchase"
+  },
+  async (ctx, id: string,
+  requestedCompanyId?: string) : Promise<ServerActionResult<PurchaseOrderRecord | null>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -218,17 +248,21 @@ export async function getPurchaseOrderByIdAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to fetch purchase order.' }
   }
-}
 
-export async function createPurchaseOrderAction(
-  data: Partial<PurchaseOrderRecord> & {
+})
+
+export const createPurchaseOrderAction = withTenantAction(
+  {
+    permission: "purchase.create",
+    entityType: "purchase"
+  },
+  async (ctx, data: Partial<PurchaseOrderRecord> & {
     supplier_id: string
     supplier_name: string
     supplier_phone: string
     items: PurchaseOrderItemRecord[]
   },
-  requestedCompanyId?: string
-): Promise<ServerActionResult<PurchaseOrderRecord>> {
+  requestedCompanyId?: string) : Promise<ServerActionResult<PurchaseOrderRecord>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -262,12 +296,16 @@ export async function createPurchaseOrderAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to create purchase order.' }
   }
-}
 
-export async function approvePurchaseOrderAction(
-  id: string,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<PurchaseOrderRecord>> {
+})
+
+export const approvePurchaseOrderAction = withTenantAction(
+  {
+    permission: "purchase.approve",
+    entityType: "purchase"
+  },
+  async (ctx, id: string,
+  requestedCompanyId?: string) : Promise<ServerActionResult<PurchaseOrderRecord>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -295,12 +333,16 @@ export async function approvePurchaseOrderAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to approve purchase order.' }
   }
-}
 
-export async function sendPurchaseOrderAction(
-  id: string,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<PurchaseOrderRecord>> {
+})
+
+export const sendPurchaseOrderAction = withTenantAction(
+  {
+    permission: "purchase.create",
+    entityType: "purchase"
+  },
+  async (ctx, id: string,
+  requestedCompanyId?: string) : Promise<ServerActionResult<PurchaseOrderRecord>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -323,16 +365,20 @@ export async function sendPurchaseOrderAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to issue purchase order.' }
   }
-}
+
+})
 
 // ==========================================
 // 3. GOODS RECEIVING ACTIONS (V5 -> V3 ATOMIC INVENTORY)
 // ==========================================
 
-export async function getGoodsReceivedNotesAction(
-  requestedCompanyId?: string,
-  options?: { poId?: string; supplierId?: string }
-): Promise<ServerActionResult<GoodsReceivedNoteRecord[]>> {
+export const getGoodsReceivedNotesAction = withTenantAction(
+  {
+    permission: "purchase.create",
+    entityType: "purchase"
+  },
+  async (ctx, requestedCompanyId?: string,
+  options?: { poId?: string; supplierId?: string }) : Promise<ServerActionResult<GoodsReceivedNoteRecord[]>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -345,10 +391,15 @@ export async function getGoodsReceivedNotesAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to fetch goods received notes.' }
   }
-}
 
-export async function receiveGoodsAction(
-  params: {
+})
+
+export const receiveGoodsAction = withTenantAction(
+  {
+    permission: "purchase.create",
+    entityType: "purchase"
+  },
+  async (ctx, params: {
     purchase_order_id: string
     receiving_location_id?: string | null
     received_date?: string
@@ -375,8 +426,7 @@ export async function receiveGoodsAction(
       notes?: string | null
     }>
   },
-  requestedCompanyId?: string
-): Promise<ServerActionResult<{ grn: GoodsReceivedNoteRecord; updatedPO: PurchaseOrderRecord }>> {
+  requestedCompanyId?: string) : Promise<ServerActionResult<{ grn: GoodsReceivedNoteRecord; updatedPO: PurchaseOrderRecord }>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -410,16 +460,20 @@ export async function receiveGoodsAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to process goods receipt.' }
   }
-}
+
+})
 
 // ==========================================
 // 4. SUPPLIER RETURNS ACTIONS
 // ==========================================
 
-export async function getSupplierReturnsAction(
-  requestedCompanyId?: string,
-  options?: { supplierId?: string; poId?: string; status?: string }
-): Promise<ServerActionResult<SupplierReturnRecord[]>> {
+export const getSupplierReturnsAction = withTenantAction(
+  {
+    permission: "purchase.view",
+    entityType: "purchase"
+  },
+  async (ctx, requestedCompanyId?: string,
+  options?: { supplierId?: string; poId?: string; status?: string }) : Promise<ServerActionResult<SupplierReturnRecord[]>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -432,10 +486,15 @@ export async function getSupplierReturnsAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to fetch supplier returns.' }
   }
-}
 
-export async function createSupplierReturnAction(
-  params: {
+})
+
+export const createSupplierReturnAction = withTenantAction(
+  {
+    permission: "purchase.create",
+    entityType: "purchase"
+  },
+  async (ctx, params: {
     supplier_id: string
     supplier_name: string
     grn_id?: string | null
@@ -453,8 +512,7 @@ export async function createSupplierReturnAction(
       location_id?: string | null
     }>
   },
-  requestedCompanyId?: string
-): Promise<ServerActionResult<SupplierReturnRecord>> {
+  requestedCompanyId?: string) : Promise<ServerActionResult<SupplierReturnRecord>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -482,4 +540,5 @@ export async function createSupplierReturnAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to create supplier return.' }
   }
-}
+
+})

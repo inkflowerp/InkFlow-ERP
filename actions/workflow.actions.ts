@@ -1,15 +1,21 @@
 'use server'
 
+import { withTenantAction } from '@/lib/actions/action-wrapper'
+
+
 import { revalidatePath } from 'next/cache'
 import { WorkflowService } from '@/services/workflow.service'
 import { WorkflowRule } from '@/types/workflow.types'
 import { getCurrentTenant } from '@/lib/auth/tenant-auth'
 
-export async function toggleWorkflowRuleAction(
-  companyId: string,
+export const toggleWorkflowRuleAction = withTenantAction(
+  {
+    permission: "settings.manage",
+    entityType: "workflow"
+  },
+  async (ctx, companyId: string,
   ruleId: string,
-  isActive: boolean
-) {
+  isActive: boolean) => {
   const tenant = await getCurrentTenant(companyId)
   if (!tenant) {
     return { success: false, message: 'Unauthorized: Session expired or invalid.' }
@@ -19,12 +25,16 @@ export async function toggleWorkflowRuleAction(
   if (tenant.companySlug) revalidatePath(`/${tenant.companySlug}/settings/automations`, 'page')
   revalidatePath('/', 'layout')
   return res
-}
 
-export async function saveWorkflowRuleAction(
-  companyId: string,
-  ruleData: Partial<WorkflowRule>
-) {
+})
+
+export const saveWorkflowRuleAction = withTenantAction(
+  {
+    permission: "settings.manage",
+    entityType: "workflow"
+  },
+  async (ctx, companyId: string,
+  ruleData: Partial<WorkflowRule>) => {
   const tenant = await getCurrentTenant(companyId)
   if (!tenant) {
     return { success: false, message: 'Unauthorized: Session expired or invalid.' }
@@ -34,12 +44,18 @@ export async function saveWorkflowRuleAction(
   if (tenant.companySlug) revalidatePath(`/${tenant.companySlug}/settings/automations`, 'page')
   revalidatePath('/', 'layout')
   return res
-}
 
-export async function deleteWorkflowRuleAction(
-  companyId: string,
-  ruleId: string
-) {
+})
+
+export const deleteWorkflowRuleAction = withTenantAction(
+  {
+    permission: "settings.manage",
+    destructive: true,
+    auditAction: "workflow.deleteworkflowrule",
+    entityType: "workflow"
+  },
+  async (ctx, companyId: string,
+  ruleId: string) => {
   const tenant = await getCurrentTenant(companyId)
   if (!tenant) {
     return { success: false, message: 'Unauthorized: Session expired or invalid.' }
@@ -49,29 +65,45 @@ export async function deleteWorkflowRuleAction(
   if (tenant.companySlug) revalidatePath(`/${tenant.companySlug}/settings/automations`, 'page')
   revalidatePath('/', 'layout')
   return res
-}
 
-export async function getWorkflowRulesAction(companyId?: string) {
+})
+
+export const getWorkflowRulesAction = withTenantAction(
+  {
+    permission: "settings.view",
+    entityType: "workflow"
+  },
+  async (ctx, companyId?: string) => {
   const tenant = await getCurrentTenant(companyId)
   if (!tenant) {
     return { success: false, message: 'Unauthorized: Session expired or invalid.' }
   }
   return await WorkflowService.getRules(tenant.companyId)
-}
 
-export async function getWorkflowExecutionLogsAction(companyId?: string) {
+})
+
+export const getWorkflowExecutionLogsAction = withTenantAction(
+  {
+    permission: "settings.view",
+    entityType: "workflow"
+  },
+  async (ctx, companyId?: string) => {
   const tenant = await getCurrentTenant(companyId)
   if (!tenant) {
     return { success: false, message: 'Unauthorized: Session expired or invalid.' }
   }
   return await WorkflowService.getExecutionLogs(tenant.companyId)
-}
 
-export async function testTriggerWorkflowRuleAction(
-  companyId: string,
+})
+
+export const testTriggerWorkflowRuleAction = withTenantAction(
+  {
+    permission: "settings.view",
+    entityType: "workflow"
+  },
+  async (ctx, companyId: string,
   ruleId: string,
-  customPayload?: Record<string, any>
-) {
+  customPayload?: Record<string, any>) => {
   const tenant = await getCurrentTenant(companyId)
   if (!tenant) {
     return { success: false, message: 'Unauthorized: Session expired or invalid.' }
@@ -81,15 +113,19 @@ export async function testTriggerWorkflowRuleAction(
   if (tenant.companySlug) revalidatePath(`/${tenant.companySlug}/settings/automations`, 'page')
   revalidatePath('/', 'layout')
   return res
-}
 
-export async function dispatchWorkflowEventAction(
-  companyId: string,
+})
+
+export const dispatchWorkflowEventAction = withTenantAction(
+  {
+    permission: "settings.view",
+    entityType: "workflow"
+  },
+  async (ctx, companyId: string,
   triggerType: any,
   entityType: any,
   entityId: string,
-  payload: Record<string, any> = {}
-) {
+  payload: Record<string, any> = {}) => {
   const tenant = await getCurrentTenant(companyId)
   if (!tenant) {
     return { success: false, message: 'Unauthorized: Session expired or invalid.' }
@@ -109,5 +145,6 @@ export async function dispatchWorkflowEventAction(
   } catch (err: any) {
     return { success: false, message: err?.message || 'Failed to dispatch workflow trigger' }
   }
-}
+
+})
 

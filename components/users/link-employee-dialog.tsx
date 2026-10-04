@@ -132,7 +132,7 @@ export function LinkEmployeeDialog({
  onClick={() => setSelectedEmpId(emp.id)}
  className={`w-full text-left p-3 transition-colors flex items-center justify-between gap-3 text-sm ${
  isSelected
-                      ? 'bg-blue-50/80 dark:bg-blue-950/30'
+                      ? 'bg-primary/10/80 bg-primary/10'
                       : isAlreadyLinkedOther
                       ? 'opacity-50 cursor-not-allowed bg-muted/50 '
                       : 'hover:bg-muted dark:hover:bg-muted/50'
@@ -154,11 +154,11 @@ export function LinkEmployeeDialog({
 
                   <div className="shrink-0 flex items-center gap-2">
                     {isAlreadyLinkedOther ? (
-                      <span className="text-[11px] text-amber-600 dark:text-amber-400 font-medium">
+                      <span className="text-xs text-warning text-warning font-medium">
  {tBilingual('Has login', 'লগইন আছে')}
                       </span>
                     ) : isSelected ? (
-                      <div className="h-6 w-6 rounded-full bg-blue-600 text-white flex items-center justify-center">
+                      <div className="h-6 w-6 rounded-full bg-primary text-white flex items-center justify-center">
                         <Check className="h-3.5 w-3.5"/>
                       </div>
                     ) : (
@@ -172,8 +172,8 @@ export function LinkEmployeeDialog({
         </div>
 
         {selectedEmployee && (
-          <div className="p-3 bg-blue-50/60 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900/40 rounded-lg text-xs text-blue-900 dark:text-blue-300 flex items-start gap-2">
-            <UserCheck className="h-4 w-4 shrink-0 text-blue-600 dark:text-blue-400 mt-0.5"/>
+          <div className="p-3 bg-primary/10/60 bg-primary/10 border border-primary/20 border-border/40 rounded-lg text-xs text-primary text-primary flex items-start gap-2">
+            <UserCheck className="h-4 w-4 shrink-0 text-primary text-primary mt-0.5"/>
             <div>
               <span>{tBilingual('Confirm linking ', 'নিশ্চিত করুন ')}</span>
               <strong>{selectedEmployee.name}</strong> ({selectedEmployee.employee_id_number || 'EMP'}) {tBilingual('to this login account. The employee will be able to punch attendance and view personal tasks.', 'এই লগইন অ্যাকাউন্টে যুক্ত করতে।')}

@@ -1,5 +1,8 @@
 'use server'
 
+import { withTenantAction } from '@/lib/actions/action-wrapper'
+
+
 import { revalidatePath } from 'next/cache'
 import { QuotationService } from '@/services/quotation.service'
 import { QuotationRepository } from '@/lib/repositories/quotation.repository'
@@ -37,10 +40,13 @@ export interface ServerActionResult<T> {
 /**
  * Server Action: Search existing customers for quotation dropdown
  */
-export async function searchQuotationCustomersAction(
-  query: string,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<CustomerRecord[]>> {
+export const searchQuotationCustomersAction = withTenantAction(
+  {
+    permission: "quotations.view",
+    entityType: "quotation"
+  },
+  async (ctx, query: string,
+  requestedCompanyId?: string) : Promise<ServerActionResult<CustomerRecord[]>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -53,15 +59,19 @@ export async function searchQuotationCustomersAction(
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to search customers.' }
   }
-}
+
+})
 
 /**
  * Server Action: Resolve 3-tier rates for a selected customer
  */
-export async function resolveQuotationRatesAction(
-  customerId: string,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<ResolvedProductRate[]>> {
+export const resolveQuotationRatesAction = withTenantAction(
+  {
+    permission: "products.view",
+    entityType: "quotation"
+  },
+  async (ctx, customerId: string,
+  requestedCompanyId?: string) : Promise<ServerActionResult<ResolvedProductRate[]>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -74,14 +84,18 @@ export async function resolveQuotationRatesAction(
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to resolve customer pricing.' }
   }
-}
+
+})
 
 /**
  * Server Action: Fetch active products for quotation line items
  */
-export async function getQuotationProductsAction(
-  requestedCompanyId?: string
-): Promise<ServerActionResult<any[]>> {
+export const getQuotationProductsAction = withTenantAction(
+  {
+    permission: "products.view",
+    entityType: "quotation"
+  },
+  async (ctx, requestedCompanyId?: string) : Promise<ServerActionResult<any[]>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -94,16 +108,20 @@ export async function getQuotationProductsAction(
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to fetch quotation products.' }
   }
-}
+
+})
 
 /**
  * Server Action: Securely creates a formal Quotation with Price Snapshot & Save-First guarantee
  */
-export async function createQuotationAction(
-  payload: CreateQuotationPayload,
+export const createQuotationAction = withTenantAction(
+  {
+    permission: "quotations.create",
+    entityType: "quotation"
+  },
+  async (ctx, payload: CreateQuotationPayload,
   requestedCompanyId?: string,
-  tenantSlug?: string
-): Promise<ServerActionResult<QuotationRecord>> {
+  tenantSlug?: string) : Promise<ServerActionResult<QuotationRecord>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId || tenantSlug)
     if (!tenant || !tenant.companyId) {
@@ -281,7 +299,8 @@ export async function createQuotationAction(
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to create quotation' }
   }
-}
+
+})
 
 import { PdfGeneratorService } from '@/services/pdf-generator.service'
 import { CommunicationTemplateService } from '@/services/communication-templates.service'
@@ -291,10 +310,13 @@ import { BusinessEmailService } from '@/services/business-email.service'
  * Server Action: Dispatches quotation communication (WhatsApp / Email)
  * Strictly guarantees Save-First before dispatch, attaches PDF, and uses customizable templates
  */
-export async function sendQuotationAction(
-  params: SendQuotationPayload,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<{ messageId: string; whatsappUrl?: string }>> {
+export const sendQuotationAction = withTenantAction(
+  {
+    permission: "quotations.send",
+    entityType: "quotation"
+  },
+  async (ctx, params: SendQuotationPayload,
+  requestedCompanyId?: string) : Promise<ServerActionResult<{ messageId: string; whatsappUrl?: string }>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -424,15 +446,19 @@ export async function sendQuotationAction(
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to dispatch quotation communication' }
   }
-}
+
+})
 
 /**
  * Server Action: Converts an approved quotation into a formal Invoice, preserving quoted rates
  */
-export async function convertQuotationToInvoiceAction(
-  quotationId: string,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<InvoiceRecord>> {
+export const convertQuotationToInvoiceAction = withTenantAction(
+  {
+    permission: "quotations.view",
+    entityType: "quotation"
+  },
+  async (ctx, quotationId: string,
+  requestedCompanyId?: string) : Promise<ServerActionResult<InvoiceRecord>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -477,15 +503,19 @@ export async function convertQuotationToInvoiceAction(
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to convert quotation to invoice' }
   }
-}
+
+})
 
 /**
  * Server Action: Fetches authoritative quotations for tenant
  */
-export async function getQuotationsAction(
-  requestedCompanyId?: string,
-  tenantSlug?: string
-): Promise<ServerActionResult<QuotationRecord[]>> {
+export const getQuotationsAction = withTenantAction(
+  {
+    permission: "quotations.view",
+    entityType: "quotation"
+  },
+  async (ctx, requestedCompanyId?: string,
+  tenantSlug?: string) : Promise<ServerActionResult<QuotationRecord[]>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId || tenantSlug)
     if (!tenant || !tenant.companyId) {
@@ -498,17 +528,23 @@ export async function getQuotationsAction(
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to fetch quotations.' }
   }
-}
+
+})
 
 /**
  * Server Action: Deletes a quotation and removes it from active pipeline
  */
-export async function deleteQuotationAction(
-  id: string,
+export const deleteQuotationAction = withTenantAction(
+  {
+    permission: "quotations.delete",
+    destructive: true,
+    auditAction: "quotation.deletequotation",
+    entityType: "quotation"
+  },
+  async (ctx, id: string,
   quotationNumber?: string,
   requestedCompanyId?: string,
-  tenantSlug?: string
-): Promise<ServerActionResult<boolean>> {
+  tenantSlug?: string) : Promise<ServerActionResult<boolean>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId || tenantSlug)
     if (!tenant || !tenant.companyId) {
@@ -527,16 +563,20 @@ export async function deleteQuotationAction(
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to delete quotation.' }
   }
-}
+
+})
 
 /**
  * Server Action: Fetches single quotation with activity history
  */
-export async function getQuotationDetailAction(
-  id: string,
+export const getQuotationDetailAction = withTenantAction(
+  {
+    permission: "quotations.view",
+    entityType: "quotation"
+  },
+  async (ctx, id: string,
   requestedCompanyId?: string,
-  tenantSlug?: string
-): Promise<ServerActionResult<{ quotation: QuotationRecord; activities: QuotationActivityRecord[] }>> {
+  tenantSlug?: string) : Promise<ServerActionResult<{ quotation: QuotationRecord; activities: QuotationActivityRecord[] }>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId || tenantSlug)
     if (!tenant || !tenant.companyId) {
@@ -554,15 +594,19 @@ export async function getQuotationDetailAction(
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to fetch quotation details.' }
   }
-}
+
+})
 
 /**
  * Server Action: Records a quotation follow-up with scheduled date, method, and outcome
  */
-export async function recordQuotationFollowUpAction(
-  params: RecordFollowUpPayload,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<QuotationRecord>> {
+export const recordQuotationFollowUpAction = withTenantAction(
+  {
+    permission: "quotations.edit",
+    entityType: "quotation"
+  },
+  async (ctx, params: RecordFollowUpPayload,
+  requestedCompanyId?: string) : Promise<ServerActionResult<QuotationRecord>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -619,17 +663,21 @@ export async function recordQuotationFollowUpAction(
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to record follow-up.' }
   }
-}
+
+})
 
 /**
  * Server Action: Updates quotation status safely with activity and audit logging
  */
-export async function updateQuotationStatusAction(
-  quotationId: string,
+export const updateQuotationStatusAction = withTenantAction(
+  {
+    permission: "quotations.edit",
+    entityType: "quotation"
+  },
+  async (ctx, quotationId: string,
   status: QuotationStatus,
   reason?: string,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<QuotationRecord>> {
+  requestedCompanyId?: string) : Promise<ServerActionResult<QuotationRecord>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -681,17 +729,21 @@ export async function updateQuotationStatusAction(
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to update quotation status.' }
   }
-}
+
+})
 
 /**
  * Server Action: Applies negotiated discount concession and recalculates margin with internal shielding
  */
-export async function applyQuotationNegotiationAction(
-  quotationId: string,
+export const applyQuotationNegotiationAction = withTenantAction(
+  {
+    permission: "quotations.edit",
+    entityType: "quotation"
+  },
+  async (ctx, quotationId: string,
   discountAmount: number,
   notes?: string,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<QuotationRecord>> {
+  requestedCompanyId?: string) : Promise<ServerActionResult<QuotationRecord>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -741,16 +793,20 @@ export async function applyQuotationNegotiationAction(
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to apply negotiated price.' }
   }
-}
+
+})
 
 /**
  * Server Action: Converts an approved quotation into a production Job Order
  */
-export async function convertQuotationToJobOrderAction(
-  quotationId: string,
+export const convertQuotationToJobOrderAction = withTenantAction(
+  {
+    permission: "quotations.view",
+    entityType: "quotation"
+  },
+  async (ctx, quotationId: string,
   options?: { advanceAmount?: number },
-  requestedCompanyId?: string
-): Promise<ServerActionResult<any>> {
+  requestedCompanyId?: string) : Promise<ServerActionResult<any>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -795,4 +851,5 @@ export async function convertQuotationToJobOrderAction(
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to convert quotation to job order.' }
   }
-}
+
+})

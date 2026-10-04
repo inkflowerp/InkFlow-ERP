@@ -25,7 +25,7 @@ export function BranchSwitcher({
  const single = branches[0]
  return (
       <div className="flex items-center space-x-2 px-3 py-1.5 bg-muted rounded-lg text-sm font-medium text-foreground">
-        <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+        <span className="w-2 h-2 rounded-full bg-success"></span>
         <span>{single ? `${single.name} (${single.code})` : 'Main Branch'}</span>
       </div>
     )
@@ -43,7 +43,7 @@ export function BranchSwitcher({
           <div className="flex items-center space-x-2">
             <span
  className={`w-2 h-2 rounded-full ${
- selectedBranchId ? 'bg-emerald-500' : 'bg-primary-500'
+ selectedBranchId ? 'bg-success' : 'bg-primary-500'
               }`}
             ></span>
             <span className="truncate max-w-[160px]">
@@ -101,7 +101,7 @@ export function BranchSwitcher({
                   }}
  className={`w-full flex items-center justify-between px-3 py-2.5 text-sm rounded-lg transition-colors ${
  selectedBranchId === b.id
-                      ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 font-semibold'
+                      ? 'bg-success-surface bg-success-surface text-success text-success font-semibold'
                       : 'text-foreground hover:bg-muted dark:hover:bg-muted'
                   }`}
                 >
@@ -114,7 +114,7 @@ export function BranchSwitcher({
                     </span>
                   </div>
                   {selectedBranchId === b.id && (
-                    <span className="text-xs font-bold text-emerald-500">✓</span>
+                    <span className="text-xs font-bold text-success">✓</span>
                   )}
                 </button>
               ))}

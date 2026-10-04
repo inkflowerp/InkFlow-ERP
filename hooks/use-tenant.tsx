@@ -84,7 +84,7 @@ function platformCompanyToRow(p: PlatformTenantCompany): CompanyRow {
     settings: { vat_rate: 7.5, bilingual_invoicing: true },
     created_at: p.created_at || new Date().toISOString(),
     updated_at: p.created_at || new Date().toISOString(),
-  }
+  } as unknown as CompanyRow
 }
 
 function resolveCompanyFromContextOrStore(
@@ -135,7 +135,7 @@ function resolveCompanyFromContextOrStore(
       settings: (ctx as any).settings || { vat_rate: 7.5, bilingual_invoicing: true },
       created_at: (ctx as any).created_at || new Date().toISOString(),
       updated_at: (ctx as any).updated_at || new Date().toISOString(),
-    }
+    } as unknown as CompanyRow
   }
 
   const slug = (targetSlug || '').toLowerCase().trim()
@@ -177,7 +177,7 @@ function resolveCompanyFromContextOrStore(
       settings: { vat_rate: 7.5, bilingual_invoicing: true },
       created_at: cookieSession.loginTime || new Date().toISOString(),
       updated_at: cookieSession.loginTime || new Date().toISOString(),
-    }
+    } as unknown as CompanyRow
   }
 
   const platformCompanies =
@@ -217,7 +217,7 @@ function resolveCompanyFromContextOrStore(
       settings: profile.settings || { vat_rate: 7.5, bilingual_invoicing: true },
       created_at: profile.created_at || new Date().toISOString(),
       updated_at: profile.updated_at || new Date().toISOString(),
-    }
+    } as unknown as CompanyRow
   }
 
   return null
@@ -356,7 +356,7 @@ export function TenantProvider({
       },
       roles: [],
       branch: branches.find((b) => b.id === session.branchId) || null,
-    }
+    } as unknown as CompanyUserWithProfile
   }, [session, branches, syncedUser])
 
   const currentBranch = session?.branchId
@@ -550,7 +550,7 @@ function getFallbackTenantContext(): TenantContextType {
         },
         roles: [],
         branch: null,
-      }
+      } as unknown as CompanyUserWithProfile
     : null
 
   return {

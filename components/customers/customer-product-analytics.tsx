@@ -106,12 +106,12 @@ export function CustomerProductAnalytics({
         {/* Aggregate KPI Badges */}
         <div className="flex items-center gap-3 text-xs shrink-0">
           <div className="flex items-center gap-1.5 text-muted-foreground">
-            <Package className="h-3.5 w-3.5 text-blue-500"/>
+            <Package className="h-3.5 w-3.5 text-primary"/>
             <span>Products: <strong className="text-foreground">{stats.length}</strong></span>
           </div>
           <div className="flex items-center gap-1.5 text-muted-foreground">
-            <TrendingUp className="h-3.5 w-3.5 text-emerald-500"/>
-            <span>Spend: <strong className="text-emerald-600 dark:text-emerald-400">৳{totalSpend.toLocaleString('en-IN')}</strong></span>
+            <TrendingUp className="h-3.5 w-3.5 text-success"/>
+            <span>Spend: <strong className="text-success text-success">৳{totalSpend.toLocaleString('en-IN')}</strong></span>
           </div>
         </div>
       </div>
@@ -131,7 +131,7 @@ export function CustomerProductAnalytics({
  className="h-8 w-36 text-xs bg-card"/>
           <Button
  size="sm"onClick={fetchStats}
- className="h-8 text-xs bg-blue-600 hover:bg-blue-700 ml-auto">
+ className="h-8 text-xs bg-primary hover:bg-primary ml-auto">
  Apply Range
           </Button>
         </div>
@@ -159,7 +159,7 @@ export function CustomerProductAnalytics({
         </div>
 
         {isLoading && (
-          <div className="flex items-center gap-1.5 text-blue-600">
+          <div className="flex items-center gap-1.5 text-primary">
             <Loader2 className="h-3.5 w-3.5 animate-spin"/>
             <span>Updating...</span>
           </div>
@@ -194,19 +194,19 @@ export function CustomerProductAnalytics({
                       {item.productName}
                     </div>
                     {item.productNameBn && (
-                      <div className="text-2xs text-muted-foreground">{item.productNameBn}</div>
+                      <div className="text-xs text-muted-foreground">{item.productNameBn}</div>
                     )}
-                    <div className="text-2xs text-muted-foreground mt-0.5">
+                    <div className="text-xs text-muted-foreground mt-0.5">
                       {item.invoiceCount} {item.invoiceCount === 1 ? 'invoice' : 'invoices'}
                     </div>
                   </td>
                   <td className="py-3 px-3 text-right font-semibold text-foreground">
-                    {item.totalQuantity.toLocaleString()} <span className="text-2xs text-muted-foreground font-normal uppercase">{item.unit}</span>
+                    {item.totalQuantity.toLocaleString()} <span className="text-xs text-muted-foreground font-normal uppercase">{item.unit}</span>
                   </td>
                   <td className="py-3 px-3 text-right font-medium text-muted-foreground">
                     {formatBDT(item.lastRate)}
                   </td>
-                  <td className="py-3 px-3 text-right font-bold text-sm text-emerald-600 dark:text-emerald-400">
+                  <td className="py-3 px-3 text-right font-bold text-sm text-success text-success">
                     {formatBDT(item.totalAmount)}
                   </td>
                   <td className="py-3 px-4 text-right text-muted-foreground font-medium">
@@ -236,31 +236,31 @@ export function CustomerProductAnalytics({
                   {item.productNameBn && (
                     <div className="text-xs text-muted-foreground">{item.productNameBn}</div>
                   )}
-                  <div className="text-2xs text-muted-foreground mt-0.5">
+                  <div className="text-xs text-muted-foreground mt-0.5">
                     {item.invoiceCount} {item.invoiceCount === 1 ? 'invoice' : 'invoices'}
                   </div>
                 </div>
 
-                <Badge variant="outline"className="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50/50 dark:bg-emerald-950/30">
+                <Badge variant="outline"className="text-xs font-bold text-success text-success bg-success-surface/50 bg-success-surface">
                   {formatBDT(item.totalAmount)}
                 </Badge>
               </div>
 
               <div className="grid grid-cols-3 gap-2 p-2 rounded-lg bg-muted text-xs">
                 <div>
-                  <div className="text-2xs text-muted-foreground">Total Qty</div>
+                  <div className="text-xs text-muted-foreground">Total Qty</div>
                   <div className="font-semibold text-foreground">
-                    {item.totalQuantity} <span className="uppercase text-2xs text-muted-foreground">{item.unit}</span>
+                    {item.totalQuantity} <span className="uppercase text-xs text-muted-foreground">{item.unit}</span>
                   </div>
                 </div>
                 <div>
-                  <div className="text-2xs text-muted-foreground">Last Rate</div>
+                  <div className="text-xs text-muted-foreground">Last Rate</div>
                   <div className="font-semibold text-foreground">
                     {formatBDT(item.lastRate)}
                   </div>
                 </div>
                 <div>
-                  <div className="text-2xs text-muted-foreground">Last Date</div>
+                  <div className="text-xs text-muted-foreground">Last Date</div>
                   <div className="font-medium text-muted-foreground truncate">
                     {item.lastPurchaseDate}
                   </div>

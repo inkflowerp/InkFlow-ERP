@@ -84,7 +84,7 @@ export default function TenantSupportPage() {
 
  if (!mounted) {
  return (
-      <div className="space-y-6 max-w-7xl animate-pulse p-4 sm:p-0">
+      <div className="space-y-6 animate-pulse p-4 sm:p-0">
         <div className="h-20 bg-muted rounded-xl w-full"/>
         <div className="h-12 bg-muted rounded-xl w-3/4"/>
         <div className="h-[550px] bg-muted rounded-xl w-full"/>
@@ -93,16 +93,16 @@ export default function TenantSupportPage() {
   }
 
  return (
-    <div className="space-y-4 max-w-7xl pb-8">
+    <div className="space-y-4 pb-8">
       {/* Top Page Header */}
       <PageHeader
  titleEn="Enterprise Support & Helpdesk"titleBn="এন্টারপ্রাইজ হেল্পডেস্ক ও লাইভ সাপোর্ট"descriptionEn="Direct communication channel with PrintERP engineers, press technicians, and billing specialists."descriptionBn="প্রিন্টইআরপি ইঞ্জিনিয়ার, প্রেস টেকনিশিয়ান ও হিসাব বিশেষজ্ঞদের সাথে সরাসরি সহায়তা ও যোগাযোগ চ্যানেল।"icon={Headset}
- iconColor="text-blue-600 dark:text-blue-400"actions={
+ iconColor="text-primary text-primary"actions={
           <div className="flex flex-wrap items-center gap-2">
             {/* WhatsApp VIP Direct Chat */}
             <a
- href="https://wa.me/8801700000000?text=Hello%20PrintERP%20Support%20Team"target="_blank"rel="noopener noreferrer"className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border border-emerald-300 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-colors shadow-2xs">
-              <MessageSquare className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400"/>
+ href="https://wa.me/8801700000000?text=Hello%20PrintERP%20Support%20Team"target="_blank"rel="noopener noreferrer"className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border border-success-border border-success-border bg-success-surface bg-success-surface text-success text-success hover:bg-success-surface dark:hover:bg-success/60 transition-colors shadow-2xs">
+              <MessageSquare className="h-3.5 w-3.5 text-success text-success"/>
               <span>WhatsApp Direct</span>
               <ExternalLink className="h-3 w-3 opacity-60 ml-0.5"/>
             </a>
@@ -110,7 +110,7 @@ export default function TenantSupportPage() {
             {/* Direct Phone Support */}
             <a
  href="tel:+8809612345678"className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border border-input bg-card text-foreground hover:bg-muted transition-colors shadow-2xs">
-              <PhoneCall className="h-3.5 w-3.5 text-blue-600"/>
+              <PhoneCall className="h-3.5 w-3.5 text-primary"/>
               <span>+880 9612-345678</span>
             </a>
 
@@ -128,7 +128,7 @@ export default function TenantSupportPage() {
       {/* EMERGENCY & SYSTEM STATUS BAR */}
       <div className="p-3.5 bg-muted/40 border border-border rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
         <div className="flex items-center gap-2.5">
-          <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse shrink-0 ring-4 ring-emerald-500/20"/>
+          <div className="h-2 w-2 rounded-full bg-success animate-pulse shrink-0 ring-4 focus:ring-ring/20"/>
           <div className="text-xs text-foreground">
             <span className="font-bold">
               {tBilingual('System Status: Operational', 'সিস্টেম স্ট্যাটাস: সম্পূর্ণ সচল')}
@@ -140,7 +140,7 @@ export default function TenantSupportPage() {
         </div>
 
         <div className="flex items-center gap-2 text-xs text-muted-foreground shrink-0">
-          <Badge variant="outline"className="text-2xs tabular-nums">
+          <Badge variant="outline"className="text-xs tabular-nums">
             {tBilingual('SLA: 24/7 Priority Support', 'এসএলএ: ২৪/৭ অগ্রাধিকার সহায়তা')}
           </Badge>
         </div>
@@ -151,48 +151,48 @@ export default function TenantSupportPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           <button
  type="button"onClick={() => handleQuickIssue('POS Thermal Slip & Printer Driver Configuration', 'technical')}
- className="p-3.5 rounded-xl border border-border bg-card hover:border-blue-500 hover:shadow-xs transition-all text-left flex flex-col justify-between group cursor-pointer">
-            <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400 mb-1.5">
+ className="p-3.5 rounded-xl border border-border bg-card hover:border-primary/20 hover:shadow-xs transition-all text-left flex flex-col justify-between group cursor-pointer">
+            <div className="flex items-center gap-2 text-primary text-primary mb-1.5">
               <Printer className="h-4 w-4"/>
               <span className="font-bold text-xs">{tBilingual('POS Printer Setup', 'পিওএস প্রিন্টার সেটআপ')}</span>
             </div>
-            <p className="text-2xs text-muted-foreground leading-snug">
+            <p className="text-xs text-muted-foreground leading-snug">
               {tBilingual('Configure thermal receipt printer & barcode scanners on shop floor.', 'দোকান বা শো-রুমের থার্মাল স্লিপ প্রিন্টার সেটআপ।')}
             </p>
           </button>
 
           <button
  type="button"onClick={() => handleQuickIssue('NBR Mushak 6.3 & BIN/TIN Invoice Setup', 'billing')}
- className="p-3.5 rounded-xl border border-border bg-card hover:border-emerald-500 hover:shadow-xs transition-all text-left flex flex-col justify-between group cursor-pointer">
-            <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 mb-1.5">
+ className="p-3.5 rounded-xl border border-border bg-card hover:border-success-border hover:shadow-xs transition-all text-left flex flex-col justify-between group cursor-pointer">
+            <div className="flex items-center gap-2 text-success text-success mb-1.5">
               <FileSpreadsheet className="h-4 w-4"/>
               <span className="font-bold text-xs">{tBilingual('Mushak 6.3 Invoicing', 'মূসক ৬.৩ চালান')}</span>
             </div>
-            <p className="text-2xs text-muted-foreground leading-snug">
+            <p className="text-xs text-muted-foreground leading-snug">
               {tBilingual('NBR compliant 13-digit BIN tax invoice format & VDS withholding setup.', 'এনবিআর স্বীকৃত ভ্যাট চালান ও বিআইএন নিবন্ধন।')}
             </p>
           </button>
 
           <button
  type="button"onClick={() => handleQuickIssue('ZKTeco Biometric Device & QR Attendance Connection', 'technical')}
- className="p-3.5 rounded-xl border border-border bg-card hover:border-purple-500 hover:shadow-xs transition-all text-left flex flex-col justify-between group cursor-pointer">
-            <div className="flex items-center gap-2 text-purple-600 dark:text-purple-400 mb-1.5">
+ className="p-3.5 rounded-xl border border-border bg-card hover:border-primary/20 hover:shadow-xs transition-all text-left flex flex-col justify-between group cursor-pointer">
+            <div className="flex items-center gap-2 text-primary text-primary mb-1.5">
               <QrCode className="h-4 w-4"/>
               <span className="font-bold text-xs">{tBilingual('Attendance Device', 'হাজিরা ডিভাইস')}</span>
             </div>
-            <p className="text-2xs text-muted-foreground leading-snug">
+            <p className="text-xs text-muted-foreground leading-snug">
               {tBilingual('Connect factory biometric fingerprint reader or geofenced QR check-in.', 'কারখানার ফিঙ্গারপ্রিন্ট বা কিউআর কোড হাজিরা।')}
             </p>
           </button>
 
           <button
  type="button"onClick={() => handleQuickIssue('bKash / Nagad / Card Payment Gateway & Subscription', 'billing')}
- className="p-3.5 rounded-xl border border-border bg-card hover:border-amber-500 hover:shadow-xs transition-all text-left flex flex-col justify-between group cursor-pointer">
-            <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400 mb-1.5">
+ className="p-3.5 rounded-xl border border-border bg-card hover:border-warning-border hover:shadow-xs transition-all text-left flex flex-col justify-between group cursor-pointer">
+            <div className="flex items-center gap-2 text-warning text-warning mb-1.5">
               <CreditCard className="h-4 w-4"/>
               <span className="font-bold text-xs">{tBilingual('bKash & Billing Help', 'বিকাশ ও বিলিং')}</span>
             </div>
-            <p className="text-2xs text-muted-foreground leading-snug">
+            <p className="text-xs text-muted-foreground leading-snug">
               {tBilingual('Resolve automated payment and monthly billing plan questions.', 'পেমেন্ট ও মাসিক বিল সংক্রান্ত প্রশ্ন।')}
             </p>
           </button>

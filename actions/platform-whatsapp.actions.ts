@@ -5,7 +5,7 @@
 // Authoritative global telemetry and infrastructure control across all tenant sessions.
 // ==============================================================================
 
-import { getCurrentPlatformUser, hasPlatformPermission } from '../lib/auth/platform-auth.ts'
+import { withPlatformAction } from '../lib/actions/action-wrapper.ts'
 import { createAdminClient } from '../lib/supabase/admin.ts'
 import { openWAClient } from '../lib/integrations/openwa/client.ts'
 
@@ -38,17 +38,9 @@ export interface PlatformWhatsAppOverview {
 /**
  * Server Action: Get Global WhatsApp Gateway Telemetry & Tenant Sessions
  */
-export async function getPlatformWhatsAppOverviewAction(): Promise<{
-  success: boolean
-  data?: PlatformWhatsAppOverview
-  error?: string
-}> {
-  try {
-    const user = await getCurrentPlatformUser()
-    if (!user || !user.is_active) {
-      return { success: false, error: 'Unauthorized: Platform administrator session required.' }
-    }
-
+export const getPlatformWhatsAppOverviewAction = withPlatformAction(
+  { permission: 'system.view' },
+  async (_ctx): Promise<{ success: boolean; data: PlatformWhatsAppOverview }> => {
     const start = Date.now()
     let gatewayOnline = false
     let activeSessions = 0
@@ -76,7 +68,7 @@ export async function getPlatformWhatsAppOverviewAction(): Promise<{
       .order('updated_at', { ascending: false })
 
     if (connErr) {
-      return { success: false, error: connErr.message }
+      throw new Error(connErr.message)
     }
 
     const todayStart = new Date()
@@ -123,48 +115,36 @@ export async function getPlatformWhatsAppOverviewAction(): Promise<{
         tenantSessions,
       },
     }
-  } catch (err: any) {
-    return { success: false, error: err?.message || 'Failed to fetch platform WhatsApp overview.' }
   }
-}
+)
 
 /**
  * Server Action: Superadmin Force Session Restart
  */
-export async function platformRestartTenantSessionAction(
-  sessionId: string
-): Promise<{ success: boolean; message?: string; error?: string }> {
-  try {
-    const user = await getCurrentPlatformUser()
-    if (!user || !user.is_active) {
-      return { success: false, error: 'Unauthorized: Platform administrator required.' }
-    }
-    if (!hasPlatformPermission(user, 'system.manage')) {
-      return { success: false, error: 'Forbidden: Insufficient permissions to restart WhatsApp sessions.' }
-    }
-
+export const platformRestartTenantSessionAction = withPlatformAction(
+  {
+    permission: 'system.manage',
+    audit: true,
+    actionName: 'whatsapp.restart_session',
+    entityType: 'whatsapp_session',
+  },
+  async (_ctx, sessionId: string) => {
     await openWAClient.restartSession(sessionId)
-    return { success: true, message: `Session ${sessionId} restarted successfully.` }
-  } catch (err: any) {
-    return { success: false, error: err?.message || 'Failed to restart session.' }
+    return { message: `Session ${sessionId} restarted successfully.` }
   }
-}
+)
 
 /**
  * Server Action: Superadmin Terminate / Delete Session
  */
-export async function platformTerminateTenantSessionAction(
-  sessionId: string
-): Promise<{ success: boolean; message?: string; error?: string }> {
-  try {
-    const user = await getCurrentPlatformUser()
-    if (!user || !user.is_active) {
-      return { success: false, error: 'Unauthorized: Platform administrator required.' }
-    }
-    if (!hasPlatformPermission(user, 'system.manage')) {
-      return { success: false, error: 'Forbidden: Insufficient permissions to terminate WhatsApp sessions.' }
-    }
-
+export const platformTerminateTenantSessionAction = withPlatformAction(
+  {
+    permission: 'system.manage',
+    audit: true,
+    actionName: 'whatsapp.terminate_session',
+    entityType: 'whatsapp_session',
+  },
+  async (_ctx, sessionId: string) => {
     await openWAClient.deleteSession(sessionId)
 
     const adminClient = createAdminClient()
@@ -177,8 +157,6 @@ export async function platformTerminateTenantSessionAction(
       })
       .eq('openwa_session_id', sessionId)
 
-    return { success: true, message: `Session ${sessionId} terminated and logged out.` }
-  } catch (err: any) {
-    return { success: false, error: err?.message || 'Failed to terminate session.' }
+    return { message: `Session ${sessionId} terminated and logged out.` }
   }
-}
+)

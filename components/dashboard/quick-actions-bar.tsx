@@ -231,7 +231,7 @@ export function QuickActionsBar({
  subEn: 'Fast Job Intake & Proof',
  subBn: 'ওয়াক-ইন কাজ ও আর্টওয়ার্ক',
  icon: Printer,
- iconColor: 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 border-blue-200 dark:border-blue-800',
+ iconColor: 'text-primary text-primary bg-primary/10 bg-primary/10 border-primary/20 border-border',
  allowed: canOrder,
  onClick: () => {
  if (onOpenNewWork) {
@@ -248,7 +248,7 @@ export function QuickActionsBar({
  subEn: 'Create quotation',
  subBn: 'দরপত্র ও প্রাক্কলন',
  icon: FileText,
- iconColor: 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 border-indigo-200 dark:border-indigo-800',
+ iconColor: 'text-primary text-primary bg-primary/10 bg-primary/10 border-primary/20 border-border',
  allowed: canQuotation,
  onClick: () => setIsQuotationModalOpen(true),
     },
@@ -259,7 +259,7 @@ export function QuickActionsBar({
  subEn: 'Sales & Billing',
  subBn: 'বিক্রয় ও বিল তৈরি',
  icon: Receipt,
- iconColor: 'text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-950/60 border-cyan-200 dark:border-cyan-800',
+ iconColor: 'text-primary text-primary bg-info-surface bg-primary/10 border-primary/20 border-border',
  allowed: canInvoice,
  onClick: () => setIsInvoiceModalOpen(true),
     },
@@ -270,7 +270,7 @@ export function QuickActionsBar({
  subEn: 'Money Receipt / Payment',
  subBn: 'নগদ বা ডিজিটাল আদায়',
  icon: DollarSign,
- iconColor: 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 border-emerald-200 dark:border-emerald-800',
+ iconColor: 'text-success text-success bg-success-surface bg-success-surface/60 border-success-border border-success-border',
  allowed: canPayment,
  onClick: () => {
  if (onOpenPaymentModal) {
@@ -287,7 +287,7 @@ export function QuickActionsBar({
  subEn: 'CRM & Client Profile',
  subBn: 'ক্লায়েন্ট প্রোফাইল যুক্ত',
  icon: UserPlus,
- iconColor: 'text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-950/60 border-sky-200 dark:border-sky-800',
+ iconColor: 'text-primary text-primary bg-info-surface bg-primary/10 border-primary/20 border-border',
  allowed: canCustomer,
  onClick: () => setIsCustomerModalOpen(true),
     },
@@ -298,7 +298,7 @@ export function QuickActionsBar({
  subEn: 'Vendor PO / Materials',
  subBn: 'কাঁচামাল ও সাপ্লায়ার PO',
  icon: Package,
- iconColor: 'text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60 border-amber-200 dark:border-amber-800',
+ iconColor: 'text-warning text-warning bg-warning-surface bg-warning-surface/60 border-warning-border border-warning-border',
  allowed: canPurchase,
  onClick: () => setIsPurchaseModalOpen(true),
     },
@@ -309,7 +309,7 @@ export function QuickActionsBar({
  subEn: 'Spend Money / Expense',
  subBn: 'ভাউচার ও খরচ এন্ট্রি',
  icon: CreditCard,
- iconColor: 'text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/60 border-rose-200 dark:border-rose-800',
+ iconColor: 'text-destructive text-destructive bg-danger-surface bg-danger-surface/60 border-danger-border border-danger-border',
  allowed: canExpense,
  onClick: () => {
  fetchAccounts()
@@ -326,14 +326,14 @@ export function QuickActionsBar({
         {/* Header Label Row */}
         <div className="flex items-center justify-between mb-3 px-1">
           <div className="flex items-center gap-2">
-            <span className="p-1.5 rounded-lg bg-blue-50 text-blue-600 dark:text-blue-400 shrink-0">
+            <span className="p-1.5 rounded-lg bg-primary/10 text-primary text-primary shrink-0">
               <Zap className="h-3.5 w-3.5"/>
             </span>
             <h2 className="text-xs font-black uppercase tracking-wider text-foreground bangla-text">
               {tBilingual('Quick Actions', 'দ্রুত তৈরি ও এন্ট্রি')}
             </h2>
           </div>
-          <span className="text-2xs text-muted-foreground font-medium hidden sm:inline bangla-text">
+          <span className="text-xs text-muted-foreground font-medium hidden sm:inline bangla-text">
             {tBilingual('1-click direct creation modals • No page change', '১-ক্লিকে সরাসরি তৈরি করুন • পেজ পরিবর্তনের প্রয়োজন নেই')}
           </span>
         </div>
@@ -346,7 +346,7 @@ export function QuickActionsBar({
               <button
  key={action.id}
  type="button"onClick={action.onClick}
- className="group relative flex items-center gap-2.5 p-2.5 sm:p-3 rounded-xl sm:rounded-xl border border-border /80 bg-muted hover:bg-card hover:border-blue-400 dark:hover:border-blue-600 hover:shadow-xs active:scale-[0.98] transition-all duration-200 cursor-pointer text-left min-h-[56px] select-none focus:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+ className="group relative flex items-center gap-2.5 p-2.5 sm:p-3 rounded-xl sm:rounded-xl border border-border /80 bg-muted hover:bg-card hover:border-border dark:hover:border-border hover:shadow-xs active:scale-[0.98] transition-all duration-200 cursor-pointer text-left min-h-[56px] select-none focus:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
                 {/* Visual Icon Container */}
                 <div
  className={cn(
@@ -359,10 +359,10 @@ export function QuickActionsBar({
 
                 {/* Title & Subtitle */}
                 <div className="min-w-0 flex-1">
-                  <div className="text-xs sm:text-sm font-bold text-foreground group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors leading-tight bangla-text break-words">
+                  <div className="text-xs sm:text-sm font-bold text-foreground group-hover:text-primary dark:group-hover:text-primary transition-colors leading-tight bangla-text break-words">
                     {tBilingual(action.labelEn, action.labelBn)}
                   </div>
-                  <div className="text-2xs sm:text-2xs text-muted-foreground truncate bangla-text mt-0.5 leading-tight">
+                  <div className="text-xs sm:text-xs text-muted-foreground truncate bangla-text mt-0.5 leading-tight">
                     {tBilingual(action.subEn, action.subBn)}
                   </div>
                 </div>

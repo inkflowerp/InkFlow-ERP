@@ -21,7 +21,7 @@ export function FAQSection() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10 sm:space-y-14">
         {/* Section Header */}
         <div className="text-center space-y-3 sm:space-y-4">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200/70 dark:border-blue-800/60 uppercase tracking-wider">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary bg-primary/10 text-primary border border-primary/20/70 border-border/60 uppercase tracking-wider">
             <HelpCircle className="h-3.5 w-3.5"/>
             <span>{tBilingual('Clear Answers', 'সাধারণ প্রশ্নোত্তর')}</span>
           </div>
@@ -49,7 +49,7 @@ export function FAQSection() {
  className="rounded-xl border border-border bg-card overflow-hidden transition-all shadow-2xs">
                 <button
  type="button"onClick={() => toggleFAQ(idx)}
- className="w-full text-left p-4 sm:p-5 flex items-center justify-between gap-4 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 transition-colors"aria-expanded={isOpen}
+ className="w-full text-left p-4 sm:p-5 flex items-center justify-between gap-4 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:focus:ring-ring transition-colors"aria-expanded={isOpen}
                 >
                   <span className="text-sm sm:text-base font-bold text-foreground bangla-text pr-2">
                     {tBilingual(faq.qEn, faq.qBn)}
@@ -57,7 +57,7 @@ export function FAQSection() {
                   <div
  className={`h-7 w-7 rounded-lg flex items-center justify-center shrink-0 transition-transform duration-200 ${
  isOpen
-                        ? 'rotate-180 bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400'
+                        ? 'rotate-180 bg-primary/10 bg-primary/10 text-primary text-primary'
                         : 'bg-muted text-muted-foreground'
                     }`}
                   >

@@ -87,22 +87,22 @@ export function TrialNotificationPopup() {
  if (isMinimized) {
  return (
       <aside
- aria-label="Trial Notification"className="fixed bottom-20 md:bottom-5 right-4 z-[99990] animate-in fade-in slide-in-from-bottom-3 duration-300">
+ aria-label="Trial Notification"className="fixed bottom-20 md:bottom-5 right-4 z-[99990] animate-in fade-in slide-in- duration-300">
         <button
  onClick={() => setIsMinimized(false)}
  className={cn(
             'flex items-center gap-2.5 px-3.5 py-2 rounded-full shadow-xs border text-xs font-semibold backdrop-blur-md transition-all cursor-pointer hover:scale-105',
  isTrialExpired
-              ? 'bg-red-950/90 text-red-200 border-red-500/50 shadow-red-950/50'
+              ? 'bg-danger-surface/90 text-destructive border-danger-border/50 shadow-red-950/50'
               : isUrgent
-              ? 'bg-amber-950/90 text-amber-200 border-amber-500/50 shadow-amber-950/50'
-              : 'bg-surface-inset text-indigo-200 border-indigo-500/50 shadow-slate-950/50'
+              ? 'bg-warning-surface/90 text-warning border-warning-border/50 shadow-amber-950/50'
+              : 'bg-surface-inset text-primary border-primary/20/50 shadow-slate-950/50'
           )}
         >
           {isTrialExpired ? (
-            <AlertTriangle className="h-4 w-4 text-red-400 animate-pulse"/>
+            <AlertTriangle className="h-4 w-4 text-destructive animate-pulse"/>
           ) : (
-            <Flame className="h-4 w-4 text-amber-400 animate-pulse"/>
+            <Flame className="h-4 w-4 text-warning animate-pulse"/>
           )}
           <span className="bangla-text">
             {isTrialExpired
@@ -124,19 +124,19 @@ export function TrialNotificationPopup() {
  aria-label="Trial Notification"className={cn(
         'fixed bottom-20 md:bottom-5 right-4 left-4 sm:left-auto sm:w-[380px] z-[99990]',
         'rounded-xl border shadow-lg backdrop-blur-xl p-4 transition-all duration-300',
-        'animate-in fade-in slide-in-from-bottom-4',
+        'animate-in fade-in slide-in-',
  isTrialExpired
-          ? 'bg-surface-inset text-foreground border-red-500/40 shadow-red-950/40'
+          ? 'bg-surface-inset text-foreground border-danger-border/40 shadow-red-950/40'
           : isUrgent
-          ? 'bg-surface-inset text-foreground border-amber-500/40 shadow-amber-950/40'
-          : 'bg-surface-inset text-foreground border-indigo-500/40 shadow-indigo-950/40'
+          ? 'bg-surface-inset text-foreground border-warning-border/40 shadow-amber-950/40'
+          : 'bg-surface-inset text-foreground border-primary/20/40 shadow-indigo-950/40'
       )}
     >
       {/* Background Accent Glow */}
       <div
  className={cn(
           'absolute -top-10 -right-10 w-32 h-32 rounded-full blur-3xl pointer-events-none opacity-20',
- isTrialExpired ? 'bg-red-500' : isUrgent ? 'bg-amber-500' : 'bg-indigo-500'
+ isTrialExpired ? 'bg-destructive' : isUrgent ? 'bg-warning' : 'bg-primary'
         )}
       />
 
@@ -145,12 +145,12 @@ export function TrialNotificationPopup() {
         <div className="flex items-center gap-2">
           <Badge
  className={cn(
-              'text-2xs font-black uppercase tracking-wider px-2 py-0.5 border-0',
+              'text-xs font-black uppercase tracking-wider px-2 py-0.5 border-0',
  isTrialExpired
-                ? 'bg-red-600 text-white'
+                ? 'bg-destructive text-white'
                 : isUrgent
-                ? 'bg-amber-600 text-white'
-                : 'bg-indigo-600 text-white'
+                ? 'bg-warning text-white'
+                : 'bg-primary text-white'
             )}
           >
             {isTrialExpired ? (
@@ -167,7 +167,7 @@ export function TrialNotificationPopup() {
           </Badge>
 
           {!isTrialExpired && (
-            <span className="text-2xs font-bold text-amber-300 bangla-text">
+            <span className="text-xs font-bold text-warning bangla-text">
               {timeRemainingInTrial && timeRemainingInTrial.days === 0
                 ? tBilingual(timeRemainingInTrial.formattedEn, timeRemainingInTrial.formattedBn)
                 : tBilingual(
@@ -234,7 +234,7 @@ export function TrialNotificationPopup() {
         {/* Progress Bar for Active Trial */}
         {!isTrialExpired && (
           <div className="space-y-1 pt-1">
-            <div className="flex justify-between text-2xs text-muted-foreground font-medium">
+            <div className="flex justify-between text-xs text-muted-foreground font-medium">
               <span className="bangla-text">{tBilingual('Trial Period', 'ট্রায়াল অগ্রগতি')}</span>
               <span className="bangla-text">
                 {locale === 'bn' ? toBengaliDigits(trialProgressPercent) : trialProgressPercent}%
@@ -244,7 +244,7 @@ export function TrialNotificationPopup() {
               <div
  className={cn(
                   'h-full rounded-full transition-all duration-500',
- isUrgent ? 'bg-amber-500' : 'bg-gradient-to-r from-indigo-500 to-purple-500'
+ isUrgent ? 'bg-warning' : '  '
                 )}
  style={{ width: `${trialProgressPercent}%` }}
               />
@@ -257,7 +257,7 @@ export function TrialNotificationPopup() {
       <div className="mt-3.5 pt-3 border-t border-border flex items-center justify-between gap-2 relative z-10">
         <button
  onClick={() => handleDismiss(12)}
- className="text-2xs text-muted-foreground hover:text-foreground bangla-text cursor-pointer transition-colors">
+ className="text-xs text-muted-foreground hover:text-foreground bangla-text cursor-pointer transition-colors">
           {tBilingual('Remind me later', 'পরে মনে করান')}
         </button>
 
@@ -270,8 +270,8 @@ export function TrialNotificationPopup() {
  className={cn(
               'h-8 text-xs font-bold bangla-text cursor-pointer shadow-lg px-3.5',
  isTrialExpired
-                ? 'bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white'
-                : 'bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 hover:opacity-95 text-white'
+                ? '   hover: hover: text-white'
+                : '    hover:opacity-95 text-white'
             )}
           >
             <Crown className="mr-1.5 h-3.5 w-3.5"/>

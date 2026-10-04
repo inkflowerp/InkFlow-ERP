@@ -41,7 +41,7 @@ export function CompanySelector() {
  suppressHydrationWarning
       >
         <div
- className="flex h-7 w-7 items-center justify-center rounded-md bg-blue-600 text-white font-bold text-xs shadow-xs shrink-0"suppressHydrationWarning
+ className="flex h-7 w-7 items-center justify-center rounded-md bg-primary text-white font-bold text-xs shadow-xs shrink-0"suppressHydrationWarning
         >
           {company?.name ? company.name.charAt(0).toUpperCase() : 'P'}
         </div>
@@ -58,7 +58,7 @@ export function CompanySelector() {
             <span
  suppressHydrationWarning
  className={cn(
-                'text-2xs xs:text-2xs px-1.5 py-0.5 rounded font-bold uppercase tracking-wider border shrink-0',
+                'text-xs xs:text-xs px-1.5 py-0.5 rounded font-bold uppercase tracking-wider border shrink-0',
  accountTypeMeta.badgeClass
               )}
             >
@@ -95,19 +95,19 @@ export function CompanySelector() {
                   }}
  className={cn(
                     'flex w-full items-center justify-between rounded-lg p-2 text-left text-xs transition-colors hover:bg-muted cursor-pointer',
- isSelected && 'bg-blue-50/80 text-blue-900 dark:bg-blue-950/60 dark:text-blue-200 font-semibold'
+ isSelected && 'bg-primary/10/80 text-primary bg-primary/10 text-primary font-semibold'
                   )}
                 >
                   <div className="flex items-center gap-2 truncate">
                     <Building2 className="h-4 w-4 text-muted-foreground shrink-0"/>
                     <div className="flex flex-col truncate">
                       <span className="truncate">{name}</span>
-                      <span className="text-2xs text-muted-foreground font-normal">
+                      <span className="text-xs text-muted-foreground font-normal">
                         {c.slug}
                       </span>
                     </div>
                   </div>
-                  {isSelected && <Check className="h-4 w-4 text-blue-600 shrink-0"/>}
+                  {isSelected && <Check className="h-4 w-4 text-primary shrink-0"/>}
                 </button>
               )
             })}
@@ -125,7 +125,7 @@ export function CompanySelector() {
                   }
  router.push('/onboarding')
                 }}
- className="flex w-full items-center gap-2 rounded-lg p-2 text-xs font-medium text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950/40 cursor-pointer bangla-text">
+ className="flex w-full items-center gap-2 rounded-lg p-2 text-xs font-medium text-primary hover:bg-primary/10 text-primary dark:hover:bg-primary/10 cursor-pointer bangla-text">
                 <PlusCircle className="h-4 w-4"/>
                 <span>{tBilingual('Add New Company / Branch', 'নতুন প্রতিষ্ঠান / শাখা যোগ করুন')}</span>
               </button>

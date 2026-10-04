@@ -62,56 +62,56 @@ export const ORDER_LIVE_STATUSES: OrderLiveStatusConfig[] = [
  labelEn: 'Design Queue',
  labelBn: 'ডিজাইন কিউ',
  stage: 'in_design',
- color: 'bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800',
- dotColor: 'bg-amber-500',
+ color: 'bg-warning-surface text-warning border-warning-border bg-warning-surface/60 text-warning border-warning-border',
+ dotColor: 'bg-warning',
   },
   {
  id: 'design_running',
  labelEn: 'Design Running',
  labelBn: 'ডিজাইন চলমান',
  stage: 'in_design',
- color: 'bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800',
- dotColor: 'bg-blue-500',
+ color: 'bg-primary/10 text-primary border-primary/20 bg-primary/10 text-primary border-border',
+ dotColor: 'bg-primary',
   },
   {
  id: 'waiting_approval',
  labelEn: 'Waiting for Design Approval',
  labelBn: 'ডিজাইন অনুমোদনের অপেক্ষায়',
  stage: 'in_design',
- color: 'bg-indigo-100 text-indigo-800 border-indigo-300 dark:bg-indigo-950/60 dark:text-indigo-300 dark:border-indigo-800',
- dotColor: 'bg-indigo-500',
+ color: 'bg-primary/10 text-primary border-primary/20 bg-primary/10 text-primary border-border',
+ dotColor: 'bg-primary',
   },
   {
  id: 'print_queue',
  labelEn: 'Print Queue',
  labelBn: 'প্রিন্ট কিউ',
  stage: 'in_production',
- color: 'bg-cyan-100 text-cyan-800 border-cyan-300 dark:bg-cyan-950/60 dark:text-cyan-300 dark:border-cyan-800',
- dotColor: 'bg-cyan-500',
+ color: 'bg-info-surface text-primary border-primary/20 bg-primary/10 text-primary border-border',
+ dotColor: 'bg-primary',
   },
   {
  id: 'printing',
  labelEn: 'Printing',
  labelBn: 'প্রিন্টিং চলমান',
  stage: 'in_production',
- color: 'bg-violet-100 text-violet-800 border-violet-300 dark:bg-violet-950/60 dark:text-violet-300 dark:border-violet-800',
- dotColor: 'bg-violet-500',
+ color: 'bg-primary/10 text-primary border-primary/20 bg-primary/10 text-primary border-border',
+ dotColor: 'bg-primary',
   },
   {
  id: 'finishing_pending',
  labelEn: 'Finishing Pending',
  labelBn: 'ফিনিশিং পেন্ডিং',
  stage: 'in_production',
- color: 'bg-orange-100 text-orange-800 border-orange-300 dark:bg-orange-950/60 dark:text-orange-300 dark:border-orange-800',
- dotColor: 'bg-orange-500',
+ color: 'bg-warning-surface text-warning border-warning-border bg-warning-surface text-warning border-warning-border',
+ dotColor: 'bg-warning',
   },
   {
  id: 'ready_delivery',
  labelEn: 'Ready for Delivery',
  labelBn: 'ডেলিভারির জন্য প্রস্তুত',
  stage: 'ready_delivery',
- color: 'bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800',
- dotColor: 'bg-emerald-500',
+ color: 'bg-success-surface text-success border-success-border bg-success-surface/60 text-success border-success-border',
+ dotColor: 'bg-success',
   },
   {
  id: 'delivered',
@@ -437,6 +437,7 @@ export interface UnifiedOrderRecord {
  rawInvoice?: InvoiceRecord
  rawJob?: JobOrderRecord
  workflowResolution?: import('@/lib/workflow/workflow-engine').OrderWorkflowResolution
+  version?: number
 }
 
 export type OrderWhatsAppTemplateKey =

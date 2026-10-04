@@ -480,14 +480,14 @@ export function SpendMoneyModal({
  size="5xl"title={
         <div className="flex items-center justify-between w-full pr-6">
           <div className="flex items-center gap-2.5">
-            <div className="h-9 w-9 rounded-xl bg-rose-600/10 text-rose-600 dark:bg-rose-500/20 dark:text-rose-400 flex items-center justify-center">
+            <div className="h-9 w-9 rounded-xl bg-destructive/10 text-destructive bg-destructive/20 text-destructive flex items-center justify-center">
               <Receipt className="h-5 w-5"/>
             </div>
             <div>
               <h2 className="text-base font-black text-foreground">
                 {locale === 'bn' ? 'খরচ ও স্টাফ বেতন এন্ট্রি' : 'Spend Money / Record Expense & Staff Salary'}
               </h2>
-              <p className="text-2xs text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
  Double-Entry General Ledger • Auto Staff Advance Tracking • Instant Voucher Generation
               </p>
             </div>
@@ -495,7 +495,7 @@ export function SpendMoneyModal({
 
           <div className="flex items-center gap-2">
             <Badge
- variant="outline"className="bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-800 text-xs tabular-nums font-bold px-2.5 py-1 flex items-center gap-1.5">
+ variant="outline"className="bg-danger-surface bg-danger-surface text-destructive text-destructive border-danger-border border-danger-border text-xs tabular-nums font-bold px-2.5 py-1 flex items-center gap-1.5">
               <FileCheck2 className="h-3.5 w-3.5"/>
               <span>{voucherNumber}</span>
             </Badge>
@@ -507,8 +507,8 @@ export function SpendMoneyModal({
       <form onSubmit={handleSubmit} className="space-y-4 pt-1 pb-4 max-h-[82vh] overflow-y-auto pr-1">
         {/* Error Alert */}
         {error && (
-          <div className="p-3.5 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 rounded-xl text-xs text-rose-900 dark:text-rose-200 flex items-start gap-2 animate-in fade-in-0">
-            <AlertCircle className="h-4 w-4 text-rose-600 shrink-0 mt-0.5"/>
+          <div className="p-3.5 bg-danger-surface bg-danger-surface border border-danger-border border-danger-border rounded-xl text-xs text-destructive text-destructive flex items-start gap-2 animate-in fade-in-0">
+            <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5"/>
             <div>
               <strong>Action Required:</strong> {error}
             </div>
@@ -521,7 +521,7 @@ export function SpendMoneyModal({
         <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <div className="h-6 w-6 rounded-lg bg-rose-100 text-rose-700 dark:bg-rose-900/60 dark:text-rose-300 flex items-center justify-center font-bold text-xs">
+              <div className="h-6 w-6 rounded-lg bg-danger-surface text-destructive bg-destructive/60 text-destructive flex items-center justify-center font-bold text-xs">
                 1
               </div>
               <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
@@ -547,7 +547,7 @@ export function SpendMoneyModal({
  className={cn(
                   'px-2.5 py-1 rounded-md font-semibold text-xs transition-all flex items-center gap-1 cursor-pointer',
  categoryTab === 'staff'
-                    ? 'bg-rose-600 text-white shadow-xs'
+                    ? 'bg-destructive text-white shadow-xs'
                     : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
                 )}
               >
@@ -590,7 +590,7 @@ export function SpendMoneyModal({
  className={cn(
                     'flex flex-col items-start p-3 rounded-xl border text-left transition-all relative cursor-pointer',
  isSelected
-                      ? 'border-rose-500 bg-rose-50/80 dark:bg-rose-950/40 text-rose-950 dark:text-rose-100 ring-2 ring-rose-500/20 shadow-xs'
+                      ? 'border-danger-border bg-danger-surface/80 bg-danger-surface text-destructive text-destructive ring-2 focus:ring-ring/20 shadow-xs'
                       : 'border-border bg-card hover:bg-muted dark:hover:bg-muted/50 text-foreground '
                   )}
                 >
@@ -598,11 +598,11 @@ export function SpendMoneyModal({
                     <span className="text-xl">{p.icon}</span>
                     {p.isWorkforce ? (
                       <Badge
- variant="outline"className="text-2xs px-1.5 py-0 border-rose-300 dark:border-rose-700 bg-rose-100/50 dark:bg-rose-900/30 text-rose-700 dark:text-rose-300 font-semibold">
+ variant="outline"className="text-xs px-1.5 py-0 border-danger-border border-danger-border bg-danger-surface/50 bg-destructive/30 text-destructive text-destructive font-semibold">
                         {tBilingual('Payroll', 'বেতন')}
                       </Badge>
                     ) : (
-                      <span className="text-2xs text-muted-foreground tabular-nums font-medium">
+                      <span className="text-xs text-muted-foreground tabular-nums font-medium">
                         {p.glAccount.split(' ')[0]}
                       </span>
                     )}
@@ -610,7 +610,7 @@ export function SpendMoneyModal({
                   <span className="mt-1.5 text-xs font-bold leading-tight line-clamp-1">
                     {p.labelBn}
                   </span>
-                  <span className="text-2xs text-muted-foreground mt-0.5 line-clamp-1">
+                  <span className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
                     {p.labelEn}
                   </span>
                 </button>
@@ -627,8 +627,8 @@ export function SpendMoneyModal({
               </span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-2xs text-muted-foreground">{activeCategoryDef.descBn}</span>
-              <Badge variant="outline"className="text-2xs tabular-nums font-bold bg-card border-input">
+              <span className="text-xs text-muted-foreground">{activeCategoryDef.descBn}</span>
+              <Badge variant="outline"className="text-xs tabular-nums font-bold bg-card border-input">
  GL: {activeCategoryDef.glAccount}
               </Badge>
             </div>
@@ -641,7 +641,7 @@ export function SpendMoneyModal({
         <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="h-6 w-6 rounded-lg bg-rose-100 text-rose-700 dark:bg-rose-900/60 dark:text-rose-300 flex items-center justify-center font-bold text-xs">
+              <div className="h-6 w-6 rounded-lg bg-danger-surface text-destructive bg-destructive/60 text-destructive flex items-center justify-center font-bold text-xs">
                 2
               </div>
               <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
@@ -656,7 +656,7 @@ export function SpendMoneyModal({
             </div>
 
             {selectedEmployee && (
-              <span className="inline-flex items-center gap-1 text-2xs font-bold text-rose-600 bg-rose-50 dark:bg-rose-950/50 px-2 py-0.5 rounded-md border border-rose-200 dark:border-rose-800">
+              <span className="inline-flex items-center gap-1 text-xs font-bold text-destructive bg-danger-surface bg-danger-surface px-2 py-0.5 rounded-md border border-danger-border border-danger-border">
                 <Users className="h-3.5 w-3.5"/>
                 {tBilingual('Employee Linked & Salary Resolved', 'কর্মচারী লিংক ও বেতন হার লোড হয়েছে')}
               </span>
@@ -674,12 +674,12 @@ export function SpendMoneyModal({
                       : category === 'daily_labor'
                       ? tBilingual('Select Worker (Optional)', 'দৈনিক মজুরি গ্রহণকারী শ্রমিক (ঐচ্ছিক)')
                       : tBilingual('Select Staff for Monthly Salary', 'মাসিক বেতন গ্রহণকারী কর্মচারী')}
-                    {category !== 'daily_labor' && <span className="text-rose-500"> *</span>}
+                    {category !== 'daily_labor' && <span className="text-destructive"> *</span>}
                   </Label>
                   <select
  value={selectedEmployeeId}
  onChange={(e) => handleEmployeeSelect(e.target.value)}
- className="w-full h-9 text-xs rounded-md border border-input bg-card px-2.5 font-medium focus:border-rose-500"required={category !== 'daily_labor'}
+ className="w-full h-9 text-xs rounded-md border border-input bg-card px-2.5 font-medium focus:border-danger-border"required={category !== 'daily_labor'}
                   >
                     <option value="">
                       {loadingEmployees
@@ -698,7 +698,7 @@ export function SpendMoneyModal({
                 {/* Payee / Receiver Name */}
                 <div>
                   <Label className="text-xs font-semibold mb-1 block">
-                    {tBilingual('Receiver Name', 'টাকা গ্রহণকারীর নাম')} <span className="text-rose-500">*</span>
+                    {tBilingual('Receiver Name', 'টাকা গ্রহণকারীর নাম')} <span className="text-destructive">*</span>
                   </Label>
                   <Input
  placeholder="নাম লিখুন..."value={vendorName}
@@ -710,59 +710,59 @@ export function SpendMoneyModal({
 
               {/* EMPLOYEE WORKFORCE HUD CARD (similar to Customer HUD in invoice modal) */}
               {selectedEmployee ? (
-                <div className="p-3 bg-rose-50/60 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 rounded-xl grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs animate-in fade-in-0">
+                <div className="p-3 bg-danger-surface/60 bg-danger-surface border border-danger-border border-danger-border/60 rounded-xl grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs animate-in fade-in-0">
                   <div>
-                    <span className="text-2xs uppercase font-bold text-muted-foreground block">
+                    <span className="text-xs uppercase font-bold text-muted-foreground block">
                       {tBilingual('Designation & Dept', 'পদবি ও বিভাগ')}
                     </span>
                     <span className="font-semibold text-foreground flex items-center gap-1 mt-0.5">
-                      <User className="h-3.5 w-3.5 text-rose-600"/>
+                      <User className="h-3.5 w-3.5 text-destructive"/>
                       <span>{selectedEmployee.designation || 'Staff'}</span>
                     </span>
-                    <span className="text-2xs text-muted-foreground block">{selectedEmployee.department || 'Print Production'}</span>
+                    <span className="text-xs text-muted-foreground block">{selectedEmployee.department || 'Print Production'}</span>
                   </div>
 
                   <div>
-                    <span className="text-2xs uppercase font-bold text-muted-foreground block">
+                    <span className="text-xs uppercase font-bold text-muted-foreground block">
                       {tBilingual('Base Salary Rate', 'নির্ধারিত মূল বেতন')}
                     </span>
                     <span className="tabular-nums font-bold text-foreground text-sm mt-0.5 block">
                       ৳{(selectedEmployee.base_salary || selectedEmployee.daily_rate || 0).toLocaleString()}
                     </span>
-                    <span className="text-2xs text-muted-foreground block">
+                    <span className="text-xs text-muted-foreground block">
                       {selectedEmployee.salary_type === 'daily' ? 'Daily Wage' : 'Per Month'}
                     </span>
                   </div>
 
                   <div>
-                    <span className="text-2xs uppercase font-bold text-muted-foreground block">
+                    <span className="text-xs uppercase font-bold text-muted-foreground block">
                       {tBilingual('Outstanding Advance', 'পূর্ববর্তী বকেয়া অগ্রিম')}
                     </span>
                     <span className={cn("tabular-nums font-bold text-sm mt-0.5 block",
- Number(selectedEmployee.current_advance_balance || 0) > 0 ?"text-amber-600 dark:text-amber-400":"text-emerald-600")}>
+ Number(selectedEmployee.current_advance_balance || 0) > 0 ?"text-warning text-warning":"text-success")}>
                       ৳{Number(selectedEmployee.current_advance_balance || 0).toLocaleString()}
                     </span>
-                    <span className="text-2xs text-muted-foreground block">
+                    <span className="text-xs text-muted-foreground block">
                       {Number(selectedEmployee.current_advance_balance || 0) > 0 ? 'Deduct from payroll' : 'No prior advance'}
                     </span>
                   </div>
 
                   <div>
-                    <span className="text-2xs uppercase font-bold text-muted-foreground block">
+                    <span className="text-xs uppercase font-bold text-muted-foreground block">
                       {tBilingual('Phone / Contact', 'যোগাযোগ নম্বর')}
                     </span>
                     <span className="tabular-nums font-semibold text-foreground text-xs mt-0.5 block">
                       {selectedEmployee.phone || 'N/A'}
                     </span>
-                    <span className="text-2xs text-muted-foreground block">
- Status: <strong className="text-emerald-600">Active</strong>
+                    <span className="text-xs text-muted-foreground block">
+ Status: <strong className="text-success">Active</strong>
                     </span>
                   </div>
                 </div>
               ) : (
                 <div className="p-3 bg-muted border border-dashed border-border rounded-xl flex items-center justify-between text-xs text-muted-foreground">
                   <div className="flex items-center gap-2">
-                    <Info className="h-4 w-4 text-rose-500"/>
+                    <Info className="h-4 w-4 text-destructive"/>
                     <span>
                       {tBilingual(
                         'Select an active employee above to automatically calculate base salary and link payroll advance ledger.',
@@ -777,7 +777,7 @@ export function SpendMoneyModal({
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
               <div>
                 <Label className="text-xs font-semibold mb-1 block">
-                  {tBilingual('Vendor / Payee Name', 'দোকান বা ব্যক্তির নাম')} <span className="text-rose-500">*</span>
+                  {tBilingual('Vendor / Payee Name', 'দোকান বা ব্যক্তির নাম')} <span className="text-destructive">*</span>
                 </Label>
                 <Input
  placeholder="যেমন: মেঘনা পেপার হাউস / বাড়িওয়ালা"value={vendorName}
@@ -787,7 +787,7 @@ export function SpendMoneyModal({
               </div>
               <div className="sm:col-span-2">
                 <Label className="text-xs font-semibold mb-1 block">
-                  {tBilingual('Expense Narration / Details', 'খরচের বিবরণ ও বিবরণী')} <span className="text-rose-500">*</span>
+                  {tBilingual('Expense Narration / Details', 'খরচের বিবরণ ও বিবরণী')} <span className="text-destructive">*</span>
                 </Label>
                 <Input
  placeholder="খরচের পূর্ণ বিবরণ লিখুন..."value={description}
@@ -805,7 +805,7 @@ export function SpendMoneyModal({
         <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="h-6 w-6 rounded-lg bg-rose-100 text-rose-700 dark:bg-rose-900/60 dark:text-rose-300 flex items-center justify-center font-bold text-xs">
+              <div className="h-6 w-6 rounded-lg bg-danger-surface text-destructive bg-destructive/60 text-destructive flex items-center justify-center font-bold text-xs">
                 3
               </div>
               <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
@@ -815,14 +815,14 @@ export function SpendMoneyModal({
 
             {/* Quick Amount Chips */}
             <div className="flex items-center gap-1">
-              <span className="text-2xs text-muted-foreground font-medium mr-1 hidden sm:inline">
+              <span className="text-xs text-muted-foreground font-medium mr-1 hidden sm:inline">
                 {tBilingual('Quick Add:', 'কুইক বাটন:')}
               </span>
               {QUICK_AMOUNTS.map((amt) => (
                 <button
  key={amt}
  type="button"onClick={() => handleQuickAmount(amt)}
- className="px-2 py-0.5 text-2xs font-bold bg-muted hover:bg-rose-50 dark:hover:bg-rose-950/40 text-foreground hover:text-rose-600 rounded-md transition-all cursor-pointer border border-border">
+ className="px-2 py-0.5 text-xs font-bold bg-muted hover:bg-danger-surface dark:hover:bg-danger-surface text-foreground hover:text-destructive rounded-md transition-all cursor-pointer border border-border">
                   +{amt >= 1000 ? `${amt / 1000}k` : amt}
                 </button>
               ))}
@@ -833,7 +833,7 @@ export function SpendMoneyModal({
             {/* Large Hero Amount Input */}
             <div className="sm:col-span-1">
               <Label className="text-xs font-semibold mb-1 block">
-                {tBilingual('Amount to Pay', 'পরিশোধের পরিমাণ')} <span className="text-rose-500">*</span>
+                {tBilingual('Amount to Pay', 'পরিশোধের পরিমাণ')} <span className="text-destructive">*</span>
               </Label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 font-bold text-muted-foreground text-lg pointer-events-none">
@@ -843,7 +843,7 @@ export function SpendMoneyModal({
  type="number"step="any"required
  placeholder="0.00"value={amount}
  onChange={(e) => setAmount(e.target.value)}
- className="pl-8 text-base tabular-nums font-black h-9 rounded-md bg-card border-input focus:border-rose-500 text-foreground"/>
+ className="pl-8 text-base tabular-nums font-black h-9 rounded-md bg-card border-input focus:border-danger-border text-foreground"/>
               </div>
             </div>
 
@@ -851,15 +851,15 @@ export function SpendMoneyModal({
             <div>
               <div className="flex items-center justify-between mb-1">
                 <Label className="text-xs font-semibold block">
-                  {tBilingual('Paid From (Account)', 'পরিশোধের হিসাব')} <span className="text-rose-500">*</span>
+                  {tBilingual('Paid From (Account)', 'পরিশোধের হিসাব')} <span className="text-destructive">*</span>
                 </Label>
                 {selectedAccount && (
                   <span
  className={cn(
-                      'text-2xs tabular-nums font-bold',
+                      'text-xs tabular-nums font-bold',
  isOverdrawn
-                        ? 'text-rose-600 dark:text-rose-400'
-                        : 'text-emerald-600 dark:text-emerald-400'
+                        ? 'text-destructive text-destructive'
+                        : 'text-success text-success'
                     )}
                   >
                     ব্যালেন্স: ৳{selectedAccount.current_balance.toLocaleString()}
@@ -889,7 +889,7 @@ export function SpendMoneyModal({
                 )}
               </select>
               {isOverdrawn && (
-                <p className="text-2xs text-rose-600 dark:text-rose-400 font-semibold mt-1 flex items-center gap-1">
+                <p className="text-xs text-destructive text-destructive font-semibold mt-1 flex items-center gap-1">
                   <AlertCircle className="w-3 h-3"/>
                   <span>{tBilingual('Warning: Amount exceeds account balance!', 'সতর্কতা: নির্বাচিত তহবিলে পর্যাপ্ত ব্যালেন্স নেই!')}</span>
                 </p>
@@ -922,7 +922,7 @@ export function SpendMoneyModal({
         <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="h-6 w-6 rounded-lg bg-rose-100 text-rose-700 dark:bg-rose-900/60 dark:text-rose-300 flex items-center justify-center font-bold text-xs">
+              <div className="h-6 w-6 rounded-lg bg-danger-surface text-destructive bg-destructive/60 text-destructive flex items-center justify-center font-bold text-xs">
                 4
               </div>
               <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
@@ -934,7 +934,7 @@ export function SpendMoneyModal({
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
               <Label className="text-xs font-semibold mb-1 block">
-                {tBilingual('Expense Date', 'খরচের তারিখ')} <span className="text-rose-500">*</span>
+                {tBilingual('Expense Date', 'খরচের তারিখ')} <span className="text-destructive">*</span>
               </Label>
               <Input
  type="date"value={expenseDate}
@@ -981,7 +981,7 @@ export function SpendMoneyModal({
            ========================================================================= */}
         <div className="pt-3 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <ShieldCheck className="h-4 w-4 text-emerald-600 shrink-0"/>
+            <ShieldCheck className="h-4 w-4 text-success shrink-0"/>
             <span>
               {tBilingual(
                 'Balanced double-entry journal entry will be posted to General Ledger.',
@@ -1000,7 +1000,7 @@ export function SpendMoneyModal({
 
             <Button
  type="submit"disabled={isSubmitting}
- className="h-10 px-5 rounded-xl font-bold bg-rose-600 hover:bg-rose-700 text-white shadow-xs flex items-center gap-2 cursor-pointer">
+ className="h-10 px-5 rounded-xl font-bold bg-destructive hover:bg-destructive text-white shadow-xs flex items-center gap-2 cursor-pointer">
               {isSubmitting ? (
                 <>
                   <RefreshCw className="h-4 w-4 animate-spin"/>

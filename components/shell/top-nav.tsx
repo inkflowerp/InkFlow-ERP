@@ -19,7 +19,7 @@ export function TopNav() {
  const pathname = usePathname()
  const { t, tBilingual } = useI18n()
  const { company } = useTenant()
- const { isLive, status } = useRealtime()
+ const { isLive, status, reconnect } = useRealtime()
  const [isAttendanceOpen, setIsAttendanceOpen] = useState(false)
 
   // Listen for global attendance punch triggers across components
@@ -63,20 +63,38 @@ export function TopNav() {
       {/* RIGHT: Live Status + Flexible Search + Attendance/Punch + Notifications + User Avatar */}
       <div className="flex items-center gap-1.5 sm:gap-2.5 min-w-0 shrink-0">
         {/* Realtime Live Sync Health Indicator */}
-        <div className="hidden lg:flex items-center mr-0.5 shrink-0"suppressHydrationWarning>
-          {isLive ? (
+        <div className="flex items-center mr-0.5 shrink-0" suppressHydrationWarning>
+          {status === 'connected' ? (
             <span
- className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200/80 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800/80"title="Live Database Realtime Connected: Synchronized across all users & tabs">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"/>
-              <span>Live</span>
-            </span>
-          ) : (
-            <span
- className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200/80 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800/80"title={`Connection State: ${status}`}
+              className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-success-surface text-success border border-success/30 shadow-2xs"
+              title="Realtime Connected: Instant live updates across all screens"
             >
-              <span className="h-1.5 w-1.5 rounded-full bg-amber-500"/>
-              <span>{status === 'connecting' || status === 'reconnecting' ? 'Syncing...' : 'Live Ready'}</span>
+              <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse shrink-0" />
+              <span className="hidden sm:inline font-mono text-xs uppercase tracking-wider font-semibold">Online</span>
+              <span className="sm:hidden text-xs font-semibold">Live</span>
             </span>
+          ) : status === 'connecting' || status === 'reconnecting' ? (
+            <button
+              type="button"
+              onClick={reconnect}
+              className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-warning-surface text-warning border border-warning/30 hover:bg-warning-surface/80 cursor-pointer transition-colors shadow-2xs"
+              title="Reconnecting to realtime database... Click to retry now"
+            >
+              <span className="h-1.5 w-1.5 rounded-full bg-warning animate-pulse shrink-0" />
+              <span className="hidden sm:inline font-mono text-xs uppercase tracking-wider font-semibold">Reconnecting</span>
+              <span className="sm:hidden text-xs font-semibold">Sync</span>
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={reconnect}
+              className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-destructive/10 text-destructive border border-destructive/30 hover:bg-destructive/20 cursor-pointer transition-colors shadow-2xs"
+              title="Realtime Offline. Slow polling (60s) active. Click to reconnect now"
+            >
+              <span className="h-1.5 w-1.5 rounded-full bg-destructive shrink-0" />
+              <span className="hidden sm:inline font-mono text-xs uppercase tracking-wider font-semibold">Offline</span>
+              <span className="sm:hidden text-xs font-semibold">Off</span>
+            </button>
           )}
         </div>
 
@@ -88,7 +106,7 @@ export function TopNav() {
             <Search className="h-4 w-4 text-muted-foreground shrink-0"/>
             <span className="truncate bangla-text font-medium text-muted-foreground">{t('common.search')}</span>
           </div>
-          <kbd className="hidden md:inline-flex items-center gap-0.5 rounded-md border border-border bg-background px-1.5 py-0.5 text-2xs font-bold text-muted-foreground tabular-nums shrink-0 shadow-2xs">
+          <kbd className="hidden md:inline-flex items-center gap-0.5 rounded-md border border-border bg-background px-1.5 py-0.5 text-xs font-bold text-muted-foreground tabular-nums shrink-0 shadow-2xs">
             ⌘K
           </kbd>
         </button>

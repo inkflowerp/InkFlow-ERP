@@ -207,7 +207,7 @@ export function PricingFinishingTariffs({
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="text-sm font-bold flex items-center gap-2">
-                <Scissors className="h-4 w-4 text-teal-600"/>
+                <Scissors className="h-4 w-4 text-success"/>
                 <span>{tBilingual('Finishing & Fabrication Option Tariffs', 'ফিনিশিং ও পোস্ট-প্রেস ট্যারিফ')}</span>
               </CardTitle>
               <CardDescription className="text-xs">
@@ -220,7 +220,7 @@ export function PricingFinishingTariffs({
 
             <Button
  size="sm"onClick={handleOpenAddFinishing}
- className="bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs h-8 shadow-xs">
+ className="bg-success hover:bg-success text-white font-bold text-xs h-8 shadow-xs">
               <Plus className="h-3.5 w-3.5 mr-1"/>
               {tBilingual('Add Finishing Option', 'নতুন ফিনিশিং')}
             </Button>
@@ -250,7 +250,7 @@ export function PricingFinishingTariffs({
                       <td className="py-3 px-4">
                         <div className="font-bold text-foreground">{fin.name}</div>
                         {fin.name_bn && (
-                          <div className="text-2xs text-teal-700 dark:text-teal-400 font-medium bangla-text">
+                          <div className="text-xs text-success text-success font-medium bangla-text">
                             {fin.name_bn}
                           </div>
                         )}
@@ -258,7 +258,7 @@ export function PricingFinishingTariffs({
                       <td className="py-3 px-4 uppercase tabular-nums font-semibold text-muted-foreground">
                         {fin.pricing_method || 'sqft'}
                       </td>
-                      <td className="py-3 px-4 tabular-nums font-black text-teal-700 dark:text-teal-400 text-sm">
+                      <td className="py-3 px-4 tabular-nums font-black text-success text-success text-sm">
                         {formatBDT(sell)}
                       </td>
                       <td className="py-3 px-4 tabular-nums text-muted-foreground">
@@ -266,10 +266,10 @@ export function PricingFinishingTariffs({
                       </td>
                       <td className="py-3 px-4">
                         <Badge
- variant="outline"className={`text-2xs tabular-nums font-bold ${
+ variant="outline"className={`text-xs tabular-nums font-bold ${
  marginPct >= 40
-                              ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
-                              : 'bg-amber-50 text-amber-800 border-amber-200'
+                              ? 'bg-success-surface text-success border-success-border'
+                              : 'bg-warning-surface text-warning border-warning-border'
                           }`}
                         >
                           {marginPct}%
@@ -287,7 +287,7 @@ export function PricingFinishingTariffs({
  setFinishingToDelete(fin)
  setIsDeleteFinishingOpen(true)
                             }}
- className="h-7 px-2 text-xs text-rose-600 hover:text-rose-700"title="Delete">
+ className="h-7 px-2 text-xs text-destructive hover:text-destructive"title="Delete">
                             <Trash2 className="h-3 w-3"/>
                           </Button>
                         </div>
@@ -307,7 +307,7 @@ export function PricingFinishingTariffs({
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="text-sm font-bold flex items-center gap-2">
-                <Printer className="h-4 w-4 text-blue-600"/>
+                <Printer className="h-4 w-4 text-primary"/>
                 <span>{tBilingual('Printing Methods & Resolution Surcharges', 'মেশিন মেথড ও রেজোলিউশন সারচার্জ')}</span>
               </CardTitle>
               <CardDescription className="text-xs">
@@ -344,7 +344,7 @@ export function PricingFinishingTariffs({
                     <td className="py-3 px-4 font-bold text-foreground">{m.name}</td>
                     <td className="py-3 px-4 tabular-nums text-muted-foreground">{m.code || '—'}</td>
                     <td className="py-3 px-4 uppercase tabular-nums font-semibold">sft</td>
-                    <td className="py-3 px-4 tabular-nums font-black text-blue-700 dark:text-blue-400 text-sm">
+                    <td className="py-3 px-4 tabular-nums font-black text-primary text-primary text-sm">
                       +{formatBDT(m.cost_per_sqft || 0)}
                     </td>
                     <td className="py-3 px-4 text-right">
@@ -359,7 +359,7 @@ export function PricingFinishingTariffs({
  setMethodToDelete(m)
  setIsDeleteMethodOpen(true)
                           }}
- className="h-7 px-2 text-xs text-rose-600 hover:text-rose-700"title="Delete">
+ className="h-7 px-2 text-xs text-destructive hover:text-destructive"title="Delete">
                           <Trash2 className="h-3 w-3"/>
                         </Button>
                       </div>
@@ -386,7 +386,7 @@ export function PricingFinishingTariffs({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <Label className="text-xs font-semibold mb-1 block">
-                {tBilingual('Finishing Name (English)', 'ফিনিশিং নাম (ইংরেজি)')} <span className="text-rose-500">*</span>
+                {tBilingual('Finishing Name (English)', 'ফিনিশিং নাম (ইংরেজি)')} <span className="text-destructive">*</span>
               </Label>
               <Input
  placeholder="e.g. Gloss Lamination (100 micron)"value={finForm.name}
@@ -425,7 +425,7 @@ export function PricingFinishingTariffs({
 
             <div>
               <Label className="text-xs font-semibold mb-1 block">
-                {tBilingual('Client Price', 'বিক্রয় দর')} <span className="text-rose-500">*</span>
+                {tBilingual('Client Price', 'বিক্রয় দর')} <span className="text-destructive">*</span>
               </Label>
               <Input
  type="number"step="0.01"value={finForm.selling_price}
@@ -449,7 +449,7 @@ export function PricingFinishingTariffs({
             <Button type="button"variant="outline"onClick={() => setIsFinishingModalOpen(false)} className="text-xs h-9">
               {tBilingual('Cancel', 'বাতিল')}
             </Button>
-            <Button type="submit"className="bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs h-9 px-5">
+            <Button type="submit"className="bg-success hover:bg-success text-white font-bold text-xs h-9 px-5">
               {tBilingual('Save Tariff', 'সংরক্ষণ করুন')}
             </Button>
           </div>
@@ -470,7 +470,7 @@ export function PricingFinishingTariffs({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <Label className="text-xs font-semibold mb-1 block">
-                {tBilingual('Method Name', 'মেথডের নাম')} <span className="text-rose-500">*</span>
+                {tBilingual('Method Name', 'মেথডের নাম')} <span className="text-destructive">*</span>
               </Label>
               <Input
  placeholder="e.g. UV 8-Pass Ultra Vivid"value={methodForm.name}
@@ -493,7 +493,7 @@ export function PricingFinishingTariffs({
           <div className="grid grid-cols-1 gap-3">
             <div>
               <Label className="text-xs font-semibold mb-1 block">
-                {tBilingual('Print Surcharge per SFT', 'প্রতি স্কয়ার ফিট সারচার্জ দর')} <span className="text-rose-500">*</span>
+                {tBilingual('Print Surcharge per SFT', 'প্রতি স্কয়ার ফিট সারচার্জ দর')} <span className="text-destructive">*</span>
               </Label>
               <Input
  type="number"step="0.01"value={methodForm.cost_per_sqft}

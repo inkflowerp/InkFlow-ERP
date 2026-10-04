@@ -150,7 +150,7 @@ export function AttendancePunchModal({
       <DialogContent onClose={onClose} className="max-w-md p-5 bg-card border-border text-foreground rounded-3xl shadow-lg">
         <DialogHeader className="mb-2">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-indigo-50 dark:bg-indigo-600/20 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-500/30">
+            <div className="p-2.5 rounded-xl bg-primary/10 bg-primary/20 text-primary text-primary border border-primary/20 border-primary/20/30">
               <QrCode className="h-5 w-5"/>
             </div>
             <div>
@@ -173,7 +173,7 @@ export function AttendancePunchModal({
  type="button"onClick={() => setPunchType('CHECK_IN')}
  className={`flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
  punchType === 'CHECK_IN'
-                    ? 'bg-emerald-600 text-white shadow-xs'
+                    ? 'bg-success text-white shadow-xs'
                     : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
                 }`}
               >
@@ -185,7 +185,7 @@ export function AttendancePunchModal({
  type="button"onClick={() => setPunchType('CHECK_OUT')}
  className={`flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
  punchType === 'CHECK_OUT'
-                    ? 'bg-amber-600 text-white shadow-xs'
+                    ? 'bg-warning text-white shadow-xs'
                     : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
                 }`}
               >
@@ -198,8 +198,8 @@ export function AttendancePunchModal({
             <CameraQrScanner onScanSuccess={handleQrScanned} />
 
             {/* Geofence Notice */}
-            <div className="p-3.5 rounded-xl bg-muted border border-border text-2xs text-muted-foreground flex items-start gap-2.5">
-              <ShieldCheck className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5"/>
+            <div className="p-3.5 rounded-xl bg-muted border border-border text-xs text-muted-foreground flex items-start gap-2.5">
+              <ShieldCheck className="h-4 w-4 text-success text-success shrink-0 mt-0.5"/>
               <span>
                 {tBilingual(
                   'Point camera at the printed InkFlow QR poster at your workplace. Your GPS location will be verified securely.',
@@ -214,8 +214,8 @@ export function AttendancePunchModal({
         {stage === 'verifying' && (
           <div className="py-12 space-y-6 text-center animate-in fade-in duration-300">
             <div className="relative mx-auto w-20 h-20 flex items-center justify-center">
-              <RefreshCw className="h-12 w-12 text-indigo-600 dark:text-indigo-400 animate-spin"/>
-              <MapPin className="h-6 w-6 text-emerald-600 dark:text-emerald-400 absolute"/>
+              <RefreshCw className="h-12 w-12 text-primary text-primary animate-spin"/>
+              <MapPin className="h-6 w-6 text-success text-success absolute"/>
             </div>
 
             <div className="space-y-1">
@@ -232,11 +232,11 @@ export function AttendancePunchModal({
 
             {/* Multi-step pipeline pills */}
             <div className="space-y-2 max-w-xs mx-auto text-left text-xs tabular-nums">
-              <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400 bg-emerald-50 p-2.5 rounded-xl border border-emerald-200">
+              <div className="flex items-center gap-2 text-success text-success bg-success-surface p-2.5 rounded-xl border border-success-border">
                 <CheckCircle2 className="h-4 w-4 shrink-0"/>
                 <span>QR Token Captured</span>
               </div>
-              <div className="flex items-center gap-2 text-indigo-700 dark:text-indigo-300 bg-indigo-50 p-2.5 rounded-xl border border-indigo-200">
+              <div className="flex items-center gap-2 text-primary text-primary bg-primary/10 p-2.5 rounded-xl border border-primary/20">
                 <RefreshCw className="h-4 w-4 shrink-0 animate-spin"/>
                 <span>Acquiring GPS & Calculating Geofence</span>
               </div>
@@ -247,12 +247,12 @@ export function AttendancePunchModal({
         {/* 3. SUCCESS STAGE */}
         {stage === 'success' && successRecord && (
           <div className="py-6 space-y-5 text-center animate-in zoom-in-95">
-            <div className="h-16 w-16 mx-auto rounded-full bg-emerald-50 dark:bg-emerald-500/20 border-2 border-emerald-300 dark:border-emerald-500/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shadow-xs shadow-emerald-500/10">
+            <div className="h-16 w-16 mx-auto rounded-full bg-success-surface bg-success/20 border-2 border-success-border border-success-border/40 text-success text-success flex items-center justify-center shadow-xs shadow-emerald-500/10">
               <CheckCircle2 className="h-8 w-8"/>
             </div>
 
             <div className="space-y-1">
-              <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800 text-xs px-2.5 py-0.5 font-bold">
+              <Badge className="bg-success-surface text-success border-success-border bg-success-surface text-success border-success-border text-xs px-2.5 py-0.5 font-bold">
                 {punchType === 'CHECK_IN' ? 'Check-In Accepted' : 'Check-Out Accepted'}
               </Badge>
               <h3 className="text-xl font-black text-foreground tracking-tight">
@@ -281,7 +281,7 @@ export function AttendancePunchModal({
               </div>
               <div className="flex justify-between items-center py-1 border-b border-border">
                 <span className="text-muted-foreground">Distance from Center:</span>
-                <span className="tabular-nums text-emerald-600 dark:text-emerald-400 font-bold">
+                <span className="tabular-nums text-success text-success font-bold">
                   {Math.round(successRecord.distance_from_location_meters)}m
                 </span>
               </div>
@@ -295,7 +295,7 @@ export function AttendancePunchModal({
 
             <Button
  type="button"onClick={onClose}
- className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold h-11 rounded-xl shadow-sm cursor-pointer">
+ className="w-full bg-primary hover:bg-primary text-white font-bold h-11 rounded-xl shadow-sm cursor-pointer">
  Done (সম্পন্ন)
             </Button>
           </div>
@@ -304,7 +304,7 @@ export function AttendancePunchModal({
         {/* 4. FAILURE STAGE */}
         {stage === 'failure' && (
           <div className="py-6 space-y-5 text-center animate-in zoom-in-95">
-            <div className="h-16 w-16 mx-auto rounded-full bg-rose-50 dark:bg-rose-500/20 border-2 border-rose-300 dark:border-rose-500/40 text-rose-600 dark:text-rose-400 flex items-center justify-center">
+            <div className="h-16 w-16 mx-auto rounded-full bg-danger-surface bg-destructive/20 border-2 border-danger-border border-danger-border/40 text-destructive text-destructive flex items-center justify-center">
               <AlertCircle className="h-8 w-8"/>
             </div>
 
@@ -312,7 +312,7 @@ export function AttendancePunchModal({
               <h3 className="text-lg font-bold text-foreground">
                 {tBilingual('Attendance Could Not Be Recorded', 'হাজিরা রেকর্ড করা সম্ভব হয়নি')}
               </h3>
-              <p className="text-xs text-rose-600 dark:text-rose-300 font-medium max-w-xs mx-auto">
+              <p className="text-xs text-destructive text-destructive font-medium max-w-xs mx-auto">
                 {failureReason || 'Verification check failed.'}
               </p>
             </div>
@@ -322,7 +322,7 @@ export function AttendancePunchModal({
                 {verificationDetails.distanceMeters !== undefined && (
                   <div className="flex justify-between text-muted-foreground">
                     <span>Calculated Distance:</span>
-                    <span className="tabular-nums text-rose-600 dark:text-rose-400 font-bold">
+                    <span className="tabular-nums text-destructive text-destructive font-bold">
                       {verificationDetails.distanceMeters}m (Allowed: {verificationDetails.allowedRadiusMeters}m)
                     </span>
                   </div>
@@ -344,7 +344,7 @@ export function AttendancePunchModal({
               </Button>
               <Button
  type="button"onClick={() => setStage('scan')}
- className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs h-11 rounded-xl shadow-sm cursor-pointer">
+ className="flex-1 bg-primary hover:bg-primary text-white font-bold text-xs h-11 rounded-xl shadow-sm cursor-pointer">
                 {tBilingual('Try Again', 'আবার চেষ্টা করুন')}
               </Button>
             </div>

@@ -83,7 +83,7 @@ export function PromptDialog({
  confirmVariant="default">
       <div className="space-y-3 py-2">
         <div className="flex items-start gap-3">
-          <div className="rounded-xl bg-indigo-500/10 p-2.5 text-indigo-500 dark:bg-indigo-500/20 border border-indigo-500/30 shrink-0 mt-0.5">
+          <div className="rounded-xl bg-primary/10 p-2.5 text-primary bg-primary/20 border border-primary/20/30 shrink-0 mt-0.5">
             <MessageSquare className="h-4 w-4"/>
           </div>
           <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed bangla-text">

@@ -38,7 +38,7 @@ export const DesignLightboxModal = React.memo(function DesignLightboxModal({
       <DialogContent className="max-w-4xl bg-surface-inset border border-border text-foreground p-4 shadow-lg">
         <DialogHeader className="border-b border-border pb-3">
           <div className="flex items-center justify-between">
-            <DialogTitle className="text-base font-bold flex items-center gap-2 text-indigo-300">
+            <DialogTitle className="text-base font-bold flex items-center gap-2 text-primary">
               <Eye className="h-4 w-4"/>
               <span>{job.title} — High-Res Artwork Inspection (আর্টওয়ার্ক ভিউয়ার)</span>
             </DialogTitle>
@@ -97,7 +97,7 @@ export const DesignLightboxModal = React.memo(function DesignLightboxModal({
             </a>
             <Button
  type="button"size="sm"onClick={onClose}
- className="text-xs bg-indigo-600 hover:bg-indigo-700 text-white font-bold">
+ className="text-xs bg-primary hover:bg-primary text-white font-bold">
               বন্ধ করুন (Close)
             </Button>
           </div>

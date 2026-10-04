@@ -19,7 +19,7 @@ export function BranchComparisonView({ data }: BranchComparisonViewProps) {
       </div>
 
       {/* Summary Banner */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-5 bg-gradient-to-r from-primary-900/20 via-slate-900/40 to-emerald-900/20 rounded-xl border border-border">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-5 rounded-xl border border-border">
         <div>
           <div className="text-xs font-semibold uppercase text-muted-foreground">Total Company Revenue</div>
           <div className="text-2xl font-black text-foreground">
@@ -28,7 +28,7 @@ export function BranchComparisonView({ data }: BranchComparisonViewProps) {
         </div>
         <div>
           <div className="text-xs font-semibold uppercase text-muted-foreground">Total Gross Profit</div>
-          <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400">
+          <div className="text-2xl font-black text-success text-success">
             ৳{data.totals.total_gross_profit.toLocaleString('en-IN')}
           </div>
         </div>
@@ -40,7 +40,7 @@ export function BranchComparisonView({ data }: BranchComparisonViewProps) {
         </div>
         <div>
           <div className="text-xs font-semibold uppercase text-muted-foreground">Total Net Profit</div>
-          <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400">
+          <div className="text-2xl font-black text-success text-success">
             ৳{data.totals.total_net_profit.toLocaleString('en-IN')}
           </div>
         </div>
@@ -82,18 +82,18 @@ export function BranchComparisonView({ data }: BranchComparisonViewProps) {
                   <td className="px-6 py-4 text-right text-muted-foreground">
                     ৳{b.cost_of_goods_sold.toLocaleString('en-IN')}
                   </td>
-                  <td className="px-6 py-4 text-right font-bold text-emerald-600 dark:text-emerald-400">
+                  <td className="px-6 py-4 text-right font-bold text-success text-success">
                     ৳{b.gross_profit.toLocaleString('en-IN')}
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400">
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-success-surface bg-success-surface text-success text-success">
                       {b.gross_margin_percent}%
                     </span>
                   </td>
                   <td className="px-6 py-4 text-right text-muted-foreground">
                     ৳{b.operating_expenses.toLocaleString('en-IN')}
                   </td>
-                  <td className="px-6 py-4 text-right font-bold text-emerald-600 dark:text-emerald-400">
+                  <td className="px-6 py-4 text-right font-bold text-success text-success">
                     ৳{b.net_profit.toLocaleString('en-IN')}
                   </td>
                   <td className="px-6 py-4 text-right font-medium">
@@ -102,7 +102,7 @@ export function BranchComparisonView({ data }: BranchComparisonViewProps) {
                   <td className="px-6 py-4 text-right">
                     <span
  className={`text-xs font-bold ${
- b.rework_rate > 5 ? 'text-rose-600' : 'text-muted-foreground'
+ b.rework_rate > 5 ? 'text-destructive' : 'text-muted-foreground'
                       }`}
                     >
                       {b.rework_rate}%
@@ -120,7 +120,7 @@ export function BranchComparisonView({ data }: BranchComparisonViewProps) {
                 <td className="px-6 py-4 text-right">
                   ৳{data.totals.total_cogs.toLocaleString('en-IN')}
                 </td>
-                <td className="px-6 py-4 text-right text-emerald-600 dark:text-emerald-400">
+                <td className="px-6 py-4 text-right text-success text-success">
                   ৳{data.totals.total_gross_profit.toLocaleString('en-IN')}
                 </td>
                 <td className="px-6 py-4 text-right">
@@ -129,7 +129,7 @@ export function BranchComparisonView({ data }: BranchComparisonViewProps) {
                 <td className="px-6 py-4 text-right">
                   ৳{data.totals.total_operating_expenses.toLocaleString('en-IN')}
                 </td>
-                <td className="px-6 py-4 text-right text-emerald-600 dark:text-emerald-400">
+                <td className="px-6 py-4 text-right text-success text-success">
                   ৳{data.totals.total_net_profit.toLocaleString('en-IN')}
                 </td>
                 <td className="px-6 py-4 text-right">

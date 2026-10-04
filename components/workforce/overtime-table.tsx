@@ -51,13 +51,13 @@ export function OvertimeTable({
  const getStatusBadge = (status: OvertimeStatus) => {
  switch (status) {
  case 'approved':
- return 'bg-emerald-50 text-emerald-700 border-emerald-200'
+ return 'bg-success-surface text-success border-success-border'
  case 'rejected':
- return 'bg-red-50 text-red-700 border-red-200'
+ return 'bg-danger-surface text-destructive border-danger-border'
  case 'paid':
- return 'bg-blue-50 text-blue-700 border-blue-200'
+ return 'bg-primary/10 text-primary border-primary/20'
  default:
- return 'bg-amber-50 text-amber-700 border-amber-200'
+ return 'bg-warning-surface text-warning border-warning-border'
     }
   }
 
@@ -116,7 +116,7 @@ export function OvertimeTable({
         <Card className="bg-card border-border shadow-[0_1px_3px_rgba(0,0,0,0.02)] rounded-xl overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-muted border-b border-border text-muted-foreground uppercase tracking-wider font-semibold text-[11px]">
+              <thead className="bg-muted border-b border-border text-muted-foreground uppercase tracking-wider font-semibold text-xs">
                 <tr>
                   <th className="py-3 px-4">{tBilingual('Employee', 'কর্মী')}</th>
                   <th className="py-3 px-3">{tBilingual('Date', 'তারিখ')}</th>
@@ -137,7 +137,7 @@ export function OvertimeTable({
                     <tr key={rec.id} className="hover:bg-muted transition-colors">
                       <td className="py-3 px-4">
                         <div className="font-semibold text-foreground">{rec.employee_name || 'Staff Member'}</div>
-                        <div className="text-[11px] text-muted-foreground capitalize">{rec.employee_department}</div>
+                        <div className="text-xs text-muted-foreground capitalize">{rec.employee_department}</div>
                       </td>
                       <td className="py-3 px-3 font-mono text-muted-foreground">{rec.ot_date}</td>
                       <td className="py-3 px-3 capitalize font-medium text-foreground">
@@ -160,7 +160,7 @@ export function OvertimeTable({
                       </td>
                       <td className="py-3 px-3 text-center">
                         <Badge
- variant="outline"className={`text-[10px] font-semibold capitalize px-2 py-0.5 rounded-full ${getStatusBadge(
+ variant="outline"className={`text-xs font-semibold capitalize px-2 py-0.5 rounded-full ${getStatusBadge(
  rec.status
                           )}`}
                         >{rec.status === 'approved' ? tBilingual('Approved', 'অনুমোদিত') : rec.status === 'rejected' ? tBilingual('Rejected', 'বাতিলকৃত') : rec.status === 'paid' ? tBilingual('Paid', 'পরিশোধিত') : tBilingual('Pending Approval', 'অনুমোদন অপেক্ষমাণ')}</Badge>
@@ -171,20 +171,20 @@ export function OvertimeTable({
                             <Button
  size="sm"disabled={isProcessing}
  onClick={() => handleReviewAction(rec.id, 'approved')}
- className="h-7 px-2.5 text-xs font-medium bg-emerald-600 hover:bg-emerald-700 text-white min-h-[28px]">
+ className="h-7 px-2.5 text-xs font-medium bg-success hover:bg-success text-white min-h-[28px]">
                               <Check className="w-3.5 h-3.5 mr-1"/>
                               <span>{tBilingual('Approve', 'অনুমোদন')}</span>
                             </Button>
                             <Button
  size="sm"variant="outline"disabled={isProcessing}
  onClick={() => handleReviewAction(rec.id, 'rejected')}
- className="h-7 px-2.5 text-xs font-medium border-red-200 text-red-600 hover:bg-red-50 min-h-[28px]">
+ className="h-7 px-2.5 text-xs font-medium border-danger-border text-destructive hover:bg-danger-surface min-h-[28px]">
                               <X className="w-3.5 h-3.5 mr-1"/>
                               <span>{tBilingual('Reject', 'বাতিল')}</span>
                             </Button>
                           </div>
                         ) : (
-                          <span className="text-[11px] text-muted-foreground capitalize">
+                          <span className="text-xs text-muted-foreground capitalize">
                             {rec.status}
                           </span>
                         )}

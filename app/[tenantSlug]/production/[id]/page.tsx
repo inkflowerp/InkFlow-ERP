@@ -95,7 +95,7 @@ export default function ProductionJobDetailPage() {
  const backHref = getTenantNavHref('/production', pathname, slug)
 
  return (
-      <div className="space-y-6 max-w-6xl">
+      <div className="space-y-6">
         <Link
  href={backHref}
  className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground dark:hover:text-foreground mb-3">
@@ -119,7 +119,7 @@ export default function ProductionJobDetailPage() {
  const backHref = getTenantNavHref('/production', pathname, slug)
 
  return (
-    <div className="space-y-6 max-w-6xl print:max-w-none print:w-full print:bg-white print:text-foreground print: print: print:m-0 print:p-0">
+    <div className="space-y-6 print:max-w-none print:w-full print:bg-white print:text-foreground print: print: print:m-0 print:p-0">
       {/* Header & Back Link */}
       <div>
         <Link
@@ -135,7 +135,7 @@ export default function ProductionJobDetailPage() {
               <h1 className="text-2xl font-black tracking-tight text-foreground tabular-nums print:text-foreground">
                 {job.production_job_number}
               </h1>
-              <span className="capitalize px-2.5 py-0.5 rounded text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 print:border-input print:text-foreground print:bg-muted">
+              <span className="capitalize px-2.5 py-0.5 rounded text-xs font-bold bg-primary/10 text-primary border border-primary/20 bg-primary/10 text-primary print:border-input print:text-foreground print:bg-muted">
                 {job.department}
               </span>
               <span className="capitalize px-2.5 py-0.5 rounded text-xs font-bold bg-muted text-foreground print:border-input print:text-foreground print:bg-muted">
@@ -148,7 +148,7 @@ export default function ProductionJobDetailPage() {
             <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground pt-0.5 print:text-foreground">
               <span>Customer: <strong>{job.customer_name}</strong></span>
               <span>•</span>
-              <span>Deadline: <strong className="text-red-600 print:text-red-800">{job.deadline}</strong></span>
+              <span>Deadline: <strong className="text-destructive print:text-destructive">{job.deadline}</strong></span>
               <span>•</span>
               <span>Qty: <strong>{job.quantity}</strong></span>
             </div>
@@ -167,16 +167,16 @@ export default function ProductionJobDetailPage() {
 
       {/* Rework Alert if active */}
       {job.has_rework && (
-        <div className="p-4 rounded-xl bg-red-50 border-2 border-red-500 dark:bg-red-950/40 dark:border-red-600 text-red-950 dark:text-red-100 flex items-start gap-3">
-          <AlertOctagon className="h-6 w-6 text-red-600 shrink-0 mt-0.5"/>
+        <div className="p-4 rounded-xl bg-danger-surface border-2 border-danger-border bg-danger-surface border-danger-border text-destructive text-destructive flex items-start gap-3">
+          <AlertOctagon className="h-6 w-6 text-destructive shrink-0 mt-0.5"/>
           <div className="space-y-1">
-            <h3 className="font-bold text-sm text-red-900 dark:text-red-200">
+            <h3 className="font-bold text-sm text-destructive text-destructive">
  Active Rework Ticket Logged ({job.reworks?.[0]?.rework_number})
             </h3>
-            <p className="text-xs text-red-800 dark:text-red-300">
+            <p className="text-xs text-destructive text-destructive">
  Reason: <strong>{job.reworks?.[0]?.reason}</strong>
             </p>
-            <div className="text-2xs text-red-700 dark:text-red-400 tabular-nums">
+            <div className="text-xs text-destructive text-destructive tabular-nums">
  Wastage: {job.reworks?.[0]?.material_wastage} • Extra Labor: {job.reworks?.[0]?.extra_labor_hours} hrs • Delay: +{job.reworks?.[0]?.additional_time_hours} hrs
             </div>
           </div>
@@ -203,7 +203,7 @@ export default function ProductionJobDetailPage() {
 
         <Card className="p-4 border-l-4 border-l-blue-500">
           <span className="text-xs font-semibold text-muted-foreground">Current Production Stage</span>
-          <div className="text-lg font-bold text-blue-600 capitalize mt-1">
+          <div className="text-lg font-bold text-primary capitalize mt-1">
             {job.stage.replace('_', ' ')}
           </div>
           <span className="text-xs text-muted-foreground mt-1 block">Status: {job.status}</span>
@@ -215,7 +215,7 @@ export default function ProductionJobDetailPage() {
         <Card>
           <CardHeader className="pb-3 border-b border-border">
             <CardTitle className="text-sm font-bold flex items-center gap-2">
-              <Scissors className="h-4 w-4 text-blue-600"/>
+              <Scissors className="h-4 w-4 text-primary"/>
  Post-Print Finishing Tasks Checklist
             </CardTitle>
           </CardHeader>
@@ -231,20 +231,20 @@ export default function ProductionJobDetailPage() {
  onClick={() => toggleTask(task)}
  className={`flex items-center gap-2.5 p-3 rounded-lg border text-left transition-all ${
  isChecked
-                        ? 'bg-emerald-50 border-emerald-300 text-emerald-800 dark:bg-emerald-950/40 dark:border-emerald-800'
+                        ? 'bg-success-surface border-success-border text-success bg-success-surface border-success-border'
                         : isApplicable
-                        ? 'bg-blue-50/50 border-blue-200 text-foreground dark:bg-blue-950/20 '
+                        ? 'bg-primary/10/50 border-primary/20 text-foreground bg-primary/10 '
                         : 'border-border text-muted-foreground opacity-60'
                     }`}
                   >
                     {isChecked ? (
-                      <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0"/>
+                      <CheckCircle2 className="h-4 w-4 text-success shrink-0"/>
                     ) : (
                       <Square className="h-4 w-4 text-muted-foreground shrink-0"/>
                     )}
                     <div className="text-xs">
                       <div className="font-bold capitalize">{task}</div>
-                      <div className="text-2xs">{isApplicable ? 'Required' : 'Optional'}</div>
+                      <div className="text-xs">{isApplicable ? 'Required' : 'Optional'}</div>
                     </div>
                   </button>
                 )
@@ -258,7 +258,7 @@ export default function ProductionJobDetailPage() {
         <Card>
           <CardHeader className="pb-3 border-b border-border">
             <CardTitle className="text-sm font-bold flex items-center gap-2">
-              <Wrench className="h-4 w-4 text-purple-600"/>
+              <Wrench className="h-4 w-4 text-primary"/>
  Workshop Fabrication & Assembly Checklist
             </CardTitle>
           </CardHeader>
@@ -274,20 +274,20 @@ export default function ProductionJobDetailPage() {
  onClick={() => toggleTask(task)}
  className={`flex items-center gap-2.5 p-3 rounded-lg border text-left transition-all ${
  isChecked
-                        ? 'bg-emerald-50 border-emerald-300 text-emerald-800 dark:bg-emerald-950/40 dark:border-emerald-800'
+                        ? 'bg-success-surface border-success-border text-success bg-success-surface border-success-border'
                         : isApplicable
-                        ? 'bg-purple-50/50 border-purple-200 text-foreground dark:bg-purple-950/20 '
+                        ? 'bg-primary/10/50 border-primary/20 text-foreground bg-primary/10 '
                         : 'border-border text-muted-foreground opacity-60'
                     }`}
                   >
                     {isChecked ? (
-                      <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0"/>
+                      <CheckCircle2 className="h-4 w-4 text-success shrink-0"/>
                     ) : (
                       <Square className="h-4 w-4 text-muted-foreground shrink-0"/>
                     )}
                     <div className="text-xs">
                       <div className="font-bold capitalize">{task.replace('_', ' ')}</div>
-                      <div className="text-2xs">{isApplicable ? 'Required' : 'Optional'}</div>
+                      <div className="text-xs">{isApplicable ? 'Required' : 'Optional'}</div>
                     </div>
                   </button>
                 )
@@ -314,7 +314,7 @@ export default function ProductionJobDetailPage() {
         <Card>
           <CardHeader className="pb-3 border-b border-border">
             <CardTitle className="text-sm font-bold flex items-center gap-2">
-              <RotateCcw className="h-4 w-4 text-red-600"/>
+              <RotateCcw className="h-4 w-4 text-destructive"/>
  Rework & Material Wastage Audit Log
             </CardTitle>
           </CardHeader>
@@ -333,12 +333,12 @@ export default function ProductionJobDetailPage() {
               <tbody className="divide-y divide-border dark:divide-border">
                 {job.reworks.map((r) => (
                   <tr key={r.id}>
-                    <td className="py-3 px-3 tabular-nums font-bold text-red-600">{r.rework_number}</td>
+                    <td className="py-3 px-3 tabular-nums font-bold text-destructive">{r.rework_number}</td>
                     <td className="py-3 px-3 font-medium text-foreground">{r.reason}</td>
                     <td className="py-3 px-3 capitalize">{r.responsible_department}</td>
                     <td className="py-3 px-3 tabular-nums">{r.material_wastage}</td>
                     <td className="py-3 px-3 tabular-nums">+{r.extra_labor_hours} hrs</td>
-                    <td className="py-3 px-3 tabular-nums text-red-600">+{r.additional_time_hours} hrs</td>
+                    <td className="py-3 px-3 tabular-nums text-destructive">+{r.additional_time_hours} hrs</td>
                   </tr>
                 ))}
               </tbody>

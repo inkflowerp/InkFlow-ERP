@@ -1765,8 +1765,8 @@ export default function ProductsCatalogPage() {
  setActiveMenuProductId(null)
  handleOpenFastQuote(item)
                 }}
- className="w-full text-left px-3 py-2 hover:bg-blue-50 dark:hover:bg-blue-950/40 flex items-center gap-2.5 text-foreground hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer">
-                <Calculator className="h-3.5 w-3.5 text-blue-500 shrink-0"/>
+ className="w-full text-left px-3 py-2 hover:bg-primary/10 dark:hover:bg-primary/10 flex items-center gap-2.5 text-foreground hover:text-primary dark:hover:text-primary transition-colors cursor-pointer">
+                <Calculator className="h-3.5 w-3.5 text-primary shrink-0"/>
                 <span className="font-medium">{tBilingual('Fast Quote Calculator', 'কোটেশন ক্যালকুলেটর')}</span>
               </button>
 
@@ -1780,8 +1780,8 @@ export default function ProductsCatalogPage() {
  setNewTargetMargin(item.target_margin_percentage || 35)
  setNewWastage(item.default_wastage_percentage || 0)
                 }}
- className="w-full text-left px-3 py-2 hover:bg-amber-50 dark:hover:bg-amber-950/40 flex items-center gap-2.5 text-foreground hover:text-amber-700 dark:hover:text-amber-400 transition-colors cursor-pointer">
-                <Edit3 className="h-3.5 w-3.5 text-amber-500 shrink-0"/>
+ className="w-full text-left px-3 py-2 hover:bg-warning-surface dark:hover:bg-warning-surface flex items-center gap-2.5 text-foreground hover:text-warning dark:hover:text-warning transition-colors cursor-pointer">
+                <Edit3 className="h-3.5 w-3.5 text-warning shrink-0"/>
                 <span>{tBilingual('Adjust Price & Margin', 'মূল্য ও মার্জিন নির্ধারণ')}</span>
               </button>
 
@@ -1792,7 +1792,7 @@ export default function ProductsCatalogPage() {
  handleOpenEdit(item)
                 }}
  className="w-full text-left px-3 py-2 hover:bg-muted flex items-center gap-2.5 text-foreground transition-colors cursor-pointer">
-                <Sliders className="h-3.5 w-3.5 text-indigo-500 shrink-0"/>
+                <Sliders className="h-3.5 w-3.5 text-primary shrink-0"/>
                 <span>{tBilingual('Edit Details & Specs', 'তথ্য ও স্পেসিফিকেশন')}</span>
               </button>
 
@@ -1825,8 +1825,8 @@ export default function ProductsCatalogPage() {
  setActiveMenuProductId(null)
  handleToggleArchive(item)
                   }}
- className="w-full text-left px-3 py-2 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 flex items-center gap-2.5 text-emerald-600 dark:text-emerald-400 transition-colors cursor-pointer">
-                  <RefreshCw className="h-3.5 w-3.5 text-emerald-500 shrink-0"/>
+ className="w-full text-left px-3 py-2 hover:bg-success-surface dark:hover:bg-success-surface flex items-center gap-2.5 text-success text-success transition-colors cursor-pointer">
+                  <RefreshCw className="h-3.5 w-3.5 text-success shrink-0"/>
                   <span>{tBilingual('Restore Item', 'আইটেম পুনরুদ্ধার করুন')}</span>
                 </button>
               )}
@@ -1837,8 +1837,8 @@ export default function ProductsCatalogPage() {
  setActiveMenuProductId(null)
  handleInitiateDelete(item)
                 }}
- className="w-full text-left px-3 py-2 hover:bg-rose-50 dark:hover:bg-rose-950/40 flex items-center gap-2.5 text-rose-600 dark:text-rose-400 transition-colors cursor-pointer">
-                <Trash2 className="h-3.5 w-3.5 text-rose-500 shrink-0"/>
+ className="w-full text-left px-3 py-2 hover:bg-danger-surface dark:hover:bg-danger-surface flex items-center gap-2.5 text-destructive text-destructive transition-colors cursor-pointer">
+                <Trash2 className="h-3.5 w-3.5 text-destructive shrink-0"/>
                 <span>{tBilingual('Delete Item', 'আইটেম মুছে ফেলুন')}</span>
               </button>
             </div>
@@ -1850,7 +1850,7 @@ export default function ProductsCatalogPage() {
 
  if (!mounted) {
  return (
-      <div className="space-y-6 max-w-7xl pb-12 animate-pulse">
+      <div className="space-y-6 pb-12 animate-pulse">
         <div className="h-10 bg-muted rounded-xl w-1/3"/>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map((i) => (
@@ -1865,11 +1865,11 @@ export default function ProductsCatalogPage() {
  return (
     <PanelAccessGuard
  module="products"action="view"panelTitle="Products & Commercial Masters"panelTitleBn="পণ্য ও বাণিজ্যিক মাস্টার্স">
-      <div className="space-y-6 max-w-7xl pb-12">
+      <div className="space-y-6 pb-12">
       {/* Page Header with Direct Action Launchers */}
       <PageHeader
  titleEn="Products & Commercial Masters"titleBn="পণ্য ও বাণিজ্যিক মাস্টার্স"descriptionEn="Unified commercial catalog • Print services, ready products, raw materials, finishing & logistics tariffs"descriptionBn="প্রিন্টিং সার্ভিস, রেডি প্রোডাক্ট, কাঁচামাল, ফিনিশিং ও ডেলিভারি ট্যারিফ নিয়ন্ত্রণ কেন্দ্র"icon={Package}
- iconColor="text-blue-600"actions={
+ iconColor="text-primary"actions={
           <div className="flex flex-wrap items-center gap-2.5">
             <Button
  size="sm"onClick={handleOpenCreate}
@@ -1894,14 +1894,14 @@ export default function ProductsCatalogPage() {
  className={cn(
             'p-3.5 rounded-xl text-xs font-semibold flex items-center gap-2.5 border shadow-xs transition-all animate-in fade-in-0',
  notification.type === 'success'
-              ? 'bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800'
-              : 'bg-rose-50 text-rose-800 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800'
+              ? 'bg-success-surface text-success border-success-border bg-success-surface text-success border-success-border'
+              : 'bg-danger-surface text-destructive border-danger-border bg-danger-surface text-destructive border-danger-border'
           )}
         >
           {notification.type === 'success' ? (
-            <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0"/>
+            <CheckCircle2 className="h-4 w-4 text-success shrink-0"/>
           ) : (
-            <AlertTriangle className="h-4 w-4 text-rose-600 shrink-0"/>
+            <AlertTriangle className="h-4 w-4 text-destructive shrink-0"/>
           )}
           <span>{notification.message}</span>
         </div>
@@ -1909,9 +1909,9 @@ export default function ProductsCatalogPage() {
 
       {/* Fetch Error Retry Banner */}
       {fetchError && (
-        <div className="p-4 bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-800 rounded-xl flex items-center justify-between gap-3 text-xs text-rose-800 dark:text-rose-300">
+        <div className="p-4 bg-danger-surface bg-danger-surface border border-danger-border border-danger-border rounded-xl flex items-center justify-between gap-3 text-xs text-destructive text-destructive">
           <div className="flex items-center gap-2">
-            <ShieldAlert className="h-5 w-5 text-rose-600 shrink-0"/>
+            <ShieldAlert className="h-5 w-5 text-destructive shrink-0"/>
             <span>{fetchError}</span>
           </div>
           <Button size="sm"variant="outline"onClick={handleRefreshAll} className="text-xs shrink-0">
@@ -1924,7 +1924,7 @@ export default function ProductsCatalogPage() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {/* 1. Total Active Catalog Items */}
         <Card className="p-3.5 bg-card border-border shadow-xs">
-          <div className="text-2xs font-bold text-muted-foreground uppercase tracking-wider">
+          <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
             {tBilingual('Active Catalog Items', 'সক্রিয় পণ্য তালিকা')}
           </div>
           <div className="text-lg sm:text-xl font-bold font-numeric tabular-nums text-foreground mt-1">
@@ -1936,34 +1936,34 @@ export default function ProductsCatalogPage() {
         </Card>
 
         {/* 2. Average Gross Margin */}
-        <Card className="p-3.5 bg-card border-emerald-200 dark:border-emerald-900/60 shadow-xs">
-          <div className="text-2xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">
+        <Card className="p-3.5 bg-card border-success-border border-success-border/60 shadow-xs">
+          <div className="text-xs font-bold text-success text-success uppercase tracking-wider">
             {tBilingual('Average Gross Margin', 'গড় গ্রস মার্জিন')}
           </div>
-          <div className="text-lg sm:text-xl font-bold font-numeric tabular-nums text-emerald-600 dark:text-emerald-400 mt-1">
+          <div className="text-lg sm:text-xl font-bold font-numeric tabular-nums text-success text-success mt-1">
             {metrics.avgMargin}%
           </div>
-          <div className="text-xs text-emerald-600/90 font-numeric tabular-nums mt-0.5">
+          <div className="text-xs text-success/90 font-numeric tabular-nums mt-0.5">
             {tBilingual('Yield-Adjusted Profitability', 'উৎপাদন ও অপচয় সমন্বিত লাভ')}
           </div>
         </Card>
 
         {/* 3. Low Margin Alert */}
-        <Card className="p-3.5 bg-card border-amber-200 dark:border-amber-900/60 shadow-xs">
-          <div className="text-2xs font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider">
+        <Card className="p-3.5 bg-card border-warning-border border-warning-border/60 shadow-xs">
+          <div className="text-xs font-bold text-warning text-warning uppercase tracking-wider">
             {tBilingual('Low Margin Alert (<20%)', 'স্বল্প মার্জিন সতর্কতা (<২০%)')}
           </div>
-          <div className="text-lg sm:text-xl font-bold font-numeric tabular-nums text-amber-600 dark:text-amber-400 mt-1">
+          <div className="text-lg sm:text-xl font-bold font-numeric tabular-nums text-warning text-warning mt-1">
             {metrics.lowMarginCount}
           </div>
-          <div className="text-xs text-amber-600/90 font-numeric tabular-nums mt-0.5">
+          <div className="text-xs text-warning/90 font-numeric tabular-nums mt-0.5">
             {tBilingual('Review Raw Purchase Tariffs', 'কাঁচামাল ক্রয় দর যাচাই করুন')}
           </div>
         </Card>
 
         {/* 4. Configuration Masters */}
         <Card className="p-3.5 bg-card border-border shadow-xs">
-          <div className="text-2xs font-bold text-muted-foreground uppercase tracking-wider">
+          <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
             {tBilingual('Configuration Masters', 'কনফিগারেশন মাস্টার্স')}
           </div>
           <div className="text-lg sm:text-xl font-bold font-numeric tabular-nums text-foreground mt-1">
@@ -2005,7 +2005,7 @@ export default function ProductsCatalogPage() {
               <span>{tab.label}</span>
               <span
  className={cn(
-                  'px-1.5 py-0.5 text-2xs rounded-full tabular-nums font-bold',
+                  'px-1.5 py-0.5 text-xs rounded-full tabular-nums font-bold',
  isActive
                     ? 'bg-card/20 text-white '
                     : 'bg-muted text-muted-foreground '
@@ -2064,7 +2064,7 @@ export default function ProductsCatalogPage() {
  setEditingCategory(null)
  setIsCategoryModalOpen(true)
               }}
- title="Add New Category"className="h-9 px-2.5 text-xs text-muted-foreground border-input hover:border-blue-500 hover:text-blue-600 shrink-0">
+ title="Add New Category"className="h-9 px-2.5 text-xs text-muted-foreground border-input hover:border-primary/20 hover:text-primary shrink-0">
               <Plus className="h-3.5 w-3.5 mr-1"/>
  Category
             </Button>
@@ -2094,13 +2094,13 @@ export default function ProductsCatalogPage() {
  onClick={() => setStatusFilter('active')}
  className={cn(
               'px-3 py-1.5 rounded-md transition-all cursor-pointer',
- statusFilter === 'active' ? 'bg-card text-blue-600 dark:text-blue-400 shadow-xs font-bold' : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
+ statusFilter === 'active' ? 'bg-card text-primary text-primary shadow-xs font-bold' : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
             )}
           >{tBilingual('Active', 'সক্রিয়')}</button>
           <button onClick={() => setStatusFilter('low_margin')}
  className={cn(
               'px-3 py-1.5 rounded-md transition-all cursor-pointer',
- statusFilter === 'low_margin' ? 'bg-card text-amber-600 dark:text-amber-400 shadow-xs font-bold' : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
+ statusFilter === 'low_margin' ? 'bg-card text-warning text-warning shadow-xs font-bold' : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
             )}
           >{tBilingual('Low Margin', 'কম মার্জিন')}</button>
           <button onClick={() => setStatusFilter('archived')}
@@ -2182,7 +2182,7 @@ export default function ProductsCatalogPage() {
                         <td className="py-3.5 px-4 font-bold text-foreground">
                           <div>{pm.name}</div>
                           {pm.name_bn && <div className="text-xs text-muted-foreground font-medium font-bengali">{pm.name_bn}</div>}
-                          {pm.description && <div className="text-2xs text-muted-foreground font-normal">{pm.description}</div>}
+                          {pm.description && <div className="text-xs text-muted-foreground font-normal">{pm.description}</div>}
                         </td>
                         <td className="py-3.5 px-3 tabular-nums text-xs text-muted-foreground">
                           {pm.code ? <Badge variant="secondary"className="tabular-nums text-xs">{pm.code}</Badge> : '—'}
@@ -2190,7 +2190,7 @@ export default function ProductsCatalogPage() {
                         <td className="py-3.5 px-3">
                           <div className="flex flex-wrap gap-1">
                             {(pm.compatible_material_types || []).map((t) => (
-                              <Badge key={t} variant="secondary"className="text-2xs uppercase tabular-nums">
+                              <Badge key={t} variant="secondary"className="text-xs uppercase tabular-nums">
                                 {t}
                               </Badge>
                             ))}
@@ -2204,11 +2204,11 @@ export default function ProductsCatalogPage() {
                         </td>
                         <td className="py-3.5 px-3">
                           {pm.is_active !== false ? (
-                            <span className="inline-flex items-center gap-1 text-2xs font-semibold text-emerald-600">
-                              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"/> {tBilingual('Active', 'সক্রিয়')}
+                            <span className="inline-flex items-center gap-1 text-xs font-semibold text-success">
+                              <span className="h-1.5 w-1.5 rounded-full bg-success"/> {tBilingual('Active', 'সক্রিয়')}
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-1 text-2xs font-semibold text-muted-foreground">
+                            <span className="inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground">
                               <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground"/> Inactive
                             </span>
                           )}
@@ -2225,7 +2225,7 @@ export default function ProductsCatalogPage() {
                             </Button>
                             <Button
  size="sm"variant="ghost"onClick={() => handleDeletePrintingMethod(pm.id)}
- className="h-7 w-7 p-0 text-rose-500 hover:text-rose-700 hover:bg-rose-50"title="Delete Method">
+ className="h-7 w-7 p-0 text-destructive hover:text-destructive hover:bg-danger-surface"title="Delete Method">
                               <Trash2 className="h-3.5 w-3.5"/>
                             </Button>
                           </div>
@@ -2315,12 +2315,12 @@ export default function ProductsCatalogPage() {
                             {f.name_bn && <div className="text-xs text-muted-foreground font-medium font-bengali">{f.name_bn}</div>}
                           </td>
                           <td className="py-3.5 px-3">
-                            <span className="capitalize px-2 py-0.5 rounded text-2xs font-semibold bg-muted text-foreground">
+                            <span className="capitalize px-2 py-0.5 rounded text-xs font-semibold bg-muted text-foreground">
                               {f.category?.replace('_', ' ') || 'General'}
                             </span>
                           </td>
                           <td className="py-3.5 px-3 tabular-nums text-xs text-foreground">
-                            <Badge variant="outline"className="text-2xs uppercase">
+                            <Badge variant="outline"className="text-xs uppercase">
                               {f.pricing_method?.replace('_', ' ')}
                             </Badge>
                           </td>
@@ -2333,10 +2333,10 @@ export default function ProductsCatalogPage() {
                           <td className="py-3.5 px-3 tabular-nums text-xs">
                             <span
  className={cn(
-                                'inline-flex items-center px-1.5 py-0.5 rounded text-2xs font-bold border',
+                                'inline-flex items-center px-1.5 py-0.5 rounded text-xs font-bold border',
  margin >= 35
-                                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300'
-                                  : 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300'
+                                  ? 'bg-success-surface text-success border-success-border bg-success-surface text-success'
+                                  : 'bg-primary/10 text-primary border-primary/20 bg-primary/10 text-primary'
                               )}
                             >
                               {margin}%
@@ -2344,18 +2344,18 @@ export default function ProductsCatalogPage() {
                           </td>
                           <td className="py-3.5 px-3 text-xs text-muted-foreground">
                             {linkedMat ? (
-                              <span className="text-blue-600 font-semibold">{linkedMat.name}</span>
+                              <span className="text-primary font-semibold">{linkedMat.name}</span>
                             ) : (
                               <span className="text-muted-foreground italic">None</span>
                             )}
                           </td>
                           <td className="py-3.5 px-3">
                             {f.is_active !== false ? (
-                              <span className="inline-flex items-center gap-1 text-2xs font-semibold text-emerald-600">
-                                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"/> Active
+                              <span className="inline-flex items-center gap-1 text-xs font-semibold text-success">
+                                <span className="h-1.5 w-1.5 rounded-full bg-success"/> Active
                               </span>
                             ) : (
-                              <span className="inline-flex items-center gap-1 text-2xs font-semibold text-muted-foreground">
+                              <span className="inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground">
                                 <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground"/> Inactive
                               </span>
                             )}
@@ -2372,7 +2372,7 @@ export default function ProductsCatalogPage() {
                               </Button>
                               <Button
  size="sm"variant="ghost"onClick={() => handleDeleteFinishingOption(f.id)}
- className="h-7 w-7 p-0 text-rose-500 hover:text-rose-700 hover:bg-rose-50"title="Delete Finishing Option">
+ className="h-7 w-7 p-0 text-destructive hover:text-destructive hover:bg-danger-surface"title="Delete Finishing Option">
                                 <Trash2 className="h-3.5 w-3.5"/>
                               </Button>
                             </div>
@@ -2463,13 +2463,13 @@ export default function ProductsCatalogPage() {
                           </td>
                           <td className="py-3.5 px-3 text-xs text-muted-foreground">
                             {linkedProduct ? (
-                              <span className="text-blue-600 font-semibold">{linkedProduct.name}</span>
+                              <span className="text-primary font-semibold">{linkedProduct.name}</span>
                             ) : (
                               <span className="text-muted-foreground italic">None (Custom)</span>
                             )}
                           </td>
                           <td className="py-3.5 px-3 tabular-nums text-xs">
-                            <Badge variant="outline"className="text-2xs uppercase">
+                            <Badge variant="outline"className="text-xs uppercase">
                               {a.pricing_method?.replace('_', ' ')}
                             </Badge>
                           </td>
@@ -2482,10 +2482,10 @@ export default function ProductsCatalogPage() {
                           <td className="py-3.5 px-3 tabular-nums text-xs">
                             <span
  className={cn(
-                                'inline-flex items-center px-1.5 py-0.5 rounded text-2xs font-bold border',
+                                'inline-flex items-center px-1.5 py-0.5 rounded text-xs font-bold border',
  margin >= 35
-                                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300'
-                                  : 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300'
+                                  ? 'bg-success-surface text-success border-success-border bg-success-surface text-success'
+                                  : 'bg-primary/10 text-primary border-primary/20 bg-primary/10 text-primary'
                               )}
                             >
                               {margin}%
@@ -2493,11 +2493,11 @@ export default function ProductsCatalogPage() {
                           </td>
                           <td className="py-3.5 px-3">
                             {a.is_active !== false ? (
-                              <span className="inline-flex items-center gap-1 text-2xs font-semibold text-emerald-600">
-                                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"/> Active
+                              <span className="inline-flex items-center gap-1 text-xs font-semibold text-success">
+                                <span className="h-1.5 w-1.5 rounded-full bg-success"/> Active
                               </span>
                             ) : (
-                              <span className="inline-flex items-center gap-1 text-2xs font-semibold text-muted-foreground">
+                              <span className="inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground">
                                 <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground"/> Inactive
                               </span>
                             )}
@@ -2514,7 +2514,7 @@ export default function ProductsCatalogPage() {
                               </Button>
                               <Button
  size="sm"variant="ghost"onClick={() => handleDeleteAdditionalOption(a.id)}
- className="h-7 w-7 p-0 text-rose-500 hover:text-rose-700 hover:bg-rose-50"title="Delete Additional Option">
+ className="h-7 w-7 p-0 text-destructive hover:text-destructive hover:bg-danger-surface"title="Delete Additional Option">
                                 <Trash2 className="h-3.5 w-3.5"/>
                               </Button>
                             </div>
@@ -2604,13 +2604,13 @@ export default function ProductsCatalogPage() {
                             {i.name_bn && <div className="text-xs text-muted-foreground font-medium font-bengali">{i.name_bn}</div>}
                           </td>
                           <td className="py-3.5 px-3">
-                            <span className="capitalize px-2 py-0.5 rounded text-2xs font-semibold bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/40 dark:text-blue-300">
+                            <span className="capitalize px-2 py-0.5 rounded text-xs font-semibold bg-primary/10 text-primary border border-primary/20 bg-primary/10 text-primary">
                               {i.fulfillment_type || 'Installation'}
                             </span>
                           </td>
                           <td className="py-3.5 px-3">
                             {i.creates_task ? (
-                              <Badge className="bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300 text-2xs">
+                              <Badge className="bg-success-surface text-success border-success-border bg-success-surface/60 text-success text-xs">
                                 🛠️ Auto-Task
                               </Badge>
                             ) : (
@@ -2618,7 +2618,7 @@ export default function ProductsCatalogPage() {
                             )}
                           </td>
                           <td className="py-3.5 px-3 tabular-nums text-xs">
-                            <Badge variant="outline"className="text-2xs uppercase">
+                            <Badge variant="outline"className="text-xs uppercase">
                               {i.pricing_method?.replace('_', ' ')}
                             </Badge>
                           </td>
@@ -2631,10 +2631,10 @@ export default function ProductsCatalogPage() {
                           <td className="py-3.5 px-3 tabular-nums text-xs">
                             <span
  className={cn(
-                                'inline-flex items-center px-1.5 py-0.5 rounded text-2xs font-bold border',
+                                'inline-flex items-center px-1.5 py-0.5 rounded text-xs font-bold border',
  margin >= 35
-                                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300'
-                                  : 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300'
+                                  ? 'bg-success-surface text-success border-success-border bg-success-surface text-success'
+                                  : 'bg-primary/10 text-primary border-primary/20 bg-primary/10 text-primary'
                               )}
                             >
                               {margin}%
@@ -2642,11 +2642,11 @@ export default function ProductsCatalogPage() {
                           </td>
                           <td className="py-3.5 px-3">
                             {i.is_active !== false ? (
-                              <span className="inline-flex items-center gap-1 text-2xs font-semibold text-emerald-600">
-                                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"/> Active
+                              <span className="inline-flex items-center gap-1 text-xs font-semibold text-success">
+                                <span className="h-1.5 w-1.5 rounded-full bg-success"/> Active
                               </span>
                             ) : (
-                              <span className="inline-flex items-center gap-1 text-2xs font-semibold text-muted-foreground">
+                              <span className="inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground">
                                 <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground"/> Inactive
                               </span>
                             )}
@@ -2663,7 +2663,7 @@ export default function ProductsCatalogPage() {
                               </Button>
                               <Button
  size="sm"variant="ghost"onClick={() => handleDeleteInstallationOption(i.id)}
- className="h-7 w-7 p-0 text-rose-500 hover:text-rose-700 hover:bg-rose-50"title="Delete Installation Option">
+ className="h-7 w-7 p-0 text-destructive hover:text-destructive hover:bg-danger-surface"title="Delete Installation Option">
                                 <Trash2 className="h-3.5 w-3.5"/>
                               </Button>
                             </div>
@@ -2753,11 +2753,11 @@ export default function ProductsCatalogPage() {
                           <td className="py-3.5 px-4 min-w-[200px]">
                             <Link
  href={getTenantNavHref(`/products/${item.id}`, pathname, slug)}
- className="font-bold text-foreground hover:text-blue-600 flex items-center gap-1.5 group">
+ className="font-bold text-foreground hover:text-primary flex items-center gap-1.5 group">
                               <span>{locale === 'bn' ? (item.name_bn || item.name) : item.name}</span>
-                              <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 text-blue-600 transition-opacity"/>
+                              <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 text-primary transition-opacity"/>
                             </Link>
-                            <div className="text-2xs tabular-nums text-muted-foreground mt-0.5">
+                            <div className="text-xs tabular-nums text-muted-foreground mt-0.5">
                               {item.sku} • {item.category || 'printing'}
                             </div>
                           </td>
@@ -2767,7 +2767,7 @@ export default function ProductsCatalogPage() {
                             </Badge>
                           </td>
                           <td className="py-3.5 px-3 whitespace-nowrap tabular-nums text-xs text-foreground">
-                            <Badge variant="secondary"className="text-2xs uppercase whitespace-nowrap">
+                            <Badge variant="secondary"className="text-xs uppercase whitespace-nowrap">
                               {(item.pricing_method || item.service_config?.pricing_method || 'per_area').replace('_', ' ')}
                             </Badge>
                           </td>
@@ -2775,12 +2775,12 @@ export default function ProductsCatalogPage() {
                             {presets.length > 0 ? (
                               <div className="flex flex-wrap gap-1 max-w-[160px]">
                                 {presets.slice(0, 2).map((p, idx) => (
-                                  <span key={idx} className="px-1.5 py-0.5 bg-muted text-2xs tabular-nums rounded whitespace-nowrap">
+                                  <span key={idx} className="px-1.5 py-0.5 bg-muted text-xs tabular-nums rounded whitespace-nowrap">
                                     {p.width}&apos;×{p.length}&apos;
                                   </span>
                                 ))}
                                 {presets.length > 2 && (
-                                  <span className="text-2xs text-muted-foreground tabular-nums whitespace-nowrap">+{presets.length - 2} more</span>
+                                  <span className="text-xs text-muted-foreground tabular-nums whitespace-nowrap">+{presets.length - 2} more</span>
                                 )}
                               </div>
                             ) : (
@@ -2789,7 +2789,7 @@ export default function ProductsCatalogPage() {
                           </td>
                           <td className="py-3.5 px-3 whitespace-nowrap">
                             {finishings.length > 0 ? (
-                              <Badge variant="secondary"className="text-2xs whitespace-nowrap">
+                              <Badge variant="secondary"className="text-xs whitespace-nowrap">
                                 {finishings.length} options
                               </Badge>
                             ) : (
@@ -2799,13 +2799,13 @@ export default function ProductsCatalogPage() {
                           <td className="py-3.5 px-3 whitespace-nowrap tabular-nums text-xs text-muted-foreground">
                             <span className="inline-flex items-baseline gap-0.5 whitespace-nowrap">
                               <CurrencyDisplay amount={item.base_cost} />
-                              <span className="text-2xs text-muted-foreground">/{item.selling_unit || item.unit}</span>
+                              <span className="text-xs text-muted-foreground">/{item.selling_unit || item.unit}</span>
                             </span>
                           </td>
                           <td className="py-3.5 px-3 whitespace-nowrap tabular-nums font-bold text-xs text-foreground">
                             <span className="inline-flex items-baseline gap-0.5 whitespace-nowrap">
                               <CurrencyDisplay amount={item.selling_price} />
-                              <span className="text-2xs font-normal text-muted-foreground">/{item.selling_unit || item.unit}</span>
+                              <span className="text-xs font-normal text-muted-foreground">/{item.selling_unit || item.unit}</span>
                             </span>
                           </td>
                           <td className="py-3.5 px-3 whitespace-nowrap text-center tabular-nums text-xs">
@@ -2813,25 +2813,25 @@ export default function ProductsCatalogPage() {
  className={cn(
                                 'inline-flex items-center whitespace-nowrap px-2 py-0.5 rounded text-xs font-bold border',
  marginPercent >= 35
-                                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300'
+                                  ? 'bg-success-surface text-success border-success-border bg-success-surface text-success'
                                   : marginPercent >= 20
-                                  ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300'
-                                  : 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300'
+                                  ? 'bg-primary/10 text-primary border-primary/20 bg-primary/10 text-primary'
+                                  : 'bg-warning-surface text-warning border-warning-border bg-warning-surface text-warning'
                               )}
                             >
                               {marginPercent}%
                             </span>
                           </td>
                           <td className="py-3.5 px-3 whitespace-nowrap text-center text-xs tabular-nums">
-                            {item.minimum_charge ? <span className="text-blue-600 font-bold">৳{item.minimum_charge}</span> : <span className="text-muted-foreground">—</span>}
+                            {item.minimum_charge ? <span className="text-primary font-bold">৳{item.minimum_charge}</span> : <span className="text-muted-foreground">—</span>}
                           </td>
                           <td className="py-3.5 px-3 whitespace-nowrap text-center">
                             {item.is_active !== false ? (
-                              <span className="inline-flex items-center gap-1 text-2xs font-semibold text-emerald-600">
-                                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"/> Active
+                              <span className="inline-flex items-center gap-1 text-xs font-semibold text-success">
+                                <span className="h-1.5 w-1.5 rounded-full bg-success"/> Active
                               </span>
                             ) : (
-                              <span className="inline-flex items-center gap-1 text-2xs font-semibold text-muted-foreground">
+                              <span className="inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground">
                                 <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground"/> {tBilingual('Archived', 'আর্কাইভড')}
                               </span>
                             )}
@@ -2867,7 +2867,7 @@ export default function ProductsCatalogPage() {
             </div>
             <Button
  size="sm"onClick={handleOpenCreateProduct}
- className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs shrink-0">
+ className="bg-primary hover:bg-primary text-white text-xs shrink-0">
               <Plus className="mr-1.5 h-3.5 w-3.5"/>
  New Ready Product
             </Button>
@@ -2886,7 +2886,7 @@ export default function ProductsCatalogPage() {
                 <p className="text-xs text-muted-foreground max-w-sm mx-auto">
  {tBilingual('Add finished display hardware or stock products with packaging specifications and tiered dealer pricing.', 'প্যাকেজিং স্পেসিফিকেশন ও ডিলার প্রাইসিং সহ ফিনিশড ডিসপ্লে পণ্য যুক্ত করুন।')}
                 </p>
-                <Button size="sm"onClick={handleOpenCreateProduct} className="mt-2 text-xs bg-indigo-600 hover:bg-indigo-700 text-white">
+                <Button size="sm"onClick={handleOpenCreateProduct} className="mt-2 text-xs bg-primary hover:bg-primary text-white">
                   <Plus className="h-3.5 w-3.5 mr-1"/> Add Ready Product
                 </Button>
               </div>
@@ -2919,14 +2919,14 @@ export default function ProductsCatalogPage() {
                           <td className="py-3.5 px-4 min-w-[200px]">
                             <Link
  href={getTenantNavHref(`/products/${item.id}`, pathname, slug)}
- className="font-bold text-foreground hover:text-blue-600 flex items-center gap-1.5 group">
+ className="font-bold text-foreground hover:text-primary flex items-center gap-1.5 group">
                               <span>{item.name}</span>
-                              <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 text-blue-600 transition-opacity"/>
+                              <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 text-primary transition-opacity"/>
                             </Link>
                             {item.name_bn && (
                               <div className="text-xs text-muted-foreground font-medium font-bengali">{item.name_bn}</div>
                             )}
-                            <div className="text-2xs tabular-nums text-muted-foreground mt-0.5">
+                            <div className="text-xs tabular-nums text-muted-foreground mt-0.5">
                               {item.sku} • {item.category || 'hardware'}
                             </div>
                           </td>
@@ -2939,19 +2939,19 @@ export default function ProductsCatalogPage() {
                             <span className="whitespace-nowrap">📦 MOQ: {item.min_order_quantity || 1} {item.unit || 'pcs'}</span>
                           </td>
                           <td className="py-3.5 px-3 whitespace-nowrap">
-                            <div className="flex flex-wrap gap-1 text-2xs tabular-nums">
+                            <div className="flex flex-wrap gap-1 text-xs tabular-nums">
                               {tiers.corporate ? (
-                                <span className="px-1.5 py-0.5 bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300 rounded border border-blue-200 whitespace-nowrap">
+                                <span className="px-1.5 py-0.5 bg-primary/10 text-primary bg-primary/10 text-primary rounded border border-primary/20 whitespace-nowrap">
  Corp: ৳{tiers.corporate}
                                 </span>
                               ) : null}
                               {tiers.dealer ? (
-                                <span className="px-1.5 py-0.5 bg-purple-50 text-purple-700 dark:bg-purple-950/40 dark:text-purple-300 rounded border border-purple-200 whitespace-nowrap">
+                                <span className="px-1.5 py-0.5 bg-primary/10 text-primary bg-primary/10 text-primary rounded border border-primary/20 whitespace-nowrap">
  Dealer: ৳{tiers.dealer}
                                 </span>
                               ) : null}
                               {tiers.wholesale ? (
-                                <span className="px-1.5 py-0.5 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 rounded border border-emerald-200 whitespace-nowrap">
+                                <span className="px-1.5 py-0.5 bg-success-surface text-success bg-success-surface text-success rounded border border-success-border whitespace-nowrap">
  WS: ৳{tiers.wholesale}
                                 </span>
                               ) : null}
@@ -2963,13 +2963,13 @@ export default function ProductsCatalogPage() {
                           <td className="py-3.5 px-3 whitespace-nowrap tabular-nums text-xs text-muted-foreground">
                             <span className="inline-flex items-baseline gap-0.5 whitespace-nowrap">
                               <CurrencyDisplay amount={item.base_cost} />
-                              <span className="text-2xs text-muted-foreground">/{item.selling_unit || item.unit}</span>
+                              <span className="text-xs text-muted-foreground">/{item.selling_unit || item.unit}</span>
                             </span>
                           </td>
                           <td className="py-3.5 px-3 whitespace-nowrap tabular-nums font-bold text-xs text-foreground">
                             <span className="inline-flex items-baseline gap-0.5 whitespace-nowrap">
                               <CurrencyDisplay amount={item.selling_price} />
-                              <span className="text-2xs font-normal text-muted-foreground">/{item.selling_unit || item.unit}</span>
+                              <span className="text-xs font-normal text-muted-foreground">/{item.selling_unit || item.unit}</span>
                             </span>
                           </td>
                           <td className="py-3.5 px-3 whitespace-nowrap text-center tabular-nums text-xs">
@@ -2977,10 +2977,10 @@ export default function ProductsCatalogPage() {
  className={cn(
                                 'inline-flex items-center whitespace-nowrap px-2 py-0.5 rounded text-xs font-bold border',
  marginPercent >= 35
-                                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300'
+                                  ? 'bg-success-surface text-success border-success-border bg-success-surface text-success'
                                   : marginPercent >= 20
-                                  ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300'
-                                  : 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300'
+                                  ? 'bg-primary/10 text-primary border-primary/20 bg-primary/10 text-primary'
+                                  : 'bg-warning-surface text-warning border-warning-border bg-warning-surface text-warning'
                               )}
                             >
                               {marginPercent}%
@@ -2988,11 +2988,11 @@ export default function ProductsCatalogPage() {
                           </td>
                           <td className="py-3.5 px-3 whitespace-nowrap text-center">
                             {item.is_active !== false ? (
-                              <span className="inline-flex items-center gap-1 text-2xs font-semibold text-emerald-600">
-                                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"/> Active
+                              <span className="inline-flex items-center gap-1 text-xs font-semibold text-success">
+                                <span className="h-1.5 w-1.5 rounded-full bg-success"/> Active
                               </span>
                             ) : (
-                              <span className="inline-flex items-center gap-1 text-2xs font-semibold text-muted-foreground">
+                              <span className="inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground">
                                 <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground"/> Archived
                               </span>
                             )}
@@ -3028,7 +3028,7 @@ export default function ProductsCatalogPage() {
             </div>
             <Button
  size="sm"onClick={handleOpenCreateMaterial}
- className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs shrink-0">
+ className="bg-success hover:bg-success text-white text-xs shrink-0">
               <Plus className="mr-1.5 h-3.5 w-3.5"/>
  New Raw Material
             </Button>
@@ -3047,7 +3047,7 @@ export default function ProductsCatalogPage() {
                 <p className="text-xs text-muted-foreground max-w-sm mx-auto">
  {tBilingual('Add media (rolls, sheets, inks) with bulk procurement rates, dimensional conversion ratios, and wastage factors.', 'পাইকারি ক্রয় দর ও রূপান্তর হিসাব সহ কাঁচামাল যুক্ত করুন।')}
                 </p>
-                <Button size="sm"onClick={handleOpenCreateMaterial} className="mt-2 text-xs bg-emerald-600 hover:bg-emerald-700 text-white">
+                <Button size="sm"onClick={handleOpenCreateMaterial} className="mt-2 text-xs bg-success hover:bg-success text-white">
                   <Plus className="h-3.5 w-3.5 mr-1"/> Add Raw Material
                 </Button>
               </div>
@@ -3075,28 +3075,28 @@ export default function ProductsCatalogPage() {
                           <td className="py-3.5 px-4 min-w-[200px]">
                             <Link
  href={getTenantNavHref(`/products/${item.id}`, pathname, slug)}
- className="font-bold text-foreground hover:text-blue-600 flex items-center gap-1.5 group">
+ className="font-bold text-foreground hover:text-primary flex items-center gap-1.5 group">
                               <span>{item.name}</span>
-                              <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 text-blue-600 transition-opacity"/>
+                              <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 text-primary transition-opacity"/>
                             </Link>
                             {item.name_bn && (
                               <div className="text-xs text-muted-foreground font-medium font-bengali">{item.name_bn}</div>
                             )}
-                            <div className="text-2xs tabular-nums text-muted-foreground mt-0.5">
+                            <div className="text-xs tabular-nums text-muted-foreground mt-0.5">
                               {item.sku} • {item.material_spec || 'Standard Grade'}
                             </div>
                           </td>
                           <td className="py-3.5 px-3 whitespace-nowrap">
                             {item.roll_width_ft && item.roll_length_ft ? (
-                              <Badge variant="outline"className="text-2xs tabular-nums bg-blue-50/50 whitespace-nowrap">
+                              <Badge variant="outline"className="text-xs tabular-nums bg-primary/10/50 whitespace-nowrap">
  Roll: {item.roll_width_ft}&apos; × {item.roll_length_ft}&apos;
                               </Badge>
                             ) : item.sheet_width_ft && item.sheet_length_ft ? (
-                              <Badge variant="outline"className="text-2xs tabular-nums bg-emerald-50/50 whitespace-nowrap">
+                              <Badge variant="outline"className="text-xs tabular-nums bg-success-surface/50 whitespace-nowrap">
  Sheet: {item.sheet_width_ft}&apos; × {item.sheet_length_ft}&apos;
                               </Badge>
                             ) : (
-                              <Badge variant="outline"className="text-2xs tabular-nums whitespace-nowrap">
+                              <Badge variant="outline"className="text-xs tabular-nums whitespace-nowrap">
  Unit ({item.unit})
                               </Badge>
                             )}
@@ -3115,14 +3115,14 @@ export default function ProductsCatalogPage() {
                           <td className="py-3.5 px-3 whitespace-nowrap tabular-nums text-xs text-muted-foreground">
                             <div className="whitespace-nowrap">1 {item.purchase_unit || 'roll'} = {getProductConversionRatio(item)} {item.selling_unit || item.unit}</div>
                             {item.default_wastage_percentage ? (
-                              <div className="text-2xs text-amber-600 whitespace-nowrap">({item.default_wastage_percentage}% waste allowance)</div>
+                              <div className="text-xs text-warning whitespace-nowrap">({item.default_wastage_percentage}% waste allowance)</div>
                             ) : null}
                           </td>
                           <td className="py-3.5 px-3 whitespace-nowrap">
                             {printingList.length > 0 ? (
                               <div className="flex flex-wrap gap-1">
                                 {printingList.map((m, idx) => (
-                                  <Badge key={idx} variant="secondary"className="text-2xs uppercase tabular-nums whitespace-nowrap">
+                                  <Badge key={idx} variant="secondary"className="text-xs uppercase tabular-nums whitespace-nowrap">
                                     {m}
                                   </Badge>
                                 ))}
@@ -3134,16 +3134,16 @@ export default function ProductsCatalogPage() {
                           <td className="py-3.5 px-3 whitespace-nowrap tabular-nums font-bold text-xs text-foreground">
                             <span className="inline-flex items-baseline gap-0.5 whitespace-nowrap">
                               <span>৳{item.base_cost}</span>
-                              <span className="text-2xs font-normal text-muted-foreground">/{item.selling_unit || item.unit}</span>
+                              <span className="text-xs font-normal text-muted-foreground">/{item.selling_unit || item.unit}</span>
                             </span>
                           </td>
                           <td className="py-3.5 px-3 whitespace-nowrap text-center">
                             {item.is_active !== false ? (
-                              <span className="inline-flex items-center gap-1 text-2xs font-semibold text-emerald-600">
-                                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"/> Active
+                              <span className="inline-flex items-center gap-1 text-xs font-semibold text-success">
+                                <span className="h-1.5 w-1.5 rounded-full bg-success"/> Active
                               </span>
                             ) : (
-                              <span className="inline-flex items-center gap-1 text-2xs font-semibold text-muted-foreground">
+                              <span className="inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground">
                                 <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground"/> Archived
                               </span>
                             )}
@@ -3169,7 +3169,7 @@ export default function ProductsCatalogPage() {
             <div>
               <CardTitle className="text-sm font-bold text-foreground flex items-center gap-2">
                 <span>{tBilingual('Outsource Products & Subcontract Services', 'আউটসোর্স পণ্য ও সাব-কন্ট্রাক্ট সার্ভিস')}</span>
-                <Badge variant="outline"className="text-xs tabular-nums font-bold text-purple-600 border-purple-300">
+                <Badge variant="outline"className="text-xs tabular-nums font-bold text-primary border-primary/20">
                   {filteredProducts.length}
                 </Badge>
               </CardTitle>
@@ -3179,7 +3179,7 @@ export default function ProductsCatalogPage() {
             </div>
             <Button
  size="sm"onClick={handleOpenCreateOutsource}
- className="bg-purple-600 hover:bg-purple-700 text-white text-xs shrink-0 font-bold">
+ className="bg-primary hover:bg-primary text-white text-xs shrink-0 font-bold">
               <Plus className="mr-1.5 h-3.5 w-3.5"/>
  New Outsource Product
             </Button>
@@ -3193,12 +3193,12 @@ export default function ProductsCatalogPage() {
               </div>
             ) : filteredProducts.length === 0 ? (
               <div className="p-12 text-center space-y-3">
-                <Share2 className="h-10 w-10 text-purple-300 mx-auto"/>
+                <Share2 className="h-10 w-10 text-primary mx-auto"/>
                 <h3 className="text-sm font-bold text-foreground">{tBilingual('No Outsource Products Found', 'কোনো আউটসোর্স পণ্য পাওয়া যায়নি')}</h3>
                 <p className="text-xs text-muted-foreground max-w-sm mx-auto">
  {tBilingual('Add non-inventory outsource items with third-party vendor cost, turnaround lead time, and multi-tier pricing.', 'ভেন্ডর খরচ ও সময়সীমা উল্লেখ করে আউটসোর্স আইটেম যুক্ত করুন।')}
                 </p>
-                <Button size="sm"onClick={handleOpenCreateOutsource} className="mt-2 text-xs bg-purple-600 hover:bg-purple-700 text-white">
+                <Button size="sm"onClick={handleOpenCreateOutsource} className="mt-2 text-xs bg-primary hover:bg-primary text-white">
                   <Plus className="h-3.5 w-3.5 mr-1"/> Add Outsource Product
                 </Button>
               </div>
@@ -3234,54 +3234,54 @@ export default function ProductsCatalogPage() {
                           <td className="py-3.5 px-4 min-w-[200px]">
                             <Link
  href={getTenantNavHref(`/products/${item.id}`, pathname, slug)}
- className="font-bold text-foreground hover:text-purple-600 flex items-center gap-1.5 group">
+ className="font-bold text-foreground hover:text-primary flex items-center gap-1.5 group">
                               <span>{item.name}</span>
-                              <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 text-purple-600 transition-opacity"/>
+                              <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 text-primary transition-opacity"/>
                             </Link>
                             {item.name_bn && (
                               <div className="text-xs text-muted-foreground font-medium font-bengali">{item.name_bn}</div>
                             )}
-                            <div className="text-2xs tabular-nums text-muted-foreground mt-0.5">
+                            <div className="text-xs tabular-nums text-muted-foreground mt-0.5">
                               {item.sku} • {item.category || 'outsource'}
                             </div>
                           </td>
                           <td className="py-3.5 px-3 whitespace-nowrap">
                             <div className="font-semibold text-xs text-foreground flex items-center gap-1 whitespace-nowrap">
-                              <Building2 className="h-3 w-3 text-purple-500"/>
+                              <Building2 className="h-3 w-3 text-primary"/>
                               <span>{vendorName}</span>
                             </div>
                             {vendorPhone && (
-                              <div className="text-2xs text-muted-foreground tabular-nums whitespace-nowrap">{vendorPhone}</div>
+                              <div className="text-xs text-muted-foreground tabular-nums whitespace-nowrap">{vendorPhone}</div>
                             )}
                             {item.vendor_item_code && (
-                              <div className="text-2xs text-muted-foreground tabular-nums whitespace-nowrap">Ref: {item.vendor_item_code}</div>
+                              <div className="text-xs text-muted-foreground tabular-nums whitespace-nowrap">Ref: {item.vendor_item_code}</div>
                             )}
                           </td>
                           <td className="py-3.5 px-3 whitespace-nowrap">
                             <div className="flex flex-col gap-1">
                               <span className="inline-flex items-center gap-1 text-xs font-semibold text-foreground whitespace-nowrap">
-                                <Clock className="h-3 w-3 text-amber-500"/>
+                                <Clock className="h-3 w-3 text-warning"/>
                                 {turnaround} {turnaround === 1 ? 'day' : 'days'}
                               </span>
-                              <Badge variant="outline"className="text-2xs bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300 w-fit whitespace-nowrap">
+                              <Badge variant="outline"className="text-xs bg-primary/10 text-primary border-primary/20 bg-primary/10 text-primary w-fit whitespace-nowrap">
  Non-Inventory
                               </Badge>
                             </div>
                           </td>
                           <td className="py-3.5 px-3 whitespace-nowrap">
-                            <div className="flex flex-wrap gap-1 text-2xs tabular-nums">
+                            <div className="flex flex-wrap gap-1 text-xs tabular-nums">
                               {tiers.corporate ? (
-                                <span className="px-1.5 py-0.5 bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300 rounded border border-blue-200 whitespace-nowrap">
+                                <span className="px-1.5 py-0.5 bg-primary/10 text-primary bg-primary/10 text-primary rounded border border-primary/20 whitespace-nowrap">
  Corp: ৳{tiers.corporate}
                                 </span>
                               ) : null}
                               {tiers.dealer ? (
-                                <span className="px-1.5 py-0.5 bg-purple-50 text-purple-700 dark:bg-purple-950/40 dark:text-purple-300 rounded border border-purple-200 whitespace-nowrap">
+                                <span className="px-1.5 py-0.5 bg-primary/10 text-primary bg-primary/10 text-primary rounded border border-primary/20 whitespace-nowrap">
  Dealer: ৳{tiers.dealer}
                                 </span>
                               ) : null}
                               {tiers.wholesale ? (
-                                <span className="px-1.5 py-0.5 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 rounded border border-emerald-200 whitespace-nowrap">
+                                <span className="px-1.5 py-0.5 bg-success-surface text-success bg-success-surface text-success rounded border border-success-border whitespace-nowrap">
  WS: ৳{tiers.wholesale}
                                 </span>
                               ) : null}
@@ -3293,13 +3293,13 @@ export default function ProductsCatalogPage() {
                           <td className="py-3.5 px-3 whitespace-nowrap tabular-nums text-xs text-muted-foreground">
                             <span className="inline-flex items-baseline gap-0.5 whitespace-nowrap">
                               <CurrencyDisplay amount={item.base_cost} />
-                              <span className="text-2xs text-muted-foreground">/{item.selling_unit || item.unit}</span>
+                              <span className="text-xs text-muted-foreground">/{item.selling_unit || item.unit}</span>
                             </span>
                           </td>
                           <td className="py-3.5 px-3 whitespace-nowrap tabular-nums font-bold text-xs text-foreground">
                             <span className="inline-flex items-baseline gap-0.5 whitespace-nowrap">
                               <CurrencyDisplay amount={item.selling_price} />
-                              <span className="text-2xs font-normal text-muted-foreground">/{item.selling_unit || item.unit}</span>
+                              <span className="text-xs font-normal text-muted-foreground">/{item.selling_unit || item.unit}</span>
                             </span>
                           </td>
                           <td className="py-3.5 px-3 whitespace-nowrap text-center tabular-nums text-xs">
@@ -3307,10 +3307,10 @@ export default function ProductsCatalogPage() {
  className={cn(
                                 'inline-flex items-center whitespace-nowrap px-2 py-0.5 rounded text-xs font-bold border',
  marginPercent >= 35
-                                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300'
+                                  ? 'bg-success-surface text-success border-success-border bg-success-surface text-success'
                                   : marginPercent >= 20
-                                  ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300'
-                                  : 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300'
+                                  ? 'bg-primary/10 text-primary border-primary/20 bg-primary/10 text-primary'
+                                  : 'bg-warning-surface text-warning border-warning-border bg-warning-surface text-warning'
                               )}
                             >
                               {marginPercent}%
@@ -3318,11 +3318,11 @@ export default function ProductsCatalogPage() {
                           </td>
                           <td className="py-3.5 px-3 whitespace-nowrap text-center">
                             {item.is_active !== false ? (
-                              <span className="inline-flex items-center gap-1 text-2xs font-semibold text-emerald-600">
-                                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"/> Active
+                              <span className="inline-flex items-center gap-1 text-xs font-semibold text-success">
+                                <span className="h-1.5 w-1.5 rounded-full bg-success"/> Active
                               </span>
                             ) : (
-                              <span className="inline-flex items-center gap-1 text-2xs font-semibold text-muted-foreground">
+                              <span className="inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground">
                                 <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground"/> Archived
                               </span>
                             )}
@@ -3373,7 +3373,7 @@ export default function ProductsCatalogPage() {
                 <p className="text-xs text-muted-foreground max-w-sm mx-auto">
  {tBilingual('No catalog items matched your current filter criteria. Create a new product or reset your search.', 'আপনার ফিল্টারের সাথে মিলে এমন কোনো পণ্য পাওয়া যায়নি। নতুন পণ্য তৈরি করুন অথবা ফিল্টার রিসেট করুন।')}
                 </p>
-                <Button size="sm"onClick={handleOpenCreate} className="mt-2 text-xs bg-blue-600 hover:bg-blue-700">
+                <Button size="sm"onClick={handleOpenCreate} className="mt-2 text-xs bg-primary hover:bg-primary">
                   <Plus className="h-3.5 w-3.5 mr-1"/> {tBilingual('Add New Item', 'নতুন আইটেম যোগ করুন')}
                 </Button>
               </div>
@@ -3412,14 +3412,14 @@ export default function ProductsCatalogPage() {
                           <td className="py-3.5 px-4 min-w-[200px]">
                             <Link
  href={getTenantNavHref(`/products/${item.id}`, pathname, slug)}
- className="font-bold text-foreground hover:text-blue-600 flex items-center gap-1.5 group">
+ className="font-bold text-foreground hover:text-primary flex items-center gap-1.5 group">
                               <span>{item.name}</span>
-                              <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 text-blue-600 transition-opacity"/>
+                              <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 text-primary transition-opacity"/>
                             </Link>
                             {item.name_bn && (
                               <div className="text-xs text-muted-foreground font-medium font-bengali">{item.name_bn}</div>
                             )}
-                            <div className="text-2xs tabular-nums text-muted-foreground mt-0.5">
+                            <div className="text-xs tabular-nums text-muted-foreground mt-0.5">
                               {item.sku} {item.material_spec ? `• ${item.material_spec}` : ''}
                             </div>
                           </td>
@@ -3428,14 +3428,14 @@ export default function ProductsCatalogPage() {
                           <td className="py-3.5 px-3 whitespace-nowrap">
                             <span
  className={cn(
-                                'inline-flex items-center whitespace-nowrap capitalize px-2 py-0.5 rounded text-2xs font-semibold border',
+                                'inline-flex items-center whitespace-nowrap capitalize px-2 py-0.5 rounded text-xs font-semibold border',
  isOutsourceProduct(item)
-                                  ? 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300'
+                                  ? 'bg-primary/10 text-primary border-primary/20 bg-primary/10 text-primary'
                                   : isServiceProduct(item)
-                                  ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300'
+                                  ? 'bg-primary/10 text-primary border-primary/20 bg-primary/10 text-primary'
                                   : isMaterialProduct(item)
-                                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300'
-                                  : 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950/40 dark:text-indigo-300'
+                                  ? 'bg-success-surface text-success border-success-border bg-success-surface text-success'
+                                  : 'bg-primary/10 text-primary border-primary/20 bg-primary/10 text-primary'
                               )}
                             >
                               {getProductEntityKindLabel(item, locale)}
@@ -3449,7 +3449,7 @@ export default function ProductsCatalogPage() {
                                 <div className="tabular-nums text-xs font-bold text-foreground whitespace-nowrap">
                                   ৳{item.purchase_price} / {item.purchase_unit || 'roll'}
                                 </div>
-                                <div className="text-2xs text-muted-foreground tabular-nums whitespace-nowrap">
+                                <div className="text-xs text-muted-foreground tabular-nums whitespace-nowrap">
                                   1 {item.purchase_unit || 'roll'} = {getProductConversionRatio(item)} {item.selling_unit || item.unit}
                                   {item.default_wastage_percentage ? ` (${item.default_wastage_percentage}% waste)` : ''}
                                 </div>
@@ -3463,7 +3463,7 @@ export default function ProductsCatalogPage() {
                           <td className="py-3.5 px-3 whitespace-nowrap text-xs font-semibold text-muted-foreground tabular-nums">
                             <span className="inline-flex items-baseline gap-0.5 whitespace-nowrap">
                               <CurrencyDisplay amount={item.base_cost} />
-                              <span className="text-2xs text-muted-foreground font-normal">/{item.selling_unit || item.unit}</span>
+                              <span className="text-xs text-muted-foreground font-normal">/{item.selling_unit || item.unit}</span>
                             </span>
                           </td>
 
@@ -3481,10 +3481,10 @@ export default function ProductsCatalogPage() {
  className={cn(
                                 'inline-flex items-center whitespace-nowrap px-2 py-0.5 rounded text-xs font-bold border tabular-nums',
  marginPercent >= 35
-                                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900'
+                                  ? 'bg-success-surface text-success border-success-border bg-success-surface text-success border-success-border'
                                   : marginPercent >= 20
-                                  ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-900'
-                                  : 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-900'
+                                  ? 'bg-primary/10 text-primary border-primary/20 bg-primary/10 text-primary border-border'
+                                  : 'bg-warning-surface text-warning border-warning-border bg-warning-surface text-warning border-warning-border'
                               )}
                             >
                               {marginPercent}%
@@ -3494,7 +3494,7 @@ export default function ProductsCatalogPage() {
                           {/* Minimum Charge */}
                           <td className="py-3.5 px-3 whitespace-nowrap text-center text-xs tabular-nums font-medium text-muted-foreground">
                             {item.minimum_charge && item.minimum_charge > 0 ? (
-                              <span className="text-blue-600 font-bold">৳{item.minimum_charge}</span>
+                              <span className="text-primary font-bold">৳{item.minimum_charge}</span>
                             ) : (
                               <span className="text-muted-foreground">—</span>
                             )}
@@ -3503,11 +3503,11 @@ export default function ProductsCatalogPage() {
                           {/* Status */}
                           <td className="py-3.5 px-3 whitespace-nowrap text-center">
                             {item.is_active !== false ? (
-                              <span className="inline-flex items-center gap-1 text-2xs font-semibold text-emerald-600 dark:text-emerald-400">
-                                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"/> Active
+                              <span className="inline-flex items-center gap-1 text-xs font-semibold text-success text-success">
+                                <span className="h-1.5 w-1.5 rounded-full bg-success"/> Active
                               </span>
                             ) : (
-                              <span className="inline-flex items-center gap-1 text-2xs font-semibold text-muted-foreground">
+                              <span className="inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground">
                                 <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground"/> Archived
                               </span>
                             )}
@@ -3538,23 +3538,23 @@ export default function ProductsCatalogPage() {
                         <div>
                           <Link
                           href={getTenantNavHref(`/products/${item.id}`, pathname, slug)}
-                          className="font-bold text-sm text-foreground hover:text-blue-600">
+                          className="font-bold text-sm text-foreground hover:text-primary">
                           {locale === 'bn' ? (item.name_bn || item.name) : item.name}
                         </Link>
-                          <div className="text-2xs tabular-nums text-muted-foreground mt-0.5">
+                          <div className="text-xs tabular-nums text-muted-foreground mt-0.5">
                             {item.sku} • {item.material_spec || 'Standard Spec'}
                           </div>
                         </div>
                         <span
  className={cn(
-                            'capitalize px-2 py-0.5 rounded text-2xs font-semibold border shrink-0',
+                            'capitalize px-2 py-0.5 rounded text-xs font-semibold border shrink-0',
  isOutsourceProduct(item)
-                              ? 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300'
+                              ? 'bg-primary/10 text-primary border-primary/20 bg-primary/10 text-primary'
                               : isServiceProduct(item)
-                              ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300'
+                              ? 'bg-primary/10 text-primary border-primary/20 bg-primary/10 text-primary'
                               : isMaterialProduct(item)
-                              ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300'
-                              : 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950/40 dark:text-indigo-300'
+                              ? 'bg-success-surface text-success border-success-border bg-success-surface text-success'
+                              : 'bg-primary/10 text-primary border-primary/20 bg-primary/10 text-primary'
                           )}
                         >
                           {getProductEntityKindLabel(item, locale)}
@@ -3571,20 +3571,20 @@ export default function ProductsCatalogPage() {
                       {/* Metrics Grid */}
                       <div className="grid grid-cols-3 gap-2 p-2.5 bg-muted rounded-lg text-center border border-border">
                         <div>
-                          <span className="text-2xs text-muted-foreground uppercase block">{tBilingual('Selling Rate', 'বিক্রয় দর')}</span>
-                          <div className="tabular-nums font-bold text-xs text-blue-600 dark:text-blue-400">
+                          <span className="text-xs text-muted-foreground uppercase block">{tBilingual('Selling Rate', 'বিক্রয় দর')}</span>
+                          <div className="tabular-nums font-bold text-xs text-primary text-primary">
                             ৳{item.selling_price}/{item.selling_unit || item.unit}
                           </div>
                         </div>
                         <div>
-                          <span className="text-2xs text-muted-foreground uppercase block">{tBilingual('Eff. Cost', 'কার্যকর খরচ')}</span>
+                          <span className="text-xs text-muted-foreground uppercase block">{tBilingual('Eff. Cost', 'কার্যকর খরচ')}</span>
                           <div className="tabular-nums text-xs text-muted-foreground">
                             ৳{item.base_cost}
                           </div>
                         </div>
                         <div>
-                          <span className="text-2xs text-emerald-600 uppercase block">{tBilingual('Margin', 'মার্জিন')}</span>
-                          <div className="tabular-nums font-bold text-xs text-emerald-600">
+                          <span className="text-xs text-success uppercase block">{tBilingual('Margin', 'মার্জিন')}</span>
+                          <div className="tabular-nums font-bold text-xs text-success">
                             {marginPercent}%
                           </div>
                         </div>
@@ -3601,7 +3601,7 @@ export default function ProductsCatalogPage() {
                         ) : (
                           <Button
  size="sm"onClick={() => handleToggleArchive(item)}
- className="flex-1 h-9 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs">
+ className="flex-1 h-9 text-xs font-bold bg-success hover:bg-success text-white shadow-xs">
                             <RefreshCw className="h-3.5 w-3.5 mr-1"/> {tBilingual('Restore Item', 'আইটেম পুনরুদ্ধার করুন')}
                           </Button>
                         )}
@@ -3641,7 +3641,7 @@ export default function ProductsCatalogPage() {
  size="2xl"hideFooter={true}
  title={
           <div className="flex items-center gap-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 font-bold shrink-0">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary bg-primary/20 text-primary font-bold shrink-0">
               <Calculator className="h-5 w-5"/>
             </div>
             <div>
@@ -3649,11 +3649,11 @@ export default function ProductsCatalogPage() {
                 <span className="text-base font-black text-foreground">
  Fast Estimate & Quotation
                 </span>
-                <Badge variant="outline"className="text-2xs uppercase tabular-nums py-0.5 px-1.5 bg-blue-50 text-blue-700 border-blue-200">
+                <Badge variant="outline"className="text-xs uppercase tabular-nums py-0.5 px-1.5 bg-primary/10 text-primary border-primary/20">
  Instant Quote
                 </Badge>
               </div>
-              <p className="text-2xs text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 {fastQuoteProduct?.name} ({fastQuoteProduct?.sku})
               </p>
             </div>
@@ -3664,17 +3664,17 @@ export default function ProductsCatalogPage() {
           <div className="space-y-4 pt-1">
             {/* Created Confirmation Banner */}
             {createdQuoteNumber && (
-              <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl space-y-2 text-emerald-900">
+              <div className="p-4 bg-success-surface border border-success-border rounded-xl space-y-2 text-success">
                 <div className="flex items-center gap-2 font-bold text-sm">
-                  <CheckCircle2 className="h-5 w-5 text-emerald-600"/>
+                  <CheckCircle2 className="h-5 w-5 text-success"/>
                   <span>Quotation Created: {createdQuoteNumber}</span>
                 </div>
-                <p className="text-xs text-emerald-800">
+                <p className="text-xs text-success">
  The quotation has been saved authoritatively in PostgreSQL and can now be dispatched to the client.
                 </p>
                 <div className="flex items-center gap-2 pt-1">
                   <Link href={getTenantNavHref('/quotations', pathname, slug)}>
-                    <Button size="sm"className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs">
+                    <Button size="sm"className="bg-success hover:bg-success text-white text-xs">
  View in Quotations Module
                     </Button>
                   </Link>
@@ -3695,7 +3695,7 @@ export default function ProductsCatalogPage() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <Label className="text-xs font-semibold mb-1 block">
- Customer / Company Name <span className="text-rose-500">*</span>
+ Customer / Company Name <span className="text-destructive">*</span>
                       </Label>
                       <Input
  placeholder={tBilingual("e.g. ABC Advertising Ltd", "যেমন: এবিসি অ্যাডভারটাইজিং লি:")}value={quoteCustomerName}
@@ -3705,7 +3705,7 @@ export default function ProductsCatalogPage() {
                     </div>
                     <div>
                       <Label className="text-xs font-semibold mb-1 block">
- Mobile Number (WhatsApp) <span className="text-rose-500">*</span>
+ Mobile Number (WhatsApp) <span className="text-destructive">*</span>
                       </Label>
                       <Input
  placeholder="e.g. 01711223344"value={quoteCustomerPhone}
@@ -3756,9 +3756,9 @@ export default function ProductsCatalogPage() {
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between p-2.5 bg-blue-50/60 dark:bg-blue-950/30 rounded-lg text-xs">
+                  <div className="flex items-center justify-between p-2.5 bg-primary/10/60 bg-primary/10 rounded-lg text-xs">
                     <span className="text-muted-foreground">Calculated Billable Area:</span>
-                    <span className="tabular-nums font-bold text-blue-700 dark:text-blue-300">
+                    <span className="tabular-nums font-bold text-primary text-primary">
                       {fastQuoteCalculation.singleAreaSft} SFT × {quoteQuantity} pcs = {fastQuoteCalculation.totalAreaSft} SFT
                     </span>
                   </div>
@@ -3819,7 +3819,7 @@ export default function ProductsCatalogPage() {
                       <span className="text-muted-foreground">
  Print Subtotal ({fastQuoteCalculation.totalAreaSft} {fastQuoteProduct.selling_unit || 'SFT'} @ ৳{fastQuoteCalculation.effectiveRate}):
                       </span>
-                      <Badge variant="outline"className="text-2xs capitalize tabular-nums">
+                      <Badge variant="outline"className="text-xs capitalize tabular-nums">
                         {fastQuoteCalculation.pricingMethod?.replace('_', ' ')}
                       </Badge>
                     </div>
@@ -3827,7 +3827,7 @@ export default function ProductsCatalogPage() {
                   </div>
 
                   {fastQuoteCalculation.isMinBillableApplied && (
-                    <div className="flex justify-between text-xs text-amber-800 dark:text-amber-300 font-semibold bg-amber-50 dark:bg-amber-950/40 p-2 rounded-md border border-amber-200 dark:border-amber-800">
+                    <div className="flex justify-between text-xs text-warning text-warning font-semibold bg-warning-surface bg-warning-surface p-2 rounded-md border border-warning-border border-warning-border">
                       <span>Minimum Billable Quantity Rule Applied:</span>
                       <span className="tabular-nums">
  Actual {fastQuoteCalculation.actualQuantity} → Billed as {fastQuoteCalculation.billableQuantity} {fastQuoteProduct.selling_unit || 'sqft'}
@@ -3843,7 +3843,7 @@ export default function ProductsCatalogPage() {
                   )}
 
                   {fastQuoteCalculation.isMinChargeApplied && (
-                    <div className="flex justify-between text-xs text-blue-700 dark:text-blue-400 font-semibold bg-blue-50 dark:bg-blue-950/40 p-2 rounded-md border border-blue-200 dark:border-blue-800">
+                    <div className="flex justify-between text-xs text-primary text-primary font-semibold bg-primary/10 bg-primary/10 p-2 rounded-md border border-primary/20 border-border">
                       <span>Minimum Charge Floor Applied (min ৳{fastQuoteCalculation.minCharge}):</span>
                       <span className="tabular-nums">৳{fastQuoteCalculation.subtotal}</span>
                     </div>
@@ -3857,21 +3857,21 @@ export default function ProductsCatalogPage() {
                   <div className="pt-2 border-t border-border flex justify-between items-center">
                     <div>
                       <span className="text-xs font-bold text-foreground block">Quotation Total:</span>
-                      <span className="text-2xs text-emerald-600 font-semibold">
+                      <span className="text-xs text-success font-semibold">
  Est. Cost: ৳{fastQuoteCalculation.estTotalCost} • Gross Profit: ৳{fastQuoteCalculation.estGrossProfit} ({fastQuoteCalculation.estMargin}%)
                       </span>
-                      <span className="text-2xs text-muted-foreground block">
+                      <span className="text-xs text-muted-foreground block">
  Margin Based On: {fastQuoteCalculation.costBasisType === 'direct_cost' ? 'Estimated Direct Job Cost' : 'Material Cost'}
                       </span>
                     </div>
-                    <div className="text-xl font-black text-blue-600 dark:text-blue-400 tabular-nums">
+                    <div className="text-xl font-black text-primary text-primary tabular-nums">
                       ৳{fastQuoteCalculation.grandTotal.toLocaleString()}
                     </div>
                   </div>
 
                   {/* Internal-Only Commercial Production Readout */}
-                  <div className="mt-2 p-2.5 bg-muted rounded-lg text-2xs text-muted-foreground space-y-1">
-                    <span className="font-bold block uppercase tracking-wider text-2xs text-muted-foreground">Internal Commercial Analysis:</span>
+                  <div className="mt-2 p-2.5 bg-muted rounded-lg text-xs text-muted-foreground space-y-1">
+                    <span className="font-bold block uppercase tracking-wider text-xs text-muted-foreground">Internal Commercial Analysis:</span>
                     <div className="flex justify-between">
                       <span>Expected Material Consumption (incl. {fastQuoteProduct.default_wastage_percentage || 0}% waste):</span>
                       <span className="tabular-nums font-bold">{fastQuoteCalculation.expectedConsumption} {fastQuoteProduct.selling_unit || 'SFT'}</span>
@@ -3912,7 +3912,7 @@ export default function ProductsCatalogPage() {
  size="3xl"hideFooter={true}
  title={
           <div className="flex items-center gap-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 font-bold shrink-0">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary bg-primary/20 text-primary font-bold shrink-0">
               <Package className="h-5 w-5"/>
             </div>
             <div>
@@ -3945,23 +3945,23 @@ export default function ProductsCatalogPage() {
  className={cn(
                       'flex flex-col items-start p-2.5 rounded-xl border text-left transition-all relative overflow-hidden',
  isSelected
-                        ? 'border-blue-600 bg-blue-50/70 dark:bg-blue-950/40 text-blue-950 dark:text-blue-100 shadow-xs ring-1 ring-blue-500'
+                        ? 'border-border bg-primary/10/70 bg-primary/10 text-primary text-primary shadow-xs ring-1 focus:ring-ring'
                         : 'border-border bg-card hover:border-input text-foreground '
                     )}
                   >
                     <div className="flex items-center justify-between w-full mb-1">
                       <div className={cn(
                         'flex h-7 w-7 items-center justify-center rounded-lg',
- isSelected ? 'bg-blue-600 text-white' : 'bg-muted text-muted-foreground '
+ isSelected ? 'bg-primary text-white' : 'bg-muted text-muted-foreground '
                       )}>
                         <Icon className="h-4 w-4"/>
                       </div>
                       {isSelected && (
-                        <CheckCircle2 className="h-4 w-4 text-blue-600 dark:text-blue-400"/>
+                        <CheckCircle2 className="h-4 w-4 text-primary text-primary"/>
                       )}
                     </div>
                     <span className="text-xs font-bold block">{card.label}</span>
-                    <span className="text-2xs text-muted-foreground leading-tight line-clamp-1 mt-0.5">
+                    <span className="text-xs text-muted-foreground leading-tight line-clamp-1 mt-0.5">
                       {card.description}
                     </span>
                   </button>
@@ -3979,7 +3979,7 @@ export default function ProductsCatalogPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="sm:col-span-2">
                 <Label className="text-xs font-semibold mb-1 block">
- Product Name <span className="text-rose-500">*</span>
+ Product Name <span className="text-destructive">*</span>
                 </Label>
                 <Input
  placeholder={tBilingual("e.g. Star Flex Banner 320 GSM, Vinyl Sticker...", "যেমন: স্টার ফ্লেক্স ব্যানার ৩২০ জিএসএম, ভিনাইল স্টিকার...")}value={formData.name}
@@ -3992,21 +3992,21 @@ export default function ProductsCatalogPage() {
               <div>
                 <div className="flex items-center justify-between mb-1">
                   <Label className="text-xs font-semibold block">
- Category <span className="text-rose-500">*</span>
+ Category <span className="text-destructive">*</span>
                   </Label>
                   <button
  type="button"onClick={() => {
  setEditingCategory(null)
  setIsCategoryModalOpen(true)
                     }}
- className="text-2xs text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 font-semibold flex items-center gap-1 hover:underline">
+ className="text-xs text-primary text-primary hover:text-primary font-semibold flex items-center gap-1 hover:underline">
                     <Plus className="h-3 w-3"/> New Category
                   </button>
                 </div>
                 <select
  value={formData.category}
  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
- className="w-full h-9 rounded-lg border border-input bg-card px-3 text-xs font-medium text-foreground focus:border-blue-500 focus:outline-none"required
+ className="w-full h-9 rounded-lg border border-input bg-card px-3 text-xs font-medium text-foreground focus:border-primary/20 focus:outline-none"required
                 >
                   <option value="" disabled>{tBilingual("Select category...", "ক্যাটাগরি নির্বাচন করুন...")}</option>
                   {categories.length > 0 ? (
@@ -4078,7 +4078,7 @@ export default function ProductsCatalogPage() {
  className={cn(
                         'px-3 py-1.5 rounded-lg text-xs font-semibold transition-all border',
  isSelected
-                          ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
+                          ? 'bg-primary text-white border-border shadow-xs'
                           : 'bg-muted text-foreground border-border hover:border-input'
                       )}
                     >
@@ -4092,14 +4092,14 @@ export default function ProductsCatalogPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
               <div>
                 <Label className="text-xs font-semibold mb-1 block">
- Selling Price <span className="text-rose-500">*</span>
+ Selling Price <span className="text-destructive">*</span>
                 </Label>
                 <div className="relative">
                   <span className="absolute left-3 top-2 text-sm font-bold text-muted-foreground">৳</span>
                   <Input
  type="number"step="0.1"placeholder="0.00"value={formData.selling_price || ''}
  onChange={(e) => setFormData({ ...formData, selling_price: Number(e.target.value) })}
- className="pl-7 pr-16 text-sm font-bold tabular-nums h-9 text-blue-600 dark:text-blue-400"required
+ className="pl-7 pr-16 text-sm font-bold tabular-nums h-9 text-primary text-primary"required
                   />
                   <span className="absolute right-3 top-2.5 text-xs text-muted-foreground font-medium">
                     / {formData.selling_unit || 'unit'}
@@ -4132,7 +4132,7 @@ export default function ProductsCatalogPage() {
                 <h4 className="text-xs font-bold text-foreground uppercase tracking-wider">
  Advanced Settings (Optional)
                 </h4>
-                <p className="text-2xs text-muted-foreground">
+                <p className="text-xs text-muted-foreground">
  Optional settings for purchasing, production allowances, minimums, costing and components.
                 </p>
               </div>
@@ -4145,7 +4145,7 @@ export default function ProductsCatalogPage() {
  className={cn(
                     'py-2 px-3 rounded-xl border text-xs font-semibold flex items-center justify-between transition-all',
  expandedSections.purchasing
-                      ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 shadow-xs'
+                      ? 'border-primary/20 bg-primary/10 bg-primary/10 text-primary text-primary shadow-xs'
                       : 'border-border bg-card text-foreground hover:border-input'
                   )}
                 >
@@ -4160,7 +4160,7 @@ export default function ProductsCatalogPage() {
  className={cn(
                     'py-2 px-3 rounded-xl border text-xs font-semibold flex items-center justify-between transition-all',
  expandedSections.production
-                      ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 shadow-xs'
+                      ? 'border-primary/20 bg-primary/10 bg-primary/10 text-primary text-primary shadow-xs'
                       : 'border-border bg-card text-foreground hover:border-input'
                   )}
                 >
@@ -4174,7 +4174,7 @@ export default function ProductsCatalogPage() {
  className={cn(
                   'py-2 px-3 rounded-xl border text-xs font-semibold flex items-center justify-between transition-all',
  expandedSections.minimums
-                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 shadow-xs'
+                    ? 'border-primary/20 bg-primary/10 bg-primary/10 text-primary text-primary shadow-xs'
                     : 'border-border bg-card text-foreground hover:border-input'
                 )}
               >
@@ -4187,7 +4187,7 @@ export default function ProductsCatalogPage() {
  className={cn(
                   'py-2 px-3 rounded-xl border text-xs font-semibold flex items-center justify-between transition-all',
  expandedSections.costing
-                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 shadow-xs'
+                    ? 'border-primary/20 bg-primary/10 bg-primary/10 text-primary text-primary shadow-xs'
                     : 'border-border bg-card text-foreground hover:border-input'
                   )}
               >
@@ -4200,7 +4200,7 @@ export default function ProductsCatalogPage() {
  className={cn(
                   'py-2 px-3 rounded-xl border text-xs font-semibold flex items-center justify-between transition-all',
  expandedSections.components
-                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 shadow-xs'
+                    ? 'border-primary/20 bg-primary/10 bg-primary/10 text-primary text-primary shadow-xs'
                     : 'border-border bg-card text-foreground hover:border-input'
                 )}
               >
@@ -4216,7 +4216,7 @@ export default function ProductsCatalogPage() {
                   <span className="text-xs font-bold text-foreground uppercase tracking-wider">
  Purchasing & Material Conversion
                   </span>
-                  <span className="text-2xs text-muted-foreground">How you buy raw materials</span>
+                  <span className="text-xs text-muted-foreground">How you buy raw materials</span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -4240,7 +4240,7 @@ export default function ProductsCatalogPage() {
  type="number"step="1"value={formData.purchase_price || ''}
  onChange={(e) => setFormData({ ...formData, purchase_price: Number(e.target.value) })}
  className="text-xs h-9 tabular-nums font-bold"/>
-                    <span className="text-2xs text-muted-foreground">per 1 {formData.purchase_unit}</span>
+                    <span className="text-xs text-muted-foreground">per 1 {formData.purchase_unit}</span>
                   </div>
 
                   <div>
@@ -4251,7 +4251,7 @@ export default function ProductsCatalogPage() {
  type="number"step="0.01"value={formData.conversion_ratio || ''}
  onChange={(e) => setFormData({ ...formData, conversion_ratio: Number(e.target.value) })}
  className="text-xs h-9 tabular-nums font-bold"/>
-                    <span className="text-2xs text-muted-foreground">
+                    <span className="text-xs text-muted-foreground">
                       1 {formData.purchase_unit} = {formData.conversion_ratio} {formData.selling_unit}
                     </span>
                   </div>
@@ -4259,18 +4259,18 @@ export default function ProductsCatalogPage() {
 
                 {/* Roll Dimension Helper */}
                 {formData.purchase_unit === 'roll' && (
-                  <div className="p-3 bg-blue-50/60 dark:bg-blue-950/30 rounded-xl border border-blue-200 dark:border-blue-900/50 space-y-2">
+                  <div className="p-3 bg-primary/10/60 bg-primary/10 rounded-xl border border-primary/20 border-border/50 space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-blue-900 dark:text-blue-200">
+                      <span className="text-xs font-bold text-primary text-primary">
  Roll Dimension Helper (1 Roll Area)
                       </span>
-                      <Badge variant="outline"className="text-2xs tabular-nums bg-card">
+                      <Badge variant="outline"className="text-xs tabular-nums bg-card">
                         {formData.roll_width_ft}ft × {formData.roll_length_ft}ft = {Math.round((formData.roll_width_ft || 0) * (formData.roll_length_ft || 0))} sqft
                       </Badge>
                     </div>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                       <div>
-                        <Label className="text-2xs font-semibold mb-1 block">Roll Width (Feet)</Label>
+                        <Label className="text-xs font-semibold mb-1 block">Roll Width (Feet)</Label>
                         <Input
  type="number"step="0.5"value={formData.roll_width_ft || ''}
  onChange={(e) => {
@@ -4282,7 +4282,7 @@ export default function ProductsCatalogPage() {
  className="text-xs h-8 tabular-nums"/>
                       </div>
                       <div>
-                        <Label className="text-2xs font-semibold mb-1 block">Roll Length (Feet)</Label>
+                        <Label className="text-xs font-semibold mb-1 block">Roll Length (Feet)</Label>
                         <Input
  type="number"step="1"value={formData.roll_length_ft || ''}
  onChange={(e) => {
@@ -4294,8 +4294,8 @@ export default function ProductsCatalogPage() {
  className="text-xs h-8 tabular-nums"/>
                       </div>
                       <div className="col-span-2 sm:col-span-1">
-                        <Label className="text-2xs font-semibold mb-1 block">Derived Ratio</Label>
-                        <div className="h-8 px-3 rounded-md bg-card border border-blue-200 dark:border-blue-800 flex items-center tabular-nums font-bold text-xs text-blue-700 dark:text-blue-300">
+                        <Label className="text-xs font-semibold mb-1 block">Derived Ratio</Label>
+                        <div className="h-8 px-3 rounded-md bg-card border border-primary/20 border-border flex items-center tabular-nums font-bold text-xs text-primary text-primary">
                           {formData.conversion_ratio} sqft / roll
                         </div>
                       </div>
@@ -4325,7 +4325,7 @@ export default function ProductsCatalogPage() {
  setFormData({ ...formData, dimensions_spec: `${w}x${l}` })
                       }}
  className="text-xs h-9 tabular-nums"/>
-                    <span className="text-2xs text-muted-foreground">Bleed / grip allowance (feet)</span>
+                    <span className="text-xs text-muted-foreground">Bleed / grip allowance (feet)</span>
                   </div>
 
                   <div>
@@ -4340,7 +4340,7 @@ export default function ProductsCatalogPage() {
  setFormData({ ...formData, dimensions_spec: `${w}x${l}` })
                       }}
  className="text-xs h-9 tabular-nums"/>
-                    <span className="text-2xs text-muted-foreground">Lead / tail allowance (feet)</span>
+                    <span className="text-xs text-muted-foreground">Lead / tail allowance (feet)</span>
                   </div>
 
                   <div>
@@ -4351,7 +4351,7 @@ export default function ProductsCatalogPage() {
  type="number"step="0.5"value={formData.default_wastage_percentage || ''}
  onChange={(e) => setFormData({ ...formData, default_wastage_percentage: Number(e.target.value) })}
  className="text-xs h-9 tabular-nums font-bold"/>
-                    <span className="text-2xs text-muted-foreground">Statistical scrap (e.g. 5%)</span>
+                    <span className="text-xs text-muted-foreground">Statistical scrap (e.g. 5%)</span>
                   </div>
                 </div>
 
@@ -4420,7 +4420,7 @@ export default function ProductsCatalogPage() {
  type="number"step="1"value={formData.min_order_quantity || ''}
  onChange={(e) => setFormData({ ...formData, min_order_quantity: Number(e.target.value) })}
  className="text-xs h-9 tabular-nums"/>
-                    <span className="text-2xs text-muted-foreground">Order cutoff (e.g. 1 pc)</span>
+                    <span className="text-xs text-muted-foreground">Order cutoff (e.g. 1 pc)</span>
                   </div>
 
                   <div>
@@ -4428,8 +4428,8 @@ export default function ProductsCatalogPage() {
                     <Input
  type="number"step="1"value={formData.min_billable_quantity || ''}
  onChange={(e) => setFormData({ ...formData, min_billable_quantity: Number(e.target.value) })}
- className="text-xs h-9 tabular-nums text-amber-600 font-bold"/>
-                    <span className="text-2xs text-muted-foreground">Billing floor (e.g. 20 sqft min)</span>
+ className="text-xs h-9 tabular-nums text-warning font-bold"/>
+                    <span className="text-xs text-muted-foreground">Billing floor (e.g. 20 sqft min)</span>
                   </div>
 
                   <div>
@@ -4437,8 +4437,8 @@ export default function ProductsCatalogPage() {
                     <Input
  type="number"step="1"value={formData.minimum_charge || ''}
  onChange={(e) => setFormData({ ...formData, minimum_charge: Number(e.target.value) })}
- className="text-xs h-9 tabular-nums font-bold text-blue-600"/>
-                    <span className="text-2xs text-muted-foreground">Money floor (e.g. ৳500 min)</span>
+ className="text-xs h-9 tabular-nums font-bold text-primary"/>
+                    <span className="text-xs text-muted-foreground">Money floor (e.g. ৳500 min)</span>
                   </div>
                 </div>
               </div>
@@ -4451,14 +4451,14 @@ export default function ProductsCatalogPage() {
                   <span className="text-xs font-bold text-foreground uppercase tracking-wider block">
  Direct Cost Breakdown & Target Margins
                   </span>
-                  <Badge variant="outline"className="text-2xs tabular-nums">
+                  <Badge variant="outline"className="text-xs tabular-nums">
  Total Cost: ৳{liveCommercialMath.totalDirectCost} / {formData.selling_unit}
                   </Badge>
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs">
                   <div>
-                    <Label className="text-2xs font-semibold mb-1 block">Ink Cost</Label>
+                    <Label className="text-xs font-semibold mb-1 block">Ink Cost</Label>
                     <Input
  type="number"step="0.1"value={formData.cost_breakdown?.ink || ''}
  onChange={(e) =>
@@ -4470,7 +4470,7 @@ export default function ProductsCatalogPage() {
  className="text-xs h-8 tabular-nums"/>
                   </div>
                   <div>
-                    <Label className="text-2xs font-semibold mb-1 block">Labor Cost</Label>
+                    <Label className="text-xs font-semibold mb-1 block">Labor Cost</Label>
                     <Input
  type="number"step="0.1"value={formData.cost_breakdown?.labor || ''}
  onChange={(e) =>
@@ -4482,7 +4482,7 @@ export default function ProductsCatalogPage() {
  className="text-xs h-8 tabular-nums"/>
                   </div>
                   <div>
-                    <Label className="text-2xs font-semibold mb-1 block">Machine Depr.</Label>
+                    <Label className="text-xs font-semibold mb-1 block">Machine Depr.</Label>
                     <Input
  type="number"step="0.1"value={formData.cost_breakdown?.machine || ''}
  onChange={(e) =>
@@ -4494,7 +4494,7 @@ export default function ProductsCatalogPage() {
  className="text-xs h-8 tabular-nums"/>
                   </div>
                   <div>
-                    <Label className="text-2xs font-semibold mb-1 block">Finishing</Label>
+                    <Label className="text-xs font-semibold mb-1 block">Finishing</Label>
                     <Input
  type="number"step="0.1"value={formData.cost_breakdown?.finishing || ''}
  onChange={(e) =>
@@ -4506,7 +4506,7 @@ export default function ProductsCatalogPage() {
  className="text-xs h-8 tabular-nums"/>
                   </div>
                   <div>
-                    <Label className="text-2xs font-semibold mb-1 block">Fabrication</Label>
+                    <Label className="text-xs font-semibold mb-1 block">Fabrication</Label>
                     <Input
  type="number"step="0.1"value={formData.cost_breakdown?.fabrication || ''}
  onChange={(e) =>
@@ -4518,7 +4518,7 @@ export default function ProductsCatalogPage() {
  className="text-xs h-8 tabular-nums"/>
                   </div>
                   <div>
-                    <Label className="text-2xs font-semibold mb-1 block">Installation</Label>
+                    <Label className="text-xs font-semibold mb-1 block">Installation</Label>
                     <Input
  type="number"step="0.1"value={formData.cost_breakdown?.installation || ''}
  onChange={(e) =>
@@ -4530,7 +4530,7 @@ export default function ProductsCatalogPage() {
  className="text-xs h-8 tabular-nums"/>
                   </div>
                   <div>
-                    <Label className="text-2xs font-semibold mb-1 block">Delivery</Label>
+                    <Label className="text-xs font-semibold mb-1 block">Delivery</Label>
                     <Input
  type="number"step="0.1"value={formData.cost_breakdown?.delivery || ''}
  onChange={(e) =>
@@ -4542,7 +4542,7 @@ export default function ProductsCatalogPage() {
  className="text-xs h-8 tabular-nums"/>
                   </div>
                   <div>
-                    <Label className="text-2xs font-semibold mb-1 block">Target Margin %</Label>
+                    <Label className="text-xs font-semibold mb-1 block">Target Margin %</Label>
                     <Input
  type="number"step="1"value={formData.target_margin_percentage || ''}
  onChange={(e) => setFormData({ ...formData, target_margin_percentage: Number(e.target.value) })}
@@ -4551,19 +4551,19 @@ export default function ProductsCatalogPage() {
                 </div>
 
                 {/* Suggested Price Card */}
-                <div className="p-3 bg-emerald-50/60 dark:bg-emerald-950/30 rounded-xl border border-emerald-200 dark:border-emerald-900/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div className="p-3 bg-success-surface/60 bg-success-surface rounded-xl border border-success-border border-success-border/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                   <div>
-                    <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-900 dark:text-emerald-200">
-                      <Sparkles className="h-4 w-4 text-emerald-600"/>
+                    <div className="flex items-center gap-1.5 text-xs font-bold text-success text-success">
+                      <Sparkles className="h-4 w-4 text-success"/>
                       <span>Suggested Selling Price: ৳{liveCommercialMath.suggestedSellingPrice} / {formData.selling_unit}</span>
                     </div>
-                    <p className="text-2xs text-emerald-700/80 dark:text-emerald-300/80 mt-0.5">
+                    <p className="text-xs text-success/80 text-success/80 mt-0.5">
  Based on cost ৳{liveCommercialMath.costBasis} @ {formData.target_margin_percentage}% margin.
                     </p>
                   </div>
                   <Button
  type="button"size="sm"variant="outline"onClick={() => setFormData({ ...formData, selling_price: liveCommercialMath.suggestedSellingPrice })}
- className="text-xs bg-card hover:bg-emerald-50 text-emerald-700 border-emerald-300 shadow-xs shrink-0">
+ className="text-xs bg-card hover:bg-success-surface text-success border-success-border shadow-xs shrink-0">
  Apply Suggested Price
                   </Button>
                 </div>
@@ -4613,7 +4613,7 @@ export default function ProductsCatalogPage() {
  next.splice(idx, 1)
  setFormData({ ...formData, components: next })
                                 }}
- className="text-rose-600 hover:text-rose-800 p-1">
+ className="text-destructive hover:text-destructive p-1">
                                 <X className="h-3.5 w-3.5"/>
                               </button>
                             </td>
@@ -4630,33 +4630,33 @@ export default function ProductsCatalogPage() {
 
                 {/* Add Component Subform */}
                 <div className="p-3 bg-muted rounded-xl border border-border space-y-2">
-                  <span className="text-2xs font-bold text-foreground block uppercase">
+                  <span className="text-xs font-bold text-foreground block uppercase">
  Add Component Item
                   </span>
                   <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs">
                     <div className="col-span-2 sm:col-span-2">
-                      <Label className="text-2xs mb-0.5 block">Item Name</Label>
+                      <Label className="text-xs mb-0.5 block">Item Name</Label>
                       <Input
  placeholder={tBilingual("e.g. X-Stand Hardware", "যেমন: এক্স-স্ট্যান্ড হার্ডওয়্যার")}value={newComponent.name}
  onChange={(e) => setNewComponent({ ...newComponent, name: e.target.value })}
  className="text-xs h-8"/>
                     </div>
                     <div>
-                      <Label className="text-2xs mb-0.5 block">Qty</Label>
+                      <Label className="text-xs mb-0.5 block">Qty</Label>
                       <Input
  type="number"step="0.1"value={newComponent.quantity}
  onChange={(e) => setNewComponent({ ...newComponent, quantity: Number(e.target.value) })}
  className="text-xs h-8 tabular-nums"/>
                     </div>
                     <div>
-                      <Label className="text-2xs mb-0.5 block">Unit</Label>
+                      <Label className="text-xs mb-0.5 block">Unit</Label>
                       <Input
  placeholder={tBilingual("pcs", "পিস")}value={newComponent.unit}
  onChange={(e) => setNewComponent({ ...newComponent, unit: e.target.value })}
  className="text-xs h-8 uppercase tabular-nums"/>
                     </div>
                     <div>
-                      <Label className="text-2xs mb-0.5 block">Cost (৳)</Label>
+                      <Label className="text-xs mb-0.5 block">Cost (৳)</Label>
                       <Input
  type="number"step="1"value={newComponent.cost_contribution}
  onChange={(e) => setNewComponent({ ...newComponent, cost_contribution: Number(e.target.value) })}
@@ -4716,7 +4716,7 @@ export default function ProductsCatalogPage() {
  size="lg"hideFooter={true}
  title={
           <div className="flex items-center gap-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 font-bold shrink-0">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary bg-primary/20 text-primary font-bold shrink-0">
               <Tag className="h-5 w-5"/>
             </div>
             <div>
@@ -4724,11 +4724,11 @@ export default function ProductsCatalogPage() {
                 <span className="text-base font-black text-foreground">
  Adjust Commercial Price & Tariffs
                 </span>
-                <Badge variant="outline"className="text-2xs uppercase tabular-nums py-0.5 px-1.5 bg-blue-50 text-blue-700 border-blue-200">
+                <Badge variant="outline"className="text-xs uppercase tabular-nums py-0.5 px-1.5 bg-primary/10 text-primary border-primary/20">
  Audit Logged
                 </Badge>
               </div>
-              <p className="text-2xs text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 {pricingProduct?.name} ({pricingProduct?.sku})
               </p>
             </div>
@@ -4736,7 +4736,7 @@ export default function ProductsCatalogPage() {
         }
       >
         <form onSubmit={handleUpdatePrice} className="space-y-4 pt-1">
-          <div className="rounded-xl border border-blue-200 dark:border-blue-800/60 bg-blue-50/50 dark:bg-blue-950/30 p-3.5 space-y-2 text-xs">
+          <div className="rounded-xl border border-primary/20 border-border/60 bg-primary/10/50 bg-primary/10 p-3.5 space-y-2 text-xs">
             <div className="flex justify-between">
               <span className="text-muted-foreground">Current Purchase Price:</span>
               <span className="tabular-nums font-bold">৳{pricingProduct?.purchase_price} / {pricingProduct?.purchase_unit}</span>
@@ -4747,7 +4747,7 @@ export default function ProductsCatalogPage() {
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Current Selling Rate:</span>
-              <span className="tabular-nums font-bold text-blue-600 dark:text-blue-400">
+              <span className="tabular-nums font-bold text-primary text-primary">
                 ৳{pricingProduct?.selling_price} / {pricingProduct?.selling_unit || pricingProduct?.unit}
               </span>
             </div>
@@ -4767,19 +4767,19 @@ export default function ProductsCatalogPage() {
 
               <div>
                 <Label className="text-xs font-semibold mb-1 block">
- New Selling Rate (৳ / {pricingProduct?.selling_unit || pricingProduct?.unit}) <span className="text-rose-500">*</span>
+ New Selling Rate (৳ / {pricingProduct?.selling_unit || pricingProduct?.unit}) <span className="text-destructive">*</span>
                 </Label>
                 <Input
  type="number"step="0.1"value={newPrice}
  onChange={(e) => setNewPrice(Number(e.target.value))}
- className="text-xs h-9 tabular-nums font-bold text-blue-600 dark:text-blue-400"required
+ className="text-xs h-9 tabular-nums font-bold text-primary text-primary"required
                 />
               </div>
             </div>
 
             <div>
               <Label className="text-xs font-semibold mb-1 block">
- Reason for Price Adjustment (Audit Trail) <span className="text-rose-500">*</span>
+ Reason for Price Adjustment (Audit Trail) <span className="text-destructive">*</span>
               </Label>
               <Input
  placeholder={tBilingual("e.g. Raw solvent media and ink import duty increase", "যেমন: কাঁচামাল ও কালির আমদানি শুল্ক বৃদ্ধি")}value={priceReason}
@@ -4813,7 +4813,7 @@ export default function ProductsCatalogPage() {
  onOpenChange={(open) => !open && setDeletingProduct(null)}
  size="md"hideFooter={true}
  title={
-          <div className="flex items-center gap-2 text-rose-600 font-bold text-base">
+          <div className="flex items-center gap-2 text-destructive font-bold text-base">
             <AlertTriangle className="h-5 w-5"/>
             <span>Confirm Deletion / Archive</span>
           </div>
@@ -4825,10 +4825,10 @@ export default function ProductsCatalogPage() {
           </p>
 
           {deletionSafety && !deletionSafety.isSafe && (
-            <div className="p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg text-amber-800 dark:text-amber-300 space-y-1">
+            <div className="p-3 bg-warning-surface bg-warning-surface border border-warning-border border-warning-border rounded-lg text-warning text-warning space-y-1">
               <strong className="block">Protected Historical Record</strong>
               <p>{deletionSafety.reason}</p>
-              <p className="text-2xs text-amber-700 dark:text-amber-400 pt-1">
+              <p className="text-xs text-warning text-warning pt-1">
  Clicking confirm will safely <strong>Archive / Deactivate</strong> this item instead of deleting it.
               </p>
             </div>
@@ -4846,7 +4846,7 @@ export default function ProductsCatalogPage() {
             <Button
  size="sm"onClick={handleConfirmDelete}
  disabled={isPending}
- className="text-xs bg-rose-600 hover:bg-rose-700 text-white font-bold">
+ className="text-xs bg-destructive hover:bg-destructive text-white font-bold">
               {isPending ? 'Processing...' : deletionSafety?.isSafe ? 'Permanently Delete' : 'Archive Product'}
             </Button>
           </div>

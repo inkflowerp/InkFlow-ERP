@@ -1,5 +1,8 @@
 'use server'
 
+import { withTenantAction } from '@/lib/actions/action-wrapper'
+
+
 // ==============================================================================
 // PrintERP SaaS - Tenant WhatsApp Connection Server Actions
 // Authoritative session lifecycle orchestration for OpenWA Multi-Tenant Gateway
@@ -76,9 +79,12 @@ async function resolveAuthorizedTenant(
  * Server Action: Initiate WhatsApp QR Connection
  * Creates or wakes up the tenant's isolated OpenWA session, registers webhooks, and returns the QR code.
  */
-export async function initiateWhatsAppConnectionAction(
-  requestedCompanyId?: string
-): Promise<ServerActionResult<{ sessionId: string; status: WhatsAppConnectionStatus; qrCode?: string }>> {
+export const initiateWhatsAppConnectionAction = withTenantAction(
+  {
+    permission: "whatsapp.send",
+    entityType: "whatsapp-connection"
+  },
+  async (ctx, requestedCompanyId?: string) : Promise<ServerActionResult<{ sessionId: string; status: WhatsAppConnectionStatus; qrCode?: string }>> => {
   try {
     const auth = await resolveAuthorizedTenant(requestedCompanyId, 'manage')
     const tenantId = auth.companyId
@@ -220,14 +226,18 @@ export async function initiateWhatsAppConnectionAction(
       error: err?.message || 'Failed to initiate WhatsApp connection.',
     }
   }
-}
+
+})
 
 /**
  * Server Action: Get Tenant WhatsApp Connection Status & Details
  */
-export async function getWhatsAppConnectionStatusAction(
-  requestedCompanyId?: string
-): Promise<ServerActionResult<WhatsAppConnectionDetails>> {
+export const getWhatsAppConnectionStatusAction = withTenantAction(
+  {
+    permission: "whatsapp.view",
+    entityType: "whatsapp-connection"
+  },
+  async (ctx, requestedCompanyId?: string) : Promise<ServerActionResult<WhatsAppConnectionDetails>> => {
   try {
     const auth = await resolveAuthorizedTenant(requestedCompanyId, 'view')
     const tenantId = auth.companyId
@@ -348,14 +358,20 @@ export async function getWhatsAppConnectionStatusAction(
       error: err?.message || 'Failed to retrieve WhatsApp connection status.',
     }
   }
-}
+
+})
 
 /**
  * Server Action: Disconnect Tenant WhatsApp Session
  */
-export async function disconnectWhatsAppAction(
-  requestedCompanyId?: string
-): Promise<ServerActionResult<{ status: WhatsAppConnectionStatus }>> {
+export const disconnectWhatsAppAction = withTenantAction(
+  {
+    permission: "whatsapp.manage_connection",
+    destructive: true,
+    auditAction: "whatsapp-connection.disconnectwhatsapp",
+    entityType: "whatsapp-connection"
+  },
+  async (ctx, requestedCompanyId?: string) : Promise<ServerActionResult<{ status: WhatsAppConnectionStatus }>> => {
   try {
     const auth = await resolveAuthorizedTenant(requestedCompanyId, 'manage')
     const tenantId = auth.companyId
@@ -406,16 +422,22 @@ export async function disconnectWhatsAppAction(
       error: err?.message || 'Failed to disconnect WhatsApp connection.',
     }
   }
-}
+
+})
 
 /**
  * Server Action: Dispatch Real WhatsApp Test Message
  */
-export async function sendWhatsAppTestMessageAction(payload: {
+export const sendWhatsAppTestMessageAction = withTenantAction(
+  {
+    permission: "whatsapp.send",
+    entityType: "whatsapp-connection"
+  },
+  async (ctx, payload: {
   phone: string
   message: string
   requestedCompanyId?: string
-}): Promise<ServerActionResult<{ messageId?: string; recipient: string; latencyMs: number }>> {
+}) : Promise<ServerActionResult<{ messageId?: string; recipient: string; latencyMs: number }>> => {
   try {
     const auth = await resolveAuthorizedTenant(payload.requestedCompanyId, 'send')
     const tenantId = auth.companyId
@@ -496,16 +518,22 @@ export async function sendWhatsAppTestMessageAction(payload: {
       error: err?.message || 'Failed to dispatch WhatsApp test message.',
     }
   }
-}
+
+})
 
 /**
  * Server Action: Update Tenant WhatsApp Configuration & Send Rules
  */
-export async function updateWhatsAppSettingsAction(settings: {
+export const updateWhatsAppSettingsAction = withTenantAction(
+  {
+    permission: "whatsapp.send",
+    entityType: "whatsapp-connection"
+  },
+  async (ctx, settings: {
   dailySendLimit?: number
   sendDelaySeconds?: number
   requestedCompanyId?: string
-}): Promise<ServerActionResult<void>> {
+}) : Promise<ServerActionResult<void>> => {
   try {
     const auth = await resolveAuthorizedTenant(settings.requestedCompanyId, 'manage')
     const tenantId = auth.companyId
@@ -545,4 +573,5 @@ export async function updateWhatsAppSettingsAction(settings: {
       error: err?.message || 'Failed to update WhatsApp settings.',
     }
   }
-}
+
+})

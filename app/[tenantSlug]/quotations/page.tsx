@@ -540,18 +540,21 @@ export default function QuotationsPage() {
   // Navigation tab
  const [activeTab, setActiveTab] = useState<QuotationTab>('quotations')
 
-  // Date period filters
- const [selectedPeriod, setSelectedPeriod] = useState<QuotationPeriod>('this_month')
- const [customStartDate, setCustomStartDate] = useState<string>(() => `${getTodayDateStr().slice(0, 7)}-01`)
- const [customEndDate, setCustomEndDate] = useState<string>(() => getTodayDateStr())
+  // Date period filters (URL-synced)
+  const [selectedPeriod, setSelectedPeriod] = useState<QuotationPeriod>(() => {
+    const p = searchParams?.get('period') as QuotationPeriod
+    return p && ['today', 'this_week', 'this_month', 'all_time', 'custom'].includes(p) ? p : 'this_month'
+  })
+  const [customStartDate, setCustomStartDate] = useState<string>(() => `${getTodayDateStr().slice(0, 7)}-01`)
+  const [customEndDate, setCustomEndDate] = useState<string>(() => getTodayDateStr())
 
   // Overview Action Hub priority tab
- const [priorityTab, setPriorityTab] = useState<PipelinePriorityTab>('all')
+  const [priorityTab, setPriorityTab] = useState<PipelinePriorityTab>('all')
 
-  // Directory search & filters
- const [search, setSearch] = useState('')
- const [selectedFilter, setSelectedFilter] = useState<string>('all')
- const [sectorFilter, setSectorFilter] = useState<'all' | 'digital_print' | 'offset_print' | 'signage_fabrication' | 'ready_merchandise'>('all')
+  // Directory search & filters (URL-synced)
+  const [search, setSearch] = useState(() => searchParams?.get('q') || searchParams?.get('search') || '')
+  const [selectedFilter, setSelectedFilter] = useState<string>(() => searchParams?.get('status') || 'all')
+  const [sectorFilter, setSectorFilter] = useState<'all' | 'digital_print' | 'offset_print' | 'signage_fabrication' | 'ready_merchandise'>('all')
 
   // Modals state
  const [isNewOpen, setIsNewOpen] = useState(false)
@@ -842,10 +845,10 @@ export default function QuotationsPage() {
  const winRateNum = Number(effectiveMetrics?.winRate || 0)
  const healthTier =
     winRateNum >= 50
-      ? { labelEn: 'Optimal Flow', labelBn: 'চমৎকার অগ্রগতি', color: 'text-emerald-600 dark:text-emerald-400', bar: 'bg-emerald-500' }
+      ? { labelEn: 'Optimal Flow', labelBn: 'চমৎকার অগ্রগতি', color: 'text-success', bar: 'bg-success' }
       : winRateNum >= 25
-      ? { labelEn: 'Steady Pace', labelBn: 'স্থিতিশীল গতি', color: 'text-blue-600 dark:text-blue-400', bar: 'bg-blue-500' }
-      : { labelEn: 'Needs Follow-up', labelBn: 'অনুসরণ প্রয়োজন', color: 'text-amber-600 dark:text-amber-400', bar: 'bg-amber-500' }
+      ? { labelEn: 'Steady Pace', labelBn: 'স্থিতিশীল গতি', color: 'text-primary', bar: 'bg-primary' }
+      : { labelEn: 'Needs Follow-up', labelBn: 'অনুসরণ প্রয়োজন', color: 'text-warning', bar: 'bg-warning' }
 
   // Directory filter tabs
  const directoryFilterTabs = [
@@ -856,14 +859,14 @@ export default function QuotationsPage() {
  labelEn: 'Follow-Up Today',
  labelBn: 'আজকের ফলো-আপ',
  count: priorityItems.filter((it) => it.urgency === 'follow_up').length,
- badgeColor: 'bg-amber-100 text-amber-900 font-bold dark:bg-amber-950 dark:text-amber-200',
+ badgeColor: 'bg-warning-surface text-warning font-bold',
     },
     {
  id: 'expiring_soon',
  labelEn: 'Expiring Soon',
  labelBn: 'মেয়াদ শেষের পথে',
  count: effectiveMetrics.expiringCount,
- badgeColor: 'bg-rose-100 text-rose-900 font-bold dark:bg-rose-950 dark:text-rose-200',
+ badgeColor: 'bg-danger-surface text-destructive font-bold',
     },
     { id: 'draft', labelEn: 'Draft', labelBn: 'খসড়া', count: quotations.filter((q) => q.status === 'draft').length },
     { id: 'sent', labelEn: 'Sent', labelBn: 'পাঠানো হয়েছে', count: quotations.filter((q) => q.status === 'sent').length },
@@ -880,15 +883,15 @@ export default function QuotationsPage() {
     <PanelAccessGuard
  module="quotations"action="view"panelTitle="Quotations"panelTitleBn="কোটেশন">
       <FeatureGate feature="quotation_pdf">
-        <div className="space-y-6 max-w-7xl mx-auto pb-20">
+        <div className="space-y-6 mx-auto pb-20">
         {/* NOTIFICATION TOAST */}
         {notification && (
-          <div className="fixed bottom-6 right-6 z-50 px-4 py-3 bg-surface-inset text-foreground backdrop-blur-md rounded-xl shadow-lg border border-white/10 dark:border-black/10 flex items-center gap-3 text-xs font-semibold animate-in slide-in-from-bottom-5">
-            <Sparkles className="h-4 w-4 text-emerald-400 dark:text-emerald-600 shrink-0"/>
+          <div className="fixed bottom-6 right-6 z-50 px-4 py-3 bg-surface-inset text-foreground backdrop-blur-md rounded-xl shadow-lg border border-border flex items-center gap-3 text-xs font-semibold animate-in slide-in-">
+            <Sparkles className="h-4 w-4 text-success shrink-0"/>
             <span>{notification}</span>
             <button
  onClick={() => setNotification(null)}
- className="p-1 text-muted-foreground hover:text-foreground dark:hover:text-black cursor-pointer ml-1">
+ className="p-1 text-muted-foreground hover:text-foreground dark:hover:text-foreground cursor-pointer ml-1">
               <X className="h-3.5 w-3.5"/>
             </button>
           </div>
@@ -900,7 +903,7 @@ export default function QuotationsPage() {
         <PageHeader
  titleEn="Quotations"titleBn="কোটেশন"descriptionEn="Commercial sales-control center: track active proposals, urgent follow-ups, margins & conversions"descriptionBn="বাণিজ্যিক সেলস কন্ট্রোল সেন্টার: চলতি কোটেশন, দ্রুত ফলো-আপ, মার্জিন ও অর্ডার কনভার্সন"icon={FileSpreadsheet}
  badge={
-            <Badge className="bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-400 border border-blue-200 dark:border-blue-800 text-2xs font-bold py-0.5">
+            <Badge className="bg-primary/10 text-primary border border-primary/20 border-border text-xs font-bold py-0.5">
  Live BDT ৳
             </Badge>
           }
@@ -924,71 +927,146 @@ export default function QuotationsPage() {
         />
 
         {/* =========================================================================
-            2. KPI SUMMARY CARDS (TOTAL QUOTED, WON, PENDING, EXPIRING, AVG DEAL, WIN RATE)
+            2. CANONICAL 4-KPI ROW & PRIORITIZED ATTENTION QUEUE
            ========================================================================= */}
-        <div className="space-y-3">
-          {/* 6 Executive Metric Cards */}
-          <KpiGrid columns={6}>
-            {/* 1. Total Quoted / Pipeline Value */}
+        <div className="space-y-4">
+          {/* Canonical 4 Executive Metric Cards */}
+          <KpiGrid columns={4}>
+            {/* 1. Active Pipeline Value */}
             <KpiCard
- titleEn="Total Quoted"titleBn="মোট প্রস্তাবনা"value={effectiveMetrics?.totalPipelineValue || 0}
- isCurrency
- icon={FileSpreadsheet}
- colorVariant="blue"subtitleEn={`${effectiveMetrics?.totalCount || 0} Proposals Created`}
- subtitleBn={`${effectiveMetrics?.totalCount || 0}টি প্রস্তাবনা তৈরি`}
+              titleEn="Active Pipeline"
+              titleBn="চলতি পাইপলাইন"
+              value={effectiveMetrics?.pendingValue || 0}
+              isCurrency
+              icon={Clock}
+              colorVariant="amber"
+              subtitleEn={`${effectiveMetrics?.pendingCount || 0} Proposals Awaiting Decision`}
+              subtitleBn={`${effectiveMetrics?.pendingCount || 0}টি সিদ্ধান্তের অপেক্ষায়`}
             />
 
             {/* 2. Won / Accepted */}
             <KpiCard
- titleEn="Accepted / Won"titleBn="অনুমোদিত / গৃহীত"value={effectiveMetrics?.wonValue || 0}
- isCurrency
- icon={FileCheck2}
- colorVariant="emerald"subtitleEn={`${effectiveMetrics?.wonCount || 0} Converted to Orders`}
- subtitleBn={`${effectiveMetrics?.wonCount || 0}টি অর্ডারে রূপান্তরিত`}
+              titleEn="Accepted / Won"
+              titleBn="অনুমোদিত ও সফল"
+              value={effectiveMetrics?.wonValue || 0}
+              isCurrency
+              icon={FileCheck2}
+              colorVariant="emerald"
+              subtitleEn={`${effectiveMetrics?.wonCount || 0} converted (${effectiveMetrics?.winRate || 0}% win rate)`}
+              subtitleBn={`${effectiveMetrics?.wonCount || 0}টি কনভার্সন (${effectiveMetrics?.winRate || 0}% জয়ের হার)`}
             />
 
-            {/* 3. Pending / Sent */}
+            {/* 3. Expiring Soon */}
             <KpiCard
- titleEn="Active Pipeline"titleBn="চলতি পাইপলাইন"value={effectiveMetrics?.pendingValue || 0}
- isCurrency
- icon={Clock}
- colorVariant="amber"subtitleEn={`${effectiveMetrics?.pendingCount || 0} Awaiting Decision`}
- subtitleBn={`${effectiveMetrics?.pendingCount || 0}টি সিদ্ধান্তের অপেক্ষায়`}
+              titleEn="Expiring Soon"
+              titleBn="মেয়াদোত্তীর্ণের পথে"
+              value={effectiveMetrics?.expiringValue || 0}
+              isCurrency
+              icon={AlertTriangle}
+              colorVariant="danger"
+              badge={(effectiveMetrics?.expiringCount || 0) > 0 ? 'Urgent' : undefined}
+              badgeColor="bg-danger-surface text-destructive border-danger-border"
+              subtitleEn={`${effectiveMetrics?.expiringCount || 0} critical near expiry`}
+              subtitleBn={`${effectiveMetrics?.expiringCount || 0}টি দ্রুত ফলো-আপ প্রয়োজন`}
             />
 
-            {/* 4. Expiring Soon */}
+            {/* 4. Follow-Up Needed Today */}
             <KpiCard
- titleEn="Expiring Soon"titleBn="মেয়াদোত্তীর্ণের পথে"value={effectiveMetrics?.expiringValue || 0}
- isCurrency
- icon={AlertTriangle}
- colorVariant="danger"badge={(effectiveMetrics?.expiringCount || 0) > 0 ? 'Urgent' : undefined}
- badgeColor="bg-rose-100 text-rose-700 border-rose-200 dark:bg-rose-950 dark:text-rose-300 dark:border-rose-800"subtitleEn={`${effectiveMetrics?.expiringCount || 0} Critical / Warning`}
- subtitleBn={`${effectiveMetrics?.expiringCount || 0}টি জরুরি নোটিশ`}
+              titleEn="Follow-Up Today"
+              titleBn="আজকের ফলো-আপ"
+              value={priorityItems.filter((it) => it.urgency === 'follow_up').length}
+              icon={Phone}
+              colorVariant="blue"
+              subtitleEn="Client calls & WhatsApp due"
+              subtitleBn="গ্রাহকের সাথে জরুরি যোগাযোগ"
             />
-
-            {/* 5. Avg. Deal Value */}
-            <KpiCard
- titleEn="Avg Deal Value"titleBn="গড় ডিল মূল্য"value={effectiveMetrics?.avgDealValue || 0}
- isCurrency
- icon={Building}
- colorVariant="purple"subtitleEn={`Avg Margin: ${effectiveMetrics?.avgMargin || 40}%`}
- subtitleBn={`গড় মার্জিন: ${effectiveMetrics?.avgMargin || 40}%`}
-            />
-
-            {/* 6. Win Rate % */}
-            <KpiCard
- titleEn="Win Rate"titleBn="জয়ের হার"value={`${effectiveMetrics?.winRate || 0}%`}
- icon={Activity}
- colorVariant="cyan"subtitle={locale === 'bn' ? healthTier.labelBn : healthTier.labelEn}
-            >
-              <div className="w-full bg-muted h-1.5 rounded-full mt-1.5 overflow-hidden">
-                <div
- className={cn('h-full rounded-full transition-all duration-500', healthTier.bar)}
- style={{ width: `${Math.min(100, Math.max(0, winRateNum))}%` }}
-                />
-              </div>
-            </KpiCard>
           </KpiGrid>
+
+          {/* PRIORITIZED WORK LIST: "What needs my attention now?" */}
+          {priorityItems.length > 0 ? (
+            <Card className="border-border p-4 bg-card rounded-xl shadow-xs">
+              <div className="flex items-center justify-between pb-3 border-b border-border">
+                <div className="flex items-center gap-2">
+                  <span className="p-1 rounded-md bg-warning-surface text-warning">
+                    <AlertTriangle className="h-4 w-4" />
+                  </span>
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-foreground bangla-text">
+                    {tBilingual('Needs Your Attention Now (Prioritized Action Queue)', 'জরুরি মনোযোগের তালিকা (অগ্রাধিকার প্রাপ্ত কাজ)')}
+                  </h3>
+                </div>
+                <Badge variant="outline" className="bg-warning-surface text-warning border-warning-border font-bold text-xs">
+                  {priorityItems.length} {tBilingual('Urgent Actions', 'টি জরুরি')}
+                </Badge>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 pt-3">
+                {priorityItems.slice(0, 6).map((item) => (
+                  <div
+                    key={item.id}
+                    className="p-3 rounded-lg border border-border bg-muted/40 hover:bg-muted/80 transition-colors flex flex-col justify-between space-y-2.5"
+                  >
+                    <div>
+                      <div className="flex items-center justify-between gap-1.5">
+                        <span className="font-mono text-xs font-bold text-primary">
+                          {item.quotationNumber}
+                        </span>
+                        <Badge
+                          variant="outline"
+                          className={cn(
+                            'text-xs font-bold py-0 h-5',
+                            item.urgency === 'critical'
+                              ? 'bg-danger-surface text-destructive border-danger-border'
+                              : 'bg-warning-surface text-warning border-warning-border'
+                          )}
+                        >
+                          {item.urgencyLabel}
+                        </Badge>
+                      </div>
+                      <div className="font-semibold text-xs text-foreground mt-1 truncate">
+                        {item.customerName}
+                      </div>
+                      <div className="text-xs text-muted-foreground truncate">
+                        {item.itemsSummary}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-2 border-t border-border">
+                      <div className="font-bold text-xs tabular-nums text-foreground">
+                        {formatBDT(item.grandTotal)}
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleOpenFollowUp(item.quotation)}
+                          className="h-7 px-2 text-xs font-semibold cursor-pointer border-border"
+                        >
+                          {tBilingual('Follow Up', 'ফলো-আপ')}
+                        </Button>
+                        <Button
+                          size="sm"
+                          onClick={() => handleConvertToOrder(item.quotation)}
+                          className="h-7 px-2 text-xs font-bold bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer"
+                        >
+                          {tBilingual('Convert', 'অর্ডার')}
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          ) : (
+            <div className="px-4 py-3 rounded-xl border border-border bg-card/60 flex items-center justify-between text-xs text-muted-foreground">
+              <span className="flex items-center gap-2">
+                <CheckCircle2 className="h-4 w-4 text-success" />
+                <span>{tBilingual('All active proposals are on track • No urgent follow-ups overdue', 'সকল কোটেশন স্বাভাবিক গতিতে রয়েছে • কোনো বিলম্বিত জরুরি ফলো-আপ নেই')}</span>
+              </span>
+              <span className="font-semibold text-primary">
+                {tBilingual('Active Pipeline:', 'চলতি পাইপলাইন:')} {formatBDT(effectiveMetrics?.pendingValue || 0)}
+              </span>
+            </div>
+          )}
         </div>
 
         {/* =========================================================================
@@ -1041,7 +1119,7 @@ export default function QuotationsPage() {
                     {/* 3. Selected Date */}
                     {selectedPeriod === 'custom' ? (
                       <div className="flex items-center gap-1.5 bg-muted px-2 py-1 rounded-xl border border-border text-xs shadow-2xs">
-                        <Calendar className="h-3.5 w-3.5 text-blue-500 shrink-0"/>
+                        <Calendar className="h-3.5 w-3.5 text-primary shrink-0"/>
                         <input
  type="date"value={customStartDate}
  onChange={(e) => setCustomStartDate(e.target.value)}
@@ -1058,8 +1136,8 @@ export default function QuotationsPage() {
                         </Button>
                       </div>
                     ) : (
-                      <div className="flex items-center gap-1.5 bg-muted px-3 py-1.5 rounded-xl border border-border /60 text-xs font-semibold text-muted-foreground tabular-nums whitespace-nowrap">
-                        <Calendar className="h-3.5 w-3.5 text-blue-500 shrink-0"/>
+                      <div className="flex items-center gap-1.5 bg-muted px-3 py-1.5 rounded-xl border border-border/60 text-xs font-semibold text-muted-foreground tabular-nums whitespace-nowrap">
+                        <Calendar className="h-3.5 w-3.5 text-primary shrink-0"/>
                         <span>
                           {effectiveMetrics?.startDate} {tBilingual('to', 'থেকে')} {effectiveMetrics?.endDate}
                         </span>
@@ -1087,7 +1165,7 @@ export default function QuotationsPage() {
                     <button
  type="button"onClick={() => loadQuotationsData(false)}
  className="h-9 w-9 flex items-center justify-center rounded-xl text-muted-foreground hover:text-foreground bg-card border border-border hover:bg-muted transition-colors shadow-2xs cursor-pointer shrink-0"title={tBilingual('Refresh quotations data', 'কোটেশন ডেটা রিফ্রেশ করুন')}>
-                      <RefreshCw className={cn('h-3.5 w-3.5', (isLoading || isRefreshing) && 'animate-spin text-blue-600')} />
+                      <RefreshCw className={cn('h-3.5 w-3.5', (isLoading || isRefreshing) && 'animate-spin text-primary')} />
                     </button>
                   </div>
                 </div>
@@ -1107,7 +1185,7 @@ export default function QuotationsPage() {
                   {selectedFilter !== 'all' && (
                     <button
  type="button"onClick={() => setSelectedFilter('all')}
- className="text-xs text-blue-600 dark:text-blue-400 hover:underline font-semibold cursor-pointer bangla-text">
+ className="text-xs text-primary hover:underline font-semibold cursor-pointer bangla-text">
  {tBilingual('Clear Filter', 'ফিল্টার মুছুন')}
                     </button>
                   )}
@@ -1116,7 +1194,7 @@ export default function QuotationsPage() {
                 <CardContent className="p-0">
                   {isLoading ? (
                     <div className="p-12 text-center space-y-3">
-                      <RefreshCw className="h-7 w-7 animate-spin text-blue-600 mx-auto"/>
+                      <RefreshCw className="h-7 w-7 animate-spin text-primary mx-auto"/>
                       <p className="text-xs text-muted-foreground font-medium bangla-text">{tBilingual('Loading quotations pipeline...', 'কোটেশন পাইপলাইন লোড হচ্ছে...')}</p>
                     </div>
                   ) : filteredQuotations.length === 0 ? (

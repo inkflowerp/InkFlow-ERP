@@ -34,7 +34,7 @@ export function BangladeshFeaturesSection() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12 sm:space-y-16">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto space-y-3 sm:space-y-4">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200/70 dark:border-emerald-800/60 uppercase tracking-wider">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-success-surface text-success bg-success-surface/60 text-success border border-success-border/70 border-success-border/60 uppercase tracking-wider">
             <span>{tBilingual('Bangladesh First', 'বাংলাদেশ ফার্স্ট')}</span>
           </div>
 
@@ -60,10 +60,10 @@ export function BangladeshFeaturesSection() {
  className="p-5 sm:p-6 rounded-xl border border-border bg-muted hover:bg-card hover:border-input transition-all shadow-2xs flex flex-col justify-between">
                 <div>
                   <div className="flex items-center justify-between mb-3.5">
-                    <div className="h-9 w-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-100 dark:border-emerald-900/60">
+                    <div className="h-9 w-9 rounded-xl bg-success-surface bg-success-surface/80 text-success text-success flex items-center justify-center border border-success-border border-success-border/60">
                       <Icon className="h-4.5 w-4.5"/>
                     </div>
-                    <span className="px-2 py-0.5 rounded-full text-2xs font-bold uppercase tracking-wider bg-emerald-100/80 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-300/40">
+                    <span className="px-2 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-success-surface/80 text-success bg-success-surface text-success border border-success-border/40">
                       {feat.status}
                     </span>
                   </div>

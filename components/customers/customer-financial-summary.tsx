@@ -74,7 +74,7 @@ export function CustomerFinancialSummaryCards({
  icon={AlertCircle}
  colorVariant={hasOverdue ? 'danger' : 'slate'}
  badge={hasOverdue ? 'Overdue' : undefined}
- badgeColor="bg-rose-100 text-rose-700 border-rose-200 dark:bg-rose-950 dark:text-rose-300 dark:border-rose-800"subtitleEn={hasOverdue ? 'Past payment deadline' : 'No overdue bills'}
+ badgeColor="bg-danger-surface text-destructive border-danger-border bg-danger-surface text-destructive border-danger-border"subtitleEn={hasOverdue ? 'Past payment deadline' : 'No overdue bills'}
  subtitleBn={hasOverdue ? 'সময়সীমা অতিক্রান্ত' : 'মেয়াদোত্তীর্ণ বিল নেই'}
       />
 
@@ -89,9 +89,9 @@ export function CustomerFinancialSummaryCards({
  creditLimit > 0 ? (
             <span
  className={cn(
-                'text-2xs font-bold',
+                'text-xs font-bold',
  summary.totalDue > creditLimit
-                  ? 'text-rose-600 dark:text-rose-400'
+                  ? 'text-destructive text-destructive'
                   : 'text-muted-foreground '
               )}
             >
@@ -109,7 +109,7 @@ export function CustomerFinancialSummaryCards({
  colorVariant="purple"value={summary.lastPayment ? summary.lastPayment.amount : (summary.lastOrder ? summary.lastOrder.orderNumber : null)}
  isCurrency={Boolean(summary.lastPayment)}
  badge={summary.lastPayment ? 'Payment' : (summary.lastOrder ? 'Order' : undefined)}
- badgeColor={summary.lastPayment ? 'bg-emerald-100 text-emerald-800 border-emerald-200' : 'bg-blue-100 text-blue-800 border-blue-200'}
+ badgeColor={summary.lastPayment ? 'bg-success-surface text-success border-success-border' : 'bg-primary/10 text-primary border-primary/20'}
  subtitle={summary.lastPayment ? summary.lastPayment.date : (summary.lastOrder ? summary.lastOrder.date : tBilingual('No activity yet', 'কোন লেনদেন নেই'))}
       />
     </KpiGrid>

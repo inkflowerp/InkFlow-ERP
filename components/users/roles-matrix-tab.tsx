@@ -323,6 +323,14 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
  const [editRoleNameBn, setEditRoleNameBn] = useState('')
  const [editRoleDesc, setEditRoleDesc] = useState('')
 
+  const getAllSystemPermissions = () => {
+    const all = new Set<string>()
+    Object.entries(MODULE_ACTION_SPECS).forEach(([mod, spec]) => {
+      spec.actions.forEach((act) => all.add(`${mod}.${act}`))
+    })
+    return all
+  }
+
  const loadRoles = async () => {
  setIsLoading(true)
  try {
@@ -333,7 +341,11 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
  const found = selectedRoleId ? safeData.find((r) => r.id === selectedRoleId) : safeData[0]
  const target = found || safeData[0]
  setSelectedRoleId(target.id)
- setCurrentPermissions(new Set(target.permissions || []))
+        if (target.slug === 'business_owner' || target.slug === 'owner') {
+          setCurrentPermissions(getAllSystemPermissions())
+        } else {
+          setCurrentPermissions(new Set(target.permissions || []))
+        }
       }
     } catch (err) {
  console.error('Failed to load roles:', err)
@@ -352,16 +364,22 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
  return list.find((r) => r.id === selectedRoleId) || list[0] || null
   }, [roles, selectedRoleId])
 
+  const isOwnerRole = selectedRole?.slug === 'business_owner' || selectedRole?.slug === 'owner'
+
   // Select Role Handler
  const handleSelectRole = (role: RoleItem) => {
  setSelectedRoleId(role.id)
- setCurrentPermissions(new Set(role.permissions || []))
+    if (role.slug === 'business_owner' || role.slug === 'owner') {
+      setCurrentPermissions(getAllSystemPermissions())
+    } else {
+      setCurrentPermissions(new Set(role.permissions || []))
+    }
  setFeedback(null)
   }
 
   // Permission Toggle
  const handleTogglePermission = (moduleKey: string, actionKey: string) => {
- if (!selectedRole) return
+    if (!selectedRole || isOwnerRole) return
  const code = `${moduleKey}.${actionKey}`
  const next = new Set(currentPermissions)
  if (next.has(code)) {
@@ -374,6 +392,7 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
 
   // Batch Category Actions
  const handleCategoryAction = (categoryKey: ModuleCategory, mode: 'view_all' | 'grant_all' | 'clear_all' | 'revoke_delete') => {
+    if (isOwnerRole) return
  const targetModules = MODULE_CATEGORIES[categoryKey]?.modules || []
  const next = new Set(currentPermissions)
 
@@ -398,7 +417,7 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
 
   // Save Matrix
  const handleSaveMatrix = () => {
- if (!selectedRole) return
+    if (!selectedRole || isOwnerRole) return
  startTransition(async () => {
  try {
  const res = await updateRolePermissionsAction({
@@ -535,7 +554,7 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
 
   // Count changes compared to original saved role
  const unsavedChangesCount = useMemo(() => {
- if (!selectedRole) return 0
+    if (!selectedRole || isOwnerRole) return 0
  const original = new Set(selectedRole.permissions || [])
  let diff = 0
  currentPermissions.forEach((p) => {
@@ -545,7 +564,7 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
  if (!currentPermissions.has(p)) diff++
     })
  return diff
-  }, [selectedRole, currentPermissions])
+  }, [selectedRole, currentPermissions, isOwnerRole])
 
  return (
     <div className="space-y-6">
@@ -579,8 +598,8 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
  className={cn(
             'p-3 rounded-xl border text-xs flex items-center justify-between',
  feedback.type === 'success'
-              ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-300'
-              : 'bg-rose-500/10 border-rose-500/30 text-rose-700 dark:text-rose-300'
+              ? 'bg-success/10 border-success-border/30 text-success text-success'
+              : 'bg-destructive/10 border-danger-border/30 text-destructive text-destructive'
           )}
         >
           <span>{feedback.message}</span>
@@ -619,19 +638,19 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
                     >
                       <div className="space-y-0.5 min-w-0 pr-2">
                         <div className="flex items-center gap-1.5 truncate">
-                          <span className={cn('truncate font-bold', isSelected ? 'text-primary dark:text-sky-300' : 'text-foreground')}>{isBn ? (role.name_bn || ROLE_NAMES_BN[role.slug || ''] || ROLE_NAMES_BN[role.name] || role.name) : role.name}</span>
+                          <span className={cn('truncate font-bold', isSelected ? 'text-primary text-primary' : 'text-foreground')}>{isBn ? (role.name_bn || ROLE_NAMES_BN[role.slug || ''] || ROLE_NAMES_BN[role.name] || role.name) : role.name}</span>
                         </div>
-                        <div className="text-2xs text-muted-foreground tabular-nums">
+                        <div className="text-xs text-muted-foreground tabular-nums">
                           {role.permissions?.length || 0} {isBn ? 'টি পারমিশন কার্যকর' : 'permissions granted'}
                         </div>
                       </div>
 
                       {role.is_system ? (
-                        <Badge variant="outline" className="text-2xs px-1 py-0 bg-muted text-muted-foreground border-input shrink-0">
+                        <Badge variant="outline" className="text-xs px-1 py-0 bg-muted text-muted-foreground border-input shrink-0">
                           {isBn ? 'সিস্টেম' : 'System'}
                         </Badge>
                       ) : (
-                        <Badge variant="outline" className="text-2xs px-1 py-0 bg-purple-50 dark:bg-purple-500/10 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-500/30 shrink-0">
+                        <Badge variant="outline" className="text-xs px-1 py-0 bg-primary/10 bg-primary/10 text-primary text-primary border-primary/20 border-primary/20/30 shrink-0">
                           {isBn ? 'কাস্টম' : 'Custom'}
                         </Badge>
                       )}
@@ -657,11 +676,11 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
                       </CardTitle>
 
                       {selectedRole.is_system ? (
-                        <Badge variant="outline" className="text-2xs bg-muted text-foreground border-border">
+                        <Badge variant="outline" className="text-xs bg-muted text-foreground border-border">
                           {isBn ? 'সিস্টেম রোল' : 'System Role'}
                         </Badge>
                       ) : (
-                        <Badge className="bg-purple-50 dark:bg-purple-500/20 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-500/30 text-2xs">
+                        <Badge className="bg-primary/10 bg-primary/20 text-primary text-primary border-primary/20 border-primary/20/30 text-xs">
                           {isBn ? 'কাস্টম রোল' : 'Custom Role'}
                         </Badge>
                       )}
@@ -687,42 +706,62 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
                   {/* Actions Toolbar */}
                   <div className="flex items-center gap-2">
                     {unsavedChangesCount > 0 && (
-                      <Badge variant="outline"className="text-2xs bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/30 animate-pulse">
+                      <Badge variant="outline" className="text-xs bg-warning/10 text-warning text-warning border-warning-border/30 animate-pulse">
                         {isBn ? `${unsavedChangesCount}টি অসংরক্ষিত পরিবর্তন` : `${unsavedChangesCount} unsaved change(s)`}
                       </Badge>
                     )}
 
                     <Button
- variant="outline"size="sm"onClick={() => {
- setCurrentPermissions(new Set(selectedRole.permissions || []))
- setFeedback(null)
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setCurrentPermissions(new Set(selectedRole.permissions || []))
+                        setFeedback(null)
                       }}
- disabled={unsavedChangesCount === 0 || isPending}
- className="border-border text-xs text-muted-foreground hover:text-foreground dark:hover:text-foreground">
+                      disabled={isOwnerRole || unsavedChangesCount === 0 || isPending}
+                      className="border-border text-xs text-muted-foreground hover:text-foreground dark:hover:text-foreground">
                       <RotateCcw className="w-3 h-3 mr-1"/>
                       {tBilingual('Reset', 'রিসেট')}
                     </Button>
 
                     <Button
- size="sm"onClick={handleSaveMatrix}
- disabled={unsavedChangesCount === 0 || isPending}
- className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs gap-1.5 shadow-sm">
+                      size="sm"
+                      onClick={handleSaveMatrix}
+                      disabled={isOwnerRole || unsavedChangesCount === 0 || isPending}
+                      className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs gap-1.5 shadow-sm">
                       <Save className="w-3.5 h-3.5"/>
                       {isPending ? (isBn ? 'সংরক্ষণ হচ্ছে...' : 'Saving...') : (isBn ? 'অনুমতি সংরক্ষণ করুন' : 'Save Permissions')}
                     </Button>
 
                     {!selectedRole.is_system && (
                       <Button
- variant="ghost"size="sm"onClick={() => {
- setRoleToDelete(selectedRole)
- setIsDeleteConfirmOpen(true)
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setRoleToDelete(selectedRole)
+                          setIsDeleteConfirmOpen(true)
                         }}
- className="text-rose-500 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 hover:text-rose-600 dark:hover:text-rose-300 h-8 px-2 text-xs">
+                        className="text-destructive hover:bg-destructive/10 hover:text-destructive h-8 px-2 text-xs">
                         <Trash2 className="w-3.5 h-3.5"/>
                       </Button>
                     )}
                   </div>
                 </div>
+
+                {isOwnerRole && (
+                  <div className="mt-3 p-3 rounded-xl border border-primary/20 bg-primary/5 flex items-start gap-2.5 text-xs text-foreground">
+                    <Lock className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                    <div>
+                      <span className="font-semibold text-primary">{tBilingual('Business Owner Permissions are Immutable', 'ব্যবসা স্বত্বাধিকারীর অনুমতি অপরিবর্তনীয়')}</span>
+                      <p className="text-muted-foreground text-xs mt-0.5">
+                        {tBilingual(
+                          'This master administrative role possesses universal, unrestricted access across all ERP modules, actions, branches, and data scopes by system architecture.',
+                          'সিস্টেম আর্কিটেকচার অনুযায়ী এই মাস্টার প্রশাসনিক রোলের সকল ইআরপি মডিউল, অ্যাকশন, শাখা এবং ডেটা স্কোপে সর্বজনীন পূর্ণ প্রবেশাধিকার রয়েছে।'
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                )}
 
                 {/* Category Selector Tabs */}
                 <div className="flex items-center gap-1.5 overflow-x-auto pt-3 border-t border-border /80 no-scrollbar">
@@ -758,26 +797,38 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
                   </div>
 
                   <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className="text-2xs text-muted-foreground mr-1 font-medium bangla-text">{isBn ? 'ব্যাচ:' : 'Batch:'}</span>
+                    <span className="text-xs text-muted-foreground mr-1 font-medium bangla-text">{isBn ? 'ব্যাচ:' : 'Batch:'}</span>
                     <Button
- variant="outline"size="sm"onClick={() => handleCategoryAction(selectedCategory, 'view_all')}
- className="h-7 px-2 text-2xs border-border text-foreground hover:bg-muted dark:hover:bg-muted">
+                      variant="outline"
+                      size="sm"
+                      disabled={isOwnerRole}
+                      onClick={() => handleCategoryAction(selectedCategory, 'view_all')}
+                      className="h-7 px-2 text-xs border-border text-foreground hover:bg-muted dark:hover:bg-muted disabled:opacity-50">
                       {isBn ? '+ দেখার অনুমতি' : '+ Grant View'}
                     </Button>
                     <Button
- variant="outline"size="sm"onClick={() => handleCategoryAction(selectedCategory, 'grant_all')}
- className="h-7 px-2 text-2xs border-border text-foreground hover:bg-muted dark:hover:bg-muted">
+                      variant="outline"
+                      size="sm"
+                      disabled={isOwnerRole}
+                      onClick={() => handleCategoryAction(selectedCategory, 'grant_all')}
+                      className="h-7 px-2 text-xs border-border text-foreground hover:bg-muted dark:hover:bg-muted disabled:opacity-50">
                       {isBn ? '+ সব অনুমতি দিন' : '+ Grant All'}
                     </Button>
                     <Button
- variant="outline"size="sm"onClick={() => handleCategoryAction(selectedCategory, 'revoke_delete')}
- className="h-7 px-2 text-2xs border-rose-200 dark:border-rose-900/40 text-rose-600 dark:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-500/10">
+                      variant="outline"
+                      size="sm"
+                      disabled={isOwnerRole}
+                      onClick={() => handleCategoryAction(selectedCategory, 'revoke_delete')}
+                      className="h-7 px-2 text-xs border-border text-destructive hover:bg-destructive/10 disabled:opacity-50">
                       {isBn ? '- ডিলিট বাদ দিন' : '- Revoke Delete'}
                     </Button>
                     <Button
- variant="outline"size="sm"onClick={() => handleCategoryAction(selectedCategory, 'clear_all')}
- className="h-7 px-2 text-2xs border-border text-muted-foreground hover:bg-muted dark:hover:bg-muted">
- {isBn ? 'ক্যাটেগরি ক্লিয়ার' : 'Clear Category'}
+                      variant="outline"
+                      size="sm"
+                      disabled={isOwnerRole}
+                      onClick={() => handleCategoryAction(selectedCategory, 'clear_all')}
+                      className="h-7 px-2 text-xs border-border text-muted-foreground hover:bg-muted dark:hover:bg-muted disabled:opacity-50">
+                      {isBn ? 'ক্যাটেগরি ক্লিয়ার' : 'Clear Category'}
                     </Button>
                   </div>
                 </div>
@@ -796,56 +847,66 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
                           <div>
                             <div className="text-xs font-bold text-foreground flex items-center gap-2">
                               {isBn ? (spec.labelBn || spec.label) : spec.label}
-                              <Badge variant="outline"className="text-2xs tabular-nums px-1 py-0 uppercase bg-muted border-border text-muted-foreground">
+                              <Badge variant="outline"className="text-xs tabular-nums px-1 py-0 uppercase bg-muted border-border text-muted-foreground">
                                 {moduleKey}
                               </Badge>
                             </div>
-                            <div className="text-2xs text-muted-foreground mt-0.5 bangla-text">{isBn ? (spec.descriptionBn || spec.description) : spec.description}</div>
+                            <div className="text-xs text-muted-foreground mt-0.5 bangla-text">{isBn ? (spec.descriptionBn || spec.description) : spec.description}</div>
                           </div>
                         </div>
 
                         {/* Action Checkboxes */}
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
                           {spec.actions.map((act) => {
- const code = `${moduleKey}.${act}`
- const isChecked = currentPermissions.has(code)
- const isHighRisk = HIGH_RISK_PERMISSIONS.has(code)
+                            const code = `${moduleKey}.${act}`
+                            const isChecked = isOwnerRole ? true : currentPermissions.has(code)
+                            const isHighRisk = HIGH_RISK_PERMISSIONS.has(code)
 
- return (
+                            return (
                               <button
- key={act}
- type="button"onClick={() => handleTogglePermission(moduleKey, act)}
- className={cn(
-                                  'p-2 rounded-lg border text-left transition-all text-xs flex items-center justify-between gap-1.5 cursor-pointer',
- isChecked
-                                    ? isHighRisk
-                                      ? 'bg-rose-50 dark:bg-rose-500/15 border-rose-300 dark:border-rose-500/50 text-rose-800 dark:text-rose-200 font-medium shadow-2xs'
-                                      : 'bg-primary/10 dark:bg-primary/20 border-primary/40 dark:border-primary/50 text-primary dark:text-primary-foreground font-medium shadow-2xs'
-                                    : isHighRisk
-                                      ? 'bg-muted/60 border-border text-muted-foreground hover:text-foreground dark:hover:text-muted-foreground hover:border-rose-300 dark:hover:border-rose-900/50'
-                                      : 'bg-muted/60 border-border text-muted-foreground hover:text-foreground dark:hover:text-muted-foreground hover:border-input dark:hover:border-border'
+                                key={act}
+                                type="button"
+                                disabled={isOwnerRole}
+                                onClick={() => handleTogglePermission(moduleKey, act)}
+                                className={cn(
+                                  'p-2 rounded-lg border text-left transition-all text-xs flex items-center justify-between gap-1.5',
+                                  isOwnerRole
+                                    ? 'cursor-default bg-primary/10 border-primary/30 text-primary dark:text-primary-foreground font-medium shadow-2xs'
+                                    : isChecked
+                                      ? isHighRisk
+                                        ? 'cursor-pointer bg-destructive/10 border-destructive/30 text-destructive font-medium shadow-2xs'
+                                        : 'cursor-pointer bg-primary/10 dark:bg-primary/20 border-primary/40 dark:border-primary/50 text-primary dark:text-primary-foreground font-medium shadow-2xs'
+                                      : isHighRisk
+                                        ? 'cursor-pointer bg-muted/60 border-border text-muted-foreground hover:text-foreground dark:hover:text-muted-foreground hover:border-destructive/40'
+                                        : 'cursor-pointer bg-muted/60 border-border text-muted-foreground hover:text-foreground dark:hover:text-muted-foreground hover:border-input dark:hover:border-border'
                                 )}
                               >
                                 <span className={cn(
-                                    'truncate flex items-center gap-1 font-semibold',
-                                    isChecked
-                                      ? isHighRisk
-                                        ? 'text-rose-800 dark:text-rose-200'
-                                        : 'text-primary dark:text-sky-300'
-                                      : 'text-foreground'
-                                  )}>
-                                    {isHighRisk && <ShieldAlert className="w-3 h-3 text-rose-500 shrink-0"/>}
-                                    {isBn ? (ACTION_LABELS[act]?.labelBn || act) : (ACTION_LABELS[act]?.label || act)}
-                                  </span>
+                                  'truncate flex items-center gap-1 font-semibold',
+                                  isOwnerRole
+                                    ? 'text-primary'
+                                    : isChecked
+                                    ? isHighRisk
+                                      ? 'text-destructive'
+                                      : 'text-primary'
+                                    : 'text-foreground'
+                                )}>
+                                  {isHighRisk && !isOwnerRole && <ShieldAlert className="w-3 h-3 text-destructive shrink-0"/>}
+                                  {isBn ? (ACTION_LABELS[act]?.labelBn || act) : (ACTION_LABELS[act]?.label || act)}
+                                </span>
 
                                 {isChecked ? (
                                   <div
- className={cn(
-                                      'w-4 h-4 rounded flex items-center justify-center text-white shrink-0',
- isHighRisk ? 'bg-rose-600' : 'bg-primary'
+                                    className={cn(
+                                      'w-4 h-4 rounded flex items-center justify-center shrink-0',
+                                      isOwnerRole
+                                        ? 'bg-primary text-primary-foreground'
+                                        : isHighRisk
+                                        ? 'bg-destructive text-destructive-foreground'
+                                        : 'bg-primary text-primary-foreground'
                                     )}
                                   >
-                                    <Check className="w-3 h-3"/>
+                                    {isOwnerRole ? <Lock className="w-2.5 h-2.5"/> : <Check className="w-3 h-3"/>}
                                   </div>
                                 ) : (
                                   <div className="w-4 h-4 rounded border border-input shrink-0"/>

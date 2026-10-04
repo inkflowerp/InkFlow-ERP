@@ -96,24 +96,24 @@ export function JobCard({
  const isReady = Boolean(workflow?.isReadyForDelivery)
 
   // Status badge style mapping
- let stageBadgeClass = 'bg-blue-50 text-blue-700 border-blue-200'
+ let stageBadgeClass = 'bg-primary/10 text-primary border-primary/20'
  if (isBlocked) {
- stageBadgeClass = 'bg-amber-50 text-amber-800 border-amber-300'
+ stageBadgeClass = 'bg-warning-surface text-warning border-warning-border'
   } else if (isDelivered) {
- stageBadgeClass = 'bg-emerald-50 text-emerald-700 border-emerald-200'
+ stageBadgeClass = 'bg-success-surface text-success border-success-border'
   } else if (isReady) {
- stageBadgeClass = 'bg-teal-50 text-teal-700 border-teal-200'
+ stageBadgeClass = 'bg-success-surface text-success border-success-border'
   }
 
   // Department icon mapping
  const getDeptIcon = () => {
  const d = department.toLowerCase()
- if (d.includes('design')) return <Palette className="h-3.5 w-3.5 text-purple-600"/>
- if (d.includes('finish')) return <Scissors className="h-3.5 w-3.5 text-amber-600"/>
+ if (d.includes('design')) return <Palette className="h-3.5 w-3.5 text-primary"/>
+ if (d.includes('finish')) return <Scissors className="h-3.5 w-3.5 text-warning"/>
  if (d.includes('fab') || d.includes('laser') || d.includes('cnc'))
- return <Cpu className="h-3.5 w-3.5 text-indigo-600"/>
- if (d.includes('delivery')) return <Truck className="h-3.5 w-3.5 text-emerald-600"/>
- return <Printer className="h-3.5 w-3.5 text-blue-600"/>
+ return <Cpu className="h-3.5 w-3.5 text-primary"/>
+ if (d.includes('delivery')) return <Truck className="h-3.5 w-3.5 text-success"/>
+ return <Printer className="h-3.5 w-3.5 text-primary"/>
   }
 
  const jobDetailUrl = getTenantNavHref(
@@ -126,9 +126,9 @@ export function JobCard({
     <div
  className={`bg-card border rounded-xl p-4 transition-all duration-150 hover:shadow-xs flex flex-col justify-between ${
  isBlocked
-          ? 'border-amber-300 bg-amber-50/20'
+          ? 'border-warning-border bg-warning-surface/20'
           : isOverdue
-          ? 'border-rose-300'
+          ? 'border-danger-border'
           : 'border-border '
       } ${className}`}
     >
@@ -141,7 +141,7 @@ export function JobCard({
               {jobNumber}
             </span>
           </div>
-          <Badge variant="outline"className={`text-2xs font-semibold px-2 py-0.5 ${stageBadgeClass}`}>
+          <Badge variant="outline"className={`text-xs font-semibold px-2 py-0.5 ${stageBadgeClass}`}>
             {currentStage}
           </Badge>
         </div>
@@ -166,14 +166,14 @@ export function JobCard({
         {/* CURRENT & NEXT */}
         <div className="space-y-1.5 text-xs pt-1 border-t border-border">
           <div className="flex items-baseline justify-between gap-2">
-            <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground">CURRENT</span>
+            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">CURRENT</span>
             <span className="font-semibold text-foreground text-right truncate">
               {currentStage}
             </span>
           </div>
           <div className="flex items-baseline justify-between gap-2">
-            <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground">NEXT</span>
-            <span className="font-semibold text-blue-600 dark:text-blue-400 text-right truncate">
+            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">NEXT</span>
+            <span className="font-semibold text-primary text-primary text-right truncate">
               {nextAction}
             </span>
           </div>
@@ -181,16 +181,16 @@ export function JobCard({
 
         {/* Blocker alert if active */}
         {isBlocked && workflow?.blockedReasonEn && (
-          <div className="bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/50 rounded-lg p-2.5 text-2xs space-y-1.5">
-            <div className="flex items-start gap-1.5 text-amber-900 dark:text-amber-200 font-bold">
-              <AlertTriangle className="h-3.5 w-3.5 text-amber-600 shrink-0 mt-0.5"/>
+          <div className="bg-warning-surface bg-warning-surface border border-warning-border border-warning-border/50 rounded-lg p-2.5 text-xs space-y-1.5">
+            <div className="flex items-start gap-1.5 text-warning text-warning font-bold">
+              <AlertTriangle className="h-3.5 w-3.5 text-warning shrink-0 mt-0.5"/>
               <span>BLOCKED: {workflow.blockedReasonEn}</span>
             </div>
             {workflow.blockerActionLabelEn && workflow.blockerActionHref && (
               <div className="pt-1">
                 <Link
  href={getTenantNavHref(workflow.blockerActionHref, pathname, tenantSlug)}
- className="inline-flex items-center gap-1 text-2xs font-bold text-amber-800 hover:text-amber-900 underline">
+ className="inline-flex items-center gap-1 text-xs font-bold text-warning hover:text-warning underline">
                   <span>[{workflow.blockerActionLabelEn}]</span>
                   <ExternalLink className="h-2.5 w-2.5"/>
                 </Link>
@@ -202,25 +202,25 @@ export function JobCard({
         {/* Machine, Operator, Due Metrics Strip */}
         <div className="grid grid-cols-3 gap-2 pt-2 border-t border-border text-center">
           <div className="bg-muted p-1.5 rounded">
-            <span className="text-3xs uppercase font-bold text-muted-foreground block">MACHINE</span>
+            <span className="text-xs uppercase font-bold text-muted-foreground block">MACHINE</span>
             <span className="text-xs font-semibold text-foreground truncate block">
               {machine}
             </span>
           </div>
           <div className="bg-muted p-1.5 rounded">
-            <span className="text-3xs uppercase font-bold text-muted-foreground block">OPERATOR</span>
+            <span className="text-xs uppercase font-bold text-muted-foreground block">OPERATOR</span>
             <span className="text-xs font-semibold text-foreground truncate block">
               {operator}
             </span>
           </div>
           <div className="bg-muted p-1.5 rounded">
-            <span className="text-3xs uppercase font-bold text-muted-foreground block">DUE</span>
+            <span className="text-xs uppercase font-bold text-muted-foreground block">DUE</span>
             <span
  className={`text-xs font-bold truncate block ${
  isOverdue
-                  ? 'text-rose-600'
+                  ? 'text-destructive'
                   : isDueToday
-                  ? 'text-amber-600'
+                  ? 'text-warning'
                   : 'text-foreground '
               }`}
             >

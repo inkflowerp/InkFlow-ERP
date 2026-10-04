@@ -118,13 +118,13 @@ export const OrderWhatsAppModal = React.memo(function OrderWhatsAppModal({
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-2xl bg-card border border-border text-foreground p-6 shadow-lg">
         <DialogHeader className="border-b border-border pb-3">
-          <DialogTitle className="text-lg font-bold flex items-center gap-2 text-emerald-700 dark:text-emerald-400">
+          <DialogTitle className="text-lg font-bold flex items-center gap-2 text-success text-success">
             <MessageSquare className="h-5 w-5"/>
             <span>{tBilingual('Order WhatsApp Communication Hub', 'অর্ডার হোয়াটসঅ্যাপ যোগাযোগ হাব')}</span>
           </DialogTitle>
           <DialogDescription className="text-xs text-muted-foreground">
             {tBilingual('Order #:', 'অর্ডার নং:')}{' '}
-            <span className="tabular-nums font-bold text-indigo-600">#{order.orderNumber}</span> |{' '}
+            <span className="tabular-nums font-bold text-primary">#{order.orderNumber}</span> |{' '}
             {tBilingual('Customer:', 'কাস্টমার:')}{' '}
             <span className="font-semibold text-foreground">{order.customerName}</span>
           </DialogDescription>
@@ -143,12 +143,12 @@ export const OrderWhatsAppModal = React.memo(function OrderWhatsAppModal({
  type="button"onClick={() => handleTemplateChange(t.key)}
  className={`p-2.5 rounded-lg border text-left text-xs font-semibold transition-all flex flex-col justify-between ${
  selectedTemplate === t.key
-                      ? 'bg-emerald-50 border-emerald-500 text-emerald-950 dark:bg-emerald-950/50 dark:text-emerald-200 shadow-sm'
-                      : 'bg-muted border-border text-foreground hover:border-emerald-300'
+                      ? 'bg-success-surface border-success-border text-success bg-success-surface text-success shadow-sm'
+                      : 'bg-muted border-border text-foreground hover:border-success-border'
                   }`}
                 >
                   <span className="truncate">{tBilingual(t.titleEn, t.titleBn)}</span>
-                  <span className="text-2xs font-normal opacity-70 mt-1">{tBilingual(t.badgeEn, t.badgeBn)}</span>
+                  <span className="text-xs font-normal opacity-70 mt-1">{tBilingual(t.badgeEn, t.badgeBn)}</span>
                 </button>
               ))}
             </div>
@@ -158,7 +158,7 @@ export const OrderWhatsAppModal = React.memo(function OrderWhatsAppModal({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-end">
             <div className="space-y-1">
               <Label className="text-xs font-bold flex items-center gap-1.5 text-foreground">
-                <Phone className="h-3.5 w-3.5 text-emerald-600"/>
+                <Phone className="h-3.5 w-3.5 text-success"/>
                 <span>{tBilingual('Customer WhatsApp Phone:', 'গ্রাহকের হোয়াটসঅ্যাপ নম্বর:')}</span>
               </Label>
               <Input
@@ -166,7 +166,7 @@ export const OrderWhatsAppModal = React.memo(function OrderWhatsAppModal({
  onChange={(e) => setPhoneNumber(e.target.value)}
  placeholder="01711-XXXXXX"className="tabular-nums text-xs bg-muted border-input"/>
             </div>
-            <div className="text-2xs text-muted-foreground bg-muted p-2 rounded-md border border-border">
+            <div className="text-xs text-muted-foreground bg-muted p-2 rounded-md border border-border">
               <span className="font-semibold text-foreground">
                 {tBilingual('Auto 88 Format:', 'অটো ৮৮ ফরম্যাট:')}{' '}
               </span>
@@ -178,13 +178,13 @@ export const OrderWhatsAppModal = React.memo(function OrderWhatsAppModal({
           <div className="space-y-1">
             <div className="flex items-center justify-between">
               <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                <Sparkles className="h-3.5 w-3.5 text-indigo-600"/>
+                <Sparkles className="h-3.5 w-3.5 text-primary"/>
                 <span>{tBilingual('Message Preview & Editor:', 'মেসেজ প্রিভিউ ও এডিটর:')}</span>
               </Label>
               <button
  type="button"onClick={handleCopy}
- className="text-2xs text-emerald-700 dark:text-emerald-400 hover:underline flex items-center gap-1 font-semibold">
-                {isCopied ? <Check className="h-3 w-3 text-emerald-600"/> : <Copy className="h-3 w-3"/>}
+ className="text-xs text-success text-success hover:underline flex items-center gap-1 font-semibold">
+                {isCopied ? <Check className="h-3 w-3 text-success"/> : <Copy className="h-3 w-3"/>}
                 <span>{isCopied ? tBilingual('Copied!', 'কপি হয়েছে') : tBilingual('Copy Text', 'কপি করুন')}</span>
               </button>
             </div>
@@ -205,13 +205,13 @@ export const OrderWhatsAppModal = React.memo(function OrderWhatsAppModal({
             <div className="flex items-center gap-2">
               <Button
  type="button"variant="outline"size="sm"onClick={handleCopy}
- className="text-xs border-border text-foreground hover:bg-muted hover:bg-emerald-50 dark:hover:bg-emerald-950">
+ className="text-xs border-border text-foreground hover:bg-muted hover:bg-success-surface dark:hover:bg-success-surface">
                 {isCopied ? <Check className="h-3.5 w-3.5 mr-1"/> : <Copy className="h-3.5 w-3.5 mr-1"/>}
                 <span>{isCopied ? tBilingual('Copied', 'কপি সম্পন্ন') : tBilingual('Copy Text', 'টেক্সট কপি করুন')}</span>
               </Button>
               <Button
  type="button"size="sm"onClick={handleOpenWhatsAppWeb}
- className="text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-xs">
+ className="text-xs bg-success hover:bg-success text-white font-bold shadow-xs">
                 <ExternalLink className="h-3.5 w-3.5 mr-1.5"/>
                 <span>{tBilingual('Open WhatsApp', 'হোয়াটসঅ্যাপে পাঠান')}</span>
               </Button>

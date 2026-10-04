@@ -5,6 +5,11 @@ import type {
 } from '../types/logistics.types.ts'
 import { LogisticsRepository } from '../lib/repositories/logistics.repository.ts'
 import { formatBDT } from '../lib/formatters.ts'
+import { generateBangladeshiChallanWhatsAppMessage } from '../lib/communication/challan-whatsapp.ts'
+import { calculateLogisticsKpis } from '../lib/logistics/kpis.ts'
+export { calculateLogisticsKpis }
+
+export { generateBangladeshiChallanWhatsAppMessage }
 
 export interface LogisticsKpiMetrics {
   dispatchesToday: number
@@ -74,49 +79,7 @@ export class LogisticsService {
   /**
    * Calculates executive and operational KPIs for delivery & installation overview.
    */
-  static calculateLogisticsKpis(
-    challans: DeliveryChallanRecord[] = [],
-    installations: InstallationRecord[] = []
-  ): LogisticsKpiMetrics {
-    const todayStr = new Date().toISOString().split('T')[0]
-
-    let dispatchesToday = 0
-    let outForDelivery = 0
-    let partiallyDelivered = 0
-    let fullyDelivered = 0
-    let totalPendingDue = 0
-
-    for (const ch of challans) {
-      if (ch.scheduled_date === todayStr) {
-        dispatchesToday++
-      }
-      if (ch.status === 'out_for_delivery') {
-        outForDelivery++
-      } else if (ch.status === 'partially_delivered') {
-        partiallyDelivered++
-      } else if (ch.status === 'delivered') {
-        fullyDelivered++
-      }
-
-      if (ch.status !== 'delivered' && ch.due_amount && ch.due_amount > 0) {
-        totalPendingDue += Number(ch.due_amount) || 0
-      }
-    }
-
-    const installationsActive = installations.filter(
-      (ins) => ins.status === 'on_site' || ins.status === 'scheduled'
-    ).length
-
-    return {
-      dispatchesToday,
-      outForDelivery,
-      partiallyDelivered,
-      installationsActive,
-      fullyDelivered,
-      totalPendingDue,
-      totalChallans: challans.length,
-    }
-  }
+  static calculateLogisticsKpis = calculateLogisticsKpis
 
   /**
    * Generates a culturally-appropriate, respectful Bengali WhatsApp message

@@ -59,7 +59,7 @@ export const OrdersTableView = React.memo(function OrdersTableView({
     <div className="bg-card rounded-xl border border-border shadow-sm overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full text-left text-xs text-foreground">
-          <thead className="bg-muted border-b border-border text-2xs font-bold text-muted-foreground uppercase tracking-wider">
+          <thead className="bg-muted border-b border-border text-xs font-bold text-muted-foreground uppercase tracking-wider">
             <tr>
               <th className="py-3 px-4">{tBilingual('Order / Invoice', 'অর্ডার / ইনভয়েস')}</th>
               <th className="py-3 px-4">{tBilingual('Customer & Phone', 'কাস্টমার ও মোবাইল')}</th>
@@ -87,17 +87,17 @@ export const OrdersTableView = React.memo(function OrdersTableView({
                   <td className="py-3 px-4 align-middle">
                     <Link
  href={getTenantNavHref(`/orders/${order.id}`, pathname, tenantSlug)}
- className="tabular-nums font-bold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1">
+ className="tabular-nums font-bold text-primary text-primary hover:underline flex items-center gap-1">
                       <span>#{order.orderNumber}</span>
                       <ExternalLink className="h-3 w-3"/>
                     </Link>
                     {order.invoiceNumber && (
-                      <div className="tabular-nums text-2xs text-muted-foreground">
+                      <div className="tabular-nums text-xs text-muted-foreground">
  Inv: #{order.invoiceNumber}
                       </div>
                     )}
                     {order.jobNumber && (
-                      <div className="tabular-nums text-2xs text-purple-600 dark:text-purple-400">
+                      <div className="tabular-nums text-xs text-primary text-primary">
  Job: #{order.jobNumber}
                       </div>
                     )}
@@ -111,7 +111,7 @@ export const OrdersTableView = React.memo(function OrdersTableView({
                     {order.customerPhone && (
                       <button
  type="button"onClick={() => onOpenWhatsApp(order)}
- className="text-2xs text-emerald-700 dark:text-emerald-400 tabular-nums hover:underline flex items-center gap-1 mt-0.5">
+ className="text-xs text-success text-success tabular-nums hover:underline flex items-center gap-1 mt-0.5">
                         <Phone className="h-3 w-3"/>
                         <span>{order.customerPhone}</span>
                       </button>
@@ -123,17 +123,17 @@ export const OrdersTableView = React.memo(function OrdersTableView({
                     <div className="font-bold text-foreground line-clamp-1 flex items-center gap-1.5">
                       <span>{order.items[0]?.itemName || 'Print Work'}</span>
                       {order.items.length > 1 && (
-                        <span className="text-2xs text-muted-foreground font-normal">
+                        <span className="text-xs text-muted-foreground font-normal">
                           (+{order.items.length - 1} more)
                         </span>
                       )}
                       {order.items.some((it) => it.itemKind === 'ready_product' || it.workflowRouting === 'ready_product') && (
-                        <span className="text-2xs font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 px-1 py-0.2 rounded border border-emerald-300 dark:border-emerald-800">
+                        <span className="text-xs font-bold bg-success-surface text-success bg-success-surface text-success px-1 py-0.2 rounded border border-success-border border-success-border">
                           {tBilingual('Ready', 'রেডি')}
                         </span>
                       )}
                       {order.items.some((it) => it.itemKind === 'outsource' || it.workflowRouting === 'outsource') && (
-                        <span className="text-2xs font-bold bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 px-1 py-0.2 rounded border border-purple-300 dark:border-purple-800">
+                        <span className="text-xs font-bold bg-primary/10 text-primary bg-primary/10 text-primary px-1 py-0.2 rounded border border-primary/20 border-border">
                           {tBilingual('Outsource', 'আউটসোর্স')}
                         </span>
                       )}
@@ -150,7 +150,7 @@ export const OrdersTableView = React.memo(function OrdersTableView({
                       }
  const specs = resolveOrderItemSpecs(firstItem, order.rawJob, order.rawInvoice, tBilingual)
  return (
-                        <div className="text-2xs text-muted-foreground tabular-nums space-y-0.5 mt-0.5">
+                        <div className="text-xs text-muted-foreground tabular-nums space-y-0.5 mt-0.5">
                           <div className="flex items-center gap-1.5 flex-wrap">
                             <span className="text-foreground font-semibold"title={specs.material}>
                               📄 {specs.material}
@@ -160,19 +160,19 @@ export const OrdersTableView = React.memo(function OrdersTableView({
                               📐 {specs.size}
                             </span>
                             <span>•</span>
-                            <span className="text-indigo-600 dark:text-indigo-400 font-bold"title={specs.quantity}>
+                            <span className="text-primary text-primary font-bold"title={specs.quantity}>
                               📦 {specs.quantity}
                             </span>
                           </div>
                           {(specs.finishing !== 'None' || specs.addOn !== 'None') && (
                             <div className="flex items-center gap-2 flex-wrap">
                               {specs.finishing !== 'None' && (
-                                <span className="text-amber-700 dark:text-amber-400 font-medium">
+                                <span className="text-warning text-warning font-medium">
                                   ✨ {tBilingual('Finishing: ', 'ফিনিশিং: ')}{specs.finishing}
                                 </span>
                               )}
                               {specs.addOn !== 'None' && (
-                                <span className="text-indigo-700 dark:text-indigo-400 font-medium">
+                                <span className="text-primary text-primary font-medium">
                                   ➕ {tBilingual('Add-on: ', 'অ্যাড-অন: ')}{specs.addOn}
                                 </span>
                               )}
@@ -189,7 +189,7 @@ export const OrdersTableView = React.memo(function OrdersTableView({
                       <select
  value={order.currentStatus || currentStatusConfig.id}
  onChange={(e) => onUpdateLiveStatus?.(order.id, e.target.value as OrderLiveStatus)}
- className={`text-2xs font-bold rounded px-1.5 py-0.5 border cursor-pointer ${currentStatusConfig.color}`}
+ className={`text-xs font-bold rounded px-1.5 py-0.5 border cursor-pointer ${currentStatusConfig.color}`}
                       >
                         {ORDER_LIVE_STATUSES.map((st) => (
                           <option key={st.id} value={st.id}>
@@ -197,7 +197,7 @@ export const OrdersTableView = React.memo(function OrdersTableView({
                           </option>
                         ))}
                       </select>
-                      <div className="text-2xs text-muted-foreground">
+                      <div className="text-xs text-muted-foreground">
                         {tBilingual('Target: ', 'টার্গেট: ')}{order.deliveryDate || 'N/A'}
                       </div>
                     </div>
@@ -208,13 +208,13 @@ export const OrdersTableView = React.memo(function OrdersTableView({
                     <div className="tabular-nums font-bold text-foreground">
                       ৳{order.totalAmount.toLocaleString()}
                     </div>
-                    <div className="text-2xs tabular-nums">
+                    <div className="text-xs tabular-nums">
                       {order.dueAmount > 0 ? (
-                        <span className="text-rose-600 font-bold">
+                        <span className="text-destructive font-bold">
                           {tBilingual('Due: ', 'বাকি: ')}৳{order.dueAmount.toLocaleString()}
                         </span>
                       ) : (
-                        <span className="text-emerald-600 font-bold">
+                        <span className="text-success font-bold">
                           {tBilingual('PAID', 'পরিশোধিত')}
                         </span>
                       )}
@@ -226,7 +226,7 @@ export const OrdersTableView = React.memo(function OrdersTableView({
                     <div className="flex items-center justify-end gap-1">
                       <Link
  href={getTenantNavHref(`/orders/${order.id}`, pathname, tenantSlug)}
- className="inline-flex items-center justify-center h-7 px-2 text-2xs font-semibold rounded-md border border-blue-200 text-blue-700 hover:bg-blue-50 dark:border-blue-800 dark:text-blue-300 gap-1"title={tBilingual('Open Job Flow', 'কাজের ফ্লো দেখুন')}
+ className="inline-flex items-center justify-center h-7 px-2 text-xs font-semibold rounded-md border border-primary/20 text-primary hover:bg-primary/10 border-border text-primary gap-1"title={tBilingual('Open Job Flow', 'কাজের ফ্লো দেখুন')}
                       >
                         <span>{tBilingual('Job Flow', 'জব ফ্লো')}</span>
                         <ArrowRight className="h-3 w-3"/>
@@ -235,14 +235,14 @@ export const OrdersTableView = React.memo(function OrdersTableView({
                       {/* Direct Print Job Sheet Action */}
                       <Button
  type="button"size="sm"variant="outline"onClick={() => onPrintJobTicket(order)}
- className="h-7 px-2 text-xs border-indigo-200 text-indigo-700 hover:bg-indigo-50 dark:border-indigo-800 dark:text-indigo-300"title={tBilingual('Print Job Sheet (Press Ticket)', 'প্রোডাকশন জব স্লিপ প্রিন্ট করুন')}
+ className="h-7 px-2 text-xs border-primary/20 text-primary hover:bg-primary/10 border-border text-primary"title={tBilingual('Print Job Sheet (Press Ticket)', 'প্রোডাকশন জব স্লিপ প্রিন্ট করুন')}
                       >
                         <Printer className="h-3 w-3"/>
                       </Button>
 
                       <Button
  type="button"size="sm"variant="outline"onClick={() => onOpenWhatsApp(order)}
- className="h-7 px-2 text-xs border-emerald-300 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-800 dark:text-emerald-300"title={tBilingual('Send WhatsApp Update', 'WhatsApp বার্তা')}
+ className="h-7 px-2 text-xs border-success-border text-success hover:bg-success-surface border-success-border text-success"title={tBilingual('Send WhatsApp Update', 'WhatsApp বার্তা')}
                       >
                         <MessageSquare className="h-3 w-3"/>
                       </Button>

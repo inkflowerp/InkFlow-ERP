@@ -96,32 +96,32 @@ export const ProductionInvoiceGroupCard = React.memo(function ProductionInvoiceG
  const firstActiveTask = jobs[0]?.activeTask || jobs[0]?.tasks[0]
 
  return (
-    <div className="rounded-xl border border-blue-200 dark:border-blue-900/60 bg-gradient-to-b from-blue-50/30 via-white to-white dark:from-blue-950/20 dark:via-slate-900 dark:to-slate-900 shadow-xs overflow-hidden mb-4">
+    <div className="rounded-xl border border-primary/20 border-border/60 via-white to-white dark: dark: dark: shadow-xs overflow-hidden mb-4">
       {/* Group Header */}
-      <div className="p-3.5 bg-blue-50/70 dark:bg-blue-950/40 border-b border-blue-100 dark:border-blue-900/40 flex items-center justify-between flex-wrap gap-2">
+      <div className="p-3.5 bg-primary/10/70 bg-primary/10 border-b border-border border-border/40 flex items-center justify-between flex-wrap gap-2">
         <div className="flex items-center gap-2.5">
-          <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-700 text-white flex items-center justify-center font-bold text-xs shadow-xs">
+          <div className="h-8 w-8 rounded-xl text-white flex items-center justify-center font-bold text-xs shadow-xs">
             <FileText className="h-4 w-4"/>
           </div>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
               <Link
  href={invoiceHref}
- className="tabular-nums text-sm font-bold text-foreground dark:text-blue-200 hover:underline inline-flex items-center gap-1">
+ className="tabular-nums text-sm font-bold text-foreground text-primary hover:underline inline-flex items-center gap-1">
                 <span>Invoice #{invoiceNumber}</span>
                 <ExternalLink className="h-3 w-3 opacity-60"/>
               </Link>
-              <span className="bg-blue-200/80 dark:bg-blue-900/70 text-blue-900 dark:text-blue-200 text-2xs font-bold px-2 py-0.5 rounded-full">
+              <span className="bg-primary/80 bg-primary/70 text-primary text-primary text-xs font-bold px-2 py-0.5 rounded-full">
                 {jobs.length} {isBn ? 'প্রোডাকশন কাজ' : 'Production Job(s)'}
               </span>
               {readyProductItems.length > 0 && (
-                <span className="bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 text-2xs font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+                <span className="bg-success-surface bg-success-surface/60 text-success text-success border border-success-border border-success-border text-xs font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
                   <Package className="h-3 w-3"/>
                   <span>{readyProductItems.length} {isBn ? 'রেডি প্রোডাক্ট' : 'Ready Product'}</span>
                 </span>
               )}
               {outsourceItems.length > 0 && (
-                <span className="bg-purple-100 dark:bg-purple-950/60 text-purple-800 dark:text-purple-300 border border-purple-300 dark:border-purple-800 text-2xs font-bold px-2 py-0.5 rounded-full">
+                <span className="bg-primary/10 bg-primary/10 text-primary text-primary border border-primary/20 border-border text-xs font-bold px-2 py-0.5 rounded-full">
                   {outsourceItems.length} {isBn ? 'আউটসোর্স' : 'Outsource'}
                 </span>
               )}
@@ -129,7 +129,7 @@ export const ProductionInvoiceGroupCard = React.memo(function ProductionInvoiceG
             <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
               <span className="font-semibold text-foreground">{customerName}</span>
               {customerPhone && (
-                <span className="text-2xs tabular-nums text-emerald-700 dark:text-emerald-400">
+                <span className="text-xs tabular-nums text-success text-success">
                   • {customerPhone}
                 </span>
               )}
@@ -142,8 +142,8 @@ export const ProductionInvoiceGroupCard = React.memo(function ProductionInvoiceG
           {firstActiveTask && onSendWhatsApp && customerPhone && (
             <Button
  type="button"size="sm"variant="outline"onClick={() => onSendWhatsApp(firstActiveTask)}
- className="text-xs h-8 border-emerald-300 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 rounded-xl gap-1.5 cursor-pointer">
-              <MessageSquare className="h-3.5 w-3.5 text-emerald-600"/>
+ className="text-xs h-8 border-success-border border-success-border text-success text-success hover:bg-success-surface dark:hover:bg-success-surface rounded-xl gap-1.5 cursor-pointer">
+              <MessageSquare className="h-3.5 w-3.5 text-success"/>
               <span className="hidden sm:inline">WhatsApp Floor Update</span>
             </Button>
           )}

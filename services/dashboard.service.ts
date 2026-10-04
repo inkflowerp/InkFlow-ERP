@@ -37,145 +37,27 @@ import type { DeliveryChallanRecord } from '@/types/logistics.types'
 import type { DesignJobRecord } from '@/types/design.types'
 import type { MaterialRecord } from '@/types/inventory.types'
 import type { JobCostingRecord } from '@/types/costing.types'
+import { createAdminClient } from '../lib/supabase/admin.ts'
 import type { QuotationRecord } from '@/types/quotation.types'
 import type { ExpenseRecord } from '@/types/accounting.types'
+import type {
+  OwnerDashboardSnapshot,
+  CriticalStockAlert,
+  SegmentMetrics,
+  LiquiditySummary,
+  MachineryFloorSummary,
+  TopCustomerSummary,
+  FastSummaryMetrics,
+} from '@/types/dashboard.types'
 
-export interface CriticalStockAlert {
-  id: string
-  name: string
-  sku: string
-  category: string
-  currentStock: number
-  minStockLevel: number
-  unit: string
-  reorderQuantity: number
-  severity: 'critical' | 'warning'
-}
-
-export interface SegmentMetrics {
-  digital: {
-    activeJobsCount: number
-    completedTodayCount: number
-    todaySales: number
-  }
-  offset: {
-    activeJobsCount: number
-    platesPending: number
-    pressRunning: number
-    todaySales: number
-  }
-  signage: {
-    activeJobsCount: number
-    totalSqFt: number
-    installationPending: number
-    todaySales: number
-  }
-}
-
-export interface LiquiditySummary {
-  cashInHand: number
-  bankBalance: number
-  mfsBalance: number // bKash, Nagad, Rocket
-  totalLiquidAssets: number
-  todayCollection: number
-  todayExpenses: number
-  todayNetCashFlow: number
-}
-
-export interface MachineryFloorSummary {
-  totalMachines: number
-  runningCount: number
-  idleCount: number
-  maintenanceCount: number
-  breakdownCount: number
-}
-
-export interface OwnerDashboardSnapshot {
-  timestamp: string
-  companyId: string
-  branchId: string | null
-  businessDate: string
-  hasFinancialPermission?: boolean
-  
-  // 1. Business Today Core KPIs
-  salesMetrics: CanonicalSalesMetrics
-  collectionMetrics: CanonicalCollectionMetrics
-  receivablesMetrics: CanonicalReceivablesMetrics
-  profitMetrics: CanonicalProfitMetrics
-
-  // 2. Liquid Funds & Cash Drawer (BDT)
-  liquiditySummary?: LiquiditySummary
-
-  // 3. Printing Segment Metrics (Digital / Offset / Signage)
-  segmentMetrics?: SegmentMetrics
-
-  // 4. Critical Stock Watchlist (Low Paper, Vinyl, Banner, Ink, Plates)
-  criticalStockAlerts?: CriticalStockAlert[]
-
-  // 5. Machine Floor Status
-  machinerySummary?: MachineryFloorSummary
-
-  // 6. Needs Your Attention
-  attentionItems: NeedsAttentionItem[]
-
-  // 7. Blocked Work
-  blockedWorkItems: BlockedWorkItem[]
-
-  // 8. Production Today
-  productionSummary: {
-    activeCount: number
-    runningCount: number
-    queuedCount: number
-    waitingCount: number
-    finishingCount: number
-    atRiskCount: number
-    completedTodayCount: number
-    topJobs: EvaluatedJobRisk[]
-  }
-
-  // 9. Delivery Today
-  deliverySummary: {
-    scheduledCount: number
-    assignedCount: number
-    outForDeliveryCount: number
-    deliveredCount: number
-    delayedCount: number
-    topDeliveries: Array<{
-      id: string
-      challanNumber: string
-      customerName: string
-      deliveryAddress: string
-      status: string
-      scheduledDate: string
-      deliveryPersonName?: string | null
-      isDelayed: boolean
-    }>
-  }
-
-  // 10. Money to Collect
-  moneyToCollect: OverdueReceivableSummary[]
-
-  // 11. Workflow Pipeline Counts
-  pipelineCounts: {
-    newWork: number
-    quotation: number
-    approved: number
-    design: number
-    production: number
-    ready: number
-    delivered: number
-  }
-
-  // 12. Business Trend (Past 7 Days)
-  trendData: Array<{
-    dateStr: string
-    dayLabelEn: string
-    dayLabelBn: string
-    sales: number
-    collections: number
-  }>
-
-  branchCount: number
+export type {
+  OwnerDashboardSnapshot,
+  CriticalStockAlert,
+  SegmentMetrics,
+  LiquiditySummary,
+  MachineryFloorSummary,
+  TopCustomerSummary,
+  FastSummaryMetrics,
 }
 
 export class DashboardService {
@@ -204,6 +86,7 @@ export class DashboardService {
       accounts,
       machineries,
       expenses,
+      fastMetrics,
     ]: [
       InvoiceRecord[],
       PaymentRecord[],
@@ -218,6 +101,7 @@ export class DashboardService {
       any[],
       any[],
       ExpenseRecord[],
+      FastSummaryMetrics | null,
     ] = await Promise.all([
       BillingRepository.getInvoices(companyId).catch(() => []),
       BillingRepository.getPayments(companyId).catch(() => []),
@@ -232,6 +116,7 @@ export class DashboardService {
       FinanceRepository.getAccounts(companyId, branchId || undefined).catch(() => []),
       MachineryRepository.getMachineries(companyId, { branch_id: branchId || undefined }).catch(() => []),
       AccountingService.getExpenses(companyId).catch(() => []),
+      DashboardService.getFastSummaryMetrics(companyId, branchId).catch(() => null),
     ])
 
     // Filter by branch if specific branch selected
@@ -619,8 +504,8 @@ export class DashboardService {
       delivered: branchDelivery.filter((d) => d.status === 'delivered').length,
     }
 
-    // 12. 7-Day Trend (Gated)
-    const dateRange = getBangladeshDateRange(7)
+    // 12. 30-Day Trend (Gated)
+    const dateRange = getBangladeshDateRange(30)
     const trendData = hasFinancialPermission
       ? dateRange.map((rangeItem) => {
           const daySales = branchInvoices
@@ -642,11 +527,56 @@ export class DashboardService {
             dateStr: rangeItem.dateStr,
             dayLabelEn: rangeItem.dayOfWeek,
             dayLabelBn: rangeItem.dayOfWeek,
+            shortDate: rangeItem.labelEn,
             sales: Number(daySales.toFixed(2)),
             collections: Number(dayCollections.toFixed(2)),
           }
         })
       : []
+
+    // 13. Top 5 Customers by Revenue (Gated)
+    const customerMap = new Map<string, TopCustomerSummary>()
+    if (hasFinancialPermission) {
+      for (const inv of branchInvoices) {
+        const rawStatus = String(inv.status || '').toLowerCase()
+        if (rawStatus === 'cancelled' || rawStatus === 'void') continue
+
+        const custKey = inv.customer_id || inv.customer_name || 'unknown'
+        const salesAmt = Number(inv.grand_total) || Number((inv as any).total_amount) || Number(inv.subtotal) || 0
+        const dueAmt = Number(inv.due_amount) || 0
+
+        const existing = customerMap.get(custKey)
+        if (existing) {
+          existing.totalSales += salesAmt
+          existing.ordersCount += 1
+          existing.dueBalance += dueAmt
+          if (!existing.companyName && inv.customer_company) {
+            existing.companyName = inv.customer_company
+          }
+          if ((!existing.customerName || existing.customerName === 'Unknown Customer') && inv.customer_name) {
+            existing.customerName = inv.customer_name
+          }
+        } else {
+          customerMap.set(custKey, {
+            customerId: inv.customer_id || '',
+            customerName: inv.customer_name || inv.customer_company || 'Unknown Customer',
+            companyName: inv.customer_company || undefined,
+            totalSales: salesAmt,
+            ordersCount: 1,
+            dueBalance: dueAmt,
+          })
+        }
+      }
+    }
+
+    const topCustomers: TopCustomerSummary[] = Array.from(customerMap.values())
+      .sort((a, b) => b.totalSales - a.totalSales)
+      .slice(0, 5)
+      .map((c) => ({
+        ...c,
+        totalSales: Number(c.totalSales.toFixed(2)),
+        dueBalance: Number(c.dueBalance.toFixed(2)),
+      }))
 
     return {
       timestamp: new Date().toISOString(),
@@ -669,7 +599,45 @@ export class DashboardService {
       moneyToCollect,
       pipelineCounts,
       trendData,
+      topCustomers,
       branchCount: branches.length || 1,
+      fastSummary: fastMetrics || null,
+    }
+  }
+
+  /**
+   * Fetches high-performance pre-aggregated dashboard summary metrics from PostgreSQL RPC.
+   * Auto-refreshes every 5 minutes or falls back to live calculation.
+   */
+  static async getFastSummaryMetrics(
+    companyId: string,
+    branchId?: string | null
+  ): Promise<FastSummaryMetrics | null> {
+    try {
+      const supabase = createAdminClient()
+      const { data, error } = await (supabase as any).rpc('get_tenant_dashboard_metrics', {
+        p_company_id: companyId,
+        p_branch_id: branchId || null,
+      })
+
+      if (error || !data) {
+        return null
+      }
+
+      return {
+        todaySales: Number(data.today_sales) || 0,
+        todayCollections: Number(data.today_collections) || 0,
+        totalReceivables: Number(data.total_receivables) || 0,
+        totalOverdueReceivables: Number(data.total_overdue_receivables) || 0,
+        activeOrdersCount: Number(data.active_orders_count) || 0,
+        inProductionCount: Number(data.in_production_count) || 0,
+        pendingDesignCount: Number(data.pending_design_count) || 0,
+        criticalStockCount: Number(data.critical_stock_count) || 0,
+        isCached: Boolean(data.is_cached),
+      }
+    } catch {
+      return null
     }
   }
 }
+

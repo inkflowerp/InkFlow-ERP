@@ -12,6 +12,7 @@ import { resolveTenantRole, TENANT_SESSION_COOKIE, type TenantSessionData, type 
 import type { PrimaryRole } from '../types/rbac.types.ts'
 import { MODULE_ACTION_SPECS } from '../types/rbac.types.ts'
 import { TenantRepository } from '../lib/repositories/tenant.repository.ts'
+import { CompanyUsersRepository } from '../lib/repositories/company-users.repository.ts'
 import { AuthEmailService } from './auth-email.service.ts'
 import { AuditService } from './audit.service.ts'
 import { isTestEnvironment } from '../lib/security/runtime-env.ts'
@@ -58,6 +59,33 @@ async function getSupabaseAuthClient() {
 }
 
 export class AuthService {
+  /**
+   * Establishes server session via CompanyUsersRepository
+   */
+  static async establishServerSession(email: string, domain?: string): Promise<boolean> {
+    return CompanyUsersRepository.establishServerSession(email, domain)
+  }
+
+  /**
+   * Initiates OAuth login via CompanyUsersRepository
+   */
+  static async signInWithOAuth(provider: 'google', callbackUrl: string) {
+    return CompanyUsersRepository.signInWithOAuth({ provider, redirectTo: callbackUrl })
+  }
+
+  /**
+   * Retrieves current authenticated user
+   */
+  static async getAuthUser() {
+    return CompanyUsersRepository.getAuthUser()
+  }
+
+  /**
+   * Authenticates with email and password
+   */
+  static async signInWithPassword(email: string, password: string) {
+    return CompanyUsersRepository.authenticateWithPassword(email, password)
+  }
   /**
    * Resolves any login identifier (email, username, mobile, employee ID badge)
    * to the authoritative registered Supabase Auth email.

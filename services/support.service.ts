@@ -6,6 +6,7 @@
 
 import { createAdminClient } from '../lib/supabase/admin.ts'
 import { AuditService } from './audit.service.ts'
+import { NotificationService } from './notification.service.ts'
 import type {
   SupportConversationRecord,
   SupportMessageRecord,
@@ -917,6 +918,30 @@ export class SupportService {
         { is_internal: isInternalNote, preview: input.body.substring(0, 80) },
         `Agent ${adminName} ${isInternalNote ? 'added internal note on' : 'replied to'} ticket ${conversation.ticket_number}`
       )
+
+      // Multi-channel notification to tenant customer
+      if (!isInternalNote) {
+        try {
+          await NotificationService.notify({
+            companyId: conversation.company_id,
+            userId: conversation.created_by,
+            type: 'support_reply',
+            entity: { id: conversation.id, type: 'support_ticket', number: conversation.ticket_number },
+            payload: {
+              title: `Support Ticket #${conversation.ticket_number} Updated`,
+              title_bn: `সাপোর্ট টিকিট #${conversation.ticket_number}-এ উত্তর এসেছে`,
+              message: `${adminName}: ${input.body.trim().substring(0, 140)}`,
+              message_bn: `${adminName}: ${input.body.trim().substring(0, 140)}`,
+              ticket_number: conversation.ticket_number,
+              preview: input.body.trim().substring(0, 100),
+              action_url: `/settings/support`,
+            },
+            channels: ['in_app', 'email'],
+          })
+        } catch (notifErr) {
+          console.warn('[SupportService.sendPlatformReply] Notification dispatch skipped:', notifErr)
+        }
+      }
 
       return { success: true, data: messageRecord }
     } catch (err: any) {

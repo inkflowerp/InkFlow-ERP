@@ -1,5 +1,9 @@
-import PlatformFeaturesPage from '../features/page'
+import { requirePlatformPermission } from '@/lib/auth/platform-auth'
+import PlatformFeatureFlagsClient from './feature-flags-client'
 
-export default function PlatformFeatureFlagsLegacyPage() {
- return <PlatformFeaturesPage />
+export const dynamic = 'force-dynamic'
+
+export default async function PlatformFeatureFlagsPage() {
+  await requirePlatformPermission('feature.view')
+  return <PlatformFeatureFlagsClient />
 }

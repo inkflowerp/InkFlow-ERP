@@ -286,7 +286,7 @@ function OrderDetailContent() {
  if (isLoadingServer && !order) {
  return (
       <div className="flex flex-col items-center justify-center min-h-[400px] space-y-3">
-        <Briefcase className="h-7 w-7 text-blue-600 animate-pulse"/>
+        <Briefcase className="h-7 w-7 text-primary animate-pulse"/>
         <p className="text-xs font-semibold text-muted-foreground">
           {tBilingual('Loading authoritative order details...', 'অর্ডারের তথ্য লোড হচ্ছে...')}
         </p>
@@ -296,7 +296,7 @@ function OrderDetailContent() {
 
  if (!order) {
  return (
-      <div className="space-y-6 max-w-7xl">
+      <div className="space-y-6">
         <Link
  href={getTenantNavHref('/orders', pathname, slug)}
  className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground dark:hover:text-foreground mb-3">
@@ -403,15 +403,15 @@ function OrderDetailContent() {
  switch (priority) {
  case 'very_urgent':
  return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded text-xs font-black bg-red-100 text-red-800 dark:bg-red-950/60 dark:text-red-300 border border-red-300 dark:border-red-800 animate-pulse">
-            <Flame className="h-3.5 w-3.5 text-red-600 shrink-0"/>
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded text-xs font-black bg-danger-surface text-destructive bg-danger-surface/60 text-destructive border border-danger-border border-danger-border animate-pulse">
+            <Flame className="h-3.5 w-3.5 text-destructive shrink-0"/>
  Very Urgent (জরুরি)
           </span>
         )
  case 'urgent':
  return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded text-xs font-bold bg-amber-100 text-amber-900 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-300 dark:border-amber-800">
-            <AlertTriangle className="h-3.5 w-3.5 text-amber-600 shrink-0"/>
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded text-xs font-bold bg-warning-surface text-warning bg-warning-surface/60 text-warning border border-warning-border border-warning-border">
+            <AlertTriangle className="h-3.5 w-3.5 text-warning shrink-0"/>
  Urgent (জরুরি)
           </span>
         )
@@ -426,7 +426,7 @@ function OrderDetailContent() {
   }
 
  return (
-    <div className="space-y-6 max-w-7xl pb-16">
+    <div className="space-y-6 pb-16">
       {/* =========================================================================
           1. HEADER (Section 10 & 11)
  ORDER #1024 | Customer | Total | Paid | Due | Delivery | Priority | Next Action
@@ -458,10 +458,10 @@ function OrderDetailContent() {
                   <Badge
  variant="outline"className={`text-xs font-bold ${
  order.workflow_routing === 'design_required'
-                        ? 'bg-purple-50 text-purple-700 border-purple-300 dark:bg-purple-950/40 dark:text-purple-300'
+                        ? 'bg-primary/10 text-primary border-primary/20 bg-primary/10 text-primary'
                         : order.workflow_routing === 'design_ok'
-                        ? 'bg-blue-50 text-blue-700 border-blue-300 dark:bg-blue-950/40 dark:text-blue-300'
-                        : 'bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-300'
+                        ? 'bg-primary/10 text-primary border-primary/20 bg-primary/10 text-primary'
+                        : 'bg-success-surface text-success border-success-border bg-success-surface text-success'
                     }`}
                   >
                     {order.workflow_routing === 'design_required'
@@ -474,18 +474,18 @@ function OrderDetailContent() {
 
                 {/* Commercial Invoice Gate Status */}
                 {order.invoice_id || order.commercial_status === 'invoice_created' ? (
-                  <Badge className="bg-emerald-600 text-white text-xs font-bold flex items-center gap-1">
+                  <Badge className="bg-success text-white text-xs font-bold flex items-center gap-1">
                     <CheckCircle2 className="h-3 w-3"/>
  Invoice Linked {order.invoice_number ? `(#${order.invoice_number})` : ''}
                   </Badge>
                 ) : order.commercial_status === 'invoice_requested' ? (
-                  <Badge className="bg-amber-100 text-amber-900 border-amber-300 text-xs font-bold flex items-center gap-1">
-                    <Clock className="h-3 w-3 text-amber-600"/>
+                  <Badge className="bg-warning-surface text-warning border-warning-border text-xs font-bold flex items-center gap-1">
+                    <Clock className="h-3 w-3 text-warning"/>
  Invoice Requested
                   </Badge>
                 ) : (
-                  <Badge className="bg-rose-100 text-rose-800 border-rose-300 text-xs font-bold flex items-center gap-1">
-                    <AlertTriangle className="h-3 w-3 text-rose-600"/>
+                  <Badge className="bg-danger-surface text-destructive border-danger-border text-xs font-bold flex items-center gap-1">
+                    <AlertTriangle className="h-3 w-3 text-destructive"/>
  Invoice Required
                   </Badge>
                 )}
@@ -519,7 +519,7 @@ function OrderDetailContent() {
  setCollectionAmount(order.due_amount)
  setIsPayOpen(true)
                 }}
- className="bg-emerald-600 hover:bg-emerald-700 text-xs text-white min-h-[44px] px-3 font-semibold">
+ className="bg-success hover:bg-success text-xs text-white min-h-[44px] px-3 font-semibold">
                 <Receipt className="mr-1.5 h-4 w-4"/>
  Record Payment
               </Button>
@@ -527,15 +527,15 @@ function OrderDetailContent() {
               <Button
  size="sm"variant="outline"onClick={() => setIsAddJobOpen(true)}
  className="text-xs min-h-[44px] px-3 font-medium border-input">
-                <Plus className="mr-1.5 h-4 w-4 text-blue-600"/>
+                <Plus className="mr-1.5 h-4 w-4 text-primary"/>
  Add Job
               </Button>
 
               {(!order.invoice_id && order.commercial_status !== 'invoice_created') && (
                 <Button
  size="sm"variant="outline"onClick={() => setIsInvoiceRequestOpen(true)}
- className="text-xs min-h-[44px] px-3 border-rose-300 text-rose-700 hover:bg-rose-50 dark:border-rose-800 dark:text-rose-300">
-                  <Send className="mr-1.5 h-3.5 w-3.5 text-rose-600"/>
+ className="text-xs min-h-[44px] px-3 border-danger-border text-destructive hover:bg-danger-surface border-danger-border text-destructive">
+                  <Send className="mr-1.5 h-3.5 w-3.5 text-destructive"/>
  Request Invoice
                 </Button>
               )}
@@ -545,25 +545,25 @@ function OrderDetailContent() {
           {/* Quick Metrics & Target Delivery Row */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1">
             <div className="p-3 bg-muted rounded-lg">
-              <span className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider block">Total</span>
+              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block">Total</span>
               <span className="text-lg font-black text-foreground tabular-nums">
                 <CurrencyDisplay amount={order.final_price} />
               </span>
             </div>
-            <div className="p-3 bg-emerald-50/60 dark:bg-emerald-950/30 rounded-lg">
-              <span className="text-2xs font-semibold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider block">Paid</span>
-              <span className="text-lg font-black text-emerald-600 dark:text-emerald-400 tabular-nums">
+            <div className="p-3 bg-success-surface/60 bg-success-surface rounded-lg">
+              <span className="text-xs font-semibold text-success text-success uppercase tracking-wider block">Paid</span>
+              <span className="text-lg font-black text-success text-success tabular-nums">
                 <CurrencyDisplay amount={order.advance_amount} />
               </span>
             </div>
-            <div className={`p-3 rounded-lg ${order.due_amount > 0 ? 'bg-amber-50/60 dark:bg-amber-950/30' : 'bg-muted '}`}>
-              <span className={`text-2xs font-semibold uppercase tracking-wider block ${order.due_amount > 0 ? 'text-amber-700 dark:text-amber-400' : 'text-muted-foreground'}`}>Due</span>
-              <span className={`text-lg font-black tabular-nums ${order.due_amount > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-muted-foreground'}`}>
+            <div className={`p-3 rounded-lg ${order.due_amount > 0 ? 'bg-warning-surface/60 bg-warning-surface' : 'bg-muted '}`}>
+              <span className={`text-xs font-semibold uppercase tracking-wider block ${order.due_amount > 0 ? 'text-warning text-warning' : 'text-muted-foreground'}`}>Due</span>
+              <span className={`text-lg font-black tabular-nums ${order.due_amount > 0 ? 'text-warning text-warning' : 'text-muted-foreground'}`}>
                 <CurrencyDisplay amount={order.due_amount} />
               </span>
             </div>
             <div className="p-3 bg-muted rounded-lg">
-              <span className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider block">Delivery Due</span>
+              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block">Delivery Due</span>
               <span className="text-sm font-bold text-foreground mt-1 block">
                 {order.delivery_date || 'Not specified'}
               </span>
@@ -574,19 +574,19 @@ function OrderDetailContent() {
           {workflow && (
             <div className={`p-3.5 rounded-lg border flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
  workflow.isBlocked
-                ? 'bg-amber-50/80 border-amber-300 dark:bg-amber-950/40 dark:border-amber-800'
-                : 'bg-blue-50/80 border-blue-200 dark:bg-blue-950/40 dark:border-blue-900'
+                ? 'bg-warning-surface/80 border-warning-border bg-warning-surface border-warning-border'
+                : 'bg-primary/10/80 border-primary/20 bg-primary/10 border-border'
             }`}>
               <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                 <div>
-                  <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground block">CURRENT</span>
+                  <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">CURRENT</span>
                   <span className="text-sm font-bold text-foreground">
                     {workflow.overallStageLabelEn}
                   </span>
                 </div>
                 <div className="hidden sm:block text-muted-foreground">|</div>
                 <div>
-                  <span className="text-2xs font-bold uppercase tracking-wider text-blue-700 dark:text-blue-300 block">NEXT</span>
+                  <span className="text-xs font-bold uppercase tracking-wider text-primary text-primary block">NEXT</span>
                   <span className="text-sm font-semibold text-foreground">
                     {workflow.nextActionEn}
                   </span>
@@ -595,11 +595,11 @@ function OrderDetailContent() {
 
               {workflow.isBlocked ? (
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold text-amber-900 dark:text-amber-200 bg-amber-100 dark:bg-amber-900/60 px-2.5 py-1 rounded">
+                  <span className="text-xs font-bold text-warning text-warning bg-warning-surface bg-warning/60 px-2.5 py-1 rounded">
  BLOCKED: {workflow.blockedReasonEn || 'Hold in effect'}
                   </span>
                   {workflow.blockerActionHref && (
-                    <Button asChild size="sm"className="bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold min-h-[38px]">
+                    <Button asChild size="sm"className="bg-warning hover:bg-warning/90 text-white text-xs font-bold min-h-[38px]">
                       <Link href={workflow.blockerActionHref}>
                         {workflow.blockerActionLabelEn || 'Resolve Blocker'}
                       </Link>
@@ -622,14 +622,14 @@ function OrderDetailContent() {
 
       {/* Commercial Hold Gate Warning Banner */}
       {(!order.invoice_id && order.commercial_status !== 'invoice_created') && (
-        <div className="p-4 rounded-xl border border-rose-200 dark:border-rose-900 bg-rose-50/70 dark:bg-rose-950/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="p-4 rounded-xl border border-danger-border border-danger-border bg-danger-surface/70 bg-danger-surface flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-start gap-2.5">
-            <Lock className="h-5 w-5 text-rose-600 shrink-0 mt-0.5"/>
+            <Lock className="h-5 w-5 text-destructive shrink-0 mt-0.5"/>
             <div>
-              <h4 className="text-xs font-bold text-rose-900 dark:text-rose-200">
+              <h4 className="text-xs font-bold text-destructive text-destructive">
  Commercial Gate: Official Invoice Not Created
               </h4>
-              <p className="text-xs text-rose-700 dark:text-rose-300 mt-0.5">
+              <p className="text-xs text-destructive text-destructive mt-0.5">
  Production floor execution is blocked until an official invoice is generated by sales or accounts.
               </p>
             </div>
@@ -638,12 +638,12 @@ function OrderDetailContent() {
             {order.commercial_status !== 'invoice_requested' ? (
               <Button
  size="sm"onClick={() => setIsInvoiceRequestOpen(true)}
- className="bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold min-h-[44px] flex items-center gap-1.5">
+ className="bg-destructive hover:bg-destructive text-white text-xs font-bold min-h-[44px] flex items-center gap-1.5">
                 <Send className="h-3.5 w-3.5"/>
  Send Invoice Request
               </Button>
             ) : (
-              <span className="text-xs font-bold text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-950/60 px-3 py-1.5 rounded-lg border border-amber-300">
+              <span className="text-xs font-bold text-warning text-warning bg-warning-surface bg-warning-surface/60 px-3 py-1.5 rounded-lg border border-warning-border">
  Invoice Request Dispatched
               </span>
             )}
@@ -658,8 +658,8 @@ function OrderDetailContent() {
 
       {/* Notification */}
       {notification && (
-        <div className="p-3 bg-emerald-50 text-emerald-800 rounded-lg text-xs font-semibold flex items-center gap-2 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800 animate-in fade-in-0">
-          <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0"/>
+        <div className="p-3 bg-success-surface text-success rounded-lg text-xs font-semibold flex items-center gap-2 border border-success-border bg-success-surface text-success border-success-border animate-in fade-in-0">
+          <CheckCircle2 className="h-4 w-4 text-success shrink-0"/>
           <span>{notification}</span>
         </div>
       )}
@@ -671,7 +671,7 @@ function OrderDetailContent() {
       <section id="workflow-section"className="space-y-3">
         <div className="flex items-center justify-between">
           <h2 className="text-base font-bold text-foreground flex items-center gap-2">
-            <Layers className="h-4.5 w-4.5 text-blue-600"/>
+            <Layers className="h-4.5 w-4.5 text-primary"/>
             <span>Workflow & Stage Progress</span>
           </h2>
           <span className="text-xs text-muted-foreground font-medium">
@@ -705,7 +705,7 @@ function OrderDetailContent() {
       <section id="finance-section"className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-base font-bold text-foreground flex items-center gap-2">
-            <Receipt className="h-4.5 w-4.5 text-emerald-600"/>
+            <Receipt className="h-4.5 w-4.5 text-success"/>
             <span>Finance & Line Items</span>
           </h2>
           <Button
@@ -713,7 +713,7 @@ function OrderDetailContent() {
  setCollectionAmount(order.due_amount)
  setIsPayOpen(true)
             }}
- className="bg-emerald-600 hover:bg-emerald-700 text-xs text-white min-h-[38px] font-semibold">
+ className="bg-success hover:bg-success text-xs text-white min-h-[38px] font-semibold">
             <Receipt className="mr-1.5 h-3.5 w-3.5"/>
  Record Payment
           </Button>
@@ -726,25 +726,25 @@ function OrderDetailContent() {
             <div className="text-2xl font-black text-foreground mt-1">
               <CurrencyDisplay amount={order.final_price} />
             </div>
-            <span className="text-2xs text-muted-foreground">Terms: {order.payment_terms || 'cash'}</span>
+            <span className="text-xs text-muted-foreground">Terms: {order.payment_terms || 'cash'}</span>
           </Card>
 
           <Card className="p-4 border-l-4 border-l-emerald-500">
             <span className="text-xs font-semibold text-muted-foreground">Advance Received (পরিশোধিত)</span>
-            <div className="text-2xl font-black text-emerald-600 mt-1">
+            <div className="text-2xl font-black text-success mt-1">
               <CurrencyDisplay amount={order.advance_amount} />
             </div>
-            <span className="text-2xs text-emerald-600 font-medium">
+            <span className="text-xs text-success font-medium">
               {order.final_price > 0 ? Math.round((order.advance_amount / order.final_price) * 100) : 0}% Paid
             </span>
           </Card>
 
           <Card className={`p-4 border-l-4 ${order.due_amount > 0 ? 'border-l-amber-500' : 'border-l-emerald-500'}`}>
             <span className="text-xs font-semibold text-muted-foreground">Remaining Balance (বাকি টাকা)</span>
-            <div className={`text-2xl font-black mt-1 ${order.due_amount > 0 ? 'text-amber-600' : 'text-emerald-600'}`}>
+            <div className={`text-2xl font-black mt-1 ${order.due_amount > 0 ? 'text-warning' : 'text-success'}`}>
               <CurrencyDisplay amount={order.due_amount} />
             </div>
-            <span className="text-2xs text-muted-foreground">Payment is decoupled from delivery completion</span>
+            <span className="text-xs text-muted-foreground">Payment is decoupled from delivery completion</span>
           </Card>
         </div>
 
@@ -822,7 +822,7 @@ function OrderDetailContent() {
                       ৳{Number(it.total_price || 0).toLocaleString()}
                     </span>
                   </div>
-                  <div className="flex flex-wrap gap-2 text-2xs text-muted-foreground">
+                  <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
                     <span>Size: {it.width && it.height ? `${it.width}×${it.height} ${it.dimension_unit || 'ft'}` : '—'}</span>
                     <span>•</span>
                     <span>Qty: {it.quantity || 1} {it.unit || 'pcs'}</span>
@@ -846,7 +846,7 @@ function OrderDetailContent() {
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-base font-bold text-foreground flex items-center gap-2">
-              <FileCheck className="h-4.5 w-4.5 text-purple-600"/>
+              <FileCheck className="h-4.5 w-4.5 text-primary"/>
               <span>Artwork & Design Proofs</span>
             </h2>
             <p className="text-xs text-muted-foreground mt-0.5">
@@ -861,7 +861,7 @@ function OrderDetailContent() {
               <Card key={dj.id} className="p-4 border border-border space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <span className="text-2xs font-bold text-purple-600 dark:text-purple-400">
+                    <span className="text-xs font-bold text-primary text-primary">
                       {dj.design_number}
                     </span>
                     <h3 className="text-xs font-bold text-foreground">
@@ -869,11 +869,11 @@ function OrderDetailContent() {
                     </h3>
                   </div>
                   <Badge
- variant="outline"className={`text-2xs font-bold ${
+ variant="outline"className={`text-xs font-bold ${
  dj.status === 'approved'
-                        ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
+                        ? 'bg-success-surface text-success border-success-border'
                         : dj.status === 'customer_approval'
-                        ? 'bg-amber-50 text-amber-700 border-amber-300'
+                        ? 'bg-warning-surface text-warning border-warning-border'
                         : 'bg-muted text-foreground border-input'
                     }`}
                   >
@@ -887,7 +887,7 @@ function OrderDetailContent() {
                     {dj.versions.map((ver) => (
                       <div key={ver.id} className="flex items-center justify-between p-2 rounded bg-muted text-xs">
                         <div className="flex items-center gap-2">
-                          <span className="px-1.5 py-0.5 bg-purple-100 dark:bg-purple-950 text-purple-800 dark:text-purple-300 text-2xs font-bold rounded">
+                          <span className="px-1.5 py-0.5 bg-primary/10 bg-primary/10 text-primary text-primary text-xs font-bold rounded">
                             {ver.version_label || `V${ver.version_number}`}
                           </span>
                           <span className="text-foreground truncate max-w-[180px]">
@@ -897,18 +897,18 @@ function OrderDetailContent() {
                         {ver.proof_file_url ? (
                           <a
  href={ver.proof_file_url}
- target="_blank"rel="noopener noreferrer"className="text-xs font-semibold text-blue-600 hover:underline inline-flex items-center gap-1">
+ target="_blank"rel="noopener noreferrer"className="text-xs font-semibold text-primary hover:underline inline-flex items-center gap-1">
                             <span>View</span>
                             <ExternalLink className="h-3 w-3"/>
                           </a>
                         ) : (
-                          <span className="text-2xs text-muted-foreground">No URL</span>
+                          <span className="text-xs text-muted-foreground">No URL</span>
                         )}
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <div className="text-2xs text-muted-foreground py-1">No versioned proof files uploaded yet.</div>
+                  <div className="text-xs text-muted-foreground py-1">No versioned proof files uploaded yet.</div>
                 )}
               </Card>
             ))}
@@ -919,7 +919,7 @@ function OrderDetailContent() {
             <p className="text-xs font-semibold text-muted-foreground">
  No design ticket or proof files linked directly.
             </p>
-            <p className="text-2xs text-muted-foreground mt-0.5">
+            <p className="text-xs text-muted-foreground mt-0.5">
  Production will proceed using customer-provided artwork or direct print traveler specs.
             </p>
           </Card>
@@ -933,7 +933,7 @@ function OrderDetailContent() {
       <section id="activity-section"className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-base font-bold text-foreground flex items-center gap-2">
-            <Clock className="h-4.5 w-4.5 text-blue-600"/>
+            <Clock className="h-4.5 w-4.5 text-primary"/>
             <span>Activity & Audit Trail</span>
           </h2>
           <span className="text-xs text-muted-foreground">Immutable chronological events</span>
@@ -947,18 +947,18 @@ function OrderDetailContent() {
                   {idx < timeline.length - 1 && (
                     <div className="absolute left-2.5 top-6 bottom-0 w-0.5 bg-muted"/>
                   )}
-                  <div className="h-5 w-5 rounded-full bg-blue-100 dark:bg-blue-950/60 border border-blue-400 flex items-center justify-center shrink-0 mt-0.5">
-                    <div className="h-2 w-2 rounded-full bg-blue-600"/>
+                  <div className="h-5 w-5 rounded-full bg-primary/10 bg-primary/10 border border-border flex items-center justify-center shrink-0 mt-0.5">
+                    <div className="h-2 w-2 rounded-full bg-primary"/>
                   </div>
                   <div className="space-y-0.5 flex-1 min-w-0">
                     <div className="flex flex-wrap items-center justify-between gap-1">
                       <span className="text-xs font-bold text-foreground">{ev.title}</span>
-                      <span className="text-2xs text-muted-foreground tabular-nums">{ev.created_at}</span>
+                      <span className="text-xs text-muted-foreground tabular-nums">{ev.created_at}</span>
                     </div>
                     {ev.description && (
                       <p className="text-xs text-muted-foreground">{ev.description}</p>
                     )}
-                    <span className="text-2xs font-medium text-muted-foreground block pt-0.5">
+                    <span className="text-xs font-medium text-muted-foreground block pt-0.5">
  By {ev.actor_name || 'System Operator'}
                     </span>
                   </div>
@@ -967,19 +967,19 @@ function OrderDetailContent() {
             ) : (
               <div className="space-y-3">
                 <div className="flex gap-3">
-                  <div className="h-5 w-5 rounded-full bg-blue-100 dark:bg-blue-950/60 border border-blue-400 flex items-center justify-center shrink-0 mt-0.5">
-                    <div className="h-2 w-2 rounded-full bg-blue-600"/>
+                  <div className="h-5 w-5 rounded-full bg-primary/10 bg-primary/10 border border-border flex items-center justify-center shrink-0 mt-0.5">
+                    <div className="h-2 w-2 rounded-full bg-primary"/>
                   </div>
                   <div className="space-y-0.5">
                     <span className="text-xs font-bold text-foreground">Order Booked & Confirmed</span>
                     <p className="text-xs text-muted-foreground">Order #{order.order_number} initialized for customer {order.customer_name}.</p>
-                    <span className="text-2xs text-muted-foreground tabular-nums">{order.created_at || order.order_date}</span>
+                    <span className="text-xs text-muted-foreground tabular-nums">{order.created_at || order.order_date}</span>
                   </div>
                 </div>
                 {order.invoice_number && (
                   <div className="flex gap-3">
-                    <div className="h-5 w-5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 border border-emerald-400 flex items-center justify-center shrink-0 mt-0.5">
-                      <div className="h-2 w-2 rounded-full bg-emerald-600"/>
+                    <div className="h-5 w-5 rounded-full bg-success-surface bg-success-surface/60 border border-success-border flex items-center justify-center shrink-0 mt-0.5">
+                      <div className="h-2 w-2 rounded-full bg-success"/>
                     </div>
                     <div className="space-y-0.5">
                       <span className="text-xs font-bold text-foreground">Commercial Invoice Generated</span>
@@ -989,8 +989,8 @@ function OrderDetailContent() {
                 )}
                 {jobs.length > 0 && (
                   <div className="flex gap-3">
-                    <div className="h-5 w-5 rounded-full bg-purple-100 dark:bg-purple-950/60 border border-purple-400 flex items-center justify-center shrink-0 mt-0.5">
-                      <div className="h-2 w-2 rounded-full bg-purple-600"/>
+                    <div className="h-5 w-5 rounded-full bg-primary/10 bg-primary/10 border border-border flex items-center justify-center shrink-0 mt-0.5">
+                      <div className="h-2 w-2 rounded-full bg-primary"/>
                     </div>
                     <div className="space-y-0.5">
                       <span className="text-xs font-bold text-foreground">Production Job Tickets Dispatched</span>
@@ -1078,7 +1078,7 @@ function OrderDetailContent() {
             <Button type="button"variant="outline"onClick={() => setIsAddJobOpen(false)}>
  Cancel
             </Button>
-            <Button type="submit"className="bg-indigo-600 hover:bg-indigo-700 text-white">
+            <Button type="submit"className="bg-primary hover:bg-primary text-white">
  Dispatch to Machine Queue
             </Button>
           </div>
@@ -1120,7 +1120,7 @@ function OrderDetailContent() {
             <Button type="button"variant="outline"onClick={() => setIsPayOpen(false)}>
  Cancel
             </Button>
-            <Button type="submit"className="bg-emerald-600 hover:bg-emerald-700 text-white">
+            <Button type="submit"className="bg-success hover:bg-success text-white">
  Issue Money Receipt
             </Button>
           </div>
@@ -1136,14 +1136,14 @@ function OrderDetailContent() {
           <div className="space-y-4 p-4 rounded-xl border-2 border-border bg-card text-foreground text-xs print:bg-white print:text-foreground print:border-border">
             <div className="flex justify-between items-start border-b-2 border-border print:border-border pb-3">
               <div>
-                <span className="tabular-nums font-black text-xl text-blue-800 dark:text-blue-400 print:text-blue-800">
+                <span className="tabular-nums font-black text-xl text-primary text-primary print:text-primary">
                   {selectedJobForPrint.job_number}
                 </span>
                 <div className="text-muted-foreground print:text-muted-foreground">Sales Order: {order.order_number}</div>
               </div>
               <div className="text-right">
                 <div className="font-bold uppercase tracking-wider text-foreground print:text-foreground">{selectedJobForPrint.assigned_department}</div>
-                <div className="text-red-600 dark:text-red-400 font-bold print:text-red-600">Deadline: {selectedJobForPrint.deadline}</div>
+                <div className="text-destructive text-destructive font-bold print:text-destructive">Deadline: {selectedJobForPrint.deadline}</div>
               </div>
             </div>
 
@@ -1172,7 +1172,7 @@ function OrderDetailContent() {
               </div>
             )}
 
-            <div className="grid grid-cols-2 gap-6 pt-6 border-t border-dashed border-input print:border-input text-center text-2xs text-muted-foreground print:text-muted-foreground">
+            <div className="grid grid-cols-2 gap-6 pt-6 border-t border-dashed border-input print:border-input text-center text-xs text-muted-foreground print:text-muted-foreground">
               <div>Operator Initial & Machine #</div>
               <div>QC Inspector Passed</div>
             </div>
@@ -1194,9 +1194,9 @@ function OrderDetailContent() {
  title="Send Invoice Request to Sales / Management"description={`Request official invoice creation for Order ${order.order_number} to clear commercial production gating.`}
       >
         <form onSubmit={handleSendInvoiceRequest} className="space-y-4 pt-1">
-          <div className="p-3 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900 rounded-xl text-xs text-blue-900 dark:text-blue-200 space-y-1">
+          <div className="p-3 bg-primary/10 bg-primary/10 border border-primary/20 border-border rounded-xl text-xs text-primary text-primary space-y-1">
             <p className="font-semibold">Commercial Workflow Gating</p>
-            <p className="text-2xs opacity-90">
+            <p className="text-xs opacity-90">
  Submitting this request alerts sales and billing management. Once the invoice is generated, this order will automatically unlock for shop floor printing and production.
             </p>
           </div>
@@ -1233,7 +1233,7 @@ export default function OrderDetailPage() {
       <React.Suspense
  fallback={
           <div className="flex flex-col items-center justify-center min-h-[400px] space-y-3">
-            <Briefcase className="h-6 w-6 text-indigo-500 animate-pulse"/>
+            <Briefcase className="h-6 w-6 text-primary animate-pulse"/>
             <p className="text-xs text-muted-foreground">Loading Order Details...</p>
           </div>
         }

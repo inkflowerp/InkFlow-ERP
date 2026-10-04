@@ -1,5 +1,8 @@
 'use server'
 
+import { withTenantAction } from '@/lib/actions/action-wrapper'
+
+
 import { revalidatePath } from 'next/cache'
 import { ProductService } from '@/services/product.service'
 import { AuditService } from '@/services/audit.service'
@@ -44,12 +47,15 @@ function checkProductPermission(tenant: any, requiredPerm: string): boolean {
 // PRODUCTS CRUD ACTIONS
 // ==========================================
 
-export async function getProductsAction(
-  requestedCompanyId?: string,
+export const getProductsAction = withTenantAction(
+  {
+    permission: "products.view",
+    entityType: "product"
+  },
+  async (ctx, requestedCompanyId?: string,
   activeOnly: boolean = false,
   category?: string,
-  search?: string
-): Promise<ServerActionResult<ProductRecord[]>> {
+  search?: string) : Promise<ServerActionResult<ProductRecord[]>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -62,12 +68,16 @@ export async function getProductsAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to fetch products.' }
   }
-}
 
-export async function getProductByIdAction(
-  id: string,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<ProductRecord | null>> {
+})
+
+export const getProductByIdAction = withTenantAction(
+  {
+    permission: "products.view",
+    entityType: "product"
+  },
+  async (ctx, id: string,
+  requestedCompanyId?: string) : Promise<ServerActionResult<ProductRecord | null>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -80,17 +90,21 @@ export async function getProductByIdAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to fetch product.' }
   }
-}
 
-export async function createProductAction(
-  data: Partial<ProductRecord> & {
+})
+
+export const createProductAction = withTenantAction(
+  {
+    permission: "products.create",
+    entityType: "product"
+  },
+  async (ctx, data: Partial<ProductRecord> & {
     sku: string
     name: string
     unit: any
     selling_price: number
   },
-  requestedCompanyId?: string
-): Promise<ServerActionResult<ProductRecord>> {
+  requestedCompanyId?: string) : Promise<ServerActionResult<ProductRecord>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -139,13 +153,17 @@ export async function createProductAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to create product.' }
   }
-}
 
-export async function updateProductAction(
-  id: string,
+})
+
+export const updateProductAction = withTenantAction(
+  {
+    permission: "products.edit",
+    entityType: "product"
+  },
+  async (ctx, id: string,
   data: Partial<ProductRecord>,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<ProductRecord>> {
+  requestedCompanyId?: string) : Promise<ServerActionResult<ProductRecord>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -181,13 +199,19 @@ export async function updateProductAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to update product.' }
   }
-}
 
-export async function archiveProductAction(
-  id: string,
+})
+
+export const archiveProductAction = withTenantAction(
+  {
+    permission: "products.delete",
+    destructive: true,
+    auditAction: "product.archiveproduct",
+    entityType: "product"
+  },
+  async (ctx, id: string,
   isArchived: boolean,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<ProductRecord>> {
+  requestedCompanyId?: string) : Promise<ServerActionResult<ProductRecord>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -221,19 +245,27 @@ export async function archiveProductAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to update product status.' }
   }
-}
 
-export async function restoreProductAction(
-  id: string,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<ProductRecord>> {
+})
+
+export const restoreProductAction = withTenantAction(
+  {
+    permission: "products.view",
+    entityType: "product"
+  },
+  async (ctx, id: string,
+  requestedCompanyId?: string) : Promise<ServerActionResult<ProductRecord>> => {
   return archiveProductAction(id, false, requestedCompanyId)
-}
 
-export async function checkProductDeletionSafetyAction(
-  id: string,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<{ isSafe: boolean; references: any; reason?: string }>> {
+})
+
+export const checkProductDeletionSafetyAction = withTenantAction(
+  {
+    permission: "products.view",
+    entityType: "product"
+  },
+  async (ctx, id: string,
+  requestedCompanyId?: string) : Promise<ServerActionResult<{ isSafe: boolean; references: any; reason?: string }>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -246,12 +278,18 @@ export async function checkProductDeletionSafetyAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to check deletion safety.' }
   }
-}
 
-export async function deleteProductAction(
-  id: string,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<boolean>> {
+})
+
+export const deleteProductAction = withTenantAction(
+  {
+    permission: "products.delete",
+    destructive: true,
+    auditAction: "product.deleteproduct",
+    entityType: "product"
+  },
+  async (ctx, id: string,
+  requestedCompanyId?: string) : Promise<ServerActionResult<boolean>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -285,10 +323,15 @@ export async function deleteProductAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to delete product.' }
   }
-}
 
-export async function updateProductPriceAction(
-  productId: string,
+})
+
+export const updateProductPriceAction = withTenantAction(
+  {
+    permission: "pricing.edit",
+    entityType: "product"
+  },
+  async (ctx, productId: string,
   newPrice: number,
   reason?: string,
   requestedCompanyId?: string,
@@ -296,8 +339,7 @@ export async function updateProductPriceAction(
     newPurchasePrice?: number
     newTargetMarginPercent?: number
     newWastagePercent?: number
-  }
-): Promise<ServerActionResult<ProductRecord>> {
+  }) : Promise<ServerActionResult<ProductRecord>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -349,12 +391,16 @@ export async function updateProductPriceAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to update price.' }
   }
-}
 
-export async function getProductPriceHistoryAction(
-  productId?: string,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<PriceHistoryRecord[]>> {
+})
+
+export const getProductPriceHistoryAction = withTenantAction(
+  {
+    permission: "pricing.view",
+    entityType: "product"
+  },
+  async (ctx, productId?: string,
+  requestedCompanyId?: string) : Promise<ServerActionResult<PriceHistoryRecord[]>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -367,12 +413,16 @@ export async function getProductPriceHistoryAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to fetch price history.' }
   }
-}
 
-export async function getProductUsageStatsAction(
-  productId: string,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<ProductUsageStats>> {
+})
+
+export const getProductUsageStatsAction = withTenantAction(
+  {
+    permission: "products.view",
+    entityType: "product"
+  },
+  async (ctx, productId: string,
+  requestedCompanyId?: string) : Promise<ServerActionResult<ProductUsageStats>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -385,18 +435,22 @@ export async function getProductUsageStatsAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to fetch product usage statistics.' }
   }
-}
 
-export async function resolveProductCustomerPriceAction(
-  productId: string,
+})
+
+export const resolveProductCustomerPriceAction = withTenantAction(
+  {
+    permission: "pricing.view",
+    entityType: "product"
+  },
+  async (ctx, productId: string,
   customerId?: string,
   options?: {
     allowFloorOverride?: boolean
     overrideReason?: string
     authorizedBy?: string
   },
-  requestedCompanyId?: string
-): Promise<ServerActionResult<ResolvedProductPrice>> {
+  requestedCompanyId?: string) : Promise<ServerActionResult<ResolvedProductPrice>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -409,16 +463,20 @@ export async function resolveProductCustomerPriceAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to resolve customer price.' }
   }
-}
+
+})
 
 // ==========================================
 // VARIANTS & FORMULAS ACTIONS
 // ==========================================
 
-export async function getProductVariantsAction(
-  productId: string,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<ProductVariantRecord[]>> {
+export const getProductVariantsAction = withTenantAction(
+  {
+    permission: "products.view",
+    entityType: "product"
+  },
+  async (ctx, productId: string,
+  requestedCompanyId?: string) : Promise<ServerActionResult<ProductVariantRecord[]>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -431,15 +489,19 @@ export async function getProductVariantsAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to fetch variants.' }
   }
-}
 
-export async function createProductVariantAction(
-  data: Partial<ProductVariantRecord> & {
+})
+
+export const createProductVariantAction = withTenantAction(
+  {
+    permission: "products.create",
+    entityType: "product"
+  },
+  async (ctx, data: Partial<ProductVariantRecord> & {
     product_id: string
     variant_name: string
   },
-  requestedCompanyId?: string
-): Promise<ServerActionResult<ProductVariantRecord>> {
+  requestedCompanyId?: string) : Promise<ServerActionResult<ProductVariantRecord>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -460,13 +522,19 @@ export async function createProductVariantAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to create variant.' }
   }
-}
 
-export async function deleteProductVariantAction(
-  variantId: string,
+})
+
+export const deleteProductVariantAction = withTenantAction(
+  {
+    permission: "products.delete",
+    destructive: true,
+    auditAction: "product.deleteproductvariant",
+    entityType: "product"
+  },
+  async (ctx, variantId: string,
   productId: string,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<boolean>> {
+  requestedCompanyId?: string) : Promise<ServerActionResult<boolean>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -484,12 +552,16 @@ export async function deleteProductVariantAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to delete variant.' }
   }
-}
 
-export async function getProductFormulasAction(
-  productId: string,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<ProductFormulaRecord[]>> {
+})
+
+export const getProductFormulasAction = withTenantAction(
+  {
+    permission: "products.view",
+    entityType: "product"
+  },
+  async (ctx, productId: string,
+  requestedCompanyId?: string) : Promise<ServerActionResult<ProductFormulaRecord[]>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -502,15 +574,19 @@ export async function getProductFormulasAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to fetch formulas.' }
   }
-}
 
-export async function createProductFormulaAction(
-  data: Partial<ProductFormulaRecord> & {
+})
+
+export const createProductFormulaAction = withTenantAction(
+  {
+    permission: "products.create",
+    entityType: "product"
+  },
+  async (ctx, data: Partial<ProductFormulaRecord> & {
     product_id: string
     model: any
   },
-  requestedCompanyId?: string
-): Promise<ServerActionResult<ProductFormulaRecord>> {
+  requestedCompanyId?: string) : Promise<ServerActionResult<ProductFormulaRecord>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -531,11 +607,15 @@ export async function createProductFormulaAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to create formula.' }
   }
-}
 
-export async function getPriceListsAction(
-  requestedCompanyId?: string
-): Promise<ServerActionResult<PriceListRecord[]>> {
+})
+
+export const getPriceListsAction = withTenantAction(
+  {
+    permission: "pricing.view",
+    entityType: "product"
+  },
+  async (ctx, requestedCompanyId?: string) : Promise<ServerActionResult<PriceListRecord[]>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -548,15 +628,19 @@ export async function getPriceListsAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to fetch price lists.' }
   }
-}
 
-export async function createPriceListAction(
-  data: Partial<PriceListRecord> & {
+})
+
+export const createPriceListAction = withTenantAction(
+  {
+    permission: "products.create",
+    entityType: "product"
+  },
+  async (ctx, data: Partial<PriceListRecord> & {
     name: string
     code: string
   },
-  requestedCompanyId?: string
-): Promise<ServerActionResult<PriceListRecord>> {
+  requestedCompanyId?: string) : Promise<ServerActionResult<PriceListRecord>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -577,13 +661,17 @@ export async function createPriceListAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to create price list.' }
   }
-}
 
-export async function calculateProductPricingAction(
-  productId: string,
+})
+
+export const calculateProductPricingAction = withTenantAction(
+  {
+    permission: "pricing.view",
+    entityType: "product"
+  },
+  async (ctx, productId: string,
   input: PricingCalculationInput,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<PricingCalculationOutput>> {
+  requestedCompanyId?: string) : Promise<ServerActionResult<PricingCalculationOutput>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -599,16 +687,20 @@ export async function calculateProductPricingAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to calculate pricing.' }
   }
-}
+
+})
 
 // ==========================================
 // SUPPLIER PURCHASE ECONOMICS ACTIONS
 // ==========================================
 
-export async function getProductSupplierPricesAction(
-  productId: string,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<ProductSupplierPriceRecord[]>> {
+export const getProductSupplierPricesAction = withTenantAction(
+  {
+    permission: "pricing.view",
+    entityType: "product"
+  },
+  async (ctx, productId: string,
+  requestedCompanyId?: string) : Promise<ServerActionResult<ProductSupplierPriceRecord[]>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -621,12 +713,16 @@ export async function getProductSupplierPricesAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to fetch supplier prices.' }
   }
-}
 
-export async function saveProductSupplierPriceAction(
-  data: Partial<ProductSupplierPriceRecord> & { product_id: string; supplier_name: string; purchase_price: number },
-  requestedCompanyId?: string
-): Promise<ServerActionResult<ProductSupplierPriceRecord>> {
+})
+
+export const saveProductSupplierPriceAction = withTenantAction(
+  {
+    permission: "pricing.edit",
+    entityType: "product"
+  },
+  async (ctx, data: Partial<ProductSupplierPriceRecord> & { product_id: string; supplier_name: string; purchase_price: number },
+  requestedCompanyId?: string) : Promise<ServerActionResult<ProductSupplierPriceRecord>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -644,13 +740,19 @@ export async function saveProductSupplierPriceAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to save supplier price.' }
   }
-}
 
-export async function deleteProductSupplierPriceAction(
-  id: string,
+})
+
+export const deleteProductSupplierPriceAction = withTenantAction(
+  {
+    permission: "products.delete",
+    destructive: true,
+    auditAction: "product.deleteproductsupplierprice",
+    entityType: "product"
+  },
+  async (ctx, id: string,
   productId: string,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<boolean>> {
+  requestedCompanyId?: string) : Promise<ServerActionResult<boolean>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -668,17 +770,21 @@ export async function deleteProductSupplierPriceAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to delete supplier price.' }
   }
-}
+
+})
 
 // ==========================================
 // PRICE OVERRIDES AUDITING ACTIONS
 // ==========================================
 
-export async function getPriceOverridesAction(
-  productId?: string,
+export const getPriceOverridesAction = withTenantAction(
+  {
+    permission: "pricing.price_override",
+    entityType: "product"
+  },
+  async (ctx, productId?: string,
   limit: number = 50,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<PriceOverrideRecord[]>> {
+  requestedCompanyId?: string) : Promise<ServerActionResult<PriceOverrideRecord[]>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -691,12 +797,16 @@ export async function getPriceOverridesAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to fetch price overrides.' }
   }
-}
 
-export async function logPriceOverrideAction(
-  data: Partial<PriceOverrideRecord> & { original_price: number; override_price: number; reason: string },
-  requestedCompanyId?: string
-): Promise<ServerActionResult<PriceOverrideRecord>> {
+})
+
+export const logPriceOverrideAction = withTenantAction(
+  {
+    permission: "pricing.price_override",
+    entityType: "product"
+  },
+  async (ctx, data: Partial<PriceOverrideRecord> & { original_price: number; override_price: number; reason: string },
+  requestedCompanyId?: string) : Promise<ServerActionResult<PriceOverrideRecord>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -715,4 +825,5 @@ export async function logPriceOverrideAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to log price override.' }
   }
-}
+
+})

@@ -46,7 +46,7 @@ export function DeliveryDashboard({ metrics, onRefresh }: DeliveryDashboardProps
           <h1 className="text-xl sm:text-2xl font-black">
             {tBilingual("Today's Dispatches & Installations", 'আজকের ডেলিভারি ও চালান')}
           </h1>
-          <p className="text-xs text-emerald-100/90">
+          <p className="text-xs text-success/90">
             {tBilingual('Print delivery challans, capture signed receipts, and record COD balance collections.', 'চালান প্রিন্ট করুন, গ্রাহকের রিসিট নিশ্চিত করুন এবং বাকি টাকা গ্রহণ করুন।')}
           </p>
         </div>

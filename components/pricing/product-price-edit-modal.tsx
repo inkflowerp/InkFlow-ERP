@@ -140,7 +140,7 @@ export function ProductPriceEditModal({
  onOpenChange={onOpenChange}
  size="3xl"title={
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-teal-600/10 text-teal-600 dark:bg-teal-500/20 dark:text-teal-400 font-bold shrink-0">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-success/10 text-success bg-success/20 text-success font-bold shrink-0">
             <Tag className="h-5 w-5"/>
           </div>
           <div>
@@ -148,7 +148,7 @@ export function ProductPriceEditModal({
               <span className="text-base font-black text-foreground">
                 {tBilingual('Edit Selling Rate & Customer Tiers', 'বিক্রয় দর ও গ্রাহক রেট নির্ধারণ')}
               </span>
-              <Badge variant="outline"className="text-2xs uppercase tabular-nums py-0.5 px-2 bg-teal-50 dark:bg-teal-950/50 text-teal-700 dark:text-teal-300 border-teal-200 dark:border-teal-800">
+              <Badge variant="outline"className="text-xs uppercase tabular-nums py-0.5 px-2 bg-success-surface bg-success-surface text-success text-success border-success-border border-success-border">
                 {product.unit || 'sft'}
               </Badge>
             </div>
@@ -161,8 +161,8 @@ export function ProductPriceEditModal({
     >
       <form onSubmit={handleSubmit} className="space-y-4 pt-1">
         {errorMsg && (
-          <div className="p-3 bg-rose-50 text-rose-800 rounded-lg text-xs font-semibold flex items-center gap-2 border border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800">
-            <AlertCircle className="h-4 w-4 text-rose-600 shrink-0"/>
+          <div className="p-3 bg-danger-surface text-destructive rounded-lg text-xs font-semibold flex items-center gap-2 border border-danger-border bg-danger-surface text-destructive border-danger-border">
+            <AlertCircle className="h-4 w-4 text-destructive shrink-0"/>
             <span>{errorMsg}</span>
           </div>
         )}
@@ -171,7 +171,7 @@ export function ProductPriceEditModal({
         <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <DollarSign className="h-4 w-4 text-teal-600"/>
+              <DollarSign className="h-4 w-4 text-success"/>
               <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
                 {tBilingual('Base Selling Rate & Material Cost', 'মূল বিক্রয় মূল্য ও মেটেরিয়াল খরচ')}
               </h3>
@@ -180,8 +180,8 @@ export function ProductPriceEditModal({
               <Badge
  variant="outline"className={`text-xs tabular-nums font-bold py-0.5 px-2 ${
  profitMargin >= 30
-                    ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
-                    : 'bg-amber-50 text-amber-800 border-amber-300'
+                    ? 'bg-success-surface text-success border-success-border'
+                    : 'bg-warning-surface text-warning border-warning-border'
                 }`}
               >
                 {profitMargin}% Gross Margin
@@ -192,7 +192,7 @@ export function ProductPriceEditModal({
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
               <Label className="text-xs font-semibold mb-1 block">
-                {tBilingual('Standard Retail Price', 'খুচরা মূল্য')} <span className="text-rose-500">*</span>
+                {tBilingual('Standard Retail Price', 'খুচরা মূল্য')} <span className="text-destructive">*</span>
               </Label>
               <div className="relative">
                 <span className="absolute left-3 top-2 text-xs font-bold text-muted-foreground pointer-events-none">৳</span>
@@ -258,12 +258,12 @@ export function ProductPriceEditModal({
         <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <TrendingUp className="h-4 w-4 text-blue-600"/>
+              <TrendingUp className="h-4 w-4 text-primary"/>
               <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
                 {tBilingual('Customer Category Tier Rates', 'গ্রাহক ক্যাটাগরি দর')}
               </h3>
             </div>
-            <span className="text-2xs text-muted-foreground">
+            <span className="text-xs text-muted-foreground">
               {tBilingual('Auto-resolved in quotations based on client profile', 'কোটেশনে ক্লায়েন্ট প্রোফাইল অনুযায়ী নির্ধারিত হবে')}
             </span>
           </div>
@@ -283,28 +283,28 @@ export function ProductPriceEditModal({
                       {key === 'reseller' && (
                         <button
  type="button"onClick={() => handleApplyPresetDiscount(key, 15)}
- className="text-2xs font-bold text-blue-600 hover:underline">
+ className="text-xs font-bold text-primary hover:underline">
                           -15%
                         </button>
                       )}
                       {key === 'corporate' && (
                         <button
  type="button"onClick={() => handleApplyPresetDiscount(key, 10)}
- className="text-2xs font-bold text-purple-600 hover:underline">
+ className="text-xs font-bold text-primary hover:underline">
                           -10%
                         </button>
                       )}
                       {key === 'agency' && (
                         <button
  type="button"onClick={() => handleApplyPresetDiscount(key, 12)}
- className="text-2xs font-bold text-amber-600 hover:underline">
+ className="text-xs font-bold text-warning hover:underline">
                           -12%
                         </button>
                       )}
                       {key === 'regular' && (
                         <button
  type="button"onClick={() => handleApplyPresetDiscount(key, 8)}
- className="text-2xs font-bold text-indigo-600 hover:underline">
+ className="text-xs font-bold text-primary hover:underline">
                           -8%
                         </button>
                       )}
@@ -334,7 +334,7 @@ export function ProductPriceEditModal({
 
           <Button
  type="submit"disabled={loading}
- className="w-full sm:w-auto min-h-[40px] text-xs bg-teal-600 hover:bg-teal-700 text-white font-bold shadow-sm px-6">
+ className="w-full sm:w-auto min-h-[40px] text-xs bg-success hover:bg-success text-white font-bold shadow-sm px-6">
             {loading
               ? tBilingual('Saving...', 'সংরক্ষণ হচ্ছে...')
               : tBilingual('Update Product Tariff', 'দর আপডেট করুন')}

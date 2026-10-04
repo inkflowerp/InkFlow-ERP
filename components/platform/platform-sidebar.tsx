@@ -75,7 +75,7 @@ const SIDEBAR_SECTIONS: NavSection[] = [
       { titleEn: 'Plans', titleBn: 'প্ল্যান', href: '/platform/plans', icon: Briefcase },
       { titleEn: 'Client Plans', titleBn: 'চলতি প্ল্যান', href: '/platform/subscriptions', icon: CreditCard },
       { titleEn: 'Bills', titleBn: 'বিল', href: '/platform/billing', icon: FileCheck2 },
-      { titleEn: 'Features', titleBn: 'ফিচার', href: '/platform/features', icon: Flag },
+      { titleEn: 'Features', titleBn: 'ফিচার', href: '/platform/feature-flags', icon: Flag },
       { titleEn: 'Usage', titleBn: 'ব্যবহার', href: '/platform/usage', icon: Gauge },
       { titleEn: 'Client Help', titleBn: 'গ্রাহক সহায়তা', href: '/platform/customer-success', icon: Sparkles },
     ],
@@ -97,7 +97,7 @@ const SIDEBAR_SECTIONS: NavSection[] = [
     items: [
       { titleEn: 'Security', titleBn: 'নিরাপত্তা', href: '/platform/security', icon: Shield },
       { titleEn: 'Admins', titleBn: 'এডমিন', href: '/platform/admins', icon: UserCheck },
-      { titleEn: 'Roles', titleBn: 'দায়িত্ব', href: '/platform/permissions', icon: Sliders },
+      { titleEn: 'Roles', titleBn: 'দায়িত্ব', href: '/platform/rbac', icon: Sliders },
       { titleEn: 'Devices', titleBn: 'ডিভাইস', href: '/platform/sessions', icon: Laptop },
       { titleEn: 'Activity Log', titleBn: 'কাজের ইতিহাস', href: '/platform/audit', icon: FileText },
     ],
@@ -107,7 +107,7 @@ const SIDEBAR_SECTIONS: NavSection[] = [
     titleBn: 'সেটিংস',
     items: [
       { titleEn: 'Settings', titleBn: 'সেটিংস', href: '/platform/settings', icon: Settings },
-      { titleEn: 'Email', titleBn: 'ইমেইল', href: '/platform/settings/communication', icon: Mail, badge: 'SMTP' },
+      { titleEn: 'Email', titleBn: 'ইমেইল', href: '/platform/email', icon: Mail, badge: 'SMTP' },
       { titleEn: 'Connections', titleBn: 'সংযোগ', href: '/platform/integrations', icon: Layers },
       { titleEn: 'Emergency Stop', titleBn: 'জরুরি বন্ধ', href: '/platform/emergency', icon: Server },
     ],
@@ -283,7 +283,7 @@ export function PlatformSidebar() {
             return (
               <div key={sec.titleEn} className="space-y-1">
                 {!isCollapsed && (
-                  <div className="px-2.5 text-2xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">
+                  <div className="px-2.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">
                     {secTitle}
                   </div>
                 )}
@@ -340,7 +340,7 @@ export function PlatformSidebar() {
                         {!isCollapsed && item.badge && (
                           <span
                             className={cn(
-                              'text-2xs font-bold px-1.5 py-0.5 rounded-md shrink-0 ml-1.5',
+                              'text-xs font-bold px-1.5 py-0.5 rounded-md shrink-0 ml-1.5',
                               item.badgeColor || 'bg-primary/10 text-primary border border-primary/20'
                             )}
                           >
@@ -378,12 +378,12 @@ export function PlatformSidebar() {
       <div className="p-2.5 border-t border-border bg-card space-y-2 shrink-0 select-none">
         {!isCollapsed ? (
           <>
-            <div className="p-2 rounded-lg bg-muted border border-border text-2xs text-foreground flex items-center justify-between">
+            <div className="p-2 rounded-lg bg-muted border border-border text-xs text-foreground flex items-center justify-between">
               <span className="flex items-center gap-1.5 font-medium">
                 <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse" />
                 {tBilingual('System Online', 'সিস্টেম চালু')}
               </span>
-              <span className="tabular-nums text-muted-foreground text-2xs font-semibold">{appName}</span>
+              <span className="tabular-nums text-muted-foreground text-xs font-semibold">{appName}</span>
             </div>
 
             <Link
@@ -426,7 +426,7 @@ export function PlatformSidebar() {
         <div className="flex h-11 items-center justify-between border-b border-border px-3 shrink-0">
           {!collapsed ? (
             <div className="flex items-center gap-2 min-w-0">
-              <span className="text-2xs tabular-nums font-bold uppercase tracking-widest text-primary truncate">
+              <span className="text-xs tabular-nums font-bold uppercase tracking-widest text-primary truncate">
                 {appName} {tBilingual('Control Center', 'কন্ট্রোল সেন্টার')}
               </span>
             </div>
@@ -463,7 +463,7 @@ export function PlatformSidebar() {
             </div>
             <div className="text-left">
               <span className="font-bold text-sm text-foreground block">{appName}</span>
-              <span className="text-2xs text-muted-foreground tabular-nums">
+              <span className="text-xs text-muted-foreground tabular-nums">
                 {tBilingual('Control Center', 'কন্ট্রোল সেন্টার')}
               </span>
             </div>

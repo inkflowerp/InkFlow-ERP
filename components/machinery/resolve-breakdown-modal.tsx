@@ -103,7 +103,7 @@ export function ResolveBreakdownModal({
           </Alert>
         )}
 
-        <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-xs text-amber-900 dark:text-amber-300">
+        <div className="p-3 rounded-lg bg-warning-surface bg-warning-surface border border-warning-border border-warning-border text-xs text-warning text-warning">
           <p className="font-bold">Original Problem: {breakdown.problem_title}</p>
           <p className="opacity-90">{breakdown.problem_description}</p>
         </div>
@@ -195,7 +195,7 @@ export function ResolveBreakdownModal({
 
           <Button
  type="submit"isLoading={loading}
- className="w-full sm:w-auto min-h-[40px] bg-emerald-600 hover:bg-emerald-700 text-white font-bold inline-flex items-center gap-1.5">
+ className="w-full sm:w-auto min-h-[40px] bg-success hover:bg-success text-white font-bold inline-flex items-center gap-1.5">
             <CheckCircle className="h-4 w-4"/>
             <span>Mark Breakdown Resolved</span>
           </Button>

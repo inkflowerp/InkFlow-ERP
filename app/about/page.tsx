@@ -17,14 +17,14 @@ export default function PublicAboutPage() {
 
   return (
     <MarketingDemoProvider>
-      <div className="min-h-screen bg-muted text-foreground selection:bg-blue-600 selection:text-white font-sans antialiased overflow-x-hidden">
+      <div className="min-h-screen bg-muted text-foreground selection:bg-primary selection:text-white font-sans antialiased overflow-x-hidden">
         <MarketingNavbar />
 
         <main className="pt-20">
           {/* Banner */}
           <div className="py-16 sm:py-20 bg-card border-b border-border text-center px-4">
-            <div className="max-w-3xl mx-auto space-y-4">
-              <span className="text-xs font-bold text-blue-700 dark:text-blue-300 uppercase tracking-wider bg-blue-50 dark:bg-blue-950/60 px-3 py-1 rounded-full border border-blue-200/70 dark:border-blue-800/60">
+            <div className="mx-auto space-y-4">
+              <span className="text-xs font-bold text-primary text-primary uppercase tracking-wider bg-primary/10 bg-primary/10 px-3 py-1 rounded-full border border-primary/20/70 border-border/60">
                 Our Mission & Story
               </span>
               <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-foreground dark:text-white bangla-text tracking-tight">
@@ -43,7 +43,7 @@ export default function PublicAboutPage() {
           </div>
 
           {/* Narrative & Origin Section */}
-          <section className="py-16 sm:py-20 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+          <section className="py-16 sm:py-20 mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
             <div className="space-y-6 text-sm sm:text-base text-foreground leading-relaxed">
               <h2 className="text-2xl sm:text-3xl font-black text-foreground dark:text-white bangla-text">
                 {tBilingual('Why Generic ERPs Fail in Print Shops', 'সাধারণ বিদেশি ইআরপি কেন প্রেসের কাজে ব্যর্থ হয়')}
@@ -62,7 +62,7 @@ export default function PublicAboutPage() {
             {/* 3 Core Pillars */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
               <div className="p-6 rounded-2xl border border-border bg-card space-y-3 shadow-2xs">
-                <div className="h-10 w-10 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold border border-blue-200/60 dark:border-blue-800/60">
+                <div className="h-10 w-10 rounded-xl bg-primary/10 bg-primary/10 text-primary text-primary flex items-center justify-center font-bold border border-primary/20/60 border-border/60">
                   <Target className="h-5 w-5" />
                 </div>
                 <h3 className="text-base sm:text-lg font-bold text-foreground dark:text-white bangla-text">
@@ -74,7 +74,7 @@ export default function PublicAboutPage() {
               </div>
 
               <div className="p-6 rounded-2xl border border-border bg-card space-y-3 shadow-2xs">
-                <div className="h-10 w-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold border border-emerald-200/60 dark:border-emerald-800/60">
+                <div className="h-10 w-10 rounded-xl bg-success-surface bg-success-surface/60 text-success text-success flex items-center justify-center font-bold border border-success-border/60 border-success-border/60">
                   <HeartHandshake className="h-5 w-5" />
                 </div>
                 <h3 className="text-base sm:text-lg font-bold text-foreground dark:text-white bangla-text">
@@ -86,7 +86,7 @@ export default function PublicAboutPage() {
               </div>
 
               <div className="p-6 rounded-2xl border border-border bg-card space-y-3 shadow-2xs">
-                <div className="h-10 w-10 rounded-xl bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center font-bold border border-purple-200/60 dark:border-purple-800/60">
+                <div className="h-10 w-10 rounded-xl bg-primary/10 bg-primary/10 text-primary text-primary flex items-center justify-center font-bold border border-primary/20/60 border-border/60">
                   <ShieldCheck className="h-5 w-5" />
                 </div>
                 <h3 className="text-base sm:text-lg font-bold text-foreground dark:text-white bangla-text">

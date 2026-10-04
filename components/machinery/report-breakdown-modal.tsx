@@ -104,7 +104,7 @@ export function ReportBreakdownModal({
           </Alert>
         )}
 
-        <div className="p-3 rounded-lg bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 text-xs text-red-900 dark:text-red-300">
+        <div className="p-3 rounded-lg bg-danger-surface bg-danger-surface border border-danger-border border-danger-border text-xs text-destructive text-destructive">
           ⚠️ <strong>Immediate Floor Notice:</strong> Reporting a breakdown will immediately update the machine status to <strong>Breakdown</strong>, dispatch alerts to the Production Coordinator & Manager, and prevent new job allocations until resolved.
         </div>
 
@@ -171,7 +171,7 @@ export function ReportBreakdownModal({
 
           <Button
  type="submit"isLoading={loading}
- className="w-full sm:w-auto min-h-[40px] bg-red-600 hover:bg-red-700 text-white font-bold inline-flex items-center gap-1.5">
+ className="w-full sm:w-auto min-h-[40px] bg-destructive hover:bg-destructive text-white font-bold inline-flex items-center gap-1.5">
             <AlertTriangle className="h-4 w-4"/>
             <span>Submit Breakdown Report</span>
           </Button>

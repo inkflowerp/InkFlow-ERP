@@ -54,7 +54,7 @@ export function PanelAccessDenied({
 
           {/* Heading */}
           <div className="space-y-1.5">
-            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-2xs tabular-nums font-bold uppercase tracking-wider bg-red-100 dark:bg-red-950 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800">
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs tabular-nums font-bold uppercase tracking-wider bg-danger-surface bg-danger-surface text-destructive text-destructive border border-danger-border border-danger-border">
               <Lock className="w-3 h-3"/>
               {tBilingual('403 Panel Isolated', '৪০৩ প্যানেল সীমাবদ্ধ')}
             </span>
@@ -98,12 +98,12 @@ export function PanelAccessDenied({
  responsibilities.map((r) => (
                     <Badge
  key={r}
- variant="outline"className="text-2xs bg-card text-foreground capitalize px-1.5 py-0">
+ variant="outline"className="text-xs bg-card text-foreground capitalize px-1.5 py-0">
                       {r.replace(/_/g, ' ')}
                     </Badge>
                   ))
                 ) : (
-                  <Badge variant="outline"className="text-2xs bg-card text-muted-foreground">
+                  <Badge variant="outline"className="text-xs bg-card text-muted-foreground">
  general staff
                   </Badge>
                 )}
@@ -126,14 +126,14 @@ export function PanelAccessDenied({
  asChild
  variant="outline"className="border-border text-xs gap-1.5">
               <Link href={getTenantNavHref('/portal/my-workforce', pathname, slug)}>
-                <UserCheck className="h-4 w-4 text-emerald-600"/>
+                <UserCheck className="h-4 w-4 text-success"/>
                 <span>{tBilingual('Employee Self-Service Hub', 'আমার হাজিরা ও বেতন')}</span>
               </Link>
             </Button>
           </div>
 
           {/* Notice to contact Owner */}
-          <p className="text-2xs text-muted-foreground">
+          <p className="text-xs text-muted-foreground">
             {tBilingual(
               'If you need access to this panel for your workflow duties, contact your business owner to update your permissions.',
               'কাজের প্রয়োজনে এই প্যানেলে প্রবেশের অনুমতির জন্য প্রতিষ্ঠানের মালিকের সাথে যোগাযোগ করুন।'

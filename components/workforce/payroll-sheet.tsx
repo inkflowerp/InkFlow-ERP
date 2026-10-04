@@ -71,9 +71,9 @@ export function PayrollSheet({
   }
 
  const getItemStatusBadge = (status: string) => {
- if (status === 'paid') return 'bg-emerald-50 text-emerald-700 border-emerald-200'
- if (status === 'partial') return 'bg-amber-50 text-amber-700 border-amber-200'
- return 'bg-red-50 text-red-700 border-red-200'
+ if (status === 'paid') return 'bg-success-surface text-success border-success-border'
+ if (status === 'partial') return 'bg-warning-surface text-warning border-warning-border'
+ return 'bg-danger-surface text-destructive border-danger-border'
   }
 
  if (isLoading) {
@@ -135,7 +135,7 @@ export function PayrollSheet({
             )}
 
             {isLocked && (
-              <div className="text-right text-[11px] text-muted-foreground">
+              <div className="text-right text-xs text-muted-foreground">
                 <span className="font-medium text-foreground">{tBilingual('Period is locked & immutable.', 'পিরিয়ড লক এবং অপরিবর্তনীয়।')}</span>
                 <span className="block text-muted-foreground">
  Locked {period.locked_at ? new Date(period.locked_at).toLocaleDateString() : ''}
@@ -156,21 +156,21 @@ export function PayrollSheet({
 
           <div>
             <span className="text-muted-foreground block font-medium">{tBilingual('Overtime', 'ওভারটাইম')}</span>
-            <span className="text-sm font-bold text-indigo-600 tabular-nums">
+            <span className="text-sm font-bold text-primary tabular-nums">
               ৳ {Number(period.total_ot_amount || 0).toLocaleString('en-IN')}
             </span>
           </div>
 
           <div>
             <span className="text-muted-foreground block font-medium">{tBilingual('Advances Deducted', 'কর্তনকৃত অগ্রিম')}</span>
-            <span className="text-sm font-bold text-amber-600 tabular-nums">
+            <span className="text-sm font-bold text-warning tabular-nums">
               ৳ {Number(period.total_advances_deducted || 0).toLocaleString('en-IN')}
             </span>
           </div>
 
           <div>
             <span className="text-muted-foreground block font-medium">{tBilingual('Other Deductions', 'অন্যান্য কর্তন')}</span>
-            <span className="text-sm font-bold text-red-600 tabular-nums">
+            <span className="text-sm font-bold text-destructive tabular-nums">
               ৳ {Number(period.total_other_deductions || 0).toLocaleString('en-IN')}
             </span>
           </div>
@@ -184,14 +184,14 @@ export function PayrollSheet({
 
           <div>
             <span className="text-muted-foreground block font-medium">{tBilingual('Paid', 'পরিশোধিত')}</span>
-            <span className="text-sm font-bold text-emerald-600 tabular-nums">
+            <span className="text-sm font-bold text-success tabular-nums">
               ৳ {Number(period.total_paid_amount || 0).toLocaleString('en-IN')}
             </span>
           </div>
 
           <div>
             <span className="text-muted-foreground block font-medium">{tBilingual('Due Remaining', 'অবশিষ্ট বকেয়া')}</span>
-            <span className="text-sm font-bold text-rose-600 tabular-nums">
+            <span className="text-sm font-bold text-destructive tabular-nums">
               ৳ {Number(period.total_due_amount || 0).toLocaleString('en-IN')}
             </span>
           </div>
@@ -202,7 +202,7 @@ export function PayrollSheet({
       <Card className="bg-card border-border shadow-[0_1px_3px_rgba(0,0,0,0.02)] rounded-xl overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-muted border-b border-border text-muted-foreground uppercase tracking-wider font-semibold text-[11px]">
+            <thead className="bg-muted border-b border-border text-muted-foreground uppercase tracking-wider font-semibold text-xs">
               <tr>
                 <th className="py-3 px-4">{tBilingual('Employee', 'কর্মী')}</th>
                 <th className="py-3 px-3">{tBilingual('Basis', 'ধরন')}</th>
@@ -234,7 +234,7 @@ export function PayrollSheet({
                     {/* Employee */}
                     <td className="py-3 px-4">
                       <div className="font-semibold text-foreground">{item.employee_name}</div>
-                      <div className="text-[11px] text-muted-foreground capitalize">
+                      <div className="text-xs text-muted-foreground capitalize">
                         {item.role || item.department}
                       </div>
                     </td>
@@ -255,22 +255,22 @@ export function PayrollSheet({
                     </td>
 
                     {/* OT Hours */}
-                    <td className="py-3 px-3 text-center font-medium text-indigo-600 tabular-nums">
+                    <td className="py-3 px-3 text-center font-medium text-primary tabular-nums">
                       {item.overtime_hours || 0}
                     </td>
 
                     {/* OT Amount */}
-                    <td className="py-3 px-3 text-right font-medium text-indigo-600 tabular-nums">
+                    <td className="py-3 px-3 text-right font-medium text-primary tabular-nums">
                       ৳ {otAmt.toLocaleString('en-IN')}
                     </td>
 
                     {/* Bonuses */}
-                    <td className="py-3 px-3 text-right font-medium text-emerald-600 tabular-nums">
+                    <td className="py-3 px-3 text-right font-medium text-success tabular-nums">
                       ৳ {bonuses.toLocaleString('en-IN')}
                     </td>
 
                     {/* Advance Deducted */}
-                    <td className="py-3 px-3 text-right font-medium text-amber-600 tabular-nums">
+                    <td className="py-3 px-3 text-right font-medium text-warning tabular-nums">
                       ৳ {advDed.toLocaleString('en-IN')}
                     </td>
 
@@ -280,19 +280,19 @@ export function PayrollSheet({
                     </td>
 
                     {/* Paid */}
-                    <td className="py-3 px-3 text-right font-bold text-emerald-600 tabular-nums">
+                    <td className="py-3 px-3 text-right font-bold text-success tabular-nums">
                       ৳ {paid.toLocaleString('en-IN')}
                     </td>
 
                     {/* Due */}
-                    <td className="py-3 px-3 text-right font-bold text-rose-600 tabular-nums">
+                    <td className="py-3 px-3 text-right font-bold text-destructive tabular-nums">
                       ৳ {due.toLocaleString('en-IN')}
                     </td>
 
                     {/* Status */}
                     <td className="py-3 px-3 text-center">
                       <Badge
- variant="outline"className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${getItemStatusBadge(
+ variant="outline"className={`text-xs font-bold uppercase px-2 py-0.5 rounded-full ${getItemStatusBadge(
  item.payment_status || (due <= 0 ? 'paid' : paid > 0 ? 'partial' : 'unpaid')
                         )}`}
                       >
@@ -305,12 +305,12 @@ export function PayrollSheet({
                       {due > 0 ? (
                         <Button
  size="sm"onClick={() => onOpenPaymentModal(item)}
- className="h-7 px-2.5 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white min-h-[28px]">
+ className="h-7 px-2.5 text-xs font-semibold bg-success hover:bg-success text-white min-h-[28px]">
                           <CreditCard className="w-3 h-3 mr-1"/>
                           <span>Pay Due</span>
                         </Button>
                       ) : (
-                        <span className="text-[11px] text-emerald-600 font-semibold flex items-center justify-end gap-1">
+                        <span className="text-xs text-success font-semibold flex items-center justify-end gap-1">
                           <CheckCircle2 className="w-3.5 h-3.5"/>
                           <span>Fully Paid</span>
                         </span>

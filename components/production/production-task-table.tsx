@@ -1,5 +1,7 @@
 'use client'
 
+import { generateBangladeshiFloorWhatsAppMessage } from '@/lib/communication/production-whatsapp'
+
 import React from 'react'
 import {
  Play,
@@ -19,8 +21,6 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { ProductionTaskRecord, ProductionTaskStatus } from '@/types/production.types'
-import { LogisticsService } from '@/services/logistics.service'
-import { ProductionService } from '@/services/production.service'
 import { useI18n } from '@/i18n/context'
 
 export interface ProductionTaskTableProps {
@@ -48,7 +48,7 @@ export function ProductionTaskTable({
  const isBn = locale === 'bn'
 
  const handleSendWhatsApp = (task: ProductionTaskRecord) => {
- const rawMsg = ProductionService.generateBangladeshiFloorWhatsAppMessage(task, companyName)
+ const rawMsg = generateBangladeshiFloorWhatsAppMessage(task, companyName)
  const encoded = encodeURIComponent(rawMsg)
  const phone = task.customer_phone?.replace(/[^0-9]/g, '') || ''
  const targetUrl = phone
@@ -61,7 +61,7 @@ export function ProductionTaskTable({
  switch (status) {
  case 'in_progress':
  return (
-          <Badge className="bg-blue-600 text-white text-2xs font-bold gap-1 animate-pulse">
+          <Badge className="bg-primary text-white text-xs font-bold gap-1 animate-pulse">
             <span className="h-1.5 w-1.5 rounded-full bg-card"/>
             <span>{isBn ? 'মেশিনে চলমান' : 'Running'}</span>
           </Badge>
@@ -69,34 +69,34 @@ export function ProductionTaskTable({
  case 'ready':
  case 'scheduled':
  return (
-          <Badge variant="outline"className="bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300 text-2xs font-bold">
+          <Badge variant="outline"className="bg-primary/10 text-primary border-primary/20 bg-primary/10 text-primary text-xs font-bold">
             {isBn ? 'শিডিউল্ড' : 'Scheduled'}
           </Badge>
         )
  case 'on_hold':
  return (
-          <Badge variant="outline"className="bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950/40 dark:text-amber-300 text-2xs font-bold gap-1">
-            <AlertTriangle className="h-3 w-3 text-amber-600"/>
+          <Badge variant="outline"className="bg-warning-surface text-warning border-warning-border bg-warning-surface text-warning text-xs font-bold gap-1">
+            <AlertTriangle className="h-3 w-3 text-warning"/>
             <span>{isBn ? 'স্থগিতাদেশ' : 'On Hold'}</span>
           </Badge>
         )
  case 'rework':
  return (
-          <Badge className="bg-rose-600 text-white text-2xs font-bold">
+          <Badge className="bg-destructive text-white text-xs font-bold">
             {isBn ? 'রি-ওয়ার্ক' : 'Rework'}
           </Badge>
         )
  case 'completed':
  return (
-          <Badge variant="outline"className="bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-300 text-2xs font-bold gap-1">
-            <CheckCircle2 className="h-3 w-3 text-emerald-600"/>
+          <Badge variant="outline"className="bg-success-surface text-success border-success-border bg-success-surface text-success text-xs font-bold gap-1">
+            <CheckCircle2 className="h-3 w-3 text-success"/>
             <span>{isBn ? 'সম্পন্ন' : 'Completed'}</span>
           </Badge>
         )
  case 'queued':
  default:
  return (
-          <Badge variant="outline"className="bg-muted text-foreground border-border text-2xs">
+          <Badge variant="outline"className="bg-muted text-foreground border-border text-xs">
             {isBn ? 'কিউ' : 'Queued'}
           </Badge>
         )
@@ -139,14 +139,14 @@ export function ProductionTaskTable({
                 <tr key={task.id} className="hover:bg-muted dark:hover:bg-muted/50 transition-colors">
                   {/* Task & Job # */}
                   <td className="py-3 px-4">
-                    <div className="tabular-nums font-bold text-blue-600 dark:text-blue-400">
+                    <div className="tabular-nums font-bold text-primary text-primary">
                       {task.task_number}
                     </div>
-                    <div className="tabular-nums text-2xs text-muted-foreground mt-0.5">
+                    <div className="tabular-nums text-xs text-muted-foreground mt-0.5">
  Job: {task.job_number || 'N/A'}
                     </div>
                     {task.priority === 'urgent' && (
-                      <span className="inline-flex items-center px-1.5 py-0.2 rounded text-2xs font-black bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300 mt-1">
+                      <span className="inline-flex items-center px-1.5 py-0.2 rounded text-xs font-black bg-danger-surface text-destructive bg-danger-surface text-destructive mt-1">
  URGENT
                       </span>
                     )}
@@ -157,7 +157,7 @@ export function ProductionTaskTable({
                     <div className="font-bold text-foreground">
                       {task.task_name}
                     </div>
-                    <div className="text-2xs text-muted-foreground mt-0.5">
+                    <div className="text-xs text-muted-foreground mt-0.5">
                       {task.customer_name || 'Direct Client'} • Qty: <strong>{task.quantity} {task.unit || 'pcs'}</strong>
                     </div>
                   </td>
@@ -167,7 +167,7 @@ export function ProductionTaskTable({
                     <div className="font-semibold text-foreground capitalize">
                       {task.department}
                     </div>
-                    <div className="text-2xs text-blue-600 dark:text-blue-400 tabular-nums mt-0.5 flex items-center gap-1">
+                    <div className="text-xs text-primary text-primary tabular-nums mt-0.5 flex items-center gap-1">
                       <Cpu className="h-3 w-3 text-muted-foreground"/>
                       <span>{task.assigned_machine_name || 'Floor Bench'}</span>
                     </div>
@@ -183,7 +183,7 @@ export function ProductionTaskTable({
                     ) : (
                       <span className="text-muted-foreground">—</span>
                     )}
-                    <div className="text-2xs text-muted-foreground font-sans truncate max-w-[140px] mt-0.5">
+                    <div className="text-xs text-muted-foreground font-sans truncate max-w-[140px] mt-0.5">
                       {task.required_material || 'Press Substrate'}
                     </div>
                   </td>
@@ -208,7 +208,7 @@ export function ProductionTaskTable({
                       <Button
  size="sm"variant="ghost"onClick={() => handleSendWhatsApp(task)}
  title={isBn ? 'হোয়াটসঅ্যাপ আপডেট' : 'WhatsApp Notice'}
- className="h-7 w-7 p-0 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50">
+ className="h-7 w-7 p-0 text-success hover:text-success hover:bg-success-surface">
                         <MessageSquare className="h-3.5 w-3.5"/>
                       </Button>
 
@@ -217,13 +217,13 @@ export function ProductionTaskTable({
                         <>
                           <Button
  size="sm"variant="outline"onClick={() => onPause(task)}
- className="h-7 text-2xs px-2 border-amber-300 text-amber-800 hover:bg-amber-50">
+ className="h-7 text-xs px-2 border-warning-border text-warning hover:bg-warning-surface">
                             <Pause className="h-3 w-3 mr-1"/>
                             {isBn ? 'পজ' : 'Pause'}
                           </Button>
                           <Button
  size="sm"onClick={() => onComplete(task)}
- className="h-7 text-2xs px-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold">
+ className="h-7 text-xs px-2.5 bg-success hover:bg-success text-white font-bold">
                             <CheckCircle2 className="h-3 w-3 mr-1"/>
                             {isBn ? 'সম্পন্ন' : 'Done'}
                           </Button>
@@ -231,19 +231,19 @@ export function ProductionTaskTable({
                       ) : task.status === 'on_hold' ? (
                         <Button
  size="sm"variant="outline"onClick={() => onResume(task)}
- className="h-7 text-2xs px-2 border-emerald-300 text-emerald-800 hover:bg-emerald-50">
+ className="h-7 text-xs px-2 border-success-border text-success hover:bg-success-surface">
                           <Play className="h-3 w-3 mr-1"/>
                           {isBn ? 'রিজিউম' : 'Resume'}
                         </Button>
                       ) : task.status !== 'completed' ? (
                         <Button
  size="sm"onClick={() => onStart(task)}
- className="h-7 text-2xs px-2.5 bg-primary hover:bg-primary/90 text-primary-foreground font-bold">
+ className="h-7 text-xs px-2.5 bg-primary hover:bg-primary/90 text-primary-foreground font-bold">
                           <Play className="h-3 w-3 mr-1"/>
                           {isBn ? 'স্টার্ট' : 'Start'}
                         </Button>
                       ) : (
-                        <span className="text-2xs text-emerald-600 font-bold">
+                        <span className="text-xs text-success font-bold">
                           ✓ Complete
                         </span>
                       )}
@@ -261,7 +261,7 @@ export function ProductionTaskTable({
         {tasks.map((task) => (
           <div key={task.id} className="p-4 space-y-2.5">
             <div className="flex items-center justify-between">
-              <span className="tabular-nums font-bold text-xs text-blue-600 dark:text-blue-400">
+              <span className="tabular-nums font-bold text-xs text-primary text-primary">
                 {task.task_number}
               </span>
               {getStatusBadge(task.status, task)}
@@ -276,11 +276,11 @@ export function ProductionTaskTable({
 
             <div className="grid grid-cols-2 gap-2 p-2 rounded-lg bg-muted text-xs border border-border tabular-nums">
               <div>
-                <span className="text-2xs text-muted-foreground block font-sans">Machine</span>
+                <span className="text-xs text-muted-foreground block font-sans">Machine</span>
                 <strong>{task.assigned_machine_name || 'Floor Bench'}</strong>
               </div>
               <div>
-                <span className="text-2xs text-muted-foreground block font-sans">Substrate</span>
+                <span className="text-xs text-muted-foreground block font-sans">Substrate</span>
                 <span className="truncate block">{task.required_material || 'Standard'}</span>
               </div>
             </div>
@@ -290,12 +290,12 @@ export function ProductionTaskTable({
                 <Button
  size="sm"variant="outline"onClick={() => onPrintTicket(task)}
  className="h-8 text-xs gap-1">
-                  <FileCheck2 className="h-3.5 w-3.5 text-blue-600"/>
+                  <FileCheck2 className="h-3.5 w-3.5 text-primary"/>
                   <span>Ticket</span>
                 </Button>
                 <Button
  size="sm"variant="outline"onClick={() => handleSendWhatsApp(task)}
- className="h-8 text-xs gap-1 text-emerald-600 border-emerald-200">
+ className="h-8 text-xs gap-1 text-success border-success-border">
                   <MessageSquare className="h-3.5 w-3.5"/>
                   <span>WA</span>
                 </Button>
@@ -305,7 +305,7 @@ export function ProductionTaskTable({
                 {task.status === 'in_progress' ? (
                   <Button
  size="sm"onClick={() => onComplete(task)}
- className="h-8 text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-bold">
+ className="h-8 text-xs bg-success hover:bg-success text-white font-bold">
                     <CheckCircle2 className="h-3.5 w-3.5 mr-1"/>
  Complete
                   </Button>

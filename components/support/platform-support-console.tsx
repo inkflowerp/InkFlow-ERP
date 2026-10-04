@@ -150,12 +150,12 @@ export function PlatformSupportConsole({
  className={cn(
             'p-3 rounded-xl border text-left transition-all cursor-pointer flex items-center justify-between',
  activeQueueTab === 'all' && priorityFilter === 'all'
-              ? 'bg-card-elevated/90 border-indigo-500/80 shadow-xs shadow-indigo-500/10'
+              ? 'bg-card-elevated/90 border-primary/20/80 shadow-xs shadow-indigo-500/10'
               : 'bg-surface-inset border-border hover:border-border'
           )}
         >
           <div>
-            <div className="text-2xs sm:text-2xs text-muted-foreground font-semibold uppercase tracking-wider">
+            <div className="text-xs sm:text-xs text-muted-foreground font-semibold uppercase tracking-wider">
  Total Tickets
             </div>
             <div className="text-lg sm:text-xl font-black text-foreground mt-0.5">{stats?.totalCount || 0}</div>
@@ -174,17 +174,17 @@ export function PlatformSupportConsole({
  className={cn(
             'p-3 rounded-xl border text-left transition-all cursor-pointer flex items-center justify-between',
  activeQueueTab === 'unassigned'
-              ? 'bg-emerald-950/40 border-emerald-500/80 shadow-xs shadow-emerald-500/10'
-              : 'bg-surface-inset border-border hover:border-emerald-800/60'
+              ? 'bg-success-surface border-success-border/80 shadow-xs shadow-emerald-500/10'
+              : 'bg-surface-inset border-border hover:border-success-border/60'
           )}
         >
           <div>
-            <div className="text-2xs sm:text-2xs text-emerald-400 font-semibold uppercase tracking-wider">
+            <div className="text-xs sm:text-xs text-success font-semibold uppercase tracking-wider">
  Unassigned
             </div>
-            <div className="text-lg sm:text-xl font-black text-emerald-400 mt-0.5">{stats?.unassignedCount || 0}</div>
+            <div className="text-lg sm:text-xl font-black text-success mt-0.5">{stats?.unassignedCount || 0}</div>
           </div>
-          <div className="w-7 h-7 rounded-xl bg-emerald-950/70 border border-emerald-800 text-emerald-400 flex items-center justify-center shrink-0">
+          <div className="w-7 h-7 rounded-xl bg-success-surface/70 border border-success-border text-success flex items-center justify-center shrink-0">
             <AlertCircle className="w-3.5 h-3.5"/>
           </div>
         </button>
@@ -198,17 +198,17 @@ export function PlatformSupportConsole({
  className={cn(
             'p-3 rounded-xl border text-left transition-all cursor-pointer flex items-center justify-between',
  activeQueueTab === 'mine'
-              ? 'bg-indigo-950/40 border-indigo-500/80 shadow-xs shadow-indigo-500/10'
-              : 'bg-surface-inset border-border hover:border-indigo-800/60'
+              ? 'bg-primary/10 border-primary/20/80 shadow-xs shadow-indigo-500/10'
+              : 'bg-surface-inset border-border hover:border-border/60'
           )}
         >
           <div>
-            <div className="text-2xs sm:text-2xs text-indigo-400 font-semibold uppercase tracking-wider">
+            <div className="text-xs sm:text-xs text-primary font-semibold uppercase tracking-wider">
  My Tickets
             </div>
-            <div className="text-lg sm:text-xl font-black text-indigo-400 mt-0.5">{stats?.assignedToMeCount || 0}</div>
+            <div className="text-lg sm:text-xl font-black text-primary mt-0.5">{stats?.assignedToMeCount || 0}</div>
           </div>
-          <div className="w-7 h-7 rounded-xl bg-indigo-950/70 border border-indigo-800 text-indigo-400 flex items-center justify-center shrink-0">
+          <div className="w-7 h-7 rounded-xl bg-primary/10 border border-border text-primary flex items-center justify-center shrink-0">
             <UserCheck className="w-3.5 h-3.5"/>
           </div>
         </button>
@@ -222,17 +222,17 @@ export function PlatformSupportConsole({
  className={cn(
             'p-3 rounded-xl border text-left transition-all cursor-pointer flex items-center justify-between',
  activeQueueTab === 'waiting_customer'
-              ? 'bg-amber-950/40 border-amber-500/80 shadow-xs shadow-amber-500/10'
-              : 'bg-surface-inset border-border hover:border-amber-800/60'
+              ? 'bg-warning-surface border-warning-border/80 shadow-xs shadow-amber-500/10'
+              : 'bg-surface-inset border-border hover:border-warning-border/60'
           )}
         >
           <div>
-            <div className="text-2xs sm:text-2xs text-amber-400 font-semibold uppercase tracking-wider">
+            <div className="text-xs sm:text-xs text-warning font-semibold uppercase tracking-wider">
  Waiting
             </div>
-            <div className="text-lg sm:text-xl font-black text-amber-400 mt-0.5">{stats?.waitingCustomerCount || 0}</div>
+            <div className="text-lg sm:text-xl font-black text-warning mt-0.5">{stats?.waitingCustomerCount || 0}</div>
           </div>
-          <div className="w-7 h-7 rounded-xl bg-amber-950/70 border border-amber-800 text-amber-400 flex items-center justify-center shrink-0">
+          <div className="w-7 h-7 rounded-xl bg-warning-surface/70 border border-warning-border text-warning flex items-center justify-center shrink-0">
             <Clock className="w-3.5 h-3.5"/>
           </div>
         </button>
@@ -246,17 +246,17 @@ export function PlatformSupportConsole({
  className={cn(
             'p-3 rounded-xl border text-left transition-all cursor-pointer flex items-center justify-between',
  activeQueueTab === 'urgent'
-              ? 'bg-rose-950/40 border-rose-500/80 shadow-xs shadow-rose-500/10'
-              : 'bg-surface-inset border-border hover:border-rose-800/60'
+              ? 'bg-danger-surface border-danger-border/80 shadow-xs shadow-rose-500/10'
+              : 'bg-surface-inset border-border hover:border-danger-border/60'
           )}
         >
           <div>
-            <div className="text-2xs sm:text-2xs text-rose-400 font-semibold uppercase tracking-wider">
+            <div className="text-xs sm:text-xs text-destructive font-semibold uppercase tracking-wider">
  Urgent SLA
             </div>
-            <div className="text-lg sm:text-xl font-black text-rose-400 mt-0.5">{stats?.urgentCount || 0}</div>
+            <div className="text-lg sm:text-xl font-black text-destructive mt-0.5">{stats?.urgentCount || 0}</div>
           </div>
-          <div className="w-7 h-7 rounded-xl bg-rose-950/70 border border-rose-800 text-rose-400 flex items-center justify-center shrink-0">
+          <div className="w-7 h-7 rounded-xl bg-danger-surface/70 border border-danger-border text-destructive flex items-center justify-center shrink-0">
             <Zap className="w-3.5 h-3.5"/>
           </div>
         </button>
@@ -264,14 +264,14 @@ export function PlatformSupportConsole({
         {/* Avg First Response */}
         <div className="p-3 rounded-xl bg-surface-inset border border-border flex items-center justify-between">
           <div>
-            <div className="text-2xs sm:text-2xs text-purple-400 font-semibold uppercase tracking-wider">
+            <div className="text-xs sm:text-xs text-primary font-semibold uppercase tracking-wider">
  Avg SLA
             </div>
-            <div className="text-lg sm:text-xl font-black text-purple-400 mt-0.5">
+            <div className="text-lg sm:text-xl font-black text-primary mt-0.5">
               {stats?.averageFirstResponseMinutes || 15}m
             </div>
           </div>
-          <div className="w-7 h-7 rounded-xl bg-purple-950/70 border border-purple-800 text-purple-400 flex items-center justify-center shrink-0">
+          <div className="w-7 h-7 rounded-xl bg-primary/10 border border-border text-primary flex items-center justify-center shrink-0">
             <Timer className="w-3.5 h-3.5"/>
           </div>
         </div>
@@ -290,7 +290,7 @@ export function PlatformSupportConsole({
           <div className="p-3 border-b border-border space-y-2.5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <ShieldAlert className="w-4 h-4 text-indigo-400"/>
+                <ShieldAlert className="w-4 h-4 text-primary"/>
                 <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
  Triage Queue ({filteredQueue.length})
                 </h3>
@@ -336,9 +336,9 @@ export function PlatformSupportConsole({
  key={tab.key}
  onClick={() => setActiveQueueTab(tab.key)}
  className={cn(
-                    'px-2.5 py-1 rounded-lg text-2xs font-semibold whitespace-nowrap transition-colors cursor-pointer',
+                    'px-2.5 py-1 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer',
  activeQueueTab === tab.key
-                      ? 'bg-indigo-600 text-white shadow-xs'
+                      ? 'bg-primary text-white shadow-xs'
                       : 'text-muted-foreground hover:bg-card-elevated hover:text-foreground'
                   )}
                 >
@@ -364,7 +364,7 @@ export function PlatformSupportConsole({
                 <p>No tickets matching current filters.</p>
                 <button
  onClick={resetFilters}
- className="px-3 py-1 text-2xs font-bold text-indigo-400 hover:text-indigo-300 bg-surface-inset border border-border rounded-lg">
+ className="px-3 py-1 text-xs font-bold text-primary hover:text-primary bg-surface-inset border border-border rounded-lg">
  Reset Filters
                 </button>
               </div>
@@ -384,19 +384,19 @@ export function PlatformSupportConsole({
  className={cn(
                       'w-full text-left p-3.5 transition-all flex flex-col gap-1.5 cursor-pointer relative',
  isSelected
-                        ? 'bg-card-elevated/95 border-l-4 border-indigo-500 text-white shadow-inner'
+                        ? 'bg-card-elevated/95 border-l-4 border-primary/20 text-white shadow-inner'
                         : 'hover:bg-card-elevated/40 text-muted-foreground'
                     )}
                   >
-                    <div className="flex items-center justify-between text-2xs">
-                      <span className="tabular-nums font-bold text-indigo-400">{conv.ticket_number}</span>
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="tabular-nums font-bold text-primary">{conv.ticket_number}</span>
                       <div className="flex items-center gap-1">
                         {conv.priority === 'urgent' && (
-                          <span className="px-1.5 py-0.2 rounded text-2xs font-bold bg-rose-950 text-rose-300 border border-rose-800">
+                          <span className="px-1.5 py-0.2 rounded text-xs font-bold bg-danger-surface text-destructive border border-danger-border">
  URGENT
                           </span>
                         )}
-                        <span className={cn('px-1.5 py-0.2 rounded text-2xs border font-medium', statusConfig.badgeClass)}>
+                        <span className={cn('px-1.5 py-0.2 rounded text-xs border font-medium', statusConfig.badgeClass)}>
                           {statusConfig.labelEn}
                         </span>
                       </div>
@@ -404,7 +404,7 @@ export function PlatformSupportConsole({
 
                     <div className="font-bold text-xs text-foreground truncate">{conv.subject}</div>
 
-                    <div className="flex items-center justify-between text-2xs text-muted-foreground">
+                    <div className="flex items-center justify-between text-xs text-muted-foreground">
                       <span className="truncate max-w-[140px] text-muted-foreground font-medium">
                         {conv.company_name || 'Tenant'}
                       </span>

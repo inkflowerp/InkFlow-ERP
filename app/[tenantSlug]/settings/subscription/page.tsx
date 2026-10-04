@@ -34,6 +34,7 @@ import { ModalDialog } from '@/components/shared/modal-dialog'
 import { CurrencyDisplay } from '@/components/shared/currency-display'
 import { PageHeader } from '@/components/shared/page-header'
 import { formatDate } from '@/lib/formatters'
+import { UsageMeter } from '@/components/platform/usage-meter'
 import {
  DEFAULT_PLANS,
  FEATURE_METADATA,
@@ -183,13 +184,30 @@ export default function TenantSubscriptionPage() {
  const customerLimit = getLimitStatus('max_customers')
  const productLimit = getLimitStatus('max_products')
 
+  const anyLimitExceeded = Boolean(
+    userLimit.exceeded ||
+    branchLimit.exceeded ||
+    storageLimit.exceeded ||
+    orderLimit.exceeded ||
+    customerLimit.exceeded ||
+    productLimit.exceeded
+  )
+  const anyLimitWarning = Boolean(
+    userLimit.warning ||
+    branchLimit.warning ||
+    storageLimit.warning ||
+    orderLimit.warning ||
+    customerLimit.warning ||
+    productLimit.warning
+  )
+
  const isCancelScheduled = Boolean(subscription.cancel_at_period_end)
  const isDowngradeScheduled = Boolean(subscription.next_plan_id && subscription.change_effective_at)
  const nextPlanRecord = subscription.next_plan_id ? allPlans.find((p) => p.id === subscription.next_plan_id) : null
 
  if (!mounted) {
  return (
-      <div className="space-y-6 max-w-6xl animate-pulse">
+      <div className="space-y-6 animate-pulse">
         <div className="h-20 bg-muted rounded-xl"/>
         <div className="h-12 bg-muted rounded-xl"/>
         <div className="h-44 bg-muted rounded-xl"/>
@@ -203,26 +221,26 @@ export default function TenantSubscriptionPage() {
   }
 
  return (
-    <div className="space-y-6 max-w-6xl">
+    <div className="space-y-6">
       {/* Header */}
       <PageHeader
  titleEn="My Plan"titleBn="সাবস্ক্রিপশন ও প্ল্যান ব্যবস্থাপনা"descriptionEn="Manage your organization subscription tier (Trial, Starter, Business, Enterprise), view resource quota meters, and process payments securely."descriptionBn="আপনার প্রতিষ্ঠানের সাবস্ক্রিপশন প্ল্যান, রিসোর্স কোটা ও বিলিং স্ট্যাটাস পরিচালনা করুন।"icon={Crown}
- iconColor="text-amber-500"/>
+ iconColor="text-warning"/>
 
       {/* Notification Toast */}
       {notification && (
-        <div className="p-3 bg-emerald-50 text-emerald-800 rounded-lg text-xs font-semibold flex items-center gap-2 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800 animate-in fade-in-0">
-          <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0"/>
+        <div className="p-3 bg-success-surface text-success rounded-lg text-xs font-semibold flex items-center gap-2 border border-success-border bg-success-surface text-success border-success-border animate-in fade-in-0">
+          <CheckCircle2 className="h-4 w-4 text-success shrink-0"/>
           <span>{notification}</span>
         </div>
       )}
 
       {/* Scheduled Change / Cancellation Alert */}
       {isCancelScheduled && (
-        <div className="p-4 rounded-xl border border-amber-300 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/40 flex items-center justify-between gap-3">
+        <div className="p-4 rounded-xl border border-warning-border border-warning-border bg-warning-surface bg-warning-surface flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
-            <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0"/>
-            <div className="text-xs text-amber-900 dark:text-amber-200">
+            <AlertTriangle className="h-5 w-5 text-warning shrink-0"/>
+            <div className="text-xs text-warning text-warning">
               <strong>Cancellation Pending:</strong> Your subscription will remain active until{' '}
               <span className="tabular-nums font-bold">{formatDate(subscription.current_period_end, locale)}</span>, after which it will not renew.
             </div>
@@ -230,17 +248,17 @@ export default function TenantSubscriptionPage() {
           <Button
  size="sm"onClick={handleReactivate}
  disabled={isActionPending}
- className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shrink-0">
+ className="bg-success hover:bg-success text-white text-xs font-bold shrink-0">
  Resume Subscription
           </Button>
         </div>
       )}
 
       {isDowngradeScheduled && nextPlanRecord && (
-        <div className="p-4 rounded-xl border border-blue-300 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/40 flex items-center justify-between gap-3">
+        <div className="p-4 rounded-xl border border-primary/20 border-border bg-primary/10 bg-primary/10 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
-            <Clock className="h-5 w-5 text-blue-600 shrink-0"/>
-            <div className="text-xs text-blue-900 dark:text-blue-200">
+            <Clock className="h-5 w-5 text-primary shrink-0"/>
+            <div className="text-xs text-primary text-primary">
               <strong>Scheduled Downgrade:</strong> Your plan will switch to{' '}
               <strong>{nextPlanRecord.name}</strong> on{' '}
               <span className="tabular-nums font-bold">
@@ -256,23 +274,23 @@ export default function TenantSubscriptionPage() {
         <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div className="space-y-2">
             <div className="flex items-center gap-2.5 flex-wrap">
-              <Badge className="bg-amber-100 text-amber-900 dark:bg-amber-950/50 dark:text-amber-300 border border-amber-300 font-bold tracking-wider uppercase text-2xs px-2.5 py-0.5">
+              <Badge className="bg-warning-surface text-warning bg-warning-surface text-warning border border-warning-border font-bold tracking-wider uppercase text-xs px-2.5 py-0.5">
                 {isTrial ? (isBn ? 'ফ্রি ট্রায়াল' : 'Free Trial') : (isBn ? (currentPlan.name_bn || currentPlan.name) : currentPlan.name)}
               </Badge>
 
               <Badge
- className={`text-2xs font-bold capitalize px-2 py-0.5 ${
+ className={`text-xs font-bold capitalize px-2 py-0.5 ${
  isTrial
                     ? isTrialExpired
-                      ? 'bg-red-500 text-white'
-                      : 'bg-amber-500 text-foreground'
+                      ? 'bg-destructive text-white'
+                      : 'bg-warning text-foreground'
                     : subscription.status === 'active'
                     ? isPlanExpired
-                      ? 'bg-red-500 text-white'
-                      : 'bg-emerald-500 text-white'
+                      ? 'bg-destructive text-white'
+                      : 'bg-success text-white'
                     : subscription.status === 'past_due'
-                    ? 'bg-amber-500 text-foreground'
-                    : 'bg-red-500 text-white'
+                    ? 'bg-warning text-foreground'
+                    : 'bg-destructive text-white'
                 }`}
               >
                 {isTrial
@@ -310,13 +328,13 @@ export default function TenantSubscriptionPage() {
               {isBn ? accountTypeMeta.nameBn : accountTypeMeta.nameEn}: {isBn ? accountTypeMeta.descriptionBn : accountTypeMeta.descriptionEn}
             </p>
 
-            <div className="text-2xs text-muted-foreground pt-1 flex items-center gap-3 flex-wrap">
+            <div className="text-xs text-muted-foreground pt-1 flex items-center gap-3 flex-wrap">
               <span>
                 {isTrial ? (isBn ? 'ট্রায়াল শেষ:' : 'Trial Ends:') : (isBn ? 'মেয়াদ শেষ:' : 'Period Ends:')}{' '}
                 <strong className="text-white tabular-nums">
                   {formatDate(trialExpiresAt || planExpiresAt || subscription.current_period_end, locale)}
                 </strong>{' '}
-                <span className="text-amber-300 tabular-nums text-2xs">
+                <span className="text-warning tabular-nums text-xs">
                   ({isTrial
                     ? isTrialExpired
                       ? 'Expired'
@@ -329,7 +347,7 @@ export default function TenantSubscriptionPage() {
               {subscription.last_payment_reference && (
                 <span>
  {isBn ? 'সর্বশেষ পেমেন্ট রেফারেন্স:' : 'Last Payment Reference:'}{' '}
-                  <strong className="text-indigo-300 tabular-nums">{subscription.last_payment_reference}</strong>{' '}
+                  <strong className="text-primary tabular-nums">{subscription.last_payment_reference}</strong>{' '}
                   ({subscription.payment_method_type?.toUpperCase()})
                 </span>
               )}
@@ -358,7 +376,7 @@ export default function TenantSubscriptionPage() {
                 )}
                 <Button
  variant="outline"size="sm"onClick={() => setIsCancelConfirmOpen(true)}
- className="border-red-900/60 text-red-400 hover:bg-red-950/40 text-xs flex-1">
+ className="border-danger-border/60 text-destructive hover:bg-danger-surface text-xs flex-1">
  Cancel Plan
                 </Button>
               </div>
@@ -372,162 +390,140 @@ export default function TenantSubscriptionPage() {
         <div className="flex items-center justify-between mb-3">
           <div>
             <h2 className="text-base font-bold text-foreground flex items-center gap-2">
-              <Layers className="h-4 w-4 text-indigo-600"/>
+              <Layers className="h-4 w-4 text-primary"/>
               {isBn ? 'রিসোর্স ব্যবহার ও কোটা মিটার' : '6 Configurable Limits & Utilization'}
             </h2>
             <p className="text-xs text-muted-foreground">
- {isBn ? 'আপনার সাবস্ক্রিপশন প্ল্যানের কোটা ও রিয়েল-টাইম ব্যবহারের পরিসংখ্যান।' : 'Authoritative server-side consumption tracking against your plan quota.'}
+              {isBn ? 'আপনার সাবস্ক্রিপশন প্ল্যানের কোটা ও রিয়েল-টাইম ব্যবহারের পরিসংখ্যান।' : 'Authoritative server-side consumption tracking against your plan quota.'}
             </p>
           </div>
 
           {subscription.custom_limits_override && (
-            <Badge className="bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 border-purple-200 text-2xs">
- {isBn ? 'কাস্টম সীমা সক্রিয়' : 'Custom Overrides Active'}
+            <Badge variant="outline" className="border-border text-foreground text-xs">
+              {isBn ? 'কাস্টম সীমা সক্রিয়' : 'Custom Overrides Active'}
             </Badge>
           )}
         </div>
 
+        {anyLimitExceeded && (
+          <div className="mb-4 p-3.5 rounded-xl border border-destructive/30 bg-destructive/10 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5">
+              <AlertCircle className="h-5 w-5 text-destructive shrink-0" />
+              <div className="text-xs text-destructive font-medium">
+                <strong>{isBn ? 'কোটা অতিক্রম করেছে:' : 'Quota Limit Exceeded:'}</strong>{' '}
+                {isBn
+                  ? 'আপনার সাবস্ক্রিপশন প্ল্যানের রিসোর্স সীমা পূর্ণ হয়েছে। নতুন ডেটা এন্ট্রি করতে প্ল্যান আপগ্রেড করুন।'
+                  : 'One or more resource limits have been reached. Upgrade your plan to expand capacity.'}
+              </div>
+            </div>
+            <Button
+              size="sm"
+              onClick={() => openUpgradeModal()}
+              className="text-xs font-bold shrink-0"
+            >
+              {isBn ? 'আপগ্রেড করুন' : 'Upgrade Plan'}
+            </Button>
+          </div>
+        )}
+
+        {!anyLimitExceeded && anyLimitWarning && (
+          <div className="mb-4 p-3.5 rounded-xl border border-warning/30 bg-warning-surface flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5">
+              <AlertTriangle className="h-5 w-5 text-warning shrink-0" />
+              <div className="text-xs text-warning-foreground font-medium">
+                <strong>{isBn ? 'কোটা সতর্কতা:' : 'Quota Warning:'}</strong>{' '}
+                {isBn
+                  ? 'আপনার কিছু রিসোর্সের ব্যবহার ৮০% বা তার বেশি পৌঁছেছে।'
+                  : 'One or more resource quotas have reached 80% capacity.'}
+              </div>
+            </div>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => openUpgradeModal()}
+              className="text-xs font-bold shrink-0 border-warning/30"
+            >
+              {isBn ? 'প্ল্যান দেখুন' : 'View Plans'}
+            </Button>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {/* Limit 1: Team Users */}
           <Card className="p-4 bg-card border-border">
-            <div className="flex items-center justify-between text-xs font-semibold text-foreground">
-              <span className="flex items-center gap-1.5">
-                <Users className="h-4 w-4 text-blue-500"/>
-                {isBn ? 'টিম সদস্য' : 'Team Users'}
-              </span>
-              <span className="tabular-nums text-foreground font-bold">
-                {userLimit.current} / {userLimit.limit}
-              </span>
-            </div>
-            <div className="w-full bg-muted rounded-full h-2 mt-2 overflow-hidden">
-              <div
- className={`h-2 rounded-full transition-all ${
- userLimit.exceeded
-                    ? 'bg-red-500'
-                    : userLimit.warning
-                    ? 'bg-amber-500'
-                    : 'bg-blue-600'
-                }`}
- style={{ width: `${Math.min(userLimit.percentage, 100)}%` }}
-              />
-            </div>
-            <div className="text-2xs text-muted-foreground mt-1 flex justify-between">
-              <span>{userLimit.percentage}% {isBn ? 'ব্যবহৃত' : 'used'}</span>
-              <span className="bangla-text">{Math.max(0, userLimit.limit - userLimit.current)} {isBn ? 'টি সিট বাকি' : 'seats left'}</span>
-            </div>
+            <UsageMeter
+              label={isBn ? 'টিম সদস্য' : 'Team Users'}
+              current={userLimit.current}
+              max={userLimit.limit}
+              warningThreshold={80}
+              dangerThreshold={95}
+              description={Math.max(0, userLimit.limit - userLimit.current) > 0 
+                ? (isBn ? `${Math.max(0, userLimit.limit - userLimit.current)} টি সিট বাকি` : `${Math.max(0, userLimit.limit - userLimit.current)} seats available`)
+                : (isBn ? 'কোটা পূর্ণ হয়েছে' : 'Quota exhausted')}
+            />
           </Card>
 
-          {/* Limit 2: Branches */}
           <Card className="p-4 bg-card border-border">
-            <div className="flex items-center justify-between text-xs font-semibold text-foreground">
-              <span className="flex items-center gap-1.5">
-                <Building className="h-4 w-4 text-purple-500"/>
-                {isBn ? 'শাখা ও কারখানা হাব' : 'Branches & Hubs'}
-              </span>
-              <span className="tabular-nums text-foreground font-bold">
-                {branchLimit.current} / {branchLimit.limit}
-              </span>
-            </div>
-            <div className="w-full bg-muted rounded-full h-2 mt-2 overflow-hidden">
-              <div
- className={`h-2 rounded-full transition-all ${
- branchLimit.exceeded ? 'bg-red-500' : 'bg-purple-600'
-                }`}
- style={{ width: `${Math.min(branchLimit.percentage, 100)}%` }}
-              />
-            </div>
-            <div className="text-2xs text-muted-foreground mt-1 flex justify-between">
-              <span>{branchLimit.percentage}% {isBn ? 'ব্যবহৃত' : 'used'}</span>
-              <span className="bangla-text">{Math.max(0, branchLimit.limit - branchLimit.current)} {isBn ? 'টি অবশিষ্ট' : 'available'}</span>
-            </div>
+            <UsageMeter
+              label={isBn ? 'শাখা ও কারখানা হাব' : 'Branches & Hubs'}
+              current={branchLimit.current}
+              max={branchLimit.limit}
+              warningThreshold={80}
+              dangerThreshold={95}
+              description={Math.max(0, branchLimit.limit - branchLimit.current) > 0 
+                ? (isBn ? `${Math.max(0, branchLimit.limit - branchLimit.current)} টি অবশিষ্ট` : `${Math.max(0, branchLimit.limit - branchLimit.current)} branches available`)
+                : (isBn ? 'কোটা পূর্ণ হয়েছে' : 'Quota exhausted')}
+            />
           </Card>
 
-          {/* Limit 3: Storage */}
           <Card className="p-4 bg-card border-border">
-            <div className="flex items-center justify-between text-xs font-semibold text-foreground">
-              <span className="flex items-center gap-1.5">
-                <HardDrive className="h-4 w-4 text-cyan-500"/>
-                {isBn ? 'ক্লাউড আর্টওয়ার্ক স্টোরেজ' : 'Cloud Artwork Storage'}
-              </span>
-              <span className="tabular-nums text-foreground font-bold">
-                {storageLimit.current} {isBn ? 'জিবি' : 'GB'} / {storageLimit.limit} {isBn ? 'জিবি' : 'GB'}
-              </span>
-            </div>
-            <div className="w-full bg-muted rounded-full h-2 mt-2 overflow-hidden">
-              <div
- className="h-2 rounded-full bg-cyan-500 transition-all"style={{ width: `${Math.min(storageLimit.percentage, 100)}%` }}
-              />
-            </div>
-            <div className="text-2xs text-muted-foreground mt-1 flex justify-between">
-              <span>{storageLimit.percentage}% {isBn ? 'ব্যবহৃত' : 'used'}</span>
-              <span className="bangla-text">{(storageLimit.limit - storageLimit.current).toFixed(1)} {isBn ? 'জিবি খালি' : 'GB free'}</span>
-            </div>
+            <UsageMeter
+              label={isBn ? 'ক্লাউড আর্টওয়ার্ক স্টোরেজ' : 'Cloud Artwork Storage'}
+              current={storageLimit.current}
+              max={storageLimit.limit}
+              unit={isBn ? 'জিবি' : 'GB'}
+              warningThreshold={80}
+              dangerThreshold={95}
+              description={(storageLimit.limit - storageLimit.current) > 0
+                ? (isBn ? `${(storageLimit.limit - storageLimit.current).toFixed(1)} জিবি খালি` : `${(storageLimit.limit - storageLimit.current).toFixed(1)} GB available`)
+                : (isBn ? 'স্টোরেজ পূর্ণ' : 'Storage full')}
+            />
           </Card>
 
-          {/* Limit 4: Monthly Orders */}
           <Card className="p-4 bg-card border-border">
-            <div className="flex items-center justify-between text-xs font-semibold text-foreground">
-              <span className="flex items-center gap-1.5">
-                <ShoppingCart className="h-4 w-4 text-emerald-500"/>
-                {isBn ? 'মাসিক অর্ডার' : 'Monthly Orders'}
-              </span>
-              <span className="tabular-nums text-foreground font-bold">
-                {orderLimit.current} / {orderLimit.limit}
-              </span>
-            </div>
-            <div className="w-full bg-muted rounded-full h-2 mt-2 overflow-hidden">
-              <div
- className="h-2 rounded-full bg-emerald-500 transition-all"style={{ width: `${Math.min(orderLimit.percentage, 100)}%` }}
-              />
-            </div>
-            <div className="text-2xs text-muted-foreground mt-1 flex justify-between">
-              <span>{orderLimit.percentage}% {isBn ? 'ব্যবহৃত' : 'used'}</span>
-              <span className="bangla-text">{isBn ? 'প্রতি মাসের ১ তারিখে রিসেট হবে' : 'Resets on 1st of month'}</span>
-            </div>
+            <UsageMeter
+              label={isBn ? 'মাসিক অর্ডার' : 'Monthly Orders'}
+              current={orderLimit.current}
+              max={orderLimit.limit}
+              warningThreshold={80}
+              dangerThreshold={95}
+              description={isBn ? 'প্রতি মাসের ১ তারিখে রিসেট হবে' : 'Resets on 1st of month'}
+            />
           </Card>
 
-          {/* Limit 5: Customers */}
           <Card className="p-4 bg-card border-border">
-            <div className="flex items-center justify-between text-xs font-semibold text-foreground">
-              <span className="flex items-center gap-1.5">
-                <Users className="h-4 w-4 text-amber-500"/>
-                {isBn ? 'গ্রাহক তালিকা' : 'Client Directory'}
-              </span>
-              <span className="tabular-nums text-foreground font-bold">
-                {customerLimit.current} / {customerLimit.limit}
-              </span>
-            </div>
-            <div className="w-full bg-muted rounded-full h-2 mt-2 overflow-hidden">
-              <div
- className="h-2 rounded-full bg-amber-500 transition-all"style={{ width: `${Math.min(customerLimit.percentage, 100)}%` }}
-              />
-            </div>
-            <div className="text-2xs text-muted-foreground mt-1 flex justify-between">
-              <span>{customerLimit.percentage}% {isBn ? 'ব্যবহৃত' : 'used'}</span>
-              <span className="bangla-text">{customerLimit.limit - customerLimit.current} {isBn ? 'টি এন্ট্রি বাকি' : 'entries left'}</span>
-            </div>
+            <UsageMeter
+              label={isBn ? 'গ্রাহক তালিকা' : 'Client Directory'}
+              current={customerLimit.current}
+              max={customerLimit.limit}
+              warningThreshold={80}
+              dangerThreshold={95}
+              description={Math.max(0, customerLimit.limit - customerLimit.current) > 0
+                ? (isBn ? `${customerLimit.limit - customerLimit.current} টি বাকি` : `${customerLimit.limit - customerLimit.current} entries left`)
+                : (isBn ? 'কোটা পূর্ণ হয়েছে' : 'Quota exhausted')}
+            />
           </Card>
 
-          {/* Limit 6: Products */}
           <Card className="p-4 bg-card border-border">
-            <div className="flex items-center justify-between text-xs font-semibold text-foreground">
-              <span className="flex items-center gap-1.5">
-                <Layers className="h-4 w-4 text-pink-500"/>
-                {isBn ? 'ক্যাটালগ পণ্য' : 'Catalog Products'}
-              </span>
-              <span className="tabular-nums text-foreground font-bold">
-                {productLimit.current} / {productLimit.limit}
-              </span>
-            </div>
-            <div className="w-full bg-muted rounded-full h-2 mt-2 overflow-hidden">
-              <div
- className="h-2 rounded-full bg-pink-500 transition-all"style={{ width: `${Math.min(productLimit.percentage, 100)}%` }}
-              />
-            </div>
-            <div className="text-2xs text-muted-foreground mt-1 flex justify-between">
-              <span>{productLimit.percentage}% {isBn ? 'ব্যবহৃত' : 'used'}</span>
-              <span className="bangla-text">{productLimit.limit - productLimit.current} {isBn ? 'টি প্রোডাক্ট বাকি' : 'products left'}</span>
-            </div>
+            <UsageMeter
+              label={isBn ? 'ক্যাটালগ পণ্য' : 'Catalog Products'}
+              current={productLimit.current}
+              max={productLimit.limit}
+              warningThreshold={80}
+              dangerThreshold={95}
+              description={Math.max(0, productLimit.limit - productLimit.current) > 0
+                ? (isBn ? `${productLimit.limit - productLimit.current} টি বাকি` : `${productLimit.limit - productLimit.current} products left`)
+                : (isBn ? 'কোটা পূর্ণ হয়েছে' : 'Quota exhausted')}
+            />
           </Card>
         </div>
       </div>
@@ -536,7 +532,7 @@ export default function TenantSubscriptionPage() {
       <Card className="border-border">
         <CardHeader className="pb-3 border-b border-border">
           <CardTitle className="text-base font-bold text-foreground flex items-center gap-2">
-            <Clock className="h-4 w-4 text-indigo-600"/>
+            <Clock className="h-4 w-4 text-primary"/>
             {isBn ? 'সাবস্ক্রিপশন ইভেন্ট ও অ্যাক্টিভেশন হিস্ট্রি' : 'Subscription Events & Audit Log'}
           </CardTitle>
           <CardDescription className="text-xs text-muted-foreground">
@@ -568,17 +564,17 @@ export default function TenantSubscriptionPage() {
  events.map((ev) => (
                     <tr key={ev.id} className="hover:bg-muted dark:hover:bg-muted/40 transition-colors">
                       <td className="py-3 px-4">
-                        <span className={`px-2 py-0.5 rounded-full text-2xs font-bold ${
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
  ev.event_type === 'PLAN_UPGRADED' || ev.event_type === 'PAYMENT_VERIFIED' || ev.event_type === 'RENEWED'
-                            ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                            ? 'bg-success-surface text-success bg-success-surface text-success'
                             : ev.event_type === 'PAYMENT_FAILED' || ev.event_type === 'EXPIRED'
-                            ? 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300'
-                            : 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300'
+                            ? 'bg-danger-surface text-destructive bg-danger-surface text-destructive'
+                            : 'bg-primary/10 text-primary bg-primary/10 text-primary'
                         }`}>
                           {ev.event_type}
                         </span>
                       </td>
-                      <td className="py-3 px-4 tabular-nums text-2xs">
+                      <td className="py-3 px-4 tabular-nums text-xs">
                         {ev.previous_plan_code || 'trial'} → <strong className="text-foreground">{ev.new_plan_code || 'starter'}</strong>
                       </td>
                       <td className="py-3 px-4 tabular-nums font-bold">
@@ -607,12 +603,12 @@ export default function TenantSubscriptionPage() {
  events.map((ev) => (
                 <div key={ev.id} className="p-4 space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className={`px-2 py-0.5 rounded-full text-2xs font-bold ${
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
  ev.event_type === 'PLAN_UPGRADED' || ev.event_type === 'PAYMENT_VERIFIED' || ev.event_type === 'RENEWED'
-                        ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                        ? 'bg-success-surface text-success bg-success-surface text-success'
                         : ev.event_type === 'PAYMENT_FAILED' || ev.event_type === 'EXPIRED'
-                        ? 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300'
-                        : 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300'
+                        ? 'bg-danger-surface text-destructive bg-danger-surface text-destructive'
+                        : 'bg-primary/10 text-primary bg-primary/10 text-primary'
                     }`}>
                       {ev.event_type}
                     </span>
@@ -623,7 +619,7 @@ export default function TenantSubscriptionPage() {
                   <div className="text-xs text-foreground tabular-nums">
                     {ev.previous_plan_code || 'trial'} → <strong className="text-foreground">{ev.new_plan_code || 'starter'}</strong>
                   </div>
-                  <div className="flex items-center justify-between text-2xs text-muted-foreground pt-1">
+                  <div className="flex items-center justify-between text-xs text-muted-foreground pt-1">
                     <span>{ev.reason || 'Lifecycle action'}</span>
                     <span>{formatDate(ev.created_at, locale)}</span>
                   </div>
@@ -638,7 +634,7 @@ export default function TenantSubscriptionPage() {
       <Card className="border-border">
         <CardHeader className="pb-3 border-b border-border">
           <CardTitle className="text-base font-bold text-foreground flex items-center gap-2">
-            <FileText className="h-4 w-4 text-emerald-600"/>
+            <FileText className="h-4 w-4 text-success"/>
             {isBn ? 'পেমেন্ট ইনভয়েস ও রসিদ হিস্ট্রি' : 'Billing Invoices & Payment Receipts'}
           </CardTitle>
           <CardDescription className="text-xs text-muted-foreground">
@@ -675,7 +671,7 @@ export default function TenantSubscriptionPage() {
                         {inv.invoice_number}
                       </td>
                       <td className="py-3 px-4 uppercase text-foreground font-semibold">
-                        {inv.plan_name} <span className="text-2xs text-muted-foreground font-normal">({inv.billing_interval})</span>
+                        {inv.plan_name} <span className="text-xs text-muted-foreground font-normal">({inv.billing_interval})</span>
                       </td>
                       <td className="py-3 px-4 tabular-nums font-bold">
                         <CurrencyDisplay amount={inv.amount} />
@@ -683,16 +679,16 @@ export default function TenantSubscriptionPage() {
                       <td className="py-3 px-4 uppercase text-muted-foreground">
                         {inv.payment_method}
                       </td>
-                      <td className="py-3 px-4 tabular-nums text-2xs text-muted-foreground">
+                      <td className="py-3 px-4 tabular-nums text-xs text-muted-foreground">
                         {inv.transaction_ref}
                       </td>
                       <td className="py-3 px-4">
-                        <span className={`px-2 py-0.5 rounded-full text-2xs font-bold uppercase ${
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-bold uppercase ${
  inv.status === 'paid'
-                            ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                            ? 'bg-success-surface text-success bg-success-surface text-success'
                             : inv.status === 'failed'
-                            ? 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300'
-                            : 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
+                            ? 'bg-danger-surface text-destructive bg-danger-surface text-destructive'
+                            : 'bg-warning-surface text-warning bg-warning-surface text-warning'
                         }`}>
                           {inv.status}
                         </span>
@@ -720,12 +716,12 @@ export default function TenantSubscriptionPage() {
                     <span className="tabular-nums text-xs font-bold text-foreground">
                       {inv.invoice_number}
                     </span>
-                    <span className={`px-2 py-0.5 rounded-full text-2xs font-bold uppercase ${
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-bold uppercase ${
  inv.status === 'paid'
-                        ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                        ? 'bg-success-surface text-success bg-success-surface text-success'
                         : inv.status === 'failed'
-                        ? 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300'
-                        : 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
+                        ? 'bg-danger-surface text-destructive bg-danger-surface text-destructive'
+                        : 'bg-warning-surface text-warning bg-warning-surface text-warning'
                     }`}>
                       {inv.status}
                     </span>
@@ -738,7 +734,7 @@ export default function TenantSubscriptionPage() {
                       <CurrencyDisplay amount={inv.amount} />
                     </span>
                   </div>
-                  <div className="flex items-center justify-between text-2xs text-muted-foreground tabular-nums pt-1">
+                  <div className="flex items-center justify-between text-xs text-muted-foreground tabular-nums pt-1">
                     <span>{inv.payment_method?.toUpperCase()} • {inv.transaction_ref}</span>
                     <span>{formatDate(inv.billing_date, locale)}</span>
                   </div>
@@ -759,7 +755,7 @@ export default function TenantSubscriptionPage() {
             <p className="text-foreground">
  You are about to downgrade your plan to <strong className="text-foreground uppercase">{downgradeTargetPlan}</strong>.
             </p>
-            <div className="p-3 bg-amber-50 dark:bg-amber-950/40 rounded-xl border border-amber-200 dark:border-amber-800 text-amber-900 dark:text-amber-200">
+            <div className="p-3 bg-warning-surface bg-warning-surface rounded-xl border border-warning-border border-warning-border text-warning text-warning">
  Your downgrade will safely take effect at the end of your current billing period (<strong>{formatDate(subscription.current_period_end)}</strong>). You will retain full access to your current features until that date.
             </div>
             <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-3 border-t border-border">
@@ -790,7 +786,7 @@ export default function TenantSubscriptionPage() {
             <p className="text-foreground">
  Are you sure you want to cancel your PrintERP subscription?
             </p>
-            <div className="p-3 bg-red-50 dark:bg-red-950/40 rounded-xl border border-red-200 dark:border-red-800 text-red-900 dark:text-red-200">
+            <div className="p-3 bg-danger-surface bg-danger-surface rounded-xl border border-danger-border border-danger-border text-destructive text-destructive">
  Your subscription will remain active until <strong>{formatDate(subscription.current_period_end)}</strong> and will not renew. Your company data and invoices will remain intact.
             </div>
             <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-3 border-t border-border">
@@ -803,7 +799,7 @@ export default function TenantSubscriptionPage() {
               <Button
  size="sm"onClick={handleCancelSubscription}
  disabled={isActionPending}
- className="bg-red-600 hover:bg-red-700 text-white font-bold w-full sm:w-auto h-10 sm:h-9">
+ className="bg-destructive hover:bg-destructive text-white font-bold w-full sm:w-auto h-10 sm:h-9">
                 {isActionPending ? 'Cancelling...' : 'Confirm Cancellation'}
               </Button>
             </div>

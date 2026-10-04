@@ -45,6 +45,7 @@ import { Badge } from '@/components/ui/badge'
 import { Label } from '@/components/ui/label'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import { PageHeader } from '@/components/shared/page-header'
+import { PageContainer } from '@/components/ui/page-container'
 import { KpiCard, KpiGrid } from '@/components/shared/kpi-card'
 import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
 import {
@@ -424,10 +425,85 @@ export default function FinishingAndFabricationPage() {
       }
     })
   }
+  // Prioritized Attention Queue for Finishing Floor
+  const attentionItems = useMemo(() => {
+    const items: Array<{
+      id: string
+      type: 'urgent_start' | 'in_progress_qc' | 'on_hold'
+      titleEn: string
+      titleBn: string
+      subtitleEn: string
+      subtitleBn: string
+      badgeText: string
+      badgeVariant: 'warning' | 'destructive' | 'primary'
+      actionLabelEn: string
+      actionLabelBn: string
+      onAction: () => void
+    }> = []
+
+    // 1. High priority tasks ready to start on bench
+    const urgentReady = tasks.filter(
+      (t) => (t.status === 'ready' || t.status === 'scheduled') && (t.priority === 'very_urgent' || t.priority === 'normal')
+    )
+    urgentReady.slice(0, 3).forEach((t) => {
+      items.push({
+        id: `bench-${t.id}`,
+        type: 'urgent_start',
+        titleEn: `Start Bench: ${t.task_name}`,
+        titleBn: `বেন্চে কাজ শুরু: ${t.task_name}`,
+        subtitleEn: `${t.task_number} • ${t.customer_name || 'Customer Job'} • ${t.required_material || 'Substrate Ready'}`,
+        subtitleBn: `${t.task_number} • ${t.customer_name || 'গ্রাহকের অর্ডার'} • ${t.required_material || 'ম্যাটেরিয়াল প্রস্তুত'}`,
+        badgeText: t.priority === 'very_urgent' ? 'URGENT' : 'READY',
+        badgeVariant: t.priority === 'very_urgent' ? 'destructive' : 'warning',
+        actionLabelEn: 'Start Bench',
+        actionLabelBn: 'শুরু করুন',
+        onAction: () => handleStartTask(t),
+      })
+    })
+
+    // 2. Active in-progress tasks ready for completion & QC inspection
+    const activeTasks = tasks.filter((t) => t.status === 'in_progress')
+    activeTasks.slice(0, 2).forEach((t) => {
+      items.push({
+        id: `qc-${t.id}`,
+        type: 'in_progress_qc',
+        titleEn: `Active Bench: ${t.task_name}`,
+        titleBn: `চলমান কাজ: ${t.task_name}`,
+        subtitleEn: `${t.task_number} • In progress at station • Click to pass QC`,
+        subtitleBn: `${t.task_number} • স্টেশনে কাজ চলছে • কিউসি সম্পন্ন করুন`,
+        badgeText: 'IN BENCH',
+        badgeVariant: 'primary',
+        actionLabelEn: 'Pass QC',
+        actionLabelBn: 'কিউসি পাস',
+        onAction: () => handleOpenQCModal(t),
+      })
+    })
+
+    // 3. Tasks on hold
+    const holdTasks = tasks.filter((t) => t.status === 'on_hold')
+    holdTasks.slice(0, 2).forEach((t) => {
+      items.push({
+        id: `hold-${t.id}`,
+        type: 'on_hold',
+        titleEn: `Resume Hold: ${t.task_name}`,
+        titleBn: `হোল্ড প্রত্যাহার: ${t.task_name}`,
+        subtitleEn: `${t.task_number} • ${t.hold_reason || 'Material or spec clarification'}`,
+        subtitleBn: `${t.task_number} • ${t.hold_reason || 'ম্যাটেরিয়াল বা স্পেক যাচাই'}`,
+        badgeText: 'ON HOLD',
+        badgeVariant: 'warning',
+        actionLabelEn: 'Resume Task',
+        actionLabelBn: 'পুনরায় চালু',
+        onAction: () => handleStartTask(t),
+      })
+    })
+
+    return items
+  }, [tasks, handleStartTask, handleOpenQCModal])
+
 
  if (!mounted) {
  return (
-      <div className="space-y-6 max-w-7xl mx-auto pb-16 animate-pulse p-4 sm:p-6">
+      <div className="space-y-6 mx-auto pb-16 animate-pulse p-4 sm:p-6">
         <div className="h-10 bg-muted rounded-xl w-1/3"/>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[1, 2, 3, 4].map((i) => (
@@ -448,7 +524,7 @@ export default function FinishingAndFabricationPage() {
     <PanelAccessGuard
  module="production"action="view"panelTitle="Finishing & Fabrication"panelTitleBn="ফিনিশিং ও সাইনেজ ফেব্রিকেশন">
       <FeatureGate feature="production">
-        <div className="space-y-5 max-w-7xl mx-auto pb-16 p-4 sm:p-6">
+        <PageContainer className="space-y-6">
         {/* =========================================================================
             1. HEADER: Standardized PageHeader matching Quotations & Billing
            ========================================================================= */}
@@ -459,7 +535,7 @@ export default function FinishingAndFabricationPage() {
               <Link href={getTenantNavHref('/production', pathname, slug)}>
                 <Button
  variant="outline"size="sm"className="text-xs font-semibold h-9 px-3.5 gap-1.5 border-border bg-card hover:bg-muted text-foreground rounded-xl cursor-pointer shadow-2xs">
-                  <LayoutGrid className="h-4 w-4 text-indigo-600"/>
+                  <LayoutGrid className="h-4 w-4 text-primary"/>
                   <span>{tBilingual('Production Board', 'প্রোডাকশন বোর্ড')}</span>
                 </Button>
               </Link>
@@ -495,14 +571,14 @@ export default function FinishingAndFabricationPage() {
           <div
  className={`p-3.5 rounded-xl text-xs font-semibold flex items-center gap-2 border shadow-xs animate-in fade-in-0 ${
  notification.type === 'success'
-                ? 'bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800'
-                : 'bg-rose-50 text-rose-800 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800'
+                ? 'bg-success-surface text-success border border-success-border'
+                : 'bg-destructive/10 text-destructive border border-destructive/20'
             }`}
           >
             {notification.type === 'success' ? (
-              <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0"/>
+              <CheckCircle2 className="h-4 w-4 text-success shrink-0"/>
             ) : (
-              <AlertTriangle className="h-4 w-4 text-rose-600 shrink-0"/>
+              <AlertTriangle className="h-4 w-4 text-destructive shrink-0"/>
             )}
             <span>{notification.message}</span>
           </div>
@@ -511,57 +587,53 @@ export default function FinishingAndFabricationPage() {
         {/* =========================================================================
             2. TOP STATION METRICS KPI BAR (Standardized KpiGrid)
            ========================================================================= */}
-        <KpiGrid columns={6}>
+                <KpiGrid columns={4}>
           <KpiCard
- titleEn="Total Tasks"titleBn="মোট কাজ"value={tasks.length}
- icon={Layers}
- colorVariant="slate"selected={selectedStation === 'all' && selectedStatus === 'all'}
- onClick={() => {
- setSelectedStation('all')
- setSelectedStatus('all')
+            titleEn="Total Tasks"
+            titleBn="মোট কাজ"
+            value={tasks.length}
+            icon={Layers}
+            colorVariant="slate"
+            selected={selectedStation === 'all' && selectedStatus === 'all'}
+            onClick={() => {
+              setSelectedStation('all')
+              setSelectedStatus('all')
             }}
           />
           <KpiCard
- titleEn="Digital Wide"titleBn="ডিজিটাল ফিনিশিং"value={stationMetrics.digitalCount}
- icon={Scissors}
- colorVariant="indigo"selected={selectedStation === 'digital_finishing'}
- onClick={() => {
- setSelectedStation('digital_finishing')
- setSelectedStatus('all')
+            titleEn="Digital Wide"
+            titleBn="ডিজিটাল ফিনিশিং"
+            value={stationMetrics.digitalCount}
+            icon={Scissors}
+            colorVariant="indigo"
+            selected={selectedStation === 'digital_finishing'}
+            onClick={() => {
+              setSelectedStation('digital_finishing')
+              setSelectedStatus('all')
             }}
           />
           <KpiCard
- titleEn="Offset & Binding"titleBn="অফসেট ও বাইন্ডিং"value={stationMetrics.offsetCount}
- icon={Layers}
- colorVariant="blue"selected={selectedStation === 'offset_binding'}
- onClick={() => {
- setSelectedStation('offset_binding')
- setSelectedStatus('all')
+            titleEn="Offset & Binding"
+            titleBn="অফসেট ও বাইন্ডিং"
+            value={stationMetrics.offsetCount}
+            icon={Layers}
+            colorVariant="blue"
+            selected={selectedStation === 'offset_binding'}
+            onClick={() => {
+              setSelectedStation('offset_binding')
+              setSelectedStatus('all')
             }}
           />
           <KpiCard
- titleEn="Signage & Acrylic"titleBn="সাইনেজ ও এক্রিলিক"value={stationMetrics.signageCount}
- icon={Wrench}
- colorVariant="amber"selected={selectedStation === 'signage_fabrication'}
- onClick={() => {
- setSelectedStation('signage_fabrication')
- setSelectedStatus('all')
-            }}
-          />
-          <KpiCard
- titleEn="Active on Bench"titleBn="বেঞ্চে চলমান"value={stationMetrics.inProgressCount}
- icon={Play}
- colorVariant="purple"selected={selectedStatus === 'in_progress'}
- onClick={() => {
- setSelectedStatus('in_progress')
-            }}
-          />
-          <KpiCard
- titleEn="QC Passed Today"titleBn="আজ সম্পন্ন"value={stationMetrics.qcReadyCount}
- icon={CheckCircle2}
- colorVariant="emerald"selected={selectedStatus === 'completed'}
- onClick={() => {
- setSelectedStatus('completed')
+            titleEn="Signage & Acrylic"
+            titleBn="সাইনেজ ও এক্রিলিক"
+            value={stationMetrics.signageCount}
+            icon={Wrench}
+            colorVariant="amber"
+            selected={selectedStation === 'signage_fabrication'}
+            onClick={() => {
+              setSelectedStation('signage_fabrication')
+              setSelectedStatus('all')
             }}
           />
         </KpiGrid>
@@ -591,17 +663,17 @@ export default function FinishingAndFabricationPage() {
  className={cn(
                   'px-4 py-1.5 rounded-full text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer shadow-2xs',
  isSelected
-                    ? 'bg-indigo-600 dark:bg-indigo-600 text-white shadow-xs'
-                    : 'bg-card border border-border /80 text-foreground hover:bg-muted dark:hover:bg-muted/80'
+                    ? 'bg-primary text-primary-foreground shadow-xs'
+                    : 'bg-card border border-border text-foreground hover:bg-muted'
                 )}
               >
                 <Icon className="w-3.5 h-3.5"/>
                 <span>{tBilingual(cat.labelEn, cat.labelBn)}</span>
                 <span
  className={cn(
-                    'text-2xs px-2 py-0.5 rounded-full font-bold tabular-nums',
+                    'text-xs px-2 py-0.5 rounded-full font-bold tabular-nums',
  isSelected
-                      ? 'bg-card text-indigo-600 dark:text-indigo-600'
+                      ? 'bg-card text-primary'
                       : 'bg-muted text-muted-foreground '
                   )}
                 >
@@ -612,10 +684,88 @@ export default function FinishingAndFabricationPage() {
           })}
         </div>
 
+
+        {/* Prioritized Attention Queue */}
+        <Card className="border-border shadow-xs bg-card">
+          <CardHeader className="py-3 px-4 border-b border-border bg-muted/40">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm font-bold text-foreground flex items-center gap-2">
+                <AlertTriangle className="h-4 w-4 text-warning" />
+                <span>{tBilingual('Needs Your Attention Now', 'জরুরি মনোযোগ প্রয়োজন')}</span>
+                <Badge variant="outline" className="text-xs tabular-nums font-bold bg-warning-surface text-warning border-warning-border">
+                  {attentionItems.length}
+                </Badge>
+              </CardTitle>
+              <span className="text-xs text-muted-foreground hidden sm:inline bangla-text">
+                {tBilingual('Immediate bench starts, active QC completions, and hold releases', 'তাৎক্ষণিক বেন্চে কাজ শুরু, কিউসি অনুমোদন ও হোল্ড প্রত্যাহার')}
+              </span>
+            </div>
+          </CardHeader>
+          <CardContent className="p-4">
+            {attentionItems.length === 0 ? (
+              <div className="flex items-center gap-3 p-3 rounded-xl bg-success-surface/50 border border-success-border text-success">
+                <CheckCircle2 className="h-5 w-5 shrink-0" />
+                <div className="text-xs">
+                  <p className="font-bold">{tBilingual('Finishing & Post-Press Flow Normal', 'সকল ফিনিশিং ও পোস্ট-প্রেস কাজ স্বাভাবিক আছে')}</p>
+                  <p className="text-muted-foreground">{tBilingual('Zero high-priority jobs stalled and benches operating on schedule.', 'কোনো জরুরি কাজ আটকে নেই এবং সকল স্টেশন সময়মতো পরিচালিত হচ্ছে।')}</p>
+                </div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                {attentionItems.map((item: any) => (
+                  <div
+                    key={item.id}
+                    className="p-3 rounded-xl border border-border bg-card flex flex-col justify-between gap-3 shadow-2xs hover:border-primary/40 transition-colors"
+                  >
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between gap-2">
+                        <Badge
+                          variant="outline"
+                          className={
+                            item.badgeVariant === 'destructive'
+                              ? 'bg-destructive/10 text-destructive border-destructive/20 text-xs font-bold'
+                              : item.badgeVariant === 'warning'
+                              ? 'bg-warning-surface text-warning border-warning-border text-xs font-bold'
+                              : 'bg-primary/10 text-primary border-primary/20 text-xs font-bold'
+                          }
+                        >
+                          {item.badgeText}
+                        </Badge>
+                      </div>
+                      <h4 className="text-xs font-bold text-foreground leading-snug">
+                        {tBilingual(item.titleEn, item.titleBn)}
+                      </h4>
+                      <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+                        {tBilingual(item.subtitleEn, item.subtitleBn)}
+                      </p>
+                    </div>
+
+                    <div className="pt-2 border-t border-border flex items-center justify-end">
+                      <Button
+                        size="sm"
+                        onClick={item.onAction}
+                        className={
+                          item.badgeVariant === 'destructive'
+                            ? 'h-7 text-xs px-2.5 font-bold bg-destructive hover:bg-destructive/90 text-destructive-foreground cursor-pointer shadow-xs'
+                            : item.badgeVariant === 'warning'
+                            ? 'h-7 text-xs px-2.5 font-bold bg-warning hover:bg-warning/90 text-warning-foreground cursor-pointer shadow-xs'
+                            : 'h-7 text-xs px-2.5 font-bold bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer shadow-xs'
+                        }
+                      >
+                        {tBilingual(item.actionLabelEn, item.actionLabelBn)}
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
         {/* =========================================================================
             4. UNIFIED SEARCH & FILTER TOOLBAR (Matching DesignFilterToolbar)
            ========================================================================= */}
-        <div className="bg-card px-3.5 py-2.5 rounded-xl border border-border /80 shadow-2xs flex flex-col md:flex-row items-center justify-between gap-3">
+        <div className="bg-card px-3.5 py-2.5 rounded-xl border border-border shadow-2xs flex flex-col md:flex-row items-center justify-between gap-3">
           <div className="relative w-full md:flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground"/>
             <Input
@@ -655,11 +805,11 @@ export default function FinishingAndFabricationPage() {
  className={cn(
                   'rounded-xl border border-l-4 transition-all duration-200 p-4 space-y-3 shadow-2xs hover:shadow-xs overflow-hidden',
  isRunning
-                    ? 'border-indigo-500/80 border-l-indigo-600 bg-card ring-2 ring-indigo-500/10'
+                    ? 'border-primary/20/80 border-l-indigo-600 bg-card ring-2 focus:ring-ring/10'
                     : isCompleted
-                    ? 'border-emerald-500/80 border-l-emerald-600 bg-emerald-50/10 dark:bg-emerald-950/20'
+                    ? 'border-success-border/80 border-l-emerald-600 bg-success-surface/10 bg-success-surface'
                     : isOnHold
-                    ? 'border-amber-500/80 border-l-amber-600 bg-amber-50/20 dark:bg-amber-950/20'
+                    ? 'border-warning-border/80 border-l-amber-600 bg-warning-surface/20 bg-warning-surface'
                     : 'border-border /80 border-l-slate-400 dark:border-l-slate-600 bg-card hover:border-input dark:hover:border-border'
                 )}
               >
@@ -670,17 +820,17 @@ export default function FinishingAndFabricationPage() {
                         <Link
  href={getTenantNavHref(`/production/${task.job_order_id || task.job_number || task.id}`, pathname, slug)}
                         >
-                          <Badge variant="outline"className="tabular-nums text-2xs font-bold bg-muted hover:bg-indigo-100 dark:hover:bg-indigo-950/50 hover:text-indigo-700 cursor-pointer transition-colors">
+                          <Badge variant="outline"className="tabular-nums text-xs font-bold bg-muted hover:bg-primary/10 dark:hover:bg-primary/10 hover:text-primary cursor-pointer transition-colors">
                             #{task.job_number || task.task_number}
                           </Badge>
                         </Link>
                         <Badge
- className={`text-2xs font-bold uppercase ${
+ className={`text-xs font-bold uppercase ${
  category === 'digital_finishing'
-                              ? 'bg-indigo-100 text-indigo-800 border-indigo-200 dark:bg-indigo-950 dark:text-indigo-300'
+                              ? 'bg-primary/10 text-primary border-primary/20 bg-primary/10 text-primary'
                               : category === 'signage_fabrication'
-                              ? 'bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-950 dark:text-amber-300'
-                              : 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-950 dark:text-blue-300'
+                              ? 'bg-warning-surface text-warning border-warning-border bg-warning-surface text-warning'
+                              : 'bg-primary/10 text-primary border-primary/20 bg-primary/10 text-primary'
                           }`}
                         >
                           {category === 'digital_finishing' ? 'Digital Finishing' : category === 'signage_fabrication' ? 'Signage Fab' : 'Offset Binding'}
@@ -689,7 +839,7 @@ export default function FinishingAndFabricationPage() {
                           {task.task_name}
                         </span>
                         {task.priority === 'urgent' && (
-                          <Badge className="bg-rose-600 text-white text-2xs font-bold">
+                          <Badge className="bg-destructive text-white text-xs font-bold">
                             <Flame className="h-3 w-3 mr-1"/> URGENT
                           </Badge>
                         )}
@@ -704,7 +854,7 @@ export default function FinishingAndFabricationPage() {
                         {task.width && task.height && (
                           <>
                             <span>•</span>
-                            <span className="tabular-nums font-bold text-indigo-600 dark:text-indigo-400">
+                            <span className="tabular-nums font-bold text-primary text-primary">
                               {task.width} × {task.height} in ({((task.width * task.height) / 144).toFixed(1)} sqft)
                             </span>
                           </>
@@ -717,13 +867,13 @@ export default function FinishingAndFabricationPage() {
                       <Badge
  className={`text-xs px-2.5 py-0.5 font-bold uppercase ${
  isRunning
-                            ? 'bg-indigo-600 text-white animate-pulse'
+                            ? 'bg-primary text-white animate-pulse'
                             : isPaused
-                            ? 'bg-amber-600 text-white'
+                            ? 'bg-warning text-white'
                             : isCompleted
-                            ? 'bg-emerald-600 text-white'
+                            ? 'bg-success text-white'
                             : isOnHold
-                            ? 'bg-rose-600 text-white'
+                            ? 'bg-destructive text-white'
                             : 'bg-muted text-foreground '
                         }`}
                       >
@@ -734,7 +884,7 @@ export default function FinishingAndFabricationPage() {
 
                   {/* Bangladeshi Press Domain Specifications Bar */}
                   <div className="p-2.5 rounded-lg bg-muted border border-border /80 text-xs flex items-center justify-between gap-2 flex-wrap">
-                    <div className="flex items-center gap-3 flex-wrap text-2xs text-muted-foreground">
+                    <div className="flex items-center gap-3 flex-wrap text-xs text-muted-foreground">
                       {task.required_material && (
                         <span>Substrate: <strong className="text-foreground">{task.required_material}</strong></span>
                       )}
@@ -747,7 +897,7 @@ export default function FinishingAndFabricationPage() {
                     </div>
 
                     {/* Hardware & Consumables Counter for Bangladeshi Craftsmen */}
-                    <div className="flex items-center gap-2 text-2xs">
+                    <div className="flex items-center gap-2 text-xs">
                       {category === 'digital_finishing' && (
                         <div className="flex items-center gap-1 bg-card px-2 py-0.5 rounded border border-border">
                           <span className="text-muted-foreground">আইলেট (Eyelets):</span>
@@ -756,7 +906,7 @@ export default function FinishingAndFabricationPage() {
  className="px-1 font-bold text-muted-foreground hover:text-foreground">
                             -
                           </button>
-                          <span className="font-bold text-indigo-600">{taskConsumables.eyelets || 4}</span>
+                          <span className="font-bold text-primary">{taskConsumables.eyelets || 4}</span>
                           <button
  onClick={() => handleUpdateConsumable(task.id, 'eyelets', 1)}
  className="px-1 font-bold text-muted-foreground hover:text-foreground">
@@ -774,14 +924,14 @@ export default function FinishingAndFabricationPage() {
  className="px-1 font-bold text-muted-foreground">
                               -
                             </button>
-                            <span className="font-bold text-amber-600">{taskConsumables.ledModules || 20}</span>
+                            <span className="font-bold text-warning">{taskConsumables.ledModules || 20}</span>
                             <button
  onClick={() => handleUpdateConsumable(task.id, 'ledModules', 5)}
  className="px-1 font-bold text-muted-foreground">
                               +
                             </button>
                           </div>
-                          <Badge variant="outline"className="text-2xs bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border-amber-300">
+                          <Badge variant="outline"className="text-xs bg-warning-surface bg-warning-surface text-warning text-warning border-warning-border">
                             ⚡ 12V DC Verified
                           </Badge>
                         </>
@@ -791,7 +941,7 @@ export default function FinishingAndFabricationPage() {
 
                   {/* Action Controls */}
                   <div className="flex items-center justify-between gap-2 pt-1 border-t border-border">
-                    <div className="text-2xs text-muted-foreground">
+                    <div className="text-xs text-muted-foreground">
                       {task.actual_start ? (
                         <span>Started: {new Date(task.actual_start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                       ) : (
@@ -804,7 +954,7 @@ export default function FinishingAndFabricationPage() {
                         <Button
  size="sm"variant="default"onClick={() => handleStartTask(task)}
  disabled={!!actionInProgressTaskId}
- className="text-xs bg-indigo-600 hover:bg-indigo-700 text-white font-semibold h-9 px-3.5 flex items-center gap-1.5 shadow-xs">
+ className="text-xs bg-primary hover:bg-primary text-white font-semibold h-9 px-3.5 flex items-center gap-1.5 shadow-xs">
                           <Play className="h-3.5 w-3.5 fill-current"/>
                           <span>{tBilingual('Start Bench Work', 'কাজ শুরু করুন')}</span>
                         </Button>
@@ -815,7 +965,7 @@ export default function FinishingAndFabricationPage() {
                           <Button
  size="sm"variant="outline"onClick={() => handlePauseTask(task)}
  disabled={!!actionInProgressTaskId}
- className="text-xs text-amber-700 border-amber-300 hover:bg-amber-50 dark:text-amber-300 dark:border-amber-800 h-9 px-3 flex items-center gap-1.5">
+ className="text-xs text-warning border-warning-border hover:bg-warning-surface text-warning border-warning-border h-9 px-3 flex items-center gap-1.5">
                             <Pause className="h-3.5 w-3.5"/>
                             <span>{tBilingual('Pause / Hold', 'স্থগিত')}</span>
                           </Button>
@@ -823,7 +973,7 @@ export default function FinishingAndFabricationPage() {
                           <Button
  size="sm"variant="default"onClick={() => handleOpenQCModal(task)}
  disabled={!!actionInProgressTaskId}
- className="text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-semibold h-9 px-3.5 flex items-center gap-1.5 shadow-xs">
+ className="text-xs bg-success hover:bg-success text-white font-semibold h-9 px-3.5 flex items-center gap-1.5 shadow-xs">
                             <ShieldCheck className="h-3.5 w-3.5"/>
                             <span>{tBilingual('QC Sign-Off & Complete', 'কিউসি পাস ও সম্পন্ন')}</span>
                           </Button>
@@ -831,7 +981,7 @@ export default function FinishingAndFabricationPage() {
                       )}
 
                       {isCompleted && (
-                        <Badge className="bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300 text-xs px-2.5 py-1 font-bold flex items-center gap-1">
+                        <Badge className="bg-success-surface text-success border-success-border bg-success-surface text-success text-xs px-2.5 py-1 font-bold flex items-center gap-1">
                           <Check className="h-3.5 w-3.5"/>
                           <span>{tBilingual('QC Passed & Ready for Delivery', 'কিউসি পাস ও ডেলিভারির জন্য প্রস্তুত')}</span>
                         </Badge>
@@ -875,18 +1025,18 @@ export default function FinishingAndFabricationPage() {
  hideFooter={true}
         >
           <form onSubmit={handleConfirmQCSignOff} className="space-y-4">
-            <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-lg text-xs text-emerald-900 dark:text-emerald-200 space-y-1">
+            <div className="p-3 bg-success-surface bg-success-surface border border-success-border border-success-border rounded-lg text-xs text-success text-success space-y-1">
               <p className="font-bold">
                 {selectedTaskForQC?.task_name} — #{selectedTaskForQC?.job_number}
               </p>
-              <p className="text-2xs opacity-90">
+              <p className="text-xs opacity-90">
  Verify all 5 quality checkpoints before releasing to the delivery dock. Passing QC automatically advances the job to <strong>Ready for Delivery</strong>.
               </p>
             </div>
 
             {/* 5-Point QC Inspection Checklist */}
             <div className="space-y-2 p-3 bg-muted rounded-lg border border-border text-xs">
-              <Label className="font-bold text-foreground uppercase tracking-wide text-2xs">
+              <Label className="font-bold text-foreground uppercase tracking-wide text-xs">
  Bangladeshi Press Quality Checkpoints (৫-দফা মান যাচাই)
               </Label>
               <div className="space-y-1.5 pt-1">
@@ -894,35 +1044,35 @@ export default function FinishingAndFabricationPage() {
                   <input
  type="checkbox"checked={qcSizeChecked}
  onChange={(e) => setQcSizeChecked(e.target.checked)}
- className="rounded text-emerald-600 focus:ring-emerald-500"/>
+ className="rounded text-success focus:ring-ring"/>
                   <span>1. Dimensions & Finished Size (W × H) verified against job order</span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
  type="checkbox"checked={qcEdgeClean}
  onChange={(e) => setQcEdgeClean(e.target.checked)}
- className="rounded text-emerald-600 focus:ring-emerald-500"/>
+ className="rounded text-success focus:ring-ring"/>
                   <span>2. Clean edges, burr-free trimming, and scratch-free surface</span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
  type="checkbox"checked={qcHardwareChecked}
  onChange={(e) => setQcHardwareChecked(e.target.checked)}
- className="rounded text-emerald-600 focus:ring-emerald-500"/>
+ className="rounded text-success focus:ring-ring"/>
                   <span>3. Eyelets firmly punched / Binding glue & lamination bubble-free</span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
  type="checkbox"checked={qcElectricalTested}
  onChange={(e) => setQcElectricalTested(e.target.checked)}
- className="rounded text-emerald-600 focus:ring-emerald-500"/>
+ className="rounded text-success focus:ring-ring"/>
                   <span>4. Electrical & 12V DC LED power continuity tested (for signage)</span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
  type="checkbox"checked={qcPackagingClean}
  onChange={(e) => setQcPackagingClean(e.target.checked)}
- className="rounded text-emerald-600 focus:ring-emerald-500"/>
+ className="rounded text-success focus:ring-ring"/>
                   <span>5. Bubble-wrap / Cardboard packaging applied for safe dispatch</span>
                 </label>
               </div>
@@ -931,7 +1081,7 @@ export default function FinishingAndFabricationPage() {
             {/* Quantities */}
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label className="text-xs font-semibold text-emerald-700 dark:text-emerald-400">
+                <Label className="text-xs font-semibold text-success text-success">
                   {tBilingual('Good Quantity (QC Passed)', 'সঠিক পরিমাণ (পাস)')}
                 </Label>
                 <Input
@@ -939,31 +1089,31 @@ export default function FinishingAndFabricationPage() {
  required
  value={goodQty}
  onChange={(e) => setGoodQty(parseInt(e.target.value) || 0)}
- className="text-xs font-bold text-emerald-800 dark:text-emerald-200"/>
+ className="text-xs font-bold text-success text-success"/>
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-xs font-semibold text-rose-700 dark:text-rose-400">
+                <Label className="text-xs font-semibold text-destructive text-destructive">
                   {tBilingual('Defect / Rework Qty', 'ত্রুটি / রি-ওয়ার্ক')}
                 </Label>
                 <Input
  type="number"min={0}
  value={rejectedQty}
  onChange={(e) => setRejectedQty(parseInt(e.target.value) || 0)}
- className="text-xs font-bold text-rose-800 dark:text-rose-200"/>
+ className="text-xs font-bold text-destructive text-destructive"/>
               </div>
             </div>
 
             {/* Defect Reason if rejected > 0 */}
             {rejectedQty > 0 && (
-              <div className="p-3 bg-rose-50/60 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900 rounded-lg space-y-2">
-                <Label className="text-xs font-bold text-rose-800 dark:text-rose-300">
+              <div className="p-3 bg-danger-surface/60 bg-danger-surface border border-danger-border border-danger-border rounded-lg space-y-2">
+                <Label className="text-xs font-bold text-destructive text-destructive">
                   {tBilingual('Primary Defect Reason', 'ত্রুটির প্রধান কারণ')}
                 </Label>
                 <select
  value={defectReason}
  onChange={(e) => setDefectReason(e.target.value)}
- className="w-full text-xs rounded-md border border-rose-300 bg-card px-3 py-2 text-rose-900 dark:border-rose-800 dark:text-rose-100">
+ className="w-full text-xs rounded-md border border-danger-border bg-card px-3 py-2 text-destructive border-danger-border text-destructive">
                   {Object.entries(DEFECT_REASON_LABELS).map(([code, label]) => (
                     <option key={code} value={code}>
                       {label.labelEn} ({label.labelBn})
@@ -998,13 +1148,13 @@ export default function FinishingAndFabricationPage() {
               </Button>
               <Button
  type="submit"variant="default"size="sm"disabled={isSubmittingQC}
- className="text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-bold">
+ className="text-xs bg-success hover:bg-success/90 text-success-foreground font-bold">
                 {isSubmittingQC ? tBilingual('Approving QC...', 'অনুমোদন হচ্ছে...') : tBilingual('Approve QC & Release to Delivery', 'কিউসি পাস ও ডেলিভারি ছাড়পত্র')}
               </Button>
             </div>
           </form>
         </ModalDialog>
-      </div>
+      </PageContainer>
     </FeatureGate>
     </PanelAccessGuard>
   )

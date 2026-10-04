@@ -66,15 +66,15 @@ export function PWAInstaller() {
   }
 
  return (
-    <div className="fixed bottom-20 md:bottom-6 left-4 right-4 md:left-auto md:right-6 md:max-w-sm z-50 animate-in slide-in-from-bottom-5">
+    <div className="fixed bottom-20 md:bottom-6 left-4 right-4 md:left-auto md:right-6 md:max-w-sm z-50 animate-in slide-in-">
       <div className="bg-card border border-border text-foreground p-3.5 rounded-xl shadow-xs flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center shrink-0 shadow-xs">
+          <div className="h-10 w-10 rounded-xl flex items-center justify-center shrink-0 shadow-xs">
             <Smartphone className="h-5 w-5 text-white"/>
           </div>
           <div className="text-xs">
             <p className="font-bold text-white">Install PrintERP App</p>
-            <p className="text-muted-foreground text-2xs">
+            <p className="text-muted-foreground text-xs">
               {isIOS ? 'Tap Share ➔ Add to Home Screen' : 'Fast offline access from your home screen'}
             </p>
           </div>
@@ -84,7 +84,7 @@ export function PWAInstaller() {
           {!isIOS && (
             <Button
  size="sm"onClick={handleInstallClick}
- className="h-8 text-xs bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl px-3 font-semibold">
+ className="h-8 text-xs bg-primary hover:bg-primary text-white rounded-xl px-3 font-semibold">
               <Download className="h-3 w-3 mr-1"/>
  Install
             </Button>

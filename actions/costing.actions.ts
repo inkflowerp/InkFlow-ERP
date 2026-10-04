@@ -1,5 +1,8 @@
 'use server'
 
+import { withTenantAction } from '@/lib/actions/action-wrapper'
+
+
 import { revalidatePath } from 'next/cache'
 import { CostingService } from '@/services/costing.service'
 import { AuditService } from '@/services/audit.service'
@@ -25,9 +28,12 @@ function checkCostingPermission(tenant: any, requiredPerm: string): boolean {
 // COSTING ACTIONS
 // ==========================================
 
-export async function getCostingsAction(
-  requestedCompanyId?: string
-): Promise<ServerActionResult<JobCostingRecord[]>> {
+export const getCostingsAction = withTenantAction(
+  {
+    permission: "pricing.view",
+    entityType: "costing"
+  },
+  async (ctx, requestedCompanyId?: string) : Promise<ServerActionResult<JobCostingRecord[]>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -54,12 +60,16 @@ export async function getCostingsAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to fetch job costings.' }
   }
-}
 
-export async function getCostingByIdAction(
-  id: string,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<JobCostingRecord | null>> {
+})
+
+export const getCostingByIdAction = withTenantAction(
+  {
+    permission: "pricing.view",
+    entityType: "costing"
+  },
+  async (ctx, id: string,
+  requestedCompanyId?: string) : Promise<ServerActionResult<JobCostingRecord | null>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -88,12 +98,16 @@ export async function getCostingByIdAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to fetch job costing.' }
   }
-}
 
-export async function createCostingAction(
-  data: Partial<JobCostingRecord>,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<JobCostingRecord>> {
+})
+
+export const createCostingAction = withTenantAction(
+  {
+    permission: "pricing.create",
+    entityType: "costing"
+  },
+  async (ctx, data: Partial<JobCostingRecord>,
+  requestedCompanyId?: string) : Promise<ServerActionResult<JobCostingRecord>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -130,10 +144,15 @@ export async function createCostingAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to create costing.' }
   }
-}
 
-export async function createCostingFromProductAction(
-  productId: string,
+})
+
+export const createCostingFromProductAction = withTenantAction(
+  {
+    permission: "pricing.create",
+    entityType: "costing"
+  },
+  async (ctx, productId: string,
   input: PricingCalculationInput,
   options: {
     customer_id?: string
@@ -143,8 +162,7 @@ export async function createCostingFromProductAction(
     quotation_id?: string
     selling_price_override?: number
   },
-  requestedCompanyId?: string
-): Promise<ServerActionResult<JobCostingRecord>> {
+  requestedCompanyId?: string) : Promise<ServerActionResult<JobCostingRecord>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -162,12 +180,16 @@ export async function createCostingFromProductAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to create product costing.' }
   }
-}
 
-export async function syncActualConsumptionToCostingAction(
-  costingId: string,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<JobCostingRecord>> {
+})
+
+export const syncActualConsumptionToCostingAction = withTenantAction(
+  {
+    permission: "pricing.create",
+    entityType: "costing"
+  },
+  async (ctx, costingId: string,
+  requestedCompanyId?: string) : Promise<ServerActionResult<JobCostingRecord>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -187,13 +209,17 @@ export async function syncActualConsumptionToCostingAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to sync actual consumption.' }
   }
-}
 
-export async function updateCostingAction(
-  id: string,
+})
+
+export const updateCostingAction = withTenantAction(
+  {
+    permission: "pricing.view",
+    entityType: "costing"
+  },
+  async (ctx, id: string,
   data: Partial<JobCostingRecord>,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<JobCostingRecord | null>> {
+  requestedCompanyId?: string) : Promise<ServerActionResult<JobCostingRecord | null>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -225,4 +251,5 @@ export async function updateCostingAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to update costing.' }
   }
-}
+
+})

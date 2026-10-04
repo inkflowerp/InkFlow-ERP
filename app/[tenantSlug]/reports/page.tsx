@@ -1,5 +1,7 @@
 'use client'
 
+import { computeBusinessReport } from '@/lib/reports/business-report-engine'
+
 import { useI18n } from '@/i18n/context'
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react'
@@ -42,10 +44,7 @@ import { STORAGE_KEYS } from '@/lib/db/data-store'
 import { cn } from '@/lib/utils'
 import { listBranchesAction } from '@/actions/branch.actions'
 import { getBusinessReportDataAction } from '@/actions/reports.actions'
-import {
- ReportsService,
- exportToCsv,
-} from '@/services/reports.service'
+import { exportToCsv } from '@/lib/export/csv'
 import type {
  ReportPeriodKey,
  BusinessReportCalculatedData,
@@ -238,7 +237,7 @@ export default function BusinessReportsPage() {
 
   // 100% Real-Time Metric & Report Calculation via ReportsService
  const reportData = useMemo<BusinessReportCalculatedData>(() => {
- return ReportsService.computeBusinessReport({
+ return computeBusinessReport({
  invoices: effectiveInvoices,
  orders: effectiveOrders,
  payments: effectivePayments,
@@ -380,7 +379,7 @@ export default function BusinessReportsPage() {
         {/* Toast Notification */}
         {notification && (
           <div className="fixed top-20 right-6 z-50 p-4 bg-surface-inset text-foreground text-xs font-semibold rounded-xl shadow-xs border border-border flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4 text-emerald-400"/>
+            <CheckCircle2 className="w-4 h-4 text-success"/>
             <span>{notification}</span>
           </div>
         )}
@@ -411,7 +410,7 @@ export default function BusinessReportsPage() {
         <div className="print:hidden flex flex-col md:flex-row md:items-center justify-between gap-4 pt-1">
           {/* Left Title */}
           <div className="flex items-center gap-3">
-            <div className="h-11 w-11 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-xs shrink-0">
+            <div className="h-11 w-11 rounded-xl bg-primary text-white flex items-center justify-center shadow-xs shrink-0">
               <BarChart3 className="h-6 w-6"/>
             </div>
             <div>
@@ -493,7 +492,7 @@ export default function BusinessReportsPage() {
                         }}
  className={`w-full text-left px-3.5 py-2 hover:bg-muted dark:hover:bg-muted/60 transition-colors font-medium cursor-pointer ${
  period === item.id
-                            ? 'text-blue-600 dark:text-blue-400 font-bold bg-blue-50/50 dark:bg-blue-950/20'
+                            ? 'text-primary text-primary font-bold bg-primary/10/50 bg-primary/10'
                             : 'text-foreground '
                         }`}
                       >
@@ -509,7 +508,7 @@ export default function BusinessReportsPage() {
             <div className="relative">
               <Button
  onClick={() => setIsExportMenuOpen(!isExportMenuOpen)}
- className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs h-9 px-4 rounded-xl shadow-xs flex items-center gap-1.5 cursor-pointer">
+ className="bg-primary hover:bg-primary text-white font-semibold text-xs h-9 px-4 rounded-xl shadow-xs flex items-center gap-1.5 cursor-pointer">
                 <Download className="w-3.5 h-3.5"/>
                 <span>{tBilingual('Export', 'এক্সপোর্ট')}</span>
                 <ChevronDown className="w-3 h-3 ml-0.5 opacity-80"/>
@@ -525,8 +524,8 @@ export default function BusinessReportsPage() {
                     <div className="p-1">
                       <button
  onClick={() => handleExport('excel')}
- className="w-full px-3 py-2 text-left rounded-lg hover:bg-emerald-50 dark:hover:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 flex items-center gap-2 font-medium cursor-pointer">
-                        <FileSpreadsheet className="w-4 h-4 text-emerald-600"/>
+ className="w-full px-3 py-2 text-left rounded-lg hover:bg-success-surface dark:hover:bg-success-surface text-success text-success flex items-center gap-2 font-medium cursor-pointer">
+                        <FileSpreadsheet className="w-4 h-4 text-success"/>
  {tBilingual('Excel CSV (.xlsx)', 'এক্সেল সিএসভি (.xlsx)')}
                       </button>
                       <button
@@ -555,7 +554,7 @@ export default function BusinessReportsPage() {
  disabled={loading}
  className="border-border bg-card hover:bg-muted text-xs font-semibold h-9 w-9 p-0 rounded-xl cursor-pointer flex items-center justify-center shrink-0"title="Refresh Business Reports Data"aria-label="Refresh Business Reports Data">
               <RefreshCw
- className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-blue-600' : 'text-muted-foreground'}`}
+ className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-primary' : 'text-muted-foreground'}`}
               />
             </Button>
           </div>
@@ -751,7 +750,7 @@ export default function BusinessReportsPage() {
  type="button"onClick={() => setDonutDistributionMode('customer_type')}
  className={`text-xs font-bold px-2.5 py-1 rounded-lg transition-colors cursor-pointer ${
  donutDistributionMode === 'customer_type'
-                          ? 'bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300'
+                          ? 'bg-primary/10 text-primary bg-primary/10 text-primary'
                           : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
                       }`}
                     >
@@ -761,7 +760,7 @@ export default function BusinessReportsPage() {
  type="button"onClick={() => setDonutDistributionMode('product_category')}
  className={`text-xs font-bold px-2.5 py-1 rounded-lg transition-colors cursor-pointer ${
  donutDistributionMode === 'product_category'
-                          ? 'bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300'
+                          ? 'bg-primary/10 text-primary bg-primary/10 text-primary'
                           : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
                       }`}
                     >
@@ -817,18 +816,18 @@ export default function BusinessReportsPage() {
                   </h3>
                   <button
  type="button"onClick={() => setActiveQuickReport('all_customers')}
- className="text-xs font-semibold text-blue-600 hover:text-blue-700 cursor-pointer">
+ className="text-xs font-semibold text-primary hover:text-primary cursor-pointer">
  {tBilingual('View All', 'সব দেখুন')}
                   </button>
                 </div>
 
                 {reportData.topCustomers.length === 0 ? (
                   <div className="py-8 text-center text-muted-foreground flex flex-col items-center justify-center gap-1.5">
-                    <CheckCircle2 className="w-6 h-6 text-emerald-500/80 stroke-[1.5]"/>
+                    <CheckCircle2 className="w-6 h-6 text-success/80 stroke-[1.5]"/>
                     <span className="text-xs font-semibold text-muted-foreground">
  {tBilingual('No customer sales records found', 'কোনো গ্রাহক বিক্রয় রেকর্ড পাওয়া যায়নি')}
                     </span>
-                    <span className="text-2xs text-muted-foreground">
+                    <span className="text-xs text-muted-foreground">
  {tBilingual('Sales records will appear here automatically', 'কনফার্ম করা বিক্রয় রেকর্ড এখানে স্বয়ংক্রিয়ভাবে প্রদর্শিত হবে')}
                     </span>
                   </div>
@@ -839,14 +838,14 @@ export default function BusinessReportsPage() {
  key={item.id}
  className="flex items-center justify-between text-xs gap-2">
                         <div className="flex items-center gap-2.5 min-w-0">
-                          <div className="h-6 w-6 rounded-full bg-blue-50 dark:bg-blue-950/40 text-blue-600 text-2xs font-bold flex items-center justify-center shrink-0">
+                          <div className="h-6 w-6 rounded-full bg-primary/10 bg-primary/10 text-primary text-xs font-bold flex items-center justify-center shrink-0">
                             {item.rank}
                           </div>
                           <div className="min-w-0">
                             <span className="font-bold text-foreground block truncate">
                               {item.customerName}
                             </span>
-                            <span className="text-3xs text-muted-foreground font-medium">
+                            <span className="text-xs text-muted-foreground font-medium">
                               {item.invoicesCount} {tBilingual('Invoices', 'টি চালান')}
                             </span>
                           </div>
@@ -857,7 +856,7 @@ export default function BusinessReportsPage() {
                             ৳ {item.amount.toLocaleString()}
                           </span>
 
-                          <span className="text-3xs font-medium px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 dark:bg-blue-950/50 whitespace-nowrap">
+                          <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary bg-primary/10 whitespace-nowrap">
                             {item.sharePercent}%
                           </span>
                         </div>
@@ -878,7 +877,7 @@ export default function BusinessReportsPage() {
                   <button
                     type="button"
                     onClick={() => setActiveQuickReport('all_products')}
-                    className="text-xs font-semibold text-blue-600 hover:text-blue-700 cursor-pointer">
+                    className="text-xs font-semibold text-primary hover:text-primary cursor-pointer">
                     {tBilingual('View All', 'সব দেখুন')}
                   </button>
                 </div>
@@ -889,7 +888,7 @@ export default function BusinessReportsPage() {
                     <span className="text-xs font-semibold text-muted-foreground">
  {tBilingual('No product sales records found', 'কোনো পণ্য বিক্রয় রেকর্ড পাওয়া যায়নি')}
                     </span>
-                    <span className="text-2xs text-muted-foreground">
+                    <span className="text-xs text-muted-foreground">
  {tBilingual('Line items from confirmed orders will appear here', 'কনফার্ম করা অর্ডারের পণ্য তালিকা এখানে প্রদর্শিত হবে')}
                     </span>
                   </div>
@@ -900,14 +899,14 @@ export default function BusinessReportsPage() {
  key={item.id}
  className="flex items-center justify-between text-xs gap-2">
                         <div className="flex items-center gap-2.5 min-w-0">
-                          <div className="h-6 w-6 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 text-2xs font-bold flex items-center justify-center shrink-0">
+                          <div className="h-6 w-6 rounded-full bg-success-surface bg-success-surface text-success text-xs font-bold flex items-center justify-center shrink-0">
                             {item.rank}
                           </div>
                           <div className="min-w-0">
                             <span className="font-bold text-foreground block truncate">
                               {item.name}
                             </span>
-                            <span className="text-3xs text-muted-foreground font-medium">
+                            <span className="text-xs text-muted-foreground font-medium">
                               {tBilingual('Qty:', 'পরিমাণ:')} {item.quantityFormatted}
                             </span>
                           </div>
@@ -918,7 +917,7 @@ export default function BusinessReportsPage() {
                             ৳ {item.amount.toLocaleString()}
                           </span>
 
-                          <span className="text-3xs font-medium px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 whitespace-nowrap">
+                          <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-success-surface text-success bg-success-surface whitespace-nowrap">
                             {item.sharePercent}%
                           </span>
                         </div>
@@ -939,7 +938,7 @@ export default function BusinessReportsPage() {
                   <button
                     type="button"
                     onClick={() => setActiveQuickReport('production')}
-                    className="text-xs font-semibold text-blue-600 hover:text-blue-700 cursor-pointer">
+                    className="text-xs font-semibold text-primary hover:text-primary cursor-pointer">
                     {tBilingual('View All', 'সব দেখুন')}
                   </button>
                 </div>
@@ -976,7 +975,7 @@ export default function BusinessReportsPage() {
                               )}
                             </span>
                           </div>
-                          <span className="tabular-nums text-2xs font-bold text-muted-foreground">
+                          <span className="tabular-nums text-xs font-bold text-muted-foreground">
                             {st.count} ({st.percentage}%)
                           </span>
                         </div>
@@ -1013,7 +1012,7 @@ export default function BusinessReportsPage() {
                 <div className="overflow-x-auto -mx-3.5 sm:mx-0 px-3.5 sm:px-0">
                   <table className="w-full text-xs text-left min-w-[460px] 2xl:min-w-[500px]">
                     <thead>
-                      <tr className="text-2xs font-semibold text-muted-foreground border-b border-border pb-2">
+                      <tr className="text-xs font-semibold text-muted-foreground border-b border-border pb-2">
                         <th className="pb-2 2xl:pb-2.5 font-semibold bangla-text">{tBilingual('Month', 'মাস')}</th>
                         <th className="pb-2 2xl:pb-2.5 font-semibold text-right bangla-text">{tBilingual('Sales', 'বিক্রয়')}</th>
                         <th className="pb-2 2xl:pb-2.5 font-semibold text-right bangla-text">{tBilingual('Cost', 'খরচ')}</th>
@@ -1046,13 +1045,13 @@ export default function BusinessReportsPage() {
  className={cn(
                                 'py-2.5 2xl:py-3 text-right tabular-nums font-bold',
  row.profit >= 0
-                                  ? 'text-emerald-600 dark:text-emerald-400'
-                                  : 'text-rose-600 dark:text-rose-400'
+                                  ? 'text-success text-success'
+                                  : 'text-destructive text-destructive'
                               )}
                             >
                               {locale === 'bn' ? `৳ ${row.profit.toLocaleString('en-US').replace(/\d/g, (d: string) => '০১২৩৪৫৬৭৮৯'[Number(d)])}` : `৳ ${row.profit.toLocaleString()}`}
                             </td>
-                            <td className="py-2.5 2xl:py-3 text-right tabular-nums font-bold text-emerald-600 dark:text-emerald-400">
+                            <td className="py-2.5 2xl:py-3 text-right tabular-nums font-bold text-success text-success">
                               {locale === 'bn' ? `${String(row.margin).replace(/\d/g, (d: string) => '০১২৩৪৫৬৭৮৯'[Number(d)])}%` : `${row.margin}%`}
                             </td>
                           </tr>
@@ -1075,64 +1074,64 @@ export default function BusinessReportsPage() {
                   {/* 1. Sales Report */}
                   <button
  type="button"onClick={() => setActiveQuickReport('sales')}
- className="flex items-center gap-2 p-2 2xl:p-2.5 rounded-xl border border-emerald-200/80 dark:border-emerald-900/60 bg-emerald-50/40 dark:bg-emerald-950/20 hover:bg-emerald-50 text-emerald-800 dark:text-emerald-300 text-xs font-semibold transition-all cursor-pointer text-left min-h-[42px] 2xl:min-h-[44px]">
-                    <TrendingUp className="w-4 h-4 text-emerald-600 shrink-0"/>
+ className="flex items-center gap-2 p-2 2xl:p-2.5 rounded-xl border border-success-border/80 border-success-border/60 bg-success-surface/40 bg-success-surface hover:bg-success-surface text-success text-success text-xs font-semibold transition-all cursor-pointer text-left min-h-[42px] 2xl:min-h-[44px]">
+                    <TrendingUp className="w-4 h-4 text-success shrink-0"/>
                     <span className="leading-tight">{tBilingual('Sales Report', 'বিক্রয় রিপোর্ট')}</span>
                   </button>
 
                   {/* 2. Production Report */}
                   <button
  type="button"onClick={() => setActiveQuickReport('production')}
- className="flex items-center gap-2 p-2 2xl:p-2.5 rounded-xl border border-blue-200/80 dark:border-blue-900/60 bg-blue-50/40 dark:bg-blue-950/20 hover:bg-blue-50 text-blue-800 dark:text-blue-300 text-xs font-semibold transition-all cursor-pointer text-left min-h-[42px] 2xl:min-h-[44px]">
-                    <ClipboardList className="w-4 h-4 text-blue-600 shrink-0"/>
+ className="flex items-center gap-2 p-2 2xl:p-2.5 rounded-xl border border-primary/20/80 border-border/60 bg-primary/10/40 bg-primary/10 hover:bg-primary/10 text-primary text-primary text-xs font-semibold transition-all cursor-pointer text-left min-h-[42px] 2xl:min-h-[44px]">
+                    <ClipboardList className="w-4 h-4 text-primary shrink-0"/>
                     <span className="leading-tight">{tBilingual('Production', 'উৎপাদন')}</span>
                   </button>
 
                   {/* 3. Inventory Report */}
                   <button
  type="button"onClick={() => setActiveQuickReport('inventory')}
- className="flex items-center gap-2 p-2 2xl:p-2.5 rounded-xl border border-amber-200/80 dark:border-amber-900/60 bg-amber-50/40 dark:bg-amber-950/20 hover:bg-amber-50 text-amber-800 dark:text-amber-300 text-xs font-semibold transition-all cursor-pointer text-left min-h-[42px] 2xl:min-h-[44px]">
-                    <Package className="w-4 h-4 text-amber-600 shrink-0"/>
+ className="flex items-center gap-2 p-2 2xl:p-2.5 rounded-xl border border-warning-border/80 border-warning-border/60 bg-warning-surface/40 bg-warning-surface hover:bg-warning-surface text-warning text-warning text-xs font-semibold transition-all cursor-pointer text-left min-h-[42px] 2xl:min-h-[44px]">
+                    <Package className="w-4 h-4 text-warning shrink-0"/>
                     <span className="leading-tight">{tBilingual('Inventory', 'ইনভেন্টরি')}</span>
                   </button>
 
                   {/* 4. Financial Report */}
                   <button
  type="button"onClick={() => setActiveQuickReport('financial')}
- className="flex items-center gap-2 p-2 2xl:p-2.5 rounded-xl border border-purple-200/80 dark:border-purple-900/60 bg-purple-50/40 dark:bg-purple-950/20 hover:bg-purple-50 text-purple-800 dark:text-purple-300 text-xs font-semibold transition-all cursor-pointer text-left min-h-[42px] 2xl:min-h-[44px]">
-                    <FileText className="w-4 h-4 text-purple-600 shrink-0"/>
+ className="flex items-center gap-2 p-2 2xl:p-2.5 rounded-xl border border-primary/20/80 border-border/60 bg-primary/10/40 bg-primary/10 hover:bg-primary/10 text-primary text-primary text-xs font-semibold transition-all cursor-pointer text-left min-h-[42px] 2xl:min-h-[44px]">
+                    <FileText className="w-4 h-4 text-primary shrink-0"/>
                     <span className="leading-tight">{tBilingual('Financial', 'আর্থিক')}</span>
                   </button>
 
                   {/* 5. Customer Report */}
                   <button
  type="button"onClick={() => setActiveQuickReport('customer')}
- className="flex items-center gap-2 p-2 2xl:p-2.5 rounded-xl border border-sky-200/80 dark:border-sky-900/60 bg-sky-50/40 dark:bg-sky-950/20 hover:bg-sky-50 text-sky-800 dark:text-sky-300 text-xs font-semibold transition-all cursor-pointer text-left min-h-[42px] 2xl:min-h-[44px]">
-                    <Users className="w-4 h-4 text-sky-600 shrink-0"/>
+ className="flex items-center gap-2 p-2 2xl:p-2.5 rounded-xl border border-primary/20/80 border-border/60 bg-info-surface/40 bg-primary/10 hover:bg-info-surface text-primary text-primary text-xs font-semibold transition-all cursor-pointer text-left min-h-[42px] 2xl:min-h-[44px]">
+                    <Users className="w-4 h-4 text-primary shrink-0"/>
                     <span className="leading-tight">{tBilingual('Customer', 'গ্রাহক')}</span>
                   </button>
 
                   {/* 6. Supplier Report */}
                   <button
  type="button"onClick={() => setActiveQuickReport('supplier')}
- className="flex items-center gap-2 p-2 2xl:p-2.5 rounded-xl border border-indigo-200/80 dark:border-indigo-900/60 bg-indigo-50/40 dark:bg-indigo-950/20 hover:bg-indigo-50 text-indigo-800 dark:text-indigo-300 text-xs font-semibold transition-all cursor-pointer text-left min-h-[42px] 2xl:min-h-[44px]">
-                    <Truck className="w-4 h-4 text-indigo-600 shrink-0"/>
+ className="flex items-center gap-2 p-2 2xl:p-2.5 rounded-xl border border-primary/20/80 border-border/60 bg-primary/10/40 bg-primary/10 hover:bg-primary/10 text-primary text-primary text-xs font-semibold transition-all cursor-pointer text-left min-h-[42px] 2xl:min-h-[44px]">
+                    <Truck className="w-4 h-4 text-primary shrink-0"/>
                     <span className="leading-tight">{tBilingual('Supplier', 'মহাজন')}</span>
                   </button>
 
                   {/* 7. Profitability Report */}
                   <button
  type="button"onClick={() => setActiveQuickReport('profitability')}
- className="flex items-center gap-2 p-2 2xl:p-2.5 rounded-xl border border-rose-200/80 dark:border-rose-900/60 bg-rose-50/40 dark:bg-rose-950/20 hover:bg-rose-50 text-rose-800 dark:text-rose-300 text-xs font-semibold transition-all cursor-pointer text-left min-h-[42px] 2xl:min-h-[44px]">
-                    <Scale className="w-4 h-4 text-rose-600 shrink-0"/>
+ className="flex items-center gap-2 p-2 2xl:p-2.5 rounded-xl border border-danger-border/80 border-danger-border/60 bg-danger-surface/40 bg-danger-surface hover:bg-danger-surface text-destructive text-destructive text-xs font-semibold transition-all cursor-pointer text-left min-h-[42px] 2xl:min-h-[44px]">
+                    <Scale className="w-4 h-4 text-destructive shrink-0"/>
                     <span className="leading-tight">{tBilingual('Profitability', 'লাভ-মার্জিন')}</span>
                   </button>
 
                   {/* 8. Custom Range Report */}
                   <button
  type="button"onClick={() => setShowDatePickerModal(true)}
- className="flex items-center gap-2 p-2 2xl:p-2.5 rounded-xl border border-teal-200/80 dark:border-teal-900/60 bg-teal-50/40 dark:bg-teal-950/20 hover:bg-teal-50 text-teal-800 dark:text-teal-300 text-xs font-semibold transition-all cursor-pointer text-left min-h-[42px] 2xl:min-h-[44px]">
-                    <Calendar className="w-4 h-4 text-teal-600 shrink-0"/>
+ className="flex items-center gap-2 p-2 2xl:p-2.5 rounded-xl border border-success-border/80 border-success-border/60 bg-success-surface/40 bg-success-surface hover:bg-success-surface text-success text-success text-xs font-semibold transition-all cursor-pointer text-left min-h-[42px] 2xl:min-h-[44px]">
+                    <Calendar className="w-4 h-4 text-success shrink-0"/>
                     <span className="leading-tight">{tBilingual('Custom Date', 'কাস্টম তারিখ')}</span>
                   </button>
                 </div>
@@ -1149,7 +1148,7 @@ export default function BusinessReportsPage() {
             <div className="bg-card rounded-xl border border-border shadow-xs max-w-sm w-full p-5 space-y-4">
               <div className="flex items-center justify-between pb-2 border-b border-border">
                 <h3 className="font-bold text-foreground text-sm flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-blue-600" />
+                  <Calendar className="w-4 h-4 text-primary" />
                   {tBilingual('Select Custom Date Range', 'কাস্টম সময়সীমা নির্ধারণ')}
                 </h3>
                 <button

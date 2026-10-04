@@ -85,6 +85,7 @@ export interface JobOrderRecord {
   notes?: string | null
   created_at: string
   updated_at: string
+  version?: number
 }
 
 export interface OrderTimelineEventRecord {
@@ -146,5 +147,6 @@ export interface SalesOrderRecord {
   jobs_count?: number
   created_at: string
   updated_at: string
+  version?: number
 }
 

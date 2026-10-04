@@ -147,16 +147,16 @@ export function OperatorDashboard({ tasks, onRefresh }: OperatorDashboardProps) 
 
             <div className="flex items-center justify-center md:justify-end gap-1.5">
               {todayAttendance?.check_in_time ? (
-                <Badge className="bg-emerald-500 text-white tabular-nums text-xs">
+                <Badge className="bg-success text-white tabular-nums text-xs">
  IN: {todayAttendance.check_in_time}
                 </Badge>
               ) : (
-                <Badge variant="outline"className="text-amber-300 border-amber-400/40 text-xs">
+                <Badge variant="outline"className="text-warning border-warning-border/40 text-xs">
                   {tBilingual('Not Clocked In', 'হাজিরা দেওয়া হয়নি')}
                 </Badge>
               )}
               {todayAttendance?.check_out_time && (
-                <Badge className="bg-blue-600 text-white tabular-nums text-xs">
+                <Badge className="bg-primary text-white tabular-nums text-xs">
  OUT: {todayAttendance.check_out_time}
                 </Badge>
               )}
@@ -167,7 +167,7 @@ export function OperatorDashboard({ tasks, onRefresh }: OperatorDashboardProps) 
                 <Button
  size="sm"onClick={handleQuickClockIn}
  disabled={isPunching}
- className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs h-8 px-3 rounded-lg cursor-pointer">
+ className="bg-success hover:bg-success text-white font-bold text-xs h-8 px-3 rounded-lg cursor-pointer">
                   <UserCheck className="h-3.5 w-3.5 mr-1"/>
                   {isPunching ? '...' : tBilingual('1-Tap Punch In', 'হাজিরা দিন (ইন)')}
                 </Button>
@@ -175,19 +175,19 @@ export function OperatorDashboard({ tasks, onRefresh }: OperatorDashboardProps) 
                 <Button
  size="sm"onClick={handleQuickClockOut}
  disabled={isPunching}
- className="bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs h-8 px-3 rounded-lg cursor-pointer">
+ className="bg-primary hover:bg-primary text-white font-bold text-xs h-8 px-3 rounded-lg cursor-pointer">
                   <Clock3 className="h-3.5 w-3.5 mr-1"/>
                   {isPunching ? '...' : tBilingual('1-Tap Punch Out', 'প্রস্থান (আউট)')}
                 </Button>
               ) : (
-                <span className="text-xs text-emerald-300 font-semibold flex items-center gap-1">
+                <span className="text-xs text-success font-semibold flex items-center gap-1">
                   <CheckCircle2 className="h-3.5 w-3.5"/> Done Today
                 </span>
               )}
             </div>
 
             {punchFeedback && (
-              <p className="text-2xs text-cyan-300 font-medium">{punchFeedback}</p>
+              <p className="text-xs text-primary font-medium">{punchFeedback}</p>
             )}
           </div>
         </div>
@@ -197,41 +197,41 @@ export function OperatorDashboard({ tasks, onRefresh }: OperatorDashboardProps) 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <Button
  variant="outline"onClick={() => router.push(getTenantNavHref('/operator', pathname))}
- className="h-auto py-3 px-3.5 justify-start border-border hover:bg-blue-50 dark:hover:bg-blue-950/40 hover:border-blue-300 cursor-pointer">
-          <Cpu className="h-5 w-5 text-blue-600 mr-2.5 shrink-0"/>
+ className="h-auto py-3 px-3.5 justify-start border-border hover:bg-primary/10 dark:hover:bg-primary/10 hover:border-primary/20 cursor-pointer">
+          <Cpu className="h-5 w-5 text-primary mr-2.5 shrink-0"/>
           <div className="text-left">
             <div className="text-xs font-bold text-foreground">{tBilingual('Full Screen Terminal', 'ফুল টার্মিনাল')}</div>
-            <div className="text-2xs text-muted-foreground">{tBilingual('Touch station queue', 'টাচ কিউ')}</div>
+            <div className="text-xs text-muted-foreground">{tBilingual('Touch station queue', 'টাচ কিউ')}</div>
           </div>
         </Button>
 
         <Button
  variant="outline"onClick={() => router.push(getTenantNavHref('/production/floor-consumption', pathname))}
- className="h-auto py-3 px-3.5 justify-start border-border hover:bg-amber-50 dark:hover:bg-amber-950/40 hover:border-amber-300 cursor-pointer">
-          <Flame className="h-5 w-5 text-amber-600 mr-2.5 shrink-0"/>
+ className="h-auto py-3 px-3.5 justify-start border-border hover:bg-warning-surface dark:hover:bg-warning-surface hover:border-warning-border cursor-pointer">
+          <Flame className="h-5 w-5 text-warning mr-2.5 shrink-0"/>
           <div className="text-left">
             <div className="text-xs font-bold text-foreground">{tBilingual('Floor Consumptions', 'কাঁচামাল খরচ')}</div>
-            <div className="text-2xs text-muted-foreground">{tBilingual('Log media & wastage', 'মিডিয়া ও অপচয়')}</div>
+            <div className="text-xs text-muted-foreground">{tBilingual('Log media & wastage', 'মিডিয়া ও অপচয়')}</div>
           </div>
         </Button>
 
         <Button
  variant="outline"onClick={() => router.push(getTenantNavHref('/production/machineries', pathname))}
- className="h-auto py-3 px-3.5 justify-start border-border hover:bg-purple-50 dark:hover:bg-purple-950/40 hover:border-purple-300 cursor-pointer">
-          <Wrench className="h-5 w-5 text-purple-600 mr-2.5 shrink-0"/>
+ className="h-auto py-3 px-3.5 justify-start border-border hover:bg-primary/10 dark:hover:bg-primary/10 hover:border-primary/20 cursor-pointer">
+          <Wrench className="h-5 w-5 text-primary mr-2.5 shrink-0"/>
           <div className="text-left">
             <div className="text-xs font-bold text-foreground">{tBilingual('Machinery Fleet', 'মেশিন যন্ত্রপাতি')}</div>
-            <div className="text-2xs text-muted-foreground">{tBilingual('Log breakdown & repair', 'মেরামত ও রক্ষণাবেক্ষণ')}</div>
+            <div className="text-xs text-muted-foreground">{tBilingual('Log breakdown & repair', 'মেরামত ও রক্ষণাবেক্ষণ')}</div>
           </div>
         </Button>
 
         <Button
  variant="outline"onClick={() => setActiveTab('workforce')}
- className="h-auto py-3 px-3.5 justify-start border-border hover:bg-emerald-50 dark:hover:bg-emerald-950/40 hover:border-emerald-300 cursor-pointer">
-          <UserCheck className="h-5 w-5 text-emerald-600 mr-2.5 shrink-0"/>
+ className="h-auto py-3 px-3.5 justify-start border-border hover:bg-success-surface dark:hover:bg-success-surface hover:border-success-border cursor-pointer">
+          <UserCheck className="h-5 w-5 text-success mr-2.5 shrink-0"/>
           <div className="text-left">
             <div className="text-xs font-bold text-foreground">{tBilingual('My Attendance & Salary', 'আমার বেতন ও হাজিরা')}</div>
-            <div className="text-2xs text-muted-foreground">{tBilingual('Leaves, OT & payslips', 'ছুটি, ওটি ও স্লিপ')}</div>
+            <div className="text-xs text-muted-foreground">{tBilingual('Leaves, OT & payslips', 'ছুটি, ওটি ও স্লিপ')}</div>
           </div>
         </Button>
       </div>
@@ -242,7 +242,7 @@ export function OperatorDashboard({ tasks, onRefresh }: OperatorDashboardProps) 
  type="button"onClick={() => setActiveTab('queue')}
  className={`px-4 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer whitespace-nowrap ${
  activeTab === 'queue'
-              ? 'bg-blue-600 text-white shadow-xs'
+              ? 'bg-primary text-white shadow-xs'
               : 'text-muted-foreground hover:text-foreground hover:bg-muted dark:hover:bg-muted'
           }`}
         >
@@ -253,7 +253,7 @@ export function OperatorDashboard({ tasks, onRefresh }: OperatorDashboardProps) 
  type="button"onClick={() => setActiveTab('workforce')}
  className={`px-4 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer whitespace-nowrap ${
  activeTab === 'workforce'
-              ? 'bg-emerald-600 text-white shadow-xs'
+              ? 'bg-success text-white shadow-xs'
               : 'text-muted-foreground hover:text-foreground hover:bg-muted dark:hover:bg-muted'
           }`}
         >
@@ -264,7 +264,7 @@ export function OperatorDashboard({ tasks, onRefresh }: OperatorDashboardProps) 
  type="button"onClick={() => setActiveTab('machinery')}
  className={`px-4 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer whitespace-nowrap ${
  activeTab === 'machinery'
-              ? 'bg-purple-600 text-white shadow-xs'
+              ? 'bg-primary text-white shadow-xs'
               : 'text-muted-foreground hover:text-foreground hover:bg-muted dark:hover:bg-muted'
           }`}
         >
@@ -307,13 +307,13 @@ export function OperatorDashboard({ tasks, onRefresh }: OperatorDashboardProps) 
             </div>
 
             <div className="flex items-center gap-2">
-              <Badge variant="outline"className="text-xs tabular-nums font-bold bg-amber-50 dark:bg-amber-950 text-amber-700 dark:text-amber-300 border-amber-200">
+              <Badge variant="outline"className="text-xs tabular-nums font-bold bg-warning-surface bg-warning-surface text-warning text-warning border-warning-border">
                 {activeCount} {tBilingual('In Progress', 'চলমান')}
               </Badge>
-              <Badge variant="outline"className="text-xs tabular-nums font-bold bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border-blue-200">
+              <Badge variant="outline"className="text-xs tabular-nums font-bold bg-primary/10 bg-primary/10 text-primary text-primary border-primary/20">
                 {queuedCount} {tBilingual('Queued', 'অপেক্ষারত')}
               </Badge>
-              <Badge variant="outline"className="text-xs tabular-nums font-bold bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border-emerald-200">
+              <Badge variant="outline"className="text-xs tabular-nums font-bold bg-success-surface bg-success-surface text-success text-success border-success-border">
                 {completedTodayCount} {tBilingual('Done Today', 'আজ সম্পন্ন')}
               </Badge>
               <Button
@@ -340,14 +340,14 @@ export function OperatorDashboard({ tasks, onRefresh }: OperatorDashboardProps) 
       {activeTab === 'machinery' && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {COMMON_MACHINES.filter((m) => m.id !== 'all').map((m) => (
-            <Card key={m.id} className="border-border shadow-xs hover:border-blue-400 transition-colors">
+            <Card key={m.id} className="border-border shadow-xs hover:border-border transition-colors">
               <CardContent className="p-4 space-y-3">
                 <div className="flex items-center justify-between">
-                  <Badge variant="outline"className="capitalize text-2xs font-bold">
+                  <Badge variant="outline"className="capitalize text-xs font-bold">
                     {m.type.replace('_', ' ')}
                   </Badge>
-                  <span className="flex items-center gap-1.5 text-xs text-emerald-600 font-bold">
-                    <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"/>
+                  <span className="flex items-center gap-1.5 text-xs text-success font-bold">
+                    <span className="h-2 w-2 rounded-full bg-success animate-pulse"/>
  Online & Ready
                   </span>
                 </div>
@@ -377,15 +377,15 @@ export function OperatorDashboard({ tasks, onRefresh }: OperatorDashboardProps) 
         <Card className="border-border shadow-xs">
           <CardHeader className="pb-3 border-b border-border">
             <CardTitle className="text-sm font-bold text-foreground flex items-center gap-2">
-              <ShieldCheck className="h-4 w-4 text-blue-600"/>
+              <ShieldCheck className="h-4 w-4 text-primary"/>
               <span>{tBilingual('Print Operator Security Perimeter & Role Matrix', 'প্রিন্ট অপারেটরের নিরাপত্তা ও অনুমোদনের পরিধি')}</span>
             </CardTitle>
           </CardHeader>
           <CardContent className="p-4 space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-              <div className="p-3 rounded-xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/40 space-y-2">
-                <span className="font-bold text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5">
-                  <Check className="h-4 w-4 text-emerald-600"/>
+              <div className="p-3 rounded-xl bg-success-surface/50 bg-success-surface border border-success-border border-success-border/40 space-y-2">
+                <span className="font-bold text-success text-success flex items-center gap-1.5">
+                  <Check className="h-4 w-4 text-success"/>
                   {tBilingual('Granted Operational Authorities', 'অনুমোদিত কাজের অধিকারসমূহ')}
                 </span>
                 <ul className="space-y-1 text-foreground pl-5 list-disc">
@@ -398,9 +398,9 @@ export function OperatorDashboard({ tasks, onRefresh }: OperatorDashboardProps) 
                 </ul>
               </div>
 
-              <div className="p-3 rounded-xl bg-rose-50/50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/40 space-y-2">
-                <span className="font-bold text-rose-800 dark:text-rose-300 flex items-center gap-1.5">
-                  <AlertTriangle className="h-4 w-4 text-rose-600"/>
+              <div className="p-3 rounded-xl bg-danger-surface/50 bg-danger-surface border border-danger-border border-danger-border/40 space-y-2">
+                <span className="font-bold text-destructive text-destructive flex items-center gap-1.5">
+                  <AlertTriangle className="h-4 w-4 text-destructive"/>
                   {tBilingual('Strict Governance Restrictions & Limitations', 'কঠোর আর্থিক ও নিরাপত্তা সীমাবদ্ধতা')}
                 </span>
                 <ul className="space-y-1 text-foreground pl-5 list-disc">

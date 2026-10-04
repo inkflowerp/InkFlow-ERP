@@ -13,12 +13,12 @@ function TenantSuspendedContent() {
   return (
     <div className="min-h-screen flex items-center justify-center p-4 sm:p-6 bg-muted font-sans">
       <div className="max-w-lg w-full text-center space-y-6 bg-card p-6 sm:p-10 rounded-2xl border border-border shadow-xl">
-        <div className="inline-flex items-center justify-center h-16 w-16 rounded-2xl bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 mx-auto shadow-sm ring-1 ring-rose-200 dark:ring-rose-900/50">
+        <div className="inline-flex items-center justify-center h-16 w-16 rounded-2xl bg-danger-surface bg-danger-surface/60 text-destructive text-destructive mx-auto shadow-sm ring-1 focus:ring-ring dark:focus:ring-ring/50">
           <ShieldAlert className="h-8 w-8" />
         </div>
 
         <div className="space-y-2">
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-100 dark:bg-rose-950 text-rose-800 dark:text-rose-300 tabular-nums">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-danger-surface bg-danger-surface text-destructive text-destructive tabular-nums">
             423 • WORKSPACE SUSPENDED
           </div>
           <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground dark:text-white">
@@ -30,7 +30,7 @@ function TenantSuspendedContent() {
           <p className="text-xs sm:text-sm text-muted-foreground max-w-sm mx-auto pt-1 leading-relaxed">
             {slug ? (
               <>
-                The tenant workspace for <code className="px-1.5 py-0.5 rounded bg-muted tabular-nums text-xs text-rose-600 dark:text-rose-400 font-bold">{slug}</code> is currently suspended due to billing, administrative review, or policy hold.
+                The tenant workspace for <code className="px-1.5 py-0.5 rounded bg-muted tabular-nums text-xs text-destructive text-destructive font-bold">{slug}</code> is currently suspended due to billing, administrative review, or policy hold.
               </>
             ) : (
               'This workspace has been suspended. Please contact your organization administrator or PrintERP platform support to reactivate your account.'
@@ -39,7 +39,7 @@ function TenantSuspendedContent() {
         </div>
 
         <div className="pt-2 flex flex-col sm:flex-row gap-3 justify-center">
-          <Button asChild className="bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs sm:text-sm shadow-md">
+          <Button asChild className="bg-destructive hover:bg-destructive text-white font-bold text-xs sm:text-sm shadow-md">
             <Link href="/contact">
               <Headphones className="mr-1.5 h-4 w-4" />
               <span>Contact Support / Billing</span>

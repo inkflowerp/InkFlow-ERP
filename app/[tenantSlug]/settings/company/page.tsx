@@ -235,7 +235,7 @@ export default function CompanyProfileSettingsPage() {
 
  if (!mounted) {
  return (
-      <div className="space-y-6 max-w-5xl animate-pulse">
+      <div className="space-y-6 animate-pulse">
         <div className="h-20 bg-muted rounded-xl w-full"/>
         <div className="h-12 bg-muted rounded-xl w-3/4"/>
         <div className="h-48 bg-muted rounded-xl w-full"/>
@@ -244,16 +244,16 @@ export default function CompanyProfileSettingsPage() {
   }
 
  return (
-    <div className="space-y-6 max-w-5xl">
+    <div className="space-y-6">
       <PageHeader
  titleEn="Company Profile & Information"titleBn="প্রতিষ্ঠান পরিচিতি ও তথ্য"descriptionEn="Manage corporate identity, physical printing hub address, operational hours, tax registrations, and official communication channels."descriptionBn="করপোরেট পরিচিতি, প্রিন্টিং হাবের ঠিকানা, অফিস সময়সূচি, ট্যাক্স নিবন্ধন এবং অফিশিয়াল যোগাযোগের মাধ্যম পরিচালনা করুন।"icon={Building2}
- iconColor="text-blue-600"/>
+ iconColor="text-primary"/>
 
       {/* Account Type & Subscription Tier Card */}
       <Card className="p-4 bg-card text-card-foreground border border-border shadow-xs">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-lg bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400 border border-amber-200 dark:border-amber-800 flex items-center justify-center shrink-0">
+            <div className="h-10 w-10 rounded-lg bg-warning-surface text-warning bg-warning-surface text-warning border border-warning-border border-warning-border flex items-center justify-center shrink-0">
               <Crown className="h-5 w-5"/>
             </div>
             <div>
@@ -284,8 +284,8 @@ export default function CompanyProfileSettingsPage() {
       </Card>
 
       {isSaved && (
-        <div className="p-3 bg-emerald-50 text-emerald-800 rounded-lg text-xs font-semibold flex items-center gap-2 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800 animate-in fade-in-0">
-          <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0"/>
+        <div className="p-3 bg-success-surface text-success rounded-lg text-xs font-semibold flex items-center gap-2 border border-success-border bg-success-surface text-success border-success-border animate-in fade-in-0">
+          <CheckCircle2 className="h-4 w-4 text-success shrink-0"/>
           <span>{tBilingual('Company profile information updated and saved successfully!', 'কোম্পানি প্রোফাইল তথ্য সফলভাবে সংরক্ষিত হয়েছে!')}</span>
         </div>
       )}
@@ -295,7 +295,7 @@ export default function CompanyProfileSettingsPage() {
         <Card>
           <CardHeader className="pb-3 border-b border-border">
             <CardTitle className="text-base flex items-center gap-2">
-              <FileText className="h-4 w-4 text-blue-600"/>
+              <FileText className="h-4 w-4 text-primary"/>
               {tBilingual('Corporate Names & Branding', 'প্রাতিষ্ঠানিক নাম ও ব্র্যান্ডিং')}
             </CardTitle>
           </CardHeader>
@@ -331,7 +331,7 @@ export default function CompanyProfileSettingsPage() {
  id="legal_name"name="legal_name"value={formData.legal_name}
  onChange={handleChange}
  placeholder={tBilingual("e.g. Rapid Print Solutions Limited", "যেমন: র‍্যাপিড প্রিন্ট সল্যুশনস লিমিটেড")}/>
-              <p className="text-2xs text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 {tBilingual('Official entity name utilized for NBR tax Mushak vouchers and legal vendor contracts.', 'এনবিআর মূসক চালান এবং আইনি ভেন্ডর চুক্তির জন্য ব্যবহৃত অফিশিয়াল প্রতিষ্ঠানের নাম।')}
               </p>
             </div>
@@ -352,7 +352,7 @@ export default function CompanyProfileSettingsPage() {
                   ) : (
                     <div className="text-center p-2">
                       <ImageIcon className="h-5 w-5 mx-auto text-muted-foreground"/>
-                      <span className="text-2xs text-muted-foreground block mt-0.5">{tBilingual('No Logo', 'লোগো নেই')}</span>
+                      <span className="text-xs text-muted-foreground block mt-0.5">{tBilingual('No Logo', 'লোগো নেই')}</span>
                     </div>
                   )}
                 </div>
@@ -361,7 +361,7 @@ export default function CompanyProfileSettingsPage() {
  id="logo_url"name="logo_url"value={formData.logo_url}
  onChange={handleChange}
  placeholder="https://example.com/logo.png"/>
-                  <span className="text-2xs text-muted-foreground block">
+                  <span className="text-xs text-muted-foreground block">
                     {tBilingual('Printed at the top of client quotations, work challans, and money receipts.', 'গ্রাহক কোটেশন, কাজের চালান ও মানি রিসিটের শীর্ষে মুদ্রিত হবে।')}
                   </span>
                 </div>
@@ -374,7 +374,7 @@ export default function CompanyProfileSettingsPage() {
         <Card>
           <CardHeader className="pb-3 border-b border-border">
             <CardTitle className="text-base flex items-center gap-2">
-              <Phone className="h-4 w-4 text-emerald-600"/>
+              <Phone className="h-4 w-4 text-success"/>
               {tBilingual('Contact & Digital Channels', 'যোগাযোগ ও ডিজিটাল চ্যানেল')}
             </CardTitle>
           </CardHeader>
@@ -419,7 +419,7 @@ export default function CompanyProfileSettingsPage() {
         <Card>
           <CardHeader className="pb-3 border-b border-border">
             <CardTitle className="text-base flex items-center gap-2">
-              <MapPin className="h-4 w-4 text-red-600"/>
+              <MapPin className="h-4 w-4 text-destructive"/>
               {tBilingual('Print Hub & Commercial Address', 'প্রিন্ট হাব ও বাণিজ্যিক ঠিকানা')}
             </CardTitle>
           </CardHeader>
@@ -462,7 +462,7 @@ export default function CompanyProfileSettingsPage() {
         <Card>
           <CardHeader className="pb-3 border-b border-border">
             <CardTitle className="text-base flex items-center gap-2">
-              <ShieldCheck className="h-4 w-4 text-purple-600"/>
+              <ShieldCheck className="h-4 w-4 text-primary"/>
               {tBilingual('Tax & Business Registrations', 'ট্যাক্স ও ব্যবসায়িক নিবন্ধন')}
             </CardTitle>
           </CardHeader>
@@ -495,7 +495,7 @@ export default function CompanyProfileSettingsPage() {
         <Card>
           <CardHeader className="pb-3 border-b border-border">
             <CardTitle className="text-base flex items-center gap-2">
-              <Clock className="h-4 w-4 text-blue-600"/>
+              <Clock className="h-4 w-4 text-primary"/>
               {tBilingual('Office Hours & Holiday Schedule', 'অফিস সময়সূচি ও ছুটির তালিকা')}
             </CardTitle>
           </CardHeader>
@@ -514,7 +514,7 @@ export default function CompanyProfileSettingsPage() {
                   <button
  key={preset}
  type="button"onClick={() => setFormData({ ...formData, office_hours: preset })}
- className="text-2xs px-2.5 py-1 rounded-md bg-muted text-foreground hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-card-elevated transition-colors border border-border">
+ className="text-xs px-2.5 py-1 rounded-md bg-muted text-foreground hover:bg-primary/10 hover:text-primary dark:hover:bg-card-elevated transition-colors border border-border">
                     {preset}
                   </button>
                 ))}
@@ -535,7 +535,7 @@ export default function CompanyProfileSettingsPage() {
                   <button
  key={preset}
  type="button"onClick={() => setFormData({ ...formData, holidays: preset })}
- className="text-2xs px-2.5 py-1 rounded-md bg-muted text-foreground hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-card-elevated transition-colors border border-border">
+ className="text-xs px-2.5 py-1 rounded-md bg-muted text-foreground hover:bg-primary/10 hover:text-primary dark:hover:bg-card-elevated transition-colors border border-border">
                     {preset}
                   </button>
                 ))}
@@ -547,7 +547,7 @@ export default function CompanyProfileSettingsPage() {
         <div className="flex justify-end gap-3 pt-2">
           <Button
  type="submit"isLoading={isLoading}
- className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto h-11 sm:h-9 text-xs font-semibold">
+ className="bg-primary hover:bg-primary w-full sm:w-auto h-11 sm:h-9 text-xs font-semibold">
             <Save className="mr-1.5 h-4 w-4"/>
             {tBilingual('Save Profile Settings', 'প্রোফাইল সেটিংস সংরক্ষণ করুন')}
           </Button>

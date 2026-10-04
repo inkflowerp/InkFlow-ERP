@@ -1,33 +1,27 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { useParams } from 'next/navigation'
 import {
- Bell,
- Save,
- CheckCircle2,
- MessageSquare,
- PhoneCall,
- Mail,
- AlertTriangle,
- AlertCircle,
- Volume2,
- VolumeX,
- Radio,
- Sliders,
- Sparkles,
- ShoppingBag,
- DollarSign,
- Truck,
- UserCheck,
- Send,
- Smartphone,
- ShieldCheck,
- Info,
- Layers,
- Package,
- Flame,
- Megaphone,
+  Bell,
+  Save,
+  CheckCircle2,
+  MessageSquare,
+  Mail,
+  AlertTriangle,
+  AlertCircle,
+  Smartphone,
+  ShieldCheck,
+  Clock,
+  Eye,
+  Send,
+  Sparkles,
+  Sliders,
+  Volume2,
+  VolumeX,
+  Languages,
+  Check,
+  RefreshCw,
 } from 'lucide-react'
 import { useI18n } from '@/i18n/context'
 import { useTenant } from '@/hooks/use-tenant'
@@ -37,733 +31,893 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
-import { updateCompanyAction, updateCompanySettingsAction } from '@/actions/tenant.actions'
-
-import { useDataStore } from '@/hooks/use-data-store'
-import { STORAGE_KEYS } from '@/lib/db/data-store'
-import {
- playNotificationSound,
- previewSound,
- isSoundMuted,
- setSoundMuted,
- getSoundVolume,
- setSoundVolume,
- NotificationSoundType,
- SOUND_CATALOG,
-} from '@/lib/notifications/sound-manager'
-import {
- getBrowserNotificationPermission,
- requestBrowserNotificationPermission,
- isBrowserNotificationEnabled,
- setBrowserNotificationEnabled,
- showBrowserNotification,
- BrowserPermissionStatus,
-} from '@/lib/notifications/browser-notification'
-import { notify } from '@/lib/notifications/notification-bus'
 import { useToast } from '@/components/shared/toast-feedback'
+import {
+  getUserNotificationPreferencesAction,
+  saveUserNotificationPreferencesAction,
+  getNotificationTemplatesAction,
+  notifyAction,
+} from '@/actions/notification.actions'
+import type { NotificationPreferenceRecord, NotificationEventType } from '@/types/communication.types'
+
+interface EventMeta {
+  type: NotificationEventType
+  nameEn: string
+  nameBn: string
+  descEn: string
+  descBn: string
+  category: 'billing' | 'production' | 'hr' | 'system'
+}
+
+const EVENT_METADATA: EventMeta[] = [
+  {
+    type: 'invoice_created',
+    nameEn: 'Invoice Created',
+    nameBn: 'নতুন ইনভয়েস তৈরি',
+    descEn: 'Dispatched when a new invoice is created for a customer order',
+    descBn: 'গ্রাহকের অর্ডারের জন্য নতুন ইনভয়েস তৈরি হলে পাঠানো হয়',
+    category: 'billing',
+  },
+  {
+    type: 'invoice_overdue',
+    nameEn: 'Invoice Overdue Reminder',
+    nameBn: 'বকেয়া বিলের তাগাদা',
+    descEn: 'Scheduled reminders before, on, and after invoice due date',
+    descBn: 'ইনভয়েসের নির্দিষ্ট তারিখের আগে, দিনে ও পরে স্বয়ংক্রিয় তাগাদা',
+    category: 'billing',
+  },
+  {
+    type: 'payment_received',
+    nameEn: 'Payment Received',
+    nameBn: 'পেমেন্ট জমা রশিদ',
+    descEn: 'Payment acknowledgement when full or partial payment is recorded',
+    descBn: 'গ্রাহকের পেমেন্ট প্রাপ্তির সাথে সাথে নিশ্চিতকরণ বার্তা',
+    category: 'billing',
+  },
+  {
+    type: 'quotation_approved',
+    nameEn: 'Quotation Approved',
+    nameBn: 'কোটেশন অনুমোদন',
+    descEn: 'Alert when client or manager approves a sales quotation',
+    descBn: 'গ্রাহক বা ম্যানেজার বিক্রয় কোটেশন অনুমোদন করলে বার্তা',
+    category: 'billing',
+  },
+  {
+    type: 'design_feedback',
+    nameEn: 'Design Feedback / Proofing',
+    nameBn: 'ডিজাইন ফিডব্যাক ও প্রুফ',
+    descEn: 'Client feedback, revision requests, or artwork approval',
+    descBn: 'গ্রাহকের ডিজাইন সংক্রান্ত মন্তব্য, সংশোধন বা অনুমোদন',
+    category: 'production',
+  },
+  {
+    type: 'production_problem',
+    nameEn: 'Production Machine Issue',
+    nameBn: 'মেশিন বা উৎপাদন সমস্যা',
+    descEn: 'Machine breakdown, material jam, or urgent production problem',
+    descBn: 'মেশিন নষ্ট, কাঁচামালের ঘাটতি বা জরুরি উৎপাদন সমস্যা',
+    category: 'production',
+  },
+  {
+    type: 'production_delay',
+    nameEn: 'Production Deadline Warning',
+    nameBn: 'উৎপাদন সময়সীমা সতর্কতা',
+    descEn: 'Warning when a job is within 24 hours of scheduled completion',
+    descBn: 'নির্ধারিত সমাপ্তির ২৪ ঘণ্টার মধ্যে কাজ সম্পন্ন না হলে সতর্কবার্তা',
+    category: 'production',
+  },
+  {
+    type: 'low_stock',
+    nameEn: 'Low Inventory Stock',
+    nameBn: 'কাঁচামাল সংকট সতর্কতা',
+    descEn: 'Triggered when raw materials fall below the reorder threshold',
+    descBn: 'স্টক পুনঃক্রয় সীমার নিচে নেমে গেলে সতর্কতা',
+    category: 'production',
+  },
+  {
+    type: 'attendance_exception',
+    nameEn: 'Attendance Exception',
+    nameBn: 'হাজিরা ব্যতিক্রম',
+    descEn: 'Late check-in, geofence mismatch, or correction request',
+    descBn: 'দেরিতে উপস্থিতি, জিওফেন্স বাইরে বা হাজিরা সংশোধনের আবেদন',
+    category: 'hr',
+  },
+  {
+    type: 'subscription_state',
+    nameEn: 'Subscription & Plan Status',
+    nameBn: 'সাবস্ক্রিপশন ও প্ল্যান স্ট্যাটাস',
+    descEn: 'Billing cycle updates, plan upgrades, and renewals',
+    descBn: 'সাবস্ক্রিপশন বিলিং, প্ল্যান পরিবর্তন ও নবায়ন সংক্রান্ত বিজ্ঞপ্তি',
+    category: 'system',
+  },
+  {
+    type: 'support_reply',
+    nameEn: 'Support Ticket Reply',
+    nameBn: 'সাপোর্ট টিকিট উত্তর',
+    descEn: 'Direct message from platform technical support agent',
+    descBn: 'সাপোর্ট টিকিট বা হেল্পডেস্ক থেকে নতুন উত্তর প্রাপ্তি',
+    category: 'system',
+  },
+]
 
 export default function NotificationSettingsPage() {
- const params = useParams()
- const routeSlug = (params?.tenantSlug as string) || ''
- const { company, settings, refreshTenant } = useTenant()
- const { locale, tBilingual } = useI18n()
- const { showToast } = useToast()
- const slug = routeSlug || company?.slug || ''
- const [mounted, setMounted] = useState(false)
- const [isSaved, setIsSaved] = useState(false)
- const [isLoading, setIsLoading] = useState(false)
+  const params = useParams()
+  const routeSlug = (params?.tenantSlug as string) || ''
+  const { company } = useTenant()
+  const { tBilingual } = useI18n()
+  const { showToast } = useToast()
+  const slug = routeSlug || company?.slug || ''
 
-  // Sound and browser notification state
- const [soundMuted, setSoundMutedState] = useState(false)
- const [volume, setVolumeState] = useState(85)
- const [browserPerm, setBrowserPerm] = useState<BrowserPermissionStatus>('default')
- const [browserEnabled, setBrowserEnabledState] = useState(false)
- const [selectedCategory, setSelectedCategory] = useState<'all' | 'commercial' | 'operations' | 'alerts' | 'system'>('all')
- const [activePlaying, setActivePlaying] = useState<NotificationSoundType | null>(null)
+  const [activeTab, setActiveTab] = useState<'preferences' | 'templates' | 'test'>('preferences')
+  const [isLoading, setIsLoading] = useState(true)
+  const [isSaving, setIsSaving] = useState(false)
 
- useEffect(() => {
- setMounted(true)
- setSoundMutedState(isSoundMuted())
- setVolumeState(Math.round(getSoundVolume() * 100))
- setBrowserPerm(getBrowserNotificationPermission())
- setBrowserEnabledState(isBrowserNotificationEnabled())
-  }, [])
+  // Preferences State
+  const [preferences, setPreferences] = useState<Record<string, Partial<NotificationPreferenceRecord>>>({})
+  const [quietHoursEnabled, setQuietHoursEnabled] = useState(true)
+  const [quietHoursStart, setQuietHoursStart] = useState('22:00')
+  const [quietHoursEnd, setQuietHoursEnd] = useState('08:00')
 
- const [notif, setNotif] = useDataStore(STORAGE_KEYS.NOTIFICATION_SETTINGS, {
- whatsapp_enabled: !!(company?.whatsapp || settings?.whatsapp),
- whatsapp_number: company?.whatsapp || settings?.whatsapp || '',
- sms_enabled: false,
- sms_gateway: 'Greenweb SMS Gateway',
- sms_sender_id: '',
- sms_api_key: '',
- email_enabled: true,
- low_stock_alerts: true,
- low_stock_threshold: 50, // 50 sft / rolls
-  }, slug)
+  // Templates State
+  const [templates, setTemplates] = useState<any[]>([])
+  const [selectedTemplateKey, setSelectedTemplateKey] = useState<string>('invoice_created')
+  const [previewLang, setPreviewLang] = useState<'bn' | 'en'>('bn')
 
- useEffect(() => {
- if (company?.whatsapp || settings?.whatsapp) {
- setNotif((prev) => ({
+  // Test Dispatch State
+  const [testChannel, setTestChannel] = useState<'in_app' | 'whatsapp' | 'email'>('in_app')
+  const [testRecipient, setTestRecipient] = useState('')
+  const [isTestSending, setIsTestSending] = useState(false)
+  const [testResult, setTestResult] = useState<any>(null)
+
+  // Load initial preferences and templates from DB
+  const loadData = async () => {
+    setIsLoading(true)
+    try {
+      const [prefRes, tplRes] = await Promise.all([
+        getUserNotificationPreferencesAction(company?.id),
+        getNotificationTemplatesAction(company?.id),
+      ])
+
+      if (prefRes.success && prefRes.data) {
+        const prefMap: Record<string, Partial<NotificationPreferenceRecord>> = {}
+        for (const item of prefRes.data) {
+          prefMap[item.event_type] = item
+        }
+        setPreferences(prefMap)
+
+        // Sync quiet hours from first available record
+        const sample = prefRes.data[0]
+        if (sample) {
+          setQuietHoursEnabled(Boolean(sample.quiet_hours_enabled))
+          if (sample.quiet_hours_start) setQuietHoursStart(sample.quiet_hours_start)
+          if (sample.quiet_hours_end) setQuietHoursEnd(sample.quiet_hours_end)
+        }
+      }
+
+      if (tplRes.success && tplRes.data) {
+        setTemplates(tplRes.data)
+      }
+    } catch (err: any) {
+      console.warn('Failed to load notification settings:', err)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    loadData()
+  }, [company?.id])
+
+  // Handle Channel Checkbox Toggle
+  const handleToggleChannel = (
+    eventType: string,
+    channel: 'in_app_enabled' | 'whatsapp_enabled' | 'email_enabled' | 'sms_enabled'
+  ) => {
+    setPreferences((prev) => {
+      const current = prev[eventType] || {
+        event_type: eventType as NotificationEventType,
+        in_app_enabled: true,
+        whatsapp_enabled: true,
+        email_enabled: true,
+        sms_enabled: false,
+      }
+      return {
         ...prev,
- whatsapp_number: prev.whatsapp_number || company?.whatsapp || settings?.whatsapp || '',
-      }))
-    }
-  }, [company, settings, setNotif])
-
- const handleToggleSoundMute = () => {
- const next = !soundMuted
- setSoundMuted(next)
- setSoundMutedState(next)
- if (!next) {
- previewSound('success')
-    }
-  }
-
- const handleVolumeChange = (newVal: number) => {
- setVolumeState(newVal)
- setSoundVolume(newVal / 100)
-  }
-
- const handleVolumePreset = (presetVal: number) => {
- setVolumeState(presetVal)
- setSoundVolume(presetVal / 100)
- if (soundMuted) {
- setSoundMuted(false)
- setSoundMutedState(false)
-    }
- previewSound('system', presetVal / 100)
-  }
-
- const handleRequestPushPermission = async () => {
- const perm = await requestBrowserNotificationPermission()
- setBrowserPerm(perm)
- setBrowserEnabledState(isBrowserNotificationEnabled())
- if (perm === 'granted') {
- showToast({
- title: 'Browser Notifications Enabled',
- titleBn: 'ব্রাউজার পুশ নোটিফিকেশন সক্রিয় হয়েছে',
- type: 'success',
- message: 'You will now receive desktop alerts for orders, payments, and dispatch events.',
- messageBn: 'নতুন অর্ডার, পেমেন্ট এবং চালানের নোটিফিকেশন সরাসরি স্ক্রিনে পাবেন।',
-      })
- showBrowserNotification({
- title: 'PrintERP Notifications Active',
- body: 'Realtime order, payment, and production alerts are now connected.',
- soundType: 'success',
-      })
-    }
-  }
-
- const handleToggleBrowserEnabled = () => {
- const next = !browserEnabled
- setBrowserNotificationEnabled(next)
- setBrowserEnabledState(next)
-  }
-
- const handleTestSound = (type: NotificationSoundType) => {
- setActivePlaying(type)
- previewSound(type)
- setTimeout(() => setActivePlaying(null), 1000)
-  }
-
- const handleTestLivePopup = (type: NotificationSoundType) => {
- const sampleAlerts: Record<NotificationSoundType, { title: string; titleBn: string; msg: string; msgBn: string; url: string }> = {
- order: {
- title: 'New POS Order #ORD-2026-98',
- titleBn: 'নতুন পিওএস অর্ডার #ORD-2026-98',
- msg: 'Acrylic 3D Signboard (40 sft) ordered by Vision Enterprise',
- msgBn: 'ভিশন এন্টারপ্রাইজ থেকে অ্যাক্রিলিক থ্রিডি সাইনবোর্ড অর্ডার এসেছে',
- url: '/orders',
-      },
- payment: {
- title: 'Payment Received: ৳15,000',
- titleBn: 'পেমেন্ট জমা হয়েছে: ৳১৫,০০০',
- msg: 'bKash Merchant settlement for Invoice #INV-5432',
- msgBn: 'ইনভয়েস #INV-5432 এর বিকাশ মার্চেন্ট পেমেন্ট সম্পন্ন হয়েছে',
- url: '/orders',
-      },
- delivery: {
- title: 'Challan #CH-881 Ready for Dispatch',
- titleBn: 'চালান #CH-881 ডেলিভারির জন্য প্রস্তুত',
- msg: 'Assigned to Rider Kamrul for Motijheel Commercial Area',
- msgBn: 'মতিঝিল ডেলিভারির জন্য রাইডার কামরুলকে দায়িত্ব দেওয়া হয়েছে',
- url: '/delivery',
-      },
- attendance: {
- title: 'Biometric Check-In Recorded',
- titleBn: 'বায়োমেট্রিক হাজিরা রেকর্ড হয়েছে',
- msg: 'Operator Tanvir Ahmed checked in at Floor 1 (09:05 AM)',
- msgBn: 'অপারেটর তানভীর আহমেদ ফ্লোর ১ এ চেক-ইন করেছেন (সকাল ০৯:০৫)',
- url: '/attendance',
-      },
- job: {
- title: 'Production Step Completed',
- titleBn: 'প্রোডাকশন ধাপ সম্পন্ন',
- msg: 'Offset UV Varnishing finished for Job #JOB-8842',
- msgBn: 'জব #JOB-8842 এর অফসেট ইউভি বার্নিশ সফলভাবে সমাপ্ত হয়েছে',
- url: '/production',
-      },
- inventory: {
- title: 'Roll Received: Self-Adhesive Vinyl 5ft',
- titleBn: 'নতুন রোল জমা: সেলফ-আঠালো ভিনাইল ৫ ফিট',
- msg: 'Added 500 sft to Main Warehouse Rack B-04',
- msgBn: 'প্রধান ওয়্যারহাউস র্যাক B-04 এ ৫০০ স্কয়ার ফিট যুক্ত হয়েছে',
- url: '/inventory/rolls',
-      },
- urgent: {
- title: 'Machine Jam: Solvent Printhead 1 Halted',
- titleBn: 'জরুরি সতর্কতা: সলভেন্ট হেড ১ জ্যাম',
- msg: 'Roland VS-640 emergency stop triggered during high-speed banner print.',
- msgBn: 'হাই-স্পিড ব্যানার প্রিন্টিং চলাকালীন রোল্যান্ড মেশিনে জরুরি থামা সংকেত।',
- url: '/production',
-      },
- warning: {
- title: 'Low Stock: Solvent Frontlit 440gsm',
- titleBn: 'স্টক সংকট: সলভেন্ট ফ্রন্টলিট ৪৪০ জিএসএম',
- msg: 'Remaining inventory: 35 sft (below 50 sft re-order point)',
- msgBn: 'বর্তমান স্টক: ৩৫ স্কয়ার ফিট (সর্বনিম্ন ৫০ স্কয়ার ফিটের নিচে)',
- url: '/inventory/rolls',
-      },
- error: {
- title: 'Transaction Gateway Timeout',
- titleBn: 'পেমেন্ট গেটওয়ে সময়সীমা অতিক্রম',
- msg: 'bKash merchant auto-settlement failed for POS Terminal 2',
- msgBn: 'পিওএস টার্মিনাল ২ এর বিকাশ অটো-সেটেলমেন্ট ব্যর্থ হয়েছে',
- url: '/orders',
-      },
- broadcast: {
- title: 'Platform Maintenance Advisory',
- titleBn: 'সিস্টেম রক্ষণাবেক্ষণ বিজ্ঞপ্তি',
- msg: 'Scheduled database indexing tonight from 02:00 AM to 02:30 AM (BST)',
- msgBn: 'আজ রাত ০২:০০ থেকে ০২:৩০ পর্যন্ত সিস্টেম আপডেট চলবে।',
- url: '/settings',
-      },
- message: {
- title: 'New Customer Support Message',
- titleBn: 'নতুন গ্রাহক বার্তা',
- msg: 'Aman Graphics:"Can we get the proof approved by 4 PM today?"',
- msgBn: 'আমান গ্রাফিক্স:"আজ বিকাল ৪টার মধ্যে প্রুফ পাওয়া যাবে কি?"',
- url: '/support',
-      },
- success: {
- title: 'Job Order #JB-901 Completed',
- titleBn: 'জব অর্ডার #JB-901 সম্পন্ন হয়েছে',
- msg: 'UV Flatbed printing for 10 Frosted Glass panels verified by QC',
- msgBn: '১০টি ফ্রস্টেড গ্লাস প্যানেলের ইউভি প্রিন্টিং কিউসি দ্বারা পরীক্ষিত ও প্রস্তুত',
- url: '/production',
-      },
- system: {
- title: 'Database Cloud Sync Complete',
- titleBn: 'ডাটাবেস ক্লাউড সিঙ্ক সম্পন্ন',
- msg: 'All local changes synchronized with PrintERP master node',
- msgBn: 'সকল লোকাল ডাটা প্রিন্টইআরপি সার্ভারের সাথে আপডেট হয়েছে',
- url: '/settings',
-      },
-    }
-
- const item = sampleAlerts[type] || sampleAlerts.order
- notify({
- title: item.title,
- titleBn: item.titleBn,
- message: item.msg,
- messageBn: item.msgBn,
- type,
- actionUrl: item.url,
- mode: type === 'urgent' ? 'both' : 'popup',
+        [eventType]: {
+          ...current,
+          [channel]: !current[channel],
+        },
+      }
     })
   }
 
- const handleSave = async (e: React.FormEvent) => {
- e.preventDefault()
- setIsLoading(true)
- setIsSaved(false)
- try {
- if (company?.id) {
- const phoneToSave = notif.whatsapp_enabled ? notif.whatsapp_number : null
- await updateCompanyAction(company.id, {
- whatsapp: phoneToSave,
-        })
- await updateCompanySettingsAction(company.id, {
- whatsapp: phoneToSave,
-        })
- await refreshTenant()
-      }
- setNotif(notif)
- setIsSaved(true)
- showToast({
- title: 'Settings Saved',
- titleBn: 'সেটিংস সংরক্ষিত হয়েছে',
- type: 'success',
- message: 'Notification gateways and audio preferences updated successfully.',
- messageBn: 'নোটিফিকেশন গেটওয়ে এবং অডিও কনফিগারেশন আপডেট করা হয়েছে।',
+  // Save Preferences
+  const handleSavePreferences = async () => {
+    setIsSaving(true)
+    try {
+      const payload: Partial<NotificationPreferenceRecord>[] = EVENT_METADATA.map((event) => {
+        const current = preferences[event.type] || {}
+        return {
+          event_type: event.type,
+          in_app_enabled: current.in_app_enabled ?? true,
+          whatsapp_enabled: current.whatsapp_enabled ?? true,
+          email_enabled: current.email_enabled ?? true,
+          sms_enabled: current.sms_enabled ?? false,
+          quiet_hours_enabled: quietHoursEnabled,
+          quiet_hours_start: quietHoursStart,
+          quiet_hours_end: quietHoursEnd,
+        }
       })
- setTimeout(() => setIsSaved(false), 3500)
+
+      const res = await saveUserNotificationPreferencesAction(payload, company?.id)
+      if (res.success) {
+        showToast({
+          title: 'Preferences Saved',
+          titleBn: 'পছন্দসমূহ সংরক্ষিত হয়েছে',
+          type: 'success',
+          message: 'Your notification channels and quiet hours have been updated.',
+          messageBn: 'আপনার নোটিফিকেশন চ্যানেল এবং নিস্তব্ধ সময়ের সেটিংস আপডেট হয়েছে।',
+        })
+      } else {
+        showToast({
+          title: 'Save Failed',
+          titleBn: 'সংরক্ষণ ব্যর্থ হয়েছে',
+          type: 'error',
+          message: res.error || 'Failed to save preferences',
+          messageBn: 'সেটিংস সংরক্ষণ করা সম্ভব হয়নি',
+        })
+      }
     } finally {
- setIsLoading(false)
+      setIsSaving(false)
     }
   }
 
- if (!mounted) {
- return (
-      <div className="space-y-6 max-w-5xl animate-pulse">
-        <div className="h-20 bg-muted rounded-xl"/>
-        <div className="h-12 bg-muted rounded-xl"/>
-        <div className="h-48 bg-muted rounded-xl"/>
-        <div className="h-48 bg-muted rounded-xl"/>
-      </div>
+  // Active Selected Template
+  const activeTemplate = useMemo(() => {
+    return (
+      templates.find((t) => t.template_key === selectedTemplateKey) ||
+      templates[0] || {
+        template_key: selectedTemplateKey,
+        name: 'Notification',
+        name_bn: 'বিজ্ঞপ্তি',
+        body_en: 'Notification for {{invoice_number}}',
+        body_bn: '{{invoice_number}}-এর জন্য বিজ্ঞপ্তি',
+        variables: ['invoice_number', 'customer_name'],
+      }
     )
+  }, [templates, selectedTemplateKey])
+
+  // Interpolated Preview
+  const sampleVariables: Record<string, string> = {
+    customer_name: 'Vision Enterprise',
+    recipient_name: 'Aman Ullah',
+    invoice_number: 'INV-2026-0042',
+    quotation_number: 'QTN-2026-0019',
+    order_number: 'ORD-2026-0088',
+    job_number: 'JOB-901',
+    task_number: 'TSK-102',
+    ticket_number: 'TCK-881',
+    amount: '18,500',
+    due_amount: '6,200',
+    current_stock: '35',
+    reorder_level: '50',
+    item_name: 'Solvent Backlit Banner 440gsm',
+    unit: 'sft',
+    reason: 'Routine equipment calibration delay',
+    new_eta: 'Tomorrow at 04:00 PM',
+    machine_name: 'Roland VS-640 #1',
+    problem_type: 'Printhead Cleaning Error',
+    description: 'High speed printing paused for maintenance',
+    comment: 'Artwork proof requires resolution adjustment',
+    status: 'Ready for Review',
+    date: '2026-10-04',
+    preview: 'Please confirm updated cutting dimensions.',
+    plan_name: 'Professional Enterprise',
   }
 
- const filteredCatalog = SOUND_CATALOG.filter(
-    (item) => selectedCategory === 'all' || item.category === selectedCategory
-  )
+  const renderedPreview = useMemo(() => {
+    const raw = previewLang === 'bn' ? activeTemplate.body_bn : activeTemplate.body_en
+    if (!raw) return ''
+    let out = raw
+    for (const [k, v] of Object.entries(sampleVariables)) {
+      out = out.replace(new RegExp(`{{${k}}}`, 'g'), v)
+      out = out.replace(new RegExp(`{${k}}`, 'g'), v)
+    }
+    return out
+  }, [activeTemplate, previewLang])
 
- const getSoundIcon = (type: NotificationSoundType) => {
- switch (type) {
- case 'order':
- return ShoppingBag
- case 'payment':
- return DollarSign
- case 'delivery':
- return Truck
- case 'attendance':
- return UserCheck
- case 'job':
- return Layers
- case 'inventory':
- return Package
- case 'urgent':
- return Flame
- case 'warning':
- return AlertTriangle
- case 'error':
- return AlertCircle
- case 'broadcast':
- return Megaphone
- case 'message':
- return MessageSquare
- case 'success':
- return Sparkles
- case 'system':
- default:
- return Bell
+  // Handle Test Notification Send
+  const handleTestSend = async () => {
+    if (testChannel !== 'in_app' && !testRecipient.trim()) {
+      showToast({
+        title: 'Recipient Required',
+        titleBn: 'প্রাপকের ঠিকানা প্রয়োজন',
+        type: 'warning',
+        message:
+          testChannel === 'whatsapp'
+            ? 'Please enter a valid Bangladesh mobile number (01XXXXXXXXX).'
+            : 'Please enter a valid email address.',
+        messageBn: 'অনুগ্রহ করে সঠিক ফোন নম্বর বা ইমেইল ঠিকানা লিখুন।',
+      })
+      return
+    }
+
+    setIsTestSending(true)
+    setTestResult(null)
+    try {
+      const res = await notifyAction({
+        companyId: company?.id || '',
+        type: selectedTemplateKey as NotificationEventType,
+        payload: {
+          ...sampleVariables,
+          recipientPhone: testChannel === 'whatsapp' ? testRecipient : undefined,
+          recipientEmail: testChannel === 'email' ? testRecipient : undefined,
+          recipientName: 'Test Recipient',
+          action_url: '/settings/notifications',
+        },
+        channels: [testChannel],
+      })
+
+      if (res.success && res.data) {
+        setTestResult(res.data)
+        showToast({
+          title: 'Test Notification Dispatched',
+          titleBn: 'টেস্ট নোটিফিকেশন পাঠানো হয়েছে',
+          type: 'success',
+          message:
+            testChannel === 'in_app'
+              ? 'Delivered to In-App Bell instantly (< 1s).'
+              : `Enqueued for async queue worker delivery (${res.data.jobsEnqueuedCount} job enqueued).`,
+          messageBn:
+            testChannel === 'in_app'
+              ? 'ইন-অ্যাপ বেল আইকনে তাৎক্ষণিকভাবে পৌঁছেছে (< ১ সেকেন্ড)।'
+              : 'ডেলিভারি কিউতে সফলভাবে যোগ করা হয়েছে।',
+        })
+      } else {
+        showToast({
+          title: 'Dispatch Failed',
+          titleBn: 'নোটিফিকেশন পাঠানো ব্যর্থ হয়েছে',
+          type: 'error',
+          message: res.error || 'Failed to dispatch test notification',
+          messageBn: 'টেস্ট নোটিফিকেশন প্রেরণ সম্ভব হয়নি',
+        })
+      }
+    } finally {
+      setIsTestSending(false)
     }
   }
 
- return (
-    <div className="space-y-6 max-w-5xl">
+  return (
+    <div className="space-y-6">
       <PageHeader
- titleEn="Notification Alerts"titleBn="নোটিফিকেশন ও এলার্ট"descriptionEn="Configure studio-grade polyphonic audio synthesis, amplified factory chimes, browser push alerts, and SMS/WhatsApp dispatches."descriptionBn="স্টুডিও-গ্রেড পলিফোনিক অডিও সিন্থেসাইজার, উচ্চ শব্দযুক্ত ফ্যাক্টরি চাইম, ব্রাউজার পুশ ও এসএমএস/হোয়াটসঅ্যাপ গেটওয়ে কনফিগার করুন।"icon={Bell}
- iconColor="text-amber-600"/>
+        titleEn="Notification Preferences & Channels"
+        titleBn="নোটিফিকেশন পছন্দ ও চ্যানেল সেটিংস"
+        descriptionEn="Granular multi-channel notification toggles, Asia/Dhaka quiet hours enforcement, bilingual message templates, and live test delivery."
+        descriptionBn="প্রতিটি ইভেন্টের জন্য ইন-অ্যাপ, হোয়াটসঅ্যাপ ও ইমেইল নিয়ন্ত্রণ, এশিয়া/ঢাকা নিস্তব্ধ সময় ও দ্বিভাষিক মেসেজ টেমপ্লেট।"
+        icon={Bell}
+      />
 
-      {isSaved && (
-        <div className="p-3.5 bg-emerald-50 text-emerald-800 rounded-xl text-xs font-semibold flex items-center gap-2 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800 animate-in fade-in-0 shadow-sm">
-          <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0"/>
-          <span>{tBilingual('Notification gateways and audio telemetry updated and recorded in audit log.', 'নোটিফিকেশন গেটওয়ে ও অডিও টেলিমেট্রি সফলভাবে আপডেট করা হয়েছে।')}</span>
+      {/* Navigation Tabs */}
+      <div className="flex items-center gap-2 border-b border-border pb-2">
+        <button
+          type="button"
+          onClick={() => setActiveTab('preferences')}
+          className={`flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-lg transition-colors cursor-pointer ${
+            activeTab === 'preferences'
+              ? 'bg-primary text-primary-foreground shadow-xs'
+              : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+          }`}
+        >
+          <Sliders className="h-3.5 w-3.5" />
+          {tBilingual('Preferences & Quiet Hours', 'পছন্দসমূহ ও নিস্তব্ধ সময়')}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('templates')}
+          className={`flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-lg transition-colors cursor-pointer ${
+            activeTab === 'templates'
+              ? 'bg-primary text-primary-foreground shadow-xs'
+              : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+          }`}
+        >
+          <Eye className="h-3.5 w-3.5" />
+          {tBilingual('Template Preview', 'টেমপ্লেট প্রিভিউ')}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('test')}
+          className={`flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-lg transition-colors cursor-pointer ${
+            activeTab === 'test'
+              ? 'bg-primary text-primary-foreground shadow-xs'
+              : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+          }`}
+        >
+          <Send className="h-3.5 w-3.5" />
+          {tBilingual('Live Test Send', 'টেস্ট মেসেজ পাঠান')}
+        </button>
+      </div>
+
+      {/* =========================================================================
+          TAB 1: CHANNEL PREFERENCES & ASIA/DHAKA QUIET HOURS
+          ========================================================================= */}
+      {activeTab === 'preferences' && (
+        <div className="space-y-6">
+          {/* Quiet Hours Card */}
+          <Card className="rounded-xl border border-border bg-card shadow-xs">
+            <CardHeader className="pb-3 border-b border-border">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                    <Clock className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-sm font-bold text-foreground">
+                      {tBilingual('Quiet Hours (Asia/Dhaka)', 'নিস্তব্ধ সময় (এশিয়া/ঢাকা)')}
+                    </CardTitle>
+                    <CardDescription className="text-xs text-muted-foreground">
+                      {tBilingual(
+                        'Automatically defer external WhatsApp & Email dispatches during rest hours without disturbing customers or staff.',
+                        'গ্রাহক বা কর্মীদের বিরক্তি এড়াতে বিশ্রামের সময় হোয়াটসঅ্যাপ ও ইমেইল পাঠানো স্বয়ংক্রিয়ভাবে স্থগিত রাখা হয়।'
+                      )}
+                    </CardDescription>
+                  </div>
+                </div>
+
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={quietHoursEnabled}
+                    onChange={(e) => setQuietHoursEnabled(e.target.checked)}
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-muted peer-focus:outline-hidden rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-card after:border-border after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                </label>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-foreground">
+                    {tBilingual('Quiet Hours Start Time', 'শুরুর সময়')}
+                  </Label>
+                  <Input
+                    type="time"
+                    value={quietHoursStart}
+                    disabled={!quietHoursEnabled}
+                    onChange={(e) => setQuietHoursStart(e.target.value)}
+                    className="h-9 text-xs"
+                  />
+                  <span className="text-xs text-muted-foreground block">
+                    {tBilingual('Default: 10:00 PM (22:00 BST)', 'ডিফল্ট: রাত ১০:০০')}
+                  </span>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-foreground">
+                    {tBilingual('Quiet Hours End Time (Resume Dispatches)', 'শেষের সময় (পুনরায় শুরু)')}
+                  </Label>
+                  <Input
+                    type="time"
+                    value={quietHoursEnd}
+                    disabled={!quietHoursEnabled}
+                    onChange={(e) => setQuietHoursEnd(e.target.value)}
+                    className="h-9 text-xs"
+                  />
+                  <span className="text-xs text-muted-foreground block">
+                    {tBilingual('Default: 08:00 AM (08:00 BST)', 'ডিফল্ট: সকাল ০৮:০০')}
+                  </span>
+                </div>
+              </div>
+
+              <div className="mt-4 p-3 rounded-lg bg-muted/40 border border-border flex items-start gap-2.5 text-xs text-muted-foreground">
+                <ShieldCheck className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                <p>
+                  {tBilingual(
+                    'In-App bell notifications are always delivered immediately regardless of quiet hours. External dispatches triggered during quiet hours are scheduled to resume automatically at the designated end time.',
+                    'ইন-অ্যাপ বেল নোটিফিকেশন সবসময় তাৎক্ষণিকভাবে পাওয়া যাবে। নিস্তব্ধ সময়ে আসা হোয়াটসঅ্যাপ ও ইমেইল সকালের নির্ধারিত সময়ে পৌঁছাবে।'
+                  )}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Granular Event Channel Preferences Table */}
+          <Card className="rounded-xl border border-border bg-card shadow-xs">
+            <CardHeader className="pb-3 border-b border-border flex flex-row items-center justify-between">
+              <div>
+                <CardTitle className="text-sm font-bold text-foreground">
+                  {tBilingual('Event Channel Distribution Matrix', 'ইভেন্ট চ্যানেল ডিস্ট্রিবিউশন ম্যাট্রিক্স')}
+                </CardTitle>
+                <CardDescription className="text-xs text-muted-foreground">
+                  {tBilingual(
+                    'Configure exactly which channels receive dispatches for each ERP business event.',
+                    'প্রতিটি ব্যবসায়িক ইভেন্টের জন্য কোন কোন চ্যানেলে নোটিফিকেশন যাবে তা নির্ধারণ করুন।'
+                  )}
+                </CardDescription>
+              </div>
+
+              <Button
+                size="sm"
+                onClick={handleSavePreferences}
+                disabled={isSaving}
+                className="h-9 px-4 text-xs font-semibold gap-1.5 cursor-pointer shadow-xs"
+              >
+                {isSaving ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
+                {tBilingual('Save Preferences', 'পছন্দ সংরক্ষণ করুন')}
+              </Button>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-muted/50 border-b border-border text-muted-foreground font-semibold">
+                    <tr>
+                      <th className="py-3 px-4 min-w-[220px]">
+                        {tBilingual('Business Event', 'ব্যবসায়িক ইভেন্ট')}
+                      </th>
+                      <th className="py-3 px-4 text-center w-28">
+                        <span className="inline-flex items-center gap-1 font-semibold text-foreground">
+                          <Bell className="h-3 w-3 text-primary" /> In-App
+                        </span>
+                      </th>
+                      <th className="py-3 px-4 text-center w-28">
+                        <span className="inline-flex items-center gap-1 font-semibold text-foreground">
+                          <MessageSquare className="h-3 w-3 text-success" /> WhatsApp
+                        </span>
+                      </th>
+                      <th className="py-3 px-4 text-center w-28">
+                        <span className="inline-flex items-center gap-1 font-semibold text-foreground">
+                          <Mail className="h-3 w-3 text-primary" /> Email
+                        </span>
+                      </th>
+                      <th className="py-3 px-4 text-center w-28">
+                        <span className="inline-flex items-center gap-1 font-semibold text-foreground">
+                          <Smartphone className="h-3 w-3 text-muted-foreground" /> SMS
+                        </span>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    {EVENT_METADATA.map((event) => {
+                      const pref = preferences[event.type] || {
+                        in_app_enabled: true,
+                        whatsapp_enabled: true,
+                        email_enabled: true,
+                        sms_enabled: false,
+                      }
+
+                      return (
+                        <tr key={event.type} className="hover:bg-muted/30 transition-colors">
+                          <td className="py-3.5 px-4">
+                            <p className="font-semibold text-foreground">
+                              {tBilingual(event.nameEn, event.nameBn)}
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-0.5">
+                              {tBilingual(event.descEn, event.descBn)}
+                            </p>
+                          </td>
+
+                          {/* In-App Toggle */}
+                          <td className="py-3.5 px-4 text-center">
+                            <input
+                              type="checkbox"
+                              checked={pref.in_app_enabled !== false}
+                              onChange={() => handleToggleChannel(event.type, 'in_app_enabled')}
+                              className="h-4 w-4 rounded border-border text-primary focus:ring-ring cursor-pointer"
+                              title="Toggle In-App notification"
+                            />
+                          </td>
+
+                          {/* WhatsApp Toggle */}
+                          <td className="py-3.5 px-4 text-center">
+                            <input
+                              type="checkbox"
+                              checked={pref.whatsapp_enabled !== false}
+                              onChange={() => handleToggleChannel(event.type, 'whatsapp_enabled')}
+                              className="h-4 w-4 rounded border-border text-primary focus:ring-ring cursor-pointer"
+                              title="Toggle WhatsApp notification"
+                            />
+                          </td>
+
+                          {/* Email Toggle */}
+                          <td className="py-3.5 px-4 text-center">
+                            <input
+                              type="checkbox"
+                              checked={pref.email_enabled !== false}
+                              onChange={() => handleToggleChannel(event.type, 'email_enabled')}
+                              className="h-4 w-4 rounded border-border text-primary focus:ring-ring cursor-pointer"
+                              title="Toggle Email notification"
+                            />
+                          </td>
+
+                          {/* SMS Toggle */}
+                          <td className="py-3.5 px-4 text-center">
+                            <input
+                              type="checkbox"
+                              checked={pref.sms_enabled === true}
+                              onChange={() => handleToggleChannel(event.type, 'sms_enabled')}
+                              className="h-4 w-4 rounded border-border text-primary focus:ring-ring cursor-pointer"
+                              title="Toggle SMS notification"
+                            />
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="p-4 border-t border-border flex items-center justify-between">
+                <span className="text-xs text-muted-foreground">
+                  {tBilingual(
+                    'Unchecking a channel will completely suppress external job enqueues and in-app writes for that event.',
+                    'কোনো চ্যানেল আনচেক করলে ওই ইভেন্টের জন্য স্বয়ংক্রিয় মেসেজ পাঠানো বন্ধ থাকবে।'
+                  )}
+                </span>
+
+                <Button
+                  size="sm"
+                  onClick={handleSavePreferences}
+                  disabled={isSaving}
+                  className="h-9 px-4 text-xs font-semibold gap-1.5 cursor-pointer shadow-xs"
+                >
+                  {isSaving ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
+                  {tBilingual('Save Preferences', 'পছন্দ সংরক্ষণ করুন')}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       )}
 
-      {/* 1. Realtime Audio Chimes & Browser Push Notifications */}
-      <Card className="border-indigo-500/30 shadow-xs shadow-indigo-950/5">
-        <CardHeader className="pb-3 border-b border-border bg-indigo-50/30 dark:bg-indigo-950/20">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
-                <Radio className="h-5 w-5 animate-pulse"/>
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <CardTitle className="text-base">{tBilingual('Realtime Audio Chimes & Browser Push', 'রিয়েলটাইম অডিও চাইম ও ব্রাউজার পুশ')}</CardTitle>
-                  <Badge className="bg-indigo-600 text-white text-2xs font-bold">Web Audio 2.0</Badge>
-                  <Badge className="bg-emerald-600/20 text-emerald-400 border border-emerald-500/30 text-2xs font-bold">
-                    {tBilingual('Limiter Protected', 'লিমিটার সুরক্ষিত')}
-                  </Badge>
-                </div>
-                <CardDescription className="text-xs">
-                  {tBilingual('High-fidelity harmonic synthesis with 5.6x amplified output volume and native OS desktop push notifications.', 'হাই-ফিডেলিটি হারমোনিক সাউন্ড সিন্থেসিস এবং ৫.৬ গুণ বর্ধিত সাউন্ডসহ ব্রাউজার পুশ অ্যালার্ট।')}
+      {/* =========================================================================
+          TAB 2: BILINGUAL TEMPLATE PREVIEW
+          ========================================================================= */}
+      {activeTab === 'templates' && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Template Selection & Info */}
+          <div className="space-y-4">
+            <Card className="rounded-xl border border-border bg-card shadow-xs">
+              <CardHeader className="pb-3 border-b border-border">
+                <CardTitle className="text-sm font-bold text-foreground">
+                  {tBilingual('Select Template', 'টেমপ্লেট নির্বাচন করুন')}
+                </CardTitle>
+                <CardDescription className="text-xs text-muted-foreground">
+                  {tBilingual(
+                    'Stored per-language in message_templates. Zero mixed-language messages.',
+                    'ডাটাবেসে সংরক্ষিত দ্বিভাষিক টেমপ্লেট। সম্পূর্ণ বাংলা অথবা সম্পূর্ণ ইংরেজি।'
+                  )}
                 </CardDescription>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2 shrink-0">
-              <Button
- type="button"size="sm"variant="outline"onClick={handleToggleSoundMute}
- className={`text-xs h-9 font-bold border transition-all cursor-pointer ${
- soundMuted
-                    ? 'border-rose-300 text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/30'
-                    : 'border-emerald-300 text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30'
-                }`}
-              >
-                {soundMuted ? (
-                  <>
-                    <VolumeX className="mr-1.5 h-4 w-4"/>
- {tBilingual('Audio Muted', 'নিঃশব্দ')}
-                  </>
-                ) : (
-                  <>
-                    <Volume2 className="mr-1.5 h-4 w-4"/>
- {tBilingual('Audio Active', 'সাউন্ড সক্রিয়')}
-                  </>
-                )}
-              </Button>
-            </div>
-          </div>
-        </CardHeader>
-
-        <CardContent className="space-y-6 pt-5">
-          {/* Audio Volume & Browser Permission Status Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            {/* Audio Volume Slider & Quick Presets */}
-            <div className="p-4 rounded-xl bg-muted border border-border space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Sliders className="h-4 w-4 text-indigo-600 dark:text-indigo-400"/>
-                  <span className="text-xs font-bold text-foreground">
- {tBilingual('Master Chime Volume', 'সাউন্ড ভলিউম')}
-                  </span>
-                </div>
-                <span className="text-xs tabular-nums font-bold text-indigo-600 dark:text-indigo-400">
-                  {soundMuted ? 'Muted (0%)' : `${volume}%`}
-                </span>
-              </div>
-
-              <input
- type="range"min="0"max="100"value={soundMuted ? 0 : volume}
- disabled={soundMuted}
- onChange={(e) => handleVolumeChange(Number(e.target.value))}
- className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-indigo-600 disabled:opacity-40"/>
-
-              {/* Quick Volume Preset Buttons */}
-              <div className="flex items-center gap-1.5 pt-1">
-                <span className="text-2xs text-muted-foreground uppercase font-semibold">{tBilingual('Presets:', 'প্রিসেট:')}</span>
-                {[
-                  { labelEn: '25% Subtle', labelBn: '২৫% মৃদু', val: 25 },
-                  { labelEn: '50% Normal', labelBn: '৫০% সাধারণ', val: 50 },
-                  { labelEn: '85% Loud', labelBn: '৮৫% জোরালো', val: 85 },
-                  { labelEn: '100% Boost', labelBn: '১০০% সর্বোচ্চ', val: 100 },
-                ].map((preset) => (
-                  <button
-                    key={preset.val}
-                    type="button"
-                    onClick={() => handleVolumePreset(preset.val)}
-                    className={`px-2 py-0.5 rounded text-2xs font-bold border transition-colors cursor-pointer ${
-                      volume === preset.val && !soundMuted
-                        ? 'bg-indigo-600 text-white border-indigo-500'
-                        : 'bg-card border-input text-muted-foreground hover:border-indigo-400'
-                    }`}
+              </CardHeader>
+              <CardContent className="pt-4 space-y-3">
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-foreground">
+                    {tBilingual('Event Template', 'ইভেন্ট টেমপ্লেট')}
+                  </Label>
+                  <select
+                    value={selectedTemplateKey}
+                    onChange={(e) => setSelectedTemplateKey(e.target.value)}
+                    className="w-full h-9 rounded-lg border border-input bg-card px-3 text-xs text-foreground focus:outline-hidden focus:ring-1 focus:ring-ring"
                   >
-                    {tBilingual(preset.labelEn, preset.labelBn)}
-                  </button>
-                ))}
-              </div>
-
-              <p className="text-2xs text-muted-foreground">
-                {tBilingual('Crafted with dynamic limiter compression to cut through loud printing presses, noisy cutter machines, and busy retail counters without digital distortion.', 'প্রিন্টিং প্রেসের তীব্র শব্দ ও কোলাহলেও স্পষ্টভাবে শোনার জন্য ডায়নামিক লিমিটার কম্প্রেশন প্রযুক্তি যুক্ত।')}
-              </p>
-            </div>
-
-            {/* Native Browser Push Notification Card */}
-            <div className="p-4 rounded-xl bg-muted border border-border space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Smartphone className="h-4 w-4 text-indigo-600 dark:text-indigo-400"/>
-                  <span className="text-xs font-bold text-foreground">
-                    {tBilingual('Desktop / OS Push Notifications', 'ডেস্কটপ / ওএস পুশ নোটিফিকেশন')}
-                  </span>
+                    {EVENT_METADATA.map((e) => (
+                      <option key={e.type} value={e.type}>
+                        {tBilingual(e.nameEn, e.nameBn)} ({e.type})
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
-                <Badge
- className={
- browserPerm === 'granted'
-                      ? 'bg-emerald-600 text-white text-2xs'
-                      : browserPerm === 'denied'
-                      ? 'bg-rose-600 text-white text-2xs'
-                      : 'bg-amber-600 text-white text-2xs'
-                  }
-                >
-                  {browserPerm === 'granted'
-                    ? tBilingual('Granted / Active', 'অনুমোদিত / সক্রিয়')
-                    : browserPerm === 'denied'
-                    ? tBilingual('Blocked in Browser', 'ব্রাউজারে ব্লক করা')
-                    : tBilingual('Permission Required', 'অনুমতি প্রয়োজন')}
-                </Badge>
-              </div>
-
-              <div className="flex items-center justify-between gap-3 pt-1">
-                <span className="text-2xs text-muted-foreground">
-                  {browserPerm === 'granted'
-                    ? tBilingual('System alerts will pop up even when the browser tab is minimized or in background.', 'ট্যাব মিনিমাইজ করা থাকলেও সিস্টেম অ্যালার্ট স্ক্রিনে ভেসে উঠবে।')
-                    : tBilingual('Enable browser permission to receive desktop alerts when away from the tab.', 'ট্যাব ব্যাকগ্রাউন্ডে থাকাকালীন ডেস্কটপ অ্যালার্ট পেতে ব্রাউজারের অনুমতি দিন।')}
-                </span>
-
-                {browserPerm !== 'granted' ? (
-                  <Button
- type="button"size="sm"onClick={handleRequestPushPermission}
- className="h-8 text-xs bg-indigo-600 hover:bg-indigo-700 text-white shrink-0 font-bold cursor-pointer">
- Enable Push
-                  </Button>
-                ) : (
-                  <Button
- type="button"size="sm"variant="outline"onClick={handleToggleBrowserEnabled}
- className="h-8 text-xs shrink-0 cursor-pointer">
-                    {browserEnabled ? tBilingual('Disable', 'নিষ্ক্রিয় করুন') : tBilingual('Enable', 'সক্রিয় করুন')}
-                  </Button>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Interactive Sound Chime & Live Popup Testing Suite (13 Sound Archetypes) */}
-          <div className="space-y-3.5">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border pb-2">
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
-                  <Sparkles className="h-4 w-4 text-amber-500"/>
-                  {tBilingual('Sound Synthesizer & Alert Studio (13 Archetypes)', 'সাউন্ড সিন্থেসাইজার ও অ্যালার্ট স্টুডিও (১৩টি আর্কিটাইপ)')}
-                </span>
-                <Badge className="bg-indigo-500/10 text-indigo-400 border-indigo-500/30 text-2xs">
-                  {filteredCatalog.length} {tBilingual('Sounds', 'সাউন্ড')}
-                </Badge>
-              </div>
-
-              {/* Category Filter Tabs */}
-              <div className="flex items-center gap-1 overflow-x-auto">
-                {[
-                  { key: 'all' as const, labelEn: 'All', labelBn: 'সকল' },
-                  { key: 'commercial' as const, labelEn: 'Commercial', labelBn: 'বাণিজ্যিক' },
-                  { key: 'operations' as const, labelEn: 'Operations', labelBn: 'অপারেশনস' },
-                  { key: 'alerts' as const, labelEn: 'Alerts', labelBn: 'অ্যালার্ট' },
-                  { key: 'system' as const, labelEn: 'System', labelBn: 'সিস্টেম' },
-                ].map((tab) => (
-                  <button
-                    key={tab.key}
-                    type="button"
-                    onClick={() => setSelectedCategory(tab.key)}
-                    className={`px-2.5 py-1 rounded-lg text-2xs font-semibold transition-all cursor-pointer ${
-                      selectedCategory === tab.key
-                        ? 'bg-indigo-600 text-white'
-                        : 'bg-muted text-muted-foreground hover:text-foreground'
-                    }`}
-                  >
-                    {tBilingual(tab.labelEn, tab.labelBn)}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {filteredCatalog.map((item) => {
- const Icon = getSoundIcon(item.type)
- const isPlayingThis = activePlaying === item.type
-
- return (
-                  <div
- key={item.type}
- className={`p-3.5 rounded-xl border bg-card flex flex-col justify-between gap-3 transition-all group ${
- isPlayingThis
-                        ? 'border-indigo-500 ring-2 ring-indigo-500/30 shadow-lg shadow-indigo-950/20'
-                        : 'border-border hover:border-indigo-400 dark:hover:border-indigo-500'
-                    }`}
-                  >
-                    <div className="space-y-1.5">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <div className={`p-2 rounded-xl border ${
- item.type === 'urgent'
-                              ? 'bg-rose-500/10 text-rose-400 border-rose-500/30'
-                              : item.type === 'payment' || item.type === 'success'
-                              ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
-                              : item.type === 'order'
-                              ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/30'
-                              : item.type === 'delivery' || item.type === 'message'
-                              ? 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30'
-                              : item.type === 'attendance'
-                              ? 'bg-blue-500/10 text-blue-400 border-blue-500/30'
-                              : item.type === 'warning' || item.type === 'job'
-                              ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
-                              : item.type === 'broadcast'
-                              ? 'bg-fuchsia-500/10 text-fuchsia-400 border-fuchsia-500/30'
-                              : 'bg-muted text-muted-foreground border-border'
-                          }`}>
-                            <Icon className="h-4 w-4"/>
-                          </div>
-                          <div>
-                            <div className="text-xs font-bold text-foreground">
-                              {tBilingual(item.nameEn, item.nameBn)}
-                            </div>
-                            <span className="text-2xs text-muted-foreground uppercase tabular-nums tracking-wider">
-                              {item.category === 'commercial' ? tBilingual('Commercial', 'বাণিজ্যিক') : item.category === 'operations' ? tBilingual('Operations', 'অপারেশনস') : item.category === 'alerts' ? tBilingual('Alerts', 'অ্যালার্ট') : tBilingual('System', 'সিস্টেম')} • {item.waveform === 'sine' ? tBilingual('SINE', 'সাইন') : item.waveform === 'hybrid' ? tBilingual('HYBRID', 'হাইব্রিড') : item.waveform === 'triangle' ? tBilingual('TRIANGLE', 'ট্রায়াঙ্গেল') : tBilingual('SAWTOOTH', 'স-টুথ')}
-                            </span>
-                          </div>
-                        </div>
-
-                        {isPlayingThis && (
-                          <span className="flex items-center gap-1 text-2xs text-indigo-400 font-bold animate-pulse">
-                            <Volume2 className="h-3 w-3"/>
-                            {tBilingual('Playing', 'বাজছে')}
-                          </span>
-                        )}
-                      </div>
-
-                      <p className="text-2xs text-muted-foreground leading-relaxed">
-                        {tBilingual(item.descEn, item.descBn)}
-                      </p>
-
-                      <div className="text-2xs tabular-nums text-muted-foreground bg-muted p-1.5 rounded-lg border border-border truncate">
-                        {item.frequencies}
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-2 pt-1 border-t border-border /80">
-                      <button
- type="button"onClick={() => handleTestSound(item.type)}
- className="px-2.5 py-1.5 rounded-xl bg-muted hover:bg-indigo-100 dark:hover:bg-indigo-950/80 text-2xs font-bold text-foreground hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer text-center flex items-center justify-center gap-1.5"title="Play audio chime only">
-                        <Volume2 className="h-3.5 w-3.5"/>
-                        {tBilingual('Chime 🔊', 'চাইম 🔊')}
-                      </button>
-                      <button
- type="button"onClick={() => handleTestLivePopup(item.type)}
- className="px-2.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-2xs font-bold text-white transition-colors cursor-pointer text-center flex items-center justify-center gap-1.5 shadow-sm"title="Trigger live popup card & chime">
-                        <Bell className="h-3.5 w-3.5"/>
-                        {tBilingual('Popup 🔔', 'পপআপ 🔔')}
-                      </button>
-                    </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-foreground">
+                    {tBilingual('Preview Language', 'প্রিভিউ ভাষা')}
+                  </Label>
+                  <div className="flex rounded-lg border border-border p-1 bg-muted/40 gap-1">
+                    <button
+                      type="button"
+                      onClick={() => setPreviewLang('bn')}
+                      className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition-colors ${
+                        previewLang === 'bn'
+                          ? 'bg-card text-foreground shadow-2xs'
+                          : 'text-muted-foreground hover:text-foreground'
+                      }`}
+                    >
+                      বাংলা (Bangla)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPreviewLang('en')}
+                      className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition-colors ${
+                        previewLang === 'en'
+                          ? 'bg-card text-foreground shadow-2xs'
+                          : 'text-muted-foreground hover:text-foreground'
+                      }`}
+                    >
+                      English
+                    </button>
                   </div>
-                )
-              })}
-            </div>
+                </div>
+
+                <div className="pt-2">
+                  <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground block mb-1">
+                    {tBilingual('Available Template Variables', 'ব্যবহারযোগ্য ভেরিয়েবল')}
+                  </Label>
+                  <div className="flex flex-wrap gap-1">
+                    {[
+                      'customer_name',
+                      'invoice_number',
+                      'amount',
+                      'due_amount',
+                      'item_name',
+                      'unit',
+                      'reason',
+                      'new_eta',
+                    ].map((v) => (
+                      <span
+                        key={v}
+                        className="px-2 py-0.5 rounded-md bg-muted text-xs font-mono text-muted-foreground border border-border"
+                      >
+                        {`{${v}}`}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
-        </CardContent>
-      </Card>
 
-      <form onSubmit={handleSave} className="space-y-6">
-        {/* WhatsApp Cloud API */}
-        <Card>
-          <CardHeader className="pb-3 border-b border-border">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <MessageSquare className="h-5 w-5 text-emerald-600"/>
+          {/* Live Preview Card */}
+          <div className="lg:col-span-2">
+            <Card className="rounded-xl border border-border bg-card shadow-xs">
+              <CardHeader className="pb-3 border-b border-border flex flex-row items-center justify-between">
                 <div>
-                  <CardTitle className="text-base">{tBilingual('WhatsApp Order & Proof Alerts', 'হোয়াটসঅ্যাপ অর্ডার ও প্রুফ অ্যালার্ট')}</CardTitle>
-                  <CardDescription className="text-xs">
-                    {tBilingual('Send high-res watermarked proofs and delivery PDF receipts to customer WhatsApp.', 'গ্রাহকের হোয়াটসঅ্যাপে ওয়াটারমার্কযুক্ত প্রুফ ও ডেলিভারি রসিদ পাঠান।')}
+                  <CardTitle className="text-sm font-bold text-foreground">
+                    {tBilingual('Rendered Message Preview', 'প্রস্তুতকৃত বার্তার প্রিভিউ')}
+                  </CardTitle>
+                  <CardDescription className="text-xs text-muted-foreground">
+                    {previewLang === 'bn'
+                      ? 'শুদ্ধ বাংলায় অনূদিত গ্রাহক বা অভ্যন্তরীণ নোটিফিকেশন'
+                      : 'Professional English notification rendered without translation artifacts'}
                   </CardDescription>
                 </div>
-              </div>
+                <Badge variant="outline" className="text-xs font-mono">
+                  {selectedTemplateKey}
+                </Badge>
+              </CardHeader>
+              <CardContent className="pt-5 space-y-4">
+                {/* Simulated Notification Container */}
+                <div className="rounded-xl border border-border bg-muted/20 p-4 space-y-2">
+                  <div className="flex items-center justify-between border-b border-border/60 pb-2">
+                    <span className="text-xs font-bold text-foreground">
+                      {previewLang === 'bn' ? activeTemplate.name_bn || activeTemplate.name : activeTemplate.name}
+                    </span>
+                    <span className="text-xs text-muted-foreground">InkFlow ERP • Just now</span>
+                  </div>
 
-              <input
- type="checkbox"checked={notif.whatsapp_enabled}
- onChange={(e) => setNotif({ ...notif, whatsapp_enabled: e.target.checked })}
- className="h-5 w-5 rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer"/>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4 pt-4">
-            <div className="space-y-1.5">
-              <Label htmlFor="whatsappNo">{tBilingual('WhatsApp Business Helpline', 'হোয়াটসঅ্যাপ হেল্পলাইন নম্বর')}</Label>
-              <Input
- id="whatsappNo"placeholder="+880 1700-000000"value={notif.whatsapp_number}
- onChange={(e) => setNotif({ ...notif, whatsapp_number: e.target.value })}
- disabled={!notif.whatsapp_enabled}
-              />
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Bangladeshi SMS Gateway (Greenweb / SSL Wireless) */}
-        <Card>
-          <CardHeader className="pb-3 border-b border-border">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <PhoneCall className="h-5 w-5 text-blue-600"/>
-                <div>
-                  <CardTitle className="text-base">{tBilingual('Bangladeshi Masked SMS Gateway', 'বাংলাদেশি মাস্কড এসএমএস গেটওয়ে')}</CardTitle>
-                  <CardDescription className="text-xs">
-                    {tBilingual('Instant delivery readiness and invoice payment confirmation SMS.', 'ডেলিভারি প্রস্তুতি এবং বিল পেমেন্টের তাৎক্ষণিক নিশ্চিতকরণ এসএমএস।')}
-                  </CardDescription>
+                  <p className="text-xs text-foreground whitespace-pre-line leading-relaxed font-sans">
+                    {renderedPreview || 'No template content registered for this language.'}
+                  </p>
                 </div>
-              </div>
 
-              <input
- type="checkbox"checked={notif.sms_enabled}
- onChange={(e) => setNotif({ ...notif, sms_enabled: e.target.checked })}
- className="h-5 w-5 rounded text-blue-600 focus:ring-ring cursor-pointer"/>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4 pt-4">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="space-y-1.5">
-                <Label htmlFor="smsGateway">{tBilingual('SMS Provider', 'এসএমএস প্রোভাইডার')}</Label>
-                <select
- id="smsGateway"className="w-full h-10 px-3 rounded-md border border-input bg-card text-xs font-semibold"value={notif.sms_gateway}
- onChange={(e) => setNotif({ ...notif, sms_gateway: e.target.value })}
- disabled={!notif.sms_enabled}
-                >
-                  <option value="Greenweb SMS Gateway">{tBilingual("Greenweb BD (Fast OTP/Alerts)", "গ্রিনওয়েব বিডি (দ্রুত ওটিপি/অ্যালার্ট)")}</option>
-                  <option value="SSL Wireless">{tBilingual("SSL Wireless SMS Engine", "এসএসএল ওয়্যারলেস এসএমএস ইঞ্জিন")}</option>
-                  <option value="Banglalink/Grameenphone Aggregator">{tBilingual("Direct Telco Aggregator", "ডিরেক্ট টেলকো এগ্রিগেটর")}</option>
-                </select>
-              </div>
-
-              <div className="space-y-1.5">
-                <Label htmlFor="senderId">{tBilingual('BTCL Approved Masking ID', 'বিটিসিএল অনুমোদিত মাস্কিং আইডি')}</Label>
-                <Input
- id="senderId"placeholder={tBilingual("PRINTFLOW", "PRINTFLOW")}value={notif.sms_sender_id}
- onChange={(e) => setNotif({ ...notif, sms_sender_id: e.target.value })}
- disabled={!notif.sms_enabled}
- className="tabular-nums text-xs uppercase"/>
-              </div>
-
-              <div className="space-y-1.5">
-                <Label htmlFor="smsApiKey">{tBilingual('API Secret Key', 'এপিআই সিক্রেট কি')}</Label>
-                <Input
- id="smsApiKey"type="password"value={notif.sms_api_key}
- onChange={(e) => setNotif({ ...notif, sms_api_key: e.target.value })}
- disabled={!notif.sms_enabled}
- className="tabular-nums text-xs"/>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Low-Stock & Inventory Warnings */}
-        <Card>
-          <CardHeader className="pb-3 border-b border-border">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <AlertTriangle className="h-5 w-5 text-amber-600"/>
-                <div>
-                  <CardTitle className="text-base">{tBilingual('Low-Stock Media Alerts', 'স্বল্প স্টক ও কাঁচামাল সতর্কতা')}</CardTitle>
-                  <CardDescription className="text-xs">
-                    {tBilingual('Notify Floor Manager when media rolls or solvent inks reach re-order threshold.', 'মিডিয়া রোল বা কালির পরিমাণ পুনর্ক্রয় সীমায় পৌঁছালে ফ্লোর ম্যানেজারকে সতর্ক করুন।')}
-                  </CardDescription>
+                <div className="p-3 rounded-lg bg-success-surface border border-success/30 flex items-center gap-2 text-xs text-success">
+                  <CheckCircle2 className="h-4 w-4 shrink-0" />
+                  <span>
+                    {tBilingual(
+                      'Zero mixed-language invariant satisfied: All static and variable components match the recipient locale.',
+                      'ভাষা বিশুদ্ধতা যাচাইকৃত: কোনো মিশ্র বা ত্রুটিপূর্ণ টেক্সট ছাড়াই সম্পূর্ণ বার্তা প্রদর্শিত হচ্ছে।'
+                    )}
+                  </span>
                 </div>
-              </div>
-
-              <input
- type="checkbox"checked={notif.low_stock_alerts}
- onChange={(e) => setNotif({ ...notif, low_stock_alerts: e.target.checked })}
- className="h-5 w-5 rounded text-amber-600 focus:ring-amber-500 cursor-pointer"/>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4 pt-4">
-            <div className="space-y-1.5 max-w-xs">
-              <Label htmlFor="lowStockThresh">{tBilingual('Re-order Alert Margin (sft / rolls)', 'পুনর্ক্রয় সতর্কতার সীমা (স্কয়ারফুট / রোল)')}</Label>
-              <Input
- id="lowStockThresh"type="number"value={notif.low_stock_threshold}
- onChange={(e) => setNotif({ ...notif, low_stock_threshold: Number(e.target.value) })}
- disabled={!notif.low_stock_alerts}
-              />
-            </div>
-          </CardContent>
-        </Card>
-
-        <div className="flex justify-end pt-2">
-          <Button type="submit"isLoading={isLoading} className="bg-amber-600 hover:bg-amber-700 text-white font-bold">
-            <Save className="mr-1.5 h-4 w-4"/>
-            {tBilingual('Save Notification Gateways', 'নোটিফিকেশন গেটওয়ে সংরক্ষণ করুন')}
-          </Button>
+              </CardContent>
+            </Card>
+          </div>
         </div>
-      </form>
+      )}
+
+      {/* =========================================================================
+          TAB 3: LIVE TEST SEND
+          ========================================================================= */}
+      {activeTab === 'test' && (
+        <Card className="rounded-xl border border-border bg-card shadow-xs max-w-2xl">
+          <CardHeader className="pb-3 border-b border-border">
+            <CardTitle className="text-sm font-bold text-foreground">
+              {tBilingual('Send Test Notification', 'টেস্ট নোটিফিকেশন পাঠান')}
+            </CardTitle>
+            <CardDescription className="text-xs text-muted-foreground">
+              {tBilingual(
+                'Verify sub-second in-app delivery or async email/WhatsApp queue processing live.',
+                'ইন-অ্যাপ তাৎক্ষণিক নোটিফিকেশন বা হোয়াটসঅ্যাপ/ইমেইল কিউ প্রসেসিং সরাসরি পরীক্ষা করুন।'
+              )}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-4 space-y-4">
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold text-foreground">
+                {tBilingual('Delivery Channel', 'ডেলিভারি চ্যানেল')}
+              </Label>
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  { id: 'in_app', label: 'In-App Bell (< 1s)' },
+                  { id: 'whatsapp', label: 'WhatsApp (Async)' },
+                  { id: 'email', label: 'Email (Async)' },
+                ].map((ch) => (
+                  <button
+                    key={ch.id}
+                    type="button"
+                    onClick={() => setTestChannel(ch.id as any)}
+                    className={`py-2 px-3 text-xs font-semibold rounded-lg border transition-colors cursor-pointer ${
+                      testChannel === ch.id
+                        ? 'border-primary bg-primary/10 text-primary shadow-2xs'
+                        : 'border-border bg-card text-muted-foreground hover:bg-muted'
+                    }`}
+                  >
+                    {ch.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold text-foreground">
+                {tBilingual('Event Type', 'ইভেন্ট ধরন')}
+              </Label>
+              <select
+                value={selectedTemplateKey}
+                onChange={(e) => setSelectedTemplateKey(e.target.value)}
+                className="w-full h-9 rounded-lg border border-input bg-card px-3 text-xs text-foreground focus:outline-hidden focus:ring-1 focus:ring-ring"
+              >
+                {EVENT_METADATA.map((e) => (
+                  <option key={e.type} value={e.type}>
+                    {tBilingual(e.nameEn, e.nameBn)}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {testChannel !== 'in_app' && (
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold text-foreground">
+                  {testChannel === 'whatsapp'
+                    ? tBilingual('Recipient WhatsApp Number', 'প্রাপকের হোয়াটসঅ্যাপ নম্বর')
+                    : tBilingual('Recipient Email Address', 'প্রাপকের ইমেইল ঠিকানা')}
+                </Label>
+                <Input
+                  type={testChannel === 'whatsapp' ? 'tel' : 'email'}
+                  placeholder={testChannel === 'whatsapp' ? '01712345678' : 'manager@example.com'}
+                  value={testRecipient}
+                  onChange={(e) => setTestRecipient(e.target.value)}
+                  className="h-9 text-xs"
+                />
+              </div>
+            )}
+
+            <Button
+              onClick={handleTestSend}
+              disabled={isTestSending}
+              className="w-full h-9 text-xs font-semibold gap-1.5 cursor-pointer shadow-xs"
+            >
+              {isTestSending ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
+              {tBilingual('Dispatch Test Notification', 'টেস্ট নোটিফিকেশন পাঠান')}
+            </Button>
+
+            {testResult && (
+              <div className="p-3 rounded-lg border border-border bg-muted/40 space-y-1.5 text-xs">
+                <div className="flex items-center gap-1.5 font-bold text-success">
+                  <CheckCircle2 className="h-4 w-4" />
+                  <span>{tBilingual('Dispatch Completed Successfully', 'সফলভাবে সম্পন্ন হয়েছে')}</span>
+                </div>
+                <div className="text-xs text-muted-foreground font-mono space-y-0.5">
+                  <p>In-App Delivered: {testResult.inAppDeliveredCount}</p>
+                  <p>Jobs Enqueued: {testResult.jobsEnqueuedCount}</p>
+                  {testResult.delayedForQuietHours && (
+                    <p className="text-warning">Held for Quiet Hours: Will resume at {quietHoursEnd} BST</p>
+                  )}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

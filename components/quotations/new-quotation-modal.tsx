@@ -248,20 +248,20 @@ function CatalogItemCombobox({
  onClick={() => handleSelect({ id: '', type: 'custom' })}
  className={cn("p-2.5 cursor-pointer font-semibold flex items-center justify-between transition-colors",
  highlightedIndex === 0
-                ?"bg-blue-100/90 dark:bg-blue-950/70 border-l-4 border-blue-600 text-blue-900 dark:text-blue-100": !selectedProductId
-                ?"bg-blue-50/80 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300":"hover:bg-muted text-muted-foreground")}
+                ?"bg-primary/10/90 bg-primary/10 border-l-4 border-border text-primary text-primary": !selectedProductId
+                ?"bg-primary/10/80 text-primary bg-primary/10 text-primary":"hover:bg-muted text-muted-foreground")}
           >
             <span>✨ -- Custom Item (Manual Specification) --</span>
             <div className="flex items-center gap-1.5">
-              {highlightedIndex === 0 && <span className="text-2xs font-semibold text-blue-600 dark:text-blue-400">↵ Enter</span>}
-              {!selectedProductId && <CheckCircle2 className="h-3.5 w-3.5 text-blue-600"/>}
+              {highlightedIndex === 0 && <span className="text-xs font-semibold text-primary text-primary">↵ Enter</span>}
+              {!selectedProductId && <CheckCircle2 className="h-3.5 w-3.5 text-primary"/>}
             </div>
           </div>
 
           {/* Digital Printing Services */}
           {digitalServices.length > 0 && (
             <div>
-              <div className="px-2.5 py-1 text-2xs font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-950/30 uppercase tracking-wider flex items-center gap-1">
+              <div className="px-2.5 py-1 text-xs font-bold text-primary text-primary bg-primary/10/50 bg-primary/10 uppercase tracking-wider flex items-center gap-1">
                 <span>🎨 Digital & Large Format Print ({digitalServices.length})</span>
               </div>
               {digitalServices.map((p) => {
@@ -272,18 +272,18 @@ function CatalogItemCombobox({
  onClick={() => handleSelect({ id: p.id, type: 'product', product: p })}
  className={cn("p-2.5 cursor-pointer flex items-center justify-between gap-2 transition-colors",
  isSelected
-                        ?"bg-blue-50 font-bold text-blue-700 dark:bg-blue-950/50 dark:text-blue-300":"hover:bg-blue-50/70 dark:hover:bg-blue-950/40")}
+                        ?"bg-primary/10 font-bold text-primary bg-primary/10 text-primary":"hover:bg-primary/10/70 dark:hover:bg-primary/10")}
                   >
                     <div>
                       <div className="font-semibold text-foreground">{p.name}</div>
-                      <div className="text-2xs text-muted-foreground flex items-center gap-1.5 mt-0.5">
+                      <div className="text-xs text-muted-foreground flex items-center gap-1.5 mt-0.5">
                         {p.sku && <span className="tabular-nums bg-muted px-1 rounded">{p.sku}</span>}
                         <span>Unit: {p.unit || 'sft'}</span>
-                        {p.printable_material_name && <span className="text-indigo-600">• {p.printable_material_name}</span>}
+                        {p.printable_material_name && <span className="text-primary">• {p.printable_material_name}</span>}
                       </div>
                     </div>
                     <div className="flex items-center gap-1.5 shrink-0">
-                      <span className="tabular-nums font-bold text-indigo-600 dark:text-indigo-400">
+                      <span className="tabular-nums font-bold text-primary text-primary">
                         ৳{p.selling_price}
                       </span>
                     </div>
@@ -296,7 +296,7 @@ function CatalogItemCombobox({
           {/* 3D Signage & Fabrication Services */}
           {signageServices.length > 0 && (
             <div>
-              <div className="px-2.5 py-1 text-2xs font-bold text-amber-600 dark:text-amber-400 bg-amber-50/50 dark:bg-amber-950/30 uppercase tracking-wider flex items-center gap-1">
+              <div className="px-2.5 py-1 text-xs font-bold text-warning text-warning bg-warning-surface/50 bg-warning-surface uppercase tracking-wider flex items-center gap-1">
                 <span>💡 3D Signage & Fabrication ({signageServices.length})</span>
               </div>
               {signageServices.map((p) => {
@@ -307,17 +307,17 @@ function CatalogItemCombobox({
  onClick={() => handleSelect({ id: p.id, type: 'product', product: p })}
  className={cn("p-2.5 cursor-pointer flex items-center justify-between gap-2 transition-colors",
  isSelected
-                        ?"bg-amber-50 font-bold text-amber-700 dark:bg-amber-950/50 dark:text-amber-300":"hover:bg-amber-50/70 dark:hover:bg-amber-950/40")}
+                        ?"bg-warning-surface font-bold text-warning bg-warning-surface text-warning":"hover:bg-warning-surface/70 dark:hover:bg-warning-surface")}
                   >
                     <div>
                       <div className="font-semibold text-foreground">{p.name}</div>
-                      <div className="text-2xs text-muted-foreground flex items-center gap-1.5 mt-0.5">
+                      <div className="text-xs text-muted-foreground flex items-center gap-1.5 mt-0.5">
                         {p.sku && <span className="tabular-nums bg-muted px-1 rounded">{p.sku}</span>}
                         <span>Unit: {p.unit || 'sft'}</span>
                       </div>
                     </div>
                     <div className="flex items-center gap-1.5 shrink-0">
-                      <span className="tabular-nums font-bold text-amber-600 dark:text-amber-400">
+                      <span className="tabular-nums font-bold text-warning text-warning">
                         ৳{p.selling_price}
                       </span>
                     </div>
@@ -330,7 +330,7 @@ function CatalogItemCombobox({
           {/* Ready Products */}
           {readyProducts.length > 0 && (
             <div>
-              <div className="px-2.5 py-1 text-2xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50/50 dark:bg-emerald-950/30 uppercase tracking-wider flex items-center gap-1">
+              <div className="px-2.5 py-1 text-xs font-bold text-success text-success bg-success-surface/50 bg-success-surface uppercase tracking-wider flex items-center gap-1">
                 <span>📦 Ready Products & Merchandise ({readyProducts.length})</span>
               </div>
               {readyProducts.map((p) => {
@@ -341,17 +341,17 @@ function CatalogItemCombobox({
  onClick={() => handleSelect({ id: p.id, type: 'product', product: p })}
  className={cn("p-2.5 cursor-pointer flex items-center justify-between gap-2 transition-colors",
  isSelected
-                        ?"bg-emerald-50 font-bold text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300":"hover:bg-emerald-50/70 dark:hover:bg-emerald-950/40")}
+                        ?"bg-success-surface font-bold text-success bg-success-surface text-success":"hover:bg-success-surface/70 dark:hover:bg-success-surface")}
                   >
                     <div>
                       <div className="font-semibold text-foreground">{p.name}</div>
-                      <div className="text-2xs text-muted-foreground flex items-center gap-1.5 mt-0.5">
+                      <div className="text-xs text-muted-foreground flex items-center gap-1.5 mt-0.5">
                         {p.sku && <span className="tabular-nums bg-muted px-1 rounded">{p.sku}</span>}
                         <span>Unit: {p.unit || 'pcs'}</span>
                       </div>
                     </div>
                     <div className="flex items-center gap-1.5 shrink-0">
-                      <span className="tabular-nums font-bold text-emerald-600 dark:text-emerald-400">
+                      <span className="tabular-nums font-bold text-success text-success">
                         ৳{p.selling_price}
                       </span>
                     </div>
@@ -364,7 +364,7 @@ function CatalogItemCombobox({
           {/* Raw Materials */}
           {materials.length > 0 && (
             <div>
-              <div className="px-2.5 py-1 text-2xs font-bold text-purple-600 dark:text-purple-400 bg-purple-50/50 dark:bg-purple-950/30 uppercase tracking-wider flex items-center gap-1">
+              <div className="px-2.5 py-1 text-xs font-bold text-primary text-primary bg-primary/10/50 bg-primary/10 uppercase tracking-wider flex items-center gap-1">
                 <span>🧵 Raw Materials ({materials.length})</span>
               </div>
               {materials.map((p) => {
@@ -375,17 +375,17 @@ function CatalogItemCombobox({
  onClick={() => handleSelect({ id: p.id, type: 'product', product: p })}
  className={cn("p-2.5 cursor-pointer flex items-center justify-between gap-2 transition-colors",
  isSelected
-                        ?"bg-purple-50 font-bold text-purple-700 dark:bg-purple-950/50 dark:text-purple-300":"hover:bg-purple-50/70 dark:hover:bg-purple-950/40")}
+                        ?"bg-primary/10 font-bold text-primary bg-primary/10 text-primary":"hover:bg-primary/10/70 dark:hover:bg-primary/10")}
                   >
                     <div>
                       <div className="font-semibold text-foreground">{p.name}</div>
-                      <div className="text-2xs text-muted-foreground flex items-center gap-1.5 mt-0.5">
+                      <div className="text-xs text-muted-foreground flex items-center gap-1.5 mt-0.5">
                         {p.sku && <span className="tabular-nums bg-muted px-1 rounded">{p.sku}</span>}
                         <span>Unit: {p.unit || 'roll'}</span>
                       </div>
                     </div>
                     <div className="flex items-center gap-1.5 shrink-0">
-                      <span className="tabular-nums font-bold text-purple-600 dark:text-purple-400">
+                      <span className="tabular-nums font-bold text-primary text-primary">
                         ৳{p.selling_price}
                       </span>
                     </div>
@@ -443,7 +443,7 @@ function CustomerSuggestionsDropdown({
  className={cn(
               'p-2.5 cursor-pointer transition-colors flex items-center justify-between gap-2',
  isHighlighted
-                ? 'bg-blue-50 dark:bg-blue-950/70 border-l-4 border-blue-600 text-blue-900 dark:text-blue-100'
+                ? 'bg-primary/10 bg-primary/10 border-l-4 border-border text-primary text-primary'
                 : 'hover:bg-muted dark:hover:bg-muted/60 text-foreground '
             )}
           >
@@ -451,28 +451,28 @@ function CustomerSuggestionsDropdown({
               <div className="font-bold flex items-center gap-1.5 truncate">
                 <span>{cust.name}</span>
                 {cust.name_bn && (
-                  <span className="text-2xs font-normal text-muted-foreground">
+                  <span className="text-xs font-normal text-muted-foreground">
                     ({cust.name_bn})
                   </span>
                 )}
                 {cust.company_name && (
-                  <span className="text-2xs font-normal text-muted-foreground truncate">
+                  <span className="text-xs font-normal text-muted-foreground truncate">
                     • {cust.company_name}
                   </span>
                 )}
               </div>
-              <div className="text-2xs text-muted-foreground tabular-nums flex flex-wrap items-center gap-2 mt-0.5">
+              <div className="text-xs text-muted-foreground tabular-nums flex flex-wrap items-center gap-2 mt-0.5">
                 <span>📞 {cust.mobile}</span>
                 {cust.email && <span className="truncate">✉️ {cust.email}</span>}
               </div>
             </div>
 
             <div className="flex items-center gap-1.5 shrink-0">
-              <span className="text-2xs uppercase font-bold px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
+              <span className="text-xs uppercase font-bold px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
                 {cust.customer_type || cust.customer_category || 'Retail'}
               </span>
               {isHighlighted && (
-                <span className="text-2xs font-semibold text-blue-600 dark:text-blue-400">
+                <span className="text-xs font-semibold text-primary text-primary">
                   ↵ Enter
                 </span>
               )}
@@ -1703,7 +1703,7 @@ export function NewQuotationModal({
  onOpenChange={onOpenChange}
  size="5xl"title={
           <div className="flex items-center gap-2.5">
-            <div className="h-9 w-9 rounded-xl bg-blue-600 text-white flex items-center justify-center font-black shadow-sm">
+            <div className="h-9 w-9 rounded-xl bg-primary text-white flex items-center justify-center font-black shadow-sm">
               <FileSpreadsheet className="h-5 w-5"/>
             </div>
             <div>
@@ -1740,7 +1740,7 @@ export function NewQuotationModal({
               <Button
  type="button"onClick={handleCreateQuotation}
  disabled={isSubmitting || isSending}
- className="h-10 px-5 rounded-xl font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs flex items-center gap-2 cursor-pointer">
+ className="h-10 px-5 rounded-xl font-bold bg-success hover:bg-success text-white shadow-xs flex items-center gap-2 cursor-pointer">
                 {isSubmitting && submitActionType === 'create' ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-1.5 animate-spin"/>
@@ -1768,7 +1768,7 @@ export function NewQuotationModal({
               <div>
                 <div className="flex items-center justify-between flex-wrap gap-2 mb-3">
                   <div className="flex items-center gap-2">
-                    <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
+                    <div className="h-6 w-6 rounded-lg bg-primary/10 text-primary bg-primary/60 text-primary flex items-center justify-center font-bold text-xs">
                       1
                     </div>
                     <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
@@ -1779,13 +1779,13 @@ export function NewQuotationModal({
                   <div className="flex items-center gap-2">
                     {selectedCustomer && (
                       <div className="flex items-center gap-1.5 mr-1">
-                        <Badge variant="outline"className="bg-emerald-50 text-emerald-800 border-emerald-300 text-xs font-semibold">
-                          <UserCheck className="h-3 w-3 mr-1 text-emerald-600"/>
+                        <Badge variant="outline"className="bg-success-surface text-success border-success-border text-xs font-semibold">
+                          <UserCheck className="h-3 w-3 mr-1 text-success"/>
  Existing Customer
                         </Badge>
                         <Button
  type="button"variant="ghost"size="sm"onClick={handleClearCustomer}
- className="h-6 text-2xs text-muted-foreground hover:text-foreground cursor-pointer">
+ className="h-6 text-xs text-muted-foreground hover:text-foreground cursor-pointer">
  Change
                         </Button>
                       </div>
@@ -1805,7 +1805,7 @@ export function NewQuotationModal({
  className={cn(
                             'px-2.5 py-1 text-xs font-medium rounded-md transition-all cursor-pointer',
  customerType === tab.value
-                              ? 'bg-card text-blue-600 dark:text-blue-400 shadow-xs font-semibold'
+                              ? 'bg-card text-primary text-primary shadow-xs font-semibold'
                               : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
                           )}
                         >
@@ -1821,7 +1821,7 @@ export function NewQuotationModal({
                   {/* Customer Name with Search Dropdown */}
                   <div className="relative"ref={nameSearchRef}>
                     <Label htmlFor="custNameInput"className="text-xs font-semibold mb-1 block">
- Customer Name <span className="text-rose-500">*</span>
+ Customer Name <span className="text-destructive">*</span>
                     </Label>
                     <div className="relative">
                       <Input
@@ -1855,7 +1855,7 @@ export function NewQuotationModal({
                   {/* Mobile Phone with Search Dropdown */}
                   <div className="relative"ref={phoneSearchRef}>
                     <Label htmlFor="custPhoneInput"className="text-xs font-semibold mb-1 block">
- Mobile Phone <span className="text-rose-500">*</span>
+ Mobile Phone <span className="text-destructive">*</span>
                     </Label>
                     <div className="relative">
                       <Input
@@ -1949,7 +1949,7 @@ export function NewQuotationModal({
                     <input
  type="checkbox"id="saveCustCheck"checked={saveCustomer}
  onChange={(e) => setSaveCustomer(e.target.checked)}
- className="h-4 w-4 rounded border-input text-blue-600 focus:ring-ring"/>
+ className="h-4 w-4 rounded border-input text-primary focus:ring-ring"/>
                     <span>Save customer details to directory for future quotations & orders</span>
                   </label>
                 </div>
@@ -1957,19 +1957,19 @@ export function NewQuotationModal({
 
               {/* Duplicate Detection Alert */}
               {duplicateWarning && duplicateWarning.matches.length > 0 && !selectedCustomer && (
-                <div className="mt-2 p-3 bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200 border border-amber-300 dark:border-amber-800 rounded-xl text-xs space-y-2">
+                <div className="mt-2 p-3 bg-warning-surface bg-warning-surface text-warning text-warning border border-warning-border border-warning-border rounded-xl text-xs space-y-2">
                   <div className="flex items-center gap-1.5 font-bold">
-                    <AlertTriangle className="h-4 w-4 text-amber-600"/>
+                    <AlertTriangle className="h-4 w-4 text-warning"/>
                     <span>Existing Customer Found</span>
                   </div>
-                  <p className="text-2xs text-amber-800 dark:text-amber-300">
+                  <p className="text-xs text-warning text-warning">
  Profile matches <strong>{duplicateWarning.matches[0].customer.name}</strong> (
                     {duplicateWarning.matches[0].customer.mobile}
                     {duplicateWarning.matches[0].customer.company_name ? ` • ${duplicateWarning.matches[0].customer.company_name}` : ''}).
                   </p>
                   <Button
  type="button"size="sm"variant="outline"onClick={() => handleSelectCustomer(duplicateWarning.matches[0].customer)}
- className="h-7 text-xs bg-card text-amber-900 border-amber-300 hover:bg-amber-100">
+ className="h-7 text-xs bg-card text-warning border-warning-border hover:bg-warning-surface">
  Use Existing Customer Profile
                   </Button>
                 </div>
@@ -1980,7 +1980,7 @@ export function NewQuotationModal({
             <div className="lg:col-span-1 rounded-xl border border-border bg-card p-4 space-y-3 shadow-xs flex flex-col justify-between">
               <div>
                 <div className="flex items-center gap-2 mb-3">
-                  <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
+                  <div className="h-6 w-6 rounded-lg bg-primary/10 text-primary bg-primary/60 text-primary flex items-center justify-center font-bold text-xs">
                     2
                   </div>
                   <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
@@ -2038,7 +2038,7 @@ export function NewQuotationModal({
              ========================================================================= */}
           <div className="rounded-xl border border-border bg-card p-4 space-y-4 shadow-xs">
             <div className="flex items-center gap-2">
-              <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
+              <div className="h-6 w-6 rounded-lg bg-primary/10 text-primary bg-primary/60 text-primary flex items-center justify-center font-bold text-xs">
                 3
               </div>
               <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
@@ -2074,41 +2074,41 @@ export function NewQuotationModal({
 
                         {/* Item Kind & Category Badge */}
                         {item.category_preset === 'digital_print' && (
-                          <Badge variant="outline"className="bg-indigo-50 text-indigo-700 border-indigo-300 text-2xs font-bold">
+                          <Badge variant="outline"className="bg-primary/10 text-primary border-primary/20 text-xs font-bold">
                             🎨 Digital Print
                           </Badge>
                         )}
                         {item.category_preset === 'offset_print' && (
-                          <Badge variant="outline"className="bg-emerald-50 text-emerald-700 border-emerald-300 text-2xs font-bold">
+                          <Badge variant="outline"className="bg-success-surface text-success border-success-border text-xs font-bold">
                             📑 Offset & Packaging
                           </Badge>
                         )}
                         {item.category_preset === 'signage_fabrication' && (
-                          <Badge variant="outline"className="bg-amber-50 text-amber-700 border-amber-300 text-2xs font-bold">
+                          <Badge variant="outline"className="bg-warning-surface text-warning border-warning-border text-xs font-bold">
                             💡 3D Signage
                           </Badge>
                         )}
                         {item.category_preset === 'ready_merchandise' && (
-                          <Badge variant="outline"className="bg-purple-50 text-purple-700 border-purple-300 text-2xs font-bold">
+                          <Badge variant="outline"className="bg-primary/10 text-primary border-primary/20 text-xs font-bold">
                             🎁 Merchandise
                           </Badge>
                         )}
 
                         {isCustom && (
-                          <Badge variant="outline"className="bg-muted text-foreground border-input text-2xs font-bold">
+                          <Badge variant="outline"className="bg-muted text-foreground border-input text-xs font-bold">
                             ✨ Custom Item
                           </Badge>
                         )}
 
                         {item.tier_applied && (
-                          <Badge variant="outline"className="bg-blue-50 text-blue-700 border-blue-300 text-2xs font-bold">
+                          <Badge variant="outline"className="bg-primary/10 text-primary border-primary/20 text-xs font-bold">
                             💎 {item.tier_applied}
                           </Badge>
                         )}
 
                         {item.moq && item.quantity < item.moq && (
-                          <span className="text-2xs text-amber-700 dark:text-amber-300 font-bold bg-amber-50 dark:bg-amber-950/50 border border-amber-300 px-1.5 py-0.5 rounded flex items-center gap-1">
-                            <AlertTriangle className="h-3 w-3 text-amber-600"/>
+                          <span className="text-xs text-warning text-warning font-bold bg-warning-surface bg-warning-surface border border-warning-border px-1.5 py-0.5 rounded flex items-center gap-1">
+                            <AlertTriangle className="h-3 w-3 text-warning"/>
  Below MOQ ({item.moq} {item.unit})
                           </span>
                         )}
@@ -2124,7 +2124,7 @@ export function NewQuotationModal({
                         {items.length > 1 && (
                           <Button
  type="button"variant="ghost"size="sm"onClick={() => handleRemoveItem(index)}
- className="h-7 px-2 text-rose-600 hover:text-rose-700 hover:bg-rose-50 text-xs cursor-pointer">
+ className="h-7 px-2 text-destructive hover:text-destructive hover:bg-danger-surface text-xs cursor-pointer">
                             <Trash2 className="h-3.5 w-3.5 mr-1"/>
  Remove
                           </Button>
@@ -2149,16 +2149,16 @@ export function NewQuotationModal({
                       <div className="sm:col-span-7">
                         <div className="flex items-center justify-between mb-1">
                           <Label className="text-xs font-semibold block">
- Item Description & Specs <span className="text-rose-500">*</span>
+ Item Description & Specs <span className="text-destructive">*</span>
                           </Label>
                           {isCustom && (
                             <div className="flex items-center gap-1">
-                              <span className="text-2xs text-muted-foreground mr-1">Pricing Mode:</span>
+                              <span className="text-xs text-muted-foreground mr-1">Pricing Mode:</span>
                               <button
  type="button"onClick={() => handleToggleItemKind(index, 'service')}
  className={cn(
-                                  'px-1.5 py-0.5 rounded text-2xs font-bold transition-all cursor-pointer',
- isService ? 'bg-indigo-600 text-white' : 'bg-muted text-muted-foreground'
+                                  'px-1.5 py-0.5 rounded text-xs font-bold transition-all cursor-pointer',
+ isService ? 'bg-primary text-white' : 'bg-muted text-muted-foreground'
                                 )}
                               >
                                 📐 Sqft Area
@@ -2166,8 +2166,8 @@ export function NewQuotationModal({
                               <button
  type="button"onClick={() => handleToggleItemKind(index, 'ready_product')}
  className={cn(
-                                  'px-1.5 py-0.5 rounded text-2xs font-bold transition-all cursor-pointer',
- isReadyProduct ? 'bg-emerald-600 text-white' : 'bg-muted text-muted-foreground'
+                                  'px-1.5 py-0.5 rounded text-xs font-bold transition-all cursor-pointer',
+ isReadyProduct ? 'bg-success text-white' : 'bg-muted text-muted-foreground'
                                 )}
                               >
                                 📦 Unit
@@ -2187,7 +2187,7 @@ export function NewQuotationModal({
                     {isService && (
                       <div className="grid grid-cols-2 sm:grid-cols-12 gap-2.5 items-start">
                         <div className="sm:col-span-1">
-                          <Label className="text-2xs font-semibold block mb-1">Width</Label>
+                          <Label className="text-xs font-semibold block mb-1">Width</Label>
                           <Input
  type="number"step="0.1"placeholder="0"value={item.width ?? ''}
  onChange={(e) => handleItemChange(index, 'width', e.target.value === '' ? '' : parseFloat(e.target.value) || 0)}
@@ -2195,7 +2195,7 @@ export function NewQuotationModal({
                         </div>
 
                         <div className="sm:col-span-1">
-                          <Label className="text-2xs font-semibold block mb-1">Height</Label>
+                          <Label className="text-xs font-semibold block mb-1">Height</Label>
                           <Input
  type="number"step="0.1"placeholder="0"value={item.height ?? ''}
  onChange={(e) => handleItemChange(index, 'height', e.target.value === '' ? '' : parseFloat(e.target.value) || 0)}
@@ -2203,7 +2203,7 @@ export function NewQuotationModal({
                         </div>
 
                         <div className="sm:col-span-1">
-                          <Label className="text-2xs font-semibold block mb-1">Unit</Label>
+                          <Label className="text-xs font-semibold block mb-1">Unit</Label>
                           <select
  value={item.dimension_unit || 'ft'}
  onChange={(e) => handleItemChange(index, 'dimension_unit', e.target.value)}
@@ -2215,7 +2215,7 @@ export function NewQuotationModal({
                         </div>
 
                         <div className="sm:col-span-1">
-                          <Label className="text-2xs font-semibold block mb-1">Qty</Label>
+                          <Label className="text-xs font-semibold block mb-1">Qty</Label>
                           <Input
  type="number"min="1"value={item.quantity}
  onChange={(e) => handleItemChange(index, 'quantity', parseInt(e.target.value) || 1)}
@@ -2224,9 +2224,9 @@ export function NewQuotationModal({
 
                         <div className="sm:col-span-3">
                           <div className="flex items-center justify-between mb-1">
-                            <Label className="text-2xs font-semibold">Finishing</Label>
+                            <Label className="text-xs font-semibold">Finishing</Label>
                             {(item.finishing_rate ?? 0) > 0 && (
-                              <span className="text-2xs text-indigo-600 tabular-nums font-bold">
+                              <span className="text-xs text-primary tabular-nums font-bold">
                                 +৳{item.finishing_rate}
                               </span>
                             )}
@@ -2258,9 +2258,9 @@ export function NewQuotationModal({
 
                         <div className="sm:col-span-3">
                           <div className="flex items-center justify-between mb-1">
-                            <Label className="text-2xs font-semibold">Add on</Label>
+                            <Label className="text-xs font-semibold">Add on</Label>
                             {(item.add_on_rate ?? 0) > 0 && (
-                              <span className="text-2xs text-purple-600 tabular-nums font-bold">
+                              <span className="text-xs text-primary tabular-nums font-bold">
                                 +৳{item.add_on_rate}
                               </span>
                             )}
@@ -2278,13 +2278,13 @@ export function NewQuotationModal({
                         </div>
 
                         <div className="sm:col-span-2">
-                          <Label className="text-2xs font-semibold block mb-1">
+                          <Label className="text-xs font-semibold block mb-1">
  Rate / {item.dimension_unit || 'sft'} (৳)
                           </Label>
                           <Input
  type="number"step="0.5"value={item.unit_rate ?? ''}
  onChange={(e) => handleItemChange(index, 'unit_rate', e.target.value)}
- className="text-xs h-9 tabular-nums font-bold text-blue-600 dark:text-blue-400 w-full"/>
+ className="text-xs h-9 tabular-nums font-bold text-primary text-primary w-full"/>
                         </div>
                       </div>
                     )}
@@ -2293,17 +2293,17 @@ export function NewQuotationModal({
                     {isReadyProduct && (
                       <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 p-3 bg-card rounded-xl border border-border">
                         <div className="sm:col-span-5 flex flex-col justify-center">
-                          <span className="text-2xs uppercase font-bold text-muted-foreground block mb-0.5">Physical Specs & Packaging</span>
+                          <span className="text-xs uppercase font-bold text-muted-foreground block mb-0.5">Physical Specs & Packaging</span>
                           <div className="flex flex-wrap items-center gap-1.5 text-xs text-foreground font-medium">
                             {item.dimensions_spec ? (
-                              <span className="bg-muted px-2 py-0.5 rounded tabular-nums text-2xs">
+                              <span className="bg-muted px-2 py-0.5 rounded tabular-nums text-xs">
                                 📐 {item.dimensions_spec}
                               </span>
                             ) : (
-                              <span className="text-muted-foreground italic text-2xs">Standard Factory Unit</span>
+                              <span className="text-muted-foreground italic text-xs">Standard Factory Unit</span>
                             )}
                             {item.pcs_per_carton ? (
-                              <span className="bg-muted px-2 py-0.5 rounded text-2xs">
+                              <span className="bg-muted px-2 py-0.5 rounded text-xs">
                                 📦 {item.pcs_per_carton} pcs/box
                               </span>
                             ) : null}
@@ -2311,7 +2311,7 @@ export function NewQuotationModal({
                         </div>
 
                         <div className="sm:col-span-3">
-                          <Label className="text-2xs font-semibold mb-1 block">Quantity</Label>
+                          <Label className="text-xs font-semibold mb-1 block">Quantity</Label>
                           <Input
  type="number"min="1"value={item.quantity}
  onChange={(e) => handleItemChange(index, 'quantity', parseInt(e.target.value) || 1)}
@@ -2319,7 +2319,7 @@ export function NewQuotationModal({
                         </div>
 
                         <div className="sm:col-span-2">
-                          <Label className="text-2xs font-semibold mb-1 block">Unit</Label>
+                          <Label className="text-xs font-semibold mb-1 block">Unit</Label>
                           <select
  value={item.unit}
  onChange={(e) => handleItemChange(index, 'unit', e.target.value)}
@@ -2347,19 +2347,19 @@ export function NewQuotationModal({
                         </div>
 
                         <div className="sm:col-span-2">
-                          <Label className="text-2xs font-semibold mb-1 block">Unit Price (৳)</Label>
+                          <Label className="text-xs font-semibold mb-1 block">Unit Price (৳)</Label>
                           <Input
  type="number"step="1"value={item.unit_rate || ''}
  onChange={(e) => handleItemChange(index, 'unit_rate', parseFloat(e.target.value) || 0)}
- className="text-xs h-9 tabular-nums font-bold text-emerald-600 dark:text-emerald-400"/>
+ className="text-xs h-9 tabular-nums font-bold text-success text-success"/>
                         </div>
                       </div>
                     )}
 
                     {/* Substrate Pill */}
                     {isService && item.printable_material_name && (
-                      <div className="flex items-center gap-2 text-2xs text-muted-foreground bg-card px-3 py-1.5 rounded-lg border border-border">
-                        <Layers className="h-3.5 w-3.5 text-indigo-500 shrink-0"/>
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground bg-card px-3 py-1.5 rounded-lg border border-border">
+                        <Layers className="h-3.5 w-3.5 text-primary shrink-0"/>
                         <span>Linked Catalog Substrate: <strong>{item.printable_material_name}</strong></span>
                       </div>
                     )}
@@ -2368,14 +2368,14 @@ export function NewQuotationModal({
                     {item.showAdvanced && (
                       <div className="p-3.5 rounded-xl bg-card border border-border space-y-2.5 text-xs animate-in fade-in-0">
                         <div className="flex items-center justify-between border-b border-border pb-2">
-                          <span className="text-2xs uppercase font-bold text-muted-foreground flex items-center gap-1.5">
-                            <Wrench className="h-3.5 w-3.5 text-blue-600"/>
+                          <span className="text-xs uppercase font-bold text-muted-foreground flex items-center gap-1.5">
+                            <Wrench className="h-3.5 w-3.5 text-primary"/>
  Additional Spec
                           </span>
                         </div>
 
                         <div className="w-full">
-                          <Label className="text-2xs font-semibold mb-1 block">Substrate / Material Spec</Label>
+                          <Label className="text-xs font-semibold mb-1 block">Substrate / Material Spec</Label>
                           <Input
  placeholder="e.g. 280 GSM Chinese Frontlit Flex, 300 GSM Art Card, 3mm Acrylic"value={item.material_spec || ''}
  onChange={(e) => handleItemChange(index, 'material_spec', e.target.value)}
@@ -2398,14 +2398,14 @@ export function NewQuotationModal({
                         )}
 
                         {estimatedDirectCost > 0 && (
-                          <span className="text-2xs text-muted-foreground bg-muted px-2 py-0.5 rounded tabular-nums">
+                          <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded tabular-nums">
  Est. Direct Cost: ৳{estimatedDirectCost} • Margin: {estMarginPercent}%
                           </span>
                         )}
                       </div>
 
                       <div className="text-right">
-                        <span className="text-2xs text-muted-foreground mr-2">Line Total:</span>
+                        <span className="text-xs text-muted-foreground mr-2">Line Total:</span>
                         <span className="tabular-nums font-bold text-foreground text-sm">
                           {formatBDT(Number(item.item_total))}
                         </span>
@@ -2419,7 +2419,7 @@ export function NewQuotationModal({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
                 <Button
  type="button"variant="outline"onClick={handleAddItem}
- className="w-full h-9 text-xs font-bold gap-1.5 text-blue-600 border border-dashed border-blue-300 bg-blue-50/50 hover:bg-blue-100/70 rounded-lg cursor-pointer">
+ className="w-full h-9 text-xs font-bold gap-1.5 text-primary border border-dashed border-primary/20 bg-primary/10/50 hover:bg-primary/10/70 rounded-lg cursor-pointer">
                   <Plus className="h-4 w-4"/>
  Add Printing Service Line
                 </Button>
@@ -2435,7 +2435,7 @@ export function NewQuotationModal({
  readyItem.description = 'Ready Display Product / Merch'
  setItems([...items, readyItem])
                   }}
- className="w-full h-9 text-xs font-bold gap-1.5 text-emerald-700 border border-dashed border-emerald-300 bg-emerald-50/50 hover:bg-emerald-100/70 rounded-lg cursor-pointer">
+ className="w-full h-9 text-xs font-bold gap-1.5 text-success border border-dashed border-success-border bg-success-surface/50 hover:bg-success-surface/70 rounded-lg cursor-pointer">
                   <Plus className="h-4 w-4"/>
  Add Ready Product Line
                 </Button>
@@ -2477,7 +2477,7 @@ export function NewQuotationModal({
  setTermsAndConditions(DEFAULT_QUOTATION_TERMS)
                       }
                     }}
- className="text-2xs font-medium text-muted-foreground bg-card border border-border rounded-md px-2 py-0.5 cursor-pointer focus:outline-none">
+ className="text-xs font-medium text-muted-foreground bg-card border border-border rounded-md px-2 py-0.5 cursor-pointer focus:outline-none">
                     <option value="default">Use Default</option>
                     <option value="standard">Standard (15 Days)</option>
                     <option value="bangla">বাংলা শর্তাবলী</option>
@@ -2514,7 +2514,7 @@ export function NewQuotationModal({
  className={cn(
                             'px-2 py-0.5 text-xs font-semibold transition-colors cursor-pointer',
  discountType === 'percent'
-                              ? 'bg-blue-600 text-white'
+                              ? 'bg-primary text-white'
                               : 'bg-card text-muted-foreground hover:bg-muted'
                           )}
                         >
@@ -2525,7 +2525,7 @@ export function NewQuotationModal({
  className={cn(
                             'px-2 py-0.5 text-xs font-semibold transition-colors border-l border-border cursor-pointer',
  discountType === 'fixed'
-                              ? 'bg-blue-600 text-white'
+                              ? 'bg-primary text-white'
                               : 'bg-card text-muted-foreground hover:bg-muted'
                           )}
                         >
@@ -2559,7 +2559,7 @@ export function NewQuotationModal({
  onClick={() => setIsVatEnabled(!isVatEnabled)}
  className={cn(
                           'relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none',
- isVatEnabled ? 'bg-blue-600' : 'bg-muted '
+ isVatEnabled ? 'bg-primary' : 'bg-muted '
                         )}
                       >
                         <span
@@ -2576,7 +2576,7 @@ export function NewQuotationModal({
                   </div>
 
                   {/* Total Amount */}
-                  <div className="flex items-center justify-between pt-2 border-t border-border text-emerald-600 dark:text-emerald-400">
+                  <div className="flex items-center justify-between pt-2 border-t border-border text-success text-success">
                     <span className="text-sm font-bold">Total Amount</span>
                     <span className="text-base font-extrabold font-numeric">
                       {formatBDT(calculatedGrandTotal)}
@@ -2595,7 +2595,7 @@ export function NewQuotationModal({
                 <input
  type="checkbox"checked={sendToCustomer}
  onChange={(e) => setSendToCustomer(e.target.checked)}
- className="h-4 w-4 rounded border-input text-blue-600 focus:ring-ring cursor-pointer"/>
+ className="h-4 w-4 rounded border-input text-primary focus:ring-ring cursor-pointer"/>
                 <span>Send quotation to customer (WhatsApp/Email)</span>
               </label>
 
@@ -2603,7 +2603,7 @@ export function NewQuotationModal({
                 <input
  type="checkbox"checked={createJobOrder}
  onChange={(e) => setCreateJobOrder(e.target.checked)}
- className="h-4 w-4 rounded border-input text-blue-600 focus:ring-ring cursor-pointer"/>
+ className="h-4 w-4 rounded border-input text-primary focus:ring-ring cursor-pointer"/>
                 <span>Create job order(s) after approval</span>
               </label>
 
@@ -2611,7 +2611,7 @@ export function NewQuotationModal({
                 <input
  type="checkbox"checked={printPdfAfterSaving}
  onChange={(e) => setPrintPdfAfterSaving(e.target.checked)}
- className="h-4 w-4 rounded border-input text-blue-600 focus:ring-ring cursor-pointer"/>
+ className="h-4 w-4 rounded border-input text-primary focus:ring-ring cursor-pointer"/>
                 <span>Print PDF after saving</span>
               </label>
             </div>
@@ -2626,7 +2626,7 @@ export function NewQuotationModal({
  title="Quick Add Product to Catalog"description="Creates an authoritative product in PostgreSQL and inserts it directly into this quote."maxWidth="max-w-md">
         <form onSubmit={handleSaveQuickProduct} className="p-4 space-y-3.5 text-xs">
           {quickProductError && (
-            <div className="p-2.5 rounded-lg bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200">
+            <div className="p-2.5 rounded-lg bg-danger-surface bg-danger-surface text-destructive text-destructive border border-danger-border">
               {quickProductError}
             </div>
           )}
@@ -2695,7 +2695,7 @@ export function NewQuotationModal({
               <Input
  type="number"step="0.5"min="0"placeholder="0"value={quickAddMinPrice || ''}
  onChange={(e) => setQuickAddMinPrice(parseFloat(e.target.value) || 0)}
- className="text-xs h-9 tabular-nums text-amber-700 dark:text-amber-400 no-spinner [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"/>
+ className="text-xs h-9 tabular-nums text-warning text-warning no-spinner [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"/>
             </div>
           </div>
 

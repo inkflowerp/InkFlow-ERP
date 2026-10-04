@@ -50,9 +50,9 @@ export function AttendanceCorrectionTable({
   }
 
  const getStatusBadge = (status: string) => {
- if (status === 'approved') return 'bg-emerald-50 text-emerald-700 border-emerald-200'
- if (status === 'rejected') return 'bg-red-50 text-red-700 border-red-200'
- return 'bg-amber-50 text-amber-700 border-amber-200'
+ if (status === 'approved') return 'bg-success-surface text-success border-success-border'
+ if (status === 'rejected') return 'bg-danger-surface text-destructive border-danger-border'
+ return 'bg-warning-surface text-warning border-warning-border'
   }
 
  if (isLoading) {
@@ -115,7 +115,7 @@ export function AttendanceCorrectionTable({
         <Card className="bg-card border-border shadow-[0_1px_3px_rgba(0,0,0,0.02)] rounded-xl overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-muted border-b border-border text-muted-foreground uppercase tracking-wider font-semibold text-[11px]">
+              <thead className="bg-muted border-b border-border text-muted-foreground uppercase tracking-wider font-semibold text-xs">
                 <tr>
                   <th className="py-3 px-4">{tBilingual('Employee', 'কর্মী')}</th>
                   <th className="py-3 px-3">{tBilingual('Date', 'তারিখ')}</th>
@@ -140,7 +140,7 @@ export function AttendanceCorrectionTable({
                       <td className="py-3 px-3 capitalize font-medium text-foreground">
                         {corr.requested_type.replace('_', ' ')}
                       </td>
-                      <td className="py-3 px-3 font-mono font-semibold text-blue-600">
+                      <td className="py-3 px-3 font-mono font-semibold text-primary">
                         {corr.requested_time}
                       </td>
                       <td className="py-3 px-4 text-muted-foreground max-w-xs truncate"title={corr.reason}>
@@ -148,7 +148,7 @@ export function AttendanceCorrectionTable({
                       </td>
                       <td className="py-3 px-3 text-center">
                         <Badge
- variant="outline"className={`text-[10px] font-semibold capitalize px-2 py-0.5 rounded-full ${getStatusBadge(
+ variant="outline"className={`text-xs font-semibold capitalize px-2 py-0.5 rounded-full ${getStatusBadge(
  corr.status
                           )}`}
                         >{corr.status === 'approved' ? tBilingual('Approved', 'অনুমোদিত') : corr.status === 'rejected' ? tBilingual('Rejected', 'বাতিলকৃত') : tBilingual('Pending', 'অপেক্ষমাণ')}</Badge>
@@ -159,20 +159,20 @@ export function AttendanceCorrectionTable({
                             <Button
  size="sm"disabled={isProcessing}
  onClick={() => handleReviewAction(corr.id, 'approved')}
- className="h-7 px-2.5 text-xs font-medium bg-emerald-600 hover:bg-emerald-700 text-white min-h-[28px]">
+ className="h-7 px-2.5 text-xs font-medium bg-success hover:bg-success text-white min-h-[28px]">
                               <Check className="w-3.5 h-3.5 mr-1"/>
                               <span>{tBilingual('Approve', 'অনুমোদন')}</span>
                             </Button>
                             <Button
  size="sm"variant="outline"disabled={isProcessing}
  onClick={() => handleReviewAction(corr.id, 'rejected')}
- className="h-7 px-2.5 text-xs font-medium border-red-200 text-red-600 hover:bg-red-50 min-h-[28px]">
+ className="h-7 px-2.5 text-xs font-medium border-danger-border text-destructive hover:bg-danger-surface min-h-[28px]">
                               <X className="w-3.5 h-3.5 mr-1"/>
                               <span>{tBilingual('Reject', 'বাতিল')}</span>
                             </Button>
                           </div>
                         ) : (
-                          <span className="text-[11px] text-muted-foreground capitalize">
+                          <span className="text-xs text-muted-foreground capitalize">
  {tBilingual(`Reviewed by ${corr.reviewed_by_name || 'Manager'}`, `${corr.reviewed_by_name || 'ম্যানেজার'} দ্বারা পর্যালোচিত`)}
                           </span>
                         )}

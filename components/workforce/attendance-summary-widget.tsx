@@ -50,40 +50,40 @@ export function AttendanceSummaryWidget({
  labelBn: 'উপস্থিত',
  count: present,
  icon: UserCheck,
- color: 'text-emerald-700 bg-emerald-50 border-emerald-200',
- badgeBg: 'bg-emerald-100 text-emerald-800',
+ color: 'text-success bg-success-surface border-success-border',
+ badgeBg: 'bg-success-surface text-success',
     },
     {
  label: 'Late',
  labelBn: 'দেরিতে আগমন',
  count: late,
  icon: Clock,
- color: 'text-amber-700 bg-amber-50 border-amber-200',
- badgeBg: 'bg-amber-100 text-amber-800',
+ color: 'text-warning bg-warning-surface border-warning-border',
+ badgeBg: 'bg-warning-surface text-warning',
     },
     {
  label: 'On Leave',
  labelBn: 'ছুটিতে',
  count: leave,
  icon: UserMinus,
- color: 'text-blue-700 bg-blue-50 border-blue-200',
- badgeBg: 'bg-blue-100 text-blue-800',
+ color: 'text-primary bg-primary/10 border-primary/20',
+ badgeBg: 'bg-primary/10 text-primary',
     },
     {
  label: 'Absent',
  labelBn: 'অনুপস্থিত',
  count: absent,
  icon: UserX,
- color: 'text-rose-700 bg-rose-50 border-rose-200',
- badgeBg: 'bg-rose-100 text-rose-800',
+ color: 'text-destructive bg-danger-surface border-danger-border',
+ badgeBg: 'bg-danger-surface text-destructive',
     },
     {
  label: 'Currently Working',
  labelBn: 'বর্তমানে কর্মরত (ফ্লোরে)',
  count: currentlyWorking,
  icon: Activity,
- color: 'text-indigo-700 bg-indigo-50 border-indigo-200',
- badgeBg: 'bg-indigo-100 text-indigo-800',
+ color: 'text-primary bg-primary/10 border-primary/20',
+ badgeBg: 'bg-primary/10 text-primary',
     },
   ]
 
@@ -103,7 +103,7 @@ export function AttendanceSummaryWidget({
         </div>
         <Link
  href={`/${tenantSlug}/hr/attendance`}
- className="text-xs font-medium text-blue-600 hover:text-blue-700 flex items-center gap-1 shrink-0">
+ className="text-xs font-medium text-primary hover:text-primary flex items-center gap-1 shrink-0">
           <span>{tBilingual('Floor Roster', 'ফ্লোর রোস্টার')}</span>
           <ArrowRight className="w-3.5 h-3.5"/>
         </Link>

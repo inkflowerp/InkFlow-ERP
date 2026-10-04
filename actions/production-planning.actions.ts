@@ -1,10 +1,14 @@
 'use server'
 
+import { withTenantAction } from '@/lib/actions/action-wrapper'
+
+
 import { revalidatePath } from 'next/cache'
 import { ProductionPlanningService } from '@/services/production-planning.service'
 import { AuditService } from '@/services/audit.service'
 import { AuditRepository } from '@/lib/repositories/audit.repository'
 import { getCurrentTenant } from '@/lib/auth/tenant-auth'
+import { ProductionRepository } from '@/lib/repositories/production.repository'
 import {
   ProductionTaskRecord,
   CreateProductionTaskInput,
@@ -20,6 +24,7 @@ export interface ServerActionResult<T> {
   success: boolean
   data?: T
   error?: string
+  conflict?: boolean
 }
 
 async function resolveTenantContext(requestedCompanyId?: string) {
@@ -40,10 +45,13 @@ async function resolveTenantContext(requestedCompanyId?: string) {
 /**
  * Server Action: Fetch production tasks
  */
-export async function getProductionTasksAction(
-  filters?: TaskFilterOptions,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<ProductionTaskRecord[]>> {
+export const getProductionTasksAction = withTenantAction(
+  {
+    permission: "production.view",
+    entityType: "production-planning"
+  },
+  async (ctx, filters?: TaskFilterOptions,
+  requestedCompanyId?: string) : Promise<ServerActionResult<ProductionTaskRecord[]>> => {
   try {
     const { companyId } = await resolveTenantContext(requestedCompanyId)
     const tasks = await ProductionPlanningService.getTasks(companyId, filters)
@@ -51,16 +59,20 @@ export async function getProductionTasksAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to fetch production tasks.' }
   }
-}
+
+})
 
 /**
  * Server Action: Get single task by ID
  */
-export async function getProductionTaskByIdAction(
-  id: string,
+export const getProductionTaskByIdAction = withTenantAction(
+  {
+    permission: "production.view",
+    entityType: "production-planning"
+  },
+  async (ctx, id: string,
   requestedCompanyId?: string,
-  taskPayload?: Partial<ProductionTaskRecord>
-): Promise<ServerActionResult<ProductionTaskRecord>> {
+  taskPayload?: Partial<ProductionTaskRecord>) : Promise<ServerActionResult<ProductionTaskRecord>> => {
   try {
     const { companyId } = await resolveTenantContext(requestedCompanyId)
     const task = await ProductionPlanningService.getTaskById(id, companyId, taskPayload)
@@ -72,15 +84,19 @@ export async function getProductionTaskByIdAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to fetch production task.' }
   }
-}
+
+})
 
 /**
  * Server Action: Create a production task
  */
-export async function createProductionTaskAction(
-  data: CreateProductionTaskInput,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<ProductionTaskRecord>> {
+export const createProductionTaskAction = withTenantAction(
+  {
+    permission: "production.create",
+    entityType: "production-planning"
+  },
+  async (ctx, data: CreateProductionTaskInput,
+  requestedCompanyId?: string) : Promise<ServerActionResult<ProductionTaskRecord>> => {
   try {
     const { companyId, userId, userEmail } = await resolveTenantContext(requestedCompanyId)
     const task = await ProductionPlanningService.createTask(data, companyId)
@@ -104,16 +120,20 @@ export async function createProductionTaskAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to create production task.' }
   }
-}
+
+})
 
 /**
  * Server Action: Schedule a production task
  */
-export async function scheduleProductionTaskAction(
-  input: ScheduleTaskInput,
+export const scheduleProductionTaskAction = withTenantAction(
+  {
+    permission: "production.edit",
+    entityType: "production-planning"
+  },
+  async (ctx, input: ScheduleTaskInput,
   requestedCompanyId?: string,
-  taskPayload?: Partial<ProductionTaskRecord>
-): Promise<ServerActionResult<ProductionTaskRecord>> {
+  taskPayload?: Partial<ProductionTaskRecord>) : Promise<ServerActionResult<ProductionTaskRecord>> => {
   try {
     const { companyId, userId, userEmail } = await resolveTenantContext(requestedCompanyId)
     const task = await ProductionPlanningService.scheduleTask(input, companyId, taskPayload)
@@ -135,19 +155,26 @@ export async function scheduleProductionTaskAction(
     revalidatePath('/[tenantSlug]/production', 'layout')
     return { success: true, data: task }
   } catch (err: any) {
+    if (err?.conflict || err?.code === 'STALE_WRITE' || err?.message?.includes('Updated by someone else')) {
+      return { success: false, conflict: true, error: 'Updated by someone else, reload?' }
+    }
     return { success: false, error: err.message || 'Failed to schedule production task.' }
   }
-}
+
+})
 
 /**
  * Server Action: Start a production task
  */
-export async function startProductionTaskAction(
-  taskId: string,
+export const startProductionTaskAction = withTenantAction(
+  {
+    permission: "production.edit",
+    entityType: "production-planning"
+  },
+  async (ctx, taskId: string,
   forceOverride: boolean = false,
   requestedCompanyId?: string,
-  taskPayload?: Partial<ProductionTaskRecord>
-): Promise<ServerActionResult<ProductionTaskRecord>> {
+  taskPayload?: Partial<ProductionTaskRecord>) : Promise<ServerActionResult<ProductionTaskRecord>> => {
   try {
     const { companyId, userId, userEmail, userName } = await resolveTenantContext(requestedCompanyId)
     const task = await ProductionPlanningService.startTask(
@@ -179,17 +206,21 @@ export async function startProductionTaskAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to start production task.' }
   }
-}
+
+})
 
 /**
  * Server Action: Pause a production task
  */
-export async function pauseProductionTaskAction(
-  taskId: string,
+export const pauseProductionTaskAction = withTenantAction(
+  {
+    permission: "production.edit",
+    entityType: "production-planning"
+  },
+  async (ctx, taskId: string,
   reason: string,
   requestedCompanyId?: string,
-  taskPayload?: Partial<ProductionTaskRecord>
-): Promise<ServerActionResult<ProductionTaskRecord>> {
+  taskPayload?: Partial<ProductionTaskRecord>) : Promise<ServerActionResult<ProductionTaskRecord>> => {
   try {
     const { companyId } = await resolveTenantContext(requestedCompanyId)
     const task = await ProductionPlanningService.pauseTask(taskId, reason, companyId, taskPayload)
@@ -200,13 +231,18 @@ export async function pauseProductionTaskAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to pause production task.' }
   }
-}
+
+})
 
 /**
  * Server Action: Complete a production task
  */
-export async function completeProductionTaskAction(
-  taskId: string,
+export const completeProductionTaskAction = withTenantAction(
+  {
+    permission: "production.edit",
+    entityType: "production-planning"
+  },
+  async (ctx, taskId: string,
   completionData?: {
     good_quantity?: number
     rejected_quantity?: number
@@ -215,13 +251,12 @@ export async function completeProductionTaskAction(
     notes?: string
   },
   requestedCompanyId?: string,
-  taskPayload?: Partial<ProductionTaskRecord>
-): Promise<
+  taskPayload?: Partial<ProductionTaskRecord>) : Promise<
   ServerActionResult<{
     completedTask: ProductionTaskRecord
     nextReadyTask: ProductionTaskRecord | null
   }>
-> {
+> => {
   try {
     const { companyId, userId, userEmail } = await resolveTenantContext(requestedCompanyId)
     const result = await ProductionPlanningService.completeTask(taskId, companyId, completionData, taskPayload)
@@ -246,13 +281,18 @@ export async function completeProductionTaskAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to complete production task.' }
   }
-}
+
+})
 
 /**
  * Server Action: Generate automated Production Tasks from Product / Order specifications
  */
-export async function generateProductionTasksFromOrderAction(
-  input: {
+export const generateProductionTasksFromOrderAction = withTenantAction(
+  {
+    permission: "production.create",
+    entityType: "production-planning"
+  },
+  async (ctx, input: {
     job_order_id: string
     production_job_id?: string | null
     product_id?: string | null
@@ -270,8 +310,7 @@ export async function generateProductionTasksFromOrderAction(
     notes?: string | null
     branch_id?: string | null
   },
-  requestedCompanyId?: string
-): Promise<ServerActionResult<ProductionTaskRecord[]>> {
+  requestedCompanyId?: string) : Promise<ServerActionResult<ProductionTaskRecord[]>> => {
   try {
     const { companyId } = await resolveTenantContext(requestedCompanyId)
     const tasks = await ProductionPlanningService.generateTasksFromOrderOrProduct(input, companyId)
@@ -280,15 +319,19 @@ export async function generateProductionTasksFromOrderAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to generate production tasks.' }
   }
-}
+
+})
 
 /**
  * Server Action: Get compatible machineries for a given task
  */
-export async function getCompatibleMachineriesForTaskAction(
-  taskId: string,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<Array<{ machine: any; isCompatible: boolean; incompatibilityReasons: string[]; currentLoadMinutes: number }>>> {
+export const getCompatibleMachineriesForTaskAction = withTenantAction(
+  {
+    permission: "production.view",
+    entityType: "production-planning"
+  },
+  async (ctx, taskId: string,
+  requestedCompanyId?: string) : Promise<ServerActionResult<Array<{ machine: any; isCompatible: boolean; incompatibilityReasons: string[]; currentLoadMinutes: number }>>> => {
   try {
     const { companyId } = await resolveTenantContext(requestedCompanyId)
     const data = await ProductionPlanningService.getCompatibleMachinesForTask(taskId, companyId)
@@ -296,16 +339,20 @@ export async function getCompatibleMachineriesForTaskAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to check machine compatibility.' }
   }
-}
+
+})
 
 /**
  * Server Action: Reassign all tasks from a broken machine to a target machine
  */
-export async function reassignHeldTasksAction(
-  sourceMachineId: string,
+export const reassignHeldTasksAction = withTenantAction(
+  {
+    permission: "production.edit",
+    entityType: "production-planning"
+  },
+  async (ctx, sourceMachineId: string,
   targetMachineId: string,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<{ reassignedCount: number; tasks: ProductionTaskRecord[] }>> {
+  requestedCompanyId?: string) : Promise<ServerActionResult<{ reassignedCount: number; tasks: ProductionTaskRecord[] }>> => {
   try {
     const { companyId } = await resolveTenantContext(requestedCompanyId)
     const result = await ProductionPlanningService.reassignHeldTasks(companyId, sourceMachineId, targetMachineId)
@@ -315,16 +362,20 @@ export async function reassignHeldTasksAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to reassign tasks.' }
   }
-}
+
+})
 
 /**
  * Server Action: Place task on hold
  */
-export async function holdProductionTaskAction(
-  input: HoldTaskInput,
+export const holdProductionTaskAction = withTenantAction(
+  {
+    permission: "production.edit",
+    entityType: "production-planning"
+  },
+  async (ctx, input: HoldTaskInput,
   requestedCompanyId?: string,
-  taskPayload?: Partial<ProductionTaskRecord>
-): Promise<ServerActionResult<ProductionTaskRecord>> {
+  taskPayload?: Partial<ProductionTaskRecord>) : Promise<ServerActionResult<ProductionTaskRecord>> => {
   try {
     const { companyId, userId, userEmail } = await resolveTenantContext(requestedCompanyId)
     const task = await ProductionPlanningService.holdTask(input, companyId, taskPayload)
@@ -348,16 +399,20 @@ export async function holdProductionTaskAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to place task on hold.' }
   }
-}
+
+})
 
 /**
  * Server Action: Resume task from hold
  */
-export async function resumeProductionTaskAction(
-  taskId: string,
+export const resumeProductionTaskAction = withTenantAction(
+  {
+    permission: "production.edit",
+    entityType: "production-planning"
+  },
+  async (ctx, taskId: string,
   requestedCompanyId?: string,
-  taskPayload?: Partial<ProductionTaskRecord>
-): Promise<ServerActionResult<ProductionTaskRecord>> {
+  taskPayload?: Partial<ProductionTaskRecord>) : Promise<ServerActionResult<ProductionTaskRecord>> => {
   try {
     const { companyId } = await resolveTenantContext(requestedCompanyId)
     const task = await ProductionPlanningService.resumeTask(taskId, companyId, taskPayload)
@@ -367,16 +422,20 @@ export async function resumeProductionTaskAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to resume production task.' }
   }
-}
+
+})
 
 /**
  * Server Action: Create rework task
  */
-export async function reworkProductionTaskAction(
-  input: ReworkTaskInput,
+export const reworkProductionTaskAction = withTenantAction(
+  {
+    permission: "production.edit",
+    entityType: "production-planning"
+  },
+  async (ctx, input: ReworkTaskInput,
   requestedCompanyId?: string,
-  taskPayload?: Partial<ProductionTaskRecord>
-): Promise<ServerActionResult<ProductionTaskRecord>> {
+  taskPayload?: Partial<ProductionTaskRecord>) : Promise<ServerActionResult<ProductionTaskRecord>> => {
   try {
     const { companyId, userId, userEmail, userName } = await resolveTenantContext(requestedCompanyId)
     const task = await ProductionPlanningService.createReworkTask(input, companyId, userName || 'QC Inspector', taskPayload)
@@ -400,15 +459,19 @@ export async function reworkProductionTaskAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to create rework task.' }
   }
-}
+
+})
 
 /**
  * Server Action: Get Machine Queues (NOW, NEXT, LATER)
  */
-export async function getMachineQueuesAction(
-  branchId?: string,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<MachineQueueGroup[]>> {
+export const getMachineQueuesAction = withTenantAction(
+  {
+    permission: "production.view",
+    entityType: "production-planning"
+  },
+  async (ctx, branchId?: string,
+  requestedCompanyId?: string) : Promise<ServerActionResult<MachineQueueGroup[]>> => {
   try {
     const { companyId } = await resolveTenantContext(requestedCompanyId)
     const queues = await ProductionPlanningService.getMachineQueues(companyId, branchId)
@@ -416,14 +479,18 @@ export async function getMachineQueuesAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to fetch machine queues.' }
   }
-}
+
+})
 
 /**
  * Server Action: Get current operator's assigned tasks
  */
-export async function getMyAssignedTasksAction(
-  requestedCompanyId?: string
-): Promise<ServerActionResult<ProductionTaskRecord[]>> {
+export const getMyAssignedTasksAction = withTenantAction(
+  {
+    permission: "production.view",
+    entityType: "production-planning"
+  },
+  async (ctx, requestedCompanyId?: string) : Promise<ServerActionResult<ProductionTaskRecord[]>> => {
   try {
     const { companyId, userId } = await resolveTenantContext(requestedCompanyId)
     const tasks = await ProductionPlanningService.getTasks(companyId, {
@@ -433,42 +500,68 @@ export async function getMyAssignedTasksAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to fetch operator tasks.' }
   }
-}
+
+})
 
 /**
  * Server Action: First-Class Problem Reporting (⚠ সমস্যা হয়েছে)
+ * Utilizes atomic report_production_problem_atomic RPC with photo attachment.
  */
-export async function reportProductionProblemAction(
-  params: {
+export const reportProductionProblemAction = withTenantAction(
+  {
+    permission: "production.view",
+    entityType: "production-planning"
+  },
+  async (ctx, params: {
     task_id: string
     reason: string
     notes?: string
     photo_url?: string
+    reported_by_name?: string
     taskPayload?: Partial<ProductionTaskRecord>
   },
-  requestedCompanyId?: string
-): Promise<ServerActionResult<any>> {
+  requestedCompanyId?: string) : Promise<ServerActionResult<any>> => {
   try {
-    const { companyId, userId, userEmail } = await resolveTenantContext(requestedCompanyId)
+    const { companyId, userId, userEmail, userName, tenantSlug } = await resolveTenantContext(requestedCompanyId)
 
-    // 1. Hold / Pause the task
+    let problemNumber = 'PRB-' + Date.now().toString().slice(-6)
+    let problemId = null
+
+    // 1. Attempt atomic stored procedure execution in PostgreSQL
+    const rpcRes = await ProductionRepository.reportProductionProblemAtomic({
+      companyId,
+      taskId: params.task_id,
+      reason: params.reason,
+      notes: params.notes || null,
+      photoUrl: params.photo_url || null,
+      reportedByName: params.reported_by_name || userName || 'Operator',
+    })
+
+    if (rpcRes && rpcRes.success) {
+      problemNumber = rpcRes.problem_number || problemNumber
+      problemId = rpcRes.problem_id
+    }
+
+    // 2. Stateful fallback & cache sync
     const updatedTask = await ProductionPlanningService.holdTask(
       {
         task_id: params.task_id,
-        hold_reason: (params.reason as any) || 'customer_approval',
-        hold_notes: params.notes,
+        hold_reason: (params.reason as any) || 'quality_issue',
+        hold_notes: `[${problemNumber}] ${params.notes || params.reason}`,
       },
       companyId,
       params.taskPayload
     )
 
-    // 2. Log Audit Event
+    // 3. Log Audit Event
     await AuditRepository.logEvent({
       companyId,
       entity: 'production_task',
-      action: 'hold',
+      action: 'problem_reported',
       entityId: params.task_id,
       newValue: {
+        problem_id: problemId,
+        problem_number: problemNumber,
         problem_reason: params.reason,
         notes: params.notes,
         photo_attached: Boolean(params.photo_url),
@@ -477,6 +570,31 @@ export async function reportProductionProblemAction(
       userId: userId,
     })
 
+    // Trigger Preference-Aware Production Problem Notification
+    try {
+      const { NotificationService } = await import('@/services/notification.service')
+      await NotificationService.notify({
+        companyId,
+        role: 'production_manager',
+        type: 'production_problem',
+        entity: { type: 'production_task', id: params.task_id, number: updatedTask.task_number },
+        payload: {
+          task_number: updatedTask.task_number,
+          problem_type: params.reason,
+          description: params.notes || params.reason,
+          machine_name: (updatedTask as any).machine_name || 'Floor Machine',
+          action_url: `/production`,
+        },
+        channels: ['in_app', 'whatsapp'],
+      })
+    } catch (notifErr) {
+      console.warn('[reportProductionProblemAction] Notification dispatch warning:', notifErr)
+    }
+
+    if (tenantSlug) {
+      revalidatePath(`/${tenantSlug}/production`)
+      revalidatePath(`/${tenantSlug}/operator`)
+    }
     revalidatePath('/production')
     revalidatePath('/operator')
 
@@ -484,6 +602,8 @@ export async function reportProductionProblemAction(
       success: true,
       data: {
         task: updatedTask,
+        problem_id: problemId,
+        problem_number: problemNumber,
         problem_reason: params.reason,
         notes: params.notes,
       },
@@ -491,5 +611,6 @@ export async function reportProductionProblemAction(
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to report production problem.' }
   }
-}
+
+})
 

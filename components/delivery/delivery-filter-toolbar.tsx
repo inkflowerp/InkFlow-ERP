@@ -77,7 +77,7 @@ export function DeliveryFilterToolbar({
  className={cn(
               'text-xs h-8 px-3.5 rounded-xl font-bold transition-all shrink-0',
  viewMode === 'installations'
-                ? 'bg-purple-600 hover:bg-purple-700 text-white shadow-xs'
+                ? 'bg-primary hover:bg-primary text-white shadow-xs'
                 : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
             )}
           >
@@ -109,11 +109,11 @@ export function DeliveryFilterToolbar({
  className={cn(
                 'h-8 text-xs font-bold rounded-xl border shrink-0',
  dueOnly
-                  ? 'bg-rose-600 hover:bg-rose-700 text-white border-rose-600 shadow-xs'
-                  : 'bg-card text-foreground border-border hover:border-rose-300'
+                  ? 'bg-destructive hover:bg-destructive text-white border-danger-border shadow-xs'
+                  : 'bg-card text-foreground border-border hover:border-danger-border'
               )}
             >
-              <DollarSign className="h-3 w-3 mr-1 text-rose-500"/>
+              <DollarSign className="h-3 w-3 mr-1 text-destructive"/>
               <span>{tBilingual('Unpaid Due Only', 'বকেয়া চালান')}</span>
             </Button>
           )}
@@ -139,7 +139,7 @@ export function DeliveryFilterToolbar({
       {/* Secondary Method Filters (For Challans View) */}
       {viewMode === 'challans' && (
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
-          <span className="text-2xs font-semibold text-muted-foreground shrink-0 mr-1 bangla-text">
+          <span className="text-xs font-semibold text-muted-foreground shrink-0 mr-1 bangla-text">
             {tBilingual('Method:', 'মাধ্যম:')}
           </span>
           {methodTabs.map((tab) => {
@@ -151,7 +151,7 @@ export function DeliveryFilterToolbar({
  className={cn(
                   'px-2.5 py-1 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors shrink-0 border cursor-pointer',
  isSelected
-                    ? 'bg-blue-50 text-blue-700 border-blue-300 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-700 font-bold'
+                    ? 'bg-primary/10 text-primary border-primary/20 bg-primary/10 text-primary border-border font-bold'
                     : 'bg-card text-muted-foreground border-border hover:bg-muted dark:hover:bg-muted/60'
                 )}
               >

@@ -29,7 +29,7 @@ export function FinalCTASection({ onOpenDemo }: FinalCTASectionProps) {
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="rounded-3xl border border-border bg-muted p-8 sm:p-12 md:p-16 text-center space-y-5 sm:space-y-6 shadow-sm">
           {/* Eyebrow */}
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200/70 dark:border-blue-800/60 uppercase tracking-wider">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary bg-primary/10 text-primary border border-primary/20/70 border-border/60 uppercase tracking-wider">
             <span>{tBilingual('Get Started Today', 'আজই শুরু করুন')}</span>
           </div>
 
@@ -62,7 +62,7 @@ export function FinalCTASection({ onOpenDemo }: FinalCTASectionProps) {
               <Button
  type="button"variant="outline"onClick={handleOpenDemo}
  className="w-full sm:w-auto h-12 px-6 text-sm font-semibold border-input bg-card text-foreground hover:bg-muted cursor-pointer bangla-text">
-                <Calendar className="mr-2 h-4 w-4 text-blue-600"/>
+                <Calendar className="mr-2 h-4 w-4 text-primary"/>
                 <span>{tBilingual('Book a Demo', 'লাইভ ডেমো বুক করুন')}</span>
               </Button>
             )}
@@ -71,15 +71,15 @@ export function FinalCTASection({ onOpenDemo }: FinalCTASectionProps) {
           {/* Trust Guarantees */}
           <div className="pt-4 flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-xs text-muted-foreground">
             <span className="flex items-center gap-1.5">
-              <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0"/>
+              <CheckCircle2 className="h-4 w-4 text-success shrink-0"/>
               <span>{tBilingual('No credit card required', 'কোনো কার্ডের প্রয়োজন নেই')}</span>
             </span>
             <span className="flex items-center gap-1.5">
-              <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0"/>
+              <CheckCircle2 className="h-4 w-4 text-success shrink-0"/>
               <span>{tBilingual(`${trialDays}-day full evaluation`, `${trialDaysBn} দিনের মূল্যায়ন ট্রায়াল`)}</span>
             </span>
             <span className="flex items-center gap-1.5">
-              <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0"/>
+              <CheckCircle2 className="h-4 w-4 text-success shrink-0"/>
               <span>{tBilingual('Dhaka onboarding support', 'ঢাকা টিম থেকে অনবোর্ডিং সাপোর্ট')}</span>
             </span>
           </div>

@@ -67,7 +67,7 @@ export function MarketingNavbar({ onOpenDemo }: MarketingNavbarProps) {
  alt={appName}
  className="h-8 w-8 sm:h-9 sm:w-9 rounded-lg object-contain bg-card border border-border p-0.5 shadow-2xs shrink-0"/>
             ) : (
-              <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-lg bg-blue-600 text-white shadow-xs shrink-0">
+              <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-lg bg-primary text-white shadow-xs shrink-0">
                 <Printer className="h-4 w-4 sm:h-4.5 sm:w-4.5"/>
               </div>
             )}
@@ -82,7 +82,7 @@ export function MarketingNavbar({ onOpenDemo }: MarketingNavbarProps) {
               <Link
  key={item.href}
  href={item.href}
- className="text-xs sm:text-sm font-medium text-muted-foreground hover:text-blue-600 dark:hover:text-blue-400 transition-colors bangla-text">
+ className="text-xs sm:text-sm font-medium text-muted-foreground hover:text-primary dark:hover:text-primary transition-colors bangla-text">
                 {tBilingual(item.labelEn, item.labelBn)}
               </Link>
             ))}
@@ -141,14 +141,14 @@ export function MarketingNavbar({ onOpenDemo }: MarketingNavbarProps) {
 
       {/* Mobile Menu Dropdown Drawer */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-b border-border bg-card p-4 space-y-4 animate-in slide-in-from-top-2 duration-150">
+        <div className="md:hidden border-b border-border bg-card p-4 space-y-4 animate-in slide-in- duration-150">
           <nav className="flex flex-col space-y-1">
             {MARKETING_NAV_ITEMS.map((item) => (
               <Link
  key={item.href}
  href={item.href}
  onClick={() => setMobileMenuOpen(false)}
- className="px-3 py-2.5 rounded-lg text-sm font-semibold text-foreground hover:bg-muted hover:text-blue-600 dark:hover:text-blue-400 transition-colors bangla-text">
+ className="px-3 py-2.5 rounded-lg text-sm font-semibold text-foreground hover:bg-muted hover:text-primary dark:hover:text-primary transition-colors bangla-text">
                 {tBilingual(item.labelEn, item.labelBn)}
               </Link>
             ))}

@@ -85,7 +85,7 @@ function ResetPasswordForm() {
 
       {isSuccess ? (
         <CardContent className="space-y-4 py-6 text-center">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-success-surface text-success bg-success-surface/60 text-success">
             <CheckCircle2 className="h-7 w-7" />
           </div>
           <h4 className="font-bold text-foreground text-lg">
@@ -96,7 +96,7 @@ function ResetPasswordForm() {
           </p>
           <div className="pt-2">
             <Link href="/login">
-              <Button className="w-full bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 text-white font-bold">
+              <Button className="w-full text-white font-bold">
                 {t('auth.sign_in') || 'Sign In'}
               </Button>
             </Link>
@@ -106,13 +106,13 @@ function ResetPasswordForm() {
         <form onSubmit={handleSubmit(onSubmit)}>
           <CardContent className="space-y-3.5">
             {!tokenParam && !emailParam && (
-              <div className="flex items-start gap-2 rounded-lg bg-amber-500/10 p-3 text-xs text-amber-600 dark:text-amber-400 border border-amber-500/20">
+              <div className="flex items-start gap-2 rounded-lg bg-warning/10 p-3 text-xs text-warning text-warning border border-warning-border/20">
                 <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
                 <span>
                   {locale === 'bn'
                     ? 'আপনার কাছে কি ভেরিফিকেশন কোড বা লিংক আছে? নতুন রিসেট লিংক পেতে '
                     : 'Need a reset link? Visit the '}
-                  <Link href="/forgot-password" className="underline font-bold hover:text-amber-700 dark:hover:text-amber-300">
+                  <Link href="/forgot-password" className="underline font-bold hover:text-warning dark:hover:text-warning">
                     {locale === 'bn' ? 'পাসওয়ার্ড ভুলে গেছেন পেজ' : 'Forgot Password page'}
                   </Link>
                   {locale === 'bn' ? ' ভিজিট করুন।' : ' to request one.'}
@@ -120,7 +120,7 @@ function ResetPasswordForm() {
               </div>
             )}
             {error && (
-              <div className="flex items-start gap-2 rounded-lg bg-red-50 p-3 text-xs text-red-600 dark:bg-red-950/50 dark:text-red-300 border border-red-200 dark:border-red-900">
+              <div className="flex items-start gap-2 rounded-lg bg-danger-surface p-3 text-xs text-destructive bg-danger-surface text-destructive border border-danger-border border-danger-border">
                 <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
                 <span>{error}</span>
               </div>
@@ -153,7 +153,7 @@ function ResetPasswordForm() {
           <CardFooter className="flex flex-col gap-3 border-t border-border pt-4">
             <Button
               type="submit"
-              className="w-full justify-center gap-2 bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 text-white font-bold h-11 text-sm shadow-md"
+              className="w-full justify-center gap-2 hover: hover: text-white font-bold h-11 text-sm shadow-md"
               isLoading={isLoading}
             >
               <span>{locale === 'bn' ? 'পাসওয়ার্ড পরিবর্তন করুন' : 'Update Password'}</span>

@@ -41,6 +41,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { PageHeader } from '@/components/shared/page-header'
+import { PageContainer } from '@/components/ui/page-container'
 import { CurrencyDisplay } from '@/components/shared/currency-display'
 import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
 import { KpiCard, KpiGrid } from '@/components/shared/kpi-card'
@@ -66,12 +67,14 @@ import {
 import type { CashBookEntryRecord } from '@/types/accounting.types'
 import { ConfirmDialog } from '@/components/shared/confirm-dialog'
 import { dispatchToast } from '@/components/shared/toast-feedback'
+import { cn } from '@/lib/utils'
 
 export default function SuppliersPage() {
  const params = useParams()
  const pathname = usePathname()
  const { company } = useTenant()
  const { locale, tBilingual } = useI18n()
+  const isBn = locale === 'bn'
  const slug = (params?.tenantSlug as string) || company?.slug || 'my-company'
 
  const [mounted, setMounted] = useState(false)
@@ -298,6 +301,15 @@ export default function SuppliersPage() {
     }
   }, [suppliers, supplierPrices])
 
+  // Attention Queue: High Due & Exceeded Credit Limit Suppliers
+  const criticalCreditSuppliers = useMemo(() => {
+    return suppliers.filter((s) => {
+      const due = s.outstanding_balance || 0
+      const limit = s.credit_limit || 0
+      return (limit > 0 && due > limit) || due >= 50000
+    }).slice(0, 4)
+  }, [suppliers])
+
   // Filtered List
  const filtered = useMemo(() => {
  return suppliers.filter((s) => {
@@ -328,7 +340,7 @@ export default function SuppliersPage() {
 
  if (!mounted) {
  return (
-      <div className="space-y-6 max-w-7xl pb-12 animate-pulse">
+      <div className="space-y-6 pb-12 animate-pulse">
         <div className="h-10 bg-muted rounded-xl w-1/3"/>
         <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
           {[1, 2, 3, 4, 5].map((i) => (
@@ -343,11 +355,11 @@ export default function SuppliersPage() {
  return (
     <PanelAccessGuard
  module="inventory"action="view"panelTitle="Supplier & Vendor Directory"panelTitleBn="মহাজন ও সরবরাহকারী ডিরেক্টরি">
-      <div className="space-y-6 max-w-7xl">
+      <PageContainer className="space-y-6">
       {/* Header */}
       <PageHeader
  titleEn="Supplier & Vendor Directory"titleBn="মহাজন ও সরবরাহকারী ডিরেক্টরি"descriptionEn="Manage media importers, acrylic merchants, ink dealers, paper mills, and hardware suppliers across Nayabazar, Chawkbazar, and Fakirapool."descriptionBn="নয়াবাজার, চকবাজার ও ফকিরারপুলের মিডিয়া আমদানিকারক, এক্রিলিক মার্চেন্ট এবং পেপার মিলের মহাজনদের তালিকা ও বাকি হিসাব।"icon={Truck}
- iconColor="text-teal-600"actions={
+ iconColor="text-success"actions={
           <div className="flex flex-wrap items-center gap-2">
             <Button
  variant="outline"size="sm"onClick={handleExportCSV}
@@ -359,14 +371,14 @@ export default function SuppliersPage() {
             <Button
  variant="outline"size="sm"onClick={() => setIsNewPOOpen(true)}
  className="text-xs h-9 font-semibold text-foreground">
-              <Package className="mr-1.5 h-3.5 w-3.5 text-blue-600"/>
+              <Package className="mr-1.5 h-3.5 w-3.5 text-primary"/>
               {tBilingual('New PO', 'নতুন ক্রয়াদেশ')}
             </Button>
 
             <Link href={getTenantNavHref('/inventory?view=purchases', pathname, slug)}>
               <Button
  variant="outline"size="sm"className="text-xs h-9 font-semibold text-foreground">
-                <Layers className="mr-1.5 h-3.5 w-3.5 text-teal-600"/>
+                <Layers className="mr-1.5 h-3.5 w-3.5 text-success"/>
                 <span className="hidden sm:inline">{tBilingual('PO & GRN Log', 'পিও ও জিআরএন লগ')}</span>
               </Button>
             </Link>
@@ -384,7 +396,7 @@ export default function SuppliersPage() {
  setSupplierToEdit(null)
  setIsSupplierModalOpen(true)
               }}
- className="bg-teal-600 hover:bg-teal-700 text-xs text-white font-bold h-9 shadow-xs">
+ className="bg-success hover:bg-success/90 text-xs text-success-foreground font-bold h-9 shadow-xs">
               <Plus className="mr-1.5 h-4 w-4"/>
               {tBilingual('Register Supplier', 'নতুন মহাজন যুক্ত করুন')}
             </Button>
@@ -394,48 +406,141 @@ export default function SuppliersPage() {
 
       {/* Notification Toast */}
       {notification && (
-        <div className="p-3 bg-emerald-50 text-emerald-800 rounded-xl text-xs font-semibold flex items-center gap-2 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800 animate-in fade-in-0 shadow-xs">
-          <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0"/>
+        <div className="p-3 bg-success-surface text-success rounded-xl text-xs font-semibold flex items-center gap-2 border border-success-border bg-success-surface text-success animate-in fade-in-0 shadow-xs">
+          <CheckCircle2 className="h-4 w-4 text-success shrink-0"/>
           <span>{notification.message}</span>
         </div>
       )}
 
-      {/* KPI HUD */}
-      <KpiGrid columns={5}>
+            {/* CANONICAL 4-KPI ROW */}
+      <KpiGrid columns={4}>
         {/* Total Vendors */}
         <KpiCard
- titleEn="Total Vendors"titleBn="মোট সরবরাহকারী"value={stats.totalVendors}
- icon={Truck}
- colorVariant="teal"subtitleEn={`${stats.activeVendors} Active partners`}
- subtitleBn={`${stats.activeVendors} জন সক্রিয় অংশীদার`}
+          titleEn="Total Vendors"
+          titleBn="মোট সরবরাহকারী"
+          value={stats.totalVendors}
+          icon={Truck}
+          colorVariant="teal"
+          subtitleEn={`${stats.activeVendors} Active partners`}
+          subtitleBn={`${stats.activeVendors} জন সক্রিয় অংশীদার`}
         />
 
         {/* Total Outstanding Due */}
         <KpiCard
- titleEn="Total Payable Due"titleBn="মোট মহাজনের পাওনা"value={stats.totalPayableDue}
- isCurrency
- icon={CreditCard}
- colorVariant="amber"subtitleEn={`${stats.vendorsWithDue} vendors pending payment`}
- subtitleBn={`${stats.vendorsWithDue} জন সরবরাহকারীর পাওনা বাকি`}
+          titleEn="Total Payable Due"
+          titleBn="মোট মহাজনের পাওনা"
+          value={stats.totalPayableDue}
+          isCurrency
+          icon={CreditCard}
+          colorVariant={stats.totalPayableDue > 0 ? "amber" : "slate"}
+          subtitleEn={`${stats.vendorsWithDue} vendors pending payment`}
+          subtitleBn={`${stats.vendorsWithDue} জন সরবরাহকারীর পাওনা বাকি`}
         />
 
-        {/* Contract Rates */}
+        {/* Overdue / High Due Accounts */}
         <KpiCard
- titleEn="Agreed Rates"titleBn="নির্ধারিত চুক্তি দর"value={stats.activeContracts}
- icon={Tag}
- colorVariant="sky"subtitleEn="Catalog buying specs"subtitleBn="ক্যাটালগ ক্রয় শর্তাবলী"/>
+          titleEn="Credit Overdue / Warning"
+          titleBn="সীমা অতিক্রম ও জরুরি"
+          value={criticalCreditSuppliers.length}
+          icon={AlertTriangle}
+          colorVariant={criticalCreditSuppliers.length > 0 ? "danger" : "slate"}
+          subtitleEn={`${criticalCreditSuppliers.length} require settlement`}
+          subtitleBn={`${criticalCreditSuppliers.length}টি অ্যাকাউন্টে জরুরি তাগাদা`}
+        />
 
-        {/* Market Hubs */}
+        {/* Agreed Rates */}
         <KpiCard
- titleEn="Market Hubs"titleBn="মার্কেট হাব"value={stats.uniqueHubs || 5}
- icon={MapPin}
- colorVariant="purple"subtitleEn="Nayabazar, Chawkbazar, etc."subtitleBn="নয়াবাজার, চকবাজার ইত্যাদি"/>
-
-        {/* Avg Credit Term */}
-        <KpiCard
- titleEn="Standard Credit"titleBn="সাধারণ বাকি মেয়াদ"value={tBilingual('15-30 Days', '১৫-৩০ দিন')}icon={Clock}
- colorVariant="indigo"subtitleEn="Post-dated Cheque cycle"subtitleBn="চেক পেমেন্ট সাইকেল"/>
+          titleEn="Agreed Rates"
+          titleBn="নির্ধারিত চুক্তি দর"
+          value={stats.activeContracts}
+          icon={Tag}
+          colorVariant="sky"
+          subtitleEn={`${stats.uniqueHubs || 5} Market Hubs locked`}
+          subtitleBn={`${stats.uniqueHubs || 5}টি মার্কেট হাব চুক্তিবদ্ধ`}
+        />
       </KpiGrid>
+
+      {/* ========================================================= */}
+      {/* PRIORITIZED WORK LIST / ATTENTION QUEUE */}
+      {/* ========================================================= */}
+      <section className="space-y-3" aria-label="Suppliers Attention Queue">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className={cn("h-2 w-2 rounded-full", criticalCreditSuppliers.length > 0 ? "bg-warning animate-pulse" : "bg-success")} />
+            <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+              {isBn ? 'জরুরি মনোযোগের তালিকা (অ্যাকশন কিউ)' : 'What Needs My Attention Now'}
+            </h2>
+            <Badge variant="outline" className="text-xs font-mono">
+              {criticalCreditSuppliers.length} {isBn ? 'জরুরি' : 'urgent'}
+            </Badge>
+          </div>
+        </div>
+
+        {criticalCreditSuppliers.length === 0 ? (
+          <Card className="border-border bg-card">
+            <CardContent className="p-4 flex items-center gap-3">
+              <CheckCircle2 className="h-5 w-5 text-success shrink-0" />
+              <p className="text-xs text-muted-foreground font-medium">
+                {isBn
+                  ? 'সকল মহাজনের বাকি হিসাব স্বাভাবিক রয়েছে — কোনো ক্রেডিট সীমা অতিক্রম হয়নি।'
+                  : 'All supplier credit accounts are in balance — zero exceeded credit limits or urgent dues.'}
+              </p>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+            {criticalCreditSuppliers.map((s) => {
+              const isOverLimit = (s.credit_limit || 0) > 0 && (s.outstanding_balance || 0) > (s.credit_limit || 0)
+              return (
+                <Card key={s.id} className="border-border bg-card p-3.5 space-y-2.5 shadow-xs">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <div className="flex items-center gap-1.5">
+                        <Badge
+                          variant={isOverLimit ? 'destructive' : 'outline'}
+                          className={cn('text-xs font-semibold uppercase', !isOverLimit && 'text-warning border-warning-border bg-warning-surface')}
+                        >
+                          {isOverLimit ? (isBn ? 'সীমা অতিক্রম' : 'Over Limit') : (isBn ? 'বকেয়া তাগাদা' : 'High Due')}
+                        </Badge>
+                        <span className="text-xs text-muted-foreground font-mono">{s.supplier_code || 'SUP'}</span>
+                      </div>
+                      <h3 className="text-xs font-bold text-foreground mt-1 line-clamp-1">{isBn && s.name_bn ? s.name_bn : s.supplier_name}</h3>
+                      <p className="text-xs text-muted-foreground">
+                        {isBn ? 'বাকি:' : 'Due:'} <span className="font-bold text-foreground"><CurrencyDisplay amount={s.outstanding_balance || 0} /></span> • {s.market_hub || 'Dhaka'}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 pt-1 border-t border-border">
+                    <Button
+                      size="sm"
+                      onClick={() => {
+                        setPayTargetSupplier(s)
+                        setIsPayModalOpen(true)
+                      }}
+                      className="h-8 text-xs font-semibold gap-1 bg-success hover:bg-success/90 text-success-foreground cursor-pointer flex-1"
+                    >
+                      <Receipt className="h-3.5 w-3.5" />
+                      <span>{isBn ? 'পরিশোধ' : 'Pay'}</span>
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setPayTargetSupplier(s)
+                        setIsNewPOOpen(true)
+                      }}
+                      className="h-8 text-xs font-semibold gap-1 border-input hover:bg-muted text-foreground cursor-pointer"
+                    >
+                      <Package className="h-3.5 w-3.5" />
+                      <span>{isBn ? 'PO' : 'PO'}</span>
+                    </Button>
+                  </div>
+                </Card>
+              )
+            })}
+          </div>
+        )}
+      </section>
 
       {/* FILTER & SEARCH CONTROL BAR */}
       <Card className="p-4 rounded-xl shadow-xs border-border space-y-3.5">
@@ -486,7 +591,7 @@ export default function SuppliersPage() {
  type="button"onClick={() => setViewMode('table')}
  className={`p-1.5 rounded-md text-xs font-bold transition-all cursor-pointer ${
  viewMode === 'table'
-                  ? 'bg-card text-teal-700 dark:text-teal-300 shadow-xs'
+                  ? 'bg-card text-success text-success shadow-xs'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
  title="Table View">
@@ -496,7 +601,7 @@ export default function SuppliersPage() {
  type="button"onClick={() => setViewMode('grid')}
  className={`p-1.5 rounded-md text-xs font-bold transition-all cursor-pointer ${
  viewMode === 'grid'
-                  ? 'bg-card text-teal-700 dark:text-teal-300 shadow-xs'
+                  ? 'bg-card text-success text-success shadow-xs'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
  title="Grid Cards View">
@@ -511,7 +616,7 @@ export default function SuppliersPage() {
  type="button"onClick={() => setSelectedCategory('all')}
  className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
  selectedCategory === 'all'
-                ? 'bg-teal-600 text-white shadow-xs'
+                ? 'bg-success text-white shadow-xs'
                 : 'bg-muted text-muted-foreground hover:bg-muted dark:hover:bg-card-elevated'
             }`}
           >
@@ -527,12 +632,12 @@ export default function SuppliersPage() {
  type="button"onClick={() => setSelectedCategory(cat.id)}
  className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap flex items-center gap-1.5 transition-all cursor-pointer ${
  isSelected
-                    ? 'bg-teal-600 text-white shadow-xs'
+                    ? 'bg-success text-white shadow-xs'
                     : 'bg-muted text-muted-foreground hover:bg-muted dark:hover:bg-card-elevated'
                 }`}
               >
                 <span>{locale === 'bn' ? cat.labelBn.split(' ')[0] : cat.labelEn.split(' ')[0]}</span>
-                <span className="text-2xs opacity-75 tabular-nums">({count})</span>
+                <span className="text-xs opacity-75 tabular-nums">({count})</span>
               </button>
             )
           })}
@@ -560,7 +665,7 @@ export default function SuppliersPage() {
  setSupplierToEdit(null)
  setIsSupplierModalOpen(true)
             }}
- className="mt-4 bg-teal-600 hover:bg-teal-700 text-white font-bold"size="sm">
+ className="mt-4 bg-success hover:bg-success text-white font-bold"size="sm">
             <Plus className="mr-1.5 h-3.5 w-3.5"/>
             {tBilingual('Register New Supplier', 'নতুন মহাজন যুক্ত করুন')}
           </Button>
@@ -576,7 +681,7 @@ export default function SuppliersPage() {
                 <CardTitle className="text-sm font-bold text-foreground">
                   {tBilingual('Registered Suppliers & Vendor Partners', 'নিবন্ধিত মহাজন ও ভেন্ডর পার্টনার')}
                 </CardTitle>
-                <Badge variant="outline"className="text-2xs tabular-nums">
+                <Badge variant="outline"className="text-xs tabular-nums">
                   {filtered.length} {tBilingual('shown', 'দেখানো হচ্ছে')}
                 </Badge>
               </div>
@@ -619,11 +724,11 @@ export default function SuppliersPage() {
                             <div>
                               <Link
  href={getTenantNavHref(`/suppliers/${supplier.id}`, pathname, slug)}
- className="font-bold text-foreground hover:text-teal-600 flex items-center gap-1 group">
+ className="font-bold text-foreground hover:text-success flex items-center gap-1 group">
                                 <span>{locale === 'bn' ? (supplier.name_bn || supplier.supplier_name) : supplier.supplier_name}</span>
-                                <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 text-teal-600 transition-opacity"/>
+                                <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 text-success transition-opacity"/>
                               </Link>
-                              <div className="flex items-center gap-2 text-2xs text-muted-foreground tabular-nums mt-0.5">
+                              <div className="flex items-center gap-2 text-xs text-muted-foreground tabular-nums mt-0.5">
                                 <span>{supplier.supplier_code || 'SUP-001'}</span>
                                 {supplier.company && <span>• {supplier.company}</span>}
                               </div>
@@ -634,7 +739,7 @@ export default function SuppliersPage() {
                         {/* Category */}
                         <td className="py-3.5 px-4">
                           <span
- className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-2xs font-bold border ${catMeta.badgeClass}`}
+ className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-bold border ${catMeta.badgeClass}`}
                           >
                             <CatIcon className="h-3 w-3"/>
                             <span>{tBilingual(catMeta.labelEn.split(' ')[0], catMeta.labelBn.split(' ')[0])}</span>
@@ -647,19 +752,19 @@ export default function SuppliersPage() {
                             {supplier.contact_person || '—'}
                           </div>
                           {supplier.designation && (
-                            <div className="text-2xs text-muted-foreground">{supplier.designation}</div>
+                            <div className="text-xs text-muted-foreground">{supplier.designation}</div>
                           )}
-                          <div className="flex items-center gap-3 tabular-nums text-2xs pt-1">
+                          <div className="flex items-center gap-3 tabular-nums text-xs pt-1">
                             <a
  href={`tel:${supplier.mobile}`}
- className="flex items-center gap-1 text-foreground hover:text-teal-600">
+ className="flex items-center gap-1 text-foreground hover:text-success">
                               <Phone className="h-3 w-3 text-muted-foreground"/>
                               <span>{supplier.mobile}</span>
                             </a>
                             {supplier.whatsapp && (
                               <a
  href={`https://wa.me/${supplier.whatsapp.replace(/\D/g, '')}`}
- target="_blank"rel="noopener noreferrer"className="flex items-center gap-1 text-emerald-600 hover:underline"title="Chat on WhatsApp">
+ target="_blank"rel="noopener noreferrer"className="flex items-center gap-1 text-success hover:underline"title="Chat on WhatsApp">
                                 <MessageSquare className="h-3 w-3"/>
                                 <span>WA</span>
                               </a>
@@ -670,11 +775,11 @@ export default function SuppliersPage() {
                         {/* Market Hub */}
                         <td className="py-3.5 px-4">
                           <div className="flex items-center gap-1 text-foreground font-medium">
-                            <MapPin className="h-3 w-3 text-teal-600 shrink-0"/>
+                            <MapPin className="h-3 w-3 text-success shrink-0"/>
                             <span className="capitalize">{supplier.market_hub || 'Nayabazar'}</span>
                           </div>
                           {supplier.address && (
-                            <div className="text-2xs text-muted-foreground truncate max-w-[180px] mt-0.5">
+                            <div className="text-xs text-muted-foreground truncate max-w-[180px] mt-0.5">
                               {supplier.address}
                             </div>
                           )}
@@ -686,7 +791,7 @@ export default function SuppliersPage() {
                             {supplier.payment_terms.replace('_', ' ')}
                           </div>
                           {(supplier.credit_limit || 0) > 0 && (
-                            <div className="text-2xs text-muted-foreground tabular-nums">
+                            <div className="text-xs text-muted-foreground tabular-nums">
  {tBilingual('Limit', 'সীমা')}: {formatBDT(supplier.credit_limit || 0)}
                             </div>
                           )}
@@ -696,19 +801,19 @@ export default function SuppliersPage() {
                         <td className="py-3.5 px-4">
                           {hasDue ? (
                             <div>
-                              <div className="text-sm font-black tabular-nums text-amber-700 dark:text-amber-400">
+                              <div className="text-sm font-black tabular-nums text-warning text-warning">
                                 {formatBDT(supplier.outstanding_balance || 0)}
                               </div>
                               {isOverLimit ? (
-                                <Badge className="bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300 text-2xs py-0 px-1 border-0">
+                                <Badge className="bg-danger-surface text-destructive bg-danger-surface/60 text-destructive text-xs py-0 px-1 border-0">
  {tBilingual('Limit Exceeded', 'সীমা অতিক্রম')}
                                 </Badge>
                               ) : (
-                                <span className="text-2xs text-amber-600 font-semibold">{tBilingual('Payable Due', 'পাওনা বাকি')}</span>
+                                <span className="text-xs text-warning font-semibold">{tBilingual('Payable Due', 'পাওনা বাকি')}</span>
                               )}
                             </div>
                           ) : (
-                            <div className="flex items-center gap-1 text-emerald-600 font-bold text-xs">
+                            <div className="flex items-center gap-1 text-success font-bold text-xs">
                               <CheckCircle2 className="h-3.5 w-3.5"/>
                               <span>{tBilingual('Settled', 'পরিশোধিত')}</span>
                             </div>
@@ -724,8 +829,8 @@ export default function SuppliersPage() {
  setPayTargetSupplier(supplier)
  setIsPayModalOpen(true)
                                 }}
- className="h-8 px-2 text-2xs font-bold text-teal-700 dark:text-teal-300 border-teal-200 dark:border-teal-800 bg-teal-50/50 hover:bg-teal-100/70"title="Pay Supplier">
-                                <Receipt className="h-3.5 w-3.5 mr-1 text-teal-600"/>
+ className="h-8 px-2 text-xs font-bold text-success text-success border-success-border border-success-border bg-success-surface/50 hover:bg-success-surface/70"title="Pay Supplier">
+                                <Receipt className="h-3.5 w-3.5 mr-1 text-success"/>
                                 {tBilingual('Pay', 'পরিশোধ')}
                               </Button>
                             )}
@@ -735,7 +840,7 @@ export default function SuppliersPage() {
  setRateTargetSupplier(supplier)
  setIsRateModalOpen(true)
                               }}
- className="h-8 px-2 text-2xs font-semibold"title="Add Material Contract Rate">
+ className="h-8 px-2 text-xs font-semibold"title="Add Material Contract Rate">
                               <Tag className="h-3.5 w-3.5 text-muted-foreground"/>
                             </Button>
 
@@ -744,19 +849,19 @@ export default function SuppliersPage() {
  setSupplierToEdit(supplier)
  setIsSupplierModalOpen(true)
                               }}
- className="h-8 px-2 text-2xs font-semibold"title="Edit Supplier">
+ className="h-8 px-2 text-xs font-semibold"title="Edit Supplier">
                               <Edit2 className="h-3.5 w-3.5 text-muted-foreground"/>
                             </Button>
 
                             <Link href={getTenantNavHref(`/suppliers/${supplier.id}`, pathname, slug)}>
-                              <Button size="sm"className="h-8 px-2.5 text-2xs bg-surface-inset hover:bg-card-elevated text-foreground dark:hover:bg-card-elevated font-bold">
+                              <Button size="sm"className="h-8 px-2.5 text-xs bg-surface-inset hover:bg-card-elevated text-foreground dark:hover:bg-card-elevated font-bold">
                                 {tBilingual('Profile & Rates', 'রেটশিট ও লেজার')}
                               </Button>
                             </Link>
 
                             <Button
  size="sm"variant="ghost"onClick={() => handleTrashSupplier(supplier)}
- className="h-8 px-1.5 text-muted-foreground hover:text-rose-600 hover:bg-rose-50"title="Move to Trash">
+ className="h-8 px-1.5 text-muted-foreground hover:text-destructive hover:bg-danger-surface"title="Move to Trash">
                               <Trash2 className="h-3.5 w-3.5"/>
                             </Button>
                           </div>
@@ -799,18 +904,18 @@ export default function SuppliersPage() {
                         <div>
                           <Link
  href={getTenantNavHref(`/suppliers/${supplier.id}`, pathname, slug)}
- className="font-bold text-foreground hover:text-teal-600 text-sm flex items-center gap-1 group">
+ className="font-bold text-foreground hover:text-success text-sm flex items-center gap-1 group">
                             <span>{locale === 'bn' ? (supplier.name_bn || supplier.supplier_name) : supplier.supplier_name}</span>
-                            <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 text-teal-600"/>
+                            <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 text-success"/>
                           </Link>
-                          <div className="text-2xs text-muted-foreground tabular-nums mt-0.5">
+                          <div className="text-xs text-muted-foreground tabular-nums mt-0.5">
                             {supplier.supplier_code || 'SUP-001'} {supplier.company && `• ${supplier.company}`}
                           </div>
                         </div>
                       </div>
 
                       <span
- className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-2xs font-bold border shrink-0 ${catMeta.badgeClass}`}
+ className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-bold border shrink-0 ${catMeta.badgeClass}`}
                       >
                         <CatIcon className="h-3 w-3"/>
                         <span>{locale === 'bn' ? catMeta.labelBn.split(' ')[0] : catMeta.labelEn.split(' ')[0]}</span>
@@ -825,15 +930,15 @@ export default function SuppliersPage() {
                         <div className="text-foreground font-medium flex items-center justify-between">
                           <span>{supplier.contact_person}</span>
                           {supplier.designation && (
-                            <span className="text-2xs text-muted-foreground">{supplier.designation}</span>
+                            <span className="text-xs text-muted-foreground">{supplier.designation}</span>
                           )}
                         </div>
                       )}
 
-                      <div className="flex flex-wrap items-center justify-between gap-2 tabular-nums text-2xs pt-0.5">
+                      <div className="flex flex-wrap items-center justify-between gap-2 tabular-nums text-xs pt-0.5">
                         <a
  href={`tel:${supplier.mobile}`}
- className="flex items-center gap-1 text-teal-700 dark:text-teal-400 font-bold hover:underline">
+ className="flex items-center gap-1 text-success text-success font-bold hover:underline">
                           <Phone className="h-3 w-3"/>
                           <span>{supplier.mobile}</span>
                         </a>
@@ -841,14 +946,14 @@ export default function SuppliersPage() {
                         {supplier.whatsapp && (
                           <a
  href={`https://wa.me/${supplier.whatsapp.replace(/\D/g, '')}`}
- target="_blank"rel="noopener noreferrer"className="flex items-center gap-1 text-emerald-600 font-bold hover:underline">
+ target="_blank"rel="noopener noreferrer"className="flex items-center gap-1 text-success font-bold hover:underline">
                             <MessageSquare className="h-3 w-3"/>
                             <span>WhatsApp</span>
                           </a>
                         )}
                       </div>
 
-                      <div className="flex items-center gap-1 text-2xs text-muted-foreground pt-1 border-t border-border /50">
+                      <div className="flex items-center gap-1 text-xs text-muted-foreground pt-1 border-t border-border /50">
                         <MapPin className="h-3 w-3 text-muted-foreground shrink-0"/>
                         <span className="truncate">{supplier.address || supplier.market_hub || 'Dhaka'}</span>
                       </div>
@@ -856,14 +961,14 @@ export default function SuppliersPage() {
 
                     {/* Credit Bar */}
                     <div className="space-y-1">
-                      <div className="flex justify-between text-2xs text-muted-foreground font-semibold">
+                      <div className="flex justify-between text-xs text-muted-foreground font-semibold">
                         <span>{tBilingual('Terms', 'শর্তাবলী')}: {supplier.payment_terms.replace('_', ' ').toUpperCase()}</span>
                         <span>{tBilingual('Credit Limit', 'বাকি সীমা')}: {formatBDT(creditLimit)}</span>
                       </div>
                       <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
                         <div
  className={`h-full transition-all rounded-full ${
- creditUsedPct > 90 ? 'bg-rose-500' : creditUsedPct > 50 ? 'bg-amber-500' : 'bg-teal-500'
+ creditUsedPct > 90 ? 'bg-destructive' : creditUsedPct > 50 ? 'bg-warning' : 'bg-success'
                           }`}
  style={{ width: `${creditUsedPct}%` }}
                         />
@@ -875,16 +980,16 @@ export default function SuppliersPage() {
                 {/* Card Footer Balance & Actions */}
                 <div className="p-4 pt-3 border-t border-border bg-muted flex items-center justify-between gap-2">
                   <div>
-                    <span className="text-2xs text-muted-foreground uppercase font-bold tracking-wider">
+                    <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider">
                       {tBilingual('Payable Balance', 'বকেয়া পাওনা')}
                     </span>
                     <div className="text-base font-black tabular-nums">
                       {hasDue ? (
-                        <span className="text-amber-700 dark:text-amber-400">
+                        <span className="text-warning text-warning">
                           {formatBDT(currentBal)}
                         </span>
                       ) : (
-                        <span className="text-xs text-emerald-600 font-bold flex items-center gap-1">
+                        <span className="text-xs text-success font-bold flex items-center gap-1">
                           <CheckCircle2 className="h-3.5 w-3.5"/> {tBilingual('Settled', 'পরিশোধিত')}
                         </span>
                       )}
@@ -898,7 +1003,7 @@ export default function SuppliersPage() {
  setPayTargetSupplier(supplier)
  setIsPayModalOpen(true)
                           }}
- className="h-8 px-2.5 text-xs bg-teal-600 hover:bg-teal-700 text-white font-bold shadow-xs">
+ className="h-8 px-2.5 text-xs bg-success hover:bg-success text-white font-bold shadow-xs">
                           <Receipt className="h-3.5 w-3.5 mr-1"/>
                           {tBilingual('Pay', 'পরিশোধ')}
                         </Button>
@@ -912,7 +1017,7 @@ export default function SuppliersPage() {
 
                       <Button
  size="sm"variant="ghost"onClick={() => handleTrashSupplier(supplier)}
- className="h-8 px-1.5 text-muted-foreground hover:text-rose-600 hover:bg-rose-50"title="Move to Trash">
+ className="h-8 px-1.5 text-muted-foreground hover:text-destructive hover:bg-danger-surface"title="Move to Trash">
                         <Trash2 className="h-3.5 w-3.5"/>
                       </Button>
                     </div>
@@ -964,7 +1069,7 @@ export default function SuppliersPage() {
  isLoading={isTrashing}
  onConfirm={confirmTrashSupplier}
       />
-      </div>
+      </PageContainer>
     </PanelAccessGuard>
   )
 }

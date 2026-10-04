@@ -94,7 +94,7 @@ export function GlobalSearchDialog({ open, onClose }: GlobalSearchDialogProps) {
       onClick={onClose}
     >
       <div
-        className="w-full max-w-2xl bg-card border border-border rounded-xl shadow-lg overflow-hidden flex flex-col max-h-screen animate-in zoom-in-95 duration-200 cursor-default"
+        className="w-full max-w-2xl bg-card border border-border rounded-xl shadow-xs overflow-hidden flex flex-col max-h-screen animate-in zoom-in-95 duration-200 cursor-default"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Search Input Bar */}
@@ -127,7 +127,7 @@ export function GlobalSearchDialog({ open, onClose }: GlobalSearchDialogProps) {
           <button
             type="button"
             onClick={onClose}
-            className="hidden sm:inline-flex items-center px-2 py-0.5 text-2xs tabular-nums text-muted-foreground bg-muted border border-border rounded-md cursor-pointer transition-colors font-semibold"
+            className="hidden sm:inline-flex items-center px-2 py-0.5 text-xs tabular-nums text-muted-foreground bg-muted border border-border rounded-md cursor-pointer transition-colors font-semibold"
             title="ESC"
             aria-label="Close search (ESC)"
           >
@@ -159,7 +159,7 @@ export function GlobalSearchDialog({ open, onClose }: GlobalSearchDialogProps) {
               <p className="text-xs text-foreground font-medium">
                 {tBilingual('Search by client name, phone, or plan.', 'ক্লায়েন্টের নাম বা ফোন দিয়ে খুঁজুন।')}
               </p>
-              <p className="text-2xs text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 {tBilingual('Shortcut: press', 'সহজে খুলতে')} <kbd className="px-1.5 py-0.5 bg-muted border border-border rounded text-foreground font-semibold tabular-nums">/</kbd> {tBilingual('anywhere', 'চাপুন')}
               </p>
             </div>
@@ -179,7 +179,7 @@ export function GlobalSearchDialog({ open, onClose }: GlobalSearchDialogProps) {
           {/* Group: Companies */}
           {results && results.companies.length > 0 && (
             <div className="space-y-2">
-              <div className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+              <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
                 <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
                 <span>{tBilingual('Clients', 'ক্লায়েন্ট')} ({results.companies.length})</span>
               </div>
@@ -195,7 +195,7 @@ export function GlobalSearchDialog({ open, onClose }: GlobalSearchDialogProps) {
                         {comp.name}
                         {comp.name_bn && <span className="text-muted-foreground ml-1 font-normal">({comp.name_bn})</span>}
                       </div>
-                      <div className="text-2xs text-muted-foreground flex items-center gap-2 mt-0.5 font-medium">
+                      <div className="text-xs text-muted-foreground flex items-center gap-2 mt-0.5 font-medium">
                         <span>{tBilingual('Owner:', 'মালিক:')} {comp.owner_name}</span>
                         <span>•</span>
                         <span>{comp.owner_phone}</span>
@@ -204,7 +204,7 @@ export function GlobalSearchDialog({ open, onClose }: GlobalSearchDialogProps) {
                       </div>
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <span className={`text-2xs uppercase font-semibold px-2 py-0.5 rounded-full border ${comp.status === 'active' ? 'bg-success-surface text-success border-success/30' : 'bg-warning-surface text-warning border-warning/30'}`}>
+                      <span className={`text-xs uppercase font-semibold px-2 py-0.5 rounded-full border ${comp.status === 'active' ? 'bg-success-surface text-success border-success/30' : 'bg-warning-surface text-warning border-warning/30'}`}>
                         {comp.status}
                       </span>
                       <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
@@ -218,7 +218,7 @@ export function GlobalSearchDialog({ open, onClose }: GlobalSearchDialogProps) {
           {/* Group: Subscriptions */}
           {results && results.subscriptions.length > 0 && (
             <div className="space-y-2">
-              <div className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+              <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
                 <CreditCard className="h-3.5 w-3.5 text-muted-foreground" />
                 <span>{tBilingual('Plans', 'প্ল্যান')} ({results.subscriptions.length})</span>
               </div>
@@ -233,11 +233,11 @@ export function GlobalSearchDialog({ open, onClose }: GlobalSearchDialogProps) {
                       <div className="font-semibold text-foreground group-hover:text-primary transition-colors">
                         {sub.company_name} — {sub.plan_code.toUpperCase()}
                       </div>
-                      <div className="text-2xs text-muted-foreground font-medium">
+                      <div className="text-xs text-muted-foreground font-medium">
                         {tBilingual('Monthly:', 'মাসিক:')} ৳{sub.amount.toLocaleString()}
                       </div>
                     </div>
-                    <span className="text-2xs font-semibold uppercase px-2 py-0.5 rounded-full bg-success-surface text-success border border-success/30">
+                    <span className="text-xs font-semibold uppercase px-2 py-0.5 rounded-full bg-success-surface text-success border border-success/30">
                       {sub.status}
                     </span>
                   </button>
@@ -249,7 +249,7 @@ export function GlobalSearchDialog({ open, onClose }: GlobalSearchDialogProps) {
           {/* Group: Audit Events */}
           {results && results.audit_events.length > 0 && (
             <div className="space-y-2">
-              <div className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+              <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
                 <FileClock className="h-3.5 w-3.5 text-muted-foreground" />
                 <span>{tBilingual('Activity Log', 'কাজের ইতিহাস')} ({results.audit_events.length})</span>
               </div>
@@ -264,7 +264,7 @@ export function GlobalSearchDialog({ open, onClose }: GlobalSearchDialogProps) {
                       <div className="font-semibold text-foreground group-hover:text-primary transition-colors tabular-nums">
                         {a.action}
                       </div>
-                      <div className="text-2xs text-muted-foreground font-medium">
+                      <div className="text-xs text-muted-foreground font-medium">
                         {tBilingual('By', 'করেছেন')} {a.actor_email} {a.target_company_name ? `(${a.target_company_name})` : ''}
                       </div>
                     </div>
@@ -278,7 +278,7 @@ export function GlobalSearchDialog({ open, onClose }: GlobalSearchDialogProps) {
           {/* Group: Feature Flags */}
           {results && results.features.length > 0 && (
             <div className="space-y-2">
-              <div className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+              <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
                 <Flag className="h-3.5 w-3.5 text-muted-foreground" />
                 <span>{tBilingual('Features', 'ফিচার')} ({results.features.length})</span>
               </div>
@@ -293,9 +293,9 @@ export function GlobalSearchDialog({ open, onClose }: GlobalSearchDialogProps) {
                       <div className="font-semibold text-foreground group-hover:text-primary transition-colors">
                         {f.name}
                       </div>
-                      <div className="text-2xs text-muted-foreground tabular-nums font-mono">{f.key}</div>
+                      <div className="text-xs text-muted-foreground tabular-nums font-mono">{f.key}</div>
                     </div>
-                    <span className={`text-2xs font-semibold px-2 py-0.5 rounded-full ${f.is_enabled ? 'bg-primary/10 text-primary border border-primary/20' : 'bg-muted text-muted-foreground border border-border'}`}>
+                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${f.is_enabled ? 'bg-primary/10 text-primary border border-primary/20' : 'bg-muted text-muted-foreground border border-border'}`}>
                       {f.is_enabled ? tBilingual('ON', 'চালু') : tBilingual('OFF', 'বন্ধ')}
                     </span>
                   </button>
@@ -306,7 +306,7 @@ export function GlobalSearchDialog({ open, onClose }: GlobalSearchDialogProps) {
         </div>
 
         {/* Footer */}
-        <div className="px-4 py-2.5 bg-muted/50 border-t border-border flex items-center justify-between text-2xs text-muted-foreground">
+        <div className="px-4 py-2.5 bg-muted/50 border-t border-border flex items-center justify-between text-xs text-muted-foreground">
           <span>{tBilingual('Select to open', 'খুলতে ক্লিক করুন')}</span>
           <button
             type="button"

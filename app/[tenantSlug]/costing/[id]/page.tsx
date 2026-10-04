@@ -58,7 +58,7 @@ export default function JobCostingDetailPage() {
 
  if (!mounted) {
  return (
-      <div className="space-y-6 max-w-5xl pb-20 animate-pulse">
+      <div className="space-y-6 pb-20 animate-pulse">
         <div className="h-8 bg-muted rounded-xl w-40"/>
         <div className="h-96 bg-muted rounded-xl"/>
       </div>
@@ -68,7 +68,7 @@ export default function JobCostingDetailPage() {
  if (!costing) {
  return (
       <FeatureGate feature="job_costing">
-        <div className="space-y-6 max-w-5xl pb-20">
+        <div className="space-y-6 pb-20">
           <Link
  href={getTenantNavHref('/costing', pathname, slug)}
  className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground dark:hover:text-foreground">
@@ -110,7 +110,7 @@ export default function JobCostingDetailPage() {
 
  return (
     <FeatureGate feature="job_costing">
-      <div className="space-y-6 max-w-5xl pb-20 print:max-w-none print:w-full print:bg-white print:text-foreground print: print: print:m-0 print:p-0">
+      <div className="space-y-6 pb-20 print:max-w-none print:w-full print:bg-white print:text-foreground print: print: print:m-0 print:p-0">
         {/* Non-Print Action Bar */}
         <div className="print:hidden flex flex-wrap items-center justify-between gap-3">
           <Link
@@ -125,18 +125,18 @@ export default function JobCostingDetailPage() {
  size="sm"variant="outline"onClick={() => setIsSalesRoleShielded(!isSalesRoleShielded)}
  className={`text-xs h-9 rounded-xl font-semibold ${
  isSalesRoleShielded
-                  ? 'bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950/40 dark:text-amber-300'
+                  ? 'bg-warning-surface text-warning border-warning-border bg-warning-surface text-warning'
                   : 'text-foreground '
               }`}
             >
               {isSalesRoleShielded ? (
                 <>
-                  <EyeOff className="mr-1.5 h-3.5 w-3.5 text-amber-600"/>
+                  <EyeOff className="mr-1.5 h-3.5 w-3.5 text-warning"/>
                   <span>{tBilingual('Sales View (Masked)', 'সেলস ভিউ')}</span>
                 </>
               ) : (
                 <>
-                  <ShieldCheck className="mr-1.5 h-3.5 w-3.5 text-emerald-600"/>
+                  <ShieldCheck className="mr-1.5 h-3.5 w-3.5 text-success"/>
                   <span>{tBilingual('Owner View (Full)', 'মালিক ভিউ')}</span>
                 </>
               )}
@@ -158,7 +158,7 @@ export default function JobCostingDetailPage() {
           {/* Letterhead */}
           <div className="text-center space-y-1 pb-4 border-b-2 border-border print:border-border">
             <h1 className="text-xl sm:text-2xl font-black tracking-tight">{company?.name || 'Industrial Printing & Signage Solutions'}</h1>
-            <p className="text-muted-foreground text-2xs">Commercial Printing • Large-Format Signage • 4-Color Offset{company?.address ? ` • ${company.address}` : ''}</p>
+            <p className="text-muted-foreground text-xs">Commercial Printing • Large-Format Signage • 4-Color Offset{company?.address ? ` • ${company.address}` : ''}</p>
             <div className="inline-block mt-2 px-5 py-1 rounded-full bg-muted font-black text-xs sm:text-sm tracking-wider uppercase border border-input">
  JOB COST TRAVELER & MARGIN AUDIT (কস্টিং ও লাভ নিরীক্ষা)
             </div>
@@ -167,11 +167,11 @@ export default function JobCostingDetailPage() {
           {/* Job Meta Box */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-xl bg-muted border border-border text-xs">
             <div className="space-y-1">
-              <span className="text-2xs uppercase font-bold text-muted-foreground">Job Particulars:</span>
+              <span className="text-xs uppercase font-bold text-muted-foreground">Job Particulars:</span>
               <div className="font-black text-base text-foreground tabular-nums">{costing.job_number}</div>
-              <div className="font-bold text-blue-600 dark:text-blue-400">{costing.customer_name}</div>
+              <div className="font-bold text-primary text-primary">{costing.customer_name}</div>
               <div className="text-foreground font-semibold">{costing.item_title}</div>
-              <div className="text-muted-foreground tabular-nums text-2xs">Specs: {costing.dimensions_spec || 'Custom dimensions'}</div>
+              <div className="text-muted-foreground tabular-nums text-xs">Specs: {costing.dimensions_spec || 'Custom dimensions'}</div>
             </div>
 
             <div className="space-y-1 text-left sm:text-right tabular-nums">
@@ -184,11 +184,11 @@ export default function JobCostingDetailPage() {
               <div>Labor Mode: <strong className="uppercase">{costing.labor_cost_mode.replace('_', ' ')}</strong></div>
               <div>
  Status:{' '}
-                <strong className={`uppercase ${costing.status === 'actualized' ? 'text-emerald-600' : 'text-blue-600'}`}>
+                <strong className={`uppercase ${costing.status === 'actualized' ? 'text-success' : 'text-primary'}`}>
                   {costing.status}
                 </strong>
               </div>
-              <div className="text-muted-foreground text-2xs">Audited on: {costing.updated_at.split('T')[0]}</div>
+              <div className="text-muted-foreground text-xs">Audited on: {costing.updated_at.split('T')[0]}</div>
             </div>
           </div>
 
@@ -212,7 +212,7 @@ export default function JobCostingDetailPage() {
                     <tr key={idx} className="hover:bg-muted">
                       <td className="p-3 font-semibold text-foreground font-sans">
                         <div>{h.labelEn}</div>
-                        <div className="text-2xs text-muted-foreground font-normal">{h.labelBn}</div>
+                        <div className="text-xs text-muted-foreground font-normal">{h.labelBn}</div>
                       </td>
 
                       {/* Pre-Production Estimate */}
@@ -237,9 +237,9 @@ export default function JobCostingDetailPage() {
                           '••••'
                         ) : costing.status === 'actualized' ? (
  variance < 0 ? (
-                            <span className="text-emerald-600 font-bold">-{formatBDT(Math.abs(variance))}</span>
+                            <span className="text-success font-bold">-{formatBDT(Math.abs(variance))}</span>
                           ) : variance > 0 ? (
-                            <span className="text-red-600 font-bold">+{formatBDT(variance)}</span>
+                            <span className="text-destructive font-bold">+{formatBDT(variance)}</span>
                           ) : (
                             <span className="text-muted-foreground">৳ 0</span>
                           )
@@ -251,14 +251,14 @@ export default function JobCostingDetailPage() {
                       {/* Badge */}
                       <td className="p-3 text-center">
                         {isSalesRoleShielded ? (
-                          <span className="text-muted-foreground text-2xs">Shielded</span>
+                          <span className="text-muted-foreground text-xs">Shielded</span>
                         ) : costing.status === 'actualized' ? (
                           <Badge
  className={
  variance < 0
-                                ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200'
+                                ? 'bg-success-surface text-success bg-success text-success'
                                 : variance > 0
-                                ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                                ? 'bg-danger-surface text-destructive bg-destructive text-destructive'
                                 : 'bg-muted text-foreground'
                             }
                           >
@@ -290,11 +290,11 @@ export default function JobCostingDetailPage() {
                       '••••••'
                     ) : costing.status === 'actualized' ? (
                       (costing.variances?.total_variance || 0) < 0 ? (
-                        <span className="text-emerald-700 font-black">
+                        <span className="text-success font-black">
                           -{formatBDT(Math.abs(costing.variances?.total_variance || 0))}
                         </span>
                       ) : (
-                        <span className="text-red-700 font-black">
+                        <span className="text-destructive font-black">
                           +{formatBDT(costing.variances?.total_variance || 0)}
                         </span>
                       )
@@ -312,29 +312,29 @@ export default function JobCostingDetailPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Estimated Margins */}
             <div className="p-4 rounded-xl bg-muted border space-y-1 tabular-nums text-xs">
-              <span className="text-2xs uppercase font-bold text-muted-foreground">Pre-Production Estimate:</span>
+              <span className="text-xs uppercase font-bold text-muted-foreground">Pre-Production Estimate:</span>
               <div className="flex justify-between">
                 <span>Estimated Profit:</span>
-                <strong className="text-blue-600 font-bold">
+                <strong className="text-primary font-bold">
                   {isSalesRoleShielded ? '••••••' : formatBDT(costing.est.profit)}
                 </strong>
               </div>
               <div className="flex justify-between">
                 <span>Estimated Margin:</span>
-                <strong className="text-blue-600 font-bold">
+                <strong className="text-primary font-bold">
                   {isSalesRoleShielded ? '••••' : `${costing.est.margin_percentage}%`}
                 </strong>
               </div>
             </div>
 
             {/* Actual Margins */}
-            <div className="p-4 rounded-xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-300 dark:border-emerald-800 space-y-1 tabular-nums text-xs">
-              <span className="text-2xs uppercase font-bold text-emerald-700 dark:text-emerald-300">
+            <div className="p-4 rounded-xl bg-success-surface/50 bg-success-surface border border-success-border border-success-border space-y-1 tabular-nums text-xs">
+              <span className="text-xs uppercase font-bold text-success text-success">
  Realized Post-Production Margin:
               </span>
               <div className="flex justify-between">
                 <span>Actual Realized Profit:</span>
-                <strong className="text-emerald-700 dark:text-emerald-300 text-sm font-bold">
+                <strong className="text-success text-success text-sm font-bold">
                   {isSalesRoleShielded
                     ? '••••••'
                     : costing.status === 'actualized'
@@ -344,7 +344,7 @@ export default function JobCostingDetailPage() {
               </div>
               <div className="flex justify-between">
                 <span>Realized Margin %:</span>
-                <strong className="text-emerald-700 dark:text-emerald-300 text-sm font-bold">
+                <strong className="text-success text-success text-sm font-bold">
                   {isSalesRoleShielded
                     ? '••••'
                     : costing.status === 'actualized'

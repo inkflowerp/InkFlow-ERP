@@ -113,3 +113,13 @@ export interface InstallationRecord {
   created_at: string
   updated_at: string
 }
+
+export interface LogisticsKpiMetrics {
+  dispatchesToday: number
+  outForDelivery: number
+  partiallyDelivered: number
+  installationsActive: number
+  fullyDelivered: number
+  totalPendingDue: number
+  totalChallans: number
+}

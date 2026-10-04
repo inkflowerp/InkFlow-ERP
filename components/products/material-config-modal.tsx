@@ -87,9 +87,9 @@ export const PHYSICAL_FORM_CARDS: Array<{
  icon: Layers,
  badge: 'Roll Substrate',
  accentColor: 'blue',
- borderClass: 'border-blue-200 dark:border-blue-900/60 hover:border-blue-500 hover:bg-blue-50/40 dark:hover:bg-blue-950/30',
- badgeClass: 'bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 border-blue-200 dark:border-blue-800',
- iconClass: 'bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300',
+ borderClass: 'border-primary/20 border-border/60 hover:border-primary/20 hover:bg-primary/10/40 dark:hover:bg-primary/10',
+ badgeClass: 'bg-primary/10 text-primary bg-primary/60 text-primary border-primary/20 border-border',
+ iconClass: 'bg-primary/10 text-primary bg-primary/60 text-primary',
   },
   {
  id: 'sheet',
@@ -99,9 +99,9 @@ export const PHYSICAL_FORM_CARDS: Array<{
  icon: Maximize2,
  badge: 'Flat Sheet',
  accentColor: 'emerald',
- borderClass: 'border-emerald-200 dark:border-emerald-900/60 hover:border-emerald-500 hover:bg-emerald-50/40 dark:hover:bg-emerald-950/30',
- badgeClass: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800',
- iconClass: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-300',
+ borderClass: 'border-success-border border-success-border/60 hover:border-success-border hover:bg-success-surface/40 dark:hover:bg-success-surface',
+ badgeClass: 'bg-success-surface text-success bg-success/60 text-success border-success-border border-success-border',
+ iconClass: 'bg-success-surface text-success bg-success/60 text-success',
   },
   {
  id: 'liquid',
@@ -111,9 +111,9 @@ export const PHYSICAL_FORM_CARDS: Array<{
  icon: Droplets,
  badge: 'Chemical/Ink',
  accentColor: 'rose',
- borderClass: 'border-rose-200 dark:border-rose-900/60 hover:border-rose-500 hover:bg-rose-50/40 dark:hover:bg-rose-950/30',
- badgeClass: 'bg-rose-100 text-rose-700 dark:bg-rose-900/60 dark:text-rose-300 border-rose-200 dark:border-rose-800',
- iconClass: 'bg-rose-100 text-rose-700 dark:bg-rose-900/60 dark:text-rose-300',
+ borderClass: 'border-danger-border border-danger-border/60 hover:border-danger-border hover:bg-danger-surface/40 dark:hover:bg-danger-surface',
+ badgeClass: 'bg-danger-surface text-destructive bg-destructive/60 text-destructive border-danger-border border-danger-border',
+ iconClass: 'bg-danger-surface text-destructive bg-destructive/60 text-destructive',
   },
   {
  id: 'rigid',
@@ -123,9 +123,9 @@ export const PHYSICAL_FORM_CARDS: Array<{
  icon: Wrench,
  badge: 'Linear Profile',
  accentColor: 'indigo',
- borderClass: 'border-indigo-200 dark:border-indigo-900/60 hover:border-indigo-500 hover:bg-indigo-50/40 dark:hover:bg-indigo-950/30',
- badgeClass: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/60 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800',
- iconClass: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/60 dark:text-indigo-300',
+ borderClass: 'border-primary/20 border-border/60 hover:border-primary/20 hover:bg-primary/10/40 dark:hover:bg-primary/10',
+ badgeClass: 'bg-primary/10 text-primary bg-primary/60 text-primary border-primary/20 border-border',
+ iconClass: 'bg-primary/10 text-primary bg-primary/60 text-primary',
   },
   {
  id: 'accessory',
@@ -135,9 +135,9 @@ export const PHYSICAL_FORM_CARDS: Array<{
  icon: Package,
  badge: 'Accessories',
  accentColor: 'amber',
- borderClass: 'border-amber-200 dark:border-amber-900/60 hover:border-amber-500 hover:bg-amber-50/40 dark:hover:bg-amber-950/30',
- badgeClass: 'bg-amber-100 text-amber-700 dark:bg-amber-900/60 dark:text-amber-300 border-amber-200 dark:border-amber-800',
- iconClass: 'bg-amber-100 text-amber-700 dark:bg-amber-900/60 dark:text-amber-300',
+ borderClass: 'border-warning-border border-warning-border/60 hover:border-warning-border hover:bg-warning-surface/40 dark:hover:bg-warning-surface',
+ badgeClass: 'bg-warning-surface text-warning bg-warning/60 text-warning border-warning-border border-warning-border',
+ iconClass: 'bg-warning-surface text-warning bg-warning/60 text-warning',
   },
   {
  id: 'electrical',
@@ -147,9 +147,9 @@ export const PHYSICAL_FORM_CARDS: Array<{
  icon: Sparkles,
  badge: 'Illumination',
  accentColor: 'cyan',
- borderClass: 'border-cyan-200 dark:border-cyan-900/60 hover:border-cyan-500 hover:bg-cyan-50/40 dark:hover:bg-cyan-950/30',
- badgeClass: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/60 dark:text-cyan-300 border-cyan-200 dark:border-cyan-800',
- iconClass: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/60 dark:text-cyan-300',
+ borderClass: 'border-primary/20 border-border/60 hover:border-primary/20 hover:bg-info-surface/40 dark:hover:bg-primary/10',
+ badgeClass: 'bg-info-surface text-primary bg-primary/60 text-primary border-primary/20 border-border',
+ iconClass: 'bg-info-surface text-primary bg-primary/60 text-primary',
   },
 ]
 
@@ -1436,7 +1436,7 @@ export function MaterialConfigModal({
  size="5xl"onSubmit={handleSubmit}
  title={
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-600/10 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400 font-bold shrink-0 ring-1 ring-amber-500/20">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-warning/10 text-warning bg-warning/20 text-warning font-bold shrink-0 ring-1 focus:ring-ring/20">
             <Boxes className="h-5 w-5"/>
           </div>
           <div>
@@ -1444,14 +1444,14 @@ export function MaterialConfigModal({
               <span className="text-base font-bold text-foreground">
                 {initialData ? `Edit Raw Material: ${initialData.name}` : 'New Raw Material Master'}
               </span>
-              <Badge variant="outline"className="text-2xs uppercase tabular-nums py-0.5 px-2 bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800">
+              <Badge variant="outline"className="text-xs uppercase tabular-nums py-0.5 px-2 bg-warning-surface text-warning border-warning-border bg-warning-surface text-warning border-warning-border">
  Inventory Stock
               </Badge>
-              <Badge variant="outline"className="text-2xs uppercase tabular-nums py-0.5 px-2 bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800">
+              <Badge variant="outline"className="text-xs uppercase tabular-nums py-0.5 px-2 bg-primary/10 text-primary border-primary/20 bg-primary/10 text-primary border-border">
                 {materialType.toUpperCase()}
               </Badge>
               {calculatedEconomics.unitCost > 0 && (
-                <Badge variant="outline"className="text-2xs tabular-nums py-0.5 px-2 bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800">
+                <Badge variant="outline"className="text-xs tabular-nums py-0.5 px-2 bg-success-surface text-success border-success-border bg-success-surface text-success border-success-border">
                   ৳{calculatedEconomics.unitCost.toFixed(2)} / {usageUnit}
                 </Badge>
               )}
@@ -1501,7 +1501,7 @@ export function MaterialConfigModal({
  else if (activeTab === 'costing') setActiveTab('inventory')
  else if (activeTab === 'inventory') setActiveTab('production')
                 }}
- className="h-10 px-4 rounded-xl font-bold border-amber-300 text-amber-700 dark:border-amber-700 dark:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-950/40 gap-1.5 cursor-pointer">
+ className="h-10 px-4 rounded-xl font-bold border-warning-border text-warning border-warning-border text-warning hover:bg-warning-surface dark:hover:bg-warning-surface gap-1.5 cursor-pointer">
                 <span>Next Step</span>
                 <ChevronRight className="w-4 h-4"/>
               </Button>
@@ -1510,7 +1510,7 @@ export function MaterialConfigModal({
             {activeTab === 'production' && (
               <Button
  type="submit"disabled={isSubmitting}
- className="h-10 px-5 rounded-xl font-bold bg-amber-600 hover:bg-amber-700 text-white shadow-xs flex items-center justify-center gap-2 cursor-pointer">
+ className="h-10 px-5 rounded-xl font-bold bg-warning hover:bg-warning/90 text-white shadow-xs flex items-center justify-center gap-2 cursor-pointer">
                 {isSubmitting ? (
                   <>
                     <RefreshCw className="h-4 w-4 animate-spin"/>
@@ -1547,16 +1547,16 @@ export function MaterialConfigModal({
  className={cn(
                   'px-2 py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap text-xs relative',
  isSelected
-                    ? 'bg-card text-foreground shadow-xs font-bold ring-1 ring-slate-200 dark:ring-slate-600'
+                    ? 'bg-card text-foreground shadow-xs font-bold ring-1 focus:ring-ring dark:focus:ring-ring'
                     : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground font-medium'
                 )}
               >
-                <Icon className={cn('w-3.5 h-3.5 shrink-0', isSelected ? 'text-amber-600 dark:text-amber-400' : 'text-muted-foreground')} />
+                <Icon className={cn('w-3.5 h-3.5 shrink-0', isSelected ? 'text-warning text-warning' : 'text-muted-foreground')} />
                 <span>{tab.label}</span>
                 {tab.count !== null && (
                   <span className={cn(
-                    'text-2xs px-1.5 py-0.2 rounded-full tabular-nums font-bold leading-tight',
- isSelected ? 'bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300' : 'bg-muted text-muted-foreground '
+                    'text-xs px-1.5 py-0.2 rounded-full tabular-nums font-bold leading-tight',
+ isSelected ? 'bg-warning-surface text-warning bg-warning text-warning' : 'bg-muted text-muted-foreground '
                   )}>
                     {tab.count}
                   </span>
@@ -1575,19 +1575,19 @@ export function MaterialConfigModal({
             <div className="space-y-3 pb-3 border-b border-border">
               <div className="flex items-center justify-between pb-1.5 border-b border-border">
                 <div className="flex items-center gap-2">
-                  <div className="h-6 w-6 rounded-lg bg-amber-100 text-amber-700 dark:bg-amber-900/60 dark:text-amber-300 flex items-center justify-center font-bold text-xs">
+                  <div className="h-6 w-6 rounded-lg bg-warning-surface text-warning bg-warning/60 text-warning flex items-center justify-center font-bold text-xs">
                     1
                   </div>
                   <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
  Material Identity & Bilingual Naming
                   </h3>
                 </div>
-                <span className="text-2xs text-muted-foreground font-medium">Bilingual stock naming & SKU</span>
+                <span className="text-xs text-muted-foreground font-medium">Bilingual stock naming & SKU</span>
               </div>
 
               <div>
                 <Label className="text-xs font-semibold mb-1 block">
- Material Name (English) <span className="text-rose-500">*</span>
+ Material Name (English) <span className="text-destructive">*</span>
                 </Label>
                 <Input
  placeholder="e.g. Star Frontlit Flex Banner 280 GSM, Glossy Self-Adhesive Vinyl 100 Micron..."value={name}
@@ -1598,12 +1598,12 @@ export function MaterialConfigModal({
  required
  className={cn(
                     'h-9 text-xs font-medium transition-colors',
- fieldErrors.name && 'border-rose-500 focus-visible:ring-rose-400 bg-rose-50/30 dark:bg-rose-950/20'
+ fieldErrors.name && 'border-danger-border focus-visible:focus:ring-ring bg-danger-surface/30 bg-danger-surface'
                   )}
  autoFocus
                 />
                 {fieldErrors.name && (
-                  <p className="text-2xs text-rose-600 dark:text-rose-400 font-medium mt-1 flex items-center gap-1">
+                  <p className="text-xs text-destructive text-destructive font-medium mt-1 flex items-center gap-1">
                     <AlertCircle className="w-3.5 h-3.5 shrink-0"/>
                     <span>{fieldErrors.name}</span>
                   </p>
@@ -1637,9 +1637,9 @@ export function MaterialConfigModal({
             <div className="space-y-3 pb-3 border-b border-border">
               <div className="flex items-center justify-between pb-1.5">
                 <Label className="text-xs font-semibold text-foreground">
- Physical Form / Classification <span className="text-rose-500">*</span>
+ Physical Form / Classification <span className="text-destructive">*</span>
                 </Label>
-                <span className="text-2xs text-amber-600 dark:text-amber-400 font-semibold">
+                <span className="text-xs text-warning text-warning font-semibold">
  Determines geometry, tracking & costing formulas
                 </span>
               </div>
@@ -1655,7 +1655,7 @@ export function MaterialConfigModal({
  className={cn(
                         'p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between group shadow-2xs',
  isSelected
-                          ? 'bg-amber-50/50 dark:bg-amber-950/40 border-amber-500 ring-1 ring-amber-400 dark:ring-amber-600 shadow-xs'
+                          ? 'bg-warning-surface/50 bg-warning-surface border-warning-border ring-1 focus:ring-ring dark:focus:ring-ring shadow-xs'
                           : 'bg-card border-border hover:border-input dark:hover:border-border'
                       )}
                     >
@@ -1665,14 +1665,14 @@ export function MaterialConfigModal({
                         </div>
                         <div className="min-w-0">
                           <div className="flex items-center gap-1.5">
-                            <span className={cn('font-bold text-xs', isSelected ? 'text-amber-900 dark:text-amber-200' : 'text-foreground')}>
+                            <span className={cn('font-bold text-xs', isSelected ? 'text-warning text-warning' : 'text-foreground')}>
                               {card.title}
                             </span>
                           </div>
-                          <span className="text-2xs text-muted-foreground font-bengali block">
+                          <span className="text-xs text-muted-foreground font-bengali block">
                             {card.titleBn}
                           </span>
-                          <p className="text-2xs text-muted-foreground mt-1 line-clamp-2 leading-relaxed">
+                          <p className="text-xs text-muted-foreground mt-1 line-clamp-2 leading-relaxed">
                             {card.subtitle}
                           </p>
                         </div>
@@ -1687,9 +1687,9 @@ export function MaterialConfigModal({
                 <div>
                   <div className="flex items-center justify-between mb-1">
                     <Label className="text-xs font-semibold text-foreground">
- Catalog Category (ক্যাটালগ ক্যাটাগরি) <span className="text-rose-500">*</span>
+ Catalog Category (ক্যাটালগ ক্যাটাগরি) <span className="text-destructive">*</span>
                     </Label>
-                    <span className="text-2xs text-amber-600 dark:text-amber-400 font-semibold">
+                    <span className="text-xs text-warning text-warning font-semibold">
                       {filteredCatalogCategories.length} {materialType} Categories
                     </span>
                   </div>
@@ -1765,7 +1765,7 @@ export function MaterialConfigModal({
  type="number"step="any"min="0"placeholder="e.g. 280, 340, 440 GSM"value={weightGsm}
  onChange={(e) => setWeightGsm(e.target.value === '' ? '' : parseFloat(e.target.value))}
  className="h-9 text-xs tabular-nums pr-12"/>
-                    <span className="absolute right-2.5 top-2.5 text-2xs font-bold text-muted-foreground">GSM</span>
+                    <span className="absolute right-2.5 top-2.5 text-xs font-bold text-muted-foreground">GSM</span>
                   </div>
                 </div>
 
@@ -1795,7 +1795,7 @@ export function MaterialConfigModal({
  rows={2}
  placeholder="e.g. 280 GSM heavy duty PVC substrate, matte finish, solvent/eco-solvent compatible, 1-year outdoor UV resistance, high tear strength..."value={description}
  onChange={(e) => setDescription(e.target.value)}
- className="w-full p-2.5 rounded-md border border-input bg-card text-xs focus:ring-1 focus:ring-amber-500 outline-none resize-none"/>
+ className="w-full p-2.5 rounded-md border border-input bg-card text-xs focus:ring-1 focus:ring-ring outline-none resize-none"/>
               </div>
             </div>
           </div>
@@ -1808,24 +1808,24 @@ export function MaterialConfigModal({
           <div className="rounded-xl border border-border bg-card p-4 space-y-4 shadow-xs animate-in fade-in-0">
             <div className="flex items-center justify-between pb-2 border-b border-border">
               <div className="flex items-center gap-2">
-                <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
+                <div className="h-6 w-6 rounded-lg bg-primary/10 text-primary bg-primary/60 text-primary flex items-center justify-center font-bold text-xs">
                   2
                 </div>
                 <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
                   {tBilingual('Measurement Units & Physical Dimensions Matrix', 'পরিমাপ একক ও সাইজ মেট্রিক্স')}
                 </h3>
               </div>
-              <span className="text-2xs text-muted-foreground font-medium">
+              <span className="text-xs text-muted-foreground font-medium">
                 {tBilingual('Purchase units, roll widths & dimensions', 'ক্রয় একক, রোল প্রস্থ ও সাইজ')}
               </span>
             </div>
 
-            <div className="p-3.5 bg-blue-50/50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/60 rounded-xl space-y-3.5">
+            <div className="p-3.5 bg-primary/10/50 bg-primary/10 border border-primary/20 border-border/60 rounded-xl space-y-3.5">
               {/* Units Selection Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
                   <Label className="text-xs font-semibold text-foreground mb-1 block">
-                    {tBilingual('Purchase Unit', 'ক্রয় একক')} <span className="text-rose-500">*</span>
+                    {tBilingual('Purchase Unit', 'ক্রয় একক')} <span className="text-destructive">*</span>
                   </Label>
                   <select
  value={purchaseUnit}
@@ -1846,7 +1846,7 @@ export function MaterialConfigModal({
 
                 <div>
                   <Label className="text-xs font-semibold text-foreground mb-1 block">
-                    {tBilingual('Usage Unit', 'ব্যবহার বা খরচের একক')} <span className="text-rose-500">*</span>
+                    {tBilingual('Usage Unit', 'ব্যবহার বা খরচের একক')} <span className="text-destructive">*</span>
                   </Label>
                   <select
  value={usageUnit}
@@ -1878,7 +1878,7 @@ export function MaterialConfigModal({
 
               {/* Geometry Case A: Continuous Roll Media */}
               {(materialType === 'roll' || purchaseUnit === 'roll') && (
-                <div className="pt-3 border-t border-blue-200/60 dark:border-blue-800/60 space-y-3">
+                <div className="pt-3 border-t border-primary/20/60 border-border/60 space-y-3">
                   {/* Roll Width & Allowance Input Row */}
                   <div className="space-y-2.5 pt-1">
                     <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
@@ -1892,7 +1892,7 @@ export function MaterialConfigModal({
  type="number"step="any"min="0"placeholder="e.g. 10"value={newWidthInput}
  onChange={(e) => handleWidthInputChange(e.target.value)}
  className="h-9 text-xs tabular-nums font-bold pr-7"/>
-                            <span className="absolute right-2.5 top-2 text-2xs font-bold text-muted-foreground">ft</span>
+                            <span className="absolute right-2.5 top-2 text-xs font-bold text-muted-foreground">ft</span>
                           </div>
                           <span className="text-sm font-bold text-muted-foreground">+</span>
                           <div className="relative w-24">
@@ -1900,7 +1900,7 @@ export function MaterialConfigModal({
  type="number"step="any"min="0"placeholder="0"value={extraWidthAllowance}
  onChange={(e) => handleAllowanceChange(e.target.value)}
  className="h-9 text-xs tabular-nums font-bold pr-7"/>
-                            <span className="absolute right-2 top-2 text-2xs font-bold text-muted-foreground">ft</span>
+                            <span className="absolute right-2 top-2 text-xs font-bold text-muted-foreground">ft</span>
                           </div>
                         </div>
                       </div>
@@ -1914,7 +1914,7 @@ export function MaterialConfigModal({
  type="number"step="any"min="0"placeholder="e.g. 164"value={standardRollLength}
  onChange={(e) => handleRollLengthChange(e.target.value)}
  className="h-9 text-xs tabular-nums font-bold pr-7"/>
-                          <span className="absolute right-2.5 top-2 text-2xs font-bold text-muted-foreground">ft</span>
+                          <span className="absolute right-2.5 top-2 text-xs font-bold text-muted-foreground">ft</span>
                         </div>
                       </div>
 
@@ -1930,12 +1930,12 @@ export function MaterialConfigModal({
 
                   {/* Configured Roll Sizes Matrix */}
                   {configuredRolls.length > 0 && (
-                    <div className="pt-2.5 border-t border-blue-200/40 dark:border-blue-900/40 space-y-1.5">
+                    <div className="pt-2.5 border-t border-primary/20/40 border-border/40 space-y-1.5">
                       <div className="flex items-center justify-between">
-                        <span className="text-2xs font-bold text-foreground">
+                        <span className="text-xs font-bold text-foreground">
  Active Configured Roll Sizes (Width × Length) & Discrete Economics:
                         </span>
-                        <span className="text-2xs text-muted-foreground font-medium">
+                        <span className="text-xs text-muted-foreground font-medium">
                           {configuredRolls.length} configured variant{configuredRolls.length > 1 ? 's' : ''}
                         </span>
                       </div>
@@ -1958,15 +1958,15 @@ export function MaterialConfigModal({
  className={cn(
                                 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs tabular-nums font-bold transition-all cursor-pointer shadow-2xs',
  isCurrentActive
-                                  ? 'bg-blue-50 dark:bg-blue-950/60 border-blue-500 text-blue-700 dark:text-blue-300 ring-1 ring-blue-400'
-                                  : 'bg-card border-input text-foreground hover:border-blue-400'
+                                  ? 'bg-primary/10 bg-primary/10 border-primary/20 text-primary text-primary ring-1 focus:ring-ring'
+                                  : 'bg-card border-input text-foreground hover:border-border'
                               )}
  title="Click to view & edit price and allowance for this roll size">
                               <span>
                                 {roll.width}ft {rollAllowance > 0 ? `(+${rollAllowance}ft)` : ''} × {rollLen}ft
                               </span>
                               {rollPrice !== null && (
-                                <span className="text-2xs font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100/70 dark:bg-emerald-900/60 px-1.5 py-0.2 rounded font-sans">
+                                <span className="text-xs font-bold text-success text-success bg-success-surface/70 bg-success/60 px-1.5 py-0.2 rounded font-sans">
                                   ৳{rollPrice.toLocaleString()}
                                 </span>
                               )}
@@ -1975,7 +1975,7 @@ export function MaterialConfigModal({
  e.stopPropagation()
  handleRemoveRoll(roll.width, rollLen)
                                 }}
- className="ml-0.5 text-muted-foreground hover:text-rose-600 cursor-pointer text-sm font-bold"title={`Remove ${roll.width}ft × ${rollLen}ft roll`}
+ className="ml-0.5 text-muted-foreground hover:text-destructive cursor-pointer text-sm font-bold"title={`Remove ${roll.width}ft × ${rollLen}ft roll`}
                               >
                                 ×
                               </button>
@@ -1990,10 +1990,10 @@ export function MaterialConfigModal({
 
               {/* Geometry Case B: Sheet Physical Dimensions */}
               {(materialType === 'sheet' || purchaseUnit === 'sheet') && (
-                <div className="pt-3 border-t border-blue-200/60 dark:border-blue-800/60 space-y-3">
+                <div className="pt-3 border-t border-primary/20/60 border-border/60 space-y-3">
                   {/* Preset Sheet Sizes */}
                   <div>
-                    <span className="text-2xs font-bold text-foreground block mb-1.5">
+                    <span className="text-xs font-bold text-foreground block mb-1.5">
  Quick Add Popular Sheet Sizes:
                     </span>
                     <div className="flex flex-wrap gap-1.5">
@@ -2001,7 +2001,7 @@ export function MaterialConfigModal({
                         <button
  key={p.label}
  type="button"onClick={() => handleQuickAddSheetSize(p.width, p.length, p.label)}
- className="px-2 py-1 rounded-md text-2xs tabular-nums font-bold bg-card border border-input text-foreground hover:border-blue-500 cursor-pointer">
+ className="px-2 py-1 rounded-md text-xs tabular-nums font-bold bg-card border border-input text-foreground hover:border-primary/20 cursor-pointer">
                           +{p.label}
                         </button>
                       ))}
@@ -2018,7 +2018,7 @@ export function MaterialConfigModal({
  type="number"step="any"min="0"placeholder="e.g. 4"value={newSheetWidthInput}
  onChange={(e) => setNewSheetWidthInput(e.target.value)}
  className="h-9 text-xs tabular-nums font-bold pr-7"/>
-                        <span className="absolute right-2.5 top-2 text-2xs font-bold text-muted-foreground">ft</span>
+                        <span className="absolute right-2.5 top-2 text-xs font-bold text-muted-foreground">ft</span>
                       </div>
                     </div>
 
@@ -2031,7 +2031,7 @@ export function MaterialConfigModal({
  type="number"step="any"min="0"placeholder="e.g. 8"value={newSheetLengthInput}
  onChange={(e) => setNewSheetLengthInput(e.target.value)}
  className="h-9 text-xs tabular-nums font-bold pr-7"/>
-                        <span className="absolute right-2.5 top-2 text-2xs font-bold text-muted-foreground">ft</span>
+                        <span className="absolute right-2.5 top-2 text-xs font-bold text-muted-foreground">ft</span>
                       </div>
                     </div>
 
@@ -2057,7 +2057,7 @@ export function MaterialConfigModal({
                   {/* Configured Sheet Sizes List */}
                   {availableSheetSizes.length > 0 && (
                     <div className="flex flex-wrap items-center gap-1.5 pt-1">
-                      <span className="text-2xs font-bold text-muted-foreground mr-1">
+                      <span className="text-xs font-bold text-muted-foreground mr-1">
  Configured Sheet Sizes:
                       </span>
                       {availableSheetSizes.map((s, index) => (
@@ -2067,14 +2067,14 @@ export function MaterialConfigModal({
  setNewSheetWidthInput(s.width.toString())
  setNewSheetLengthInput(s.length.toString())
                           }}
- className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-card border border-input text-xs tabular-nums font-bold text-foreground shadow-2xs hover:border-blue-500 hover:bg-blue-50/50 dark:hover:bg-blue-950/30 cursor-pointer transition-colors">
+ className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-card border border-input text-xs tabular-nums font-bold text-foreground shadow-2xs hover:border-primary/20 hover:bg-primary/10/50 dark:hover:bg-primary/10 cursor-pointer transition-colors">
                           <span>{s.width}ft × {s.length}ft ({s.width * s.length} sft)</span>
                           <button
  type="button"onClick={(e) => {
  e.stopPropagation()
  handleRemoveSheetSize(index)
                             }}
- className="ml-1 text-muted-foreground hover:text-rose-600 cursor-pointer text-sm font-bold">
+ className="ml-1 text-muted-foreground hover:text-destructive cursor-pointer text-sm font-bold">
                             ×
                           </button>
                         </span>
@@ -2086,7 +2086,7 @@ export function MaterialConfigModal({
 
               {/* Geometry Case C: Liquid Consumables & Inks */}
               {(materialType === 'liquid' || purchaseUnit === 'bottle' || purchaseUnit === 'liter') && (
-                <div className="pt-3 border-t border-blue-200/60 dark:border-blue-800/60 grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="pt-3 border-t border-primary/20/60 border-border/60 grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
                     <Label className="text-xs font-semibold mb-1 block text-foreground">
  Bottle / Can Volume
@@ -2096,7 +2096,7 @@ export function MaterialConfigModal({
  type="number"step="any"min="0"placeholder="e.g. 1000"value={liquidVolumeMl}
  onChange={(e) => setLiquidVolumeMl(e.target.value === '' ? '' : parseFloat(e.target.value))}
  className="h-9 text-xs tabular-nums pr-8"/>
-                      <span className="absolute right-2.5 top-2.5 text-2xs font-bold text-muted-foreground">ml</span>
+                      <span className="absolute right-2.5 top-2.5 text-xs font-bold text-muted-foreground">ml</span>
                     </div>
                   </div>
 
@@ -2126,7 +2126,7 @@ export function MaterialConfigModal({
  type="number"step="any"min="0"placeholder="e.g. 1000"value={coverageYieldSqft}
  onChange={(e) => setCoverageYieldSqft(e.target.value === '' ? '' : parseFloat(e.target.value))}
  className="h-9 text-xs tabular-nums pr-12"/>
-                      <span className="absolute right-2.5 top-2.5 text-2xs font-bold text-muted-foreground">sft/L</span>
+                      <span className="absolute right-2.5 top-2.5 text-xs font-bold text-muted-foreground">sft/L</span>
                     </div>
                   </div>
                 </div>
@@ -2134,7 +2134,7 @@ export function MaterialConfigModal({
 
               {/* Geometry Case D: Framing & Metal Profiles */}
               {(materialType === 'rigid') && (
-                <div className="pt-3 border-t border-blue-200/60 dark:border-blue-800/60 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="pt-3 border-t border-primary/20/60 border-border/60 grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <Label className="text-xs font-semibold mb-1 block text-foreground">
  Standard Bar / Pipe Length (Feet)
@@ -2144,7 +2144,7 @@ export function MaterialConfigModal({
  type="number"step="any"min="0"placeholder="e.g. 20"value={profileLengthFt}
  onChange={(e) => setProfileLengthFt(e.target.value === '' ? '' : parseFloat(e.target.value))}
  className="h-9 text-xs tabular-nums pr-7"/>
-                      <span className="absolute right-2.5 top-2.5 text-2xs font-bold text-muted-foreground">ft</span>
+                      <span className="absolute right-2.5 top-2.5 text-xs font-bold text-muted-foreground">ft</span>
                     </div>
                   </div>
 
@@ -2162,7 +2162,7 @@ export function MaterialConfigModal({
 
               {/* Geometry Case E: Fasteners / Accessories */}
               {(purchaseUnit === 'box' || purchaseUnit === 'pack' || materialType === 'accessory' || materialType === 'electrical') && (
-                <div className="pt-3 border-t border-blue-200/60 dark:border-blue-800/60 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="pt-3 border-t border-primary/20/60 border-border/60 grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <Label className="text-xs font-semibold mb-1 block text-foreground">
  Items / Pieces per {purchaseUnit}
@@ -2174,7 +2174,7 @@ export function MaterialConfigModal({
  setPackQuantity(val)
                       }}
  className="h-9 text-xs tabular-nums font-bold"/>
-                    <span className="text-2xs text-muted-foreground">Auto-converts purchase pack price to unit cost per piece</span>
+                    <span className="text-xs text-muted-foreground">Auto-converts purchase pack price to unit cost per piece</span>
                   </div>
                 </div>
               )}
@@ -2189,14 +2189,14 @@ export function MaterialConfigModal({
           <div className="rounded-xl border border-border bg-card p-4 space-y-4 shadow-xs animate-in fade-in-0">
             <div className="flex items-center justify-between pb-2 border-b border-border">
               <div className="flex items-center gap-2">
-                <div className="h-6 w-6 rounded-lg bg-emerald-100 text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-300 flex items-center justify-center font-bold text-xs">
+                <div className="h-6 w-6 rounded-lg bg-success-surface text-success bg-success/60 text-success flex items-center justify-center font-bold text-xs">
                   3
                 </div>
                 <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
  Purchasing Rate, Direct Costing & Resale Pricing
                 </h3>
               </div>
-              <span className="text-2xs text-muted-foreground font-medium">Purchase rate, wastage & multi-tier resale</span>
+              <span className="text-xs text-muted-foreground font-medium">Purchase rate, wastage & multi-tier resale</span>
             </div>
 
             {/* Section A: Purchase Pricing */}
@@ -2206,9 +2206,9 @@ export function MaterialConfigModal({
                 <div className="flex flex-col justify-between">
                   <div className="h-6 flex items-center justify-between mb-1">
                     <Label className="text-xs font-semibold text-foreground truncate">
- Purchase Price (৳/{usageUnit.toUpperCase()}) <span className="text-rose-500">*</span>
+ Purchase Price (৳/{usageUnit.toUpperCase()}) <span className="text-destructive">*</span>
                     </Label>
-                    <span className="text-2xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-1.5 py-0.5 rounded shrink-0">
+                    <span className="text-xs font-bold text-primary text-primary bg-primary/10 bg-primary/10 px-1.5 py-0.5 rounded shrink-0">
                       {usageUnit.toUpperCase()} Rate
                     </span>
                   </div>
@@ -2217,9 +2217,9 @@ export function MaterialConfigModal({
                     <Input
  type="number"step="any"min="0"placeholder="e.g. 5.20"value={purchasePricePerSft}
  onChange={(e) => handlePricePerSftChange(e.target.value)}
- className="pl-7 h-9 text-xs tabular-nums font-bold bg-blue-50/20 border-blue-200 dark:border-blue-800 focus:border-blue-500"/>
+ className="pl-7 h-9 text-xs tabular-nums font-bold bg-primary/10/20 border-primary/20 border-border focus:border-primary/20"/>
                   </div>
-                  <span className="text-2xs text-muted-foreground mt-1 block truncate">Direct material cost per {usageUnit}</span>
+                  <span className="text-xs text-muted-foreground mt-1 block truncate">Direct material cost per {usageUnit}</span>
                 </div>
 
                 {/* Package Purchase Price */}
@@ -2228,7 +2228,7 @@ export function MaterialConfigModal({
                     <Label className="text-xs font-semibold text-foreground truncate">
  Purchase Price (৳/{purchaseUnit})
                     </Label>
-                    <span className="text-2xs font-bold text-muted-foreground bg-muted px-1.5 py-0.5 rounded shrink-0">
+                    <span className="text-xs font-bold text-muted-foreground bg-muted px-1.5 py-0.5 rounded shrink-0">
                       {materialType === 'roll' || purchaseUnit === 'roll'
                         ? `${parseFloat(newWidthInput) || 10}ft roll`
                         : `Total ${purchaseUnit}`}
@@ -2241,7 +2241,7 @@ export function MaterialConfigModal({
  onChange={(e) => handleTotalPurchasePriceChange(e.target.value)}
  className="pl-7 h-9 text-xs tabular-nums font-bold"/>
                   </div>
-                  <span className="text-2xs text-muted-foreground mt-1 block truncate">
+                  <span className="text-xs text-muted-foreground mt-1 block truncate">
                     {materialType === 'roll' || purchaseUnit === 'roll'
                       ? `Package price for ${parseFloat(newWidthInput) || 10}ft roll`
                       : 'Supplier invoice package price'}
@@ -2262,7 +2262,7 @@ export function MaterialConfigModal({
  className="pr-7 h-9 text-xs tabular-nums"/>
                     <span className="absolute right-3 top-2.5 text-muted-foreground font-bold text-xs">%</span>
                   </div>
-                  <span className="text-2xs text-muted-foreground mt-1 block truncate">Production scrap margin</span>
+                  <span className="text-xs text-muted-foreground mt-1 block truncate">Production scrap margin</span>
                 </div>
 
                 {/* Landed Cost Markup Factor */}
@@ -2279,48 +2279,48 @@ export function MaterialConfigModal({
  className="pr-7 h-9 text-xs tabular-nums"/>
                     <span className="absolute right-3 top-2.5 text-muted-foreground font-bold text-xs">%</span>
                   </div>
-                  <span className="text-2xs text-muted-foreground mt-1 block truncate">Freight & import duty surcharge</span>
+                  <span className="text-xs text-muted-foreground mt-1 block truncate">Freight & import duty surcharge</span>
                 </div>
               </div>
 
               {/* Live Real-Time Cost Economics Card */}
-              <div className="p-3.5 bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/60 rounded-xl space-y-2.5">
+              <div className="p-3.5 bg-success-surface/60 bg-success-surface border border-success-border border-success-border/60 rounded-xl space-y-2.5">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Calculator className="w-4 h-4 text-emerald-600 dark:text-emerald-400"/>
-                    <span className="text-xs font-bold text-emerald-950 dark:text-emerald-200 uppercase tracking-wider">
+                    <Calculator className="w-4 h-4 text-success text-success"/>
+                    <span className="text-xs font-bold text-success text-success uppercase tracking-wider">
  Calculated Production Direct Cost & Yield
                     </span>
                   </div>
-                  <Badge variant="outline"className="text-2xs tabular-nums bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-900 dark:text-emerald-200">
+                  <Badge variant="outline"className="text-xs tabular-nums bg-success-surface text-success border-success-border bg-success text-success">
  Total Yield: {calculatedEconomics.yieldLabel}
                   </Badge>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
-                  <div className="p-2.5 rounded-lg bg-card/80 border border-emerald-100 dark:border-emerald-900/60">
-                    <span className="text-2xs font-medium text-muted-foreground block">Direct Base Cost (৳ / {usageUnit})</span>
-                    <span className="text-sm font-bold tabular-nums text-emerald-700 dark:text-emerald-300">
+                  <div className="p-2.5 rounded-lg bg-card/80 border border-success-border border-success-border/60">
+                    <span className="text-xs font-medium text-muted-foreground block">Direct Base Cost (৳ / {usageUnit})</span>
+                    <span className="text-sm font-bold tabular-nums text-success text-success">
                       ৳{calculatedEconomics.unitCost.toFixed(2)} / {usageUnit}
                     </span>
                   </div>
 
-                  <div className="p-2.5 rounded-lg bg-card/80 border border-emerald-100 dark:border-emerald-900/60">
-                    <span className="text-2xs font-medium text-muted-foreground block">Effective Cost ({wastePercent}% Waste)</span>
+                  <div className="p-2.5 rounded-lg bg-card/80 border border-success-border border-success-border/60">
+                    <span className="text-xs font-medium text-muted-foreground block">Effective Cost ({wastePercent}% Waste)</span>
                     <span className="text-sm font-bold tabular-nums text-foreground">
                       ৳{calculatedEconomics.effectiveCost.toFixed(2)} / {usageUnit}
                     </span>
                   </div>
 
-                  <div className="p-2.5 rounded-lg bg-card/80 border border-emerald-100 dark:border-emerald-900/60">
-                    <span className="text-2xs font-medium text-muted-foreground block">Suggested Selling Rate ({targetMargin}% Margin)</span>
-                    <span className="text-sm font-bold tabular-nums text-blue-700 dark:text-blue-300">
+                  <div className="p-2.5 rounded-lg bg-card/80 border border-success-border border-success-border/60">
+                    <span className="text-xs font-medium text-muted-foreground block">Suggested Selling Rate ({targetMargin}% Margin)</span>
+                    <span className="text-sm font-bold tabular-nums text-primary text-primary">
                       ৳{suggestedSellingPrice.toFixed(2)} / {usageUnit}
                     </span>
                   </div>
                 </div>
 
-                <div className="text-2xs tabular-nums text-emerald-800 dark:text-emerald-300 bg-emerald-100/60 dark:bg-emerald-900/40 px-2.5 py-1 rounded-md">
+                <div className="text-xs tabular-nums text-success text-success bg-success-surface/60 bg-success/40 px-2.5 py-1 rounded-md">
                   {calculatedEconomics.formulaText}
                 </div>
               </div>
@@ -2329,12 +2329,12 @@ export function MaterialConfigModal({
               <div className="pt-3 border-t border-border space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <DollarSign className="w-4 h-4 text-blue-600"/>
+                    <DollarSign className="w-4 h-4 text-primary"/>
                     <h4 className="text-xs font-bold text-foreground uppercase tracking-wider">
  Direct Resale & Multi-Tier Customer Pricing (ঐচ্ছিক বিক্রয় মূল্য)
                     </h4>
                   </div>
-                  <span className="text-2xs text-muted-foreground">When selling raw rolls/sheets directly</span>
+                  <span className="text-xs text-muted-foreground">When selling raw rolls/sheets directly</span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -2380,12 +2380,12 @@ export function MaterialConfigModal({
 
                 {/* Multi-tier Rate Grid */}
                 <div className="p-3 bg-muted rounded-xl space-y-2 border border-border">
-                  <span className="text-2xs font-bold text-foreground block">
+                  <span className="text-xs font-bold text-foreground block">
  Customer Tier Price List (৳ / {usageUnit}):
                   </span>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                     <div>
-                      <Label className="text-2xs font-medium text-muted-foreground mb-1 block">
+                      <Label className="text-xs font-medium text-muted-foreground mb-1 block">
  Retail (খুচরা)
                       </Label>
                       <Input
@@ -2395,7 +2395,7 @@ export function MaterialConfigModal({
                     </div>
 
                     <div>
-                      <Label className="text-2xs font-medium text-muted-foreground mb-1 block">
+                      <Label className="text-xs font-medium text-muted-foreground mb-1 block">
  Corporate (কর্পোরেট)
                       </Label>
                       <Input
@@ -2405,7 +2405,7 @@ export function MaterialConfigModal({
                     </div>
 
                     <div>
-                      <Label className="text-2xs font-medium text-muted-foreground mb-1 block">
+                      <Label className="text-xs font-medium text-muted-foreground mb-1 block">
  Dealer (ডিলার)
                       </Label>
                       <Input
@@ -2415,7 +2415,7 @@ export function MaterialConfigModal({
                     </div>
 
                     <div>
-                      <Label className="text-2xs font-medium text-muted-foreground mb-1 block">
+                      <Label className="text-xs font-medium text-muted-foreground mb-1 block">
  Wholesale (পাইকারি)
                       </Label>
                       <Input
@@ -2432,7 +2432,7 @@ export function MaterialConfigModal({
                     <input
  type="checkbox"checked={vatApplicable}
  onChange={(e) => setVatApplicable(e.target.checked)}
- className="w-4 h-4 rounded text-blue-600 focus:ring-ring"/>
+ className="w-4 h-4 rounded text-primary focus:ring-ring"/>
                     <span>VAT Applicable (ভ্যাট প্রযোজ্য)</span>
                   </label>
 
@@ -2450,7 +2450,7 @@ export function MaterialConfigModal({
                     <input
  type="checkbox"checked={allowManualOverride}
  onChange={(e) => setAllowManualOverride(e.target.checked)}
- className="w-4 h-4 rounded text-blue-600 focus:ring-ring"/>
+ className="w-4 h-4 rounded text-primary focus:ring-ring"/>
                     <span>Allow manual price override on sales</span>
                   </label>
                 </div>
@@ -2466,14 +2466,14 @@ export function MaterialConfigModal({
           <div className="rounded-xl border border-border bg-card p-4 space-y-4 shadow-xs animate-in fade-in-0">
             <div className="flex items-center justify-between pb-2 border-b border-border">
               <div className="flex items-center gap-2">
-                <div className="h-6 w-6 rounded-lg bg-purple-100 text-purple-700 dark:bg-purple-900/60 dark:text-purple-300 flex items-center justify-center font-bold text-xs">
+                <div className="h-6 w-6 rounded-lg bg-primary/10 text-primary bg-primary/60 text-primary flex items-center justify-center font-bold text-xs">
                   4
                 </div>
                 <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
  Inventory Storage, Reorder Thresholds & Suppliers
                 </h3>
               </div>
-              <span className="text-2xs text-muted-foreground font-medium">Reorder intelligence & store bins</span>
+              <span className="text-xs text-muted-foreground font-medium">Reorder intelligence & store bins</span>
             </div>
 
             <div className="space-y-3">
@@ -2497,7 +2497,7 @@ export function MaterialConfigModal({
  type="number"step="1"min="0"value={reorderLevel}
  onChange={(e) => setReorderLevel(parseInt(e.target.value, 10) || 0)}
  className="h-9 text-xs tabular-nums"/>
-                  <span className="text-2xs text-muted-foreground mt-1 block">Low stock warning threshold</span>
+                  <span className="text-xs text-muted-foreground mt-1 block">Low stock warning threshold</span>
                 </div>
 
                 <div>
@@ -2508,7 +2508,7 @@ export function MaterialConfigModal({
  type="number"step="1"min="1"value={reorderQuantity}
  onChange={(e) => setReorderQuantity(e.target.value === '' ? '' : parseInt(e.target.value, 10))}
  className="h-9 text-xs tabular-nums"/>
-                  <span className="text-2xs text-muted-foreground mt-1 block">Suggested purchase batch</span>
+                  <span className="text-xs text-muted-foreground mt-1 block">Suggested purchase batch</span>
                 </div>
               </div>
 
@@ -2610,7 +2610,7 @@ export function MaterialConfigModal({
                     <input
  type="checkbox"checked={trackBatches}
  onChange={(e) => setTrackBatches(e.target.checked)}
- className="w-4 h-4 rounded text-blue-600 focus:ring-ring"/>
+ className="w-4 h-4 rounded text-primary focus:ring-ring"/>
                     <span>Track Physical Roll Codes & Lot Numbers (রোল কোড ট্র্যাকিং)</span>
                   </label>
                 </div>
@@ -2626,14 +2626,14 @@ export function MaterialConfigModal({
           <div className="rounded-xl border border-border bg-card p-4 space-y-4 shadow-xs animate-in fade-in-0">
             <div className="flex items-center justify-between pb-2 border-b border-border">
               <div className="flex items-center gap-2">
-                <div className="h-6 w-6 rounded-lg bg-cyan-100 text-cyan-700 dark:bg-cyan-900/60 dark:text-cyan-300 flex items-center justify-center font-bold text-xs">
+                <div className="h-6 w-6 rounded-lg bg-info-surface text-primary bg-primary/60 text-primary flex items-center justify-center font-bold text-xs">
                   5
                 </div>
                 <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
  Production Role & Machine Compatibility
                 </h3>
               </div>
-              <span className="text-2xs text-muted-foreground font-medium">BOM role & printer compatibility</span>
+              <span className="text-xs text-muted-foreground font-medium">BOM role & printer compatibility</span>
             </div>
 
             <div className="space-y-3.5">
@@ -2660,7 +2660,7 @@ export function MaterialConfigModal({
                   <Label className="text-xs font-semibold text-foreground">
                     {tBilingual('Compatible Printing Methods & Machinery', 'সামঞ্জস্যপূর্ণ প্রিন্টিং পদ্ধতি ও মেশিন')}
                   </Label>
-                  <span className="text-2xs text-muted-foreground font-medium">
+                  <span className="text-xs text-muted-foreground font-medium">
                     {compatiblePrintingMethods.length} Selected
                   </span>
                 </div>
@@ -2677,13 +2677,13 @@ export function MaterialConfigModal({
  className={cn(
                           'px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer border flex items-center gap-1.5',
  isSelected
-                            ? 'bg-blue-50 dark:bg-blue-950/60 border-blue-500 text-blue-700 dark:text-blue-300 font-bold'
+                            ? 'bg-primary/10 bg-primary/10 border-primary/20 text-primary text-primary font-bold'
                             : 'bg-card border-border text-foreground hover:border-input'
                         )}
                       >
                         <Printer className="w-3 h-3"/>
                         <span>{method}</span>
-                        {isSelected && <Check className="w-3 h-3 text-blue-600"/>}
+                        {isSelected && <Check className="w-3 h-3 text-primary"/>}
                       </button>
                     )
                   })}
@@ -2696,7 +2696,7 @@ export function MaterialConfigModal({
                   <Label className="text-xs font-semibold text-foreground">
  Compatible Inks & Chemistry (কালির ধরন)
                   </Label>
-                  <span className="text-2xs text-muted-foreground font-medium">
+                  <span className="text-xs text-muted-foreground font-medium">
                     {compatibleInkTypes.length} Selected
                   </span>
                 </div>
@@ -2710,13 +2710,13 @@ export function MaterialConfigModal({
  className={cn(
                           'px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer border flex items-center gap-1.5',
  isSelected
-                            ? 'bg-rose-50 dark:bg-rose-950/60 border-rose-500 text-rose-700 dark:text-rose-300 font-bold'
+                            ? 'bg-danger-surface bg-danger-surface/60 border-danger-border text-destructive text-destructive font-bold'
                             : 'bg-card border-border text-foreground hover:border-input'
                         )}
                       >
                         <Droplets className="w-3 h-3"/>
                         <span>{ink}</span>
-                        {isSelected && <Check className="w-3 h-3 text-rose-600"/>}
+                        {isSelected && <Check className="w-3 h-3 text-destructive"/>}
                       </button>
                     )
                   })}
@@ -2741,7 +2741,7 @@ export function MaterialConfigModal({
                   <input
  type="checkbox"checked={isActive}
  onChange={(e) => setIsActive(e.target.checked)}
- className="w-4 h-4 rounded text-blue-600 focus:ring-ring"/>
+ className="w-4 h-4 rounded text-primary focus:ring-ring"/>
                   <span>Active in Raw Material Inventory & Available for Service BOM Consumption</span>
                 </label>
               </div>

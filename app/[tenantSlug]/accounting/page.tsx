@@ -56,6 +56,7 @@ import { ExpensesTabView } from '@/components/finance/expenses-tab-view'
 import { TransactionsLedgerView } from '@/components/finance/transactions-ledger-view'
 import { CashClosingView } from '@/components/finance/cash-closing-view'
 import { FinancialReportsView } from '@/components/finance/financial-reports-view'
+import { ReconciliationTabView } from '@/components/finance/reconciliation-tab-view'
 
 // Modals
 import { SpendMoneyModal } from '@/components/finance/modals/spend-money-modal'
@@ -101,6 +102,7 @@ function AccountingContent() {
  if (param === 'transactions' || param === 'ledger') return 'transactions'
  if (param === 'cash-closing' || param === 'closings') return 'cash-closing'
  if (param === 'reports' || param === 'pnl' || param === 'balance_sheet' || param === 'cash_flow' || param === 'trial_balance') return 'reports'
+    if (param === 'reconciliation' || param === 'reconcile' || param === 'drift') return 'reconciliation'
  return param
   }
 
@@ -479,7 +481,7 @@ function AccountingContent() {
  description: 'Cash in Hand, Bank accounts, customer dues, supplier liabilities, and today collections.',
  descriptionBn: 'ক্যাশ ব্যালেন্স, ব্যাংক তহবিল, কাস্টমার বাকি, মহাজন দেনা এবং আজকের কালেকশনের সার্বিক চিত্র।',
  icon: LayoutDashboard,
- colorClass: 'bg-emerald-500 text-white',
+ colorClass: 'bg-success text-white',
     },
     'cash-bank': {
  title: 'Cash & Bank Accounts',
@@ -487,7 +489,7 @@ function AccountingContent() {
  description: 'Manage real money accounts: Cash in Drawer, Bank Checking, and bKash / Nagad / MFS.',
  descriptionBn: 'ক্যাশ ড্রয়ার, ব্যাংক অ্যাকাউন্ট ও বিকাশ/নগদ ওয়ালেটে থাকা টাকা, স্থানান্তর ও স্টেটমেন্ট।',
  icon: Wallet,
- colorClass: 'bg-blue-600 text-white',
+ colorClass: 'bg-primary text-white',
     },
  receivables: {
  title: 'Customer Due',
@@ -495,7 +497,7 @@ function AccountingContent() {
  description: 'Customer-wise outstanding, payment collection against invoices, payment history, and due aging.',
  descriptionBn: 'ইনভয়েস বকেয়া, গ্রাহকের বাকি, মানি রিসিট সংগ্রহ ও সময়সীমাভিত্তিক বাকি বিশ্লেষণ।',
  icon: Users,
- colorClass: 'bg-amber-500 text-white',
+ colorClass: 'bg-warning text-white',
     },
  payables: {
  title: 'Supplier Due',
@@ -503,7 +505,7 @@ function AccountingContent() {
  description: 'Track material & paper purchase liabilities, vendor payouts, and payable aging.',
  descriptionBn: 'কাঁচামাল ও কাগজের বকেয়া বিল, মহাজন পাওনা পরিশোধ ও দেনার মেয়াদ বিশ্লেষণ।',
  icon: ShoppingBag,
- colorClass: 'bg-rose-600 text-white',
+ colorClass: 'bg-destructive text-white',
     },
  expenses: {
  title: 'Expenses & Overheads',
@@ -511,7 +513,7 @@ function AccountingContent() {
  description: 'Simple expense entry, operating overheads, recurring bills, and category budgets.',
  descriptionBn: 'কারখানা ও দোকানের দৈনন্দিন খরচ, মাসিক নিয়মিত বিল এবং খাতভিত্তিক ব্যয় হিসাব।',
  icon: TrendingDown,
- colorClass: 'bg-rose-500 text-white',
+ colorClass: 'bg-destructive text-white',
     },
  transactions: {
  title: 'Transactions Ledger',
@@ -519,7 +521,7 @@ function AccountingContent() {
  description: 'One unified ledger for all Money In, Money Out, and Transfer movements.',
  descriptionBn: 'সকল জমা, খরচ এবং ট্রান্সফারের একক পূর্ণাঙ্গ ডিজিটাল খতিয়ান।',
  icon: Receipt,
- colorClass: 'bg-indigo-600 text-white',
+ colorClass: 'bg-primary text-white',
     },
     'cash-closing': {
  title: 'Daily Cash Closing',
@@ -527,7 +529,7 @@ function AccountingContent() {
  description: 'Reconcile counted cash drawer against expected cash register balance and lock day records.',
  descriptionBn: 'দিনের শেষে হিসাবমতে ড্রয়ার ক্যাশের সাথে গোনা টাকার মিল ও রেজিস্টার লক।',
  icon: Clock,
- colorClass: 'bg-purple-600 text-white',
+ colorClass: 'bg-primary text-white',
     },
  reports: {
  title: 'Financial Reports',
@@ -535,8 +537,16 @@ function AccountingContent() {
  description: 'Practical management reports: Income & Expense, Cash Flow, Receivables, Payables, and Statements.',
  descriptionBn: 'আয়-ব্যয়, নগদ প্রবাহ, বাকি আদায়, মহাজন দেনা এবং ব্যাংক হিসাব বিবরণী রিপোর্ট।',
  icon: BarChart3,
- colorClass: 'bg-teal-600 text-white',
+ colorClass: 'bg-success text-white',
     },
+  reconciliation: {
+    title: 'Ledger Reconciliation',
+    titleBn: 'লেজার রিকনসিলিয়েশন',
+    description: 'Reconcile customer balances and inventory stock quantities against transactional ledgers.',
+    descriptionBn: 'ইনভয়েস, পেমেন্ট এবং স্টক লেজারের সাথে হিসাব মিলিয়ে ডাটাবেজ সমন্বয় করুন।',
+    icon: ShieldCheck,
+    colorClass: 'bg-success text-white',
+  },
   }
 
  const currentHeader = tabHeaders[activeTab] || tabHeaders.overview
@@ -547,7 +557,7 @@ function AccountingContent() {
       {/* Toast Notification */}
       {notification && (
         <div className="fixed top-20 right-6 z-50 p-4 bg-surface-inset text-foreground text-xs font-semibold rounded-xl shadow-xs border border-border flex items-center gap-2">
-          <CheckCircle2 className="w-4 h-4 text-emerald-400"/>
+          <CheckCircle2 className="w-4 h-4 text-success"/>
           <span>{notification}</span>
         </div>
       )}
@@ -562,7 +572,7 @@ function AccountingContent() {
             {activeTab !== 'overview' && (
               <button
  type="button"onClick={() => handleTabChange('overview')}
- className="text-3xs text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 mb-0.5 font-semibold cursor-pointer">
+ className="text-xs text-primary text-primary hover:underline flex items-center gap-1 mb-0.5 font-semibold cursor-pointer">
                 <ChevronLeft className="w-3 h-3"/>
                 <span>{tBilingual('Finance Dashboard', 'ফাইন্যান্স ড্যাশবোর্ড')}</span>
               </button>
@@ -614,7 +624,7 @@ function AccountingContent() {
                       }}
  className={`w-full text-left px-3.5 py-2 hover:bg-muted dark:hover:bg-muted/60 transition-colors font-medium ${
  timeframe === item.id
-                          ? 'text-blue-600 dark:text-blue-400 font-bold bg-blue-50/50 dark:bg-blue-950/20'
+                          ? 'text-primary text-primary font-bold bg-primary/10/50 bg-primary/10'
                           : 'text-foreground '
                       }`}
                     >
@@ -626,6 +636,18 @@ function AccountingContent() {
             )}
           </div>
 
+          {/* Reconcile Quick Access Button */}
+          <Button
+            variant={activeTab === 'reconciliation' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => handleTabChange('reconciliation')}
+            className="border-border text-xs font-semibold h-9 px-3 rounded-xl cursor-pointer flex items-center gap-1.5 shrink-0"
+            title="Ledger Reconciliation"
+          >
+            <ShieldCheck className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">{tBilingual('Reconcile', 'রিকনসিল')}</span>
+          </Button>
+
           {/* Refresh Button */}
           <Button
  variant="outline"size="sm"onClick={() => {
@@ -634,7 +656,7 @@ function AccountingContent() {
             }}
  disabled={isLoading}
  className="border-border bg-card hover:bg-muted text-xs font-semibold h-9 w-9 p-0 rounded-xl cursor-pointer flex items-center justify-center shrink-0"title="Refresh Finance Data"aria-label="Refresh Finance Data">
-            <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin text-blue-600' : 'text-muted-foreground'}`} />
+            <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin text-primary' : 'text-muted-foreground'}`} />
           </Button>
         </div>
       </div>
@@ -642,7 +664,7 @@ function AccountingContent() {
       {/* Mobile-Only Quick Tab Selector (when sidebar is hidden on small screens) */}
       <div className="lg:hidden flex items-center justify-between p-2.5 rounded-xl bg-card border border-border shadow-2xs">
         <div className="flex items-center gap-2">
-          <HeaderIcon className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0"/>
+          <HeaderIcon className="w-4 h-4 text-primary text-primary shrink-0"/>
           <span className="text-xs font-bold text-foreground bangla-text">
             {tBilingual('Active Module:', 'বর্তমান বিভাগ:')}
           </span>
@@ -660,6 +682,7 @@ function AccountingContent() {
           <option value="transactions">{tBilingual('Transactions', 'লেনদেন লেজার')}</option>
           <option value="cash-closing">{tBilingual('Cash Closing', 'ক্যাশ ক্লোজিং')}</option>
           <option value="reports">{tBilingual('Financial Reports', 'ফাইন্যান্সিয়াল রিপোর্ট')}</option>
+          <option value="reconciliation">{tBilingual('Reconciliation', 'রিকনসিলিয়েশন')}</option>
         </select>
       </div>
 
@@ -749,6 +772,15 @@ function AccountingContent() {
  loadAllData(r.startDate, r.endDate)
           }}
  isLoading={isLoading}
+        />
+      )}
+
+      {/* View 9: Ledger Reconciliation */}
+      {activeTab === 'reconciliation' && (
+        <ReconciliationTabView
+          onSuccessReconciliation={() => {
+            loadAllData()
+          }}
         />
       )}
 

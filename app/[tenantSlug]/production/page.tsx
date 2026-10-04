@@ -1,8 +1,11 @@
 'use client'
 
+import { calculateProductionKpis } from '@/lib/production/kpis'
+import { generateBangladeshiFloorWhatsAppMessage } from '@/lib/communication/production-whatsapp'
+
 import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import Link from 'next/link'
-import { useParams, usePathname } from 'next/navigation'
+import { useParams, usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import {
  Printer,
@@ -84,7 +87,6 @@ import {
 } from '@/components/production/production-filter-toolbar'
 import { ProductionTaskTable } from '@/components/production/production-task-table'
 import { JobTicketPrintModal } from '@/components/production/production-job-ticket-modal'
-import { ProductionService } from '@/services/production.service'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 
 export default function AdvancedProductionPage() {
@@ -969,7 +971,7 @@ export default function AdvancedProductionPage() {
 
   // Executive KPI Counts
  const kpiMetrics = useMemo(() => {
- const base = ProductionService.calculateProductionKpis(tasks, machineQueues)
+ const base = calculateProductionKpis(tasks, machineQueues)
  const finishingCount = tasks.filter(
       (t) => (t.department === 'finishing' || t.task_type === 'finishing') && t.status !== 'completed'
     ).length
@@ -1224,7 +1226,7 @@ export default function AdvancedProductionPage() {
   }
 
  const handleSendWhatsAppNotice = (task: ProductionTaskRecord) => {
- const rawMsg = ProductionService.generateBangladeshiFloorWhatsAppMessage(
+ const rawMsg = generateBangladeshiFloorWhatsAppMessage(
  task,
  company?.name || 'InkFlow Digital & Offset Press'
     )
@@ -1344,7 +1346,7 @@ export default function AdvancedProductionPage() {
 
  if (!mounted) {
  return (
-      <div className="space-y-4 max-w-7xl pb-16 mx-auto animate-pulse p-4">
+      <div className="space-y-4 pb-16 mx-auto animate-pulse p-4">
         <div className="h-28 bg-muted rounded-xl w-full"/>
         <div className="grid grid-cols-2 sm:grid-cols-6 gap-3">
           {[1, 2, 3, 4, 5, 6].map((i) => (
@@ -1361,7 +1363,7 @@ export default function AdvancedProductionPage() {
     <PanelAccessGuard
  module="production"action="view"panelTitle="Printing Floor & Production"panelTitleBn="প্রিন্টিং ফ্লোর ও প্রডাকশন">
       <FeatureGate feature="production">
-        <div className="space-y-4 pb-16 max-w-7xl mx-auto">
+        <div className="space-y-4 pb-16 mx-auto">
         {/* =========================================================================
             1. HEADER: Standardized PageHeader matching Quotations & Billing
            ========================================================================= */}
@@ -1372,7 +1374,7 @@ export default function AdvancedProductionPage() {
               <Link href={getTenantNavHref('/production/machineries', pathname, slug)}>
                 <Button
  variant="outline"size="sm"className="text-xs font-semibold h-9 px-3.5 gap-1.5 border-border bg-card hover:bg-muted text-foreground rounded-xl cursor-pointer shadow-2xs">
-                  <Cpu className="h-4 w-4 text-blue-600"/>
+                  <Cpu className="h-4 w-4 text-primary"/>
                   <span>{isBn ? 'মেশিন বহর' : 'Machinery Fleet'}</span>
                 </Button>
               </Link>
@@ -1425,15 +1427,15 @@ export default function AdvancedProductionPage() {
                 }}
  className={`px-4 py-1.5 rounded-full text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer shadow-2xs ${
  isActive
-                    ? 'bg-blue-600 dark:bg-blue-600 text-white shadow-xs'
+                    ? 'bg-primary bg-primary text-white shadow-xs'
                     : 'bg-card border border-border /80 text-foreground hover:bg-muted dark:hover:bg-muted/80'
                 }`}
               >
                 <span>{t.label}</span>
                 <span
- className={`text-2xs px-2 py-0.5 rounded-full font-bold tabular-nums ${
+ className={`text-xs px-2 py-0.5 rounded-full font-bold tabular-nums ${
  isActive
-                      ? 'bg-card text-blue-600 dark:text-blue-600'
+                      ? 'bg-card text-primary text-primary'
                       : 'bg-muted text-muted-foreground '
                   }`}
                 >
@@ -1468,7 +1470,7 @@ export default function AdvancedProductionPage() {
            ========================================================================= */}
         {loading ? (
           <div className="p-16 text-center text-muted-foreground text-xs flex items-center justify-center gap-2">
-            <RefreshCw className="h-4 w-4 animate-spin text-blue-600"/>
+            <RefreshCw className="h-4 w-4 animate-spin text-primary"/>
             <span>{isBn ? 'প্রোডাকশন ডেটা লোড হচ্ছে...' : 'Loading production data...'}</span>
           </div>
         ) : viewMode === 'board' ? (
@@ -1550,7 +1552,7 @@ export default function AdvancedProductionPage() {
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="h-3 w-3 rounded-full bg-emerald-500 animate-ping"/>
+                  <div className="h-3 w-3 rounded-full bg-success animate-ping"/>
                   <h3 className="text-sm font-black uppercase tracking-wider text-foreground">
                     {isBn
                       ? `লাইভ কারখানা অপারেশন • চলমান মেশিনারি টাস্ক (${terminalRunningTasks.length})`
@@ -1570,7 +1572,7 @@ export default function AdvancedProductionPage() {
                   <p className="text-xs font-bold text-foreground">
                     {isBn ? 'এই মুহূর্তে মেশিনে কোন কাজ চলমান নেই।' : 'No active running jobs on floor right now.'}
                   </p>
-                  <p className="text-2xs text-muted-foreground mt-0.5">
+                  <p className="text-xs text-muted-foreground mt-0.5">
                     {isBn
                       ? 'নিচের কিউ থেকে কাজ শুরু করুন।'
                       : 'Start a job from the scheduled queue below to allocate machine.'}
@@ -1581,12 +1583,12 @@ export default function AdvancedProductionPage() {
                   {terminalRunningTasks.map((task) => (
                     <Card
  key={task.id}
- className="p-4 bg-card border-2 border-blue-500 dark:border-blue-600 rounded-xl shadow-xs space-y-3">
+ className="p-4 bg-card border-2 border-primary/20 border-border rounded-xl shadow-xs space-y-3">
                       <div className="flex items-center justify-between">
-                        <Badge className="bg-blue-600 text-white tabular-nums text-2xs">
+                        <Badge className="bg-primary text-white tabular-nums text-xs">
                           {task.task_number}
                         </Badge>
-                        <Badge className="bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 text-2xs font-bold">
+                        <Badge className="bg-success-surface text-success bg-success-surface text-success text-xs font-bold">
                           ● {isBn ? 'চলমান' : 'RUNNING'}
                         </Badge>
                       </div>
@@ -1604,7 +1606,7 @@ export default function AdvancedProductionPage() {
                       <div className="p-2.5 bg-muted rounded-xl text-xs space-y-1 tabular-nums">
                         <div className="flex justify-between">
                           <span className="text-muted-foreground">{isBn ? 'মেশিন:' : 'Machine:'}</span>
-                          <span className="font-bold text-blue-600 dark:text-blue-400">
+                          <span className="font-bold text-primary text-primary">
                             {task.assigned_machine_name || 'Floor Bench'}
                           </span>
                         </div>
@@ -1630,13 +1632,13 @@ export default function AdvancedProductionPage() {
                       <div className="grid grid-cols-2 gap-2 pt-1">
                         <Button
  size="sm"variant="outline"onClick={() => handlePauseTask(task)}
- className="h-10 text-xs font-bold border-amber-300 text-amber-800 dark:text-amber-300 hover:bg-amber-50 rounded-xl cursor-pointer gap-1.5">
+ className="h-10 text-xs font-bold border-warning-border text-warning text-warning hover:bg-warning-surface rounded-xl cursor-pointer gap-1.5">
                           <Pause className="h-4 w-4"/>
                           <span>{isBn ? 'পজ করুন' : 'Pause'}</span>
                         </Button>
                         <Button
  size="sm"onClick={() => handleCompleteTask(task)}
- className="h-10 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-xs cursor-pointer gap-1.5">
+ className="h-10 text-xs font-bold bg-success hover:bg-success text-white rounded-xl shadow-xs cursor-pointer gap-1.5">
                           <CheckCircle2 className="h-4 w-4"/>
                           <span>{isBn ? 'সম্পন্ন ও কর্তন' : 'Complete & Deduct'}</span>
                         </Button>
@@ -1664,7 +1666,7 @@ export default function AdvancedProductionPage() {
                       <span className="tabular-nums text-xs font-bold text-muted-foreground">
                         {task.task_number}
                       </span>
-                      <Badge variant="outline"className="text-2xs capitalize">
+                      <Badge variant="outline"className="text-xs capitalize">
                         {task.department}
                       </Badge>
                     </div>
@@ -1673,13 +1675,13 @@ export default function AdvancedProductionPage() {
                       <h4 className="font-bold text-xs text-foreground">
                         {task.task_name}
                       </h4>
-                      <p className="text-2xs text-muted-foreground tabular-nums">
+                      <p className="text-xs text-muted-foreground tabular-nums">
                         {task.customer_name} • Qty: {task.quantity} {task.unit}
                       </p>
                     </div>
 
                     <div className="flex items-center justify-between pt-1">
-                      <span className="text-2xs text-muted-foreground tabular-nums">
+                      <span className="text-xs text-muted-foreground tabular-nums">
                         {task.assigned_machine_name || 'Unassigned Machine'}
                       </span>
                       <Button
@@ -1717,7 +1719,7 @@ export default function AdvancedProductionPage() {
                 <CardTitle className="text-sm font-bold text-foreground flex items-center gap-2">
                   <span>{isBn ? 'প্রোডাকশন টাস্ক তালিকা' : 'Production Work Order Tasks'}</span>
                   <Badge
- variant="secondary"className="text-2xs tabular-nums font-bold bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300">
+ variant="secondary"className="text-xs tabular-nums font-bold bg-primary/10 text-primary bg-primary/10 text-primary">
                     {filteredTasks.length}
                   </Badge>
                 </CardTitle>
@@ -1767,11 +1769,11 @@ export default function AdvancedProductionPage() {
  hideFooter={true}
         >
           <form onSubmit={handleGenerateTasksFromOrder} className="space-y-4">
-            <div className="p-3 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-xl text-xs text-blue-900 dark:text-blue-200 space-y-1">
+            <div className="p-3 bg-primary/10 bg-primary/10 border border-primary/20 border-border rounded-xl text-xs text-primary text-primary space-y-1">
               <p className="font-bold">
                 {isBn ? 'মাল্টি-স্টেজ প্রোডাকশন রাউটিং' : 'Automated Multi-Stage Production Routing'}
               </p>
-              <p className="text-2xs opacity-90">
+              <p className="text-xs opacity-90">
                 {isBn
                   ? 'অর্ডার নির্বাচন করলে সিস্টেম স্বয়ংক্রিয়ভাবে প্রি-প্রেস, প্রিন্টিং, লেমিনেশন/ফিনিশিং এবং কিউসি টাস্ক তৈরি করবে।'
                   : 'Select an active order or job. The engine will inspect item specifications and auto-create sequential tasks.'}
@@ -1786,7 +1788,7 @@ export default function AdvancedProductionPage() {
  required
  value={selectedOrderForGen}
  onChange={(e) => setSelectedOrderForGen(e.target.value)}
- className="w-full text-xs rounded-xl border border-input bg-card px-3 py-2 text-foreground shadow-xs focus:border-blue-500 focus:outline-hidden">
+ className="w-full text-xs rounded-xl border border-input bg-card px-3 py-2 text-foreground shadow-xs focus:border-primary/20 focus:outline-hidden">
                 <option value="">-- Choose Order / Job --</option>
                 {activeOrders.map((o) => (
                   <option key={o.id} value={o.id}>
@@ -1893,24 +1895,24 @@ export default function AdvancedProductionPage() {
            ========================================================================= */}
         {notification && (
           <div
- className={`fixed bottom-6 right-6 z-50 p-4 rounded-xl shadow-xs border flex items-center gap-3 backdrop-blur-md transition-all animate-in slide-in-from-bottom-5 duration-300 max-w-md ${
+ className={`fixed bottom-6 right-6 z-50 p-4 rounded-xl shadow-xs border flex items-center gap-3 backdrop-blur-md transition-all animate-in slide-in- duration-300 max-w-md ${
  notification.type === 'error'
-                ? 'bg-rose-50/95 border-rose-300 text-rose-900 dark:bg-rose-950/90 dark:border-rose-800 dark:text-rose-200'
+                ? 'bg-danger-surface/95 border-danger-border text-destructive bg-danger-surface/90 border-danger-border text-destructive'
                 : notification.type === 'warning'
-                ? 'bg-amber-50/95 border-amber-300 text-amber-900 dark:bg-amber-950/90 dark:border-amber-800 dark:text-amber-200'
+                ? 'bg-warning-surface/95 border-warning-border text-warning bg-warning-surface/90 border-warning-border text-warning'
                 : notification.type === 'info'
-                ? 'bg-blue-50/95 border-blue-300 text-blue-900 dark:bg-blue-950/90 dark:border-blue-800 dark:text-blue-200'
-                : 'bg-emerald-50/95 border-emerald-300 text-emerald-900 dark:bg-emerald-950/90 dark:border-emerald-800 dark:text-emerald-200'
+                ? 'bg-primary/10/95 border-primary/20 text-primary bg-primary/10 border-border text-primary'
+                : 'bg-success-surface/95 border-success-border text-success bg-success-surface/90 border-success-border text-success'
             }`}
           >
             {notification.type === 'error' ? (
-              <AlertTriangle className="h-5 w-5 text-rose-600 shrink-0"/>
+              <AlertTriangle className="h-5 w-5 text-destructive shrink-0"/>
             ) : notification.type === 'warning' ? (
-              <AlertOctagon className="h-5 w-5 text-amber-600 shrink-0"/>
+              <AlertOctagon className="h-5 w-5 text-warning shrink-0"/>
             ) : notification.type === 'info' ? (
-              <Clock className="h-5 w-5 text-blue-600 shrink-0"/>
+              <Clock className="h-5 w-5 text-primary shrink-0"/>
             ) : (
-              <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0"/>
+              <CheckCircle2 className="h-5 w-5 text-success shrink-0"/>
             )}
             <p className="text-xs font-semibold leading-relaxed">{notification.msg}</p>
             <button

@@ -738,7 +738,7 @@ export function ReadyProductModal({
  size="5xl"onSubmit={handleSubmit}
  title={
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 font-bold shrink-0 ring-1 ring-blue-500/20">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary bg-primary/20 text-primary font-bold shrink-0 ring-1 focus:ring-ring/20">
             <Package className="h-5 w-5"/>
           </div>
           <div>
@@ -746,11 +746,11 @@ export function ReadyProductModal({
               <span className="text-base font-bold text-foreground">
                 {initialData ? `Edit Ready Product: ${initialData.name}` : 'New Ready Product Master'}
               </span>
-              <Badge variant="outline"className="text-2xs uppercase tabular-nums py-0.5 px-2 bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800">
+              <Badge variant="outline"className="text-xs uppercase tabular-nums py-0.5 px-2 bg-primary/10 text-primary border-primary/20 bg-primary/10 text-primary border-border">
  Ready to Sell
               </Badge>
               {sellingPrice !== '' && Number(sellingPrice) > 0 && (
-                <Badge variant="outline"className="text-2xs tabular-nums py-0.5 px-2 bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800">
+                <Badge variant="outline"className="text-xs tabular-nums py-0.5 px-2 bg-success-surface text-success border-success-border bg-success-surface text-success border-success-border">
                   ৳{Number(sellingPrice).toFixed(2)} / {unit}
                 </Badge>
               )}
@@ -790,7 +790,7 @@ export function ReadyProductModal({
  setFieldErrors({})
  setActiveTab(TABS_CONFIG[currentTabIndex + 1].id)
                 }}
- className="h-10 px-4 rounded-xl font-bold border-blue-300 text-blue-700 dark:border-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-950/40 gap-1.5 cursor-pointer">
+ className="h-10 px-4 rounded-xl font-bold border-primary/20 text-primary border-border text-primary hover:bg-primary/10 dark:hover:bg-primary/10 gap-1.5 cursor-pointer">
                 <span>Next Step</span>
                 <ChevronRight className="w-4 h-4"/>
               </Button>
@@ -830,11 +830,11 @@ export function ReadyProductModal({
  className={cn(
                   'px-2 py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap text-xs relative',
  isSelected
-                    ? 'bg-card text-foreground shadow-xs font-bold ring-1 ring-slate-200 dark:ring-slate-600'
+                    ? 'bg-card text-foreground shadow-xs font-bold ring-1 focus:ring-ring dark:focus:ring-ring'
                     : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground font-medium'
                 )}
               >
-                <Icon className={cn('w-3.5 h-3.5 shrink-0', isSelected ? 'text-blue-600 dark:text-blue-400' : 'text-muted-foreground')} />
+                <Icon className={cn('w-3.5 h-3.5 shrink-0', isSelected ? 'text-primary text-primary' : 'text-muted-foreground')} />
                 <span>{tab.label}</span>
               </button>
             )
@@ -849,7 +849,7 @@ export function ReadyProductModal({
             {/* Section 1: Core Identification */}
             <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
               <div className="flex items-center gap-2">
-                <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
+                <div className="h-6 w-6 rounded-lg bg-primary/10 text-primary bg-primary/60 text-primary flex items-center justify-center font-bold text-xs">
                   1
                 </div>
                 <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
@@ -860,7 +860,7 @@ export function ReadyProductModal({
               <div className="space-y-3">
                 <div>
                   <Label className="text-xs font-semibold mb-1 block">
- Product Name <span className="text-rose-500">*</span>
+ Product Name <span className="text-destructive">*</span>
                   </Label>
                   <Input
  placeholder="e.g. X-Stand Display 2×5 ft, Roll-up Banner Stand 33×80 in..."value={name}
@@ -871,12 +871,12 @@ export function ReadyProductModal({
  required
  className={cn(
                       'h-9 text-xs transition-colors',
- fieldErrors.name && 'border-rose-500 focus-visible:ring-rose-400 bg-rose-50/30 dark:bg-rose-950/20'
+ fieldErrors.name && 'border-danger-border focus-visible:focus:ring-ring bg-danger-surface/30 bg-danger-surface'
                     )}
  autoFocus
                   />
                   {fieldErrors.name && (
-                    <p className="text-2xs text-rose-600 dark:text-rose-400 font-medium mt-1 flex items-center gap-1">
+                    <p className="text-xs text-destructive text-destructive font-medium mt-1 flex items-center gap-1">
                       <AlertCircle className="w-3.5 h-3.5 shrink-0"/>
                       <span>{fieldErrors.name}</span>
                     </p>
@@ -952,7 +952,7 @@ export function ReadyProductModal({
 
                   <div>
                     <Label className="text-xs font-semibold mb-1 block">
- Selling Unit <span className="text-rose-500">*</span>
+ Selling Unit <span className="text-destructive">*</span>
                     </Label>
                     <select
  value={unit}
@@ -983,7 +983,7 @@ export function ReadyProductModal({
                     <input
  type="checkbox"checked={isActive}
  onChange={(e) => setIsActive(e.target.checked)}
- className="w-4 h-4 rounded text-blue-600 focus:ring-ring"/>
+ className="w-4 h-4 rounded text-primary focus:ring-ring"/>
                     <span>Active in Sales & Billing Catalog</span>
                   </label>
                 </div>
@@ -1000,7 +1000,7 @@ export function ReadyProductModal({
             {/* Section 1: Dimensions & Build Material */}
             <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
               <div className="flex items-center gap-2">
-                <div className="h-6 w-6 rounded-lg bg-indigo-100 text-indigo-700 dark:bg-indigo-900/60 dark:text-indigo-300 flex items-center justify-center font-bold text-xs">
+                <div className="h-6 w-6 rounded-lg bg-primary/10 text-primary bg-primary/60 text-primary flex items-center justify-center font-bold text-xs">
                   <Sliders className="w-3.5 h-3.5"/>
                 </div>
                 <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
@@ -1077,7 +1077,7 @@ export function ReadyProductModal({
                   <input
  type="checkbox"checked={hasCarryBag}
  onChange={(e) => setHasCarryBag(e.target.checked)}
- className="w-4 h-4 rounded text-blue-600 focus:ring-ring"/>
+ className="w-4 h-4 rounded text-primary focus:ring-ring"/>
                   <span>Includes Carry Bag</span>
                 </label>
 
@@ -1085,7 +1085,7 @@ export function ReadyProductModal({
                   <input
  type="checkbox"checked={isFoldable}
  onChange={(e) => setIsFoldable(e.target.checked)}
- className="w-4 h-4 rounded text-blue-600 focus:ring-ring"/>
+ className="w-4 h-4 rounded text-primary focus:ring-ring"/>
                   <span>Foldable / Portable</span>
                 </label>
 
@@ -1093,7 +1093,7 @@ export function ReadyProductModal({
                   <input
  type="checkbox"checked={isOutdoorRated}
  onChange={(e) => setIsOutdoorRated(e.target.checked)}
- className="w-4 h-4 rounded text-blue-600 focus:ring-ring"/>
+ className="w-4 h-4 rounded text-primary focus:ring-ring"/>
                   <span>Outdoor Wind-Rated</span>
                 </label>
 
@@ -1101,7 +1101,7 @@ export function ReadyProductModal({
                   <input
  type="checkbox"checked={isMountable}
  onChange={(e) => setIsMountable(e.target.checked)}
- className="w-4 h-4 rounded text-blue-600 focus:ring-ring"/>
+ className="w-4 h-4 rounded text-primary focus:ring-ring"/>
                   <span>Wall / Table Mount</span>
                 </label>
               </div>
@@ -1110,7 +1110,7 @@ export function ReadyProductModal({
             {/* Section 2: Master Carton & Wholesale Packaging */}
             <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
               <div className="flex items-center gap-2">
-                <div className="h-6 w-6 rounded-lg bg-amber-100 text-amber-700 dark:bg-amber-900/60 dark:text-amber-300 flex items-center justify-center font-bold text-xs">
+                <div className="h-6 w-6 rounded-lg bg-warning-surface text-warning bg-warning/60 text-warning flex items-center justify-center font-bold text-xs">
                   <Boxes className="w-3.5 h-3.5"/>
                 </div>
                 <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
@@ -1183,7 +1183,7 @@ export function ReadyProductModal({
             {/* 1. Base Rates & Landed Cost Breakdown */}
             <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
               <div className="flex items-center gap-2">
-                <div className="h-6 w-6 rounded-lg bg-emerald-100 text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-300 flex items-center justify-center font-bold text-xs">
+                <div className="h-6 w-6 rounded-lg bg-success-surface text-success bg-success/60 text-success flex items-center justify-center font-bold text-xs">
                   <DollarSign className="w-3.5 h-3.5"/>
                 </div>
                 <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
@@ -1194,7 +1194,7 @@ export function ReadyProductModal({
               <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
                 <div>
                   <Label className="text-xs font-semibold mb-1 block text-foreground">
- Base Selling Price (৳ / {unit}) <span className="text-rose-500">*</span>
+ Base Selling Price (৳ / {unit}) <span className="text-destructive">*</span>
                   </Label>
                   <div className="relative">
                     <span className="absolute left-3 top-2.5 text-muted-foreground font-bold text-xs">৳</span>
@@ -1206,14 +1206,14 @@ export function ReadyProductModal({
                       }}
  required
  className={cn(
-                        'pl-7 h-9 text-xs tabular-nums font-bold text-blue-600 dark:text-blue-400 transition-colors',
- fieldErrors.sellingPrice && 'border-rose-500 focus-visible:ring-rose-400 bg-rose-50/30 dark:bg-rose-950/20'
+                        'pl-7 h-9 text-xs tabular-nums font-bold text-primary text-primary transition-colors',
+ fieldErrors.sellingPrice && 'border-danger-border focus-visible:focus:ring-ring bg-danger-surface/30 bg-danger-surface'
                       )}
  autoFocus
                     />
                   </div>
                   {fieldErrors.sellingPrice && (
-                    <p className="text-2xs text-rose-600 dark:text-rose-400 font-medium mt-1 flex items-center gap-1">
+                    <p className="text-xs text-destructive text-destructive font-medium mt-1 flex items-center gap-1">
                       <AlertCircle className="w-3.5 h-3.5 shrink-0"/>
                       <span>{fieldErrors.sellingPrice}</span>
                     </p>
@@ -1268,17 +1268,17 @@ export function ReadyProductModal({
               <div className="p-3.5 bg-muted border border-border rounded-xl space-y-3">
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-1.5 text-xs font-bold text-foreground">
-                    <TrendingUp className="w-4 h-4 text-emerald-600"/>
+                    <TrendingUp className="w-4 h-4 text-success"/>
                     <span>Live Yield & Margin Analysis (Landed Cost: ৳{totalLandedCost.toFixed(2)})</span>
                   </div>
                   <Badge
  variant="outline"className={cn(
-                      'text-2xs font-bold px-2 py-0.5 rounded-md',
+                      'text-xs font-bold px-2 py-0.5 rounded-md',
  marginMetrics.grossMarginPercent >= targetMargin
-                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800'
+                        ? 'bg-success-surface text-success border-success-border bg-success-surface text-success border-success-border'
                         : marginMetrics.grossMarginPercent >= minAllowedMargin
-                        ? 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/50 dark:text-amber-300 dark:border-amber-800'
-                        : 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/50 dark:text-rose-300 dark:border-rose-800'
+                        ? 'bg-warning-surface text-warning border-warning-border bg-warning-surface text-warning border-warning-border'
+                        : 'bg-danger-surface text-destructive border-danger-border bg-danger-surface text-destructive border-danger-border'
                     )}
                   >
                     {marginMetrics.grossMarginPercent >= targetMargin ? (
@@ -1295,20 +1295,20 @@ export function ReadyProductModal({
 
                 <div className="grid grid-cols-3 gap-2 text-center">
                   <div className="p-2 rounded-lg bg-card border border-border /60 shadow-2xs">
-                    <span className="text-2xs text-muted-foreground uppercase tracking-wider block">Profit / Unit</span>
-                    <span className="text-sm font-black tabular-nums text-emerald-600 dark:text-emerald-400">
+                    <span className="text-xs text-muted-foreground uppercase tracking-wider block">Profit / Unit</span>
+                    <span className="text-sm font-black tabular-nums text-success text-success">
                       {formatBDT(marginMetrics.grossProfit)}
                     </span>
                   </div>
 
                   <div className="p-2 rounded-lg bg-card border border-border /60 shadow-2xs">
-                    <span className="text-2xs text-muted-foreground uppercase tracking-wider block">Gross Margin</span>
+                    <span className="text-xs text-muted-foreground uppercase tracking-wider block">Gross Margin</span>
                     <span
  className={cn(
                         'text-sm font-black tabular-nums',
  marginMetrics.grossMarginPercent >= minAllowedMargin
-                          ? 'text-emerald-600 dark:text-emerald-400'
-                          : 'text-rose-600 dark:text-rose-400'
+                          ? 'text-success text-success'
+                          : 'text-destructive text-destructive'
                       )}
                     >
                       {marginMetrics.grossMarginPercent}%
@@ -1316,8 +1316,8 @@ export function ReadyProductModal({
                   </div>
 
                   <div className="p-2 rounded-lg bg-card border border-border /60 shadow-2xs">
-                    <span className="text-2xs text-muted-foreground uppercase tracking-wider block">Markup</span>
-                    <span className="text-sm font-black tabular-nums text-blue-600 dark:text-blue-400">
+                    <span className="text-xs text-muted-foreground uppercase tracking-wider block">Markup</span>
+                    <span className="text-sm font-black tabular-nums text-primary text-primary">
                       {marginMetrics.markupPercent}%
                     </span>
                   </div>
@@ -1325,16 +1325,16 @@ export function ReadyProductModal({
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-border">
                   <div>
-                    <Label className="text-2xs font-semibold mb-1 block text-muted-foreground">
+                    <Label className="text-xs font-semibold mb-1 block text-muted-foreground">
  Target Gross Margin (%)
                     </Label>
                     <Input
  type="number"value={targetMargin}
  onChange={(e) => setTargetMargin(parseFloat(e.target.value) || 35)}
- className="h-8 text-xs tabular-nums font-bold text-emerald-600"/>
+ className="h-8 text-xs tabular-nums font-bold text-success"/>
                   </div>
                   <div>
-                    <Label className="text-2xs font-semibold mb-1 block text-muted-foreground">
+                    <Label className="text-xs font-semibold mb-1 block text-muted-foreground">
  Minimum Allowed Margin (%) (Floor)
                     </Label>
                     <Input
@@ -1350,14 +1350,14 @@ export function ReadyProductModal({
             <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
-                  <div className="h-6 w-6 rounded-lg bg-purple-100 text-purple-700 dark:bg-purple-900/60 dark:text-purple-300 flex items-center justify-center font-bold text-xs">
+                  <div className="h-6 w-6 rounded-lg bg-primary/10 text-primary bg-primary/60 text-primary flex items-center justify-center font-bold text-xs">
                     <Tag className="w-3.5 h-3.5"/>
                   </div>
                   <div>
                     <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
  Customer Tier Segment Rates
                     </h3>
-                    <p className="text-2xs text-muted-foreground">
+                    <p className="text-xs text-muted-foreground">
  Auto-applied when preparing quotations & sales for specific customer types.
                     </p>
                   </div>
@@ -1365,7 +1365,7 @@ export function ReadyProductModal({
 
                 <Button
  type="button"size="sm"variant="outline"onClick={handleAutoFillTiers}
- className="h-7 text-2xs font-semibold text-foreground border-border hover:bg-muted bg-purple-50/50 dark:bg-purple-950/30 hover:bg-purple-100 cursor-pointer">
+ className="h-7 text-xs font-semibold text-foreground border-border hover:bg-muted bg-primary/10/50 bg-primary/10 hover:bg-primary/10 cursor-pointer">
                   <Sparkles className="w-3 h-3 mr-1"/> Auto-calculate Tiers
                 </Button>
               </div>
@@ -1374,11 +1374,11 @@ export function ReadyProductModal({
                 {/* Retail Tier */}
                 <div className="p-2.5 rounded-lg border border-border bg-muted space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-2xs font-bold uppercase text-foreground">Retail</span>
-                    <span className="text-2xs text-muted-foreground">100%</span>
+                    <span className="text-xs font-bold uppercase text-foreground">Retail</span>
+                    <span className="text-xs text-muted-foreground">100%</span>
                   </div>
                   <div className="relative">
-                    <span className="absolute left-2 top-2 text-muted-foreground font-bold text-2xs">৳</span>
+                    <span className="absolute left-2 top-2 text-muted-foreground font-bold text-xs">৳</span>
                     <Input
  type="number"step="any"placeholder={String(sellingPrice || '0')}
  value={priceTiers.retail}
@@ -1395,11 +1395,11 @@ export function ReadyProductModal({
                 {/* Corporate Tier */}
                 <div className="p-2.5 rounded-lg border border-border bg-muted space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-2xs font-bold uppercase text-purple-700 dark:text-purple-400">Corporate</span>
-                    <span className="text-2xs text-purple-500 font-medium">-5%</span>
+                    <span className="text-xs font-bold uppercase text-primary text-primary">Corporate</span>
+                    <span className="text-xs text-primary font-medium">-5%</span>
                   </div>
                   <div className="relative">
-                    <span className="absolute left-2 top-2 text-muted-foreground font-bold text-2xs">৳</span>
+                    <span className="absolute left-2 top-2 text-muted-foreground font-bold text-xs">৳</span>
                     <Input
  type="number"step="any"placeholder="e.g. 712"value={priceTiers.corporate}
  onChange={(e) =>
@@ -1415,11 +1415,11 @@ export function ReadyProductModal({
                 {/* Dealer Tier */}
                 <div className="p-2.5 rounded-lg border border-border bg-muted space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-2xs font-bold uppercase text-blue-700 dark:text-blue-400">Dealer</span>
-                    <span className="text-2xs text-blue-500 font-medium">-10%</span>
+                    <span className="text-xs font-bold uppercase text-primary text-primary">Dealer</span>
+                    <span className="text-xs text-primary font-medium">-10%</span>
                   </div>
                   <div className="relative">
-                    <span className="absolute left-2 top-2 text-muted-foreground font-bold text-2xs">৳</span>
+                    <span className="absolute left-2 top-2 text-muted-foreground font-bold text-xs">৳</span>
                     <Input
  type="number"step="any"placeholder="e.g. 675"value={priceTiers.dealer}
  onChange={(e) =>
@@ -1435,11 +1435,11 @@ export function ReadyProductModal({
                 {/* Wholesale Tier */}
                 <div className="p-2.5 rounded-lg border border-border bg-muted space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-2xs font-bold uppercase text-emerald-700 dark:text-emerald-400">Wholesale</span>
-                    <span className="text-2xs text-emerald-500 font-medium">-15%</span>
+                    <span className="text-xs font-bold uppercase text-success text-success">Wholesale</span>
+                    <span className="text-xs text-success font-medium">-15%</span>
                   </div>
                   <div className="relative">
-                    <span className="absolute left-2 top-2 text-muted-foreground font-bold text-2xs">৳</span>
+                    <span className="absolute left-2 top-2 text-muted-foreground font-bold text-xs">৳</span>
                     <Input
  type="number"step="any"placeholder="e.g. 635"value={priceTiers.wholesale}
  onChange={(e) =>
@@ -1455,11 +1455,11 @@ export function ReadyProductModal({
                 {/* Custom VIP Tier */}
                 <div className="p-2.5 rounded-lg border border-border bg-muted space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-2xs font-bold uppercase text-amber-700 dark:text-amber-400">Custom</span>
-                    <span className="text-2xs text-amber-500 font-medium">VIP</span>
+                    <span className="text-xs font-bold uppercase text-warning text-warning">Custom</span>
+                    <span className="text-xs text-warning font-medium">VIP</span>
                   </div>
                   <div className="relative">
-                    <span className="absolute left-2 top-2 text-muted-foreground font-bold text-2xs">৳</span>
+                    <span className="absolute left-2 top-2 text-muted-foreground font-bold text-xs">৳</span>
                     <Input
  type="number"step="any"placeholder="Custom"value={priceTiers.custom}
  onChange={(e) =>
@@ -1484,7 +1484,7 @@ export function ReadyProductModal({
             {/* Section 1: Stock Levels & Reorder Triggers */}
             <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
               <div className="flex items-center gap-2">
-                <div className="h-6 w-6 rounded-lg bg-teal-100 text-teal-700 dark:bg-teal-900/60 dark:text-teal-300 flex items-center justify-center font-bold text-xs">
+                <div className="h-6 w-6 rounded-lg bg-success-surface text-success bg-success/60 text-success flex items-center justify-center font-bold text-xs">
                   <Warehouse className="w-3.5 h-3.5"/>
                 </div>
                 <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
@@ -1510,7 +1510,7 @@ export function ReadyProductModal({
                   <Input
  type="number"min="0"placeholder="e.g. 10"value={reorderLevel}
  onChange={(e) => setReorderLevel(e.target.value === '' ? '' : parseInt(e.target.value))}
- className="h-9 text-xs tabular-nums font-bold text-amber-600 dark:text-amber-400"/>
+ className="h-9 text-xs tabular-nums font-bold text-warning text-warning"/>
                 </div>
 
                 <div>
@@ -1601,13 +1601,13 @@ export function ReadyProductModal({
                     <input
  type="checkbox"checked={vatApplicable}
  onChange={(e) => setVatApplicable(e.target.checked)}
- className="w-4 h-4 rounded text-blue-600 focus:ring-ring"/>
+ className="w-4 h-4 rounded text-primary focus:ring-ring"/>
                     <span>VAT / Tax Applicable</span>
                   </label>
 
                   {vatApplicable && (
                     <div className="pl-6 pt-1">
-                      <Label className="text-2xs font-semibold mb-1 block">
+                      <Label className="text-xs font-semibold mb-1 block">
  Tax Rate (%)
                       </Label>
                       <Input
@@ -1623,7 +1623,7 @@ export function ReadyProductModal({
                     <input
  type="checkbox"checked={isTaxInclusive}
  onChange={(e) => setIsTaxInclusive(e.target.checked)}
- className="w-4 h-4 rounded text-blue-600 focus:ring-ring"/>
+ className="w-4 h-4 rounded text-primary focus:ring-ring"/>
                     <span>Selling Price is Tax-Inclusive</span>
                   </label>
 
@@ -1631,7 +1631,7 @@ export function ReadyProductModal({
                     <input
  type="checkbox"checked={allowManualOverride}
  onChange={(e) => setAllowManualOverride(e.target.checked)}
- className="w-4 h-4 rounded text-blue-600 focus:ring-ring"/>
+ className="w-4 h-4 rounded text-primary focus:ring-ring"/>
                     <span>Allow Sales Staff Rate Override on Quotations</span>
                   </label>
                 </div>

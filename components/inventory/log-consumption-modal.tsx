@@ -296,39 +296,39 @@ export function LogConsumptionModal({
     >
       <form onSubmit={handleSubmit} className="space-y-4 pt-1 max-h-[75vh] overflow-y-auto px-1">
         {error && (
-          <div className="p-3 bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-300 rounded-lg text-xs font-semibold border border-red-200 dark:border-red-800">
+          <div className="p-3 bg-danger-surface text-destructive bg-danger-surface text-destructive rounded-lg text-xs font-semibold border border-danger-border border-danger-border">
             {error}
           </div>
         )}
 
         {/* Selected Active Floor Piece Card */}
         {selectedActiveRoll && (
-          <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-xl space-y-2 text-xs">
+          <div className="p-3 bg-primary/10 border border-primary/20/20 rounded-xl space-y-2 text-xs">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 font-black text-blue-900 dark:text-blue-200 tabular-nums">
-                <Disc className="w-4 h-4 text-blue-600"/>
+              <div className="flex items-center gap-2 font-black text-primary text-primary tabular-nums">
+                <Disc className="w-4 h-4 text-primary"/>
                 <span>Piece: {selectedActiveRoll.roll_code || selectedActiveRoll.roll_tag}</span>
               </div>
-              <Badge variant="outline"className="bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300 font-bold uppercase text-2xs">
+              <Badge variant="outline"className="bg-primary/10 text-primary bg-primary/10 text-primary font-bold uppercase text-xs">
                 {selectedActiveRoll.status} (1 Pcs)
               </Badge>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 border-t border-blue-500/10 text-foreground">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 border-t border-primary/20/10 text-foreground">
               <div>
-                <span className="text-muted-foreground block text-2xs">Substrate</span>
+                <span className="text-muted-foreground block text-xs">Substrate</span>
                 <span className="font-semibold truncate block">{selectedActiveRoll.material?.name || activeMat?.name || 'Roll Substrate'}</span>
               </div>
               <div>
-                <span className="text-muted-foreground block text-2xs">Roll Width</span>
+                <span className="text-muted-foreground block text-xs">Roll Width</span>
                 <span className="font-bold block">{selectedActiveRoll.width_ft} ft</span>
               </div>
               <div>
-                <span className="text-muted-foreground block text-2xs">Initial Spec</span>
+                <span className="text-muted-foreground block text-xs">Initial Spec</span>
                 <span className="font-semibold block">{selectedActiveRoll.initial_length_ft} ft</span>
               </div>
               <div>
-                <span className="text-muted-foreground block text-2xs">Available Length</span>
-                <span className="font-black text-emerald-600 dark:text-emerald-400 block">
+                <span className="text-muted-foreground block text-xs">Available Length</span>
+                <span className="font-black text-success text-success block">
                   {Number(selectedActiveRoll.current_length_ft ?? 0).toFixed(2)} ft — 1 Pcs
                 </span>
               </div>
@@ -338,32 +338,32 @@ export function LogConsumptionModal({
 
         {/* Floor Record Context Card */}
         {!selectedActiveRoll && selectedFloorRecord && (
-          <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg space-y-2 text-xs">
+          <div className="p-3 bg-warning/10 border border-warning-border/20 rounded-lg space-y-2 text-xs">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 font-bold text-amber-900 dark:text-amber-200">
-                <Printer className="w-4 h-4 text-amber-600"/>
+              <div className="flex items-center gap-2 font-bold text-warning text-warning">
+                <Printer className="w-4 h-4 text-warning"/>
                 <span>Issue: {selectedFloorRecord.issue_number || selectedFloorRecord.id.slice(0, 8)}</span>
               </div>
-              <span className="px-2 py-0.5 rounded bg-amber-500/20 text-amber-800 dark:text-amber-300 font-bold uppercase tracking-wider text-2xs">
+              <span className="px-2 py-0.5 rounded bg-warning/20 text-warning text-warning font-bold uppercase tracking-wider text-xs">
                 {selectedFloorRecord.status.replace('_', ' ')}
               </span>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 border-t border-amber-500/10 text-foreground">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 border-t border-warning-border/10 text-foreground">
               <div>
-                <span className="text-muted-foreground block text-2xs">Material</span>
+                <span className="text-muted-foreground block text-xs">Material</span>
                 <span className="font-semibold truncate block">{selectedFloorRecord.material_name}</span>
               </div>
               <div>
-                <span className="text-muted-foreground block text-2xs">Workstation</span>
+                <span className="text-muted-foreground block text-xs">Workstation</span>
                 <span className="font-semibold block">{selectedFloorRecord.machine_name || 'Floor General'}</span>
               </div>
               <div>
-                <span className="text-muted-foreground block text-2xs">Total Issued</span>
+                <span className="text-muted-foreground block text-xs">Total Issued</span>
                 <span className="font-semibold block">{selectedFloorRecord.issued_quantity} {selectedFloorRecord.unit}</span>
               </div>
               <div>
-                <span className="text-muted-foreground block text-2xs">Floor Balance</span>
-                <span className="font-black text-amber-600 dark:text-amber-400 block">
+                <span className="text-muted-foreground block text-xs">Floor Balance</span>
+                <span className="font-black text-warning text-warning block">
                   {selectedFloorRecord.remaining_floor_balance} {selectedFloorRecord.unit}
                 </span>
               </div>
@@ -375,7 +375,7 @@ export function LogConsumptionModal({
         {availableRollsOnFloor.length > 0 && (
           <div className="space-y-1.5 p-3 bg-muted rounded-xl border border-border">
             <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
-              <Disc className="w-3.5 h-3.5 text-blue-600"/>
+              <Disc className="w-3.5 h-3.5 text-primary"/>
  Select Active Piece on Print Floor ({availableRollsOnFloor.length} active pieces)
             </Label>
             <select
@@ -486,12 +486,12 @@ export function LogConsumptionModal({
         {floorMaxBalance !== null && (
           <div className={`p-3 rounded-xl border text-xs space-y-1.5 ${
  isOverFloorBalance 
-              ? 'bg-red-500/10 border-red-500/30 text-red-700 dark:text-red-300' 
+              ? 'bg-destructive/10 border-danger-border/30 text-destructive text-destructive' 
               : 'bg-muted border-border text-foreground '
           }`}>
             <div className="flex items-center justify-between flex-wrap gap-2">
               <div className="flex items-center gap-1.5 font-medium">
-                <Info className="w-4 h-4 text-blue-600"/>
+                <Info className="w-4 h-4 text-primary"/>
                 <span>
  Deducting: <strong>{totalActionQty.toFixed(2)}</strong> {floorUnit}
                   {selectedActiveRoll && (
@@ -507,11 +507,11 @@ export function LogConsumptionModal({
             </div>
 
             {selectedActiveRoll && (
-              <div className="pt-1 border-t border-border /60 flex items-center justify-between text-2xs text-muted-foreground tabular-nums">
+              <div className="pt-1 border-t border-border /60 flex items-center justify-between text-xs text-muted-foreground tabular-nums">
                 <span>
  Physical Spec: {selectedActiveRoll.width_ft}ft × {Math.max(0, floorMaxBalance - totalActionQty).toFixed(2)}ft
                 </span>
-                <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                <span className="font-bold text-success text-success">
  Derived Area: {Math.round(Math.max(0, floorMaxBalance - totalActionQty) * (selectedActiveRoll.width_ft || 3) * 100) / 100} sqft
                 </span>
               </div>
@@ -520,14 +520,14 @@ export function LogConsumptionModal({
         )}
 
         {returnedQty > 0 && (
-          <div className="space-y-1.5 p-2.5 bg-emerald-50 dark:bg-emerald-950/40 rounded-lg border border-emerald-200 dark:border-emerald-800 text-xs">
-            <Label required className="text-emerald-900 dark:text-emerald-200">
+          <div className="space-y-1.5 p-2.5 bg-success-surface bg-success-surface rounded-lg border border-success-border border-success-border text-xs">
+            <Label required className="text-success text-success">
  Return Store Location
             </Label>
             <select
  value={returnLocationId}
  onChange={(e) => setReturnLocationId(e.target.value)}
- className="w-full h-9 px-2 rounded border border-emerald-300 dark:border-emerald-700 bg-card text-xs font-semibold"required
+ className="w-full h-9 px-2 rounded border border-success-border border-success-border bg-card text-xs font-semibold"required
             >
               {locations.map((loc) => (
                 <option key={loc.id} value={loc.id}>
@@ -539,14 +539,14 @@ export function LogConsumptionModal({
         )}
 
         {wastageQty > 0 && (
-          <div className="space-y-1.5 p-2.5 bg-red-50 dark:bg-red-950/40 rounded-lg border border-red-200 dark:border-red-800 text-xs">
-            <Label required className="text-red-900 dark:text-red-200">
+          <div className="space-y-1.5 p-2.5 bg-danger-surface bg-danger-surface rounded-lg border border-danger-border border-danger-border text-xs">
+            <Label required className="text-destructive text-destructive">
  Wastage Root Cause Reason
             </Label>
             <select
  value={wastageReason}
  onChange={(e) => setWastageReason(e.target.value)}
- className="w-full h-9 px-2 rounded border border-red-300 dark:border-red-700 bg-card text-xs font-semibold mb-1"required
+ className="w-full h-9 px-2 rounded border border-danger-border border-danger-border bg-card text-xs font-semibold mb-1"required
             >
               <option value="">-- Select Root Cause --</option>
               <option value="Cutting & Margin Loss">Cutting & Margin Loss</option>
@@ -568,7 +568,7 @@ export function LogConsumptionModal({
         <div className="space-y-2 pt-1 border-t border-border">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5">
-              <Scissors className="h-4 w-4 text-purple-600"/>
+              <Scissors className="h-4 w-4 text-primary"/>
               <span className="font-bold text-xs text-foreground">
  Discrete Reusable Remnants ({remnants.length})
               </span>
@@ -579,7 +579,7 @@ export function LogConsumptionModal({
           </div>
 
           {remnants.length === 0 ? (
-            <p className="text-2xs text-muted-foreground italic">
+            <p className="text-xs text-muted-foreground italic">
  No usable offcuts. Click &quot;Add Remnant&quot; to catalog usable roll/sheet leftovers for future small jobs.
             </p>
           ) : (
@@ -587,15 +587,15 @@ export function LogConsumptionModal({
               {remnants.map((r, idx) => (
                 <div
  key={idx}
- className="p-3 bg-purple-50/60 dark:bg-purple-950/30 rounded-lg border border-purple-200 dark:border-purple-800 space-y-2 text-xs">
+ className="p-3 bg-primary/10/60 bg-primary/10 rounded-lg border border-primary/20 border-border space-y-2 text-xs">
                   <div className="flex items-center justify-between">
-                    <span className="font-bold text-purple-900 dark:text-purple-300">
+                    <span className="font-bold text-primary text-primary">
  Remnant #{idx + 1} ({r.width} × {r.length} {r.dimension_unit} ={' '}
                       <strong>{r.width * r.length} SFT</strong>)
                     </span>
                     <Button
  type="button"size="sm"variant="ghost"onClick={() => handleRemoveRemnant(idx)}
- className="h-6 w-6 p-0 text-red-600">
+ className="h-6 w-6 p-0 text-destructive">
                       <Trash2 className="h-3.5 w-3.5"/>
                     </Button>
                   </div>
@@ -660,7 +660,7 @@ export function LogConsumptionModal({
           </Button>
           <Button
  type="submit"disabled={loading || Boolean(isOverFloorBalance)}
- className="w-full sm:w-auto min-h-[40px] bg-purple-600 hover:bg-purple-700 text-white font-bold">
+ className="w-full sm:w-auto min-h-[40px] bg-primary hover:bg-primary/90 text-primary-foreground font-bold">
             {loading ? 'Submitting...' : 'Sign-Off Consumption & Remnants'}
           </Button>
         </div>

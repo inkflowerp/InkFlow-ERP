@@ -28,7 +28,7 @@ export function MachineryStatusBadge({
  case 'available':
  return (
         <Badge
- variant="outline"className={`bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800 font-semibold inline-flex items-center gap-1 ${className}`}
+ variant="outline"className={`bg-success-surface text-success border-success-border bg-success-surface text-success border-success-border font-semibold inline-flex items-center gap-1 ${className}`}
         >
           {showIcon && <CheckCircle2 className="h-3 w-3"/>}
           <span>Available</span>
@@ -37,7 +37,7 @@ export function MachineryStatusBadge({
  case 'in_use':
  return (
         <Badge
- variant="outline"className={`bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-400 dark:border-blue-800 font-semibold inline-flex items-center gap-1 ${className}`}
+ variant="outline"className={`bg-primary/10 text-primary border-primary/20 bg-primary/10 text-primary border-border font-semibold inline-flex items-center gap-1 ${className}`}
         >
           {showIcon && <PlayCircle className="h-3 w-3"/>}
           <span>In Use</span>
@@ -46,7 +46,7 @@ export function MachineryStatusBadge({
  case 'scheduled':
  return (
         <Badge
- variant="outline"className={`bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950/40 dark:text-indigo-400 dark:border-indigo-800 font-semibold inline-flex items-center gap-1 ${className}`}
+ variant="outline"className={`bg-primary/10 text-primary border-primary/20 bg-primary/10 text-primary border-border font-semibold inline-flex items-center gap-1 ${className}`}
         >
           {showIcon && <Clock className="h-3 w-3"/>}
           <span>Scheduled</span>
@@ -55,7 +55,7 @@ export function MachineryStatusBadge({
  case 'maintenance':
  return (
         <Badge
- variant="outline"className={`bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800 font-semibold inline-flex items-center gap-1 ${className}`}
+ variant="outline"className={`bg-warning-surface text-warning border-warning-border bg-warning-surface text-warning border-warning-border font-semibold inline-flex items-center gap-1 ${className}`}
         >
           {showIcon && <Wrench className="h-3 w-3"/>}
           <span>Maintenance</span>
@@ -64,7 +64,7 @@ export function MachineryStatusBadge({
  case 'breakdown':
  return (
         <Badge
- variant="outline"className={`bg-red-50 text-red-700 border-red-200 dark:bg-red-950/40 dark:text-red-400 dark:border-red-800 font-bold inline-flex items-center gap-1 animate-pulse ${className}`}
+ variant="outline"className={`bg-danger-surface text-destructive border-danger-border bg-danger-surface text-destructive border-danger-border font-bold inline-flex items-center gap-1 animate-pulse ${className}`}
         >
           {showIcon && <AlertTriangle className="h-3 w-3"/>}
           <span>Breakdown</span>

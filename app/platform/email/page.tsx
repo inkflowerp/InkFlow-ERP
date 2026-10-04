@@ -1,5 +1,9 @@
-import { redirect } from 'next/navigation'
+import { requirePlatformPermission } from '@/lib/auth/platform-auth'
+import PlatformEmailClient from './email-client'
 
-export default function PlatformEmailRedirect() {
- redirect('/platform/settings/communication')
+export const dynamic = 'force-dynamic'
+
+export default async function PlatformEmailPage() {
+  await requirePlatformPermission('system.view')
+  return <PlatformEmailClient />
 }

@@ -136,15 +136,15 @@ export function AttendanceRoster({
  switch (status) {
  case 'present':
  case 'half_day':
- return 'bg-emerald-50 text-emerald-700 border-emerald-200'
+ return 'bg-success-surface text-success border-success-border'
  case 'late':
- return 'bg-amber-50 text-amber-700 border-amber-200'
+ return 'bg-warning-surface text-warning border-warning-border'
  case 'absent':
- return 'bg-red-50 text-red-700 border-red-200'
+ return 'bg-danger-surface text-destructive border-danger-border'
  case 'leave':
- return 'bg-blue-50 text-blue-700 border-blue-200'
+ return 'bg-primary/10 text-primary border-primary/20'
  case 'field_work':
- return 'bg-purple-50 text-purple-700 border-purple-200'
+ return 'bg-primary/10 text-primary border-primary/20'
  default:
  return 'bg-muted text-foreground border-border'
     }
@@ -163,28 +163,28 @@ export function AttendanceRoster({
       {/* KPI Cards Row */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
         <Card className="p-3 bg-card border-border shadow-[0_1px_3px_rgba(0,0,0,0.02)] rounded-xl">
-          <span className="text-[11px] font-medium text-muted-foreground block">{tBilingual('Present', 'উপস্থিত')}</span>
-          <span className="text-xl font-bold text-emerald-600 tabular-nums">{stats.present}</span>
+          <span className="text-xs font-medium text-muted-foreground block">{tBilingual('Present', 'উপস্থিত')}</span>
+          <span className="text-xl font-bold text-success tabular-nums">{stats.present}</span>
         </Card>
         <Card className="p-3 bg-card border-border shadow-[0_1px_3px_rgba(0,0,0,0.02)] rounded-xl">
-          <span className="text-[11px] font-medium text-muted-foreground block">{tBilingual('Late', 'দেরিতে আগমন')}</span>
-          <span className="text-xl font-bold text-amber-600 tabular-nums">{stats.late}</span>
+          <span className="text-xs font-medium text-muted-foreground block">{tBilingual('Late', 'দেরিতে আগমন')}</span>
+          <span className="text-xl font-bold text-warning tabular-nums">{stats.late}</span>
         </Card>
         <Card className="p-3 bg-card border-border shadow-[0_1px_3px_rgba(0,0,0,0.02)] rounded-xl">
-          <span className="text-[11px] font-medium text-muted-foreground block">{tBilingual('Absent', 'অনুপস্থিত')}</span>
-          <span className="text-xl font-bold text-red-600 tabular-nums">{stats.absent}</span>
+          <span className="text-xs font-medium text-muted-foreground block">{tBilingual('Absent', 'অনুপস্থিত')}</span>
+          <span className="text-xl font-bold text-destructive tabular-nums">{stats.absent}</span>
         </Card>
         <Card className="p-3 bg-card border-border shadow-[0_1px_3px_rgba(0,0,0,0.02)] rounded-xl">
-          <span className="text-[11px] font-medium text-muted-foreground block">{tBilingual('Leave', 'ছুটিতে')}</span>
-          <span className="text-xl font-bold text-blue-600 tabular-nums">{stats.leave}</span>
+          <span className="text-xs font-medium text-muted-foreground block">{tBilingual('Leave', 'ছুটিতে')}</span>
+          <span className="text-xl font-bold text-primary tabular-nums">{stats.leave}</span>
         </Card>
         <Card className="p-3 bg-card border-border shadow-[0_1px_3px_rgba(0,0,0,0.02)] rounded-xl">
-          <span className="text-[11px] font-medium text-muted-foreground block">{tBilingual('Field Work', 'ফিল্ডে')}</span>
-          <span className="text-xl font-bold text-purple-600 tabular-nums">{stats.fieldWork}</span>
+          <span className="text-xs font-medium text-muted-foreground block">{tBilingual('Field Work', 'ফিল্ডে')}</span>
+          <span className="text-xl font-bold text-primary tabular-nums">{stats.fieldWork}</span>
         </Card>
         <Card className="p-3 bg-card border-border shadow-[0_1px_3px_rgba(0,0,0,0.02)] rounded-xl">
-          <span className="text-[11px] font-medium text-muted-foreground block">{tBilingual('Working Now', 'ফ্লোরে কর্মরত')}</span>
-          <span className="text-xl font-bold text-indigo-600 tabular-nums">{stats.currentlyWorking}</span>
+          <span className="text-xs font-medium text-muted-foreground block">{tBilingual('Working Now', 'ফ্লোরে কর্মরত')}</span>
+          <span className="text-xl font-bold text-primary tabular-nums">{stats.currentlyWorking}</span>
         </Card>
       </div>
 
@@ -216,7 +216,7 @@ export function AttendanceRoster({
               {!isToday && (
                 <Button
  variant="ghost"size="sm"onClick={() => onDateChange(new Date().toISOString().split('T')[0])}
- className="h-8 text-xs text-blue-600 hover:text-blue-700 px-2 font-medium">
+ className="h-8 text-xs text-primary hover:text-primary px-2 font-medium">
  Today
                 </Button>
               )}
@@ -227,7 +227,7 @@ export function AttendanceRoster({
               <Button
  variant="outline"size="sm"onClick={onOpenQrPunch}
  className="h-8 text-xs border-border hover:bg-muted text-foreground min-h-[32px]">
-                <QrCode className="w-3.5 h-3.5 mr-1.5 text-blue-600"/>
+                <QrCode className="w-3.5 h-3.5 mr-1.5 text-primary"/>
                 <span>{tBilingual('QR Attendance', 'কিউআর হাজিরা')}</span>
               </Button>
 
@@ -304,7 +304,7 @@ export function AttendanceRoster({
         <Card className="bg-card border-border shadow-[0_1px_3px_rgba(0,0,0,0.02)] rounded-xl overflow-hidden">
           <div className="overflow-x-auto min-h-[160px]">
             <table className="w-full text-left text-xs">
-              <thead className="bg-muted border-b border-border text-muted-foreground uppercase tracking-wider font-semibold text-[11px]">
+              <thead className="bg-muted border-b border-border text-muted-foreground uppercase tracking-wider font-semibold text-xs">
                 <tr>
                   <th className="py-3 px-4">{tBilingual('Employee', 'কর্মী')}</th>
                   <th className="py-3 px-3">{tBilingual('Department', 'বিভাগ')}</th>
@@ -326,7 +326,7 @@ export function AttendanceRoster({
                       {/* Employee */}
                       <td className="py-3 px-4">
                         <div className="font-semibold text-foreground">{employee.name}</div>
-                        <div className="text-[11px] text-muted-foreground font-mono">
+                        <div className="text-xs text-muted-foreground font-mono">
                           {employee.employee_id_number}
                         </div>
                       </td>
@@ -344,7 +344,7 @@ export function AttendanceRoster({
                       {/* Status */}
                       <td className="py-3 px-3 text-center">
                         <Badge
- variant="outline"className={`text-[10px] font-semibold capitalize px-2 py-0.5 rounded-full ${getStatusBadge(
+ variant="outline"className={`text-xs font-semibold capitalize px-2 py-0.5 rounded-full ${getStatusBadge(
  status
                           )}`}
                         >
@@ -370,7 +370,7 @@ export function AttendanceRoster({
                       {/* Late */}
                       <td className="py-3 px-3 font-mono text-muted-foreground">
                         {summary && summary.late_minutes > 0 ? (
-                          <span className="text-amber-600 font-semibold">{summary.late_minutes}m</span>
+                          <span className="text-warning font-semibold">{summary.late_minutes}m</span>
                         ) : (
                           '0m'
                         )}
@@ -379,7 +379,7 @@ export function AttendanceRoster({
                       {/* OT */}
                       <td className="py-3 px-3 font-mono text-muted-foreground">
                         {summary && summary.approved_ot_minutes > 0 ? (
-                          <span className="text-indigo-600 font-semibold">{Math.round((summary.approved_ot_minutes / 60) * 10) / 10}h</span>
+                          <span className="text-primary font-semibold">{Math.round((summary.approved_ot_minutes / 60) * 10) / 10}h</span>
                         ) : (
                           '0h'
                         )}
@@ -401,23 +401,23 @@ export function AttendanceRoster({
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end"className="w-44 text-xs font-medium">
                             <DropdownMenuItem onClick={() => onMarkAttendance(employee, 'present')}>
-                              <UserCheck className="w-3.5 h-3.5 mr-2 text-emerald-600"/>
+                              <UserCheck className="w-3.5 h-3.5 mr-2 text-success"/>
                               <span>Mark Present</span>
                             </DropdownMenuItem>
 
                             <DropdownMenuItem onClick={() => onMarkAttendance(employee, 'late')}>
-                              <Clock className="w-3.5 h-3.5 mr-2 text-amber-600"/>
+                              <Clock className="w-3.5 h-3.5 mr-2 text-warning"/>
                               <span>Mark Late</span>
                             </DropdownMenuItem>
 
                             <DropdownMenuItem onClick={() => onMarkAttendance(employee, 'absent')}>
-                              <UserX className="w-3.5 h-3.5 mr-2 text-red-600"/>
+                              <UserX className="w-3.5 h-3.5 mr-2 text-destructive"/>
                               <span>Mark Absent</span>
                             </DropdownMenuItem>
 
                             {summary && (
                               <DropdownMenuItem onClick={() => onAdjustTime(summary)}>
-                                <Edit2 className="w-3.5 h-3.5 mr-2 text-blue-600"/>
+                                <Edit2 className="w-3.5 h-3.5 mr-2 text-primary"/>
                                 <span>Adjust Punch Times</span>
                               </DropdownMenuItem>
                             )}

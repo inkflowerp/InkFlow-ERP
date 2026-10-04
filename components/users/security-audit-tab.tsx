@@ -108,7 +108,7 @@ export function SecurityAuditTab({ companyId, companySlug }: SecurityAuditTabPro
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
             <div>
               <CardTitle className="text-base font-semibold text-foreground flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                <ShieldCheck className="w-4 h-4 text-success text-success" />
                 <span>{tBilingual('Security & Access Audit Trail', 'নিরাপত্তা ও অ্যাক্সেস অডিট ট্রেইল')}</span>
               </CardTitle>
               <CardDescription className="text-xs text-muted-foreground mt-1">
@@ -199,11 +199,11 @@ export function SecurityAuditTab({ companyId, companySlug }: SecurityAuditTabPro
                         <div className="flex items-start gap-3">
                           <div className="p-1.5 rounded-lg bg-muted text-foreground border border-border mt-0.5">
                             {log.entity === 'auth' ? (
-                              <Key className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" />
+                              <Key className="w-3.5 h-3.5 text-warning text-warning" />
                             ) : log.entity === 'user' ? (
-                              <User className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
+                              <User className="w-3.5 h-3.5 text-primary text-primary" />
                             ) : (
-                              <FileText className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                              <FileText className="w-3.5 h-3.5 text-success text-success" />
                             )}
                           </div>
 
@@ -212,14 +212,14 @@ export function SecurityAuditTab({ companyId, companySlug }: SecurityAuditTabPro
                               <span className="font-semibold text-xs text-foreground tabular-nums">
                                 {log.action}
                               </span>
-                              <Badge variant="outline" className="text-2xs px-1.5 py-0 uppercase bg-muted border-border text-muted-foreground">
+                              <Badge variant="outline" className="text-xs px-1.5 py-0 uppercase bg-muted border-border text-muted-foreground">
                                 {log.entity}
                               </Badge>
                             </div>
 
                             <div className="text-xs text-foreground">{log.description || 'Action recorded'}</div>
 
-                            <div className="flex items-center gap-3 text-2xs text-muted-foreground pt-0.5">
+                            <div className="flex items-center gap-3 text-xs text-muted-foreground pt-0.5">
                               <span>
                                 {tBilingual('Actor:', 'ব্যবহারকারী:')} <span className="text-foreground font-medium">{log.user_email || 'System Agent'}</span>
                               </span>
@@ -233,7 +233,7 @@ export function SecurityAuditTab({ companyId, companySlug }: SecurityAuditTabPro
                         </div>
 
                         <div className="flex items-center gap-2">
-                          <div className="text-right text-2xs text-muted-foreground tabular-nums whitespace-nowrap">
+                          <div className="text-right text-xs text-muted-foreground tabular-nums whitespace-nowrap">
                             {formatDateTime(getLogTimestamp(log))}
                           </div>
 
@@ -252,9 +252,9 @@ export function SecurityAuditTab({ companyId, companySlug }: SecurityAuditTabPro
 
                       {/* Expandable Before/After Diff */}
                       {isExpanded && hasDiff && (
-                        <div className="mt-3 p-3 rounded-lg bg-muted border border-border text-2xs tabular-nums grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div className="mt-3 p-3 rounded-lg bg-muted border border-border text-xs tabular-nums grid grid-cols-1 md:grid-cols-2 gap-3">
                           <div>
-                            <div className="text-rose-600 dark:text-rose-400 font-semibold mb-1 flex items-center gap-1">
+                            <div className="text-destructive text-destructive font-semibold mb-1 flex items-center gap-1">
                               <XCircle className="w-3 h-3" /> {tBilingual('Previous State:', 'পূর্ববর্তী অবস্থা:')}
                             </div>
                             <pre className="p-2 rounded bg-card border border-border text-foreground overflow-x-auto">
@@ -263,7 +263,7 @@ export function SecurityAuditTab({ companyId, companySlug }: SecurityAuditTabPro
                           </div>
 
                           <div>
-                            <div className="text-emerald-600 dark:text-emerald-400 font-semibold mb-1 flex items-center gap-1">
+                            <div className="text-success text-success font-semibold mb-1 flex items-center gap-1">
                               <CheckCircle2 className="w-3 h-3" /> {tBilingual('New State:', 'নতুন অবস্থা:')}
                             </div>
                             <pre className="p-2 rounded bg-card border border-border text-foreground overflow-x-auto">

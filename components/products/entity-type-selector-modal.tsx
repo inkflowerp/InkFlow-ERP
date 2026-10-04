@@ -21,9 +21,9 @@ export function EntityTypeSelectorModal({ isOpen, onClose, onSelect }: EntityTyp
  description: 'Physical items sold ready-to-use by piece/pack. No roll formulas or production bleeds.',
  icon: Package,
  badge: 'Ready to Sell',
- borderClass: 'border-blue-200 dark:border-blue-900/60 hover:border-blue-500 hover:bg-blue-50/50 dark:hover:bg-blue-950/30',
- badgeClass: 'bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 border-blue-200 dark:border-blue-800',
- iconClass: 'bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300',
+ borderClass: 'border-primary/20 border-border/60 hover:border-primary/20 hover:bg-primary/10/50 dark:hover:bg-primary/10',
+ badgeClass: 'bg-primary/10 text-primary bg-primary/60 text-primary border-primary/20 border-border',
+ iconClass: 'bg-primary/10 text-primary bg-primary/60 text-primary',
     },
     {
  id: 'service' as const,
@@ -32,9 +32,9 @@ export function EntityTypeSelectorModal({ isOpen, onClose, onSelect }: EntityTyp
  description: 'Custom work configured by dimensions, required materials, finishing, and allowance geometry.',
  icon: Wrench,
  badge: 'Custom Jobs',
- borderClass: 'border-emerald-200 dark:border-emerald-900/60 hover:border-emerald-500 hover:bg-emerald-50/50 dark:hover:bg-emerald-950/30',
- badgeClass: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800',
- iconClass: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-300',
+ borderClass: 'border-success-border border-success-border/60 hover:border-success-border hover:bg-success-surface/50 dark:hover:bg-success-surface',
+ badgeClass: 'bg-success-surface text-success bg-success/60 text-success border-success-border border-success-border',
+ iconClass: 'bg-success-surface text-success bg-success/60 text-success',
     },
     {
  id: 'material' as const,
@@ -43,9 +43,9 @@ export function EntityTypeSelectorModal({ isOpen, onClose, onSelect }: EntityTyp
  description: 'Stock materials purchased in bulk/rolls, tracked by roll length, and consumed during production.',
  icon: Boxes,
  badge: 'Inventory Stock',
- borderClass: 'border-amber-200 dark:border-amber-900/60 hover:border-amber-500 hover:bg-amber-50/50 dark:hover:bg-amber-950/30',
- badgeClass: 'bg-amber-100 text-amber-700 dark:bg-amber-900/60 dark:text-amber-300 border-amber-200 dark:border-amber-800',
- iconClass: 'bg-amber-100 text-amber-700 dark:bg-amber-900/60 dark:text-amber-300',
+ borderClass: 'border-warning-border border-warning-border/60 hover:border-warning-border hover:bg-warning-surface/50 dark:hover:bg-warning-surface',
+ badgeClass: 'bg-warning-surface text-warning bg-warning/60 text-warning border-warning-border border-warning-border',
+ iconClass: 'bg-warning-surface text-warning bg-warning/60 text-warning',
     },
     {
  id: 'outsource' as const,
@@ -54,9 +54,9 @@ export function EntityTypeSelectorModal({ isOpen, onClose, onSelect }: EntityTyp
  description: 'Jobs & items contracted to third-party vendors. Direct vendor costing, lead times, and zero stock depletion.',
  icon: Share2,
  badge: 'Non-Inventory',
- borderClass: 'border-purple-200 dark:border-purple-900/60 hover:border-purple-500 hover:bg-purple-50/50 dark:hover:bg-purple-950/30',
- badgeClass: 'bg-purple-100 text-purple-700 dark:bg-purple-900/60 dark:text-purple-300 border-purple-200 dark:border-purple-800',
- iconClass: 'bg-purple-100 text-purple-700 dark:bg-purple-900/60 dark:text-purple-300',
+ borderClass: 'border-primary/20 border-border/60 hover:border-primary/20 hover:bg-primary/10/50 dark:hover:bg-primary/10',
+ badgeClass: 'bg-primary/10 text-primary bg-primary/60 text-primary border-primary/20 border-border',
+ iconClass: 'bg-primary/10 text-primary bg-primary/60 text-primary',
     },
   ]
 
@@ -66,7 +66,7 @@ export function EntityTypeSelectorModal({ isOpen, onClose, onSelect }: EntityTyp
  onOpenChange={(open) => !open && onClose()}
  size="2xl"title={
         <div className="flex items-center gap-2.5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 font-bold shrink-0">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary bg-primary/20 text-primary font-bold shrink-0">
             <Layers className="h-5 w-5"/>
           </div>
           <div>
@@ -105,22 +105,22 @@ export function EntityTypeSelectorModal({ isOpen, onClose, onSelect }: EntityTyp
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="font-bold text-foreground text-sm group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                      <span className="font-bold text-foreground text-sm group-hover:text-primary dark:group-hover:text-primary transition-colors">
                         {opt.title}
                       </span>
-                      <span className={cn('px-2 py-0.5 text-2xs font-bold rounded-md border', opt.badgeClass)}>
+                      <span className={cn('px-2 py-0.5 text-xs font-bold rounded-md border', opt.badgeClass)}>
                         {opt.badge}
                       </span>
                     </div>
                     <p className="text-xs font-semibold text-muted-foreground mt-0.5">
                       {opt.subtitle}
                     </p>
-                    <p className="text-2xs text-muted-foreground mt-1 leading-relaxed">
+                    <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
                       {opt.description}
                     </p>
                   </div>
                 </div>
-                <div className="p-2 rounded-full text-muted-foreground group-hover:text-blue-600 dark:group-hover:text-blue-400 group-hover:translate-x-0.5 transition-all shrink-0">
+                <div className="p-2 rounded-full text-muted-foreground group-hover:text-primary dark:group-hover:text-primary group-hover:translate-x-0.5 transition-all shrink-0">
                   <ArrowRight className="w-4 h-4"/>
                 </div>
               </button>

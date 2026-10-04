@@ -22,7 +22,7 @@ export function BranchPerformanceDashboard({
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <div className="flex items-center space-x-2">
-            <span className="w-3 h-3 rounded-full bg-emerald-500"></span>
+            <span className="w-3 h-3 rounded-full bg-success"></span>
             <h2 className="text-xl font-bold text-foreground">
               {kpis.branch_name} ({kpis.branch_code})
             </h2>
@@ -69,13 +69,13 @@ export function BranchPerformanceDashboard({
               </div>
               <div>
                 <span className="text-muted-foreground">Collection: </span>
-                <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                <span className="font-semibold text-success text-success">
                   ৳{kpis.sales.collection_amount.toLocaleString('en-IN')}
                 </span>
               </div>
               <div>
                 <span className="text-muted-foreground">Due/Outstanding: </span>
-                <span className="font-semibold text-rose-600 dark:text-rose-400">
+                <span className="font-semibold text-destructive text-destructive">
                   ৳{kpis.sales.outstanding_amount.toLocaleString('en-IN')}
                 </span>
               </div>
@@ -99,7 +99,7 @@ export function BranchPerformanceDashboard({
             <div className="grid grid-cols-2 gap-2 text-xs pt-2">
               <div>
                 <span className="text-muted-foreground">Queued: </span>
-                <span className="font-semibold text-amber-600 dark:text-amber-400">
+                <span className="font-semibold text-warning text-warning">
                   {kpis.production.queued_tasks}
                 </span>
               </div>
@@ -111,7 +111,7 @@ export function BranchPerformanceDashboard({
               </div>
               <div>
                 <span className="text-muted-foreground">Reworks: </span>
-                <span className="font-semibold text-rose-600 dark:text-rose-400">
+                <span className="font-semibold text-destructive text-destructive">
                   {kpis.production.rework_tasks}
                 </span>
               </div>
@@ -129,7 +129,7 @@ export function BranchPerformanceDashboard({
             <div className="grid grid-cols-2 gap-2 text-xs pt-2">
               <div>
                 <span className="text-muted-foreground">Low Stock Alert: </span>
-                <span className={`font-semibold ${kpis.inventory.low_stock_item_count > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-foreground '}`}>
+                <span className={`font-semibold ${kpis.inventory.low_stock_item_count > 0 ? 'text-destructive text-destructive' : 'text-foreground '}`}>
                   {kpis.inventory.low_stock_item_count} items
                 </span>
               </div>
@@ -164,7 +164,7 @@ export function BranchPerformanceDashboard({
               </div>
               <div>
                 <span className="text-muted-foreground">Net Flow: </span>
-                <span className={`font-semibold ${kpis.finance.net_cash_flow >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
+                <span className={`font-semibold ${kpis.finance.net_cash_flow >= 0 ? 'text-success text-success' : 'text-destructive text-destructive'}`}>
                   ৳{kpis.finance.net_cash_flow.toLocaleString('en-IN')}
                 </span>
               </div>

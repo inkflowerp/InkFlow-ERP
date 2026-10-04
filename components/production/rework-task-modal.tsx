@@ -96,19 +96,19 @@ export function ReworkTaskModal({
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Parent Task Card */}
-        <div className="p-3 bg-rose-50/50 dark:bg-rose-950/30 rounded-lg border border-rose-200 dark:border-rose-800 space-y-1">
-          <div className="text-xs font-bold text-rose-900 dark:text-rose-200 flex items-center gap-1.5">
-            <RotateCcw className="h-4 w-4 text-rose-600"/>
+        <div className="p-3 bg-danger-surface/50 bg-danger-surface rounded-lg border border-danger-border border-danger-border space-y-1">
+          <div className="text-xs font-bold text-destructive text-destructive flex items-center gap-1.5">
+            <RotateCcw className="h-4 w-4 text-destructive"/>
             <span>{task.task_name}</span>
           </div>
-          <p className="text-2xs text-rose-800/80 dark:text-rose-300/80">
+          <p className="text-xs text-destructive/80 text-destructive/80">
  Original task records are preserved for costing and audit purposes. A new linked high-priority rework task will be queued.
           </p>
         </div>
 
         {errorMessage && (
-          <div className="p-3 bg-rose-50 text-rose-800 rounded-lg text-xs font-medium flex items-center gap-2 border border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800">
-            <AlertTriangle className="h-4 w-4 text-rose-600 shrink-0"/>
+          <div className="p-3 bg-danger-surface text-destructive rounded-lg text-xs font-medium flex items-center gap-2 border border-danger-border bg-danger-surface text-destructive border-danger-border">
+            <AlertTriangle className="h-4 w-4 text-destructive shrink-0"/>
             <span>{errorMessage}</span>
           </div>
         )}
@@ -174,7 +174,7 @@ export function ReworkTaskModal({
           </Button>
           <Button
  type="submit"variant="destructive"size="sm"disabled={isSubmitting}
- className="text-xs bg-rose-600 hover:bg-rose-700 text-white font-semibold">
+ className="text-xs bg-destructive hover:bg-destructive text-white font-semibold">
             {isSubmitting ? tBilingual('Submitting...', 'আবেদন হচ্ছে...') : tBilingual('Queue Rework Task', 'রি-ওয়ার্ক কিউতে পাঠান')}
           </Button>
         </div>

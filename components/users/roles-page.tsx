@@ -68,7 +68,7 @@ export function RolesPage() {
       {/* Header */}
       <div className="pb-1 border-b border-border">
         <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
-          <ShieldCheck className="w-6 h-6 text-blue-600" />
+          <ShieldCheck className="w-6 h-6 text-primary" />
           <span>{tBilingual('Roles & Permission Matrix', 'রোল ও পারমিশন ম্যাট্রিক্স')}</span>
         </h1>
         <p className="text-xs sm:text-sm text-muted-foreground mt-1">
@@ -87,7 +87,7 @@ export function RolesPage() {
           className={cn(
             'flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all whitespace-nowrap cursor-pointer shrink-0',
             activeTab === 'matrix'
-              ? 'bg-blue-600 text-white shadow-xs'
+              ? 'bg-primary text-white shadow-xs'
               : 'text-muted-foreground hover:text-foreground hover:bg-muted dark:hover:bg-muted/60'
           )}
         >
@@ -101,11 +101,11 @@ export function RolesPage() {
           className={cn(
             'flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all whitespace-nowrap cursor-pointer shrink-0',
             activeTab === 'simulator'
-              ? 'bg-blue-600 text-white shadow-xs'
+              ? 'bg-primary text-white shadow-xs'
               : 'text-muted-foreground hover:text-foreground hover:bg-muted dark:hover:bg-muted/60'
           )}
         >
-          <ShieldAlert className="w-4 h-4 shrink-0 text-amber-500" />
+          <ShieldAlert className="w-4 h-4 shrink-0 text-warning" />
           <span>{tBilingual('Permission Inspector & Simulator', 'পারমিশন ইন্সপেক্টর ও সিমুলেটর')}</span>
         </button>
 
@@ -115,7 +115,7 @@ export function RolesPage() {
           className={cn(
             'flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all whitespace-nowrap cursor-pointer shrink-0',
             activeTab === 'audit'
-              ? 'bg-blue-600 text-white shadow-xs'
+              ? 'bg-primary text-white shadow-xs'
               : 'text-muted-foreground hover:text-foreground hover:bg-muted dark:hover:bg-muted/60'
           )}
         >

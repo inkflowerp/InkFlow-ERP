@@ -30,15 +30,16 @@ import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { PageContainer } from '@/components/ui/page-container'
 import { FeatureGate } from '@/components/shared/feature-gate'
 import { DeliveryChallanRecord, DeliveryStatus } from '@/types/logistics.types'
 import { useDataStore } from '@/hooks/use-data-store'
 import { STORAGE_KEYS } from '@/lib/db/data-store'
 import { getChallanByIdAction } from '@/actions/logistics.actions'
-import { LogisticsService } from '@/services/logistics.service'
 import { formatBDT } from '@/lib/formatters'
 import { PdfActionButtons } from '@/components/pdf/pdf-action-buttons'
 import { ChallanPdfDocument } from '@/components/pdf/documents/challan-pdf-document'
+import { generateBangladeshiChallanWhatsAppMessage } from '@/lib/communication/challan-whatsapp'
 
 type CopyType = 'all' | 'customer' | 'gate_pass' | 'office'
 
@@ -101,7 +102,7 @@ export default function DeliveryChallanDetailPage() {
 
  if (!mounted) {
  return (
-      <div className="space-y-6 max-w-5xl p-6 animate-pulse">
+      <div className="space-y-6 p-6 animate-pulse">
         <div className="h-6 bg-muted rounded w-48"/>
         <div className="h-96 bg-muted rounded-xl"/>
       </div>
@@ -111,7 +112,7 @@ export default function DeliveryChallanDetailPage() {
  if (!challan) {
  return (
       <FeatureGate feature="delivery_challan">
-        <div className="space-y-6 max-w-5xl">
+        <div className="space-y-6">
           <Link
  href={getTenantNavHref('/delivery', pathname, slug)}
  className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground dark:hover:text-foreground">
@@ -140,7 +141,7 @@ export default function DeliveryChallanDetailPage() {
   }
 
  const handleSendWhatsApp = () => {
- const rawMsg = LogisticsService.generateBangladeshiChallanWhatsAppMessage(
+ const rawMsg = generateBangladeshiChallanWhatsAppMessage(
       { ...challan, due_amount: calculatedDue },
  company?.name || 'InkFlow Printing Press'
     )
@@ -153,7 +154,7 @@ export default function DeliveryChallanDetailPage() {
   }
 
  const handleCopySlip = () => {
- const rawMsg = LogisticsService.generateBangladeshiChallanWhatsAppMessage(
+ const rawMsg = generateBangladeshiChallanWhatsAppMessage(
       { ...challan, due_amount: calculatedDue },
  company?.name || 'InkFlow Printing Press'
     )
@@ -169,21 +170,21 @@ export default function DeliveryChallanDetailPage() {
  key: 'customer',
  titleBn: 'গ্রাহক কপি (পণ্য গ্রহণের রিসিট)',
  titleEn: 'CUSTOMER COPY',
- color: 'border-blue-500 text-blue-800 bg-blue-50/50',
+ color: 'border-primary/20 text-primary bg-primary/10/50',
  badge: '১ম কপি / Customer Acknowledgment Copy',
           },
           {
  key: 'gate_pass',
  titleBn: 'গেট পাস ও ট্রান্সপোর্ট কপি (সিকিউরিটি ও পরিবহন)',
  titleEn: 'GATE PASS & TRANSPORTER COPY',
- color: 'border-purple-500 text-purple-800 bg-purple-50/50',
+ color: 'border-primary/20 text-primary bg-primary/10/50',
  badge: '২য় কপি / Factory Gate & Transit Check Copy',
           },
           {
  key: 'office',
  titleBn: 'অফিস ও হিসাব কপি (বকেয়া ও রেকর্ড সংরক্ষণ)',
  titleEn: 'OFFICE & ACCOUNTS COPY',
- color: 'border-emerald-500 text-emerald-800 bg-emerald-50/50',
+ color: 'border-success-border text-success bg-success-surface/50',
  badge: '৩য় কপি / Accounts & Due Collection Verification',
           },
         ]
@@ -193,7 +194,7 @@ export default function DeliveryChallanDetailPage() {
  key: 'customer',
  titleBn: 'গ্রাহক কপি (পণ্য গ্রহণের রিসিট)',
  titleEn: 'CUSTOMER COPY',
- color: 'border-blue-500 text-blue-800 bg-blue-50/50',
+ color: 'border-primary/20 text-primary bg-primary/10/50',
  badge: 'CUSTOMER COPY (গ্রাহক কপি)',
           },
         ]
@@ -203,7 +204,7 @@ export default function DeliveryChallanDetailPage() {
  key: 'gate_pass',
  titleBn: 'গেট পাস ও ট্রান্সপোর্ট কপি (সিকিউরিটি ও পরিবহন)',
  titleEn: 'GATE PASS & TRANSPORTER COPY',
- color: 'border-purple-500 text-purple-800 bg-purple-50/50',
+ color: 'border-primary/20 text-primary bg-primary/10/50',
  badge: 'GATE PASS / TRANSPORTER COPY (গেট পাস কপি)',
           },
         ]
@@ -212,14 +213,14 @@ export default function DeliveryChallanDetailPage() {
  key: 'office',
  titleBn: 'অফিস ও হিসাব কপি (বকেয়া ও রেকর্ড সংরক্ষণ)',
  titleEn: 'OFFICE & ACCOUNTS COPY',
- color: 'border-emerald-500 text-emerald-800 bg-emerald-50/50',
+ color: 'border-success-border text-success bg-success-surface/50',
  badge: 'OFFICE & ACCOUNTS COPY (অফিস ও হিসাব কপি)',
           },
         ]
 
  return (
     <FeatureGate feature="delivery_challan">
-      <div className="space-y-6 max-w-5xl print:max-w-none print:m-0 print:p-0">
+      <PageContainer className="space-y-6 print:max-w-none print:m-0 print:p-0">
         {/* Top Action Bar (Hidden on Print) */}
         <div className="print:hidden flex flex-wrap items-center justify-between gap-3 p-4 bg-card rounded-xl border border-border shadow-xs">
           <Link
@@ -245,7 +246,7 @@ export default function DeliveryChallanDetailPage() {
  onClick={() => setSelectedCopy('customer')}
  className={`px-2.5 py-1 rounded-md font-semibold transition-all ${
  selectedCopy === 'customer'
-                  ? 'bg-blue-600 text-white shadow-xs'
+                  ? 'bg-primary text-primary-foreground shadow-xs'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
@@ -255,7 +256,7 @@ export default function DeliveryChallanDetailPage() {
  onClick={() => setSelectedCopy('gate_pass')}
  className={`px-2.5 py-1 rounded-md font-semibold transition-all ${
  selectedCopy === 'gate_pass'
-                  ? 'bg-purple-600 text-white shadow-xs'
+                  ? 'bg-primary text-primary-foreground shadow-xs'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
@@ -265,7 +266,7 @@ export default function DeliveryChallanDetailPage() {
  onClick={() => setSelectedCopy('office')}
  className={`px-2.5 py-1 rounded-md font-semibold transition-all ${
  selectedCopy === 'office'
-                  ? 'bg-emerald-600 text-white shadow-xs'
+                  ? 'bg-success text-success-foreground shadow-xs'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
@@ -278,12 +279,12 @@ export default function DeliveryChallanDetailPage() {
             <Button
  size="sm"variant="outline"onClick={handleCopySlip}
  className="text-xs h-8 border-input">
-              {copiedLink ? <Check className="mr-1.5 h-3.5 w-3.5 text-emerald-600"/> : <Copy className="mr-1.5 h-3.5 w-3.5"/>}
+              {copiedLink ? <Check className="mr-1.5 h-3.5 w-3.5 text-success"/> : <Copy className="mr-1.5 h-3.5 w-3.5"/>}
               {copiedLink ? (locale === 'bn' ? 'কপি হয়েছে' : 'Copied') : (locale === 'bn' ? 'স্লিপ কপি' : 'Copy Text')}
             </Button>
             <Button
  size="sm"onClick={handleSendWhatsApp}
- className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs h-8">
+ className="bg-success hover:bg-success/90 text-success-foreground text-xs h-8">
               <MessageSquare className="mr-1.5 h-3.5 w-3.5"/>
               {locale === 'bn' ? 'হোয়াটসঅ্যাপে পাঠান' : 'WhatsApp Slip'}
             </Button>
@@ -308,16 +309,16 @@ export default function DeliveryChallanDetailPage() {
 
         {/* DUE ON DELIVERY / COD BANNER (If Due > 0) */}
         {calculatedDue > 0 && (
-          <div className="print:hidden p-4 rounded-xl bg-amber-500/10 border-2 border-amber-500/30 flex items-start justify-between gap-4">
+          <div className="print:hidden p-4 rounded-xl bg-warning/10 border-2 border-warning-border/30 flex items-start justify-between gap-4">
             <div className="flex items-start gap-3">
-              <div className="p-2 rounded-lg bg-amber-500 text-white font-bold shrink-0">
+              <div className="p-2 rounded-lg bg-warning text-warning-foreground font-bold shrink-0">
                 <AlertTriangle className="h-5 w-5"/>
               </div>
               <div>
-                <h3 className="text-sm font-black text-amber-900 dark:text-amber-300">
+                <h3 className="text-sm font-black text-warning">
                   {locale === 'bn' ? 'বকেয়া বিল সতর্কতা (Cash On Delivery - COD)' : 'Due on Delivery Alert (Cash On Delivery - COD)'}
                 </h3>
-                <p className="text-xs text-amber-800 dark:text-amber-400 mt-0.5">
+                <p className="text-xs text-warning mt-0.5">
                   {locale === 'bn'
                     ? `ডেলিভারির সময় গ্রাহক থেকে অবশিষ্ট ${formatBDT(calculatedDue)} নগদ/বিকাশ/নগদ বা ব্যাংকের মাধ্যমে গ্রহণ নিশ্চিত করুন।`
                     : `Please ensure remaining balance of ${formatBDT(calculatedDue)} is collected via Cash / bKash / Bank before cargo handover.`}
@@ -325,10 +326,10 @@ export default function DeliveryChallanDetailPage() {
               </div>
             </div>
             <div className="text-right shrink-0">
-              <div className="text-2xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">
+              <div className="text-xs font-bold uppercase tracking-wider text-warning">
                 {locale === 'bn' ? 'মোট বকেয়া' : 'Pending Due'}
               </div>
-              <div className="text-lg font-black text-amber-950 dark:text-amber-200 tabular-nums">
+              <div className="text-lg font-black text-warning tabular-nums">
                 {formatBDT(calculatedDue)}
               </div>
             </div>
@@ -348,16 +349,16 @@ export default function DeliveryChallanDetailPage() {
             >
               {/* Header */}
               <div className="text-center space-y-1 pb-3 border-b-2 border-border print:border-border relative">
-                <div className="absolute right-0 top-0 text-2xs tabular-nums px-2 py-0.5 rounded bg-muted print:bg-muted font-bold border border-input text-foreground print:text-foreground">
+                <div className="absolute right-0 top-0 text-xs tabular-nums px-2 py-0.5 rounded bg-muted print:bg-muted font-bold border border-input text-foreground print:text-foreground">
                   {copyMeta.badge}
                 </div>
                 <h1 className="text-xl font-black tracking-tight print:text-foreground">{company?.name || 'InkFlow Printing & Signage'}</h1>
-                {company?.address && <p className="text-muted-foreground print:text-muted-foreground text-2xs">{company.address}</p>}
+                {company?.address && <p className="text-muted-foreground print:text-muted-foreground text-xs">{company.address}</p>}
                 
                 <div className="inline-block mt-2 px-6 py-1 rounded-full bg-surface-inset text-foreground print:bg-surface-inset print:text-white font-black text-xs tracking-wider uppercase">
  DELIVERY CHALLAN • ডেলিভারি চালানপত্র
                 </div>
-                <div className="text-2xs font-bold text-muted-foreground print:text-foreground">
+                <div className="text-xs font-bold text-muted-foreground print:text-foreground">
                   {copyMeta.titleBn} — ({copyMeta.titleEn})
                 </div>
               </div>
@@ -365,7 +366,7 @@ export default function DeliveryChallanDetailPage() {
               {/* Challan & Transit Meta */}
               <div className="grid grid-cols-2 gap-6 p-4 rounded-xl bg-muted print:bg-muted border border-border print:border-input text-xs print:text-foreground">
                 <div className="space-y-1.5">
-                  <span className="text-2xs uppercase font-bold text-muted-foreground print:text-muted-foreground">
+                  <span className="text-xs uppercase font-bold text-muted-foreground print:text-muted-foreground">
  Consignee / Deliver To (প্রাপক):
                   </span>
                   <div className="font-bold text-sm text-foreground print:text-foreground">{challan.customer_name}</div>
@@ -380,7 +381,7 @@ export default function DeliveryChallanDetailPage() {
 
                 <div className="space-y-1.5 text-right tabular-nums print:text-foreground">
                   <div>
- Challan No: <strong className="text-sm font-black text-blue-600 dark:text-blue-400 print:text-foreground">{challan.challan_number}</strong>
+ Challan No: <strong className="text-sm font-black text-primary print:text-foreground">{challan.challan_number}</strong>
                   </div>
                   <div>Order Ref: <strong className="print:text-foreground">{challan.order_number || 'N/A'}</strong></div>
                   <div>Invoice Ref: <strong className="print:text-foreground">{challan.invoice_number || relatedInvoice?.invoice_number || 'N/A'}</strong></div>
@@ -409,7 +410,7 @@ export default function DeliveryChallanDetailPage() {
 
               {/* Line Items Table */}
               <table className="w-full text-left border-collapse border border-input print:border-input text-xs print:text-foreground">
-                <thead className="bg-muted print:bg-muted font-bold text-2xs print:text-foreground">
+                <thead className="bg-muted print:bg-muted font-bold text-xs print:text-foreground">
                   <tr>
                     <th className="p-2.5 border border-input print:border-input text-center w-12">ক্র./SL</th>
                     <th className="p-2.5 border border-input print:border-input">
@@ -435,7 +436,7 @@ export default function DeliveryChallanDetailPage() {
                       <td className="p-2.5 border border-input print:border-input font-bold text-foreground print:text-foreground">
                         {item.product_description}
                         {item.is_delivered && (
-                          <span className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded text-2xs font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 print:hidden">
+                          <span className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded text-xs font-semibold bg-success-surface text-success border border-success-border print:hidden">
                             ডেলিভার্ড
                           </span>
                         )}
@@ -456,7 +457,7 @@ export default function DeliveryChallanDetailPage() {
 
               {/* Due on Delivery Box for Accounts Copy & General Copy */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="p-3 bg-muted print:bg-muted rounded-lg text-2xs text-muted-foreground print:text-foreground space-y-1 border border-border print:border-input">
+                <div className="p-3 bg-muted print:bg-muted rounded-lg text-xs text-muted-foreground print:text-foreground space-y-1 border border-border print:border-input">
                   <strong className="print:text-foreground text-foreground">
                     ডেলিভারির নিয়মাবলী ও শর্তসমূহ (Terms of Delivery):
                   </strong>
@@ -468,15 +469,15 @@ export default function DeliveryChallanDetailPage() {
                 {/* Due / Payment Verification Block */}
                 <div className="p-3 bg-muted print:bg-muted rounded-lg border border-border print:border-input space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <span className="font-bold text-2xs uppercase tracking-wider text-muted-foreground print:text-foreground">
+                    <span className="font-bold text-xs uppercase tracking-wider text-muted-foreground print:text-foreground">
                       পেমেন্ট / বিল হিসাব (Payment Status):
                     </span>
                     {calculatedDue > 0 ? (
-                      <span className="text-2xs font-black px-2 py-0.5 rounded bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-500/30">
+                      <span className="text-xs font-black px-2 py-0.5 rounded bg-warning/20 text-warning border border-warning-border/30">
                         বকেয়া বাকি আছে (DUE ON DELIVERY)
                       </span>
                     ) : (
-                      <span className="text-2xs font-black px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border border-emerald-500/30">
+                      <span className="text-xs font-black px-2 py-0.5 rounded bg-success/20 text-success border border-success-border/30">
                         সম্পূর্ণ পরিশোধিত (PAID IN FULL)
                       </span>
                     )}
@@ -488,7 +489,7 @@ export default function DeliveryChallanDetailPage() {
                     </strong>
                   </div>
                   {copyMeta.key === 'office' && (
-                    <div className="pt-2 text-2xs text-muted-foreground print:text-foreground space-y-1 border-t border-dashed border-input">
+                    <div className="pt-2 text-xs text-muted-foreground print:text-foreground space-y-1 border-t border-dashed border-input">
                       <div>[ ] নগদ টাকা আদায় করা হয়েছে (MR No: _________)</div>
                       <div>[ ] বিকাশ/নগদ/ব্যাংক ট্রান্সফার ভেরিফাইড (Trx ID: _________)</div>
                     </div>
@@ -499,45 +500,45 @@ export default function DeliveryChallanDetailPage() {
               {/* 3-Party Signatures Block */}
               <div className="pt-10 grid grid-cols-3 gap-4 text-xs page-break-inside-avoid print-avoid-break">
                 <div className="text-center space-y-1.5">
-                  <div className="tabular-nums text-muted-foreground print:text-muted-foreground text-2xs">
+                  <div className="tabular-nums text-muted-foreground print:text-muted-foreground text-xs">
                     {(challan as any).dispatched_by_name || (challan as any).created_by_name || 'Warehouse In-charge'}
                   </div>
                   <div className="border-t border-input pt-1 font-bold print:text-foreground">
                     প্রেরকের স্বাক্ষর
-                    <div className="text-2xs font-normal text-muted-foreground print:text-muted-foreground">(Dispatched By)</div>
+                    <div className="text-xs font-normal text-muted-foreground print:text-muted-foreground">(Dispatched By)</div>
                   </div>
                 </div>
 
                 <div className="text-center space-y-1.5">
-                  <div className="tabular-nums text-muted-foreground print:text-muted-foreground text-2xs">
+                  <div className="tabular-nums text-muted-foreground print:text-muted-foreground text-xs">
                     {challan.delivery_person_name || 'Driver / Carrier'}
                   </div>
                   <div className="border-t border-input pt-1 font-bold print:text-foreground">
                     বাহকের স্বাক্ষর
-                    <div className="text-2xs font-normal text-muted-foreground print:text-muted-foreground">(Carried By / Driver)</div>
+                    <div className="text-xs font-normal text-muted-foreground print:text-muted-foreground">(Carried By / Driver)</div>
                   </div>
                 </div>
 
                 <div className="text-center space-y-1.5">
                   {challan.receiver_signature ? (
-                    <div className="tabular-nums text-emerald-600 print:text-emerald-800 font-bold text-2xs">
+                    <div className="tabular-nums text-success print:text-success font-bold text-xs">
  Signed: {challan.receiver_signature} ({challan.receiver_name})
                     </div>
                   ) : (
-                    <div className="tabular-nums text-muted-foreground print:text-muted-foreground italic text-2xs">
+                    <div className="tabular-nums text-muted-foreground print:text-muted-foreground italic text-xs">
                       সিল ও স্বাক্ষর (Seal & Sign)
                     </div>
                   )}
                   <div className="border-t border-input pt-1 font-bold print:text-foreground">
                     গ্রহীতার স্বাক্ষর ও সিল
-                    <div className="text-2xs font-normal text-muted-foreground print:text-muted-foreground">(Received in Good Condition)</div>
+                    <div className="text-xs font-normal text-muted-foreground print:text-muted-foreground">(Received in Good Condition)</div>
                   </div>
                 </div>
               </div>
             </div>
           ))}
         </div>
-      </div>
+      </PageContainer>
     </FeatureGate>
   )
 }

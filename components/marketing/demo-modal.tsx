@@ -107,7 +107,7 @@ export function DemoModal({ isOpen, onClose }: DemoModalProps) {
 
         {submitted ? (
           <div className="text-center py-6 sm:py-8 space-y-4">
-            <div className="h-14 w-14 sm:h-16 sm:w-16 rounded-full bg-emerald-50 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto border border-emerald-200 dark:border-emerald-500/30">
+            <div className="h-14 w-14 sm:h-16 sm:w-16 rounded-full bg-success-surface bg-success/20 text-success text-success flex items-center justify-center mx-auto border border-success-border border-success-border/30">
               <CheckCircle2 className="h-8 w-8"/>
             </div>
 
@@ -134,7 +134,7 @@ export function DemoModal({ isOpen, onClose }: DemoModalProps) {
           <div className="space-y-5">
             {/* Header */}
             <div className="space-y-1.5 pr-8">
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 border border-blue-200 dark:border-blue-800/60">
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary/10 text-primary bg-primary/40 text-primary border border-primary/20 border-border/60">
                 <Calendar className="h-3.5 w-3.5"/>
                 <span>{tBilingual('Live Walkthrough', 'লাইভ স্ক্রিন ডেমো')}</span>
               </div>
@@ -151,7 +151,7 @@ export function DemoModal({ isOpen, onClose }: DemoModalProps) {
 
             {/* Error Banner */}
             {serverError && (
-              <div className="p-3 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-xs flex items-start gap-2 animate-in fade-in-0">
+              <div className="p-3 rounded-xl bg-danger-surface bg-danger-surface border border-danger-border border-danger-border text-destructive text-destructive text-xs flex items-start gap-2 animate-in fade-in-0">
                 <AlertCircle className="h-4 w-4 shrink-0 mt-0.5"/>
                 <span>{serverError}</span>
               </div>
@@ -271,7 +271,7 @@ export function DemoModal({ isOpen, onClose }: DemoModalProps) {
                     <span>{tBilingual('Confirm & Schedule Demo', 'ডেমো শিডিউল নিশ্চিত করুন')}</span>
                   )}
                 </Button>
-                <p className="text-2xs text-center text-muted-foreground mt-2">
+                <p className="text-xs text-center text-muted-foreground mt-2">
                   {tBilingual(
                     'No software installation required • 30-minute interactive screen share',
                     'কোনো সফটওয়্যার ইনস্টল করতে হবে না • ৩০ মিনিটের ইন্টারঅ্যাক্টিভ স্ক্রিন শেয়ার'

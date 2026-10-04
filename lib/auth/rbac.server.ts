@@ -109,11 +109,11 @@ export async function isPlatformOwner(): Promise<boolean> {
 
     if (!user) return false
 
-    const { data } = await (supabase as any).rpc('auth_is_platform_owner')
+    const { data } = await supabase.rpc('auth_is_platform_owner' as never)
     if (typeof data === 'boolean') return data
 
     // Fallback: check platform_admins table
-    const { data: adminRow } = await (supabase as any)
+    const { data: adminRow } = await supabase
       .from('platform_admins')
       .select('id, is_active')
       .eq('user_id', user.id)
@@ -206,7 +206,7 @@ export async function verifyServerPermission(params: {
     }
 
     const membership = await TenantRepository.resolveUserMembership(user.id, params.companyId)
-    if (!membership || !membership.companyUser || (membership.companyUser as any).is_active === false) {
+    if (!membership || !membership.companyUser || membership.companyUser.is_active === false) {
       return { allowed: false, userId: user.id, error: 'User is not an active member of this company' }
     }
 
@@ -239,7 +239,7 @@ export async function verifyServerPermission(params: {
     }
 
     return { allowed: true, userId: user.id }
-  } catch (err: any) {
-    return { allowed: false, error: err.message || 'Authorization check failed' }
+  } catch (err: unknown) {
+    return { allowed: false, error: err instanceof Error ? err.message : 'Authorization check failed' }
   }
 }

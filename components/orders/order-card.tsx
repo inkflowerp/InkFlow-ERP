@@ -105,9 +105,9 @@ export const OrderCard = React.memo(function OrderCard({
     <div
  className={`bg-card border rounded-xl p-4 transition-all duration-200 hover:shadow-xs flex flex-col justify-between ${
  isBlocked
-          ? 'border-amber-300 dark:border-amber-900/60 ring-1 ring-amber-300/30'
+          ? 'border-warning-border border-warning-border/60 ring-1 focus:ring-ring/30'
           : isUrgent
-          ? 'border-rose-300 dark:border-rose-900/60 ring-1 ring-rose-300/30'
+          ? 'border-danger-border border-danger-border/60 ring-1 focus:ring-ring/30'
           : 'border-border '
       }`}
     >
@@ -118,15 +118,15 @@ export const OrderCard = React.memo(function OrderCard({
             <div className="flex items-center gap-2 flex-wrap">
               <Link
  href={getTenantNavHref(`/orders/${order.id}`, pathname, tenantSlug)}
- className="font-mono text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1">
+ className="font-mono text-xs font-bold text-primary text-primary hover:underline flex items-center gap-1">
                 <span>ORDER #{order.orderNumber}</span>
                 <ExternalLink className="h-3 w-3"/>
               </Link>
-              <span className="text-2xs font-semibold px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
+              <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
                 {jobsCount} {jobsCount === 1 ? 'Job' : 'Jobs'}
               </span>
               {isUrgent && (
-                <span className="text-3xs font-bold px-1.5 py-0.5 rounded bg-rose-50 text-rose-700 border border-rose-200">
+                <span className="text-xs font-bold px-1.5 py-0.5 rounded bg-danger-surface text-destructive border border-danger-border">
  URGENT
                 </span>
               )}
@@ -142,7 +142,7 @@ export const OrderCard = React.memo(function OrderCard({
             {order.customerPhone && onOpenWhatsApp && (
               <button
  type="button"onClick={() => onOpenWhatsApp(order, 'order_confirmed')}
- className="p-1.5 rounded-lg text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 transition-colors"title={tBilingual('Send WhatsApp Update', 'হোয়াটসঅ্যাপ মেসেজ')}
+ className="p-1.5 rounded-lg text-success hover:bg-success-surface dark:hover:bg-success-surface transition-colors"title={tBilingual('Send WhatsApp Update', 'হোয়াটসঅ্যাপ মেসেজ')}
  aria-label="WhatsApp">
                 <Phone className="h-3.5 w-3.5"/>
               </button>
@@ -161,22 +161,22 @@ export const OrderCard = React.memo(function OrderCard({
         {/* Financial Row: Total, Paid, Due (Section 9) */}
         <div className="grid grid-cols-3 gap-2 p-2.5 rounded-lg bg-muted border border-border text-xs">
           <div>
-            <span className="text-3xs font-bold uppercase tracking-wider text-muted-foreground block">Total</span>
+            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">Total</span>
             <span className="font-bold tabular-nums text-foreground block mt-0.5">
               ৳{totalAmount.toLocaleString()}
             </span>
           </div>
           <div>
-            <span className="text-3xs font-bold uppercase tracking-wider text-muted-foreground block">Paid</span>
-            <span className="font-bold tabular-nums text-emerald-600 dark:text-emerald-400 block mt-0.5">
+            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">Paid</span>
+            <span className="font-bold tabular-nums text-success text-success block mt-0.5">
               ৳{advanceAmount.toLocaleString()}
             </span>
           </div>
           <div>
-            <span className="text-3xs font-bold uppercase tracking-wider text-muted-foreground block">Due</span>
+            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">Due</span>
             <span
  className={`font-bold tabular-nums block mt-0.5 ${
- dueAmount > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-muted-foreground'
+ dueAmount > 0 ? 'text-warning text-warning' : 'text-muted-foreground'
               }`}
             >
               ৳{dueAmount.toLocaleString()}
@@ -187,16 +187,16 @@ export const OrderCard = React.memo(function OrderCard({
         {/* Operational State: CURRENT & NEXT (Section 9) */}
         <div className="space-y-1.5 text-xs pt-1 border-t border-border">
           <div className="flex items-baseline justify-between gap-2">
-            <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground">CURRENT:</span>
+            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">CURRENT:</span>
             <Badge
- variant="outline"className={`text-2xs font-semibold px-2 py-0.5 ${
+ variant="outline"className={`text-xs font-semibold px-2 py-0.5 ${
  isBlocked
-                  ? 'bg-amber-50 text-amber-800 border-amber-300'
+                  ? 'bg-warning-surface text-warning border-warning-border'
                   : currentStage === 'Delivered'
-                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                  ? 'bg-success-surface text-success border-success-border'
                   : currentStage === 'Ready'
-                  ? 'bg-teal-50 text-teal-700 border-teal-200'
-                  : 'bg-blue-50 text-blue-700 border-blue-200'
+                  ? 'bg-success-surface text-success border-success-border'
+                  : 'bg-primary/10 text-primary border-primary/20'
               }`}
             >
               {currentStage}
@@ -204,8 +204,8 @@ export const OrderCard = React.memo(function OrderCard({
           </div>
 
           <div className="flex items-baseline justify-between gap-2">
-            <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground">NEXT:</span>
-            <span className="font-semibold text-blue-600 dark:text-blue-400 text-right truncate">
+            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">NEXT:</span>
+            <span className="font-semibold text-primary text-primary text-right truncate">
               {nextAction}
             </span>
           </div>
@@ -213,16 +213,16 @@ export const OrderCard = React.memo(function OrderCard({
 
         {/* Blocker alert if active (Section 15) */}
         {isBlocked && blockedReason && (
-          <div className="bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/50 rounded-lg p-2.5 text-2xs space-y-1.5">
-            <div className="flex items-start gap-1.5 text-amber-900 dark:text-amber-200 font-bold">
-              <AlertTriangle className="h-3.5 w-3.5 text-amber-600 shrink-0 mt-0.5"/>
+          <div className="bg-warning-surface bg-warning-surface border border-warning-border border-warning-border/50 rounded-lg p-2.5 text-xs space-y-1.5">
+            <div className="flex items-start gap-1.5 text-warning text-warning font-bold">
+              <AlertTriangle className="h-3.5 w-3.5 text-warning shrink-0 mt-0.5"/>
               <span>BLOCKED: {blockedReason}</span>
             </div>
             {blockerActionLabel && blockerActionHref && (
               <div className="pt-0.5">
                 <Link
  href={getTenantNavHref(blockerActionHref, pathname, tenantSlug)}
- className="inline-flex items-center gap-1 font-bold text-amber-800 hover:text-amber-900 underline">
+ className="inline-flex items-center gap-1 font-bold text-warning hover:text-warning underline">
                   <span>[{blockerActionLabel}]</span>
                   <ExternalLink className="h-2.5 w-2.5"/>
                 </Link>
@@ -233,17 +233,17 @@ export const OrderCard = React.memo(function OrderCard({
 
         {/* Jobs Mini Checklist (Section 9: ✓ Banner, ● ACP Sign, ○ Business Card) */}
         <div className="pt-2 border-t border-border">
-          <span className="text-3xs uppercase font-bold text-muted-foreground block mb-1.5">Jobs:</span>
+          <span className="text-xs uppercase font-bold text-muted-foreground block mb-1.5">Jobs:</span>
           <div className="space-y-1">
             {miniJobs.slice(0, 4).map((j, idx) => (
-              <div key={idx} className="flex items-center justify-between text-2xs">
+              <div key={idx} className="flex items-center justify-between text-xs">
                 <div className="flex items-center gap-1.5 min-w-0">
                   <span
  className={`font-mono font-bold text-xs ${
  j.statusIcon === '✓'
-                        ? 'text-emerald-600'
+                        ? 'text-success'
                         : j.statusIcon === '●'
-                        ? 'text-blue-600'
+                        ? 'text-primary'
                         : 'text-muted-foreground'
                     }`}
                   >
@@ -251,11 +251,11 @@ export const OrderCard = React.memo(function OrderCard({
                   </span>
                   <span className="text-foreground truncate">{j.title}</span>
                 </div>
-                <span className="text-3xs text-muted-foreground shrink-0 ml-2">{j.stageLabel}</span>
+                <span className="text-xs text-muted-foreground shrink-0 ml-2">{j.stageLabel}</span>
               </div>
             ))}
             {miniJobs.length > 4 && (
-              <p className="text-3xs text-muted-foreground italic pt-0.5">
+              <p className="text-xs text-muted-foreground italic pt-0.5">
                 +{miniJobs.length - 4} more jobs...
               </p>
             )}

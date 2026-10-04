@@ -27,7 +27,7 @@ import type {
 
 export function isValidUUID(str?: string | null): boolean {
   if (!str) return false
-  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(str)
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str)
 }
 
 export function generateUUID(): string {
@@ -859,5 +859,43 @@ export class FinanceRepository {
 
     PrintERPDataStore.addItem(STORAGE_KEYS.BANK_STATEMENTS, statement)
     return statement
+  }
+
+  static async getFinancialDriftReport(companyId: string) {
+    const admin = createAdminClient()
+    const { data, error } = await (admin as any).rpc('get_financial_drift_report', {
+      p_company_id: companyId,
+    })
+    if (error) throw error
+    return data
+  }
+
+  static async runReconciliation(companyId: string) {
+    const admin = createAdminClient()
+    const { data: custResult, error: custErr } = await (admin as any).rpc(
+      'reconcile_customer_balance_atomic',
+      {
+        p_company_id: companyId,
+        p_customer_id: null,
+      }
+    )
+    if (custErr) throw custErr
+
+    const { data: stockResult, error: stockErr } = await (admin as any).rpc(
+      'reconcile_inventory_stock_atomic',
+      {
+        p_company_id: companyId,
+        p_material_id: null,
+      }
+    )
+    if (stockErr) throw stockErr
+
+    return {
+      reconciled_customers: custResult?.reconciled_count || 0,
+      reconciled_stock_items: stockResult?.reconciled_count || 0,
+      drift_detected_count: (custResult?.drift_detected_count || 0) + (stockResult?.drift_detected_count || 0),
+      total_drift_amount: custResult?.total_drift_amount || 0,
+      timestamp: new Date().toISOString(),
+    }
   }
 }

@@ -137,12 +137,12 @@ export function NegotiationModal({
  onOpenChange={onOpenChange}
  size="lg"title={
         <div className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-lg bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-300 flex items-center justify-center font-bold">
+          <div className="h-8 w-8 rounded-lg bg-warning-surface text-warning bg-warning/60 text-warning flex items-center justify-center font-bold">
             <Sliders className="h-4 w-4"/>
           </div>
           <div>
             <h2 className="text-sm font-bold text-foreground">Commercial Margin & Negotiation Simulator</h2>
-            <p className="text-2xs text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
  Internal margin simulation • Protects minimum floor price • Strictly shielded from customer PDF
             </p>
           </div>
@@ -161,17 +161,17 @@ export function NegotiationModal({
           <div className="flex justify-between items-center text-muted-foreground">
             <span className="flex items-center gap-1">
  Internal Direct Cost Floor:
-              <span className="text-2xs bg-card/10 px-1.5 py-0.2 rounded text-muted-foreground">Materials + Print Labor</span>
+              <span className="text-xs bg-card/10 px-1.5 py-0.2 rounded text-muted-foreground">Materials + Print Labor</span>
             </span>
-            <span className="tabular-nums font-bold text-amber-400">{formatBDT(totalCost)}</span>
+            <span className="tabular-nums font-bold text-warning">{formatBDT(totalCost)}</span>
           </div>
 
           <div className="border-t border-border pt-2 grid grid-cols-2 gap-3">
             <div>
-              <span className="text-2xs text-muted-foreground block">Projected Gross Profit</span>
+              <span className="text-xs text-muted-foreground block">Projected Gross Profit</span>
               <span
  className={`text-base font-black tabular-nums ${
- calculated.grossProfit >= 0 ? 'text-emerald-400' : 'text-rose-400'
+ calculated.grossProfit >= 0 ? 'text-success' : 'text-destructive'
                 }`}
               >
                 {formatBDT(calculated.grossProfit)}
@@ -179,14 +179,14 @@ export function NegotiationModal({
             </div>
 
             <div className="text-right">
-              <span className="text-2xs text-muted-foreground block">Projected Margin</span>
+              <span className="text-xs text-muted-foreground block">Projected Margin</span>
               <span
  className={`text-base font-black tabular-nums ${
  calculated.marginPercent >= 35
-                    ? 'text-emerald-400'
+                    ? 'text-success'
                     : calculated.marginPercent >= 25
-                    ? 'text-amber-400'
-                    : 'text-rose-400'
+                    ? 'text-warning'
+                    : 'text-destructive'
                 }`}
               >
                 {calculated.marginPercent}%
@@ -197,21 +197,21 @@ export function NegotiationModal({
 
         {/* Low Margin & Critical Loss Warning */}
         {calculated.isCriticalLoss ? (
-          <div className="p-3 bg-rose-100 text-rose-950 dark:bg-rose-950/80 dark:text-rose-100 rounded-xl border border-rose-300 dark:border-rose-900 text-xs flex items-start gap-2">
-            <ShieldAlert className="h-4 w-4 text-rose-600 shrink-0 mt-0.5"/>
+          <div className="p-3 bg-danger-surface text-destructive bg-danger-surface/80 text-destructive rounded-xl border border-danger-border border-danger-border text-xs flex items-start gap-2">
+            <ShieldAlert className="h-4 w-4 text-destructive shrink-0 mt-0.5"/>
             <div>
               <span className="font-bold">Loss-Making Deal Alert!</span>
-              <p className="text-2xs text-rose-800 dark:text-rose-200 mt-0.5">
+              <p className="text-xs text-destructive text-destructive mt-0.5">
  The discount reduces selling price below internal production cost ({formatBDT(totalCost)}). You will incur an operational loss.
               </p>
             </div>
           </div>
         ) : calculated.isLowMargin ? (
-          <div className="p-3 bg-amber-50 text-amber-900 dark:bg-amber-950/40 dark:text-amber-200 rounded-xl border border-amber-200 dark:border-amber-900 text-xs flex items-start gap-2">
-            <ShieldAlert className="h-4 w-4 text-amber-600 shrink-0 mt-0.5"/>
+          <div className="p-3 bg-warning-surface text-warning bg-warning-surface text-warning rounded-xl border border-warning-border border-warning-border text-xs flex items-start gap-2">
+            <ShieldAlert className="h-4 w-4 text-warning shrink-0 mt-0.5"/>
             <div>
               <span className="font-bold">Low Margin Warning (&lt; 25%)</span>
-              <p className="text-2xs text-amber-700 dark:text-amber-300 mt-0.5">
+              <p className="text-xs text-warning text-warning mt-0.5">
  Gross margin is under 25%. Overhead, machine depreciation, and delivery may erode net profit.
               </p>
             </div>
@@ -221,38 +221,38 @@ export function NegotiationModal({
         {/* 1-Click Quick Concession Presets */}
         <div className="space-y-2 p-3 rounded-xl bg-muted border border-border text-xs">
           <div className="flex items-center justify-between">
-            <span className="text-2xs font-bold text-foreground flex items-center gap-1">
-              <Sparkles className="h-3.5 w-3.5 text-amber-500"/>
+            <span className="text-xs font-bold text-foreground flex items-center gap-1">
+              <Sparkles className="h-3.5 w-3.5 text-warning"/>
  Quick Concession Helpers (ছাড় ও রাউন্ড অফ)
             </span>
-            <span className="text-2xs text-muted-foreground">1-Click Auto Adjust</span>
+            <span className="text-xs text-muted-foreground">1-Click Auto Adjust</span>
           </div>
 
           <div className="flex flex-wrap items-center gap-1.5 pt-1">
-            <span className="text-2xs text-muted-foreground font-semibold mr-1">Concession %:</span>
+            <span className="text-xs text-muted-foreground font-semibold mr-1">Concession %:</span>
             {[3, 5, 8, 10, 15].map((pct) => (
               <button
  key={pct}
  type="button"onClick={() => handleConcessionPercent(pct)}
- className="px-2 py-1 rounded bg-card border border-border text-2xs font-semibold text-foreground hover:border-amber-400 hover:text-amber-600 transition-colors cursor-pointer">
+ className="px-2 py-1 rounded bg-card border border-border text-xs font-semibold text-foreground hover:border-warning-border hover:text-warning transition-colors cursor-pointer">
                 {pct}% (৳{Math.round((subtotal * pct) / 100).toLocaleString()})
               </button>
             ))}
           </div>
 
           <div className="flex flex-wrap items-center gap-1.5 pt-1 border-t border-border">
-            <span className="text-2xs text-muted-foreground font-semibold mr-1">Round Grand Total:</span>
+            <span className="text-xs text-muted-foreground font-semibold mr-1">Round Grand Total:</span>
             {[500, 100, 50].map((nearest) => (
               <button
  key={nearest}
  type="button"onClick={() => handleRoundGrandTotal(nearest)}
- className="px-2 py-1 rounded bg-card border border-border text-2xs font-semibold text-foreground hover:border-blue-400 hover:text-blue-600 transition-colors cursor-pointer">
+ className="px-2 py-1 rounded bg-card border border-border text-xs font-semibold text-foreground hover:border-border hover:text-primary transition-colors cursor-pointer">
  Round to ৳{nearest}
               </button>
             ))}
             <button
  type="button"onClick={() => setDiscountAmount(0)}
- className="px-2 py-1 rounded bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300 border border-rose-200 dark:border-rose-900 text-2xs font-semibold hover:bg-rose-100 transition-colors cursor-pointer ml-auto">
+ className="px-2 py-1 rounded bg-danger-surface text-destructive bg-danger-surface text-destructive border border-danger-border border-danger-border text-xs font-semibold hover:bg-danger-surface transition-colors cursor-pointer ml-auto">
  Reset
             </button>
           </div>
@@ -270,7 +270,7 @@ export function NegotiationModal({
  value={discountAmount || ''}
  onChange={(e) => setDiscountAmount(parseFloat(e.target.value) || 0)}
  className="text-xs h-9 tabular-nums"placeholder="Enter discount in Taka..."/>
-            <span className="text-2xs text-muted-foreground mt-1 block">
+            <span className="text-xs text-muted-foreground mt-1 block">
  Maximum allowed: {formatBDT(subtotal)} • Minimum Break-even Subtotal: {formatBDT(totalCost)}
             </span>
           </div>
@@ -303,7 +303,7 @@ export function NegotiationModal({
           </Button>
           <Button
  type="submit"disabled={isSubmitting}
- className="text-xs h-9 bg-amber-600 hover:bg-amber-700 text-white font-bold px-4 cursor-pointer">
+ className="text-xs h-9 bg-warning hover:bg-warning/90 text-white font-bold px-4 cursor-pointer">
             {isSubmitting ? (
               <>
                 <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin"/>

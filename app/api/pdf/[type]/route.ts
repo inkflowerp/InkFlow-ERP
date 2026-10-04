@@ -51,6 +51,49 @@ export async function GET(
       });
     }
 
+    // Strict Fail-Closed Permission Verification for Tenant Users
+    if (isAuthorizedTenant && !isAuthorizedPlatform) {
+      const isOwner =
+        tenant.companyRole === 'business_owner' ||
+        tenant.primaryRole === 'business_owner' ||
+        tenant.isSupportMode
+
+      if (!isOwner) {
+        let hasDocPermission = false
+        if (type === 'invoice' || type === 'billing') {
+          hasDocPermission =
+            tenant.permissions.includes('invoice.view') ||
+            tenant.permissions.includes('invoices.view') ||
+            tenant.permissions.includes('billing.view') ||
+            tenant.permissions.includes('invoices.full_control')
+        } else if (type === 'quotation' || type === 'estimate') {
+          hasDocPermission =
+            tenant.permissions.includes('quotation.view') ||
+            tenant.permissions.includes('quotations.view') ||
+            tenant.permissions.includes('quotations.full_control')
+        } else if (type === 'challan' || type === 'delivery') {
+          hasDocPermission =
+            tenant.permissions.includes('challan.view') ||
+            tenant.permissions.includes('logistics.view') ||
+            tenant.permissions.includes('logistics.full_control')
+        } else if (type === 'receipt' || type === 'payment') {
+          hasDocPermission =
+            tenant.permissions.includes('payment.view') ||
+            tenant.permissions.includes('payments.view') ||
+            tenant.permissions.includes('billing.view')
+        }
+
+        if (!hasDocPermission) {
+          return new NextResponse(`Forbidden: Insufficient permissions to view ${type} document`, {
+            status: 403,
+            headers: {
+              "Cache-Control": "private, no-cache, no-store, must-revalidate",
+            },
+          });
+        }
+      }
+    }
+
     let tenantCompany = null;
     try {
       tenantCompany = await TenantRepository.getCompanyById(companyId);

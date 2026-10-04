@@ -200,12 +200,12 @@ export default function SalesManagerPage() {
  return (
     <PanelAccessGuard
  module="orders"action="view"panelTitle="Commercial & Sales"panelTitleBn="কমার্শিয়াল ও সেলস">
-      <div className="space-y-6 max-w-7xl">
+      <div className="space-y-6">
       {/* Header */}
       <PageHeader
  titleEn="Commercial & Sales Management"titleBn="কমার্শিয়াল ও সেলস ম্যানেজমেন্ট"descriptionEn="CRM leads, dimensional quotations, booked job orders, advance payments, and customer delivery schedules."descriptionBn="সিআরএম লিড, পরিমাপভিত্তিক কোটেশন, বুক করা জব অর্ডার, অগ্রিম আদায় ও ডেলিভারি সময়সূচী।"icon={Briefcase}
- iconColor="text-blue-600"badge={
-          <Badge variant="outline"className="text-xs bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 bangla-text">
+ iconColor="text-primary"badge={
+          <Badge variant="outline"className="text-xs bg-primary/10 text-primary border-primary/20 bg-primary/10 text-primary bangla-text">
             {tBilingual('Role: Sales Manager', 'রোল: সেলস ম্যানেজার')}
           </Badge>
         }
@@ -221,8 +221,8 @@ export default function SalesManagerPage() {
 
       {/* Notification */}
       {notification && (
-        <div className="p-3 bg-emerald-50 text-emerald-800 rounded-lg text-xs font-semibold flex items-center gap-2 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800 animate-in fade-in-0">
-          <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0"/>
+        <div className="p-3 bg-success-surface text-success rounded-lg text-xs font-semibold flex items-center gap-2 border border-success-border bg-success-surface text-success border-success-border animate-in fade-in-0">
+          <CheckCircle2 className="h-4 w-4 text-success shrink-0"/>
           <span>{notification}</span>
         </div>
       )}
@@ -259,7 +259,7 @@ export default function SalesManagerPage() {
  colorVariant="purple"footer={
             <Link
  href={getTenantNavHref('/delivery', pathname, slug)}
- className="text-xs font-semibold text-purple-600 dark:text-purple-400 hover:underline inline-flex items-center gap-1">
+ className="text-xs font-semibold text-primary text-primary hover:underline inline-flex items-center gap-1">
               <span>{tBilingual('Generate Challans', 'চালান তৈরি করুন')}</span>
               <span>&rarr;</span>
             </Link>
@@ -279,7 +279,7 @@ export default function SalesManagerPage() {
  onClick={() => setActiveTab(tab.id as typeof activeTab)}
  className={`px-4 py-2.5 text-xs font-semibold border-b-2 -mb-px transition-colors shrink-0 whitespace-nowrap bangla-text ${
  activeTab === tab.id
-                ? 'border-blue-600 text-blue-600 dark:text-blue-400'
+                ? 'border-border text-primary text-primary'
                 : 'border-transparent text-muted-foreground hover:text-foreground dark:hover:text-foreground'
             }`}
           >
@@ -314,7 +314,7 @@ export default function SalesManagerPage() {
                 <tbody className="divide-y divide-border dark:divide-border">
                   {(quotations || []).map((q) => (
                     <tr key={q.id} className="hover:bg-muted dark:hover:bg-muted/50 transition-colors">
-                      <td className="py-3.5 px-4 tabular-nums text-xs font-bold text-blue-600">
+                      <td className="py-3.5 px-4 tabular-nums text-xs font-bold text-primary">
                         <Link href={`/quotations/${q.id}`} className="hover:underline">
                           {q.quotation_number}
                         </Link>
@@ -335,13 +335,13 @@ export default function SalesManagerPage() {
                         {q.status !== 'converted' && !q.converted_order_id ? (
                           <Button
  size="sm"variant="outline"onClick={() => handleConvertToOrder(q.id)}
- className="h-8 text-xs font-semibold text-blue-600 hover:bg-blue-50">
+ className="h-8 text-xs font-semibold text-primary hover:bg-primary/10">
  Convert to Order
                           </Button>
                         ) : (
                           <Link
  href={`/orders?search=${q.converted_order_id || ''}`}
- className="text-xs text-purple-600 font-semibold hover:underline">
+ className="text-xs text-primary font-semibold hover:underline">
  Job Order #{q.converted_order_id || 'View'} →
                           </Link>
                         )}
@@ -367,14 +367,14 @@ export default function SalesManagerPage() {
                     <div>
                       <Link
  href={`/quotations/${q.id}`}
- className="tabular-nums text-xs font-bold text-blue-600 hover:underline">
+ className="tabular-nums text-xs font-bold text-primary hover:underline">
                         {q.quotation_number}
                       </Link>
                       <div className="font-semibold text-sm text-foreground mt-0.5">
                         {q.customer_name}
                       </div>
                     </div>
-                    <Badge variant="outline"className="text-2xs capitalize">
+                    <Badge variant="outline"className="text-xs capitalize">
                       {q.status.replace('_', ' ')}
                     </Badge>
                   </div>
@@ -390,13 +390,13 @@ export default function SalesManagerPage() {
                     {q.status !== 'converted' && !q.converted_order_id ? (
                       <Button
  size="sm"variant="outline"onClick={() => handleConvertToOrder(q.id)}
- className="h-9 px-3 text-xs font-bold text-blue-600 hover:bg-blue-50">
+ className="h-9 px-3 text-xs font-bold text-primary hover:bg-primary/10">
  Convert to Order
                       </Button>
                     ) : (
                       <Link
  href={`/orders?search=${q.converted_order_id || ''}`}
- className="text-xs text-purple-600 font-bold hover:underline">
+ className="text-xs text-primary font-bold hover:underline">
  Job Order #{q.converted_order_id || 'View'} →
                       </Link>
                     )}
@@ -439,7 +439,7 @@ export default function SalesManagerPage() {
                 <tbody className="divide-y divide-border dark:divide-border">
                   {(orders || []).map((o) => (
                     <tr key={o.id} className="hover:bg-muted">
-                      <td className="py-3.5 px-4 tabular-nums text-xs font-bold text-blue-600">
+                      <td className="py-3.5 px-4 tabular-nums text-xs font-bold text-primary">
                         <Link href={`/orders/${o.id}`} className="hover:underline">
                           {o.order_number}
                         </Link>
@@ -448,10 +448,10 @@ export default function SalesManagerPage() {
                       <td className="py-3.5 px-4 font-bold text-foreground">
                         <CurrencyDisplay amount={o.final_price || 0} />
                       </td>
-                      <td className="py-3.5 px-4 font-semibold text-emerald-600">
+                      <td className="py-3.5 px-4 font-semibold text-success">
                         <CurrencyDisplay amount={o.advance_amount || 0} />
                       </td>
-                      <td className="py-3.5 px-4 font-semibold text-red-600">
+                      <td className="py-3.5 px-4 font-semibold text-destructive">
                         <CurrencyDisplay amount={o.due_amount || 0} />
                       </td>
                       <td className="py-3.5 px-4">
@@ -480,34 +480,34 @@ export default function SalesManagerPage() {
                     <div>
                       <Link
  href={`/orders/${o.id}`}
- className="tabular-nums text-xs font-bold text-blue-600 hover:underline">
+ className="tabular-nums text-xs font-bold text-primary hover:underline">
                         {o.order_number}
                       </Link>
                       <div className="font-semibold text-sm text-foreground mt-0.5">
                         {o.customer_name}
                       </div>
                     </div>
-                    <Badge variant="outline"className="text-2xs capitalize">
+                    <Badge variant="outline"className="text-xs capitalize">
                       {o.status.replace('_', ' ')}
                     </Badge>
                   </div>
 
                   <div className="grid grid-cols-3 gap-2 p-2.5 bg-muted rounded-lg border border-border /60 text-center">
                     <div>
-                      <span className="text-2xs text-muted-foreground uppercase block">Total</span>
+                      <span className="text-xs text-muted-foreground uppercase block">Total</span>
                       <div className="tabular-nums font-bold text-xs text-foreground">
                         {formatBDT(o.final_price || 0)}
                       </div>
                     </div>
                     <div>
-                      <span className="text-2xs text-emerald-600 uppercase block">Paid</span>
-                      <div className="tabular-nums font-bold text-xs text-emerald-600">
+                      <span className="text-xs text-success uppercase block">Paid</span>
+                      <div className="tabular-nums font-bold text-xs text-success">
                         {formatBDT(o.advance_amount || 0)}
                       </div>
                     </div>
                     <div>
-                      <span className="text-2xs text-red-500 uppercase block">Due</span>
-                      <div className="tabular-nums font-bold text-xs text-red-600">
+                      <span className="text-xs text-destructive uppercase block">Due</span>
+                      <div className="tabular-nums font-bold text-xs text-destructive">
                         {formatBDT(o.due_amount || 0)}
                       </div>
                     </div>

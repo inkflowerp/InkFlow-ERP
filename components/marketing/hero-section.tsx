@@ -29,7 +29,7 @@ export function HeroSection({ onOpenDemo }: HeroSectionProps) {
         {/* Hero Text Content */}
         <div className="text-center max-w-4xl mx-auto space-y-5 sm:space-y-6">
           {/* Eyebrow */}
-          <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200/70 dark:border-blue-800/60 uppercase tracking-wider">
+          <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary bg-primary/10 text-primary border border-primary/20/70 border-border/60 uppercase tracking-wider">
             <span>
               {tBilingual(
                 'PRINT & SIGNAGE BUSINESS MANAGEMENT',
@@ -66,7 +66,7 @@ export function HeroSection({ onOpenDemo }: HeroSectionProps) {
             <a href="#how-it-works"className="w-full sm:w-auto">
               <Button
  variant="outline"className="w-full sm:w-auto h-12 px-6 text-sm sm:text-base font-semibold border-input bg-card text-foreground hover:bg-muted cursor-pointer bangla-text">
-                <PlayCircle className="mr-2 h-4 w-4 text-blue-600"/>
+                <PlayCircle className="mr-2 h-4 w-4 text-primary"/>
                 <span>{tBilingual('See How It Works', 'কাজের ধাপ দেখুন')}</span>
               </Button>
             </a>
@@ -82,7 +82,7 @@ export function HeroSection({ onOpenDemo }: HeroSectionProps) {
           </div>
 
           {/* Small Trust Reassurance Line */}
-          <div className="pt-2 text-2xs sm:text-xs text-muted-foreground flex flex-wrap items-center justify-center gap-2">
+          <div className="pt-2 text-xs sm:text-xs text-muted-foreground flex flex-wrap items-center justify-center gap-2">
             <span className="font-semibold text-foreground">
               {tBilingual('Built for:', 'উপযোগী:')}
             </span>

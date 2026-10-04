@@ -36,11 +36,11 @@ function InkFlowPlatformLogo({ className = '' }: { className?: string }) {
           <span className="text-lg sm:text-xl font-black tracking-tight text-foreground leading-none">
             InkFlow
           </span>
-          <span className="text-2xs font-bold px-1.5 py-0.5 rounded bg-primary/10 text-primary border border-primary/20 uppercase tracking-wider">
+          <span className="text-xs font-bold px-1.5 py-0.5 rounded bg-primary/10 text-primary border border-primary/20 uppercase tracking-wider">
             PLATFORM
           </span>
         </div>
-        <div className="text-2xs tracking-[0.25em] font-bold text-muted-foreground uppercase mt-0.5 leading-none">
+        <div className="text-xs tracking-[0.25em] font-bold text-muted-foreground uppercase mt-0.5 leading-none">
           CONTROL CENTER
         </div>
       </div>
@@ -114,14 +114,14 @@ function PlatformLoginForm() {
   return (
     <div className="min-h-screen w-full bg-background text-foreground flex flex-col justify-between relative overflow-x-hidden font-sans selection:bg-primary selection:text-primary-foreground">
       {/* --- Top Navigation Bar --- */}
-      <header className="relative z-30 w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-3 sm:pt-4 pb-2 flex items-center justify-between shrink-0">
+      <header className="relative z-30 w-full mx-auto px-4 sm:px-6 lg:px-8 pt-3 sm:pt-4 pb-2 flex items-center justify-between shrink-0">
         <div>
           <InkFlowPlatformLogo />
         </div>
 
         <div className="flex items-center gap-2 sm:gap-2.5">
           {/* Status Indicator */}
-          <div className="hidden sm:inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-card border border-border text-2xs text-muted-foreground">
+          <div className="hidden sm:inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-card border border-border text-xs text-muted-foreground">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75" />
               <span className="relative inline-flex rounded-full h-2 w-2 bg-success" />
@@ -138,11 +138,11 @@ function PlatformLoginForm() {
       </header>
 
       {/* --- Main Content Container --- */}
-      <main className="relative z-20 flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-5 flex flex-col lg:flex-row items-center justify-center lg:justify-between gap-6 lg:gap-10 my-auto min-h-0">
+      <main className="relative z-20 flex-1 w-full mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-5 flex flex-col lg:flex-row items-center justify-center lg:justify-between gap-6 lg:gap-10 my-auto min-h-0">
         {/* LEFT COLUMN: Highlights (Desktop Only) */}
         <div className="hidden lg:flex w-full max-w-md xl:max-w-lg flex-col justify-center space-y-4">
           <div>
-            <div className="text-2xs font-bold tracking-[0.2em] text-muted-foreground uppercase mb-1">
+            <div className="text-xs font-bold tracking-[0.2em] text-muted-foreground uppercase mb-1">
               {tBilingual('PLATFORM OWNER', 'প্ল্যাটফর্ম মালিক')}
             </div>
             <div className="w-8 h-1 rounded-full bg-primary" />
@@ -175,7 +175,7 @@ function PlatformLoginForm() {
                 <div className="text-xs xl:text-sm font-bold text-foreground">
                   {tBilingual('Owner access', 'মালিকের একাউন্ট')}
                 </div>
-                <div className="text-2xs xl:text-xs text-muted-foreground leading-normal">
+                <div className="text-xs xl:text-xs text-muted-foreground leading-normal">
                   {tBilingual('Built for authorized staff only.', 'শুধুমাত্র অনুমোদিত কর্মীদের জন্য।')}
                 </div>
               </div>
@@ -189,7 +189,7 @@ function PlatformLoginForm() {
                 <div className="text-xs xl:text-sm font-bold text-foreground">
                   {tBilingual('Separate clients', 'আলাদা ক্লায়েন্ট')}
                 </div>
-                <div className="text-2xs xl:text-xs text-muted-foreground leading-normal">
+                <div className="text-xs xl:text-xs text-muted-foreground leading-normal">
                   {tBilingual('Keep every business separate and secure.', 'প্রতিটি ক্লায়েন্ট আলাদা ও নিরাপদ থাকে।')}
                 </div>
               </div>
@@ -203,7 +203,7 @@ function PlatformLoginForm() {
                 <div className="text-xs xl:text-sm font-bold text-foreground">
                   {tBilingual('Safe and secure', 'নিরাপদ লগইন')}
                 </div>
-                <div className="text-2xs xl:text-xs text-muted-foreground leading-normal">
+                <div className="text-xs xl:text-xs text-muted-foreground leading-normal">
                   {tBilingual('Your data and actions are always protected.', 'আপনার তথ্য সর্বদা সুরক্ষিত থাকে।')}
                 </div>
               </div>
@@ -229,7 +229,7 @@ function PlatformLoginForm() {
                     ? tBilingual('Enter the 6-digit code.', '৬-সংখ্যার কোড লিখুন।')
                     : tBilingual('Sign in to control center.', 'কন্ট্রোল সেন্টারে সাইন ইন করুন।')}
                 </p>
-                <p className="text-2xs text-muted-foreground">
+                <p className="text-xs text-muted-foreground">
                   {tBilingual('Authorized staff only.', 'শুধুমাত্র অনুমোদিত কর্মীরা।')}
                 </p>
               </div>
@@ -248,7 +248,7 @@ function PlatformLoginForm() {
                         variant="outline"
                         size="sm"
                         onClick={() => executeSignIn()}
-                        className="text-2xs h-6 border-destructive/30 bg-destructive/10 text-foreground hover:bg-destructive/90 px-2"
+                        className="text-xs h-6 border-destructive/30 bg-destructive/10 text-foreground hover:bg-destructive/90 px-2"
                       >
                         <RefreshCw className="h-3 w-3 mr-1" />
                         {tBilingual('Try Again', 'আবার চেষ্টা')}
@@ -272,7 +272,7 @@ function PlatformLoginForm() {
                   </div>
 
                   <div className="space-y-1">
-                    <Label htmlFor="platform-mfa" className="text-2xs font-bold tracking-wider text-muted-foreground uppercase">
+                    <Label htmlFor="platform-mfa" className="text-xs font-bold tracking-wider text-muted-foreground uppercase">
                       {tBilingual('6-DIGIT CODE', '৬-সংখ্যার কোড')}
                     </Label>
                     <input
@@ -320,7 +320,7 @@ function PlatformLoginForm() {
                   <div className="space-y-1">
                     <Label
                       htmlFor="platform-email"
-                      className="text-2xs font-bold tracking-wider text-muted-foreground uppercase"
+                      className="text-xs font-bold tracking-wider text-muted-foreground uppercase"
                     >
                       {tBilingual('Email, Username or Mobile', 'ইমেইল, ইউজারনেম বা মোবাইল')}
                     </Label>
@@ -348,7 +348,7 @@ function PlatformLoginForm() {
                   <div className="space-y-1">
                     <Label
                       htmlFor="platform-password"
-                      className="text-2xs font-bold tracking-wider text-muted-foreground uppercase"
+                      className="text-xs font-bold tracking-wider text-muted-foreground uppercase"
                     >
                       {tBilingual('Password', 'পাসওয়ার্ড')}
                     </Label>
@@ -384,7 +384,7 @@ function PlatformLoginForm() {
                   <div className="flex justify-end pt-0.5">
                     <Link
                       href="/platform/forgot-password"
-                      className="text-2xs text-primary hover:text-primary/80 font-medium transition-colors hover:underline"
+                      className="text-xs text-primary hover:text-primary/80 font-medium transition-colors hover:underline"
                     >
                       {tBilingual('Forgot password?', 'পাসওয়ার্ড ভুলে গেছেন?')}
                     </Link>
@@ -414,14 +414,14 @@ function PlatformLoginForm() {
                   {/* Divider */}
                   <div className="relative flex items-center justify-center py-0.5">
                     <div className="w-full border-t border-border" />
-                    <span className="bg-card px-2 text-2xs font-bold tracking-wider text-muted-foreground uppercase">
+                    <span className="bg-card px-2 text-xs font-bold tracking-wider text-muted-foreground uppercase">
                       {tBilingual('OR', 'অথবা')}
                     </span>
                     <div className="w-full border-t border-border" />
                   </div>
 
                   {/* Business Login Alternative */}
-                  <div className="text-center text-2xs text-muted-foreground">
+                  <div className="text-center text-xs text-muted-foreground">
                     {tBilingual('Looking for your printing shop ERP?', 'আপনার নিজস্ব শপ ERP খুঁজছেন?')}{' '}
                     <Link
                       href="/login"
@@ -433,11 +433,11 @@ function PlatformLoginForm() {
                   </div>
 
                   {/* Security Badge */}
-                  <div className="mt-2.5 p-2 rounded-xl bg-muted/60 border border-border text-2xs text-muted-foreground flex items-center gap-2">
+                  <div className="mt-2.5 p-2 rounded-xl bg-muted/60 border border-border text-xs text-muted-foreground flex items-center gap-2">
                     <div className="w-4 h-4 rounded-md bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0">
                       <Shield className="h-2.5 w-2.5 text-primary" />
                     </div>
-                    <span className="leading-tight text-2xs">
+                    <span className="leading-tight text-xs">
                       {tBilingual(
                         'Secure session with encrypted authentication.',
                         'এনক্রিপ্টেড ও সম্পূর্ণ নিরাপদ লগইন।'
@@ -452,8 +452,8 @@ function PlatformLoginForm() {
       </main>
 
       {/* --- Footer Area --- */}
-      <footer className="relative z-20 w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 sm:py-3 flex flex-col sm:flex-row items-center justify-between gap-2 text-2xs text-muted-foreground border-t border-border shrink-0">
-        <div className="tracking-[0.2em] font-semibold uppercase text-muted-foreground flex items-center gap-1.5 text-2xs">
+      <footer className="relative z-20 w-full mx-auto px-4 sm:px-6 lg:px-8 py-2.5 sm:py-3 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-muted-foreground border-t border-border shrink-0">
+        <div className="tracking-[0.2em] font-semibold uppercase text-muted-foreground flex items-center gap-1.5 text-xs">
           <span>PRINT</span>
           <span className="text-primary font-normal">›</span>
           <span>PEOPLE</span>

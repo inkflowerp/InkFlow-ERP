@@ -150,14 +150,14 @@ export function MoneyReceiptModal({
  onOpenChange={onOpenChange}
  size="4xl"className="printable-receipt-modal"title={
         <div className="flex items-center gap-2.5">
-          <div className="h-9 w-9 rounded-xl bg-emerald-600/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400 flex items-center justify-center">
+          <div className="h-9 w-9 rounded-xl bg-success/10 text-success bg-success/20 text-success flex items-center justify-center">
             <Receipt className="h-5 w-5"/>
           </div>
           <div>
             <h2 className="text-base font-black text-foreground">
               {locale === 'bn' ? 'অফিসিয়াল মানি রিসিট (MR)' : 'Official Money Receipt (MR)'}
             </h2>
-            <p className="text-2xs text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
  Official acknowledgment of payment collection and multi-invoice settlement
             </p>
           </div>
@@ -168,32 +168,32 @@ export function MoneyReceiptModal({
       <div data-money-receipt="true"className="space-y-4 pt-1 pb-2">
         {/* ACTION BAR & PAYMENT HIGHLIGHT (NON-PRINT) */}
         <div className="print:hidden space-y-3">
-          <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-800 rounded-xl flex flex-wrap items-center justify-between gap-3 text-xs">
+          <div className="p-3 bg-success-surface bg-success-surface border border-success-border border-success-border rounded-xl flex flex-wrap items-center justify-between gap-3 text-xs">
             <div className="flex flex-wrap items-center gap-3 font-numeric tabular-nums">
               <div>
-                <span className="text-emerald-700 dark:text-emerald-400 font-bold block text-2xs uppercase">Payment Received</span>
-                <strong className="text-emerald-800 dark:text-emerald-200 text-sm font-bold">{formatBDT(payment.amount)}</strong>
+                <span className="text-success text-success font-bold block text-xs uppercase">Payment Received</span>
+                <strong className="text-success text-success text-sm font-bold">{formatBDT(payment.amount)}</strong>
               </div>
               {invoices.length > 0 && invoices[0] && (
                 <>
-                  <div className="border-l border-emerald-200 dark:border-emerald-800 pl-3">
-                    <span className="text-muted-foreground block text-2xs uppercase">Invoice</span>
-                    <strong className="text-blue-600 dark:text-blue-400 font-bold">#{invoices[0].invoice_number}</strong>
+                  <div className="border-l border-success-border border-success-border pl-3">
+                    <span className="text-muted-foreground block text-xs uppercase">Invoice</span>
+                    <strong className="text-primary text-primary font-bold">#{invoices[0].invoice_number}</strong>
                   </div>
-                  <div className="border-l border-emerald-200 dark:border-emerald-800 pl-3">
-                    <span className="text-muted-foreground block text-2xs uppercase">Customer</span>
+                  <div className="border-l border-success-border border-success-border pl-3">
+                    <span className="text-muted-foreground block text-xs uppercase">Customer</span>
                     <strong className="text-foreground font-bold">{payment.customer_name || invoices[0].customer_name}</strong>
                   </div>
-                  <div className="border-l border-emerald-200 dark:border-emerald-800 pl-3">
-                    <span className="text-muted-foreground block text-2xs uppercase">Remaining Due</span>
+                  <div className="border-l border-success-border border-success-border pl-3">
+                    <span className="text-muted-foreground block text-xs uppercase">Remaining Due</span>
                     {Math.max(0, (invoices[0].due_amount || 0) - payment.amount) === 0 ? (
-                      <strong className="text-emerald-600 dark:text-emerald-400 font-black flex items-center gap-1">
-                        {formatBDT(0)} <span className="text-2xs px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200">Paid</span>
+                      <strong className="text-success text-success font-black flex items-center gap-1">
+                        {formatBDT(0)} <span className="text-xs px-1.5 py-0.5 rounded bg-success-surface text-success bg-success text-success">Paid</span>
                       </strong>
                     ) : (
-                      <strong className="text-rose-600 dark:text-rose-400 font-black flex items-center gap-1">
+                      <strong className="text-destructive text-destructive font-black flex items-center gap-1">
                         {formatBDT(Math.max(0, (invoices[0].due_amount || 0) - payment.amount))}
-                        <span className="text-2xs px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200 font-bold">Partially Paid</span>
+                        <span className="text-xs px-1.5 py-0.5 rounded bg-warning-surface text-warning bg-warning text-warning font-bold">Partially Paid</span>
                       </strong>
                     )}
                   </div>
@@ -205,13 +205,13 @@ export function MoneyReceiptModal({
               <Button
  type="button"variant="outline"size="sm"onClick={handleCopyText}
  className="h-8 text-xs gap-1 font-semibold cursor-pointer">
-                {copied ? <Check className="h-3.5 w-3.5 text-emerald-600"/> : <Copy className="h-3.5 w-3.5"/>}
+                {copied ? <Check className="h-3.5 w-3.5 text-success"/> : <Copy className="h-3.5 w-3.5"/>}
                 {copied ? 'Copied' : 'Copy'}
               </Button>
 
               <Button
  type="button"variant="outline"size="sm"onClick={handleShareWhatsApp}
- className="h-8 text-xs gap-1 font-semibold text-emerald-700 border-emerald-300 hover:bg-emerald-50 dark:border-emerald-800 dark:text-emerald-400 cursor-pointer">
+ className="h-8 text-xs gap-1 font-semibold text-success border-success-border hover:bg-success-surface border-success-border text-success cursor-pointer">
                 <MessageSquare className="h-3.5 w-3.5"/>
  WhatsApp
               </Button>
@@ -229,7 +229,7 @@ export function MoneyReceiptModal({
 
               <Button
  type="button"size="sm"onClick={handlePrint}
- className="h-8 text-xs gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold cursor-pointer shadow-xs">
+ className="h-8 text-xs gap-1.5 bg-success hover:bg-success text-white font-bold cursor-pointer shadow-xs">
                 <Printer className="h-3.5 w-3.5"/>
  Print / PDF
               </Button>
@@ -242,7 +242,7 @@ export function MoneyReceiptModal({
  ref={printRef}
  data-money-receipt-canvas="true"data-print-isolate="true"className="p-6 bg-card border-2 border-input rounded-xl space-y-5 text-foreground shadow-xs font-sans print:border-none print:shadow-none print:p-0 print:m-0">
           {/* HEADER */}
-          <div className="text-center space-y-1 pb-4 border-b-2 border-emerald-600 dark:border-emerald-500">
+          <div className="text-center space-y-1 pb-4 border-b-2 border-success-border border-success-border">
             <h1 className="text-xl font-black tracking-tight uppercase text-foreground">
               {company?.name || 'Printing & Signage Solutions'}
             </h1>
@@ -250,7 +250,7 @@ export function MoneyReceiptModal({
               {company?.address || '42/1 Motijheel C/A, Dhaka-1000'} • Phone: {company?.phone || '+880 1700-000000'}
               {(company as any)?.bin || (company as any)?.bin_no ? ` • BIN: ${(company as any)?.bin || (company as any)?.bin_no}` : ''}
             </p>
-            <div className="inline-block mt-2 px-4 py-1 rounded-full bg-emerald-100 text-emerald-900 dark:bg-emerald-950/80 dark:text-emerald-300 font-black text-xs tracking-wider uppercase border border-emerald-300 dark:border-emerald-700">
+            <div className="inline-block mt-2 px-4 py-1 rounded-full bg-success-surface text-success bg-success-surface/80 text-success font-black text-xs tracking-wider uppercase border border-success-border border-success-border">
  OFFICIAL MONEY RECEIPT / অফিসিয়াল মানি রিসিট (MR)
             </div>
           </div>
@@ -259,7 +259,7 @@ export function MoneyReceiptModal({
           <div className="flex flex-wrap justify-between items-center text-xs tabular-nums py-1 px-1 border-b border-border">
             <div>
               <span className="text-muted-foreground">Receipt No: </span>
-              <strong className="text-emerald-700 dark:text-emerald-400 text-sm font-black">
+              <strong className="text-success text-success text-sm font-black">
                 {payment.receipt_number}
               </strong>
             </div>
@@ -285,7 +285,7 @@ export function MoneyReceiptModal({
 
             <div className="flex flex-col sm:flex-row sm:items-baseline">
               <span className="text-muted-foreground w-44 shrink-0 font-medium">The sum of Taka (in words):</span>
-              <span className="font-bold text-emerald-800 dark:text-emerald-300 italic">
+              <span className="font-bold text-success text-success italic">
                 {numberToWordsBDT(payment.amount)}
               </span>
             </div>
@@ -295,17 +295,17 @@ export function MoneyReceiptModal({
               <div className="font-bold uppercase flex items-center gap-2 flex-wrap">
                 <span>{methodInfo.en}</span>
                 {payment.mfs_transaction_id && (
-                  <Badge variant="outline"className="tabular-nums text-2xs normal-case bg-card">
+                  <Badge variant="outline"className="tabular-nums text-xs normal-case bg-card">
  TrxID: {payment.mfs_transaction_id}
                   </Badge>
                 )}
                 {payment.cheque_number && (
-                  <Badge variant="outline"className="tabular-nums text-2xs normal-case bg-card">
+                  <Badge variant="outline"className="tabular-nums text-xs normal-case bg-card">
  Cheque #{payment.cheque_number} {payment.bank_name ? `(${payment.bank_name})` : ''}
                   </Badge>
                 )}
                 {payment.bank_name && !payment.cheque_number && (
-                  <Badge variant="outline"className="tabular-nums text-2xs normal-case bg-card">
+                  <Badge variant="outline"className="tabular-nums text-xs normal-case bg-card">
  Bank: {payment.bank_name}
                   </Badge>
                 )}
@@ -323,12 +323,12 @@ export function MoneyReceiptModal({
           {/* INVOICE ALLOCATION BREAKDOWN */}
           {payment.allocations && payment.allocations.length > 0 ? (
             <div className="space-y-1.5">
-              <div className="text-2xs font-bold uppercase tracking-wider text-muted-foreground">
+              <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
  Invoice Settlement Allocation
               </div>
               <div className="border border-border rounded-lg overflow-hidden text-xs">
                 <table className="w-full text-left">
-                  <thead className="bg-muted text-muted-foreground font-semibold text-2xs">
+                  <thead className="bg-muted text-muted-foreground font-semibold text-xs">
                     <tr>
                       <th className="p-2">Invoice</th>
                       <th className="p-2 text-right">Invoice Total</th>
@@ -343,13 +343,13 @@ export function MoneyReceiptModal({
  const remainingDue = matchedInv ? Math.max(0, matchedInv.due_amount - alloc.allocated_amount) : 0
  return (
                         <tr key={i} className="hover:bg-muted dark:hover:bg-muted/30">
-                          <td className="p-2 font-bold text-blue-600 dark:text-blue-400">
+                          <td className="p-2 font-bold text-primary text-primary">
                             #{alloc.invoice_number || alloc.invoice_id}
                           </td>
                           <td className="p-2 text-right text-foreground">
                             {formatBDT(grandTotal)}
                           </td>
-                          <td className="p-2 text-right font-bold text-emerald-700 dark:text-emerald-400">
+                          <td className="p-2 text-right font-bold text-success text-success">
                             {formatBDT(alloc.allocated_amount)}
                           </td>
                           <td className="p-2 text-right text-muted-foreground">
@@ -364,12 +364,12 @@ export function MoneyReceiptModal({
             </div>
           ) : (invoices.length > 0 && invoices[0]) ? (
             <div className="space-y-1.5">
-              <div className="text-2xs font-bold uppercase tracking-wider text-muted-foreground">
+              <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
  Invoice Settlement
               </div>
               <div className="border border-border rounded-lg overflow-hidden text-xs">
                 <table className="w-full text-left">
-                  <thead className="bg-muted text-muted-foreground font-semibold text-2xs">
+                  <thead className="bg-muted text-muted-foreground font-semibold text-xs">
                     <tr>
                       <th className="p-2">Invoice</th>
                       <th className="p-2 text-right">Invoice Total</th>
@@ -379,13 +379,13 @@ export function MoneyReceiptModal({
                   </thead>
                   <tbody className="divide-y divide-border font-numeric tabular-nums">
                     <tr className="hover:bg-muted dark:hover:bg-muted/30">
-                      <td className="p-2 font-bold text-blue-600 dark:text-blue-400">
+                      <td className="p-2 font-bold text-primary text-primary">
                         #{invoices[0].invoice_number}
                       </td>
                       <td className="p-2 text-right text-foreground">
                         {formatBDT(invoices[0].grand_total)}
                       </td>
-                      <td className="p-2 text-right font-bold text-emerald-700 dark:text-emerald-400">
+                      <td className="p-2 text-right font-bold text-success text-success">
                         {formatBDT(payment.amount)}
                       </td>
                       <td className="p-2 text-right text-muted-foreground">
@@ -400,8 +400,8 @@ export function MoneyReceiptModal({
 
           {/* TOTAL, QR CODE & SIGNATURES */}
           <div className="flex flex-col sm:flex-row justify-between items-end gap-6 pt-4 border-t border-border">
-            <div className="p-3.5 rounded-xl bg-gradient-to-br from-emerald-600 to-teal-700 text-white font-numeric tabular-nums shadow-sm min-w-[200px]">
-              <span className="text-2xs uppercase font-bold text-emerald-100 block">Total Amount Received</span>
+            <div className="p-3.5 rounded-xl text-white font-numeric tabular-nums shadow-sm min-w-[200px]">
+              <span className="text-xs uppercase font-bold text-success block">Total Amount Received</span>
               <div className="text-2xl font-bold tracking-normal">
                 {formatBDT(payment.amount)}
               </div>
@@ -414,7 +414,7 @@ export function MoneyReceiptModal({
                 size={64}
                 className="bg-card p-1 rounded"
               />
-              <span className="text-2xs text-muted-foreground font-semibold mt-1">
+              <span className="text-xs text-muted-foreground font-semibold mt-1">
  Scan to Verify Voucher
               </span>
             </div>
@@ -423,7 +423,7 @@ export function MoneyReceiptModal({
               <div className="border-t border-input w-48 pt-1.5 font-bold text-xs">
                 {payment.received_by_name || 'Cashier / Accountant'}
               </div>
-              <div className="text-2xs text-muted-foreground uppercase tracking-wider">
+              <div className="text-xs text-muted-foreground uppercase tracking-wider">
  Authorized Signatory & Seal
               </div>
             </div>
@@ -440,7 +440,7 @@ export function MoneyReceiptModal({
           <div className="flex items-center gap-2">
             <Button
  type="button"variant="outline"onClick={handleShareWhatsApp}
- className="h-10 px-4 rounded-xl font-bold border-emerald-300 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-800 dark:text-emerald-400 gap-1.5 cursor-pointer">
+ className="h-10 px-4 rounded-xl font-bold border-success-border text-success hover:bg-success-surface border-success-border text-success gap-1.5 cursor-pointer">
               <MessageSquare className="h-4 w-4"/>
  WhatsApp Share
             </Button>

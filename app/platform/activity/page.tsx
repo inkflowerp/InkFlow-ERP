@@ -1,5 +1,5 @@
-import PlatformAuditPage from '../audit/page'
+import { redirect } from 'next/navigation'
 
-export default function PlatformActivityPage() {
- return <PlatformAuditPage />
+export default function PlatformActivityRedirect() {
+  redirect('/platform/audit')
 }

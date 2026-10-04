@@ -68,42 +68,47 @@ export function PlatformSupportBanner() {
 
  if (!supportData) return null
 
- return (
-    <aside aria-label="Support Mode Banner"className="bg-gradient-to-r from-amber-600 via-orange-600 to-rose-700 text-white px-4 py-2.5 text-xs font-semibold flex flex-wrap items-center justify-between gap-3 shadow-lg sticky top-0 z-50 border-b border-white/20 animate-in slide-in-from-top duration-300">
+  return (
+    <aside
+      aria-label="Support Mode Banner"
+      className="bg-warning-surface text-foreground px-4 py-2 text-xs font-semibold flex flex-wrap items-center justify-between gap-3 shadow-xs sticky top-0 z-50 border-b border-warning/30"
+    >
       <div className="flex items-center gap-2.5 flex-wrap">
-        <span className="p-1.5 rounded-lg bg-black/30 text-amber-200 shadow-xs">
-          <ShieldAlert className="h-4 w-4"/>
+        <span className="p-1 rounded-md bg-warning/20 text-warning shadow-xs">
+          <ShieldAlert className="h-4 w-4" />
         </span>
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="bg-black/30 text-amber-200 px-2 py-0.5 rounded text-2xs font-black uppercase tracking-wider">
- SUPPORT MODE ACTIVE
+          <span className="bg-warning/20 text-warning border border-warning/30 px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wider">
+            SUPPORT MODE ACTIVE
           </span>
           <span>
- Tenant: <strong className="underline text-white font-bold">{supportData.targetCompanyName}</strong>
+            Tenant: <strong className="underline text-foreground font-bold">{supportData.targetCompanyName}</strong>
           </span>
           {supportData.accessLevel && (
-            <span className="bg-black/20 text-amber-100 px-2 py-0.5 rounded text-2xs tabular-nums uppercase">
+            <span className="bg-muted text-muted-foreground border border-border px-2 py-0.5 rounded text-xs tabular-nums uppercase">
               {supportData.accessLevel.replace('_', ' ')}
             </span>
           )}
           {supportData.reason && (
-            <span className="text-amber-100 hidden sm:inline">
-              • Reason: <em className="not-italic text-white">&quot;{supportData.reason}&quot;</em>
+            <span className="text-muted-foreground hidden sm:inline">
+              • Reason: <em className="not-italic text-foreground">&quot;{supportData.reason}&quot;</em>
             </span>
           )}
           {timeLeft && (
-            <span className="inline-flex items-center gap-1 bg-black/20 text-amber-100 px-2 py-0.5 rounded text-2xs tabular-nums">
-              <Clock className="h-3 w-3 text-amber-300"/>
+            <span className="inline-flex items-center gap-1 bg-warning/15 text-warning px-2 py-0.5 rounded text-xs tabular-nums font-mono">
+              <Clock className="h-3 w-3 text-warning" />
               {timeLeft}
             </span>
           )}
         </div>
       </div>
       <button
- type="button"onClick={handleExitSupportMode}
- disabled={isExiting}
- className="flex items-center gap-1.5 bg-black/40 hover:bg-black/70 text-white px-3.5 py-1.5 rounded-full text-xs font-bold transition-all border border-white/30 cursor-pointer shadow-sm active:scale-95 disabled:opacity-60">
-        {isExiting ? <Loader2 className="h-3.5 w-3.5 animate-spin"/> : <LogOut className="h-3.5 w-3.5"/>}
+        type="button"
+        onClick={handleExitSupportMode}
+        disabled={isExiting}
+        className="flex items-center gap-1.5 bg-destructive text-destructive-foreground hover:bg-destructive/90 px-3 py-1 rounded-md text-xs font-medium transition-all cursor-pointer shadow-xs active:scale-95 disabled:opacity-60"
+      >
+        {isExiting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <LogOut className="h-3.5 w-3.5" />}
         <span>{isExiting ? 'Exiting...' : 'Exit Support Mode'}</span>
       </button>
     </aside>

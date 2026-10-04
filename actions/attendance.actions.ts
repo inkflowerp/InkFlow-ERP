@@ -1,5 +1,8 @@
 'use server'
 
+import { withTenantAction } from '@/lib/actions/action-wrapper'
+
+
 import { revalidatePath } from 'next/cache'
 import { getCurrentTenant, requireTenantUser } from '@/lib/auth/tenant-auth'
 import { AttendanceService } from '@/services/attendance.service'
@@ -14,8 +17,9 @@ import {
   AttendanceCorrectionRecord,
   AttendanceAuditLogRecord,
 } from '@/types/attendance.types'
-import { createAdminClient } from '@/lib/supabase/admin'
 import { AttendanceRepository, resolveCompanyUuid } from '@/lib/repositories/attendance.repository'
+import { WorkforceRepository } from '@/lib/repositories/workforce.repository'
+import { BranchRepository } from '@/lib/repositories/branch.repository'
 import { getAttendanceLocalDate, formatAttendanceTime } from '@/lib/attendance/geofence-utils'
 
 export interface ServerActionResult<T> {
@@ -29,9 +33,12 @@ export interface ServerActionResult<T> {
 /**
  * Server Action: Authenticated employee punch (Check-In or Check-Out) via QR & Geolocation
  */
-export async function recordAttendanceAction(
-  input: AttendancePunchInput
-): Promise<ServerActionResult<AttendanceRecord>> {
+export const recordAttendanceAction = withTenantAction(
+  {
+    permission: "hr.view",
+    entityType: "attendance"
+  },
+  async (ctx, input: AttendancePunchInput) : Promise<ServerActionResult<AttendanceRecord>> => {
   try {
     const tenant = await getCurrentTenant(input.company_id)
     if (!tenant) {
@@ -42,17 +49,9 @@ export async function recordAttendanceAction(
       }
     }
 
-    const admin = createAdminClient()
-
     // 1. Resolve employee record for this authenticated user
     // Strictly match by user_id linked to the authenticated user within the company
-    const { data: employee } = await (admin as any)
-      .from('employees')
-      .select('id, name, role, department, user_id, status')
-      .eq('company_id', tenant.companyId)
-      .eq('user_id', tenant.userId)
-      .eq('status', 'active')
-      .maybeSingle()
+    const employee = await WorkforceRepository.getEmployeeByUserId(tenant.userId, tenant.companyId)
 
     if (!employee) {
       return {
@@ -102,7 +101,8 @@ export async function recordAttendanceAction(
       error: error.message || 'An unexpected error occurred during attendance verification.',
     }
   }
-}
+
+})
 
 function canManageAttendance(tenant: any): boolean {
   return (
@@ -123,9 +123,12 @@ function canManageAttendance(tenant: any): boolean {
 /**
  * Server Action: Create an attendance geofenced location
  */
-export async function createAttendanceLocationAction(
-  input: CreateAttendanceLocationInput
-): Promise<ServerActionResult<{ location: AttendanceLocationRecord; qrToken: AttendanceQrTokenRecord }>> {
+export const createAttendanceLocationAction = withTenantAction(
+  {
+    permission: "hr.edit",
+    entityType: "attendance"
+  },
+  async (ctx, input: CreateAttendanceLocationInput) : Promise<ServerActionResult<{ location: AttendanceLocationRecord; qrToken: AttendanceQrTokenRecord }>> => {
   try {
     const tenant = await requireTenantUser(input.company_id)
 
@@ -149,16 +152,20 @@ export async function createAttendanceLocationAction(
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to create location.' }
   }
-}
+
+})
 
 /**
  * Server Action: Update attendance location
  */
-export async function updateAttendanceLocationAction(
-  id: string,
+export const updateAttendanceLocationAction = withTenantAction(
+  {
+    permission: "hr.edit",
+    entityType: "attendance"
+  },
+  async (ctx, id: string,
   updates: UpdateAttendanceLocationInput,
-  companyId: string
-): Promise<ServerActionResult<AttendanceLocationRecord>> {
+  companyId: string) : Promise<ServerActionResult<AttendanceLocationRecord>> => {
   try {
     const tenant = await requireTenantUser(companyId)
 
@@ -179,15 +186,21 @@ export async function updateAttendanceLocationAction(
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to update location.' }
   }
-}
+
+})
 
 /**
  * Server Action: Delete attendance location
  */
-export async function deleteAttendanceLocationAction(
-  id: string,
-  companyId: string
-): Promise<ServerActionResult<boolean>> {
+export const deleteAttendanceLocationAction = withTenantAction(
+  {
+    permission: "hr.delete",
+    destructive: true,
+    auditAction: "attendance.deleteattendancelocation",
+    entityType: "attendance"
+  },
+  async (ctx, id: string,
+  companyId: string) : Promise<ServerActionResult<boolean>> => {
   try {
     const tenant = await requireTenantUser(companyId)
 
@@ -202,15 +215,19 @@ export async function deleteAttendanceLocationAction(
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to delete location.' }
   }
-}
+
+})
 
 /**
  * Server Action: Regenerate and rotate Location QR Code (Invalidates previous QR immediately)
  */
-export async function regenerateLocationQrAction(
-  locationId: string,
-  companyId: string
-): Promise<ServerActionResult<AttendanceQrTokenRecord>> {
+export const regenerateLocationQrAction = withTenantAction(
+  {
+    permission: "hr.edit",
+    entityType: "attendance"
+  },
+  async (ctx, locationId: string,
+  companyId: string) : Promise<ServerActionResult<AttendanceQrTokenRecord>> => {
   try {
     const tenant = await requireTenantUser(companyId)
 
@@ -233,15 +250,19 @@ export async function regenerateLocationQrAction(
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to regenerate QR code.' }
   }
-}
+
+})
 
 /**
  * Server Action: Deactivate/Revoke Location QR Code
  */
-export async function revokeLocationQrAction(
-  locationId: string,
-  companyId: string
-): Promise<ServerActionResult<boolean>> {
+export const revokeLocationQrAction = withTenantAction(
+  {
+    permission: "hr.view",
+    entityType: "attendance"
+  },
+  async (ctx, locationId: string,
+  companyId: string) : Promise<ServerActionResult<boolean>> => {
   try {
     const tenant = await requireTenantUser(companyId)
 
@@ -258,14 +279,18 @@ export async function revokeLocationQrAction(
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to revoke QR code.' }
   }
-}
+
+})
 
 /**
  * Server Action: Fetch all locations for current tenant
  */
-export async function getAttendanceLocationsAction(
-  companyId?: string
-): Promise<ServerActionResult<AttendanceLocationRecord[]>> {
+export const getAttendanceLocationsAction = withTenantAction(
+  {
+    permission: "hr.view",
+    entityType: "attendance"
+  },
+  async (ctx, companyId?: string) : Promise<ServerActionResult<AttendanceLocationRecord[]>> => {
   try {
     const tenant = await getCurrentTenant(companyId)
     if (!tenant) return { success: false, error: 'Unauthenticated' }
@@ -275,33 +300,30 @@ export async function getAttendanceLocationsAction(
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to fetch locations.' }
   }
-}
+
+})
 
 /**
  * Server Action: Get today's attendance punches and status for authenticated employee
  */
-export async function getEmployeeTodayStatusAction(
-  companyId?: string
-): Promise<ServerActionResult<{
+export const getEmployeeTodayStatusAction = withTenantAction(
+  {
+    permission: "hr.view",
+    entityType: "attendance"
+  },
+  async (ctx, companyId?: string) : Promise<ServerActionResult<{
   hasCheckedIn: boolean
   hasCheckedOut: boolean
   checkInTime?: string
   checkOutTime?: string
   todayRecords: AttendanceRecord[]
   employeeName: string
-}>> {
+}>> => {
   try {
     const tenant = await getCurrentTenant(companyId)
     if (!tenant) return { success: false, error: 'Unauthenticated' }
 
-    const admin = createAdminClient()
-    const { data: employee } = await (admin as any)
-      .from('employees')
-      .select('id, name, user_id')
-      .eq('company_id', tenant.companyId)
-      .eq('user_id', tenant.userId)
-      .eq('status', 'active')
-      .maybeSingle()
+    const employee = await WorkforceRepository.getEmployeeByUserId(tenant.userId, tenant.companyId)
 
     if (!employee) {
       return {
@@ -360,13 +382,7 @@ export async function getEmployeeTodayStatusAction(
     // Fallback check on public.attendances table if no punch records found in attendance_records
     if (!hasCheckedIn && !hasCheckedOut) {
       try {
-        const { data: dailyAtt } = await (admin as any)
-          .from('attendances')
-          .select('check_in_time, check_out_time, status')
-          .eq('employee_id', employee.id)
-          .eq('attendance_date', todayStr)
-          .maybeSingle()
-
+        const dailyAtt = await AttendanceRepository.getEmployeeDailyAttendance(employee.id, todayStr)
         if (dailyAtt) {
           if (dailyAtt.check_in_time) {
             hasCheckedIn = true
@@ -396,26 +412,23 @@ export async function getEmployeeTodayStatusAction(
   } catch (error: any) {
     return { success: false, error: error.message }
   }
-}
+
+})
 
 /**
  * Server Action: Fetch employee attendance history
  */
-export async function getEmployeeHistoryAction(
-  companyId?: string
-): Promise<ServerActionResult<AttendanceRecord[]>> {
+export const getEmployeeHistoryAction = withTenantAction(
+  {
+    permission: "hr.view",
+    entityType: "attendance"
+  },
+  async (ctx, companyId?: string) : Promise<ServerActionResult<AttendanceRecord[]>> => {
   try {
     const tenant = await getCurrentTenant(companyId)
     if (!tenant) return { success: false, error: 'Unauthenticated' }
 
-    const admin = createAdminClient()
-    const { data: employee } = await (admin as any)
-      .from('employees')
-      .select('id, name, user_id')
-      .eq('company_id', tenant.companyId)
-      .eq('user_id', tenant.userId)
-      .eq('status', 'active')
-      .maybeSingle()
+    const employee = await WorkforceRepository.getEmployeeByUserId(tenant.userId, tenant.companyId)
 
     if (!employee) return { success: true, data: [] }
 
@@ -429,31 +442,30 @@ export async function getEmployeeHistoryAction(
   } catch (error: any) {
     return { success: false, error: error.message }
   }
-}
+
+})
 
 /**
  * Server Action: Submit Attendance Correction Request
  */
-export async function requestAttendanceCorrectionAction(params: {
+export const requestAttendanceCorrectionAction = withTenantAction(
+  {
+    permission: "hr.view",
+    entityType: "attendance"
+  },
+  async (ctx, params: {
   attendanceDate: string
   requestedType: 'CHECK_IN' | 'CHECK_OUT'
   requestedTime: string
   reason: string
   attendanceRecordId?: string | null
   companyId?: string
-}): Promise<ServerActionResult<AttendanceCorrectionRecord>> {
+}) : Promise<ServerActionResult<AttendanceCorrectionRecord>> => {
   try {
     const tenant = await getCurrentTenant(params.companyId)
     if (!tenant) return { success: false, error: 'Unauthenticated' }
 
-    const admin = createAdminClient()
-    const { data: employee } = await (admin as any)
-      .from('employees')
-      .select('id, name, user_id')
-      .eq('company_id', tenant.companyId)
-      .eq('user_id', tenant.userId)
-      .eq('status', 'active')
-      .maybeSingle()
+    const employee = await WorkforceRepository.getEmployeeByUserId(tenant.userId, tenant.companyId)
 
     if (!employee) return { success: false, error: 'Your login account is not linked to any active employee profile.' }
 
@@ -476,17 +488,23 @@ export async function requestAttendanceCorrectionAction(params: {
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to submit correction request.' }
   }
-}
+
+})
 
 /**
  * Server Action: Review (Approve/Reject) Attendance Correction
  */
-export async function reviewAttendanceCorrectionAction(params: {
+export const reviewAttendanceCorrectionAction = withTenantAction(
+  {
+    permission: "hr.view",
+    entityType: "attendance"
+  },
+  async (ctx, params: {
   id: string
   status: 'approved' | 'rejected'
   reviewNotes?: string
   companyId: string
-}): Promise<ServerActionResult<AttendanceCorrectionRecord>> {
+}) : Promise<ServerActionResult<AttendanceCorrectionRecord>> => {
   try {
     const tenant = await requireTenantUser(params.companyId)
 
@@ -517,15 +535,19 @@ export async function reviewAttendanceCorrectionAction(params: {
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to review correction.' }
   }
-}
+
+})
 
 /**
  * Server Action: Fetch all corrections for management inbox
  */
-export async function getAttendanceCorrectionsAction(
-  companyId: string,
-  status?: 'pending' | 'approved' | 'rejected'
-): Promise<ServerActionResult<AttendanceCorrectionRecord[]>> {
+export const getAttendanceCorrectionsAction = withTenantAction(
+  {
+    permission: "hr.view",
+    entityType: "attendance"
+  },
+  async (ctx, companyId: string,
+  status?: 'pending' | 'approved' | 'rejected') : Promise<ServerActionResult<AttendanceCorrectionRecord[]>> => {
   try {
     const tenant = await requireTenantUser(companyId)
     const corrections = await AttendanceService.getTenantCorrections(tenant.companyId, status)
@@ -533,15 +555,19 @@ export async function getAttendanceCorrectionsAction(
   } catch (error: any) {
     return { success: false, error: error.message }
   }
-}
+
+})
 
 /**
  * Server Action: Fetch tenant attendance overview / live feed
  */
-export async function getTenantAttendanceOverviewAction(
-  companyId?: string,
-  dateStr?: string
-): Promise<ServerActionResult<AttendanceRecord[]>> {
+export const getTenantAttendanceOverviewAction = withTenantAction(
+  {
+    permission: "hr.view",
+    entityType: "attendance"
+  },
+  async (ctx, companyId?: string,
+  dateStr?: string) : Promise<ServerActionResult<AttendanceRecord[]>> => {
   try {
     const tenant = await getCurrentTenant(companyId)
     if (!tenant) return { success: false, error: 'Unauthenticated' }
@@ -551,14 +577,18 @@ export async function getTenantAttendanceOverviewAction(
   } catch (error: any) {
     return { success: false, error: error.message }
   }
-}
+
+})
 
 /**
  * Server Action: Fetch audit logs for attendance
  */
-export async function getAttendanceAuditLogsAction(
-  companyId: string
-): Promise<ServerActionResult<AttendanceAuditLogRecord[]>> {
+export const getAttendanceAuditLogsAction = withTenantAction(
+  {
+    permission: "hr.view",
+    entityType: "attendance"
+  },
+  async (ctx, companyId: string) : Promise<ServerActionResult<AttendanceAuditLogRecord[]>> => {
   try {
     const tenant = await requireTenantUser(companyId)
     const logs = await AttendanceService.getAuditLogs(tenant.companyId, 50)
@@ -566,36 +596,36 @@ export async function getAttendanceAuditLogsAction(
   } catch (error: any) {
     return { success: false, error: error.message }
   }
-}
+
+})
 
 /**
  * Server Action: Fetch tenant branches for location assignment
  */
-export async function getTenantBranchesForAttendanceAction(
-  companyId?: string
-): Promise<ServerActionResult<Array<{ id: string; name: string; code: string; is_main?: boolean }>>> {
+export const getTenantBranchesForAttendanceAction = withTenantAction(
+  {
+    permission: "hr.view",
+    entityType: "attendance"
+  },
+  async (ctx, companyId?: string) : Promise<ServerActionResult<Array<{ id: string; name: string; code: string; is_main?: boolean }>>> => {
   try {
     const tenant = await getCurrentTenant(companyId)
     if (!tenant) return { success: false, error: 'Unauthenticated' }
 
-    const admin = createAdminClient()
     const targetCompanyId = (await resolveCompanyUuid(tenant.companyId)) || tenant.companyId
-
-    const { data: branches, error } = await (admin as any)
-      .from('branches')
-      .select('id, name, code, is_main')
-      .eq('company_id', targetCompanyId)
-      .eq('is_active', true)
-      .order('is_main', { ascending: false })
-
-    if (error) {
-      console.warn('[getTenantBranchesForAttendanceAction] Branches query note:', error.message)
-      return { success: true, data: [] }
+    const branches = await BranchRepository.listBranches(targetCompanyId)
+    return {
+      success: true,
+      data: branches.map((b) => ({
+        id: b.id,
+        name: b.name,
+        code: b.code || '',
+        is_main: b.is_main,
+      })),
     }
-
-    return { success: true, data: branches || [] }
   } catch (error: any) {
     return { success: false, error: error.message }
   }
-}
+
+})
 

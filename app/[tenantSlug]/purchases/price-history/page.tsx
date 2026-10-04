@@ -52,7 +52,7 @@ export default function SupplierPriceHistoryPage() {
  const uniqueMaterials = Array.from(new Set(history.map((h) => h.material_id)))
 
  return (
-    <div className="space-y-6 max-w-6xl">
+    <div className="space-y-6">
       {/* Back Link & Header */}
       <div>
         <Link
@@ -64,7 +64,7 @@ export default function SupplierPriceHistoryPage() {
 
         <PageHeader
  titleEn="Supplier Price History"titleBn="মহাজনদের দর ইতিহাস ও অ্যানালিটিক্স"descriptionEn="Historical purchase costs across vendors, tracking price shifts, volume discounts, and lowest procurement ceilings."descriptionBn="বিভিন্ন মহাজনের ঐতিহাসিক ক্রয়মূল্য, মূল্য পরিবর্তন ট্র্যাকিং এবং সুলভ রেট যাচাই।"icon={TrendingUp}
- iconColor="text-blue-600"/>
+ iconColor="text-primary"/>
       </div>
 
       {/* Material Benchmarks Grid */}
@@ -80,7 +80,7 @@ export default function SupplierPriceHistoryPage() {
 
  return (
             <Card key={matId} className="p-4 border-border">
-              <span className="tabular-nums text-2xs uppercase text-blue-600 font-bold block truncate">
+              <span className="tabular-nums text-xs uppercase text-primary font-bold block truncate">
                 {matId.toUpperCase()}
               </span>
               <h4 className="font-bold text-xs text-foreground mt-0.5 truncate">
@@ -89,26 +89,26 @@ export default function SupplierPriceHistoryPage() {
 
               <div className="grid grid-cols-2 gap-2 mt-3 pt-3 border-t border-border text-xs">
                 <div>
-                  <span className="text-muted-foreground text-2xs">Last Paid:</span>
+                  <span className="text-muted-foreground text-xs">Last Paid:</span>
                   <div className="tabular-nums font-bold text-foreground">
                     {formatBDT(lastPrice)}
                   </div>
                 </div>
                 <div>
-                  <span className="text-muted-foreground text-2xs">Average:</span>
-                  <div className="tabular-nums font-bold text-blue-600">
+                  <span className="text-muted-foreground text-xs">Average:</span>
+                  <div className="tabular-nums font-bold text-primary">
                     {formatBDT(avg)}
                   </div>
                 </div>
                 <div>
-                  <span className="text-muted-foreground text-2xs">Lowest:</span>
-                  <div className="tabular-nums font-bold text-emerald-600">
+                  <span className="text-muted-foreground text-xs">Lowest:</span>
+                  <div className="tabular-nums font-bold text-success">
                     {formatBDT(lowest)}
                   </div>
                 </div>
                 <div>
-                  <span className="text-muted-foreground text-2xs">Highest:</span>
-                  <div className="tabular-nums font-bold text-red-600">
+                  <span className="text-muted-foreground text-xs">Highest:</span>
+                  <div className="tabular-nums font-bold text-destructive">
                     {formatBDT(highest)}
                   </div>
                 </div>
@@ -202,7 +202,7 @@ export default function SupplierPriceHistoryPage() {
                           {item.previous_price ? (
                             <span
  className={`inline-flex items-center gap-0.5 font-bold ${
- isIncreased ? 'text-red-600' : 'text-emerald-600'
+ isIncreased ? 'text-destructive' : 'text-success'
                               }`}
                             >
                               {isIncreased ? (
@@ -240,36 +240,36 @@ export default function SupplierPriceHistoryPage() {
                     <div className="flex items-start justify-between gap-2">
                       <div>
                         <div className="font-bold text-foreground text-sm">{item.material_name}</div>
-                        <div className="text-2xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                        <div className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
                           <Building className="h-3 w-3 text-muted-foreground"/> {item.supplier_name}
                         </div>
                       </div>
-                      <span className="tabular-nums text-2xs text-muted-foreground shrink-0">{item.po_date}</span>
+                      <span className="tabular-nums text-xs text-muted-foreground shrink-0">{item.po_date}</span>
                     </div>
 
                     <div className="flex items-center justify-between p-2.5 rounded-lg bg-muted tabular-nums">
                       <div>
-                        <div className="text-2xs text-muted-foreground">Qty: {item.quantity}</div>
+                        <div className="text-xs text-muted-foreground">Qty: {item.quantity}</div>
                         <div className="text-sm font-black text-foreground">
                           {formatBDT(item.purchase_price)}
                         </div>
                       </div>
 
                       <div className="text-right">
-                        <div className="text-2xs text-muted-foreground">
+                        <div className="text-xs text-muted-foreground">
  Prev: {item.previous_price ? formatBDT(item.previous_price) : 'N/A'}
                         </div>
                         {item.previous_price ? (
                           <span
  className={`inline-flex items-center gap-0.5 font-bold text-xs ${
- isIncreased ? 'text-red-600' : 'text-emerald-600'
+ isIncreased ? 'text-destructive' : 'text-success'
                             }`}
                           >
                             {isIncreased ? <ArrowUpRight className="h-3 w-3"/> : <ArrowDownRight className="h-3 w-3"/>}
                             {isIncreased ? `+৳ ${diff}` : `-৳ ${Math.abs(diff)}`}
                           </span>
                         ) : (
-                          <span className="text-2xs text-muted-foreground">Baseline</span>
+                          <span className="text-xs text-muted-foreground">Baseline</span>
                         )}
                       </div>
                     </div>

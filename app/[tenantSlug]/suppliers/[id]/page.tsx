@@ -39,6 +39,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { CurrencyDisplay } from '@/components/shared/currency-display'
+import { PageContainer } from '@/components/ui/page-container'
 import { KpiCard, KpiGrid } from '@/components/shared/kpi-card'
 import type { SupplierRecord, SupplierMaterialPrice } from '@/types/crm.types'
 import { useDataStore } from '@/hooks/use-data-store'
@@ -176,7 +177,7 @@ export default function SupplierProfilePage() {
 
  if (!mounted) {
  return (
-      <div className="space-y-6 max-w-7xl pb-12 animate-pulse">
+      <div className="space-y-6 pb-12 animate-pulse">
         <div className="h-6 w-48 bg-muted rounded mb-3"/>
         <div className="h-24 bg-muted rounded-xl"/>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -190,7 +191,7 @@ export default function SupplierProfilePage() {
 
  if (!supplier) {
  return (
-      <div className="space-y-6 max-w-7xl">
+      <PageContainer className="space-y-6">
         <Link
  href={getTenantNavHref('/suppliers', pathname, slug)}
  className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground dark:hover:text-foreground">
@@ -205,11 +206,11 @@ export default function SupplierProfilePage() {
           <p className="text-xs text-muted-foreground mt-1 max-w-md mx-auto">
  {tBilingual('The supplier record you are looking for does not exist in your organization or was removed.', 'কাঙ্ক্ষিত সরবরাহকারীর তথ্য খুঁজে পাওয়া যায়নি অথবা মুছে ফেলা হয়েছে।')}
           </p>
-          <Button asChild className="mt-4 bg-teal-600 hover:bg-teal-700 text-white font-bold"size="sm">
+          <Button asChild className="mt-4 bg-success hover:bg-success/90 text-success-foreground font-bold"size="sm">
             <Link href={getTenantNavHref('/suppliers', pathname, slug)}>{tBilingual('View All Suppliers', 'সকল সরবরাহকারী দেখুন')}</Link>
           </Button>
         </Card>
-      </div>
+      </PageContainer>
     )
   }
 
@@ -220,7 +221,7 @@ export default function SupplierProfilePage() {
  const creditUsedPct = Math.min(100, Math.round((outstandingDue / creditLimit) * 100))
 
  return (
-    <div className="space-y-6 max-w-7xl">
+    <PageContainer className="space-y-6">
       {/* Top Breadcrumb & Action Header */}
       <div>
         <Link
@@ -250,13 +251,13 @@ export default function SupplierProfilePage() {
                   <CatIcon className="h-3.5 w-3.5"/>
                   <span>{catMeta.labelEn.split(' ')[0]}</span>
                 </span>
-                <Badge variant="outline"className="text-2xs tabular-nums py-0.5 px-2 bg-muted text-muted-foreground">
+                <Badge variant="outline"className="text-xs tabular-nums py-0.5 px-2 bg-muted text-muted-foreground">
                   {supplier.supplier_code || 'SUP-001'}
                 </Badge>
               </div>
 
               {supplier.name_bn && (
-                <div className="text-sm font-bold text-teal-700 dark:text-teal-400 bangla-text">
+                <div className="text-sm font-bold text-success bangla-text">
                   {supplier.name_bn} {supplier.company && `• ${supplier.company}`}
                 </div>
               )}
@@ -265,7 +266,7 @@ export default function SupplierProfilePage() {
               <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground pt-1">
                 <a
  href={`tel:${supplier.mobile}`}
- className="flex items-center gap-1 tabular-nums text-foreground hover:text-teal-600 font-bold">
+ className="flex items-center gap-1 tabular-nums text-foreground hover:text-success font-bold">
                   <Phone className="h-3.5 w-3.5 text-muted-foreground"/>
                   <span>{supplier.mobile}</span>
                 </a>
@@ -273,7 +274,7 @@ export default function SupplierProfilePage() {
                 {supplier.whatsapp && (
                   <a
  href={`https://wa.me/${supplier.whatsapp.replace(/\D/g, '')}`}
- target="_blank"rel="noopener noreferrer"className="flex items-center gap-1 text-emerald-600 tabular-nums font-bold hover:underline">
+ target="_blank"rel="noopener noreferrer"className="flex items-center gap-1 text-success tabular-nums font-bold hover:underline">
                     <MessageSquare className="h-3.5 w-3.5"/>
                     <span>WhatsApp</span>
                   </a>
@@ -317,21 +318,21 @@ export default function SupplierProfilePage() {
  setPriceToEdit(null)
  setIsRateModalOpen(true)
               }}
- className="text-xs h-9 font-semibold text-teal-700 dark:text-teal-300 border-teal-200 dark:border-teal-800 bg-teal-50/50 hover:bg-teal-100">
-              <Tag className="mr-1.5 h-3.5 w-3.5 text-teal-600"/>
+ className="text-xs h-9 font-semibold text-success border-success-border bg-success-surface/50 hover:bg-success-surface">
+              <Tag className="mr-1.5 h-3.5 w-3.5 text-success"/>
               {tBilingual('Add Rate', 'দর যুক্ত করুন')}
             </Button>
 
             <Button
  size="sm"onClick={() => setIsPayModalOpen(true)}
- className="bg-teal-600 hover:bg-teal-700 text-xs text-white font-bold h-9 shadow-xs">
+ className="bg-success hover:bg-success/90 text-xs text-success-foreground font-bold h-9 shadow-xs">
               <Receipt className="mr-1.5 h-3.5 w-3.5"/>
               {tBilingual('Pay Supplier Voucher', 'বিল পরিশোধ')}
             </Button>
 
             <Button
  size="sm"onClick={() => setIsNewPOOpen(true)}
- className="bg-blue-600 hover:bg-blue-700 text-xs text-white font-bold h-9 shadow-xs">
+ className="bg-primary hover:bg-primary/90 text-xs text-primary-foreground font-bold h-9 shadow-xs">
               <Package className="mr-1.5 h-3.5 w-3.5"/>
               {tBilingual('Issue New PO', 'ক্রয়াদেশ')}
             </Button>
@@ -341,8 +342,8 @@ export default function SupplierProfilePage() {
 
       {/* Notification Toast */}
       {notification && (
-        <div className="p-3 bg-emerald-50 text-emerald-800 rounded-xl text-xs font-semibold flex items-center gap-2 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800 animate-in fade-in-0 shadow-xs">
-          <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0"/>
+        <div className="p-3 bg-success-surface text-success rounded-xl text-xs font-semibold flex items-center gap-2 border border-success-border bg-success-surface text-success animate-in fade-in-0 shadow-xs">
+          <CheckCircle2 className="h-4 w-4 text-success shrink-0"/>
           <span>{notification}</span>
         </div>
       )}
@@ -370,7 +371,7 @@ export default function SupplierProfilePage() {
  icon={CreditCard}
  colorVariant={outstandingDue > 0 ? 'amber' : 'emerald'}
  badge={outstandingDue > 0 ? tBilingual('Pending', 'অপেক্ষমান') : tBilingual('Settled', 'পরিশোধিত')}
- badgeColor={outstandingDue > 0 ? 'bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-800' : 'bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800'}
+ badgeColor={outstandingDue > 0 ? 'bg-warning-surface text-warning border-warning-border bg-warning-surface text-warning border-warning-border' : 'bg-success-surface text-success border-success-border bg-success-surface text-success border-success-border'}
  subtitle={`${tBilingual('Terms', 'শর্তাবলী')}: ${supplier.payment_terms.replace('_', ' ').toUpperCase()}`}
         />
 
@@ -385,7 +386,7 @@ export default function SupplierProfilePage() {
           <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden mt-1.5">
             <div
  className={`h-full transition-all rounded-full ${
- creditUsedPct > 90 ? 'bg-rose-500' : creditUsedPct > 50 ? 'bg-amber-500' : 'bg-teal-500'
+ creditUsedPct > 90 ? 'bg-destructive' : creditUsedPct > 50 ? 'bg-warning' : 'bg-success'
               }`}
  style={{ width: `${Math.min(100, Math.max(0, creditUsedPct))}%` }}
             />
@@ -407,13 +408,13 @@ export default function SupplierProfilePage() {
  onClick={() => setActiveTab(tab.id as TabKey)}
  className={`px-4 py-2.5 text-xs font-bold border-b-2 -mb-px whitespace-nowrap transition-all flex items-center gap-1.5 cursor-pointer bangla-text ${
  activeTab === tab.id
-                ? 'border-teal-600 text-teal-700 dark:border-teal-400 dark:text-teal-300 bg-teal-50/50 dark:bg-teal-950/30 rounded-t-lg'
+                ? 'border-success-border text-success border-success-border text-success bg-success-surface/50 bg-success-surface rounded-t-lg'
                 : 'border-transparent text-muted-foreground hover:text-foreground hover:bg-muted dark:hover:bg-muted/40'
             }`}
           >
             <span>{tBilingual(tab.labelEn, tab.labelBn)}</span>
             {tab.count !== undefined && (
-              <Badge variant="outline"className="text-2xs tabular-nums py-0 px-1.5">
+              <Badge variant="outline"className="text-xs tabular-nums py-0 px-1.5">
                 {tab.count}
               </Badge>
             )}
@@ -444,7 +445,7 @@ export default function SupplierProfilePage() {
  setPriceToEdit(null)
  setIsRateModalOpen(true)
                 }}
- className="bg-teal-600 hover:bg-teal-700 text-xs text-white font-bold shrink-0 shadow-xs">
+ className="bg-success hover:bg-success/90 text-xs text-success-foreground font-bold shrink-0 shadow-xs">
                 <Plus className="h-3.5 w-3.5 mr-1"/>
                 {tBilingual('Add Material Rate', 'নতুন চুক্তি দর')}
               </Button>
@@ -484,8 +485,8 @@ export default function SupplierProfilePage() {
                         <td className="py-3 px-4 font-bold text-foreground">{price.material_name}</td>
                         <td className="py-3 px-4 capitalize text-muted-foreground">{price.category}</td>
                         <td className="py-3 px-4 uppercase tabular-nums font-semibold">{price.unit}</td>
-                        <td className="py-3 px-4 font-black tabular-nums text-teal-700 dark:text-teal-400 text-sm">
-                          {formatBDT(price.contract_price_bdt)} <span className="text-2xs font-normal text-muted-foreground">/ {price.unit}</span>
+                        <td className="py-3 px-4 font-black tabular-nums text-success text-sm">
+                          {formatBDT(price.contract_price_bdt)} <span className="text-xs font-normal text-muted-foreground">/ {price.unit}</span>
                         </td>
                         <td className="py-3 px-4 tabular-nums text-muted-foreground">
  MOQ: {price.moq || 1} • {price.lead_time_days || 2}d
@@ -506,7 +507,7 @@ export default function SupplierProfilePage() {
                             </Button>
                             <Button
  size="sm"variant="outline"onClick={() => handleDeleteRate(price.id, price.material_name)}
- className="h-7 px-2 text-xs text-rose-600 hover:text-rose-700"title="Delete Rate">
+ className="h-7 px-2 text-xs text-destructive hover:text-destructive"title="Delete Rate">
                               <Trash2 className="h-3 w-3"/>
                             </Button>
                           </div>
@@ -533,7 +534,7 @@ export default function SupplierProfilePage() {
               </CardTitle>
               <Button
  size="sm"onClick={() => setIsNewPOOpen(true)}
- className="bg-blue-600 hover:bg-blue-700 text-xs text-white font-bold shrink-0 shadow-xs">
+ className="bg-primary hover:bg-primary/90 text-xs text-primary-foreground font-bold shrink-0 shadow-xs">
                 <Plus className="h-3.5 w-3.5 mr-1"/>
                 {tBilingual('Issue Purchase Order', 'নতুন ক্রয়াদেশ')}
               </Button>
@@ -568,7 +569,7 @@ export default function SupplierProfilePage() {
                   ) : (
  relatedPOs.map((po) => (
                       <tr key={po.id} className="hover:bg-muted dark:hover:bg-muted/60 transition-colors">
-                        <td className="py-3 px-4 tabular-nums font-bold text-teal-600 dark:text-teal-400">
+                        <td className="py-3 px-4 tabular-nums font-bold text-success">
                           {po.po_number}
                         </td>
                         <td className="py-3 px-4 text-muted-foreground tabular-nums">{po.po_date}</td>
@@ -579,12 +580,12 @@ export default function SupplierProfilePage() {
                           {formatBDT(po.grand_total || 0)}
                         </td>
                         <td className="py-3 px-4">
-                          <Badge variant="outline"className="bg-emerald-50 text-emerald-800 border-emerald-200 capitalize text-2xs">
+                          <Badge variant="outline"className="bg-success-surface text-success border-success-border capitalize text-xs">
                             {po.status}
                           </Badge>
                         </td>
                         <td className="py-3 px-4">
-                          <Badge variant="outline"className="bg-sky-50 text-sky-800 border-sky-200 capitalize text-2xs">
+                          <Badge variant="outline"className="bg-info-surface text-primary border-primary/20 capitalize text-xs">
                             {po.due_amount <= 0 ? 'Paid' : po.paid_amount > 0 ? 'Partially Paid' : 'Unpaid'}
                           </Badge>
                         </td>
@@ -610,7 +611,7 @@ export default function SupplierProfilePage() {
               </CardTitle>
               <Button
  size="sm"onClick={() => setIsPayModalOpen(true)}
- className="bg-teal-600 hover:bg-teal-700 text-xs text-white font-bold shrink-0 shadow-xs">
+ className="bg-success hover:bg-success/90 text-xs text-success-foreground font-bold shrink-0 shadow-xs">
                 <Receipt className="h-3.5 w-3.5 mr-1"/>
                 {tBilingual('Pay Voucher', 'নতুন ভাউচার')}
               </Button>
@@ -631,13 +632,13 @@ export default function SupplierProfilePage() {
                 </thead>
                 <tbody className="divide-y divide-border dark:divide-border">
                   <tr className="hover:bg-muted dark:hover:bg-muted/60">
-                    <td className="py-3 px-4 tabular-nums font-bold text-teal-600">PV-2024-0012</td>
+                    <td className="py-3 px-4 tabular-nums font-bold text-success">PV-2024-0012</td>
                     <td className="py-3 px-4 font-medium text-foreground">Bank Cheque</td>
-                    <td className="py-3 px-4 tabular-nums font-bold text-emerald-600 text-sm">৳ 100,000</td>
+                    <td className="py-3 px-4 tabular-nums font-bold text-success text-sm">৳ 100,000</td>
                     <td className="py-3 px-4 text-muted-foreground tabular-nums">20/08/2024</td>
                     <td className="py-3 px-4 tabular-nums text-muted-foreground">City Bank Cheque #982104</td>
                     <td className="py-3 px-4">
-                      <Badge variant="outline"className="text-emerald-700 bg-emerald-50 text-2xs">
+                      <Badge variant="outline"className="text-success bg-success-surface text-xs">
  Cheque Cleared
                       </Badge>
                     </td>
@@ -689,21 +690,21 @@ export default function SupplierProfilePage() {
                     <td className="py-3 px-4 font-sans font-semibold text-foreground">
  Goods Received (GRN-0089)
                     </td>
-                    <td className="py-3 px-4 text-teal-600 font-bold">PO-000034</td>
+                    <td className="py-3 px-4 text-success font-bold">PO-000034</td>
                     <td className="py-3 px-4 text-right font-bold text-foreground">৳ 23,750</td>
                     <td className="py-3 px-4 text-right text-muted-foreground">—</td>
-                    <td className="py-3 px-4 text-right font-bold text-amber-700 dark:text-amber-400">
+                    <td className="py-3 px-4 text-right font-bold text-warning text-warning">
                       {formatBDT(supplier.outstanding_balance || 0)}
                     </td>
                   </tr>
                   <tr>
                     <td className="py-3 px-4 text-muted-foreground">20/08/2024</td>
-                    <td className="py-3 px-4 font-sans font-semibold text-emerald-600">
+                    <td className="py-3 px-4 font-sans font-semibold text-success">
  Payment Voucher Cleared
                     </td>
                     <td className="py-3 px-4 text-muted-foreground">PV-2024-0012</td>
                     <td className="py-3 px-4 text-right text-muted-foreground">—</td>
-                    <td className="py-3 px-4 text-right font-bold text-emerald-600">৳ 100,000</td>
+                    <td className="py-3 px-4 text-right font-bold text-success">৳ 100,000</td>
                     <td className="py-3 px-4 text-right font-bold text-foreground">৳ 0</td>
                   </tr>
                 </tbody>
@@ -721,7 +722,7 @@ export default function SupplierProfilePage() {
           {/* Legal & Market Location */}
           <Card className="p-5 rounded-xl shadow-xs border-border space-y-4">
             <div className="flex items-center gap-2 border-b border-border pb-2">
-              <Building className="h-4 w-4 text-teal-600"/>
+              <Building className="h-4 w-4 text-success"/>
               <h3 className="text-sm font-bold text-foreground">
                 {tBilingual('Legal & Trade Registration', 'আইনগত ও ট্রেড তথ্য')}
               </h3>
@@ -764,7 +765,7 @@ export default function SupplierProfilePage() {
           {/* Bank & Cheque Disbursement Details */}
           <Card className="p-5 rounded-xl shadow-xs border-border space-y-4">
             <div className="flex items-center gap-2 border-b border-border pb-2">
-              <Landmark className="h-4 w-4 text-teal-600"/>
+              <Landmark className="h-4 w-4 text-success"/>
               <h3 className="text-sm font-bold text-foreground">
                 {tBilingual('Bank Account for Disbursements', 'ব্যাংক অ্যাকাউন্ট ও চেক প্রদান তথ্য')}
               </h3>
@@ -785,7 +786,7 @@ export default function SupplierProfilePage() {
               </div>
               <div className="flex justify-between py-1 border-b border-border">
                 <span className="text-muted-foreground">Account Number:</span>
-                <span className="tabular-nums font-bold text-teal-700 dark:text-teal-400">
+                <span className="tabular-nums font-bold text-success">
                   {supplier.bank_account_number || '—'}
                 </span>
               </div>
@@ -856,6 +857,6 @@ export default function SupplierProfilePage() {
  confirmText="Remove Rate"confirmTextBn="রেট মুছুন"cancelText="Cancel"cancelTextBn="বাতিল"isDestructive={true}
  onConfirm={confirmDeleteRate}
       />
-    </div>
+    </PageContainer>
   )
 }

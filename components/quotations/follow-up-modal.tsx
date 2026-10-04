@@ -118,12 +118,12 @@ export function FollowUpModal({
  onOpenChange={onOpenChange}
  size="lg"title={
         <div className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold">
+          <div className="h-8 w-8 rounded-lg bg-primary/10 text-primary bg-primary/60 text-primary flex items-center justify-center font-bold">
             <Clock className="h-4 w-4"/>
           </div>
           <div>
             <h2 className="text-sm font-bold text-foreground">Record Quotation Follow-up</h2>
-            <p className="text-2xs text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
  Log client conversation, update status, and schedule next contact
             </p>
           </div>
@@ -135,17 +135,17 @@ export function FollowUpModal({
         {/* Quotation Summary Card */}
         <div className="p-3 rounded-xl bg-surface-inset text-foreground space-y-1.5 text-xs shadow-inner">
           <div className="flex items-center justify-between">
-            <span className="tabular-nums font-bold text-cyan-300">
+            <span className="tabular-nums font-bold text-primary">
               #{quotation.quotation_number}
             </span>
-            <span className="tabular-nums font-black text-sm text-emerald-400">
+            <span className="tabular-nums font-black text-sm text-success">
               {formatBDT(quotation.grand_total)}
             </span>
           </div>
           <div className="text-muted-foreground font-semibold truncate">
             {quotation.customer_name} {quotation.customer_company && `(${quotation.customer_company})`}
           </div>
-          <div className="text-2xs text-muted-foreground tabular-nums flex items-center gap-3">
+          <div className="text-xs text-muted-foreground tabular-nums flex items-center gap-3">
             <span>📞 {quotation.customer_phone}</span>
             <span>•</span>
             <span>Valid Until: {quotation.valid_until}</span>
@@ -153,8 +153,8 @@ export function FollowUpModal({
         </div>
 
         {error && (
-          <div className="p-2.5 rounded-lg bg-red-50 text-red-800 dark:bg-red-950/40 dark:text-red-200 border border-red-200 text-xs flex items-center gap-2">
-            <AlertCircle className="h-4 w-4 text-red-600 shrink-0"/>
+          <div className="p-2.5 rounded-lg bg-danger-surface text-destructive bg-danger-surface text-destructive border border-danger-border text-xs flex items-center gap-2">
+            <AlertCircle className="h-4 w-4 text-destructive shrink-0"/>
             <span>{error}</span>
           </div>
         )}
@@ -178,12 +178,12 @@ export function FollowUpModal({
  type="button"onClick={() => setMethod(m.id as FollowUpMethod)}
  className={`p-2 rounded-lg border text-center transition-all cursor-pointer flex flex-col items-center gap-1 ${
  isSelected
-                      ? 'bg-blue-50 text-blue-700 border-blue-400 font-bold dark:bg-blue-950/50 dark:text-blue-300'
+                      ? 'bg-primary/10 text-primary border-border font-bold bg-primary/10 text-primary'
                       : 'border-border text-muted-foreground hover:bg-muted '
                   }`}
                 >
                   <Icon className="h-3.5 w-3.5"/>
-                  <span className="text-2xs">{m.label}</span>
+                  <span className="text-xs">{m.label}</span>
                 </button>
               )
             })}
@@ -213,9 +213,9 @@ export function FollowUpModal({
         <div>
           <div className="flex items-center justify-between mb-1">
             <Label htmlFor="followUpNote"className="text-xs font-semibold">
- Follow-Up Notes <span className="text-rose-500">*</span>
+ Follow-Up Notes <span className="text-destructive">*</span>
             </Label>
-            <span className="text-2xs text-muted-foreground">Internal only • Never shared with customer</span>
+            <span className="text-xs text-muted-foreground">Internal only • Never shared with customer</span>
           </div>
           <textarea
  id="followUpNote"rows={3}
@@ -231,22 +231,22 @@ export function FollowUpModal({
           <div className="flex items-center gap-2 mb-2">
             <button
  type="button"onClick={() => handleQuickSchedule(1)}
- className="px-2.5 py-1 text-2xs rounded-md border border-border hover:bg-muted text-foreground font-medium cursor-pointer">
+ className="px-2.5 py-1 text-xs rounded-md border border-border hover:bg-muted text-foreground font-medium cursor-pointer">
  Tomorrow
             </button>
             <button
  type="button"onClick={() => handleQuickSchedule(3)}
- className="px-2.5 py-1 text-2xs rounded-md border border-border hover:bg-muted text-foreground font-medium cursor-pointer">
+ className="px-2.5 py-1 text-xs rounded-md border border-border hover:bg-muted text-foreground font-medium cursor-pointer">
  In 3 Days
             </button>
             <button
  type="button"onClick={() => handleQuickSchedule(7)}
- className="px-2.5 py-1 text-2xs rounded-md border border-border hover:bg-muted text-foreground font-medium cursor-pointer">
+ className="px-2.5 py-1 text-xs rounded-md border border-border hover:bg-muted text-foreground font-medium cursor-pointer">
  In 1 Week
             </button>
             <button
  type="button"onClick={() => handleQuickSchedule(0)}
- className="px-2.5 py-1 text-2xs rounded-md border border-border hover:bg-muted text-muted-foreground font-medium cursor-pointer">
+ className="px-2.5 py-1 text-xs rounded-md border border-border hover:bg-muted text-muted-foreground font-medium cursor-pointer">
  No Follow-Up
             </button>
           </div>

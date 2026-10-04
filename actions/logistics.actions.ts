@@ -1,5 +1,8 @@
 'use server'
 
+import { withTenantAction } from '@/lib/actions/action-wrapper'
+
+
 import { revalidatePath } from 'next/cache'
 import { LogisticsService } from '@/services/logistics.service'
 import { LogisticsRepository } from '@/lib/repositories/logistics.repository'
@@ -23,9 +26,12 @@ async function resolveLogisticsTenant(requestedCompanyId?: string) {
 /**
  * Server Action: Fetch delivery challans for the active tenant
  */
-export async function getChallansAction(
-  requestedCompanyId?: string
-): Promise<ServerActionResult<DeliveryChallanRecord[]>> {
+export const getChallansAction = withTenantAction(
+  {
+    permission: "delivery.view",
+    entityType: "logistics"
+  },
+  async (ctx, requestedCompanyId?: string) : Promise<ServerActionResult<DeliveryChallanRecord[]>> => {
   try {
     const tenant = await resolveLogisticsTenant(requestedCompanyId)
     const challans = await LogisticsService.getChallans(tenant.companyId)
@@ -33,15 +39,19 @@ export async function getChallansAction(
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to fetch delivery challans' }
   }
-}
+
+})
 
 /**
  * Server Action: Fetch single challan by ID or Challan Number
  */
-export async function getChallanByIdAction(
-  id: string,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<DeliveryChallanRecord | null>> {
+export const getChallanByIdAction = withTenantAction(
+  {
+    permission: "delivery.view",
+    entityType: "logistics"
+  },
+  async (ctx, id: string,
+  requestedCompanyId?: string) : Promise<ServerActionResult<DeliveryChallanRecord | null>> => {
   try {
     const tenant = await resolveLogisticsTenant(requestedCompanyId)
     const challan = await LogisticsService.getChallanById(id, tenant.companyId)
@@ -49,15 +59,19 @@ export async function getChallanByIdAction(
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to fetch delivery challan' }
   }
-}
+
+})
 
 /**
  * Server Action: Create a new delivery challan
  */
-export async function createChallanAction(
-  payload: any,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<DeliveryChallanRecord>> {
+export const createChallanAction = withTenantAction(
+  {
+    permission: "delivery.create",
+    entityType: "logistics"
+  },
+  async (ctx, payload: any,
+  requestedCompanyId?: string) : Promise<ServerActionResult<DeliveryChallanRecord>> => {
   try {
     const tenant = await resolveLogisticsTenant(requestedCompanyId || payload.company_id)
     const challan = await LogisticsService.createChallan({
@@ -77,17 +91,21 @@ export async function createChallanAction(
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to create delivery challan' }
   }
-}
+
+})
 
 /**
  * Server Action: Update delivery challan status / confirm delivery
  */
-export async function updateChallanStatusAction(
-  id: string,
+export const updateChallanStatusAction = withTenantAction(
+  {
+    permission: "delivery.edit",
+    entityType: "logistics"
+  },
+  async (ctx, id: string,
   status: DeliveryStatus | 'ready' | 'assigned' | 'out_for_delivery' | 'delivered' | 'cancelled',
   requestedCompanyId?: string,
-  extraUpdates?: Partial<DeliveryChallanRecord>
-): Promise<ServerActionResult<DeliveryChallanRecord>> {
+  extraUpdates?: Partial<DeliveryChallanRecord>) : Promise<ServerActionResult<DeliveryChallanRecord>> => {
   try {
     const tenant = await resolveLogisticsTenant(requestedCompanyId)
     const updated = await LogisticsService.updateChallanStatus(id, status, tenant.companyId, extraUpdates)
@@ -104,14 +122,18 @@ export async function updateChallanStatusAction(
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to update challan status' }
   }
-}
+
+})
 
 /**
  * Server Action: Fetch installation jobs for the active tenant
  */
-export async function getInstallationsAction(
-  requestedCompanyId?: string
-): Promise<ServerActionResult<InstallationRecord[]>> {
+export const getInstallationsAction = withTenantAction(
+  {
+    permission: "delivery.view",
+    entityType: "logistics"
+  },
+  async (ctx, requestedCompanyId?: string) : Promise<ServerActionResult<InstallationRecord[]>> => {
   try {
     const tenant = await resolveLogisticsTenant(requestedCompanyId)
     const installations = await LogisticsService.getInstallations(tenant.companyId)
@@ -119,4 +141,5 @@ export async function getInstallationsAction(
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to fetch installations' }
   }
-}
+
+})

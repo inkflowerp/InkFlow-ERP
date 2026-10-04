@@ -133,7 +133,7 @@ const SIDEBAR_COLLAPSED_STORAGE_KEY = 'printerp_sidebar_collapsed'
 const EXPANDED_GROUPS_STORAGE_KEY = 'printerp_nav_expanded_groups'
 const EXPANDED_SUB_NAV_STORAGE_KEY = 'printerp_nav_expanded_sub_nav'
 
-export function Sidebar() {
+export function Sidebar({ initialNavSections }: { initialNavSections?: NavSection[] } = {}) {
  const pathname = usePathname()
  const searchParams = useSearchParams()
  const { company } = useTenant()
@@ -188,7 +188,7 @@ export function Sidebar() {
  return { company_settings: true, hr: true, accounting: true }
   })
 
- const navSections = useMemo(() => getNavigationConfig(), [])
+  const navSections = useMemo(() => initialNavSections || getNavigationConfig(), [initialNavSections])
 
   // Explicit permission and feature entitlement filtering
  const isNavItemAllowed = useCallback((item: NavItem): boolean => {
@@ -392,9 +392,9 @@ export function Sidebar() {
  className="h-8 w-8 rounded-lg object-contain bg-surface-inset border border-border/60 p-0.5 shadow-xs shrink-0"/>
             ) : (
               <div className="grid grid-cols-2 gap-0.5 p-1 rounded-md bg-surface-inset shadow-xs group-hover:scale-105 transition-transform shrink-0">
-                <span className="h-2 w-2 rounded-full bg-cyan-400"/>
+                <span className="h-2 w-2 rounded-full bg-primary"/>
                 <span className="h-2 w-2 rounded-full bg-pink-500"/>
-                <span className="h-2 w-2 rounded-full bg-yellow-400"/>
+                <span className="h-2 w-2 rounded-full bg-warning"/>
                 <span className="h-2 w-2 rounded-full bg-muted"/>
               </div>
             )}
@@ -402,7 +402,7 @@ export function Sidebar() {
               <span className="font-black tracking-tight text-base text-foreground leading-tight">
                 {appName}
               </span>
-              <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground truncate max-w-[130px]">
+              <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground truncate max-w-[130px]">
                 {tagline || tBilingual('Print ERP System', 'প্রিন্ট ইআরপি সফটওয়্যার')}
               </span>
             </div>
@@ -416,9 +416,9 @@ export function Sidebar() {
               <img src={appLogoUrl} alt={appName} className="h-6 w-6 object-contain"/>
             ) : (
               <div className="grid grid-cols-2 gap-0.5">
-                <span className="h-2 w-2 rounded-full bg-cyan-400"/>
+                <span className="h-2 w-2 rounded-full bg-primary"/>
                 <span className="h-2 w-2 rounded-full bg-pink-500"/>
-                <span className="h-2 w-2 rounded-full bg-yellow-400"/>
+                <span className="h-2 w-2 rounded-full bg-warning"/>
                 <span className="h-2 w-2 rounded-full bg-muted"/>
               </div>
             )}
@@ -469,7 +469,7 @@ export function Sidebar() {
                 <button
  type="button"onClick={() => toggleGroup(section.id)}
  aria-expanded={isExpanded}
- className="w-full flex items-center justify-between px-3 py-1.5 text-2xs font-black uppercase tracking-wider text-muted-foreground hover:text-foreground dark:hover:text-muted-foreground transition-colors rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 cursor-pointer bangla-text group">
+ className="w-full flex items-center justify-between px-3 py-1.5 text-xs font-black uppercase tracking-wider text-muted-foreground hover:text-foreground dark:hover:text-muted-foreground transition-colors rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 cursor-pointer bangla-text group">
                   <span className="truncate">{sectionTitle}</span>
                   {isExpanded ? (
                     <ChevronDown className="h-3.5 w-3.5 text-muted-foreground group-hover:text-muted-foreground dark:group-hover:text-foreground transition-transform"/>
@@ -508,7 +508,7 @@ export function Sidebar() {
  className={cn(
                               'flex flex-1 items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors cursor-pointer bangla-text min-h-[40px] focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
  isActive || isChildActive
-                                ? 'bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400 font-semibold'
+                                ? 'bg-primary/10 text-primary bg-primary/10 text-primary font-semibold'
                                 : 'text-muted-foreground hover:bg-muted hover:text-foreground dark:hover:text-foreground',
  collapsed && 'justify-center px-2'
                             )}
@@ -517,7 +517,7 @@ export function Sidebar() {
  className={cn(
                                 'h-4 w-4 shrink-0 transition-transform group-hover/nav:scale-105',
  isActive || isChildActive
-                                  ? 'text-blue-600 dark:text-blue-400'
+                                  ? 'text-primary text-primary'
                                   : 'text-muted-foreground group-hover/nav:text-muted-foreground dark:group-hover/nav:text-foreground'
                               )}
                             />
@@ -530,14 +530,14 @@ export function Sidebar() {
                                     <Badge
  variant={isActive || isPrimary ? 'secondary' : 'default'}
  className={cn(
-                                        'text-2xs px-2 py-0.5 h-4.5 font-bold shrink-0',
+                                        'text-xs px-2 py-0.5 h-4.5 font-bold shrink-0',
  item.badgeVariant === 'live'
-                                          ? 'bg-rose-500 text-white animate-pulse'
+                                          ? 'bg-destructive text-white animate-pulse'
                                           : item.badgeVariant === 'fast'
-                                          ? 'bg-emerald-400 text-foreground font-black'
+                                          ? 'bg-success text-foreground font-black'
                                           : item.badgeVariant === 'pro'
-                                          ? 'bg-amber-500 text-white'
-                                          : 'bg-emerald-500 text-white'
+                                          ? 'bg-warning text-white'
+                                          : 'bg-success text-white'
                                       )}
                                     >
                                       {item.badge}
@@ -568,7 +568,7 @@ export function Sidebar() {
                                 <span
  className={cn(
                                     'absolute top-1.5 right-1.5 h-2 w-2 rounded-full',
- item.badgeVariant === 'live' ? 'bg-rose-500 animate-pulse' : 'bg-emerald-500'
+ item.badgeVariant === 'live' ? 'bg-destructive animate-pulse' : 'bg-success'
                                   )}
                                 />
                               )
@@ -592,7 +592,7 @@ export function Sidebar() {
  className={cn(
                                     'flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors cursor-pointer bangla-text min-h-[32px] focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
  isSubActive
-                                      ? 'bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400 font-semibold'
+                                      ? 'bg-primary/10 text-primary bg-primary/10 text-primary font-semibold'
                                       : 'text-muted-foreground hover:bg-muted hover:text-foreground dark:hover:text-foreground'
                                   )}
                                 >
@@ -600,7 +600,7 @@ export function Sidebar() {
  className={cn(
                                       'h-3.5 w-3.5 shrink-0 transition-transform',
  isSubActive
-                                        ? 'text-blue-600 dark:text-blue-400'
+                                        ? 'text-primary text-primary'
                                         : 'text-muted-foreground group-hover:text-muted-foreground dark:group-hover:text-foreground'
                                     )}
                                   />
@@ -624,13 +624,13 @@ export function Sidebar() {
                             {/* Popover Header */}
                             <div className="px-2.5 py-2 border-b border-border flex items-center justify-between">
                               <div className="flex items-center gap-2 min-w-0">
-                                <Icon className="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0"/>
+                                <Icon className="h-4 w-4 text-primary text-primary shrink-0"/>
                                 <span className="font-bold text-xs text-foreground truncate bangla-text">
                                   {itemTitle}
                                 </span>
                               </div>
                               {hasChildren && (
-                                <span className="text-2xs font-semibold px-1.5 py-0.5 rounded bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 shrink-0">
+                                <span className="text-xs font-semibold px-1.5 py-0.5 rounded bg-primary/10 bg-primary/10 text-primary text-primary shrink-0">
                                   {item.children!.length} modules
                                 </span>
                               )}
@@ -649,7 +649,7 @@ export function Sidebar() {
  className={cn(
                                         'flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors bangla-text',
  isSubActive
-                                          ? 'bg-blue-600 text-white font-bold shadow-xs'
+                                          ? 'bg-primary text-white font-bold shadow-xs'
                                           : 'text-muted-foreground hover:bg-muted hover:text-foreground dark:hover:text-foreground'
                                       )}
                                     >
@@ -663,7 +663,7 @@ export function Sidebar() {
                               <div className="p-1">
                                 <Link
  href={getTenantNavHref(item.href, pathname, company?.slug)}
- className="flex items-center gap-2 px-2.5 py-1.5 text-xs text-foreground hover:text-blue-600 bangla-text">
+ className="flex items-center gap-2 px-2.5 py-1.5 text-xs text-foreground hover:text-primary bangla-text">
                                   <span>Open {itemTitle}</span>
                                 </Link>
                               </div>
@@ -705,12 +705,12 @@ export function Sidebar() {
             <div className="rounded-lg bg-muted/40 p-2.5 border border-border space-y-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1.5 min-w-0">
-                  <Crown className="h-3.5 w-3.5 text-amber-500 shrink-0"/>
+                  <Crown className="h-3.5 w-3.5 text-warning shrink-0"/>
                   <span className="text-xs font-bold text-foreground truncate bangla-text">
                     {tBilingual(currentPlan?.name || 'Free Trial', currentPlan?.name_bn || 'ফ্রি ট্রায়াল')}
                   </span>
                 </div>
-                <Badge suppressHydrationWarning className="text-2xs bg-amber-50 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 font-bold border-amber-200 dark:border-amber-800 px-1.5 py-0.2 shrink-0">
+                <Badge suppressHydrationWarning className="text-xs bg-warning-surface text-warning bg-warning-surface text-warning font-bold border-warning-border border-warning-border px-1.5 py-0.2 shrink-0">
                   {timeRemainingInTrial ? (tBilingual(timeRemainingInTrial.statusBadgeEn, timeRemainingInTrial.statusBadgeBn || timeRemainingInTrial.statusBadgeEn)) : `${daysRemainingInTrial} ${tBilingual('d left', 'দিন বাকি')}`}
                 </Badge>
               </div>
@@ -718,7 +718,7 @@ export function Sidebar() {
               <button
  type="button"onClick={() => openUpgradeModal('business')}
  className="w-full flex items-center justify-center gap-1.5 py-1.5 px-2.5 rounded-lg bg-primary text-primary-foreground text-xs font-semibold shadow-xs hover:bg-primary/90 transition-colors cursor-pointer bangla-text">
-                <Crown className="h-3.5 w-3.5 text-amber-300"/>
+                <Crown className="h-3.5 w-3.5 text-warning"/>
                 <span>{tBilingual('Upgrade Plan', 'প্ল্যান আপগ্রেড')}</span>
               </button>
             </div>
@@ -726,7 +726,7 @@ export function Sidebar() {
  currentPlan && (
               <div className="rounded-xl bg-muted p-2.5 border border-border flex items-center justify-between">
                 <div className="flex items-center gap-1.5 min-w-0">
-                  <Sparkles className="h-3.5 w-3.5 text-indigo-500 shrink-0"/>
+                  <Sparkles className="h-3.5 w-3.5 text-primary shrink-0"/>
                   <div className="truncate">
                     <span className="text-xs font-bold text-foreground block truncate bangla-text">
                       {tBilingual(currentPlan.name, currentPlan.name_bn)}
@@ -736,7 +736,7 @@ export function Sidebar() {
                 {currentPlan.code !== 'enterprise' && (
                   <button
  type="button"onClick={() => openUpgradeModal('enterprise')}
- className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline bangla-text cursor-pointer shrink-0 ml-1.5">
+ className="text-xs font-bold text-primary text-primary hover:underline bangla-text cursor-pointer shrink-0 ml-1.5">
                     {tBilingual('Upgrade', 'আপগ্রেড')}
                   </button>
                 )}
@@ -747,32 +747,32 @@ export function Sidebar() {
           {/* Support Desk Link */}
           <Link
  href={getTenantNavHref('/support', pathname, company?.slug)}
- className="flex items-center justify-between rounded-xl bg-muted px-2.5 py-2 border border-border hover:border-blue-300 hover:bg-muted dark:hover:bg-muted/90 transition-all group cursor-pointer">
+ className="flex items-center justify-between rounded-xl bg-muted px-2.5 py-2 border border-border hover:border-primary/20 hover:bg-muted dark:hover:bg-muted/90 transition-all group cursor-pointer">
             <div className="flex items-center gap-2 min-w-0">
-              <Headphones className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400 shrink-0 group-hover:scale-110 transition-transform"/>
+              <Headphones className="h-3.5 w-3.5 text-primary text-primary shrink-0 group-hover:scale-110 transition-transform"/>
               <div className="truncate">
-                <p className="text-xs font-bold text-foreground group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate bangla-text">
+                <p className="text-xs font-bold text-foreground group-hover:text-primary dark:group-hover:text-primary transition-colors truncate bangla-text">
                   {tBilingual('Help & Support', 'সহায়তা ও সাপোর্ট')}
                 </p>
-                <p className="text-2xs text-muted-foreground font-medium truncate">
+                <p className="text-xs text-muted-foreground font-medium truncate">
                   {company?.phone || '24/7 Live Desk'}
                 </p>
               </div>
             </div>
-            <ChevronRight className="h-3.5 w-3.5 text-muted-foreground group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors shrink-0"/>
+            <ChevronRight className="h-3.5 w-3.5 text-muted-foreground group-hover:text-primary dark:group-hover:text-primary transition-colors shrink-0"/>
           </Link>
 
           {/* Reset All Data Button */}
           <button
  type="button"onClick={() => setResetModalOpen(true)}
- className="w-full flex items-center justify-between rounded-xl bg-rose-50/60 dark:bg-rose-950/20 px-2.5 py-1.5 border border-rose-200/80 dark:border-rose-900/40 hover:bg-rose-100/80 dark:hover:bg-rose-900/40 text-rose-700 dark:text-rose-300 transition-all group cursor-pointer">
+ className="w-full flex items-center justify-between rounded-xl bg-danger-surface/60 bg-danger-surface px-2.5 py-1.5 border border-danger-border/80 border-danger-border/40 hover:bg-danger-surface/80 dark:hover:bg-destructive/40 text-destructive text-destructive transition-all group cursor-pointer">
             <div className="flex items-center gap-2 min-w-0">
-              <RotateCcw className="h-3.5 w-3.5 text-rose-600 dark:text-rose-400 shrink-0 group-hover:rotate-[-45deg] transition-transform"/>
+              <RotateCcw className="h-3.5 w-3.5 text-destructive text-destructive shrink-0 group-hover:rotate-[-45deg] transition-transform"/>
               <span className="text-xs font-bold truncate bangla-text">
                 {tBilingual('Reset All Data', 'সব ডাটা রিসেট')}
               </span>
             </div>
-            <Badge className="text-2xs bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-300 dark:border-rose-800 tabular-nums px-1 py-0 shrink-0">
+            <Badge className="text-xs bg-destructive/10 text-destructive text-destructive border-danger-border border-danger-border tabular-nums px-1 py-0 shrink-0">
  Zero State
             </Badge>
           </button>
@@ -784,7 +784,7 @@ export function Sidebar() {
         <div className="shrink-0 border-t border-border p-2 flex justify-center">
           <button
  type="button"onClick={() => setResetModalOpen(true)}
- className="h-9 w-9 rounded-xl flex items-center justify-center text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 hover:text-rose-600 transition-colors cursor-pointer"title={tBilingual('Reset All Data', 'সব তথ্য রিসেট')}
+ className="h-9 w-9 rounded-xl flex items-center justify-center text-destructive hover:bg-danger-surface dark:hover:bg-danger-surface hover:text-destructive transition-colors cursor-pointer"title={tBilingual('Reset All Data', 'সব তথ্য রিসেট')}
           >
             <RotateCcw className="h-4 w-4"/>
           </button>

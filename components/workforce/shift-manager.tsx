@@ -131,7 +131,7 @@ export function ShiftManager({
           </p>
           <Button
  size="sm"onClick={() => setModalOpen(true)}
- className="h-8 px-3.5 text-xs bg-blue-600 text-white">
+ className="h-8 px-3.5 text-xs bg-primary text-white">
  {tBilingual('Create First Shift', 'প্রথম শিফট তৈরি করুন')}
           </Button>
         </Card>
@@ -145,9 +145,9 @@ export function ShiftManager({
                 <div className="flex items-start justify-between gap-2 mb-2">
                   <div>
                     <h4 className="font-semibold text-foreground text-sm">{shift.shift_name}</h4>
-                    <span className="font-mono text-[11px] text-muted-foreground">{shift.shift_code}</span>
+                    <span className="font-mono text-xs text-muted-foreground">{shift.shift_code}</span>
                   </div>
-                  <Badge variant="outline"className="bg-muted text-muted-foreground text-[10px]">
+                  <Badge variant="outline"className="bg-muted text-muted-foreground text-xs">
                     {shift.is_overnight ? tBilingual('Overnight', 'নৈশ শিফট') : tBilingual('Day Shift', 'দিনের শিফট')}
                   </Badge>
                 </div>
@@ -170,7 +170,7 @@ export function ShiftManager({
                 </div>
               </div>
 
-              <div className="pt-3 mt-3 border-t border-border flex items-center justify-between text-[11px] text-muted-foreground">
+              <div className="pt-3 mt-3 border-t border-border flex items-center justify-between text-xs text-muted-foreground">
                 <span>{tBilingual('Status:', 'অবস্থা:')} {shift.is_active ? tBilingual('Active', 'সক্রিয়') : tBilingual('Disabled', 'নিষ্ক্রিয়')}</span>
               </div>
             </Card>
@@ -186,8 +186,8 @@ export function ShiftManager({
           </DialogHeader>
 
           {errorMsg && (
-            <div className="p-3 rounded-lg bg-red-50 text-red-700 text-xs flex items-center gap-1.5">
-              <AlertCircle className="w-4 h-4 shrink-0 text-red-600"/>
+            <div className="p-3 rounded-lg bg-danger-surface text-destructive text-xs flex items-center gap-1.5">
+              <AlertCircle className="w-4 h-4 shrink-0 text-destructive"/>
               <span>{errorMsg}</span>
             </div>
           )}

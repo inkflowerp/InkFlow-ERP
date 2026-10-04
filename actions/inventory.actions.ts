@@ -1,5 +1,8 @@
 'use server'
 
+import { withTenantAction } from '@/lib/actions/action-wrapper'
+
+
 import { revalidatePath } from 'next/cache'
 import { InventoryService } from '@/services/inventory.service'
 import { AuditService } from '@/services/audit.service'
@@ -36,6 +39,7 @@ export interface ServerActionResult<T> {
   success: boolean
   data?: T
   error?: string
+  conflict?: boolean
 }
 
 function checkInventoryPermission(tenant: any, requiredPerm: string): boolean {
@@ -50,15 +54,18 @@ function checkInventoryPermission(tenant: any, requiredPerm: string): boolean {
 // MATERIAL MASTER ACTIONS
 // ==========================================
 
-export async function createMaterialAction(
-  data: Partial<MaterialRecord> & {
+export const createMaterialAction = withTenantAction(
+  {
+    permission: "inventory.create",
+    entityType: "inventory"
+  },
+  async (ctx, data: Partial<MaterialRecord> & {
     sku: string
     name: string
     category: any
     unit: any
   },
-  requestedCompanyId?: string
-): Promise<ServerActionResult<MaterialRecord>> {
+  requestedCompanyId?: string) : Promise<ServerActionResult<MaterialRecord>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -89,13 +96,17 @@ export async function createMaterialAction(
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to create material' }
   }
-}
 
-export async function updateMaterialAction(
-  id: string,
+})
+
+export const updateMaterialAction = withTenantAction(
+  {
+    permission: "inventory.edit",
+    entityType: "inventory"
+  },
+  async (ctx, id: string,
   updates: Partial<MaterialRecord>,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<MaterialRecord>> {
+  requestedCompanyId?: string) : Promise<ServerActionResult<MaterialRecord>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -117,17 +128,21 @@ export async function updateMaterialAction(
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to update material' }
   }
-}
 
-export async function getMaterialsAction(
-  requestedCompanyId?: string,
+})
+
+export const getMaterialsAction = withTenantAction(
+  {
+    permission: "inventory.view",
+    entityType: "inventory"
+  },
+  async (ctx, requestedCompanyId?: string,
   options?: {
     branchId?: string | null
     category?: string
     search?: string
     lowStockOnly?: boolean
-  }
-): Promise<ServerActionResult<MaterialRecord[]>> {
+  }) : Promise<ServerActionResult<MaterialRecord[]>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -139,21 +154,25 @@ export async function getMaterialsAction(
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to fetch materials' }
   }
-}
+
+})
 
 // ==========================================
 // LOCATION ACTIONS
 // ==========================================
 
-export async function createLocationAction(
-  location: {
+export const createLocationAction = withTenantAction(
+  {
+    permission: "inventory.create",
+    entityType: "inventory"
+  },
+  async (ctx, location: {
     location_code: string
     location_name: string
     location_type: string
     description?: string | null
   },
-  requestedCompanyId?: string
-): Promise<ServerActionResult<InventoryLocationRecord>> {
+  requestedCompanyId?: string) : Promise<ServerActionResult<InventoryLocationRecord>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -176,14 +195,19 @@ export async function createLocationAction(
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to create location' }
   }
-}
+
+})
 
 // ==========================================
 // STOCK RECEIPT & OPENING BALANCE ACTIONS
 // ==========================================
 
-export async function receiveStockAction(
-  params: {
+export const receiveStockAction = withTenantAction(
+  {
+    permission: "inventory.create",
+    entityType: "inventory"
+  },
+  async (ctx, params: {
     material_id: string
     location_id: string
     quantity: number
@@ -208,8 +232,7 @@ export async function receiveStockAction(
     variant_id?: string | null
     variant_name?: string | null
   },
-  requestedCompanyId?: string
-): Promise<ServerActionResult<{ material: MaterialRecord; ledgerEntry: StockLedgerRecord; rollsCreated?: InventoryRollRecord[] }>> {
+  requestedCompanyId?: string) : Promise<ServerActionResult<{ material: MaterialRecord; ledgerEntry: StockLedgerRecord; rollsCreated?: InventoryRollRecord[] }>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -235,15 +258,19 @@ export async function receiveStockAction(
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to receive stock' }
   }
-}
 
-export async function getPriceIntelligenceAction(
-  materialId: string,
+})
+
+export const getPriceIntelligenceAction = withTenantAction(
+  {
+    permission: "inventory.view",
+    entityType: "inventory"
+  },
+  async (ctx, materialId: string,
   sizeLabel?: string,
   currentPrice?: number,
   supplierId?: string | null,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<PriceIntelligenceSummary | null>> {
+  requestedCompanyId?: string) : Promise<ServerActionResult<PriceIntelligenceSummary | null>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -262,14 +289,19 @@ export async function getPriceIntelligenceAction(
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to fetch price intelligence' }
   }
-}
+
+})
 
 // ==========================================
 // MATERIAL REQUEST ACTIONS
 // ==========================================
 
-export async function createMaterialRequestAction(
-  params: {
+export const createMaterialRequestAction = withTenantAction(
+  {
+    permission: "inventory.create",
+    entityType: "inventory"
+  },
+  async (ctx, params: {
     production_task_id?: string | null
     destination_location_id?: string | null
     source_location_id?: string | null
@@ -282,8 +314,7 @@ export async function createMaterialRequestAction(
       notes?: string | null
     }>
   },
-  requestedCompanyId?: string
-): Promise<ServerActionResult<MaterialRequestRecord>> {
+  requestedCompanyId?: string) : Promise<ServerActionResult<MaterialRequestRecord>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -306,12 +337,16 @@ export async function createMaterialRequestAction(
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to create material request' }
   }
-}
 
-export async function approveMaterialRequestAction(
-  requestId: string,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<MaterialRequestRecord>> {
+})
+
+export const approveMaterialRequestAction = withTenantAction(
+  {
+    permission: "inventory.approve",
+    entityType: "inventory"
+  },
+  async (ctx, requestId: string,
+  requestedCompanyId?: string) : Promise<ServerActionResult<MaterialRequestRecord>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -334,13 +369,17 @@ export async function approveMaterialRequestAction(
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to approve material request' }
   }
-}
 
-export async function rejectMaterialRequestAction(
-  requestId: string,
+})
+
+export const rejectMaterialRequestAction = withTenantAction(
+  {
+    permission: "inventory.approve",
+    entityType: "inventory"
+  },
+  async (ctx, requestId: string,
   reason: string,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<MaterialRequestRecord>> {
+  requestedCompanyId?: string) : Promise<ServerActionResult<MaterialRequestRecord>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -364,14 +403,19 @@ export async function rejectMaterialRequestAction(
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to reject material request' }
   }
-}
+
+})
 
 // ==========================================
 // MATERIAL ISSUE ACTIONS
 // ==========================================
 
-export async function issueMaterialAction(
-  params: {
+export const issueMaterialAction = withTenantAction(
+  {
+    permission: "inventory.create",
+    entityType: "inventory"
+  },
+  async (ctx, params: {
     request_id?: string | null
     production_task_id?: string | null
     source_location_id: string
@@ -384,10 +428,10 @@ export async function issueMaterialAction(
       issued_quantity: number
       unit: string
       unit_cost?: number
+      expected_version?: number
     }>
   },
-  requestedCompanyId?: string
-): Promise<ServerActionResult<MaterialIssueRecord>> {
+  requestedCompanyId?: string) : Promise<ServerActionResult<MaterialIssueRecord>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -414,16 +458,24 @@ export async function issueMaterialAction(
     revalidatePath('/[tenantSlug]/production/floor-consumption', 'page')
     return { success: true, data: issue }
   } catch (error: any) {
+    if (error?.conflict || error?.code === 'STALE_WRITE' || error?.message?.includes('Updated by someone else')) {
+      return { success: false, conflict: true, error: 'Updated by someone else, reload?' }
+    }
     return { success: false, error: error.message || 'Failed to issue material' }
   }
-}
+
+})
 
 // ==========================================
 // CONSUMPTION & SCRAP SIGN-OFF ACTIONS
 // ==========================================
 
-export async function logProductionConsumptionAction(
-  params: {
+export const logProductionConsumptionAction = withTenantAction(
+  {
+    permission: "inventory.view",
+    entityType: "inventory"
+  },
+  async (ctx, params: {
     production_task_id: string
     material_id: string
     consumed_quantity: number
@@ -443,8 +495,7 @@ export async function logProductionConsumptionAction(
       notes?: string | null
     }>
   },
-  requestedCompanyId?: string
-): Promise<ServerActionResult<{ remnantsCreated: number }>> {
+  requestedCompanyId?: string) : Promise<ServerActionResult<{ remnantsCreated: number }>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -470,16 +521,20 @@ export async function logProductionConsumptionAction(
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to log production consumption' }
   }
-}
+
+})
 
 // ==========================================
 // PRINT FLOOR CONSUMPTION UNIT ACTIONS
 // ==========================================
 
-export async function getFloorConsumptionsAction(
-  options?: { machineId?: string; status?: string; search?: string },
-  requestedCompanyId?: string
-): Promise<ServerActionResult<FloorConsumptionRecord[]>> {
+export const getFloorConsumptionsAction = withTenantAction(
+  {
+    permission: "inventory.view",
+    entityType: "inventory"
+  },
+  async (ctx, options?: { machineId?: string; status?: string; search?: string },
+  requestedCompanyId?: string) : Promise<ServerActionResult<FloorConsumptionRecord[]>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -492,10 +547,15 @@ export async function getFloorConsumptionsAction(
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to load floor consumptions' }
   }
-}
 
-export async function logFloorConsumptionAction(
-  params: {
+})
+
+export const logFloorConsumptionAction = withTenantAction(
+  {
+    permission: "inventory.view",
+    entityType: "inventory"
+  },
+  async (ctx, params: {
     issue_id?: string | null
     issue_item_id?: string | null
     material_id: string
@@ -522,8 +582,7 @@ export async function logFloorConsumptionAction(
     }>
     notes?: string | null
   },
-  requestedCompanyId?: string
-): Promise<ServerActionResult<FloorConsumptionRecord>> {
+  requestedCompanyId?: string) : Promise<ServerActionResult<FloorConsumptionRecord>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -548,18 +607,22 @@ export async function logFloorConsumptionAction(
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to log floor consumption' }
   }
-}
 
-export async function returnFloorStockToStoreAction(
-  params: {
+})
+
+export const returnFloorStockToStoreAction = withTenantAction(
+  {
+    permission: "inventory.create",
+    entityType: "inventory"
+  },
+  async (ctx, params: {
     issue_id: string
     material_id: string
     quantity: number
     return_location_id: string
     notes?: string | null
   },
-  requestedCompanyId?: string
-): Promise<ServerActionResult<{ remainingFloorBalance: number }>> {
+  requestedCompanyId?: string) : Promise<ServerActionResult<{ remainingFloorBalance: number }>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -582,14 +645,19 @@ export async function returnFloorStockToStoreAction(
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to return floor stock to store' }
   }
-}
+
+})
 
 // ==========================================
 // REMNANTS & TRANSFERS & ADJUSTMENT ACTIONS
 // ==========================================
 
-export async function createRemnantAction(
-  params: {
+export const createRemnantAction = withTenantAction(
+  {
+    permission: "inventory.create",
+    entityType: "inventory"
+  },
+  async (ctx, params: {
     parent_material_id: string
     production_task_id?: string | null
     location_id: string
@@ -601,8 +669,7 @@ export async function createRemnantAction(
     condition?: 'excellent' | 'usable' | 'minor_defect'
     notes?: string | null
   },
-  requestedCompanyId?: string
-): Promise<ServerActionResult<InventoryRemnantRecord>> {
+  requestedCompanyId?: string) : Promise<ServerActionResult<InventoryRemnantRecord>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -622,13 +689,17 @@ export async function createRemnantAction(
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to create remnant' }
   }
-}
 
-export async function updateRemnantStatusAction(
-  id: string,
+})
+
+export const updateRemnantStatusAction = withTenantAction(
+  {
+    permission: "inventory.create",
+    entityType: "inventory"
+  },
+  async (ctx, id: string,
   status: 'available' | 'reserved' | 'consumed' | 'scrapped',
-  requestedCompanyId?: string
-): Promise<ServerActionResult<InventoryRemnantRecord>> {
+  requestedCompanyId?: string) : Promise<ServerActionResult<InventoryRemnantRecord>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -642,10 +713,15 @@ export async function updateRemnantStatusAction(
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to update remnant status' }
   }
-}
 
-export async function transferStockAction(
-  params: {
+})
+
+export const transferStockAction = withTenantAction(
+  {
+    permission: "inventory.create",
+    entityType: "inventory"
+  },
+  async (ctx, params: {
     source_location_id: string
     destination_location_id: string
     material_id: string
@@ -653,8 +729,7 @@ export async function transferStockAction(
     unit: string
     reason?: string | null
   },
-  requestedCompanyId?: string
-): Promise<ServerActionResult<InventoryTransferRecord>> {
+  requestedCompanyId?: string) : Promise<ServerActionResult<InventoryTransferRecord>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -678,10 +753,15 @@ export async function transferStockAction(
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to transfer stock' }
   }
-}
 
-export async function adjustStockAction(
-  adjustment: {
+})
+
+export const adjustStockAction = withTenantAction(
+  {
+    permission: "inventory.adjust",
+    entityType: "inventory"
+  },
+  async (ctx, adjustment: {
     material_id: string
     location_id?: string
     quantity_change?: number
@@ -691,8 +771,7 @@ export async function adjustStockAction(
     cost_per_unit?: number
     reference_id?: string
   },
-  requestedCompanyId?: string
-): Promise<ServerActionResult<any>> {
+  requestedCompanyId?: string) : Promise<ServerActionResult<any>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -746,22 +825,26 @@ export async function adjustStockAction(
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to adjust inventory stock' }
   }
-}
+
+})
 
 // ==========================================
 // TASK REQUIREMENT ACTIONS
 // ==========================================
 
-export async function addTaskRequirementAction(
-  requirement: {
+export const addTaskRequirementAction = withTenantAction(
+  {
+    permission: "inventory.view",
+    entityType: "inventory"
+  },
+  async (ctx, requirement: {
     production_task_id: string
     material_id: string
     estimated_quantity: number
     unit: string
     notes?: string | null
   },
-  requestedCompanyId?: string
-): Promise<ServerActionResult<TaskMaterialRequirementRecord>> {
+  requestedCompanyId?: string) : Promise<ServerActionResult<TaskMaterialRequirementRecord>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -779,12 +862,16 @@ export async function addTaskRequirementAction(
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to add task material requirement' }
   }
-}
 
-export async function removeTaskRequirementAction(
-  id: string,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<boolean>> {
+})
+
+export const removeTaskRequirementAction = withTenantAction(
+  {
+    permission: "inventory.view",
+    entityType: "inventory"
+  },
+  async (ctx, id: string,
+  requestedCompanyId?: string) : Promise<ServerActionResult<boolean>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -798,20 +885,24 @@ export async function removeTaskRequirementAction(
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to remove requirement' }
   }
-}
+
+})
 
 // ==========================================
 // PHYSICAL ROLL MOUNT / UNMOUNT ACTIONS
 // ==========================================
 
-export async function mountRollToMachineAction(
-  params: {
+export const mountRollToMachineAction = withTenantAction(
+  {
+    permission: "inventory.create",
+    entityType: "inventory"
+  },
+  async (ctx, params: {
     roll_id: string
     machine_id: string
     machine_name: string
   },
-  requestedCompanyId?: string
-): Promise<ServerActionResult<InventoryRollRecord>> {
+  requestedCompanyId?: string) : Promise<ServerActionResult<InventoryRollRecord>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -834,15 +925,19 @@ export async function mountRollToMachineAction(
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to mount roll to machine' }
   }
-}
 
-export async function unmountRollFromMachineAction(
-  params: {
+})
+
+export const unmountRollFromMachineAction = withTenantAction(
+  {
+    permission: "inventory.create",
+    entityType: "inventory"
+  },
+  async (ctx, params: {
     roll_id: string
     machine_id?: string
   },
-  requestedCompanyId?: string
-): Promise<ServerActionResult<InventoryRollRecord>> {
+  requestedCompanyId?: string) : Promise<ServerActionResult<InventoryRollRecord>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -863,27 +958,36 @@ export async function unmountRollFromMachineAction(
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to unmount roll from machine' }
   }
-}
+
+})
 
 /**
  * Server Action: Deterministic roll feed, bleed, and wastage calculation
  */
-export async function calculateRollFeedAction(
-  input: RollFeedCalculationInput
-): Promise<ServerActionResult<RollFeedCalculationResult>> {
+export const calculateRollFeedAction = withTenantAction(
+  {
+    permission: "inventory.view",
+    entityType: "inventory"
+  },
+  async (ctx, input: RollFeedCalculationInput) : Promise<ServerActionResult<RollFeedCalculationResult>> => {
   try {
     const result = RollConsumptionEngine.calculateRollLinearFeed(input)
     return { success: true, data: result }
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to calculate roll feed' }
   }
-}
+
+})
 
 /**
  * Server Action: Consume linear length from a physical roll with bleed allowance and scrap/wastage logging
  */
-export async function consumeRollWithBleedAndWastageAction(
-  params: {
+export const consumeRollWithBleedAndWastageAction = withTenantAction(
+  {
+    permission: "inventory.create",
+    entityType: "inventory"
+  },
+  async (ctx, params: {
     roll_id: string
     linear_length_consumed_ft: number
     bleed_allowance_ft?: number
@@ -901,8 +1005,7 @@ export async function consumeRollWithBleedAndWastageAction(
     }
     notes?: string | null
   },
-  requestedCompanyId?: string
-): Promise<ServerActionResult<{ roll: InventoryRollRecord; remnant?: InventoryRemnantRecord | null; totalDeductedFt: number }>> {
+  requestedCompanyId?: string) : Promise<ServerActionResult<{ roll: InventoryRollRecord; remnant?: InventoryRemnantRecord | null; totalDeductedFt: number }>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -926,15 +1029,19 @@ export async function consumeRollWithBleedAndWastageAction(
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to consume from roll' }
   }
-}
+
+})
 
 /**
  * Server Action: Requisition and mount/issue a brand new physical master roll directly to the print floor
  */
-export async function requestAndIssueFloorRollAction(
-  params: IssueMasterRollParams,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<InventoryRollRecord>> {
+export const requestAndIssueFloorRollAction = withTenantAction(
+  {
+    permission: "inventory.create",
+    entityType: "inventory"
+  },
+  async (ctx, params: IssueMasterRollParams,
+  requestedCompanyId?: string) : Promise<ServerActionResult<InventoryRollRecord>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -959,15 +1066,19 @@ export async function requestAndIssueFloorRollAction(
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to request new floor roll' }
   }
-}
+
+})
 
 /**
  * Server Action: Requisition and issue batch master rolls to print floor with complete telemetry
  */
-export async function issueMasterRollsBatchAction(
-  params: IssueMasterRollParams,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<IssueMasterRollResult>> {
+export const issueMasterRollsBatchAction = withTenantAction(
+  {
+    permission: "inventory.create",
+    entityType: "inventory"
+  },
+  async (ctx, params: IssueMasterRollParams,
+  requestedCompanyId?: string) : Promise<ServerActionResult<IssueMasterRollResult>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -994,15 +1105,19 @@ export async function issueMasterRollsBatchAction(
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to issue master rolls batch' }
   }
-}
+
+})
 
 /**
  * Server Action: Requisition and issue multiple material items in a single batch to print floor
  */
-export async function issueMultipleMaterialsBatchAction(
-  items: IssueMasterRollParams[],
-  requestedCompanyId?: string
-): Promise<ServerActionResult<{ count: number; total_area_sft: number; results: IssueMasterRollResult[] }>> {
+export const issueMultipleMaterialsBatchAction = withTenantAction(
+  {
+    permission: "inventory.create",
+    entityType: "inventory"
+  },
+  async (ctx, items: IssueMasterRollParams[],
+  requestedCompanyId?: string) : Promise<ServerActionResult<{ count: number; total_area_sft: number; results: IssueMasterRollResult[] }>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -1047,14 +1162,18 @@ export async function issueMultipleMaterialsBatchAction(
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to issue materials batch to floor.' }
   }
-}
+
+})
 
 /**
  * Server Action: Get all physical rolls in inventory/floor
  */
-export async function getInventoryRollsAction(
-  requestedCompanyId?: string
-): Promise<ServerActionResult<InventoryRollRecord[]>> {
+export const getInventoryRollsAction = withTenantAction(
+  {
+    permission: "inventory.view",
+    entityType: "inventory"
+  },
+  async (ctx, requestedCompanyId?: string) : Promise<ServerActionResult<InventoryRollRecord[]>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -1067,7 +1186,8 @@ export async function getInventoryRollsAction(
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to fetch rolls' }
   }
-}
+
+})
 
 export interface InventoryDashboardData {
   materials: MaterialRecord[]
@@ -1088,9 +1208,12 @@ export interface InventoryDashboardData {
 /**
  * Server Action: Load all inventory dashboard data
  */
-export async function getInventoryDashboardDataAction(
-  requestedCompanyId?: string
-): Promise<ServerActionResult<InventoryDashboardData>> {
+export const getInventoryDashboardDataAction = withTenantAction(
+  {
+    permission: "inventory.view",
+    entityType: "inventory"
+  },
+  async (ctx, requestedCompanyId?: string) : Promise<ServerActionResult<InventoryDashboardData>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -1145,7 +1268,8 @@ export async function getInventoryDashboardDataAction(
   } catch (error: any) {
     return { success: false, error: error?.message || 'Failed to load inventory dashboard data.' }
   }
-}
+
+})
 
 export interface MaterialFullDetails {
   material: MaterialRecord | null
@@ -1158,10 +1282,13 @@ export interface MaterialFullDetails {
 /**
  * Server Action: Load single material details
  */
-export async function getMaterialDetailsAction(
-  materialId: string,
-  requestedCompanyId?: string
-): Promise<ServerActionResult<MaterialFullDetails>> {
+export const getMaterialDetailsAction = withTenantAction(
+  {
+    permission: "inventory.view",
+    entityType: "inventory"
+  },
+  async (ctx, materialId: string,
+  requestedCompanyId?: string) : Promise<ServerActionResult<MaterialFullDetails>> => {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -1190,4 +1317,5 @@ export async function getMaterialDetailsAction(
   } catch (error: any) {
     return { success: false, error: error?.message || 'Failed to load material details.' }
   }
-}
+
+})

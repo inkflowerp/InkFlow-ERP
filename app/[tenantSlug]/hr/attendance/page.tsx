@@ -212,7 +212,7 @@ export default function AttendancePage() {
  return (
     <PanelAccessGuard module="attendance"action="view"panelTitle="Attendance"panelTitleBn="হাজিরা">
       <div className="min-h-screen bg-muted pb-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-6">
+        <div className="mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-6">
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border">
                         <div>
@@ -239,7 +239,7 @@ export default function AttendancePage() {
  onClick={() => setActiveTab('roster')}
  className={`px-3.5 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors shrink-0 ${
  activeTab === 'roster'
-                  ? 'bg-blue-600 text-white font-semibold shadow-xs'
+                  ? 'bg-primary text-white font-semibold shadow-xs'
                   : 'text-muted-foreground hover:bg-muted'
               }`}
             >
@@ -250,7 +250,7 @@ export default function AttendancePage() {
             <button
  onClick={() => setQrModalOpen(true)}
  className="px-3.5 py-1.5 rounded-lg text-muted-foreground hover:bg-muted flex items-center gap-1.5 transition-colors shrink-0">
-              <QrCode className="w-4 h-4 text-blue-600"/>
+              <QrCode className="w-4 h-4 text-primary"/>
               <span>{tBilingual('QR Punch', 'কিউআর পাঞ্চ')}</span>
             </button>
 
@@ -269,15 +269,15 @@ export default function AttendancePage() {
  onClick={() => setActiveTab('corrections')}
  className={`px-3.5 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors shrink-0 ${
  activeTab === 'corrections'
-                  ? 'bg-blue-600 text-white font-semibold shadow-xs'
+                  ? 'bg-primary text-white font-semibold shadow-xs'
                   : 'text-muted-foreground hover:bg-muted'
               }`}
             >
               <Clock className="w-4 h-4"/>
               <span>{tBilingual('Corrections', 'হাজিরা সংশোধন')}</span>
               {pendingCorrectionsCount > 0 && (
-                <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
- activeTab === 'corrections' ? 'bg-card text-blue-600' : 'bg-amber-100 text-amber-800'
+                <span className={`px-1.5 py-0.2 rounded-full text-xs font-bold ${
+ activeTab === 'corrections' ? 'bg-card text-primary' : 'bg-warning-surface text-warning'
                 }`}>
                   {pendingCorrectionsCount}
                 </span>
@@ -288,15 +288,15 @@ export default function AttendancePage() {
  onClick={() => setActiveTab('overtime')}
  className={`px-3.5 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors shrink-0 ${
  activeTab === 'overtime'
-                  ? 'bg-blue-600 text-white font-semibold shadow-xs'
+                  ? 'bg-primary text-white font-semibold shadow-xs'
                   : 'text-muted-foreground hover:bg-muted'
               }`}
             >
               <Clock4 className="w-4 h-4"/>
               <span>{tBilingual('Overtime', 'ওভারটাইম')}</span>
               {pendingOtCount > 0 && (
-                <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
- activeTab === 'overtime' ? 'bg-card text-blue-600' : 'bg-indigo-100 text-indigo-800'
+                <span className={`px-1.5 py-0.2 rounded-full text-xs font-bold ${
+ activeTab === 'overtime' ? 'bg-card text-primary' : 'bg-primary/10 text-primary'
                 }`}>
                   {pendingOtCount}
                 </span>
@@ -307,7 +307,7 @@ export default function AttendancePage() {
  onClick={() => setActiveTab('shifts')}
  className={`px-3.5 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors shrink-0 ${
  activeTab === 'shifts'
-                  ? 'bg-blue-600 text-white font-semibold shadow-xs'
+                  ? 'bg-primary text-white font-semibold shadow-xs'
                   : 'text-muted-foreground hover:bg-muted'
               }`}
             >

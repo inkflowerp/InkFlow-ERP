@@ -91,7 +91,7 @@ export function PlatformSettingsNav() {
             {tab.badge && (
               <span
                 className={cn(
-                  'text-2xs px-1.5 py-0.5 rounded font-semibold shrink-0',
+                  'text-xs px-1.5 py-0.5 rounded font-semibold shrink-0',
                   isActive
                     ? 'bg-primary-foreground/20 text-primary-foreground'
                     : 'bg-primary/10 text-primary border border-primary/20'

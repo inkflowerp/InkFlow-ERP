@@ -369,16 +369,16 @@ function LoginForm() {
         <CardContent className="space-y-3.5 pt-1 px-5 sm:px-6">
           {/* Status Feedback / Signed Out Message */}
           {statusMessage && (
-            <div className="rounded-xl bg-emerald-50 p-3 text-xs text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 flex items-start gap-2.5 animate-in fade-in-50 duration-200">
-              <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+            <div className="rounded-xl bg-success-surface p-3 text-xs text-success bg-success-surface/60 text-success border border-success-border border-success-border flex items-start gap-2.5 animate-in fade-in-50 duration-200">
+              <CheckCircle2 className="h-4 w-4 text-success text-success shrink-0 mt-0.5" />
               <div className="flex-1 font-medium">{statusMessage}</div>
             </div>
           )}
 
           {/* Standard Error Alert Box */}
           {error && (
-            <div className="rounded-xl bg-red-50 p-3 text-xs text-red-700 dark:bg-red-950/60 dark:text-red-200 border border-red-200 dark:border-red-900/80 flex items-start gap-2.5 animate-in fade-in-50 duration-200">
-              <ShieldAlert className="h-4 w-4 text-red-600 dark:text-red-400 shrink-0 mt-0.5" />
+            <div className="rounded-xl bg-danger-surface p-3 text-xs text-destructive bg-danger-surface/60 text-destructive border border-danger-border border-danger-border/80 flex items-start gap-2.5 animate-in fade-in-50 duration-200">
+              <ShieldAlert className="h-4 w-4 text-destructive text-destructive shrink-0 mt-0.5" />
               <div className="flex-1 space-y-1.5">
                 <span className="font-medium leading-relaxed">{error}</span>
                 {isNetworkError && (
@@ -388,7 +388,7 @@ function LoginForm() {
                       size="sm"
                       variant="outline"
                       onClick={() => performLogin(currentEmail, currentPassword)}
-                      className="text-2xs h-6 border-red-300 bg-red-100 hover:bg-red-200 text-red-800 dark:border-red-800 dark:bg-red-900/40 dark:text-red-200 cursor-pointer"
+                      className="text-xs h-6 border-danger-border bg-danger-surface hover:bg-destructive text-destructive border-danger-border bg-destructive/40 text-destructive cursor-pointer"
                     >
                       <RefreshCw className="h-3 w-3 mr-1" />
                       {locale === 'bn' ? 'পুনরায় চেষ্টা করুন' : 'Try Again'}
@@ -401,13 +401,13 @@ function LoginForm() {
 
           {/* Cross-Portal Platform Administrator Redirection Callout */}
           {isPlatformAdminError && (
-            <div className="p-3 rounded-xl bg-gradient-to-r from-purple-950/80 via-indigo-950/80 to-slate-900 border border-purple-500/40 text-xs text-purple-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 shadow-lg shadow-purple-950/30 animate-in fade-in-50">
+            <div className="p-3 rounded-xl border border-primary/20/40 text-xs text-primary flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 shadow-lg shadow-purple-950/30 animate-in fade-in-50">
               <div className="space-y-0.5">
                 <div className="font-bold text-white flex items-center gap-1.5">
-                  <Sparkles className="h-3.5 w-3.5 text-purple-400" />
+                  <Sparkles className="h-3.5 w-3.5 text-primary" />
                   <span>{locale === 'bn' ? 'প্ল্যাটফর্ম অ্যাডমিন অ্যাকাউন্ট' : 'Platform Administrator Account'}</span>
                 </div>
-                <div className="text-2xs text-purple-300">
+                <div className="text-xs text-primary">
                   {locale === 'bn'
                     ? 'সুপারঅ্যাডমিনদের জন্য আলাদা প্ল্যাটফর্ম কন্ট্রোল সেন্টার পোর্টাল রয়েছে।'
                     : 'Superadmins must sign in via the dedicated Platform Control Center.'}
@@ -416,7 +416,7 @@ function LoginForm() {
 
               <Link
                 href="/platform/login"
-                className="inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-500 text-white font-semibold text-xs transition-colors shrink-0 shadow-sm"
+                className="inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-lg bg-primary hover:bg-primary text-white font-semibold text-xs transition-colors shrink-0 shadow-sm"
               >
                 <span>{locale === 'bn' ? 'প্ল্যাটফর্ম লগইন' : 'Go to Platform Login'}</span>
                 <ArrowRight className="h-3.5 w-3.5" />
@@ -487,7 +487,7 @@ function LoginForm() {
 
             {/* Caps Lock Alert Notification */}
             {isCapsLock && (
-              <div className="flex items-center gap-1.5 text-2xs font-semibold text-amber-600 dark:text-amber-400 pt-0.5">
+              <div className="flex items-center gap-1.5 text-xs font-semibold text-warning text-warning pt-0.5">
                 <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
                 <span>{t('auth.caps_lock_on') || 'Caps Lock is ON'}</span>
               </div>
@@ -501,7 +501,7 @@ function LoginForm() {
                 type="checkbox"
                 checked={rememberMe}
                 onChange={(e) => setRememberMe(e.target.checked)}
-                className="h-4 w-4 rounded border-input text-cyan-600 focus:ring-cyan-500 cursor-pointer"
+                className="h-4 w-4 rounded border-input text-primary focus:ring-ring cursor-pointer"
               />
               <span className="text-xs text-muted-foreground font-medium">
                 {t('auth.remember_me') || 'Remember Me'}
@@ -510,7 +510,7 @@ function LoginForm() {
 
             <Link
               href="/forgot-password"
-              className="text-xs text-cyan-600 hover:text-cyan-700 dark:text-cyan-400 dark:hover:text-cyan-300 font-medium transition-colors hover:underline py-0.5"
+              className="text-xs text-primary hover:text-primary text-primary dark:hover:text-primary font-medium transition-colors hover:underline py-0.5"
             >
               {t('auth.forgot_password')}
             </Link>
@@ -519,7 +519,7 @@ function LoginForm() {
           {/* Primary Submit Button */}
           <Button
             type="submit"
-            className="w-full bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 text-white font-bold cursor-pointer h-11 text-sm shadow-lg shadow-cyan-600/20 border border-cyan-500/30 transition-all active:scale-[0.99]"
+            className="w-full hover: hover: text-white font-bold cursor-pointer h-11 text-sm shadow-lg shadow-cyan-600/20 border border-primary/20/30 transition-all active:scale-[0.99]"
             isLoading={isLoading}
           >
             <span>{t('auth.sign_in')}</span>
@@ -531,7 +531,7 @@ function LoginForm() {
             <div className="absolute inset-0 flex items-center">
               <span className="w-full border-t border-border dark:border-border" />
             </div>
-            <div className="relative flex justify-center text-2xs uppercase font-bold tracking-wider">
+            <div className="relative flex justify-center text-xs uppercase font-bold tracking-wider">
               <span className="bg-card px-2.5 text-muted-foreground dark:bg-card">
                 {locale === 'bn' ? 'অথবা' : 'Or continue with'}
               </span>
@@ -583,7 +583,7 @@ function LoginForm() {
             {t('auth.no_account')}{' '}
             <Link
               href="/register"
-              className="font-bold text-cyan-600 hover:text-cyan-700 dark:text-cyan-400 dark:hover:text-cyan-300 transition-colors hover:underline py-1"
+              className="font-bold text-primary hover:text-primary text-primary dark:hover:text-primary transition-colors hover:underline py-1"
             >
               {t('auth.sign_up')}
             </Link>
@@ -600,7 +600,7 @@ export default function LoginPage() {
       fallback={
         <div className="p-8 text-center text-sm text-muted-foreground dark:text-muted-foreground">
           <div className="inline-flex items-center gap-2">
-            <RefreshCw className="h-4 w-4 animate-spin text-cyan-500" />
+            <RefreshCw className="h-4 w-4 animate-spin text-primary" />
             <span>Loading login portal...</span>
           </div>
         </div>

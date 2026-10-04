@@ -56,24 +56,24 @@ export function PayrollSummaryWidget({
  labelBn: 'পরিশোধিত',
  amount: paid,
  icon: CheckCircle2,
- color: 'text-emerald-700 bg-emerald-50 border-emerald-200',
- badgeBg: 'text-emerald-700',
+ color: 'text-success bg-success-surface border-success-border',
+ badgeBg: 'text-success',
     },
     {
  label: 'Pending Approval',
  labelBn: 'অনুমোদনের অপেক্ষায়',
  amount: pending,
  icon: Clock,
- color: 'text-amber-700 bg-amber-50 border-amber-200',
- badgeBg: 'text-amber-700',
+ color: 'text-warning bg-warning-surface border-warning-border',
+ badgeBg: 'text-warning',
     },
     {
  label: 'Due Outstanding',
  labelBn: 'বকেয়া বেতন',
  amount: due,
  icon: AlertCircle,
- color: 'text-rose-700 bg-rose-50 border-rose-200',
- badgeBg: 'text-rose-700',
+ color: 'text-destructive bg-danger-surface border-danger-border',
+ badgeBg: 'text-destructive',
     },
   ]
 
@@ -90,7 +90,7 @@ export function PayrollSummaryWidget({
         </div>
         <Link
  href={`/${tenantSlug}/hr/payroll`}
- className="text-xs font-medium text-blue-600 hover:text-blue-700 flex items-center gap-1 shrink-0">
+ className="text-xs font-medium text-primary hover:text-primary flex items-center gap-1 shrink-0">
           <span>{tBilingual('Payroll Sheets', 'বেতন শিট')}</span>
           <ArrowRight className="w-3.5 h-3.5"/>
         </Link>

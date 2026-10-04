@@ -153,7 +153,7 @@ export function CompleteMaintenanceModal({
 
           <Button
  type="submit"isLoading={loading}
- className="w-full sm:w-auto min-h-[40px] bg-emerald-600 hover:bg-emerald-700 text-white font-bold inline-flex items-center gap-1.5">
+ className="w-full sm:w-auto min-h-[40px] bg-success hover:bg-success text-white font-bold inline-flex items-center gap-1.5">
             <CheckCircle className="h-4 w-4"/>
             <span>Mark Maintenance Complete</span>
           </Button>
