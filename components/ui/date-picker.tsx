@@ -5,7 +5,7 @@ import { Calendar } from 'lucide-react'
 import { Input, type InputProps } from './input'
 import { cn } from '@/lib/utils'
 
-export interface DatePickerProps extends Omit<InputProps, 'type'> {}
+export type DatePickerProps = Omit<InputProps, 'type'>
 
 export const DatePicker = React.forwardRef<HTMLInputElement, DatePickerProps>(
   ({ className, ...props }, ref) => {

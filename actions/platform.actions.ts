@@ -71,7 +71,13 @@ export const deleteBusinessAction = withPlatformAction(
   }
 )
 
-export { deleteTenantPermanentlyAction } from './platform-data.actions'
+import { deleteTenantPermanentlyAction as deleteTenantPermanentlyActionImpl } from './platform-data.actions'
+export async function deleteTenantPermanentlyAction(
+  ...args: Parameters<typeof deleteTenantPermanentlyActionImpl>
+) {
+  return deleteTenantPermanentlyActionImpl(...args)
+}
+
 
 export const deleteAllBusinessesAction = withPlatformAction(
   {
