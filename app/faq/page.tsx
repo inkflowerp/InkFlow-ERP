@@ -23,11 +23,11 @@ export default function PublicFAQPage() {
                 Knowledge Base
               </span>
               <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-foreground dark:text-white bangla-text tracking-tight">
-                {tBilingual('Frequently Asked Questions', 'প্রিন্টইআরপি সাধারণ প্রশ্নোত্তর')}
+                {tBilingual('Frequently Asked Questions', 'প্রিন্টফ্লো সাধারণ প্রশ্নোত্তর')}
               </h1>
               <p className="text-muted-foreground text-sm sm:text-base max-w-xl mx-auto leading-relaxed bangla-text">
                 {tBilingual(
-                  'Got questions about how PrintERP handles flex rolls, Bengali invoices, BDT payments, or multi-branch printing? Find all the answers below.',
+                  'Got questions about how PrintFlow handles flex rolls, Bengali invoices, BDT payments, or multi-branch printing? Find all the answers below.',
                   'রোল ট্র্যাকিং, বাংলা চালান, টাকা পেমেন্ট ও একাধিক ব্রাঞ্চ নিয়ে সাধারণ সব প্রশ্নের উত্তর এখানে পাবেন।'
                 )}
               </p>

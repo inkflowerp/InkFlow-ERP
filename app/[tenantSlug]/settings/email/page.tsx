@@ -1,7 +1,7 @@
 'use client'
 
 // ==============================================================================
-// PrintERP SaaS - Tenant Business Email Gateway Settings
+// PrintFlow SaaS - Tenant Business Email Gateway Settings
 // Location: Tenant Dashboard -> Settings -> Email Gateway
 // Supports Google OAuth 2.0 (Gmail API) and Standard Authenticated SMTP
 // ==============================================================================
@@ -531,7 +531,7 @@ export default function TenantEmailSettingsPage() {
                   {tBilingual('Google Gmail Integration', 'গুগল জিমেইল ইন্টিগ্রেশন')}
                 </CardTitle>
                 <CardDescription className="text-xs">
-                  {tBilingual('Authorize InkFlow to send business documents directly from your Gmail / Google Workspace account.', 'আপনার জিমেইল / গুগল ওয়ার্কস্পেস অ্যাকাউন্ট থেকে সরাসরি ব্যবসায়িক নথি পাঠানোর অনুমতি দিন।')}
+                  {tBilingual('Authorize PrintFlow to send business documents directly from your Gmail / Google Workspace account.', 'আপনার জিমেইল / গুগল ওয়ার্কস্পেস অ্যাকাউন্ট থেকে সরাসরি ব্যবসায়িক নথি পাঠানোর অনুমতি দিন।')}
                 </CardDescription>
               </CardHeader>
               <CardContent className="p-6">
@@ -572,7 +572,7 @@ export default function TenantEmailSettingsPage() {
                     <div className="p-3 bg-muted rounded-xl border text-xs text-muted-foreground space-y-1">
                       <span className="font-semibold text-foreground block">Security Guarantee:</span>
                       <p className="text-xs leading-relaxed">
- InkFlow uses official Google OAuth 2.0 with limited `gmail.send` scope. We never have access to read your inbox messages, and tokens are encrypted at rest with AES-256-GCM.
+ PrintFlow uses official Google OAuth 2.0 with limited `gmail.send` scope. We never have access to read your inbox messages, and tokens are encrypted at rest with AES-256-GCM.
                       </p>
                     </div>
                   </div>
@@ -584,7 +584,7 @@ export default function TenantEmailSettingsPage() {
                       </div>
                       <h3 className="font-bold text-sm text-foreground">{tBilingual('Connect Your Gmail Account', 'আপনার জিমেইল অ্যাকাউন্ট সংযুক্ত করুন')}</h3>
                       <p className="text-xs text-muted-foreground leading-relaxed">
-                        {tBilingual('Click below to sign in with Google. InkFlow will securely obtain an authorization token to dispatch customer quotes and invoices from your address.', 'গুগলে সাইন ইন করতে নিচে ক্লিক করুন। আপনার ঠিকানা থেকে গ্রাহকদের কোটেশন ও ইনভয়েস পাঠাতে ইনকফ্লো নিরাপদে অনুমতি গ্রহণ করবে।')}
+                        {tBilingual('Click below to sign in with Google. PrintFlow will securely obtain an authorization token to dispatch customer quotes and invoices from your address.', 'গুগলে সাইন ইন করতে নিচে ক্লিক করুন। আপনার ঠিকানা থেকে গ্রাহকদের কোটেশন ও ইনভয়েস পাঠাতে প্রিন্টফ্লো নিরাপদে অনুমতি গ্রহণ করবে।')}
                       </p>
                     </div>
 

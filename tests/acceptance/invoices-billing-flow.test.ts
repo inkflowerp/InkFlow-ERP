@@ -1,5 +1,5 @@
 // ==============================================================================
-// InkFlow ERP - Module 4: Invoices & Billing Flow & UX Acceptance Tests
+// PrintFlow - Module 4: Invoices & Billing Flow & UX Acceptance Tests
 // Tests the full lifecycle: Create -> Edit / Payment -> Status Change -> Document Print
 // Matrix: Light/Dark x Mobile 375px / Desktop 1440px x EN/BN
 // Guarantees: <= 3 clicks completion from dashboard, 4-KPI row, attention queue
@@ -28,7 +28,7 @@ describe('Module 4: Invoices & Billing End-to-End Hardening & Flow Verification'
     await browser?.close()
   })
 
-  // Helper to render mock Billing DOM reflecting InkFlow Design System
+  // Helper to render mock Billing DOM reflecting PrintFlow Design System
   async function renderBillingPage(
     context: BrowserContext,
     options: {
@@ -391,7 +391,7 @@ describe('Module 4: Invoices & Billing End-to-End Hardening & Flow Verification'
             </div>
             <div class="receipt-preview" id="receipt-document-sheet">
               <div style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 12px;">
-                <h1 style="font-size: 18px; font-weight: 900;">INKFLOW COMMERCIAL PRESS</h1>
+                <h1 style="font-size: 18px; font-weight: 900;">PRINTFLOW COMMERCIAL PRESS</h1>
                 <p>Tax Registration BIN: 19827364501 • Motijheel, Dhaka</p>
                 <h2 style="font-size: 14px; font-weight: 800; margin-top: 4px;">MONEY RECEIPT / চালানের প্রাপ্তিস্বীকার</h2>
               </div>

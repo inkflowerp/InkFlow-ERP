@@ -82,7 +82,7 @@ export function generateSecureQrToken(): {
 } {
   const rawToken = crypto.randomBytes(32).toString('hex')
   const tokenHash = crypto.createHash('sha256').update(rawToken).digest('hex')
-  const tokenPrefix = `INK-LOC-${rawToken.substring(0, 8).toUpperCase()}`
+  const tokenPrefix = `PF-LOC-${rawToken.substring(0, 8).toUpperCase()}`
 
   return { rawToken, tokenHash, tokenPrefix }
 }
@@ -98,6 +98,8 @@ export function hashQrToken(rawToken: string): string {
   } else if (clean.includes('t=')) {
     const parts = clean.split('t=')
     clean = parts[1].split('&')[0]
+  } else if (clean.startsWith('PRINTFLOW:ATT:v1:')) {
+    clean = clean.replace('PRINTFLOW:ATT:v1:', '')
   } else if (clean.startsWith('INKFLOW:ATT:v1:')) {
     clean = clean.replace('INKFLOW:ATT:v1:', '')
   }

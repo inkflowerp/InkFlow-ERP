@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP / InkFlow SaaS - Pure Client-Safe Billing Utilities & Formatters
+// PrintFlow SaaS - Pure Client-Safe Billing Utilities & Formatters
 // Zero server dependencies (safe for Client Components & SSR)
 // ==============================================================================
 
@@ -69,10 +69,10 @@ export function getSectorForInvoice(invoice: InvoiceRecord): IndustrialSector {
  */
 export function generateInvoiceTextMessage(
   invoice: InvoiceRecord,
-  companyName: string | null = 'InkFlow',
+  companyName: string | null = 'PrintFlow',
   paymentAccounts?: { bkash?: string | null; nagad?: string | null; bank?: string | null }
 ): string {
-  const effectiveCompanyName = companyName || 'InkFlow'
+  const effectiveCompanyName = companyName || 'PrintFlow'
   const bkash = paymentAccounts?.bkash || '01700-000000'
   const nagad = paymentAccounts?.nagad || '01800-000000'
   const bank = paymentAccounts?.bank || 'Dutch-Bangla Bank / City Bank'

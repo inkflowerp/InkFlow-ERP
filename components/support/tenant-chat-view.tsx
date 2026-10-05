@@ -1,7 +1,7 @@
 'use client'
 
 // ==============================================================================
-// InkFlow SaaS - Tenant Support Chat View Component
+// PrintFlow SaaS - Tenant Support Chat View Component
 // Modern, lightweight real-time conversation timeline, attachment viewer & composer.
 // ==============================================================================
 

@@ -35,7 +35,7 @@ export interface DeliveryChallanTableProps {
 export function DeliveryChallanTable({
   challans,
   tenantSlug,
-  companyName = 'InkFlow Printing & Signage',
+  companyName = 'PrintFlow Printing & Signage',
   onOpenDeliveryModal,
   onMarkOutForDelivery,
   getLiveItemStatus,

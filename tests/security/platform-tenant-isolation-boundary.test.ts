@@ -2,7 +2,7 @@ import { test, describe } from 'node:test'
 import assert from 'node:assert'
 
 // ==============================================================================
-// InkFlow SaaS - Complete Platform User & Tenant User Auth Isolation Test Suite
+// PrintFlow SaaS - Complete Platform User & Tenant User Auth Isolation Test Suite
 // Exhaustively tests the strict, fail-closed 2x2 authentication boundary matrix:
 //   1. Platform User -> Platform Domain (PASS)
 //   2. Platform User -> Tenant Domain (DENY)
@@ -49,7 +49,7 @@ const PLATFORM_ADMIN_DIRECTORY: MockPlatformAdminRecord[] = [
   {
     id: 'pa-owner-001',
     userId: 'u-auth-owner-001',
-    email: 'haji.shamim@printerp.com.bd',
+    email: 'haji.shamim@printflow.bd',
     fullName: 'Haji Mohammad Shamim (Platform Owner)',
     role: 'platform_owner',
     isActive: true,
@@ -57,7 +57,7 @@ const PLATFORM_ADMIN_DIRECTORY: MockPlatformAdminRecord[] = [
   {
     id: 'pa-admin-002',
     userId: 'u-auth-admin-002',
-    email: 'ops.lead@printerp.com.bd',
+    email: 'ops.lead@printflow.bd',
     fullName: 'Operations Lead (Platform Admin)',
     role: 'platform_admin',
     isActive: true,
@@ -65,7 +65,7 @@ const PLATFORM_ADMIN_DIRECTORY: MockPlatformAdminRecord[] = [
   {
     id: 'pa-disabled-003',
     userId: 'u-auth-disabled-003',
-    email: 'ex.admin@printerp.com.bd',
+    email: 'ex.admin@printflow.bd',
     fullName: 'Ex Platform Staff',
     role: 'platform_admin',
     isActive: false, // Suspended
@@ -270,13 +270,13 @@ function simulateRequireTenantGuard(userId: string, requestedCompanySlugOrId: st
 
 // --- Test Suite Execution ---
 
-describe('InkFlow SaaS: Complete Platform vs Tenant Authentication Isolation Matrix', () => {
+describe('PrintFlow SaaS: Complete Platform vs Tenant Authentication Isolation Matrix', () => {
   // --------------------------------------------------------------------------
   // Matrix Cell 1: Platform User -> Platform Domain (ALLOWED)
   // --------------------------------------------------------------------------
   describe('1. Platform User -> Platform Domain Access', () => {
     test('1.1 Platform Owner can log in via /platform/login and establish Platform Context', () => {
-      const res = simulatePlatformLogin('haji.shamim@printerp.com.bd', 'RootPass123!')
+      const res = simulatePlatformLogin('haji.shamim@printflow.bd', 'RootPass123!')
       assert.strictEqual(res.success, true)
       assert.strictEqual(res.context, 'platform')
       assert.strictEqual(res.user?.role, 'platform_owner')
@@ -297,13 +297,13 @@ describe('InkFlow SaaS: Complete Platform vs Tenant Authentication Isolation Mat
   // --------------------------------------------------------------------------
   describe('2. Platform User -> Tenant Domain Rejection (Hard Boundary)', () => {
     test('2.1 Platform Owner cannot log in via Tenant Login (/login)', () => {
-      const res = simulateTenantLogin('haji.shamim@printerp.com.bd', 'RootPass123!')
+      const res = simulateTenantLogin('haji.shamim@printflow.bd', 'RootPass123!')
       assert.strictEqual(res.success, false)
       assert.strictEqual(res.error, 'This account does not have access to the business workspace.')
     })
 
     test('2.2 Platform Admin cannot log in via Tenant Login (/login)', () => {
-      const res = simulateTenantLogin('ops.lead@printerp.com.bd', 'AdminPass123!')
+      const res = simulateTenantLogin('ops.lead@printflow.bd', 'AdminPass123!')
       assert.strictEqual(res.success, false)
       assert.strictEqual(res.error, 'This account does not have access to the business workspace.')
     })
@@ -445,7 +445,7 @@ describe('InkFlow SaaS: Complete Platform vs Tenant Authentication Isolation Mat
   // --------------------------------------------------------------------------
   describe('6. Suspended and Disabled Account Rejection', () => {
     test('6.1 Suspended Platform Admin is rejected at login and route guard', () => {
-      const loginRes = simulatePlatformLogin('ex.admin@printerp.com.bd', 'Pass123!')
+      const loginRes = simulatePlatformLogin('ex.admin@printflow.bd', 'Pass123!')
       assert.strictEqual(loginRes.success, false)
       assert.ok(loginRes.error?.includes('suspended'))
 

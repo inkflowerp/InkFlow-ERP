@@ -176,7 +176,7 @@ export class GoogleOAuthProvider implements IAuthProvider {
       const { getGoogleAuthClientConfig, generateGoogleAuthSignInUrl } = await import('./google-auth.ts')
       const config = getGoogleAuthClientConfig(origin)
 
-      // 1. Direct Branded InkFlow Domain Flow (Removes *.supabase.co domain exposure)
+      // 1. Direct Branded PrintFlow Domain Flow (Removes *.supabase.co domain exposure)
       if (config.isConfigured) {
         const { url } = generateGoogleAuthSignInUrl({
           origin,

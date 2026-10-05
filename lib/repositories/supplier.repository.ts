@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP / InkFlow SaaS - Supplier Repository (V5)
+// PrintFlow SaaS - Supplier Repository (V5)
 // Multi-Tenant PostgreSQL Supplier Master, Supplier Items & Price History
 // ==============================================================================
 

@@ -1,5 +1,5 @@
 // ==============================================================================
-// InkFlow ERP - Authoritative Workforce, Attendance, Overtime & Payroll Types
+// PrintFlow - Authoritative Workforce, Attendance, Overtime & Payroll Types
 // Designed for Bangladeshi Print & Signage Shops with permanent, daily & hourly staff
 // ==============================================================================
 

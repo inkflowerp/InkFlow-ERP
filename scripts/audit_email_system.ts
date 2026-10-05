@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP SaaS — Comprehensive Email Gateway System Audit Script
+// PrintFlow SaaS — Comprehensive Email Gateway System Audit Script
 // ==============================================================================
 
 import { EmailGatewayService, DEFAULT_PLATFORM_GATEWAY } from '../services/email-gateway.service.ts'
@@ -20,7 +20,7 @@ import { MockProviderAdapter } from '../lib/email/adapters/mock.adapter.ts'
 
 async function runAudit() {
   console.log('====================================================')
-  console.log('PrintERP SaaS — Email Gateway Comprehensive Audit')
+  console.log('PrintFlow SaaS — Email Gateway Comprehensive Audit')
   console.log('====================================================\n')
 
   // 1. Audit Cryptography
@@ -85,7 +85,7 @@ async function runAudit() {
     paid_amount: '50,000',
     due_amount: '95,000',
     due_date: '25-Oct-2026',
-    payment_link: 'https://printerp.app/pay/INV-9081',
+    payment_link: 'https://printflow.bd/pay/INV-9081',
     company_name: 'Dhaka Modern Press',
   }
 

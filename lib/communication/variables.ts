@@ -18,7 +18,7 @@ export const SUPPORTED_TEMPLATE_VARIABLES: {
     { tag: '{{company_phone}}', name: 'Company Phone', description: 'Official company phone / hotline', category: 'company', example: '+880 1711-000000' },
     { tag: '{{company_email}}', name: 'Company Email', description: 'Official business email', category: 'company', example: 'billing@example.com' },
     { tag: '{{company_address}}', name: 'Company Address', description: 'Registered business address', category: 'company', example: '12/A Motijheel C/A, Dhaka' },
-    { tag: '{{company_website}}', name: 'Company Website', description: 'Public website or portal URL', category: 'company', example: 'https://demo.printerp.app' },
+    { tag: '{{company_website}}', name: 'Company Website', description: 'Public website or portal URL', category: 'company', example: 'https://demo.printflow.bd' },
   ],
   customer: [
     { tag: '{{customer_name}}', name: 'Customer Name', description: 'Client contact person or name', category: 'customer', example: 'Ashiqur Rahman' },
@@ -46,7 +46,7 @@ export const SUPPORTED_TEMPLATE_VARIABLES: {
   ],
   user: [
     { tag: '{{sender_name}}', name: 'Sender Name', description: 'Name of the current employee / sender', category: 'user', example: 'Tanvir Hossain' },
-    { tag: '{{sender_email}}', name: 'Sender Email', description: 'Email address of logged in staff', category: 'user', example: 'tanvir@printerp.app' },
+    { tag: '{{sender_email}}', name: 'Sender Email', description: 'Email address of logged in staff', category: 'user', example: 'tanvir@printflow.bd' },
     { tag: '{{sender_phone}}', name: 'Sender Phone', description: 'Phone number of creator', category: 'user', example: '+880 1812-345678' },
   ],
 }

@@ -1,5 +1,6 @@
 import React from"react";
 import { Document, Page, StyleSheet, View } from"@formepdf/react";
+import { BRAND } from "@/config/brand";
 import {
  PdfcnThemeProvider,
  usePdfcnTheme,
@@ -33,7 +34,7 @@ export interface QuotationPdfProps {
 const QuotationPdfContent = ({ quotation, company }: { quotation: QuotationRecord; company?: QuotationPdfProps["company"] }) => {
  const theme = usePdfcnTheme();
 
- const companyName = company?.name ||"InkFlow PrintERP";
+ const companyName = company?.name || BRAND.name;
  const companySubtitle = company?.tagline ||"Printing & Signage Manufacturing";
  const companyAddress = company?.address ||"";
  const companyContact = `${company?.phone ||"+880 1700-000000"} · ${company?.email ||"sales@inkflow-erp.com"}`;
@@ -41,7 +42,7 @@ const QuotationPdfContent = ({ quotation, company }: { quotation: QuotationRecor
  const appOrigin =
    typeof window !== 'undefined' && window.location?.origin
      ? window.location.origin
-     : process.env.NEXT_PUBLIC_APP_URL || 'https://inkflowerp.com'
+     : process.env.NEXT_PUBLIC_APP_URL || `https://${BRAND.rootDomain}`
  const qrPayload = `${appOrigin}/api/pdf/quotation?id=${encodeURIComponent(quotation.quotation_number || quotation.id)}`;
 
  const styles = StyleSheet.create({

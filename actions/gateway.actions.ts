@@ -1,7 +1,7 @@
 'use server'
 
 // ==============================================================================
-// PrintERP SaaS - Platform Owner & Tenant Gateway Server Actions
+// PrintFlow SaaS - Platform Owner & Tenant Gateway Server Actions
 // ==============================================================================
 
 import { getCurrentPlatformUser, hasPlatformPermission } from '@/lib/auth/platform-auth'

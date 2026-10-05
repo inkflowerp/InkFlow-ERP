@@ -44,11 +44,11 @@ describe('Email Gateway Security & Encryption Tests', () => {
   })
 
   it('5. Masks email addresses correctly', () => {
-    const email = 'finance@printerp.com'
+    const email = 'finance@printflow.bd'
     const masked = maskEmail(email)
 
     assert.ok(masked.includes('***'), 'Masked email must hide intermediate chars')
-    assert.ok(masked.endsWith('@printerp.com'), 'Masked email must preserve domain')
+    assert.ok(masked.endsWith('@printflow.bd'), 'Masked email must preserve domain')
   })
 
   it('6. Sanitizes gateway records to strip raw passwords and encrypted payloads', () => {
@@ -59,7 +59,7 @@ describe('Email Gateway Security & Encryption Tests', () => {
       encrypted_credentials: 'v1:a:b:c',
       password: 'raw_pass_must_be_stripped',
       api_key: 'sk_secret_123456789',
-      sender_name: 'PrintERP',
+      sender_name: 'PrintFlow',
     }
 
     const sanitized = sanitizeGatewayRecord(rawRecord)

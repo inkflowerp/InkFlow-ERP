@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP SaaS - Telegram Bot API Adapter (Official Bot API)
+// PrintFlow SaaS - Telegram Bot API Adapter (Official Bot API)
 // Documentation: https://core.telegram.org/bots/api
 // ==============================================================================
 
@@ -48,7 +48,7 @@ export class TelegramBotAdapter implements ITelegramProvider {
       const url = `${this.getBaseUrl()}/getMe`
       const res = await fetch(url, {
         method: 'GET',
-        headers: { 'User-Agent': 'PrintERP-SaaS/1.0' },
+        headers: { 'User-Agent': 'PrintFlow-SaaS/1.0' },
         signal: AbortSignal.timeout(10000),
       })
 

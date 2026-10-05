@@ -399,7 +399,7 @@ export function CameraQrScanner({
               <Input
                 value={manualCode}
                 onChange={(e) => setManualCode(e.target.value)}
-                placeholder="e.g. INKFLOW:ATT:v1:... or Terminal Code"
+                placeholder="e.g. PRINTFLOW:ATT:v1:... or Terminal Code"
                 className="bg-card border-border text-foreground tabular-nums text-xs h-11"
                 autoFocus
               />

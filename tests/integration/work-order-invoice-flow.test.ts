@@ -1,8 +1,8 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert'
 
-// Simulated store matching PrintERP persistence engine
-class SimulatedPrintERPStore {
+// Simulated store matching PrintFlow persistence engine
+class SimulatedPrintFlowStore {
   private collections: Map<string, any[]> = new Map()
 
   get<T = any[]>(key: string): T {
@@ -37,7 +37,7 @@ class SimulatedPrintERPStore {
 }
 
 describe('Designer Work Order & Invoice Request Flow (End-to-End)', () => {
-  const store = new SimulatedPrintERPStore()
+  const store = new SimulatedPrintFlowStore()
   const companyId = 'c-integration-01'
 
   it('1. Designer creates Work Order: saves order, generates design job ticket, and requests invoice from Manager', () => {

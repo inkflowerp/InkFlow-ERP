@@ -1,6 +1,6 @@
 import { test, describe, beforeEach } from 'node:test'
 import assert from 'node:assert'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import { InventoryRepository } from '../../lib/repositories/inventory.repository.ts'
 import { ProductRepository } from '../../lib/repositories/product.repository.ts'
 import { InventoryService } from '../../services/inventory.service.ts'
@@ -12,9 +12,9 @@ describe('Unit: Physical Rolls Inventory & Warehouse Tracking', () => {
   const testCompanyId = `test-roll-company-${Date.now()}`
 
   beforeEach(() => {
-    PrintERPDataStore.clear(STORAGE_KEYS.MOUNTED_ROLLS)
-    PrintERPDataStore.clear(STORAGE_KEYS.MATERIALS)
-    PrintERPDataStore.clear(STORAGE_KEYS.PRODUCTS)
+    PrintFlowDataStore.clear(STORAGE_KEYS.MOUNTED_ROLLS)
+    PrintFlowDataStore.clear(STORAGE_KEYS.MATERIALS)
+    PrintFlowDataStore.clear(STORAGE_KEYS.PRODUCTS)
   })
 
   test('1. Retrieves and enriches actual physical rolls without synthesizing fake fallback rolls', async () => {

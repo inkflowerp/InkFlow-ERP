@@ -1,7 +1,7 @@
 import { describe, it, beforeEach } from 'node:test'
 import assert from 'node:assert'
 import { EntitlementService } from '../../services/entitlement.service.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import { DEFAULT_PLANS } from '../../lib/subscription/subscription-constants.ts'
 import type { CompanySubscriptionRecord } from '../../types/subscription.types.ts'
 
@@ -9,8 +9,8 @@ describe('Subscription 360 - Failed Payment, Grace Period & Suspension Tests', (
   const companyId = 'co-grace-test-200'
 
   beforeEach(() => {
-    PrintERPDataStore.clear()
-    PrintERPDataStore.set(STORAGE_KEYS.PLATFORM_PLANS, DEFAULT_PLANS, false)
+    PrintFlowDataStore.clear()
+    PrintFlowDataStore.set(STORAGE_KEYS.PLATFORM_PLANS, DEFAULT_PLANS, false)
   })
 
   it('1. Grace period allows operational access while showing billing warning', async () => {
@@ -26,7 +26,7 @@ describe('Subscription 360 - Failed Payment, Grace Period & Suspension Tests', (
       current_period_end: new Date(Date.now() - 2 * 86400000).toISOString(),
       grace_period_ends_at: new Date(Date.now() + 5 * 86400000).toISOString(), // 5 days remaining in grace
     }
-    PrintERPDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, { [companyId]: graceSub }, false)
+    PrintFlowDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, { [companyId]: graceSub }, false)
 
     const entitlements = await EntitlementService.getTenantEntitlements(companyId)
     assert.strictEqual(entitlements.status, 'grace_period')
@@ -50,7 +50,7 @@ describe('Subscription 360 - Failed Payment, Grace Period & Suspension Tests', (
       current_period_start: new Date(Date.now() - 40 * 86400000).toISOString(),
       current_period_end: new Date(Date.now() - 10 * 86400000).toISOString(),
     }
-    PrintERPDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, { [companyId]: suspendedSub }, false)
+    PrintFlowDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, { [companyId]: suspendedSub }, false)
 
     const entitlements = await EntitlementService.getTenantEntitlements(companyId)
     assert.strictEqual(entitlements.status, 'suspended')

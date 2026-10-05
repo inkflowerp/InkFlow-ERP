@@ -14,15 +14,15 @@ import {
   calculateRollAreaSqft,
 } from '../../lib/units.ts'
 import { ProductRepository } from '../../lib/repositories/product.repository.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 
 describe('Unit: Real-World Roll Material & Cutting Consumption Audit', () => {
   const companyId = 'tenant-roll-cutting-audit'
 
   beforeEach(() => {
-    PrintERPDataStore.set(STORAGE_KEYS.PRODUCTS, [])
-    PrintERPDataStore.set(STORAGE_KEYS.PRICE_HISTORY, [])
-    PrintERPDataStore.set(STORAGE_KEYS.PRICE_OVERRIDES, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.PRODUCTS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.PRICE_HISTORY, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.PRICE_OVERRIDES, [])
   })
 
   // =========================================================================

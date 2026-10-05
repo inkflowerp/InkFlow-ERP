@@ -21,11 +21,11 @@ import { MarketingFooter } from '@/components/marketing/marketing-footer'
 export const revalidate = 300 // Revalidate public cached content every 5 minutes
 
 export const metadata: Metadata = {
-  title: 'PrintERP — The Operating System for Print & Signage Businesses',
+  title: 'PrintFlow — The Operating System for Print & Signage Businesses',
   description:
     'From customer request to quotation, order, design, production, inventory, payment and delivery — one connected system built for print and signage businesses in Bangladesh.',
   openGraph: {
-    title: 'PrintERP — The Operating System for Print & Signage Businesses',
+    title: 'PrintFlow — The Operating System for Print & Signage Businesses',
     description:
       'Manage quotations, orders, production, materials, payments, delivery and profitability from one connected platform.',
     type: 'website',
@@ -41,7 +41,7 @@ export default async function MarketingHomePage() {
   const structuredData = {
     '@context': 'https://schema.org',
     '@type': 'SoftwareApplication',
-    name: 'PrintERP',
+    name: 'PrintFlow',
     operatingSystem: 'Web, Android, iOS, Windows, macOS',
     applicationCategory: 'BusinessApplication',
     offers: {
@@ -70,7 +70,7 @@ export default async function MarketingHomePage() {
             {/* Section 2: Hero */}
             <HeroSection />
 
-            {/* Section 3: "How Print Shops Work With PrintERP" */}
+            {/* Section 3: "How Print Shops Work With PrintFlow" */}
             <HowShopsWorkSection />
 
             {/* Section 4: Core Problems */}
@@ -79,7 +79,7 @@ export default async function MarketingHomePage() {
             {/* Section 5: Core Workflow */}
             <CoreWorkflowSection />
 
-            {/* Section 6: What PrintERP Manages */}
+            {/* Section 6: What PrintFlow Manages */}
             <WhatPrintErpManagesSection />
 
             {/* Section 7: Industry/Business Types */}

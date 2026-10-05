@@ -6,7 +6,7 @@ import type { ProductionTaskRecord } from '../../types/production.types.ts'
  */
 export function generateBangladeshiFloorWhatsAppMessage(
   task: ProductionTaskRecord,
-  companyName: string = 'InkFlow Digital & Offset Press'
+  companyName: string = 'PrintFlow Digital & Offset Press'
 ): string {
   const customer = task.customer_name || 'সম্মানিত গ্রাহক'
   const jobNo = task.job_number || task.task_number || 'JOB-0000'

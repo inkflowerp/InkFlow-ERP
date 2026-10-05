@@ -1,5 +1,5 @@
 // ==============================================================================
-// InkFlow ERP - Module 9: Purchases & Suppliers Flow & UX Acceptance Tests
+// PrintFlow - Module 9: Purchases & Suppliers Flow & UX Acceptance Tests
 // Tests the full lifecycle: Supplier Directory -> New PO -> GRN Intake -> Settle Bill -> Print Statement
 // Matrix: Light/Dark x Mobile 375px / Desktop 1440px x EN/BN
 // Guarantees: <= 3 clicks completion from dashboard, 4-KPI row, attention queue, Mahajon ledger accounting
@@ -28,7 +28,7 @@ describe('Module 9: Purchases & Suppliers End-to-End Hardening & Flow Verificati
     await browser?.close()
   })
 
-  // Helper to render mock Suppliers & Purchases DOM reflecting InkFlow Design System
+  // Helper to render mock Suppliers & Purchases DOM reflecting PrintFlow Design System
   async function renderSuppliersPage(
     context: BrowserContext,
     options: {

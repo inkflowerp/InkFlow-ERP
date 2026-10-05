@@ -27,7 +27,7 @@ export default function PrivacyPolicyPage() {
             </h1>
             <p className="text-muted-foreground text-base max-w-xl mx-auto leading-relaxed bangla-text">
               {tBilingual(
-                'How PrintERP protects your customer records, financial ledgers, and artwork files with bank-grade security standards.',
+                'How PrintFlow protects your customer records, financial ledgers, and artwork files with bank-grade security standards.',
                 'আপনার প্রতিষ্ঠানের আর্থিক হিসাব, গ্রাহকের তথ্য ও ফাইলসমূহ কীভাবে সুরক্ষিত রাখা হয়।'
               )}
             </p>
@@ -42,7 +42,7 @@ export default function PrivacyPolicyPage() {
               <span>1. Tenant Isolation & Data Ownership</span>
             </h2>
             <p>
-              Your print shop data belongs 100% to your enterprise. PrintERP utilizes row-level multi-tenant isolation and PostgreSQL encryption to guarantee that no other shop or unauthorized third party can ever view your quotation pricing, profit margins, customer credit ledgers, or employee salaries.
+              Your print shop data belongs 100% to your enterprise. PrintFlow utilizes row-level multi-tenant isolation and PostgreSQL encryption to guarantee that no other shop or unauthorized third party can ever view your quotation pricing, profit margins, customer credit ledgers, or employee salaries.
             </p>
           </section>
 
@@ -52,7 +52,7 @@ export default function PrivacyPolicyPage() {
               <span>2. Encryption & Financial Data</span>
             </h2>
             <p>
-              All traffic between your browser or mobile phone and the PrintERP cloud is encrypted using TLS 1.3 with AES-256 standards. Financial records (e.g. bKash TrxID numbers, cash receipts, and customer debts) are audited with immutable timestamping.
+              All traffic between your browser or mobile phone and the PrintFlow cloud is encrypted using TLS 1.3 with AES-256 standards. Financial records (e.g. bKash TrxID numbers, cash receipts, and customer debts) are audited with immutable timestamping.
             </p>
           </section>
 

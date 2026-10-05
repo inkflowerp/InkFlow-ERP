@@ -1,5 +1,5 @@
 // ==============================================================================
-// InkFlow ERP - Authoritative Workforce Repository
+// PrintFlow - Authoritative Workforce Repository
 // PostgreSQL persistence with DataStore fallback for Employees, Shifts,
 // Daily Attendance, Overtime Records, Salary Advances, Payroll & Payments
 // ==============================================================================

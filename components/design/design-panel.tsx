@@ -794,7 +794,7 @@ export function DesignPanel({ defaultTab = 'new_tasks' }: DesignPanelProps) {
  isOpen={whatsAppModalState.isOpen}
  onClose={() => setWhatsAppModalState({ isOpen: false, job: null, template: 'proof' })}
  job={whatsAppModalState.job}
- companyName={company?.name || 'InkFlow ERP'}
+ companyName={company?.name || 'PrintFlow Commercial Press'}
  initialTemplate={whatsAppModalState.template}
  onShowNotification={showNotification}
         />

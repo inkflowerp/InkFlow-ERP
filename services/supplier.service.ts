@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP / InkFlow SaaS - Supplier Service (V5)
+// PrintFlow SaaS - Supplier Service (V5)
 // Multi-Tenant Supplier Operations, Item Mapping & Price Intelligence
 // ==============================================================================
 

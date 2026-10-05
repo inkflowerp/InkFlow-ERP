@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP SaaS - Unit Tests: Business Email Event Dispatches
+// PrintFlow - Unit Tests: Business Email Event Dispatches
 // ==============================================================================
 
 import { describe, it, beforeEach } from 'node:test'
@@ -64,7 +64,7 @@ describe('Business Email Event Workflow Unit Tests', () => {
       paidAmount: 100000,
       dueAmount: 150000,
       dueDate: '15-Dec-2026',
-      paymentLink: 'https://printerp.com/pay/INV-0441',
+      paymentLink: 'https://printflow.bd/pay/INV-0441',
     })
 
     assert.strictEqual(res.success, true)
@@ -111,7 +111,7 @@ describe('Business Email Event Workflow Unit Tests', () => {
       jobTitle: 'Acrylic LED Letter Signage 3D',
       customerName: 'Beximco Pharma',
       recipientEmail: 'brand@beximco.com',
-      proofUrl: 'https://printerp.com/proofs/dsg-552/review',
+      proofUrl: 'https://printflow.bd/proofs/dsg-552/review',
       approvalDeadline: 'Tomorrow 5:00 PM',
     })
 

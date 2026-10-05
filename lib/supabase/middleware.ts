@@ -151,7 +151,7 @@ export async function updateSession(request: NextRequest) {
       return NextResponse.rewrite(url)
     }
 
-    // 0b. Handle Reserved System Subdomains (e.g. admin.inkflow.com.bd -> redirect to root/platform)
+    // 0b. Handle Reserved System Subdomains (e.g. admin.printflow.bd -> redirect to root/platform)
     if (hostType === 'reserved') {
       if (tenantSlug === 'platform' || tenantSlug === 'platform-admin' || tenantSlug === 'admin') {
         const url = request.nextUrl.clone()
@@ -351,7 +351,7 @@ export async function updateSession(request: NextRequest) {
     }
 
     // --------------------------------------------------------------------------
-    // B. TENANT SUBDOMAIN ROUTING (e.g. vision.inkflow.com.bd or vision.localhost:3000)
+    // B. TENANT SUBDOMAIN ROUTING (e.g. vision.printflow.bd or vision.localhost:3000)
     // --------------------------------------------------------------------------
     if (hostType === 'tenant' && tenantSlug) {
       // 0. Platform routes are completely unreachable on tenant hosts
@@ -403,7 +403,7 @@ export async function updateSession(request: NextRequest) {
         return applyNoCacheHeaders(NextResponse.redirect(cleanUrl, 307))
       }
 
-      // 3. Tenant Auth Paths on Subdomain (e.g. vision.inkflow.com.bd/login)
+      // 3. Tenant Auth Paths on Subdomain (e.g. vision.printflow.bd/login)
       if (isAuthPage) {
         if (pathname === '/login') {
           const hasAuthError = request.nextUrl.searchParams.has('error') || request.nextUrl.searchParams.has('logged_out')
@@ -523,7 +523,7 @@ export async function updateSession(request: NextRequest) {
     }
 
     // --------------------------------------------------------------------------
-    // C. ROOT DOMAIN ROUTING (e.g. inkflowerp.com, localhost:3000)
+    // C. ROOT DOMAIN ROUTING (e.g. printflow.bd, localhost:3000)
     // --------------------------------------------------------------------------
     if (hostType === 'root') {
       const pathParts = pathname.split('/').filter(Boolean)
@@ -602,7 +602,7 @@ export async function updateSession(request: NextRequest) {
         }
       }
 
-      // 4. If user visits explicit path with tenant slug on root domain (e.g. inkflowerp.com/alpha-print/invoices)
+      // 4. If user visits explicit path with tenant slug on root domain (e.g. printflow.bd/alpha-print/invoices)
       const isKnownRootSegment =
         firstSegment === '' ||
         isReservedSlug(firstSegment) ||

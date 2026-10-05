@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP / InkFlow SaaS - Authoritative Authentication & Tenant Authorization Service
+// PrintFlow SaaS - Authoritative Authentication & Tenant Authorization Service
 // Manages Supabase Auth, registration with email OTP/link gating, anti-enumeration
 // password reset, platform vs tenant isolation, and session establishment.
 // ==============================================================================
@@ -1393,7 +1393,7 @@ export class AuthService {
         session: sessionData,
         requiresOnboarding: true,
       },
-      message: 'Email successfully verified! Welcome to InkFlow.',
+      message: 'Email successfully verified! Welcome to PrintFlow.',
     }
   }
 

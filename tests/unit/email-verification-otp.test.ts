@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP / InkFlow SaaS - Unit Tests: Email Verification & OTP Security
+// PrintFlow / PrintFlow SaaS - Unit Tests: Email Verification & OTP Security
 // Tests 6-digit OTP generation, single-use tokens, SHA-256 hashing, timing-safe
 // comparison, 10-minute expiry, 5-attempt brute-force protection, 60s cooldowns,
 // purpose isolation, and email dispatch.
@@ -162,7 +162,7 @@ describe('Email Verification & OTP Security Unit Tests', () => {
 
   it('10. Dispatches Registration Verification Email with 6-digit OTP and link', async () => {
     const sendRes = await AuthEmailService.sendRegistrationVerificationEmail({
-      email: 'newuser@inkflow.com',
+      email: 'newuser@printflow.test',
       fullName: 'Kamrul Islam',
     })
 
@@ -174,7 +174,7 @@ describe('Email Verification & OTP Security Unit Tests', () => {
 
   it('11. Dispatches Password Reset Email with 6-digit OTP and link', async () => {
     const sendRes = await AuthEmailService.sendPasswordResetEmail({
-      email: 'resetuser@inkflow.com',
+      email: 'resetuser@printflow.test',
       userName: 'Reset User',
       scopeType: 'PLATFORM',
     })
@@ -209,7 +209,7 @@ describe('Email Verification & OTP Security Unit Tests', () => {
   })
 
   it('13. Finalizes registration verification and activates user profile', async () => {
-    const email = 'activation-flow@inkflow.com'
+    const email = 'activation-flow@printflow.test'
     const regRes = await AuthEmailService.createVerificationRecord({
       email,
       purpose: 'registration',
@@ -224,7 +224,7 @@ describe('Email Verification & OTP Security Unit Tests', () => {
   })
 
   it('14. Verifies registration URL link token flow', async () => {
-    const email = 'link-flow@inkflow.com'
+    const email = 'link-flow@printflow.test'
     const regRes = await AuthEmailService.createVerificationRecord({
       email,
       purpose: 'registration',
@@ -239,7 +239,7 @@ describe('Email Verification & OTP Security Unit Tests', () => {
   })
 
   it('15. Verifies direct token resolution and finalizeRegistrationVerification (/auth/verify route flow)', async () => {
-    const email = 'route-flow@inkflow.com'
+    const email = 'route-flow@printflow.test'
     const regRes = await AuthEmailService.createVerificationRecord({
       email,
       purpose: 'registration',
@@ -260,7 +260,7 @@ describe('Email Verification & OTP Security Unit Tests', () => {
   })
 
   it('16. checkRegistrationVerificationStatus live polling detects link verification status', async () => {
-    const email = 'poll-check@inkflow.com'
+    const email = 'poll-check@printflow.test'
     
     // Initial check: not verified
     const initCheck = await AuthService.checkRegistrationVerificationStatus(email)
@@ -286,7 +286,7 @@ describe('Email Verification & OTP Security Unit Tests', () => {
   })
 
   it('17. OTP submission gracefully succeeds and returns session if user already verified via link', async () => {
-    const email = 'link-first-otp-second@inkflow.com'
+    const email = 'link-first-otp-second@printflow.test'
 
     // 1. User signs up and verification code & link are dispatched
     const regRes = await AuthEmailService.createVerificationRecord({
@@ -309,7 +309,7 @@ describe('Email Verification & OTP Security Unit Tests', () => {
   })
 
   it('18. Directs to workspace dashboard when user already completed onboarding', async () => {
-    const email = 'already-onboarded@inkflow.com'
+    const email = 'already-onboarded@printflow.test'
     const origResolve = (TenantRepository as any).resolveUserMembership
     try {
       (TenantRepository as any).resolveUserMembership = async (userId: string) => {

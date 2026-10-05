@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import { CustomerRepository } from '../../lib/repositories/customer.repository.ts'
 import { BillingRepository } from '../../lib/repositories/billing.repository.ts'
 import { DesignRepository } from '../../lib/repositories/design.repository.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import type { CustomerRecord } from '../../types/crm.types.ts'
 
 describe('Customer Outstanding Balance, Orders & Job Flow, and Design Panel Intake Tests', () => {
@@ -95,14 +95,14 @@ describe('Customer Outstanding Balance, Orders & Job Flow, and Design Panel Inta
     assert.ok(invoice.id)
 
     // Verify Sales Order was auto-provisioned in datastore
-    const orders = PrintERPDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []
+    const orders = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []
     const matchingOrder = orders.find((o) => o.company_id === TENANT_ID && o.invoice_id === invoice.id)
     assert.ok(matchingOrder, 'Sales Order must be auto-provisioned for invoice')
     assert.equal(matchingOrder.commercial_status, 'invoice_created')
     assert.equal(matchingOrder.production_gate_status, 'ready_for_production')
 
     // Verify Job Orders were auto-provisioned
-    const jobOrders = PrintERPDataStore.get<any[]>(STORAGE_KEYS.JOB_ORDERS) || []
+    const jobOrders = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.JOB_ORDERS) || []
     const matchingJobs = jobOrders.filter((j) => j.company_id === TENANT_ID && j.invoice_id === invoice.id)
     assert.ok(matchingJobs.length >= 1, 'Job Order must be auto-provisioned for invoice line items')
     assert.equal(matchingJobs[0].production_instructions, 'Finishing: Gloss Lamination + Die Cut')

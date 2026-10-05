@@ -1,5 +1,5 @@
 /**
- * Runtime environment detection for InkFlow SaaS.
+ * Runtime environment detection for PrintFlow SaaS.
  * Distinguishes between test suites, browser, and server execution.
  */
 export function isTestEnvironment(): boolean {

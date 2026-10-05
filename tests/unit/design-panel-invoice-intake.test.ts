@@ -1,17 +1,17 @@
 import { describe, it, beforeEach } from 'node:test'
 import assert from 'node:assert/strict'
 import { DesignRepository } from '../../lib/repositories/design.repository.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import type { DesignJobRecord } from '../../types/design.types.ts'
 
 describe('Design Panel - Invoice Design Required & Design OK Intake Tests', () => {
   const companyId = 'c-test-intake-99'
 
   beforeEach(() => {
-    PrintERPDataStore.set(STORAGE_KEYS.DESIGN_JOBS, [])
-    PrintERPDataStore.set(STORAGE_KEYS.INVOICES, [])
-    PrintERPDataStore.set(STORAGE_KEYS.CUSTOMERS, [])
-    PrintERPDataStore.set(STORAGE_KEYS.JOB_ORDERS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.DESIGN_JOBS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.INVOICES, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.CUSTOMERS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.JOB_ORDERS, [])
   })
 
   it('1. Correctly brings invoice item with workflow_routing="design_required" into Design Panel as a new task', async () => {
@@ -39,7 +39,7 @@ describe('Design Panel - Invoice Design Required & Design OK Intake Tests', () =
       ],
       created_at: new Date().toISOString(),
     }
-    PrintERPDataStore.addItem(STORAGE_KEYS.INVOICES, invoice)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.INVOICES, invoice)
 
     await DesignRepository.createDesignJob({
       id: 'dsn-test-req-01',
@@ -88,7 +88,7 @@ describe('Design Panel - Invoice Design Required & Design OK Intake Tests', () =
       ],
       created_at: new Date().toISOString(),
     }
-    PrintERPDataStore.addItem(STORAGE_KEYS.INVOICES, invoice)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.INVOICES, invoice)
 
     await DesignRepository.createDesignJob({
       id: 'dsn-test-ok-02',
@@ -158,7 +158,7 @@ describe('Design Panel - Invoice Design Required & Design OK Intake Tests', () =
       ],
       created_at: new Date().toISOString(),
     }
-    PrintERPDataStore.addItem(STORAGE_KEYS.INVOICES, invoice)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.INVOICES, invoice)
 
     await DesignRepository.createDesignJob({
       id: 'dsn-test-multi-box',

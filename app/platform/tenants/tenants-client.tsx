@@ -617,7 +617,7 @@ export default function PlatformTenantsPage() {
  Tenants Management
  </h1>
  <p className="text-xs sm:text-sm text-muted-foreground mt-1">
- Authoritative directory of all organizations on the InkFlow platform with lifecycle governance.
+ Authoritative directory of all organizations on the PrintFlow platform with lifecycle governance.
  </p>
  </div>
 
@@ -968,7 +968,7 @@ export default function PlatformTenantsPage() {
  <div className="flex items-center gap-1.5">
  <Mail className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
  <a
- href={`mailto:${reg.email}?subject=${encodeURIComponent('Complete your InkFlow ERP Workspace Setup')}`}
+ href={`mailto:${reg.email}?subject=${encodeURIComponent('Complete your PrintFlow Workspace Setup')}`}
  className="tabular-nums text-foreground hover:text-primary transition-colors truncate max-w-44"
  title="Click to send email"
  >
@@ -1784,7 +1784,7 @@ export default function PlatformTenantsPage() {
  <Button
  type="button"
  onClick={() => {
- const payload = `🚀 Welcome to InkFlow ERP!\n\nYour organization workspace is ready:\n🏢 Organization: ${provisionedResult.credentials.businessName}\n🌐 Login URL: ${window.location.origin}${provisionedResult.credentials.loginUrl}\n👤 Owner Email: ${provisionedResult.credentials.email}\n🔑 Password: ${provisionedResult.credentials.password}\n📦 Plan: ${provisionedResult.credentials.plan.toUpperCase()}\n\nPlease log in and update your password from your profile settings.`
+ const payload = `🚀 Welcome to PrintFlow!\n\nYour organization workspace is ready:\n🏢 Organization: ${provisionedResult.credentials.businessName}\n🌐 Login URL: ${window.location.origin}${provisionedResult.credentials.loginUrl}\n👤 Owner Email: ${provisionedResult.credentials.email}\n🔑 Password: ${provisionedResult.credentials.password}\n📦 Plan: ${provisionedResult.credentials.plan.toUpperCase()}\n\nPlease log in and update your password from your profile settings.`
  handleCopyText(payload, 'all')
  }}
  className="w-full bg-muted hover:bg-muted text-foreground hover:text-foreground font-medium text-xs h-9 border border-border rounded-xl"

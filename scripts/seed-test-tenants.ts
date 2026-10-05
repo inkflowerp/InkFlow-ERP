@@ -613,7 +613,7 @@ const TENANTS: TenantSeedConfig[] = [
 
 // 3. EXECUTION LOGIC (IDEMPOTENT UPSERTS)
 async function seedTestTenants() {
-  console.log('\n--- INKFLOW ERP: SEEDING TEST TENANTS (PHASE-0 ISOLATION DATASET) ---')
+  console.log('\n--- PRINTFLOW: SEEDING TEST TENANTS (PHASE-0 ISOLATION DATASET) ---')
   console.log(`Connecting to Postgres database...`)
 
   const client = new Client({

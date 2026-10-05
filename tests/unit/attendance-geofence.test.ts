@@ -104,10 +104,11 @@ describe('Attendance Geofence & Haversine Distance Calculation Tests', () => {
   it('7. Generates cryptographically secure QR tokens and produces matching SHA-256 hashes', () => {
     const { rawToken, tokenHash, tokenPrefix } = generateSecureQrToken()
     assert.ok(rawToken.length >= 64)
-    assert.ok(tokenPrefix.startsWith('INK-LOC-'))
+    assert.ok(tokenPrefix.startsWith('PF-LOC-'))
     assert.equal(hashQrToken(rawToken), tokenHash)
-    assert.equal(hashQrToken(`INKFLOW:ATT:v1:${rawToken}`), tokenHash)
-    assert.equal(hashQrToken(`https://app.inkflow.io/punch?qr=${rawToken}`), tokenHash)
+    assert.equal(hashQrToken(`PRINTFLOW:ATT:v1:${rawToken}`), tokenHash)
+    assert.equal(hashQrToken(`PRINTFLOW:ATT:v1:${rawToken}`), tokenHash)
+    assert.equal(hashQrToken(`https://app.printflow.bd/punch?qr=${rawToken}`), tokenHash)
   })
 
   it('8. Enforces valid punch transition state machine (Check-In -> Check-Out)', () => {

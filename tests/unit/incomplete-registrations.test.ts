@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP / InkFlow SaaS - Unit Tests: Incomplete Registrations Management
+// PrintFlow / PrintFlow SaaS - Unit Tests: Incomplete Registrations Management
 // Tests detection of started-but-not-finished registrations, stage categorization,
 // exclusion of provisioned tenants, OTP resend, and abandoned registration purge.
 // ==============================================================================
@@ -62,12 +62,12 @@ describe('Incomplete Registrations Platform Management Test Suite', () => {
   describe('2. Active Tenant & Completed User Exclusion Logic', () => {
     it('Excludes users and emails that belong to existing companies or platform admins', () => {
       const completedUserIds = new Set<string>(['user-100', 'user-200'])
-      const completedEmails = new Set<string>(['owner@active-press.com', 'admin@printerp.com'])
+      const completedEmails = new Set<string>(['owner@active-press.com', 'admin@printflow.bd'])
 
       const mockRegistrations = [
         { id: 'v-1', user_id: 'user-100', email: 'owner@active-press.com', full_name: 'Existing Owner' },
         { id: 'v-2', user_id: 'user-300', email: 'incomplete@newshop.com', full_name: 'New Prospect' },
-        { id: 'v-3', user_id: null, email: 'admin@printerp.com', full_name: 'Platform Admin' },
+        { id: 'v-3', user_id: null, email: 'admin@printflow.bd', full_name: 'Platform Admin' },
         { id: 'v-4', user_id: null, email: 'prospect2@domain.com', full_name: 'Second Prospect' },
       ]
 

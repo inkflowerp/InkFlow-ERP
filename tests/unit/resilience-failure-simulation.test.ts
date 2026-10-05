@@ -244,20 +244,20 @@ describe('Real-World Resilience & Failure Simulation Suite', () => {
 
     it('EntitlementService respects emergency platform kill-switch feature flags', async () => {
       const { EntitlementService } = await import('../../services/entitlement.service.ts')
-      const { PrintERPDataStore, STORAGE_KEYS } = await import('../../lib/db/data-store.ts')
+      const { PrintFlowDataStore, STORAGE_KEYS } = await import('../../lib/db/data-store.ts')
 
-      const originalFlags = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PLATFORM_FEATURE_FLAGS) || []
+      const originalFlags = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.PLATFORM_FEATURE_FLAGS) || []
 
       try {
         // Explicitly disable whatsapp_notifications at platform level
-        PrintERPDataStore.set(STORAGE_KEYS.PLATFORM_FEATURE_FLAGS, [
+        PrintFlowDataStore.set(STORAGE_KEYS.PLATFORM_FEATURE_FLAGS, [
           { key: 'whatsapp_notifications', is_enabled: false },
         ])
 
         const canUse = await EntitlementService.canUseFeature('tenant-test-1', 'whatsapp_notifications' as any)
         assert.strictEqual(canUse, false, 'Globally disabled feature must return false regardless of tenant plan')
       } finally {
-        PrintERPDataStore.set(STORAGE_KEYS.PLATFORM_FEATURE_FLAGS, originalFlags)
+        PrintFlowDataStore.set(STORAGE_KEYS.PLATFORM_FEATURE_FLAGS, originalFlags)
       }
     })
   })
@@ -317,11 +317,11 @@ describe('Real-World Resilience & Failure Simulation Suite', () => {
         process.env.NEXT_PUBLIC_SUPABASE_URL = 'http://127.0.0.1:59999'
 
         // Create a local quotation in test store
-        const { PrintERPDataStore, STORAGE_KEYS } = await import('../../lib/db/data-store.ts')
+        const { PrintFlowDataStore, STORAGE_KEYS } = await import('../../lib/db/data-store.ts')
         const companyId = 'b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e'
         const quoteId = 'c3d4e5f6-a7b8-4c9d-0e1f-2a3b4c5d6e7f'
 
-        PrintERPDataStore.addItem(STORAGE_KEYS.QUOTATIONS, {
+        PrintFlowDataStore.addItem(STORAGE_KEYS.QUOTATIONS, {
           id: quoteId,
           company_id: companyId,
           quotation_number: 'QUO-FAIL-TEST',
@@ -407,11 +407,11 @@ describe('Real-World Resilience & Failure Simulation Suite', () => {
 
     it('Quotation conversion self-heals and deduplicates if order already exists in store', async () => {
       const { QuotationRepository } = await import('../../lib/repositories/quotation.repository.ts')
-      const { PrintERPDataStore, STORAGE_KEYS } = await import('../../lib/db/data-store.ts')
+      const { PrintFlowDataStore, STORAGE_KEYS } = await import('../../lib/db/data-store.ts')
       const companyId = `comp-dedup-${Date.now()}`
       const quoteId = `quo-dedup-${Date.now()}`
 
-      PrintERPDataStore.addItem(STORAGE_KEYS.QUOTATIONS, {
+      PrintFlowDataStore.addItem(STORAGE_KEYS.QUOTATIONS, {
         id: quoteId,
         company_id: companyId,
         quotation_number: 'QUO-DEDUP-001',

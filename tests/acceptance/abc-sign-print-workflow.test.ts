@@ -2,12 +2,12 @@ import { test, describe } from 'node:test'
 import assert from 'node:assert'
 
 // ==============================================================================
-// PrintERP SaaS - Acceptance Test Suite: Complete 23-Step Business Lifecycle
+// PrintFlow - Acceptance Test Suite: Complete 23-Step Business Lifecycle
 // Company: "Apex Sign & Print"
 // Roles: Owner, Sales Manager, Designer, Production Manager, Operator, Staff
 // ==============================================================================
 
-describe('PrintERP SaaS — Final Acceptance Test: "Apex Sign & Print" Lifecycle', () => {
+describe('PrintFlow — Final Acceptance Test: "Apex Sign & Print" Lifecycle', () => {
   // Shared Test Context
   const company = {
     id: 'comp-apex-001',

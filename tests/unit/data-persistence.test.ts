@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert'
 
-// Unit test mock of PrintERP unified persistence storage engine
+// Unit test mock of PrintFlow unified persistence storage engine
 class PersistenceEngine {
   private cache: Map<string, any> = new Map()
 

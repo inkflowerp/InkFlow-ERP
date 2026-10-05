@@ -140,7 +140,7 @@ describe('Quotation & Invoice PDF and Communication Template Suite', () => {
   })
 
   test('3. CommunicationTemplateService correctly builds variables & interpolates templates', () => {
-    const vars = CommunicationTemplateService.buildQuotationVariables(mockQuotation, mockCompany, 'https://printerp.app')
+    const vars = CommunicationTemplateService.buildQuotationVariables(mockQuotation, mockCompany, 'https://printflow.bd')
     assert.strictEqual(vars.customer_name, 'Metro Retail Ltd.')
     assert.strictEqual(vars.quotation_number, 'Q-2026-0099')
     assert.ok(vars.grand_total.includes('32,250'))
@@ -152,7 +152,7 @@ describe('Quotation & Invoice PDF and Communication Template Suite', () => {
   })
 
   test('4. CommunicationTemplateService interpolates Invoice variables accurately', () => {
-    const vars = CommunicationTemplateService.buildInvoiceVariables(mockInvoice, mockCompany, 'https://printerp.app')
+    const vars = CommunicationTemplateService.buildInvoiceVariables(mockInvoice, mockCompany, 'https://printflow.bd')
     assert.strictEqual(vars.invoice_number, 'INV-2026-0501')
     assert.ok(vars.due_amount.includes('22,250'))
     assert.ok(vars.paid_amount.includes('10,000'))
@@ -274,7 +274,7 @@ describe('Quotation & Invoice PDF and Communication Template Suite', () => {
   })
 
   test('9. buildQuotationVariables and buildInvoiceVariables populate all supported variables without arbitrary leaks', () => {
-    const quoteVars = CommunicationTemplateService.buildQuotationVariables(mockQuotation, mockCompany, 'https://printerp.app')
+    const quoteVars = CommunicationTemplateService.buildQuotationVariables(mockQuotation, mockCompany, 'https://printflow.bd')
     assert.strictEqual(quoteVars.company_name, 'PrintCraft Visuals Ltd.')
     assert.strictEqual(quoteVars.customer_name, 'Metro Retail Ltd.')
     assert.strictEqual(quoteVars.customer_phone, '01711223344')
@@ -285,7 +285,7 @@ describe('Quotation & Invoice PDF and Communication Template Suite', () => {
     assert.strictEqual(quoteVars.quotation_total, '32,250')
     assert.strictEqual(quoteVars.salesperson_name, 'Imtiaz Ahmed')
 
-    const invVars = CommunicationTemplateService.buildInvoiceVariables(mockInvoice, mockCompany, 'https://printerp.app')
+    const invVars = CommunicationTemplateService.buildInvoiceVariables(mockInvoice, mockCompany, 'https://printflow.bd')
     assert.strictEqual(invVars.invoice_number, 'INV-2026-0501')
     assert.strictEqual(invVars.invoice_total, '32,250')
     assert.strictEqual(invVars.paid_amount, '10,000')

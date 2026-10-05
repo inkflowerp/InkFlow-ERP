@@ -1,6 +1,6 @@
 import { describe, it, beforeEach } from 'node:test'
 import assert from 'node:assert'
-import { PrintERPDataStore } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore } from '../../lib/db/data-store.ts'
 import { InventoryService } from '../../services/inventory.service.ts'
 import { InventoryRepository } from '../../lib/repositories/inventory.repository.ts'
 import { getMaterialWarehouseStockBreakdown } from '../../lib/units.ts'
@@ -62,8 +62,8 @@ describe('PVC Multi-Size Roll Stock Intake & Distinct Inventory Grouping', () =>
   }
 
   beforeEach(async () => {
-    PrintERPDataStore.purgeTenantData(testCompanyId)
-    PrintERPDataStore.clearAll(testCompanyId)
+    PrintFlowDataStore.purgeTenantData(testCompanyId)
+    PrintFlowDataStore.clearAll(testCompanyId)
     await InventoryService.createMaterial(pvcMaster)
   })
 

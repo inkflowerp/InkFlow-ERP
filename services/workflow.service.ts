@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP SaaS - Rebuilt Workflow Automations Engine
+// PrintFlow SaaS - Rebuilt Workflow Automations Engine
 // Multi-Tenant Declarative Trigger-Condition-Action Pipeline
 // Authoritative Supabase Database Persistence + Offline/Memory Fallback
 // ==============================================================================
@@ -919,7 +919,7 @@ export class WorkflowService {
       }
 
       case 'send_sms': {
-        const message = action.config.message || `PrintERP Update: ${entityType} ${entityId} status updated.`
+        const message = action.config.message || `PrintFlow Update: ${entityType} ${entityId} status updated.`
         const recipient = action.config.recipient || context.customer_phone || '+8801700000000'
 
         try {

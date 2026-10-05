@@ -10,7 +10,7 @@ import { MaterialPurchaseConfigRepository } from '../../lib/repositories/materia
 import { FinishingOptionRepository } from '../../lib/repositories/finishing-option.repository.ts'
 import { AdditionalOptionRepository } from '../../lib/repositories/additional-option.repository.ts'
 import { InstallationOptionRepository } from '../../lib/repositories/installation-option.repository.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import type {
   ProductRecord,
   PrintingMethod,
@@ -26,17 +26,17 @@ describe('Comprehensive Rebuild Acceptance Test Suite (Scenarios A through N)', 
 
   beforeEach(async () => {
     // Clean mock data store for tenant isolation
-    PrintERPDataStore.clear(STORAGE_KEYS.PRODUCTS, companyId)
-    PrintERPDataStore.clear(STORAGE_KEYS.MATERIALS, companyId)
-    PrintERPDataStore.clear(STORAGE_KEYS.MOUNTED_ROLLS, companyId)
-    PrintERPDataStore.clear(STORAGE_KEYS.REMNANTS, companyId)
-    PrintERPDataStore.clear(STORAGE_KEYS.PURCHASE_ORDERS, companyId)
-    PrintERPDataStore.clear(STORAGE_KEYS.GOODS_RECEIVED_NOTES, companyId)
-    PrintERPDataStore.clear(STORAGE_KEYS.PRINTING_METHODS, companyId)
-    PrintERPDataStore.clear(STORAGE_KEYS.MATERIAL_PURCHASE_CONFIGS, companyId)
-    PrintERPDataStore.clear(STORAGE_KEYS.FINISHING_OPTIONS, companyId)
-    PrintERPDataStore.clear(STORAGE_KEYS.ADDITIONAL_OPTIONS, companyId)
-    PrintERPDataStore.clear(STORAGE_KEYS.INSTALLATION_OPTIONS, companyId)
+    PrintFlowDataStore.clear(STORAGE_KEYS.PRODUCTS, companyId)
+    PrintFlowDataStore.clear(STORAGE_KEYS.MATERIALS, companyId)
+    PrintFlowDataStore.clear(STORAGE_KEYS.MOUNTED_ROLLS, companyId)
+    PrintFlowDataStore.clear(STORAGE_KEYS.REMNANTS, companyId)
+    PrintFlowDataStore.clear(STORAGE_KEYS.PURCHASE_ORDERS, companyId)
+    PrintFlowDataStore.clear(STORAGE_KEYS.GOODS_RECEIVED_NOTES, companyId)
+    PrintFlowDataStore.clear(STORAGE_KEYS.PRINTING_METHODS, companyId)
+    PrintFlowDataStore.clear(STORAGE_KEYS.MATERIAL_PURCHASE_CONFIGS, companyId)
+    PrintFlowDataStore.clear(STORAGE_KEYS.FINISHING_OPTIONS, companyId)
+    PrintFlowDataStore.clear(STORAGE_KEYS.ADDITIONAL_OPTIONS, companyId)
+    PrintFlowDataStore.clear(STORAGE_KEYS.INSTALLATION_OPTIONS, companyId)
   })
 
   // =========================================================================
@@ -71,7 +71,7 @@ describe('Comprehensive Rebuild Acceptance Test Suite (Scenarios A through N)', 
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }
-    PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCTS, xStandProduct, companyId)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.PRODUCTS, xStandProduct, companyId)
 
     // Verify ready product attributes (no roll fields forced)
     assert.equal(xStandProduct.entity_type, 'product')
@@ -219,7 +219,7 @@ describe('Comprehensive Rebuild Acceptance Test Suite (Scenarios A through N)', 
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }
-    PrintERPDataStore.addItem(STORAGE_KEYS.MATERIALS, rawMaterial, companyId)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.MATERIALS, rawMaterial, companyId)
 
     // Save arbitrary purchase configurations: 3.25, 4.25, 5.25, 5.5, 7.5, 8.0 ft
     const arbitraryWidths = [3.25, 4.25, 5.25, 5.5, 7.5, 8.0]
@@ -283,7 +283,7 @@ describe('Comprehensive Rebuild Acceptance Test Suite (Scenarios A through N)', 
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }
-    PrintERPDataStore.addItem(STORAGE_KEYS.MATERIALS, vinylMat, companyId)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.MATERIALS, vinylMat, companyId)
 
     // 2. Issue PO for 10 rolls
     const poRes = await PurchaseRepository.createPurchaseOrder({
@@ -448,7 +448,7 @@ describe('Comprehensive Rebuild Acceptance Test Suite (Scenarios A through N)', 
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }
-    PrintERPDataStore.addItem(STORAGE_KEYS.MATERIALS, varMat, companyId)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.MATERIALS, varMat, companyId)
 
     // 2. Create physical roll of 100ft
     const roll = await InventoryRepository.createRoll({
@@ -530,7 +530,7 @@ describe('Comprehensive Rebuild Acceptance Test Suite (Scenarios A through N)', 
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }
-    PrintERPDataStore.addItem(STORAGE_KEYS.MATERIALS, wasteMat, companyId)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.MATERIALS, wasteMat, companyId)
 
     const wasteRecord = await InventoryRepository.recordScrapWaste({
       company_id: companyId,

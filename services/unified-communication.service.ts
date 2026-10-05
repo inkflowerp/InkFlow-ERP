@@ -1,5 +1,5 @@
 // ==============================================================================
-// InkFlow ERP - Authoritative Unified Communication Service (V8)
+// PrintFlow - Authoritative Unified Communication Service (V8)
 // Multi-Channel WhatsApp, SMS, Email & In-App Dispatch Engine with Bilingual Templates & PDF Delivery
 // ==============================================================================
 

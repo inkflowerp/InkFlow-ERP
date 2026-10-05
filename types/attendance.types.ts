@@ -1,5 +1,5 @@
 // ==============================================================================
-// InkFlow ERP - Attendance & QR Geolocation Type Definitions
+// PrintFlow - Attendance & QR Geolocation Type Definitions
 // ==============================================================================
 
 export type AttendanceType =

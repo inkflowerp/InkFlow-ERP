@@ -1,7 +1,7 @@
 'use client'
 
 // ==============================================================================
-// PrintERP SaaS - Tenant WhatsApp Inbox & Customer Conversations
+// PrintFlow SaaS - Tenant WhatsApp Inbox & Customer Conversations
 // 3-Pane Responsive Layout: Conversations List | Live Chat Thread | Customer CRM Context
 // ==============================================================================
 

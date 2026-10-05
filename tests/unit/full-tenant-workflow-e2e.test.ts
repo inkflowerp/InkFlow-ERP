@@ -1,6 +1,6 @@
 import { test, describe, beforeEach } from 'node:test'
 import assert from 'node:assert'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import { QuotationRepository } from '../../lib/repositories/quotation.repository.ts'
 import { BillingRepository } from '../../lib/repositories/billing.repository.ts'
 import { DesignRepository } from '../../lib/repositories/design.repository.ts'
@@ -15,14 +15,14 @@ describe('Full Tenant End-to-End Workflow: Quotation -> Invoice -> Orders -> Des
   const companyId = 'comp-workflow-audit-001'
 
   beforeEach(() => {
-    PrintERPDataStore.set(STORAGE_KEYS.QUOTATIONS, [])
-    PrintERPDataStore.set(STORAGE_KEYS.INVOICES, [])
-    PrintERPDataStore.set(STORAGE_KEYS.ORDERS, [])
-    PrintERPDataStore.set(STORAGE_KEYS.DESIGN_JOBS, [])
-    PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, [])
-    PrintERPDataStore.set(STORAGE_KEYS.MATERIALS, [])
-    PrintERPDataStore.set(STORAGE_KEYS.STOCK_LEDGER, [])
-    PrintERPDataStore.set(STORAGE_KEYS.DELIVERY_CHALLANS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.QUOTATIONS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.INVOICES, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.ORDERS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.DESIGN_JOBS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.MATERIALS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.STOCK_LEDGER, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.DELIVERY_CHALLANS, [])
   })
 
   test('1. Quotation -> Invoice: preserves quoted rates, item kinds, design requirements, and post-press finishing', async () => {
@@ -96,7 +96,7 @@ describe('Full Tenant End-to-End Workflow: Quotation -> Invoice -> Orders -> Des
       ],
     }
 
-    PrintERPDataStore.addItem(STORAGE_KEYS.QUOTATIONS, quote)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.QUOTATIONS, quote)
 
     // Convert Quotation to Invoice
     const invoice = await QuotationRepository.convertQuotationToInvoice(quote.id, companyId, {
@@ -185,7 +185,7 @@ describe('Full Tenant End-to-End Workflow: Quotation -> Invoice -> Orders -> Des
       ],
     }
 
-    PrintERPDataStore.set(STORAGE_KEYS.INVOICES, [mixedInvoice])
+    PrintFlowDataStore.set(STORAGE_KEYS.INVOICES, [mixedInvoice])
 
     // Create genuine design job for custom item
     await DesignRepository.createDesignJob({
@@ -274,7 +274,7 @@ describe('Full Tenant End-to-End Workflow: Quotation -> Invoice -> Orders -> Des
       ],
     }
 
-    PrintERPDataStore.set(STORAGE_KEYS.INVOICES, [invoice])
+    PrintFlowDataStore.set(STORAGE_KEYS.INVOICES, [invoice])
 
     await DesignRepository.createDesignJob({
       id: 'dsn-prod-301',
@@ -322,7 +322,7 @@ describe('Full Tenant End-to-End Workflow: Quotation -> Invoice -> Orders -> Des
       updated_at: new Date().toISOString(),
     }
 
-    PrintERPDataStore.addItem(STORAGE_KEYS.MATERIALS, initialMaterial)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.MATERIALS, initialMaterial)
 
     // Deduct 240 sqft for production job
     const result = await InventoryRepository.recordStockAdjustment({
@@ -397,7 +397,7 @@ describe('Full Tenant End-to-End Workflow: Quotation -> Invoice -> Orders -> Des
       ],
     }
 
-    PrintERPDataStore.set(STORAGE_KEYS.INVOICES, [invoiceWithDue])
+    PrintFlowDataStore.set(STORAGE_KEYS.INVOICES, [invoiceWithDue])
 
     const createdChallan = await LogisticsRepository.createChallan({
       company_id: companyId,
@@ -453,7 +453,7 @@ describe('Full Tenant End-to-End Workflow: Quotation -> Invoice -> Orders -> Des
 
     // Confirm Delivery with receiver sign-off
     const now = new Date().toISOString()
-    const updatedChallan = PrintERPDataStore.updateItem(STORAGE_KEYS.DELIVERY_CHALLANS, ch.id, {
+    const updatedChallan = PrintFlowDataStore.updateItem(STORAGE_KEYS.DELIVERY_CHALLANS, ch.id, {
       status: 'delivered',
       delivered_at: now,
       receiver_name: 'Mahbubur Rahman (Admin Officer)',

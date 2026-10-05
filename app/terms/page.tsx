@@ -27,8 +27,8 @@ export default function TermsOfServicePage() {
             </h1>
             <p className="text-muted-foreground text-base max-w-xl mx-auto leading-relaxed bangla-text">
               {tBilingual(
-                'Clear, fair terms governing the usage, billing, and support of the PrintERP SaaS platform.',
-                'প্রিন্টইআরপি প্ল্যাটফর্ম ব্যবহার ও সেবার নীতিমালা।'
+                'Clear, fair terms governing the usage, billing, and support of the PrintFlow SaaS platform.',
+                'প্রিন্টফ্লো প্ল্যাটফর্ম ব্যবহার ও সেবার নীতিমালা।'
               )}
             </p>
           </div>
@@ -42,7 +42,7 @@ export default function TermsOfServicePage() {
               <span>1. SaaS Subscription & Free Trial</span>
             </h2>
             <p>
-              PrintERP provides a 14-day fully featured trial with zero credit card commitment. At the conclusion of the trial period, organizations can select an active plan (Starter, Business, or Enterprise) billed in Bangladeshi Taka (৳ BDT) on a monthly or annual cycle.
+              PrintFlow provides a 14-day fully featured trial with zero credit card commitment. At the conclusion of the trial period, organizations can select an active plan (Starter, Business, or Enterprise) billed in Bangladeshi Taka (৳ BDT) on a monthly or annual cycle.
             </p>
           </section>
 
@@ -62,7 +62,7 @@ export default function TermsOfServicePage() {
               <span>3. Service Level Agreement (SLA) & Uptime</span>
             </h2>
             <p>
-              PrintERP guarantees a 99.9% uptime SLA across all production infrastructure. Enterprise tier subscribers receive 24/7 dedicated telephone and on-site engineering escalation support in Bangladesh.
+              PrintFlow guarantees a 99.9% uptime SLA across all production infrastructure. Enterprise tier subscribers receive 24/7 dedicated telephone and on-site engineering escalation support in Bangladesh.
             </p>
           </section>
         </div>

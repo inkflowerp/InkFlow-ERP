@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP SaaS - Asynchronous Communication Job Queue & Retry Worker (V2)
+// PrintFlow SaaS - Asynchronous Communication Job Queue & Retry Worker (V2)
 // Database-backed job queue with atomic FOR UPDATE SKIP LOCKED claiming,
 // exponential backoff, dead-letter status, per-tenant rate limits, and PII protection.
 // ==============================================================================
@@ -150,7 +150,7 @@ export class CommunicationJobQueue {
         const waRes = await CommunicationRouter.sendTenantWhatsApp({
           companyId: jobRecord.tenant_id,
           recipientPhone: jobRecord.recipient_phone,
-          messageText: payload.message || payload.text || 'PrintERP Notification',
+          messageText: payload.message || payload.text || 'PrintFlow Notification',
           documentUrl: payload.documentUrl,
           documentFilename: payload.documentFilename,
           customerId: jobRecord.recipient_customer_id || undefined,
@@ -171,7 +171,7 @@ export class CommunicationJobQueue {
           category: 'sms',
           recipient: jobRecord.recipient_phone,
           recipientName: payload.recipientName || 'Customer',
-          message: payload.message || payload.text || 'PrintERP Alert',
+          message: payload.message || payload.text || 'PrintFlow Alert',
         })
 
         success = smsRes.success
@@ -205,7 +205,7 @@ export class CommunicationJobQueue {
           company_id: jobRecord.tenant_id,
           user_id: jobRecord.recipient_user_id || null,
           type: payload.notificationType || 'customer_approval_needed',
-          title: payload.title || 'PrintERP Alert',
+          title: payload.title || 'PrintFlow Alert',
           title_bn: payload.title_bn || payload.title,
           message: payload.message || '',
           message_bn: payload.message_bn || payload.message,

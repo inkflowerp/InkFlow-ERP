@@ -150,7 +150,7 @@ export function FeatureDeepDiveSection() {
  const grandTotal = Math.round(afterDiscount + vatAmount)
 
  const handleCopyQuote = () => {
- const text = `*PrintERP SFT Quotation*\nSize: ${calcWidth}ft × ${calcHeight}ft (${calcQty} pcs) = ${totalSft} SFT\nRate: ৳${calcRate}/sft\nSubtotal: ৳${subtotal.toLocaleString()}\nDiscount (${calcDiscount}%): -৳${Math.round(discountAmount).toLocaleString()}\nVAT (${calcVat}%): +৳${Math.round(vatAmount).toLocaleString()}\n*Grand Total: ৳${grandTotal.toLocaleString()} BDT*`
+ const text = `*PrintFlow SFT Quotation*\nSize: ${calcWidth}ft × ${calcHeight}ft (${calcQty} pcs) = ${totalSft} SFT\nRate: ৳${calcRate}/sft\nSubtotal: ৳${subtotal.toLocaleString()}\nDiscount (${calcDiscount}%): -৳${Math.round(discountAmount).toLocaleString()}\nVAT (${calcVat}%): +৳${Math.round(vatAmount).toLocaleString()}\n*Grand Total: ৳${grandTotal.toLocaleString()} BDT*`
  navigator.clipboard.writeText(text)
  setCopiedQuote(true)
  setTimeout(() => setCopiedQuote(false), 3000)
@@ -196,7 +196,7 @@ export function FeatureDeepDiveSection() {
 
             <p className="text-sm sm:text-base text-muted-foreground leading-relaxed bangla-text">
               {tBilingual(
-                'Say goodbye to mental math and calculator errors. PrintERP calculates square feet, converts running feet for signboard frames, applies finishing charges (eyelets, lamination, die-cuts), and auto-adds NBR VAT in real time.',
+                'Say goodbye to mental math and calculator errors. PrintFlow calculates square feet, converts running feet for signboard frames, applies finishing charges (eyelets, lamination, die-cuts), and auto-adds NBR VAT in real time.',
                 'ক্যালকুলেটর নিয়ে ভুল করার দিন শেষ। ইঞ্চি ও ফিট ইনপুট দিন—সফটওয়্যার নিজে থেকে স্কয়ারফিট, রোল খরচ, ল্যামিনেশন ও ভ্যাট হিসাব করে ব্র্যান্ডেড পিডিএফ রেডি করে দেবে।'
               )}
             </p>
@@ -502,13 +502,13 @@ export function FeatureDeepDiveSection() {
 
             <p className="text-sm sm:text-base text-muted-foreground leading-relaxed bangla-text">
               {tBilingual(
-                'Many shop owners celebrate high sales only to find their bank account empty at the end of the month. PrintERP calculates the exact bill of materials (media, ink, grommets, ACP, frame pipe), electricity, operator labor, and transport to reveal your true net profit.',
-                'অনেক সময় লাখ টাকার বিল করেও মাস শেষে ক্যাশ থাকে না। কারণ লুকায়িত খরচগুলো হিসাবে আসে না। প্রিন্টইআরপিতে মেটেরিয়াল, কালি, বিদ্যুৎ, কারিগরের মজুরি ও পরিবহন বাদ দিয়ে প্রতিটি কাজের আসল লাভ নিশ্চিত করা হয়।'
+                'Many shop owners celebrate high sales only to find their bank account empty at the end of the month. PrintFlow calculates the exact bill of materials (media, ink, grommets, ACP, frame pipe), electricity, operator labor, and transport to reveal your true net profit.',
+                'অনেক সময় লাখ টাকার বিল করেও মাস শেষে ক্যাশ থাকে না। কারণ লুকায়িত খরচগুলো হিসাবে আসে না। প্রিন্টফ্লোতে মেটেরিয়াল, কালি, বিদ্যুৎ, কারিগরের মজুরি ও পরিবহন বাদ দিয়ে প্রতিটি কাজের আসল লাভ নিশ্চিত করা হয়।'
               )}
             </p>
 
             <div className="p-3.5 sm:p-4 rounded-xl bg-success-surface border border-success-border/50 text-xs text-success">
-              <span className="font-bold">Real PrintERP Insight:</span>
+              <span className="font-bold">Real PrintFlow Insight:</span>
               <p className="mt-1 text-muted-foreground leading-relaxed">
  A ৳25,000 billboard quote costs ৳15,000 in raw media, labor, framing & transport — locking in a guaranteed ৳10,000 (40%) net profit margin.
               </p>
@@ -719,8 +719,8 @@ export function FeatureDeepDiveSection() {
 
             <p className="text-sm sm:text-base text-muted-foreground leading-relaxed bangla-text">
               {tBilingual(
-                'In the printing business, cash flow is king. PrintERP automatically sorts your accounts receivable into 15-day, 30-day, and 60-day aging buckets and lets you dispatch polite WhatsApp and SMS reminders with a single click.',
-                'প্রেসের লাভ আটকে থাকে কাস্টমারের বাকি টাকায়। প্রিন্টইআরপি স্বয়ংক্রিয়ভাবে কার কাছে কত টাকা বাকি আছে তা হিসাব রাখে এবং ১ ক্লিকে গ্রাহকের হোয়াটসঅ্যাপে ভদ্র তাগাদার মেসেজ পাঠায়।'
+                'In the printing business, cash flow is king. PrintFlow automatically sorts your accounts receivable into 15-day, 30-day, and 60-day aging buckets and lets you dispatch polite WhatsApp and SMS reminders with a single click.',
+                'প্রেসের লাভ আটকে থাকে কাস্টমারের বাকি টাকায়। প্রিন্টফ্লো স্বয়ংক্রিয়ভাবে কার কাছে কত টাকা বাকি আছে তা হিসাব রাখে এবং ১ ক্লিকে গ্রাহকের হোয়াটসঅ্যাপে ভদ্র তাগাদার মেসেজ পাঠায়।'
               )}
             </p>
 

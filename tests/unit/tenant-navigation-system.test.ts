@@ -11,7 +11,7 @@ import {
 import type { PermissionAction, PermissionModule, ResponsibilitySlug } from '../../types/rbac.types.ts'
 
 describe('Tenant Sidebar & Navigation Architecture Tests', () => {
-  const sampleSlug = 'inkflow-demo'
+  const sampleSlug = 'printflow-demo'
   const navSections = getNavigationConfig(sampleSlug)
 
   it('1. Navigation configuration has streamlined business hierarchy sections', () => {

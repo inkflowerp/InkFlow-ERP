@@ -5,7 +5,7 @@ import { PurchaseService } from '../../services/purchase.service.ts'
 import { InventoryService } from '../../services/inventory.service.ts'
 import { CostingService } from '../../services/costing.service.ts'
 import { ProductService } from '../../services/product.service.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import type { StockLedgerRecord } from '../../types/inventory.types.ts'
 
 describe('V5 Integration: End-to-End Procurement, Physical Stock Receipt & Costing Lifecycle', () => {
@@ -46,7 +46,7 @@ describe('V5 Integration: End-to-End Procurement, Physical Stock Receipt & Costi
         lead_time_days: 2,
       },
       'usr-admin-01',
-      'admin@inkflow.com'
+      'admin@printflow.test'
     )
     assert.ok(supplier.id)
     assert.strictEqual(supplier.supplier_name, 'Bengal Media Supplies Ltd')
@@ -89,7 +89,7 @@ describe('V5 Integration: End-to-End Procurement, Physical Stock Receipt & Costi
         ],
       },
       'usr-prod-01',
-      'prod@inkflow.com'
+      'prod@printflow.test'
     )
     assert.ok(pr.id)
     assert.strictEqual(pr.status, 'submitted')
@@ -97,7 +97,7 @@ describe('V5 Integration: End-to-End Procurement, Physical Stock Receipt & Costi
     // 5. Approve Purchase Request -> Auto Generate PO
     const approvalResult = await PurchaseService.approvePurchaseRequest(
       pr.id,
-      { id: 'usr-mgr-01', name: 'Supply Chain Manager', email: 'manager@inkflow.com' },
+      { id: 'usr-mgr-01', name: 'Supply Chain Manager', email: 'manager@printflow.test' },
       companyId,
       true
     )
@@ -113,7 +113,7 @@ describe('V5 Integration: End-to-End Procurement, Physical Stock Receipt & Costi
     // 6. Issue Purchase Order
     const issuedPO = await PurchaseService.sendPurchaseOrder(
       po.id,
-      { name: 'Procurement Officer', email: 'procurement@inkflow.com' },
+      { name: 'Procurement Officer', email: 'procurement@printflow.test' },
       companyId
     )
     assert.strictEqual(issuedPO.status, 'issued')
@@ -149,7 +149,7 @@ describe('V5 Integration: End-to-End Procurement, Physical Stock Receipt & Costi
     assert.strictEqual(matAfterReceipt1?.current_stock, 400)
 
     // Verify Stock Ledger has PURCHASE_RECEIPT entry
-    const ledger = PrintERPDataStore.get<StockLedgerRecord[]>(STORAGE_KEYS.STOCK_LEDGER) || []
+    const ledger = PrintFlowDataStore.get<StockLedgerRecord[]>(STORAGE_KEYS.STOCK_LEDGER) || []
     const receipt1Tx = ledger.find(
       (tx) => tx.company_id === companyId && tx.material_id === material.id && tx.transaction_type === 'PURCHASE_RECEIPT'
     )

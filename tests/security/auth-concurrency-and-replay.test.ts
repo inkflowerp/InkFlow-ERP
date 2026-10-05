@@ -3,7 +3,7 @@ import assert from 'node:assert'
 import { AuthEmailService } from '../../services/auth-email.service.ts'
 
 describe('Auth Concurrency, Race Condition & Replay Security Tests', () => {
-  const testEmail = 'concurrency_victim@printerp.test'
+  const testEmail = 'concurrency_victim@printflow.test'
 
   it('1. High-burst concurrent OTP redemption (10 simultaneous requests) allows exactly ONE success', async () => {
     // Generate valid OTP
@@ -40,7 +40,7 @@ describe('Auth Concurrency, Race Condition & Replay Security Tests', () => {
   it('2. Concurrent URL verification token redemption allows exactly ONE success', async () => {
     // Generate valid token
     const res = await AuthEmailService.createVerificationRecord({
-      email: 'link_victim@printerp.test',
+      email: 'link_victim@printflow.test',
       purpose: 'registration',
     })
 
@@ -50,7 +50,7 @@ describe('Auth Concurrency, Race Condition & Replay Security Tests', () => {
 
     // Launch 5 simultaneous requests with the same token
     const concurrentRequests = Array.from({ length: 5 }).map(() =>
-      AuthEmailService.verifyToken(token!, 'link_victim@printerp.test', 'registration')
+      AuthEmailService.verifyToken(token!, 'link_victim@printflow.test', 'registration')
     )
 
     const results = await Promise.all(concurrentRequests)
@@ -62,21 +62,21 @@ describe('Auth Concurrency, Race Condition & Replay Security Tests', () => {
     assert.strictEqual(failures.length, 4, `Expected exactly 4 failures, got ${failures.length}`)
 
     // Subsequent call must fail
-    const replayAttempt = await AuthEmailService.verifyToken(token!, 'link_victim@printerp.test', 'registration')
+    const replayAttempt = await AuthEmailService.verifyToken(token!, 'link_victim@printflow.test', 'registration')
     assert.strictEqual(replayAttempt.success, false)
   })
 
   it('3. Concurrent password reset authorization token redemption allows exactly ONE success', async () => {
     // First, create and verify a password_reset OTP to get a real reset authorization token
     const res = await AuthEmailService.createVerificationRecord({
-      email: 'pwd_reset_victim@printerp.test',
+      email: 'pwd_reset_victim@printflow.test',
       purpose: 'password_reset',
     })
 
     assert.ok('otp' in res)
     const { otp } = res
 
-    const verifyResult = await AuthEmailService.verifyOtp('pwd_reset_victim@printerp.test', otp!, 'password_reset')
+    const verifyResult = await AuthEmailService.verifyOtp('pwd_reset_victim@printflow.test', otp!, 'password_reset')
     assert.strictEqual(verifyResult.success, true)
     assert.ok(verifyResult.resetToken)
 
@@ -84,7 +84,7 @@ describe('Auth Concurrency, Race Condition & Replay Security Tests', () => {
 
     // Launch 4 simultaneous requests attempting to consume the reset authorization token
     const concurrentResetRequests = Array.from({ length: 4 }).map(() =>
-      AuthEmailService.validateResetAuthorization('pwd_reset_victim@printerp.test', resetToken)
+      AuthEmailService.validateResetAuthorization('pwd_reset_victim@printflow.test', resetToken)
     )
 
     const results = await Promise.all(concurrentResetRequests)
@@ -96,14 +96,14 @@ describe('Auth Concurrency, Race Condition & Replay Security Tests', () => {
     assert.strictEqual(failures.length, 3, `Expected exactly 3 failures, got ${failures.length}`)
 
     // Replay attempt must fail
-    const replayReset = await AuthEmailService.validateResetAuthorization('pwd_reset_victim@printerp.test', resetToken)
+    const replayReset = await AuthEmailService.validateResetAuthorization('pwd_reset_victim@printflow.test', resetToken)
     assert.strictEqual(replayReset.success, false)
     assert.ok(replayReset.error)
   })
 
   it('4. Concurrent multi-purpose attack: Registration OTP cannot be hijacked concurrently for Password Reset', async () => {
     const res = await AuthEmailService.createVerificationRecord({
-      email: 'multi_purpose@printerp.test',
+      email: 'multi_purpose@printflow.test',
       purpose: 'registration',
     })
 
@@ -112,8 +112,8 @@ describe('Auth Concurrency, Race Condition & Replay Security Tests', () => {
 
     // Simultaneously attempt registration verification and password reset verification
     const [regResult, resetResult] = await Promise.all([
-      AuthEmailService.verifyOtp('multi_purpose@printerp.test', otp!, 'registration'),
-      AuthEmailService.verifyOtp('multi_purpose@printerp.test', otp!, 'password_reset'),
+      AuthEmailService.verifyOtp('multi_purpose@printflow.test', otp!, 'registration'),
+      AuthEmailService.verifyOtp('multi_purpose@printflow.test', otp!, 'password_reset'),
     ])
 
     // Registration must succeed

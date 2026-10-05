@@ -1,17 +1,17 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import { PriceIntelligenceEngine } from '../../lib/domain/price-intelligence-engine.ts'
 
 test('Direct Stock Intake & Price Intelligence — Registered Masters, Units, & Non-Inflated Pricing', async (t) => {
   const companyId = 'tenant-price-intelligence-test-corp'
 
   // Reset store
-  PrintERPDataStore.set(STORAGE_KEYS.MATERIALS, [], true, companyId)
-  PrintERPDataStore.set(STORAGE_KEYS.MOUNTED_ROLLS, [], true, companyId)
-  PrintERPDataStore.set(STORAGE_KEYS.STOCK_LEDGER, [], true, companyId)
-  PrintERPDataStore.set(STORAGE_KEYS.PRICE_INTELLIGENCE, [], true, companyId)
-  PrintERPDataStore.set(STORAGE_KEYS.LOCATIONS, [], true, companyId)
+  PrintFlowDataStore.set(STORAGE_KEYS.MATERIALS, [], true, companyId)
+  PrintFlowDataStore.set(STORAGE_KEYS.MOUNTED_ROLLS, [], true, companyId)
+  PrintFlowDataStore.set(STORAGE_KEYS.STOCK_LEDGER, [], true, companyId)
+  PrintFlowDataStore.set(STORAGE_KEYS.PRICE_INTELLIGENCE, [], true, companyId)
+  PrintFlowDataStore.set(STORAGE_KEYS.LOCATIONS, [], true, companyId)
 
   // 1. Registered Material Masters exactly as in Products & Commercial Masters
   const registeredMaterials = [
@@ -83,7 +83,7 @@ test('Direct Stock Intake & Price Intelligence — Registered Masters, Units, & 
     },
   ]
 
-  PrintERPDataStore.set(STORAGE_KEYS.MATERIALS, registeredMaterials, true, companyId)
+  PrintFlowDataStore.set(STORAGE_KEYS.MATERIALS, registeredMaterials, true, companyId)
 
   await t.test('1. Physical Form & Purchase Unit Detection matches registered commercial types', () => {
     const ink = registeredMaterials[0]

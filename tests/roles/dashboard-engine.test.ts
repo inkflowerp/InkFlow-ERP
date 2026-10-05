@@ -2,7 +2,7 @@ import { test, describe } from 'node:test'
 import assert from 'node:assert'
 
 // ==============================================================================
-// PrintERP SaaS - Personalized Dashboard Engine & RBAC Test Suite
+// PrintFlow - Personalized Dashboard Engine & RBAC Test Suite
 // ==============================================================================
 
 export type PrimaryRole =

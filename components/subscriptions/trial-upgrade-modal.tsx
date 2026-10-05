@@ -189,7 +189,7 @@ export function TrialUpgradeModal() {
             <div className="font-black text-xl tracking-tight bangla-text">
               {isTrial
                 ? tBilingual('Upgrade Your Free Trial to a Pro Plan', 'আপনার ফ্রি ট্রায়ালটি প্রো প্ল্যানে আপগ্রেড করুন')
-                : tBilingual('Upgrade Your PrintERP Plan', 'আপনার প্রিন্টইআরপি প্ল্যান আপগ্রেড করুন')}
+                : tBilingual('Upgrade Your PrintFlow Plan', 'আপনার প্রিন্টফ্লো প্ল্যান আপগ্রেড করুন')}
             </div>
             {isTrial && (
               <p className="text-xs text-warning text-warning font-medium bangla-text mt-0.5">

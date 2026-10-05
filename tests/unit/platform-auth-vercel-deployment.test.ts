@@ -24,13 +24,13 @@ describe('Platform Auth & Vercel Deployment Cookie Resolution Tests', () => {
   })
 
   test('2. getAuthCookieOptions strictly enforces host-only cookies for production custom domain', () => {
-    const opts = getAuthCookieOptions('inkflow.com.bd')
+    const opts = getAuthCookieOptions('printflow.bd')
     assert.equal(opts.domain, undefined, 'Cookie domain MUST be undefined (host-only) to eliminate cross-subdomain session leaks')
     assert.equal(opts.sameSite, 'lax')
     assert.equal(opts.httpOnly, true)
   })
 
-  test('3. getRootDomain prioritizes VERCEL_URL when NEXT_PUBLIC_ROOT_DOMAIN is unset', () => {
+  test('3. getRootDomain ignores VERCEL_URL to guarantee deterministic resolution', () => {
     const origVercel = process.env.VERCEL_URL
     const origRoot = process.env.NEXT_PUBLIC_ROOT_DOMAIN
 
@@ -39,13 +39,14 @@ describe('Platform Auth & Vercel Deployment Cookie Resolution Tests', () => {
       delete process.env.NEXT_PUBLIC_APP_DOMAIN
       delete process.env.ROOT_DOMAIN
       delete process.env.VERCEL_PROJECT_PRODUCTION_URL
-      process.env.VERCEL_URL = 'inkflow-erp.vercel.app'
+      process.env.VERCEL_URL = 'preview-branch.vercel.app'
 
       const root = getRootDomain()
-      assert.equal(root, 'inkflow-erp.vercel.app')
+      // In non-production test runner, deterministic fallback is localhost:3000
+      assert.equal(root, 'localhost:3000')
 
       const cookieOpts = getAuthCookieOptions()
-      assert.equal(cookieOpts.domain, undefined, 'Default cookie options must omit domain on Vercel deployment')
+      assert.equal(cookieOpts.domain, undefined, 'Default cookie options must omit domain for host-only isolation')
     } finally {
       if (origVercel) process.env.VERCEL_URL = origVercel
       else delete process.env.VERCEL_URL
@@ -55,9 +56,9 @@ describe('Platform Auth & Vercel Deployment Cookie Resolution Tests', () => {
 
   test('4. classifyLoginIdentifier handles platform administrator login inputs', () => {
     // Email input
-    const emailRes = classifyLoginIdentifier('admin@printerp.com.bd')
+    const emailRes = classifyLoginIdentifier('admin@printflow.bd')
     assert.equal(emailRes.type, 'email')
-    assert.equal(emailRes.normalized, 'admin@printerp.com.bd')
+    assert.equal(emailRes.normalized, 'admin@printflow.bd')
 
     // Phone inputs with various formats
     const phoneRes1 = classifyLoginIdentifier('01762474444')
@@ -78,7 +79,7 @@ describe('Platform Auth & Vercel Deployment Cookie Resolution Tests', () => {
     const payload: PlatformSessionData = {
       userId: '4e3a29b3-3d52-49d2-b0af-462129a4d72d',
       adminId: 'ef8108a7-5bbb-4525-937b-a7411fc1e796',
-      email: 'admin@printerp.com.bd',
+      email: 'admin@printflow.bd',
       fullName: 'Md. Shahidur Rahman',
       role: 'platform_owner',
       mfaVerified: false,

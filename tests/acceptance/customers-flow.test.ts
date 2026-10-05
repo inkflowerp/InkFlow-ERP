@@ -1,5 +1,5 @@
 // ==============================================================================
-// InkFlow ERP - Module 5: Customers & CRM Flow & UX Acceptance Tests
+// PrintFlow - Module 5: Customers & CRM Flow & UX Acceptance Tests
 // Tests the full lifecycle: Create -> Edit / Pricing Tier -> Ledger / Due -> Print Statement
 // Matrix: Light/Dark x Mobile 375px / Desktop 1440px x EN/BN
 // Guarantees: <= 3 clicks completion from dashboard, 4-KPI row, attention queue
@@ -28,7 +28,7 @@ describe('Module 5: Customers & CRM End-to-End Hardening & Flow Verification', (
     await browser?.close()
   })
 
-  // Helper to render mock Customers DOM reflecting InkFlow Design System
+  // Helper to render mock Customers DOM reflecting PrintFlow Design System
   async function renderCustomersPage(
     context: BrowserContext,
     options: {

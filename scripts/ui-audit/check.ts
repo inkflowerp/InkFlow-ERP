@@ -1,12 +1,12 @@
 // ==============================================================================
-// InkFlow ERP SaaS - UI Audit CI Gate & Strict Linter (Requirement 10)
+// PrintFlow SaaS - UI Audit CI Gate & Strict Linter (Requirement 10)
 // ==============================================================================
 
 import { runAuditGate } from './audit-scanner.ts'
 
 async function main() {
   console.log('==============================================================================')
-  console.log('InkFlow ERP SaaS - UI Audit & Design Token Enforcement CI Gate')
+  console.log('PrintFlow SaaS - UI Audit & Design Token Enforcement CI Gate')
   console.log('==============================================================================')
   console.log('Enforcing design system rules from STYLE_GUIDE.md & AGENTS.md:')
   console.log('  1. Zero raw palette classes (bg-slate-*, text-red-*, etc.)')

@@ -1124,7 +1124,7 @@ export default function PlatformSecurityPage() {
  <rect x="74" y="88" width="18" height="4" fill="currentColor" rx="1" />
  </svg>
  <span className="text-xs tabular-nums font-bold text-foreground mt-1">
- PrintERP:PlatformAdmin
+ PrintFlow:PlatformAdmin
  </span>
  </div>
 

@@ -15,7 +15,7 @@ describe('Workforce + Attendance + Costing Lifecycle Integration Test (V6)', () 
       name: 'Tanvir Hossain',
       name_bn: 'তানভীর হোসেন',
       mobile: '+8801711223344',
-      email: 'tanvir@inkflow.com.bd',
+      email: 'tanvir@printflow.bd',
       role: 'Machine Operator',
       responsibilities: ['Machine Operator', 'Finishing Operator'],
       department: 'printing',

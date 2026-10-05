@@ -4,7 +4,7 @@ import { ProductService } from '../../services/product.service.ts'
 import { CostingService } from '../../services/costing.service.ts'
 import { QuotationService } from '../../services/quotation.service.ts'
 import { InventoryService } from '../../services/inventory.service.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import type { ProductRecord } from '../../types/product.types.ts'
 
 describe('V4 Integration: End-to-End Product, Formula, Costing & Profitability Lifecycle', () => {
@@ -139,11 +139,11 @@ describe('V4 Integration: End-to-End Product, Formula, Costing & Profitability L
     assert.strictEqual(salesOrder.customer_name, 'Apex Advertising Ltd')
 
     // 7. Verify V2 Production Tasks and V3 Material Requirements were created
-    const tasks = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
+    const tasks = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
     const jobTasks = tasks.filter((t) => t.company_id === companyId)
     assert.ok(jobTasks.length > 0)
 
-    const matReqs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_TASK_MATERIAL_REQUIREMENTS) || []
+    const matReqs = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_TASK_MATERIAL_REQUIREMENTS) || []
     const jobMatReqs = matReqs.filter((m) => m.company_id === companyId)
     assert.ok(jobMatReqs.length > 0)
 

@@ -1,5 +1,5 @@
 // ==============================================================================
-// InkFlow ERP - Authoritative Workforce, Attendance, Overtime & Payroll Service
+// PrintFlow - Authoritative Workforce, Attendance, Overtime & Payroll Service
 // Orchestrates Business Logic, Double-Entry General Ledger, Audit Trails & Costing
 // ==============================================================================
 
@@ -411,7 +411,7 @@ export class WorkforceService {
       }
     }
 
-    const password = portalCreds.password?.trim() || `InkFlow@${Math.floor(100000 + Math.random() * 900000)}`
+    const password = portalCreds.password?.trim() || `PrintFlow@${Math.floor(100000 + Math.random() * 900000)}`
     let userId = employee.user_id || portalCreds.user_id || null
 
     const rawAssigned = portalCreds.role || employee.role || 'operator'
@@ -674,7 +674,7 @@ export class WorkforceService {
           await AuthEmailService.sendUserInvitationEmail({
             email,
             inviteUrl,
-            companyName: companyName || 'InkFlow PrintERP',
+            companyName: companyName || 'PrintFlow Commercial Press',
             roleName: roleDisplayName,
             invitedByName: actorName,
             tenantId: employee.company_id,

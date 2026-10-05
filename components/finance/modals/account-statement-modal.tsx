@@ -91,7 +91,7 @@ export function AccountStatementModal({
 
  const handleExportCSV = () => {
  const rows = [
-      ['PrintERP - Official Account Statement'],
+      ['PrintFlow - Official Account Statement'],
       ['Account Name', account.name],
       ['Account Code', account.code],
       ['Account Type', account.account_subtype],
@@ -147,7 +147,7 @@ export function AccountStatementModal({
                 </Badge>
               </div>
               <p className="text-xs text-muted-foreground tabular-nums">
-                {account.metadata?.bank_name || account.metadata?.mfs_provider || 'PrintERP Money Account'}
+                {account.metadata?.bank_name || account.metadata?.mfs_provider || 'PrintFlow Money Account'}
                 {account.metadata?.account_number_masked ? ` • ${account.metadata.account_number_masked}` : ''}
                 {account.metadata?.mfs_wallet_number ? ` • ${account.metadata.mfs_wallet_number}` : ''}
               </p>

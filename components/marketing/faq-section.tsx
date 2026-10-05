@@ -32,8 +32,8 @@ export function FAQSection() {
 
           <p className="text-sm sm:text-base text-muted-foreground max-w-xl mx-auto leading-relaxed bangla-text">
             {tBilingual(
-              'Clear, direct answers about PrintERP features, roll tracking, Bengali localization, BDT pricing, and getting started.',
-              'প্রিন্টইআরপির ফিচার, রোল স্টক, বাংলা ভাষা, টাকা হিসাব এবং সহজে শুরু করার স্পষ্ট উত্তর।'
+              'Clear, direct answers about PrintFlow features, roll tracking, Bengali localization, BDT pricing, and getting started.',
+              'প্রিন্টফ্লোর ফিচার, রোল স্টক, বাংলা ভাষা, টাকা হিসাব এবং সহজে শুরু করার স্পষ্ট উত্তর।'
             )}
           </p>
         </div>

@@ -1,5 +1,5 @@
 // ==============================================================================
-// InkFlow ERP - Universal Auth Identifier Normalizer & Parser
+// PrintFlow - Universal Auth Identifier Normalizer & Parser
 // Handles flexible, duplicate-free multi-identifier login: Email, Phone & Username
 // Standardized across Bangladeshi & International formats
 // ==============================================================================

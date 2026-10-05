@@ -2,7 +2,7 @@ import { describe, it, beforeEach } from 'node:test'
 import assert from 'node:assert'
 import { getNavigationConfig } from '../../config/navigation.config.ts'
 import { BillingRepository } from '../../lib/repositories/billing.repository.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import type { InvoiceRecord } from '../../types/billing.types.ts'
 import type { SalesOrderRecord, JobOrderRecord } from '../../types/order.types.ts'
 
@@ -10,11 +10,11 @@ const TENANT_ID = 'company-test-orders-flow'
 
 describe('Orders & Job Flow Upgrade & Invoice Works Ingestion', () => {
   beforeEach(() => {
-    PrintERPDataStore.set(STORAGE_KEYS.INVOICES, [])
-    PrintERPDataStore.set(STORAGE_KEYS.ORDERS, [])
-    PrintERPDataStore.set(STORAGE_KEYS.JOB_ORDERS, [])
-    PrintERPDataStore.set(STORAGE_KEYS.CUSTOMERS, [])
-    PrintERPDataStore.set(STORAGE_KEYS.DELIVERY_CHALLANS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.INVOICES, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.ORDERS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.JOB_ORDERS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.CUSTOMERS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.DELIVERY_CHALLANS, [])
   })
 
   it('1. Navigation config contains Orders & Jobs with bilingual titles', () => {
@@ -64,7 +64,7 @@ describe('Orders & Job Flow Upgrade & Invoice Works Ingestion', () => {
     assert.ok(created, 'Invoice should be created')
 
     // Verify Orders Datastore contains auto-provisioned matching order
-    const orders = PrintERPDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS) || []
+    const orders = PrintFlowDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS) || []
     const matchingOrder = orders.find(
       (o) => o.invoice_id === created.id || o.order_number === 'ORD-2026-9901' || o.invoice_number === created.invoice_number
     )
@@ -74,7 +74,7 @@ describe('Orders & Job Flow Upgrade & Invoice Works Ingestion', () => {
     assert.strictEqual(matchingOrder.production_gate_status, 'ready_for_production')
 
     // Verify Job Orders Datastore contains job tickets for the items
-    const jobOrders = PrintERPDataStore.get<JobOrderRecord[]>(STORAGE_KEYS.JOB_ORDERS) || []
+    const jobOrders = PrintFlowDataStore.get<JobOrderRecord[]>(STORAGE_KEYS.JOB_ORDERS) || []
     const matchingJob = jobOrders.find((j) => j.invoice_id === created.id || j.order_id === matchingOrder?.id)
     assert.ok(matchingJob, 'Job order should be provisioned for invoice item')
     assert.strictEqual(matchingJob.product_name, 'Star Flex Billboard Banner')
@@ -108,10 +108,10 @@ describe('Orders & Job Flow Upgrade & Invoice Works Ingestion', () => {
       ],
     }
 
-    const createdOrder = PrintERPDataStore.createSalesOrderWithIntegrations(orderData)
+    const createdOrder = PrintFlowDataStore.createSalesOrderWithIntegrations(orderData)
     assert.ok(createdOrder, 'Order should be created with integrations')
 
-    const savedOrders = PrintERPDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS) || []
+    const savedOrders = PrintFlowDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS) || []
     const found = savedOrders.find((o) => o.id === 'ord-test-002')
     assert.ok(found, 'Sales order must be stored')
     assert.strictEqual(found.priority, 'urgent')
@@ -149,7 +149,7 @@ describe('Orders & Job Flow Upgrade & Invoice Works Ingestion', () => {
       ],
     }
 
-    PrintERPDataStore.createSalesOrderWithIntegrations(initialOrder)
+    PrintFlowDataStore.createSalesOrderWithIntegrations(initialOrder)
 
     // 2. Invoice created later with billing figures for ORD-000011
     const invoicePayload: Partial<InvoiceRecord> = {
@@ -180,7 +180,7 @@ describe('Orders & Job Flow Upgrade & Invoice Works Ingestion', () => {
     await BillingRepository.createInvoice(invoicePayload as InvoiceRecord)
 
     // Verify orders store has only ONE order for ORD-000011
-    const allOrders = PrintERPDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS) || []
+    const allOrders = PrintFlowDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS) || []
     const matchingOrders = allOrders.filter(
       (o) => o.order_number?.replace(/\s+/g, '').toUpperCase() === 'ORD-000011'
     )

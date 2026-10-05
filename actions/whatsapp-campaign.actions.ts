@@ -4,7 +4,7 @@ import { withTenantAction } from '@/lib/actions/action-wrapper'
 
 
 // ==============================================================================
-// PrintERP SaaS - WhatsApp Campaigns & Chat Server Actions
+// PrintFlow SaaS - WhatsApp Campaigns & Chat Server Actions
 // Supports safe controlled bulk broadcasts, contact management, and live chat replies.
 // ==============================================================================
 

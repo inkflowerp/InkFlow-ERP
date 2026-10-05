@@ -39,7 +39,7 @@ export interface QuotationTableProps {
 export function QuotationTable({
  quotations = [],
  tenantSlug,
- companyName = 'InkFlow',
+ companyName = 'PrintFlow',
  onOpenFollowUp,
  onTrash,
 }: QuotationTableProps) {

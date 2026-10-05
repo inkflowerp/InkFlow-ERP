@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP SaaS - Twilio SMS Gateway Adapter
+// PrintFlow SaaS - Twilio SMS Gateway Adapter
 // Official API Endpoint: https://api.twilio.com/2010-04-01/Accounts/{AccountSid}/Messages.json
 // ==============================================================================
 
@@ -53,7 +53,7 @@ export class TwilioSmsAdapter implements ISmsProvider {
         method: 'GET',
         headers: {
           Authorization: this.getAuthHeader(),
-          'User-Agent': 'PrintERP-SaaS/1.0',
+          'User-Agent': 'PrintFlow-SaaS/1.0',
         },
         signal: AbortSignal.timeout(10000),
       })

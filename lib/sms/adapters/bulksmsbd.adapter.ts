@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP SaaS - BulkSMSBD Gateway Adapter (Bangladeshi SMS Service)
+// PrintFlow SaaS - BulkSMSBD Gateway Adapter (Bangladeshi SMS Service)
 // Official API Endpoint: http://bulksmsbd.net/api/smsapi
 // ==============================================================================
 
@@ -46,7 +46,7 @@ export class BulkSmsBdAdapter implements ISmsProvider {
       const balanceUrl = `http://bulksmsbd.net/api/getBalanceApi?api_key=${encodeURIComponent(this.apiKey)}`
       const res = await fetch(balanceUrl, {
         method: 'GET',
-        headers: { 'User-Agent': 'PrintERP-SaaS/1.0' },
+        headers: { 'User-Agent': 'PrintFlow-SaaS/1.0' },
         signal: AbortSignal.timeout(10000),
       })
 

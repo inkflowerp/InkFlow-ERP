@@ -1,5 +1,5 @@
 // ==============================================================================
-// InkFlow ERP - Migration Verification & RLS Authz Test Runner
+// PrintFlow - Migration Verification & RLS Authz Test Runner
 // Runs in CI to verify that all migrations apply cleanly to a clean Postgres database,
 // and executes verify_multitenant_rls.sql plus rpc_authz.sql.
 // ==============================================================================
@@ -13,7 +13,7 @@ const { Client } = pg;
 
 async function run() {
   console.log('==============================================================================');
-  console.log('InkFlow ERP - Migration Security & Isolation Verification Runner');
+  console.log('PrintFlow - Migration Security & Isolation Verification Runner');
   console.log('==============================================================================');
 
   // 1. Run Static Migration Security Scan

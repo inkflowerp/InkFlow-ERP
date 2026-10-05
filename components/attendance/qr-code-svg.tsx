@@ -24,7 +24,7 @@ export function QRCodeSVG({
 }: QRCodeSVGProps) {
  const { path, totalSize } = useMemo(() => {
  try {
- const qr = QRCode.create(value || 'INKFLOW', {
+ const qr = QRCode.create(value || 'PRINTFLOW', {
  errorCorrectionLevel: level,
       })
  const matrixSize = qr.modules.size

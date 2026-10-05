@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP / InkFlow SaaS - Purchase Repository (V5)
+// PrintFlow SaaS - Purchase Repository (V5)
 // Multi-Tenant PostgreSQL Purchase Requests, Orders, Goods Receipts & Returns
 // ==============================================================================
 

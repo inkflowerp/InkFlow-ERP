@@ -1,14 +1,14 @@
 import { describe, it, beforeEach } from 'node:test'
 import assert from 'node:assert'
 import { isRenderableFormat, getFormatBadgeColor } from '../../lib/formatters.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import type { DesignJobRecord, DesignVersionRecord, DesignFormat } from '../../types/design.types.ts'
 
 describe('Graphic Design Studio - .JPG / .PNG Format Support & Clipboard Paste (Ctrl+V)', () => {
   const companyId = 'c-test-formats'
 
   beforeEach(() => {
-    PrintERPDataStore.set(STORAGE_KEYS.DESIGN_JOBS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.DESIGN_JOBS, [])
   })
 
   it('1. Correctly identifies .jpg, .jpeg, and .png as renderable formats', () => {
@@ -63,9 +63,9 @@ describe('Graphic Design Studio - .JPG / .PNG Format Support & Clipboard Paste (
       updated_at: new Date().toISOString(),
     }
 
-    PrintERPDataStore.addItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, dsnJob)
+    PrintFlowDataStore.addItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, dsnJob)
 
-    const retrieved = PrintERPDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []
+    const retrieved = PrintFlowDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []
     assert.equal(retrieved.length, 1)
     assert.equal(retrieved[0].versions?.[0].file_format, 'png')
     assert.ok(retrieved[0].versions?.[0].proof_file_url?.startsWith('data:image/png'))
@@ -98,7 +98,7 @@ describe('Graphic Design Studio - .JPG / .PNG Format Support & Clipboard Paste (
       updated_at: new Date().toISOString(),
     }
 
-    PrintERPDataStore.addItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, initialJob)
+    PrintFlowDataStore.addItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, initialJob)
 
     // Simulate pasted clipboard screenshot (Ctrl+V) resulting in a base64 Data URL and .jpg format
     const pastedDataUrl = 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP...'
@@ -126,9 +126,9 @@ describe('Graphic Design Studio - .JPG / .PNG Format Support & Clipboard Paste (
       updated_at: new Date().toISOString(),
     }
 
-    PrintERPDataStore.updateItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, initialJob.id, updatedJob)
+    PrintFlowDataStore.updateItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, initialJob.id, updatedJob)
 
-    const jobs = PrintERPDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []
+    const jobs = PrintFlowDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []
     const updated = jobs.find((j) => j.id === initialJob.id)
 
     assert.ok(updated)

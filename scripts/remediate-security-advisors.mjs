@@ -1,5 +1,5 @@
 // ==============================================================================
-// InkFlow ERP - Supabase Security Advisor Remediation Script
+// PrintFlow - Supabase Security Advisor Remediation Script
 // Eliminates security advisor warnings:
 // 1. Revokes EXECUTE on SECURITY DEFINER functions from 'anon' and 'public' roles.
 // 2. Sets explicit immutable search_path (public, pg_temp) on all functions.

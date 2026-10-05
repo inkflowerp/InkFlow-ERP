@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP / InkFlow SaaS - Platform Administration Privileged Service
+// PrintFlow SaaS - Platform Administration Privileged Service
 //
 // CRITICAL ARCHITECTURE RULE:
 // 1. Platform administration operates via explicit privileged server-side functions.
@@ -4181,7 +4181,7 @@ export class PlatformService {
 
       // Check or create Supabase Auth user
       let authUserId: string
-      const password = input.password || 'InkFlowAdmin!2026'
+      const password = input.password || 'PrintFlowAdmin!2026'
 
       const { data: authUser, error: authErr } = await admin.auth.admin.createUser({
         email,
@@ -5978,7 +5978,7 @@ export class PlatformService {
             default_currency: data.default_currency || 'BDT',
             default_vat_rate_pct: Number(data.default_vat_rate_pct) || 15,
             maintenance_mode_enabled: Boolean(data.maintenance_mode_enabled),
-            maintenance_message: data.maintenance_message || 'InkFlow is currently undergoing scheduled platform upgrades.',
+            maintenance_message: data.maintenance_message || 'PrintFlow is currently undergoing scheduled platform upgrades.',
             incident_alert_webhook: data.incident_alert_webhook || undefined,
             backup_retention_days: data.backup_retention_days ?? 90,
             auto_backup_enabled: data.auto_backup_enabled ?? true,
@@ -6034,7 +6034,7 @@ export class PlatformService {
         default_currency: 'BDT',
         default_vat_rate_pct: 15,
         maintenance_mode_enabled: false,
-        maintenance_message: 'InkFlow is currently undergoing scheduled platform upgrades.',
+        maintenance_message: 'PrintFlow is currently undergoing scheduled platform upgrades.',
         backup_retention_days: 90,
         auto_backup_enabled: true,
         ...DEFAULT_PLATFORM_BRANDING,
@@ -6186,7 +6186,7 @@ export class PlatformService {
           plan_name: plan?.name || 'Starter Press',
           owner_name: comp.name + ' Admin',
           owner_phone: comp.phone || '01711-000000',
-          owner_email: comp.email || 'admin@' + comp.slug + '.printerp.com',
+          owner_email: comp.email || 'admin@' + comp.slug + '.printflow.bd',
           has_custom_limits: Object.keys(customOverrides).length > 0,
           users_count: usersCount,
           users_limit: usersLimit,
@@ -6712,7 +6712,7 @@ export class PlatformService {
         default_currency: (settings.default_currency || 'BDT').toUpperCase().trim(),
         default_vat_rate_pct: Number(settings.default_vat_rate_pct) || 15,
         maintenance_mode_enabled: Boolean(settings.maintenance_mode_enabled),
-        maintenance_message: settings.maintenance_message?.trim() || 'InkFlow is currently undergoing scheduled platform upgrades.',
+        maintenance_message: settings.maintenance_message?.trim() || 'PrintFlow is currently undergoing scheduled platform upgrades.',
         incident_alert_webhook: settings.incident_alert_webhook?.trim() || null,
         backup_retention_days: Number(settings.backup_retention_days) || 90,
         auto_backup_enabled: settings.auto_backup_enabled !== undefined ? Boolean(settings.auto_backup_enabled) : true,
@@ -6882,9 +6882,9 @@ export class PlatformService {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             event: 'platform.test_ping',
-            source: 'InkFlow ERP Infrastructure',
+            source: 'PrintFlow Infrastructure',
             timestamp: new Date().toISOString(),
-            message: 'This is a test notification from the InkFlow Platform Settings Center.',
+            message: 'This is a test notification from the PrintFlow Platform Settings Center.',
           }),
           signal: AbortSignal.timeout(5000),
         })

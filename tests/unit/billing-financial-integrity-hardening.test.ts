@@ -2,7 +2,7 @@ import { test, describe, beforeEach } from 'node:test'
 import assert from 'node:assert'
 import { BillingRepository, getTodayDateString, calculateDaysOverdue, getFinancialPersistenceMode } from '../../lib/repositories/billing.repository.ts'
 import { BillingService } from '../../services/billing.service.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import type { InvoiceRecord, PaymentRecord } from '../../types/billing.types.ts'
 import type { CustomerRecord } from '../../types/crm.types.ts'
 
@@ -11,10 +11,10 @@ describe('Billing Financial Integrity & Production Hardening Unit Tests', () => 
   const companyB = 'comp-financial-beta'
 
   beforeEach(() => {
-    PrintERPDataStore.clear()
+    PrintFlowDataStore.clear()
 
     // Seed mock customers
-    PrintERPDataStore.set(STORAGE_KEYS.CUSTOMERS, [
+    PrintFlowDataStore.set(STORAGE_KEYS.CUSTOMERS, [
       {
         id: 'cust-h01',
         company_id: companyA,
@@ -115,7 +115,7 @@ describe('Billing Financial Integrity & Production Hardening Unit Tests', () => 
       },
     ]
 
-    PrintERPDataStore.set(STORAGE_KEYS.INVOICES, initialInvoices)
+    PrintFlowDataStore.set(STORAGE_KEYS.INVOICES, initialInvoices)
   })
 
   test('1. Financial Persistence Mode: Resolves test/production mode explicitly', () => {
@@ -151,7 +151,7 @@ describe('Billing Financial Integrity & Production Hardening Unit Tests', () => 
     assert.strictEqual(cancelledInv?.due_amount, 0, 'Due amount should be zeroed')
 
     // Customer total due balance should be reduced from 60,000 to 30,000
-    const customers = PrintERPDataStore.get<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS) || []
+    const customers = PrintFlowDataStore.get<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS) || []
     const cust = customers.find((c) => c.id === 'cust-h01')
     assert.strictEqual(cust?.total_due_balance, 30000, 'Customer due balance should be reduced by released due')
   })
@@ -201,7 +201,7 @@ describe('Billing Financial Integrity & Production Hardening Unit Tests', () => 
     assert.strictEqual(updatedInv?.due_amount, 20000, 'Remaining due should be 20,000')
     assert.strictEqual(updatedInv?.write_off_amount, 10000, 'Write-off amount should be 10,000')
 
-    const customers = PrintERPDataStore.get<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS) || []
+    const customers = PrintFlowDataStore.get<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS) || []
     const cust = customers.find((c) => c.id === 'cust-h01')
     assert.strictEqual(cust?.total_due_balance, 50000, 'Customer total due balance should decrease by 10,000')
   })
@@ -255,9 +255,9 @@ describe('Billing Financial Integrity & Production Hardening Unit Tests', () => 
     assert.ok(report.totalCustomers >= 2, 'Should audit all company customers')
 
     // Modify a customer balance to simulate a mismatch
-    const customers = PrintERPDataStore.get<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS) || []
+    const customers = PrintFlowDataStore.get<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS) || []
     customers[0].total_due_balance = 999999 // Erroneous stored balance
-    PrintERPDataStore.set(STORAGE_KEYS.CUSTOMERS, customers)
+    PrintFlowDataStore.set(STORAGE_KEYS.CUSTOMERS, customers)
 
     const mismatchReport = await BillingService.reconcileCustomerBalances(companyA)
     assert.strictEqual(mismatchReport.mismatchedCustomers, 1, 'Should detect exactly 1 mismatched customer')

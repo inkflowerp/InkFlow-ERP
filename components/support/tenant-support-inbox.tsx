@@ -1,7 +1,7 @@
 'use client'
 
 // ==============================================================================
-// InkFlow SaaS - Tenant Support Inbox Component
+// PrintFlow SaaS - Tenant Support Inbox Component
 // Clean, mobile-first list of active and resolved support conversations.
 // ==============================================================================
 

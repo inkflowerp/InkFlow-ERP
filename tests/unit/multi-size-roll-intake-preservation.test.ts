@@ -2,7 +2,7 @@ import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import { InventoryService } from '../../services/inventory.service.ts'
 import { InventoryRepository } from '../../lib/repositories/inventory.repository.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import { getMaterialWarehouseStockBreakdown } from '../../lib/units.ts'
 import type { MaterialRecord, InventoryLocationRecord } from '../../types/inventory.types.ts'
 
@@ -70,8 +70,8 @@ describe('Multi-Size Roll Stock Intake & Existing Stock Preservation Tests', () 
   }
 
   it('1. Before receive stock: 3.25ft has 50 rolls (26,650 SFT), 2.25ft has 0 rolls (Out of Stock)', async () => {
-    PrintERPDataStore.addItem(STORAGE_KEYS.LOCATIONS, mockLocation, companyId)
-    PrintERPDataStore.addItem(STORAGE_KEYS.MATERIALS, initialStarPvc, companyId)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.LOCATIONS, mockLocation, companyId)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.MATERIALS, initialStarPvc, companyId)
 
     const initialRolls = await InventoryRepository.getInventoryRolls(companyId, { materialId: initialStarPvc.id })
     const breakdown = getMaterialWarehouseStockBreakdown(initialStarPvc, initialRolls)

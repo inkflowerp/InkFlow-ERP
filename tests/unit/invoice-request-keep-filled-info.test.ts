@@ -1,6 +1,6 @@
 import test, { describe, it, beforeEach } from 'node:test'
 import assert from 'node:assert/strict'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import { InvoiceRequestService } from '../../services/invoice-request.service.ts'
 import { InvoiceRequestRepository } from '../../lib/repositories/invoice-request.repository.ts'
 import type { SalesOrderRecord } from '../../types/order.types.ts'
@@ -9,11 +9,11 @@ describe('Invoice Request — Keep Filled Information Test Suite', () => {
   const companyAlpha = 'comp-tenant-alpha'
 
   beforeEach(() => {
-    PrintERPDataStore.clear()
-    PrintERPDataStore.set(STORAGE_KEYS.INVOICE_REQUESTS, [])
-    PrintERPDataStore.set(STORAGE_KEYS.ORDERS, [])
-    PrintERPDataStore.set(STORAGE_KEYS.CUSTOMERS, [])
-    PrintERPDataStore.set(STORAGE_KEYS.DESIGN_JOBS, [])
+    PrintFlowDataStore.clear()
+    PrintFlowDataStore.set(STORAGE_KEYS.INVOICE_REQUESTS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.ORDERS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.CUSTOMERS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.DESIGN_JOBS, [])
   })
 
   it('1. Keeps full customer contact info, company name, line items, rates, and notes when created directly', async () => {
@@ -120,7 +120,7 @@ describe('Invoice Request — Keep Filled Information Test Suite', () => {
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }
-    PrintERPDataStore.set(STORAGE_KEYS.ORDERS, [mockOrder])
+    PrintFlowDataStore.set(STORAGE_KEYS.ORDERS, [mockOrder])
 
     // Dispatch request with minimal fields (as from a quick button)
     const request = await InvoiceRequestService.createInvoiceRequest({

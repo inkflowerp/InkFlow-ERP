@@ -35,7 +35,7 @@ describe('Gateway Phone & Email Validation Utils', () => {
   })
 
   it('5. Validates email syntax', () => {
-    assert.strictEqual(isValidEmail('admin@printerp.com'), true)
+    assert.strictEqual(isValidEmail('admin@printflow.bd'), true)
     assert.strictEqual(isValidEmail('invalid-email'), false)
   })
 })

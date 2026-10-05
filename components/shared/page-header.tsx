@@ -1,7 +1,7 @@
 'use client'
 
 // ==============================================================================
-// PrintERP SaaS - PageHeader Component (Bilingual Tenant Adapter)
+// PrintFlow SaaS - PageHeader Component (Bilingual Tenant Adapter)
 // Re-exports and wraps standardized PageHeader token patterns
 // ==============================================================================
 

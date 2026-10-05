@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP / InkFlow SaaS - Production Google OAuth 2.0 & Domain Branding Engine
+// PrintFlow SaaS - Production Google OAuth 2.0 & Domain Branding Engine
 // Eliminates raw Supabase URL exposure during Sign-in with Google.
 // Implements direct domain authorization, HMAC-SHA256 state CSRF protection,
 // server-to-server token exchange, ID token decoding, and multi-tenant resolution.
@@ -698,7 +698,7 @@ export function getGoogleAuthBrandingDiagnostics(origin?: string): {
     try {
       domainDisplayed = new URL(process.env.NEXT_PUBLIC_SUPABASE_URL || '').host
     } catch {
-      domainDisplayed = 'auth.inkflowerp.com'
+      domainDisplayed = 'auth.printflow.bd'
     }
   } else {
     try {
@@ -716,7 +716,7 @@ export function getGoogleAuthBrandingDiagnostics(origin?: string): {
       `Add authorized redirect URI in Google Cloud Console: ${config.redirectUri}`
     )
     recommendations.push(
-      'Configure Google OAuth Consent Screen App Name as "InkFlow ERP" with your verified domain.'
+      'Configure Google OAuth Consent Screen App Name as "PrintFlow" with your verified domain.'
     )
   }
 

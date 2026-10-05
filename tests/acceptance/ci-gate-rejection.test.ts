@@ -1,9 +1,9 @@
 // ==============================================================================
-// InkFlow ERP — Deliberately Broken PR Acceptance Gate Suite
+// PrintFlow — Deliberately Broken PR Acceptance Gate Suite
 // Requirement: "A deliberately broken PR test verifying CI blocks cross-tenant query,
 // hard-coded color, missing translation, and anon grant."
 //
-// This test suite proves that InkFlow ERP's automated CI/CD security and quality gates
+// This test suite proves that PrintFlow's automated CI/CD security and quality gates
 // fail-closed, actively intercepting and rejecting non-compliant code.
 // ==============================================================================
 

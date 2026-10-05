@@ -1,5 +1,5 @@
 // ==============================================================================
-// InkFlow SaaS - Enterprise Support Chat & Conversation Service
+// PrintFlow SaaS - Enterprise Support Chat & Conversation Service
 // Authoritative Supabase Database & Memory Store implementation.
 // Strictly isolates tenant data and guarantees internal notes privacy.
 // ==============================================================================

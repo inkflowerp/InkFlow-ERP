@@ -1,7 +1,7 @@
 'use client'
 
 // ==============================================================================
-// InkFlow SaaS - Tenant Support & Help Desk Page
+// PrintFlow SaaS - Tenant Support & Help Desk Page
 // Mobile-first, responsive, real-time live support chat for tenant users.
 // ==============================================================================
 
@@ -96,12 +96,12 @@ export default function TenantSupportPage() {
     <div className="space-y-4 pb-8">
       {/* Top Page Header */}
       <PageHeader
- titleEn="Enterprise Support & Helpdesk"titleBn="এন্টারপ্রাইজ হেল্পডেস্ক ও লাইভ সাপোর্ট"descriptionEn="Direct communication channel with PrintERP engineers, press technicians, and billing specialists."descriptionBn="প্রিন্টইআরপি ইঞ্জিনিয়ার, প্রেস টেকনিশিয়ান ও হিসাব বিশেষজ্ঞদের সাথে সরাসরি সহায়তা ও যোগাযোগ চ্যানেল।"icon={Headset}
+ titleEn="Enterprise Support & Helpdesk"titleBn="এন্টারপ্রাইজ হেল্পডেস্ক ও লাইভ সাপোর্ট"descriptionEn="Direct communication channel with PrintFlow engineers, press technicians, and billing specialists."descriptionBn="প্রিন্টফ্লো ইঞ্জিনিয়ার, প্রেস টেকনিশিয়ান ও হিসাব বিশেষজ্ঞদের সাথে সরাসরি সহায়তা ও যোগাযোগ চ্যানেল।"icon={Headset}
  iconColor="text-primary text-primary"actions={
           <div className="flex flex-wrap items-center gap-2">
             {/* WhatsApp VIP Direct Chat */}
             <a
- href="https://wa.me/8801700000000?text=Hello%20PrintERP%20Support%20Team"target="_blank"rel="noopener noreferrer"className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border border-success-border border-success-border bg-success-surface bg-success-surface text-success text-success hover:bg-success-surface dark:hover:bg-success/60 transition-colors shadow-2xs">
+ href="https://wa.me/8801700000000?text=Hello%20PrintFlow%20Support%20Team"target="_blank"rel="noopener noreferrer"className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border border-success-border border-success-border bg-success-surface bg-success-surface text-success text-success hover:bg-success-surface dark:hover:bg-success/60 transition-colors shadow-2xs">
               <MessageSquare className="h-3.5 w-3.5 text-success text-success"/>
               <span>WhatsApp Direct</span>
               <ExternalLink className="h-3 w-3 opacity-60 ml-0.5"/>

@@ -73,7 +73,7 @@ export function PWAInstaller() {
             <Smartphone className="h-5 w-5 text-white"/>
           </div>
           <div className="text-xs">
-            <p className="font-bold text-white">Install PrintERP App</p>
+            <p className="font-bold text-white">Install PrintFlow App</p>
             <p className="text-muted-foreground text-xs">
               {isIOS ? 'Tap Share ➔ Add to Home Screen' : 'Fast offline access from your home screen'}
             </p>

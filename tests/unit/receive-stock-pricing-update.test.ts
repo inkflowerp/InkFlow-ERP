@@ -2,7 +2,7 @@ import { describe, it } from 'node:test'
 import assert from 'node:assert'
 import type { MaterialRecord } from '../../types/inventory.types.ts'
 import type { ProductRecord } from '../../types/product.types.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import { InventoryRepository } from '../../lib/repositories/inventory.repository.ts'
 import { ProductService } from '../../services/product.service.ts'
 import { PriceIntelligenceEngine } from '../../lib/domain/price-intelligence-engine.ts'
@@ -150,8 +150,8 @@ describe('Receive Stock Unified Catalog & Pricing Update Intelligence Tests', ()
 
   it('4. Updating product pricing with new purchase cost persists in DataStore and ProductService', async () => {
     // Seed initial product in DataStore across default and tenant partition
-    PrintERPDataStore.set(STORAGE_KEYS.PRODUCTS, mockProducts, false)
-    PrintERPDataStore.set(STORAGE_KEYS.PRODUCTS, mockProducts, false, companyId)
+    PrintFlowDataStore.set(STORAGE_KEYS.PRODUCTS, mockProducts, false)
+    PrintFlowDataStore.set(STORAGE_KEYS.PRODUCTS, mockProducts, false, companyId)
 
     const productId = 'prod-rollup-301'
     const newPurchasePrice = 950
@@ -184,10 +184,10 @@ describe('Receive Stock Unified Catalog & Pricing Update Intelligence Tests', ()
   })
 
   it('5. Receiving stock for a product updates inventory ledger and location stock balance', async () => {
-    PrintERPDataStore.set(STORAGE_KEYS.PRODUCTS, mockProducts, false)
-    PrintERPDataStore.set(STORAGE_KEYS.PRODUCTS, mockProducts, false, companyId)
-    PrintERPDataStore.set(STORAGE_KEYS.MATERIALS, mockMaterials, false)
-    PrintERPDataStore.set(STORAGE_KEYS.MATERIALS, mockMaterials, false, companyId)
+    PrintFlowDataStore.set(STORAGE_KEYS.PRODUCTS, mockProducts, false)
+    PrintFlowDataStore.set(STORAGE_KEYS.PRODUCTS, mockProducts, false, companyId)
+    PrintFlowDataStore.set(STORAGE_KEYS.MATERIALS, mockMaterials, false)
+    PrintFlowDataStore.set(STORAGE_KEYS.MATERIALS, mockMaterials, false, companyId)
 
     const res = await InventoryRepository.recordStockAdjustment({
       company_id: companyId,
@@ -210,7 +210,7 @@ describe('Receive Stock Unified Catalog & Pricing Update Intelligence Tests', ()
     assert.strictEqual(res.ledgerEntry.total_cost, 23750)
 
     // Check that product current_stock in DataStore was updated
-    const productsInStore = PrintERPDataStore.get<ProductRecord[]>(STORAGE_KEYS.PRODUCTS, companyId) || []
+    const productsInStore = PrintFlowDataStore.get<ProductRecord[]>(STORAGE_KEYS.PRODUCTS, companyId) || []
     const updatedRollup = productsInStore.find((p) => p.id === 'prod-rollup-301')
     assert.ok(updatedRollup, 'Product must be found in products store')
     assert.strictEqual(updatedRollup.current_stock, 25, 'Product current_stock must be updated to 25')
@@ -240,8 +240,8 @@ describe('Receive Stock Unified Catalog & Pricing Update Intelligence Tests', ()
       updated_at: new Date().toISOString(),
     }
 
-    PrintERPDataStore.set(STORAGE_KEYS.PRODUCTS, [xStandProduct], false)
-    PrintERPDataStore.set(STORAGE_KEYS.PRODUCTS, [xStandProduct], false, companyId)
+    PrintFlowDataStore.set(STORAGE_KEYS.PRODUCTS, [xStandProduct], false)
+    PrintFlowDataStore.set(STORAGE_KEYS.PRODUCTS, [xStandProduct], false, companyId)
 
     // Initially: Stock On Hand is 0, Total Valuation is 0
     let prods = await ProductService.getProducts(companyId, false, 'all', undefined, 'product')
@@ -321,9 +321,9 @@ describe('Receive Stock Unified Catalog & Pricing Update Intelligence Tests', ()
     }
 
     // Seed materials in DataStore
-    const existingMaterials = PrintERPDataStore.get<MaterialRecord[]>(STORAGE_KEYS.MATERIALS, companyId) || []
-    PrintERPDataStore.set(STORAGE_KEYS.MATERIALS, [...existingMaterials, vinylMat, pvcMat], false, companyId)
-    PrintERPDataStore.set(STORAGE_KEYS.MATERIALS, [...existingMaterials, vinylMat, pvcMat], false)
+    const existingMaterials = PrintFlowDataStore.get<MaterialRecord[]>(STORAGE_KEYS.MATERIALS, companyId) || []
+    PrintFlowDataStore.set(STORAGE_KEYS.MATERIALS, [...existingMaterials, vinylMat, pvcMat], false, companyId)
+    PrintFlowDataStore.set(STORAGE_KEYS.MATERIALS, [...existingMaterials, vinylMat, pvcMat], false)
 
     const mats = await InventoryRepository.getMaterials(companyId)
     const fetchedVinyl = mats.find((m) => m.id === 'mat-vinyl-multi')

@@ -1,7 +1,7 @@
 'use client'
 
 // ==============================================================================
-// PrintERP SaaS - Platform Integrations & Communication Gateway Command Center
+// PrintFlow SaaS - Platform Integrations & Communication Gateway Command Center
 // Location: /platform/integrations
 // Supports Email, SMS, Payment, WhatsApp, Telegram, Webhooks, Transactions, & Security
 // ==============================================================================
@@ -140,10 +140,10 @@ const PROVIDERS_METADATA: Record<string, ProviderMeta> = {
  {
  key: 'sender_name',
  label: 'From Display Name',
- placeholder: 'PrintERP Platform',
+ placeholder: 'PrintFlow Platform',
  type: 'text',
  required: true,
- defaultValue: 'PrintERP Platform',
+ defaultValue: 'PrintFlow Platform',
  },
  {
  key: 'sender_email',
@@ -192,7 +192,7 @@ const PROVIDERS_METADATA: Record<string, ProviderMeta> = {
  ],
  },
  { key: 'smtp_username', label: 'SMTP Username / Login', placeholder: 'notifications@printerp.com', type: 'text', required: true },
- { key: 'sender_name', label: 'From Display Name', placeholder: 'PrintERP Notifications', type: 'text', required: true, defaultValue: 'PrintERP Notifications' },
+ { key: 'sender_name', label: 'From Display Name', placeholder: 'PrintFlow Notifications', type: 'text', required: true, defaultValue: 'PrintFlow Notifications' },
  { key: 'sender_email', label: 'From Email Address', placeholder: 'notifications@printerp.com', type: 'text', required: true },
  { key: 'reply_to_email', label: 'Reply-To Email', placeholder: 'support@printerp.com', type: 'text', required: false },
  ],
@@ -211,7 +211,7 @@ const PROVIDERS_METADATA: Record<string, ProviderMeta> = {
  { key: 'api_key', label: 'Resend API Key', placeholder: 're_1234567890abcdef...', type: 'password', required: true, description: 'From Resend Dashboard -> API Keys' },
  ],
  configFields: [
- { key: 'sender_name', label: 'From Display Name', placeholder: 'PrintERP Notifications', type: 'text', required: true, defaultValue: 'PrintERP Notifications' },
+ { key: 'sender_name', label: 'From Display Name', placeholder: 'PrintFlow Notifications', type: 'text', required: true, defaultValue: 'PrintFlow Notifications' },
  { key: 'sender_email', label: 'Verified Domain From Email', placeholder: 'noreply@yourdomain.com', type: 'text', required: true },
  { key: 'reply_to_email', label: 'Reply-To Email', placeholder: 'support@yourdomain.com', type: 'text', required: false },
  ],
@@ -229,7 +229,7 @@ const PROVIDERS_METADATA: Record<string, ProviderMeta> = {
  { key: 'api_key', label: 'SendGrid API Key', placeholder: 'SG.xxxxxxxxxxxx...', type: 'password', required: true },
  ],
  configFields: [
- { key: 'sender_name', label: 'From Display Name', placeholder: 'PrintERP Delivery', type: 'text', required: true, defaultValue: 'PrintERP Delivery' },
+ { key: 'sender_name', label: 'From Display Name', placeholder: 'PrintFlow Delivery', type: 'text', required: true, defaultValue: 'PrintFlow Delivery' },
  { key: 'sender_email', label: 'Verified Sender Email', placeholder: 'orders@yourdomain.com', type: 'text', required: true },
  ],
  },
@@ -262,7 +262,7 @@ const PROVIDERS_METADATA: Record<string, ProviderMeta> = {
  ],
  },
  { key: 'sender_email', label: 'SES Verified Email Address', placeholder: 'alerts@yourdomain.com', type: 'text', required: true },
- { key: 'sender_name', label: 'From Display Name', placeholder: 'PrintERP System', type: 'text', required: true, defaultValue: 'PrintERP System' },
+ { key: 'sender_name', label: 'From Display Name', placeholder: 'PrintFlow System', type: 'text', required: true, defaultValue: 'PrintFlow System' },
  ],
  },
 
@@ -282,7 +282,7 @@ const PROVIDERS_METADATA: Record<string, ProviderMeta> = {
  { key: 'token', label: 'Greenweb API Access Token', placeholder: 'Enter Greenweb API Access Token', type: 'password', required: true, description: 'Generated from Greenweb SMS portal' },
  ],
  configFields: [
- { key: 'sender_id', label: 'Approved Masking Name / Sender ID', placeholder: 'PRINTERP', type: 'text', required: false, description: 'Leave empty for non-masking standard rate' },
+ { key: 'sender_id', label: 'Approved Masking Name / Sender ID', placeholder: 'PRINTFLOW', type: 'text', required: false, description: 'Leave empty for non-masking standard rate' },
  { key: 'base_url', label: 'API Base URL', placeholder: 'https://api.greenweb.com.bd/api.php', type: 'text', required: false, defaultValue: 'https://api.greenweb.com.bd/api.php' },
  ],
  },
@@ -314,7 +314,7 @@ const PROVIDERS_METADATA: Record<string, ProviderMeta> = {
  defaultEnv: 'live',
  credentialFields: [
  { key: 'api_token', label: 'SSL SMS API Token', placeholder: 'Enter SSL SMS API Token', type: 'password', required: true },
- { key: 'sid', label: 'Stakeholder ID (SID)', placeholder: 'PRINTERP_CORP', type: 'text', required: true },
+ { key: 'sid', label: 'Stakeholder ID (SID)', placeholder: 'PRINTFLOW_CORP', type: 'text', required: true },
  ],
  configFields: [
  { key: 'base_url', label: 'API Endpoint', placeholder: 'https://smsplus.sslwireless.com/api/v3/send-sms', type: 'text', required: false, defaultValue: 'https://smsplus.sslwireless.com/api/v3/send-sms' },
@@ -372,7 +372,7 @@ const PROVIDERS_METADATA: Record<string, ProviderMeta> = {
  popular: true,
  defaultEnv: 'sandbox',
  credentialFields: [
- { key: 'store_id', label: 'Store ID', placeholder: 'printerp_live', type: 'text', required: true },
+ { key: 'store_id', label: 'Store ID', placeholder: 'printflow_live', type: 'text', required: true },
  { key: 'store_password', label: 'Store Password', placeholder: 'Enter Store Password', type: 'password', required: true },
  ],
  configFields: [
@@ -451,7 +451,7 @@ const PROVIDERS_METADATA: Record<string, ProviderMeta> = {
  configFields: [
  { key: 'business_account_id', label: 'WhatsApp Business Account (WABA) ID', placeholder: '123456789012345', type: 'text', required: false },
  { key: 'api_version', label: 'Graph API Version', placeholder: 'v20.0', type: 'text', required: false, defaultValue: 'v20.0' },
- { key: 'verify_token', label: 'Webhook Handshake Verify Token', placeholder: 'printerp_whatsapp_verify_token', type: 'text', required: false, defaultValue: 'printerp_whatsapp_verify_token' },
+ { key: 'verify_token', label: 'Webhook Handshake Verify Token', placeholder: 'printflow_whatsapp_verify_token', type: 'text', required: false, defaultValue: 'printflow_whatsapp_verify_token' },
  ],
  },
  openwa: {
@@ -582,8 +582,8 @@ export default function PlatformIntegrationsPage() {
  category: 'email',
  recipient: '',
  recipientName: 'Administrator',
- subject: 'PrintERP Integration Verification Test',
- message: 'This is a live test message dispatched from the PrintERP Platform Control Center.',
+ subject: 'PrintFlow Integration Verification Test',
+ message: 'This is a live test message dispatched from the PrintFlow Platform Control Center.',
  })
  const [testConfirmed, setTestConfirmed] = useState(false)
  const [sendingTest, setSendingTest] = useState(false)
@@ -1199,7 +1199,7 @@ export default function PlatformIntegrationsPage() {
  Platform Integrations
  </h1>
  <p className="text-sm text-muted-foreground mt-1">
- Manage communication, payment and external service connections for PrintERP.
+ Manage communication, payment and external service connections for PrintFlow.
  </p>
  </div>
  <div className="flex items-center gap-2.5">
@@ -2794,7 +2794,7 @@ export default function PlatformIntegrationsPage() {
  <div className="space-y-4">
  <p className="text-sm text-muted-foreground">
  This will permanently remove the configuration for{' '}
- <strong className="text-foreground">{deletingGateway?.name}</strong> from PrintERP.
+ <strong className="text-foreground">{deletingGateway?.name}</strong> from PrintFlow.
  </p>
 
  {deletingGateway?.is_default && (

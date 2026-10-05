@@ -3,15 +3,15 @@ import assert from 'node:assert'
 import { UnifiedCommunicationService } from '../../services/unified-communication.service.ts'
 import { CommunicationRepository } from '../../lib/repositories/communication.repository.ts'
 import { BillingRepository } from '../../lib/repositories/billing.repository.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 
 describe('WhatsApp & SMS Communication Lifecycle Integration Tests (V8)', () => {
   const companyId = 'co-comm-lifecycle-integration'
 
   beforeEach(async () => {
-    PrintERPDataStore.clear(STORAGE_KEYS.COMMUNICATION_MESSAGES)
-    PrintERPDataStore.clear(STORAGE_KEYS.COMMUNICATION_TEMPLATES)
-    PrintERPDataStore.clear(STORAGE_KEYS.INVOICES)
+    PrintFlowDataStore.clear(STORAGE_KEYS.COMMUNICATION_MESSAGES)
+    PrintFlowDataStore.clear(STORAGE_KEYS.COMMUNICATION_TEMPLATES)
+    PrintFlowDataStore.clear(STORAGE_KEYS.INVOICES)
     await CommunicationRepository.seedDefaultTemplates(companyId)
   })
 
@@ -51,7 +51,7 @@ describe('WhatsApp & SMS Communication Lifecycle Integration Tests (V8)', () => 
         paid_amount: inv.paid_amount,
         due_amount: inv.due_amount,
       },
-      attachmentUrl: `https://cdn.inkflow.com.bd/invoices/${inv.id}.pdf`,
+      attachmentUrl: `https://cdn.printflow.bd/invoices/${inv.id}.pdf`,
       attachmentName: `${inv.invoice_number}.pdf`,
       idempotencyKey: `comm_inv_${inv.id}`,
     })
@@ -78,7 +78,7 @@ describe('WhatsApp & SMS Communication Lifecycle Integration Tests (V8)', () => 
       templateKey: 'due_payment_reminder',
       variables: {
         customer_name: 'Akhtar Furniture',
-        company_name: 'InkFlow Sign & Print',
+        company_name: 'PrintFlow Sign & Print',
         due_amount: 18500,
       },
       language: 'bn',

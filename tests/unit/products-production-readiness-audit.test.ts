@@ -16,7 +16,7 @@ import {
 } from '../../lib/units.ts'
 import { CategoryRepository } from '../../lib/repositories/category.repository.ts'
 import { ProductRepository } from '../../lib/repositories/product.repository.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import type {
   ProductRecord,
   ProductComponent,
@@ -26,12 +26,12 @@ import type {
   PricingMethod,
 } from '../../types/product.types.ts'
 
-describe('INKFLOW — FINAL PRODUCTS & SERVICES PRODUCTION-READINESS AUDIT', () => {
+describe('PRINTFLOW — FINAL PRODUCTS & SERVICES PRODUCTION-READINESS AUDIT', () => {
   const TEST_COMPANY_ID = 'company-dhaka-print-signage-360'
 
   beforeEach(() => {
-    PrintERPDataStore.set(STORAGE_KEYS.PRODUCT_CATEGORIES, [])
-    PrintERPDataStore.set(STORAGE_KEYS.PRODUCTS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.PRODUCT_CATEGORIES, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.PRODUCTS, [])
   })
 
   // =========================================================================

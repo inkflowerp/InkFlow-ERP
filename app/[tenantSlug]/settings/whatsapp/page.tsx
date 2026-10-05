@@ -1,7 +1,7 @@
 'use client'
 
 // ==============================================================================
-// PrintERP SaaS - Tenant WhatsApp Gateway Settings
+// PrintFlow SaaS - Tenant WhatsApp Gateway Settings
 // Location: Tenant Dashboard -> Settings -> WhatsApp Gateway
 // Multi-tenant QR pairing, connection lifecycle, test messaging & safety rules
 // ==============================================================================
@@ -59,7 +59,7 @@ export default function TenantWhatsAppSettingsPage() {
 
   // Test Message State
  const [testPhone, setTestPhone] = useState('')
- const [testMessage, setTestMessage] = useState('Hello! This is a test message from PrintERP.')
+ const [testMessage, setTestMessage] = useState('Hello! This is a test message from PrintFlow.')
  const [sendingTest, setSendingTest] = useState(false)
  const [testFeedback, setTestFeedback] = useState<{ success: boolean; message: string } | null>(null)
 

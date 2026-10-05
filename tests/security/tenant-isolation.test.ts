@@ -9,7 +9,7 @@ export function generateSignedStorageUrl(
 ) {
   const expiresAt = Date.now() + expiresInSeconds * 1000
   const signature = Buffer.from(`${bucket}:${filePath}:${expiresAt}:secret-salt-key`).toString('base64url')
-  const url = `https://storage.printerp.app/${bucket}/${filePath}?expires=${expiresAt}&signature=${signature}`
+  const url = `https://storage.printflow.bd/${bucket}/${filePath}?expires=${expiresAt}&signature=${signature}`
   return { url, expiresAt }
 }
 

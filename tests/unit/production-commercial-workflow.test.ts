@@ -1,6 +1,6 @@
 import { describe, it, beforeEach } from 'node:test'
 import assert from 'node:assert'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import { InvoiceRequestService } from '../../services/invoice-request.service.ts'
 import { DesignService } from '../../services/design.service.ts'
 import { ProductionPlanningService } from '../../services/production-planning.service.ts'
@@ -9,18 +9,18 @@ import type { SalesOrderRecord, JobOrderRecord } from '../../types/order.types.t
 import type { DesignJobRecord } from '../../types/design.types.ts'
 import type { ProductionTaskRecord } from '../../types/production.types.ts'
 
-describe('PrintERP Production Commercial Workflow & Gating Architecture', () => {
+describe('PrintFlow Production Commercial Workflow & Gating Architecture', () => {
   const TENANT_ID = 'tenant-test-01'
 
   beforeEach(() => {
     // Clear in-memory datastore before each test run
-    PrintERPDataStore.set(STORAGE_KEYS.ORDERS, [])
-    PrintERPDataStore.set(STORAGE_KEYS.JOB_ORDERS, [])
-    PrintERPDataStore.set(STORAGE_KEYS.DESIGN_JOBS, [])
-    PrintERPDataStore.set(STORAGE_KEYS.INVOICE_REQUESTS, [])
-    PrintERPDataStore.set(STORAGE_KEYS.IN_APP_NOTIFICATIONS, [])
-    PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, [])
-    PrintERPDataStore.set(STORAGE_KEYS.INVOICES, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.ORDERS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.JOB_ORDERS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.DESIGN_JOBS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.INVOICE_REQUESTS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.IN_APP_NOTIFICATIONS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.INVOICES, [])
   })
 
   it('Path A: Invoice + Design Required -> Designer -> Design Ready -> Customer Approval -> Print -> Finishing -> Delivery', async () => {
@@ -65,7 +65,7 @@ describe('PrintERP Production Commercial Workflow & Gating Architecture', () => 
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }
-    PrintERPDataStore.addItem(STORAGE_KEYS.ORDERS, order)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.ORDERS, order)
 
     const jobOrder: JobOrderRecord = {
       id: 'job-001',
@@ -87,7 +87,7 @@ describe('PrintERP Production Commercial Workflow & Gating Architecture', () => 
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }
-    PrintERPDataStore.addItem(STORAGE_KEYS.JOB_ORDERS, jobOrder)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.JOB_ORDERS, jobOrder)
 
     // 2. Prepress Design Job created
     const designJob: DesignJobRecord = {
@@ -115,7 +115,7 @@ describe('PrintERP Production Commercial Workflow & Gating Architecture', () => 
           design_job_id: 'dj-001',
           version_number: 1,
           file_name: 'acme_sign_draft_v1.pdf',
-          file_url: 'https://cdn.printerp.com/designs/v1.pdf',
+          file_url: 'https://cdn.printflow.bd/designs/v1.pdf',
           file_size_bytes: 4096000,
           created_at: new Date().toISOString(),
           created_by_name: 'Rafiq Designer',
@@ -125,7 +125,7 @@ describe('PrintERP Production Commercial Workflow & Gating Architecture', () => 
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }
-    PrintERPDataStore.addItem(STORAGE_KEYS.DESIGN_JOBS, designJob)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.DESIGN_JOBS, designJob)
 
     // 3. Designer completes design -> marks ready
     const readyResult = await DesignService.markReady('dj-001', TENANT_ID, 'Finalized vector layout with bleed lines')
@@ -179,8 +179,8 @@ describe('PrintERP Production Commercial Workflow & Gating Architecture', () => 
       updated_at: new Date().toISOString(),
     }
 
-    PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCTION_TASKS, printTask)
-    PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCTION_TASKS, finishingTask)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.PRODUCTION_TASKS, printTask)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.PRODUCTION_TASKS, finishingTask)
 
     // Check tasks hydration & gating status
     const tasks = await ProductionPlanningService.getTasks(TENANT_ID)
@@ -230,7 +230,7 @@ describe('PrintERP Production Commercial Workflow & Gating Architecture', () => 
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }
-    PrintERPDataStore.addItem(STORAGE_KEYS.ORDERS, order)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.ORDERS, order)
 
     const jobOrder: JobOrderRecord = {
       id: 'job-b-001',
@@ -252,7 +252,7 @@ describe('PrintERP Production Commercial Workflow & Gating Architecture', () => 
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }
-    PrintERPDataStore.addItem(STORAGE_KEYS.JOB_ORDERS, jobOrder)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.JOB_ORDERS, jobOrder)
 
     const printTask: ProductionTaskRecord = {
       id: 'tsk-b-01',
@@ -270,7 +270,7 @@ describe('PrintERP Production Commercial Workflow & Gating Architecture', () => 
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }
-    PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCTION_TASKS, printTask)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.PRODUCTION_TASKS, printTask)
 
     const tasks = await ProductionPlanningService.getTasks(TENANT_ID)
     const hydratedTask = tasks.find((t) => t.id === 'tsk-b-01')
@@ -310,7 +310,7 @@ describe('PrintERP Production Commercial Workflow & Gating Architecture', () => 
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }
-    PrintERPDataStore.addItem(STORAGE_KEYS.ORDERS, order)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.ORDERS, order)
 
     const jobOrder: JobOrderRecord = {
       id: 'job-c-001',
@@ -332,7 +332,7 @@ describe('PrintERP Production Commercial Workflow & Gating Architecture', () => 
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }
-    PrintERPDataStore.addItem(STORAGE_KEYS.JOB_ORDERS, jobOrder)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.JOB_ORDERS, jobOrder)
 
     // 2. Prepress design completes & becomes ready
     const designJob: DesignJobRecord = {
@@ -358,7 +358,7 @@ describe('PrintERP Production Commercial Workflow & Gating Architecture', () => 
           design_job_id: 'dj-003',
           version_number: 1,
           file_name: 'gamma_acrylic_cnc.dxf',
-          file_url: 'https://cdn.printerp.com/designs/gamma.dxf',
+          file_url: 'https://cdn.printflow.bd/designs/gamma.dxf',
           file_size_bytes: 2048000,
           created_at: new Date().toISOString(),
           created_by_name: 'Anis Designer',
@@ -368,7 +368,7 @@ describe('PrintERP Production Commercial Workflow & Gating Architecture', () => 
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }
-    PrintERPDataStore.addItem(STORAGE_KEYS.DESIGN_JOBS, designJob)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.DESIGN_JOBS, designJob)
 
     await DesignService.markReady('dj-003', TENANT_ID, 'Vector cut path generated')
     await DesignService.updateVersionApproval({
@@ -395,7 +395,7 @@ describe('PrintERP Production Commercial Workflow & Gating Architecture', () => 
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }
-    PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCTION_TASKS, cncTask)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.PRODUCTION_TASKS, cncTask)
 
     const tasksBeforeInvoice = await ProductionPlanningService.getTasks(TENANT_ID)
     const hydratedTaskBefore = tasksBeforeInvoice.find((t) => t.id === 'tsk-c-01')
@@ -430,7 +430,7 @@ describe('PrintERP Production Commercial Workflow & Gating Architecture', () => 
     assert.strictEqual(requestResult.sales_order_id, order.id)
 
     // Verify in-app notification was dispatched to sales/management
-    const notifications = PrintERPDataStore.getAll(STORAGE_KEYS.IN_APP_NOTIFICATIONS) as any[]
+    const notifications = PrintFlowDataStore.getAll(STORAGE_KEYS.IN_APP_NOTIFICATIONS) as any[]
     const invoiceReqNotif = notifications.find((n) => n.type === 'invoice_request' && n.action_url.includes(order.id))
     assert.ok(invoiceReqNotif, 'Invoice Request notification must be created')
     assert.ok(invoiceReqNotif.action_url.includes('create_invoice'), 'Action URL must link to invoice creator')
@@ -479,14 +479,14 @@ describe('PrintERP Production Commercial Workflow & Gating Architecture', () => 
     assert.ok(newInvoice.id, 'Invoice created successfully')
 
     // 7. Verify Auto-Reconnection & Gate Unlock
-    const ordersList = PrintERPDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS) || []
+    const ordersList = PrintFlowDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS) || []
     const updatedOrder = ordersList.find((o) => o.id === order.id)
     assert.strictEqual(updatedOrder?.commercial_status, 'invoice_created')
     assert.strictEqual(updatedOrder?.invoice_id, newInvoice.id)
     assert.strictEqual(updatedOrder?.invoice_number, newInvoice.invoice_number)
     assert.strictEqual(updatedOrder?.production_gate_status, 'ready_for_production')
 
-    const jobsList = PrintERPDataStore.get<JobOrderRecord[]>(STORAGE_KEYS.JOB_ORDERS) || []
+    const jobsList = PrintFlowDataStore.get<JobOrderRecord[]>(STORAGE_KEYS.JOB_ORDERS) || []
     const updatedJob = jobsList.find((j) => j.id === jobOrder.id)
     assert.strictEqual(updatedJob?.commercial_status, 'invoice_created')
     assert.strictEqual(updatedJob?.invoice_id, newInvoice.id)
@@ -537,7 +537,7 @@ describe('PrintERP Production Commercial Workflow & Gating Architecture', () => 
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }
-    PrintERPDataStore.addItem(STORAGE_KEYS.ORDERS, order)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.ORDERS, order)
 
     const jobOrder: JobOrderRecord = {
       id: 'job-d-001',
@@ -559,7 +559,7 @@ describe('PrintERP Production Commercial Workflow & Gating Architecture', () => 
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }
-    PrintERPDataStore.addItem(STORAGE_KEYS.JOB_ORDERS, jobOrder)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.JOB_ORDERS, jobOrder)
 
     assert.strictEqual(jobOrder.workflow_routing, 'ready_production')
     assert.strictEqual(jobOrder.artwork_status, 'not_required')
@@ -589,7 +589,7 @@ describe('PrintERP Production Commercial Workflow & Gating Architecture', () => 
           design_job_id: 'dj-version-test',
           version_number: 1,
           file_name: 'box_v1_initial.pdf',
-          file_url: 'https://cdn.printerp.com/box_v1.pdf',
+          file_url: 'https://cdn.printflow.bd/box_v1.pdf',
           file_size_bytes: 1024000,
           created_at: '2026-09-18T10:00:00Z',
           created_by_name: 'Designer A',
@@ -599,7 +599,7 @@ describe('PrintERP Production Commercial Workflow & Gating Architecture', () => 
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }
-    PrintERPDataStore.addItem(STORAGE_KEYS.DESIGN_JOBS, designJob)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.DESIGN_JOBS, designJob)
 
     // 2. Add version 2
     const v2 = await DesignService.addVersion({
@@ -607,7 +607,7 @@ describe('PrintERP Production Commercial Workflow & Gating Architecture', () => 
       design_job_id: 'dj-version-test',
       version_number: 2,
       file_name: 'box_v2_revised.pdf',
-      file_url: 'https://cdn.printerp.com/box_v2.pdf',
+      file_url: 'https://cdn.printflow.bd/box_v2.pdf',
       file_size_bytes: 1200000,
       created_by_name: 'Designer B',
       notes: 'Moved barcode 20mm higher as requested.',
@@ -666,7 +666,7 @@ describe('PrintERP Production Commercial Workflow & Gating Architecture', () => 
           design_job_id: 'dj-rev-flow',
           version_number: 1,
           file_name: 'storefront_v1.pdf',
-          file_url: 'https://cdn.printerp.com/storefront_v1.pdf',
+          file_url: 'https://cdn.printflow.bd/storefront_v1.pdf',
           file_size_bytes: 3100000,
           created_at: '2026-09-18T09:00:00Z',
           created_by_name: 'Tariq Designer',
@@ -676,7 +676,7 @@ describe('PrintERP Production Commercial Workflow & Gating Architecture', () => 
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }
-    PrintERPDataStore.addItem(STORAGE_KEYS.DESIGN_JOBS, designJob)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.DESIGN_JOBS, designJob)
 
     // 2. Customer requests revision with specific notes
     await DesignService.updateVersionApproval({
@@ -699,7 +699,7 @@ describe('PrintERP Production Commercial Workflow & Gating Architecture', () => 
       design_job_id: 'dj-rev-flow',
       version_number: 2,
       file_name: 'storefront_v2_royal_blue.pdf',
-      file_url: 'https://cdn.printerp.com/storefront_v2.pdf',
+      file_url: 'https://cdn.printflow.bd/storefront_v2.pdf',
       file_size_bytes: 3250000,
       created_by_name: 'Tariq Designer',
       notes: 'Enlarged logo and applied royal blue gradient hex #002366.',
@@ -758,7 +758,7 @@ describe('PrintERP Production Commercial Workflow & Gating Architecture', () => 
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }
-    PrintERPDataStore.addItem(STORAGE_KEYS.ORDERS, order)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.ORDERS, order)
 
     const jobOrder: JobOrderRecord = {
       id: 'job-design-gate-01',
@@ -780,7 +780,7 @@ describe('PrintERP Production Commercial Workflow & Gating Architecture', () => 
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }
-    PrintERPDataStore.addItem(STORAGE_KEYS.JOB_ORDERS, jobOrder)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.JOB_ORDERS, jobOrder)
 
     const printTask: ProductionTaskRecord = {
       id: 'tsk-gate-01',
@@ -798,7 +798,7 @@ describe('PrintERP Production Commercial Workflow & Gating Architecture', () => 
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }
-    PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCTION_TASKS, printTask)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.PRODUCTION_TASKS, printTask)
 
     const tasks = await ProductionPlanningService.getTasks(TENANT_ID)
     const task = tasks.find((t) => t.id === 'tsk-gate-01')
@@ -872,7 +872,7 @@ describe('PrintERP Production Commercial Workflow & Gating Architecture', () => 
       notes: 'Commercial creation required',
     })
 
-    const notifications = PrintERPDataStore.getAll(STORAGE_KEYS.IN_APP_NOTIFICATIONS) as any[]
+    const notifications = PrintFlowDataStore.getAll(STORAGE_KEYS.IN_APP_NOTIFICATIONS) as any[]
     const notif = notifications.find((n) => n.action_url?.includes(orderId))
 
     assert.ok(notif, 'Notification must exist')
@@ -906,7 +906,7 @@ describe('PrintERP Production Commercial Workflow & Gating Architecture', () => 
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }
-    PrintERPDataStore.addItem(STORAGE_KEYS.JOB_ORDERS, jobOrderFab)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.JOB_ORDERS, jobOrderFab)
 
     const fabTask: ProductionTaskRecord = {
       id: 'tsk-fab-01',
@@ -924,7 +924,7 @@ describe('PrintERP Production Commercial Workflow & Gating Architecture', () => 
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }
-    PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCTION_TASKS, fabTask)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.PRODUCTION_TASKS, fabTask)
 
     const tasks = await ProductionPlanningService.getTasks(TENANT_ID)
     const task = tasks.find((t) => t.id === 'tsk-fab-01')

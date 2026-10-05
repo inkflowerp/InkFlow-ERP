@@ -1,5 +1,5 @@
 /**
- * Plain-language Copy Fixer for InkFlow ERP
+ * Plain-language Copy Fixer for PrintFlow
  * Replaces banned corporate words and long titles with everyday words.
  */
 

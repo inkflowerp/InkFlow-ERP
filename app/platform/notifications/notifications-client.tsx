@@ -879,7 +879,7 @@ export default function PlatformNotificationsPage() {
  Action Link URL <span className="text-muted-foreground font-normal">(Optional)</span>
  </label>
  <Input
- placeholder="e.g., /platform/health or https://status.inkflow.io"
+ placeholder="e.g., /platform/health or https://status.printflow.bd"
  value={broadcastForm.action_url}
  onChange={(e) => setBroadcastForm({ ...broadcastForm, action_url: e.target.value })}
  className="bg-card border-border text-xs text-foreground"

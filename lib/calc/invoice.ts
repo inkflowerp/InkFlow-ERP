@@ -1,5 +1,5 @@
 // ==============================================================================
-// InkFlow ERP - Authoritative Invoice & Commercial Document Formulas (lib/calc/invoice.ts)
+// PrintFlow - Authoritative Invoice & Commercial Document Formulas (lib/calc/invoice.ts)
 // Single Source of Truth for Subtotal, Discounts, Bangladesh VAT, Advances,
 // Due on Delivery, and Paid/Due breakdowns across UI previews and Server Actions.
 // ==============================================================================

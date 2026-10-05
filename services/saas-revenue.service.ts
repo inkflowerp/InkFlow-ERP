@@ -1,5 +1,5 @@
 // ==============================================================================
-// InkFlow ERP SaaS - Authoritative SaaS Revenue & Telemetry Service
+// PrintFlow SaaS - Authoritative SaaS Revenue & Telemetry Service
 // Computes MRR, ARR, ARPU, Churn, Trial Conversion Rate, and Collection Rates.
 // Server-side financial formulas grounded in PostgreSQL transactions & subscriptions.
 // ==============================================================================

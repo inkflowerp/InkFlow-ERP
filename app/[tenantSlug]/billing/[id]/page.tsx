@@ -376,7 +376,7 @@ export default function InvoiceCockpitPage() {
             <div className="grid grid-cols-2 gap-6 p-4 rounded-xl bg-primary/10/40 bg-primary/10 border border-primary/20 border-border">
               <div className="space-y-1">
                 <div className="font-bold text-foreground">নিবন্ধিত ব্যক্তির নাম (Seller):</div>
-                <div className="font-black text-sm">{company?.name || 'InkFlow Printing Enterprise'}</div>
+                <div className="font-black text-sm">{company?.name || 'PrintFlow Printing Enterprise'}</div>
                 {company?.address ? <div>ঠিকানা: {company.address}</div> : null}
                 <div className="tabular-nums font-bold text-primary text-primary">
                   বিক্রেতার মূসক নিবন্ধন / BIN: <strong>{company?.bin_no || '002938172-0101'}</strong>
@@ -476,7 +476,7 @@ export default function InvoiceCockpitPage() {
                   <div className="h-8 w-8 rounded-lg bg-primary text-white flex items-center justify-center font-black text-base">
  P
                   </div>
-                  <h1 className="text-xl font-black tracking-tight">{company?.name || 'InkFlow Enterprise'}</h1>
+                  <h1 className="text-xl font-black tracking-tight">{company?.name || 'PrintFlow Enterprise'}</h1>
                 </div>
                 {(company?.address || company?.phone) && (
                   <p className="text-muted-foreground">
@@ -651,7 +651,7 @@ export default function InvoiceCockpitPage() {
                       <span>Nagad Wallet:</span> <strong>{company?.phone || '01800-000000'}</strong> (Send Money/Merchant)
                     </div>
                     <div className="col-span-2">
-                      <span>Bank Transfer:</span> <strong>Dutch-Bangla Bank / City Bank</strong> (A/C: {company?.name || 'InkFlow Enterprise'})
+                      <span>Bank Transfer:</span> <strong>Dutch-Bangla Bank / City Bank</strong> (A/C: {company?.name || 'PrintFlow Enterprise'})
                     </div>
                   </div>
                   {invoice.payment_method_note && (

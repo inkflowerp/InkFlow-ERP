@@ -12,7 +12,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 # Design System & UI Consistency Guardrails (Tenant & Platform)
 
-All UI development across InkFlow ERP (both Tenant app `/[tenantSlug]/*` and Platform Owner app `/platform/*`) must adhere strictly to the shared design system in `design-spec.json` and `app/globals.css`.
+All UI development across PrintFlow (both Tenant app `/[tenantSlug]/*` and Platform Owner app `/platform/*`) must adhere strictly to the shared design system in `design-spec.json` and `app/globals.css`.
 
 ### Invariants:
 1. **Zero Raw Palette Colors:** NEVER use raw Tailwind palette classes (e.g. `bg-slate-*`, `text-indigo-*`, `border-zinc-*`, `bg-gray-*`) in application markup. Always use semantic design tokens:

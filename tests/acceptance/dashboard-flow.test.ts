@@ -1,5 +1,5 @@
 // ==============================================================================
-// InkFlow ERP - Module 1: Dashboard Flow & UX Acceptance Tests
+// PrintFlow - Module 1: Dashboard Flow & UX Acceptance Tests
 // Tests the end-to-end information hierarchy, 4-KPI row, attention queue,
 // and the <= 3-clicks-to-complete-main-task guarantee.
 // Matrix: Light/Dark x Mobile 375px / Desktop 1440px x EN/BN
@@ -28,7 +28,7 @@ describe('Module 1: Dashboard Hardening & Flow Verification', () => {
     await browser?.close()
   })
 
-  // Helper to render mock Dashboard DOM reflecting InkFlow Design System
+  // Helper to render mock Dashboard DOM reflecting PrintFlow Design System
   async function renderDashboardPage(
     context: BrowserContext,
     options: {

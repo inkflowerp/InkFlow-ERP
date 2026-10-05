@@ -51,7 +51,7 @@ export const TRUST_TAGS = [
   'Installation',
 ]
 
-// 3. How Print Shops Work With PrintERP: 8 Connected Steps
+// 3. How Print Shops Work With PrintFlow: 8 Connected Steps
 export const CONNECTED_WORKFLOW_STEPS = [
   {
     step: '01',
@@ -231,7 +231,7 @@ export const CORE_WORKFLOW_LIFECYCLE = [
   },
 ]
 
-// 6. What PrintERP Manages: 6 Operational Domains
+// 6. What PrintFlow Manages: 6 Operational Domains
 export const WHAT_PRINTERP_MANAGES = [
   {
     id: 'sales',
@@ -492,21 +492,21 @@ export const BANGLADESH_SPECIFIC_FEATURES = [
 // 12. FAQ Section: 12 Authentic Operational Questions
 export const FAQS = [
   {
-    qEn: 'What is PrintERP?',
-    qBn: 'প্রিন্টইআরপি (PrintERP) কী?',
-    aEn: 'PrintERP is business software built specifically for printing presses, digital banner shops, signage fabricators, and advertising workshops in Bangladesh. It connects quotations, orders, design approval, production, inventory, delivery, and accounting in one unified system.',
-    aBn: 'প্রিন্টইআরপি হলো বাংলাদেশের ডিজিটাল প্রিন্ট, অফসেট প্রেস, ব্যানার, সাইনবোর্ড ফ্যাব্রিকেশন ও বিজ্ঞাপন এজেন্সির জন্য বিশেষভাবে তৈরি সফটওয়্যার। এটি কোটেশন, অর্ডার, ডিজাইন অনুমোদন, কারখানা প্রোডাকশন, স্টক, চালান ও বকেয়া আদায়ের পুরো ব্যবসাকে এক ছাদের নিচে পরিচালনা করে।',
+    qEn: 'What is PrintFlow?',
+    qBn: 'প্রিন্টফ্লো (PrintFlow) কী?',
+    aEn: 'PrintFlow is business software built specifically for printing presses, digital banner shops, signage fabricators, and advertising workshops in Bangladesh. It connects quotations, orders, design approval, production, inventory, delivery, and accounting in one unified system.',
+    aBn: 'প্রিন্টফ্লো হলো বাংলাদেশের ডিজিটাল প্রিন্ট, অফসেট প্রেস, ব্যানার, সাইনবোর্ড ফ্যাব্রিকেশন ও বিজ্ঞাপন এজেন্সির জন্য বিশেষভাবে তৈরি সফটওয়্যার। এটি কোটেশন, অর্ডার, ডিজাইন অনুমোদন, কারখানা প্রোডাকশন, স্টক, চালান ও বকেয়া আদায়ের পুরো ব্যবসাকে এক ছাদের নিচে পরিচালনা করে।',
   },
   {
-    qEn: 'Who is PrintERP for?',
-    qBn: 'প্রিন্টইআরপি কাদের জন্য তৈরি?',
+    qEn: 'Who is PrintFlow for?',
+    qBn: 'প্রিন্টফ্লো কাদের জন্য তৈরি?',
     aEn: 'It is built for commercial offset presses, digital flex/banner workshops, acrylic and LED signboard makers, carton packaging plants, sticker printers, steel fabrication teams, and advertising agencies across Bangladesh.',
     aBn: 'এটি বাংলাদেশের কমার্শিয়াল অফসেট প্রেস, ফ্লেক্স/ডিজিটাল ব্যানার শপ, এক্রিলিক ও এলইডি সাইনবোর্ড নির্মাতা, প্যাকেজিং কারখানা, স্টিকার প্রিন্টার এবং অ্যাডভার্টাইজিং এজেন্সির জন্য তৈরি।',
   },
   {
     qEn: 'Can I manage quotations and invoices in square feet (SFT)?',
     qBn: 'স্কয়ারফিট (SFT) অনুযায়ী কি কোটেশন ও ইনভয়েস তৈরি করা যায়?',
-    aEn: 'Yes. Enter dimensions in inches, feet, or running feet, and PrintERP automatically calculates total square footage, applies material and finishing rates, handles minimum billable limits, and formats branded PDF quotes.',
+    aEn: 'Yes. Enter dimensions in inches, feet, or running feet, and PrintFlow automatically calculates total square footage, applies material and finishing rates, handles minimum billable limits, and formats branded PDF quotes.',
     aBn: 'হ্যাঁ। ইঞ্চি বা ফুটে মাপ লিখলেই সফটওয়্যার স্বয়ংক্রিয়ভাবে স্কয়ারফিট বের করে মেটেরিয়াল রেট ও ফিনিশিং যোগ করে পেশাদার পিডিএফ কোটেশন প্রস্তুত করে দেয়।',
   },
   {
@@ -518,7 +518,7 @@ export const FAQS = [
   {
     qEn: 'Can I manage roll inventory and material wastage?',
     qBn: 'ফ্লেক্স রোল এবং কাঁচামালের অপচয় কি ট্র্যাক করা যায়?',
-    aEn: 'Yes. PrintERP tracks master rolls by width and length (e.g. 10ft × 164ft = 1,640 SFT), subtracts square footage as jobs finish, accounts for loading scrap, and alerts you when stocks drop low.',
+    aEn: 'Yes. PrintFlow tracks master rolls by width and length (e.g. 10ft × 164ft = 1,640 SFT), subtracts square footage as jobs finish, accounts for loading scrap, and alerts you when stocks drop low.',
     aBn: 'হ্যাঁ। প্রতিটি রোলের প্রস্থ ও দৈর্ঘ্য অনুযায়ী স্কয়ারফিটের ব্যবহার ও অপচয় লাইভ কমে যায় এবং স্টক নির্দিষ্ট সীমার নিচে নামলে অ্যালার্ট প্রদান করে।',
   },
   {
@@ -528,9 +528,9 @@ export const FAQS = [
     aBn: 'হ্যাঁ। গ্রাহকের আংশিক জমা ও বকেয়া নিখুঁতভাবে রেকর্ড থাকে। মাত্র ১ ক্লিকে গ্রাহকের হোয়াটসঅ্যাপে বকেয়া টাকার ভদ্র রিমাইন্ডার পাঠানো যায়।',
   },
   {
-    qEn: 'Does PrintERP support Bengali language?',
-    qBn: 'প্রিন্টইআরপিতে কি বাংলা ভাষা সাপোর্ট করে?',
-    aEn: 'Full native support! You can use PrintERP in 100% pure Bangla (with clear Hind Siliguri typography) or 100% English. Customer names, delivery challans, and money receipts all render properly in Bengali.',
+    qEn: 'Does PrintFlow support Bengali language?',
+    qBn: 'প্রিন্টফ্লোতে কি বাংলা ভাষা সাপোর্ট করে?',
+    aEn: 'Full native support! You can use PrintFlow in 100% pure Bangla (with clear Hind Siliguri typography) or 100% English. Customer names, delivery challans, and money receipts all render properly in Bengali.',
     aBn: 'শতভাগ পরিপূর্ণ বাংলা সাপোর্ট রয়েছে! ‘হিন্দ শিলিগুড়ি’ ফন্টে শুদ্ধ বাংলায় অথবা ইংরেজিতে কাজ করতে পারবেন। গ্রাহকের নাম, ডেলিভারি চালান ও মানি রিসিট বাংলায় প্রিন্ট হয়।',
   },
   {
@@ -546,10 +546,10 @@ export const FAQS = [
     aBn: 'হ্যাঁ। ভূমিকাভিত্তিক পারমিশন সিস্টেমের কারণে মালিক, সেলসম্যান, ডিজাইনার, প্রোডাকশন ম্যানেজার ও অপারেটররা যার যার নির্দিষ্ট প্যানেলে নিরাপদভাবে কাজ করতে পারবেন।',
   },
   {
-    qEn: 'Can I use PrintERP on mobile smartphones?',
-    qBn: 'প্রিন্টইআরপি কি স্মার্টফোনে ব্যবহার করা যায়?',
-    aEn: 'PrintERP is fully responsive and mobile-friendly. Shop owners can check sales, review customer dues, and monitor production queues from any Android or iPhone without needing a computer.',
-    aBn: 'প্রিন্টইআরপি সম্পূর্ণ মোবাইল-ফ্রেন্ডলি। ফলে কম্পিউটার ছাড়াও যেকোনো সাধারণ স্মার্টফোনে লাইভ সেলস, বকেয়া খাতা ও প্রোডাকশন মনিটর করা যায়।',
+    qEn: 'Can I use PrintFlow on mobile smartphones?',
+    qBn: 'প্রিন্টফ্লো কি স্মার্টফোনে ব্যবহার করা যায়?',
+    aEn: 'PrintFlow is fully responsive and mobile-friendly. Shop owners can check sales, review customer dues, and monitor production queues from any Android or iPhone without needing a computer.',
+    aBn: 'প্রিন্টফ্লো সম্পূর্ণ মোবাইল-ফ্রেন্ডলি। ফলে কম্পিউটার ছাড়াও যেকোনো সাধারণ স্মার্টফোনে লাইভ সেলস, বকেয়া খাতা ও প্রোডাকশন মনিটর করা যায়।',
   },
   {
     qEn: 'Can I start with a free trial?',
@@ -559,8 +559,8 @@ export const FAQS = [
   },
   {
     qEn: 'How easy is it to move from Excel or paper registers?',
-    qBn: 'খাতা বা এক্সেল থেকে প্রিন্টইআরপিতে আসা কতটা সহজ?',
-    aEn: 'Very easy. PrintERP is built around how print shops already operate in Bangladesh. You can import your customer lists and material price lists, and our Dhaka onboarding team provides live walkthrough support.',
+    qBn: 'খাতা বা এক্সেল থেকে প্রিন্টফ্লোতে আসা কতটা সহজ?',
+    aEn: 'Very easy. PrintFlow is built around how print shops already operate in Bangladesh. You can import your customer lists and material price lists, and our Dhaka onboarding team provides live walkthrough support.',
     aBn: 'খুবই সহজ। সফটওয়্যারটি বাংলাদেশি প্রেসের কাজের ধরনের সাথে মিল রেখে তৈরি। গ্রাহক তালিকা সহজেই যুক্ত করা যায় এবং আমাদের ঢাকা অনবোর্ডিং টিম লাইভ ডেমো ও সহযোগিতা প্রদান করে।',
   },
 ]

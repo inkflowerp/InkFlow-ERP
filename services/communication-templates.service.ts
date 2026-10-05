@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP SaaS - Unified Communication Template Service
+// PrintFlow SaaS - Unified Communication Template Service
 // Manages and renders customizable Email Subjects, Email Bodies, and WhatsApp
 // templates for Quotations and Invoices with strictly supported template variables.
 // ==============================================================================
@@ -29,7 +29,7 @@ export const SUPPORTED_TEMPLATE_VARIABLES: {
     { tag: '{{company_phone}}', name: 'Company Phone', description: 'Official company phone / hotline', category: 'company', example: '+880 1711-000000' },
     { tag: '{{company_email}}', name: 'Company Email', description: 'Official business email', category: 'company', example: 'billing@example.com' },
     { tag: '{{company_address}}', name: 'Company Address', description: 'Registered business address', category: 'company', example: '12/A Motijheel C/A, Dhaka' },
-    { tag: '{{company_website}}', name: 'Company Website', description: 'Public website or portal URL', category: 'company', example: 'https://demo.printerp.app' },
+    { tag: '{{company_website}}', name: 'Company Website', description: 'Public website or portal URL', category: 'company', example: 'https://demo.printflow.bd' },
   ],
   customer: [
     { tag: '{{customer_name}}', name: 'Customer Name', description: 'Client contact person or name', category: 'customer', example: 'Ashiqur Rahman' },
@@ -282,7 +282,7 @@ export class CommunicationTemplateService {
     const compEmail = company?.email || company?.contact_email || 'info@example.com'
     const compAddress = company?.address || ''
     const tenantSlug = company?.slug || 'my-company'
-    const compWebsite = company?.website || `https://${tenantSlug}.printerp.app`
+    const compWebsite = company?.website || `https://${tenantSlug}.printflow.bd`
 
     // Lookup customer from datastore if customer_id is present
     let customer: any = null
@@ -369,7 +369,7 @@ export class CommunicationTemplateService {
     const compEmail = company?.email || company?.contact_email || 'billing@example.com'
     const compAddress = company?.address || ''
     const tenantSlug = company?.slug || 'my-company'
-    const compWebsite = company?.website || `https://${tenantSlug}.printerp.app`
+    const compWebsite = company?.website || `https://${tenantSlug}.printflow.bd`
 
     // Lookup customer from datastore if customer_id is present
     let customer: any = null

@@ -815,7 +815,7 @@ export default function QuotationsPage() {
  showNotification('Customer phone number is missing.', 'error')
  return
     }
- const msg = QuotationService.generateBangladeshiQuotationWhatsAppMessage(quote, company?.name || 'InkFlow')
+ const msg = QuotationService.generateBangladeshiQuotationWhatsAppMessage(quote, company?.name || 'PrintFlow')
  const cleanPhone = phone.replace(/\D/g, '')
  const formattedPhone = cleanPhone.startsWith('880')
       ? cleanPhone
@@ -1227,7 +1227,7 @@ export default function QuotationsPage() {
                     <QuotationTable
  quotations={filteredQuotations}
  tenantSlug={slug}
- companyName={company?.name || 'InkFlow'}
+ companyName={company?.name || 'PrintFlow'}
  onOpenFollowUp={handleOpenFollowUp}
  onTrash={handleTrashQuotation}
                     />

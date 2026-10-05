@@ -41,7 +41,7 @@ class PlatformOwnerSecurityManager {
   private owner: PlatformOwnerAccount = {
     id: 'pa-001',
     user_id: 'u-platform-root-01',
-    email: 'admin@printerp.com.bd',
+    email: 'admin@printflow.bd',
     full_name: 'Haji Mohammad Shamim',
     role: 'platform_owner',
     phone: '+8801711-892019',
@@ -57,7 +57,7 @@ class PlatformOwnerSecurityManager {
   private sessions: PlatformSession[] = [
     {
       id: 'sess-01',
-      user_email: 'admin@printerp.com.bd',
+      user_email: 'admin@printflow.bd',
       device_name: 'Desktop Workstation (Chrome — Windows)',
       ip_address: '103.108.140.22',
       location: 'Dhaka, Bangladesh',
@@ -66,7 +66,7 @@ class PlatformOwnerSecurityManager {
     },
     {
       id: 'sess-02',
-      user_email: 'admin@printerp.com.bd',
+      user_email: 'admin@printflow.bd',
       device_name: 'iPhone 15 Pro (Safari — iOS)',
       ip_address: '103.108.140.89',
       location: 'Dhaka, Bangladesh',
@@ -153,12 +153,12 @@ class PlatformOwnerSecurityManager {
   }
 }
 
-describe('PrintERP SaaS — Platform Owner Account Experience & Security Tests', () => {
+describe('PrintFlow — Platform Owner Account Experience & Security Tests', () => {
   const manager = new PlatformOwnerSecurityManager()
 
   it('Platform Owner Identity: Exactly one primary root platform owner configured', () => {
     const profile = manager.getProfile()
-    assert.strictEqual(profile.email, 'admin@printerp.com.bd')
+    assert.strictEqual(profile.email, 'admin@printflow.bd')
     assert.strictEqual(profile.role, 'platform_owner')
     assert.strictEqual(profile.is_active, true)
   })

@@ -1,5 +1,5 @@
 // ==============================================================================
-// InkFlow ERP - Authoritative Unified Communication Repository (V8)
+// PrintFlow - Authoritative Unified Communication Repository (V8)
 // Multi-Tenant WhatsApp, SMS, Email, In-App Dispatch Logs & Templates
 // ==============================================================================
 

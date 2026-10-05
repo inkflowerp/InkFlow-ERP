@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP SaaS - UddoktaPay Automated Payment Gateway Adapter
+// PrintFlow SaaS - UddoktaPay Automated Payment Gateway Adapter
 // Documentation: https://uddoktapay.com/docs/v2
 // ==============================================================================
 
@@ -56,7 +56,7 @@ export class UddoktaPayPaymentAdapter implements PaymentProvider {
         headers: {
           'RT-UDDOKTAPAY-API-KEY': this.apiKey,
           'Content-Type': 'application/json',
-          'User-Agent': 'PrintERP-SaaS/1.0',
+          'User-Agent': 'PrintFlow-SaaS/1.0',
         },
         body: JSON.stringify({ invoice_id: `PING_${Date.now()}` }),
         signal: AbortSignal.timeout(10000),
@@ -112,7 +112,7 @@ export class UddoktaPayPaymentAdapter implements PaymentProvider {
 
     try {
       const payload = {
-        full_name: params.customerName || 'PrintERP Customer',
+        full_name: params.customerName || 'PrintFlow Customer',
         email: params.customerEmail || 'billing@printerp.com',
         amount: params.amount.toFixed(2),
         metadata: {
@@ -120,9 +120,9 @@ export class UddoktaPayPaymentAdapter implements PaymentProvider {
           company_id: params.companyId,
           plan: params.planName,
         },
-        redirect_url: params.redirectUrl || 'https://printerp.com/platform/billing',
-        cancel_url: params.cancelUrl || 'https://printerp.com/platform/billing',
-        webhook_url: params.callbackUrl || 'https://printerp.com/api/webhooks/uddoktapay',
+        redirect_url: params.redirectUrl || 'https://printflow.bd/platform/billing',
+        cancel_url: params.cancelUrl || 'https://printflow.bd/platform/billing',
+        webhook_url: params.callbackUrl || 'https://printflow.bd/api/webhooks/uddoktapay',
       }
 
       const res = await fetch(`${this.baseUrl}/api/checkout-v2`, {

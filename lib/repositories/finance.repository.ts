@@ -1,5 +1,5 @@
 // ==============================================================================
-// InkFlow ERP - Authoritative Finance & Double-Entry Accounting Repository (V9.1)
+// PrintFlow - Authoritative Finance & Double-Entry Accounting Repository (V9.1)
 // PostgreSQL persistence for Accounts, Financial Transactions, Transfers, Cash Closings,
 // General Ledger, Trial Balance, Bank Statements & Statements Reconciliation
 // ==============================================================================

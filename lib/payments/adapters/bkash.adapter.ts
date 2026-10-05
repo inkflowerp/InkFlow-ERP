@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP SaaS - bKash Tokenized Checkout Payment Gateway Adapter
+// PrintFlow SaaS - bKash Tokenized Checkout Payment Gateway Adapter
 // Official Documentation: https://developer.bKash.com
 // API Version: v1.2.0-beta Tokenized Checkout
 // ==============================================================================
@@ -136,7 +136,7 @@ export class BkashPaymentAdapter implements PaymentProvider {
     try {
       const { token } = await this.grantToken()
       const callbackURL =
-        params.callbackUrl || `${params.redirectUrl || 'https://printerp.com/api/webhooks/bkash'}?trx=${trxId}`
+        params.callbackUrl || `${params.redirectUrl || 'https://printflow.bd/api/webhooks/bkash'}?trx=${trxId}`
 
       const payload = {
         mode: '0011',
@@ -305,7 +305,7 @@ export class BkashPaymentAdapter implements PaymentProvider {
           paymentID: transactionId,
           amount: amount.toFixed(2),
           trxID: transactionId,
-          sku: 'PrintERP-Refund',
+          sku: 'PrintFlow-Refund',
           reason,
         }),
       })

@@ -42,7 +42,7 @@ export function ProductionTaskTable({
  onHold,
  onResume,
  onPrintTicket,
- companyName = 'InkFlow Digital & Offset Press',
+ companyName = 'PrintFlow Digital & Offset Press',
 }: ProductionTaskTableProps) {
  const { locale, tBilingual } = useI18n()
  const isBn = locale === 'bn'

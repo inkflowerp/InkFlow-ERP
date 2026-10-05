@@ -47,7 +47,7 @@ export default function PlatformForgotPasswordPage() {
  </div>
  <div className="flex items-center justify-center gap-2">
  <span className="tabular-nums text-xs uppercase tracking-widest text-primary font-bold">
- PrintERP Platform
+ PrintFlow Platform
  </span>
  </div>
  <h1 className="text-2xl font-black tracking-tight text-foreground">

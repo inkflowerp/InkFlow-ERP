@@ -19,46 +19,49 @@ import {
 
 describe('Tenant Subdomain Resolution & DNS Utility Unit Tests', () => {
   test('1. Resolves standard production tenant subdomains', () => {
-    const res = resolveHostname('vision.inkflow.com.bd')
+    const res = resolveHostname('vision.printflow.bd')
     assert.equal(res.hostType, 'tenant')
     assert.equal(res.tenantSlug, 'vision')
-    assert.equal(res.rootDomain, 'inkflow.com.bd')
+    assert.equal(res.rootDomain, 'printflow.bd')
     assert.equal(res.isDevelopment, false)
   })
 
   test('2. Resolves hyphenated multi-word tenant subdomains', () => {
-    const res = resolveHostname('abc-print-dhaka.inkflow.com.bd')
+    const res = resolveHostname('abc-print-dhaka.printflow.bd')
     assert.equal(res.hostType, 'tenant')
     assert.equal(res.tenantSlug, 'abc-print-dhaka')
-    assert.equal(res.rootDomain, 'inkflow.com.bd')
+    assert.equal(res.rootDomain, 'printflow.bd')
   })
 
   test('3. Handles uppercase and mixed-case hostnames by normalizing to lowercase', () => {
-    const res = resolveHostname('VISION-SIGN.INKFLOW.COM.BD')
+    const res = resolveHostname('VISION-SIGN.PRINTFLOW.COM.BD')
     assert.equal(res.hostType, 'tenant')
     assert.equal(res.tenantSlug, 'vision-sign')
   })
 
   test('4. Resolves root production domain as root (not a tenant)', () => {
-    const res = resolveHostname('inkflow.com.bd')
+    const res = resolveHostname('printflow.bd')
     assert.equal(res.hostType, 'root')
     assert.equal(res.tenantSlug, null)
-    assert.equal(res.rootDomain, 'inkflow.com.bd')
+    assert.equal(res.rootDomain, 'printflow.bd')
   })
 
   test('5. Resolves www subdomain as root domain (not a tenant)', () => {
-    const res = resolveHostname('www.inkflow.com.bd')
+    const res = resolveHostname('www.printflow.bd')
     assert.equal(res.hostType, 'root')
     assert.equal(res.tenantSlug, null)
   })
 
-  test('6. Identifies reserved system subdomains', () => {
-    const reservedCases = ['admin.inkflow.com.bd', 'api.inkflow.com.bd', 'mail.inkflow.com.bd', 'billing.inkflow.com.bd', 'auth.inkflow.com.bd']
+  test('6. Identifies reserved system subdomains and platform hosts', () => {
+    const reservedCases = ['api.printflow.bd', 'mail.printflow.bd', 'billing.printflow.bd', 'auth.printflow.bd']
     for (const host of reservedCases) {
       const res = resolveHostname(host)
       assert.equal(res.hostType, 'reserved', `Host ${host} should be identified as reserved`)
       assert.ok(res.tenantSlug, `Reserved slug should be captured`)
     }
+    const adminRes = resolveHostname('admin.printflow.bd')
+    assert.equal(adminRes.hostType, 'platform', 'Host admin.printflow.bd should be identified as platform')
+    assert.equal(adminRes.tenantSlug, 'admin')
   })
 
   test('7. Resolves local development root host (localhost:3000)', () => {
@@ -83,7 +86,7 @@ describe('Tenant Subdomain Resolution & DNS Utility Unit Tests', () => {
   })
 
   test('10. Flags malformed or invalid hostnames', () => {
-    const invalidCases = ['', '..invalid', 'vision..sign.inkflow.com.bd', '-invalid-.inkflow.com.bd']
+    const invalidCases = ['', '..invalid', 'vision..sign.printflow.bd', '-invalid-.printflow.bd']
     for (const host of invalidCases) {
       const res = resolveHostname(host)
       assert.equal(res.hostType, 'invalid', `Host ${host} should be identified as invalid`)
@@ -125,7 +128,7 @@ describe('Tenant Subdomain Resolution & DNS Utility Unit Tests', () => {
   })
 
   test('14. getAuthCookieOptions enforces host-only cookies across production and development', () => {
-    const prodOpts = getAuthCookieOptions('inkflow.com.bd')
+    const prodOpts = getAuthCookieOptions('printflow.bd')
     assert.equal(prodOpts.domain, undefined, 'Cookie must be host-only (domain: undefined)')
     assert.equal(prodOpts.sameSite, 'lax')
     assert.equal(prodOpts.httpOnly, true)
@@ -211,7 +214,7 @@ describe('Tenant Subdomain Resolution & DNS Utility Unit Tests', () => {
 
   test('22. getTenantBaseUrl and getTenantLink strip www. prefixes from root domain', () => {
     const base = getTenantBaseUrl('vision')
-    assert.ok(!base.includes('www.inkflow.com.bd'))
+    assert.ok(!base.includes('www.printflow.bd'))
     assert.ok(base.includes('vision.'))
 
     const link = getTenantLink('vision', '/vision/orders')
@@ -220,7 +223,7 @@ describe('Tenant Subdomain Resolution & DNS Utility Unit Tests', () => {
   })
 
   test('23. getAuthCookieOptions normalizes www root domain to host-only', () => {
-    const opts = getAuthCookieOptions('www.inkflow.com.bd')
+    const opts = getAuthCookieOptions('www.printflow.bd')
     assert.equal(opts.domain, undefined)
   })
 
@@ -235,33 +238,33 @@ describe('Tenant Subdomain Resolution & DNS Utility Unit Tests', () => {
     assert.equal(vercelRoot.hostType, 'root')
     assert.equal(vercelRoot.tenantSlug, null)
 
-    // ccTLD (.bd): rangao.inkflow.bd
-    const bdTenant = resolveHostname('rangao.inkflow.bd')
+    // ccTLD (.bd): rangao.printflow.bd
+    const bdTenant = resolveHostname('rangao.printflow.bd')
     assert.equal(bdTenant.hostType, 'tenant')
     assert.equal(bdTenant.tenantSlug, 'rangao')
-    assert.equal(bdTenant.rootDomain, 'inkflow.bd')
+    assert.equal(bdTenant.rootDomain, 'printflow.bd')
 
-    const bdRoot = resolveHostname('inkflow.bd')
+    const bdRoot = resolveHostname('printflow.bd')
     assert.equal(bdRoot.hostType, 'root')
     assert.equal(bdRoot.tenantSlug, null)
 
-    // gTLD (.com): vision-sign.inkflow.com
-    const comTenant = resolveHostname('vision-sign.inkflow.com')
+    // gTLD (.com): vision-sign.printflow.com
+    const comTenant = resolveHostname('vision-sign.printflow.com')
     assert.equal(comTenant.hostType, 'tenant')
     assert.equal(comTenant.tenantSlug, 'vision-sign')
-    assert.equal(comTenant.rootDomain, 'inkflow.com')
+    assert.equal(comTenant.rootDomain, 'printflow.com')
 
-    const comRoot = resolveHostname('inkflow.com')
+    const comRoot = resolveHostname('printflow.com')
     assert.equal(comRoot.hostType, 'root')
     assert.equal(comRoot.tenantSlug, null)
 
-    // Second-level ccTLD (.com.bd): vision.inkflow.com.bd
-    const comBdTenant = resolveHostname('vision.inkflow.com.bd')
+    // Second-level ccTLD (.com.bd): vision.printflow.bd
+    const comBdTenant = resolveHostname('vision.printflow.bd')
     assert.equal(comBdTenant.hostType, 'tenant')
     assert.equal(comBdTenant.tenantSlug, 'vision')
-    assert.equal(comBdTenant.rootDomain, 'inkflow.com.bd')
+    assert.equal(comBdTenant.rootDomain, 'printflow.bd')
 
-    const comBdRoot = resolveHostname('inkflow.com.bd')
+    const comBdRoot = resolveHostname('printflow.bd')
     assert.equal(comBdRoot.hostType, 'root')
     assert.equal(comBdRoot.tenantSlug, null)
   })
@@ -272,16 +275,16 @@ describe('Tenant Subdomain Resolution & DNS Utility Unit Tests', () => {
       'https://rangao.inkflow-erp.vercel.app'
     )
     assert.equal(
-      getTenantBaseUrl('rangao', 'inkflow.bd'),
-      'https://rangao.inkflow.bd'
+      getTenantBaseUrl('rangao', 'printflow.bd'),
+      'https://rangao.printflow.bd'
     )
     assert.equal(
-      getTenantBaseUrl('vision-sign', 'inkflow.com'),
-      'https://vision-sign.inkflow.com'
+      getTenantBaseUrl('vision-sign', 'printflow.com'),
+      'https://vision-sign.printflow.com'
     )
     assert.equal(
-      getTenantBaseUrl('vision', 'inkflow.com.bd'),
-      'https://vision.inkflow.com.bd'
+      getTenantBaseUrl('vision', 'printflow.bd'),
+      'https://vision.printflow.bd'
     )
     assert.equal(
       getTenantBaseUrl('rangao', 'localhost:3000'),
@@ -295,16 +298,16 @@ describe('Tenant Subdomain Resolution & DNS Utility Unit Tests', () => {
       'https://rangao.inkflow-erp.vercel.app/orders'
     )
     assert.equal(
-      getTenantLink('rangao', 'dashboard', 'inkflow.bd'),
-      'https://rangao.inkflow.bd/dashboard'
+      getTenantLink('rangao', 'dashboard', 'printflow.bd'),
+      'https://rangao.printflow.bd/dashboard'
     )
     assert.equal(
-      getTenantLink('vision-sign', '/invoices/INV-2026-001', 'inkflow.com'),
-      'https://vision-sign.inkflow.com/invoices/INV-2026-001'
+      getTenantLink('vision-sign', '/invoices/INV-2026-001', 'printflow.com'),
+      'https://vision-sign.printflow.com/invoices/INV-2026-001'
     )
     assert.equal(
-      getTenantLink('vision', '/quotations/QUO-2026-001', 'inkflow.com.bd'),
-      'https://vision.inkflow.com.bd/quotations/QUO-2026-001'
+      getTenantLink('vision', '/quotations/QUO-2026-001', 'printflow.bd'),
+      'https://vision.printflow.bd/quotations/QUO-2026-001'
     )
     assert.equal(
       getTenantLink('rangao', '/production', 'localhost:3000'),
@@ -318,19 +321,19 @@ describe('Tenant Subdomain Resolution & DNS Utility Unit Tests', () => {
       'https://rangao.inkflow-erp.vercel.app/invoices/INV-100'
     )
     assert.equal(
-      formatDocumentUrl('rangao', 'quotation', 'QUO-200', 'inkflow.bd'),
-      'https://rangao.inkflow.bd/quotations/QUO-200'
+      formatDocumentUrl('rangao', 'quotation', 'QUO-200', 'printflow.bd'),
+      'https://rangao.printflow.bd/quotations/QUO-200'
     )
     assert.equal(
-      formatDocumentUrl('vision-sign', 'receipt', 'MR-300', 'inkflow.com'),
-      'https://vision-sign.inkflow.com/billing?receipt=MR-300'
+      formatDocumentUrl('vision-sign', 'receipt', 'MR-300', 'printflow.com'),
+      'https://vision-sign.printflow.com/billing?receipt=MR-300'
     )
   })
 
   test('28. getAuthCookieOptions sets host-only cookie domains across .bd, .com, .com.bd and omits for PSL', () => {
-    assert.equal(getAuthCookieOptions('inkflow.bd').domain, undefined)
-    assert.equal(getAuthCookieOptions('inkflow.com').domain, undefined)
-    assert.equal(getAuthCookieOptions('inkflow.com.bd').domain, undefined)
+    assert.equal(getAuthCookieOptions('printflow.bd').domain, undefined)
+    assert.equal(getAuthCookieOptions('printflow.com').domain, undefined)
+    assert.equal(getAuthCookieOptions('printflow.bd').domain, undefined)
     assert.equal(getAuthCookieOptions('inkflow-erp.vercel.app').domain, undefined)
   })
 })

@@ -1,5 +1,5 @@
 // ==============================================================================
-// InkFlow ERP SaaS - Visual Audit & Screenshot Crawler (Step A)
+// PrintFlow SaaS - Visual Audit & Screenshot Crawler (Step A)
 //
 // Crawls all ~57 routes (Auth, Onboarding, Platform, and all 31 Tenant Modules)
 // across Light/Dark x Mobile 375 / Tablet 768 / Desktop 1440 x English/Bangla.
@@ -150,7 +150,7 @@ async function getAuthTokens() {
 
 export async function runVisualAudit() {
   console.log('==============================================================================')
-  console.log('INKFLOW ERP - VISUAL AUDIT & WCAG CONTRAST HARNESS (STEP A)')
+  console.log('PRINTFLOW - VISUAL AUDIT & WCAG CONTRAST HARNESS (STEP A)')
   console.log(`Target: ${BASE_URL}`)
   console.log(`Pages: ${ALL_AUDIT_PAGES.length} total`)
   console.log(`Variants: 2 Themes x 3 Viewports x 2 Locales = 12 variants per page`)

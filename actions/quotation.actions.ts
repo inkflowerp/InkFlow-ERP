@@ -333,7 +333,7 @@ export const sendQuotationAction = withTenantAction(
       return { success: false, error: 'Quotation not found in company context.' }
     }
 
-    const companyName = tenant.companyName || 'InkFlow'
+    const companyName = tenant.companyName || 'PrintFlow'
     const recipient = params.recipientOverride || (params.channel === 'email' ? quote.customer_email : (quote.customer_whatsapp || quote.customer_phone))
 
     if (!recipient) {

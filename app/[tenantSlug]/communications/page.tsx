@@ -825,7 +825,7 @@ export default function CommunicationsHubPage() {
             <div className="space-y-2 text-xs">
               <div className="space-y-1">
                 <Label>SMTP Host &amp; Port</Label>
-                <Input value={`smtp.${company?.slug || 'inkflow'}.com:587`} readOnly className="h-10 sm:h-8 tabular-nums text-xs bg-muted"/>
+                <Input value={`smtp.${company?.slug || 'printflow'}.bd:587`} readOnly className="h-10 sm:h-8 tabular-nums text-xs bg-muted"/>
               </div>
               <div className="space-y-1">
                 <Label>Password</Label>

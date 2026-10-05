@@ -158,7 +158,7 @@ export class CompanyUsersService {
       // Generate secure temporary password if none supplied
       const generatedPassword =
         params.password ||
-        `InkFlow!${Math.random().toString(36).slice(-8)}${Math.floor(100 + Math.random() * 900)}`
+        `PrintFlow!${Math.random().toString(36).slice(-8)}${Math.floor(100 + Math.random() * 900)}`
 
       // 1. Check if user already exists in auth.users or create them
       let userId: string | null = null
@@ -312,7 +312,7 @@ export class CompanyUsersService {
         return { success: false, error: uniquenessCheck.error }
       }
 
-      const generatedPassword = `InkFlow!${Math.random().toString(36).slice(-8)}${Math.floor(100 + Math.random() * 900)}`
+      const generatedPassword = `PrintFlow!${Math.random().toString(36).slice(-8)}${Math.floor(100 + Math.random() * 900)}`
 
       // 1. Create or ensure user profile exists in Supabase Auth
       let userId: string | null = null
@@ -1063,7 +1063,7 @@ export class CompanyUsersService {
         await AuthEmailService.sendUserInvitationEmail({
           email: normalizedEmail,
           inviteUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/login`,
-          companyName: comp?.name || 'InkFlow PrintERP',
+          companyName: comp?.name || 'PrintFlow',
           roleName: 'Team User',
           invitedByName: params.actorName || 'Administrator',
           tenantId: params.companyId,

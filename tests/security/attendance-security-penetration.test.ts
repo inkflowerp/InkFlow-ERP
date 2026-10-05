@@ -43,13 +43,15 @@ describe('Attendance Security, Penetration & Tenant Boundary Test Suite', () => 
     it('consistently hashes tokens whether wrapped in URLs or raw prefixes', () => {
       const rawHex = 'a1b2c3d4e5f60718293a4b5c6d7e8f90112233445566778899aabbccddeeff00'
       const hash1 = hashQrToken(rawHex)
-      const hash2 = hashQrToken(`INKFLOW:ATT:v1:${rawHex}`)
-      const hash3 = hashQrToken(`https://inkflow.app/attendance/scan?t=${rawHex}`)
-      const hash4 = hashQrToken(`https://inkflow.app/attendance/scan?qr=${rawHex}&mode=mobile`)
+      const hash2 = hashQrToken(`PRINTFLOW:ATT:v1:${rawHex}`)
+      const hash3 = hashQrToken(`https://printflow.bd/attendance/scan?t=${rawHex}`)
+      const hash4 = hashQrToken(`https://printflow.bd/attendance/scan?qr=${rawHex}&mode=mobile`)
+      const hashLegacy = hashQrToken(`PRINTFLOW:ATT:v1:${rawHex}`)
 
       assert.equal(hash1, hash2)
       assert.equal(hash1, hash3)
       assert.equal(hash1, hash4)
+      assert.equal(hash1, hashLegacy)
     })
   })
 

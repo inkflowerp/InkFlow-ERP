@@ -1,7 +1,7 @@
 'use client'
 
 // ==============================================================================
-// InkFlow SaaS - Enterprise Realtime Support Chat React Hook
+// PrintFlow SaaS - Enterprise Realtime Support Chat React Hook
 // Manages live message stream, Supabase Realtime synchronization,
 // optimistic message delivery, connection state, audio chimes, and unread badges.
 // ==============================================================================

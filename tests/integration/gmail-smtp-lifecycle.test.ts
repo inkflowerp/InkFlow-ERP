@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP SaaS - Integration Tests: Gmail & SMTP Full Lifecycle
+// PrintFlow - Integration Tests: Gmail & SMTP Full Lifecycle
 // ==============================================================================
 
 import { describe, it, beforeEach } from 'node:test'
@@ -35,12 +35,12 @@ describe('Gmail & SMTP Full Lifecycle Integration Tests', () => {
       scope_type: 'TENANT',
       provider: 'gmail',
       type: 'transactional',
-      gmail_account_email: 'sales@inkflow-tenant.com',
-      gmail_display_name: 'InkFlow Tenant Sales',
+      gmail_account_email: 'sales@printflow-tenant.com',
+      gmail_display_name: 'PrintFlow Tenant Sales',
       encrypted_credentials: encryptedTokens,
       token_expires_at: new Date(Date.now() + 3600 * 1000).toISOString(),
-      sender_name: 'InkFlow Tenant Sales',
-      sender_email: 'sales@inkflow-tenant.com',
+      sender_name: 'PrintFlow Tenant Sales',
+      sender_email: 'sales@printflow-tenant.com',
       status: 'active',
       is_default: true,
       created_at: new Date().toISOString(),
@@ -57,7 +57,7 @@ describe('Gmail & SMTP Full Lifecycle Integration Tests', () => {
     // Step C: Send Business Quotation Email
     const quoteSend = await BusinessEmailService.sendQuotationEmail({
       companyId,
-      companyName: 'InkFlow Tenant Press',
+      companyName: 'PrintFlow Tenant Press',
       quotationId: 'quo-1001',
       quotationNumber: 'QUO-2026-1001',
       customerName: 'Prime Bank Ltd',
@@ -86,7 +86,7 @@ describe('Gmail & SMTP Full Lifecycle Integration Tests', () => {
     // Step F: Verify Post-Disconnect Fail-Closed Behavior
     const postDisconnectSend = await BusinessEmailService.sendQuotationEmail({
       companyId,
-      companyName: 'InkFlow Tenant Press',
+      companyName: 'PrintFlow Tenant Press',
       quotationId: 'quo-1002',
       quotationNumber: 'QUO-2026-1002',
       customerName: 'Prime Bank Ltd',

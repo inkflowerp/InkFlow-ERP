@@ -21,7 +21,7 @@ import {
 } from '../../lib/units.ts'
 import { ProductService } from '../../services/product.service.ts'
 import { ProductRepository } from '../../lib/repositories/product.repository.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import type {
   ProductRecord,
   ProductComponent,
@@ -35,12 +35,12 @@ describe('Unit: Commercial Master 2.3 — Real-World Commercial Sanity Audit', (
   const companyId = 'tenant-real-world-commercial-2-3'
 
   beforeEach(() => {
-    PrintERPDataStore.set(STORAGE_KEYS.PRODUCTS, [])
-    PrintERPDataStore.set(STORAGE_KEYS.PRICE_HISTORY, [])
-    PrintERPDataStore.set(STORAGE_KEYS.PRODUCT_VARIANTS, [])
-    PrintERPDataStore.set(STORAGE_KEYS.PRODUCT_FORMULAS, [])
-    PrintERPDataStore.set(STORAGE_KEYS.PRODUCT_SUPPLIER_PRICES, [])
-    PrintERPDataStore.set(STORAGE_KEYS.PRICE_OVERRIDES, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.PRODUCTS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.PRICE_HISTORY, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.PRODUCT_VARIANTS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.PRODUCT_FORMULAS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.PRODUCT_SUPPLIER_PRICES, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.PRICE_OVERRIDES, [])
   })
 
   // =========================================================================

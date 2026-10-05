@@ -4,7 +4,7 @@ import { withTenantAction } from '@/lib/actions/action-wrapper'
 
 
 // ==============================================================================
-// InkFlow ERP - Authoritative Unified Communication Server Actions (V8)
+// PrintFlow - Authoritative Unified Communication Server Actions (V8)
 // Protected, Multi-Tenant WhatsApp, SMS, Email & In-App Actions
 // ==============================================================================
 

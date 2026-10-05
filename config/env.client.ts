@@ -8,7 +8,7 @@ const clientEnvSchema = z.object({
   NEXT_PUBLIC_SUPABASE_URL: z.string().url('NEXT_PUBLIC_SUPABASE_URL must be a valid URL'),
   NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(10, 'NEXT_PUBLIC_SUPABASE_ANON_KEY is required'),
   NEXT_PUBLIC_APP_URL: z.string().default('http://localhost:3000'),
-  NEXT_PUBLIC_APP_NAME: z.string().default('PrintERP SaaS'),
+  NEXT_PUBLIC_APP_NAME: z.string().default('PrintFlow SaaS'),
   NEXT_PUBLIC_DEFAULT_LOCALE: z.string().default('bn'),
   NEXT_PUBLIC_DEFAULT_CURRENCY: z.string().default('BDT'),
   NEXT_PUBLIC_ROOT_DOMAIN: z.string().default('localhost:3000'),

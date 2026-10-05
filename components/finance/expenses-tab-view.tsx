@@ -57,7 +57,7 @@ const DEFAULT_RECURRING_BILLS = [
   { id: 'rec_elec', titleEn: 'Electricity Bill (DESCO/DPDC)', titleBn: 'বিদ্যুৎ বিল (DESCO/DPDC)', category: 'electricity_utility', amount: 18500, dueDay: 15, status: 'PAID' },
   { id: 'rec_net', titleEn: 'High-speed Internet Lease', titleBn: 'ইন্টারনেট সংযোগ বিল', category: 'office_stationery', amount: 2500, dueDay: 10, status: 'PAID' },
   { id: 'rec_amc', titleEn: 'Large-Format Printer AMC', titleBn: 'প্রিন্টার সার্ভিস চুক্তি (AMC)', category: 'machine_maintenance', amount: 6000, dueDay: 20, status: 'DUE' },
-  { id: 'rec_erp', titleEn: 'PrintERP Cloud Platform', titleBn: 'প্রিন্ট ইআরপি সাবস্ক্রিপশন', category: 'miscellaneous', amount: 3000, dueDay: 1, status: 'PAID' },
+  { id: 'rec_erp', titleEn: 'PrintFlow Cloud Platform', titleBn: 'প্রিন্টফ্লো সাবস্ক্রিপশন', category: 'miscellaneous', amount: 3000, dueDay: 1, status: 'PAID' },
 ]
 
 export function ExpensesTabView({

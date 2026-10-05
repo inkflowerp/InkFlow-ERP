@@ -5,13 +5,13 @@ import { OpenWAAdapter } from '../../lib/whatsapp/adapters/openwa.adapter.ts';
 
 describe('OpenWA Provider & Adapter Unit Tests', () => {
   it('1. OpenWAClient normalizes base URL and trims trailing slashes and /api', () => {
-    const client1 = new OpenWAClient({ baseUrl: 'http://wa.printerp.com:2785/api/', apiKey: 'test-key' });
-    const client2 = new OpenWAClient({ baseUrl: 'http://wa.printerp.com:2785/', apiKey: 'test-key' });
-    const client3 = new OpenWAClient({ baseUrl: 'http://wa.printerp.com:2785', apiKey: 'test-key' });
+    const client1 = new OpenWAClient({ baseUrl: 'http://wa.printflow.bd:2785/api/', apiKey: 'test-key' });
+    const client2 = new OpenWAClient({ baseUrl: 'http://wa.printflow.bd:2785/', apiKey: 'test-key' });
+    const client3 = new OpenWAClient({ baseUrl: 'http://wa.printflow.bd:2785', apiKey: 'test-key' });
 
-    assert.equal((client1 as any).baseUrl, 'http://wa.printerp.com:2785/api');
-    assert.equal((client2 as any).baseUrl, 'http://wa.printerp.com:2785/api');
-    assert.equal((client3 as any).baseUrl, 'http://wa.printerp.com:2785/api');
+    assert.equal((client1 as any).baseUrl, 'http://wa.printflow.bd:2785/api');
+    assert.equal((client2 as any).baseUrl, 'http://wa.printflow.bd:2785/api');
+    assert.equal((client3 as any).baseUrl, 'http://wa.printflow.bd:2785/api');
   });
 
   it('2. OpenWAAdapter providerName is openwa', () => {

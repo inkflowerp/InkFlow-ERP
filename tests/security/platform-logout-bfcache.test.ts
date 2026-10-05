@@ -47,7 +47,7 @@ describe('Platform Logout & Back-Forward Cache (bfcache) Security Suite', () => 
       JSON.stringify({
         userId: 'root_user_1',
         adminId: 'padmin_1',
-        email: 'owner@printerp.com',
+        email: 'owner@printflow.bd',
         role: 'platform_owner',
       })
     )

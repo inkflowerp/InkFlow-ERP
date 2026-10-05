@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP / InkFlow SaaS - Order Management Service
+// PrintFlow SaaS - Order Management Service
 // Authoritative PostgreSQL persistence via OrderRepository
 // ==============================================================================
 

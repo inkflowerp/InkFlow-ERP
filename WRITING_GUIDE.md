@@ -1,4 +1,4 @@
-# InkFlow ERP — Plain-Language Writing Guide
+# PrintFlow — Plain-Language Writing Guide
 
 > **Audience:** Shop staff, press operators, cashiers, helpers, and small business owners in Bangladesh, in the printing and signage industry. Many read slowly, use budget Android phones, and do not know formal English or accounting jargon.
 
@@ -88,7 +88,7 @@ Every error message must follow this exact formula:
 
 | Banned SaaS Term | Replace with (English) | Replace with (Bangla) | Context / Meaning |
 |---|---|---|---|
-| **Tenant / Tenant Management** | Client / Clients | ক্লায়েন্ট | The printing business using InkFlow |
+| **Tenant / Tenant Management** | Client / Clients | ক্লায়েন্ট | The printing business using PrintFlow |
 | **Subscription / Lifecycle** | Plan / Plan Status | প্ল্যান / প্ল্যানের অবস্থা | Their monthly or yearly tier |
 | **MRR / Monthly Recurring** | Monthly Income | মাসিক আয় | Total recurring revenue per month |
 | **ARR** | Yearly Income | বার্ষিক আয় | Total recurring revenue per year |

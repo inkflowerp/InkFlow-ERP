@@ -1,5 +1,5 @@
 // ==============================================================================
-// InkFlow ERP SaaS - Dedicated SaaS Billing & Invoicing Service
+// PrintFlow SaaS - Dedicated SaaS Billing & Invoicing Service
 // Manages SaaS Subscription Invoices, Line Items, Credits, and Receipts.
 // Strictly isolated from Tenant Customer Sales Invoices.
 // ==============================================================================

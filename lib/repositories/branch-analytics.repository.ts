@@ -249,7 +249,7 @@ export class BranchAnalyticsRepository {
 
     return {
       company_id: companyId,
-      company_name: 'InkFlow Company',
+      company_name: 'PrintFlow Company',
       active_branch_count: branches.filter((b) => b.is_active).length,
       period,
       kpis: {

@@ -2,7 +2,7 @@ import { test, describe } from 'node:test'
 import assert from 'node:assert/strict'
 import { InventoryRepository } from '../../lib/repositories/inventory.repository.ts'
 import { InventoryService } from '../../services/inventory.service.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import type { MaterialRecord, InventoryLocationRecord } from '../../types/inventory.types.ts'
 
 describe('Material Requisition & Factory Floor Consumption Workflow Tests', () => {
@@ -52,12 +52,12 @@ describe('Material Requisition & Factory Floor Consumption Workflow Tests', () =
 
   test('1. Material received into warehouse store does NOT appear in Factory Floor Consumption', async () => {
     // Save location and material to store warehouse
-    PrintERPDataStore.addItem(STORAGE_KEYS.LOCATIONS, mockLocation, companyId)
-    PrintERPDataStore.addItem(STORAGE_KEYS.MATERIALS, mockMat, companyId)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.LOCATIONS, mockLocation, companyId)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.MATERIALS, mockMat, companyId)
 
     // Also register 10 available warehouse rolls in physical_rolls (stored in warehouse, not issued)
     for (let i = 1; i <= 10; i++) {
-      PrintERPDataStore.addItem(
+      PrintFlowDataStore.addItem(
         STORAGE_KEYS.MOUNTED_ROLLS,
         {
           id: `roll-wh-${mockMat.id}-${i}`,
@@ -236,7 +236,7 @@ describe('Material Requisition & Factory Floor Consumption Workflow Tests', () =
       updated_at: new Date().toISOString(),
     }
 
-    PrintERPDataStore.addItem(STORAGE_KEYS.MATERIALS, mockSheetMat, companyId)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.MATERIALS, mockSheetMat, companyId)
 
     // Issue 3 acrylic sheets to CNC Router Workstation
     const sheetIssueResult = await InventoryRepository.issueMasterRollsBatch({

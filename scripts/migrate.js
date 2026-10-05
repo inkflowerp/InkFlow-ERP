@@ -160,6 +160,9 @@ async function runMigrations() {
 
     console.log(`\nStarting migration sequence: ${migrationFiles.length} migrations to execute...\n`)
 
+    // Architectural Continuity: The internal migrations tracking table is retained as
+    // `_printerp_migrations` to preserve applied migration history across existing deployments
+    // and prevent double-applying historical migrations during the PrintFlow rebrand.
     await client.query(`
       CREATE TABLE IF NOT EXISTS _printerp_migrations (
         id SERIAL PRIMARY KEY,

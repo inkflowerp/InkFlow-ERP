@@ -128,7 +128,7 @@ export function AttendancePunchModal({
       (geoErr) => {
  setStage('failure')
  if (geoErr.code === geoErr.PERMISSION_DENIED) {
- setFailureReason('Location permission denied. InkFlow requires device GPS to verify workplace attendance.')
+ setFailureReason('Location permission denied. PrintFlow requires device GPS to verify workplace attendance.')
         } else if (geoErr.code === geoErr.POSITION_UNAVAILABLE) {
  setFailureReason('GPS position unavailable. Please ensure location services are enabled on your device.')
         } else if (geoErr.code === geoErr.TIMEOUT) {
@@ -202,7 +202,7 @@ export function AttendancePunchModal({
               <ShieldCheck className="h-4 w-4 text-success text-success shrink-0 mt-0.5"/>
               <span>
                 {tBilingual(
-                  'Point camera at the printed InkFlow QR poster at your workplace. Your GPS location will be verified securely.',
+                  'Point camera at the printed PrintFlow QR poster at your workplace. Your GPS location will be verified securely.',
                   'কর্মস্থলের দেওয়ালে বা ডেস্কে প্রিন্ট করা কিউআর কোড স্ক্যান করুন। জিপিএস স্বয়ংক্রিয়ভাবে যাচাই হবে।'
                 )}
               </span>

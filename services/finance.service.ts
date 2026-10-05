@@ -1,5 +1,5 @@
 // ==============================================================================
-// InkFlow ERP - Authoritative Finance 360 Service (V9.1)
+// PrintFlow - Authoritative Finance 360 Service (V9.1)
 // Double-entry accounting, General Ledger authority, Receivables & Payables reconciliation,
 // Cash Closings, Transfers, Profit & Loss, Balance Sheet, Cash Flow, Trial Balance,
 // Job Profitability, Branch Profitability, Bank Reconciliation

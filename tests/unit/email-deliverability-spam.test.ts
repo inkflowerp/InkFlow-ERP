@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP SaaS - Email Deliverability & Anti-Spam Standards Unit Tests
+// PrintFlow - Email Deliverability & Anti-Spam Standards Unit Tests
 // Verifies RFC 5322 Message-ID alignment, MIME multipart/alternative plain text,
 // transactional anti-spam headers, and sender domain alignment.
 // ==============================================================================
@@ -24,8 +24,8 @@ describe('Email Deliverability & Anti-Spam Protection Suite', () => {
     const html = `
       <style>body { color: red; }</style>
       <h1>Account Verification</h1>
-      <p>Hello <strong>John Doe</strong>, welcome to InkFlow.</p>
-      <p>Please click <a href="https://printerp.com/verify?code=123456">here to verify</a> your account.</p>
+      <p>Hello <strong>John Doe</strong>, welcome to PrintFlow.</p>
+      <p>Please click <a href="https://printflow.bd/verify?code=123456">here to verify</a> your account.</p>
       <ul>
         <li>Fast processing</li>
         <li>Zero spam</li>
@@ -37,9 +37,9 @@ describe('Email Deliverability & Anti-Spam Protection Suite', () => {
     assert.strictEqual(plain.includes('color: red'), false)
     // Should preserve text content
     assert.strictEqual(plain.includes('Account Verification'), true)
-    assert.strictEqual(plain.includes('Hello John Doe, welcome to InkFlow.'), true)
+    assert.strictEqual(plain.includes('Hello John Doe, welcome to PrintFlow.'), true)
     // Should preserve links in parentheses for plain-text readers
-    assert.strictEqual(plain.includes('here to verify (https://printerp.com/verify?code=123456)'), true)
+    assert.strictEqual(plain.includes('here to verify (https://printflow.bd/verify?code=123456)'), true)
     // Should format list items
     assert.strictEqual(plain.includes('• Fast processing'), true)
   })
@@ -81,13 +81,13 @@ describe('Email Deliverability & Anti-Spam Protection Suite', () => {
 
     const rawMime = Buffer.from(mimeBase64Url, 'base64url').toString('utf8')
 
-    // Message-ID must match sender domain @myprintbiz.com, NOT hardcoded @printerp.com
+    // Message-ID must match sender domain @myprintbiz.com, NOT hardcoded @printflow.bd
     assert.match(rawMime, /Message-ID: <\d+\.[a-z0-9]+@myprintbiz\.com>/i)
 
     // Transactional anti-spam headers
     assert.strictEqual(rawMime.includes('Auto-Submitted: auto-generated'), true)
     assert.strictEqual(rawMime.includes('X-Auto-Response-Suppress: All'), true)
-    assert.strictEqual(rawMime.includes('X-Mailer: InkFlow ERP Engine'), true)
+    assert.strictEqual(rawMime.includes('X-Mailer: PrintFlow Engine'), true)
     assert.strictEqual(rawMime.includes('List-Unsubscribe: <mailto:support@myprintbiz.com?subject=unsubscribe>'), true)
     assert.strictEqual(rawMime.includes('List-Unsubscribe-Post: List-Unsubscribe=One-Click'), true)
 

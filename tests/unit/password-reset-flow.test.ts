@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP / InkFlow SaaS - Unit Tests: Password Reset Flow & Security
+// PrintFlow / PrintFlow SaaS - Unit Tests: Password Reset Flow & Security
 // Tests anti-enumeration, OTP verification, reset authorization, token expiry,
 // and password change invariants.
 // ==============================================================================
@@ -12,7 +12,7 @@ import { AuthEmailService } from '../../services/auth-email.service.ts'
 describe('Password Reset Flow & Anti-Enumeration Unit Tests', () => {
   it('1. Enforces email anti-enumeration protection on forgotPassword', async () => {
     // Test with non-existent email
-    const nonExistentEmail = 'nonexistent_user_999@inkflow-fake.com'
+    const nonExistentEmail = 'nonexistent_user_999@printflow-fake.test'
     const res1 = await AuthService.forgotPassword(nonExistentEmail)
 
     assert.strictEqual(res1.success, true)
@@ -22,7 +22,7 @@ describe('Password Reset Flow & Anti-Enumeration Unit Tests', () => {
     )
 
     // Test with standard email format
-    const validEmail = 'owner@inkflow.com'
+    const validEmail = 'owner@printflow.test'
     const res2 = await AuthService.forgotPassword(validEmail)
 
     assert.strictEqual(res2.success, true)

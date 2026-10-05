@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP / InkFlow SaaS - Unit Tests: Employee Login & Invitation Lifecycle
+// PrintFlow / PrintFlow SaaS - Unit Tests: Employee Login & Invitation Lifecycle
 // Tests flexible login identifiers (email, username, mobile), invitation link
 // token generation, verification, and portal credential state transitions.
 // ==============================================================================
@@ -16,7 +16,7 @@ import {
   generateSafeEmployeeUsername,
 } from '../../lib/auth/identifier-helper.ts'
 import { AuthService } from '../../services/auth.service.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 
 describe('Employee Login & Invitation Lifecycle Unit Tests', () => {
   describe('1. Flexible Login Identifier Schema Validation', () => {
@@ -99,7 +99,7 @@ describe('Employee Login & Invitation Lifecycle Unit Tests', () => {
     })
 
     it('dispatches invitation email with valid accept_link and company details', async () => {
-      const employeeEmail = 'designer.karim@inkflow.com'
+      const employeeEmail = 'designer.karim@printflow.test'
       const dispatchResult = await AuthEmailService.sendUserInvitationEmail({
         email: employeeEmail,
         userName: 'Karim Ullah',
@@ -206,12 +206,12 @@ describe('Employee Login & Invitation Lifecycle Unit Tests', () => {
   })
 
   describe('5. Duplicate Prevention & Uniqueness Validation', () => {
-    const originalEmployees = PrintERPDataStore.get<any[]>(STORAGE_KEYS.EMPLOYEES) || []
-    const originalUsers = PrintERPDataStore.get<any[]>(STORAGE_KEYS.REGISTERED_USERS) || []
+    const originalEmployees = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.EMPLOYEES) || []
+    const originalUsers = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.REGISTERED_USERS) || []
 
     before(() => {
-      // Seed test data in PrintERPDataStore
-      PrintERPDataStore.set(STORAGE_KEYS.EMPLOYEES, [
+      // Seed test data in PrintFlowDataStore
+      PrintFlowDataStore.set(STORAGE_KEYS.EMPLOYEES, [
         {
           id: 'emp-uniq-1',
           name: 'Rahim Khan',
@@ -225,7 +225,7 @@ describe('Employee Login & Invitation Lifecycle Unit Tests', () => {
         },
       ])
 
-      PrintERPDataStore.set(STORAGE_KEYS.REGISTERED_USERS, [
+      PrintFlowDataStore.set(STORAGE_KEYS.REGISTERED_USERS, [
         {
           id: 'usr-uniq-1',
           full_name: 'Karim Owner',
@@ -237,8 +237,8 @@ describe('Employee Login & Invitation Lifecycle Unit Tests', () => {
     })
 
     after(() => {
-      PrintERPDataStore.set(STORAGE_KEYS.EMPLOYEES, originalEmployees)
-      PrintERPDataStore.set(STORAGE_KEYS.REGISTERED_USERS, originalUsers)
+      PrintFlowDataStore.set(STORAGE_KEYS.EMPLOYEES, originalEmployees)
+      PrintFlowDataStore.set(STORAGE_KEYS.REGISTERED_USERS, originalUsers)
     })
 
     it('detects duplicate email in employee records', async () => {
@@ -305,11 +305,11 @@ describe('Employee Login & Invitation Lifecycle Unit Tests', () => {
   })
 
   describe('6. Multi-Identifier Login Resolution', () => {
-    const originalEmployees = PrintERPDataStore.get<any[]>(STORAGE_KEYS.EMPLOYEES) || []
-    const originalUsers = PrintERPDataStore.get<any[]>(STORAGE_KEYS.REGISTERED_USERS) || []
+    const originalEmployees = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.EMPLOYEES) || []
+    const originalUsers = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.REGISTERED_USERS) || []
 
     before(() => {
-      PrintERPDataStore.set(STORAGE_KEYS.EMPLOYEES, [
+      PrintFlowDataStore.set(STORAGE_KEYS.EMPLOYEES, [
         {
           id: 'emp-res-1',
           name: 'Tariq Operator',
@@ -323,7 +323,7 @@ describe('Employee Login & Invitation Lifecycle Unit Tests', () => {
         },
       ])
 
-      PrintERPDataStore.set(STORAGE_KEYS.REGISTERED_USERS, [
+      PrintFlowDataStore.set(STORAGE_KEYS.REGISTERED_USERS, [
         {
           id: 'usr-res-1',
           full_name: 'Farhana Manager',
@@ -335,8 +335,8 @@ describe('Employee Login & Invitation Lifecycle Unit Tests', () => {
     })
 
     after(() => {
-      PrintERPDataStore.set(STORAGE_KEYS.EMPLOYEES, originalEmployees)
-      PrintERPDataStore.set(STORAGE_KEYS.REGISTERED_USERS, originalUsers)
+      PrintFlowDataStore.set(STORAGE_KEYS.EMPLOYEES, originalEmployees)
+      PrintFlowDataStore.set(STORAGE_KEYS.REGISTERED_USERS, originalUsers)
     })
 
     it('resolves direct email to normalized lowercase email', async () => {

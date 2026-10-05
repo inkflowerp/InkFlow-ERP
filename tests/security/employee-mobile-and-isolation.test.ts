@@ -12,33 +12,33 @@ describe('Employee Experience, Mobile-First, Bangla Default & Server-Enforced Is
 
   describe('1. Role-Based Landing Redirection', () => {
     test('1.1 Operator lands on /operator', () => {
-      const path = getRoleDefaultPath('operator', 'inkflow-press')
-      assert.equal(path, '/inkflow-press/operator')
+      const path = getRoleDefaultPath('operator', 'printflow-press')
+      assert.equal(path, '/printflow-press/operator')
     })
 
     test('1.2 Graphic Designer lands on /designer', () => {
-      const path = getRoleDefaultPath('designer', 'inkflow-press')
-      assert.equal(path, '/inkflow-press/designer')
+      const path = getRoleDefaultPath('designer', 'printflow-press')
+      assert.equal(path, '/printflow-press/designer')
     })
 
     test('1.3 Production Manager lands on /production board', () => {
-      const path = getRoleDefaultPath('production_manager', 'inkflow-press')
-      assert.equal(path, '/inkflow-press/production')
+      const path = getRoleDefaultPath('production_manager', 'printflow-press')
+      assert.equal(path, '/printflow-press/production')
     })
 
     test('1.4 Sales Manager lands on /orders', () => {
-      const path = getRoleDefaultPath('sales_manager', 'inkflow-press')
-      assert.equal(path, '/inkflow-press/orders')
+      const path = getRoleDefaultPath('sales_manager', 'printflow-press')
+      assert.equal(path, '/printflow-press/orders')
     })
 
     test('1.5 General Staff lands on /portal', () => {
-      const path = getRoleDefaultPath('general_staff', 'inkflow-press')
-      assert.equal(path, '/inkflow-press/portal')
+      const path = getRoleDefaultPath('general_staff', 'printflow-press')
+      assert.equal(path, '/printflow-press/portal')
     })
 
     test('1.6 Business Owner & Branch Manager land on /dashboard', () => {
-      assert.equal(getRoleDefaultPath('business_owner', 'inkflow-press'), '/inkflow-press/dashboard')
-      assert.equal(getRoleDefaultPath('branch_manager', 'inkflow-press'), '/inkflow-press/dashboard')
+      assert.equal(getRoleDefaultPath('business_owner', 'printflow-press'), '/printflow-press/dashboard')
+      assert.equal(getRoleDefaultPath('branch_manager', 'printflow-press'), '/printflow-press/dashboard')
     })
   })
 
@@ -181,7 +181,7 @@ describe('Employee Experience, Mobile-First, Bangla Default & Server-Enforced Is
 
   describe('4. Mobile-First Standards & Bangla Default Configuration', () => {
     test('4.1 System default locale is Bengali (bn)', () => {
-      assert.equal(DEFAULT_LOCALE, 'bn', 'Default locale for InkFlow ERP must be bn (Bangla)')
+      assert.equal(DEFAULT_LOCALE, 'bn', 'Default locale for PrintFlow must be bn (Bangla)')
     })
 
     test('4.2 Minimum touch targets and typography standard constants', () => {

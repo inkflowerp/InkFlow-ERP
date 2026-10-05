@@ -37,7 +37,7 @@ export function HeroVisual() {
             <span className="h-2.5 w-2.5 rounded-full bg-muted"/>
           </div>
           <span className="text-xs font-semibold text-muted-foreground pl-2">
- PrintERP • Connected Job Hub
+ PrintFlow • Connected Job Hub
           </span>
         </div>
 

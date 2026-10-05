@@ -44,7 +44,7 @@ describe('Gateway Platform vs Tenant Isolation Security Tests', () => {
       environment: 'live',
       is_enabled: true,
       credentials: { tokens: JSON.stringify({ access_token: 'test-token', refresh_token: 'test-refresh' }) },
-      public_config: { sender_email: 'inkflow.erp@gmail.com', sender_name: 'InkFlow Platform' },
+      public_config: { sender_email: 'inkflow.erp@gmail.com', sender_name: 'PrintFlow Platform' },
     }
 
     const res = await GatewayService.saveGateway(gmailForm, syntheticAdminId)

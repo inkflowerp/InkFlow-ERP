@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import { InventoryService } from '../../services/inventory.service.ts'
 import { InventoryRepository } from '../../lib/repositories/inventory.repository.ts'
 import { getMaterialWarehouseStockBreakdown, createInventoryGroupingKey, normalizeInventoryGroupAttributes } from '../../lib/units.ts'
@@ -8,7 +8,7 @@ import type { MaterialRecord } from '../../types/inventory.types.ts'
 
 test('Multi-Category Receive Stock & Available Stock Synchronization Tests', async (t) => {
   const companyId = 'test-company-multicat-avail'
-  PrintERPDataStore.clearAll()
+  PrintFlowDataStore.clearAll()
 
   await t.test('1. Multi-Size Rigid Sheets: Stock Intake updates sheet_sizes and Available Stock per dimension', async () => {
     // Setup rigid sheet material
@@ -246,7 +246,7 @@ test('Multi-Category Receive Stock & Available Stock Synchronization Tests', asy
   await t.test('5. Commercial Ready Product Intake synchronizes both Materials and Products stores', async () => {
     // Register product in DataStore
     const prodId = 'prod-mug-custom'
-    PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCTS, {
+    PrintFlowDataStore.addItem(STORAGE_KEYS.PRODUCTS, {
       id: prodId,
       company_id: companyId,
       sku: 'RP-MUG-001',
@@ -281,7 +281,7 @@ test('Multi-Category Receive Stock & Available Stock Synchronization Tests', asy
     assert.strictEqual(matRecord?.current_stock, 50, 'Material current stock should be 50')
 
     // Check products DataStore
-    const prods = PrintERPDataStore.getAll<any>(STORAGE_KEYS.PRODUCTS, companyId) || []
+    const prods = PrintFlowDataStore.getAll<any>(STORAGE_KEYS.PRODUCTS, companyId) || []
     const prodRecord = prods.find((p) => p.id === prodId)
     assert.strictEqual(prodRecord?.current_stock, 50, 'Product current stock in DataStore should be 50')
   })

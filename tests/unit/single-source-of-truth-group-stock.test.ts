@@ -2,7 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { InventoryService } from '../../services/inventory.service.ts'
 import { InventoryRepository } from '../../lib/repositories/inventory.repository.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import { getMaterialWarehouseStockBreakdown } from '../../lib/units.ts'
 import type { MaterialRecord } from '../../types/inventory.types.ts'
 
@@ -11,7 +11,7 @@ test('Single Source of Truth: Group stock isolation on receive and issue', async
 
   // Setup initial test location
   const locId = `loc-${Date.now()}`
-  PrintERPDataStore.addItem(STORAGE_KEYS.LOCATIONS, {
+  PrintFlowDataStore.addItem(STORAGE_KEYS.LOCATIONS, {
     id: locId,
     company_id: companyId,
     location_code: 'WH-TEST',
@@ -105,8 +105,8 @@ test('Single Source of Truth: Group stock isolation on receive and issue', async
       updated_at: new Date().toISOString(),
     }
 
-    PrintERPDataStore.addItem(STORAGE_KEYS.MATERIALS, rollMaterial, companyId)
-    PrintERPDataStore.addItem(STORAGE_KEYS.MATERIALS, rollMaterial)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.MATERIALS, rollMaterial, companyId)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.MATERIALS, rollMaterial)
 
     // Receive 5 rolls of 4ft x 164ft
     await InventoryService.receiveStock({
@@ -242,8 +242,8 @@ test('Single Source of Truth: Group stock isolation on receive and issue', async
       updated_at: new Date().toISOString(),
     }
 
-    PrintERPDataStore.addItem(STORAGE_KEYS.MATERIALS, sheetMaterial, companyId)
-    PrintERPDataStore.addItem(STORAGE_KEYS.MATERIALS, sheetMaterial)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.MATERIALS, sheetMaterial, companyId)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.MATERIALS, sheetMaterial)
 
     // Receive 10 sheets of 8ft x 4ft (32 SFT per sheet -> 320 SFT)
     await InventoryService.receiveStock({
@@ -364,8 +364,8 @@ test('Single Source of Truth: Group stock isolation on receive and issue', async
       updated_at: new Date().toISOString(),
     }
 
-    PrintERPDataStore.addItem(STORAGE_KEYS.MATERIALS, inkMaterial, companyId)
-    PrintERPDataStore.addItem(STORAGE_KEYS.MATERIALS, inkMaterial)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.MATERIALS, inkMaterial, companyId)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.MATERIALS, inkMaterial)
 
     // Receive 8 bottles of Cyan
     await InventoryService.receiveStock({

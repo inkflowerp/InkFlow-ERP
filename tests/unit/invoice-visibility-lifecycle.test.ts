@@ -8,7 +8,7 @@ import {
 } from '../../lib/repositories/billing.repository.ts'
 import { BillingService } from '../../services/billing.service.ts'
 import { SearchService } from '../../services/search.service.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import type { InvoiceRecord, PaymentRecord } from '../../types/billing.types.ts'
 import type { CustomerRecord } from '../../types/crm.types.ts'
 
@@ -18,10 +18,10 @@ describe('Invoice Visibility & Full Lifecycle Forensic Tests', () => {
   const todayStr = getTodayDateString()
 
   beforeEach(() => {
-    PrintERPDataStore.clear()
+    PrintFlowDataStore.clear()
 
     // Seed customers for companyAlpha
-    PrintERPDataStore.set(STORAGE_KEYS.CUSTOMERS, [
+    PrintFlowDataStore.set(STORAGE_KEYS.CUSTOMERS, [
       {
         id: '11111111-1111-4111-a111-111111111111',
         company_id: companyAlpha,

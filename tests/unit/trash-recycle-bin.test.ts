@@ -3,7 +3,7 @@ import assert from 'node:assert'
 import { getNavigationConfig } from '../../config/navigation.config.ts'
 import { TrashRepository } from '../../lib/repositories/trash.repository.ts'
 import { TrashService } from '../../services/trash.service.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import type { QuotationRecord } from '../../types/quotation.types.ts'
 import type { InvoiceRecord } from '../../types/billing.types.ts'
 import type { CustomerRecord, SupplierRecord } from '../../types/crm.types.ts'
@@ -15,13 +15,13 @@ const COMPANY_B = 'company-trash-test-b'
 
 describe('Trash & Recycle Bin Unified System for 6 Entities', () => {
   beforeEach(() => {
-    PrintERPDataStore.set(STORAGE_KEYS.TRASH_ITEMS, [])
-    PrintERPDataStore.set(STORAGE_KEYS.QUOTATIONS, [])
-    PrintERPDataStore.set(STORAGE_KEYS.INVOICES, [])
-    PrintERPDataStore.set(STORAGE_KEYS.CUSTOMERS, [])
-    PrintERPDataStore.set(STORAGE_KEYS.PRODUCTS, [])
-    PrintERPDataStore.set(STORAGE_KEYS.MATERIALS, [])
-    PrintERPDataStore.set(STORAGE_KEYS.SUPPLIERS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.TRASH_ITEMS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.QUOTATIONS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.INVOICES, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.CUSTOMERS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.PRODUCTS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.MATERIALS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.SUPPLIERS, [])
   })
 
   it('1. Navigation configuration includes Trash / Recycle Bin under settings', () => {
@@ -49,7 +49,7 @@ describe('Trash & Recycle Bin Unified System for 6 Entities', () => {
       status: 'draft',
       company_id: COMPANY_A,
     }
-    PrintERPDataStore.set(STORAGE_KEYS.QUOTATIONS, [sampleQuote])
+    PrintFlowDataStore.set(STORAGE_KEYS.QUOTATIONS, [sampleQuote])
 
     // Move to trash
     const trashRec = await TrashRepository.moveToTrash({
@@ -65,7 +65,7 @@ describe('Trash & Recycle Bin Unified System for 6 Entities', () => {
     assert.strictEqual(trashRec.reference_number, 'QUO-2026-001')
 
     // Verify active collection is now empty
-    const activeQuotes = PrintERPDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS) || []
+    const activeQuotes = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS) || []
     assert.strictEqual(activeQuotes.length, 0, 'Quotation should be removed from active collection')
 
     // Verify trash store has the item
@@ -83,7 +83,7 @@ describe('Trash & Recycle Bin Unified System for 6 Entities', () => {
       status: 'unpaid',
       company_id: COMPANY_A,
     }
-    PrintERPDataStore.set(STORAGE_KEYS.INVOICES, [sampleInvoice])
+    PrintFlowDataStore.set(STORAGE_KEYS.INVOICES, [sampleInvoice])
 
     const trashRec = await TrashRepository.moveToTrash({
       category: 'invoices',
@@ -95,7 +95,7 @@ describe('Trash & Recycle Bin Unified System for 6 Entities', () => {
     assert.strictEqual(trashRec.category, 'invoices')
     assert.strictEqual(trashRec.reference_number, 'INV-2026-5501')
 
-    const activeInvoices = PrintERPDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || []
+    const activeInvoices = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || []
     assert.strictEqual(activeInvoices.length, 0)
   })
 
@@ -125,10 +125,10 @@ describe('Trash & Recycle Bin Unified System for 6 Entities', () => {
       company_id: COMPANY_A,
     }
 
-    PrintERPDataStore.set(STORAGE_KEYS.CUSTOMERS, [sampleCustomer])
-    PrintERPDataStore.set(STORAGE_KEYS.PRODUCTS, [sampleProduct])
-    PrintERPDataStore.set(STORAGE_KEYS.MATERIALS, [sampleMaterial])
-    PrintERPDataStore.set(STORAGE_KEYS.SUPPLIERS, [sampleSupplier])
+    PrintFlowDataStore.set(STORAGE_KEYS.CUSTOMERS, [sampleCustomer])
+    PrintFlowDataStore.set(STORAGE_KEYS.PRODUCTS, [sampleProduct])
+    PrintFlowDataStore.set(STORAGE_KEYS.MATERIALS, [sampleMaterial])
+    PrintFlowDataStore.set(STORAGE_KEYS.SUPPLIERS, [sampleSupplier])
 
     await TrashRepository.moveToTrash({ category: 'customers', item: sampleCustomer, companyId: COMPANY_A })
     await TrashRepository.moveToTrash({ category: 'products', item: sampleProduct, companyId: COMPANY_A })
@@ -136,10 +136,10 @@ describe('Trash & Recycle Bin Unified System for 6 Entities', () => {
     await TrashRepository.moveToTrash({ category: 'suppliers', item: sampleSupplier, companyId: COMPANY_A })
 
     // Verify all active collections are now empty
-    assert.strictEqual((PrintERPDataStore.get<any[]>(STORAGE_KEYS.CUSTOMERS) || []).length, 0)
-    assert.strictEqual((PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTS) || []).length, 0)
-    assert.strictEqual((PrintERPDataStore.get<any[]>(STORAGE_KEYS.MATERIALS) || []).length, 0)
-    assert.strictEqual((PrintERPDataStore.get<any[]>(STORAGE_KEYS.SUPPLIERS) || []).length, 0)
+    assert.strictEqual((PrintFlowDataStore.get<any[]>(STORAGE_KEYS.CUSTOMERS) || []).length, 0)
+    assert.strictEqual((PrintFlowDataStore.get<any[]>(STORAGE_KEYS.PRODUCTS) || []).length, 0)
+    assert.strictEqual((PrintFlowDataStore.get<any[]>(STORAGE_KEYS.MATERIALS) || []).length, 0)
+    assert.strictEqual((PrintFlowDataStore.get<any[]>(STORAGE_KEYS.SUPPLIERS) || []).length, 0)
 
     // Verify summary counts
     const summary = await TrashService.getTrashSummary(COMPANY_A)
@@ -165,14 +165,14 @@ describe('Trash & Recycle Bin Unified System for 6 Entities', () => {
     })
 
     assert.strictEqual((await TrashRepository.getTrashItems(COMPANY_A)).length, 1)
-    assert.strictEqual((PrintERPDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS) || []).length, 0)
+    assert.strictEqual((PrintFlowDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS) || []).length, 0)
 
     // Restore
     const restored = await TrashRepository.restoreFromTrash(trashed.id, COMPANY_A)
     assert.strictEqual(restored.id, 'quote-restore-01')
 
     // Verify active collection has it back
-    const active = PrintERPDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS) || []
+    const active = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS) || []
     assert.strictEqual(active.length, 1)
     assert.strictEqual(active[0].quotation_number, 'QUO-RESTORE-01')
 
@@ -198,7 +198,7 @@ describe('Trash & Recycle Bin Unified System for 6 Entities', () => {
     assert.strictEqual(deleted, true)
 
     assert.strictEqual((await TrashRepository.getTrashItems(COMPANY_A)).length, 0)
-    assert.strictEqual((PrintERPDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || []).length, 0)
+    assert.strictEqual((PrintFlowDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || []).length, 0)
   })
 
   it('7. Emptying Trash by category or entirely purges target records cleanly', async () => {
@@ -283,7 +283,7 @@ describe('Trash & Recycle Bin Unified System for 6 Entities', () => {
       payload: { id: 'inv-recent-01' },
     }
 
-    PrintERPDataStore.set(STORAGE_KEYS.TRASH_ITEMS, [expiredRecord, activeRecord])
+    PrintFlowDataStore.set(STORAGE_KEYS.TRASH_ITEMS, [expiredRecord, activeRecord])
 
     // Fetching items should auto-purge expired items permanently
     const items = await TrashRepository.getTrashItems(COMPANY_A)
@@ -291,7 +291,7 @@ describe('Trash & Recycle Bin Unified System for 6 Entities', () => {
     assert.strictEqual(items[0].id, 'trash-active-1')
 
     // Verify underlying store was permanently modified
-    const inStore = PrintERPDataStore.get<any[]>(STORAGE_KEYS.TRASH_ITEMS) || []
+    const inStore = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.TRASH_ITEMS) || []
     assert.strictEqual(inStore.length, 1)
     assert.strictEqual(inStore[0].id, 'trash-active-1')
   })
@@ -332,14 +332,14 @@ describe('Trash & Recycle Bin Unified System for 6 Entities', () => {
       payload: { id: 'p-a' },
     }
 
-    PrintERPDataStore.set(STORAGE_KEYS.TRASH_ITEMS, [oldA, oldB, recentA])
+    PrintFlowDataStore.set(STORAGE_KEYS.TRASH_ITEMS, [oldA, oldB, recentA])
 
     // Global purge across all tenants
     const result = await TrashService.purgeExpiredTrash()
     assert.strictEqual(result.purgedCount, 2)
     assert.deepStrictEqual(result.purgedIds.sort(), ['old-a', 'old-b'].sort())
 
-    const remaining = PrintERPDataStore.get<any[]>(STORAGE_KEYS.TRASH_ITEMS) || []
+    const remaining = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.TRASH_ITEMS) || []
     assert.strictEqual(remaining.length, 1)
     assert.strictEqual(remaining[0].id, 'recent-a')
   })

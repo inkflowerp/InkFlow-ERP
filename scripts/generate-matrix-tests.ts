@@ -67,7 +67,7 @@ console.log(`Parsed ${cells.length} permission entries from docs/hardening/permi
 
 // Generate test code
 const generatedTest = `// ==============================================================================
-// InkFlow ERP - Authoritative RBAC Matrix Automated Verification Test Suite
+// PrintFlow - Authoritative RBAC Matrix Automated Verification Test Suite
 // Generated automatically from docs/hardening/permission-matrix.md
 // Asserts 100% matrix compliance, server action rejection, and destructive safeguards
 // ==============================================================================

@@ -1,5 +1,5 @@
 // ==============================================================================
-// InkFlow ERP - Money Calculation & Rounding Unit Tests
+// PrintFlow - Money Calculation & Rounding Unit Tests
 // Tests integer Paisa conversions, Banker's vs Commercial rounding,
 // Bangladesh VAT rates (5%, 7.5%, 10%, 15%), discounts, advance %, and zero-drift allocations.
 // ==============================================================================

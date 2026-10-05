@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP SaaS - Enterprise Gateway & API Integration System Types
+// PrintFlow SaaS - Enterprise Gateway & API Integration System Types
 // Supports Email, SMS, Payment, WhatsApp, and Telegram providers
 // ==============================================================================
 

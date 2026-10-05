@@ -510,7 +510,7 @@ function OnboardingWizard() {
             <Printer className="h-5 w-5" />
           </div>
           <div>
-            <span className="font-black tracking-tight text-foreground dark:text-white text-base">PrintERP</span>
+            <span className="font-black tracking-tight text-foreground dark:text-white text-base">PrintFlow</span>
             <span className="ml-1 text-xs font-semibold text-primary text-primary">Setup Wizard</span>
           </div>
         </div>

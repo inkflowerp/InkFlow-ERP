@@ -1,5 +1,5 @@
 // ==============================================================================
-// InkFlow SaaS - Machineries & Equipment Fleet Types
+// PrintFlow SaaS - Machineries & Equipment Fleet Types
 // ==============================================================================
 
 export type MachineryType =

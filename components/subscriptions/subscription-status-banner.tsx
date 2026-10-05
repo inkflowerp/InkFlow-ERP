@@ -61,7 +61,7 @@ export function SubscriptionStatusBanner() {
             <span className="bangla-text">
               {tBilingual(
                 'Account Suspended: Your tenant workspace has been suspended by the platform administrator. Operational write actions are restricted.',
-                'সতর্কতা: আপনার প্রিন্টইআরপি অ্যাকাউন্ট প্ল্যাটফর্ম অ্যাডমিন দ্বারা স্থগিত (Suspended) করা হয়েছে। নতুন কাজ বুকিং বন্ধ রয়েছে।'
+                'সতর্কতা: আপনার প্রিন্টফ্লো অ্যাকাউন্ট প্ল্যাটফর্ম অ্যাডমিন দ্বারা স্থগিত (Suspended) করা হয়েছে। নতুন কাজ বুকিং বন্ধ রয়েছে।'
               )}
             </span>
           </div>

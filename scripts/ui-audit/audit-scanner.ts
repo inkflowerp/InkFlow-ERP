@@ -1,5 +1,5 @@
 // ==============================================================================
-// InkFlow ERP SaaS - UI Audit CI Gate & Strict Linter (Requirement 10)
+// PrintFlow SaaS - UI Audit CI Gate & Strict Linter (Requirement 10)
 // ==============================================================================
 
 import fs from 'fs'
@@ -223,7 +223,7 @@ export function runAuditGate(): { violations: Violation[]; filesScanned: number 
 }
 
 if (process.argv[1]?.includes('audit-scanner')) {
-  console.log('--- Scanning InkFlow ERP Codebase for UI Consistency Violations ---')
+  console.log('--- Scanning PrintFlow Codebase for UI Consistency Violations ---')
   const { violations, filesScanned } = runAuditGate()
   console.log(`Scanned: ${filesScanned} files`)
   console.log(`Violations Found: ${violations.length}`)

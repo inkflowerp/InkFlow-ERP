@@ -1,7 +1,7 @@
 import type { ProductRecord } from '../types/product.types.ts'
 
 /**
- * InkFlow ERP — Centralized Commercial Unit & Conversion Engine
+ * PrintFlow — Centralized Commercial Unit & Conversion Engine
  * Standardizes units, conversions, wastage calculations, and margin metrics.
  */
 

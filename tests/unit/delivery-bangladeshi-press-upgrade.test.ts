@@ -3,7 +3,7 @@ import assert from 'node:assert'
 import { LogisticsService } from '../../services/logistics.service.ts'
 import { LogisticsRepository } from '../../lib/repositories/logistics.repository.ts'
 import { BillingRepository } from '../../lib/repositories/billing.repository.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import type { DeliveryChallanRecord, InstallationRecord } from '../../types/logistics.types.ts'
 
 describe('Bangladeshi Printing Press Delivery, Logistics & On-Site Installation Upgrade Tests', () => {
@@ -264,7 +264,7 @@ describe('Bangladeshi Printing Press Delivery, Logistics & On-Site Installation 
     assert.ok(invoice.id, 'Invoice generated with ID')
     
     // Check challan in DataStore
-    const challans = PrintERPDataStore.get<DeliveryChallanRecord[]>(STORAGE_KEYS.DELIVERY_CHALLANS) || []
+    const challans = PrintFlowDataStore.get<DeliveryChallanRecord[]>(STORAGE_KEYS.DELIVERY_CHALLANS) || []
     const challan = challans.find((c) => c.company_id === TENANT_ID && c.invoice_id === invoice.id)
 
     assert.ok(challan, 'Delivery Challan must be automatically provisioned')

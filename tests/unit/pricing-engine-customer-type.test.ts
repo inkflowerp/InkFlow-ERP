@@ -11,15 +11,15 @@ import {
   calculatePricingRulePrice,
   isRuleCurrentlyEffective,
 } from '../../lib/pricing/pricing-engine.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import type { PricingTierRange, PricingRuleRecord } from '../../types/pricing.types.ts'
 
-describe('InkFlow ERP — Customer-Type-Based Pricing Engine Unit Tests', () => {
+describe('PrintFlow — Customer-Type-Based Pricing Engine Unit Tests', () => {
   const companyId = `comp-pricing-test-${Date.now()}`
   const companyIdB = `comp-pricing-other-${Date.now()}`
 
   beforeEach(() => {
-    PrintERPDataStore.clear()
+    PrintFlowDataStore.clear()
   })
 
   // --------------------------------------------------------------------------

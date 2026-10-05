@@ -2,7 +2,7 @@ import { describe, it } from 'node:test'
 import assert from 'node:assert'
 import { BillingRepository } from '../../lib/repositories/billing.repository.ts'
 import { DesignRepository } from '../../lib/repositories/design.repository.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import type { DesignJobRecord } from '../../types/design.types.ts'
 
 describe('Design Panel Invoiced Items Visibility & Tab Filtering Tests', () => {

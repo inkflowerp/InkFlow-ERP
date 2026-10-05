@@ -90,9 +90,9 @@ describe('Team Users & Roles Rebuild Unit Tests', () => {
 
   test('5. Strict Identity Mapping: User resolution requires exact user_id match with zero heuristic fallback', () => {
     const mockWorkforce = [
-      { id: 'emp-md', name: 'Managing Director', email: 'owner@printerp.com', mobile: '01700000000', user_id: 'user-owner-1' },
-      { id: 'emp-sales', name: 'Sales Executive', email: 'sales@printerp.com', mobile: '01711111111', user_id: 'user-sales-2' },
-      { id: 'emp-unlinked', name: 'Floor Technician', email: 'tech@printerp.com', mobile: '01722222222', user_id: null },
+      { id: 'emp-md', name: 'Managing Director', email: 'owner@printflow.bd', mobile: '01700000000', user_id: 'user-owner-1' },
+      { id: 'emp-sales', name: 'Sales Executive', email: 'sales@printflow.bd', mobile: '01711111111', user_id: 'user-sales-2' },
+      { id: 'emp-unlinked', name: 'Floor Technician', email: 'tech@printflow.bd', mobile: '01722222222', user_id: null },
     ]
 
     // Strict lookup policy

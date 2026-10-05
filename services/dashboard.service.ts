@@ -1,5 +1,5 @@
 // ==============================================================================
-// InkFlow ERP - Authoritative Business Owner Dashboard Service (V9.1)
+// PrintFlow - Authoritative Business Owner Dashboard Service (V9.1)
 // PostgreSQL server-side aggregation for Executive Control Center
 // Tenant-safe, Branch-scoped, Permission-aware, and Timezone-accurate (Asia/Dhaka)
 // ==============================================================================

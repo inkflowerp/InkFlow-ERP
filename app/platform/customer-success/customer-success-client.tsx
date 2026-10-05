@@ -168,7 +168,7 @@ export default function CustomerSuccessPage() {
  <span>Free Evaluation Trials ({data.trials_ending_soon.length})</span>
  </CardTitle>
  <CardDescription className="text-xs text-muted-foreground">
- Tenants evaluating PrintERP. Check feature adoption and assist conversion to paid plans.
+ Tenants evaluating PrintFlow. Check feature adoption and assist conversion to paid plans.
  </CardDescription>
  </CardHeader>
 

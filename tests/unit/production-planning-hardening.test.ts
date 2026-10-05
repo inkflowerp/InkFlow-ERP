@@ -4,15 +4,15 @@ import { ProductionPlanningService } from '../../services/production-planning.se
 import { ProductionTaskRepository } from '../../lib/repositories/production-task.repository.ts'
 import { MachineryRepository } from '../../lib/repositories/machinery.repository.ts'
 import { OrderRepository } from '../../lib/repositories/order.repository.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 
 describe('Production Planning Hardening & Workflow Automation Tests', () => {
   const companyId = 'comp-hardening-01'
 
   beforeEach(() => {
-    PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, [], false)
-    PrintERPDataStore.set(STORAGE_KEYS.JOB_ORDERS, [], false)
-    PrintERPDataStore.set(STORAGE_KEYS.MACHINERIES, [], false)
+    PrintFlowDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, [], false)
+    PrintFlowDataStore.set(STORAGE_KEYS.JOB_ORDERS, [], false)
+    PrintFlowDataStore.set(STORAGE_KEYS.MACHINERIES, [], false)
   })
 
   it('1. Section 20 Idempotency: Calling generateTasksFromOrderOrProduct twice does not duplicate tasks', async () => {

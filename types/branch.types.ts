@@ -1,5 +1,5 @@
 /**
- * InkFlow V9 — Multi-Branch & Advanced Management Types
+ * PrintFlow V9 — Multi-Branch & Advanced Management Types
  */
 
 export type BranchStatus = 'active' | 'inactive' | 'suspended' | 'archived'

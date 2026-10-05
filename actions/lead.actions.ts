@@ -1,7 +1,7 @@
 'use server'
 
 // ==============================================================================
-// PrintERP SaaS - Authoritative Server Action for Demo Walkthrough Requests
+// PrintFlow SaaS - Authoritative Server Action for Demo Walkthrough Requests
 // Handles validation, anti-XSS sanitization, rate limiting, and persistence
 // into platform_notifications ledger via Supabase Admin client.
 // ==============================================================================

@@ -27,7 +27,7 @@ export default function GlobalError({
               System Recovery Mode
             </h1>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              InkFlow ERP encountered an unhandled system exception. You can attempt an in-memory reset or return to the landing page.
+              PrintFlow encountered an unhandled system exception. You can attempt an in-memory reset or return to the landing page.
             </p>
           </div>
 

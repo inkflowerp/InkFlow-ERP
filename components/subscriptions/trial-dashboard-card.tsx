@@ -91,7 +91,7 @@ export function TrialDashboardCard() {
               )}
             >
               <Crown className="h-3 w-3 mr-1"/>
-              {tBilingual(currentPlan?.name || 'PrintERP Free Trial', currentPlan?.name_bn || 'প্রিন্টইআরপি ফ্রি ট্রায়াল')}
+              {tBilingual(currentPlan?.name || 'PrintFlow Free Trial', currentPlan?.name_bn || 'প্রিন্টফ্লো ফ্রি ট্রায়াল')}
             </Badge>
 
             <span className="text-xs font-bold text-foreground flex items-center gap-1 bangla-text">
@@ -114,7 +114,7 @@ export function TrialDashboardCard() {
                   `আপনার ${trialDaysBn} দিনের ফ্রি ট্রায়ালের মেয়াদ শেষ হয়েছে। নিরবচ্ছিন্ন সেবা অব্যাহত রাখতে এবং নতুন ডাটা এন্ট্রি করতে এখনই সাবস্ক্রিপশন প্ল্যান নির্বাচন করুন।`
                 )
               : tBilingual(
-                  `You have full access to PrintERP modules during this ${trialDaysTotal}-day evaluation. Upgrade before the trial ends to ensure seamless operations with no data loss.`,
+                  `You have full access to PrintFlow modules during this ${trialDaysTotal}-day evaluation. Upgrade before the trial ends to ensure seamless operations with no data loss.`,
                   `আপনি ট্রায়াল মেয়াদে সকল প্রিমিয়াম ফিচার ব্যবহার করতে পারছেন। মেয়াদ শেষের পূর্বেই আপনার সুবিধাজনক প্ল্যানে আপগ্রেড করুন।`
                 )}
           </p>

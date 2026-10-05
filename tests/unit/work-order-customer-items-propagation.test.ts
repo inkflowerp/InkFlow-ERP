@@ -1,6 +1,6 @@
 import test, { describe, it, beforeEach } from 'node:test'
 import assert from 'node:assert/strict'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import { InvoiceRequestService } from '../../services/invoice-request.service.ts'
 import { InvoiceRequestRepository } from '../../lib/repositories/invoice-request.repository.ts'
 import { BillingRepository } from '../../lib/repositories/billing.repository.ts'
@@ -10,13 +10,13 @@ describe('Work Order Modal Customer Info, Multi-Item Specs & Workflow Routing', 
   const companyAlpha = 'comp-tenant-alpha'
 
   beforeEach(() => {
-    PrintERPDataStore.clear(STORAGE_KEYS.INVOICE_REQUESTS)
-    PrintERPDataStore.clear(STORAGE_KEYS.ORDERS)
-    PrintERPDataStore.clear(STORAGE_KEYS.DESIGN_JOBS)
-    PrintERPDataStore.clear(STORAGE_KEYS.JOB_ORDERS)
-    PrintERPDataStore.clear(STORAGE_KEYS.PRODUCTION_TASKS)
-    PrintERPDataStore.clear(STORAGE_KEYS.DELIVERY_CHALLANS)
-    PrintERPDataStore.clear(STORAGE_KEYS.IN_APP_NOTIFICATIONS)
+    PrintFlowDataStore.clear(STORAGE_KEYS.INVOICE_REQUESTS)
+    PrintFlowDataStore.clear(STORAGE_KEYS.ORDERS)
+    PrintFlowDataStore.clear(STORAGE_KEYS.DESIGN_JOBS)
+    PrintFlowDataStore.clear(STORAGE_KEYS.JOB_ORDERS)
+    PrintFlowDataStore.clear(STORAGE_KEYS.PRODUCTION_TASKS)
+    PrintFlowDataStore.clear(STORAGE_KEYS.DELIVERY_CHALLANS)
+    PrintFlowDataStore.clear(STORAGE_KEYS.IN_APP_NOTIFICATIONS)
   })
 
   it('1. Persists all customer information (Customer Type, WhatsApp, Address, Company) and item specs (Finishing, Add-ons, Dimensions) without required pricing', async () => {
@@ -196,14 +196,14 @@ describe('Work Order Modal Customer Info, Multi-Item Specs & Workflow Routing', 
     await BillingRepository.syncCommercialWorkflowOnInvoiceCreated(invoiceRecord, companyAlpha)
 
     // Verify 1: Sales Order auto-created with commercial status and production gate status
-    const orders = (PrintERPDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []).filter((o) => o.company_id === companyAlpha)
+    const orders = (PrintFlowDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []).filter((o) => o.company_id === companyAlpha)
     const matchingOrder = orders.find((o) => o.invoice_id === invoiceRecord.id)
     assert.ok(matchingOrder, 'Sales Order should be auto-synchronized for the invoice')
     assert.equal(matchingOrder.commercial_status, 'invoice_created')
     assert.equal(matchingOrder.production_gate_status, 'ready_for_production')
 
     // Verify 2: Job Order created for custom print item and NOT for ready product
-    const jobOrders = (PrintERPDataStore.get<any[]>(STORAGE_KEYS.JOB_ORDERS) || []).filter((j) => j.company_id === companyAlpha)
+    const jobOrders = (PrintFlowDataStore.get<any[]>(STORAGE_KEYS.JOB_ORDERS) || []).filter((j) => j.company_id === companyAlpha)
     assert.equal(jobOrders.length, 1, 'Only the custom print item should generate a job order')
     assert.equal(jobOrders[0].product_name, 'Star Pana Flex Frontlit Banner (20x10 ft)')
     assert.equal(jobOrders[0].commercial_status, 'invoice_created')
@@ -212,7 +212,7 @@ describe('Work Order Modal Customer Info, Multi-Item Specs & Workflow Routing', 
     assert.equal(jobOrders[0].is_blocked_by_design_gate, false)
 
     // Verify 3: Production Tasks created for Shop Floor Terminal
-    const prodTasks = (PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []).filter((t) => t.company_id === companyAlpha)
+    const prodTasks = (PrintFlowDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []).filter((t) => t.company_id === companyAlpha)
     assert.ok(prodTasks.length >= 2, 'Should create print and finishing tasks for Shop Floor')
     const printTask = prodTasks.find((t) => t.task_type === 'printing')
     const finishTask = prodTasks.find((t) => t.task_type === 'finishing')
@@ -223,7 +223,7 @@ describe('Work Order Modal Customer Info, Multi-Item Specs & Workflow Routing', 
     assert.equal(finishTask.is_blocked_by_commercial_gate, false)
 
     // Verify 4: Delivery Challan created with both products tracked
-    const challans = (PrintERPDataStore.get<any[]>(STORAGE_KEYS.DELIVERY_CHALLANS) || []).filter((c) => c.company_id === companyAlpha)
+    const challans = (PrintFlowDataStore.get<any[]>(STORAGE_KEYS.DELIVERY_CHALLANS) || []).filter((c) => c.company_id === companyAlpha)
     assert.equal(challans.length, 1, 'Delivery challan should be created for delivery logistics')
     assert.equal(challans[0].items?.length, 2, 'Challan should track both line items')
 

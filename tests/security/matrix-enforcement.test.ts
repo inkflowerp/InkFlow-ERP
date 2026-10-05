@@ -1,5 +1,5 @@
 // ==============================================================================
-// InkFlow ERP - Authoritative RBAC Matrix Automated Verification Test Suite
+// PrintFlow - Authoritative RBAC Matrix Automated Verification Test Suite
 // Generated automatically from docs/hardening/permission-matrix.md
 // Asserts 100% matrix compliance, server action rejection, and destructive safeguards
 // ==============================================================================

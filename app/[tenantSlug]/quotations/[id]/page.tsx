@@ -433,7 +433,7 @@ function QuotationDetailContent() {
 
  const messageText = QuotationService.generateBangladeshiQuotationWhatsAppMessage(
  quote,
- company?.name || 'InkFlow Printing & Signage Solutions'
+ company?.name || 'PrintFlow Printing & Signage Solutions'
     )
 
  window.open(`https://wa.me/${formattedPhone}?text=${encodeURIComponent(messageText)}`, '_blank')
@@ -741,7 +741,7 @@ function QuotationDetailContent() {
                 </div>
                 <div>
                   <h2 className="text-xl font-black tracking-tight text-foreground print:text-foreground">
-                    {company?.name || 'InkFlow Printing & Signage Solutions'}
+                    {company?.name || 'PrintFlow Printing & Signage Solutions'}
                   </h2>
                   {company?.name_bn && (
                     <div className="text-xs text-muted-foreground print:text-muted-foreground font-semibold">{company.name_bn}</div>
@@ -960,7 +960,7 @@ function QuotationDetailContent() {
                 <div className="text-xs space-y-0.5">
                   <div>• <strong>bKash / Nagad (Merchant):</strong> 01711-000000 (Counter 1)</div>
                   <div>• <strong>Bank:</strong> City Bank Ltd, Motijheel Branch, A/C: 1102938471001</div>
-                  <div>• <strong>Account Name:</strong> {company?.name || 'InkFlow Solutions'}</div>
+                  <div>• <strong>Account Name:</strong> {company?.name || 'PrintFlow Solutions'}</div>
                 </div>
               </div>
 
@@ -1027,7 +1027,7 @@ function QuotationDetailContent() {
             <div className="text-center space-y-1">
               <div className="font-bold text-foreground print:text-foreground">Authorized Signatory</div>
               <div className="text-xs text-muted-foreground print:text-muted-foreground">
-                {languageMode === 'bn' ? 'অনুমোদনকারী কর্মকর্তা ও সিল' : `For ${company?.name || 'InkFlow Solutions'}`}
+                {languageMode === 'bn' ? 'অনুমোদনকারী কর্মকর্তা ও সিল' : `For ${company?.name || 'PrintFlow Solutions'}`}
               </div>
             </div>
           </div>

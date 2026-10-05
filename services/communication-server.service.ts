@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP SaaS - Communication Server Service (Server Only)
+// PrintFlow SaaS - Communication Server Service (Server Only)
 // Handles transactional email, SMS, WhatsApp, Telegram, and In-App notification dispatching.
 // ==============================================================================
 

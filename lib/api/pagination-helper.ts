@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP SaaS - Phase 28: Production API Pagination, Sorting, Filtering & Rate Limiting
+// PrintFlow SaaS - Phase 28: Production API Pagination, Sorting, Filtering & Rate Limiting
 // Prevents memory exhaustion and DDoS on tenant endpoints
 // ==============================================================================
 

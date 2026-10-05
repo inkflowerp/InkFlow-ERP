@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP SaaS - Universal High-Fidelity Notification Sound Synthesizer
+// PrintFlow SaaS - Universal High-Fidelity Notification Sound Synthesizer
 // Studio-grade polyphonic audio synthesizer powered by Web Audio API.
 // Amplified output volume with dynamic limiter compression to prevent clipping.
 // Zero external MP3 asset dependency, 100% offline-ready, cross-platform support.

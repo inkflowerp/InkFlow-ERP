@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP SaaS - Security & Multi-Tenant Isolation Tests for Email System
+// PrintFlow - Security & Multi-Tenant Isolation Tests for Email System
 // ==============================================================================
 
 import { describe, it, beforeEach } from 'node:test'
@@ -79,8 +79,8 @@ describe('Email Gateway Multi-Tenant Isolation & Security Tests', () => {
       scope_type: 'PLATFORM',
       provider: 'mock',
       type: 'transactional',
-      sender_name: 'InkFlow Platform Admin',
-      sender_email: 'platform-noreply@printerp.com',
+      sender_name: 'PrintFlow Platform Admin',
+      sender_email: 'platform-noreply@printflow.bd',
       status: 'active',
       is_default: true,
       created_at: new Date().toISOString(),

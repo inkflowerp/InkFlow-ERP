@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP SaaS - Phase 24: Global Multi-Entity Search Service
+// PrintFlow SaaS - Phase 24: Global Multi-Entity Search Service
 // Searches across core domains with strict tenant quarantine and RBAC gating.
 // ==============================================================================
 

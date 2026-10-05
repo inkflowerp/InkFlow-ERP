@@ -127,7 +127,7 @@ export function ReceivablesView({
 
   // Copy SMS text handler
  const handleCopySMS = (customerName: string, amount: number) => {
- const text = `আসসালামু আলাইকুম ${customerName}, PrintERP থেকে আপনার বকেয়া বিল ৳${amount.toLocaleString()} টাকা। অনুগ্রহ করে পরিশোধের ব্যবস্থা করবেন। ধন্যবাদ।`
+ const text = `আসসালামু আলাইকুম ${customerName}, PrintFlow থেকে আপনার বকেয়া বিল ৳${amount.toLocaleString()} টাকা। অনুগ্রহ করে পরিশোধের ব্যবস্থা করবেন। ধন্যবাদ।`
  navigator.clipboard.writeText(text)
  setCopiedCustomer(customerName)
  setTimeout(() => setCopiedCustomer(null), 2500)
@@ -375,7 +375,7 @@ export function ReceivablesView({
                           {cust.phone && (
                             <a
  href={`https://wa.me/88${cust.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(
-                                `আসসালামু আলাইকুম ${cust.name}, PrintERP থেকে জানানো যাচ্ছে যে আপনার ৳${cust.dueAmount.toLocaleString()} টাকা বকেয়া বিল রয়েছে। অনুগ্রহ করে পরিশোধের ব্যবস্থা করবেন। ধন্যবাদ।`
+                                `আসসালামু আলাইকুম ${cust.name}, PrintFlow থেকে জানানো যাচ্ছে যে আপনার ৳${cust.dueAmount.toLocaleString()} টাকা বকেয়া বিল রয়েছে। অনুগ্রহ করে পরিশোধের ব্যবস্থা করবেন। ধন্যবাদ।`
                               )}`}
  target="_blank"rel="noreferrer"className="p-1.5 rounded-lg bg-success-surface text-success hover:bg-success-surface transition-colors"title="WhatsApp Reminder">
                               <MessageCircle className="w-3.5 h-3.5"/>

@@ -1,5 +1,5 @@
 // ==============================================================================
-// InkFlow ERP - Authoritative Application Error Model (lib/errors/app-error.ts)
+// PrintFlow - Authoritative Application Error Model (lib/errors/app-error.ts)
 // Single Source of Truth for Typed Errors across Services, Server Actions, & UI
 // ==============================================================================
 

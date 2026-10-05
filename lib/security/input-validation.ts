@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP SaaS - Phase 22: Strict Input Validation Schemas (Zod)
+// PrintFlow SaaS - Phase 22: Strict Input Validation Schemas (Zod)
 // Guards financial actions, user inputs, customer records, and inventory mutations.
 // ==============================================================================
 

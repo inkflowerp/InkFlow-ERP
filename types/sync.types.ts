@@ -1,5 +1,5 @@
 // ==============================================================================
-// InkFlow ERP - Phase 24: V8 Sync Engine & Outbox Types
+// PrintFlow - Phase 24: V8 Sync Engine & Outbox Types
 // Multi-Tenant, Idempotent, Server-Authoritative Synchronization
 // ==============================================================================
 

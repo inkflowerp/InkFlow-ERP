@@ -10,7 +10,7 @@ export type PrimaryRole =
   | 'operator'
   | 'general_staff'
 
-// RBAC capability checker based on the PrintERP security matrix
+// RBAC capability checker based on the PrintFlow security matrix
 export function canUserPerformAction(
   role: PrimaryRole,
   resource: string,

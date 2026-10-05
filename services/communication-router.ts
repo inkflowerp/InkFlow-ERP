@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP SaaS - Multi-Tenant Communication Router
+// PrintFlow SaaS - Multi-Tenant Communication Router
 // Intelligently routes outbound communication through tenant-isolated OpenWA sessions
 // with automated SMS fallback, daily limit validation, and queue integration.
 // ==============================================================================

@@ -204,7 +204,7 @@ export default function PlatformSettingsPage() {
  const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(res.data, null, 2))
  const downloadAnchor = document.createElement('a')
  downloadAnchor.setAttribute('href', dataStr)
- downloadAnchor.setAttribute('download', `inkflow-platform-config-${new Date().toISOString().slice(0, 10)}.json`)
+ downloadAnchor.setAttribute('download', `printflow-platform-config-${new Date().toISOString().slice(0, 10)}.json`)
  document.body.appendChild(downloadAnchor)
  downloadAnchor.click()
  downloadAnchor.remove()
@@ -566,7 +566,7 @@ export default function PlatformSettingsPage() {
  <Input
  value={settings.app_name || ''}
  onChange={(e) => setSettings({ ...settings, app_name: e.target.value })}
- placeholder="e.g. InkFlow ERP or PrintERP"
+ placeholder="e.g. PrintFlow"
  className="h-9 text-xs bg-card border-border text-foreground rounded-xl"
  />
  <span className="text-xs text-muted-foreground mt-1 block">
@@ -689,7 +689,7 @@ export default function PlatformSettingsPage() {
  <Input
  value={settings.app_title || ''}
  onChange={(e) => setSettings({ ...settings, app_title: e.target.value })}
- placeholder="e.g. PrintERP SaaS - Operating System for Printing &amp; Signage in Bangladesh"
+ placeholder="e.g. PrintFlow - Operating System for Printing &amp; Signage in Bangladesh"
  className="h-9 text-xs bg-card border-border text-foreground rounded-xl"
  />
  <span className="text-xs text-muted-foreground mt-1 block">

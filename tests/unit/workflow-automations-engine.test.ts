@@ -2,7 +2,7 @@ import { describe, it, beforeEach } from 'node:test'
 import assert from 'node:assert/strict'
 import { WorkflowService, SEEDED_WORKFLOW_RULES } from '../../services/workflow.service.ts'
 import type { WorkflowRule, WorkflowCondition } from '../../types/workflow.types.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 
 describe('Workflow Automations Engine - Multi-Tenant Declarative Pipeline', () => {
   const testCompanyId = 'comp-wf-test-01'
@@ -10,8 +10,8 @@ describe('Workflow Automations Engine - Multi-Tenant Declarative Pipeline', () =
   beforeEach(() => {
     // Clear in-memory storage for clean test isolation
     WorkflowService.clearMemoryState()
-    PrintERPDataStore.clear(STORAGE_KEYS.WORKFLOW_RULES)
-    PrintERPDataStore.clear(STORAGE_KEYS.WORKFLOW_LOGS)
+    PrintFlowDataStore.clear(STORAGE_KEYS.WORKFLOW_RULES)
+    PrintFlowDataStore.clear(STORAGE_KEYS.WORKFLOW_LOGS)
   })
 
   // ============================================================================

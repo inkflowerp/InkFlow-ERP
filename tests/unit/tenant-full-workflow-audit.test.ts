@@ -1,6 +1,6 @@
 import { describe, it, beforeEach } from 'node:test'
 import assert from 'node:assert/strict'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import { CustomerRepository } from '../../lib/repositories/customer.repository.ts'
 import { QuotationRepository } from '../../lib/repositories/quotation.repository.ts'
 import { BillingRepository } from '../../lib/repositories/billing.repository.ts'
@@ -21,7 +21,7 @@ describe('Comprehensive Tenant Full Workflow Audit (Bangladeshi Digital, Offset 
   const companyId = 'comp_audit_dhaka_press_2026'
 
   beforeEach(() => {
-    PrintERPDataStore.clear()
+    PrintFlowDataStore.clear()
   })
 
   it('Step 1: Customer CRM - Registers Corporate Client with Credit Limit & Bangla Billing Profile', async () => {
@@ -127,7 +127,7 @@ describe('Comprehensive Tenant Full Workflow Audit (Bangladeshi Digital, Offset 
       ],
     }
 
-    PrintERPDataStore.addItem(STORAGE_KEYS.QUOTATIONS, quote)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.QUOTATIONS, quote)
 
     // Convert Quotation to Invoice
     const invoice = await QuotationRepository.convertQuotationToInvoice(quote.id, companyId, {
@@ -207,8 +207,8 @@ describe('Comprehensive Tenant Full Workflow Audit (Bangladeshi Digital, Offset 
       updated_at: new Date().toISOString(),
     }
 
-    PrintERPDataStore.addItem(STORAGE_KEYS.INVOICES, invoice)
-    PrintERPDataStore.addItem(STORAGE_KEYS.PAYMENTS, advancePayment)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.INVOICES, invoice)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.PAYMENTS, advancePayment)
 
     const storedInvoice = await BillingRepository.getInvoiceById(invoice.id, companyId)
     assert.equal(storedInvoice?.paid_amount, 22000)
@@ -241,7 +241,7 @@ describe('Comprehensive Tenant Full Workflow Audit (Bangladeshi Digital, Offset 
     // Step 4a: Designer works on artwork
     const inReview = await DesignRepository.updateDesignJob(designJob.id, companyId, {
       status: 'in_review',
-      artwork_proof_url: 'https://cdn.printerp.com/artworks/walton-flex-20x10.pdf',
+      artwork_proof_url: 'https://cdn.printflow.bd/artworks/walton-flex-20x10.pdf',
     })
     assert.equal(inReview?.status, 'in_review')
 
@@ -269,7 +269,7 @@ describe('Comprehensive Tenant Full Workflow Audit (Bangladeshi Digital, Offset 
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }
-    PrintERPDataStore.addItem(STORAGE_KEYS.MACHINERIES, printer)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.MACHINERIES, printer)
 
     // 5b. Mount Star Flex Roll (10ft width, 150ft length = 1500 SFT)
     const material: MaterialRecord = {
@@ -285,7 +285,7 @@ describe('Comprehensive Tenant Full Workflow Audit (Bangladeshi Digital, Offset 
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }
-    PrintERPDataStore.addItem(STORAGE_KEYS.MATERIALS, material)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.MATERIALS, material)
 
     const roll = await InventoryRepository.createPhysicalRoll({
       company_id: companyId,
@@ -321,7 +321,7 @@ describe('Comprehensive Tenant Full Workflow Audit (Bangladeshi Digital, Offset 
       unit: 'sft',
       sequence_order: 1,
     }
-    PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCTION_TASKS, printTask)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.PRODUCTION_TASKS, printTask)
 
     // Complete Task with scrap recording
     const { completedTask } = await ProductionPlanningService.completeTask(
@@ -398,9 +398,9 @@ describe('Comprehensive Tenant Full Workflow Audit (Bangladeshi Digital, Offset 
       items: [{ item_name: 'Outdoor Star Flex Banner (20ft × 10ft)', quantity: 2 }],
     }
 
-    PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCTION_JOBS, parentJob)
-    PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCTION_TASKS, finishingTask)
-    PrintERPDataStore.addItem(STORAGE_KEYS.ORDERS, salesOrder)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.PRODUCTION_JOBS, parentJob)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.PRODUCTION_TASKS, finishingTask)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.ORDERS, salesOrder)
 
     // Complete Finishing Task with 5-Point QC
     const { completedTask } = await ProductionPlanningService.completeTask(
@@ -418,7 +418,7 @@ describe('Comprehensive Tenant Full Workflow Audit (Bangladeshi Digital, Offset 
     assert.equal(completedTask.good_quantity, 2)
 
     // Downstream Sales Order updated to ready_delivery
-    const orders = PrintERPDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []
+    const orders = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []
     const matchingOrder = orders.find((o) => o.id === 'ord_walton_01')
     assert.equal(matchingOrder?.stage, 'ready_delivery')
   })
@@ -466,7 +466,7 @@ describe('Comprehensive Tenant Full Workflow Audit (Bangladeshi Digital, Offset 
       ],
     }
 
-    PrintERPDataStore.addItem(STORAGE_KEYS.INVOICES, invoice)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.INVOICES, invoice)
 
     await LogisticsRepository.createChallan({
       company_id: companyId,
@@ -500,7 +500,7 @@ describe('Comprehensive Tenant Full Workflow Audit (Bangladeshi Digital, Offset 
     assert.equal(ch.due_amount, 22000, 'Highlights remaining ৳22,000 due collection on delivery gate pass')
 
     // Confirm delivery sign-off
-    const deliveredChallan = PrintERPDataStore.updateItem(STORAGE_KEYS.DELIVERY_CHALLANS, ch.id, {
+    const deliveredChallan = PrintFlowDataStore.updateItem(STORAGE_KEYS.DELIVERY_CHALLANS, ch.id, {
       status: 'delivered',
       delivered_at: new Date().toISOString(),
       receiver_name: 'Engr. Enamul Hoque (Walton Project Manager)',

@@ -1,7 +1,7 @@
 'use server'
 
 // ==============================================================================
-// InkFlow / PrintERP SaaS - Server Actions for Platform SaaS Billing & Subscriptions
+// PrintFlow SaaS - Server Actions for Platform SaaS Billing & Subscriptions
 // Strict server-side authorization: accessible ONLY by Platform Admins with proper RBAC.
 // ==============================================================================
 

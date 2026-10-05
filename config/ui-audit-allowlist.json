@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "description": "InkFlow ERP UI Audit Allowlist for Verified Legitimate Exceptions",
+  "description": "PrintFlow UI Audit Allowlist for Verified Legitimate Exceptions",
   "allowedHex": [
     {
       "hex": ["#00E5FF", "#FF007F", "#FFEB3B", "#0F172A", "#00e5ff", "#ff007f", "#ffeb3b", "#0f172a", "#00aeef", "#ec008c", "#ffd700", "#fff200", "#231f20", "#80d6f7", "#f680c5", "#94a3b8", "#ffffff", "#FFFFFF"],

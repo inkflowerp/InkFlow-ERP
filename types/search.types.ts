@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP SaaS - Phase 24: Global Search & Quick Actions Types
+// PrintFlow SaaS - Phase 24: Global Search & Quick Actions Types
 // ==============================================================================
 
 export type SearchEntity =

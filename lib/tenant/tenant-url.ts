@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP / InkFlow SaaS - Tenant Subdomain URL Generator
+// PrintFlow SaaS - Tenant Subdomain URL Generator
 // Canonical URL builders for tenant-scoped links, document sharing, and notifications.
 // ==============================================================================
 
@@ -9,10 +9,8 @@ import { getRootDomain, isReservedSlug, resolveHostname } from './tenant-resolut
  * Returns the fully qualified origin for a given tenant subdomain.
  * Format is strictly: [tenantSlug].app.TLD
  * Examples:
- * - https://rangao.inkflow-erp.vercel.app
- * - https://rangao.inkflow.bd
- * - https://vision-sign.inkflow.com
- * - https://vision.inkflow.com.bd
+ * - https://rangao.printflow.bd
+ * - https://vision-sign.printflow.bd
  * - http://vision.localhost:3000
  */
 export function getTenantBaseUrl(slug: string, customRootDomain?: string): string {
@@ -45,9 +43,9 @@ export function getTenantBaseUrl(slug: string, customRootDomain?: string): strin
 /**
  * Generates a full tenant-scoped URL for a specific resource path.
  * Examples:
- * getTenantLink('rangao', '/invoices/INV-001', 'inkflow-erp.vercel.app') -> https://rangao.inkflow-erp.vercel.app/invoices/INV-001
- * getTenantLink('rangao', 'dashboard', 'inkflow.bd') -> https://rangao.inkflow.bd/dashboard
- * getTenantLink('vision-sign', '/orders', 'inkflow.com') -> https://vision-sign.inkflow.com/orders
+ * getTenantLink('rangao', '/invoices/INV-001', 'printflow.bd') -> https://rangao.printflow.bd/invoices/INV-001
+ * getTenantLink('rangao', 'dashboard', 'printflow.bd') -> https://rangao.printflow.bd/dashboard
+ * getTenantLink('vision-sign', '/orders', 'printflow.bd') -> https://vision-sign.printflow.bd/orders
  */
 export function getTenantLink(slug: string, path: string = '', customRootDomain?: string): string {
   const cleanSlug = (slug || '').toLowerCase().trim()
@@ -65,9 +63,9 @@ export function getTenantLink(slug: string, path: string = '', customRootDomain?
 /**
  * Formats public customer-facing document links without exposing internal UUIDs.
  * Examples:
- * formatDocumentUrl('vision', 'invoice', 'INV-2026-0012') -> https://vision.inkflow.com.bd/invoices/INV-2026-0012
- * formatDocumentUrl('vision', 'quotation', 'QUO-2026-0089') -> https://vision.inkflow.com.bd/quotations/QUO-2026-0089
- * formatDocumentUrl('vision', 'receipt', 'MR-2026-0044') -> https://vision.inkflow.com.bd/billing/receipts/MR-2026-0044
+ * formatDocumentUrl('vision', 'invoice', 'INV-2026-0012') -> https://vision.printflow.bd/invoices/INV-2026-0012
+ * formatDocumentUrl('vision', 'quotation', 'QUO-2026-0089') -> https://vision.printflow.bd/quotations/QUO-2026-0089
+ * formatDocumentUrl('vision', 'receipt', 'MR-2026-0044') -> https://vision.printflow.bd/billing/receipts/MR-2026-0044
  */
 export function formatDocumentUrl(
   slug: string,
@@ -105,21 +103,12 @@ export function formatWhatsAppShareLink(
 
 /**
  * Resolves an internal navigation href (e.g. '/orders', '/quotations', '/sales/new-work', '/finishing')
- * to the proper tenant-scoped route based on current URL path context and tenant slug.
- * 
- * Works symmetrically across:
- * - Path-based tenant routing (e.g., localhost:3000/vision/dashboard -> /vision/orders)
- * - Subdomain tenant routing (e.g., vision.inkflow.com.bd/dashboard -> /orders)
- * - Client-side Next.js Link and router navigation
- */
-/**
- * Resolves an internal navigation href (e.g. '/orders', '/quotations', '/sales/new-work', '/finishing')
  * to the proper tenant-scoped route based on current URL context.
  * 
  * Symmetrically handles:
- * 1. Subdomain tenant routing (e.g. rangao.inkflow-erp.vercel.app/production or vision.inkflow.com.bd/dashboard):
+ * 1. Subdomain tenant routing (e.g. rangao.printflow.bd/production or vision.printflow.bd/dashboard):
  *    -> Hrefs remain clean relative paths: '/sales/new-work', '/orders', '/finishing'
- * 2. Path-based tenant routing (e.g. localhost:3000/rangao/dashboard or inkflow.com.bd/vision/orders):
+ * 2. Path-based tenant routing (e.g. localhost:3000/rangao/dashboard or printflow.bd/vision/orders):
  *    -> Hrefs are prefixed with tenant slug: '/rangao/sales/new-work', '/vision/orders'
  */
 export function getTenantNavHref(
@@ -143,7 +132,7 @@ export function getTenantNavHref(
     const host = window.location.host.toLowerCase().trim()
     const browserPathname = window.location.pathname
 
-    // Check if host is an authoritative tenant subdomain (e.g. rangao.inkflow-erp.vercel.app or vision.inkflow.com.bd or vision.localhost:3000)
+    // Check if host is an authoritative tenant subdomain (e.g. rangao.printflow.bd or vision.printflow.bd or vision.localhost:3000)
     const isSubdomain = resolveHostname(host).hostType === 'tenant'
 
     if (isSubdomain) {
@@ -158,7 +147,7 @@ export function getTenantNavHref(
       return cleanHref
     }
 
-    // On root host (e.g. localhost:3000 or inkflow.com.bd), check if browserPathname is path-based
+    // On root host (e.g. localhost:3000 or printflow.bd), check if browserPathname is path-based
     const pathToCheck = pathname || browserPathname
     if (cleanSlug) {
       if (pathToCheck.startsWith(`/${cleanSlug}/`) || pathToCheck === `/${cleanSlug}`) {

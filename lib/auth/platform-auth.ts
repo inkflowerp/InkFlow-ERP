@@ -1,5 +1,5 @@
 // ==============================================================================
-// InkFlow SaaS - Platform Authorization Utilities (Server-Side)
+// PrintFlow SaaS - Platform Authorization Utilities (Server-Side)
 // Authoritative Supabase Auth & PostgreSQL verification.
 // Strictly guards all /platform/* operations against unauthorized access.
 // Single Source of Truth: Supabase Auth -> Authenticated auth.uid() -> platform_admins -> Fail Closed.

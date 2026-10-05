@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server.js";
 import React from "react";
+import { BRAND } from "@/config/brand";
 import { generatePdfBytes } from "@/lib/pdf/pdf-generator";
 import { InvoicePdfDocument } from "@/components/pdf/documents/invoice-pdf-document";
 import { QuotationPdfDocument } from "@/components/pdf/documents/quotation-pdf-document";
@@ -102,12 +103,12 @@ export async function GET(
     }
 
     const companyMeta = {
-      name: tenantCompany?.name || "InkFlow PrintERP",
+      name: tenantCompany?.name || BRAND.name,
       tagline: tenantCompany?.legal_name || "Printing & Signage Solutions",
       address: tenantCompany?.address || "",
       phone: tenantCompany?.phone || "+880 1700-000000",
       email: tenantCompany?.email || "billing@inkflow-erp.com",
-      website: tenantCompany?.website || "www.inkflow-erp.com",
+      website: tenantCompany?.website || `www.${BRAND.rootDomain}`,
       binNumber: tenantCompany?.bin_no || undefined,
     };
 

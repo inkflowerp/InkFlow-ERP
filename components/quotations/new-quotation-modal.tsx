@@ -1610,7 +1610,7 @@ export function NewQuotationModal({
           .join('\n')
 
  const text = encodeURIComponent(
-          `প্রিয় ${saved.customer_name},\n\nআপনার জন্য ${company?.name || 'InkFlow'} এর অফিশিয়াল কোটেশন প্রস্তুত করা হয়েছে:\n` +
+          `প্রিয় ${saved.customer_name},\n\nআপনার জন্য ${company?.name || 'PrintFlow'} এর অফিশিয়াল কোটেশন প্রস্তুত করা হয়েছে:\n` +
           `কোটেশন নং: #${saved.quotation_number}\n` +
           `তারিখ: ${saved.quotation_date} (মেয়াদ: ${saved.valid_until} পর্যন্ত)\n\n` +
           `আইটেম বিবরণ:\n${itemsSummary}\n\n` +
@@ -1651,7 +1651,7 @@ export function NewQuotationModal({
         .join('\n')
 
  const text = encodeURIComponent(
-        `প্রিয় ${quoteToUse.customer_name},\n\nআপনার জন্য ${company?.name || 'InkFlow'} এর অফিশিয়াল কোটেশন প্রস্তুত করা হয়েছে:\n` +
+        `প্রিয় ${quoteToUse.customer_name},\n\nআপনার জন্য ${company?.name || 'PrintFlow'} এর অফিশিয়াল কোটেশন প্রস্তুত করা হয়েছে:\n` +
         `কোটেশন নং: #${quoteToUse.quotation_number}\n` +
         `তারিখ: ${quoteToUse.quotation_date} (মেয়াদ: ${quoteToUse.valid_until} পর্যন্ত)\n\n` +
         `আইটেম বিবরণ:\n${itemsSummary}\n\n` +

@@ -209,8 +209,8 @@ export function TrialNotificationPopup() {
                 'আপনার ট্রায়ালের মেয়াদ শীঘ্রই শেষ হচ্ছে!'
               )
             : tBilingual(
-                'Enjoying your PrintERP Trial?',
-                'প্রিন্টইআরপি ট্রায়াল উপভোগ করছেন?'
+                'Enjoying your PrintFlow Trial?',
+                'প্রিন্টফ্লো ট্রায়াল উপভোগ করছেন?'
               )}
         </h4>
 

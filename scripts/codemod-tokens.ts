@@ -1,5 +1,5 @@
 // ==============================================================================
-// InkFlow ERP SaaS - Full Spectrum Semantic Token Codemod
+// PrintFlow SaaS - Full Spectrum Semantic Token Codemod
 // Eliminates all raw Tailwind palette classes, gradients, and sub-12px sizes
 // ==============================================================================
 

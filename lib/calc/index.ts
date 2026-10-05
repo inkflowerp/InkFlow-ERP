@@ -1,5 +1,5 @@
 // ==============================================================================
-// InkFlow ERP - Centralized Calculation Formulas Engine (lib/calc/index.ts)
+// PrintFlow - Centralized Calculation Formulas Engine (lib/calc/index.ts)
 // Single Source of Truth for Financial, Costing, Pricing, and Payroll Rules.
 // ==============================================================================
 

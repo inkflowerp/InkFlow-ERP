@@ -889,7 +889,7 @@ export default function DeliveryLogisticsPage() {
                 <DeliveryChallanTable
  challans={filteredChallans}
  tenantSlug={slug}
- companyName={company?.name || 'InkFlow Printing & Signage'}
+ companyName={company?.name || 'PrintFlow Printing & Signage'}
  onOpenDeliveryModal={openDeliveryModal}
  onMarkOutForDelivery={handleMarkOutForDelivery}
  getLiveItemStatus={getLiveItemStatus}

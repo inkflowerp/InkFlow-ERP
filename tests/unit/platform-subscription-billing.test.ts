@@ -56,7 +56,7 @@ describe('Authoritative Platform Subscription & SaaS Billing Test Suite', () => 
         planId: growthPlan.id,
         billingCycle: 'yearly',
         provider: 'bank_transfer',
-        adminEmail: 'admin@inkflow.io',
+        adminEmail: 'admin@printflow.bd',
       })
 
       assert.strictEqual(checkoutRes.success, true)

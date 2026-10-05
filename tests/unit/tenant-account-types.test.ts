@@ -2,7 +2,7 @@ import { test, describe } from 'node:test'
 import assert from 'node:assert'
 
 // ==============================================================================
-// INKFLOW SaaS — Tenant Account Types (Trial, Starter, Business, Enterprise)
+// PRINTFLOW SaaS — Tenant Account Types (Trial, Starter, Business, Enterprise)
 // Unit Test Suite verifying account type resolution, quotas, and entitlements.
 // ==============================================================================
 

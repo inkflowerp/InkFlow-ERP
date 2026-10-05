@@ -2,16 +2,16 @@ import { describe, it, beforeEach } from 'node:test'
 import assert from 'node:assert'
 import { ProductService } from '../../services/product.service.ts'
 import { QuotationRepository } from '../../lib/repositories/quotation.repository.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 
 describe('Unit: Products Archive & Delete Protection Suite', () => {
   const companyId = `comp-protect-${Date.now()}`
 
   beforeEach(() => {
-    PrintERPDataStore.set(STORAGE_KEYS.PRODUCTS, [])
-    PrintERPDataStore.set(STORAGE_KEYS.QUOTATIONS, [])
-    PrintERPDataStore.set(STORAGE_KEYS.INVOICES, [])
-    PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.PRODUCTS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.QUOTATIONS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.INVOICES, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, [])
   })
 
   it('1. Permanently deletes an unreferenced product with zero dependencies', async () => {

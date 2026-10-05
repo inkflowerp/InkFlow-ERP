@@ -1,5 +1,5 @@
 // ==============================================================================
-// InkFlow ERP - Centralized Business Date & Bangladesh Timezone Helper (V9.1)
+// PrintFlow - Centralized Business Date & Bangladesh Timezone Helper (V9.1)
 // Canonical timezone: Asia/Dhaka (UTC+6)
 // Provides consistent business-day boundaries, relative dates, overdue calculations,
 // and bilingual greetings for all business-sensitive operational calculations.

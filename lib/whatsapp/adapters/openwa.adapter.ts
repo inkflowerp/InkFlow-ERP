@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP SaaS - OpenWA WhatsApp Provider Adapter
+// PrintFlow SaaS - OpenWA WhatsApp Provider Adapter
 // Implements IWhatsAppProvider for OpenWA Multi-Tenant API Gateway
 // ==============================================================================
 

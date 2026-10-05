@@ -1,8 +1,8 @@
 // ==============================================================================
-// PrintERP SaaS - Platform Administration & Root Governance Types
+// PrintFlow SaaS - Platform Administration & Root Governance Types
 // ==============================================================================
 
-import { BRAND } from '@/config/brand'
+import { BRAND } from '../config/brand.ts'
 
 export type PlatformCompanyStatus =
   | 'trial'

@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP SaaS - Meta WhatsApp Cloud API Adapter (Official Meta Graph API)
+// PrintFlow SaaS - Meta WhatsApp Cloud API Adapter (Official Meta Graph API)
 // Documentation: https://developers.facebook.com/docs/whatsapp/cloud-api
 // ==============================================================================
 
@@ -56,7 +56,7 @@ export class MetaWhatsAppAdapter implements IWhatsAppProvider {
         headers: {
           Authorization: `Bearer ${this.accessToken}`,
           'Content-Type': 'application/json',
-          'User-Agent': 'PrintERP-SaaS/1.0',
+          'User-Agent': 'PrintFlow-SaaS/1.0',
         },
         signal: AbortSignal.timeout(10000),
       })

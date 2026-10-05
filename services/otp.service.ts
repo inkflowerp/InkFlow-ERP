@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP SaaS - Dual-Channel OTP Service (WhatsApp Primary + SMS Fallback)
+// PrintFlow SaaS - Dual-Channel OTP Service (WhatsApp Primary + SMS Fallback)
 // High-assurance authentication and verification delivery with anti-abuse throttling.
 // ==============================================================================
 
@@ -94,7 +94,7 @@ export class OtpService {
     const otpCode = this.generateNumericOtp()
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString()
 
-    const otpMessage = `Your PrintERP verification code is: *${otpCode}*.\n\nValid for 5 minutes. Never share this code with anyone.\nআপনার ভেরিফিকেশন কোড: ${otpCode}`
+    const otpMessage = `Your PrintFlow verification code is: *${otpCode}*.\n\nValid for 5 minutes. Never share this code with anyone.\nআপনার ভেরিফিকেশন কোড: ${otpCode}`
 
     let channelUsed: 'whatsapp' | 'sms' = preferredChannel
     let deliverySuccess = false
@@ -127,7 +127,7 @@ export class OtpService {
           category: 'sms',
           recipient: formatted,
           recipientName: 'User',
-          message: `PrintERP Code: ${otpCode}. Valid for 5 minutes. Do not share.`,
+          message: `PrintFlow Code: ${otpCode}. Valid for 5 minutes. Do not share.`,
         })
 
         if (smsResult.success) {

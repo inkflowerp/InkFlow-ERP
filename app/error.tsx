@@ -11,7 +11,7 @@ export default function Error({
   reset: () => void
 }) {
   useEffect(() => {
-    console.error('PrintERP Application Error:', error)
+    console.error('PrintFlow Application Error:', error)
   }, [error])
 
   return (

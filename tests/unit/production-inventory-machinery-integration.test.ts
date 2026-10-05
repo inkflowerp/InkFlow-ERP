@@ -4,7 +4,7 @@ import { ProductionPlanningService } from '../../services/production-planning.se
 import { InventoryRepository } from '../../lib/repositories/inventory.repository.ts'
 import { MachineryRepository } from '../../lib/repositories/machinery.repository.ts'
 import { ProductionTaskRepository } from '../../lib/repositories/production-task.repository.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import type { MachineryRecord } from '../../types/machinery.types.ts'
 import type { MaterialRecord } from '../../types/inventory.types.ts'
 import type { ProductionTaskRecord, CompleteTaskInput } from '../../types/production.types.ts'
@@ -27,7 +27,7 @@ describe('Tri-Pillar Integration: Production Planning & Shop Floor + Inventory R
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }
-    PrintERPDataStore.set(STORAGE_KEYS.MATERIALS, [material])
+    PrintFlowDataStore.set(STORAGE_KEYS.MATERIALS, [material])
 
     // Setup test machinery
     const machine: MachineryRecord = {
@@ -46,7 +46,7 @@ describe('Tri-Pillar Integration: Production Planning & Shop Floor + Inventory R
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }
-    PrintERPDataStore.set(STORAGE_KEYS.MACHINERIES, [machine])
+    PrintFlowDataStore.set(STORAGE_KEYS.MACHINERIES, [machine])
 
     // Create a 10ft wide x 150ft long Physical Roll (1500 SFT)
     const roll = await InventoryRepository.createPhysicalRoll({
@@ -114,7 +114,7 @@ describe('Tri-Pillar Integration: Production Planning & Shop Floor + Inventory R
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }
-    PrintERPDataStore.set(STORAGE_KEYS.MACHINERIES, [machine])
+    PrintFlowDataStore.set(STORAGE_KEYS.MACHINERIES, [machine])
 
     const task: ProductionTaskRecord = {
       id: 'task-print-apex-01',
@@ -138,7 +138,7 @@ describe('Tri-Pillar Integration: Production Planning & Shop Floor + Inventory R
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }
-    PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, [task])
+    PrintFlowDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, [task])
 
     // Start Task
     const startedTask = await ProductionPlanningService.startTask(
@@ -172,7 +172,7 @@ describe('Tri-Pillar Integration: Production Planning & Shop Floor + Inventory R
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }
-    PrintERPDataStore.set(STORAGE_KEYS.MATERIALS, [material])
+    PrintFlowDataStore.set(STORAGE_KEYS.MATERIALS, [material])
 
     // Setup Machine with initial meters
     const machine: MachineryRecord = {
@@ -190,7 +190,7 @@ describe('Tri-Pillar Integration: Production Planning & Shop Floor + Inventory R
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }
-    PrintERPDataStore.set(STORAGE_KEYS.MACHINERIES, [machine])
+    PrintFlowDataStore.set(STORAGE_KEYS.MACHINERIES, [machine])
 
     // Create 4ft wide physical roll with 100ft length (400 SFT)
     const roll = await InventoryRepository.createPhysicalRoll({
@@ -250,7 +250,7 @@ describe('Tri-Pillar Integration: Production Planning & Shop Floor + Inventory R
       updated_at: new Date().toISOString(),
     }
 
-    PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, [printTask, finishingTask])
+    PrintFlowDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, [printTask, finishingTask])
 
     // Operator Completes Task from SFT:
     // - Good Qty: 10 pcs (200 SFT)

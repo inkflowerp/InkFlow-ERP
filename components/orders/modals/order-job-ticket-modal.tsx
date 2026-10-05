@@ -30,7 +30,7 @@ export const OrderJobTicketModal = React.memo(function OrderJobTicketModal({
  isOpen,
  onClose,
  order,
- companyName = 'PrintERP Commercial Press',
+ companyName = 'PrintFlow Commercial Press',
  companyAddress = 'Paltan / Fakirapool, Dhaka',
  companyPhone = '01700-000000',
 }: OrderJobTicketModalProps) {

@@ -111,7 +111,7 @@ export async function GET() {
   const payload: HealthDiagnostic = {
     status: overallStatus,
     timestamp: new Date().toISOString(),
-    app: 'InkFlow ERP SaaS',
+    app: 'PrintFlow SaaS',
     version: process.env.NEXT_PUBLIC_APP_VERSION || '1.0.0',
     region: 'BD',
     currency: 'BDT',

@@ -4,7 +4,7 @@ import { withTenantAction } from '@/lib/actions/action-wrapper'
 
 
 // ==============================================================================
-// PrintERP SaaS - Multi-Tenant Email Gateway Server Actions
+// PrintFlow SaaS - Multi-Tenant Email Gateway Server Actions
 // Enforces strict platform vs tenant authorization boundaries.
 // Encrypts secrets at rest and prevents credential exposure to frontend.
 // ==============================================================================
@@ -67,7 +67,7 @@ export const getPlatformEmailGatewayAction = withPlatformAction(
         smtp_username: process.env.PLATFORM_SMTP_USER || process.env.SMTP_USER || process.env.SMTP_USERNAME || null,
         encrypted_credentials: null,
         encryption_type: ((process.env.PLATFORM_SMTP_SECURE || process.env.SMTP_SECURE) === 'true' ? 'ssl' : 'tls') as any,
-        sender_name: process.env.PLATFORM_SENDER_NAME || process.env.SMTP_FROM_NAME || 'InkFlow Platform',
+        sender_name: process.env.PLATFORM_SENDER_NAME || process.env.SMTP_FROM_NAME || 'PrintFlow Platform',
         sender_email: process.env.PLATFORM_SENDER_EMAIL || process.env.SMTP_FROM_EMAIL || process.env.PLATFORM_SMTP_USER || process.env.SMTP_USER || 'inkflow.erp@gmail.com',
         reply_to_email: process.env.PLATFORM_SENDER_EMAIL || process.env.SMTP_REPLY_TO || 'inkflow.erp@gmail.com',
         status: 'active',
@@ -289,7 +289,7 @@ export const testPlatformEmailGatewayAction = withPlatformAction(
       encrypted_credentials: formData.password || formData.api_key || null,
       encryption_type: formData.encryption_type || 'tls',
       gmail_account_email: formData.gmail_account_email || null,
-      sender_name: formData.sender_name || 'PrintERP Platform',
+      sender_name: formData.sender_name || 'PrintFlow Platform',
       sender_email: formData.sender_email || 'test@printerp.com',
       reply_to_email: formData.reply_to_email || null,
       status: 'active',
@@ -323,8 +323,8 @@ export const sendTestPlatformEmailAction = withPlatformAction(
       eventType: 'test_email',
       recipient: recipientEmail,
       variables: {
-        company_name: 'InkFlow Platform Admin',
-        sender_name: 'InkFlow System Notifications',
+        company_name: 'PrintFlow Platform Admin',
+        sender_name: 'PrintFlow System Notifications',
         sender_email: recipientEmail,
         provider_name: 'Platform Email Gateway',
         timestamp: new Date().toLocaleString(),

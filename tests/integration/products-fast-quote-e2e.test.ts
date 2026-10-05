@@ -4,18 +4,18 @@ import { ProductService } from '../../services/product.service.ts'
 import { QuotationService } from '../../services/quotation.service.ts'
 import { BillingRepository } from '../../lib/repositories/billing.repository.ts'
 import { CustomerRepository } from '../../lib/repositories/customer.repository.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 
 describe('Integration: Real Bangladeshi Business End-to-End Workflow & Price Immutability', () => {
   const companyId = `comp-e2e-real-${Date.now()}`
 
   beforeEach(() => {
-    PrintERPDataStore.set(STORAGE_KEYS.PRODUCTS, [])
-    PrintERPDataStore.set(STORAGE_KEYS.CUSTOMERS, [])
-    PrintERPDataStore.set(STORAGE_KEYS.CUSTOMER_RATES, [])
-    PrintERPDataStore.set(STORAGE_KEYS.QUOTATIONS, [])
-    PrintERPDataStore.set(STORAGE_KEYS.INVOICES, [])
-    PrintERPDataStore.set(STORAGE_KEYS.PRICE_HISTORY, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.PRODUCTS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.CUSTOMERS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.CUSTOMER_RATES, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.QUOTATIONS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.INVOICES, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.PRICE_HISTORY, [])
   })
 
   it('Executes complete Product -> Fast Quote -> Invoice -> Price Change -> Snapshot Immutability scenario', async () => {

@@ -1,17 +1,17 @@
 import { test, describe, beforeEach } from 'node:test'
 import assert from 'node:assert/strict'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import { InventoryRepository } from '../../lib/repositories/inventory.repository.ts'
 import { PurchaseRepository } from '../../lib/repositories/purchase.repository.ts'
 import { ProductRepository } from '../../lib/repositories/product.repository.ts'
 import { evaluateStockAvailability } from '../../lib/domain/stock-availability.ts'
 import type { MaterialRecord, InventoryRollRecord, StockLedgerRecord } from '../../types/inventory.types.ts'
 
-describe('INKFLOW — Inventory + Purchases Consolidated Workspace Acceptance Tests', () => {
+describe('PRINTFLOW — Inventory + Purchases Consolidated Workspace Acceptance Tests', () => {
   const companyId = 'test-company-consolidation'
 
   beforeEach(() => {
-    PrintERPDataStore.clear()
+    PrintFlowDataStore.clear()
   })
 
   test('1. PO Creation does NOT increase inventory or create physical rolls', async () => {
@@ -34,7 +34,7 @@ describe('INKFLOW — Inventory + Purchases Consolidated Workspace Acceptance Te
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }
-    PrintERPDataStore.addItem(STORAGE_KEYS.MATERIALS, material)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.MATERIALS, material)
 
     // Create PO for 5 Vinyl Rolls
     const po = await PurchaseRepository.createPurchaseOrder({
@@ -90,7 +90,7 @@ describe('INKFLOW — Inventory + Purchases Consolidated Workspace Acceptance Te
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }
-    PrintERPDataStore.addItem(STORAGE_KEYS.MATERIALS, material)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.MATERIALS, material)
 
     // Receive 3 Physical Rolls via GRN
     const roll1 = await InventoryRepository.createPhysicalRoll({

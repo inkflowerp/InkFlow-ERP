@@ -1,5 +1,5 @@
 // ==============================================================================
-// InkFlow ERP — End-to-End Critical Path Acceptance Suite
+// PrintFlow — End-to-End Critical Path Acceptance Suite
 // Authoritative automated verification of 8 core enterprise journeys:
 // 1. Tenant Register -> Onboarding -> First Invoice
 // 2. Login Per Role & RBAC Boundaries
@@ -14,7 +14,7 @@
 import { describe, it, beforeEach } from 'node:test'
 import assert from 'node:assert/strict'
 import crypto from 'node:crypto'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import { QuotationRepository } from '../../lib/repositories/quotation.repository.ts'
 import { BillingRepository } from '../../lib/repositories/billing.repository.ts'
 import { calculateServiceCosting } from '../../lib/domain/service-costing-engine.ts'
@@ -29,8 +29,8 @@ describe('Critical Path Acceptance Suite: 8 Production Invariants', () => {
 
   beforeEach(() => {
     for (const key of Object.values(STORAGE_KEYS)) {
-      PrintERPDataStore.clear(key as any, tenantA)
-      PrintERPDataStore.clear(key as any, tenantB)
+      PrintFlowDataStore.clear(key as any, tenantA)
+      PrintFlowDataStore.clear(key as any, tenantB)
     }
   })
 
@@ -47,7 +47,7 @@ describe('Critical Path Acceptance Suite: 8 Production Invariants', () => {
       created_at: new Date().toISOString(),
       status: 'active',
     }
-    PrintERPDataStore.set(STORAGE_KEYS.COMPANIES as any, [company], tenantA)
+    PrintFlowDataStore.set(STORAGE_KEYS.COMPANIES as any, [company], tenantA)
 
     // 1.2 Onboarding 7-Step Checklist Verification
     const onboardingSteps = [
@@ -157,7 +157,7 @@ describe('Critical Path Acceptance Suite: 8 Production Invariants', () => {
       total_amount: costing.grandTotalBDT,
       created_at: new Date().toISOString(),
     }
-    PrintERPDataStore.set(STORAGE_KEYS.ORDERS as any, [order], tenantA)
+    PrintFlowDataStore.set(STORAGE_KEYS.ORDERS as any, [order], tenantA)
 
     // Step D: Production Task Claim & Roll Consumption
     const productionTask = {
@@ -170,7 +170,7 @@ describe('Critical Path Acceptance Suite: 8 Production Invariants', () => {
       sqft_produced: 200,
       operator_id: 'user-operator-01',
     }
-    PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS as any, [productionTask], tenantA)
+    PrintFlowDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS as any, [productionTask], tenantA)
     assert.strictEqual(productionTask.status, 'in_progress', 'Production task in progress')
 
     // Step E: Delivery Challan Generation (Triplicate)
@@ -184,7 +184,7 @@ describe('Critical Path Acceptance Suite: 8 Production Invariants', () => {
       copies: ['customer_copy', 'gate_pass', 'accounts_copy'],
       status: 'delivered',
     }
-    PrintERPDataStore.set(STORAGE_KEYS.DELIVERY_CHALLANS as any, [challan], tenantA)
+    PrintFlowDataStore.set(STORAGE_KEYS.DELIVERY_CHALLANS as any, [challan], tenantA)
     assert.strictEqual(challan.copies.length, 3, 'Must generate triplicate challan copies')
 
     // Step F: Invoice Generation & Settlement

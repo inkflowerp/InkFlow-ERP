@@ -1,5 +1,5 @@
 // ==============================================================================
-// InkFlow ERP SaaS - Authoritative Server-Side Subscription Guard
+// PrintFlow SaaS - Authoritative Server-Side Subscription Guard
 // The single point of truth for asserting feature entitlements and resource quotas.
 // Ensures zero client-side bypass across Server Actions, APIs, and background jobs.
 // ==============================================================================

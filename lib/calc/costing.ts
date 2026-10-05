@@ -1,5 +1,5 @@
 // ==============================================================================
-// InkFlow ERP - Authoritative Job Costing Formulas (lib/calc/costing.ts)
+// PrintFlow - Authoritative Job Costing Formulas (lib/calc/costing.ts)
 // Calculates Material Wastage, Machine Running Time, Labor Hours, Overheads,
 // and True Gross Margin for commercial print production.
 // ==============================================================================

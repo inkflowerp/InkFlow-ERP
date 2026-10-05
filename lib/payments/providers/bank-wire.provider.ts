@@ -23,9 +23,9 @@ export class BankWirePaymentProvider implements PaymentProvider {
       gatewayReference: `INVOICE_${subRef}`,
       requiresManualVerification: true,
       instructions: [
-        'Transfer subscription fee to PrintERP Corporate Account:',
+        'Transfer subscription fee to PrintFlow Corporate Account:',
         'Bank: City Bank PLC | Branch: Principal Branch, Motijheel, Dhaka',
-        'Account Name: PrintERP Technologies Bangladesh Ltd.',
+        'Account Name: PrintFlow Technologies Bangladesh Ltd.',
         'Account Number: 1102948192001',
         'Routing Number: 225272635',
         `Reference: ${(params.companyName || 'COMPANY').slice(0, 10).toUpperCase()}-${planRef}`,

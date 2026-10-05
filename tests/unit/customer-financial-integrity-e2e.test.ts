@@ -290,12 +290,12 @@ describe('Customer Financial Integrity, Accounting Single Source of Truth & Fore
     test('Actor Identity: Audit logger derives actor from authenticated JWT session, ignoring client forged IDs', () => {
       const authenticatedSessionUser = {
         userId: 'real-user-123',
-        userEmail: 'real.cashier@inkflow.com',
+        userEmail: 'real.cashier@printflow.test',
       }
 
       const clientSuppliedForgedInput = {
         actor_user_id: 'fake-admin-999',
-        user_email: 'fake.admin@inkflow.com',
+        user_email: 'fake.admin@printflow.test',
       }
 
       // Server audit resolution: session always supersedes client input
@@ -303,7 +303,7 @@ describe('Customer Financial Integrity, Accounting Single Source of Truth & Fore
       const resolvedActorEmail = authenticatedSessionUser.userEmail || clientSuppliedForgedInput.user_email
 
       assert.strictEqual(resolvedActorId, 'real-user-123')
-      assert.strictEqual(resolvedActorEmail, 'real.cashier@inkflow.com')
+      assert.strictEqual(resolvedActorEmail, 'real.cashier@printflow.test')
       assert.notStrictEqual(resolvedActorId, 'fake-admin-999')
     })
   })

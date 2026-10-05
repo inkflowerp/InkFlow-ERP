@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP SaaS - SendGrid Provider Adapter (v3 API)
+// PrintFlow SaaS - SendGrid Provider Adapter (v3 API)
 // Integrates with Twilio SendGrid v3 Mail Send API.
 // ==============================================================================
 

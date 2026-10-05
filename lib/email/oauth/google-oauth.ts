@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP SaaS - Google OAuth 2.0 & Gmail API Security Utilities
+// PrintFlow SaaS - Google OAuth 2.0 & Gmail API Security Utilities
 // Implements secure OAuth state signing, token exchange, token refresh, and identity retrieval.
 // ==============================================================================
 
@@ -361,7 +361,7 @@ export async function fetchGoogleUserProfile(accessToken: string): Promise<Googl
       id: 'mock-google-user-id',
       email: 'test-user@gmail.com',
       verified_email: true,
-      name: 'PrintERP Verified Test Account',
+      name: 'PrintFlow Verified Test Account',
     }
   }
 

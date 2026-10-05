@@ -1,5 +1,5 @@
 // ==============================================================================
-// InkFlow / PrintERP SaaS - Authoritative Platform Subscription & Billing Service
+// PrintFlow SaaS - Authoritative Platform Subscription & Billing Service
 // Strict architectural isolation between Platform SaaS billing and Tenant billing.
 // ==============================================================================
 
@@ -207,7 +207,7 @@ export class PlatformSubscriptionService {
         })
 
         const initResult = await adapter.initiatePayment({
-          companyName: 'InkFlow SaaS Platform',
+          companyName: 'PrintFlow Platform',
           invoiceId: invoiceId,
           planCode: targetPlan.slug,
           planName: targetPlan.name,

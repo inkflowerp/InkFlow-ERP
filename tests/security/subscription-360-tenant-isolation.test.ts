@@ -2,7 +2,7 @@ import { describe, it, beforeEach } from 'node:test'
 import assert from 'node:assert'
 import { EntitlementService } from '../../services/entitlement.service.ts'
 import { SaasBillingService } from '../../services/saas-billing.service.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import { DEFAULT_PLANS } from '../../lib/subscription/subscription-constants.ts'
 import type { CompanySubscriptionRecord } from '../../types/subscription.types.ts'
 
@@ -11,8 +11,8 @@ describe('Subscription 360 - Multi-Tenant Security & Isolation Tests', () => {
   const companyB = 'co-tenant-beta'
 
   beforeEach(() => {
-    PrintERPDataStore.clear()
-    PrintERPDataStore.set(STORAGE_KEYS.PLATFORM_PLANS, DEFAULT_PLANS, false)
+    PrintFlowDataStore.clear()
+    PrintFlowDataStore.set(STORAGE_KEYS.PLATFORM_PLANS, DEFAULT_PLANS, false)
 
     const starterPlan = DEFAULT_PLANS.find((p) => p.code === 'starter')!
     const enterprisePlan = DEFAULT_PLANS.find((p) => p.code === 'enterprise')!
@@ -39,7 +39,7 @@ describe('Subscription 360 - Multi-Tenant Security & Isolation Tests', () => {
       current_period_end: new Date(Date.now() + 365 * 86400000).toISOString(),
     }
 
-    PrintERPDataStore.set(
+    PrintFlowDataStore.set(
       STORAGE_KEYS.COMPANY_SUBSCRIPTIONS,
       { [companyA]: subA, [companyB]: subB },
       false

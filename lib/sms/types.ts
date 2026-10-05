@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP SaaS - SMS Provider Types & Interface
+// PrintFlow SaaS - SMS Provider Types & Interface
 // ==============================================================================
 
 import type { SmsProviderType, GatewayEnvironment } from '../../types/gateway.types.ts'

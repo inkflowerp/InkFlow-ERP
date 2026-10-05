@@ -408,7 +408,7 @@ export default function PlatformOwnerProfilePage() {
  <div>
  <div className="font-bold text-foreground">{tBilingual('Owner (Full Control)', 'মালিক (পূর্ণ ক্ষমতা)')}</div>
  <div className="text-xs text-muted-foreground">
- Unrestricted authority across all PrintERP SaaS clusters, billing, and tenants.
+ Unrestricted authority across all PrintFlow SaaS clusters, billing, and tenants.
  </div>
  </div>
  <span className="text-xs font-bold tabular-nums text-primary bg-primary/10 px-2 py-1 rounded border border-primary/20">

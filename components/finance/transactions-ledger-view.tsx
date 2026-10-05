@@ -149,7 +149,7 @@ export function TransactionsLedgerView({
   // CSV Export handler
  const handleExportCSV = () => {
  const rows = [
-      ['PrintERP - Unified Transactions Ledger'],
+      ['PrintFlow - Unified Transactions Ledger'],
       ['Exported At', new Date().toLocaleString()],
       ['Filter Type', filterType],
       ['Total Records', String(filteredEntries.length)],

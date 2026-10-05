@@ -3,14 +3,14 @@ import assert from 'node:assert'
 import { PurchaseService } from '../../services/purchase.service.ts'
 import { InventoryRepository } from '../../lib/repositories/inventory.repository.ts'
 import { SupplierRepository } from '../../lib/repositories/supplier.repository.ts'
-import { PrintERPDataStore } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore } from '../../lib/db/data-store.ts'
 
 describe('Purchasing to Physical Roll Inventory Integration', () => {
   const companyId = 'comp-test-purchasing'
 
   beforeEach(async () => {
-    PrintERPDataStore.clearAll(companyId)
-    PrintERPDataStore.clearAll()
+    PrintFlowDataStore.clearAll(companyId)
+    PrintFlowDataStore.clearAll()
 
     // Seed supplier
     await SupplierRepository.createSupplier({

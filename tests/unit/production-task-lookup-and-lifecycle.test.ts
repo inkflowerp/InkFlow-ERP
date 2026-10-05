@@ -1,6 +1,6 @@
 import { describe, it, beforeEach } from 'node:test'
 import assert from 'node:assert'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import { ProductionPlanningService } from '../../services/production-planning.service.ts'
 import { ProductionTaskRepository } from '../../lib/repositories/production-task.repository.ts'
 import type { ProductionTaskRecord } from '../../types/production.types.ts'
@@ -11,11 +11,11 @@ describe('Production Task Lookup and Resilient Lifecycle Tests', () => {
   const TENANT_ID = 'comp-test-lookup-01'
 
   beforeEach(() => {
-    PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, [])
-    PrintERPDataStore.set(STORAGE_KEYS.INVOICES, [])
-    PrintERPDataStore.set(STORAGE_KEYS.DESIGN_JOBS, [])
-    PrintERPDataStore.set(STORAGE_KEYS.JOB_ORDERS, [])
-    PrintERPDataStore.set(STORAGE_KEYS.ORDERS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.INVOICES, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.DESIGN_JOBS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.JOB_ORDERS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.ORDERS, [])
   })
 
   it('1. Retrieves task by UUID and by task_number from DataStore', async () => {
@@ -39,7 +39,7 @@ describe('Production Task Lookup and Resilient Lifecycle Tests', () => {
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }
-    PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCTION_TASKS, task)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.PRODUCTION_TASKS, task)
 
     // Lookup by UUID
     const byUuid = await ProductionPlanningService.getTaskById(taskUuid, TENANT_ID)
@@ -172,8 +172,8 @@ describe('Production Task Lookup and Resilient Lifecycle Tests', () => {
       updated_at: new Date().toISOString(),
     }
 
-    PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCTION_TASKS, task1)
-    PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCTION_TASKS, task2)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.PRODUCTION_TASKS, task1)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.PRODUCTION_TASKS, task2)
 
     // Complete task 1
     const result = await ProductionPlanningService.completeTask(task1.id, TENANT_ID)
@@ -184,7 +184,7 @@ describe('Production Task Lookup and Resilient Lifecycle Tests', () => {
   })
 
   it('5. Automatically provisions preset machine (heidelberg_sm74) and resiliently starts and completes task with machine tracking', async () => {
-    PrintERPDataStore.set(STORAGE_KEYS.MACHINERIES, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.MACHINERIES, [])
 
     const taskId = 'tsk-heidelberg-test'
     const task: ProductionTaskRecord = {
@@ -205,7 +205,7 @@ describe('Production Task Lookup and Resilient Lifecycle Tests', () => {
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }
-    PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCTION_TASKS, task)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.PRODUCTION_TASKS, task)
 
     // Starting task assigned to heidelberg_sm74 should succeed without "Machinery heidelberg_sm74 not found" error
     const started = await ProductionPlanningService.startTask(taskId, TENANT_ID, 'op-02', 'Faruk Offset Lead')
@@ -249,7 +249,7 @@ describe('Production Task Lookup and Resilient Lifecycle Tests', () => {
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }
-    PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCTION_TASKS, queuedTask)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.PRODUCTION_TASKS, queuedTask)
 
     // Completing directly from 'queued' must succeed smoothly
     const res = await ProductionPlanningService.completeTask(queuedTaskId, TENANT_ID, {
@@ -280,7 +280,7 @@ describe('Production Task Lookup and Resilient Lifecycle Tests', () => {
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }
-    PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCTION_TASKS, onHoldTask)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.PRODUCTION_TASKS, onHoldTask)
 
     const holdRes = await ProductionPlanningService.completeTask(onHoldTaskId, TENANT_ID, {
       good_quantity: 5,
@@ -312,7 +312,7 @@ describe('Production Task Lookup and Resilient Lifecycle Tests', () => {
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }
-    PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCTION_TASKS, task)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.PRODUCTION_TASKS, task)
 
     const found = await ProductionPlanningService.getTaskById('TSK-000009-1', TENANT_ID)
     assert.ok(found, 'Should find task TSK-009-1 when queried with TSK-000009-1')

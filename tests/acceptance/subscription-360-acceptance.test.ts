@@ -4,7 +4,7 @@ import { SubscriptionService } from '../../services/subscription.service.ts'
 import { EntitlementService } from '../../services/entitlement.service.ts'
 import { SaasBillingService } from '../../services/saas-billing.service.ts'
 import { SaasRevenueService } from '../../services/saas-revenue.service.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import { DEFAULT_PLANS } from '../../lib/subscription/subscription-constants.ts'
 import type { CompanySubscriptionRecord } from '../../types/subscription.types.ts'
 
@@ -12,8 +12,8 @@ describe('Subscription 360 - Comprehensive Acceptance Criteria Tests', () => {
   const companyId = 'co-acceptance-test-300'
 
   beforeEach(() => {
-    PrintERPDataStore.clear()
-    PrintERPDataStore.set(STORAGE_KEYS.PLATFORM_PLANS, DEFAULT_PLANS, false)
+    PrintFlowDataStore.clear()
+    PrintFlowDataStore.set(STORAGE_KEYS.PLATFORM_PLANS, DEFAULT_PLANS, false)
   })
 
   it('1. [ACCEPTANCE — STARTER] Verifies trial, Starter plan display, limits and feature gating', async () => {
@@ -28,7 +28,7 @@ describe('Subscription 360 - Comprehensive Acceptance Criteria Tests', () => {
       current_period_start: new Date().toISOString(),
       current_period_end: new Date(Date.now() + 30 * 86400000).toISOString(),
     }
-    PrintERPDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, { [companyId]: sub }, false)
+    PrintFlowDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, { [companyId]: sub }, false)
 
     const entitlements = await EntitlementService.getTenantEntitlements(companyId)
     assert.strictEqual(entitlements.planCode, 'starter')
@@ -52,7 +52,7 @@ describe('Subscription 360 - Comprehensive Acceptance Criteria Tests', () => {
       current_period_start: new Date().toISOString(),
       current_period_end: new Date(Date.now() + 30 * 86400000).toISOString(),
     }
-    PrintERPDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, { [companyId]: sub }, false)
+    PrintFlowDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, { [companyId]: sub }, false)
 
     const checkout = await SubscriptionService.initiatePlanCheckout({
       companyId,
@@ -86,7 +86,7 @@ describe('Subscription 360 - Comprehensive Acceptance Criteria Tests', () => {
       current_period_start: new Date().toISOString(),
       current_period_end: new Date(Date.now() + 30 * 86400000).toISOString(),
     }
-    PrintERPDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, { [companyId]: sub }, false)
+    PrintFlowDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, { [companyId]: sub }, false)
 
     const downgrade = await SubscriptionService.schedulePlanDowngrade(companyId, 'starter', 'user-owner')
     assert.strictEqual(downgrade.success, true)

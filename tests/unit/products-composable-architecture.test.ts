@@ -12,7 +12,7 @@ import {
   normalizePricingMethod,
 } from '../../lib/units.ts'
 import { CategoryRepository } from '../../lib/repositories/category.repository.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import type { ProductRecord, ProductComponent } from '../../types/product.types.ts'
 import type { CreateCategoryInput } from '../../types/category.types.ts'
 
@@ -21,7 +21,7 @@ describe('Products & Services Composable Architecture & Business Reality Tests',
 
   beforeEach(() => {
     // Clear in-memory categories for clean isolation
-    PrintERPDataStore.set(STORAGE_KEYS.PRODUCT_CATEGORIES, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.PRODUCT_CATEGORIES, [])
   })
 
   // =========================================================================

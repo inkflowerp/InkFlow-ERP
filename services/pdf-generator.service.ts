@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP SaaS - Native PDF Generator Service
+// PrintFlow SaaS - Native PDF Generator Service
 // Generates standards-compliant PDF 1.4 document buffers for Quotations and Invoices
 // with zero external runtime dependencies.
 // ==============================================================================

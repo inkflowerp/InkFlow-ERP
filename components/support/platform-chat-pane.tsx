@@ -1,7 +1,7 @@
 'use client'
 
 // ==============================================================================
-// InkFlow SaaS - Platform Support Chat Pane Component
+// PrintFlow SaaS - Platform Support Chat Pane Component
 // Authoritative dual-mode composer (Public Reply vs Private Internal Note),
 // realtime stream, date dividers, and attachment actions.
 // ==============================================================================
@@ -153,7 +153,7 @@ export function PlatformChatPane({
  const cannedSnippets = [
     {
  label: '+ Investigating',
- text: 'Hello! Thank you for contacting InkFlow Platform Support. We are investigating this issue for your tenant and will update you shortly.',
+ text: 'Hello! Thank you for contacting PrintFlow Platform Support. We are investigating this issue for your tenant and will update you shortly.',
     },
     {
  label: '+ Request Info',

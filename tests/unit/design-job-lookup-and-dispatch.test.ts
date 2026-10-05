@@ -1,18 +1,18 @@
 import { describe, it, beforeEach } from 'node:test'
 import assert from 'node:assert'
 import { DesignRepository } from '../../lib/repositories/design.repository.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import type { DesignJobRecord } from '../../types/design.types.ts'
 
 describe('Graphic Design Studio - Design Job Lookup & Print Dispatch Hardening', () => {
   const companyId = 'c-test-design-lookup'
 
   beforeEach(() => {
-    PrintERPDataStore.set(STORAGE_KEYS.DESIGN_JOBS, [])
-    PrintERPDataStore.set(STORAGE_KEYS.INVOICES, [])
-    PrintERPDataStore.set(STORAGE_KEYS.JOB_ORDERS, [])
-    PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_JOBS, [])
-    PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.DESIGN_JOBS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.INVOICES, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.JOB_ORDERS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.PRODUCTION_JOBS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, [])
   })
 
   it('1. Retrieves design job by exact UUID id', async () => {
@@ -31,7 +31,7 @@ describe('Graphic Design Studio - Design Job Lookup & Print Dispatch Hardening',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }
-    PrintERPDataStore.addItem(STORAGE_KEYS.DESIGN_JOBS, job)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.DESIGN_JOBS, job)
 
     const found = await DesignRepository.getDesignJobById('uuid-job-1111', companyId)
     assert.ok(found, 'Should find design job by UUID')
@@ -55,7 +55,7 @@ describe('Graphic Design Studio - Design Job Lookup & Print Dispatch Hardening',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }
-    PrintERPDataStore.addItem(STORAGE_KEYS.DESIGN_JOBS, job)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.DESIGN_JOBS, job)
 
     // Lookup using design number instead of UUID
     const found = await DesignRepository.getDesignJobById('DSN-000003', companyId)
@@ -86,7 +86,7 @@ describe('Graphic Design Studio - Design Job Lookup & Print Dispatch Hardening',
       ],
       created_at: new Date().toISOString(),
     }
-    PrintERPDataStore.addItem(STORAGE_KEYS.INVOICES, invoice)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.INVOICES, invoice)
 
     // Attempt to lookup non-existent DSN-999999 must return null (no synthetic fallback)
     const notFound = await DesignRepository.getDesignJobById('DSN-999999', companyId)
@@ -131,7 +131,7 @@ describe('Graphic Design Studio - Design Job Lookup & Print Dispatch Hardening',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }
-    PrintERPDataStore.addItem(STORAGE_KEYS.DESIGN_JOBS, job)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.DESIGN_JOBS, job)
 
     // Call sendToPrintOperator with design_number 'DSN-000003'
     const result = await DesignRepository.sendToPrintOperator('DSN-000003', companyId)
@@ -141,11 +141,11 @@ describe('Graphic Design Studio - Design Job Lookup & Print Dispatch Hardening',
     assert.equal(result.designJob?.workflow_routing, 'ready_production')
 
     // Verify job orders and production tasks are created/queued
-    const jobOrders = PrintERPDataStore.get<any[]>(STORAGE_KEYS.JOB_ORDERS) || []
+    const jobOrders = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.JOB_ORDERS) || []
     assert.ok(jobOrders.length > 0, 'Job order should be queued')
     assert.equal(jobOrders[0].production_gate_status, 'ready_for_production')
 
-    const prodTasks = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
+    const prodTasks = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
     assert.ok(prodTasks.length >= 1, 'Production task for printing should be queued')
     assert.equal(prodTasks[0].is_blocked_by_design_gate, false)
     assert.equal(prodTasks[0].is_blocked_by_commercial_gate, false)

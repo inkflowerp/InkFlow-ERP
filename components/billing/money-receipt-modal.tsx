@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useRef } from 'react'
+import { BRAND } from '@/config/brand'
 import {
  Printer,
  X,
@@ -410,7 +411,7 @@ export function MoneyReceiptModal({
             {/* QR Code Verification for Direct Print */}
             <div className="flex flex-col items-center justify-center p-2 rounded-xl bg-muted border border-border">
               <QRCodeSVG
-                value={`${typeof window !== 'undefined' ? window.location.origin : (process.env.NEXT_PUBLIC_APP_URL || 'https://inkflowerp.com')}/api/pdf/receipt?id=${encodeURIComponent(payment.receipt_number || payment.id)}`}
+                value={`${typeof window !== 'undefined' ? window.location.origin : (process.env.NEXT_PUBLIC_APP_URL || `https://${BRAND.rootDomain}`)}/api/pdf/receipt?id=${encodeURIComponent(payment.receipt_number || payment.id)}`}
                 size={64}
                 className="bg-card p-1 rounded"
               />

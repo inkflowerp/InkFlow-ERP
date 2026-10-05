@@ -1,5 +1,5 @@
 // ==============================================================================
-// InkFlow ERP - Authoritative Payroll & Workforce Formulas (lib/calc/payroll.ts)
+// PrintFlow - Authoritative Payroll & Workforce Formulas (lib/calc/payroll.ts)
 // Implements Bangladesh Labor Act Compliant Salary, Overtime, and Deductions.
 // Standard Work Month: 26 working days, 8 hours/day = 208 standard monthly hours.
 // Overtime Rate: 2x basic hourly wage.

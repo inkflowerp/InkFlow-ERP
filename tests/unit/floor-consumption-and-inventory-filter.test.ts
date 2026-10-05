@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import { InventoryRepository } from '../../lib/repositories/inventory.repository.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import type { MaterialRecord, InventoryLocationRecord, FloorConsumptionRecord } from '../../types/inventory.types.ts'
 import type { ProductRecord } from '../../types/product.types.ts'
 
@@ -161,8 +161,8 @@ describe('Print Floor Consumption Tracking & Receive Stock Catalog Filter Tests'
       updated_at: new Date().toISOString(),
     }
 
-    PrintERPDataStore.set(STORAGE_KEYS.MATERIALS, [testMaterial], false, companyId)
-    PrintERPDataStore.set(STORAGE_KEYS.LOCATIONS, [mainStore, floorRack], false, companyId)
+    PrintFlowDataStore.set(STORAGE_KEYS.MATERIALS, [testMaterial], false, companyId)
+    PrintFlowDataStore.set(STORAGE_KEYS.LOCATIONS, [mainStore, floorRack], false, companyId)
 
     // 2. Issue 100 SFT to Print Floor
     const issue = await InventoryRepository.createIssue({

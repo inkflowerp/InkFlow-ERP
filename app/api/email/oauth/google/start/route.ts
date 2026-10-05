@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP SaaS - Google OAuth 2.0 Initiation Route
+// PrintFlow SaaS - Google OAuth 2.0 Initiation Route
 // GET /api/email/oauth/google/start?scope=platform|tenant&tenantId=...&returnUrl=...
 // ==============================================================================
 

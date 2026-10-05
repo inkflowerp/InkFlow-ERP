@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP SaaS - Phase 25: Workflow Automation Types
+// PrintFlow SaaS - Phase 25: Workflow Automation Types
 // Strictly structured triggers, condition rules, and deterministic action pipelines.
 // ==============================================================================
 

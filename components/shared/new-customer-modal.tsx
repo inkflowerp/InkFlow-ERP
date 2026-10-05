@@ -816,7 +816,7 @@ export function NewCustomerModal({
             <div className="p-3.5 rounded-xl bg-primary/10/70 bg-primary/10 border border-primary/20/60 border-border/40 text-xs flex items-start gap-2.5">
               <Sparkles className="h-4 w-4 text-primary shrink-0 mt-0.5"/>
               <div className="text-foreground text-xs leading-relaxed">
- Configure special contracted rates for this customer. When creating quotations or invoices, InkFlow automatically pulls these custom rates.
+ Configure special contracted rates for this customer. When creating quotations or invoices, PrintFlow automatically pulls these custom rates.
               </div>
             </div>
 

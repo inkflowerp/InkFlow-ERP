@@ -1,5 +1,5 @@
 // ==============================================================================
-// InkFlow ERP - Authoritative Canonical Finance Calculation Engine (V9.1)
+// PrintFlow - Authoritative Canonical Finance Calculation Engine (V9.1)
 // Standardizes definitions for Sales, Collections, Customer Receivables, Dues,
 // Write-Offs, and Gross Profit/Margins across the entire application.
 // ==============================================================================

@@ -1,10 +1,10 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import type { QuotationRecord, QuotationItemRecord } from '../../types/quotation.types.ts'
 
 // Quotation Text Message Generator matching QuotationService
-function generateQuotationTextMessage(quote: QuotationRecord, companyName: string = 'InkFlow'): string {
+function generateQuotationTextMessage(quote: QuotationRecord, companyName: string = 'PrintFlow'): string {
   const itemsSummary = (quote.items || [])
     .map((it, idx) => {
       const dim = it.width > 0 && it.height > 0 ? ` (${it.width}ft × ${it.height}ft)` : ''
@@ -46,7 +46,7 @@ function isValidBdPhone(phone: string): boolean {
   return /^01[3-9]\d{8}$/.test(cleaned)
 }
 
-describe('InkFlow — Quotation Workflow & Pricing Engine', () => {
+describe('PrintFlow — Quotation Workflow & Pricing Engine', () => {
   const testCompanyId = 'comp-test-quo-01'
 
   it('1. Calculates SFT Area & Dimensional Pricing Accurately', () => {
@@ -118,8 +118,8 @@ describe('InkFlow — Quotation Workflow & Pricing Engine', () => {
   })
 
   it('3. Generates Concurrency-Safe Sequential Quotation Numbers', () => {
-    const quoteNum1 = PrintERPDataStore.getNextDocumentNumber(testCompanyId, 'quotation')
-    const quoteNum2 = PrintERPDataStore.getNextDocumentNumber(testCompanyId, 'quotation')
+    const quoteNum1 = PrintFlowDataStore.getNextDocumentNumber(testCompanyId, 'quotation')
+    const quoteNum2 = PrintFlowDataStore.getNextDocumentNumber(testCompanyId, 'quotation')
 
     assert.ok(quoteNum1.startsWith('QUO-'))
     assert.ok(quoteNum2.startsWith('QUO-'))
@@ -167,9 +167,9 @@ describe('InkFlow — Quotation Workflow & Pricing Engine', () => {
       updated_at: new Date().toISOString(),
     }
 
-    PrintERPDataStore.addItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, testQuote)
+    PrintFlowDataStore.addItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, testQuote)
 
-    const list = PrintERPDataStore.get<QuotationRecord[]>(STORAGE_KEYS.QUOTATIONS) || []
+    const list = PrintFlowDataStore.get<QuotationRecord[]>(STORAGE_KEYS.QUOTATIONS) || []
     const retrieved = list.find((q) => q.id === quoteId)
 
     assert.ok(retrieved)
@@ -221,8 +221,8 @@ describe('InkFlow — Quotation Workflow & Pricing Engine', () => {
       updated_at: new Date().toISOString(),
     }
 
-    PrintERPDataStore.addItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, quote)
-    const order = PrintERPDataStore.convertQuotationToSalesOrder(quote.id)
+    PrintFlowDataStore.addItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, quote)
+    const order = PrintFlowDataStore.convertQuotationToSalesOrder(quote.id)
 
     assert.ok(order)
     assert.strictEqual(order?.customer_name, 'Rahim Enterprise')
@@ -271,7 +271,7 @@ describe('InkFlow — Quotation Workflow & Pricing Engine', () => {
       updated_at: new Date().toISOString(),
     }
 
-    const text = generateQuotationTextMessage(sampleQuote, 'InkFlow Solutions')
+    const text = generateQuotationTextMessage(sampleQuote, 'PrintFlow Solutions')
 
     // Must include customer info and totals
     assert.ok(text.includes('QUO-000101'))

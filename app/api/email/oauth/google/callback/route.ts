@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP SaaS - Google OAuth 2.0 Callback Route
+// PrintFlow SaaS - Google OAuth 2.0 Callback Route
 // GET /api/email/oauth/google/callback?code=...&state=...
 // ==============================================================================
 

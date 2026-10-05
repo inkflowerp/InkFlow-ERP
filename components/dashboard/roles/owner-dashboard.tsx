@@ -430,7 +430,7 @@ export function OwnerDashboard({
             {/* Top Context Row */}
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
-                {company ? tBilingual(company.name, company.name_bn || company.name) : 'InkFlow Business'}
+                {company ? tBilingual(company.name, company.name_bn || company.name) : 'PrintFlow Business'}
               </span>
 
               <Badge

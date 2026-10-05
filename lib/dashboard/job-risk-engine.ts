@@ -1,5 +1,5 @@
 // ==============================================================================
-// InkFlow ERP - Authoritative Job Risk & Blocked Work Engine (V9.1)
+// PrintFlow - Authoritative Job Risk & Blocked Work Engine (V9.1)
 // Classifies operational risks (Critical, At Risk, On Track) and detects actual
 // workflow blockers based on real multi-factor production & business signals.
 // ==============================================================================

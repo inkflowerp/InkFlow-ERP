@@ -3,17 +3,17 @@ import assert from 'node:assert'
 import { ProductService } from '../../services/product.service.ts'
 import { ProductRepository } from '../../lib/repositories/product.repository.ts'
 import { InventoryService } from '../../services/inventory.service.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 
 describe('Unit: Ready Product Opening Stock & Warehouse Thresholds Propagation', () => {
   const companyId = 'tenant-ready-stock-test-01'
 
   beforeEach(() => {
-    PrintERPDataStore.set(STORAGE_KEYS.PRODUCTS, [], companyId)
-    PrintERPDataStore.set(STORAGE_KEYS.MATERIALS, [], companyId)
-    PrintERPDataStore.set(STORAGE_KEYS.PRICE_HISTORY, [], companyId)
-    PrintERPDataStore.set(STORAGE_KEYS.STOCK_BALANCES, [], companyId)
-    PrintERPDataStore.set(STORAGE_KEYS.STOCK_LEDGER, [], companyId)
+    PrintFlowDataStore.set(STORAGE_KEYS.PRODUCTS, [], companyId)
+    PrintFlowDataStore.set(STORAGE_KEYS.MATERIALS, [], companyId)
+    PrintFlowDataStore.set(STORAGE_KEYS.PRICE_HISTORY, [], companyId)
+    PrintFlowDataStore.set(STORAGE_KEYS.STOCK_BALANCES, [], companyId)
+    PrintFlowDataStore.set(STORAGE_KEYS.STOCK_LEDGER, [], companyId)
   })
 
   it('1. Correctly saves opening_stock (50 pcs) and reorder_level (10 pcs) when creating Ready Product', async () => {

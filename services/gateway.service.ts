@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP SaaS - Unified Gateway & API Integration Core Service
+// PrintFlow SaaS - Unified Gateway & API Integration Core Service
 // Provides database persistence, AES-256-GCM authenticated encryption, security isolation,
 // logs, telemetry, and atomic default provider management.
 // ==============================================================================

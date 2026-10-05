@@ -1,4 +1,4 @@
-name: InkFlow ERP - Continuous Integration & Quality Gate
+name: PrintFlow - Continuous Integration & Quality Gate
 
 on:
   push:

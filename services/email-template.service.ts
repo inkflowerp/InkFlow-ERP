@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP SaaS - Email Template Engine & Pre-Seeded Workflow Templates
+// PrintFlow SaaS - Email Template Engine & Pre-Seeded Workflow Templates
 // Supports dynamic variable interpolation, bilingual layout rendering, and HTML wrappers.
 // ==============================================================================
 
@@ -107,11 +107,11 @@ export function wrapHtmlEmail(
     recipientEmail?: string
   } = {}
 ): string {
-  const companyName = options.companyName || 'InkFlow ERP'
+  const companyName = options.companyName || 'PrintFlow'
   const accentColor = options.accentColor || '#4f46e5' // Indigo 600
   const year = options.year || new Date().getFullYear()
   const footer = options.footerText || `© ${year} ${companyName}. All rights reserved.`
-  const preheaderText = options.preheader || 'Notification from InkFlow Cloud Platform'
+  const preheaderText = options.preheader || 'Notification from PrintFlow Cloud Platform'
 
   return `
 <!DOCTYPE html>
@@ -594,11 +594,11 @@ export const DEFAULT_EMAIL_TEMPLATES: EmailTemplateRecord[] = [
     event_type: 'user_invitation',
     name: 'Team Member Invitation ',
     name_bn: 'টিম আমন্ত্রণ',
-    subject_template: 'You have been invited to join {{company_name}} on PrintERP SaaS',
-    subject_template_bn: '{{company_name}} এর PrintERP টিমে যোগদানের আমন্ত্রণ',
+    subject_template: 'You have been invited to join {{company_name}} on PrintFlow SaaS',
+    subject_template_bn: '{{company_name}} এর PrintFlow টিমে যোগদানের আমন্ত্রণ',
     body_template: `
       <p>Hello <strong>{{user_name}}</strong>,</p>
-      <p>You have been invited by <strong>{{invited_by}}</strong> to join the team at <strong>{{company_name}}</strong> on PrintERP SaaS.</p>
+      <p>You have been invited by <strong>{{invited_by}}</strong> to join the team at <strong>{{company_name}}</strong> on PrintFlow SaaS.</p>
       <div class="info-card">
         <table>
           <tr><td class="label">Organization:</td><td class="value">{{company_name}}</td></tr>
@@ -610,7 +610,7 @@ export const DEFAULT_EMAIL_TEMPLATES: EmailTemplateRecord[] = [
     `,
     body_template_bn: `
       <p>প্রিয় <strong>{{user_name}}</strong>,</p>
-      <p>আপনাকে <strong>{{company_name}}</strong> এর PrintERP সফটওয়্যারে টিম মেম্বার হিসেবে যুক্ত হওয়ার আমন্ত্রণ জানানো হয়েছে।</p>
+      <p>আপনাকে <strong>{{company_name}}</strong> এর PrintFlow সফটওয়্যারে টিম মেম্বার হিসেবে যুক্ত হওয়ার আমন্ত্রণ জানানো হয়েছে।</p>
       <p><a href="{{accept_link}}" class="btn">আমন্ত্রণ গ্রহণ করুন</a></p>
     `,
     variables: ['user_name', 'invited_by', 'company_name', 'role_name', 'email', 'accept_link'],
@@ -626,22 +626,22 @@ export const DEFAULT_EMAIL_TEMPLATES: EmailTemplateRecord[] = [
     event_type: 'email_verification',
     name: 'Account Email Verification ',
     name_bn: 'ইমেইল যাচাইকরণ',
-    subject_template: 'Verify your InkFlow account - Code: {{otp_code}}',
-    subject_template_bn: 'আপনার InkFlow একাউন্ট যাচাই করুন - কোড: {{otp_code}}',
+    subject_template: 'Verify your PrintFlow account - Code: {{otp_code}}',
+    subject_template_bn: 'আপনার PrintFlow একাউন্ট যাচাই করুন - কোড: {{otp_code}}',
     body_template: `
       <p>Hello <strong>{{user_name}}</strong>,</p>
-      <p>Thank you for registering with <strong>InkFlow</strong>. Please use the 6-digit verification code below to activate your account:</p>
+      <p>Thank you for registering with <strong>PrintFlow</strong>. Please use the 6-digit verification code below to activate your account:</p>
       <div style="background: #f1f5f9; border: 2px dashed #4f46e5; border-radius: 8px; padding: 18px; text-align: center; margin: 24px 0;">
         <span style="font-size: 32px; font-weight: 800; letter-spacing: 8px; color: #4f46e5; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">{{otp_code}}</span>
       </div>
       <p style="text-align: center; margin: 20px 0;">
         <a href="{{verification_link}}" style="display: inline-block; background: #4f46e5; color: #ffffff; padding: 12px 28px; font-weight: bold; border-radius: 6px; text-decoration: none;">Verify Email Address</a>
       </p>
-      <p style="font-size: 13px; color: #64748b;">This verification code and link will expire in <strong>{{expires_minutes}} minutes</strong>. If you did not create an account on InkFlow, you can safely ignore this email.</p>
+      <p style="font-size: 13px; color: #64748b;">This verification code and link will expire in <strong>{{expires_minutes}} minutes</strong>. If you did not create an account on PrintFlow, you can safely ignore this email.</p>
     `,
     body_template_bn: `
       <p>প্রিয় <strong>{{user_name}}</strong>,</p>
-      <p>InkFlow-এ নিবন্ধন করার জন্য ধন্যবাদ। আপনার একাউন্ট সক্রিয় করতে নিচের ৬-সংখ্যার যাচাইকরণ কোডটি ব্যবহার করুন:</p>
+      <p>PrintFlow-এ নিবন্ধন করার জন্য ধন্যবাদ। আপনার একাউন্ট সক্রিয় করতে নিচের ৬-সংখ্যার যাচাইকরণ কোডটি ব্যবহার করুন:</p>
       <div style="background: #f1f5f9; border: 2px dashed #4f46e5; border-radius: 8px; padding: 18px; text-align: center; margin: 24px 0;">
         <span style="font-size: 32px; font-weight: 800; letter-spacing: 8px; color: #4f46e5; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">{{otp_code}}</span>
       </div>
@@ -663,11 +663,11 @@ export const DEFAULT_EMAIL_TEMPLATES: EmailTemplateRecord[] = [
     event_type: 'password_reset',
     name: 'Password Reset Request ',
     name_bn: 'পাসওয়ার্ড রিসেট',
-    subject_template: 'Reset your InkFlow password - Code: {{otp_code}}',
-    subject_template_bn: 'আপনার InkFlow পাসওয়ার্ড রিসেট করুন - কোড: {{otp_code}}',
+    subject_template: 'Reset your PrintFlow password - Code: {{otp_code}}',
+    subject_template_bn: 'আপনার PrintFlow পাসওয়ার্ড রিসেট করুন - কোড: {{otp_code}}',
     body_template: `
       <p>Hello <strong>{{user_name}}</strong>,</p>
-      <p>We received a request to reset the password for your InkFlow account (<strong>{{email}}</strong>).</p>
+      <p>We received a request to reset the password for your PrintFlow account (<strong>{{email}}</strong>).</p>
       <div style="background: #f1f5f9; border: 2px dashed #4f46e5; border-radius: 8px; padding: 18px; text-align: center; margin: 24px 0;">
         <span style="font-size: 32px; font-weight: 800; letter-spacing: 8px; color: #4f46e5; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">{{otp_code}}</span>
       </div>
@@ -678,7 +678,7 @@ export const DEFAULT_EMAIL_TEMPLATES: EmailTemplateRecord[] = [
     `,
     body_template_bn: `
       <p>প্রিয় <strong>{{user_name}}</strong>,</p>
-      <p>আপনার InkFlow একাউন্টের (<strong>{{email}}</strong>) পাসওয়ার্ড রিসেট করার জন্য একটি অনুরোধ পাওয়া গেছে।</p>
+      <p>আপনার PrintFlow একাউন্টের (<strong>{{email}}</strong>) পাসওয়ার্ড রিসেট করার জন্য একটি অনুরোধ পাওয়া গেছে।</p>
       <div style="background: #f1f5f9; border: 2px dashed #4f46e5; border-radius: 8px; padding: 18px; text-align: center; margin: 24px 0;">
         <span style="font-size: 32px; font-weight: 800; letter-spacing: 8px; color: #4f46e5; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">{{otp_code}}</span>
       </div>
@@ -700,11 +700,11 @@ export const DEFAULT_EMAIL_TEMPLATES: EmailTemplateRecord[] = [
     event_type: 'security_alert',
     name: 'Security Alert: New Sign-In ',
     name_bn: 'নিরাপত্তা সতর্কতা',
-    subject_template: 'Security Alert: New sign-in to your PrintERP account',
+    subject_template: 'Security Alert: New sign-in to your PrintFlow account',
     subject_template_bn: 'নিরাপত্তা সতর্কতা: আপনার একাউন্টে নতুন সাইন-ইন',
     body_template: `
       <p>Hello <strong>{{user_name}}</strong>,</p>
-      <p>A new sign-in was detected for your PrintERP account.</p>
+      <p>A new sign-in was detected for your PrintFlow account.</p>
       <div class="info-card">
         <table>
           <tr><td class="label">Date & Time:</td><td class="value">{{timestamp}}</td></tr>
@@ -731,8 +731,8 @@ export const DEFAULT_EMAIL_TEMPLATES: EmailTemplateRecord[] = [
     event_type: 'test_email',
     name: 'Gateway Connection Test Email ',
     name_bn: 'গেটওয়ে টেস্ট বার্তা',
-    subject_template: '✓ Test Email from {{sender_name}} via PrintERP Email Gateway',
-    subject_template_bn: '✓ PrintERP ইমেইল গেটওয়ে টেস্ট সফল - {{sender_name}}',
+    subject_template: '✓ Test Email from {{sender_name}} via PrintFlow Email Gateway',
+    subject_template_bn: '✓ PrintFlow ইমেইল গেটওয়ে টেস্ট সফল - {{sender_name}}',
     body_template: `
       <p>Congratulations!</p>
       <p>Your email gateway configured for <strong>{{company_name}}</strong> is functioning perfectly.</p>

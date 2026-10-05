@@ -6,7 +6,7 @@ import {
   CHILD_PARENT_TABLE_MAP,
   isSingleObjectStorageKey,
 } from '../../lib/realtime/subscription-manager.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 
 describe('Realtime Subscription Manager & Live Synchronization Unit Tests', () => {
   it('should map core database tables to valid StorageKeys', () => {
@@ -49,7 +49,7 @@ describe('Realtime Subscription Manager & Live Synchronization Unit Tests', () =
       'customers'
     )
 
-    const stored1 = PrintERPDataStore.findItem<any>(STORAGE_KEYS.CUSTOMERS, testCustomerId)
+    const stored1 = PrintFlowDataStore.findItem<any>(STORAGE_KEYS.CUSTOMERS, testCustomerId)
     assert.ok(stored1)
     assert.strictEqual(stored1?.name, 'Dynamic Realtime Client')
 
@@ -62,12 +62,12 @@ describe('Realtime Subscription Manager & Live Synchronization Unit Tests', () =
       'customers'
     )
 
-    const list = PrintERPDataStore.get<any[]>(STORAGE_KEYS.CUSTOMERS) || []
+    const list = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.CUSTOMERS) || []
     const matching = list.filter((x) => x.id === testCustomerId)
     assert.strictEqual(matching.length, 1)
 
     // Cleanup
-    PrintERPDataStore.removeItem(STORAGE_KEYS.CUSTOMERS, testCustomerId)
+    PrintFlowDataStore.removeItem(STORAGE_KEYS.CUSTOMERS, testCustomerId)
   })
 
   it('should reconcile UPDATE event with newer timestamp and ignore stale update', () => {
@@ -80,7 +80,7 @@ describe('Realtime Subscription Manager & Live Synchronization Unit Tests', () =
       updated_at: '2026-09-10T10:00:00.000Z',
     }
 
-    PrintERPDataStore.addItem(STORAGE_KEYS.ORDERS, initialOrder)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.ORDERS, initialOrder)
 
     // Newer update
     const updatedOrder = {
@@ -99,11 +99,11 @@ describe('Realtime Subscription Manager & Live Synchronization Unit Tests', () =
       'sales_orders'
     )
 
-    const storedAfterUpdate = PrintERPDataStore.findItem<any>(STORAGE_KEYS.ORDERS, testOrderId)
+    const storedAfterUpdate = PrintFlowDataStore.findItem<any>(STORAGE_KEYS.ORDERS, testOrderId)
     assert.strictEqual(storedAfterUpdate?.status, 'completed')
 
     // Cleanup
-    PrintERPDataStore.removeItem(STORAGE_KEYS.ORDERS, testOrderId)
+    PrintFlowDataStore.removeItem(STORAGE_KEYS.ORDERS, testOrderId)
   })
 
   it('should preserve local items array when parent order row is updated without items payload', () => {
@@ -118,7 +118,7 @@ describe('Realtime Subscription Manager & Live Synchronization Unit Tests', () =
       updated_at: '2026-09-10T10:00:00.000Z',
     }
 
-    PrintERPDataStore.addItem(STORAGE_KEYS.ORDERS, initialOrder)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.ORDERS, initialOrder)
 
     // Postgres sends sales_orders row without items joined
     const incomingOrder = {
@@ -136,14 +136,14 @@ describe('Realtime Subscription Manager & Live Synchronization Unit Tests', () =
       'sales_orders'
     )
 
-    const stored = PrintERPDataStore.findItem<any>(STORAGE_KEYS.ORDERS, testOrderId)
+    const stored = PrintFlowDataStore.findItem<any>(STORAGE_KEYS.ORDERS, testOrderId)
     assert.strictEqual(stored?.status, 'in_production')
     assert.ok(Array.isArray(stored?.items))
     assert.strictEqual(stored?.items.length, 1)
     assert.strictEqual(stored?.items[0].item_name, 'Custom Banner')
 
     // Cleanup
-    PrintERPDataStore.removeItem(STORAGE_KEYS.ORDERS, testOrderId)
+    PrintFlowDataStore.removeItem(STORAGE_KEYS.ORDERS, testOrderId)
   })
 
   it('should correctly reconcile child table sales_order_items into parent order items array', () => {
@@ -156,7 +156,7 @@ describe('Realtime Subscription Manager & Live Synchronization Unit Tests', () =
       updated_at: new Date().toISOString(),
     }
 
-    PrintERPDataStore.addItem(STORAGE_KEYS.ORDERS, initialOrder)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.ORDERS, initialOrder)
 
     // Child item inserted
     const childItem = {
@@ -176,7 +176,7 @@ describe('Realtime Subscription Manager & Live Synchronization Unit Tests', () =
       'sales_order_items'
     )
 
-    const stored = PrintERPDataStore.findItem<any>(STORAGE_KEYS.ORDERS, testOrderId)
+    const stored = PrintFlowDataStore.findItem<any>(STORAGE_KEYS.ORDERS, testOrderId)
     assert.strictEqual(stored?.items?.length, 1)
     assert.strictEqual(stored?.items[0].item_name, 'Foil Stamping Box')
 
@@ -195,7 +195,7 @@ describe('Realtime Subscription Manager & Live Synchronization Unit Tests', () =
       'sales_order_items'
     )
 
-    const storedAfterUpdate = PrintERPDataStore.findItem<any>(STORAGE_KEYS.ORDERS, testOrderId)
+    const storedAfterUpdate = PrintFlowDataStore.findItem<any>(STORAGE_KEYS.ORDERS, testOrderId)
     assert.strictEqual(storedAfterUpdate?.items?.length, 1)
     assert.strictEqual(storedAfterUpdate?.items[0].quantity, 150)
 
@@ -208,14 +208,14 @@ describe('Realtime Subscription Manager & Live Synchronization Unit Tests', () =
       'sales_order_items'
     )
 
-    const storedAfterDelete = PrintERPDataStore.findItem<any>(STORAGE_KEYS.ORDERS, testOrderId)
+    const storedAfterDelete = PrintFlowDataStore.findItem<any>(STORAGE_KEYS.ORDERS, testOrderId)
     assert.strictEqual(storedAfterDelete?.items?.length, 0)
 
     // Ensure raw child item was NOT added to orders list
-    assert.strictEqual(PrintERPDataStore.findItem(STORAGE_KEYS.ORDERS, 'child-item-1'), null)
+    assert.strictEqual(PrintFlowDataStore.findItem(STORAGE_KEYS.ORDERS, 'child-item-1'), null)
 
     // Cleanup
-    PrintERPDataStore.removeItem(STORAGE_KEYS.ORDERS, testOrderId)
+    PrintFlowDataStore.removeItem(STORAGE_KEYS.ORDERS, testOrderId)
   })
 
   it('should correctly reconcile child table invoice_items into parent invoice items array', () => {
@@ -229,7 +229,7 @@ describe('Realtime Subscription Manager & Live Synchronization Unit Tests', () =
       updated_at: new Date().toISOString(),
     }
 
-    PrintERPDataStore.addItem(STORAGE_KEYS.INVOICES, initialInvoice)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.INVOICES, initialInvoice)
 
     const childItem = {
       id: 'inv-item-101',
@@ -247,12 +247,12 @@ describe('Realtime Subscription Manager & Live Synchronization Unit Tests', () =
       'invoice_items'
     )
 
-    const stored = PrintERPDataStore.findItem<any>(STORAGE_KEYS.INVOICES, testInvoiceId)
+    const stored = PrintFlowDataStore.findItem<any>(STORAGE_KEYS.INVOICES, testInvoiceId)
     assert.strictEqual(stored?.items?.length, 1)
     assert.strictEqual(stored?.items[0].item_description, 'Large Billboard Flex Print')
 
     // Cleanup
-    PrintERPDataStore.removeItem(STORAGE_KEYS.INVOICES, testInvoiceId)
+    PrintFlowDataStore.removeItem(STORAGE_KEYS.INVOICES, testInvoiceId)
   })
 
   it('should reconcile singleton object configuration without array wrapping', () => {
@@ -275,7 +275,7 @@ describe('Realtime Subscription Manager & Live Synchronization Unit Tests', () =
       'companies'
     )
 
-    const profile = PrintERPDataStore.get<any>(STORAGE_KEYS.COMPANY_PROFILE)
+    const profile = PrintFlowDataStore.get<any>(STORAGE_KEYS.COMPANY_PROFILE)
     assert.strictEqual(typeof profile, 'object')
     assert.strictEqual(Array.isArray(profile), false)
     assert.strictEqual(profile?.name, 'PrintTech Live Enterprise')
@@ -289,8 +289,8 @@ describe('Realtime Subscription Manager & Live Synchronization Unit Tests', () =
       status: 'queued',
     }
 
-    PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCTION_JOBS, initialJob)
-    assert.ok(PrintERPDataStore.findItem(STORAGE_KEYS.PRODUCTION_JOBS, testJobId))
+    PrintFlowDataStore.addItem(STORAGE_KEYS.PRODUCTION_JOBS, initialJob)
+    assert.ok(PrintFlowDataStore.findItem(STORAGE_KEYS.PRODUCTION_JOBS, testJobId))
 
     // Reconcile DELETE
     realtimeManager.reconcileRecord(
@@ -301,7 +301,7 @@ describe('Realtime Subscription Manager & Live Synchronization Unit Tests', () =
       'production_jobs'
     )
 
-    assert.strictEqual(PrintERPDataStore.findItem(STORAGE_KEYS.PRODUCTION_JOBS, testJobId), null)
+    assert.strictEqual(PrintFlowDataStore.findItem(STORAGE_KEYS.PRODUCTION_JOBS, testJobId), null)
   })
 
   it('should report initial connection status correctly', () => {

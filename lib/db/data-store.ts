@@ -526,7 +526,7 @@ export function getInitialSeedData(key: StorageKey, tenantSlug?: string): any {
       return []
     case STORAGE_KEYS.PLATFORM_SYSTEM_SETTINGS:
       return {
-        platform_name: 'PrintERP Bangladesh Cloud',
+        platform_name: 'PrintFlow Bangladesh Cloud',
         platform_tagline: 'Enterprise Operating System for Large Format, Digital & Offset Printers',
         contact_email: 'support@printerp.com.bd',
         contact_phone: '+8801711000000',
@@ -1970,3 +1970,6 @@ export class PrintERPDataStore {
     return `${prefix}${currentYear}-${paddedNum}`
   }
 }
+
+export const PrintFlowDataStore = PrintERPDataStore
+

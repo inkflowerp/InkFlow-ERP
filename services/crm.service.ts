@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP / InkFlow SaaS - CRM & Customer Management Service
+// PrintFlow SaaS - CRM & Customer Management Service
 // Authoritative PostgreSQL persistence via CustomerRepository
 // ==============================================================================
 

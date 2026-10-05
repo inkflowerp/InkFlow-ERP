@@ -1,5 +1,5 @@
 // ==============================================================================
-// InkFlow ERP - Mobile-First Employee Experience & Playwright Viewport Tests
+// PrintFlow - Mobile-First Employee Experience & Playwright Viewport Tests
 // Viewport: 375 × 667 (iPhone SE Mobile Viewport)
 // Network: Throttled Simulation (Slow 3G / High Latency)
 // Roles: Machine Operator, Graphic Designer, General Staff

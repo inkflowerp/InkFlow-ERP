@@ -16,7 +16,7 @@ describe('Support Chat Multi-Tenant Isolation & Security Boundary Tests', () => 
       'Alpha Signage Ltd',
       'alpha-signage',
       userA,
-      'alpha@inkflow.com',
+      'alpha@printflow.test',
       'Rahim Alpha',
       {
         subject: 'Alpha confidential production setup',
@@ -31,7 +31,7 @@ describe('Support Chat Multi-Tenant Isolation & Security Boundary Tests', () => 
       'Beta Print Ltd',
       'beta-print',
       userB,
-      'beta@inkflow.com',
+      'beta@printflow.test',
       'Karim Beta',
       {
         subject: 'Beta confidential banking ledger',
@@ -60,7 +60,7 @@ describe('Support Chat Multi-Tenant Isolation & Security Boundary Tests', () => 
       'Beta Print Ltd',
       'beta-print',
       userB,
-      'beta@inkflow.com',
+      'beta@printflow.test',
       'Karim Beta',
       {
         subject: 'Beta private contract inquiry',
@@ -85,7 +85,7 @@ describe('Support Chat Multi-Tenant Isolation & Security Boundary Tests', () => 
       'Beta Print Ltd',
       'beta-print',
       userB,
-      'beta@inkflow.com',
+      'beta@printflow.test',
       'Karim Beta',
       {
         subject: 'Beta secret work order',
@@ -99,7 +99,7 @@ describe('Support Chat Multi-Tenant Isolation & Security Boundary Tests', () => 
     const injectionAttempt = await SupportService.sendTenantMessage(
       tenantAId,
       userA,
-      'alpha@inkflow.com',
+      'alpha@printflow.test',
       'Rahim Alpha',
       {
         conversationId: betaConvId,
@@ -116,7 +116,7 @@ describe('Support Chat Multi-Tenant Isolation & Security Boundary Tests', () => 
       'Alpha Signage Ltd',
       'alpha-signage',
       userA,
-      'alpha@inkflow.com',
+      'alpha@printflow.test',
       'Rahim Alpha',
       {
         subject: 'Bug in invoice PDF generator',
@@ -127,17 +127,17 @@ describe('Support Chat Multi-Tenant Isolation & Security Boundary Tests', () => 
     const convId = convRes.data!.id
 
     // Add 3 internal notes and 1 public reply
-    await SupportService.sendPlatformReply(adminId, 'agent1@inkflow.com', 'Agent 1', {
+    await SupportService.sendPlatformReply(adminId, 'agent1@printflow.test', 'Agent 1', {
       conversationId: convId,
       body: 'INTERNAL NOTE 1: Bug reproduced in test suite.',
       isInternalNote: true,
     })
-    await SupportService.sendPlatformReply(adminId, 'agent2@inkflow.com', 'Agent 2', {
+    await SupportService.sendPlatformReply(adminId, 'agent2@printflow.test', 'Agent 2', {
       conversationId: convId,
       body: 'INTERNAL NOTE 2: Hotfix committed to staging.',
       isInternalNote: true,
     })
-    await SupportService.sendPlatformReply(adminId, 'agent1@inkflow.com', 'Agent 1', {
+    await SupportService.sendPlatformReply(adminId, 'agent1@printflow.test', 'Agent 1', {
       conversationId: convId,
       body: 'We have applied a fix to the PDF rendering engine. Please test generating the invoice again.',
       isInternalNote: false,

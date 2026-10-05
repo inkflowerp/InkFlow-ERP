@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP SaaS - SSL Wireless (SSL SMS v3) Gateway Adapter
+// PrintFlow SaaS - SSL Wireless (SSL SMS v3) Gateway Adapter
 // Official API Endpoint: https://smsplus.sslwireless.com/api/v3/send-sms
 // ==============================================================================
 
@@ -48,7 +48,7 @@ export class SslWirelessSmsAdapter implements ISmsProvider {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'User-Agent': 'PrintERP-SaaS/1.0',
+          'User-Agent': 'PrintFlow-SaaS/1.0',
         },
         body: JSON.stringify({
           api_token: this.apiToken,

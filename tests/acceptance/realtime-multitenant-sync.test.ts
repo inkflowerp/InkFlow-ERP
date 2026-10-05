@@ -1,5 +1,5 @@
 // ==============================================================================
-// InkFlow ERP - Multi-Tenant Realtime & Optimistic Concurrency Acceptance Tests
+// PrintFlow - Multi-Tenant Realtime & Optimistic Concurrency Acceptance Tests
 //
 // Verifies:
 // 1. Live synchronization (~1s) across multiple users in the same tenant.
@@ -20,7 +20,7 @@ import {
 import { OrderRepository } from '../../lib/repositories/order.repository.ts'
 import { ProductionTaskRepository } from '../../lib/repositories/production-task.repository.ts'
 import { InventoryRepository } from '../../lib/repositories/inventory.repository.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import type { SalesOrderRecord } from '../../types/order.types.ts'
 
 describe('Acceptance Test: Sub-Second Multi-Tenant Realtime Sync & OCC', () => {
@@ -29,9 +29,9 @@ describe('Acceptance Test: Sub-Second Multi-Tenant Realtime Sync & OCC', () => {
 
   beforeEach(() => {
     // Clean up local store for isolated test run
-    PrintERPDataStore.set(STORAGE_KEYS.ORDERS, [])
-    PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, [])
-    PrintERPDataStore.set(STORAGE_KEYS.MATERIAL_ISSUES, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.ORDERS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.MATERIAL_ISSUES, [])
   })
 
   // --------------------------------------------------------------------------
@@ -220,7 +220,7 @@ describe('Acceptance Test: Sub-Second Multi-Tenant Realtime Sync & OCC', () => {
       updated_at: new Date().toISOString(),
       version: 1,
     }
-    PrintERPDataStore.set(STORAGE_KEYS.ORDERS, [initialOrder])
+    PrintFlowDataStore.set(STORAGE_KEYS.ORDERS, [initialOrder])
 
     // User A updates order with expectedVersion: 1 -> succeeds and bumps to version 2
     const updatedA = await OrderRepository.updateOrder(
@@ -253,7 +253,7 @@ describe('Acceptance Test: Sub-Second Multi-Tenant Realtime Sync & OCC', () => {
     assert.equal(conflictError?.message, 'Updated by someone else, reload?')
 
     // Verify the order in the database/store was NOT overwritten by the stale write
-    const currentOrder = (PrintERPDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS) || [])[0]
+    const currentOrder = (PrintFlowDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS) || [])[0]
     assert.equal(currentOrder.status, 'in_production', 'Status must remain in_production')
     assert.equal(currentOrder.version, 2, 'Version must remain 2')
   })
@@ -280,7 +280,7 @@ describe('Acceptance Test: Sub-Second Multi-Tenant Realtime Sync & OCC', () => {
       updated_at: new Date().toISOString(),
       version: 1,
     }
-    PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, [task])
+    PrintFlowDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, [task])
 
     // Update with correct expectedVersion: 1 -> succeeds and bumps to 2
     const updatedTask = await ProductionTaskRepository.updateTask(
@@ -337,7 +337,7 @@ describe('Acceptance Test: Sub-Second Multi-Tenant Realtime Sync & OCC', () => {
       updated_at: new Date().toISOString(),
       version: 1,
     }
-    PrintERPDataStore.set(STORAGE_KEYS.MATERIALS, [mat])
+    PrintFlowDataStore.set(STORAGE_KEYS.MATERIALS, [mat])
 
     // Stale write attempt with version 99
     let stockConflictCaught = false

@@ -2,7 +2,7 @@ import { describe, it, beforeEach } from 'node:test'
 import assert from 'node:assert'
 import { QuotationService } from '../../services/quotation.service.ts'
 import { QuotationRepository } from '../../lib/repositories/quotation.repository.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import type { QuotationRecord, CreateQuotationPayload } from '../../types/quotation.types.ts'
 
 describe('Quotation Production Hardening & Sales-Control Center Test Suite', () => {
@@ -11,10 +11,10 @@ describe('Quotation Production Hardening & Sales-Control Center Test Suite', () 
 
   beforeEach(() => {
     // Reset test storage
-    PrintERPDataStore.set(STORAGE_KEYS.QUOTATIONS, [])
-    PrintERPDataStore.set(STORAGE_KEYS.QUOTATION_ACTIVITIES, [])
-    PrintERPDataStore.set(STORAGE_KEYS.ORDERS, [])
-    PrintERPDataStore.set(STORAGE_KEYS.INVOICES, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.QUOTATIONS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.QUOTATION_ACTIVITIES, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.ORDERS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.INVOICES, [])
   })
 
   describe('1. Financial Integrity & Tamper-Resistant Calculations', () => {
@@ -251,7 +251,7 @@ describe('Quotation Production Hardening & Sales-Control Center Test Suite', () 
         ],
       })
 
-      const customerMsg = QuotationService.generateQuotationTextMessage(quote, 'InkFlow Press')
+      const customerMsg = QuotationService.generateQuotationTextMessage(quote, 'PrintFlow Press')
 
       // Customer message must include commercial details
       assert.ok(customerMsg.includes(quote.quotation_number))

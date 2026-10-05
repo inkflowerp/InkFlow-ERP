@@ -1,5 +1,5 @@
 // ==============================================================================
-// InkFlow / PrintERP SaaS - Authoritative Platform Entitlement Service
+// PrintFlow SaaS - Authoritative Platform Entitlement Service
 // Enforces platform cluster features, quotas, limits, and subscription status server-side.
 // ==============================================================================
 

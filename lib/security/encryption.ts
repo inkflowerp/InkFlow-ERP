@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP SaaS - Encryption & Security Utilities (AES-256-GCM v2)
+// PrintFlow SaaS - Encryption & Security Utilities (AES-256-GCM v2)
 // Securely encrypts and decrypts SMTP passwords, API keys, and third-party secrets.
 // Supports versioned keys (v2:k1:iv:tag:data), legacy v1 migration, and explicit error types.
 // ==============================================================================
@@ -317,7 +317,7 @@ export function maskCredential(secret?: string | null): string {
 }
 
 /**
- * Masks an email for privacy (e.g. `sup••••@printerp.com`)
+ * Masks an email for privacy (e.g. `sup••••@printflow.bd`)
  */
 export function maskEmail(email: string): string {
   if (!email || !email.includes('@')) return email

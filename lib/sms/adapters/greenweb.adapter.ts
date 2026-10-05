@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP SaaS - Greenweb SMS Gateway Adapter (Bangladesh Carrier Routing)
+// PrintFlow SaaS - Greenweb SMS Gateway Adapter (Bangladesh Carrier Routing)
 // Official API Endpoint: https://api.greenweb.com.bd/api.php
 // ==============================================================================
 
@@ -47,7 +47,7 @@ export class GreenwebSmsAdapter implements ISmsProvider {
       const balanceUrl = `https://api.greenweb.com.bd/gapi.php?token=${encodeURIComponent(this.token)}&balance`
       const res = await fetch(balanceUrl, {
         method: 'GET',
-        headers: { 'User-Agent': 'PrintERP-SaaS/1.0' },
+        headers: { 'User-Agent': 'PrintFlow-SaaS/1.0' },
         signal: AbortSignal.timeout(10000),
       })
 

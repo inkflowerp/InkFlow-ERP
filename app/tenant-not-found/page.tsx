@@ -48,7 +48,7 @@ function TenantNotFoundContent() {
           <Button asChild variant="outline" className="border-input text-xs sm:text-sm">
             <Link href="/">
               <ArrowLeft className="mr-1.5 h-4 w-4" />
-              <span>Return to InkFlow Home</span>
+              <span>Return to PrintFlow Home</span>
             </Link>
           </Button>
         </div>

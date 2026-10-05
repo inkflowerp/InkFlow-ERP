@@ -3,7 +3,7 @@ import assert from 'node:assert'
 import { SubscriptionService } from '../../services/subscription.service.ts'
 import { EntitlementService } from '../../services/entitlement.service.ts'
 import { SubscriptionGuard } from '../../lib/subscription/subscription-guard.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import type { SubscriptionPlanRecord, CompanySubscriptionRecord } from '../../types/subscription.types.ts'
 
 describe('Authoritative SaaS Subscription Resolver & Single Source of Truth', () => {
@@ -101,10 +101,10 @@ describe('Authoritative SaaS Subscription Resolver & Single Source of Truth', ()
   }
 
   beforeEach(() => {
-    PrintERPDataStore.clear()
+    PrintFlowDataStore.clear()
     // Authoritative trial registered in store
-    PrintERPDataStore.set(STORAGE_KEYS.PLATFORM_PLANS, [dbTrialPlan], false)
-    PrintERPDataStore.set(
+    PrintFlowDataStore.set(STORAGE_KEYS.PLATFORM_PLANS, [dbTrialPlan], false)
+    PrintFlowDataStore.set(
       STORAGE_KEYS.COMPANY_SUBSCRIPTIONS,
       {
         [dbTrialCompanyId]: {

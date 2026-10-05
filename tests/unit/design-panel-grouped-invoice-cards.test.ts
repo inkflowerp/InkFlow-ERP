@@ -2,7 +2,7 @@ import { describe, it } from 'node:test'
 import assert from 'node:assert'
 import { BillingRepository } from '../../lib/repositories/billing.repository.ts'
 import { DesignRepository } from '../../lib/repositories/design.repository.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import type { DesignJobRecord, DesignPriority, DesignStatus, DesignFormat } from '../../types/design.types.ts'
 import type { InvoiceRecord } from '../../types/billing.types.ts'
 

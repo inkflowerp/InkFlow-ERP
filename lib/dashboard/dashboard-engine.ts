@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP SaaS - Personalized Dashboard & Quick Action Engine
+// PrintFlow SaaS - Personalized Dashboard & Quick Action Engine
 // Authorizes, calculates, and renders personalized dashboard metrics,
 // tasks, attention items, and prioritized quick actions based on:
 // Authenticated User, Tenant, Branch, Responsibilities (Multi-Role),
@@ -114,7 +114,7 @@ export interface DashboardRawData {
   deliveryChallans?: DeliveryChallanRecord[]
 }
 
-// Master list of all possible quick actions in PrintERP
+// Master list of all possible quick actions in PrintFlow
 export const MASTER_QUICK_ACTIONS: QuickActionItem[] = [
   // 1. Work Order / Design Creation
   {

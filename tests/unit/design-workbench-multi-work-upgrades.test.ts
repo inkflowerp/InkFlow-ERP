@@ -1,17 +1,17 @@
 import { describe, it, beforeEach } from 'node:test'
 import assert from 'node:assert'
 import { DesignRepository } from '../../lib/repositories/design.repository.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import type { DesignJobRecord } from '../../types/design.types.ts'
 
 describe('Design Workbench - Multi-Work Invoices, Customer Info, Briefs & Attachments', () => {
   const companyId = 'c-test-workbench'
 
   beforeEach(() => {
-    PrintERPDataStore.set(STORAGE_KEYS.DESIGN_JOBS, [])
-    PrintERPDataStore.set(STORAGE_KEYS.INVOICES, [])
-    PrintERPDataStore.set(STORAGE_KEYS.CUSTOMERS, [])
-    PrintERPDataStore.set(STORAGE_KEYS.JOB_ORDERS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.DESIGN_JOBS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.INVOICES, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.CUSTOMERS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.JOB_ORDERS, [])
   })
 
   it('1. Retrieves genuine design jobs without synthesizing phantom jobs from invoice', async () => {
@@ -54,7 +54,7 @@ describe('Design Workbench - Multi-Work Invoices, Customer Info, Briefs & Attach
       address: 'Gulshan-2, Dhaka',
       category: 'corporate' as const,
     }
-    PrintERPDataStore.addItem(STORAGE_KEYS.CUSTOMERS, customer)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.CUSTOMERS, customer)
 
     const createdJob = await DesignRepository.createDesignJob({
       id: 'dsn-alpha-99-0',

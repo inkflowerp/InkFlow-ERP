@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP SaaS - Start Free Trial & Auth Redirect Loop Regression Tests
+// PrintFlow - Start Free Trial & Auth Redirect Loop Regression Tests
 // Validates:
 // 1. Landing Page -> Start Free Trial (/register) is never trapped in redirect loops.
 // 2. /register allows unauthenticated & existing users to sign up cleanly.

@@ -1,5 +1,5 @@
 // ==============================================================================
-// InkFlow ERP - Enterprise Structured JSON Logger & Observability Engine
+// PrintFlow - Enterprise Structured JSON Logger & Observability Engine
 // Emits single-line structured JSON logs with tenant, hashed user, and trace IDs.
 // Designed for seamless ingestion by Supabase Log Drains, Vercel, Datadog, and Sentry.
 // Automatically scrubs PII, JWT tokens, passwords, and sensitive keys.

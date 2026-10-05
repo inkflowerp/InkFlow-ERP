@@ -2,7 +2,7 @@ import { describe, it } from 'node:test'
 import assert from 'node:assert'
 import { OrderRepository } from '../../lib/repositories/order.repository.ts'
 import { DesignRepository } from '../../lib/repositories/design.repository.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 
 describe('Design Studio & Commercial Orders Hub - Auto Pull Tests', () => {
   const TENANT_ID = `tenant-autopull-${Date.now()}`

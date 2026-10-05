@@ -1228,7 +1228,7 @@ export default function AdvancedProductionPage() {
  const handleSendWhatsAppNotice = (task: ProductionTaskRecord) => {
  const rawMsg = generateBangladeshiFloorWhatsAppMessage(
  task,
- company?.name || 'InkFlow Digital & Offset Press'
+ company?.name || 'PrintFlow Digital & Offset Press'
     )
  const encoded = encodeURIComponent(rawMsg)
  const phone = task.customer_phone?.replace(/[^0-9]/g, '') || ''
@@ -1737,7 +1737,7 @@ export default function AdvancedProductionPage() {
  onHold={(t) => setHoldTaskTarget(t)}
  onResume={handleResumeTask}
  onPrintTicket={(t) => setJobTicketTarget(t)}
- companyName={company?.name || 'InkFlow Digital & Offset Press'}
+ companyName={company?.name || 'PrintFlow Digital & Offset Press'}
               />
             </CardContent>
           </Card>

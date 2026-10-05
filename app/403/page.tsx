@@ -28,7 +28,7 @@ function ForbiddenContent() {
           </h1>
           <p className="text-sm text-muted-foreground max-w-sm mx-auto">
             {isPlatform
-              ? 'This area is strictly restricted to authorized PrintERP platform administrators. Your current session does not possess root administrative clearance.'
+              ? 'This area is strictly restricted to authorized PrintFlow platform administrators. Your current session does not possess root administrative clearance.'
               : "You don't have permission to access this page or tenant organization. Please contact your company business owner if you believe this is an error."}
           </p>
         </div>

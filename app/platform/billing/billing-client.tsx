@@ -1,7 +1,7 @@
 'use client'
 
 // ==============================================================================
-// InkFlow / PrintERP SaaS - Platform Billing & Tenant Revenue Reconciliation
+// PrintFlow SaaS - Platform Billing & Tenant Revenue Reconciliation
 // Authoritative Tenant MRR, Gateway Collections, Invoices & Audit Ledger.
 // ==============================================================================
 

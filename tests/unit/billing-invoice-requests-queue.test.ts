@@ -1,6 +1,6 @@
 import { test, describe, beforeEach } from 'node:test'
 import assert from 'node:assert'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import { InvoiceRequestRepository } from '../../lib/repositories/invoice-request.repository.ts'
 import { InvoiceRequestService } from '../../services/invoice-request.service.ts'
 import { DesignService } from '../../services/design.service.ts'
@@ -12,11 +12,11 @@ describe('Billing & Collections: Prepress & Floor Invoice Requests Queue Certifi
   const SLUG_ALPHA = 'tenant-alpha'
 
   beforeEach(() => {
-    PrintERPDataStore.clear()
-    PrintERPDataStore.set(STORAGE_KEYS.INVOICE_REQUESTS, [])
-    PrintERPDataStore.set(STORAGE_KEYS.DESIGN_JOBS, [])
-    PrintERPDataStore.set(STORAGE_KEYS.ORDERS, [])
-    PrintERPDataStore.set(STORAGE_KEYS.INVOICES, [])
+    PrintFlowDataStore.clear()
+    PrintFlowDataStore.set(STORAGE_KEYS.INVOICE_REQUESTS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.DESIGN_JOBS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.ORDERS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.INVOICES, [])
   })
 
   describe('1. Ingestion & Retrieval across Tenant Partitions', () => {

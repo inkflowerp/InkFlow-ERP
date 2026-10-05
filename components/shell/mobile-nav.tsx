@@ -358,7 +358,7 @@ export function MobileNav() {
                   {appName}
                 </span>
                 <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider leading-none">
-                  {tagline || 'Print ERP'}
+                  {tagline || 'PrintFlow'}
                 </span>
               </div>
             </Link>

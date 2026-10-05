@@ -1,5 +1,5 @@
-# Supabase Local Configuration for PrintERP SaaS
-project_id = "printerp-saas"
+# Supabase Local Configuration for PrintFlow
+project_id = "printflow"
 
 [api]
 enabled = true

@@ -143,7 +143,7 @@ export default function DeliveryChallanDetailPage() {
  const handleSendWhatsApp = () => {
  const rawMsg = generateBangladeshiChallanWhatsAppMessage(
       { ...challan, due_amount: calculatedDue },
- company?.name || 'InkFlow Printing Press'
+ company?.name || 'PrintFlow Printing Press'
     )
  const encoded = encodeURIComponent(rawMsg)
  const phone = challan.customer_phone?.replace(/[^0-9]/g, '') || ''
@@ -156,7 +156,7 @@ export default function DeliveryChallanDetailPage() {
  const handleCopySlip = () => {
  const rawMsg = generateBangladeshiChallanWhatsAppMessage(
       { ...challan, due_amount: calculatedDue },
- company?.name || 'InkFlow Printing Press'
+ company?.name || 'PrintFlow Printing Press'
     )
  navigator.clipboard.writeText(rawMsg)
  setCopiedLink(true)
@@ -352,7 +352,7 @@ export default function DeliveryChallanDetailPage() {
                 <div className="absolute right-0 top-0 text-xs tabular-nums px-2 py-0.5 rounded bg-muted print:bg-muted font-bold border border-input text-foreground print:text-foreground">
                   {copyMeta.badge}
                 </div>
-                <h1 className="text-xl font-black tracking-tight print:text-foreground">{company?.name || 'InkFlow Printing & Signage'}</h1>
+                <h1 className="text-xl font-black tracking-tight print:text-foreground">{company?.name || 'PrintFlow Printing & Signage'}</h1>
                 {company?.address && <p className="text-muted-foreground print:text-muted-foreground text-xs">{company.address}</p>}
                 
                 <div className="inline-block mt-2 px-6 py-1 rounded-full bg-surface-inset text-foreground print:bg-surface-inset print:text-white font-black text-xs tracking-wider uppercase">

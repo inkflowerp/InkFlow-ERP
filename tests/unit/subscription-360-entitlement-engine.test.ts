@@ -2,7 +2,7 @@ import { describe, it, beforeEach } from 'node:test'
 import assert from 'node:assert'
 import { EntitlementService } from '../../services/entitlement.service.ts'
 import { SubscriptionGuard } from '../../lib/subscription/subscription-guard.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import { DEFAULT_PLANS } from '../../lib/subscription/subscription-constants.ts'
 import type { CompanySubscriptionRecord } from '../../types/subscription.types.ts'
 
@@ -11,8 +11,8 @@ describe('Subscription 360 - Central Entitlement Engine & Guard Tests', () => {
   const testSlug = 'alpha-print'
 
   beforeEach(() => {
-    PrintERPDataStore.clear()
-    PrintERPDataStore.set(STORAGE_KEYS.PLATFORM_PLANS, DEFAULT_PLANS, false)
+    PrintFlowDataStore.clear()
+    PrintFlowDataStore.set(STORAGE_KEYS.PLATFORM_PLANS, DEFAULT_PLANS, false)
     const trialPlan = DEFAULT_PLANS.find((p) => p.code === 'trial')!
     const trialSub: CompanySubscriptionRecord = {
       id: 'sub-trial-1',
@@ -25,7 +25,7 @@ describe('Subscription 360 - Central Entitlement Engine & Guard Tests', () => {
       current_period_end: new Date(Date.now() + (trialPlan.trial_days || 30) * 86400000).toISOString(),
       trial_ends_at: new Date(Date.now() + (trialPlan.trial_days || 30) * 86400000).toISOString(),
     }
-    PrintERPDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, { [testCompanyId]: trialSub }, false)
+    PrintFlowDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, { [testCompanyId]: trialSub }, false)
   })
 
   it('1. Authoritatively resolves trial plan for active trial tenant', async () => {
@@ -60,7 +60,7 @@ describe('Subscription 360 - Central Entitlement Engine & Guard Tests', () => {
       current_period_start: new Date().toISOString(),
       current_period_end: new Date(Date.now() + 30 * 86400000).toISOString(),
     }
-    PrintERPDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, { [testCompanyId]: starterSub }, false)
+    PrintFlowDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, { [testCompanyId]: starterSub }, false)
 
     // Allowed on Starter
     assert.strictEqual(await EntitlementService.canUseFeature(testCompanyId, 'basic_sales'), true)
@@ -84,7 +84,7 @@ describe('Subscription 360 - Central Entitlement Engine & Guard Tests', () => {
       current_period_start: new Date().toISOString(),
       current_period_end: new Date(Date.now() + 30 * 86400000).toISOString(),
     }
-    PrintERPDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, { [testCompanyId]: businessSub }, false)
+    PrintFlowDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, { [testCompanyId]: businessSub }, false)
 
     // Allowed on Business
     assert.strictEqual(await EntitlementService.canUseFeature(testCompanyId, 'inventory'), true)
@@ -107,7 +107,7 @@ describe('Subscription 360 - Central Entitlement Engine & Guard Tests', () => {
       current_period_start: new Date().toISOString(),
       current_period_end: new Date(Date.now() + 30 * 86400000).toISOString(),
     }
-    PrintERPDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, { [testCompanyId]: suspendedSub }, false)
+    PrintFlowDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, { [testCompanyId]: suspendedSub }, false)
 
     await assert.rejects(
       async () => {
@@ -136,7 +136,7 @@ describe('Subscription 360 - Central Entitlement Engine & Guard Tests', () => {
       current_period_start: new Date().toISOString(),
       current_period_end: new Date(Date.now() + 30 * 86400000).toISOString(),
     }
-    PrintERPDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, { [testCompanyId]: starterSub }, false)
+    PrintFlowDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, { [testCompanyId]: starterSub }, false)
 
     const limit = await SubscriptionGuard.getLimit(testCompanyId, 'max_users')
     assert.strictEqual(limit, 3)

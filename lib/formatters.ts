@@ -504,7 +504,7 @@ export function tBilingual(enText: string, bnText?: string | null): string {
 }
 
 /**
- * Canonical Customer ID Formatter across PrintERP
+ * Canonical Customer ID Formatter across PrintFlow
  * Ensures deterministic, professional, non-garbled customer IDs across Directory, Customer 360, CSV, and Modals.
  */
 export function formatCustomerIdNo(

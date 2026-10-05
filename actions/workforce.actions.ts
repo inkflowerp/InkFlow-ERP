@@ -4,7 +4,7 @@ import { withTenantAction } from '@/lib/actions/action-wrapper'
 
 
 // ==============================================================================
-// InkFlow ERP - Authoritative Workforce, Attendance, Overtime & Payroll Server Actions
+// PrintFlow - Authoritative Workforce, Attendance, Overtime & Payroll Server Actions
 // Strict Multi-Tenant Isolation, RBAC Permission Checks, and Audit Logging
 // ==============================================================================
 

@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP / InkFlow SaaS - Billing & Invoicing Service
+// PrintFlow SaaS - Billing & Invoicing Service
 // Authoritative PostgreSQL persistence via BillingRepository
 // ==============================================================================
 
@@ -280,7 +280,7 @@ export class BillingService {
       return { success: false, error: 'Customer phone/WhatsApp number is missing.' }
     }
 
-    const compName = companyName || 'InkFlow'
+    const compName = companyName || 'PrintFlow'
     const daysOverdue = calculateDaysOverdue(invoice.due_date)
     const overdueNotice = daysOverdue > 0 ? ` (⚠️ ${daysOverdue} দিন অতিবাহিত / Overdue)` : ''
 
@@ -326,7 +326,7 @@ export class BillingService {
    */
   static generateInvoiceTextMessage(
     invoice: InvoiceRecord,
-    companyName: string | null = 'InkFlow',
+    companyName: string | null = 'PrintFlow',
     paymentAccounts?: { bkash?: string | null; nagad?: string | null; bank?: string | null }
   ): string {
     return generateInvoiceTextMessage(invoice, companyName, paymentAccounts)
@@ -366,7 +366,7 @@ export class BillingService {
 
     const recipient = recipientOverride || (channel === 'email' ? invoice.customer_email || invoice.customer_bin || '' : invoice.customer_phone)
 
-    const effectiveCompanyName = companyName || 'InkFlow'
+    const effectiveCompanyName = companyName || 'PrintFlow'
     const vars = CommunicationTemplateService.buildInvoiceVariables(invoice, {
       name: effectiveCompanyName,
       slug: tenantSlug || 'my-company',

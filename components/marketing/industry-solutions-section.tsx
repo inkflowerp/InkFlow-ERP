@@ -31,8 +31,8 @@ export function IndustrySolutionsSection() {
 
           <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto leading-relaxed bangla-text">
             {tBilingual(
-              'Whether running wide-format solvent banners in Arambagh, offset packaging in Fakirapool, or acrylic laser cutting in Chattogram, PrintERP adapts to your craft.',
-              'আরামবাগের ব্যানার শপ, ফকিরাপুলের অফসেট প্রেস কিংবা চট্টগ্রামের সাইনবোর্ড ফ্যাব্রিকেশন—প্রিন্টইআরপি আপনার কারখানার কাজের ধরন অনুযায়ী মানানসই।'
+              'Whether running wide-format solvent banners in Arambagh, offset packaging in Fakirapool, or acrylic laser cutting in Chattogram, PrintFlow adapts to your craft.',
+              'আরামবাগের ব্যানার শপ, ফকিরাপুলের অফসেট প্রেস কিংবা চট্টগ্রামের সাইনবোর্ড ফ্যাব্রিকেশন—প্রিন্টফ্লো আপনার কারখানার কাজের ধরন অনুযায়ী মানানসই।'
             )}
           </p>
         </div>

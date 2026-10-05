@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP SaaS - Phase 23: Offline Sync Queue & Conflict Resolution Manager
+// PrintFlow SaaS - Phase 23: Offline Sync Queue & Conflict Resolution Manager
 // Queues mutations when offline, retries with exponential backoff, and resolves conflicts.
 // ==============================================================================
 

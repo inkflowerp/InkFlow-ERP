@@ -33,7 +33,7 @@ function TenantSuspendedContent() {
                 The tenant workspace for <code className="px-1.5 py-0.5 rounded bg-muted tabular-nums text-xs text-destructive text-destructive font-bold">{slug}</code> is currently suspended due to billing, administrative review, or policy hold.
               </>
             ) : (
-              'This workspace has been suspended. Please contact your organization administrator or PrintERP platform support to reactivate your account.'
+              'This workspace has been suspended. Please contact your organization administrator or PrintFlow platform support to reactivate your account.'
             )}
           </p>
         </div>

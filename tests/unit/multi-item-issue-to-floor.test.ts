@@ -2,7 +2,7 @@ import { describe, it, beforeEach } from 'node:test'
 import assert from 'node:assert/strict'
 import { InventoryRepository } from '../../lib/repositories/inventory.repository.ts'
 import { InventoryService } from '../../services/inventory.service.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import { getMaterialWarehouseStockBreakdown } from '../../lib/units.ts'
 import type { MaterialRecord } from '../../types/inventory.types.ts'
 
@@ -10,7 +10,7 @@ describe('Multi-Item Direct Issue to Print Floor', () => {
   const testCompanyId = `test-multi-issue-${Date.now()}`
 
   beforeEach(() => {
-    PrintERPDataStore.clear()
+    PrintFlowDataStore.clear()
   })
 
   it('1. Successfully issues multiple materials (Roll Media + Liquid Consumable) in batch with accurate inventory deductions', async () => {
@@ -63,10 +63,10 @@ describe('Multi-Item Direct Issue to Print Floor', () => {
       is_active: true,
     }
 
-    PrintERPDataStore.addItem(STORAGE_KEYS.MATERIALS, rollMaterial, testCompanyId)
-    PrintERPDataStore.addItem(STORAGE_KEYS.MATERIALS, rollMaterial)
-    PrintERPDataStore.addItem(STORAGE_KEYS.MATERIALS, inkMaterial, testCompanyId)
-    PrintERPDataStore.addItem(STORAGE_KEYS.MATERIALS, inkMaterial)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.MATERIALS, rollMaterial, testCompanyId)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.MATERIALS, rollMaterial)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.MATERIALS, inkMaterial, testCompanyId)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.MATERIALS, inkMaterial)
 
     // 3. Issue Item 1: 1 Roll of Flex (492 SFT)
     const res1 = await InventoryService.issueMasterRollsBatch({

@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP SaaS - SSLCOMMERZ Multi-Channel Payment Gateway Adapter
+// PrintFlow SaaS - SSLCOMMERZ Multi-Channel Payment Gateway Adapter
 // Documentation: https://developer.sslcommerz.com/doc/v4/
 // ==============================================================================
 
@@ -65,7 +65,7 @@ export class SslCommerzPaymentAdapter implements PaymentProvider {
 
       const res = await fetch(testValUrl, {
         method: 'GET',
-        headers: { 'User-Agent': 'PrintERP-SaaS/1.0' },
+        headers: { 'User-Agent': 'PrintFlow-SaaS/1.0' },
         signal: AbortSignal.timeout(10000),
       })
 
@@ -133,7 +133,7 @@ export class SslCommerzPaymentAdapter implements PaymentProvider {
       const origin =
         typeof window !== 'undefined'
           ? window.location.origin
-          : process.env.NEXT_PUBLIC_APP_URL || 'https://printerp.com'
+          : process.env.NEXT_PUBLIC_APP_URL || 'https://printflow.bd'
 
       const successUrl = params.redirectUrl || `${origin}/api/webhooks/sslcommerz?status=success&tran_id=${tranId}`
       const failUrl = params.cancelUrl || `${origin}/api/webhooks/sslcommerz?status=fail&tran_id=${tranId}`
@@ -157,7 +157,7 @@ export class SslCommerzPaymentAdapter implements PaymentProvider {
       bodyParams.append('cus_country', 'Bangladesh')
       bodyParams.append('cus_phone', params.customerPhone || '01700000000')
       bodyParams.append('shipping_method', 'NO')
-      bodyParams.append('product_name', params.planName || 'PrintERP SaaS Subscription')
+      bodyParams.append('product_name', params.planName || 'PrintFlow SaaS Subscription')
       bodyParams.append('product_category', 'Software SaaS')
       bodyParams.append('product_profile', 'non-physical-goods')
 
@@ -220,7 +220,7 @@ export class SslCommerzPaymentAdapter implements PaymentProvider {
 
       const res = await fetch(valUrl, {
         method: 'GET',
-        headers: { 'User-Agent': 'PrintERP-SaaS/1.0' },
+        headers: { 'User-Agent': 'PrintFlow-SaaS/1.0' },
         signal: AbortSignal.timeout(15000),
       })
 

@@ -39,8 +39,8 @@ export function CoreWorkflowSection() {
 
           <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto leading-relaxed bangla-text">
             {tBilingual(
-              'PrintERP reflects the actual reality of printing and signage businesses: flexible stages, multi-department execution, and connected financial ledgers.',
-              'প্রিন্টইআরপি প্রেস ও সাইনেজ ব্যবসার বাস্তব কর্মপ্রবাহের সাথে মানানসই: প্রয়োজন অনুযায়ী নমনীয় ধাপ, বহুমুখী কাজের বিভাজন ও স্বচ্ছ হিসাব।'
+              'PrintFlow reflects the actual reality of printing and signage businesses: flexible stages, multi-department execution, and connected financial ledgers.',
+              'প্রিন্টফ্লো প্রেস ও সাইনেজ ব্যবসার বাস্তব কর্মপ্রবাহের সাথে মানানসই: প্রয়োজন অনুযায়ী নমনীয় ধাপ, বহুমুখী কাজের বিভাজন ও স্বচ্ছ হিসাব।'
             )}
           </p>
         </div>

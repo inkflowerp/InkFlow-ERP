@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP SaaS - Unified Payment Gateway Provider Interface & Types
+// PrintFlow SaaS - Unified Payment Gateway Provider Interface & Types
 // Supports Bangladesh-first Payment Gateways (bKash, SSLCOMMERZ, Nagad, UddoktaPay, Stripe)
 // ==============================================================================
 
@@ -176,7 +176,7 @@ export const PAYMENT_GATEWAY_METADATA_LIST: PaymentGatewayMeta[] = [
     description: 'Manual deposit / EFT / RTGS to platform corporate account',
     descriptionBn: 'প্ল্যাটফর্মের ব্যাংক একাউন্টে সরাসরি জমা বা ট্রান্সফার',
     instructions: [
-      'Transfer funds to City Bank: PrintERP Ltd (A/C: 1102938475001, Branch: Principal).',
+      'Transfer funds to City Bank: PrintFlow Ltd (A/C: 1102938475001, Branch: Principal).',
       'Enter the transaction / deposit reference number in the box below.',
       'Platform administrator will verify and activate your subscription.',
     ],

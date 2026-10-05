@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import { BRAND } from '@/config/brand'
 import {
  Dialog,
  DialogContent,
@@ -51,11 +52,11 @@ export const DesignWhatsAppModal = React.memo(function DesignWhatsAppModal({
  const raw = customerPhone || job.customer_phone || '01711000000'
  setPhoneNumber(raw)
  const latestVer = job.versions?.[job.versions.length - 1]
- const proofUrl = latestVer?.proof_file_url || 'https://inkflow-erp.vercel.app/proof'
+ const proofUrl = latestVer?.proof_file_url || `https://${BRAND.rootDomain}/proof`
  const generated = buildBangladeshiWhatsAppMessage({
  template: initialTemplate,
  customerName: job.customer_name,
- companyName: companyName || 'PrintERP Studio',
+ companyName: companyName || `${BRAND.name} Studio`,
  jobTitle: job.title,
  jobNum: job.design_number,
  invoiceNum: job.invoice_number,
@@ -72,11 +73,11 @@ export const DesignWhatsAppModal = React.memo(function DesignWhatsAppModal({
  setSelectedTemplate(tpl)
  if (!job) return
  const latestVer = job.versions?.[job.versions.length - 1]
- const proofUrl = latestVer?.proof_file_url || 'https://inkflow-erp.vercel.app/proof'
+ const proofUrl = latestVer?.proof_file_url || `https://${BRAND.rootDomain}/proof`
  const generated = buildBangladeshiWhatsAppMessage({
  template: tpl,
  customerName: job.customer_name,
- companyName: companyName || 'PrintERP Studio',
+ companyName: companyName || `${BRAND.name} Studio`,
  jobTitle: job.title,
  jobNum: job.design_number,
  invoiceNum: job.invoice_number,

@@ -47,7 +47,7 @@ import type {
  CashClosingRecord,
 } from '@/types/finance.types'
 
-// The 8 Practical PrintERP Finance Components
+// The 8 Practical PrintFlow Finance Components
 import { FinanceDashboardView } from '@/components/finance/finance-dashboard-view'
 import { CashBankView } from '@/components/finance/cash-bank-view'
 import { ReceivablesView } from '@/components/finance/receivables-view'

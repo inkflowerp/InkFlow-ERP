@@ -1,5 +1,5 @@
 // ==============================================================================
-// InkFlow ERP - Authoritative Workforce & Salary Calculation Engine
+// PrintFlow - Authoritative Workforce & Salary Calculation Engine
 // Single source of truth for Shift, Attendance, Overtime, Advance & Payroll Math
 // ==============================================================================
 

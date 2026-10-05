@@ -403,7 +403,7 @@ export function Sidebar({ initialNavSections }: { initialNavSections?: NavSectio
                 {appName}
               </span>
               <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground truncate max-w-[130px]">
-                {tagline || tBilingual('Print ERP System', 'প্রিন্ট ইআরপি সফটওয়্যার')}
+                {tagline || tBilingual('PrintFlow System', 'প্রিন্টফ্লো সফটওয়্যার')}
               </span>
             </div>
           </Link>

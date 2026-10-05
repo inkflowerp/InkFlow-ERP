@@ -2,14 +2,14 @@ import { test, describe, beforeEach } from 'node:test'
 import assert from 'node:assert'
 import { UnifiedCommunicationService } from '../../services/unified-communication.service.ts'
 import { CommunicationRepository } from '../../lib/repositories/communication.repository.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 
 describe('Unified Communication & Templates Unit Tests (V8)', () => {
   const companyId = 'co-comm-unit-test'
 
   beforeEach(async () => {
-    PrintERPDataStore.clear(STORAGE_KEYS.COMMUNICATION_MESSAGES)
-    PrintERPDataStore.clear(STORAGE_KEYS.COMMUNICATION_TEMPLATES)
+    PrintFlowDataStore.clear(STORAGE_KEYS.COMMUNICATION_MESSAGES)
+    PrintFlowDataStore.clear(STORAGE_KEYS.COMMUNICATION_TEMPLATES)
     await CommunicationRepository.seedDefaultTemplates(companyId)
   })
 
@@ -106,13 +106,13 @@ describe('Unified Communication & Templates Unit Tests (V8)', () => {
       recipientName: 'Shamol Roy',
       recipientDestination: '+8801700000000',
       customContent: 'Here is your official invoice document.',
-      attachmentUrl: 'https://cdn.inkflow.com.bd/invoices/INV-2026-001.pdf',
+      attachmentUrl: 'https://cdn.printflow.bd/invoices/INV-2026-001.pdf',
     })
 
     assert.strictEqual(res.success, true)
 
     const log = await CommunicationRepository.getMessageById(res.messageId, companyId)
     assert.ok(log)
-    assert.ok(log.message_content.includes('Document Link: https://cdn.inkflow.com.bd/invoices/INV-2026-001.pdf'))
+    assert.ok(log.message_content.includes('Document Link: https://cdn.printflow.bd/invoices/INV-2026-001.pdf'))
   })
 })

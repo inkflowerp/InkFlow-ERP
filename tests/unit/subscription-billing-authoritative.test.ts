@@ -9,7 +9,7 @@ import {
   checkResourceLimit,
 } from '../../services/subscription.service.ts'
 import { EntitlementService } from '../../services/entitlement.service.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import {
   resolveTenantAccountType,
   resolveSubscriptionPlan,
@@ -252,7 +252,7 @@ describe('Authoritative Subscription, Billing & Verification System Tests', () =
     })
     it('EntitlementService.enforceLimit throws descriptive error when quota is exceeded', async () => {
       const starterPlan = DEFAULT_PLANS.find((p) => p.code === 'starter')!
-      PrintERPDataStore.set(
+      PrintFlowDataStore.set(
         STORAGE_KEYS.COMPANY_SUBSCRIPTIONS,
         {
           'test-company-1': {

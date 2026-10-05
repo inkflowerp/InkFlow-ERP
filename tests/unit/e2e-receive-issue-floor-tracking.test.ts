@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import { InventoryRepository } from '../../lib/repositories/inventory.repository.ts'
 import { InventoryService } from '../../services/inventory.service.ts'
 import { getMaterialWarehouseStockBreakdown } from '../../lib/units.ts'
@@ -43,8 +43,8 @@ test('E2E: Receive Stock → Available Stock → Issue to Floor → Available St
     updated_at: new Date().toISOString(),
   }
 
-  PrintERPDataStore.addItem(STORAGE_KEYS.LOCATIONS, storeLocation, companyId)
-  PrintERPDataStore.addItem(STORAGE_KEYS.LOCATIONS, floorLocation, companyId)
+  PrintFlowDataStore.addItem(STORAGE_KEYS.LOCATIONS, storeLocation, companyId)
+  PrintFlowDataStore.addItem(STORAGE_KEYS.LOCATIONS, floorLocation, companyId)
 
   // ============================================================
   // SCENARIO A: ROLL MEDIA (PVC Flex Banner) — full lifecycle
@@ -72,8 +72,8 @@ test('E2E: Receive Stock → Available Stock → Issue to Floor → Available St
       updated_at: new Date().toISOString(),
     }
 
-    PrintERPDataStore.addItem(STORAGE_KEYS.MATERIALS, flexMat, companyId)
-    PrintERPDataStore.addItem(STORAGE_KEYS.MATERIALS, flexMat)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.MATERIALS, flexMat, companyId)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.MATERIALS, flexMat)
 
     // --- STEP 1: Receive 5 Rolls into Warehouse ---
     const receiveResult = await InventoryService.receiveStock({
@@ -195,8 +195,8 @@ test('E2E: Receive Stock → Available Stock → Issue to Floor → Available St
       updated_at: new Date().toISOString(),
     }
 
-    PrintERPDataStore.addItem(STORAGE_KEYS.MATERIALS, xstandMat, companyId)
-    PrintERPDataStore.addItem(STORAGE_KEYS.MATERIALS, xstandMat)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.MATERIALS, xstandMat, companyId)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.MATERIALS, xstandMat)
 
     // --- STEP 1: Receive 50 X-Stands ---
     const receiveResult = await InventoryService.receiveStock({
@@ -272,8 +272,8 @@ test('E2E: Receive Stock → Available Stock → Issue to Floor → Available St
       updated_at: new Date().toISOString(),
     }
 
-    PrintERPDataStore.addItem(STORAGE_KEYS.MATERIALS, vinylMat, companyId)
-    PrintERPDataStore.addItem(STORAGE_KEYS.MATERIALS, vinylMat)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.MATERIALS, vinylMat, companyId)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.MATERIALS, vinylMat)
 
     // --- STEP 1: Receive 3 Rolls (4ft × 164ft) ---
     await InventoryService.receiveStock({
@@ -357,8 +357,8 @@ test('E2E: Receive Stock → Available Stock → Issue to Floor → Available St
       updated_at: new Date().toISOString(),
     }
 
-    PrintERPDataStore.addItem(STORAGE_KEYS.MATERIALS, eyeletMat, companyId)
-    PrintERPDataStore.addItem(STORAGE_KEYS.MATERIALS, eyeletMat)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.MATERIALS, eyeletMat, companyId)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.MATERIALS, eyeletMat)
 
     // --- STEP 1: Receive 5000 pcs ---
     await InventoryService.receiveStock({
@@ -429,8 +429,8 @@ test('E2E: Receive Stock → Available Stock → Issue to Floor → Available St
       updated_at: new Date().toISOString(),
     }
 
-    PrintERPDataStore.addItem(STORAGE_KEYS.MATERIALS, boltMat, companyId)
-    PrintERPDataStore.addItem(STORAGE_KEYS.MATERIALS, boltMat)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.MATERIALS, boltMat, companyId)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.MATERIALS, boltMat)
 
     // Receive 500
     await InventoryService.receiveStock({
@@ -508,8 +508,8 @@ test('E2E: Receive Stock → Available Stock → Issue to Floor → Available St
       updated_at: new Date().toISOString(),
     }
 
-    PrintERPDataStore.addItem(STORAGE_KEYS.MATERIALS, washerMat, companyId)
-    PrintERPDataStore.addItem(STORAGE_KEYS.MATERIALS, washerMat)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.MATERIALS, washerMat, companyId)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.MATERIALS, washerMat)
 
     // Receive 300
     await InventoryService.receiveStock({

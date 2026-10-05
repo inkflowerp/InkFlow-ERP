@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP / InkFlow SaaS - Unit Tests: Authentication Email & OTP Security
+// PrintFlow / PrintFlow SaaS - Unit Tests: Authentication Email & OTP Security
 // Tests 6-digit OTP generation, single-use tokens, SHA-256 hashing, timing-safe
 // comparison, 10-minute expiry, 5-attempt brute-force protection, 60s cooldowns,
 // and strict purpose isolation.
@@ -154,7 +154,7 @@ describe('Auth Email & OTP Security Unit Tests', () => {
 
   it('10. Dispatches Registration Verification Email with 6-digit OTP and link', async () => {
     const sendRes = await AuthEmailService.sendRegistrationVerificationEmail({
-      email: 'newowner@inkflow.com',
+      email: 'newowner@printflow.test',
       fullName: 'Kamrul Hassan',
     })
 
@@ -166,7 +166,7 @@ describe('Auth Email & OTP Security Unit Tests', () => {
 
   it('11. Dispatches Password Reset Email with 6-digit OTP and link', async () => {
     const sendRes = await AuthEmailService.sendPasswordResetEmail({
-      email: 'owner@printerp.com',
+      email: 'owner@printflow.bd',
       userName: 'Platform Owner',
       scopeType: 'PLATFORM',
     })

@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP / InkFlow SaaS - Platform vs Tenant Authentication Types
+// PrintFlow SaaS - Platform vs Tenant Authentication Types
 // Strictly segregates Platform Administration from Tenant / Business Users.
 // ==============================================================================
 

@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP SaaS - RFC 6238 TOTP (Time-Based One-Time Password) Implementation
+// PrintFlow SaaS - RFC 6238 TOTP (Time-Based One-Time Password) Implementation
 // Cryptographically verified 6-digit MFA using Node.js built-in crypto (HMAC-SHA1).
 // Compatible with Google Authenticator, Microsoft Authenticator, Authy, 1Password.
 // ==============================================================================

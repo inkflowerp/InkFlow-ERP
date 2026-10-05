@@ -1,5 +1,5 @@
 /**
- * Copy Linter & Inventory Extractor for InkFlow ERP
+ * Copy Linter & Inventory Extractor for PrintFlow
  * Line-by-line scanner without regex backtracking.
  */
 

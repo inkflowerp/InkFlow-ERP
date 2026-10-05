@@ -1,5 +1,5 @@
 // ==============================================================================
-// InkFlow ERP - Module 7: Design & Designer Flow & UX Acceptance Tests
+// PrintFlow - Module 7: Design & Designer Flow & UX Acceptance Tests
 // Tests the full lifecycle: Start Design -> Upload Proof -> WhatsApp Proof -> Route to Press
 // Matrix: Light/Dark x Mobile 375px / Desktop 1440px x EN/BN
 // Guarantees: <= 3 clicks completion from dashboard, 4-KPI row, attention queue, preflight validation
@@ -28,7 +28,7 @@ describe('Module 7: Design & Designer End-to-End Hardening & Flow Verification',
     await browser?.close()
   })
 
-  // Helper to render mock Design Studio & Designer Workbench DOM reflecting InkFlow Design System
+  // Helper to render mock Design Studio & Designer Workbench DOM reflecting PrintFlow Design System
   async function renderDesignPage(
     context: BrowserContext,
     options: {
@@ -341,7 +341,7 @@ describe('Module 7: Design & Designer End-to-End Hardening & Flow Verification',
               To: <strong id="modalPhone">01711223344</strong> (Recipient: <span id="modalCustomer">Client</span>)
             </div>
             <textarea id="modalMsg" style="width: 100%; height: 110px; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--muted); color: var(--foreground); font-size: 13px; font-family: inherit;">
-আসসালামু আলাইকুম, InkFlow Digital Press থেকে শুভেচ্ছা। আপনার অর্ডারকৃত ডিজাইনের ডিজিটাল প্রুফ কপি প্রস্তুত হয়েছে। অনুগ্রহপূর্বক ফাইলটি দেখে অনুমোদন প্রদান করুন। ধন্যবাদ।
+আসসালামু আলাইকুম, PrintFlow Digital Press থেকে শুভেচ্ছা। আপনার অর্ডারকৃত ডিজাইনের ডিজিটাল প্রুফ কপি প্রস্তুত হয়েছে। অনুগ্রহপূর্বক ফাইলটি দেখে অনুমোদন প্রদান করুন। ধন্যবাদ।
             </textarea>
             <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px;">
               <button class="btn-outline" onclick="closeModal()">${isBn ? 'বাতিল' : 'Cancel'}</button>

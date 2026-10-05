@@ -2,17 +2,17 @@ import { describe, it, beforeEach } from 'node:test'
 import assert from 'node:assert'
 import { ProductService } from '../../services/product.service.ts'
 import { ProductRepository } from '../../lib/repositories/product.repository.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 
 describe('Unit: Products & Services CRUD, Authority & Validation', () => {
   const companyA = `comp-prod-test-${Date.now()}`
   const companyB = `comp-prod-other-${Date.now()}`
 
   beforeEach(() => {
-    PrintERPDataStore.set(STORAGE_KEYS.PRODUCTS, [])
-    PrintERPDataStore.set(STORAGE_KEYS.PRICE_HISTORY, [])
-    PrintERPDataStore.set(STORAGE_KEYS.PRODUCT_VARIANTS, [])
-    PrintERPDataStore.set(STORAGE_KEYS.PRODUCT_FORMULAS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.PRODUCTS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.PRICE_HISTORY, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.PRODUCT_VARIANTS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.PRODUCT_FORMULAS, [])
   })
 
   it('1. Creates a valid print product with English & Bengali identity and pricing', async () => {

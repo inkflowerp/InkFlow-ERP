@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP SaaS - Unit Tests: Email Provider Abstraction & Adapters
+// PrintFlow - Unit Tests: Email Provider Abstraction & Adapters
 // ==============================================================================
 
 import { describe, it, beforeEach } from 'node:test'

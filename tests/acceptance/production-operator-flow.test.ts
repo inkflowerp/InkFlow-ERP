@@ -1,5 +1,5 @@
 // ==============================================================================
-// InkFlow ERP - Module 6: Production & Operator Flow & UX Acceptance Tests
+// PrintFlow - Module 6: Production & Operator Flow & UX Acceptance Tests
 // Tests the full lifecycle: Start on Press -> Pause / Hold -> Complete Task -> Print Job Ticket
 // Matrix: Light/Dark x Mobile 375px / Desktop 1440px x EN/BN
 // Guarantees: <= 3 clicks completion from dashboard, 4-KPI row, attention queue, one-handed mobile kiosk
@@ -28,7 +28,7 @@ describe('Module 6: Production & Operator End-to-End Hardening & Flow Verificati
     await browser?.close()
   })
 
-  // Helper to render mock Production & Operator DOM reflecting InkFlow Design System
+  // Helper to render mock Production & Operator DOM reflecting PrintFlow Design System
   async function renderProductionPage(
     context: BrowserContext,
     options: {
@@ -362,7 +362,7 @@ describe('Module 6: Production & Operator End-to-End Hardening & Flow Verificati
         <div class="ticket-container" id="ticketContainer" data-testid="ticket-container">
           <div class="ticket-header">
             <div>
-              <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--primary);">InkFlow Press Floor Job Ticket</div>
+              <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--primary);">PrintFlow Press Floor Job Ticket</div>
               <h2 style="font-size: 22px; font-weight: 900;" id="ticketJobCode">JOB-401: PVC Banner</h2>
               <div style="font-size: 13px; color: var(--muted-foreground);" id="ticketCustomer">Client: Delta Corporation</div>
             </div>

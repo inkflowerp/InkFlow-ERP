@@ -17,6 +17,14 @@
       "reason": "Legacy 1-release transition key migration reader"
     },
     {
+      "token": "inkflow-erp.vercel.app",
+      "reason": "Preview deployment fallback host and Public Suffix List test domain"
+    },
+    {
+      "token": "formerly InkFlow ERP / PrintERP",
+      "reason": "README product historical continuity note"
+    },
+    {
       "token": "accounts@inkflow-erp.com",
       "reason": "email, pending owner decision"
     },
@@ -53,6 +61,18 @@
       "reason": "email, pending owner decision"
     },
     {
+      "token": "admin@printerp.com",
+      "reason": "email, pending owner decision"
+    },
+    {
+      "token": "admin@inkflow.io",
+      "reason": "email, pending owner decision"
+    },
+    {
+      "token": "inkflow.erp@gmail.com",
+      "reason": "email, pending owner decision"
+    },
+    {
       "token": "tariqul@inkflow.com.bd",
       "reason": "email, pending owner decision"
     },
@@ -78,15 +98,119 @@
     },
     {
       "token": "repo: inkflowerp/InkFlow-ERP",
-      "reason": "GitHub upstream git repository identifier"
+      "reason": "GitHub upstream git identifier"
+    },
+    {
+      "token": "system@printerp.com.bd",
+      "reason": "email, pending owner decision"
+    },
+    {
+      "token": "admin@printerp.com.bd",
+      "reason": "email, pending owner decision"
+    },
+    {
+      "token": "staff@printerp.com.bd",
+      "reason": "email, pending owner decision"
+    },
+    {
+      "token": "user@printerp.com",
+      "reason": "email, pending owner decision"
+    },
+    {
+      "token": "privacy@printerp.com.bd",
+      "reason": "email, pending owner decision"
+    },
+    {
+      "token": "forensic.audit@inkflow.com",
+      "reason": "email, pending owner decision"
+    },
+    {
+      "token": "inventory@inkflow.com",
+      "reason": "email, pending owner decision"
+    },
+    {
+      "token": "owner@printerp.com",
+      "reason": "email, pending owner decision"
+    },
+    {
+      "token": "audit@printerp.com",
+      "reason": "email, pending owner decision"
+    },
+    {
+      "token": "billing.manager@printerp.com",
+      "reason": "email, pending owner decision"
+    },
+    {
+      "token": "system@inkflowerp.com",
+      "reason": "email, pending owner decision"
+    },
+    {
+      "token": "printerp-saas-master-key-salt-2026",
+      "reason": "Cryptographic salt invariant"
+    },
+    {
+      "token": "inkflow-erp-secure-session-signing-key-minimum-32-bytes!",
+      "reason": "Fallback session signing key token"
+    },
+    {
+      "token": "INKFLOW:ATT:v1:",
+      "reason": "Attendance QR backward compatibility parser token"
+    },
+    {
+      "token": "INKFLOW:ATT:LOC:",
+      "reason": "Attendance QR legacy terminal parser token"
+    },
+    {
+      "token": "k.includes('inkflow')",
+      "reason": "Legacy local storage key migration reader"
+    },
+    {
+      "token": "printerp_tenant_quotations",
+      "reason": "Legacy local storage key migration reader"
+    },
+    {
+      "token": "printerp_quotations",
+      "reason": "Legacy local storage key migration reader"
+    },
+    {
+      "token": ".inkflow.app",
+      "reason": "Internal synthetic employee email domain fallback"
+    },
+    {
+      "token": "PrintERPDataStore",
+      "reason": "Offline memory store symbol name"
+    },
+    {
+      "token": "printerp_registered_users",
+      "reason": "Legacy local storage key migration reader"
+    },
+    {
+      "token": "WhatPrintErpManagesSection",
+      "reason": "Marketing section component identifier"
     }
   ],
   "allowedFilePatterns": [
     "docs/rebrand/**",
-    "docs/hardening/migration-drift.md",
+    "docs/hardening/**",
+    "docs/EMAIL_INTEGRATION_GUIDE.md",
+    "deployment/openwa.md",
+    "copy-inventory.csv",
+    "TENANT_AUTH_AUDIT.md",
+    "SECURITY_REVIEW.md",
+    "PLATFORM_UI_CHECKLIST.md",
+    "HISTORICAL_INCIDENTS.md",
+    "supabase/migrations/**",
+    "supabase/schema_full.sql",
     "scripts/brand-check.mjs",
     "scripts/brand-allowlist.json",
     "scripts/build-inventory.mjs",
-    "scripts/inventory.json"
+    "scripts/inventory.json",
+    "docs/**",
+    "glossary.md",
+    "push_to_github.bat",
+    "scripts/ui-audit/ui-audit-report.md",
+    "supabase/tests/**",
+    "supabase/verify_multitenant_rls.sql",
+    "supabase/seed.sql"
   ]
 }

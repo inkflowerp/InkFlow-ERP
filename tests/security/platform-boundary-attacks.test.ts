@@ -13,7 +13,7 @@ describe('Security Attack Tests: Platform Boundary & Role Isolation', () => {
     const readonlyUser: PlatformUserRecord = {
       id: 'admin-ro-123',
       user_id: 'usr-ro-123',
-      email: 'ro@printerp.com',
+      email: 'ro@printflow.bd',
       full_name: 'Readonly Inspector',
       role: 'platform_readonly',
       is_active: true,
@@ -33,7 +33,7 @@ describe('Security Attack Tests: Platform Boundary & Role Isolation', () => {
     const inactiveOwner: PlatformUserRecord = {
       id: 'admin-owner-disabled',
       user_id: 'usr-owner-disabled',
-      email: 'disabled@printerp.com',
+      email: 'disabled@printflow.bd',
       full_name: 'Suspended Owner',
       role: 'platform_owner',
       is_active: false, // Deactivated

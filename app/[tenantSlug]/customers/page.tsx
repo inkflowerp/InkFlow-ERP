@@ -956,8 +956,8 @@ export default function CustomersPage() {
                     <a
                       href={`https://wa.me/${(c.whatsapp || c.mobile).replace(/\D/g, '')}?text=${encodeURIComponent(
                         tBilingual(
-                          `Dear ${c.name}, greetings from InkFlow. Your outstanding balance is ৳${due.toLocaleString('en-IN')}. Please settle the payment at your earliest convenience. Thank you.`,
-                          `আসসালামু আলাইকুম ${c.name}, InkFlow থেকে শুভেচ্ছা। আপনার বকেয়া বিল ৳${due.toLocaleString('en-IN')} পরিশোধের জন্য বিনীত অনুরোধ করা হচ্ছে। ধন্যবাদ।`
+                          `Dear ${c.name}, greetings from PrintFlow. Your outstanding balance is ৳${due.toLocaleString('en-IN')}. Please settle the payment at your earliest convenience. Thank you.`,
+                          `আসসালামু আলাইকুম ${c.name}, PrintFlow থেকে শুভেচ্ছা। আপনার বকেয়া বিল ৳${due.toLocaleString('en-IN')} পরিশোধের জন্য বিনীত অনুরোধ করা হচ্ছে। ধন্যবাদ।`
                         )
                       )}`}
                       target="_blank"

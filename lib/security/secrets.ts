@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP SaaS - Phase 22: Secrets Sanitizer & Masking
+// PrintFlow SaaS - Phase 22: Secrets Sanitizer & Masking
 // Guards API credentials, bKash merchant tokens, and sensitive personal info in logs.
 // ==============================================================================
 

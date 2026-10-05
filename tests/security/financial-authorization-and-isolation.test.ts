@@ -53,7 +53,7 @@ interface SimulatedWriteOff {
   actor_user_id: string
 }
 
-// Security Authorizer simulating InkFlow Server-Authoritative Pipeline
+// Security Authorizer simulating PrintFlow Server-Authoritative Pipeline
 class FinancialSecurityAuthorizer {
   /**
    * Server-authoritative tenant resolution:
@@ -234,7 +234,7 @@ class FinancialSecurityAuthorizer {
 // TEST SUITE: FINANCIAL AUTHORIZATION & ISOLATION
 // ==========================================
 
-describe('InkFlow ERP — Financial Authorization, Admin Client & Tenant Isolation Forensic Tests', () => {
+describe('PrintFlow — Financial Authorization, Admin Client & Tenant Isolation Forensic Tests', () => {
   // Setup simulated tenants and users
   const tenantA: { id: string; slug: string } = { id: 'company-a-uuid', slug: 'tenant-a' }
   const tenantB: { id: string; slug: string } = { id: 'company-b-uuid', slug: 'tenant-b' }

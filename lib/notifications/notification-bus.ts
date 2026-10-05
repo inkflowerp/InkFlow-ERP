@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP SaaS - Universal Notification Event Bus & Dispatcher
+// PrintFlow SaaS - Universal Notification Event Bus & Dispatcher
 // Seamlessly coordinates in-app popup cards, toast banners, Web Audio chimes,
 // native browser push notifications, and cross-tab synchronization.
 // ==============================================================================

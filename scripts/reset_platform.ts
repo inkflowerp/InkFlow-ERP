@@ -2,7 +2,7 @@ import { createAdminClient } from '../lib/supabase/admin.ts';
 
 async function resetPlatformData() {
   console.log('====================================================');
-  console.log('PrintERP SaaS - Platform Database Reset & Data Purge');
+  console.log('PrintFlow SaaS - Platform Database Reset & Data Purge');
   console.log('====================================================\n');
 
   const admin = createAdminClient();
@@ -196,7 +196,7 @@ async function resetPlatformData() {
     if (!existingSettings) {
       await (admin as any).from('platform_system_settings').insert({
         cluster_name: 'default',
-        app_name: 'PrintERP SaaS',
+        app_name: 'PrintFlow SaaS',
         support_email: 'support@printerp.com.bd',
         billing_email: 'billing@printerp.com.bd',
         default_currency: 'BDT',

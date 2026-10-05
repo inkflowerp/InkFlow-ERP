@@ -36,7 +36,7 @@ describe('Multi-Tenant Full Isolation & Security Invariant Tests', () => {
 
   describe('1. Subdomain Resolution & Cookie Security Invariants', () => {
     it('enforces host-only cookies across all environments (zero wildcard domain cookies)', () => {
-      const prodOpts = getAuthCookieOptions('alpha.inkflowerp.com')
+      const prodOpts = getAuthCookieOptions('alpha.printflow.bd')
       assert.strictEqual(prodOpts.domain, undefined, 'Cookie domain must be undefined (host-only) in production')
       assert.strictEqual(prodOpts.httpOnly, true, 'Cookie must be httpOnly')
 
@@ -48,17 +48,17 @@ describe('Multi-Tenant Full Isolation & Security Invariant Tests', () => {
     })
 
     it('strictly separates platform owner host from tenant workspaces', () => {
-      const platformRes = resolveTenant('admin.inkflowerp.com', '', { overrideRootDomain: 'inkflowerp.com' })
+      const platformRes = resolveTenant('admin.printflow.bd', '', { overrideRootDomain: 'printflow.bd' })
       assert.strictEqual(platformRes.type, 'platform')
       assert.strictEqual(platformRes.slug, null, 'Platform host must not have a tenant slug')
 
-      const tenantRes = resolveTenant('printcraft.inkflowerp.com', '', { overrideRootDomain: 'inkflowerp.com' })
+      const tenantRes = resolveTenant('printcraft.printflow.bd', '', { overrideRootDomain: 'printflow.bd' })
       assert.strictEqual(tenantRes.type, 'tenant')
       assert.strictEqual(tenantRes.slug, 'printcraft')
     })
 
     it('strictly rejects multi-label subdomains (a.b.root.com) to prevent wildcard spoofing', () => {
-      const res = resolveTenant('malicious.tenant.inkflowerp.com', '', { overrideRootDomain: 'inkflowerp.com' })
+      const res = resolveTenant('malicious.tenant.printflow.bd', '', { overrideRootDomain: 'printflow.bd' })
       assert.strictEqual(res.type, 'invalid')
       assert.strictEqual(res.slug, null)
     })

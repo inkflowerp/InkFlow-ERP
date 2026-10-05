@@ -1,5 +1,5 @@
 // ==============================================================================
-// InkFlow ERP - Universal Distributed Rate Limiter
+// PrintFlow - Universal Distributed Rate Limiter
 // Supports Upstash Redis / Vercel KV REST API with in-memory sliding window fallback.
 // Guarantees rate limiting works across stateless serverless edge/lambda instances.
 // ==============================================================================

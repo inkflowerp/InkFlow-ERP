@@ -97,7 +97,7 @@ export function MobileWorkflowSection() {
               <div className="flex items-center justify-between pb-3 border-b border-border text-xs">
                 <div className="flex items-center gap-1.5 font-bold text-foreground">
                   <Printer className="h-4 w-4 text-primary"/>
-                  <span>PrintERP Mobile</span>
+                  <span>PrintFlow Mobile</span>
                 </div>
                 <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-success-surface text-success bg-success-surface text-success">
  Online Sync

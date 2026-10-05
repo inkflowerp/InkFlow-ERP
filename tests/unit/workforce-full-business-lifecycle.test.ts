@@ -1,5 +1,5 @@
 // ==============================================================================
-// InkFlow ERP - Workforce, Attendance, Overtime & Payroll Full Business Suite
+// PrintFlow - Workforce, Attendance, Overtime & Payroll Full Business Suite
 // Real-world Business Test Scenarios matching Bangladeshi Print & Signage SaaS
 // ==============================================================================
 
@@ -8,7 +8,7 @@ import assert from 'node:assert'
 import { WorkforceCalculatorService } from '../../services/workforce-calculator.service.ts'
 import { WorkforceService } from '../../services/workforce.service.ts'
 import { WorkforceRepository } from '../../lib/repositories/workforce.repository.ts'
-import { PrintERPDataStore } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore } from '../../lib/db/data-store.ts'
 import type { EmployeeRecord, ShiftRecord, OvertimeRecord } from '../../types/workforce.types.ts'
 
 describe('Workforce, Attendance, Overtime & Payroll Lifecycle Tests', () => {

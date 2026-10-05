@@ -12,7 +12,7 @@ import { calculateDowntimeMinutes, validateStatusTransition } from '../unit/mach
 import { validateMachineryPayload } from '../unit/machinery-validation.test.ts'
 
 describe('Machinery End-to-End Operational Lifecycle Integration Tests', () => {
-  const companyId = 'tenant-inkflow-001'
+  const companyId = 'tenant-printflow-001'
 
   test('Complete Machine Lifecycle: Creation -> Assignment -> Breakdown -> Resolution -> Maintenance -> Available', () => {
     // 1. Machine Creation & Validation

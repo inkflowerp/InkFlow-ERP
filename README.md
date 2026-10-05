@@ -1,4 +1,5 @@
-# PrintERP SaaS 🖨️🇧🇩
+# PrintFlow 🖨️🇧🇩
+*(formerly InkFlow ERP / PrintERP)*
 
 **Enterprise Multi-Tenant ERP & Factory Automation Suite tailored for Bangladesh Printing Presses, Digital Advertising Signage, and Commercial Packaging Workshops.**
 
@@ -8,7 +9,7 @@
 1. [Overview & Core Value](#overview--core-value)
 2. [System Architecture & Tech Stack](#system-architecture--tech-stack)
 3. [Prerequisites & Environment Setup](#prerequisites--environment-setup)
-4. [Database Migrations (001 – 029)](#database-migrations-001--029)
+4. [Database Migrations](#database-migrations)
 5. [Local Development](#local-development)
 6. [Comprehensive Automated Testing](#comprehensive-automated-testing)
 7. [Production Deployment (Vercel + Supabase)](#production-deployment-vercel--supabase)
@@ -19,7 +20,7 @@
 
 ## 1. Overview & Core Value
 
-PrintERP SaaS is purpose-built for printing workshops in **Motijheel, Arambagh, Banglabazar, Tejgaon, Chittagong, and Bogura**. It addresses the exact real-world complexities of the printing trade:
+PrintFlow is purpose-built for printing workshops in **Motijheel, Arambagh, Banglabazar, Tejgaon, Chittagong, and Bogura**. It addresses the exact real-world complexities of the printing trade:
 - **Dimensional SFT/RFT/GSM Pricing**: Fast calculation for Star Flex, Backlit, Vinyl, 3D Acrylic, Offset sheets, and PVC boards.
 - **Full Order-to-Delivery Pipeline**: Customer ➔ Quotation ➔ Order ➔ Pre-press Artwork Proof ➔ Press Floor Ticket (Konica, Heidelberg) ➔ Mushak 6.3 Tax Invoice ➔ bKash/Nagad/Cash Payment ➔ Delivery Challan.
 - **Bangladesh Compliance**: NBR Mushak 6.3 tax challans, 15% / 7.5% / 5% VAT extraction, double-overtime under Bangladesh Labor Act (208-hour divisor), and advance salary recovery.
@@ -91,9 +92,9 @@ PrintERP SaaS is purpose-built for printing workshops in **Motijheel, Arambagh, 
 
 ---
 
-## 4. Database Migrations (001 – 029)
+## 4. Database Migrations
 
-PrintERP features **29 modular SQL migrations** in [`supabase/migrations/`](file:///f:/Antigravity/PrintERP/supabase/migrations/):
+PrintFlow features **125 modular SQL migrations** in [`supabase/migrations/`](supabase/migrations/):
 
 ```bash
 # Link local repo to your remote Supabase project
@@ -137,7 +138,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## 6. Comprehensive Automated Testing
 
-PrintERP uses Node.js native test runner with zero external runner bloat:
+PrintFlow uses Node.js native test runner with zero external runner bloat:
 
 ```bash
 # Run all automated test suites
@@ -172,7 +173,7 @@ npm run lint
 2. Configure **Environment Variables** in Vercel Project Settings:
    - Add all variables defined in `.env.example`.
    - Separate **Production**, **Preview**, and **Development** environment variables.
-3. Deploy! Vercel will automatically run the build configured in [`vercel.json`](file:///f:/Antigravity/PrintERP/vercel.json) using Singapore (`sin1`) edge routing.
+3. Deploy! Vercel will automatically run the build configured in [`vercel.json`](vercel.json) using Singapore (`sin1`) edge routing.
 
 ---
 

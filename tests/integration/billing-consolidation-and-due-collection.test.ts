@@ -2,14 +2,14 @@ import { describe, it, beforeEach } from 'node:test'
 import assert from 'node:assert'
 import { BillingRepository } from '../../lib/repositories/billing.repository.ts'
 import { BillingService } from '../../services/billing.service.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import type { InvoiceRecord, PaymentRecord } from '../../types/billing.types.ts'
 
 describe('Consolidated Billing & Simple Due Collection Engine (Integration & Financial Integrity)', () => {
   const companyId = 'comp-test-billing-01'
 
   beforeEach(() => {
-    PrintERPDataStore.clearAll()
+    PrintFlowDataStore.clearAll()
   })
 
   it('SCENARIO 1 — FULL PAYMENT: due ৳20,000 -> collect ৳20,000 -> due ৳0, status Paid', async () => {

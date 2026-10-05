@@ -3,7 +3,7 @@ import assert from 'node:assert'
 import { SubscriptionService, DEFAULT_PLANS } from '../../services/subscription.service.ts'
 import { EntitlementService } from '../../services/entitlement.service.ts'
 import { SubscriptionGuard } from '../../lib/subscription/subscription-guard.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import type { CompanySubscriptionRecord, SubscriptionPlanRecord } from '../../types/subscription.types.ts'
 
 describe('Subscription Security & Bypass Prevention Test Suite (Adversarial Certification)', () => {
@@ -45,9 +45,9 @@ describe('Subscription Security & Bypass Prevention Test Suite (Adversarial Cert
       },
     }
 
-    PrintERPDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, subs, false)
-    PrintERPDataStore.set(STORAGE_KEYS.PLATFORM_PLANS, DEFAULT_PLANS, false)
-    PrintERPDataStore.set(STORAGE_KEYS.GATEWAY_TRANSACTIONS, [], false)
+    PrintFlowDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, subs, false)
+    PrintFlowDataStore.set(STORAGE_KEYS.PLATFORM_PLANS, DEFAULT_PLANS, false)
+    PrintFlowDataStore.set(STORAGE_KEYS.GATEWAY_TRANSACTIONS, [], false)
   })
 
   // ============================================================================
@@ -70,7 +70,7 @@ describe('Subscription Security & Bypass Prevention Test Suite (Adversarial Cert
           interval: 'monthly',
         },
       }
-      PrintERPDataStore.set(STORAGE_KEYS.GATEWAY_TRANSACTIONS, [pendingTx], false)
+      PrintFlowDataStore.set(STORAGE_KEYS.GATEWAY_TRANSACTIONS, [pendingTx], false)
 
       const res = await SubscriptionService.verifyPaymentAndActivateSubscription({
         internalTrxId: 'SUB-MANUAL-1001',
@@ -101,7 +101,7 @@ describe('Subscription Security & Bypass Prevention Test Suite (Adversarial Cert
           interval: 'monthly',
         },
       }
-      PrintERPDataStore.set(STORAGE_KEYS.GATEWAY_TRANSACTIONS, [pendingTx], false)
+      PrintFlowDataStore.set(STORAGE_KEYS.GATEWAY_TRANSACTIONS, [pendingTx], false)
 
       const res = await SubscriptionService.verifyPaymentAndActivateSubscription({
         internalTrxId: 'SUB-WIRE-2002',
@@ -142,7 +142,7 @@ describe('Subscription Security & Bypass Prevention Test Suite (Adversarial Cert
           interval: 'monthly',
         },
       }
-      PrintERPDataStore.set(STORAGE_KEYS.GATEWAY_TRANSACTIONS, [tx], false)
+      PrintFlowDataStore.set(STORAGE_KEYS.GATEWAY_TRANSACTIONS, [tx], false)
 
       const res = await SubscriptionService.verifyPaymentAndActivateSubscription({
         internalTrxId: 'SUB-IDEMPOTENT-100',
@@ -160,7 +160,7 @@ describe('Subscription Security & Bypass Prevention Test Suite (Adversarial Cert
   describe('2. Fail-Closed & Server Timestamp Expiry Enforcement', () => {
     test('Expired trial account is denied premium feature access immediately', async () => {
       const trialCompany = 'tenant-expired-trial'
-      const subs = PrintERPDataStore.get<Record<string, any>>(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS) || {}
+      const subs = PrintFlowDataStore.get<Record<string, any>>(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS) || {}
       subs[trialCompany] = {
         id: 'sub-expired-trial',
         company_id: trialCompany,
@@ -175,7 +175,7 @@ describe('Subscription Security & Bypass Prevention Test Suite (Adversarial Cert
         payment_method_type: null,
         last_payment_reference: null,
       }
-      PrintERPDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, subs, false)
+      PrintFlowDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, subs, false)
 
       const canAccess = await EntitlementService.canUseFeature(trialCompany, 'inventory_rolls')
       assert.strictEqual(canAccess, false, 'Expired trial must have zero access to premium features')
@@ -191,7 +191,7 @@ describe('Subscription Security & Bypass Prevention Test Suite (Adversarial Cert
 
     test('Expired active subscription past grace period is denied feature access', async () => {
       const expiredActiveCompany = 'tenant-expired-active'
-      const subs = PrintERPDataStore.get<Record<string, any>>(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS) || {}
+      const subs = PrintFlowDataStore.get<Record<string, any>>(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS) || {}
       subs[expiredActiveCompany] = {
         id: 'sub-expired-active',
         company_id: expiredActiveCompany,
@@ -207,7 +207,7 @@ describe('Subscription Security & Bypass Prevention Test Suite (Adversarial Cert
         payment_method_type: 'bkash',
         last_payment_reference: 'TRX-OLD-999',
       }
-      PrintERPDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, subs, false)
+      PrintFlowDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, subs, false)
 
       const canAccess = await EntitlementService.canUseFeature(expiredActiveCompany, 'inventory_rolls')
       assert.strictEqual(canAccess, false, 'Expired active subscription past grace period must lose access')
@@ -215,7 +215,7 @@ describe('Subscription Security & Bypass Prevention Test Suite (Adversarial Cert
 
     test('Cancelled subscription past current_period_end is denied feature access', async () => {
       const cancelledCompany = 'tenant-cancelled-past-period'
-      const subs = PrintERPDataStore.get<Record<string, any>>(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS) || {}
+      const subs = PrintFlowDataStore.get<Record<string, any>>(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS) || {}
       subs[cancelledCompany] = {
         id: 'sub-cancelled-1',
         company_id: cancelledCompany,
@@ -230,7 +230,7 @@ describe('Subscription Security & Bypass Prevention Test Suite (Adversarial Cert
         payment_method_type: null,
         last_payment_reference: null,
       }
-      PrintERPDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, subs, false)
+      PrintFlowDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, subs, false)
 
       const canAccess = await EntitlementService.canUseFeature(cancelledCompany, 'inventory_rolls')
       assert.strictEqual(canAccess, false, 'Cancelled subscription past period end must have zero feature access')
@@ -249,7 +249,7 @@ describe('Subscription Security & Bypass Prevention Test Suite (Adversarial Cert
 
     test('Suspended account is blocked from all operations', async () => {
       const suspendedCompany = 'tenant-suspended-corp'
-      const subs = PrintERPDataStore.get<Record<string, any>>(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS) || {}
+      const subs = PrintFlowDataStore.get<Record<string, any>>(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS) || {}
       subs[suspendedCompany] = {
         id: 'sub-suspended',
         company_id: suspendedCompany,
@@ -264,7 +264,7 @@ describe('Subscription Security & Bypass Prevention Test Suite (Adversarial Cert
         payment_method_type: null,
         last_payment_reference: null,
       }
-      PrintERPDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, subs, false)
+      PrintFlowDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, subs, false)
 
       const canAccess = await EntitlementService.canUseFeature(suspendedCompany, 'api_access')
       assert.strictEqual(canAccess, false, 'Suspended enterprise account must be denied feature access')
@@ -317,7 +317,7 @@ describe('Subscription Security & Bypass Prevention Test Suite (Adversarial Cert
 
     test('Expired custom overrides automatically stop granting elevated limits', async () => {
       const overrideTenant = 'tenant-override-exp'
-      const subs = PrintERPDataStore.get<Record<string, any>>(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS) || {}
+      const subs = PrintFlowDataStore.get<Record<string, any>>(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS) || {}
       subs[overrideTenant] = {
         id: 'sub-override-1',
         company_id: overrideTenant,
@@ -335,7 +335,7 @@ describe('Subscription Security & Bypass Prevention Test Suite (Adversarial Cert
           expires_at: new Date(Date.now() - 1 * 86400000).toISOString(), // Expired yesterday
         },
       }
-      PrintERPDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, subs, false)
+      PrintFlowDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, subs, false)
 
       // Base Starter limit is 3. Attempting 5 users with expired override of 10 must fail
       await assert.rejects(
@@ -368,7 +368,7 @@ describe('Subscription Security & Bypass Prevention Test Suite (Adversarial Cert
           interval: 'monthly',
         },
       }
-      PrintERPDataStore.set(STORAGE_KEYS.GATEWAY_TRANSACTIONS, [txB], false)
+      PrintFlowDataStore.set(STORAGE_KEYS.GATEWAY_TRANSACTIONS, [txB], false)
 
       const res = await SubscriptionService.verifyPaymentAndActivateSubscription({
         internalTrxId: 'SUB-MOCK-B001',

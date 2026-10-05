@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP SaaS - Stripe International Payment Gateway Adapter
+// PrintFlow SaaS - Stripe International Payment Gateway Adapter
 // Documentation: https://stripe.com/docs/api
 // ==============================================================================
 
@@ -57,7 +57,7 @@ export class StripePaymentAdapter implements PaymentProvider {
         method: 'GET',
         headers: {
           Authorization: `Bearer ${this.secretKey}`,
-          'User-Agent': 'PrintERP-SaaS/1.0',
+          'User-Agent': 'PrintFlow-SaaS/1.0',
         },
         signal: AbortSignal.timeout(10000),
       })
@@ -119,13 +119,13 @@ export class StripePaymentAdapter implements PaymentProvider {
       const body = new URLSearchParams()
       body.append('payment_method_types[0]', 'card')
       body.append('mode', 'payment')
-      body.append('success_url', params.redirectUrl || 'https://printerp.com/platform/billing?session_id={CHECKOUT_SESSION_ID}')
-      body.append('cancel_url', params.cancelUrl || 'https://printerp.com/platform/billing')
+      body.append('success_url', params.redirectUrl || 'https://printflow.bd/platform/billing?session_id={CHECKOUT_SESSION_ID}')
+      body.append('cancel_url', params.cancelUrl || 'https://printflow.bd/platform/billing')
       body.append('client_reference_id', trxId)
       body.append('customer_email', params.customerEmail || 'billing@printerp.com')
       body.append('line_items[0][price_data][currency]', currency)
       body.append('line_items[0][price_data][unit_amount]', String(unitAmount))
-      body.append('line_items[0][price_data][product_data][name]', params.planName || 'PrintERP Subscription')
+      body.append('line_items[0][price_data][product_data][name]', params.planName || 'PrintFlow Subscription')
       body.append('line_items[0][quantity]', '1')
 
       const res = await fetch('https://api.stripe.com/v1/checkout/sessions', {

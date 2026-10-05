@@ -1,7 +1,7 @@
 'use client'
 
 // ==============================================================================
-// PrintERP SaaS - Platform Owner Email Gateway Hub
+// PrintFlow SaaS - Platform Owner Email Gateway Hub
 // Location: Platform Admin Panel -> Settings -> Communication -> Email Gateway
 // Supports Platform Gmail (OAuth 2.0) and Platform SMTP Infrastructure
 // ==============================================================================
@@ -102,7 +102,7 @@ export default function PlatformEmailGatewayPage() {
  const [encryptionType, setEncryptionType] = useState<'ssl' | 'tls' | 'starttls' | 'none'>('tls')
  const [smtpUsername, setSmtpUsername] = useState('')
  const [password, setPassword] = useState('')
- const [senderName, setSenderName] = useState('InkFlow Platform')
+ const [senderName, setSenderName] = useState('PrintFlow Platform')
  const [senderEmail, setSenderEmail] = useState('inkflow.erp@gmail.com')
  const [replyToEmail, setReplyToEmail] = useState('inkflow.erp@gmail.com')
 
@@ -156,7 +156,7 @@ export default function PlatformEmailGatewayPage() {
  setSmtpPort(gwRes.data.smtp_port || 587)
  setEncryptionType(gwRes.data.encryption_type || 'tls')
  setSmtpUsername(gwRes.data.smtp_username || '')
- setSenderName(gwRes.data.sender_name || 'InkFlow Platform')
+ setSenderName(gwRes.data.sender_name || 'PrintFlow Platform')
  setSenderEmail(gwRes.data.sender_email || 'inkflow.erp@gmail.com')
  setReplyToEmail(gwRes.data.reply_to_email || 'inkflow.erp@gmail.com')
  } else {
@@ -507,7 +507,7 @@ export default function PlatformEmailGatewayPage() {
  {providerMode === 'gmail' && <Check className="h-4 w-4 text-primary" />}
  </div>
  <p className="text-xs text-muted-foreground mt-1">
- Connect official InkFlow platform Google Workspace or Gmail account for OAuth 2.0 authenticated system delivery.
+ Connect official PrintFlow platform Google Workspace or Gmail account for OAuth 2.0 authenticated system delivery.
  </p>
  </div>
  <div className="mt-3 text-xs tabular-nums text-muted-foreground">
@@ -594,7 +594,7 @@ export default function PlatformEmailGatewayPage() {
  </div>
  <h3 className="font-bold text-sm text-foreground">Connect Platform Gmail Account</h3>
  <p className="text-xs text-muted-foreground">
- Authorize InkFlow to send platform authentication emails and billing receipts using Google OAuth.
+ Authorize PrintFlow to send platform authentication emails and billing receipts using Google OAuth.
  </p>
  </div>
 
@@ -672,7 +672,7 @@ export default function PlatformEmailGatewayPage() {
  <Input
  value={smtpHost}
  onChange={(e) => setSmtpHost(e.target.value)}
- placeholder="smtp.printerp.com"
+ placeholder="smtp.printflow.bd"
  className="h-9 text-xs bg-card border-border text-foreground tabular-nums rounded-xl"
  />
  </div>
@@ -773,7 +773,7 @@ export default function PlatformEmailGatewayPage() {
  <Input
  value={senderName}
  onChange={(e) => setSenderName(e.target.value)}
- placeholder="InkFlow Platform"
+ placeholder="PrintFlow Platform"
  className="h-9 text-xs bg-card border-border text-foreground rounded-xl"
  />
  </div>
@@ -1017,7 +1017,7 @@ export default function PlatformEmailGatewayPage() {
  <div className="flex items-center gap-2">
  <Input
  type="text"
- value={customDomainInput || (gateway?.sender_email || senderEmail || 'printerp.com').split('@')[1] || 'printerp.com'}
+ value={customDomainInput || (gateway?.sender_email || senderEmail || 'printflow.bd').split('@')[1] || 'printflow.bd'}
  onChange={(e) => setCustomDomainInput(e.target.value.trim().toLowerCase())}
  placeholder="e.g. myprintshop.com"
  className="h-9 text-xs bg-card border-border text-foreground font-mono"
@@ -1173,7 +1173,7 @@ export default function PlatformEmailGatewayPage() {
  size="sm"
  variant="outline"
  onClick={() => {
- const domain = customDomainInput || (gateway?.sender_email || senderEmail || 'printerp.com').split('@')[1] || 'printerp.com'
+ const domain = customDomainInput || (gateway?.sender_email || senderEmail || 'printflow.bd').split('@')[1] || 'printflow.bd'
  const dmarcValue = `v=DMARC1; p=quarantine; sp=quarantine; rua=mailto:postmaster@${domain}; aspf=r; adkim=r;`
  handleCopyRecord('dmarc', dmarcValue)
  }}
@@ -1205,7 +1205,7 @@ export default function PlatformEmailGatewayPage() {
  <div className="sm:col-span-9">
  <span className="text-xs text-muted-foreground font-semibold block uppercase">TXT Value / Content</span>
  <span className="font-mono text-success font-semibold break-all select-all">
- {`v=DMARC1; p=quarantine; sp=quarantine; rua=mailto:postmaster@${customDomainInput || (gateway?.sender_email || senderEmail || 'printerp.com').split('@')[1] || 'printerp.com'}; aspf=r; adkim=r;`}
+ {`v=DMARC1; p=quarantine; sp=quarantine; rua=mailto:postmaster@${customDomainInput || (gateway?.sender_email || senderEmail || 'printflow.bd').split('@')[1] || 'printflow.bd'}; aspf=r; adkim=r;`}
  </span>
  </div>
  </div>
@@ -1287,7 +1287,7 @@ export default function PlatformEmailGatewayPage() {
  type="email"
  value={testRecipient}
  onChange={(e) => setTestRecipient(e.target.value)}
- placeholder="admin@printerp.com"
+ placeholder="admin@printflow.bd"
  className="h-10 text-xs tabular-nums text-foreground bg-card border-input dark:text-foreground"
  />
  </div>

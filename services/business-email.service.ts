@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP SaaS - Business Workflow Email Service
+// PrintFlow SaaS - Business Workflow Email Service
 // Connects Quotations, Invoices, Payments, Due Reminders, Design Proofs,
 // and Delivery Challans to the tenant's authenticated email provider (Gmail/SMTP).
 // ==============================================================================

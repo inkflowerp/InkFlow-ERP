@@ -1,5 +1,5 @@
 // ==============================================================================
-// InkFlow ERP - Module 10: Delivery & Finishing Flow & UX Acceptance Tests
+// PrintFlow - Module 10: Delivery & Finishing Flow & UX Acceptance Tests
 // Tests the full fulfillment lifecycle: Finishing Bench -> QC Inspection -> Challan Dispatch -> Gate Release -> In-Transit COD -> Signed POD
 // Matrix: Light/Dark x Mobile 375px / Desktop 1440px x EN/BN
 // Guarantees: <= 3 clicks completion from dashboard, 4-KPI rows, attention queues, Triplicate Challan Printing (Customer, Gate Pass, Office)
@@ -28,7 +28,7 @@ describe('Module 10: Delivery & Finishing End-to-End Hardening & Flow Verificati
     await browser?.close()
   })
 
-  // Helper to render mock Delivery & Finishing DOM reflecting InkFlow Design System
+  // Helper to render mock Delivery & Finishing DOM reflecting PrintFlow Design System
   async function renderDeliveryPage(
     context: BrowserContext,
     options: {

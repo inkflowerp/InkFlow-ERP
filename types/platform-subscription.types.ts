@@ -1,5 +1,5 @@
 // ==============================================================================
-// InkFlow / PrintERP SaaS - Platform Owner Subscription & Billing Types
+// PrintFlow SaaS - Platform Owner Subscription & Billing Types
 // Strict architectural separation from Tenant billing models.
 // ==============================================================================
 

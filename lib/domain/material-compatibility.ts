@@ -1,5 +1,5 @@
 /**
- * InkFlow ERP — Authoritative Material Compatibility & Physical Geometry Engine
+ * PrintFlow — Authoritative Material Compatibility & Physical Geometry Engine
  * Validates whether physical production dimensions fit available roll widths,
  * rigid sheet media, or usable inventory remnants.
  * 

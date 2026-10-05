@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP SaaS - Quotation Pure Business & Presentation Utilities
+// PrintFlow SaaS - Quotation Pure Business & Presentation Utilities
 // Client-safe calculation, validation, formatting and status evaluation utilities.
 // Free of any server/database/network dependencies.
 // ==============================================================================
@@ -246,7 +246,7 @@ export function getNeedsAttentionQuotes(quotes: QuotationRecord[]): QuotationRec
  * Generates customer-facing text message for WhatsApp or Email
  * Strictly shields internal notes, database IDs, and sensitive data.
  */
-export function generateQuotationTextMessage(quote: QuotationRecord, companyName: string = 'InkFlow'): string {
+export function generateQuotationTextMessage(quote: QuotationRecord, companyName: string = 'PrintFlow'): string {
   const itemsSummary = (quote.items || [])
     .map((it, idx) => {
       const dim = it.width > 0 && it.height > 0 ? ` (${it.width}ft × ${it.height}ft)` : ''
@@ -279,7 +279,7 @@ ${quote.notes ? `*Notes:* ${quote.notes}\n` : ''}Thank you for your business.`
  */
 export function generateBangladeshiQuotationWhatsAppMessage(
   quote: QuotationRecord,
-  companyName: string = 'InkFlow Printing & Signage Solutions',
+  companyName: string = 'PrintFlow Printing & Signage Solutions',
   options?: {
     bkashNumber?: string
     bankDetails?: string

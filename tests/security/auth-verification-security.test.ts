@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP / InkFlow SaaS - Security Tests: Auth Verification & Security Boundaries
+// PrintFlow / PrintFlow SaaS - Security Tests: Auth Verification & Security Boundaries
 // Tests tenant access gating for unverified users, token/OTP replay attacks,
 // purpose tampering, brute-force lockouts, cross-user tokens, and anti-enumeration invariants.
 // ==============================================================================
@@ -157,7 +157,7 @@ describe('Auth Verification & Tenant Access Security Tests', () => {
 
   it('10. Blocks unverified accounts from possessing valid tenant context without onboarding', async () => {
     // Fresh unverified signup
-    const unverifiedEmail = 'unverified-owner@inkflow.com'
+    const unverifiedEmail = 'unverified-owner@printflow.test'
     const res = await AuthService.signUp(unverifiedEmail, 'Password123!', 'Unverified Owner')
     assert.strictEqual(res.success, true)
     assert.strictEqual(res.data?.requiresVerification, true)
@@ -166,18 +166,18 @@ describe('Auth Verification & Tenant Access Security Tests', () => {
 
   it('11. Dynamically resolves canonical origin and never leaks localhost in production', () => {
     // Explicit valid domain
-    assert.strictEqual(resolveAppBaseUrl('https://app.printerp.com/'), 'https://app.printerp.com')
+    assert.strictEqual(resolveAppBaseUrl('https://app.printflow.bd/'), 'https://app.printflow.bd')
     
     // Simulating headers with x-forwarded-host
     const mockHeaders = new Headers({
-      'x-forwarded-host': 'custom.printerp.io',
+      'x-forwarded-host': 'custom.printflow.io',
       'x-forwarded-proto': 'https',
     })
-    assert.strictEqual(resolveRequestOrigin(mockHeaders), 'https://custom.printerp.io')
+    assert.strictEqual(resolveRequestOrigin(mockHeaders), 'https://custom.printflow.io')
   })
 
   it('12. Generates verification link with dynamically passed appUrl and verifies token', async () => {
-    const customOrigin = 'https://cloud.printerp.com'
+    const customOrigin = 'https://cloud.printflow.bd'
     const email = 'custom-origin@example.com'
     
     const sendRes = await AuthEmailService.sendRegistrationVerificationEmail({

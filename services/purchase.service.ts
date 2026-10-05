@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP / InkFlow SaaS - Purchase Service (V5)
+// PrintFlow SaaS - Purchase Service (V5)
 // Multi-Tenant Procurement Lifecycle, Approval, Goods Receiving & V3 Inventory Integration
 // ==============================================================================
 

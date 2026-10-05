@@ -791,7 +791,7 @@ export default function NotificationSettingsPage() {
                     <span className="text-xs font-bold text-foreground">
                       {previewLang === 'bn' ? activeTemplate.name_bn || activeTemplate.name : activeTemplate.name}
                     </span>
-                    <span className="text-xs text-muted-foreground">InkFlow ERP • Just now</span>
+                    <span className="text-xs text-muted-foreground">PrintFlow • Just now</span>
                   </div>
 
                   <p className="text-xs text-foreground whitespace-pre-line leading-relaxed font-sans">

@@ -1,5 +1,5 @@
 // ==============================================================================
-// InkFlow ERP - Finance 360 & Double-Entry Accounting Types (V9.1)
+// PrintFlow - Finance 360 & Double-Entry Accounting Types (V9.1)
 // ==============================================================================
 
 export type AccountType = 'ASSET' | 'LIABILITY' | 'EQUITY' | 'REVENUE' | 'EXPENSE'

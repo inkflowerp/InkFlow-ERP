@@ -1,5 +1,5 @@
 // ==============================================================================
-// InkFlow ERP SaaS - Visual Audit Report Generator & WCAG Contrast Engine
+// PrintFlow SaaS - Visual Audit Report Generator & WCAG Contrast Engine
 // ==============================================================================
 
 import fs from 'fs'

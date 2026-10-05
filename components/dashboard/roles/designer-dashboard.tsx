@@ -191,7 +191,7 @@ export function DesignerDashboard({ tasks, onRefresh }: DesignerDashboardProps) 
  return buildBangladeshiWhatsAppMessage({
  template: whatsAppTemplate,
  customerName: whatsAppModalJob.customer_name,
- companyName: company?.name || 'InkFlow PrintERP',
+ companyName: company?.name || 'PrintFlow Commercial Press',
  jobTitle: whatsAppModalJob.title || whatsAppModalJob.product_name || 'Printing Job',
  jobNum: whatsAppModalJob.design_number || whatsAppModalJob.order_number || whatsAppModalJob.id,
  invoiceNum: whatsAppModalJob.invoice_number,

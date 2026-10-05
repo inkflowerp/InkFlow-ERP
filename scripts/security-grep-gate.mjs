@@ -1,5 +1,5 @@
 // ==============================================================================
-// InkFlow ERP - Security Grep Gate & Static Policy Enforcement
+// PrintFlow - Security Grep Gate & Static Policy Enforcement
 // CI Gate running on every PR to prevent silent security regressions:
 // 1. Blocks 'GRANT ... TO anon' on sensitive and security definer functions.
 // 2. Blocks 'USING (true)' / 'WITH CHECK (true)' RLS bypass on tenant tables.
@@ -169,7 +169,7 @@ scanClientFiles('app');
 // FINAL RESULT
 // ------------------------------------------------------------------------------
 console.log('==============================================================================');
-console.log('InkFlow ERP - Security Grep Gate Verification Result');
+console.log('PrintFlow - Security Grep Gate Verification Result');
 console.log('==============================================================================');
 if (violations > 0) {
   console.error(`\x1b[31m❌ SECURITY GREP GATE FAILED: ${violations} violation(s) detected.\x1b[0m`);

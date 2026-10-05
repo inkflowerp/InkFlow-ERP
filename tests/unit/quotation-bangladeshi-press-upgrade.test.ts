@@ -4,7 +4,7 @@ import { BANGLADESHI_PRINT_PRESETS, getPresetsByCategory } from '../../lib/quota
 import { QuotationRepository } from '../../lib/repositories/quotation.repository.ts'
 import { QuotationService } from '../../services/quotation.service.ts'
 import { formatBDT, numberToWordsBangla, numberToWordsBDT } from '../../lib/formatters.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 
 test('Quotation Bangladeshi Press Upgrade - Presets Catalog', () => {
   // Test presets availability

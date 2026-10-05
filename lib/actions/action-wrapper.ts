@@ -1,5 +1,5 @@
 // ==============================================================================
-// InkFlow ERP - Universal Server Action Security Wrappers
+// PrintFlow - Universal Server Action Security Wrappers
 // Enforces fail-closed isolation, database-resolved membership, and strict RBAC.
 // ==============================================================================
 

@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP / InkFlow SaaS - Performance & Latency Telemetry Monitor
+// PrintFlow SaaS - Performance & Latency Telemetry Monitor
 // Tracks server-side execution latency, query durations, and slow-path alerts.
 // Automatically scrubs sensitive credentials and PII from telemetry logs.
 // ==============================================================================

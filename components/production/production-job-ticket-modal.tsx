@@ -88,7 +88,7 @@ export function JobTicketPrintModal({
  TASK: {task.task_number}
             </div>
             <h1 className="text-lg font-black tracking-tight uppercase">
-              {company?.name || 'InkFlow Digital Printing & Signage'}
+              {company?.name || 'PrintFlow Digital Printing & Signage'}
             </h1>
             {company?.address && (
               <p className="text-muted-foreground text-xs">{company.address}</p>

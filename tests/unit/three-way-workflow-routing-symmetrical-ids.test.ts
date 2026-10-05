@@ -3,7 +3,7 @@ import assert from 'node:assert'
 import { BillingRepository } from '../../lib/repositories/billing.repository.ts'
 import { OrderRepository } from '../../lib/repositories/order.repository.ts'
 import { DesignRepository } from '../../lib/repositories/design.repository.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 
 describe('3-Way Workflow Routing & Symmetrical ID Sequence Tests', () => {
   const TENANT_ID = `tenant-routing-${Date.now()}`
@@ -56,7 +56,7 @@ describe('3-Way Workflow Routing & Symmetrical ID Sequence Tests', () => {
     assert.ok(invoice.invoice_number)
 
     // Verify Delivery Challan is automatically created in Delivery Panel
-    const challans = PrintERPDataStore.get<any[]>(STORAGE_KEYS.DELIVERY_CHALLANS) || []
+    const challans = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.DELIVERY_CHALLANS) || []
     const matchingChallan = challans.find(
       (c) => c.company_id === TENANT_ID && c.invoice_id === invoice.id
     )
@@ -67,7 +67,7 @@ describe('3-Way Workflow Routing & Symmetrical ID Sequence Tests', () => {
     assert.strictEqual(matchingChallan.items[0].product_description, 'Pre-printed Paper Cups 250ml')
 
     // Verify NO design jobs were created for ready product
-    const designJobs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.DESIGN_JOBS) || []
+    const designJobs = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.DESIGN_JOBS) || []
     const readyDesignJobs = designJobs.filter(
       (d) => d.company_id === TENANT_ID && d.invoice_id === invoice.id
     )
@@ -100,7 +100,7 @@ describe('3-Way Workflow Routing & Symmetrical ID Sequence Tests', () => {
     assert.ok(invoice.id)
 
     // Verify Design Job created with workflow_routing = 'design_required' and customer_approval_required = true
-    const designJobs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.DESIGN_JOBS) || []
+    const designJobs = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.DESIGN_JOBS) || []
     const matchingDesignJob = designJobs.find(
       (d) => d.company_id === TENANT_ID && d.invoice_id === invoice.id
     )
@@ -139,7 +139,7 @@ describe('3-Way Workflow Routing & Symmetrical ID Sequence Tests', () => {
     assert.ok(invoice.id)
 
     // Verify Design Job created with workflow_routing = 'design_ok' and pre-approved artwork version
-    const designJobs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.DESIGN_JOBS) || []
+    const designJobs = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.DESIGN_JOBS) || []
     const matchingDesignJob = designJobs.find(
       (d) => d.company_id === TENANT_ID && d.invoice_id === invoice.id
     )
@@ -161,7 +161,7 @@ describe('3-Way Workflow Routing & Symmetrical ID Sequence Tests', () => {
     assert.strictEqual(releaseResult.status, 'released_to_production')
 
     // Verify Production Tasks are generated for Print & Finishing floors
-    const prodTasks = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
+    const prodTasks = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
     const jobProdTasks = prodTasks.filter(
       (t) => t.company_id === TENANT_ID && t.job_number === invoice.invoice_number
     )

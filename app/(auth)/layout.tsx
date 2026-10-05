@@ -19,7 +19,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
             {appLogoUrl ? (
               <img
                 src={appLogoUrl}
-                alt={appName || 'PrintERP'}
+                alt={appName || 'PrintFlow'}
                 className="h-10 w-10 rounded-xl object-contain bg-card border border-border p-1 shadow-xs group-hover:scale-105 transition-transform shrink-0"
               />
             ) : (
@@ -30,7 +30,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
             <div className="flex flex-col">
               <div className="flex items-center gap-2">
                 <span className="text-2xl font-black tracking-tight text-foreground">
-                  {appName || 'InkFlow ERP'}
+                  {appName || 'PrintFlow'}
                 </span>
                 <span className="rounded-md bg-primary/10 px-2 py-0.5 text-xs font-bold uppercase tracking-wider text-primary border border-primary/20">
                   BD SaaS
@@ -89,7 +89,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
             <ShieldCheck className="h-4 w-4 text-primary" />
             <span>Multi-Tenant RLS & 256-Bit SSL Isolated</span>
           </div>
-          <span className="font-medium text-muted-foreground">© {new Date().getFullYear()} {appName || 'InkFlow ERP'}</span>
+          <span className="font-medium text-muted-foreground">© {new Date().getFullYear()} {appName || 'PrintFlow'}</span>
         </div>
       </div>
 
@@ -102,7 +102,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
             {appLogoUrl ? (
               <img
                 src={appLogoUrl}
-                alt={appName || 'PrintERP'}
+                alt={appName || 'PrintFlow'}
                 className="h-8 w-8 rounded-lg object-contain bg-card border border-border p-1 shadow-xs"
               />
             ) : (
@@ -111,7 +111,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
               </div>
             )}
             <span className="text-base font-black tracking-tight text-foreground">
-              {appName || 'InkFlow ERP'}
+              {appName || 'PrintFlow'}
             </span>
           </Link>
 

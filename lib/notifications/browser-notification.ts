@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP SaaS - Universal Browser Push & Web Notification Manager
+// PrintFlow SaaS - Universal Browser Push & Web Notification Manager
 // Wraps native Web Notification API with permission handling, icons,
 // click-to-route action handling, audio chimes, and fallback support.
 // ==============================================================================
@@ -115,7 +115,7 @@ export async function showBrowserNotification(
       body: options.body,
       icon: options.icon || defaultIcon,
       badge: options.badge || defaultBadge,
-      tag: options.tag || `printerp-${Date.now()}`,
+      tag: options.tag || `printflow-${Date.now()}`,
       silent: true, // We handle synthesized polyphonic Web Audio ourselves
       data: {
         url: options.url,

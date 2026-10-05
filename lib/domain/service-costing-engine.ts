@@ -1,5 +1,5 @@
 /**
- * InkFlow ERP — Authoritative Service Pricing & Costing Engine
+ * PrintFlow — Authoritative Service Pricing & Costing Engine
  * Calculates customer selling prices, planned material and direct costs,
  * finishing options, additionals, and on-site installation economics.
  */

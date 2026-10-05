@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP SaaS - Nagad Merchant Payment Gateway Adapter
+// PrintFlow SaaS - Nagad Merchant Payment Gateway Adapter
 // Documentation: https://developer.mynagad.com
 // ==============================================================================
 
@@ -69,7 +69,7 @@ export class NagadPaymentAdapter implements PaymentProvider {
         headers: {
           'X-KM-Api-Version': 'v-0.2.0',
           'X-KM-IP-V4': '127.0.0.1',
-          'User-Agent': 'PrintERP-SaaS/1.0',
+          'User-Agent': 'PrintFlow-SaaS/1.0',
         },
         signal: AbortSignal.timeout(10000),
       })

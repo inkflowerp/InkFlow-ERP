@@ -1,5 +1,5 @@
 // ==============================================================================
-// InkFlow ERP - Module 2: Quotations Flow & UX Acceptance Tests
+// PrintFlow - Module 2: Quotations Flow & UX Acceptance Tests
 // Tests the full lifecycle: Create -> Edit -> Status Change -> Document Print
 // Matrix: Light/Dark x Mobile 375px / Desktop 1440px x EN/BN
 // Guarantees: <= 3 clicks completion from dashboard, 4-KPI row, attention queue
@@ -28,7 +28,7 @@ describe('Module 2: Quotations End-to-End Hardening & Flow Verification', () => 
     await browser?.close()
   })
 
-  // Helper to render mock Quotations DOM reflecting InkFlow Design System
+  // Helper to render mock Quotations DOM reflecting PrintFlow Design System
   async function renderQuotationsPage(
     context: BrowserContext,
     options: {
@@ -384,7 +384,7 @@ describe('Module 2: Quotations End-to-End Hardening & Flow Verification', () => 
             <div class="print-preview" id="print-document-sheet">
               <div style="display: flex; justify-content: space-between; border-bottom: 2px solid #000; padding-bottom: 12px; margin-bottom: 12px;">
                 <div>
-                  <h1 style="font-size: 20px; font-weight: 900;">INKFLOW COMMERCIAL PRESS</h1>
+                  <h1 style="font-size: 20px; font-weight: 900;">PRINTFLOW COMMERCIAL PRESS</h1>
                   <p>12/A Motijheel C/A, Dhaka-1000, Bangladesh</p>
                   <p>Tax Registration: BIN-19827364501 • Asia/Dhaka</p>
                 </div>

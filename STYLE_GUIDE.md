@@ -1,4 +1,4 @@
-# InkFlow ERP — Design System Style Guide
+# PrintFlow — Design System Style Guide
 
 ## Philosophy
 Minimal, clean, professional, modern. Inspired by Linear, Vercel, and Stripe Dashboard.

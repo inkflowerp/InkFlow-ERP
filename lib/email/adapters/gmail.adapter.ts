@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP SaaS - Enterprise Gmail API Adapter (Google OAuth 2.0)
+// PrintFlow SaaS - Enterprise Gmail API Adapter (Google OAuth 2.0)
 // Uses Google's Gmail REST API v1 (`users/me/messages/send`) with MIME RFC 2822 formatting
 // and automatic OAuth access token refresh with single-retry capability.
 // ==============================================================================
@@ -146,7 +146,7 @@ export class GmailProviderAdapter implements IEmailProvider {
       'MIME-Version: 1.0',
       'Auto-Submitted: auto-generated',
       'X-Auto-Response-Suppress: All',
-      'X-Mailer: InkFlow ERP Engine',
+      'X-Mailer: PrintFlow Engine',
     ]
 
     if (ccAddresses) headers.push(`Cc: ${ccAddresses}`)
@@ -181,7 +181,7 @@ export class GmailProviderAdapter implements IEmailProvider {
             .replace(/<[^>]*>?/gm, ' ')
             .replace(/&nbsp;/gi, ' ')
             .replace(/\s+/g, ' ')
-            .trim() || 'Notification from InkFlow'
+            .trim() || 'Notification from PrintFlow'
 
     const hasAttachments = payload.attachments && payload.attachments.length > 0
 

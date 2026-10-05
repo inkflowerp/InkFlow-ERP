@@ -1,17 +1,17 @@
 import { describe, it, beforeEach } from 'node:test'
 import assert from 'node:assert'
 import { ProductService } from '../../services/product.service.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 
 describe('Security: Products & Pricing Multi-Tenant Quarantine & RBAC Shielding', () => {
   const companyA = `tenant-alpha-${Date.now()}`
   const companyB = `tenant-beta-${Date.now()}`
 
   beforeEach(() => {
-    PrintERPDataStore.set(STORAGE_KEYS.PRODUCTS, [])
-    PrintERPDataStore.set(STORAGE_KEYS.PRICE_HISTORY, [])
-    PrintERPDataStore.set(STORAGE_KEYS.PRODUCT_VARIANTS, [])
-    PrintERPDataStore.set(STORAGE_KEYS.PRICE_LISTS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.PRODUCTS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.PRICE_HISTORY, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.PRODUCT_VARIANTS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.PRICE_LISTS, [])
   })
 
   it('1. Strict Read Isolation: Company A cannot see products belonging to Company B', async () => {

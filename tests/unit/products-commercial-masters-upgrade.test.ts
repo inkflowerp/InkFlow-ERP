@@ -10,17 +10,17 @@ import { FinishingOptionRepository } from '../../lib/repositories/finishing-opti
 import { AdditionalOptionRepository } from '../../lib/repositories/additional-option.repository.ts'
 import { InstallationOptionRepository } from '../../lib/repositories/installation-option.repository.ts'
 import { PrintingMethodRepository } from '../../lib/repositories/printing-method.repository.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 
 describe('Unit: Products & Commercial Masters 2.0 Upgrade Suite', () => {
   const tenantAlpha = 'tenant-commercial-alpha-001'
   const tenantBeta = 'tenant-commercial-beta-002'
 
   beforeEach(() => {
-    PrintERPDataStore.set(STORAGE_KEYS.FINISHING_OPTIONS, [])
-    PrintERPDataStore.set(STORAGE_KEYS.ADDITIONAL_OPTIONS, [])
-    PrintERPDataStore.set(STORAGE_KEYS.INSTALLATION_OPTIONS, [])
-    PrintERPDataStore.set(STORAGE_KEYS.PRINTING_METHODS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.FINISHING_OPTIONS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.ADDITIONAL_OPTIONS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.INSTALLATION_OPTIONS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.PRINTING_METHODS, [])
   })
 
   // =========================================================================

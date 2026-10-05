@@ -2,7 +2,7 @@ import { Client } from 'pg';
 
 async function executeFullReset() {
   console.log('===========================================================');
-  console.log('⚡ PrintERP SaaS - Executing Full Application System Reset ⚡');
+  console.log('⚡ PrintFlow SaaS - Executing Full Application System Reset ⚡');
   console.log('===========================================================\n');
 
   const client = new Client({
@@ -411,7 +411,7 @@ async function executeFullReset() {
             mfa_required_for_admins
           ) VALUES (
             'default',
-            'PrintERP SaaS',
+            'PrintFlow SaaS',
             'bdinfosky@gmail.com',
             'BDT',
             false,

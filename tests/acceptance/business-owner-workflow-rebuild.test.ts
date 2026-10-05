@@ -8,7 +8,7 @@ import { InventoryRepository } from '../../lib/repositories/inventory.repository
 import { PurchaseRepository } from '../../lib/repositories/purchase.repository.ts'
 import { QuotationRepository } from '../../lib/repositories/quotation.repository.ts'
 import { BillingRepository } from '../../lib/repositories/billing.repository.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import type {
   ProductRecord,
   PrintingMethod,
@@ -29,8 +29,8 @@ describe('20 Mandatory Acceptance Tests: Business-Owner Quotation, Invoice, Prod
   beforeEach(() => {
     // Clear in-memory mock datastores for both tenants
     for (const key of Object.values(STORAGE_KEYS)) {
-      PrintERPDataStore.clear(key as any, companyIdA)
-      PrintERPDataStore.clear(key as any, companyIdB)
+      PrintFlowDataStore.clear(key as any, companyIdA)
+      PrintFlowDataStore.clear(key as any, companyIdB)
     }
   })
 
@@ -39,7 +39,7 @@ describe('20 Mandatory Acceptance Tests: Business-Owner Quotation, Invoice, Prod
   // =========================================================================
   test('TEST 1: Create quotation with zero catalog products -> Success', async () => {
     // Verify 0 products in catalog
-    const allProducts = PrintERPDataStore.get<ProductRecord[]>(STORAGE_KEYS.PRODUCTS, companyIdA) || []
+    const allProducts = PrintFlowDataStore.get<ProductRecord[]>(STORAGE_KEYS.PRODUCTS, companyIdA) || []
     assert.equal(allProducts.length, 0, 'Catalog should be completely empty')
 
     // Create a custom quote item
@@ -83,9 +83,9 @@ describe('20 Mandatory Acceptance Tests: Business-Owner Quotation, Invoice, Prod
       updated_at: new Date().toISOString(),
     }
 
-    PrintERPDataStore.addItem(STORAGE_KEYS.QUOTATIONS, quotation, companyIdA)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.QUOTATIONS, quotation, companyIdA)
 
-    const saved = PrintERPDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS, companyIdA)?.find(
+    const saved = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS, companyIdA)?.find(
       (q) => q.id === quoteId
     )
     assert.ok(saved, 'Quotation should save successfully')
@@ -94,7 +94,7 @@ describe('20 Mandatory Acceptance Tests: Business-Owner Quotation, Invoice, Prod
     assert.equal(saved.total_amount, 13000)
 
     // Catalog must still have 0 products
-    const productsAfter = PrintERPDataStore.get<ProductRecord[]>(STORAGE_KEYS.PRODUCTS, companyIdA) || []
+    const productsAfter = PrintFlowDataStore.get<ProductRecord[]>(STORAGE_KEYS.PRODUCTS, companyIdA) || []
     assert.equal(productsAfter.length, 0, 'Catalog must remain empty without auto-creating products')
   })
 
@@ -134,17 +134,17 @@ describe('20 Mandatory Acceptance Tests: Business-Owner Quotation, Invoice, Prod
       updated_at: new Date().toISOString(),
     }
 
-    PrintERPDataStore.addItem(STORAGE_KEYS.QUOTATIONS, quotation, companyIdA)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.QUOTATIONS, quotation, companyIdA)
 
     // Verify quotation is saved
-    const saved = PrintERPDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS, companyIdA)?.find(
+    const saved = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS, companyIdA)?.find(
       (q) => q.id === quoteId
     )
     assert.ok(saved)
     assert.equal(saved.items?.[0].product_id, null)
 
     // Verify no product created in catalog
-    const products = PrintERPDataStore.get<ProductRecord[]>(STORAGE_KEYS.PRODUCTS, companyIdA) || []
+    const products = PrintFlowDataStore.get<ProductRecord[]>(STORAGE_KEYS.PRODUCTS, companyIdA) || []
     const matchingProduct = products.find((p) => p.name.includes('Custom 3D Acrylic Lettering'))
     assert.equal(matchingProduct, undefined, 'No product should be created in catalog')
   })
@@ -167,7 +167,7 @@ describe('20 Mandatory Acceptance Tests: Business-Owner Quotation, Invoice, Prod
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }
-    PrintERPDataStore.addItem(STORAGE_KEYS.MATERIALS, outOfStockMaterial, companyIdA)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.MATERIALS, outOfStockMaterial, companyIdA)
 
     // Evaluate stock availability
     const availability = evaluateStockAvailability({
@@ -199,15 +199,15 @@ describe('20 Mandatory Acceptance Tests: Business-Owner Quotation, Invoice, Prod
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }
-    PrintERPDataStore.addItem(STORAGE_KEYS.QUOTATIONS, quote, companyIdA)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.QUOTATIONS, quote, companyIdA)
 
-    const saved = PrintERPDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS, companyIdA)?.find(
+    const saved = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS, companyIdA)?.find(
       (q) => q.id === quoteId
     )
     assert.ok(saved, 'Quotation saved successfully despite material shortage')
 
     // Verify stock remains untouched at 0 (no negative reservation)
-    const matAfter = PrintERPDataStore.get<MaterialRecord[]>(STORAGE_KEYS.MATERIALS, companyIdA)?.find(
+    const matAfter = PrintFlowDataStore.get<MaterialRecord[]>(STORAGE_KEYS.MATERIALS, companyIdA)?.find(
       (m) => m.id === outOfStockMaterial.id
     )
     assert.equal(matAfter?.current_stock, 0, 'Quotation must NOT decrement or reserve stock')
@@ -267,12 +267,12 @@ describe('20 Mandatory Acceptance Tests: Business-Owner Quotation, Invoice, Prod
       updated_at: new Date().toISOString(),
     }
 
-    PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCTS, p1ActiveReady, companyIdA)
-    PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCTS, p2ActiveService, companyIdA)
-    PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCTS, p3InactiveProduct, companyIdA)
-    PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCTS, p4RawMaterial, companyIdA)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.PRODUCTS, p1ActiveReady, companyIdA)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.PRODUCTS, p2ActiveService, companyIdA)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.PRODUCTS, p3InactiveProduct, companyIdA)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.PRODUCTS, p4RawMaterial, companyIdA)
 
-    const all = PrintERPDataStore.get<ProductRecord[]>(STORAGE_KEYS.PRODUCTS, companyIdA) || []
+    const all = PrintFlowDataStore.get<ProductRecord[]>(STORAGE_KEYS.PRODUCTS, companyIdA) || []
     const sellableCatalog = all.filter((p) => {
       if (!p.is_active) return false
       if (p.entity_type === 'material' && !(p as any).is_sellable) return false
@@ -300,7 +300,7 @@ describe('20 Mandatory Acceptance Tests: Business-Owner Quotation, Invoice, Prod
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }
-    PrintERPDataStore.addItem(STORAGE_KEYS.MATERIALS, vinylMaterial, companyIdA)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.MATERIALS, vinylMaterial, companyIdA)
 
     // Invoice order requires 166.56 SFT (4 ft x 41.64 ft)
     const check = evaluateStockAvailability({
@@ -330,9 +330,9 @@ describe('20 Mandatory Acceptance Tests: Business-Owner Quotation, Invoice, Prod
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }
-    PrintERPDataStore.addItem(STORAGE_KEYS.INVOICES, invoice, companyIdA)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.INVOICES, invoice, companyIdA)
 
-    const saved = PrintERPDataStore.get<any[]>(STORAGE_KEYS.INVOICES, companyIdA)?.find(
+    const saved = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.INVOICES, companyIdA)?.find(
       (i) => i.id === invoiceId
     )
     assert.ok(saved, 'Invoice should save successfully')
@@ -385,7 +385,7 @@ describe('20 Mandatory Acceptance Tests: Business-Owner Quotation, Invoice, Prod
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }
-    PrintERPDataStore.addItem(STORAGE_KEYS.MATERIALS, xStandMaterial, companyIdA)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.MATERIALS, xStandMaterial, companyIdA)
 
     // 1. Create Purchase Order for 20 pcs
     const po = await PurchaseRepository.createPurchaseOrder({
@@ -458,7 +458,7 @@ describe('20 Mandatory Acceptance Tests: Business-Owner Quotation, Invoice, Prod
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }
-    PrintERPDataStore.addItem(STORAGE_KEYS.MATERIALS, vinylMat, companyIdA)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.MATERIALS, vinylMat, companyIdA)
 
     // 1. Create PO for 5 rolls (2.25 ft x 164 ft)
     const po = await PurchaseRepository.createPurchaseOrder({
@@ -565,11 +565,11 @@ describe('20 Mandatory Acceptance Tests: Business-Owner Quotation, Invoice, Prod
       updated_at: new Date().toISOString(),
     }
 
-    PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCTS, readyProd, companyIdA)
-    PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCTS, matItem, companyIdA)
-    PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCTS, serviceItem, companyIdA)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.PRODUCTS, readyProd, companyIdA)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.PRODUCTS, matItem, companyIdA)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.PRODUCTS, serviceItem, companyIdA)
 
-    const all = PrintERPDataStore.get<ProductRecord[]>(STORAGE_KEYS.PRODUCTS, companyIdA) || []
+    const all = PrintFlowDataStore.get<ProductRecord[]>(STORAGE_KEYS.PRODUCTS, companyIdA) || []
     const purchasable = all.filter((p) => p.is_active && (p.entity_type === 'product' || p.entity_type === 'material'))
 
     assert.equal(purchasable.length, 2)
@@ -599,9 +599,9 @@ describe('20 Mandatory Acceptance Tests: Business-Owner Quotation, Invoice, Prod
       updated_at: new Date().toISOString(),
     }
 
-    PrintERPDataStore.addItem(STORAGE_KEYS.MATERIAL_PURCHASE_CONFIGS, config, companyIdA)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.MATERIAL_PURCHASE_CONFIGS, config, companyIdA)
 
-    const saved = PrintERPDataStore.get<any[]>(
+    const saved = PrintFlowDataStore.get<any[]>(
       STORAGE_KEYS.MATERIAL_PURCHASE_CONFIGS,
       companyIdA
     )?.find((c) => c.id === config.id)
@@ -796,7 +796,7 @@ describe('20 Mandatory Acceptance Tests: Business-Owner Quotation, Invoice, Prod
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }
-    PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCTS, product, companyIdA)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.PRODUCTS, product, companyIdA)
 
     // 2. Save quotation snapshot
     const quoteId = 'quo-hist-18'
@@ -826,14 +826,14 @@ describe('20 Mandatory Acceptance Tests: Business-Owner Quotation, Invoice, Prod
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }
-    PrintERPDataStore.addItem(STORAGE_KEYS.QUOTATIONS, quote, companyIdA)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.QUOTATIONS, quote, companyIdA)
 
     // 3. Mutate catalog product price to 85 BDT
     const updatedProduct = { ...product, selling_price: 85.0 }
-    PrintERPDataStore.updateItem(STORAGE_KEYS.PRODUCTS, product.id, updatedProduct, companyIdA)
+    PrintFlowDataStore.updateItem(STORAGE_KEYS.PRODUCTS, product.id, updatedProduct, companyIdA)
 
     // 4. Verify historical quotation remains at 50 BDT
-    const historicalQuote = PrintERPDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS, companyIdA)?.find(
+    const historicalQuote = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS, companyIdA)?.find(
       (q) => q.id === quoteId
     )
     assert.equal(historicalQuote?.items?.[0].unit_price, 50.0, 'Historical quotation rate must remain 50 BDT')
@@ -855,7 +855,7 @@ describe('20 Mandatory Acceptance Tests: Business-Owner Quotation, Invoice, Prod
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }
-    PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCTS, product, companyIdA)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.PRODUCTS, product, companyIdA)
 
     // 2. Save invoice snapshot
     const invoiceId = 'inv-hist-19'
@@ -883,14 +883,14 @@ describe('20 Mandatory Acceptance Tests: Business-Owner Quotation, Invoice, Prod
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }
-    PrintERPDataStore.addItem(STORAGE_KEYS.INVOICES, invoice, companyIdA)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.INVOICES, invoice, companyIdA)
 
     // 3. Mutate catalog product price to 950 BDT
     const updatedProduct = { ...product, selling_price: 950.0 }
-    PrintERPDataStore.updateItem(STORAGE_KEYS.PRODUCTS, product.id, updatedProduct, companyIdA)
+    PrintFlowDataStore.updateItem(STORAGE_KEYS.PRODUCTS, product.id, updatedProduct, companyIdA)
 
     // 4. Verify historical invoice remains at 650 BDT
-    const historicalInvoice = PrintERPDataStore.get<any[]>(STORAGE_KEYS.INVOICES, companyIdA)?.find(
+    const historicalInvoice = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.INVOICES, companyIdA)?.find(
       (i) => i.id === invoiceId
     )
     assert.equal(historicalInvoice?.items?.[0].unit_price, 650.0, 'Historical invoice rate must remain 650 BDT')
@@ -912,7 +912,7 @@ describe('20 Mandatory Acceptance Tests: Business-Owner Quotation, Invoice, Prod
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }
-    PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCTS, prodA, companyIdA)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.PRODUCTS, prodA, companyIdA)
 
     await InventoryRepository.createPhysicalRoll({
       company_id: companyIdA,
@@ -923,7 +923,7 @@ describe('20 Mandatory Acceptance Tests: Business-Owner Quotation, Invoice, Prod
     })
 
     // Tenant B queries catalog and rolls
-    const tenantBProducts = PrintERPDataStore.get<ProductRecord[]>(STORAGE_KEYS.PRODUCTS, companyIdB) || []
+    const tenantBProducts = PrintFlowDataStore.get<ProductRecord[]>(STORAGE_KEYS.PRODUCTS, companyIdB) || []
     const tenantBRolls = await InventoryRepository.getInventoryRolls(companyIdB)
 
     assert.equal(tenantBProducts.length, 0, 'Tenant B must see 0 of Tenant A products')

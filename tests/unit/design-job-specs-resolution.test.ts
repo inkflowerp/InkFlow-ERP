@@ -2,16 +2,16 @@ import { describe, it, beforeEach } from 'node:test'
 import assert from 'node:assert/strict'
 import { resolveDesignJobSpecs, inferMaterialFromItemName } from '../../components/design/types.ts'
 import { DesignRepository } from '../../lib/repositories/design.repository.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import type { DesignJobRecord } from '../../types/design.types.ts'
 
 describe('Design Panel Job Information & Specifications Resolution', () => {
   const companyId = 'comp-design-test-01'
 
   beforeEach(() => {
-    PrintERPDataStore.set(STORAGE_KEYS.DESIGN_JOBS, [])
-    PrintERPDataStore.set(STORAGE_KEYS.INVOICES, [])
-    PrintERPDataStore.set(STORAGE_KEYS.ORDERS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.DESIGN_JOBS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.INVOICES, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.ORDERS, [])
   })
 
   it('1. Correctly resolves structured 6-field specifications from invoice item', () => {
@@ -103,7 +103,7 @@ describe('Design Panel Job Information & Specifications Resolution', () => {
       ],
       created_at: new Date().toISOString(),
     }
-    PrintERPDataStore.set(STORAGE_KEYS.INVOICES, [invoice])
+    PrintFlowDataStore.set(STORAGE_KEYS.INVOICES, [invoice])
 
     // Suppose an existing stored design job previously had generic title and missing specs
     const staleJob: DesignJobRecord = {
@@ -124,7 +124,7 @@ describe('Design Panel Job Information & Specifications Resolution', () => {
       updated_at: new Date().toISOString(),
       versions: [],
     }
-    PrintERPDataStore.set(STORAGE_KEYS.DESIGN_JOBS, [staleJob])
+    PrintFlowDataStore.set(STORAGE_KEYS.DESIGN_JOBS, [staleJob])
 
     // Load jobs through DesignRepository
     const loadedJobs = await DesignRepository.getDesignJobs(companyId)

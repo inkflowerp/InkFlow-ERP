@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP SaaS - Client Safe Communication Constants & Helpers
+// PrintFlow SaaS - Client Safe Communication Constants & Helpers
 // Provides bilingual templates, SMS provider abstractions, and template renderers.
 // ==============================================================================
 

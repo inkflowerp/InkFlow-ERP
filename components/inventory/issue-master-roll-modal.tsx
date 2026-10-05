@@ -1115,7 +1115,7 @@ export function IssueMasterRollModal({
  key={i}
  className="w-full max-w-sm p-4 bg-card border-2 border-border rounded-xl shadow-xs space-y-2 text-foreground">
                   <div className="flex items-center justify-between border-b pb-1.5">
-                    <div className="font-black text-xs tracking-wider">INKFLOW MATERIAL TICKET #{i + 1}</div>
+                    <div className="font-black text-xs tracking-wider">PRINTFLOW MATERIAL TICKET #{i + 1}</div>
                     <Badge variant="outline"className="tabular-nums text-xs font-bold uppercase">
                       {r.purchaseUnitName}
                     </Badge>

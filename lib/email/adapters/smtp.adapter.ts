@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP SaaS - Enterprise SMTP Adapter (Nodemailer)
+// PrintFlow SaaS - Enterprise SMTP Adapter (Nodemailer)
 // Supports SSL, TLS, and STARTTLS with connection verification.
 // ==============================================================================
 
@@ -72,13 +72,13 @@ export class SmtpProviderAdapter implements IEmailProvider {
         ? senderDomainMatch[1]
         : this.config.smtp_username?.includes('@')
         ? this.config.smtp_username.split('@')[1]
-        : 'printerp.com'
+        : 'printflow.bd'
 
       // Enterprise deliverability headers to prevent spam classification
       const deliverabilityHeaders: Record<string, string> = {
         'Auto-Submitted': 'auto-generated',
         'X-Auto-Response-Suppress': 'All',
-        'X-Mailer': 'InkFlow ERP Engine',
+        'X-Mailer': 'PrintFlow Engine',
         'List-Unsubscribe': `<mailto:notifications@${senderDomain}?subject=unsubscribe>`,
         'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
         ...payload.headers,

@@ -19,7 +19,7 @@ describe('Attendance QR Cryptographic Security & Rotation Tests', () => {
     assert.equal(tokenHash.length, 64) // SHA-256 hash = 64 hex characters
     assert.match(tokenHash, /^[0-9a-f]{64}$/)
 
-    assert.match(tokenPrefix, /^INK-LOC-[0-9A-F]{8}$/)
+    assert.match(tokenPrefix, /^PF-LOC-[0-9A-F]{8}$/)
 
     // Verify hash matches
     const expectedHash = crypto.createHash('sha256').update(rawToken).digest('hex')
@@ -34,16 +34,17 @@ describe('Attendance QR Cryptographic Security & Rotation Tests', () => {
     assert.equal(hashQrToken(raw), expectedHash)
 
     // Case B: URL with qr parameter
-    const urlA = `https://inkflow.app/acme-press/attendance?qr=${raw}`
+    const urlA = `https://printflow.bd/acme-press/attendance?qr=${raw}`
     assert.equal(hashQrToken(urlA), expectedHash)
 
     // Case C: URL with t parameter
-    const urlB = `https://inkflow.app/attendance/scan?t=${raw}&source=mobile`
+    const urlB = `https://printflow.bd/attendance/scan?t=${raw}&source=mobile`
     assert.equal(hashQrToken(urlB), expectedHash)
 
-    // Case D: Prefixed payload
-    const prefixed = `INKFLOW:ATT:v1:${raw}`
+    // Case D: Prefixed payload (PrintFlow and legacy PrintFlow)
+    const prefixed = `PRINTFLOW:ATT:v1:${raw}`
     assert.equal(hashQrToken(prefixed), expectedHash)
+    assert.equal(hashQrToken(`PRINTFLOW:ATT:v1:${raw}`), expectedHash)
   })
 
   it('3. Rejects empty, whitespace, or invalid QR tokens gracefully', () => {
@@ -55,7 +56,7 @@ describe('Attendance QR Cryptographic Security & Rotation Tests', () => {
 
   it('4. Generates valid standard QR code matrix for attendance token', async () => {
     const QRCode = (await import('qrcode')).default
-    const testToken = 'INKFLOW:ATT:v1:a1b2c3d4e5f60718293a4b5c6d7e8f90123456789abcdef0123456789abcdef0'
+    const testToken = 'PRINTFLOW:ATT:v1:a1b2c3d4e5f60718293a4b5c6d7e8f90123456789abcdef0123456789abcdef0'
     const qr = QRCode.create(testToken, { errorCorrectionLevel: 'M' })
 
     assert.ok(qr.modules.size >= 21)

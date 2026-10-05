@@ -18,7 +18,7 @@ describe('Security RBAC & Destructive Action Guards (Platform Owner Panel)', () 
   ): PlatformUserRecord => ({
     id: `admin-${role}-id`,
     user_id: `usr-${role}-id`,
-    email: `${role}@printerp.com`,
+    email: `${role}@printflow.bd`,
     full_name: `${role} Test User`,
     role,
     is_active: isActive,

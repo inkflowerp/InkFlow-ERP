@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import { DesignRepository } from '../../lib/repositories/design.repository.ts'
 import { ProductionTaskRepository } from '../../lib/repositories/production-task.repository.ts'
 import { LogisticsRepository } from '../../lib/repositories/logistics.repository.ts'
@@ -10,11 +10,11 @@ test('Unified Invoice Item Grouping & Ready Product Bypass Across Panels', async
   const testCompanyId = 'comp-test-invoice-grouping'
 
   // Reset stores for test
-  PrintERPDataStore.set(STORAGE_KEYS.INVOICES, [])
-  PrintERPDataStore.set(STORAGE_KEYS.DESIGN_JOBS, [])
-  PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, [])
-  PrintERPDataStore.set(STORAGE_KEYS.DELIVERY_CHALLANS, [])
-  PrintERPDataStore.set(STORAGE_KEYS.ORDERS, [])
+  PrintFlowDataStore.set(STORAGE_KEYS.INVOICES, [])
+  PrintFlowDataStore.set(STORAGE_KEYS.DESIGN_JOBS, [])
+  PrintFlowDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, [])
+  PrintFlowDataStore.set(STORAGE_KEYS.DELIVERY_CHALLANS, [])
+  PrintFlowDataStore.set(STORAGE_KEYS.ORDERS, [])
 
   await t.test('1. Ready product identification helpers work reliably', () => {
     const readyStand = {
@@ -87,7 +87,7 @@ test('Unified Invoice Item Grouping & Ready Product Bypass Across Panels', async
       ],
     }
 
-    PrintERPDataStore.set(STORAGE_KEYS.INVOICES, [mixedInvoice])
+    PrintFlowDataStore.set(STORAGE_KEYS.INVOICES, [mixedInvoice])
 
     await DesignRepository.createDesignJob({
       id: 'dsn-banner-001',
@@ -148,8 +148,8 @@ test('Unified Invoice Item Grouping & Ready Product Bypass Across Panels', async
       ],
     }
 
-    PrintERPDataStore.set(STORAGE_KEYS.INVOICES, [readyOnlyInvoice])
-    PrintERPDataStore.set(STORAGE_KEYS.DESIGN_JOBS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.INVOICES, [readyOnlyInvoice])
+    PrintFlowDataStore.set(STORAGE_KEYS.DESIGN_JOBS, [])
 
     const designJobs = await DesignRepository.getDesignJobs(testCompanyId)
     assert.equal(designJobs.length, 0, 'Invoices with only ready products must produce 0 design jobs')
@@ -185,7 +185,7 @@ test('Unified Invoice Item Grouping & Ready Product Bypass Across Panels', async
       created_at: new Date().toISOString(),
     }
 
-    PrintERPDataStore.set(STORAGE_KEYS.DESIGN_JOBS, [approvedCustomJob, approvedReadyProductJob])
+    PrintFlowDataStore.set(STORAGE_KEYS.DESIGN_JOBS, [approvedCustomJob, approvedReadyProductJob])
 
     const productionTasks = await ProductionTaskRepository.getTasks(testCompanyId)
 

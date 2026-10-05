@@ -25,7 +25,7 @@ export function DashboardHeader({
 
  const orgTitle = companyName
     ? tBilingual(companyName, companyNameBn || companyName)
-    : 'PrintERP Organization'
+    : 'PrintFlow Organization'
 
  const branchDisplay = branchName ? ` • ${branchName.split('(')[0].trim()}` : ''
 

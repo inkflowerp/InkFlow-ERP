@@ -1,7 +1,7 @@
 'use client'
 
 // ==============================================================================
-// InkFlow SaaS - Platform Support Ticket Context & Tenant Info Pane
+// PrintFlow SaaS - Platform Support Ticket Context & Tenant Info Pane
 // Authoritative context inspection: Tenant Plan, SLA timers, Assigned Staff,
 // and Direct Support Impersonation Session Launcher.
 // ==============================================================================

@@ -14,7 +14,7 @@ import type {
   CompanySubscriptionRecord,
   CustomLimitsOverride,
 } from '../../types/subscription.types.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 
 describe('Subscription Plan Control 360 - Certification & Hardening Suite', () => {
   const starterPlan = DEFAULT_PLANS.find((p) => p.code === 'starter')!
@@ -102,7 +102,7 @@ describe('Subscription Plan Control 360 - Certification & Hardening Suite', () =
         { id: 'ord-3', company_id: companyId, created_at: dateIso, is_practice: true }, // Practice mode
         { id: 'ord-4', company_id: companyId, created_at: dateIso, is_practice: true }, // Practice mode
       ]
-      PrintERPDataStore.set(STORAGE_KEYS.ORDERS, orders)
+      PrintFlowDataStore.set(STORAGE_KEYS.ORDERS, orders)
 
       const usage = getTenantResourceUsage(companyId, starterPlan)
       assert.strictEqual(usage.orders_this_month, 2, 'Usage calculation must only count non-practice orders (2 instead of 4)')
@@ -123,8 +123,8 @@ describe('Subscription Plan Control 360 - Certification & Hardening Suite', () =
         current_period_start: new Date().toISOString(),
         current_period_end: new Date(Date.now() + 30 * 86400000).toISOString(),
       }
-      PrintERPDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, { [companyId]: sub })
-      PrintERPDataStore.set(STORAGE_KEYS.COMPANY_USERS, [{ id: 'u1', company_id: companyId, status: 'active' }])
+      PrintFlowDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, { [companyId]: sub })
+      PrintFlowDataStore.set(STORAGE_KEYS.COMPANY_USERS, [{ id: 'u1', company_id: companyId, status: 'active' }])
 
       const canAddUser = await EntitlementService.canCreate(companyId, 'max_users')
       assert.strictEqual(canAddUser, true, 'Tenant with 1 user and limit of 3 should be able to create user')
@@ -143,8 +143,8 @@ describe('Subscription Plan Control 360 - Certification & Hardening Suite', () =
         current_period_start: new Date().toISOString(),
         current_period_end: new Date(Date.now() + 30 * 86400000).toISOString(),
       }
-      PrintERPDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, { [companyId]: sub })
-      PrintERPDataStore.set(STORAGE_KEYS.COMPANY_USERS, [
+      PrintFlowDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, { [companyId]: sub })
+      PrintFlowDataStore.set(STORAGE_KEYS.COMPANY_USERS, [
         { id: 'u1', company_id: companyId, status: 'active' },
         { id: 'u2', company_id: companyId, status: 'active' },
         { id: 'u3', company_id: companyId, status: 'active' },
@@ -170,15 +170,15 @@ describe('Subscription Plan Control 360 - Certification & Hardening Suite', () =
         current_period_start: new Date().toISOString(),
         current_period_end: new Date(Date.now() + 30 * 86400000).toISOString(),
       }
-      PrintERPDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, { [companyId]: sub })
-      PrintERPDataStore.set(STORAGE_KEYS.COMPANY_USERS, [
+      PrintFlowDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, { [companyId]: sub })
+      PrintFlowDataStore.set(STORAGE_KEYS.COMPANY_USERS, [
         { id: 'u1', company_id: companyId, status: 'active' },
         { id: 'u2', company_id: companyId, status: 'active' },
         { id: 'u3', company_id: companyId, status: 'active' },
         { id: 'u4', company_id: companyId, status: 'active' },
         { id: 'u5', company_id: companyId, status: 'active' },
       ])
-      PrintERPDataStore.set(STORAGE_KEYS.BRANCHES, [
+      PrintFlowDataStore.set(STORAGE_KEYS.BRANCHES, [
         { id: 'b1', company_id: companyId, is_active: true },
         { id: 'b2', company_id: companyId, is_active: true },
         { id: 'b3', company_id: companyId, is_active: true },

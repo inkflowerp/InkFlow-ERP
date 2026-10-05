@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP SaaS - Telegram Provider Types & Interface
+// PrintFlow SaaS - Telegram Provider Types & Interface
 // ==============================================================================
 
 import type { TelegramProviderType } from '../../types/gateway.types.ts'

@@ -1,5 +1,5 @@
 // ==============================================================================
-// InkFlow ERP - Workforce & Payroll Multi-Tenant Security & Isolation Tests
+// PrintFlow - Workforce & Payroll Multi-Tenant Security & Isolation Tests
 // Validates Tenant Boundaries, RLS, Permission Guarding, and Locked Mutation Guards
 // ==============================================================================
 

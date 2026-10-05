@@ -2,7 +2,7 @@ import { describe, it } from 'node:test'
 import assert from 'node:assert'
 import { PlatformService } from '../../services/platform.service.ts'
 import { hasPlatformPermission } from '../../lib/auth/platform-auth.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import type { PlatformAdminUser } from '../../types/platform.types.ts'
 
 describe('Adversarial Security Audit: Direct RPC & Platform Deletion Abuse', () => {
@@ -36,7 +36,7 @@ describe('Adversarial Security Audit: Direct RPC & Platform Deletion Abuse', () 
   const mockPlatformOwnerUser: PlatformAdminUser = {
     id: 'user-platform-owner',
     user_id: 'user-platform-owner',
-    email: 'owner@printerp.com',
+    email: 'owner@printflow.bd',
     full_name: 'Platform Owner',
     role: 'platform_owner',
     is_active: true,
@@ -71,18 +71,18 @@ describe('Adversarial Security Audit: Direct RPC & Platform Deletion Abuse', () 
 
   it('4. Rejects cross-tenant deletion attack (Tenant A attacking Tenant B)', async () => {
     // Setup Victim and Attacker in platform store
-    PrintERPDataStore.set(STORAGE_KEYS.PLATFORM_COMPANIES, [
+    PrintFlowDataStore.set(STORAGE_KEYS.PLATFORM_COMPANIES, [
       { id: victimTenantId, slug: 'victim-enterprise', name: 'Victim Enterprise Ltd' },
       { id: attackerTenantId, slug: 'attacker-org', name: 'Attacker Org Ltd' },
     ])
 
-    PrintERPDataStore.set(STORAGE_KEYS.ORDERS, [
+    PrintFlowDataStore.set(STORAGE_KEYS.ORDERS, [
       { id: 'ord-victim-1', company_id: victimTenantId, order_number: 'ORD-VIC-01' },
       { id: 'ord-attacker-1', company_id: attackerTenantId, order_number: 'ORD-ATK-01' },
     ])
 
     // Verify victim orders exist
-    const orders = PrintERPDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []
+    const orders = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []
     assert.ok(orders.some((o) => o.id === 'ord-victim-1'))
 
     // An attacker from tenant A attempting to delete victim fails authorization
@@ -91,7 +91,7 @@ describe('Adversarial Security Audit: Direct RPC & Platform Deletion Abuse', () 
     assert.strictEqual(isAuthorized, false)
 
     // Verify victim data was not affected
-    const ordersAfter = PrintERPDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []
+    const ordersAfter = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []
     assert.ok(ordersAfter.some((o) => o.id === 'ord-victim-1'))
   })
 
@@ -105,7 +105,7 @@ describe('Adversarial Security Audit: Direct RPC & Platform Deletion Abuse', () 
     assert.strictEqual(res.data?.companyId, victimTenantId)
 
     // Verify victim data is completely purged
-    const orders = PrintERPDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []
+    const orders = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []
     assert.strictEqual(orders.some((o) => o.company_id === victimTenantId), false)
 
     // Verify attacker data remains unaffected

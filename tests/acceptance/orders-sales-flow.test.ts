@@ -1,5 +1,5 @@
 // ==============================================================================
-// InkFlow ERP - Module 3: Orders & Sales Flow & UX Acceptance Tests
+// PrintFlow - Module 3: Orders & Sales Flow & UX Acceptance Tests
 // Tests the full lifecycle: Create -> Edit -> Status Change -> Document Print
 // Matrix: Light/Dark x Mobile 375px / Desktop 1440px x EN/BN
 // Guarantees: <= 3 clicks completion from dashboard, 4-KPI row, attention queue
@@ -28,7 +28,7 @@ describe('Module 3: Orders & Sales End-to-End Hardening & Flow Verification', ()
     await browser?.close()
   })
 
-  // Helper to render mock Orders DOM reflecting InkFlow Design System
+  // Helper to render mock Orders DOM reflecting PrintFlow Design System
   async function renderOrdersPage(
     context: BrowserContext,
     options: {
@@ -392,7 +392,7 @@ describe('Module 3: Orders & Sales End-to-End Hardening & Flow Verification', ()
             <div class="ticket-preview" id="job-ticket-sheet">
               <div style="display: flex; justify-content: space-between; border-bottom: 2px dashed #000; padding-bottom: 8px; margin-bottom: 8px;">
                 <div>
-                  <h1 style="font-size: 18px; font-weight: 900;">INKFLOW PRESS ROUTING TICKET</h1>
+                  <h1 style="font-size: 18px; font-weight: 900;">PRINTFLOW PRESS ROUTING TICKET</h1>
                   <p>Order: #ORD-2026-104 • Asia/Dhaka (UTC+6)</p>
                 </div>
                 <div style="text-align: right;">

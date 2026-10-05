@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
+import { BRAND } from '@/config/brand'
 import {
  QrCode,
  MapPin,
@@ -722,8 +723,8 @@ export default function AttendanceSettingsPage() {
               {filteredLocations.map((loc) => {
  const activeToken = loc.active_qr_token
  const qrValue = activeToken?.raw_token
-                  ? `INKFLOW:ATT:v1:${activeToken.raw_token}`
-                  : `INKFLOW:ATT:LOC:${loc.id}`
+                  ? `PRINTFLOW:ATT:v1:${activeToken.raw_token}`
+                  : `PRINTFLOW:ATT:LOC:${loc.id}`
 
  return (
                   <Card
@@ -882,8 +883,8 @@ export default function AttendanceSettingsPage() {
  locations.map((loc) => {
  const activeToken = loc.active_qr_token
  const qrValue = activeToken?.raw_token
-                  ? `INKFLOW:ATT:v1:${activeToken.raw_token}`
-                  : `INKFLOW:ATT:LOC:${loc.id}`
+                  ? `PRINTFLOW:ATT:v1:${activeToken.raw_token}`
+                  : `PRINTFLOW:ATT:LOC:${loc.id}`
 
  return (
                   <div
@@ -1418,8 +1419,8 @@ export default function AttendanceSettingsPage() {
                 <QRCodeSVG
  value={
  selectedLocation.active_qr_token?.raw_token
-                      ? `INKFLOW:ATT:v1:${selectedLocation.active_qr_token.raw_token}`
-                      : `INKFLOW:ATT:LOC:${selectedLocation.id}`
+                      ? `PRINTFLOW:ATT:v1:${selectedLocation.active_qr_token.raw_token}`
+                      : `PRINTFLOW:ATT:LOC:${selectedLocation.id}`
                   }
  size={120}
  includeMargin={false}
@@ -1632,7 +1633,7 @@ export default function AttendanceSettingsPage() {
  title="Printable QR Code Poster"description="High-resolution poster for on-site attendance entrance">
           <PrintableQrPoster
  location={selectedLocation}
- companyName={company?.name || 'InkFlow Printing ERP'}
+ companyName={company?.name || `${BRAND.name} Press`}
  companyNameBn={company?.name_bn}
  logoUrl={company?.logo_url}
  onClose={() => setIsPrintPosterOpen(false)}

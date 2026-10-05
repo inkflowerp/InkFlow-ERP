@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP / InkFlow SaaS - Tenant Authorization Utilities (Server-Side)
+// PrintFlow SaaS - Tenant Authorization Utilities (Server-Side)
 // Authoritative Supabase Auth & PostgreSQL verification.
 // Guards all tenant operations against cross-tenant data access.
 // ==============================================================================
@@ -363,7 +363,7 @@ export async function requireTenantUser(requestedSlugOrId?: string): Promise<Ten
     } catch {}
 
     if (isUserLoggedIn && targetSlug) {
-      // 403 Forbidden: User is logged in to PrintERP but does not have active membership in targetSlug
+      // 403 Forbidden: User is logged in to PrintFlow but does not have active membership in targetSlug
       await performRedirect(`/403?type=tenant&tenant=${encodeURIComponent(targetSlug)}`)
       throw new Error('Forbidden: Cross-Tenant Access Denied')
     }

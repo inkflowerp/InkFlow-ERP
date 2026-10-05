@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP / InkFlow SaaS - Unit Tests: Google Auth Branding & Security Audit
+// PrintFlow / PrintFlow SaaS - Unit Tests: Google Auth Branding & Security Audit
 // Tests direct domain Google OAuth initiation, HMAC-SHA256 CSRF protection,
 // state expiration, ID token decoding, tenant resolution, and platform boundaries.
 // ==============================================================================
@@ -27,7 +27,7 @@ describe('Google Auth Branding & Security Audit Tests', () => {
   beforeEach(() => {
     process.env = { ...originalEnv }
     process.env.ENCRYPTION_SECRET = 'test-secret-for-hmac-sha256-google-auth'
-    process.env.NEXT_PUBLIC_APP_URL = 'https://inkflowerp.com'
+    process.env.NEXT_PUBLIC_APP_URL = 'https://printflow.bd'
     ;(process.env as any).NODE_ENV = 'test'
   })
 
@@ -40,24 +40,24 @@ describe('Google Auth Branding & Security Audit Tests', () => {
     delete process.env.GOOGLE_CLIENT_SECRET
     delete process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
 
-    const config = getGoogleAuthClientConfig('https://inkflowerp.com')
+    const config = getGoogleAuthClientConfig('https://printflow.bd')
     assert.strictEqual(config.isConfigured, false)
     assert.strictEqual(config.hasClientId, false)
     assert.strictEqual(config.hasClientSecret, false)
     assert.strictEqual(config.mode, 'supabase_default')
-    assert.strictEqual(config.redirectUri, 'https://inkflowerp.com/api/auth/google/callback')
+    assert.strictEqual(config.redirectUri, 'https://printflow.bd/api/auth/google/callback')
   })
 
   it('2. Detects configured Google OAuth credentials and enables direct domain mode', () => {
     process.env.GOOGLE_CLIENT_ID = '1234567890-test.apps.googleusercontent.com'
     process.env.GOOGLE_CLIENT_SECRET = 'GOCSPX-Secret123'
 
-    const config = getGoogleAuthClientConfig('https://inkflowerp.com')
+    const config = getGoogleAuthClientConfig('https://printflow.bd')
     assert.strictEqual(config.isConfigured, true)
     assert.strictEqual(config.hasClientId, true)
     assert.strictEqual(config.hasClientSecret, true)
     assert.strictEqual(config.mode, 'direct_domain')
-    assert.strictEqual(config.redirectUri, 'https://inkflowerp.com/api/auth/google/callback')
+    assert.strictEqual(config.redirectUri, 'https://printflow.bd/api/auth/google/callback')
   })
 
   it('3. generateGoogleAuthSignInUrl uses the application domain redirect URI and never leaks client secret', () => {
@@ -65,7 +65,7 @@ describe('Google Auth Branding & Security Audit Tests', () => {
     process.env.GOOGLE_CLIENT_SECRET = 'GOCSPX-Secret123'
 
     const { url, state } = generateGoogleAuthSignInUrl({
-      origin: 'https://inkflowerp.com',
+      origin: 'https://printflow.bd',
       next: '/speedy-print/orders',
       prompt: 'select_account',
     })
@@ -74,7 +74,7 @@ describe('Google Auth Branding & Security Audit Tests', () => {
     assert.strictEqual(parsedUrl.origin, 'https://accounts.google.com')
     assert.strictEqual(parsedUrl.pathname, '/o/oauth2/v2/auth')
     assert.strictEqual(parsedUrl.searchParams.get('client_id'), '1234567890-test.apps.googleusercontent.com')
-    assert.strictEqual(parsedUrl.searchParams.get('redirect_uri'), 'https://inkflowerp.com/api/auth/google/callback')
+    assert.strictEqual(parsedUrl.searchParams.get('redirect_uri'), 'https://printflow.bd/api/auth/google/callback')
     assert.strictEqual(parsedUrl.searchParams.get('response_type'), 'code')
     assert.strictEqual(parsedUrl.searchParams.get('prompt'), 'select_account')
     assert.strictEqual(parsedUrl.searchParams.get('scope'), 'openid email profile')
@@ -89,7 +89,7 @@ describe('Google Auth Branding & Security Audit Tests', () => {
     const state = generateGoogleAuthState({
       next: '/speedy-print/dashboard',
       purpose: 'login',
-      sourceOrigin: 'https://inkflowerp.com',
+      sourceOrigin: 'https://printflow.bd',
     })
 
     assert.ok(state.includes('.'))
@@ -97,7 +97,7 @@ describe('Google Auth Branding & Security Audit Tests', () => {
     assert.ok(verified)
     assert.strictEqual(verified?.next, '/speedy-print/dashboard')
     assert.strictEqual(verified?.purpose, 'login')
-    assert.strictEqual(verified?.sourceOrigin, 'https://inkflowerp.com')
+    assert.strictEqual(verified?.sourceOrigin, 'https://printflow.bd')
     assert.ok(verified?.nonce)
   })
 
@@ -237,12 +237,12 @@ describe('Google Auth Branding & Security Audit Tests', () => {
   it('10. getGoogleAuthBrandingDiagnostics returns actionable branding report', () => {
     process.env.GOOGLE_CLIENT_ID = '1234567890-test.apps.googleusercontent.com'
     process.env.GOOGLE_CLIENT_SECRET = 'GOCSPX-Secret123'
-    process.env.NEXT_PUBLIC_APP_URL = 'https://inkflowerp.com'
+    process.env.NEXT_PUBLIC_APP_URL = 'https://printflow.bd'
 
-    const diag = getGoogleAuthBrandingDiagnostics('https://inkflowerp.com')
+    const diag = getGoogleAuthBrandingDiagnostics('https://printflow.bd')
     assert.strictEqual(diag.isDirectDomainActive, true)
     assert.strictEqual(diag.isBranded, true)
-    assert.strictEqual(diag.domainDisplayedToUser, 'inkflowerp.com')
-    assert.strictEqual(diag.redirectUri, 'https://inkflowerp.com/api/auth/google/callback')
+    assert.strictEqual(diag.domainDisplayedToUser, 'printflow.bd')
+    assert.strictEqual(diag.redirectUri, 'https://printflow.bd/api/auth/google/callback')
   })
 })

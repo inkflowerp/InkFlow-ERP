@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP / InkFlow SaaS - Graphic Design & Vector Management Service
+// PrintFlow SaaS - Graphic Design & Vector Management Service
 // Authoritative PostgreSQL persistence via DesignRepository
 // ==============================================================================
 

@@ -44,8 +44,8 @@ describe('Email Gateway Resolver Priority Logic Tests', () => {
       scope_type: 'PLATFORM',
       provider: 'mock',
       type: 'transactional',
-      sender_name: 'PrintERP Platform Pool',
-      sender_email: 'noreply@printerp.com',
+      sender_name: 'PrintFlow Platform Pool',
+      sender_email: 'noreply@printflow.bd',
       status: 'active',
       is_default: true,
       created_at: new Date().toISOString(),
@@ -66,8 +66,8 @@ describe('Email Gateway Resolver Priority Logic Tests', () => {
       scope_type: 'PLATFORM',
       provider: 'mock',
       type: 'transactional',
-      sender_name: 'PrintERP Platform Pool',
-      sender_email: 'noreply@printerp.com',
+      sender_name: 'PrintFlow Platform Pool',
+      sender_email: 'noreply@printflow.bd',
       status: 'active',
       is_default: true,
       created_at: new Date().toISOString(),
@@ -79,7 +79,7 @@ describe('Email Gateway Resolver Priority Logic Tests', () => {
     const resolved = await EmailGatewayService.resolveGateway(null, 'PLATFORM')
     assert.ok(resolved)
     assert.strictEqual(resolved.id, 'gw-platform-global')
-    assert.strictEqual(resolved.sender_email, 'noreply@printerp.com')
+    assert.strictEqual(resolved.sender_email, 'noreply@printflow.bd')
   })
 
   it('4. Sends email successfully when gateway exists and records audit log', async () => {
@@ -108,7 +108,7 @@ describe('Email Gateway Resolver Priority Logic Tests', () => {
         paid_amount: '30,000',
         due_amount: '50,000',
         due_date: '15-Oct-2026',
-        payment_link: 'https://printerp.com/pay/INV-0099',
+        payment_link: 'https://printflow.bd/pay/INV-0099',
       },
     })
 

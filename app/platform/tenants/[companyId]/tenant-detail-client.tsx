@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { BRAND } from '@/config/brand'
 import {
  Building2,
  Users,
@@ -242,7 +243,7 @@ export default function Company360Page() {
  {company.owner_phone}
  </span>
  <span>•</span>
- <span className="tabular-nums text-primary">{company.slug}.printerp.com.bd</span>
+ <span className="tabular-nums text-primary">{company.slug}.{BRAND.rootDomain}</span>
  </div>
  </div>
 

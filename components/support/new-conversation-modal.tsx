@@ -1,7 +1,7 @@
 'use client'
 
 // ==============================================================================
-// InkFlow SaaS - New Support Conversation Modal
+// PrintFlow SaaS - New Support Conversation Modal
 // Standardized modal for ticket creation using unified ModalDialog design system.
 // ==============================================================================
 

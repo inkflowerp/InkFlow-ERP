@@ -40,18 +40,18 @@ export const DEFAULT_PLATFORM_SETTINGS: PlatformSystemSettings = {
   default_currency: 'BDT',
   default_vat_rate_pct: 15,
   maintenance_mode_enabled: false,
-  maintenance_message: 'InkFlow is currently undergoing scheduled platform upgrades.',
+  maintenance_message: 'PrintFlow is currently undergoing scheduled platform upgrades.',
   backup_retention_days: 90,
   auto_backup_enabled: true,
 
-  app_name: 'InkFlow ERP',
+  app_name: 'PrintFlow',
   app_logo_url: '',
   app_tagline: 'The Complete Printing & Signage Operating System',
   favicon_url: '/favicon.ico',
-  app_title: 'PrintERP SaaS - Operating System for Printing & Signage in Bangladesh',
+  app_title: 'PrintFlow - Operating System for Printing & Signage in Bangladesh',
   app_description: 'Production-ready SaaS for digital printing, offset press, flex/banner, stickers, packaging, LED signage, acrylic fabrication, and installation businesses in Bangladesh.',
   support_helpline: '+880 1819-876543',
-  app_domain: 'inkflow.com.bd',
+  app_domain: 'printflow.bd',
   contact_email: 'support@printerp.com.bd',
   contact_phone: '+880 1819-876543',
   contact_address: 'Arambagh Press Cluster, Motijheel, Dhaka-1000, Bangladesh',
@@ -251,14 +251,14 @@ describe('Platform System Settings & Disaster Recovery Unit Tests', () => {
 
   describe('5. Platform Identity, Domain & Contact Settings', () => {
     it('should have default branding and identity parameters defined', () => {
-      assert.strictEqual(DEFAULT_PLATFORM_SETTINGS.app_name, 'InkFlow ERP')
+      assert.strictEqual(DEFAULT_PLATFORM_SETTINGS.app_name, 'PrintFlow')
       assert.strictEqual(DEFAULT_PLATFORM_SETTINGS.app_tagline, 'The Complete Printing & Signage Operating System')
       assert.strictEqual(DEFAULT_PLATFORM_SETTINGS.favicon_url, '/favicon.ico')
       assert.strictEqual(DEFAULT_PLATFORM_SETTINGS.support_helpline, '+880 1819-876543')
-      assert.strictEqual(DEFAULT_PLATFORM_SETTINGS.app_domain, 'inkflow.com.bd')
+      assert.strictEqual(DEFAULT_PLATFORM_SETTINGS.app_domain, 'printflow.bd')
       assert.strictEqual(DEFAULT_PLATFORM_SETTINGS.contact_email, 'support@printerp.com.bd')
       assert.strictEqual(DEFAULT_PLATFORM_SETTINGS.contact_phone, '+880 1819-876543')
-      assert.match(DEFAULT_PLATFORM_SETTINGS.app_title!, /PrintERP/)
+      assert.match(DEFAULT_PLATFORM_SETTINGS.app_title!, /PrintFlow/)
       assert.match(DEFAULT_PLATFORM_SETTINGS.contact_address!, /Motijheel/)
     })
 

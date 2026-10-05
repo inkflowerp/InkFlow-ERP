@@ -130,7 +130,7 @@ describe('Bangladeshi Printing Press & 3D Signage — Billing & Receivables Upgr
 
   describe('2. Respectful Bangladeshi Payment Reminder Generation', () => {
     test('Generates respectful greetings, BDT breakdown, and remittance details', async () => {
-      const reminder = BillingService.generateInvoiceTextMessage(baseInvoice, 'InkFlow Printing Enterprise', {
+      const reminder = BillingService.generateInvoiceTextMessage(baseInvoice, 'PrintFlow Printing Enterprise', {
         bkash: '01711-000111 (Merchant)',
         nagad: '01811-000222',
         bank: 'City Bank (Gulshan Branch)',
@@ -138,7 +138,7 @@ describe('Bangladeshi Printing Press & 3D Signage — Billing & Receivables Upgr
 
       // Verify respectful Bengali greeting
       assert.match(reminder, /আসসালামু আলাইকুম \/ আদাব Tanvir Hossain ভাই\/ম্যাডাম/)
-      assert.match(reminder, /InkFlow Printing Enterprise/)
+      assert.match(reminder, /PrintFlow Printing Enterprise/)
       assert.match(reminder, /#INV-2026-0891/)
 
       // Verify financial breakdown in BDT

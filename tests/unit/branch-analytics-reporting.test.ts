@@ -2,7 +2,7 @@ import { test, describe, beforeEach } from 'node:test'
 import assert from 'node:assert'
 import { BranchAnalyticsService } from '../../services/branch-analytics.service.ts'
 import { BranchRepository } from '../../lib/repositories/branch.repository.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 
 describe('Branch Analytics, Comparison & Consolidated Reporting (V9)', () => {
   const companyId = 'test-company-v9-analytics'
@@ -10,7 +10,7 @@ describe('Branch Analytics, Comparison & Consolidated Reporting (V9)', () => {
   let branch2Id = ''
 
   beforeEach(async () => {
-    PrintERPDataStore.clearAll(companyId)
+    PrintFlowDataStore.clearAll(companyId)
 
     // Create 2 branches
     const b1 = await BranchRepository.createBranch(companyId, {
@@ -30,7 +30,7 @@ describe('Branch Analytics, Comparison & Consolidated Reporting (V9)', () => {
     branch2Id = b2.id
 
     // Seed Branch 1: ৳1,00,000 Sales, ৳40,000 COGS, ৳10,000 Opex
-    PrintERPDataStore.set(STORAGE_KEYS.INVOICES, companyId, [
+    PrintFlowDataStore.set(STORAGE_KEYS.INVOICES, companyId, [
       {
         id: 'inv-01',
         company_id: companyId,
@@ -49,7 +49,7 @@ describe('Branch Analytics, Comparison & Consolidated Reporting (V9)', () => {
       },
     ])
 
-    PrintERPDataStore.set(STORAGE_KEYS.PAYMENTS, companyId, [
+    PrintFlowDataStore.set(STORAGE_KEYS.PAYMENTS, companyId, [
       {
         id: 'pay-01',
         company_id: companyId,
@@ -64,7 +64,7 @@ describe('Branch Analytics, Comparison & Consolidated Reporting (V9)', () => {
       },
     ])
 
-    PrintERPDataStore.set(STORAGE_KEYS.JOB_COSTINGS, companyId, [
+    PrintFlowDataStore.set(STORAGE_KEYS.JOB_COSTINGS, companyId, [
       {
         id: 'jc-01',
         company_id: companyId,
@@ -79,7 +79,7 @@ describe('Branch Analytics, Comparison & Consolidated Reporting (V9)', () => {
       },
     ])
 
-    PrintERPDataStore.set(STORAGE_KEYS.EXPENSES, companyId, [
+    PrintFlowDataStore.set(STORAGE_KEYS.EXPENSES, companyId, [
       {
         id: 'exp-01',
         company_id: companyId,
@@ -94,7 +94,7 @@ describe('Branch Analytics, Comparison & Consolidated Reporting (V9)', () => {
       },
     ])
 
-    PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, companyId, [
+    PrintFlowDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, companyId, [
       {
         id: 'pt-01',
         company_id: companyId,

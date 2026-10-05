@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP SaaS - Universal Realtime Subscription Manager
+// PrintFlow SaaS - Universal Realtime Subscription Manager
 // Authoritative Supabase Realtime synchronization with strict tenant isolation,
 // PostgreSQL replication reconciliation, cross-tab BroadcastChannel, and
 // instant live updates across all application modules without browser reload.

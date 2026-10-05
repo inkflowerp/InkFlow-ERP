@@ -9,7 +9,7 @@ import {
   FEATURE_METADATA,
 } from '../../lib/subscription/subscription-constants.ts'
 import { EntitlementService } from '../../services/entitlement.service.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import type { FeatureCode, CompanySubscriptionRecord } from '../../types/subscription.types.ts'
 
 describe('Business Plan Entitlement, Canonical Features & Upgrade CTA Security', () => {
@@ -171,10 +171,10 @@ describe('Business Plan Entitlement, Canonical Features & Upgrade CTA Security',
       custom_limits_override: null,
     }
 
-    PrintERPDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, {
+    PrintFlowDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, {
       [testCompanyId]: subRecord,
     }, false)
-    PrintERPDataStore.set(STORAGE_KEYS.PLATFORM_PLANS, DEFAULT_PLANS, false)
+    PrintFlowDataStore.set(STORAGE_KEYS.PLATFORM_PLANS, DEFAULT_PLANS, false)
 
     // Test Shop Floor Production
     const canAccessProduction = await EntitlementService.canUseFeature(testCompanyId, 'production')
@@ -217,10 +217,10 @@ describe('Business Plan Entitlement, Canonical Features & Upgrade CTA Security',
       custom_limits_override: null,
     }
 
-    PrintERPDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, {
+    PrintFlowDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, {
       [testCompanyId]: subRecord,
     }, false)
-    PrintERPDataStore.set(STORAGE_KEYS.PLATFORM_PLANS, DEFAULT_PLANS, false)
+    PrintFlowDataStore.set(STORAGE_KEYS.PLATFORM_PLANS, DEFAULT_PLANS, false)
 
     const canAccessProduction = await EntitlementService.canUseFeature(testCompanyId, 'production')
     assert.strictEqual(canAccessProduction, false, 'Expired Business tenant must be denied feature access')
@@ -246,10 +246,10 @@ describe('Business Plan Entitlement, Canonical Features & Upgrade CTA Security',
       custom_limits_override: null,
     }
 
-    PrintERPDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, {
+    PrintFlowDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, {
       [testCompanyId]: subRecord,
     }, false)
-    PrintERPDataStore.set(STORAGE_KEYS.PLATFORM_PLANS, DEFAULT_PLANS, false)
+    PrintFlowDataStore.set(STORAGE_KEYS.PLATFORM_PLANS, DEFAULT_PLANS, false)
 
     const canAccessProduction = await EntitlementService.canUseFeature(testCompanyId, 'production')
     assert.strictEqual(canAccessProduction, false, 'Starter tenant must be denied Business feature')

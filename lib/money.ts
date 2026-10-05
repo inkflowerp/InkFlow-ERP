@@ -1,5 +1,5 @@
 // ==============================================================================
-// InkFlow ERP - Authoritative Monetary Calculation Engine (lib/money.ts)
+// PrintFlow - Authoritative Monetary Calculation Engine (lib/money.ts)
 // Eliminates IEEE-754 floating-point errors by operating on exact integer Paisa
 // 1 Bangladeshi Taka (BDT) = 100 Paisa.
 // Supports: Standard Commercial Half-Up and Banker's Half-Even Rounding.

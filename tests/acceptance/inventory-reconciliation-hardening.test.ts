@@ -1,6 +1,6 @@
 import { test, describe, beforeEach } from 'node:test'
 import assert from 'node:assert/strict'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import { InventoryRepository } from '../../lib/repositories/inventory.repository.ts'
 import { PurchaseRepository } from '../../lib/repositories/purchase.repository.ts'
 import { PurchaseService } from '../../services/purchase.service.ts'
@@ -15,14 +15,14 @@ import type {
   InventoryStockBalanceRecord,
 } from '../../types/inventory.types.ts'
 
-describe('INKFLOW — Inventory & Purchasing Deep Hardening & Reconciliation Suite', () => {
+describe('PRINTFLOW — Inventory & Purchasing Deep Hardening & Reconciliation Suite', () => {
   const companyId = 'co-hardening-test'
   const branchId = 'br-main'
 
   let mainLocation: InventoryLocationRecord
 
   beforeEach(() => {
-    PrintERPDataStore.clear()
+    PrintFlowDataStore.clear()
 
     mainLocation = {
       id: 'loc-main-store',
@@ -35,7 +35,7 @@ describe('INKFLOW — Inventory & Purchasing Deep Hardening & Reconciliation Sui
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }
-    PrintERPDataStore.addItem(STORAGE_KEYS.LOCATIONS, mainLocation)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.LOCATIONS, mainLocation)
   })
 
   test('1. PO -> GRN -> Stock Inflow & Physical Roll Creation without PO stock pre-inflation', async () => {
@@ -62,7 +62,7 @@ describe('INKFLOW — Inventory & Purchasing Deep Hardening & Reconciliation Sui
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }
-    PrintERPDataStore.addItem(STORAGE_KEYS.MATERIALS, vinylMaterial)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.MATERIALS, vinylMaterial)
 
     // 2. Create Purchase Order for 2 Rolls from ABC Media
     const po = await PurchaseService.createPurchaseOrder({
@@ -169,7 +169,7 @@ describe('INKFLOW — Inventory & Purchasing Deep Hardening & Reconciliation Sui
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }
-    PrintERPDataStore.addItem(STORAGE_KEYS.MATERIALS, material)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.MATERIALS, material)
 
     const initialRoll = await InventoryRepository.createPhysicalRoll({
       id: rollId,
@@ -249,7 +249,7 @@ describe('INKFLOW — Inventory & Purchasing Deep Hardening & Reconciliation Sui
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }
-    PrintERPDataStore.addItem(STORAGE_KEYS.MATERIALS, material)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.MATERIALS, material)
 
     // Step 1: Issue 5 Sheets to Production Floor for Job #JOB-202
     const issueResult = await InventoryService.issueMaterial({
@@ -319,7 +319,7 @@ describe('INKFLOW — Inventory & Purchasing Deep Hardening & Reconciliation Sui
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }
-    PrintERPDataStore.addItem(STORAGE_KEYS.MATERIALS, material)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.MATERIALS, material)
 
     // 1. Opening balance = 10 (ADJUSTMENT_IN)
     await InventoryRepository.recordStockAdjustment({

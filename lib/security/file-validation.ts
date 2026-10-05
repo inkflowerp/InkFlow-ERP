@@ -1,5 +1,5 @@
 // ==============================================================================
-// InkFlow ERP - Security File Validation & Sanitization Module
+// PrintFlow - Security File Validation & Sanitization Module
 // Hardens upload boundaries against executable injection, directory traversal,
 // and unauthorized mime/extensions. Pure utility suitable for server and tests.
 // ==============================================================================

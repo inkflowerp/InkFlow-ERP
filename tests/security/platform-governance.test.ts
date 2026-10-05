@@ -145,13 +145,13 @@ const mockState = {
   },
 }
 
-describe('PrintERP SaaS - Platform Admin Security & Governance', () => {
+describe('PrintFlow - Platform Admin Security & Governance', () => {
   // Test 1: Platform RBAC Matrix Verification
   test('Platform RBAC: Platform Owner has unrestricted access to all permissions (*)', () => {
     const ownerUser: PlatformUser = {
       id: 'pa-001',
       user_id: 'u-platform-root-01',
-      email: 'admin@printerp.com.bd',
+      email: 'admin@printflow.bd',
       role: 'platform_owner',
       is_active: true,
     }
@@ -169,7 +169,7 @@ describe('PrintERP SaaS - Platform Admin Security & Governance', () => {
     const readOnlyUser: PlatformUser = {
       id: 'pa-005',
       user_id: 'u-platform-ro-01',
-      email: 'auditor@printerp.com.bd',
+      email: 'auditor@printflow.bd',
       role: 'platform_readonly',
       is_active: true,
     }
@@ -189,7 +189,7 @@ describe('PrintERP SaaS - Platform Admin Security & Governance', () => {
     const inactiveUser: PlatformUser = {
       id: 'pa-009',
       user_id: 'u-platform-inactive-01',
-      email: 'former_staff@printerp.com.bd',
+      email: 'former_staff@printflow.bd',
       role: 'platform_admin',
       is_active: false,
     }

@@ -1,18 +1,18 @@
 import { describe, it, beforeEach } from 'node:test'
 import assert from 'node:assert'
 import { ProductService } from '../../services/product.service.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 
 describe('Security: Products & Pricing Multi-Tenant Isolation & Attack Paths', () => {
   const tenantA = `company-tenant-alpha-${Date.now()}`
   const tenantB = `company-tenant-beta-${Date.now()}`
 
   beforeEach(() => {
-    PrintERPDataStore.set(STORAGE_KEYS.PRODUCTS, [])
-    PrintERPDataStore.set(STORAGE_KEYS.PRICE_LISTS, [])
-    PrintERPDataStore.set(STORAGE_KEYS.PRODUCT_VARIANTS, [])
-    PrintERPDataStore.set(STORAGE_KEYS.PRODUCT_FORMULAS, [])
-    PrintERPDataStore.set(STORAGE_KEYS.PRICE_HISTORY, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.PRODUCTS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.PRICE_LISTS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.PRODUCT_VARIANTS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.PRODUCT_FORMULAS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.PRICE_HISTORY, [])
   })
 
   it('1. Prevents Tenant A from listing Tenant B catalog items', async () => {

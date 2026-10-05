@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP SaaS - Subscription Plan Constants & Pure Utility Functions
+// PrintFlow SaaS - Subscription Plan Constants & Pure Utility Functions
 // Client-Safe: Zero Node.js or Database Server Dependencies
 // ==============================================================================
 

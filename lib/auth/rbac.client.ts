@@ -59,7 +59,7 @@ export function normalizeModuleKey(raw: string): PermissionModule {
 }
 
 /**
- * Responsibility default matrices for standard PrintERP responsibilities
+ * Responsibility default matrices for standard PrintFlow responsibilities
  */
 export const DEFAULT_RESPONSIBILITY_MATRICES: Record<ResponsibilitySlug, Record<PermissionModule, Partial<Record<PermissionAction, boolean>>>> = {
   business_owner: generateFullModuleMatrix(true),

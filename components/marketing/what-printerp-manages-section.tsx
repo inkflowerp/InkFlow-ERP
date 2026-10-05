@@ -35,7 +35,7 @@ export function WhatPrintErpManagesSection() {
           </div>
 
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-foreground tracking-tight leading-tight bangla-text">
-            {tBilingual('What PrintERP Actually Manages.', 'প্রিন্টইআরপি আপনার ব্যবসায়ের ঠিক কী কী পরিচালনা করে।')}
+            {tBilingual('What PrintFlow Actually Manages.', 'প্রিন্টফ্লো আপনার ব্যবসায়ের ঠিক কী কী পরিচালনা করে।')}
           </h2>
 
           <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto leading-relaxed bangla-text">
@@ -87,7 +87,7 @@ export function WhatPrintErpManagesSection() {
 
                 <div className="pt-3 border-t border-border text-xs font-semibold text-muted-foreground flex items-center justify-between">
                   <span>{tBilingual('Fully Connected', 'সম্পূর্ণ সমন্বিত')}</span>
-                  <span className="text-primary text-primary font-bold">PrintERP Core</span>
+                  <span className="text-primary text-primary font-bold">PrintFlow Core</span>
                 </div>
               </div>
             )

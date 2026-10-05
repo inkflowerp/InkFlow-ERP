@@ -1,5 +1,5 @@
 // ==============================================================================
-// InkFlow SaaS - Enterprise Support Chat & Ticket System Types
+// PrintFlow SaaS - Enterprise Support Chat & Ticket System Types
 // Authoritative TypeScript interfaces for tenant & platform support workflows
 // ==============================================================================
 

@@ -784,7 +784,7 @@ export default function TenantSubscriptionPage() {
  title="Cancel Subscription">
           <div className="space-y-4 text-xs">
             <p className="text-foreground">
- Are you sure you want to cancel your PrintERP subscription?
+ Are you sure you want to cancel your PrintFlow subscription?
             </p>
             <div className="p-3 bg-danger-surface bg-danger-surface rounded-xl border border-danger-border border-danger-border text-destructive text-destructive">
  Your subscription will remain active until <strong>{formatDate(subscription.current_period_end)}</strong> and will not renew. Your company data and invoices will remain intact.

@@ -25,31 +25,31 @@ describe('Authentication Audit Remediation Verification Suite', () => {
       return new URL(safeRedirect, origin).toString()
     }
 
-    const origin = 'https://app.inkflow.com.bd'
+    const origin = 'https://app.printflow.bd'
 
     test('blocks external absolute URLs', () => {
       const sanitized = sanitizeRedirect('https://evil.com/phish', origin)
-      assert.strictEqual(sanitized, 'https://app.inkflow.com.bd/login?logged_out=true')
+      assert.strictEqual(sanitized, 'https://app.printflow.bd/login?logged_out=true')
     })
 
     test('blocks protocol-relative URLs (//evil.com)', () => {
       const sanitized = sanitizeRedirect('//evil.com/phish', origin)
-      assert.strictEqual(sanitized, 'https://app.inkflow.com.bd/login?logged_out=true')
+      assert.strictEqual(sanitized, 'https://app.printflow.bd/login?logged_out=true')
     })
 
     test('blocks backslash evasion (/\\evil.com)', () => {
       const sanitized = sanitizeRedirect('/\\evil.com', origin)
-      assert.strictEqual(sanitized, 'https://app.inkflow.com.bd/login?logged_out=true')
+      assert.strictEqual(sanitized, 'https://app.printflow.bd/login?logged_out=true')
     })
 
     test('blocks javascript: URIs', () => {
       const sanitized = sanitizeRedirect('javascript:alert(1)', origin)
-      assert.strictEqual(sanitized, 'https://app.inkflow.com.bd/login?logged_out=true')
+      assert.strictEqual(sanitized, 'https://app.printflow.bd/login?logged_out=true')
     })
 
     test('permits safe relative application paths on the same origin', () => {
       const sanitized = sanitizeRedirect('/login?reauth=true', origin)
-      assert.strictEqual(sanitized, 'https://app.inkflow.com.bd/login?reauth=true')
+      assert.strictEqual(sanitized, 'https://app.printflow.bd/login?reauth=true')
     })
   })
 
@@ -104,7 +104,7 @@ describe('Authentication Audit Remediation Verification Suite', () => {
     })
 
     test('getAuthCookieOptions strictly enforces host-only cookie across custom domains', () => {
-      const opts = getAuthCookieOptions('inkflow.com.bd')
+      const opts = getAuthCookieOptions('printflow.bd')
       assert.strictEqual(opts.domain, undefined, 'Cookie domain must be host-only')
       assert.strictEqual(opts.sameSite, 'lax')
       assert.strictEqual(opts.path, '/')
@@ -126,8 +126,8 @@ describe('Authentication Audit Remediation Verification Suite', () => {
 
   describe('4. User Lookup Resilience (AUTH-BUG-02)', () => {
     test('email normalization matches case-insensitively', () => {
-      const email1 = '  Admin@PrintERP.com  '.trim().toLowerCase()
-      const email2 = 'admin@printerp.com'
+      const email1 = '  Admin@PrintFlow.bd  '.trim().toLowerCase()
+      const email2 = 'admin@printflow.bd'
       assert.strictEqual(email1, email2)
     })
   })

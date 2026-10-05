@@ -353,7 +353,7 @@ export function FinanceDashboardView({
                       {cust.phone && (
                         <a
  href={`https://wa.me/88${cust.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(
-                            `আসসালামু আলাইকুম ${cust.name}, PrintERP থেকে জানানো যাচ্ছে যে আপনার ৳${cust.amount.toLocaleString()} টাকা বকেয়া বিল রয়েছে। অনুগ্রহ করে পরিশোধের ব্যবস্থা করবেন। ধন্যবাদ।`
+                            `আসসালামু আলাইকুম ${cust.name}, PrintFlow থেকে জানানো যাচ্ছে যে আপনার ৳${cust.amount.toLocaleString()} টাকা বকেয়া বিল রয়েছে। অনুগ্রহ করে পরিশোধের ব্যবস্থা করবেন। ধন্যবাদ।`
                           )}`}
  target="_blank"rel="noreferrer"className="p-1.5 rounded-lg bg-success-surface text-success hover:bg-success-surface bg-success-surface text-success transition-colors"title="Send WhatsApp Reminder">
                           <MessageCircle className="w-3.5 h-3.5"/>

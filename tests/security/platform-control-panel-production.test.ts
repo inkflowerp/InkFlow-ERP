@@ -1,7 +1,7 @@
 import { test, describe } from 'node:test'
 import assert from 'node:assert'
 
-describe('InkFlow Platform Owner — Production Control Panel & Security Hardening', () => {
+describe('PrintFlow Platform Owner — Production Control Panel & Security Hardening', () => {
   // Mock Data Types
   interface MockPlatformAdmin {
     id: string
@@ -95,7 +95,7 @@ describe('InkFlow Platform Owner — Production Control Panel & Security Hardeni
       {
         id: 'adm-01',
         user_id: 'usr-auth-owner-uuid',
-        email: 'owner@inkflow.com',
+        email: 'owner@printflow.test',
         full_name: 'Platform Owner',
         role: 'platform_owner',
         responsibilities: ['platform_owner'],
@@ -105,7 +105,7 @@ describe('InkFlow Platform Owner — Production Control Panel & Security Hardeni
       {
         id: 'adm-02',
         user_id: 'usr-auth-admin-uuid',
-        email: 'admin@inkflow.com',
+        email: 'admin@printflow.test',
         full_name: 'Operations Admin',
         role: 'platform_admin',
         responsibilities: ['platform_admin'],
@@ -115,7 +115,7 @@ describe('InkFlow Platform Owner — Production Control Panel & Security Hardeni
       {
         id: 'adm-03',
         user_id: 'usr-auth-inactive-uuid',
-        email: 'former@inkflow.com',
+        email: 'former@printflow.test',
         full_name: 'Former Staff',
         role: 'platform_admin',
         responsibilities: ['platform_admin'],
@@ -153,7 +153,7 @@ describe('InkFlow Platform Owner — Production Control Panel & Security Hardeni
     const owner: MockPlatformAdmin = {
       id: 'adm-01',
       user_id: 'usr-auth-owner-uuid',
-      email: 'owner@inkflow.com',
+      email: 'owner@printflow.test',
       full_name: 'Platform Owner',
       role: 'platform_owner',
       responsibilities: ['platform_owner'],
@@ -164,7 +164,7 @@ describe('InkFlow Platform Owner — Production Control Panel & Security Hardeni
     const opsAdmin: MockPlatformAdmin = {
       id: 'adm-02',
       user_id: 'usr-auth-admin-uuid',
-      email: 'ops@inkflow.com',
+      email: 'ops@printflow.test',
       full_name: 'Ops Admin',
       role: 'platform_admin',
       responsibilities: ['platform_admin'],
@@ -193,7 +193,7 @@ describe('InkFlow Platform Owner — Production Control Panel & Security Hardeni
       {
         id: 'adm-owner-sole',
         user_id: 'usr-sole-owner',
-        email: 'sole@inkflow.com',
+        email: 'sole@printflow.test',
         full_name: 'Sole Owner',
         role: 'platform_owner',
         responsibilities: ['platform_owner'],
@@ -203,7 +203,7 @@ describe('InkFlow Platform Owner — Production Control Panel & Security Hardeni
       {
         id: 'adm-staff',
         user_id: 'usr-staff',
-        email: 'staff@inkflow.com',
+        email: 'staff@printflow.test',
         full_name: 'Staff Member',
         role: 'platform_admin',
         responsibilities: ['platform_admin'],
@@ -229,7 +229,7 @@ describe('InkFlow Platform Owner — Production Control Panel & Security Hardeni
         {
           id: 'adm-owner-two',
           user_id: 'usr-owner-2',
-          email: 'owner2@inkflow.com',
+          email: 'owner2@printflow.test',
           full_name: 'Second Owner',
           role: 'platform_owner',
           responsibilities: ['platform_owner'],

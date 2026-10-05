@@ -41,8 +41,8 @@ export function CoreProblemsSection() {
 
           <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto leading-relaxed bangla-text">
             {tBilingual(
-              'When quotes live in WhatsApp chats, job sizes on loose slips, and customer credit in memory, mistakes and lost profits are inevitable. Here is how PrintERP transforms the chaos into order.',
-              'কোটেশন যখন হোয়াটসঅ্যাপে, কাজের মাপ ছেঁড়া চিরকুটে আর বাকি টাকা স্মৃতির ওপর থাকে, তখন কাজের ভুল ও লোকসান ঠেকানো অসম্ভব। প্রিন্টইআরপি এই বিশৃঙ্খলাকে শৃঙ্খলায় রূপান্তর করে।'
+              'When quotes live in WhatsApp chats, job sizes on loose slips, and customer credit in memory, mistakes and lost profits are inevitable. Here is how PrintFlow transforms the chaos into order.',
+              'কোটেশন যখন হোয়াটসঅ্যাপে, কাজের মাপ ছেঁড়া চিরকুটে আর বাকি টাকা স্মৃতির ওপর থাকে, তখন কাজের ভুল ও লোকসান ঠেকানো অসম্ভব। প্রিন্টফ্লো এই বিশৃঙ্খলাকে শৃঙ্খলায় রূপান্তর করে।'
             )}
           </p>
         </div>
@@ -96,7 +96,7 @@ export function CoreProblemsSection() {
                 <div className="p-3 rounded-xl bg-success-surface/60 bg-success-surface border border-success-border border-success-border/40 space-y-1">
                   <div className="flex items-center gap-1.5 text-xs font-bold text-success text-success uppercase tracking-wider">
                     <CheckCircle2 className="h-3 w-3 shrink-0"/>
-                    <span>{tBilingual('With PrintERP: Connected & Clear', 'প্রিন্টইআরপিতে: সমন্বিত ও পরিষ্কার')}</span>
+                    <span>{tBilingual('With PrintFlow: Connected & Clear', 'প্রিন্টফ্লোতে: সমন্বিত ও পরিষ্কার')}</span>
                   </div>
                   <p className="text-xs text-foreground leading-relaxed font-medium bangla-text">
                     {tBilingual(card.afterEn, card.afterBn)}

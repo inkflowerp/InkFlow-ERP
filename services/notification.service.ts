@@ -1,5 +1,5 @@
 // ==============================================================================
-// InkFlow ERP SaaS - Authoritative Preference-Aware Notification Service
+// PrintFlow SaaS - Authoritative Preference-Aware Notification Service
 // Unified multi-channel dispatcher (In-App, WhatsApp, Email, SMS) with
 // Asia/Dhaka Quiet Hours, Template Localization, Business Rules, and Idempotency.
 // ==============================================================================

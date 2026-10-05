@@ -1,5 +1,5 @@
 // ==============================================================================
-// InkFlow ERP - Authoritative Calculations & Property Verification Tests
+// PrintFlow - Authoritative Calculations & Property Verification Tests
 // Asserts 100% parity between UI Preview formulas, Server Action formulas,
 // and SQL stored calculation rules across random vectors (property testing).
 // ==============================================================================

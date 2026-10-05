@@ -4,7 +4,7 @@ import { withTenantAction } from '@/lib/actions/action-wrapper'
 
 
 // ==============================================================================
-// InkFlow ERP - Authoritative Finance 360 Server Actions (V9.1)
+// PrintFlow - Authoritative Finance 360 Server Actions (V9.1)
 // ==============================================================================
 
 import { FinanceService } from '@/services/finance.service'

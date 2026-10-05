@@ -1,5 +1,5 @@
 // ==============================================================================
-// InkFlow SaaS - Enterprise Audit Logging Service
+// PrintFlow SaaS - Enterprise Audit Logging Service
 // Authoritative Supabase Database Audit Trail & Metadata
 // ==============================================================================
 

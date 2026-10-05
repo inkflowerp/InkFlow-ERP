@@ -1,5 +1,5 @@
 // ==============================================================================
-// InkFlow ERP - Authoritative Tenant Subdomain & Domain Resolution Engine
+// PrintFlow - Authoritative Tenant Subdomain & Domain Resolution Engine
 // Single shared resolution utility for middleware, DAL, server actions, and auth hooks.
 // Strict single-label validation, host normalization, and host-only cookie isolation.
 // ==============================================================================
@@ -84,7 +84,7 @@ export const RESERVED_SLUGS = new Set([
 
 /**
  * Standard two-part ccTLDs where registration occurs at the third level
- * (e.g. inkflow.com.bd, not inkflow.bd).
+ * (e.g. printflow.bd).
  */
 export const TWO_PART_TLDS = new Set([
   'com.bd',

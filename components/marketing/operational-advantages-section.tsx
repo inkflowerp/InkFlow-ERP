@@ -34,8 +34,8 @@ export function OperationalAdvantagesSection() {
 
           <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto leading-relaxed bangla-text">
             {tBilingual(
-              'Traditional ERPs fail in printing presses because print orders are custom manufacturing projects. PrintERP is architected around measurements, rolls, machine queues, and local credit culture.',
-              'সাধারণ রিটেইল সফটওয়্যার প্রেসে অচল, কারণ এখানে প্রতিটি কাজ কাস্টম প্রজেক্ট। প্রিন্টইআরপি পরিমাপ, রোল স্টক, মেশিন কিউ ও বাস্তব প্রেস কালচারের ওপর ভিত্তি করে নির্মিত।'
+              'Traditional ERPs fail in printing presses because print orders are custom manufacturing projects. PrintFlow is architected around measurements, rolls, machine queues, and local credit culture.',
+              'সাধারণ রিটেইল সফটওয়্যার প্রেসে অচল, কারণ এখানে প্রতিটি কাজ কাস্টম প্রজেক্ট। প্রিন্টফ্লো পরিমাপ, রোল স্টক, মেশিন কিউ ও বাস্তব প্রেস কালচারের ওপর ভিত্তি করে নির্মিত।'
             )}
           </p>
         </div>

@@ -2,7 +2,7 @@ import { describe, it } from 'node:test'
 import assert from 'node:assert'
 import { BillingRepository } from '../../lib/repositories/billing.repository.ts'
 import { DesignRepository } from '../../lib/repositories/design.repository.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import type { DeliveryChallanRecord } from '../../types/logistics.types.ts'
 
 describe('Delivery Panel Multi-Product Status & Partial Delivery Workflow Tests', () => {
@@ -61,7 +61,7 @@ describe('Delivery Panel Multi-Product Status & Partial Delivery Workflow Tests'
     assert.ok(invoice.invoice_number, 'Invoice must have number')
 
     // 2. Fetch Delivery Challan created in Delivery Panel
-    const challans = PrintERPDataStore.get<DeliveryChallanRecord[]>(STORAGE_KEYS.DELIVERY_CHALLANS) || []
+    const challans = PrintFlowDataStore.get<DeliveryChallanRecord[]>(STORAGE_KEYS.DELIVERY_CHALLANS) || []
     const challan = challans.find(
       (c) => c.company_id === TENANT_ID && c.invoice_id === invoice.id
     )
@@ -94,7 +94,7 @@ describe('Delivery Panel Multi-Product Status & Partial Delivery Workflow Tests'
     assert.strictEqual(item3.is_delivered, false)
 
     // 6. Verify Design Jobs created for custom manufacturing items
-    const designJobs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.DESIGN_JOBS) || []
+    const designJobs = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.DESIGN_JOBS) || []
     const invoiceDesignJobs = designJobs.filter(
       (d) => d.company_id === TENANT_ID && d.invoice_id === invoice.id
     )
@@ -102,7 +102,7 @@ describe('Delivery Panel Multi-Product Status & Partial Delivery Workflow Tests'
   })
 
   it('2. Production flow updates item status to printing/finishing pending and updates challan item status', async () => {
-    const designJobs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.DESIGN_JOBS) || []
+    const designJobs = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.DESIGN_JOBS) || []
     const vinylDesignJob = designJobs.find(
       (d) => d.company_id === TENANT_ID && d.workflow_routing === 'design_ok'
     )
@@ -117,7 +117,7 @@ describe('Delivery Panel Multi-Product Status & Partial Delivery Workflow Tests'
     assert.ok(operatorResult.success)
 
     // Verify Challan item status is updated to printing_pending / in_production
-    const challans = PrintERPDataStore.get<DeliveryChallanRecord[]>(STORAGE_KEYS.DELIVERY_CHALLANS) || []
+    const challans = PrintFlowDataStore.get<DeliveryChallanRecord[]>(STORAGE_KEYS.DELIVERY_CHALLANS) || []
     const challan = challans.find((c) => c.company_id === TENANT_ID)
     assert.ok(challan)
 
@@ -127,7 +127,7 @@ describe('Delivery Panel Multi-Product Status & Partial Delivery Workflow Tests'
   })
 
   it('3. Partial Delivery: Marking only Ready Product (X-stand) delivered changes status to partially_delivered', async () => {
-    const challans = PrintERPDataStore.get<DeliveryChallanRecord[]>(STORAGE_KEYS.DELIVERY_CHALLANS) || []
+    const challans = PrintFlowDataStore.get<DeliveryChallanRecord[]>(STORAGE_KEYS.DELIVERY_CHALLANS) || []
     const challanIndex = challans.findIndex((c) => c.company_id === TENANT_ID)
     assert.ok(challanIndex !== -1)
 
@@ -162,7 +162,7 @@ describe('Delivery Panel Multi-Product Status & Partial Delivery Workflow Tests'
     }
 
     challans[challanIndex] = updatedChallan
-    PrintERPDataStore.set(STORAGE_KEYS.DELIVERY_CHALLANS, challans)
+    PrintFlowDataStore.set(STORAGE_KEYS.DELIVERY_CHALLANS, challans)
 
     // Verify status is partially_delivered
     assert.strictEqual(updatedChallan.status, 'partially_delivered')
@@ -172,7 +172,7 @@ describe('Delivery Panel Multi-Product Status & Partial Delivery Workflow Tests'
   })
 
   it('4. Full Delivery: Marking remaining items delivered marks challan as delivered', async () => {
-    const challans = PrintERPDataStore.get<DeliveryChallanRecord[]>(STORAGE_KEYS.DELIVERY_CHALLANS) || []
+    const challans = PrintFlowDataStore.get<DeliveryChallanRecord[]>(STORAGE_KEYS.DELIVERY_CHALLANS) || []
     const challanIndex = challans.findIndex((c) => c.company_id === TENANT_ID)
     assert.ok(challanIndex !== -1)
 
@@ -204,7 +204,7 @@ describe('Delivery Panel Multi-Product Status & Partial Delivery Workflow Tests'
     }
 
     challans[challanIndex] = updatedChallan
-    PrintERPDataStore.set(STORAGE_KEYS.DELIVERY_CHALLANS, challans)
+    PrintFlowDataStore.set(STORAGE_KEYS.DELIVERY_CHALLANS, challans)
 
     // Verify status is fully delivered
     assert.strictEqual(updatedChallan.status, 'delivered')
@@ -263,21 +263,21 @@ describe('Delivery Panel Multi-Product Status & Partial Delivery Workflow Tests'
     })
 
     // 2. Verify Production Tasks: ZERO tasks created for X-stand
-    const prodTasks = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
+    const prodTasks = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
     const xstandProdTasks = prodTasks.filter(
       (t) => t.company_id === TEST_TENANT && (t.task_name?.includes('X-stand') || t.product_name?.includes('X-stand'))
     )
     assert.strictEqual(xstandProdTasks.length, 0, 'Ready product X-stand must NOT create production tasks')
 
     // 3. Verify Design Jobs: ZERO design jobs created for X-stand
-    const designJobs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.DESIGN_JOBS) || []
+    const designJobs = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.DESIGN_JOBS) || []
     const xstandDesignJobs = designJobs.filter(
       (d) => d.company_id === TEST_TENANT && d.title?.includes('X-stand')
     )
     assert.strictEqual(xstandDesignJobs.length, 0, 'Ready product X-stand must NOT create design jobs')
 
     // 4. Verify Delivery Challan: X-stand goes direct to Delivery & Logistics with ready_for_delivery
-    const challans = PrintERPDataStore.get<DeliveryChallanRecord[]>(STORAGE_KEYS.DELIVERY_CHALLANS) || []
+    const challans = PrintFlowDataStore.get<DeliveryChallanRecord[]>(STORAGE_KEYS.DELIVERY_CHALLANS) || []
     const challan = challans.find((c) => c.company_id === TEST_TENANT && c.invoice_id === invoice.id)
     assert.ok(challan, 'Delivery challan must exist')
     assert.strictEqual(challan.items.length, 3)
@@ -349,7 +349,7 @@ describe('Delivery Panel Multi-Product Status & Partial Delivery Workflow Tests'
     assert.strictEqual(invoice.items[0].workflow_routing, 'ready_product')
 
     // Verify Delivery Challan exists and has ready_for_delivery status
-    const challans = PrintERPDataStore.get<DeliveryChallanRecord[]>(STORAGE_KEYS.DELIVERY_CHALLANS) || []
+    const challans = PrintFlowDataStore.get<DeliveryChallanRecord[]>(STORAGE_KEYS.DELIVERY_CHALLANS) || []
     const challan = challans.find((c) => c.company_id === ACTION_TENANT && c.invoice_id === invoice.id)
     assert.ok(challan, 'Delivery challan must be created in datastore')
     assert.strictEqual(challan.items.length, 1)
@@ -358,7 +358,7 @@ describe('Delivery Panel Multi-Product Status & Partial Delivery Workflow Tests'
     assert.strictEqual(challan.items[0].workflow_routing, 'ready_product')
 
     // Verify 0 production tasks were created for this ready product
-    const prodTasks = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
+    const prodTasks = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
     const xstandTasks = prodTasks.filter((t) => t.company_id === ACTION_TENANT)
     assert.strictEqual(xstandTasks.length, 0, 'Zero production tasks must be generated for ready products')
   })

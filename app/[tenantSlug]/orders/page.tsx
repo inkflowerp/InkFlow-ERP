@@ -1306,7 +1306,7 @@ export default function OrdersPage() {
  isOpen={whatsAppModalState.isOpen}
  onClose={() => setWhatsAppModalState({ isOpen: false, order: null, template: 'order_confirmed' })}
  order={whatsAppModalState.order}
- companyName={company?.name || 'PrintERP Commercial Press'}
+ companyName={company?.name || 'PrintFlow Commercial Press'}
  initialTemplate={whatsAppModalState.template}
  onShowNotification={showNotification}
         />
@@ -1317,7 +1317,7 @@ export default function OrdersPage() {
  isOpen={jobTicketModalState.isOpen}
  onClose={() => setJobTicketModalState({ isOpen: false, order: null })}
  order={jobTicketModalState.order}
- companyName={company?.name || 'PrintERP Commercial Press'}
+ companyName={company?.name || 'PrintFlow Commercial Press'}
  companyAddress="Paltan / Fakirapool, Dhaka"companyPhone="01700-000000"/>
       )}
 

@@ -232,7 +232,7 @@ describe('Platform Admin Authentication & Authorization Security', () => {
   const ownerUser: PlatformUserRecord = {
     id: 'pa-owner-001',
     user_id: 'u-auth-owner-001',
-    email: 'haji.shamim@printerp.com.bd',
+    email: 'haji.shamim@printflow.bd',
     full_name: 'Haji Mohammad Shamim',
     role: 'platform_owner',
     is_active: true,
@@ -243,7 +243,7 @@ describe('Platform Admin Authentication & Authorization Security', () => {
   const adminUser: PlatformUserRecord = {
     id: 'pa-admin-001',
     user_id: 'u-auth-admin-001',
-    email: 'ops-lead@printerp.com.bd',
+    email: 'ops-lead@printflow.bd',
     full_name: 'Lead Administrator',
     role: 'platform_admin',
     is_active: true,
@@ -253,7 +253,7 @@ describe('Platform Admin Authentication & Authorization Security', () => {
   const supportUser: PlatformUserRecord = {
     id: 'pa-supp-001',
     user_id: 'u-auth-supp-001',
-    email: 'support-agent@printerp.com.bd',
+    email: 'support-agent@printflow.bd',
     full_name: 'Support Agent',
     role: 'platform_support',
     is_active: true,
@@ -263,7 +263,7 @@ describe('Platform Admin Authentication & Authorization Security', () => {
   const financeUser: PlatformUserRecord = {
     id: 'pa-fin-001',
     user_id: 'u-auth-fin-001',
-    email: 'billing-lead@printerp.com.bd',
+    email: 'billing-lead@printflow.bd',
     full_name: 'Finance Controller',
     role: 'platform_finance',
     is_active: true,
@@ -273,7 +273,7 @@ describe('Platform Admin Authentication & Authorization Security', () => {
   const readonlyUser: PlatformUserRecord = {
     id: 'pa-ro-001',
     user_id: 'u-auth-ro-001',
-    email: 'auditor@printerp.com.bd',
+    email: 'auditor@printflow.bd',
     full_name: 'External Security Auditor',
     role: 'platform_readonly',
     is_active: true,
@@ -350,7 +350,7 @@ describe('Platform Admin Authentication & Authorization Security', () => {
   })
 
   test('8. Fail-Closed: Zero heuristic fallbacks on email strings without active database record', () => {
-    const fakeAdminEmail = 'admin@printerp.com.bd'
+    const fakeAdminEmail = 'admin@printflow.bd'
     const unverifiedUser = null // Supabase returns null or user has no platform_admins record
     assert.strictEqual(hasPlatformPermission(unverifiedUser, 'tenant.view'), false)
     assert.strictEqual(fakeAdminEmail.includes('admin'), true) // String matching exists, but code denies
@@ -412,10 +412,10 @@ describe('Platform Admin Authentication & Authorization Security', () => {
   test('12. Email Spoofing Denial: Arbitrary email without matching auth.uid() in DB cannot grant platform access', () => {
     const spoofedUser = {
       id: 'auth-attacker-uuid',
-      email: 'haji.shamim@printerp.com.bd', // Matches owner's email address
+      email: 'haji.shamim@printflow.bd', // Matches owner's email address
     }
     const dbAdminRecords = [
-      { id: 'pa-owner-001', user_id: 'u-auth-owner-001', email: 'haji.shamim@printerp.com.bd', is_active: true }
+      { id: 'pa-owner-001', user_id: 'u-auth-owner-001', email: 'haji.shamim@printflow.bd', is_active: true }
     ]
     // Canonical check strictly matches on user_id === auth.uid()
     const match = dbAdminRecords.find((rec) => rec.user_id === spoofedUser.id && rec.is_active)

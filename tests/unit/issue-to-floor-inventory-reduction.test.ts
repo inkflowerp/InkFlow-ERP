@@ -2,7 +2,7 @@ import { describe, it, beforeEach } from 'node:test'
 import assert from 'node:assert/strict'
 import { InventoryRepository } from '../../lib/repositories/inventory.repository.ts'
 import { InventoryService } from '../../services/inventory.service.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import { getMaterialWarehouseStockBreakdown } from '../../lib/units.ts'
 import type { MaterialRecord } from '../../types/inventory.types.ts'
 
@@ -10,7 +10,7 @@ describe('Issue to Floor Inventory Stock Reduction & Synchronization', () => {
   const testCompanyId = `test-floor-issue-company-${Date.now()}`
 
   beforeEach(() => {
-    PrintERPDataStore.clear()
+    PrintFlowDataStore.clear()
   })
 
   it('1. Roll media: issuing 1 of 2 rolls reduces warehouse breakdown to 1 roll (656 SFT), issuing second reduces to 0 rolls (0 SFT)', async () => {
@@ -46,8 +46,8 @@ describe('Issue to Floor Inventory Stock Reduction & Synchronization', () => {
       is_active: true,
     }
 
-    PrintERPDataStore.addItem(STORAGE_KEYS.MATERIALS, rollMaterial, testCompanyId)
-    PrintERPDataStore.addItem(STORAGE_KEYS.MATERIALS, rollMaterial)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.MATERIALS, rollMaterial, testCompanyId)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.MATERIALS, rollMaterial)
 
     // Verify initial stock breakdown: 2 rolls, 1312 SFT
     const initialBreakdown = getMaterialWarehouseStockBreakdown(rollMaterial)
@@ -149,8 +149,8 @@ describe('Issue to Floor Inventory Stock Reduction & Synchronization', () => {
       is_active: true,
     }
 
-    PrintERPDataStore.addItem(STORAGE_KEYS.MATERIALS, sheetMaterial, testCompanyId)
-    PrintERPDataStore.addItem(STORAGE_KEYS.MATERIALS, sheetMaterial)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.MATERIALS, sheetMaterial, testCompanyId)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.MATERIALS, sheetMaterial)
 
     const initialBreakdown = getMaterialWarehouseStockBreakdown(sheetMaterial)
     assert.strictEqual(initialBreakdown.purchase_unit_display, '10 Sheets')
@@ -199,8 +199,8 @@ describe('Issue to Floor Inventory Stock Reduction & Synchronization', () => {
       is_active: true,
     }
 
-    PrintERPDataStore.addItem(STORAGE_KEYS.MATERIALS, bannerMaterial, testCompanyId)
-    PrintERPDataStore.addItem(STORAGE_KEYS.MATERIALS, bannerMaterial)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.MATERIALS, bannerMaterial, testCompanyId)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.MATERIALS, bannerMaterial)
 
     // Issue 500 SFT via direct issueMaterial
     const issueResult = await InventoryService.issueMaterial({
@@ -276,8 +276,8 @@ describe('Issue to Floor Inventory Stock Reduction & Synchronization', () => {
       is_active: true,
     }
 
-    PrintERPDataStore.addItem(STORAGE_KEYS.MATERIALS, blackPvcMaterial, testCompanyId)
-    PrintERPDataStore.addItem(STORAGE_KEYS.MATERIALS, blackPvcMaterial)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.MATERIALS, blackPvcMaterial, testCompanyId)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.MATERIALS, blackPvcMaterial)
 
     // Verify initial stock breakdown calculates 21 rolls (6,888 SFT)
     const initialBreakdown = getMaterialWarehouseStockBreakdown(blackPvcMaterial)

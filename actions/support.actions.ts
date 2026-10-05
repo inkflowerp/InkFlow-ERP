@@ -4,7 +4,7 @@ import { withTenantAction } from '@/lib/actions/action-wrapper'
 
 
 // ==============================================================================
-// InkFlow SaaS - Authoritative Server Actions for Support Chat & Conversations
+// PrintFlow SaaS - Authoritative Server Actions for Support Chat & Conversations
 // Server-Guarded: Enforces authenticated identity, tenant isolation, permissions,
 // rate limiting, anti-XSS validation, and audit logging.
 // ==============================================================================

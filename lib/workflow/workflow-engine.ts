@@ -1,5 +1,5 @@
 /**
- * PrintERP SaaS - Canonical Order-to-Delivery Workflow Engine
+ * PrintFlow SaaS - Canonical Order-to-Delivery Workflow Engine
  *
  * Centralized, deterministic workflow resolver that evaluates an order and its child jobs,
  * routing specifications, design approvals, production tasks, and delivery challans

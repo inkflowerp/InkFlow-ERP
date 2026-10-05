@@ -1,7 +1,7 @@
 'use client'
 
 // ==============================================================================
-// PrintERP SaaS - Platform Superadmin WhatsApp Gateway Infrastructure Monitoring
+// PrintFlow SaaS - Platform Superadmin WhatsApp Gateway Infrastructure Monitoring
 // Location: Platform Superadmin -> Communications -> WhatsApp Gateway
 // Real-time server telemetry, active Chromium sessions, and force restart controls
 // ==============================================================================

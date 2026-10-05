@@ -1,7 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { QuotationRepository } from '../../lib/repositories/quotation.repository.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import type { QuotationRecord } from '../../types/quotation.types.ts'
 
 test('Quotation to Job Order: verifies order, job ticket, and cross-partition sync for Commercial Orders & Job Hub', async (t) => {
@@ -53,8 +53,8 @@ test('Quotation to Job Order: verifies order, job ticket, and cross-partition sy
     updated_at: new Date().toISOString(),
   }
 
-  PrintERPDataStore.addItem(STORAGE_KEYS.QUOTATIONS, quote)
-  PrintERPDataStore.addItem(STORAGE_KEYS.QUOTATIONS, quote, companyId)
+  PrintFlowDataStore.addItem(STORAGE_KEYS.QUOTATIONS, quote)
+  PrintFlowDataStore.addItem(STORAGE_KEYS.QUOTATIONS, quote, companyId)
 
   await t.test('converts quotation and provisions sales order, job ticket, and production job', async () => {
     const result = await QuotationRepository.convertQuotationToJobOrder(quote.id, companyId, {
@@ -71,19 +71,19 @@ test('Quotation to Job Order: verifies order, job ticket, and cross-partition sy
     assert.equal(result.due_amount, 7000)
 
     // Check quotation status updated to converted
-    const updatedQuote = PrintERPDataStore.findItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, quote.id)
+    const updatedQuote = PrintFlowDataStore.findItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, quote.id)
     assert.equal(updatedQuote?.status, 'converted')
     assert.equal(updatedQuote?.converted_order_id, result.order_number)
 
     // Check Job Order ticket created
-    const jobOrders = PrintERPDataStore.get<any[]>(STORAGE_KEYS.JOB_ORDERS) || []
+    const jobOrders = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.JOB_ORDERS) || []
     const matchingJob = jobOrders.find((j) => j.order_id === result.id || j.order_number === result.order_number)
     assert.ok(matchingJob, 'Linked Job Order ticket must exist in DataStore')
     assert.match(matchingJob.job_number, /^JOB-/)
     assert.equal(matchingJob.customer_name, 'Metro Billboard Ltd')
 
     // Check Sales Order in DataStore
-    const orders = PrintERPDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []
+    const orders = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []
     const matchingOrder = orders.find((o) => o.id === result.id || o.order_number === result.order_number)
     assert.ok(matchingOrder, 'Sales Order must exist in DataStore for Commercial Orders & Job Hub')
     assert.equal(matchingOrder.quotation_id, quote.id)

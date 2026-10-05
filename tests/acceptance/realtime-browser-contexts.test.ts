@@ -1,5 +1,5 @@
 // ==============================================================================
-// InkFlow ERP - Multi-Context Browser Realtime Acceptance Test
+// PrintFlow - Multi-Context Browser Realtime Acceptance Test
 //
 // Verifies with Playwright:
 // - Two browser contexts with different users in the same tenant (Tenant Alpha).
@@ -128,11 +128,11 @@ describe('Playwright Multi-Context Multi-Tenant Realtime & OCC Verification', ()
   })
 
   test('Two browser contexts in Tenant Alpha sync live; Tenant Beta receives 0 events', async () => {
-    // HTML simulating InkFlow tenant app DOM with isolated company Realtime channel
+    // HTML simulating PrintFlow tenant app DOM with isolated company Realtime channel
     const createTenantAppHTML = (companyId: string, userName: string, initialStatus: string) => `
       <!DOCTYPE html>
       <html>
-      <head><title>InkFlow ERP</title></head>
+      <head><title>PrintFlow</title></head>
       <body>
         <div id="company">${companyId}</div>
         <div id="user">${userName}</div>

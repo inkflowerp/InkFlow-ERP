@@ -2488,7 +2488,7 @@ export class BillingRepository {
           }
 
           const allPayments = PrintERPDataStore.get<PaymentRecord[]>(STORAGE_KEYS.PAYMENTS) || []
-          allPayments.unshift({ ...newPaymentRow, payment_number: receiptNumber, allocations: allocationRecords })
+          allPayments.unshift({ ...newPaymentRow, customer_id: params.customerId || newPaymentRow.customer_id, payment_number: receiptNumber, allocations: allocationRecords })
           PrintERPDataStore.set(STORAGE_KEYS.PAYMENTS, allPayments)
         } catch (_) {}
 
@@ -3577,14 +3577,14 @@ export class BillingRepository {
 
       return {
         invoice,
-        company: company || { name: 'InkFlow Enterprise', address: '' },
+        company: company || { name: 'PrintFlow Enterprise', address: '' },
       }
     } catch {
       const invoice = await this.getInvoiceById(id, companyId)
       if (!invoice) return null
       return {
         invoice,
-        company: { name: 'InkFlow Enterprise', address: '' },
+        company: { name: 'PrintFlow Enterprise', address: '' },
       }
     }
   }

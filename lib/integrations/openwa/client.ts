@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP SaaS - OpenWA Server-Side API Client
+// PrintFlow SaaS - OpenWA Server-Side API Client
 // Authoritative API integration with rmyndharis/OpenWA WhatsApp Gateway
 // OpenAPI 3.0 specification compliant (OpenWA 0.24.0+)
 // ==============================================================================
@@ -163,7 +163,7 @@ export class OpenWAClient {
 
     const requestHeaders: Record<string, string> = {
       Accept: 'application/json',
-      'User-Agent': 'PrintERP-SaaS/1.0',
+      'User-Agent': 'PrintFlow-SaaS/1.0',
       ...headers,
     }
 

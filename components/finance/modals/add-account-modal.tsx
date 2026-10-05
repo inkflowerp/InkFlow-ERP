@@ -330,7 +330,7 @@ export function AddAccountModal({
           </div>
           <p className="text-xs text-muted-foreground mt-1">
             {tBilingual(
-              'Initial money in this drawer or account when starting PrintERP.',
+              'Initial money in this drawer or account when starting PrintFlow.',
               'সফটওয়্যার চালুর সময় এই ড্রয়ার বা একাউন্টে থাকা বর্তমান নগদ টাকা।'
             )}
           </p>

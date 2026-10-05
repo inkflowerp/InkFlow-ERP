@@ -1,10 +1,11 @@
 'use server'
 
 import { withTenantAction } from '@/lib/actions/action-wrapper'
+import { BRAND } from '@/config/brand'
 
 
 // ==============================================================================
-// PrintERP SaaS - Tenant WhatsApp Connection Server Actions
+// PrintFlow SaaS - Tenant WhatsApp Connection Server Actions
 // Authoritative session lifecycle orchestration for OpenWA Multi-Tenant Gateway
 // ==============================================================================
 
@@ -165,7 +166,7 @@ export const initiateWhatsAppConnectionAction = withTenantAction(
     }
 
     // 4. Ensure Webhook is registered for incoming messages and lifecycle events
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.printerp.com'
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || `https://${BRAND.rootDomain}`
     const webhookUrl = `${appUrl.replace(/\/+$/, '')}/api/webhooks/openwa`
     const webhookSecret = openWAClient.getWebhookSecret()
 

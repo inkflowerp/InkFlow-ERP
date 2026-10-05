@@ -1,5 +1,5 @@
 /**
- * InkFlow ERP — Authoritative Production Geometry Engine
+ * PrintFlow — Authoritative Production Geometry Engine
  * Handles deterministic bleed / production allowances, dimension formatting,
  * and physical cutting geometry without double-multiplication or rounding drift.
  */

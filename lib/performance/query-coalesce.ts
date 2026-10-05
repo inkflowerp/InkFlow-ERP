@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP SaaS - Server Query Coalescer & Fast In-Flight Cache
+// PrintFlow SaaS - Server Query Coalescer & Fast In-Flight Cache
 // Eliminates redundant simultaneous database queries across parallel server actions.
 // If multiple actions query the same tenant dataset within the same request cycle,
 // this module merges them into a single database execution.

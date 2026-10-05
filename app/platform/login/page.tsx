@@ -24,8 +24,8 @@ import { LanguageSwitcher } from '@/components/shell/language-switcher'
 import { useI18n } from '@/lib/i18n'
 import { platformLoginAction } from '@/actions/platform-auth.actions'
 
-// --- InkFlow Vector Logo ---
-function InkFlowPlatformLogo({ className = '' }: { className?: string }) {
+// --- PrintFlow Vector Logo ---
+function PrintFlowPlatformLogo({ className = '' }: { className?: string }) {
   return (
     <Link href="/" className={`inline-flex items-center gap-2.5 select-none group cursor-pointer ${className}`}>
       <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-lg bg-primary flex items-center justify-center text-primary-foreground shadow-xs shrink-0">
@@ -34,7 +34,7 @@ function InkFlowPlatformLogo({ className = '' }: { className?: string }) {
       <div className="flex flex-col">
         <div className="flex items-center gap-1.5">
           <span className="text-lg sm:text-xl font-black tracking-tight text-foreground leading-none">
-            InkFlow
+            PrintFlow
           </span>
           <span className="text-xs font-bold px-1.5 py-0.5 rounded bg-primary/10 text-primary border border-primary/20 uppercase tracking-wider">
             PLATFORM
@@ -116,7 +116,7 @@ function PlatformLoginForm() {
       {/* --- Top Navigation Bar --- */}
       <header className="relative z-30 w-full mx-auto px-4 sm:px-6 lg:px-8 pt-3 sm:pt-4 pb-2 flex items-center justify-between shrink-0">
         <div>
-          <InkFlowPlatformLogo />
+          <PrintFlowPlatformLogo />
         </div>
 
         <div className="flex items-center gap-2 sm:gap-2.5">
@@ -151,7 +151,7 @@ function PlatformLoginForm() {
           {/* Main Headline */}
           <div className="space-y-1.5">
             <h1 className="text-2xl sm:text-3xl xl:text-4xl font-black tracking-tight text-foreground leading-[1.15]">
-              {tBilingual('Operate InkFlow.', 'ইঙ্কফ্লো পরিচালনা করুন।')}
+              {tBilingual('Operate PrintFlow.', 'প্রিন্টফ্লো পরিচালনা করুন।')}
               <br />
               <span className="text-primary">
                 {tBilingual('Securely.', 'সম্পূর্ণ নিরাপদে।')}
@@ -159,8 +159,8 @@ function PlatformLoginForm() {
             </h1>
             <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed max-w-md">
               {tBilingual(
-                'Manage the InkFlow platform, clients, users, and system from one secure control center.',
-                'একটি নিরাপদ কন্ট্রোল সেন্টার থেকে ইঙ্কফ্লো প্ল্যাটফর্ম, ক্লায়েন্ট ও সিস্টেম পরিচালনা করুন।'
+                'Manage the PrintFlow platform, clients, users, and system from one secure control center.',
+                'একটি নিরাপদ কন্ট্রোল সেন্টার থেকে প্রিন্টফ্লো প্ল্যাটফর্ম, ক্লায়েন্ট ও সিস্টেম পরিচালনা করুন।'
               )}
             </p>
           </div>

@@ -1,27 +1,27 @@
 import { describe, it, beforeEach } from 'node:test'
 import assert from 'node:assert'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import { DesignService } from '../../services/design.service.ts'
 import { InvoiceRequestService } from '../../services/invoice-request.service.ts'
 import { BillingRepository } from '../../lib/repositories/billing.repository.ts'
 import { CustomerRepository } from '../../lib/repositories/customer.repository.ts'
 import type { CustomerRecord } from '../../types/crm.types.ts'
 
-describe('PrintERP Designer Panel & Dual Intake Workflow Architecture', () => {
+describe('PrintFlow Designer Panel & Dual Intake Workflow Architecture', () => {
   const TENANT_A = 'tenant-designer-test-a'
   const TENANT_B = 'tenant-designer-test-b'
 
   beforeEach(() => {
     // Reset DataStore for clean isolation
-    PrintERPDataStore.set(STORAGE_KEYS.DESIGN_JOBS, [])
-    PrintERPDataStore.set(STORAGE_KEYS.INVOICE_REQUESTS, [])
-    PrintERPDataStore.set(STORAGE_KEYS.INVOICES, [])
-    PrintERPDataStore.set(STORAGE_KEYS.CUSTOMERS, [])
-    PrintERPDataStore.set(STORAGE_KEYS.ORDERS, [])
-    PrintERPDataStore.set(STORAGE_KEYS.JOB_ORDERS, [])
-    PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, [])
-    PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_JOBS, [])
-    PrintERPDataStore.set(STORAGE_KEYS.IN_APP_NOTIFICATIONS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.DESIGN_JOBS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.INVOICE_REQUESTS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.INVOICES, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.CUSTOMERS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.ORDERS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.JOB_ORDERS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.PRODUCTION_JOBS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.IN_APP_NOTIFICATIONS, [])
   })
 
   describe('PATH A: Direct Customer to Designer Intake Workflow', () => {
@@ -93,8 +93,8 @@ describe('PrintERP Designer Panel & Dual Intake Workflow Architecture', () => {
         design_job_id: designJob.id,
         version_number: 2,
         file_name: 'abc_fashion_v2.pdf',
-        file_url: 'https://storage.printerp.com/designs/abc_fashion_v2.pdf',
-        preview_url: 'https://storage.printerp.com/designs/abc_fashion_v2_thumb.jpg',
+        file_url: 'https://storage.printflow.bd/designs/abc_fashion_v2.pdf',
+        preview_url: 'https://storage.printflow.bd/designs/abc_fashion_v2_thumb.jpg',
         file_size_bytes: 4500000,
         notes: 'Completed final proof for client',
         created_by_name: 'Sazzad Designer',
@@ -128,7 +128,7 @@ describe('PrintERP Designer Panel & Dual Intake Workflow Architecture', () => {
       assert.strictEqual(invoiceReq.design_job_id, designJob.id)
 
       // Verify in-app notification to billing team
-      const notifs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.IN_APP_NOTIFICATIONS) || []
+      const notifs = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.IN_APP_NOTIFICATIONS) || []
       const billingNotif = notifs.find((n) => n.company_id === TENANT_A && n.type === 'invoice_request')
       assert.ok(billingNotif, 'Billing team must receive in-app notification for invoice request')
     })
@@ -281,7 +281,7 @@ describe('PrintERP Designer Panel & Dual Intake Workflow Architecture', () => {
       assert.strictEqual(result3.success, true, 'Handoff must succeed when all gates are satisfied')
 
       // Verify production job is queued
-      const prodJobs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_JOBS) || []
+      const prodJobs = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_JOBS) || []
       const pj = prodJobs.find((p) => p.company_id === TENANT_A && p.customer_name === 'ABC Fashion Ltd')
       assert.ok(pj, 'Production job must be queued on the shop floor')
       assert.strictEqual(pj.status, 'queued')
@@ -332,7 +332,7 @@ describe('PrintERP Designer Panel & Dual Intake Workflow Architecture', () => {
       assert.strictEqual(matchingJob.customer_name, 'XYZ Restaurant')
 
       // Verify in-app notification was sent to Designer
-      const notifs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.IN_APP_NOTIFICATIONS) || []
+      const notifs = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.IN_APP_NOTIFICATIONS) || []
       const designerNotif = notifs.find(
         (n) => n.company_id === TENANT_A && n.type === 'design_assigned' && n.title.includes(matchingJob.design_number)
       )
@@ -385,7 +385,7 @@ describe('PrintERP Designer Panel & Dual Intake Workflow Architecture', () => {
         design_job_id: job.id,
         version_number: 2,
         file_name: 'menu_v2.pdf',
-        file_url: 'https://storage.printerp.com/menu_v2.pdf',
+        file_url: 'https://storage.printflow.bd/menu_v2.pdf',
         file_size_bytes: 2000000,
         notes: 'First draft for client review',
         created_by_name: 'Tareq Designer',
@@ -409,7 +409,7 @@ describe('PrintERP Designer Panel & Dual Intake Workflow Architecture', () => {
         design_job_id: job.id,
         version_number: 3,
         file_name: 'menu_v3.pdf',
-        file_url: 'https://storage.printerp.com/menu_v3.pdf',
+        file_url: 'https://storage.printflow.bd/menu_v3.pdf',
         file_size_bytes: 2100000,
         notes: 'Updated dessert page font color to maroon',
         created_by_name: 'Tareq Designer',

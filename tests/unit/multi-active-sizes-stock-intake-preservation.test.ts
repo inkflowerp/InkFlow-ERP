@@ -5,13 +5,13 @@ import { InventoryRepository } from '../../lib/repositories/inventory.repository
 import { ProductRepository } from '../../lib/repositories/product.repository.ts'
 import { ProductService } from '../../services/product.service.ts'
 import { getMaterialWarehouseStockBreakdown } from '../../lib/units.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 
 describe('Preservation of Multi-Active Sizes on Stock Intake', () => {
   const companyId = 'test-co-multi-sizes'
 
   beforeEach(() => {
-    PrintERPDataStore.clear(companyId)
+    PrintFlowDataStore.clear(companyId)
   })
 
   it('preserves PVC 3.25ft x 164ft when receiving 10 rolls of PVC 2ft x 164ft', async () => {

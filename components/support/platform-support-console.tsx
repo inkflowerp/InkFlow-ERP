@@ -1,7 +1,7 @@
 'use client'
 
 // ==============================================================================
-// InkFlow SaaS - Platform Support Console Master Workspace
+// PrintFlow SaaS - Platform Support Console Master Workspace
 // Unified 3-Pane Console: Triage Queue, Realtime Chat, and Tenant Context Inspector.
 // ==============================================================================
 

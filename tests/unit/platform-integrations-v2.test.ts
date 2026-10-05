@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP SaaS - Platform Integrations V2 Unit & Security Test Suite
+// PrintFlow - Platform Integrations V2 Unit & Security Test Suite
 // Verifies:
 // 1. Authenticated v2 encryption (v2:k1:iv:tag:data) & legacy v1 fallback
 // 2. Safe error handling (CREDENTIAL_KEY_MISMATCH, CREDENTIAL_FORMAT_INVALID, needsReentry)

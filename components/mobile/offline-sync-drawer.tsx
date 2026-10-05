@@ -228,7 +228,7 @@ export function OfflineSyncDrawer({ open, onClose }: OfflineSyncDrawerProps) {
 
         {/* Footer */}
         <div className="p-3 border-t border-border bg-surface-inset text-xs text-muted-foreground text-center">
- PrintERP Offline Storage Engine • Safe local storage on device
+ PrintFlow Offline Storage Engine • Safe local storage on device
         </div>
       </div>
     </div>

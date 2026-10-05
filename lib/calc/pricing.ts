@@ -1,5 +1,5 @@
 // ==============================================================================
-// InkFlow ERP - Authoritative Pricing & Rate Rules (lib/calc/pricing.ts)
+// PrintFlow - Authoritative Pricing & Rate Rules (lib/calc/pricing.ts)
 // Calculates Tiered Quantity Pricing, Customer Tier Rules, and Rush Surcharges.
 // ==============================================================================
 

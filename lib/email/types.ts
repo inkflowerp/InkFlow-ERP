@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP SaaS - Email Provider Abstraction Interfaces
+// PrintFlow SaaS - Email Provider Abstraction Interfaces
 // ==============================================================================
 
 import type { EmailProviderType, EmailEncryptionType } from '../../types/communication.types.ts'

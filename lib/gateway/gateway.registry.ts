@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP SaaS - Central Gateway Registry & Dispatch Hub
+// PrintFlow SaaS - Central Gateway Registry & Dispatch Hub
 // Factory and router for Email, SMS, Payment, WhatsApp, and Telegram adapters
 // ==============================================================================
 
@@ -50,7 +50,7 @@ export class GatewayRegistry {
           }
 
           const senderEmail = publicConfig.sender_email || publicConfig.gmail_account_email || 'test@printerp.com'
-          const senderName = publicConfig.sender_name || publicConfig.gmail_display_name || 'PrintERP'
+          const senderName = publicConfig.sender_name || publicConfig.gmail_display_name || 'PrintFlow'
 
           const emailProvider = createEmailProvider({
             id: 'test-gw',
@@ -239,7 +239,7 @@ export class GatewayRegistry {
           }
 
           const senderEmail = publicConfig.sender_email || publicConfig.gmail_account_email || 'test@printerp.com'
-          const senderName = publicConfig.sender_name || publicConfig.gmail_display_name || 'PrintERP Test'
+          const senderName = publicConfig.sender_name || publicConfig.gmail_display_name || 'PrintFlow Test'
           const emailProvider = createEmailProvider({
             id: 'test-send',
             provider: provider as any,
@@ -259,9 +259,9 @@ export class GatewayRegistry {
           const res = await emailProvider.sendEmail({
             from: { name: senderName, address: senderEmail },
             to: payload.recipient,
-            subject: payload.subject || 'PrintERP Gateway Live Test Email',
+            subject: payload.subject || 'PrintFlow Gateway Live Test Email',
             html: `<div style="font-family: sans-serif; padding: 20px;">
-              <h2>PrintERP Live Gateway Test</h2>
+              <h2>PrintFlow Live Gateway Test</h2>
               <p>${payload.message}</p>
               <hr style="border: none; border-top: 1px solid #eaeaea; margin: 20px 0;" />
               <p style="color: #666; font-size: 12px;">Sent via ${provider.toUpperCase()} at ${new Date().toISOString()}</p>

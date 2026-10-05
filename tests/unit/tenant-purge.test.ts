@@ -45,7 +45,7 @@ describe('Tenant Purge & Zero-Tenant Platform Integrity Test Suite', () => {
     }
     if (key === 'printerp_platform_system_settings') {
       return {
-        platform_name: 'PrintERP Bangladesh Cloud',
+        platform_name: 'PrintFlow Bangladesh Cloud',
         maintenance_mode: false,
         allow_tenant_registration: true,
       }
@@ -67,7 +67,7 @@ describe('Tenant Purge & Zero-Tenant Platform Integrity Test Suite', () => {
 
     const systemSettings = getInitialSeedData('printerp_platform_system_settings')
     assert.ok(systemSettings)
-    assert.strictEqual(systemSettings.platform_name, 'PrintERP Bangladesh Cloud')
+    assert.strictEqual(systemSettings.platform_name, 'PrintFlow Bangladesh Cloud')
   })
 
   it('3. Simulates single tenant creation and subsequent clean deletion with cascading dependencies', () => {
@@ -114,7 +114,7 @@ describe('Tenant Purge & Zero-Tenant Platform Integrity Test Suite', () => {
     ]
 
     const platformAdmins = [
-      { id: 'admin-1', email: 'admin@printerp.com.bd', role: 'super_admin' },
+      { id: 'admin-1', email: 'admin@printflow.bd', role: 'super_admin' },
     ]
 
     assert.strictEqual(mockTenantList.length, 3)

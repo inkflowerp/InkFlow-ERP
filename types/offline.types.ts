@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP SaaS - Phase 23: Offline-Friendly Architecture Types
+// PrintFlow SaaS - Phase 23: Offline-Friendly Architecture Types
 // ==============================================================================
 
 export type OfflineSyncStatus = 'queued' | 'syncing' | 'synced' | 'failed' | 'conflict'

@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert'
 
-// Unit test of Document Numbering Engine matching PrintERPDataStore.getNextDocumentNumber
+// Unit test of Document Numbering Engine matching PrintFlowDataStore.getNextDocumentNumber
 class DocumentNumberingEngine {
   private static counters: Map<string, number> = new Map()
 

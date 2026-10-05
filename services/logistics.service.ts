@@ -87,7 +87,7 @@ export class LogisticsService {
    */
   static generateBangladeshiChallanWhatsAppMessage(
     challan: DeliveryChallanRecord,
-    companyName: string = 'InkFlow Printing & Signage'
+    companyName: string = 'PrintFlow Printing & Signage'
   ): string {
     const customer = challan.customer_name || 'সম্মানিত গ্রাহক'
     const challanNo = challan.challan_number || 'CHL-0000'

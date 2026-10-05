@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP SaaS - Email Provider Factory
+// PrintFlow SaaS - Email Provider Factory
 // Instantiates and returns the appropriate IEmailProvider adapter.
 // ==============================================================================
 

@@ -144,7 +144,7 @@ describe('Tenant Subdomain Security & Cross-Tenant Boundary Tests', () => {
   ]
 
   test('1. Tenant A user CANNOT access Tenant B subdomain (Fail-Closed Quarantine)', () => {
-    // User Bob belongs to ABC Printing, tries to access vision.inkflow.com.bd
+    // User Bob belongs to ABC Printing, tries to access vision.printflow.bd
     const res = simulateRequireTenantAccess('user-bob-2', 'vision')
     assert.equal(res.authorized, false)
     assert.equal(res.statusCode, 403)
@@ -152,14 +152,14 @@ describe('Tenant Subdomain Security & Cross-Tenant Boundary Tests', () => {
   })
 
   test('2. Tenant A user accessing Tenant B subdomain query receives 0 records (RLS enforcement)', () => {
-    // Bob (ABC Printing) tries to query invoices on vision.inkflow.com.bd
+    // Bob (ABC Printing) tries to query invoices on vision.printflow.bd
     const queryRes = simulateTenantScopedDataQuery('user-bob-2', 'vision', sampleInvoices)
     assert.equal(queryRes.allowed, false)
     assert.equal(queryRes.data.length, 0, 'No cross-tenant data leaked to unauthorized user')
   })
 
   test('3. Tenant A user accessing own tenant subdomain succeeds with authorized status', () => {
-    // Alice (Vision Sign) accesses vision.inkflow.com.bd
+    // Alice (Vision Sign) accesses vision.printflow.bd
     const res = simulateRequireTenantAccess('user-alice-1', 'vision')
     assert.equal(res.authorized, true)
     assert.equal(res.statusCode, 200)

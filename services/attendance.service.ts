@@ -1,5 +1,5 @@
 // ==============================================================================
-// InkFlow ERP - Authoritative Attendance Service (Server-Side)
+// PrintFlow - Authoritative Attendance Service (Server-Side)
 // Cryptographic QR Token Generation, Rotation, and Geofence Verification Engine
 // ==============================================================================
 
@@ -71,7 +71,7 @@ export class AttendanceService {
     })
 
     qrToken.raw_token = rawToken
-    qrToken.qr_payload_url = `INKFLOW:ATT:v1:${rawToken}`
+    qrToken.qr_payload_url = `PRINTFLOW:ATT:v1:${rawToken}`
     location.active_qr_token = qrToken
 
     // 3. Log audit event
@@ -177,7 +177,7 @@ export class AttendanceService {
     })
 
     newToken.raw_token = rawToken
-    newToken.qr_payload_url = `INKFLOW:ATT:v1:${rawToken}`
+    newToken.qr_payload_url = `PRINTFLOW:ATT:v1:${rawToken}`
 
     // Audit log
     await AttendanceRepository.logAttendanceAudit({
@@ -295,11 +295,11 @@ export class AttendanceService {
       }
     }
 
-    // Fallback B: Lookup by token prefix (e.g. "INK-LOC-8B89A214")
+    // Fallback B: Lookup by token prefix (e.g. "PF-LOC-8B89A214" or legacy "INK-LOC-8B89A214")
     if (!tokenMatch) {
       let prefix = ''
-      if (cleanQr.includes('INK-LOC-')) {
-        const match = cleanQr.match(/INK-LOC-[0-9A-Za-z_-]+/i)
+      if (cleanQr.includes('PF-LOC-') || cleanQr.includes('INK-LOC-')) {
+        const match = cleanQr.match(/(?:PF-LOC-|INK-LOC-)[0-9A-Za-z_-]+/i)
         if (match) prefix = match[0].toUpperCase()
       } else if (cleanQr.startsWith('LOC-')) {
         prefix = cleanQr
@@ -328,7 +328,7 @@ export class AttendanceService {
       return {
         success: false,
         code: 'QR_INVALID',
-        error: 'Invalid QR code. Please scan an authorized InkFlow attendance terminal.',
+        error: 'Invalid QR code. Please scan an authorized PrintFlow attendance terminal.',
       }
     }
 

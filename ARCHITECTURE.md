@@ -1,4 +1,4 @@
-# InkFlow ERP — Multi-Tenant Architecture & Security Specification
+# PrintFlow — Multi-Tenant Architecture & Security Specification
 
 **Version:** 2.0.0  
 **Status:** Approved Architecture  
@@ -9,7 +9,7 @@
 ## 1. Architectural Invariants
 
 1. **Host-Derived Tenant Scope:** The tenant context is ALWAYS derived from the verified request host (or path fallback in PSL/development mode). It is NEVER accepted from client-supplied headers, request bodies, or URL parameters.
-2. **Host-Only Cookies:** All session cookies (`sb-*-auth-token`, `printerp_tenant_session`) are host-only. The `Domain` attribute is NEVER set to `.ROOT_DOMAIN` (no wildcard cookies). Platform cookies and tenant cookies never share host scope or storage.
+2. **Host-Only Cookies:** All session cookies (`sb-*-auth-token`, `printflow_tenant_session`, legacy reader support) are host-only. The `Domain` attribute is NEVER set to `.ROOT_DOMAIN` (no wildcard cookies). Platform cookies and tenant cookies never share host scope or storage.
 3. **Defense in Depth (DAL as Real Boundary):** Edge middleware performs routing and session refresh, but the server-side Data Access Layer (`lib/auth/dal.ts`) is the authoritative security boundary. Every Server Action, Route Handler, and Server Component independently authenticates and authorizes.
 4. **PostgreSQL RLS as the Ultimate Barrier:** All tenant tables carry a non-null tenant/company identifier, have Row-Level Security enabled and FORCED (`FORCE ROW LEVEL SECURITY`), with non-bypassable policies checking verified identity and active membership.
 5. **No Blind Trust of Claims:** JWT claims provide fast token-based routing, but sensitive operations re-verify against the active database membership so suspended or removed users lose access immediately.
@@ -26,7 +26,7 @@
          v                                v                               v
 +------------------+            +-------------------+           +-------------------+
 |   ROOT DOMAIN    |            |  PLATFORM ADMIN   |           |  TENANT SUBDOMAIN |
-|  inkflowerp.com  |            | admin.inkflowerp  |           | [slug].inkflowerp |
+|   printflow.bd   |            | admin.printflow.bd|           |[slug].printflow.bd|
 +------------------+            +-------------------+           +-------------------+
          |                                |                               |
          | Rewrites                       | Rewrites                      | Rewrites
@@ -43,9 +43,9 @@
 
 | Host Type | Domain Pattern | Target Experience | Cookie Scope |
 | :--- | :--- | :--- | :--- |
-| **Marketing / Root** | `ROOT_DOMAIN` (`inkflowerp.com`, `localhost:3000`) | Landing page, workspace discovery, tenant registration, legal pages | Host-only (`inkflowerp.com`) |
-| **Platform Owner** | `admin.ROOT_DOMAIN` (`admin.inkflowerp.com`, `admin.localhost`) | Platform administration, subscriptions, tenant audit, metrics | Host-only (`admin.inkflowerp.com`) |
-| **Tenant Portal** | `[tenantSlug].ROOT_DOMAIN` (`vision.inkflowerp.com`) | Tenant business operations, billing, inventory, POS, employee login | Host-only (`vision.inkflowerp.com`) |
+| **Marketing / Root** | `ROOT_DOMAIN` (`printflow.bd`, `localhost:3000`) | Landing page, workspace discovery, tenant registration, legal pages | Host-only (`printflow.bd`) |
+| **Platform Owner** | `admin.ROOT_DOMAIN` (`admin.printflow.bd`, `admin.localhost`) | Platform administration, subscriptions, tenant audit, metrics | Host-only (`admin.printflow.bd`) |
+| **Tenant Portal** | `[tenantSlug].ROOT_DOMAIN` (`vision.printflow.bd`) | Tenant business operations, billing, inventory, POS, employee login | Host-only (`vision.printflow.bd`) |
 | **Custom Domain** | `erp.customerdomain.com` (verified in `tenant_domains`) | Same as tenant portal, branded for customer | Host-only (`erp.customerdomain.com`) |
 | **PSL / Dev Fallback**| `inkflow-erp.vercel.app/t/[slug]/*` or `/[slug]/*` | Path-based fallback when wildcard DNS is unavailable | Host-only on fallback host |
 
@@ -108,7 +108,7 @@ A user's session in the application is **strictly scoped to ONE active tenant**,
      - **Temporary Password:** Generated server-side with forced password reset on first login (`must_change_password = true`).
 2. **Synthetic Identity Resolution:**
    - Employees who lack an email address receive a deterministic, tenant-isolated synthetic identity:
-     `{sanitized_username}@{company_slug}.inkflow.internal`
+     `{sanitized_username}@{company_slug}.printflow.internal`
    - The synthetic email is strictly internal and NEVER exposed to users or client code.
 3. **Server-Side Credential Resolver:**
    - Employee enters: `Username or Phone` + `Password`.
@@ -239,19 +239,19 @@ export const getScopedDbClient = async () => { ... } // Returns Supabase client 
 
 ## 12. End-to-End Request Lifecycle & Layering Architecture
 
-InkFlow ERP strictly enforces physical and architectural boundaries across all application tiers. The request lifecycle follows a strict unidirectional data flow:
+PrintFlow strictly enforces physical and architectural boundaries across all application tiers. The request lifecycle follows a strict unidirectional data flow:
 
 ```
 +---------------------------------------------------------------------------------------------------+
 | 1. INCOMING HOST & DNS RESOLUTION                                                                 |
-|    - Verified Host / Subdomain / Custom Domain Resolution (e.g. acme.inkflowerp.com)             |
+|    - Verified Host / Subdomain / Custom Domain Resolution (e.g. acme.printflow.bd)                |
 |    - Rejects invalid / reserved / mismatched tenant hosts                                        |
 +---------------------------------------------------------------------------------------------------+
                                                   |
                                                   v
 +---------------------------------------------------------------------------------------------------+
 | 2. EDGE ROUTING MIDDLEWARE (lib/supabase/middleware.ts)                                          |
-|    - Reconstructs internal routing / rewrites (e.g. acme.inkflowerp.com/sales -> /acme/sales)    |
+|    - Reconstructs internal routing / rewrites (e.g. acme.printflow.bd/sales -> /acme/sales)       |
 |    - Verifies cryptographic session tokens (HMAC-SHA256 session signer)                          |
 |    - Injects anti-cache headers & x-forwarded-tenant headers                                      |
 +---------------------------------------------------------------------------------------------------+

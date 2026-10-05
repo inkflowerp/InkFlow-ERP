@@ -313,7 +313,7 @@ export default function PlatformAdminsPage() {
  Platform Administrators
  </h1>
  <p className="text-xs sm:text-sm text-muted-foreground mt-1">
- Privileged accounts with root administrative access to InkFlow platform infrastructure and operational controls.
+ Privileged accounts with root administrative access to PrintFlow platform infrastructure and operational controls.
  </p>
  </div>
 

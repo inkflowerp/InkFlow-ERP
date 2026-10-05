@@ -2,15 +2,15 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { RollConsumptionEngine } from '../../lib/domain/roll-consumption-engine.ts'
 import { InventoryRepository } from '../../lib/repositories/inventory.repository.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 
 test('Roll Dimensional Consumption Engine - User Specific Scenarios', async (t) => {
   const companyId = 'tenant-test-roll-corp'
 
   // Reset datastore for clean tests
-  PrintERPDataStore.set(STORAGE_KEYS.MOUNTED_ROLLS, [], true, companyId)
-  PrintERPDataStore.set(STORAGE_KEYS.STOCK_LEDGER, [], true, companyId)
-  PrintERPDataStore.set(STORAGE_KEYS.MATERIALS, [
+  PrintFlowDataStore.set(STORAGE_KEYS.MOUNTED_ROLLS, [], true, companyId)
+  PrintFlowDataStore.set(STORAGE_KEYS.STOCK_LEDGER, [], true, companyId)
+  PrintFlowDataStore.set(STORAGE_KEYS.MATERIALS, [
     {
       id: 'mat-pvc-banner',
       company_id: companyId,

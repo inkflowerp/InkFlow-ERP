@@ -1,5 +1,5 @@
 // ==============================================================================
-// InkFlow ERP - Observability & Error Telemetry Engine
+// PrintFlow - Observability & Error Telemetry Engine
 // Integrates with Sentry / Vercel Observability and exports captureError helpers.
 // Tags every event with tenant_id, hashed user_id, and request_id.
 // ==============================================================================

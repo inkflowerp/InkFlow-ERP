@@ -1,11 +1,11 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import { QuotationService } from '../../services/quotation.service.ts'
 import { QuotationRepository } from '../../lib/repositories/quotation.repository.ts'
 import type { QuotationRecord, QuotationItemRecord } from '../../types/quotation.types.ts'
 
-describe('InkFlow — Business-Owner-First Quotation Workflow & Control Center', () => {
+describe('PrintFlow — Business-Owner-First Quotation Workflow & Control Center', () => {
   const testCompanyId = 'comp-owner-test-01'
 
   // Sample items
@@ -310,7 +310,7 @@ describe('InkFlow — Business-Owner-First Quotation Workflow & Control Center',
       updated_at: new Date().toISOString(),
     }
 
-    PrintERPDataStore.addItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, testQuote)
+    PrintFlowDataStore.addItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, testQuote)
 
     const nextDate = new Date(Date.now() + 86400000).toISOString().split('T')[0]
     const updated = await QuotationRepository.recordFollowUp(
@@ -363,7 +363,7 @@ describe('InkFlow — Business-Owner-First Quotation Workflow & Control Center',
       updated_at: new Date().toISOString(),
     }
 
-    PrintERPDataStore.addItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, testQuote)
+    PrintFlowDataStore.addItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, testQuote)
 
     // Apply ৳15,000 concession discount
     // Subtotal after disc = 85,000. VAT 7.5% = 6,375. Grand total = 91,375.
@@ -411,7 +411,7 @@ describe('InkFlow — Business-Owner-First Quotation Workflow & Control Center',
       updated_at: new Date().toISOString(),
     }
 
-    PrintERPDataStore.addItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, testQuote)
+    PrintFlowDataStore.addItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, testQuote)
 
     // Convert with ৳15,000 advance
     const order = await QuotationRepository.convertQuotationToJobOrder(
@@ -473,7 +473,7 @@ describe('InkFlow — Business-Owner-First Quotation Workflow & Control Center',
       updated_at: new Date().toISOString(),
     }
 
-    PrintERPDataStore.addItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, testQuote)
+    PrintFlowDataStore.addItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, testQuote)
 
     const invoice = await QuotationRepository.convertQuotationToInvoice(
       testQuote.id,
@@ -520,7 +520,7 @@ describe('InkFlow — Business-Owner-First Quotation Workflow & Control Center',
       updated_at: new Date().toISOString(),
     }
 
-    const message = QuotationService.generateQuotationTextMessage(sensitiveQuote, 'InkFlow Solutions')
+    const message = QuotationService.generateQuotationTextMessage(sensitiveQuote, 'PrintFlow Solutions')
 
     // Customer text must contain essential proposal details
     assert.ok(message.includes('QUO-SHIELD-01'))

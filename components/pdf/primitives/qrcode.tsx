@@ -39,7 +39,7 @@ const generateQRMatrix = (
  margin: number
 ): boolean[][] => {
  try {
- const textToEncode = (value && value.trim()) ||"https://rangao.inkflow-erp.vercel.app";
+ const textToEncode = (value && value.trim()) || "https://rangao.printflow.bd";
  const qr = QRCode.create(textToEncode, { errorCorrectionLevel: errorLevel });
  const { size, data } = qr.modules;
  const totalSize = size + margin * 2;

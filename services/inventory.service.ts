@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP / InkFlow SaaS - Advanced Inventory Management Service (V3)
+// PrintFlow SaaS - Advanced Inventory Management Service (V3)
 // Authoritative PostgreSQL persistence via InventoryRepository & AuditRepository
 // ==============================================================================
 

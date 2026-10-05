@@ -1,5 +1,5 @@
 // ==============================================================================
-// InkFlow ERP SaaS - Subscription 360 Canonical Domain Types
+// PrintFlow SaaS - Subscription 360 Canonical Domain Types
 // Fully typed models for Plans, Versioning, Feature Catalog, Entitlements,
 // State Machine, SaaS Invoices, Usage Metering, and Revenue Analytics.
 // ==============================================================================

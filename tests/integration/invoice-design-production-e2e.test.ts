@@ -4,7 +4,7 @@ import { BillingService } from '../../services/billing.service.ts'
 import { DesignService } from '../../services/design.service.ts'
 import { ProductionPlanningService } from '../../services/production-planning.service.ts'
 import { ProductionTaskRepository } from '../../lib/repositories/production-task.repository.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 
 describe('Invoice Created + Design Approved -> Production Planning & Shop Floor Terminal E2E', () => {
   const companyId = `comp-prod-flow-${Date.now()}`
@@ -53,7 +53,7 @@ describe('Invoice Created + Design Approved -> Production Planning & Shop Floor 
       design_job_id: job.id,
       version_number: 1,
       file_name: 'Apex_Backlit_Final.pdf',
-      file_url: 'https://storage.printerp.com/designs/apex_final.pdf',
+      file_url: 'https://storage.printflow.bd/designs/apex_final.pdf',
       created_by_name: 'Designer Rifat',
     })
 

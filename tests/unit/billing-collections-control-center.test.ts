@@ -14,17 +14,17 @@ import type {
 } from '../../types/billing.types.ts'
 import { BillingRepository } from '../../lib/repositories/billing.repository.ts'
 import { BillingService } from '../../services/billing.service.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 
 describe('Billing & Collections Owner Control Center Unit Tests', () => {
   const companyA = 'comp-tenant-alpha'
   const companyB = 'comp-tenant-beta'
 
   beforeEach(() => {
-    PrintERPDataStore.clear()
+    PrintFlowDataStore.clear()
 
     // Seed mock customers
-    PrintERPDataStore.set(STORAGE_KEYS.CUSTOMERS, [
+    PrintFlowDataStore.set(STORAGE_KEYS.CUSTOMERS, [
       {
         id: 'cust-01',
         company_id: companyA,
@@ -219,7 +219,7 @@ describe('Billing & Collections Owner Control Center Unit Tests', () => {
       },
     ]
 
-    PrintERPDataStore.set(STORAGE_KEYS.INVOICES, [...mockInvoicesCompA, ...mockInvoicesCompB])
+    PrintFlowDataStore.set(STORAGE_KEYS.INVOICES, [...mockInvoicesCompA, ...mockInvoicesCompB])
 
     // Seed mock payment for Company A (Received today)
     const mockPayments: PaymentRecord[] = [
@@ -249,7 +249,7 @@ describe('Billing & Collections Owner Control Center Unit Tests', () => {
       },
     ]
 
-    PrintERPDataStore.set(STORAGE_KEYS.PAYMENTS, mockPayments)
+    PrintFlowDataStore.set(STORAGE_KEYS.PAYMENTS, mockPayments)
   })
 
   test('1. Financial Metrics & Period Calculations: Accurately separates Sales from Collection', async () => {
@@ -309,7 +309,7 @@ describe('Billing & Collections Owner Control Center Unit Tests', () => {
     assert.strictEqual(allocInv1?.allocated_amount, 5000)
 
     // Verify updated invoices in store
-    const updatedInvoices = PrintERPDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES)
+    const updatedInvoices = PrintFlowDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES)
     const inv2 = updatedInvoices.find(i => i.id === 'inv-a02')
     assert.strictEqual(inv2?.paid_amount, 75000)
     assert.strictEqual(inv2?.due_amount, 0)
@@ -340,7 +340,7 @@ describe('Billing & Collections Owner Control Center Unit Tests', () => {
     assert.strictEqual(result.amount, 60000)
     assert.strictEqual(result.payment_method, 'nagad')
 
-    const updatedInvoices = PrintERPDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES)
+    const updatedInvoices = PrintFlowDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES)
     const inv3 = updatedInvoices.find(i => i.id === 'inv-a03')
     // Was 20k paid before, now +40k = 60k paid out of 120k grand total -> 60k due
     assert.strictEqual(inv3?.paid_amount, 60000)
@@ -437,7 +437,7 @@ describe('Billing & Collections Owner Control Center Unit Tests', () => {
     assert.strictEqual(writeOffRecord.amount, 10000)
     assert.strictEqual(writeOffRecord.authorized_by_name, 'Managing Director Shamol')
 
-    const updatedInvoices = PrintERPDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES)
+    const updatedInvoices = PrintFlowDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES)
     const inv1 = updatedInvoices.find(i => i.id === 'inv-a01')
     assert.strictEqual(inv1?.write_off_amount, 10000)
     // Due balance should reduce from 25,000 to 15,000
@@ -455,7 +455,7 @@ describe('Billing & Collections Owner Control Center Unit Tests', () => {
     )
 
     assert.strictEqual(success, true)
-    const updatedInvoices = PrintERPDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES)
+    const updatedInvoices = PrintFlowDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES)
     const inv1 = updatedInvoices.find(i => i.id === 'inv-a01')
     assert.strictEqual(inv1?.status, 'cancelled')
     assert.strictEqual(inv1?.due_amount, 0)

@@ -28,8 +28,8 @@ export function PrintableQrPoster({
 
  const activeToken = location.active_qr_token
  const qrValue = activeToken?.raw_token
-    ? `INKFLOW:ATT:v1:${activeToken.raw_token}`
-    : `INKFLOW:ATT:LOC:${location.id}`
+    ? `PRINTFLOW:ATT:v1:${activeToken.raw_token}`
+    : `PRINTFLOW:ATT:LOC:${location.id}`
 
  const generatedDate = formatDate(
  activeToken?.created_at || new Date(),
@@ -94,7 +94,7 @@ export function PrintableQrPoster({
         <div className="text-center space-y-2 border-b-2 border-border pb-6">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary border border-primary/20 text-xs font-bold tracking-wider uppercase">
             <ShieldCheck className="h-4 w-4"/>
-            <span>InkFlow ERP • Smart Attendance</span>
+            <span>PrintFlow • Smart Attendance</span>
           </div>
 
           <h1 className="text-2xl sm:text-3xl font-black text-foreground tracking-tight uppercase">
@@ -152,7 +152,7 @@ export function PrintableQrPoster({
             কিভাবে হাজিরা দিবেন? / How to Punch?
           </h3>
           <ol className="text-xs text-muted-foreground space-y-1 text-left list-decimal list-inside font-medium max-w-xs mx-auto">
-            <li>InkFlow অ্যাপ বা ব্রাউজারে লগইন করুন।</li>
+            <li>PrintFlow অ্যাপ বা ব্রাউজারে লগইন করুন।</li>
             <li><strong className="text-foreground">Attendance</strong> অপশন সিলেক্ট করুন।</li>
             <li>ক্যামেরা দিয়ে এই কিউআর কোড স্ক্যান করুন।</li>
             <li>ডিভাইস লোকেশন সক্রিয় করে হাজিরা নিশ্চিত করুন।</li>

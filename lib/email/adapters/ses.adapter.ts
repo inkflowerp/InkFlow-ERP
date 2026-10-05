@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP SaaS - Amazon SES Provider Adapter
+// PrintFlow SaaS - Amazon SES Provider Adapter
 // High-throughput delivery via Amazon Simple Email Service (SES) with region config.
 // ==============================================================================
 
@@ -61,12 +61,12 @@ export class SesProviderAdapter implements IEmailProvider {
 
       const senderRaw = typeof payload.from === 'string' ? payload.from : payload.from.address
       const senderDomainMatch = senderRaw.match(/@([a-zA-Z0-9.-]+)/)
-      const senderDomain = senderDomainMatch ? senderDomainMatch[1] : 'printerp.com'
+      const senderDomain = senderDomainMatch ? senderDomainMatch[1] : 'printflow.bd'
 
       const headers: Record<string, string> = {
         'Auto-Submitted': 'auto-generated',
         'X-Auto-Response-Suppress': 'All',
-        'X-Mailer': 'InkFlow ERP Engine',
+        'X-Mailer': 'PrintFlow Engine',
         'List-Unsubscribe': `<mailto:notifications@${senderDomain}?subject=unsubscribe>`,
         'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
         ...payload.headers,

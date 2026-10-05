@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP SaaS - Email Gateway & Queue Orchestration Service
+// PrintFlow SaaS - Email Gateway & Queue Orchestration Service
 // Manages gateway resolution, credential decryption, template merging, queue processing,
 // Gmail token refresh synchronization, and strict platform vs tenant scope isolation.
 // ==============================================================================
@@ -68,7 +68,7 @@ export const DEFAULT_PLATFORM_GATEWAY: EmailGatewayRecord = {
   gmail_display_name: null,
   encrypted_credentials: null,
   encryption_type: 'tls',
-  sender_name: 'InkFlow Platform',
+  sender_name: 'PrintFlow Platform',
   sender_email: 'inkflow.erp@gmail.com',
   reply_to_email: 'inkflow.erp@gmail.com',
   status: 'inactive',
@@ -158,7 +158,7 @@ export class EmailGatewayService {
           smtp_username: process.env.PLATFORM_SMTP_USER || process.env.SMTP_USER || process.env.SMTP_USERNAME || null,
           encrypted_credentials: process.env.PLATFORM_SMTP_PASSWORD || process.env.SMTP_PASS || process.env.SMTP_PASSWORD || null,
           encryption_type: ((process.env.PLATFORM_SMTP_SECURE || process.env.SMTP_SECURE) === 'true' ? 'ssl' : 'tls') as any,
-          sender_name: process.env.PLATFORM_SENDER_NAME || process.env.SMTP_FROM_NAME || 'InkFlow Platform',
+          sender_name: process.env.PLATFORM_SENDER_NAME || process.env.SMTP_FROM_NAME || 'PrintFlow Platform',
           sender_email: process.env.PLATFORM_SENDER_EMAIL || process.env.SMTP_FROM_EMAIL || process.env.PLATFORM_SMTP_USER || process.env.SMTP_USER || 'inkflow.erp@gmail.com',
           reply_to_email: process.env.PLATFORM_SENDER_EMAIL || process.env.SMTP_REPLY_TO || 'inkflow.erp@gmail.com',
           status: 'active',
@@ -528,7 +528,7 @@ export class EmailGatewayService {
       }
 
       const fromAddress = {
-        name: gateway.sender_name || gateway.gmail_display_name || 'PrintERP Notifications',
+        name: gateway.sender_name || gateway.gmail_display_name || 'PrintFlow Notifications',
         address: effectiveSenderEmail,
       }
 
@@ -543,7 +543,7 @@ export class EmailGatewayService {
         headers: {
           'Auto-Submitted': 'auto-generated',
           'X-Auto-Response-Suppress': 'All',
-          'X-Mailer': 'InkFlow ERP Engine',
+          'X-Mailer': 'PrintFlow Engine',
           ...((options as any).headers || {}),
         },
         metadata,

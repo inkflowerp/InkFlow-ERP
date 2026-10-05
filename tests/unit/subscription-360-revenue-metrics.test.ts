@@ -1,14 +1,14 @@
 import { describe, it, beforeEach } from 'node:test'
 import assert from 'node:assert'
 import { SaasRevenueService } from '../../services/saas-revenue.service.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import { DEFAULT_PLANS } from '../../lib/subscription/subscription-constants.ts'
 import type { CompanySubscriptionRecord } from '../../types/subscription.types.ts'
 
 describe('Subscription 360 - SaaS Revenue & Financial Metrics', () => {
   beforeEach(() => {
-    PrintERPDataStore.clear()
-    PrintERPDataStore.set(STORAGE_KEYS.PLATFORM_PLANS, DEFAULT_PLANS, false)
+    PrintFlowDataStore.clear()
+    PrintFlowDataStore.set(STORAGE_KEYS.PLATFORM_PLANS, DEFAULT_PLANS, false)
   })
 
   it('1. Computes MRR and ARR accurately for mixed monthly and yearly active subscriptions', async () => {
@@ -68,7 +68,7 @@ describe('Subscription 360 - SaaS Revenue & Financial Metrics', () => {
       },
     }
 
-    PrintERPDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, mockSubs, false)
+    PrintFlowDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, mockSubs, false)
 
     const revenue = await SaasRevenueService.getRevenueOverview()
 
@@ -115,7 +115,7 @@ describe('Subscription 360 - SaaS Revenue & Financial Metrics', () => {
       },
     }
 
-    PrintERPDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, mockSubs, false)
+    PrintFlowDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, mockSubs, false)
 
     const revenue = await SaasRevenueService.getRevenueOverview()
     // 1 cancelled out of 3 total = 33.3% churn

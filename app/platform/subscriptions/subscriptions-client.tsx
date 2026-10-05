@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
+import { BRAND } from '@/config/brand'
 import {
  CreditCard,
  Search,
@@ -401,7 +402,7 @@ export default function PlatformSubscriptionsPage() {
  const url = URL.createObjectURL(blob)
  const link = document.createElement('a')
  link.setAttribute('href', url)
- link.setAttribute('download', `printerp-subscriptions-${new Date().toISOString().slice(0, 10)}.csv`)
+ link.setAttribute('download', `printflow-subscriptions-${new Date().toISOString().slice(0, 10)}.csv`)
  document.body.appendChild(link)
  link.click()
  document.body.removeChild(link)
@@ -804,7 +805,7 @@ export default function PlatformSubscriptionsPage() {
  <ExternalLink className="h-3 w-3 text-muted-foreground opacity-60 hover:opacity-100" />
  </Link>
  <div className="text-xs tabular-nums text-primary">
- {s.company_slug}.printerp.com.bd
+ {s.company_slug}.{BRAND.rootDomain}
  </div>
  <div className="text-xs text-muted-foreground mt-0.5">
  {s.owner_name} • {s.owner_phone}

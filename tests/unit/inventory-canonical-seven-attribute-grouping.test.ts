@@ -1,6 +1,6 @@
 import { describe, it, beforeEach } from 'node:test'
 import assert from 'node:assert'
-import { PrintERPDataStore } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore } from '../../lib/db/data-store.ts'
 import { InventoryService } from '../../services/inventory.service.ts'
 import {
   normalizeInventoryGroupAttributes,
@@ -14,10 +14,10 @@ describe('Inventory & Warehouse Operations 7-Canonical-Attribute Grouping Rule',
   const tenantB = 'tenant-canonical-test-b'
 
   beforeEach(() => {
-    PrintERPDataStore.purgeTenantData(tenantA)
-    PrintERPDataStore.clearAll(tenantA)
-    PrintERPDataStore.purgeTenantData(tenantB)
-    PrintERPDataStore.clearAll(tenantB)
+    PrintFlowDataStore.purgeTenantData(tenantA)
+    PrintFlowDataStore.clearAll(tenantA)
+    PrintFlowDataStore.purgeTenantData(tenantB)
+    PrintFlowDataStore.clearAll(tenantB)
   })
 
   describe('1. Canonical Key Normalization & Attribute Comparison Engine', () => {

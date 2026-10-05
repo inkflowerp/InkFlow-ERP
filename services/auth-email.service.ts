@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP / InkFlow SaaS - Authentication & Security Email Service
+// PrintFlow SaaS - Authentication & Security Email Service
 // Handles cryptographically secure 6-digit OTP and single-use URL token generation,
 // SHA-256 hashing, timing-safe validation, 5-attempt throttling, 60s resend cooldowns,
 // registration verification, and password reset authorization lifecycle.
@@ -788,7 +788,7 @@ export class AuthEmailService {
 
     if (process.env.NODE_ENV !== 'production') {
       console.log('\n==================================================')
-      console.log(`🔑 [InkFlow Auth] REGISTRATION OTP: ${otp}`)
+      console.log(`🔑 [PrintFlow Auth] REGISTRATION OTP: ${otp}`)
       console.log(`📧 Recipient: ${email}`)
       console.log(`🔗 Link: ${verificationLink}`)
       console.log('==================================================\n')
@@ -807,7 +807,7 @@ export class AuthEmailService {
         expires_minutes: '10',
         timestamp: new Date().toLocaleString(),
       },
-      customSubject: `Verify your InkFlow account - Code: ${otp}`,
+      customSubject: `Verify your PrintFlow account - Code: ${otp}`,
       idempotencyKey: `reg_verify:${email}:${Date.now()}`,
     })
 
@@ -856,7 +856,7 @@ export class AuthEmailService {
 
     if (process.env.NODE_ENV !== 'production') {
       console.log('\n==================================================')
-      console.log(`🔑 [InkFlow Auth] PASSWORD RESET OTP: ${otp}`)
+      console.log(`🔑 [PrintFlow Auth] PASSWORD RESET OTP: ${otp}`)
       console.log(`📧 Recipient: ${email}`)
       console.log(`🔗 Link: ${resetUrl}`)
       console.log('==================================================\n')
@@ -875,7 +875,7 @@ export class AuthEmailService {
         expires_minutes: '10',
         timestamp: new Date().toLocaleString(),
       },
-      customSubject: `Reset your InkFlow password - Code: ${otp}`,
+      customSubject: `Reset your PrintFlow password - Code: ${otp}`,
       idempotencyKey: `pwd_reset:${email}:${Date.now()}`,
     })
 
@@ -921,7 +921,7 @@ export class AuthEmailService {
         accept_link: inviteUrl,
         timestamp: new Date().toLocaleString(),
       },
-      customSubject: `Invitation to join ${companyName} on InkFlow`,
+      customSubject: `Invitation to join ${companyName} on PrintFlow`,
       idempotencyKey: `invite:${tenantId}:${email}:${Date.now()}`,
     })
   }

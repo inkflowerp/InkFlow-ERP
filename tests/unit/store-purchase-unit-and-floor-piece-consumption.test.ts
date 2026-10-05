@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import { InventoryRepository } from '../../lib/repositories/inventory.repository.ts'
 import {
   getMaterialWarehouseStockBreakdown,
@@ -12,9 +12,9 @@ test('Purchase Unit Store & Piece-Based Floor Consumption Lifecycle', async (t) 
   const companyId = 'tenant-purchase-unit-test-corp'
 
   // Reset store
-  PrintERPDataStore.set(STORAGE_KEYS.MATERIALS, [], true, companyId)
-  PrintERPDataStore.set(STORAGE_KEYS.MOUNTED_ROLLS, [], true, companyId)
-  PrintERPDataStore.set(STORAGE_KEYS.STOCK_LEDGER, [], true, companyId)
+  PrintFlowDataStore.set(STORAGE_KEYS.MATERIALS, [], true, companyId)
+  PrintFlowDataStore.set(STORAGE_KEYS.MOUNTED_ROLLS, [], true, companyId)
+  PrintFlowDataStore.set(STORAGE_KEYS.STOCK_LEDGER, [], true, companyId)
 
   // 1. Setup Material: PVC Media
   const pvcMaterial = {
@@ -61,8 +61,8 @@ test('Purchase Unit Store & Piece-Based Floor Consumption Lifecycle', async (t) 
     })),
   ]
 
-  PrintERPDataStore.set(STORAGE_KEYS.MATERIALS, [pvcMaterial], true, companyId)
-  PrintERPDataStore.set(STORAGE_KEYS.MOUNTED_ROLLS, warehouseRolls, true, companyId)
+  PrintFlowDataStore.set(STORAGE_KEYS.MATERIALS, [pvcMaterial], true, companyId)
+  PrintFlowDataStore.set(STORAGE_KEYS.MOUNTED_ROLLS, warehouseRolls, true, companyId)
 
   await t.test('1. Warehouse Inventory Breakdown displays stock as Purchase Units', () => {
     const breakdown = getMaterialWarehouseStockBreakdown(pvcMaterial, warehouseRolls)
@@ -93,7 +93,7 @@ test('Purchase Unit Store & Piece-Based Floor Consumption Lifecycle', async (t) 
     issuedRoll.location_name = 'Print Floor'
     pvcMaterial.current_stock -= (issuedRoll.width_ft * issuedRoll.initial_length_ft)
 
-    PrintERPDataStore.set(STORAGE_KEYS.MOUNTED_ROLLS, warehouseRolls, true, companyId)
+    PrintFlowDataStore.set(STORAGE_KEYS.MOUNTED_ROLLS, warehouseRolls, true, companyId)
 
     // Verify remaining warehouse rolls (now 9 rolls of 3ft and 8 rolls of 5ft in warehouse)
     const breakdownAfterIssue = getMaterialWarehouseStockBreakdown(pvcMaterial, warehouseRolls)

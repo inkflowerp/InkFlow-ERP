@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP SaaS - Mock / Dev Provider Adapter
+// PrintFlow SaaS - Mock / Dev Provider Adapter
 // High-speed simulated email provider for testing and offline development.
 // ==============================================================================
 

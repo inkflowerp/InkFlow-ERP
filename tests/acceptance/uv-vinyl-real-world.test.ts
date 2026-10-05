@@ -3,7 +3,7 @@ import assert from 'node:assert'
 import { calculateServiceCosting } from '../../lib/domain/service-costing-engine.ts'
 import { evaluateMaterialCompatibility } from '../../lib/domain/material-compatibility.ts'
 import { InventoryRepository } from '../../lib/repositories/inventory.repository.ts'
-import { PrintERPDataStore } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore } from '../../lib/db/data-store.ts'
 import type { ProductRecord } from '../../types/product.types.ts'
 
 describe('Real-World Acceptance Test 51: UV Vinyl Print Order for ABC Company', () => {
@@ -78,7 +78,7 @@ describe('Real-World Acceptance Test 51: UV Vinyl Print Order for ABC Company', 
   }
 
   beforeEach(async () => {
-    PrintERPDataStore.clearAll()
+    PrintFlowDataStore.clearAll()
 
     // Seed master material
     await InventoryRepository.createMaterial({

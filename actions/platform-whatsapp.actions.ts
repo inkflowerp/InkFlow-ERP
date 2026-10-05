@@ -1,7 +1,7 @@
 'use server'
 
 // ==============================================================================
-// PrintERP SaaS - Platform Superadmin WhatsApp Gateway Monitoring Actions
+// PrintFlow SaaS - Platform Superadmin WhatsApp Gateway Monitoring Actions
 // Authoritative global telemetry and infrastructure control across all tenant sessions.
 // ==============================================================================
 

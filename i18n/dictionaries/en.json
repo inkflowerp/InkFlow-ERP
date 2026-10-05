@@ -1,6 +1,6 @@
 {
   "app": {
-    "name": "PrintERP",
+    "name": "PrintFlow",
     "tagline": "Operating System for Bangladeshi Printing and Signage Industry"
   },
   "nav": {
@@ -64,7 +64,7 @@
     "general_staff": "General Staff"
   },
   "auth": {
-    "login_title": "Sign In to PrintERP",
+    "login_title": "Sign In to PrintFlow",
     "login_subtitle": "Manage your printing, signage, and fabrication business",
     "portal_badge": "BUSINESS AND SHOP FLOOR PORTAL",
     "register_title": "Create an Account",

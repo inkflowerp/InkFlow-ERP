@@ -12,15 +12,15 @@ import {
 } from '../../lib/units.ts'
 import { ProductService } from '../../services/product.service.ts'
 import { ProductRepository } from '../../lib/repositories/product.repository.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 
 describe('Unit: Outsource Products & Subcontract Services (Non-Inventory Items)', () => {
   const companyId = 'tenant-outsource-test-01'
   const otherCompanyId = 'tenant-outsource-other-02'
 
   beforeEach(() => {
-    PrintERPDataStore.purgeTenantData(companyId)
-    PrintERPDataStore.purgeTenantData(otherCompanyId)
+    PrintFlowDataStore.purgeTenantData(companyId)
+    PrintFlowDataStore.purgeTenantData(otherCompanyId)
   })
 
   it('1. Correctly classifies Outsource Product (Offset Brochure) as Outsource (Non-Inventory)', async () => {

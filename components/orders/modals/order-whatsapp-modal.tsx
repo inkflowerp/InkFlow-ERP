@@ -58,7 +58,7 @@ export const OrderWhatsAppModal = React.memo(function OrderWhatsAppModal({
  const generated = buildBangladeshiOrderWhatsAppMessage({
  template: initialTemplate,
  customerName: order.customerName,
- companyName: companyName || 'PrintERP Press Studio',
+ companyName: companyName || 'PrintFlow Press Studio',
  orderNumber: order.orderNumber,
  invoiceNumber: order.invoiceNumber,
  totalAmount: order.totalAmount,
@@ -82,7 +82,7 @@ export const OrderWhatsAppModal = React.memo(function OrderWhatsAppModal({
  const generated = buildBangladeshiOrderWhatsAppMessage({
  template: tpl,
  customerName: order.customerName,
- companyName: companyName || 'PrintERP Press Studio',
+ companyName: companyName || 'PrintFlow Press Studio',
  orderNumber: order.orderNumber,
  invoiceNumber: order.invoiceNumber,
  totalAmount: order.totalAmount,

@@ -1,5 +1,5 @@
 // ==============================================================================
-// InkFlow ERP - Module 8: Inventory & Floor Consumption Flow & UX Acceptance Tests
+// PrintFlow - Module 8: Inventory & Floor Consumption Flow & UX Acceptance Tests
 // Tests the full lifecycle: Stock Shortage -> Reorder PO -> Receive GRN -> Issue Roll -> Floor Consumption & Off-Cut
 // Matrix: Light/Dark x Mobile 375px / Desktop 1440px x EN/BN
 // Guarantees: <= 3 clicks completion from dashboard, 4-KPI row, attention queue, live consumption telemetry
@@ -28,7 +28,7 @@ describe('Module 8: Inventory & Floor Consumption End-to-End Hardening & Flow Ve
     await browser?.close()
   })
 
-  // Helper to render mock Inventory Hub & Floor Consumption DOM reflecting InkFlow Design System
+  // Helper to render mock Inventory Hub & Floor Consumption DOM reflecting PrintFlow Design System
   async function renderInventoryPage(
     context: BrowserContext,
     options: {

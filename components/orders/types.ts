@@ -530,7 +530,7 @@ export function buildBangladeshiOrderWhatsAppMessage({
  itemsSummary: string
 }): string {
  const custName = customerName || 'সম্মানিত গ্রাহক'
- const comp = companyName || 'PrintERP Press Studio'
+ const comp = companyName || 'PrintFlow Press Studio'
  const docNum = orderNumber || (invoiceNumber ? `#${invoiceNumber}` : 'ORD-001')
  const invStr = invoiceNumber ? ` (ইনভয়েস: #${invoiceNumber})` : ''
 

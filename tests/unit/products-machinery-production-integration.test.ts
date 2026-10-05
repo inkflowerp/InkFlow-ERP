@@ -4,7 +4,7 @@ import { ProductionPlanningService } from '../../services/production-planning.se
 import { MachineryService } from '../../services/machinery.service.ts'
 import { MachineryRepository } from '../../lib/repositories/machinery.repository.ts'
 import { ProductionTaskRepository } from '../../lib/repositories/production-task.repository.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import type { MachineryRecord } from '../../types/machinery.types.ts'
 import type { ProductionTaskRecord } from '../../types/production.types.ts'
 
@@ -32,8 +32,8 @@ describe('Products, Machinery Fleet & Shop Floor Production Integration Tests', 
       updated_at: new Date().toISOString(),
     }
 
-    const currentMachines = PrintERPDataStore.get<MachineryRecord[]>(STORAGE_KEYS.MACHINERIES) || []
-    PrintERPDataStore.set(STORAGE_KEYS.MACHINERIES, [
+    const currentMachines = PrintFlowDataStore.get<MachineryRecord[]>(STORAGE_KEYS.MACHINERIES) || []
+    PrintFlowDataStore.set(STORAGE_KEYS.MACHINERIES, [
       ...currentMachines.filter((m) => m.id !== testMachine.id),
       testMachine,
     ])
@@ -98,8 +98,8 @@ describe('Products, Machinery Fleet & Shop Floor Production Integration Tests', 
       updated_at: new Date().toISOString(),
     }
 
-    const currentMachines = PrintERPDataStore.get<MachineryRecord[]>(STORAGE_KEYS.MACHINERIES) || []
-    PrintERPDataStore.set(STORAGE_KEYS.MACHINERIES, [
+    const currentMachines = PrintFlowDataStore.get<MachineryRecord[]>(STORAGE_KEYS.MACHINERIES) || []
+    PrintFlowDataStore.set(STORAGE_KEYS.MACHINERIES, [
       ...currentMachines.filter((m) => m.id !== wideMachine.id && m.id !== smallMachine.id),
       wideMachine,
       smallMachine,
@@ -145,8 +145,8 @@ describe('Products, Machinery Fleet & Shop Floor Production Integration Tests', 
       updated_at: new Date().toISOString(),
     }
 
-    const currentMachines = PrintERPDataStore.get<MachineryRecord[]>(STORAGE_KEYS.MACHINERIES) || []
-    PrintERPDataStore.set(STORAGE_KEYS.MACHINERIES, [
+    const currentMachines = PrintFlowDataStore.get<MachineryRecord[]>(STORAGE_KEYS.MACHINERIES) || []
+    PrintFlowDataStore.set(STORAGE_KEYS.MACHINERIES, [
       ...currentMachines.filter((m) => m.id !== testMachine.id),
       testMachine,
     ])
@@ -189,8 +189,8 @@ describe('Products, Machinery Fleet & Shop Floor Production Integration Tests', 
       updated_at: new Date().toISOString(),
     }
 
-    const currentMachines = PrintERPDataStore.get<MachineryRecord[]>(STORAGE_KEYS.MACHINERIES) || []
-    PrintERPDataStore.set(STORAGE_KEYS.MACHINERIES, [
+    const currentMachines = PrintFlowDataStore.get<MachineryRecord[]>(STORAGE_KEYS.MACHINERIES) || []
+    PrintFlowDataStore.set(STORAGE_KEYS.MACHINERIES, [
       ...currentMachines.filter((m) => m.id !== testMachine.id),
       testMachine,
     ])
@@ -263,8 +263,8 @@ describe('Products, Machinery Fleet & Shop Floor Production Integration Tests', 
       updated_at: new Date().toISOString(),
     }
 
-    const currentMachines = PrintERPDataStore.get<MachineryRecord[]>(STORAGE_KEYS.MACHINERIES) || []
-    PrintERPDataStore.set(STORAGE_KEYS.MACHINERIES, [
+    const currentMachines = PrintFlowDataStore.get<MachineryRecord[]>(STORAGE_KEYS.MACHINERIES) || []
+    PrintFlowDataStore.set(STORAGE_KEYS.MACHINERIES, [
       ...currentMachines.filter((m) => m.id !== brokenMachine.id && m.id !== targetMachine.id),
       brokenMachine,
       targetMachine,

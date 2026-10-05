@@ -2,15 +2,15 @@ import { describe, it, beforeEach } from 'node:test'
 import assert from 'node:assert'
 import { SubscriptionService } from '../../services/subscription.service.ts'
 import { SaasBillingService } from '../../services/saas-billing.service.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import { DEFAULT_PLANS } from '../../lib/subscription/subscription-constants.ts'
 
 describe('Subscription 360 - Full Lifecycle Integration Tests', () => {
   const companyId = 'co-lifecycle-test-100'
 
   beforeEach(() => {
-    PrintERPDataStore.clear()
-    PrintERPDataStore.set(STORAGE_KEYS.PLATFORM_PLANS, DEFAULT_PLANS, false)
+    PrintFlowDataStore.clear()
+    PrintFlowDataStore.set(STORAGE_KEYS.PLATFORM_PLANS, DEFAULT_PLANS, false)
   })
 
   it('1. Executes end-to-end subscription lifecycle: Trial -> Checkout -> Payment -> Activation -> Downgrade', async () => {
@@ -25,7 +25,7 @@ describe('Subscription 360 - Full Lifecycle Integration Tests', () => {
       trial_starts_at: new Date().toISOString(),
       trial_ends_at: new Date(Date.now() + (trialPlan.trial_days || 30) * 86400000).toISOString(),
     }
-    PrintERPDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, { [companyId]: trialSub }, false)
+    PrintFlowDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, { [companyId]: trialSub }, false)
 
     const initialSub = await SubscriptionService.getTenantSubscription(companyId)
     assert.strictEqual(initialSub.status, 'trial')

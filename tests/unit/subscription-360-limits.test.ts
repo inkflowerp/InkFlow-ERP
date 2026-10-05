@@ -1,7 +1,7 @@
 import { describe, it, beforeEach } from 'node:test'
 import assert from 'node:assert'
 import { EntitlementService } from '../../services/entitlement.service.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import { DEFAULT_PLANS } from '../../lib/subscription/subscription-constants.ts'
 import type { CompanySubscriptionRecord } from '../../types/subscription.types.ts'
 
@@ -9,8 +9,8 @@ describe('Subscription 360 - Resource Limits & Enforcement Unit Tests', () => {
   const testCompanyId = 'co-test-limits-1'
 
   beforeEach(() => {
-    PrintERPDataStore.clear()
-    PrintERPDataStore.set(STORAGE_KEYS.PLATFORM_PLANS, DEFAULT_PLANS, false)
+    PrintFlowDataStore.clear()
+    PrintFlowDataStore.set(STORAGE_KEYS.PLATFORM_PLANS, DEFAULT_PLANS, false)
 
     const starterPlan = DEFAULT_PLANS.find((p) => p.code === 'starter')!
     const starterSub: CompanySubscriptionRecord = {
@@ -23,7 +23,7 @@ describe('Subscription 360 - Resource Limits & Enforcement Unit Tests', () => {
       current_period_start: new Date().toISOString(),
       current_period_end: new Date(Date.now() + 30 * 86400000).toISOString(),
     }
-    PrintERPDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, { [testCompanyId]: starterSub }, false)
+    PrintFlowDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, { [testCompanyId]: starterSub }, false)
   })
 
   it('1. Starter plan enforces max 3 users limit', async () => {
@@ -74,7 +74,7 @@ describe('Subscription 360 - Resource Limits & Enforcement Unit Tests', () => {
         max_users: 7, // Overriding starter 3 to 7
       },
     }
-    PrintERPDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, { [testCompanyId]: customSub }, false)
+    PrintFlowDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, { [testCompanyId]: customSub }, false)
 
     const quota = await EntitlementService.checkResourceQuota(testCompanyId, 'max_users', 4)
     assert.strictEqual(quota.limit, 7)

@@ -2,16 +2,16 @@ import { describe, it, beforeEach } from 'node:test'
 import assert from 'node:assert'
 import { ProductService } from '../../services/product.service.ts'
 import { CustomerRepository } from '../../lib/repositories/customer.repository.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 
 describe('Unit: 5-Tier Deterministic Customer Pricing Hierarchy', () => {
   const companyId = `comp-pricing-hier-${Date.now()}`
 
   beforeEach(() => {
-    PrintERPDataStore.set(STORAGE_KEYS.PRODUCTS, [])
-    PrintERPDataStore.set(STORAGE_KEYS.CUSTOMERS, [])
-    PrintERPDataStore.set(STORAGE_KEYS.CUSTOMER_RATES, [])
-    PrintERPDataStore.set(STORAGE_KEYS.PRICE_LISTS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.PRODUCTS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.CUSTOMERS, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.CUSTOMER_RATES, [])
+    PrintFlowDataStore.set(STORAGE_KEYS.PRICE_LISTS, [])
   })
 
   it('1. Resolves standard catalog selling rate when no customer is passed (Default Tier 4)', async () => {

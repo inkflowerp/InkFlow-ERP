@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert'
 import { CommunicationService } from '../../services/communication-server.service.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import { renderTemplate } from '../../services/communication.service.ts'
 
 describe('In-App Notifications & Live Communication Unit Tests', () => {
@@ -23,11 +23,11 @@ describe('In-App Notifications & Live Communication Unit Tests', () => {
     assert.ok(notif.created_at)
 
     // Check presence in local storage
-    const stored = PrintERPDataStore.get<any[]>(STORAGE_KEYS.IN_APP_NOTIFICATIONS) || []
+    const stored = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.IN_APP_NOTIFICATIONS) || []
     assert.ok(stored.some((n) => n.id === notif.id))
 
     // Cleanup
-    PrintERPDataStore.removeItem(STORAGE_KEYS.IN_APP_NOTIFICATIONS, notif.id)
+    PrintFlowDataStore.removeItem(STORAGE_KEYS.IN_APP_NOTIFICATIONS, notif.id)
   })
 
   it('should dispatch multi-channel workflow notification including in-app channel', async () => {
@@ -43,14 +43,14 @@ describe('In-App Notifications & Live Communication Unit Tests', () => {
 
     assert.strictEqual(result.in_app, true)
 
-    const stored = PrintERPDataStore.get<any[]>(STORAGE_KEYS.IN_APP_NOTIFICATIONS) || []
+    const stored = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.IN_APP_NOTIFICATIONS) || []
     const matching = stored.find((n) => n.action_url === '/orders/ORD-555')
     assert.ok(matching)
     assert.strictEqual(matching.is_read, false)
 
     // Cleanup
     if (matching) {
-      PrintERPDataStore.removeItem(STORAGE_KEYS.IN_APP_NOTIFICATIONS, matching.id)
+      PrintFlowDataStore.removeItem(STORAGE_KEYS.IN_APP_NOTIFICATIONS, matching.id)
     }
   })
 

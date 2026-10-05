@@ -234,7 +234,7 @@ export async function runUiAudit() {
     // Output Markdown Report
     let md = `# UI Consistency & Pixel Measurement Audit Report (Platform + Cross-App)\n\n`
     md += `**Date:** ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}\n`
-    md += `**Target:** InkFlow ERP Platform Owner Panel (\`/platform/*\`) & Cross-App Consistency\n\n`
+    md += `**Target:** PrintFlow Platform Owner Panel (\`/platform/*\`) & Cross-App Consistency\n\n`
     md += `## 1. Executive Summary\n\n`
     md += `| Metric | Count |\n|---|---|\n`
     md += `| **Total Platform Routes Audited** | ${PLATFORM_ROUTES.length} |\n`

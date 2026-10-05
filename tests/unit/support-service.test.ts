@@ -62,14 +62,14 @@ describe('SupportService Unit Tests', () => {
     const convId = convRes.data!.id
 
     // 2. Staff adds internal note
-    await SupportService.sendPlatformReply(adminId, 'agent@printerp.com', 'Agent Tareq', {
+    await SupportService.sendPlatformReply(adminId, 'agent@printflow.bd', 'Agent Tareq', {
       conversationId: convId,
       body: 'INTERNAL NOTE: Checked gateway, tenant IP was blocked on firewall.',
       isInternalNote: true,
     })
 
     // 3. Staff adds public reply
-    await SupportService.sendPlatformReply(adminId, 'agent@printerp.com', 'Agent Tareq', {
+    await SupportService.sendPlatformReply(adminId, 'agent@printflow.bd', 'Agent Tareq', {
       conversationId: convId,
       body: 'We have refreshed your terminal connection. Please restart the agent app.',
       isInternalNote: false,
@@ -109,7 +109,7 @@ describe('SupportService Unit Tests', () => {
     const convId = convRes.data!.id
 
     // Staff replies -> status becomes waiting_customer
-    await SupportService.sendPlatformReply(adminId, 'agent@printerp.com', 'Agent Tareq', {
+    await SupportService.sendPlatformReply(adminId, 'agent@printflow.bd', 'Agent Tareq', {
       conversationId: convId,
       body: 'Which invoice number are you referring to?',
       isInternalNote: false,

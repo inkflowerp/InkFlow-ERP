@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import { InventoryRepository } from '../../lib/repositories/inventory.repository.ts'
 import { InventoryService } from '../../services/inventory.service.ts'
 import { getMaterialWarehouseStockBreakdown } from '../../lib/units.ts'
@@ -32,8 +32,8 @@ test('Direct Material Issue to Production — Auto Source Store & Purchase Unit 
     updated_at: new Date().toISOString(),
   }
 
-  PrintERPDataStore.addItem(STORAGE_KEYS.LOCATIONS, storeLocation, companyId)
-  PrintERPDataStore.addItem(STORAGE_KEYS.LOCATIONS, floorLocation, companyId)
+  PrintFlowDataStore.addItem(STORAGE_KEYS.LOCATIONS, storeLocation, companyId)
+  PrintFlowDataStore.addItem(STORAGE_KEYS.LOCATIONS, floorLocation, companyId)
 
   await t.test('1. Material breakdown correctly derives purchase units and roll size groups', () => {
     const pvcMat: MaterialRecord = {
@@ -97,8 +97,8 @@ test('Direct Material Issue to Production — Auto Source Store & Purchase Unit 
       is_active: true,
     }
 
-    PrintERPDataStore.addItem(STORAGE_KEYS.MATERIALS, pvcMat, companyId)
-    PrintERPDataStore.addItem(STORAGE_KEYS.MATERIALS, pvcMat)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.MATERIALS, pvcMat, companyId)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.MATERIALS, pvcMat)
 
     // Issue 1 Roll of 3ft × 164ft
     const issueResult = await InventoryService.issueMaterial({
@@ -158,8 +158,8 @@ test('Direct Material Issue to Production — Auto Source Store & Purchase Unit 
       is_active: true,
     }
 
-    PrintERPDataStore.addItem(STORAGE_KEYS.MATERIALS, eyeletMat, companyId)
-    PrintERPDataStore.addItem(STORAGE_KEYS.MATERIALS, eyeletMat)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.MATERIALS, eyeletMat, companyId)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.MATERIALS, eyeletMat)
 
     const breakdown = getMaterialWarehouseStockBreakdown(eyeletMat)
     assert.strictEqual(breakdown.purchase_unit, 'box')
@@ -253,8 +253,8 @@ test('Direct Material Issue to Production — Auto Source Store & Purchase Unit 
       is_active: true,
     }
 
-    PrintERPDataStore.addItem(STORAGE_KEYS.MATERIALS, standMat, companyId)
-    PrintERPDataStore.addItem(STORAGE_KEYS.MATERIALS, standMat)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.MATERIALS, standMat, companyId)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.MATERIALS, standMat)
 
     const issueRes = await InventoryRepository.issueMasterRollsBatch({
       company_id: companyId,

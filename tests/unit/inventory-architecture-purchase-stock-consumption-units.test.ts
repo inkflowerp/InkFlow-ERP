@@ -1,13 +1,13 @@
 import { describe, it, before, beforeEach } from 'node:test'
 import assert from 'node:assert'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import { InventoryService } from '../../services/inventory.service.ts'
 import { InventoryRepository } from '../../lib/repositories/inventory.repository.ts'
 import { RollConsumptionEngine } from '../../lib/domain/roll-consumption-engine.ts'
 import { getMaterialWarehouseStockBreakdown, formatFloorPieceDisplay } from '../../lib/units.ts'
 import type { MaterialRecord, InventoryRollRecord } from '../../types/inventory.types.ts'
 
-describe('PrintERP Inventory Architecture — Purchase Unit, Stock Unit & Consumption Unit', () => {
+describe('PrintFlow Inventory Architecture — Purchase Unit, Stock Unit & Consumption Unit', () => {
   const testCompanyId = 'comp-inventory-arch-test-01'
 
   const pvcMaster: MaterialRecord = {
@@ -32,7 +32,7 @@ describe('PrintERP Inventory Architecture — Purchase Unit, Stock Unit & Consum
 
   beforeEach(async () => {
     // Clear test store partition
-    PrintERPDataStore.clear(testCompanyId)
+    PrintFlowDataStore.clear(testCompanyId)
     // Register material master
     await InventoryService.createMaterial(pvcMaster)
   })
@@ -296,8 +296,8 @@ describe('PrintERP Inventory Architecture — Purchase Unit, Stock Unit & Consum
     roll.current_length_ft = 143.75
     roll.remaining_length_ft = 143.75
     roll.remaining_area_sft = 143.75 * 3
-    PrintERPDataStore.addItem(STORAGE_KEYS.MOUNTED_ROLLS, roll, testCompanyId)
-    PrintERPDataStore.addItem(STORAGE_KEYS.MOUNTED_ROLLS, roll)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.MOUNTED_ROLLS, roll, testCompanyId)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.MOUNTED_ROLLS, roll)
 
     // 2. Consume 20 linear ft for JOB-1050
     const consumptionResult = await InventoryService.consumeFromPhysicalRoll({

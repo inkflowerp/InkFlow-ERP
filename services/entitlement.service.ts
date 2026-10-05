@@ -1,5 +1,5 @@
 // ==============================================================================
-// InkFlow ERP SaaS - Authoritative Entitlement & Feature Gating Service
+// PrintFlow SaaS - Authoritative Entitlement & Feature Gating Service
 // Server-side evaluation of plans, subscription state, canonical features, & quotas
 // ==============================================================================
 

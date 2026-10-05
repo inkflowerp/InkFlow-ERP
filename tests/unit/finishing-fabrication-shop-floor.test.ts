@@ -1,7 +1,7 @@
 import { describe, it, beforeEach } from 'node:test'
 import assert from 'node:assert/strict'
 import { getNavigationConfig } from '../../config/navigation.config.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import { ProductionPlanningService } from '../../services/production-planning.service.ts'
 import { ProductionRepository } from '../../lib/repositories/production.repository.ts'
 import { LogisticsRepository } from '../../lib/repositories/logistics.repository.ts'
@@ -11,7 +11,7 @@ describe('Finishing & Fabrication Floor Management & Shop Floor Terminal Tests',
   const testCompanyId = 'comp_test_finishing_001'
 
   beforeEach(() => {
-    PrintERPDataStore.clear()
+    PrintFlowDataStore.clear()
   })
 
   it('1. Navigation config contains Finishing & Fabrication under Work section', () => {
@@ -47,8 +47,8 @@ describe('Finishing & Fabrication Floor Management & Shop Floor Terminal Tests',
       required_material: 'Star Flex 320gsm',
     }
 
-    PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, [digitalTask], false)
-    const stored = PrintERPDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS)
+    PrintFlowDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, [digitalTask], false)
+    const stored = PrintFlowDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS)
     assert.equal(stored?.length, 1)
     assert.equal(stored?.[0].department, 'finishing')
     assert.equal(stored?.[0].priority, 'urgent')
@@ -72,8 +72,8 @@ describe('Finishing & Fabrication Floor Management & Shop Floor Terminal Tests',
       required_material: 'Cast Acrylic 3mm + Samsung 3-LED Modules + 12V 33A Power Adapter',
     }
 
-    PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, [signageTask], false)
-    const stored = PrintERPDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS)
+    PrintFlowDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, [signageTask], false)
+    const stored = PrintFlowDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS)
     assert.equal(stored?.[0].department, 'fabrication')
     assert.equal(stored?.[0].task_type, 'fabrication')
   })
@@ -127,9 +127,9 @@ describe('Finishing & Fabrication Floor Management & Shop Floor Terminal Tests',
       items: [{ item_name: 'Visiting Card 300gsm Art Card', quantity: 1000 }],
     }
 
-    PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_JOBS, [parentJob], false)
-    PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, [finishingTask], false)
-    PrintERPDataStore.set(STORAGE_KEYS.ORDERS, [salesOrder], false)
+    PrintFlowDataStore.set(STORAGE_KEYS.PRODUCTION_JOBS, [parentJob], false)
+    PrintFlowDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, [finishingTask], false)
+    PrintFlowDataStore.set(STORAGE_KEYS.ORDERS, [salesOrder], false)
 
     // Complete task
     const { completedTask } = await ProductionPlanningService.completeTask(
@@ -147,7 +147,7 @@ describe('Finishing & Fabrication Floor Management & Shop Floor Terminal Tests',
     assert.equal(completedTask.good_quantity, 1000)
 
     // Verify parent sales order is ready for delivery
-    const updatedOrders = PrintERPDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []
+    const updatedOrders = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []
     const matchingOrder = updatedOrders.find((o) => o.id === 'ord_fin_001')
     assert.ok(matchingOrder, 'Matching order should exist')
     assert.equal(matchingOrder.stage, 'ready_delivery')
@@ -169,7 +169,7 @@ describe('Finishing & Fabrication Floor Management & Shop Floor Terminal Tests',
       status: 'in_progress',
     }
 
-    PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, [cuttingTask], false)
+    PrintFlowDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, [cuttingTask], false)
 
     const { completedTask } = await ProductionPlanningService.completeTask(
       'task_cut_defect_001',

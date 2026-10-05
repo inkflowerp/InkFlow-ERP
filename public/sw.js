@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP SaaS - Service Worker Cleanup & Self-Unregistration
+// PrintFlow - Service Worker Cleanup & Self-Unregistration
 // Removes stale caching layers to prevent 503 intercepts on Next.js Server Actions.
 // ==============================================================================
 

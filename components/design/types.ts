@@ -116,7 +116,7 @@ export function buildBangladeshiWhatsAppMessage({
  machineName?: string
 }): string {
  const custName = customerName || 'সম্মানিত গ্রাহক'
- const comp = companyName || 'PrintERP Studio'
+ const comp = companyName || 'PrintFlow Studio'
  const dims = dimensions || 'Standard Specification'
  const ver = versionNumber || 1
  const inv = invoiceNum ? `#${invoiceNum}` : `(Job #${jobNum})`

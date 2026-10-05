@@ -810,7 +810,7 @@ export function UserDetailDrawer({
  open={isDisableConfirmOpen}
  onOpenChange={setIsDisableConfirmOpen}
  onConfirm={() => handleToggleStatus('disabled')}
- title="Disable this user's login?"titleBn="এই ব্যবহারকারীর লগইন নিষ্ক্রিয় করবেন?"message="They will no longer be able to sign in or access PrintERP. All linked employee records, attendance, and payroll will remain intact."confirmText={tBilingual('Disable Login', 'লগইন নিষ্ক্রিয় করুন')} cancelText={tBilingual('Cancel', 'বাতিল')}isDestructive={true}
+ title="Disable this user's login?"titleBn="এই ব্যবহারকারীর লগইন নিষ্ক্রিয় করবেন?"message="They will no longer be able to sign in or access PrintFlow. All linked employee records, attendance, and payroll will remain intact."confirmText={tBilingual('Disable Login', 'লগইন নিষ্ক্রিয় করুন')} cancelText={tBilingual('Cancel', 'বাতিল')}isDestructive={true}
  isLoading={actionLoading}
       />
 

@@ -1,5 +1,5 @@
 {
-  "$schema": "InkFlow ERP Design System Specification v1.0",
+  "$schema": "PrintFlow Design System Specification v1.0",
   "philosophy": "Minimal, clean, professional, modern. Flat solid colors, 1px borders, no gradients, no glow, no decorative shadows.",
   
   "colors": {

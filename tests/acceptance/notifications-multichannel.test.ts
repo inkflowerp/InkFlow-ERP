@@ -1,5 +1,5 @@
 // ==============================================================================
-// InkFlow ERP SaaS - Acceptance Tests: Multi-Channel Preference-Aware Notifications
+// PrintFlow SaaS - Acceptance Tests: Multi-Channel Preference-Aware Notifications
 //
 // Verifies:
 // 1. Multi-channel dispatch (In-App, WhatsApp, Email) with sub-second in-app delivery.

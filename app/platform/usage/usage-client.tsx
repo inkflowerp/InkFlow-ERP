@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
+import { BRAND } from '@/config/brand'
 import {
  Gauge,
  Users,
@@ -558,7 +559,7 @@ export default function PlatformUsagePage() {
  <ExternalLink className="h-3 w-3 text-muted-foreground opacity-60 hover:opacity-100" />
  </Link>
  <div className="text-xs tabular-nums text-primary">
- {r.company_slug}.printerp.com.bd
+ {r.company_slug}.{BRAND.rootDomain}
  </div>
  <div className="text-xs text-muted-foreground mt-0.5">
  {r.owner_phone} • {r.branches_count} of {r.branches_limit} branches

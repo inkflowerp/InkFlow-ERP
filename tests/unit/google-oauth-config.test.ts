@@ -51,14 +51,14 @@ describe('Google OAuth Configuration & Security Audit Tests', () => {
   it('3. Correctly validates valid Google OAuth credentials', () => {
     process.env.GOOGLE_CLIENT_ID = '1234567890-abcdef.apps.googleusercontent.com'
     process.env.GOOGLE_CLIENT_SECRET = 'GOCSPX-ValidSecret12345'
-    process.env.GOOGLE_GMAIL_REDIRECT_URI = 'https://app.printerp.com/api/email/oauth/google/callback'
+    process.env.GOOGLE_GMAIL_REDIRECT_URI = 'https://app.printflow.bd/api/email/oauth/google/callback'
 
     const diag = getGoogleOAuthDiagnostics()
     assert.strictEqual(diag.isConfigured, true)
     assert.strictEqual(diag.hasClientId, true)
     assert.strictEqual(diag.hasClientSecret, true)
     assert.strictEqual(diag.hasRedirectUri, true)
-    assert.strictEqual(diag.redirectUri, 'https://app.printerp.com/api/email/oauth/google/callback')
+    assert.strictEqual(diag.redirectUri, 'https://app.printflow.bd/api/email/oauth/google/callback')
     assert.strictEqual(diag.issues.length, 0)
   })
 
@@ -86,7 +86,7 @@ describe('Google OAuth Configuration & Security Audit Tests', () => {
   it('5. generateGoogleAuthUrl constructs standard RFC-compliant Google OAuth URL', () => {
     process.env.GOOGLE_CLIENT_ID = '9876543210-xyz.apps.googleusercontent.com'
     process.env.GOOGLE_CLIENT_SECRET = 'GOCSPX-SecretForTesting'
-    process.env.GOOGLE_GMAIL_REDIRECT_URI = 'https://app.printerp.com/api/email/oauth/google/callback'
+    process.env.GOOGLE_GMAIL_REDIRECT_URI = 'https://app.printflow.bd/api/email/oauth/google/callback'
 
     const authUrlString = generateGoogleAuthUrl({
       scopeType: 'TENANT',
@@ -102,7 +102,7 @@ describe('Google OAuth Configuration & Security Audit Tests', () => {
     assert.strictEqual(authUrl.searchParams.get('access_type'), 'offline')
     assert.strictEqual(authUrl.searchParams.get('prompt'), 'consent')
     assert.ok(authUrl.searchParams.get('scope')?.includes('https://www.googleapis.com/auth/gmail.send'))
-    assert.strictEqual(authUrl.searchParams.get('redirect_uri'), 'https://app.printerp.com/api/email/oauth/google/callback')
+    assert.strictEqual(authUrl.searchParams.get('redirect_uri'), 'https://app.printflow.bd/api/email/oauth/google/callback')
     assert.ok(authUrl.searchParams.get('state'))
 
     // CRITICAL SECURITY: Never leak client_secret in URL!
@@ -111,7 +111,7 @@ describe('Google OAuth Configuration & Security Audit Tests', () => {
   })
 
   it('6. HMAC-SHA256 OAuth state generation & timing-safe verification', () => {
-    process.env.OAUTH_STATE_SECRET = 'super-secret-hmac-key-for-inkflow-testing'
+    process.env.OAUTH_STATE_SECRET = 'super-secret-hmac-key-for-printflow-testing'
 
     const stateString = generateOAuthState({
       tenantId: 'tenant-secure-789',
@@ -129,7 +129,7 @@ describe('Google OAuth Configuration & Security Audit Tests', () => {
   })
 
   it('7. Rejects tampered state payload or signature', () => {
-    process.env.OAUTH_STATE_SECRET = 'super-secret-hmac-key-for-inkflow-testing'
+    process.env.OAUTH_STATE_SECRET = 'super-secret-hmac-key-for-printflow-testing'
 
     const validState = generateOAuthState({
       tenantId: 'tenant-legit',
@@ -152,7 +152,7 @@ describe('Google OAuth Configuration & Security Audit Tests', () => {
   })
 
   it('8. Rejects expired state (>10 minutes old)', () => {
-    process.env.OAUTH_STATE_SECRET = 'super-secret-hmac-key-for-inkflow-testing'
+    process.env.OAUTH_STATE_SECRET = 'super-secret-hmac-key-for-printflow-testing'
 
     const expiredTimestamp = Date.now() - (15 * 60 * 1000) // 15 minutes ago
     const expiredPayload: GoogleOAuthStatePayload = {

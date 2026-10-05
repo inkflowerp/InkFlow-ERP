@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP SaaS - OpenWA Multi-Tenant Webhook Receiver
+// PrintFlow SaaS - OpenWA Multi-Tenant Webhook Receiver
 // Route: /api/webhooks/openwa
 // Handles HMAC-SHA256 signature verification, idempotency deduplication,
 // real-time session lifecycle tracking, inbound messaging, and delivery acks.
@@ -42,7 +42,7 @@ function isDuplicateDelivery(key?: string | null): boolean {
 export async function GET() {
   return NextResponse.json({
     status: 'ok',
-    service: 'PrintERP OpenWA Webhook Endpoint',
+    service: 'PrintFlow OpenWA Webhook Endpoint',
     version: '1.0.0',
     timestamp: new Date().toISOString(),
   })

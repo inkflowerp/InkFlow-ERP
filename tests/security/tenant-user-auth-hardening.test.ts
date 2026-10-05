@@ -2,7 +2,7 @@ import { test, describe } from 'node:test'
 import assert from 'node:assert'
 
 // ==============================================================================
-// INKFLOW SaaS — Tenant & User Authentication Hardening Test Suite
+// PRINTFLOW SaaS — Tenant & User Authentication Hardening Test Suite
 // Rigorous automated verification for registration, login, logout,
 // tenant isolation, user isolation, branch isolation, and IDOR prevention.
 // ==============================================================================
@@ -271,7 +271,7 @@ class MockDatabase {
 // ------------------------------------------------------------------------------
 // Test Suites
 // ------------------------------------------------------------------------------
-describe('InkFlow Tenant & User Auth Hardening Suite', () => {
+describe('PrintFlow Tenant & User Auth Hardening Suite', () => {
   const db = new MockDatabase()
 
   test.beforeEach(() => {
@@ -294,16 +294,16 @@ describe('InkFlow Tenant & User Auth Hardening Suite', () => {
     })
 
     test('Duplicate email registration is rejected', () => {
-      db.signUp('existing@inkflow.com', 'Pass123456!', 'Existing User')
+      db.signUp('existing@printflow.test', 'Pass123456!', 'Existing User')
       assert.throws(
-        () => db.signUp('existing@inkflow.com', 'AnotherPass123!', 'Duplicate User'),
+        () => db.signUp('existing@printflow.test', 'AnotherPass123!', 'Duplicate User'),
         /An account with this email already exists/
       )
     })
 
     test('Weak passwords under 8 characters are rejected', () => {
       assert.throws(
-        () => db.signUp('weak@inkflow.com', '123', 'Weak Password User'),
+        () => db.signUp('weak@printflow.test', '123', 'Weak Password User'),
         /Password must be at least 8 characters long/
       )
     })
@@ -367,7 +367,7 @@ describe('InkFlow Tenant & User Auth Hardening Suite', () => {
   describe('Pillar 4: Cross-Tenant Isolation & Quarantine', () => {
     test('Tenant A cannot query Tenant B records under any circumstances', () => {
       // Setup Tenant A
-      const { userId: userA } = db.signUp('ownerA@inkflow.com', 'Password123!', 'Owner A')
+      const { userId: userA } = db.signUp('ownerA@printflow.test', 'Password123!', 'Owner A')
       const { company: companyA } = db.createTenant(userA, 'Company A', 'company-a')
       db.createTenantRecord(userA, companyA.id, {
         type: 'invoice',
@@ -376,7 +376,7 @@ describe('InkFlow Tenant & User Auth Hardening Suite', () => {
       })
 
       // Setup Tenant B
-      const { userId: userB } = db.signUp('ownerB@inkflow.com', 'Password123!', 'Owner B')
+      const { userId: userB } = db.signUp('ownerB@printflow.test', 'Password123!', 'Owner B')
       const { company: companyB } = db.createTenant(userB, 'Company B', 'company-b')
       db.createTenantRecord(userB, companyB.id, {
         type: 'invoice',
@@ -404,10 +404,10 @@ describe('InkFlow Tenant & User Auth Hardening Suite', () => {
     })
 
     test('Tenant A cannot insert records into Tenant B', () => {
-      const { userId: userA } = db.signUp('intruder@inkflow.com', 'Password123!', 'Intruder')
+      const { userId: userA } = db.signUp('intruder@printflow.test', 'Password123!', 'Intruder')
       const { company: companyA } = db.createTenant(userA, 'Intruder Co', 'intruder-co')
 
-      const { userId: userB } = db.signUp('victim@inkflow.com', 'Password123!', 'Victim')
+      const { userId: userB } = db.signUp('victim@printflow.test', 'Password123!', 'Victim')
       const { company: companyB } = db.createTenant(userB, 'Victim Co', 'victim-co')
 
       // Intruder attempts to insert into Victim Co

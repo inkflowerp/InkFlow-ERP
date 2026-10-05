@@ -9,7 +9,7 @@ import {
 import type { CommercialProductType, PricingMethod } from '../../types/product.types.ts'
 import type { ProductCategoryRecord, CreateCategoryInput } from '../../types/category.types.ts'
 
-describe('InkFlow — Simplified Product Modal & Category Modal UX Suite', () => {
+describe('PrintFlow — Simplified Product Modal & Category Modal UX Suite', () => {
   describe('1. Product Type Selector Cards (Human-Friendly Types)', () => {
     it('1.1 Exposes human-readable product type cards with no technical enum jargon', () => {
       assert.equal(PRODUCT_TYPE_CARDS.length, 9)

@@ -1,5 +1,5 @@
 // ==============================================================================
-// InkFlow ERP - Dependency License Compliance Gate
+// PrintFlow - Dependency License Compliance Gate
 // Scans node_modules production dependencies to ensure 100% permissive open source licensing.
 // Permitted: MIT, Apache-2.0, BSD-2-Clause, BSD-3-Clause, ISC, 0BSD, CC0-1.0
 // Prohibited: Viral copyleft licenses (GPL, AGPL) in proprietary commercial distribution.
@@ -24,7 +24,7 @@ const PROHIBITED_KEYWORDS = ['GPL', 'AGPL', 'SSPL'];
 
 function checkLicenses() {
   console.log('==============================================================================');
-  console.log('InkFlow ERP - Dependency License Compliance Audit');
+  console.log('PrintFlow - Dependency License Compliance Audit');
   console.log('==============================================================================');
 
   const pkgJsonPath = path.join(process.cwd(), 'package.json');

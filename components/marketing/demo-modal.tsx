@@ -143,7 +143,7 @@ export function DemoModal({ isOpen, onClose }: DemoModalProps) {
               </h3>
               <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed bangla-text">
                 {tBilingual(
-                  'See how PrintERP manages your actual machines, roll stocks, and customer dues in real time.',
+                  'See how PrintFlow manages your actual machines, roll stocks, and customer dues in real time.',
                   'আপনার মেশিনের প্রকার, রোল স্টক এবং বাকি খাতার হিসাব কীভাবে পরিচালিত হবে তা সরাসরি দেখুন।'
                 )}
               </p>
