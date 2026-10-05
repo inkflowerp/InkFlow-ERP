@@ -18,7 +18,8 @@ import type {
 } from '../types/communication.types.ts'
 import { decryptSecret, encryptSecret, sanitizeGatewayRecord } from '../lib/security/encryption.ts'
 import { isTestEnvironment } from '../lib/security/runtime-env.ts'
-import { sanitizeLegacyBrand } from '../lib/brand/sanitizer.ts'
+import { sanitizeLegacyBrand, sanitizeLegacyEmail } from '../lib/brand/sanitizer.ts'
+import { formatBangladeshDateTime } from '../lib/formatters.ts'
 import { createEmailProvider } from '../lib/email/provider.factory.ts'
 import type { DecryptedGatewayConfig } from '../lib/email/types.ts'
 import {
@@ -180,6 +181,20 @@ export class EmailGatewayService {
       console.warn('[EmailGatewayService] Database gateway resolution error:', err)
       return null
     }
+  }
+
+  /**
+   * Convenience helper to resolve the default active Platform Gateway
+   */
+  static async getPlatformGateway(): Promise<EmailGatewayRecord | null> {
+    return this.resolveGateway(null, 'PLATFORM')
+  }
+
+  /**
+   * Convenience helper to resolve a specific Tenant's active Gateway
+   */
+  static async getTenantGateway(tenantId: string): Promise<EmailGatewayRecord | null> {
+    return this.resolveGateway(tenantId, 'TENANT')
   }
 
   /**
@@ -434,23 +449,49 @@ export class EmailGatewayService {
       let finalHtml = customHtmlBody || ''
       let finalText = customTextBody || ''
 
+      // Guarantee valid timestamp in Bangladesh Standard Time if missing or raw Date/ISO
+      if (!variables.timestamp) {
+        variables.timestamp = formatBangladeshDateTime(new Date(), language === 'bn' ? 'bn' : 'en')
+      } else if (variables.timestamp instanceof Date) {
+        variables.timestamp = formatBangladeshDateTime(variables.timestamp, language === 'bn' ? 'bn' : 'en')
+      } else if (
+        typeof variables.timestamp === 'string' &&
+        /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(variables.timestamp)
+      ) {
+        variables.timestamp = formatBangladeshDateTime(new Date(variables.timestamp), language === 'bn' ? 'bn' : 'en')
+      }
+
+      // Deep sanitize all string variable values to prevent legacy brand leaks
+      for (const [key, val] of Object.entries(variables)) {
+        if (typeof val === 'string') {
+          if (key.includes('email') || val.includes('@')) {
+            variables[key] = sanitizeLegacyEmail(val)
+          } else {
+            variables[key] = sanitizeLegacyBrand(val, val)
+          }
+        }
+      }
+
       if (!customHtmlBody || !customSubject) {
         const template = await this.resolveTemplate(eventType, tenantId)
         if (template) {
-          const subjectTpl =
+          const rawSubjectTpl =
             language === 'bn' && template.subject_template_bn
               ? template.subject_template_bn
               : template.subject_template
-          const bodyTpl =
+          const rawBodyTpl =
             language === 'bn' && template.body_template_bn
               ? template.body_template_bn
               : template.body_template
 
+          const subjectTpl = sanitizeLegacyBrand(rawSubjectTpl, 'PrintFlow Notification')
+          const bodyTpl = sanitizeLegacyBrand(rawBodyTpl, '')
+
           finalSubject = customSubject || interpolateVariables(subjectTpl, variables)
           const interpolatedBody = interpolateVariables(bodyTpl, variables)
           const cleanCompany = sanitizeLegacyBrand(
-            variables.company_name || gateway.sender_name,
-            effectiveScope === 'PLATFORM' ? 'PrintFlow Platform Admin' : 'PrintFlow'
+            variables.company_name || (effectiveScope === 'PLATFORM' ? 'PrintFlow Platform' : gateway.sender_name),
+            effectiveScope === 'PLATFORM' ? 'PrintFlow Platform' : 'PrintFlow'
           )
 
           finalHtml = wrapHtmlEmail(interpolatedBody, {
@@ -461,7 +502,7 @@ export class EmailGatewayService {
           finalSubject = customSubject || `Notification: ${eventType}`
           const cleanCompany = sanitizeLegacyBrand(
             gateway.sender_name,
-            effectiveScope === 'PLATFORM' ? 'PrintFlow Platform Admin' : 'PrintFlow'
+            effectiveScope === 'PLATFORM' ? 'PrintFlow Platform' : 'PrintFlow'
           )
 
           finalHtml = wrapHtmlEmail(`<p>${JSON.stringify(variables)}</p>`, {
@@ -484,13 +525,18 @@ export class EmailGatewayService {
       ) {
         const cleanCompany = sanitizeLegacyBrand(
           variables.company_name || gateway.sender_name,
-          effectiveScope === 'PLATFORM' ? 'PrintFlow Platform Admin' : 'PrintFlow'
+          effectiveScope === 'PLATFORM' ? 'PrintFlow Platform' : 'PrintFlow'
         )
 
         finalHtml = wrapHtmlEmail(finalHtml, {
           companyName: cleanCompany,
         })
       }
+
+      // Final pass to ensure all output strings strictly adhere to PrintFlow branding
+      finalSubject = sanitizeLegacyBrand(finalSubject, 'PrintFlow Notification')
+      finalHtml = sanitizeLegacyBrand(finalHtml, '')
+      finalText = sanitizeLegacyBrand(finalText, '')
 
       // 4. Asynchronous queue dispatch
       if (queueNow) {
@@ -542,16 +588,18 @@ export class EmailGatewayService {
         gateway.provider === 'smtp' &&
         gateway.smtp_username &&
         gateway.smtp_username.includes('@') &&
-        (!effectiveSenderEmail || effectiveSenderEmail === 'printflow.bd@gmail.com' || effectiveSenderEmail === 'notifications@printflow.bd')
+        (!effectiveSenderEmail || effectiveSenderEmail === 'printflow.bd@gmail.com' || effectiveSenderEmail === 'printflowbd@gmail.com' || effectiveSenderEmail === 'notifications@printflow.bd')
       ) {
         effectiveSenderEmail = gateway.smtp_username
       } else if (!effectiveSenderEmail) {
-        effectiveSenderEmail = process.env.PLATFORM_SENDER_EMAIL || 'printflow.bd@gmail.com'
+        effectiveSenderEmail = process.env.PLATFORM_SENDER_EMAIL || 'printflowbd@gmail.com'
       }
+
+      effectiveSenderEmail = sanitizeLegacyEmail(effectiveSenderEmail)
 
       const rawSenderName =
         gateway.sender_name || gateway.gmail_display_name || (effectiveScope === 'PLATFORM' ? 'PrintFlow Platform' : 'PrintFlow Notifications')
-      const sanitizedSenderName = sanitizeLegacyBrand(rawSenderName, 'PrintFlow')
+      const sanitizedSenderName = sanitizeLegacyBrand(rawSenderName, 'PrintFlow Platform')
 
       const fromAddress = {
         name: sanitizedSenderName,

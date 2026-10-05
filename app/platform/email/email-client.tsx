@@ -41,7 +41,7 @@ import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import { PlatformSettingsNav } from '@/components/platform/platform-settings-nav'
-import { formatTime } from '@/lib/formatters'
+import { formatTime, formatBangladeshDateTime } from '@/lib/formatters'
 import {
  getPlatformEmailGatewayAction,
  savePlatformEmailGatewayAction,
@@ -440,12 +440,12 @@ export default function PlatformEmailGatewayPage() {
  <div className="space-y-6">
  {/* Status Overview Cards */}
  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
- <Card className="bg-card border-border p-4 border-l-4 border-l-indigo-500">
+ <Card className="bg-card border-border p-4 border-l-4 border-l-primary">
  <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block mb-1">
  Active Provider
  </span>
  <div className="text-lg font-bold text-foreground capitalize flex items-center gap-2">
- <span className="h-2 w-2 rounded-full bg-success animate-pulse" />
+ <span className={`h-2 w-2 rounded-full ${gateway?.status === 'active' ? (gateway?.last_test_status === 'error' ? 'bg-destructive' : 'bg-success') : 'bg-muted-foreground'} animate-pulse`} />
  {gateway?.provider?.toUpperCase() || 'SMTP'} Gateway
  </div>
  <span className="text-xs text-muted-foreground mt-1 block">
@@ -453,20 +453,24 @@ export default function PlatformEmailGatewayPage() {
  </span>
  </Card>
 
- <Card className="bg-card border-border p-4 border-l-4 border-l-emerald-500">
+ <Card className={`bg-card border-border p-4 border-l-4 ${gateway?.last_test_status === 'error' ? 'border-l-destructive' : gateway?.last_test_status === 'healthy' ? 'border-l-success' : 'border-l-primary'}`}>
  <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block mb-1">
  Status
  </span>
- <div className="text-lg font-bold text-success flex items-center gap-1.5">
- <CheckCircle2 className="h-4 w-4" />
- {gateway?.last_test_status?.toUpperCase() || 'READY'}
+ <div className={`text-lg font-bold flex items-center gap-1.5 ${gateway?.last_test_status === 'error' ? 'text-destructive' : gateway?.last_test_status === 'healthy' ? 'text-success' : 'text-foreground'}`}>
+ {gateway?.last_test_status === 'error' ? (
+ <AlertTriangle className="h-4 w-4 text-destructive" />
+ ) : (
+ <CheckCircle2 className="h-4 w-4 text-success" />
+ )}
+ {gateway?.last_test_status ? gateway.last_test_status.toUpperCase() : (gateway?.status === 'active' ? 'ACTIVE' : 'READY')}
  </div>
  <span className="text-xs text-muted-foreground mt-1 block">
  Last Tested: {gateway?.last_tested_at ? formatTime(gateway.last_tested_at) : 'Active'}
  </span>
  </Card>
 
- <Card className="bg-card border-border p-4 border-l-4 border-l-purple-500">
+ <Card className="bg-card border-border p-4 border-l-4 border-l-border">
  <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block mb-1">
  Platform Sender
  </span>
@@ -991,7 +995,7 @@ export default function PlatformEmailGatewayPage() {
  .map((log) => (
  <tr key={log.id} className="hover:bg-muted">
  <td className="py-3 px-4 tabular-nums text-xs text-muted-foreground">
- <div>{new Date(log.created_at).toLocaleDateString()}</div>
+ <div>{formatBangladeshDateTime(log.created_at)}</div>
  <span className="text-primary text-xs">{log.event_type}</span>
  </td>
  <td className="py-3 px-4 font-medium text-foreground">{log.recipient}</td>

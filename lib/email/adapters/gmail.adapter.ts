@@ -150,10 +150,12 @@ export class GmailProviderAdapter implements IEmailProvider {
     const bccAddresses = payload.bcc ? (Array.isArray(payload.bcc) ? payload.bcc.join(', ') : payload.bcc) : undefined
     const replyTo = payload.replyTo || this.config.reply_to_email || undefined
 
+    const cleanSubject = sanitizeLegacyBrand(payload.subject || '', 'PrintFlow Notification')
+
     const headers: string[] = [
       `From: ${fromAddress}`,
       `To: ${toAddresses}`,
-      `Subject: =?UTF-8?B?${Buffer.from(payload.subject || '', 'utf8').toString('base64')}?=`,
+      `Subject: =?UTF-8?B?${Buffer.from(cleanSubject, 'utf8').toString('base64')}?=`,
       `Date: ${new Date().toUTCString()}`,
       `Message-ID: <${Date.now()}.${Math.random().toString(36).substring(2, 8)}@${senderDomain}>`,
       'MIME-Version: 1.0',

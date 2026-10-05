@@ -23,6 +23,7 @@
   ],
   "allowedFilePatterns": [
     "scripts/brand-check.mjs",
-    "scripts/brand-allowlist.json"
+    "scripts/brand-allowlist.json",
+    "lib/brand/sanitizer.ts"
   ]
 }

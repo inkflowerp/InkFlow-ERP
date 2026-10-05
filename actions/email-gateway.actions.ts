@@ -30,6 +30,8 @@ import { EmailGatewayService, DEFAULT_PLATFORM_GATEWAY, EmailDataStore } from '.
 import { DEFAULT_EMAIL_TEMPLATES } from '../services/email-template.service.ts'
 import { revokeGoogleToken, getGoogleOAuthDiagnostics } from '../lib/email/oauth/google-oauth.ts'
 import { AuditService } from '../services/audit.service.ts'
+import { formatBangladeshDateTime } from '../lib/formatters.ts'
+import { sanitizeLegacyBrand, sanitizeLegacyEmail } from '../lib/brand/sanitizer.ts'
 
 // -----------------------------------------------------------------------------
 // PLATFORM OWNER ACTIONS (Platform Admin -> Settings -> Communication)
@@ -346,17 +348,29 @@ export const sendTestPlatformEmailAction = withPlatformAction(
     entityType: 'email',
   },
   async (ctx, recipientEmail: string): Promise<SendEmailResult> => {
+    const gateway = await EmailGatewayService.getPlatformGateway()
+    const senderEmail =
+      gateway?.sender_email ||
+      gateway?.gmail_account_email ||
+      process.env.PLATFORM_SENDER_EMAIL ||
+      'printflowbd@gmail.com'
+    const senderName =
+      gateway?.sender_name ||
+      gateway?.gmail_display_name ||
+      process.env.PLATFORM_SENDER_NAME ||
+      'PrintFlow Platform'
+
     return await EmailGatewayService.sendEmail({
       scopeType: 'PLATFORM',
       tenantId: null,
       eventType: 'test_email',
       recipient: recipientEmail,
       variables: {
-        company_name: 'PrintFlow Platform Admin',
-        sender_name: 'PrintFlow System Notifications',
-        sender_email: recipientEmail,
-        provider_name: 'Platform Email Gateway',
-        timestamp: new Date().toLocaleString(),
+        company_name: 'PrintFlow Platform',
+        sender_name: senderName,
+        sender_email: senderEmail,
+        provider_name: gateway?.provider ? `${gateway.provider.toUpperCase()} Gateway` : 'Platform Email Gateway',
+        timestamp: formatBangladeshDateTime(new Date()),
       },
       sentBy: ctx.platformUser.id,
     })
@@ -379,13 +393,20 @@ export const getPlatformEmailTemplatesAction = withPlatformAction(
         .is('tenant_id', null)
         .order('name', { ascending: true })
 
-      if (data && data.length > 0) {
-        return data
-      }
-
-      return DEFAULT_EMAIL_TEMPLATES
+      const templates = data && data.length > 0 ? data : DEFAULT_EMAIL_TEMPLATES
+      return templates.map((tpl: EmailTemplateRecord) => ({
+        ...tpl,
+        name: sanitizeLegacyBrand(tpl.name, tpl.name),
+        subject_template: sanitizeLegacyBrand(tpl.subject_template, tpl.subject_template),
+        body_template: sanitizeLegacyBrand(tpl.body_template, tpl.body_template),
+      }))
     } catch {
-      return DEFAULT_EMAIL_TEMPLATES
+      return DEFAULT_EMAIL_TEMPLATES.map((tpl) => ({
+        ...tpl,
+        name: sanitizeLegacyBrand(tpl.name, tpl.name),
+        subject_template: sanitizeLegacyBrand(tpl.subject_template, tpl.subject_template),
+        body_template: sanitizeLegacyBrand(tpl.body_template, tpl.body_template),
+      }))
     }
   }
 )
@@ -405,11 +426,11 @@ export const savePlatformEmailTemplateAction = withPlatformAction(
     const payload = {
       tenant_id: null,
       event_type: template.event_type!,
-      name: template.name!,
+      name: sanitizeLegacyBrand(template.name!, template.name!),
       name_bn: template.name_bn || null,
-      subject_template: template.subject_template!,
+      subject_template: sanitizeLegacyBrand(template.subject_template!, template.subject_template!),
       subject_template_bn: template.subject_template_bn || null,
-      body_template: template.body_template!,
+      body_template: sanitizeLegacyBrand(template.body_template!, template.body_template!),
       body_template_bn: template.body_template_bn || null,
       variables: template.variables || [],
       status: template.status || 'active',
@@ -892,6 +913,16 @@ export const sendTestTenantEmailAction = withTenantAction(
   recipientEmail: string) : Promise<SendEmailResult> => {
   try {
     const tenant = await requireTenantPermission(companyId, 'settings.edit')
+    const gateway = await EmailGatewayService.getTenantGateway(companyId)
+    const senderEmail =
+      gateway?.sender_email ||
+      gateway?.gmail_account_email ||
+      `${tenant.companySlug || 'tenant'}@printflow.bd`
+    const senderName =
+      gateway?.sender_name ||
+      gateway?.gmail_display_name ||
+      tenant.companyName ||
+      'PrintFlow'
 
     const result = await EmailGatewayService.sendEmail({
       scopeType: 'TENANT',
@@ -899,11 +930,11 @@ export const sendTestTenantEmailAction = withTenantAction(
       eventType: 'test_email',
       recipient: recipientEmail,
       variables: {
-        company_name: tenant.companyName,
-        sender_name: tenant.companyName,
-        sender_email: recipientEmail,
-        provider_name: 'Tenant Active Email Gateway',
-        timestamp: new Date().toLocaleString(),
+        company_name: tenant.companyName || 'PrintFlow',
+        sender_name: senderName,
+        sender_email: senderEmail,
+        provider_name: gateway?.provider ? `${gateway.provider.toUpperCase()} Gateway` : 'Tenant Active Email Gateway',
+        timestamp: formatBangladeshDateTime(new Date()),
       },
       sentBy: tenant.userId,
     })

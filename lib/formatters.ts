@@ -214,6 +214,51 @@ export function formatDateTime(
 }
 
 /**
+ * Formats a timestamp specifically for email dispatches, system logs, and transactional receipts
+ * in canonical Bangladesh Standard Time (Asia/Dhaka) with 12-hour AM/PM format and (BST) zone tag.
+ * Example: "10/6/2026, 3:05:23 AM (BST)" or in Bengali: "৬/১০/২০২৬, ৩:০৫:২৩ AM (বিএসটি)"
+ */
+export function formatBangladeshDateTime(
+  date: string | number | Date | null | undefined = new Date(),
+  locale: 'en' | 'bn' = 'en'
+): string {
+  if (date === null || date === undefined || date === '') return '—'
+  const d = typeof date === 'string' || typeof date === 'number' ? new Date(date) : date
+  if (isNaN(d.getTime())) return '—'
+
+  try {
+    if (locale === 'bn') {
+      const timeStr = new Intl.DateTimeFormat('bn-BD', {
+        timeZone: APP_TIMEZONE,
+        year: 'numeric',
+        month: 'numeric',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: true,
+      }).format(d)
+      return `${timeStr} (বিএসটি)`
+    }
+
+    const timeStr = new Intl.DateTimeFormat('en-US', {
+      timeZone: APP_TIMEZONE,
+      year: 'numeric',
+      month: 'numeric',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: true,
+    }).format(d)
+    return `${timeStr} (BST)`
+  } catch {
+    return d.toLocaleString('en-US', { timeZone: APP_TIMEZONE }) + ' (BST)'
+  }
+}
+
+
+/**
  * Resolves local calendar date (YYYY-MM-DD) in Bangladesh Standard Time (Asia/Dhaka) or custom timezone.
  */
 export function getLocalDate(date: Date | string | number = new Date(), timeZone: string = APP_TIMEZONE): string {
