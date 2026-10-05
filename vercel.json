@@ -8,10 +8,6 @@
       "schedule": "0 2 * * *"
     },
     {
-      "path": "/api/cron/communication-worker",
-      "schedule": "* * * * *"
-    },
-    {
       "path": "/api/cron/nightly-reconciliation",
       "schedule": "0 3 * * *"
     }
