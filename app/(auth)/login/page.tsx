@@ -114,8 +114,12 @@ function WorkspaceFinderForm({ rootDomain }: { rootDomain: string }) {
   return (
     <Card className="border border-border bg-card shadow-xs">
       <CardHeader className="space-y-1.5 text-center pb-4 pt-6 px-6">
-        <div className="mx-auto w-10 h-10 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary mb-2">
-          <Building2 className="h-5 w-5" />
+        <div className="mx-auto flex items-center justify-center mb-2">
+          <img
+            src="/logo.png"
+            alt={BRAND.name}
+            className="h-11 w-11 object-contain rounded-xl p-0.5"
+          />
         </div>
         <CardTitle className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
           {locale === 'bn' ? `${BRAND.nameBn}-তে সাইন ইন করুন` : `Sign In to ${BRAND.name}`}

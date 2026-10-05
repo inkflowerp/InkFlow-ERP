@@ -47,6 +47,8 @@ ALTER TABLE public.platform_system_settings
     ALTER COLUMN app_name SET DEFAULT 'PrintFlow',
     ALTER COLUMN app_title SET DEFAULT 'PrintFlow - Operating System for Printing & Signage in Bangladesh',
     ALTER COLUMN app_domain SET DEFAULT 'printflow.bd',
+    ALTER COLUMN app_logo_url SET DEFAULT '/logo.png',
+    ALTER COLUMN favicon_url SET DEFAULT '/favicon.ico',
     ALTER COLUMN support_helpline SET DEFAULT '+880 1973-811114',
     ALTER COLUMN contact_phone SET DEFAULT '+880 1973-811114';
 
@@ -55,6 +57,8 @@ SET
     app_name = 'PrintFlow',
     app_title = 'PrintFlow - Operating System for Printing & Signage in Bangladesh',
     app_domain = 'printflow.bd',
+    app_logo_url = '/logo.png',
+    favicon_url = '/favicon.ico',
     support_helpline = '+880 1973-811114',
     contact_phone = '+880 1973-811114',
     maintenance_message = 'PrintFlow is currently undergoing scheduled system maintenance. Please check back shortly.',

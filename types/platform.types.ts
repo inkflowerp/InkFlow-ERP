@@ -742,7 +742,7 @@ export interface PlatformSystemSettings {
 
 export const DEFAULT_PLATFORM_BRANDING = {
   app_name: BRAND.name,
-  app_logo_url: '',
+  app_logo_url: '/logo.png',
   app_tagline: BRAND.tagline,
   favicon_url: '/favicon.ico',
   app_title: `${BRAND.name} - Operating System for Printing & Signage in Bangladesh`,

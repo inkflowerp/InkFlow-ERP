@@ -57,7 +57,7 @@ export function PlatformSettingsProvider({
 
   // Derived properties with safe fallbacks
  const appName = useMemo(() => settings?.app_name || DEFAULT_PLATFORM_BRANDING.app_name, [settings])
- const appLogoUrl = useMemo(() => settings?.app_logo_url || '', [settings])
+ const appLogoUrl = useMemo(() => settings?.app_logo_url || DEFAULT_PLATFORM_BRANDING.app_logo_url || '/logo.png', [settings])
  const tagline = useMemo(() => settings?.app_tagline || DEFAULT_PLATFORM_BRANDING.app_tagline, [settings])
  const faviconUrl = useMemo(() => settings?.favicon_url || DEFAULT_PLATFORM_BRANDING.favicon_url, [settings])
  const title = useMemo(() => settings?.app_title || DEFAULT_PLATFORM_BRANDING.app_title, [settings])
