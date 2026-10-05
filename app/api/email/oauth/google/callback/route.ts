@@ -10,7 +10,7 @@ import {
   exchangeGoogleAuthCode,
   fetchGoogleUserProfile,
 } from '@/lib/email/oauth/google-oauth'
-import { encryptSecret } from '@/lib/security/encryption'
+import { encryptSecret, decryptSecret } from '@/lib/security/encryption'
 import { EmailDataStore } from '@/services/email-gateway.service'
 import { AuditService } from '@/services/audit.service'
 import type { EmailGatewayRecord } from '@/types/communication.types'
@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
     console.warn('[GoogleOAuthCallback] Google returned error:', oauthError)
     const statePayload = verifyGoogleOAuthState(state)
     if (statePayload) {
-      let returnBase = '/platform/settings/communication'
+      let returnBase = '/platform/email'
       if (statePayload.scopeType === 'TENANT') {
         try {
           const adminClient = createAdminClient()
@@ -61,7 +61,10 @@ export async function GET(request: NextRequest) {
   }
 
   if (!code) {
-    return NextResponse.redirect(`${origin}/?oauth_error=missing_authorization_code`)
+    const returnBase = statePayload.scopeType === 'PLATFORM' ? '/platform/email' : '/settings/email'
+    const errUrl = new URL(statePayload.returnUrl || returnBase, origin)
+    errUrl.searchParams.set('error', 'missing_authorization_code')
+    return NextResponse.redirect(errUrl)
   }
 
   try {
@@ -72,18 +75,47 @@ export async function GET(request: NextRequest) {
     // 4. Retrieve Google Identity Profile
     const profile = await fetchGoogleUserProfile(access_token)
 
-    // 5. Encrypt OAuth Tokens at rest using AES-256-GCM
+    const adminClient = createAdminClient()
+
+    // 5. Look up existing Gmail gateway to preserve refresh_token if Google omitted it
+    let query = (adminClient as any)
+      .from('email_gateways')
+      .select('*')
+      .eq('provider', 'gmail')
+
+    if (statePayload.scopeType === 'PLATFORM') {
+      query = query.is('tenant_id', null)
+    } else {
+      query = query.eq('tenant_id', statePayload.tenantId!)
+    }
+
+    const { data: existing } = await query
+      .order('is_default', { ascending: false })
+      .order('updated_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+
+    let effectiveRefreshToken = refresh_token
+    if (!effectiveRefreshToken && existing?.encrypted_credentials) {
+      try {
+        const decrypted = decryptSecret(existing.encrypted_credentials)
+        const parsed = JSON.parse(decrypted)
+        if (parsed?.refresh_token) {
+          effectiveRefreshToken = parsed.refresh_token
+        }
+      } catch {}
+    }
+
+    // Encrypt OAuth Tokens at rest using AES-256-GCM
     const tokenPayload = JSON.stringify({
       access_token,
-      refresh_token: refresh_token || undefined,
+      refresh_token: effectiveRefreshToken || undefined,
       scope,
     })
     const encryptedCredentials = encryptSecret(tokenPayload)
 
     const tokenExpiresAt = new Date(Date.now() + (expires_in || 3600) * 1000).toISOString()
     const nowIso = new Date().toISOString()
-
-    const adminClient = createAdminClient()
 
     const gatewayPayload = {
       tenant_id: statePayload.scopeType === 'PLATFORM' ? null : statePayload.tenantId,
@@ -112,11 +144,11 @@ export async function GET(request: NextRequest) {
     } as EmailGatewayRecord
 
     try {
-      // 1. Deactivate other non-Gmail gateways as default before making Gmail default
+      // 1. Deactivate other non-Gmail gateways as default and active before making Gmail active
       try {
         let deactQuery = (adminClient as any)
           .from('email_gateways')
-          .update({ is_default: false })
+          .update({ is_default: false, status: 'inactive' })
           .neq('provider', 'gmail')
 
         if (statePayload.scopeType === 'PLATFORM') {
@@ -126,20 +158,6 @@ export async function GET(request: NextRequest) {
         }
         await deactQuery
       } catch {}
-
-      // 2. Find existing Gmail gateway for this scope
-      let query = (adminClient as any)
-        .from('email_gateways')
-        .select('id')
-        .eq('provider', 'gmail')
-
-      if (statePayload.scopeType === 'PLATFORM') {
-        query = query.is('tenant_id', null)
-      } else {
-        query = query.eq('tenant_id', statePayload.tenantId!)
-      }
-
-      const { data: existing } = await query.maybeSingle()
 
       if (existing?.id) {
         const { data, error } = await (adminClient as any)
@@ -225,7 +243,7 @@ export async function GET(request: NextRequest) {
 
     if (!redirectDestination) {
       if (statePayload.scopeType === 'PLATFORM') {
-        redirectDestination = `${origin}/platform/settings/communication?gmail=connected`
+        redirectDestination = `${origin}/platform/email?gmail=connected`
       } else {
         // Resolve tenant slug
         const { data: company } = await (adminClient as any)
@@ -244,7 +262,7 @@ export async function GET(request: NextRequest) {
         safePath.startsWith('//') ||
         safePath.startsWith('/\\')
       ) {
-        safePath = '/settings/email'
+        safePath = statePayload.scopeType === 'PLATFORM' ? '/platform/email' : '/settings/email'
       }
       try {
         const parsed = new URL(safePath, origin)
@@ -252,17 +270,32 @@ export async function GET(request: NextRequest) {
           parsed.searchParams.set('gmail', 'connected')
           redirectDestination = parsed.toString()
         } else {
-          redirectDestination = `${origin}/settings/email?gmail=connected`
+          redirectDestination = `${origin}${safePath}${safePath.includes('?') ? '&' : '?'}gmail=connected`
         }
       } catch {
-        redirectDestination = `${origin}/settings/email?gmail=connected`
+        redirectDestination = `${origin}${safePath}${safePath.includes('?') ? '&' : '?'}gmail=connected`
       }
     }
 
     return NextResponse.redirect(redirectDestination)
   } catch (err: any) {
     console.error('[GoogleOAuthCallback] OAuth exchange failure:', err)
-    const errUrl = `${origin}/?oauth_error=${encodeURIComponent(err?.message || 'Token exchange failed')}`
+    let returnBase = statePayload.scopeType === 'PLATFORM' ? '/platform/email' : '/settings/email'
+    if (statePayload.scopeType === 'TENANT' && statePayload.tenantId) {
+      try {
+        const adminClient = createAdminClient()
+        const { data: comp } = await (adminClient as any)
+          .from('companies')
+          .select('slug')
+          .eq('id', statePayload.tenantId)
+          .maybeSingle()
+        if (comp?.slug) {
+          returnBase = `/${comp.slug}/settings/email`
+        }
+      } catch {}
+    }
+    const errUrl = new URL(statePayload.returnUrl || returnBase, origin)
+    errUrl.searchParams.set('error', err?.message || 'Token exchange failed')
     return NextResponse.redirect(errUrl)
   }
 }

@@ -2363,7 +2363,8 @@ export default function PlatformIntegrationsPage() {
  <Button
  type="button"
  onClick={() => {
- window.location.href = '/api/email/oauth/google/start?scope=platform'
+                    const returnUrl = encodeURIComponent(window.location.pathname)
+                    window.location.href = `/api/email/oauth/google/start?scope=platform&returnUrl=${returnUrl}`
  }}
  className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs h-9 px-4 shrink-0 font-medium shadow-sm flex items-center gap-1.5"
  >

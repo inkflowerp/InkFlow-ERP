@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
     if (isPlatform) {
       const platformUser = await getAuthenticatedPlatformContext()
       if (!platformUser || !platformUser.isActive) {
-        const returnUrl = returnUrlParam || '/platform/settings/communication'
+        const returnUrl = returnUrlParam || '/platform/email'
         const redirectUrl = new URL(returnUrl, request.url)
         redirectUrl.searchParams.set('error', 'unauthorized')
         return NextResponse.redirect(redirectUrl)
@@ -44,12 +44,19 @@ export async function GET(request: NextRequest) {
       userId = platformUser.userId
     } else {
       const tenantUser = await getCurrentTenant(tenantIdParam || undefined)
-      if (
-        !tenantUser ||
-        (tenantUser.companyRole !== 'business_owner' &&
-          !tenantUser.permissions.includes('settings.edit') &&
-          !tenantUser.permissions.includes('settings.manage'))
-      ) {
+      const tenantRole = (tenantUser?.companyRole || (tenantUser as any)?.primaryRole || '').toLowerCase()
+      const isAuthorizedRole =
+        tenantRole === 'business_owner' ||
+        tenantRole === 'owner' ||
+        tenantRole === 'admin'
+      const hasPermission = Boolean(
+        tenantUser?.permissions &&
+        (tenantUser.permissions.includes('settings.edit') ||
+          tenantUser.permissions.includes('settings.manage') ||
+          tenantUser.permissions.includes('all.manage'))
+      )
+
+      if (!tenantUser || (!isAuthorizedRole && !hasPermission)) {
         const returnUrl = returnUrlParam || `/${tenantUser?.companySlug || tenantIdParam || 'tenant'}/settings/email`
         const redirectUrl = new URL(returnUrl, request.url)
         redirectUrl.searchParams.set('error', 'unauthorized')
@@ -63,7 +70,7 @@ export async function GET(request: NextRequest) {
 
     const diag = getGoogleOAuthDiagnostics(origin)
     if (!diag.isConfigured) {
-      const returnUrl = returnUrlParam || (isPlatform ? '/platform/settings/communication' : `/${resolvedSlug || resolvedTenantId || 'tenant'}/settings/email`)
+      const returnUrl = returnUrlParam || (isPlatform ? '/platform/email' : `/${resolvedSlug || resolvedTenantId || 'tenant'}/settings/email`)
       const redirectUrl = new URL(returnUrl, request.url)
       redirectUrl.searchParams.set('error', 'google_client_id_missing')
       return NextResponse.redirect(redirectUrl)

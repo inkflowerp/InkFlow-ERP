@@ -749,6 +749,15 @@ export const DEFAULT_EMAIL_TEMPLATES: EmailTemplateRecord[] = [
     body_template_bn: `
       <p>অভিনন্দন!</p>
       <p><strong>{{company_name}}</strong> এর জন্য কনফিগার করা ইমেইল গেটওয়ে সফলভাবে সংযোগ স্থাপন করেছে।</p>
+      <div class="info-card">
+        <table>
+          <tr><td class="label">প্রোভাইডার:</td><td class="value">{{provider_name}}</td></tr>
+          <tr><td class="label">প্রেরক:</td><td class="value">{{sender_name}} &lt;{{sender_email}}&gt;</td></tr>
+          <tr><td class="label">সময়:</td><td class="value">{{timestamp}}</td></tr>
+          <tr><td class="label">অবস্থা:</td><td class="value" style="color: #10b981;">সক্রিয় ও পরীক্ষিত</td></tr>
+        </table>
+      </div>
+      <p>সকল স্বয়ংক্রিয় কোটেশন, ইনভয়েস এবং নোটিফিকেশন এই গেটওয়ের মাধ্যমে নির্ভরযোগ্যভাবে পাঠানো হবে।</p>
     `,
     variables: ['company_name', 'provider_name', 'sender_name', 'sender_email', 'timestamp'],
     status: 'active',

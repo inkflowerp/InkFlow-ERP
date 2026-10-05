@@ -225,7 +225,17 @@ export default function TenantEmailSettingsPage() {
 
  const handleConnectGmail = () => {
  if (!companyId) return
- window.location.href = `/api/email/oauth/google/start?scope=tenant&tenantId=${companyId}`
+ const returnUrl = encodeURIComponent(window.location.pathname)
+ window.location.href = `/api/email/oauth/google/start?scope=tenant&tenantId=${companyId}&returnUrl=${returnUrl}`
+  }
+
+ const handleTestGmailConnection = async () => {
+ if (!companyId) return
+ setTesting(true)
+ setTestResult(null)
+ const res = await testTenantEmailGatewayAction(companyId, { provider: 'gmail' })
+ setTestResult(res)
+ setTesting(false)
   }
 
  const handleDisconnectGmail = async () => {
@@ -537,9 +547,9 @@ export default function TenantEmailSettingsPage() {
               <CardContent className="p-6">
                 {gateway?.provider === 'gmail' && gateway.status === 'active' ? (
                   <div className="space-y-4">
-                    <div className="p-4 rounded-xl bg-success-surface bg-success-surface border border-success-border border-success-border flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="p-4 rounded-xl bg-success-surface border border-success-border flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                       <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-full bg-success text-white flex items-center justify-center font-bold text-sm">
+                        <div className="h-10 w-10 rounded-full bg-success text-primary-foreground flex items-center justify-center font-bold text-sm">
                           ✓
                         </div>
                         <div>
@@ -554,20 +564,43 @@ export default function TenantEmailSettingsPage() {
 
                       <div className="flex items-center gap-2">
                         <Button
- size="sm"variant="outline"onClick={() => setIsTestModalOpen(true)}
- className="text-xs h-9 min-h-[38px]">
+                          size="sm"
+                          variant="outline"
+                          disabled={testing}
+                          onClick={handleTestGmailConnection}
+                          className="text-xs h-9 min-h-9"
+                        >
+                          <RotateCw className={`mr-1.5 h-3.5 w-3.5 ${testing ? 'animate-spin text-primary' : ''}`} />
+                          {testing ? tBilingual('Verifying...', 'যাচাই হচ্ছে...') : tBilingual('Verify API', 'এপিআই যাচাই')}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setIsTestModalOpen(true)}
+                          className="text-xs h-9 min-h-9"
+                        >
                           <Send className="mr-1.5 h-3.5 w-3.5"/>
                           {tBilingual('Send Test', 'টেস্ট পাঠান')}
                         </Button>
                         <Button
- size="sm"variant="destructive"disabled={disconnecting}
- onClick={handleDisconnectGmail}
- className="text-xs h-9 min-h-[38px]">
+                          size="sm"
+                          variant="destructive"
+                          disabled={disconnecting}
+                          onClick={handleDisconnectGmail}
+                          className="text-xs h-9 min-h-9"
+                        >
                           <Trash2 className="mr-1.5 h-3.5 w-3.5"/>
                           {disconnecting ? tBilingual('Disconnecting...', 'বিচ্ছিন্ন করা হচ্ছে...') : tBilingual('Disconnect', 'সংযোগ বিচ্ছিন্ন করুন')}
                         </Button>
                       </div>
                     </div>
+
+                    {testResult && (
+                      <div className={`p-3 rounded-lg border text-xs font-semibold flex items-center gap-2 ${testResult.success ? 'bg-success-surface text-success border-success-border' : 'bg-destructive/10 text-destructive border-border'}`}>
+                        {testResult.success ? <CheckCircle2 className="h-4 w-4 shrink-0" /> : <AlertTriangle className="h-4 w-4 shrink-0" />}
+                        <span>{testResult.message}</span>
+                      </div>
+                    )}
 
                     <div className="p-3 bg-muted rounded-xl border text-xs text-muted-foreground space-y-1">
                       <span className="font-semibold text-foreground block">Security Guarantee:</span>

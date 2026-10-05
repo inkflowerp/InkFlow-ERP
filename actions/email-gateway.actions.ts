@@ -1,6 +1,6 @@
 'use server'
 
-import { withTenantAction } from '@/lib/actions/action-wrapper'
+import { withTenantAction, withPlatformAction } from '../lib/actions/action-wrapper.ts'
 
 
 // ==============================================================================
@@ -11,11 +11,11 @@ import { withTenantAction } from '@/lib/actions/action-wrapper'
 
 import { createAdminClient } from '../lib/supabase/admin.ts'
 import { getAuthenticatedPlatformContext } from '../lib/auth/platform-auth.ts'
-import { requireTenantPermission, requireTenantUser } from '../lib/auth/tenant-auth.ts'
-import { withPlatformAction } from '../lib/actions/action-wrapper.ts'
+import { requireTenantPermission, requireTenantUser, getCurrentTenant } from '../lib/auth/tenant-auth.ts'
 import type {
   EmailGatewayRecord,
   EmailGatewayFormData,
+  EmailProviderType,
   EmailTemplateRecord,
   EmailLogRecord,
   ConnectionTestResult,
@@ -276,7 +276,7 @@ export const disconnectPlatformGmailAction = withPlatformAction(
  */
 export const testPlatformEmailGatewayAction = withPlatformAction(
   { permission: 'system.manage' },
-  async (_ctx, formData: EmailGatewayFormData): Promise<ConnectionTestResult> => {
+  async (_ctx, formData: Partial<EmailGatewayFormData> & { provider: EmailProviderType }): Promise<ConnectionTestResult> => {
     const tempGatewayRecord: EmailGatewayRecord = {
       id: formData.id || 'temp-test-gw',
       tenant_id: null,
@@ -289,6 +289,7 @@ export const testPlatformEmailGatewayAction = withPlatformAction(
       encrypted_credentials: formData.password || formData.api_key || null,
       encryption_type: formData.encryption_type || 'tls',
       gmail_account_email: formData.gmail_account_email || null,
+      gmail_display_name: formData.gmail_display_name || null,
       sender_name: formData.sender_name || 'PrintFlow Platform',
       sender_email: formData.sender_email || 'test@printflow.bd',
       reply_to_email: formData.reply_to_email || null,
@@ -300,6 +301,30 @@ export const testPlatformEmailGatewayAction = withPlatformAction(
       },
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
+    }
+
+    if (!tempGatewayRecord.encrypted_credentials) {
+      const adminClient = createAdminClient()
+      const { data: existing } = await (adminClient as any)
+        .from('email_gateways')
+        .select('*')
+        .is('tenant_id', null)
+        .eq('provider', formData.provider)
+        .order('is_default', { ascending: false })
+        .order('updated_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+
+      if (existing) {
+        tempGatewayRecord.id = existing.id
+        tempGatewayRecord.encrypted_credentials = existing.encrypted_credentials
+        tempGatewayRecord.gmail_account_email = tempGatewayRecord.gmail_account_email || existing.gmail_account_email
+        tempGatewayRecord.gmail_display_name = tempGatewayRecord.gmail_display_name || existing.gmail_display_name
+        tempGatewayRecord.token_expires_at = existing.token_expires_at
+        tempGatewayRecord.sender_email = tempGatewayRecord.sender_email || existing.sender_email
+        tempGatewayRecord.sender_name = tempGatewayRecord.sender_name || existing.sender_name
+        tempGatewayRecord.extra_settings = existing.extra_settings || tempGatewayRecord.extra_settings
+      }
     }
 
     return await EmailGatewayService.testConnection(tempGatewayRecord)
@@ -503,11 +528,14 @@ export const getTenantEmailGatewayAction = withTenantAction(
 
     const adminClient = createAdminClient()
 
-    // 1. Check custom gateway for tenant
+    // 1. Check custom gateway for tenant (highest priority default or active)
     const { data: tenantGw } = await (adminClient as any)
       .from('email_gateways')
       .select('*')
       .eq('tenant_id', companyId)
+      .order('is_default', { ascending: false })
+      .order('updated_at', { ascending: false })
+      .limit(1)
       .maybeSingle()
 
     const localGateways = EmailDataStore.get<EmailGatewayRecord[]>('printflow_email_gateways') || []
@@ -575,10 +603,22 @@ export const saveTenantEmailGatewayAction = withTenantAction(
       updated_at: new Date().toISOString(),
     }
 
+    // Deactivate other gateways before saving new active default
+    try {
+      await (adminClient as any)
+        .from('email_gateways')
+        .update({ is_default: false, status: 'inactive' })
+        .eq('tenant_id', companyId)
+        .neq('provider', formData.provider)
+    } catch {}
+
     const { data: existing } = await (adminClient as any)
       .from('email_gateways')
       .select('id')
       .eq('tenant_id', companyId)
+      .eq('provider', formData.provider)
+      .order('updated_at', { ascending: false })
+      .limit(1)
       .maybeSingle()
 
     let savedRecord: EmailGatewayRecord
@@ -770,7 +810,7 @@ export const testTenantEmailGatewayAction = withTenantAction(
     entityType: "email-gateway"
   },
   async (ctx, companyId: string,
-  formData: EmailGatewayFormData) : Promise<ConnectionTestResult> => {
+  formData: Partial<EmailGatewayFormData> & { provider: EmailProviderType }) : Promise<ConnectionTestResult> => {
   try {
     await requireTenantPermission(companyId, 'settings.edit')
 
@@ -786,8 +826,9 @@ export const testTenantEmailGatewayAction = withTenantAction(
       encrypted_credentials: formData.password || formData.api_key || null,
       encryption_type: formData.encryption_type || 'tls',
       gmail_account_email: formData.gmail_account_email || null,
-      sender_name: formData.sender_name,
-      sender_email: formData.sender_email,
+      gmail_display_name: formData.gmail_display_name || null,
+      sender_name: formData.sender_name || 'Business Mailer',
+      sender_email: formData.sender_email || 'noreply@printflow.bd',
       reply_to_email: formData.reply_to_email || null,
       status: 'active',
       is_default: true,
@@ -797,6 +838,30 @@ export const testTenantEmailGatewayAction = withTenantAction(
       },
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
+    }
+
+    if (!tempGatewayRecord.encrypted_credentials) {
+      const adminClient = createAdminClient()
+      const { data: existing } = await (adminClient as any)
+        .from('email_gateways')
+        .select('*')
+        .eq('tenant_id', companyId)
+        .eq('provider', formData.provider)
+        .order('is_default', { ascending: false })
+        .order('updated_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+
+      if (existing) {
+        tempGatewayRecord.id = existing.id
+        tempGatewayRecord.encrypted_credentials = existing.encrypted_credentials
+        tempGatewayRecord.gmail_account_email = tempGatewayRecord.gmail_account_email || existing.gmail_account_email
+        tempGatewayRecord.gmail_display_name = tempGatewayRecord.gmail_display_name || existing.gmail_display_name
+        tempGatewayRecord.token_expires_at = existing.token_expires_at
+        tempGatewayRecord.sender_email = tempGatewayRecord.sender_email || existing.sender_email
+        tempGatewayRecord.sender_name = tempGatewayRecord.sender_name || existing.sender_name
+        tempGatewayRecord.extra_settings = existing.extra_settings || tempGatewayRecord.extra_settings
+      }
     }
 
     return await EmailGatewayService.testConnection(tempGatewayRecord)
@@ -1048,14 +1113,10 @@ export const dispatchWorkflowEmailAction = withTenantAction(
 })
 
 /**
- * Safe server-side diagnostic: checks whether Google OAuth credentials exist without exposing secrets
+ * Safe server-side diagnostic: checks whether Google OAuth credentials exist without exposing secrets.
+ * Accessible to authenticated platform administrators and tenant users.
  */
-export const getGoogleOAuthStatusAction = withTenantAction(
-  {
-    permission: "settings.view",
-    entityType: "email-gateway"
-  },
-  async (ctx) : Promise<{
+export async function getGoogleOAuthStatusAction(): Promise<{
   success: boolean
   isConfigured: boolean
   hasClientId: boolean
@@ -1063,8 +1124,27 @@ export const getGoogleOAuthStatusAction = withTenantAction(
   hasRedirectUri: boolean
   redirectUri: string
   issues: string[]
-}> => {
+  error?: string
+}> {
   try {
+    const [platformUser, tenantUser] = await Promise.all([
+      getAuthenticatedPlatformContext().catch(() => null),
+      getCurrentTenant().catch(() => null),
+    ])
+
+    if (!platformUser?.isActive && !tenantUser?.userId) {
+      return {
+        success: false,
+        isConfigured: false,
+        hasClientId: false,
+        hasClientSecret: false,
+        hasRedirectUri: false,
+        redirectUri: '',
+        issues: ['Unauthorized'],
+        error: 'Unauthorized',
+      }
+    }
+
     const diag = getGoogleOAuthDiagnostics()
     return {
       success: true,
@@ -1084,7 +1164,7 @@ export const getGoogleOAuthStatusAction = withTenantAction(
       hasRedirectUri: false,
       redirectUri: '',
       issues: [err?.message || 'Failed to check Google OAuth configuration status'],
+      error: err?.message,
     }
   }
-
-})
+}

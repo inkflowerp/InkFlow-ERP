@@ -120,6 +120,9 @@ export class EmailGatewayService {
           .select('*')
           .eq('tenant_id', tenantId)
           .eq('status', 'active')
+          .order('is_default', { ascending: false })
+          .order('updated_at', { ascending: false })
+          .limit(1)
           .maybeSingle()
 
         if (!tenantErr && tenantGw) {

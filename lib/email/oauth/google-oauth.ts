@@ -54,29 +54,30 @@ export interface GoogleOAuthDiagnostics {
  * Returns Google OAuth Client configuration from environment
  */
 export function getGoogleOAuthConfig(requestOriginOrExplicitUri?: string) {
-  const clientId =
+  const clientId = (
     process.env.GOOGLE_CLIENT_ID ||
     process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ||
     process.env.GOOGLE_OAUTH_CLIENT_ID ||
     ''
-  const clientSecret =
+  ).trim()
+  const clientSecret = (
     process.env.GOOGLE_CLIENT_SECRET ||
     process.env.GOOGLE_OAUTH_CLIENT_SECRET ||
     ''
+  ).trim()
   
   // Canonical Redirect URI resolution
-  let redirectUri =
+  let redirectUri = (
     process.env.GOOGLE_GMAIL_REDIRECT_URI ||
     process.env.GOOGLE_OAUTH_REDIRECT_URI ||
     ''
+  ).trim()
 
-  if (!redirectUri && requestOriginOrExplicitUri) {
+  if (requestOriginOrExplicitUri && requestOriginOrExplicitUri.includes('/api/email/oauth/google/callback')) {
+    redirectUri = requestOriginOrExplicitUri.trim()
+  } else if (!redirectUri && requestOriginOrExplicitUri) {
     if (requestOriginOrExplicitUri.startsWith('http://') || requestOriginOrExplicitUri.startsWith('https://')) {
-      if (requestOriginOrExplicitUri.includes('/api/email/oauth/google/callback')) {
-        redirectUri = requestOriginOrExplicitUri
-      } else {
-        redirectUri = `${requestOriginOrExplicitUri.replace(/\/$/, '')}/api/email/oauth/google/callback`
-      }
+      redirectUri = `${requestOriginOrExplicitUri.replace(/\/$/, '')}/api/email/oauth/google/callback`
     }
   }
 

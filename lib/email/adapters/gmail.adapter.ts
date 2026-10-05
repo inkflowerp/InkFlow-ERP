@@ -123,9 +123,17 @@ export class GmailProviderAdapter implements IEmailProvider {
       this.config.sender_name ||
       ''
 
-    const fromAddress = senderDisplayName
-      ? `"${senderDisplayName.replace(/"/g, '')}" <${effectiveSenderEmail}>`
-      : effectiveSenderEmail
+    let fromAddress = effectiveSenderEmail
+    if (senderDisplayName) {
+      const cleanName = senderDisplayName.replace(/[\r\n"]/g, '').trim()
+      if (cleanName) {
+        if (/[^\x20-\x7E]/.test(cleanName)) {
+          fromAddress = `=?UTF-8?B?${Buffer.from(cleanName, 'utf8').toString('base64')}?= <${effectiveSenderEmail}>`
+        } else {
+          fromAddress = `"${cleanName}" <${effectiveSenderEmail}>`
+        }
+      }
+    }
 
     const domainMatch = effectiveSenderEmail.match(/@([a-zA-Z0-9.-]+)/)
     const senderDomain = domainMatch
@@ -183,6 +191,7 @@ export class GmailProviderAdapter implements IEmailProvider {
             .replace(/\s+/g, ' ')
             .trim() || 'Notification from PrintFlow'
 
+    const effectiveHtml = htmlContent || `<p>${plainText.replace(/\n/g, '<br/>')}</p>`
     const hasAttachments = payload.attachments && payload.attachments.length > 0
 
     let messageBody = ''
@@ -205,7 +214,7 @@ export class GmailProviderAdapter implements IEmailProvider {
       messageBody += `--${altBoundary}\r\n`
       messageBody += 'Content-Type: text/html; charset="UTF-8"\r\n'
       messageBody += 'Content-Transfer-Encoding: base64\r\n\r\n'
-      messageBody += `${Buffer.from(payload.html, 'utf8').toString('base64')}\r\n\r\n`
+      messageBody += `${Buffer.from(effectiveHtml, 'utf8').toString('base64')}\r\n\r\n`
       messageBody += `--${altBoundary}--\r\n\r\n`
 
       // Attachments
@@ -216,7 +225,12 @@ export class GmailProviderAdapter implements IEmailProvider {
         if (Buffer.isBuffer(att.content)) {
           contentBuffer = att.content
         } else if (typeof att.content === 'string') {
-          contentBuffer = Buffer.from(att.content, 'utf8')
+          const cleanStr = att.content.trim()
+          if (cleanStr.length % 4 === 0 && cleanStr.length > 50 && /^[A-Za-z0-9+/]+={0,2}$/.test(cleanStr)) {
+            contentBuffer = Buffer.from(cleanStr, 'base64')
+          } else {
+            contentBuffer = Buffer.from(att.content, 'utf8')
+          }
         } else {
           contentBuffer = Buffer.from('')
         }
@@ -241,7 +255,7 @@ export class GmailProviderAdapter implements IEmailProvider {
       messageBody += `--${boundary}\r\n`
       messageBody += 'Content-Type: text/html; charset="UTF-8"\r\n'
       messageBody += 'Content-Transfer-Encoding: base64\r\n\r\n'
-      messageBody += `${Buffer.from(payload.html, 'utf8').toString('base64')}\r\n\r\n`
+      messageBody += `${Buffer.from(effectiveHtml, 'utf8').toString('base64')}\r\n\r\n`
       messageBody += `--${boundary}--`
     }
 
@@ -305,7 +319,13 @@ export class GmailProviderAdapter implements IEmailProvider {
         response = await executeSend(this.accessToken)
       }
 
-      const data = await response.json()
+      let data: any = {}
+      try {
+        const text = await response.text()
+        data = text ? JSON.parse(text) : {}
+      } catch {
+        data = { error: { message: `Gmail API returned HTTP ${response.status} (${response.statusText})` } }
+      }
 
       if (!response.ok) {
         let errorMsg = data.error?.message || `Gmail API error (${response.status})`
@@ -389,7 +409,13 @@ export class GmailProviderAdapter implements IEmailProvider {
       }
 
       const latencyMs = Date.now() - startTime
-      const data = await response.json()
+      let data: any = {}
+      try {
+        const text = await response.text()
+        data = text ? JSON.parse(text) : {}
+      } catch {
+        data = { error: { message: `Google API returned HTTP ${response.status} (${response.statusText})` } }
+      }
 
       if (!response.ok) {
         let errorMsg = data.error?.message || 'Failed to authenticate with Gmail API'

@@ -200,7 +200,16 @@ export default function PlatformEmailGatewayPage() {
  }, [])
 
  const handleConnectGmail = () => {
- window.location.href = '/api/email/oauth/google/start?scope=platform'
+ const returnUrl = encodeURIComponent(window.location.pathname)
+ window.location.href = `/api/email/oauth/google/start?scope=platform&returnUrl=${returnUrl}`
+ }
+
+ const handleTestGmailConnection = async () => {
+ setTesting(true)
+ setTestResult(null)
+ const res = await testPlatformEmailGatewayAction({ provider: 'gmail' })
+ setTestResult(res)
+ setTesting(false)
  }
 
  const handleDisconnectGmail = async () => {
@@ -549,6 +558,7 @@ export default function PlatformEmailGatewayPage() {
  </CardHeader>
  <CardContent className="p-6">
  {gateway?.provider === 'gmail' && gateway.status === 'active' ? (
+ <div className="space-y-4">
  <div className="p-4 rounded-xl bg-card border border-border flex flex-col sm:flex-row sm:items-center justify-between gap-4">
  <div className="flex items-center gap-3">
  <div className="h-10 w-10 rounded-full bg-success text-foreground flex items-center justify-center font-bold text-sm">
@@ -565,6 +575,16 @@ export default function PlatformEmailGatewayPage() {
  </div>
 
  <div className="flex items-center gap-2">
+ <Button
+ size="sm"
+ variant="outline"
+ disabled={testing}
+ onClick={handleTestGmailConnection}
+ className="text-xs border-border bg-card text-foreground"
+ >
+ <RotateCw className={`mr-1.5 h-3.5 w-3.5 ${testing ? 'animate-spin text-primary' : ''}`} />
+ {testing ? 'Verifying...' : 'Verify API'}
+ </Button>
  <Button
  size="sm"
  variant="outline"
@@ -585,6 +605,14 @@ export default function PlatformEmailGatewayPage() {
  {disconnecting ? 'Disconnecting...' : 'Disconnect'}
  </Button>
  </div>
+ </div>
+
+ {testResult && (
+ <div className={`p-3 rounded-lg border text-xs font-semibold flex items-center gap-2 ${testResult.success ? 'bg-success-surface text-success border-success-border' : 'bg-destructive/10 text-destructive border-border'}`}>
+ {testResult.success ? <CheckCircle2 className="h-4 w-4 shrink-0" /> : <AlertTriangle className="h-4 w-4 shrink-0" />}
+ <span>{testResult.message}</span>
+ </div>
+ )}
  </div>
  ) : (
  <div className="p-6 text-center space-y-4">
