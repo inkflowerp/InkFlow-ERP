@@ -18,6 +18,7 @@ import type {
 } from '../types/communication.types.ts'
 import { decryptSecret, encryptSecret, sanitizeGatewayRecord } from '../lib/security/encryption.ts'
 import { isTestEnvironment } from '../lib/security/runtime-env.ts'
+import { sanitizeLegacyBrand } from '../lib/brand/sanitizer.ts'
 import { createEmailProvider } from '../lib/email/provider.factory.ts'
 import type { DecryptedGatewayConfig } from '../lib/email/types.ts'
 import {
@@ -447,14 +448,24 @@ export class EmailGatewayService {
 
           finalSubject = customSubject || interpolateVariables(subjectTpl, variables)
           const interpolatedBody = interpolateVariables(bodyTpl, variables)
+          const cleanCompany = sanitizeLegacyBrand(
+            variables.company_name || gateway.sender_name,
+            effectiveScope === 'PLATFORM' ? 'PrintFlow Platform Admin' : 'PrintFlow'
+          )
+
           finalHtml = wrapHtmlEmail(interpolatedBody, {
-            companyName: variables.company_name || gateway.sender_name,
+            companyName: cleanCompany,
           })
           finalText = htmlToPlainText(interpolatedBody)
         } else {
           finalSubject = customSubject || `Notification: ${eventType}`
+          const cleanCompany = sanitizeLegacyBrand(
+            gateway.sender_name,
+            effectiveScope === 'PLATFORM' ? 'PrintFlow Platform Admin' : 'PrintFlow'
+          )
+
           finalHtml = wrapHtmlEmail(`<p>${JSON.stringify(variables)}</p>`, {
-            companyName: gateway.sender_name,
+            companyName: cleanCompany,
           })
           finalText = htmlToPlainText(finalHtml)
         }
@@ -471,8 +482,13 @@ export class EmailGatewayService {
         !finalHtml.toLowerCase().includes('<html') &&
         !finalHtml.toLowerCase().includes('<!doctype')
       ) {
+        const cleanCompany = sanitizeLegacyBrand(
+          variables.company_name || gateway.sender_name,
+          effectiveScope === 'PLATFORM' ? 'PrintFlow Platform Admin' : 'PrintFlow'
+        )
+
         finalHtml = wrapHtmlEmail(finalHtml, {
-          companyName: variables.company_name || gateway.sender_name,
+          companyName: cleanCompany,
         })
       }
 
@@ -533,8 +549,12 @@ export class EmailGatewayService {
         effectiveSenderEmail = process.env.PLATFORM_SENDER_EMAIL || 'printflow.bd@gmail.com'
       }
 
+      const rawSenderName =
+        gateway.sender_name || gateway.gmail_display_name || (effectiveScope === 'PLATFORM' ? 'PrintFlow Platform' : 'PrintFlow Notifications')
+      const sanitizedSenderName = sanitizeLegacyBrand(rawSenderName, 'PrintFlow')
+
       const fromAddress = {
-        name: gateway.sender_name || gateway.gmail_display_name || 'PrintFlow Notifications',
+        name: sanitizedSenderName,
         address: effectiveSenderEmail,
       }
 

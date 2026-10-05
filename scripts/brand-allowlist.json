@@ -15,6 +15,10 @@
     {
       "token": "LEGACY_COOKIE_SUPPORT_TENANT",
       "reason": "1-release transition key reader"
+    },
+    {
+      "token": "LEGACY_SALT",
+      "reason": "AES-256-GCM legacy salt fallback reader for existing encrypted credentials"
     }
   ],
   "allowedFilePatterns": [

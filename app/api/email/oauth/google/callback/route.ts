@@ -14,7 +14,8 @@ import { encryptSecret, decryptSecret } from '@/lib/security/encryption'
 import { EmailDataStore } from '@/services/email-gateway.service'
 import { AuditService } from '@/services/audit.service'
 import type { EmailGatewayRecord } from '@/types/communication.types'
-import { resolveRequestOrigin } from '@/lib/security/runtime-env'
+import { resolveRequestOrigin, isTestEnvironment } from '@/lib/security/runtime-env'
+import { sanitizeLegacyBrand } from '@/lib/brand/sanitizer'
 
 const isValidUuid = (str?: string | null): boolean => {
   return Boolean(str && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str))
@@ -128,18 +129,33 @@ export async function GET(request: NextRequest) {
     const tokenExpiresAt = new Date(Date.now() + (expires_in || 3600) * 1000).toISOString()
     const nowIso = new Date().toISOString()
 
+    const effectiveSenderName =
+      statePayload.scopeType === 'PLATFORM'
+        ? (process.env.PLATFORM_SENDER_NAME || 'PrintFlow Platform')
+        : sanitizeLegacyBrand(profile.name || profile.email, 'PrintFlow')
+
+    const effectiveDisplayName =
+      statePayload.scopeType === 'PLATFORM'
+        ? (process.env.PLATFORM_SENDER_NAME || 'PrintFlow Platform')
+        : sanitizeLegacyBrand(profile.name || profile.email, 'PrintFlow')
+
+    const effectiveReplyTo =
+      statePayload.scopeType === 'PLATFORM'
+        ? (process.env.PLATFORM_SENDER_EMAIL || 'printflow.bd@gmail.com')
+        : profile.email
+
     const gatewayPayload = {
       tenant_id: statePayload.scopeType === 'PLATFORM' ? null : statePayload.tenantId,
       scope_type: statePayload.scopeType,
       provider: 'gmail' as const,
       type: 'transactional' as const,
       gmail_account_email: profile.email,
-      gmail_display_name: profile.name || profile.email,
+      gmail_display_name: effectiveDisplayName,
       encrypted_credentials: encryptedCredentials,
       token_expires_at: tokenExpiresAt,
-      sender_name: profile.name || profile.email,
+      sender_name: effectiveSenderName,
       sender_email: profile.email,
-      reply_to_email: profile.email,
+      reply_to_email: effectiveReplyTo,
       status: 'active' as const,
       is_default: true,
       last_tested_at: nowIso,

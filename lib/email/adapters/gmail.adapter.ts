@@ -14,6 +14,7 @@ import type {
 } from '../types.ts'
 import { refreshGoogleAccessToken } from '../oauth/google-oauth.ts'
 import { isTestEnvironment } from '../../security/runtime-env.ts'
+import { sanitizeLegacyBrand } from '../../brand/sanitizer.ts'
 
 export class GmailProviderAdapter implements IEmailProvider {
   readonly providerName = 'gmail' as const
@@ -119,11 +120,13 @@ export class GmailProviderAdapter implements IEmailProvider {
       process.env.PLATFORM_SENDER_EMAIL ||
       'printflow.bd@gmail.com'
 
-    const senderDisplayName =
+    const rawSenderDisplayName =
       (typeof payload.from === 'object' && payload.from?.name) ||
       this.config.gmail_display_name ||
       this.config.sender_name ||
       ''
+
+    const senderDisplayName = sanitizeLegacyBrand(rawSenderDisplayName, '')
 
     let fromAddress = effectiveSenderEmail
     if (senderDisplayName) {

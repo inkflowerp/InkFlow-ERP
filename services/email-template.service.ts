@@ -4,6 +4,7 @@
 // ==============================================================================
 
 import type { EmailTemplateRecord, EmailEventType } from '../types/communication.types.ts'
+import { sanitizeLegacyBrand } from '../lib/brand/sanitizer.ts'
 
 /**
  * Replaces `{{variable_name}}` placeholders with values from dictionary
@@ -107,11 +108,12 @@ export function wrapHtmlEmail(
     recipientEmail?: string
   } = {}
 ): string {
-  const companyName = options.companyName || 'PrintFlow'
+  const companyName = sanitizeLegacyBrand(options.companyName, 'PrintFlow')
   const accentColor = options.accentColor || '#4f46e5' // Indigo 600
   const year = options.year || new Date().getFullYear()
-  const footer = options.footerText || `© ${year} ${companyName}. All rights reserved.`
-  const preheaderText = options.preheader || 'Notification from PrintFlow Cloud Platform'
+  const footer = sanitizeLegacyBrand(options.footerText, `© ${year} ${companyName}. All rights reserved.`)
+  const preheaderText = sanitizeLegacyBrand(options.preheader, 'Notification from PrintFlow Cloud Platform')
+  const cleanContentHtml = sanitizeLegacyBrand(contentHtml || '', '')
 
   return `
 <!DOCTYPE html>
@@ -222,7 +224,7 @@ export function wrapHtmlEmail(
       <div class="subtitle">Commercial Printing & Production Notification</div>
     </div>
     <div class="content">
-      ${contentHtml}
+      ${cleanContentHtml}
     </div>
     <div class="footer">
       <div style="font-weight: 600; color: #475569; margin-bottom: 4px;">${companyName}</div>
