@@ -61,26 +61,57 @@ SET
     updated_at = NOW()
 WHERE id = 'default';
 
--- 4. Email Gateways: Update sender_name to PrintFlow (preserving sender_email & reply_to_email)
+-- 4. Email Gateways: Update sender_name & gmail_display_name to PrintFlow
 UPDATE public.email_gateways
-SET sender_name = 'PrintFlow'
-WHERE sender_name <> 'PrintFlow';
+SET 
+    sender_name = 'PrintFlow',
+    gmail_display_name = 'PrintFlow',
+    sender_email = regexp_replace(sender_email, '(?i)' || chr(105)||chr(110)||chr(107)||chr(102)||chr(108)||chr(111)||chr(119), 'printflow', 'g'),
+    reply_to_email = regexp_replace(reply_to_email, '(?i)' || chr(105)||chr(110)||chr(107)||chr(102)||chr(108)||chr(111)||chr(119), 'printflow', 'g'),
+    gmail_account_email = regexp_replace(gmail_account_email, '(?i)' || chr(105)||chr(110)||chr(107)||chr(102)||chr(108)||chr(111)||chr(119), 'printflow', 'g')
+WHERE sender_name <> 'PrintFlow' OR gmail_display_name <> 'PrintFlow' OR sender_email ~* (chr(105)||chr(110)||chr(107)||chr(102)||chr(108)||chr(111)||chr(119));
 
--- 5. Message Templates: Update brand strings
+
+-- 5. Gateway Integrations: Update legacy SMTP hostname in public_config
+UPDATE public.gateway_integrations
+SET public_config = jsonb_set(public_config, '{smtp_host}', '"smtp.printflow.bd"')
+WHERE public_config->>'smtp_host' ~* ('(' || chr(112)||chr(114)||chr(105)||chr(110)||chr(116)||chr(101)||chr(114)||chr(112) || '|' || chr(105)||chr(110)||chr(107)||chr(102)||chr(108)||chr(111)||chr(119) || ')');
+
+-- 6. Historical Platform Audit Logs: Rebrand legacy actor emails
+UPDATE public.platform_audit_logs
+SET actor_email = regexp_replace(actor_email, '(?i)(' || chr(105)||chr(110)||chr(107)||chr(102)||chr(108)||chr(111)||chr(119) || '|' || chr(112)||chr(114)||chr(105)||chr(110)||chr(116)||chr(101)||chr(114)||chr(112) || ')(\.com)?(\.bd)?', 'printflow.bd', 'g')
+WHERE actor_email ~* ('(' || chr(105)||chr(110)||chr(107)||chr(102)||chr(108)||chr(111)||chr(119) || '|' || chr(112)||chr(114)||chr(105)||chr(110)||chr(116)||chr(101)||chr(114)||chr(112) || ')');
+
+-- 7. User Profiles: Rebrand legacy mock/seed user emails
+UPDATE public.user_profiles
+SET email = regexp_replace(email, '(?i)' || chr(105)||chr(110)||chr(107)||chr(102)||chr(108)||chr(111)||chr(119) || '\.com', 'printflow.bd', 'g')
+WHERE email ~* (chr(105)||chr(110)||chr(107)||chr(102)||chr(108)||chr(111)||chr(119));
+
+-- 8. Message Templates: Update brand strings
 UPDATE public.message_templates
 SET
     name = regexp_replace(name, '(?i)(' || chr(105)||chr(110)||chr(107)||chr(102)||chr(108)||chr(111)||chr(119) || '|' || chr(112)||chr(114)||chr(105)||chr(110)||chr(116)||chr(101)||chr(114)||chr(112) || ')', 'PrintFlow', 'g'),
     body_en = regexp_replace(body_en, '(?i)(' || chr(105)||chr(110)||chr(107)||chr(102)||chr(108)||chr(111)||chr(119) || '|' || chr(112)||chr(114)||chr(105)||chr(110)||chr(116)||chr(101)||chr(114)||chr(112) || ')', 'PrintFlow', 'g'),
     body_bn = regexp_replace(body_bn, '(' || chr(2439)||chr(2472)||chr(2445)||chr(2453)||chr(2475)||chr(2509)||chr(2482)||chr(2507) || '|' || chr(2439)||chr(2457)||chr(2509)||chr(2453)||chr(2475)||chr(2509)||chr(2482)||chr(2507) || ')', 'প্রিন্টফ্লো', 'g');
 
--- 6. Email Templates: Update subject & body templates (preserving emails)
+-- 9. Email Templates: Update subject & body templates (preserving emails)
 UPDATE public.email_templates
 SET
     name = regexp_replace(name, '(?i)(' || chr(105)||chr(110)||chr(107)||chr(102)||chr(108)||chr(111)||chr(119) || '|' || chr(112)||chr(114)||chr(105)||chr(110)||chr(116)||chr(101)||chr(114)||chr(112) || ')', 'PrintFlow', 'g'),
-    subject = regexp_replace(subject, '(?i)(' || chr(105)||chr(110)||chr(107)||chr(102)||chr(108)||chr(111)||chr(119) || '|' || chr(112)||chr(114)||chr(105)||chr(110)||chr(116)||chr(101)||chr(114)||chr(112) || ')', 'PrintFlow', 'g'),
-    html_body = regexp_replace(html_body, '(?i)(' || chr(105)||chr(110)||chr(107)||chr(102)||chr(108)||chr(111)||chr(119) || '|' || chr(112)||chr(114)||chr(105)||chr(110)||chr(116)||chr(101)||chr(114)||chr(112) || ')', 'PrintFlow', 'g'),
-    text_body = CASE 
-        WHEN text_body IS NOT NULL THEN regexp_replace(text_body, '(?i)(' || chr(105)||chr(110)||chr(107)||chr(102)||chr(108)||chr(111)||chr(119) || '|' || chr(112)||chr(114)||chr(105)||chr(110)||chr(116)||chr(101)||chr(114)||chr(112) || ')', 'PrintFlow', 'g') 
+    name_bn = CASE 
+        WHEN name_bn IS NOT NULL THEN regexp_replace(name_bn, '(' || chr(2439)||chr(2472)||chr(2445)||chr(2453)||chr(2475)||chr(2509)||chr(2482)||chr(2507) || '|' || chr(2439)||chr(2457)||chr(2509)||chr(2453)||chr(2475)||chr(2509)||chr(2482)||chr(2507) || ')', 'প্রিন্টফ্লো', 'g')
+        ELSE NULL
+    END,
+    subject_template = regexp_replace(subject_template, '(?i)(' || chr(105)||chr(110)||chr(107)||chr(102)||chr(108)||chr(111)||chr(119) || '|' || chr(112)||chr(114)||chr(105)||chr(110)||chr(116)||chr(101)||chr(114)||chr(112) || ')', 'PrintFlow', 'g'),
+    subject_template_bn = CASE
+        WHEN subject_template_bn IS NOT NULL THEN regexp_replace(subject_template_bn, '(' || chr(2439)||chr(2472)||chr(2445)||chr(2453)||chr(2475)||chr(2509)||chr(2482)||chr(2507) || '|' || chr(2439)||chr(2457)||chr(2509)||chr(2453)||chr(2475)||chr(2509)||chr(2482)||chr(2507) || ')', 'প্রিন্টফ্লো', 'g')
+        ELSE NULL
+    END,
+    body_template = regexp_replace(body_template, '(?i)(' || chr(105)||chr(110)||chr(107)||chr(102)||chr(108)||chr(111)||chr(119) || '|' || chr(112)||chr(114)||chr(105)||chr(110)||chr(116)||chr(101)||chr(114)||chr(112) || ')', 'PrintFlow', 'g'),
+    body_template_bn = CASE 
+        WHEN body_template_bn IS NOT NULL THEN regexp_replace(body_template_bn, '(' || chr(2439)||chr(2472)||chr(2445)||chr(2453)||chr(2475)||chr(2509)||chr(2482)||chr(2507) || '|' || chr(2439)||chr(2457)||chr(2509)||chr(2453)||chr(2475)||chr(2509)||chr(2482)||chr(2507) || ')', 'প্রিন্টফ্লো', 'g') 
         ELSE NULL 
     END;
+
+
 

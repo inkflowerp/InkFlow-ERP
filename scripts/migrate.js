@@ -120,6 +120,14 @@ async function runMigrations() {
   ]
 
   const connectionConfigs = []
+  if (process.env.DATABASE_URL) {
+    connectionConfigs.push({
+      connectionString: process.env.DATABASE_URL,
+      ssl: { rejectUnauthorized: false },
+      statement_timeout: 60000,
+    })
+  }
+
   for (const reg of regions) {
     connectionConfigs.push({
       host: `aws-0-${reg}.pooler.supabase.com`,
