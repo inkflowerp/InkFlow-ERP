@@ -196,8 +196,8 @@ export default function TenantEmailSettingsPage() {
  const handleSync = () => {
  loadTenantData()
     }
- window.addEventListener('printerp_table_synced:email_gateways', handleSync)
- window.addEventListener('printerp_data_sync', handleSync)
+ window.addEventListener('printflow_table_synced:email_gateways', handleSync)
+ window.addEventListener('printflow_data_sync', handleSync)
 
     // Inspect URL for OAuth success or errors
  if (typeof window !== 'undefined') {
@@ -218,8 +218,8 @@ export default function TenantEmailSettingsPage() {
     }
 
  return () => {
- window.removeEventListener('printerp_table_synced:email_gateways', handleSync)
- window.removeEventListener('printerp_data_sync', handleSync)
+ window.removeEventListener('printflow_table_synced:email_gateways', handleSync)
+ window.removeEventListener('printflow_data_sync', handleSync)
     }
   }, [companyId])
 

@@ -108,7 +108,7 @@ export async function createCompanyAction(
       cookieOpts
     )
     cookieStore.set(
-      'printerp_locale',
+      'printflow_locale',
       data.default_language || (company as any).default_locale || 'bn',
       cookieOpts
     )

@@ -318,8 +318,8 @@ export function RealtimeNotificationPopup() {
  setMuted(isSoundMuted())
       }
     }
- window.addEventListener('printerp_sound_mute_changed', handleMuteChange)
- return () => window.removeEventListener('printerp_sound_mute_changed', handleMuteChange)
+ window.addEventListener('printflow_sound_mute_changed', handleMuteChange)
+ return () => window.removeEventListener('printflow_sound_mute_changed', handleMuteChange)
   }, [])
 
  const dismissNotification = useCallback((id: string) => {
@@ -381,9 +381,9 @@ export function RealtimeNotificationPopup() {
       }
     }
 
- window.addEventListener('printerp_popup_notification', handleNotificationEvent)
+ window.addEventListener('printflow_popup_notification', handleNotificationEvent)
  return () => {
- window.removeEventListener('printerp_popup_notification', handleNotificationEvent)
+ window.removeEventListener('printflow_popup_notification', handleNotificationEvent)
     }
   }, [])
 
@@ -435,7 +435,7 @@ export function RealtimeNotificationPopup() {
 export function triggerPopupNotification(notification: Omit<RealtimePopupNotification, 'id'> & { id?: string }) {
  if (typeof window === 'undefined') return
  const id = notification.id || `popup-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`
- const event = new CustomEvent<RealtimePopupNotification>('printerp_popup_notification', {
+ const event = new CustomEvent<RealtimePopupNotification>('printflow_popup_notification', {
  detail: { ...notification, id },
   })
  window.dispatchEvent(event)

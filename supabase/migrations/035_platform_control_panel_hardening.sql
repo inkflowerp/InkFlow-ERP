@@ -1,5 +1,5 @@
 -- ==============================================================================
--- InkFlow SaaS - Migration 035: Platform Control Panel Hardening & Last-Owner Protection
+-- PrintFlow SaaS - Migration 035: Platform Control Panel Hardening & Last-Owner Protection
 -- Supports:
 --   1. Last Active Platform Owner Protection Trigger
 --   2. Authoritative Platform Support Session Functions & Expiry Checks

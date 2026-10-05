@@ -1,7 +1,7 @@
 import { createClient } from '../supabase/server.ts'
 import type { JobCostingRecord, CostHeads } from '../../types/costing.types.ts'
 import { measureAsync } from '../performance/logger.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../db/data-store.ts'
 
 export class CostingRepository {
   static async getCostings(companyId: string): Promise<JobCostingRecord[]> {
@@ -19,7 +19,7 @@ export class CostingRepository {
         }
       } catch {}
 
-      const costings = PrintERPDataStore.get<JobCostingRecord[]>(STORAGE_KEYS.JOB_COSTINGS) || []
+      const costings = PrintFlowDataStore.get<JobCostingRecord[]>(STORAGE_KEYS.JOB_COSTINGS) || []
       return costings.filter((c) => !c.company_id || c.company_id === companyId)
     })
   }
@@ -131,12 +131,12 @@ export class CostingRepository {
 
       if (!error && inserted) {
         const mapped = this.mapFromDb(inserted)
-        PrintERPDataStore.addItem(STORAGE_KEYS.JOB_COSTINGS, mapped)
+        PrintFlowDataStore.addItem(STORAGE_KEYS.JOB_COSTINGS, mapped)
         return mapped
       }
     } catch {}
 
-    PrintERPDataStore.addItem(STORAGE_KEYS.JOB_COSTINGS, record)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.JOB_COSTINGS, record)
     return record
   }
 
@@ -178,12 +178,12 @@ export class CostingRepository {
 
       if (!error && data) {
         const mapped = this.mapFromDb(data)
-        PrintERPDataStore.updateItem<JobCostingRecord>(STORAGE_KEYS.JOB_COSTINGS, id, mapped)
+        PrintFlowDataStore.updateItem<JobCostingRecord>(STORAGE_KEYS.JOB_COSTINGS, id, mapped)
         return mapped
       }
     } catch {}
 
-    PrintERPDataStore.updateItem<JobCostingRecord>(STORAGE_KEYS.JOB_COSTINGS, id, updated)
+    PrintFlowDataStore.updateItem<JobCostingRecord>(STORAGE_KEYS.JOB_COSTINGS, id, updated)
     return updated
   }
 
@@ -205,7 +205,7 @@ export class CostingRepository {
         .eq('company_id', companyId)
     } catch {}
 
-    return PrintERPDataStore.removeItem(STORAGE_KEYS.JOB_COSTINGS, id)
+    return PrintFlowDataStore.removeItem(STORAGE_KEYS.JOB_COSTINGS, id)
   }
 
   private static mapToDb(record: JobCostingRecord): any {

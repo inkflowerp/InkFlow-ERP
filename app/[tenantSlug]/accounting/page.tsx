@@ -34,7 +34,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { PageHeader } from '@/components/shared/page-header'
 import { useDataStore } from '@/hooks/use-data-store'
-import { STORAGE_KEYS, PrintERPDataStore } from '@/lib/db/data-store'
+import { STORAGE_KEYS, PrintFlowDataStore } from '@/lib/db/data-store'
 import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
 import type { CustomerRecord, SupplierRecord } from '@/types/crm.types'
 import type {
@@ -255,7 +255,7 @@ function AccountingContent() {
  if (accRes && accRes.success && Array.isArray(accRes.data) && accRes.data.length > 0) {
  setAccounts(accRes.data.filter((a) => !isDemoAccount(a)))
       } else {
- const localAccounts = PrintERPDataStore.get<AccountRecord[]>(STORAGE_KEYS.ACCOUNTS) || []
+ const localAccounts = PrintFlowDataStore.get<AccountRecord[]>(STORAGE_KEYS.ACCOUNTS) || []
  const companyAccounts = localAccounts.filter((a) => (!a.company_id || a.company_id === effCompany || a.company_id === 'default') && !isDemoAccount(a))
  if (companyAccounts.length > 0) {
  setAccounts(companyAccounts)
@@ -266,10 +266,10 @@ function AccountingContent() {
 
       // Purge any demo accounts cached in local storage for this tenant
  try {
- const localAccs = PrintERPDataStore.get<AccountRecord[]>(STORAGE_KEYS.ACCOUNTS) || []
+ const localAccs = PrintFlowDataStore.get<AccountRecord[]>(STORAGE_KEYS.ACCOUNTS) || []
  const filteredAccs = localAccs.filter((a) => !isDemoAccount(a))
  if (localAccs.length !== filteredAccs.length) {
- PrintERPDataStore.set(STORAGE_KEYS.ACCOUNTS, filteredAccs, false)
+ PrintFlowDataStore.set(STORAGE_KEYS.ACCOUNTS, filteredAccs, false)
         }
       } catch {}
 
@@ -296,21 +296,21 @@ function AccountingContent() {
     }
 
  if (typeof window !== 'undefined') {
- window.addEventListener('printerp_table_synced:payments', handleRealtimeSync)
- window.addEventListener('printerp_table_synced:invoices', handleRealtimeSync)
- window.addEventListener('printerp_table_synced:expenses', handleRealtimeSync)
- window.addEventListener('printerp_table_synced', handleRealtimeSync)
- window.addEventListener('printerp_data_sync', handleRealtimeSync)
+ window.addEventListener('printflow_table_synced:payments', handleRealtimeSync)
+ window.addEventListener('printflow_table_synced:invoices', handleRealtimeSync)
+ window.addEventListener('printflow_table_synced:expenses', handleRealtimeSync)
+ window.addEventListener('printflow_table_synced', handleRealtimeSync)
+ window.addEventListener('printflow_data_sync', handleRealtimeSync)
  window.addEventListener('storage', handleRealtimeSync)
     }
 
  return () => {
  if (typeof window !== 'undefined') {
- window.removeEventListener('printerp_table_synced:payments', handleRealtimeSync)
- window.removeEventListener('printerp_table_synced:invoices', handleRealtimeSync)
- window.removeEventListener('printerp_table_synced:expenses', handleRealtimeSync)
- window.removeEventListener('printerp_table_synced', handleRealtimeSync)
- window.removeEventListener('printerp_data_sync', handleRealtimeSync)
+ window.removeEventListener('printflow_table_synced:payments', handleRealtimeSync)
+ window.removeEventListener('printflow_table_synced:invoices', handleRealtimeSync)
+ window.removeEventListener('printflow_table_synced:expenses', handleRealtimeSync)
+ window.removeEventListener('printflow_table_synced', handleRealtimeSync)
+ window.removeEventListener('printflow_data_sync', handleRealtimeSync)
  window.removeEventListener('storage', handleRealtimeSync)
       }
     }

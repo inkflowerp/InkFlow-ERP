@@ -30,7 +30,7 @@ import type {
 } from '../types/price-intelligence.types.ts'
 import { PriceIntelligenceEngine } from '../lib/domain/price-intelligence-engine.ts'
 import { getMaterialWarehouseStockBreakdown, isMaterialProduct, normalizeInventoryGroupAttributes, createInventoryGroupingKey } from '../lib/units.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../lib/db/data-store.ts'
 
 export class InventoryService {
   // ==========================================
@@ -103,7 +103,7 @@ export class InventoryService {
 
     await AuditRepository.logEvent({
       companyId: data.company_id,
-      userEmail: data.actor_email || 'inventory@inkflow.com',
+      userEmail: data.actor_email || 'inventory@printflow.bd',
       action: 'inventory.material_created',
       entity: 'material',
       entityId: created.id,
@@ -125,7 +125,7 @@ export class InventoryService {
 
     await AuditRepository.logEvent({
       companyId,
-      userEmail: actorEmail || 'inventory@inkflow.com',
+      userEmail: actorEmail || 'inventory@printflow.bd',
       action: 'inventory.material_updated',
       entity: 'material',
       entityId: id,
@@ -592,7 +592,7 @@ export class InventoryService {
         )
 
         try {
-          PrintERPDataStore.updateItem<any>(
+          PrintFlowDataStore.updateItem<any>(
             STORAGE_KEYS.PRODUCTS,
             (p: any) => p && (p.id === material.id || (!!material.sku && p.sku === material.sku)),
             (p: any) => ({
@@ -746,7 +746,7 @@ export class InventoryService {
         )
 
         try {
-          PrintERPDataStore.updateItem<any>(
+          PrintFlowDataStore.updateItem<any>(
             STORAGE_KEYS.PRODUCTS,
             (p: any) => p && (p.id === freshMaterial.id || (!!freshMaterial.sku && p.sku === freshMaterial.sku)),
             {
@@ -836,7 +836,7 @@ export class InventoryService {
           )
 
           try {
-            PrintERPDataStore.updateItem<any>(
+            PrintFlowDataStore.updateItem<any>(
               STORAGE_KEYS.PRODUCTS,
               (p: any) => p && (p.id === freshMaterial.id || (!!freshMaterial.sku && p.sku === freshMaterial.sku)),
               {

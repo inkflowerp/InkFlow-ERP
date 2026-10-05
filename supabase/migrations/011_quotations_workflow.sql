@@ -1,5 +1,5 @@
 -- ==============================================================================
--- PrintERP SaaS - Migration 011: Quotation Lifecycle Workflow
+-- PrintFlow - Migration 011: Quotation Lifecycle Workflow
 -- Supports:
 --   1. 8 Quotation Statuses (draft, sent, viewed, negotiation, approved, rejected, expired, converted)
 --   2. Multi-item dimensional calculations (quotation_items)

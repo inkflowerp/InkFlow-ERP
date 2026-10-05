@@ -49,7 +49,7 @@ export class GatewayRegistry {
                 : credentials.password || credentials.api_key)
           }
 
-          const senderEmail = publicConfig.sender_email || publicConfig.gmail_account_email || 'test@printerp.com'
+          const senderEmail = publicConfig.sender_email || publicConfig.gmail_account_email || 'test@printflow.bd'
           const senderName = publicConfig.sender_name || publicConfig.gmail_display_name || 'PrintFlow'
 
           const emailProvider = createEmailProvider({
@@ -238,7 +238,7 @@ export class GatewayRegistry {
                 : credentials.password || credentials.api_key)
           }
 
-          const senderEmail = publicConfig.sender_email || publicConfig.gmail_account_email || 'test@printerp.com'
+          const senderEmail = publicConfig.sender_email || publicConfig.gmail_account_email || 'test@printflow.bd'
           const senderName = publicConfig.sender_name || publicConfig.gmail_display_name || 'PrintFlow Test'
           const emailProvider = createEmailProvider({
             id: 'test-send',

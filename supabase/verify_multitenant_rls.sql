@@ -1,5 +1,5 @@
 -- ==============================================================================
--- PrintERP SaaS - Multi-Tenant Security & Isolation Verification Test
+-- PrintFlow - Multi-Tenant Security & Isolation Verification Test
 -- ==============================================================================
 
 -- TEST SCENARIO 1: Create Two Separate Companies (Company A & Company B)

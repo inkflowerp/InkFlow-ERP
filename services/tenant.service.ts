@@ -3,7 +3,7 @@ import { ApiResponse } from '@/types/common.types'
 import { TenantRepository } from '@/lib/repositories/tenant.repository'
 import { CompanyUsersRepository } from '@/lib/repositories/company-users.repository'
 import { isValidSlugFormat, isReservedSlug } from '@/lib/tenant/tenant-resolution'
-import { PrintERPDataStore } from '@/lib/db/data-store'
+import { PrintFlowDataStore } from '@/lib/db/data-store'
 
 export interface CreateCompanyInput {
   name: string
@@ -136,7 +136,7 @@ export class TenantService {
           try {
             const { data: newAuth, error: authErr } = await admin.auth.admin.createUser({
               email: normalizedOwnerEmail,
-              password: data.owner_password || 'PrintERP2026!Owner',
+              password: data.owner_password || 'PrintFlow2026!Owner',
               email_confirm: true,
               user_metadata: {
                 full_name: data.owner_name || data.name || normalizedOwnerEmail.split('@')[0],
@@ -395,7 +395,7 @@ export class TenantService {
       const aliases = [company.slug, `comp-${company.slug}`, `co-${company.slug}`]
 
       // 1. Reset local memory and browser storage
-      PrintERPDataStore.resetTenantData(company.id, aliases)
+      PrintFlowDataStore.resetTenantData(company.id, aliases)
 
       // 2. Clean database tables via repository
       await TenantRepository.resetTenantTables(company.id)

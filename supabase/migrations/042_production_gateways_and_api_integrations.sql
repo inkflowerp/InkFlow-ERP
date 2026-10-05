@@ -1,5 +1,5 @@
 -- ==============================================================================
--- PrintERP SaaS - Migration 042: Production Gateways, API Integrations & Webhooks
+-- PrintFlow - Migration 042: Production Gateways, API Integrations & Webhooks
 -- Supports:
 --   1. Unified Gateway Integrations Table (Email, SMS, Payment, WhatsApp, Telegram)
 --   2. Strict Platform Owner vs Tenant Isolation with RLS & Encrypted Credentials

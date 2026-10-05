@@ -1,5 +1,5 @@
 -- ==============================================================================
--- InkFlow / PrintERP SaaS - Migration 045: Platform SaaS Subscription & Billing
+-- PrintFlow / PrintFlow - Migration 045: Platform SaaS Subscription & Billing
 -- Authoritative Platform Plans, Platform Subscriptions, Lifecycle Events,
 -- Webhook Logs, and Strict Platform/Tenant Isolation Policies.
 -- ==============================================================================

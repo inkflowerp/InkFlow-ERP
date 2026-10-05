@@ -69,12 +69,12 @@ export function AppShell({
       setSearchOpen(true)
     }
 
-    window.addEventListener('printerp_open_search', handleOpenSearch)
-    window.addEventListener('printerp_open_new', handleOpenNew)
+    window.addEventListener('printflow_open_search', handleOpenSearch)
+    window.addEventListener('printflow_open_new', handleOpenNew)
 
     return () => {
-      window.removeEventListener('printerp_open_search', handleOpenSearch)
-      window.removeEventListener('printerp_open_new', handleOpenNew)
+      window.removeEventListener('printflow_open_search', handleOpenSearch)
+      window.removeEventListener('printflow_open_new', handleOpenNew)
     }
   }, [])
 

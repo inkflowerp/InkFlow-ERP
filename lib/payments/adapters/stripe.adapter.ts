@@ -122,7 +122,7 @@ export class StripePaymentAdapter implements PaymentProvider {
       body.append('success_url', params.redirectUrl || 'https://printflow.bd/platform/billing?session_id={CHECKOUT_SESSION_ID}')
       body.append('cancel_url', params.cancelUrl || 'https://printflow.bd/platform/billing')
       body.append('client_reference_id', trxId)
-      body.append('customer_email', params.customerEmail || 'billing@printerp.com')
+      body.append('customer_email', params.customerEmail || 'billing@printflow.bd')
       body.append('line_items[0][price_data][currency]', currency)
       body.append('line_items[0][price_data][unit_amount]', String(unitAmount))
       body.append('line_items[0][price_data][product_data][name]', params.planName || 'PrintFlow Subscription')

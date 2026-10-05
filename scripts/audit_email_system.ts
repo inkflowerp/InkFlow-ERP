@@ -31,7 +31,7 @@ async function runAudit() {
   if (decrypted !== secretPass) throw new Error('Decryption mismatch!')
   if (!encrypted.startsWith('v1:')) throw new Error('Encrypted payload missing v1 prefix!')
   const maskedKey = maskCredential('re_1234567890abcdef')
-  const maskedMail = maskEmail('billing.manager@printerp.com')
+  const maskedMail = maskEmail('billing.manager@printflow.bd')
   console.log('  [PASS] Secret encryption and decryption verified')
   console.log('  [PASS] Masked Secret:', maskedKey)
   console.log('  [PASS] Masked Email:', maskedMail)
@@ -41,7 +41,7 @@ async function runAudit() {
   const mockProvider = createEmailProvider({
     provider: 'mock',
     sender_name: 'Audit System',
-    sender_email: 'audit@printerp.com',
+    sender_email: 'audit@printflow.bd',
   })
   const mockConn = await mockProvider.verifyConnection()
   console.log('  [PASS] Mock Provider connection status:', mockConn.success ? 'CONNECTED' : 'FAILED', `(${mockConn.latencyMs}ms)`)

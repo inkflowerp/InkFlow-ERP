@@ -71,9 +71,9 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       }
     }
 
- window.addEventListener('printerp_toast_dispatch', handleCustomToast)
+ window.addEventListener('printflow_toast_dispatch', handleCustomToast)
  return () => {
- window.removeEventListener('printerp_toast_dispatch', handleCustomToast)
+ window.removeEventListener('printflow_toast_dispatch', handleCustomToast)
     }
   }, [showToast])
 
@@ -151,7 +151,7 @@ export function useToast() {
 export function dispatchToast(toast: Omit<ToastItem, 'id'>) {
  if (typeof window === 'undefined') return
  window.dispatchEvent(
- new CustomEvent('printerp_toast_dispatch', {
+ new CustomEvent('printflow_toast_dispatch', {
  detail: toast,
     })
   )

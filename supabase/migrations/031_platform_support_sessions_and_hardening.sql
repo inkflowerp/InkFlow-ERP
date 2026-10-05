@@ -1,5 +1,5 @@
 -- ==============================================================================
--- PrintERP / InkFlow SaaS - Migration 031: Platform Support Sessions & Control Plane Hardening
+-- PrintFlow / PrintFlow SaaS - Migration 031: Platform Support Sessions & Control Plane Hardening
 -- Supports:
 --   1. Secure Temporary Support Sessions with Explicit Reason & Automatic TTL
 --   2. Granular Support Access Levels (read_only, config_only, full_support)

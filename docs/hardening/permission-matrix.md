@@ -1,4 +1,4 @@
-# InkFlow ERP — Authoritative Permission Matrix
+# PrintFlow — Authoritative Permission Matrix
 
 > **Document Status:** PROPOSAL AWAITING OWNER/MANAGER APPROVAL  
 > **Phase:** Hardening Phase 4 — RBAC, Server-Side Enforcement & Isolation  
@@ -7,7 +7,7 @@
 
 ## 1. Executive Summary & Core Principles
 
-In InkFlow ERP, all authorization is enforced on the server (**fail-closed**). Clients, form submissions, and direct API/RPC calls cannot bypass permission gates. The database table `public.role_permissions` has historically been empty, causing permission checks to fall back to hardcoded code heuristics. This matrix establishes the **single source of truth** for role capabilities across all tenant operations.
+In PrintFlow, all authorization is enforced on the server (**fail-closed**). Clients, form submissions, and direct API/RPC calls cannot bypass permission gates. The database table `public.role_permissions` has historically been empty, causing permission checks to fall back to hardcoded code heuristics. This matrix establishes the **single source of truth** for role capabilities across all tenant operations.
 
 ### The Four Access Primitives
 Each cell in the matrix specifies the exact level of operational clearance granted to that role:
@@ -241,7 +241,7 @@ A thorough static and runtime audit revealed significant discrepancies between t
 The following permissions in the database have **zero usages in application code** or represent invalid actions for multi-tenant SaaS safety:
 
 1. **`settings.delete` & `settings.approve` & `settings.full_control`:** Tenant company settings are updated, never deleted or approved through multi-stage workflow.
-2. **`reports.delete` & `reports.create` & `reports.edit` & `reports.approve` & `reports.full_control`:** Reports in InkFlow ERP are pure dynamic read-only calculations (views and RPCs). Users only have `reports.view` and `reports.export`.
+2. **`reports.delete` & `reports.create` & `reports.edit` & `reports.approve` & `reports.full_control`:** Reports in PrintFlow are pure dynamic read-only calculations (views and RPCs). Users only have `reports.view` and `reports.export`.
 3. **`customer.approve` & `customer.full_control`:** Customers do not have an approval stage in CRM intake.
 4. **`supplier.approve` & `supplier.full_control` & `supplier.delete`:** Suppliers are deactivated/archived, never dropped.
 5. **`inventory.delete` & `inventory.full_control`:** Raw materials (flex, vinyl, ink) have stock ledger transactions; deleting inventory rows causes foreign key cascades. Physical inventory is adjusted via `inventory.adjust`.

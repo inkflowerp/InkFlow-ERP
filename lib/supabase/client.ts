@@ -2,7 +2,7 @@ import { createBrowserClient } from '@supabase/ssr'
 import type { Database } from '../../types/database.types.ts'
 import { getAuthCookieOptions } from '../tenant/tenant-resolution.ts'
 
-const GLOBAL_CLIENT_KEY = '__printErpBrowserSupabaseClient'
+const GLOBAL_CLIENT_KEY = '__printFlowBrowserSupabaseClient'
 let hasLoggedConfigWarning = false
 
 /**

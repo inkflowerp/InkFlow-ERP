@@ -84,8 +84,8 @@ export function useAuth() {
       syncUserFromSession()
     }
 
-    window.addEventListener('printerp_auth_changed', handleAuthChange)
-    return () => window.removeEventListener('printerp_auth_changed', handleAuthChange)
+    window.addEventListener('printflow_auth_changed', handleAuthChange)
+    return () => window.removeEventListener('printflow_auth_changed', handleAuthChange)
   }, [syncUserFromSession])
 
   const signOut = async () => {

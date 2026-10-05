@@ -1,4 +1,4 @@
-# InkFlow V8 — Mobile + WhatsApp + SMS + Offline Implementation Guide
+# PrintFlow V8 — Mobile + WhatsApp + SMS + Offline Implementation Guide
 
 ## Enterprise Architecture, Engine Specifications & Technical Documentation
 
@@ -11,11 +11,11 @@
 
 ## 1. Architectural Overview & System Design
 
-InkFlow V8 introduces a resilient mobile operating system, bilingual multi-channel customer communications, and an audit-grade offline sync engine engineered directly on top of the production-certified V1–V7 architecture (`migrations 001–068`).
+PrintFlow V8 introduces a resilient mobile operating system, bilingual multi-channel customer communications, and an audit-grade offline sync engine engineered directly on top of the production-certified V1–V7 architecture (`migrations 001–068`).
 
 ```
                                 +-------------------------------------------+
-                                |      InkFlow V8 Architecture Matrix       |
+                                |      PrintFlow V8 Architecture Matrix       |
                                 +-------------------------------------------+
                                                       |
                    +----------------------------------+----------------------------------+
@@ -34,7 +34,7 @@ InkFlow V8 introduces a resilient mobile operating system, bilingual multi-chann
 1. **Server Authority (Zero Parallel Ledgers):** The server remains the sole source of truth. Offline devices queue operational intents into a tenant-scoped outbox. Money, inventory, production state, and attendance transactions are never finalized offline; they are evaluated and committed atomically by the server upon sync.
 2. **Deterministic Idempotency:** Every queued outbox item carries an immutable compound idempotency key formatted as `device_id + '_' + uuid`. Re-transmissions of previously processed items safely return cached execution results without double processing.
 3. **Non-Blocking Communication Failure Isolation:** Commercial transactions (invoice generation, quotation approval, job delivery, payment collection) complete and commit with 100% reliability regardless of whether third-party messaging providers (Meta WhatsApp, BulkSMSBD) succeed, timeout, or fail.
-4. **Tenant-Scoped Local Cache Partitioning:** All browser local storage and IndexedDB keys are strictly prefixed with the tenant slug (`printerp_{tenantSlug}_*`). Cache purging on logout, session termination, or tenant switching ensures zero cross-tenant data leakage on shared mobile floor tablets.
+4. **Tenant-Scoped Local Cache Partitioning:** All browser local storage and IndexedDB keys are strictly prefixed with the tenant slug (`printflow_{tenantSlug}_*`). Cache purging on logout, session termination, or tenant switching ensures zero cross-tenant data leakage on shared mobile floor tablets.
 
 ---
 
@@ -199,7 +199,7 @@ Templates support double-brace variable syntax (`{{variable_name}}`) in both Eng
 ### 4.3 PDF / Document Link Delivery
 When documents (e.g. Invoices, Quotations, Delivery Challans, Mushak 6.3) are dispatched over text channels (WhatsApp / SMS), the service automatically formats and appends the secure document link to the message content:
 ```
-Document Link / লিংক: https://cdn.inkflow.com.bd/invoices/inv-123.pdf
+Document Link / লিংক: https://cdn.printflow.bd/invoices/inv-123.pdf
 ```
 
 ### 4.4 Non-Blocking Commercial Isolation
@@ -233,7 +233,7 @@ try {
 ## 6. Client Cache Security & Tenant Partitioning
 
 The `LocalCacheSecurityManager` guarantees zero cross-tenant contamination:
-1. **Tenant Key Prefixing:** All local storage entries are partitioned by tenant slug (`printerp_{tenantSlug}_{key}`).
+1. **Tenant Key Prefixing:** All local storage entries are partitioned by tenant slug (`printflow_{tenantSlug}_{key}`).
 2. **Automatic Session Cleanup:** When a user logs out or switches tenants, all tenant-scoped cached data, outbox items, and client settings are cryptographically purged.
 3. **Hardware Device Registration:** Devices generate a persistent UUID stored in local storage and register with the server via `SyncRepository.registerClientDevice`.
 

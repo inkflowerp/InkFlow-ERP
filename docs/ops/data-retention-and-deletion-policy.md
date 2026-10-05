@@ -1,8 +1,8 @@
-# InkFlow ERP — Data Retention & Tenant Deletion Policy
+# PrintFlow — Data Retention & Tenant Deletion Policy
 
 ## 1. Statutory & Business Data Retention Schedule
 
-In compliance with the **National Board of Revenue (NBR) Bangladesh VAT and Supplementary Duty Act 2012** and international data protection standards, InkFlow ERP enforces the following data lifecycle rules:
+In compliance with the **National Board of Revenue (NBR) Bangladesh VAT and Supplementary Duty Act 2012** and international data protection standards, PrintFlow enforces the following data lifecycle rules:
 
 | Data Category | Retention Period | Storage Location | Deletion / Archival Mechanism |
 |---|---|---|---|

@@ -86,10 +86,10 @@ describe('Designer Work Order & Invoice Request Flow (End-to-End)', () => {
       updated_at: new Date().toISOString(),
     }
 
-    store.addItem('printerp_tenant_orders', newOrder)
+    store.addItem('printflow_tenant_orders', newOrder)
 
     // Verify order exists in store
-    const retrievedOrder = store.findItem('printerp_tenant_orders', orderId)
+    const retrievedOrder = store.findItem('printflow_tenant_orders', orderId)
     assert.ok(retrievedOrder)
     assert.strictEqual(retrievedOrder.order_number, orderNumber)
     assert.strictEqual(retrievedOrder.customer_name, 'Beximco Pharmaceuticals Ltd.')
@@ -116,9 +116,9 @@ describe('Designer Work Order & Invoice Request Flow (End-to-End)', () => {
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }
-    store.addItem('printerp_tenant_design_jobs', newDesignJob)
+    store.addItem('printflow_tenant_design_jobs', newDesignJob)
 
-    const retrievedDesign = store.findItem('printerp_tenant_design_jobs', designJobId)
+    const retrievedDesign = store.findItem('printflow_tenant_design_jobs', designJobId)
     assert.ok(retrievedDesign)
     assert.strictEqual(retrievedDesign.title, 'Star Flex Banner (10×4 ft)')
 
@@ -136,9 +136,9 @@ describe('Designer Work Order & Invoice Request Flow (End-to-End)', () => {
       is_read: false,
       created_at: 'Just now',
     }
-    store.addItem('printerp_tenant_in_app_notifications', managerNotif)
+    store.addItem('printflow_tenant_in_app_notifications', managerNotif)
 
-    const retrievedNotif = store.findItem('printerp_tenant_in_app_notifications', notifId)
+    const retrievedNotif = store.findItem('printflow_tenant_in_app_notifications', notifId)
     assert.ok(retrievedNotif)
     assert.strictEqual(retrievedNotif.type, 'invoice_request')
     assert.ok(retrievedNotif.roles.includes('manager'))
@@ -147,7 +147,7 @@ describe('Designer Work Order & Invoice Request Flow (End-to-End)', () => {
 
   it('2. Financial Safety & Inventory Rule: Work order and invoice creation MUST NOT reserve or deduct inventory', () => {
     // Check initial stock ledger
-    const initialLedger = store.get<any[]>('printerp_tenant_stock_ledger')
+    const initialLedger = store.get<any[]>('printflow_tenant_stock_ledger')
     const initialLedgerCount = initialLedger.length
 
     // Simulating invoice creation
@@ -155,7 +155,7 @@ describe('Designer Work Order & Invoice Request Flow (End-to-End)', () => {
     assert.match(invoiceNum, /^INV-\d{6}$/)
 
     // Verify stock ledger has NOT grown (inventory is untouched at invoice creation)
-    const currentLedger = store.get<any[]>('printerp_tenant_stock_ledger')
+    const currentLedger = store.get<any[]>('printflow_tenant_stock_ledger')
     assert.strictEqual(currentLedger.length, initialLedgerCount, 'Stock ledger must remain unchanged on invoice creation')
   })
 })

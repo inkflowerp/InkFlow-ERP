@@ -1,4 +1,4 @@
-# INKFLOW — SUBSCRIPTION PLAN CONTROL 360 CERTIFICATION REPORT
+# PRINTFLOW — SUBSCRIPTION PLAN CONTROL 360 CERTIFICATION REPORT
 
 ## Enterprise Multi-Tenant SaaS Subscription & Entitlement Control Platform
 
@@ -6,7 +6,7 @@
 
 ### Executive Summary
 
-InkFlow ERP achieves **Subscription Plan Control 360** production certification. The system operates as an authoritative, multi-tenant safe, financially correct, concurrency-safe, provider-independent SaaS subscription and entitlement engine governing plans, canonical features, numerical limits, periodic quotas, trials, grace periods, suspensions, upgrades, downgrades, and platform customizations with **database-level atomic concurrency safety**, **strict server-side enforcement**, and **zero client bypass**.
+PrintFlow achieves **Subscription Plan Control 360** production certification. The system operates as an authoritative, multi-tenant safe, financially correct, concurrency-safe, provider-independent SaaS subscription and entitlement engine governing plans, canonical features, numerical limits, periodic quotas, trials, grace periods, suspensions, upgrades, downgrades, and platform customizations with **database-level atomic concurrency safety**, **strict server-side enforcement**, and **zero client bypass**.
 
 ---
 

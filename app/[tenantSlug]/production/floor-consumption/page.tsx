@@ -121,16 +121,16 @@ export default function FloorConsumptionPage() {
  loadFloorData()
     }
 
- window.addEventListener('printerp_table_synced:floor_consumption', handleSync)
- window.addEventListener('printerp_table_synced:stock_ledger', handleSync)
- window.addEventListener('printerp_table_synced:materials', handleSync)
- window.addEventListener('printerp_table_synced:physical_rolls', handleSync)
+ window.addEventListener('printflow_table_synced:floor_consumption', handleSync)
+ window.addEventListener('printflow_table_synced:stock_ledger', handleSync)
+ window.addEventListener('printflow_table_synced:materials', handleSync)
+ window.addEventListener('printflow_table_synced:physical_rolls', handleSync)
 
  return () => {
- window.removeEventListener('printerp_table_synced:floor_consumption', handleSync)
- window.removeEventListener('printerp_table_synced:stock_ledger', handleSync)
- window.removeEventListener('printerp_table_synced:materials', handleSync)
- window.removeEventListener('printerp_table_synced:physical_rolls', handleSync)
+ window.removeEventListener('printflow_table_synced:floor_consumption', handleSync)
+ window.removeEventListener('printflow_table_synced:stock_ledger', handleSync)
+ window.removeEventListener('printflow_table_synced:materials', handleSync)
+ window.removeEventListener('printflow_table_synced:physical_rolls', handleSync)
     }
   }, [loadFloorData])
 

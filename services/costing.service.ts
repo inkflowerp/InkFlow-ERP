@@ -4,7 +4,7 @@ import type { PricingCalculationInput, ProductRecord } from '../types/product.ty
 import { CostingRepository } from '../lib/repositories/costing.repository.ts'
 import { ProductRepository } from '../lib/repositories/product.repository.ts'
 import { calculateJobPricing } from '../lib/pricing-engine.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../lib/db/data-store.ts'
 import type { StockLedgerRecord } from '../types/inventory.types.ts'
 import type { ProductionTaskRecord } from '../types/production.types.ts'
 
@@ -130,7 +130,7 @@ export class CostingService {
           0
         )
       } else {
-        const ledger = PrintERPDataStore.get<StockLedgerRecord[]>(STORAGE_KEYS.STOCK_LEDGER) || []
+        const ledger = PrintFlowDataStore.get<StockLedgerRecord[]>(STORAGE_KEYS.STOCK_LEDGER) || []
         const relevantTransactions = ledger.filter(
           (tx) =>
             tx.company_id === companyId &&
@@ -161,7 +161,7 @@ export class CostingService {
 
       const tasksToUse = Array.isArray(dbTasks) && dbTasks.length > 0
         ? dbTasks
-        : (PrintERPDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []).filter(
+        : (PrintFlowDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []).filter(
             (t) => t.company_id === companyId && t.job_order_id === costing.job_order_id
           )
 

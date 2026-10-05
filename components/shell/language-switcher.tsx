@@ -22,7 +22,7 @@ export function LanguageSwitcher({
  const toggleLanguage = () => {
  const next = locale === 'en' ? 'bn' : 'en'
  if (typeof window !== 'undefined') {
- localStorage.setItem('printerp_locale_explicit', 'true')
+ localStorage.setItem('printflow_locale_explicit', 'true')
     }
  setLocale(next)
   }

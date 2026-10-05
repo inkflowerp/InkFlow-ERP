@@ -65,7 +65,7 @@ import { CustomerRecord, ResolvedProductRate, DuplicateCheckResponse } from '@/t
 import { ProductRecord } from '@/types/product.types'
 import { normalizeBdPhone, formatBDT } from '@/lib/formatters'
 import { cn } from '@/lib/utils'
-import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
+import { PrintFlowDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import { calculateCommercialPricing, isServiceProduct, isReadyProduct, isMaterialProduct } from '@/lib/units'
 import {
  STANDARD_FINISHING_OPTIONS,
@@ -553,7 +553,7 @@ export function NewQuotationModal({
  const { locale, tBilingual } = useI18n()
  const { company, currentUser } = useTenant()
  const { checkCanCreate, openLimitExceededModal, refreshUsage } = useSubscription()
- const slug = tenantSlug || company?.slug || PrintERPDataStore.getActiveTenantSlug() || ''
+ const slug = tenantSlug || company?.slug || PrintFlowDataStore.getActiveTenantSlug() || ''
 
   // -------------------------------------------------------------
   // CUSTOMER STATE (Multi-field keyword search)
@@ -770,12 +770,12 @@ export function NewQuotationModal({
  useEffect(() => {
  if (!open || typeof window === 'undefined') return
 
- const prefillRaw = sessionStorage.getItem('printerp_estimator_prefill')
+ const prefillRaw = sessionStorage.getItem('printflow_estimator_prefill')
  if (!prefillRaw) return
 
  try {
  const prefill = JSON.parse(prefillRaw)
- sessionStorage.removeItem('printerp_estimator_prefill')
+ sessionStorage.removeItem('printflow_estimator_prefill')
 
  if (prefill.customerType) {
  setCustomerType(prefill.customerType)
@@ -1553,8 +1553,8 @@ export function NewQuotationModal({
 
  if (res.success && res.data) {
  try {
- PrintERPDataStore.addItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, res.data, slug)
- PrintERPDataStore.addItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, res.data)
+ PrintFlowDataStore.addItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, res.data, slug)
+ PrintFlowDataStore.addItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, res.data)
         } catch {}
 
  setSaveSuccessQuote(res.data)

@@ -1,5 +1,5 @@
 -- ==============================================================================
--- InkFlow SaaS - Migration 061: Machinery Multi-Task Production Integration
+-- PrintFlow SaaS - Migration 061: Machinery Multi-Task Production Integration
 -- Supports:
 --   1. Multiple Machine Assignments per Job Order across distinct production tasks (Printing, Lamination, Cutting, CNC, Fabrication, Finishing)
 --   2. Branch scoping on machinery assignments

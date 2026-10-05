@@ -41,7 +41,7 @@ const InvoicePdfContent = ({ invoice, company }: { invoice: InvoiceRecord; compa
  const companyName = company?.name || BRAND.name;
  const companySubtitle = company?.tagline ||"Printing & Signage Manufacturing";
  const companyAddress = company?.address ||"";
- const companyContact = `${company?.phone ||"+880 1700-000000"} · ${company?.email ||"billing@inkflow-erp.com"}`;
+ const companyContact = `${company?.phone ||"+880 1700-000000"} · ${company?.email ||"billing@printflow.bd"}`;
 
  const isMushak = invoice.invoice_type ==="vat_invoice";
  const title = isMushak

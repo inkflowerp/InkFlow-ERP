@@ -20,7 +20,7 @@ import type {
 } from '../types/billing.types.ts'
 import { BillingRepository } from '../lib/repositories/billing.repository.ts'
 import { TrashRepository } from '../lib/repositories/trash.repository.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../lib/db/data-store.ts'
 import { PdfGeneratorService } from './pdf-generator.service.ts'
 import { CommunicationTemplateService } from './communication-templates.service.ts'
 import { BusinessEmailService } from './business-email.service.ts'
@@ -134,8 +134,8 @@ export class BillingService {
         deleted_by_name: actorName,
         payload: existing,
       }
-      const trashList = PrintERPDataStore.get<any[]>(STORAGE_KEYS.TRASH_ITEMS) || []
-      PrintERPDataStore.set(STORAGE_KEYS.TRASH_ITEMS, [trashRecord, ...trashList])
+      const trashList = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.TRASH_ITEMS) || []
+      PrintFlowDataStore.set(STORAGE_KEYS.TRASH_ITEMS, [trashRecord, ...trashList])
     }
     return success
   }

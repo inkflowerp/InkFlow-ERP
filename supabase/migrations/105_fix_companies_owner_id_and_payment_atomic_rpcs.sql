@@ -1,5 +1,5 @@
 -- ==============================================================================
--- InkFlow ERP SaaS - Migration 105: Fix companies owner_id & financial atomic RPCs
+-- PrintFlow SaaS - Migration 105: Fix companies owner_id & financial atomic RPCs
 -- Fixes: column "owner_id" does not exist in public.companies
 -- Ensures:
 --   1. ALTER TABLE public.companies ADD COLUMN IF NOT EXISTS owner_id UUID REFERENCES auth.users(id) ON DELETE SET NULL;

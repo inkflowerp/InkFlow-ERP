@@ -79,7 +79,7 @@ export async function GET(
       process.env.WHATSAPP_VERIFY_TOKEN
 
     if (!expectedToken) {
-      if (isTestEnvironment() && mode === 'subscribe' && token === 'printerp_whatsapp_verify_token') {
+      if (isTestEnvironment() && mode === 'subscribe' && token === 'printflow_whatsapp_verify_token') {
         return new NextResponse(challenge, { status: 200 })
       }
       return NextResponse.json(

@@ -1,5 +1,5 @@
 -- ==============================================================================
--- InkFlow ERP SaaS - Migration 101: Fix company_users is_active & Financial RPCs
+-- PrintFlow SaaS - Migration 101: Fix company_users is_active & Financial RPCs
 -- Ensures:
 --   1. ALTER TABLE public.company_users ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT true;
 --   2. Synchronizes is_active based on status = 'active'

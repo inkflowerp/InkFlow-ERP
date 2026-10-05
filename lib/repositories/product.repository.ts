@@ -18,7 +18,7 @@ import type {
   PriceTierKey,
 } from '../../types/product.types.ts'
 import { measureAsync } from '../performance/logger.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../db/data-store.ts'
 import { TrashRepository } from './trash.repository.ts'
 import type { MaterialRecord } from '../../types/inventory.types.ts'
 import {
@@ -463,7 +463,7 @@ export class ProductRepository {
   ): Promise<ProductRecord[]> {
     return measureAsync(`ProductRepository.getProducts(${companyId})`, async () => {
       if (!isSupabaseConfigured() || isTestMode()) {
-        const prods = PrintERPDataStore.get<ProductRecord[]>(STORAGE_KEYS.PRODUCTS, companyId) || []
+        const prods = PrintFlowDataStore.get<ProductRecord[]>(STORAGE_KEYS.PRODUCTS, companyId) || []
         const normTarget = companyId ? companyId.toLowerCase() : ''
         const cleanTarget = normTarget.replace(/^comp-/, '').replace(/^co-/, '')
         let filtered = prods.filter((p) => {
@@ -968,7 +968,7 @@ export class ProductRepository {
         // In test mode keep store synced
         const enriched = enrichProductRecord(data as ProductRecord)
         if (isTestMode()) {
-          PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCTS, enriched, product.company_id)
+          PrintFlowDataStore.addItem(STORAGE_KEYS.PRODUCTS, enriched, product.company_id)
         }
 
         // If product has opening stock > 0, record in stock_ledger
@@ -1030,12 +1030,12 @@ export class ProductRepository {
             purchase_price_per_sft: (enriched.material_config as any)?.purchase_price_per_sft || (enriched.pricing_formula as any)?.purchase_price_per_sft || null,
             is_active: enriched.is_active !== false,
           }
-          PrintERPDataStore.addItem(STORAGE_KEYS.MATERIALS, matRec, product.company_id)
+          PrintFlowDataStore.addItem(STORAGE_KEYS.MATERIALS, matRec, product.company_id)
         }
 
         if (typeof window !== 'undefined') {
-          window.dispatchEvent(new CustomEvent('printerp_table_synced:products'))
-          window.dispatchEvent(new CustomEvent('printerp_table_synced:materials'))
+          window.dispatchEvent(new CustomEvent('printflow_table_synced:products'))
+          window.dispatchEvent(new CustomEvent('printflow_table_synced:materials'))
           window.dispatchEvent(new CustomEvent('products_updated'))
           window.dispatchEvent(new CustomEvent('materials_updated'))
         }
@@ -1047,7 +1047,7 @@ export class ProductRepository {
             id: product.id || `prd-test-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
             ...payload,
           })
-          PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCTS, testRecord, product.company_id)
+          PrintFlowDataStore.addItem(STORAGE_KEYS.PRODUCTS, testRecord, product.company_id)
 
           const isMat =
             isMaterialProduct(testRecord) ||
@@ -1088,12 +1088,12 @@ export class ProductRepository {
               production_width_allowance: testRecord.production_width_allowance || (testRecord.material_config as any)?.extra_width_allowance_ft || (testRecord.pricing_formula as any)?.production_width_allowance || 0,
               is_active: testRecord.is_active !== false,
             }
-            PrintERPDataStore.addItem(STORAGE_KEYS.MATERIALS, matRecordPayload, product.company_id)
+            PrintFlowDataStore.addItem(STORAGE_KEYS.MATERIALS, matRecordPayload, product.company_id)
           }
 
           if (typeof window !== 'undefined') {
-            window.dispatchEvent(new CustomEvent('printerp_table_synced:products'))
-            window.dispatchEvent(new CustomEvent('printerp_table_synced:materials'))
+            window.dispatchEvent(new CustomEvent('printflow_table_synced:products'))
+            window.dispatchEvent(new CustomEvent('printflow_table_synced:materials'))
             window.dispatchEvent(new CustomEvent('products_updated'))
             window.dispatchEvent(new CustomEvent('materials_updated'))
           }
@@ -1339,10 +1339,10 @@ export class ProductRepository {
 
       if (!isSupabaseConfigured()) {
         if (isTestMode()) {
-          const prods = PrintERPDataStore.get<ProductRecord[]>(STORAGE_KEYS.PRODUCTS, companyId) || []
+          const prods = PrintFlowDataStore.get<ProductRecord[]>(STORAGE_KEYS.PRODUCTS, companyId) || []
           const existing = prods.find((p) => p.id === id)
           if (!existing) throw new Error(`Product ${id} not found in tenant catalog.`)
-          const updated = PrintERPDataStore.updateItem<ProductRecord>(STORAGE_KEYS.PRODUCTS, id, payload, companyId)
+          const updated = PrintFlowDataStore.updateItem<ProductRecord>(STORAGE_KEYS.PRODUCTS, id, payload, companyId)
           if (!updated) throw new Error(`Product ${id} not found in test store`)
           return enrichProductRecord(updated)
         }
@@ -1419,7 +1419,7 @@ export class ProductRepository {
 
         const enriched = enrichProductRecord(data as ProductRecord)
         if (isTestMode()) {
-          PrintERPDataStore.updateItem<ProductRecord>(STORAGE_KEYS.PRODUCTS, id, enriched, companyId)
+          PrintFlowDataStore.updateItem<ProductRecord>(STORAGE_KEYS.PRODUCTS, id, enriched, companyId)
         }
 
         // Auto-sync into MATERIALS store if product is a raw material / substrate
@@ -1463,13 +1463,13 @@ export class ProductRepository {
             is_active: enriched.is_active !== false,
           }
           try {
-            PrintERPDataStore.updateItem<MaterialRecord>(STORAGE_KEYS.MATERIALS, id, matRec, companyId)
+            PrintFlowDataStore.updateItem<MaterialRecord>(STORAGE_KEYS.MATERIALS, id, matRec, companyId)
           } catch {}
         }
 
         if (typeof window !== 'undefined') {
-          window.dispatchEvent(new CustomEvent('printerp_table_synced:products'))
-          window.dispatchEvent(new CustomEvent('printerp_table_synced:materials'))
+          window.dispatchEvent(new CustomEvent('printflow_table_synced:products'))
+          window.dispatchEvent(new CustomEvent('printflow_table_synced:materials'))
           window.dispatchEvent(new CustomEvent('products_updated'))
           window.dispatchEvent(new CustomEvent('materials_updated'))
         }
@@ -1477,10 +1477,10 @@ export class ProductRepository {
         return enriched
       } catch (err: any) {
         if (isTestMode() && !err.message.includes('already assigned')) {
-          const prods = PrintERPDataStore.get<ProductRecord[]>(STORAGE_KEYS.PRODUCTS, companyId) || []
+          const prods = PrintFlowDataStore.get<ProductRecord[]>(STORAGE_KEYS.PRODUCTS, companyId) || []
           const existing = prods.find((p) => p.id === id)
           if (!existing) throw new Error(`Product ${id} not found in tenant catalog.`)
-          const updated = PrintERPDataStore.updateItem<ProductRecord>(STORAGE_KEYS.PRODUCTS, id, payload, companyId)
+          const updated = PrintFlowDataStore.updateItem<ProductRecord>(STORAGE_KEYS.PRODUCTS, id, payload, companyId)
           if (updated) {
             const enrichedTest = enrichProductRecord(updated)
             const isMat =
@@ -1497,7 +1497,7 @@ export class ProductRepository {
                 ? (rawPurchaseUnit && !['sft', 'sqft'].includes(rawPurchaseUnit.toLowerCase()) ? rawPurchaseUnit : 'roll')
                 : rawPurchaseUnit || enrichedTest.unit || 'pcs'
 
-              PrintERPDataStore.updateItem<MaterialRecord>(STORAGE_KEYS.MATERIALS, id, {
+              PrintFlowDataStore.updateItem<MaterialRecord>(STORAGE_KEYS.MATERIALS, id, {
                 id: enrichedTest.id,
                 company_id: enrichedTest.company_id,
                 sku: enrichedTest.sku,
@@ -1525,8 +1525,8 @@ export class ProductRepository {
             }
 
             if (typeof window !== 'undefined') {
-              window.dispatchEvent(new CustomEvent('printerp_table_synced:products'))
-              window.dispatchEvent(new CustomEvent('printerp_table_synced:materials'))
+              window.dispatchEvent(new CustomEvent('printflow_table_synced:products'))
+              window.dispatchEvent(new CustomEvent('printflow_table_synced:materials'))
               window.dispatchEvent(new CustomEvent('products_updated'))
               window.dispatchEvent(new CustomEvent('materials_updated'))
             }
@@ -1566,26 +1566,26 @@ export class ProductRepository {
   }> {
     if (!isSupabaseConfigured()) {
       if (isTestMode()) {
-        const quotesCompany = companyId ? (PrintERPDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS, companyId) || []) : []
-        const quotesGlobal = PrintERPDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS) || []
+        const quotesCompany = companyId ? (PrintFlowDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS, companyId) || []) : []
+        const quotesGlobal = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS) || []
         const quotes = [...quotesCompany, ...quotesGlobal].filter(
           (q, idx, arr) => arr.findIndex((x) => x.id === q.id) === idx && (!q.company_id || q.company_id === companyId) && q.items?.some((i: any) => i.product_id === productId)
         )
 
-        const invoicesCompany = companyId ? (PrintERPDataStore.get<any[]>(STORAGE_KEYS.INVOICES, companyId) || []) : []
-        const invoicesGlobal = PrintERPDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || []
+        const invoicesCompany = companyId ? (PrintFlowDataStore.get<any[]>(STORAGE_KEYS.INVOICES, companyId) || []) : []
+        const invoicesGlobal = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || []
         const invoices = [...invoicesCompany, ...invoicesGlobal].filter(
           (inv, idx, arr) => arr.findIndex((x) => x.id === inv.id) === idx && (!inv.company_id || inv.company_id === companyId) && inv.items?.some((i: any) => i.product_id === productId)
         )
 
-        const jobsCompany = companyId ? (PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_TASKS, companyId) || []) : []
-        const jobsGlobal = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
+        const jobsCompany = companyId ? (PrintFlowDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_TASKS, companyId) || []) : []
+        const jobsGlobal = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
         const jobs = [...jobsCompany, ...jobsGlobal].filter(
           (t, idx, arr) => arr.findIndex((x) => x.id === t.id) === idx && (!t.company_id || t.company_id === companyId) && t.product_id === productId
         )
 
-        const customerRatesCompany = companyId ? (PrintERPDataStore.get<any[]>(STORAGE_KEYS.CUSTOMER_RATES, companyId) || []) : []
-        const customerRatesGlobal = PrintERPDataStore.get<any[]>(STORAGE_KEYS.CUSTOMER_RATES) || []
+        const customerRatesCompany = companyId ? (PrintFlowDataStore.get<any[]>(STORAGE_KEYS.CUSTOMER_RATES, companyId) || []) : []
+        const customerRatesGlobal = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.CUSTOMER_RATES) || []
         const customerRates = [...customerRatesCompany, ...customerRatesGlobal].filter(
           (r, idx, arr) => arr.findIndex((x) => x.id === r.id) === idx && (!r.company_id || r.company_id === companyId) && r.product_id === productId
         )
@@ -1661,10 +1661,10 @@ export class ProductRepository {
 
       if (!isSupabaseConfigured()) {
         if (isTestMode()) {
-          const prods = PrintERPDataStore.get<ProductRecord[]>(STORAGE_KEYS.PRODUCTS, companyId) || []
+          const prods = PrintFlowDataStore.get<ProductRecord[]>(STORAGE_KEYS.PRODUCTS, companyId) || []
           const existing = prods.find((p) => p.id === id)
           if (!existing) throw new Error(`Product ${id} not found in tenant catalog.`)
-          PrintERPDataStore.removeItem(STORAGE_KEYS.PRODUCTS, id, companyId)
+          PrintFlowDataStore.removeItem(STORAGE_KEYS.PRODUCTS, id, companyId)
           await TrashRepository.moveToTrash({ category: 'products', item: existing, companyId })
           return { deleted: true, archived: false, message: 'Product moved to Trash / Recycle Bin.' }
         }
@@ -1672,7 +1672,7 @@ export class ProductRepository {
       }
 
       try {
-        const prods = PrintERPDataStore.get<ProductRecord[]>(STORAGE_KEYS.PRODUCTS, companyId) || []
+        const prods = PrintFlowDataStore.get<ProductRecord[]>(STORAGE_KEYS.PRODUCTS, companyId) || []
         const existing = prods.find((p) => p.id === id)
 
         const supabase = await createClient()
@@ -1687,19 +1687,19 @@ export class ProductRepository {
         }
 
         if (existing) {
-          PrintERPDataStore.removeItem(STORAGE_KEYS.PRODUCTS, id, companyId)
+          PrintFlowDataStore.removeItem(STORAGE_KEYS.PRODUCTS, id, companyId)
           await TrashRepository.moveToTrash({ category: 'products', item: existing, companyId })
         } else if (isTestMode()) {
-          PrintERPDataStore.removeItem(STORAGE_KEYS.PRODUCTS, id, companyId)
+          PrintFlowDataStore.removeItem(STORAGE_KEYS.PRODUCTS, id, companyId)
         }
 
         return { deleted: true, archived: false, message: 'Product moved to Trash / Recycle Bin.' }
       } catch (err: any) {
         if (isTestMode()) {
-          const prods = PrintERPDataStore.get<ProductRecord[]>(STORAGE_KEYS.PRODUCTS, companyId) || []
+          const prods = PrintFlowDataStore.get<ProductRecord[]>(STORAGE_KEYS.PRODUCTS, companyId) || []
           const existing = prods.find((p) => p.id === id)
           if (!existing) throw new Error(`Product ${id} not found in tenant catalog.`)
-          PrintERPDataStore.removeItem(STORAGE_KEYS.PRODUCTS, id, companyId)
+          PrintFlowDataStore.removeItem(STORAGE_KEYS.PRODUCTS, id, companyId)
           await TrashRepository.moveToTrash({ category: 'products', item: existing, companyId })
           return { deleted: true, archived: false, message: 'Product moved to Trash / Recycle Bin.' }
         }
@@ -1714,18 +1714,18 @@ export class ProductRepository {
   static async getProductUsageStats(productId: string, companyId: string): Promise<ProductUsageStats> {
     if (!isSupabaseConfigured()) {
       if (isTestMode()) {
-        const quotesCompany = companyId ? (PrintERPDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS, companyId) || []) : []
-        const quotesGlobal = PrintERPDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS) || []
+        const quotesCompany = companyId ? (PrintFlowDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS, companyId) || []) : []
+        const quotesGlobal = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS) || []
         const quotes = [...quotesCompany, ...quotesGlobal].filter(
           (q, idx, arr) => arr.findIndex((x) => x.id === q.id) === idx && (!q.company_id || q.company_id === companyId) && q.items?.some((i: any) => i.product_id === productId)
         )
-        const invoicesCompany = companyId ? (PrintERPDataStore.get<any[]>(STORAGE_KEYS.INVOICES, companyId) || []) : []
-        const invoicesGlobal = PrintERPDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || []
+        const invoicesCompany = companyId ? (PrintFlowDataStore.get<any[]>(STORAGE_KEYS.INVOICES, companyId) || []) : []
+        const invoicesGlobal = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || []
         const invoices = [...invoicesCompany, ...invoicesGlobal].filter(
           (inv, idx, arr) => arr.findIndex((x) => x.id === inv.id) === idx && (!inv.company_id || inv.company_id === companyId) && inv.items?.some((i: any) => i.product_id === productId)
         )
-        const jobsCompany = companyId ? (PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_TASKS, companyId) || []) : []
-        const jobsGlobal = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
+        const jobsCompany = companyId ? (PrintFlowDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_TASKS, companyId) || []) : []
+        const jobsGlobal = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
         const jobs = [...jobsCompany, ...jobsGlobal].filter(
           (t, idx, arr) => arr.findIndex((x) => x.id === t.id) === idx && (!t.company_id || t.company_id === companyId) && t.product_id === productId
         )
@@ -1831,9 +1831,9 @@ export class ProductRepository {
 
     if (!isSupabaseConfigured()) {
       if (isTestMode()) {
-        PrintERPDataStore.addItem(STORAGE_KEYS.PRICE_HISTORY, entry)
+        PrintFlowDataStore.addItem(STORAGE_KEYS.PRICE_HISTORY, entry)
         if (companyId && companyId !== 'default') {
-          PrintERPDataStore.addItem(STORAGE_KEYS.PRICE_HISTORY, entry, companyId)
+          PrintFlowDataStore.addItem(STORAGE_KEYS.PRICE_HISTORY, entry, companyId)
         }
         return entry
       }
@@ -1864,9 +1864,9 @@ export class ProductRepository {
 
       if (error) {
         if (isTestMode()) {
-          PrintERPDataStore.addItem(STORAGE_KEYS.PRICE_HISTORY, entry)
+          PrintFlowDataStore.addItem(STORAGE_KEYS.PRICE_HISTORY, entry)
           if (companyId && companyId !== 'default') {
-            PrintERPDataStore.addItem(STORAGE_KEYS.PRICE_HISTORY, entry, companyId)
+            PrintFlowDataStore.addItem(STORAGE_KEYS.PRICE_HISTORY, entry, companyId)
           }
           return entry
         }
@@ -1876,9 +1876,9 @@ export class ProductRepository {
       return { ...entry, id: data.id }
     } catch (err: any) {
       if (isTestMode()) {
-        PrintERPDataStore.addItem(STORAGE_KEYS.PRICE_HISTORY, entry)
+        PrintFlowDataStore.addItem(STORAGE_KEYS.PRICE_HISTORY, entry)
         if (companyId && companyId !== 'default') {
-          PrintERPDataStore.addItem(STORAGE_KEYS.PRICE_HISTORY, entry, companyId)
+          PrintFlowDataStore.addItem(STORAGE_KEYS.PRICE_HISTORY, entry, companyId)
         }
         return entry
       }
@@ -1889,8 +1889,8 @@ export class ProductRepository {
   static async getProductPriceHistory(productId?: string, companyId?: string): Promise<PriceHistoryRecord[]> {
     if (!isSupabaseConfigured()) {
       if (isTestMode()) {
-        const historyCompany = companyId && companyId !== 'default' ? (PrintERPDataStore.get<PriceHistoryRecord[]>(STORAGE_KEYS.PRICE_HISTORY, companyId) || []) : []
-        const historyGlobal = PrintERPDataStore.get<PriceHistoryRecord[]>(STORAGE_KEYS.PRICE_HISTORY) || []
+        const historyCompany = companyId && companyId !== 'default' ? (PrintFlowDataStore.get<PriceHistoryRecord[]>(STORAGE_KEYS.PRICE_HISTORY, companyId) || []) : []
+        const historyGlobal = PrintFlowDataStore.get<PriceHistoryRecord[]>(STORAGE_KEYS.PRICE_HISTORY) || []
         const history = [...historyCompany, ...historyGlobal]
         const norm = companyId ? companyId.toLowerCase() : ''
         const clean = norm.replace(/^comp-/, '').replace(/^co-/, '')
@@ -1929,7 +1929,7 @@ export class ProductRepository {
   static async getProductVariants(productId: string, companyId: string): Promise<ProductVariantRecord[]> {
     if (!isSupabaseConfigured()) {
       if (isTestMode()) {
-        const vars = PrintERPDataStore.get<ProductVariantRecord[]>(STORAGE_KEYS.PRODUCT_VARIANTS, companyId) || []
+        const vars = PrintFlowDataStore.get<ProductVariantRecord[]>(STORAGE_KEYS.PRODUCT_VARIANTS, companyId) || []
         return vars.filter((v) => v.product_id === productId)
       }
       return []
@@ -1947,13 +1947,13 @@ export class ProductRepository {
 
       if (!error && data && data.length > 0) return data as ProductVariantRecord[]
       if (isTestMode()) {
-        const vars = PrintERPDataStore.get<ProductVariantRecord[]>(STORAGE_KEYS.PRODUCT_VARIANTS, companyId) || []
+        const vars = PrintFlowDataStore.get<ProductVariantRecord[]>(STORAGE_KEYS.PRODUCT_VARIANTS, companyId) || []
         return vars.filter((v) => v.product_id === productId)
       }
       return []
     } catch {
       if (isTestMode()) {
-        const vars = PrintERPDataStore.get<ProductVariantRecord[]>(STORAGE_KEYS.PRODUCT_VARIANTS, companyId) || []
+        const vars = PrintFlowDataStore.get<ProductVariantRecord[]>(STORAGE_KEYS.PRODUCT_VARIANTS, companyId) || []
         return vars.filter((v) => v.product_id === productId)
       }
       return []
@@ -1988,7 +1988,7 @@ export class ProductRepository {
           id: `var-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
           ...record,
         }
-        PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCT_VARIANTS, testVar, data.company_id)
+        PrintFlowDataStore.addItem(STORAGE_KEYS.PRODUCT_VARIANTS, testVar, data.company_id)
         return testVar
       }
       throw new Error('Authoritative database connection is required to create a variant.')
@@ -2004,7 +2004,7 @@ export class ProductRepository {
 
       if (error) throw new Error(`Database error saving variant: ${error.message}`)
       if (isTestMode() && inserted) {
-        PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCT_VARIANTS, inserted, data.company_id)
+        PrintFlowDataStore.addItem(STORAGE_KEYS.PRODUCT_VARIANTS, inserted, data.company_id)
       }
       return inserted as ProductVariantRecord
     } catch (err: any) {
@@ -2013,7 +2013,7 @@ export class ProductRepository {
           id: `var-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
           ...record,
         }
-        PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCT_VARIANTS, testVar, data.company_id)
+        PrintFlowDataStore.addItem(STORAGE_KEYS.PRODUCT_VARIANTS, testVar, data.company_id)
         return testVar
       }
       throw err
@@ -2023,7 +2023,7 @@ export class ProductRepository {
   static async deleteProductVariant(variantId: string, companyId: string): Promise<boolean> {
     if (!isSupabaseConfigured()) {
       if (isTestMode()) {
-        return PrintERPDataStore.removeItem(STORAGE_KEYS.PRODUCT_VARIANTS, variantId, companyId)
+        return PrintFlowDataStore.removeItem(STORAGE_KEYS.PRODUCT_VARIANTS, variantId, companyId)
       }
       throw new Error('Authoritative database connection is required to delete a variant.')
     }
@@ -2038,12 +2038,12 @@ export class ProductRepository {
 
       if (error) throw new Error(`Failed to delete variant: ${error.message}`)
       if (isTestMode()) {
-        PrintERPDataStore.removeItem(STORAGE_KEYS.PRODUCT_VARIANTS, variantId, companyId)
+        PrintFlowDataStore.removeItem(STORAGE_KEYS.PRODUCT_VARIANTS, variantId, companyId)
       }
       return true
     } catch (err: any) {
       if (isTestMode()) {
-        return PrintERPDataStore.removeItem(STORAGE_KEYS.PRODUCT_VARIANTS, variantId, companyId)
+        return PrintFlowDataStore.removeItem(STORAGE_KEYS.PRODUCT_VARIANTS, variantId, companyId)
       }
       throw err
     }
@@ -2056,7 +2056,7 @@ export class ProductRepository {
   static async getProductFormulas(productId: string, companyId: string): Promise<ProductFormulaRecord[]> {
     if (!isSupabaseConfigured()) {
       if (isTestMode()) {
-        const forms = PrintERPDataStore.get<ProductFormulaRecord[]>(STORAGE_KEYS.PRODUCT_FORMULAS, companyId) || []
+        const forms = PrintFlowDataStore.get<ProductFormulaRecord[]>(STORAGE_KEYS.PRODUCT_FORMULAS, companyId) || []
         return forms.filter((f) => f.product_id === productId)
       }
       return []
@@ -2073,13 +2073,13 @@ export class ProductRepository {
 
       if (!error && data && data.length > 0) return data as ProductFormulaRecord[]
       if (isTestMode()) {
-        const forms = PrintERPDataStore.get<ProductFormulaRecord[]>(STORAGE_KEYS.PRODUCT_FORMULAS, companyId) || []
+        const forms = PrintFlowDataStore.get<ProductFormulaRecord[]>(STORAGE_KEYS.PRODUCT_FORMULAS, companyId) || []
         return forms.filter((f) => f.product_id === productId)
       }
       return []
     } catch {
       if (isTestMode()) {
-        const forms = PrintERPDataStore.get<ProductFormulaRecord[]>(STORAGE_KEYS.PRODUCT_FORMULAS, companyId) || []
+        const forms = PrintFlowDataStore.get<ProductFormulaRecord[]>(STORAGE_KEYS.PRODUCT_FORMULAS, companyId) || []
         return forms.filter((f) => f.product_id === productId)
       }
       return []
@@ -2116,7 +2116,7 @@ export class ProductRepository {
     if (!isSupabaseConfigured()) {
       if (isTestMode()) {
         const testForm: ProductFormulaRecord = { id: `form-${Date.now()}`, ...record }
-        PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCT_FORMULAS, testForm, data.company_id)
+        PrintFlowDataStore.addItem(STORAGE_KEYS.PRODUCT_FORMULAS, testForm, data.company_id)
         return testForm
       }
       throw new Error('Authoritative database connection is required to create a formula.')
@@ -2135,7 +2135,7 @@ export class ProductRepository {
     } catch (err: any) {
       if (isTestMode()) {
         const testForm: ProductFormulaRecord = { id: `form-${Date.now()}`, ...record }
-        PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCT_FORMULAS, testForm, data.company_id)
+        PrintFlowDataStore.addItem(STORAGE_KEYS.PRODUCT_FORMULAS, testForm, data.company_id)
         return testForm
       }
       throw err
@@ -2149,7 +2149,7 @@ export class ProductRepository {
   static async getPriceLists(companyId: string): Promise<PriceListRecord[]> {
     if (!isSupabaseConfigured()) {
       if (isTestMode()) {
-        const lists = PrintERPDataStore.get<PriceListRecord[]>(STORAGE_KEYS.PRICE_LISTS, companyId) || []
+        const lists = PrintFlowDataStore.get<PriceListRecord[]>(STORAGE_KEYS.PRICE_LISTS, companyId) || []
         const norm = companyId ? companyId.toLowerCase() : ''
         const clean = norm.replace(/^comp-/, '').replace(/^co-/, '')
         return lists.filter((l) => {
@@ -2197,7 +2197,7 @@ export class ProductRepository {
     if (!isSupabaseConfigured()) {
       if (isTestMode()) {
         const testList: PriceListRecord = { id: `pl-${Date.now()}`, ...record }
-        PrintERPDataStore.addItem(STORAGE_KEYS.PRICE_LISTS, testList, data.company_id)
+        PrintFlowDataStore.addItem(STORAGE_KEYS.PRICE_LISTS, testList, data.company_id)
         return testList
       }
       throw new Error('Authoritative database connection is required to create a price list.')
@@ -2216,7 +2216,7 @@ export class ProductRepository {
     } catch (err: any) {
       if (isTestMode()) {
         const testList: PriceListRecord = { id: `pl-${Date.now()}`, ...record }
-        PrintERPDataStore.addItem(STORAGE_KEYS.PRICE_LISTS, testList, data.company_id)
+        PrintFlowDataStore.addItem(STORAGE_KEYS.PRICE_LISTS, testList, data.company_id)
         return testList
       }
       throw err
@@ -2302,7 +2302,7 @@ export class ProductRepository {
 
         // Tier 1: Check Customer-Specific Rate (customer_rates)
         if (isTestMode()) {
-          const rates = PrintERPDataStore.get<any[]>(STORAGE_KEYS.CUSTOMER_RATES) || []
+          const rates = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.CUSTOMER_RATES) || []
           const match = rates.find(
             (r) => (!r.company_id || r.company_id === companyId) && r.customer_id === customerId && r.product_id === productId
           )
@@ -2375,7 +2375,7 @@ export class ProductRepository {
                 assignedPriceListId = cust.price_list_id || null
               }
             } else if (isTestMode()) {
-              const customers = PrintERPDataStore.get<any[]>(STORAGE_KEYS.CUSTOMERS) || []
+              const customers = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.CUSTOMERS) || []
               const cust = customers.find((c) => c.id === customerId)
               if (cust) {
                 customerCategory = requestedTier || cust.customer_type || cust.customer_category || 'retail'
@@ -2433,7 +2433,7 @@ export class ProductRepository {
 
             // Tier 2.4: Check Pricing Rules (pricing_rules)
             if (!foundPriceListItem) {
-              const pricingRules = (PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRICING_RULES) || []).filter(
+              const pricingRules = (PrintFlowDataStore.get<any[]>(STORAGE_KEYS.PRICING_RULES) || []).filter(
                 (r) => (!r.company_id || r.company_id === companyId) && r.customer_type === customerCategory && r.status === 'active'
               )
               const match = pricingRules.find((r) => r.product_id === productId || (!r.product_id && r.category === product.category))
@@ -2621,7 +2621,7 @@ export class ProductRepository {
   ): Promise<ProductSupplierPriceRecord[]> {
     return measureAsync(`ProductRepository.getProductSupplierPrices(${productId})`, async () => {
       if (!isSupabaseConfigured() || isTestMode()) {
-        const prices = PrintERPDataStore.get<ProductSupplierPriceRecord[]>(STORAGE_KEYS.PRODUCT_SUPPLIER_PRICES, companyId) || []
+        const prices = PrintFlowDataStore.get<ProductSupplierPriceRecord[]>(STORAGE_KEYS.PRODUCT_SUPPLIER_PRICES, companyId) || []
         return prices
           .filter((p) => p.product_id === productId)
           .sort((a, b) => (b.is_preferred ? 1 : 0) - (a.is_preferred ? 1 : 0) || a.purchase_price - b.purchase_price)
@@ -2640,7 +2640,7 @@ export class ProductRepository {
         return (data || []) as ProductSupplierPriceRecord[]
       } catch (err: any) {
         if (isTestMode()) {
-          const prices = PrintERPDataStore.get<ProductSupplierPriceRecord[]>(STORAGE_KEYS.PRODUCT_SUPPLIER_PRICES, companyId) || []
+          const prices = PrintFlowDataStore.get<ProductSupplierPriceRecord[]>(STORAGE_KEYS.PRODUCT_SUPPLIER_PRICES, companyId) || []
           return prices.filter((p) => p.product_id === productId)
         }
         throw err
@@ -2672,7 +2672,7 @@ export class ProductRepository {
       }
 
       if (!isSupabaseConfigured() || isTestMode()) {
-        PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCT_SUPPLIER_PRICES, record, companyId)
+        PrintFlowDataStore.addItem(STORAGE_KEYS.PRODUCT_SUPPLIER_PRICES, record, companyId)
         return record
       }
 
@@ -2691,7 +2691,7 @@ export class ProductRepository {
   static async deleteProductSupplierPrice(id: string, companyId: string): Promise<boolean> {
     return measureAsync(`ProductRepository.deleteProductSupplierPrice(${id})`, async () => {
       if (!isSupabaseConfigured() || isTestMode()) {
-        PrintERPDataStore.removeItem(STORAGE_KEYS.PRODUCT_SUPPLIER_PRICES, id, companyId)
+        PrintFlowDataStore.removeItem(STORAGE_KEYS.PRODUCT_SUPPLIER_PRICES, id, companyId)
         return true
       }
 
@@ -2744,7 +2744,7 @@ export class ProductRepository {
     }
 
     if (!isSupabaseConfigured() || isTestMode()) {
-      PrintERPDataStore.addItem(STORAGE_KEYS.PRICE_OVERRIDES, entry, companyId)
+      PrintFlowDataStore.addItem(STORAGE_KEYS.PRICE_OVERRIDES, entry, companyId)
       return entry
     }
 
@@ -2757,12 +2757,12 @@ export class ProductRepository {
         .single()
 
       if (error) {
-        PrintERPDataStore.addItem(STORAGE_KEYS.PRICE_OVERRIDES, entry, companyId)
+        PrintFlowDataStore.addItem(STORAGE_KEYS.PRICE_OVERRIDES, entry, companyId)
         return entry
       }
       return saved as PriceOverrideRecord
     } catch {
-      PrintERPDataStore.addItem(STORAGE_KEYS.PRICE_OVERRIDES, entry, companyId)
+      PrintFlowDataStore.addItem(STORAGE_KEYS.PRICE_OVERRIDES, entry, companyId)
       return entry
     }
   }
@@ -2773,7 +2773,7 @@ export class ProductRepository {
     limit: number = 50
   ): Promise<PriceOverrideRecord[]> {
     if (!isSupabaseConfigured() || isTestMode()) {
-      let entries = PrintERPDataStore.get<PriceOverrideRecord[]>(STORAGE_KEYS.PRICE_OVERRIDES, companyId) || []
+      let entries = PrintFlowDataStore.get<PriceOverrideRecord[]>(STORAGE_KEYS.PRICE_OVERRIDES, companyId) || []
       const norm = companyId ? companyId.toLowerCase() : ''
       const clean = norm.replace(/^comp-/, '').replace(/^co-/, '')
       entries = entries.filter((e) => !companyId || (e.company_id && (e.company_id.toLowerCase() === norm || e.company_id.toLowerCase().replace(/^comp-/, '') === clean)))
@@ -2798,7 +2798,7 @@ export class ProductRepository {
       if (error) throw error
       return (data || []) as PriceOverrideRecord[]
     } catch {
-      let entries = PrintERPDataStore.get<PriceOverrideRecord[]>(STORAGE_KEYS.PRICE_OVERRIDES, companyId) || []
+      let entries = PrintFlowDataStore.get<PriceOverrideRecord[]>(STORAGE_KEYS.PRICE_OVERRIDES, companyId) || []
       const norm = companyId ? companyId.toLowerCase() : ''
       const clean = norm.replace(/^comp-/, '').replace(/^co-/, '')
       entries = entries.filter((e) => !companyId || (e.company_id && (e.company_id.toLowerCase() === norm || e.company_id.toLowerCase().replace(/^comp-/, '') === clean)))

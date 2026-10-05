@@ -1,5 +1,5 @@
 -- ==============================================================================
--- PrintERP SaaS - Multi-Tenant Initial Schema Migration (001)
+-- PrintFlow - Multi-Tenant Initial Schema Migration (001)
 -- Unicode-Safe UTF-8, Multi-Tenancy Architecture
 -- ==============================================================================
 

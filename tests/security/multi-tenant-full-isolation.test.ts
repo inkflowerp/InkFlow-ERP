@@ -43,7 +43,7 @@ describe('Multi-Tenant Full Isolation & Security Invariant Tests', () => {
       const devOpts = getAuthCookieOptions('alpha.localhost:3000')
       assert.strictEqual(devOpts.domain, undefined, 'Cookie domain must be undefined (host-only) in development')
 
-      const pslOpts = getAuthCookieOptions('alpha.inkflow-erp.vercel.app')
+      const pslOpts = getAuthCookieOptions('alpha.printflow.bd')
       assert.strictEqual(pslOpts.domain, undefined, 'Cookie domain must be undefined on PSL domains')
     })
 

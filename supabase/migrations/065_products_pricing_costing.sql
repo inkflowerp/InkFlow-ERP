@@ -1,5 +1,5 @@
 -- ==============================================================================
--- InkFlow SaaS - Migration 065: Products, Services, Advanced Formulas & Costing
+-- PrintFlow SaaS - Migration 065: Products, Services, Advanced Formulas & Costing
 -- Supports:
 --   1. Extended Product Master with Variants & Bangladeshi Print/Signage Specs
 --   2. Structured Production Formulas (Material, Machine, Labor, Finishing, Transport)

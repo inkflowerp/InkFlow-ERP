@@ -133,8 +133,8 @@ describe('Email Deliverability & Anti-Spam Protection Suite', () => {
       encrypted_credentials: 'aes-dummy-secret',
       encryption_type: 'tls' as const,
       sender_name: 'Platform Notifications',
-      sender_email: 'notifications@printerp.com', // Dummy unaligned sender
-      reply_to_email: 'support@printerp.com',
+      sender_email: 'notifications@printflow.bd', // Dummy unaligned sender
+      reply_to_email: 'support@printflow.bd',
       status: 'active' as const,
       is_default: true,
       extra_settings: { is_mock: true },
@@ -142,7 +142,7 @@ describe('Email Deliverability & Anti-Spam Protection Suite', () => {
       updated_at: new Date().toISOString(),
     }
 
-    EmailDataStore.set('printerp_email_gateways', [customSmtpGateway])
+    EmailDataStore.set('printflow_email_gateways', [customSmtpGateway])
 
     const sendRes = await EmailGatewayService.sendEmail({
       scopeType: 'PLATFORM',
@@ -159,7 +159,7 @@ describe('Email Deliverability & Anti-Spam Protection Suite', () => {
     assert.strictEqual(sendRes.success, true)
 
     // Check recorded log
-    const logs = EmailDataStore.get<any[]>('printerp_email_logs') || []
+    const logs = EmailDataStore.get<any[]>('printflow_email_logs') || []
     const log = logs.find((l) => l.recipient === 'verify@customer.com')
     assert.ok(log)
     assert.strictEqual(log.status, 'sent')

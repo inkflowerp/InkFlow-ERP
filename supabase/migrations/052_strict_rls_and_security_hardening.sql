@@ -1,5 +1,5 @@
 -- ==============================================================================
--- InkFlow SaaS - Migration 052: Strict RLS & Security Definer Hardening
+-- PrintFlow SaaS - Migration 052: Strict RLS & Security Definer Hardening
 -- Single Source of Truth & Authoritative Isolation Boundary:
 --   1. Enforces search_path = public, pg_temp across ALL security definer functions
 --   2. Enforces caller authorization on sequence & document numbering generators

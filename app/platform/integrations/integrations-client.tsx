@@ -191,10 +191,10 @@ const PROVIDERS_METADATA: Record<string, ProviderMeta> = {
  { label: 'None (Plain)', value: 'none' },
  ],
  },
- { key: 'smtp_username', label: 'SMTP Username / Login', placeholder: 'notifications@printerp.com', type: 'text', required: true },
+ { key: 'smtp_username', label: 'SMTP Username / Login', placeholder: 'notifications@printflow.bd', type: 'text', required: true },
  { key: 'sender_name', label: 'From Display Name', placeholder: 'PrintFlow Notifications', type: 'text', required: true, defaultValue: 'PrintFlow Notifications' },
- { key: 'sender_email', label: 'From Email Address', placeholder: 'notifications@printerp.com', type: 'text', required: true },
- { key: 'reply_to_email', label: 'Reply-To Email', placeholder: 'support@printerp.com', type: 'text', required: false },
+ { key: 'sender_email', label: 'From Email Address', placeholder: 'notifications@printflow.bd', type: 'text', required: true },
+ { key: 'reply_to_email', label: 'Reply-To Email', placeholder: 'support@printflow.bd', type: 'text', required: false },
  ],
  },
  resend: {
@@ -978,7 +978,7 @@ export default function PlatformIntegrationsPage() {
  return
  }
  } else if (selectedMeta.category === 'email') {
- recipient = String(formData.public_config?.sender_email || formData.public_config?.gmail_account_email || 'admin@printerp.com').trim()
+ recipient = String(formData.public_config?.sender_email || formData.public_config?.gmail_account_email || 'admin@printflow.bd').trim()
  } else if (selectedMeta.category === 'sms' || selectedMeta.category === 'whatsapp') {
  recipient = '01711000000'
  }
@@ -1104,7 +1104,7 @@ export default function PlatformIntegrationsPage() {
  // Open "Send Test Message" Modal
  const handleOpenSendTest = (gw: SanitizedGatewayRecord) => {
  let defaultRecipient = ''
- if (gw.category === 'email') defaultRecipient = 'admin@printerp.com'
+ if (gw.category === 'email') defaultRecipient = 'admin@printflow.bd'
  else if (gw.category === 'sms' || gw.category === 'whatsapp') defaultRecipient = '01711000000'
  else if (gw.category === 'telegram') defaultRecipient = gw.public_config?.default_chat_id || ''
 
@@ -2703,7 +2703,7 @@ export default function PlatformIntegrationsPage() {
  className="mt-1 h-9 text-xs border-border"
  placeholder={
  testPayload.category === 'email'
- ? 'admin@printerp.com'
+ ? 'admin@printflow.bd'
  : testPayload.category === 'telegram'
  ? '1990933920 or @channel'
  : '01711000000'

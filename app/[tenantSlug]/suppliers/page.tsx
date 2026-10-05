@@ -48,7 +48,7 @@ import { KpiCard, KpiGrid } from '@/components/shared/kpi-card'
 import type { SupplierRecord, SupplierCategory, SupplierPaymentTerms } from '@/types/crm.types'
 import { normalizeBdPhone, formatBDT } from '@/lib/formatters'
 import { useDataStore } from '@/hooks/use-data-store'
-import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
+import { PrintFlowDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import {
  BANGLADESH_MARKET_HUBS,
  SUPPLIER_CATEGORY_META,
@@ -143,13 +143,13 @@ export default function SuppliersPage() {
   const handleSaveSupplier = (saved: SupplierRecord) => {
     const exists = suppliers.some((s) => s.id === saved.id)
     if (exists) {
-      PrintERPDataStore.updateItem<SupplierRecord>(STORAGE_KEYS.SUPPLIERS, saved.id, saved)
+      PrintFlowDataStore.updateItem<SupplierRecord>(STORAGE_KEYS.SUPPLIERS, saved.id, saved)
       updateSupplierAction(saved.id, saved, company?.id).catch((e) =>
         console.warn('[Supplier] Server update sync failed:', e)
       )
       showNotification(`Supplier profile '${saved.supplier_name}' updated successfully.`)
     } else {
-      PrintERPDataStore.addItem<SupplierRecord>(STORAGE_KEYS.SUPPLIERS, saved)
+      PrintFlowDataStore.addItem<SupplierRecord>(STORAGE_KEYS.SUPPLIERS, saved)
       createSupplierAction(saved, company?.id).catch((e) =>
         console.warn('[Supplier] Server create sync failed:', e)
       )
@@ -188,7 +188,7 @@ export default function SuppliersPage() {
  if (!payTargetSupplier) return
 
  const newBalance = Math.max(0, (payTargetSupplier.outstanding_balance || 0) - amount)
- PrintERPDataStore.updateItem<SupplierRecord>(STORAGE_KEYS.SUPPLIERS, payTargetSupplier.id, {
+ PrintFlowDataStore.updateItem<SupplierRecord>(STORAGE_KEYS.SUPPLIERS, payTargetSupplier.id, {
  outstanding_balance: newBalance,
  updated_at: new Date().toISOString(),
     })
@@ -212,7 +212,7 @@ export default function SuppliersPage() {
  performed_by_name: details.authorizedBy || 'Cashier',
  created_at: new Date().toISOString(),
       }
- PrintERPDataStore.addItem<CashBookEntryRecord>(STORAGE_KEYS.CASH_BOOK, cashEntry)
+ PrintFlowDataStore.addItem<CashBookEntryRecord>(STORAGE_KEYS.CASH_BOOK, cashEntry)
     }
 
  showNotification(`Payment voucher ${details.voucherNumber} of ${formatBDT(amount)} recorded for ${payTargetSupplier.supplier_name}.`)
@@ -222,10 +222,10 @@ export default function SuppliersPage() {
  const handleSaveRate = (rate: any) => {
  const exists = supplierPrices.some((p) => p.id === rate.id)
  if (exists) {
- PrintERPDataStore.updateItem(STORAGE_KEYS.SUPPLIER_PRICES, rate.id, rate)
+ PrintFlowDataStore.updateItem(STORAGE_KEYS.SUPPLIER_PRICES, rate.id, rate)
  showNotification(`Contract rate for '${rate.material_name}' updated.`)
     } else {
- PrintERPDataStore.addItem(STORAGE_KEYS.SUPPLIER_PRICES, rate)
+ PrintFlowDataStore.addItem(STORAGE_KEYS.SUPPLIER_PRICES, rate)
  showNotification(`Contract rate for '${rate.material_name}' saved.`)
     }
   }
@@ -275,7 +275,7 @@ export default function SuppliersPage() {
  const url = URL.createObjectURL(blob)
  const link = document.createElement('a')
  link.href = url
- link.setAttribute('download', `PrintERP_Suppliers_${new Date().toISOString().split('T')[0]}.csv`)
+ link.setAttribute('download', `PrintFlow_Suppliers_${new Date().toISOString().split('T')[0]}.csv`)
  document.body.appendChild(link)
  link.click()
  document.body.removeChild(link)

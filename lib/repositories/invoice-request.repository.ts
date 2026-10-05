@@ -1,7 +1,7 @@
 import { createClient } from '../supabase/server.ts'
 import { createAdminClient } from '../supabase/admin.ts'
 import type { InvoiceRequestRecord, InvoiceRequestStatus } from '../../types/workflow.types.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../db/data-store.ts'
 
 export interface InvoiceRequestFilterOptions {
   status?: InvoiceRequestStatus
@@ -84,8 +84,8 @@ export class InvoiceRequestRepository {
         const records = data as unknown as InvoiceRequestRecord[]
         try {
           const allLocal = [
-            ...(PrintERPDataStore.getAll<InvoiceRequestRecord>(STORAGE_KEYS.INVOICE_REQUESTS, companyId) || []),
-            ...(PrintERPDataStore.get<InvoiceRequestRecord[]>(STORAGE_KEYS.INVOICE_REQUESTS) || []),
+            ...(PrintFlowDataStore.getAll<InvoiceRequestRecord>(STORAGE_KEYS.INVOICE_REQUESTS, companyId) || []),
+            ...(PrintFlowDataStore.get<InvoiceRequestRecord[]>(STORAGE_KEYS.INVOICE_REQUESTS) || []),
           ]
           const reqMap = new Map<string, InvoiceRequestRecord>()
           allLocal.forEach((r) => {
@@ -95,8 +95,8 @@ export class InvoiceRequestRepository {
             if (r?.id) reqMap.set(r.id, r)
           })
           const merged = Array.from(reqMap.values())
-          PrintERPDataStore.set(STORAGE_KEYS.INVOICE_REQUESTS, merged)
-          PrintERPDataStore.set(STORAGE_KEYS.INVOICE_REQUESTS, merged, true, companyId)
+          PrintFlowDataStore.set(STORAGE_KEYS.INVOICE_REQUESTS, merged)
+          PrintFlowDataStore.set(STORAGE_KEYS.INVOICE_REQUESTS, merged, true, companyId)
         } catch {}
         return records
       }
@@ -105,8 +105,8 @@ export class InvoiceRequestRepository {
     }
 
     const allLocal = [
-      ...(PrintERPDataStore.getAll<InvoiceRequestRecord>(STORAGE_KEYS.INVOICE_REQUESTS, companyId) || []),
-      ...(PrintERPDataStore.get<InvoiceRequestRecord[]>(STORAGE_KEYS.INVOICE_REQUESTS) || []),
+      ...(PrintFlowDataStore.getAll<InvoiceRequestRecord>(STORAGE_KEYS.INVOICE_REQUESTS, companyId) || []),
+      ...(PrintFlowDataStore.get<InvoiceRequestRecord[]>(STORAGE_KEYS.INVOICE_REQUESTS) || []),
     ]
     const dedupeMap = new Map<string, InvoiceRequestRecord>()
     allLocal.forEach((r) => {
@@ -168,8 +168,8 @@ export class InvoiceRequestRepository {
     } catch {}
 
     const all = [
-      ...(PrintERPDataStore.getAll<InvoiceRequestRecord>(STORAGE_KEYS.INVOICE_REQUESTS, companyId) || []),
-      ...(PrintERPDataStore.get<InvoiceRequestRecord[]>(STORAGE_KEYS.INVOICE_REQUESTS) || []),
+      ...(PrintFlowDataStore.getAll<InvoiceRequestRecord>(STORAGE_KEYS.INVOICE_REQUESTS, companyId) || []),
+      ...(PrintFlowDataStore.get<InvoiceRequestRecord[]>(STORAGE_KEYS.INVOICE_REQUESTS) || []),
     ]
     return all.find((r) => r.id === id && this.isMatchingCompany(r.company_id, companyId)) || null
   }
@@ -238,12 +238,12 @@ export class InvoiceRequestRepository {
         }
 
         try {
-          const all = PrintERPDataStore.get<InvoiceRequestRecord[]>(STORAGE_KEYS.INVOICE_REQUESTS) || []
+          const all = PrintFlowDataStore.get<InvoiceRequestRecord[]>(STORAGE_KEYS.INVOICE_REQUESTS) || []
           const idx = all.findIndex((r) => r.id === target.id)
           if (idx >= 0) all[idx] = updatedTarget
           else all.unshift(updatedTarget)
-          PrintERPDataStore.set(STORAGE_KEYS.INVOICE_REQUESTS, all)
-          PrintERPDataStore.set(STORAGE_KEYS.INVOICE_REQUESTS, all, true, data.company_id)
+          PrintFlowDataStore.set(STORAGE_KEYS.INVOICE_REQUESTS, all)
+          PrintFlowDataStore.set(STORAGE_KEYS.INVOICE_REQUESTS, all, true, data.company_id)
         } catch {}
 
         return updatedTarget
@@ -318,10 +318,10 @@ export class InvoiceRequestRepository {
       if (!error && inserted) {
         const createdRec = inserted as unknown as InvoiceRequestRecord
         try {
-          const all = PrintERPDataStore.get<InvoiceRequestRecord[]>(STORAGE_KEYS.INVOICE_REQUESTS) || []
+          const all = PrintFlowDataStore.get<InvoiceRequestRecord[]>(STORAGE_KEYS.INVOICE_REQUESTS) || []
           const merged = [createdRec, ...all.filter((r) => r.id !== createdRec.id)]
-          PrintERPDataStore.set(STORAGE_KEYS.INVOICE_REQUESTS, merged)
-          PrintERPDataStore.set(STORAGE_KEYS.INVOICE_REQUESTS, merged, true, data.company_id)
+          PrintFlowDataStore.set(STORAGE_KEYS.INVOICE_REQUESTS, merged)
+          PrintFlowDataStore.set(STORAGE_KEYS.INVOICE_REQUESTS, merged, true, data.company_id)
         } catch {}
         return createdRec
       }
@@ -337,10 +337,10 @@ export class InvoiceRequestRepository {
       id: data.id || `inv-req-${Date.now()}`,
       ...payload,
     }
-    const all = PrintERPDataStore.get<InvoiceRequestRecord[]>(STORAGE_KEYS.INVOICE_REQUESTS) || []
+    const all = PrintFlowDataStore.get<InvoiceRequestRecord[]>(STORAGE_KEYS.INVOICE_REQUESTS) || []
     const updatedAll = [newRec, ...all.filter((r) => r.id !== newRec.id)]
-    PrintERPDataStore.set(STORAGE_KEYS.INVOICE_REQUESTS, updatedAll)
-    PrintERPDataStore.set(STORAGE_KEYS.INVOICE_REQUESTS, updatedAll, true, data.company_id)
+    PrintFlowDataStore.set(STORAGE_KEYS.INVOICE_REQUESTS, updatedAll)
+    PrintFlowDataStore.set(STORAGE_KEYS.INVOICE_REQUESTS, updatedAll, true, data.company_id)
     return newRec
   }
 
@@ -412,14 +412,14 @@ export class InvoiceRequestRepository {
       if (!error && data && data.length > 0) {
         const records = data as unknown as InvoiceRequestRecord[]
         try {
-          const all = PrintERPDataStore.get<InvoiceRequestRecord[]>(STORAGE_KEYS.INVOICE_REQUESTS) || []
+          const all = PrintFlowDataStore.get<InvoiceRequestRecord[]>(STORAGE_KEYS.INVOICE_REQUESTS) || []
           records.forEach((rec) => {
             const idx = all.findIndex((a) => a.id === rec.id)
             if (idx >= 0) all[idx] = rec
             else all.unshift(rec)
           })
-          PrintERPDataStore.set(STORAGE_KEYS.INVOICE_REQUESTS, all)
-          PrintERPDataStore.set(STORAGE_KEYS.INVOICE_REQUESTS, all, true, companyId)
+          PrintFlowDataStore.set(STORAGE_KEYS.INVOICE_REQUESTS, all)
+          PrintFlowDataStore.set(STORAGE_KEYS.INVOICE_REQUESTS, all, true, companyId)
         } catch {}
         return records
       }
@@ -428,8 +428,8 @@ export class InvoiceRequestRepository {
     }
 
     const all = [
-      ...(PrintERPDataStore.getAll<InvoiceRequestRecord>(STORAGE_KEYS.INVOICE_REQUESTS, companyId) || []),
-      ...(PrintERPDataStore.get<InvoiceRequestRecord[]>(STORAGE_KEYS.INVOICE_REQUESTS) || []),
+      ...(PrintFlowDataStore.getAll<InvoiceRequestRecord>(STORAGE_KEYS.INVOICE_REQUESTS, companyId) || []),
+      ...(PrintFlowDataStore.get<InvoiceRequestRecord[]>(STORAGE_KEYS.INVOICE_REQUESTS) || []),
     ]
     const dedupeMap = new Map<string, InvoiceRequestRecord>()
     all.forEach((r) => {
@@ -456,8 +456,8 @@ export class InvoiceRequestRepository {
         }
       }
     }
-    PrintERPDataStore.set(STORAGE_KEYS.INVOICE_REQUESTS, list)
-    PrintERPDataStore.set(STORAGE_KEYS.INVOICE_REQUESTS, list, true, companyId)
+    PrintFlowDataStore.set(STORAGE_KEYS.INVOICE_REQUESTS, list)
+    PrintFlowDataStore.set(STORAGE_KEYS.INVOICE_REQUESTS, list, true, companyId)
     return resolved
   }
 
@@ -515,28 +515,28 @@ export class InvoiceRequestRepository {
       if (!error && data) {
         const updated = data as unknown as InvoiceRequestRecord
         try {
-          const all = PrintERPDataStore.get<InvoiceRequestRecord[]>(STORAGE_KEYS.INVOICE_REQUESTS) || []
+          const all = PrintFlowDataStore.get<InvoiceRequestRecord[]>(STORAGE_KEYS.INVOICE_REQUESTS) || []
           const idx = all.findIndex((r) => r.id === id)
           if (idx >= 0) all[idx] = updated
           else all.unshift(updated)
-          PrintERPDataStore.set(STORAGE_KEYS.INVOICE_REQUESTS, all)
-          PrintERPDataStore.set(STORAGE_KEYS.INVOICE_REQUESTS, all, true, companyId)
+          PrintFlowDataStore.set(STORAGE_KEYS.INVOICE_REQUESTS, all)
+          PrintFlowDataStore.set(STORAGE_KEYS.INVOICE_REQUESTS, all, true, companyId)
         } catch {}
         return updated
       }
     } catch {}
 
     const all = [
-      ...(PrintERPDataStore.getAll<InvoiceRequestRecord>(STORAGE_KEYS.INVOICE_REQUESTS, companyId) || []),
-      ...(PrintERPDataStore.get<InvoiceRequestRecord[]>(STORAGE_KEYS.INVOICE_REQUESTS) || []),
+      ...(PrintFlowDataStore.getAll<InvoiceRequestRecord>(STORAGE_KEYS.INVOICE_REQUESTS, companyId) || []),
+      ...(PrintFlowDataStore.get<InvoiceRequestRecord[]>(STORAGE_KEYS.INVOICE_REQUESTS) || []),
     ]
     const idx = all.findIndex((r) => r.id === id && this.isMatchingCompany(r.company_id, companyId))
     if (idx >= 0) {
       all[idx].status = status
       if (notes !== undefined) all[idx].notes = notes
       all[idx].updated_at = now
-      PrintERPDataStore.set(STORAGE_KEYS.INVOICE_REQUESTS, all)
-      PrintERPDataStore.set(STORAGE_KEYS.INVOICE_REQUESTS, all, true, companyId)
+      PrintFlowDataStore.set(STORAGE_KEYS.INVOICE_REQUESTS, all)
+      PrintFlowDataStore.set(STORAGE_KEYS.INVOICE_REQUESTS, all, true, companyId)
       return all[idx]
     }
     return null

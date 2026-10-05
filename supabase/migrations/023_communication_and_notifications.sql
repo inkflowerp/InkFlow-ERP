@@ -1,5 +1,5 @@
 -- ==============================================================================
--- PrintERP SaaS - Migration 023: In-App Notifications & Communication Architecture
+-- PrintFlow - Migration 023: In-App Notifications & Communication Architecture
 -- Supports:
 --   1. Real-time In-App Notification Feed (Orders, Payments, Approvals, Low Stock)
 --   2. WhatsApp Business API Configuration

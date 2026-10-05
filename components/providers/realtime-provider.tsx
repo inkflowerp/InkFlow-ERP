@@ -72,7 +72,7 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
     const fallbackTimer = setInterval(() => {
       console.log('[RealtimeProvider] Socket disconnected; slow fallback refresh triggered (60s)...')
       if (typeof window !== 'undefined') {
-        window.dispatchEvent(new CustomEvent('printerp_data_sync'))
+        window.dispatchEvent(new CustomEvent('printflow_data_sync'))
       }
       try {
         router.refresh()

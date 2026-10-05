@@ -1,7 +1,7 @@
 # UX Specification: Quotations Module (কোটেশন ও প্রস্তাবনা)
 
 ## 1. Executive Summary & Purpose
-The Quotations module is InkFlow ERP's commercial frontline. Its primary job to be done (JTBD) is helping the business owner, estimator, and sales managers answer:
+The Quotations module is PrintFlow's commercial frontline. Its primary job to be done (JTBD) is helping the business owner, estimator, and sales managers answer:
 > **"Which high-value proposals need immediate follow-up to close today, and what is our win rate?"**
 
 Every interaction must be actionable within **$\le 3$ clicks from the Dashboard**:

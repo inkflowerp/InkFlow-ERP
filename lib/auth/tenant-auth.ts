@@ -35,7 +35,7 @@ async function performRedirect(url: string): Promise<never> {
   throw new Error(`REDIRECT:${url}`)
 }
 
-const SUPPORT_COOKIE_NAME = 'printerp_support_tenant'
+const SUPPORT_COOKIE_NAME = 'printflow_support_tenant'
 
 // High-speed in-memory short-lived cache for concurrent server action deduplication
 const platformAdminCheckCache = new Map<string, { isAdmin: boolean; expiresAt: number }>()
@@ -324,7 +324,7 @@ export async function requireTenantUser(requestedSlugOrId?: string): Promise<Ten
     try {
       const { cookies } = await import('next/headers')
       const cookieStore = await cookies()
-      hasPlatformCookie = Boolean(cookieStore.get('printerp_platform_session')?.value)
+      hasPlatformCookie = Boolean(cookieStore.get('printflow_platform_session')?.value)
     } catch {}
 
     if (hasPlatformCookie) {

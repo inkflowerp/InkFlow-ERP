@@ -1,5 +1,5 @@
 -- ==============================================================================
--- PrintERP SaaS - Migration 027: Security, Comprehensive Audit & Data Integrity
+-- PrintFlow - Migration 027: Security, Comprehensive Audit & Data Integrity
 -- Supports:
 --   1. Comprehensive Audit Logging (15 Critical Event Categories)
 --   2. Immutable Append-Only Audit Ledger Rules

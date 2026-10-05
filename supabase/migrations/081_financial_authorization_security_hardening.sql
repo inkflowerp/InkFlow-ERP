@@ -1,5 +1,5 @@
 -- ==============================================================================
--- InkFlow ERP SaaS - Migration 081: Financial Authorization & SECURITY DEFINER Hardening
+-- PrintFlow SaaS - Migration 081: Financial Authorization & SECURITY DEFINER Hardening
 -- Single Authoritative Source of Financial Operations in PostgreSQL:
 --   1. Explicit SET search_path = public, pg_temp; on all SECURITY DEFINER RPCs
 --   2. Strict rejection of unauthenticated 'anon' role callers

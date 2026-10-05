@@ -1,6 +1,6 @@
 import { createClient } from '../supabase/server.ts'
 import type { MaterialPurchaseConfig } from '../../types/product.types.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../db/data-store.ts'
 
 export class MaterialPurchaseConfigRepository {
   static async getConfigsByMaterial(
@@ -30,7 +30,7 @@ export class MaterialPurchaseConfigRepository {
       // Fallback
     }
 
-    const all = PrintERPDataStore.getAll<MaterialPurchaseConfig>(STORAGE_KEYS.MATERIAL_PURCHASE_CONFIGS, companyId)
+    const all = PrintFlowDataStore.getAll<MaterialPurchaseConfig>(STORAGE_KEYS.MATERIAL_PURCHASE_CONFIGS, companyId)
       .filter((c: MaterialPurchaseConfig) => (!c.company_id || c.company_id === companyId) && c.material_id === materialId)
 
     return options?.includeInactive ? all : all.filter((c: MaterialPurchaseConfig) => c.is_active)
@@ -69,7 +69,7 @@ export class MaterialPurchaseConfigRepository {
       // Fallback
     }
 
-    const all = PrintERPDataStore.getAll<MaterialPurchaseConfig>(STORAGE_KEYS.MATERIAL_PURCHASE_CONFIGS, companyId)
+    const all = PrintFlowDataStore.getAll<MaterialPurchaseConfig>(STORAGE_KEYS.MATERIAL_PURCHASE_CONFIGS, companyId)
       .filter((c: MaterialPurchaseConfig) => !c.company_id || c.company_id === companyId)
 
     return options?.includeInactive ? all : all.filter((c: MaterialPurchaseConfig) => c.is_active)
@@ -126,7 +126,7 @@ export class MaterialPurchaseConfigRepository {
       updated_at: new Date().toISOString(),
     }
 
-    PrintERPDataStore.addItem<MaterialPurchaseConfig>(
+    PrintFlowDataStore.addItem<MaterialPurchaseConfig>(
       STORAGE_KEYS.MATERIAL_PURCHASE_CONFIGS,
       localRecord,
       companyId
@@ -162,7 +162,7 @@ export class MaterialPurchaseConfigRepository {
       // Fallback
     }
 
-    return PrintERPDataStore.updateItem<MaterialPurchaseConfig>(
+    return PrintFlowDataStore.updateItem<MaterialPurchaseConfig>(
       STORAGE_KEYS.MATERIAL_PURCHASE_CONFIGS,
       id,
       updates,
@@ -187,7 +187,7 @@ export class MaterialPurchaseConfigRepository {
       // Fallback
     }
 
-    PrintERPDataStore.removeItem<MaterialPurchaseConfig>(STORAGE_KEYS.MATERIAL_PURCHASE_CONFIGS, id, companyId)
+    PrintFlowDataStore.removeItem<MaterialPurchaseConfig>(STORAGE_KEYS.MATERIAL_PURCHASE_CONFIGS, id, companyId)
     return true
   }
 }

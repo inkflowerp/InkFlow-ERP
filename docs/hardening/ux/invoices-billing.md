@@ -1,7 +1,7 @@
 # UX Specification: Invoices & Billing Module (বিলিং, চালান ও বকেয়া কালেকশন)
 
 ## 1. Executive Summary & Purpose
-The Invoices & Billing module is InkFlow ERP's financial nerve center. Its primary job to be done (JTBD) is helping the business owner, accountant, and collection managers answer:
+The Invoices & Billing module is PrintFlow's financial nerve center. Its primary job to be done (JTBD) is helping the business owner, accountant, and collection managers answer:
 > **"Which customer bills are overdue for collection today, and what is our live cash vs receivable status?"**
 
 The main billing workflow must be completable in **$\le 3$ clicks from the Dashboard**:

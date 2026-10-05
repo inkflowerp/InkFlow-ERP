@@ -53,16 +53,16 @@ import {
 } from '@/types/platform.types'
 import { SubscriptionPlanRecord } from '@/types/subscription.types'
 import { DEFAULT_PLANS } from '@/lib/subscription/subscription-constants'
-import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
+import { PrintFlowDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 
 function broadcastSubscriptionChange(companyId?: string) {
  if (typeof window !== 'undefined') {
  try {
- window.dispatchEvent(new CustomEvent('printerp_plans_sync'))
- window.dispatchEvent(new CustomEvent('printerp_company_subscriptions_updated', { detail: { companyId } }))
- window.dispatchEvent(new CustomEvent('printerp_data_sync', { detail: { key: STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, companyId } }))
+ window.dispatchEvent(new CustomEvent('printflow_plans_sync'))
+ window.dispatchEvent(new CustomEvent('printflow_company_subscriptions_updated', { detail: { companyId } }))
+ window.dispatchEvent(new CustomEvent('printflow_data_sync', { detail: { key: STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, companyId } }))
  if ('BroadcastChannel' in window) {
- const bus = new BroadcastChannel('printerp_realtime_bus')
+ const bus = new BroadcastChannel('printflow_realtime_bus')
  bus.postMessage({ type: 'SUBSCRIPTION_UPDATE', storageKey: STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, companyId })
  bus.close()
  }

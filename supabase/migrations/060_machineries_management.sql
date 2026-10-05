@@ -1,5 +1,5 @@
 -- ==============================================================================
--- InkFlow SaaS - Migration 060: Machineries Management & Equipment Fleet
+-- PrintFlow SaaS - Migration 060: Machineries Management & Equipment Fleet
 -- Supports:
 --   1. Tenant-scoped Machineries table (Digital, Offset, Large Format, UV, DTF, CNC, Laser, Fabrication, Finishing)
 --   2. Machine Assignments with start/end windows and job order links

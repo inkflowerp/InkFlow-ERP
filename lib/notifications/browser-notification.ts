@@ -8,7 +8,7 @@ import { playNotificationSound, NotificationSoundType } from './sound-manager'
 
 export type BrowserPermissionStatus = 'default' | 'granted' | 'denied' | 'unsupported'
 
-const PREF_STORAGE_KEY = 'printerp_browser_notifications_enabled'
+const PREF_STORAGE_KEY = 'printflow_browser_notifications_enabled'
 
 /**
  * Checks whether the browser supports the Notification API
@@ -52,7 +52,7 @@ export function setBrowserNotificationEnabled(enabled: boolean): void {
   try {
     localStorage.setItem(PREF_STORAGE_KEY, String(enabled))
     window.dispatchEvent(
-      new CustomEvent('printerp_browser_notif_pref_changed', { detail: { enabled } })
+      new CustomEvent('printflow_browser_notif_pref_changed', { detail: { enabled } })
     )
   } catch {}
 }

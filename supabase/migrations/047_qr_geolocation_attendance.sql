@@ -1,5 +1,5 @@
 -- ==============================================================================
--- InkFlow ERP SaaS - Migration 047: QR Code & Geolocation Attendance Engine
+-- PrintFlow SaaS - Migration 047: QR Code & Geolocation Attendance Engine
 -- Authoritative schema for:
 --   1. attendance_locations (Workplace geofences, branch scoping, coordinates)
 --   2. attendance_qr_tokens (Cryptographic SHA-256 hashed rotation tokens)

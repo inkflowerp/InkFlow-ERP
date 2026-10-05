@@ -104,7 +104,7 @@ export class GmailProviderAdapter implements IEmailProvider {
    * Builds an RFC 2822 compliant MIME message and encodes it to Base64URL
    */
   private createMimeMessage(payload: OutgoingEmailPayload): string {
-    const boundary = `====_PrintERP_${Date.now()}_${Math.random().toString(36).substring(2, 8)}_====`
+    const boundary = `====_PrintFlow_${Date.now()}_${Math.random().toString(36).substring(2, 8)}_====`
     const altBoundary = `====_Alt_${Date.now()}_${Math.random().toString(36).substring(2, 8)}_====`
 
     // Safely extract sender address with fallbacks
@@ -115,7 +115,7 @@ export class GmailProviderAdapter implements IEmailProvider {
       this.config.gmail_account_email ||
       this.config.sender_email ||
       process.env.PLATFORM_SENDER_EMAIL ||
-      'inkflow.erp@gmail.com'
+      'printflow.bd@gmail.com'
 
     const senderDisplayName =
       (typeof payload.from === 'object' && payload.from?.name) ||

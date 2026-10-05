@@ -239,19 +239,19 @@ export default function PricingManagementPage() {
     }
 
  if (typeof window !== 'undefined') {
- window.addEventListener('printerp_table_synced:pricing_rules', handleRealtimeSync)
- window.addEventListener('printerp_table_synced:products', handleRealtimeSync)
- window.addEventListener('printerp_table_synced', handleRealtimeSync)
- window.addEventListener('printerp_data_sync', handleRealtimeSync)
+ window.addEventListener('printflow_table_synced:pricing_rules', handleRealtimeSync)
+ window.addEventListener('printflow_table_synced:products', handleRealtimeSync)
+ window.addEventListener('printflow_table_synced', handleRealtimeSync)
+ window.addEventListener('printflow_data_sync', handleRealtimeSync)
  window.addEventListener('storage', handleRealtimeSync)
     }
 
  return () => {
  if (typeof window !== 'undefined') {
- window.removeEventListener('printerp_table_synced:pricing_rules', handleRealtimeSync)
- window.removeEventListener('printerp_table_synced:products', handleRealtimeSync)
- window.removeEventListener('printerp_table_synced', handleRealtimeSync)
- window.removeEventListener('printerp_data_sync', handleRealtimeSync)
+ window.removeEventListener('printflow_table_synced:pricing_rules', handleRealtimeSync)
+ window.removeEventListener('printflow_table_synced:products', handleRealtimeSync)
+ window.removeEventListener('printflow_table_synced', handleRealtimeSync)
+ window.removeEventListener('printflow_data_sync', handleRealtimeSync)
  window.removeEventListener('storage', handleRealtimeSync)
       }
     }
@@ -460,7 +460,7 @@ export default function PricingManagementPage() {
  const url = URL.createObjectURL(blob)
  const link = document.createElement('a')
  link.href = url
- link.setAttribute('download', `PrintERP_Commercial_RateSheet_${new Date().toISOString().split('T')[0]}.csv`)
+ link.setAttribute('download', `PrintFlow_Commercial_RateSheet_${new Date().toISOString().split('T')[0]}.csv`)
  document.body.appendChild(link)
  link.click()
  document.body.removeChild(link)

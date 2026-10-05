@@ -1,5 +1,5 @@
 -- ==============================================================================
--- PrintERP SaaS - Migration 026: Platform Administration & Root Governance
+-- PrintFlow - Migration 026: Platform Administration & Root Governance
 -- Supports:
 --   1. Platform Audit Logs (Immutable Root Audit Trail with RLS)
 --   2. Tenant-Specific Feature Flag Overrides
@@ -12,7 +12,7 @@
 create table if not exists public.platform_audit_logs (
     id uuid primary key default gen_random_uuid(),
     platform_admin_id uuid references public.platform_admins(id) on delete set null,
-    actor_email text not null default 'system@printerp.com.bd',
+    actor_email text not null default 'system@printflow.bd',
     action text not null, -- 'company.activate', 'company.suspend', 'company.reactivate', 'company.change_plan', 'feature_flag.update', 'rbac_template.update', 'system.job_retry', 'system.resolve'
     entity_type text not null, -- 'company', 'plan', 'feature_flag', 'rbac_template', 'system_job', 'system_alert'
     entity_id text,
@@ -202,7 +202,7 @@ begin
         ip_address
     ) values (
         v_admin_id,
-        coalesce(v_email, 'system@printerp.com.bd'),
+        coalesce(v_email, 'system@printflow.bd'),
         p_action,
         p_entity_type,
         p_entity_id,

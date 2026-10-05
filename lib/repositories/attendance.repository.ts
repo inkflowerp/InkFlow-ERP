@@ -15,7 +15,7 @@ import {
   getAttendanceLocalDate,
   formatAttendanceTime,
 } from '../attendance/geofence-utils.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../db/data-store.ts'
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
@@ -670,8 +670,8 @@ export class AttendanceRepository {
         notes: record.notes || null,
         created_at: new Date().toISOString(),
       }
-      const existingAtts = PrintERPDataStore.get<AttendanceRecord[]>(STORAGE_KEYS.ATTENDANCE) || []
-      PrintERPDataStore.set(STORAGE_KEYS.ATTENDANCE, [data, ...existingAtts.filter((r) => r.id !== data.id)])
+      const existingAtts = PrintFlowDataStore.get<AttendanceRecord[]>(STORAGE_KEYS.ATTENDANCE) || []
+      PrintFlowDataStore.set(STORAGE_KEYS.ATTENDANCE, [data, ...existingAtts.filter((r) => r.id !== data.id)])
     }
 
     // Also update or insert daily summary row into public.attendances for backward compatibility with payroll/HR
@@ -789,7 +789,7 @@ export class AttendanceRepository {
       }
     } catch {}
 
-    const all = PrintERPDataStore.get<AttendanceRecord[]>(STORAGE_KEYS.ATTENDANCE) || []
+    const all = PrintFlowDataStore.get<AttendanceRecord[]>(STORAGE_KEYS.ATTENDANCE) || []
     const targetDate = dateStr || getAttendanceLocalDate(new Date(), 'Asia/Dhaka')
     return all.filter((r) => r.employee_id === employeeId && r.attendance_date === targetDate)
   }
@@ -1219,7 +1219,7 @@ export class AttendanceRepository {
       }
     } catch {}
 
-    const all = PrintERPDataStore.get<any[]>(STORAGE_KEYS.ATTENDANCE) || []
+    const all = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.ATTENDANCE) || []
     return all.filter((a) => {
       if (a.company_id && a.company_id !== companyId) return false
       if (a.date && a.date !== dateStr) return false
@@ -1241,7 +1241,7 @@ export class AttendanceRepository {
       if (data) return data
     } catch {}
 
-    const all = PrintERPDataStore.get<any[]>(STORAGE_KEYS.ATTENDANCE) || []
+    const all = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.ATTENDANCE) || []
     return (
       all.find(
         (a) =>

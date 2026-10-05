@@ -1,5 +1,5 @@
 -- ==============================================================================
--- PrintERP SaaS - Migration 108: Atomic Invoicing, Dual-Entry Advance Payments & Inventory Concurrency Hardening
+-- PrintFlow - Migration 108: Atomic Invoicing, Dual-Entry Advance Payments & Inventory Concurrency Hardening
 -- ==============================================================================
 
 -- 0. CLEANUP OBSOLETE FUNCTION OVERLOADS (Ensures unique signatures & grants)

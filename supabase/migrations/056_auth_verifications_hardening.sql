@@ -1,5 +1,5 @@
 -- ==============================================================================
--- PrintERP / InkFlow SaaS - Migration 056: Auth Verifications Hardening & Atomic Functions
+-- PrintFlow / PrintFlow SaaS - Migration 056: Auth Verifications Hardening & Atomic Functions
 -- Enhances public.auth_verifications with explicit purpose support ('password_reset_auth'),
 -- atomic OTP and token verification stored procedures, and strict index optimization.
 -- ==============================================================================

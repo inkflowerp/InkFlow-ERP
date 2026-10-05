@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { KeyboardShortcutConfig, DEFAULT_SHORTCUTS } from '@/types/search.types'
 
-const STORAGE_KEY = 'printerp_keyboard_shortcuts'
+const STORAGE_KEY = 'printflow_keyboard_shortcuts'
 
 export function useShortcuts(handlers?: {
   onOpenSearch?: () => void
@@ -31,7 +31,7 @@ export function useShortcuts(handlers?: {
     if (typeof window !== 'undefined') {
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(updated))
-        window.dispatchEvent(new Event('printerp_shortcuts_updated'))
+        window.dispatchEvent(new Event('printflow_shortcuts_updated'))
       } catch {
         // Ignore
       }
@@ -43,7 +43,7 @@ export function useShortcuts(handlers?: {
     if (typeof window !== 'undefined') {
       try {
         localStorage.removeItem(STORAGE_KEY)
-        window.dispatchEvent(new Event('printerp_shortcuts_updated'))
+        window.dispatchEvent(new Event('printflow_shortcuts_updated'))
       } catch {
         // Ignore
       }

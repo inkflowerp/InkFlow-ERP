@@ -1,5 +1,5 @@
 -- ==============================================================================
--- PrintERP SaaS - Migration 059: Add Tenant Company Extended Fields
+-- PrintFlow - Migration 059: Add Tenant Company Extended Fields
 -- Fields added:
 --   - legal_name: Registered Legal Entity Name (for NBR, tax & contracts)
 --   - office_hours: Business / Shop working hours (e.g. '9:00 AM - 8:00 PM (Sat - Thu)')

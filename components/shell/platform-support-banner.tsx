@@ -19,7 +19,7 @@ export function PlatformSupportBanner() {
  const router = useRouter()
 
  useEffect(() => {
- const match = document.cookie.match(new RegExp('(^| )printerp_support_tenant=([^;]+)'))
+ const match = document.cookie.match(new RegExp('(^| )printflow_support_tenant=([^;]+)'))
  if (match) {
  try {
  const parsed = JSON.parse(decodeURIComponent(match[2]))
@@ -58,7 +58,7 @@ export function PlatformSupportBanner() {
  setIsExiting(true)
  try {
  await exitTenantSupportSessionAction()
- document.cookie = 'printerp_support_tenant=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;'
+ document.cookie = 'printflow_support_tenant=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;'
  router.push('/platform/support')
  router.refresh()
     } catch {

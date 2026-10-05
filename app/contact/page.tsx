@@ -8,6 +8,7 @@ import { useI18n } from '@/i18n/context'
 import { usePlatformSettings } from '@/hooks/use-platform-settings'
 import { Button } from '@/components/ui/button'
 import { submitDemoRequestAction } from '@/actions/lead.actions'
+import { BRAND } from '@/config/brand'
 import {
   Phone,
   Mail,
@@ -96,12 +97,12 @@ export default function PublicContactPage() {
                     {tBilingual('Dhaka Headquarters & Help Desk', 'ঢাকা প্রধান কার্যালয় ও সাপোর্ট ডেস্ক')}
                   </h3>
 
-                  <div className="space-y-4 text-xs sm:text-sm text-muted-foreground dark:text-muted-foreground">
+                  <div className="space-y-4 text-xs sm:text-sm text-muted-foreground">
                     <div className="flex items-start gap-3">
                       <MapPin className="h-5 w-5 text-primary text-primary shrink-0 mt-0.5" />
                       <div>
-                        <span className="font-bold text-foreground dark:text-white block">Official Address</span>
-                        <span className="text-muted-foreground dark:text-muted-foreground">
+                        <span className="font-bold text-foreground block">Official Address</span>
+                        <span className="text-muted-foreground">
                           {contactAddress || 'Level 4, Modern Bhaban, Motijheel C/A, Dhaka-1000, Bangladesh'}
                         </span>
                       </div>
@@ -110,19 +111,22 @@ export default function PublicContactPage() {
                     <div className="flex items-start gap-3">
                       <Phone className="h-5 w-5 text-primary text-primary shrink-0 mt-0.5" />
                       <div>
-                        <span className="font-bold text-foreground dark:text-white block">Direct Phone & Support Helpline</span>
-                        <span className="text-primary text-primary font-semibold tabular-nums">
-                          {supportHelpline || contactPhone || '+880 1819-876543 / +880 1711-234567'}
-                        </span>
+                        <span className="font-bold text-foreground block">Direct Phone & Support Helpline</span>
+                        <a
+                          href={`tel:${BRAND.helplineE164}`}
+                          className="text-primary hover:underline font-semibold tabular-nums block"
+                        >
+                          {supportHelpline || contactPhone || BRAND.helplineDisplay}
+                        </a>
                       </div>
                     </div>
 
                     <div className="flex items-start gap-3">
                       <Mail className="h-5 w-5 text-primary text-primary shrink-0 mt-0.5" />
                       <div>
-                        <span className="font-bold text-foreground dark:text-white block">Email Inquiries</span>
+                        <span className="font-bold text-foreground block">Email Inquiries</span>
                         <span className="text-muted-foreground tabular-nums">
-                          {contactEmail || 'support@printerp.com.bd'}
+                          {contactEmail || 'support@printflow.bd'}
                         </span>
                       </div>
                     </div>
@@ -130,17 +134,17 @@ export default function PublicContactPage() {
                     <div className="flex items-start gap-3">
                       <Clock className="h-5 w-5 text-primary text-primary shrink-0 mt-0.5" />
                       <div>
-                        <span className="font-bold text-foreground dark:text-white block">Press Support Hours</span>
-                        <span className="text-muted-foreground dark:text-muted-foreground">
+                        <span className="font-bold text-foreground block">Press Support Hours</span>
+                        <span className="text-muted-foreground">
                           Saturday – Thursday: 9:00 AM – 9:00 PM (Emergency 24/7 for Enterprise)
                         </span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="pt-4 border-t border-border dark:border-border">
+                  <div className="pt-4 border-t border-border">
                     <a
-                      href={`https://wa.me/${(supportHelpline || contactPhone || '8801819876543').replace(/\D/g, '')}`}
+                      href={BRAND.whatsappUrl}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center justify-center w-full gap-2 px-4 py-2.5 rounded-xl bg-success hover:bg-success text-white font-bold text-xs sm:text-sm shadow-xs transition-colors cursor-pointer"

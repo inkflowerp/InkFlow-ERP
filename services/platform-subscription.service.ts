@@ -215,7 +215,7 @@ export class PlatformSubscriptionService {
           amount: finalPayableAmount,
           currency: (targetPlan.currency?.toUpperCase() === 'USD' ? 'USD' : 'BDT') as 'BDT' | 'USD',
           customerName: 'Platform Owner / SaaS Cluster Admin',
-          customerEmail: input.adminEmail || 'admin@inkflow.io',
+          customerEmail: input.adminEmail || 'admin@printflow.bd',
           customerPhone: input.adminPhone || '+8801700000000',
           redirectUrl: input.returnUrl || `${getAppUrl()}/platform/billing?status=processing`,
           cancelUrl: input.cancelUrl || `${getAppUrl()}/platform/billing?status=cancelled`,
@@ -250,7 +250,7 @@ export class PlatformSubscriptionService {
         companyId: 'platform_root',
         eventType: 'invoice_created',
         recipientName: 'Platform Administrator',
-        recipientEmail: input.adminEmail || 'admin@inkflow.io',
+        recipientEmail: input.adminEmail || 'admin@printflow.bd',
         recipientPhone: input.adminPhone || '+8801700000000',
         variables: {
           invoice_id: invoiceId,
@@ -486,7 +486,7 @@ export class PlatformSubscriptionService {
         companyId: 'platform_root',
         eventType: 'payment_received',
         recipientName: 'Platform Administrator',
-        recipientEmail: 'admin@inkflow.io',
+        recipientEmail: 'admin@printflow.bd',
         variables: {
           invoice_id: trx.invoice_id || 'PLT-INV',
           transaction_id: internalTrxId,
@@ -553,7 +553,7 @@ export class PlatformSubscriptionService {
         companyId: 'platform_root',
         eventType: 'invoice_created',
         recipientName: 'Platform Administrator',
-        recipientEmail: 'admin@inkflow.io',
+        recipientEmail: 'admin@printflow.bd',
         variables: {
           current_plan: sub.plan?.name || 'Current Plan',
           next_plan: targetPlan.name,
@@ -603,7 +603,7 @@ export class PlatformSubscriptionService {
         companyId: 'platform_root',
         eventType: 'invoice_created',
         recipientName: 'Platform Administrator',
-        recipientEmail: 'admin@inkflow.io',
+        recipientEmail: 'admin@printflow.bd',
         variables: {
           plan_name: sub.plan?.name || 'Platform Plan',
           effective_date: atPeriodEnd ? sub.current_period_end.split('T')[0] : now.toISOString().split('T')[0],

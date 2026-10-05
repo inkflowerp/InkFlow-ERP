@@ -16,7 +16,7 @@ import type {
   TenantAccountType,
   TenantAccountTypeMeta,
 } from '../../types/subscription.types.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../db/data-store.ts'
 
 export const TENANT_ACCOUNT_TYPE_METADATA: Record<TenantAccountType, TenantAccountTypeMeta> = {
   trial: {
@@ -471,12 +471,12 @@ export function getTenantResourceUsage(
   plan?: SubscriptionPlanRecord | null,
   override?: CustomLimitsOverride | null
 ): TenantResourceUsage {
-  const users = PrintERPDataStore.get<any[]>(STORAGE_KEYS.COMPANY_USERS) || []
-  const customers = PrintERPDataStore.get<any[]>(STORAGE_KEYS.CUSTOMERS) || []
-  const orders = PrintERPDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []
-  const products = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTS) || []
-  const materials = PrintERPDataStore.get<any[]>(STORAGE_KEYS.MATERIALS) || []
-  const branches = PrintERPDataStore.get<any[]>(STORAGE_KEYS.BRANCHES) || []
+  const users = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.COMPANY_USERS) || []
+  const customers = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.CUSTOMERS) || []
+  const orders = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []
+  const products = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.PRODUCTS) || []
+  const materials = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.MATERIALS) || []
+  const branches = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.BRANCHES) || []
 
   const isCoMatch = (item: any) => {
     if (!item) return false
@@ -510,8 +510,8 @@ export function getTenantResourceUsage(
   if (!activePlan) {
     if (typeof window !== 'undefined') {
       try {
-        const storedPlans = PrintERPDataStore.get<SubscriptionPlanRecord[]>(STORAGE_KEYS.PLATFORM_PLANS) || DEFAULT_PLANS
-        const storedSubs = PrintERPDataStore.get<Record<string, CompanySubscriptionRecord>>(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS)
+        const storedPlans = PrintFlowDataStore.get<SubscriptionPlanRecord[]>(STORAGE_KEYS.PLATFORM_PLANS) || DEFAULT_PLANS
+        const storedSubs = PrintFlowDataStore.get<Record<string, CompanySubscriptionRecord>>(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS)
         const compSub =
           storedSubs?.[companyId] ||
           storedSubs?.['default']

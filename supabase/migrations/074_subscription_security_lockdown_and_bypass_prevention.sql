@@ -1,5 +1,5 @@
 -- ==============================================================================
--- InkFlow ERP SaaS - Migration 074: Subscription Security Lockdown & Bypass Prevention
+-- PrintFlow SaaS - Migration 074: Subscription Security Lockdown & Bypass Prevention
 -- Enforces the Absolute Business Rule:
 --   A tenant's subscription/plan may change ONLY via:
 --     1. Verified Payment (via secure backend provider verification or atomic RPC)

@@ -103,14 +103,14 @@ export default function PlatformEmailGatewayPage() {
  const [smtpUsername, setSmtpUsername] = useState('')
  const [password, setPassword] = useState('')
  const [senderName, setSenderName] = useState('PrintFlow Platform')
- const [senderEmail, setSenderEmail] = useState('inkflow.erp@gmail.com')
- const [replyToEmail, setReplyToEmail] = useState('inkflow.erp@gmail.com')
+ const [senderEmail, setSenderEmail] = useState('printflow.bd@gmail.com')
+ const [replyToEmail, setReplyToEmail] = useState('printflow.bd@gmail.com')
 
  // Toast & Modal State
  const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
  const [testResult, setTestResult] = useState<{ success: boolean; message: string; latencyMs?: number } | null>(null)
  const [isTestModalOpen, setIsTestModalOpen] = useState(false)
- const [testRecipient, setTestRecipient] = useState('inkflow.erp@gmail.com')
+ const [testRecipient, setTestRecipient] = useState('printflow.bd@gmail.com')
  const [sendingTestEmail, setSendingTestEmail] = useState(false)
 
  // Template Editing State
@@ -157,8 +157,8 @@ export default function PlatformEmailGatewayPage() {
  setEncryptionType(gwRes.data.encryption_type || 'tls')
  setSmtpUsername(gwRes.data.smtp_username || '')
  setSenderName(gwRes.data.sender_name || 'PrintFlow Platform')
- setSenderEmail(gwRes.data.sender_email || 'inkflow.erp@gmail.com')
- setReplyToEmail(gwRes.data.reply_to_email || 'inkflow.erp@gmail.com')
+ setSenderEmail(gwRes.data.sender_email || 'printflow.bd@gmail.com')
+ setReplyToEmail(gwRes.data.reply_to_email || 'printflow.bd@gmail.com')
  } else {
  setGateway(null)
  }
@@ -706,7 +706,7 @@ export default function PlatformEmailGatewayPage() {
  <Input
  value={smtpUsername}
  onChange={(e) => setSmtpUsername(e.target.value)}
- placeholder="inkflow.erp@gmail.com"
+ placeholder="printflow.bd@gmail.com"
  className="h-9 text-xs bg-card border-border text-foreground tabular-nums rounded-xl"
  />
  </div>
@@ -784,7 +784,7 @@ export default function PlatformEmailGatewayPage() {
  type="email"
  value={senderEmail}
  onChange={(e) => setSenderEmail(e.target.value)}
- placeholder="inkflow.erp@gmail.com"
+ placeholder="printflow.bd@gmail.com"
  className="h-9 text-xs bg-card border-border text-foreground rounded-xl tabular-nums"
  />
  </div>
@@ -795,7 +795,7 @@ export default function PlatformEmailGatewayPage() {
  type="email"
  value={replyToEmail}
  onChange={(e) => setReplyToEmail(e.target.value)}
- placeholder="inkflow.erp@gmail.com"
+ placeholder="printflow.bd@gmail.com"
  className="h-9 text-xs bg-card border-border text-foreground rounded-xl tabular-nums"
  />
  </div>

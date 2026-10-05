@@ -1,5 +1,5 @@
 -- ==============================================================================
--- PrintERP SaaS - Migration 106: Workflow Security Definer Hardening & High-Volume Foreign Key Indexes
+-- PrintFlow - Migration 106: Workflow Security Definer Hardening & High-Volume Foreign Key Indexes
 -- 1. Security Track (Section 80): Revoke unauthorized public/anon execution grants from
 --    sensitive administrative purge and reset functions; ensure explicit search_path.
 -- 2. Performance Track (Section 81): Add targeted, non-duplicate composite indexes on

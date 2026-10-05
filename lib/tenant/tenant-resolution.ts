@@ -602,7 +602,7 @@ export function resolveTenant(
   // 5. Preview Fallback Hosts (e.g. *.vercel.app, *.pages.dev)
   // ---------------------------------------------------------------------------
   if (isPreviewHost) {
-    // If the host itself is a preview deployment URL (e.g. inkflow-erp.vercel.app or branch-xyz.vercel.app)
+    // If the host itself is a preview deployment URL (e.g. printflow-preview.vercel.app or branch-xyz.vercel.app)
     const previewRoot = extractCanonicalRootDomain(host).split(':')[0]
     if (host === previewRoot || host === `www.${previewRoot}`) {
       // Path-based tenant resolution on preview host
@@ -642,7 +642,7 @@ export function resolveTenant(
       }
     }
 
-    // Subdomain on preview root (e.g. vision.inkflow-erp.vercel.app)
+    // Subdomain on preview root (e.g. vision.printflow.bd)
     if (host.endsWith(`.${previewRoot}`)) {
       const rawSub = host.slice(0, -(previewRoot.length + 1)).replace(/^www\./i, '')
       const labels = rawSub.split('.')

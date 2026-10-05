@@ -1,5 +1,5 @@
 -- ==============================================================================
--- InkFlow SaaS - Migration 089: Modernize and Relax Products Constraints
+-- PrintFlow SaaS - Migration 089: Modernize and Relax Products Constraints
 -- Fixes constraint errors on products table:
 --   1. products_product_type_check: Adds ready_product, production_product, service, finishing, additional, etc.
 --   2. products_unit_check: Adds piece, set, pack, box, item, meter, rft, liter, etc.

@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { LanguageSwitcher } from '@/components/shell/language-switcher'
 import { Printer, Sparkles, ShieldCheck, CheckCircle2 } from 'lucide-react'
 import { usePlatformSettings } from '@/hooks/use-platform-settings'
+import { BRAND } from '@/config/brand'
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   const { appName, appLogoUrl, tagline, supportHelpline, contactPhone } = usePlatformSettings()
@@ -129,10 +130,10 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         <div className="text-center text-xs text-muted-foreground mt-4 shrink-0">
           <span>Need setup assistance or customized onboarding? Hotline: </span>
           <a
-            href={`tel:${(supportHelpline || contactPhone || '+8801700000000').replace(/[^\d+]/g, '')}`}
+            href={`tel:${(supportHelpline || contactPhone || BRAND.helplineE164).replace(/[^\d+]/g, '')}`}
             className="font-semibold text-primary hover:underline tabular-nums"
           >
-            {supportHelpline || contactPhone || '+880 1700-000000'}
+            {supportHelpline || contactPhone || BRAND.helplineDisplay}
           </a>
         </div>
       </div>

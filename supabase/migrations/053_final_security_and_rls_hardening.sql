@@ -1,5 +1,5 @@
 -- ==============================================================================
--- InkFlow SaaS - Migration 053: Comprehensive Production Security & RLS Hardening
+-- PrintFlow SaaS - Migration 053: Comprehensive Production Security & RLS Hardening
 -- Single Source of Truth & Authoritative Isolation Boundary:
 --   1. Enforces search_path = public, pg_temp across ALL security definer functions
 --   2. Restricts EXECUTE permissions on privileged database functions

@@ -1,5 +1,5 @@
 # PrintFlow 🖨️🇧🇩
-*(formerly InkFlow ERP / PrintERP)*
+*(formerly PrintFlow / PrintFlow)*
 
 **Enterprise Multi-Tenant ERP & Factory Automation Suite tailored for Bangladesh Printing Presses, Digital Advertising Signage, and Commercial Packaging Workshops.**
 

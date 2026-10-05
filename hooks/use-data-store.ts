@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import {
-  PrintERPDataStore,
+  PrintFlowDataStore,
   StorageKey,
   STORAGE_KEYS,
   getInitialSeedData,
@@ -57,8 +57,8 @@ export function useDataStore<T = any>(
   }, [initialSeed])
 
   const [data, setData] = useState<T>(() => {
-    const slug = customTenantSlug || PrintERPDataStore.getActiveTenantSlug()
-    const cached = PrintERPDataStore.get<T>(key, slug)
+    const slug = customTenantSlug || PrintFlowDataStore.getActiveTenantSlug()
+    const cached = PrintFlowDataStore.get<T>(key, slug)
     if (cached !== undefined && cached !== null) {
       if (Array.isArray(initialSeed) && !Array.isArray(cached)) {
         if (typeof cached === 'object' && Array.isArray((cached as any).sequences)) {
@@ -88,8 +88,8 @@ export function useDataStore<T = any>(
   })
 
   const reload = useCallback(() => {
-    const slug = customTenantSlug || PrintERPDataStore.getActiveTenantSlug()
-    const latest = PrintERPDataStore.get<T>(key, slug)
+    const slug = customTenantSlug || PrintFlowDataStore.getActiveTenantSlug()
+    const latest = PrintFlowDataStore.get<T>(key, slug)
     if (latest !== undefined && latest !== null) {
       if (Array.isArray(initialSeedRef.current) && !Array.isArray(latest)) {
         if (typeof latest === 'object' && Array.isArray((latest as any).sequences)) {
@@ -116,8 +116,8 @@ export function useDataStore<T = any>(
     // Initial sync on mount
     reloadRef.current()
 
-    const slug = customTenantSlug || PrintERPDataStore.getActiveTenantSlug()
-    const effectiveKey = PrintERPDataStore.getEffectiveKey(key, slug)
+    const slug = customTenantSlug || PrintFlowDataStore.getActiveTenantSlug()
+    const effectiveKey = PrintFlowDataStore.getEffectiveKey(key, slug)
 
     let syncDebounceTimer: ReturnType<typeof setTimeout> | null = null
     const scheduleReload = () => {
@@ -151,7 +151,7 @@ export function useDataStore<T = any>(
     let localBc: BroadcastChannel | null = null
     if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
       try {
-        localBc = new BroadcastChannel('printerp_realtime_bus')
+        localBc = new BroadcastChannel('printflow_realtime_bus')
         localBc.onmessage = (e) => {
           const msg = e.data
           if (
@@ -191,24 +191,24 @@ export function useDataStore<T = any>(
       }
     }
 
-    window.addEventListener('printerp_data_sync', handleCustomSync)
-    window.addEventListener('printerp_table_synced', handleTableSync)
-    window.addEventListener(`printerp_table_synced:${key}`, handleTableSync)
+    window.addEventListener('printflow_data_sync', handleCustomSync)
+    window.addEventListener('printflow_table_synced', handleTableSync)
+    window.addEventListener(`printflow_table_synced:${key}`, handleTableSync)
     window.addEventListener(`${key}_updated`, handleKeyUpdate)
     window.addEventListener(`${effectiveKey}_updated`, handleKeyUpdate)
     window.addEventListener('storage', handleStorageChange)
 
     // Specific granular child entity updates
     if (key === STORAGE_KEYS.ORDERS) {
-      window.addEventListener('printerp_order_items_updated', handleKeyUpdate)
+      window.addEventListener('printflow_order_items_updated', handleKeyUpdate)
     } else if (key === STORAGE_KEYS.INVOICES) {
-      window.addEventListener('printerp_invoice_items_updated', handleKeyUpdate)
+      window.addEventListener('printflow_invoice_items_updated', handleKeyUpdate)
     } else if (key === STORAGE_KEYS.QUOTATIONS) {
-      window.addEventListener('printerp_quotation_items_updated', handleKeyUpdate)
+      window.addEventListener('printflow_quotation_items_updated', handleKeyUpdate)
     } else if (key === STORAGE_KEYS.DESIGN_JOBS) {
-      window.addEventListener('printerp_design_versions_updated', handleKeyUpdate)
+      window.addEventListener('printflow_design_versions_updated', handleKeyUpdate)
     } else if (key === STORAGE_KEYS.TIMELINE_EVENTS) {
-      window.addEventListener('printerp_timeline_updated', handleKeyUpdate)
+      window.addEventListener('printflow_timeline_updated', handleKeyUpdate)
     }
 
     return () => {
@@ -218,40 +218,40 @@ export function useDataStore<T = any>(
           localBc.close()
         } catch {}
       }
-      window.removeEventListener('printerp_data_sync', handleCustomSync)
-      window.removeEventListener('printerp_table_synced', handleTableSync)
-      window.removeEventListener(`printerp_table_synced:${key}`, handleTableSync)
+      window.removeEventListener('printflow_data_sync', handleCustomSync)
+      window.removeEventListener('printflow_table_synced', handleTableSync)
+      window.removeEventListener(`printflow_table_synced:${key}`, handleTableSync)
       window.removeEventListener(`${key}_updated`, handleKeyUpdate)
       window.removeEventListener(`${effectiveKey}_updated`, handleKeyUpdate)
       window.removeEventListener('storage', handleStorageChange)
 
       if (key === STORAGE_KEYS.ORDERS) {
-        window.removeEventListener('printerp_order_items_updated', handleKeyUpdate)
+        window.removeEventListener('printflow_order_items_updated', handleKeyUpdate)
       } else if (key === STORAGE_KEYS.INVOICES) {
-        window.removeEventListener('printerp_invoice_items_updated', handleKeyUpdate)
+        window.removeEventListener('printflow_invoice_items_updated', handleKeyUpdate)
       } else if (key === STORAGE_KEYS.QUOTATIONS) {
-        window.removeEventListener('printerp_quotation_items_updated', handleKeyUpdate)
+        window.removeEventListener('printflow_quotation_items_updated', handleKeyUpdate)
       } else if (key === STORAGE_KEYS.DESIGN_JOBS) {
-        window.removeEventListener('printerp_design_versions_updated', handleKeyUpdate)
+        window.removeEventListener('printflow_design_versions_updated', handleKeyUpdate)
       } else if (key === STORAGE_KEYS.TIMELINE_EVENTS) {
-        window.removeEventListener('printerp_timeline_updated', handleKeyUpdate)
+        window.removeEventListener('printflow_timeline_updated', handleKeyUpdate)
       }
     }
   }, [key, customTenantSlug])
 
   const set = useCallback(
     (newData: T | ((prev: T) => T)) => {
-      const slug = customTenantSlug || PrintERPDataStore.getActiveTenantSlug()
+      const slug = customTenantSlug || PrintFlowDataStore.getActiveTenantSlug()
       if (typeof newData === 'function') {
         setData((prev) => {
           const next = (newData as (prev: T) => T)(prev)
           queueMicrotask(() => {
-            PrintERPDataStore.set(key, next, true, slug)
+            PrintFlowDataStore.set(key, next, true, slug)
           })
           return next
         })
       } else {
-        PrintERPDataStore.set(key, newData, true, slug)
+        PrintFlowDataStore.set(key, newData, true, slug)
         setData(newData)
       }
     },
@@ -260,8 +260,8 @@ export function useDataStore<T = any>(
 
   const addItem = useCallback(
     <I extends { id?: string }>(item: I) => {
-      const slug = customTenantSlug || PrintERPDataStore.getActiveTenantSlug()
-      const updated = PrintERPDataStore.addItem(key, item, slug)
+      const slug = customTenantSlug || PrintFlowDataStore.getActiveTenantSlug()
+      const updated = PrintFlowDataStore.addItem(key, item, slug)
       setData(updated as unknown as T)
       return updated
     },
@@ -273,8 +273,8 @@ export function useDataStore<T = any>(
       idOrPredicate: string | ((item: I) => boolean),
       updates: Partial<I>
     ) => {
-      const slug = customTenantSlug || PrintERPDataStore.getActiveTenantSlug()
-      const updated = PrintERPDataStore.updateItem(key, idOrPredicate as any, updates, slug)
+      const slug = customTenantSlug || PrintFlowDataStore.getActiveTenantSlug()
+      const updated = PrintFlowDataStore.updateItem(key, idOrPredicate as any, updates, slug)
       reload()
       return updated
     },
@@ -283,8 +283,8 @@ export function useDataStore<T = any>(
 
   const removeItem = useCallback(
     <I extends { id?: string }>(idOrPredicate: string | ((item: I) => boolean)) => {
-      const slug = customTenantSlug || PrintERPDataStore.getActiveTenantSlug()
-      const res = PrintERPDataStore.removeItem(key, idOrPredicate as any, slug)
+      const slug = customTenantSlug || PrintFlowDataStore.getActiveTenantSlug()
+      const res = PrintFlowDataStore.removeItem(key, idOrPredicate as any, slug)
       reload()
       return res
     },
@@ -293,8 +293,8 @@ export function useDataStore<T = any>(
 
   const findItem = useCallback(
     <I extends { id?: string }>(idOrPredicate: string | ((item: I) => boolean)) => {
-      const slug = customTenantSlug || PrintERPDataStore.getActiveTenantSlug()
-      return PrintERPDataStore.findItem<I>(key, idOrPredicate as any, slug)
+      const slug = customTenantSlug || PrintFlowDataStore.getActiveTenantSlug()
+      return PrintFlowDataStore.findItem<I>(key, idOrPredicate as any, slug)
     },
     [key, customTenantSlug]
   )

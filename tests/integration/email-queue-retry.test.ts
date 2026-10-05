@@ -17,9 +17,9 @@ describe('Email Queue Asynchronous Processing & Retry Unit Tests', () => {
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }
-    EmailDataStore.set('printerp_email_gateways', [tenantGw])
-    EmailDataStore.set('printerp_email_queue', [])
-    EmailDataStore.set('printerp_email_logs', [])
+    EmailDataStore.set('printflow_email_gateways', [tenantGw])
+    EmailDataStore.set('printflow_email_queue', [])
+    EmailDataStore.set('printflow_email_logs', [])
     MockProviderAdapter.clearHistory()
   })
 
@@ -40,7 +40,7 @@ describe('Email Queue Asynchronous Processing & Retry Unit Tests', () => {
     assert.strictEqual(res.status, 'queued')
     assert.ok(res.messageId)
 
-    const queue = EmailDataStore.get<any[]>('printerp_email_queue') || []
+    const queue = EmailDataStore.get<any[]>('printflow_email_queue') || []
     assert.strictEqual(queue.length, 1)
     assert.strictEqual(queue[0].recipient, 'payee@client.com')
     assert.strictEqual(queue[0].status, 'pending')
@@ -63,7 +63,7 @@ describe('Email Queue Asynchronous Processing & Retry Unit Tests', () => {
     assert.strictEqual(processRes.succeeded, 1)
     assert.strictEqual(processRes.failed, 0)
 
-    const queue = EmailDataStore.get<any[]>('printerp_email_queue') || []
+    const queue = EmailDataStore.get<any[]>('printflow_email_queue') || []
     assert.strictEqual(queue[0].status, 'completed')
     assert.strictEqual(queue[0].attempts, 1)
   })

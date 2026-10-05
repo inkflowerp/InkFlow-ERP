@@ -35,7 +35,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
+import { PrintFlowDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import { dispatchToast } from '@/components/shared/toast-feedback'
 import {
  ProductionTaskRecord,
@@ -143,8 +143,8 @@ export function getAvailableFloorMaterials(companyId?: string): FloorMaterialSto
  try {
     // 1. Read Floor Consumption records (only available, active balances)
  const floorConsumptions = (
- PrintERPDataStore.get<FloorConsumptionRecord[]>(STORAGE_KEYS.FLOOR_CONSUMPTIONS, companyId) ||
- PrintERPDataStore.get<FloorConsumptionRecord[]>(STORAGE_KEYS.FLOOR_CONSUMPTIONS) ||
+ PrintFlowDataStore.get<FloorConsumptionRecord[]>(STORAGE_KEYS.FLOOR_CONSUMPTIONS, companyId) ||
+ PrintFlowDataStore.get<FloorConsumptionRecord[]>(STORAGE_KEYS.FLOOR_CONSUMPTIONS) ||
       []
     ).filter((fc) => {
  if (!fc || !fc.material_name) return false
@@ -175,8 +175,8 @@ export function getAvailableFloorMaterials(companyId?: string): FloorMaterialSto
 
     // 2. Read Mounted / Active Floor Rolls
  const mountedRolls = (
- PrintERPDataStore.get<InventoryRollRecord[]>(STORAGE_KEYS.MOUNTED_ROLLS, companyId) ||
- PrintERPDataStore.get<InventoryRollRecord[]>(STORAGE_KEYS.MOUNTED_ROLLS) ||
+ PrintFlowDataStore.get<InventoryRollRecord[]>(STORAGE_KEYS.MOUNTED_ROLLS, companyId) ||
+ PrintFlowDataStore.get<InventoryRollRecord[]>(STORAGE_KEYS.MOUNTED_ROLLS) ||
       []
     ).filter((r) => {
  if (!r) return false
@@ -361,8 +361,8 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
           // Also merge active mounted rolls from local storage
  try {
  const mountedRolls = (
- PrintERPDataStore.get<InventoryRollRecord[]>(STORAGE_KEYS.MOUNTED_ROLLS, company?.id) ||
- PrintERPDataStore.get<InventoryRollRecord[]>(STORAGE_KEYS.MOUNTED_ROLLS) ||
+ PrintFlowDataStore.get<InventoryRollRecord[]>(STORAGE_KEYS.MOUNTED_ROLLS, company?.id) ||
+ PrintFlowDataStore.get<InventoryRollRecord[]>(STORAGE_KEYS.MOUNTED_ROLLS) ||
               []
             ).filter((r) => {
  if (!r) return false
@@ -413,12 +413,12 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
  const handleSync = () => {
  syncFloorConsumptions()
       }
- window.addEventListener('printerp_table_synced:floor_consumption', handleSync)
- window.addEventListener('printerp_table_synced:physical_rolls', handleSync)
+ window.addEventListener('printflow_table_synced:floor_consumption', handleSync)
+ window.addEventListener('printflow_table_synced:physical_rolls', handleSync)
  return () => {
  isMounted = false
- window.removeEventListener('printerp_table_synced:floor_consumption', handleSync)
- window.removeEventListener('printerp_table_synced:physical_rolls', handleSync)
+ window.removeEventListener('printflow_table_synced:floor_consumption', handleSync)
+ window.removeEventListener('printflow_table_synced:physical_rolls', handleSync)
       }
     }
 
@@ -534,7 +534,7 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
  activeTask.required_material = newMat
  try {
  const tasks =
- PrintERPDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
+ PrintFlowDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
  const idx = tasks.findIndex((t) => t.id === activeTask.id)
  if (idx !== -1) {
  tasks[idx] = {
@@ -542,7 +542,7 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
  required_material: newMat,
  updated_at: new Date().toISOString(),
           }
- PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, tasks)
+ PrintFlowDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, tasks)
         }
       } catch (_) {}
     }
@@ -569,8 +569,8 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
  try {
       // 1. Update Floor Consumptions
  const floorConsumptions =
- PrintERPDataStore.get<FloorConsumptionRecord[]>(STORAGE_KEYS.FLOOR_CONSUMPTIONS, company?.id) ||
- PrintERPDataStore.get<FloorConsumptionRecord[]>(STORAGE_KEYS.FLOOR_CONSUMPTIONS) ||
+ PrintFlowDataStore.get<FloorConsumptionRecord[]>(STORAGE_KEYS.FLOOR_CONSUMPTIONS, company?.id) ||
+ PrintFlowDataStore.get<FloorConsumptionRecord[]>(STORAGE_KEYS.FLOOR_CONSUMPTIONS) ||
         []
  const fcIdx = floorConsumptions.findIndex(
         (fc) =>
@@ -586,13 +586,13 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
           (Number(floorConsumptions[fcIdx].consumed_quantity) || 0) + totalDeduct
  floorConsumptions[fcIdx].status = newBal <= 0 ? 'fully_consumed' : 'partially_consumed'
  floorConsumptions[fcIdx].updated_at = new Date().toISOString()
- PrintERPDataStore.set(STORAGE_KEYS.FLOOR_CONSUMPTIONS, floorConsumptions)
+ PrintFlowDataStore.set(STORAGE_KEYS.FLOOR_CONSUMPTIONS, floorConsumptions)
       }
 
       // 2. Update Mounted Rolls
  const mountedRolls =
- PrintERPDataStore.get<InventoryRollRecord[]>(STORAGE_KEYS.MOUNTED_ROLLS, company?.id) ||
- PrintERPDataStore.get<InventoryRollRecord[]>(STORAGE_KEYS.MOUNTED_ROLLS) ||
+ PrintFlowDataStore.get<InventoryRollRecord[]>(STORAGE_KEYS.MOUNTED_ROLLS, company?.id) ||
+ PrintFlowDataStore.get<InventoryRollRecord[]>(STORAGE_KEYS.MOUNTED_ROLLS) ||
         []
  const rIdx = mountedRolls.findIndex(
         (r) =>
@@ -611,11 +611,11 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
  mountedRolls[rIdx].remaining_area_sft = newArea
  mountedRolls[rIdx].status = newLen <= 0 ? 'depleted' : mountedRolls[rIdx].status
  mountedRolls[rIdx].updated_at = new Date().toISOString()
- PrintERPDataStore.set(STORAGE_KEYS.MOUNTED_ROLLS, mountedRolls)
+ PrintFlowDataStore.set(STORAGE_KEYS.MOUNTED_ROLLS, mountedRolls)
       }
 
       // 3. Keep general Materials store updated
- const materials = PrintERPDataStore.get<any[]>(STORAGE_KEYS.MATERIALS) || []
+ const materials = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.MATERIALS) || []
  const matchedIdx = materials.findIndex(
         (m) => m.name?.toLowerCase() === matName.toLowerCase() || m.id === matName
       )
@@ -625,7 +625,7 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
  remainingStock = Math.max(0, prev - totalDeduct)
  materials[matchedIdx].current_stock = remainingStock
  materials[matchedIdx].updated_at = new Date().toISOString()
- PrintERPDataStore.set(STORAGE_KEYS.MATERIALS, materials)
+ PrintFlowDataStore.set(STORAGE_KEYS.MATERIALS, materials)
       }
 
       // 4. Update local state list
@@ -641,7 +641,7 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
 
       // 5. Record in Stock Ledger
  try {
- const ledger = PrintERPDataStore.get<any[]>(STORAGE_KEYS.STOCK_LEDGER) || []
+ const ledger = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.STOCK_LEDGER) || []
  ledger.push({
  id: crypto.randomUUID(),
  material_name: matName,
@@ -654,7 +654,7 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
  notes: `Floor consumption print run: ${lengthDeduct} ft (${consumedQty} sft) + ${wastageQty || 0} sft scrap for #${job.jobNumber} (${job.title})`,
  created_at: new Date().toISOString(),
         })
- PrintERPDataStore.set(STORAGE_KEYS.STOCK_LEDGER, ledger)
+ PrintFlowDataStore.set(STORAGE_KEYS.STOCK_LEDGER, ledger)
       } catch (_) {}
 
  return isBn
@@ -678,7 +678,7 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
  activeTask.started_at = now
  try {
  const tasks =
- PrintERPDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
+ PrintFlowDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
  const idx = tasks.findIndex((t) => t.id === activeTask.id)
  if (idx !== -1) {
  tasks[idx] = {
@@ -687,7 +687,7 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
  started_at: now,
  updated_at: now,
           }
- PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, tasks)
+ PrintFlowDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, tasks)
         }
       } catch (_) {}
     }
@@ -717,7 +717,7 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
  activeTask.status = 'on_hold'
  try {
  const tasks =
- PrintERPDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
+ PrintFlowDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
  const idx = tasks.findIndex((t) => t.id === activeTask.id)
  if (idx !== -1) {
  tasks[idx] = {
@@ -725,7 +725,7 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
  status: 'on_hold',
  updated_at: new Date().toISOString(),
           }
- PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, tasks)
+ PrintFlowDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, tasks)
         }
       } catch (_) {}
     }
@@ -748,7 +748,7 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
  activeTask.status = 'in_progress'
  try {
  const tasks =
- PrintERPDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
+ PrintFlowDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
  const idx = tasks.findIndex((t) => t.id === activeTask.id)
  if (idx !== -1) {
  tasks[idx] = {
@@ -756,7 +756,7 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
  status: 'in_progress',
  updated_at: new Date().toISOString(),
           }
- PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, tasks)
+ PrintFlowDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, tasks)
         }
       } catch (_) {}
     }
@@ -783,7 +783,7 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
  activeTask.started_at = null
  try {
  const tasks =
- PrintERPDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
+ PrintFlowDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
  const idx = tasks.findIndex((t) => t.id === activeTask.id)
  if (idx !== -1) {
  tasks[idx] = {
@@ -792,7 +792,7 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
  started_at: null,
  updated_at: new Date().toISOString(),
           }
- PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, tasks)
+ PrintFlowDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, tasks)
         }
       } catch (_) {}
     }
@@ -828,7 +828,7 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
       ;(activeTask as any).is_print_completed = true
  try {
  const tasks =
- PrintERPDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
+ PrintFlowDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
  const idx = tasks.findIndex((t) => t.id === activeTask.id)
  if (idx !== -1) {
  tasks[idx] = {
@@ -841,7 +841,7 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
  is_print_completed: true,
  updated_at: now,
           }
- PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, tasks)
+ PrintFlowDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, tasks)
         }
       } catch (_) {}
     }
@@ -882,7 +882,7 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
  const now = new Date().toISOString()
  try {
  const allTasks =
- PrintERPDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
+ PrintFlowDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
  const taskIds = new Set(job.tasks.map((t) => t.id))
  const nextTasks = allTasks.map((t) => {
  if (taskIds.has(t.id)) {
@@ -902,9 +902,9 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
         }
  return t
       })
- PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, nextTasks)
+ PrintFlowDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, nextTasks)
 
- const allJobs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_JOBS) || []
+ const allJobs = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_JOBS) || []
  const jIdx = allJobs.findIndex((j) => j.id === job.id || j.job_number === job.jobNumber)
  if (jIdx !== -1) {
  allJobs[jIdx] = {
@@ -928,7 +928,7 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
  updated_at: now,
         })
       }
- PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_JOBS, allJobs)
+ PrintFlowDataStore.set(STORAGE_KEYS.PRODUCTION_JOBS, allJobs)
     } catch (_) {}
 
  dispatchToast({

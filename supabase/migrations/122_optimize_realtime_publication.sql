@@ -1,5 +1,5 @@
 -- ==============================================================================
--- InkFlow ERP SaaS - Migration 122: Optimize Supabase Realtime Publication
+-- PrintFlow SaaS - Migration 122: Optimize Supabase Realtime Publication
 -- & Optimistic Concurrency Control (OCC) Version Triggers
 -- ==============================================================================
 -- 1. Restricts supabase_realtime publication to only authoritative live operational tables:

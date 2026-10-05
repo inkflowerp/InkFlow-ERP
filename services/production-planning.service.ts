@@ -13,7 +13,7 @@ import { ProductionTaskRepository, type TaskFilterOptions } from '../lib/reposit
 import { MachineryRepository } from '../lib/repositories/machinery.repository.ts'
 import { InventoryRepository } from '../lib/repositories/inventory.repository.ts'
 import { MachineryService } from './machinery.service.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../lib/db/data-store.ts'
 
 // Concurrency mutex lock per (companyId + machineId) to serialize concurrent booking promises
 const scheduleLocks = new Map<string, Promise<void>>()
@@ -81,9 +81,9 @@ export class ProductionPlanningService {
     }
 
     // Load store context for commercial & design gates
-    const jobOrders = PrintERPDataStore.get<any[]>(STORAGE_KEYS.JOB_ORDERS) || []
-    const salesOrders = PrintERPDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []
-    const invoices = PrintERPDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || []
+    const jobOrders = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.JOB_ORDERS) || []
+    const salesOrders = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []
+    const invoices = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || []
 
     // Evaluate sequential dependencies and commercial/design gates
     for (const task of tasks) {
@@ -137,7 +137,7 @@ export class ProductionPlanningService {
       }
 
       // Check design gate
-      const designJobs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.DESIGN_JOBS) || []
+      const designJobs = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.DESIGN_JOBS) || []
       const isDesignJobApproved = designJobs.some(
         (dj) =>
           ProductionTaskRepository.isMatchingCompany(dj.company_id, companyId) &&
@@ -190,9 +190,9 @@ export class ProductionPlanningService {
     }
 
     // Check commercial & design gates
-    const jobOrders = PrintERPDataStore.get<any[]>(STORAGE_KEYS.JOB_ORDERS) || []
-    const salesOrders = PrintERPDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []
-    const invoices = PrintERPDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || []
+    const jobOrders = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.JOB_ORDERS) || []
+    const salesOrders = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []
+    const invoices = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || []
 
     const jo = jobOrders.find((j) => (j.id === task.job_order_id || j.id === (task as any).order_id) && ProductionTaskRepository.isMatchingCompany(j.company_id, companyId))
     const so = jo?.order_id ? salesOrders.find((s) => s.id === jo.order_id && ProductionTaskRepository.isMatchingCompany(s.company_id, companyId)) : null
@@ -221,7 +221,7 @@ export class ProductionPlanningService {
       task.commercial_gate_reason = null
     }
 
-    const designJobs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.DESIGN_JOBS) || []
+    const designJobs = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.DESIGN_JOBS) || []
     const isDesignJobApproved = designJobs.some(
       (dj) =>
         ProductionTaskRepository.isMatchingCompany(dj.company_id, companyId) &&
@@ -759,7 +759,7 @@ export class ProductionPlanningService {
             }, companyId)
           }
 
-          const allOrders = PrintERPDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []
+          const allOrders = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []
           const matchedOrder = allOrders.find(
             (o) =>
               o.id === task.job_order_id ||
@@ -767,7 +767,7 @@ export class ProductionPlanningService {
               (task.job_number && o.order_number && task.job_number.includes(o.order_number))
           )
           if (matchedOrder && matchedOrder.status !== 'delivered' && matchedOrder.status !== 'cancelled') {
-            PrintERPDataStore.updateItem<any>(STORAGE_KEYS.ORDERS, matchedOrder.id, {
+            PrintFlowDataStore.updateItem<any>(STORAGE_KEYS.ORDERS, matchedOrder.id, {
               status: 'in_progress',
               stage: 'finishing',
             })
@@ -803,7 +803,7 @@ export class ProductionPlanningService {
         } catch (_) {}
 
         // Update Sales Order to ready_delivery
-        const allOrders = PrintERPDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []
+        const allOrders = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []
         const matchedOrder = allOrders.find(
           (o) =>
             o.id === task.job_order_id ||
@@ -811,7 +811,7 @@ export class ProductionPlanningService {
             (task.job_number && o.order_number && task.job_number.includes(o.order_number))
         )
         if (matchedOrder && matchedOrder.status !== 'delivered' && matchedOrder.status !== 'cancelled') {
-          PrintERPDataStore.updateItem<any>(STORAGE_KEYS.ORDERS, matchedOrder.id, {
+          PrintFlowDataStore.updateItem<any>(STORAGE_KEYS.ORDERS, matchedOrder.id, {
             status: 'completed',
             stage: 'ready_delivery',
           })

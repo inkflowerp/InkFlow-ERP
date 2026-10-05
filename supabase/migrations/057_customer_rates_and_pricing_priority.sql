@@ -1,5 +1,5 @@
 -- ==============================================================================
--- PrintERP / InkFlow SaaS - Migration 057: Customer Rates & Pricing Priority Engine
+-- PrintFlow / PrintFlow SaaS - Migration 057: Customer Rates & Pricing Priority Engine
 -- Supports:
 --   1. Customer-specific product rates (customer_rates table)
 --   2. 3-Tier Pricing Priority: Custom Rate -> Last Valid Invoice Rate -> Default Rate

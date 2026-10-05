@@ -338,7 +338,7 @@ function PlatformLoginForm() {
                         spellCheck={false}
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        placeholder={tBilingual('admin@inkflow.com.bd, 017...', 'ইমেইল বা ০১...')}
+                        placeholder={tBilingual('admin@printflow.bd, 017...', 'ইমেইল বা ০১...')}
                         className="w-full bg-background border border-border hover:border-input focus:border-primary/40 focus:ring-2 focus:ring-primary/20 rounded-xl pl-9 pr-3 h-10 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground transition-all outline-none"
                       />
                     </div>

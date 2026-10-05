@@ -126,7 +126,7 @@ export default function PlatformSettingsPage() {
  setOriginalSettings(JSON.parse(JSON.stringify(settings)))
  setReason('')
  if (typeof window !== 'undefined') {
- window.dispatchEvent(new CustomEvent('printerp_platform_settings_updated', { detail: settings }))
+ window.dispatchEvent(new CustomEvent('printflow_platform_settings_updated', { detail: settings }))
  }
  } else {
  showNotification((res as any).error || 'Failed to update settings', 'error')
@@ -753,7 +753,7 @@ export default function PlatformSettingsPage() {
  type="email"
  value={settings.contact_email || ''}
  onChange={(e) => setSettings({ ...settings, contact_email: e.target.value })}
- placeholder="support@printerp.com.bd"
+ placeholder="support@printflow.bd"
  className="h-9 text-xs bg-card border-border text-foreground rounded-xl tabular-nums"
  />
  <span className="text-xs text-muted-foreground mt-1 block">

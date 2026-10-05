@@ -12,7 +12,7 @@ import type {
   MaintenanceStatus,
   BreakdownStatus,
 } from '../../types/machinery.types.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../db/data-store.ts'
 
 export const PRESET_MACHINES: Record<string, Partial<MachineryRecord>> = {
   heidelberg_sm74: {
@@ -184,7 +184,7 @@ export class MachineryRepository {
       // Supabase unavailable or table empty, proceed to local store
     }
 
-    const all = PrintERPDataStore.get<MachineryRecord[]>(STORAGE_KEYS.MACHINERIES) || []
+    const all = PrintFlowDataStore.get<MachineryRecord[]>(STORAGE_KEYS.MACHINERIES) || []
     let records = all.filter((m: MachineryRecord) => !m.company_id || m.company_id === companyId || companyId === 'default')
 
     // If local store is also empty in test environment, provision test press fleet
@@ -192,7 +192,7 @@ export class MachineryRepository {
       const seeded: MachineryRecord[] = Object.keys(PRESET_MACHINES).map((key) =>
         buildDefaultMachineryRecord(key, companyId)
       )
-      PrintERPDataStore.set(STORAGE_KEYS.MACHINERIES, [...all, ...seeded])
+      PrintFlowDataStore.set(STORAGE_KEYS.MACHINERIES, [...all, ...seeded])
       records = seeded
     }
 
@@ -226,27 +226,27 @@ export class MachineryRepository {
       }
       data = resData
     } catch (err: any) {
-      const all = PrintERPDataStore.get<MachineryRecord[]>(STORAGE_KEYS.MACHINERIES) || []
+      const all = PrintFlowDataStore.get<MachineryRecord[]>(STORAGE_KEYS.MACHINERIES) || []
       const found = all.find((m: MachineryRecord) => (m.id === id || m.code === id) && (!m.company_id || m.company_id === companyId || companyId === 'default'))
       if (found) return found
 
       // Auto-provision if it matches a preset machine
       if (PRESET_MACHINES[id]) {
         const autoMachine = buildDefaultMachineryRecord(id, companyId)
-        PrintERPDataStore.set(STORAGE_KEYS.MACHINERIES, [...all, autoMachine])
+        PrintFlowDataStore.set(STORAGE_KEYS.MACHINERIES, [...all, autoMachine])
         return autoMachine
       }
       return null
     }
 
     if (!data) {
-      const all = PrintERPDataStore.get<MachineryRecord[]>(STORAGE_KEYS.MACHINERIES) || []
+      const all = PrintFlowDataStore.get<MachineryRecord[]>(STORAGE_KEYS.MACHINERIES) || []
       const found = all.find((m: MachineryRecord) => (m.id === id || m.code === id) && (!m.company_id || m.company_id === companyId || companyId === 'default'))
       if (found) return found
 
       if (PRESET_MACHINES[id]) {
         const autoMachine = buildDefaultMachineryRecord(id, companyId)
-        PrintERPDataStore.set(STORAGE_KEYS.MACHINERIES, [...all, autoMachine])
+        PrintFlowDataStore.set(STORAGE_KEYS.MACHINERIES, [...all, autoMachine])
         return autoMachine
       }
       return null
@@ -398,7 +398,7 @@ export class MachineryRepository {
 
       return data as unknown as MachineryRecord
     } catch (err: any) {
-      const all = PrintERPDataStore.get<MachineryRecord[]>(STORAGE_KEYS.MACHINERIES) || []
+      const all = PrintFlowDataStore.get<MachineryRecord[]>(STORAGE_KEYS.MACHINERIES) || []
       const newRec = {
         ...payload,
         id: (payload as any).id || `mach-${Date.now()}`,
@@ -406,7 +406,7 @@ export class MachineryRepository {
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       } as unknown as MachineryRecord
-      PrintERPDataStore.set(STORAGE_KEYS.MACHINERIES, [
+      PrintFlowDataStore.set(STORAGE_KEYS.MACHINERIES, [
         ...all.filter((m) => m.id !== newRec.id),
         newRec,
       ])
@@ -450,11 +450,11 @@ export class MachineryRepository {
 
       return data as unknown as MachineryRecord
     } catch (err: any) {
-      const all = PrintERPDataStore.get<MachineryRecord[]>(STORAGE_KEYS.MACHINERIES) || []
+      const all = PrintFlowDataStore.get<MachineryRecord[]>(STORAGE_KEYS.MACHINERIES) || []
       const existing = all.find((m) => (m.id === id || m.code === id) && (!m.company_id || m.company_id === companyId || companyId === 'default')) || (all.find((m) => m.id === id) as MachineryRecord)
       if (!existing) {
         const autoMachine = buildDefaultMachineryRecord(id, companyId, payload)
-        PrintERPDataStore.set(STORAGE_KEYS.MACHINERIES, [...all, autoMachine])
+        PrintFlowDataStore.set(STORAGE_KEYS.MACHINERIES, [...all, autoMachine])
         return autoMachine
       }
       const updated: MachineryRecord = {
@@ -462,7 +462,7 @@ export class MachineryRepository {
         ...payload,
         updated_at: new Date().toISOString(),
       }
-      PrintERPDataStore.set(
+      PrintFlowDataStore.set(
         STORAGE_KEYS.MACHINERIES,
         all.map((m) => (m.id === id ? updated : m))
       )
@@ -754,9 +754,9 @@ export class MachineryRepository {
 
       return data as unknown as MachineryMaintenanceRecord
     } catch (err: any) {
-      const all = PrintERPDataStore.get<MachineryMaintenanceRecord[]>(STORAGE_KEYS.MACHINERY_MAINTENANCES) || []
+      const all = PrintFlowDataStore.get<MachineryMaintenanceRecord[]>(STORAGE_KEYS.MACHINERY_MAINTENANCES) || []
       const newRec = payload as unknown as MachineryMaintenanceRecord
-      PrintERPDataStore.set(STORAGE_KEYS.MACHINERY_MAINTENANCES, [
+      PrintFlowDataStore.set(STORAGE_KEYS.MACHINERY_MAINTENANCES, [
         ...all.filter((m) => m.id !== newRec.id),
         newRec,
       ])
@@ -790,7 +790,7 @@ export class MachineryRepository {
 
       return data as unknown as MachineryMaintenanceRecord
     } catch (err: any) {
-      const all = PrintERPDataStore.get<MachineryMaintenanceRecord[]>(STORAGE_KEYS.MACHINERY_MAINTENANCES) || []
+      const all = PrintFlowDataStore.get<MachineryMaintenanceRecord[]>(STORAGE_KEYS.MACHINERY_MAINTENANCES) || []
       const existing = all.find((m) => m.id === id && m.company_id === companyId)
       if (!existing) {
         throw new Error(`Maintenance record ${id} not found`)
@@ -799,7 +799,7 @@ export class MachineryRepository {
         ...existing,
         ...payload,
       } as MachineryMaintenanceRecord
-      PrintERPDataStore.set(
+      PrintFlowDataStore.set(
         STORAGE_KEYS.MACHINERY_MAINTENANCES,
         all.map((m) => (m.id === id ? updated : m))
       )
@@ -830,7 +830,7 @@ export class MachineryRepository {
 
       return (data || []) as unknown as MachineryBreakdownRecord[]
     } catch (err: any) {
-      const all = PrintERPDataStore.get<MachineryBreakdownRecord[]>(STORAGE_KEYS.MACHINERY_BREAKDOWNS) || []
+      const all = PrintFlowDataStore.get<MachineryBreakdownRecord[]>(STORAGE_KEYS.MACHINERY_BREAKDOWNS) || []
       return all.filter((b) => b.machine_id === machineId && b.company_id === companyId)
     }
   }
@@ -854,7 +854,7 @@ export class MachineryRepository {
 
       return (data as unknown as MachineryBreakdownRecord) || null
     } catch (err: any) {
-      const all = PrintERPDataStore.get<MachineryBreakdownRecord[]>(STORAGE_KEYS.MACHINERY_BREAKDOWNS) || []
+      const all = PrintFlowDataStore.get<MachineryBreakdownRecord[]>(STORAGE_KEYS.MACHINERY_BREAKDOWNS) || []
       return all.find((b) => b.id === id && b.company_id === companyId) || null
     }
   }
@@ -901,9 +901,9 @@ export class MachineryRepository {
 
       return data as unknown as MachineryBreakdownRecord
     } catch (err: any) {
-      const all = PrintERPDataStore.get<MachineryBreakdownRecord[]>(STORAGE_KEYS.MACHINERY_BREAKDOWNS) || []
+      const all = PrintFlowDataStore.get<MachineryBreakdownRecord[]>(STORAGE_KEYS.MACHINERY_BREAKDOWNS) || []
       const newRec = payload as unknown as MachineryBreakdownRecord
-      PrintERPDataStore.set(STORAGE_KEYS.MACHINERY_BREAKDOWNS, [
+      PrintFlowDataStore.set(STORAGE_KEYS.MACHINERY_BREAKDOWNS, [
         ...all.filter((b) => b.id !== newRec.id),
         newRec,
       ])
@@ -956,7 +956,7 @@ export class MachineryRepository {
 
       return data as unknown as MachineryBreakdownRecord
     } catch (err: any) {
-      const all = PrintERPDataStore.get<MachineryBreakdownRecord[]>(STORAGE_KEYS.MACHINERY_BREAKDOWNS) || []
+      const all = PrintFlowDataStore.get<MachineryBreakdownRecord[]>(STORAGE_KEYS.MACHINERY_BREAKDOWNS) || []
       const existing = all.find((b) => b.id === id && b.company_id === companyId)
       if (!existing) {
         throw new Error(`Breakdown ${id} not found`)
@@ -965,7 +965,7 @@ export class MachineryRepository {
         ...existing,
         ...payload,
       } as MachineryBreakdownRecord
-      PrintERPDataStore.set(
+      PrintFlowDataStore.set(
         STORAGE_KEYS.MACHINERY_BREAKDOWNS,
         all.map((b) => (b.id === id ? updated : b))
       )

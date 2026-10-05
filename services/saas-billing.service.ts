@@ -12,7 +12,7 @@ import type {
   PaymentGatewayType,
 } from '../types/subscription.types.ts'
 import { SubscriptionService } from './subscription.service.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../lib/db/data-store.ts'
 import { formatDate } from '../lib/formatters.ts'
 
 const isValidUuid = (str?: string | null): boolean => {
@@ -182,8 +182,8 @@ export class SaasBillingService {
     }
 
     // Persist in DataStore cache
-    const existingInvoices = PrintERPDataStore.get<SaasSubscriptionInvoiceRecord[]>(STORAGE_KEYS.SAAS_INVOICES) || []
-    PrintERPDataStore.set(STORAGE_KEYS.SAAS_INVOICES, [createdInvoice, ...existingInvoices], false)
+    const existingInvoices = PrintFlowDataStore.get<SaasSubscriptionInvoiceRecord[]>(STORAGE_KEYS.SAAS_INVOICES) || []
+    PrintFlowDataStore.set(STORAGE_KEYS.SAAS_INVOICES, [createdInvoice, ...existingInvoices], false)
 
     return createdInvoice
   }
@@ -216,7 +216,7 @@ export class SaasBillingService {
       }
 
       // Update in DataStore cache
-      const memInvoices = PrintERPDataStore.get<SaasSubscriptionInvoiceRecord[]>(STORAGE_KEYS.SAAS_INVOICES) || []
+      const memInvoices = PrintFlowDataStore.get<SaasSubscriptionInvoiceRecord[]>(STORAGE_KEYS.SAAS_INVOICES) || []
       const updated = memInvoices.map((inv) => {
         if (inv.id === invoiceId || inv.invoice_number === invoiceId) {
           return {
@@ -229,7 +229,7 @@ export class SaasBillingService {
         }
         return inv
       })
-      PrintERPDataStore.set(STORAGE_KEYS.SAAS_INVOICES, updated, false)
+      PrintFlowDataStore.set(STORAGE_KEYS.SAAS_INVOICES, updated, false)
 
       return { success: true }
     } catch (err: any) {
@@ -279,7 +279,7 @@ export class SaasBillingService {
       }
 
       // Update in DataStore cache
-      const memInvoices = PrintERPDataStore.get<SaasSubscriptionInvoiceRecord[]>(STORAGE_KEYS.SAAS_INVOICES) || []
+      const memInvoices = PrintFlowDataStore.get<SaasSubscriptionInvoiceRecord[]>(STORAGE_KEYS.SAAS_INVOICES) || []
       const updated = memInvoices.map((inv) => {
         if (inv.id === invoiceId || inv.invoice_number === invoiceId) {
           return {
@@ -291,7 +291,7 @@ export class SaasBillingService {
         }
         return inv
       })
-      PrintERPDataStore.set(STORAGE_KEYS.SAAS_INVOICES, updated, false)
+      PrintFlowDataStore.set(STORAGE_KEYS.SAAS_INVOICES, updated, false)
 
       return { success: true }
     } catch (err: any) {
@@ -358,7 +358,7 @@ export class SaasBillingService {
     } catch {}
 
     // Check DataStore cache
-    const memInvoices = PrintERPDataStore.get<SaasSubscriptionInvoiceRecord[]>(STORAGE_KEYS.SAAS_INVOICES) || []
+    const memInvoices = PrintFlowDataStore.get<SaasSubscriptionInvoiceRecord[]>(STORAGE_KEYS.SAAS_INVOICES) || []
     const tenantInvoices = memInvoices.filter((i) => i.company_id === companyId)
     if (tenantInvoices.length > 0) {
       return tenantInvoices
@@ -409,7 +409,7 @@ export class SaasBillingService {
       }
     } catch {}
 
-    const memInvoices = PrintERPDataStore.get<SaasSubscriptionInvoiceRecord[]>(STORAGE_KEYS.SAAS_INVOICES) || []
+    const memInvoices = PrintFlowDataStore.get<SaasSubscriptionInvoiceRecord[]>(STORAGE_KEYS.SAAS_INVOICES) || []
     return memInvoices.find((i) => i.id === invoiceId || i.invoice_number === invoiceId) || null
   }
 }

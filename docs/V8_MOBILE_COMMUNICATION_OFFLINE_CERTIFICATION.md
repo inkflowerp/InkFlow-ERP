@@ -1,4 +1,4 @@
-# InkFlow V8 — Mobile + WhatsApp + SMS + Offline Certification
+# PrintFlow V8 — Mobile + WhatsApp + SMS + Offline Certification
 
 ## Executive Compliance, Operational Integrity, Security & Production Readiness Report
 
@@ -12,14 +12,14 @@
 
 ## 1. Executive Summary
 
-InkFlow V8 establishes an enterprise-grade mobile operational environment and multi-channel customer communication system constructed strictly upon the frozen, production-certified V1–V7 baseline architecture (`migrations 001–068`).
+PrintFlow V8 establishes an enterprise-grade mobile operational environment and multi-channel customer communication system constructed strictly upon the frozen, production-certified V1–V7 baseline architecture (`migrations 001–068`).
 
 V8 delivers:
 1. **Server-Authoritative Offline Sync:** Mobile operators and floor workers can queue tasks, attendance punches, customer notes, material requests, and quotations while completely offline. Upon reconnection, transactions sync atomically through server-side idempotency verification with guaranteed conflict detection (preventing negative inventory, duplicate check-ins, or race conditions).
 2. **Deterministic Idempotency Architecture:** Every queued outbox item carries a unique compound key formatted as `{device_id}_{action}_{uuid}` (`sync_outbox_idempotency_co_unique`), ensuring network retries and duplicate transmissions return cached results without double execution.
 3. **Multi-Channel Bilingual Communication Engine:** Unified dispatch across WhatsApp (Meta Cloud API), SMS (BulkSMSBD, SSL Wireless), Email, and In-App with bilingual variable interpolation in English and বাংলা, signed document PDF delivery, and non-blocking failure isolation.
 4. **Mobile Floor Terminal & Actionable Metrics:** High-speed mobile dashboard with dedicated touch targets ($\ge 48\text{px}$) for floor task execution (`Start`, `Pause`, `Resume`, `Hold`, `Complete`, `Rework`), GPS/QR attendance logging, and delivery status updates.
-5. **Zero-Contamination Cache Security:** Browser storage keys are partitioned by tenant slug (`printerp_{tenantSlug}_*`), automatically purging all sensitive business data upon user logout or tenant switching on shared tablets.
+5. **Zero-Contamination Cache Security:** Browser storage keys are partitioned by tenant slug (`printflow_{tenantSlug}_*`), automatically purging all sensitive business data upon user logout or tenant switching on shared tablets.
 6. **Zero Regression Baseline:** 100% of existing V1–V7 features, tests, and database structures remain intact with zero regressions across 900 automated tests and a clean 106-route Next.js production build.
 
 ---
@@ -77,7 +77,7 @@ Before creating new schema or code, an audit verified migrations `001–068` and
 ## 6. Mobile Security & Local Cache Isolation Audit
 
 ### 6.1 Multi-Tenant Storage Partitioning
-- Verified that all browser storage keys are prefixed with `printerp_{tenantSlug}_*`.
+- Verified that all browser storage keys are prefixed with `printflow_{tenantSlug}_*`.
 - Tested cross-tenant isolation: Tenant A users cannot query or mutate Tenant B outbox records or communication logs.
 
 ### 6.2 Shared Workstation Cache Cleanup
@@ -89,7 +89,7 @@ Before creating new schema or code, an audit verified migrations `001–068` and
 
 ```
 ================================================================================
-                    INKFLOW V8 AUTOMATED TEST SUITE REPORT
+                    PRINTFLOW V8 AUTOMATED TEST SUITE REPORT
 ================================================================================
 Total Test Suites:       235
 Total Unit Tests:        900
@@ -143,6 +143,6 @@ Exit Code:               0 (Clean Production Build)
 
 ## 9. Final Certification Sign-Off
 
-The InkFlow V8 Mobile, WhatsApp, SMS, and Offline Sync Engine meets all enterprise reliability, operational integrity, data safety, and performance criteria.
+The PrintFlow V8 Mobile, WhatsApp, SMS, and Offline Sync Engine meets all enterprise reliability, operational integrity, data safety, and performance criteria.
 
 **Final Certification Status:** **`CERTIFIED — PRODUCTION READY`**

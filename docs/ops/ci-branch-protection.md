@@ -1,4 +1,4 @@
-# InkFlow ERP — GitHub Actions CI & Branch Protection Standards
+# PrintFlow — GitHub Actions CI & Branch Protection Standards
 
 ## 1. Zero Silent Regressions Guarantee
 

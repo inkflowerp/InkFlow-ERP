@@ -1,5 +1,5 @@
 -- ==============================================================================
--- PrintERP / InkFlow SaaS - Migration 048: Production Performance Indexes & Scalability Hardening
+-- PrintFlow / PrintFlow SaaS - Migration 048: Production Performance Indexes & Scalability Hardening
 -- Adds schema-verified composite covering indexes, foreign key index coverage,
 -- and hardened server-side PL/pgSQL aggregation function for 100k+ record scalability.
 -- ==============================================================================

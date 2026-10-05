@@ -191,10 +191,10 @@ export default function TaxPage() {
 
       // Broadcast update across windows & tabs
  if (typeof window !== 'undefined') {
- window.dispatchEvent(new CustomEvent('printerp_table_synced:tax_settings', { detail: updated }))
- window.dispatchEvent(new CustomEvent('printerp_table_synced:settings', { detail: updated }))
- window.dispatchEvent(new CustomEvent('printerp_table_synced:company', { detail: company }))
- window.dispatchEvent(new CustomEvent('printerp_data_sync', { detail: { table: 'tax_settings' } }))
+ window.dispatchEvent(new CustomEvent('printflow_table_synced:tax_settings', { detail: updated }))
+ window.dispatchEvent(new CustomEvent('printflow_table_synced:settings', { detail: updated }))
+ window.dispatchEvent(new CustomEvent('printflow_table_synced:company', { detail: company }))
+ window.dispatchEvent(new CustomEvent('printflow_data_sync', { detail: { table: 'tax_settings' } }))
       }
 
  showNotification(

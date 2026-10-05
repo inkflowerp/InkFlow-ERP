@@ -49,7 +49,7 @@ describe('Security Attack Tests: Platform Boundary & Role Isolation', () => {
     const supportUser: PlatformUserRecord = {
       id: 'admin-sup-123',
       user_id: 'usr-sup-123',
-      email: 'support@printerp.com',
+      email: 'support@printflow.bd',
       full_name: 'Support Tech',
       role: 'platform_support',
       is_active: true,

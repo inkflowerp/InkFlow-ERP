@@ -1,6 +1,6 @@
 -- ==============================================================================
 -- Migration: 046_enable_realtime_synchronization.sql
--- Description: Enables PostgreSQL Realtime replication for all PrintERP tables
+-- Description: Enables PostgreSQL Realtime replication for all PrintFlow tables
 -- Sets REPLICA IDENTITY FULL and adds operational tables to supabase_realtime publication
 -- ==============================================================================
 

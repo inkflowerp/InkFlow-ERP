@@ -107,7 +107,7 @@ describe('Employee Login & Invitation Lifecycle Unit Tests', () => {
         roleName: 'Graphic Designer',
         invitedByName: 'Managing Director',
         tenantId: 'tenant-dhaka-print-001',
-        inviteUrl: 'http://localhost:3000/auth/verify?token=test_invite_token_1234567890abcdef1234567890abcdef&email=designer.karim%40inkflow.com&purpose=invitation',
+        inviteUrl: 'http://localhost:3000/auth/verify?token=test_invite_token_1234567890abcdef1234567890abcdef&email=designer.karim%40printflow.bd&purpose=invitation',
       })
 
       assert.strictEqual(dispatchResult.success, true, 'Email dispatch must succeed')

@@ -14,8 +14,8 @@ import type { EmailGatewayRecord, EmailLogRecord } from '../../types/communicati
 
 describe('Gmail & SMTP Full Lifecycle Integration Tests', () => {
   beforeEach(() => {
-    EmailDataStore.set('printerp_email_gateways', [])
-    EmailDataStore.set('printerp_email_logs', [])
+    EmailDataStore.set('printflow_email_gateways', [])
+    EmailDataStore.set('printflow_email_logs', [])
   })
 
   it('1. Complete Gmail Lifecycle: Connect -> Test Connection -> Send Quote -> Log -> Disconnect', async () => {
@@ -47,7 +47,7 @@ describe('Gmail & SMTP Full Lifecycle Integration Tests', () => {
       updated_at: new Date().toISOString(),
     }
 
-    EmailDataStore.set('printerp_email_gateways', [gmailGateway])
+    EmailDataStore.set('printflow_email_gateways', [gmailGateway])
 
     // Step B: Test Connection
     const testResult = await EmailGatewayService.testConnection(gmailGateway)
@@ -70,15 +70,15 @@ describe('Gmail & SMTP Full Lifecycle Integration Tests', () => {
     assert.strictEqual(quoteSend.providerUsed, 'gmail')
 
     // Step D: Verify Transmission Log
-    const logs = EmailDataStore.get<EmailLogRecord[]>('printerp_email_logs') || []
+    const logs = EmailDataStore.get<EmailLogRecord[]>('printflow_email_logs') || []
     assert.strictEqual(logs.length, 1)
     assert.strictEqual(logs[0].recipient, 'procurement@primebank.com.bd')
     assert.strictEqual(logs[0].status, 'sent')
 
     // Step E: Disconnect Gmail
     EmailDataStore.set(
-      'printerp_email_gateways',
-      (EmailDataStore.get<EmailGatewayRecord[]>('printerp_email_gateways') || []).filter(
+      'printflow_email_gateways',
+      (EmailDataStore.get<EmailGatewayRecord[]>('printflow_email_gateways') || []).filter(
         (g) => g.tenant_id !== companyId
       )
     )
@@ -123,7 +123,7 @@ describe('Gmail & SMTP Full Lifecycle Integration Tests', () => {
       updated_at: new Date().toISOString(),
     }
 
-    EmailDataStore.set('printerp_email_gateways', [smtpGateway])
+    EmailDataStore.set('printflow_email_gateways', [smtpGateway])
 
     // Step B: Test SMTP Connection
     const testResult = await EmailGatewayService.testConnection(smtpGateway)
@@ -161,7 +161,7 @@ describe('Gmail & SMTP Full Lifecycle Integration Tests', () => {
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }
-    EmailDataStore.set('printerp_email_gateways', [gateway])
+    EmailDataStore.set('printflow_email_gateways', [gateway])
 
     const idempotencyKey = `quote:quo-doubleclick-01:customer@buyer.com`
 
@@ -193,7 +193,7 @@ describe('Gmail & SMTP Full Lifecycle Integration Tests', () => {
     assert.strictEqual(send2.providerUsed, 'cached_idempotent')
 
     // Logs in data store must only have 1 transmission recorded
-    const logs = EmailDataStore.get<EmailLogRecord[]>('printerp_email_logs') || []
+    const logs = EmailDataStore.get<EmailLogRecord[]>('printflow_email_logs') || []
     assert.strictEqual(logs.length, 1)
   })
 })

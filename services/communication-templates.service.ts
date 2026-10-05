@@ -4,7 +4,7 @@
 // templates for Quotations and Invoices with strictly supported template variables.
 // ==============================================================================
 
-import { PrintERPDataStore, STORAGE_KEYS } from '../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../lib/db/data-store.ts'
 import type { DocumentType, DocumentTemplateConfigRecord } from '../types/tax-and-docs.types.ts'
 import type { QuotationRecord } from '../types/quotation.types.ts'
 import type { InvoiceRecord } from '../types/billing.types.ts'
@@ -243,7 +243,7 @@ export class CommunicationTemplateService {
    * Retrieves Quotation communication template configuration
    */
   static getQuotationTemplates(companyId: string): QuotationCommunicationTemplate {
-    const docTemplates = PrintERPDataStore.get<Record<DocumentType, DocumentTemplateConfigRecord>>(STORAGE_KEYS.DOCUMENT_TEMPLATES)
+    const docTemplates = PrintFlowDataStore.get<Record<DocumentType, DocumentTemplateConfigRecord>>(STORAGE_KEYS.DOCUMENT_TEMPLATES)
     const quoteDocTpl = docTemplates?.quotation
 
     return {
@@ -260,7 +260,7 @@ export class CommunicationTemplateService {
    * Retrieves Invoice communication template configuration
    */
   static getInvoiceTemplates(companyId: string): InvoiceCommunicationTemplate {
-    const docTemplates = PrintERPDataStore.get<Record<DocumentType, DocumentTemplateConfigRecord>>(STORAGE_KEYS.DOCUMENT_TEMPLATES)
+    const docTemplates = PrintFlowDataStore.get<Record<DocumentType, DocumentTemplateConfigRecord>>(STORAGE_KEYS.DOCUMENT_TEMPLATES)
     const invDocTpl = docTemplates?.invoice
 
     return {
@@ -287,7 +287,7 @@ export class CommunicationTemplateService {
     // Lookup customer from datastore if customer_id is present
     let customer: any = null
     if (quote.customer_id) {
-      const allCustomers = PrintERPDataStore.get<any[]>(STORAGE_KEYS.CUSTOMERS) || []
+      const allCustomers = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.CUSTOMERS) || []
       customer = allCustomers.find((c) => c.id === quote.customer_id)
     }
 
@@ -374,7 +374,7 @@ export class CommunicationTemplateService {
     // Lookup customer from datastore if customer_id is present
     let customer: any = null
     if (invoice.customer_id) {
-      const allCustomers = PrintERPDataStore.get<any[]>(STORAGE_KEYS.CUSTOMERS) || []
+      const allCustomers = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.CUSTOMERS) || []
       customer = allCustomers.find((c) => c.id === invoice.customer_id)
     }
 

@@ -157,13 +157,13 @@ export class AuthService {
 
       // Test environment / fallback data store
       try {
-        const { PrintERPDataStore, STORAGE_KEYS } = await import('../lib/db/data-store.ts')
-        const emps = PrintERPDataStore.get<any[]>(STORAGE_KEYS.EMPLOYEES) || []
+        const { PrintFlowDataStore, STORAGE_KEYS } = await import('../lib/db/data-store.ts')
+        const emps = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.EMPLOYEES) || []
         const empFound = emps.find((e) => candidates.includes(e.mobile))
         if (empFound?.portal_credentials?.email) return empFound.portal_credentials.email.toLowerCase()
         if (empFound?.email) return empFound.email.toLowerCase()
 
-        const users = PrintERPDataStore.get<any[]>(STORAGE_KEYS.REGISTERED_USERS) || []
+        const users = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.REGISTERED_USERS) || []
         const userFound = users.find((u) => candidates.includes(u.phone))
         if (userFound?.email) return userFound.email.toLowerCase()
       } catch {}
@@ -281,8 +281,8 @@ export class AuthService {
 
       // Test environment / fallback data store
       try {
-        const { PrintERPDataStore, STORAGE_KEYS } = await import('../lib/db/data-store.ts')
-        const emps = PrintERPDataStore.get<any[]>(STORAGE_KEYS.EMPLOYEES) || []
+        const { PrintFlowDataStore, STORAGE_KEYS } = await import('../lib/db/data-store.ts')
+        const emps = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.EMPLOYEES) || []
         const empFound = emps.find(
           (e) =>
             e.employee_id_number?.toLowerCase() === norm ||
@@ -291,7 +291,7 @@ export class AuthService {
         if (empFound?.portal_credentials?.email) return empFound.portal_credentials.email.toLowerCase()
         if (empFound?.email) return empFound.email.toLowerCase()
 
-        const users = PrintERPDataStore.get<any[]>(STORAGE_KEYS.REGISTERED_USERS) || []
+        const users = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.REGISTERED_USERS) || []
         const userFound = users.find((u) => u.username?.toLowerCase() === norm)
         if (userFound?.email) return userFound.email.toLowerCase()
       } catch {}
@@ -353,10 +353,10 @@ export class AuthService {
         }
       } catch {}
 
-      // C. Check PrintERPDataStore in test/mock environment
+      // C. Check PrintFlowDataStore in test/mock environment
       try {
-        const { PrintERPDataStore, STORAGE_KEYS } = await import('../lib/db/data-store.ts')
-        const emps = PrintERPDataStore.get<any[]>(STORAGE_KEYS.EMPLOYEES) || []
+        const { PrintFlowDataStore, STORAGE_KEYS } = await import('../lib/db/data-store.ts')
+        const emps = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.EMPLOYEES) || []
         const empConflict = emps.find(
           (e) =>
             e.id !== params.excludeEmployeeId &&
@@ -371,7 +371,7 @@ export class AuthService {
           }
         }
 
-        const users = PrintERPDataStore.get<any[]>(STORAGE_KEYS.REGISTERED_USERS) || []
+        const users = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.REGISTERED_USERS) || []
         const userConflict = users.find((u) => u.id !== params.excludeUserId && u.email?.toLowerCase() === email)
         if (userConflict) {
           return {
@@ -437,10 +437,10 @@ export class AuthService {
         }
       } catch {}
 
-      // C. Check PrintERPDataStore in test/mock environment
+      // C. Check PrintFlowDataStore in test/mock environment
       try {
-        const { PrintERPDataStore, STORAGE_KEYS } = await import('../lib/db/data-store.ts')
-        const emps = PrintERPDataStore.get<any[]>(STORAGE_KEYS.EMPLOYEES) || []
+        const { PrintFlowDataStore, STORAGE_KEYS } = await import('../lib/db/data-store.ts')
+        const emps = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.EMPLOYEES) || []
         const empConflict = emps.find(
           (e) =>
             e.id !== params.excludeEmployeeId &&
@@ -455,7 +455,7 @@ export class AuthService {
           }
         }
 
-        const users = PrintERPDataStore.get<any[]>(STORAGE_KEYS.REGISTERED_USERS) || []
+        const users = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.REGISTERED_USERS) || []
         const userConflict = users.find((u) => u.id !== params.excludeUserId && u.username?.toLowerCase() === username)
         if (userConflict) {
           return {
@@ -514,10 +514,10 @@ export class AuthService {
           }
         } catch {}
 
-        // C. Check PrintERPDataStore in test/mock environment
+        // C. Check PrintFlowDataStore in test/mock environment
         try {
-          const { PrintERPDataStore, STORAGE_KEYS } = await import('../lib/db/data-store.ts')
-          const emps = PrintERPDataStore.get<any[]>(STORAGE_KEYS.EMPLOYEES) || []
+          const { PrintFlowDataStore, STORAGE_KEYS } = await import('../lib/db/data-store.ts')
+          const emps = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.EMPLOYEES) || []
           const empConflict = emps.find(
             (e) => e.id !== params.excludeEmployeeId && candidates.includes(e.mobile)
           )
@@ -530,7 +530,7 @@ export class AuthService {
             }
           }
 
-          const users = PrintERPDataStore.get<any[]>(STORAGE_KEYS.REGISTERED_USERS) || []
+          const users = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.REGISTERED_USERS) || []
           const userConflict = users.find((u) => u.id !== params.excludeUserId && candidates.includes(u.phone))
           if (userConflict) {
             return {
@@ -688,7 +688,7 @@ export class AuthService {
           const encoded = encodeURIComponent(JSON.stringify(sessionData))
           const maxAge = 60 * 60 * 24 * 7 // 7 days
           document.cookie = `${TENANT_SESSION_COOKIE}=${encoded}; path=/; max-age=${maxAge}; SameSite=Lax;`
-          window.dispatchEvent(new CustomEvent('printerp_auth_changed', { detail: sessionData }))
+          window.dispatchEvent(new CustomEvent('printflow_auth_changed', { detail: sessionData }))
         }
 
         return {
@@ -744,7 +744,7 @@ export class AuthService {
         const encoded = encodeURIComponent(JSON.stringify(sessionData))
         const maxAge = 60 * 60 * 24 * 7 // 7 days
         document.cookie = `${TENANT_SESSION_COOKIE}=${encoded}; path=/; max-age=${maxAge}; SameSite=Lax;`
-        window.dispatchEvent(new CustomEvent('printerp_auth_changed', { detail: sessionData }))
+        window.dispatchEvent(new CustomEvent('printflow_auth_changed', { detail: sessionData }))
       }
 
       return {
@@ -808,8 +808,8 @@ export class AuthService {
       } catch {}
 
       try {
-        const { PrintERPDataStore, STORAGE_KEYS } = await import('../lib/db/data-store.ts')
-        const emps = PrintERPDataStore.get<any[]>(STORAGE_KEYS.EMPLOYEES) || []
+        const { PrintFlowDataStore, STORAGE_KEYS } = await import('../lib/db/data-store.ts')
+        const emps = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.EMPLOYEES) || []
         const empConflict = emps.find(
           (e) => (e.email?.toLowerCase() === normalizedEmail || e.portal_credentials?.email?.toLowerCase() === normalizedEmail)
         )
@@ -833,8 +833,8 @@ export class AuthService {
       } catch {}
 
       try {
-        const { PrintERPDataStore, STORAGE_KEYS } = await import('../lib/db/data-store.ts')
-        const users = PrintERPDataStore.get<any[]>(STORAGE_KEYS.REGISTERED_USERS) || []
+        const { PrintFlowDataStore, STORAGE_KEYS } = await import('../lib/db/data-store.ts')
+        const users = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.REGISTERED_USERS) || []
         const userConflict = users.find((u) => u.email?.toLowerCase() === normalizedEmail)
         if (userConflict) {
           return {
@@ -901,8 +901,8 @@ export class AuthService {
         }
 
         try {
-          const { PrintERPDataStore, STORAGE_KEYS } = await import('../lib/db/data-store.ts')
-          const users = PrintERPDataStore.get<any[]>(STORAGE_KEYS.REGISTERED_USERS) || []
+          const { PrintFlowDataStore, STORAGE_KEYS } = await import('../lib/db/data-store.ts')
+          const users = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.REGISTERED_USERS) || []
           if (!users.some((u) => u.email?.toLowerCase() === normalizedEmail)) {
             users.push({
               id: userId,
@@ -911,7 +911,7 @@ export class AuthService {
               phone: phone || null,
               created_at: new Date().toISOString(),
             })
-            PrintERPDataStore.set(STORAGE_KEYS.REGISTERED_USERS, users)
+            PrintFlowDataStore.set(STORAGE_KEYS.REGISTERED_USERS, users)
           }
         } catch {}
       }
@@ -1334,7 +1334,7 @@ export class AuthService {
           const encoded = encodeURIComponent(JSON.stringify(sessionData))
           const maxAge = 60 * 60 * 24 * 7
           document.cookie = `${TENANT_SESSION_COOKIE}=${encoded}; path=/; max-age=${maxAge}; SameSite=Lax;`
-          window.dispatchEvent(new CustomEvent('printerp_auth_changed', { detail: sessionData }))
+          window.dispatchEvent(new CustomEvent('printflow_auth_changed', { detail: sessionData }))
         }
 
         return {
@@ -1383,7 +1383,7 @@ export class AuthService {
       const encoded = encodeURIComponent(JSON.stringify(sessionData))
       const maxAge = 60 * 60 * 24 * 7
       document.cookie = `${TENANT_SESSION_COOKIE}=${encoded}; path=/; max-age=${maxAge}; SameSite=Lax;`
-      window.dispatchEvent(new CustomEvent('printerp_auth_changed', { detail: sessionData }))
+      window.dispatchEvent(new CustomEvent('printflow_auth_changed', { detail: sessionData }))
     }
 
     return {
@@ -1635,7 +1635,7 @@ export class AuthService {
       // 3. Clear session cookie & purge browser cache
       if (typeof document !== 'undefined') {
         document.cookie = `${TENANT_SESSION_COOKIE}=; path=/; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax;`
-        window.dispatchEvent(new CustomEvent('printerp_auth_changed', { detail: null }))
+        window.dispatchEvent(new CustomEvent('printflow_auth_changed', { detail: null }))
       }
 
       await AuditService.trackPasswordChanged(normalizedEmail, userId)
@@ -1682,7 +1682,7 @@ export class AuthService {
     try {
       if (typeof document !== 'undefined') {
         document.cookie = `${TENANT_SESSION_COOKIE}=; path=/; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax;`
-        window.dispatchEvent(new CustomEvent('printerp_auth_changed', { detail: null }))
+        window.dispatchEvent(new CustomEvent('printflow_auth_changed', { detail: null }))
       }
 
       const supabase = await getSupabaseAuthClient()
@@ -1691,7 +1691,7 @@ export class AuthService {
     } catch (_err: unknown) {
       if (typeof document !== 'undefined') {
         document.cookie = `${TENANT_SESSION_COOKIE}=; path=/; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax;`
-        window.dispatchEvent(new CustomEvent('printerp_auth_changed', { detail: null }))
+        window.dispatchEvent(new CustomEvent('printflow_auth_changed', { detail: null }))
       }
       return { success: true }
     }

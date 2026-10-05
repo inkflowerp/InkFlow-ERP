@@ -14,7 +14,7 @@ export type Database = {
   }
   public: {
     Tables: {
-      _printerp_migrations: {
+      _printflow_migrations: {
         Row: {
           applied_at: string
           id: number

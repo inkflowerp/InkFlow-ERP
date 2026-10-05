@@ -6,7 +6,7 @@ import type {
   CategoryTreeItem,
 } from '../../types/category.types.ts'
 import { measureAsync } from '../performance/logger.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../db/data-store.ts'
 import { isTestMode } from './product.repository.ts'
 
 function isSupabaseConfigured(): boolean {
@@ -132,7 +132,7 @@ export class CategoryRepository {
   ): Promise<ProductCategoryRecord[]> {
     return measureAsync(`CategoryRepository.getCategories(${companyId})`, async () => {
       if (!isSupabaseConfigured() || isTestMode()) {
-        let cats = PrintERPDataStore.get<ProductCategoryRecord[]>(STORAGE_KEYS.PRODUCT_CATEGORIES, companyId) || []
+        let cats = PrintFlowDataStore.get<ProductCategoryRecord[]>(STORAGE_KEYS.PRODUCT_CATEGORIES, companyId) || []
         const norm = companyId ? companyId.toLowerCase() : ''
         const clean = norm.replace(/^comp-/, '').replace(/^co-/, '')
 
@@ -281,7 +281,7 @@ export class CategoryRepository {
       }
 
       if (!isSupabaseConfigured() || isTestMode()) {
-        PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCT_CATEGORIES, newRecord, companyId)
+        PrintFlowDataStore.addItem(STORAGE_KEYS.PRODUCT_CATEGORIES, newRecord, companyId)
         return newRecord
       }
 
@@ -310,7 +310,7 @@ export class CategoryRepository {
         return data as ProductCategoryRecord
       } catch (err: any) {
         if (isTestMode()) {
-          PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCT_CATEGORIES, newRecord, companyId)
+          PrintFlowDataStore.addItem(STORAGE_KEYS.PRODUCT_CATEGORIES, newRecord, companyId)
           return newRecord
         }
         throw new Error(`Database error creating category: ${err.message}`)
@@ -361,7 +361,7 @@ export class CategoryRepository {
       }
 
       if (!isSupabaseConfigured() || isTestMode()) {
-        PrintERPDataStore.updateItem<ProductCategoryRecord>(STORAGE_KEYS.PRODUCT_CATEGORIES, input.id, updated, companyId)
+        PrintFlowDataStore.updateItem<ProductCategoryRecord>(STORAGE_KEYS.PRODUCT_CATEGORIES, input.id, updated, companyId)
         return updated
       }
 
@@ -391,7 +391,7 @@ export class CategoryRepository {
         return data as ProductCategoryRecord
       } catch (err: any) {
         if (isTestMode()) {
-          PrintERPDataStore.updateItem<ProductCategoryRecord>(STORAGE_KEYS.PRODUCT_CATEGORIES, input.id, updated, companyId)
+          PrintFlowDataStore.updateItem<ProductCategoryRecord>(STORAGE_KEYS.PRODUCT_CATEGORIES, input.id, updated, companyId)
           return updated
         }
         throw new Error(`Database error updating category: ${err.message}`)
@@ -414,14 +414,14 @@ export class CategoryRepository {
       }
 
       if (!isSupabaseConfigured() || isTestMode()) {
-        PrintERPDataStore.removeItem(STORAGE_KEYS.PRODUCT_CATEGORIES, id, companyId)
+        PrintFlowDataStore.removeItem(STORAGE_KEYS.PRODUCT_CATEGORIES, id, companyId)
         return true
       }
 
       if (!isSupabaseConfigured() || isTestMode()) {
-        const all = PrintERPDataStore.get<ProductCategoryRecord[]>(STORAGE_KEYS.PRODUCT_CATEGORIES) || []
+        const all = PrintFlowDataStore.get<ProductCategoryRecord[]>(STORAGE_KEYS.PRODUCT_CATEGORIES) || []
         const filtered = all.filter((c) => c.id !== id)
-        PrintERPDataStore.set(STORAGE_KEYS.PRODUCT_CATEGORIES, filtered)
+        PrintFlowDataStore.set(STORAGE_KEYS.PRODUCT_CATEGORIES, filtered)
         return true
       }
 
@@ -439,7 +439,7 @@ export class CategoryRepository {
         return true
       } catch (err: any) {
         if (isTestMode()) {
-          PrintERPDataStore.removeItem(STORAGE_KEYS.PRODUCT_CATEGORIES, id, companyId)
+          PrintFlowDataStore.removeItem(STORAGE_KEYS.PRODUCT_CATEGORIES, id, companyId)
           return true
         }
         throw new Error(`Database error deleting category: ${err.message}`)

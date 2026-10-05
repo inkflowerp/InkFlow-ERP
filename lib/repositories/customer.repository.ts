@@ -14,7 +14,7 @@ import type {
 import { ProductRepository } from './product.repository.ts'
 import { measureAsync } from '../performance/logger.ts'
 import { buildPaginatedResponse, type PaginatedResult } from '../api/pagination-helper.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../db/data-store.ts'
 import { coalesceQuery, invalidateQueryCache } from '../performance/query-coalesce.ts'
 
 export function isSupabaseConfigured(): boolean {
@@ -57,8 +57,8 @@ export class CustomerRepository {
       return measureAsync(`CustomerRepository.getCustomers(${companyId})`, async () => {
         if (!isSupabaseConfigured()) {
           if (isTestMode()) {
-            const list = (PrintERPDataStore.get<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS) || []).filter((c: CustomerRecord) => c.company_id === companyId)
-            const allInvs = (PrintERPDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || []).filter((i: any) => i.company_id === companyId && i.status !== 'cancelled')
+            const list = (PrintFlowDataStore.get<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS) || []).filter((c: CustomerRecord) => c.company_id === companyId)
+            const allInvs = (PrintFlowDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || []).filter((i: any) => i.company_id === companyId && i.status !== 'cancelled')
             const dueMap = new Map<string, number>()
             const billedMap = new Map<string, number>()
             const paidMap = new Map<string, number>()
@@ -144,8 +144,8 @@ export class CustomerRepository {
       return measureAsync(`CustomerRepository.getCustomersSummary(${companyId})`, async () => {
         if (!isSupabaseConfigured()) {
           if (isTestMode()) {
-            const list = (PrintERPDataStore.get<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS) || []).filter((c: CustomerRecord) => c.company_id === companyId)
-            const allInvs = (PrintERPDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || []).filter((i: any) => i.company_id === companyId && i.status !== 'cancelled')
+            const list = (PrintFlowDataStore.get<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS) || []).filter((c: CustomerRecord) => c.company_id === companyId)
+            const allInvs = (PrintFlowDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || []).filter((i: any) => i.company_id === companyId && i.status !== 'cancelled')
             const totalDue = allInvs.reduce((sum, inv) => sum + (Number(inv.due_amount) || 0), 0)
             const customersWithDue = new Set(allInvs.filter((i) => Number(i.due_amount) > 0).map((i) => i.customer_id)).size
             return {
@@ -197,7 +197,7 @@ export class CustomerRepository {
 
       if (!isSupabaseConfigured()) {
         if (isTestMode()) {
-          const list = (PrintERPDataStore.get<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS) || []).filter((c: CustomerRecord) => c.company_id === companyId)
+          const list = (PrintFlowDataStore.get<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS) || []).filter((c: CustomerRecord) => c.company_id === companyId)
           return buildPaginatedResponse(list, list.length, page, pageSize)
         }
         throw new Error('Authoritative database connection is required to fetch paginated customers.')
@@ -454,7 +454,7 @@ export class CustomerRepository {
       }
     }
 
-    const allCusts = PrintERPDataStore.get<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS) || []
+    const allCusts = PrintFlowDataStore.get<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS) || []
     const localCust = allCusts.find((c: CustomerRecord) => (c.id === id || (c as any)._id === id) && (!companyId || c.company_id === companyId)) || null
     if (localCust) {
       try {
@@ -535,7 +535,7 @@ export class CustomerRepository {
       }
     }
 
-    const all = (PrintERPDataStore.get<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS) || []).filter(
+    const all = (PrintFlowDataStore.get<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS) || []).filter(
       (c) => c.company_id === companyId
     )
     return `CUST-${String(all.length + 1).padStart(4, '0')}`
@@ -549,7 +549,7 @@ export class CustomerRepository {
   ): Promise<CustomerRecord> {
     if (!isSupabaseConfigured()) {
       if (isTestMode()) {
-        const existingList = PrintERPDataStore.get<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS) || []
+        const existingList = PrintFlowDataStore.get<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS) || []
         const fallbackIdNo =
           customer.customer_id_no?.trim() ||
           customer.customer_code?.trim() ||
@@ -563,7 +563,7 @@ export class CustomerRepository {
           created_at: customer.created_at || new Date().toISOString(),
           updated_at: customer.updated_at || new Date().toISOString(),
         }
-        PrintERPDataStore.set(STORAGE_KEYS.CUSTOMERS, [...existingList, newRecord])
+        PrintFlowDataStore.set(STORAGE_KEYS.CUSTOMERS, [...existingList, newRecord])
         return newRecord as CustomerRecord
       }
       throw new Error('Authoritative database connection is required to create a customer.')
@@ -633,14 +633,14 @@ export class CustomerRepository {
   ): Promise<CustomerRecord> {
     if (!isSupabaseConfigured()) {
       if (isTestMode()) {
-        const list = PrintERPDataStore.get<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS) || []
+        const list = PrintFlowDataStore.get<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS) || []
         const index = list.findIndex((c) => c.id === id && c.company_id === companyId)
         if (index === -1) {
           throw new Error(`Customer ${id} not found`)
         }
         const updated = { ...list[index], ...updates, updated_at: new Date().toISOString() }
         list[index] = updated as CustomerRecord
-        PrintERPDataStore.set(STORAGE_KEYS.CUSTOMERS, list)
+        PrintFlowDataStore.set(STORAGE_KEYS.CUSTOMERS, list)
         return updated as CustomerRecord
       }
       throw new Error('Authoritative database connection is required to update a customer.')
@@ -681,8 +681,8 @@ export class CustomerRepository {
   static async deleteCustomer(id: string, companyId: string): Promise<boolean> {
     if (!isSupabaseConfigured()) {
       if (isTestMode()) {
-        const list = PrintERPDataStore.get<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS) || []
-        PrintERPDataStore.set(
+        const list = PrintFlowDataStore.get<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS) || []
+        PrintFlowDataStore.set(
           STORAGE_KEYS.CUSTOMERS,
           list.filter((c) => !(c.id === id && c.company_id === companyId))
         )
@@ -731,14 +731,14 @@ export class CustomerRepository {
   static async toggleCustomerActive(id: string, companyId: string, isActive: boolean): Promise<CustomerRecord> {
     if (!isSupabaseConfigured()) {
       if (isTestMode()) {
-        const list = PrintERPDataStore.get<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS) || []
+        const list = PrintFlowDataStore.get<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS) || []
         const index = list.findIndex((c) => c.id === id && c.company_id === companyId)
         if (index === -1) {
           throw new Error(`Customer ${id} not found`)
         }
         const updated = { ...list[index], is_active: isActive, updated_at: new Date().toISOString() }
         list[index] = updated as CustomerRecord
-        PrintERPDataStore.set(STORAGE_KEYS.CUSTOMERS, list)
+        PrintFlowDataStore.set(STORAGE_KEYS.CUSTOMERS, list)
         return updated as CustomerRecord
       }
       throw new Error('Authoritative database connection is required to toggle customer active status.')
@@ -816,7 +816,7 @@ export class CustomerRepository {
           throw new Error(`Failed to save customer rate: ${error.message}`)
         }
         if (isTestMode()) {
-          PrintERPDataStore.addItem(STORAGE_KEYS.CUSTOMER_RATES, data)
+          PrintFlowDataStore.addItem(STORAGE_KEYS.CUSTOMER_RATES, data)
         }
         return data as CustomerRateRecord
       } catch (err: any) {
@@ -826,7 +826,7 @@ export class CustomerRepository {
             created_at: new Date().toISOString(),
             ...payload,
           } as CustomerRateRecord
-          PrintERPDataStore.addItem(STORAGE_KEYS.CUSTOMER_RATES, testItem)
+          PrintFlowDataStore.addItem(STORAGE_KEYS.CUSTOMER_RATES, testItem)
           return testItem
         }
         throw err
@@ -838,7 +838,7 @@ export class CustomerRepository {
       created_at: new Date().toISOString(),
       ...payload,
     } as CustomerRateRecord
-    PrintERPDataStore.addItem(STORAGE_KEYS.CUSTOMER_RATES, testItem)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.CUSTOMER_RATES, testItem)
     return testItem
   }
 
@@ -864,8 +864,8 @@ export class CustomerRepository {
       }
     }
     if (isTestMode()) {
-      const rates = PrintERPDataStore.get<any[]>(STORAGE_KEYS.CUSTOMER_RATES) || []
-      PrintERPDataStore.set(
+      const rates = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.CUSTOMER_RATES) || []
+      PrintFlowDataStore.set(
         STORAGE_KEYS.CUSTOMER_RATES,
         rates.filter(
           (r) => !(r.company_id === companyId && r.customer_id === customerId && r.product_id === productId)
@@ -894,7 +894,7 @@ export class CustomerRepository {
       const customer = await this.getCustomerById(customerId, companyId)
       const customerType = customer?.customer_type || customer?.customer_category || 'retail'
 
-      const pricingRules = (PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRICING_RULES) || []).filter(
+      const pricingRules = (PrintFlowDataStore.get<any[]>(STORAGE_KEYS.PRICING_RULES) || []).filter(
         (r) => (!r.company_id || r.company_id === companyId) && r.customer_type === customerType && r.status === 'active'
       )
 
@@ -1010,7 +1010,7 @@ export class CustomerRepository {
       }
 
       // Also ingest local / demo data store invoices and quotations
-      const localInvoices = (PrintERPDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || [])
+      const localInvoices = (PrintFlowDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || [])
         .filter((i) => i.customer_id === customerId && i.status !== 'cancelled')
         .sort((a, b) => (b.invoice_date || b.created_at || '').localeCompare(a.invoice_date || a.created_at || ''))
 
@@ -1040,7 +1040,7 @@ export class CustomerRepository {
         }
       }
 
-      const localQuotations = (PrintERPDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS) || [])
+      const localQuotations = (PrintFlowDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS) || [])
         .filter((q) => q.customer_id === customerId && q.status !== 'rejected' && q.status !== 'expired')
         .sort((a, b) => (b.quotation_date || b.created_at || '').localeCompare(a.quotation_date || a.created_at || ''))
 
@@ -1155,7 +1155,7 @@ export class CustomerRepository {
       const todayStr = getTodayDateString()
 
       if (!isSupabaseConfigured()) {
-        const allInvs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || []
+        const allInvs = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || []
         const custInvs = allInvs.filter((i) => i.customer_id === customerId && i.status !== 'cancelled')
 
         let totalInvoices = 0
@@ -1175,12 +1175,12 @@ export class CustomerRepository {
           }
         }
 
-        const allCusts = PrintERPDataStore.get<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS) || []
+        const allCusts = PrintFlowDataStore.get<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS) || []
         const customer = allCusts.find((c) => c.id === customerId)
         const creditLimit = Number(customer?.credit_limit) || 0
         const availableCredit = Math.max(0, creditLimit - totalDue)
 
-        const allPays = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PAYMENTS) || []
+        const allPays = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.PAYMENTS) || []
         const custPays = allPays
           .filter((p) => p.customer_id === customerId)
           .sort((a, b) => (b.payment_date || b.created_at || '').localeCompare(a.payment_date || a.created_at || ''))
@@ -1194,7 +1194,7 @@ export class CustomerRepository {
           }
         }
 
-        const allOrders = PrintERPDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []
+        const allOrders = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []
         const custOrders = allOrders
           .filter((o) => o.customer_id === customerId && o.status !== 'cancelled')
           .sort((a, b) => (b.order_date || b.created_at || '').localeCompare(a.order_date || a.created_at || ''))

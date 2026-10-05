@@ -1,5 +1,5 @@
 -- ==============================================================================
--- PrintERP SaaS - Migration 012: Sales Orders & Multi-Job Production Ticketing
+-- PrintFlow - Migration 012: Sales Orders & Multi-Job Production Ticketing
 -- Supports:
 --   1. Sales Orders with Priority (Normal, Urgent, Very Urgent) and Payment Terms (Cash, Advance, Partial, Credit)
 --   2. Multi-Job Orders (job_orders table generating discrete machine bay tickets)

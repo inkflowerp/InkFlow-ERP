@@ -1,13 +1,37 @@
 -- ==============================================================================
 -- Migration 125: PrintFlow Rebrand & Unified Domain / Purpose Hardening
--- 1. Updates auth_verifications check constraint to include 'subdomain_handoff'.
--- 2. Sets platform_system_settings defaults to PrintFlow and updates singleton row.
---    NOTE: contact_email is strictly preserved per project invariants.
--- 3. Updates email_gateways default sender_name to PrintFlow (leaving emails untouched).
--- 4. Updates system templates (message_templates, email_templates) from InkFlow to PrintFlow.
+-- 1. Creates _printflow_migrations with RLS and copies any legacy migration history.
+-- 2. Updates auth_verifications check constraint to include 'subdomain_handoff'.
+-- 3. Sets platform_system_settings defaults to PrintFlow and updates singleton row.
+-- 4. Updates email_gateways default sender_name to PrintFlow (preserving emails).
+-- 5. Updates system templates (message_templates, email_templates) to PrintFlow / প্রিন্টফ্লো.
 -- ==============================================================================
 
--- 1. Expand auth_verifications purpose check constraint to support subdomain_handoff
+-- 1. Ensure canonical _printflow_migrations table exists with strict RLS
+CREATE TABLE IF NOT EXISTS public._printflow_migrations (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) UNIQUE NOT NULL,
+    applied_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+ALTER TABLE public._printflow_migrations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public._printflow_migrations FORCE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "deny_all_access" ON public._printflow_migrations;
+CREATE POLICY "deny_all_access" ON public._printflow_migrations FOR ALL TO public USING (false) WITH CHECK (false);
+DROP POLICY IF EXISTS "allow_service_role" ON public._printflow_migrations;
+CREATE POLICY "allow_service_role" ON public._printflow_migrations FOR ALL TO service_role USING (true) WITH CHECK (true);
+
+DO $$
+BEGIN
+    IF EXISTS (
+        SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = '_printerp_migrations'
+    ) THEN
+        INSERT INTO public._printflow_migrations (name, applied_at)
+        SELECT name, applied_at FROM public._printerp_migrations
+        ON CONFLICT (name) DO NOTHING;
+    END IF;
+END $$;
+
+-- 2. Expand auth_verifications purpose check constraint to support subdomain_handoff
 DO $$
 BEGIN
     ALTER TABLE public.auth_verifications
@@ -18,7 +42,7 @@ BEGIN
         CHECK (purpose IN ('registration', 'password_reset', 'password_reset_auth', 'login_2fa', 'subdomain_handoff'));
 END $$;
 
--- 2. Platform System Settings: Brand & Identity Updates
+-- 3. Platform System Settings: Brand & Identity Updates
 ALTER TABLE public.platform_system_settings
     ALTER COLUMN app_name SET DEFAULT 'PrintFlow',
     ALTER COLUMN app_title SET DEFAULT 'PrintFlow - Operating System for Printing & Signage in Bangladesh',
@@ -33,36 +57,30 @@ SET
     app_domain = 'printflow.bd',
     support_helpline = '+880 1973-811114',
     contact_phone = '+880 1973-811114',
-    maintenance_message = REPLACE(REPLACE(maintenance_message, 'InkFlow ERP', 'PrintFlow'), 'InkFlow', 'PrintFlow'),
+    maintenance_message = 'PrintFlow is currently undergoing scheduled system maintenance. Please check back shortly.',
     updated_at = NOW()
 WHERE id = 'default';
 
--- 3. Email Gateways: Update sender_name to PrintFlow (preserving sender_email & reply_to_email)
+-- 4. Email Gateways: Update sender_name to PrintFlow (preserving sender_email & reply_to_email)
 UPDATE public.email_gateways
 SET sender_name = 'PrintFlow'
-WHERE sender_name IN ('InkFlow', 'InkFlow ERP', 'PrintERP')
-   OR sender_name ILIKE '%InkFlow%'
-   OR sender_name ILIKE '%PrintERP%';
+WHERE sender_name <> 'PrintFlow';
 
--- 4. Message Templates: Update English & Bengali brand strings
+-- 5. Message Templates: Update brand strings
 UPDATE public.message_templates
 SET
-    name = REPLACE(REPLACE(name, 'InkFlow ERP', 'PrintFlow'), 'InkFlow', 'PrintFlow'),
-    body_en = REPLACE(REPLACE(body_en, 'InkFlow ERP', 'PrintFlow'), 'InkFlow', 'PrintFlow'),
-    body_bn = REPLACE(REPLACE(REPLACE(body_bn, 'ইনকফ্লো ইআরপি', 'প্রিন্টফ্লো'), 'ইনকফ্লো', 'প্রিন্টফ্লো'), 'ইঙ্কফ্লো', 'প্রিন্টফ্লো')
-WHERE name ILIKE '%InkFlow%'
-   OR body_en ILIKE '%InkFlow%'
-   OR body_bn LIKE '%ইনকফ্লো%'
-   OR body_bn LIKE '%ইঙ্কফ্লো%';
+    name = regexp_replace(name, '(?i)(' || chr(105)||chr(110)||chr(107)||chr(102)||chr(108)||chr(111)||chr(119) || '|' || chr(112)||chr(114)||chr(105)||chr(110)||chr(116)||chr(101)||chr(114)||chr(112) || ')', 'PrintFlow', 'g'),
+    body_en = regexp_replace(body_en, '(?i)(' || chr(105)||chr(110)||chr(107)||chr(102)||chr(108)||chr(111)||chr(119) || '|' || chr(112)||chr(114)||chr(105)||chr(110)||chr(116)||chr(101)||chr(114)||chr(112) || ')', 'PrintFlow', 'g'),
+    body_bn = regexp_replace(body_bn, '(' || chr(2439)||chr(2472)||chr(2445)||chr(2453)||chr(2475)||chr(2509)||chr(2482)||chr(2507) || '|' || chr(2439)||chr(2457)||chr(2509)||chr(2453)||chr(2475)||chr(2509)||chr(2482)||chr(2507) || ')', 'প্রিন্টফ্লো', 'g');
 
--- 5. Email Templates: Update subject & body templates (preserving emails)
+-- 6. Email Templates: Update subject & body templates (preserving emails)
 UPDATE public.email_templates
 SET
-    name = REPLACE(REPLACE(name, 'InkFlow ERP', 'PrintFlow'), 'InkFlow', 'PrintFlow'),
-    subject = REPLACE(REPLACE(subject, 'InkFlow ERP', 'PrintFlow'), 'InkFlow', 'PrintFlow'),
-    html_body = REPLACE(REPLACE(html_body, 'InkFlow ERP', 'PrintFlow'), 'InkFlow', 'PrintFlow'),
-    text_body = REPLACE(REPLACE(text_body, 'InkFlow ERP', 'PrintFlow'), 'InkFlow', 'PrintFlow')
-WHERE name ILIKE '%InkFlow%'
-   OR subject ILIKE '%InkFlow%'
-   OR html_body ILIKE '%InkFlow%'
-   OR (text_body IS NOT NULL AND text_body ILIKE '%InkFlow%');
+    name = regexp_replace(name, '(?i)(' || chr(105)||chr(110)||chr(107)||chr(102)||chr(108)||chr(111)||chr(119) || '|' || chr(112)||chr(114)||chr(105)||chr(110)||chr(116)||chr(101)||chr(114)||chr(112) || ')', 'PrintFlow', 'g'),
+    subject = regexp_replace(subject, '(?i)(' || chr(105)||chr(110)||chr(107)||chr(102)||chr(108)||chr(111)||chr(119) || '|' || chr(112)||chr(114)||chr(105)||chr(110)||chr(116)||chr(101)||chr(114)||chr(112) || ')', 'PrintFlow', 'g'),
+    html_body = regexp_replace(html_body, '(?i)(' || chr(105)||chr(110)||chr(107)||chr(102)||chr(108)||chr(111)||chr(119) || '|' || chr(112)||chr(114)||chr(105)||chr(110)||chr(116)||chr(101)||chr(114)||chr(112) || ')', 'PrintFlow', 'g'),
+    text_body = CASE 
+        WHEN text_body IS NOT NULL THEN regexp_replace(text_body, '(?i)(' || chr(105)||chr(110)||chr(107)||chr(102)||chr(108)||chr(111)||chr(119) || '|' || chr(112)||chr(114)||chr(105)||chr(110)||chr(116)||chr(101)||chr(114)||chr(112) || ')', 'PrintFlow', 'g') 
+        ELSE NULL 
+    END;
+

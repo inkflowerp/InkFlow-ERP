@@ -14,12 +14,12 @@ export function maskAccountNumber(accNo: string): string {
 
 
 
-import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
+import { PrintFlowDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 
 export class AccountingService {
   static async getExpenses(companyId: string = ''): Promise<ExpenseRecord[]> {
-    const expenses = (companyId ? PrintERPDataStore.getAll<ExpenseRecord>(STORAGE_KEYS.EXPENSES, companyId) : []) ||
-      PrintERPDataStore.get<ExpenseRecord[]>(STORAGE_KEYS.EXPENSES, companyId) || []
+    const expenses = (companyId ? PrintFlowDataStore.getAll<ExpenseRecord>(STORAGE_KEYS.EXPENSES, companyId) : []) ||
+      PrintFlowDataStore.get<ExpenseRecord[]>(STORAGE_KEYS.EXPENSES, companyId) || []
     return expenses.filter((e) => !companyId || e.company_id === companyId)
   }
 
@@ -41,7 +41,7 @@ export class AccountingService {
       recorded_by_name: data.recorded_by_name || 'Accounts Officer',
       created_at: new Date().toISOString(),
     }
-    PrintERPDataStore.addItem(STORAGE_KEYS.EXPENSES, newExpense, company_id)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.EXPENSES, newExpense, company_id)
 
     // Also record cash book outflow
     const cashEntry: CashBookEntryRecord = {
@@ -56,28 +56,28 @@ export class AccountingService {
       performed_by_name: newExpense.recorded_by_name,
       created_at: new Date().toISOString(),
     }
-    PrintERPDataStore.addItem(STORAGE_KEYS.CASH_BOOK, cashEntry, company_id)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.CASH_BOOK, cashEntry, company_id)
 
     return newExpense
   }
 
   static async deleteExpense(id: string, companyId?: string): Promise<boolean> {
-    return PrintERPDataStore.removeItem(STORAGE_KEYS.EXPENSES, id, companyId)
+    return PrintFlowDataStore.removeItem(STORAGE_KEYS.EXPENSES, id, companyId)
   }
 
   static async getBankAccounts(companyId: string = ''): Promise<BankAccountRecord[]> {
-    const accounts = (companyId ? PrintERPDataStore.getAll<BankAccountRecord>(STORAGE_KEYS.BANK_ACCOUNTS, companyId) : []) ||
-      PrintERPDataStore.get<BankAccountRecord[]>(STORAGE_KEYS.BANK_ACCOUNTS, companyId) || []
+    const accounts = (companyId ? PrintFlowDataStore.getAll<BankAccountRecord>(STORAGE_KEYS.BANK_ACCOUNTS, companyId) : []) ||
+      PrintFlowDataStore.get<BankAccountRecord[]>(STORAGE_KEYS.BANK_ACCOUNTS, companyId) || []
     return accounts.filter((a) => !companyId || a.company_id === companyId)
   }
 
   static async updateBankAccount(id: string, data: Partial<BankAccountRecord>, companyId?: string): Promise<BankAccountRecord | null> {
-    return PrintERPDataStore.updateItem<BankAccountRecord>(STORAGE_KEYS.BANK_ACCOUNTS, id, data, companyId)
+    return PrintFlowDataStore.updateItem<BankAccountRecord>(STORAGE_KEYS.BANK_ACCOUNTS, id, data, companyId)
   }
 
   static async getCashBook(companyId: string = ''): Promise<CashBookEntryRecord[]> {
-    const entries = (companyId ? PrintERPDataStore.getAll<CashBookEntryRecord>(STORAGE_KEYS.CASH_BOOK, companyId) : []) ||
-      PrintERPDataStore.get<CashBookEntryRecord[]>(STORAGE_KEYS.CASH_BOOK, companyId) || []
+    const entries = (companyId ? PrintFlowDataStore.getAll<CashBookEntryRecord>(STORAGE_KEYS.CASH_BOOK, companyId) : []) ||
+      PrintFlowDataStore.get<CashBookEntryRecord[]>(STORAGE_KEYS.CASH_BOOK, companyId) || []
     return entries.filter((e) => !companyId || e.company_id === companyId)
   }
 
@@ -96,7 +96,7 @@ export class AccountingService {
       performed_by_name: entry.performed_by_name || 'Cashier',
       created_at: new Date().toISOString(),
     }
-    PrintERPDataStore.addItem(STORAGE_KEYS.CASH_BOOK, newEntry, company_id)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.CASH_BOOK, newEntry, company_id)
     return newEntry
   }
 }

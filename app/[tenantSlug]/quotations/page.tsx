@@ -67,7 +67,7 @@ import { moveToTrashAction } from '@/actions/trash.actions'
 import { QuotationTable } from '@/components/quotations/quotation-table'
 import { FollowUpModal } from '@/components/quotations/follow-up-modal'
 import { NewQuotationModal } from '@/components/quotations/new-quotation-modal'
-import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
+import { PrintFlowDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import { formatBDT } from '@/lib/formatters'
 import { ConfirmDialog } from '@/components/shared/confirm-dialog'
@@ -155,9 +155,9 @@ function getLocalQuotations(slug?: string, companySlug?: string, companyId?: str
 
   // Direct DataStore reads strictly scoped to tenant
  const storeItems = [
-    ...(slug ? (PrintERPDataStore.getAll<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, slug) || []) : []),
-    ...(companySlug && companySlug !== slug ? (PrintERPDataStore.getAll<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, companySlug) || []) : []),
-    ...(companyId ? (PrintERPDataStore.getAll<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, companyId) || []) : []),
+    ...(slug ? (PrintFlowDataStore.getAll<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, slug) || []) : []),
+    ...(companySlug && companySlug !== slug ? (PrintFlowDataStore.getAll<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, companySlug) || []) : []),
+    ...(companyId ? (PrintFlowDataStore.getAll<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, companyId) || []) : []),
   ]
  rawList.push(...storeItems)
 
@@ -191,9 +191,9 @@ function removeLocalQuotation(id: string, quotationNumber?: string, slug?: strin
       } catch {}
     })
 
- if (slug) PrintERPDataStore.removeItem(STORAGE_KEYS.QUOTATIONS, id, slug)
- if (companySlug && companySlug !== slug) PrintERPDataStore.removeItem(STORAGE_KEYS.QUOTATIONS, id, companySlug)
- if (companyId) PrintERPDataStore.removeItem(STORAGE_KEYS.QUOTATIONS, id, companyId)
+ if (slug) PrintFlowDataStore.removeItem(STORAGE_KEYS.QUOTATIONS, id, slug)
+ if (companySlug && companySlug !== slug) PrintFlowDataStore.removeItem(STORAGE_KEYS.QUOTATIONS, id, companySlug)
+ if (companyId) PrintFlowDataStore.removeItem(STORAGE_KEYS.QUOTATIONS, id, companyId)
   } catch {}
 }
 
@@ -622,19 +622,19 @@ export default function QuotationsPage() {
 
  if (typeof window !== 'undefined') {
  window.addEventListener('storage', handleSync)
- window.addEventListener('printerp_datastore_sync', handleSync)
- window.addEventListener('printerp_drafts_updated', handleSync)
- window.addEventListener('printerp_table_synced:quotations', handleSync)
- window.addEventListener('printerp_table_synced', handleSync)
- window.addEventListener('printerp_data_sync', handleSync)
+ window.addEventListener('printflow_datastore_sync', handleSync)
+ window.addEventListener('printflow_drafts_updated', handleSync)
+ window.addEventListener('printflow_table_synced:quotations', handleSync)
+ window.addEventListener('printflow_table_synced', handleSync)
+ window.addEventListener('printflow_data_sync', handleSync)
 
  return () => {
  window.removeEventListener('storage', handleSync)
- window.removeEventListener('printerp_datastore_sync', handleSync)
- window.removeEventListener('printerp_drafts_updated', handleSync)
- window.removeEventListener('printerp_table_synced:quotations', handleSync)
- window.removeEventListener('printerp_table_synced', handleSync)
- window.removeEventListener('printerp_data_sync', handleSync)
+ window.removeEventListener('printflow_datastore_sync', handleSync)
+ window.removeEventListener('printflow_drafts_updated', handleSync)
+ window.removeEventListener('printflow_table_synced:quotations', handleSync)
+ window.removeEventListener('printflow_table_synced', handleSync)
+ window.removeEventListener('printflow_data_sync', handleSync)
       }
     }
   }, [loadQuotationsData])
@@ -792,8 +792,8 @@ export default function QuotationsPage() {
 
       // 5. Sync to client TRASH_ITEMS so Trash page sees it immediately
  if (res.success && res.record) {
- const localTrash = PrintERPDataStore.get<any[]>(STORAGE_KEYS.TRASH_ITEMS) || []
- PrintERPDataStore.set(STORAGE_KEYS.TRASH_ITEMS, [res.record, ...localTrash.filter((t: any) => t.id !== res.record.id)])
+ const localTrash = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.TRASH_ITEMS) || []
+ PrintFlowDataStore.set(STORAGE_KEYS.TRASH_ITEMS, [res.record, ...localTrash.filter((t: any) => t.id !== res.record.id)])
       }
 
  setIsTrashConfirmOpen(false)

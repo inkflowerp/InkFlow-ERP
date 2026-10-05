@@ -1,5 +1,5 @@
 -- ==============================================================================
--- InkFlow SaaS - Migration 070: Multi-Branch & Advanced Management Engine (V9)
+-- PrintFlow SaaS - Migration 070: Multi-Branch & Advanced Management Engine (V9)
 -- Extends branches table, introduces branch transfer requests, inter-branch
 -- financial transfers, cross-branch employee assignments, workflow configurations,
 -- and user branch access with strict multi-tenant Row Level Security.

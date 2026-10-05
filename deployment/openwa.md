@@ -2,12 +2,12 @@
 
 ## 1. Architecture Overview
 
-OpenWA runs as an independent, persistent gateway service on a dedicated Linux VPS/instance (e.g. `wa.printerp.com` or internal VPC network). It provides multi-session WhatsApp connectivity for PrintERP SaaS tenants while remaining completely decoupled from PrintERP's Vercel/Next.js frontend.
+OpenWA runs as an independent, persistent gateway service on a dedicated Linux VPS/instance (e.g. `wa.printflow.bd` or internal VPC network). It provides multi-session WhatsApp connectivity for PrintFlow tenants while remaining completely decoupled from PrintFlow's Vercel/Next.js frontend.
 
 ```
                            +----------------------------------------+
-                           |       PrintERP Next.js (Vercel)        |
-                           |   app.printerp.com / api.printerp.com   |
+                           |       PrintFlow Next.js (Vercel)        |
+                           |   app.printflow.bd / api.printflow.bd   |
                            +----------------------------------------+
                                      |                     ^
              HTTPS (Server-to-Server)|                     | POST Webhook
@@ -15,7 +15,7 @@ OpenWA runs as an independent, persistent gateway service on a dedicated Linux V
                                      v                     |
                            +----------------------------------------+
                            |   Reverse Proxy (Nginx + SSL / HTTPS)  |
-                           |            wa.printerp.com             |
+                           |            wa.printflow.bd             |
                            +----------------------------------------+
                                      |
                                      v
@@ -162,21 +162,21 @@ networks:
 
 ## 5. Nginx Reverse Proxy with HTTPS & WebSockets
 
-Create `/etc/nginx/sites-available/wa.printerp.com`:
+Create `/etc/nginx/sites-available/wa.printflow.bd`:
 
 ```nginx
 server {
     listen 80;
-    server_name wa.printerp.com;
+    server_name wa.printflow.bd;
     return 301 https://$host$request_uri;
 }
 
 server {
     listen 443 ssl http2;
-    server_name wa.printerp.com;
+    server_name wa.printflow.bd;
 
-    ssl_certificate /etc/letsencrypt/live/wa.printerp.com/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/wa.printerp.com/privkey.pem;
+    ssl_certificate /etc/letsencrypt/live/wa.printflow.bd/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/wa.printflow.bd/privkey.pem;
 
     ssl_protocols TLSv1.2 TLSv1.3;
     ssl_ciphers HIGH:!aNULL:!MD5;
@@ -207,18 +207,18 @@ server {
 
 ---
 
-## 6. PrintERP Environment Variables Configuration
+## 6. PrintFlow Environment Variables Configuration
 
 Add the following variables to `.env.local` / Vercel Environment Variables:
 
 ```bash
 # ==============================================================================
-# PrintERP SaaS - OpenWA Gateway Connection Configuration
+# PrintFlow - OpenWA Gateway Connection Configuration
 # ==============================================================================
-OPENWA_BASE_URL="https://wa.printerp.com/api"
+OPENWA_BASE_URL="https://wa.printflow.bd/api"
 OPENWA_API_KEY="owa_admin_secret_generated_api_key"
 OPENWA_WEBHOOK_SECRET="super_secret_hmac_sha256_webhook_key_min_32_chars"
-NEXT_PUBLIC_APP_URL="https://app.printerp.com"
+NEXT_PUBLIC_APP_URL="https://app.printflow.bd"
 ```
 
 ---
@@ -227,7 +227,7 @@ NEXT_PUBLIC_APP_URL="https://app.printerp.com"
 
 ### Health Check Command
 ```bash
-curl -I -H "X-API-Key: YOUR_API_KEY" https://wa.printerp.com/api/stats/overview
+curl -I -H "X-API-Key: YOUR_API_KEY" https://wa.printflow.bd/api/stats/overview
 ```
 
 ### Session Backup Procedure

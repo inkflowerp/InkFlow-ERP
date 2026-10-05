@@ -1,5 +1,5 @@
 -- ==============================================================================
--- PrintERP SaaS - Migration 017: Invoicing, Payments & Multi-Invoice Allocation
+-- PrintFlow - Migration 017: Invoicing, Payments & Multi-Invoice Allocation
 -- Supports:
 --   1. Sales Invoices, NBR Mushak 6.3 VAT Invoices, and Payment Money Receipts
 --   2. Multi-Invoice Payment Allocation

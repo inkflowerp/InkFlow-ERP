@@ -1,5 +1,5 @@
 -- ==============================================================================
--- PrintERP SaaS - Migration 015: Specialized Inventory & Stock Ledger
+-- PrintFlow - Migration 015: Specialized Inventory & Stock Ledger
 -- Supports:
 --   1. Printing & Signage Materials (Roll Media, Rigid Sheets, Metals, LED, Inks)
 --   2. Roll Inventory (Width x Length = SFT area accounting)

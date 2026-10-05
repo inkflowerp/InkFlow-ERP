@@ -1,5 +1,5 @@
 -- ==============================================================================
--- PrintERP SaaS - Migration 014: Production Management & Rework Tracking
+-- PrintFlow - Migration 014: Production Management & Rework Tracking
 -- Supports:
 --   1. 5 Production Departments (design, printing, finishing, fabrication, installation)
 --   2. Adaptive departmental stages and task checklists

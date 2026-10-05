@@ -1,5 +1,5 @@
 -- ==============================================================================
--- PrintERP / InkFlow SaaS - Migration 055: Email OTP & Link Verification System
+-- PrintFlow / PrintFlow SaaS - Migration 055: Email OTP & Link Verification System
 -- Provides authoritative storage for 6-digit OTPs and secure single-use URL tokens
 -- for registration verification, password resets, and multi-factor security events.
 -- ==============================================================================

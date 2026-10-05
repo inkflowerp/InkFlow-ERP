@@ -244,8 +244,8 @@ export function SubscriptionProvider({
       if (
         key === STORAGE_KEYS.COMPANY_SUBSCRIPTIONS ||
         key === STORAGE_KEYS.PLATFORM_PLANS ||
-        key === 'printerp_company_subscriptions' ||
-        key === 'printerp_platform_plans' ||
+        key === 'printflow_company_subscriptions' ||
+        key === 'printflow_platform_plans' ||
         key === 'plans'
       ) {
         refreshSubscription()
@@ -263,16 +263,16 @@ export function SubscriptionProvider({
       }
     }
 
-    window.addEventListener('printerp_plans_sync', handlePlansSync)
-    window.addEventListener('printerp_data_sync', handleDataSync)
+    window.addEventListener('printflow_plans_sync', handlePlansSync)
+    window.addEventListener('printflow_data_sync', handleDataSync)
     window.addEventListener('storage', handleStorageEvent)
-    window.addEventListener('printerp_company_subscriptions_updated', handlePlansSync)
-    window.addEventListener('printerp_platform_plans_updated', handlePlansSync)
+    window.addEventListener('printflow_company_subscriptions_updated', handlePlansSync)
+    window.addEventListener('printflow_platform_plans_updated', handlePlansSync)
 
     let busChannel: BroadcastChannel | null = null
     try {
       if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
-        busChannel = new BroadcastChannel('printerp_realtime_bus')
+        busChannel = new BroadcastChannel('printflow_realtime_bus')
         busChannel.onmessage = (event) => {
           if (
             event.data?.storageKey === STORAGE_KEYS.PLATFORM_PLANS ||
@@ -319,11 +319,11 @@ export function SubscriptionProvider({
     } catch {}
 
     return () => {
-      window.removeEventListener('printerp_plans_sync', handlePlansSync)
-      window.removeEventListener('printerp_data_sync', handleDataSync)
+      window.removeEventListener('printflow_plans_sync', handlePlansSync)
+      window.removeEventListener('printflow_data_sync', handleDataSync)
       window.removeEventListener('storage', handleStorageEvent)
-      window.removeEventListener('printerp_company_subscriptions_updated', handlePlansSync)
-      window.removeEventListener('printerp_platform_plans_updated', handlePlansSync)
+      window.removeEventListener('printflow_company_subscriptions_updated', handlePlansSync)
+      window.removeEventListener('printflow_platform_plans_updated', handlePlansSync)
       if (busChannel) {
         try {
           busChannel.close()

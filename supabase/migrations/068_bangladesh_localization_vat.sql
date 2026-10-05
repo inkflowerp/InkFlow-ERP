@@ -1,5 +1,5 @@
 -- ==============================================================================
--- InkFlow ERP - Migration 068: Bangladesh Localization & VAT Engine (V7)
+-- PrintFlow - Migration 068: Bangladesh Localization & VAT Engine (V7)
 -- Authoritative, multi-tenant Bangladesh tax architecture & localized profile
 -- ==============================================================================
 

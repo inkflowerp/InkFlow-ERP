@@ -151,7 +151,7 @@ export class SslCommerzPaymentAdapter implements PaymentProvider {
       bodyParams.append('cancel_url', cancelUrl)
       bodyParams.append('ipn_url', ipnUrl)
       bodyParams.append('cus_name', params.customerName || 'Valued Customer')
-      bodyParams.append('cus_email', params.customerEmail || 'billing@printerp.com')
+      bodyParams.append('cus_email', params.customerEmail || 'billing@printflow.bd')
       bodyParams.append('cus_add1', 'Dhaka, Bangladesh')
       bodyParams.append('cus_city', 'Dhaka')
       bodyParams.append('cus_country', 'Bangladesh')

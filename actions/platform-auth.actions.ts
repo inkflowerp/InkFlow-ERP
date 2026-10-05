@@ -280,13 +280,13 @@ export async function platformLogoutAction(): Promise<{ success: boolean; redire
     cookieStore.delete(PLATFORM_SESSION_COOKIE)
 
     // 2. Invalidate support tenant cookie
-    cookieStore.set('printerp_support_tenant', '', {
+    cookieStore.set('printflow_support_tenant', '', {
       ...cookieOpts,
       path: '/',
       maxAge: 0,
       expires: new Date(0),
     })
-    cookieStore.delete('printerp_support_tenant')
+    cookieStore.delete('printflow_support_tenant')
 
     // 3. Sign out Supabase auth session
     try {

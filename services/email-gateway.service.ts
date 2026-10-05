@@ -69,8 +69,8 @@ export const DEFAULT_PLATFORM_GATEWAY: EmailGatewayRecord = {
   encrypted_credentials: null,
   encryption_type: 'tls',
   sender_name: 'PrintFlow Platform',
-  sender_email: 'inkflow.erp@gmail.com',
-  reply_to_email: 'inkflow.erp@gmail.com',
+  sender_email: 'printflow.bd@gmail.com',
+  reply_to_email: 'printflow.bd@gmail.com',
   status: 'inactive',
   is_default: false,
   extra_settings: {},
@@ -95,7 +95,7 @@ export class EmailGatewayService {
 
     // In unit testing environment, prioritize in-memory mock store
     if (isTestEnvironment()) {
-      const localGateways = EmailDataStore.get<EmailGatewayRecord[]>('printerp_email_gateways') || []
+      const localGateways = EmailDataStore.get<EmailGatewayRecord[]>('printflow_email_gateways') || []
       if (effectiveScope === 'TENANT') {
         if (!tenantId) return null
         const tenantLocal = localGateways.find((g) => g.tenant_id === tenantId && g.status === 'active')
@@ -159,8 +159,8 @@ export class EmailGatewayService {
           encrypted_credentials: process.env.PLATFORM_SMTP_PASSWORD || process.env.SMTP_PASS || process.env.SMTP_PASSWORD || null,
           encryption_type: ((process.env.PLATFORM_SMTP_SECURE || process.env.SMTP_SECURE) === 'true' ? 'ssl' : 'tls') as any,
           sender_name: process.env.PLATFORM_SENDER_NAME || process.env.SMTP_FROM_NAME || 'PrintFlow Platform',
-          sender_email: process.env.PLATFORM_SENDER_EMAIL || process.env.SMTP_FROM_EMAIL || process.env.PLATFORM_SMTP_USER || process.env.SMTP_USER || 'inkflow.erp@gmail.com',
-          reply_to_email: process.env.PLATFORM_SENDER_EMAIL || process.env.SMTP_REPLY_TO || 'inkflow.erp@gmail.com',
+          sender_email: process.env.PLATFORM_SENDER_EMAIL || process.env.SMTP_FROM_EMAIL || process.env.PLATFORM_SMTP_USER || process.env.SMTP_USER || 'printflow.bd@gmail.com',
+          reply_to_email: process.env.PLATFORM_SENDER_EMAIL || process.env.SMTP_REPLY_TO || 'printflow.bd@gmail.com',
           status: 'active',
           is_default: true,
           extra_settings: {},
@@ -185,7 +185,7 @@ export class EmailGatewayService {
   ): Promise<EmailTemplateRecord | null> {
     if (isTestEnvironment()) {
       const localTemplates =
-        EmailDataStore.get<EmailTemplateRecord[]>('printerp_email_templates') || []
+        EmailDataStore.get<EmailTemplateRecord[]>('printflow_email_templates') || []
       const foundLocal =
         localTemplates.find((t) => t.tenant_id === tenantId && t.event_type === eventType) ||
         localTemplates.find((t) => !t.tenant_id && t.event_type === eventType)
@@ -222,7 +222,7 @@ export class EmailGatewayService {
 
       // 3. Check local data store templates
       const localTemplates =
-        EmailDataStore.get<EmailTemplateRecord[]>('printerp_email_templates') || []
+        EmailDataStore.get<EmailTemplateRecord[]>('printflow_email_templates') || []
       const foundLocal =
         localTemplates.find((t) => t.tenant_id === tenantId && t.event_type === eventType) ||
         localTemplates.find((t) => !t.tenant_id && t.event_type === eventType)
@@ -289,13 +289,13 @@ export class EmailGatewayService {
           }
 
           // Update local store
-          const localGateways = EmailDataStore.get<EmailGatewayRecord[]>('printerp_email_gateways') || []
+          const localGateways = EmailDataStore.get<EmailGatewayRecord[]>('printflow_email_gateways') || []
           const item = localGateways.find((g) => g.id === gateway.id)
           if (item) {
             item.encrypted_credentials = reEncrypted
             item.token_expires_at = newTokens.expires_at
             item.last_checked_at = new Date().toISOString()
-            EmailDataStore.set('printerp_email_gateways', localGateways)
+            EmailDataStore.set('printflow_email_gateways', localGateways)
           }
         } catch (syncErr) {
           console.error('[EmailGatewayService] Failed to persist refreshed token:', syncErr)
@@ -378,7 +378,7 @@ export class EmailGatewayService {
     try {
       // 1. Idempotency Check: Prevent duplicate sends on rapid clicks or repeated calls
       if (idempotencyKey) {
-        const localLogs = EmailDataStore.get<EmailLogRecord[]>('printerp_email_logs') || []
+        const localLogs = EmailDataStore.get<EmailLogRecord[]>('printflow_email_logs') || []
         const existingLog = localLogs.find(
           (l) => l.idempotency_key === idempotencyKey && l.status === 'sent'
         )
@@ -520,11 +520,11 @@ export class EmailGatewayService {
         gateway.provider === 'smtp' &&
         gateway.smtp_username &&
         gateway.smtp_username.includes('@') &&
-        (!effectiveSenderEmail || effectiveSenderEmail === 'inkflow.erp@gmail.com' || effectiveSenderEmail === 'notifications@printerp.com')
+        (!effectiveSenderEmail || effectiveSenderEmail === 'printflow.bd@gmail.com' || effectiveSenderEmail === 'notifications@printflow.bd')
       ) {
         effectiveSenderEmail = gateway.smtp_username
       } else if (!effectiveSenderEmail) {
-        effectiveSenderEmail = process.env.PLATFORM_SENDER_EMAIL || 'inkflow.erp@gmail.com'
+        effectiveSenderEmail = process.env.PLATFORM_SENDER_EMAIL || 'printflow.bd@gmail.com'
       }
 
       const fromAddress = {
@@ -638,7 +638,7 @@ export class EmailGatewayService {
     }
 
     // Local DataStore fallback
-    const localQueue = EmailDataStore.get<EmailQueueJob[]>('printerp_email_queue') || []
+    const localQueue = EmailDataStore.get<EmailQueueJob[]>('printflow_email_queue') || []
     localQueue.push({
       id: jobId,
       tenant_id: jobData.tenant_id,
@@ -659,7 +659,7 @@ export class EmailGatewayService {
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     })
-    EmailDataStore.set('printerp_email_queue', localQueue)
+    EmailDataStore.set('printflow_email_queue', localQueue)
 
     return jobId
   }
@@ -692,7 +692,7 @@ export class EmailGatewayService {
 
       // If DB has no jobs, check local store
       if (jobsToProcess.length === 0) {
-        const localQueue = EmailDataStore.get<EmailQueueJob[]>('printerp_email_queue') || []
+        const localQueue = EmailDataStore.get<EmailQueueJob[]>('printflow_email_queue') || []
         const localPending = localQueue.filter(
           (j) => (j.status === 'pending' || j.status === 'failed') && j.attempts < 3
         )
@@ -719,7 +719,7 @@ export class EmailGatewayService {
             queueNow: false,
           })
 
-          const queueLocal = EmailDataStore.get<EmailQueueJob[]>('printerp_email_queue') || []
+          const queueLocal = EmailDataStore.get<EmailQueueJob[]>('printflow_email_queue') || []
           const localItem = queueLocal.find((q) => q.id === job.id)
 
           if (result.success) {
@@ -739,7 +739,7 @@ export class EmailGatewayService {
               localItem.status = 'completed'
               localItem.attempts = attempt
               localItem.updated_at = new Date().toISOString()
-              EmailDataStore.set('printerp_email_queue', queueLocal)
+              EmailDataStore.set('printflow_email_queue', queueLocal)
             }
           } else {
             failed++
@@ -766,7 +766,7 @@ export class EmailGatewayService {
               localItem.last_error = result.error
               localItem.next_run_at = nextRun
               localItem.updated_at = new Date().toISOString()
-              EmailDataStore.set('printerp_email_queue', queueLocal)
+              EmailDataStore.set('printflow_email_queue', queueLocal)
             }
           }
         } catch (jobErr: any) {
@@ -821,8 +821,8 @@ export class EmailGatewayService {
     }
 
     // Always keep in local data store for instant UI reactivity
-    const currentLogs = EmailDataStore.get<EmailLogRecord[]>('printerp_email_logs') || []
+    const currentLogs = EmailDataStore.get<EmailLogRecord[]>('printflow_email_logs') || []
     currentLogs.unshift(record)
-    EmailDataStore.set('printerp_email_logs', currentLogs.slice(0, 100))
+    EmailDataStore.set('printflow_email_logs', currentLogs.slice(0, 100))
   }
 }

@@ -1,5 +1,5 @@
 -- ==============================================================================
--- InkFlow SaaS - Migration 084: Products & Services Commercial Master 2.0
+-- PrintFlow SaaS - Migration 084: Products & Services Commercial Master 2.0
 -- Supports:
 --   1. Purchase Unit vs Selling Unit with Conversion Ratio
 --   2. Expected Usable Yield & Default Wastage Percentage

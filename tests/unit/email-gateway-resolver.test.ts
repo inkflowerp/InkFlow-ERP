@@ -10,8 +10,8 @@ import { MockProviderAdapter } from '../../lib/email/adapters/mock.adapter.ts'
 
 describe('Email Gateway Resolver Priority Logic Tests', () => {
   beforeEach(() => {
-    EmailDataStore.set('printerp_email_gateways', [])
-    EmailDataStore.set('printerp_email_logs', [])
+    EmailDataStore.set('printflow_email_gateways', [])
+    EmailDataStore.set('printflow_email_logs', [])
     MockProviderAdapter.clearHistory()
   })
 
@@ -29,7 +29,7 @@ describe('Email Gateway Resolver Priority Logic Tests', () => {
       updated_at: new Date().toISOString(),
     }
 
-    EmailDataStore.set('printerp_email_gateways', [tenantGateway])
+    EmailDataStore.set('printflow_email_gateways', [tenantGateway])
 
     const resolved = await EmailGatewayService.resolveGateway('tenant-123')
     assert.ok(resolved)
@@ -52,7 +52,7 @@ describe('Email Gateway Resolver Priority Logic Tests', () => {
       updated_at: new Date().toISOString(),
     }
 
-    EmailDataStore.set('printerp_email_gateways', [platformGateway])
+    EmailDataStore.set('printflow_email_gateways', [platformGateway])
 
     const resolved = await EmailGatewayService.resolveGateway('tenant-no-gw')
     // Must return null, never fall back to platform gateway for a tenant!
@@ -74,7 +74,7 @@ describe('Email Gateway Resolver Priority Logic Tests', () => {
       updated_at: new Date().toISOString(),
     }
 
-    EmailDataStore.set('printerp_email_gateways', [platformGateway])
+    EmailDataStore.set('printflow_email_gateways', [platformGateway])
 
     const resolved = await EmailGatewayService.resolveGateway(null, 'PLATFORM')
     assert.ok(resolved)
@@ -95,7 +95,7 @@ describe('Email Gateway Resolver Priority Logic Tests', () => {
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }
-    EmailDataStore.set('printerp_email_gateways', [tenantGateway])
+    EmailDataStore.set('printflow_email_gateways', [tenantGateway])
 
     const sendResult = await EmailGatewayService.sendEmail({
       tenantId: 'tenant-123',
@@ -117,7 +117,7 @@ describe('Email Gateway Resolver Priority Logic Tests', () => {
     assert.ok(sendResult.messageId)
 
     // Inspect logs
-    const logs = EmailDataStore.get<any[]>('printerp_email_logs') || []
+    const logs = EmailDataStore.get<any[]>('printflow_email_logs') || []
     assert.strictEqual(logs.length, 1)
     assert.strictEqual(logs[0].recipient, 'customer@buyer.com')
     assert.strictEqual(logs[0].status, 'sent')

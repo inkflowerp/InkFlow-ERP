@@ -1,8 +1,8 @@
-# InkFlow ERP — Production Deployment & Instant Rollback Playbook
+# PrintFlow — Production Deployment & Instant Rollback Playbook
 
 ## 1. Overview & Rollback Architecture
 
-InkFlow ERP leverages Vercel's **Instant Rollback** capability combined with PostgreSQL backward-compatible migrations to achieve near-zero downtime recovery from bad production releases.
+PrintFlow leverages Vercel's **Instant Rollback** capability combined with PostgreSQL backward-compatible migrations to achieve near-zero downtime recovery from bad production releases.
 
 | Metric | Target | Realized Protocol |
 |---|---|---|
@@ -23,7 +23,7 @@ In Vercel, every successful production deployment that passes automated health c
    - `npm run check:migrations` (0 dangerous grants)
    - `npm run test` (Core acceptance, security, and integration suites)
 2. **Post-Deployment Health Probe:**
-   - Synthetic check against `https://app.inkflowerp.com/api/health` confirming `dbStatus === 'ok'` and `queueStatus === 'ok'`.
+   - Synthetic check against `https://app.printflow.bd/api/health` confirming `dbStatus === 'ok'` and `queueStatus === 'ok'`.
 3. **Rollback Marker:**
    - Once verified for 15 minutes with error rate < 0.1%, deployment is confirmed as the target `isRollbackCandidate`.
 
@@ -43,14 +43,14 @@ vercel rollback --prod
 vercel rollback dpl_xxxxxxxxxxxx --prod
 ```
 
-Or via **Vercel Dashboard** $\to$ **InkFlow ERP Project** $\to$ **Deployments** $\to$ Select previous healthy deployment $\to$ Click **Instant Rollback**.
+Or via **Vercel Dashboard** $\to$ **PrintFlow Project** $\to$ **Deployments** $\to$ Select previous healthy deployment $\to$ Click **Instant Rollback**.
 
 ### Step 2: Traffic Re-Routing Verification
 - Vercel Edge immediately routes 100% of incoming domain traffic to the previously healthy build artifacts.
 - Zero rebuilding or recompilation occurs during instant rollback.
 
 ### Step 3: Database Compatibility Safeguard
-- Because InkFlow ERP enforces the **Expand/Contract** database schema convention, the prior application version remains 100% compatible with the existing database schema.
+- Because PrintFlow enforces the **Expand/Contract** database schema convention, the prior application version remains 100% compatible with the existing database schema.
 - Schema changes never drop active columns or break backward compatibility in the same release.
 
 ### Step 4: Incident Post-Mortem & Fix-Forward

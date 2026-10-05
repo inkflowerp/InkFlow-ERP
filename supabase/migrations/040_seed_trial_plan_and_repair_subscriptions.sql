@@ -1,5 +1,5 @@
 -- ==============================================================================
--- InkFlow / PrintERP SaaS - Migration 040: Seed Trial Plan & Repair Subscriptions
+-- PrintFlow / PrintFlow - Migration 040: Seed Trial Plan & Repair Subscriptions
 -- Ensures 'trial' is a first-class citizen in subscription_plans and repairs
 -- any trial subscriptions that were linked to starter plan.
 -- ==============================================================================

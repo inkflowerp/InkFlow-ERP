@@ -1,5 +1,5 @@
 -- ==============================================================================
--- PrintERP SaaS - Migration 020: Employee, Attendance, Salary Advances & Payroll
+-- PrintFlow - Migration 020: Employee, Attendance, Salary Advances & Payroll
 -- Supports:
 --   1. 3 Employee Types (Permanent, Contract, Daily Labor)
 --   2. Attendance Tracking (Late minutes, Overtime hours, Leaves)

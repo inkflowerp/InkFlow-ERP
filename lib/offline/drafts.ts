@@ -5,7 +5,7 @@
 
 import { OfflineDraft, OfflineFormType } from '@/types/offline.types'
 
-const DRAFTS_STORAGE_KEY = 'printerp_offline_drafts'
+const DRAFTS_STORAGE_KEY = 'printflow_offline_drafts'
 
 const INITIAL_EMPTY_DRAFTS: OfflineDraft[] = []
 
@@ -49,7 +49,7 @@ export class OfflineDraftManager {
     if (typeof window !== 'undefined') {
       try {
         localStorage.setItem(DRAFTS_STORAGE_KEY, JSON.stringify(updated))
-        window.dispatchEvent(new Event('printerp_drafts_updated'))
+        window.dispatchEvent(new Event('printflow_drafts_updated'))
       } catch (e) {
         console.error('Failed to save draft', e)
       }
@@ -63,7 +63,7 @@ export class OfflineDraftManager {
     if (typeof window !== 'undefined') {
       try {
         localStorage.setItem(DRAFTS_STORAGE_KEY, JSON.stringify(drafts))
-        window.dispatchEvent(new Event('printerp_drafts_updated'))
+        window.dispatchEvent(new Event('printflow_drafts_updated'))
       } catch (e) {
         console.error('Failed to delete draft', e)
       }

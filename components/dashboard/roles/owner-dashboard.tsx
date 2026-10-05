@@ -63,7 +63,7 @@ const NewPurchaseModal = dynamic(
 import { formatBDT, toBengaliNumerals } from '@/lib/formatters'
 import { getBangladeshGreeting, formatBangladeshDate, getBangladeshTodayDateString } from '@/lib/utils/business-date'
 import { getTenantNavHref } from '@/lib/tenant/tenant-url'
-import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
+import { PrintFlowDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import type {
  OwnerDashboardSnapshot,
  CriticalStockAlert,
@@ -179,19 +179,19 @@ export function OwnerDashboard({
  try {
  if (typeof window !== 'undefined') {
  const payments = [
-              ...(PrintERPDataStore.getAll<any>(STORAGE_KEYS.PAYMENTS, company?.slug) || []),
-              ...(PrintERPDataStore.getAll<any>(STORAGE_KEYS.PAYMENTS, company?.id) || []),
-              ...(PrintERPDataStore.get<any[]>(STORAGE_KEYS.PAYMENTS) || []),
+              ...(PrintFlowDataStore.getAll<any>(STORAGE_KEYS.PAYMENTS, company?.slug) || []),
+              ...(PrintFlowDataStore.getAll<any>(STORAGE_KEYS.PAYMENTS, company?.id) || []),
+              ...(PrintFlowDataStore.get<any[]>(STORAGE_KEYS.PAYMENTS) || []),
             ]
  const invoices = [
-              ...(PrintERPDataStore.getAll<any>(STORAGE_KEYS.INVOICES, company?.slug) || []),
-              ...(PrintERPDataStore.getAll<any>(STORAGE_KEYS.INVOICES, company?.id) || []),
-              ...(PrintERPDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || []),
+              ...(PrintFlowDataStore.getAll<any>(STORAGE_KEYS.INVOICES, company?.slug) || []),
+              ...(PrintFlowDataStore.getAll<any>(STORAGE_KEYS.INVOICES, company?.id) || []),
+              ...(PrintFlowDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || []),
             ]
  const expenses = [
-              ...(PrintERPDataStore.getAll<any>(STORAGE_KEYS.EXPENSES, company?.slug) || []),
-              ...(PrintERPDataStore.getAll<any>(STORAGE_KEYS.EXPENSES, company?.id) || []),
-              ...(PrintERPDataStore.get<any[]>(STORAGE_KEYS.EXPENSES) || []),
+              ...(PrintFlowDataStore.getAll<any>(STORAGE_KEYS.EXPENSES, company?.slug) || []),
+              ...(PrintFlowDataStore.getAll<any>(STORAGE_KEYS.EXPENSES, company?.id) || []),
+              ...(PrintFlowDataStore.get<any[]>(STORAGE_KEYS.EXPENSES) || []),
             ]
 
  let pCash = 0, pMfs = 0, pBank = 0
@@ -329,8 +329,8 @@ export function OwnerDashboard({
  if (typeof window !== 'undefined') {
  try {
  const orders = [
-          ...(PrintERPDataStore.getAll<any>(STORAGE_KEYS.ORDERS, company?.slug) || []),
-          ...(PrintERPDataStore.getAll<any>(STORAGE_KEYS.ORDERS, company?.id) || []),
+          ...(PrintFlowDataStore.getAll<any>(STORAGE_KEYS.ORDERS, company?.slug) || []),
+          ...(PrintFlowDataStore.getAll<any>(STORAGE_KEYS.ORDERS, company?.id) || []),
         ]
  const seen = new Set<string>()
  storeOrdersCount = orders.filter((o) => o?.id && !seen.has(o.id) && seen.add(o.id)).length

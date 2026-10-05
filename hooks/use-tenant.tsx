@@ -11,7 +11,7 @@ import {
   CompanyUserWithProfile,
 } from '@/types/tenant.types'
 import { TENANT_SESSION_COOKIE, TenantSessionData, TenantContext as ServerTenantContext, mapSessionToTenantRole } from '@/lib/auth/types'
-import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
+import { PrintFlowDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import { PlatformTenantCompany } from '@/types/platform.types'
 import { getTenantLink } from '@/lib/tenant/tenant-url'
 import { switchCompanyAction } from '@/actions/tenant.actions'
@@ -181,11 +181,11 @@ function resolveCompanyFromContextOrStore(
   }
 
   const platformCompanies =
-    PrintERPDataStore.get<PlatformTenantCompany[]>(STORAGE_KEYS.PLATFORM_COMPANIES) || []
+    PrintFlowDataStore.get<PlatformTenantCompany[]>(STORAGE_KEYS.PLATFORM_COMPANIES) || []
   const platMatch = platformCompanies.find((c) => c.slug === slug || c.id === slug)
   if (platMatch) return platformCompanyToRow(platMatch)
 
-  const profile = PrintERPDataStore.get<Partial<CompanyRow>>(STORAGE_KEYS.COMPANY_PROFILE)
+  const profile = PrintFlowDataStore.get<Partial<CompanyRow>>(STORAGE_KEYS.COMPANY_PROFILE)
   if (profile && (profile.slug === slug || profile.id === slug)) {
     const rawName = profile.name || slug
     return {
@@ -312,7 +312,7 @@ export function TenantProvider({
       (session as any)?.defaultLocale ||
       (initialTenantContext as any)?.defaultLocale
     if (tenantDefault === 'en' || tenantDefault === 'bn') {
-      const explicitChoice = typeof window !== 'undefined' ? localStorage.getItem('printerp_locale_explicit') : null
+      const explicitChoice = typeof window !== 'undefined' ? localStorage.getItem('printflow_locale_explicit') : null
       if (!explicitChoice && i18n.locale !== tenantDefault) {
         i18n.setLocale(tenantDefault)
       }
@@ -371,7 +371,7 @@ export function TenantProvider({
     if (activeSession) {
       setSession(activeSession)
       const users =
-        PrintERPDataStore.get<CompanyUserWithProfile[]>(STORAGE_KEYS.COMPANY_USERS) || []
+        PrintFlowDataStore.get<CompanyUserWithProfile[]>(STORAGE_KEYS.COMPANY_USERS) || []
       const matched = users.find(
         (u) =>
           u.user_id === activeSession.userId ||
@@ -390,13 +390,13 @@ export function TenantProvider({
       setCompany(resolved)
     }
 
-    const persistedSettings = PrintERPDataStore.get<CompanySettingsRow>(STORAGE_KEYS.TAX_SETTINGS)
+    const persistedSettings = PrintFlowDataStore.get<CompanySettingsRow>(STORAGE_KEYS.TAX_SETTINGS)
     if (persistedSettings) {
       setSettings(persistedSettings)
     }
 
     const rawPlatformCompanies =
-      PrintERPDataStore.get<PlatformTenantCompany[]>(STORAGE_KEYS.PLATFORM_COMPANIES)
+      PrintFlowDataStore.get<PlatformTenantCompany[]>(STORAGE_KEYS.PLATFORM_COMPANIES)
     const platformCompanies = Array.isArray(rawPlatformCompanies) ? rawPlatformCompanies : []
     const converted = platformCompanies.map(platformCompanyToRow)
 
@@ -426,12 +426,12 @@ export function TenantProvider({
       }
     }
 
-    window.addEventListener('printerp_auth_changed', handleAuthChange)
-    window.addEventListener('printerp_data_sync', handleDataSync)
+    window.addEventListener('printflow_auth_changed', handleAuthChange)
+    window.addEventListener('printflow_data_sync', handleDataSync)
 
     return () => {
-      window.removeEventListener('printerp_auth_changed', handleAuthChange)
-      window.removeEventListener('printerp_data_sync', handleDataSync)
+      window.removeEventListener('printflow_auth_changed', handleAuthChange)
+      window.removeEventListener('printflow_data_sync', handleDataSync)
     }
   }, [reloadTenantData])
 

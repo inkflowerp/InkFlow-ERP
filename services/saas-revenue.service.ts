@@ -7,7 +7,7 @@
 import { createAdminClient } from '../lib/supabase/admin.ts'
 import type { SaasRevenueOverview, SubscriptionPlanRecord } from '../types/subscription.types.ts'
 import { DEFAULT_PLANS } from '../lib/subscription/subscription-constants.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../lib/db/data-store.ts'
 
 export class SaasRevenueService {
   /**
@@ -59,7 +59,7 @@ export class SaasRevenueService {
 
     if (subs.length === 0) {
       try {
-        const storedSubs = PrintERPDataStore.get<Record<string, any>>(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS)
+        const storedSubs = PrintFlowDataStore.get<Record<string, any>>(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS)
         if (storedSubs) {
           subs = Object.values(storedSubs)
         }

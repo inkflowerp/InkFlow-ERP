@@ -36,10 +36,10 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     let cookieLocale: string | null = null
     if (typeof document !== 'undefined') {
-      const match = document.cookie.split('; ').find((r) => r.startsWith('printerp_locale='))
+      const match = document.cookie.split('; ').find((r) => r.startsWith('printflow_locale='))
       if (match) cookieLocale = match.split('=')[1]
       if (!cookieLocale) {
-        const sMatch = document.cookie.split('; ').find((r) => r.startsWith('printerp_tenant_session='))
+        const sMatch = document.cookie.split('; ').find((r) => r.startsWith('printflow_tenant_session='))
         if (sMatch) {
           try {
             const parsed = JSON.parse(decodeURIComponent(sMatch.split('=')[1]))
@@ -51,20 +51,20 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
       }
     }
 
-    const saved = (localStorage.getItem('printerp_locale') as string | null) || cookieLocale
+    const saved = (localStorage.getItem('printflow_locale') as string | null) || cookieLocale
     if (saved === 'en' || saved === 'bn') {
       setLocaleState(saved)
     } else if (saved === 'bi') {
       setLocaleState('bn')
-      localStorage.setItem('printerp_locale', 'bn')
+      localStorage.setItem('printflow_locale', 'bn')
     }
   }, [])
 
   const setLocale = (newLocale: LocaleMode) => {
     setLocaleState(newLocale)
     if (typeof window !== 'undefined') {
-      localStorage.setItem('printerp_locale', newLocale)
-      document.cookie = `printerp_locale=${newLocale}; path=/; max-age=31536000; SameSite=Lax`
+      localStorage.setItem('printflow_locale', newLocale)
+      document.cookie = `printflow_locale=${newLocale}; path=/; max-age=31536000; SameSite=Lax`
     }
   }
 

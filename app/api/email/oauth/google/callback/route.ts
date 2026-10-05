@@ -192,12 +192,12 @@ export async function GET(request: NextRequest) {
     }
 
     // 7. Update in-memory / local data store
-    const localGateways = EmailDataStore.get<EmailGatewayRecord[]>('printerp_email_gateways') || []
+    const localGateways = EmailDataStore.get<EmailGatewayRecord[]>('printflow_email_gateways') || []
     const filtered = localGateways.filter((g) =>
       statePayload.scopeType === 'PLATFORM' ? g.tenant_id !== null : g.tenant_id !== statePayload.tenantId
     )
     filtered.push(savedRecord)
-    EmailDataStore.set('printerp_email_gateways', filtered)
+    EmailDataStore.set('printflow_email_gateways', filtered)
 
     // 8. Record audit log
     try {

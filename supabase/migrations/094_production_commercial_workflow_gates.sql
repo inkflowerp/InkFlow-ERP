@@ -1,5 +1,5 @@
 -- ==============================================================================
--- PrintERP SaaS - Migration 094: Production Commercial Workflow & Gating Architecture
+-- PrintFlow - Migration 094: Production Commercial Workflow & Gating Architecture
 -- Supports:
 --   1. Invoice Requests table with tenant isolation & status lifecycle
 --   2. Workflow routing & commercial gate statuses on Sales Orders, Job Orders, Design Jobs, Production Jobs

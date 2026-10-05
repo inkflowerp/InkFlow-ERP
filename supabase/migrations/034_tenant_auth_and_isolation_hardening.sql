@@ -1,5 +1,5 @@
 -- ==============================================================================
--- InkFlow SaaS - Migration 034: Production Tenant Auth & Multi-Tenant Isolation Hardening
+-- PrintFlow SaaS - Migration 034: Production Tenant Auth & Multi-Tenant Isolation Hardening
 -- Enforces PostgreSQL-level isolation, search_path protection on security definer functions,
 -- active membership verification, and row-level security across all operational tables.
 -- ==============================================================================

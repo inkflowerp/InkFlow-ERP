@@ -1,6 +1,6 @@
-# InkFlow ERP Hardening & Production Safety Plan
+# PrintFlow Hardening & Production Safety Plan
 
-This document outlines the systematic engineering roadmap to harden **InkFlow ERP** (Next.js 16, React 19, Supabase PostgreSQL, Vercel) for mission-critical production readiness.
+This document outlines the systematic engineering roadmap to harden **PrintFlow** (Next.js 16, React 19, Supabase PostgreSQL, Vercel) for mission-critical production readiness.
 
 ---
 

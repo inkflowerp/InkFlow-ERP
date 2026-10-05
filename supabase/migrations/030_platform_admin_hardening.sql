@@ -1,5 +1,5 @@
 -- ==============================================================================
--- PrintERP SaaS - Migration 030: Platform Admin Complete Hardening & Telemetry
+-- PrintFlow - Migration 030: Platform Admin Complete Hardening & Telemetry
 -- Supports:
 --   1. Platform Incidents Management Ledger
 --   2. Platform Background Jobs Telemetry & Retries

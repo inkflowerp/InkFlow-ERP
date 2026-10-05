@@ -61,7 +61,7 @@ function simulateMiddleware(request: MockRequest, user: { id: string; email: str
     pathname.startsWith('/auth/verify')
 
   // Check Tenant Session Cookie
-  const tenantSessionCookie = request.cookies['printerp_tenant_session']
+  const tenantSessionCookie = request.cookies['printflow_tenant_session']
   let hasValidTenantCookie = false
   let tenantSessionData: any = null
   if (tenantSessionCookie) {
@@ -107,7 +107,7 @@ function simulateMiddleware(request: MockRequest, user: { id: string; email: str
       }
     } else if (!user && hasValidTenantCookie) {
       // Stale tenant session cookie with no active Supabase user session: purge cookie to prevent redirect loops
-      response.cookiesToDelete.push('printerp_tenant_session')
+      response.cookiesToDelete.push('printflow_tenant_session')
     }
   }
 
@@ -139,7 +139,7 @@ describe('Start Free Trial & Auth Redirect Loop Protection Suite', () => {
     const req: MockRequest = {
       pathname: '/register',
       searchParams: { plan: 'starter' },
-      cookies: { printerp_tenant_session: staleCookie },
+      cookies: { printflow_tenant_session: staleCookie },
     }
 
     const res = simulateMiddleware(req, null)
@@ -159,12 +159,12 @@ describe('Start Free Trial & Auth Redirect Loop Protection Suite', () => {
     const req: MockRequest = {
       pathname: '/login',
       searchParams: {},
-      cookies: { printerp_tenant_session: staleCookie },
+      cookies: { printflow_tenant_session: staleCookie },
     }
 
     const res = simulateMiddleware(req, null)
     assert.equal(res.status, 200, 'Unauthenticated /login must load login page without redirecting to dashboard')
-    assert.ok(res.cookiesToDelete.includes('printerp_tenant_session'), 'Must purge stale tenant cookie')
+    assert.ok(res.cookiesToDelete.includes('printflow_tenant_session'), 'Must purge stale tenant cookie')
   })
 
   test('4. /login with error query parameters (e.g. ?error=unauthorized) does NOT redirect to dashboard', () => {
@@ -179,7 +179,7 @@ describe('Start Free Trial & Auth Redirect Loop Protection Suite', () => {
     const req: MockRequest = {
       pathname: '/login',
       searchParams: { error: 'unauthorized' },
-      cookies: { printerp_tenant_session: validCookie },
+      cookies: { printflow_tenant_session: validCookie },
     }
 
     const res = simulateMiddleware(req, { id: '33333333-3333-3333-3333-333333333333', email: 'active@example.com' })
@@ -199,7 +199,7 @@ describe('Start Free Trial & Auth Redirect Loop Protection Suite', () => {
     const req: MockRequest = {
       pathname: '/login',
       searchParams: {},
-      cookies: { printerp_tenant_session: validCookie },
+      cookies: { printflow_tenant_session: validCookie },
     }
 
     const res = simulateMiddleware(req, { id: '33333333-3333-3333-3333-333333333333', email: 'active@example.com' })

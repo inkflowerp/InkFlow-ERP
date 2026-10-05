@@ -13,7 +13,7 @@ import type {
   WorkflowCondition,
 } from '../types/workflow.types.ts'
 import type { ApiResponse } from '../types/common.types.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../lib/db/data-store.ts'
 
 // Standard printing industry workflow rule templates for bootstrapping tenants
 export const SEEDED_WORKFLOW_RULES: WorkflowRule[] = [
@@ -324,7 +324,7 @@ export class WorkflowService {
 
       // Memory and Local Store Fallback
       if (typeof window !== 'undefined') {
-        const stored = PrintERPDataStore.get<WorkflowRule[]>(STORAGE_KEYS.AUTOMATION_RULES)
+        const stored = PrintFlowDataStore.get<WorkflowRule[]>(STORAGE_KEYS.AUTOMATION_RULES)
         if (stored && Array.isArray(stored) && stored.length > 0) {
           memoryRules = stored
         }
@@ -341,7 +341,7 @@ export class WorkflowService {
         memoryRules.push(...seededForCompany)
         results = seededForCompany
         if (typeof window !== 'undefined') {
-          PrintERPDataStore.set(STORAGE_KEYS.AUTOMATION_RULES, memoryRules)
+          PrintFlowDataStore.set(STORAGE_KEYS.AUTOMATION_RULES, memoryRules)
         }
       }
 
@@ -366,7 +366,7 @@ export class WorkflowService {
       rule.is_active = isActive
       rule.updated_at = new Date().toISOString()
       if (typeof window !== 'undefined') {
-        PrintERPDataStore.set(STORAGE_KEYS.AUTOMATION_RULES, memoryRules)
+        PrintFlowDataStore.set(STORAGE_KEYS.AUTOMATION_RULES, memoryRules)
       }
     }
 
@@ -439,7 +439,7 @@ export class WorkflowService {
         }
 
         if (typeof window !== 'undefined') {
-          PrintERPDataStore.set(STORAGE_KEYS.AUTOMATION_RULES, memoryRules)
+          PrintFlowDataStore.set(STORAGE_KEYS.AUTOMATION_RULES, memoryRules)
         }
 
         try {
@@ -489,7 +489,7 @@ export class WorkflowService {
 
       memoryRules.unshift(newRule)
       if (typeof window !== 'undefined') {
-        PrintERPDataStore.set(STORAGE_KEYS.AUTOMATION_RULES, memoryRules)
+        PrintFlowDataStore.set(STORAGE_KEYS.AUTOMATION_RULES, memoryRules)
       }
 
       try {
@@ -531,7 +531,7 @@ export class WorkflowService {
   static async deleteRule(companyId: string, ruleId: string): Promise<ApiResponse<boolean>> {
     memoryRules = memoryRules.filter((r) => r.id !== ruleId)
     if (typeof window !== 'undefined') {
-      PrintERPDataStore.set(STORAGE_KEYS.AUTOMATION_RULES, memoryRules)
+      PrintFlowDataStore.set(STORAGE_KEYS.AUTOMATION_RULES, memoryRules)
     }
 
     try {

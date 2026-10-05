@@ -1,5 +1,5 @@
 -- ==============================================================================
--- InkFlow ERP - Migration 111: Enforce Forced RLS & Tenant Immutability
+-- PrintFlow - Migration 111: Enforce Forced RLS & Tenant Immutability
 -- 
 -- 1. Adds missing tenant RLS policies for:
 --    - public.sales_order_items (joins to sales_orders.company_id)

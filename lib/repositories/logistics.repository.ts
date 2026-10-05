@@ -2,7 +2,7 @@ import { createClient } from '../supabase/server.ts'
 import { createAdminClient } from '../supabase/admin.ts'
 import type { DeliveryChallanRecord, InstallationRecord, DeliveryStatus, ChallanItemRecord, ChallanItemStatus } from '../../types/logistics.types.ts'
 import { BillingRepository } from './billing.repository.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../db/data-store.ts'
 import { isReadyProduct, isOutsourceProduct } from '../units.ts'
 
 export function isValidUUID(str?: string | null): boolean {
@@ -85,7 +85,7 @@ export class LogisticsRepository {
 
       // If database is empty or offline in test environment, check DataStore
       if (challansData.length === 0) {
-        const localChallans = PrintERPDataStore.get<DeliveryChallanRecord[]>(STORAGE_KEYS.DELIVERY_CHALLANS) || []
+        const localChallans = PrintFlowDataStore.get<DeliveryChallanRecord[]>(STORAGE_KEYS.DELIVERY_CHALLANS) || []
         const matched = localChallans.filter((c: any) => c.company_id === companyId || c.company_id === effectiveCompanyId || c.tenant_slug === companyId)
         if (matched.length > 0) {
           challansData = matched
@@ -148,13 +148,13 @@ export class LogisticsRepository {
 
       const formatted = challansData as unknown as DeliveryChallanRecord[]
       try {
-        const allLocal = PrintERPDataStore.get<DeliveryChallanRecord[]>(STORAGE_KEYS.DELIVERY_CHALLANS) || []
+        const allLocal = PrintFlowDataStore.get<DeliveryChallanRecord[]>(STORAGE_KEYS.DELIVERY_CHALLANS) || []
         const merged = [...formatted, ...allLocal.filter((l) => l.company_id && l.company_id !== effectiveCompanyId && l.company_id !== companyId)]
-        PrintERPDataStore.set(STORAGE_KEYS.DELIVERY_CHALLANS, merged)
+        PrintFlowDataStore.set(STORAGE_KEYS.DELIVERY_CHALLANS, merged)
       } catch {}
       return formatted
     } catch (err: any) {
-      const all = PrintERPDataStore.get<DeliveryChallanRecord[]>(STORAGE_KEYS.DELIVERY_CHALLANS) || []
+      const all = PrintFlowDataStore.get<DeliveryChallanRecord[]>(STORAGE_KEYS.DELIVERY_CHALLANS) || []
       return all.filter((c: DeliveryChallanRecord) => c.company_id === companyId || (c as any).tenant_slug === companyId)
     }
   }
@@ -212,10 +212,10 @@ export class LogisticsRepository {
         return data as unknown as DeliveryChallanRecord
       }
 
-      const all = PrintERPDataStore.get<DeliveryChallanRecord[]>(STORAGE_KEYS.DELIVERY_CHALLANS) || []
+      const all = PrintFlowDataStore.get<DeliveryChallanRecord[]>(STORAGE_KEYS.DELIVERY_CHALLANS) || []
       return all.find((c: DeliveryChallanRecord) => (c.id === id || c.challan_number === id) && (c.company_id === companyId || c.company_id === effectiveCompanyId || (c as any).tenant_slug === companyId)) || null
     } catch (err: any) {
-      const all = PrintERPDataStore.get<DeliveryChallanRecord[]>(STORAGE_KEYS.DELIVERY_CHALLANS) || []
+      const all = PrintFlowDataStore.get<DeliveryChallanRecord[]>(STORAGE_KEYS.DELIVERY_CHALLANS) || []
       return all.find((c: DeliveryChallanRecord) => (c.id === id || c.challan_number === id) && (c.company_id === companyId || (c as any).tenant_slug === companyId)) || null
     }
   }
@@ -314,7 +314,7 @@ export class LogisticsRepository {
       return (await this.getChallanById(String(data.id), effectiveCompanyId)) as DeliveryChallanRecord
     } catch (err: any) {
       // Offline / DataStore fallback
-      const all = PrintERPDataStore.get<DeliveryChallanRecord[]>(STORAGE_KEYS.DELIVERY_CHALLANS) || []
+      const all = PrintFlowDataStore.get<DeliveryChallanRecord[]>(STORAGE_KEYS.DELIVERY_CHALLANS) || []
       const fallbackChallan: DeliveryChallanRecord = {
         id: challan.id || `chl-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
         company_id: effectiveCompanyId,
@@ -358,7 +358,7 @@ export class LogisticsRepository {
         updated_at: new Date().toISOString(),
       }
       all.unshift(fallbackChallan)
-      PrintERPDataStore.set(STORAGE_KEYS.DELIVERY_CHALLANS, all)
+      PrintFlowDataStore.set(STORAGE_KEYS.DELIVERY_CHALLANS, all)
       return fallbackChallan
     }
   }
@@ -433,7 +433,7 @@ export class LogisticsRepository {
 
     // Update in DataStore fallback as well
     try {
-      const all = PrintERPDataStore.get<DeliveryChallanRecord[]>(STORAGE_KEYS.DELIVERY_CHALLANS) || []
+      const all = PrintFlowDataStore.get<DeliveryChallanRecord[]>(STORAGE_KEYS.DELIVERY_CHALLANS) || []
       const idx = all.findIndex((c) => c.id === id || c.challan_number === id)
       if (idx !== -1) {
         all[idx] = {
@@ -442,7 +442,7 @@ export class LogisticsRepository {
           ...extraUpdates,
           updated_at: new Date().toISOString(),
         }
-        PrintERPDataStore.set(STORAGE_KEYS.DELIVERY_CHALLANS, all)
+        PrintFlowDataStore.set(STORAGE_KEYS.DELIVERY_CHALLANS, all)
         return all[idx]
       }
     } catch {}
@@ -494,7 +494,7 @@ export class LogisticsRepository {
       }
       return (data || []) as unknown as InstallationRecord[]
     } catch (err: any) {
-      const all = PrintERPDataStore.get<InstallationRecord[]>(STORAGE_KEYS.INSTALLATIONS) || []
+      const all = PrintFlowDataStore.get<InstallationRecord[]>(STORAGE_KEYS.INSTALLATIONS) || []
       return all.filter((i: InstallationRecord) => i.company_id === companyId || (i as any).tenant_slug === companyId)
     }
   }

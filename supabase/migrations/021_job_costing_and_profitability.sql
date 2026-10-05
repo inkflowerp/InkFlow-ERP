@@ -1,5 +1,5 @@
 -- ==============================================================================
--- PrintERP SaaS - Migration 021: Job Costing, 9-Head Costs & Profitability Engine
+-- PrintFlow - Migration 021: Job Costing, 9-Head Costs & Profitability Engine
 -- Supports:
 --   1. 9 Standard Cost Heads (Material, Ink, Printing, Finishing, Labor, Fabrication, Installation, Transport, Other)
 --   2. Pre-Production Estimated vs Post-Production Actual Costing

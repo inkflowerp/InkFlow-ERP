@@ -245,7 +245,7 @@ export function PricingCalculatorSimulator({
     }
 
  try {
- sessionStorage.setItem('printerp_estimator_prefill', JSON.stringify(prefillData))
+ sessionStorage.setItem('printflow_estimator_prefill', JSON.stringify(prefillData))
     } catch (e) {
  console.warn('[Estimator] Failed to store quote prefill:', e)
     }

@@ -75,10 +75,10 @@ import { PlatformTenantCompany } from '@/types/platform.types'
 function notifyPlansUpdated(updatedPlans: SubscriptionPlanRecord[]) {
  if (typeof window !== 'undefined') {
  try {
- window.dispatchEvent(new CustomEvent('printerp_plans_sync', { detail: { plans: updatedPlans } }))
- window.dispatchEvent(new CustomEvent('printerp_platform_plans_updated', { detail: { plans: updatedPlans } }))
+ window.dispatchEvent(new CustomEvent('printflow_plans_sync', { detail: { plans: updatedPlans } }))
+ window.dispatchEvent(new CustomEvent('printflow_platform_plans_updated', { detail: { plans: updatedPlans } }))
  if ('BroadcastChannel' in window) {
- const bus = new BroadcastChannel('printerp_realtime_bus')
+ const bus = new BroadcastChannel('printflow_realtime_bus')
  bus.postMessage({ type: 'PLAN_UPDATE', data: updatedPlans })
  bus.close()
  }

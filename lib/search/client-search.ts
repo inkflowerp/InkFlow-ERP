@@ -10,7 +10,7 @@ import type {
   QuickCommand,
 } from '../../types/search.types.ts'
 import type { PrimaryRole } from '../../types/rbac.types.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../db/data-store.ts'
 import type { CustomerRecord } from '../../types/crm.types.ts'
 import type { SalesOrderRecord } from '../../types/order.types.ts'
 import type { QuotationRecord } from '../../types/quotation.types.ts'
@@ -163,7 +163,7 @@ export function searchLocalStore(
 
     // 1. Customers
     if (hasPermission('customer.view')) {
-      const customers = (PrintERPDataStore.get<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS) || []).filter(
+      const customers = (PrintFlowDataStore.get<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS) || []).filter(
         (c: CustomerRecord) => !c.company_id || c.company_id === companyId
       )
       for (const c of customers) {
@@ -190,7 +190,7 @@ export function searchLocalStore(
 
     // 2. Orders
     if (hasPermission('order.view')) {
-      const orders = (PrintERPDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS) || []).filter(
+      const orders = (PrintFlowDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS) || []).filter(
         (o: SalesOrderRecord) => !o.company_id || o.company_id === companyId
       )
       for (const o of orders) {
@@ -216,7 +216,7 @@ export function searchLocalStore(
 
     // 3. Quotations
     if (hasPermission('quotation.view')) {
-      const quotations = (PrintERPDataStore.get<QuotationRecord[]>(STORAGE_KEYS.QUOTATIONS) || []).filter(
+      const quotations = (PrintFlowDataStore.get<QuotationRecord[]>(STORAGE_KEYS.QUOTATIONS) || []).filter(
         (qt: QuotationRecord) => !qt.company_id || qt.company_id === companyId
       )
       for (const qt of quotations) {
@@ -241,7 +241,7 @@ export function searchLocalStore(
 
     // 4. Invoices
     if (hasPermission('invoice.view')) {
-      const invoices = (PrintERPDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []).filter(
+      const invoices = (PrintFlowDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []).filter(
         (i: InvoiceRecord) => !i.company_id || i.company_id === companyId
       )
       for (const i of invoices) {
@@ -266,7 +266,7 @@ export function searchLocalStore(
 
     // 4.5 Products & Services Catalog
     if (hasPermission('products.view') || hasPermission('inventory.view') || hasPermission('quotation.create')) {
-      const products = (PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTS) || []).filter(
+      const products = (PrintFlowDataStore.get<any[]>(STORAGE_KEYS.PRODUCTS) || []).filter(
         (p: any) => !p.company_id || p.company_id === companyId
       )
       for (const p of products) {
@@ -293,7 +293,7 @@ export function searchLocalStore(
 
     // 5. Inventory
     if (hasPermission('inventory.view')) {
-      const materials = (PrintERPDataStore.get<MaterialRecord[]>(STORAGE_KEYS.MATERIALS) || []).filter(
+      const materials = (PrintFlowDataStore.get<MaterialRecord[]>(STORAGE_KEYS.MATERIALS) || []).filter(
         (m: MaterialRecord) => !m.company_id || m.company_id === companyId
       )
       for (const m of materials) {
@@ -318,7 +318,7 @@ export function searchLocalStore(
 
     // 6. Production Jobs
     if (hasPermission('production.view')) {
-      const prodJobs = (PrintERPDataStore.get<ProductionJobRecord[]>(STORAGE_KEYS.PRODUCTION_JOBS) || []).filter(
+      const prodJobs = (PrintFlowDataStore.get<ProductionJobRecord[]>(STORAGE_KEYS.PRODUCTION_JOBS) || []).filter(
         (p: ProductionJobRecord) => !p.company_id || p.company_id === companyId
       )
       for (const p of prodJobs) {
@@ -344,7 +344,7 @@ export function searchLocalStore(
 
     // 7. Design Jobs
     if (hasPermission('design.view')) {
-      const designJobs = (PrintERPDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []).filter(
+      const designJobs = (PrintFlowDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []).filter(
         (d: DesignJobRecord) => !d.company_id || d.company_id === companyId
       )
       for (const d of designJobs) {
@@ -370,7 +370,7 @@ export function searchLocalStore(
 
     // 8. Delivery Challans
     if (hasPermission('delivery.view')) {
-      const challans = (PrintERPDataStore.get<DeliveryChallanRecord[]>(STORAGE_KEYS.DELIVERY_CHALLANS) || []).filter(
+      const challans = (PrintFlowDataStore.get<DeliveryChallanRecord[]>(STORAGE_KEYS.DELIVERY_CHALLANS) || []).filter(
         (ch: DeliveryChallanRecord) => !ch.company_id || ch.company_id === companyId
       )
       for (const ch of challans) {
@@ -395,7 +395,7 @@ export function searchLocalStore(
 
     // 9. Employees
     if (hasPermission('hr.view')) {
-      const employees = (PrintERPDataStore.get<EmployeeRecord[]>(STORAGE_KEYS.EMPLOYEES) || []).filter(
+      const employees = (PrintFlowDataStore.get<EmployeeRecord[]>(STORAGE_KEYS.EMPLOYEES) || []).filter(
         (e: EmployeeRecord) => !e.company_id || e.company_id === companyId
       )
       for (const e of employees) {
@@ -422,7 +422,7 @@ export function searchLocalStore(
 
     // 10. Machineries & Equipment Fleet
     if (hasPermission('machineries.view') || hasPermission('production.view')) {
-      const machineries = (PrintERPDataStore.get<MachineryRecord[]>('machineries' as any) || []).filter(
+      const machineries = (PrintFlowDataStore.get<MachineryRecord[]>('machineries' as any) || []).filter(
         (m: MachineryRecord) => (!m.company_id || m.company_id === companyId) && !m.is_archived
       )
       for (const m of machineries) {

@@ -47,13 +47,13 @@
 | **Platform Owner** | `admin.ROOT_DOMAIN` (`admin.printflow.bd`, `admin.localhost`) | Platform administration, subscriptions, tenant audit, metrics | Host-only (`admin.printflow.bd`) |
 | **Tenant Portal** | `[tenantSlug].ROOT_DOMAIN` (`vision.printflow.bd`) | Tenant business operations, billing, inventory, POS, employee login | Host-only (`vision.printflow.bd`) |
 | **Custom Domain** | `erp.customerdomain.com` (verified in `tenant_domains`) | Same as tenant portal, branded for customer | Host-only (`erp.customerdomain.com`) |
-| **PSL / Dev Fallback**| `inkflow-erp.vercel.app/t/[slug]/*` or `/[slug]/*` | Path-based fallback when wildcard DNS is unavailable | Host-only on fallback host |
+| **PSL / Dev Fallback**| `printflow.bd/t/[slug]/*` or `/[slug]/*` | Path-based fallback when wildcard DNS is unavailable | Host-only on fallback host |
 
 ### B. Vercel Wildcard & DNS Configuration
 - Wildcard subdomains (`*.ROOT_DOMAIN`) require custom nameservers pointed to Vercel:
   - `ns1.vercel-dns.com`
   - `ns2.vercel-dns.com`
-- Wildcards on `*.inkflow-erp.vercel.app` are mathematically and architecturally impossible because `vercel.app` is an entry on the Public Suffix List (PSL).
+- Wildcards on `*.printflow.bd` are mathematically and architecturally impossible because `vercel.app` is an entry on the Public Suffix List (PSL).
 - In development and preview environments (`*.vercel.app`), the system automatically switches to path-based tenant isolation (`/[tenantSlug]/...`) with identical security gates.
 
 ---
@@ -188,7 +188,7 @@ All cookies are hardened to prevent XSS exfiltration, CSRF, and cross-subdomain 
 ```ts
 export const COOKIE_CONFIG = {
   tenantSession: {
-    name: 'printerp_tenant_session',
+    name: 'printflow_tenant_session',
     httpOnly: true, // NEVER accessible via document.cookie
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax' as const,
@@ -197,7 +197,7 @@ export const COOKIE_CONFIG = {
     domain: undefined, // HOST-ONLY: No wildcard domain!
   },
   platformSession: {
-    name: 'printerp_platform_session',
+    name: 'printflow_platform_session',
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'strict' as const,

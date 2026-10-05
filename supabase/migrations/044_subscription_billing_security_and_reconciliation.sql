@@ -1,5 +1,5 @@
 -- ==============================================================================
--- InkFlow / PrintERP SaaS - Migration 044: Subscription Billing Security & Reconciliation
+-- PrintFlow / PrintFlow - Migration 044: Subscription Billing Security & Reconciliation
 -- Authoritative Billing Transactions, Webhook Idempotency Constraints,
 -- Cron Performance Indexes, and Multi-Tenant Isolation Policies.
 -- ==============================================================================

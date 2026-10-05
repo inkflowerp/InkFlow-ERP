@@ -100,8 +100,8 @@ export function hashQrToken(rawToken: string): string {
     clean = parts[1].split('&')[0]
   } else if (clean.startsWith('PRINTFLOW:ATT:v1:')) {
     clean = clean.replace('PRINTFLOW:ATT:v1:', '')
-  } else if (clean.startsWith('INKFLOW:ATT:v1:')) {
-    clean = clean.replace('INKFLOW:ATT:v1:', '')
+  } else if (clean.startsWith('PRINTFLOW:ATT:v1:')) {
+    clean = clean.replace('PRINTFLOW:ATT:v1:', '')
   }
 
   return crypto.createHash('sha256').update(clean).digest('hex')

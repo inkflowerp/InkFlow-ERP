@@ -1,5 +1,5 @@
 -- ==============================================================================
--- PrintERP SaaS - Migration 051: Multi-Tenant Gmail (OAuth 2.0) + SMTP Integration & Scope Isolation
+-- PrintFlow - Migration 051: Multi-Tenant Gmail (OAuth 2.0) + SMTP Integration & Scope Isolation
 -- Supports:
 --   1. Gmail Provider (Google OAuth 2.0 + Gmail API) and Upgraded SMTP
 --   2. Strict Platform Scope (tenant_id IS NULL) vs Tenant Scope (tenant_id IS NOT NULL)

@@ -35,7 +35,7 @@ import { useI18n } from '@/i18n/context'
 import { useTenant } from '@/hooks/use-tenant'
 import { useSubscription } from '@/hooks/use-subscription'
 import { useDataStore } from '@/hooks/use-data-store'
-import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
+import { PrintFlowDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import { CustomerRecord } from '@/types/crm.types'
 import { SalesOrderRecord } from '@/types/order.types'
 import { DesignJobRecord } from '@/types/design.types'
@@ -212,7 +212,7 @@ export function WorkOrderModal({
  if (res.success && res.data) {
  setProducts(res.data)
       } else {
- const local = PrintERPDataStore.getAll<ProductRecord>(STORAGE_KEYS.PRODUCTS, effectiveCompanyId) || []
+ const local = PrintFlowDataStore.getAll<ProductRecord>(STORAGE_KEYS.PRODUCTS, effectiveCompanyId) || []
  if (local.length > 0) setProducts(local)
       }
     })
@@ -638,7 +638,7 @@ export function WorkOrderModal({
 
  try {
       // 1. Get collision-free document numbers
- const orderNumber = PrintERPDataStore.getNextDocumentNumber(effectiveCompanyId, 'order')
+ const orderNumber = PrintFlowDataStore.getNextDocumentNumber(effectiveCompanyId, 'order')
  const orderId = `ord-${Date.now()}`
 
       // Build Order Items with full specs, finishing, and add-on
@@ -716,7 +716,7 @@ export function WorkOrderModal({
       }
 
       // Persist to store
- PrintERPDataStore.addItem(STORAGE_KEYS.ORDERS, newOrder)
+ PrintFlowDataStore.addItem(STORAGE_KEYS.ORDERS, newOrder)
  refreshUsage()
 
       // 3. Create Pre-Press Design Job Ticket
@@ -772,7 +772,7 @@ export function WorkOrderModal({
  created_at: new Date().toISOString(),
  updated_at: new Date().toISOString(),
         }
- PrintERPDataStore.addItem(STORAGE_KEYS.DESIGN_JOBS, newDesignJob)
+ PrintFlowDataStore.addItem(STORAGE_KEYS.DESIGN_JOBS, newDesignJob)
       }
 
       // 4. Dispatch Invoice Request with complete specifications and customer info

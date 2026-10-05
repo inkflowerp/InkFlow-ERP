@@ -7,12 +7,12 @@
 
 import { RealtimeChannel } from '@supabase/supabase-js'
 import { createClient, isSupabaseConfigured } from '../supabase/client.ts'
-import { PrintERPDataStore, STORAGE_KEYS, type StorageKey, CLIENT_TAB_ID, getInitialSeedData } from '../db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS, type StorageKey, CLIENT_TAB_ID, getInitialSeedData } from '../db/data-store.ts'
 
 function triggerPopupNotification(notification: any) {
   if (typeof window === 'undefined') return
   const id = notification.id || `popup-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`
-  const event = new CustomEvent('printerp_popup_notification', {
+  const event = new CustomEvent('printflow_popup_notification', {
     detail: { ...notification, id },
   })
   window.dispatchEvent(event)
@@ -324,7 +324,7 @@ class RealtimeSubscriptionManager {
   private initLocalBroadcast() {
     if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
       try {
-        this.localBroadcastChannel = new BroadcastChannel('printerp_realtime_bus')
+        this.localBroadcastChannel = new BroadcastChannel('printflow_realtime_bus')
         this.localBroadcastChannel.onmessage = (event) => {
           const msg = event.data
           if (!msg || typeof msg !== 'object') return
@@ -336,13 +336,13 @@ class RealtimeSubscriptionManager {
           if (msg.type === 'LOCAL_STORE_MUTATION' && msg.storageKey) {
             // Reconcile into DataStore without re-emitting cross-tab message to avoid infinite loop
             if (msg.mutationType === 'DELETE') {
-              PrintERPDataStore.removeItem(msg.storageKey, msg.id, msg.tenantSlug, false)
+              PrintFlowDataStore.removeItem(msg.storageKey, msg.id, msg.tenantSlug, false)
             } else if (msg.mutationType === 'ADD') {
-              PrintERPDataStore.addItem(msg.storageKey, msg.record, msg.tenantSlug, false)
+              PrintFlowDataStore.addItem(msg.storageKey, msg.record, msg.tenantSlug, false)
             } else if (msg.mutationType === 'UPDATE') {
-              PrintERPDataStore.updateItem(msg.storageKey, msg.id, msg.record, msg.tenantSlug, false)
+              PrintFlowDataStore.updateItem(msg.storageKey, msg.id, msg.record, msg.tenantSlug, false)
             } else if (msg.mutationType === 'SET') {
-              PrintERPDataStore.set(msg.storageKey, msg.data, true, msg.tenantSlug, false)
+              PrintFlowDataStore.set(msg.storageKey, msg.data, true, msg.tenantSlug, false)
             }
           } else if (msg.type === 'POPUP_NOTIFICATION' && msg.payload) {
             triggerPopupNotification(msg.payload)
@@ -656,7 +656,7 @@ class RealtimeSubscriptionManager {
   }
 
   /**
-   * Reconciles a PostgreSQL record into PrintERPDataStore with timestamp/id check
+   * Reconciles a PostgreSQL record into PrintFlowDataStore with timestamp/id check
    */
   reconcileRecord(
     storageKey: StorageKey,
@@ -684,7 +684,7 @@ class RealtimeSubscriptionManager {
           record?.return_id
 
         if (parentId) {
-          const parent = PrintERPDataStore.findItem<any>(childRelation.parentKey, parentId)
+          const parent = PrintFlowDataStore.findItem<any>(childRelation.parentKey, parentId)
           if (parent) {
             const rawArray = parent[childRelation.itemsArrayField]
             const itemsList = Array.isArray(rawArray) ? [...rawArray] : []
@@ -692,7 +692,7 @@ class RealtimeSubscriptionManager {
 
             if (eventType === 'DELETE') {
               const filtered = itemsList.filter((item) => item.id !== childId)
-              PrintERPDataStore.updateItem(childRelation.parentKey, parentId, {
+              PrintFlowDataStore.updateItem(childRelation.parentKey, parentId, {
                 [childRelation.itemsArrayField]: filtered,
               } as any)
             } else if (eventType === 'INSERT' || eventType === 'UPDATE') {
@@ -702,7 +702,7 @@ class RealtimeSubscriptionManager {
               } else {
                 itemsList.push(record)
               }
-              PrintERPDataStore.updateItem(childRelation.parentKey, parentId, {
+              PrintFlowDataStore.updateItem(childRelation.parentKey, parentId, {
                 [childRelation.itemsArrayField]: itemsList,
               } as any)
             }
@@ -711,25 +711,25 @@ class RealtimeSubscriptionManager {
             if (typeof window !== 'undefined') {
               if (tableName === 'sales_order_items') {
                 window.dispatchEvent(
-                  new CustomEvent('printerp_order_items_updated', {
+                  new CustomEvent('printflow_order_items_updated', {
                     detail: { orderId: parentId, item: record, eventType },
                   })
                 )
               } else if (tableName === 'invoice_items') {
                 window.dispatchEvent(
-                  new CustomEvent('printerp_invoice_items_updated', {
+                  new CustomEvent('printflow_invoice_items_updated', {
                     detail: { invoiceId: parentId, item: record, eventType },
                   })
                 )
               } else if (tableName === 'quotation_items') {
                 window.dispatchEvent(
-                  new CustomEvent('printerp_quotation_items_updated', {
+                  new CustomEvent('printflow_quotation_items_updated', {
                     detail: { quotationId: parentId, item: record, eventType },
                   })
                 )
               } else if (tableName === 'design_versions') {
                 window.dispatchEvent(
-                  new CustomEvent('printerp_design_versions_updated', {
+                  new CustomEvent('printflow_design_versions_updated', {
                     detail: { designJobId: parentId, version: record, eventType },
                   })
                 )
@@ -743,10 +743,10 @@ class RealtimeSubscriptionManager {
       // 2. Check if storage key is a singleton configuration/profile object
       if (isSingleObjectStorageKey(storageKey)) {
         if (eventType === 'DELETE') {
-          PrintERPDataStore.set(storageKey, getInitialSeedData(storageKey))
+          PrintFlowDataStore.set(storageKey, getInitialSeedData(storageKey))
         } else if (newRecord) {
-          const existing = PrintERPDataStore.get(storageKey) || {}
-          PrintERPDataStore.set(storageKey, { ...existing, ...newRecord })
+          const existing = PrintFlowDataStore.get(storageKey) || {}
+          PrintFlowDataStore.set(storageKey, { ...existing, ...newRecord })
         }
         return
       }
@@ -755,14 +755,14 @@ class RealtimeSubscriptionManager {
       if (eventType === 'DELETE') {
         const idToRemove = oldRecord?.id || newRecord?.id
         if (idToRemove) {
-          PrintERPDataStore.removeItem(storageKey, idToRemove)
+          PrintFlowDataStore.removeItem(storageKey, idToRemove)
         }
       } else if (eventType === 'INSERT' || eventType === 'UPDATE') {
         if (!newRecord || !newRecord.id) return
-        const existing = PrintERPDataStore.findItem<any>(storageKey, newRecord.id)
+        const existing = PrintFlowDataStore.findItem<any>(storageKey, newRecord.id)
 
         if (!existing) {
-          PrintERPDataStore.addItem(storageKey, newRecord)
+          PrintFlowDataStore.addItem(storageKey, newRecord)
         } else {
           // Compare timestamps to prevent stale overwrite
           const existingUpdated = (existing as any)?.updated_at ? new Date((existing as any).updated_at).getTime() : 0
@@ -777,7 +777,7 @@ class RealtimeSubscriptionManager {
             if (existing.versions && !newRecord.versions) {
               updatedRecord.versions = existing.versions
             }
-            PrintERPDataStore.updateItem(storageKey, newRecord.id, updatedRecord)
+            PrintFlowDataStore.updateItem(storageKey, newRecord.id, updatedRecord)
           }
         }
       }
@@ -787,7 +787,7 @@ class RealtimeSubscriptionManager {
         const orderId = newRecord?.order_id || oldRecord?.order_id
         if (orderId && typeof window !== 'undefined') {
           window.dispatchEvent(
-            new CustomEvent('printerp_timeline_updated', {
+            new CustomEvent('printflow_timeline_updated', {
               detail: { orderId, record: newRecord || oldRecord, eventType },
             })
           )
@@ -1074,20 +1074,20 @@ class RealtimeSubscriptionManager {
             timestamp: Date.now(),
           }
           window.dispatchEvent(
-            new CustomEvent('printerp_table_synced', {
+            new CustomEvent('printflow_table_synced', {
               detail: enrichedDetail,
             })
           )
           if (table) {
             window.dispatchEvent(
-              new CustomEvent(`printerp_table_synced:${table}`, {
+              new CustomEvent(`printflow_table_synced:${table}`, {
                 detail: enrichedDetail,
               })
             )
           }
           if (storageKey) {
             window.dispatchEvent(
-              new CustomEvent(`printerp_table_synced:${storageKey}`, {
+              new CustomEvent(`printflow_table_synced:${storageKey}`, {
                 detail: enrichedDetail,
               })
             )
@@ -1155,18 +1155,18 @@ class RealtimeSubscriptionManager {
             timestamp: Date.now(),
           }
           window.dispatchEvent(
-            new CustomEvent('printerp_table_synced', {
+            new CustomEvent('printflow_table_synced', {
               detail,
             })
           )
           window.dispatchEvent(
-            new CustomEvent(`printerp_table_synced:${table}`, {
+            new CustomEvent(`printflow_table_synced:${table}`, {
               detail,
             })
           )
           if (storageKey) {
             window.dispatchEvent(
-              new CustomEvent(`printerp_table_synced:${storageKey}`, {
+              new CustomEvent(`printflow_table_synced:${storageKey}`, {
                 detail,
               })
             )
@@ -1231,17 +1231,17 @@ class RealtimeSubscriptionManager {
               timestamp: Date.now(),
             }
             window.dispatchEvent(
-              new CustomEvent('printerp_table_synced', {
+              new CustomEvent('printflow_table_synced', {
                 detail,
               })
             )
             window.dispatchEvent(
-              new CustomEvent('printerp_table_synced:companies', {
+              new CustomEvent('printflow_table_synced:companies', {
                 detail,
               })
             )
             window.dispatchEvent(
-              new CustomEvent(`printerp_table_synced:${STORAGE_KEYS.COMPANY_PROFILE}`, {
+              new CustomEvent(`printflow_table_synced:${STORAGE_KEYS.COMPANY_PROFILE}`, {
                 detail,
               })
             )
@@ -1319,7 +1319,7 @@ class RealtimeSubscriptionManager {
         const payload = response.payload
         if (typeof window !== 'undefined') {
           window.dispatchEvent(
-            new CustomEvent('printerp_platform_notification', {
+            new CustomEvent('printflow_platform_notification', {
               detail: payload,
             })
           )
@@ -1354,7 +1354,7 @@ class RealtimeSubscriptionManager {
 
           if (typeof window !== 'undefined') {
             window.dispatchEvent(
-              new CustomEvent('printerp_platform_notification_change', {
+              new CustomEvent('printflow_platform_notification_change', {
                 detail: changeEvent,
               })
             )
@@ -1403,12 +1403,12 @@ class RealtimeSubscriptionManager {
           onEvent(e.detail)
         }
       }
-      window.addEventListener('printerp_platform_notification_change', windowListener)
+      window.addEventListener('printflow_platform_notification_change', windowListener)
     }
 
     return () => {
       if (windowListener && typeof window !== 'undefined') {
-        window.removeEventListener('printerp_platform_notification_change', windowListener)
+        window.removeEventListener('printflow_platform_notification_change', windowListener)
       }
       this.unsubscribe(channelName)
     }

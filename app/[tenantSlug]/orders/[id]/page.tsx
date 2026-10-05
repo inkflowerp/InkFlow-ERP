@@ -46,7 +46,7 @@ import {
 } from '@/types/order.types'
 import { formatBDT } from '@/lib/formatters'
 import { useDataStore } from '@/hooks/use-data-store'
-import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
+import { PrintFlowDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import { createInvoiceRequestAction } from '@/actions/invoice-request.actions'
 import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import { JobFlowStepper } from '@/components/orders/job-flow-stepper'
@@ -269,7 +269,7 @@ function OrderDetailContent() {
  showNotification('Invoice request dispatched to sales/management!')
  setIsInvoiceRequestOpen(false)
  setInvoiceNotes('')
- PrintERPDataStore.updateItem<SalesOrderRecord>(STORAGE_KEYS.ORDERS, order.id, {
+ PrintFlowDataStore.updateItem<SalesOrderRecord>(STORAGE_KEYS.ORDERS, order.id, {
  commercial_status: 'invoice_requested',
  invoice_requested_at: new Date().toISOString(),
         })
@@ -326,7 +326,7 @@ function OrderDetailContent() {
 
   // Toggle Job Status
  const handleUpdateJobStatus = (jobId: string, newStatus: JobStatus) => {
- PrintERPDataStore.updateItem<JobOrderRecord>(STORAGE_KEYS.JOB_ORDERS, jobId, {
+ PrintFlowDataStore.updateItem<JobOrderRecord>(STORAGE_KEYS.JOB_ORDERS, jobId, {
  status: newStatus,
  updated_at: new Date().toISOString(),
     })
@@ -340,7 +340,7 @@ function OrderDetailContent() {
  actor_name: 'Floor Supervisor',
  created_at: 'Just now',
     }
- PrintERPDataStore.addItem<OrderTimelineEventRecord>(STORAGE_KEYS.TIMELINE_EVENTS, newEvent)
+ PrintFlowDataStore.addItem<OrderTimelineEventRecord>(STORAGE_KEYS.TIMELINE_EVENTS, newEvent)
 
  showNotification(`Job status updated to ${newStatus.replace('_', ' ').toUpperCase()}`)
   }
@@ -373,8 +373,8 @@ function OrderDetailContent() {
  updated_at: new Date().toISOString(),
     }
 
- PrintERPDataStore.addItem<JobOrderRecord>(STORAGE_KEYS.JOB_ORDERS, newJob)
- PrintERPDataStore.updateItem<SalesOrderRecord>(STORAGE_KEYS.ORDERS, order.id, {
+ PrintFlowDataStore.addItem<JobOrderRecord>(STORAGE_KEYS.JOB_ORDERS, newJob)
+ PrintFlowDataStore.updateItem<SalesOrderRecord>(STORAGE_KEYS.ORDERS, order.id, {
  jobs_count: (order.jobs_count || 1) + 1,
     })
 
@@ -387,7 +387,7 @@ function OrderDetailContent() {
  e.preventDefault()
  if (collectionAmount <= 0) return
 
- PrintERPDataStore.recordPaymentCollection({
+ PrintFlowDataStore.recordPaymentCollection({
  customerId: order.customer_id || 'cust-01',
  amount: collectionAmount,
  paymentMethod: collectionMethod.toLowerCase().includes('cash') ? 'cash' : 'bank',

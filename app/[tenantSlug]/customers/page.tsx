@@ -56,7 +56,7 @@ import {
 import { TrashRecord } from '@/types/trash.types'
 import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import { cn } from '@/lib/utils'
-import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
+import { PrintFlowDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import { ConfirmDialog } from '@/components/shared/confirm-dialog'
 import { dispatchToast } from '@/components/shared/toast-feedback'
 
@@ -88,9 +88,9 @@ function removeLocalCustomer(id: string, slug?: string, companySlug?: string, co
       } catch {}
     })
 
- if (slug) PrintERPDataStore.removeItem(STORAGE_KEYS.CUSTOMERS, id, slug)
- if (companySlug && companySlug !== slug) PrintERPDataStore.removeItem(STORAGE_KEYS.CUSTOMERS, id, companySlug)
- if (companyId) PrintERPDataStore.removeItem(STORAGE_KEYS.CUSTOMERS, id, companyId)
+ if (slug) PrintFlowDataStore.removeItem(STORAGE_KEYS.CUSTOMERS, id, slug)
+ if (companySlug && companySlug !== slug) PrintFlowDataStore.removeItem(STORAGE_KEYS.CUSTOMERS, id, companySlug)
+ if (companyId) PrintFlowDataStore.removeItem(STORAGE_KEYS.CUSTOMERS, id, companyId)
   } catch {}
 }
 
@@ -131,9 +131,9 @@ function getLocalInvoices(slug?: string, companySlug?: string, companyId?: strin
   })
 
  const storeItems = [
-    ...(slug ? (PrintERPDataStore.getAll<any>(STORAGE_KEYS.INVOICES, slug) || []) : []),
-    ...(companySlug && companySlug !== slug ? (PrintERPDataStore.getAll<any>(STORAGE_KEYS.INVOICES, companySlug) || []) : []),
-    ...(companyId ? (PrintERPDataStore.getAll<any>(STORAGE_KEYS.INVOICES, companyId) || []) : []),
+    ...(slug ? (PrintFlowDataStore.getAll<any>(STORAGE_KEYS.INVOICES, slug) || []) : []),
+    ...(companySlug && companySlug !== slug ? (PrintFlowDataStore.getAll<any>(STORAGE_KEYS.INVOICES, companySlug) || []) : []),
+    ...(companyId ? (PrintFlowDataStore.getAll<any>(STORAGE_KEYS.INVOICES, companyId) || []) : []),
   ]
  storeItems.forEach((inv) => {
  if (isMatching(inv)) invMap.set(inv.id, inv)
@@ -179,9 +179,9 @@ function getLocalPayments(slug?: string, companySlug?: string, companyId?: strin
   })
 
  const storeItems = [
-    ...(slug ? (PrintERPDataStore.getAll<any>(STORAGE_KEYS.PAYMENTS, slug) || []) : []),
-    ...(companySlug && companySlug !== slug ? (PrintERPDataStore.getAll<any>(STORAGE_KEYS.PAYMENTS, companySlug) || []) : []),
-    ...(companyId ? (PrintERPDataStore.getAll<any>(STORAGE_KEYS.PAYMENTS, companyId) || []) : []),
+    ...(slug ? (PrintFlowDataStore.getAll<any>(STORAGE_KEYS.PAYMENTS, slug) || []) : []),
+    ...(companySlug && companySlug !== slug ? (PrintFlowDataStore.getAll<any>(STORAGE_KEYS.PAYMENTS, companySlug) || []) : []),
+    ...(companyId ? (PrintFlowDataStore.getAll<any>(STORAGE_KEYS.PAYMENTS, companyId) || []) : []),
   ]
  storeItems.forEach((pay) => {
  if (isMatching(pay)) payMap.set(pay.id, pay)
@@ -227,9 +227,9 @@ function getLocalOrders(slug?: string, companySlug?: string, companyId?: string)
   })
 
  const storeItems = [
-    ...(slug ? (PrintERPDataStore.getAll<any>(STORAGE_KEYS.ORDERS, slug) || []) : []),
-    ...(companySlug && companySlug !== slug ? (PrintERPDataStore.getAll<any>(STORAGE_KEYS.ORDERS, companySlug) || []) : []),
-    ...(companyId ? (PrintERPDataStore.getAll<any>(STORAGE_KEYS.ORDERS, companyId) || []) : []),
+    ...(slug ? (PrintFlowDataStore.getAll<any>(STORAGE_KEYS.ORDERS, slug) || []) : []),
+    ...(companySlug && companySlug !== slug ? (PrintFlowDataStore.getAll<any>(STORAGE_KEYS.ORDERS, companySlug) || []) : []),
+    ...(companyId ? (PrintFlowDataStore.getAll<any>(STORAGE_KEYS.ORDERS, companyId) || []) : []),
   ]
  storeItems.forEach((ord) => {
  if (isMatching(ord)) ordMap.set(ord.id, ord)
@@ -263,9 +263,9 @@ function getLocalCustomers(slug?: string, companySlug?: string, companyId?: stri
   })
 
  const storeItems = [
-    ...(PrintERPDataStore.getAll<CustomerRecord>(STORAGE_KEYS.CUSTOMERS, slug) || []),
-    ...(PrintERPDataStore.getAll<CustomerRecord>(STORAGE_KEYS.CUSTOMERS, companySlug) || []),
-    ...(PrintERPDataStore.get<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS) || []),
+    ...(PrintFlowDataStore.getAll<CustomerRecord>(STORAGE_KEYS.CUSTOMERS, slug) || []),
+    ...(PrintFlowDataStore.getAll<CustomerRecord>(STORAGE_KEYS.CUSTOMERS, companySlug) || []),
+    ...(PrintFlowDataStore.get<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS) || []),
   ]
  storeItems.forEach((c) => {
  if (c && c.id) custMap.set(c.id, c)
@@ -602,19 +602,19 @@ export default function CustomersPage() {
     }
 
  if (typeof window !== 'undefined') {
- window.addEventListener('printerp_table_synced:customers', handleRealtimeSync)
- window.addEventListener('printerp_table_synced:payments', handleRealtimeSync)
- window.addEventListener('printerp_table_synced:invoices', handleRealtimeSync)
- window.addEventListener('printerp_table_synced', handleRealtimeSync)
- window.addEventListener('printerp_data_sync', handleRealtimeSync)
+ window.addEventListener('printflow_table_synced:customers', handleRealtimeSync)
+ window.addEventListener('printflow_table_synced:payments', handleRealtimeSync)
+ window.addEventListener('printflow_table_synced:invoices', handleRealtimeSync)
+ window.addEventListener('printflow_table_synced', handleRealtimeSync)
+ window.addEventListener('printflow_data_sync', handleRealtimeSync)
  window.addEventListener('storage', handleRealtimeSync)
 
  return () => {
- window.removeEventListener('printerp_table_synced:customers', handleRealtimeSync)
- window.removeEventListener('printerp_table_synced:payments', handleRealtimeSync)
- window.removeEventListener('printerp_table_synced:invoices', handleRealtimeSync)
- window.removeEventListener('printerp_table_synced', handleRealtimeSync)
- window.removeEventListener('printerp_data_sync', handleRealtimeSync)
+ window.removeEventListener('printflow_table_synced:customers', handleRealtimeSync)
+ window.removeEventListener('printflow_table_synced:payments', handleRealtimeSync)
+ window.removeEventListener('printflow_table_synced:invoices', handleRealtimeSync)
+ window.removeEventListener('printflow_table_synced', handleRealtimeSync)
+ window.removeEventListener('printflow_data_sync', handleRealtimeSync)
  window.removeEventListener('storage', handleRealtimeSync)
       }
     }
@@ -736,8 +736,8 @@ export default function CustomersPage() {
 
       // 5. Sync to client TRASH_ITEMS so Trash page sees it immediately
  if (res.success && res.record) {
- const localTrash = PrintERPDataStore.get<TrashRecord[]>(STORAGE_KEYS.TRASH_ITEMS) || []
- PrintERPDataStore.set(STORAGE_KEYS.TRASH_ITEMS, [res.record, ...localTrash.filter((t) => t.id !== res.record.id)])
+ const localTrash = PrintFlowDataStore.get<TrashRecord[]>(STORAGE_KEYS.TRASH_ITEMS) || []
+ PrintFlowDataStore.set(STORAGE_KEYS.TRASH_ITEMS, [res.record, ...localTrash.filter((t) => t.id !== res.record.id)])
       }
 
  setIsTrashConfirmOpen(false)

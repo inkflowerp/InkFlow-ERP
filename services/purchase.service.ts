@@ -19,7 +19,7 @@ import { PurchaseRepository } from '../lib/repositories/purchase.repository.ts'
 import { SupplierRepository } from '../lib/repositories/supplier.repository.ts'
 import { InventoryRepository } from '../lib/repositories/inventory.repository.ts'
 import { AuditService } from './audit.service.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../lib/db/data-store.ts'
 
 import { getSupplierPriceBenchmark } from '../types/purchase.types.ts'
 

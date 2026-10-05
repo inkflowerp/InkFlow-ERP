@@ -457,21 +457,21 @@ export default function ProductsCatalogPage() {
     }
 
  if (typeof window !== 'undefined') {
- window.addEventListener('printerp_table_synced:products', handleRealtimeSync)
- window.addEventListener('printerp_table_synced:product_categories', handleRealtimeSync)
- window.addEventListener('printerp_table_synced:machines', handleRealtimeSync)
- window.addEventListener('printerp_table_synced', handleRealtimeSync)
- window.addEventListener('printerp_data_sync', handleRealtimeSync)
+ window.addEventListener('printflow_table_synced:products', handleRealtimeSync)
+ window.addEventListener('printflow_table_synced:product_categories', handleRealtimeSync)
+ window.addEventListener('printflow_table_synced:machines', handleRealtimeSync)
+ window.addEventListener('printflow_table_synced', handleRealtimeSync)
+ window.addEventListener('printflow_data_sync', handleRealtimeSync)
  window.addEventListener('storage', handleRealtimeSync)
     }
 
  return () => {
  if (typeof window !== 'undefined') {
- window.removeEventListener('printerp_table_synced:products', handleRealtimeSync)
- window.removeEventListener('printerp_table_synced:product_categories', handleRealtimeSync)
- window.removeEventListener('printerp_table_synced:machines', handleRealtimeSync)
- window.removeEventListener('printerp_table_synced', handleRealtimeSync)
- window.removeEventListener('printerp_data_sync', handleRealtimeSync)
+ window.removeEventListener('printflow_table_synced:products', handleRealtimeSync)
+ window.removeEventListener('printflow_table_synced:product_categories', handleRealtimeSync)
+ window.removeEventListener('printflow_table_synced:machines', handleRealtimeSync)
+ window.removeEventListener('printflow_table_synced', handleRealtimeSync)
+ window.removeEventListener('printflow_data_sync', handleRealtimeSync)
  window.removeEventListener('storage', handleRealtimeSync)
       }
     }

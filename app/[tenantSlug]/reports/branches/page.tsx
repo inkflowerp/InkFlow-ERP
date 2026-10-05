@@ -118,19 +118,19 @@ export default function MultiBranchReportingPage() {
       }, 300)
     }
 
- window.addEventListener('printerp_table_synced:branches', handleDataSync)
- window.addEventListener('printerp_table_synced:orders', handleDataSync)
- window.addEventListener('printerp_table_synced:payments', handleDataSync)
- window.addEventListener('printerp_table_synced:materials', handleDataSync)
- window.addEventListener('printerp_data_sync', handleDataSync)
+ window.addEventListener('printflow_table_synced:branches', handleDataSync)
+ window.addEventListener('printflow_table_synced:orders', handleDataSync)
+ window.addEventListener('printflow_table_synced:payments', handleDataSync)
+ window.addEventListener('printflow_table_synced:materials', handleDataSync)
+ window.addEventListener('printflow_data_sync', handleDataSync)
 
  return () => {
  if (timer) clearTimeout(timer)
- window.removeEventListener('printerp_table_synced:branches', handleDataSync)
- window.removeEventListener('printerp_table_synced:orders', handleDataSync)
- window.removeEventListener('printerp_table_synced:payments', handleDataSync)
- window.removeEventListener('printerp_table_synced:materials', handleDataSync)
- window.removeEventListener('printerp_data_sync', handleDataSync)
+ window.removeEventListener('printflow_table_synced:branches', handleDataSync)
+ window.removeEventListener('printflow_table_synced:orders', handleDataSync)
+ window.removeEventListener('printflow_table_synced:payments', handleDataSync)
+ window.removeEventListener('printflow_table_synced:materials', handleDataSync)
+ window.removeEventListener('printflow_data_sync', handleDataSync)
     }
   }, [loadData])
 

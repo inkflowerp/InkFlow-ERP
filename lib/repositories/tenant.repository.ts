@@ -11,7 +11,7 @@ import type { DataScope } from '../../types/rbac.types.ts'
 import { MODULE_ACTION_SPECS } from '../../types/rbac.types.ts'
 import { checkPermission, DEFAULT_RESPONSIBILITY_MATRICES } from '../auth/rbac.client.ts'
 import { parseAndNormalizePhone } from '../auth/identifier-helper.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../db/data-store.ts'
 
 export const DEFAULT_SYSTEM_ROLES: RoleRow[] = [
   {
@@ -1082,7 +1082,7 @@ export class TenantRepository {
 
         // Also update local data store for memory/offline fallback
         try {
-          const localEmployees = PrintERPDataStore.get<any[]>(STORAGE_KEYS.EMPLOYEES, companyId) || []
+          const localEmployees = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.EMPLOYEES, companyId) || []
           let empChanged = false
           const updatedLocal = localEmployees.map((emp) => {
             if (emp.user_id === userId) {
@@ -1092,7 +1092,7 @@ export class TenantRepository {
             return emp
           })
           if (empChanged) {
-            PrintERPDataStore.set(STORAGE_KEYS.EMPLOYEES, updatedLocal, true, companyId)
+            PrintFlowDataStore.set(STORAGE_KEYS.EMPLOYEES, updatedLocal, true, companyId)
           }
         } catch {}
       } catch (empSyncErr: any) {

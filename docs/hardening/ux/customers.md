@@ -1,7 +1,7 @@
 # UX Specification: Customers & CRM Module (গ্রাহক খতিয়ান ও কাস্টমার ডিরেক্টরি)
 
 ## 1. Executive Summary & Purpose
-The Customers & CRM module is InkFlow ERP's client relationship and ledger management hub. Its primary job to be done (JTBD) is helping business owners, account executives, and collection managers answer:
+The Customers & CRM module is PrintFlow's client relationship and ledger management hub. Its primary job to be done (JTBD) is helping business owners, account executives, and collection managers answer:
 > **"Which clients hold outstanding balances or exceed credit limits, and what is each client's live ledger & custom pricing tier?"**
 
 The core customer workflow must be completable in **$\le 3$ clicks from the Dashboard**:

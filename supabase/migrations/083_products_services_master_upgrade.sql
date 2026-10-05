@@ -1,5 +1,5 @@
 -- ==============================================================================
--- InkFlow SaaS - Migration 083: Products & Services Master Upgrade
+-- PrintFlow SaaS - Migration 083: Products & Services Master Upgrade
 -- Supports:
 --   1. Non-destructive extension of public.products table with production flags & specs
 --   2. Performance indexes for multi-tenant search, category filtering & active status

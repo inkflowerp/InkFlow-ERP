@@ -4,7 +4,7 @@
 // ==============================================================================
 
 import { createClient } from '../supabase/server.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../db/data-store.ts'
 
 export interface UnifiedCommunicationMessage {
   id: string
@@ -67,12 +67,12 @@ export class CommunicationRepository {
         .single()
 
       if (!error && data) {
-        PrintERPDataStore.addItem(STORAGE_KEYS.COMMUNICATION_MESSAGES, data)
+        PrintFlowDataStore.addItem(STORAGE_KEYS.COMMUNICATION_MESSAGES, data)
         return data as unknown as UnifiedCommunicationMessage
       }
     } catch {}
 
-    PrintERPDataStore.addItem(STORAGE_KEYS.COMMUNICATION_MESSAGES, msg)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.COMMUNICATION_MESSAGES, msg)
     return msg
   }
 
@@ -94,7 +94,7 @@ export class CommunicationRepository {
       }
     } catch {}
 
-    const all = PrintERPDataStore.get<UnifiedCommunicationMessage[]>(STORAGE_KEYS.COMMUNICATION_MESSAGES) || []
+    const all = PrintFlowDataStore.get<UnifiedCommunicationMessage[]>(STORAGE_KEYS.COMMUNICATION_MESSAGES) || []
     return all.find((m) => m.id === id && (!m.company_id || m.company_id === companyId)) || null
   }
 
@@ -116,7 +116,7 @@ export class CommunicationRepository {
       }
     } catch {}
 
-    const all = PrintERPDataStore.get<UnifiedCommunicationMessage[]>(STORAGE_KEYS.COMMUNICATION_MESSAGES) || []
+    const all = PrintFlowDataStore.get<UnifiedCommunicationMessage[]>(STORAGE_KEYS.COMMUNICATION_MESSAGES) || []
     return (
       all.find(
         (m) =>
@@ -163,7 +163,7 @@ export class CommunicationRepository {
       }
     } catch {}
 
-    const all = PrintERPDataStore.get<UnifiedCommunicationMessage[]>(STORAGE_KEYS.COMMUNICATION_MESSAGES) || []
+    const all = PrintFlowDataStore.get<UnifiedCommunicationMessage[]>(STORAGE_KEYS.COMMUNICATION_MESSAGES) || []
     return all
       .filter((m) => {
         if (m.company_id && m.company_id !== companyId) return false
@@ -218,7 +218,7 @@ export class CommunicationRepository {
         .single()
 
       if (!error && data) {
-        PrintERPDataStore.updateItem<UnifiedCommunicationMessage>(
+        PrintFlowDataStore.updateItem<UnifiedCommunicationMessage>(
           STORAGE_KEYS.COMMUNICATION_MESSAGES,
           id,
           data
@@ -227,7 +227,7 @@ export class CommunicationRepository {
       }
     } catch {}
 
-    const updated = PrintERPDataStore.updateItem<UnifiedCommunicationMessage>(
+    const updated = PrintFlowDataStore.updateItem<UnifiedCommunicationMessage>(
       STORAGE_KEYS.COMMUNICATION_MESSAGES,
       id,
       updates
@@ -262,7 +262,7 @@ export class CommunicationRepository {
       }
     } catch {}
 
-    const all = PrintERPDataStore.get<UnifiedCommunicationTemplate[]>(STORAGE_KEYS.COMMUNICATION_TEMPLATES) || []
+    const all = PrintFlowDataStore.get<UnifiedCommunicationTemplate[]>(STORAGE_KEYS.COMMUNICATION_TEMPLATES) || []
     return all.filter((t) => {
       if (t.company_id && t.company_id !== companyId) return false
       if (!t.is_active) return false
@@ -295,7 +295,7 @@ export class CommunicationRepository {
       }
     } catch {}
 
-    const all = PrintERPDataStore.get<UnifiedCommunicationTemplate[]>(STORAGE_KEYS.COMMUNICATION_TEMPLATES) || []
+    const all = PrintFlowDataStore.get<UnifiedCommunicationTemplate[]>(STORAGE_KEYS.COMMUNICATION_TEMPLATES) || []
     return (
       all.find(
         (t) =>
@@ -319,12 +319,12 @@ export class CommunicationRepository {
         .single()
 
       if (!error && data) {
-        PrintERPDataStore.addItem(STORAGE_KEYS.COMMUNICATION_TEMPLATES, data)
+        PrintFlowDataStore.addItem(STORAGE_KEYS.COMMUNICATION_TEMPLATES, data)
         return data as unknown as UnifiedCommunicationTemplate
       }
     } catch {}
 
-    PrintERPDataStore.addItem(STORAGE_KEYS.COMMUNICATION_TEMPLATES, template)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.COMMUNICATION_TEMPLATES, template)
     return template
   }
 

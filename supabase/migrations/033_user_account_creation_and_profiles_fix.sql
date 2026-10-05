@@ -1,5 +1,5 @@
 -- ==============================================================================
--- PrintERP / InkFlow SaaS - Migration 033: User Account Creation & Profiles Hardening
+-- PrintFlow / PrintFlow SaaS - Migration 033: User Account Creation & Profiles Hardening
 -- Ensures auth.users signup trigger automatically syncs into public.user_profiles
 -- and public.profiles with metadata, and configures non-blocking RLS policies.
 -- ==============================================================================

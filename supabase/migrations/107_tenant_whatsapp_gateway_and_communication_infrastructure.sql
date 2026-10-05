@@ -1,5 +1,5 @@
 -- ==============================================================================
--- PrintERP SaaS - Migration 107: OpenWA Tenant WhatsApp Gateway & Multi-Tenant Infrastructure
+-- PrintFlow - Migration 107: OpenWA Tenant WhatsApp Gateway & Multi-Tenant Infrastructure
 -- Supports:
 --   1. tenant_whatsapp_connections: Multi-tenant OpenWA session mapping & engine configuration
 --   2. whatsapp_contacts: Tenant phone directory linked to customers and employees

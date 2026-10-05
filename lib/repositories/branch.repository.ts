@@ -1,5 +1,5 @@
 import { createClient } from '../supabase/server.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../db/data-store.ts'
 import type {
   BranchMasterRecord,
   UserBranchAccessRecord,
@@ -14,7 +14,7 @@ export class BranchRepository {
     companyId: string,
     options?: { status?: BranchStatus; includeInactive?: boolean }
   ): Promise<BranchMasterRecord[]> {
-    const storeBranches = (PrintERPDataStore.get<BranchMasterRecord[]>(
+    const storeBranches = (PrintFlowDataStore.get<BranchMasterRecord[]>(
       STORAGE_KEYS.BRANCHES,
       companyId
     ) || []) as BranchMasterRecord[]
@@ -61,7 +61,7 @@ export class BranchRepository {
     companyId: string,
     branchId: string
   ): Promise<BranchMasterRecord | null> {
-    const branches = (PrintERPDataStore.get<BranchMasterRecord[]>(
+    const branches = (PrintFlowDataStore.get<BranchMasterRecord[]>(
       STORAGE_KEYS.BRANCHES,
       companyId
     ) || []) as BranchMasterRecord[]
@@ -92,7 +92,7 @@ export class BranchRepository {
     code: string
   ): Promise<BranchMasterRecord | null> {
     const cleanCode = code.toUpperCase().trim()
-    const branches = (PrintERPDataStore.get<BranchMasterRecord[]>(
+    const branches = (PrintFlowDataStore.get<BranchMasterRecord[]>(
       STORAGE_KEYS.BRANCHES,
       companyId
     ) || []) as BranchMasterRecord[]
@@ -164,7 +164,7 @@ export class BranchRepository {
       updated_at: now,
     }
 
-    const branches = (PrintERPDataStore.get<BranchMasterRecord[]>(
+    const branches = (PrintFlowDataStore.get<BranchMasterRecord[]>(
       STORAGE_KEYS.BRANCHES,
       companyId
     ) || []) as BranchMasterRecord[]
@@ -176,7 +176,7 @@ export class BranchRepository {
     }
 
     branches.push(branch)
-    PrintERPDataStore.set(STORAGE_KEYS.BRANCHES, companyId, branches)
+    PrintFlowDataStore.set(STORAGE_KEYS.BRANCHES, companyId, branches)
 
     try {
       const supabase = await createClient()
@@ -197,7 +197,7 @@ export class BranchRepository {
     const now = new Date().toISOString()
     const updateData = { ...updates, updated_at: now }
 
-    const branches = (PrintERPDataStore.get<BranchMasterRecord[]>(
+    const branches = (PrintFlowDataStore.get<BranchMasterRecord[]>(
       STORAGE_KEYS.BRANCHES,
       companyId
     ) || []) as BranchMasterRecord[]
@@ -215,7 +215,7 @@ export class BranchRepository {
 
     const updated = { ...branches[index], ...updateData }
     branches[index] = updated
-    PrintERPDataStore.set(STORAGE_KEYS.BRANCHES, companyId, branches)
+    PrintFlowDataStore.set(STORAGE_KEYS.BRANCHES, companyId, branches)
 
     try {
       const supabase = await createClient()
@@ -248,7 +248,7 @@ export class BranchRepository {
     companyId: string,
     userId: string
   ): Promise<string[]> {
-    const accessList = (PrintERPDataStore.get<UserBranchAccessRecord[]>(
+    const accessList = (PrintFlowDataStore.get<UserBranchAccessRecord[]>(
       STORAGE_KEYS.USER_BRANCH_ACCESS,
       companyId
     ) || []) as UserBranchAccessRecord[]
@@ -291,13 +291,13 @@ export class BranchRepository {
       created_at: now,
     }))
 
-    let accessList = (PrintERPDataStore.get<UserBranchAccessRecord[]>(
+    let accessList = (PrintFlowDataStore.get<UserBranchAccessRecord[]>(
       STORAGE_KEYS.USER_BRANCH_ACCESS,
       companyId
     ) || []) as UserBranchAccessRecord[]
 
     accessList = accessList.filter((a) => a.user_id !== userId).concat(records)
-    PrintERPDataStore.set(STORAGE_KEYS.USER_BRANCH_ACCESS, companyId, accessList)
+    PrintFlowDataStore.set(STORAGE_KEYS.USER_BRANCH_ACCESS, companyId, accessList)
 
     try {
       const supabase = await createClient()

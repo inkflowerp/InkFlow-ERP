@@ -5,7 +5,7 @@
 
 import { OfflineSyncItem, OfflineActionType, OfflineSyncStatus } from '@/types/offline.types'
 
-const QUEUE_STORAGE_KEY = 'printerp_offline_sync_queue'
+const QUEUE_STORAGE_KEY = 'printflow_offline_sync_queue'
 
 const INITIAL_EMPTY_QUEUE: OfflineSyncItem[] = []
 
@@ -28,7 +28,7 @@ export class OfflineSyncManager {
     if (typeof window === 'undefined') return
     try {
       localStorage.setItem(QUEUE_STORAGE_KEY, JSON.stringify(queue))
-      window.dispatchEvent(new Event('printerp_sync_queue_updated'))
+      window.dispatchEvent(new Event('printflow_sync_queue_updated'))
     } catch (e) {
       console.error('Failed to persist sync queue', e)
     }

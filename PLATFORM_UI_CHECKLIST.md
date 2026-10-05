@@ -1,5 +1,5 @@
 # Platform UI Consistency Audit & Verification Checklist
-**App:** InkFlow ERP — Super Admin & Platform Owner (`/platform/*`)  
+**App:** PrintFlow — Super Admin & Platform Owner (`/platform/*`)  
 **Design System Target:** Linear / Stripe / Vercel Dashboard aesthetic (Flat solid colors, 1px borders, semantic tokens, 0 decorative gradients, 0 raw Tailwind palette classes, full Light & Dark mode support).  
 **Audit Date:** October 2, 2026  
 **Status:** ✅ **100% UNIFIED (0 Violations)**

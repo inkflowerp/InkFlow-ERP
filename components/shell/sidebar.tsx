@@ -129,9 +129,9 @@ const iconMap: Record<string, React.ElementType> = {
  RotateCcw,
 }
 
-const SIDEBAR_COLLAPSED_STORAGE_KEY = 'printerp_sidebar_collapsed'
-const EXPANDED_GROUPS_STORAGE_KEY = 'printerp_nav_expanded_groups'
-const EXPANDED_SUB_NAV_STORAGE_KEY = 'printerp_nav_expanded_sub_nav'
+const SIDEBAR_COLLAPSED_STORAGE_KEY = 'printflow_sidebar_collapsed'
+const EXPANDED_GROUPS_STORAGE_KEY = 'printflow_nav_expanded_groups'
+const EXPANDED_SUB_NAV_STORAGE_KEY = 'printflow_nav_expanded_sub_nav'
 
 export function Sidebar({ initialNavSections }: { initialNavSections?: NavSection[] } = {}) {
  const pathname = usePathname()
@@ -148,11 +148,11 @@ export function Sidebar({ initialNavSections }: { initialNavSections?: NavSectio
  const [collapsed, setCollapsed] = useState<boolean>(() => {
  if (typeof window === 'undefined') return false
  try {
-      // Legacy migration from inkflow_
- const legacyCollapsed = localStorage.getItem('inkflow_sidebar_collapsed')
+      // Legacy migration from printflow_
+ const legacyCollapsed = localStorage.getItem('printflow_sidebar_collapsed')
  if (legacyCollapsed && !localStorage.getItem(SIDEBAR_COLLAPSED_STORAGE_KEY)) {
  localStorage.setItem(SIDEBAR_COLLAPSED_STORAGE_KEY, legacyCollapsed)
- localStorage.removeItem('inkflow_sidebar_collapsed')
+ localStorage.removeItem('printflow_sidebar_collapsed')
       }
  return localStorage.getItem(SIDEBAR_COLLAPSED_STORAGE_KEY) === 'true'
     } catch {

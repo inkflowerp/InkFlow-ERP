@@ -1,5 +1,5 @@
 -- ==============================================================================
--- PrintERP Migration 109: Drop Abandoned Subsystem Tables
+-- PrintFlow Migration 109: Drop Abandoned Subsystem Tables
 -- Description: Cleans up database tables associated with retired mobile sync,
 --              cross-branch operations, and duplicate parallel tax engine.
 -- ==============================================================================

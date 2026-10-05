@@ -194,14 +194,14 @@ export default function CompanySettingsPage() {
  refreshTenant?.()
     }
 
- window.addEventListener('printerp_table_synced:company', handleSync)
- window.addEventListener('printerp_table_synced:settings', handleSync)
- window.addEventListener('printerp_data_sync', handleSync)
+ window.addEventListener('printflow_table_synced:company', handleSync)
+ window.addEventListener('printflow_table_synced:settings', handleSync)
+ window.addEventListener('printflow_data_sync', handleSync)
 
  return () => {
- window.removeEventListener('printerp_table_synced:company', handleSync)
- window.removeEventListener('printerp_table_synced:settings', handleSync)
- window.removeEventListener('printerp_data_sync', handleSync)
+ window.removeEventListener('printflow_table_synced:company', handleSync)
+ window.removeEventListener('printflow_table_synced:settings', handleSync)
+ window.removeEventListener('printflow_data_sync', handleSync)
     }
   }, [refreshTenant])
 
@@ -285,8 +285,8 @@ export default function CompanySettingsPage() {
 
       // Broadcast update across windows
  if (typeof window !== 'undefined') {
- window.dispatchEvent(new CustomEvent('printerp_table_synced:settings', { detail: { companyId: company.id } }))
- window.dispatchEvent(new CustomEvent('printerp_table_synced:company', { detail: { companyId: company.id } }))
+ window.dispatchEvent(new CustomEvent('printflow_table_synced:settings', { detail: { companyId: company.id } }))
+ window.dispatchEvent(new CustomEvent('printflow_table_synced:company', { detail: { companyId: company.id } }))
       }
 
  setTimeout(() => setIsSaved(false), 4000)

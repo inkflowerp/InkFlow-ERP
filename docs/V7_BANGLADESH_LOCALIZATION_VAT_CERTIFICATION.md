@@ -1,4 +1,4 @@
-# InkFlow V7 — Bangladesh Localization + VAT Certification
+# PrintFlow V7 — Bangladesh Localization + VAT Certification
 
 ## Executive Compliance, Operational Integrity, Security & Production Readiness Report
 
@@ -12,7 +12,7 @@
 
 ## 1. Executive Summary
 
-InkFlow V7 establishes a deeply native, audit-grade Bangladesh Localization and Value Added Tax (VAT) framework constructed strictly on top of the frozen production-certified V1–V6 architectural baseline (`migrations 001–067`). 
+PrintFlow V7 establishes a deeply native, audit-grade Bangladesh Localization and Value Added Tax (VAT) framework constructed strictly on top of the frozen production-certified V1–V6 architectural baseline (`migrations 001–067`). 
 
 V7 delivers:
 1. **Full Bangladesh Business Profile & Identity:** Support for Legal/Trade names in English and বাংলা, 13-digit NBR Business Identification Numbers (BIN), 12-digit Taxpayer Identification Numbers (TIN), Trade Licenses, VAT Commissionerate/Circle designations, and structured 5-tier Bangladesh administrative geography (Division $\rightarrow$ District $\rightarrow$ Upazila/Thana $\rightarrow$ Area $\rightarrow$ Full Address).
@@ -54,7 +54,7 @@ Before creating new schema or code, an audit verified migrations `001–067` and
 
 ## 4. Bangladesh Company Profile
 
-Companies in InkFlow now maintain complete statutory and localized attributes:
+Companies in PrintFlow now maintain complete statutory and localized attributes:
 - `legal_name_bn` / `trade_name_bn`: Authentic Unicode Bengali representations.
 - `bin_number`: 13-digit NBR BIN string with format validation.
 - `tin_number`: 12-digit e-TIN identifier.
@@ -317,4 +317,4 @@ NEXT.JS PRODUCTION BUILD (next build):
 ## 30. Final Production Certification Verdict
 
 # CERTIFIED — PRODUCTION READY
-*InkFlow V7 Bangladesh Localization + VAT is fully implemented, verified, hardened, and certified for enterprise production deployment.*
+*PrintFlow V7 Bangladesh Localization + VAT is fully implemented, verified, hardened, and certified for enterprise production deployment.*

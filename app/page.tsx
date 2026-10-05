@@ -8,7 +8,7 @@ import { HeroSection } from '@/components/marketing/hero-section'
 import { HowShopsWorkSection } from '@/components/marketing/how-shops-work-section'
 import { CoreProblemsSection } from '@/components/marketing/core-problems-section'
 import { CoreWorkflowSection } from '@/components/marketing/core-workflow-section'
-import { WhatPrintErpManagesSection } from '@/components/marketing/what-printerp-manages-section'
+import { WhatPrintFlowManagesSection } from '@/components/marketing/what-printflow-manages-section'
 import { IndustrySolutionsSection } from '@/components/marketing/industry-solutions-section'
 import { OperationalAdvantagesSection } from '@/components/marketing/operational-advantages-section'
 import { BangladeshFeaturesSection } from '@/components/marketing/bangladesh-features-section'
@@ -80,7 +80,7 @@ export default async function MarketingHomePage() {
             <CoreWorkflowSection />
 
             {/* Section 6: What PrintFlow Manages */}
-            <WhatPrintErpManagesSection />
+            <WhatPrintFlowManagesSection />
 
             {/* Section 7: Industry/Business Types */}
             <IndustrySolutionsSection />

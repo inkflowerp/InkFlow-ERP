@@ -99,138 +99,138 @@ import { extractTenantSlug } from '../tenant/tenant-resolution.ts'
 
 // Storage keys
 export const STORAGE_KEYS = {
-  CUSTOMERS: 'printerp_tenant_customers',
-  COMMUNICATIONS: 'printerp_tenant_communications',
-  SUPPLIERS: 'printerp_tenant_suppliers',
-  SUPPLIER_PRICES: 'printerp_tenant_supplier_prices',
-  ORDERS: 'printerp_tenant_orders',
-  JOB_ORDERS: 'printerp_tenant_job_orders',
-  TIMELINE_EVENTS: 'printerp_tenant_timeline_events',
-  QUOTATIONS: 'printerp_tenant_quotations',
-  QUOTATION_ACTIVITIES: 'printerp_tenant_quotation_activities',
-  PRODUCTS: 'printerp_tenant_products',
-  PRICE_HISTORY: 'printerp_tenant_price_history',
-  PRICE_INTELLIGENCE: 'printerp_tenant_price_intelligence',
-  MATERIALS: 'printerp_tenant_materials',
-  MOUNTED_ROLLS: 'printerp_tenant_mounted_rolls',
-  STOCK_LEDGER: 'printerp_tenant_stock_ledger',
-  REMNANTS: 'printerp_tenant_remnants',
-  LOCATIONS: 'printerp_tenant_locations',
-  PRODUCTION_JOBS: 'printerp_tenant_production_jobs',
-  PRODUCTION_TASKS: 'printerp_tenant_production_tasks',
-  REWORKS: 'printerp_tenant_reworks',
-  INVOICES: 'printerp_tenant_invoices',
-  INVOICE_REQUESTS: 'printerp_tenant_invoice_requests',
-  PAYMENTS: 'printerp_tenant_payments',
-  EXPENSES: 'printerp_tenant_expenses',
-  BANK_ACCOUNTS: 'printerp_tenant_bank_accounts',
-  CASH_BOOK: 'printerp_tenant_cash_book',
-  PURCHASE_ORDERS: 'printerp_tenant_purchase_orders',
-  DELIVERY_CHALLANS: 'printerp_tenant_delivery_challans',
-  INSTALLATIONS: 'printerp_tenant_installations',
-  JOB_COSTINGS: 'printerp_tenant_job_costings',
-  DESIGN_JOBS: 'printerp_tenant_design_jobs',
-  EMPLOYEES: 'printerp_tenant_employees',
-  ATTENDANCE: 'printerp_tenant_attendance',
-  SALARY_ADVANCES: 'printerp_tenant_salary_advances',
-  LEAVE_REQUESTS: 'printerp_tenant_leave_requests',
-  OVERTIME: 'printerp_tenant_overtime',
-  DAILY_LABOR_LOGS: 'printerp_tenant_daily_labor_logs',
-  PAYROLL: 'printerp_tenant_payroll',
-  PAYROLL_PERIODS: 'printerp_tenant_payroll_periods',
-  IN_APP_NOTIFICATIONS: 'printerp_tenant_in_app_notifications',
-  COMMUNICATION_LOGS: 'printerp_tenant_comm_logs',
-  TRASH_ITEMS: 'printerp_tenant_trash_items',
-  MESSAGE_TEMPLATES: 'printerp_tenant_msg_templates',
-  CHANNEL_CONFIGS: 'printerp_tenant_channel_configs',
-  TAX_SETTINGS: 'printerp_tenant_tax_settings',
-  COMPANY_USERS: 'printerp_tenant_company_users',
-  ROLES: 'printerp_tenant_roles',
-  ROLE_MATRICES: 'printerp_tenant_role_matrices',
-  BRANCHES: 'printerp_tenant_branches',
-  COMPANY_PROFILE: 'printerp_tenant_company_profile',
-  BRANDING_SETTINGS: 'printerp_tenant_branding_settings',
-  DOCUMENT_NUMBERING: 'printerp_tenant_doc_numbering',
-  DOCUMENT_TEMPLATES: 'printerp_tenant_doc_templates',
-  NOTIFICATION_SETTINGS: 'printerp_tenant_notification_settings',
-  AUTOMATION_RULES: 'printerp_tenant_automation_rules',
-  PLATFORM_COMPANIES: 'printerp_platform_companies',
-  PLATFORM_PLANS: 'printerp_platform_plans',
-  PLATFORM_FEATURE_FLAGS: 'printerp_platform_feature_flags',
-  PLATFORM_USERS: 'printerp_platform_users',
-  PLATFORM_INCIDENTS: 'printerp_platform_incidents',
-  PLATFORM_SYSTEM_SETTINGS: 'printerp_platform_system_settings',
-  PLATFORM_INCOMPLETE_REGISTRATIONS: 'printerp_platform_incomplete_registrations',
-  REGISTERED_USERS: 'printerp_registered_users',
-  OPERATOR_JOBS: 'printerp_tenant_operator_jobs',
-  MACHINERIES: 'printerp_tenant_machineries',
-  MACHINERY_ASSIGNMENTS: 'printerp_tenant_machinery_assignments',
-  MACHINERY_MAINTENANCES: 'printerp_tenant_machinery_maintenances',
-  MACHINERY_BREAKDOWNS: 'printerp_tenant_machinery_breakdowns',
-  AUDIT_LOGS: 'printerp_tenant_audit_logs',
-  USER_OVERRIDES: 'printerp_tenant_user_overrides',
-  COMPANY_SUBSCRIPTIONS: 'printerp_company_subscriptions',
-  SUPPORT_CONVERSATIONS: 'printerp_support_conversations',
-  SUPPORT_MESSAGES: 'printerp_support_messages',
-  INVENTORY_LOCATIONS: 'printerp_tenant_inventory_locations',
-  INVENTORY_STOCK_BALANCES: 'printerp_tenant_inventory_stock_balances',
-  PRODUCTION_TASK_MATERIAL_REQUIREMENTS: 'printerp_tenant_task_material_requirements',
-  MATERIAL_REQUESTS: 'printerp_tenant_material_requests',
-  MATERIAL_ISSUES: 'printerp_tenant_material_issues',
-  INVENTORY_REMNANTS: 'printerp_tenant_inventory_remnants',
-  INVENTORY_TRANSFERS: 'printerp_tenant_inventory_transfers',
-  INVENTORY_ADJUSTMENTS: 'printerp_tenant_inventory_adjustments',
-  PRODUCT_VARIANTS: 'printerp_tenant_product_variants',
-  PRODUCT_FORMULAS: 'printerp_tenant_product_formulas',
-  PRICE_LISTS: 'printerp_tenant_price_lists',
-  PRICE_LIST_ITEMS: 'printerp_tenant_price_list_items',
-  CUSTOMER_RATES: 'printerp_tenant_customer_rates',
-  PRICING_RULES: 'printerp_tenant_pricing_rules',
-  PRICE_OVERRIDES: 'printerp_tenant_price_overrides',
-  PRODUCT_SUPPLIER_PRICES: 'printerp_tenant_product_supplier_prices',
-  PURCHASE_REQUESTS: 'printerp_tenant_purchase_requests',
-  PURCHASE_REQUEST_ITEMS: 'printerp_tenant_purchase_request_items',
-  SUPPLIER_ITEMS: 'printerp_tenant_supplier_items',
-  GOODS_RECEIVED_NOTES: 'printerp_tenant_goods_received_notes',
-  GOODS_RECEIVED_NOTE_ITEMS: 'printerp_tenant_grn_items',
-  SUPPLIER_RETURNS: 'printerp_tenant_supplier_returns',
-  SUPPLIER_RETURN_ITEMS: 'printerp_tenant_supplier_return_items',
-  SUPPLIER_LEDGER_ENTRIES: 'printerp_tenant_supplier_ledger_entries',
-  SHIFTS: 'printerp_tenant_shifts',
-  EMPLOYEE_SHIFTS: 'printerp_tenant_employee_shifts',
-  ACCOUNTS: 'printerp_tenant_accounts',
-  FINANCIAL_TRANSACTIONS: 'printerp_tenant_financial_transactions',
-  JOURNAL_ENTRY_LINES: 'printerp_tenant_journal_entry_lines',
-  CASH_CLOSINGS: 'printerp_tenant_cash_closings',
-  ACCOUNT_TRANSFERS: 'printerp_tenant_account_transfers',
-  PRINTING_METHODS: 'printerp_tenant_printing_methods',
-  MATERIAL_PURCHASE_CONFIGS: 'printerp_tenant_material_purchase_configs',
-  FINISHING_OPTIONS: 'printerp_tenant_finishing_options',
-  ADDITIONAL_OPTIONS: 'printerp_tenant_additional_options',
-  INSTALLATION_OPTIONS: 'printerp_tenant_installation_options',
-  FINANCIAL_PERIODS: 'printerp_tenant_financial_periods',
-  TAX_PROFILES: 'printerp_tenant_tax_profiles',
-  TAX_TRANSACTION_LINES: 'printerp_tenant_tax_transaction_lines',
-  LOCATIONS_MASTER: 'printerp_locations_master',
-  SYNC_OUTBOX: 'printerp_tenant_sync_outbox',
-  COMMUNICATION_MESSAGES: 'printerp_tenant_comm_messages',
-  COMMUNICATION_TEMPLATES: 'printerp_tenant_comm_templates',
-  CLIENT_DEVICES: 'printerp_tenant_client_devices',
-  BRANCH_TRANSFERS: 'printerp_tenant_branch_transfers',
-  INTER_BRANCH_FINANCIAL_TRANSFERS: 'printerp_tenant_inter_branch_financial_transfers',
-  EMPLOYEE_BRANCH_ASSIGNMENTS: 'printerp_tenant_employee_branch_assignments',
-  WORKFLOW_CONFIGURATIONS: 'printerp_tenant_workflow_configurations',
-  USER_BRANCH_ACCESS: 'printerp_tenant_user_branch_access',
-  SAVED_VIEWS: 'printerp_tenant_saved_views',
-  BANK_STATEMENTS: 'printerp_tenant_bank_statements',
-  GATEWAY_TRANSACTIONS: 'printerp_gateway_transactions',
-  SAAS_INVOICES: 'printerp_saas_invoices',
-  PRODUCT_CATEGORIES: 'printerp_tenant_product_categories',
-  WF_ATTENDANCE_SUMMARIES: 'printerp_tenant_wf_att_summaries',
-  WF_OVERTIME_RECORDS: 'printerp_tenant_wf_ot_records',
-  WF_SALARY_PAYMENTS: 'printerp_tenant_wf_salary_payments',
-  WF_AUDIT_LOGS: 'printerp_tenant_wf_audit_logs',
-  FLOOR_CONSUMPTIONS: 'printerp_tenant_floor_consumptions',
+  CUSTOMERS: 'printflow_tenant_customers',
+  COMMUNICATIONS: 'printflow_tenant_communications',
+  SUPPLIERS: 'printflow_tenant_suppliers',
+  SUPPLIER_PRICES: 'printflow_tenant_supplier_prices',
+  ORDERS: 'printflow_tenant_orders',
+  JOB_ORDERS: 'printflow_tenant_job_orders',
+  TIMELINE_EVENTS: 'printflow_tenant_timeline_events',
+  QUOTATIONS: 'printflow_tenant_quotations',
+  QUOTATION_ACTIVITIES: 'printflow_tenant_quotation_activities',
+  PRODUCTS: 'printflow_tenant_products',
+  PRICE_HISTORY: 'printflow_tenant_price_history',
+  PRICE_INTELLIGENCE: 'printflow_tenant_price_intelligence',
+  MATERIALS: 'printflow_tenant_materials',
+  MOUNTED_ROLLS: 'printflow_tenant_mounted_rolls',
+  STOCK_LEDGER: 'printflow_tenant_stock_ledger',
+  REMNANTS: 'printflow_tenant_remnants',
+  LOCATIONS: 'printflow_tenant_locations',
+  PRODUCTION_JOBS: 'printflow_tenant_production_jobs',
+  PRODUCTION_TASKS: 'printflow_tenant_production_tasks',
+  REWORKS: 'printflow_tenant_reworks',
+  INVOICES: 'printflow_tenant_invoices',
+  INVOICE_REQUESTS: 'printflow_tenant_invoice_requests',
+  PAYMENTS: 'printflow_tenant_payments',
+  EXPENSES: 'printflow_tenant_expenses',
+  BANK_ACCOUNTS: 'printflow_tenant_bank_accounts',
+  CASH_BOOK: 'printflow_tenant_cash_book',
+  PURCHASE_ORDERS: 'printflow_tenant_purchase_orders',
+  DELIVERY_CHALLANS: 'printflow_tenant_delivery_challans',
+  INSTALLATIONS: 'printflow_tenant_installations',
+  JOB_COSTINGS: 'printflow_tenant_job_costings',
+  DESIGN_JOBS: 'printflow_tenant_design_jobs',
+  EMPLOYEES: 'printflow_tenant_employees',
+  ATTENDANCE: 'printflow_tenant_attendance',
+  SALARY_ADVANCES: 'printflow_tenant_salary_advances',
+  LEAVE_REQUESTS: 'printflow_tenant_leave_requests',
+  OVERTIME: 'printflow_tenant_overtime',
+  DAILY_LABOR_LOGS: 'printflow_tenant_daily_labor_logs',
+  PAYROLL: 'printflow_tenant_payroll',
+  PAYROLL_PERIODS: 'printflow_tenant_payroll_periods',
+  IN_APP_NOTIFICATIONS: 'printflow_tenant_in_app_notifications',
+  COMMUNICATION_LOGS: 'printflow_tenant_comm_logs',
+  TRASH_ITEMS: 'printflow_tenant_trash_items',
+  MESSAGE_TEMPLATES: 'printflow_tenant_msg_templates',
+  CHANNEL_CONFIGS: 'printflow_tenant_channel_configs',
+  TAX_SETTINGS: 'printflow_tenant_tax_settings',
+  COMPANY_USERS: 'printflow_tenant_company_users',
+  ROLES: 'printflow_tenant_roles',
+  ROLE_MATRICES: 'printflow_tenant_role_matrices',
+  BRANCHES: 'printflow_tenant_branches',
+  COMPANY_PROFILE: 'printflow_tenant_company_profile',
+  BRANDING_SETTINGS: 'printflow_tenant_branding_settings',
+  DOCUMENT_NUMBERING: 'printflow_tenant_doc_numbering',
+  DOCUMENT_TEMPLATES: 'printflow_tenant_doc_templates',
+  NOTIFICATION_SETTINGS: 'printflow_tenant_notification_settings',
+  AUTOMATION_RULES: 'printflow_tenant_automation_rules',
+  PLATFORM_COMPANIES: 'printflow_platform_companies',
+  PLATFORM_PLANS: 'printflow_platform_plans',
+  PLATFORM_FEATURE_FLAGS: 'printflow_platform_feature_flags',
+  PLATFORM_USERS: 'printflow_platform_users',
+  PLATFORM_INCIDENTS: 'printflow_platform_incidents',
+  PLATFORM_SYSTEM_SETTINGS: 'printflow_platform_system_settings',
+  PLATFORM_INCOMPLETE_REGISTRATIONS: 'printflow_platform_incomplete_registrations',
+  REGISTERED_USERS: 'printflow_registered_users',
+  OPERATOR_JOBS: 'printflow_tenant_operator_jobs',
+  MACHINERIES: 'printflow_tenant_machineries',
+  MACHINERY_ASSIGNMENTS: 'printflow_tenant_machinery_assignments',
+  MACHINERY_MAINTENANCES: 'printflow_tenant_machinery_maintenances',
+  MACHINERY_BREAKDOWNS: 'printflow_tenant_machinery_breakdowns',
+  AUDIT_LOGS: 'printflow_tenant_audit_logs',
+  USER_OVERRIDES: 'printflow_tenant_user_overrides',
+  COMPANY_SUBSCRIPTIONS: 'printflow_company_subscriptions',
+  SUPPORT_CONVERSATIONS: 'printflow_support_conversations',
+  SUPPORT_MESSAGES: 'printflow_support_messages',
+  INVENTORY_LOCATIONS: 'printflow_tenant_inventory_locations',
+  INVENTORY_STOCK_BALANCES: 'printflow_tenant_inventory_stock_balances',
+  PRODUCTION_TASK_MATERIAL_REQUIREMENTS: 'printflow_tenant_task_material_requirements',
+  MATERIAL_REQUESTS: 'printflow_tenant_material_requests',
+  MATERIAL_ISSUES: 'printflow_tenant_material_issues',
+  INVENTORY_REMNANTS: 'printflow_tenant_inventory_remnants',
+  INVENTORY_TRANSFERS: 'printflow_tenant_inventory_transfers',
+  INVENTORY_ADJUSTMENTS: 'printflow_tenant_inventory_adjustments',
+  PRODUCT_VARIANTS: 'printflow_tenant_product_variants',
+  PRODUCT_FORMULAS: 'printflow_tenant_product_formulas',
+  PRICE_LISTS: 'printflow_tenant_price_lists',
+  PRICE_LIST_ITEMS: 'printflow_tenant_price_list_items',
+  CUSTOMER_RATES: 'printflow_tenant_customer_rates',
+  PRICING_RULES: 'printflow_tenant_pricing_rules',
+  PRICE_OVERRIDES: 'printflow_tenant_price_overrides',
+  PRODUCT_SUPPLIER_PRICES: 'printflow_tenant_product_supplier_prices',
+  PURCHASE_REQUESTS: 'printflow_tenant_purchase_requests',
+  PURCHASE_REQUEST_ITEMS: 'printflow_tenant_purchase_request_items',
+  SUPPLIER_ITEMS: 'printflow_tenant_supplier_items',
+  GOODS_RECEIVED_NOTES: 'printflow_tenant_goods_received_notes',
+  GOODS_RECEIVED_NOTE_ITEMS: 'printflow_tenant_grn_items',
+  SUPPLIER_RETURNS: 'printflow_tenant_supplier_returns',
+  SUPPLIER_RETURN_ITEMS: 'printflow_tenant_supplier_return_items',
+  SUPPLIER_LEDGER_ENTRIES: 'printflow_tenant_supplier_ledger_entries',
+  SHIFTS: 'printflow_tenant_shifts',
+  EMPLOYEE_SHIFTS: 'printflow_tenant_employee_shifts',
+  ACCOUNTS: 'printflow_tenant_accounts',
+  FINANCIAL_TRANSACTIONS: 'printflow_tenant_financial_transactions',
+  JOURNAL_ENTRY_LINES: 'printflow_tenant_journal_entry_lines',
+  CASH_CLOSINGS: 'printflow_tenant_cash_closings',
+  ACCOUNT_TRANSFERS: 'printflow_tenant_account_transfers',
+  PRINTING_METHODS: 'printflow_tenant_printing_methods',
+  MATERIAL_PURCHASE_CONFIGS: 'printflow_tenant_material_purchase_configs',
+  FINISHING_OPTIONS: 'printflow_tenant_finishing_options',
+  ADDITIONAL_OPTIONS: 'printflow_tenant_additional_options',
+  INSTALLATION_OPTIONS: 'printflow_tenant_installation_options',
+  FINANCIAL_PERIODS: 'printflow_tenant_financial_periods',
+  TAX_PROFILES: 'printflow_tenant_tax_profiles',
+  TAX_TRANSACTION_LINES: 'printflow_tenant_tax_transaction_lines',
+  LOCATIONS_MASTER: 'printflow_locations_master',
+  SYNC_OUTBOX: 'printflow_tenant_sync_outbox',
+  COMMUNICATION_MESSAGES: 'printflow_tenant_comm_messages',
+  COMMUNICATION_TEMPLATES: 'printflow_tenant_comm_templates',
+  CLIENT_DEVICES: 'printflow_tenant_client_devices',
+  BRANCH_TRANSFERS: 'printflow_tenant_branch_transfers',
+  INTER_BRANCH_FINANCIAL_TRANSFERS: 'printflow_tenant_inter_branch_financial_transfers',
+  EMPLOYEE_BRANCH_ASSIGNMENTS: 'printflow_tenant_employee_branch_assignments',
+  WORKFLOW_CONFIGURATIONS: 'printflow_tenant_workflow_configurations',
+  USER_BRANCH_ACCESS: 'printflow_tenant_user_branch_access',
+  SAVED_VIEWS: 'printflow_tenant_saved_views',
+  BANK_STATEMENTS: 'printflow_tenant_bank_statements',
+  GATEWAY_TRANSACTIONS: 'printflow_gateway_transactions',
+  SAAS_INVOICES: 'printflow_saas_invoices',
+  PRODUCT_CATEGORIES: 'printflow_tenant_product_categories',
+  WF_ATTENDANCE_SUMMARIES: 'printflow_tenant_wf_att_summaries',
+  WF_OVERTIME_RECORDS: 'printflow_tenant_wf_ot_records',
+  WF_SALARY_PAYMENTS: 'printflow_tenant_wf_salary_payments',
+  WF_AUDIT_LOGS: 'printflow_tenant_wf_audit_logs',
+  FLOOR_CONSUMPTIONS: 'printflow_tenant_floor_consumptions',
 } as const
 
 export type StorageKey = (typeof STORAGE_KEYS)[keyof typeof STORAGE_KEYS]
@@ -528,7 +528,7 @@ export function getInitialSeedData(key: StorageKey, tenantSlug?: string): any {
       return {
         platform_name: 'PrintFlow Bangladesh Cloud',
         platform_tagline: 'Enterprise Operating System for Large Format, Digital & Offset Printers',
-        contact_email: 'support@printerp.com.bd',
+        contact_email: 'support@printflow.bd',
         contact_phone: '+8801711000000',
         system_version: 'v2.6.4-prod',
         environment: 'production',
@@ -570,13 +570,13 @@ export const CLIENT_TAB_ID =
     ? `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`
     : 'server'
 
-export class PrintERPDataStore {
+export class PrintFlowDataStore {
   /**
    * Resolves the current active tenant slug from location pathname or session cookie
    */
   static getActiveTenantSlug(): string {
     if (typeof window !== 'undefined') {
-      // 1. Resolve tenant slug directly from subdomain hostname (e.g. rangao.inkflow-erp.vercel.app -> rangao)
+      // 1. Resolve tenant slug directly from subdomain hostname (e.g. rangao.printflow.bd -> rangao)
       try {
         const hostSlug = extractTenantSlug(window.location.hostname)
         if (
@@ -593,7 +593,7 @@ export class PrintERPDataStore {
       try {
         const cookieRow = document.cookie
           .split('; ')
-          .find((row) => row.startsWith('printerp_tenant_session='))
+          .find((row) => row.startsWith('printflow_tenant_session='))
         if (cookieRow) {
           const raw = cookieRow.split('=')[1]
           const parsed = JSON.parse(decodeURIComponent(raw))
@@ -645,7 +645,7 @@ export class PrintERPDataStore {
 
     if (typeof window !== 'undefined') {
       try {
-        const raw = localStorage.getItem(effectiveKey)
+        let raw = localStorage.getItem(effectiveKey)
         if (raw) {
           const parsed = JSON.parse(raw)
           inMemoryStore[effectiveKey] = parsed
@@ -708,7 +708,7 @@ export class PrintERPDataStore {
           queueMicrotask(() => {
             if (typeof window !== 'undefined') {
               window.dispatchEvent(
-                new CustomEvent('printerp_data_sync', {
+                new CustomEvent('printflow_data_sync', {
                   detail: { key, effectiveKey, data: actualData, timestamp: Date.now() },
                 })
               )
@@ -720,7 +720,7 @@ export class PrintERPDataStore {
           // Instant cross-tab broadcast (only when broadcastCrossTab is enabled)
           if (broadcastCrossTab && 'BroadcastChannel' in window) {
             try {
-              const channel = new BroadcastChannel('printerp_realtime_bus')
+              const channel = new BroadcastChannel('printflow_realtime_bus')
               channel.postMessage({
                 type: 'LOCAL_STORE_MUTATION',
                 mutationType: 'SET',
@@ -736,7 +736,7 @@ export class PrintERPDataStore {
           }
         }
       } catch (err) {
-        console.error(`[PrintERPDataStore] Error saving key ${effectiveKey}:`, err)
+        console.error(`[PrintFlowDataStore] Error saving key ${effectiveKey}:`, err)
       }
     }
     return actualData
@@ -867,7 +867,7 @@ export class PrintERPDataStore {
     // 5. Broadcast cross-tab purge notification
     if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
       try {
-        const channel = new BroadcastChannel('printerp_realtime_bus')
+        const channel = new BroadcastChannel('printflow_realtime_bus')
         channel.postMessage({
           type: 'LOCAL_STORE_MUTATION',
           mutationType: 'PURGE',
@@ -1084,7 +1084,7 @@ export class PrintERPDataStore {
           }
 
           // Handle offline sync queue
-          if (lsKey === 'printerp_offline_sync_queue') {
+          if (lsKey === 'printflow_offline_sync_queue') {
             try {
               const raw = localStorage.getItem(lsKey)
               if (raw) {
@@ -1101,7 +1101,7 @@ export class PrintERPDataStore {
           }
 
           // Handle offline drafts
-          if (lsKey === 'printerp_offline_drafts') {
+          if (lsKey === 'printflow_offline_drafts') {
             try {
               const raw = localStorage.getItem(lsKey)
               if (raw) {
@@ -1118,7 +1118,7 @@ export class PrintERPDataStore {
           }
 
           // Handle client outbox
-          if (lsKey.startsWith('inkflow_client_outbox_')) {
+          if (lsKey.startsWith('printflow_client_outbox_')) {
             for (const t of targets) {
               if (lsKey.includes(t)) {
                 try {
@@ -1179,7 +1179,7 @@ export class PrintERPDataStore {
     if (typeof window !== 'undefined') {
       try {
         if ('BroadcastChannel' in window) {
-          const channel = new BroadcastChannel('printerp_realtime_bus')
+          const channel = new BroadcastChannel('printflow_realtime_bus')
           channel.postMessage({
             type: 'LOCAL_STORE_MUTATION',
             mutationType: 'RESET_DATA',
@@ -1191,7 +1191,7 @@ export class PrintERPDataStore {
         }
 
         window.dispatchEvent(new Event('storage'))
-        window.dispatchEvent(new Event('printerp_data_reset'))
+        window.dispatchEvent(new Event('printflow_data_reset'))
       } catch {}
     }
   }
@@ -1329,8 +1329,8 @@ export class PrintERPDataStore {
           if (!raw) continue
 
           if (
-            k.startsWith('printerp_tenant_quotations') ||
-            k.startsWith('printerp_quotations') ||
+            k.startsWith('printflow_tenant_quotations') ||
+            k.startsWith('printflow_quotations') ||
             k.includes('quotation') ||
             k.includes('quotes')
           ) {
@@ -1344,7 +1344,7 @@ export class PrintERPDataStore {
                 }
               }
             } catch {}
-          } else if (k === 'printerp_offline_drafts') {
+          } else if (k === 'printflow_offline_drafts') {
             try {
               const drafts = JSON.parse(raw)
               if (Array.isArray(drafts)) {
@@ -1361,8 +1361,8 @@ export class PrintERPDataStore {
         console.warn('[DataStore] Error purging localStorage quotes:', err)
       }
 
-      window.dispatchEvent(new CustomEvent('printerp_datastore_sync', { detail: { key: STORAGE_KEYS.QUOTATIONS, all: true } }))
-      window.dispatchEvent(new Event('printerp_drafts_updated'))
+      window.dispatchEvent(new CustomEvent('printflow_datastore_sync', { detail: { key: STORAGE_KEYS.QUOTATIONS, all: true } }))
+      window.dispatchEvent(new Event('printflow_drafts_updated'))
     }
 
     return purgedCount
@@ -1970,6 +1970,3 @@ export class PrintERPDataStore {
     return `${prefix}${currentYear}-${paddedNum}`
   }
 }
-
-export const PrintFlowDataStore = PrintERPDataStore
-

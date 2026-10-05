@@ -1,5 +1,5 @@
 -- ==============================================================================
--- PrintERP SaaS - Multi-Tenant Row Level Security (RLS) Policies (003)
+-- PrintFlow - Multi-Tenant Row Level Security (RLS) Policies (003)
 -- Ensures strict multi-tenant isolation across all organizations
 -- ==============================================================================
 

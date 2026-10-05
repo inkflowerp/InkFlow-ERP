@@ -115,14 +115,14 @@ describe('Register -> Onboarding Step 7 Credential Pull', () => {
 
   it('5. Storage cleanup simulation after successful company setup', () => {
     const mockStorage: Record<string, string> = {
-      printerp_registration_draft: JSON.stringify({ fullName: 'Test', password: 'secret' }),
+      printflow_registration_draft: JSON.stringify({ fullName: 'Test', password: 'secret' }),
     }
 
-    assert.ok(mockStorage['printerp_registration_draft'])
+    assert.ok(mockStorage['printflow_registration_draft'])
 
     // Cleanup upon company creation success
-    delete mockStorage['printerp_registration_draft']
+    delete mockStorage['printflow_registration_draft']
 
-    assert.strictEqual(mockStorage['printerp_registration_draft'], undefined)
+    assert.strictEqual(mockStorage['printflow_registration_draft'], undefined)
   })
 })

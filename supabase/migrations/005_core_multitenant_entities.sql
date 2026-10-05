@@ -1,5 +1,5 @@
 -- ==============================================================================
--- PrintERP SaaS - Migration 005: Core Multi-Tenant Entities & RBAC
+-- PrintFlow - Migration 005: Core Multi-Tenant Entities & RBAC
 -- Entities: companies (extended), company_settings, branches, user_profiles,
 --           roles, permissions, role_permissions, company_users, user_roles
 -- Every tenant-owned table contains company_id referencing companies(id).

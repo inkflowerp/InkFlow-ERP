@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { MarketingNavbar } from '@/components/marketing/marketing-navbar'
-import { WhatPrintErpManagesSection } from '@/components/marketing/what-printerp-manages-section'
+import { WhatPrintFlowManagesSection } from '@/components/marketing/what-printflow-manages-section'
 import { FeatureDeepDiveSection } from '@/components/marketing/feature-deep-dive-section'
 import { FinalCTASection } from '@/components/marketing/final-cta-section'
 import { MarketingFooter } from '@/components/marketing/marketing-footer'
@@ -39,7 +39,7 @@ export default function PublicFeaturesPage() {
             </div>
           </div>
 
-          <WhatPrintErpManagesSection />
+          <WhatPrintFlowManagesSection />
           <FeatureDeepDiveSection />
           <FinalCTASection />
         </main>

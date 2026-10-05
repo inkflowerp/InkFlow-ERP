@@ -15,8 +15,8 @@ import {
 import type { PlatformSessionData } from '../../lib/auth/types.ts'
 
 describe('Platform Auth & Vercel Deployment Cookie Resolution Tests', () => {
-  test('1. getAuthCookieOptions sets host-scoped cookies for inkflow-erp.vercel.app (PSL domain)', () => {
-    const opts = getAuthCookieOptions('inkflow-erp.vercel.app')
+  test('1. getAuthCookieOptions sets host-scoped cookies for printflow.bd (PSL domain)', () => {
+    const opts = getAuthCookieOptions('printflow.bd')
     assert.equal(opts.domain, undefined, 'Cookie domain MUST be undefined on vercel.app to prevent browser rejection')
     assert.equal(opts.sameSite, 'lax')
     assert.equal(opts.path, '/')

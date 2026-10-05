@@ -1,5 +1,5 @@
 -- ==============================================================================
--- PrintERP / InkFlow SaaS - Migration 066: Purchasing & Suppliers Management (V5)
+-- PrintFlow / PrintFlow SaaS - Migration 066: Purchasing & Suppliers Management (V5)
 -- Production-Certified Multi-Tenant Procurement & Supplier Operations
 -- ==============================================================================
 

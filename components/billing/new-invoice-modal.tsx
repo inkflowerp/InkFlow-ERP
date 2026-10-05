@@ -47,7 +47,7 @@ import {
 import { getCustomerFinancialSummaryAction } from '@/actions/customer.actions'
 import { evaluateStockAvailability, type StockAvailabilityResult } from '@/lib/domain/stock-availability'
 import type { CreateInvoiceItemInput } from '@/types/billing.types'
-import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
+import { PrintFlowDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import type { MaterialRecord, InventoryRollRecord, InventoryStockBalanceRecord, InventoryRemnantRecord } from '@/types/inventory.types'
 import { isServiceProduct, isReadyProduct, isMaterialProduct } from '@/lib/units'
 
@@ -705,10 +705,10 @@ export function NewInvoiceModal({
       }
     })
 
- const matList = PrintERPDataStore.getAll<MaterialRecord>(STORAGE_KEYS.MATERIALS, company?.id) || []
- const rollList = PrintERPDataStore.getAll<InventoryRollRecord>(STORAGE_KEYS.MOUNTED_ROLLS, company?.id) || []
- const balList = PrintERPDataStore.getAll<InventoryStockBalanceRecord>(STORAGE_KEYS.INVENTORY_STOCK_BALANCES, company?.id) || []
- const remList = PrintERPDataStore.getAll<InventoryRemnantRecord>(STORAGE_KEYS.INVENTORY_REMNANTS, company?.id) || []
+ const matList = PrintFlowDataStore.getAll<MaterialRecord>(STORAGE_KEYS.MATERIALS, company?.id) || []
+ const rollList = PrintFlowDataStore.getAll<InventoryRollRecord>(STORAGE_KEYS.MOUNTED_ROLLS, company?.id) || []
+ const balList = PrintFlowDataStore.getAll<InventoryStockBalanceRecord>(STORAGE_KEYS.INVENTORY_STOCK_BALANCES, company?.id) || []
+ const remList = PrintFlowDataStore.getAll<InventoryRemnantRecord>(STORAGE_KEYS.INVENTORY_REMNANTS, company?.id) || []
 
  setMaterials(matList)
  setPhysicalRolls(rollList)
@@ -1531,9 +1531,9 @@ export function NewInvoiceModal({
  setSavedInvoice(result.data)
  setIdempotencyKey(typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `inv-idemp-${Date.now()}`)
  try {
- const allInvs = PrintERPDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []
+ const allInvs = PrintFlowDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []
  const filtered = allInvs.filter((i) => i.id !== result.data!.id)
- PrintERPDataStore.set(STORAGE_KEYS.INVOICES, [result.data, ...filtered])
+ PrintFlowDataStore.set(STORAGE_KEYS.INVOICES, [result.data, ...filtered])
       } catch {}
  if (onInvoiceCreated) {
  onInvoiceCreated(result.data)

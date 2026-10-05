@@ -1,5 +1,5 @@
 -- ==============================================================================
--- InkFlow ERP - Migration 069: Mobile + WhatsApp + SMS + Offline Sync
+-- PrintFlow - Migration 069: Mobile + WhatsApp + SMS + Offline Sync
 -- Multi-Tenant Outbox, Idempotent Sync, Unified Communication & Client Devices
 -- ==============================================================================
 

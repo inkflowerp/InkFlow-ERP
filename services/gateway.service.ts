@@ -625,7 +625,7 @@ export class GatewayService {
       if (payload.category === 'telegram') {
         payload.recipient = String(publicConfig.default_chat_id || credentials.chat_id || '').trim()
       } else if (payload.category === 'email') {
-        payload.recipient = String(publicConfig.sender_email || publicConfig.gmail_account_email || 'admin@printerp.com').trim()
+        payload.recipient = String(publicConfig.sender_email || publicConfig.gmail_account_email || 'admin@printflow.bd').trim()
       }
     }
 

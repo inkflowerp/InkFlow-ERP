@@ -105,7 +105,7 @@ export default function PlatformForgotPasswordPage() {
  value={email}
  onChange={(e) => setEmail(e.target.value)}
  icon={<Mail className="h-4 w-4 text-muted-foreground" />}
- placeholder="admin@printerp.com.bd"
+ placeholder="admin@printflow.bd"
  className="bg-card border-border text-foreground placeholder:text-muted-foreground focus-visible:ring-primary"
  />
  </div>

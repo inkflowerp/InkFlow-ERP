@@ -61,7 +61,7 @@ import {
  completeProductionTaskAction,
 } from '@/actions/production-planning.actions'
 import { HoldTaskModal } from '@/components/production/hold-task-modal'
-import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
+import { PrintFlowDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import { cn } from '@/lib/utils'
 
 // Station Categories
@@ -97,14 +97,14 @@ export default function FinishingAndFabricationPage() {
   // State with Zero-Latency SWR Cache Hydration
  const [tasks, setTasks] = useState<ProductionTaskRecord[]>(() => {
  try {
- return PrintERPDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
+ return PrintFlowDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
     } catch {
  return []
     }
   })
  const [loading, setLoading] = useState(() => {
  try {
- const cached = PrintERPDataStore.get(STORAGE_KEYS.PRODUCTION_TASKS)
+ const cached = PrintFlowDataStore.get(STORAGE_KEYS.PRODUCTION_TASKS)
  return !cached || (cached as any[]).length === 0
     } catch {
  return true
@@ -152,7 +152,7 @@ export default function FinishingAndFabricationPage() {
  if (res.success && res.data) {
  setTasks(res.data)
  try {
- PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, res.data, false)
+ PrintFlowDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, res.data, false)
         } catch {}
       }
     } catch (err: any) {
@@ -172,21 +172,21 @@ export default function FinishingAndFabricationPage() {
     }
 
  if (typeof window !== 'undefined') {
- window.addEventListener('printerp_table_synced:production_tasks', handleRealtimeSync)
- window.addEventListener('printerp_table_synced:delivery_challans', handleRealtimeSync)
- window.addEventListener('printerp_table_synced:machines', handleRealtimeSync)
- window.addEventListener('printerp_table_synced', handleRealtimeSync)
- window.addEventListener('printerp_data_sync', handleRealtimeSync)
+ window.addEventListener('printflow_table_synced:production_tasks', handleRealtimeSync)
+ window.addEventListener('printflow_table_synced:delivery_challans', handleRealtimeSync)
+ window.addEventListener('printflow_table_synced:machines', handleRealtimeSync)
+ window.addEventListener('printflow_table_synced', handleRealtimeSync)
+ window.addEventListener('printflow_data_sync', handleRealtimeSync)
  window.addEventListener('storage', handleRealtimeSync)
     }
 
  return () => {
  if (typeof window !== 'undefined') {
- window.removeEventListener('printerp_table_synced:production_tasks', handleRealtimeSync)
- window.removeEventListener('printerp_table_synced:delivery_challans', handleRealtimeSync)
- window.removeEventListener('printerp_table_synced:machines', handleRealtimeSync)
- window.removeEventListener('printerp_table_synced', handleRealtimeSync)
- window.removeEventListener('printerp_data_sync', handleRealtimeSync)
+ window.removeEventListener('printflow_table_synced:production_tasks', handleRealtimeSync)
+ window.removeEventListener('printflow_table_synced:delivery_challans', handleRealtimeSync)
+ window.removeEventListener('printflow_table_synced:machines', handleRealtimeSync)
+ window.removeEventListener('printflow_table_synced', handleRealtimeSync)
+ window.removeEventListener('printflow_data_sync', handleRealtimeSync)
  window.removeEventListener('storage', handleRealtimeSync)
       }
     }

@@ -93,7 +93,7 @@ import {
  cancelInvoiceRequestAction,
 } from '@/actions/invoice-request.actions'
 import { getSectorForInvoice } from '@/lib/billing-utils'
-import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
+import { PrintFlowDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import { cn } from '@/lib/utils'
 
@@ -155,9 +155,9 @@ function getLocalInvoices(slug?: string, companySlug?: string, companyId?: strin
   })
 
  const storeItems = [
-    ...(slug ? (PrintERPDataStore.getAll<InvoiceRecord>(STORAGE_KEYS.INVOICES, slug) || []) : []),
-    ...(companySlug && companySlug !== slug ? (PrintERPDataStore.getAll<InvoiceRecord>(STORAGE_KEYS.INVOICES, companySlug) || []) : []),
-    ...(companyId ? (PrintERPDataStore.getAll<InvoiceRecord>(STORAGE_KEYS.INVOICES, companyId) || []) : []),
+    ...(slug ? (PrintFlowDataStore.getAll<InvoiceRecord>(STORAGE_KEYS.INVOICES, slug) || []) : []),
+    ...(companySlug && companySlug !== slug ? (PrintFlowDataStore.getAll<InvoiceRecord>(STORAGE_KEYS.INVOICES, companySlug) || []) : []),
+    ...(companyId ? (PrintFlowDataStore.getAll<InvoiceRecord>(STORAGE_KEYS.INVOICES, companyId) || []) : []),
   ]
  storeItems.forEach((inv) => {
  if (isMatchingTenant(inv)) invoiceMap.set(inv.id, inv)
@@ -209,9 +209,9 @@ function getLocalPayments(slug?: string, companySlug?: string, companyId?: strin
   })
 
  const storeItems = [
-    ...(slug ? (PrintERPDataStore.getAll<PaymentRecord>(STORAGE_KEYS.PAYMENTS, slug) || []) : []),
-    ...(companySlug && companySlug !== slug ? (PrintERPDataStore.getAll<PaymentRecord>(STORAGE_KEYS.PAYMENTS, companySlug) || []) : []),
-    ...(companyId ? (PrintERPDataStore.getAll<PaymentRecord>(STORAGE_KEYS.PAYMENTS, companyId) || []) : []),
+    ...(slug ? (PrintFlowDataStore.getAll<PaymentRecord>(STORAGE_KEYS.PAYMENTS, slug) || []) : []),
+    ...(companySlug && companySlug !== slug ? (PrintFlowDataStore.getAll<PaymentRecord>(STORAGE_KEYS.PAYMENTS, companySlug) || []) : []),
+    ...(companyId ? (PrintFlowDataStore.getAll<PaymentRecord>(STORAGE_KEYS.PAYMENTS, companyId) || []) : []),
   ]
  storeItems.forEach((p) => {
  if (isMatchingTenant(p)) paymentMap.set(p.id, p)
@@ -649,7 +649,7 @@ function BillingContent() {
  try {
  const localInvs = getLocalInvoices(slug, company?.slug, company?.id)
  const localPays = getLocalPayments(slug, company?.slug, company?.id)
- const cachedRequests = PrintERPDataStore.get<InvoiceRequestRecord[]>(STORAGE_KEYS.INVOICE_REQUESTS) || []
+ const cachedRequests = PrintFlowDataStore.get<InvoiceRequestRecord[]>(STORAGE_KEYS.INVOICE_REQUESTS) || []
  if (localInvs.length > 0) setInvoices(localInvs)
  if (localPays.length > 0) setPayments(localPays)
  if (cachedRequests.length > 0) setInvoiceRequests(cachedRequests)
@@ -751,10 +751,10 @@ function BillingContent() {
 
       // Merge with local client-side data store for seamless resilience across tenant partitions
  const localRequests: InvoiceRequestRecord[] = [
-        ...(PrintERPDataStore.getAll<InvoiceRequestRecord>(STORAGE_KEYS.INVOICE_REQUESTS, slug) || []),
-        ...(PrintERPDataStore.getAll<InvoiceRequestRecord>(STORAGE_KEYS.INVOICE_REQUESTS, company.slug) || []),
-        ...(PrintERPDataStore.getAll<InvoiceRequestRecord>(STORAGE_KEYS.INVOICE_REQUESTS, company.id) || []),
-        ...(PrintERPDataStore.get<InvoiceRequestRecord[]>(STORAGE_KEYS.INVOICE_REQUESTS) || []),
+        ...(PrintFlowDataStore.getAll<InvoiceRequestRecord>(STORAGE_KEYS.INVOICE_REQUESTS, slug) || []),
+        ...(PrintFlowDataStore.getAll<InvoiceRequestRecord>(STORAGE_KEYS.INVOICE_REQUESTS, company.slug) || []),
+        ...(PrintFlowDataStore.getAll<InvoiceRequestRecord>(STORAGE_KEYS.INVOICE_REQUESTS, company.id) || []),
+        ...(PrintFlowDataStore.get<InvoiceRequestRecord[]>(STORAGE_KEYS.INVOICE_REQUESTS) || []),
       ]
 
  const isTenantMatch = (itemCompanyId?: string | null) => {
@@ -784,10 +784,10 @@ function BillingContent() {
       // Also check orders marked commercial_status: invoice_requested to guarantee visibility
  try {
  const orders = [
-          ...(PrintERPDataStore.getAll<any>(STORAGE_KEYS.ORDERS, slug) || []),
-          ...(PrintERPDataStore.getAll<any>(STORAGE_KEYS.ORDERS, company.slug) || []),
-          ...(PrintERPDataStore.getAll<any>(STORAGE_KEYS.ORDERS, company.id) || []),
-          ...(PrintERPDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []),
+          ...(PrintFlowDataStore.getAll<any>(STORAGE_KEYS.ORDERS, slug) || []),
+          ...(PrintFlowDataStore.getAll<any>(STORAGE_KEYS.ORDERS, company.slug) || []),
+          ...(PrintFlowDataStore.getAll<any>(STORAGE_KEYS.ORDERS, company.id) || []),
+          ...(PrintFlowDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []),
         ]
  orders.forEach((ord) => {
  if (
@@ -841,10 +841,10 @@ function BillingContent() {
       // Also check design jobs marked commercial_status: invoice_requested to guarantee visibility
  try {
  const designJobs = [
-          ...(PrintERPDataStore.getAll<any>(STORAGE_KEYS.DESIGN_JOBS, slug) || []),
-          ...(PrintERPDataStore.getAll<any>(STORAGE_KEYS.DESIGN_JOBS, company.slug) || []),
-          ...(PrintERPDataStore.getAll<any>(STORAGE_KEYS.DESIGN_JOBS, company.id) || []),
-          ...(PrintERPDataStore.get<any[]>(STORAGE_KEYS.DESIGN_JOBS) || []),
+          ...(PrintFlowDataStore.getAll<any>(STORAGE_KEYS.DESIGN_JOBS, slug) || []),
+          ...(PrintFlowDataStore.getAll<any>(STORAGE_KEYS.DESIGN_JOBS, company.slug) || []),
+          ...(PrintFlowDataStore.getAll<any>(STORAGE_KEYS.DESIGN_JOBS, company.id) || []),
+          ...(PrintFlowDataStore.get<any[]>(STORAGE_KEYS.DESIGN_JOBS) || []),
         ]
  designJobs.forEach((dj) => {
  if (
@@ -916,16 +916,16 @@ function BillingContent() {
  const handleRealtimeBillingSync = () => {
  loadBillingData()
     }
- window.addEventListener('printerp_table_synced:invoices', handleRealtimeBillingSync)
- window.addEventListener('printerp_table_synced:payments', handleRealtimeBillingSync)
- window.addEventListener('printerp_table_synced:invoice_requests', handleRealtimeBillingSync)
- window.addEventListener('printerp_data_sync', handleRealtimeBillingSync)
+ window.addEventListener('printflow_table_synced:invoices', handleRealtimeBillingSync)
+ window.addEventListener('printflow_table_synced:payments', handleRealtimeBillingSync)
+ window.addEventListener('printflow_table_synced:invoice_requests', handleRealtimeBillingSync)
+ window.addEventListener('printflow_data_sync', handleRealtimeBillingSync)
 
  return () => {
- window.removeEventListener('printerp_table_synced:invoices', handleRealtimeBillingSync)
- window.removeEventListener('printerp_table_synced:payments', handleRealtimeBillingSync)
- window.removeEventListener('printerp_table_synced:invoice_requests', handleRealtimeBillingSync)
- window.removeEventListener('printerp_data_sync', handleRealtimeBillingSync)
+ window.removeEventListener('printflow_table_synced:invoices', handleRealtimeBillingSync)
+ window.removeEventListener('printflow_table_synced:payments', handleRealtimeBillingSync)
+ window.removeEventListener('printflow_table_synced:invoice_requests', handleRealtimeBillingSync)
+ window.removeEventListener('printflow_data_sync', handleRealtimeBillingSync)
     }
   }, [loadBillingData])
 
@@ -1910,7 +1910,7 @@ function BillingContent() {
  let advanceToUse: number | undefined = undefined
 
  if (req.sales_order_id) {
- const orders = PrintERPDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []
+ const orders = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []
  const linkedOrder = orders.find((o) => o.id === req.sales_order_id)
  if (linkedOrder) {
  if (!phoneToUse) phoneToUse = linkedOrder.customer_phone

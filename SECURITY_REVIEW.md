@@ -1,4 +1,4 @@
-# PrintERP SaaS - Enterprise Security & Data Integrity Review
+# PrintFlow - Enterprise Security & Data Integrity Review
 
 **Assessment Version**: 22.0  
 **Target Architecture**: Multi-Tenant Next.js 16 App Router + Supabase PostgreSQL (v16.3)  
@@ -9,7 +9,7 @@
 
 ## 1. Executive Summary
 
-PrintERP SaaS implements an enterprise-grade, defense-in-depth security model tailored to Bangladesh's printing, packaging, and digital signage industry. The architecture guarantees:
+PrintFlow implements an enterprise-grade, defense-in-depth security model tailored to Bangladesh's printing, packaging, and digital signage industry. The architecture guarantees:
 1. **Strict Multi-Tenant Isolation**: Zero cross-tenant data leakage via PostgreSQL Row Level Security (RLS) and server-side verification guards.
 2. **Financial Data Immutability**: Silent deletion of invoices, receipts, payments, and expenses is strictly blocked at the database trigger layer; all corrections execute via formal `void`, `cancel`, `reverse`, and `adjust` transaction workflows.
 3. **Payment Integrity**: Historical payment records cannot be edited in place. Corrections create linked, audited `payment_adjustments` entries.
@@ -21,7 +21,7 @@ PrintERP SaaS implements an enterprise-grade, defense-in-depth security model ta
 
 ## 2. Row Level Security (RLS) Audit
 
-Every multi-tenant database table in PrintERP is bound to `company_id` and protected with strict PostgreSQL RLS policies:
+Every multi-tenant database table in PrintFlow is bound to `company_id` and protected with strict PostgreSQL RLS policies:
 
 | Database Domain | Tables Protected | RLS Policy Mechanism | Status |
 | :--- | :--- | :--- | :--- |
@@ -39,7 +39,7 @@ Every multi-tenant database table in PrintERP is bound to `company_id` and prote
 ### Threat Mitigated: Accidental or Fraudulent Ledger Tampering
 In conventional ERPs, deleting an invoice or modifying an old payment record can erase sales tax obligations (such as Bangladesh NBR Mushak 6.3) or conceal employee theft.
 
-### PrintERP Architectural Defenses:
+### PrintFlow Architectural Defenses:
 1. **Database Anti-Deletion Triggers**:
    - `prevent_invoice_deletion`: Blocks `DELETE` operations on `public.invoices`.
    - `prevent_payment_deletion`: Blocks `DELETE` operations on `public.payments`.
@@ -57,7 +57,7 @@ In conventional ERPs, deleting an invoice or modifying an old payment record can
 ### Threat Mitigated: Direct Overwrite of Raw Material Stock
 In printing plants, direct stock quantity manipulation causes untracked roll theft, phantom wastage, and inaccurate square-foot job costing.
 
-### PrintERP Architectural Defenses:
+### PrintFlow Architectural Defenses:
 1. **Database Stored Function**:
    `public.record_inventory_stock_transaction(company_id, material_id, transaction_type, quantity_change, unit_cost, reference_id, notes, performed_by_name)`
 2. **Atomic Ledger Insertion**:
@@ -71,7 +71,7 @@ In printing plants, direct stock quantity manipulation causes untracked roll the
 
 ## 5. Comprehensive 15-Event Audit Trail
 
-PrintERP's `AuditService` natively instruments and records the following 15 mission-critical events:
+PrintFlow's `AuditService` natively instruments and records the following 15 mission-critical events:
 
 | # | Event Action Code | Domain | Captured Payload |
 | :--- | :--- | :--- | :--- |
@@ -121,4 +121,4 @@ PostgreSQL trigger `prevent_audit_log_mutation` rejects any `UPDATE` or `DELETE`
 
 ## 7. Security Conclusion
 
-PrintERP SaaS Phase 22 meets enterprise standards for data security, audit compliance, and accounting integrity. Normal tenant sessions remain strictly isolated, financial records are immutable, material stock changes are fully auditable, and the platform owner possesses dedicated telemetry without violating tenant privacy.
+PrintFlow Phase 22 meets enterprise standards for data security, audit compliance, and accounting integrity. Normal tenant sessions remain strictly isolated, financial records are immutable, material stock changes are fully auditable, and the platform owner possesses dedicated telemetry without violating tenant privacy.

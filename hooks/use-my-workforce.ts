@@ -3,7 +3,7 @@
 import { useState, useMemo, useCallback, useEffect } from 'react'
 import { useTenant } from '@/hooks/use-tenant'
 import { useAuth } from '@/hooks/use-auth'
-import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
+import { PrintFlowDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import type {
   EmployeeRecord,
   AttendanceDailySummaryRecord,
@@ -38,11 +38,11 @@ export function useMyWorkforce() {
   // Load from DataStore
   const loadData = useCallback(() => {
     try {
-      const emps = PrintERPDataStore.get<EmployeeRecord[]>(STORAGE_KEYS.EMPLOYEES) || []
-      const atts = PrintERPDataStore.get<AttendanceDailySummaryRecord[]>(STORAGE_KEYS.ATTENDANCE) || []
-      const advs = PrintERPDataStore.get<SalaryAdvanceRecord[]>(STORAGE_KEYS.SALARY_ADVANCES) || []
-      const leaves = PrintERPDataStore.get<LeaveRequestItem[]>('printerp_tenant_leave_requests' as any) || []
-      const ots = PrintERPDataStore.get<OvertimeRecord[]>('printerp_tenant_overtime' as any) || []
+      const emps = PrintFlowDataStore.get<EmployeeRecord[]>(STORAGE_KEYS.EMPLOYEES) || []
+      const atts = PrintFlowDataStore.get<AttendanceDailySummaryRecord[]>(STORAGE_KEYS.ATTENDANCE) || []
+      const advs = PrintFlowDataStore.get<SalaryAdvanceRecord[]>(STORAGE_KEYS.SALARY_ADVANCES) || []
+      const leaves = PrintFlowDataStore.get<LeaveRequestItem[]>('printflow_tenant_leave_requests' as any) || []
+      const ots = PrintFlowDataStore.get<OvertimeRecord[]>('printflow_tenant_overtime' as any) || []
 
       setEmployees(emps)
       setAttendances(atts)
@@ -260,9 +260,9 @@ export function useMyWorkforce() {
     }
 
     try {
-      const existing = PrintERPDataStore.get<AttendanceDailySummaryRecord[]>(STORAGE_KEYS.ATTENDANCE) || []
+      const existing = PrintFlowDataStore.get<AttendanceDailySummaryRecord[]>(STORAGE_KEYS.ATTENDANCE) || []
       const filtered = existing.filter((a) => !(a.employee_id === currentEmployee.id && a.attendance_date === todayStr))
-      PrintERPDataStore.set(STORAGE_KEYS.ATTENDANCE, [newRecord, ...filtered])
+      PrintFlowDataStore.set(STORAGE_KEYS.ATTENDANCE, [newRecord, ...filtered])
       loadData()
       return { success: true, record: newRecord }
     } catch (err: any) {
@@ -279,7 +279,7 @@ export function useMyWorkforce() {
     const isoStr = now.toISOString()
 
     try {
-      const existing = PrintERPDataStore.get<AttendanceDailySummaryRecord[]>(STORAGE_KEYS.ATTENDANCE) || []
+      const existing = PrintFlowDataStore.get<AttendanceDailySummaryRecord[]>(STORAGE_KEYS.ATTENDANCE) || []
       const todayIndex = existing.findIndex((a) => a.employee_id === currentEmployee.id && a.attendance_date === todayStr)
 
       let updatedRecord: AttendanceDailySummaryRecord
@@ -335,7 +335,7 @@ export function useMyWorkforce() {
         existing.unshift(updatedRecord)
       }
 
-      PrintERPDataStore.set(STORAGE_KEYS.ATTENDANCE, existing)
+      PrintFlowDataStore.set(STORAGE_KEYS.ATTENDANCE, existing)
       loadData()
       return { success: true, record: updatedRecord }
     } catch (err: any) {
@@ -369,8 +369,8 @@ export function useMyWorkforce() {
     }
 
     try {
-      const existing = PrintERPDataStore.get<LeaveRequestItem[]>('printerp_tenant_leave_requests' as any) || []
-      PrintERPDataStore.set('printerp_tenant_leave_requests' as any, [item, ...existing])
+      const existing = PrintFlowDataStore.get<LeaveRequestItem[]>('printflow_tenant_leave_requests' as any) || []
+      PrintFlowDataStore.set('printflow_tenant_leave_requests' as any, [item, ...existing])
       loadData()
       return { success: true, item }
     } catch (err: any) {
@@ -405,8 +405,8 @@ export function useMyWorkforce() {
     }
 
     try {
-      const existing = PrintERPDataStore.get<SalaryAdvanceRecord[]>(STORAGE_KEYS.SALARY_ADVANCES) || []
-      PrintERPDataStore.set(STORAGE_KEYS.SALARY_ADVANCES, [item, ...existing])
+      const existing = PrintFlowDataStore.get<SalaryAdvanceRecord[]>(STORAGE_KEYS.SALARY_ADVANCES) || []
+      PrintFlowDataStore.set(STORAGE_KEYS.SALARY_ADVANCES, [item, ...existing])
       loadData()
       return { success: true, item }
     } catch (err: any) {

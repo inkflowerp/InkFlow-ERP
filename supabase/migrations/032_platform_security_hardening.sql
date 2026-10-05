@@ -1,5 +1,5 @@
 -- ==============================================================================
--- PrintERP / InkFlow SaaS - Migration 032: Platform Security & Root Control Plane Hardening
+-- PrintFlow / PrintFlow SaaS - Migration 032: Platform Security & Root Control Plane Hardening
 -- Single Source of Truth: Supabase Auth + PostgreSQL RLS + Explicit Platform RBAC
 -- ==============================================================================
 

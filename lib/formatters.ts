@@ -496,7 +496,7 @@ export function getDepartmentColumns(department: string) {
 export function tBilingual(enText: string, bnText?: string | null): string {
   if (!bnText) return enText
   if (typeof window !== 'undefined') {
-    const saved = localStorage.getItem('printerp_locale')
+    const saved = localStorage.getItem('printflow_locale')
     if (saved === 'bn') return bnText
     return enText
   }

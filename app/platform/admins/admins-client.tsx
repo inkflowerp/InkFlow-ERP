@@ -880,7 +880,7 @@ export default function PlatformAdminsPage() {
  name="email"
  type="email"
  required
- placeholder="tariqul@inkflow.com.bd"
+ placeholder="tariqul@printflow.bd"
  className="bg-card border-border text-foreground text-xs h-9 tabular-nums focus-visible:ring-primary"
  />
  </div>
@@ -901,7 +901,7 @@ export default function PlatformAdminsPage() {
  <Input
  name="password"
  type={showCreatePassword ? 'text' : 'password'}
- placeholder="Default: InkFlowAdmin!2026"
+ placeholder="Default: PrintFlowAdmin!2026"
  className="bg-card border-border text-foreground text-xs h-9 focus-visible:ring-primary pr-10"
  />
  <button

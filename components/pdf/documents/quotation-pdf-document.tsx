@@ -37,7 +37,7 @@ const QuotationPdfContent = ({ quotation, company }: { quotation: QuotationRecor
  const companyName = company?.name || BRAND.name;
  const companySubtitle = company?.tagline ||"Printing & Signage Manufacturing";
  const companyAddress = company?.address ||"";
- const companyContact = `${company?.phone ||"+880 1700-000000"} · ${company?.email ||"sales@inkflow-erp.com"}`;
+ const companyContact = `${company?.phone ||"+880 1700-000000"} · ${company?.email ||"sales@printflow.bd"}`;
 
  const appOrigin =
    typeof window !== 'undefined' && window.location?.origin

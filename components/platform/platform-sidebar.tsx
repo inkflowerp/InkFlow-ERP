@@ -127,7 +127,7 @@ export function PlatformSidebar() {
   useEffect(() => {
     try {
       // 1. Check support session cookie
-      const supportMatch = document.cookie.match(/(?:^|; )printerp_support_tenant=([^;]*)/)
+      const supportMatch = document.cookie.match(/(?:^|; )printflow_support_tenant=([^;]*)/)
       if (supportMatch && supportMatch[1]) {
         const parsed = JSON.parse(decodeURIComponent(supportMatch[1]))
         if (parsed?.targetCompanySlug) {
@@ -137,7 +137,7 @@ export function PlatformSidebar() {
       }
 
       // 2. Check tenant session cookie
-      const sessionMatch = document.cookie.match(/(?:^|; )printerp_tenant_session=([^;]*)/)
+      const sessionMatch = document.cookie.match(/(?:^|; )printflow_tenant_session=([^;]*)/)
       if (sessionMatch && sessionMatch[1]) {
         const parsed = JSON.parse(decodeURIComponent(sessionMatch[1]))
         if (parsed?.companySlug) {
@@ -148,9 +148,9 @@ export function PlatformSidebar() {
 
       // 3. Check localStorage
       const localSlug =
-        localStorage.getItem('printerp_current_company') ||
-        localStorage.getItem('printerp_tenant_slug') ||
-        localStorage.getItem('printerp_active_tenant')
+        localStorage.getItem('printflow_current_company') ||
+        localStorage.getItem('printflow_tenant_slug') ||
+        localStorage.getItem('printflow_active_tenant')
       if (localSlug) {
         setBusinessSlug(localSlug)
         return
@@ -163,12 +163,12 @@ export function PlatformSidebar() {
   // Load persisted collapsed state from localStorage
   useEffect(() => {
     try {
-      const legacy = localStorage.getItem('inkflow_platform_sidebar_collapsed')
-      if (legacy !== null && !localStorage.getItem('printerp_platform_sidebar_collapsed')) {
-        localStorage.setItem('printerp_platform_sidebar_collapsed', legacy)
-        localStorage.removeItem('inkflow_platform_sidebar_collapsed')
+      const legacy = localStorage.getItem('printflow_platform_sidebar_collapsed')
+      if (legacy !== null && !localStorage.getItem('printflow_platform_sidebar_collapsed')) {
+        localStorage.setItem('printflow_platform_sidebar_collapsed', legacy)
+        localStorage.removeItem('printflow_platform_sidebar_collapsed')
       }
-      const saved = localStorage.getItem('printerp_platform_sidebar_collapsed')
+      const saved = localStorage.getItem('printflow_platform_sidebar_collapsed')
       if (saved !== null) {
         setCollapsed(saved === 'true')
       }
@@ -181,7 +181,7 @@ export function PlatformSidebar() {
     setCollapsed((prev) => {
       const next = !prev
       try {
-        localStorage.setItem('printerp_platform_sidebar_collapsed', String(next))
+        localStorage.setItem('printflow_platform_sidebar_collapsed', String(next))
       } catch {
         // Ignored
       }
@@ -194,12 +194,12 @@ export function PlatformSidebar() {
     const handleOpen = () => setMobileOpen(true)
     const handleClose = () => setMobileOpen(false)
 
-    window.addEventListener('printerp_open_platform_nav', handleOpen)
-    window.addEventListener('printerp_close_platform_nav', handleClose)
+    window.addEventListener('printflow_open_platform_nav', handleOpen)
+    window.addEventListener('printflow_close_platform_nav', handleClose)
 
     return () => {
-      window.removeEventListener('printerp_open_platform_nav', handleOpen)
-      window.removeEventListener('printerp_close_platform_nav', handleClose)
+      window.removeEventListener('printflow_open_platform_nav', handleOpen)
+      window.removeEventListener('printflow_close_platform_nav', handleClose)
     }
   }, [])
 

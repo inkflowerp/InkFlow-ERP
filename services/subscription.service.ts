@@ -27,7 +27,7 @@ import { createAdminClient } from '../lib/supabase/admin.ts'
 import { GatewayService } from './gateway.service.ts'
 import { SaasBillingService } from './saas-billing.service.ts'
 import { createPaymentProvider } from '../lib/payments/provider.factory.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../lib/db/data-store.ts'
 import { formatDate } from '../lib/formatters.ts'
 
 const isValidUuid = (str?: string | null): boolean => {
@@ -343,14 +343,14 @@ export class SubscriptionService {
     // 3. Fallback: Check if test mock store has subscription when running in isolated unit test harnesses
     if (!sub) {
       try {
-        const storedSubs = PrintERPDataStore.get<Record<string, CompanySubscriptionRecord>>(
+        const storedSubs = PrintFlowDataStore.get<Record<string, CompanySubscriptionRecord>>(
           STORAGE_KEYS.COMPANY_SUBSCRIPTIONS
         )
         if (storedSubs && (storedSubs[resolvedCompanyId] || (normId && storedSubs[normId]) || (resolvedSlug && storedSubs[resolvedSlug]))) {
           const matched = storedSubs[resolvedCompanyId] || storedSubs[normId] || (resolvedSlug ? storedSubs[resolvedSlug] : null)
           if (matched) {
             sub = matched
-            const storedPlans = PrintERPDataStore.get<SubscriptionPlanRecord[]>(STORAGE_KEYS.PLATFORM_PLANS)
+            const storedPlans = PrintFlowDataStore.get<SubscriptionPlanRecord[]>(STORAGE_KEYS.PLATFORM_PLANS)
             if (storedPlans) {
               planRecord = storedPlans.find((p) => p.id === matched.plan_id || p.code === matched.plan_code) || null
             }
@@ -534,7 +534,7 @@ export class SubscriptionService {
     } catch {}
 
     try {
-      const stored = PrintERPDataStore.get<SubscriptionPlanRecord[]>(STORAGE_KEYS.PLATFORM_PLANS)
+      const stored = PrintFlowDataStore.get<SubscriptionPlanRecord[]>(STORAGE_KEYS.PLATFORM_PLANS)
       if (stored && Array.isArray(stored) && stored.length > 0) {
         return stored
       }
@@ -813,9 +813,9 @@ export class SubscriptionService {
       }
 
       // Persist in memory store for local/test resilience
-      const memTxs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.GATEWAY_TRANSACTIONS) || []
+      const memTxs = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.GATEWAY_TRANSACTIONS) || []
       const savedTx = { ...transactionPayload, id: txRecord?.id || `tx-${Date.now()}` }
-      PrintERPDataStore.set(STORAGE_KEYS.GATEWAY_TRANSACTIONS, [savedTx, ...memTxs], false)
+      PrintFlowDataStore.set(STORAGE_KEYS.GATEWAY_TRANSACTIONS, [savedTx, ...memTxs], false)
 
       // 5. Record Subscription Event: PAYMENT_PENDING
       await this.recordSubscriptionEvent({
@@ -940,7 +940,7 @@ export class SubscriptionService {
       } catch {}
 
       if (!tx) {
-        const memTxs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.GATEWAY_TRANSACTIONS) || []
+        const memTxs = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.GATEWAY_TRANSACTIONS) || []
         tx = memTxs.find((t) =>
           (internalTrxId && t.internal_trx_id === internalTrxId) ||
           (providerTrxId && t.provider_trx_id === providerTrxId) ||
@@ -1113,7 +1113,7 @@ export class SubscriptionService {
           .eq('id', tx.id)
       } catch {}
 
-      const memTxs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.GATEWAY_TRANSACTIONS) || []
+      const memTxs = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.GATEWAY_TRANSACTIONS) || []
       const updatedMemTxs = memTxs.map((t) =>
         t.internal_trx_id === tx.internal_trx_id || t.id === tx.id
           ? {
@@ -1127,7 +1127,7 @@ export class SubscriptionService {
             }
           : t
       )
-      PrintERPDataStore.set(STORAGE_KEYS.GATEWAY_TRANSACTIONS, updatedMemTxs, false)
+      PrintFlowDataStore.set(STORAGE_KEYS.GATEWAY_TRANSACTIONS, updatedMemTxs, false)
 
       // 5. Update Tenant Subscription Record Atomically
       const targetPlan = await this.getPlanByCode(targetPlanCode)
@@ -1167,7 +1167,7 @@ export class SubscriptionService {
         }
 
         // Always update in DataStore cache
-        const subsMap = PrintERPDataStore.get<Record<string, any>>(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS) || {}
+        const subsMap = PrintFlowDataStore.get<Record<string, any>>(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS) || {}
         subsMap[companyId] = {
           ...(subsMap[companyId] || {}),
           id: subsMap[companyId]?.id || `sub-${companyId}`,
@@ -1175,7 +1175,7 @@ export class SubscriptionService {
           plan_code: targetPlanCode,
           ...updateData,
         }
-        PrintERPDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, subsMap, false)
+        PrintFlowDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, subsMap, false)
 
         // Settle associated SaaS invoice
         try {
@@ -1327,12 +1327,12 @@ export class SubscriptionService {
       }
 
       if (companyId) {
-        const subsMap = PrintERPDataStore.get<Record<string, any>>(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS) || {}
+        const subsMap = PrintFlowDataStore.get<Record<string, any>>(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS) || {}
         if (subsMap[companyId]) {
           subsMap[companyId].next_plan_id = nextPlan.id
           subsMap[companyId].change_effective_at = effectiveAt
           subsMap[companyId].updated_at = new Date().toISOString()
-          PrintERPDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, subsMap, false)
+          PrintFlowDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, subsMap, false)
         }
       }
 
@@ -1814,12 +1814,12 @@ export function getTenantResourceUsage(
   plan?: SubscriptionPlanRecord | null,
   override?: CustomLimitsOverride | null
 ): TenantResourceUsage {
-  const users = PrintERPDataStore.get<any[]>(STORAGE_KEYS.COMPANY_USERS) || []
-  const customers = PrintERPDataStore.get<any[]>(STORAGE_KEYS.CUSTOMERS) || []
-  const orders = PrintERPDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []
-  const products = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTS) || []
-  const materials = PrintERPDataStore.get<any[]>(STORAGE_KEYS.MATERIALS) || []
-  const branches = PrintERPDataStore.get<any[]>(STORAGE_KEYS.BRANCHES) || []
+  const users = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.COMPANY_USERS) || []
+  const customers = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.CUSTOMERS) || []
+  const orders = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []
+  const products = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.PRODUCTS) || []
+  const materials = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.MATERIALS) || []
+  const branches = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.BRANCHES) || []
 
   const isCoMatch = (item: any) =>
     !companyId || item.company_id === companyId
@@ -1849,7 +1849,7 @@ export function getTenantResourceUsage(
   if (!activePlan) {
     if (typeof window !== 'undefined') {
       try {
-        const stored = PrintERPDataStore.get<SubscriptionPlanRecord[]>(STORAGE_KEYS.PLATFORM_PLANS)
+        const stored = PrintFlowDataStore.get<SubscriptionPlanRecord[]>(STORAGE_KEYS.PLATFORM_PLANS)
         if (stored && Array.isArray(stored) && stored.length > 0) {
           activePlan = stored.find((p) => p.code === 'trial') || stored[0]
         }

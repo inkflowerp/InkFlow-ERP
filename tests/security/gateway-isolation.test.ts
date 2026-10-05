@@ -12,7 +12,7 @@ describe('Gateway Platform vs Tenant Isolation Security Tests', () => {
       environment: 'live',
       is_enabled: true,
       credentials: { password: 'PlatformMasterPassword123!' },
-      public_config: { smtp_host: 'smtp.printerp.com', smtp_port: 587 },
+      public_config: { smtp_host: 'smtp.printflow.bd', smtp_port: 587 },
     }
 
     const res = await GatewayService.saveGateway(platformForm, 'admin-user-id')
@@ -44,7 +44,7 @@ describe('Gateway Platform vs Tenant Isolation Security Tests', () => {
       environment: 'live',
       is_enabled: true,
       credentials: { tokens: JSON.stringify({ access_token: 'test-token', refresh_token: 'test-refresh' }) },
-      public_config: { sender_email: 'inkflow.erp@gmail.com', sender_name: 'PrintFlow Platform' },
+      public_config: { sender_email: 'printflow.bd@gmail.com', sender_name: 'PrintFlow Platform' },
     }
 
     const res = await GatewayService.saveGateway(gmailForm, syntheticAdminId)

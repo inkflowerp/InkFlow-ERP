@@ -1,5 +1,5 @@
 -- ==============================================================================
--- InkFlow ERP SaaS - Migration 079: Billing Financial Integrity & Authorization Hardening
+-- PrintFlow SaaS - Migration 079: Billing Financial Integrity & Authorization Hardening
 -- Single Authoritative Source of Financial Operations in PostgreSQL:
 --   1. Idempotency & Actor Tracking Columns for Invoices, Payments, Write-offs
 --   2. Hardened record_multi_invoice_payment_atomic with Idempotency & Tenant Authorization

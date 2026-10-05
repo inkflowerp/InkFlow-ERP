@@ -1,5 +1,5 @@
 -- ==============================================================================
--- InkFlow SaaS - Migration 071: V9.1 Operator-First UX & Production Hardening
+-- PrintFlow SaaS - Migration 071: V9.1 Operator-First UX & Production Hardening
 -- Single Authoritative Source of Business Data in PostgreSQL:
 --   1. Strict Concurrency-Safe Document Number Generator (FOR UPDATE lock)
 --   2. Standardized Production State Separation (job_status vs current_stage)

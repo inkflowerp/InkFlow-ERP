@@ -1,5 +1,5 @@
 -- ==============================================================================
--- PrintERP SaaS - Migration 097: Administrative Purge of Customers, Invoice Requests & Work Orders
+-- PrintFlow - Migration 097: Administrative Purge of Customers, Invoice Requests & Work Orders
 -- Allows secure, atomic cleanup of customers, work orders, design jobs, production jobs, and reset sequences
 -- ==============================================================================
 

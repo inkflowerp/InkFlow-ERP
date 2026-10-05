@@ -65,7 +65,7 @@ import {
 import { HoldTaskModal } from '@/components/production/hold-task-modal'
 import { CompleteTaskModal } from '@/components/production/complete-task-modal'
 import { ReportProblemModal } from '@/components/production/report-problem-modal'
-import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
+import { PrintFlowDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 
 function MobileOperatorPanelContent() {
  const { locale, tBilingual } = useI18n()
@@ -84,14 +84,14 @@ function MobileOperatorPanelContent() {
 
  const [tasks, setTasks] = useState<ProductionTaskRecord[]>(() => {
  try {
- return PrintERPDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
+ return PrintFlowDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
     } catch {
  return []
     }
   })
  const [machineries, setMachineries] = useState<MachineryRecord[]>(() => {
  try {
- const all = PrintERPDataStore.get<MachineryRecord[]>(STORAGE_KEYS.MACHINERIES) || []
+ const all = PrintFlowDataStore.get<MachineryRecord[]>(STORAGE_KEYS.MACHINERIES) || []
  const presetKeys = ['heidelberg_sm74', 'roland_truevis', 'polar_115x', 'fuji_xerox_c1000i', 'manual_finishing']
  return all.filter((m) => !presetKeys.includes(m.id) && (!m.company_id || m.company_id === (company?.id || slug)))
     } catch {
@@ -105,7 +105,7 @@ function MobileOperatorPanelContent() {
  const [searchQuery, setSearchQuery] = useState('')
  const [loading, setLoading] = useState(() => {
  try {
- const cached = PrintERPDataStore.get(STORAGE_KEYS.PRODUCTION_TASKS)
+ const cached = PrintFlowDataStore.get(STORAGE_KEYS.PRODUCTION_TASKS)
  return !cached || (cached as any[]).length === 0
     } catch {
  return true
@@ -180,7 +180,7 @@ function MobileOperatorPanelContent() {
       ])
 
       // Get local tasks from store as well
- const localStoreTasks = PrintERPDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
+ const localStoreTasks = PrintFlowDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
  const taskMap = new Map<string, ProductionTaskRecord>()
 
       // 1. Populate from local datastore
@@ -196,7 +196,7 @@ function MobileOperatorPanelContent() {
       }
 
       // 3. Scan local approved design jobs to auto-materialize tasks if missing
- const localDesignJobs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.DESIGN_JOBS) || []
+ const localDesignJobs = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.DESIGN_JOBS) || []
  const now = new Date().toISOString()
  let addedAnyLocal = false
 
@@ -290,7 +290,7 @@ function MobileOperatorPanelContent() {
 
  if (addedAnyLocal || taskRes.success) {
  try {
- PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, mergedTasks, false)
+ PrintFlowDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, mergedTasks, false)
         } catch {}
       }
 
@@ -299,7 +299,7 @@ function MobileOperatorPanelContent() {
  const cleanedMachineries = machRes.data.filter((m) => !presetKeys.includes(m.id))
  setMachineries(cleanedMachineries)
  try {
- PrintERPDataStore.set(STORAGE_KEYS.MACHINERIES, cleanedMachineries, false)
+ PrintFlowDataStore.set(STORAGE_KEYS.MACHINERIES, cleanedMachineries, false)
         } catch {}
       }
     } catch (_) {
@@ -316,21 +316,21 @@ function MobileOperatorPanelContent() {
     }
 
  if (typeof window !== 'undefined') {
- window.addEventListener('printerp_table_synced:production_tasks', handleRealtimeSync)
- window.addEventListener('printerp_table_synced:machines', handleRealtimeSync)
- window.addEventListener('printerp_table_synced:mounted_rolls', handleRealtimeSync)
- window.addEventListener('printerp_table_synced', handleRealtimeSync)
- window.addEventListener('printerp_data_sync', handleRealtimeSync)
+ window.addEventListener('printflow_table_synced:production_tasks', handleRealtimeSync)
+ window.addEventListener('printflow_table_synced:machines', handleRealtimeSync)
+ window.addEventListener('printflow_table_synced:mounted_rolls', handleRealtimeSync)
+ window.addEventListener('printflow_table_synced', handleRealtimeSync)
+ window.addEventListener('printflow_data_sync', handleRealtimeSync)
  window.addEventListener('storage', handleRealtimeSync)
     }
 
  return () => {
  if (typeof window !== 'undefined') {
- window.removeEventListener('printerp_table_synced:production_tasks', handleRealtimeSync)
- window.removeEventListener('printerp_table_synced:machines', handleRealtimeSync)
- window.removeEventListener('printerp_table_synced:mounted_rolls', handleRealtimeSync)
- window.removeEventListener('printerp_table_synced', handleRealtimeSync)
- window.removeEventListener('printerp_data_sync', handleRealtimeSync)
+ window.removeEventListener('printflow_table_synced:production_tasks', handleRealtimeSync)
+ window.removeEventListener('printflow_table_synced:machines', handleRealtimeSync)
+ window.removeEventListener('printflow_table_synced:mounted_rolls', handleRealtimeSync)
+ window.removeEventListener('printflow_table_synced', handleRealtimeSync)
+ window.removeEventListener('printflow_data_sync', handleRealtimeSync)
  window.removeEventListener('storage', handleRealtimeSync)
       }
     }

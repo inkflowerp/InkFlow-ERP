@@ -17,7 +17,7 @@ const OperatorModeContext = createContext<OperatorModeContextType>({
   isOperatorRole: false,
 })
 
-const STORAGE_KEY = 'printerp_operator_simple_mode'
+const STORAGE_KEY = 'printflow_operator_simple_mode'
 
 export function OperatorModeProvider({ children }: { children: React.ReactNode }) {
   const { activeRole, isOwner } = usePermissions()
@@ -34,10 +34,10 @@ export function OperatorModeProvider({ children }: { children: React.ReactNode }
   const [isSimpleMode, setIsSimpleModeState] = useState<boolean>(() => {
     if (typeof window === 'undefined') return true
     try {
-      const legacy = localStorage.getItem('inkflow_operator_simple_mode')
+      const legacy = localStorage.getItem('printflow_operator_simple_mode')
       if (legacy !== null && !localStorage.getItem(STORAGE_KEY)) {
         localStorage.setItem(STORAGE_KEY, legacy)
-        localStorage.removeItem('inkflow_operator_simple_mode')
+        localStorage.removeItem('printflow_operator_simple_mode')
       }
     } catch {}
     const saved = localStorage.getItem(STORAGE_KEY)

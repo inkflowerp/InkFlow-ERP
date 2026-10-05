@@ -2,7 +2,7 @@
 
 **Branch:** `hardening/phase-0`  
 **Generated:** 2026-10-03  
-**Scope:** Complete inventory of all PostgreSQL RPC functions in the InkFlow ERP database schema and codebase, auditing caller clients, execution permissions, and tenant security boundaries.
+**Scope:** Complete inventory of all PostgreSQL RPC functions in the PrintFlow database schema and codebase, auditing caller clients, execution permissions, and tenant security boundaries.
 
 ---
 

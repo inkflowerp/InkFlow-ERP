@@ -1,5 +1,5 @@
 -- ==============================================================================
--- PrintERP SaaS - Database Seed Script
+-- PrintFlow - Database Seed Script
 -- Production-ready seed script: Contains zero hardcoded demo business records.
 -- All tenant organizations and user accounts are provisioned dynamically.
 -- ==============================================================================

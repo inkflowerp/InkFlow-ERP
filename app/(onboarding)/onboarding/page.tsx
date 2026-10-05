@@ -131,8 +131,8 @@ function OnboardingWizard() {
     // 1. Try registration draft from sessionStorage or localStorage
     try {
       let draft: any = null
-      const rawSession = typeof window !== 'undefined' ? sessionStorage.getItem('printerp_registration_draft') : null
-      const rawLocal = typeof window !== 'undefined' ? localStorage.getItem('printerp_registration_draft') : null
+      const rawSession = typeof window !== 'undefined' ? sessionStorage.getItem('printflow_registration_draft') : null
+      const rawLocal = typeof window !== 'undefined' ? localStorage.getItem('printflow_registration_draft') : null
 
       if (rawSession) {
         try { draft = JSON.parse(rawSession) } catch {}
@@ -165,7 +165,7 @@ function OnboardingWizard() {
     // 2. Fallback: Check tenant session cookie
     try {
       const match = typeof document !== 'undefined'
-        ? document.cookie.split('; ').find((row) => row.startsWith('printerp_tenant_session='))
+        ? document.cookie.split('; ').find((row) => row.startsWith('printflow_tenant_session='))
         : null
 
       if (match) {
@@ -384,9 +384,9 @@ function OnboardingWizard() {
       // Ensure the tenant's chosen default language is active and synchronized in browser
       if (typeof window !== 'undefined') {
         try {
-          localStorage.setItem('printerp_locale', data.default_language)
-          localStorage.removeItem('printerp_locale_explicit')
-          document.cookie = `printerp_locale=${data.default_language}; path=/; max-age=31536000; SameSite=Lax`
+          localStorage.setItem('printflow_locale', data.default_language)
+          localStorage.removeItem('printflow_locale_explicit')
+          document.cookie = `printflow_locale=${data.default_language}; path=/; max-age=31536000; SameSite=Lax`
           setLocale(data.default_language as 'en' | 'bn')
         } catch {}
       }
@@ -394,16 +394,16 @@ function OnboardingWizard() {
       // Clean up registration draft upon successful workspace creation
       if (typeof window !== 'undefined') {
         try {
-          sessionStorage.removeItem('printerp_registration_draft')
-          localStorage.removeItem('printerp_registration_draft')
+          sessionStorage.removeItem('printflow_registration_draft')
+          localStorage.removeItem('printflow_registration_draft')
         } catch {}
       }
 
       // Notify client-side state listeners about company creation
       if (typeof window !== 'undefined') {
         try {
-          window.dispatchEvent(new CustomEvent('printerp_auth_changed'))
-          window.dispatchEvent(new CustomEvent('printerp_data_sync', { detail: { key: 'printerp_company_profile' } }))
+          window.dispatchEvent(new CustomEvent('printflow_auth_changed'))
+          window.dispatchEvent(new CustomEvent('printflow_data_sync', { detail: { key: 'printflow_company_profile' } }))
         } catch {}
       }
 
@@ -857,9 +857,9 @@ function OnboardingWizard() {
                             setValue('default_language', chosen)
                             setLocale(chosen)
                             if (typeof window !== 'undefined') {
-                              localStorage.setItem('printerp_locale', chosen)
-                              localStorage.removeItem('printerp_locale_explicit')
-                              document.cookie = `printerp_locale=${chosen}; path=/; max-age=31536000; SameSite=Lax`
+                              localStorage.setItem('printflow_locale', chosen)
+                              localStorage.removeItem('printflow_locale_explicit')
+                              document.cookie = `printflow_locale=${chosen}; path=/; max-age=31536000; SameSite=Lax`
                             }
                           }}
                           className={cn(

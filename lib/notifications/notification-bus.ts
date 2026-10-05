@@ -48,7 +48,7 @@ export interface NotifyPayload {
 let broadcastChannel: BroadcastChannel | null = null
 if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
   try {
-    broadcastChannel = new BroadcastChannel('printerp_notifications_channel')
+    broadcastChannel = new BroadcastChannel('printflow_notifications_channel')
   } catch {}
 }
 
@@ -124,7 +124,7 @@ export function notify(payload: NotifyPayload): string {
     }
 
     window.dispatchEvent(
-      new CustomEvent<RealtimePopupNotification>('printerp_popup_notification', {
+      new CustomEvent<RealtimePopupNotification>('printflow_popup_notification', {
         detail: popupPayload,
       })
     )
@@ -142,7 +142,7 @@ export function notify(payload: NotifyPayload): string {
         : 'info'
 
     window.dispatchEvent(
-      new CustomEvent('printerp_toast_dispatch', {
+      new CustomEvent('printflow_toast_dispatch', {
         detail: {
           id,
           type: toastType,

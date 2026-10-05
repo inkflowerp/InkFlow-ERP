@@ -1,5 +1,5 @@
 -- ==============================================================================
--- PrintERP SaaS - Migration 039: Multi-Tenant Email Gateway System & Communication Infrastructure
+-- PrintFlow - Migration 039: Multi-Tenant Email Gateway System & Communication Infrastructure
 -- Supports:
 --   1. Platform-level Default Email Gateway & Configuration
 --   2. Tenant-level Custom Email Gateways (BYO SMTP / Resend / SendGrid / Amazon SES)

@@ -103,7 +103,7 @@ export function PlatformHeader({ initialUser }: { initialUser?: PlatformUserReco
           <button
             type="button"
             onClick={() => {
-              window.dispatchEvent(new Event('printerp_open_platform_nav'))
+              window.dispatchEvent(new Event('printflow_open_platform_nav'))
             }}
             className="lg:hidden flex items-center justify-center h-10 w-10 rounded-lg bg-muted text-foreground hover:bg-muted/80 border border-border cursor-pointer min-h-11 min-w-11"
             aria-label="Open Platform Navigation Menu"

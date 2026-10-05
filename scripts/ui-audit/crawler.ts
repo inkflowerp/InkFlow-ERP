@@ -44,12 +44,12 @@ export async function runUiAudit() {
     const context = await browser.newContext()
     await context.addCookies([
       {
-        name: 'printerp_platform_session',
+        name: 'printflow_platform_session',
         value: encodeURIComponent(
           JSON.stringify({
             userId: 'test-platform-owner-id',
             adminId: 'test-admin-id',
-            email: 'owner@printerp.com',
+            email: 'owner@printflow.bd',
             role: 'platform_owner',
             fullName: 'Platform Superadmin',
           })
@@ -57,7 +57,7 @@ export async function runUiAudit() {
         url: BASE_URL,
       },
       {
-        name: 'printerp_tenant_session',
+        name: 'printflow_tenant_session',
         value: encodeURIComponent(
           JSON.stringify({
             userId: 'test-tenant-owner-id',

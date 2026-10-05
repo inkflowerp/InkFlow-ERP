@@ -8,7 +8,7 @@ import { resolveRequestOrigin } from '@/lib/security/runtime-env'
 
 import { getAuthCookieOptions } from '@/lib/tenant/tenant-resolution'
 
-const SUPPORT_COOKIE_NAME = 'printerp_support_tenant'
+const SUPPORT_COOKIE_NAME = 'printflow_support_tenant'
 
 export async function GET(request: NextRequest) {
   const cookieStore = await cookies()

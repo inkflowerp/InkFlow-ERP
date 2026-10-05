@@ -5,7 +5,7 @@ function getSessionSecret(): Uint8Array {
     process.env.SESSION_SECRET ||
     process.env.SUPABASE_SERVICE_ROLE_KEY ||
     process.env.NEXTAUTH_SECRET ||
-    'inkflow-erp-secure-session-signing-key-minimum-32-bytes!'
+    'printflow-secure-session-signing-key-minimum-32-bytes!'
   return new TextEncoder().encode(secret)
 }
 

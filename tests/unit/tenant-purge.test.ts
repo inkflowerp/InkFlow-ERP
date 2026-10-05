@@ -3,24 +3,24 @@ import assert from 'node:assert'
 
 describe('Tenant Purge & Zero-Tenant Platform Integrity Test Suite', () => {
   const PLATFORM_KEYS = new Set([
-    'printerp_platform_companies',
-    'printerp_platform_plans',
-    'printerp_platform_feature_flags',
-    'printerp_platform_users',
-    'printerp_platform_incidents',
-    'printerp_platform_system_settings',
-    'printerp_registered_users',
-    'printerp_tenant_company_users',
+    'printflow_platform_companies',
+    'printflow_platform_plans',
+    'printflow_platform_feature_flags',
+    'printflow_platform_users',
+    'printflow_platform_incidents',
+    'printflow_platform_system_settings',
+    'printflow_registered_users',
+    'printflow_tenant_company_users',
   ])
 
   const TRANSACTIONAL_KEYS = new Set([
-    'printerp_tenant_customers',
-    'printerp_tenant_orders',
-    'printerp_tenant_invoices',
-    'printerp_tenant_payments',
-    'printerp_tenant_materials',
-    'printerp_tenant_production_jobs',
-    'printerp_platform_companies',
+    'printflow_tenant_customers',
+    'printflow_tenant_orders',
+    'printflow_tenant_invoices',
+    'printflow_tenant_payments',
+    'printflow_tenant_materials',
+    'printflow_tenant_production_jobs',
+    'printflow_platform_companies',
   ])
 
   function isPlatformKey(key: string): boolean {
@@ -35,7 +35,7 @@ describe('Tenant Purge & Zero-Tenant Platform Integrity Test Suite', () => {
     if (isTransactionalKey(key)) {
       return []
     }
-    if (key === 'printerp_platform_plans') {
+    if (key === 'printflow_platform_plans') {
       return [
         { code: 'trial', name: 'Free Trial', price_monthly: 0 },
         { code: 'starter', name: 'Starter Press', price_monthly: 2500 },
@@ -43,7 +43,7 @@ describe('Tenant Purge & Zero-Tenant Platform Integrity Test Suite', () => {
         { code: 'enterprise', name: 'Enterprise Factory', price_monthly: 15000 },
       ]
     }
-    if (key === 'printerp_platform_system_settings') {
+    if (key === 'printflow_platform_system_settings') {
       return {
         platform_name: 'PrintFlow Bangladesh Cloud',
         maintenance_mode: false,
@@ -55,17 +55,17 @@ describe('Tenant Purge & Zero-Tenant Platform Integrity Test Suite', () => {
 
   it('1. Verifies system initializes with 0 default seeded tenants', () => {
     // Initial transactional seed for PLATFORM_COMPANIES must be empty
-    const seedCompanies = getInitialSeedData('printerp_platform_companies')
+    const seedCompanies = getInitialSeedData('printflow_platform_companies')
     assert.strictEqual(Array.isArray(seedCompanies), true)
     assert.strictEqual(seedCompanies.length, 0, 'Seed platform companies must be empty')
   })
 
   it('2. Verifies system plans and settings are preserved when tenants are purged', () => {
-    const plans = getInitialSeedData('printerp_platform_plans')
+    const plans = getInitialSeedData('printflow_platform_plans')
     assert.ok(Array.isArray(plans))
     assert.ok(plans.length >= 4, 'Platform plans must exist independently of tenants')
 
-    const systemSettings = getInitialSeedData('printerp_platform_system_settings')
+    const systemSettings = getInitialSeedData('printflow_platform_system_settings')
     assert.ok(systemSettings)
     assert.strictEqual(systemSettings.platform_name, 'PrintFlow Bangladesh Cloud')
   })
@@ -127,9 +127,9 @@ describe('Tenant Purge & Zero-Tenant Platform Integrity Test Suite', () => {
   })
 
   it('5. Verifies platform keys remain separated from tenant-scoped transactional keys', () => {
-    assert.strictEqual(isPlatformKey('printerp_platform_companies'), true)
-    assert.strictEqual(isPlatformKey('printerp_platform_plans'), true)
-    assert.strictEqual(isTransactionalKey('printerp_tenant_orders'), true)
-    assert.strictEqual(isTransactionalKey('printerp_tenant_invoices'), true)
+    assert.strictEqual(isPlatformKey('printflow_platform_companies'), true)
+    assert.strictEqual(isPlatformKey('printflow_platform_plans'), true)
+    assert.strictEqual(isTransactionalKey('printflow_tenant_orders'), true)
+    assert.strictEqual(isTransactionalKey('printflow_tenant_invoices'), true)
   })
 })

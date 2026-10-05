@@ -1,7 +1,7 @@
 import { InvoiceRequestRepository, type InvoiceRequestFilterOptions } from '../lib/repositories/invoice-request.repository.ts'
 import type { InvoiceRequestRecord } from '../types/workflow.types.ts'
 import { createClient } from '../lib/supabase/server.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../lib/db/data-store.ts'
 import type { InAppNotificationRecord } from '../types/communication.types.ts'
 
 export interface CreateInvoiceRequestInput {
@@ -112,7 +112,7 @@ export class InvoiceRequestService {
     // Smart backfill from linked Sales Order
     if (salesOrderId || orderNumber) {
       try {
-        const orders = PrintERPDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []
+        const orders = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []
         const linkedOrder = orders.find(
           (o) => (salesOrderId && o.id === salesOrderId) || (orderNumber && o.order_number === orderNumber)
         )
@@ -172,7 +172,7 @@ export class InvoiceRequestService {
     // Smart backfill from linked Customer record
     if (resolvedCustomerId && (!resolvedCustomerPhone || !resolvedCustomerAddress || !resolvedCompanyName || !resolvedCustomerEmail || !resolvedCustomerType)) {
       try {
-        const customers = PrintERPDataStore.get<any[]>(STORAGE_KEYS.CUSTOMERS) || []
+        const customers = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.CUSTOMERS) || []
         const linkedCust = customers.find((c) => c.id === resolvedCustomerId)
         if (linkedCust) {
           if (linkedCust.customer_type) resolvedCustomerType = linkedCust.customer_type
@@ -190,7 +190,7 @@ export class InvoiceRequestService {
     // Smart backfill from linked Design Job
     if (designJobId || designNumber) {
       try {
-        const designs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.DESIGN_JOBS) || []
+        const designs = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.DESIGN_JOBS) || []
         const linkedDesign = designs.find(
           (d) => (designJobId && d.id === designJobId) || (designNumber && d.design_number === designNumber)
         )
@@ -260,21 +260,21 @@ export class InvoiceRequestService {
     } catch {
       // Local fallback updates
       if (salesOrderId) {
-        const orders = PrintERPDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []
+        const orders = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []
         const ord = orders.find((o) => o.id === salesOrderId)
         if (ord) {
           ord.commercial_status = 'invoice_requested'
           ord.invoice_requested_at = new Date().toISOString()
-          PrintERPDataStore.set(STORAGE_KEYS.ORDERS, orders)
+          PrintFlowDataStore.set(STORAGE_KEYS.ORDERS, orders)
         }
       }
       if (designJobId) {
-        const designs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.DESIGN_JOBS) || []
+        const designs = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.DESIGN_JOBS) || []
         const des = designs.find((d) => d.id === designJobId)
         if (des) {
           des.commercial_status = 'invoice_requested'
           des.invoice_request_id = request.id
-          PrintERPDataStore.set(STORAGE_KEYS.DESIGN_JOBS, designs)
+          PrintFlowDataStore.set(STORAGE_KEYS.DESIGN_JOBS, designs)
         }
       }
     }
@@ -303,7 +303,7 @@ export class InvoiceRequestService {
       })
     } catch {
       // Fallback in-app notification to local store
-      const notifs = PrintERPDataStore.get<InAppNotificationRecord[]>(STORAGE_KEYS.IN_APP_NOTIFICATIONS) || []
+      const notifs = PrintFlowDataStore.get<InAppNotificationRecord[]>(STORAGE_KEYS.IN_APP_NOTIFICATIONS) || []
       notifs.unshift({
         id: `notif-${Date.now()}`,
         company_id: companyId,
@@ -318,7 +318,7 @@ export class InvoiceRequestService {
         is_read: false,
         created_at: new Date().toISOString(),
       } as any)
-      PrintERPDataStore.set(STORAGE_KEYS.IN_APP_NOTIFICATIONS, notifs)
+      PrintFlowDataStore.set(STORAGE_KEYS.IN_APP_NOTIFICATIONS, notifs)
     }
 
     return request

@@ -72,7 +72,7 @@ import { QuotationRecord } from '@/types/quotation.types'
 import { SalesOrderRecord } from '@/types/order.types'
 import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import { cn } from '@/lib/utils'
-import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
+import { PrintFlowDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 
 function getLocalInvoices(slug?: string, companySlug?: string, companyId?: string): InvoiceRecord[] {
  if (typeof window === 'undefined') return []
@@ -99,9 +99,9 @@ function getLocalInvoices(slug?: string, companySlug?: string, companyId?: strin
   })
 
  const storeItems = [
-    ...(PrintERPDataStore.getAll<InvoiceRecord>(STORAGE_KEYS.INVOICES, slug) || []),
-    ...(PrintERPDataStore.getAll<InvoiceRecord>(STORAGE_KEYS.INVOICES, companySlug) || []),
-    ...(PrintERPDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []),
+    ...(PrintFlowDataStore.getAll<InvoiceRecord>(STORAGE_KEYS.INVOICES, slug) || []),
+    ...(PrintFlowDataStore.getAll<InvoiceRecord>(STORAGE_KEYS.INVOICES, companySlug) || []),
+    ...(PrintFlowDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []),
   ]
  storeItems.forEach((inv) => {
  if (inv && inv.id) invoiceMap.set(inv.id, inv)
@@ -135,9 +135,9 @@ function getLocalPayments(slug?: string, companySlug?: string, companyId?: strin
   })
 
  const storeItems = [
-    ...(PrintERPDataStore.getAll<PaymentRecord>(STORAGE_KEYS.PAYMENTS, slug) || []),
-    ...(PrintERPDataStore.getAll<PaymentRecord>(STORAGE_KEYS.PAYMENTS, companySlug) || []),
-    ...(PrintERPDataStore.get<PaymentRecord[]>(STORAGE_KEYS.PAYMENTS) || []),
+    ...(PrintFlowDataStore.getAll<PaymentRecord>(STORAGE_KEYS.PAYMENTS, slug) || []),
+    ...(PrintFlowDataStore.getAll<PaymentRecord>(STORAGE_KEYS.PAYMENTS, companySlug) || []),
+    ...(PrintFlowDataStore.get<PaymentRecord[]>(STORAGE_KEYS.PAYMENTS) || []),
   ]
  storeItems.forEach((p) => {
  if (p && p.id) paymentMap.set(p.id, p)
@@ -171,9 +171,9 @@ function getLocalQuotations(slug?: string, companySlug?: string, companyId?: str
   })
 
  const storeItems = [
-    ...(PrintERPDataStore.getAll<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, slug) || []),
-    ...(PrintERPDataStore.getAll<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, companySlug) || []),
-    ...(PrintERPDataStore.get<QuotationRecord[]>(STORAGE_KEYS.QUOTATIONS) || []),
+    ...(PrintFlowDataStore.getAll<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, slug) || []),
+    ...(PrintFlowDataStore.getAll<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, companySlug) || []),
+    ...(PrintFlowDataStore.get<QuotationRecord[]>(STORAGE_KEYS.QUOTATIONS) || []),
   ]
  storeItems.forEach((q) => {
  if (q && q.id) quoteMap.set(q.id, q)
@@ -207,9 +207,9 @@ function getLocalOrders(slug?: string, companySlug?: string, companyId?: string)
   })
 
  const storeItems = [
-    ...(PrintERPDataStore.getAll<SalesOrderRecord>(STORAGE_KEYS.ORDERS, slug) || []),
-    ...(PrintERPDataStore.getAll<SalesOrderRecord>(STORAGE_KEYS.ORDERS, companySlug) || []),
-    ...(PrintERPDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS) || []),
+    ...(PrintFlowDataStore.getAll<SalesOrderRecord>(STORAGE_KEYS.ORDERS, slug) || []),
+    ...(PrintFlowDataStore.getAll<SalesOrderRecord>(STORAGE_KEYS.ORDERS, companySlug) || []),
+    ...(PrintFlowDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS) || []),
   ]
  storeItems.forEach((ord) => {
  if (ord && ord.id) ordMap.set(ord.id, ord)
@@ -243,9 +243,9 @@ function getLocalCustomers(slug?: string, companySlug?: string, companyId?: stri
   })
 
  const storeItems = [
-    ...(PrintERPDataStore.getAll<CustomerRecord>(STORAGE_KEYS.CUSTOMERS, slug) || []),
-    ...(PrintERPDataStore.getAll<CustomerRecord>(STORAGE_KEYS.CUSTOMERS, companySlug) || []),
-    ...(PrintERPDataStore.get<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS) || []),
+    ...(PrintFlowDataStore.getAll<CustomerRecord>(STORAGE_KEYS.CUSTOMERS, slug) || []),
+    ...(PrintFlowDataStore.getAll<CustomerRecord>(STORAGE_KEYS.CUSTOMERS, companySlug) || []),
+    ...(PrintFlowDataStore.get<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS) || []),
   ]
  storeItems.forEach((c) => {
  if (c && c.id) custMap.set(c.id, c)
@@ -260,8 +260,8 @@ function deriveCustomerRates(
  invoices: InvoiceRecord[],
  quotations: QuotationRecord[]
 ): ResolvedProductRate[] {
- const products = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTS) || []
- const customOverrides = PrintERPDataStore.get<any[]>(STORAGE_KEYS.CUSTOMER_RATES) || []
+ const products = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.PRODUCTS) || []
+ const customOverrides = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.CUSTOMER_RATES) || []
 
  const productMap = new Map<string, any>()
  products.forEach((p: any) => {
@@ -731,20 +731,20 @@ export default function CustomerProfilePage() {
     }
  if (typeof window !== 'undefined') {
  window.addEventListener('storage', handleSync)
- window.addEventListener('printerp_table_synced:customers', handleSync)
- window.addEventListener('printerp_table_synced:invoices', handleSync)
- window.addEventListener('printerp_table_synced:payments', handleSync)
- window.addEventListener('printerp_table_synced:quotations', handleSync)
- window.addEventListener('printerp_table_synced:orders', handleSync)
- window.addEventListener('printerp_data_sync', handleSync)
+ window.addEventListener('printflow_table_synced:customers', handleSync)
+ window.addEventListener('printflow_table_synced:invoices', handleSync)
+ window.addEventListener('printflow_table_synced:payments', handleSync)
+ window.addEventListener('printflow_table_synced:quotations', handleSync)
+ window.addEventListener('printflow_table_synced:orders', handleSync)
+ window.addEventListener('printflow_data_sync', handleSync)
  return () => {
  window.removeEventListener('storage', handleSync)
- window.removeEventListener('printerp_table_synced:customers', handleSync)
- window.removeEventListener('printerp_table_synced:invoices', handleSync)
- window.removeEventListener('printerp_table_synced:payments', handleSync)
- window.removeEventListener('printerp_table_synced:quotations', handleSync)
- window.removeEventListener('printerp_table_synced:orders', handleSync)
- window.removeEventListener('printerp_data_sync', handleSync)
+ window.removeEventListener('printflow_table_synced:customers', handleSync)
+ window.removeEventListener('printflow_table_synced:invoices', handleSync)
+ window.removeEventListener('printflow_table_synced:payments', handleSync)
+ window.removeEventListener('printflow_table_synced:quotations', handleSync)
+ window.removeEventListener('printflow_table_synced:orders', handleSync)
+ window.removeEventListener('printflow_data_sync', handleSync)
       }
     }
   }, [loadCustomerData])

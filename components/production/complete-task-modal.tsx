@@ -32,7 +32,7 @@ import {
  DEFECT_REASON_LABELS,
 } from '@/types/production.types'
 import { InventoryRollRecord, RollFeedCalculationResult } from '@/types/inventory.types'
-import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
+import { PrintFlowDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import {
  RollConsumptionEngine,
  parseTaskDimensions,
@@ -109,7 +109,7 @@ export function CompleteTaskModal({
     )
  if (hasFinishingSpec) return true
 
- const allTasks = PrintERPDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
+ const allTasks = PrintFlowDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
  return allTasks.some(
       (t) =>
  t.id !== task.id &&
@@ -132,7 +132,7 @@ export function CompleteTaskModal({
       }
     } catch {}
 
- const cached = PrintERPDataStore.get<InventoryRollRecord[]>(STORAGE_KEYS.MOUNTED_ROLLS) || []
+ const cached = PrintFlowDataStore.get<InventoryRollRecord[]>(STORAGE_KEYS.MOUNTED_ROLLS) || []
  const filtered = cached.filter((r) => r.status === 'mounted' || r.status === 'available' || r.status === 'in_use')
  setAvailableRolls(filtered)
  return filtered

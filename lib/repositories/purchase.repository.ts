@@ -14,7 +14,7 @@ import type {
   SupplierReturnRecord,
   SupplierReturnItemRecord,
 } from '../../types/purchase.types.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../db/data-store.ts'
 
 export class PurchaseRepository {
   // ==========================================
@@ -48,7 +48,7 @@ export class PurchaseRepository {
       if (!error && data) return data as unknown as PurchaseRequestRecord[]
     } catch {}
 
-    const all = PrintERPDataStore.get<PurchaseRequestRecord[]>(STORAGE_KEYS.PURCHASE_REQUESTS) || []
+    const all = PrintFlowDataStore.get<PurchaseRequestRecord[]>(STORAGE_KEYS.PURCHASE_REQUESTS) || []
     return all.filter((r) => {
       if (r.company_id && r.company_id !== companyId) return false
       if (options?.status && options.status !== 'all' && r.status !== options.status) return false
@@ -77,7 +77,7 @@ export class PurchaseRepository {
       if (!error && data) return data as unknown as PurchaseRequestRecord
     } catch {}
 
-    const all = PrintERPDataStore.get<PurchaseRequestRecord[]>(STORAGE_KEYS.PURCHASE_REQUESTS) || []
+    const all = PrintFlowDataStore.get<PurchaseRequestRecord[]>(STORAGE_KEYS.PURCHASE_REQUESTS) || []
     return all.find((r) => (r.id === id || r.pr_number === id) && (!r.company_id || r.company_id === companyId)) || null
   }
 
@@ -158,12 +158,12 @@ export class PurchaseRepository {
         if (items.length > 0) {
           await (supabase as any).from('purchase_request_items').insert(items)
         }
-        PrintERPDataStore.addItem(STORAGE_KEYS.PURCHASE_REQUESTS, payload)
+        PrintFlowDataStore.addItem(STORAGE_KEYS.PURCHASE_REQUESTS, payload)
         return payload
       }
     } catch {}
 
-    PrintERPDataStore.addItem(STORAGE_KEYS.PURCHASE_REQUESTS, payload)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.PURCHASE_REQUESTS, payload)
     return payload
   }
 
@@ -185,12 +185,12 @@ export class PurchaseRepository {
         .single()
 
       if (!error && data) {
-        PrintERPDataStore.updateItem<PurchaseRequestRecord>(STORAGE_KEYS.PURCHASE_REQUESTS, id, data)
+        PrintFlowDataStore.updateItem<PurchaseRequestRecord>(STORAGE_KEYS.PURCHASE_REQUESTS, id, data)
         return data as unknown as PurchaseRequestRecord
       }
     } catch {}
 
-    return PrintERPDataStore.updateItem<PurchaseRequestRecord>(STORAGE_KEYS.PURCHASE_REQUESTS, id, payload)
+    return PrintFlowDataStore.updateItem<PurchaseRequestRecord>(STORAGE_KEYS.PURCHASE_REQUESTS, id, payload)
   }
 
   // ==========================================
@@ -227,7 +227,7 @@ export class PurchaseRepository {
       if (!error && data) return data as unknown as PurchaseOrderRecord[]
     } catch {}
 
-    const all = PrintERPDataStore.get<PurchaseOrderRecord[]>(STORAGE_KEYS.PURCHASE_ORDERS) || []
+    const all = PrintFlowDataStore.get<PurchaseOrderRecord[]>(STORAGE_KEYS.PURCHASE_ORDERS) || []
     return all.filter((po) => {
       if (po.company_id && po.company_id !== companyId) return false
       if (options?.status && options.status !== 'all' && po.status !== options.status) return false
@@ -257,7 +257,7 @@ export class PurchaseRepository {
       if (!error && data) return data as unknown as PurchaseOrderRecord
     } catch {}
 
-    const all = PrintERPDataStore.get<PurchaseOrderRecord[]>(STORAGE_KEYS.PURCHASE_ORDERS) || []
+    const all = PrintFlowDataStore.get<PurchaseOrderRecord[]>(STORAGE_KEYS.PURCHASE_ORDERS) || []
     return all.find((po) => (po.id === id || po.po_number === id) && (!po.company_id || po.company_id === companyId)) || null
   }
 
@@ -401,12 +401,12 @@ export class PurchaseRepository {
         if (items.length > 0) {
           await (supabase as any).from('purchase_order_items').insert(items)
         }
-        PrintERPDataStore.addItem(STORAGE_KEYS.PURCHASE_ORDERS, payload)
+        PrintFlowDataStore.addItem(STORAGE_KEYS.PURCHASE_ORDERS, payload)
         return payload
       }
     } catch {}
 
-    PrintERPDataStore.addItem(STORAGE_KEYS.PURCHASE_ORDERS, payload)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.PURCHASE_ORDERS, payload)
     return payload
   }
 
@@ -428,12 +428,12 @@ export class PurchaseRepository {
         .single()
 
       if (!error && data) {
-        PrintERPDataStore.updateItem<PurchaseOrderRecord>(STORAGE_KEYS.PURCHASE_ORDERS, id, data)
+        PrintFlowDataStore.updateItem<PurchaseOrderRecord>(STORAGE_KEYS.PURCHASE_ORDERS, id, data)
         return data as unknown as PurchaseOrderRecord
       }
     } catch {}
 
-    return PrintERPDataStore.updateItem<PurchaseOrderRecord>(STORAGE_KEYS.PURCHASE_ORDERS, id, payload)
+    return PrintFlowDataStore.updateItem<PurchaseOrderRecord>(STORAGE_KEYS.PURCHASE_ORDERS, id, payload)
   }
 
   // ==========================================
@@ -459,7 +459,7 @@ export class PurchaseRepository {
       if (!error && data) return data as unknown as GoodsReceivedNoteRecord[]
     } catch {}
 
-    const all = PrintERPDataStore.get<GoodsReceivedNoteRecord[]>(STORAGE_KEYS.GOODS_RECEIVED_NOTES) || []
+    const all = PrintFlowDataStore.get<GoodsReceivedNoteRecord[]>(STORAGE_KEYS.GOODS_RECEIVED_NOTES) || []
     return all.filter((grn) => {
       if (grn.company_id && grn.company_id !== companyId) return false
       if (options?.poId && grn.purchase_order_id !== options.poId) return false
@@ -579,12 +579,12 @@ export class PurchaseRepository {
         if (items.length > 0) {
           await (supabase as any).from('goods_received_note_items').insert(items)
         }
-        PrintERPDataStore.addItem(STORAGE_KEYS.GOODS_RECEIVED_NOTES, payload)
+        PrintFlowDataStore.addItem(STORAGE_KEYS.GOODS_RECEIVED_NOTES, payload)
         return payload
       }
     } catch {}
 
-    PrintERPDataStore.addItem(STORAGE_KEYS.GOODS_RECEIVED_NOTES, payload)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.GOODS_RECEIVED_NOTES, payload)
     return payload
   }
 
@@ -612,7 +612,7 @@ export class PurchaseRepository {
       if (!error && data) return data as unknown as SupplierReturnRecord[]
     } catch {}
 
-    const all = PrintERPDataStore.get<SupplierReturnRecord[]>(STORAGE_KEYS.SUPPLIER_RETURNS) || []
+    const all = PrintFlowDataStore.get<SupplierReturnRecord[]>(STORAGE_KEYS.SUPPLIER_RETURNS) || []
     return all.filter((r) => {
       if (r.company_id && r.company_id !== companyId) return false
       if (options?.supplierId && r.supplier_id !== options.supplierId) return false
@@ -733,12 +733,12 @@ export class PurchaseRepository {
         if (items.length > 0) {
           await (supabase as any).from('supplier_return_items').insert(items)
         }
-        PrintERPDataStore.addItem(STORAGE_KEYS.SUPPLIER_RETURNS, payload)
+        PrintFlowDataStore.addItem(STORAGE_KEYS.SUPPLIER_RETURNS, payload)
         return payload
       }
     } catch {}
 
-    PrintERPDataStore.addItem(STORAGE_KEYS.SUPPLIER_RETURNS, payload)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.SUPPLIER_RETURNS, payload)
     return payload
   }
 }

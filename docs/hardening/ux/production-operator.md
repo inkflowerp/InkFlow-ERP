@@ -1,7 +1,7 @@
 # UX Specification: Production Floor & Operator Kiosk Module (প্রোডাকশন ফ্লোর ও অপারেটর প্যানেল)
 
 ## 1. Executive Summary & Purpose
-The Production Floor & Operator module is InkFlow ERP's physical manufacturing engine. Its primary job to be done (JTBD) is helping the factory manager, press operators, and finishing leads answer:
+The Production Floor & Operator module is PrintFlow's physical manufacturing engine. Its primary job to be done (JTBD) is helping the factory manager, press operators, and finishing leads answer:
 > **"Which jobs are currently running on machines, what is queued next, and what bottlenecks or material shortages need immediate intervention?"**
 
 The core production execution workflow must be completable in **$\le 3$ clicks from the Dashboard**:

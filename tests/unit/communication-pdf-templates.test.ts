@@ -102,7 +102,7 @@ describe('Quotation & Invoice PDF and Communication Template Suite', () => {
   beforeEach(() => {
     EmailDataStore.clear()
     // Configure an active mock tenant email gateway in test data store
-    EmailDataStore.set('printerp_email_gateways', [
+    EmailDataStore.set('printflow_email_gateways', [
       {
         id: 'gw-tenant-test',
         tenant_id: 'comp-01',

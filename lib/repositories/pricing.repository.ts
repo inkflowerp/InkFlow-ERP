@@ -21,7 +21,7 @@ import {
   resolveRuleEffectiveStatus,
 } from '../pricing/pricing-engine.ts'
 import { measureAsync } from '../performance/logger.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../db/data-store.ts'
 
 export function isSupabaseConfigured(): boolean {
   return !!(
@@ -58,7 +58,7 @@ export class PricingRepository {
 
       if (!isSupabaseConfigured()) {
         if (isTestMode()) {
-          const allRules = PrintERPDataStore.get<PricingRuleRecord[]>(STORAGE_KEYS.PRICING_RULES, companyId) || []
+          const allRules = PrintFlowDataStore.get<PricingRuleRecord[]>(STORAGE_KEYS.PRICING_RULES, companyId) || []
           const norm = companyId ? companyId.toLowerCase() : ''
           const clean = norm.replace(/^comp-/, '').replace(/^co-/, '')
           rules = allRules.filter((r) => {
@@ -112,7 +112,7 @@ export class PricingRepository {
           }))
         } catch (err) {
           if (isTestMode()) {
-            const allRules = PrintERPDataStore.get<PricingRuleRecord[]>(STORAGE_KEYS.PRICING_RULES, companyId) || []
+            const allRules = PrintFlowDataStore.get<PricingRuleRecord[]>(STORAGE_KEYS.PRICING_RULES, companyId) || []
             const norm = companyId ? companyId.toLowerCase() : ''
             const clean = norm.replace(/^comp-/, '').replace(/^co-/, '')
             rules = allRules.filter((r) => {
@@ -166,7 +166,7 @@ export class PricingRepository {
     return measureAsync(`PricingRepository.getPricingRuleById(${id})`, async () => {
       if (!isSupabaseConfigured()) {
         if (isTestMode()) {
-          const allRules = PrintERPDataStore.get<PricingRuleRecord[]>(STORAGE_KEYS.PRICING_RULES, companyId) || []
+          const allRules = PrintFlowDataStore.get<PricingRuleRecord[]>(STORAGE_KEYS.PRICING_RULES, companyId) || []
           return allRules.find((r) => r.id === id) || null
         }
         return null
@@ -201,7 +201,7 @@ export class PricingRepository {
         }
       } catch (err) {
         if (isTestMode()) {
-          const allRules = PrintERPDataStore.get<PricingRuleRecord[]>(STORAGE_KEYS.PRICING_RULES, companyId) || []
+          const allRules = PrintFlowDataStore.get<PricingRuleRecord[]>(STORAGE_KEYS.PRICING_RULES, companyId) || []
           return allRules.find((r) => r.id === id) || null
         }
         throw err
@@ -303,7 +303,7 @@ export class PricingRepository {
       }
 
       if (isTestMode() || !isSupabaseConfigured()) {
-        PrintERPDataStore.addItem(STORAGE_KEYS.PRICING_RULES, newRecord, companyId)
+        PrintFlowDataStore.addItem(STORAGE_KEYS.PRICING_RULES, newRecord, companyId)
       }
 
       return newRecord
@@ -376,7 +376,7 @@ export class PricingRepository {
       }
 
       if (isTestMode() || !isSupabaseConfigured()) {
-        PrintERPDataStore.updateItem<PricingRuleRecord>(STORAGE_KEYS.PRICING_RULES, id, updatedRecord, companyId)
+        PrintFlowDataStore.updateItem<PricingRuleRecord>(STORAGE_KEYS.PRICING_RULES, id, updatedRecord, companyId)
       }
 
       return updatedRecord
@@ -621,7 +621,7 @@ export class PricingRepository {
         let customRateFound = false
 
         if (isTestMode()) {
-          const customRates = PrintERPDataStore.get<any[]>(STORAGE_KEYS.CUSTOMER_RATES) || []
+          const customRates = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.CUSTOMER_RATES) || []
           const match = customRates.find(
             (r) => (!r.company_id || r.company_id === companyId) && r.customer_id === customerId && r.product_id === productId
           )

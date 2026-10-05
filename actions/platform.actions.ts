@@ -327,7 +327,7 @@ export const createBusinessAction = withPlatformAction(
       throw new Error('Company Name and unique Slug are required.')
     }
 
-    const defaultOwnerPassword = ownerPassword || 'PrintERP2026!Owner'
+    const defaultOwnerPassword = ownerPassword || 'PrintFlow2026!Owner'
 
     const createRes = await TenantService.createCompany({
       name,
@@ -450,7 +450,7 @@ export const startTenantSupportSessionAction = withPlatformAction(
 
     const token = await signSessionToken(sessionPayload, `${effectiveMinutes}m`)
     const cookieStore = await cookies()
-    cookieStore.set('printerp_support_tenant', token, {
+    cookieStore.set('printflow_support_tenant', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
@@ -480,14 +480,14 @@ export const extendSupportSessionAction = withPlatformAction(
     const result = await PlatformService.extendSupportSession(sessionId, additionalMinutes)
     if (result.success && result.data) {
       const cookieStore = await cookies()
-      const existing = cookieStore.get('printerp_support_tenant')?.value
+      const existing = cookieStore.get('printflow_support_tenant')?.value
       if (existing) {
         try {
           const parsed = await verifySessionToken<any>(existing)
           if (parsed) {
             parsed.expiresAt = result.data.expires_at
             const newToken = await signSessionToken(parsed, '60m')
-            cookieStore.set('printerp_support_tenant', newToken, {
+            cookieStore.set('printflow_support_tenant', newToken, {
               httpOnly: true,
               secure: process.env.NODE_ENV === 'production',
               sameSite: 'lax',
@@ -510,7 +510,7 @@ export const exitTenantSupportSessionAction = withPlatformAction(
   },
   async (_ctx) => {
     const cookieStore = await cookies()
-    const existing = cookieStore.get('printerp_support_tenant')?.value
+    const existing = cookieStore.get('printflow_support_tenant')?.value
     if (existing) {
       try {
         const parsed = await verifySessionToken<any>(existing)
@@ -518,7 +518,7 @@ export const exitTenantSupportSessionAction = withPlatformAction(
           await PlatformService.revokeSupportSession(parsed.sessionId, 'Support session exited by platform user')
         }
       } catch {}
-      cookieStore.delete('printerp_support_tenant')
+      cookieStore.delete('printflow_support_tenant')
     }
     revalidatePath('/platform', 'layout')
     revalidatePath('/platform/support')
@@ -535,12 +535,12 @@ export const revokeSupportSessionAction = withPlatformAction(
   async (ctx, sessionId: string, reason?: string) => {
     const result = await PlatformService.revokeSupportSession(sessionId, reason)
     const cookieStore = await cookies()
-    const existing = cookieStore.get('printerp_support_tenant')?.value
+    const existing = cookieStore.get('printflow_support_tenant')?.value
     if (existing) {
       try {
         const parsed = await verifySessionToken<any>(existing)
         if (parsed?.sessionId === sessionId) {
-          cookieStore.delete('printerp_support_tenant')
+          cookieStore.delete('printflow_support_tenant')
         }
       } catch {}
     }

@@ -1,6 +1,6 @@
 import { createClient } from '../supabase/server.ts'
 import type { AdditionalOptionRecord } from '../../types/product.types.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../db/data-store.ts'
 
 export const DEFAULT_ADDITIONAL_OPTIONS: Array<Omit<AdditionalOptionRecord, 'id' | 'company_id' | 'created_at' | 'updated_at'>> = [
   {
@@ -71,7 +71,7 @@ export class AdditionalOptionRepository {
       // Fallback
     }
 
-    const all = PrintERPDataStore.get<AdditionalOptionRecord[]>(
+    const all = PrintFlowDataStore.get<AdditionalOptionRecord[]>(
       STORAGE_KEYS.ADDITIONAL_OPTIONS,
       companyId
     ) || []
@@ -106,7 +106,7 @@ export class AdditionalOptionRepository {
       updated_at: now,
     }))
     defaults.forEach((item) =>
-      PrintERPDataStore.addItem<AdditionalOptionRecord>(STORAGE_KEYS.ADDITIONAL_OPTIONS, item, companyId)
+      PrintFlowDataStore.addItem<AdditionalOptionRecord>(STORAGE_KEYS.ADDITIONAL_OPTIONS, item, companyId)
     )
     return defaults
   }
@@ -158,7 +158,7 @@ export class AdditionalOptionRepository {
       updated_at: new Date().toISOString(),
     }
 
-    PrintERPDataStore.addItem<AdditionalOptionRecord>(
+    PrintFlowDataStore.addItem<AdditionalOptionRecord>(
       STORAGE_KEYS.ADDITIONAL_OPTIONS,
       localRecord,
       companyId
@@ -193,7 +193,7 @@ export class AdditionalOptionRepository {
       // Fallback
     }
 
-    return PrintERPDataStore.updateItem<AdditionalOptionRecord>(
+    return PrintFlowDataStore.updateItem<AdditionalOptionRecord>(
       STORAGE_KEYS.ADDITIONAL_OPTIONS,
       id,
       updates,
@@ -218,7 +218,7 @@ export class AdditionalOptionRepository {
       // Fallback
     }
 
-    PrintERPDataStore.removeItem<AdditionalOptionRecord>(STORAGE_KEYS.ADDITIONAL_OPTIONS, id, companyId)
+    PrintFlowDataStore.removeItem<AdditionalOptionRecord>(STORAGE_KEYS.ADDITIONAL_OPTIONS, id, companyId)
     return true
   }
 }

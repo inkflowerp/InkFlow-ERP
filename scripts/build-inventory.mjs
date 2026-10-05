@@ -26,17 +26,17 @@ function runGitGrep(pattern, isRegex = false) {
 
 console.log('Collecting brand inventory via git grep...');
 
-const inkflowMatches = runGitGrep('inkflow');
-const inkHyphenFlowMatches = runGitGrep('ink-flow');
-const printerpMatches = runGitGrep('printerp');
-const printErpSpacedMatches = runGitGrep('print erp');
-const bnPrintErpSpaced = runGitGrep('প্রিন্ট ইআরপি');
-const bnPrintErpJoined = runGitGrep('প্রিন্টইআরপি');
-const bnInkflow = runGitGrep('ইঙ্কফ্লো');
-const bnInkflow2 = runGitGrep('ইংকফ্লো');
+const inkflowMatches = runGitGrep('printflow');
+const printHyphenFlowMatches = runGitGrep('print-flow');
+const printerpMatches = runGitGrep('printflow');
+const printErpSpacedMatches = runGitGrep('print flow');
+const bnPrintErpSpaced = runGitGrep('প্রিন্টফ্লো');
+const bnPrintErpJoined = runGitGrep('প্রিন্টফ্লো');
+const bnInkflow = runGitGrep('প্রিন্টফ্লো');
+const bnInkflow2 = runGitGrep('প্রিন্টফ্লো');
 
 // Hostnames
-const hostnameRegex = '([a-zA-Z0-9.-]+\\.)?(inkflow|printerp)[a-zA-Z0-9.-]*\\.(com\\.bd|com|bd|io|app|net|vercel\\.app)';
+const hostnameRegex = '([a-zA-Z0-9.-]+\\.)?(printflow|printflow)[a-zA-Z0-9.-]*\\.(com\\.bd|com|bd|io|app|net|vercel\\.app)';
 const hostMatches = runGitGrep(hostnameRegex, true);
 
 // Dedup and categorize
@@ -54,14 +54,14 @@ function addItems(category, token, items) {
   }
 }
 
-addItems('Token: inkflow', 'inkflow', inkflowMatches);
-addItems('Token: ink-flow', 'ink-flow', inkHyphenFlowMatches);
-addItems('Token: printerp', 'printerp', printerpMatches);
-addItems('Token: print erp', 'print erp', printErpSpacedMatches);
-addItems('Bangla: প্রিন্ট ইআরপি', 'প্রিন্ট ইআরপি', bnPrintErpSpaced);
-addItems('Bangla: প্রিন্টইআরপি', 'প্রিন্টইআরপি', bnPrintErpJoined);
-addItems('Bangla: ইঙ্কফ্লো', 'ইঙ্কফ্লো', bnInkflow);
-addItems('Bangla: ইংকফ্লো', 'ইংকফ্লো', bnInkflow2);
+addItems('Token: printflow', 'printflow', inkflowMatches);
+addItems('Token: print-flow', 'print-flow', printHyphenFlowMatches);
+addItems('Token: printflow', 'printflow', printerpMatches);
+addItems('Token: print flow', 'print flow', printErpSpacedMatches);
+addItems('Bangla: প্রিন্টফ্লো', 'প্রিন্টফ্লো', bnPrintErpSpaced);
+addItems('Bangla: প্রিন্টফ্লো', 'প্রিন্টফ্লো', bnPrintErpJoined);
+addItems('Bangla: প্রিন্টফ্লো', 'প্রিন্টফ্লো', bnInkflow);
+addItems('Bangla: প্রিন্টফ্লো', 'প্রিন্টফ্লো', bnInkflow2);
 addItems('Hostname / Domain', 'hostname', hostMatches);
 
 // Let's summarize by file and category
@@ -76,7 +76,7 @@ for (const entry of allInventory) {
 // Generate Markdown
 let md = `# PrintFlow Rebrand — Token & Domain Inventory
 
-Generated as part of **Phase 0** to establish a comprehensive audit footprint for migrating from **InkFlow ERP / PrintERP** to **PrintFlow** (\`প্রিন্টফ্লো\`).
+Generated as part of **Phase 0** to establish a comprehensive audit footprint for migrating from **PrintFlow / PrintFlow** to **PrintFlow** (\`প্রিন্টফ্লো\`).
 
 ---
 
@@ -84,14 +84,14 @@ Generated as part of **Phase 0** to establish a comprehensive audit footprint fo
 
 | Category / Pattern | Total Matches |
 | :--- | :--- |
-| **inkflow** (case-insensitive) | ${inkflowMatches.length} |
-| **ink-flow** (case-insensitive) | ${inkHyphenFlowMatches.length} |
-| **printerp** (case-insensitive) | ${printerpMatches.length} |
-| **print erp** (case-insensitive) | ${printErpSpacedMatches.length} |
-| **Bangla: প্রিন্ট ইআরপি** | ${bnPrintErpSpaced.length} |
-| **Bangla: প্রিন্টইআরপি** | ${bnPrintErpJoined.length} |
-| **Bangla: ইঙ্কফ্লো / ইংকফ্লো** | ${bnInkflow.length + bnInkflow2.length} |
-| **Hostnames / Domains** (inkflow/printerp + TLDs) | ${hostMatches.length} |
+| **printflow** (case-insensitive) | ${inkflowMatches.length} |
+| **print-flow** (case-insensitive) | ${printHyphenFlowMatches.length} |
+| **printflow** (case-insensitive) | ${printerpMatches.length} |
+| **print flow** (case-insensitive) | ${printErpSpacedMatches.length} |
+| **Bangla: প্রিন্টফ্লো** | ${bnPrintErpSpaced.length} |
+| **Bangla: প্রিন্টফ্লো** | ${bnPrintErpJoined.length} |
+| **Bangla: প্রিন্টফ্লো / প্রিন্টফ্লো** | ${bnInkflow.length + bnInkflow2.length} |
+| **Hostnames / Domains** (printflow/printflow + TLDs) | ${hostMatches.length} |
 | **Unique Affected Files** | ${Object.keys(byFile).length} |
 | **Total Inventory Footprint** | ${allInventory.length} |
 
@@ -99,7 +99,7 @@ Generated as part of **Phase 0** to establish a comprehensive audit footprint fo
 
 ## 2. Hostname & Domain Matches Detail
 
-Hostnames matching \`(inkflow|printerp)[a-z0-9.-]*\\.(com\\.bd|com|bd|io|app|net|vercel\\.app)\`:
+Hostnames matching \`(printflow|printflow)[a-z0-9.-]*\\.(com\\.bd|com|bd|io|app|net|vercel\\.app)\`:
 
 | File | Line | Snippet |
 | :--- | :--- | :--- |
@@ -121,9 +121,9 @@ Legacy Bangla transliterations identified:
 
 | Term | Occurrences | Target Replacement |
 | :--- | :--- | :--- |
-| \`প্রিন্ট ইআরপি\` | ${bnPrintErpSpaced.length} | \`প্রিন্টফ্লো\` |
-| \`প্রিন্টইআরপি\` | ${bnPrintErpJoined.length} | \`প্রিন্টফ্লো\` |
-| \`ইঙ্কফ্লো\` / \`ইংকফ্লো\` | ${bnInkflow.length + bnInkflow2.length} | \`প্রিন্টফ্লো\` |
+| \`প্রিন্টফ্লো\` | ${bnPrintErpSpaced.length} | \`প্রিন্টফ্লো\` |
+| \`প্রিন্টফ্লো\` | ${bnPrintErpJoined.length} | \`প্রিন্টফ্লো\` |
+| \`প্রিন্টফ্লো\` / \`প্রিন্টফ্লো\` | ${bnInkflow.length + bnInkflow2.length} | \`প্রিন্টফ্লো\` |
 
 ### Bangla Matches:
 | File | Line | Token | Snippet |
@@ -155,18 +155,18 @@ md += `\n---
 
 ### Database & Migrations
 - \`public._printerp_migrations\`: Live migration state tracking table. **Must NOT be renamed or dropped**.
-- \`platform_system_settings\`: Contains \`app_name\`, \`app_title\`, \`app_tagline\`, \`app_domain\` (\`inkflow-erp.vercel.app\`), \`support_helpline\`, \`contact_phone\`.
-- \`email_gateways\`: Contains \`sender_name\` (\`InkFlow\`), and untouched email fields.
+- \`platform_system_settings\`: Contains \`app_name\`, \`app_title\`, \`app_tagline\`, \`app_domain\` (\`printflow.bd\`), \`support_helpline\`, \`contact_phone\`.
+- \`email_gateways\`: Contains \`sender_name\` (\`PrintFlow\`), and untouched email fields.
 
 ### Runtime Keys & Cookies
-- Cookies: \`printerp_platform_session\`, \`printerp_tenant_session\`, \`printerp_support_tenant\`.
-- Storage / Event keys: \`printerp_locale\`, \`printerp_table_synced\`, \`printerp_data_sync\`, \`printerp_offline_drafts\`, \`printerp_registration_draft\`, etc.
+- Cookies: \`printflow_platform_session\`, \`printflow_tenant_session\`, \`printflow_support_tenant\`.
+- Storage / Event keys: \`printflow_locale\`, \`printflow_table_synced\`, \`printflow_data_sync\`, \`printflow_offline_drafts\`, \`printflow_registration_draft\`, etc.
 - Must be unified via \`k(name) => \`\${BRAND.keyPrefix}_\${name}\`\` with a 1-release transition reader.
 
 ### Email Exclusions (Preserved Unaltered)
 - \`platform_system_settings.contact_email\`
 - \`email_gateways.sender_email\` / \`reply_to_email\`
-- PDF fallback emails: \`accounts@inkflow-erp.com\`, \`sales@inkflow-erp.com\`, \`billing@inkflow-erp.com\`, \`dispatch@inkflow-erp.com\`
+- PDF fallback emails: \`accounts@printflow.bd\`, \`sales@printflow.bd\`, \`billing@printflow.bd\`, \`dispatch@printflow.bd\`
 - \`.env.example\` mail values
 - Mail OAuth settings
 `;

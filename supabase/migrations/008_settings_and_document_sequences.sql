@@ -1,5 +1,5 @@
 -- ==============================================================================
--- PrintERP SaaS - Migration 008: Settings, Document Sequences & Audit Logs
+-- PrintFlow - Migration 008: Settings, Document Sequences & Audit Logs
 -- Supports:
 --   1. Transaction-safe document numbering (QUO-000001, ORD-000001, INV-000001, etc.)
 --   2. Audit logging for important settings changes

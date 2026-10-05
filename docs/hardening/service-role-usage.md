@@ -1,7 +1,7 @@
 # Service-Role Supabase Client Usage Audit (`createAdminClient`)
 
 ## Overview & Policy
-The Supabase service-role client (`createAdminClient`) bypasses PostgreSQL Row-Level Security (RLS). Under InkFlow ERP hardening rules:
+The Supabase service-role client (`createAdminClient`) bypasses PostgreSQL Row-Level Security (RLS). Under PrintFlow hardening rules:
 1. **Never use unrestricted service-role in application-layer code** without tenant scoping.
 2. Tenant-scoped operations must use `tenantScoped(admin, companyId)` in `lib/supabase/admin.ts` to automatically enforce `.eq('company_id', companyId)` on queries.
 3. Operations that can execute with user credentials must prefer the user-session client (`createClient()`).

@@ -1,5 +1,5 @@
 -- ==============================================================================
--- InkFlow SaaS - Migration 113: Authoritative RBAC Matrix & Role Permissions Seeding
+-- PrintFlow SaaS - Migration 113: Authoritative RBAC Matrix & Role Permissions Seeding
 -- Implements single source of truth from docs/hardening/permission-matrix.md
 -- 1. Cleans up phantom / unused legacy permissions.
 -- 2. Adds active application permissions (products, pricing, design, tasks, support, audit).

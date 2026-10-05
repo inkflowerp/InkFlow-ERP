@@ -1,5 +1,5 @@
 -- ==============================================================================
--- InkFlow SaaS - Migration 064: V3 Advanced Inventory Management
+-- PrintFlow SaaS - Migration 064: V3 Advanced Inventory Management
 -- Supports:
 --   1. Inventory Locations / Multi-Warehouse per tenant and branch
 --   2. Enhanced Material Master (SKUs, Specifications, Dimensions, Reorder Thresholds)

@@ -191,8 +191,8 @@ export async function runVisualAudit() {
 
     // Add session cookies
     const cookiesToAdd = [
-      { name: 'printerp_tenant_session', value: tenantCookie, url: BASE_URL },
-      { name: 'printerp_platform_session', value: platCookie, url: BASE_URL },
+      { name: 'printflow_tenant_session', value: tenantCookie, url: BASE_URL },
+      { name: 'printflow_platform_session', value: platCookie, url: BASE_URL },
     ]
     if (supabaseAuthCookie) {
       cookiesToAdd.push({
@@ -234,8 +234,8 @@ export async function runVisualAudit() {
           // Set locale in browser
           await page.evaluate((loc) => {
             try {
-              localStorage.setItem('printerp_locale', loc)
-              document.cookie = `printerp_locale=${loc}; path=/`
+              localStorage.setItem('printflow_locale', loc)
+              document.cookie = `printflow_locale=${loc}; path=/`
               document.documentElement.lang = loc
             } catch (_) {}
           }, locale)

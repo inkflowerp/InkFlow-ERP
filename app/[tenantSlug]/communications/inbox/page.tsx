@@ -127,9 +127,9 @@ export default function TenantWhatsAppInboxPage() {
       fetchMessages(selectedChat.id)
     }
 
-    window.addEventListener('printerp_table_synced:support_messages', handleMessageSync)
-    window.addEventListener('printerp_table_synced:communication_messages', handleMessageSync)
-    window.addEventListener('printerp_table_synced', handleMessageSync)
+    window.addEventListener('printflow_table_synced:support_messages', handleMessageSync)
+    window.addEventListener('printflow_table_synced:communication_messages', handleMessageSync)
+    window.addEventListener('printflow_table_synced', handleMessageSync)
 
     let fallbackInterval: NodeJS.Timeout | null = null
     if (realtimeStatus !== 'connected') {
@@ -139,9 +139,9 @@ export default function TenantWhatsAppInboxPage() {
     }
 
     return () => {
-      window.removeEventListener('printerp_table_synced:support_messages', handleMessageSync)
-      window.removeEventListener('printerp_table_synced:communication_messages', handleMessageSync)
-      window.removeEventListener('printerp_table_synced', handleMessageSync)
+      window.removeEventListener('printflow_table_synced:support_messages', handleMessageSync)
+      window.removeEventListener('printflow_table_synced:communication_messages', handleMessageSync)
+      window.removeEventListener('printflow_table_synced', handleMessageSync)
       if (fallbackInterval) clearInterval(fallbackInterval)
     }
   }, [selectedChat?.id, fetchMessages, realtimeStatus])

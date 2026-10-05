@@ -27,7 +27,7 @@ import {
 import { CustomerRecord, ResolvedProductRate } from '@/types/crm.types'
 import { InvoiceRecord } from '@/types/billing.types'
 import { SalesOrderRecord } from '@/types/order.types'
-import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
+import { PrintFlowDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 
 export interface ServerActionResult<T> {
   success: boolean

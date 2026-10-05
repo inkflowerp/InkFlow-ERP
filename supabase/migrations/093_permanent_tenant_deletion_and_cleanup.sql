@@ -1,5 +1,5 @@
 -- ==============================================================================
--- PrintERP SaaS - Migration 093: Permanent Tenant Deletion & Cascade Architecture
+-- PrintFlow - Migration 093: Permanent Tenant Deletion & Cascade Architecture
 -- Authoritative, atomic server-side PostgreSQL permanent deletion
 -- Function: public.delete_tenant_permanently(p_company_id, p_admin_id, p_reason)
 -- ==============================================================================
@@ -7,7 +7,7 @@
 -- 1. Verify schema prerequisites
 do $$
 begin
-    raise notice 'PrintERP Permanent Deletion Migration 093 executing.';
+    raise notice 'PrintFlow Permanent Deletion Migration 093 executing.';
 end $$;
 
 -- 2. Master Atomic Deletion Function
@@ -670,7 +670,7 @@ begin
             details
         ) values (
             p_admin_id,
-            'platform-admin@printerp.com.bd',
+            'platform-admin@printflow.bd',
             'company.permanent_delete',
             'company',
             p_company_id::text,

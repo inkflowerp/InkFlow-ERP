@@ -5,7 +5,7 @@
 // ==============================================================================
 
 import { createAdminClient } from '../supabase/admin.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../db/data-store.ts'
 import type {
   AccountRecord,
   FinancialTransactionRecord,
@@ -95,7 +95,7 @@ export class FinanceRepository {
       console.warn('[FinanceRepository.getAccounts] DB query fallback:', e)
     }
 
-    const accounts = PrintERPDataStore.get<AccountRecord[]>(STORAGE_KEYS.ACCOUNTS) || []
+    const accounts = PrintFlowDataStore.get<AccountRecord[]>(STORAGE_KEYS.ACCOUNTS) || []
     const filtered = accounts.filter((a) => {
       if (a.company_id && a.company_id !== companyId) return false
       if (branchId && a.branch_id !== branchId) return false
@@ -151,7 +151,7 @@ export class FinanceRepository {
         .single()
 
       if (!error && data) {
-        PrintERPDataStore.addItem(STORAGE_KEYS.ACCOUNTS, data as AccountRecord)
+        PrintFlowDataStore.addItem(STORAGE_KEYS.ACCOUNTS, data as AccountRecord)
         return data as AccountRecord
       }
       if (error) {
@@ -161,7 +161,7 @@ export class FinanceRepository {
       console.warn('[FinanceRepository.createAccount] DB fallback:', e)
     }
 
-    PrintERPDataStore.addItem(STORAGE_KEYS.ACCOUNTS, payload)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.ACCOUNTS, payload)
     return payload
   }
 
@@ -182,7 +182,7 @@ export class FinanceRepository {
       })
 
       if (!rpcErr && rpcData) {
-        PrintERPDataStore.updateItem<AccountRecord>(STORAGE_KEYS.ACCOUNTS, acc.id, {
+        PrintFlowDataStore.updateItem<AccountRecord>(STORAGE_KEYS.ACCOUNTS, acc.id, {
           current_balance: Number(rpcData.current_balance),
         })
         return rpcData as AccountRecord
@@ -198,7 +198,7 @@ export class FinanceRepository {
         .single()
 
       if (!error && data) {
-        PrintERPDataStore.updateItem<AccountRecord>(STORAGE_KEYS.ACCOUNTS, acc.id, {
+        PrintFlowDataStore.updateItem<AccountRecord>(STORAGE_KEYS.ACCOUNTS, acc.id, {
           current_balance: Number(data.current_balance),
         })
         return data as AccountRecord
@@ -208,7 +208,7 @@ export class FinanceRepository {
     }
 
     const fallbackBalance = Number((Number(acc.current_balance || 0) + delta).toFixed(2))
-    return PrintERPDataStore.updateItem<AccountRecord>(STORAGE_KEYS.ACCOUNTS, acc.id, {
+    return PrintFlowDataStore.updateItem<AccountRecord>(STORAGE_KEYS.ACCOUNTS, acc.id, {
       current_balance: fallbackBalance,
     })
   }
@@ -234,7 +234,7 @@ export class FinanceRepository {
         .single()
 
       if (!error && data) {
-        PrintERPDataStore.updateItem<AccountRecord>(STORAGE_KEYS.ACCOUNTS, acc.id, {
+        PrintFlowDataStore.updateItem<AccountRecord>(STORAGE_KEYS.ACCOUNTS, acc.id, {
           current_balance: newBalance,
         })
         return data as AccountRecord
@@ -243,7 +243,7 @@ export class FinanceRepository {
       console.warn('[FinanceRepository.setAccountBalance] DB fallback:', e)
     }
 
-    return PrintERPDataStore.updateItem<AccountRecord>(STORAGE_KEYS.ACCOUNTS, acc.id, {
+    return PrintFlowDataStore.updateItem<AccountRecord>(STORAGE_KEYS.ACCOUNTS, acc.id, {
       current_balance: newBalance,
     })
   }
@@ -318,7 +318,7 @@ export class FinanceRepository {
 
       if (!error && data && data.length > 0) {
         for (const item of data) {
-          PrintERPDataStore.addItem(STORAGE_KEYS.ACCOUNTS, item as AccountRecord)
+          PrintFlowDataStore.addItem(STORAGE_KEYS.ACCOUNTS, item as AccountRecord)
         }
         return data as AccountRecord[]
       }
@@ -422,9 +422,9 @@ export class FinanceRepository {
             }
           }
 
-          PrintERPDataStore.addItem(STORAGE_KEYS.FINANCIAL_TRANSACTIONS, txnData)
+          PrintFlowDataStore.addItem(STORAGE_KEYS.FINANCIAL_TRANSACTIONS, txnData)
           for (const line of lines) {
-            PrintERPDataStore.addItem(STORAGE_KEYS.JOURNAL_ENTRY_LINES, line)
+            PrintFlowDataStore.addItem(STORAGE_KEYS.JOURNAL_ENTRY_LINES, line)
           }
 
           return { ...txnData, lines } as FinancialTransactionRecord
@@ -445,9 +445,9 @@ export class FinanceRepository {
       id: isValidUUID(l.id) ? l.id : generateUUID(),
       transaction_id: txnId,
     }))
-    PrintERPDataStore.addItem(STORAGE_KEYS.FINANCIAL_TRANSACTIONS, { ...txnHeader, lines: normalizedLines })
+    PrintFlowDataStore.addItem(STORAGE_KEYS.FINANCIAL_TRANSACTIONS, { ...txnHeader, lines: normalizedLines })
     for (const line of normalizedLines) {
-      PrintERPDataStore.addItem(STORAGE_KEYS.JOURNAL_ENTRY_LINES, line)
+      PrintFlowDataStore.addItem(STORAGE_KEYS.JOURNAL_ENTRY_LINES, line)
       const acc = await this.getAccountById(line.account_id, txn.company_id)
       if (acc) {
         const debit = Number(line.debit || 0)
@@ -501,8 +501,8 @@ export class FinanceRepository {
       console.warn('[FinanceRepository.getTransactions] DB fallback:', e)
     }
 
-    const txns = PrintERPDataStore.get<FinancialTransactionRecord[]>(STORAGE_KEYS.FINANCIAL_TRANSACTIONS) || []
-    const allLines = PrintERPDataStore.get<JournalEntryLineRecord[]>(STORAGE_KEYS.JOURNAL_ENTRY_LINES) || []
+    const txns = PrintFlowDataStore.get<FinancialTransactionRecord[]>(STORAGE_KEYS.FINANCIAL_TRANSACTIONS) || []
+    const allLines = PrintFlowDataStore.get<JournalEntryLineRecord[]>(STORAGE_KEYS.JOURNAL_ENTRY_LINES) || []
 
     return txns
       .filter((t) => {
@@ -689,7 +689,7 @@ export class FinanceRepository {
         .single()
 
       if (!error && data) {
-        PrintERPDataStore.addItem(STORAGE_KEYS.ACCOUNT_TRANSFERS, data as AccountTransferRecord)
+        PrintFlowDataStore.addItem(STORAGE_KEYS.ACCOUNT_TRANSFERS, data as AccountTransferRecord)
         return data as AccountTransferRecord
       }
       if (error) {
@@ -699,7 +699,7 @@ export class FinanceRepository {
       console.warn('[FinanceRepository.recordTransfer] DB fallback:', e)
     }
 
-    PrintERPDataStore.addItem(STORAGE_KEYS.ACCOUNT_TRANSFERS, payload)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.ACCOUNT_TRANSFERS, payload)
     return payload
   }
 
@@ -719,7 +719,7 @@ export class FinanceRepository {
       console.warn('[FinanceRepository.getTransfers] DB fallback:', e)
     }
 
-    const transfers = PrintERPDataStore.get<AccountTransferRecord[]>(STORAGE_KEYS.ACCOUNT_TRANSFERS) || []
+    const transfers = PrintFlowDataStore.get<AccountTransferRecord[]>(STORAGE_KEYS.ACCOUNT_TRANSFERS) || []
     return transfers.filter((t) => !t.company_id || t.company_id === companyId)
   }
 
@@ -744,7 +744,7 @@ export class FinanceRepository {
         .single()
 
       if (!error && data) {
-        PrintERPDataStore.addItem(STORAGE_KEYS.CASH_CLOSINGS, { ...data, account_name: closing.account_name } as CashClosingRecord)
+        PrintFlowDataStore.addItem(STORAGE_KEYS.CASH_CLOSINGS, { ...data, account_name: closing.account_name } as CashClosingRecord)
         return { ...data, account_name: closing.account_name } as CashClosingRecord
       }
       if (error) {
@@ -754,7 +754,7 @@ export class FinanceRepository {
       console.warn('[FinanceRepository.recordCashClosing] DB fallback:', e)
     }
 
-    PrintERPDataStore.addItem(STORAGE_KEYS.CASH_CLOSINGS, payload)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.CASH_CLOSINGS, payload)
     return payload
   }
 
@@ -777,7 +777,7 @@ export class FinanceRepository {
       console.warn('[FinanceRepository.getCashClosings] DB fallback:', e)
     }
 
-    const closings = PrintERPDataStore.get<CashClosingRecord[]>(STORAGE_KEYS.CASH_CLOSINGS) || []
+    const closings = PrintFlowDataStore.get<CashClosingRecord[]>(STORAGE_KEYS.CASH_CLOSINGS) || []
     return closings.filter((c) => {
       if (c.company_id && c.company_id !== companyId) return false
       if (closingDate && c.closing_date !== closingDate) return false
@@ -805,7 +805,7 @@ export class FinanceRepository {
       console.warn('[FinanceRepository.getFinancialPeriods] DB fallback:', e)
     }
 
-    const periods = PrintERPDataStore.get<FinancialPeriodRecord[]>(STORAGE_KEYS.FINANCIAL_PERIODS) || []
+    const periods = PrintFlowDataStore.get<FinancialPeriodRecord[]>(STORAGE_KEYS.FINANCIAL_PERIODS) || []
     return periods.filter((p) => !p.company_id || p.company_id === companyId)
   }
 
@@ -838,7 +838,7 @@ export class FinanceRepository {
       }
     } catch {}
 
-    const statements = PrintERPDataStore.get<BankStatementRecord[]>(STORAGE_KEYS.BANK_STATEMENTS, companyId) || []
+    const statements = PrintFlowDataStore.get<BankStatementRecord[]>(STORAGE_KEYS.BANK_STATEMENTS, companyId) || []
     return statements.filter((s) => !accountId || s.account_id === accountId)
   }
 
@@ -852,12 +852,12 @@ export class FinanceRepository {
         .single()
 
       if (!error && data) {
-        PrintERPDataStore.addItem(STORAGE_KEYS.BANK_STATEMENTS, data as BankStatementRecord)
+        PrintFlowDataStore.addItem(STORAGE_KEYS.BANK_STATEMENTS, data as BankStatementRecord)
         return data as BankStatementRecord
       }
     } catch {}
 
-    PrintERPDataStore.addItem(STORAGE_KEYS.BANK_STATEMENTS, statement)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.BANK_STATEMENTS, statement)
     return statement
   }
 

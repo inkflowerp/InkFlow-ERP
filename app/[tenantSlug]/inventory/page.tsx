@@ -86,7 +86,7 @@ import type { MachineryRecord } from '@/types/machinery.types'
 import { formatBDT } from '@/lib/formatters'
 import { cn } from '@/lib/utils'
 import { isMaterialProduct, isReadyProduct, getMaterialWarehouseStockBreakdown, formatFloorPieceDisplay, normalizeInventoryGroupAttributes, createInventoryGroupingKey } from '@/lib/units'
-import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
+import { PrintFlowDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import {
  approveMaterialRequestAction,
  rejectMaterialRequestAction,
@@ -166,8 +166,8 @@ function UnifiedInventoryContent() {
   // Core Data States with Zero-Latency SWR Initial Cache Hydration
  const [materials, setMaterials] = useState<MaterialRecord[]>(() => {
  try {
- const mats = PrintERPDataStore.get<MaterialRecord[]>(STORAGE_KEYS.MATERIALS) || []
- const prods = PrintERPDataStore.get<ProductRecord[]>(STORAGE_KEYS.PRODUCTS) || []
+ const mats = PrintFlowDataStore.get<MaterialRecord[]>(STORAGE_KEYS.MATERIALS) || []
+ const prods = PrintFlowDataStore.get<ProductRecord[]>(STORAGE_KEYS.PRODUCTS) || []
  const matProds = prods.filter(isMaterialProduct)
  const seen = new Set(mats.map((m) => m.id))
  const combined = [...mats]
@@ -223,7 +223,7 @@ function UnifiedInventoryContent() {
   })
  const [readyProducts, setReadyProducts] = useState<ProductRecord[]>(() => {
  try {
- const allProds = PrintERPDataStore.get<ProductRecord[]>(STORAGE_KEYS.PRODUCTS) || []
+ const allProds = PrintFlowDataStore.get<ProductRecord[]>(STORAGE_KEYS.PRODUCTS) || []
  return allProds.filter(
         (p) =>
  p.entity_type === 'product' ||
@@ -240,7 +240,7 @@ function UnifiedInventoryContent() {
   })
  const [locations, setLocations] = useState<InventoryLocationRecord[]>(() => {
  try {
- return PrintERPDataStore.get<InventoryLocationRecord[]>(STORAGE_KEYS.LOCATIONS) || []
+ return PrintFlowDataStore.get<InventoryLocationRecord[]>(STORAGE_KEYS.LOCATIONS) || []
     } catch {
  return []
     }
@@ -250,7 +250,7 @@ function UnifiedInventoryContent() {
  const [issues, setIssues] = useState<MaterialIssueRecord[]>([])
  const [floorConsumptions, setFloorConsumptions] = useState<FloorConsumptionRecord[]>(() => {
  try {
- return PrintERPDataStore.get<FloorConsumptionRecord[]>(STORAGE_KEYS.FLOOR_CONSUMPTIONS) || []
+ return PrintFlowDataStore.get<FloorConsumptionRecord[]>(STORAGE_KEYS.FLOOR_CONSUMPTIONS) || []
     } catch {
  return []
     }
@@ -259,7 +259,7 @@ function UnifiedInventoryContent() {
  const [ledger, setLedger] = useState<StockLedgerRecord[]>([])
  const [rolls, setRolls] = useState<InventoryRollRecord[]>(() => {
  try {
- return PrintERPDataStore.get<InventoryRollRecord[]>(STORAGE_KEYS.MOUNTED_ROLLS) || []
+ return PrintFlowDataStore.get<InventoryRollRecord[]>(STORAGE_KEYS.MOUNTED_ROLLS) || []
     } catch {
  return []
     }
@@ -277,7 +277,7 @@ function UnifiedInventoryContent() {
 
  const [loading, setLoading] = useState(() => {
  try {
- const cached = PrintERPDataStore.get<MaterialRecord[]>(STORAGE_KEYS.MATERIALS)
+ const cached = PrintFlowDataStore.get<MaterialRecord[]>(STORAGE_KEYS.MATERIALS)
  return !cached || cached.length === 0
     } catch {
  return true
@@ -315,7 +315,7 @@ function UnifiedInventoryContent() {
   // Machinery fleet integration for physical rolls
  const [machines, setMachines] = useState<MachineryRecord[]>(() => {
  try {
- return PrintERPDataStore.get<MachineryRecord[]>(STORAGE_KEYS.MACHINERIES) || []
+ return PrintFlowDataStore.get<MachineryRecord[]>(STORAGE_KEYS.MACHINERIES) || []
     } catch {
  return []
     }
@@ -416,11 +416,11 @@ function UnifiedInventoryContent() {
  setSummary(res.data.summary)
         }
  try {
- if (res.data.materials) PrintERPDataStore.set(STORAGE_KEYS.MATERIALS, res.data.materials, false)
- if (res.data.rolls) PrintERPDataStore.set(STORAGE_KEYS.MOUNTED_ROLLS, res.data.rolls, false)
- if (res.data.locations) PrintERPDataStore.set(STORAGE_KEYS.LOCATIONS, res.data.locations, false)
- if (res.data.floorConsumptions) PrintERPDataStore.set(STORAGE_KEYS.FLOOR_CONSUMPTIONS, res.data.floorConsumptions, false)
- const mList = PrintERPDataStore.get<MachineryRecord[]>(STORAGE_KEYS.MACHINERIES) || []
+ if (res.data.materials) PrintFlowDataStore.set(STORAGE_KEYS.MATERIALS, res.data.materials, false)
+ if (res.data.rolls) PrintFlowDataStore.set(STORAGE_KEYS.MOUNTED_ROLLS, res.data.rolls, false)
+ if (res.data.locations) PrintFlowDataStore.set(STORAGE_KEYS.LOCATIONS, res.data.locations, false)
+ if (res.data.floorConsumptions) PrintFlowDataStore.set(STORAGE_KEYS.FLOOR_CONSUMPTIONS, res.data.floorConsumptions, false)
+ const mList = PrintFlowDataStore.get<MachineryRecord[]>(STORAGE_KEYS.MACHINERIES) || []
  setMachines(mList)
         } catch {}
       }
@@ -443,36 +443,36 @@ function UnifiedInventoryContent() {
     }
 
  if (typeof window !== 'undefined') {
- window.addEventListener('printerp_table_synced:materials', handleRealtimeSync)
- window.addEventListener('printerp_table_synced:products', handleRealtimeSync)
- window.addEventListener('printerp_table_synced:inventory_rolls', handleRealtimeSync)
- window.addEventListener('printerp_table_synced:stock_ledger', handleRealtimeSync)
- window.addEventListener('printerp_table_synced:inventory_stock_balances', handleRealtimeSync)
- window.addEventListener('printerp_table_synced:inventory_locations', handleRealtimeSync)
- window.addEventListener('printerp_table_synced:material_requests', handleRealtimeSync)
- window.addEventListener('printerp_table_synced:material_issues', handleRealtimeSync)
- window.addEventListener('printerp_table_synced:floor_consumption', handleRealtimeSync)
- window.addEventListener('printerp_table_synced:purchase_orders', handleRealtimeSync)
- window.addEventListener('printerp_table_synced:goods_received_notes', handleRealtimeSync)
- window.addEventListener('printerp_table_synced', handleRealtimeSync)
- window.addEventListener('printerp_data_sync', handleRealtimeSync)
+ window.addEventListener('printflow_table_synced:materials', handleRealtimeSync)
+ window.addEventListener('printflow_table_synced:products', handleRealtimeSync)
+ window.addEventListener('printflow_table_synced:inventory_rolls', handleRealtimeSync)
+ window.addEventListener('printflow_table_synced:stock_ledger', handleRealtimeSync)
+ window.addEventListener('printflow_table_synced:inventory_stock_balances', handleRealtimeSync)
+ window.addEventListener('printflow_table_synced:inventory_locations', handleRealtimeSync)
+ window.addEventListener('printflow_table_synced:material_requests', handleRealtimeSync)
+ window.addEventListener('printflow_table_synced:material_issues', handleRealtimeSync)
+ window.addEventListener('printflow_table_synced:floor_consumption', handleRealtimeSync)
+ window.addEventListener('printflow_table_synced:purchase_orders', handleRealtimeSync)
+ window.addEventListener('printflow_table_synced:goods_received_notes', handleRealtimeSync)
+ window.addEventListener('printflow_table_synced', handleRealtimeSync)
+ window.addEventListener('printflow_data_sync', handleRealtimeSync)
  window.addEventListener('storage', handleRealtimeSync)
 
  return () => {
  if (syncTimeout) clearTimeout(syncTimeout)
- window.removeEventListener('printerp_table_synced:materials', handleRealtimeSync)
- window.removeEventListener('printerp_table_synced:products', handleRealtimeSync)
- window.removeEventListener('printerp_table_synced:inventory_rolls', handleRealtimeSync)
- window.removeEventListener('printerp_table_synced:stock_ledger', handleRealtimeSync)
- window.removeEventListener('printerp_table_synced:inventory_stock_balances', handleRealtimeSync)
- window.removeEventListener('printerp_table_synced:inventory_locations', handleRealtimeSync)
- window.removeEventListener('printerp_table_synced:material_requests', handleRealtimeSync)
- window.removeEventListener('printerp_table_synced:material_issues', handleRealtimeSync)
- window.removeEventListener('printerp_table_synced:floor_consumption', handleRealtimeSync)
- window.removeEventListener('printerp_table_synced:purchase_orders', handleRealtimeSync)
- window.removeEventListener('printerp_table_synced:goods_received_notes', handleRealtimeSync)
- window.removeEventListener('printerp_table_synced', handleRealtimeSync)
- window.removeEventListener('printerp_data_sync', handleRealtimeSync)
+ window.removeEventListener('printflow_table_synced:materials', handleRealtimeSync)
+ window.removeEventListener('printflow_table_synced:products', handleRealtimeSync)
+ window.removeEventListener('printflow_table_synced:inventory_rolls', handleRealtimeSync)
+ window.removeEventListener('printflow_table_synced:stock_ledger', handleRealtimeSync)
+ window.removeEventListener('printflow_table_synced:inventory_stock_balances', handleRealtimeSync)
+ window.removeEventListener('printflow_table_synced:inventory_locations', handleRealtimeSync)
+ window.removeEventListener('printflow_table_synced:material_requests', handleRealtimeSync)
+ window.removeEventListener('printflow_table_synced:material_issues', handleRealtimeSync)
+ window.removeEventListener('printflow_table_synced:floor_consumption', handleRealtimeSync)
+ window.removeEventListener('printflow_table_synced:purchase_orders', handleRealtimeSync)
+ window.removeEventListener('printflow_table_synced:goods_received_notes', handleRealtimeSync)
+ window.removeEventListener('printflow_table_synced', handleRealtimeSync)
+ window.removeEventListener('printflow_data_sync', handleRealtimeSync)
  window.removeEventListener('storage', handleRealtimeSync)
       }
     }

@@ -54,7 +54,7 @@ import {
 } from '@/types/communication.types'
 import { CustomerRecord } from '@/types/crm.types'
 import { useDataStore } from '@/hooks/use-data-store'
-import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
+import { PrintFlowDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import { getCommunicationLogsAction } from '@/actions/communication.actions'
 import { getDeliveryLogsAction, resendDeliveryJobAction } from '@/actions/notification.actions'
 import { formatBDT } from '@/lib/formatters'
@@ -193,9 +193,9 @@ export default function CommunicationsHubPage() {
  setNotifications((prev) =>
       (prev || []).map((n) => (n.id === id ? { ...n, is_read: !n.is_read } : n))
     )
- const stored = PrintERPDataStore.get<InAppNotificationRecord[]>(STORAGE_KEYS.IN_APP_NOTIFICATIONS) || []
+ const stored = PrintFlowDataStore.get<InAppNotificationRecord[]>(STORAGE_KEYS.IN_APP_NOTIFICATIONS) || []
  const updated = stored.map((n) => (n.id === id ? { ...n, is_read: !n.is_read } : n))
- PrintERPDataStore.set(STORAGE_KEYS.IN_APP_NOTIFICATIONS, updated)
+ PrintFlowDataStore.set(STORAGE_KEYS.IN_APP_NOTIFICATIONS, updated)
  showNotification('Notification status updated.')
   }
 
@@ -238,7 +238,7 @@ export default function CommunicationsHubPage() {
  created_at: 'Just now',
     }
 
- PrintERPDataStore.addItem<CommunicationLogRecord>(STORAGE_KEYS.COMMUNICATION_LOGS, newLog)
+ PrintFlowDataStore.addItem<CommunicationLogRecord>(STORAGE_KEYS.COMMUNICATION_LOGS, newLog)
  setIsSendOpen(false)
  showNotification(
       `${sendChannel.toUpperCase()} message dispatched successfully to ${selectedCust?.name || 'recipient'} (${customPhone})!`

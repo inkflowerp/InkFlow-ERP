@@ -1,5 +1,5 @@
 -- ==============================================================================
--- PrintERP SaaS - Migration 009: Customer and Supplier Management
+-- PrintFlow - Migration 009: Customer and Supplier Management
 -- Supports:
 --   1. Customer Directory with 6 customer types (Corporate, Agency, Retail, Dealer, Government, Regular)
 --   2. Customer Communication Logs & Notes

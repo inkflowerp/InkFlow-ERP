@@ -76,7 +76,7 @@ export function MarketingFooter() {
               </div>
               <div className="flex items-center gap-2">
                 <Mail className="h-3.5 w-3.5 text-primary shrink-0"/>
-                <span>{contactEmail || 'support@printerp.com.bd'}</span>
+                <span>{contactEmail || 'support@printflow.bd'}</span>
               </div>
             </div>
           </div>

@@ -43,7 +43,7 @@ import {
 } from '@/types/purchase.types'
 import { formatBDT } from '@/lib/formatters'
 import { useDataStore } from '@/hooks/use-data-store'
-import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
+import { PrintFlowDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import { MaterialRecord, StockLedgerRecord, MaterialUnit } from '@/types/inventory.types'
 import { CashBookEntryRecord } from '@/types/accounting.types'
 import { getTenantNavHref } from '@/lib/tenant/tenant-url'
@@ -158,13 +158,13 @@ export default function PurchaseOrderDetailPage() {
  updated_at: new Date().toISOString(),
     }
 
- PrintERPDataStore.updateItem<PurchaseOrderRecord>(STORAGE_KEYS.PURCHASE_ORDERS, po.id, updatedPO)
+ PrintFlowDataStore.updateItem<PurchaseOrderRecord>(STORAGE_KEYS.PURCHASE_ORDERS, po.id, updatedPO)
 
     // Update raw materials stock in inventory & stock ledger
- const material = PrintERPDataStore.findItem<MaterialRecord>(STORAGE_KEYS.MATERIALS, (m) => m.id === primaryItem.material_id || m.name === primaryItem.material_name)
+ const material = PrintFlowDataStore.findItem<MaterialRecord>(STORAGE_KEYS.MATERIALS, (m) => m.id === primaryItem.material_id || m.name === primaryItem.material_name)
  if (material) {
  const newStock = material.current_stock + receivingQty
- PrintERPDataStore.updateItem<MaterialRecord>(STORAGE_KEYS.MATERIALS, material.id, {
+ PrintFlowDataStore.updateItem<MaterialRecord>(STORAGE_KEYS.MATERIALS, material.id, {
  current_stock: newStock,
  last_purchase_price: primaryItem.unit_cost,
  updated_at: new Date().toISOString(),
@@ -186,7 +186,7 @@ export default function PurchaseOrderDetailPage() {
  notes: `GRN from ${po.supplier_name} under challan ${challanNo}`,
  created_at: new Date().toISOString(),
       }
- PrintERPDataStore.addItem<StockLedgerRecord>(STORAGE_KEYS.STOCK_LEDGER, ledgerEntry)
+ PrintFlowDataStore.addItem<StockLedgerRecord>(STORAGE_KEYS.STOCK_LEDGER, ledgerEntry)
     }
 
  setIsReceiveOpen(false)
@@ -227,7 +227,7 @@ export default function PurchaseOrderDetailPage() {
  updated_at: new Date().toISOString(),
     }
 
- PrintERPDataStore.updateItem<PurchaseOrderRecord>(STORAGE_KEYS.PURCHASE_ORDERS, po.id, updatedPO)
+ PrintFlowDataStore.updateItem<PurchaseOrderRecord>(STORAGE_KEYS.PURCHASE_ORDERS, po.id, updatedPO)
 
  if (payMethod === 'cash') {
  const cashEntry: CashBookEntryRecord = {
@@ -242,7 +242,7 @@ export default function PurchaseOrderDetailPage() {
  performed_by_name: 'Accounts Executive',
  created_at: 'Just now',
       }
- PrintERPDataStore.addItem<CashBookEntryRecord>(STORAGE_KEYS.CASH_BOOK, cashEntry)
+ PrintFlowDataStore.addItem<CashBookEntryRecord>(STORAGE_KEYS.CASH_BOOK, cashEntry)
     }
 
  setIsPayOpen(false)

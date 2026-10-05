@@ -9,7 +9,7 @@
 // ==============================================================================
 
 import { createAdminClient } from '../lib/supabase/admin.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../lib/db/data-store.ts'
 import type {
   PlatformDashboardMetrics,
   PlatformTenantCompany,
@@ -1175,7 +1175,7 @@ export class PlatformService {
       } catch {}
 
       // 6. Check local registered users store fallback
-      const registeredUsers = PrintERPDataStore.get<any[]>(STORAGE_KEYS.REGISTERED_USERS) || []
+      const registeredUsers = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.REGISTERED_USERS) || []
       registeredUsers.forEach((item: any) => {
         const normalizedEmail = (item.email || '').toLowerCase().trim()
         if (normalizedEmail && !completedEmails.has(normalizedEmail) && !incompleteMap.has(normalizedEmail)) {
@@ -1198,7 +1198,7 @@ export class PlatformService {
       })
 
       // 7. Check local test data store fallback
-      const localIncomplete = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PLATFORM_INCOMPLETE_REGISTRATIONS) || []
+      const localIncomplete = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.PLATFORM_INCOMPLETE_REGISTRATIONS) || []
       localIncomplete.forEach((item: any) => {
         const normalizedEmail = (item.email || '').toLowerCase().trim()
         if (normalizedEmail && !completedEmails.has(normalizedEmail) && !incompleteMap.has(normalizedEmail)) {
@@ -1433,23 +1433,23 @@ export class PlatformService {
       }
 
       // 6. Clean from local storage data stores
-      const localIncomplete = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PLATFORM_INCOMPLETE_REGISTRATIONS) || []
+      const localIncomplete = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.PLATFORM_INCOMPLETE_REGISTRATIONS) || []
       const filteredIncomplete = localIncomplete.filter(
         (i: any) =>
           i.id !== raw &&
           i.id !== targetEmail &&
           i.email?.toLowerCase().trim() !== targetEmail
       )
-      PrintERPDataStore.set(STORAGE_KEYS.PLATFORM_INCOMPLETE_REGISTRATIONS, filteredIncomplete)
+      PrintFlowDataStore.set(STORAGE_KEYS.PLATFORM_INCOMPLETE_REGISTRATIONS, filteredIncomplete)
 
-      const localRegistered = PrintERPDataStore.get<any[]>(STORAGE_KEYS.REGISTERED_USERS) || []
+      const localRegistered = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.REGISTERED_USERS) || []
       const filteredRegistered = localRegistered.filter(
         (u: any) =>
           u.id !== raw &&
           u.id !== targetUserId &&
           u.email?.toLowerCase().trim() !== targetEmail
       )
-      PrintERPDataStore.set(STORAGE_KEYS.REGISTERED_USERS, filteredRegistered)
+      PrintFlowDataStore.set(STORAGE_KEYS.REGISTERED_USERS, filteredRegistered)
 
       // 7. Record Audit Log
       try {
@@ -2204,12 +2204,12 @@ export class PlatformService {
       }
 
       // 4. Purge completely from DataStore (in-memory, localStorage, and partitioned collections)
-      PrintERPDataStore.purgeTenantData(targetUuid || companyIdOrSlug, allTargetIdentifiers)
+      PrintFlowDataStore.purgeTenantData(targetUuid || companyIdOrSlug, allTargetIdentifiers)
 
       // 5. Purge offline sync outbox items for this tenant
       try {
-        const outbox = PrintERPDataStore.get<any[]>(STORAGE_KEYS.SYNC_OUTBOX) || []
-        PrintERPDataStore.set(
+        const outbox = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.SYNC_OUTBOX) || []
+        PrintFlowDataStore.set(
           STORAGE_KEYS.SYNC_OUTBOX,
           outbox.filter((item: any) => !allTargetIdentifiers.includes(item.company_id) && !allTargetIdentifiers.includes(item.tenantSlug))
         )
@@ -2250,7 +2250,7 @@ export class PlatformService {
         if (data) companies = data
       } catch {}
 
-      const storeCompanies = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PLATFORM_COMPANIES) || []
+      const storeCompanies = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.PLATFORM_COMPANIES) || []
       const allCompanyIds = Array.from(
         new Set([
           ...companies.map((c: any) => c.id),
@@ -2271,7 +2271,7 @@ export class PlatformService {
 
       // Clear sync outbox
       try {
-        PrintERPDataStore.set(STORAGE_KEYS.SYNC_OUTBOX, [])
+        PrintFlowDataStore.set(STORAGE_KEYS.SYNC_OUTBOX, [])
       } catch {}
 
       await this.recordAuditLog(
@@ -2762,7 +2762,7 @@ export class PlatformService {
 
       // Sync local storage store
       try {
-        const currentSubs = PrintERPDataStore.get<Record<string, any>>(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS) || {}
+        const currentSubs = PrintFlowDataStore.get<Record<string, any>>(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS) || {}
         const subObj = {
           id: existingSub?.id || `sub-${companyId}`,
           company_id: companyId,
@@ -2781,7 +2781,7 @@ export class PlatformService {
         if (comp.slug) {
           currentSubs[comp.slug] = subObj
         }
-        PrintERPDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, currentSubs, true)
+        PrintFlowDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, currentSubs, true)
       } catch {}
 
       return { success: true, data: { companyId, updated: true } }
@@ -3459,7 +3459,7 @@ export class PlatformService {
       
       if (!planList || planList.length === 0) {
         try {
-          const stored = PrintERPDataStore.get<SubscriptionPlanRecord[]>(STORAGE_KEYS.PLATFORM_PLANS)
+          const stored = PrintFlowDataStore.get<SubscriptionPlanRecord[]>(STORAGE_KEYS.PLATFORM_PLANS)
           if (stored && Array.isArray(stored) && stored.length > 0) {
             return { success: true, data: stored }
           }
@@ -3597,7 +3597,7 @@ export class PlatformService {
       }) as SubscriptionPlanRecord
 
       try {
-        const currentStored = PrintERPDataStore.get<SubscriptionPlanRecord[]>(STORAGE_KEYS.PLATFORM_PLANS) || DEFAULT_PLANS
+        const currentStored = PrintFlowDataStore.get<SubscriptionPlanRecord[]>(STORAGE_KEYS.PLATFORM_PLANS) || DEFAULT_PLANS
         const idx = currentStored.findIndex((p) => p.id === finalRecord.id || p.code === finalRecord.code)
         let nextStored = [...currentStored]
         if (idx >= 0) {
@@ -3605,7 +3605,7 @@ export class PlatformService {
         } else {
           nextStored.push(finalRecord)
         }
-        PrintERPDataStore.set(STORAGE_KEYS.PLATFORM_PLANS, nextStored, true)
+        PrintFlowDataStore.set(STORAGE_KEYS.PLATFORM_PLANS, nextStored, true)
       } catch {}
 
       await this.recordAuditLog(
@@ -3642,9 +3642,9 @@ export class PlatformService {
       if (error) return { success: false, error: error.message }
 
       try {
-        const stored = PrintERPDataStore.get<SubscriptionPlanRecord[]>(STORAGE_KEYS.PLATFORM_PLANS) || DEFAULT_PLANS
+        const stored = PrintFlowDataStore.get<SubscriptionPlanRecord[]>(STORAGE_KEYS.PLATFORM_PLANS) || DEFAULT_PLANS
         const updated = stored.map((p) => (p.id === planId ? { ...p, is_active: false } : p))
-        PrintERPDataStore.set(STORAGE_KEYS.PLATFORM_PLANS, updated, false)
+        PrintFlowDataStore.set(STORAGE_KEYS.PLATFORM_PLANS, updated, false)
       } catch {}
 
       await this.recordAuditLog(
@@ -3681,9 +3681,9 @@ export class PlatformService {
       if (error) return { success: false, error: error.message }
 
       try {
-        const stored = PrintERPDataStore.get<SubscriptionPlanRecord[]>(STORAGE_KEYS.PLATFORM_PLANS) || DEFAULT_PLANS
+        const stored = PrintFlowDataStore.get<SubscriptionPlanRecord[]>(STORAGE_KEYS.PLATFORM_PLANS) || DEFAULT_PLANS
         const updated = stored.map((p) => (p.id === planId ? { ...p, is_active: true } : p))
-        PrintERPDataStore.set(STORAGE_KEYS.PLATFORM_PLANS, updated, false)
+        PrintFlowDataStore.set(STORAGE_KEYS.PLATFORM_PLANS, updated, false)
       } catch {}
 
       await this.recordAuditLog(
@@ -3751,9 +3751,9 @@ export class PlatformService {
       }
 
       try {
-        const stored = PrintERPDataStore.get<SubscriptionPlanRecord[]>(STORAGE_KEYS.PLATFORM_PLANS) || DEFAULT_PLANS
+        const stored = PrintFlowDataStore.get<SubscriptionPlanRecord[]>(STORAGE_KEYS.PLATFORM_PLANS) || DEFAULT_PLANS
         const updated = stored.filter((p) => p.id !== planId)
-        PrintERPDataStore.set(STORAGE_KEYS.PLATFORM_PLANS, updated, false)
+        PrintFlowDataStore.set(STORAGE_KEYS.PLATFORM_PLANS, updated, false)
       } catch {}
 
       await this.recordAuditLog(
@@ -3836,8 +3836,8 @@ export class PlatformService {
 
       const formatted: PlatformAuditLogItem[] = (data || []).map((l: any) => {
         const adminObj = l.platform_admins
-        const actorEmail = l.actor_email || adminObj?.email || 'system@printerp.com.bd'
-        const actorName = adminObj?.full_name || l.details?.actor_name || l.details?.admin_name || (actorEmail === 'bdinfosky@gmail.com' ? 'Shahidur Rahman' : (actorEmail === 'admin@printerp.com.bd' ? 'Md. Shahidur Rahman' : null))
+        const actorEmail = l.actor_email || adminObj?.email || 'system@printflow.bd'
+        const actorName = adminObj?.full_name || l.details?.actor_name || l.details?.admin_name || (actorEmail === 'bdinfosky@gmail.com' ? 'Shahidur Rahman' : (actorEmail === 'admin@printflow.bd' ? 'Md. Shahidur Rahman' : null))
         const actorRole = adminObj?.role || l.details?.role || 'platform_owner'
         const rawIp = l.ip_address || l.details?.ip_address || null
         const cleanIp = rawIp === '::1' ? '127.0.0.1' : rawIp
@@ -3941,7 +3941,7 @@ export class PlatformService {
       }
 
       if (!actorEmail) {
-        actorEmail = 'system@printerp.com.bd'
+        actorEmail = 'system@printflow.bd'
       }
 
       // Rule #18 & #24: Recursive secret sanitizer for audit payloads
@@ -4358,7 +4358,7 @@ export class PlatformService {
 
       // Check local data store fallback if database returned nothing
       if (cuErr || rawCompanyUsers.length === 0) {
-        const localCU = PrintERPDataStore.get<any[]>(STORAGE_KEYS.COMPANY_USERS) || []
+        const localCU = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.COMPANY_USERS) || []
         if (localCU.length > 0) {
           rawCompanyUsers = localCU.map((cu: any) => ({
             id: cu.id,
@@ -4395,8 +4395,8 @@ export class PlatformService {
       ])
 
       // Fallback maps from local store
-      const localCompanies = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PLATFORM_COMPANIES) || []
-      const registeredUsers = (PrintERPDataStore as any).get('printerp_registered_users') || []
+      const localCompanies = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.PLATFORM_COMPANIES) || []
+      const registeredUsers = (PrintFlowDataStore as any).get('printflow_registered_users') || []
 
       const compMap = new Map<string, any>()
       ;(compRes.data || []).forEach((c: any) => compMap.set(c.id, c))
@@ -4430,7 +4430,7 @@ export class PlatformService {
         const roleName = roleObj?.name || (roleSlug.includes('owner') ? 'Business Owner' : roleSlug)
 
         const fullName = profile?.full_name || cu.invited_name || (roleSlug.includes('owner') ? 'Business Owner' : 'Tenant User')
-        const email = profile?.email || cu.invited_email || (cu.user_id?.includes('@') ? cu.user_id : 'user@printerp.com')
+        const email = profile?.email || cu.invited_email || (cu.user_id?.includes('@') ? cu.user_id : 'user@printflow.bd')
         const phone = profile?.phone || cu.phone || null
 
         return {
@@ -4513,9 +4513,9 @@ export class PlatformService {
       }
 
       // Also sync transient store
-      const localCU = PrintERPDataStore.get<any[]>(STORAGE_KEYS.COMPANY_USERS) || []
+      const localCU = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.COMPANY_USERS) || []
       const updatedLocal = localCU.map((cu: any) => cu.id === companyUserId ? { ...cu, status: newStatus } : cu)
-      PrintERPDataStore.set(STORAGE_KEYS.COMPANY_USERS, updatedLocal)
+      PrintFlowDataStore.set(STORAGE_KEYS.COMPANY_USERS, updatedLocal)
 
       await this.recordAuditLog(
         `tenant_user.${newStatus}`,
@@ -5369,7 +5369,7 @@ export class PlatformService {
         .map((u: any) => ({
           id: u.id,
           full_name: u.profile?.full_name || 'Staff User',
-          email: u.profile?.email || 'staff@printerp.com.bd',
+          email: u.profile?.email || 'staff@printflow.bd',
           company_name: u.companies?.name || 'Printing Firm',
           role: u.department || 'General Staff',
         }))
@@ -5503,7 +5503,7 @@ export class PlatformService {
 
       // Synchronize in-memory DataStore so EntitlementService kill-switch is immediately aware
       try {
-        PrintERPDataStore.set(STORAGE_KEYS.PLATFORM_FEATURE_FLAGS, items)
+        PrintFlowDataStore.set(STORAGE_KEYS.PLATFORM_FEATURE_FLAGS, items)
       } catch {}
 
       return { success: true, data: overview }
@@ -6002,7 +6002,7 @@ export class PlatformService {
     }
 
     // Fallback to local data store if present
-    const saved = PrintERPDataStore.get<PlatformSystemSettings>(STORAGE_KEYS.PLATFORM_SYSTEM_SETTINGS)
+    const saved = PrintFlowDataStore.get<PlatformSystemSettings>(STORAGE_KEYS.PLATFORM_SYSTEM_SETTINGS)
     if (saved) {
       return {
         success: true,
@@ -6335,16 +6335,16 @@ export class PlatformService {
 
       if (error) return { success: false, error: error.message }
 
-      // Sync into PrintERPDataStore
+      // Sync into PrintFlowDataStore
       try {
-        const storedFlags = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PLATFORM_FEATURE_FLAGS) || []
+        const storedFlags = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.PLATFORM_FEATURE_FLAGS) || []
         storedFlags.push({
           id: data.id,
           key: cleanKey,
           name: input.name,
           is_enabled: data.is_enabled,
         })
-        PrintERPDataStore.set(STORAGE_KEYS.PLATFORM_FEATURE_FLAGS, storedFlags)
+        PrintFlowDataStore.set(STORAGE_KEYS.PLATFORM_FEATURE_FLAGS, storedFlags)
       } catch {}
 
       await this.recordAuditLog('feature_flag.create', 'platform_feature_flag', data.id, undefined, undefined, {
@@ -6392,16 +6392,16 @@ export class PlatformService {
 
       if (error) return { success: false, error: error.message }
 
-      // Sync into PrintERPDataStore so EntitlementService kill-switch evaluates immediately
+      // Sync into PrintFlowDataStore so EntitlementService kill-switch evaluates immediately
       try {
-        const storedFlags = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PLATFORM_FEATURE_FLAGS) || []
+        const storedFlags = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.PLATFORM_FEATURE_FLAGS) || []
         const existingIdx = storedFlags.findIndex((f: any) => f.id === resolved.id || f.key === resolved.key)
         if (existingIdx >= 0) {
           storedFlags[existingIdx] = { ...storedFlags[existingIdx], ...payload }
         } else {
           storedFlags.push({ id: resolved.id, key: resolved.key, ...payload })
         }
-        PrintERPDataStore.set(STORAGE_KEYS.PLATFORM_FEATURE_FLAGS, storedFlags)
+        PrintFlowDataStore.set(STORAGE_KEYS.PLATFORM_FEATURE_FLAGS, storedFlags)
       } catch {}
 
       await this.recordAuditLog('feature_flag.update', 'platform_feature_flag', resolved.id, undefined, undefined, input)
@@ -6422,11 +6422,11 @@ export class PlatformService {
 
       if (error) return { success: false, error: error.message }
 
-      // Sync into PrintERPDataStore
+      // Sync into PrintFlowDataStore
       try {
-        const storedFlags = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PLATFORM_FEATURE_FLAGS) || []
+        const storedFlags = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.PLATFORM_FEATURE_FLAGS) || []
         const updated = storedFlags.filter((f: any) => f.id !== resolved.id && f.key !== resolved.key)
-        PrintERPDataStore.set(STORAGE_KEYS.PLATFORM_FEATURE_FLAGS, updated)
+        PrintFlowDataStore.set(STORAGE_KEYS.PLATFORM_FEATURE_FLAGS, updated)
       } catch {}
 
       await this.recordAuditLog('feature_flag.delete', 'platform_feature_flag', resolved.id, undefined, undefined, { key: resolved.key })
@@ -6449,16 +6449,16 @@ export class PlatformService {
 
       if (error) return { success: false, error: error.message }
 
-      // Sync into PrintERPDataStore so EntitlementService kill-switch evaluates immediately
+      // Sync into PrintFlowDataStore so EntitlementService kill-switch evaluates immediately
       try {
-        const storedFlags = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PLATFORM_FEATURE_FLAGS) || []
+        const storedFlags = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.PLATFORM_FEATURE_FLAGS) || []
         const existingIdx = storedFlags.findIndex((f: any) => f.id === resolved.id || f.key === resolved.key)
         if (existingIdx >= 0) {
           storedFlags[existingIdx] = { ...storedFlags[existingIdx], is_enabled: isEnabled }
         } else {
           storedFlags.push({ id: resolved.id, key: resolved.key, is_enabled: isEnabled })
         }
-        PrintERPDataStore.set(STORAGE_KEYS.PLATFORM_FEATURE_FLAGS, storedFlags)
+        PrintFlowDataStore.set(STORAGE_KEYS.PLATFORM_FEATURE_FLAGS, storedFlags)
       } catch {}
 
       await this.recordAuditLog('feature_flag.toggle', 'platform_feature_flag', resolved.id, undefined, undefined, {
@@ -6756,10 +6756,10 @@ export class PlatformService {
 
 
       // Sync with transient local store
-      PrintERPDataStore.set(STORAGE_KEYS.PLATFORM_SYSTEM_SETTINGS, payload)
+      PrintFlowDataStore.set(STORAGE_KEYS.PLATFORM_SYSTEM_SETTINGS, payload)
     } catch {
       // Non-blocking fallback
-      PrintERPDataStore.set(STORAGE_KEYS.PLATFORM_SYSTEM_SETTINGS, settings)
+      PrintFlowDataStore.set(STORAGE_KEYS.PLATFORM_SYSTEM_SETTINGS, settings)
     }
 
     await this.recordAuditLog(

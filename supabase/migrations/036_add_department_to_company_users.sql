@@ -1,5 +1,5 @@
 -- ==============================================================================
--- PrintERP / InkFlow SaaS - Migration 036: Add Department & Custom Metadata to Company Users
+-- PrintFlow / PrintFlow SaaS - Migration 036: Add Department & Custom Metadata to Company Users
 -- Adds department, responsibilities, and raw_overrides to public.company_users.
 -- ==============================================================================
 

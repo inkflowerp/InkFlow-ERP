@@ -1,7 +1,7 @@
 # UX Specification: Delivery & Finishing Module (ডেলিভারি চালান, অন-সাইট ফিটিং ও পোস্ট-প্রেস ফিনিশিং)
 
 ## 1. Executive Summary & Purpose
-The Delivery & Finishing module represents the final operational fulfillment and customer handover phase in InkFlow ERP. Its primary job to be done (JTBD) is helping logistics coordinators, dispatch gatekeepers, signage installation supervisors, and post-press finishing technicians answer:
+The Delivery & Finishing module represents the final operational fulfillment and customer handover phase in PrintFlow. Its primary job to be done (JTBD) is helping logistics coordinators, dispatch gatekeepers, signage installation supervisors, and post-press finishing technicians answer:
 > **"Which orders are ready on the finishing bench to be laminated or bound, which consignments must be loaded onto vehicles today, how much Cash on Delivery (COD) must drivers collect before handover, and which field rigging crews need sign-off at customer sites?"**
 
 The fulfillment and delivery handover workflow must be completable in **$\le 3$ clicks from the Dashboard**:

@@ -1,8 +1,8 @@
-# PrintERP Canonical Engineering Workflow Specification
+# PrintFlow Canonical Engineering Workflow Specification
 
 ## Overview & Mental Model
 
-PrintERP is architected around the mental model of how commercial and industrial print shops operate in Bangladesh and South Asia. The print-shop owner and floor staff do not interact with fragmented ERP database tables; instead, they experience an interconnected, proactive workflow:
+PrintFlow is architected around the mental model of how commercial and industrial print shops operate in Bangladesh and South Asia. The print-shop owner and floor staff do not interact with fragmented ERP database tables; instead, they experience an interconnected, proactive workflow:
 
 ```
 CUSTOMER
@@ -70,7 +70,7 @@ The system only displays stages relevant to each job's specifications:
 
 ## 3. Human Stages vs. Next Actions
 
-PrintERP never shows raw technical status codes without clear next actions.
+PrintFlow never shows raw technical status codes without clear next actions.
 
 | Current Stage (`humanStage`) | Next Action (`nextActionEn`) | Direct Destination |
 | :--- | :--- | :--- |
@@ -120,7 +120,7 @@ An order is **NEVER** marked `Delivered` until all required deliverable jobs are
 
 ## 6. Machine Scheduling & Conflict Prevention
 
-Machines in PrintERP are **RESOURCES**, not workflow stages.
+Machines in PrintFlow are **RESOURCES**, not workflow stages.
 - Server validates that no machine is assigned overlapping runtimes.
 - In `ProductionPlanningService.startTask`, if machine `DX5-01` is already `in_progress` running another job, starting a second job throws an immediate machine conflict error:
   `Machine conflict: Machine DX5-01 is currently running Task #TSK-2045. Parallel execution is not permitted on this machine.`

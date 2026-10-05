@@ -12,24 +12,26 @@ if (fs.existsSync(allowlistPath)) {
 
 const isStrict = process.argv.includes('--strict') || process.env.STRICT_BRAND_CHECK === 'true';
 
-// Token definitions to scan
+// Token definitions to scan for forbidden legacy branding
 const BANNED_PATTERNS = [
-  { name: 'inkflow', regex: /\binkflow\b/i },
-  { name: 'ink-flow', regex: /\bink-flow\b/i },
-  { name: 'printerp', regex: /\bprinterp\b/i },
-  { name: 'print erp', regex: /\bprint erp\b/i },
+  { name: 'legacy inkflow', regex: /\binkflow\b/i },
+  { name: 'legacy ink-flow', regex: /\bink-flow\b/i },
+  { name: 'legacy printerp', regex: /\bprinterp\b/i },
+  { name: 'legacy print erp', regex: /\bprint erp\b/i },
   { name: 'Bangla প্রিন্ট ইআরপি', regex: /প্রিন্ট\s+ইআরপি/ },
   { name: 'Bangla প্রিন্টইআরপি', regex: /প্রিন্টইআরপি/ },
   { name: 'Bangla ইঙ্কফ্লো', regex: /ইঙ্কফ্লো|ইংকফ্লো/ },
   { name: 'legacy host inkflowerp.com', regex: /inkflowerp\.com/i },
   { name: 'legacy host inkflow.com.bd', regex: /inkflow\.com\.bd/i },
   { name: 'legacy host inkflow-erp.vercel.app', regex: /inkflow-erp\.vercel\.app/i },
+  { name: 'legacy host inkflow-erp.vercel.com', regex: /inkflow-erp\.vercel\.com/i },
   { name: 'legacy host printerp.com', regex: /printerp\.com/i },
   { name: 'legacy host printerp.com.bd', regex: /printerp\.com\.bd/i }
 ];
 
 function isPathAllowed(filePath) {
   const norm = filePath.replace(/\\/g, '/');
+  if (norm === 'scripts/brand-check.mjs' || norm === 'scripts/brand-allowlist.json') return true;
   for (const pat of allowlist.allowedFilePatterns) {
     if (pat.endsWith('/**')) {
       const base = pat.slice(0, -3);
@@ -54,7 +56,7 @@ function runCheck() {
   let gitTrackedFiles = [];
   try {
     const stdout = execSync('git ls-files', { encoding: 'utf8', maxBuffer: 20 * 1024 * 1024 });
-    gitTrackedFiles = stdout.trim().split('\n').filter(Boolean);
+    gitTrackedFiles = stdout.trim().split(/\r?\n/).map(f => f.trim()).filter(Boolean);
   } catch (err) {
     console.error('Failed to list git files:', err);
     process.exit(1);

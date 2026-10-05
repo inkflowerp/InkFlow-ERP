@@ -1,5 +1,5 @@
 -- ==============================================================================
--- InkFlow SaaS - Migration 115: Employee Ownership RLS & Data Isolation Hardening
+-- PrintFlow SaaS - Migration 115: Employee Ownership RLS & Data Isolation Hardening
 -- Enforces:
 --   1. Operators read and update only tasks assigned to them, their machine, or branch
 --   2. Designers read and update only their assigned design jobs

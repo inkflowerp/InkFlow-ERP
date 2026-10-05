@@ -83,7 +83,7 @@ export default async function RootLayout({
             __html: `
               (function() {
                 try {
-                  var key = 'printerp_theme';
+                  var key = 'printflow_theme';
                   var stored = localStorage.getItem(key);
                   var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
                   var isDark = stored === 'dark' || (!stored && prefersDark) || (stored === 'system' && prefersDark);

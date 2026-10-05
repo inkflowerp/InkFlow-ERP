@@ -19,7 +19,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 
-const SNOOZE_STORAGE_KEY = 'printerp_trial_popup_snooze'
+const SNOOZE_STORAGE_KEY = 'printflow_trial_popup_snooze'
 
 export function TrialNotificationPopup() {
  const {

@@ -125,7 +125,7 @@ export default function PlatformTenantsPage() {
  const [provisionOwnerName, setProvisionOwnerName] = useState('')
  const [provisionOwnerEmail, setProvisionOwnerEmail] = useState('')
  const [provisionOwnerPhone, setProvisionOwnerPhone] = useState('')
- const [provisionPassword, setProvisionPassword] = useState('PrintERP2026!Owner')
+ const [provisionPassword, setProvisionPassword] = useState('PrintFlow2026!Owner')
  const [showPassword, setShowPassword] = useState(false)
  const [provisionAddress, setProvisionAddress] = useState('')
  const [provisionCurrency, setProvisionCurrency] = useState('BDT')
@@ -394,7 +394,7 @@ export default function PlatformTenantsPage() {
  formData.set('owner_name', provisionOwnerName.trim())
  formData.set('owner_email', provisionOwnerEmail.trim())
  formData.set('owner_phone', provisionOwnerPhone.trim())
- formData.set('owner_password', provisionPassword.trim() || 'PrintERP2026!Owner')
+ formData.set('owner_password', provisionPassword.trim() || 'PrintFlow2026!Owner')
  formData.set('address', provisionAddress.trim())
  formData.set('currency', provisionCurrency)
  formData.set('plan', provisionPlan)
@@ -411,7 +411,7 @@ export default function PlatformTenantsPage() {
  businessName: res.data.name,
  slug: res.data.slug,
  email: provisionOwnerEmail.trim() || res.data.email || `owner@${res.data.slug}.com`,
- password: provisionPassword.trim() || 'PrintERP2026!Owner',
+ password: provisionPassword.trim() || 'PrintFlow2026!Owner',
  loginUrl: getTenantLink(res.data.slug, '/login'),
  dashboardUrl: getTenantLink(res.data.slug, '/dashboard'),
  plan: provisionPlan,
@@ -425,7 +425,7 @@ export default function PlatformTenantsPage() {
  setProvisionOwnerName('')
  setProvisionOwnerEmail('')
  setProvisionOwnerPhone('')
- setProvisionPassword('PrintERP2026!Owner')
+ setProvisionPassword('PrintFlow2026!Owner')
  setProvisionAddress('')
  setProvisionPlan('trial')
  loadData()

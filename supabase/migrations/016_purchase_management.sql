@@ -1,5 +1,5 @@
 -- ==============================================================================
--- PrintERP SaaS - Migration 016: Purchase Management & Supplier Price Benchmarks
+-- PrintFlow - Migration 016: Purchase Management & Supplier Price Benchmarks
 -- Supports:
 --   1. Purchase Orders with multi-item tracking
 --   2. Partial Receiving (goods_received_notes with incremental stock sync)

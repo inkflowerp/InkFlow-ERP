@@ -1,5 +1,5 @@
 -- ==============================================================================
--- PrintERP SaaS - Migration 022: Reporting and Business Analytics Engine
+-- PrintFlow - Migration 022: Reporting and Business Analytics Engine
 -- Provides:
 --   1. Server-side SQL aggregations for Sales, Production, Financial, Inventory & Customer
 --   2. Optimized performance avoiding multi-thousand row browser loading

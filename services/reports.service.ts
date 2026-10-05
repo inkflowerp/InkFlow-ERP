@@ -17,7 +17,7 @@ import type {
   FinancialSummaryRow,
   MonthlyOverviewRow,
 } from '../types/reports.types.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../lib/db/data-store.ts'
 import type { SalesOrderRecord } from '../types/order.types.ts'
 import type { CustomerRecord } from '../types/crm.types.ts'
 import type { InvoiceRecord, PaymentRecord } from '../types/billing.types.ts'
@@ -285,7 +285,7 @@ export class ReportsService {
   static computeBusinessReport = computeBusinessReport
   // Legacy helper methods preserved for backward compatibility
   static getSalesByProduct(ordersList?: SalesOrderRecord[]): SalesBreakdownItem[] {
-    const orders = ordersList || PrintERPDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS) || []
+    const orders = ordersList || PrintFlowDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS) || []
     if (!orders.length) return []
     const map = new Map<string, { revenue: number; count: number; category: string }>()
     let totalRev = 0
@@ -310,7 +310,7 @@ export class ReportsService {
   }
 
   static getSalesByCustomer(ordersList?: SalesOrderRecord[]): SalesBreakdownItem[] {
-    const orders = ordersList || PrintERPDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS) || []
+    const orders = ordersList || PrintFlowDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS) || []
     if (!orders.length) return []
     const map = new Map<string, { revenue: number; count: number }>()
     let totalRev = 0
@@ -334,7 +334,7 @@ export class ReportsService {
   }
 
   static getSalesByPerson(ordersList?: SalesOrderRecord[]): SalesBreakdownItem[] {
-    const orders = ordersList || PrintERPDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS) || []
+    const orders = ordersList || PrintFlowDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS) || []
     if (!orders.length) return []
     const map = new Map<string, { revenue: number; count: number }>()
     let totalRev = 0
@@ -358,7 +358,7 @@ export class ReportsService {
   }
 
   static getSalesByArea(ordersList?: SalesOrderRecord[]): SalesBreakdownItem[] {
-    const orders = ordersList || PrintERPDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS) || []
+    const orders = ordersList || PrintFlowDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS) || []
     if (!orders.length) return []
     const map = new Map<string, { revenue: number; count: number }>()
     let totalRev = 0
@@ -382,7 +382,7 @@ export class ReportsService {
   }
 
   static getPaymentMethods(paymentsList?: PaymentRecord[]): SalesBreakdownItem[] {
-    const payments = paymentsList || PrintERPDataStore.get<PaymentRecord[]>(STORAGE_KEYS.PAYMENTS) || []
+    const payments = paymentsList || PrintFlowDataStore.get<PaymentRecord[]>(STORAGE_KEYS.PAYMENTS) || []
     if (!payments.length) return []
     const map = new Map<string, { revenue: number; count: number }>()
     let totalRev = 0
@@ -406,7 +406,7 @@ export class ReportsService {
   }
 
   static getProductionMetrics(jobsList?: ProductionJobRecord[]): ProductionMetricItem[] {
-    const jobs = jobsList || PrintERPDataStore.get<ProductionJobRecord[]>(STORAGE_KEYS.PRODUCTION_JOBS) || []
+    const jobs = jobsList || PrintFlowDataStore.get<ProductionJobRecord[]>(STORAGE_KEYS.PRODUCTION_JOBS) || []
     const completed = jobs.filter((j) => j.status === 'completed').length
     const inProgress = jobs.filter((j) => j.status === 'in_progress').length
     const queued = jobs.filter((j) => j.status === 'queued').length
@@ -437,7 +437,7 @@ export class ReportsService {
   }
 
   static getFinancialAging(invoicesList?: InvoiceRecord[]): FinancialAgingItem[] {
-    const invoices = invoicesList || PrintERPDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []
+    const invoices = invoicesList || PrintFlowDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []
     const overdueInvoices = invoices.filter((i) => (Number(i.due_amount) || 0) > 0)
     const totalOverdue = overdueInvoices.reduce((sum, i) => sum + (Number(i.due_amount) || 0), 0)
 
@@ -474,7 +474,7 @@ export class ReportsService {
   }
 
   static getInventoryValuation(materialsList?: MaterialRecord[]): InventoryValuationItem[] {
-    const materials = materialsList || PrintERPDataStore.get<MaterialRecord[]>(STORAGE_KEYS.MATERIALS) || []
+    const materials = materialsList || PrintFlowDataStore.get<MaterialRecord[]>(STORAGE_KEYS.MATERIALS) || []
     return materials.map((m, idx) => {
       const unitCost = Number(m.average_cost ?? m.cost_per_unit ?? m.last_purchase_price ?? 0)
       return {
@@ -492,8 +492,8 @@ export class ReportsService {
   }
 
   static getCustomerReports(customersList?: CustomerRecord[], ordersList?: SalesOrderRecord[]): CustomerReportItem[] {
-    const customers = customersList || PrintERPDataStore.get<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS) || []
-    const orders = ordersList || PrintERPDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS) || []
+    const customers = customersList || PrintFlowDataStore.get<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS) || []
+    const orders = ordersList || PrintFlowDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS) || []
 
     return customers.map((c, idx) => {
       const custOrders = orders.filter((o) => o.customer_id === c.id || o.customer_name === c.name)

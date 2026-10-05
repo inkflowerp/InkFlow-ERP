@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { useI18n } from '@/i18n/context'
-import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
+import { PrintFlowDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import { ICON_MAP } from './dashboard-quick-actions'
 import type { QuickActionItem, MyWorkItem } from '@/lib/dashboard/dashboard-engine'
 import type { CustomerRecord } from '@/types/crm.types'
@@ -90,7 +90,7 @@ export function DashboardModals({
  created_at: new Date().toISOString(),
  updated_at: new Date().toISOString(),
     }
- PrintERPDataStore.addItem<CustomerRecord>(STORAGE_KEYS.CUSTOMERS, newCust)
+ PrintFlowDataStore.addItem<CustomerRecord>(STORAGE_KEYS.CUSTOMERS, newCust)
  onCloseModal()
  const name = customerName
  setCustomerName('')
@@ -117,7 +117,7 @@ export function DashboardModals({
  recorded_by_name: currentUserName || 'Staff',
  created_at: new Date().toISOString(),
     }
- PrintERPDataStore.addItem<ExpenseRecord>(STORAGE_KEYS.EXPENSES, newExp)
+ PrintFlowDataStore.addItem<ExpenseRecord>(STORAGE_KEYS.EXPENSES, newExp)
  onCloseModal()
  const title = expenseTitle
  setExpenseTitle('')
@@ -146,7 +146,7 @@ export function DashboardModals({
  created_at: new Date().toISOString(),
  updated_at: new Date().toISOString(),
     }
- PrintERPDataStore.addItem<MaterialRecord>(STORAGE_KEYS.MATERIALS, newMat)
+ PrintFlowDataStore.addItem<MaterialRecord>(STORAGE_KEYS.MATERIALS, newMat)
  onCloseModal()
  const name = materialName
  setMaterialName('')
@@ -158,7 +158,7 @@ export function DashboardModals({
  e.preventDefault()
  if (!problemDescription.trim()) return
  if (activeWorkItem) {
- PrintERPDataStore.updateItem<ProductionJobRecord>(STORAGE_KEYS.PRODUCTION_JOBS, activeWorkItem.id, {
+ PrintFlowDataStore.updateItem<ProductionJobRecord>(STORAGE_KEYS.PRODUCTION_JOBS, activeWorkItem.id, {
  has_rework: true,
  priority: 'very_urgent',
       })

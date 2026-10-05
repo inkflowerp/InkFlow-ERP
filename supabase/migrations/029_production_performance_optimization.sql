@@ -1,5 +1,5 @@
 -- ==============================================================================
--- PrintERP SaaS - Migration 029: Production Performance Optimization
+-- PrintFlow - Migration 029: Production Performance Optimization
 -- High-performance covering indexes, foreign key index coverage,
 -- optimized RLS function caching, and pre-aggregated dashboard KPI queries.
 -- ==============================================================================

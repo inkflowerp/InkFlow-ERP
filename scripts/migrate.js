@@ -160,15 +160,22 @@ async function runMigrations() {
 
     console.log(`\nStarting migration sequence: ${migrationFiles.length} migrations to execute...\n`)
 
-    // Architectural Continuity: The internal migrations tracking table is retained as
-    // `_printerp_migrations` to preserve applied migration history across existing deployments
-    // and prevent double-applying historical migrations during the PrintFlow rebrand.
+    // PrintFlow Migrations: Both _printflow_migrations and legacy _printerp_migrations are maintained
+    // to preserve historical continuity while promoting the canonical PrintFlow brand.
     await client.query(`
+      CREATE TABLE IF NOT EXISTS _printflow_migrations (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(255) UNIQUE NOT NULL,
+        applied_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+      );
       CREATE TABLE IF NOT EXISTS _printerp_migrations (
         id SERIAL PRIMARY KEY,
         name VARCHAR(255) UNIQUE NOT NULL,
         applied_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
       );
+      INSERT INTO _printflow_migrations (name, applied_at)
+      SELECT name, applied_at FROM _printerp_migrations
+      ON CONFLICT (name) DO NOTHING;
     `)
 
     const forceArg = process.argv.find((a) => a.startsWith('--force='))?.split('=')[1] || process.argv[2] === '--force' ? process.argv[3] : null
@@ -178,10 +185,10 @@ async function runMigrations() {
       const filePath = path.join(migrationsDir, file)
       const sql = fs.readFileSync(filePath, 'utf8')
 
-      // Check if already applied
+      // Check if already applied in either table
       const shouldForce = forceArg === 'all' || (forceArg && file.includes(forceArg))
       if (!shouldForce) {
-        const existing = await client.query('SELECT name FROM _printerp_migrations WHERE name = $1', [file])
+        const existing = await client.query('SELECT name FROM _printflow_migrations WHERE name = $1 UNION SELECT name FROM _printerp_migrations WHERE name = $1', [file])
         if (existing.rows.length > 0) {
           console.log(`[${i + 1}/${migrationFiles.length}] Already applied: ${file}`)
           continue
@@ -192,6 +199,7 @@ async function runMigrations() {
       try {
         await client.query('BEGIN')
         await client.query(sql)
+        await client.query('INSERT INTO _printflow_migrations (name) VALUES ($1) ON CONFLICT (name) DO NOTHING', [file])
         await client.query('INSERT INTO _printerp_migrations (name) VALUES ($1) ON CONFLICT (name) DO NOTHING', [file])
         await client.query('COMMIT')
         console.log(`✓ Applied ${file} successfully.`)
@@ -225,6 +233,7 @@ async function runMigrations() {
           }
         }
 
+        await client.query('INSERT INTO _printflow_migrations (name) VALUES ($1) ON CONFLICT (name) DO NOTHING', [file])
         await client.query('INSERT INTO _printerp_migrations (name) VALUES ($1) ON CONFLICT (name) DO NOTHING', [file])
         console.log(`✓ Applied ${file} via statement execution (${successCount} statements).`)
       }

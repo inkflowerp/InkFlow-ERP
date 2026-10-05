@@ -323,7 +323,7 @@ export function NewWorkWizard({
  const cleanPhone = custPhone.replace(/\D/g, '')
  const formattedPhone = cleanPhone.startsWith('880') ? cleanPhone : cleanPhone.startsWith('0') ? `88${cleanPhone}` : `880${cleanPhone}`
  const whatsappMsg = encodeURIComponent(
-        `নমস্কার ${selectedCustomer.name},\nInkFlow এ আপনার কাজ (${jobTitle}) অর্ডার হিসেবে যুক্ত হয়েছে।\nবিল নং: ${invoiceNumber}\nমোট টাকা: ৳${totalAmount.toLocaleString()}\nজমা: ৳${advancePaid.toLocaleString()}\nবাকি: ৳${dueAmount.toLocaleString()}\nডেলিভারি: ${deliveryDate}\nধন্যবাদ!`
+        `নমস্কার ${selectedCustomer.name},\nPrintFlow এ আপনার কাজ (${jobTitle}) অর্ডার হিসেবে যুক্ত হয়েছে।\nবিল নং: ${invoiceNumber}\nমোট টাকা: ৳${totalAmount.toLocaleString()}\nজমা: ৳${advancePaid.toLocaleString()}\nবাকি: ৳${dueAmount.toLocaleString()}\nডেলিভারি: ${deliveryDate}\nধন্যবাদ!`
       )
  const waUrl = `https://wa.me/${formattedPhone}?text=${whatsappMsg}`
 

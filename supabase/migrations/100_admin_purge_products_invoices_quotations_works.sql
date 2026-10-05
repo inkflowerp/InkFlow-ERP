@@ -1,5 +1,5 @@
 -- ==============================================================================
--- PrintERP SaaS - Migration 100: Administrative Purge of Products, Invoices, Quotations & Works
+-- PrintFlow - Migration 100: Administrative Purge of Products, Invoices, Quotations & Works
 -- Allows secure, atomic cleanup of products, catalog, invoices, quotations, work orders,
 -- job orders, design jobs, production jobs/tasks, and resets sequence counters.
 -- ==============================================================================

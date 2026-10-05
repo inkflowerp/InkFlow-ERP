@@ -1,5 +1,5 @@
 -- ==============================================================================
--- PrintERP SaaS - Migration 010: Product/Service Catalog + Safe Pricing Engine
+-- PrintFlow - Migration 010: Product/Service Catalog + Safe Pricing Engine
 -- Supports:
 --   1. Products table with 6 product types and 10 units of measure
 --   2. Structured JSON pricing formulas (Safe non-eval declarative models)

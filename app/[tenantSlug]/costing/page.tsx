@@ -43,7 +43,7 @@ import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
 import { JobCostingRecord, CostHeads, calculateNegotiationMargin } from '@/types/costing.types'
 import { formatBDT } from '@/lib/formatters'
 import { useDataStore } from '@/hooks/use-data-store'
-import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
+import { PrintFlowDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import {
   getCostingsAction,
   createCostingAction,
@@ -374,7 +374,7 @@ export default function JobCostingPage() {
 
  const updatedList = [newRecord, ...costings]
  setStoredCostings(updatedList)
- PrintERPDataStore.addItem(STORAGE_KEYS.JOB_COSTINGS, newRecord)
+ PrintFlowDataStore.addItem(STORAGE_KEYS.JOB_COSTINGS, newRecord)
  createCostingAction(newRecord, company?.id).catch((e) =>
  console.warn('[Costing] Server create sync failed:', e)
  )
@@ -436,7 +436,7 @@ export default function JobCostingPage() {
 
  const updatedList = costings.map((c) => (c.id === editingJob.id ? updatedCosting : c))
  setStoredCostings(updatedList)
- PrintERPDataStore.updateItem<JobCostingRecord>(STORAGE_KEYS.JOB_COSTINGS, editingJob.id, updatedCosting)
+ PrintFlowDataStore.updateItem<JobCostingRecord>(STORAGE_KEYS.JOB_COSTINGS, editingJob.id, updatedCosting)
  updateCostingAction(editingJob.id, updatedCosting, company?.id).catch((e) =>
  console.warn('[Costing] Server update sync failed:', e)
  )
@@ -516,7 +516,7 @@ export default function JobCostingPage() {
  const url = URL.createObjectURL(blob)
  const link = document.createElement('a')
  link.href = url
- link.download = `PrintERP_Job_Costings_${new Date().toISOString().split('T')[0]}.csv`
+ link.download = `PrintFlow_Job_Costings_${new Date().toISOString().split('T')[0]}.csv`
  document.body.appendChild(link)
  link.click()
  document.body.removeChild(link)
@@ -1298,7 +1298,7 @@ export default function JobCostingPage() {
                         : c
                     )
  setStoredCostings(updated)
- PrintERPDataStore.updateItem<JobCostingRecord>(STORAGE_KEYS.JOB_COSTINGS, negotiatingJob.id, {
+ PrintFlowDataStore.updateItem<JobCostingRecord>(STORAGE_KEYS.JOB_COSTINGS, negotiatingJob.id, {
  selling_price: negotiationResult.finalPrice,
  est: {
                         ...negotiatingJob.est,

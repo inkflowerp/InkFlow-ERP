@@ -26,8 +26,8 @@ describe('Business Email Event Workflow Unit Tests', () => {
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }
-    EmailDataStore.set('printerp_email_gateways', [tenantGw])
-    EmailDataStore.set('printerp_email_logs', [])
+    EmailDataStore.set('printflow_email_gateways', [tenantGw])
+    EmailDataStore.set('printflow_email_logs', [])
   })
 
   it('1. Dispatches Quotation Email with customer & price details', async () => {
@@ -46,7 +46,7 @@ describe('Business Email Event Workflow Unit Tests', () => {
     assert.strictEqual(res.success, true)
     assert.strictEqual(res.status, 'sent')
 
-    const logs = EmailDataStore.get<EmailLogRecord[]>('printerp_email_logs') || []
+    const logs = EmailDataStore.get<EmailLogRecord[]>('printflow_email_logs') || []
     assert.strictEqual(logs.length, 1)
     assert.strictEqual(logs[0].event_type, 'quotation_sent')
     assert.strictEqual(logs[0].recipient, 'procurement@dhakacity.gov.bd')

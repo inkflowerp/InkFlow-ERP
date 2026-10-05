@@ -37,7 +37,7 @@ import { KpiCard, KpiGrid } from '@/components/shared/kpi-card'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
 import { useDataStore } from '@/hooks/use-data-store'
-import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
+import { PrintFlowDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import {
  getTrashItemsAction,
  restoreFromTrashAction,
@@ -96,7 +96,7 @@ function TrashContent() {
         })
  const merged = Array.from(map.values())
  setTrashItems(merged)
- PrintERPDataStore.set(STORAGE_KEYS.TRASH_ITEMS, merged, true, tenantSlug)
+ PrintFlowDataStore.set(STORAGE_KEYS.TRASH_ITEMS, merged, true, tenantSlug)
       }
     } catch (e) {
  console.error('Error fetching trash items:', e)
@@ -170,8 +170,8 @@ function TrashContent() {
       }
 
  setTrashItems((prev) => prev.filter((t) => t.id !== item.id))
- const storeItems = PrintERPDataStore.get<TrashRecord[]>(STORAGE_KEYS.TRASH_ITEMS, tenantSlug) || []
- PrintERPDataStore.set(STORAGE_KEYS.TRASH_ITEMS, storeItems.filter((t) => t.id !== item.id), true, tenantSlug)
+ const storeItems = PrintFlowDataStore.get<TrashRecord[]>(STORAGE_KEYS.TRASH_ITEMS, tenantSlug) || []
+ PrintFlowDataStore.set(STORAGE_KEYS.TRASH_ITEMS, storeItems.filter((t) => t.id !== item.id), true, tenantSlug)
 
  showNotification(
  tBilingual(
@@ -197,8 +197,8 @@ function TrashContent() {
       }
 
  setTrashItems((prev) => prev.filter((t) => t.id !== itemToPermanentDelete.id))
- const storeItems = PrintERPDataStore.get<TrashRecord[]>(STORAGE_KEYS.TRASH_ITEMS, tenantSlug) || []
- PrintERPDataStore.set(STORAGE_KEYS.TRASH_ITEMS, storeItems.filter((t) => t.id !== itemToPermanentDelete.id), true, tenantSlug)
+ const storeItems = PrintFlowDataStore.get<TrashRecord[]>(STORAGE_KEYS.TRASH_ITEMS, tenantSlug) || []
+ PrintFlowDataStore.set(STORAGE_KEYS.TRASH_ITEMS, storeItems.filter((t) => t.id !== itemToPermanentDelete.id), true, tenantSlug)
 
  setIsPermanentModalOpen(false)
  setItemToPermanentDelete(null)
@@ -227,11 +227,11 @@ function TrashContent() {
 
  if (categoryToClear) {
  setTrashItems((prev) => prev.filter((t) => t.category !== categoryToClear))
- const storeItems = PrintERPDataStore.get<TrashRecord[]>(STORAGE_KEYS.TRASH_ITEMS, tenantSlug) || []
- PrintERPDataStore.set(STORAGE_KEYS.TRASH_ITEMS, storeItems.filter((t) => t.category !== categoryToClear), true, tenantSlug)
+ const storeItems = PrintFlowDataStore.get<TrashRecord[]>(STORAGE_KEYS.TRASH_ITEMS, tenantSlug) || []
+ PrintFlowDataStore.set(STORAGE_KEYS.TRASH_ITEMS, storeItems.filter((t) => t.category !== categoryToClear), true, tenantSlug)
       } else {
  setTrashItems([])
- PrintERPDataStore.set(STORAGE_KEYS.TRASH_ITEMS, [], true, tenantSlug)
+ PrintFlowDataStore.set(STORAGE_KEYS.TRASH_ITEMS, [], true, tenantSlug)
       }
 
  setIsEmptyTrashModalOpen(false)

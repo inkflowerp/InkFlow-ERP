@@ -43,7 +43,7 @@ import { PageContainer } from '@/components/ui/page-container'
 import { KpiCard, KpiGrid } from '@/components/shared/kpi-card'
 import type { SupplierRecord, SupplierMaterialPrice } from '@/types/crm.types'
 import { useDataStore } from '@/hooks/use-data-store'
-import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
+import { PrintFlowDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import type { CashBookEntryRecord } from '@/types/accounting.types'
 import type { PurchaseOrderRecord } from '@/types/purchase.types'
 import { formatBDT } from '@/lib/formatters'
@@ -113,10 +113,10 @@ export default function SupplierProfilePage() {
  const handleSaveRate = (rate: SupplierMaterialPrice) => {
  const exists = allPrices.some((p) => p.id === rate.id)
  if (exists) {
- PrintERPDataStore.updateItem(STORAGE_KEYS.SUPPLIER_PRICES, rate.id, rate)
+ PrintFlowDataStore.updateItem(STORAGE_KEYS.SUPPLIER_PRICES, rate.id, rate)
  showNotification(`Contract rate for '${rate.material_name}' updated.`)
     } else {
- PrintERPDataStore.addItem(STORAGE_KEYS.SUPPLIER_PRICES, rate)
+ PrintFlowDataStore.addItem(STORAGE_KEYS.SUPPLIER_PRICES, rate)
  showNotification(`Contract rate for '${rate.material_name}' saved.`)
     }
   }
@@ -129,7 +129,7 @@ export default function SupplierProfilePage() {
 
  const confirmDeleteRate = () => {
  if (!rateToDelete) return
- PrintERPDataStore.removeItem(STORAGE_KEYS.SUPPLIER_PRICES, rateToDelete.id)
+ PrintFlowDataStore.removeItem(STORAGE_KEYS.SUPPLIER_PRICES, rateToDelete.id)
  showNotification(`Contract rate for '${rateToDelete.name}' removed.`, 'info')
  setIsDeleteRateOpen(false)
  setRateToDelete(null)
@@ -137,7 +137,7 @@ export default function SupplierProfilePage() {
 
   // Handle Save Supplier from Edit
  const handleSaveSupplier = (updated: SupplierRecord) => {
- PrintERPDataStore.updateItem<SupplierRecord>(STORAGE_KEYS.SUPPLIERS, updated.id, updated)
+ PrintFlowDataStore.updateItem<SupplierRecord>(STORAGE_KEYS.SUPPLIERS, updated.id, updated)
  showNotification(`Supplier profile '${updated.supplier_name}' updated.`)
   }
 
@@ -146,7 +146,7 @@ export default function SupplierProfilePage() {
  if (!supplier) return
 
  const newBalance = Math.max(0, (supplier.outstanding_balance || 0) - amount)
- PrintERPDataStore.updateItem<SupplierRecord>(STORAGE_KEYS.SUPPLIERS, supplier.id, {
+ PrintFlowDataStore.updateItem<SupplierRecord>(STORAGE_KEYS.SUPPLIERS, supplier.id, {
  outstanding_balance: newBalance,
  updated_at: new Date().toISOString(),
     })
@@ -164,7 +164,7 @@ export default function SupplierProfilePage() {
  performed_by_name: details.authorizedBy || 'Cashier',
  created_at: new Date().toISOString(),
       }
- PrintERPDataStore.addItem<CashBookEntryRecord>(STORAGE_KEYS.CASH_BOOK, cashEntry)
+ PrintFlowDataStore.addItem<CashBookEntryRecord>(STORAGE_KEYS.CASH_BOOK, cashEntry)
     }
 
  showNotification(`Payment voucher ${details.voucherNumber} of ${formatBDT(amount)} recorded for ${supplier.supplier_name}.`)

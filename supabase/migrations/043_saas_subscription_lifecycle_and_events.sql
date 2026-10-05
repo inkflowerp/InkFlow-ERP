@@ -1,5 +1,5 @@
 -- ==============================================================================
--- InkFlow / PrintERP SaaS - Migration 043: SaaS Subscription Lifecycle & Events
+-- PrintFlow / PrintFlow - Migration 043: SaaS Subscription Lifecycle & Events
 -- Comprehensive Subscription State Machine, Immutable Event Ledger, Downgrade Scheduling,
 -- and Verification Status on Financial Transactions.
 -- ==============================================================================

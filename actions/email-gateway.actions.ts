@@ -68,8 +68,8 @@ export const getPlatformEmailGatewayAction = withPlatformAction(
         encrypted_credentials: null,
         encryption_type: ((process.env.PLATFORM_SMTP_SECURE || process.env.SMTP_SECURE) === 'true' ? 'ssl' : 'tls') as any,
         sender_name: process.env.PLATFORM_SENDER_NAME || process.env.SMTP_FROM_NAME || 'PrintFlow Platform',
-        sender_email: process.env.PLATFORM_SENDER_EMAIL || process.env.SMTP_FROM_EMAIL || process.env.PLATFORM_SMTP_USER || process.env.SMTP_USER || 'inkflow.erp@gmail.com',
-        reply_to_email: process.env.PLATFORM_SENDER_EMAIL || process.env.SMTP_REPLY_TO || 'inkflow.erp@gmail.com',
+        sender_email: process.env.PLATFORM_SENDER_EMAIL || process.env.SMTP_FROM_EMAIL || process.env.PLATFORM_SMTP_USER || process.env.SMTP_USER || 'printflow.bd@gmail.com',
+        reply_to_email: process.env.PLATFORM_SENDER_EMAIL || process.env.SMTP_REPLY_TO || 'printflow.bd@gmail.com',
         status: 'active',
         is_default: true,
         created_at: new Date().toISOString(),
@@ -80,7 +80,7 @@ export const getPlatformEmailGatewayAction = withPlatformAction(
 
     // Check local data store (development/tests only)
     if (process.env.NODE_ENV !== 'production') {
-      const localGateways = EmailDataStore.get<EmailGatewayRecord[]>('printerp_email_gateways') || []
+      const localGateways = EmailDataStore.get<EmailGatewayRecord[]>('printflow_email_gateways') || []
       const platLocal = localGateways.find((g) => !g.tenant_id && g.is_default && g.status === 'active')
       if (platLocal) {
         return sanitizeGatewayRecord(platLocal)
@@ -186,10 +186,10 @@ export const savePlatformEmailGatewayAction = withPlatformAction(
     }
 
     // Sync to local data store
-    const localGateways = EmailDataStore.get<EmailGatewayRecord[]>('printerp_email_gateways') || []
+    const localGateways = EmailDataStore.get<EmailGatewayRecord[]>('printflow_email_gateways') || []
     const updatedLocal = localGateways.filter((g) => g.tenant_id !== null)
     updatedLocal.push(savedRecord)
-    EmailDataStore.set('printerp_email_gateways', updatedLocal)
+    EmailDataStore.set('printflow_email_gateways', updatedLocal)
 
     try {
       await AuditService.logEvent(
@@ -247,9 +247,9 @@ export const disconnectPlatformGmailAction = withPlatformAction(
       .is('tenant_id', null)
       .eq('provider', 'gmail')
 
-    const localGateways = EmailDataStore.get<EmailGatewayRecord[]>('printerp_email_gateways') || []
+    const localGateways = EmailDataStore.get<EmailGatewayRecord[]>('printflow_email_gateways') || []
     EmailDataStore.set(
-      'printerp_email_gateways',
+      'printflow_email_gateways',
       localGateways.filter((g) => g.tenant_id !== null || g.provider !== 'gmail')
     )
 
@@ -290,7 +290,7 @@ export const testPlatformEmailGatewayAction = withPlatformAction(
       encryption_type: formData.encryption_type || 'tls',
       gmail_account_email: formData.gmail_account_email || null,
       sender_name: formData.sender_name || 'PrintFlow Platform',
-      sender_email: formData.sender_email || 'test@printerp.com',
+      sender_email: formData.sender_email || 'test@printflow.bd',
       reply_to_email: formData.reply_to_email || null,
       status: 'active',
       is_default: true,
@@ -449,9 +449,9 @@ export const getPlatformEmailLogsAction = withPlatformAction(
       }
 
       // Local DataStore fallback
-      return EmailDataStore.get<EmailLogRecord[]>('printerp_email_logs') || []
+      return EmailDataStore.get<EmailLogRecord[]>('printflow_email_logs') || []
     } catch {
-      return EmailDataStore.get<EmailLogRecord[]>('printerp_email_logs') || []
+      return EmailDataStore.get<EmailLogRecord[]>('printflow_email_logs') || []
     }
   }
 )
@@ -510,7 +510,7 @@ export const getTenantEmailGatewayAction = withTenantAction(
       .eq('tenant_id', companyId)
       .maybeSingle()
 
-    const localGateways = EmailDataStore.get<EmailGatewayRecord[]>('printerp_email_gateways') || []
+    const localGateways = EmailDataStore.get<EmailGatewayRecord[]>('printflow_email_gateways') || []
     const localTenant = localGateways.find((g) => g.tenant_id === companyId)
 
     const activeCustom = tenantGw || localTenant
@@ -624,10 +624,10 @@ export const saveTenantEmailGatewayAction = withTenantAction(
     }
 
     // Sync to local data store
-    const localGateways = EmailDataStore.get<EmailGatewayRecord[]>('printerp_email_gateways') || []
+    const localGateways = EmailDataStore.get<EmailGatewayRecord[]>('printflow_email_gateways') || []
     const updatedLocal = localGateways.filter((g) => g.tenant_id !== companyId)
     updatedLocal.push(savedRecord)
-    EmailDataStore.set('printerp_email_gateways', updatedLocal)
+    EmailDataStore.set('printflow_email_gateways', updatedLocal)
 
     try {
       await AuditService.logEvent(
@@ -689,9 +689,9 @@ export const disconnectTenantGmailAction = withTenantAction(
       .eq('provider', 'gmail')
 
     // Remove from local store
-    const localGateways = EmailDataStore.get<EmailGatewayRecord[]>('printerp_email_gateways') || []
+    const localGateways = EmailDataStore.get<EmailGatewayRecord[]>('printflow_email_gateways') || []
     EmailDataStore.set(
-      'printerp_email_gateways',
+      'printflow_email_gateways',
       localGateways.filter((g) => g.tenant_id !== companyId || g.provider !== 'gmail')
     )
 
@@ -734,9 +734,9 @@ export const deleteTenantEmailGatewayAction = withTenantAction(
     await (adminClient as any).from('email_gateways').delete().eq('tenant_id', companyId)
 
     // Remove from local store
-    const localGateways = EmailDataStore.get<EmailGatewayRecord[]>('printerp_email_gateways') || []
+    const localGateways = EmailDataStore.get<EmailGatewayRecord[]>('printflow_email_gateways') || []
     EmailDataStore.set(
-      'printerp_email_gateways',
+      'printflow_email_gateways',
       localGateways.filter((g) => g.tenant_id !== companyId)
     )
 
@@ -988,12 +988,12 @@ export const getTenantEmailLogsAction = withTenantAction(
       return { success: true, data }
     }
 
-    const localLogs = (EmailDataStore.get<EmailLogRecord[]>('printerp_email_logs') || []).filter(
+    const localLogs = (EmailDataStore.get<EmailLogRecord[]>('printflow_email_logs') || []).filter(
       (l) => l.tenant_id === companyId
     )
     return { success: true, data: localLogs }
   } catch {
-    const localLogs = (EmailDataStore.get<EmailLogRecord[]>('printerp_email_logs') || []).filter(
+    const localLogs = (EmailDataStore.get<EmailLogRecord[]>('printflow_email_logs') || []).filter(
       (l) => l.tenant_id === companyId
     )
     return { success: true, data: localLogs }

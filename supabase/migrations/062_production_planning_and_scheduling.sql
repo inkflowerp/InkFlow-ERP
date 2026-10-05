@@ -1,5 +1,5 @@
 -- ==============================================================================
--- InkFlow SaaS - Migration 062: V2 Advanced Production Planning & Machine Scheduling
+-- PrintFlow SaaS - Migration 062: V2 Advanced Production Planning & Machine Scheduling
 -- Supports:
 --   1. Independent, trackable Production Tasks with multi-task sequencing
 --   2. Task Lifecycle: queued -> scheduled -> ready -> in_progress -> completed (plus on_hold, rework, cancelled)

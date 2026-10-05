@@ -41,7 +41,7 @@ import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
 import { usePermissions } from '@/hooks/use-permissions'
 import { useSubscription } from '@/hooks/use-subscription'
-import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
+import { PrintFlowDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import { createPurchaseOrderAction } from '@/actions/purchase.actions'
 import { getMaterialsAction } from '@/actions/inventory.actions'
 import { getProductsAction } from '@/actions/product.actions'
@@ -205,12 +205,12 @@ export function NewPurchaseModal({
   // Load suppliers, materials, products, configurations and warehouse locations
  useEffect(() => {
  if (open) {
- const supList = PrintERPDataStore.getAll<SupplierRecord>(STORAGE_KEYS.SUPPLIERS, company?.id) || []
- const matList = PrintERPDataStore.getAll<MaterialRecord>(STORAGE_KEYS.MATERIALS, company?.id) || []
- const prodList = (PrintERPDataStore.getAll<ProductRecord>(STORAGE_KEYS.PRODUCTS, company?.id) || [])
+ const supList = PrintFlowDataStore.getAll<SupplierRecord>(STORAGE_KEYS.SUPPLIERS, company?.id) || []
+ const matList = PrintFlowDataStore.getAll<MaterialRecord>(STORAGE_KEYS.MATERIALS, company?.id) || []
+ const prodList = (PrintFlowDataStore.getAll<ProductRecord>(STORAGE_KEYS.PRODUCTS, company?.id) || [])
         .filter((p) => p.is_active !== false && !isServiceProduct(p) && !isOutsourceProduct(p) && p.entity_type !== 'service' && p.product_type !== 'service')
- const configList = PrintERPDataStore.getAll<MaterialPurchaseConfig>(STORAGE_KEYS.MATERIAL_PURCHASE_CONFIGS, company?.id) || []
- const locList = PrintERPDataStore.getAll<InventoryLocationRecord>(STORAGE_KEYS.LOCATIONS, company?.id) || []
+ const configList = PrintFlowDataStore.getAll<MaterialPurchaseConfig>(STORAGE_KEYS.MATERIAL_PURCHASE_CONFIGS, company?.id) || []
+ const locList = PrintFlowDataStore.getAll<InventoryLocationRecord>(STORAGE_KEYS.LOCATIONS, company?.id) || []
 
  setSuppliers(supList)
  setMaterials(matList)
@@ -268,27 +268,27 @@ export function NewPurchaseModal({
   // Real-time table listener for materials & products sync
  useEffect(() => {
  const handleSync = () => {
- const mats = PrintERPDataStore.getAll<MaterialRecord>(STORAGE_KEYS.MATERIALS, company?.id) || []
- const prods = (PrintERPDataStore.getAll<ProductRecord>(STORAGE_KEYS.PRODUCTS, company?.id) || [])
+ const mats = PrintFlowDataStore.getAll<MaterialRecord>(STORAGE_KEYS.MATERIALS, company?.id) || []
+ const prods = (PrintFlowDataStore.getAll<ProductRecord>(STORAGE_KEYS.PRODUCTS, company?.id) || [])
         .filter((p) => p.is_active !== false && !isServiceProduct(p) && !isOutsourceProduct(p) && p.entity_type !== 'service' && p.product_type !== 'service')
- const configs = PrintERPDataStore.getAll<MaterialPurchaseConfig>(STORAGE_KEYS.MATERIAL_PURCHASE_CONFIGS, company?.id) || []
+ const configs = PrintFlowDataStore.getAll<MaterialPurchaseConfig>(STORAGE_KEYS.MATERIAL_PURCHASE_CONFIGS, company?.id) || []
  if (mats.length > 0) setMaterials(mats)
  if (prods.length > 0) setReadyProducts(prods)
  if (configs.length > 0) setPurchaseConfigs(configs)
     }
 
  if (typeof window !== 'undefined') {
- window.addEventListener('printerp_table_synced:materials', handleSync)
- window.addEventListener('printerp_table_synced:products', handleSync)
- window.addEventListener('printerp_table_synced', handleSync)
+ window.addEventListener('printflow_table_synced:materials', handleSync)
+ window.addEventListener('printflow_table_synced:products', handleSync)
+ window.addEventListener('printflow_table_synced', handleSync)
  window.addEventListener('materials_updated', handleSync)
  window.addEventListener('products_updated', handleSync)
  window.addEventListener('storage', handleSync)
 
  return () => {
- window.removeEventListener('printerp_table_synced:materials', handleSync)
- window.removeEventListener('printerp_table_synced:products', handleSync)
- window.removeEventListener('printerp_table_synced', handleSync)
+ window.removeEventListener('printflow_table_synced:materials', handleSync)
+ window.removeEventListener('printflow_table_synced:products', handleSync)
+ window.removeEventListener('printflow_table_synced', handleSync)
  window.removeEventListener('materials_updated', handleSync)
  window.removeEventListener('products_updated', handleSync)
  window.removeEventListener('storage', handleSync)
@@ -990,7 +990,7 @@ export function NewPurchaseModal({
           ...payload,
         } as PurchaseOrderRecord
 
- PrintERPDataStore.addItem<PurchaseOrderRecord>(STORAGE_KEYS.PURCHASE_ORDERS, savedPO)
+ PrintFlowDataStore.addItem<PurchaseOrderRecord>(STORAGE_KEYS.PURCHASE_ORDERS, savedPO)
       }
 
  dispatchToast({

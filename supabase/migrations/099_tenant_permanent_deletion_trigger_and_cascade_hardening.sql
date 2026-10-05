@@ -1,5 +1,5 @@
 -- ==============================================================================
--- InkFlow SaaS - Migration 099: Tenant Permanent Deletion Trigger & Cascade Hardening
+-- PrintFlow SaaS - Migration 099: Tenant Permanent Deletion Trigger & Cascade Hardening
 -- Ensures anti-mutation triggers permit platform admin permanent deletions,
 -- and updates delete_tenant_permanently RPC to safely resolve all columns dynamically.
 -- ==============================================================================
@@ -310,7 +310,7 @@ BEGIN
             details
         ) VALUES (
             p_admin_id,
-            'platform-admin@printerp.com.bd',
+            'platform-admin@printflow.bd',
             'company.permanent_delete',
             'company',
             p_company_id::text,

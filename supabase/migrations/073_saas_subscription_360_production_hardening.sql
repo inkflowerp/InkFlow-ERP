@@ -1,5 +1,5 @@
 -- ==============================================================================
--- InkFlow ERP SaaS - Migration 073: SaaS Subscription 360 Production Hardening
+-- PrintFlow SaaS - Migration 073: SaaS Subscription 360 Production Hardening
 -- Supports:
 --   1. Canonical Features Catalog (Bilingual, Categories, Entitlement Types)
 --   2. Plan Versioning, Soft/Hard Limits, Overage Policies, & Currency Standards

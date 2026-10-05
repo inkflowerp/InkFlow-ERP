@@ -1,5 +1,5 @@
 -- ==============================================================================
--- PrintERP SaaS - Migration 024: Bangladesh VAT/Tax & Concurrency-Safe Documents
+-- PrintFlow - Migration 024: Bangladesh VAT/Tax & Concurrency-Safe Documents
 -- Supports:
 --   1. Configurable VAT (Enable/Disable, Inclusive/Exclusive, Rates: 5%, 7.5%, 15%)
 --   2. Tax Information (13-digit BIN, TIN, Trade License, VAT Circle)

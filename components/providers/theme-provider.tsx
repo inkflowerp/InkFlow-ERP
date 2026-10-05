@@ -11,7 +11,7 @@ interface ThemeContextType {
   toggleTheme: () => void
 }
 
-const THEME_STORAGE_KEY = 'printerp_theme'
+const THEME_STORAGE_KEY = 'printflow_theme'
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
 

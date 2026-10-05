@@ -1,5 +1,5 @@
 -- ==============================================================================
--- InkFlow ERP SaaS - Migration 075: Subscription Security Audit & RPC Hardening
+-- PrintFlow SaaS - Migration 075: Subscription Security Audit & RPC Hardening
 -- Enforces:
 --   1. Strict fail-closed semantics in validate_tenant_limit_atomic (No fallback to trial/starter)
 --   2. Strict server timestamp expiry checks on active subscriptions past current_period_end

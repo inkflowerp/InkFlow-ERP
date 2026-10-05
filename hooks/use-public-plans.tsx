@@ -143,15 +143,15 @@ export function PublicPlansProvider({
       }
     }
 
-    window.addEventListener('printerp_plans_sync', handlePlansSync)
-    window.addEventListener('printerp_data_sync', handleDataSync)
+    window.addEventListener('printflow_plans_sync', handlePlansSync)
+    window.addEventListener('printflow_data_sync', handleDataSync)
     window.addEventListener('storage', handleStorageEvent)
-    window.addEventListener('printerp_platform_plans_updated', handlePlansSync)
+    window.addEventListener('printflow_platform_plans_updated', handlePlansSync)
 
     let busChannel: BroadcastChannel | null = null
     try {
       if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
-        busChannel = new BroadcastChannel('printerp_realtime_bus')
+        busChannel = new BroadcastChannel('printflow_realtime_bus')
         busChannel.onmessage = (event) => {
           if (
             event.data?.storageKey === STORAGE_KEYS.PLATFORM_PLANS ||
@@ -189,10 +189,10 @@ export function PublicPlansProvider({
     } catch {}
 
     return () => {
-      window.removeEventListener('printerp_plans_sync', handlePlansSync)
-      window.removeEventListener('printerp_data_sync', handleDataSync)
+      window.removeEventListener('printflow_plans_sync', handlePlansSync)
+      window.removeEventListener('printflow_data_sync', handleDataSync)
       window.removeEventListener('storage', handleStorageEvent)
-      window.removeEventListener('printerp_platform_plans_updated', handlePlansSync)
+      window.removeEventListener('printflow_platform_plans_updated', handlePlansSync)
       if (busChannel) {
         try {
           busChannel.close()
@@ -306,13 +306,13 @@ function useStandalonePublicSubscriptionPlans(initialData?: PublicPlansData | nu
     const handleDataSync = (e: Event) => {
       const customEvent = e as CustomEvent
       const key = customEvent.detail?.key
-      if (key === 'plans' || key === 'printerp_plans_updated') {
+      if (key === 'plans' || key === 'printflow_plans_updated') {
         fetchPlans()
       }
     }
 
-    window.addEventListener('printerp_plans_sync', handlePlansSync)
-    window.addEventListener('printerp_data_sync', handleDataSync)
+    window.addEventListener('printflow_plans_sync', handlePlansSync)
+    window.addEventListener('printflow_data_sync', handleDataSync)
 
     let channel: any = null
     try {
@@ -332,8 +332,8 @@ function useStandalonePublicSubscriptionPlans(initialData?: PublicPlansData | nu
     } catch {}
 
     return () => {
-      window.removeEventListener('printerp_plans_sync', handlePlansSync)
-      window.removeEventListener('printerp_data_sync', handleDataSync)
+      window.removeEventListener('printflow_plans_sync', handlePlansSync)
+      window.removeEventListener('printflow_data_sync', handleDataSync)
       if (channel && isSupabaseConfigured()) {
         try {
           const supabase = createClient()

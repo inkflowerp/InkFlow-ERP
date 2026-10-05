@@ -1,7 +1,7 @@
 # UI Consistency & Pixel Measurement Audit Report (Platform + Cross-App)
 
 **Date:** 10/3/2026 8:03:32 PM
-**Target:** InkFlow ERP Platform Owner Panel (`/platform/*`) & Cross-App Consistency
+**Target:** PrintFlow Platform Owner Panel (`/platform/*`) & Cross-App Consistency
 
 ## 1. Executive Summary
 

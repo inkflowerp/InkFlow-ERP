@@ -1,7 +1,7 @@
 # UX Specification: Inventory & Floor Consumption Module (ইনভেন্টরি ও প্রেস ফ্লোর কনজাম্পশন)
 
 ## 1. Executive Summary & Purpose
-The Inventory & Floor Consumption module is InkFlow ERP's physical asset accounting and press-floor material tracking engine. Its primary job to be done (JTBD) is helping inventory store managers, warehouse keepers, and press floor supervisors answer:
+The Inventory & Floor Consumption module is PrintFlow's physical asset accounting and press-floor material tracking engine. Its primary job to be done (JTBD) is helping inventory store managers, warehouse keepers, and press floor supervisors answer:
 > **"Which substrates or media rolls are critically low or depleted, what operator requisitions are waiting to be issued to the floor, and how much substrate was consumed or wasted during today's print runs?"**
 
 The core inventory replenishment and floor issue workflows must be completable in **$\le 3$ clicks from the Dashboard**:

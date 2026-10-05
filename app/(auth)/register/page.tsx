@@ -51,10 +51,10 @@ function RegisterForm() {
         savedAt: Date.now(),
       }
       try {
-        sessionStorage.setItem('printerp_registration_draft', JSON.stringify(regDraft))
+        sessionStorage.setItem('printflow_registration_draft', JSON.stringify(regDraft))
       } catch {}
       try {
-        localStorage.setItem('printerp_registration_draft', JSON.stringify(regDraft))
+        localStorage.setItem('printflow_registration_draft', JSON.stringify(regDraft))
       } catch {}
     }
 

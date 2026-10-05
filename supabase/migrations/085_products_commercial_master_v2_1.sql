@@ -1,5 +1,5 @@
 -- ==============================================================================
--- InkFlow SaaS - Migration 085: Products & Services Commercial Master 2.1
+-- PrintFlow SaaS - Migration 085: Products & Services Commercial Master 2.1
 -- Supports:
 --   1. Pricing Methods (fixed, per_piece, per_area, per_length, per_weight, per_volume, per_job, per_hour, tiered, formula)
 --   2. Minimum Billable Quantity (distinct from MOQ and Minimum Charge)

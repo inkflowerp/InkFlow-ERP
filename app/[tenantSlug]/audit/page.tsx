@@ -71,12 +71,12 @@ export default function TenantAuditLogsPage() {
  loadLogs()
     }
 
- window.addEventListener('printerp_table_synced:audit_logs', handleAuditRealtime)
- window.addEventListener('printerp_table_synced', handleAuditRealtime)
+ window.addEventListener('printflow_table_synced:audit_logs', handleAuditRealtime)
+ window.addEventListener('printflow_table_synced', handleAuditRealtime)
 
  return () => {
- window.removeEventListener('printerp_table_synced:audit_logs', handleAuditRealtime)
- window.removeEventListener('printerp_table_synced', handleAuditRealtime)
+ window.removeEventListener('printflow_table_synced:audit_logs', handleAuditRealtime)
+ window.removeEventListener('printflow_table_synced', handleAuditRealtime)
     }
   }, [search, category])
 

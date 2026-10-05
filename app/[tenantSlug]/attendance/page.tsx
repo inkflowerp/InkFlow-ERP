@@ -198,18 +198,18 @@ export default function EmployeeAttendancePage() {
     }
 
     if (typeof window !== 'undefined') {
-      window.addEventListener('printerp_table_synced:attendance_records', handleSync)
-      window.addEventListener('printerp_table_synced:attendance', handleSync)
-      window.addEventListener('printerp_table_synced', handleSync)
-      window.addEventListener('printerp_data_sync', handleSync)
+      window.addEventListener('printflow_table_synced:attendance_records', handleSync)
+      window.addEventListener('printflow_table_synced:attendance', handleSync)
+      window.addEventListener('printflow_table_synced', handleSync)
+      window.addEventListener('printflow_data_sync', handleSync)
     }
 
     return () => {
       if (typeof window !== 'undefined') {
-        window.removeEventListener('printerp_table_synced:attendance_records', handleSync)
-        window.removeEventListener('printerp_table_synced:attendance', handleSync)
-        window.removeEventListener('printerp_table_synced', handleSync)
-        window.removeEventListener('printerp_data_sync', handleSync)
+        window.removeEventListener('printflow_table_synced:attendance_records', handleSync)
+        window.removeEventListener('printflow_table_synced:attendance', handleSync)
+        window.removeEventListener('printflow_table_synced', handleSync)
+        window.removeEventListener('printflow_data_sync', handleSync)
       }
     }
   }, [company?.id, tenantSlug])

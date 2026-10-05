@@ -1,5 +1,5 @@
 -- ==============================================================================
--- InkFlow SaaS - Migration 050: Authoritative Platform Notifications & Real-Time Replication
+-- PrintFlow SaaS - Migration 050: Authoritative Platform Notifications & Real-Time Replication
 -- Supports:
 --   1. Real-time Platform Notifications Ledger (Admin alerts, Telemetry, Broadcasts, Security, Support)
 --   2. Strict Row Level Security (RLS) allowing only verified platform administrators

@@ -1,6 +1,6 @@
 import { createClient } from '../supabase/server.ts'
 import type { DesignJobRecord, DesignVersionRecord } from '../../types/design.types.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../db/data-store.ts'
 import { coalesceQuery, invalidateQueryCache } from '../performance/query-coalesce.ts'
 import { isReadyProduct, isOutsourceProduct } from '../units.ts'
 
@@ -42,10 +42,10 @@ export class DesignRepository {
         return false
       }
 
-      const all: DesignJobRecord[] = PrintERPDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []
+      const all: DesignJobRecord[] = PrintFlowDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []
       const cleanAll = all.filter((d: DesignJobRecord) => !d?.id?.startsWith('dsn-ref-'))
       if (cleanAll.length !== all.length) {
-        PrintERPDataStore.set(STORAGE_KEYS.DESIGN_JOBS, cleanAll)
+        PrintFlowDataStore.set(STORAGE_KEYS.DESIGN_JOBS, cleanAll)
       }
       const localJobs = cleanAll.filter((d: DesignJobRecord) => isMatchingTenant(d.company_id))
 
@@ -59,8 +59,8 @@ export class DesignRepository {
 
       // Auto-pull design required and design check work from Commercial Orders & Job Hub
       const orders: any[] = [
-        ...(companyId ? (PrintERPDataStore.getAll<any>(STORAGE_KEYS.ORDERS, companyId) || []) : []),
-        ...(PrintERPDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []),
+        ...(companyId ? (PrintFlowDataStore.getAll<any>(STORAGE_KEYS.ORDERS, companyId) || []) : []),
+        ...(PrintFlowDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []),
       ]
 
       try {
@@ -99,8 +99,8 @@ export class DesignRepository {
 
       // Also load Invoices to cross-hydrate items, specs, materials, finishing, and add-ons
       const invoices: any[] = [
-        ...(companyId ? (PrintERPDataStore.getAll<any>(STORAGE_KEYS.INVOICES, companyId) || []) : []),
-        ...(PrintERPDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || []),
+        ...(companyId ? (PrintFlowDataStore.getAll<any>(STORAGE_KEYS.INVOICES, companyId) || []) : []),
+        ...(PrintFlowDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || []),
       ]
 
       try {
@@ -156,7 +156,7 @@ export class DesignRepository {
       }
 
       const newAutoJobs: DesignJobRecord[] = []
-      const existingAll = (PrintERPDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []).filter(
+      const existingAll = (PrintFlowDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []).filter(
         (j) => !j.id?.startsWith('dsn-ref-')
       )
 
@@ -424,10 +424,10 @@ export class DesignRepository {
 
       if (hasHealedJobs || newAutoJobs.length > 0) {
         const mergedJobs = Array.from(jobMap.values())
-        const otherTenantJobs = (PrintERPDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []).filter(
+        const otherTenantJobs = (PrintFlowDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []).filter(
           (j) => !isMatchingTenant(j.company_id)
         )
-        PrintERPDataStore.set(STORAGE_KEYS.DESIGN_JOBS, [...otherTenantJobs, ...mergedJobs])
+        PrintFlowDataStore.set(STORAGE_KEYS.DESIGN_JOBS, [...otherTenantJobs, ...mergedJobs])
       }
 
       return Array.from(jobMap.values())
@@ -468,7 +468,7 @@ export class DesignRepository {
       }
     } catch (err: any) {}
 
-    const all = PrintERPDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []
+    const all = PrintFlowDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []
     const foundLocal = all.find(
       (d: DesignJobRecord) =>
         (d.id === id || d.design_number === id) &&
@@ -609,9 +609,9 @@ export class DesignRepository {
       ],
     }
 
-    const all = PrintERPDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []
+    const all = PrintFlowDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []
     all.unshift(localJob)
-    PrintERPDataStore.set(STORAGE_KEYS.DESIGN_JOBS, all)
+    PrintFlowDataStore.set(STORAGE_KEYS.DESIGN_JOBS, all)
     invalidateQueryCache(`design_jobs`)
 
     return localJob
@@ -692,7 +692,7 @@ export class DesignRepository {
       created_at: now,
     }
 
-    const all = PrintERPDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []
+    const all = PrintFlowDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []
     const job = all.find(
       (d) =>
         (d.id === version.design_job_id || d.design_number === version.design_job_id) &&
@@ -704,7 +704,7 @@ export class DesignRepository {
       job.current_version = version.version_number
       job.version_count = version.version_number
       job.updated_at = now
-      PrintERPDataStore.set(STORAGE_KEYS.DESIGN_JOBS, all)
+      PrintFlowDataStore.set(STORAGE_KEYS.DESIGN_JOBS, all)
     }
 
     return newVer
@@ -755,7 +755,7 @@ export class DesignRepository {
       // Local fallback
     }
 
-    const all = PrintERPDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []
+    const all = PrintFlowDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []
     const job = all.find(
       (d) =>
         (d.id === params.design_job_id || d.design_number === params.design_job_id) &&
@@ -774,11 +774,11 @@ export class DesignRepository {
           v.change_notes = params.customer_feedback || v.change_notes
         }
       }
-      PrintERPDataStore.set(STORAGE_KEYS.DESIGN_JOBS, all)
+      PrintFlowDataStore.set(STORAGE_KEYS.DESIGN_JOBS, all)
 
       if (params.approval_status === 'approved') {
         const salesOrderId = job.sales_order_id || job.order_id
-        const jobOrders = PrintERPDataStore.get<any[]>(STORAGE_KEYS.JOB_ORDERS) || []
+        const jobOrders = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.JOB_ORDERS) || []
         let updatedAny = false
         for (const jo of jobOrders) {
           if (
@@ -791,7 +791,7 @@ export class DesignRepository {
           }
         }
         if (updatedAny) {
-          PrintERPDataStore.set(STORAGE_KEYS.JOB_ORDERS, jobOrders)
+          PrintFlowDataStore.set(STORAGE_KEYS.JOB_ORDERS, jobOrders)
         }
 
         try {
@@ -859,7 +859,7 @@ export class DesignRepository {
       // Fallback
     }
 
-    const all = PrintERPDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []
+    const all = PrintFlowDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []
     let idx = all.findIndex(
       (d) =>
         (d.id === id || d.design_number === id) &&
@@ -874,7 +874,7 @@ export class DesignRepository {
       all[idx].commercial_status = nextCommercialStatus as any
       all[idx].is_locked = isReadyForProd
       all[idx].updated_at = now
-      PrintERPDataStore.set(STORAGE_KEYS.DESIGN_JOBS, all)
+      PrintFlowDataStore.set(STORAGE_KEYS.DESIGN_JOBS, all)
 
       if (isReadyForProd) {
         try {
@@ -926,7 +926,7 @@ export class DesignRepository {
       // Fallback
     }
 
-    const all = PrintERPDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []
+    const all = PrintFlowDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []
     let idx = all.findIndex(
       (d) =>
         (d.id === id || d.design_number === id) &&
@@ -938,13 +938,13 @@ export class DesignRepository {
 
     if (idx >= 0) {
       all[idx] = { ...all[idx], ...updates, updated_at: now }
-      PrintERPDataStore.set(STORAGE_KEYS.DESIGN_JOBS, all)
+      PrintFlowDataStore.set(STORAGE_KEYS.DESIGN_JOBS, all)
       return all[idx]
     } else {
       const synth = await this.getDesignJobById(id, companyId)
       if (synth) {
         const merged: DesignJobRecord = { ...synth, ...updates, updated_at: now }
-        PrintERPDataStore.addItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, merged)
+        PrintFlowDataStore.addItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, merged)
         return merged
       }
     }
@@ -978,7 +978,7 @@ export class DesignRepository {
     }
 
     // 1. Resolve Commercial Gate: check direct invoice or linked sales orders/invoices
-    const invoices = PrintERPDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || []
+    const invoices = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || []
     const matchingInv = invoices.find(
       (inv) =>
         (job.invoice_id && (inv.id === job.invoice_id || inv.invoice_number === job.invoice_id)) ||
@@ -1023,7 +1023,7 @@ export class DesignRepository {
 
     // 4. Update / Create Job Order in Production Queue
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-    const jobOrders = PrintERPDataStore.get<any[]>(STORAGE_KEYS.JOB_ORDERS) || []
+    const jobOrders = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.JOB_ORDERS) || []
     let matchedOrder = jobOrders.find(
       (jo) =>
         (!jo.company_id || jo.company_id === companyId || companyId === 'default' || (jo as any).company_slug === companyId) &&
@@ -1068,10 +1068,10 @@ export class DesignRepository {
       }
       jobOrders.unshift(matchedOrder)
     }
-    PrintERPDataStore.set(STORAGE_KEYS.JOB_ORDERS, jobOrders)
+    PrintFlowDataStore.set(STORAGE_KEYS.JOB_ORDERS, jobOrders)
 
     // 5. Update Production Jobs
-    const prodJobs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_JOBS) || []
+    const prodJobs = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_JOBS) || []
     let matchedProdJob = prodJobs.find(
       (pj) =>
         (!pj.company_id || pj.company_id === companyId || companyId === 'default' || (pj as any).company_slug === companyId) &&
@@ -1104,10 +1104,10 @@ export class DesignRepository {
       }
       prodJobs.unshift(matchedProdJob)
     }
-    PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_JOBS, prodJobs)
+    PrintFlowDataStore.set(STORAGE_KEYS.PRODUCTION_JOBS, prodJobs)
 
     // 6. Create or Unblock Production Tasks for the Production Board
-    const prodTasks = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
+    const prodTasks = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
     const existingJobTasks = prodTasks.filter(
       (t) =>
         (!t.company_id || t.company_id === companyId || companyId === 'default' || (t as any).company_slug === companyId) &&
@@ -1133,7 +1133,7 @@ export class DesignRepository {
         t.job_deadline = t.job_deadline || job.deadline
         t.updated_at = now
       }
-      PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, prodTasks)
+      PrintFlowDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, prodTasks)
     } else {
       const task1Id = crypto.randomUUID()
       const task2Id = crypto.randomUUID()
@@ -1199,7 +1199,7 @@ export class DesignRepository {
       )
 
       prodTasks.unshift(task2, task1)
-      PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, prodTasks)
+      PrintFlowDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, prodTasks)
 
       try {
         const supabase = await createClient()
@@ -1225,7 +1225,7 @@ export class DesignRepository {
 
     // 6.1 Update Delivery Challan Item Status to Printing / In Production
     try {
-      const challans = PrintERPDataStore.get<any[]>(STORAGE_KEYS.DELIVERY_CHALLANS) || []
+      const challans = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.DELIVERY_CHALLANS) || []
       let chlUpdated = false
       for (const ch of challans) {
         if (
@@ -1252,13 +1252,13 @@ export class DesignRepository {
         }
       }
       if (chlUpdated) {
-        PrintERPDataStore.set(STORAGE_KEYS.DELIVERY_CHALLANS, challans)
+        PrintFlowDataStore.set(STORAGE_KEYS.DELIVERY_CHALLANS, challans)
       }
     } catch {}
 
     // 7. In-App Notification to Print Operator / Shop Floor
     try {
-      const notifs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.IN_APP_NOTIFICATIONS) || []
+      const notifs = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.IN_APP_NOTIFICATIONS) || []
       notifs.unshift({
         id: `notif-${Date.now()}`,
         company_id: companyId,
@@ -1272,7 +1272,7 @@ export class DesignRepository {
         is_read: false,
         created_at: now,
       })
-      PrintERPDataStore.set(STORAGE_KEYS.IN_APP_NOTIFICATIONS, notifs)
+      PrintFlowDataStore.set(STORAGE_KEYS.IN_APP_NOTIFICATIONS, notifs)
     } catch {}
 
     return { success: true, designJob: updatedJob || job }
@@ -1296,7 +1296,7 @@ export class DesignRepository {
       // Local fallback
     }
 
-    const all = PrintERPDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []
+    const all = PrintFlowDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []
     const filtered = all.filter(
       (d) =>
         !(
@@ -1304,7 +1304,7 @@ export class DesignRepository {
           (d.company_id === companyId || !d.company_id || companyId === 'default')
         )
     )
-    PrintERPDataStore.set(STORAGE_KEYS.DESIGN_JOBS, filtered)
+    PrintFlowDataStore.set(STORAGE_KEYS.DESIGN_JOBS, filtered)
     return true
   }
 
@@ -1324,9 +1324,9 @@ export class DesignRepository {
       // Local fallback
     }
 
-    const all = PrintERPDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []
+    const all = PrintFlowDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []
     const filtered = all.filter((d) => d.company_id && d.company_id !== companyId)
-    PrintERPDataStore.set(STORAGE_KEYS.DESIGN_JOBS, filtered)
+    PrintFlowDataStore.set(STORAGE_KEYS.DESIGN_JOBS, filtered)
     return true
   }
 

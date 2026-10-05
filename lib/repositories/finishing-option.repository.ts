@@ -1,6 +1,6 @@
 import { createClient } from '../supabase/server.ts'
 import type { FinishingOptionRecord } from '../../types/product.types.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../db/data-store.ts'
 
 export const DEFAULT_FINISHING_OPTIONS: Array<Omit<FinishingOptionRecord, 'id' | 'company_id' | 'created_at' | 'updated_at'>> = [
   {
@@ -85,7 +85,7 @@ export class FinishingOptionRepository {
       // Fallback
     }
 
-    const all = PrintERPDataStore.get<FinishingOptionRecord[]>(
+    const all = PrintFlowDataStore.get<FinishingOptionRecord[]>(
       STORAGE_KEYS.FINISHING_OPTIONS,
       companyId
     ) || []
@@ -120,7 +120,7 @@ export class FinishingOptionRepository {
       updated_at: now,
     }))
     defaults.forEach((item) =>
-      PrintERPDataStore.addItem<FinishingOptionRecord>(STORAGE_KEYS.FINISHING_OPTIONS, item, companyId)
+      PrintFlowDataStore.addItem<FinishingOptionRecord>(STORAGE_KEYS.FINISHING_OPTIONS, item, companyId)
     )
     return defaults
   }
@@ -173,7 +173,7 @@ export class FinishingOptionRepository {
       updated_at: new Date().toISOString(),
     }
 
-    PrintERPDataStore.addItem<FinishingOptionRecord>(
+    PrintFlowDataStore.addItem<FinishingOptionRecord>(
       STORAGE_KEYS.FINISHING_OPTIONS,
       localRecord,
       companyId
@@ -208,7 +208,7 @@ export class FinishingOptionRepository {
       // Fallback
     }
 
-    return PrintERPDataStore.updateItem<FinishingOptionRecord>(
+    return PrintFlowDataStore.updateItem<FinishingOptionRecord>(
       STORAGE_KEYS.FINISHING_OPTIONS,
       id,
       updates,
@@ -233,7 +233,7 @@ export class FinishingOptionRepository {
       // Fallback
     }
 
-    PrintERPDataStore.removeItem<FinishingOptionRecord>(STORAGE_KEYS.FINISHING_OPTIONS, id, companyId)
+    PrintFlowDataStore.removeItem<FinishingOptionRecord>(STORAGE_KEYS.FINISHING_OPTIONS, id, companyId)
     return true
   }
 }

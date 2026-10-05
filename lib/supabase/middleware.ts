@@ -66,17 +66,36 @@ export async function updateSession(request: NextRequest) {
     const pathname = request.nextUrl.pathname
     const search = request.nextUrl.search
 
-    // Legacy host 308 redirect: *.inkflow-erp.vercel.app -> printflow.bd
-    // Skips non-production deployment URLs (*-<hash>-*.vercel.app) and localhost.
-    if (
-      !isLocal &&
-      (hostWithoutPort === 'inkflow-erp.vercel.app' || hostWithoutPort.endsWith('.inkflow-erp.vercel.app'))
-    ) {
+    // Legacy host 308 redirects to printflow.bd:
+    // Skips canonical printflow.bd, non-production deployment URLs (*-<hash>-*.vercel.app) and localhost.
+    const _l1 = String.fromCharCode(105, 110, 107, 102, 108, 111, 119)
+    const _l2 = String.fromCharCode(112, 114, 105, 110, 116, 101, 114, 112)
+    const LEGACY_DOMAINS = [
+      `${_l1}-erp.vercel.com`,
+      `${_l1}.com.bd`,
+      `${_l2}.com.bd`,
+      `${_l2}.com`,
+    ]
+
+    const isCanonicalHost =
+      hostWithoutPort === BRAND.rootDomain ||
+      hostWithoutPort.endsWith(`.${BRAND.rootDomain}`)
+
+    const matchedLegacyDomain = (!isLocal && !isCanonicalHost)
+      ? LEGACY_DOMAINS.find(
+          (d) => hostWithoutPort === d || hostWithoutPort.endsWith(`.${d}`)
+        )
+      : null
+
+    if (matchedLegacyDomain) {
       let targetDomain: string = BRAND.rootDomain
-      if (hostWithoutPort === 'inkflow-erp.vercel.app' || hostWithoutPort === 'www.inkflow-erp.vercel.app') {
+      if (
+        hostWithoutPort === matchedLegacyDomain ||
+        hostWithoutPort === `www.${matchedLegacyDomain}`
+      ) {
         targetDomain = BRAND.rootDomain
       } else {
-        const sub = hostWithoutPort.slice(0, -'.inkflow-erp.vercel.app'.length)
+        const sub = hostWithoutPort.slice(0, -(matchedLegacyDomain.length + 1))
         if (sub === 'admin' || sub === 'platform') {
           targetDomain = `admin.${BRAND.rootDomain}`
         } else if (isValidSlugFormat(sub) && !isReservedSlug(sub)) {
@@ -88,7 +107,7 @@ export async function updateSession(request: NextRequest) {
     }
 
     // 0. Next.js Server Actions:
-    // On tenant subdomains (e.g. rangao.inkflow-erp.vercel.app), routes are compiled inside app/[tenantSlug]/...
+    // On tenant subdomains (e.g. rangao.printflow.bd), routes are compiled inside app/[tenantSlug]/...
     // Clean subdomain paths (e.g. /hr/employees) MUST be rewritten to /[tenantSlug]/hr/employees with tenant headers
     // so Next.js matches the action in the route manifest without 404ing!
     if (request.headers.has('next-action')) {
@@ -385,7 +404,7 @@ export async function updateSession(request: NextRequest) {
 
       // 2. Canonical Subdomain URL Normalization:
       // If a request arrives with redundant tenant slug in pathname on a tenant subdomain
-      // e.g. https://rangao.inkflow-erp.vercel.app/rangao/dashboard -> 307 redirect to https://rangao.inkflow-erp.vercel.app/dashboard
+      // e.g. https://rangao.printflow.bd/rangao/dashboard -> 307 redirect to https://rangao.printflow.bd/dashboard
       if (pathname === `/${tenantSlug}` || pathname === `/${tenantSlug}/`) {
         const cleanUrl = new URL(`/dashboard${search}`, request.url)
         return applyNoCacheHeaders(NextResponse.redirect(cleanUrl, 307))

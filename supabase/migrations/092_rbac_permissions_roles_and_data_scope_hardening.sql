@@ -1,5 +1,5 @@
 -- ==============================================================================
--- InkFlow SaaS - Migration 092: RBAC Permissions, Roles & Data Scope Hardening
+-- PrintFlow SaaS - Migration 092: RBAC Permissions, Roles & Data Scope Hardening
 -- Establishes server-authoritative role matrices, company custom roles,
 -- per-user data scopes, granular user management permissions, and strict RLS.
 -- ==============================================================================

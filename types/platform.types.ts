@@ -749,7 +749,7 @@ export const DEFAULT_PLATFORM_BRANDING = {
   app_description: 'Production-ready SaaS for digital printing, offset press, flex/banner, stickers, packaging, LED signage, acrylic fabrication, and installation businesses in Bangladesh.',
   support_helpline: BRAND.helplineDisplay,
   app_domain: BRAND.rootDomain,
-  contact_email: 'support@printerp.com.bd',
+  contact_email: 'support@printflow.bd',
   contact_phone: BRAND.helplineDisplay,
   contact_address: 'Arambagh Press Cluster, Motijheel, Dhaka-1000, Bangladesh',
 } as const

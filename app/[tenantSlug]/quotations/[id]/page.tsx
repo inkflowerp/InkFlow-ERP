@@ -70,7 +70,7 @@ import * as QuotationService from '@/lib/quotations/quotation-utils'
 import { FollowUpModal } from '@/components/quotations/follow-up-modal'
 import { NegotiationModal } from '@/components/quotations/negotiation-modal'
 import { useDataStore } from '@/hooks/use-data-store'
-import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
+import { PrintFlowDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 
 function QuotationDetailContent() {
@@ -127,7 +127,7 @@ function QuotationDetailContent() {
 
  if (typeof window !== 'undefined') {
  try {
- const fromStore = (PrintERPDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS) || []).find(
+ const fromStore = (PrintFlowDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS) || []).find(
           (q) => q && (q.id === quoteId || q.quotation_number === quoteId)
         )
  if (fromStore) return normalizeQuotationRecord(fromStore)
@@ -136,8 +136,8 @@ function QuotationDetailContent() {
  const k = window.localStorage.key(i)
  if (!k) continue
  if (
- k.startsWith('printerp_tenant_quotations') ||
- k.startsWith('printerp_quotations') ||
+ k.startsWith('printflow_tenant_quotations') ||
+ k.startsWith('printflow_quotations') ||
  k.includes('quotation') ||
  k.includes('quotes')
           ) {
@@ -299,21 +299,21 @@ function QuotationDetailContent() {
  if (res.success && res.data) {
         // Hydrate client DataStore immediately so Commercial Orders & Job Hub has it without refresh
  try {
- PrintERPDataStore.createSalesOrderWithIntegrations(res.data)
+ PrintFlowDataStore.createSalesOrderWithIntegrations(res.data)
  if (slug && slug !== 'default') {
- PrintERPDataStore.addItem(STORAGE_KEYS.ORDERS, res.data, slug)
+ PrintFlowDataStore.addItem(STORAGE_KEYS.ORDERS, res.data, slug)
  if (res.data.job_order) {
- PrintERPDataStore.addItem(STORAGE_KEYS.JOB_ORDERS, res.data.job_order, slug)
+ PrintFlowDataStore.addItem(STORAGE_KEYS.JOB_ORDERS, res.data.job_order, slug)
             }
  if (res.data.production_job) {
- PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCTION_JOBS, res.data.production_job, slug)
+ PrintFlowDataStore.addItem(STORAGE_KEYS.PRODUCTION_JOBS, res.data.production_job, slug)
             }
- PrintERPDataStore.updateItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, quote.id, {
+ PrintFlowDataStore.updateItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, quote.id, {
  status: 'converted',
  converted_order_id: res.data.order_number,
             }, slug)
           }
- PrintERPDataStore.updateItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, quote.id, {
+ PrintFlowDataStore.updateItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, quote.id, {
  status: 'converted',
  converted_order_id: res.data.order_number,
           })
@@ -333,12 +333,12 @@ function QuotationDetailContent() {
 
         // Dispatch instant multi-window & cross-component sync events
  if (typeof window !== 'undefined') {
- window.dispatchEvent(new CustomEvent('printerp_data_sync'))
- window.dispatchEvent(new CustomEvent('printerp_table_synced:sales_orders'))
- window.dispatchEvent(new CustomEvent('printerp_table_synced:job_orders'))
- window.dispatchEvent(new CustomEvent('printerp_table_synced:quotations'))
- window.dispatchEvent(new CustomEvent('printerp_table_synced:production_jobs'))
- window.dispatchEvent(new CustomEvent('printerp_table_synced'))
+ window.dispatchEvent(new CustomEvent('printflow_data_sync'))
+ window.dispatchEvent(new CustomEvent('printflow_table_synced:sales_orders'))
+ window.dispatchEvent(new CustomEvent('printflow_table_synced:job_orders'))
+ window.dispatchEvent(new CustomEvent('printflow_table_synced:quotations'))
+ window.dispatchEvent(new CustomEvent('printflow_table_synced:production_jobs'))
+ window.dispatchEvent(new CustomEvent('printflow_table_synced'))
         }
 
  showNotification(`Successfully converted to Job Order Ticket #${res.data.order_number}!`)
@@ -360,15 +360,15 @@ function QuotationDetailContent() {
  setIsConvertingInvoice(false)
  if (res.success && res.data) {
  try {
- PrintERPDataStore.addItem(STORAGE_KEYS.INVOICES, res.data)
+ PrintFlowDataStore.addItem(STORAGE_KEYS.INVOICES, res.data)
  if (slug && slug !== 'default') {
- PrintERPDataStore.addItem(STORAGE_KEYS.INVOICES, res.data, slug)
- PrintERPDataStore.updateItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, quote.id, {
+ PrintFlowDataStore.addItem(STORAGE_KEYS.INVOICES, res.data, slug)
+ PrintFlowDataStore.updateItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, quote.id, {
  status: 'converted',
  converted_invoice_id: res.data.id || res.data.invoice_number,
             }, slug)
           }
- PrintERPDataStore.updateItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, quote.id, {
+ PrintFlowDataStore.updateItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, quote.id, {
  status: 'converted',
  converted_invoice_id: res.data.id || res.data.invoice_number,
           })
@@ -386,10 +386,10 @@ function QuotationDetailContent() {
         )
 
  if (typeof window !== 'undefined') {
- window.dispatchEvent(new CustomEvent('printerp_data_sync'))
- window.dispatchEvent(new CustomEvent('printerp_table_synced:invoices'))
- window.dispatchEvent(new CustomEvent('printerp_table_synced:quotations'))
- window.dispatchEvent(new CustomEvent('printerp_table_synced'))
+ window.dispatchEvent(new CustomEvent('printflow_data_sync'))
+ window.dispatchEvent(new CustomEvent('printflow_table_synced:invoices'))
+ window.dispatchEvent(new CustomEvent('printflow_table_synced:quotations'))
+ window.dispatchEvent(new CustomEvent('printflow_table_synced'))
         }
 
  showNotification(`Successfully converted to Invoice #${res.data.invoice_number}! Quoted prices preserved.`)
@@ -416,7 +416,7 @@ function QuotationDetailContent() {
  created_at: new Date().toISOString(),
  updated_at: new Date().toISOString(),
     }
- PrintERPDataStore.addItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, duplicated)
+ PrintFlowDataStore.addItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, duplicated)
  showNotification(`Quotation cloned into new Draft ${dupNumber}.`)
  router.push(getTenantNavHref(`/quotations/${duplicated.id}`, pathname, slug))
   }

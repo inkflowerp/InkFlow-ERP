@@ -1,5 +1,5 @@
 -- ==============================================================================
--- PrintERP SaaS - Migration 013: Design Management & Artwork Versioning
+-- PrintFlow - Migration 013: Design Management & Artwork Versioning
 -- Supports:
 --   1. 6 Design Workflow Statuses (received, designing, customer_approval, revision, approved, rejected)
 --   2. Multi-Format Artwork & Proof Versioning (v1, v2, v3)

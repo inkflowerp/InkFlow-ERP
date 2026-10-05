@@ -1,5 +1,5 @@
 -- ==============================================================================
--- InkFlow ERP SaaS - Migration 067: Workforce + Geo Attendance + Double-Entry Finance
+-- PrintFlow SaaS - Migration 067: Workforce + Geo Attendance + Double-Entry Finance
 -- Authoritative schema for:
 --   1. Extended Employee Master (Branch, Responsibilities, Employment Types, Emergency Contacts, Wage Rates)
 --   2. Shifts & Overnight Schedule Management (Overnight shifts, Grace periods, Break times)

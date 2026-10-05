@@ -23,7 +23,7 @@ import { PageHeader } from '@/components/shared/page-header'
 import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
 import { KpiCard, KpiGrid } from '@/components/shared/kpi-card'
 import { useDataStore } from '@/hooks/use-data-store'
-import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
+import { PrintFlowDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import {
  QuotationRecord,
  normalizeQuotationRecord,
@@ -65,19 +65,19 @@ export default function SalesManagerPage() {
     }
 
  if (typeof window !== 'undefined') {
- window.addEventListener('printerp_table_synced:quotations', handleRealtimeSync)
- window.addEventListener('printerp_table_synced:sales_orders', handleRealtimeSync)
- window.addEventListener('printerp_table_synced', handleRealtimeSync)
- window.addEventListener('printerp_data_sync', handleRealtimeSync)
+ window.addEventListener('printflow_table_synced:quotations', handleRealtimeSync)
+ window.addEventListener('printflow_table_synced:sales_orders', handleRealtimeSync)
+ window.addEventListener('printflow_table_synced', handleRealtimeSync)
+ window.addEventListener('printflow_data_sync', handleRealtimeSync)
  window.addEventListener('storage', handleRealtimeSync)
     }
 
  return () => {
  if (typeof window !== 'undefined') {
- window.removeEventListener('printerp_table_synced:quotations', handleRealtimeSync)
- window.removeEventListener('printerp_table_synced:sales_orders', handleRealtimeSync)
- window.removeEventListener('printerp_table_synced', handleRealtimeSync)
- window.removeEventListener('printerp_data_sync', handleRealtimeSync)
+ window.removeEventListener('printflow_table_synced:quotations', handleRealtimeSync)
+ window.removeEventListener('printflow_table_synced:sales_orders', handleRealtimeSync)
+ window.removeEventListener('printflow_table_synced', handleRealtimeSync)
+ window.removeEventListener('printflow_data_sync', handleRealtimeSync)
  window.removeEventListener('storage', handleRealtimeSync)
       }
     }
@@ -96,13 +96,13 @@ export default function SalesManagerPage() {
  if (!raw) continue
 
  if (
- k.startsWith('printerp_tenant_quotations') ||
- k.startsWith('printerp_quotations') ||
+ k.startsWith('printflow_tenant_quotations') ||
+ k.startsWith('printflow_quotations') ||
  k.includes('quotation') ||
  k.includes('quotes') ||
  k.includes('draft') ||
  k.includes('outbox') ||
- k.includes('inkflow')
+ k.includes('printflow')
           ) {
  const extracted = extractQuotationsFromAny(raw)
  if (extracted.length > 0) {
@@ -114,10 +114,10 @@ export default function SalesManagerPage() {
     }
 
     // Direct DataStore reads
- const dsTenant = PrintERPDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS, slug) || []
+ const dsTenant = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS, slug) || []
  if (Array.isArray(dsTenant)) rawList.push(...dsTenant)
 
- const dsGlobal = PrintERPDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS) || []
+ const dsGlobal = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS) || []
  if (Array.isArray(dsGlobal)) rawList.push(...dsGlobal)
 
  if (localQuotations && Array.isArray(localQuotations)) {
@@ -145,40 +145,40 @@ export default function SalesManagerPage() {
  companyId
       )
  if (res.success && res.data) {
- PrintERPDataStore.createSalesOrderWithIntegrations(res.data)
+ PrintFlowDataStore.createSalesOrderWithIntegrations(res.data)
  if (slug && slug !== 'default') {
- PrintERPDataStore.addItem(STORAGE_KEYS.ORDERS, res.data, slug)
+ PrintFlowDataStore.addItem(STORAGE_KEYS.ORDERS, res.data, slug)
  if (res.data.job_order) {
- PrintERPDataStore.addItem(STORAGE_KEYS.JOB_ORDERS, res.data.job_order, slug)
+ PrintFlowDataStore.addItem(STORAGE_KEYS.JOB_ORDERS, res.data.job_order, slug)
           }
  if (res.data.production_job) {
- PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCTION_JOBS, res.data.production_job, slug)
+ PrintFlowDataStore.addItem(STORAGE_KEYS.PRODUCTION_JOBS, res.data.production_job, slug)
           }
- PrintERPDataStore.updateItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, quoteId, {
+ PrintFlowDataStore.updateItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, quoteId, {
  status: 'converted',
  converted_order_id: res.data.order_number,
           }, slug)
         }
- PrintERPDataStore.updateItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, quoteId, {
+ PrintFlowDataStore.updateItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, quoteId, {
  status: 'converted',
  converted_order_id: res.data.order_number,
         })
  if (typeof window !== 'undefined') {
- window.dispatchEvent(new CustomEvent('printerp_data_sync'))
- window.dispatchEvent(new CustomEvent('printerp_table_synced:sales_orders'))
- window.dispatchEvent(new CustomEvent('printerp_table_synced:job_orders'))
- window.dispatchEvent(new CustomEvent('printerp_table_synced:quotations'))
- window.dispatchEvent(new CustomEvent('printerp_table_synced'))
+ window.dispatchEvent(new CustomEvent('printflow_data_sync'))
+ window.dispatchEvent(new CustomEvent('printflow_table_synced:sales_orders'))
+ window.dispatchEvent(new CustomEvent('printflow_table_synced:job_orders'))
+ window.dispatchEvent(new CustomEvent('printflow_table_synced:quotations'))
+ window.dispatchEvent(new CustomEvent('printflow_table_synced'))
         }
  showNotification(`Quotation converted to Job Order Ticket #${res.data.order_number} successfully!`)
       } else {
- const localRes = PrintERPDataStore.convertQuotationToSalesOrder(quoteId)
+ const localRes = PrintFlowDataStore.convertQuotationToSalesOrder(quoteId)
  if (localRes) {
  if (typeof window !== 'undefined') {
- window.dispatchEvent(new CustomEvent('printerp_data_sync'))
- window.dispatchEvent(new CustomEvent('printerp_table_synced:sales_orders'))
- window.dispatchEvent(new CustomEvent('printerp_table_synced:job_orders'))
- window.dispatchEvent(new CustomEvent('printerp_table_synced:quotations'))
+ window.dispatchEvent(new CustomEvent('printflow_data_sync'))
+ window.dispatchEvent(new CustomEvent('printflow_table_synced:sales_orders'))
+ window.dispatchEvent(new CustomEvent('printflow_table_synced:job_orders'))
+ window.dispatchEvent(new CustomEvent('printflow_table_synced:quotations'))
           }
  showNotification(`Quotation converted to Sales Order ${localRes.order_number} successfully!`)
         } else {
@@ -186,7 +186,7 @@ export default function SalesManagerPage() {
         }
       }
     } catch {
- const localRes = PrintERPDataStore.convertQuotationToSalesOrder(quoteId)
+ const localRes = PrintFlowDataStore.convertQuotationToSalesOrder(quoteId)
  if (localRes) {
  showNotification(`Quotation converted to Sales Order ${localRes.order_number} successfully!`)
       }

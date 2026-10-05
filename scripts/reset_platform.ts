@@ -169,7 +169,7 @@ async function resetPlatformData() {
     // Insert single clean reset record
     await (admin as any).from('platform_audit_logs').insert({
       platform_admin_id: admins?.[0]?.id || null,
-      actor_email: admins?.[0]?.email || 'system@printerp.com.bd',
+      actor_email: admins?.[0]?.email || 'system@printflow.bd',
       action: 'platform.reset',
       entity_type: 'system',
       entity_id: 'cluster-root',
@@ -197,8 +197,8 @@ async function resetPlatformData() {
       await (admin as any).from('platform_system_settings').insert({
         cluster_name: 'default',
         app_name: 'PrintFlow SaaS',
-        support_email: 'support@printerp.com.bd',
-        billing_email: 'billing@printerp.com.bd',
+        support_email: 'support@printflow.bd',
+        billing_email: 'billing@printflow.bd',
         default_currency: 'BDT',
         default_locale: 'bn',
         maintenance_mode: false,

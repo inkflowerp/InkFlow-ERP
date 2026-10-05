@@ -1,5 +1,5 @@
 -- ==============================================================================
--- InkFlow ERP - RPC Authorization & Tenant Isolation Verification Suite
+-- PrintFlow - RPC Authorization & Tenant Isolation Verification Suite
 -- Tests:
 -- 1. Anonymous role (anon) is rejected from service-role and user-callable RPCs.
 -- 2. Cross-tenant attacks: Tenant-B user calling Tenant-A IDs is rejected.

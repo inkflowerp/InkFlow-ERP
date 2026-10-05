@@ -51,7 +51,7 @@ import {
 } from '@/types/logistics.types'
 import { formatBDT } from '@/lib/formatters'
 import { useDataStore } from '@/hooks/use-data-store'
-import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
+import { PrintFlowDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import { CustomerRecord } from '@/types/crm.types'
 import {
  getChallansAction,
@@ -125,17 +125,17 @@ export default function DeliveryLogisticsPage() {
     }
 
  if (typeof window !== 'undefined') {
- window.addEventListener('printerp_table_synced:delivery_challans', handleRealtimeSync)
- window.addEventListener('printerp_table_synced:installations', handleRealtimeSync)
- window.addEventListener('printerp_table_synced', handleRealtimeSync)
- window.addEventListener('printerp_data_sync', handleRealtimeSync)
+ window.addEventListener('printflow_table_synced:delivery_challans', handleRealtimeSync)
+ window.addEventListener('printflow_table_synced:installations', handleRealtimeSync)
+ window.addEventListener('printflow_table_synced', handleRealtimeSync)
+ window.addEventListener('printflow_data_sync', handleRealtimeSync)
  window.addEventListener('storage', handleRealtimeSync)
 
  return () => {
- window.removeEventListener('printerp_table_synced:delivery_challans', handleRealtimeSync)
- window.removeEventListener('printerp_table_synced:installations', handleRealtimeSync)
- window.removeEventListener('printerp_table_synced', handleRealtimeSync)
- window.removeEventListener('printerp_data_sync', handleRealtimeSync)
+ window.removeEventListener('printflow_table_synced:delivery_challans', handleRealtimeSync)
+ window.removeEventListener('printflow_table_synced:installations', handleRealtimeSync)
+ window.removeEventListener('printflow_table_synced', handleRealtimeSync)
+ window.removeEventListener('printflow_data_sync', handleRealtimeSync)
  window.removeEventListener('storage', handleRealtimeSync)
       }
     }
@@ -267,7 +267,7 @@ export default function DeliveryLogisticsPage() {
  const isAllDelivered = remainingNonDelivered.length === 0
  const nextChallanStatus: DeliveryStatus = isAllDelivered ? 'delivered' : 'partially_delivered'
 
- PrintERPDataStore.updateItem<DeliveryChallanRecord>(STORAGE_KEYS.DELIVERY_CHALLANS, selectedChallanForDelivery.id, {
+ PrintFlowDataStore.updateItem<DeliveryChallanRecord>(STORAGE_KEYS.DELIVERY_CHALLANS, selectedChallanForDelivery.id, {
  status: nextChallanStatus,
  delivered_at: isAllDelivered ? now : (selectedChallanForDelivery.delivered_at || null),
  receiver_name: receiverName,
@@ -279,7 +279,7 @@ export default function DeliveryLogisticsPage() {
 
     // Update matching Sales Orders to delivered / partially_delivered
  try {
- const orders = PrintERPDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []
+ const orders = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []
  const matchedOrder = orders.find(
         (o) =>
           (selectedChallanForDelivery.sales_order_id && o.id === selectedChallanForDelivery.sales_order_id) ||
@@ -287,7 +287,7 @@ export default function DeliveryLogisticsPage() {
           (selectedChallanForDelivery.invoice_number && o.invoice_number === selectedChallanForDelivery.invoice_number)
       )
  if (matchedOrder) {
- PrintERPDataStore.updateItem<any>(STORAGE_KEYS.ORDERS, matchedOrder.id, {
+ PrintFlowDataStore.updateItem<any>(STORAGE_KEYS.ORDERS, matchedOrder.id, {
  status: isAllDelivered ? 'delivered' : 'in_production',
  delivery_status: isAllDelivered ? 'delivered' : 'partially_delivered',
  delivered_at: isAllDelivered ? now : undefined,
@@ -296,7 +296,7 @@ export default function DeliveryLogisticsPage() {
       }
 
       // Update matching Invoices delivery_status
- const invoices = PrintERPDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || []
+ const invoices = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || []
  const matchedInv = invoices.find(
         (i) =>
           (selectedChallanForDelivery.invoice_id && i.id === selectedChallanForDelivery.invoice_id) ||
@@ -304,7 +304,7 @@ export default function DeliveryLogisticsPage() {
           (selectedChallanForDelivery.order_number && i.order_number === selectedChallanForDelivery.order_number)
       )
  if (matchedInv) {
- PrintERPDataStore.updateItem<any>(STORAGE_KEYS.INVOICES, matchedInv.id, {
+ PrintFlowDataStore.updateItem<any>(STORAGE_KEYS.INVOICES, matchedInv.id, {
  delivery_status: isAllDelivered ? 'delivered' : 'partially_delivered',
  delivered_at: isAllDelivered ? now : undefined,
  updated_at: now,
@@ -333,7 +333,7 @@ export default function DeliveryLogisticsPage() {
 
   // Quick Action: Mark Out for Delivery
  const handleMarkOutForDelivery = async (challanId: string) => {
- PrintERPDataStore.updateItem<DeliveryChallanRecord>(STORAGE_KEYS.DELIVERY_CHALLANS, challanId, {
+ PrintFlowDataStore.updateItem<DeliveryChallanRecord>(STORAGE_KEYS.DELIVERY_CHALLANS, challanId, {
  status: 'out_for_delivery',
  updated_at: new Date().toISOString(),
     })
@@ -381,7 +381,7 @@ export default function DeliveryLogisticsPage() {
  updated_at: new Date().toISOString(),
     }
 
- PrintERPDataStore.addItem<DeliveryChallanRecord>(STORAGE_KEYS.DELIVERY_CHALLANS, newCh)
+ PrintFlowDataStore.addItem<DeliveryChallanRecord>(STORAGE_KEYS.DELIVERY_CHALLANS, newCh)
  try {
  await createChallanAction(newCh, targetCompanyId)
     } catch {}
@@ -418,14 +418,14 @@ export default function DeliveryLogisticsPage() {
  updated_at: new Date().toISOString(),
     }
 
- PrintERPDataStore.addItem<InstallationRecord>(STORAGE_KEYS.INSTALLATIONS, newIns)
+ PrintFlowDataStore.addItem<InstallationRecord>(STORAGE_KEYS.INSTALLATIONS, newIns)
  setIsNewInstallationOpen(false)
  showNotification(`Installation job ${insNum} scheduled at ${insSite}.`)
   }
 
   // Update Installation Status
  const handleUpdateInstallationStatus = (installationId: string, status: InstallationStatus) => {
- PrintERPDataStore.updateItem<InstallationRecord>(STORAGE_KEYS.INSTALLATIONS, installationId, {
+ PrintFlowDataStore.updateItem<InstallationRecord>(STORAGE_KEYS.INSTALLATIONS, installationId, {
  status,
  updated_at: new Date().toISOString(),
     })

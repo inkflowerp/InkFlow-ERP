@@ -63,7 +63,7 @@ export interface AuthenticatedPlatformContext {
   lastLoginAt?: string
 }
 
-export const PLATFORM_SESSION_COOKIE = 'printerp_platform_session'
+export const PLATFORM_SESSION_COOKIE = 'printflow_platform_session'
 
 export interface PlatformSessionData {
   userId: string
@@ -207,7 +207,7 @@ export function mapSessionToTenantRole(sessionOrRole: TenantSessionData | string
 
 import type { CompanyRow } from '../../types/tenant.types.ts'
 
-export const TENANT_SESSION_COOKIE = 'printerp_tenant_session'
+export const TENANT_SESSION_COOKIE = 'printflow_tenant_session'
 
 export interface TenantSessionData {
   userId: string

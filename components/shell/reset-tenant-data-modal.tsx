@@ -19,7 +19,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useI18n } from '@/i18n/context'
 import { resetTenantDataAction } from '@/actions/tenant.actions'
-import { PrintERPDataStore } from '@/lib/db/data-store'
+import { PrintFlowDataStore } from '@/lib/db/data-store'
 import { playNotificationSound } from '@/lib/notifications/sound-manager'
 import { notify } from '@/lib/notifications/notification-bus'
 import { useToast } from '@/components/shared/toast-feedback'
@@ -55,7 +55,7 @@ export function ResetTenantDataModal({
 
  try {
  const pathSlug = typeof window !== 'undefined' ? window.location.pathname.split('/')[1] : ''
- const effectiveSlug = companySlug || PrintERPDataStore.getActiveTenantSlug() || pathSlug || ''
+ const effectiveSlug = companySlug || PrintFlowDataStore.getActiveTenantSlug() || pathSlug || ''
  const effectiveCompanyId = companyId || effectiveSlug
  const aliases = [
  effectiveSlug,
@@ -67,7 +67,7 @@ export function ResetTenantDataModal({
       ].filter(Boolean)
 
       // 1. Client-side immediate zero-state wipe (guarantees local storage is wiped regardless of server connection)
- PrintERPDataStore.resetTenantData(effectiveCompanyId, aliases)
+ PrintFlowDataStore.resetTenantData(effectiveCompanyId, aliases)
 
       // 2. Trigger server-side data reset across database tables
  try {
@@ -77,7 +77,7 @@ export function ResetTenantDataModal({
       }
 
       // 3. Client-side secondary purge to guarantee clean zero-state
- PrintERPDataStore.resetTenantData(effectiveCompanyId, aliases)
+ PrintFlowDataStore.resetTenantData(effectiveCompanyId, aliases)
 
       // 4. Play sound & dispatch alert
  playNotificationSound('warning')

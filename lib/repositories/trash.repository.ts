@@ -1,4 +1,4 @@
-import { PrintERPDataStore, STORAGE_KEYS } from '../db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../db/data-store.ts'
 import {
   TRASH_RETENTION_DAYS,
   computeTrashExpiration,
@@ -23,7 +23,7 @@ export class TrashRepository {
     companyId?: string,
     retentionDays: number = TRASH_RETENTION_DAYS
   ): Promise<{ purgedCount: number; purgedIds: string[] }> {
-    const all = PrintERPDataStore.get<TrashRecord[]>(STORAGE_KEYS.TRASH_ITEMS) || []
+    const all = PrintFlowDataStore.get<TrashRecord[]>(STORAGE_KEYS.TRASH_ITEMS) || []
     const purgedIds: string[] = []
     const unexpired: TrashRecord[] = []
 
@@ -37,9 +37,9 @@ export class TrashRepository {
     }
 
     if (purgedIds.length > 0) {
-      PrintERPDataStore.set(STORAGE_KEYS.TRASH_ITEMS, unexpired)
+      PrintFlowDataStore.set(STORAGE_KEYS.TRASH_ITEMS, unexpired)
       if (typeof window !== 'undefined') {
-        window.dispatchEvent(new CustomEvent('printerp_datastore_sync', { detail: { key: STORAGE_KEYS.TRASH_ITEMS } }))
+        window.dispatchEvent(new CustomEvent('printflow_datastore_sync', { detail: { key: STORAGE_KEYS.TRASH_ITEMS } }))
       }
       try {
         const { createAdminClient } = await import('../supabase/admin.ts')
@@ -66,7 +66,7 @@ export class TrashRepository {
       await this.purgeExpiredTrash(companyId)
     }
 
-    let all = PrintERPDataStore.get<TrashRecord[]>(STORAGE_KEYS.TRASH_ITEMS) || []
+    let all = PrintFlowDataStore.get<TrashRecord[]>(STORAGE_KEYS.TRASH_ITEMS) || []
 
     try {
       const { createAdminClient } = await import('../supabase/admin.ts')
@@ -91,7 +91,7 @@ export class TrashRepository {
           if (!map.has(item.id)) map.set(item.id, item)
         })
         all = Array.from(map.values())
-        PrintERPDataStore.set(STORAGE_KEYS.TRASH_ITEMS, all)
+        PrintFlowDataStore.set(STORAGE_KEYS.TRASH_ITEMS, all)
       }
     } catch {
       // In-memory / client fallback
@@ -142,14 +142,14 @@ export class TrashRepository {
       refNum = item.quotation_number || ''
       subtitle = item.items?.[0]?.description || (item.grand_total ? `৳ ${item.grand_total}` : '')
       // Remove from active quotations
-      const list = PrintERPDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS) || []
-      PrintERPDataStore.set(
+      const list = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS) || []
+      PrintFlowDataStore.set(
         STORAGE_KEYS.QUOTATIONS,
         list.filter((q) => q.id !== originalId && q.quotation_number !== item.quotation_number)
       )
       if (companyId) {
-        const compList = PrintERPDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS, companyId) || []
-        PrintERPDataStore.set(
+        const compList = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS, companyId) || []
+        PrintFlowDataStore.set(
           STORAGE_KEYS.QUOTATIONS,
           compList.filter((q) => q.id !== originalId && q.quotation_number !== item.quotation_number),
           true,
@@ -175,8 +175,8 @@ export class TrashRepository {
       refNum = item.invoice_number || ''
       subtitle = item.grand_total ? `৳ ${item.grand_total} (${item.status})` : ''
       // Remove from active invoices
-      const list = PrintERPDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || []
-      PrintERPDataStore.set(
+      const list = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || []
+      PrintFlowDataStore.set(
         STORAGE_KEYS.INVOICES,
         list.filter((i) => i.id !== originalId && i.invoice_number !== item.invoice_number)
       )
@@ -185,14 +185,14 @@ export class TrashRepository {
       refNum = item.mobile || item.phone || ''
       subtitle = item.area || item.company_name || 'Customer Profile'
       // Remove from active customers in local data store
-      const list = PrintERPDataStore.get<any[]>(STORAGE_KEYS.CUSTOMERS) || []
-      PrintERPDataStore.set(
+      const list = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.CUSTOMERS) || []
+      PrintFlowDataStore.set(
         STORAGE_KEYS.CUSTOMERS,
         list.filter((c) => c.id !== originalId)
       )
-      const compList = companyId ? (PrintERPDataStore.get<any[]>(STORAGE_KEYS.CUSTOMERS, companyId) || []) : []
+      const compList = companyId ? (PrintFlowDataStore.get<any[]>(STORAGE_KEYS.CUSTOMERS, companyId) || []) : []
       if (companyId) {
-        PrintERPDataStore.set(
+        PrintFlowDataStore.set(
           STORAGE_KEYS.CUSTOMERS,
           compList.filter((c) => c.id !== originalId),
           true,
@@ -208,7 +208,7 @@ export class TrashRepository {
           const { error: dbErr } = await q
           if (dbErr && dbErr.code === '23503') {
             console.warn('[TrashRepository] Foreign key prevents customer deletion:', dbErr)
-            PrintERPDataStore.set(STORAGE_KEYS.CUSTOMERS, [item, ...compList.filter((c) => c.id !== originalId)], true, companyId)
+            PrintFlowDataStore.set(STORAGE_KEYS.CUSTOMERS, [item, ...compList.filter((c) => c.id !== originalId)], true, companyId)
             throw new Error(`Cannot trash customer: ${dbErr.message || 'Record has dependent transactions'}`)
           }
         }
@@ -223,8 +223,8 @@ export class TrashRepository {
       refNum = item.sku || item.code || ''
       subtitle = item.category || (item.base_price ? `৳ ${item.base_price}` : 'Product Catalog Item')
       // Remove from active products
-      const list = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTS) || []
-      PrintERPDataStore.set(
+      const list = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.PRODUCTS) || []
+      PrintFlowDataStore.set(
         STORAGE_KEYS.PRODUCTS,
         list.filter((p) => p.id !== originalId)
       )
@@ -233,8 +233,8 @@ export class TrashRepository {
       refNum = item.sku || item.item_code || ''
       subtitle = item.category || (item.unit ? `Unit: ${item.unit}` : 'Inventory Stock Item')
       // Remove from active materials
-      const list = PrintERPDataStore.get<any[]>(STORAGE_KEYS.MATERIALS) || []
-      PrintERPDataStore.set(
+      const list = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.MATERIALS) || []
+      PrintFlowDataStore.set(
         STORAGE_KEYS.MATERIALS,
         list.filter((m) => m.id !== originalId)
       )
@@ -243,8 +243,8 @@ export class TrashRepository {
       refNum = item.mobile || item.phone || ''
       subtitle = item.contact_person || item.address || 'Vendor / Supplier Profile'
       // Remove from active suppliers
-      const list = PrintERPDataStore.get<any[]>(STORAGE_KEYS.SUPPLIERS) || []
-      PrintERPDataStore.set(
+      const list = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.SUPPLIERS) || []
+      PrintFlowDataStore.set(
         STORAGE_KEYS.SUPPLIERS,
         list.filter((s) => s.id !== originalId)
       )
@@ -267,8 +267,8 @@ export class TrashRepository {
       payload: item,
     }
 
-    const trashList = PrintERPDataStore.get<TrashRecord[]>(STORAGE_KEYS.TRASH_ITEMS) || []
-    PrintERPDataStore.set(STORAGE_KEYS.TRASH_ITEMS, [trashRecord, ...trashList.filter(t => t.id !== trashRecord.id)])
+    const trashList = PrintFlowDataStore.get<TrashRecord[]>(STORAGE_KEYS.TRASH_ITEMS) || []
+    PrintFlowDataStore.set(STORAGE_KEYS.TRASH_ITEMS, [trashRecord, ...trashList.filter(t => t.id !== trashRecord.id)])
 
     // Persist to Supabase audit_logs as TRASH_ITEM for cross-device & serverless durability
     try {
@@ -292,7 +292,7 @@ export class TrashRepository {
 
     // Broadcast client sync events
     if (typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent('printerp_datastore_sync', { detail: { key: STORAGE_KEYS.TRASH_ITEMS } }))
+      window.dispatchEvent(new CustomEvent('printflow_datastore_sync', { detail: { key: STORAGE_KEYS.TRASH_ITEMS } }))
     }
 
     return trashRecord
@@ -302,7 +302,7 @@ export class TrashRepository {
    * Restores a record from Trash back to its active collection
    */
   static async restoreFromTrash(trashId: string, companyId: string): Promise<any> {
-    const trashList = PrintERPDataStore.get<TrashRecord[]>(STORAGE_KEYS.TRASH_ITEMS) || []
+    const trashList = PrintFlowDataStore.get<TrashRecord[]>(STORAGE_KEYS.TRASH_ITEMS) || []
     const trashItem = trashList.find((t) => t.id === trashId)
 
     if (!trashItem) {
@@ -312,11 +312,11 @@ export class TrashRepository {
     const restoredPayload = trashItem.payload
 
     if (trashItem.category === 'quotations') {
-      const list = PrintERPDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS) || []
-      PrintERPDataStore.set(STORAGE_KEYS.QUOTATIONS, [restoredPayload, ...list])
+      const list = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS) || []
+      PrintFlowDataStore.set(STORAGE_KEYS.QUOTATIONS, [restoredPayload, ...list])
       if (companyId) {
-        const compList = PrintERPDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS, companyId) || []
-        PrintERPDataStore.set(STORAGE_KEYS.QUOTATIONS, [restoredPayload, ...compList], true, companyId)
+        const compList = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS, companyId) || []
+        PrintFlowDataStore.set(STORAGE_KEYS.QUOTATIONS, [restoredPayload, ...compList], true, companyId)
       }
       try {
         const { createAdminClient } = await import('../supabase/admin.ts')
@@ -332,14 +332,14 @@ export class TrashRepository {
         console.warn('[TrashRepository] Re-insert quotation error:', dbErr)
       }
     } else if (trashItem.category === 'invoices') {
-      const list = PrintERPDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || []
-      PrintERPDataStore.set(STORAGE_KEYS.INVOICES, [restoredPayload, ...list])
+      const list = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || []
+      PrintFlowDataStore.set(STORAGE_KEYS.INVOICES, [restoredPayload, ...list])
     } else if (trashItem.category === 'customers') {
-      const list = PrintERPDataStore.get<any[]>(STORAGE_KEYS.CUSTOMERS) || []
-      PrintERPDataStore.set(STORAGE_KEYS.CUSTOMERS, [restoredPayload, ...list])
+      const list = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.CUSTOMERS) || []
+      PrintFlowDataStore.set(STORAGE_KEYS.CUSTOMERS, [restoredPayload, ...list])
       if (companyId) {
-        const compList = PrintERPDataStore.get<any[]>(STORAGE_KEYS.CUSTOMERS, companyId) || []
-        PrintERPDataStore.set(STORAGE_KEYS.CUSTOMERS, [restoredPayload, ...compList], true, companyId)
+        const compList = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.CUSTOMERS, companyId) || []
+        PrintFlowDataStore.set(STORAGE_KEYS.CUSTOMERS, [restoredPayload, ...compList], true, companyId)
       }
       try {
         const { createAdminClient } = await import('../supabase/admin.ts')
@@ -351,18 +351,18 @@ export class TrashRepository {
         console.warn('[TrashRepository] Re-insert customer error:', dbErr)
       }
     } else if (trashItem.category === 'products') {
-      const list = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTS) || []
-      PrintERPDataStore.set(STORAGE_KEYS.PRODUCTS, [restoredPayload, ...list])
+      const list = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.PRODUCTS) || []
+      PrintFlowDataStore.set(STORAGE_KEYS.PRODUCTS, [restoredPayload, ...list])
     } else if (trashItem.category === 'materials') {
-      const list = PrintERPDataStore.get<any[]>(STORAGE_KEYS.MATERIALS) || []
-      PrintERPDataStore.set(STORAGE_KEYS.MATERIALS, [restoredPayload, ...list])
+      const list = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.MATERIALS) || []
+      PrintFlowDataStore.set(STORAGE_KEYS.MATERIALS, [restoredPayload, ...list])
     } else if (trashItem.category === 'suppliers') {
-      const list = PrintERPDataStore.get<any[]>(STORAGE_KEYS.SUPPLIERS) || []
-      PrintERPDataStore.set(STORAGE_KEYS.SUPPLIERS, [restoredPayload, ...list])
+      const list = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.SUPPLIERS) || []
+      PrintFlowDataStore.set(STORAGE_KEYS.SUPPLIERS, [restoredPayload, ...list])
     }
 
     // Remove from trash
-    PrintERPDataStore.set(
+    PrintFlowDataStore.set(
       STORAGE_KEYS.TRASH_ITEMS,
       trashList.filter((t) => t.id !== trashId)
     )
@@ -386,7 +386,7 @@ export class TrashRepository {
     }
 
     if (typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent('printerp_datastore_sync', { detail: { key: STORAGE_KEYS.TRASH_ITEMS } }))
+      window.dispatchEvent(new CustomEvent('printflow_datastore_sync', { detail: { key: STORAGE_KEYS.TRASH_ITEMS } }))
     }
 
     return restoredPayload
@@ -396,11 +396,11 @@ export class TrashRepository {
    * Permanently deletes a record from Trash
    */
   static async permanentDelete(trashId: string, companyId: string): Promise<boolean> {
-    const trashList = PrintERPDataStore.get<TrashRecord[]>(STORAGE_KEYS.TRASH_ITEMS) || []
+    const trashList = PrintFlowDataStore.get<TrashRecord[]>(STORAGE_KEYS.TRASH_ITEMS) || []
     const trashItem = trashList.find((t) => t.id === trashId)
     const origId = trashItem?.original_id || trashId
 
-    PrintERPDataStore.set(
+    PrintFlowDataStore.set(
       STORAGE_KEYS.TRASH_ITEMS,
       trashList.filter((t) => t.id !== trashId)
     )
@@ -418,7 +418,7 @@ export class TrashRepository {
     }
 
     if (typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent('printerp_datastore_sync', { detail: { key: STORAGE_KEYS.TRASH_ITEMS } }))
+      window.dispatchEvent(new CustomEvent('printflow_datastore_sync', { detail: { key: STORAGE_KEYS.TRASH_ITEMS } }))
     }
 
     return true
@@ -428,7 +428,7 @@ export class TrashRepository {
    * Clears all trash items or all items within a category
    */
   static async emptyTrash(companyId: string, category?: TrashCategory): Promise<number> {
-    const trashList = PrintERPDataStore.get<TrashRecord[]>(STORAGE_KEYS.TRASH_ITEMS) || []
+    const trashList = PrintFlowDataStore.get<TrashRecord[]>(STORAGE_KEYS.TRASH_ITEMS) || []
     const toDelete = trashList.filter((t) => {
       const matchCompany = matchesCompany(t.company_id, companyId)
       const matchCategory = !category || (category as any) === 'all' || t.category === category
@@ -436,7 +436,7 @@ export class TrashRepository {
     })
 
     const remaining = trashList.filter((t) => !toDelete.includes(t))
-    PrintERPDataStore.set(STORAGE_KEYS.TRASH_ITEMS, remaining)
+    PrintFlowDataStore.set(STORAGE_KEYS.TRASH_ITEMS, remaining)
 
     try {
       const { createAdminClient } = await import('../supabase/admin.ts')
@@ -454,7 +454,7 @@ export class TrashRepository {
     }
 
     if (typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent('printerp_datastore_sync', { detail: { key: STORAGE_KEYS.TRASH_ITEMS } }))
+      window.dispatchEvent(new CustomEvent('printflow_datastore_sync', { detail: { key: STORAGE_KEYS.TRASH_ITEMS } }))
     }
 
     return toDelete.length

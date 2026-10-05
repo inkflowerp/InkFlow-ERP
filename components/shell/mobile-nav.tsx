@@ -175,14 +175,14 @@ export function MobileNav() {
  const handleClose = () => setOpen(false)
  const handleToggle = () => setOpen((prev) => !prev)
 
- window.addEventListener('printerp_open_mobile_nav', handleOpen)
- window.addEventListener('printerp_close_mobile_nav', handleClose)
- window.addEventListener('printerp_toggle_mobile_nav', handleToggle)
+ window.addEventListener('printflow_open_mobile_nav', handleOpen)
+ window.addEventListener('printflow_close_mobile_nav', handleClose)
+ window.addEventListener('printflow_toggle_mobile_nav', handleToggle)
 
  return () => {
- window.removeEventListener('printerp_open_mobile_nav', handleOpen)
- window.removeEventListener('printerp_close_mobile_nav', handleClose)
- window.removeEventListener('printerp_toggle_mobile_nav', handleToggle)
+ window.removeEventListener('printflow_open_mobile_nav', handleOpen)
+ window.removeEventListener('printflow_close_mobile_nav', handleClose)
+ window.removeEventListener('printflow_toggle_mobile_nav', handleToggle)
     }
   }, [])
 

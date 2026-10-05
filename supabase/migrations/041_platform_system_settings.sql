@@ -13,7 +13,7 @@ create table if not exists public.platform_system_settings (
     default_currency text not null default 'BDT',
     default_vat_rate_pct numeric(5,2) not null default 15.00,
     maintenance_mode_enabled boolean not null default false,
-    maintenance_message text not null default 'InkFlow is currently undergoing scheduled platform upgrades.',
+    maintenance_message text not null default 'PrintFlow is currently undergoing scheduled platform upgrades.',
     incident_alert_webhook text,
     backup_retention_days integer not null default 90,
     auto_backup_enabled boolean not null default true,
@@ -62,7 +62,7 @@ insert into public.platform_system_settings (
     'BDT',
     15.00,
     false,
-    'InkFlow is currently undergoing scheduled platform upgrades.',
+    'PrintFlow is currently undergoing scheduled platform upgrades.',
     90,
     true
 )

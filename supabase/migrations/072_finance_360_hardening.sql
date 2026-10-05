@@ -1,5 +1,5 @@
 -- ==============================================================================
--- InkFlow ERP SaaS - Migration 072: Finance 360 & Atomic Accounting Hardening
+-- PrintFlow SaaS - Migration 072: Finance 360 & Atomic Accounting Hardening
 -- Supports:
 --   1. Bank Statements & Statement Lines for Bank/MFS Reconciliation
 --   2. Atomic PostgreSQL RPC: record_expense_atomic

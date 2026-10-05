@@ -10,7 +10,7 @@ describe('Support Chat End-to-End Workflow Integration Test', () => {
   const customerEmail = 'owner@betaprint.com'
   const customerName = 'Kamal Hossain'
   const agentId = 'admin-agent-007'
-  const agentEmail = 'support@printerp.com'
+  const agentEmail = 'support@printflow.bd'
   const agentName = 'Agent Nusrat'
 
   test('Complete Customer-Support Lifecycle Flow: Open -> Claim -> Internal Note -> Reply -> Resolution -> Close -> Reopen', async () => {

@@ -1,6 +1,6 @@
 import { createClient } from '../supabase/server.ts'
 import type { PrintingMethod } from '../../types/product.types.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../db/data-store.ts'
 
 export const DEFAULT_PRINTING_METHODS: Array<Omit<PrintingMethod, 'id' | 'company_id' | 'created_at' | 'updated_at'>> = [
   {
@@ -112,7 +112,7 @@ export class PrintingMethodRepository {
     }
 
     // In-memory data store fallback
-    const all = PrintERPDataStore.get<PrintingMethod[]>(
+    const all = PrintFlowDataStore.get<PrintingMethod[]>(
       STORAGE_KEYS.PRINTING_METHODS,
       companyId
     ) || []
@@ -147,7 +147,7 @@ export class PrintingMethodRepository {
       updated_at: now,
     }))
     defaults.forEach((item) =>
-      PrintERPDataStore.addItem<PrintingMethod>(STORAGE_KEYS.PRINTING_METHODS, item, companyId)
+      PrintFlowDataStore.addItem<PrintingMethod>(STORAGE_KEYS.PRINTING_METHODS, item, companyId)
     )
     return defaults
   }
@@ -222,7 +222,7 @@ export class PrintingMethodRepository {
       updated_at: new Date().toISOString(),
     }
 
-    PrintERPDataStore.addItem<PrintingMethod>(
+    PrintFlowDataStore.addItem<PrintingMethod>(
       STORAGE_KEYS.PRINTING_METHODS,
       localRecord,
       companyId
@@ -257,7 +257,7 @@ export class PrintingMethodRepository {
       // Fallback
     }
 
-    return PrintERPDataStore.updateItem<PrintingMethod>(
+    return PrintFlowDataStore.updateItem<PrintingMethod>(
       STORAGE_KEYS.PRINTING_METHODS,
       id,
       updates,
@@ -282,7 +282,7 @@ export class PrintingMethodRepository {
       // Fallback
     }
 
-    PrintERPDataStore.removeItem<PrintingMethod>(STORAGE_KEYS.PRINTING_METHODS, id, companyId)
+    PrintFlowDataStore.removeItem<PrintingMethod>(STORAGE_KEYS.PRINTING_METHODS, id, companyId)
     return true
   }
 }

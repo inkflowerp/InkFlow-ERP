@@ -87,7 +87,7 @@ import {
 } from '@/components/production/production-filter-toolbar'
 import { ProductionTaskTable } from '@/components/production/production-task-table'
 import { JobTicketPrintModal } from '@/components/production/production-job-ticket-modal'
-import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
+import { PrintFlowDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 
 export default function AdvancedProductionPage() {
  const params = useParams()
@@ -164,7 +164,7 @@ export default function AdvancedProductionPage() {
 
         // Get local tasks from store
  const localStoreTasks =
- PrintERPDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
+ PrintFlowDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
  const taskMap = new Map<string, ProductionTaskRecord>()
 
         // 1. Populate from local datastore
@@ -180,7 +180,7 @@ export default function AdvancedProductionPage() {
         }
 
         // 3. Scan local approved design jobs to auto-materialize production tasks if missing
- const localDesignJobs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.DESIGN_JOBS) || []
+ const localDesignJobs = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.DESIGN_JOBS) || []
  const now = new Date().toISOString()
  let addedAnyLocal = false
 
@@ -379,7 +379,7 @@ export default function AdvancedProductionPage() {
         }
 
         // 4. Scan local invoices to enrich any tasks missing specs/services/finishing
- const localInvoices = PrintERPDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || []
+ const localInvoices = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || []
  for (const inv of localInvoices) {
  if (inv.items && Array.isArray(inv.items)) {
  for (const item of inv.items) {
@@ -443,7 +443,7 @@ export default function AdvancedProductionPage() {
 
  if (addedAnyLocal || taskRes.success) {
  try {
- PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, mergedTasks, false)
+ PrintFlowDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, mergedTasks, false)
           } catch {}
         }
 
@@ -467,21 +467,21 @@ export default function AdvancedProductionPage() {
     }
 
  if (typeof window !== 'undefined') {
- window.addEventListener('printerp_table_synced:production_tasks', handleRealtimeSync)
- window.addEventListener('printerp_table_synced:production_jobs', handleRealtimeSync)
- window.addEventListener('printerp_table_synced:machines', handleRealtimeSync)
- window.addEventListener('printerp_table_synced:design_jobs', handleRealtimeSync)
- window.addEventListener('printerp_table_synced', handleRealtimeSync)
- window.addEventListener('printerp_data_sync', handleRealtimeSync)
+ window.addEventListener('printflow_table_synced:production_tasks', handleRealtimeSync)
+ window.addEventListener('printflow_table_synced:production_jobs', handleRealtimeSync)
+ window.addEventListener('printflow_table_synced:machines', handleRealtimeSync)
+ window.addEventListener('printflow_table_synced:design_jobs', handleRealtimeSync)
+ window.addEventListener('printflow_table_synced', handleRealtimeSync)
+ window.addEventListener('printflow_data_sync', handleRealtimeSync)
  window.addEventListener('storage', handleRealtimeSync)
 
  return () => {
- window.removeEventListener('printerp_table_synced:production_tasks', handleRealtimeSync)
- window.removeEventListener('printerp_table_synced:production_jobs', handleRealtimeSync)
- window.removeEventListener('printerp_table_synced:machines', handleRealtimeSync)
- window.removeEventListener('printerp_table_synced:design_jobs', handleRealtimeSync)
- window.removeEventListener('printerp_table_synced', handleRealtimeSync)
- window.removeEventListener('printerp_data_sync', handleRealtimeSync)
+ window.removeEventListener('printflow_table_synced:production_tasks', handleRealtimeSync)
+ window.removeEventListener('printflow_table_synced:production_jobs', handleRealtimeSync)
+ window.removeEventListener('printflow_table_synced:machines', handleRealtimeSync)
+ window.removeEventListener('printflow_table_synced:design_jobs', handleRealtimeSync)
+ window.removeEventListener('printflow_table_synced', handleRealtimeSync)
+ window.removeEventListener('printflow_data_sync', handleRealtimeSync)
  window.removeEventListener('storage', handleRealtimeSync)
       }
     }
@@ -583,9 +583,9 @@ export default function AdvancedProductionPage() {
   // ==============================================================================
  const unifiedJobs = useMemo(() => {
  const jobMap = new Map<string, UnifiedProductionJob>()
- const localDesignJobs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.DESIGN_JOBS) || []
- const localInvoices = PrintERPDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || []
- const localProductionJobs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_JOBS) || []
+ const localDesignJobs = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.DESIGN_JOBS) || []
+ const localInvoices = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || []
+ const localProductionJobs = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_JOBS) || []
 
  for (const t of filteredTasks) {
       // Grouping key: by job_order_id OR (job_number + customer + product)
@@ -1101,7 +1101,7 @@ export default function AdvancedProductionPage() {
  const now = new Date().toISOString()
  try {
  const allTasks =
- PrintERPDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
+ PrintFlowDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
  const taskIds = new Set(job.tasks.map((t) => t.id))
  let updated = false
  const nextTasks = allTasks.map((t) => {
@@ -1129,10 +1129,10 @@ export default function AdvancedProductionPage() {
       })
 
  if (updated) {
- PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, nextTasks)
+ PrintFlowDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, nextTasks)
       }
 
- const allJobs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_JOBS) || []
+ const allJobs = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_JOBS) || []
  const jobIdx = allJobs.findIndex((j) => j.id === job.id || j.job_number === job.jobNumber)
  if (jobIdx !== -1) {
  allJobs[jobIdx] = {
@@ -1154,7 +1154,7 @@ export default function AdvancedProductionPage() {
  updated_at: now,
         })
       }
- PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_JOBS, allJobs)
+ PrintFlowDataStore.set(STORAGE_KEYS.PRODUCTION_JOBS, allJobs)
     } catch (_) {}
 
  showNotification(
@@ -1170,7 +1170,7 @@ export default function AdvancedProductionPage() {
  const now = new Date().toISOString()
  try {
  const allTasks =
- PrintERPDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
+ PrintFlowDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
  const taskIds = new Set(job.tasks.map((t) => t.id))
  let updated = false
  const nextTasks = allTasks.map((t) => {
@@ -1188,10 +1188,10 @@ export default function AdvancedProductionPage() {
       })
 
  if (updated) {
- PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, nextTasks)
+ PrintFlowDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, nextTasks)
       }
 
- const allJobs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_JOBS) || []
+ const allJobs = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_JOBS) || []
  const jobIdx = allJobs.findIndex((j) => j.id === job.id || j.job_number === job.jobNumber)
  if (jobIdx !== -1) {
  allJobs[jobIdx] = {
@@ -1213,7 +1213,7 @@ export default function AdvancedProductionPage() {
  updated_at: now,
         })
       }
- PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_JOBS, allJobs)
+ PrintFlowDataStore.set(STORAGE_KEYS.PRODUCTION_JOBS, allJobs)
     } catch (_) {}
 
  showNotification(
@@ -1240,8 +1240,8 @@ export default function AdvancedProductionPage() {
 
  const activeOrders = useMemo(() => {
  try {
- const orders = PrintERPDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []
- const jobOrders = PrintERPDataStore.get<any[]>(STORAGE_KEYS.JOB_ORDERS) || []
+ const orders = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []
+ const jobOrders = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.JOB_ORDERS) || []
  return [...orders, ...jobOrders]
     } catch {
  return []

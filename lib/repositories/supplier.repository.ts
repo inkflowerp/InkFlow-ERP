@@ -10,7 +10,7 @@ import type {
   SupplierPriceHistoryRecord,
   SupplierLedgerEntryRecord,
 } from '../../types/purchase.types.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../db/data-store.ts'
 
 export class SupplierRepository {
   // ==========================================
@@ -47,7 +47,7 @@ export class SupplierRepository {
       if (!error && data) return data as unknown as SupplierRecord[]
     } catch {}
 
-    const all = PrintERPDataStore.get<SupplierRecord[]>(STORAGE_KEYS.SUPPLIERS) || []
+    const all = PrintFlowDataStore.get<SupplierRecord[]>(STORAGE_KEYS.SUPPLIERS) || []
     return all.filter((s) => {
       if (s.company_id && s.company_id !== companyId) return false
       if (options?.category && options.category !== 'all' && s.category !== options.category) return false
@@ -78,7 +78,7 @@ export class SupplierRepository {
       if (!error && data) return data as unknown as SupplierRecord
     } catch {}
 
-    const all = PrintERPDataStore.get<SupplierRecord[]>(STORAGE_KEYS.SUPPLIERS) || []
+    const all = PrintFlowDataStore.get<SupplierRecord[]>(STORAGE_KEYS.SUPPLIERS) || []
     return all.find((s) => s.id === id && (!s.company_id || s.company_id === companyId)) || null
   }
 
@@ -131,12 +131,12 @@ export class SupplierRepository {
         .single()
 
       if (!error && created) {
-        PrintERPDataStore.addItem(STORAGE_KEYS.SUPPLIERS, created)
+        PrintFlowDataStore.addItem(STORAGE_KEYS.SUPPLIERS, created)
         return created as unknown as SupplierRecord
       }
     } catch {}
 
-    PrintERPDataStore.addItem(STORAGE_KEYS.SUPPLIERS, payload)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.SUPPLIERS, payload)
     return payload as unknown as SupplierRecord
   }
 
@@ -158,12 +158,12 @@ export class SupplierRepository {
         .single()
 
       if (!error && data) {
-        PrintERPDataStore.updateItem<SupplierRecord>(STORAGE_KEYS.SUPPLIERS, id, data)
+        PrintFlowDataStore.updateItem<SupplierRecord>(STORAGE_KEYS.SUPPLIERS, id, data)
         return data as unknown as SupplierRecord
       }
     } catch {}
 
-    return PrintERPDataStore.updateItem<SupplierRecord>(STORAGE_KEYS.SUPPLIERS, id, payload)
+    return PrintFlowDataStore.updateItem<SupplierRecord>(STORAGE_KEYS.SUPPLIERS, id, payload)
   }
 
   static async deleteSupplier(id: string, companyId: string): Promise<boolean> {
@@ -176,12 +176,12 @@ export class SupplierRepository {
         .eq('company_id', companyId)
 
       if (!error) {
-        PrintERPDataStore.removeItem(STORAGE_KEYS.SUPPLIERS, id)
+        PrintFlowDataStore.removeItem(STORAGE_KEYS.SUPPLIERS, id)
         return true
       }
     } catch {}
 
-    return PrintERPDataStore.removeItem(STORAGE_KEYS.SUPPLIERS, id)
+    return PrintFlowDataStore.removeItem(STORAGE_KEYS.SUPPLIERS, id)
   }
 
   // ==========================================
@@ -207,7 +207,7 @@ export class SupplierRepository {
       if (!error && data) return data as unknown as SupplierItemRecord[]
     } catch {}
 
-    const all = PrintERPDataStore.get<SupplierItemRecord[]>(STORAGE_KEYS.SUPPLIER_ITEMS) || []
+    const all = PrintFlowDataStore.get<SupplierItemRecord[]>(STORAGE_KEYS.SUPPLIER_ITEMS) || []
     return all.filter((item) => {
       if (item.company_id && item.company_id !== companyId) return false
       if (options?.supplierId && item.supplier_id !== options.supplierId) return false
@@ -253,12 +253,12 @@ export class SupplierRepository {
         .single()
 
       if (!error && created) {
-        PrintERPDataStore.addItem(STORAGE_KEYS.SUPPLIER_ITEMS, created)
+        PrintFlowDataStore.addItem(STORAGE_KEYS.SUPPLIER_ITEMS, created)
         return created as unknown as SupplierItemRecord
       }
     } catch {}
 
-    PrintERPDataStore.addItem(STORAGE_KEYS.SUPPLIER_ITEMS, payload)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.SUPPLIER_ITEMS, payload)
     return payload as unknown as SupplierItemRecord
   }
 
@@ -280,12 +280,12 @@ export class SupplierRepository {
         .single()
 
       if (!error && data) {
-        PrintERPDataStore.updateItem<SupplierItemRecord>(STORAGE_KEYS.SUPPLIER_ITEMS, id, data)
+        PrintFlowDataStore.updateItem<SupplierItemRecord>(STORAGE_KEYS.SUPPLIER_ITEMS, id, data)
         return data as unknown as SupplierItemRecord
       }
     } catch {}
 
-    return PrintERPDataStore.updateItem<SupplierItemRecord>(STORAGE_KEYS.SUPPLIER_ITEMS, id, payload)
+    return PrintFlowDataStore.updateItem<SupplierItemRecord>(STORAGE_KEYS.SUPPLIER_ITEMS, id, payload)
   }
 
   static async deleteSupplierItem(id: string, companyId: string): Promise<boolean> {
@@ -298,12 +298,12 @@ export class SupplierRepository {
         .eq('company_id', companyId)
 
       if (!error) {
-        PrintERPDataStore.removeItem(STORAGE_KEYS.SUPPLIER_ITEMS, id)
+        PrintFlowDataStore.removeItem(STORAGE_KEYS.SUPPLIER_ITEMS, id)
         return true
       }
     } catch {}
 
-    return PrintERPDataStore.removeItem(STORAGE_KEYS.SUPPLIER_ITEMS, id)
+    return PrintFlowDataStore.removeItem(STORAGE_KEYS.SUPPLIER_ITEMS, id)
   }
 
   // ==========================================
@@ -329,7 +329,7 @@ export class SupplierRepository {
       if (!error && data) return data as unknown as SupplierPriceHistoryRecord[]
     } catch {}
 
-    const all = PrintERPDataStore.get<SupplierPriceHistoryRecord[]>(STORAGE_KEYS.PRICE_HISTORY) || []
+    const all = PrintFlowDataStore.get<SupplierPriceHistoryRecord[]>(STORAGE_KEYS.PRICE_HISTORY) || []
     return all.filter((h) => {
       if (h.company_id && h.company_id !== companyId) return false
       if (options?.materialId && h.material_id !== options.materialId) return false
@@ -374,12 +374,12 @@ export class SupplierRepository {
         .single()
 
       if (!error && created) {
-        PrintERPDataStore.addItem(STORAGE_KEYS.PRICE_HISTORY, created)
+        PrintFlowDataStore.addItem(STORAGE_KEYS.PRICE_HISTORY, created)
         return created as unknown as SupplierPriceHistoryRecord
       }
     } catch {}
 
-    PrintERPDataStore.addItem(STORAGE_KEYS.PRICE_HISTORY, payload)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.PRICE_HISTORY, payload)
     return payload
   }
 
@@ -404,7 +404,7 @@ export class SupplierRepository {
       if (!error && data) return data as unknown as SupplierLedgerEntryRecord[]
     } catch {}
 
-    const all = PrintERPDataStore.get<SupplierLedgerEntryRecord[]>(STORAGE_KEYS.SUPPLIER_LEDGER_ENTRIES) || []
+    const all = PrintFlowDataStore.get<SupplierLedgerEntryRecord[]>(STORAGE_KEYS.SUPPLIER_LEDGER_ENTRIES) || []
     return all.filter((e) => (!e.company_id || e.company_id === companyId) && (!supplierId || e.supplier_id === supplierId))
   }
 
@@ -449,12 +449,12 @@ export class SupplierRepository {
         .single()
 
       if (!error && created) {
-        PrintERPDataStore.addItem(STORAGE_KEYS.SUPPLIER_LEDGER_ENTRIES, created)
+        PrintFlowDataStore.addItem(STORAGE_KEYS.SUPPLIER_LEDGER_ENTRIES, created)
         return created as unknown as SupplierLedgerEntryRecord
       }
     } catch {}
 
-    PrintERPDataStore.addItem(STORAGE_KEYS.SUPPLIER_LEDGER_ENTRIES, payload)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.SUPPLIER_LEDGER_ENTRIES, payload)
     return payload
   }
 

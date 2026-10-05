@@ -1,5 +1,5 @@
 -- ==============================================================================
--- InkFlow SaaS - Migration 087: Products & Services, Purchasing & Inventory Rebuild
+-- PrintFlow SaaS - Migration 087: Products & Services, Purchasing & Inventory Rebuild
 -- Comprehensive Architectural Rebuild:
 --   1. Commercial Entity Classification: Product, Service, Material, Finishing, Additional, Installation
 --   2. Dedicated Service Configuration JSONB & Allowance Rules

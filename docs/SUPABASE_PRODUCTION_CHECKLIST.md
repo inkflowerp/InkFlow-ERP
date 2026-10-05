@@ -1,12 +1,12 @@
 # Supabase Production Deployment & Hardening Checklist
 
-This document provides the step-by-step verification checklist for provisioning, securing, and maintaining the production PostgreSQL database, Supabase Auth, Storage, and Realtime infrastructure for **PrintERP SaaS**.
+This document provides the step-by-step verification checklist for provisioning, securing, and maintaining the production PostgreSQL database, Supabase Auth, Storage, and Realtime infrastructure for **PrintFlow**.
 
 ---
 
 ## 1. Database Migrations Execution (Sequential Order)
 
-All 29 migration scripts located in [`supabase/migrations/`](file:///f:/Antigravity/PrintERP/supabase/migrations/) must be applied sequentially.
+All 29 migration scripts located in [`supabase/migrations/`](file:///f:/Antigravity/PrintFlow/supabase/migrations/) must be applied sequentially.
 
 ### Migration Order:
 1. `001_initial_schema.sql` - Base schemas, UUID extensions, `companies`, `users`
@@ -78,7 +78,7 @@ Create the following 4 private storage buckets in Supabase Studio -> **Storage**
 | `payment-receipts` | **Private** | `image/jpeg`, `image/png`, `application/pdf` | 10 MB |
 
 ### Storage Security Policies:
-Ensure signed URL access is enforced. Disallow public bucket read access. All file downloads must pass through [`getSignedFileUrl`](file:///f:/Antigravity/PrintERP/lib/security/storage-security.ts).
+Ensure signed URL access is enforced. Disallow public bucket read access. All file downloads must pass through [`getSignedFileUrl`](file:///f:/Antigravity/PrintFlow/lib/security/storage-security.ts).
 
 ---
 
@@ -106,7 +106,7 @@ In **Database -> Publications -> supabase_realtime**:
   - `production_jobs`
   - `workflow_execution_logs`
   - `notifications`
-- Frontend components must connect strictly via [`realtimeManager.subscribe`](file:///f:/Antigravity/PrintERP/lib/realtime/subscription-manager.ts) to `company:${companyId}:${topic}`.
+- Frontend components must connect strictly via [`realtimeManager.subscribe`](file:///f:/Antigravity/PrintFlow/lib/realtime/subscription-manager.ts) to `company:${companyId}:${topic}`.
 
 ---
 

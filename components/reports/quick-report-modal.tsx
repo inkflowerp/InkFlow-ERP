@@ -160,7 +160,7 @@ export function QuickReportModal({
 
   // Handle Export
  const handleExport = (isExcel: boolean) => {
- const filename = `PrintERP_${type || 'Report'}_${new Date().toISOString().slice(0, 10)}`
+ const filename = `PrintFlow_${type || 'Report'}_${new Date().toISOString().slice(0, 10)}`
 
  if (type === 'sales') {
  const headers = ['Invoice #', 'Date', 'Customer', 'Subtotal', 'Tax/VAT', 'Total Amount', 'Paid', 'Due', 'Status']

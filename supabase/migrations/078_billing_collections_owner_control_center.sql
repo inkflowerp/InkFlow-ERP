@@ -1,5 +1,5 @@
 -- ==============================================================================
--- InkFlow ERP SaaS - Migration 078: Billing & Collections Owner Control Center
+-- PrintFlow SaaS - Migration 078: Billing & Collections Owner Control Center
 -- Single Authoritative Source of Financial & Receivables Operations in PostgreSQL:
 --   1. Atomic Multi-Invoice Payment Allocation RPC: record_multi_invoice_payment_atomic
 --   2. Atomic Financial Write-off & Non-Destructive Audit RPC: record_financial_write_off_atomic

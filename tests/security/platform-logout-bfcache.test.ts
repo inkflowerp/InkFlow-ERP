@@ -43,7 +43,7 @@ describe('Platform Logout & Back-Forward Cache (bfcache) Security Suite', () => 
   test('2. Simulates Platform Session Invalidation on Logout', () => {
     const activeCookies = new Map<string, string>()
     activeCookies.set(
-      'printerp_platform_session',
+      'printflow_platform_session',
       JSON.stringify({
         userId: 'root_user_1',
         adminId: 'padmin_1',
@@ -51,19 +51,19 @@ describe('Platform Logout & Back-Forward Cache (bfcache) Security Suite', () => 
         role: 'platform_owner',
       })
     )
-    assert.strictEqual(activeCookies.has('printerp_platform_session'), true)
+    assert.strictEqual(activeCookies.has('printflow_platform_session'), true)
 
     // Simulate logout action cookie clearing
     function simulatePlatformLogout() {
-      activeCookies.delete('printerp_platform_session')
-      activeCookies.delete('printerp_support_tenant')
+      activeCookies.delete('printflow_platform_session')
+      activeCookies.delete('printflow_support_tenant')
       return { success: true, redirectUrl: '/platform/login' }
     }
 
     const logoutResult = simulatePlatformLogout()
     assert.strictEqual(logoutResult.success, true)
     assert.strictEqual(logoutResult.redirectUrl, '/platform/login')
-    assert.strictEqual(activeCookies.has('printerp_platform_session'), false)
+    assert.strictEqual(activeCookies.has('printflow_platform_session'), false)
   })
 
   test('3. bfcache Restoration & History Navigation Guard Verification', () => {

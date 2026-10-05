@@ -17,8 +17,8 @@ import type { EmailGatewayRecord, EmailLogRecord } from '../../types/communicati
 
 describe('Email Gateway Multi-Tenant Isolation & Security Tests', () => {
   beforeEach(() => {
-    EmailDataStore.set('printerp_email_gateways', [])
-    EmailDataStore.set('printerp_email_logs', [])
+    EmailDataStore.set('printflow_email_gateways', [])
+    EmailDataStore.set('printflow_email_logs', [])
   })
 
   it('1. Verifies Tenant A cannot see or access Tenant B custom gateways', async () => {
@@ -54,7 +54,7 @@ describe('Email Gateway Multi-Tenant Isolation & Security Tests', () => {
       updated_at: new Date().toISOString(),
     }
 
-    EmailDataStore.set('printerp_email_gateways', [tenantAGateway, tenantBGateway])
+    EmailDataStore.set('printflow_email_gateways', [tenantAGateway, tenantBGateway])
 
     const resA = await EmailGatewayService.resolveGateway('tenant-a-id', 'TENANT')
     assert.ok(resA)
@@ -87,7 +87,7 @@ describe('Email Gateway Multi-Tenant Isolation & Security Tests', () => {
       updated_at: new Date().toISOString(),
     }
 
-    EmailDataStore.set('printerp_email_gateways', [platformGateway])
+    EmailDataStore.set('printflow_email_gateways', [platformGateway])
 
     // Resolving gateway for unconfigured tenant MUST return null
     const resolvedTenant = await EmailGatewayService.resolveGateway('unconfigured-tenant-id', 'TENANT')
@@ -193,9 +193,9 @@ describe('Email Gateway Multi-Tenant Isolation & Security Tests', () => {
       created_at: new Date().toISOString(),
     }
 
-    EmailDataStore.set('printerp_email_logs', [logA, logB])
+    EmailDataStore.set('printflow_email_logs', [logA, logB])
 
-    const allLogs = EmailDataStore.get<EmailLogRecord[]>('printerp_email_logs') || []
+    const allLogs = EmailDataStore.get<EmailLogRecord[]>('printflow_email_logs') || []
     const logsA = allLogs.filter((l) => l.tenant_id === 'tenant-a-id')
     const logsB = allLogs.filter((l) => l.tenant_id === 'tenant-b-id')
 

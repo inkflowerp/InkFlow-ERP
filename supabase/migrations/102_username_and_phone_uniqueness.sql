@@ -1,5 +1,5 @@
 -- ==============================================================================
--- InkFlow ERP - Migration 102: Universal Username & Phone Multi-Identifier Login
+-- PrintFlow - Migration 102: Universal Username & Phone Multi-Identifier Login
 -- Guarantees uniqueness across login identifiers (Email, Username, Phone)
 -- ==============================================================================
 

@@ -1,5 +1,5 @@
 -- ==============================================================================
--- PrintERP SaaS - Migration 019: Expenses, Cash Book & SME Bank Accounts
+-- PrintFlow - Migration 019: Expenses, Cash Book & SME Bank Accounts
 -- Supports:
 --   1. 12 SME Expense Categories (Rent, Salary, Labor, Electricity, Internet, Transport, Fuel, Marketing, Maintenance, Materials, Office, Other)
 --   2. Daily Cash Book Management (Cash In, Cash Out, Drawer Reconciliation)

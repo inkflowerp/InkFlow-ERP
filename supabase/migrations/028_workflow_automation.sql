@@ -1,5 +1,5 @@
 -- ==============================================================================
--- PrintERP SaaS - Migration 028: Workflow Automation Engine
+-- PrintFlow - Migration 028: Workflow Automation Engine
 -- Supports:
 --   1. Declarative Workflow Rules with Structured Triggers & Actions
 --   2. Workflow Execution Audit Logs

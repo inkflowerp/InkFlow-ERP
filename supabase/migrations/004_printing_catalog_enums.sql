@@ -1,5 +1,5 @@
 -- ==============================================================================
--- PrintERP SaaS - Printing, Signage & Fabrication Domain Enums & Schema (004)
+-- PrintFlow - Printing, Signage & Fabrication Domain Enums & Schema (004)
 -- Tailored for Bangladeshi Printing, Signage, LED, Acrylic & Fabrication Hubs
 -- ==============================================================================
 

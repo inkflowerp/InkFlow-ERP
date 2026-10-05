@@ -128,12 +128,12 @@ export default function TenantSubscriptionPage() {
  loadData()
  refreshSubscription()
     }
- window.addEventListener('printerp_table_synced:tenant_subscriptions', handleSync)
- window.addEventListener('printerp_data_sync', handleSync)
+ window.addEventListener('printflow_table_synced:tenant_subscriptions', handleSync)
+ window.addEventListener('printflow_data_sync', handleSync)
 
  return () => {
- window.removeEventListener('printerp_table_synced:tenant_subscriptions', handleSync)
- window.removeEventListener('printerp_data_sync', handleSync)
+ window.removeEventListener('printflow_table_synced:tenant_subscriptions', handleSync)
+ window.removeEventListener('printflow_data_sync', handleSync)
     }
   }, [company?.id, subscription.status, subscription.plan_code])
 

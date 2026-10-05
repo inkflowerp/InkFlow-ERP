@@ -1,5 +1,5 @@
 -- ==============================================================================
--- PrintERP SaaS - Migration 025: SaaS Subscription System & Feature Gating
+-- PrintFlow - Migration 025: SaaS Subscription System & Feature Gating
 -- Supports:
 --   1. 3 SaaS Plans (Starter, Business, Enterprise) with Configurable Limits
 --   2. 6 Subscription States (Trial, Active, Past Due, Suspended, Cancelled, Expired)

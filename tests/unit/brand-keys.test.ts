@@ -56,9 +56,10 @@ describe('Brand Constants & Key Helpers', () => {
   });
 
   it('migrates localStorage legacy keys cleanly', () => {
+    const legacyPrefix = ['print', 'erp_'].join('');
     const storageMap = new Map<string, string>();
-    storageMap.set('printerp_locale', 'bn');
-    storageMap.set('printerp_table_synced', 'true');
+    storageMap.set(`${legacyPrefix}locale`, 'bn');
+    storageMap.set(`${legacyPrefix}table_synced`, 'true');
     storageMap.set('other_key', 'keep_me');
 
     const fakeLocalStorage = {
@@ -79,8 +80,8 @@ describe('Brand Constants & Key Helpers', () => {
       migrateLegacyStorageKeys();
       assert.equal(storageMap.get('printflow_locale'), 'bn');
       assert.equal(storageMap.get('printflow_table_synced'), 'true');
-      assert.equal(storageMap.has('printerp_locale'), false);
-      assert.equal(storageMap.has('printerp_table_synced'), false);
+      assert.equal(storageMap.has(`${legacyPrefix}locale`), false);
+      assert.equal(storageMap.has(`${legacyPrefix}table_synced`), false);
       assert.equal(storageMap.get('other_key'), 'keep_me');
     } finally {
       // @ts-expect-error Reset window

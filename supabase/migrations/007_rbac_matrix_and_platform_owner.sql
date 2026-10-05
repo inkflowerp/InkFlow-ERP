@@ -1,5 +1,5 @@
 -- ==============================================================================
--- PrintERP SaaS - Migration 007: Complete RBAC Matrix & Platform Owner
+-- PrintFlow - Migration 007: Complete RBAC Matrix & Platform Owner
 -- Fine-grained Module / Resource / Action permissions system
 -- 7 Primary Roles:
 --   1. Platform Owner (Platform-level Superadmin)

@@ -232,7 +232,7 @@ export const CORE_WORKFLOW_LIFECYCLE = [
 ]
 
 // 6. What PrintFlow Manages: 6 Operational Domains
-export const WHAT_PRINTERP_MANAGES = [
+export const WHAT_PRINTFLOW_MANAGES = [
   {
     id: 'sales',
     titleEn: 'Sales & Quotations',

@@ -53,7 +53,7 @@ import { StoreDashboard } from '@/components/dashboard/roles/store-dashboard'
 import { DeliveryDashboard } from '@/components/dashboard/roles/delivery-dashboard'
 import { BranchManagerDashboard } from '@/components/dashboard/roles/branch-manager-dashboard'
 import { NewWorkWizard } from '@/components/orders/new-work-wizard'
-import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
+import { PrintFlowDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import {
  getAllowedQuickActions,
  getDashboardMetrics,
@@ -142,7 +142,7 @@ export function DashboardView({ initialSnapshot = null, tenantSlug }: DashboardV
  useEffect(() => {
  if (!ownerSnapshot && typeof window !== 'undefined') {
  try {
- const cached = PrintERPDataStore.get<OwnerDashboardSnapshot | null>('printerp_dashboard_snapshot_cache' as any, slug)
+ const cached = PrintFlowDataStore.get<OwnerDashboardSnapshot | null>('printflow_dashboard_snapshot_cache' as any, slug)
  if (cached && cached.companyId && company?.id && cached.companyId === company.id) {
  setOwnerSnapshot(cached)
  setIsLoadingOwner(false)
@@ -164,7 +164,7 @@ export function DashboardView({ initialSnapshot = null, tenantSlug }: DashboardV
  if (res.success && res.data) {
  setOwnerSnapshot(res.data)
  try {
- PrintERPDataStore.set('printerp_dashboard_snapshot_cache' as any, res.data, true, slug)
+ PrintFlowDataStore.set('printflow_dashboard_snapshot_cache' as any, res.data, true, slug)
         } catch {}
       } else {
  if (!ownerSnapshot) {
@@ -203,12 +203,12 @@ export function DashboardView({ initialSnapshot = null, tenantSlug }: DashboardV
     }
 
  if (typeof window !== 'undefined') {
- window.addEventListener('printerp_table_synced', scheduleRefresh)
- window.addEventListener('printerp_data_sync', scheduleRefresh)
+ window.addEventListener('printflow_table_synced', scheduleRefresh)
+ window.addEventListener('printflow_data_sync', scheduleRefresh)
  return () => {
  if (timer) clearTimeout(timer)
- window.removeEventListener('printerp_table_synced', scheduleRefresh)
- window.removeEventListener('printerp_data_sync', scheduleRefresh)
+ window.removeEventListener('printflow_table_synced', scheduleRefresh)
+ window.removeEventListener('printflow_data_sync', scheduleRefresh)
       }
     }
 

@@ -123,15 +123,14 @@ describe('Host Matrix & Subdomain Resolution (11 Canonical Scenarios)', () => {
     assert.equal(resHost.isLocalhost, true)
   })
 
-  test('11. rangao.inkflow-erp.vercel.app (tenant via preview fallback)', () => {
-    const resTenant = resolveTenant('rangao.inkflow-erp.vercel.app')
+  test('11. preview-branch.vercel.app (tenant via preview fallback)', () => {
+    const resTenant = resolveTenant('preview-branch.vercel.app', '/rangao')
     assert.equal(resTenant.type, 'tenant')
     assert.equal(resTenant.slug, 'rangao')
     assert.equal(resTenant.isFallback, true)
 
-    const resHost = resolveHostname('rangao.inkflow-erp.vercel.app')
-    assert.equal(resHost.hostType, 'tenant')
-    assert.equal(resHost.tenantSlug, 'rangao')
+    const resHost = resolveHostname('preview-branch.vercel.app')
+    assert.equal(resHost.hostType, 'root')
   })
 
   test('extractCanonicalRootDomain("rangao.printflow.bd") returns "printflow.bd"', () => {

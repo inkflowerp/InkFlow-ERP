@@ -14,7 +14,7 @@ import { useAuth } from '@/hooks/use-auth'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
 import { useToast } from '@/components/shared/toast-feedback'
-import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
+import { PrintFlowDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import { DesignRepository } from '@/lib/repositories/design.repository'
 import { sendToPrintOperatorAction } from '@/actions/design.actions'
 import { usePresence } from '@/components/providers/realtime-provider'
@@ -140,19 +140,19 @@ export function DesignPanel({ defaultTab = 'new_tasks' }: DesignPanelProps) {
  let designList = await DesignRepository.getDesignJobs(companyId)
 
       // Purge any legacy demo jobs starting with 'dsn-ref-'
- const rawStored = PrintERPDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []
+ const rawStored = PrintFlowDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []
  const cleanedStored = rawStored.filter((j) => !j?.id?.startsWith('dsn-ref-'))
  if (cleanedStored.length !== rawStored.length) {
- PrintERPDataStore.set(STORAGE_KEYS.DESIGN_JOBS, cleanedStored)
+ PrintFlowDataStore.set(STORAGE_KEYS.DESIGN_JOBS, cleanedStored)
       }
 
  const cleanList = (designList || []).filter((j) => !j?.id?.startsWith('dsn-ref-'))
  setJobs(cleanList)
 
- const prodList = PrintERPDataStore.get<ProductionJobRecord[]>(STORAGE_KEYS.PRODUCTION_JOBS) || []
+ const prodList = PrintFlowDataStore.get<ProductionJobRecord[]>(STORAGE_KEYS.PRODUCTION_JOBS) || []
  setProductionJobs(prodList)
 
- const custList = PrintERPDataStore.get<any[]>(STORAGE_KEYS.CUSTOMERS) || []
+ const custList = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.CUSTOMERS) || []
  setCustomers(
  custList.map((c) => ({
  id: c.id,
@@ -180,20 +180,20 @@ export function DesignPanel({ defaultTab = 'new_tasks' }: DesignPanelProps) {
     }
 
  if (typeof window !== 'undefined') {
- window.addEventListener('printerp_data_sync', handleDataChange)
- window.addEventListener('printerp_table_synced', handleDataChange)
- window.addEventListener('printerp_table_synced:design_jobs', handleDataChange)
- window.addEventListener('printerp_table_synced:invoices', handleDataChange)
+ window.addEventListener('printflow_data_sync', handleDataChange)
+ window.addEventListener('printflow_table_synced', handleDataChange)
+ window.addEventListener('printflow_table_synced:design_jobs', handleDataChange)
+ window.addEventListener('printflow_table_synced:invoices', handleDataChange)
  window.addEventListener('storage', handleDataChange)
     }
 
  return () => {
  if (debounceTimer) clearTimeout(debounceTimer)
  if (typeof window !== 'undefined') {
- window.removeEventListener('printerp_data_sync', handleDataChange)
- window.removeEventListener('printerp_table_synced', handleDataChange)
- window.removeEventListener('printerp_table_synced:design_jobs', handleDataChange)
- window.removeEventListener('printerp_table_synced:invoices', handleDataChange)
+ window.removeEventListener('printflow_data_sync', handleDataChange)
+ window.removeEventListener('printflow_table_synced', handleDataChange)
+ window.removeEventListener('printflow_table_synced:design_jobs', handleDataChange)
+ window.removeEventListener('printflow_table_synced:invoices', handleDataChange)
  window.removeEventListener('storage', handleDataChange)
       }
     }
@@ -433,7 +433,7 @@ export function DesignPanel({ defaultTab = 'new_tasks' }: DesignPanelProps) {
  designer_name: user?.profile?.full_name || job.designer_name || 'Design Team',
  updated_at: now,
         }
- PrintERPDataStore.updateItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, job.id, updated)
+ PrintFlowDataStore.updateItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, job.id, updated)
  setJobs((prev) => prev.map((j) => (j.id === job.id ? updated : j)))
  showNotification(`Timer started! Job #${job.design_number || job.title} is now in design.`, 'success')
       })
@@ -455,7 +455,7 @@ export function DesignPanel({ defaultTab = 'new_tasks' }: DesignPanelProps) {
  is_design_completed: true,
  updated_at: now.toISOString(),
         }
- PrintERPDataStore.updateItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, job.id, updated)
+ PrintFlowDataStore.updateItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, job.id, updated)
  setJobs((prev) => prev.map((j) => (j.id === job.id ? updated : j)))
  showNotification(`Timer stopped! Design completed (${Math.floor(durSec / 60)}m ${durSec % 60}s). Ready to send to production!`, 'success')
       })
@@ -476,7 +476,7 @@ export function DesignPanel({ defaultTab = 'new_tasks' }: DesignPanelProps) {
  is_locked: true,
  updated_at: now,
       }
- PrintERPDataStore.updateItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, job.id, updated)
+ PrintFlowDataStore.updateItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, job.id, updated)
  setJobs((prev) => prev.map((j) => (j.id === job.id ? updated : j)))
 
       // Ensure local production queue has the job for Production Floor Panel
@@ -496,7 +496,7 @@ export function DesignPanel({ defaultTab = 'new_tasks' }: DesignPanelProps) {
  created_at: now,
  updated_at: now,
       }
- PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCTION_JOBS, prodJob as any)
+ PrintFlowDataStore.addItem(STORAGE_KEYS.PRODUCTION_JOBS, prodJob as any)
 
  try {
  await sendToPrintOperatorAction(job.id, companyId, updated, {
@@ -539,7 +539,7 @@ export function DesignPanel({ defaultTab = 'new_tasks' }: DesignPanelProps) {
  is_production_paused: true,
  updated_at: new Date().toISOString(),
         }
- PrintERPDataStore.updateItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, job.id, updated as any)
+ PrintFlowDataStore.updateItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, job.id, updated as any)
  setJobs((prev) => prev.map((j) => (j.id === job.id ? (updated as any) : j)))
  showNotification('Production paused for correction', 'warning')
       })
@@ -555,7 +555,7 @@ export function DesignPanel({ defaultTab = 'new_tasks' }: DesignPanelProps) {
  is_production_paused: false,
  updated_at: new Date().toISOString(),
         }
- PrintERPDataStore.updateItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, job.id, updated as any)
+ PrintFlowDataStore.updateItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, job.id, updated as any)
  setJobs((prev) => prev.map((j) => (j.id === job.id ? (updated as any) : j)))
  showNotification('Production resumed', 'success')
       })
@@ -572,7 +572,7 @@ export function DesignPanel({ defaultTab = 'new_tasks' }: DesignPanelProps) {
  revision_count: (job.revision_count || 0) + 1,
  updated_at: new Date().toISOString(),
         }
- PrintERPDataStore.updateItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, job.id, updated)
+ PrintFlowDataStore.updateItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, job.id, updated)
  setJobs((prev) => prev.map((j) => (j.id === job.id ? updated : j)))
  showNotification(`Revision requested for #${job.design_number || job.title}`, 'info')
       })
@@ -582,7 +582,7 @@ export function DesignPanel({ defaultTab = 'new_tasks' }: DesignPanelProps) {
 
  const handleCreateNewJob = useCallback(
  async (newJob: DesignJobRecord) => {
- PrintERPDataStore.addItem(STORAGE_KEYS.DESIGN_JOBS, newJob)
+ PrintFlowDataStore.addItem(STORAGE_KEYS.DESIGN_JOBS, newJob)
  setJobs((prev) => [newJob, ...prev])
  showNotification('New design job created successfully!', 'success')
  try {

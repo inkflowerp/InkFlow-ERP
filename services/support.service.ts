@@ -31,7 +31,7 @@ class SupportMemoryStore {
   static getConversations(): SupportConversationRecord[] {
     if (typeof window !== 'undefined' && window.localStorage) {
       try {
-        const item = window.localStorage.getItem('printerp_support_conversations')
+        const item = window.localStorage.getItem('printflow_support_conversations')
         if (item) {
           const list: SupportConversationRecord[] = JSON.parse(item)
           list.forEach((c) => this.conversations.set(c.id, c))
@@ -51,7 +51,7 @@ class SupportMemoryStore {
     if (typeof window !== 'undefined' && window.localStorage) {
       try {
         const all = Array.from(this.conversations.values())
-        window.localStorage.setItem('printerp_support_conversations', JSON.stringify(all))
+        window.localStorage.setItem('printflow_support_conversations', JSON.stringify(all))
       } catch {}
     }
   }
@@ -59,7 +59,7 @@ class SupportMemoryStore {
   static getMessages(conversationId: string): SupportMessageRecord[] {
     if (typeof window !== 'undefined' && window.localStorage) {
       try {
-        const item = window.localStorage.getItem(`printerp_support_msg_${conversationId}`)
+        const item = window.localStorage.getItem(`printflow_support_msg_${conversationId}`)
         if (item) {
           const msgs: SupportMessageRecord[] = JSON.parse(item)
           this.messages.set(conversationId, msgs)
@@ -80,7 +80,7 @@ class SupportMemoryStore {
     this.messages.set(msg.conversation_id, list)
     if (typeof window !== 'undefined' && window.localStorage) {
       try {
-        window.localStorage.setItem(`printerp_support_msg_${msg.conversation_id}`, JSON.stringify(list))
+        window.localStorage.setItem(`printflow_support_msg_${msg.conversation_id}`, JSON.stringify(list))
       } catch {}
     }
   }

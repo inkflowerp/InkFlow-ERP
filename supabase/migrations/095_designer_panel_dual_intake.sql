@@ -1,5 +1,5 @@
 -- ==============================================================================
--- PrintERP SaaS - Migration 095: Designer Panel & Dual Intake Workflow Architecture
+-- PrintFlow - Migration 095: Designer Panel & Dual Intake Workflow Architecture
 -- Supports:
 --   1. Line-item level design requirement & approval configuration on invoice_items
 --   2. Dual intake source tracking and approval requirement on design_jobs

@@ -1,5 +1,5 @@
 -- ==============================================================================
--- InkFlow SaaS - Migration 090: Customer-Type-Based Pricing Engine & Tariffs
+-- PrintFlow SaaS - Migration 090: Customer-Type-Based Pricing Engine & Tariffs
 -- Supports:
 --   1. Reusable Customer-Type Pricing Layer (Retail, Reseller, Corporate, Agency, Government, Regular)
 --   2. Multiple Pricing Strategies (Fixed Price, Unit Rate, Percentage Adjustment, Fixed Adjustment, Tiered, Formula)

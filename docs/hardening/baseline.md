@@ -10,7 +10,7 @@
 
 ## Executive Summary
 
-All core quality gates (`npm ci`, `npm run typecheck`, `npm run lint`, `npm test`, `npm run copy-lint`, `npm run ui-audit`, `npm run build`) were executed on `hardening/phase-0` to establish the baseline health of InkFlow ERP before subsequent hardening phases.
+All core quality gates (`npm ci`, `npm run typecheck`, `npm run lint`, `npm test`, `npm run copy-lint`, `npm run ui-audit`, `npm run build`) were executed on `hardening/phase-0` to establish the baseline health of PrintFlow before subsequent hardening phases.
 
 | Command | Exit Code | Result | Details / Issues Cataloged |
 | :--- | :---: | :---: | :--- |
@@ -44,7 +44,7 @@ All core quality gates (`npm ci`, `npm run typecheck`, `npm run lint`, `npm test
 - **Exit Code:** `0`
 - **Output:**
   ```text
-  > printerp@0.1.0 typecheck
+  > printflow@0.1.0 typecheck
   > tsc --noEmit
   ```
 - **Observations:** No TypeScript errors detected across the entire codebase.

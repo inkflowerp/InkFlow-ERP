@@ -1,5 +1,5 @@
 -- ==============================================================================
--- InkFlow SaaS - Migration 063: Production Concurrency & Machine Scheduling Hardening
+-- PrintFlow SaaS - Migration 063: Production Concurrency & Machine Scheduling Hardening
 -- Supports:
 --   1. PostgreSQL btree_gist extension for interval exclusion constraints
 --   2. Database-level race-condition prevention on overlapping machine schedules

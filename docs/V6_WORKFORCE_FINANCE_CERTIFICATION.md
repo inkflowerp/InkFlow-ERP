@@ -1,8 +1,8 @@
-# InkFlow V6 — Workforce + Geo Attendance + Finance Certification Report
+# PrintFlow V6 — Workforce + Geo Attendance + Finance Certification Report
 
 > **Verdict:** CERTIFIED — PRODUCTION READY  
 > **Date:** September 14, 2026  
-> **Target Release:** InkFlow V6 Release Candidate  
+> **Target Release:** PrintFlow V6 Release Candidate  
 > **Platform Baseline:** V1 (Commercial) + V2 (Production) + V3 (Inventory) + V4 (Economics/Costing) + V5 (Procurement) + V6 (Workforce & Finance)  
 > **Database Baseline:** Migrations `001` through `067` (Live Remote Database Synchronized)  
 > **Test Suite:** 871 passed / 0 failed / 226 suites  
@@ -13,7 +13,7 @@
 
 ## 1. Executive Summary
 
-InkFlow V6 successfully introduces a hardened, multi-tenant, enterprise-grade **Workforce Management, Geofenced & QR Attendance, and Double-Entry Financial Accounting System** built directly on top of the frozen, production-certified V1–V5 baseline without modifying or regressing any historical architecture.
+PrintFlow V6 successfully introduces a hardened, multi-tenant, enterprise-grade **Workforce Management, Geofenced & QR Attendance, and Double-Entry Financial Accounting System** built directly on top of the frozen, production-certified V1–V5 baseline without modifying or regressing any historical architecture.
 
 V6 connects day-to-day workshop activity (shifts, clock-ins, daily worker job logs, material consumption, and supplier procurement) into an authoritative financial reality:
 - **Workforce Engine:** Multi-responsibility employee master, configurable shifts with overnight wrap-around (e.g. 22:00 $\rightarrow$ 06:00), overtime multiplier engines, daily worker attribution, and non-destructive V4 `job_costings.actual_labor_cost` reconciliation.
@@ -315,4 +315,4 @@ $$\text{Net Profit} = \text{Operating Profit} - \text{Taxes \& Adjustments}$$
 
 # CERTIFIED — PRODUCTION READY
 
-InkFlow V6 has achieved full compliance across all security, financial integrity, privacy, concurrency, and cross-domain requirements. All test suites pass, TypeScript compiles with 0 errors, and Next.js production builds cleanly.
+PrintFlow V6 has achieved full compliance across all security, financial integrity, privacy, concurrency, and cross-domain requirements. All test suites pass, TypeScript compiles with 0 errors, and Next.js production builds cleanly.

@@ -1,5 +1,5 @@
 -- ==============================================================================
--- InkFlow SaaS - Migration 088: Dynamic Configuration-Driven Masters
+-- PrintFlow SaaS - Migration 088: Dynamic Configuration-Driven Masters
 -- Comprehensive Database Support:
 --   1. Printing Methods Master (public.printing_methods)
 --   2. Multi-Configuration Material Purchase (public.material_purchase_configs)

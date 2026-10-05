@@ -72,9 +72,9 @@ describe('Google OAuth Configuration & Security Audit Tests', () => {
 
     // Test VERCEL_PROJECT_PRODUCTION_URL fallback
     delete process.env.NEXT_PUBLIC_APP_URL
-    process.env.VERCEL_PROJECT_PRODUCTION_URL = 'inkflow-erp.vercel.app'
+    process.env.VERCEL_PROJECT_PRODUCTION_URL = 'printflow.bd'
     diag = getGoogleOAuthDiagnostics()
-    assert.strictEqual(diag.redirectUri, 'https://inkflow-erp.vercel.app/api/email/oauth/google/callback')
+    assert.strictEqual(diag.redirectUri, 'https://printflow.bd/api/email/oauth/google/callback')
 
     // Test localhost fallback
     delete process.env.VERCEL_PROJECT_PRODUCTION_URL

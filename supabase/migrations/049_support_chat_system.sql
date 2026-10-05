@@ -1,5 +1,5 @@
 -- ==============================================================================
--- InkFlow SaaS - Migration 049: Enterprise Support Chat & Conversation System
+-- PrintFlow SaaS - Migration 049: Enterprise Support Chat & Conversation System
 -- Supports:
 --   1. Tenant-isolated support conversations with human-friendly numbering (SUP-000001)
 --   2. Realtime messages with strict distinction between public replies and internal notes

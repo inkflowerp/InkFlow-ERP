@@ -1,4 +1,4 @@
-# InkFlow ERP — Vercel & Supabase Environment Isolation & Key Rotation Protocol
+# PrintFlow — Vercel & Supabase Environment Isolation & Key Rotation Protocol
 
 ## 1. Environment Isolation Principle
 
@@ -20,8 +20,8 @@ flowchart TD
 
 | Variable | Development (Local) | Preview (Vercel PR) | Production (`main`) |
 |---|---|---|---|
-| `NEXT_PUBLIC_APP_URL` | `http://localhost:3000` | `https://[pr-hash].inkflowerp.com` | `https://app.inkflowerp.com` |
-| `NEXT_PUBLIC_ROOT_DOMAIN` | `localhost:3000` | `inkflow-preview.com` | `inkflowerp.com` |
+| `NEXT_PUBLIC_APP_URL` | `http://localhost:3000` | `https://[pr-hash].printflow.bd` | `https://app.printflow.bd` |
+| `NEXT_PUBLIC_ROOT_DOMAIN` | `localhost:3000` | `printflow.bd` | `printflow.bd` |
 | `NEXT_PUBLIC_SUPABASE_URL` | `http://127.0.0.1:54322` | Dedicated Supabase Branch URL | `https://[prod-ref].supabase.co` |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Local Anon Key | Branch Anon Key | Production Anon Key |
 | `SUPABASE_SERVICE_ROLE_KEY` | Local Service Role Key | Branch Service Role Key | Production Service Role Key |
@@ -37,7 +37,7 @@ flowchart TD
 ## 3. Ephemeral Supabase Database Branching for PRs
 
 ### 3.1 Setup with Supabase GitHub Integration
-1. In **Supabase Dashboard** $\to$ **Integrations** $\to$ **GitHub**, connect the `PrintERP` repository.
+1. In **Supabase Dashboard** $\to$ **Integrations** $\to$ **GitHub**, connect the `PrintFlow` repository.
 2. Enable **Database Branching**.
 3. For every open PR, Supabase automatically provisions a lightweight PostgreSQL branch cloned from production schema with migrations applied.
 4. Supabase sends the branch credentials (`SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`) to the corresponding Vercel Preview environment via the Vercel-Supabase Integration.

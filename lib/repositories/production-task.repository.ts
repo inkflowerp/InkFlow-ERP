@@ -4,7 +4,7 @@ import type {
   CreateProductionTaskInput,
   ProductionTaskStatus,
 } from '../../types/production.types.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../db/data-store.ts'
 import type { DesignJobRecord } from '../../types/design.types.ts'
 import { DesignRepository } from './design.repository.ts'
 import { isReadyProduct } from '../units.ts'
@@ -123,7 +123,7 @@ export class ProductionTaskRepository {
     }
 
     // Merge store tasks
-    const localStoreTasks = PrintERPDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
+    const localStoreTasks = PrintFlowDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
     const matchingLocalTasks = localStoreTasks.filter((t) => this.isMatchingCompany(t.company_id, companyId))
 
     const taskMap = new Map<string, any>()
@@ -141,7 +141,7 @@ export class ProductionTaskRepository {
     } catch {
       allDesignJobs = []
     }
-    const localDesignJobs = PrintERPDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []
+    const localDesignJobs = PrintFlowDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []
     for (const ld of localDesignJobs) {
       if (this.isMatchingCompany(ld.company_id, companyId) && !allDesignJobs.some((j) => j.id === ld.id)) {
         allDesignJobs.push(ld)
@@ -153,8 +153,8 @@ export class ProductionTaskRepository {
       }
     }
 
-    const invoices = PrintERPDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || []
-    const jobOrders = PrintERPDataStore.get<any[]>(STORAGE_KEYS.JOB_ORDERS) || []
+    const invoices = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || []
+    const jobOrders = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.JOB_ORDERS) || []
 
     const approvedJobs = allDesignJobs.filter((dj) => {
       // Ready products bypass machine production
@@ -290,9 +290,9 @@ export class ProductionTaskRepository {
     }
 
     if (newTasksToPersist.length > 0) {
-      const allTasks = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
+      const allTasks = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
       allTasks.unshift(...newTasksToPersist)
-      PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, allTasks)
+      PrintFlowDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, allTasks)
 
       if (uuidRegex.test(companyId)) {
         try {
@@ -415,7 +415,7 @@ export class ProductionTaskRepository {
     }
 
     // Check DataStore
-    const all = PrintERPDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
+    const all = PrintFlowDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
     let found = all.find(
       (t: ProductionTaskRecord) =>
         (t.id === id || t.task_number === id || this.matchesTaskNumber(t.task_number, id)) &&
@@ -468,7 +468,7 @@ export class ProductionTaskRepository {
       }
 
       all.unshift(registeredTask)
-      PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, all)
+      PrintFlowDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, all)
       return registeredTask
     }
 
@@ -571,9 +571,9 @@ export class ProductionTaskRepository {
       }
     } catch {}
 
-    const all = PrintERPDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
+    const all = PrintFlowDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
     all.push(payload)
-    PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, all)
+    PrintFlowDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, all)
     return payload as ProductionTaskRecord
   }
 
@@ -652,7 +652,7 @@ export class ProductionTaskRepository {
       }
     }
 
-    const all = PrintERPDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
+    const all = PrintFlowDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
     const idx = all.findIndex(
       (t: ProductionTaskRecord) =>
         (t.id === id ||
@@ -672,7 +672,7 @@ export class ProductionTaskRepository {
       }
       const nextVersion = (all[idx].version || 1) + 1
       all[idx] = { ...all[idx], ...payload, version: nextVersion }
-      PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, all)
+      PrintFlowDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, all)
       return all[idx]
     }
 
@@ -695,7 +695,7 @@ export class ProductionTaskRepository {
       updated_at: new Date().toISOString(),
     }
     all.unshift(fallbackTask)
-    PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, all)
+    PrintFlowDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, all)
     return fallbackTask
   }
 
@@ -800,7 +800,7 @@ export class ProductionTaskRepository {
     } catch {}
 
     // Local datastore fallback
-    const all = PrintERPDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
+    const all = PrintFlowDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
 
     const isSameJob = (t: ProductionTaskRecord) => {
       if (t.id === completedTask?.id) return false
@@ -854,7 +854,7 @@ export class ProductionTaskRepository {
         const idx = all.findIndex((t: ProductionTaskRecord) => t.id === nextTask.id)
         if (idx >= 0) {
           all[idx] = nextTask
-          PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, all)
+          PrintFlowDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, all)
         }
       }
       return nextTask
@@ -911,7 +911,7 @@ export class ProductionTaskRepository {
         }
 
         all.unshift(newFinishingTask)
-        PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, all)
+        PrintFlowDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, all)
 
         try {
           const supabase = await createClient()
@@ -935,12 +935,12 @@ export class ProductionTaskRepository {
         .eq('company_id', companyId)
 
       if (!error) {
-        PrintERPDataStore.removeItem(STORAGE_KEYS.PRODUCTION_TASKS, id)
+        PrintFlowDataStore.removeItem(STORAGE_KEYS.PRODUCTION_TASKS, id)
         return true
       }
     } catch {}
 
-    return PrintERPDataStore.removeItem(STORAGE_KEYS.PRODUCTION_TASKS, id)
+    return PrintFlowDataStore.removeItem(STORAGE_KEYS.PRODUCTION_TASKS, id)
   }
 
   // Compatibility aliases
@@ -950,7 +950,7 @@ export class ProductionTaskRepository {
       if (tasks && tasks.length > 0) return tasks
     } catch {}
 
-    const all = PrintERPDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
+    const all = PrintFlowDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
     return all.filter((t) => {
       if (t.company_id && !this.isMatchingCompany(t.company_id, companyId)) return false
       if (filters?.status && filters.status !== 'all' && t.status !== filters.status) return false
@@ -969,7 +969,7 @@ export class ProductionTaskRepository {
       if (task) return task
     } catch {}
 
-    const all = PrintERPDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
+    const all = PrintFlowDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
     return (
       all.find(
         (t) =>
@@ -983,12 +983,12 @@ export class ProductionTaskRepository {
     try {
       const created = await this.createTask(task)
       if (created) {
-        PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCTION_TASKS, created)
+        PrintFlowDataStore.addItem(STORAGE_KEYS.PRODUCTION_TASKS, created)
         return created
       }
     } catch {}
 
-    PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCTION_TASKS, task)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.PRODUCTION_TASKS, task)
     return task as ProductionTaskRecord
   }
 
@@ -996,12 +996,12 @@ export class ProductionTaskRepository {
     try {
       const updated = await this.updateTask(id, companyId, updates)
       if (updated) {
-        PrintERPDataStore.updateItem<ProductionTaskRecord>(STORAGE_KEYS.PRODUCTION_TASKS, id, updated)
+        PrintFlowDataStore.updateItem<ProductionTaskRecord>(STORAGE_KEYS.PRODUCTION_TASKS, id, updated)
         return updated
       }
     } catch {}
 
-    const updated = PrintERPDataStore.updateItem<ProductionTaskRecord>(STORAGE_KEYS.PRODUCTION_TASKS, id, updates)
+    const updated = PrintFlowDataStore.updateItem<ProductionTaskRecord>(STORAGE_KEYS.PRODUCTION_TASKS, id, updates)
     if (updated) return updated
     return { id, company_id: companyId, ...updates } as ProductionTaskRecord
   }

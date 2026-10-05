@@ -1,8 +1,8 @@
-# InkFlow V9 — Multi-Branch + Advanced Management Implementation Report
+# PrintFlow V9 — Multi-Branch + Advanced Management Implementation Report
 
 ## Architecture & System Overview
 
-InkFlow V9 extends the certified V1–V8 production SaaS platform into an enterprise-grade **Multi-Branch Operations & Advanced Management** system. It provides consolidated enterprise oversight while strictly preserving tenant isolation, atomic transaction ledgers (V3 stock ledger, V6 double-entry finance), and server-authoritative data scopes.
+PrintFlow V9 extends the certified V1–V8 production SaaS platform into an enterprise-grade **Multi-Branch Operations & Advanced Management** system. It provides consolidated enterprise oversight while strictly preserving tenant isolation, atomic transaction ledgers (V3 stock ledger, V6 double-entry finance), and server-authoritative data scopes.
 
 ```
 Tenant / Company (Tenant Isolation)
@@ -15,7 +15,7 @@ Tenant / Company (Tenant Isolation)
        │      │
        │      ├── Operations (Sales, Production Queues, Warehouses, Cash Books)
        │      │
-       │      └── Offline Partitioning (printerp_offline_<tenant>_<branch>_<device>)
+       │      └── Offline Partitioning (printflow_offline_<tenant>_<branch>_<device>)
        │
        └── Consolidated Management (Cross-Branch Transfers, Comparison Matrix, Global Analytics)
 ```
@@ -86,7 +86,7 @@ The `BranchAnalyticsService` delivers three management levels:
 
 Client-side cache keys are partitioned by tenant, branch, and device:
 ```
-printerp_offline_<tenantSlug>_<branchId>_<deviceId>
+printflow_offline_<tenantSlug>_<branchId>_<deviceId>
 ```
 When a user switches branches, the client clears sensitive branch-scoped cache and revalidates permissions on reconnect.
 

@@ -1,4 +1,4 @@
-# InkFlow ERP — Plain-Language Terminology Glossary (English & বাংলা)
+# PrintFlow — Plain-Language Terminology Glossary (English & বাংলা)
 
 This glossary defines the ONE approved English and Bangla word for every concept in the system.
 Every screen, button, table header, and notification MUST use these exact terms. Synonyms and corporate jargon are banned.

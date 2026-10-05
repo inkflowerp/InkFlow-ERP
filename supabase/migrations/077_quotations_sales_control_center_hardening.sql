@@ -1,5 +1,5 @@
 -- ==============================================================================
--- PrintERP SaaS - Migration 077: Quotations Sales-Control Center Hardening
+-- PrintFlow - Migration 077: Quotations Sales-Control Center Hardening
 -- Enhances public.quotations, public.quotation_items, and public.quotation_activities
 -- to support the Business-Owner-First Sales Control Center with Follow-Up Engine,
 -- Concession Negotiations, Dual Order/Invoice Conversion, and Timeline Actions.

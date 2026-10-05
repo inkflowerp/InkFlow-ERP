@@ -1,7 +1,7 @@
 # Server Actions Isolation & Security Audit
 
 ## Executive Summary
-All server actions across the InkFlow ERP application are hardened under the **Fail-Closed Isolation Architecture**.
+All server actions across the PrintFlow application are hardened under the **Fail-Closed Isolation Architecture**.
 1. **Tenant Actions**: Must use `withTenantAction({ permission, branchScoped })`.
    - Resolves user identity from Supabase Auth session.
    - Resolves `companyId` strictly from database membership (`company_users`). Never accepts or trusts client-supplied `companyId`.

@@ -10,7 +10,7 @@
 
 Platform administrators operate under **least-privilege boundaries**:
 1. **Zero Unaudited Tenant Access:** Platform administrators never query raw tenant tables directly from client components. All administrative data reads and mutations occur via authenticated Server Actions wrapped in `withPlatformAction`.
-2. **Support & Impersonation Sessions:** Access to live tenant workspaces (`/[tenantSlug]/*`) requires an active, time-boxed (default 30 min, maximum 60 min), cryptographically signed (`printerp_support_tenant`), read-only-by-default support session. Every session initiation, extension, and revocation is recorded in `platform_audit_logs` and `platform_support_sessions`.
+2. **Support & Impersonation Sessions:** Access to live tenant workspaces (`/[tenantSlug]/*`) requires an active, time-boxed (default 30 min, maximum 60 min), cryptographically signed (`printflow_support_tenant`), read-only-by-default support session. Every session initiation, extension, and revocation is recorded in `platform_audit_logs` and `platform_support_sessions`.
 3. **Aggregated Cross-Tenant Telemetry:** Metric queries in `PlatformService` (e.g., total active users, system storage consumption, invoice counts for quota enforcement) query cross-tenant metadata strictly for SaaS operations (billing, quota ranking, customer health scores).
 
 ---

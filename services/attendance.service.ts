@@ -277,15 +277,15 @@ export class AttendanceService {
     const tokenHash = hashQrToken(cleanQr)
     let tokenMatch = await AttendanceRepository.getQrTokenByHash(tokenHash)
 
-    // Fallback A: Extract location ID from payload (e.g. "INKFLOW:ATT:LOC:<id>", "LOC-<prefix>", UUID)
+    // Fallback A: Extract location ID from payload (e.g. "PRINTFLOW:ATT:LOC:<id>", "LOC-<prefix>", UUID)
     if (!tokenMatch) {
       let locId = ''
       if (cleanQr.includes('LOC:')) {
         locId = cleanQr.split('LOC:')[1]?.split('?')[0]?.split('&')[0]?.trim()
       } else if (cleanQr.includes('loc=')) {
         locId = cleanQr.split('loc=')[1]?.split('&')[0]?.trim()
-      } else if (cleanQr.startsWith('INKFLOW:ATT:LOC:')) {
-        locId = cleanQr.replace('INKFLOW:ATT:LOC:', '').trim()
+      } else if (cleanQr.startsWith('PRINTFLOW:ATT:LOC:')) {
+        locId = cleanQr.replace('PRINTFLOW:ATT:LOC:', '').trim()
       } else if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(cleanQr)) {
         locId = cleanQr
       }

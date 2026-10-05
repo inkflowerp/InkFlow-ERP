@@ -53,7 +53,7 @@ export function MobileBottomNav({ initialNavSections }: { initialNavSections?: N
   const isMessagesActive = pathname?.includes('/communications')
 
   const handleOpenMobileDrawer = () => {
-    window.dispatchEvent(new Event('printerp_open_mobile_nav'))
+    window.dispatchEvent(new Event('printflow_open_mobile_nav'))
   }
 
   // 1. General Staff Bottom Navigation (4 big touch targets, zero owner actions)

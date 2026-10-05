@@ -1,7 +1,7 @@
 # UX Specification: Purchases & Suppliers Module (ক্রয় ব্যবস্থাপনা ও মহাজন ডিরেক্টরি)
 
 ## 1. Executive Summary & Purpose
-The Purchases & Suppliers module is InkFlow ERP's supply chain procurement and vendor payable ledger system. Its primary job to be done (JTBD) is helping procurement officers, accounts executives, and production managers answer:
+The Purchases & Suppliers module is PrintFlow's supply chain procurement and vendor payable ledger system. Its primary job to be done (JTBD) is helping procurement officers, accounts executives, and production managers answer:
 > **"Which purchase orders need approval or dockside GRN receiving, which suppliers have exceeded credit limits or have overdue payables, and where can we source raw substrates at the best agreed market rates?"**
 
 The core purchasing & supplier settlement workflow must be completable in **$\le 3$ clicks from the Dashboard**:

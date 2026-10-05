@@ -1,5 +1,5 @@
 -- ==============================================================================
--- InkFlow SaaS - Migration 054: Auth PKCE & handle_new_user Trigger Hardening
+-- PrintFlow SaaS - Migration 054: Auth PKCE & handle_new_user Trigger Hardening
 -- Hardens auth.users trigger to prevent GoTrue 500 errors during OAuth sign-ins.
 -- ==============================================================================
 
@@ -20,7 +20,7 @@ begin
     v_email := coalesce(
         nullif(trim(lower(new.email)), ''),
         nullif(trim(lower(new.raw_user_meta_data->>'email')), ''),
-        'user-' || new.id || '@inkflow.internal'
+        'user-' || new.id || '@printflow.internal'
     );
 
     -- 2. Extract and sanitize full name

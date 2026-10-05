@@ -14,7 +14,7 @@ import { AuthEmailService } from './auth-email.service.ts'
 import { AuthService } from './auth.service.ts'
 import { sanitizeUsername, isValidUsernameFormat, generateSafeEmployeeUsername } from '../lib/auth/identifier-helper.ts'
 import { normalizePortalRole } from '../lib/auth/rbac.client.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../lib/db/data-store.ts'
 import type {
   EmployeeRecord,
   ShiftRecord,
@@ -407,7 +407,7 @@ export class WorkforceService {
         email = employee.email.trim().toLowerCase()
       } else {
         const cleanSlug = (companySlug || employee.company_id).replace(/^comp-/, '').replace(/^co-/, '').replace(/[^a-z0-9-]/g, '')
-        email = `${cleanUsername}@${cleanSlug || 'workspace'}.inkflow.app`
+        email = `${cleanUsername}@${cleanSlug || 'workspace'}.printflow.bd`
       }
     }
 
@@ -598,7 +598,7 @@ export class WorkforceService {
 
         // Also sync local data store for memory/offline fallback
         try {
-          const localUsers = PrintERPDataStore.get<any[]>(STORAGE_KEYS.COMPANY_USERS) || []
+          const localUsers = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.COMPANY_USERS) || []
           const existingIdx = localUsers.findIndex(
             (u: any) => u.user_id === userId && u.company_id === employee.company_id
           )
@@ -616,7 +616,7 @@ export class WorkforceService {
           } else {
             localUsers.push(updatedCuRecord)
           }
-          PrintERPDataStore.set(STORAGE_KEYS.COMPANY_USERS, localUsers)
+          PrintFlowDataStore.set(STORAGE_KEYS.COMPANY_USERS, localUsers)
         } catch {}
 
         if (companyUserId) {
@@ -645,7 +645,7 @@ export class WorkforceService {
     let inviteUrl: string | undefined = undefined
     let inviteSentAt: string | undefined = undefined
 
-    const isSystemEmail = email.endsWith('.local') || email.endsWith('.inkflow.app')
+    const isSystemEmail = email.endsWith('.local') || email.endsWith('.printflow.bd')
     if (sendInvite && email && !isSystemEmail) {
       try {
         const resolvedBaseUrl = appUrl || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
@@ -740,7 +740,7 @@ export class WorkforceService {
       ''
     ).trim().toLowerCase()
 
-    if (!targetEmail || !targetEmail.includes('@') || targetEmail.endsWith('.local') || targetEmail.endsWith('.inkflow.app')) {
+    if (!targetEmail || !targetEmail.includes('@') || targetEmail.endsWith('.local') || targetEmail.endsWith('.printflow.bd')) {
       return {
         success: false,
         message: 'A valid personal or corporate email address is required to dispatch an email invitation. For system-generated credentials, please copy the Login Pass or WhatsApp Invite instead.',

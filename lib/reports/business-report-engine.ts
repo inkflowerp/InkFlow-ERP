@@ -15,7 +15,7 @@ import type {
   FinancialSummaryRow,
   MonthlyOverviewRow,
 } from '../../types/reports.types.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../db/data-store.ts'
 import type { SalesOrderRecord } from '../../types/order.types.ts'
 import type { CustomerRecord } from '../../types/crm.types.ts'
 import type { InvoiceRecord, PaymentRecord } from '../../types/billing.types.ts'

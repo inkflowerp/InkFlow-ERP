@@ -18,7 +18,7 @@ import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
 import { Button } from '@/components/ui/button'
 import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
-import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
+import { PrintFlowDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import { OrderRepository } from '@/lib/repositories/order.repository'
 import { BillingRepository } from '@/lib/repositories/billing.repository'
 import { getOrdersAction, getJobOrdersAction, updateOrderStatusAction } from '@/actions/order.actions'
@@ -196,56 +196,56 @@ export default function OrdersPage() {
 
       // Update local cache partitions as fallback cache ONLY
  if (serverOrders.length > 0) {
- PrintERPDataStore.set(STORAGE_KEYS.ORDERS, serverOrders, true, tenantSlug)
+ PrintFlowDataStore.set(STORAGE_KEYS.ORDERS, serverOrders, true, tenantSlug)
       }
  if (serverJobs.length > 0) {
- PrintERPDataStore.set(STORAGE_KEYS.JOB_ORDERS, serverJobs, true, tenantSlug)
+ PrintFlowDataStore.set(STORAGE_KEYS.JOB_ORDERS, serverJobs, true, tenantSlug)
       }
  if (serverInvoices.length > 0) {
- PrintERPDataStore.set(STORAGE_KEYS.INVOICES, serverInvoices, true, tenantSlug)
+ PrintFlowDataStore.set(STORAGE_KEYS.INVOICES, serverInvoices, true, tenantSlug)
       }
 
       // Offline fallback: if server returned empty, fallback to cached partition
  const rawOrders: SalesOrderRecord[] =
  serverOrders.length > 0
           ? serverOrders
-          : (PrintERPDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS, tenantSlug) ||
- PrintERPDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS) ||
+          : (PrintFlowDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS, tenantSlug) ||
+ PrintFlowDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS) ||
              [])
 
  const rawJobs: JobOrderRecord[] =
  serverJobs.length > 0
           ? serverJobs
-          : (PrintERPDataStore.get<JobOrderRecord[]>(STORAGE_KEYS.JOB_ORDERS, tenantSlug) ||
- PrintERPDataStore.get<JobOrderRecord[]>(STORAGE_KEYS.JOB_ORDERS) ||
+          : (PrintFlowDataStore.get<JobOrderRecord[]>(STORAGE_KEYS.JOB_ORDERS, tenantSlug) ||
+ PrintFlowDataStore.get<JobOrderRecord[]>(STORAGE_KEYS.JOB_ORDERS) ||
              [])
 
  const rawInvoices: InvoiceRecord[] =
  serverInvoices.length > 0
           ? serverInvoices
-          : (PrintERPDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES, tenantSlug) ||
- PrintERPDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) ||
+          : (PrintFlowDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES, tenantSlug) ||
+ PrintFlowDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) ||
              [])
 
  const rawProdTasks: ProductionTaskRecord[] =
  serverProdTasks.length > 0
           ? serverProdTasks
-          : (PrintERPDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS, tenantSlug) ||
- PrintERPDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS) ||
+          : (PrintFlowDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS, tenantSlug) ||
+ PrintFlowDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS) ||
              [])
 
  const rawDesignJobs: DesignJobRecord[] =
  serverDesignJobs.length > 0
           ? serverDesignJobs
-          : (PrintERPDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS, tenantSlug) ||
- PrintERPDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) ||
+          : (PrintFlowDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS, tenantSlug) ||
+ PrintFlowDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) ||
              [])
 
  const rawChallans: DeliveryChallanRecord[] =
  serverChallans.length > 0
           ? serverChallans
-          : (PrintERPDataStore.get<DeliveryChallanRecord[]>(STORAGE_KEYS.DELIVERY_CHALLANS, tenantSlug) ||
- PrintERPDataStore.get<DeliveryChallanRecord[]>(STORAGE_KEYS.DELIVERY_CHALLANS) ||
+          : (PrintFlowDataStore.get<DeliveryChallanRecord[]>(STORAGE_KEYS.DELIVERY_CHALLANS, tenantSlug) ||
+ PrintFlowDataStore.get<DeliveryChallanRecord[]>(STORAGE_KEYS.DELIVERY_CHALLANS) ||
              [])
 
  const isMatchingTenant = (itemCompId?: string | null) => {
@@ -765,19 +765,19 @@ export default function OrdersPage() {
  loadData()
     }
  if (typeof window !== 'undefined') {
- window.addEventListener('printerp_data_sync', handleSync)
- window.addEventListener('printerp_table_synced', handleSync)
- window.addEventListener('printerp_table_synced:sales_orders', handleSync)
- window.addEventListener('printerp_table_synced:job_orders', handleSync)
- window.addEventListener('printerp_table_synced:quotations', handleSync)
- window.addEventListener('printerp_table_synced:invoices', handleSync)
- window.addEventListener('printerp_table_synced:production_jobs', handleSync)
- window.addEventListener('printerp_table_synced:production_tasks', handleSync)
- window.addEventListener('printerp_table_synced:delivery_challans', handleSync)
- window.addEventListener('printerp_table_synced:payments', handleSync)
- window.addEventListener('printerp_order_items_updated', handleSync)
- window.addEventListener('printerp_invoice_items_updated', handleSync)
- window.addEventListener('printerp_timeline_updated', handleSync)
+ window.addEventListener('printflow_data_sync', handleSync)
+ window.addEventListener('printflow_table_synced', handleSync)
+ window.addEventListener('printflow_table_synced:sales_orders', handleSync)
+ window.addEventListener('printflow_table_synced:job_orders', handleSync)
+ window.addEventListener('printflow_table_synced:quotations', handleSync)
+ window.addEventListener('printflow_table_synced:invoices', handleSync)
+ window.addEventListener('printflow_table_synced:production_jobs', handleSync)
+ window.addEventListener('printflow_table_synced:production_tasks', handleSync)
+ window.addEventListener('printflow_table_synced:delivery_challans', handleSync)
+ window.addEventListener('printflow_table_synced:payments', handleSync)
+ window.addEventListener('printflow_order_items_updated', handleSync)
+ window.addEventListener('printflow_invoice_items_updated', handleSync)
+ window.addEventListener('printflow_timeline_updated', handleSync)
  window.addEventListener('storage', handleSync)
  window.addEventListener(`${STORAGE_KEYS.ORDERS}_updated`, handleSync)
  window.addEventListener(`${STORAGE_KEYS.JOB_ORDERS}_updated`, handleSync)
@@ -787,19 +787,19 @@ export default function OrdersPage() {
 
  return () => {
  if (typeof window !== 'undefined') {
- window.removeEventListener('printerp_data_sync', handleSync)
- window.removeEventListener('printerp_table_synced', handleSync)
- window.removeEventListener('printerp_table_synced:sales_orders', handleSync)
- window.removeEventListener('printerp_table_synced:job_orders', handleSync)
- window.removeEventListener('printerp_table_synced:quotations', handleSync)
- window.removeEventListener('printerp_table_synced:invoices', handleSync)
- window.removeEventListener('printerp_table_synced:production_jobs', handleSync)
- window.removeEventListener('printerp_table_synced:production_tasks', handleSync)
- window.removeEventListener('printerp_table_synced:delivery_challans', handleSync)
- window.removeEventListener('printerp_table_synced:payments', handleSync)
- window.removeEventListener('printerp_order_items_updated', handleSync)
- window.removeEventListener('printerp_invoice_items_updated', handleSync)
- window.removeEventListener('printerp_timeline_updated', handleSync)
+ window.removeEventListener('printflow_data_sync', handleSync)
+ window.removeEventListener('printflow_table_synced', handleSync)
+ window.removeEventListener('printflow_table_synced:sales_orders', handleSync)
+ window.removeEventListener('printflow_table_synced:job_orders', handleSync)
+ window.removeEventListener('printflow_table_synced:quotations', handleSync)
+ window.removeEventListener('printflow_table_synced:invoices', handleSync)
+ window.removeEventListener('printflow_table_synced:production_jobs', handleSync)
+ window.removeEventListener('printflow_table_synced:production_tasks', handleSync)
+ window.removeEventListener('printflow_table_synced:delivery_challans', handleSync)
+ window.removeEventListener('printflow_table_synced:payments', handleSync)
+ window.removeEventListener('printflow_order_items_updated', handleSync)
+ window.removeEventListener('printflow_invoice_items_updated', handleSync)
+ window.removeEventListener('printflow_timeline_updated', handleSync)
  window.removeEventListener('storage', handleSync)
  window.removeEventListener(`${STORAGE_KEYS.ORDERS}_updated`, handleSync)
  window.removeEventListener(`${STORAGE_KEYS.JOB_ORDERS}_updated`, handleSync)
@@ -949,7 +949,7 @@ export default function OrdersPage() {
  const handleAdvanceStage = useCallback(
     (orderId: string, nextStage: OrderStage) => {
  startTransition(() => {
- const allLocalOrders = PrintERPDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS) || []
+ const allLocalOrders = PrintFlowDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS) || []
  const updatedLocal = allLocalOrders.map((o) => {
  if (o.id === orderId || o.order_number === orderId) {
  let dbStatus: any = 'in_production'
@@ -961,7 +961,7 @@ export default function OrdersPage() {
           }
  return o
         })
- PrintERPDataStore.set(STORAGE_KEYS.ORDERS, updatedLocal)
+ PrintFlowDataStore.set(STORAGE_KEYS.ORDERS, updatedLocal)
 
  setOrders((prev) =>
  prev.map((o) => (o.id === orderId ? { ...o, stage: nextStage } : o))
@@ -993,7 +993,7 @@ export default function OrdersPage() {
  const nextStage = statusMeta ? statusMeta.stage : 'in_production'
 
         // 1. Update local orders
- const allLocalOrders = PrintERPDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS) || []
+ const allLocalOrders = PrintFlowDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS) || []
  const updatedLocal = allLocalOrders.map((o) => {
  if (o.id === orderId || o.order_number === orderId) {
  let dbStatus: any = 'in_production'
@@ -1011,10 +1011,10 @@ export default function OrdersPage() {
           }
  return o
         })
- PrintERPDataStore.set(STORAGE_KEYS.ORDERS, updatedLocal)
+ PrintFlowDataStore.set(STORAGE_KEYS.ORDERS, updatedLocal)
 
         // 2. Also update production tasks
- const allTasks = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
+ const allTasks = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
  const updatedTasks = allTasks.map((t) => {
  if (t.order_id === orderId || t.order_number === orderId) {
  let taskStatus = 'pending'
@@ -1031,7 +1031,7 @@ export default function OrdersPage() {
           }
  return t
         })
- PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, updatedTasks)
+ PrintFlowDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, updatedTasks)
 
         // 3. Update React state
  setOrders((prev) =>

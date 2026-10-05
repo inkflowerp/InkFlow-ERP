@@ -27,7 +27,7 @@ import {
   checkResourceLimit,
   getTenantResourceUsage,
 } from '../lib/subscription/subscription-constants.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../lib/db/data-store.ts'
 
 const isValidUuid = (str?: string | null): boolean => {
   return Boolean(str && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str))
@@ -225,7 +225,7 @@ export class EntitlementService {
    */
   static isPlatformFeatureFlagEnabled(featureKey: string): boolean {
     try {
-      const stored = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PLATFORM_FEATURE_FLAGS)
+      const stored = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.PLATFORM_FEATURE_FLAGS)
       if (Array.isArray(stored)) {
         const match = stored.find((f) => f.key === featureKey)
         if (match && match.is_enabled === false) {

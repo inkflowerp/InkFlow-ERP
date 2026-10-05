@@ -89,7 +89,7 @@ import type { InvoiceRecord, InvoiceItemRecord } from '@/types/billing.types'
 import type { InvoiceRequestRecord } from '@/types/workflow.types'
 import type { SalesOrderRecord } from '@/types/order.types'
 import type { CustomerRecord } from '@/types/crm.types'
-import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
+import { PrintFlowDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import { cn } from '@/lib/utils'
 import { useDataStore } from '@/hooks/use-data-store'
 import { createInvoiceRequestAction } from '@/actions/invoice-request.actions'
@@ -494,10 +494,10 @@ function DesignDetailContent() {
   // Persist synthesized job into datastore if not already stored
  useEffect(() => {
  if (resolvedJob && !jobs.some((j) => j.id === resolvedJob.id)) {
- const all = PrintERPDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []
+ const all = PrintFlowDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []
  if (!all.some((j) => j.id === resolvedJob.id)) {
  all.unshift(resolvedJob)
- PrintERPDataStore.set(STORAGE_KEYS.DESIGN_JOBS, all)
+ PrintFlowDataStore.set(STORAGE_KEYS.DESIGN_JOBS, all)
  setJobs(all)
       }
     }
@@ -1031,7 +1031,7 @@ function DesignDetailContent() {
  const effectiveId = job.id || job.design_number || jobId
  const effectiveCompany = job.company_id || company?.id || slug
  await markDesignReadyAction(effectiveId, 'Designer marked design ready for production proofing', effectiveCompany)
- PrintERPDataStore.updateItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, job.id, {
+ PrintFlowDataStore.updateItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, job.id, {
  status: 'customer_approval',
  commercial_status: hasInvoice ? 'invoice_created' : 'invoice_required',
  updated_at: new Date().toISOString(),
@@ -1076,7 +1076,7 @@ function DesignDetailContent() {
  return
         }
 
- PrintERPDataStore.updateItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, job.id, {
+ PrintFlowDataStore.updateItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, job.id, {
  commercial_status: 'invoice_requested',
  invoice_request_id: res.data?.id,
  updated_at: new Date().toISOString(),
@@ -1127,7 +1127,7 @@ function DesignDetailContent() {
  updated_at: new Date().toISOString(),
     }
 
- PrintERPDataStore.updateItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, job.id, updatedJob)
+ PrintFlowDataStore.updateItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, job.id, updatedJob)
  setActiveVersionNumber(nextVerNum)
  setIsUploadOpen(false)
  setNewVersionProofUrl('')
@@ -1159,12 +1159,12 @@ function DesignDetailContent() {
  updated_at: now,
     }
 
- PrintERPDataStore.updateItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, job.id, updatedJob)
+ PrintFlowDataStore.updateItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, job.id, updatedJob)
  setIsApproveOpen(false)
 
     // Direct Production Tasks provisioning
  try {
- const allTasks = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
+ const allTasks = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
  const baseNum = (job.design_number || '001').replace('DSN-', '')
  const taskNum1 = `TSK-${baseNum}-1`
  const taskNum2 = `TSK-${baseNum}-2`
@@ -1246,7 +1246,7 @@ function DesignDetailContent() {
  allTasks.unshift(task1)
         }
       }
- PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, allTasks)
+ PrintFlowDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, allTasks)
     } catch {}
 
     // Dispatch backend action & events
@@ -1256,12 +1256,12 @@ function DesignDetailContent() {
 
  if (typeof window !== 'undefined') {
  window.dispatchEvent(
- new CustomEvent('printerp_data_sync', {
+ new CustomEvent('printflow_data_sync', {
  detail: { type: 'production_tasks_updated', source: 'design_approval', jobId: job.id },
         })
       )
- window.dispatchEvent(new CustomEvent('printerp_table_synced:production_tasks'))
- window.dispatchEvent(new CustomEvent('printerp_table_synced:production_jobs'))
+ window.dispatchEvent(new CustomEvent('printflow_table_synced:production_tasks'))
+ window.dispatchEvent(new CustomEvent('printflow_table_synced:production_jobs'))
     }
 
  showNotification(`Version ${activeVersionNumber} officially approved & locked for print production!`)
@@ -1270,7 +1270,7 @@ function DesignDetailContent() {
   // Toggle Lock
  const handleToggleLock = () => {
  const updated = !job.is_locked
- PrintERPDataStore.updateItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, job.id, {
+ PrintFlowDataStore.updateItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, job.id, {
  is_locked: updated,
  updated_at: new Date().toISOString(),
     })
@@ -1296,11 +1296,11 @@ function DesignDetailContent() {
 
  await sendToPrintOperatorAction(effectiveId, effectiveCompany, updated)
 
- PrintERPDataStore.updateItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, job.id, updated)
+ PrintFlowDataStore.updateItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, job.id, updated)
 
         // Provision/update tasks in local store
  try {
- const allTasks = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
+ const allTasks = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
  const baseNum = (job.design_number || '001').replace('DSN-', '')
  const taskNum1 = `TSK-${baseNum}-1`
  const taskNum2 = `TSK-${baseNum}-2`
@@ -1382,17 +1382,17 @@ function DesignDetailContent() {
  allTasks.unshift(task1)
             }
           }
- PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, allTasks)
+ PrintFlowDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, allTasks)
         } catch {}
 
  if (typeof window !== 'undefined') {
  window.dispatchEvent(
- new CustomEvent('printerp_data_sync', {
+ new CustomEvent('printflow_data_sync', {
  detail: { type: 'production_tasks_updated', source: 'design_send_print', jobId: job.id },
             })
           )
- window.dispatchEvent(new CustomEvent('printerp_table_synced:production_tasks'))
- window.dispatchEvent(new CustomEvent('printerp_table_synced:production_jobs'))
+ window.dispatchEvent(new CustomEvent('printflow_table_synced:production_tasks'))
+ window.dispatchEvent(new CustomEvent('printflow_table_synced:production_jobs'))
         }
 
  showNotification(`Job #${job.design_number} dispatched to Print Floor Queue!`, 'success')

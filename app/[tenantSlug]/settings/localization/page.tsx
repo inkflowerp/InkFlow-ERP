@@ -16,7 +16,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { LanguageSwitcher } from '@/components/shell/language-switcher'
-import { PrintERPDataStore } from '@/lib/db/data-store'
+import { PrintFlowDataStore } from '@/lib/db/data-store'
 import { updateCompanyAction, updateCompanySettingsAction } from '@/actions/tenant.actions'
 
 export default function LocalizationSettingsPage() {
@@ -49,7 +49,7 @@ export default function LocalizationSettingsPage() {
   }, [company, settings])
 
  React.useEffect(() => {
- const savedLoc = PrintERPDataStore.get<any>('printerp_tenant_localization' as any)
+ const savedLoc = PrintFlowDataStore.get<any>('printflow_tenant_localization' as any)
  if (savedLoc) {
  if (savedLoc.languageMode) setLanguageMode(savedLoc.languageMode)
  if (savedLoc.currency) setCurrency(savedLoc.currency)
@@ -63,7 +63,7 @@ export default function LocalizationSettingsPage() {
  setIsSaved(false)
  try {
  if (typeof window !== 'undefined') {
- localStorage.removeItem('printerp_locale_explicit')
+ localStorage.removeItem('printflow_locale_explicit')
       }
  setLocale(languageMode)
  if (company?.id) {
@@ -77,7 +77,7 @@ export default function LocalizationSettingsPage() {
         })
  await refreshTenant()
       }
- PrintERPDataStore.set('printerp_tenant_localization' as any, {
+ PrintFlowDataStore.set('printflow_tenant_localization' as any, {
  languageMode,
  currency,
  dateFormat,

@@ -145,9 +145,9 @@ describe('Authoritative Tenant Resolution (resolveTenant) Unit Tests', () => {
     assert.equal(localRes.slug, 'vision')
     assert.equal(localRes.isFallback, true)
 
-    // Path-based tenant on Vercel preview: inkflow-erp.vercel.app/t/vision/invoices
-    const previewRes = resolveTenant('inkflow-erp.vercel.app', '/t/vision/invoices', {
-      overrideRootDomain: 'inkflow-erp.vercel.app',
+    // Path-based tenant on Vercel preview: preview-branch.vercel.app/t/vision/invoices
+    const previewRes = resolveTenant('preview-branch.vercel.app', '/t/vision/invoices', {
+      overrideRootDomain: 'preview-branch.vercel.app',
     })
     assert.equal(previewRes.type, 'tenant')
     assert.equal(previewRes.slug, 'vision')

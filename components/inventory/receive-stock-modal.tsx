@@ -13,7 +13,7 @@ import { SupplierRecord } from '@/types/crm.types'
 import { receiveStockAction, getMaterialsAction, getPriceIntelligenceAction } from '@/actions/inventory.actions'
 import { receiveGoodsAction } from '@/actions/purchase.actions'
 import { updateProductPriceAction, getProductsAction } from '@/actions/product.actions'
-import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
+import { PrintFlowDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import { isMaterialProduct, isReadyProduct, isServiceProduct, isOutsourceProduct } from '@/lib/units'
 import { PriceIntelligenceEngine } from '@/lib/domain/price-intelligence-engine'
 import { PriceIntelligenceCard } from '@/components/inventory/price-intelligence-card'
@@ -362,7 +362,7 @@ export function ReceiveStockModal({
  if (orders && orders.length > 0) {
  setInternalOrders(orders)
     } else if (open) {
- const stored = PrintERPDataStore.getAll<PurchaseOrderRecord>(STORAGE_KEYS.PURCHASE_ORDERS, companyId) || []
+ const stored = PrintFlowDataStore.getAll<PurchaseOrderRecord>(STORAGE_KEYS.PURCHASE_ORDERS, companyId) || []
  if (stored.length > 0) {
  setInternalOrders(stored)
       }
@@ -436,18 +436,18 @@ export function ReceiveStockModal({
   // Load products & suppliers & materials from store/server
  useEffect(() => {
  if (open) {
- const supList = PrintERPDataStore.getAll<SupplierRecord>(STORAGE_KEYS.SUPPLIERS, companyId) || []
+ const supList = PrintFlowDataStore.getAll<SupplierRecord>(STORAGE_KEYS.SUPPLIERS, companyId) || []
  setSuppliers(supList)
 
  let prods = initialProducts
  if (!prods || prods.length === 0) {
- prods = PrintERPDataStore.getAll<ProductRecord>(STORAGE_KEYS.PRODUCTS, companyId) || []
+ prods = PrintFlowDataStore.getAll<ProductRecord>(STORAGE_KEYS.PRODUCTS, companyId) || []
       }
  setCatalogProducts(prods)
 
  let mats = materials
  if (!mats || mats.length === 0) {
- mats = PrintERPDataStore.getAll<MaterialRecord>(STORAGE_KEYS.MATERIALS, companyId) || []
+ mats = PrintFlowDataStore.getAll<MaterialRecord>(STORAGE_KEYS.MATERIALS, companyId) || []
  if (mats.length > 0) setCatalogMaterials(mats)
       }
 
@@ -474,24 +474,24 @@ export function ReceiveStockModal({
   // Real-time dynamic sync: auto-refresh catalog whenever materials or products change
  useEffect(() => {
  const handleRealtimeSync = () => {
- const mats = PrintERPDataStore.getAll<MaterialRecord>(STORAGE_KEYS.MATERIALS, companyId) || []
- const prods = PrintERPDataStore.getAll<ProductRecord>(STORAGE_KEYS.PRODUCTS, companyId) || []
+ const mats = PrintFlowDataStore.getAll<MaterialRecord>(STORAGE_KEYS.MATERIALS, companyId) || []
+ const prods = PrintFlowDataStore.getAll<ProductRecord>(STORAGE_KEYS.PRODUCTS, companyId) || []
  if (mats.length > 0) setCatalogMaterials(mats)
  if (prods.length > 0) setCatalogProducts(prods)
     }
 
  if (typeof window !== 'undefined') {
- window.addEventListener('printerp_table_synced:materials', handleRealtimeSync)
- window.addEventListener('printerp_table_synced:products', handleRealtimeSync)
- window.addEventListener('printerp_table_synced', handleRealtimeSync)
+ window.addEventListener('printflow_table_synced:materials', handleRealtimeSync)
+ window.addEventListener('printflow_table_synced:products', handleRealtimeSync)
+ window.addEventListener('printflow_table_synced', handleRealtimeSync)
  window.addEventListener('materials_updated', handleRealtimeSync)
  window.addEventListener('products_updated', handleRealtimeSync)
  window.addEventListener('storage', handleRealtimeSync)
 
  return () => {
- window.removeEventListener('printerp_table_synced:materials', handleRealtimeSync)
- window.removeEventListener('printerp_table_synced:products', handleRealtimeSync)
- window.removeEventListener('printerp_table_synced', handleRealtimeSync)
+ window.removeEventListener('printflow_table_synced:materials', handleRealtimeSync)
+ window.removeEventListener('printflow_table_synced:products', handleRealtimeSync)
+ window.removeEventListener('printflow_table_synced', handleRealtimeSync)
  window.removeEventListener('materials_updated', handleRealtimeSync)
  window.removeEventListener('products_updated', handleRealtimeSync)
  window.removeEventListener('storage', handleRealtimeSync)
@@ -679,7 +679,7 @@ export function ReceiveStockModal({
 
  const matchProd =
  catalogProducts.find((p) => p.id === m.id || (p.sku && m.sku && p.sku.toLowerCase() === m.sku.toLowerCase())) ||
-        (PrintERPDataStore.getAll<ProductRecord>(STORAGE_KEYS.PRODUCTS, companyId) || []).find((p) => p.id === m.id || (p.sku && m.sku && p.sku.toLowerCase() === m.sku.toLowerCase()))
+        (PrintFlowDataStore.getAll<ProductRecord>(STORAGE_KEYS.PRODUCTS, companyId) || []).find((p) => p.id === m.id || (p.sku && m.sku && p.sku.toLowerCase() === m.sku.toLowerCase()))
 
  const rollSizes = m.roll_sizes || (m as any).material_config?.roll_sizes || matchProd?.roll_sizes || (matchProd?.material_config as any)?.roll_sizes || (matchProd?.pricing_formula as any)?.roll_sizes || (matchProd?.pricing_formula as any)?.material_config?.roll_sizes
  const matConfig = (m as any).material_config || matchProd?.material_config || (matchProd?.pricing_formula as any)?.material_config
@@ -835,7 +835,7 @@ export function ReceiveStockModal({
   ): PriceIntelligenceSummary | null => {
  if (!item) return null
  try {
- const rawHistory = PrintERPDataStore.getAll<PriceIntelligenceRecord>(STORAGE_KEYS.PRICE_INTELLIGENCE, companyId) || []
+ const rawHistory = PrintFlowDataStore.getAll<PriceIntelligenceRecord>(STORAGE_KEYS.PRICE_INTELLIGENCE, companyId) || []
  return PriceIntelligenceEngine.buildPriceIntelligenceSummary({
  material: item,
  size_label: sizeLabel,
@@ -1642,11 +1642,11 @@ export function ReceiveStockModal({
 
         // Dispatch real-time sync broadcast events
  if (typeof window !== 'undefined') {
- window.dispatchEvent(new CustomEvent('printerp_table_synced:products'))
- window.dispatchEvent(new CustomEvent('printerp_table_synced:materials'))
- window.dispatchEvent(new CustomEvent('printerp_table_synced:stock_ledger'))
- window.dispatchEvent(new CustomEvent('printerp_table_synced:purchase_orders'))
- window.dispatchEvent(new CustomEvent('printerp_table_synced:pricing_rules'))
+ window.dispatchEvent(new CustomEvent('printflow_table_synced:products'))
+ window.dispatchEvent(new CustomEvent('printflow_table_synced:materials'))
+ window.dispatchEvent(new CustomEvent('printflow_table_synced:stock_ledger'))
+ window.dispatchEvent(new CustomEvent('printflow_table_synced:purchase_orders'))
+ window.dispatchEvent(new CustomEvent('printflow_table_synced:pricing_rules'))
         }
 
  setSuccessMsg('Goods Received Note (GRN) posted, inventory balances updated, and product masters synced successfully!')
@@ -1774,11 +1774,11 @@ export function ReceiveStockModal({
 
         // Dispatch real-time sync broadcast events
  if (typeof window !== 'undefined') {
- window.dispatchEvent(new CustomEvent('printerp_table_synced:products'))
- window.dispatchEvent(new CustomEvent('printerp_table_synced:materials'))
- window.dispatchEvent(new CustomEvent('printerp_table_synced:inventory_rolls'))
- window.dispatchEvent(new CustomEvent('printerp_table_synced:stock_ledger'))
- window.dispatchEvent(new CustomEvent('printerp_table_synced:pricing_rules'))
+ window.dispatchEvent(new CustomEvent('printflow_table_synced:products'))
+ window.dispatchEvent(new CustomEvent('printflow_table_synced:materials'))
+ window.dispatchEvent(new CustomEvent('printflow_table_synced:inventory_rolls'))
+ window.dispatchEvent(new CustomEvent('printflow_table_synced:stock_ledger'))
+ window.dispatchEvent(new CustomEvent('printflow_table_synced:pricing_rules'))
         }
 
  setSuccessMsg(

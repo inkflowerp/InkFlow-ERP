@@ -610,7 +610,7 @@ export async function recordPlatformAuditLog(params: {
     const admin = createAdminClient()
     await admin.from('platform_audit_logs').insert({
       platform_admin_id: params.adminId || null,
-      actor_email: params.actorEmail || 'system@inkflowerp.com',
+      actor_email: params.actorEmail || 'system@printflow.bd',
       action: params.action,
       entity_type: params.entityType,
       entity_id: params.entityId || null,

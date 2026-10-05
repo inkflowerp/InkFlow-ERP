@@ -21,12 +21,12 @@ export function useOfflineQueue() {
     const handleQueueUpdate = () => reloadData()
     const handleDraftsUpdate = () => reloadData()
 
-    window.addEventListener('printerp_sync_queue_updated', handleQueueUpdate)
-    window.addEventListener('printerp_drafts_updated', handleDraftsUpdate)
+    window.addEventListener('printflow_sync_queue_updated', handleQueueUpdate)
+    window.addEventListener('printflow_drafts_updated', handleDraftsUpdate)
 
     return () => {
-      window.removeEventListener('printerp_sync_queue_updated', handleQueueUpdate)
-      window.removeEventListener('printerp_drafts_updated', handleDraftsUpdate)
+      window.removeEventListener('printflow_sync_queue_updated', handleQueueUpdate)
+      window.removeEventListener('printflow_drafts_updated', handleDraftsUpdate)
     }
   }, [reloadData])
 

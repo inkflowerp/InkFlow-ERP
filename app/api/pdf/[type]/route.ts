@@ -107,7 +107,7 @@ export async function GET(
       tagline: tenantCompany?.legal_name || "Printing & Signage Solutions",
       address: tenantCompany?.address || "",
       phone: tenantCompany?.phone || "+880 1700-000000",
-      email: tenantCompany?.email || "billing@inkflow-erp.com",
+      email: tenantCompany?.email || "billing@printflow.bd",
       website: tenantCompany?.website || `www.${BRAND.rootDomain}`,
       binNumber: tenantCompany?.bin_no || undefined,
     };

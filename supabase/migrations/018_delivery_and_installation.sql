@@ -1,5 +1,5 @@
 -- ==============================================================================
--- PrintERP SaaS - Migration 018: Delivery, Dispatch Challans & On-Site Installation
+-- PrintFlow - Migration 018: Delivery, Dispatch Challans & On-Site Installation
 -- Supports:
 --   1. 4 Delivery Methods (Company Vehicle, Courier, Local Transport, Customer Pickup)
 --   2. Delivery Challans (Transit slips with receiver sign-off)

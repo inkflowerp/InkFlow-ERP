@@ -1,7 +1,7 @@
 # UX Specification: Design Studio & Designer Workbench Module (ডিজাইন স্টুডিও ও প্রাক-মুদ্রণ প্রিফ্লাইট)
 
 ## 1. Executive Summary & Purpose
-The Design Studio & Designer Workbench module is InkFlow ERP's creative intake and prepress gateway. Its primary job to be done (JTBD) is helping studio art directors, graphic designers, and prepress operators answer:
+The Design Studio & Designer Workbench module is PrintFlow's creative intake and prepress gateway. Its primary job to be done (JTBD) is helping studio art directors, graphic designers, and prepress operators answer:
 > **"Which customer proofs are pending client approval, which jobs have revision requests, and what artwork is preflight-cleared for the printing press?"**
 
 The core design & approval workflow must be completable in **$\le 3$ clicks from the Dashboard**:

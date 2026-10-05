@@ -1,5 +1,5 @@
 -- ==============================================================================
--- PrintERP SaaS - Migration 006: Strict Multi-Tenant Row Level Security (RLS)
+-- PrintFlow - Migration 006: Strict Multi-Tenant Row Level Security (RLS)
 -- Never trust company_id from browser. Resolve context from authenticated user.
 -- Disabled users cannot access any company records.
 -- ==============================================================================

@@ -167,25 +167,25 @@ describe('Tenant Subdomain Resolution & DNS Utility Unit Tests', () => {
     assert.equal(link2, 'https://wa.me/8801811223344?text=Hello%20Vision')
   })
 
-  test('18. Resolves inkflow-erp.vercel.app as root and *.inkflow-erp.vercel.app as tenant subdomains', () => {
-    const rootRes = resolveHostname('inkflow-erp.vercel.app', 'inkflow-erp.vercel.app')
+  test('18. Resolves printflow.bd as root and *.printflow.bd as tenant subdomains', () => {
+    const rootRes = resolveHostname('printflow.bd', 'printflow.bd')
     assert.equal(rootRes.hostType, 'root')
     assert.equal(rootRes.tenantSlug, null)
 
-    const tenantRes1 = resolveHostname('vision.inkflow-erp.vercel.app', 'inkflow-erp.vercel.app')
+    const tenantRes1 = resolveHostname('vision.printflow.bd', 'printflow.bd')
     assert.equal(tenantRes1.hostType, 'tenant')
     assert.equal(tenantRes1.tenantSlug, 'vision')
 
-    const tenantRes2 = resolveHostname('abc-print.inkflow-erp.vercel.app', 'inkflow-erp.vercel.app')
+    const tenantRes2 = resolveHostname('abc-print.printflow.bd', 'printflow.bd')
     assert.equal(tenantRes2.hostType, 'tenant')
     assert.equal(tenantRes2.tenantSlug, 'abc-print')
 
-    const reservedRes = resolveHostname('dashboard.inkflow-erp.vercel.app', 'inkflow-erp.vercel.app')
+    const reservedRes = resolveHostname('dashboard.printflow.bd', 'printflow.bd')
     assert.equal(reservedRes.hostType, 'reserved')
   })
 
-  test('19. Sets secure host-scoped cookies for PSL domain inkflow-erp.vercel.app', () => {
-    const opts = getAuthCookieOptions('inkflow-erp.vercel.app')
+  test('19. Sets secure host-scoped cookies for PSL domain printflow.bd', () => {
+    const opts = getAuthCookieOptions('printflow.bd')
     assert.equal(opts.domain, undefined, 'PSL domain must omit wildcard domain to prevent browser cookie drop')
     assert.equal(opts.sameSite, 'lax')
   })
@@ -206,10 +206,10 @@ describe('Tenant Subdomain Resolution & DNS Utility Unit Tests', () => {
   })
 
   test('21. Resolves nested www on Vercel preview domain cleanly', () => {
-    const res = resolveHostname('www.vision.inkflow-erp.vercel.app', 'inkflow-erp.vercel.app')
+    const res = resolveHostname('www.vision.printflow.bd', 'printflow.bd')
     assert.equal(res.hostType, 'tenant')
     assert.equal(res.tenantSlug, 'vision')
-    assert.equal(res.rootDomain, 'inkflow-erp.vercel.app')
+    assert.equal(res.rootDomain, 'printflow.bd')
   })
 
   test('22. getTenantBaseUrl and getTenantLink strip www. prefixes from root domain', () => {
@@ -228,13 +228,13 @@ describe('Tenant Subdomain Resolution & DNS Utility Unit Tests', () => {
   })
 
   test('24. Resolves [tenantSlug].app.TLD subdomains across Vercel, .bd, .com, and .com.bd', () => {
-    // Vercel deployment: rangao.inkflow-erp.vercel.app
-    const vercelTenant = resolveHostname('rangao.inkflow-erp.vercel.app')
+    // Vercel deployment: rangao.printflow.bd
+    const vercelTenant = resolveHostname('rangao.printflow.bd')
     assert.equal(vercelTenant.hostType, 'tenant')
     assert.equal(vercelTenant.tenantSlug, 'rangao')
-    assert.equal(vercelTenant.rootDomain, 'inkflow-erp.vercel.app')
+    assert.equal(vercelTenant.rootDomain, 'printflow.bd')
 
-    const vercelRoot = resolveHostname('inkflow-erp.vercel.app')
+    const vercelRoot = resolveHostname('printflow.bd')
     assert.equal(vercelRoot.hostType, 'root')
     assert.equal(vercelRoot.tenantSlug, null)
 
@@ -271,8 +271,8 @@ describe('Tenant Subdomain Resolution & DNS Utility Unit Tests', () => {
 
   test('25. getTenantBaseUrl strictly formats [tenantSlug].app.TLD without path-based fallbacks', () => {
     assert.equal(
-      getTenantBaseUrl('rangao', 'inkflow-erp.vercel.app'),
-      'https://rangao.inkflow-erp.vercel.app'
+      getTenantBaseUrl('rangao', 'printflow.bd'),
+      'https://rangao.printflow.bd'
     )
     assert.equal(
       getTenantBaseUrl('rangao', 'printflow.bd'),
@@ -294,8 +294,8 @@ describe('Tenant Subdomain Resolution & DNS Utility Unit Tests', () => {
 
   test('26. getTenantLink generates canonical subdomain paths across all domains', () => {
     assert.equal(
-      getTenantLink('rangao', '/orders', 'inkflow-erp.vercel.app'),
-      'https://rangao.inkflow-erp.vercel.app/orders'
+      getTenantLink('rangao', '/orders', 'printflow.bd'),
+      'https://rangao.printflow.bd/orders'
     )
     assert.equal(
       getTenantLink('rangao', 'dashboard', 'printflow.bd'),
@@ -317,8 +317,8 @@ describe('Tenant Subdomain Resolution & DNS Utility Unit Tests', () => {
 
   test('27. formatDocumentUrl generates public links using [tenantSlug].app.TLD', () => {
     assert.equal(
-      formatDocumentUrl('rangao', 'invoice', 'INV-100', 'inkflow-erp.vercel.app'),
-      'https://rangao.inkflow-erp.vercel.app/invoices/INV-100'
+      formatDocumentUrl('rangao', 'invoice', 'INV-100', 'printflow.bd'),
+      'https://rangao.printflow.bd/invoices/INV-100'
     )
     assert.equal(
       formatDocumentUrl('rangao', 'quotation', 'QUO-200', 'printflow.bd'),
@@ -334,6 +334,6 @@ describe('Tenant Subdomain Resolution & DNS Utility Unit Tests', () => {
     assert.equal(getAuthCookieOptions('printflow.bd').domain, undefined)
     assert.equal(getAuthCookieOptions('printflow.com').domain, undefined)
     assert.equal(getAuthCookieOptions('printflow.bd').domain, undefined)
-    assert.equal(getAuthCookieOptions('inkflow-erp.vercel.app').domain, undefined)
+    assert.equal(getAuthCookieOptions('printflow.bd').domain, undefined)
   })
 })

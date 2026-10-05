@@ -1,6 +1,6 @@
 import { createClient } from '../supabase/server.ts'
 import { createAdminClient } from '../supabase/admin.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../db/data-store.ts'
 import { coalesceQuery, invalidateQueryCache } from '../performance/query-coalesce.ts'
 import type {
   InvoiceRecord,
@@ -296,9 +296,9 @@ export class BillingRepository {
 
           // Sync into client-side store for instant search
           try {
-            const allLocal = PrintERPDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []
+            const allLocal = PrintFlowDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []
             const merged = [...formatted, ...allLocal.filter((l) => l.company_id && l.company_id !== companyId)]
-            PrintERPDataStore.set(STORAGE_KEYS.INVOICES, merged)
+            PrintFlowDataStore.set(STORAGE_KEYS.INVOICES, merged)
           } catch {}
 
           return formatted
@@ -313,7 +313,7 @@ export class BillingRepository {
         }
       }
 
-      const all = PrintERPDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []
+      const all = PrintFlowDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []
       let list = all.filter((inv) => inv.company_id === companyId || (effectiveCompanyId && inv.company_id === effectiveCompanyId))
 
       if (filters?.status && filters.status !== 'all') {
@@ -413,11 +413,11 @@ export class BillingRepository {
 
         // Cache update
         try {
-          const allLocal = PrintERPDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []
+          const allLocal = PrintFlowDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []
           const existingIdx = allLocal.findIndex((i) => i.id === formatted.id)
           if (existingIdx >= 0) allLocal[existingIdx] = formatted
           else allLocal.unshift(formatted)
-          PrintERPDataStore.set(STORAGE_KEYS.INVOICES, allLocal)
+          PrintFlowDataStore.set(STORAGE_KEYS.INVOICES, allLocal)
         } catch {}
 
         return formatted
@@ -432,7 +432,7 @@ export class BillingRepository {
       }
     }
 
-    const all = PrintERPDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []
+    const all = PrintFlowDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []
     return (
       all.find(
         (inv) =>
@@ -967,9 +967,9 @@ export class BillingRepository {
 
         // Sync into client store
         try {
-          const allLocal = PrintERPDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []
+          const allLocal = PrintFlowDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []
           const filtered = allLocal.filter((i) => i.id !== finalInvoice.id)
-          PrintERPDataStore.set(STORAGE_KEYS.INVOICES, [finalInvoice, ...filtered])
+          PrintFlowDataStore.set(STORAGE_KEYS.INVOICES, [finalInvoice, ...filtered])
         } catch {}
 
         // Commercial workflow synchronization
@@ -1037,15 +1037,15 @@ export class BillingRepository {
       write_offs: [],
     }
 
-    const all = PrintERPDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []
+    const all = PrintFlowDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []
     const idx = all.findIndex((i) => i.id === finalLocalInvoice.id)
     if (idx >= 0) all[idx] = finalLocalInvoice
     else all.unshift(finalLocalInvoice)
-    PrintERPDataStore.set(STORAGE_KEYS.INVOICES, all)
+    PrintFlowDataStore.set(STORAGE_KEYS.INVOICES, all)
 
     // Sync Customer in in-memory store
     if (validCustomerId) {
-      const customers = PrintERPDataStore.get<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS) || []
+      const customers = PrintFlowDataStore.get<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS) || []
       const cIdx = customers.findIndex((c) => c.id === validCustomerId)
       if (cIdx >= 0) {
         customers[cIdx] = {
@@ -1055,7 +1055,7 @@ export class BillingRepository {
           total_invoices_count: (Number(customers[cIdx].total_invoices_count) || 0) + 1,
           updated_at: new Date().toISOString(),
         }
-        PrintERPDataStore.set(STORAGE_KEYS.CUSTOMERS, customers)
+        PrintFlowDataStore.set(STORAGE_KEYS.CUSTOMERS, customers)
       }
     }
 
@@ -1171,7 +1171,7 @@ export class BillingRepository {
           } catch {}
         }
 
-        const orders = PrintERPDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []
+        const orders = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []
         const ordIdx = orders.findIndex(
           (o) =>
             o.id === existingDbOrder.id ||
@@ -1191,7 +1191,7 @@ export class BillingRepository {
             due_amount: invoice.due_amount !== undefined ? invoice.due_amount : orders[ordIdx].due_amount,
             items: (orders[ordIdx].items && orders[ordIdx].items.length > 0) ? orders[ordIdx].items : (invoice.items || []),
           }
-          PrintERPDataStore.set(STORAGE_KEYS.ORDERS, orders)
+          PrintFlowDataStore.set(STORAGE_KEYS.ORDERS, orders)
           provisionedOrder = orders[ordIdx]
         } else {
           provisionedOrder = existingDbOrder
@@ -1211,7 +1211,7 @@ export class BillingRepository {
             .eq('company_id', companyId)
         } catch {}
 
-        const orders = PrintERPDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []
+        const orders = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []
         const ord = orders.find((o) => o.id === invoice.sales_order_id || o.order_number === effectiveOrderNumber)
         if (ord) {
           ord.commercial_status = 'invoice_created'
@@ -1220,11 +1220,11 @@ export class BillingRepository {
           if (!ord.production_gate_status || ord.production_gate_status === 'blocked_commercial') {
             ord.production_gate_status = 'ready_for_production'
           }
-          PrintERPDataStore.set(STORAGE_KEYS.ORDERS, orders)
+          PrintFlowDataStore.set(STORAGE_KEYS.ORDERS, orders)
           provisionedOrder = ord
         }
       } else {
-        const orders = PrintERPDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []
+        const orders = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []
         let ord = orders.find(
           (o) =>
             o.company_id === companyId &&
@@ -1260,11 +1260,11 @@ export class BillingRepository {
             updated_at: new Date().toISOString(),
           }
           orders.unshift(ord)
-          PrintERPDataStore.set(STORAGE_KEYS.ORDERS, orders)
+          PrintFlowDataStore.set(STORAGE_KEYS.ORDERS, orders)
 
           // Auto-provision job orders for custom manufacturing / print items if not already created
           if (invoice.items && Array.isArray(invoice.items) && invoice.items.length > 0) {
-            const existingJobOrders = PrintERPDataStore.get<any[]>(STORAGE_KEYS.JOB_ORDERS) || []
+            const existingJobOrders = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.JOB_ORDERS) || []
             const newJobs: any[] = []
             invoice.items.forEach((it: any, idx: number) => {
               const isReady = it.item_kind === 'ready_product' || it.workflow_routing === 'ready_product'
@@ -1301,7 +1301,7 @@ export class BillingRepository {
               })
             })
             if (newJobs.length > 0) {
-              PrintERPDataStore.set(STORAGE_KEYS.JOB_ORDERS, [...newJobs, ...existingJobOrders])
+              PrintFlowDataStore.set(STORAGE_KEYS.JOB_ORDERS, [...newJobs, ...existingJobOrders])
             }
           }
         } else {
@@ -1324,14 +1324,14 @@ export class BillingRepository {
             ord.items = invoice.items
           }
           ord.updated_at = new Date().toISOString()
-          PrintERPDataStore.set(STORAGE_KEYS.ORDERS, orders)
+          PrintFlowDataStore.set(STORAGE_KEYS.ORDERS, orders)
         }
         provisionedOrder = ord
         effectiveSalesOrderId = ord.id
       }
 
       // 2.1 Synchronize Matching Job Orders in Datastore and DB
-      const jobOrders = PrintERPDataStore.get<any[]>(STORAGE_KEYS.JOB_ORDERS) || []
+      const jobOrders = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.JOB_ORDERS) || []
       let jobOrdersChanged = false
       for (const jo of jobOrders) {
         if (
@@ -1351,7 +1351,7 @@ export class BillingRepository {
         }
       }
       if (jobOrdersChanged) {
-        PrintERPDataStore.set(STORAGE_KEYS.JOB_ORDERS, jobOrders)
+        PrintFlowDataStore.set(STORAGE_KEYS.JOB_ORDERS, jobOrders)
       }
 
       // 2.2 Persist auto-provisioned sales order to PostgreSQL if database connection exists
@@ -1385,7 +1385,7 @@ export class BillingRepository {
       }
 
       // 3. Update Existing Design Jobs & Auto-provision Design Jobs for Design Required / Design OK items
-      const designJobs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.DESIGN_JOBS) || []
+      const designJobs = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.DESIGN_JOBS) || []
       const newDesignJobs: any[] = []
 
       for (const dj of designJobs) {
@@ -1500,7 +1500,7 @@ export class BillingRepository {
 
         // Send In-App Notifications for newly assigned design jobs
         try {
-          const notifs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.IN_APP_NOTIFICATIONS) || []
+          const notifs = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.IN_APP_NOTIFICATIONS) || []
           for (let i = 0; i < newDesignJobs.length; i++) {
             const dj = newDesignJobs[i]
             const isDesignOk = dj.workflow_routing === 'design_ok'
@@ -1522,14 +1522,14 @@ export class BillingRepository {
               created_at: new Date().toISOString(),
             })
           }
-          PrintERPDataStore.set(STORAGE_KEYS.IN_APP_NOTIFICATIONS, notifs)
+          PrintFlowDataStore.set(STORAGE_KEYS.IN_APP_NOTIFICATIONS, notifs)
         } catch {}
       }
-      PrintERPDataStore.set(STORAGE_KEYS.DESIGN_JOBS, designJobs)
+      PrintFlowDataStore.set(STORAGE_KEYS.DESIGN_JOBS, designJobs)
 
       // 4. Delivery Panel Integration: Unified Challan with ALL products and their workflow statuses
       if (invoice.items && Array.isArray(invoice.items) && invoice.items.length > 0) {
-        const challans = PrintERPDataStore.get<any[]>(STORAGE_KEYS.DELIVERY_CHALLANS) || []
+        const challans = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.DELIVERY_CHALLANS) || []
         const chlNum = `CHL-${invoice.invoice_number.replace('INV-', '')}`
         let existingChallan = challans.find(
           (c) => c.company_id === companyId && (c.challan_number === chlNum || c.invoice_id === invoice.id)
@@ -1594,7 +1594,7 @@ export class BillingRepository {
             updated_at: new Date().toISOString(),
           }
           challans.unshift(newChallan)
-          PrintERPDataStore.set(STORAGE_KEYS.DELIVERY_CHALLANS, challans)
+          PrintFlowDataStore.set(STORAGE_KEYS.DELIVERY_CHALLANS, challans)
 
           try {
             const supabase = await createClient()
@@ -1638,7 +1638,7 @@ export class BillingRepository {
           existingChallan.sales_order_id = effectiveSalesOrderId
           existingChallan.order_number = effectiveOrderNumber
           existingChallan.items = challanItems.map((ci) => ({ ...ci, challan_id: existingChallan!.id }))
-          PrintERPDataStore.set(STORAGE_KEYS.DELIVERY_CHALLANS, challans)
+          PrintFlowDataStore.set(STORAGE_KEYS.DELIVERY_CHALLANS, challans)
         }
       }
 
@@ -1765,7 +1765,7 @@ export class BillingRepository {
 
             // Send Designer Notification
             try {
-              const notifs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.IN_APP_NOTIFICATIONS) || []
+              const notifs = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.IN_APP_NOTIFICATIONS) || []
               notifs.unshift({
                 id: `notif-${Date.now()}-${i + 1}`,
                 company_id: companyId,
@@ -1783,13 +1783,13 @@ export class BillingRepository {
                 is_read: false,
                 created_at: new Date().toISOString(),
               })
-              PrintERPDataStore.set(STORAGE_KEYS.IN_APP_NOTIFICATIONS, notifs)
+              PrintFlowDataStore.set(STORAGE_KEYS.IN_APP_NOTIFICATIONS, notifs)
             } catch {}
           }
         }
       }
 
-      PrintERPDataStore.set(STORAGE_KEYS.DESIGN_JOBS, designJobs)
+      PrintFlowDataStore.set(STORAGE_KEYS.DESIGN_JOBS, designJobs)
 
       // 6. Direct Print/Production Tasks (For non-ready items with workflow_routing === 'ready_production' or design_required === false)
       if (invoice.items && Array.isArray(invoice.items)) {
@@ -1801,7 +1801,7 @@ export class BillingRepository {
               (it.design_required === false && it.workflow_routing !== 'design_ok' && it.workflow_routing !== 'design_required'))
         )
         if (directProdItems.length > 0) {
-          const prodTasks = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
+          const prodTasks = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
           const now = new Date().toISOString()
           const newDbTasks: any[] = []
 
@@ -1900,7 +1900,7 @@ export class BillingRepository {
           }
 
           if (newDbTasks.length > 0) {
-            PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, prodTasks)
+            PrintFlowDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, prodTasks)
             try {
               const supabase = await createClient()
               await (supabase as any).from('production_tasks').insert(newDbTasks)
@@ -1930,7 +1930,7 @@ export class BillingRepository {
           created_at: new Date().toISOString(),
         })
       } catch {
-        const notifs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.IN_APP_NOTIFICATIONS) || []
+        const notifs = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.IN_APP_NOTIFICATIONS) || []
         notifs.unshift({
           id: `notif-${Date.now()}`,
           company_id: companyId,
@@ -1944,7 +1944,7 @@ export class BillingRepository {
           is_read: false,
           created_at: new Date().toISOString(),
         })
-        PrintERPDataStore.set(STORAGE_KEYS.IN_APP_NOTIFICATIONS, notifs)
+        PrintFlowDataStore.set(STORAGE_KEYS.IN_APP_NOTIFICATIONS, notifs)
       }
     } catch (e) {
       console.warn('syncCommercialWorkflowOnInvoiceCreated notice:', e)
@@ -1998,11 +1998,11 @@ export class BillingRepository {
       }
     }
 
-    const all = PrintERPDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []
+    const all = PrintFlowDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []
     const idx = all.findIndex((i) => i.id === id)
     if (idx >= 0) {
       all[idx] = { ...all[idx], ...payload }
-      PrintERPDataStore.set(STORAGE_KEYS.INVOICES, all)
+      PrintFlowDataStore.set(STORAGE_KEYS.INVOICES, all)
       return all[idx]
     }
     throw new Error(`Invoice ${id} not found to update.`)
@@ -2057,7 +2057,7 @@ export class BillingRepository {
         }
       }
 
-      const all = PrintERPDataStore.get<PaymentRecord[]>(STORAGE_KEYS.PAYMENTS) || []
+      const all = PrintFlowDataStore.get<PaymentRecord[]>(STORAGE_KEYS.PAYMENTS) || []
       return all
         .filter((p) => (!p.company_id || p.company_id === companyId) && (!customerId || p.customer_id === customerId))
         .sort((a, b) => new Date(b.payment_date).getTime() - new Date(a.payment_date).getTime())
@@ -2179,7 +2179,7 @@ export class BillingRepository {
         const allocationRecords: PaymentAllocationRecord[] = []
         let totalAllocated = 0
 
-        // Fetch target invoices from PostgreSQL (with PrintERPDataStore fallback for tests & local cache)
+        // Fetch target invoices from PostgreSQL (with PrintFlowDataStore fallback for tests & local cache)
         const { data: dbInvoices, error: invFetchErr } = await (client as any)
           .from('invoices')
           .select('*')
@@ -2189,7 +2189,7 @@ export class BillingRepository {
           console.warn(`[BillingRepository] PostgreSQL fallback query error: ${invFetchErr.message}`)
         }
 
-        const storeInvoices = PrintERPDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []
+        const storeInvoices = PrintFlowDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []
         const invoiceList: any[] = (dbInvoices && dbInvoices.length > 0)
           ? dbInvoices
           : storeInvoices.filter((i) => !i.company_id || i.company_id === params.companyId)
@@ -2458,7 +2458,7 @@ export class BillingRepository {
 
         // Also update local datastore for invoices, customer, and payments
         try {
-          const allInvoices = PrintERPDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []
+          const allInvoices = PrintFlowDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []
           for (const alloc of allocationRecords) {
             const idx = allInvoices.findIndex((i) => i.id === alloc.invoice_id)
             if (idx >= 0) {
@@ -2474,9 +2474,9 @@ export class BillingRepository {
               }
             }
           }
-          PrintERPDataStore.set(STORAGE_KEYS.INVOICES, allInvoices)
+          PrintFlowDataStore.set(STORAGE_KEYS.INVOICES, allInvoices)
 
-          const allCustomers = PrintERPDataStore.get<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS) || []
+          const allCustomers = PrintFlowDataStore.get<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS) || []
           const cIdx = allCustomers.findIndex((c) => c.id === params.customerId)
           if (cIdx >= 0) {
             allCustomers[cIdx] = {
@@ -2484,12 +2484,12 @@ export class BillingRepository {
               total_paid_amount: (Number(allCustomers[cIdx].total_paid_amount) || 0) + Number(params.amount),
               total_due_balance: Math.max(0, (Number(allCustomers[cIdx].total_due_balance) || 0) - totalAllocated),
             }
-            PrintERPDataStore.set(STORAGE_KEYS.CUSTOMERS, allCustomers)
+            PrintFlowDataStore.set(STORAGE_KEYS.CUSTOMERS, allCustomers)
           }
 
-          const allPayments = PrintERPDataStore.get<PaymentRecord[]>(STORAGE_KEYS.PAYMENTS) || []
+          const allPayments = PrintFlowDataStore.get<PaymentRecord[]>(STORAGE_KEYS.PAYMENTS) || []
           allPayments.unshift({ ...newPaymentRow, customer_id: params.customerId || newPaymentRow.customer_id, payment_number: receiptNumber, allocations: allocationRecords })
-          PrintERPDataStore.set(STORAGE_KEYS.PAYMENTS, allPayments)
+          PrintFlowDataStore.set(STORAGE_KEYS.PAYMENTS, allPayments)
         } catch (_) {}
 
         return { ...newPaymentRow, payment_number: receiptNumber, allocations: allocationRecords } as unknown as PaymentRecord
@@ -2507,7 +2507,7 @@ export class BillingRepository {
     const allocationRecords: PaymentAllocationRecord[] = []
     let totalAllocated = 0
 
-    const allInvoices = PrintERPDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []
+    const allInvoices = PrintFlowDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []
 
     if (params.allocations && params.allocations.length > 0) {
       for (const alloc of params.allocations) {
@@ -2545,7 +2545,7 @@ export class BillingRepository {
           }
         }
       }
-      PrintERPDataStore.set(STORAGE_KEYS.INVOICES, allInvoices)
+      PrintFlowDataStore.set(STORAGE_KEYS.INVOICES, allInvoices)
     } else {
       // Auto FIFO (Oldest first)
       const openInvoices = allInvoices
@@ -2583,7 +2583,7 @@ export class BillingRepository {
           remaining -= toAlloc
         }
       }
-      PrintERPDataStore.set(STORAGE_KEYS.INVOICES, allInvoices)
+      PrintFlowDataStore.set(STORAGE_KEYS.INVOICES, allInvoices)
     }
 
     const unallocated = Math.max(0, params.amount - totalAllocated)
@@ -2613,12 +2613,12 @@ export class BillingRepository {
       created_at: new Date().toISOString(),
     }
 
-    const allPayments = PrintERPDataStore.get<PaymentRecord[]>(STORAGE_KEYS.PAYMENTS) || []
+    const allPayments = PrintFlowDataStore.get<PaymentRecord[]>(STORAGE_KEYS.PAYMENTS) || []
     allPayments.push(paymentRecord)
-    PrintERPDataStore.set(STORAGE_KEYS.PAYMENTS, allPayments)
+    PrintFlowDataStore.set(STORAGE_KEYS.PAYMENTS, allPayments)
 
     // Update customer balance in mock store
-    const allCustomers = PrintERPDataStore.get<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS) || []
+    const allCustomers = PrintFlowDataStore.get<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS) || []
     const cIdx = allCustomers.findIndex((c) => c.id === params.customerId)
     if (cIdx >= 0) {
       allCustomers[cIdx] = {
@@ -2629,7 +2629,7 @@ export class BillingRepository {
         last_payment_amount: params.amount,
         updated_at: new Date().toISOString(),
       }
-      PrintERPDataStore.set(STORAGE_KEYS.CUSTOMERS, allCustomers)
+      PrintFlowDataStore.set(STORAGE_KEYS.CUSTOMERS, allCustomers)
     }
 
     return paymentRecord
@@ -2803,7 +2803,7 @@ export class BillingRepository {
     }
 
     // In-memory simulation for test/training mode
-    const allInvoices = PrintERPDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []
+    const allInvoices = PrintFlowDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []
     const invIdx = allInvoices.findIndex((i) => i.id === writeOff.invoice_id)
     if (invIdx < 0) {
       throw new Error(`Invoice not found for write-off`)
@@ -2839,10 +2839,10 @@ export class BillingRepository {
       write_offs: [...(inv.write_offs || []), payload],
       updated_at: new Date().toISOString(),
     }
-    PrintERPDataStore.set(STORAGE_KEYS.INVOICES, allInvoices)
+    PrintFlowDataStore.set(STORAGE_KEYS.INVOICES, allInvoices)
 
     if (inv.customer_id) {
-      const allCust = PrintERPDataStore.get<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS) || []
+      const allCust = PrintFlowDataStore.get<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS) || []
       const cIdx = allCust.findIndex((c) => c.id === inv.customer_id)
       if (cIdx >= 0) {
         allCust[cIdx] = {
@@ -2850,7 +2850,7 @@ export class BillingRepository {
           total_due_balance: Math.max(0, (Number(allCust[cIdx].total_due_balance) || 0) - writeOff.amount),
           updated_at: new Date().toISOString(),
         }
-        PrintERPDataStore.set(STORAGE_KEYS.CUSTOMERS, allCust)
+        PrintFlowDataStore.set(STORAGE_KEYS.CUSTOMERS, allCust)
       }
     }
 
@@ -2859,7 +2859,7 @@ export class BillingRepository {
 
   private static syncDataStoreInvoiceCancelled(invoiceId: string, targetDbId: string | null, reason: string, actorName: string) {
     try {
-      const allInvoices = PrintERPDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []
+      const allInvoices = PrintFlowDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []
       const idx = allInvoices.findIndex((i) => i.id === invoiceId || (targetDbId && i.id === targetDbId) || i.invoice_number === invoiceId)
       if (idx >= 0) {
         const inv = allInvoices[idx]
@@ -2871,10 +2871,10 @@ export class BillingRepository {
           notes: `${inv.notes || ''} [Cancelled: ${reason} by ${actorName}]`,
           updated_at: new Date().toISOString(),
         }
-        PrintERPDataStore.set(STORAGE_KEYS.INVOICES, allInvoices)
+        PrintFlowDataStore.set(STORAGE_KEYS.INVOICES, allInvoices)
 
         if (inv.customer_id && releasedDue > 0) {
-          const allCust = PrintERPDataStore.get<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS) || []
+          const allCust = PrintFlowDataStore.get<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS) || []
           const cIdx = allCust.findIndex((c) => c.id === inv.customer_id)
           if (cIdx >= 0) {
             allCust[cIdx] = {
@@ -2882,7 +2882,7 @@ export class BillingRepository {
               total_due_balance: Math.max(0, (Number(allCust[cIdx].total_due_balance) || 0) - releasedDue),
               updated_at: new Date().toISOString(),
             }
-            PrintERPDataStore.set(STORAGE_KEYS.CUSTOMERS, allCust)
+            PrintFlowDataStore.set(STORAGE_KEYS.CUSTOMERS, allCust)
           }
         }
       }
@@ -3023,7 +3023,7 @@ export class BillingRepository {
     }
 
     // 3. In-memory / DataStore simulation for test/training mode or non-UUID offline invoices
-    const allInvoices = PrintERPDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []
+    const allInvoices = PrintFlowDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []
     const idx = allInvoices.findIndex((i) => i.id === invoiceId || i.invoice_number === invoiceId || (targetDbId && i.id === targetDbId))
     if (idx >= 0) {
       const inv = allInvoices[idx]
@@ -3048,10 +3048,10 @@ export class BillingRepository {
         notes: `${inv.notes || ''} [Cancelled: ${reason} by ${actorName}]`,
         updated_at: new Date().toISOString(),
       }
-      PrintERPDataStore.set(STORAGE_KEYS.INVOICES, allInvoices)
+      PrintFlowDataStore.set(STORAGE_KEYS.INVOICES, allInvoices)
 
       if (inv.customer_id && releasedDue > 0) {
-        const allCust = PrintERPDataStore.get<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS) || []
+        const allCust = PrintFlowDataStore.get<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS) || []
         const cIdx = allCust.findIndex((c) => c.id === inv.customer_id)
         if (cIdx >= 0) {
           allCust[cIdx] = {
@@ -3059,7 +3059,7 @@ export class BillingRepository {
             total_due_balance: Math.max(0, (Number(allCust[cIdx].total_due_balance) || 0) - releasedDue),
             updated_at: new Date().toISOString(),
           }
-          PrintERPDataStore.set(STORAGE_KEYS.CUSTOMERS, allCust)
+          PrintFlowDataStore.set(STORAGE_KEYS.CUSTOMERS, allCust)
         }
       }
       invalidateQueryCache(`invoices:${companyId}`)
@@ -3088,7 +3088,7 @@ export class BillingRepository {
           .maybeSingle()
         if (data) return data
       } catch {}
-      const all = PrintERPDataStore.get<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS) || []
+      const all = PrintFlowDataStore.get<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS) || []
       return all.find((c) => c.id === customerId) || null
     })()
 
@@ -3498,7 +3498,7 @@ export class BillingRepository {
         const { data } = await query
         if (data) return data as CustomerRecord[]
       } catch {}
-      const all = PrintERPDataStore.get<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS) || []
+      const all = PrintFlowDataStore.get<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS) || []
       return all.filter((c) => (!c.company_id || c.company_id === companyId) && (!customerId || c.id === customerId))
     })()
 

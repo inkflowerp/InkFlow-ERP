@@ -113,7 +113,7 @@ export class UddoktaPayPaymentAdapter implements PaymentProvider {
     try {
       const payload = {
         full_name: params.customerName || 'PrintFlow Customer',
-        email: params.customerEmail || 'billing@printerp.com',
+        email: params.customerEmail || 'billing@printflow.bd',
         amount: params.amount.toFixed(2),
         metadata: {
           transaction_id: trxId,

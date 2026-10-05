@@ -1,5 +1,5 @@
 -- ==============================================================================
--- PrintERP SaaS - Bangladesh Administrative Geo Schema & Seed (002)
+-- PrintFlow - Bangladesh Administrative Geo Schema & Seed (002)
 -- Unicode-Safe (UTF-8) with full Bengali and English mapping
 -- ==============================================================================
 

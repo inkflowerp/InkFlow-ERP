@@ -1,8 +1,8 @@
-# InkFlow V5 — Purchasing + Suppliers: Production Certification & Verification Report
+# PrintFlow V5 — Purchasing + Suppliers: Production Certification & Verification Report
 
 ## 1. Executive Summary & Production Baseline Confirmation
 
-* **System:** InkFlow — Bangladesh Print & Signage Business Management SaaS
+* **System:** PrintFlow — Bangladesh Print & Signage Business Management SaaS
 * **Baseline Status:** V1 Core Operations, V2 Machines/Production, V3 Authoritative Physical Inventory, and V4 Products/Costing remain **FROZEN, CERTIFIED, AND FULLY PRESERVED**.
 * **V5 Scope:** Purchasing, Suppliers, Supplier Catalogs, Price Benchmarking, Purchase Requisitions, Purchase Orders, Goods Receiving Notes (GRN), Quality/Rejection Inspection, Stock Ledger Integration (`PURCHASE_RECEIPT`), Supplier Returns (`PRTN`), and Supplier Financial Ledgers.
 * **Database Baseline:** Migrations `001–066` established and synchronized with Supabase remote database.
@@ -15,7 +15,7 @@
 
 ## 2. Architectural Integrity & Cumulative Extensions
 
-InkFlow V5 strictly conforms to the certified architectural guidelines:
+PrintFlow V5 strictly conforms to the certified architectural guidelines:
 1. **No Breaking Changes:** Existing V1–V4 APIs, schemas, repositories, and UI contracts are preserved without destructive modifications.
 2. **Authoritative Stock Control (V3 Integration):** Inventory quantity is exclusively mutated through V3's authoritative `materials` and `stock_ledger` tables using the new transaction type `PURCHASE_RECEIPT`. Physical stock is credited **only** for inspected and accepted quantities upon GRN posting.
 3. **Historical Cost Immutability (V4 Integration):** Acquisition unit costs update the material cost basis for future estimations without mutating historical costing snapshots attached to completed work orders or job orders.
@@ -154,7 +154,7 @@ Ran all test suites.
 
 ## 8. Final Certification Verdict
 
-**InkFlow V5 (Purchasing + Suppliers)** is fully integrated, secure, resilient, and verified against all functional, security, and baseline requirements.
+**PrintFlow V5 (Purchasing + Suppliers)** is fully integrated, secure, resilient, and verified against all functional, security, and baseline requirements.
 
 ```
 ================================================================================

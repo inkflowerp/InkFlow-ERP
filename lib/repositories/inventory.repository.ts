@@ -22,7 +22,7 @@ import type {
   IssueMasterRollResult,
 } from '../../types/inventory.types.ts'
 import type { PriceIntelligenceRecord } from '../../types/price-intelligence.types.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../db/data-store.ts'
 import { measureAsync } from '../performance/logger.ts'
 import { MachineryRepository } from './machinery.repository.ts'
 import type { ProductRecord } from '../../types/product.types.ts'
@@ -428,10 +428,10 @@ export class InventoryRepository {
 
       // 3. Merge Local DataStore items (only for missing items, never overwriting database items)
       const localMats: MaterialRecord[] = [
-        ...(PrintERPDataStore.getAll<MaterialRecord>(STORAGE_KEYS.MATERIALS, companyId) || []),
-        ...(PrintERPDataStore.getAll<MaterialRecord>(STORAGE_KEYS.MATERIALS) || []),
-        ...(PrintERPDataStore.get<MaterialRecord[]>(STORAGE_KEYS.MATERIALS, companyId) || []),
-        ...(PrintERPDataStore.get<MaterialRecord[]>(STORAGE_KEYS.MATERIALS) || []),
+        ...(PrintFlowDataStore.getAll<MaterialRecord>(STORAGE_KEYS.MATERIALS, companyId) || []),
+        ...(PrintFlowDataStore.getAll<MaterialRecord>(STORAGE_KEYS.MATERIALS) || []),
+        ...(PrintFlowDataStore.get<MaterialRecord[]>(STORAGE_KEYS.MATERIALS, companyId) || []),
+        ...(PrintFlowDataStore.get<MaterialRecord[]>(STORAGE_KEYS.MATERIALS) || []),
       ]
 
       for (const m of localMats) {
@@ -453,16 +453,16 @@ export class InventoryRepository {
       }
 
       const localProds: ProductRecord[] = [
-        ...(PrintERPDataStore.getAll<ProductRecord>(STORAGE_KEYS.PRODUCTS, companyId) || []),
-        ...(PrintERPDataStore.getAll<ProductRecord>(STORAGE_KEYS.PRODUCTS) || []),
-        ...(PrintERPDataStore.get<ProductRecord[]>(STORAGE_KEYS.PRODUCTS, companyId) || []),
-        ...(PrintERPDataStore.get<ProductRecord[]>(STORAGE_KEYS.PRODUCTS) || []),
+        ...(PrintFlowDataStore.getAll<ProductRecord>(STORAGE_KEYS.PRODUCTS, companyId) || []),
+        ...(PrintFlowDataStore.getAll<ProductRecord>(STORAGE_KEYS.PRODUCTS) || []),
+        ...(PrintFlowDataStore.get<ProductRecord[]>(STORAGE_KEYS.PRODUCTS, companyId) || []),
+        ...(PrintFlowDataStore.get<ProductRecord[]>(STORAGE_KEYS.PRODUCTS) || []),
       ]
 
       const allLocalVars = [
-        ...(PrintERPDataStore.getAll<any>(STORAGE_KEYS.PRODUCT_VARIANTS, companyId) || []),
-        ...(PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCT_VARIANTS, companyId) || []),
-        ...(PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCT_VARIANTS) || []),
+        ...(PrintFlowDataStore.getAll<any>(STORAGE_KEYS.PRODUCT_VARIANTS, companyId) || []),
+        ...(PrintFlowDataStore.get<any[]>(STORAGE_KEYS.PRODUCT_VARIANTS, companyId) || []),
+        ...(PrintFlowDataStore.get<any[]>(STORAGE_KEYS.PRODUCT_VARIANTS) || []),
       ]
 
       for (const p of localProds) {
@@ -880,15 +880,15 @@ export class InventoryRepository {
       }
     } catch {}
 
-    // 3. Fallback: Check PrintERPDataStore (Local Cache & Offline Memory)
+    // 3. Fallback: Check PrintFlowDataStore (Local Cache & Offline Memory)
     const normTarget = companyId ? companyId.toLowerCase() : ''
     const cleanTarget = normTarget.replace(/^comp-/, '').replace(/^co-/, '')
 
     const allMaterials: MaterialRecord[] = [
-      ...(PrintERPDataStore.getAll<MaterialRecord>(STORAGE_KEYS.MATERIALS, companyId) || []),
-      ...(PrintERPDataStore.getAll<MaterialRecord>(STORAGE_KEYS.MATERIALS) || []),
-      ...(PrintERPDataStore.get<MaterialRecord[]>(STORAGE_KEYS.MATERIALS, companyId) || []),
-      ...(PrintERPDataStore.get<MaterialRecord[]>(STORAGE_KEYS.MATERIALS) || []),
+      ...(PrintFlowDataStore.getAll<MaterialRecord>(STORAGE_KEYS.MATERIALS, companyId) || []),
+      ...(PrintFlowDataStore.getAll<MaterialRecord>(STORAGE_KEYS.MATERIALS) || []),
+      ...(PrintFlowDataStore.get<MaterialRecord[]>(STORAGE_KEYS.MATERIALS, companyId) || []),
+      ...(PrintFlowDataStore.get<MaterialRecord[]>(STORAGE_KEYS.MATERIALS) || []),
     ]
 
     const foundMat = allMaterials.find((m) => {
@@ -901,12 +901,12 @@ export class InventoryRepository {
     })
     if (foundMat) return this.reconcileMaterialStock(foundMat)
 
-    // 4. Fallback: Check Products in PrintERPDataStore
+    // 4. Fallback: Check Products in PrintFlowDataStore
     const allProducts: any[] = [
-      ...(PrintERPDataStore.getAll<any>(STORAGE_KEYS.PRODUCTS, companyId) || []),
-      ...(PrintERPDataStore.getAll<any>(STORAGE_KEYS.PRODUCTS) || []),
-      ...(PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTS, companyId) || []),
-      ...(PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTS) || []),
+      ...(PrintFlowDataStore.getAll<any>(STORAGE_KEYS.PRODUCTS, companyId) || []),
+      ...(PrintFlowDataStore.getAll<any>(STORAGE_KEYS.PRODUCTS) || []),
+      ...(PrintFlowDataStore.get<any[]>(STORAGE_KEYS.PRODUCTS, companyId) || []),
+      ...(PrintFlowDataStore.get<any[]>(STORAGE_KEYS.PRODUCTS) || []),
     ]
 
     const foundProd = allProducts.find((p) => {
@@ -955,7 +955,7 @@ export class InventoryRepository {
 
       // Sync into materials collection for fast subsequent lookups
       try {
-        PrintERPDataStore.addItem(STORAGE_KEYS.MATERIALS, bridged)
+        PrintFlowDataStore.addItem(STORAGE_KEYS.MATERIALS, bridged)
       } catch {}
 
       return this.reconcileMaterialStock(bridged)
@@ -1035,7 +1035,7 @@ export class InventoryRepository {
         .single()
 
       if (!error && data) {
-        PrintERPDataStore.addItem(STORAGE_KEYS.MATERIALS, data, material.company_id)
+        PrintFlowDataStore.addItem(STORAGE_KEYS.MATERIALS, data, material.company_id)
         return data as unknown as MaterialRecord
       }
     } catch {}
@@ -1048,12 +1048,12 @@ export class InventoryRepository {
         .select()
         .single()
       if (!error && data) {
-        PrintERPDataStore.addItem(STORAGE_KEYS.MATERIALS, data, material.company_id)
+        PrintFlowDataStore.addItem(STORAGE_KEYS.MATERIALS, data, material.company_id)
         return data as unknown as MaterialRecord
       }
     } catch {}
 
-    PrintERPDataStore.addItem(STORAGE_KEYS.MATERIALS, payload, material.company_id)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.MATERIALS, payload, material.company_id)
     return payload as unknown as MaterialRecord
   }
 
@@ -1131,8 +1131,8 @@ export class InventoryRepository {
     } catch {}
 
     if (updatedDbMat) {
-      PrintERPDataStore.updateItem<MaterialRecord>(STORAGE_KEYS.MATERIALS, id, updatedDbMat, companyId)
-      PrintERPDataStore.updateItem<any>(
+      PrintFlowDataStore.updateItem<MaterialRecord>(STORAGE_KEYS.MATERIALS, id, updatedDbMat, companyId)
+      PrintFlowDataStore.updateItem<any>(
         STORAGE_KEYS.PRODUCTS,
         (p: any) => p && (p.id === id || (!!updatedDbMat.sku && p.sku === updatedDbMat.sku)),
         {
@@ -1146,11 +1146,11 @@ export class InventoryRepository {
     }
 
     const updated =
-      PrintERPDataStore.updateItem<MaterialRecord>(STORAGE_KEYS.MATERIALS, id, payload, companyId) ||
-      PrintERPDataStore.updateItem<MaterialRecord>(STORAGE_KEYS.MATERIALS, id, payload)
+      PrintFlowDataStore.updateItem<MaterialRecord>(STORAGE_KEYS.MATERIALS, id, payload, companyId) ||
+      PrintFlowDataStore.updateItem<MaterialRecord>(STORAGE_KEYS.MATERIALS, id, payload)
 
     try {
-      PrintERPDataStore.updateItem<any>(
+      PrintFlowDataStore.updateItem<any>(
         STORAGE_KEYS.PRODUCTS,
         (p: any) => p && (p.id === id || (!!payload.sku && p.sku === payload.sku)),
         {
@@ -1221,7 +1221,7 @@ export class InventoryRepository {
       return data as unknown as InventoryStockBalanceRecord[]
     }
 
-    const localBalances = PrintERPDataStore.get<InventoryStockBalanceRecord[]>(STORAGE_KEYS.INVENTORY_STOCK_BALANCES, companyId) || []
+    const localBalances = PrintFlowDataStore.get<InventoryStockBalanceRecord[]>(STORAGE_KEYS.INVENTORY_STOCK_BALANCES, companyId) || []
     let filtered = localBalances
     if (options?.locationId) {
       filtered = filtered.filter((b) => b.location_id === options.locationId)
@@ -1463,7 +1463,7 @@ export class InventoryRepository {
       }
 
       // Always update DataStore local cache regardless of ledger outcome
-      PrintERPDataStore.updateItem<MaterialRecord>(STORAGE_KEYS.MATERIALS, material.id, {
+      PrintFlowDataStore.updateItem<MaterialRecord>(STORAGE_KEYS.MATERIALS, material.id, {
         current_stock: newStock,
         average_cost: unitCost > 0 ? unitCost : material.average_cost,
         last_purchase_price: unitCost > 0 ? unitCost : material.last_purchase_price,
@@ -1474,7 +1474,7 @@ export class InventoryRepository {
       } as any)
       if (params.company_id) {
         try {
-          PrintERPDataStore.updateItem<MaterialRecord>(STORAGE_KEYS.MATERIALS, material.id, {
+          PrintFlowDataStore.updateItem<MaterialRecord>(STORAGE_KEYS.MATERIALS, material.id, {
             current_stock: newStock,
             average_cost: unitCost > 0 ? unitCost : material.average_cost,
             last_purchase_price: unitCost > 0 ? unitCost : material.last_purchase_price,
@@ -1501,12 +1501,12 @@ export class InventoryRepository {
           ...(existingMatVariants ? { variants: existingMatVariants } : {}),
         },
       }
-      PrintERPDataStore.updateItem<any>(STORAGE_KEYS.PRODUCTS, (p: any) => p && (p.id === material.id || (!!material.sku && p.sku === material.sku)), prodUpdatePayload)
-      PrintERPDataStore.updateItem<any>(STORAGE_KEYS.PRODUCTS, material.id, prodUpdatePayload)
+      PrintFlowDataStore.updateItem<any>(STORAGE_KEYS.PRODUCTS, (p: any) => p && (p.id === material.id || (!!material.sku && p.sku === material.sku)), prodUpdatePayload)
+      PrintFlowDataStore.updateItem<any>(STORAGE_KEYS.PRODUCTS, material.id, prodUpdatePayload)
       if (params.company_id) {
         try {
-          PrintERPDataStore.updateItem<any>(STORAGE_KEYS.PRODUCTS, (p: any) => p && (p.id === material.id || (!!material.sku && p.sku === material.sku)), prodUpdatePayload, params.company_id)
-          PrintERPDataStore.updateItem<any>(STORAGE_KEYS.PRODUCTS, material.id, prodUpdatePayload, params.company_id)
+          PrintFlowDataStore.updateItem<any>(STORAGE_KEYS.PRODUCTS, (p: any) => p && (p.id === material.id || (!!material.sku && p.sku === material.sku)), prodUpdatePayload, params.company_id)
+          PrintFlowDataStore.updateItem<any>(STORAGE_KEYS.PRODUCTS, material.id, prodUpdatePayload, params.company_id)
         } catch {}
       }
 
@@ -1527,7 +1527,7 @@ export class InventoryRepository {
     } catch {}
 
     // 4. DataStore Fallback Execution
-    const updatedMaterial = PrintERPDataStore.updateItem<MaterialRecord>(STORAGE_KEYS.MATERIALS, material.id, {
+    const updatedMaterial = PrintFlowDataStore.updateItem<MaterialRecord>(STORAGE_KEYS.MATERIALS, material.id, {
       current_stock: newStock,
       average_cost: unitCost > 0 ? unitCost : material.average_cost,
       last_purchase_price: unitCost > 0 ? unitCost : material.last_purchase_price,
@@ -1545,7 +1545,7 @@ export class InventoryRepository {
 
     if (params.company_id) {
       try {
-        PrintERPDataStore.updateItem<MaterialRecord>(STORAGE_KEYS.MATERIALS, material.id, {
+        PrintFlowDataStore.updateItem<MaterialRecord>(STORAGE_KEYS.MATERIALS, material.id, {
           current_stock: newStock,
           average_cost: unitCost > 0 ? unitCost : material.average_cost,
           last_purchase_price: unitCost > 0 ? unitCost : material.last_purchase_price,
@@ -1573,19 +1573,19 @@ export class InventoryRepository {
       },
     }
 
-    PrintERPDataStore.updateItem<any>(STORAGE_KEYS.PRODUCTS, (p: any) => p && (p.id === material.id || (!!material.sku && p.sku === material.sku)), prodUpdatePayload)
-    PrintERPDataStore.updateItem<any>(STORAGE_KEYS.PRODUCTS, material.id, prodUpdatePayload)
+    PrintFlowDataStore.updateItem<any>(STORAGE_KEYS.PRODUCTS, (p: any) => p && (p.id === material.id || (!!material.sku && p.sku === material.sku)), prodUpdatePayload)
+    PrintFlowDataStore.updateItem<any>(STORAGE_KEYS.PRODUCTS, material.id, prodUpdatePayload)
 
     if (params.company_id) {
       try {
-        PrintERPDataStore.updateItem<any>(STORAGE_KEYS.PRODUCTS, (p: any) => p && (p.id === material.id || (!!material.sku && p.sku === material.sku)), prodUpdatePayload, params.company_id)
-        PrintERPDataStore.updateItem<any>(STORAGE_KEYS.PRODUCTS, material.id, prodUpdatePayload, params.company_id)
+        PrintFlowDataStore.updateItem<any>(STORAGE_KEYS.PRODUCTS, (p: any) => p && (p.id === material.id || (!!material.sku && p.sku === material.sku)), prodUpdatePayload, params.company_id)
+        PrintFlowDataStore.updateItem<any>(STORAGE_KEYS.PRODUCTS, material.id, prodUpdatePayload, params.company_id)
       } catch {}
     }
 
     if (params.location_id) {
       try {
-        const allBalances = PrintERPDataStore.get<any[]>(STORAGE_KEYS.INVENTORY_STOCK_BALANCES, params.company_id) || []
+        const allBalances = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.INVENTORY_STOCK_BALANCES, params.company_id) || []
         const existingIdx = allBalances.findIndex(
           (b) => (b.material_id === material.id || (material.sku && b.sku === material.sku)) && b.location_id === params.location_id
         )
@@ -1605,7 +1605,7 @@ export class InventoryRepository {
             updated_at: new Date().toISOString(),
           })
         }
-        PrintERPDataStore.set(STORAGE_KEYS.INVENTORY_STOCK_BALANCES, allBalances, false, params.company_id)
+        PrintFlowDataStore.set(STORAGE_KEYS.INVENTORY_STOCK_BALANCES, allBalances, false, params.company_id)
       } catch {}
     }
 
@@ -1629,7 +1629,7 @@ export class InventoryRepository {
       performed_by_name: params.performed_by_name,
       created_at: new Date().toISOString(),
     }
-    PrintERPDataStore.addItem(STORAGE_KEYS.STOCK_LEDGER, localLedgerEntry)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.STOCK_LEDGER, localLedgerEntry)
 
     return {
       material: updatedMaterial,
@@ -1743,10 +1743,10 @@ export class InventoryRepository {
 
     // Merge DataStore material requests
     const localRequests = [
-      ...(PrintERPDataStore.getAll<MaterialRequestRecord>(STORAGE_KEYS.MATERIAL_REQUESTS, companyId) || []),
-      ...(PrintERPDataStore.getAll<MaterialRequestRecord>(STORAGE_KEYS.MATERIAL_REQUESTS) || []),
-      ...(PrintERPDataStore.get<MaterialRequestRecord[]>(STORAGE_KEYS.MATERIAL_REQUESTS, companyId) || []),
-      ...(PrintERPDataStore.get<MaterialRequestRecord[]>(STORAGE_KEYS.MATERIAL_REQUESTS) || []),
+      ...(PrintFlowDataStore.getAll<MaterialRequestRecord>(STORAGE_KEYS.MATERIAL_REQUESTS, companyId) || []),
+      ...(PrintFlowDataStore.getAll<MaterialRequestRecord>(STORAGE_KEYS.MATERIAL_REQUESTS) || []),
+      ...(PrintFlowDataStore.get<MaterialRequestRecord[]>(STORAGE_KEYS.MATERIAL_REQUESTS, companyId) || []),
+      ...(PrintFlowDataStore.get<MaterialRequestRecord[]>(STORAGE_KEYS.MATERIAL_REQUESTS) || []),
     ]
 
     for (const req of localRequests) {
@@ -1871,8 +1871,8 @@ export class InventoryRepository {
       }
     } catch {}
 
-    PrintERPDataStore.addItem(STORAGE_KEYS.MATERIAL_REQUESTS, createdRequest, params.company_id)
-    PrintERPDataStore.addItem(STORAGE_KEYS.MATERIAL_REQUESTS, createdRequest)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.MATERIAL_REQUESTS, createdRequest, params.company_id)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.MATERIAL_REQUESTS, createdRequest)
 
     return createdRequest
   }
@@ -1909,16 +1909,16 @@ export class InventoryRepository {
     } catch {}
 
     const all = [
-      ...(PrintERPDataStore.getAll<MaterialRequestRecord>(STORAGE_KEYS.MATERIAL_REQUESTS, companyId) || []),
-      ...(PrintERPDataStore.get<MaterialRequestRecord[]>(STORAGE_KEYS.MATERIAL_REQUESTS, companyId) || []),
-      ...(PrintERPDataStore.get<MaterialRequestRecord[]>(STORAGE_KEYS.MATERIAL_REQUESTS) || []),
-      ...(PrintERPDataStore.getAll<MaterialRequestRecord>(STORAGE_KEYS.MATERIAL_REQUESTS) || []),
+      ...(PrintFlowDataStore.getAll<MaterialRequestRecord>(STORAGE_KEYS.MATERIAL_REQUESTS, companyId) || []),
+      ...(PrintFlowDataStore.get<MaterialRequestRecord[]>(STORAGE_KEYS.MATERIAL_REQUESTS, companyId) || []),
+      ...(PrintFlowDataStore.get<MaterialRequestRecord[]>(STORAGE_KEYS.MATERIAL_REQUESTS) || []),
+      ...(PrintFlowDataStore.getAll<MaterialRequestRecord>(STORAGE_KEYS.MATERIAL_REQUESTS) || []),
     ]
     const target = all.find((r) => r && r.id === id)
     if (target) {
       const updated = { ...target, ...payload }
-      PrintERPDataStore.updateItem(STORAGE_KEYS.MATERIAL_REQUESTS, id, updated, companyId)
-      PrintERPDataStore.updateItem(STORAGE_KEYS.MATERIAL_REQUESTS, id, updated)
+      PrintFlowDataStore.updateItem(STORAGE_KEYS.MATERIAL_REQUESTS, id, updated, companyId)
+      PrintFlowDataStore.updateItem(STORAGE_KEYS.MATERIAL_REQUESTS, id, updated)
       return updated
     }
 
@@ -1966,10 +1966,10 @@ export class InventoryRepository {
 
     // Merge DataStore material issues
     const localIssues = [
-      ...(PrintERPDataStore.getAll<MaterialIssueRecord>(STORAGE_KEYS.MATERIAL_ISSUES, companyId) || []),
-      ...(PrintERPDataStore.getAll<MaterialIssueRecord>(STORAGE_KEYS.MATERIAL_ISSUES) || []),
-      ...(PrintERPDataStore.get<MaterialIssueRecord[]>(STORAGE_KEYS.MATERIAL_ISSUES, companyId) || []),
-      ...(PrintERPDataStore.get<MaterialIssueRecord[]>(STORAGE_KEYS.MATERIAL_ISSUES) || []),
+      ...(PrintFlowDataStore.getAll<MaterialIssueRecord>(STORAGE_KEYS.MATERIAL_ISSUES, companyId) || []),
+      ...(PrintFlowDataStore.getAll<MaterialIssueRecord>(STORAGE_KEYS.MATERIAL_ISSUES) || []),
+      ...(PrintFlowDataStore.get<MaterialIssueRecord[]>(STORAGE_KEYS.MATERIAL_ISSUES, companyId) || []),
+      ...(PrintFlowDataStore.get<MaterialIssueRecord[]>(STORAGE_KEYS.MATERIAL_ISSUES) || []),
     ]
 
     for (const iss of localIssues) {
@@ -2153,8 +2153,8 @@ export class InventoryRepository {
       }
     } catch {}
 
-    PrintERPDataStore.addItem(STORAGE_KEYS.MATERIAL_ISSUES, createdIssue, params.company_id)
-    PrintERPDataStore.addItem(STORAGE_KEYS.MATERIAL_ISSUES, createdIssue)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.MATERIAL_ISSUES, createdIssue, params.company_id)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.MATERIAL_ISSUES, createdIssue)
 
     // Register FloorConsumptionRecords for immediate floor display
     for (const item of createdIssue.items || []) {
@@ -2198,8 +2198,8 @@ export class InventoryRepository {
         updated_at: new Date().toISOString(),
         material: targetMat || undefined,
       }
-      PrintERPDataStore.addItem(STORAGE_KEYS.FLOOR_CONSUMPTIONS, floorRecord, params.company_id)
-      PrintERPDataStore.addItem(STORAGE_KEYS.FLOOR_CONSUMPTIONS, floorRecord)
+      PrintFlowDataStore.addItem(STORAGE_KEYS.FLOOR_CONSUMPTIONS, floorRecord, params.company_id)
+      PrintFlowDataStore.addItem(STORAGE_KEYS.FLOOR_CONSUMPTIONS, floorRecord)
     }
 
     // Deduct stock, update roll sizes, and log ledger entry
@@ -2318,8 +2318,8 @@ export class InventoryRepository {
               mounted_by_name: params.received_by_name || params.issued_by_name,
               updated_at: new Date().toISOString(),
             }
-            PrintERPDataStore.updateItem(STORAGE_KEYS.MOUNTED_ROLLS, updatedRoll.id, updatedRoll, params.company_id)
-            PrintERPDataStore.updateItem(STORAGE_KEYS.MOUNTED_ROLLS, updatedRoll.id, updatedRoll)
+            PrintFlowDataStore.updateItem(STORAGE_KEYS.MOUNTED_ROLLS, updatedRoll.id, updatedRoll, params.company_id)
+            PrintFlowDataStore.updateItem(STORAGE_KEYS.MOUNTED_ROLLS, updatedRoll.id, updatedRoll)
 
             try {
               const supabase = await createClient()
@@ -2375,10 +2375,10 @@ export class InventoryRepository {
 
     // 2. Load all explicit floor consumption records
     const explicitConsumptions = [
-      ...(PrintERPDataStore.getAll<FloorConsumptionRecord>(STORAGE_KEYS.FLOOR_CONSUMPTIONS, companyId) || []),
-      ...(PrintERPDataStore.getAll<FloorConsumptionRecord>(STORAGE_KEYS.FLOOR_CONSUMPTIONS) || []),
-      ...(PrintERPDataStore.get<FloorConsumptionRecord[]>(STORAGE_KEYS.FLOOR_CONSUMPTIONS, companyId) || []),
-      ...(PrintERPDataStore.get<FloorConsumptionRecord[]>(STORAGE_KEYS.FLOOR_CONSUMPTIONS) || []),
+      ...(PrintFlowDataStore.getAll<FloorConsumptionRecord>(STORAGE_KEYS.FLOOR_CONSUMPTIONS, companyId) || []),
+      ...(PrintFlowDataStore.getAll<FloorConsumptionRecord>(STORAGE_KEYS.FLOOR_CONSUMPTIONS) || []),
+      ...(PrintFlowDataStore.get<FloorConsumptionRecord[]>(STORAGE_KEYS.FLOOR_CONSUMPTIONS, companyId) || []),
+      ...(PrintFlowDataStore.get<FloorConsumptionRecord[]>(STORAGE_KEYS.FLOOR_CONSUMPTIONS) || []),
     ].filter((c) => {
       if (!c) return false
       if (!companyId || !c.company_id) return true
@@ -2629,8 +2629,8 @@ export class InventoryRepository {
     // 1. Update Material Issue in DataStore if issue_id is supplied
     if (params.issue_id) {
       const allIssues = [
-        ...(PrintERPDataStore.get<MaterialIssueRecord[]>(STORAGE_KEYS.MATERIAL_ISSUES, params.company_id) || []),
-        ...(PrintERPDataStore.get<MaterialIssueRecord[]>(STORAGE_KEYS.MATERIAL_ISSUES) || []),
+        ...(PrintFlowDataStore.get<MaterialIssueRecord[]>(STORAGE_KEYS.MATERIAL_ISSUES, params.company_id) || []),
+        ...(PrintFlowDataStore.get<MaterialIssueRecord[]>(STORAGE_KEYS.MATERIAL_ISSUES) || []),
       ]
       const targetIssue = allIssues.find((iss) => iss.id === params.issue_id)
       if (targetIssue && targetIssue.items) {
@@ -2648,8 +2648,8 @@ export class InventoryRepository {
             targetIssueItem = item
           }
         }
-        PrintERPDataStore.set(STORAGE_KEYS.MATERIAL_ISSUES, allIssues, true, params.company_id)
-        PrintERPDataStore.set(STORAGE_KEYS.MATERIAL_ISSUES, allIssues, false)
+        PrintFlowDataStore.set(STORAGE_KEYS.MATERIAL_ISSUES, allIssues, true, params.company_id)
+        PrintFlowDataStore.set(STORAGE_KEYS.MATERIAL_ISSUES, allIssues, false)
       }
     }
 
@@ -2687,7 +2687,7 @@ export class InventoryRepository {
         performed_by_name: params.operator_name || 'Floor Operator',
         created_at: new Date().toISOString(),
       }
-      PrintERPDataStore.addItem(STORAGE_KEYS.STOCK_LEDGER, ledgerEntry)
+      PrintFlowDataStore.addItem(STORAGE_KEYS.STOCK_LEDGER, ledgerEntry)
     }
 
     // 3. Log Scrap / Wastage in Stock Ledger
@@ -2712,7 +2712,7 @@ export class InventoryRepository {
         performed_by_name: params.operator_name || 'Floor Operator',
         created_at: new Date().toISOString(),
       }
-      PrintERPDataStore.addItem(STORAGE_KEYS.STOCK_LEDGER, wastageEntry)
+      PrintFlowDataStore.addItem(STORAGE_KEYS.STOCK_LEDGER, wastageEntry)
     }
 
     // 4. Return Unused Material back to Warehouse Store
@@ -2794,7 +2794,7 @@ export class InventoryRepository {
       material: mat,
     }
 
-    PrintERPDataStore.addItem(STORAGE_KEYS.FLOOR_CONSUMPTIONS, floorRecord)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.FLOOR_CONSUMPTIONS, floorRecord)
 
     return { success: true, floorRecord, remnantsCreated: remnantsCount }
   }
@@ -2812,8 +2812,8 @@ export class InventoryRepository {
     if (!mat) throw new Error('Material not found.')
 
     const allIssues = [
-      ...(PrintERPDataStore.get<MaterialIssueRecord[]>(STORAGE_KEYS.MATERIAL_ISSUES, params.company_id) || []),
-      ...(PrintERPDataStore.get<MaterialIssueRecord[]>(STORAGE_KEYS.MATERIAL_ISSUES) || []),
+      ...(PrintFlowDataStore.get<MaterialIssueRecord[]>(STORAGE_KEYS.MATERIAL_ISSUES, params.company_id) || []),
+      ...(PrintFlowDataStore.get<MaterialIssueRecord[]>(STORAGE_KEYS.MATERIAL_ISSUES) || []),
     ]
     const targetIssue = allIssues.find((iss) => iss.id === params.issue_id)
     let remaining = 0
@@ -2839,8 +2839,8 @@ export class InventoryRepository {
           item.last_consumption_at = new Date().toISOString()
         }
       }
-      PrintERPDataStore.set(STORAGE_KEYS.MATERIAL_ISSUES, allIssues, true, params.company_id)
-      PrintERPDataStore.set(STORAGE_KEYS.MATERIAL_ISSUES, allIssues, false)
+      PrintFlowDataStore.set(STORAGE_KEYS.MATERIAL_ISSUES, allIssues, true, params.company_id)
+      PrintFlowDataStore.set(STORAGE_KEYS.MATERIAL_ISSUES, allIssues, false)
     }
 
     // Add stock back to store location
@@ -2884,7 +2884,7 @@ export class InventoryRepository {
       material: mat,
     }
 
-    PrintERPDataStore.addItem(STORAGE_KEYS.FLOOR_CONSUMPTIONS, floorRecord)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.FLOOR_CONSUMPTIONS, floorRecord)
 
     return { success: true, remainingFloorBalance: remaining, floorRecord }
   }
@@ -2923,7 +2923,7 @@ export class InventoryRepository {
       }
       return (data || []) as unknown as InventoryRemnantRecord[]
     } catch {
-      const all = PrintERPDataStore.get<InventoryRemnantRecord[]>(STORAGE_KEYS.REMNANTS) || []
+      const all = PrintFlowDataStore.get<InventoryRemnantRecord[]>(STORAGE_KEYS.REMNANTS) || []
       let filtered = all.filter((r) => !r.company_id || r.company_id === companyId)
       if (options?.materialId) {
         filtered = filtered.filter((r) => r.parent_material_id === options.materialId)
@@ -2950,7 +2950,7 @@ export class InventoryRepository {
       }
       return (data as unknown as InventoryRemnantRecord) || null
     } catch {
-      const all = PrintERPDataStore.get<InventoryRemnantRecord[]>(STORAGE_KEYS.REMNANTS) || []
+      const all = PrintFlowDataStore.get<InventoryRemnantRecord[]>(STORAGE_KEYS.REMNANTS) || []
       return all.find((r) => r.id === id && (!r.company_id || r.company_id === companyId)) || null
     }
   }
@@ -3056,12 +3056,12 @@ export class InventoryRepository {
           performed_by_name: params.created_by_name,
           created_at: new Date().toISOString(),
         })
-        PrintERPDataStore.addItem(STORAGE_KEYS.REMNANTS, data)
+        PrintFlowDataStore.addItem(STORAGE_KEYS.REMNANTS, data)
         return data as unknown as InventoryRemnantRecord
       }
     } catch {}
 
-    PrintERPDataStore.addItem(STORAGE_KEYS.REMNANTS, remnantRecord)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.REMNANTS, remnantRecord)
     return remnantRecord
   }
 
@@ -3287,7 +3287,7 @@ export class InventoryRepository {
       }
       return (data || []) as unknown as StockLedgerRecord[]
     } catch {
-      const all = PrintERPDataStore.get<StockLedgerRecord[]>(STORAGE_KEYS.STOCK_LEDGER) || []
+      const all = PrintFlowDataStore.get<StockLedgerRecord[]>(STORAGE_KEYS.STOCK_LEDGER) || []
       let filtered = all.filter((l) => !l.company_id || l.company_id === companyId)
       if (materialId) {
         filtered = filtered.filter((l) => l.material_id === materialId)
@@ -3379,10 +3379,10 @@ export class InventoryRepository {
 
     // 2. Merge with Local Store
     const allLocal = [
-      ...(PrintERPDataStore.getAll<InventoryRollRecord>(STORAGE_KEYS.MOUNTED_ROLLS, companyId) || []),
-      ...(PrintERPDataStore.get<InventoryRollRecord[]>(STORAGE_KEYS.MOUNTED_ROLLS, companyId) || []),
-      ...(PrintERPDataStore.get<InventoryRollRecord[]>(STORAGE_KEYS.MOUNTED_ROLLS) || []),
-      ...(PrintERPDataStore.getAll<InventoryRollRecord>(STORAGE_KEYS.MOUNTED_ROLLS) || []),
+      ...(PrintFlowDataStore.getAll<InventoryRollRecord>(STORAGE_KEYS.MOUNTED_ROLLS, companyId) || []),
+      ...(PrintFlowDataStore.get<InventoryRollRecord[]>(STORAGE_KEYS.MOUNTED_ROLLS, companyId) || []),
+      ...(PrintFlowDataStore.get<InventoryRollRecord[]>(STORAGE_KEYS.MOUNTED_ROLLS) || []),
+      ...(PrintFlowDataStore.getAll<InventoryRollRecord>(STORAGE_KEYS.MOUNTED_ROLLS) || []),
     ]
     const normTarget = companyId ? companyId.toLowerCase() : ''
     const cleanTarget = normTarget.replace(/^comp-/, '').replace(/^co-/, '')
@@ -3500,7 +3500,7 @@ export class InventoryRepository {
     }
 
     if (!roll) {
-      const all = PrintERPDataStore.get<InventoryRollRecord[]>(STORAGE_KEYS.MOUNTED_ROLLS) || []
+      const all = PrintFlowDataStore.get<InventoryRollRecord[]>(STORAGE_KEYS.MOUNTED_ROLLS) || []
       roll = all.find((r) => (r.id === id || r.roll_code === id || r.roll_tag === id) && (!companyId || !r.company_id || r.company_id === companyId)) || null
     }
 
@@ -3593,8 +3593,8 @@ export class InventoryRepository {
         .single()
 
       if (!error && data) {
-        PrintERPDataStore.addItem(STORAGE_KEYS.MOUNTED_ROLLS, payload, params.company_id)
-        PrintERPDataStore.addItem(STORAGE_KEYS.MOUNTED_ROLLS, payload)
+        PrintFlowDataStore.addItem(STORAGE_KEYS.MOUNTED_ROLLS, payload, params.company_id)
+        PrintFlowDataStore.addItem(STORAGE_KEYS.MOUNTED_ROLLS, payload)
         return payload
       }
     } catch {}
@@ -3608,14 +3608,14 @@ export class InventoryRepository {
         .single()
 
       if (!error && data) {
-        PrintERPDataStore.addItem(STORAGE_KEYS.MOUNTED_ROLLS, payload, params.company_id)
-        PrintERPDataStore.addItem(STORAGE_KEYS.MOUNTED_ROLLS, payload)
+        PrintFlowDataStore.addItem(STORAGE_KEYS.MOUNTED_ROLLS, payload, params.company_id)
+        PrintFlowDataStore.addItem(STORAGE_KEYS.MOUNTED_ROLLS, payload)
         return payload
       }
     } catch {}
 
-    PrintERPDataStore.addItem(STORAGE_KEYS.MOUNTED_ROLLS, payload, params.company_id)
-    PrintERPDataStore.addItem(STORAGE_KEYS.MOUNTED_ROLLS, payload)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.MOUNTED_ROLLS, payload, params.company_id)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.MOUNTED_ROLLS, payload)
     return payload
   }
 
@@ -3686,8 +3686,8 @@ export class InventoryRepository {
       if (data) updatedRoll = data as unknown as InventoryRollRecord
     } catch {}
 
-    PrintERPDataStore.updateItem(STORAGE_KEYS.MOUNTED_ROLLS, roll.id, updatedRoll, params.company_id)
-    PrintERPDataStore.updateItem(STORAGE_KEYS.MOUNTED_ROLLS, roll.id, updatedRoll)
+    PrintFlowDataStore.updateItem(STORAGE_KEYS.MOUNTED_ROLLS, roll.id, updatedRoll, params.company_id)
+    PrintFlowDataStore.updateItem(STORAGE_KEYS.MOUNTED_ROLLS, roll.id, updatedRoll)
 
     // Log Stock Ledger Entry for Good Job Run (+ Bleed)
     if (goodConsumedArea > 0) {
@@ -3899,8 +3899,8 @@ export class InventoryRepository {
               .eq('id', rollRecord.id)
           } catch {}
 
-          PrintERPDataStore.updateItem(STORAGE_KEYS.MOUNTED_ROLLS, rollRecord.id, rollRecord, companyId)
-          PrintERPDataStore.updateItem(STORAGE_KEYS.MOUNTED_ROLLS, rollRecord.id, rollRecord)
+          PrintFlowDataStore.updateItem(STORAGE_KEYS.MOUNTED_ROLLS, rollRecord.id, rollRecord, companyId)
+          PrintFlowDataStore.updateItem(STORAGE_KEYS.MOUNTED_ROLLS, rollRecord.id, rollRecord)
         } else {
           // Create new discrete physical roll on floor
           const rollId = `roll-${timestamp}-${i}-${Math.random().toString(36).substring(2, 6)}`
@@ -3971,8 +3971,8 @@ export class InventoryRepository {
             })
           } catch {}
 
-          PrintERPDataStore.addItem(STORAGE_KEYS.MOUNTED_ROLLS, rollRecord, companyId)
-          PrintERPDataStore.addItem(STORAGE_KEYS.MOUNTED_ROLLS, rollRecord)
+          PrintFlowDataStore.addItem(STORAGE_KEYS.MOUNTED_ROLLS, rollRecord, companyId)
+          PrintFlowDataStore.addItem(STORAGE_KEYS.MOUNTED_ROLLS, rollRecord)
         }
 
         createdRolls.push(rollRecord)
@@ -4039,8 +4039,8 @@ export class InventoryRepository {
         })
       } catch {}
 
-      PrintERPDataStore.addItem(STORAGE_KEYS.MOUNTED_ROLLS, floorRecord, companyId)
-      PrintERPDataStore.addItem(STORAGE_KEYS.MOUNTED_ROLLS, floorRecord)
+      PrintFlowDataStore.addItem(STORAGE_KEYS.MOUNTED_ROLLS, floorRecord, companyId)
+      PrintFlowDataStore.addItem(STORAGE_KEYS.MOUNTED_ROLLS, floorRecord)
       createdRolls.push(floorRecord)
     }
 
@@ -4110,8 +4110,8 @@ export class InventoryRepository {
             mat.material_config.roll_sizes = updatedSizes
           }
 
-          PrintERPDataStore.updateItem(STORAGE_KEYS.MATERIALS, mat.id, mat, companyId)
-          PrintERPDataStore.updateItem(STORAGE_KEYS.MATERIALS, mat.id, mat)
+          PrintFlowDataStore.updateItem(STORAGE_KEYS.MATERIALS, mat.id, mat, companyId)
+          PrintFlowDataStore.updateItem(STORAGE_KEYS.MATERIALS, mat.id, mat)
 
           try {
             const supabase = await createClient()
@@ -4183,8 +4183,8 @@ export class InventoryRepository {
             ;(mat.material_config as any).sheet_sizes = updatedSheetSizes
             mat.material_config.available_sheet_sizes = updatedSheetSizes
           }
-          PrintERPDataStore.updateItem(STORAGE_KEYS.MATERIALS, mat.id, mat, companyId)
-          PrintERPDataStore.updateItem(STORAGE_KEYS.MATERIALS, mat.id, mat)
+          PrintFlowDataStore.updateItem(STORAGE_KEYS.MATERIALS, mat.id, mat, companyId)
+          PrintFlowDataStore.updateItem(STORAGE_KEYS.MATERIALS, mat.id, mat)
         }
       } catch {}
     }
@@ -4227,8 +4227,8 @@ export class InventoryRepository {
           if (mat.material_config) {
             (mat.material_config as any).variants = updatedVariants
           }
-          PrintERPDataStore.updateItem(STORAGE_KEYS.MATERIALS, mat.id, mat, companyId)
-          PrintERPDataStore.updateItem(STORAGE_KEYS.MATERIALS, mat.id, mat)
+          PrintFlowDataStore.updateItem(STORAGE_KEYS.MATERIALS, mat.id, mat, companyId)
+          PrintFlowDataStore.updateItem(STORAGE_KEYS.MATERIALS, mat.id, mat)
         }
       } catch {}
     }
@@ -4339,8 +4339,8 @@ export class InventoryRepository {
       }
     } catch {}
 
-    PrintERPDataStore.addItem(STORAGE_KEYS.MATERIAL_ISSUES, issueRecord, companyId)
-    PrintERPDataStore.addItem(STORAGE_KEYS.MATERIAL_ISSUES, issueRecord)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.MATERIAL_ISSUES, issueRecord, companyId)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.MATERIAL_ISSUES, issueRecord)
 
     // If linked to a material request, mark request fulfilled
     if (params.request_id) {
@@ -4393,8 +4393,8 @@ export class InventoryRepository {
         material: mat,
       }
 
-      PrintERPDataStore.addItem(STORAGE_KEYS.FLOOR_CONSUMPTIONS, floorRecord, companyId)
-      PrintERPDataStore.addItem(STORAGE_KEYS.FLOOR_CONSUMPTIONS, floorRecord)
+      PrintFlowDataStore.addItem(STORAGE_KEYS.FLOOR_CONSUMPTIONS, floorRecord, companyId)
+      PrintFlowDataStore.addItem(STORAGE_KEYS.FLOOR_CONSUMPTIONS, floorRecord)
     }
 
     return {
@@ -4446,8 +4446,8 @@ export class InventoryRepository {
       if (data) updated = data as unknown as InventoryRollRecord
     } catch {}
 
-    PrintERPDataStore.updateItem(STORAGE_KEYS.MOUNTED_ROLLS, roll.id, updated, params.company_id)
-    PrintERPDataStore.updateItem(STORAGE_KEYS.MOUNTED_ROLLS, roll.id, updated)
+    PrintFlowDataStore.updateItem(STORAGE_KEYS.MOUNTED_ROLLS, roll.id, updated, params.company_id)
+    PrintFlowDataStore.updateItem(STORAGE_KEYS.MOUNTED_ROLLS, roll.id, updated)
 
     // Synchronize Machinery active mounted roll
     try {
@@ -4495,7 +4495,7 @@ export class InventoryRepository {
       if (data) updated = data as unknown as InventoryRollRecord
     } catch {}
 
-    PrintERPDataStore.updateItem(STORAGE_KEYS.MOUNTED_ROLLS, roll.id, updated)
+    PrintFlowDataStore.updateItem(STORAGE_KEYS.MOUNTED_ROLLS, roll.id, updated)
 
     // Synchronize Machinery unmount
     if (machineId) {
@@ -4630,8 +4630,8 @@ export class InventoryRepository {
       await (supabase as any).from('supplier_prices').insert(payload)
     } catch {}
 
-    PrintERPDataStore.addItem(STORAGE_KEYS.SUPPLIER_PRICES, payload, entry.company_id)
-    PrintERPDataStore.addItem(STORAGE_KEYS.SUPPLIER_PRICES, payload)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.SUPPLIER_PRICES, payload, entry.company_id)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.SUPPLIER_PRICES, payload)
     return payload
   }
 
@@ -4657,7 +4657,7 @@ export class InventoryRepository {
       }
     } catch {}
 
-    const local = PrintERPDataStore.getAll<PriceIntelligenceRecord>(STORAGE_KEYS.SUPPLIER_PRICES, companyId) || []
+    const local = PrintFlowDataStore.getAll<PriceIntelligenceRecord>(STORAGE_KEYS.SUPPLIER_PRICES, companyId) || []
     if (materialId) {
       return local.filter((x) => x.material_id === materialId)
     }

@@ -5,7 +5,7 @@
 // ==============================================================================
 
 import { createAdminClient } from '../supabase/admin.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../db/data-store.ts'
 import type {
   EmployeeRecord,
   ShiftRecord,
@@ -393,12 +393,12 @@ export class WorkforceRepository {
 
     // 1. Persist to DataStore in all relevant scopes
     for (const emp of seeded) {
-      PrintERPDataStore.addItem(STORAGE_KEYS.EMPLOYEES, emp, companyId)
+      PrintFlowDataStore.addItem(STORAGE_KEYS.EMPLOYEES, emp, companyId)
       const cleanSlug = companyId.replace(/^comp-/, '').replace(/^co-/, '')
       if (cleanSlug !== companyId) {
-        PrintERPDataStore.addItem(STORAGE_KEYS.EMPLOYEES, emp, cleanSlug)
+        PrintFlowDataStore.addItem(STORAGE_KEYS.EMPLOYEES, emp, cleanSlug)
       }
-      PrintERPDataStore.addItem(STORAGE_KEYS.EMPLOYEES, emp)
+      PrintFlowDataStore.addItem(STORAGE_KEYS.EMPLOYEES, emp)
     }
 
     // 2. Attempt DB insertion (best-effort)
@@ -474,10 +474,10 @@ export class WorkforceRepository {
     const cleanSlug = companyId.replace(/^comp-/, '').replace(/^co-/, '')
     const compSlug = `comp-${cleanSlug}`
 
-    const storeEmpsScoped1 = PrintERPDataStore.get<EmployeeRecord[]>(STORAGE_KEYS.EMPLOYEES, companyId) || []
-    const storeEmpsScoped2 = cleanSlug !== companyId ? (PrintERPDataStore.get<EmployeeRecord[]>(STORAGE_KEYS.EMPLOYEES, cleanSlug) || []) : []
-    const storeEmpsScoped3 = compSlug !== companyId ? (PrintERPDataStore.get<EmployeeRecord[]>(STORAGE_KEYS.EMPLOYEES, compSlug) || []) : []
-    const storeEmpsGlobal = PrintERPDataStore.get<EmployeeRecord[]>(STORAGE_KEYS.EMPLOYEES) || []
+    const storeEmpsScoped1 = PrintFlowDataStore.get<EmployeeRecord[]>(STORAGE_KEYS.EMPLOYEES, companyId) || []
+    const storeEmpsScoped2 = cleanSlug !== companyId ? (PrintFlowDataStore.get<EmployeeRecord[]>(STORAGE_KEYS.EMPLOYEES, cleanSlug) || []) : []
+    const storeEmpsScoped3 = compSlug !== companyId ? (PrintFlowDataStore.get<EmployeeRecord[]>(STORAGE_KEYS.EMPLOYEES, compSlug) || []) : []
+    const storeEmpsGlobal = PrintFlowDataStore.get<EmployeeRecord[]>(STORAGE_KEYS.EMPLOYEES) || []
 
     const allStoreEmps = [...storeEmpsScoped1, ...storeEmpsScoped2, ...storeEmpsScoped3, ...storeEmpsGlobal]
 
@@ -526,8 +526,8 @@ export class WorkforceRepository {
 
       if (!error && data) {
         const storeEmp =
-          (PrintERPDataStore.get<EmployeeRecord[]>(STORAGE_KEYS.EMPLOYEES, companyId) || []).find((e) => e.id === id || e.employee_id_number === id) ||
-          (PrintERPDataStore.get<EmployeeRecord[]>(STORAGE_KEYS.EMPLOYEES) || []).find((e) => e.id === id || e.employee_id_number === id)
+          (PrintFlowDataStore.get<EmployeeRecord[]>(STORAGE_KEYS.EMPLOYEES, companyId) || []).find((e) => e.id === id || e.employee_id_number === id) ||
+          (PrintFlowDataStore.get<EmployeeRecord[]>(STORAGE_KEYS.EMPLOYEES) || []).find((e) => e.id === id || e.employee_id_number === id)
 
         return {
           ...(storeEmp || {}),
@@ -564,7 +564,7 @@ export class WorkforceRepository {
       console.warn('[WorkforceRepository.getEmployeeByUserId] DB fallback:', e)
     }
 
-    const storeEmp = (PrintERPDataStore.get<EmployeeRecord[]>(STORAGE_KEYS.EMPLOYEES, companyId) || []).find(
+    const storeEmp = (PrintFlowDataStore.get<EmployeeRecord[]>(STORAGE_KEYS.EMPLOYEES, companyId) || []).find(
       (e) => e.user_id === userId && e.status === 'active'
     )
     return storeEmp || null
@@ -573,11 +573,11 @@ export class WorkforceRepository {
   static async createEmployee(emp: EmployeeRecord): Promise<EmployeeRecord> {
     // 1. Always save to DataStore in tenant scope, clean slug scope, and general scope to guarantee local persistence
     const cleanSlug = emp.company_id.replace(/^comp-/, '').replace(/^co-/, '')
-    PrintERPDataStore.addItem(STORAGE_KEYS.EMPLOYEES, emp, emp.company_id)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.EMPLOYEES, emp, emp.company_id)
     if (cleanSlug !== emp.company_id) {
-      PrintERPDataStore.addItem(STORAGE_KEYS.EMPLOYEES, emp, cleanSlug)
+      PrintFlowDataStore.addItem(STORAGE_KEYS.EMPLOYEES, emp, cleanSlug)
     }
-    PrintERPDataStore.addItem(STORAGE_KEYS.EMPLOYEES, emp)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.EMPLOYEES, emp)
 
     // 2. Attempt DB insertion with schema sanitization
     try {
@@ -633,8 +633,8 @@ export class WorkforceRepository {
 
       if (!error && data) {
         const merged = { ...emp, id: data.id || emp.id }
-        PrintERPDataStore.updateItem<EmployeeRecord>(STORAGE_KEYS.EMPLOYEES, emp.id, merged, emp.company_id)
-        PrintERPDataStore.updateItem<EmployeeRecord>(STORAGE_KEYS.EMPLOYEES, emp.id, merged)
+        PrintFlowDataStore.updateItem<EmployeeRecord>(STORAGE_KEYS.EMPLOYEES, emp.id, merged, emp.company_id)
+        PrintFlowDataStore.updateItem<EmployeeRecord>(STORAGE_KEYS.EMPLOYEES, emp.id, merged)
         return merged
       } else if (error) {
         console.warn('[WorkforceRepository.createEmployee] DB insert error:', error)
@@ -655,11 +655,11 @@ export class WorkforceRepository {
 
     // 1. Update DataStore in all scopes (companyId, cleanSlug, and global)
     const cleanSlug = companyId.replace(/^comp-/, '').replace(/^co-/, '')
-    PrintERPDataStore.updateItem<EmployeeRecord>(STORAGE_KEYS.EMPLOYEES, id, payload, companyId)
+    PrintFlowDataStore.updateItem<EmployeeRecord>(STORAGE_KEYS.EMPLOYEES, id, payload, companyId)
     if (cleanSlug !== companyId) {
-      PrintERPDataStore.updateItem<EmployeeRecord>(STORAGE_KEYS.EMPLOYEES, id, payload, cleanSlug)
+      PrintFlowDataStore.updateItem<EmployeeRecord>(STORAGE_KEYS.EMPLOYEES, id, payload, cleanSlug)
     }
-    PrintERPDataStore.updateItem<EmployeeRecord>(STORAGE_KEYS.EMPLOYEES, id, payload)
+    PrintFlowDataStore.updateItem<EmployeeRecord>(STORAGE_KEYS.EMPLOYEES, id, payload)
 
     // 2. Update DB
     try {
@@ -691,14 +691,14 @@ export class WorkforceRepository {
 
         if (!error && data) {
           const storeEmp =
-            (PrintERPDataStore.get<EmployeeRecord[]>(STORAGE_KEYS.EMPLOYEES, companyId) || []).find((e) => e.id === id) ||
-            (PrintERPDataStore.get<EmployeeRecord[]>(STORAGE_KEYS.EMPLOYEES) || []).find((e) => e.id === id)
+            (PrintFlowDataStore.get<EmployeeRecord[]>(STORAGE_KEYS.EMPLOYEES, companyId) || []).find((e) => e.id === id) ||
+            (PrintFlowDataStore.get<EmployeeRecord[]>(STORAGE_KEYS.EMPLOYEES) || []).find((e) => e.id === id)
           const merged = { ...(storeEmp || {}), ...data, ...updates }
-          PrintERPDataStore.updateItem<EmployeeRecord>(STORAGE_KEYS.EMPLOYEES, id, merged, companyId)
+          PrintFlowDataStore.updateItem<EmployeeRecord>(STORAGE_KEYS.EMPLOYEES, id, merged, companyId)
           if (cleanSlug !== companyId) {
-            PrintERPDataStore.updateItem<EmployeeRecord>(STORAGE_KEYS.EMPLOYEES, id, merged, cleanSlug)
+            PrintFlowDataStore.updateItem<EmployeeRecord>(STORAGE_KEYS.EMPLOYEES, id, merged, cleanSlug)
           }
-          PrintERPDataStore.updateItem<EmployeeRecord>(STORAGE_KEYS.EMPLOYEES, id, merged)
+          PrintFlowDataStore.updateItem<EmployeeRecord>(STORAGE_KEYS.EMPLOYEES, id, merged)
           return merged
         }
       }
@@ -727,14 +727,14 @@ export class WorkforceRepository {
 
     const cleanSlug = companyId.replace(/^comp-/, '').replace(/^co-/, '')
     const compSlug = `comp-${cleanSlug}`
-    PrintERPDataStore.removeItem(STORAGE_KEYS.EMPLOYEES, id, companyId)
+    PrintFlowDataStore.removeItem(STORAGE_KEYS.EMPLOYEES, id, companyId)
     if (cleanSlug !== companyId) {
-      PrintERPDataStore.removeItem(STORAGE_KEYS.EMPLOYEES, id, cleanSlug)
+      PrintFlowDataStore.removeItem(STORAGE_KEYS.EMPLOYEES, id, cleanSlug)
     }
     if (compSlug !== companyId) {
-      PrintERPDataStore.removeItem(STORAGE_KEYS.EMPLOYEES, id, compSlug)
+      PrintFlowDataStore.removeItem(STORAGE_KEYS.EMPLOYEES, id, compSlug)
     }
-    PrintERPDataStore.removeItem(STORAGE_KEYS.EMPLOYEES, id)
+    PrintFlowDataStore.removeItem(STORAGE_KEYS.EMPLOYEES, id)
     return true
   }
 
@@ -786,10 +786,10 @@ export class WorkforceRepository {
     ]
 
     for (const shift of defaultShifts) {
-      PrintERPDataStore.addItem(STORAGE_KEYS.SHIFTS, shift, companyId)
-      if (cleanSlug !== companyId) PrintERPDataStore.addItem(STORAGE_KEYS.SHIFTS, shift, cleanSlug)
-      if (compSlug !== companyId) PrintERPDataStore.addItem(STORAGE_KEYS.SHIFTS, shift, compSlug)
-      PrintERPDataStore.addItem(STORAGE_KEYS.SHIFTS, shift)
+      PrintFlowDataStore.addItem(STORAGE_KEYS.SHIFTS, shift, companyId)
+      if (cleanSlug !== companyId) PrintFlowDataStore.addItem(STORAGE_KEYS.SHIFTS, shift, cleanSlug)
+      if (compSlug !== companyId) PrintFlowDataStore.addItem(STORAGE_KEYS.SHIFTS, shift, compSlug)
+      PrintFlowDataStore.addItem(STORAGE_KEYS.SHIFTS, shift)
     }
 
     try {
@@ -826,10 +826,10 @@ export class WorkforceRepository {
     const cleanSlug = companyId.replace(/^comp-/, '').replace(/^co-/, '')
     const compSlug = `comp-${cleanSlug}`
 
-    const storeScoped1 = PrintERPDataStore.get<ShiftRecord[]>(STORAGE_KEYS.SHIFTS, companyId) || []
-    const storeScoped2 = cleanSlug !== companyId ? (PrintERPDataStore.get<ShiftRecord[]>(STORAGE_KEYS.SHIFTS, cleanSlug) || []) : []
-    const storeScoped3 = compSlug !== companyId ? (PrintERPDataStore.get<ShiftRecord[]>(STORAGE_KEYS.SHIFTS, compSlug) || []) : []
-    const storeGlobal = PrintERPDataStore.get<ShiftRecord[]>(STORAGE_KEYS.SHIFTS) || []
+    const storeScoped1 = PrintFlowDataStore.get<ShiftRecord[]>(STORAGE_KEYS.SHIFTS, companyId) || []
+    const storeScoped2 = cleanSlug !== companyId ? (PrintFlowDataStore.get<ShiftRecord[]>(STORAGE_KEYS.SHIFTS, cleanSlug) || []) : []
+    const storeScoped3 = compSlug !== companyId ? (PrintFlowDataStore.get<ShiftRecord[]>(STORAGE_KEYS.SHIFTS, compSlug) || []) : []
+    const storeGlobal = PrintFlowDataStore.get<ShiftRecord[]>(STORAGE_KEYS.SHIFTS) || []
 
     const allShifts = [...storeScoped1, ...storeScoped2, ...storeScoped3, ...storeGlobal]
     const filtered = allShifts.filter((s) => {
@@ -882,20 +882,20 @@ export class WorkforceRepository {
         .single()
 
       if (!error && data) {
-        PrintERPDataStore.addItem(STORAGE_KEYS.SHIFTS, data as ShiftRecord, companyId)
-        if (cleanSlug !== companyId) PrintERPDataStore.addItem(STORAGE_KEYS.SHIFTS, data as ShiftRecord, cleanSlug)
-        if (compSlug !== companyId) PrintERPDataStore.addItem(STORAGE_KEYS.SHIFTS, data as ShiftRecord, compSlug)
-        PrintERPDataStore.addItem(STORAGE_KEYS.SHIFTS, data as ShiftRecord)
+        PrintFlowDataStore.addItem(STORAGE_KEYS.SHIFTS, data as ShiftRecord, companyId)
+        if (cleanSlug !== companyId) PrintFlowDataStore.addItem(STORAGE_KEYS.SHIFTS, data as ShiftRecord, cleanSlug)
+        if (compSlug !== companyId) PrintFlowDataStore.addItem(STORAGE_KEYS.SHIFTS, data as ShiftRecord, compSlug)
+        PrintFlowDataStore.addItem(STORAGE_KEYS.SHIFTS, data as ShiftRecord)
         return data as ShiftRecord
       }
     } catch (e) {
       console.warn('[WorkforceRepository.createShift] DB fallback:', e)
     }
 
-    PrintERPDataStore.addItem(STORAGE_KEYS.SHIFTS, shift, companyId)
-    if (cleanSlug !== companyId) PrintERPDataStore.addItem(STORAGE_KEYS.SHIFTS, shift, cleanSlug)
-    if (compSlug !== companyId) PrintERPDataStore.addItem(STORAGE_KEYS.SHIFTS, shift, compSlug)
-    PrintERPDataStore.addItem(STORAGE_KEYS.SHIFTS, shift)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.SHIFTS, shift, companyId)
+    if (cleanSlug !== companyId) PrintFlowDataStore.addItem(STORAGE_KEYS.SHIFTS, shift, cleanSlug)
+    if (compSlug !== companyId) PrintFlowDataStore.addItem(STORAGE_KEYS.SHIFTS, shift, compSlug)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.SHIFTS, shift)
     return shift
   }
 
@@ -919,20 +919,20 @@ export class WorkforceRepository {
         .single()
 
       if (!error && data) {
-        PrintERPDataStore.updateItem<ShiftRecord>(STORAGE_KEYS.SHIFTS, id, data, companyId)
-        if (cleanSlug !== companyId) PrintERPDataStore.updateItem<ShiftRecord>(STORAGE_KEYS.SHIFTS, id, data, cleanSlug)
-        if (compSlug !== companyId) PrintERPDataStore.updateItem<ShiftRecord>(STORAGE_KEYS.SHIFTS, id, data, compSlug)
-        PrintERPDataStore.updateItem<ShiftRecord>(STORAGE_KEYS.SHIFTS, id, data)
+        PrintFlowDataStore.updateItem<ShiftRecord>(STORAGE_KEYS.SHIFTS, id, data, companyId)
+        if (cleanSlug !== companyId) PrintFlowDataStore.updateItem<ShiftRecord>(STORAGE_KEYS.SHIFTS, id, data, cleanSlug)
+        if (compSlug !== companyId) PrintFlowDataStore.updateItem<ShiftRecord>(STORAGE_KEYS.SHIFTS, id, data, compSlug)
+        PrintFlowDataStore.updateItem<ShiftRecord>(STORAGE_KEYS.SHIFTS, id, data)
         return data as ShiftRecord
       }
     } catch (e) {
       console.warn('[WorkforceRepository.updateShift] DB fallback:', e)
     }
 
-    PrintERPDataStore.updateItem<ShiftRecord>(STORAGE_KEYS.SHIFTS, id, payload, companyId)
-    if (cleanSlug !== companyId) PrintERPDataStore.updateItem<ShiftRecord>(STORAGE_KEYS.SHIFTS, id, payload, cleanSlug)
-    if (compSlug !== companyId) PrintERPDataStore.updateItem<ShiftRecord>(STORAGE_KEYS.SHIFTS, id, payload, compSlug)
-    return PrintERPDataStore.updateItem<ShiftRecord>(STORAGE_KEYS.SHIFTS, id, payload)
+    PrintFlowDataStore.updateItem<ShiftRecord>(STORAGE_KEYS.SHIFTS, id, payload, companyId)
+    if (cleanSlug !== companyId) PrintFlowDataStore.updateItem<ShiftRecord>(STORAGE_KEYS.SHIFTS, id, payload, cleanSlug)
+    if (compSlug !== companyId) PrintFlowDataStore.updateItem<ShiftRecord>(STORAGE_KEYS.SHIFTS, id, payload, compSlug)
+    return PrintFlowDataStore.updateItem<ShiftRecord>(STORAGE_KEYS.SHIFTS, id, payload)
   }
 
   static async assignShiftToEmployee(assignment: {
@@ -954,14 +954,14 @@ export class WorkforceRepository {
         .single()
 
       if (!error && data) {
-        PrintERPDataStore.addItem(STORAGE_KEYS.EMPLOYEE_SHIFTS, data)
+        PrintFlowDataStore.addItem(STORAGE_KEYS.EMPLOYEE_SHIFTS, data)
         return data
       }
     } catch (e) {
       console.warn('[WorkforceRepository.assignShiftToEmployee] DB fallback:', e)
     }
 
-    PrintERPDataStore.addItem(STORAGE_KEYS.EMPLOYEE_SHIFTS, assignment)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.EMPLOYEE_SHIFTS, assignment)
     return assignment
   }
 
@@ -988,7 +988,7 @@ export class WorkforceRepository {
       console.warn('[WorkforceRepository.getActiveShiftForEmployee] DB fallback:', e)
     }
 
-    const assignments = PrintERPDataStore.get<any[]>(STORAGE_KEYS.EMPLOYEE_SHIFTS) || []
+    const assignments = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.EMPLOYEE_SHIFTS) || []
     const match = assignments.find(
       (a) => isMatchingCompany(a.company_id, companyId) && a.employee_id === employeeId && a.is_active
     )
@@ -1105,10 +1105,10 @@ export class WorkforceRepository {
     }
 
     for (const record of seeded) {
-      PrintERPDataStore.addItem(STORAGE_KEYS.WF_ATTENDANCE_SUMMARIES, record, companyId)
-      if (cleanSlug !== companyId) PrintERPDataStore.addItem(STORAGE_KEYS.WF_ATTENDANCE_SUMMARIES, record, cleanSlug)
-      if (compSlug !== companyId) PrintERPDataStore.addItem(STORAGE_KEYS.WF_ATTENDANCE_SUMMARIES, record, compSlug)
-      PrintERPDataStore.addItem(STORAGE_KEYS.WF_ATTENDANCE_SUMMARIES, record)
+      PrintFlowDataStore.addItem(STORAGE_KEYS.WF_ATTENDANCE_SUMMARIES, record, companyId)
+      if (cleanSlug !== companyId) PrintFlowDataStore.addItem(STORAGE_KEYS.WF_ATTENDANCE_SUMMARIES, record, cleanSlug)
+      if (compSlug !== companyId) PrintFlowDataStore.addItem(STORAGE_KEYS.WF_ATTENDANCE_SUMMARIES, record, compSlug)
+      PrintFlowDataStore.addItem(STORAGE_KEYS.WF_ATTENDANCE_SUMMARIES, record)
     }
 
     try {
@@ -1200,10 +1200,10 @@ export class WorkforceRepository {
     const cleanSlug = companyId.replace(/^comp-/, '').replace(/^co-/, '')
     const compSlug = `comp-${cleanSlug}`
 
-    const storeScoped1 = PrintERPDataStore.get<AttendanceDailySummaryRecord[]>(STORAGE_KEYS.WF_ATTENDANCE_SUMMARIES, companyId) || []
-    const storeScoped2 = cleanSlug !== companyId ? (PrintERPDataStore.get<AttendanceDailySummaryRecord[]>(STORAGE_KEYS.WF_ATTENDANCE_SUMMARIES, cleanSlug) || []) : []
-    const storeScoped3 = compSlug !== companyId ? (PrintERPDataStore.get<AttendanceDailySummaryRecord[]>(STORAGE_KEYS.WF_ATTENDANCE_SUMMARIES, compSlug) || []) : []
-    const storeGlobal = PrintERPDataStore.get<AttendanceDailySummaryRecord[]>(STORAGE_KEYS.WF_ATTENDANCE_SUMMARIES) || []
+    const storeScoped1 = PrintFlowDataStore.get<AttendanceDailySummaryRecord[]>(STORAGE_KEYS.WF_ATTENDANCE_SUMMARIES, companyId) || []
+    const storeScoped2 = cleanSlug !== companyId ? (PrintFlowDataStore.get<AttendanceDailySummaryRecord[]>(STORAGE_KEYS.WF_ATTENDANCE_SUMMARIES, cleanSlug) || []) : []
+    const storeScoped3 = compSlug !== companyId ? (PrintFlowDataStore.get<AttendanceDailySummaryRecord[]>(STORAGE_KEYS.WF_ATTENDANCE_SUMMARIES, compSlug) || []) : []
+    const storeGlobal = PrintFlowDataStore.get<AttendanceDailySummaryRecord[]>(STORAGE_KEYS.WF_ATTENDANCE_SUMMARIES) || []
 
     const allStore = [...storeScoped1, ...storeScoped2, ...storeScoped3, ...storeGlobal]
 
@@ -1260,20 +1260,20 @@ export class WorkforceRepository {
 
       if (!error && data) {
         const merged = { ...payload, ...data }
-        PrintERPDataStore.addItem(STORAGE_KEYS.WF_ATTENDANCE_SUMMARIES, merged, companyId)
-        if (cleanSlug !== companyId) PrintERPDataStore.addItem(STORAGE_KEYS.WF_ATTENDANCE_SUMMARIES, merged, cleanSlug)
-        if (compSlug !== companyId) PrintERPDataStore.addItem(STORAGE_KEYS.WF_ATTENDANCE_SUMMARIES, merged, compSlug)
-        PrintERPDataStore.addItem(STORAGE_KEYS.WF_ATTENDANCE_SUMMARIES, merged)
+        PrintFlowDataStore.addItem(STORAGE_KEYS.WF_ATTENDANCE_SUMMARIES, merged, companyId)
+        if (cleanSlug !== companyId) PrintFlowDataStore.addItem(STORAGE_KEYS.WF_ATTENDANCE_SUMMARIES, merged, cleanSlug)
+        if (compSlug !== companyId) PrintFlowDataStore.addItem(STORAGE_KEYS.WF_ATTENDANCE_SUMMARIES, merged, compSlug)
+        PrintFlowDataStore.addItem(STORAGE_KEYS.WF_ATTENDANCE_SUMMARIES, merged)
         return merged as AttendanceDailySummaryRecord
       }
     } catch (e) {
       console.warn('[WorkforceRepository.upsertDailyAttendanceSummary] DB fallback:', e)
     }
 
-    PrintERPDataStore.addItem(STORAGE_KEYS.WF_ATTENDANCE_SUMMARIES, payload, companyId)
-    if (cleanSlug !== companyId) PrintERPDataStore.addItem(STORAGE_KEYS.WF_ATTENDANCE_SUMMARIES, payload, cleanSlug)
-    if (compSlug !== companyId) PrintERPDataStore.addItem(STORAGE_KEYS.WF_ATTENDANCE_SUMMARIES, payload, compSlug)
-    PrintERPDataStore.addItem(STORAGE_KEYS.WF_ATTENDANCE_SUMMARIES, payload)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.WF_ATTENDANCE_SUMMARIES, payload, companyId)
+    if (cleanSlug !== companyId) PrintFlowDataStore.addItem(STORAGE_KEYS.WF_ATTENDANCE_SUMMARIES, payload, cleanSlug)
+    if (compSlug !== companyId) PrintFlowDataStore.addItem(STORAGE_KEYS.WF_ATTENDANCE_SUMMARIES, payload, compSlug)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.WF_ATTENDANCE_SUMMARIES, payload)
     return payload
   }
 
@@ -1351,10 +1351,10 @@ export class WorkforceRepository {
     }
 
     for (const record of seeded) {
-      PrintERPDataStore.addItem(STORAGE_KEYS.WF_OVERTIME_RECORDS, record, companyId)
-      if (cleanSlug !== companyId) PrintERPDataStore.addItem(STORAGE_KEYS.WF_OVERTIME_RECORDS, record, cleanSlug)
-      if (compSlug !== companyId) PrintERPDataStore.addItem(STORAGE_KEYS.WF_OVERTIME_RECORDS, record, compSlug)
-      PrintERPDataStore.addItem(STORAGE_KEYS.WF_OVERTIME_RECORDS, record)
+      PrintFlowDataStore.addItem(STORAGE_KEYS.WF_OVERTIME_RECORDS, record, companyId)
+      if (cleanSlug !== companyId) PrintFlowDataStore.addItem(STORAGE_KEYS.WF_OVERTIME_RECORDS, record, cleanSlug)
+      if (compSlug !== companyId) PrintFlowDataStore.addItem(STORAGE_KEYS.WF_OVERTIME_RECORDS, record, compSlug)
+      PrintFlowDataStore.addItem(STORAGE_KEYS.WF_OVERTIME_RECORDS, record)
     }
 
     try {
@@ -1409,10 +1409,10 @@ export class WorkforceRepository {
     const cleanSlug = companyId.replace(/^comp-/, '').replace(/^co-/, '')
     const compSlug = `comp-${cleanSlug}`
 
-    const storeScoped1 = PrintERPDataStore.get<OvertimeRecord[]>(STORAGE_KEYS.WF_OVERTIME_RECORDS, companyId) || []
-    const storeScoped2 = cleanSlug !== companyId ? (PrintERPDataStore.get<OvertimeRecord[]>(STORAGE_KEYS.WF_OVERTIME_RECORDS, cleanSlug) || []) : []
-    const storeScoped3 = compSlug !== companyId ? (PrintERPDataStore.get<OvertimeRecord[]>(STORAGE_KEYS.WF_OVERTIME_RECORDS, compSlug) || []) : []
-    const storeGlobal = PrintERPDataStore.get<OvertimeRecord[]>(STORAGE_KEYS.WF_OVERTIME_RECORDS) || []
+    const storeScoped1 = PrintFlowDataStore.get<OvertimeRecord[]>(STORAGE_KEYS.WF_OVERTIME_RECORDS, companyId) || []
+    const storeScoped2 = cleanSlug !== companyId ? (PrintFlowDataStore.get<OvertimeRecord[]>(STORAGE_KEYS.WF_OVERTIME_RECORDS, cleanSlug) || []) : []
+    const storeScoped3 = compSlug !== companyId ? (PrintFlowDataStore.get<OvertimeRecord[]>(STORAGE_KEYS.WF_OVERTIME_RECORDS, compSlug) || []) : []
+    const storeGlobal = PrintFlowDataStore.get<OvertimeRecord[]>(STORAGE_KEYS.WF_OVERTIME_RECORDS) || []
 
     const allRecords = [...storeScoped1, ...storeScoped2, ...storeScoped3, ...storeGlobal]
 
@@ -1453,20 +1453,20 @@ export class WorkforceRepository {
         .single()
 
       if (!error && data) {
-        PrintERPDataStore.addItem(STORAGE_KEYS.WF_OVERTIME_RECORDS, data as OvertimeRecord, companyId)
-        if (cleanSlug !== companyId) PrintERPDataStore.addItem(STORAGE_KEYS.WF_OVERTIME_RECORDS, data as OvertimeRecord, cleanSlug)
-        if (compSlug !== companyId) PrintERPDataStore.addItem(STORAGE_KEYS.WF_OVERTIME_RECORDS, data as OvertimeRecord, compSlug)
-        PrintERPDataStore.addItem(STORAGE_KEYS.WF_OVERTIME_RECORDS, data as OvertimeRecord)
+        PrintFlowDataStore.addItem(STORAGE_KEYS.WF_OVERTIME_RECORDS, data as OvertimeRecord, companyId)
+        if (cleanSlug !== companyId) PrintFlowDataStore.addItem(STORAGE_KEYS.WF_OVERTIME_RECORDS, data as OvertimeRecord, cleanSlug)
+        if (compSlug !== companyId) PrintFlowDataStore.addItem(STORAGE_KEYS.WF_OVERTIME_RECORDS, data as OvertimeRecord, compSlug)
+        PrintFlowDataStore.addItem(STORAGE_KEYS.WF_OVERTIME_RECORDS, data as OvertimeRecord)
         return data as OvertimeRecord
       }
     } catch (e) {
       console.warn('[WorkforceRepository.createOvertimeRecord] DB fallback:', e)
     }
 
-    PrintERPDataStore.addItem(STORAGE_KEYS.WF_OVERTIME_RECORDS, record, companyId)
-    if (cleanSlug !== companyId) PrintERPDataStore.addItem(STORAGE_KEYS.WF_OVERTIME_RECORDS, record, cleanSlug)
-    if (compSlug !== companyId) PrintERPDataStore.addItem(STORAGE_KEYS.WF_OVERTIME_RECORDS, record, compSlug)
-    PrintERPDataStore.addItem(STORAGE_KEYS.WF_OVERTIME_RECORDS, record)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.WF_OVERTIME_RECORDS, record, companyId)
+    if (cleanSlug !== companyId) PrintFlowDataStore.addItem(STORAGE_KEYS.WF_OVERTIME_RECORDS, record, cleanSlug)
+    if (compSlug !== companyId) PrintFlowDataStore.addItem(STORAGE_KEYS.WF_OVERTIME_RECORDS, record, compSlug)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.WF_OVERTIME_RECORDS, record)
     return record
   }
 
@@ -1490,20 +1490,20 @@ export class WorkforceRepository {
         .single()
 
       if (!error && data) {
-        PrintERPDataStore.updateItem<OvertimeRecord>(STORAGE_KEYS.WF_OVERTIME_RECORDS, id, data, companyId)
-        if (cleanSlug !== companyId) PrintERPDataStore.updateItem<OvertimeRecord>(STORAGE_KEYS.WF_OVERTIME_RECORDS, id, data, cleanSlug)
-        if (compSlug !== companyId) PrintERPDataStore.updateItem<OvertimeRecord>(STORAGE_KEYS.WF_OVERTIME_RECORDS, id, data, compSlug)
-        PrintERPDataStore.updateItem<OvertimeRecord>(STORAGE_KEYS.WF_OVERTIME_RECORDS, id, data)
+        PrintFlowDataStore.updateItem<OvertimeRecord>(STORAGE_KEYS.WF_OVERTIME_RECORDS, id, data, companyId)
+        if (cleanSlug !== companyId) PrintFlowDataStore.updateItem<OvertimeRecord>(STORAGE_KEYS.WF_OVERTIME_RECORDS, id, data, cleanSlug)
+        if (compSlug !== companyId) PrintFlowDataStore.updateItem<OvertimeRecord>(STORAGE_KEYS.WF_OVERTIME_RECORDS, id, data, compSlug)
+        PrintFlowDataStore.updateItem<OvertimeRecord>(STORAGE_KEYS.WF_OVERTIME_RECORDS, id, data)
         return data as OvertimeRecord
       }
     } catch (e) {
       console.warn('[WorkforceRepository.updateOvertimeRecord] DB fallback:', e)
     }
 
-    PrintERPDataStore.updateItem<OvertimeRecord>(STORAGE_KEYS.WF_OVERTIME_RECORDS, id, payload, companyId)
-    if (cleanSlug !== companyId) PrintERPDataStore.updateItem<OvertimeRecord>(STORAGE_KEYS.WF_OVERTIME_RECORDS, id, payload, cleanSlug)
-    if (compSlug !== companyId) PrintERPDataStore.updateItem<OvertimeRecord>(STORAGE_KEYS.WF_OVERTIME_RECORDS, id, payload, compSlug)
-    return PrintERPDataStore.updateItem<OvertimeRecord>(STORAGE_KEYS.WF_OVERTIME_RECORDS, id, payload)
+    PrintFlowDataStore.updateItem<OvertimeRecord>(STORAGE_KEYS.WF_OVERTIME_RECORDS, id, payload, companyId)
+    if (cleanSlug !== companyId) PrintFlowDataStore.updateItem<OvertimeRecord>(STORAGE_KEYS.WF_OVERTIME_RECORDS, id, payload, cleanSlug)
+    if (compSlug !== companyId) PrintFlowDataStore.updateItem<OvertimeRecord>(STORAGE_KEYS.WF_OVERTIME_RECORDS, id, payload, compSlug)
+    return PrintFlowDataStore.updateItem<OvertimeRecord>(STORAGE_KEYS.WF_OVERTIME_RECORDS, id, payload)
   }
 
   // ============================================================================
@@ -1546,10 +1546,10 @@ export class WorkforceRepository {
     const cleanSlug = companyId.replace(/^comp-/, '').replace(/^co-/, '')
     const compSlug = `comp-${cleanSlug}`
 
-    const storeScoped1 = PrintERPDataStore.get<SalaryAdvanceRecord[]>(STORAGE_KEYS.SALARY_ADVANCES, companyId) || []
-    const storeScoped2 = cleanSlug !== companyId ? (PrintERPDataStore.get<SalaryAdvanceRecord[]>(STORAGE_KEYS.SALARY_ADVANCES, cleanSlug) || []) : []
-    const storeScoped3 = compSlug !== companyId ? (PrintERPDataStore.get<SalaryAdvanceRecord[]>(STORAGE_KEYS.SALARY_ADVANCES, compSlug) || []) : []
-    const storeGlobal = PrintERPDataStore.get<SalaryAdvanceRecord[]>(STORAGE_KEYS.SALARY_ADVANCES) || []
+    const storeScoped1 = PrintFlowDataStore.get<SalaryAdvanceRecord[]>(STORAGE_KEYS.SALARY_ADVANCES, companyId) || []
+    const storeScoped2 = cleanSlug !== companyId ? (PrintFlowDataStore.get<SalaryAdvanceRecord[]>(STORAGE_KEYS.SALARY_ADVANCES, cleanSlug) || []) : []
+    const storeScoped3 = compSlug !== companyId ? (PrintFlowDataStore.get<SalaryAdvanceRecord[]>(STORAGE_KEYS.SALARY_ADVANCES, compSlug) || []) : []
+    const storeGlobal = PrintFlowDataStore.get<SalaryAdvanceRecord[]>(STORAGE_KEYS.SALARY_ADVANCES) || []
 
     const allAdvances = [...storeScoped1, ...storeScoped2, ...storeScoped3, ...storeGlobal]
 
@@ -1585,20 +1585,20 @@ export class WorkforceRepository {
         .single()
 
       if (!error && data) {
-        PrintERPDataStore.addItem(STORAGE_KEYS.SALARY_ADVANCES, data as SalaryAdvanceRecord, companyId)
-        if (cleanSlug !== companyId) PrintERPDataStore.addItem(STORAGE_KEYS.SALARY_ADVANCES, data as SalaryAdvanceRecord, cleanSlug)
-        if (compSlug !== companyId) PrintERPDataStore.addItem(STORAGE_KEYS.SALARY_ADVANCES, data as SalaryAdvanceRecord, compSlug)
-        PrintERPDataStore.addItem(STORAGE_KEYS.SALARY_ADVANCES, data as SalaryAdvanceRecord)
+        PrintFlowDataStore.addItem(STORAGE_KEYS.SALARY_ADVANCES, data as SalaryAdvanceRecord, companyId)
+        if (cleanSlug !== companyId) PrintFlowDataStore.addItem(STORAGE_KEYS.SALARY_ADVANCES, data as SalaryAdvanceRecord, cleanSlug)
+        if (compSlug !== companyId) PrintFlowDataStore.addItem(STORAGE_KEYS.SALARY_ADVANCES, data as SalaryAdvanceRecord, compSlug)
+        PrintFlowDataStore.addItem(STORAGE_KEYS.SALARY_ADVANCES, data as SalaryAdvanceRecord)
         return data as SalaryAdvanceRecord
       }
     } catch (e) {
       console.warn('[WorkforceRepository.createSalaryAdvance] DB fallback:', e)
     }
 
-    PrintERPDataStore.addItem(STORAGE_KEYS.SALARY_ADVANCES, advance, companyId)
-    if (cleanSlug !== companyId) PrintERPDataStore.addItem(STORAGE_KEYS.SALARY_ADVANCES, advance, cleanSlug)
-    if (compSlug !== companyId) PrintERPDataStore.addItem(STORAGE_KEYS.SALARY_ADVANCES, advance, compSlug)
-    PrintERPDataStore.addItem(STORAGE_KEYS.SALARY_ADVANCES, advance)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.SALARY_ADVANCES, advance, companyId)
+    if (cleanSlug !== companyId) PrintFlowDataStore.addItem(STORAGE_KEYS.SALARY_ADVANCES, advance, cleanSlug)
+    if (compSlug !== companyId) PrintFlowDataStore.addItem(STORAGE_KEYS.SALARY_ADVANCES, advance, compSlug)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.SALARY_ADVANCES, advance)
     return advance
   }
 
@@ -1622,20 +1622,20 @@ export class WorkforceRepository {
         .single()
 
       if (!error && data) {
-        PrintERPDataStore.updateItem<SalaryAdvanceRecord>(STORAGE_KEYS.SALARY_ADVANCES, id, data, companyId)
-        if (cleanSlug !== companyId) PrintERPDataStore.updateItem<SalaryAdvanceRecord>(STORAGE_KEYS.SALARY_ADVANCES, id, data, cleanSlug)
-        if (compSlug !== companyId) PrintERPDataStore.updateItem<SalaryAdvanceRecord>(STORAGE_KEYS.SALARY_ADVANCES, id, data, compSlug)
-        PrintERPDataStore.updateItem<SalaryAdvanceRecord>(STORAGE_KEYS.SALARY_ADVANCES, id, data)
+        PrintFlowDataStore.updateItem<SalaryAdvanceRecord>(STORAGE_KEYS.SALARY_ADVANCES, id, data, companyId)
+        if (cleanSlug !== companyId) PrintFlowDataStore.updateItem<SalaryAdvanceRecord>(STORAGE_KEYS.SALARY_ADVANCES, id, data, cleanSlug)
+        if (compSlug !== companyId) PrintFlowDataStore.updateItem<SalaryAdvanceRecord>(STORAGE_KEYS.SALARY_ADVANCES, id, data, compSlug)
+        PrintFlowDataStore.updateItem<SalaryAdvanceRecord>(STORAGE_KEYS.SALARY_ADVANCES, id, data)
         return data as SalaryAdvanceRecord
       }
     } catch (e) {
       console.warn('[WorkforceRepository.updateSalaryAdvance] DB fallback:', e)
     }
 
-    PrintERPDataStore.updateItem<SalaryAdvanceRecord>(STORAGE_KEYS.SALARY_ADVANCES, id, payload, companyId)
-    if (cleanSlug !== companyId) PrintERPDataStore.updateItem<SalaryAdvanceRecord>(STORAGE_KEYS.SALARY_ADVANCES, id, payload, cleanSlug)
-    if (compSlug !== companyId) PrintERPDataStore.updateItem<SalaryAdvanceRecord>(STORAGE_KEYS.SALARY_ADVANCES, id, payload, compSlug)
-    return PrintERPDataStore.updateItem<SalaryAdvanceRecord>(STORAGE_KEYS.SALARY_ADVANCES, id, payload)
+    PrintFlowDataStore.updateItem<SalaryAdvanceRecord>(STORAGE_KEYS.SALARY_ADVANCES, id, payload, companyId)
+    if (cleanSlug !== companyId) PrintFlowDataStore.updateItem<SalaryAdvanceRecord>(STORAGE_KEYS.SALARY_ADVANCES, id, payload, cleanSlug)
+    if (compSlug !== companyId) PrintFlowDataStore.updateItem<SalaryAdvanceRecord>(STORAGE_KEYS.SALARY_ADVANCES, id, payload, compSlug)
+    return PrintFlowDataStore.updateItem<SalaryAdvanceRecord>(STORAGE_KEYS.SALARY_ADVANCES, id, payload)
   }
 
   // ============================================================================
@@ -1774,14 +1774,14 @@ export class WorkforceRepository {
     }
 
     // Persist to store in all scopes
-    PrintERPDataStore.addItem(STORAGE_KEYS.PAYROLL_PERIODS, periodRecord, companyId)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.PAYROLL_PERIODS, periodRecord, companyId)
     if (cleanSlug !== companyId) {
-      PrintERPDataStore.addItem(STORAGE_KEYS.PAYROLL_PERIODS, periodRecord, cleanSlug)
+      PrintFlowDataStore.addItem(STORAGE_KEYS.PAYROLL_PERIODS, periodRecord, cleanSlug)
     }
     if (compSlug !== companyId) {
-      PrintERPDataStore.addItem(STORAGE_KEYS.PAYROLL_PERIODS, periodRecord, compSlug)
+      PrintFlowDataStore.addItem(STORAGE_KEYS.PAYROLL_PERIODS, periodRecord, compSlug)
     }
-    PrintERPDataStore.addItem(STORAGE_KEYS.PAYROLL_PERIODS, periodRecord)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.PAYROLL_PERIODS, periodRecord)
 
     // Best-effort DB insert
     try {
@@ -1858,10 +1858,10 @@ export class WorkforceRepository {
     const cleanSlug = companyId.replace(/^comp-/, '').replace(/^co-/, '')
     const compSlug = `comp-${cleanSlug}`
 
-    const storeScoped1 = PrintERPDataStore.get<PayrollPeriodRecord[]>(STORAGE_KEYS.PAYROLL_PERIODS, companyId) || []
-    const storeScoped2 = cleanSlug !== companyId ? (PrintERPDataStore.get<PayrollPeriodRecord[]>(STORAGE_KEYS.PAYROLL_PERIODS, cleanSlug) || []) : []
-    const storeScoped3 = compSlug !== companyId ? (PrintERPDataStore.get<PayrollPeriodRecord[]>(STORAGE_KEYS.PAYROLL_PERIODS, compSlug) || []) : []
-    const storeGlobal = PrintERPDataStore.get<PayrollPeriodRecord[]>(STORAGE_KEYS.PAYROLL_PERIODS) || []
+    const storeScoped1 = PrintFlowDataStore.get<PayrollPeriodRecord[]>(STORAGE_KEYS.PAYROLL_PERIODS, companyId) || []
+    const storeScoped2 = cleanSlug !== companyId ? (PrintFlowDataStore.get<PayrollPeriodRecord[]>(STORAGE_KEYS.PAYROLL_PERIODS, cleanSlug) || []) : []
+    const storeScoped3 = compSlug !== companyId ? (PrintFlowDataStore.get<PayrollPeriodRecord[]>(STORAGE_KEYS.PAYROLL_PERIODS, compSlug) || []) : []
+    const storeGlobal = PrintFlowDataStore.get<PayrollPeriodRecord[]>(STORAGE_KEYS.PAYROLL_PERIODS) || []
 
     const allStorePeriods = [...storeScoped1, ...storeScoped2, ...storeScoped3, ...storeGlobal]
 
@@ -1916,10 +1916,10 @@ export class WorkforceRepository {
     }
 
     // 1. Persist to DataStore across all tenant partition keys (scoped, cleanSlug, compSlug, global)
-    PrintERPDataStore.addItem(STORAGE_KEYS.PAYROLL_PERIODS, completePeriod, companyId)
-    if (cleanSlug !== companyId) PrintERPDataStore.addItem(STORAGE_KEYS.PAYROLL_PERIODS, completePeriod, cleanSlug)
-    if (compSlug !== companyId) PrintERPDataStore.addItem(STORAGE_KEYS.PAYROLL_PERIODS, completePeriod, compSlug)
-    PrintERPDataStore.addItem(STORAGE_KEYS.PAYROLL_PERIODS, completePeriod)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.PAYROLL_PERIODS, completePeriod, companyId)
+    if (cleanSlug !== companyId) PrintFlowDataStore.addItem(STORAGE_KEYS.PAYROLL_PERIODS, completePeriod, cleanSlug)
+    if (compSlug !== companyId) PrintFlowDataStore.addItem(STORAGE_KEYS.PAYROLL_PERIODS, completePeriod, compSlug)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.PAYROLL_PERIODS, completePeriod)
 
     // 2. Best-effort DB upsert
     try {
@@ -1975,10 +1975,10 @@ export class WorkforceRepository {
     const compSlug = `comp-${cleanSlug}`
 
     // 1. Update in local store across all partitions
-    PrintERPDataStore.updateItem<PayrollPeriodRecord>(STORAGE_KEYS.PAYROLL_PERIODS, id, payload, companyId)
-    if (cleanSlug !== companyId) PrintERPDataStore.updateItem<PayrollPeriodRecord>(STORAGE_KEYS.PAYROLL_PERIODS, id, payload, cleanSlug)
-    if (compSlug !== companyId) PrintERPDataStore.updateItem<PayrollPeriodRecord>(STORAGE_KEYS.PAYROLL_PERIODS, id, payload, compSlug)
-    const storeUpdated = PrintERPDataStore.updateItem<PayrollPeriodRecord>(STORAGE_KEYS.PAYROLL_PERIODS, id, payload)
+    PrintFlowDataStore.updateItem<PayrollPeriodRecord>(STORAGE_KEYS.PAYROLL_PERIODS, id, payload, companyId)
+    if (cleanSlug !== companyId) PrintFlowDataStore.updateItem<PayrollPeriodRecord>(STORAGE_KEYS.PAYROLL_PERIODS, id, payload, cleanSlug)
+    if (compSlug !== companyId) PrintFlowDataStore.updateItem<PayrollPeriodRecord>(STORAGE_KEYS.PAYROLL_PERIODS, id, payload, compSlug)
+    const storeUpdated = PrintFlowDataStore.updateItem<PayrollPeriodRecord>(STORAGE_KEYS.PAYROLL_PERIODS, id, payload)
 
     // 2. Best-effort DB update (strip items array so DB update does not fail if column is missing)
     try {
@@ -2048,10 +2048,10 @@ export class WorkforceRepository {
         period.total_paid_amount = period.items.reduce((sum, it) => sum + Number(it.paid_amount || 0), 0)
         period.total_due_amount = period.items.reduce((sum, it) => sum + Number(it.due_amount || 0), 0)
 
-        PrintERPDataStore.updateItem<PayrollPeriodRecord>(STORAGE_KEYS.PAYROLL_PERIODS, period.id, period, companyId)
-        if (cleanSlug !== companyId) PrintERPDataStore.updateItem<PayrollPeriodRecord>(STORAGE_KEYS.PAYROLL_PERIODS, period.id, period, cleanSlug)
-        if (compSlug !== companyId) PrintERPDataStore.updateItem<PayrollPeriodRecord>(STORAGE_KEYS.PAYROLL_PERIODS, period.id, period, compSlug)
-        PrintERPDataStore.updateItem<PayrollPeriodRecord>(STORAGE_KEYS.PAYROLL_PERIODS, period.id, period)
+        PrintFlowDataStore.updateItem<PayrollPeriodRecord>(STORAGE_KEYS.PAYROLL_PERIODS, period.id, period, companyId)
+        if (cleanSlug !== companyId) PrintFlowDataStore.updateItem<PayrollPeriodRecord>(STORAGE_KEYS.PAYROLL_PERIODS, period.id, period, cleanSlug)
+        if (compSlug !== companyId) PrintFlowDataStore.updateItem<PayrollPeriodRecord>(STORAGE_KEYS.PAYROLL_PERIODS, period.id, period, compSlug)
+        PrintFlowDataStore.updateItem<PayrollPeriodRecord>(STORAGE_KEYS.PAYROLL_PERIODS, period.id, period)
         return updatedItem
       }
     }
@@ -2097,10 +2097,10 @@ export class WorkforceRepository {
     const cleanSlug = companyId.replace(/^comp-/, '').replace(/^co-/, '')
     const compSlug = `comp-${cleanSlug}`
 
-    const storeScoped1 = PrintERPDataStore.get<SalaryPaymentRecord[]>(STORAGE_KEYS.WF_SALARY_PAYMENTS, companyId) || []
-    const storeScoped2 = cleanSlug !== companyId ? (PrintERPDataStore.get<SalaryPaymentRecord[]>(STORAGE_KEYS.WF_SALARY_PAYMENTS, cleanSlug) || []) : []
-    const storeScoped3 = compSlug !== companyId ? (PrintERPDataStore.get<SalaryPaymentRecord[]>(STORAGE_KEYS.WF_SALARY_PAYMENTS, compSlug) || []) : []
-    const storeGlobal = PrintERPDataStore.get<SalaryPaymentRecord[]>(STORAGE_KEYS.WF_SALARY_PAYMENTS) || []
+    const storeScoped1 = PrintFlowDataStore.get<SalaryPaymentRecord[]>(STORAGE_KEYS.WF_SALARY_PAYMENTS, companyId) || []
+    const storeScoped2 = cleanSlug !== companyId ? (PrintFlowDataStore.get<SalaryPaymentRecord[]>(STORAGE_KEYS.WF_SALARY_PAYMENTS, cleanSlug) || []) : []
+    const storeScoped3 = compSlug !== companyId ? (PrintFlowDataStore.get<SalaryPaymentRecord[]>(STORAGE_KEYS.WF_SALARY_PAYMENTS, compSlug) || []) : []
+    const storeGlobal = PrintFlowDataStore.get<SalaryPaymentRecord[]>(STORAGE_KEYS.WF_SALARY_PAYMENTS) || []
 
     const allPayments = [...storeScoped1, ...storeScoped2, ...storeScoped3, ...storeGlobal]
 
@@ -2136,20 +2136,20 @@ export class WorkforceRepository {
         .single()
 
       if (!error && data) {
-        PrintERPDataStore.addItem(STORAGE_KEYS.WF_SALARY_PAYMENTS, data as SalaryPaymentRecord, companyId)
-        if (cleanSlug !== companyId) PrintERPDataStore.addItem(STORAGE_KEYS.WF_SALARY_PAYMENTS, data as SalaryPaymentRecord, cleanSlug)
-        if (compSlug !== companyId) PrintERPDataStore.addItem(STORAGE_KEYS.WF_SALARY_PAYMENTS, data as SalaryPaymentRecord, compSlug)
-        PrintERPDataStore.addItem(STORAGE_KEYS.WF_SALARY_PAYMENTS, data as SalaryPaymentRecord)
+        PrintFlowDataStore.addItem(STORAGE_KEYS.WF_SALARY_PAYMENTS, data as SalaryPaymentRecord, companyId)
+        if (cleanSlug !== companyId) PrintFlowDataStore.addItem(STORAGE_KEYS.WF_SALARY_PAYMENTS, data as SalaryPaymentRecord, cleanSlug)
+        if (compSlug !== companyId) PrintFlowDataStore.addItem(STORAGE_KEYS.WF_SALARY_PAYMENTS, data as SalaryPaymentRecord, compSlug)
+        PrintFlowDataStore.addItem(STORAGE_KEYS.WF_SALARY_PAYMENTS, data as SalaryPaymentRecord)
         return data as SalaryPaymentRecord
       }
     } catch (e) {
       console.warn('[WorkforceRepository.recordSalaryPayment] DB fallback:', e)
     }
 
-    PrintERPDataStore.addItem(STORAGE_KEYS.WF_SALARY_PAYMENTS, payment, companyId)
-    if (cleanSlug !== companyId) PrintERPDataStore.addItem(STORAGE_KEYS.WF_SALARY_PAYMENTS, payment, cleanSlug)
-    if (compSlug !== companyId) PrintERPDataStore.addItem(STORAGE_KEYS.WF_SALARY_PAYMENTS, payment, compSlug)
-    PrintERPDataStore.addItem(STORAGE_KEYS.WF_SALARY_PAYMENTS, payment)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.WF_SALARY_PAYMENTS, payment, companyId)
+    if (cleanSlug !== companyId) PrintFlowDataStore.addItem(STORAGE_KEYS.WF_SALARY_PAYMENTS, payment, cleanSlug)
+    if (compSlug !== companyId) PrintFlowDataStore.addItem(STORAGE_KEYS.WF_SALARY_PAYMENTS, payment, compSlug)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.WF_SALARY_PAYMENTS, payment)
     return payment
   }
 
@@ -2165,7 +2165,7 @@ export class WorkforceRepository {
       console.warn('[WorkforceRepository.logWorkforceAudit] DB audit fallback:', e)
     }
 
-    PrintERPDataStore.addItem(STORAGE_KEYS.WF_AUDIT_LOGS, log)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.WF_AUDIT_LOGS, log)
   }
 
   static async getWorkforceAuditLogs(companyId: string, limit = 50): Promise<WorkforceAuditLogRecord[]> {
@@ -2185,7 +2185,7 @@ export class WorkforceRepository {
       console.warn('[WorkforceRepository.getWorkforceAuditLogs] DB fallback:', e)
     }
 
-    const logs = PrintERPDataStore.get<WorkforceAuditLogRecord[]>(STORAGE_KEYS.WF_AUDIT_LOGS) || []
+    const logs = PrintFlowDataStore.get<WorkforceAuditLogRecord[]>(STORAGE_KEYS.WF_AUDIT_LOGS) || []
     return logs.filter((l) => !l.company_id || l.company_id === companyId).slice(0, limit)
   }
 
@@ -2245,14 +2245,14 @@ export class WorkforceRepository {
         .single()
 
       if (!error && data) {
-        PrintERPDataStore.addItem(STORAGE_KEYS.DAILY_LABOR_LOGS, { ...record, ...data })
+        PrintFlowDataStore.addItem(STORAGE_KEYS.DAILY_LABOR_LOGS, { ...record, ...data })
         return { ...record, ...data }
       }
     } catch (e) {
       console.warn('[WorkforceRepository.recordDailyLabor] DB fallback:', e)
     }
 
-    PrintERPDataStore.addItem(STORAGE_KEYS.DAILY_LABOR_LOGS, record)
+    PrintFlowDataStore.addItem(STORAGE_KEYS.DAILY_LABOR_LOGS, record)
     return record
   }
 
@@ -2286,7 +2286,7 @@ export class WorkforceRepository {
       console.warn('[WorkforceRepository.getDailyLaborLogs] DB fallback:', e)
     }
 
-    const logs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.DAILY_LABOR_LOGS) || []
+    const logs = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.DAILY_LABOR_LOGS) || []
     return logs.filter((l) => {
       if (l.company_id && l.company_id !== companyId) return false
       if (filter?.employeeId && l.employee_id !== filter.employeeId) return false

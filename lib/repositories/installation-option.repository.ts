@@ -1,6 +1,6 @@
 import { createClient } from '../supabase/server.ts'
 import type { InstallationOptionRecord } from '../../types/product.types.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../db/data-store.ts'
 
 export const DEFAULT_INSTALLATION_OPTIONS: Array<Omit<InstallationOptionRecord, 'id' | 'company_id' | 'created_at' | 'updated_at'>> = [
   {
@@ -81,7 +81,7 @@ export class InstallationOptionRepository {
       // Fallback
     }
 
-    const all = PrintERPDataStore.get<InstallationOptionRecord[]>(
+    const all = PrintFlowDataStore.get<InstallationOptionRecord[]>(
       STORAGE_KEYS.INSTALLATION_OPTIONS,
       companyId
     ) || []
@@ -116,7 +116,7 @@ export class InstallationOptionRepository {
       updated_at: now,
     }))
     defaults.forEach((item) =>
-      PrintERPDataStore.addItem<InstallationOptionRecord>(STORAGE_KEYS.INSTALLATION_OPTIONS, item, companyId)
+      PrintFlowDataStore.addItem<InstallationOptionRecord>(STORAGE_KEYS.INSTALLATION_OPTIONS, item, companyId)
     )
     return defaults
   }
@@ -169,7 +169,7 @@ export class InstallationOptionRepository {
       updated_at: new Date().toISOString(),
     }
 
-    PrintERPDataStore.addItem<InstallationOptionRecord>(
+    PrintFlowDataStore.addItem<InstallationOptionRecord>(
       STORAGE_KEYS.INSTALLATION_OPTIONS,
       localRecord,
       companyId
@@ -204,7 +204,7 @@ export class InstallationOptionRepository {
       // Fallback
     }
 
-    return PrintERPDataStore.updateItem<InstallationOptionRecord>(
+    return PrintFlowDataStore.updateItem<InstallationOptionRecord>(
       STORAGE_KEYS.INSTALLATION_OPTIONS,
       id,
       updates,
@@ -229,7 +229,7 @@ export class InstallationOptionRepository {
       // Fallback
     }
 
-    PrintERPDataStore.removeItem<InstallationOptionRecord>(STORAGE_KEYS.INSTALLATION_OPTIONS, id, companyId)
+    PrintFlowDataStore.removeItem<InstallationOptionRecord>(STORAGE_KEYS.INSTALLATION_OPTIONS, id, companyId)
     return true
   }
 }

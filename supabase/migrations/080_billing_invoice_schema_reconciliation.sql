@@ -1,5 +1,5 @@
 -- ==============================================================================
--- InkFlow ERP SaaS - Migration 080: Billing Invoice Schema Reconciliation & Integrity
+-- PrintFlow SaaS - Migration 080: Billing Invoice Schema Reconciliation & Integrity
 -- Ensures all financial columns, foreign keys, and indexes exist for seamless
 -- invoice creation, traceability, search, and immediate directory visibility.
 -- ==============================================================================

@@ -12,7 +12,7 @@ import type {
 import { EmailGatewayService } from './email-gateway.service.ts'
 import { GatewayService } from './gateway.service.ts'
 import { CommunicationRouter } from './communication-router.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../lib/db/data-store.ts'
 
 export class CommunicationService {
   /**
@@ -44,9 +44,9 @@ export class CommunicationService {
     }
 
     // Save to local store
-    const existing = PrintERPDataStore.get<InAppNotificationRecord[]>(STORAGE_KEYS.IN_APP_NOTIFICATIONS) || []
+    const existing = PrintFlowDataStore.get<InAppNotificationRecord[]>(STORAGE_KEYS.IN_APP_NOTIFICATIONS) || []
     existing.unshift(record)
-    PrintERPDataStore.set(STORAGE_KEYS.IN_APP_NOTIFICATIONS, existing.slice(0, 50))
+    PrintFlowDataStore.set(STORAGE_KEYS.IN_APP_NOTIFICATIONS, existing.slice(0, 50))
 
     return record
   }

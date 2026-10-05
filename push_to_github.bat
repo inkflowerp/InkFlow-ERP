@@ -1,7 +1,7 @@
 @echo off
 echo ===================================================
-echo   Pushing InkFlowERP to GitHub
-echo   Target: https://github.com/inkflowerp/InkFlow-ERP.git
+echo   Pushing PrintFlow to GitHub
+echo   Target: https://github.com/printflow/printflow.git
 echo ===================================================
 echo.
 
@@ -14,7 +14,7 @@ if not exist .git (
 :: Add remote URL
 echo Configuring remote repository...
 git remote remove origin 2>nul
-git remote add origin https://github.com/inkflowerp/InkFlow-ERP.git
+git remote add origin https://github.com/printflow/printflow.git
 
 :: Stage files
 echo Staging files...
@@ -22,7 +22,7 @@ git add .
 
 :: Commit
 echo Committing files...
-git commit -m "Pushing to inkflow-erp repository" 2>nul
+git commit -m "Pushing to printflow-erp repository" 2>nul
 
 :: Rename branch to main
 git branch -M main

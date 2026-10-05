@@ -1,5 +1,5 @@
 -- ==============================================================================
--- InkFlow ERP - Migration 116: Server-Side Financial Totals, Strict Check Constraints,
+-- PrintFlow - Migration 116: Server-Side Financial Totals, Strict Check Constraints,
 -- Consolidated Fiscal-Year Document Sequences, Idempotency & Unified Ledger Reconciliation
 -- ==============================================================================
 

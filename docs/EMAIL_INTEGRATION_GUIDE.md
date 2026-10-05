@@ -1,8 +1,8 @@
-# InkFlow — Gmail + SMTP Email Integration Guide
+# PrintFlow — Gmail + SMTP Email Integration Guide
 
 ## 1. Overview
 
-InkFlow provides a robust, multi-tenant email architecture supporting two primary providers:
+PrintFlow provides a robust, multi-tenant email architecture supporting two primary providers:
 1. **Google Gmail API (OAuth 2.0)**: Modern, zero-password connection via official Google OAuth consent and Gmail REST API v1.
 2. **Standard Authenticated SMTP**: Direct connection with support for TLS (587), SSL (465), and STARTTLS.
 
@@ -13,7 +13,7 @@ InkFlow provides a robust, multi-tenant email architecture supporting two primar
 | Dimension | Platform Email | Tenant Business Email |
 | :--- | :--- | :--- |
 | **Scope Type** | `PLATFORM` (`tenant_id = null`) | `TENANT` (`tenant_id = company_id`) |
-| **Owner** | InkFlow Platform Owner / Administrator | Individual Tenant / Business Owner |
+| **Owner** | PrintFlow Platform Owner / Administrator | Individual Tenant / Business Owner |
 | **Use Cases** | Platform verification, OTPs, Tenant registration, Billing receipts, System alerts | Quotations, Invoices, Money Receipts, Due Reminders, Design Proofs, Delivery Challans |
 | **Fallback Policy** | Platform Default Gateway | **FAIL-CLOSED (No fallback to platform)** |
 | **Managed In** | Platform Admin -> Settings -> Communication | Tenant Dashboard -> Settings -> Email |
@@ -24,13 +24,13 @@ InkFlow provides a robust, multi-tenant email architecture supporting two primar
 
 ### Step 1: Google Cloud Console Project
 1. Open [Google Cloud Console](https://console.cloud.google.com/).
-2. Create a new project named `InkFlow-ERP` (or select your existing project).
+2. Create a new project named `PrintFlow-ERP` (or select your existing project).
 3. Navigate to **APIs & Services** -> **Library** and enable **Gmail API**.
 
 ### Step 2: OAuth Consent Screen
 1. Go to **APIs & Services** -> **OAuth consent screen**.
 2. Select **External** (for multi-tenant SaaS).
-3. Fill in App Name (`InkFlow ERP`), User support email, and Developer contact information.
+3. Fill in App Name (`PrintFlow`), User support email, and Developer contact information.
 4. Add Scopes:
    - `https://www.googleapis.com/auth/gmail.send`
    - `https://www.googleapis.com/auth/userinfo.email`
@@ -39,7 +39,7 @@ InkFlow provides a robust, multi-tenant email architecture supporting two primar
 ### Step 3: OAuth 2.0 Client Credentials
 1. Navigate to **APIs & Services** -> **Credentials** -> **Create Credentials** -> **OAuth Client ID**.
 2. Application type: **Web application**.
-3. Name: `InkFlow Web Client`.
+3. Name: `PrintFlow Web Client`.
 4. Authorized Redirect URIs:
    - Development: `http://localhost:3000/api/email/oauth/google/callback`
    - Production: `https://your-domain.com/api/email/oauth/google/callback`
@@ -58,7 +58,7 @@ ENCRYPTION_SECRET=your-32-byte-encryption-secret
 
 ## 4. SMTP Setup
 
-InkFlow supports standard authenticated SMTP for cPanel, Google Workspace, Office 365, Zoho, Amazon SES, and transactional providers:
+PrintFlow supports standard authenticated SMTP for cPanel, Google Workspace, Office 365, Zoho, Amazon SES, and transactional providers:
 
 * **Host**: `mail.yourdomain.com` or `smtp.gmail.com`
 * **Port**: `587` (TLS / STARTTLS) or `465` (SSL)

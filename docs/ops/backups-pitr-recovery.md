@@ -1,4 +1,4 @@
-# InkFlow ERP — Disaster Recovery & Backup Architecture
+# PrintFlow — Disaster Recovery & Backup Architecture
 
 ## 1. Executive Summary & RPO/RTO Commitments
 
@@ -44,7 +44,7 @@ LIMIT 10;
 ### Step 2: Provision Restoration Target (Never Overwrite In-Place Directly)
 1. In Supabase Dashboard, select **Backups** $\to$ **Point in Time**.
 2. Enter the target timestamp: `2026-10-04 18:42:15 UTC`.
-3. Choose **Restore to New Project / Branch** (e.g. `inkflow-recovery-20261004`).
+3. Choose **Restore to New Project / Branch** (e.g. `printflow-recovery-20261004`).
 4. Wait for the restore process to provision and apply WAL logs up to the exact second.
 
 ### Step 3: Automated Multi-Tenant Integrity & Verification Drill

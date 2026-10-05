@@ -1,4 +1,4 @@
-import { PrintERPDataStore, STORAGE_KEYS } from '../db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../db/data-store.ts'
 import { BranchRepository } from './branch.repository.ts'
 import type {
   BranchKPIs,
@@ -19,11 +19,11 @@ export class BranchAnalyticsRepository {
     if (!branch) return null
 
     // 1. Sales
-    const invoices = (PrintERPDataStore.get<any[]>(STORAGE_KEYS.INVOICES, companyId) || [])
+    const invoices = (PrintFlowDataStore.get<any[]>(STORAGE_KEYS.INVOICES, companyId) || [])
       .filter((inv: any) => !inv.branch_id || inv.branch_id === branchId)
-    const quotations = (PrintERPDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS, companyId) || [])
+    const quotations = (PrintFlowDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS, companyId) || [])
       .filter((q: any) => !q.branch_id || q.branch_id === branchId)
-    const payments = (PrintERPDataStore.get<any[]>(STORAGE_KEYS.PAYMENTS, companyId) || [])
+    const payments = (PrintFlowDataStore.get<any[]>(STORAGE_KEYS.PAYMENTS, companyId) || [])
       .filter((p: any) => !p.branch_id || p.branch_id === branchId)
 
     const invoiceValue = invoices.reduce((sum: number, i: any) => sum + (Number(i.total_amount) || 0), 0)
@@ -32,9 +32,9 @@ export class BranchAnalyticsRepository {
     const outstandingAmount = Math.max(0, invoiceValue - collectionAmount)
 
     // 2. Production
-    const tasks = (PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_TASKS, companyId) || [])
+    const tasks = (PrintFlowDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_TASKS, companyId) || [])
       .filter((t: any) => !t.branch_id || t.branch_id === branchId)
-    const reworks = (PrintERPDataStore.get<any[]>(STORAGE_KEYS.REWORKS, companyId) || [])
+    const reworks = (PrintFlowDataStore.get<any[]>(STORAGE_KEYS.REWORKS, companyId) || [])
       .filter((r: any) => !r.branch_id || r.branch_id === branchId)
 
     const queuedTasks = tasks.filter((t: any) => t.status === 'queued' || t.status === 'scheduled').length
@@ -44,7 +44,7 @@ export class BranchAnalyticsRepository {
     const utilization = tasks.length > 0 ? Math.min(100, Math.round(((inProgressTasks + completedTasks) / tasks.length) * 100)) : 0
 
     // 3. Inventory
-    const materials = (PrintERPDataStore.get<any[]>(STORAGE_KEYS.MATERIALS, companyId) || [])
+    const materials = (PrintFlowDataStore.get<any[]>(STORAGE_KEYS.MATERIALS, companyId) || [])
       .filter((m: any) => !m.branch_id || m.branch_id === branchId)
     const stockValue = materials.reduce(
       (sum: number, m: any) => sum + (Number(m.current_stock) || 0) * (Number(m.unit_cost) || 0),
@@ -54,7 +54,7 @@ export class BranchAnalyticsRepository {
       (m: any) => (Number(m.current_stock) || 0) <= (Number(m.min_stock_level) || 0)
     ).length
 
-    const transfers = (PrintERPDataStore.get<any[]>(STORAGE_KEYS.BRANCH_TRANSFERS, companyId) || [])
+    const transfers = (PrintFlowDataStore.get<any[]>(STORAGE_KEYS.BRANCH_TRANSFERS, companyId) || [])
     const inboundTransfers = transfers.filter(
       (t: any) => t.to_branch_id === branchId && (t.status === 'requested' || t.status === 'in_transit' || t.status === 'approved')
     ).length
@@ -63,9 +63,9 @@ export class BranchAnalyticsRepository {
     ).length
 
     // 4. Finance
-    const cashEntries = (PrintERPDataStore.get<any[]>(STORAGE_KEYS.CASH_BOOK, companyId) || [])
+    const cashEntries = (PrintFlowDataStore.get<any[]>(STORAGE_KEYS.CASH_BOOK, companyId) || [])
       .filter((c: any) => !c.branch_id || c.branch_id === branchId)
-    const expenses = (PrintERPDataStore.get<any[]>(STORAGE_KEYS.EXPENSES, companyId) || [])
+    const expenses = (PrintFlowDataStore.get<any[]>(STORAGE_KEYS.EXPENSES, companyId) || [])
       .filter((e: any) => !e.branch_id || e.branch_id === branchId)
 
     const cashIn = cashEntries.filter((c: any) => c.entry_type === 'cash_in').reduce((s: number, c: any) => s + (Number(c.amount) || 0), 0)
@@ -74,11 +74,11 @@ export class BranchAnalyticsRepository {
     const cashBalance = Math.max(0, cashIn - cashOut)
 
     // 5. Workforce
-    const employees = (PrintERPDataStore.get<any[]>(STORAGE_KEYS.EMPLOYEES, companyId) || [])
+    const employees = (PrintFlowDataStore.get<any[]>(STORAGE_KEYS.EMPLOYEES, companyId) || [])
       .filter((e: any) => !e.branch_id || e.branch_id === branchId)
-    const attendance = (PrintERPDataStore.get<any[]>(STORAGE_KEYS.ATTENDANCE, companyId) || [])
+    const attendance = (PrintFlowDataStore.get<any[]>(STORAGE_KEYS.ATTENDANCE, companyId) || [])
       .filter((a: any) => (!a.branch_id || a.branch_id === branchId) && a.status === 'present')
-    const assignments = (PrintERPDataStore.get<any[]>(STORAGE_KEYS.EMPLOYEE_BRANCH_ASSIGNMENTS, companyId) || [])
+    const assignments = (PrintFlowDataStore.get<any[]>(STORAGE_KEYS.EMPLOYEE_BRANCH_ASSIGNMENTS, companyId) || [])
       .filter((a: any) => a.branch_id === branchId && a.status === 'active')
 
     return {
@@ -135,15 +135,15 @@ export class BranchAnalyticsRepository {
     const branchMetrics: BranchPerformanceMetric[] = []
 
     for (const b of branches) {
-      const invoices = (PrintERPDataStore.get<any[]>(STORAGE_KEYS.INVOICES, companyId) || [])
+      const invoices = (PrintFlowDataStore.get<any[]>(STORAGE_KEYS.INVOICES, companyId) || [])
         .filter((inv: any) => !inv.branch_id || inv.branch_id === b.id)
-      const costings = (PrintERPDataStore.get<any[]>(STORAGE_KEYS.JOB_COSTINGS, companyId) || [])
+      const costings = (PrintFlowDataStore.get<any[]>(STORAGE_KEYS.JOB_COSTINGS, companyId) || [])
         .filter((jc: any) => !jc.branch_id || jc.branch_id === b.id)
-      const expenses = (PrintERPDataStore.get<any[]>(STORAGE_KEYS.EXPENSES, companyId) || [])
+      const expenses = (PrintFlowDataStore.get<any[]>(STORAGE_KEYS.EXPENSES, companyId) || [])
         .filter((e: any) => !e.branch_id || e.branch_id === b.id)
-      const tasks = (PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_TASKS, companyId) || [])
+      const tasks = (PrintFlowDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_TASKS, companyId) || [])
         .filter((t: any) => !t.branch_id || t.branch_id === b.id)
-      const reworks = (PrintERPDataStore.get<any[]>(STORAGE_KEYS.REWORKS, companyId) || [])
+      const reworks = (PrintFlowDataStore.get<any[]>(STORAGE_KEYS.REWORKS, companyId) || [])
         .filter((r: any) => !r.branch_id || r.branch_id === b.id)
 
       const revenue = invoices.reduce((s: number, i: any) => s + (Number(i.total_amount) || 0), 0)
@@ -213,12 +213,12 @@ export class BranchAnalyticsRepository {
     const comparison = await this.getBranchComparison(companyId, period)
     const branches = await BranchRepository.listBranches(companyId)
 
-    const invoices = PrintERPDataStore.get<any[]>(STORAGE_KEYS.INVOICES, companyId) || []
-    const payments = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PAYMENTS, companyId) || []
-    const materials = PrintERPDataStore.get<any[]>(STORAGE_KEYS.MATERIALS, companyId) || []
-    const employees = PrintERPDataStore.get<any[]>(STORAGE_KEYS.EMPLOYEES, companyId) || []
-    const tasks = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_TASKS, companyId) || []
-    const transfers = PrintERPDataStore.get<any[]>(STORAGE_KEYS.BRANCH_TRANSFERS, companyId) || []
+    const invoices = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.INVOICES, companyId) || []
+    const payments = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.PAYMENTS, companyId) || []
+    const materials = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.MATERIALS, companyId) || []
+    const employees = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.EMPLOYEES, companyId) || []
+    const tasks = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_TASKS, companyId) || []
+    const transfers = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.BRANCH_TRANSFERS, companyId) || []
 
     const totalInv = invoices.reduce((s: number, i: any) => s + (Number(i.total_amount) || 0), 0)
     const totalPay = payments.reduce((s: number, p: any) => s + (Number(p.amount) || 0), 0)

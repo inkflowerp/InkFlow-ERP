@@ -74,14 +74,14 @@ function VerifyEmailForm() {
       // Broadcast verification event to other active tabs / windows
       if (email) {
         try {
-          const bc = new BroadcastChannel('printerp_verification_channel')
+          const bc = new BroadcastChannel('printflow_verification_channel')
           bc.postMessage({ type: 'EMAIL_VERIFIED', email, destinationUrl: customDestination })
           bc.close()
         } catch {}
 
         try {
           localStorage.setItem(
-            'printerp_last_verified_email',
+            'printflow_last_verified_email',
             JSON.stringify({ email, destinationUrl: customDestination, timestamp: Date.now() })
           )
         } catch {}
@@ -152,7 +152,7 @@ function VerifyEmailForm() {
 
     let bc: BroadcastChannel | null = null
     try {
-      bc = new BroadcastChannel('printerp_verification_channel')
+      bc = new BroadcastChannel('printflow_verification_channel')
       bc.onmessage = (event) => {
         if (event.data?.type === 'EMAIL_VERIFIED') {
           const verifiedEmail = (event.data.email || '').trim().toLowerCase()
@@ -164,7 +164,7 @@ function VerifyEmailForm() {
     } catch {}
 
     const handleStorage = (e: StorageEvent) => {
-      if (e.key === 'printerp_last_verified_email' && e.newValue) {
+      if (e.key === 'printflow_last_verified_email' && e.newValue) {
         try {
           const data = JSON.parse(e.newValue)
           const verifiedEmail = (data?.email || '').trim().toLowerCase()

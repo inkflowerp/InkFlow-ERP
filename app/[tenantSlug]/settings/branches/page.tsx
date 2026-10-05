@@ -119,7 +119,7 @@ export default function BranchesSettingsPage() {
  let timer: NodeJS.Timeout | null = null
  const handleSync = (e: Event) => {
  const ce = e as CustomEvent
- if (e.type === 'printerp_data_sync' && ce.detail?.key && ce.detail.key !== STORAGE_KEYS.BRANCHES) {
+ if (e.type === 'printflow_data_sync' && ce.detail?.key && ce.detail.key !== STORAGE_KEYS.BRANCHES) {
  return
       }
  if (timer) clearTimeout(timer)
@@ -127,13 +127,13 @@ export default function BranchesSettingsPage() {
  loadLiveBranches()
       }, 300)
     }
- window.addEventListener('printerp_table_synced:branches', handleSync)
- window.addEventListener('printerp_data_sync', handleSync)
+ window.addEventListener('printflow_table_synced:branches', handleSync)
+ window.addEventListener('printflow_data_sync', handleSync)
 
  return () => {
  if (timer) clearTimeout(timer)
- window.removeEventListener('printerp_table_synced:branches', handleSync)
- window.removeEventListener('printerp_data_sync', handleSync)
+ window.removeEventListener('printflow_table_synced:branches', handleSync)
+ window.removeEventListener('printflow_data_sync', handleSync)
     }
   }, [loadLiveBranches, company?.id])
 
@@ -165,8 +165,8 @@ export default function BranchesSettingsPage() {
 
  const broadcastSync = () => {
  if (typeof window !== 'undefined') {
- window.dispatchEvent(new CustomEvent('printerp_table_synced:branches'))
- window.dispatchEvent(new CustomEvent('printerp_data_sync'))
+ window.dispatchEvent(new CustomEvent('printflow_table_synced:branches'))
+ window.dispatchEvent(new CustomEvent('printflow_data_sync'))
     }
   }
 

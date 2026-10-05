@@ -16,7 +16,7 @@ import type { InvoiceRecord } from '../../types/billing.types.ts'
 import { BillingRepository, generateUUID, getFinancialPersistenceMode } from './billing.repository.ts'
 import { measureAsync } from '../performance/logger.ts'
 import { buildPaginatedResponse, type PaginatedResult } from '../api/pagination-helper.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../db/data-store.ts'
 
 export class QuotationRepository {
   /**
@@ -70,7 +70,7 @@ export class QuotationRepository {
       return `${prefix}-${String(nextVal).padStart(6, '0')}`
     } catch {
       // Fallback to DataStore atomic number
-      return PrintERPDataStore.getNextDocumentNumber(companyId, 'quotation')
+      return PrintFlowDataStore.getNextDocumentNumber(companyId, 'quotation')
     }
   }
 
@@ -142,7 +142,7 @@ export class QuotationRepository {
       }
 
       // 3. Merge with local data store and deep scan browser storage for any historical quotations
-      const rawStored = PrintERPDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS) || []
+      const rawStored = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS) || []
       if (Array.isArray(rawStored)) {
         rawCandidates.push(...rawStored)
       }
@@ -156,13 +156,13 @@ export class QuotationRepository {
             if (!raw) continue
 
             if (
-              k.startsWith('printerp_tenant_quotations') ||
-              k.startsWith('printerp_quotations') ||
+              k.startsWith('printflow_tenant_quotations') ||
+              k.startsWith('printflow_quotations') ||
               k.includes('quotation') ||
               k.includes('quotes') ||
               k.includes('draft') ||
               k.includes('outbox') ||
-              k.includes('inkflow')
+              k.includes('printflow')
             ) {
               const extracted = extractQuotationsFromAny(raw)
               if (extracted.length > 0) {
@@ -335,7 +335,7 @@ export class QuotationRepository {
     } catch {}
 
     // Fallback: check DataStore & localStorage
-    const localQuotes = PrintERPDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS) || []
+    const localQuotes = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS) || []
     const allCandidates: any[] = [...localQuotes]
 
     if (typeof window !== 'undefined') {
@@ -344,8 +344,8 @@ export class QuotationRepository {
           const k = window.localStorage.key(i)
           if (!k) continue
           if (
-            k.startsWith('printerp_tenant_quotations') ||
-            k.startsWith('printerp_quotations') ||
+            k.startsWith('printflow_tenant_quotations') ||
+            k.startsWith('printflow_quotations') ||
             k.includes('quotation') ||
             k.includes('quotes')
           ) {
@@ -626,7 +626,7 @@ export class QuotationRepository {
     }
 
     // Always mirror in DataStore for offline/browser availability
-    PrintERPDataStore.addItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, quoteRecord)
+    PrintFlowDataStore.addItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, quoteRecord)
 
     const activity: QuotationActivityRecord = {
       id: `qa-${Date.now()}`,
@@ -636,7 +636,7 @@ export class QuotationRepository {
       actor_name: quoteRecord.salesperson_name,
       created_at: new Date().toISOString(),
     }
-    PrintERPDataStore.addItem<QuotationActivityRecord>(STORAGE_KEYS.QUOTATION_ACTIVITIES, activity)
+    PrintFlowDataStore.addItem<QuotationActivityRecord>(STORAGE_KEYS.QUOTATION_ACTIVITIES, activity)
 
     return quoteRecord
   }
@@ -665,7 +665,7 @@ export class QuotationRepository {
       // fallback
     }
 
-    const updated = PrintERPDataStore.updateItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, id, updates)
+    const updated = PrintFlowDataStore.updateItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, id, updates)
     return updated || (await this.getQuotationById(id, companyId))
   }
 
@@ -694,7 +694,7 @@ export class QuotationRepository {
     }
 
     const dueDate = options?.dueDate || new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0]
-    const invNumber = PrintERPDataStore.getNextDocumentNumber(effectiveCompanyId, 'invoice')
+    const invNumber = PrintFlowDataStore.getNextDocumentNumber(effectiveCompanyId, 'invoice')
     const invoiceId = generateUUID()
 
     const advancePaid = options?.paidAmount !== undefined
@@ -776,7 +776,7 @@ export class QuotationRepository {
     try {
       createdInvoice = await BillingRepository.createInvoice(invoice)
     } catch {
-      PrintERPDataStore.addItem<InvoiceRecord>(STORAGE_KEYS.INVOICES, invoice)
+      PrintFlowDataStore.addItem<InvoiceRecord>(STORAGE_KEYS.INVOICES, invoice)
       createdInvoice = invoice
     }
 
@@ -823,7 +823,7 @@ export class QuotationRepository {
     }
 
     // Deduplication check: If an order already exists for this quotation (e.g. from network retry or prior run where status update failed mid-flight), self-heal and return it
-    const localOrders = PrintERPDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []
+    const localOrders = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []
     const existingLocalOrder = localOrders.find((o: any) => o.quotation_id === quote.id)
     if (existingLocalOrder) {
       await this.updateQuotation(quote.id, {
@@ -833,7 +833,7 @@ export class QuotationRepository {
       return existingLocalOrder
     }
 
-    const orderNumber = PrintERPDataStore.getNextDocumentNumber(effectiveCompanyId, 'order')
+    const orderNumber = PrintFlowDataStore.getNextDocumentNumber(effectiveCompanyId, 'order')
     const orderId = `ord-${Date.now()}`
 
     const advance = options?.advanceAmount !== undefined
@@ -1024,7 +1024,7 @@ export class QuotationRepository {
     }
 
     // Persist to DataStore with all integrated downstream records (job order, prod tasks, mat reqs, costing)
-    const integratedOrder = PrintERPDataStore.createSalesOrderWithIntegrations(salesOrder as any)
+    const integratedOrder = PrintFlowDataStore.createSalesOrderWithIntegrations(salesOrder as any)
 
     // Update Quotation Status to Converted
     await this.updateQuotation(quote.id, {
@@ -1043,11 +1043,11 @@ export class QuotationRepository {
     }
     await this.addActivity(activity)
 
-    const allJobs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.JOB_ORDERS) || []
+    const allJobs = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.JOB_ORDERS) || []
     const matchingJob = allJobs.find((j: any) => j.order_id === salesOrder.id || j.order_id === orderId)
-    const allProd = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_JOBS) || []
+    const allProd = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_JOBS) || []
     const matchingProd = allProd.find((p: any) => p.sales_order_id === salesOrder.id || p.sales_order_id === orderId)
-    const allInvs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || []
+    const allInvs = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || []
     const matchingInv = allInvs.find((i: any) => i.sales_order_id === salesOrder.id || i.sales_order_id === orderId)
 
     return {
@@ -1228,7 +1228,7 @@ export class QuotationRepository {
     } catch {
       // Fallback to DataStore
     }
-    PrintERPDataStore.addItem<QuotationActivityRecord>(STORAGE_KEYS.QUOTATION_ACTIVITIES, activity)
+    PrintFlowDataStore.addItem<QuotationActivityRecord>(STORAGE_KEYS.QUOTATION_ACTIVITIES, activity)
   }
 
   /**
@@ -1250,7 +1250,7 @@ export class QuotationRepository {
       // Fallback to DataStore
     }
 
-    const activities = PrintERPDataStore.get<QuotationActivityRecord[]>(STORAGE_KEYS.QUOTATION_ACTIVITIES) || []
+    const activities = PrintFlowDataStore.get<QuotationActivityRecord[]>(STORAGE_KEYS.QUOTATION_ACTIVITIES) || []
     return activities.filter((a) => a.quotation_id === quotationId)
   }
 
@@ -1259,20 +1259,20 @@ export class QuotationRepository {
    */
   static async deleteQuotation(id: string, companyId: string = 'c-01', quotationNumber?: string): Promise<boolean> {
     // 1. Remove from DataStore
-    PrintERPDataStore.removeItem(STORAGE_KEYS.QUOTATIONS, id)
+    PrintFlowDataStore.removeItem(STORAGE_KEYS.QUOTATIONS, id)
     if (companyId) {
-      PrintERPDataStore.removeItem(STORAGE_KEYS.QUOTATIONS, id, companyId)
+      PrintFlowDataStore.removeItem(STORAGE_KEYS.QUOTATIONS, id, companyId)
     }
 
-    const list = PrintERPDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS) || []
-    PrintERPDataStore.set(
+    const list = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS) || []
+    PrintFlowDataStore.set(
       STORAGE_KEYS.QUOTATIONS,
       list.filter((q) => q.id !== id && (!quotationNumber || q.quotation_number !== quotationNumber))
     )
 
     if (companyId) {
-      const compList = PrintERPDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS, companyId) || []
-      PrintERPDataStore.set(
+      const compList = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS, companyId) || []
+      PrintFlowDataStore.set(
         STORAGE_KEYS.QUOTATIONS,
         compList.filter((q) => q.id !== id && (!quotationNumber || q.quotation_number !== quotationNumber)),
         true,

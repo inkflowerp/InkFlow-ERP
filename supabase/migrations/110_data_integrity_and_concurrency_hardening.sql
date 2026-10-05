@@ -1,5 +1,5 @@
 -- ==============================================================================
--- PrintERP SaaS - Migration 110: Data Integrity, Concurrency & Security Hardening
+-- PrintFlow - Migration 110: Data Integrity, Concurrency & Security Hardening
 -- ==============================================================================
 
 -- 1. HARDEN GATEWAY WEBHOOKS IDEMPOTENCY

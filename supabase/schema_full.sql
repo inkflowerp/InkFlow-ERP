@@ -1,6 +1,6 @@
 -- >>> FILE: 001_initial_schema.sql <<<
 -- ==============================================================================
--- PrintERP SaaS - Multi-Tenant Initial Schema Migration (001)
+-- PrintFlow - Multi-Tenant Initial Schema Migration (001)
 -- Unicode-Safe UTF-8, Multi-Tenancy Architecture
 -- ==============================================================================
 
@@ -137,7 +137,7 @@ create trigger update_memberships_modtime
 
 -- >>> FILE: 002_bangladesh_geo.sql <<<
 -- ==============================================================================
--- PrintERP SaaS - Bangladesh Administrative Geo Schema & Seed (002)
+-- PrintFlow - Bangladesh Administrative Geo Schema & Seed (002)
 -- Unicode-Safe (UTF-8) with full Bengali and English mapping
 -- ==============================================================================
 
@@ -302,7 +302,7 @@ insert into public.upazilas (district_id, name, name_bn) values
 
 -- >>> FILE: 003_multitenant_rls.sql <<<
 -- ==============================================================================
--- PrintERP SaaS - Multi-Tenant Row Level Security (RLS) Policies (003)
+-- PrintFlow - Multi-Tenant Row Level Security (RLS) Policies (003)
 -- Ensures strict multi-tenant isolation across all organizations
 -- ==============================================================================
 
@@ -425,7 +425,7 @@ create policy "System and users can insert audit logs"
 
 -- >>> FILE: 004_printing_catalog_enums.sql <<<
 -- ==============================================================================
--- PrintERP SaaS - Printing, Signage & Fabrication Domain Enums & Schema (004)
+-- PrintFlow - Printing, Signage & Fabrication Domain Enums & Schema (004)
 -- Tailored for Bangladeshi Printing, Signage, LED, Acrylic & Fabrication Hubs
 -- ==============================================================================
 
@@ -501,7 +501,7 @@ create policy "Allow read access to measurement units"
 
 -- >>> FILE: 005_core_multitenant_entities.sql <<<
 -- ==============================================================================
--- PrintERP SaaS - Migration 005: Core Multi-Tenant Entities & RBAC
+-- PrintFlow - Migration 005: Core Multi-Tenant Entities & RBAC
 -- Entities: companies (extended), company_settings, branches, user_profiles,
 --           roles, permissions, role_permissions, company_users, user_roles
 -- Every tenant-owned table contains company_id referencing companies(id).
@@ -689,7 +689,7 @@ on conflict (role_id, permission_id) do nothing;
 
 -- >>> FILE: 006_strict_rls_policies.sql <<<
 -- ==============================================================================
--- PrintERP SaaS - Migration 006: Strict Multi-Tenant Row Level Security (RLS)
+-- PrintFlow - Migration 006: Strict Multi-Tenant Row Level Security (RLS)
 -- Never trust company_id from browser. Resolve context from authenticated user.
 -- Disabled users cannot access any company records.
 -- ==============================================================================
@@ -970,7 +970,7 @@ create trigger on_company_created_provision
 
 -- >>> FILE: 007_rbac_matrix_and_platform_owner.sql <<<
 -- ==============================================================================
--- PrintERP SaaS - Migration 007: Complete RBAC Matrix & Platform Owner
+-- PrintFlow - Migration 007: Complete RBAC Matrix & Platform Owner
 -- Fine-grained Module / Resource / Action permissions system
 -- 7 Primary Roles:
 --   1. Platform Owner (Platform-level Superadmin)
@@ -1256,7 +1256,7 @@ create policy "Admins can manage user_permission_overrides"
 
 -- >>> FILE: 008_settings_and_document_sequences.sql <<<
 -- ==============================================================================
--- PrintERP SaaS - Migration 008: Settings, Document Sequences & Audit Logs
+-- PrintFlow - Migration 008: Settings, Document Sequences & Audit Logs
 -- Supports:
 --   1. Transaction-safe document numbering (QUO-000001, ORD-000001, INV-000001, etc.)
 --   2. Audit logging for important settings changes
@@ -1422,7 +1422,7 @@ $$ language plpgsql security definer;
 
 -- >>> FILE: 009_customers_and_suppliers.sql <<<
 -- ==============================================================================
--- PrintERP SaaS - Migration 009: Customer and Supplier Management
+-- PrintFlow - Migration 009: Customer and Supplier Management
 -- Supports:
 --   1. Customer Directory with 6 customer types (Corporate, Agency, Retail, Dealer, Government, Regular)
 --   2. Customer Communication Logs & Notes
@@ -1586,7 +1586,7 @@ create policy "Authorized company users can manage supplier material prices"
 
 -- >>> FILE: 010_products_and_pricing_engine.sql <<<
 -- ==============================================================================
--- PrintERP SaaS - Migration 010: Product/Service Catalog + Safe Pricing Engine
+-- PrintFlow - Migration 010: Product/Service Catalog + Safe Pricing Engine
 -- Supports:
 --   1. Products table with 6 product types and 10 units of measure
 --   2. Structured JSON pricing formulas (Safe non-eval declarative models)
@@ -1704,7 +1704,7 @@ create policy "Active company users can log price overrides"
 
 -- >>> FILE: 011_quotations_workflow.sql <<<
 -- ==============================================================================
--- PrintERP SaaS - Migration 011: Quotation Lifecycle Workflow
+-- PrintFlow - Migration 011: Quotation Lifecycle Workflow
 -- Supports:
 --   1. 8 Quotation Statuses (draft, sent, viewed, negotiation, approved, rejected, expired, converted)
 --   2. Multi-item dimensional calculations (quotation_items)
@@ -1863,7 +1863,7 @@ create policy "Active company users can insert quotation activities"
 
 -- >>> FILE: 012_orders_and_job_orders.sql <<<
 -- ==============================================================================
--- PrintERP SaaS - Migration 012: Sales Orders & Multi-Job Production Ticketing
+-- PrintFlow - Migration 012: Sales Orders & Multi-Job Production Ticketing
 -- Supports:
 --   1. Sales Orders with Priority (Normal, Urgent, Very Urgent) and Payment Terms (Cash, Advance, Partial, Credit)
 --   2. Multi-Job Orders (job_orders table generating discrete machine bay tickets)
@@ -2043,7 +2043,7 @@ create policy "Active company users can insert timeline"
 
 -- >>> FILE: 013_design_management.sql <<<
 -- ==============================================================================
--- PrintERP SaaS - Migration 013: Design Management & Artwork Versioning
+-- PrintFlow - Migration 013: Design Management & Artwork Versioning
 -- Supports:
 --   1. 6 Design Workflow Statuses (received, designing, customer_approval, revision, approved, rejected)
 --   2. Multi-Format Artwork & Proof Versioning (v1, v2, v3)
@@ -2192,7 +2192,7 @@ create policy "Active company users can insert feedback"
 
 -- >>> FILE: 014_production_management.sql <<<
 -- ==============================================================================
--- PrintERP SaaS - Migration 014: Production Management & Rework Tracking
+-- PrintFlow - Migration 014: Production Management & Rework Tracking
 -- Supports:
 --   1. 5 Production Departments (design, printing, finishing, fabrication, installation)
 --   2. Adaptive departmental stages and task checklists
@@ -2301,7 +2301,7 @@ create policy "Authorized company users can insert reworks"
 
 -- >>> FILE: 015_inventory_and_stock_ledger.sql <<<
 -- ==============================================================================
--- PrintERP SaaS - Migration 015: Specialized Inventory & Stock Ledger
+-- PrintFlow - Migration 015: Specialized Inventory & Stock Ledger
 -- Supports:
 --   1. Printing & Signage Materials (Roll Media, Rigid Sheets, Metals, LED, Inks)
 --   2. Roll Inventory (Width x Length = SFT area accounting)
@@ -2475,7 +2475,7 @@ create policy "Authorized company users can insert wastages"
 
 -- >>> FILE: 016_purchase_management.sql <<<
 -- ==============================================================================
--- PrintERP SaaS - Migration 016: Purchase Management & Supplier Price Benchmarks
+-- PrintFlow - Migration 016: Purchase Management & Supplier Price Benchmarks
 -- Supports:
 --   1. Purchase Orders with multi-item tracking
 --   2. Partial Receiving (goods_received_notes with incremental stock sync)
@@ -2649,7 +2649,7 @@ create policy "Authorized company users can insert supplier payments"
 
 -- >>> FILE: 017_invoicing_and_payments.sql <<<
 -- ==============================================================================
--- PrintERP SaaS - Migration 017: Invoicing, Payments & Multi-Invoice Allocation
+-- PrintFlow - Migration 017: Invoicing, Payments & Multi-Invoice Allocation
 -- Supports:
 --   1. Sales Invoices, NBR Mushak 6.3 VAT Invoices, and Payment Money Receipts
 --   2. Multi-Invoice Payment Allocation
@@ -2859,7 +2859,7 @@ create policy "Authorized company users can insert write offs"
 
 -- >>> FILE: 018_delivery_and_installation.sql <<<
 -- ==============================================================================
--- PrintERP SaaS - Migration 018: Delivery, Dispatch Challans & On-Site Installation
+-- PrintFlow - Migration 018: Delivery, Dispatch Challans & On-Site Installation
 -- Supports:
 --   1. 4 Delivery Methods (Company Vehicle, Courier, Local Transport, Customer Pickup)
 --   2. Delivery Challans (Transit slips with receiver sign-off)
@@ -3013,7 +3013,7 @@ create policy "Authorized company users can manage installations"
 
 -- >>> FILE: 019_expenses_and_accounting.sql <<<
 -- ==============================================================================
--- PrintERP SaaS - Migration 019: Expenses, Cash Book & SME Bank Accounts
+-- PrintFlow - Migration 019: Expenses, Cash Book & SME Bank Accounts
 -- Supports:
 --   1. 12 SME Expense Categories (Rent, Salary, Labor, Electricity, Internet, Transport, Fuel, Marketing, Maintenance, Materials, Office, Other)
 --   2. Daily Cash Book Management (Cash In, Cash Out, Drawer Reconciliation)
@@ -3130,7 +3130,7 @@ create policy "Authorized company users can insert cash book"
 
 -- >>> FILE: 020_employees_and_payroll.sql <<<
 -- ==============================================================================
--- PrintERP SaaS - Migration 020: Employee, Attendance, Salary Advances & Payroll
+-- PrintFlow - Migration 020: Employee, Attendance, Salary Advances & Payroll
 -- Supports:
 --   1. 3 Employee Types (Permanent, Contract, Daily Labor)
 --   2. Attendance Tracking (Late minutes, Overtime hours, Leaves)
@@ -3364,7 +3364,7 @@ create policy "Authorized company users can manage daily labor logs"
 
 -- >>> FILE: 021_job_costing_and_profitability.sql <<<
 -- ==============================================================================
--- PrintERP SaaS - Migration 021: Job Costing, 9-Head Costs & Profitability Engine
+-- PrintFlow - Migration 021: Job Costing, 9-Head Costs & Profitability Engine
 -- Supports:
 --   1. 9 Standard Cost Heads (Material, Ink, Printing, Finishing, Labor, Fabrication, Installation, Transport, Other)
 --   2. Pre-Production Estimated vs Post-Production Actual Costing
@@ -3453,7 +3453,7 @@ create policy "Authorized company users can manage job costings"
 
 -- >>> FILE: 022_reporting_and_analytics.sql <<<
 -- ==============================================================================
--- PrintERP SaaS - Migration 022: Reporting and Business Analytics Engine
+-- PrintFlow - Migration 022: Reporting and Business Analytics Engine
 -- Provides:
 --   1. Server-side SQL aggregations for Sales, Production, Financial, Inventory & Customer
 --   2. Optimized performance avoiding multi-thousand row browser loading
@@ -3583,7 +3583,7 @@ $$;
 
 -- >>> FILE: 023_communication_and_notifications.sql <<<
 -- ==============================================================================
--- PrintERP SaaS - Migration 023: In-App Notifications & Communication Architecture
+-- PrintFlow - Migration 023: In-App Notifications & Communication Architecture
 -- Supports:
 --   1. Real-time In-App Notification Feed (Orders, Payments, Approvals, Low Stock)
 --   2. WhatsApp Business API Configuration
@@ -3713,7 +3713,7 @@ create policy "System and authorized users can append communication logs"
 
 -- >>> FILE: 024_vat_tax_and_document_settings.sql <<<
 -- ==============================================================================
--- PrintERP SaaS - Migration 024: Bangladesh VAT/Tax & Concurrency-Safe Documents
+-- PrintFlow - Migration 024: Bangladesh VAT/Tax & Concurrency-Safe Documents
 -- Supports:
 --   1. Configurable VAT (Enable/Disable, Inclusive/Exclusive, Rates: 5%, 7.5%, 15%)
 --   2. Tax Information (13-digit BIN, TIN, Trade License, VAT Circle)
@@ -3857,7 +3857,7 @@ create policy "Authorized company admins can manage document templates"
 
 -- >>> FILE: 025_saas_subscriptions.sql <<<
 -- ==============================================================================
--- PrintERP SaaS - Migration 025: SaaS Subscription System & Feature Gating
+-- PrintFlow - Migration 025: SaaS Subscription System & Feature Gating
 -- Supports:
 --   1. 3 SaaS Plans (Starter, Business, Enterprise) with Configurable Limits
 --   2. 6 Subscription States (Trial, Active, Past Due, Suspended, Cancelled, Expired)
@@ -3997,7 +3997,7 @@ create policy "Authorized company admins can update their subscription"
 
 -- >>> FILE: 026_platform_administration.sql <<<
 -- ==============================================================================
--- PrintERP SaaS - Migration 026: Platform Administration & Root Governance
+-- PrintFlow - Migration 026: Platform Administration & Root Governance
 -- Supports:
 --   1. Platform Audit Logs (Immutable Root Audit Trail with RLS)
 --   2. Tenant-Specific Feature Flag Overrides
@@ -4010,7 +4010,7 @@ create policy "Authorized company admins can update their subscription"
 create table if not exists public.platform_audit_logs (
     id uuid primary key default gen_random_uuid(),
     platform_admin_id uuid references public.platform_admins(id) on delete set null,
-    actor_email text not null default 'system@printerp.com.bd',
+    actor_email text not null default 'system@printflow.bd',
     action text not null, -- 'company.activate', 'company.suspend', 'company.reactivate', 'company.change_plan', 'feature_flag.update', 'rbac_template.update', 'system.job_retry', 'system.resolve'
     entity_type text not null, -- 'company', 'plan', 'feature_flag', 'rbac_template', 'system_job', 'system_alert'
     entity_id text,
@@ -4200,7 +4200,7 @@ begin
         ip_address
     ) values (
         v_admin_id,
-        coalesce(v_email, 'system@printerp.com.bd'),
+        coalesce(v_email, 'system@printflow.bd'),
         p_action,
         p_entity_type,
         p_entity_id,
@@ -4251,7 +4251,7 @@ create policy "Platform owners can view and manage system health events"
 
 -- >>> FILE: 027_security_audit_and_data_integrity.sql <<<
 -- ==============================================================================
--- PrintERP SaaS - Migration 027: Security, Comprehensive Audit & Data Integrity
+-- PrintFlow - Migration 027: Security, Comprehensive Audit & Data Integrity
 -- Supports:
 --   1. Comprehensive Audit Logging (15 Critical Event Categories)
 --   2. Immutable Append-Only Audit Ledger Rules
@@ -4464,7 +4464,7 @@ create policy "Authorized billing users can record payment adjustments"
 
 -- >>> FILE: 028_workflow_automation.sql <<<
 -- ==============================================================================
--- PrintERP SaaS - Migration 028: Workflow Automation Engine
+-- PrintFlow - Migration 028: Workflow Automation Engine
 -- Supports:
 --   1. Declarative Workflow Rules with Structured Triggers & Actions
 --   2. Workflow Execution Audit Logs
@@ -4581,7 +4581,7 @@ END $$;
 
 -- >>> FILE: 029_production_performance_optimization.sql <<<
 -- ==============================================================================
--- PrintERP SaaS - Migration 029: Production Performance Optimization
+-- PrintFlow - Migration 029: Production Performance Optimization
 -- High-performance covering indexes, foreign key index coverage,
 -- optimized RLS function caching, and pre-aggregated dashboard KPI queries.
 -- ==============================================================================
@@ -4698,7 +4698,7 @@ GRANT EXECUTE ON FUNCTION public.get_tenant_dashboard_metrics(UUID) TO service_r
 
 -- >>> FILE: 030_platform_admin_hardening.sql <<<
 -- ==============================================================================
--- PrintERP SaaS - Migration 030: Platform Admin Complete Hardening & Telemetry
+-- PrintFlow - Migration 030: Platform Admin Complete Hardening & Telemetry
 -- Supports:
 --   1. Platform Incidents Management Ledger
 --   2. Platform Background Jobs Telemetry & Retries
@@ -4842,7 +4842,7 @@ create policy "Platform owners have full control on tenant exports"
 
 -- >>> FILE: 031_platform_support_sessions_and_hardening.sql <<<
 -- ==============================================================================
--- PrintERP / InkFlow SaaS - Migration 031: Platform Support Sessions & Control Plane Hardening
+-- PrintFlow / PrintFlow SaaS - Migration 031: Platform Support Sessions & Control Plane Hardening
 -- Supports:
 --   1. Secure Temporary Support Sessions with Explicit Reason & Automatic TTL
 --   2. Granular Support Access Levels (read_only, config_only, full_support)
@@ -4935,7 +4935,7 @@ end $$;
 
 -- >>> FILE: 032_platform_security_hardening.sql <<<
 -- ==============================================================================
--- PrintERP / InkFlow SaaS - Migration 032: Platform Security & Root Control Plane Hardening
+-- PrintFlow / PrintFlow SaaS - Migration 032: Platform Security & Root Control Plane Hardening
 -- Single Source of Truth: Supabase Auth + PostgreSQL RLS + Explicit Platform RBAC
 -- ==============================================================================
 
@@ -5061,7 +5061,7 @@ create policy "Platform owners can view and manage platform_admins"
 
 -- >>> FILE: 033_user_account_creation_and_profiles_fix.sql <<<
 -- ==============================================================================
--- PrintERP / InkFlow SaaS - Migration 033: User Account Creation & Profiles Hardening
+-- PrintFlow / PrintFlow SaaS - Migration 033: User Account Creation & Profiles Hardening
 -- Ensures auth.users signup trigger automatically syncs into public.user_profiles
 -- and public.profiles with metadata, and configures non-blocking RLS policies.
 -- ==============================================================================
@@ -5211,7 +5211,7 @@ create policy "Members can view teammate profiles" on public.user_profiles
 
 -- >>> FILE: 034_tenant_auth_and_isolation_hardening.sql <<<
 -- ==============================================================================
--- InkFlow SaaS - Migration 034: Production Tenant Auth & Multi-Tenant Isolation Hardening
+-- PrintFlow SaaS - Migration 034: Production Tenant Auth & Multi-Tenant Isolation Hardening
 -- Enforces PostgreSQL-level isolation, search_path protection on security definer functions,
 -- active membership verification, and row-level security across all operational tables.
 -- ==============================================================================
@@ -5498,7 +5498,7 @@ create index if not exists idx_user_roles_comp_user on public.user_roles(company
 
 -- >>> FILE: 035_platform_control_panel_hardening.sql <<<
 -- ==============================================================================
--- InkFlow SaaS - Migration 035: Platform Control Panel Hardening & Last-Owner Protection
+-- PrintFlow SaaS - Migration 035: Platform Control Panel Hardening & Last-Owner Protection
 -- Supports:
 --   1. Last Active Platform Owner Protection Trigger
 --   2. Authoritative Platform Support Session Functions & Expiry Checks
@@ -5683,7 +5683,7 @@ create index if not exists idx_company_subs_status_company on public.company_sub
 
 -- >>> FILE: 036_add_department_to_company_users.sql <<<
 -- ==============================================================================
--- PrintERP / InkFlow SaaS - Migration 036: Add Department & Custom Metadata to Company Users
+-- PrintFlow / PrintFlow SaaS - Migration 036: Add Department & Custom Metadata to Company Users
 -- Adds department, responsibilities, and raw_overrides to public.company_users.
 -- ==============================================================================
 
@@ -5697,7 +5697,7 @@ create index if not exists idx_company_users_department on public.company_users(
 
 -- >>> FILE: 037_platform_security_definer_hardening.sql <<<
 -- ==============================================================================
--- InkFlow SaaS - Migration 037: Security Definer Hardening & Search Path Lockdown
+-- PrintFlow SaaS - Migration 037: Security Definer Hardening & Search Path Lockdown
 -- Ensures all platform security definer functions:
 --   1. Have explicit, safe search_path = public, pg_temp
 --   2. Enforce strict caller validation
@@ -5770,7 +5770,7 @@ $$;
 
 -- >>> FILE: 038_strict_auth_isolation_boundary.sql <<<
 -- ==============================================================================
--- InkFlow SaaS - Migration 038: Strict Platform vs Tenant Auth Isolation & RLS Boundary
+-- PrintFlow SaaS - Migration 038: Strict Platform vs Tenant Auth Isolation & RLS Boundary
 -- Single Source of Truth & Fail-Closed Database Policies:
 --   1. Platform Users -> platform_admins (is_active = true) -> Auth Context: Platform
 --   2. Tenant Users -> company_users (status = 'active') + companies (is_active = true) -> Auth Context: Tenant
@@ -5883,7 +5883,7 @@ create policy "Platform admins view platform audit logs"
 
 -- >>> FILE: 039_email_gateway_and_communication_system.sql <<<
 -- ==============================================================================
--- PrintERP SaaS - Migration 039: Multi-Tenant Email Gateway System & Communication Infrastructure
+-- PrintFlow - Migration 039: Multi-Tenant Email Gateway System & Communication Infrastructure
 -- Supports:
 --   1. Platform-level Default Email Gateway & Configuration
 --   2. Tenant-level Custom Email Gateways (BYO SMTP / Resend / SendGrid / Amazon SES)
@@ -6105,7 +6105,7 @@ create policy "Tenant users enqueue emails"
 
 -- >>> FILE: 040_seed_trial_plan_and_repair_subscriptions.sql <<<
 -- ==============================================================================
--- InkFlow / PrintERP SaaS - Migration 040: Seed Trial Plan & Repair Subscriptions
+-- PrintFlow / PrintFlow - Migration 040: Seed Trial Plan & Repair Subscriptions
 -- Ensures 'trial' is a first-class citizen in subscription_plans and repairs
 -- any trial subscriptions that were linked to starter plan.
 -- ==============================================================================
@@ -6202,7 +6202,7 @@ create table if not exists public.platform_system_settings (
     default_currency text not null default 'BDT',
     default_vat_rate_pct numeric(5,2) not null default 15.00,
     maintenance_mode_enabled boolean not null default false,
-    maintenance_message text not null default 'InkFlow is currently undergoing scheduled platform upgrades.',
+    maintenance_message text not null default 'PrintFlow is currently undergoing scheduled platform upgrades.',
     incident_alert_webhook text,
     backup_retention_days integer not null default 90,
     auto_backup_enabled boolean not null default true,
@@ -6251,7 +6251,7 @@ insert into public.platform_system_settings (
     'BDT',
     15.00,
     false,
-    'InkFlow is currently undergoing scheduled platform upgrades.',
+    'PrintFlow is currently undergoing scheduled platform upgrades.',
     90,
     true
 )
@@ -6260,7 +6260,7 @@ on conflict (id) do nothing;
 
 -- >>> FILE: 042_production_gateways_and_api_integrations.sql <<<
 -- ==============================================================================
--- PrintERP SaaS - Migration 042: Production Gateways, API Integrations & Webhooks
+-- PrintFlow - Migration 042: Production Gateways, API Integrations & Webhooks
 -- Supports:
 --   1. Unified Gateway Integrations Table (Email, SMS, Payment, WhatsApp, Telegram)
 --   2. Strict Platform Owner vs Tenant Isolation with RLS & Encrypted Credentials
@@ -6512,7 +6512,7 @@ create policy "Tenant users view own gateway audit logs"
 
 -- >>> FILE: 043_saas_subscription_lifecycle_and_events.sql <<<
 -- ==============================================================================
--- InkFlow / PrintERP SaaS - Migration 043: SaaS Subscription Lifecycle & Events
+-- PrintFlow / PrintFlow - Migration 043: SaaS Subscription Lifecycle & Events
 -- Comprehensive Subscription State Machine, Immutable Event Ledger, Downgrade Scheduling,
 -- and Verification Status on Financial Transactions.
 -- ==============================================================================
@@ -6595,7 +6595,7 @@ create policy "Platform super admins can view all subscription events"
 
 -- >>> FILE: 044_subscription_billing_security_and_reconciliation.sql <<<
 -- ==============================================================================
--- InkFlow / PrintERP SaaS - Migration 044: Subscription Billing Security & Reconciliation
+-- PrintFlow / PrintFlow - Migration 044: Subscription Billing Security & Reconciliation
 -- Authoritative Billing Transactions, Webhook Idempotency Constraints,
 -- Cron Performance Indexes, and Multi-Tenant Isolation Policies.
 -- ==============================================================================
@@ -6667,7 +6667,7 @@ $$;
 
 -- >>> FILE: 045_platform_saas_subscription_and_billing.sql <<<
 -- ==============================================================================
--- InkFlow / PrintERP SaaS - Migration 045: Platform SaaS Subscription & Billing
+-- PrintFlow / PrintFlow - Migration 045: Platform SaaS Subscription & Billing
 -- Authoritative Platform Plans, Platform Subscriptions, Lifecycle Events,
 -- Webhook Logs, and Strict Platform/Tenant Isolation Policies.
 -- ==============================================================================
@@ -6925,7 +6925,7 @@ create policy "Platform owners can manage platform_webhook_events"
 -- >>> FILE: 046_enable_realtime_synchronization.sql <<<
 -- ==============================================================================
 -- Migration: 046_enable_realtime_synchronization.sql
--- Description: Enables PostgreSQL Realtime replication for all PrintERP tables
+-- Description: Enables PostgreSQL Realtime replication for all PrintFlow tables
 -- Sets REPLICA IDENTITY FULL and adds operational tables to supabase_realtime publication
 -- ==============================================================================
 
@@ -7031,7 +7031,7 @@ END $$;
 
 -- >>> FILE: 047_qr_geolocation_attendance.sql <<<
 -- ==============================================================================
--- InkFlow ERP SaaS - Migration 047: QR Code & Geolocation Attendance Engine
+-- PrintFlow SaaS - Migration 047: QR Code & Geolocation Attendance Engine
 -- Authoritative schema for:
 --   1. attendance_locations (Workplace geofences, branch scoping, coordinates)
 --   2. attendance_qr_tokens (Cryptographic SHA-256 hashed rotation tokens)
@@ -7337,7 +7337,7 @@ END $$;
 
 -- >>> FILE: 048_production_performance_indexes.sql <<<
 -- ==============================================================================
--- PrintERP / InkFlow SaaS - Migration 048: Production Performance Indexes & Scalability Hardening
+-- PrintFlow / PrintFlow SaaS - Migration 048: Production Performance Indexes & Scalability Hardening
 -- Adds schema-verified composite covering indexes, foreign key index coverage,
 -- and hardened server-side PL/pgSQL aggregation function for 100k+ record scalability.
 -- ==============================================================================
@@ -7517,7 +7517,7 @@ GRANT EXECUTE ON FUNCTION public.get_tenant_dashboard_metrics_v2(UUID) TO servic
 
 -- >>> FILE: 049_support_chat_system.sql <<<
 -- ==============================================================================
--- InkFlow SaaS - Migration 049: Enterprise Support Chat & Conversation System
+-- PrintFlow SaaS - Migration 049: Enterprise Support Chat & Conversation System
 -- Supports:
 --   1. Tenant-isolated support conversations with human-friendly numbering (SUP-000001)
 --   2. Realtime messages with strict distinction between public replies and internal notes
@@ -7806,7 +7806,7 @@ end $$;
 
 -- >>> FILE: 050_platform_notifications_realtime.sql <<<
 -- ==============================================================================
--- InkFlow SaaS - Migration 050: Authoritative Platform Notifications & Real-Time Replication
+-- PrintFlow SaaS - Migration 050: Authoritative Platform Notifications & Real-Time Replication
 -- Supports:
 --   1. Real-time Platform Notifications Ledger (Admin alerts, Telemetry, Broadcasts, Security, Support)
 --   2. Strict Row Level Security (RLS) allowing only verified platform administrators
@@ -7922,7 +7922,7 @@ END $$;
 
 -- >>> FILE: 051_gmail_smtp_email_integration.sql <<<
 -- ==============================================================================
--- PrintERP SaaS - Migration 051: Multi-Tenant Gmail (OAuth 2.0) + SMTP Integration & Scope Isolation
+-- PrintFlow - Migration 051: Multi-Tenant Gmail (OAuth 2.0) + SMTP Integration & Scope Isolation
 -- Supports:
 --   1. Gmail Provider (Google OAuth 2.0 + Gmail API) and Upgraded SMTP
 --   2. Strict Platform Scope (tenant_id IS NULL) vs Tenant Scope (tenant_id IS NOT NULL)
@@ -8079,7 +8079,7 @@ create policy "Tenant users append own email logs"
 
 -- >>> FILE: 052_strict_rls_and_security_hardening.sql <<<
 -- ==============================================================================
--- InkFlow SaaS - Migration 052: Strict RLS & Security Definer Hardening
+-- PrintFlow SaaS - Migration 052: Strict RLS & Security Definer Hardening
 -- Single Source of Truth & Authoritative Isolation Boundary:
 --   1. Enforces search_path = public, pg_temp across ALL security definer functions
 --   2. Enforces caller authorization on sequence & document numbering generators
@@ -8676,7 +8676,7 @@ create policy "Tenant users and platform admins view audit logs"
 
 -- >>> FILE: 053_final_security_and_rls_hardening.sql <<<
 -- ==============================================================================
--- InkFlow SaaS - Migration 053: Comprehensive Production Security & RLS Hardening
+-- PrintFlow SaaS - Migration 053: Comprehensive Production Security & RLS Hardening
 -- Single Source of Truth & Authoritative Isolation Boundary:
 --   1. Enforces search_path = public, pg_temp across ALL security definer functions
 --   2. Restricts EXECUTE permissions on privileged database functions
@@ -9082,7 +9082,7 @@ $$;
 
 -- >>> FILE: 054_auth_pkce_and_trigger_hardening.sql <<<
 -- ==============================================================================
--- InkFlow SaaS - Migration 054: Auth PKCE & handle_new_user Trigger Hardening
+-- PrintFlow SaaS - Migration 054: Auth PKCE & handle_new_user Trigger Hardening
 -- Hardens auth.users trigger to prevent GoTrue 500 errors during OAuth sign-ins.
 -- ==============================================================================
 
@@ -9103,7 +9103,7 @@ begin
     v_email := coalesce(
         nullif(trim(lower(new.email)), ''),
         nullif(trim(lower(new.raw_user_meta_data->>'email')), ''),
-        'user-' || new.id || '@inkflow.internal'
+        'user-' || new.id || '@printflow.internal'
     );
 
     -- 2. Extract and sanitize full name
@@ -9215,7 +9215,7 @@ create trigger on_auth_user_created
 
 -- >>> FILE: 055_email_otp_and_verification_system.sql <<<
 -- ==============================================================================
--- PrintERP / InkFlow SaaS - Migration 055: Email OTP & Link Verification System
+-- PrintFlow / PrintFlow SaaS - Migration 055: Email OTP & Link Verification System
 -- Provides authoritative storage for 6-digit OTPs and secure single-use URL tokens
 -- for registration verification, password resets, and multi-factor security events.
 -- ==============================================================================
@@ -9271,7 +9271,7 @@ create policy "Service role and platform admins manage auth verifications"
 
 -- >>> FILE: 056_auth_verifications_hardening.sql <<<
 -- ==============================================================================
--- PrintERP / InkFlow SaaS - Migration 056: Auth Verifications Hardening & Atomic Functions
+-- PrintFlow / PrintFlow SaaS - Migration 056: Auth Verifications Hardening & Atomic Functions
 -- Enhances public.auth_verifications with explicit purpose support ('password_reset_auth'),
 -- atomic OTP and token verification stored procedures, and strict index optimization.
 -- ==============================================================================
@@ -9457,7 +9457,7 @@ grant execute on function public.verify_auth_token_atomic(text, text) to service
 
 -- >>> FILE: 057_customer_rates_and_pricing_priority.sql <<<
 -- ==============================================================================
--- PrintERP / InkFlow SaaS - Migration 057: Customer Rates & Pricing Priority Engine
+-- PrintFlow / PrintFlow SaaS - Migration 057: Customer Rates & Pricing Priority Engine
 -- Supports:
 --   1. Customer-specific product rates (customer_rates table)
 --   2. 3-Tier Pricing Priority: Custom Rate -> Last Valid Invoice Rate -> Default Rate
@@ -9559,7 +9559,7 @@ END $$;
 
 -- >>> FILE: 059_add_tenant_company_extended_fields.sql <<<
 -- ==============================================================================
--- PrintERP SaaS - Migration 059: Add Tenant Company Extended Fields
+-- PrintFlow - Migration 059: Add Tenant Company Extended Fields
 -- Fields added:
 --   - legal_name: Registered Legal Entity Name (for NBR, tax & contracts)
 --   - office_hours: Business / Shop working hours (e.g. '9:00 AM - 8:00 PM (Sat - Thu)')
@@ -9583,7 +9583,7 @@ CREATE INDEX IF NOT EXISTS idx_companies_legal_name ON public.companies(legal_na
 
 -- >>> FILE: 060_machineries_management.sql <<<
 -- ==============================================================================
--- InkFlow SaaS - Migration 060: Machineries Management & Equipment Fleet
+-- PrintFlow SaaS - Migration 060: Machineries Management & Equipment Fleet
 -- Supports:
 --   1. Tenant-scoped Machineries table (Digital, Offset, Large Format, UV, DTF, CNC, Laser, Fabrication, Finishing)
 --   2. Machine Assignments with start/end windows and job order links
@@ -9933,7 +9933,7 @@ on conflict (role_id, permission_id) do nothing;
 
 -- >>> FILE: 061_machinery_production_task_integration.sql <<<
 -- ==============================================================================
--- InkFlow SaaS - Migration 061: Machinery Multi-Task Production Integration
+-- PrintFlow SaaS - Migration 061: Machinery Multi-Task Production Integration
 -- Supports:
 --   1. Multiple Machine Assignments per Job Order across distinct production tasks (Printing, Lamination, Cutting, CNC, Fabrication, Finishing)
 --   2. Branch scoping on machinery assignments
@@ -9951,7 +9951,7 @@ CREATE INDEX IF NOT EXISTS idx_machinery_assignments_branch ON public.machinery_
 
 -- >>> FILE: 062_production_planning_and_scheduling.sql <<<
 -- ==============================================================================
--- InkFlow SaaS - Migration 062: V2 Advanced Production Planning & Machine Scheduling
+-- PrintFlow SaaS - Migration 062: V2 Advanced Production Planning & Machine Scheduling
 -- Supports:
 --   1. Independent, trackable Production Tasks with multi-task sequencing
 --   2. Task Lifecycle: queued -> scheduled -> ready -> in_progress -> completed (plus on_hold, rework, cancelled)
@@ -10048,7 +10048,7 @@ CREATE POLICY "Authorized company users can manage production tasks"
 
 -- >>> FILE: 063_production_concurrency_and_hardening.sql <<<
 -- ==============================================================================
--- InkFlow SaaS - Migration 063: Production Concurrency & Machine Scheduling Hardening
+-- PrintFlow SaaS - Migration 063: Production Concurrency & Machine Scheduling Hardening
 -- Supports:
 --   1. PostgreSQL btree_gist extension for interval exclusion constraints
 --   2. Database-level race-condition prevention on overlapping machine schedules
@@ -10211,7 +10211,7 @@ $$;
 
 -- >>> FILE: 064_inventory_management.sql <<<
 -- ==============================================================================
--- InkFlow SaaS - Migration 064: V3 Advanced Inventory Management
+-- PrintFlow SaaS - Migration 064: V3 Advanced Inventory Management
 -- Supports:
 --   1. Inventory Locations / Multi-Warehouse per tenant and branch
 --   2. Enhanced Material Master (SKUs, Specifications, Dimensions, Reorder Thresholds)
@@ -10702,7 +10702,7 @@ CREATE POLICY "Active company users can view task requirements"
 
 -- >>> FILE: 065_products_pricing_costing.sql <<<
 -- ==============================================================================
--- InkFlow SaaS - Migration 065: Products, Services, Advanced Formulas & Costing
+-- PrintFlow SaaS - Migration 065: Products, Services, Advanced Formulas & Costing
 -- Supports:
 --   1. Extended Product Master with Variants & Bangladeshi Print/Signage Specs
 --   2. Structured Production Formulas (Material, Machine, Labor, Finishing, Transport)
@@ -10865,7 +10865,7 @@ create policy "Active company users can manage price list items"
 
 -- >>> FILE: 066_purchasing_and_suppliers.sql <<<
 -- ==============================================================================
--- PrintERP / InkFlow SaaS - Migration 066: Purchasing & Suppliers Management (V5)
+-- PrintFlow / PrintFlow SaaS - Migration 066: Purchasing & Suppliers Management (V5)
 -- Production-Certified Multi-Tenant Procurement & Supplier Operations
 -- ==============================================================================
 
@@ -11153,7 +11153,7 @@ create policy "tenant_isolation_supplier_ledger_entries" on public.supplier_ledg
 
 -- >>> FILE: 067_workforce_finance.sql <<<
 -- ==============================================================================
--- InkFlow ERP SaaS - Migration 067: Workforce + Geo Attendance + Double-Entry Finance
+-- PrintFlow SaaS - Migration 067: Workforce + Geo Attendance + Double-Entry Finance
 -- Authoritative schema for:
 --   1. Extended Employee Master (Branch, Responsibilities, Employment Types, Emergency Contacts, Wage Rates)
 --   2. Shifts & Overnight Schedule Management (Overnight shifts, Grace periods, Break times)
@@ -11436,7 +11436,7 @@ create policy "tenant_isolation_financial_periods" on public.financial_periods f
 
 -- >>> FILE: 068_bangladesh_localization_vat.sql <<<
 -- ==============================================================================
--- InkFlow ERP - Migration 068: Bangladesh Localization & VAT Engine (V7)
+-- PrintFlow - Migration 068: Bangladesh Localization & VAT Engine (V7)
 -- Authoritative, multi-tenant Bangladesh tax architecture & localized profile
 -- ==============================================================================
 
@@ -11592,7 +11592,7 @@ alter table public.branches
 
 -- >>> FILE: 069_mobile_communication_offline.sql <<<
 -- ==============================================================================
--- InkFlow ERP - Migration 069: Mobile + WhatsApp + SMS + Offline Sync
+-- PrintFlow - Migration 069: Mobile + WhatsApp + SMS + Offline Sync
 -- Multi-Tenant Outbox, Idempotent Sync, Unified Communication & Client Devices
 -- ==============================================================================
 
@@ -11737,7 +11737,7 @@ CREATE POLICY "client_devices_tenant_isolation" ON client_devices
 
 -- >>> FILE: 070_multi_branch_advanced_management.sql <<<
 -- ==============================================================================
--- InkFlow SaaS - Migration 070: Multi-Branch & Advanced Management Engine (V9)
+-- PrintFlow SaaS - Migration 070: Multi-Branch & Advanced Management Engine (V9)
 -- Extends branches table, introduces branch transfer requests, inter-branch
 -- financial transfers, cross-branch employee assignments, workflow configurations,
 -- and user branch access with strict multi-tenant Row Level Security.

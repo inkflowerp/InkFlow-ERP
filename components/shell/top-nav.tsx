@@ -28,16 +28,16 @@ export function TopNav() {
  const handleClose = () => setIsAttendanceOpen(false)
  const handleToggle = () => setIsAttendanceOpen((prev) => !prev)
 
- window.addEventListener('printerp_open_attendance_modal', handleOpen)
- window.addEventListener('printerp_open_attendance_punch', handleOpen)
- window.addEventListener('printerp_close_attendance_modal', handleClose)
- window.addEventListener('printerp_toggle_attendance_modal', handleToggle)
+ window.addEventListener('printflow_open_attendance_modal', handleOpen)
+ window.addEventListener('printflow_open_attendance_punch', handleOpen)
+ window.addEventListener('printflow_close_attendance_modal', handleClose)
+ window.addEventListener('printflow_toggle_attendance_modal', handleToggle)
 
  return () => {
- window.removeEventListener('printerp_open_attendance_modal', handleOpen)
- window.removeEventListener('printerp_open_attendance_punch', handleOpen)
- window.removeEventListener('printerp_close_attendance_modal', handleClose)
- window.removeEventListener('printerp_toggle_attendance_modal', handleToggle)
+ window.removeEventListener('printflow_open_attendance_modal', handleOpen)
+ window.removeEventListener('printflow_open_attendance_punch', handleOpen)
+ window.removeEventListener('printflow_close_attendance_modal', handleClose)
+ window.removeEventListener('printflow_toggle_attendance_modal', handleToggle)
     }
   }, [])
 
@@ -100,7 +100,7 @@ export function TopNav() {
 
         {/* Global Search Bar - Responsive Width */}
         <button
- type="button"onClick={() => window.dispatchEvent(new Event('printerp_open_search'))}
+ type="button"onClick={() => window.dispatchEvent(new Event('printflow_open_search'))}
  className="hidden sm:flex items-center justify-between gap-2 sm:gap-3 w-36 md:w-52 lg:w-64 xl:w-80 rounded-lg border border-border bg-muted/40 hover:bg-muted/70 px-3 py-1.5 sm:py-2 text-xs sm:text-sm text-muted-foreground hover:text-foreground cursor-pointer shrink transition-colors min-h-[38px] shadow-2xs"title="Global Search (⌘K or /)">
           <div className="flex items-center gap-2 min-w-0">
             <Search className="h-4 w-4 text-muted-foreground shrink-0"/>
@@ -113,7 +113,7 @@ export function TopNav() {
 
         {/* Quick Search Icon Button (Mobile under 640px) */}
         <button
- type="button"onClick={() => window.dispatchEvent(new Event('printerp_open_search'))}
+ type="button"onClick={() => window.dispatchEvent(new Event('printflow_open_search'))}
  className="sm:hidden flex items-center justify-center h-9 w-9 rounded-lg border border-border bg-muted/40 text-muted-foreground hover:text-foreground hover:bg-muted/70 cursor-pointer shrink-0 min-h-[36px] min-w-[36px] transition-colors"title="Global Search (/)"aria-label="Search">
           <Search className="h-4 w-4 shrink-0 text-muted-foreground"/>
         </button>

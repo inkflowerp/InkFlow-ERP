@@ -164,8 +164,8 @@ export const SOUND_CATALOG: SoundCatalogItem[] = [
   },
 ]
 
-const MUTE_STORAGE_KEY = 'printerp_notifications_muted'
-const VOLUME_STORAGE_KEY = 'printerp_notification_volume'
+const MUTE_STORAGE_KEY = 'printflow_notifications_muted'
+const VOLUME_STORAGE_KEY = 'printflow_notification_volume'
 
 let sharedAudioContext: AudioContext | null = null
 
@@ -237,7 +237,7 @@ export function setSoundMuted(muted: boolean): void {
   if (typeof window === 'undefined') return
   try {
     localStorage.setItem(MUTE_STORAGE_KEY, String(muted))
-    window.dispatchEvent(new CustomEvent('printerp_sound_mute_changed', { detail: { muted } }))
+    window.dispatchEvent(new CustomEvent('printflow_sound_mute_changed', { detail: { muted } }))
   } catch {}
 }
 
@@ -273,7 +273,7 @@ export function setSoundVolume(volume: number): void {
   try {
     const val = Math.max(0, Math.min(1, volume))
     localStorage.setItem(VOLUME_STORAGE_KEY, String(val))
-    window.dispatchEvent(new CustomEvent('printerp_sound_volume_changed', { detail: { volume: val } }))
+    window.dispatchEvent(new CustomEvent('printflow_sound_volume_changed', { detail: { volume: val } }))
   } catch {}
 }
 

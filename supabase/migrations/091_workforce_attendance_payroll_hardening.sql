@@ -1,5 +1,5 @@
 -- ==============================================================================
--- InkFlow ERP SaaS - Migration 091: Workforce, Attendance, Overtime & Payroll Hardening
+-- PrintFlow SaaS - Migration 091: Workforce, Attendance, Overtime & Payroll Hardening
 -- Authoritative schema for:
 --   1. Fix Supabase advisor findings (salary_advances RLS, duplicate indexes, search_path)
 --   2. Extended Employee Master with Bangladesh specifics & Salary Structure

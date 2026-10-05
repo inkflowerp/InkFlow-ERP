@@ -1,5 +1,5 @@
 -- ==============================================================================
--- InkFlow SaaS - Migration 086: Product Categories & Composable Master Architecture
+-- PrintFlow SaaS - Migration 086: Product Categories & Composable Master Architecture
 -- Supports:
 --   1. Dedicated Product Categories Hierarchy (product_categories table)
 --   2. Product Type Applicability and Parent-Child Taxonomy

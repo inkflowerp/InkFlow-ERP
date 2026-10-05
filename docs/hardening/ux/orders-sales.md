@@ -1,7 +1,7 @@
 # UX Specification: Orders & Sales Module (অর্ডার, বিক্রয় ও জব ট্র্যাকিং)
 
 ## 1. Executive Summary & Purpose
-The Orders & Sales module is the operational engine of InkFlow ERP. Its core job to be done (JTBD) is helping press owners, production managers, and customer service staff answer:
+The Orders & Sales module is the operational engine of PrintFlow. Its core job to be done (JTBD) is helping press owners, production managers, and customer service staff answer:
 > **"What jobs are blocked or scheduled for delivery today, and what press operations need immediate intervention?"**
 
 The main workflow must be completable in **$\le 3$ clicks from the Dashboard**:

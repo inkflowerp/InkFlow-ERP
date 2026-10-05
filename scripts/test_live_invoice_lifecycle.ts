@@ -32,7 +32,7 @@ async function testLiveLifecycle() {
     company_id: companyId,
     customer_name: 'Live Forensic Audit Customer',
     customer_phone: '01712345678',
-    customer_email: 'forensic.audit@inkflow.com',
+    customer_email: 'forensic.audit@printflow.bd',
     customer_address: 'Motijheel C/A, Dhaka',
     invoice_type: 'sales_invoice',
     invoice_date: new Date().toISOString().split('T')[0],

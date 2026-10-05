@@ -1,6 +1,6 @@
 import { createClient } from '../supabase/server.ts'
 import type { ProductionJobRecord, ProductionReworkRecord } from '../../types/production.types.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../db/data-store.ts'
 
 export class ProductionRepository {
   static async getProductionJobs(companyId: string): Promise<ProductionJobRecord[]> {
@@ -17,7 +17,7 @@ export class ProductionRepository {
       }
       return (data || []) as unknown as ProductionJobRecord[]
     } catch (err: any) {
-      const all = PrintERPDataStore.get<ProductionJobRecord[]>(STORAGE_KEYS.PRODUCTION_JOBS) || []
+      const all = PrintFlowDataStore.get<ProductionJobRecord[]>(STORAGE_KEYS.PRODUCTION_JOBS) || []
       return all.filter((p: ProductionJobRecord) => p.company_id === companyId)
     }
   }
@@ -37,7 +37,7 @@ export class ProductionRepository {
       }
       return (data as unknown as ProductionJobRecord) || null
     } catch (err: any) {
-      const all = PrintERPDataStore.get<ProductionJobRecord[]>(STORAGE_KEYS.PRODUCTION_JOBS) || []
+      const all = PrintFlowDataStore.get<ProductionJobRecord[]>(STORAGE_KEYS.PRODUCTION_JOBS) || []
       return all.find((p: ProductionJobRecord) => p.id === id && p.company_id === companyId) || null
     }
   }
@@ -90,9 +90,9 @@ export class ProductionRepository {
       }
     } catch {}
 
-    const all = PrintERPDataStore.get<ProductionJobRecord[]>(STORAGE_KEYS.PRODUCTION_JOBS) || []
+    const all = PrintFlowDataStore.get<ProductionJobRecord[]>(STORAGE_KEYS.PRODUCTION_JOBS) || []
     all.push(payload)
-    PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_JOBS, all)
+    PrintFlowDataStore.set(STORAGE_KEYS.PRODUCTION_JOBS, all)
     return payload as unknown as ProductionJobRecord
   }
 
@@ -117,11 +117,11 @@ export class ProductionRepository {
       }
     } catch {}
 
-    const all = PrintERPDataStore.get<ProductionJobRecord[]>(STORAGE_KEYS.PRODUCTION_JOBS) || []
+    const all = PrintFlowDataStore.get<ProductionJobRecord[]>(STORAGE_KEYS.PRODUCTION_JOBS) || []
     const idx = all.findIndex((p: ProductionJobRecord) => p.id === id && (!companyId || p.company_id === companyId))
     if (idx >= 0) {
       all[idx] = { ...all[idx], ...payload }
-      PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_JOBS, all)
+      PrintFlowDataStore.set(STORAGE_KEYS.PRODUCTION_JOBS, all)
       return all[idx]
     }
     return null
@@ -192,9 +192,9 @@ export class ProductionRepository {
       }
     } catch {}
 
-    const all = PrintERPDataStore.get<ProductionReworkRecord[]>(STORAGE_KEYS.REWORKS) || []
+    const all = PrintFlowDataStore.get<ProductionReworkRecord[]>(STORAGE_KEYS.REWORKS) || []
     all.push(payload)
-    PrintERPDataStore.set(STORAGE_KEYS.REWORKS, all)
+    PrintFlowDataStore.set(STORAGE_KEYS.REWORKS, all)
     return payload as unknown as ProductionReworkRecord
   }
 

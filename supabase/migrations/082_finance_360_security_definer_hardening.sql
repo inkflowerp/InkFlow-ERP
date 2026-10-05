@@ -1,4 +1,4 @@
--- InkFlow ERP SaaS - Migration 082: Finance 360 SECURITY DEFINER RPC Hardening
+-- PrintFlow SaaS - Migration 082: Finance 360 SECURITY DEFINER RPC Hardening
 -- Adds explicit SET search_path = public, pg_temp; and enforces server tenant boundaries.
 
 -- 1. RECORD EXPENSE ATOMIC

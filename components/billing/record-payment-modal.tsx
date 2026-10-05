@@ -44,7 +44,7 @@ import {
  getInvoicesAction,
  getInvoiceByIdAction,
 } from '@/actions/billing.actions'
-import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
+import { PrintFlowDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 
 export interface RecordPaymentModalProps {
  open: boolean
@@ -151,7 +151,7 @@ export function RecordPaymentModal({
 
       // 2. Local storage invoices
  try {
- const cached = PrintERPDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []
+ const cached = PrintFlowDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []
  cached.forEach((i) => {
  if (i && i.id) mergedMap.set(i.id, i)
         })
@@ -322,7 +322,7 @@ export function RecordPaymentModal({
 
       // Synchronize client-side store
  try {
- const localInvs = PrintERPDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []
+ const localInvs = PrintFlowDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []
  const updatedInvs = localInvs.map((inv) => {
  if (inv.id === selectedInvoice.id) {
  const newPaid = Number(inv.paid_amount || 0) + numericAmount
@@ -336,15 +336,15 @@ export function RecordPaymentModal({
           }
  return inv
         })
- PrintERPDataStore.set(STORAGE_KEYS.INVOICES, updatedInvs)
+ PrintFlowDataStore.set(STORAGE_KEYS.INVOICES, updatedInvs)
 
- const localPays = PrintERPDataStore.get<PaymentRecord[]>(STORAGE_KEYS.PAYMENTS) || []
- PrintERPDataStore.set(STORAGE_KEYS.PAYMENTS, [payment, ...localPays.filter((p) => p.id !== payment.id)])
+ const localPays = PrintFlowDataStore.get<PaymentRecord[]>(STORAGE_KEYS.PAYMENTS) || []
+ PrintFlowDataStore.set(STORAGE_KEYS.PAYMENTS, [payment, ...localPays.filter((p) => p.id !== payment.id)])
 
  if (typeof window !== 'undefined') {
- window.dispatchEvent(new CustomEvent('printerp_table_synced:invoices'))
- window.dispatchEvent(new CustomEvent('printerp_table_synced:payments'))
- window.dispatchEvent(new CustomEvent('printerp_data_sync'))
+ window.dispatchEvent(new CustomEvent('printflow_table_synced:invoices'))
+ window.dispatchEvent(new CustomEvent('printflow_table_synced:payments'))
+ window.dispatchEvent(new CustomEvent('printflow_data_sync'))
         }
       } catch {}
 

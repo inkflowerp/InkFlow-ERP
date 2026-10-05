@@ -10,7 +10,7 @@ import { isTestEnvironment } from './runtime-env.ts'
 const ALGORITHM = 'aes-256-gcm'
 const IV_LENGTH = 12 // 96 bits recommended for GCM
 const AUTH_TAG_LENGTH = 16 // 128 bits
-const DEFAULT_SALT = 'printerp-saas-master-key-salt-2026'
+const DEFAULT_SALT = 'printflow-saas-master-key-salt-2026'
 export const CURRENT_KEY_ID = 'k1'
 
 export type CredentialErrorCode =

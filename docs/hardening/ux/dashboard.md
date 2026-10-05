@@ -1,7 +1,7 @@
-# InkFlow ERP — UX Hardening Specification: Module 1 (Dashboard)
+# PrintFlow — UX Hardening Specification: Module 1 (Dashboard)
 
 ## 1. Overview & Core Mission
-The Dashboard is the operational control center of InkFlow ERP. When an owner, branch manager, or team member opens InkFlow, the first screen must immediately answer one primary question: **"What needs my attention now?"**
+The Dashboard is the operational control center of PrintFlow. When an owner, branch manager, or team member opens PrintFlow, the first screen must immediately answer one primary question: **"What needs my attention now?"**
 
 ### Primary Jobs-To-Be-Done (JTBD):
 1. **Immediate Situational Awareness ($\le 2$ seconds):** See today's cash collections, booked sales, shop floor production workload, and overdue risks at a glance.

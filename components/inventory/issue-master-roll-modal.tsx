@@ -37,7 +37,7 @@ import {
  issueMultipleMaterialsBatchAction,
 } from '@/actions/inventory.actions'
 import { getMaterialWarehouseStockBreakdown } from '@/lib/units'
-import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
+import { PrintFlowDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 
 export interface IssueMasterRollModalProps {
  open: boolean
@@ -368,13 +368,13 @@ export function IssueMasterRollModal({
 
  if (all.length === 0 && companyId) {
  try {
- const stored = PrintERPDataStore.getAll<MaterialRecord>(STORAGE_KEYS.MATERIALS, companyId) || []
+ const stored = PrintFlowDataStore.getAll<MaterialRecord>(STORAGE_KEYS.MATERIALS, companyId) || []
  if (stored.length > 0) all = stored
       } catch {}
     }
  if (all.length === 0) {
  try {
- const storedGlobal = PrintERPDataStore.get<MaterialRecord[]>(STORAGE_KEYS.MATERIALS) || []
+ const storedGlobal = PrintFlowDataStore.get<MaterialRecord[]>(STORAGE_KEYS.MATERIALS) || []
  if (storedGlobal.length > 0) all = storedGlobal
       } catch {}
     }
@@ -382,8 +382,8 @@ export function IssueMasterRollModal({
     // Include registered stocked inventory products
  try {
  const allProds = companyId
-        ? PrintERPDataStore.getAll<any>(STORAGE_KEYS.PRODUCTS, companyId) || []
-        : PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTS) || []
+        ? PrintFlowDataStore.getAll<any>(STORAGE_KEYS.PRODUCTS, companyId) || []
+        : PrintFlowDataStore.get<any[]>(STORAGE_KEYS.PRODUCTS) || []
  for (const p of allProds) {
  if (!all.some((m) => m.id === p.id || (p.sku && m.sku && m.sku.toLowerCase() === p.sku.toLowerCase()))) {
  all.push({
@@ -421,12 +421,12 @@ export function IssueMasterRollModal({
  if (Array.isArray(rolls) && rolls.length > 0) return rolls
  if (companyId) {
  try {
- const stored = PrintERPDataStore.getAll<InventoryRollRecord>(STORAGE_KEYS.MOUNTED_ROLLS, companyId) || []
+ const stored = PrintFlowDataStore.getAll<InventoryRollRecord>(STORAGE_KEYS.MOUNTED_ROLLS, companyId) || []
  if (stored.length > 0) return stored
       } catch {}
     }
  try {
- const storedGlobal = PrintERPDataStore.get<InventoryRollRecord[]>(STORAGE_KEYS.MOUNTED_ROLLS) || []
+ const storedGlobal = PrintFlowDataStore.get<InventoryRollRecord[]>(STORAGE_KEYS.MOUNTED_ROLLS) || []
  if (storedGlobal.length > 0) return storedGlobal
     } catch {}
  return []
@@ -437,13 +437,13 @@ export function IssueMasterRollModal({
  let list = Array.isArray(locations) && locations.length > 0 ? [...locations] : []
  if (list.length === 0 && companyId) {
  try {
- const stored = PrintERPDataStore.getAll<InventoryLocationRecord>(STORAGE_KEYS.LOCATIONS, companyId) || []
+ const stored = PrintFlowDataStore.getAll<InventoryLocationRecord>(STORAGE_KEYS.LOCATIONS, companyId) || []
  if (stored.length > 0) list = stored
       } catch {}
     }
  if (list.length === 0) {
  try {
- const storedGlobal = PrintERPDataStore.get<InventoryLocationRecord[]>(STORAGE_KEYS.LOCATIONS) || []
+ const storedGlobal = PrintFlowDataStore.get<InventoryLocationRecord[]>(STORAGE_KEYS.LOCATIONS) || []
  if (storedGlobal.length > 0) list = storedGlobal
       } catch {}
     }
@@ -711,10 +711,10 @@ export function IssueMasterRollModal({
 
       // Dispatch real-time sync broadcast events
  if (typeof window !== 'undefined') {
- window.dispatchEvent(new CustomEvent('printerp_table_synced:materials'))
- window.dispatchEvent(new CustomEvent('printerp_table_synced:stock_ledger'))
- window.dispatchEvent(new CustomEvent('printerp_table_synced:mounted_rolls'))
- window.dispatchEvent(new CustomEvent('printerp_table_synced:floor_consumption'))
+ window.dispatchEvent(new CustomEvent('printflow_table_synced:materials'))
+ window.dispatchEvent(new CustomEvent('printflow_table_synced:stock_ledger'))
+ window.dispatchEvent(new CustomEvent('printflow_table_synced:mounted_rolls'))
+ window.dispatchEvent(new CustomEvent('printflow_table_synced:floor_consumption'))
       }
 
  setSuccess(

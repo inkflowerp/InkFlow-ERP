@@ -1,5 +1,5 @@
 -- ==============================================================================
--- InkFlow ERP SaaS - Migration 076: Sync Canonical Plan Features & Business Entitlements
+-- PrintFlow SaaS - Migration 076: Sync Canonical Plan Features & Business Entitlements
 -- Fixes missing canonical features in subscription_plans for Business & Enterprise tiers.
 --
 -- Feature Distribution:

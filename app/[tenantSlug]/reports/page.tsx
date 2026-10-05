@@ -192,16 +192,16 @@ export default function BusinessReportsPage() {
  loadServerData()
     }
 
- window.addEventListener('printerp_table_synced:orders', handleSync)
- window.addEventListener('printerp_table_synced:invoices', handleSync)
- window.addEventListener('printerp_table_synced:production_jobs', handleSync)
- window.addEventListener('printerp_table_synced:expenses', handleSync)
+ window.addEventListener('printflow_table_synced:orders', handleSync)
+ window.addEventListener('printflow_table_synced:invoices', handleSync)
+ window.addEventListener('printflow_table_synced:production_jobs', handleSync)
+ window.addEventListener('printflow_table_synced:expenses', handleSync)
 
  return () => {
- window.removeEventListener('printerp_table_synced:orders', handleSync)
- window.removeEventListener('printerp_table_synced:invoices', handleSync)
- window.removeEventListener('printerp_table_synced:production_jobs', handleSync)
- window.removeEventListener('printerp_table_synced:expenses', handleSync)
+ window.removeEventListener('printflow_table_synced:orders', handleSync)
+ window.removeEventListener('printflow_table_synced:invoices', handleSync)
+ window.removeEventListener('printflow_table_synced:production_jobs', handleSync)
+ window.removeEventListener('printflow_table_synced:expenses', handleSync)
     }
   }, [loadServerData])
 

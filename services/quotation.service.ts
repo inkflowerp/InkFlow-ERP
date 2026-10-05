@@ -19,7 +19,7 @@ import {
   getSectorForQuotation,
 } from '../lib/quotations/quotation-utils.ts'
 import { QuotationRepository } from '../lib/repositories/quotation.repository.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../lib/db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../lib/db/data-store.ts'
 import type { SalesOrderRecord } from '../types/order.types.ts'
 import type { InvoiceRecord } from '../types/billing.types.ts'
 

@@ -31,9 +31,9 @@ describe('Trial Account Auth & Persistence Verification', () => {
       registeredAt: new Date().toISOString(),
     }
 
-    storeAddItem('printerp_registered_users', regRecord)
+    storeAddItem('printflow_registered_users', regRecord)
 
-    const list = storeGet<any[]>('printerp_registered_users')
+    const list = storeGet<any[]>('printflow_registered_users')
     assert.ok(list)
     assert.strictEqual(list.length, 1)
     assert.strictEqual(list[0].email, 'owner@demopress.com')
@@ -54,7 +54,7 @@ describe('Trial Account Auth & Persistence Verification', () => {
       created_at: new Date().toISOString(),
     }
 
-    storeAddItem('printerp_platform_companies', trialCompany)
+    storeAddItem('printflow_platform_companies', trialCompany)
 
     const ownerUser = {
       id: 'cu-owner-001',
@@ -75,9 +75,9 @@ describe('Trial Account Auth & Persistence Verification', () => {
       roles: [{ id: 'r1', name: 'Owner', slug: 'owner' }],
     }
 
-    storeAddItem('printerp_tenant_company_users', ownerUser)
+    storeAddItem('printflow_tenant_company_users', ownerUser)
 
-    const users = storeGet<any[]>('printerp_tenant_company_users')
+    const users = storeGet<any[]>('printflow_tenant_company_users')
     const match = users?.find((u) => u.profile?.email === 'owner@demopress.com')
     assert.ok(match)
     assert.strictEqual(match.company_id, companyId)
@@ -89,9 +89,9 @@ describe('Trial Account Auth & Persistence Verification', () => {
     const email = 'owner@demopress.com'
     const inputPassword: string = 'password123'
 
-    const users = storeGet<any[]>('printerp_tenant_company_users') || []
-    const registered = storeGet<any[]>('printerp_registered_users') || []
-    const companies = storeGet<any[]>('printerp_platform_companies') || []
+    const users = storeGet<any[]>('printflow_tenant_company_users') || []
+    const registered = storeGet<any[]>('printflow_registered_users') || []
+    const companies = storeGet<any[]>('printflow_platform_companies') || []
 
     const userMatch = users.find((u) => u.profile?.email.toLowerCase() === email.toLowerCase())
     const regMatch = registered.find((r) => r.email.toLowerCase() === email.toLowerCase())
@@ -101,7 +101,7 @@ describe('Trial Account Auth & Persistence Verification', () => {
     assert.ok(regMatch)
     assert.ok(companyMatch)
 
-    const isPasswordValid = regMatch.password === inputPassword || inputPassword === 'printerp1234'
+    const isPasswordValid = regMatch.password === inputPassword || inputPassword === 'printflow1234'
     assert.strictEqual(isPasswordValid, true)
 
     // Build session data

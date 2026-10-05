@@ -9,7 +9,7 @@ import { BillingRepository, getFinancialPersistenceMode } from './billing.reposi
 import { measureAsync } from '../performance/logger.ts'
 import { buildPaginatedResponse } from '../api/pagination-helper.ts'
 import type { PaginatedResult } from '../api/pagination-helper.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../db/data-store.ts'
+import { PrintFlowDataStore, STORAGE_KEYS } from '../db/data-store.ts'
 import { coalesceQuery, invalidateQueryCache } from '../performance/query-coalesce.ts'
 import { isReadyProduct } from '../units.ts'
 
@@ -75,7 +75,7 @@ export class OrderRepository {
             console.error('[OrderRepository.getOrders] Database error in production mode:', err)
             throw new Error(`Database orders fetch failed: ${err?.message || 'Supabase query error'}`)
           }
-          const all = PrintERPDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS) || []
+          const all = PrintFlowDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS) || []
           return all.filter((o: SalesOrderRecord) => o.company_id === companyId)
         }
       })
@@ -174,7 +174,7 @@ export class OrderRepository {
       }
       return (data as unknown as SalesOrderRecord) || null
     } catch (err: any) {
-      const all = PrintERPDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS) || []
+      const all = PrintFlowDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS) || []
       return all.find((o: SalesOrderRecord) => (o.id === id || o.order_number === id) && o.company_id === companyId) || null
     }
   }
@@ -194,7 +194,7 @@ export class OrderRepository {
   }): Promise<SalesOrderRecord> {
     // 0. Idempotency Check: if idempotency_key is provided, prevent duplicate order creation
     if (order.idempotency_key) {
-      const allLocal = PrintERPDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS) || []
+      const allLocal = PrintFlowDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS) || []
       const localExisting = allLocal.find(
         (o) => o.company_id === order.company_id && (o as any).idempotency_key === order.idempotency_key
       )
@@ -409,14 +409,14 @@ export class OrderRepository {
       updated_at: new Date().toISOString(),
     }
 
-    const all = PrintERPDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS) || []
+    const all = PrintFlowDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS) || []
     const existingIdx = all.findIndex((o) => (order.id && o.id === order.id) || (orderNumber && o.order_number === orderNumber))
     if (existingIdx >= 0) {
       all[existingIdx] = { ...all[existingIdx], ...localOrder }
     } else {
       all.unshift(localOrder)
     }
-    PrintERPDataStore.set(STORAGE_KEYS.ORDERS, all)
+    PrintFlowDataStore.set(STORAGE_KEYS.ORDERS, all)
 
     // Auto-provision design job if order needs design or design check
     try {
@@ -430,7 +430,7 @@ export class OrderRepository {
         localOrder.items?.some((it: any) => (it as any).workflow_routing === 'design_ok')
 
       if (isDesignReq || isDesignOk) {
-        const designJobs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.DESIGN_JOBS) || []
+        const designJobs = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.DESIGN_JOBS) || []
         const eligibleItems = (localOrder.items || []).filter((it: any) => {
           if (isReadyProduct(it) || it.item_kind === 'ready_product' || it.workflow_routing === 'ready_product') {
             return false
@@ -521,7 +521,7 @@ export class OrderRepository {
               created_at: new Date().toISOString(),
               updated_at: new Date().toISOString(),
             }
-            PrintERPDataStore.addItem(STORAGE_KEYS.DESIGN_JOBS, newDesignJob)
+            PrintFlowDataStore.addItem(STORAGE_KEYS.DESIGN_JOBS, newDesignJob)
           }
         })
       }
@@ -584,7 +584,7 @@ export class OrderRepository {
       }
     }
 
-    const all = PrintERPDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS) || []
+    const all = PrintFlowDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS) || []
     const idx = all.findIndex((o) => (o.id === id || o.order_number === id) && (o.company_id === companyId || !companyId || companyId === 'default'))
     if (idx >= 0) {
       if (typeof expectedVersion === 'number' && all[idx].version !== undefined && all[idx].version !== expectedVersion) {
@@ -595,7 +595,7 @@ export class OrderRepository {
       }
       const nextVersion = (all[idx].version || 1) + 1
       all[idx] = { ...all[idx], ...updates, version: nextVersion, updated_at: new Date().toISOString() }
-      PrintERPDataStore.set(STORAGE_KEYS.ORDERS, all)
+      PrintFlowDataStore.set(STORAGE_KEYS.ORDERS, all)
       return all[idx]
     }
     throw new Error(`Order ${id} not found`)
@@ -620,7 +620,7 @@ export class OrderRepository {
       }
     } catch {}
 
-    const all = PrintERPDataStore.get<JobOrderRecord[]>(STORAGE_KEYS.JOB_ORDERS) || []
+    const all = PrintFlowDataStore.get<JobOrderRecord[]>(STORAGE_KEYS.JOB_ORDERS) || []
     return all.filter((j) => j.company_id === companyId && (!orderId || j.order_id === orderId || (j as any).sales_order_id === orderId))
   }
 
@@ -693,9 +693,9 @@ export class OrderRepository {
       customer_name: 'Client',
       ...payload,
     }
-    const all = PrintERPDataStore.get<JobOrderRecord[]>(STORAGE_KEYS.JOB_ORDERS) || []
+    const all = PrintFlowDataStore.get<JobOrderRecord[]>(STORAGE_KEYS.JOB_ORDERS) || []
     all.unshift(localJob)
-    PrintERPDataStore.set(STORAGE_KEYS.JOB_ORDERS, all)
+    PrintFlowDataStore.set(STORAGE_KEYS.JOB_ORDERS, all)
     return localJob
   }
 
@@ -720,9 +720,9 @@ export class OrderRepository {
       if (!error) return true
     } catch {}
 
-    const all = PrintERPDataStore.get<JobOrderRecord[]>(STORAGE_KEYS.JOB_ORDERS) || []
+    const all = PrintFlowDataStore.get<JobOrderRecord[]>(STORAGE_KEYS.JOB_ORDERS) || []
     const updated = all.map((j) => (j.id === id ? { ...j, ...payload } : j))
-    PrintERPDataStore.set(STORAGE_KEYS.JOB_ORDERS, updated)
+    PrintFlowDataStore.set(STORAGE_KEYS.JOB_ORDERS, updated)
     return true
   }
 
@@ -752,13 +752,13 @@ export class OrderRepository {
       // Local fallback
     }
 
-    const allOrders = PrintERPDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS) || []
+    const allOrders = PrintFlowDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS) || []
     const remainingOrders = allOrders.filter((o) => o.company_id && o.company_id !== companyId)
-    PrintERPDataStore.set(STORAGE_KEYS.ORDERS, remainingOrders)
+    PrintFlowDataStore.set(STORAGE_KEYS.ORDERS, remainingOrders)
 
-    const allJobs = PrintERPDataStore.get<JobOrderRecord[]>(STORAGE_KEYS.JOB_ORDERS) || []
+    const allJobs = PrintFlowDataStore.get<JobOrderRecord[]>(STORAGE_KEYS.JOB_ORDERS) || []
     const remainingJobs = allJobs.filter((j) => j.company_id && j.company_id !== companyId)
-    PrintERPDataStore.set(STORAGE_KEYS.JOB_ORDERS, remainingJobs)
+    PrintFlowDataStore.set(STORAGE_KEYS.JOB_ORDERS, remainingJobs)
 
     return true
   }

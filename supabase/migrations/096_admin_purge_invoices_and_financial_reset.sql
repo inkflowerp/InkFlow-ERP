@@ -1,5 +1,5 @@
 -- ==============================================================================
--- PrintERP SaaS - Migration 096: Administrative Invoice Purge & Financial Reset
+-- PrintFlow - Migration 096: Administrative Invoice Purge & Financial Reset
 -- Allows secure, atomic cleanup of invoices, items, payments, and sequence counters
 -- ==============================================================================
 

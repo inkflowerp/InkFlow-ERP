@@ -1,8 +1,8 @@
-# InkFlow V9 — Multi-Branch + Advanced Management Certification Report
+# PrintFlow V9 — Multi-Branch + Advanced Management Certification Report
 
 ## Executive Summary
 
-InkFlow V9 (Multi-Branch + Advanced Management) has been successfully implemented, audited, hardened, and certified against all production standards. Building on top of the frozen V1–V8 baseline (migrations 001–069), V9 introduces enterprise-level branch lifecycle management, atomic cross-branch inventory transfers, double-entry financial transfers, cross-branch production routing, temporary workforce assignments, and consolidated management reporting without regressing any existing system.
+PrintFlow V9 (Multi-Branch + Advanced Management) has been successfully implemented, audited, hardened, and certified against all production standards. Building on top of the frozen V1–V8 baseline (migrations 001–069), V9 introduces enterprise-level branch lifecycle management, atomic cross-branch inventory transfers, double-entry financial transfers, cross-branch production routing, temporary workforce assignments, and consolidated management reporting without regressing any existing system.
 
 **Status: CERTIFIED — PRODUCTION READY**
 
@@ -39,7 +39,7 @@ Tenant / Company
    │      ├── Departments
    │      ├── Branch Users & Scopes (own, assigned, department, branch, selected_branches, all_branches, company)
    │      ├── Operations (Sales, Production, Inventory, Finance, Workforce)
-   │      └── Branch Cache Partitioning (printerp_offline_<tenant>_<branch>_<device>)
+   │      └── Branch Cache Partitioning (printflow_offline_<tenant>_<branch>_<device>)
    │
    └── Consolidated Enterprise Management (Comparison Matrix, KPIs, Global Dashboard)
 ```
@@ -136,7 +136,7 @@ New module `branches` added to RBAC system with actions:
 
 - Fast Branch Switcher dropdown for authorized multi-branch users.
 - Offline cache isolation using deterministic keys:
-  `printerp_offline_<tenant>_<branch>_<device>`
+  `printflow_offline_<tenant>_<branch>_<device>`
 - Cache safely cleared and refreshed when switching branch context.
 
 ---

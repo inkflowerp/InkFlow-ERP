@@ -224,7 +224,7 @@ describe('Email Verification & OTP Security Unit Tests', () => {
   })
 
   it('14. Verifies registration URL link token flow', async () => {
-    const email = 'link-flow@printflow.test'
+    const email = 'verify-flow@printflow.test'
     const regRes = await AuthEmailService.createVerificationRecord({
       email,
       purpose: 'registration',

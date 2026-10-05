@@ -1,5 +1,5 @@
 -- ==============================================================================
--- InkFlow ERP - Migration 112: Database Security Hardening & Authorization Hotfix
+-- PrintFlow - Migration 112: Database Security Hardening & Authorization Hotfix
 -- Closes direct RPC execution holes, revokes public/anon access on sensitive RPCs,
 -- hardens in-body tenant and RBAC permission checks, drops vulnerable overloads,
 -- moves btree_gist to extensions schema, and fixes role_permissions RLS policies.
@@ -1575,22 +1575,23 @@ using (
     )
 );
 
--- 7.2 Explicit Deny-All on Legacy Migration Tracking Table
-alter table public._printerp_migrations enable row level security;
-alter table public._printerp_migrations force row level security;
-drop policy if exists "deny_all_access" on public._printerp_migrations;
-
-create policy "deny_all_access"
-on public._printerp_migrations
-for all
-to public
-using (false)
-with check (false);
-
-drop policy if exists "allow_service_role" on public._printerp_migrations;
-create policy "allow_service_role"
-on public._printerp_migrations
-for all
-to service_role
-using (true)
-with check (true);
+-- 7.2 Explicit Deny-All on Migration Tracking Tables
+DO $$
+BEGIN
+    IF EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = '_printflow_migrations') THEN
+        ALTER TABLE public._printflow_migrations ENABLE ROW LEVEL SECURITY;
+        ALTER TABLE public._printflow_migrations FORCE ROW LEVEL SECURITY;
+        DROP POLICY IF EXISTS "deny_all_access" ON public._printflow_migrations;
+        CREATE POLICY "deny_all_access" ON public._printflow_migrations FOR ALL TO public USING (false) WITH CHECK (false);
+        DROP POLICY IF EXISTS "allow_service_role" ON public._printflow_migrations;
+        CREATE POLICY "allow_service_role" ON public._printflow_migrations FOR ALL TO service_role USING (true) WITH CHECK (true);
+    END IF;
+    IF EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = '_printerp_migrations') THEN
+        ALTER TABLE public._printerp_migrations ENABLE ROW LEVEL SECURITY;
+        ALTER TABLE public._printerp_migrations FORCE ROW LEVEL SECURITY;
+        DROP POLICY IF EXISTS "deny_all_access" ON public._printerp_migrations;
+        CREATE POLICY "deny_all_access" ON public._printerp_migrations FOR ALL TO public USING (false) WITH CHECK (false);
+        DROP POLICY IF EXISTS "allow_service_role" ON public._printerp_migrations;
+        CREATE POLICY "allow_service_role" ON public._printerp_migrations FOR ALL TO service_role USING (true) WITH CHECK (true);
+    END IF;
+END $$;
