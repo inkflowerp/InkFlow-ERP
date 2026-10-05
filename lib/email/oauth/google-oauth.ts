@@ -67,18 +67,19 @@ export function getGoogleOAuthConfig(requestOriginOrExplicitUri?: string) {
   ).trim()
   
   // Canonical Redirect URI resolution
-  let redirectUri = (
-    process.env.GOOGLE_GMAIL_REDIRECT_URI ||
-    process.env.GOOGLE_OAUTH_REDIRECT_URI ||
-    ''
-  ).trim()
+  let redirectUri = ''
 
   if (requestOriginOrExplicitUri && requestOriginOrExplicitUri.includes('/api/email/oauth/google/callback')) {
     redirectUri = requestOriginOrExplicitUri.trim()
-  } else if (!redirectUri && requestOriginOrExplicitUri) {
-    if (requestOriginOrExplicitUri.startsWith('http://') || requestOriginOrExplicitUri.startsWith('https://')) {
-      redirectUri = `${requestOriginOrExplicitUri.replace(/\/$/, '')}/api/email/oauth/google/callback`
-    }
+  } else if (requestOriginOrExplicitUri && (requestOriginOrExplicitUri.startsWith('http://') || requestOriginOrExplicitUri.startsWith('https://'))) {
+    const normalizedOrigin = requestOriginOrExplicitUri.replace(/\/$/, '').replace('://127.0.0.1:3000', '://localhost:3000')
+    redirectUri = `${normalizedOrigin}/api/email/oauth/google/callback`
+  } else {
+    redirectUri = (
+      process.env.GOOGLE_GMAIL_REDIRECT_URI ||
+      process.env.GOOGLE_OAUTH_REDIRECT_URI ||
+      ''
+    ).trim()
   }
 
   if (!redirectUri) {
