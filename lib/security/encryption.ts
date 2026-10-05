@@ -11,6 +11,7 @@ const ALGORITHM = 'aes-256-gcm'
 const IV_LENGTH = 12 // 96 bits recommended for GCM
 const AUTH_TAG_LENGTH = 16 // 128 bits
 const DEFAULT_SALT = 'printflow-saas-master-key-salt-2026'
+const LEGACY_SALT = 'printerp-saas-master-key-salt-2026'
 export const CURRENT_KEY_ID = 'k1'
 
 export type CredentialErrorCode =
@@ -81,13 +82,17 @@ function getLegacyKeyCandidates(): Buffer[] {
     candidates.push('test_encryption_secret_key_32_chars_ok!')
   }
 
-  // Unique keys with original v1 salt
+  // Unique keys with current and legacy salts
   const seen = new Set<string>()
   const keys: Buffer[] = []
+  const salts = [DEFAULT_SALT, LEGACY_SALT]
   for (const c of candidates) {
-    if (!seen.has(c)) {
-      seen.add(c)
-      keys.push(crypto.scryptSync(c, DEFAULT_SALT, 32))
+    for (const s of salts) {
+      const comp = `${c}:${s}`
+      if (!seen.has(comp)) {
+        seen.add(comp)
+        keys.push(crypto.scryptSync(c, s, 32))
+      }
     }
   }
   return keys
@@ -168,17 +173,24 @@ export function decryptSecret(encryptedString: string): string {
       if (process.env.APP_SECRET) candidateSecrets.push(process.env.APP_SECRET)
       if (isTestEnvironment()) candidateSecrets.push('test_encryption_secret_key_32_chars_ok!')
 
-      const salt = `${DEFAULT_SALT}-${keyId}`
+      const saltCandidates = [
+        `${DEFAULT_SALT}-${keyId}`,
+        `${LEGACY_SALT}-${keyId}`,
+        DEFAULT_SALT,
+        LEGACY_SALT,
+      ]
       for (const candSecret of candidateSecrets) {
-        try {
-          const candKey = crypto.scryptSync(candSecret, salt, 32)
-          const candDecipher = crypto.createDecipheriv(ALGORITHM, candKey, iv)
-          candDecipher.setAuthTag(authTag)
-          let dec = candDecipher.update(cipherHex, 'hex', 'utf8')
-          dec += candDecipher.final('utf8')
-          return dec
-        } catch {
-          // try next candidate
+        for (const salt of saltCandidates) {
+          try {
+            const candKey = crypto.scryptSync(candSecret, salt, 32)
+            const candDecipher = crypto.createDecipheriv(ALGORITHM, candKey, iv)
+            candDecipher.setAuthTag(authTag)
+            let dec = candDecipher.update(cipherHex, 'hex', 'utf8')
+            dec += candDecipher.final('utf8')
+            return dec
+          } catch {
+            // try next candidate
+          }
         }
       }
 

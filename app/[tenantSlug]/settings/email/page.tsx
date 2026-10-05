@@ -210,6 +210,14 @@ export default function TenantEmailSettingsPage() {
  showNotification('Google OAuth credentials not configured. Please add GOOGLE_CLIENT_ID & GOOGLE_CLIENT_SECRET to .env.local', 'error')
  url.searchParams.delete('error')
  window.history.replaceState({}, document.title, url.toString())
+      } else if (url.searchParams.get('error') === 'gmail_scope_not_granted') {
+ showNotification('Permission missing: Please allow "Send email on your behalf" when authorizing Gmail with Google.', 'error')
+ url.searchParams.delete('error')
+ window.history.replaceState({}, document.title, url.toString())
+      } else if (url.searchParams.get('error') === 'access_denied') {
+ showNotification('Google authorization was cancelled or denied.', 'error')
+ url.searchParams.delete('error')
+ window.history.replaceState({}, document.title, url.toString())
       } else if (url.searchParams.get('error')) {
  showNotification(`Google OAuth failed: ${url.searchParams.get('error')}`, 'error')
  url.searchParams.delete('error')

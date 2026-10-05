@@ -4,6 +4,7 @@
 // Gmail token refresh synchronization, and strict platform vs tenant scope isolation.
 // ==============================================================================
 
+import crypto from 'crypto'
 import { createAdminClient } from '../lib/supabase/admin.ts'
 import type {
   EmailGatewayRecord,
@@ -140,6 +141,7 @@ export class EmailGatewayService {
         .is('tenant_id', null)
         .eq('status', 'active')
         .order('is_default', { ascending: false })
+        .order('updated_at', { ascending: false })
         .limit(1)
         .maybeSingle()
 
@@ -248,8 +250,9 @@ export class EmailGatewayService {
     if (gateway.encrypted_credentials) {
       try {
         decryptedSecret = decryptSecret(gateway.encrypted_credentials)
-      } catch {
-        decryptedSecret = gateway.encrypted_credentials
+      } catch (err: any) {
+        console.warn(`[EmailGatewayService] Decryption failed for gateway ${gateway.id}:`, err?.message)
+        decryptedSecret = ''
       }
     }
 
@@ -793,7 +796,7 @@ export class EmailGatewayService {
       max_retries?: number
     }
   ): Promise<void> {
-    const logId = `log-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`
+    const logId = typeof crypto?.randomUUID === 'function' ? crypto.randomUUID() : `00000000-0000-4000-8000-${Date.now().toString(16).padStart(12, '0')}`
     const record: EmailLogRecord = {
       id: logId,
       tenant_id: logData.tenant_id,

@@ -72,6 +72,17 @@ export async function GET(request: NextRequest) {
     const tokenResponse = await exchangeGoogleAuthCode(code, statePayload.redirectUri)
     const { access_token, refresh_token, expires_in, scope } = tokenResponse
 
+    // Validate that the user actually granted the gmail.send scope
+    const grantedScopes = (scope || '').split(' ')
+    const hasSendScope = grantedScopes.some((s) => s.includes('gmail.send'))
+    if (!hasSendScope && !isTestEnvironment()) {
+      console.warn('[GoogleOAuthCallback] gmail.send scope was NOT granted by user:', scope)
+      const returnBase = statePayload.scopeType === 'PLATFORM' ? '/platform/email' : '/settings/email'
+      const errUrl = new URL(statePayload.returnUrl || returnBase, origin)
+      errUrl.searchParams.set('error', 'gmail_scope_not_granted')
+      return NextResponse.redirect(errUrl)
+    }
+
     // 4. Retrieve Google Identity Profile
     const profile = await fetchGoogleUserProfile(access_token)
 

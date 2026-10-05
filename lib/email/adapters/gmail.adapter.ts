@@ -38,11 +38,13 @@ export class GmailProviderAdapter implements IEmailProvider {
         if (typeof parsed === 'object' && parsed !== null) {
           this.accessToken = parsed.access_token || ''
           this.refreshToken = parsed.refresh_token || this.config.extra_settings?.refresh_token
-        } else {
+        } else if (!this.config.decrypted_secret.startsWith('v1:') && !this.config.decrypted_secret.startsWith('v2:')) {
           this.accessToken = this.config.decrypted_secret
         }
       } catch {
-        this.accessToken = this.config.decrypted_secret
+        if (!this.config.decrypted_secret.startsWith('v1:') && !this.config.decrypted_secret.startsWith('v2:')) {
+          this.accessToken = this.config.decrypted_secret
+        }
       }
     }
 
@@ -76,8 +78,8 @@ export class GmailProviderAdapter implements IEmailProvider {
     }
 
     if (!this.refreshToken) {
-      if (this.accessToken) return this.accessToken
-      throw new Error('Gmail authorization required: No refresh token available. Please reconnect Gmail.')
+      if (this.accessToken && !this.isTokenExpired()) return this.accessToken
+      throw new Error('Gmail authorization required: No valid OAuth refresh token available. Please reconnect your Gmail account.')
     }
 
     try {
@@ -107,12 +109,12 @@ export class GmailProviderAdapter implements IEmailProvider {
     const boundary = `====_PrintFlow_${Date.now()}_${Math.random().toString(36).substring(2, 8)}_====`
     const altBoundary = `====_Alt_${Date.now()}_${Math.random().toString(36).substring(2, 8)}_====`
 
-    // Safely extract sender address with fallbacks
+    // Safely extract sender address, prioritizing authenticated Gmail account for Gmail API
     const effectiveSenderEmail =
+      this.config.gmail_account_email ||
       (typeof payload.from === 'string'
         ? payload.from
         : payload.from?.address) ||
-      this.config.gmail_account_email ||
       this.config.sender_email ||
       process.env.PLATFORM_SENDER_EMAIL ||
       'printflow.bd@gmail.com'
@@ -333,8 +335,13 @@ export class GmailProviderAdapter implements IEmailProvider {
         if (response.status === 403) {
           if (errorMsg.includes('has not been used') || errorMsg.includes('disabled')) {
             errorMsg = 'Gmail API is disabled in your Google Cloud Project. Please enable the Gmail API in Google Cloud Console (APIs & Services -> Enable APIs -> Gmail API).'
-          } else if (errorMsg.includes('Insufficient Permission') || errorMsg.includes('insufficient')) {
-            errorMsg = 'Gmail authorization error: The required scope (https://www.googleapis.com/auth/gmail.send) was not granted. Please reconnect Gmail.'
+          } else if (
+            errorMsg.includes('Insufficient Permission') ||
+            errorMsg.includes('insufficient') ||
+            errorMsg.includes('ACCESS_TOKEN_SCOPE_INSUFFICIENT') ||
+            errorMsg.includes('insufficientPermissions')
+          ) {
+            errorMsg = 'Gmail authorization error: The required scope (https://www.googleapis.com/auth/gmail.send) was not granted. Please reconnect Gmail and ensure "Send email on your behalf" is checked.'
           }
         } else if (response.status === 400 && errorMsg.includes('Invalid to header')) {
           errorMsg = `Invalid recipient email address: ${payload.to}`
@@ -430,6 +437,28 @@ export class GmailProviderAdapter implements IEmailProvider {
           message: errorMsg,
           error: errorMsg,
         }
+      }
+
+      // Check whether granted scopes include gmail.send
+      const effectiveToken = this.accessToken || token
+      try {
+        const tokenInfoRes = await fetch(`https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=${effectiveToken}`)
+        if (tokenInfoRes.ok) {
+          const tokenInfo = await tokenInfoRes.json()
+          const grantedScopes = (tokenInfo.scope || '').split(' ')
+          const hasSendScope = grantedScopes.some((s: string) => s.includes('gmail.send'))
+          if (!hasSendScope) {
+            return {
+              success: false,
+              provider: 'gmail',
+              latencyMs,
+              message: 'Gmail authorization error: The "Send email on your behalf" permission was not granted. Please reconnect Gmail and ensure the checkbox is checked.',
+              error: 'Missing gmail.send scope',
+            }
+          }
+        }
+      } catch (tokenInfoErr) {
+        console.warn('[GmailAdapter] Could not check tokeninfo scopes:', tokenInfoErr)
       }
 
       const verifiedEmail = data.email || this.config.gmail_account_email || this.config.sender_email
