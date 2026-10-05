@@ -24,6 +24,12 @@ export async function GET(request: NextRequest) {
         ? rawReturnUrl
         : undefined
 
+    const loginHint =
+      searchParams.get('login_hint') ||
+      searchParams.get('loginHint') ||
+      searchParams.get('email') ||
+      undefined
+
     const isPlatform = scopeParam.toLowerCase() === 'platform'
 
     let scopeType: 'PLATFORM' | 'TENANT' = 'TENANT'
@@ -81,6 +87,7 @@ export async function GET(request: NextRequest) {
       tenantId: resolvedTenantId,
       userId,
       returnUrl: returnUrlParam,
+      loginHint,
       requestOrigin: origin,
     })
 

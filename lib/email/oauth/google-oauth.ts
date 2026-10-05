@@ -259,8 +259,7 @@ export function generateGoogleAuthUrl(params: {
   url.searchParams.set('response_type', 'code')
   url.searchParams.set('scope', GMAIL_SCOPES.join(' '))
   url.searchParams.set('access_type', 'offline')
-  url.searchParams.set('prompt', 'consent') // Forces refresh token return
-  url.searchParams.set('include_granted_scopes', 'true')
+  url.searchParams.set('prompt', 'consent select_account')
   url.searchParams.set('state', state)
 
   if (params.loginHint) {

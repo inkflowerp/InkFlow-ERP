@@ -100,7 +100,7 @@ describe('Google OAuth Configuration & Security Audit Tests', () => {
     assert.strictEqual(authUrl.searchParams.get('client_id'), '9876543210-xyz.apps.googleusercontent.com')
     assert.strictEqual(authUrl.searchParams.get('response_type'), 'code')
     assert.strictEqual(authUrl.searchParams.get('access_type'), 'offline')
-    assert.strictEqual(authUrl.searchParams.get('prompt'), 'consent')
+    assert.ok(authUrl.searchParams.get('prompt')?.includes('consent'))
     assert.ok(authUrl.searchParams.get('scope')?.includes('https://www.googleapis.com/auth/gmail.send'))
     assert.strictEqual(authUrl.searchParams.get('redirect_uri'), 'https://app.printflow.bd/api/email/oauth/google/callback')
     assert.ok(authUrl.searchParams.get('state'))
