@@ -72,7 +72,13 @@ export function getGoogleOAuthConfig(requestOriginOrExplicitUri?: string) {
   if (requestOriginOrExplicitUri && requestOriginOrExplicitUri.includes('/api/email/oauth/google/callback')) {
     redirectUri = requestOriginOrExplicitUri.trim()
   } else if (requestOriginOrExplicitUri && (requestOriginOrExplicitUri.startsWith('http://') || requestOriginOrExplicitUri.startsWith('https://'))) {
-    const normalizedOrigin = requestOriginOrExplicitUri.replace(/\/$/, '').replace('://127.0.0.1:3000', '://localhost:3000')
+    let normalizedOrigin = requestOriginOrExplicitUri.replace(/\/$/, '').replace('://127.0.0.1:3000', '://localhost:3000')
+    if (normalizedOrigin.includes('.vercel.app')) {
+      const publicUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL
+      normalizedOrigin = (publicUrl && !publicUrl.includes('.vercel.app') && !publicUrl.includes('localhost') && !publicUrl.includes('127.0.0.1'))
+        ? publicUrl.replace(/\/$/, '')
+        : 'https://printflow.bd'
+    }
     redirectUri = `${normalizedOrigin}/api/email/oauth/google/callback`
   } else {
     redirectUri = (
@@ -83,18 +89,14 @@ export function getGoogleOAuthConfig(requestOriginOrExplicitUri?: string) {
   }
 
   if (!redirectUri) {
-    if (process.env.NEXT_PUBLIC_APP_URL) {
+    if (process.env.NEXT_PUBLIC_APP_URL && !process.env.NEXT_PUBLIC_APP_URL.includes('.vercel.app')) {
       redirectUri = `${process.env.NEXT_PUBLIC_APP_URL.replace(/\/$/, '')}/api/email/oauth/google/callback`
-    } else if (process.env.APP_URL) {
+    } else if (process.env.APP_URL && !process.env.APP_URL.includes('.vercel.app')) {
       redirectUri = `${process.env.APP_URL.replace(/\/$/, '')}/api/email/oauth/google/callback`
     } else if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
       redirectUri = `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL.replace(/\/$/, '')}/api/email/oauth/google/callback`
-    } else if (process.env.NEXT_PUBLIC_VERCEL_URL) {
-      const vUrl = process.env.NEXT_PUBLIC_VERCEL_URL.replace(/\/$/, '')
-      redirectUri = `${vUrl.startsWith('http') ? vUrl : `https://${vUrl}`}/api/email/oauth/google/callback`
-    } else if (process.env.VERCEL_URL) {
-      const vUrl = process.env.VERCEL_URL.replace(/\/$/, '')
-      redirectUri = `${vUrl.startsWith('http') ? vUrl : `https://${vUrl}`}/api/email/oauth/google/callback`
+    } else if (process.env.NODE_ENV === 'production') {
+      redirectUri = 'https://printflow.bd/api/email/oauth/google/callback'
     } else {
       redirectUri = 'http://localhost:3000/api/email/oauth/google/callback'
     }

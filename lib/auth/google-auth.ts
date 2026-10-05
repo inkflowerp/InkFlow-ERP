@@ -89,15 +89,16 @@ export function getGoogleAuthClientConfig(requestOrigin?: string): GoogleAuthCli
 
   // Resolve base application origin
   let origin = requestOrigin || ''
-  if (!origin) {
-    if (process.env.NEXT_PUBLIC_APP_URL) {
+  if (origin.includes('.vercel.app')) {
+    const publicUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL
+    origin = (publicUrl && !publicUrl.includes('.vercel.app') && !publicUrl.includes('localhost') && !publicUrl.includes('127.0.0.1'))
+      ? publicUrl.replace(/\/$/, '')
+      : 'https://printflow.bd'
+  } else if (!origin) {
+    if (process.env.NEXT_PUBLIC_APP_URL && !process.env.NEXT_PUBLIC_APP_URL.includes('.vercel.app')) {
       origin = process.env.NEXT_PUBLIC_APP_URL.replace(/\/$/, '')
-    } else if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
-      origin = `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL.replace(/\/$/, '')}`
-    } else if (process.env.VERCEL_URL) {
-      origin = `https://${process.env.VERCEL_URL.replace(/\/$/, '')}`
     } else {
-      origin = 'http://localhost:3000'
+      origin = process.env.NODE_ENV === 'production' ? 'https://printflow.bd' : 'http://localhost:3000'
     }
   }
 
