@@ -281,14 +281,6 @@ function WorkspaceFinderForm({
             {locale === 'bn' ? 'রেজিস্টার করুন' : 'Register your Press'}
           </Link>
         </div>
-        <div>
-          <Link
-            href="/platform/login"
-            className="text-muted-foreground hover:text-foreground hover:underline"
-          >
-            {locale === 'bn' ? 'প্ল্যাটফর্ম অ্যাডমিন পোর্টাল' : 'Platform Control Center'}
-          </Link>
-        </div>
       </CardFooter>
     </Card>
   )
@@ -824,16 +816,6 @@ function TenantLoginForm({
                   ? 'ওয়ার্কস্পেসের নাম বা কোড দিয়ে খুঁজবেন? এখানে চাপুন'
                   : 'Looking for your workspace URL? Find workspace'}
               </button>
-            </div>
-          )}
-          {!tenantSlug && (
-            <div>
-              <Link
-                href="/platform/login"
-                className="text-muted-foreground hover:text-foreground hover:underline py-1"
-              >
-                {locale === 'bn' ? 'প্ল্যাটফর্ম অ্যাডমিন পোর্টাল' : 'Platform Control Center'}
-              </Link>
             </div>
           )}
         </CardFooter>
