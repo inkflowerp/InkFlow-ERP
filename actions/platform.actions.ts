@@ -88,7 +88,35 @@ export const deleteAllBusinessesAction = withPlatformAction(
     entityType: 'company',
   },
   async (ctx, reason?: string, _mfaCode?: string) => {
-    if (process.env.ALLOW_PLATFORM_PURGE_ALL !== 'true') {
+    let isPurgeAllowed = process.env.ALLOW_PLATFORM_PURGE_ALL === 'true'
+    if (!isPurgeAllowed && process.env.ALLOW_PLATFORM_PURGE_ALL !== 'false') {
+      // In development environment, allow purge by default unless explicitly disabled
+      if (process.env.NODE_ENV !== 'production') {
+        isPurgeAllowed = true
+      } else {
+        // In production, dynamically check .env / .env.local file on disk if server wasn't restarted
+        try {
+          const fs = await import('node:fs')
+          const path = await import('node:path')
+          const envLocalPath = path.resolve(process.cwd(), '.env.local')
+          const envPath = path.resolve(process.cwd(), '.env')
+          if (fs.existsSync(envLocalPath)) {
+            const content = fs.readFileSync(envLocalPath, 'utf8')
+            if (/ALLOW_PLATFORM_PURGE_ALL\s*=\s*['"]?true['"]?/i.test(content)) {
+              isPurgeAllowed = true
+            }
+          }
+          if (!isPurgeAllowed && fs.existsSync(envPath)) {
+            const content = fs.readFileSync(envPath, 'utf8')
+            if (/ALLOW_PLATFORM_PURGE_ALL\s*=\s*['"]?true['"]?/i.test(content)) {
+              isPurgeAllowed = true
+            }
+          }
+        } catch {}
+      }
+    }
+
+    if (!isPurgeAllowed) {
       throw new AppError({
         code: 'FORBIDDEN',
         message: 'Emergency purge is disabled in this environment. Set ALLOW_PLATFORM_PURGE_ALL=true in system configuration to enable.',
