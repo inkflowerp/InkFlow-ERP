@@ -510,12 +510,7 @@ export const getActivePaymentGatewaysAction = withTenantAction(
 /**
  * Server Action: Fetches public active subscription plans & trial parameters for marketing surfaces
  */
-export const getPublicSubscriptionPlansAction = withTenantAction(
-  {
-    permission: "settings.view",
-    entityType: "subscription"
-  },
-  async (ctx) : Promise<ServerActionResult<PublicPlansData>> => {
+export async function getPublicSubscriptionPlansAction(): Promise<ServerActionResult<PublicPlansData>> {
   try {
     const allPlans = await SubscriptionService.getPlans()
     const activePlans = allPlans.filter((p: SubscriptionPlanRecord) => p.is_active !== false)
@@ -527,10 +522,17 @@ export const getPublicSubscriptionPlansAction = withTenantAction(
 
     const lowestPrice = paidPlans.length > 0 ? Math.min(...paidPlans.map((p: SubscriptionPlanRecord) => p.price_monthly)) : 1999
 
-    const gwRes = await getActivePaymentGatewaysAction()
-    const activePaymentGateways = gwRes.data || PAYMENT_GATEWAY_METADATA_LIST.filter((m) =>
+    let activePaymentGateways = PAYMENT_GATEWAY_METADATA_LIST.filter((m) =>
       ['bkash', 'sslcommerz', 'nagad', 'bank_wire'].includes(m.id)
     )
+    try {
+      const gwRes = await getActivePaymentGatewaysAction()
+      if (gwRes && gwRes.data) {
+        activePaymentGateways = gwRes.data
+      }
+    } catch {
+      // Fallback to defaults
+    }
 
     return {
       success: true,
@@ -549,7 +551,6 @@ export const getPublicSubscriptionPlansAction = withTenantAction(
       error: err?.message || 'Failed to load subscription plans',
     }
   }
-
-})
+}
 
 

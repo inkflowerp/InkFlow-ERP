@@ -21,6 +21,7 @@ import {
   ArrowLeft,
   ExternalLink,
   Briefcase,
+  Globe,
   ChevronLeft,
   ChevronRight,
   Search,
@@ -107,6 +108,7 @@ const SIDEBAR_SECTIONS: NavSection[] = [
     titleBn: 'সেটিংস',
     items: [
       { titleEn: 'Settings', titleBn: 'সেটিংস', href: '/platform/settings', icon: Settings },
+      { titleEn: 'Landing Page', titleBn: 'ল্যান্ডিং পেজ', href: '/platform/settings/landing-page', icon: Globe },
       { titleEn: 'Email', titleBn: 'ইমেইল', href: '/platform/email', icon: Mail, badge: 'SMTP' },
       { titleEn: 'Connections', titleBn: 'সংযোগ', href: '/platform/integrations', icon: Layers },
       { titleEn: 'Emergency Stop', titleBn: 'জরুরি বন্ধ', href: '/platform/emergency', icon: Server },

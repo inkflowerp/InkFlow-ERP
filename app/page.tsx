@@ -3,14 +3,16 @@ import type { Metadata } from 'next'
 import { getPublicSubscriptionPlansAction } from '@/actions/subscription.actions'
 import { PublicPlansProvider } from '@/hooks/use-public-plans'
 import { MarketingDemoProvider } from '@/components/marketing/demo-modal-context'
+import { LandingPageService } from '@/services/landing-page.service'
 import { MarketingNavbar } from '@/components/marketing/marketing-navbar'
 import { HeroSection } from '@/components/marketing/hero-section'
-import { HowShopsWorkSection } from '@/components/marketing/how-shops-work-section'
-import { CoreProblemsSection } from '@/components/marketing/core-problems-section'
+import { WithoutPrintFlowSection } from '@/components/marketing/without-printflow-section'
+import { WithPrintFlowSection } from '@/components/marketing/with-printflow-section'
 import { CoreWorkflowSection } from '@/components/marketing/core-workflow-section'
+import { EmployeeManagementSection } from '@/components/marketing/employee-management-section'
 import { WhatPrintFlowManagesSection } from '@/components/marketing/what-printflow-manages-section'
 import { IndustrySolutionsSection } from '@/components/marketing/industry-solutions-section'
-import { OperationalAdvantagesSection } from '@/components/marketing/operational-advantages-section'
+import { RegisteredCompaniesSection } from '@/components/marketing/registered-companies-section'
 import { BangladeshFeaturesSection } from '@/components/marketing/bangladesh-features-section'
 import { MobileWorkflowSection } from '@/components/marketing/mobile-workflow-section'
 import { PricingSection } from '@/components/marketing/pricing-section'
@@ -18,26 +20,61 @@ import { FAQSection } from '@/components/marketing/faq-section'
 import { FinalCTASection } from '@/components/marketing/final-cta-section'
 import { MarketingFooter } from '@/components/marketing/marketing-footer'
 
-export const revalidate = 300 // Revalidate public cached content every 5 minutes
+import { getAuthenticatedPlatformContext } from '@/lib/auth/platform-auth'
 
-export const metadata: Metadata = {
-  title: 'PrintFlow — The Operating System for Print & Signage Businesses',
-  description:
-    'From customer request to quotation, order, design, production, inventory, payment and delivery — one connected system built for print and signage businesses in Bangladesh.',
-  openGraph: {
-    title: 'PrintFlow — The Operating System for Print & Signage Businesses',
-    description:
-      'Manage quotations, orders, production, materials, payments, delivery and profitability from one connected platform.',
-    type: 'website',
-  },
+export const revalidate = 60 // Revalidate public cached content every 60 seconds
+
+export async function generateMetadata(): Promise<Metadata> {
+  const config = await LandingPageService.getPublicConfig()
+  const title = config?.seo?.metaTitle || 'PrintFlow — Print & Signage Business Management Software'
+  const description =
+    config?.seo?.metaDescription ||
+    'Manage sales, design, production, inventory, employees, delivery and payments with PrintFlow.'
+  const canonicalUrl = config?.seo?.canonicalUrl || 'https://printflow.bd'
+
+  return {
+    title,
+    description,
+    metadataBase: new URL(canonicalUrl),
+    alternates: {
+      canonical: canonicalUrl,
+    },
+    openGraph: {
+      title,
+      description,
+      url: canonicalUrl,
+      type: 'website',
+      images: config?.seo?.ogImageUrl ? [{ url: config.seo.ogImageUrl }] : undefined,
+    },
+  }
 }
 
-export default async function MarketingHomePage() {
+interface PageProps {
+  searchParams?: Promise<{ preview?: string }>
+}
+
+export default async function MarketingHomePage({ searchParams }: PageProps) {
+  const resolvedParams = searchParams ? await searchParams : undefined
+  let isPreview = resolvedParams?.preview === 'true'
+
+  // Security gate: only authenticated platform admins can preview draft configurations
+  if (isPreview) {
+    const platformCtx = await getAuthenticatedPlatformContext()
+    if (!platformCtx || !platformCtx.permissions.includes('system.manage')) {
+      isPreview = false
+    }
+  }
+
+  // If authorized preview mode, load the draft configuration; otherwise load the published configuration
+  const landingConfig = isPreview
+    ? (await LandingPageService.getAdminConfig()).draft
+    : await LandingPageService.getPublicConfig()
+
   const plansRes = await getPublicSubscriptionPlansAction()
   const initialData = plansRes.data || null
   const lowestPrice = initialData?.lowestPrice || 1999
 
-  // Truthful JSON-LD Schema (SoftwareApplication without fabricated ratings or reviews)
+  // Truthful Schema.org Structured Data
   const structuredData = {
     '@context': 'https://schema.org',
     '@type': 'SoftwareApplication',
@@ -53,10 +90,29 @@ export default async function MarketingHomePage() {
       'Cloud operating system and software built specifically for printing presses, digital banner shops, and signage fabricators in Bangladesh.',
   }
 
+  // Maintenance screen if landing page is globally disabled by platform admin
+  if (!landingConfig.general.enabled && !isPreview) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-6 bg-background text-foreground text-center">
+        <div className="max-w-md space-y-3">
+          <h1 className="text-2xl font-bold tracking-tight">PrintFlow System Update</h1>
+          <p className="text-sm text-muted-foreground">
+            PrintFlow is currently undergoing scheduled platform upgrades. Please check back shortly.
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  // Active enabled sections sorted by their configured order
+  const activeSections = (landingConfig.sections || [])
+    .filter((sec) => sec.enabled)
+    .sort((a, b) => a.order - b.order)
+
   return (
     <PublicPlansProvider initialData={initialData}>
       <MarketingDemoProvider>
-        <div className="min-h-screen bg-muted text-foreground font-sans antialiased overflow-x-hidden selection:bg-primary selection:text-white">
+        <div className="min-h-screen bg-background text-foreground font-sans antialiased overflow-x-hidden selection:bg-primary selection:text-primary-foreground">
           {/* Truthful Schema.org Structured Data */}
           <script
             type="application/ld+json"
@@ -67,44 +123,48 @@ export default async function MarketingHomePage() {
           <MarketingNavbar />
 
           <main>
-            {/* Section 2: Hero */}
-            <HeroSection />
-
-            {/* Section 3: "How Print Shops Work With PrintFlow" */}
-            <HowShopsWorkSection />
-
-            {/* Section 4: Core Problems */}
-            <CoreProblemsSection />
-
-            {/* Section 5: Core Workflow */}
-            <CoreWorkflowSection />
-
-            {/* Section 6: What PrintFlow Manages */}
-            <WhatPrintFlowManagesSection />
-
-            {/* Section 7: Industry/Business Types */}
-            <IndustrySolutionsSection />
-
-            {/* Section 8: Key Operational Advantages */}
-            <OperationalAdvantagesSection />
-
-            {/* Section 9: Bangladesh-Specific Features */}
-            <BangladeshFeaturesSection />
-
-            {/* Section 10: Mobile / Anywhere Workflow */}
-            <MobileWorkflowSection />
-
-            {/* Section 11: Pricing */}
-            <PricingSection />
-
-            {/* Section 12: FAQ */}
-            <FAQSection />
-
-            {/* Section 13: Final CTA */}
-            <FinalCTASection />
+            {activeSections.map((section) => {
+              switch (section.key) {
+                case 'hero':
+                  return <HeroSection key="hero" config={landingConfig.hero} />
+                case 'without_printflow':
+                  return <WithoutPrintFlowSection key="without_printflow" />
+                case 'with_printflow':
+                  return <WithPrintFlowSection key="with_printflow" />
+                case 'workflow':
+                  return <CoreWorkflowSection key="workflow" />
+                case 'employees':
+                  return <EmployeeManagementSection key="employees" />
+                case 'what_we_manage':
+                  return <WhatPrintFlowManagesSection key="what_we_manage" />
+                case 'industries':
+                  return <IndustrySolutionsSection key="industries" />
+                case 'companies':
+                  return (
+                    <RegisteredCompaniesSection
+                      key="companies"
+                      companies={landingConfig.companies}
+                    />
+                  )
+                case 'bangladesh':
+                  return <BangladeshFeaturesSection key="bangladesh" />
+                case 'mobile':
+                  return <MobileWorkflowSection key="mobile" />
+                case 'pricing':
+                  return landingConfig.pricing.showPricing ? (
+                    <PricingSection key="pricing" config={landingConfig.pricing} />
+                  ) : null
+                case 'faq':
+                  return <FAQSection key="faq" items={landingConfig.faq} />
+                case 'final_cta':
+                  return <FinalCTASection key="final_cta" />
+                default:
+                  return null
+              }
+            })}
           </main>
 
-          {/* Section 14: Footer */}
+          {/* Section 15: Footer */}
           <MarketingFooter />
         </div>
       </MarketingDemoProvider>

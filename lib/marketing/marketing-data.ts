@@ -35,11 +35,10 @@ export interface NavItem {
 }
 
 export const MARKETING_NAV_ITEMS: NavItem[] = [
-  { labelEn: 'Features', labelBn: 'বৈশিষ্ট্য', href: '/#features' },
-  { labelEn: 'How It Works', labelBn: 'কাজের ধাপ', href: '/#how-it-works' },
-  { labelEn: 'Solutions', labelBn: 'ইন্ডাস্ট্রি', href: '/#solutions' },
-  { labelEn: 'Pricing', labelBn: 'মূল্যতালিকা', href: '/#pricing' },
-  { labelEn: 'FAQ', labelBn: 'প্রশ্নোত্তর', href: '/#faq' },
+  { labelEn: 'Product', labelBn: 'প্রোডাক্ট', href: '#what-we-manage' },
+  { labelEn: 'How It Works', labelBn: 'কাজের ধাপ', href: '#workflow' },
+  { labelEn: 'Industries', labelBn: 'ইন্ডাস্ট্রি', href: '#industries' },
+  { labelEn: 'Pricing', labelBn: 'মূল্যতালিকা', href: '#pricing' },
 ]
 
 export const TRUST_TAGS = [

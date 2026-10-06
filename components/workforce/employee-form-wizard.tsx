@@ -201,7 +201,7 @@ export function EmployeeFormWizard({
  onClick={() => setCurrentStep(s.id)}
  type="button"className={`flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium transition-colors shrink-0 ${
  isCurrent
-                      ? 'bg-primary text-white shadow-sm'
+                      ? 'bg-primary text-primary-foreground shadow-xs'
                       : isDone
                       ? 'bg-success-surface text-success border border-success-border'
                       : 'bg-muted text-muted-foreground hover:bg-muted'

@@ -87,9 +87,9 @@ export const PHYSICAL_FORM_CARDS: Array<{
  icon: Layers,
  badge: 'Roll Substrate',
  accentColor: 'blue',
- borderClass: 'border-primary/20 border-border/60 hover:border-primary/20 hover:bg-primary/10/40 dark:hover:bg-primary/10',
- badgeClass: 'bg-primary/10 text-primary bg-primary/60 text-primary border-primary/20 border-border',
- iconClass: 'bg-primary/10 text-primary bg-primary/60 text-primary',
+ borderClass: 'border-primary/20 hover:border-primary/40 hover:bg-primary/5 dark:hover:bg-primary/10',
+ badgeClass: 'bg-primary/10 text-primary border-primary/20',
+ iconClass: 'bg-primary/10 text-primary',
   },
   {
  id: 'sheet',
@@ -99,9 +99,9 @@ export const PHYSICAL_FORM_CARDS: Array<{
  icon: Maximize2,
  badge: 'Flat Sheet',
  accentColor: 'emerald',
- borderClass: 'border-success-border border-success-border/60 hover:border-success-border hover:bg-success-surface/40 dark:hover:bg-success-surface',
- badgeClass: 'bg-success-surface text-success bg-success/60 text-success border-success-border border-success-border',
- iconClass: 'bg-success-surface text-success bg-success/60 text-success',
+ borderClass: 'border-success-border hover:border-success hover:bg-success-surface/40 dark:hover:bg-success-surface',
+ badgeClass: 'bg-success-surface text-success border-success-border',
+ iconClass: 'bg-success-surface text-success',
   },
   {
  id: 'liquid',
@@ -111,9 +111,9 @@ export const PHYSICAL_FORM_CARDS: Array<{
  icon: Droplets,
  badge: 'Chemical/Ink',
  accentColor: 'rose',
- borderClass: 'border-danger-border border-danger-border/60 hover:border-danger-border hover:bg-danger-surface/40 dark:hover:bg-danger-surface',
- badgeClass: 'bg-danger-surface text-destructive bg-destructive/60 text-destructive border-danger-border border-danger-border',
- iconClass: 'bg-danger-surface text-destructive bg-destructive/60 text-destructive',
+ borderClass: 'border-danger-border hover:border-destructive hover:bg-danger-surface/40 dark:hover:bg-danger-surface',
+ badgeClass: 'bg-danger-surface text-destructive border-danger-border',
+ iconClass: 'bg-danger-surface text-destructive',
   },
   {
  id: 'rigid',
@@ -123,9 +123,9 @@ export const PHYSICAL_FORM_CARDS: Array<{
  icon: Wrench,
  badge: 'Linear Profile',
  accentColor: 'indigo',
- borderClass: 'border-primary/20 border-border/60 hover:border-primary/20 hover:bg-primary/10/40 dark:hover:bg-primary/10',
- badgeClass: 'bg-primary/10 text-primary bg-primary/60 text-primary border-primary/20 border-border',
- iconClass: 'bg-primary/10 text-primary bg-primary/60 text-primary',
+ borderClass: 'border-primary/20 hover:border-primary/40 hover:bg-primary/5 dark:hover:bg-primary/10',
+ badgeClass: 'bg-primary/10 text-primary border-primary/20',
+ iconClass: 'bg-primary/10 text-primary',
   },
   {
  id: 'accessory',
@@ -135,9 +135,9 @@ export const PHYSICAL_FORM_CARDS: Array<{
  icon: Package,
  badge: 'Accessories',
  accentColor: 'amber',
- borderClass: 'border-warning-border border-warning-border/60 hover:border-warning-border hover:bg-warning-surface/40 dark:hover:bg-warning-surface',
- badgeClass: 'bg-warning-surface text-warning bg-warning/60 text-warning border-warning-border border-warning-border',
- iconClass: 'bg-warning-surface text-warning bg-warning/60 text-warning',
+ borderClass: 'border-warning-border hover:border-warning hover:bg-warning-surface/40 dark:hover:bg-warning-surface',
+ badgeClass: 'bg-warning-surface text-warning border-warning-border',
+ iconClass: 'bg-warning-surface text-warning',
   },
   {
  id: 'electrical',
@@ -147,9 +147,9 @@ export const PHYSICAL_FORM_CARDS: Array<{
  icon: Sparkles,
  badge: 'Illumination',
  accentColor: 'cyan',
- borderClass: 'border-primary/20 border-border/60 hover:border-primary/20 hover:bg-info-surface/40 dark:hover:bg-primary/10',
- badgeClass: 'bg-info-surface text-primary bg-primary/60 text-primary border-primary/20 border-border',
- iconClass: 'bg-info-surface text-primary bg-primary/60 text-primary',
+ borderClass: 'border-info-border hover:border-info hover:bg-info-surface/40 dark:hover:bg-info-surface',
+ badgeClass: 'bg-info-surface text-info border-info-border',
+ iconClass: 'bg-info-surface text-info',
   },
 ]
 
@@ -1575,7 +1575,7 @@ export function MaterialConfigModal({
             <div className="space-y-3 pb-3 border-b border-border">
               <div className="flex items-center justify-between pb-1.5 border-b border-border">
                 <div className="flex items-center gap-2">
-                  <div className="h-6 w-6 rounded-lg bg-warning-surface text-warning bg-warning/60 text-warning flex items-center justify-center font-bold text-xs">
+                  <div className="h-6 w-6 rounded-lg bg-warning-surface text-warning flex items-center justify-center font-bold text-xs">
                     1
                   </div>
                   <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
@@ -1808,7 +1808,7 @@ export function MaterialConfigModal({
           <div className="rounded-xl border border-border bg-card p-4 space-y-4 shadow-xs animate-in fade-in-0">
             <div className="flex items-center justify-between pb-2 border-b border-border">
               <div className="flex items-center gap-2">
-                <div className="h-6 w-6 rounded-lg bg-primary/10 text-primary bg-primary/60 text-primary flex items-center justify-center font-bold text-xs">
+                <div className="h-6 w-6 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-xs">
                   2
                 </div>
                 <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
@@ -2189,7 +2189,7 @@ export function MaterialConfigModal({
           <div className="rounded-xl border border-border bg-card p-4 space-y-4 shadow-xs animate-in fade-in-0">
             <div className="flex items-center justify-between pb-2 border-b border-border">
               <div className="flex items-center gap-2">
-                <div className="h-6 w-6 rounded-lg bg-success-surface text-success bg-success/60 text-success flex items-center justify-center font-bold text-xs">
+                <div className="h-6 w-6 rounded-lg bg-success-surface text-success flex items-center justify-center font-bold text-xs">
                   3
                 </div>
                 <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
@@ -2466,7 +2466,7 @@ export function MaterialConfigModal({
           <div className="rounded-xl border border-border bg-card p-4 space-y-4 shadow-xs animate-in fade-in-0">
             <div className="flex items-center justify-between pb-2 border-b border-border">
               <div className="flex items-center gap-2">
-                <div className="h-6 w-6 rounded-lg bg-primary/10 text-primary bg-primary/60 text-primary flex items-center justify-center font-bold text-xs">
+                <div className="h-6 w-6 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-xs">
                   4
                 </div>
                 <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
@@ -2626,7 +2626,7 @@ export function MaterialConfigModal({
           <div className="rounded-xl border border-border bg-card p-4 space-y-4 shadow-xs animate-in fade-in-0">
             <div className="flex items-center justify-between pb-2 border-b border-border">
               <div className="flex items-center gap-2">
-                <div className="h-6 w-6 rounded-lg bg-info-surface text-primary bg-primary/60 text-primary flex items-center justify-center font-bold text-xs">
+                <div className="h-6 w-6 rounded-lg bg-info-surface text-info flex items-center justify-center font-bold text-xs">
                   5
                 </div>
                 <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">

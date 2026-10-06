@@ -2,93 +2,118 @@
 
 import React from 'react'
 import {
-  FileText,
+  DollarSign,
+  Palette,
   Printer,
   Boxes,
+  ShoppingCart,
   Users,
-  CreditCard,
-  Building2,
-  CheckCircle2,
+  Wallet,
+  Truck,
+  BarChart3,
 } from 'lucide-react'
 import { useI18n } from '@/i18n/context'
-import { WHAT_PRINTFLOW_MANAGES } from '@/lib/marketing/marketing-data'
 
 export function WhatPrintFlowManagesSection() {
   const { tBilingual } = useI18n()
 
-  const CATEGORY_ICONS: Record<string, React.ElementType> = {
-    sales: FileText,
-    production: Printer,
-    inventory: Boxes,
-    workforce: Users,
-    finance: CreditCard,
-    management: Building2,
-  }
+  const CATEGORIES = [
+    {
+      labelEn: 'Sales',
+      labelBn: 'সেলস',
+      descEn: 'Quotations, invoices, and customer dues.',
+      descBn: 'কোটেশন, ইনভয়েস ও কাস্টমার বকেয়া।',
+      icon: DollarSign,
+    },
+    {
+      labelEn: 'Design',
+      labelBn: 'ডিজাইন',
+      descEn: 'Proofs, revisions, and client sign-offs.',
+      descBn: 'প্রুফ ফাইল, রিভিশন ও ক্লায়েন্ট অনুমোদন।',
+      icon: Palette,
+    },
+    {
+      labelEn: 'Production',
+      labelBn: 'প্রোডাকশন',
+      descEn: 'Live machine queue, job tickets, and finishing.',
+      descBn: 'মেশিন কিউ, জব টিকিট ও ফ্লোর ফিনিশিং।',
+      icon: Printer,
+    },
+    {
+      labelEn: 'Inventory',
+      labelBn: 'ইনভেন্টরি',
+      descEn: 'Media rolls, square feet, sheets, and scrap.',
+      descBn: 'মিডিয়া রোল, স্কয়ারফিট স্টক ও অপচয়।',
+      icon: Boxes,
+    },
+    {
+      labelEn: 'Purchasing',
+      labelBn: 'ক্রয় ও সাপ্লায়ার',
+      descEn: 'Suppliers, purchase orders, and stock receipts.',
+      descBn: 'সাপ্লায়ার, পারচেজ অর্ডার ও মালামাল গ্রহণ।',
+      icon: ShoppingCart,
+    },
+    {
+      labelEn: 'Employees',
+      labelBn: 'কর্মী ব্যবস্থাপনা',
+      descEn: 'Tasks, attendance, and branch permissions.',
+      descBn: 'কাজের দায়িত্ব, দৈনিক হাজিরা ও পারমিশন।',
+      icon: Users,
+    },
+    {
+      labelEn: 'Finance',
+      labelBn: 'হিসাব ও অর্থ',
+      descEn: 'Cash book, bank accounts, expenses, and profit.',
+      descBn: 'ক্যাশ বুক, ব্যাংক হিসাব, খরচ ও লাভ-ক্ষতি।',
+      icon: Wallet,
+    },
+    {
+      labelEn: 'Delivery',
+      labelBn: 'ডেলিভারি',
+      descEn: 'Formal challans, dispatch, and site installation.',
+      descBn: 'চালান তৈরি, ডেলিভারি ও অন-সাইট ফিটিং।',
+      icon: Truck,
+    },
+    {
+      labelEn: 'Reports',
+      labelBn: 'রিপোর্ট',
+      descEn: 'Sales summaries, material consumption, and dues.',
+      descBn: 'সেলস সামারি, স্টক ব্যবহার ও বকেয়া রিপোর্ট।',
+      icon: BarChart3,
+    },
+  ]
 
   return (
-    <section id="features" className="py-16 sm:py-24 bg-muted border-t border-border">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12 sm:space-y-16">
-        {/* Header */}
-        <div className="text-center max-w-3xl mx-auto space-y-3 sm:space-y-4">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20/70 border-border/60 uppercase tracking-wider">
-            <span>{tBilingual('Operations Map', 'অপারেশনস ম্যাপ')}</span>
+    <section id="what-we-manage" className="py-14 sm:py-20 bg-background border-t border-border">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 sm:space-y-10">
+        <div className="text-center max-w-xl mx-auto space-y-2">
+          <div className="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
+            <span>{tBilingual('Features', 'ফিচারসমূহ')}</span>
           </div>
-
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-foreground tracking-tight leading-tight bangla-text">
-            {tBilingual('What PrintFlow Actually Manages.', 'প্রিন্টফ্লো আপনার ব্যবসায়ের ঠিক কী কী পরিচালনা করে।')}
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">
+            {tBilingual('Everything Your Business Needs.', 'আপনার ব্যবসার প্রয়োজনীয় সবকিছু।')}
           </h2>
-
-          <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto leading-relaxed bangla-text">
-            {tBilingual(
-              'A compact operations map connecting the six essential pillars of your print and signage workshop into one clear, scannable control center.',
-              'আপনার প্রেস ও কারখানার ৬টি অপরিহার্য অপারেশনাল স্তম্ভকে একটি সমন্বিত ও স্বচ্ছ কন্ট্রোল সেন্টারে সংযুক্ত করা হয়েছে।'
-            )}
-          </p>
         </div>
 
-        {/* 6 Category Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {WHAT_PRINTFLOW_MANAGES.map((cat) => {
-            const Icon = CATEGORY_ICONS[cat.id] || FileText
-            const items = tBilingual(
-              JSON.stringify(cat.itemsEn),
-              JSON.stringify(cat.itemsBn)
-            )
-            const parsedItems: string[] = JSON.parse(items)
-
+        {/* Compact 9-Item Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 max-w-5xl mx-auto">
+          {CATEGORIES.map((cat, idx) => {
+            const Icon = cat.icon
             return (
               <div
-                key={cat.id}
-                className="rounded-xl border border-border bg-card p-6 space-y-4 shadow-xs hover:border-input transition-all flex flex-col justify-between"
+                key={idx}
+                className="bg-card border border-border rounded-xl p-4 flex items-start gap-3.5 shadow-2xs hover:border-primary/40 transition-colors"
               >
-                <div>
-                  <div className="flex items-center gap-3 pb-3 border-b border-border">
-                    <div className="h-10 w-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0 border border-border/60">
-                      <Icon className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <h3 className="text-base font-bold text-foreground bangla-text">
-                        {tBilingual(cat.titleEn, cat.titleBn)}
-                      </h3>
-                      <span className="text-xs text-muted-foreground uppercase font-semibold">
-                        {tBilingual('Core Operations', 'মূল কার্যপরিধি')}
-                      </span>
-                    </div>
-                  </div>
-
-                  <ul className="mt-4 space-y-2.5">
-                    {parsedItems.map((item, i) => (
-                      <li key={i} className="flex items-start gap-2 text-xs text-muted-foreground">
-                        <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
-                        <span className="leading-snug bangla-text">{item}</span>
-                      </li>
-                    ))}
-                  </ul>
+                <div className="h-9 w-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-0.5">
+                  <Icon className="h-4.5 w-4.5" />
                 </div>
-
-                <div className="pt-3 border-t border-border text-xs font-semibold text-muted-foreground flex items-center justify-between">
-                  <span>{tBilingual('Fully Connected', 'সম্পূর্ণ সমন্বিত')}</span>
-                  <span className="text-primary font-bold">PrintFlow Core</span>
+                <div className="space-y-0.5 min-w-0">
+                  <h3 className="text-sm font-bold text-foreground">
+                    {tBilingual(cat.labelEn, cat.labelBn)}
+                  </h3>
+                  <p className="text-xs text-muted-foreground leading-normal">
+                    {tBilingual(cat.descEn, cat.descBn)}
+                  </p>
                 </div>
               </div>
             )

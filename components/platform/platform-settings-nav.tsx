@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   Settings,
+  Globe,
   Mail,
   Layers,
   Shield,
@@ -23,6 +24,11 @@ export function PlatformSettingsNav() {
       href: '/platform/settings',
       icon: Settings,
       exact: true,
+    },
+    {
+      title: 'Landing Page',
+      href: '/platform/settings/landing-page',
+      icon: Globe,
     },
     {
       title: 'Email Gateway & Delivery',

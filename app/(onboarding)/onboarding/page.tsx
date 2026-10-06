@@ -502,16 +502,16 @@ function OnboardingWizard() {
   }, [gateways, selectedGateway])
 
   return (
-    <div className="min-h-screen bg-muted flex flex-col justify-between p-4 sm:p-8">
+    <div className="min-h-screen bg-background text-foreground flex flex-col justify-between p-4 sm:p-8">
       {/* Header */}
-      <header className="flex items-center justify-between mx-auto w-full pb-6 border-b border-border dark:border-border">
+      <header className="flex items-center justify-between mx-auto w-full pb-6 border-b border-border">
         <div className="flex items-center gap-2.5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl shadow-md text-white">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl shadow-xs bg-primary text-primary-foreground">
             <Printer className="h-5 w-5" />
           </div>
           <div>
-            <span className="font-black tracking-tight text-foreground dark:text-white text-base">PrintFlow</span>
-            <span className="ml-1 text-xs font-semibold text-primary text-primary">Setup Wizard</span>
+            <span className="font-black tracking-tight text-foreground text-base">PrintFlow</span>
+            <span className="ml-1.5 text-xs font-semibold text-primary">Setup Wizard</span>
           </div>
         </div>
         <LanguageSwitcher />
@@ -521,56 +521,64 @@ function OnboardingWizard() {
       <main className="flex-1 flex items-center justify-center py-6">
         <div className="w-full max-w-2xl">
           {/* Step Progress Tracker */}
-          <div className="mb-6">
-            <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground mb-2">
-              <span>
-                Step {currentStep} of {totalSteps}: {stepTitles[currentStep - 1]?.title}
+          <div className="mb-6 space-y-2.5">
+            <div className="flex items-center justify-between text-xs">
+              <span className="font-bold text-foreground">
+                Step {currentStep} of {totalSteps}:{' '}
+                <span className="text-primary font-bold">{stepTitles[currentStep - 1]?.title}</span>
               </span>
-              <span>{Math.round((currentStep / totalSteps) * 100)}% Completed</span>
+              <span className="text-muted-foreground font-bold tabular-nums">
+                {Math.round((currentStep / totalSteps) * 100)}% Completed
+              </span>
             </div>
+
             {/* Progress bar */}
-            <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
+            <div className="h-2 w-full bg-muted rounded-full overflow-hidden border border-border/50">
               <div
-                className="h-full transition-all duration-300 rounded-full"
+                className="h-full bg-primary transition-all duration-300 rounded-full shadow-xs"
                 style={{ width: `${(currentStep / totalSteps) * 100}%` }}
               />
             </div>
 
             {/* Stepper Dots */}
-            <div className="flex justify-between mt-3 px-1">
-              {stepTitles.map((st) => (
-                <div
-                  key={st.step}
-                  className={cn(
-                    'flex flex-col items-center gap-1 cursor-pointer transition-colors',
-                    currentStep === st.step
-                      ? 'text-primary font-bold'
-                      : currentStep > st.step
-                      ? 'text-success'
-                      : 'text-muted-foreground'
-                  )}
-                  onClick={() => st.step < currentStep && setCurrentStep(st.step)}
-                >
-                  <div
+            <div className="flex items-center justify-between mt-3 px-0.5">
+              {stepTitles.map((st) => {
+                const isCompleted = currentStep > st.step
+                const isCurrent = currentStep === st.step
+                return (
+                  <button
+                    key={st.step}
+                    type="button"
+                    disabled={st.step > currentStep}
                     className={cn(
-                      'h-6 w-6 rounded-full flex items-center justify-center text-xs font-bold border',
-                      currentStep === st.step
-                        ? 'border-border bg-primary/10 text-primary bg-primary/10'
-                        : currentStep > st.step
-                        ? 'border-success-border bg-success text-white'
-                        : 'border-input bg-card dark:bg-card'
+                      'flex flex-col items-center gap-1 transition-all focus:outline-hidden',
+                      st.step < currentStep ? 'cursor-pointer' : 'cursor-default'
                     )}
+                    onClick={() => st.step < currentStep && setCurrentStep(st.step)}
+                    aria-label={`Step ${st.step}: ${st.title}`}
+                    title={`Step ${st.step}: ${st.title}`}
                   >
-                    {currentStep > st.step ? <CheckCircle2 className="h-3.5 w-3.5" /> : st.step}
-                  </div>
-                </div>
-              ))}
+                    <div
+                      className={cn(
+                        'h-7 w-7 rounded-full flex items-center justify-center text-xs font-bold transition-all',
+                        isCompleted
+                          ? 'border border-success bg-success text-success-foreground shadow-2xs'
+                          : isCurrent
+                          ? 'border-2 border-primary bg-primary text-primary-foreground shadow-xs ring-4 ring-primary/25 font-black scale-105'
+                          : 'border-2 border-border bg-muted/60 text-muted-foreground'
+                      )}
+                    >
+                      {isCompleted ? <Check className="h-4 w-4 stroke-[2.5]" /> : st.step}
+                    </div>
+                  </button>
+                )
+              })}
             </div>
           </div>
 
-          <Card className="border-border shadow-xl bg-card dark:bg-card">
+          <Card className="border-border shadow-xs bg-card">
             <CardHeader className="pb-4">
-              <CardTitle className="text-xl text-foreground dark:text-white flex items-center gap-2">
+              <CardTitle className="text-xl text-foreground flex items-center gap-2">
                 {stepTitles[currentStep - 1]?.title}
                 <span className="text-sm font-normal text-muted-foreground">
                   ({stepTitles[currentStep - 1]?.titleBn})
@@ -687,22 +695,22 @@ function OnboardingWizard() {
                             className={cn(
                               'cursor-pointer rounded-xl border p-3 transition-all flex items-start gap-3 text-left',
                               isSelected
-                                ? 'border-border bg-primary/10/60 ring-2 focus:ring-ring/20 border-primary/20 bg-primary/10'
-                                : 'border-border hover:border-input dark:hover:border-border'
+                                ? 'border-primary bg-primary/10 ring-2 ring-primary/25 shadow-xs'
+                                : 'border-border bg-card hover:bg-muted/50 hover:border-border'
                             )}
                           >
                             <div
                               className={cn(
-                                'h-8 w-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5 text-xs font-bold',
+                                'h-8 w-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5 text-xs font-bold transition-colors',
                                 isSelected
-                                  ? 'bg-primary text-white'
-                                  : 'bg-muted text-muted-foreground dark:text-muted-foreground'
+                                  ? 'bg-primary text-primary-foreground shadow-2xs'
+                                  : 'bg-muted text-muted-foreground'
                               )}
                             >
                               <Printer className="h-4 w-4" />
                             </div>
                             <div className="flex-1 min-w-0">
-                              <div className="font-semibold text-xs sm:text-sm text-foreground dark:text-white flex items-center justify-between bangla-text">
+                              <div className="font-semibold text-xs sm:text-sm text-foreground flex items-center justify-between bangla-text">
                                 {tBilingual(bt.nameEn, bt.nameBn)}
                                 {isSelected && <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />}
                               </div>
@@ -808,16 +816,16 @@ function OnboardingWizard() {
                 {/* STEP 5: CURRENCY */}
                 {currentStep === 5 && (
                   <div className="space-y-4 animate-in fade-in-0 duration-200">
-                    <div className="rounded-xl border border-primary/20 bg-primary/10/50 p-4 border-border/40 bg-primary/10">
+                    <div className="rounded-xl border border-primary/30 bg-primary/10 p-4 shadow-2xs">
                       <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-full bg-primary text-white flex items-center justify-center font-bold text-lg">
+                        <div className="h-10 w-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-lg shadow-2xs">
                           ৳
                         </div>
                         <div>
-                          <div className="font-bold text-foreground dark:text-white">
+                          <div className="font-bold text-foreground">
                             BDT - Bangladeshi Taka (বাংলাদেশী টাকা)
                           </div>
-                          <p className="text-xs text-muted-foreground dark:text-muted-foreground">
+                          <p className="text-xs text-muted-foreground">
                             Pre-configured with Lakh/Crore numbering (e.g. ৳ ১,৫০,০০০.০০) and Bengali numerals.
                           </p>
                         </div>
@@ -865,14 +873,21 @@ function OnboardingWizard() {
                           className={cn(
                             'cursor-pointer rounded-xl border p-4 transition-all flex items-center justify-between',
                             isSelected
-                              ? 'border-border bg-primary/10/70 ring-2 focus:ring-ring/20 border-primary/20 bg-primary/10'
-                              : 'border-border hover:border-input dark:border-border'
+                              ? 'border-primary bg-primary/10 ring-2 ring-primary/25 shadow-xs'
+                              : 'border-border bg-card hover:bg-muted/50 hover:border-border'
                           )}
                         >
                           <div>
-                            <div className="font-bold text-sm text-foreground dark:text-white flex items-center gap-2">
+                            <div className="font-bold text-sm text-foreground flex items-center gap-2">
                               {lang.title}
-                              <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary font-semibold bg-primary/50 text-primary">
+                              <span
+                                className={cn(
+                                  'text-xs px-2 py-0.5 rounded-full font-semibold border',
+                                  isSelected
+                                    ? 'bg-primary text-primary-foreground border-primary'
+                                    : 'bg-muted text-muted-foreground border-border'
+                                )}
+                              >
                                 {lang.badge}
                               </span>
                             </div>
@@ -982,14 +997,14 @@ function OnboardingWizard() {
                     </div>
 
                     {/* Setup Review Card */}
-                    <div className="mt-4 p-3.5 rounded-xl bg-muted border border-border text-xs space-y-2">
+                    <div className="mt-4 p-3.5 rounded-xl bg-muted/60 border border-border text-xs space-y-2">
                       <div className="font-bold text-foreground flex items-center justify-between">
                         <span>Organization Summary</span>
-                        <span className="text-xs tabular-nums px-2 py-0.5 rounded bg-primary/10 text-primary bg-primary/10 text-primary font-semibold">
+                        <span className="text-xs tabular-nums px-2 py-0.5 rounded-md bg-primary text-primary-foreground font-semibold">
                           {isPaidPlan ? `${selectedPlan.toUpperCase()} Plan (Step 8: Payment)` : `${trialDays}-Day Free Trial`}
                         </span>
                       </div>
-                      <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground dark:text-muted-foreground">
+                      <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
                         <div>
                           <span className="text-muted-foreground block">Company:</span>
                           <span className="font-semibold text-foreground truncate block">
@@ -998,19 +1013,19 @@ function OnboardingWizard() {
                         </div>
                         <div>
                           <span className="text-muted-foreground block">Workspace Subdomain:</span>
-                          <span className="tabular-nums text-primary text-primary truncate block font-bold">
+                          <span className="tabular-nums text-primary truncate block font-bold">
                             https://{watch('slug') || 'workspace'}.{rootDomain}
                           </span>
                         </div>
                         <div>
                           <span className="text-muted-foreground block">Currency & Language:</span>
-                          <span className="font-semibold text-foreground dark:text-foreground">
+                          <span className="font-semibold text-foreground">
                             {watch('currency')} · {watch('default_language') === 'bn' ? 'বাংলা' : 'English'}
                           </span>
                         </div>
                         <div>
                           <span className="text-muted-foreground block">Contact Phone:</span>
-                          <span className="font-semibold text-foreground dark:text-foreground">
+                          <span className="font-semibold text-foreground">
                             {watch('phone') || '—'}
                           </span>
                         </div>
@@ -1024,14 +1039,14 @@ function OnboardingWizard() {
                   <div className="space-y-4 animate-in fade-in-0 duration-200">
                     {/* Billing Interval Toggle */}
                     <div className="flex items-center justify-center pt-1 pb-1">
-                      <div className="inline-flex items-center bg-muted p-1 rounded-xl border border-border dark:border-border">
+                      <div className="inline-flex items-center bg-muted p-1 rounded-xl border border-border">
                         <button
                           type="button"
                           onClick={() => setBillingInterval('monthly')}
                           className={cn(
-                            'px-4 py-1.5 rounded-lg text-xs font-bold transition-all',
+                            'px-4 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer',
                             billingInterval === 'monthly'
-                              ? 'bg-card text-primary text-primary shadow-xs'
+                              ? 'bg-primary text-primary-foreground shadow-xs'
                               : 'text-muted-foreground hover:text-foreground'
                           )}
                         >
@@ -1041,14 +1056,14 @@ function OnboardingWizard() {
                           type="button"
                           onClick={() => setBillingInterval('yearly')}
                           className={cn(
-                            'flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-bold transition-all',
+                            'flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer',
                             billingInterval === 'yearly'
-                              ? 'bg-card text-primary text-primary shadow-xs'
+                              ? 'bg-primary text-primary-foreground shadow-xs'
                               : 'text-muted-foreground hover:text-foreground'
                           )}
                         >
                           <span>{tBilingual('Yearly Billing', 'বাৎসরিক বিলিং')}</span>
-                          <span className="bg-success text-white text-xs font-black px-1.5 py-0.2 rounded-full uppercase">
+                          <span className="bg-success text-success-foreground text-xs font-black px-1.5 py-0.5 rounded-full uppercase">
                             {tBilingual('2 Mo Free', '২ মাস ফ্রি')}
                           </span>
                         </button>
@@ -1069,23 +1084,23 @@ function OnboardingWizard() {
                             className={cn(
                               'relative rounded-xl border-2 p-3 cursor-pointer transition-all flex flex-col justify-between text-left',
                               isSelected
-                                ? 'border-border bg-primary/10/50 bg-primary/10 shadow-md ring-2 focus:ring-ring/20'
-                                : 'border-border bg-card hover:border-input'
+                                ? 'border-primary bg-primary/10 shadow-xs ring-2 ring-primary/25'
+                                : 'border-border bg-card hover:border-border hover:bg-muted/40'
                             )}
                           >
                             {isRecommended && (
-                              <div className="absolute -top-2.5 right-3 text-white text-xs font-black px-2 py-0.5 rounded-full uppercase tracking-wider shadow-xs">
+                              <div className="absolute -top-2.5 right-3 bg-primary text-primary-foreground text-xs font-black px-2 py-0.5 rounded-full uppercase tracking-wider shadow-xs">
                                 {tBilingual('Popular', 'জনপ্রিয়')}
                               </div>
                             )}
 
                             <div>
                               <div className="flex items-center justify-between">
-                                <h4 className="font-bold text-xs sm:text-sm text-foreground dark:text-white bangla-text">
+                                <h4 className="font-bold text-xs sm:text-sm text-foreground bangla-text">
                                   {tBilingual(plan.name, plan.name_bn)}
                                 </h4>
                                 {isSelected && (
-                                  <div className="w-4 h-4 rounded-full bg-primary text-white flex items-center justify-center shrink-0">
+                                  <div className="w-4 h-4 rounded-full bg-primary text-primary-foreground flex items-center justify-center shrink-0">
                                     <Check className="h-2.5 w-2.5" />
                                   </div>
                                 )}
@@ -1093,7 +1108,7 @@ function OnboardingWizard() {
 
                               <div className="mt-1.5">
                                 <div className="flex items-baseline gap-1">
-                                  <span className="text-base sm:text-lg font-black text-foreground dark:text-white">
+                                  <span className="text-base sm:text-lg font-black text-foreground">
                                     ৳{locale === 'bn' ? toBengaliDigits(price) : price.toLocaleString()}
                                   </span>
                                   <span className="text-xs text-muted-foreground">
@@ -1103,7 +1118,7 @@ function OnboardingWizard() {
                               </div>
 
                               {/* Key Limits */}
-                              <div className="mt-2 pt-2 border-t border-border dark:border-border/80 space-y-1 text-xs text-muted-foreground dark:text-muted-foreground">
+                              <div className="mt-2 pt-2 border-t border-border space-y-1 text-xs text-muted-foreground">
                                 <div className="flex items-center gap-1.5">
                                   <Users className="h-3 w-3 text-primary shrink-0" />
                                   <span>{locale === 'bn' ? toBengaliDigits(plan.max_users) : plan.max_users} {tBilingual('Users', 'ইউজার')}</span>
@@ -1124,22 +1139,22 @@ function OnboardingWizard() {
                     </div>
 
                     {/* Payment Gateway Selector */}
-                    <div className="rounded-xl bg-muted p-3.5 border border-border space-y-3">
+                    <div className="rounded-xl bg-muted/60 p-3.5 border border-border space-y-3">
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-1.5 bangla-text">
                           <CreditCard className="h-3.5 w-3.5 text-primary" />
                           {tBilingual('Select Payment Method', 'পেমেন্ট গেটওয়ে নির্বাচন করুন')}
                         </span>
-                        <span className="text-xs font-bold text-foreground dark:text-white">
+                        <span className="text-xs font-bold text-foreground">
                           {tBilingual('Amount: ', 'মোট প্রদেয়: ')}
-                          <span className="text-primary text-primary font-black">
+                          <span className="text-primary font-black">
                             ৳{locale === 'bn' ? toBengaliDigits(payableAmount) : payableAmount.toLocaleString()} BDT
                           </span>
                         </span>
                       </div>
 
                       {gateways.length === 0 ? (
-                        <div className="p-3 text-center text-xs text-warning text-warning bg-warning-surface bg-warning-surface rounded-xl border border-warning-border border-warning-border bangla-text">
+                        <div className="p-3 text-center text-xs text-warning bg-warning-surface rounded-xl border border-warning-border bangla-text">
                           {tBilingual(
                             'No online payment gateway is currently active. You can continue and payment will be arranged manually.',
                             'বর্তমানে কোন অনলাইন পেমেন্ট গেটওয়ে সক্রিয় নেই। আপনি এগিয়ে যেতে পারেন, ম্যানুয়ালি পেমেন্ট সমন্বয় করা হবে।'
@@ -1156,12 +1171,12 @@ function OnboardingWizard() {
                                 className={cn(
                                   'p-2.5 rounded-xl border text-center transition-all flex flex-col items-center justify-center gap-1 cursor-pointer',
                                   isGWSelected
-                                    ? 'border-border bg-card shadow-sm ring-2 focus:ring-ring/20'
-                                    : 'border-border bg-card hover:bg-muted dark:hover:bg-muted'
+                                    ? 'border-primary bg-primary/10 shadow-xs ring-2 ring-primary/25'
+                                    : 'border-border bg-card hover:bg-muted/50 hover:border-border'
                                 )}
                               >
                                 <div className="flex items-center gap-1">
-                                  {g.id === 'bkash' && <Smartphone className="h-3.5 w-3.5 text-pink-600" />}
+                                  {g.id === 'bkash' && <Smartphone className="h-3.5 w-3.5 text-primary" />}
                                   {g.id === 'sslcommerz' && <CreditCard className="h-3.5 w-3.5 text-primary" />}
                                   {g.id === 'nagad' && <Smartphone className="h-3.5 w-3.5 text-warning" />}
                                   {g.id === 'bank_wire' && <Landmark className="h-3.5 w-3.5 text-success" />}
@@ -1187,7 +1202,7 @@ function OnboardingWizard() {
 
                       {/* Selected Gateway Instruction Callout */}
                       {activeGatewayMeta?.instructions && activeGatewayMeta.instructions.length > 0 && (
-                        <div className="p-2.5 bg-primary/10/70 bg-primary/10 rounded-lg border border-border border-border/60 text-xs text-primary text-primary space-y-1">
+                        <div className="p-2.5 bg-primary/10 rounded-lg border border-primary/20 text-xs text-foreground space-y-1">
                           {activeGatewayMeta.instructions.map((ins, i) => (
                             <div key={i} className="flex items-start gap-1.5">
                               <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
@@ -1199,26 +1214,26 @@ function OnboardingWizard() {
                     </div>
 
                     {/* Order Summary & Security Callout */}
-                    <div className="rounded-xl bg-muted border border-border p-3 space-y-2 text-xs">
-                      <div className="flex items-center justify-between text-muted-foreground dark:text-muted-foreground">
+                    <div className="rounded-xl bg-muted/60 border border-border p-3 space-y-2 text-xs">
+                      <div className="flex items-center justify-between text-muted-foreground">
                         <span>Selected Plan & Cycle:</span>
-                        <span className="font-bold text-foreground dark:text-white capitalize">
+                        <span className="font-bold text-foreground capitalize">
                           {selectedPlan} Plan ({billingInterval})
                         </span>
                       </div>
-                      <div className="flex items-center justify-between text-muted-foreground dark:text-muted-foreground">
+                      <div className="flex items-center justify-between text-muted-foreground">
                         <span>Workspace:</span>
-                        <span className="tabular-nums text-primary text-primary font-semibold">
+                        <span className="tabular-nums text-primary font-semibold">
                           /{watch('slug') || 'workspace'}
                         </span>
                       </div>
-                      <div className="pt-2 border-t border-border flex items-center justify-between text-xs font-bold text-foreground dark:text-white">
+                      <div className="pt-2 border-t border-border flex items-center justify-between text-xs font-bold text-foreground">
                         <span>Total Payable:</span>
-                        <span className="text-sm font-black text-primary text-primary">
+                        <span className="text-sm font-black text-primary">
                           ৳{locale === 'bn' ? toBengaliDigits(payableAmount) : payableAmount.toLocaleString()} BDT
                         </span>
                       </div>
-                      <div className="pt-1 flex items-center justify-center gap-1.5 text-xs text-muted-foreground dark:text-muted-foreground">
+                      <div className="pt-1 flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
                         <Lock className="h-3 w-3 text-success" />
                         <span>256-bit SSL Encrypted & Automated Invoice Activation</span>
                       </div>

@@ -3715,7 +3715,7 @@ export function ServiceConfigModal({
             <div className="space-y-3 pb-3 border-b border-border">
               <div className="flex items-center justify-between pb-1.5 border-b border-border">
                 <div className="flex items-center gap-2">
-                  <div className="h-6 w-6 rounded-lg bg-primary/10 text-primary bg-primary/60 text-primary flex items-center justify-center font-bold text-xs">
+                  <div className="h-6 w-6 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-xs">
                     1
                   </div>
                   <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
@@ -5127,7 +5127,7 @@ export function ServiceConfigModal({
             {/* Header with Title and Summary Badges */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-border gap-2">
               <div className="flex items-center gap-2.5">
-                <div className="h-7 w-7 rounded-lg bg-warning-surface text-warning bg-warning/60 text-warning flex items-center justify-center font-bold text-xs shrink-0">
+                <div className="h-7 w-7 rounded-lg bg-warning-surface text-warning flex items-center justify-center font-bold text-xs shrink-0">
                   <Boxes className="w-4 h-4"/>
                 </div>
                 <div>
@@ -5432,7 +5432,7 @@ export function ServiceConfigModal({
                               'px-2 py-1 rounded text-xs font-bold transition-all flex items-center gap-1 cursor-pointer',
  isSelected
                                 ? 'bg-warning text-white hover:bg-warning/90'
-                                : 'bg-warning-surface text-warning hover:bg-warning bg-warning/60 text-warning'
+                                : 'bg-warning-surface text-warning hover:bg-warning-surface/80'
                             )}
                           >
                             {isSelected ? (
@@ -5478,7 +5478,7 @@ export function ServiceConfigModal({
           <div className="rounded-xl border border-border bg-card p-4 space-y-4 shadow-xs animate-in fade-in-0">
             <div className="flex items-center justify-between pb-2 border-b border-border">
               <div className="flex items-center gap-2">
-                <div className="h-6 w-6 rounded-lg bg-primary/10 text-primary bg-primary/60 text-primary flex items-center justify-center font-bold text-xs">
+                <div className="h-6 w-6 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-xs">
                   3
                 </div>
                 <div>
@@ -5616,7 +5616,7 @@ export function ServiceConfigModal({
                                 'px-2 py-1 rounded text-xs font-bold transition-all flex items-center gap-1 cursor-pointer',
  isLinked
                                   ? 'bg-primary text-white hover:bg-primary'
-                                  : 'bg-primary/10 text-primary hover:bg-primary bg-primary/60 text-primary'
+                                  : 'bg-primary/10 text-primary hover:bg-primary/20'
                               )}
                             >
                               {isLinked ? (
@@ -5896,7 +5896,7 @@ export function ServiceConfigModal({
           <div className="rounded-xl border border-border bg-card p-4 space-y-4 shadow-xs animate-in fade-in-0">
             <div className="flex items-center justify-between pb-2 border-b border-border">
               <div className="flex items-center gap-2">
-                <div className="h-6 w-6 rounded-lg bg-success-surface text-success bg-success/60 text-success flex items-center justify-center font-bold text-xs">
+                <div className="h-6 w-6 rounded-lg bg-success-surface text-success flex items-center justify-center font-bold text-xs">
                   4
                 </div>
                 <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
@@ -5962,7 +5962,7 @@ export function ServiceConfigModal({
           <div className="rounded-xl border border-border bg-card p-4 space-y-4 shadow-xs animate-in fade-in-0">
             <div className="flex items-center justify-between pb-2 border-b border-border">
               <div className="flex items-center gap-2">
-                <div className="h-6 w-6 rounded-lg bg-success-surface text-success bg-success/60 text-success flex items-center justify-center font-bold text-xs">
+                <div className="h-6 w-6 rounded-lg bg-success-surface text-success flex items-center justify-center font-bold text-xs">
                   5
                 </div>
                 <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">

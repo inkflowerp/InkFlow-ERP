@@ -2,60 +2,66 @@
 
 import React from 'react'
 import {
- Printer,
- Building2,
- ArrowRight,
+  Printer,
+  Layers,
+  Image,
+  Tag,
+  Package,
+  Sparkles,
+  Zap,
+  Building,
+  Shield,
+  Hammer,
+  Car,
+  Wrench,
 } from 'lucide-react'
 import { useI18n } from '@/i18n/context'
-import { INDUSTRY_SECTORS } from '@/lib/marketing/marketing-data'
 
 export function IndustrySolutionsSection() {
- const { tBilingual } = useI18n()
+  const { tBilingual } = useI18n()
 
- return (
-    <section id="solutions"className="py-16 sm:py-24 bg-card border-t border-border">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12 sm:space-y-16">
-        {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto space-y-3 sm:space-y-4">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary bg-primary/10 text-primary border border-primary/20/70 border-border/60 uppercase tracking-wider">
-            <Building2 className="h-3.5 w-3.5"/>
-            <span>{tBilingual('Print & Signage Verticals', 'প্রিন্ট ও সাইনেজ খাত')}</span>
+  const INDUSTRIES = [
+    { nameEn: 'Digital Print', nameBn: 'ডিজিটাল প্রিন্ট', icon: Printer },
+    { nameEn: 'Offset', nameBn: 'অফসেট প্রেস', icon: Layers },
+    { nameEn: 'Flex & Banner', nameBn: 'ফ্লেক্স ও ব্যানার', icon: Image },
+    { nameEn: 'Sticker & Label', nameBn: 'স্টিকার ও লেবেল', icon: Tag },
+    { nameEn: 'Packaging', nameBn: 'প্যাকেজিং ও বক্স', icon: Package },
+    { nameEn: 'Acrylic', nameBn: 'এক্রিলিক কাজ', icon: Sparkles },
+    { nameEn: 'LED Signage', nameBn: 'এলইডি সাইনেজ', icon: Zap },
+    { nameEn: 'ACP', nameBn: 'এসিপি বোর্ড', icon: Building },
+    { nameEn: 'PVC', nameBn: 'পিভিসি ফোম বোর্ড', icon: Shield },
+    { nameEn: 'Metal', nameBn: 'মেটাল কাঠামো', icon: Hammer },
+    { nameEn: 'Vehicle Branding', nameBn: 'গাড়ি ব্র্যান্ডিং', icon: Car },
+    { nameEn: 'Installation', nameBn: 'সাইট ফিটিং ও স্থাপন', icon: Wrench },
+  ]
+
+  return (
+    <section id="industries" className="py-14 sm:py-20 bg-muted/40 border-t border-border">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 sm:space-y-10">
+        <div className="text-center max-w-xl mx-auto space-y-2">
+          <div className="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
+            <span>{tBilingual('Industries', 'শিল্প খাত')}</span>
           </div>
-
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-foreground tracking-tight leading-tight bangla-text">
-            {tBilingual(
-              'Tailored for Every Printing & Signage Sector.',
-              'আপনার প্রেসের সুনির্দিষ্ট কাজের ধরনের উপযোগী।'
-            )}
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">
+            {tBilingual('Built for Print & Signage Businesses.', 'প্রিন্ট ও সাইনেজ ব্যবসার জন্য বিশেষভাবে তৈরি।')}
           </h2>
-
-          <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto leading-relaxed bangla-text">
-            {tBilingual(
-              'Whether running wide-format solvent banners in Arambagh, offset packaging in Fakirapool, or acrylic laser cutting in Chattogram, PrintFlow adapts to your craft.',
-              'আরামবাগের ব্যানার শপ, ফকিরাপুলের অফসেট প্রেস কিংবা চট্টগ্রামের সাইনবোর্ড ফ্যাব্রিকেশন—প্রিন্টফ্লো আপনার কারখানার কাজের ধরন অনুযায়ী মানানসই।'
-            )}
-          </p>
         </div>
 
-        {/* 12 Industry Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
-          {INDUSTRY_SECTORS.map((sector) => {
- const Icon = sector.icon || Printer
- return (
+        {/* 12 Compact Cards — Minimal without long descriptions */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 max-w-5xl mx-auto">
+          {INDUSTRIES.map((ind, idx) => {
+            const Icon = ind.icon
+            return (
               <div
- key={sector.id}
- className="p-5 rounded-xl border border-border bg-muted hover:bg-card hover:border-primary/20 dark:hover:border-border transition-all hover:shadow-sm group flex flex-col justify-between">
-                <div>
-                  <div className="h-9 w-9 rounded-lg bg-primary/10 bg-primary/10 text-primary text-primary flex items-center justify-center mb-3 group-hover:scale-105 transition-transform border border-border border-border/60">
-                    <Icon className="h-4 w-4"/>
-                  </div>
-                  <h3 className="text-sm font-bold text-foreground bangla-text mb-1">
-                    {tBilingual(sector.titleEn, sector.titleBn)}
-                  </h3>
-                  <p className="text-xs text-muted-foreground leading-relaxed bangla-text">
-                    {tBilingual(sector.descEn, sector.descBn)}
-                  </p>
+                key={idx}
+                className="bg-card border border-border rounded-xl p-3.5 flex flex-col items-center justify-center text-center space-y-2 shadow-2xs hover:border-primary/40 hover:bg-card/80 transition-all"
+              >
+                <div className="h-9 w-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                  <Icon className="h-4.5 w-4.5" />
                 </div>
+                <span className="text-xs sm:text-sm font-bold text-foreground block truncate">
+                  {tBilingual(ind.nameEn, ind.nameBn)}
+                </span>
               </div>
             )
           })}

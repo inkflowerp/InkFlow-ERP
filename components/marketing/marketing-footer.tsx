@@ -2,186 +2,83 @@
 
 import React from 'react'
 import Link from 'next/link'
-import {
- Printer,
- Phone,
- Mail,
- MapPin,
- Globe2,
-} from 'lucide-react'
+import { Printer, Globe2 } from 'lucide-react'
 import { useI18n } from '@/i18n/context'
 import { usePlatformSettings } from '@/hooks/use-platform-settings'
-import { BRAND } from '@/config/brand'
 
 export function MarketingFooter() {
- const { locale, setLocale, tBilingual } = useI18n()
- const { appName, appLogoUrl, tagline, contactAddress, contactPhone, contactEmail, supportHelpline } = usePlatformSettings()
+  const { locale, setLocale, tBilingual } = useI18n()
+  const { appName, appLogoUrl } = usePlatformSettings()
+  const currentYear = new Date().getFullYear()
 
- const currentYear = new Date().getFullYear()
-
- return (
-    <footer className="bg-muted text-muted-foreground border-t border-border pt-12 sm:pt-16 pb-10 sm:pb-12 text-xs">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10 sm:space-y-12">
-        {/* Top 4 Columns Directory */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-10">
-          {/* Brand Info (takes 2 cols on lg) */}
-          <div className="sm:col-span-2 space-y-4">
-            <Link href="/"className="flex items-center gap-2.5 shrink-0">
+  return (
+    <footer className="bg-muted/40 text-muted-foreground border-t border-border pt-10 pb-8 text-xs">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 pb-6 border-b border-border/60">
+          {/* Brand */}
+          <div className="space-y-1.5 max-w-sm">
+            <Link href="/" className="flex items-center gap-2 shrink-0">
               {appLogoUrl ? (
                 <img
- src={appLogoUrl}
- alt={appName}
- className="h-8 w-8 rounded-lg object-contain bg-card border border-border p-0.5 shadow-2xs shrink-0"/>
+                  src={appLogoUrl}
+                  alt={appName}
+                  className="h-7 w-7 rounded-md object-contain bg-card border border-border p-0.5 shadow-2xs shrink-0"
+                />
               ) : (
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-white shadow-xs shrink-0">
-                  <Printer className="h-4 w-4"/>
+                <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary text-primary-foreground shadow-xs shrink-0">
+                  <Printer className="h-4 w-4" />
                 </div>
               )}
               <span className="text-base font-bold text-foreground tracking-tight">
                 {appName}
               </span>
             </Link>
-
-            <p className="text-xs text-muted-foreground leading-relaxed max-w-sm bangla-text">
+            <p className="text-xs text-muted-foreground">
               {tBilingual(
-                tagline || BRAND.tagline,
-                'বাংলাদেশের প্রিন্টিং প্রেস, সাইনেজ ও ফ্যাব্রিকেশন কারখানার জন্য সমন্বিত অপারেটিং সিস্টেম।'
+                'Business management software for print and signage businesses.',
+                'প্রিন্ট ও সাইনেজ ব্যবসার আধুনিক ম্যানেজমেন্ট সফটওয়্যার।'
               )}
             </p>
-
-            <div className="space-y-2 text-xs text-muted-foreground pt-1">
-              <div className="flex items-start gap-2">
-                <MapPin className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5"/>
-                <span>{contactAddress || 'Arambagh Press Cluster, Motijheel, Dhaka-1000'}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Phone className="h-3.5 w-3.5 text-primary shrink-0"/>
-                <a
-                  href={`tel:${BRAND.helplineE164}`}
-                  className="tabular-nums hover:text-foreground transition-colors"
-                >
-                  {contactPhone || supportHelpline || BRAND.helplineDisplay}
-                </a>
-              </div>
-              <div className="flex items-center gap-2">
-                <a
-                  href={BRAND.whatsappUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-foreground transition-colors inline-flex items-center gap-1"
-                >
-                  <span className="font-semibold text-primary">WhatsApp:</span>
-                  <span className="tabular-nums">{BRAND.helplineDisplay}</span>
-                </a>
-              </div>
-              <div className="flex items-center gap-2">
-                <Mail className="h-3.5 w-3.5 text-primary shrink-0"/>
-                <span>{contactEmail || 'support@printflow.bd'}</span>
-              </div>
-            </div>
           </div>
 
-          {/* Col 2: Product */}
-          <div className="space-y-3">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-foreground">Product</h4>
-            <ul className="space-y-2 text-xs">
-              <li>
-                <Link href="/#features"className="hover:text-primary dark:hover:text-primary transition-colors">
- Features
-                </Link>
-              </li>
-              <li>
-                <Link href="/#how-it-works"className="hover:text-primary dark:hover:text-primary transition-colors">
- How It Works
-                </Link>
-              </li>
-              <li>
-                <Link href="/#pricing"className="hover:text-primary dark:hover:text-primary transition-colors">
- Pricing Plans
-                </Link>
-              </li>
-              <li>
-                <Link href="/register?plan=trial"className="hover:text-primary dark:hover:text-primary transition-colors font-medium text-primary text-primary">
- Free Trial
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Col 3: Solutions */}
-          <div className="space-y-3">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-foreground">Solutions</h4>
-            <ul className="space-y-2 text-xs">
-              <li>
-                <Link href="/#solutions"className="hover:text-primary dark:hover:text-primary transition-colors">
- Digital Printing
-                </Link>
-              </li>
-              <li>
-                <Link href="/#solutions"className="hover:text-primary dark:hover:text-primary transition-colors">
- Offset Press
-                </Link>
-              </li>
-              <li>
-                <Link href="/#solutions"className="hover:text-primary dark:hover:text-primary transition-colors">
- Flex & Banner
-                </Link>
-              </li>
-              <li>
-                <Link href="/#solutions"className="hover:text-primary dark:hover:text-primary transition-colors">
- Acrylic & Signage
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Col 4: Resources & Company */}
-          <div className="space-y-3">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-foreground">Company</h4>
-            <ul className="space-y-2 text-xs">
-              <li>
-                <Link href="/#faq"className="hover:text-primary dark:hover:text-primary transition-colors">
- FAQ
-                </Link>
-              </li>
-              <li>
-                <Link href="/about"className="hover:text-primary dark:hover:text-primary transition-colors">
- About Us
-                </Link>
-              </li>
-              <li>
-                <Link href="/contact"className="hover:text-primary dark:hover:text-primary transition-colors">
- Contact Sales & Support
-                </Link>
-              </li>
-              <li>
-                <Link href="/privacy"className="hover:text-primary dark:hover:text-primary transition-colors">
- Privacy Policy
-                </Link>
-              </li>
-              <li>
-                <Link href="/terms"className="hover:text-primary dark:hover:text-primary transition-colors">
- Terms of Service
-                </Link>
-              </li>
-            </ul>
+          {/* Minimal Links: Product, Pricing, How It Works, FAQ, Privacy, Terms, Contact */}
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs font-medium">
+            <a href="#what-we-manage" className="hover:text-primary transition-colors cursor-pointer">
+              {tBilingual('Product', 'প্রোডাক্ট')}
+            </a>
+            <a href="#pricing" className="hover:text-primary transition-colors cursor-pointer">
+              {tBilingual('Pricing', 'মূল্যতালিকা')}
+            </a>
+            <a href="#workflow" className="hover:text-primary transition-colors cursor-pointer">
+              {tBilingual('How It Works', 'কাজের ধাপ')}
+            </a>
+            <a href="#faq" className="hover:text-primary transition-colors cursor-pointer">
+              {tBilingual('FAQ', 'প্রশ্নোত্তর')}
+            </a>
+            <Link href="/privacy" className="hover:text-primary transition-colors">
+              {tBilingual('Privacy', 'প্রাইভেসি')}
+            </Link>
+            <Link href="/terms" className="hover:text-primary transition-colors">
+              {tBilingual('Terms', 'শর্তাবলী')}
+            </Link>
+            <Link href="/contact" className="hover:text-primary transition-colors">
+              {tBilingual('Contact', 'যোগাযোগ')}
+            </Link>
           </div>
         </div>
 
         {/* Bottom Bar */}
-        <div className="pt-6 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4 text-muted-foreground">
-          <div className="flex items-center gap-2">
-            <span>© {currentYear} {appName}. All rights reserved.</span>
-          </div>
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
+          <span>© {currentYear} {appName}. All rights reserved.</span>
 
-          <div className="flex items-center gap-4">
-            <button
- type="button"onClick={() => setLocale(locale === 'en' ? 'bn' : 'en')}
- className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary cursor-pointer">
-              <Globe2 className="h-3.5 w-3.5"/>
-              <span>{locale === 'en' ? 'বাংলায় দেখুন' : 'Switch to English'}</span>
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={() => setLocale(locale === 'en' ? 'bn' : 'en')}
+            className="inline-flex items-center gap-1.5 hover:text-foreground transition-colors cursor-pointer"
+          >
+            <Globe2 className="h-3.5 w-3.5" />
+            <span>{locale === 'en' ? 'বাংলায় দেখুন' : 'Switch to English'}</span>
+          </button>
         </div>
       </div>
     </footer>

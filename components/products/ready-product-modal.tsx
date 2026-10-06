@@ -738,7 +738,7 @@ export function ReadyProductModal({
  size="5xl"onSubmit={handleSubmit}
  title={
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary bg-primary/20 text-primary font-bold shrink-0 ring-1 focus:ring-ring/20">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary font-bold shrink-0 ring-1 focus:ring-ring/20">
             <Package className="h-5 w-5"/>
           </div>
           <div>
@@ -746,11 +746,11 @@ export function ReadyProductModal({
               <span className="text-base font-bold text-foreground">
                 {initialData ? `Edit Ready Product: ${initialData.name}` : 'New Ready Product Master'}
               </span>
-              <Badge variant="outline"className="text-xs uppercase tabular-nums py-0.5 px-2 bg-primary/10 text-primary border-primary/20 bg-primary/10 text-primary border-border">
+              <Badge variant="outline"className="text-xs uppercase tabular-nums py-0.5 px-2 bg-primary/10 text-primary border-primary/20">
  Ready to Sell
               </Badge>
               {sellingPrice !== '' && Number(sellingPrice) > 0 && (
-                <Badge variant="outline"className="text-xs tabular-nums py-0.5 px-2 bg-success-surface text-success border-success-border bg-success-surface text-success border-success-border">
+                <Badge variant="outline"className="text-xs tabular-nums py-0.5 px-2 bg-success-surface text-success border-success-border">
                   ৳{Number(sellingPrice).toFixed(2)} / {unit}
                 </Badge>
               )}
@@ -849,7 +849,7 @@ export function ReadyProductModal({
             {/* Section 1: Core Identification */}
             <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
               <div className="flex items-center gap-2">
-                <div className="h-6 w-6 rounded-lg bg-primary/10 text-primary bg-primary/60 text-primary flex items-center justify-center font-bold text-xs">
+                <div className="h-6 w-6 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-xs">
                   1
                 </div>
                 <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
@@ -1000,7 +1000,7 @@ export function ReadyProductModal({
             {/* Section 1: Dimensions & Build Material */}
             <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
               <div className="flex items-center gap-2">
-                <div className="h-6 w-6 rounded-lg bg-primary/10 text-primary bg-primary/60 text-primary flex items-center justify-center font-bold text-xs">
+                <div className="h-6 w-6 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-xs">
                   <Sliders className="w-3.5 h-3.5"/>
                 </div>
                 <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
@@ -1110,7 +1110,7 @@ export function ReadyProductModal({
             {/* Section 2: Master Carton & Wholesale Packaging */}
             <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
               <div className="flex items-center gap-2">
-                <div className="h-6 w-6 rounded-lg bg-warning-surface text-warning bg-warning/60 text-warning flex items-center justify-center font-bold text-xs">
+                <div className="h-6 w-6 rounded-lg bg-warning-surface text-warning flex items-center justify-center font-bold text-xs">
                   <Boxes className="w-3.5 h-3.5"/>
                 </div>
                 <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
@@ -1183,7 +1183,7 @@ export function ReadyProductModal({
             {/* 1. Base Rates & Landed Cost Breakdown */}
             <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
               <div className="flex items-center gap-2">
-                <div className="h-6 w-6 rounded-lg bg-success-surface text-success bg-success/60 text-success flex items-center justify-center font-bold text-xs">
+                <div className="h-6 w-6 rounded-lg bg-success-surface text-success flex items-center justify-center font-bold text-xs">
                   <DollarSign className="w-3.5 h-3.5"/>
                 </div>
                 <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
@@ -1275,7 +1275,7 @@ export function ReadyProductModal({
  variant="outline"className={cn(
                       'text-xs font-bold px-2 py-0.5 rounded-md',
  marginMetrics.grossMarginPercent >= targetMargin
-                        ? 'bg-success-surface text-success border-success-border bg-success-surface text-success border-success-border'
+                        ? 'bg-success-surface text-success border-success-border'
                         : marginMetrics.grossMarginPercent >= minAllowedMargin
                         ? 'bg-warning-surface text-warning border-warning-border bg-warning-surface text-warning border-warning-border'
                         : 'bg-danger-surface text-destructive border-danger-border bg-danger-surface text-destructive border-danger-border'
@@ -1350,7 +1350,7 @@ export function ReadyProductModal({
             <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
-                  <div className="h-6 w-6 rounded-lg bg-primary/10 text-primary bg-primary/60 text-primary flex items-center justify-center font-bold text-xs">
+                  <div className="h-6 w-6 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-xs">
                     <Tag className="w-3.5 h-3.5"/>
                   </div>
                   <div>
@@ -1484,7 +1484,7 @@ export function ReadyProductModal({
             {/* Section 1: Stock Levels & Reorder Triggers */}
             <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
               <div className="flex items-center gap-2">
-                <div className="h-6 w-6 rounded-lg bg-success-surface text-success bg-success/60 text-success flex items-center justify-center font-bold text-xs">
+                <div className="h-6 w-6 rounded-lg bg-success-surface text-success flex items-center justify-center font-bold text-xs">
                   <Warehouse className="w-3.5 h-3.5"/>
                 </div>
                 <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
