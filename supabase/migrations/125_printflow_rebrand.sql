@@ -127,6 +127,6 @@ BEGIN
         FROM pg_proc 
         WHERE proname IN ('auth_is_active_company_user', 'auth_company_user_has_permission', 'auth_company_user_role')
     LOOP
-        EXECUTE format('GRANT EXECUTE ON FUNCTION %s TO authenticated, anon, service_role, public;', r.func_sig);
+        EXECUTE format('GRANT EXECUTE ON FUNCTION %s TO authenticated, service_role, public;', r.func_sig);
     END LOOP;
 END $$;
