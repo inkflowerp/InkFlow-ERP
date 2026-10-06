@@ -57,12 +57,7 @@ export async function updateSession(request: NextRequest) {
       hostWithoutPort === 'localhost' ||
       hostWithoutPort === '127.0.0.1'
     )
-    const isPslOrLocal = Boolean(
-      isLocal ||
-      hostWithoutPort.endsWith('.vercel.app') ||
-      hostWithoutPort.endsWith('.pages.dev') ||
-      hostWithoutPort.endsWith('.netlify.app')
-    )
+    const isPslOrLocal = Boolean(isLocal)
     const pathname = request.nextUrl.pathname
     const search = request.nextUrl.search
 
@@ -72,11 +67,12 @@ export async function updateSession(request: NextRequest) {
     requestHeaders.set('x-pathname', pathname)
     requestHeaders.set('x-url', request.url)
 
-    // Legacy host 308 redirects to printflow.bd:
-    // Skips canonical printflow.bd, non-production deployment URLs (*-<hash>-*.vercel.app) and localhost.
+    // Legacy host & vercel.app 308 permanent redirects to printflow.bd:
+    // Skips canonical printflow.bd and localhost.
     const _l1 = String.fromCharCode(105, 110, 107, 102, 108, 111, 119)
     const _l2 = String.fromCharCode(112, 114, 105, 110, 116, 101, 114, 112)
     const LEGACY_DOMAINS = [
+      `${_l1}-erp.vercel.app`,
       `${_l1}-erp.vercel.com`,
       `${_l1}.com.bd`,
       `${_l2}.com.bd`,
@@ -87,21 +83,23 @@ export async function updateSession(request: NextRequest) {
       hostWithoutPort === BRAND.rootDomain ||
       hostWithoutPort.endsWith(`.${BRAND.rootDomain}`)
 
+    const isVercelHost = !isLocal && hostWithoutPort.endsWith('.vercel.app')
     const matchedLegacyDomain = (!isLocal && !isCanonicalHost)
       ? LEGACY_DOMAINS.find(
           (d) => hostWithoutPort === d || hostWithoutPort.endsWith(`.${d}`)
         )
       : null
 
-    if (matchedLegacyDomain) {
+    if (matchedLegacyDomain || isVercelHost) {
       let targetDomain: string = BRAND.rootDomain
       let targetPath: string = pathname
       if (
-        hostWithoutPort === matchedLegacyDomain ||
-        hostWithoutPort === `www.${matchedLegacyDomain}`
+        matchedLegacyDomain &&
+        (hostWithoutPort === matchedLegacyDomain ||
+        hostWithoutPort === `www.${matchedLegacyDomain}`)
       ) {
         targetDomain = BRAND.rootDomain
-      } else {
+      } else if (matchedLegacyDomain) {
         const sub = hostWithoutPort.slice(0, -(matchedLegacyDomain.length + 1))
         if (sub === 'admin' || sub === 'platform') {
           targetDomain = BRAND.rootDomain
@@ -116,6 +114,19 @@ export async function updateSession(request: NextRequest) {
           }
         } else if (isValidSlugFormat(sub) && !isReservedSlug(sub)) {
           targetDomain = `${sub}.${BRAND.rootDomain}`
+        }
+      } else if (isVercelHost) {
+        // Any other vercel.app host:
+        // If pathname starts with /t/[slug] or /[slug], extract tenant slug to subdomain
+        const segments = pathname.split('/').filter(Boolean)
+        if (segments[0] === 't' && segments[1] && isValidSlugFormat(segments[1]) && !isReservedSlug(segments[1])) {
+          targetDomain = `${segments[1]}.${BRAND.rootDomain}`
+          targetPath = '/' + segments.slice(2).join('/')
+        } else if (segments[0] && isValidSlugFormat(segments[0]) && !isReservedSlug(segments[0])) {
+          targetDomain = `${segments[0]}.${BRAND.rootDomain}`
+          targetPath = '/' + segments.slice(1).join('/')
+        } else {
+          targetDomain = BRAND.rootDomain
         }
       }
       const redirectUrl = new URL(`https://${targetDomain}${targetPath}${search}`)

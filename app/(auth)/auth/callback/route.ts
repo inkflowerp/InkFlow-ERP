@@ -221,12 +221,9 @@ export async function GET(request: Request) {
       }
 
       // Determine safe redirect destination
-      const isPslOrLocal = Boolean(
+      const isLocal = Boolean(
         origin.includes('localhost') ||
-        origin.includes('127.0.0.1') ||
-        origin.includes('.vercel.app') ||
-        origin.includes('.pages.dev') ||
-        origin.includes('.netlify.app')
+        origin.includes('127.0.0.1')
       )
 
       let cleanNext = '/dashboard'
@@ -245,7 +242,7 @@ export async function GET(request: Request) {
       }
 
       let destination: string
-      if (isPslOrLocal) {
+      if (isLocal) {
         const formattedSubPath = cleanNext.startsWith('/') ? cleanNext : `/${cleanNext}`
         destination = `${origin}/${company.slug}${formattedSubPath}`
         const redirectResponse = NextResponse.redirect(destination)

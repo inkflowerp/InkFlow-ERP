@@ -116,28 +116,25 @@ export async function createCompanyAction(
 
   revalidatePath('/', 'layout')
 
-  // Check if current request is from localhost or PSL (e.g. *.vercel.app)
-  let isPslOrLocalRequest = false
+  // Check if current request is from localhost
+  let isLocalRequest = false
   try {
     const { headers } = await import('next/headers')
     const headerStore = await headers()
     const host = (headerStore.get('x-forwarded-host') || headerStore.get('host') || '').toLowerCase().split(':')[0]
     if (
       host.includes('localhost') ||
-      host.includes('127.0.0.1') ||
-      host.endsWith('.vercel.app') ||
-      host.endsWith('.pages.dev') ||
-      host.endsWith('.netlify.app')
+      host.includes('127.0.0.1')
     ) {
-      isPslOrLocalRequest = true
+      isLocalRequest = true
     }
   } catch {}
 
-  let subdomainUrl = isPslOrLocalRequest
+  let subdomainUrl = isLocalRequest
     ? `/${company.slug}/dashboard`
     : `${getTenantBaseUrl(company.slug)}/dashboard`
 
-  if (!isPslOrLocalRequest && effectiveUserId) {
+  if (!isLocalRequest && effectiveUserId) {
     try {
       const handoffToken = await createSubdomainHandoffToken({
         userId: effectiveUserId,

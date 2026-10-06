@@ -3,6 +3,7 @@
 // Canonical URL builders for tenant-scoped links, document sharing, and notifications.
 // ==============================================================================
 
+import { BRAND } from '../../config/brand.ts'
 import { getRootDomain, isReservedSlug, resolveHostname } from './tenant-resolution.ts'
 
 /**
@@ -22,9 +23,16 @@ export function getTenantBaseUrl(slug: string, customRootDomain?: string): strin
     rootDomain.includes('localhost') ||
     rootDomain.includes('127.0.0.1')
 
+  const effectiveRoot = (customRootDomain && !customRootDomain.includes('vercel.app'))
+    ? rootDomain
+    : BRAND.rootDomain
+
   if (!cleanSlug) {
-    const isProd = (process.env.NODE_ENV === 'production' || rootDomain.includes('.')) && !isLocalhost
-    return `${isProd ? 'https' : 'http'}://${rootDomain}`
+    if (isLocalhost) {
+      const port = rootDomain.includes(':') ? `:${rootDomain.split(':')[1]}` : ':3000'
+      return `http://localhost${port}`
+    }
+    return `https://${effectiveRoot}`
   }
 
   // Handle localhost development: http://${cleanSlug}.localhost:3000
@@ -33,11 +41,9 @@ export function getTenantBaseUrl(slug: string, customRootDomain?: string): strin
     return `http://${cleanSlug}.localhost${port}`
   }
 
-  // Handle remote / production subdomain: https://${cleanSlug}.${rootDomain}
-  // All tenants MUST be: [tenantSlug].app.TLD
-  const isProd = process.env.NODE_ENV === 'production' || rootDomain.includes('.')
-  const protocol = isProd ? 'https' : 'http'
-  return `${protocol}://${cleanSlug}.${rootDomain}`
+  // Handle remote / production subdomain: strictly https://${cleanSlug}.${effectiveRoot}
+  // All tenants default to: [tenantSlug].printflow.bd
+  return `https://${cleanSlug}.${effectiveRoot}`
 }
 
 /**
@@ -188,9 +194,11 @@ export function getPlatformBaseUrl(customRootDomain?: string): string {
   const rawRootDomain = customRootDomain || getRootDomain()
   const rootDomain = rawRootDomain.replace(/^https?:\/\//i, '').split('/')[0].replace(/^www\./i, '')
   const isLocalhost = rootDomain.includes('localhost') || rootDomain.includes('127.0.0.1')
-  const isProd = (process.env.NODE_ENV === 'production' || rootDomain.includes('.')) && !isLocalhost
-  const protocol = isProd ? 'https' : 'http'
-  return `${protocol}://${rootDomain}/platform`
+  if (isLocalhost) {
+    const port = rootDomain.includes(':') ? `:${rootDomain.split(':')[1]}` : ':3000'
+    return `http://localhost${port}/platform`
+  }
+  return `https://${BRAND.rootDomain}/platform`
 }
 
 /**

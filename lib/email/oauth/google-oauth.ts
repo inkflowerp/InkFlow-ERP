@@ -93,9 +93,9 @@ export function getGoogleOAuthConfig(requestOriginOrExplicitUri?: string) {
       redirectUri = `${process.env.NEXT_PUBLIC_APP_URL.replace(/\/$/, '')}/api/email/oauth/google/callback`
     } else if (process.env.APP_URL && !process.env.APP_URL.includes('.vercel.app')) {
       redirectUri = `${process.env.APP_URL.replace(/\/$/, '')}/api/email/oauth/google/callback`
-    } else if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
+    } else if (process.env.VERCEL_PROJECT_PRODUCTION_URL && !process.env.VERCEL_PROJECT_PRODUCTION_URL.includes('.vercel.app')) {
       redirectUri = `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL.replace(/\/$/, '')}/api/email/oauth/google/callback`
-    } else if (process.env.NODE_ENV === 'production') {
+    } else if (process.env.NODE_ENV === 'production' || process.env.VERCEL_PROJECT_PRODUCTION_URL) {
       redirectUri = 'https://printflow.bd/api/email/oauth/google/callback'
     } else {
       redirectUri = 'http://localhost:3000/api/email/oauth/google/callback'

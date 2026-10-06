@@ -197,13 +197,9 @@ export function extractCanonicalRootDomain(rawHost: string | null | undefined): 
     return `localhost${port || ':3000'}`
   }
 
-  // 2. Vercel deployment URLs (*.vercel.app)
+  // 2. Vercel deployment URLs (*.vercel.app): Canonical root domain is strictly BRAND.rootDomain ('printflow.bd')
   if (hostWithoutPort.endsWith('.vercel.app')) {
-    const parts = hostWithoutPort.split('.')
-    if (parts.length >= 3) {
-      return parts.slice(-3).join('.') + port
-    }
-    return hostWithoutPort + port
+    return BRAND.rootDomain
   }
 
   // 3. General domain parsing (Two-part TLD vs Single-part TLD)
@@ -226,8 +222,8 @@ export function extractCanonicalRootDomain(rawHost: string | null | undefined): 
 /**
  * Normalizes and extracts the configured root domain deterministically.
  * Resolution hierarchy:
- * 1. ROOT_DOMAIN or NEXT_PUBLIC_ROOT_DOMAIN env vars (explicit infrastructure root)
- * 2. In browser runtime: extract canonical root from window.location.host
+ * 1. ROOT_DOMAIN or NEXT_PUBLIC_ROOT_DOMAIN env vars (explicit infrastructure root, ignoring legacy vercel domains)
+ * 2. In browser runtime: localhost if local, strictly BRAND.rootDomain ('printflow.bd') otherwise
  * 3. BRAND.rootDomain in production ('printflow.bd'), 'localhost:3000' otherwise
  *
  * NOTE: VERCEL_URL / VERCEL_PROJECT_PRODUCTION_URL / NEXT_PUBLIC_VERCEL_URL
@@ -241,12 +237,23 @@ export function getRootDomain(): string {
 
   if (configured && configured.trim() !== '') {
     const clean = configured.replace(/^https?:\/\//i, '').split('/')[0].toLowerCase().trim()
-    return clean.replace(/^www\./i, '').replace(/\.$/, '')
+    const cleanNoWww = clean.replace(/^www\./i, '').replace(/\.$/, '')
+    if (cleanNoWww.includes('localhost') || cleanNoWww.includes('127.0.0.1')) {
+      return cleanNoWww
+    }
+    // Filter out legacy vercel domains - root domain is only printflow.bd
+    if (!cleanNoWww.endsWith('.vercel.app')) {
+      return cleanNoWww
+    }
   }
 
   // 2. Client-side browser runtime: Extract canonical root from active browser host
   if (typeof window !== 'undefined' && window.location && window.location.host) {
-    return extractCanonicalRootDomain(window.location.host)
+    const browserHost = window.location.host.toLowerCase().trim()
+    if (browserHost.includes('localhost') || browserHost.includes('127.0.0.1')) {
+      return extractCanonicalRootDomain(browserHost)
+    }
+    return BRAND.rootDomain
   }
 
   // 3. BRAND.rootDomain in production, localhost:3000 otherwise
@@ -558,61 +565,41 @@ export function resolveTenant(
   // 5. Preview Fallback Hosts (e.g. *.vercel.app, *.pages.dev)
   // ---------------------------------------------------------------------------
   if (isPreviewHost) {
-    // If the host itself is a preview deployment URL (e.g. printflow-preview.vercel.app or branch-xyz.vercel.app)
-    const previewRoot = extractCanonicalRootDomain(host).split(':')[0]
-    if (host === previewRoot || host === `www.${previewRoot}`) {
-      // Path-based tenant resolution on preview host
-      const segments = pathname.split('/').filter(Boolean)
-      let candidateSlug: string | null = null
-      let remainingPath = pathname
+    const previewRoot = host.replace(/^www\./i, '')
+    // Path-based tenant resolution on preview host (e.g. preview-branch.vercel.app/rangao)
+    const segments = pathname.split('/').filter(Boolean)
+    let candidateSlug: string | null = null
+    let remainingPath = pathname
 
-      if (segments[0] === 't' && segments[1]) {
-        candidateSlug = segments[1].toLowerCase().trim()
-        remainingPath = '/' + segments.slice(2).join('/')
-      } else if (segments[0] && !isReservedSlug(segments[0]) && isValidSlugFormat(segments[0])) {
-        candidateSlug = segments[0].toLowerCase().trim()
-        remainingPath = '/' + segments.slice(1).join('/')
-      }
+    if (segments[0] === 't' && segments[1]) {
+      candidateSlug = segments[1].toLowerCase().trim()
+      remainingPath = '/' + segments.slice(2).join('/')
+    } else if (segments[0] && !isReservedSlug(segments[0]) && isValidSlugFormat(segments[0])) {
+      candidateSlug = segments[0].toLowerCase().trim()
+      remainingPath = '/' + segments.slice(1).join('/')
+    }
 
-      if (candidateSlug && isValidSlugFormat(candidateSlug) && !isReservedSlug(candidateSlug)) {
-        return {
-          type: 'tenant',
-          slug: candidateSlug,
-          hostname: host,
-          rootDomain: previewRoot,
-          isCustomDomain: false,
-          isFallback: true,
-          pathname,
-          normalizedPath: remainingPath || '/dashboard',
-        }
-      }
-
+    if (candidateSlug && isValidSlugFormat(candidateSlug) && !isReservedSlug(candidateSlug)) {
       return {
-        type: 'marketing',
-        slug: null,
+        type: 'tenant',
+        slug: candidateSlug,
         hostname: host,
         rootDomain: previewRoot,
         isCustomDomain: false,
         isFallback: true,
         pathname,
+        normalizedPath: remainingPath || '/dashboard',
       }
     }
 
-    // Subdomain on preview root (e.g. vision.printflow.bd)
-    if (host.endsWith(`.${previewRoot}`)) {
-      const rawSub = host.slice(0, -(previewRoot.length + 1)).replace(/^www\./i, '')
-      const labels = rawSub.split('.')
-      if (labels.length === 1 && isValidSlugFormat(labels[0]) && !isReservedSlug(labels[0])) {
-        return {
-          type: 'tenant',
-          slug: labels[0],
-          hostname: host,
-          rootDomain: previewRoot,
-          isCustomDomain: false,
-          isFallback: true,
-          pathname,
-        }
-      }
+    return {
+      type: 'marketing',
+      slug: null,
+      hostname: host,
+      rootDomain: previewRoot,
+      isCustomDomain: false,
+      isFallback: true,
+      pathname,
     }
   }
 

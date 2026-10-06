@@ -5,7 +5,6 @@ const allowedActionOrigins = [
   '*.printflow.bd',
   'localhost:3000',
   '*.localhost:3000',
-  '*.vercel.app',
 ]
 
 const nextConfig: NextConfig = {

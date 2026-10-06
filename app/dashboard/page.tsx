@@ -9,7 +9,7 @@ export default async function GlobalDashboardRedirect() {
   try {
     const headerStore = await headers();
     const host = (headerStore.get('x-forwarded-host') || headerStore.get('host') || '').toLowerCase();
-    if (host.includes('localhost') || host.includes('127.0.0.1') || host.endsWith('.vercel.app')) {
+    if (host.includes('localhost') || host.includes('127.0.0.1')) {
       redirect(`/${slug}/dashboard`);
     }
   } catch {}

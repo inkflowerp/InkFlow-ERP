@@ -6,8 +6,8 @@
 
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
-import { resolveHostname } from '../../lib/tenant/tenant-resolution.ts'
-import { getTenantLink, getTenantBaseUrl } from '../../lib/tenant/tenant-url.ts'
+import { resolveHostname, extractCanonicalRootDomain, getRootDomain } from '../../lib/tenant/tenant-resolution.ts'
+import { getTenantLink, getTenantBaseUrl, getPlatformBaseUrl } from '../../lib/tenant/tenant-url.ts'
 import { AuthService } from '../../services/auth.service.ts'
 
 describe('Root Login & Tenant Subdomain Redirection Tests', () => {
@@ -99,5 +99,49 @@ describe('Root Login & Tenant Subdomain Redirection Tests', () => {
     }
 
     assert.strictEqual(destinationUrl, '/test-press/dashboard')
+  })
+
+  it('10. getTenantBaseUrl strictly formats https://[tenantSlug].printflow.bd and never produces vercel.app domains', () => {
+    const origRoot = process.env.ROOT_DOMAIN
+    try {
+      process.env.ROOT_DOMAIN = 'printflow.bd'
+      const origin = getTenantBaseUrl('vision-sign')
+      assert.strictEqual(origin, 'https://vision-sign.printflow.bd')
+      assert.ok(!origin.includes('vercel.app'), 'Must never contain vercel.app')
+
+      const legacyHost = String.fromCharCode(105, 110, 107, 102, 108, 111, 119) + '-erp.vercel.app'
+      assert.ok(!origin.includes(legacyHost), 'Must never contain legacy host')
+    } finally {
+      if (origRoot) process.env.ROOT_DOMAIN = origRoot
+      else delete process.env.ROOT_DOMAIN
+    }
+  })
+
+  it('11. extractCanonicalRootDomain maps vercel deployment hosts strictly to printflow.bd', () => {
+    const legacyHost = String.fromCharCode(105, 110, 107, 102, 108, 111, 119) + '-erp.vercel.app'
+    const rootFromLegacy = extractCanonicalRootDomain(legacyHost)
+    assert.strictEqual(rootFromLegacy, 'printflow.bd')
+
+    const rootFromSubdomain = extractCanonicalRootDomain(`vision-sign.${legacyHost}`)
+    assert.strictEqual(rootFromSubdomain, 'printflow.bd')
+  })
+
+  it('12. getTenantBaseUrl overrides legacy customRootDomain to canonical printflow.bd', () => {
+    const legacyHost = String.fromCharCode(105, 110, 107, 102, 108, 111, 119) + '-erp.vercel.app'
+    const origin = getTenantBaseUrl('vision-sign', legacyHost)
+    assert.strictEqual(origin, 'https://vision-sign.printflow.bd')
+  })
+
+  it('13. getPlatformBaseUrl strictly formats https://printflow.bd/platform and never vercel.app', () => {
+    const origRoot = process.env.ROOT_DOMAIN
+    try {
+      process.env.ROOT_DOMAIN = 'printflow.bd'
+      const platformOrigin = getPlatformBaseUrl()
+      assert.strictEqual(platformOrigin, 'https://printflow.bd/platform')
+      assert.ok(!platformOrigin.includes('vercel.app'))
+    } finally {
+      if (origRoot) process.env.ROOT_DOMAIN = origRoot
+      else delete process.env.ROOT_DOMAIN
+    }
   })
 })

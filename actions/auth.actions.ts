@@ -138,22 +138,19 @@ export async function loginAction(formData: FormData) {
     ? redirectTo
     : '/dashboard'
 
-  let isPslOrLocalRequest = false
+  let isLocalRequest = false
   try {
     const headerStore = await headers()
     const host = (headerStore.get('x-forwarded-host') || headerStore.get('host') || '').toLowerCase().split(':')[0]
     if (
       host.includes('localhost') ||
-      host.includes('127.0.0.1') ||
-      host.endsWith('.vercel.app') ||
-      host.endsWith('.pages.dev') ||
-      host.endsWith('.netlify.app')
+      host.includes('127.0.0.1')
     ) {
-      isPslOrLocalRequest = true
+      isLocalRequest = true
     }
   } catch {}
 
-  if (isPslOrLocalRequest) {
+  if (isLocalRequest) {
     let clean = targetPath
     if (clean.startsWith(`/${session.companySlug}/`)) {
       clean = clean.slice(`/${session.companySlug}`.length)
@@ -248,19 +245,16 @@ export async function signInAction(email: string, pass: string, redirectTo?: str
       ? redirectTo
       : '/dashboard'
 
-    let isPslOrLocalRequest = false
+    let isLocalRequest = false
     const hostLower = requestHost.toLowerCase().split(':')[0]
     if (
       hostLower.includes('localhost') ||
-      hostLower.includes('127.0.0.1') ||
-      hostLower.endsWith('.vercel.app') ||
-      hostLower.endsWith('.pages.dev') ||
-      hostLower.endsWith('.netlify.app')
+      hostLower.includes('127.0.0.1')
     ) {
-      isPslOrLocalRequest = true
+      isLocalRequest = true
     }
 
-    if (isPslOrLocalRequest) {
+    if (isLocalRequest) {
       let clean = targetPath
       if (clean.startsWith(`/${session.companySlug}/`)) {
         clean = clean.slice(`/${session.companySlug}`.length)
