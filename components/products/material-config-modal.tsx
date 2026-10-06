@@ -336,7 +336,8 @@ export function MaterialConfigModal({
  suppliers = [],
  printingMethods = [],
 }: MaterialConfigModalProps) {
- const { tBilingual } = useI18n()
+ const { locale, tBilingual } = useI18n()
+  const isBn = locale === 'bn'
 
   // Tab State
  const [activeTab, setActiveTab] = useState<'basic' | 'geometry' | 'costing' | 'inventory' | 'production'>('basic')
@@ -1442,7 +1443,7 @@ export function MaterialConfigModal({
           <div>
             <div className="flex items-center gap-2">
               <span className="text-base font-bold text-foreground">
-                {initialData ? `Edit Raw Material: ${initialData.name}` : 'New Raw Material Master'}
+                {initialData ? (isBn ? `কাঁচামাল সম্পাদনা: ${initialData.name_bn || initialData.name}` : `Edit Raw Material: ${initialData.name}`) : tBilingual('New Raw Material Master', 'নতুন কাঁচামাল মাস্টার')}
               </span>
               <Badge variant="outline"className="text-xs uppercase tabular-nums py-0.5 px-2 bg-warning-surface text-warning border-warning-border bg-warning-surface text-warning border-warning-border">
  Inventory Stock
@@ -1457,7 +1458,7 @@ export function MaterialConfigModal({
               )}
             </div>
             <p className="text-xs text-muted-foreground">
- Purchased raw printing substrate & consumables tracked by physical dimensions, yield formulas, and consumed in production.
+ {tBilingual('Purchased raw printing substrate & consumables tracked by physical dimensions, yield formulas, and consumed in production.', 'প্রিন্টিং সাবস্ট্রেট ও কাঁচামাল যা রোল/শীট সাইজে ট্র্যাক হয় এবং প্রোডাকশনে ব্যবহৃত হয়।')}
             </p>
           </div>
         </div>
@@ -1475,7 +1476,7 @@ export function MaterialConfigModal({
                 }}
  className="h-10 px-4 rounded-xl font-bold border-input text-foreground hover:bg-muted gap-1.5 cursor-pointer">
                 <ChevronLeft className="w-4 h-4"/>
-                <span>Back</span>
+                <span>{tBilingual('Back', 'পূর্ববর্তী ধাপ')}</span>
               </Button>
             )}
           </div>
@@ -1502,7 +1503,7 @@ export function MaterialConfigModal({
  else if (activeTab === 'inventory') setActiveTab('production')
                 }}
  className="h-10 px-4 rounded-xl font-bold border-warning-border text-warning border-warning-border text-warning hover:bg-warning-surface dark:hover:bg-warning-surface gap-1.5 cursor-pointer">
-                <span>Next Step</span>
+                <span>{tBilingual('Next Step', 'পরবর্তী ধাপ')}</span>
                 <ChevronRight className="w-4 h-4"/>
               </Button>
             )}
@@ -1514,12 +1515,12 @@ export function MaterialConfigModal({
                 {isSubmitting ? (
                   <>
                     <RefreshCw className="h-4 w-4 animate-spin"/>
-                    <span>Saving Material...</span>
+                    <span>{tBilingual('Saving Material...', 'সেভ হচ্ছে...')}</span>
                   </>
                 ) : (
                   <>
                     <Boxes className="h-4 w-4"/>
-                    <span>{initialData ? 'Update Raw Material' : 'Save Raw Material Master'}</span>
+                    <span>{initialData ? tBilingual('Update Raw Material', 'কাঁচামাল আপডেট করুন') : tBilingual('Save Raw Material Master', 'কাঁচামাল সংরক্ষণ করুন')}</span>
                   </>
                 )}
               </Button>
@@ -1582,15 +1583,15 @@ export function MaterialConfigModal({
  Material Identity & Bilingual Naming
                   </h3>
                 </div>
-                <span className="text-xs text-muted-foreground font-medium">Bilingual stock naming & SKU</span>
+                <span className={cn("text-xs text-muted-foreground font-medium", isBn && "font-bangla")}>{tBilingual('Bilingual stock naming & SKU', 'দ্বিভাষিক স্টক নাম ও এসকেইউ')}</span>
               </div>
 
               <div>
                 <Label className="text-xs font-semibold mb-1 block">
- Material Name (English) <span className="text-destructive">*</span>
+ {tBilingual('Material Name (English)', 'কাঁচামালের নাম (ইংরেজি)')} <span className="text-destructive">*</span>
                 </Label>
                 <Input
- placeholder="e.g. Star Frontlit Flex Banner 280 GSM, Glossy Self-Adhesive Vinyl 100 Micron..."value={name}
+ placeholder={tBilingual('e.g. Star Frontlit Flex Banner 280 GSM, Glossy Self-Adhesive Vinyl 100 Micron...', 'যেমন: স্টার ফ্রন্টলিট ফ্লেক্স ব্যানার ২৮০ জিএসএম, গ্লসি ভিনাইল ১০০ মাইক্রন...')}value={name}
  onChange={(e) => {
  setName(e.target.value)
  if (fieldErrors.name) setFieldErrors((prev) => ({ ...prev, name: '' }))
@@ -1613,7 +1614,7 @@ export function MaterialConfigModal({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <Label className="text-xs font-semibold mb-1 block text-foreground">
- Bengali Name (বাংলা নাম - ঐচ্ছিক)
+ {tBilingual('Material Name (Bangla - Optional)', 'বাংলা নাম (ঐচ্ছিক)')}
                   </Label>
                   <Input
  placeholder="যেমন: স্টার ফ্রন্টলিট ফ্লেক্স ব্যানার"value={nameBn}
@@ -1623,7 +1624,7 @@ export function MaterialConfigModal({
 
                 <div>
                   <Label className="text-xs font-semibold mb-1 block text-foreground">
- Material SKU / Stock Code
+ {tBilingual('Material SKU / Stock Code', 'ম্যাটেরিয়াল কোড / SKU')}
                   </Label>
                   <Input
  placeholder="e.g. MAT-FLEX-STAR-280"value={sku}
@@ -1637,7 +1638,7 @@ export function MaterialConfigModal({
             <div className="space-y-3 pb-3 border-b border-border">
               <div className="flex items-center justify-between pb-1.5">
                 <Label className="text-xs font-semibold text-foreground">
- Physical Form / Classification <span className="text-destructive">*</span>
+ {tBilingual('Physical Form / Classification', 'উপাদানের ধরন / ক্লাসিফিকেশন')} <span className="text-destructive">*</span>
                 </Label>
                 <span className="text-xs text-warning text-warning font-semibold">
  Determines geometry, tracking & costing formulas
@@ -1687,7 +1688,7 @@ export function MaterialConfigModal({
                 <div>
                   <div className="flex items-center justify-between mb-1">
                     <Label className="text-xs font-semibold text-foreground">
- Catalog Category (ক্যাটালগ ক্যাটাগরি) <span className="text-destructive">*</span>
+ {tBilingual('Catalog Category', 'ক্যাটালগ ক্যাটাগরি')} <span className="text-destructive">*</span>
                     </Label>
                     <span className="text-xs text-warning text-warning font-semibold">
                       {filteredCatalogCategories.length} {materialType} Categories
@@ -1718,7 +1719,7 @@ export function MaterialConfigModal({
 
                 <div>
                   <Label className="text-xs font-semibold mb-1 block text-foreground">
- Substrate Brand / Manufacturer
+ {tBilingual('Substrate Brand / Manufacturer', 'ব্র্যান্ড / প্রস্তুতকারক')}
                   </Label>
                   <Input
  placeholder="e.g. Star Flex, 3M, Avery Dennison, LG Hausys, Politape, Alucobond, Toyo Ink..."value={brand}
@@ -1733,7 +1734,7 @@ export function MaterialConfigModal({
               <div className="flex items-center gap-2 pb-1">
                 <Tag className="w-4 h-4 text-muted-foreground"/>
                 <h4 className="text-xs font-bold text-foreground uppercase tracking-wider">
- Technical Specifications & Surface Finish
+ {tBilingual('Technical Specifications & Surface Finish', 'প্রযুক্তিগত স্পেক্স ও সারফেস ফিনিশ')}
                 </h4>
               </div>
 

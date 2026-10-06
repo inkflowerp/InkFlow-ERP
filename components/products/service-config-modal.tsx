@@ -67,6 +67,7 @@ import type { MachineryRecord } from '@/types/machinery.types'
 import { formatBDT } from '@/lib/formatters'
 import { calculateGrossMargin } from '@/lib/units'
 import { cn } from '@/lib/utils'
+import { useI18n } from '@/i18n/context'
 import { dispatchToast } from '@/components/shared/toast-feedback'
 
 interface ServiceConfigModalProps {
@@ -1055,6 +1056,8 @@ export function ServiceConfigModal({
  additionalMasterOptions = [],
  installationMasterOptions = [],
 }: ServiceConfigModalProps) {
+  const { locale, tBilingual } = useI18n()
+  const isBn = locale === 'bn'
  const safeCategories = Array.isArray(categories) ? categories : []
  const safeAvailableMaterials = Array.isArray(availableMaterials) ? availableMaterials : []
  const safeMachineries = Array.isArray(machineries) ? machineries : []
@@ -3585,7 +3588,7 @@ export function ServiceConfigModal({
           <div>
             <div className="flex items-center gap-2">
               <span className="text-base font-bold text-foreground">
-                {initialData ? `Configure Service: ${initialData.name}` : 'New Printing & Production Service'}
+                {initialData ? (isBn ? `সার্ভিস কনফিগারেশন: ${initialData.name_bn || initialData.name}` : `Configure Service: ${initialData.name}`) : tBilingual('New Printing & Production Service', 'নতুন প্রিন্টিং ও প্রোডাকশন সার্ভিস')}
               </span>
               <Badge variant="outline"className="text-xs uppercase tabular-nums py-0.5 px-2 bg-primary/10 text-primary border-primary/20 bg-primary/10 text-primary border-border">
                 {serviceType.toUpperCase()}
@@ -3597,7 +3600,7 @@ export function ServiceConfigModal({
               )}
             </div>
             <p className="text-xs text-muted-foreground">
- Configure print category, raw material substrate, ink formulation, automated consumption & commercial cost breakdown.
+ {tBilingual('Configure print category, raw material substrate, ink formulation, automated consumption & commercial cost breakdown.', 'প্রিন্ট ক্যাটাগরি, কাঁচামাল সাবস্ট্রেট, কালি ফর্মুলেশন, স্বয়ংক্রিয় অপচয় হিসাব এবং বাণিজ্যিক খরচ কনফিগার করুন।')}
             </p>
           </div>
         </div>
@@ -3615,7 +3618,7 @@ export function ServiceConfigModal({
                 }}
  className="h-10 px-4 rounded-xl font-bold border-input text-foreground hover:bg-muted gap-1.5 cursor-pointer">
                 <ChevronLeft className="w-4 h-4"/>
-                <span>Back</span>
+                <span>{tBilingual('Back', 'পূর্ববর্তী ধাপ')}</span>
               </Button>
             )}
           </div>
@@ -3642,7 +3645,7 @@ export function ServiceConfigModal({
  else if (activeTab === 'additionals') setActiveTab('pricing')
                 }}
  className="h-10 px-4 rounded-xl font-bold border-primary/20 text-primary border-border text-primary hover:bg-primary/10 dark:hover:bg-primary/10 gap-1.5 cursor-pointer">
-                <span>Next Step</span>
+                <span>{tBilingual('Next Step', 'পরবর্তী ধাপ')}</span>
                 <ChevronRight className="w-4 h-4"/>
               </Button>
             )}
@@ -3654,12 +3657,12 @@ export function ServiceConfigModal({
                 {isSubmitting ? (
                   <>
                     <RefreshCw className="h-4 w-4 animate-spin"/>
-                    <span>Saving Service...</span>
+                    <span>{tBilingual('Saving Service...', 'সেভ হচ্ছে...')}</span>
                   </>
                 ) : (
                   <>
                     <Wrench className="h-4 w-4"/>
-                    <span>{initialData ? 'Update Service' : 'Save Printing Service'}</span>
+                    <span>{initialData ? tBilingual('Update Service', 'সার্ভিস আপডেট করুন') : tBilingual('Save Printing Service', 'প্রিন্টিং সার্ভিস সংরক্ষণ করুন')}</span>
                   </>
                 )}
               </Button>
@@ -3719,19 +3722,19 @@ export function ServiceConfigModal({
                     1
                   </div>
                   <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
- Basic Information & Classification
+ {tBilingual('Basic Information & Classification', 'বেসিক পরিচিতি ও ক্যাটাগরি')}
                   </h3>
                 </div>
-                <span className="text-xs text-muted-foreground font-medium">Bilingual naming & 4-level classification</span>
+                <span className={cn("text-xs text-muted-foreground font-medium", isBn && "font-bangla")}>{tBilingual('Bilingual naming & 4-level classification', 'দ্বিভাষিক নাম ও ৪-স্তরীয় ক্যাটাগরি')}</span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="sm:col-span-2">
                   <Label className="text-xs font-semibold mb-1 block">
- Service Name (English) <span className="text-destructive">*</span>
+ {tBilingual('Service Name (English)', 'সার্ভিসের নাম (ইংরেজি)')} <span className="text-destructive">*</span>
                   </Label>
                   <Input
- placeholder="e.g. UV Vinyl Sticker Printing (High Density), Eco PVC Frontlit Banner Print..."value={name}
+ placeholder={tBilingual('e.g. UV Vinyl Sticker Printing (High Density), Eco PVC Frontlit Banner Print...', 'যেমন: ইউভি ভিনাইল স্টিকার প্রিন্টিং, পিভিসি ব্যানার...')}value={name}
  onChange={(e) => {
  setName(e.target.value)
  if (fieldErrors.name) setFieldErrors((prev) => ({ ...prev, name: '' }))
@@ -3753,7 +3756,7 @@ export function ServiceConfigModal({
 
                 <div>
                   <Label className="text-xs font-semibold mb-1 block">
- Service Name (Bangla - বাংলা নাম)
+ {tBilingual('Service Name (Bangla - Optional)', 'সার্ভিসের নাম (বাংলা - ঐচ্ছিক)')}
                   </Label>
                   <Input
  placeholder="যেমন: ইউভি ভিনাইল স্টিকার প্রিন্টিং, পিভিসি ব্যানার..."value={nameBn}
@@ -3763,7 +3766,7 @@ export function ServiceConfigModal({
 
                 <div>
                   <Label className="text-xs font-semibold mb-1 block">
- Service Code / SKU <span className="text-destructive">*</span>
+ {tBilingual('Service Code / SKU', 'সার্ভিস কোড / SKU')} <span className="text-destructive">*</span>
                   </Label>
                   <Input
  placeholder="e.g. SRV-UV-VINYL-01"value={sku}
@@ -3777,7 +3780,7 @@ export function ServiceConfigModal({
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
                     <Label className="text-xs font-semibold mb-1 block text-foreground">
- Service Type <span className="text-destructive">*</span>
+ {tBilingual('Service Type', 'সার্ভিসের ধরন')} <span className="text-destructive">*</span>
                     </Label>
                     <select
  value={serviceType}
@@ -3795,7 +3798,7 @@ export function ServiceConfigModal({
                   <div>
                     <div className="flex items-center justify-between mb-1">
                       <Label className="text-xs font-semibold block text-foreground">
- Category <span className="text-destructive">*</span>
+ {tBilingual('Category', 'ক্যাটাগরি')} <span className="text-destructive">*</span>
                       </Label>
                       <span className="text-xs text-primary text-primary font-semibold uppercase">
                         {filteredCatalogCategories.length} Options
@@ -3820,10 +3823,10 @@ export function ServiceConfigModal({
 
                   <div>
                     <Label className="text-xs font-semibold mb-1 block text-foreground">
- Sub-category (উপ-ক্যাটাগরি)
+ {tBilingual('Sub-category', 'উপ-ক্যাটাগরি')}
                     </Label>
                     <Input
- list="subcat-options"placeholder="e.g. Flex Printing, Rigid UV, Acrylic Letters..."value={subCategory}
+ list="subcat-options"placeholder={tBilingual('e.g. Flex Printing, Rigid UV, Acrylic Letters...', 'যেমন: ফ্লেক্স প্রিন্টিং, রিজিড ইউভি, এক্রিলিক লেটার...')}value={subCategory}
  onChange={(e) => setSubCategory(e.target.value)}
  className="h-9 text-xs"/>
                     <datalist id="subcat-options">
@@ -3837,7 +3840,7 @@ export function ServiceConfigModal({
                 {/* Sub-category Clickable Suggestions Pills */}
                 {(CATEGORY_SUBCATEGORY_MAP[category] || []).length > 0 && (
                   <div className="flex flex-wrap items-center gap-1 pt-0.5">
-                    <span className="text-xs text-muted-foreground font-semibold uppercase mr-1">Suggestions:</span>
+                    <span className={cn("text-xs text-muted-foreground font-semibold uppercase mr-1", isBn && "font-bangla")}>{tBilingual('Suggestions:', 'সাজেশন:')}</span>
                     {(CATEGORY_SUBCATEGORY_MAP[category] || []).slice(0, 5).map((preset) => (
                       <button
  key={preset}

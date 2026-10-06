@@ -43,6 +43,7 @@ import {
 } from 'lucide-react'
 import { dispatchToast } from '@/components/shared/toast-feedback'
 import { cn } from '@/lib/utils'
+import { useI18n } from '@/i18n/context'
 import type { ProductRecord, UnitOfMeasure, ProductPriceTiers, OutsourceConfiguration } from '@/types/product.types'
 import type { ProductCategoryRecord } from '@/types/category.types'
 import { formatBDT } from '@/lib/formatters'
@@ -204,6 +205,8 @@ export function OutsourceProductModal({
  categories = [],
  suppliers = [],
 }: OutsourceProductModalProps) {
+  const { locale, tBilingual } = useI18n()
+  const isBn = locale === 'bn'
   // 4 Master Tabs
  const [activeTab, setActiveTab] = useState<'basic' | 'costing' | 'vendor_specs' | 'taxes'>('basic')
 
@@ -559,10 +562,10 @@ export function OutsourceProductModal({
   }
 
  const TABS_CONFIG = [
-    { id: 'basic', label: '1. Identity & Vendor', icon: Share2 },
-    { id: 'costing', label: '2. Costing & Pricing', icon: DollarSign },
-    { id: 'vendor_specs', label: '3. Specs & Lead Time', icon: Clock },
-    { id: 'taxes', label: '4. Taxes & Notes', icon: Warehouse },
+    { id: 'basic', label: tBilingual('1. Identity & Vendor', '১. পরিচিতি ও ভেন্ডর'), icon: Share2 },
+    { id: 'costing', label: tBilingual('2. Costing & Pricing', '২. খরচ ও মূল্য নির্ধারণ'), icon: DollarSign },
+    { id: 'vendor_specs', label: tBilingual('3. Specs & Lead Time', '৩. স্পেক্স ও ডেলিভারি সময়'), icon: Clock },
+    { id: 'taxes', label: tBilingual('4. Taxes & Notes', '৪. ট্যাক্স ও নোট'), icon: Warehouse },
   ] as const
 
  const currentTabIndex = TABS_CONFIG.findIndex((t) => t.id === activeTab)
@@ -580,7 +583,7 @@ export function OutsourceProductModal({
           <div>
             <div className="flex items-center gap-2">
               <span className="text-base font-bold text-foreground">
-                {initialData ? `Edit Outsource Product: ${initialData.name}` : 'New Outsource Product'}
+                {initialData ? (isBn ? `আউটসোর্স প্রোডাক্ট সম্পাদনা: ${initialData.name_bn || initialData.name}` : `Edit Outsource Product: ${initialData.name}`) : tBilingual('New Outsource Product', 'নতুন আউটসোর্স প্রোডাক্ট')}
               </span>
               <Badge variant="outline"className="text-xs uppercase tabular-nums py-0.5 px-2 bg-primary/10 text-primary border-primary/20 bg-primary/10 text-primary border-border">
  Non-Inventory Item
@@ -592,7 +595,7 @@ export function OutsourceProductModal({
               )}
             </div>
             <p className="text-xs text-muted-foreground">
- Subcontracted offset printing, neon signs, computer embroidery, hot foil, and special jobs routed to third-party vendors without internal stock depletion.
+ {tBilingual('Subcontracted offset printing, neon signs, computer embroidery, hot foil, and special jobs routed to third-party vendors without internal stock depletion.', 'তৃতীয় পক্ষের ভেন্ডর দ্বারা সম্পন্ন অফসেট, নিয়ন সাইন, এমব্রয়ডারি বা বিশেষ কাজ যা নিজস্ব স্টক হ্রাস করে না।')}
             </p>
           </div>
         </div>
@@ -605,7 +608,7 @@ export function OutsourceProductModal({
  type="button"variant="outline"onClick={() => setActiveTab(TABS_CONFIG[currentTabIndex - 1].id)}
  className="h-10 px-4 rounded-xl font-bold border-input text-foreground hover:bg-muted gap-1.5 cursor-pointer">
                 <ChevronLeft className="w-4 h-4"/>
-                <span>Back</span>
+                <span>{tBilingual('Back', 'পূর্ববর্তী ধাপ')}</span>
               </Button>
             )}
           </div>
@@ -627,7 +630,7 @@ export function OutsourceProductModal({
  setActiveTab(TABS_CONFIG[currentTabIndex + 1].id)
                 }}
  className="h-10 px-4 rounded-xl font-bold border-primary/20 text-primary border-border text-primary hover:bg-primary/10 dark:hover:bg-primary/10 gap-1.5 cursor-pointer">
-                <span>Next Step</span>
+                <span>{tBilingual('Next Step', 'পরবর্তী ধাপ')}</span>
                 <ChevronRight className="w-4 h-4"/>
               </Button>
             )}
@@ -639,12 +642,12 @@ export function OutsourceProductModal({
                 {isSubmitting ? (
                   <>
                     <RefreshCw className="h-4 w-4 animate-spin"/>
-                    <span>Saving Product...</span>
+                    <span>{tBilingual('Saving Product...', 'সেভ হচ্ছে...')}</span>
                   </>
                 ) : (
                   <>
                     <Share2 className="h-4 w-4"/>
-                    <span>{initialData ? 'Update Outsource Product' : 'Save Outsource Product'}</span>
+                    <span>{initialData ? tBilingual('Update Outsource Product', 'আপডেট সম্পন্ন করুন') : tBilingual('Save Outsource Product', 'আউটসোর্স প্রোডাক্ট সংরক্ষণ করুন')}</span>
                   </>
                 )}
               </Button>
@@ -687,7 +690,7 @@ export function OutsourceProductModal({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <Label className="text-xs font-bold text-foreground">
- Outsource Product Name <span className="text-destructive">*</span>
+ {tBilingual('Outsource Product Name (English)', 'আউটসোর্স প্রোডাক্টের নাম (ইংরেজি)')} <span className="text-destructive">*</span>
                   </Label>
                   <Input
  value={name}
@@ -695,7 +698,7 @@ export function OutsourceProductModal({
  setName(e.target.value)
  if (fieldErrors.name) setFieldErrors((prev) => ({ ...prev, name: '' }))
                     }}
- placeholder="e.g. Offset Leaflet A4 120 GSM (1,000 pcs)"className={cn(
+ placeholder={tBilingual('e.g. Offset Leaflet A4 120 GSM (1,000 pcs)', 'যেমন: অফসেট লিফলেট এ৪ ১২০ জিএসএম (১,০০০ পিস)')}className={cn(
                       'mt-1 h-9 text-xs font-medium transition-colors',
  fieldErrors.name && 'border-danger-border focus-visible:focus:ring-ring bg-danger-surface/30 bg-danger-surface'
                     )}
@@ -716,13 +719,13 @@ export function OutsourceProductModal({
                   <Input
  value={nameBn}
  onChange={(e) => setNameBn(e.target.value)}
- placeholder="উদা: অফসেট লিফলেট এ৪ ১২০ জিএসএম (১,০০০ পিস)"className="mt-1 h-9 text-xs font-bengali"/>
+ placeholder={tBilingual('উদা: অফসেট লিফলেট এ৪ ১২০ জিএসএম (১,০০০ পিস)', 'যেমন: অফসেট লিফলেট এ৪ ১২০ জিএসএম (১,০০০ পিস)')}className="mt-1 h-9 text-xs font-bengali"/>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                  <Label className="text-xs font-bold text-foreground">SKU Code</Label>
+                  <Label className={cn("text-xs font-bold text-foreground", isBn && "font-bangla")}>{tBilingual('SKU Code', 'আইটেম কোড / SKU')}</Label>
                   <Input
  value={sku}
  onChange={(e) => setSku(e.target.value.toUpperCase())}
@@ -730,7 +733,7 @@ export function OutsourceProductModal({
                 </div>
 
                 <div>
-                  <Label className="text-xs font-bold text-foreground">Category</Label>
+                  <Label className={cn("text-xs font-bold text-foreground", isBn && "font-bangla")}>{tBilingual('Category', 'ক্যাটাগরি')}</Label>
                   <select
  value={category}
  onChange={(e) => setCategory(e.target.value)}
@@ -744,7 +747,7 @@ export function OutsourceProductModal({
                 </div>
 
                 <div>
-                  <Label className="text-xs font-bold text-foreground">Selling Unit</Label>
+                  <Label className={cn("text-xs font-bold text-foreground", isBn && "font-bangla")}>{tBilingual('Selling Unit', 'বিক্রয় একক')}</Label>
                   <select
  value={unit}
  onChange={(e) => {
@@ -767,19 +770,19 @@ export function OutsourceProductModal({
                 <div className="flex items-center gap-2">
                   <Building className="w-4 h-4 text-primary"/>
                   <span className="text-xs font-bold text-foreground">
- Preferred Outsource Vendor & Contact
+ {tBilingual('Preferred Outsource Vendor & Contact', 'প্রধান আউটসোর্স ভেন্ডর ও যোগাযোগের তথ্য')}
                   </span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   {suppliers.length > 0 && (
                     <div>
-                      <Label className="text-xs font-medium text-muted-foreground">Select Existing Vendor</Label>
+                      <Label className={cn("text-xs font-medium text-muted-foreground", isBn && "font-bangla")}>{tBilingual('Select Existing Vendor', 'পূর্ববর্তী ভেন্ডর নির্বাচন করুন')}</Label>
                       <select
  value={preferredVendorId}
  onChange={(e) => handleSupplierSelect(e.target.value)}
  className="mt-1 w-full h-9 px-3 rounded-lg border border-input bg-card text-xs font-medium focus:ring-1 focus:ring-ring">
-                        <option value="">-- Choose Vendor / Press --</option>
+                        <option value="">{tBilingual('-- Choose Vendor / Press --', '-- ভেন্ডর / প্রেস নির্বাচন করুন --')}</option>
                         {suppliers.map((s) => (
                           <option key={s.id} value={s.id}>
                             {s.name} {s.phone ? `(${s.phone})` : ''}
@@ -790,15 +793,15 @@ export function OutsourceProductModal({
                   )}
 
                   <div className={cn(suppliers.length === 0 ? 'sm:col-span-2' : '')}>
-                    <Label className="text-xs font-medium text-muted-foreground">Vendor / Workshop Name</Label>
+                    <Label className={cn("text-xs font-medium text-muted-foreground", isBn && "font-bangla")}>{tBilingual('Vendor / Workshop Name', 'ভেন্ডর / ওয়ার্কশপের নাম')}</Label>
                     <Input
  value={vendorName}
  onChange={(e) => setVendorName(e.target.value)}
- placeholder="e.g. Arambagh Offset Press / Neon Fab Studio"className="mt-1 h-9 text-xs font-medium"/>
+ placeholder={tBilingual('e.g. Arambagh Offset Press / Neon Fab Studio', 'যেমন: আরামবাগ অফসেট প্রেস / নিয়ন ফ্যাব্রিক স্টুডিও')}className="mt-1 h-9 text-xs font-medium"/>
                   </div>
 
                   <div>
-                    <Label className="text-xs font-medium text-muted-foreground">Vendor Phone</Label>
+                    <Label className={cn("text-xs font-medium text-muted-foreground", isBn && "font-bangla")}>{tBilingual('Vendor Phone', 'ভেন্ডর মোবাইল নম্বর')}</Label>
                     <Input
  value={vendorPhone}
  onChange={(e) => setVendorPhone(e.target.value)}
@@ -808,14 +811,14 @@ export function OutsourceProductModal({
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <Label className="text-xs font-medium text-muted-foreground">Vendor Item / Reference Code</Label>
+                    <Label className={cn("text-xs font-medium text-muted-foreground", isBn && "font-bangla")}>{tBilingual('Vendor Item / Reference Code', 'ভেন্ডর রেফারেন্স কোড')}</Label>
                     <Input
  value={vendorItemCode}
  onChange={(e) => setVendorItemCode(e.target.value)}
  placeholder="e.g. VEND-REF-409"className="mt-1 h-9 text-xs tabular-nums"/>
                   </div>
                   <div>
-                    <Label className="text-xs font-medium text-muted-foreground">Vendor Address / Location</Label>
+                    <Label className={cn("text-xs font-medium text-muted-foreground", isBn && "font-bangla")}>{tBilingual('Vendor Address / Location', 'ভেন্ডর ঠিকানা / লোকেশন')}</Label>
                     <Input
  value={vendorAddress}
  onChange={(e) => setVendorAddress(e.target.value)}
@@ -825,11 +828,11 @@ export function OutsourceProductModal({
               </div>
 
               <div>
-                <Label className="text-xs font-bold text-foreground">Catalog Description</Label>
+                <Label className={cn("text-xs font-bold text-foreground", isBn && "font-bangla")}>{tBilingual('Catalog Description', 'ক্যাটালগ বিবরণ')}</Label>
                 <Input
  value={description}
  onChange={(e) => setDescription(e.target.value)}
- placeholder="Brief description visible in catalog and quote proposal..."className="mt-1 h-9 text-xs"/>
+ placeholder={tBilingual('Brief description visible in catalog and quote proposal...', 'ক্যাটালগ ও কোটেশনে প্রদর্শিত সংক্ষিপ্ত বিবরণ...')}className="mt-1 h-9 text-xs"/>
               </div>
             </div>
           </div>
