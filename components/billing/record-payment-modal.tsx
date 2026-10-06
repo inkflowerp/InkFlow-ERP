@@ -75,7 +75,8 @@ export function RecordPaymentModal({
  onSuccess,
 }: RecordPaymentModalProps) {
  const { company } = useTenant()
- const { locale } = useI18n()
+ const { locale, tBilingual } = useI18n()
+  const isBn = locale === 'bn'
 
   // Invoices list for search with instant initial hydration
  const [invoices, setInvoices] = useState<InvoiceRecord[]>(() => {
@@ -379,7 +380,7 @@ export function RecordPaymentModal({
             </div>
             <div>
               <h2 className="text-base font-black text-foreground">
-                {locale === 'bn' ? 'বকেয়া আদায় (Collect Due)' : 'Collect Due'}
+                tBilingual('Collect Due', 'বকেয়া আদায়')
               </h2>
               <p className="text-xs text-muted-foreground">
  Search invoice or customer • Partial or full collection • Instant receipt
@@ -403,7 +404,7 @@ export function RecordPaymentModal({
                   )}
                 </div>
               ) : (
-                <span className="text-xs text-muted-foreground">Select an unpaid invoice above</span>
+                <span className={cn("text-xs text-muted-foreground", isBn && "font-bangla")}>{tBilingual('Select an unpaid invoice above', 'উপর থেকে একটি বকেয়া চালান নির্বাচন করুন')}</span>
               )}
             </div>
 
@@ -428,7 +429,7 @@ export function RecordPaymentModal({
                   {isSubmitting ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin"/>
-                      <span>Collecting...</span>
+                      <span>{tBilingual('Collecting...', 'আদায় হচ্ছে...')}</span>
                     </>
                   ) : (
                     <>
@@ -469,7 +470,7 @@ export function RecordPaymentModal({
                 </Label>
                 <div className="relative">
                   <Input
- placeholder="Type Invoice # (e.g. INV-1025), customer name, or phone..."value={searchQuery}
+ placeholder={tBilingual('Type Invoice # (e.g. INV-1025), customer name, or phone...', 'চালান নং (যেমন: INV-1025), কাস্টমারের নাম বা ফোন লিখুন...')}value={searchQuery}
  onChange={(e) => setSearchQuery(e.target.value)}
  className="h-10 text-xs pl-9 pr-8 rounded-xl border-input"autoFocus
                   />

@@ -1652,7 +1652,7 @@ export function NewInvoiceModal({
             </div>
             <div>
               <h2 className="text-base font-black text-foreground">
-                {locale === 'bn' ? 'নতুন চালান / ইনভয়েস' : 'New Invoice'}
+                tBilingual('New Invoice', 'নতুন চালান / ইনভয়েস')
               </h2>
             </div>
           </div>
@@ -1668,7 +1668,7 @@ export function NewInvoiceModal({
               )}
             >
               <Layers className="h-3.5 w-3.5"/>
-              <span>{isAdvancedMode ? 'Advanced Mode Active' : 'Simple Mode'}</span>
+              <span>{isAdvancedMode ? tBilingual('Advanced Mode Active', 'অ্যাডভান্সড মোড') : tBilingual('Simple Mode', 'সহজ মোড')}</span>
             </button>
           </div>
         </div>
@@ -1689,7 +1689,7 @@ export function NewInvoiceModal({
  disabled={isSubmitting}
  className="h-10 px-4 rounded-xl font-bold border-input text-foreground hover:bg-muted gap-1.5 cursor-pointer">
               <Printer className="h-4 w-4"/>
-              <span>Save & Print PDF</span>
+              <span>{tBilingual('Save & Print PDF', 'সংরক্ষণ ও প্রিন্ট PDF')}</span>
             </Button>
 
             {/* Send via WhatsApp / Email Dropdown */}
@@ -1699,7 +1699,7 @@ export function NewInvoiceModal({
  disabled={isSubmitting}
  className="h-10 px-4 rounded-xl font-bold border-success-border text-success hover:bg-success-surface border-success-border text-success gap-1.5 cursor-pointer">
                 <Send className="h-4 w-4"/>
-                <span>Save & Send</span>
+                <span>{tBilingual('Save & Send', 'সংরক্ষণ ও পাঠান')}</span>
                 <ChevronDown className="h-3.5 w-3.5"/>
               </Button>
 
@@ -1709,13 +1709,13 @@ export function NewInvoiceModal({
  type="button"onClick={() => handleSaveAndSend('whatsapp')}
  className="w-full text-left px-3.5 py-2 hover:bg-muted flex items-center gap-2 text-foreground font-semibold cursor-pointer">
                     <Smartphone className="h-4 w-4 text-success"/>
-                    <span>Send via WhatsApp</span>
+                    <span>{tBilingual('Send via WhatsApp', 'হোয়াটসঅ্যাপে পাঠান')}</span>
                   </button>
                   <button
  type="button"onClick={() => handleSaveAndSend('email')}
  className="w-full text-left px-3.5 py-2 hover:bg-muted flex items-center gap-2 text-foreground font-semibold cursor-pointer">
                     <Mail className="h-4 w-4 text-primary"/>
-                    <span>Send PDF via Email</span>
+                    <span>{tBilingual('Send PDF via Email', 'ইমেইলে পাঠান')}</span>
                   </button>
                 </div>
               )}
@@ -1729,12 +1729,12 @@ export function NewInvoiceModal({
               {isSubmitting ? (
                 <>
                   <RefreshCw className="h-4 w-4 animate-spin"/>
-                  <span>Saving Invoice...</span>
+                  <span>{tBilingual('Saving Invoice...', 'সংরক্ষণ হচ্ছে...')}</span>
                 </>
               ) : (
                 <>
                   <Receipt className="h-4 w-4"/>
-                  <span>Save Invoice</span>
+                  <span>{tBilingual('Save Invoice', 'চালান সংরক্ষণ করুন')}</span>
                 </>
               )}
             </Button>
@@ -1828,11 +1828,11 @@ export function NewInvoiceModal({
             {/* Row 1: [Customer Name] [Phone Number] [Company Name] */}
             <div className="relative"ref={nameSearchRef}>
               <Label className="text-xs font-semibold mb-1 block">
- Customer Name <span className="text-destructive">*</span>
+ {tBilingual('Customer Name', 'কাস্টমারের নাম')} <span className="text-destructive">*</span>
               </Label>
               <div className="relative">
                 <Input
- placeholder="Type name to search or enter new..."value={customerName}
+ placeholder={tBilingual('Type name to search or enter new...', 'খুঁজতে নাম লিখুন বা নতুন কাস্টমার এন্ট্রি করুন...')}value={customerName}
  onChange={(e) => handleCustomerFieldChange('name', e.target.value)}
  onFocus={() => {
  setActiveCustomerSearchField('name')
@@ -1858,11 +1858,11 @@ export function NewInvoiceModal({
 
             <div className="relative"ref={phoneSearchRef}>
               <Label className="text-xs font-semibold mb-1 block">
- Phone Number <span className="text-destructive">*</span>
+ {tBilingual('Phone Number', 'মোবাইল নম্বর')} <span className="text-destructive">*</span>
               </Label>
               <div className="relative">
                 <Input
- placeholder="01XXXXXXXXX"value={phoneNumber}
+ placeholder={tBilingual('01XXXXXXXXX', '০১XXXXXXXXX')}value={phoneNumber}
  onChange={(e) => handleCustomerFieldChange('phone', e.target.value)}
  onFocus={() => {
  setActiveCustomerSearchField('phone')
@@ -1887,10 +1887,10 @@ export function NewInvoiceModal({
             </div>
 
             <div className="relative"ref={companySearchRef}>
-              <Label className="text-xs font-semibold mb-1 block">Company Name (Optional)</Label>
+              <Label className="text-xs font-semibold mb-1 block">{tBilingual('Company Name (Optional)', 'প্রতিষ্ঠানের নাম (ঐচ্ছিক)')}</Label>
               <div className="relative">
                 <Input
- placeholder="Business / Organization"value={companyName}
+ placeholder={tBilingual('Business / Organization', 'ব্যবসা প্রতিষ্ঠান / সংস্থা')}value={companyName}
  onChange={(e) => handleCustomerFieldChange('company', e.target.value)}
  onFocus={() => {
  setActiveCustomerSearchField('company')
@@ -1916,16 +1916,16 @@ export function NewInvoiceModal({
             {/* Row 2: [Billing Address (2 cols)] [Email (1 col)] */}
             <div className="md:col-span-2">
               <Label className="text-xs font-semibold mb-1 block">
- Billing Address (Optional)
+ {tBilingual('Billing Address (Optional)', 'বিলিং ঠিকানা (ঐচ্ছিক)')}
               </Label>
               <Input
- placeholder="Full address for delivery & invoice"value={address}
+ placeholder={tBilingual('Full address for delivery & invoice', 'ডেলিভারি ও চালানের সম্পূর্ণ ঠিকানা')}value={address}
  onChange={(e) => setAddress(e.target.value)}
  className="text-xs h-9"/>
             </div>
 
             <div className="relative md:col-span-1"ref={emailSearchRef}>
-              <Label className="text-xs font-semibold mb-1 block">Email (for PDF Invoice)</Label>
+              <Label className="text-xs font-semibold mb-1 block">{tBilingual('Email (for PDF Invoice)', 'ইমেইল (PDF চালানের জন্য)')}</Label>
               <div className="relative">
                 <Input
  type="email"placeholder="client@domain.com"value={emailAddress}
@@ -1960,7 +1960,7 @@ export function NewInvoiceModal({
  type="checkbox"checked={saveCustomer}
  onChange={(e) => setSaveCustomer(e.target.checked)}
  className="rounded border-input text-primary focus:ring-ring h-4 w-4"/>
-                <span>Save customer details to directory for future invoices</span>
+                <span>{tBilingual('Save customer details to directory for future invoices', 'ভবিষ্যতের চালানের জন্য কাস্টমার ডিরেক্টরিতে সংরক্ষণ করুন')}</span>
               </label>
             </div>
           )}
@@ -2039,7 +2039,7 @@ export function NewInvoiceModal({
  Invoice Items & Specs
                 </h3>
                 <p className="text-xs text-muted-foreground">
- Billing & Fulfillment: Supports Printing Services, Ready Products & Hardware, and Materials.
+ {tBilingual('Billing & Fulfillment: Supports Printing Services, Ready Products & Hardware, and Materials.', 'বিলিং ও ডেলিভারি: প্রিন্টিং সার্ভিস, রেডি প্রোডাক্ট হার্ডওয়্যার ও কাঁচামাল সমর্থিত।')}
                 </p>
               </div>
             </div>

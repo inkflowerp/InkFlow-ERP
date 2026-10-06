@@ -84,7 +84,8 @@ export function WorkOrderModal({
  onSuccess,
  companyId = 'c-01',
 }: WorkOrderModalProps) {
- const { tBilingual } = useI18n()
+ const { locale, tBilingual } = useI18n()
+  const isBn = locale === 'bn'
  const { currentUser, company } = useTenant()
  const { checkCanCreate, openLimitExceededModal, refreshUsage } = useSubscription()
  const effectiveCompanyId = company?.id || companyId
@@ -865,7 +866,7 @@ export function WorkOrderModal({
               </span>
               <Badge
  variant="outline"className="text-xs uppercase tabular-nums py-0.5 px-1.5 bg-primary/10 bg-primary/10 text-primary text-primary border-primary/20 border-border">
- Pre-Press Flow
+ {tBilingual('Pre-Press Flow', 'প্রি-প্রেস ফ্লো')}
               </Badge>
             </div>
             <p className="text-xs text-muted-foreground">
@@ -923,12 +924,12 @@ export function WorkOrderModal({
             >
               <div className="flex items-center justify-between">
                 <span className="font-bold text-xs text-foreground flex items-center gap-1.5">
-                  🚀 Ready Production
+                  {tBilingual('🚀 Ready Production', '🚀 রেডি প্রোডাকশন')}
                 </span>
                 {workflowRouting === 'ready_production' && <CheckCircle2 className="h-4 w-4 text-primary"/>}
               </div>
               <p className="text-xs text-muted-foreground mt-1">
- Fast-track. Auto-routes custom items to Production Planning and ready items to Delivery.
+ {tBilingual('Fast-track. Auto-routes custom items to Production Planning and ready items to Delivery.', 'ফাস্ট-ট্র্যাক। কাস্টম আইটেম প্রোডাকশনে ও রেডি আইটেম সরাসরি ডেলিভারিতে যাবে।')}
               </p>
             </button>
 
@@ -943,12 +944,12 @@ export function WorkOrderModal({
             >
               <div className="flex items-center justify-between">
                 <span className="font-bold text-xs text-foreground flex items-center gap-1.5">
-                  ⚡ Design OK (Print Ready)
+                  {tBilingual('⚡ Design OK (Print Ready)', '⚡ ডিজাইন রেডি (প্রিন্ট ফাইল প্রস্তুত)')}
                 </span>
                 {workflowRouting === 'design_ok' && <CheckCircle2 className="h-4 w-4 text-success"/>}
               </div>
               <p className="text-xs text-muted-foreground mt-1">
- Print-ready file verified. Routes straight to prepress flightcheck & print floor.
+ {tBilingual('Print-ready file verified. Routes straight to prepress flightcheck & print floor.', 'প্রিন্ট ফাইল যাচাই সম্পন্ন। সরাসরি প্রি-প্রেস ও প্রিন্ট ফ্লোরে যাবে।')}
               </p>
             </button>
 
@@ -963,12 +964,12 @@ export function WorkOrderModal({
             >
               <div className="flex items-center justify-between">
                 <span className="font-bold text-xs text-foreground flex items-center gap-1.5">
-                  🎨 Design Required
+                  {tBilingual('🎨 Design Required', '🎨 নতুন ডিজাইন প্রয়োজন')}
                 </span>
                 {workflowRouting === 'design_required' && <CheckCircle2 className="h-4 w-4 text-primary"/>}
               </div>
               <p className="text-xs text-muted-foreground mt-1">
- Creates Designer task. Requires customer proof approval before printing.
+ {tBilingual('Creates Designer task. Requires customer proof approval before printing.', 'ডিজাইনারের টাস্ক তৈরি করবে এবং প্রিন্টের আগে কাস্টমার অনুমোদন লাগবে।')}
               </p>
             </button>
           </div>
@@ -1042,11 +1043,11 @@ export function WorkOrderModal({
             {/* Customer Name * */}
             <div className="relative"ref={searchContainerRef}>
               <Label className="text-xs font-semibold mb-1 block">
- Customer Name <span className="text-destructive">*</span>
+ {tBilingual('Customer Name', 'কাস্টমারের নাম')} <span className="text-destructive">*</span>
               </Label>
               <div className="relative">
                 <Input
- placeholder="Type name to search or enter new..."value={customerName}
+ placeholder={tBilingual('Type name to search or enter new...', 'খুঁজতে নাম লিখুন বা নতুন কাস্টমার এন্ট্রি করুন...')}value={customerName}
  onChange={(e) => handleCustomerFieldChange('name', e.target.value)}
  onKeyDown={handleCustomerKeyDown}
  onFocus={() => {
@@ -1098,17 +1099,17 @@ export function WorkOrderModal({
             {/* Phone Number * */}
             <div ref={phoneSearchRef}>
               <Label className="text-xs font-semibold mb-1 block">
- Phone Number <span className="text-destructive">*</span>
+ {tBilingual('Phone Number', 'মোবাইল নম্বর')} <span className="text-destructive">*</span>
               </Label>
               <Input
- placeholder="01XXXXXXXXX"value={customerPhone}
+ placeholder={tBilingual('01XXXXXXXXX', '০১XXXXXXXXX')}value={customerPhone}
  onChange={(e) => handleCustomerFieldChange('phone', e.target.value)}
  onKeyDown={handleCustomerKeyDown}
  className="text-xs h-9 tabular-nums"required
               />
             </div>
 
-            {/* WhatsApp Number (Optional) */}
+            {/* {tBilingual('WhatsApp Number (Optional)', 'হোয়াটসঅ্যাপ নম্বর (ঐচ্ছিক)')} */}
             <div>
               <Label className="text-xs font-semibold mb-1 block">WhatsApp Number (Optional)</Label>
               <Input
@@ -1117,11 +1118,11 @@ export function WorkOrderModal({
  className="text-xs h-9 tabular-nums"/>
             </div>
 
-            {/* Company Name (Optional) */}
+            {/* {tBilingual('Company Name (Optional)', 'প্রতিষ্ঠানের নাম (ঐচ্ছিক)')} */}
             <div ref={companySearchRef}>
               <Label className="text-xs font-semibold mb-1 block">Company Name (Optional)</Label>
               <Input
- placeholder="Business / Organization"value={companyName}
+ placeholder={tBilingual('Business / Organization', 'ব্যবসা প্রতিষ্ঠান / সংস্থা')}value={companyName}
  onChange={(e) => handleCustomerFieldChange('company', e.target.value)}
  onKeyDown={handleCustomerKeyDown}
  className="text-xs h-9"/>
@@ -1130,16 +1131,16 @@ export function WorkOrderModal({
             {/* Billing / Delivery Address * */}
             <div className="sm:col-span-2">
               <Label className="text-xs font-semibold mb-1 block">
- Billing / Delivery Address <span className="text-destructive">*</span>
+ {tBilingual('Billing / Delivery Address', 'বিলিং / ডেলিভারি ঠিকানা')} <span className="text-destructive">*</span>
               </Label>
               <Input
- placeholder="Full address for delivery & invoice"value={customerAddress}
+ placeholder={tBilingual('Full address for delivery & invoice', 'ডেলিভারি ও চালানের সম্পূর্ণ ঠিকানা')}value={customerAddress}
  onChange={(e) => setCustomerAddress(e.target.value)}
  className="text-xs h-9"required
               />
             </div>
 
-            {/* Email (for PDF Invoice) */}
+            {/* {tBilingual('Email (for PDF Invoice)', 'ইমেইল (PDF চালানের জন্য)')} */}
             <div ref={emailSearchRef}>
               <Label className="text-xs font-semibold mb-1 block">Email (for PDF Invoice)</Label>
               <Input

@@ -1892,7 +1892,7 @@ export function NewQuotationModal({
                     </Label>
                     <div className="relative">
                       <Input
- id="custCompanyInput"placeholder="e.g. Acme Advertising Ltd."value={customerCompany}
+ id="custCompanyInput"placeholder={tBilingual('e.g. Acme Advertising Ltd.', 'যেমন: একমি অ্যাডভার্টাইজিং লিমিটেড')}value={customerCompany}
  onChange={(e) => handleCustomerFieldChange('company', e.target.value)}
  onFocus={() => {
  setActiveCustomerSearchField('company')
@@ -1935,7 +1935,7 @@ export function NewQuotationModal({
  Delivery / Office Address
                     </Label>
                     <Input
- id="custAddressInput"placeholder="e.g. 14 Motijheel C/A, Dhaka"value={customerAddress}
+ id="custAddressInput"placeholder={tBilingual('e.g. 14 Motijheel C/A, Dhaka', 'যেমন: ১৪ মতিঝিল বা/এ, ঢাকা')}value={customerAddress}
  onChange={(e) => setCustomerAddress(e.target.value)}
  className="text-xs h-9"/>
                   </div>
@@ -1950,7 +1950,7 @@ export function NewQuotationModal({
  type="checkbox"id="saveCustCheck"checked={saveCustomer}
  onChange={(e) => setSaveCustomer(e.target.checked)}
  className="h-4 w-4 rounded border-input text-primary focus:ring-ring"/>
-                    <span>Save customer details to directory for future quotations & orders</span>
+                    <span>{tBilingual('Save customer details to directory for future quotations & orders', 'ভবিষ্যতের কোটেশন ও অর্ডারের জন্য কাস্টমার সংরক্ষণ করুন')}</span>
                   </label>
                 </div>
               )}
@@ -2014,7 +2014,7 @@ export function NewQuotationModal({
  Reference / PO #
                     </Label>
                     <Input
- id="refNo"placeholder="e.g. PO-9842"value={referenceNo}
+ id="refNo"placeholder={tBilingual('e.g. PO-9842', 'যেমন: PO-9842')}value={referenceNo}
  onChange={(e) => setReferenceNo(e.target.value)}
  className="text-xs h-9"/>
                   </div>
@@ -2024,7 +2024,7 @@ export function NewQuotationModal({
  Prepared By / Salesperson
                     </Label>
                     <Input
- id="salesperson"placeholder="Sales Representative"value={salespersonName}
+ id="salesperson"placeholder={tBilingual('Sales Representative', 'সেলস প্রতিনিধি')}value={salespersonName}
  onChange={(e) => setSalespersonName(e.target.value)}
  className="text-xs h-9"/>
                   </div>

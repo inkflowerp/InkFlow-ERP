@@ -326,7 +326,7 @@ export function NewCustomerModal({
           </div>
           <div>
             <h2 className="text-base font-black text-foreground">
-              {locale === 'bn' ? 'নতুন কাস্টমার নিবন্ধন' : 'New Customer Registration'}
+              tBilingual('New Customer Registration', 'নতুন কাস্টমার নিবন্ধন')
             </h2>
             <p className="text-xs text-muted-foreground">
  Fast walk-in customer creation, credit limits, delivery addresses, and customer-specific rates
@@ -343,7 +343,7 @@ export function NewCustomerModal({
  type="button"variant="outline"onClick={() => setActiveTab('info')}
  className="h-10 px-4 rounded-xl font-bold border-input text-foreground hover:bg-muted gap-1.5 cursor-pointer text-xs">
                 <ChevronLeft className="w-4 h-4"/>
-                <span>Back to Info</span>
+                <span>{tBilingual('Back to Info', 'পূর্ববর্তী ধাপে ফিরুন')}</span>
               </Button>
             )}
           </div>
@@ -368,7 +368,7 @@ export function NewCustomerModal({
  setActiveTab('rates')
                 }}
  className="h-10 px-4 rounded-xl font-bold border-primary/20 text-primary border-border text-primary hover:bg-primary/10 dark:hover:bg-primary/10 gap-1.5 cursor-pointer text-xs">
-                <span>Next: Custom Rates</span>
+                <span>{tBilingual('Next: Custom Rates', 'পরবর্তী: স্পেশাল রেট')}</span>
                 <ChevronRight className="w-4 h-4"/>
               </Button>
             )}
@@ -380,10 +380,10 @@ export function NewCustomerModal({
                 {isSubmitting ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-1.5 animate-spin"/>
- Saving Customer...
+ {tBilingual('Saving Customer...', 'সংরক্ষণ হচ্ছে...')}
                   </>
                 ) : (
-                  'Save Customer'
+                  tBilingual('Save Customer', 'কাস্টমার সংরক্ষণ করুন')
                 )}
               </Button>
             )}
@@ -404,7 +404,7 @@ export function NewCustomerModal({
             )}
           >
             <User className="h-3.5 w-3.5"/>
-            <span>Basic Information</span>
+            <span>{tBilingual('Basic Information', 'প্রাথমিক তথ্য')}</span>
           </button>
 
           <button
@@ -417,7 +417,7 @@ export function NewCustomerModal({
             )}
           >
             <Tag className="h-3.5 w-3.5"/>
-            <span>Customer Rates ({Object.keys(customRateOverrides).length} custom)</span>
+            <span>{tBilingual(`Customer Rates (${Object.keys(customRateOverrides).length} custom)`, `কাস্টমার স্পেশাল রেট (${Object.keys(customRateOverrides).length}টি)`)}</span>
           </button>
         </div>
 
@@ -496,12 +496,12 @@ export function NewCustomerModal({
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 <div>
                   <Label className="text-xs font-semibold mb-1 block">
- Customer Name <span className="text-destructive">*</span>
+ {tBilingual('Customer Name', 'কাস্টমারের নাম')} <span className="text-destructive">*</span>
                   </Label>
                   <Input
  ref={nameInputRef}
  required
- placeholder="e.g. Rahim Chowdhury"value={name}
+ placeholder={tBilingual('e.g. Rahim Chowdhury', 'যেমন: রহিম চৌধুরী')}value={name}
  onChange={(e) => {
  setName(e.target.value)
  if (fieldErrors.name) setFieldErrors((prev) => ({ ...prev, name: '' }))
@@ -519,7 +519,7 @@ export function NewCustomerModal({
 
                 <div>
                   <Label className="text-xs font-semibold mb-1 block">
- Bangla Name (বাংলা নাম)
+ {tBilingual('Customer Name (Bangla - Optional)', 'বাংলা নাম (ঐচ্ছিক)')}
                   </Label>
                   <Input
  placeholder="যেমন: রহিম চৌধুরী"value={nameBn}
@@ -529,7 +529,7 @@ export function NewCustomerModal({
 
                 <div>
                   <Label className="text-xs font-semibold mb-1 block">
- Customer Type <span className="text-destructive">*</span>
+ {tBilingual('Customer Type', 'কাস্টমারের ধরন')} <span className="text-destructive">*</span>
                   </Label>
                   <select
  value={customerType}
@@ -546,21 +546,21 @@ export function NewCustomerModal({
 
                 <div>
                   <Label className="text-xs font-semibold mb-1 block">
- Customer ID (কাস্টমার আইডি)
+ {tBilingual('Customer ID', 'কাস্টমার আইডি')}
                   </Label>
                   <Input
- placeholder="Auto (e.g. CUST-0002)"value={customerIdNo}
+ placeholder={tBilingual('Auto (e.g. CUST-0002)', 'অটো (যেমন: CUST-0002)')}value={customerIdNo}
  onChange={(e) => setCustomerIdNo(e.target.value)}
  className="text-xs h-9 tabular-nums"/>
-                  <p className="text-xs text-muted-foreground mt-1">Leave empty to auto-generate</p>
+                  <p className="text-xs text-muted-foreground mt-1">{tBilingual('Leave empty to auto-generate', 'অটো-জেনারেট করতে ফাঁকা রাখুন')}</p>
                 </div>
 
                 <div>
                   <Label className="text-xs font-semibold mb-1 block">
- Customer Code (গ্রাহক কোড)
+ {tBilingual('Customer Code', 'গ্রাহক কোড')}
                   </Label>
                   <Input
- placeholder="e.g. APX-01 or REF-01"value={customerCode}
+ placeholder={tBilingual('e.g. APX-01 or REF-01', 'যেমন: APX-01 বা REF-01')}value={customerCode}
  onChange={(e) => setCustomerCode(e.target.value)}
  className="text-xs h-9 tabular-nums"/>
                 </div>
@@ -570,17 +570,17 @@ export function NewCustomerModal({
  Contact Person
                   </Label>
                   <Input
- placeholder="e.g. Mr. Kabir (Purchase Officer)"value={contactPerson}
+ placeholder={tBilingual('e.g. Mr. Kabir (Purchase Officer)', 'যেমন: মোঃ কবির (ক্রয় কর্মকর্তা)')}value={contactPerson}
  onChange={(e) => setContactPerson(e.target.value)}
  className="text-xs h-9"/>
                 </div>
 
                 <div className="sm:col-span-2 lg:col-span-3">
                   <Label className="text-xs font-semibold mb-1 block">
- Company Name (Optional)
+ {tBilingual('Company Name (Optional)', 'প্রতিষ্ঠানের নাম (ঐচ্ছিক)')}
                   </Label>
                   <Input
- placeholder="e.g. Apex Media Limited"value={companyName}
+ placeholder={tBilingual('e.g. Apex Media Limited', 'যেমন: অ্যাপেক্স মিডিয়া লিমিটেড')}value={companyName}
  onChange={(e) => setCompanyName(e.target.value)}
  className="text-xs h-9"/>
                 </div>
