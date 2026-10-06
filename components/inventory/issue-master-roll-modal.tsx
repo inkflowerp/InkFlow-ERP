@@ -356,7 +356,8 @@ export function IssueMasterRollModal({
  onSuccess,
  companyId,
 }: IssueMasterRollModalProps) {
- const { tBilingual } = useI18n()
+ const { locale, tBilingual } = useI18n()
+  const isBn = locale === 'bn'
 
   // 1. Available materials fallback discovery
  const availableMaterials = useMemo(() => {
@@ -769,11 +770,11 @@ export function IssueMasterRollModal({
         <div className="w-full flex items-center justify-between flex-wrap gap-2.5">
           <div className="flex items-center gap-2 flex-wrap">
             <Badge variant="secondary"className="tabular-nums text-xs font-bold py-1 px-2.5">
-              {issueItems.length} {issueItems.length === 1 ? 'Material' : 'Materials'} ({totalUnitsCount} Units)
+              {issueItems.length} {tBilingual(issueItems.length === 1 ? 'Material' : 'Materials', 'টি উপাদান')} ({totalUnitsCount} {tBilingual('Units', 'ইউনিট')})
             </Badge>
             {totalAreaSft > 0 && (
               <Badge variant="outline"className="tabular-nums text-xs font-semibold py-1 px-2">
- Total Area: {totalAreaSft.toLocaleString()} SFT
+ {tBilingual('Total Area', 'মোট পরিমাপ')}: {totalAreaSft.toLocaleString()} SFT
               </Badge>
             )}
           </div>
@@ -789,7 +790,7 @@ export function IssueMasterRollModal({
  type="submit"disabled={loading || issueItems.length === 0 || hasEmptyMaterial || hasShortage || hasInvalidQty}
  className="h-9 px-5 bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold shadow-xs cursor-pointer gap-2">
               {loading ? (
-                <span>Issuing Materials...</span>
+                <span>{tBilingual('Issuing Materials...', 'কাঁচামাল প্রদান করা হচ্ছে...')}</span>
               ) : (
                 <>
                   <Package className="h-4 w-4"/>
@@ -834,7 +835,7 @@ export function IssueMasterRollModal({
               {tBilingual('Requisition Header', 'ইস্যু তথ্য')}
             </span>
             <span className="text-xs text-muted-foreground font-medium">
- Destination: <strong className="text-foreground">Print Floor Staging</strong>
+ {tBilingual('Destination:', 'গন্তব্য:')} <strong className="text-foreground">{tBilingual('Print Floor Staging', 'প্রিন্ট ফ্লোর স্টেজ')}</strong>
             </span>
           </div>
 
@@ -863,7 +864,7 @@ export function IssueMasterRollModal({
               <Input
  value={operatorName}
  onChange={(e) => setOperatorName(e.target.value)}
- placeholder="e.g. Kamal Hossain / Floor Operator"className="h-9.5 text-xs font-medium bg-card"required
+ placeholder={tBilingual('e.g. Kamal Hossain / Floor Operator', 'যেমন: কামাল হোসেন / ফ্লোর অপারেটর')}className="h-9.5 text-xs font-medium bg-card"required
               />
             </div>
 
@@ -876,7 +877,7 @@ export function IssueMasterRollModal({
               <Input
  value={notes}
  onChange={(e) => setNotes(e.target.value)}
- placeholder="e.g. Job #1042 / Urgent Run"className="h-9.5 text-xs font-medium bg-card"/>
+ placeholder={tBilingual('e.g. Job #1042 / Urgent Run', 'যেমন: জব #১০৪২ / জরুরি কাজ')}className="h-9.5 text-xs font-medium bg-card"/>
             </div>
           </div>
         </div>
@@ -892,7 +893,7 @@ export function IssueMasterRollModal({
                 {tBilingual('Items to Issue', 'ইস্যু করার কাঁচামাল তালিকা')}
               </span>
               <Badge variant="secondary"className="tabular-nums font-bold text-xs px-2 py-0.5">
-                {issueItems.length} {issueItems.length === 1 ? 'Item' : 'Items'}
+                {issueItems.length} {tBilingual(issueItems.length === 1 ? 'Item' : 'Items', 'টি আইটেম')}
               </Badge>
             </div>
 
@@ -927,7 +928,7 @@ export function IssueMasterRollModal({
                         #{idx + 1}
                       </span>
                       <span className="font-bold text-xs text-foreground">
-                        {metrics.material ? metrics.material.name : 'Choose Material'}
+                        {metrics.material ? metrics.material.name : tBilingual('Choose Material', 'কাঁচামাল নির্বাচন করুন')}
                       </span>
                       {metrics.material && (
                         <Badge
@@ -938,7 +939,7 @@ export function IssueMasterRollModal({
                               : 'bg-success-surface text-success border-success-border bg-success-surface text-success'
                           )}
                         >
- Stock: {metrics.breakdown?.purchase_unit_display || `${metrics.currentStoreStock} ${metrics.consumptionUnitName.toUpperCase()}`}
+ {tBilingual('Stock:', 'স্টক:')} {metrics.breakdown?.purchase_unit_display || `${metrics.currentStoreStock} ${metrics.consumptionUnitName.toUpperCase()}`}
                         </Badge>
                       )}
                     </div>
@@ -950,13 +951,13 @@ export function IssueMasterRollModal({
                         }
  className="h-7 text-xs font-medium text-muted-foreground hover:text-foreground dark:hover:text-foreground px-2 cursor-pointer">
                         <Tag className="h-3 w-3 mr-1"/>
-                        {item.showTagDetails ? 'Hide Lot' : 'Tag / Lot'}
+                        {item.showTagDetails ? tBilingual('Hide Lot', 'লট লুকান') : tBilingual('Tag / Lot', 'ট্যাগ / লট')}
                       </Button>
 
                       {issueItems.length > 1 && (
                         <Button
  type="button"variant="ghost"size="sm"onClick={() => handleRemoveItem(idx)}
- className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive hover:bg-danger-surface dark:hover:bg-danger-surface cursor-pointer rounded-lg"title="Remove item">
+ className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive hover:bg-danger-surface dark:hover:bg-danger-surface cursor-pointer rounded-lg"title={tBilingual('Remove item', 'আইটেম বাদ দিন')}>
                           <Trash2 className="h-3.5 w-3.5"/>
                         </Button>
                       )}
@@ -975,12 +976,12 @@ export function IssueMasterRollModal({
  onChange={(e) => handleMaterialChange(idx, e.target.value)}
  className="w-full h-9 rounded-lg border border-input bg-card px-3 text-xs font-semibold text-foreground focus:ring-2 focus:ring-ring shadow-2xs"required
                       >
-                        <option value="">-- Choose Material --</option>
+                        <option value="">{tBilingual('-- Choose Material --', '-- কাঁচামাল নির্বাচন করুন --')}</option>
                         {availableMaterials.map((m) => {
  const bd = getMaterialWarehouseStockBreakdown(m, effectiveRolls)
  return (
                             <option key={m.id} value={m.id}>
-                              {m.name} ({m.sku || 'No SKU'}) • Stock: {bd.purchase_unit_display}
+                              {m.name} ({m.sku || 'No SKU'}) • {tBilingual('Stock:', 'স্টক:')} {bd.purchase_unit_display}
                             </option>
                           )
                         })}
@@ -1044,13 +1045,11 @@ export function IssueMasterRollModal({
                       <div className="flex items-center gap-1.5 font-medium">
                         <AlertTriangle className="h-3.5 w-3.5 text-destructive shrink-0"/>
                         <span>
- Insufficient Warehouse Stock! Available: {metrics.availablePurchaseUnits}{' '}
-                          {formatUnitPlural(metrics.availablePurchaseUnits, metrics.purchaseUnitName)} (
-                          {metrics.currentStoreStock.toLocaleString()} {metrics.consumptionUnitName.toUpperCase()}).
+ {tBilingual('Insufficient Warehouse Stock! Available:', 'গুদামে পর্যাপ্ত স্টক নেই! মজুদ:')} {metrics.availablePurchaseUnits}{' '} {formatUnitPlural(metrics.availablePurchaseUnits, metrics.purchaseUnitName)} ({metrics.currentStoreStock.toLocaleString()} {metrics.consumptionUnitName.toUpperCase()}).
                         </span>
                       </div>
                       <span className="font-bold tabular-nums shrink-0">
- Deficit: {Math.abs(metrics.projectedStoreBalance).toLocaleString()} {metrics.consumptionUnitName.toUpperCase()}
+ {tBilingual('Deficit:', 'ঘাটতি:')} {Math.abs(metrics.projectedStoreBalance).toLocaleString()} {metrics.consumptionUnitName.toUpperCase()}
                       </span>
                     </div>
                   )}
@@ -1060,19 +1059,19 @@ export function IssueMasterRollModal({
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2.5 border-t border-border">
                       <div>
                         <Label className="text-xs font-semibold mb-1 block text-muted-foreground">
- Batch / Lot Number (Optional)
+ {tBilingual('Batch / Lot Number (Optional)', 'ব্যাচ / লট নম্বর (ঐচ্ছিক)')}
                         </Label>
                         <Input
- placeholder="e.g. LOT-2026-B8"value={item.lotNumber || ''}
+ placeholder={tBilingual('e.g. LOT-2026-B8', 'যেমন: LOT-2026-B8')}value={item.lotNumber || ''}
  onChange={(e) => handleUpdateItem(idx, { lotNumber: e.target.value })}
  className="h-8 text-xs tabular-nums"/>
                       </div>
                       <div>
                         <Label className="text-xs font-semibold mb-1 block text-muted-foreground">
- Custom Roll / Item Tag (Optional)
+ {tBilingual('Custom Roll / Item Tag (Optional)', 'কাস্টম রোল / আইটেম ট্যাগ (ঐচ্ছিক)')}
                         </Label>
                         <Input
- placeholder="e.g. TAG-CUSTOM-001"value={item.customRollTag || ''}
+ placeholder={tBilingual('e.g. TAG-CUSTOM-001', 'যেমন: TAG-CUSTOM-001')}value={item.customRollTag || ''}
  onChange={(e) => handleUpdateItem(idx, { customRollTag: e.target.value })}
  className="h-8 text-xs tabular-nums"/>
                       </div>
@@ -1104,7 +1103,7 @@ export function IssueMasterRollModal({
             <Button
  type="button"variant="outline"size="sm"onClick={() => setShowPrintLabel(!showPrintLabel)}
  className="h-7 text-xs font-bold px-2.5 cursor-pointer">
-              {showPrintLabel ? 'Hide Label' : 'Show Ticket'}
+              {showPrintLabel ? tBilingual('Hide Label', 'ট্যাগ লুকান') : tBilingual('Show Ticket', 'টিকেট দেখুন')}
             </Button>
           </div>
 
@@ -1115,7 +1114,7 @@ export function IssueMasterRollModal({
  key={i}
  className="w-full max-w-sm p-4 bg-card border-2 border-border rounded-xl shadow-xs space-y-2 text-foreground">
                   <div className="flex items-center justify-between border-b pb-1.5">
-                    <div className="font-black text-xs tracking-wider">PRINTFLOW MATERIAL TICKET #{i + 1}</div>
+                    <div className="font-black text-xs tracking-wider">{tBilingual(`PRINTFLOW MATERIAL TICKET #${i + 1}`, `প্রিন্টফ্লো মেটেরিয়াল টিকেট #${i + 1}`)}</div>
                     <Badge variant="outline"className="tabular-nums text-xs font-bold uppercase">
                       {r.purchaseUnitName}
                     </Badge>
@@ -1130,30 +1129,29 @@ export function IssueMasterRollModal({
 
                   <div className="grid grid-cols-2 gap-1.5 text-xs tabular-nums border-t border-b py-1.5">
                     <div>
-                      <span className="text-muted-foreground block">MEASURE:</span>
+                      <span className="text-muted-foreground block">{tBilingual('MEASURE:', 'পরিমাপ:')}</span>
                       <strong>{r.unitMeasureDisplay}</strong>
                     </div>
                     <div>
-                      <span className="text-muted-foreground block">QUANTITY:</span>
+                      <span className="text-muted-foreground block">{tBilingual('QUANTITY:', 'পরিমাণ:')}</span>
                       <strong>
                         {issueItems[i]?.quantity} {formatUnitPlural(issueItems[i]?.quantity, r.purchaseUnitName).toUpperCase()}
                       </strong>
                     </div>
                     <div>
-                      <span className="text-muted-foreground block">TOTAL VOLUME:</span>
+                      <span className="text-muted-foreground block">{tBilingual('TOTAL VOLUME:', 'মোট ভলিউম:')}</span>
                       <strong>
                         {r.totalBatchQuantity.toLocaleString()} {r.consumptionUnitName.toUpperCase()}
                       </strong>
                     </div>
                     <div>
-                      <span className="text-muted-foreground block">DESTINATION:</span>
-                      <strong>Floor Staging</strong>
+                      <span className="text-muted-foreground block">{tBilingual('DESTINATION:', 'গন্তব্য:')}</span><strong>{tBilingual('Floor Staging', 'ফ্লোর স্টেজ')}</strong>
                     </div>
                   </div>
 
                   <div className="flex items-center justify-between text-xs text-muted-foreground pt-0.5">
-                    <span>DATE: {issueDate}</span>
-                    <span>OPERATOR: {operatorName}</span>
+                    <span>{tBilingual('DATE:', 'তারিখ:')} {issueDate}</span>
+                    <span>{tBilingual('OPERATOR:', 'অপারেটর:')} {operatorName}</span>
                   </div>
                 </div>
               ))}

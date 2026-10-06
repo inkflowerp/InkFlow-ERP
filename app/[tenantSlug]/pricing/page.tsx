@@ -747,9 +747,10 @@ export default function PricingManagementPage() {
 
       {/* MODAL 2: PRICING RULE MODAL */}
       <ModalDialog
- open={isRuleModalOpen}
- onOpenChange={setIsRuleModalOpen}
- title={
+        open={isRuleModalOpen}
+        onOpenChange={setIsRuleModalOpen}
+        hideFooter
+        title={
  editingRule
             ? tBilingual('Edit Customer Pricing Rule', 'মূল্য নির্ধারণ নিয়ম সম্পাদনা')
             : tBilingual('Create Customer Pricing Rule', 'নতুন গ্রাহক মূল্য নির্ধারণ নিয়ম')
@@ -783,10 +784,10 @@ export default function PricingManagementPage() {
  onChange={(e) => setFormCustomerType(e.target.value as PricingCustomerType)}
  className="w-full h-9 rounded-lg border border-input bg-card px-3 text-xs font-medium">
                 {Object.entries(CUSTOMER_TYPES_META).map(([key, meta]) => (
-                  <option key={key} value={key}>
-                    {meta.label} ({meta.labelBn})
-                  </option>
-                ))}
+                <option key={key} value={key}>
+                  {locale === 'bn' ? meta.labelBn : meta.label}
+                </option>
+              ))}
               </select>
             </div>
 
@@ -865,20 +866,21 @@ export default function PricingManagementPage() {
 
       {/* MODAL 3: BULK PRICING MODAL */}
       <ModalDialog
- open={isBulkModalOpen}
- onOpenChange={setIsBulkModalOpen}
- title={tBilingual('Bulk Category / Product Pricing Adjustment', 'একযোগে মূল্য সমন্বয়')}
+        open={isBulkModalOpen}
+        onOpenChange={setIsBulkModalOpen}
+        hideFooter
+        title={tBilingual('Bulk Category / Product Pricing Adjustment', 'একযোগে মূল্য সমন্বয়')}
       >
         <form onSubmit={handleBulkSubmit} className="space-y-4 pt-1">
           <div>
-            <Label className="text-xs font-semibold mb-1 block">Target Customer Tier</Label>
+            <Label className="text-xs font-semibold mb-1 block">{tBilingual('Target Customer Tier', 'টার্গেট গ্রাহক স্তর')}</Label>
             <select
  value={bulkCustomerType}
  onChange={(e) => setBulkCustomerType(e.target.value as PricingCustomerType)}
  className="w-full h-9 rounded-lg border border-input bg-card px-3 text-xs font-medium">
               {Object.entries(CUSTOMER_TYPES_META).map(([key, meta]) => (
                 <option key={key} value={key}>
-                  {meta.label} ({meta.labelBn})
+                  {locale === 'bn' ? meta.labelBn : meta.label}
                 </option>
               ))}
             </select>
@@ -886,20 +888,20 @@ export default function PricingManagementPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <Label className="text-xs font-semibold mb-1 block">Adjustment Type</Label>
+              <Label className="text-xs font-semibold mb-1 block">{tBilingual('Adjustment Type', 'সমন্বয়ের ধরন')}</Label>
               <select
  value={bulkAdjustmentType}
  onChange={(e) => setBulkAdjustmentType(e.target.value as any)}
  className="w-full h-9 rounded-lg border border-input bg-card px-3 text-xs font-medium">
-                <option value="percentage">Percentage Discount / Surcharge (%)</option>
-                <option value="fixed">Fixed Amount Discount / Surcharge (৳)</option>
+                <option value="percentage">{tBilingual('Percentage Discount / Surcharge (%)', 'শতাংশ ছাড় / সারচার্জ (%)')}</option>
+                <option value="fixed">{tBilingual('Fixed Amount Discount / Surcharge (৳)', 'নির্দিষ্ট টাকা ছাড় / সারচার্জ (৳)')}</option>
               </select>
             </div>
 
             <div>
-              <Label className="text-xs font-semibold mb-1 block">Adjustment Value</Label>
+              <Label className="text-xs font-semibold mb-1 block">{tBilingual('Adjustment Value', 'সমন্বয় মান')}</Label>
               <Input
- type="number"step="0.1"placeholder="e.g. -15 for 15% off"value={bulkAdjustmentValue}
+ type="number"step="0.1"placeholder={tBilingual('e.g. -15 for 15% off', 'যেমন: ১৫% ছাড়ের জন্য -১৫')}value={bulkAdjustmentValue}
  onChange={(e) => setBulkAdjustmentValue(Number(e.target.value))}
  className="text-xs h-9 tabular-nums"/>
             </div>
@@ -907,7 +909,7 @@ export default function PricingManagementPage() {
 
           <div>
             <div className="flex items-center justify-between mb-1">
-              <Label className="text-xs font-semibold">Select Products to Apply ({bulkProductIds.length} selected)</Label>
+              <Label className="text-xs font-semibold">{tBilingual('Select Products to Apply', 'প্রয়োগের জন্য পণ্য নির্বাচন করুন')} ({bulkProductIds.length} {tBilingual('selected', 'নির্বাচিত')})</Label>
               <button
  type="button"onClick={() => {
  if (bulkProductIds.length === products.length) {
@@ -917,7 +919,7 @@ export default function PricingManagementPage() {
                   }
                 }}
  className="text-xs text-success font-bold hover:underline">
-                {bulkProductIds.length === products.length ? 'Deselect All' : 'Select All Products'}
+                {bulkProductIds.length === products.length ? tBilingual('Deselect All', 'সব নির্বাচন বাতিল') : tBilingual('Select All Products', 'সব পণ্য নির্বাচন করুন')}
               </button>
             </div>
 
@@ -946,11 +948,9 @@ export default function PricingManagementPage() {
           </div>
 
           <div className="pt-2 flex justify-end gap-2 border-t border-border">
-            <Button type="button"variant="outline"onClick={() => setIsBulkModalOpen(false)} className="text-xs h-9">
- Cancel
-            </Button>
+            <Button type="button" variant="outline" onClick={() => setIsBulkModalOpen(false)} className="text-xs h-9">{tBilingual('Cancel', 'বাতিল')}</Button>
             <Button type="submit"disabled={isPending} className="bg-success hover:bg-success text-white font-bold text-xs h-9 px-5">
-              {isPending ? 'Applying...' : 'Apply Bulk Adjustment'}
+              {isPending ? tBilingual('Applying...', 'প্রয়োগ করা হচ্ছে...') : tBilingual('Apply Bulk Adjustment', 'মূল্য সমন্বয় প্রয়োগ করুন')}
             </Button>
           </div>
         </form>
@@ -958,57 +958,54 @@ export default function PricingManagementPage() {
 
       {/* MODAL 4: COPY PRICING MODAL */}
       <ModalDialog
- open={isCopyModalOpen}
- onOpenChange={setIsCopyModalOpen}
- title={tBilingual('Clone / Copy Pricing Tiers', 'মূল্য টায়ার কপি করুন')}
+        open={isCopyModalOpen}
+        onOpenChange={setIsCopyModalOpen}
+        hideFooter
+        title={tBilingual('Clone / Copy Pricing Tiers', 'মূল্য টায়ার কপি করুন')}
       >
         <form onSubmit={handleCopySubmit} className="space-y-4 pt-1">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <Label className="text-xs font-semibold mb-1 block">Source Customer Tier</Label>
+              <Label className="text-xs font-semibold mb-1 block">{tBilingual('Source Customer Tier', 'উৎস গ্রাহক স্তর')}</Label>
               <select
  value={copySourceType}
  onChange={(e) => setCopySourceType(e.target.value as PricingCustomerType)}
  className="w-full h-9 rounded-lg border border-input bg-card px-3 text-xs font-medium">
                 {Object.entries(CUSTOMER_TYPES_META).map(([key, meta]) => (
-                  <option key={key} value={key}>
-                    {meta.label} ({meta.labelBn})
-                  </option>
-                ))}
+                <option key={key} value={key}>
+                  {locale === 'bn' ? meta.labelBn : meta.label}
+                </option>
+              ))}
               </select>
             </div>
 
             <div>
-              <Label className="text-xs font-semibold mb-1 block">Target Customer Tier</Label>
+              <Label className="text-xs font-semibold mb-1 block">{tBilingual('Target Customer Tier', 'টার্গেট গ্রাহক স্তর')}</Label>
               <select
  value={copyTargetType}
  onChange={(e) => setCopyTargetType(e.target.value as PricingCustomerType)}
  className="w-full h-9 rounded-lg border border-input bg-card px-3 text-xs font-medium">
                 {Object.entries(CUSTOMER_TYPES_META).map(([key, meta]) => (
-                  <option key={key} value={key}>
-                    {meta.label} ({meta.labelBn})
-                  </option>
-                ))}
+                <option key={key} value={key}>
+                  {locale === 'bn' ? meta.labelBn : meta.label}
+                </option>
+              ))}
               </select>
             </div>
           </div>
 
           <div>
-            <Label className="text-xs font-semibold mb-1 block">
- Adjustment Modifier (% on copied price)
-            </Label>
+            <Label className="text-xs font-semibold mb-1 block">{tBilingual('Adjustment Modifier (% on copied price)', 'সমন্বয় পরিবর্তনকারী (% কপি করা মূল্যের উপর)')}</Label>
             <Input
- type="number"step="0.1"placeholder="e.g. -5 for 5% additional discount"value={copyModifierPercent}
+ type="number"step="0.1"placeholder={tBilingual('e.g. -5 for 5% additional discount', 'যেমন: ৫% অতিরিক্ত ছাড়ের জন্য -৫')}value={copyModifierPercent}
  onChange={(e) => setCopyModifierPercent(Number(e.target.value))}
  className="text-xs h-9 tabular-nums"/>
           </div>
 
           <div className="pt-2 flex justify-end gap-2 border-t border-border">
-            <Button type="button"variant="outline"onClick={() => setIsCopyModalOpen(false)} className="text-xs h-9">
- Cancel
-            </Button>
+            <Button type="button" variant="outline" onClick={() => setIsCopyModalOpen(false)} className="text-xs h-9">{tBilingual('Cancel', 'বাতিল')}</Button>
             <Button type="submit"disabled={isPending} className="bg-success hover:bg-success text-white font-bold text-xs h-9 px-5">
-              {isPending ? 'Copying...' : 'Clone Pricing Rules'}
+              {isPending ? tBilingual('Copying...', 'কপি হচ্ছে...') : tBilingual('Clone Pricing Rules', 'মূল্য নিয়ম ক্লোন করুন')}
             </Button>
           </div>
         </form>

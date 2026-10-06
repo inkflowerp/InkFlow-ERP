@@ -18,47 +18,47 @@ import {
  updateMachineryAction,
 } from '@/actions/machinery.actions'
 import { AlertCircle, Cpu, Sliders, DollarSign } from 'lucide-react'
+import { useI18n } from '@/i18n/context'
 
-const MACHINE_TYPES: { value: MachineryType; label: string }[] = [
-  { value: 'digital_printing', label: 'Digital Press (Konica / Xerox / Ricoh)' },
-  { value: 'large_format_printing', label: 'Large-Format Solvent / Latex / UV' },
-  { value: 'uv_flatbed', label: 'UV Flatbed (Acrylic, Wood, Metal)' },
-  { value: 'eco_solvent', label: 'Eco-Solvent Vinyl / Banner' },
-  { value: 'sublimation', label: 'Sublimation / Apparel Heat Press' },
-  { value: 'dtf_dtg', label: 'DTF / DTG Direct-to-Garment' },
-  { value: 'offset_printing', label: 'Offset Sheetfed / Web Press' },
-  { value: 'cutting_plotter', label: 'Sticker / Vinyl Cutting Plotter' },
-  { value: 'laser_cutting', label: 'CO2 / Fiber Laser Cutter' },
-  { value: 'cnc_router', label: 'CNC Router (Wood / ACP / Foam)' },
-  { value: 'engraving', label: 'Rotary / Laser Engraver' },
-  { value: 'acrylic_fabrication', label: 'Acrylic Bending / Flame Polisher' },
-  { value: 'metal_fabrication', label: 'Metal Fabrication & Sheet Bender' },
-  { value: 'welding', label: 'MIG / TIG Welding Station' },
-  { value: 'laminating', label: 'Cold / Thermal Roll Laminator' },
-  { value: 'binding', label: 'Book Binding / Perfect Binder' },
-  { value: 'finishing', label: 'Eyelet / Creasing / Die-Punch' },
-  { value: 'installation', label: 'Scaffolding / Boom Lift / Sign Rigging' },
-  { value: 'other', label: 'Other Equipment' },
+const MACHINE_TYPES: { value: MachineryType; label: string; labelBn: string }[] = [
+  { value: 'digital_printing', label: 'Digital Press (Konica / Xerox / Ricoh)', labelBn: 'ডিজিটাল প্রেস (Konica / Xerox / Ricoh)' },
+  { value: 'large_format_printing', label: 'Large-Format Solvent / Latex / UV', labelBn: 'লার্জ-ফরম্যাট সলভেন্ট / ল্যাটেক্স / ইউভি' },
+  { value: 'uv_flatbed', label: 'UV Flatbed (Acrylic, Wood, Metal)', labelBn: 'ইউভি ফ্ল্যাটবেড (এক্রিলিক, কাঠ, মেটাল)' },
+  { value: 'eco_solvent', label: 'Eco-Solvent Vinyl / Banner', labelBn: 'ইকো-সলভেন্ট ভিনাইল / ব্যানার' },
+  { value: 'sublimation', label: 'Sublimation / Apparel Heat Press', labelBn: 'সাবলিমেশন / পোশাক হিট প্রেস' },
+  { value: 'dtf_dtg', label: 'DTF / DTG Direct-to-Garment', labelBn: 'DTF / DTG ডিরেক্ট-টু-গার্মেন্ট' },
+  { value: 'offset_printing', label: 'Offset Sheetfed / Web Press', labelBn: 'অফসেট শিটফেড / ওয়েব প্রেস' },
+  { value: 'cutting_plotter', label: 'Sticker / Vinyl Cutting Plotter', labelBn: 'স্টিকার / ভিনাইল কাটিং প্লটার' },
+  { value: 'laser_cutting', label: 'CO2 / Fiber Laser Cutter', labelBn: 'CO2 / ফাইবার লেজার কাটার' },
+  { value: 'cnc_router', label: 'CNC Router (Wood / ACP / Foam)', labelBn: 'সিএনসি রাউটার (কাঠ / এসিপি / ফোম)' },
+  { value: 'engraving', label: 'Rotary / Laser Engraver', labelBn: 'রোটারি / লেজার এনগ্রেভার' },
+  { value: 'acrylic_fabrication', label: 'Acrylic Bending / Flame Polisher', labelBn: 'এক্রিলিক বেন্ডিং / ফ্লেম পলিশার' },
+  { value: 'metal_fabrication', label: 'Metal Fabrication & Sheet Bender', labelBn: 'মেটাল ফ্যাব্রিকেশন ও শিট বেন্ডার' },
+  { value: 'welding', label: 'MIG / TIG Welding Station', labelBn: 'MIG / TIG ওয়েল্ডিং স্টেশন' },
+  { value: 'laminating', label: 'Cold / Thermal Roll Laminator', labelBn: 'কোল্ড / থার্মাল রোল লেমিনেটর' },
+  { value: 'binding', label: 'Book Binding / Perfect Binder', labelBn: 'বই বাইন্ডিং / পারফেক্ট বাইন্ডার' },
+  { value: 'finishing', label: 'Eyelet / Creasing / Die-Punch', labelBn: 'আইলেট / ক্রিজিং / ডাই-পাঞ্চ' },
+  { value: 'installation', label: 'Scaffolding / Boom Lift / Sign Rigging', labelBn: 'স্ক্যাফোল্ডিং / বুম লিফট / সাইন রিগিং' },
+  { value: 'other', label: 'Other Equipment', labelBn: 'অন্যান্য যন্ত্রপাতি' },
 ]
 
-const CATEGORIES: { value: MachineryCategory; label: string }[] = [
-  { value: 'printing', label: 'Printing Press' },
-  { value: 'cutting_cnc', label: 'Cutting & CNC' },
-  { value: 'fabrication', label: 'Metal & Acrylic Fab' },
-  { value: 'finishing', label: 'Post-Press & Finishing' },
-  { value: 'installation', label: 'Installation Rig' },
-  { value: 'other', label: 'General Production' },
+const CATEGORIES: { value: MachineryCategory; label: string; labelBn: string }[] = [
+  { value: 'printing', label: 'Printing Press', labelBn: 'প্রিন্টিং প্রেস' },
+  { value: 'cutting_cnc', label: 'Cutting & CNC', labelBn: 'কাটিং ও সিএনসি' },
+  { value: 'fabrication', label: 'Metal & Acrylic Fab', labelBn: 'মেটাল ও এক্রিলিক ফেব' },
+  { value: 'finishing', label: 'Post-Press & Finishing', labelBn: 'পোস্ট-প্রেস ও ফিনিশিং' },
+  { value: 'installation', label: 'Installation Rig', labelBn: 'ইনস্টলেশন রিগ' },
+  { value: 'other', label: 'General Production', labelBn: 'সাধারণ উৎপাদন' },
 ]
 
-const DEPARTMENTS: { value: MachineryDepartment; label: string }[] = [
-  { value: 'printing', label: 'Printing Floor' },
-  { value: 'finishing', label: 'Finishing & Binding' },
-  { value: 'fabrication', label: 'Fabrication Workshop' },
-  { value: 'design', label: 'Design & Pre-Press' },
-  { value: 'installation', label: 'Installation Fleet' },
-  { value: 'other', label: 'General Floor' },
+const DEPARTMENTS: { value: MachineryDepartment; label: string; labelBn: string }[] = [
+  { value: 'printing', label: 'Printing Floor', labelBn: 'প্রিন্টিং ফ্লোর' },
+  { value: 'finishing', label: 'Finishing & Binding', labelBn: 'ফিনিশিং ও বাইন্ডিং' },
+  { value: 'fabrication', label: 'Fabrication Workshop', labelBn: 'ফ্যাব্রিকেশন ওয়ার্কশপ' },
+  { value: 'design', label: 'Design & Pre-Press', labelBn: 'ডিজাইন ও প্রি-প্রেস' },
+  { value: 'installation', label: 'Installation Fleet', labelBn: 'ইনস্টলেশন বহর' },
+  { value: 'other', label: 'General Floor', labelBn: 'সাধারণ ফ্লোর' },
 ]
-
 interface MachineryFormModalProps {
  open: boolean
  onOpenChange: (open: boolean) => void
@@ -72,7 +72,8 @@ export function MachineryFormModal({
  machinery,
  onSuccess,
 }: MachineryFormModalProps) {
- const isEdit = Boolean(machinery?.id)
+ const { locale, tBilingual } = useI18n()
+  const isEdit = Boolean(machinery?.id)
  const [activeTab, setActiveTab] = useState<'basic' | 'production' | 'costing'>('basic')
  const [loading, setLoading] = useState(false)
  const [error, setError] = useState<string | null>(null)
@@ -285,8 +286,8 @@ export function MachineryFormModal({
     <ModalDialog
  open={open}
  onOpenChange={onOpenChange}
- title={isEdit ? `Edit Machinery — ${machinery?.name}` : '+ Add New Machinery'}
- description="Configure machine specifications, operational limits, maintenance parameters, and costing."size="4xl"hideFooter
+ title={isEdit ? tBilingual(`Edit Machinery — ${machinery?.name}`, `যন্ত্রপাতি সম্পাদনা — ${machinery?.name}`) : tBilingual('+ Add New Machinery', '+ নতুন যন্ত্রপাতি যোগ করুন')}
+ description={tBilingual('Configure machine specifications, operational limits, maintenance parameters, and costing.', 'মেশিনের স্পেসিফিকেশন, অপারেশনাল সীমা, রক্ষণাবেক্ষণ পরামিতি ও খরচ কনফিগার করুন।')}size="4xl"hideFooter
     >
       <form onSubmit={handleSubmit} className="space-y-4 pt-1">
         {error && (
@@ -307,7 +308,7 @@ export function MachineryFormModal({
             }`}
           >
             <Cpu className="h-3.5 w-3.5"/>
-            <span>1. Basic Profile</span>
+            <span>{tBilingual('1. Basic Profile', '১. প্রাথমিক বিবরণ')}</span>
           </button>
           <button
  type="button"onClick={() => setActiveTab('production')}
@@ -318,7 +319,7 @@ export function MachineryFormModal({
             }`}
           >
             <Sliders className="h-3.5 w-3.5"/>
-            <span>2. Production & Dimensions</span>
+            <span>{tBilingual('2. Production & Dimensions', '২. উৎপাদন ও আকার')}</span>
           </button>
           <button
  type="button"onClick={() => setActiveTab('costing')}
@@ -329,7 +330,7 @@ export function MachineryFormModal({
             }`}
           >
             <DollarSign className="h-3.5 w-3.5"/>
-            <span>3. Operating Costing</span>
+            <span>{tBilingual('3. Operating Costing', '৩. পরিচালন ও খরচ')}</span>
           </button>
         </div>
 
@@ -340,7 +341,7 @@ export function MachineryFormModal({
               <div className="space-y-1.5">
                 <Label htmlFor="mName"required>Machine Name</Label>
                 <Input
- id="mName"placeholder="e.g. Flora Polar 3200 Solvent 10ft"value={name}
+ id="mName"placeholder={tBilingual('e.g. Flora Polar 3200 Solvent 10ft', 'যেমন: Flora Polar 3200 Solvent 10ft')}value={name}
  onChange={(e) => setName(e.target.value)}
  required
                 />
@@ -349,7 +350,7 @@ export function MachineryFormModal({
               <div className="space-y-1.5">
                 <Label htmlFor="mCode"required>Machine Code / ID</Label>
                 <Input
- id="mCode"placeholder="e.g. PRN-01, CNC-02, LAS-01"value={code}
+ id="mCode"placeholder={tBilingual('e.g. PRN-01, CNC-02, LAS-01', 'যেমন: PRN-01, CNC-02, LAS-01')}value={code}
  onChange={(e) => setCode(e.target.value)}
  required
  className="tabular-nums uppercase font-bold tracking-wider"/>
@@ -363,58 +364,52 @@ export function MachineryFormModal({
  id="mType"value={machineType}
  onChange={(e) => setMachineType(e.target.value as MachineryType)}
  className="w-full h-10 px-3 rounded-md border border-input bg-card text-xs font-semibold">
-                  {MACHINE_TYPES.map((t) => (
-                    <option key={t.value} value={t.value}>{t.label}</option>
-                  ))}
+                  {MACHINE_TYPES.map((t) => (<option key={t.value} value={t.value}>{locale === 'bn' ? t.labelBn : t.label}</option>))}
                 </select>
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="mCat">Fleet Category</Label>
+                <Label htmlFor="mCat">{tBilingual('Fleet Category', 'ক্যাটাগরি')}</Label>
                 <select
  id="mCat"value={category}
  onChange={(e) => setCategory(e.target.value as MachineryCategory)}
  className="w-full h-10 px-3 rounded-md border border-input bg-card text-xs font-semibold">
-                  {CATEGORIES.map((c) => (
-                    <option key={c.value} value={c.value}>{c.label}</option>
-                  ))}
+                  {CATEGORIES.map((c) => (<option key={c.value} value={c.value}>{locale === 'bn' ? c.labelBn : c.label}</option>))}
                 </select>
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="mDept">Department</Label>
+                <Label htmlFor="mDept">{tBilingual('Department', 'বিভাগ')}</Label>
                 <select
  id="mDept"value={department}
  onChange={(e) => setDepartment(e.target.value as MachineryDepartment)}
  className="w-full h-10 px-3 rounded-md border border-input bg-card text-xs font-semibold">
-                  {DEPARTMENTS.map((d) => (
-                    <option key={d.value} value={d.value}>{d.label}</option>
-                  ))}
+                  {DEPARTMENTS.map((d) => (<option key={d.value} value={d.value}>{locale === 'bn' ? d.labelBn : d.label}</option>))}
                 </select>
               </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="mBrand">Brand / Manufacturer</Label>
+                <Label htmlFor="mBrand">{tBilingual('Brand / Manufacturer', 'ব্র্যান্ড / প্রস্তুতকারক')}</Label>
                 <Input
- id="mBrand"placeholder="e.g. Roland, Konica Minolta, Flora, Epson"value={brand}
+ id="mBrand"placeholder={tBilingual('e.g. Roland, Konica Minolta, Flora, Epson', 'যেমন: Roland, Konica Minolta, Flora, Epson')}value={brand}
  onChange={(e) => setBrand(e.target.value)}
                 />
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="mModel">Model Number</Label>
+                <Label htmlFor="mModel">{tBilingual('Model Number', 'মডেল নম্বর')}</Label>
                 <Input
- id="mModel"placeholder="e.g. AccurioPress C4070, SureColor S80600"value={model}
+ id="mModel"placeholder={tBilingual('e.g. AccurioPress C4070, SureColor S80600', 'যেমন: AccurioPress C4070, SureColor S80600')}value={model}
  onChange={(e) => setModel(e.target.value)}
                 />
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="mSerial">Serial Number</Label>
+                <Label htmlFor="mSerial">{tBilingual('Serial Number', 'সিরিয়াল নম্বর')}</Label>
                 <Input
- id="mSerial"placeholder="e.g. SN-98234-2023"value={serialNumber}
+ id="mSerial"placeholder={tBilingual('e.g. SN-98234-2023', 'যেমন: SN-98234-2023')}value={serialNumber}
  onChange={(e) => setSerialNumber(e.target.value)}
                 />
               </div>
@@ -422,23 +417,23 @@ export function MachineryFormModal({
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="mLoc">Floor Location</Label>
+                <Label htmlFor="mLoc">{tBilingual('Floor Location', 'ফ্লোর লোকেশন')}</Label>
                 <Input
- id="mLoc"placeholder="e.g. Bay 2, Ground Floor Press Hub"value={location}
+ id="mLoc"placeholder={tBilingual('e.g. Bay 2, Ground Floor Press Hub', 'যেমন: বে ২, নিচতলা প্রেস হাব')}value={location}
  onChange={(e) => setLocation(e.target.value)}
                 />
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="mSupp">Supplier / Vendor</Label>
+                <Label htmlFor="mSupp">{tBilingual('Supplier / Vendor', 'সরবরাহকারী / ভেন্ডর')}</Label>
                 <Input
- id="mSupp"placeholder="e.g. ACI Machinery, DigiPrint BD"value={supplier}
+ id="mSupp"placeholder={tBilingual('e.g. ACI Machinery, DigiPrint BD', 'যেমন: এসিআই মেশিনারি, ডিজিপিন্ট বিডি')}value={supplier}
  onChange={(e) => setSupplier(e.target.value)}
                 />
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="mPurDate">Purchase Date</Label>
+                <Label htmlFor="mPurDate">{tBilingual('Purchase Date', 'ক্রয়ের তারিখ')}</Label>
                 <Input
  id="mPurDate"type="date"value={purchaseDate}
  onChange={(e) => setPurchaseDate(e.target.value)}
@@ -448,7 +443,7 @@ export function MachineryFormModal({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="mWarr">Warranty Expiry Date</Label>
+                <Label htmlFor="mWarr">{tBilingual('Warranty Expiry Date', 'ওয়ারেন্টির মেয়াদ উত্তীর্ণের তারিখ')}</Label>
                 <Input
  id="mWarr"type="date"value={warrantyExpiry}
  onChange={(e) => setWarrantyExpiry(e.target.value)}
@@ -456,9 +451,9 @@ export function MachineryFormModal({
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="mDesc">Description & Notes</Label>
+                <Label htmlFor="mDesc">{tBilingual('Description & Notes', 'বিবরণ ও মন্তব্য')}</Label>
                 <Input
- id="mDesc"placeholder="e.g. 4-head Konica 512i printhead configuration with takeup roll"value={description}
+ id="mDesc"placeholder={tBilingual('e.g. 4-head Konica 512i printhead configuration with takeup roll', 'যেমন: ৪-হেড কনিকা ৫১২i প্রিন্টহেড ও টেক-আপ রোল')}value={description}
  onChange={(e) => setDescription(e.target.value)}
                 />
               </div>
@@ -471,20 +466,20 @@ export function MachineryFormModal({
           <div className="space-y-3.5 py-1">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="mDimUnit">Dimension Unit</Label>
+                <Label htmlFor="mDimUnit">{tBilingual('Dimension Unit', 'পরিমাপের একক')}</Label>
                 <select
  id="mDimUnit"value={dimensionUnit}
  onChange={(e) => setDimensionUnit(e.target.value as DimensionUnit)}
  className="w-full h-10 px-3 rounded-md border border-input bg-card text-xs font-semibold">
-                  <option value="inch">Inches (in)</option>
-                  <option value="ft">Feet (ft)</option>
-                  <option value="mm">Millimeters (mm)</option>
-                  <option value="cm">Centimeters (cm)</option>
+                  <option value="inch">{tBilingual('Inches (in)', 'ইঞ্চি (in)')}</option>
+                  <option value="ft">{tBilingual('Feet (ft)', 'ফুট (ft)')}</option>
+                  <option value="mm">{tBilingual('Millimeters (mm)', 'মিলিমিটার (mm)')}</option>
+                  <option value="cm">{tBilingual('Centimeters (cm)', 'সেন্টিমিটার (cm)')}</option>
                 </select>
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="mMaxW">Max Width ({dimensionUnit})</Label>
+                <Label htmlFor="mMaxW">{tBilingual(`Max Width (${dimensionUnit})`, `সর্বোচ্চ প্রস্থ (${dimensionUnit})`)}</Label>
                 <Input
  id="mMaxW"type="number"step="0.1"placeholder="e.g. 126"value={maxWidth}
  onChange={(e) => setMaxWidth(e.target.value)}
@@ -492,7 +487,7 @@ export function MachineryFormModal({
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="mMaxH">Max Height / Roll Length</Label>
+                <Label htmlFor="mMaxH">{tBilingual('Max Height / Roll Length', 'সর্বোচ্চ উচ্চতা / রোল দৈর্ঘ্য')}</Label>
                 <Input
  id="mMaxH"type="number"step="0.1"placeholder="e.g. 1800"value={maxHeight}
  onChange={(e) => setMaxHeight(e.target.value)}
@@ -500,7 +495,7 @@ export function MachineryFormModal({
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="mMinW">Min Width ({dimensionUnit})</Label>
+                <Label htmlFor="mMinW">{tBilingual(`Min Width (${dimensionUnit})`, `সর্বনিম্ন প্রস্থ (${dimensionUnit})`)}</Label>
                 <Input
  id="mMinW"type="number"step="0.1"placeholder="e.g. 12"value={minWidth}
  onChange={(e) => setMinWidth(e.target.value)}
@@ -510,7 +505,7 @@ export function MachineryFormModal({
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="mCap">Capacity ({capacityUnit})</Label>
+                <Label htmlFor="mCap">{tBilingual(`Capacity (${capacityUnit})`, `উৎপাদন ক্ষমতা (${capacityUnit})`)}</Label>
                 <Input
  id="mCap"type="number"step="1"placeholder="e.g. 200"value={productionCapacity}
  onChange={(e) => setProductionCapacity(e.target.value)}
@@ -518,7 +513,7 @@ export function MachineryFormModal({
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="mCapUnit">Capacity Unit</Label>
+                <Label htmlFor="mCapUnit">{tBilingual('Capacity Unit', 'ক্ষমতার একক')}</Label>
                 <Input
  id="mCapUnit"placeholder="e.g. sft/hour, pcs/hour, sheets/hr"value={capacityUnit}
  onChange={(e) => setCapacityUnit(e.target.value)}
@@ -526,7 +521,7 @@ export function MachineryFormModal({
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="mSpeed">Estimated Running Speed</Label>
+                <Label htmlFor="mSpeed">{tBilingual('Estimated Running Speed', 'আনুমানিক কাজের গতি')}</Label>
                 <Input
  id="mSpeed"type="number"step="1"placeholder="e.g. 250"value={estimatedSpeed}
  onChange={(e) => setEstimatedSpeed(e.target.value)}
@@ -536,7 +531,7 @@ export function MachineryFormModal({
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="mSetup">Setup Time (Mins)</Label>
+                <Label htmlFor="mSetup">{tBilingual('Setup Time (Mins)', 'সেটআপ সময় (মিনিট)')}</Label>
                 <Input
  id="mSetup"type="number"step="1"placeholder="e.g. 10"value={setupTimeMins}
  onChange={(e) => setSetupTimeMins(e.target.value)}
@@ -544,7 +539,7 @@ export function MachineryFormModal({
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="mChange">Changeover Time (Mins)</Label>
+                <Label htmlFor="mChange">{tBilingual('Changeover Time (Mins)', 'চেঞ্জওভার সময় (মিনিট)')}</Label>
                 <Input
  id="mChange"type="number"step="1"placeholder="e.g. 5"value={changeoverTimeMins}
  onChange={(e) => setChangeoverTimeMins(e.target.value)}
@@ -552,7 +547,7 @@ export function MachineryFormModal({
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="mOps">Operators Required</Label>
+                <Label htmlFor="mOps">{tBilingual('Operators Required', 'প্রয়োজনীয় অপারেটর সংখ্যা')}</Label>
                 <Input
  id="mOps"type="number"step="1"min="1"value={operatorsRequiredCount}
  onChange={(e) => setOperatorsRequiredCount(e.target.value)}
@@ -561,7 +556,7 @@ export function MachineryFormModal({
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="mMats">Supported Materials (Comma separated)</Label>
+              <Label htmlFor="mMats">{tBilingual('Supported Materials (Comma separated)', 'সমর্থিত কাঁচামাল (কমা দিয়ে আলাদা)')}</Label>
               <Input
  id="mMats"placeholder="Panaflex 440gsm, PVC Vinyl 100mic, Backlit Film, Mesh, Canvas"value={supportedMaterials}
  onChange={(e) => setSupportedMaterials(e.target.value)}
@@ -569,7 +564,7 @@ export function MachineryFormModal({
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="mTypes">Supported Production Types</Label>
+              <Label htmlFor="mTypes">{tBilingual('Supported Production Types', 'সমর্থিত উৎপাদন ধরণ')}</Label>
               <Input
  id="mTypes"placeholder="Digital Solvent Print, Outdoor Signage, Vehicle Wrap"value={supportedProductionTypes}
  onChange={(e) => setSupportedProductionTypes(e.target.value)}
@@ -582,12 +577,12 @@ export function MachineryFormModal({
         {activeTab === 'costing' && (
           <div className="space-y-3.5 py-1">
             <div className="p-3 rounded-lg bg-primary/10 bg-primary/10 border border-primary/20 border-border text-xs text-primary text-primary">
-              💡 <strong>V4 Costing Readiness:</strong> Machine hourly and operating costs are used for accurate live job costing, electricity attribution, and floor profit margin auditing.
+              {tBilingual('💡 V4 Costing Readiness: Machine hourly and operating costs are used for accurate live job costing, electricity attribution, and floor profit margin auditing.', '💡 খরচ নির্ধারণ: প্রতি ঘণ্টার মেশিন খরচ ও পরিচালন ব্যয় নির্ভুল জব কস্টিং, বিদ্যুৎ খরচ বণ্টন ও ফ্লোর প্রফিট মার্জিনের জন্য ব্যবহৃত হয়।')}
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="mPurCost">Purchase Cost (৳ BDT)</Label>
+                <Label htmlFor="mPurCost">{tBilingual('Purchase Cost (৳ BDT)', 'ক্রয় মূল্য (৳)')}</Label>
                 <Input
  id="mPurCost"type="number"step="1000"placeholder="e.g. 1200000"value={purchaseCost}
  onChange={(e) => setPurchaseCost(e.target.value)}
@@ -595,7 +590,7 @@ export function MachineryFormModal({
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="mHourCost">Hourly Machine Run Rate (৳/Hour)</Label>
+                <Label htmlFor="mHourCost">{tBilingual('Hourly Machine Run Rate (৳/Hour)', 'প্রতি ঘণ্টার মেশিন রেট (৳/ঘণ্টা)')}</Label>
                 <Input
  id="mHourCost"type="number"step="10"placeholder="e.g. 350"value={hourlyMachineCost}
  onChange={(e) => setHourlyMachineCost(e.target.value)}
@@ -605,7 +600,7 @@ export function MachineryFormModal({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="mPerUnit">Per-Unit / Per-SFT Overhead (৳)</Label>
+                <Label htmlFor="mPerUnit">{tBilingual('Per-Unit / Per-SFT Overhead (৳)', 'প্রতি ইউনিট / প্রতি SFT খরচ (৳)')}</Label>
                 <Input
  id="mPerUnit"type="number"step="0.1"placeholder="e.g. 2.5"value={perUnitMachineCost}
  onChange={(e) => setPerUnitMachineCost(e.target.value)}
@@ -613,7 +608,7 @@ export function MachineryFormModal({
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="mElec">Electricity Cost / Hour (৳)</Label>
+                <Label htmlFor="mElec">{tBilingual('Electricity Cost / Hour (৳)', 'বিদ্যুৎ খরচ / ঘণ্টা (৳)')}</Label>
                 <Input
  id="mElec"type="number"step="5"placeholder="e.g. 80"value={electricityCostPerHour}
  onChange={(e) => setElectricityCostPerHour(e.target.value)}
@@ -623,7 +618,7 @@ export function MachineryFormModal({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="mMaintCost">Maintenance Buffer / Hour (৳)</Label>
+                <Label htmlFor="mMaintCost">{tBilingual('Maintenance Buffer / Hour (৳)', 'রক্ষণাবেক্ষণ বাফার / ঘণ্টা (৳)')}</Label>
                 <Input
  id="mMaintCost"type="number"step="5"placeholder="e.g. 40"value={maintenanceCostPerHour}
  onChange={(e) => setMaintenanceCostPerHour(e.target.value)}
@@ -631,7 +626,7 @@ export function MachineryFormModal({
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="mOtherCost">Other Operating Overheads (৳/Hour)</Label>
+                <Label htmlFor="mOtherCost">{tBilingual('Other Operating Overheads (৳/Hour)', 'অন্যান্য পরিচালনা ব্যয় (৳/ঘণ্টা)')}</Label>
                 <Input
  id="mOtherCost"type="number"step="5"placeholder="e.g. 20"value={otherOperatingCostPerHour}
  onChange={(e) => setOtherOperatingCostPerHour(e.target.value)}
@@ -657,16 +652,12 @@ export function MachineryFormModal({
  if (activeTab === 'basic') setActiveTab('production')
  else if (activeTab === 'production') setActiveTab('costing')
                 }}
- className="w-full sm:w-auto min-h-[40px]">
- Next Section ➔
-              </Button>
+ className="w-full sm:w-auto min-h-10">{tBilingual('Next Section ➔', 'পরবর্তী ধাপ ➔')}</Button>
             ) : null}
 
             <Button
  type="submit"isLoading={loading}
- className="w-full sm:w-auto min-h-[40px] bg-primary hover:bg-primary/90 text-primary-foreground font-bold">
-              {isEdit ? 'Save Changes' : 'Register Machine'}
-            </Button>
+ className="w-full sm:w-auto min-h-10 bg-primary hover:bg-primary/90 text-primary-foreground font-bold">{isEdit ? tBilingual('Save Changes', 'পরিবর্তন সংরক্ষণ') : tBilingual('Register Machine', 'মেশিন নিবন্ধন করুন')}</Button>
           </div>
         </div>
       </form>

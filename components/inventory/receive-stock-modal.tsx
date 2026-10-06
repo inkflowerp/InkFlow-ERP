@@ -1837,7 +1837,7 @@ export function ReceiveStockModal({
               </h2>
               <Badge
  variant="outline"className="text-xs uppercase tabular-nums py-0.5 px-2 bg-success-surface bg-success-surface/60 text-success text-success border-success-border border-success-border">
- Inward Gate & Master Sync
+ {tBilingual('Inward Gate & Master Sync', 'ইনওয়ার্ড গেট ও মাস্টার সিঙ্ক')}
               </Badge>
             </div>
             <p className="text-xs text-muted-foreground">
@@ -1854,7 +1854,7 @@ export function ReceiveStockModal({
           <div className="flex items-center gap-2 w-full sm:w-auto">
             <Button
  type="button"variant="outline"onClick={() => onOpenChange(false)}
- className="w-full sm:w-auto min-h-[40px] text-xs font-semibold cursor-pointer">
+ className="w-full sm:w-auto min-h-10 text-xs font-semibold cursor-pointer">
               {tBilingual('Cancel', 'বাতিল')}
             </Button>
           </div>
@@ -1862,7 +1862,7 @@ export function ReceiveStockModal({
           <div className="flex items-center gap-3 w-full sm:w-auto">
             <Button
  type="submit"disabled={loading}
- className="w-full sm:w-auto min-h-[40px] text-xs bg-success hover:bg-success/90 text-success-foreground font-bold px-7 shadow-xs cursor-pointer">
+ className="w-full sm:w-auto min-h-10 text-xs bg-success hover:bg-success/90 text-success-foreground font-bold px-7 shadow-xs cursor-pointer">
               {loading ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-1.5 animate-spin"/>
@@ -2230,7 +2230,7 @@ export function ReceiveStockModal({
  type="button"size="sm"variant="outline"onClick={handleAddDirectItem}
  className="h-7 text-xs font-bold text-foreground border-border hover:bg-muted text-success border-success-border cursor-pointer">
                 <Plus className="h-3.5 w-3.5 mr-1"/>
-                {tBilingual('Add Line', 'নতুন আইটেম')}
+                {tBilingual('+ Add Item', '+ নতুন আইটেম')}
               </Button>
             </div>
 
@@ -2255,7 +2255,7 @@ export function ReceiveStockModal({
  value={selectedSupplierId}
  onChange={(e) => setSelectedSupplierId(e.target.value)}
  className="w-full h-9 rounded-lg border border-input bg-card px-3 text-xs font-medium">
-                    <option value="">-- Choose Registered Vendor (Optional) --</option>
+                    <option value="">{tBilingual('-- Choose Registered Vendor (Optional) --', '-- নিবন্ধিত সরবরাহকারী নির্বাচন করুন (ঐচ্ছিক) --')}</option>
                     {suppliers.map((s) => (
                       <option key={s.id} value={s.id}>
                         {s.supplier_name} — 📞 {s.mobile}
@@ -2268,7 +2268,7 @@ export function ReceiveStockModal({
                     {tBilingual('Or Custom Spot Vendor / Source', 'অথবা স্পট সাপ্লায়ার')}
                   </Label>
                   <Input
- placeholder="e.g. Local Chawkbazar Spot Purchase"value={customSupplierName}
+ placeholder={tBilingual('e.g. Local Chawkbazar Spot Purchase', 'যেমন: লোকাল চকবাজার স্পট ক্রয়')}value={customSupplierName}
  onChange={(e) => setCustomSupplierName(e.target.value)}
  className="text-xs h-9"/>
                 </div>
@@ -2335,14 +2335,14 @@ export function ReceiveStockModal({
                       {/* 1. Registered Material Master Dropdown (No Free-Text) */}
                       <div className="sm:col-span-6">
                         <Label className="text-xs font-semibold text-foreground mb-0.5 block">
- Material Name (Registered Master) <span className="text-destructive">*</span>
+ {tBilingual('Material Name (Registered Master)', 'কাঁচামাল বা পণ্যের নাম (মাস্টার রেকর্ড)')} <span className="text-destructive">*</span>
                         </Label>
                         <select
  value={item.material_id}
  onChange={(e) => handleDirectItemChange(idx, 'material_id', e.target.value)}
  className="w-full h-9 rounded-lg border border-input bg-card px-2.5 text-xs font-medium focus:ring-2 focus:ring-ring"required
                         >
-                          <option value="">-- Select Registered Material Master --</option>
+                          <option value="">{tBilingual('-- Select Registered Material Master --', '-- মাস্টার কাঁচামাল বা পণ্য নির্বাচন করুন --')}</option>
                           {Object.entries(groupedCatalog).map(([grpName, grpItems]) => (
                             <optgroup key={grpName} label={`📂 ${grpName}`}>
                               {grpItems.map((m) => {
@@ -2368,7 +2368,7 @@ export function ReceiveStockModal({
                       {/* 2. Active Configured Roll/Sheet Sizes & Discrete Economics Dropdown */}
                       <div className="sm:col-span-6">
                         <Label className="text-xs font-semibold text-foreground mb-0.5 block">
- Active Configured Size & Economics <span className="text-destructive">*</span>
+ {tBilingual('Active Configured Size & Economics', 'সক্রিয় কনফিগার করা সাইজ ও দর')} <span className="text-destructive">*</span>
                         </Label>
                         {item.configured_sizes && item.configured_sizes.length > 0 ? (
                           <select
@@ -2397,7 +2397,7 @@ export function ReceiveStockModal({
                           </select>
                         ) : (
                           <Input
- placeholder="Standard Master Size"value={item.size_spec || 'Standard Master Size'}
+ placeholder={tBilingual('Standard Master Size', 'স্ট্যান্ডার্ড মাস্টার সাইজ')}value={item.size_spec || 'Standard Master Size'}
  disabled
  className="h-9 text-xs bg-muted tabular-nums text-muted-foreground"/>
                         )}
@@ -2410,7 +2410,7 @@ export function ReceiveStockModal({
                       {/* Quantity */}
                       <div>
                         <Label className="text-xs font-semibold text-muted-foreground mb-0.5 block">
- Quantity ({item.unit || 'Roll'}) <span className="text-destructive">*</span>
+ {tBilingual(`Quantity (${item.unit || 'Roll'})`, `পরিমাণ (${item.unit || 'রোল'})`)} <span className="text-destructive">*</span>
                         </Label>
                         <Input
  type="number"step="any"min="0.01"value={item.quantity === 0 ? '' : item.quantity}
@@ -2423,7 +2423,7 @@ export function ReceiveStockModal({
                       <div>
                         <div className="flex items-center justify-between mb-0.5">
                           <Label className="text-xs font-semibold text-muted-foreground block">
- Unit Purchase Price (৳) <span className="text-destructive">*</span>
+ {tBilingual('Unit Purchase Price (৳)', 'একক ক্রয় মূল্য (৳)')} <span className="text-destructive">*</span>
                           </Label>
                           {item.cost_variance_percent !== 0 && (
                             <Badge
@@ -2447,9 +2447,7 @@ export function ReceiveStockModal({
 
                       {/* Inward Total Cost */}
                       <div>
-                        <Label className="text-xs font-semibold text-muted-foreground mb-0.5 block">
- Total Value (৳)
-                        </Label>
+                        <Label className="text-xs font-semibold text-muted-foreground mb-0.5 block">{tBilingual('Total Value (৳)', 'মোট মূল্য (৳)')}</Label>
                         <div className="h-9 px-3 rounded-lg bg-success-surface/80 bg-success-surface/60 border border-success-border border-success-border flex items-center tabular-nums font-bold text-success text-success text-sm">
                           {formatBDT(item.total_cost)}
                         </div>
@@ -2457,9 +2455,9 @@ export function ReceiveStockModal({
 
                       {/* Batch / Lot / Challan Tag */}
                       <div>
-                        <Label className="text-xs text-muted-foreground mb-0.5 block">Batch / Lot / Roll Tag</Label>
+                        <Label className="text-xs text-muted-foreground mb-0.5 block">{tBilingual('Batch / Lot / Roll Tag', 'ব্যাচ / লট / রোল ট্যাগ')}</Label>
                         <Input
- placeholder="e.g. Lot-1024"value={item.batch_lot_number}
+ placeholder={tBilingual('e.g. Lot-1024', 'যেমন: Lot-1024')}value={item.batch_lot_number}
  onChange={(e) => handleDirectItemChange(idx, 'batch_lot_number', e.target.value)}
  className="h-9 text-xs tabular-nums"/>
                       </div>
@@ -2481,13 +2479,13 @@ export function ReceiveStockModal({
             {/* Direct Total Summary Banner */}
             <div className="p-3.5 rounded-xl bg-success-surface/70 bg-success-surface border border-success-border border-success-border flex justify-between items-center text-xs">
               <div>
-                <span className="text-muted-foreground">Total Lines Configured:</span>
+                <span className="text-muted-foreground">{tBilingual('Total Lines Configured:', 'মোট কনফিগার করা আইটেম:')}</span>
                 <div className="tabular-nums text-foreground font-bold">
-                  {directItems.length} item line(s) ready for inward post & master price update
+                  {directItems.length} {tBilingual('item line(s) ready for inward post & master price update', 'টি আইটেম গ্রহণ ও মূল্য আপডেটের জন্য প্রস্তুত')}
                 </div>
               </div>
               <div className="text-right">
-                <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Total Inward Valuation</span>
+                <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider">{tBilingual('Total Inward Valuation', 'মোট ইনওয়ার্ড মূল্যায়ন')}</span>
                 <div className="text-xl font-black text-success text-success tabular-nums">
                   {formatBDT(directTotalValuation)}
                 </div>
