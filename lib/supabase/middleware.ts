@@ -348,8 +348,58 @@ export async function updateSession(request: NextRequest) {
 
     const allCookies = request.cookies.getAll()
     const hasSupabaseAuthCookies = allCookies.some((c) => c.name.startsWith('sb-') && c.name.includes('-auth-token'))
+    const isExplicitLogout = request.nextUrl.searchParams.has('logged_out') || pathname === '/logout'
 
-    if (supabaseUrl && supabaseAnonKey && hasSupabaseAuthCookies) {
+    const purgeResponseAuthCookies = (res: NextResponse) => {
+      const cookieOpts = getAuthCookieOptions(rawHost)
+      const domainsToClear = [undefined, cookieOpts.domain, `.${rootDomain}`, rootDomain]
+
+      const cookieNamesToPurge = new Set<string>([
+        TENANT_SESSION_COOKIE,
+        PLATFORM_SESSION_COOKIE,
+        'printflow_support_tenant',
+        'printflow_handoff_token',
+        'printflow_temp_handoff',
+      ])
+
+      request.cookies.getAll().forEach((c) => {
+        if (
+          c.name.startsWith('sb-') ||
+          c.name.startsWith('printflow_') ||
+          c.name.includes('-auth-token') ||
+          c.name.includes('session')
+        ) {
+          cookieNamesToPurge.add(c.name)
+        }
+      })
+
+      for (const name of cookieNamesToPurge) {
+        for (const domain of domainsToClear) {
+          try {
+            res.cookies.set(name, '', {
+              path: '/',
+              domain: domain || undefined,
+              maxAge: 0,
+              expires: new Date(0),
+              sameSite: 'lax',
+            })
+            if (domain) {
+              res.cookies.delete({ name, domain, path: '/' })
+            } else {
+              res.cookies.delete(name)
+            }
+          } catch {}
+        }
+      }
+    }
+
+    if (isExplicitLogout) {
+      user = null
+      hasValidTenantCookie = false
+      tenantSessionData = null
+      hasValidPlatformCookie = false
+      platformSessionData = null
+    } else if (supabaseUrl && supabaseAnonKey && hasSupabaseAuthCookies) {
       try {
         const cookieOpts = getAuthCookieOptions(rawHost)
         supabase = createServerClient<Database>(supabaseUrl, supabaseAnonKey, {
@@ -377,6 +427,7 @@ export async function updateSession(request: NextRequest) {
 
     // Authoritative Tenant Authentication: Validated via Supabase user session or cryptographically verified tenant token bound to this slug.
     const isTenantCookieBoundToSlug = Boolean(
+      !isExplicitLogout &&
       hasValidTenantCookie &&
       tenantSessionData &&
       hostType === 'tenant' &&
@@ -384,7 +435,7 @@ export async function updateSession(request: NextRequest) {
       tenantSessionData.companySlug?.toLowerCase() === tenantSlug.toLowerCase()
     )
 
-    const isTenantAuthenticated = Boolean(user || isTenantCookieBoundToSlug)
+    const isTenantAuthenticated = Boolean(!isExplicitLogout && (user || isTenantCookieBoundToSlug))
 
     // --------------------------------------------------------------------------
     // A. PLATFORM PORTAL GUARDS
@@ -519,8 +570,8 @@ export async function updateSession(request: NextRequest) {
             headers: requestHeaders,
           },
         })
-        if (!user && !isTenantAuthenticated && hasValidTenantCookie) {
-          res.cookies.delete(TENANT_SESSION_COOKIE)
+        if (isExplicitLogout || (!user && !isTenantAuthenticated)) {
+          purgeResponseAuthCookies(res)
         }
         responseCookies.forEach(({ name, value, options }) => res.cookies.set(name, value, options))
         res.headers.set('X-Robots-Tag', 'noindex, nofollow')
@@ -655,9 +706,9 @@ export async function updateSession(request: NextRequest) {
           }
           const tenantUrl = getTenantLink(targetSlug, `/dashboard`, rootDomain)
           return applyNoCacheHeaders(NextResponse.redirect(new URL(tenantUrl), 307))
-        } else if (hasAuthError && hasValidTenantCookie) {
+        } else if (hasAuthError || isExplicitLogout) {
           const res = NextResponse.next({ request: { headers: requestHeaders } })
-          res.cookies.delete(TENANT_SESSION_COOKIE)
+          purgeResponseAuthCookies(res)
           responseCookies.forEach(({ name, value, options }) => res.cookies.set(name, value, options))
           return res
         }

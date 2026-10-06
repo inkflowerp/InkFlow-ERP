@@ -18,6 +18,8 @@ import { classifyLoginIdentifier } from '@/lib/auth/identifier-helper'
 import { verifyTotpCode } from '@/lib/auth/totp'
 import { isTestEnvironment } from '@/lib/security/runtime-env'
 import { signSessionToken } from '@/lib/security/session-signer'
+import { clearAllAuthCookies } from '@/actions/auth.actions'
+import { invalidateTenantAuthCache } from '@/lib/auth/tenant-auth'
 
 export interface PlatformLoginResult {
   success: boolean
@@ -269,24 +271,11 @@ export async function platformLogoutAction(): Promise<{ success: boolean; redire
     const currentUser = await getCurrentPlatformUser()
     const cookieStore = await cookies()
 
-    // 1. Invalidate platform session cookie
-    cookieStore.set(PLATFORM_SESSION_COOKIE, '', {
-      ...cookieOpts,
-      path: '/',
-      maxAge: 0,
-      expires: new Date(0),
-      httpOnly: true,
-    })
-    cookieStore.delete(PLATFORM_SESSION_COOKIE)
+    // 1. Invalidate fast-path auth caches
+    invalidateTenantAuthCache(currentUser?.id)
 
-    // 2. Invalidate support tenant cookie
-    cookieStore.set('printflow_support_tenant', '', {
-      ...cookieOpts,
-      path: '/',
-      maxAge: 0,
-      expires: new Date(0),
-    })
-    cookieStore.delete('printflow_support_tenant')
+    // 2. Comprehensive cookie purge across all scopes
+    await clearAllAuthCookies(cookieStore)
 
     // 3. Sign out Supabase auth session
     try {

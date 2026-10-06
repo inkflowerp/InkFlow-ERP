@@ -1693,16 +1693,28 @@ export class AuthService {
   static async signOut(): Promise<ApiResponse> {
     try {
       if (typeof document !== 'undefined') {
-        document.cookie = `${TENANT_SESSION_COOKIE}=; path=/; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax;`
+        const rawCookies = document.cookie.split(';')
+        for (const c of rawCookies) {
+          const name = c.split('=')[0]?.trim()
+          if (name && (name.startsWith('sb-') || name.startsWith('printflow_') || name.includes('session'))) {
+            document.cookie = `${name}=; path=/; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT`
+          }
+        }
         window.dispatchEvent(new CustomEvent('printflow_auth_changed', { detail: null }))
       }
 
       const supabase = await getSupabaseAuthClient()
-      await supabase.auth.signOut()
+      await supabase.auth.signOut({ scope: 'local' }).catch(() => {})
       return { success: true }
     } catch (_err: unknown) {
       if (typeof document !== 'undefined') {
-        document.cookie = `${TENANT_SESSION_COOKIE}=; path=/; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax;`
+        const rawCookies = document.cookie.split(';')
+        for (const c of rawCookies) {
+          const name = c.split('=')[0]?.trim()
+          if (name && (name.startsWith('sb-') || name.startsWith('printflow_') || name.includes('session'))) {
+            document.cookie = `${name}=; path=/; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT`
+          }
+        }
         window.dispatchEvent(new CustomEvent('printflow_auth_changed', { detail: null }))
       }
       return { success: true }

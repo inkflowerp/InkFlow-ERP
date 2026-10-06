@@ -112,10 +112,39 @@ export function useAuth() {
 
   const signOut = async () => {
     setIsLoading(true)
-    await signOutAction()
-    setUser(null)
-    window.location.replace('/login')
-    setIsLoading(false)
+    try {
+      // 1. Client-side Supabase signOut to clear local storage, memory session, and listeners
+      try {
+        const supabase = createClient()
+        await supabase.auth.signOut({ scope: 'local' })
+      } catch {
+        // Non-blocking
+      }
+
+      // 2. Client-side document cookie cleanup for any non-httpOnly auth tokens
+      if (typeof document !== 'undefined') {
+        const rawCookies = document.cookie.split(';')
+        for (const c of rawCookies) {
+          const name = c.split('=')[0]?.trim()
+          if (name && (name.startsWith('sb-') || name.startsWith('printflow_') || name.includes('session'))) {
+            document.cookie = `${name}=; path=/; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT`
+          }
+        }
+        window.dispatchEvent(new CustomEvent('printflow_auth_changed', { detail: null }))
+      }
+
+      // 3. Server action: Invalidate server-side cookies, caches, audit trail, and Supabase auth
+      const result = await signOutAction()
+
+      setUser(null)
+      const targetUrl = result?.redirectUrl || '/login?logged_out=true'
+      window.location.href = targetUrl
+    } catch {
+      setUser(null)
+      window.location.href = '/login?logged_out=true'
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return { user, isLoading, signOut, refreshAuth: syncUserFromSession }

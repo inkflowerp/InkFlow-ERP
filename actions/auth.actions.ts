@@ -1,23 +1,60 @@
 'use server'
 
-import { revalidatePath } from 'next/cache'
-import { redirect } from 'next/navigation'
-import { cookies, headers } from 'next/headers'
-import { AuthService } from '@/services/auth.service'
-import { AuditService } from '@/services/audit.service'
-import { checkRateLimitAsync } from '@/lib/security/rate-limiter'
-import { TENANT_SESSION_COOKIE } from '@/lib/auth/types'
-import { getCurrentTenant } from '@/lib/auth/tenant-auth'
-import { resolveRequestOrigin } from '@/lib/security/runtime-env'
-import { getAuthCookieOptions, resolveHostname, resolveTenant, isReservedSlug } from '@/lib/tenant/tenant-resolution'
-import { getTenantLink, getTenantBaseUrl } from '@/lib/tenant/tenant-url'
-import { createSubdomainHandoffToken } from '@/lib/auth/subdomain-handoff'
-import { signSessionToken } from '@/lib/security/session-signer'
-import { TenantRepository } from '@/lib/repositories/tenant.repository'
+import { AuthService } from '../services/auth.service.ts'
+import { AuditService } from '../services/audit.service.ts'
+import { checkRateLimitAsync } from '../lib/security/rate-limiter.ts'
+import { TENANT_SESSION_COOKIE, PLATFORM_SESSION_COOKIE } from '../lib/auth/types.ts'
+import { getCurrentTenant, invalidateTenantAuthCache } from '../lib/auth/tenant-auth.ts'
+import { createClient } from '../lib/supabase/server.ts'
+import { resolveRequestOrigin } from '../lib/security/runtime-env.ts'
+import { getAuthCookieOptions, resolveHostname, resolveTenant, isReservedSlug } from '../lib/tenant/tenant-resolution.ts'
+import { getTenantLink, getTenantBaseUrl } from '../lib/tenant/tenant-url.ts'
+import { createSubdomainHandoffToken } from '../lib/auth/subdomain-handoff.ts'
+import { signSessionToken } from '../lib/security/session-signer.ts'
+import { TenantRepository } from '../lib/repositories/tenant.repository.ts'
+
+async function getCookieStore(customCookieStore?: any) {
+  if (customCookieStore) return customCookieStore
+  try {
+    const { cookies } = await import('next/headers')
+    return await cookies()
+  } catch {
+    return {
+      getAll: () => [],
+      get: () => undefined,
+      set: () => {},
+      delete: () => {},
+    }
+  }
+}
+
+async function getHeaderStore(): Promise<{ get: (key: string) => string | null }> {
+  try {
+    const { headers } = await import('next/headers')
+    const h = await headers()
+    return {
+      get: (key: string) => h.get(key) ?? null,
+    }
+  } catch {
+    return new Headers()
+  }
+}
+
+async function safeRevalidatePath(path: string, type?: 'page' | 'layout') {
+  try {
+    const { revalidatePath } = await import('next/cache')
+    revalidatePath(path, type)
+  } catch {}
+}
+
+async function safeRedirect(url: string) {
+  const { redirect } = await import('next/navigation')
+  redirect(url)
+}
 
 async function getRequestBaseUrl(): Promise<string> {
   try {
-    const headerStore = await headers()
+    const headerStore = await getHeaderStore()
     return resolveRequestOrigin(headerStore)
   } catch {
     return resolveRequestOrigin()
@@ -26,7 +63,7 @@ async function getRequestBaseUrl(): Promise<string> {
 
 async function getCookieOptions() {
   try {
-    const headerStore = await headers()
+    const headerStore = await getHeaderStore()
     const requestHost = headerStore.get('x-forwarded-host') || headerStore.get('host') || undefined
     return getAuthCookieOptions(requestHost)
   } catch {
@@ -34,26 +71,72 @@ async function getCookieOptions() {
   }
 }
 
-export async function clearTenantSessionCookie() {
-  const cookieStore = await cookies()
+/**
+ * Sweeps and purges all authentication and session cookies across all domain scopes.
+ * Removes host-only, wildcard-domain, and chunked Supabase auth tokens.
+ */
+export async function clearAllAuthCookies(customCookieStore?: any) {
+  const cookieStore = await getCookieStore(customCookieStore)
   const opts = await getCookieOptions()
+  const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'printflow.bd'
 
-  // 1. Clear host-scoped cookie
-  cookieStore.delete(TENANT_SESSION_COOKIE)
-  cookieStore.set(TENANT_SESSION_COOKIE, '', {
-    path: '/',
-    maxAge: 0,
-    expires: new Date(0),
-  })
-
-  // 2. Clear domain-scoped cookie if wildcard domain is configured
-  if (opts.domain) {
-    cookieStore.set(TENANT_SESSION_COOKIE, '', {
-      ...opts,
-      maxAge: 0,
-      expires: new Date(0),
-    })
+  const domainsToClear: Array<string | undefined> = [undefined]
+  if (opts.domain && !domainsToClear.includes(opts.domain)) {
+    domainsToClear.push(opts.domain)
   }
+  if (rootDomain) {
+    if (!domainsToClear.includes(`.${rootDomain}`)) domainsToClear.push(`.${rootDomain}`)
+    if (!domainsToClear.includes(rootDomain)) domainsToClear.push(rootDomain)
+  }
+
+  const standardAuthCookies = [
+    TENANT_SESSION_COOKIE,
+    PLATFORM_SESSION_COOKIE,
+    'printflow_support_tenant',
+    'printflow_handoff_token',
+    'printflow_temp_handoff',
+  ]
+
+  const allCurrentCookies = typeof cookieStore.getAll === 'function' ? cookieStore.getAll() : []
+  const cookieNamesToPurge = new Set<string>(standardAuthCookies)
+
+  for (const c of allCurrentCookies) {
+    if (
+      c.name.startsWith('sb-') ||
+      c.name.startsWith('printflow_') ||
+      c.name.includes('-auth-token') ||
+      c.name.includes('session')
+    ) {
+      cookieNamesToPurge.add(c.name)
+    }
+  }
+
+  for (const name of cookieNamesToPurge) {
+    for (const domain of domainsToClear) {
+      try {
+        cookieStore.set(name, '', {
+          path: '/',
+          domain: domain || undefined,
+          maxAge: 0,
+          expires: new Date(0),
+          sameSite: 'lax',
+          httpOnly: true,
+        })
+      } catch {}
+
+      try {
+        if (domain) {
+          cookieStore.delete({ name, domain, path: '/' })
+        } else {
+          cookieStore.delete(name)
+        }
+      } catch {}
+    }
+  }
+}
+
+export async function clearTenantSessionCookie() {
+  await clearAllAuthCookies()
 }
 
 export async function checkIdentifierAvailabilityAction(params: {
@@ -92,7 +175,7 @@ export async function loginAction(formData: FormData) {
 
   let targetCompanySlug: string | undefined
   try {
-    const headerStore = await headers()
+    const headerStore = await getHeaderStore()
     const headerSlug = headerStore.get('x-tenant-slug')
     if (headerSlug && !isReservedSlug(headerSlug)) {
       targetCompanySlug = headerSlug
@@ -117,7 +200,7 @@ export async function loginAction(formData: FormData) {
   const session = result.data.session
 
   // Store cryptographically signed tenant session cookie
-  const cookieStore = await cookies()
+  const cookieStore = await getCookieStore()
   const signedSession = await signSessionToken(session, '7d')
   cookieStore.set(TENANT_SESSION_COOKIE, signedSession, await getCookieOptions())
 
@@ -130,10 +213,10 @@ export async function loginAction(formData: FormData) {
     }
   }
 
-  revalidatePath('/', 'layout')
+  await safeRevalidatePath('/', 'layout')
 
   if (result.data.requiresOnboarding || !session.companySlug) {
-    redirect('/onboarding')
+    await safeRedirect('/onboarding')
   }
 
   const targetPath = redirectTo && redirectTo.startsWith('/') && !redirectTo.startsWith('/login')
@@ -142,7 +225,7 @@ export async function loginAction(formData: FormData) {
 
   let isLocalRequest = false
   try {
-    const headerStore = await headers()
+    const headerStore = await getHeaderStore()
     const host = (headerStore.get('x-forwarded-host') || headerStore.get('host') || '').toLowerCase().split(':')[0]
     if (
       host.includes('localhost') ||
@@ -160,7 +243,7 @@ export async function loginAction(formData: FormData) {
       clean = '/dashboard'
     }
     const cleanDestination = clean.startsWith('/') ? clean : `/${clean}`
-    redirect(`/${session.companySlug}${cleanDestination}`)
+    await safeRedirect(`/${session.companySlug}${cleanDestination}`)
   }
 
   let destinationUrl = getTenantLink(session.companySlug, targetPath)
@@ -177,7 +260,7 @@ export async function loginAction(formData: FormData) {
     console.warn('[loginAction] Failed to create subdomain handoff token, falling back to direct link:', handoffErr)
   }
 
-  redirect(destinationUrl)
+  await safeRedirect(destinationUrl)
 }
 
 export async function signInAction(email: string, pass: string, redirectTo?: string) {
@@ -197,7 +280,7 @@ export async function signInAction(email: string, pass: string, redirectTo?: str
   let isRootHost = false
   let requestHost = ''
   try {
-    const headerStore = await headers()
+    const headerStore = await getHeaderStore()
     requestHost = headerStore.get('x-forwarded-host') || headerStore.get('host') || ''
     const headerSlug = headerStore.get('x-tenant-slug')
     if (headerSlug && !isReservedSlug(headerSlug)) {
@@ -228,7 +311,7 @@ export async function signInAction(email: string, pass: string, redirectTo?: str
   }
 
   const session = result.data.session
-  const cookieStore = await cookies()
+  const cookieStore = await getCookieStore()
   const signedSession = await signSessionToken(session, '7d')
   cookieStore.set(TENANT_SESSION_COOKIE, signedSession, await getCookieOptions())
 
@@ -340,7 +423,7 @@ export async function signUpAction(data: {
   }
 
   // Clear any previous active tenant session cookie until email is verified
-  const cookieStore = await cookies()
+  const cookieStore = await getCookieStore()
   cookieStore.delete(TENANT_SESSION_COOKIE)
 
   return {
@@ -372,14 +455,16 @@ export async function verifyRegistrationOtpAction(email: string, otp: string) {
 
   const session = result.data.session
   const cookieOpts = await getCookieOptions()
-  const cookieStore = await cookies()
+  const cookieStore = await getCookieStore()
   const signedSession = await signSessionToken(session, '7d')
   cookieStore.set(TENANT_SESSION_COOKIE, signedSession, cookieOpts)
 
   // Establish Supabase SSR auth token cookies on server
-  await AuthService.establishServerSession(email, cookieOpts.domain)
+  if (session.userEmail) {
+    await AuthService.establishServerSession(email, cookieOpts.domain)
+  }
 
-  revalidatePath('/', 'layout')
+  await safeRevalidatePath('/', 'layout')
   return result
 }
 
@@ -395,7 +480,7 @@ export async function verifyRegistrationTokenAction(token: string, email?: strin
 
   const session = result.data.session
   const cookieOpts = await getCookieOptions()
-  const cookieStore = await cookies()
+  const cookieStore = await getCookieStore()
   const signedSession = await signSessionToken(session, '7d')
   cookieStore.set(TENANT_SESSION_COOKIE, signedSession, cookieOpts)
 
@@ -404,7 +489,7 @@ export async function verifyRegistrationTokenAction(token: string, email?: strin
     await AuthService.establishServerSession(session.userEmail, cookieOpts.domain)
   }
 
-  revalidatePath('/', 'layout')
+  await safeRevalidatePath('/', 'layout')
   return result
 }
 
@@ -417,13 +502,13 @@ export async function checkEmailVerificationStatusAction(email: string) {
   if (result.success && result.data?.isVerified && result.data.session) {
     const session = result.data.session
     const cookieOpts = await getCookieOptions()
-    const cookieStore = await cookies()
+    const cookieStore = await getCookieStore()
     const signedSession = await signSessionToken(session, '7d')
     cookieStore.set(TENANT_SESSION_COOKIE, signedSession, cookieOpts)
 
     // Establish Supabase SSR auth token cookies on server
     await AuthService.establishServerSession(email, cookieOpts.domain)
-    revalidatePath('/', 'layout')
+    await safeRevalidatePath('/', 'layout')
   }
 
   return result
@@ -520,7 +605,7 @@ export async function resetPasswordAction(newPassword: string) {
   return await AuthService.resetPassword(newPassword)
 }
 
-export async function signOutAction() {
+export async function signOutAction(): Promise<{ success: boolean; redirectUrl: string }> {
   const currentTenant = await getCurrentTenant()
 
   if (currentTenant) {
@@ -535,11 +620,26 @@ export async function signOutAction() {
     }
   }
 
-  await clearTenantSessionCookie()
+  // 1. Invalidate fast-path in-memory tenant context cache
+  invalidateTenantAuthCache(currentTenant?.userId)
 
-  await AuthService.signOut()
-  revalidatePath('/', 'layout')
-  redirect('/login?logged_out=true')
+  // 2. Comprehensive cookie purge across all scopes
+  await clearAllAuthCookies()
+
+  // 3. Revoke Supabase auth session on server
+  try {
+    const supabase = await createClient()
+    await supabase.auth.signOut({ scope: 'local' }).catch(() => {})
+  } catch {}
+
+  try {
+    await AuthService.signOut()
+  } catch {}
+
+  // 4. Invalidate all Next.js cached layouts
+  await safeRevalidatePath('/', 'layout')
+
+  return { success: true, redirectUrl: '/login?logged_out=true' }
 }
 
 export async function signInWithGoogleAction(redirectTo?: string) {
