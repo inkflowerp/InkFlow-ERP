@@ -22,21 +22,21 @@
 +-----------------------------------------------------------------------------------+
 |                                   INTERNET                                        |
 +-----------------------------------------------------------------------------------+
-         |                                |                               |
-         v                                v                               v
-+------------------+            +-------------------+           +-------------------+
-|   ROOT DOMAIN    |            |  PLATFORM CONSOLE |           |  TENANT SUBDOMAIN |
-|   printflow.bd   |            |printflow.bd/plat..|           |[slug].printflow.bd|
-+------------------+            +-------------------+           +-------------------+
-         |                                |                               |
-         | Rewrites                       | Direct Path                   | Rewrites
-         v                                v                               v
-+------------------+            +-------------------+           +-------------------+
-|  app/(marketing) |            |   app/platform    |           |    app/(tenant)   |
-|  - Landing       |            |   - Tenants       |           |   - Login/Staff   |
-|  - Registration  |            |   - Subscriptions |           |   - Invoices/POS  |
-|  - Find-Workspace|            |   - Support/Audit |           |   - Production    |
-+------------------+            +-------------------+           +-------------------+
+                   |                                             |
+                   v                                             v
++-------------------------------------+         +-----------------------------------+
+|             ROOT DOMAIN             |         |         TENANT SUBDOMAIN          |
+|            printflow.bd             |         |        [slug].printflow.bd        |
++-------------------------------------+         +-----------------------------------+
+       |                       |                                   |
+       | Path /                | Path /platform                    | Rewrites
+       v                       v                                   v
++------------------+  +-------------------+     +-----------------------------------+
+|  app/(marketing) |  |   app/platform    |     |            app/(tenant)           |
+|  - Landing       |  |   - Tenants       |     |   - Login/Staff                   |
+|  - Registration  |  |   - Subscriptions |     |   - Invoices/POS                  |
+|  - Find-Workspace|  |   - Support/Audit |     |   - Production                    |
++------------------+  +-------------------+     +-----------------------------------+
 ```
 
 ### A. Host Classification
@@ -44,7 +44,7 @@
 | Host Type | Domain Pattern | Target Experience | Cookie Scope |
 | :--- | :--- | :--- | :--- |
 | **Marketing / Root** | `ROOT_DOMAIN` (`printflow.bd`, `localhost:3000`) | Landing page, workspace discovery, tenant registration, legal pages | Host-only (`printflow.bd`) |
-| **Platform Owner** | `ROOT_DOMAIN/platform` (`printflow.bd/platform`, `localhost:3000/platform`) | Platform administration, subscriptions, tenant audit, metrics (subdomains `admin.*` and `platform.*` 308 redirect here) | Host-only (`printflow.bd`) |
+| **Platform Owner** | `ROOT_DOMAIN/platform` (`printflow.bd/platform`, `localhost:3000/platform`) | Platform administration, subscriptions, tenant audit, metrics (The only admin URL is `printflow.bd/platform`) | Host-only (`printflow.bd`) |
 | **Tenant Portal** | `[tenantSlug].ROOT_DOMAIN` (`vision.printflow.bd`) | Tenant business operations, billing, inventory, POS, employee login | Host-only (`vision.printflow.bd`) |
 | **Custom Domain** | `erp.customerdomain.com` (verified in `tenant_domains`) | Same as tenant portal, branded for customer | Host-only (`erp.customerdomain.com`) |
 | **PSL / Dev Fallback**| `printflow.bd/t/[slug]/*` or `/[slug]/*` | Path-based fallback when wildcard DNS is unavailable | Host-only on fallback host |

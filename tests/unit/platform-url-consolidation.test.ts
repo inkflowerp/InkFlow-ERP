@@ -23,17 +23,20 @@ describe('Platform Admin URL Consolidation & Duplicate URL Elimination', () => {
     assert.equal(getPlatformLink('/platform/tenants', 'printflow.bd'), 'https://printflow.bd/platform/tenants')
   })
 
-  test('3. Host resolution correctly identifies admin and platform subdomains as platform hostType', () => {
+  test('3. Host resolution correctly identifies admin and platform subdomains as reserved hostType', () => {
     const adminRes = resolveHostname('admin.printflow.bd', ROOT)
-    assert.equal(adminRes.hostType, 'platform')
+    assert.equal(adminRes.hostType, 'reserved')
+    assert.equal(adminRes.tenantSlug, 'admin')
     assert.equal(adminRes.rootDomain, ROOT)
 
     const platformRes = resolveHostname('platform.printflow.bd', ROOT)
-    assert.equal(platformRes.hostType, 'platform')
+    assert.equal(platformRes.hostType, 'reserved')
+    assert.equal(platformRes.tenantSlug, 'platform')
     assert.equal(platformRes.rootDomain, ROOT)
 
     const adminLocalRes = resolveHostname('admin.localhost:3000')
-    assert.equal(adminLocalRes.hostType, 'platform')
+    assert.equal(adminLocalRes.hostType, 'reserved')
+    assert.equal(adminLocalRes.tenantSlug, 'admin')
     assert.equal(adminLocalRes.isLocalhost, true)
   })
 
@@ -53,7 +56,10 @@ describe('Platform Admin URL Consolidation & Duplicate URL Elimination', () => {
       status?: number
     } {
       const resolution = resolveHostname(rawHost, rawHost.includes('localhost') ? undefined : ROOT)
-      if (resolution.hostType === 'platform') {
+      if (
+        (resolution.hostType === 'reserved' && (resolution.tenantSlug === 'admin' || resolution.tenantSlug === 'platform')) ||
+        resolution.hostType === 'platform'
+      ) {
         const targetProtocol = resolution.isDevelopment ? 'http' : 'https'
         const port = (resolution.isDevelopment || resolution.isLocalhost) && rawHost.includes(':') ? `:${rawHost.split(':')[1]}` : ''
         const targetHost = resolution.rootDomain.includes(':') ? resolution.rootDomain : `${resolution.rootDomain}${port}`

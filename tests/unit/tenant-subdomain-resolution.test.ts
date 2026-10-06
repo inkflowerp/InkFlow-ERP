@@ -52,16 +52,13 @@ describe('Tenant Subdomain Resolution & DNS Utility Unit Tests', () => {
     assert.equal(res.tenantSlug, null)
   })
 
-  test('6. Identifies reserved system subdomains and platform hosts', () => {
-    const reservedCases = ['api.printflow.bd', 'mail.printflow.bd', 'billing.printflow.bd', 'auth.printflow.bd']
+  test('6. Identifies reserved system subdomains (including admin.printflow.bd)', () => {
+    const reservedCases = ['api.printflow.bd', 'mail.printflow.bd', 'billing.printflow.bd', 'auth.printflow.bd', 'admin.printflow.bd', 'platform.printflow.bd']
     for (const host of reservedCases) {
       const res = resolveHostname(host)
       assert.equal(res.hostType, 'reserved', `Host ${host} should be identified as reserved`)
       assert.ok(res.tenantSlug, `Reserved slug should be captured`)
     }
-    const adminRes = resolveHostname('admin.printflow.bd')
-    assert.equal(adminRes.hostType, 'platform', 'Host admin.printflow.bd should be identified as platform')
-    assert.equal(adminRes.tenantSlug, 'admin')
   })
 
   test('7. Resolves local development root host (localhost:3000)', () => {

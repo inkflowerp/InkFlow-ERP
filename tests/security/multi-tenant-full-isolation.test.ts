@@ -47,10 +47,10 @@ describe('Multi-Tenant Full Isolation & Security Invariant Tests', () => {
       assert.strictEqual(pslOpts.domain, undefined, 'Cookie domain must be undefined on PSL domains')
     })
 
-    it('strictly separates platform owner host from tenant workspaces', () => {
+    it('strictly separates platform owner routes and reserved subdomains from tenant workspaces', () => {
       const platformRes = resolveTenant('admin.printflow.bd', '', { overrideRootDomain: 'printflow.bd' })
-      assert.strictEqual(platformRes.type, 'platform')
-      assert.strictEqual(platformRes.slug, null, 'Platform host must not have a tenant slug')
+      assert.notStrictEqual(platformRes.type, 'tenant', 'Admin subdomain must not resolve as a tenant')
+      assert.strictEqual(platformRes.type, 'not_found', 'Admin subdomain must resolve as reserved system subdomain')
 
       const tenantRes = resolveTenant('printcraft.printflow.bd', '', { overrideRootDomain: 'printflow.bd' })
       assert.strictEqual(tenantRes.type, 'tenant')

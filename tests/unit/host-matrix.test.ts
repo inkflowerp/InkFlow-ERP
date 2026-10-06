@@ -50,20 +50,22 @@ describe('Host Matrix & Subdomain Resolution (11 Canonical Scenarios)', () => {
     assert.equal(resHost.tenantSlug, 'vision-sign')
   })
 
-  test('5. admin.printflow.bd and platform.printflow.bd (platform)', () => {
+  test('5. admin.printflow.bd and platform.printflow.bd (reserved subdomains)', () => {
     const resAdmin = resolveTenant('admin.printflow.bd', '', { overrideRootDomain: ROOT })
-    assert.equal(resAdmin.type, 'platform')
-    assert.equal(resAdmin.slug, null)
+    assert.equal(resAdmin.type, 'not_found')
+    assert.equal(resAdmin.slug, 'admin')
 
     const resAdminHost = resolveHostname('admin.printflow.bd', ROOT)
-    assert.equal(resAdminHost.hostType, 'platform')
+    assert.equal(resAdminHost.hostType, 'reserved')
+    assert.equal(resAdminHost.tenantSlug, 'admin')
 
     const resPlatform = resolveTenant('platform.printflow.bd', '', { overrideRootDomain: ROOT })
-    assert.equal(resPlatform.type, 'platform')
-    assert.equal(resPlatform.slug, null)
+    assert.equal(resPlatform.type, 'not_found')
+    assert.equal(resPlatform.slug, 'platform')
 
     const resPlatformHost = resolveHostname('platform.printflow.bd', ROOT)
-    assert.equal(resPlatformHost.hostType, 'platform')
+    assert.equal(resPlatformHost.hostType, 'reserved')
+    assert.equal(resPlatformHost.tenantSlug, 'platform')
   })
 
   test('6. api.printflow.bd and mail.printflow.bd (reserved)', () => {

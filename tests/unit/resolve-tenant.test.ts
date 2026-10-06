@@ -40,16 +40,16 @@ describe('Authoritative Tenant Resolution (resolveTenant) Unit Tests', () => {
     assert.equal(res.slug, 'vision')
   })
 
-  test('5. Identifies platform host (admin.ROOT_DOMAIN)', () => {
+  test('5. Identifies admin.ROOT_DOMAIN as reserved subdomain', () => {
     const res = resolveTenant('admin.printflow.bd', '', { overrideRootDomain: ROOT_DOMAIN })
-    assert.equal(res.type, 'platform')
-    assert.equal(res.slug, null)
+    assert.equal(res.type, 'not_found')
+    assert.equal(res.slug, 'admin')
   })
 
-  test('6. Identifies platform host alias (platform.ROOT_DOMAIN)', () => {
+  test('6. Identifies platform.ROOT_DOMAIN as reserved subdomain', () => {
     const res = resolveTenant('platform.printflow.bd', '', { overrideRootDomain: ROOT_DOMAIN })
-    assert.equal(res.type, 'platform')
-    assert.equal(res.slug, null)
+    assert.equal(res.type, 'not_found')
+    assert.equal(res.slug, 'platform')
   })
 
   test('7. Identifies root marketing domain (printflow.bd & www.printflow.bd)', () => {

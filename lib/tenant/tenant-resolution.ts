@@ -386,27 +386,7 @@ export function resolveTenant(
   const isFallbackHost = isLocalhost || isPreviewHost
 
   // ---------------------------------------------------------------------------
-  // 1. Check Platform Host (admin.ROOT_DOMAIN or platform.ROOT_DOMAIN or admin.localhost)
-  // ---------------------------------------------------------------------------
-  if (
-    host === `admin.${rootDomain}` ||
-    host === `platform.${rootDomain}` ||
-    host === 'admin.localhost' ||
-    host === 'platform.localhost'
-  ) {
-    return {
-      type: 'platform',
-      slug: null,
-      hostname: host,
-      rootDomain,
-      isCustomDomain: false,
-      isFallback: isFallbackHost,
-      pathname,
-    }
-  }
-
-  // ---------------------------------------------------------------------------
-  // 2. Check Localhost Subdomain (e.g. vision.localhost, rangao.localhost)
+  // 1. Check Localhost Subdomain (e.g. vision.localhost, rangao.localhost)
   // ---------------------------------------------------------------------------
   if (host.endsWith('.localhost')) {
     const rawSubdomain = host.slice(0, -'.localhost'.length)
@@ -428,18 +408,6 @@ export function resolveTenant(
     if (!slug || slug === 'www') {
       return {
         type: 'marketing',
-        slug: null,
-        hostname: host,
-        rootDomain,
-        isCustomDomain: false,
-        isFallback: true,
-        pathname,
-      }
-    }
-
-    if (slug === 'admin' || slug === 'platform' || slug === 'platform-admin') {
-      return {
-        type: 'platform',
         slug: null,
         hostname: host,
         rootDomain,
@@ -550,18 +518,6 @@ export function resolveTenant(
     }
 
     const slug = labels[0]
-
-    if (slug === 'admin' || slug === 'platform' || slug === 'platform-admin') {
-      return {
-        type: 'platform',
-        slug: null,
-        hostname: host,
-        rootDomain,
-        isCustomDomain: false,
-        isFallback: isFallbackHost,
-        pathname,
-      }
-    }
 
     if (isReservedSlug(slug)) {
       return {
