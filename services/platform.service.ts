@@ -4985,7 +4985,9 @@ export class PlatformService {
           mfa_enabled: true,
           updated_at: new Date().toISOString(),
           preferences: updatedPreferences,
-          totp_secret: candidateSecret,
+        }
+        if ('totp_secret' in existingAdmin) {
+          updatePayload.totp_secret = candidateSecret
         }
 
         const { error } = await (admin as any)
@@ -5015,7 +5017,9 @@ export class PlatformService {
           mfa_enabled: false,
           updated_at: new Date().toISOString(),
           preferences: updatedPreferences,
-          totp_secret: null,
+        }
+        if ('totp_secret' in existingAdmin) {
+          updatePayload.totp_secret = null
         }
 
         const { error } = await (admin as any)

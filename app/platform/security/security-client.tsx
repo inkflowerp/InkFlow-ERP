@@ -69,6 +69,8 @@ export default function PlatformSecurityPage() {
  const [mfaActionType, setMfaActionType] = useState<'enable' | 'disable'>('enable')
  const [totpCode, setTotpCode] = useState('')
  const [totpSecretKey, setTotpSecretKey] = useState('')
+ const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null)
+ const [isLoadingSecret, setIsLoadingSecret] = useState(false)
  const [isUpdatingMfa, setIsUpdatingMfa] = useState(false)
  const [mfaError, setMfaError] = useState<string | null>(null)
  const [copiedSecret, setCopiedSecret] = useState(false)
@@ -86,13 +88,23 @@ export default function PlatformSecurityPage() {
  setTotpCode('')
  setMfaModalOpen(true)
  if (type === 'enable') {
+ setIsLoadingSecret(true)
+ setQrCodeUrl(null)
+ setTotpSecretKey('')
  try {
  const res = await generatePlatformMfaSecretAction()
  if (res.success && res.secret) {
  setTotpSecretKey(res.secret)
+ if (res.qrCodeDataUrl) {
+ setQrCodeUrl(res.qrCodeDataUrl)
  }
- } catch {
- // Fallback
+ } else {
+ setMfaError(res.error || 'Failed to generate MFA secret key.')
+ }
+ } catch (err: any) {
+ setMfaError(err?.message || 'Failed to initialize authenticator setup.')
+ } finally {
+ setIsLoadingSecret(false)
  }
  }
  }
@@ -1074,58 +1086,34 @@ export default function PlatformSecurityPage() {
  Scan this QR code with <strong>Google Authenticator</strong>, <strong>Microsoft Authenticator</strong>, or <strong>1Password</strong>:
  </p>
 
- {/* SVG Visual QR Code */}
- <div className="p-4 bg-card rounded-2xl flex flex-col items-center justify-center mx-auto w-48 h-48 shadow-inner relative">
- <svg className="w-36 h-36" viewBox="0 0 100 100" fill="none">
- {/* Corner Position Detection Patterns */}
- {/* Top Left */}
- <rect x="5" y="5" width="28" height="28" fill="currentColor" rx="4" />
- <rect x="9" y="9" width="20" height="20" fill="white" rx="2" />
- <rect x="13" y="13" width="12" height="12" fill="currentColor" rx="1" />
-
- {/* Top Right */}
- <rect x="67" y="5" width="28" height="28" fill="currentColor" rx="4" />
- <rect x="71" y="9" width="20" height="20" fill="white" rx="2" />
- <rect x="75" y="13" width="12" height="12" fill="currentColor" rx="1" />
-
- {/* Bottom Left */}
- <rect x="5" y="67" width="28" height="28" fill="currentColor" rx="4" />
- <rect x="9" y="71" width="20" height="20" fill="white" rx="2" />
- <rect x="13" y="75" width="12" height="12" fill="currentColor" rx="1" />
-
- {/* Matrix Mock Pattern Elements */}
- <rect x="38" y="8" width="6" height="6" fill="currentColor" rx="1" />
- <rect x="48" y="8" width="12" height="6" fill="currentColor" rx="1" />
- <rect x="38" y="18" width="12" height="6" fill="currentColor" rx="1" />
- <rect x="54" y="18" width="6" height="6" fill="currentColor" rx="1" />
- <rect x="38" y="28" width="6" height="6" fill="currentColor" rx="1" />
- <rect x="48" y="28" width="12" height="6" fill="currentColor" rx="1" />
-
- <rect x="8" y="38" width="6" height="12" fill="currentColor" rx="1" />
- <rect x="18" y="38" width="12" height="6" fill="currentColor" rx="1" />
- <rect x="18" y="48" width="6" height="12" fill="currentColor" rx="1" />
-
- <rect x="38" y="38" width="24" height="24" fill="currentColor" rx="3" />
- <path d="M50 44 L56 47 L56 53 C56 57 50 60 50 60 C50 60 44 57 44 53 L44 47 Z" fill="white" />
-
- <rect x="68" y="38" width="12" height="6" fill="currentColor" rx="1" />
- <rect x="84" y="38" width="8" height="12" fill="currentColor" rx="1" />
- <rect x="68" y="48" width="6" height="12" fill="currentColor" rx="1" />
- <rect x="78" y="48" width="14" height="6" fill="currentColor" rx="1" />
-
- <rect x="38" y="68" width="12" height="6" fill="currentColor" rx="1" />
- <rect x="54" y="68" width="6" height="12" fill="currentColor" rx="1" />
- <rect x="38" y="78" width="6" height="14" fill="currentColor" rx="1" />
- <rect x="48" y="86" width="12" height="6" fill="currentColor" rx="1" />
-
- <rect x="68" y="68" width="8" height="6" fill="currentColor" rx="1" />
- <rect x="80" y="68" width="12" height="6" fill="currentColor" rx="1" />
- <rect x="68" y="78" width="24" height="6" fill="currentColor" rx="1" />
- <rect x="74" y="88" width="18" height="4" fill="currentColor" rx="1" />
- </svg>
- <span className="text-xs tabular-nums font-bold text-foreground mt-1">
- PrintFlow:PlatformAdmin
+ {/* Scannable Authenticator QR Code */}
+ <div className="p-4 bg-card rounded-2xl border border-border flex flex-col items-center justify-center mx-auto w-56 min-h-56 shadow-xs relative">
+ {isLoadingSecret ? (
+ <div className="flex flex-col items-center justify-center gap-2 py-8 text-muted-foreground">
+ <RefreshCw className="h-6 w-6 animate-spin text-primary" />
+ <span className="text-xs font-medium">Generating QR code...</span>
+ </div>
+ ) : qrCodeUrl ? (
+ <div className="flex flex-col items-center gap-2">
+ <div className="p-2 bg-card rounded-xl border border-border shadow-xs shrink-0">
+ <img
+ src={qrCodeUrl}
+ alt="Authenticator App QR Code"
+ width={176}
+ height={176}
+ className="w-44 h-44 block object-contain"
+ />
+ </div>
+ <span className="text-xs tabular-nums font-bold text-foreground">
+ PrintFlow: {data?.current_user_email || 'PlatformAdmin'}
  </span>
+ </div>
+ ) : (
+ <div className="text-center p-4 text-xs text-muted-foreground space-y-1">
+ <p className="font-semibold text-foreground">QR Code Unavailable</p>
+ <p>Please enter the manual setup secret key below into your authenticator app.</p>
+ </div>
+ )}
  </div>
 
  {/* Manual Setup Key with Copy Button */}
@@ -1154,15 +1142,24 @@ export default function PlatformSecurityPage() {
  </div>
 
  <div className="space-y-1.5 pt-1">
- <Label className="text-muted-foreground text-xs font-semibold">
+ <Label htmlFor="mfa-totp-input" className="text-muted-foreground text-xs font-semibold">
  Enter 6-digit verification code from your app:
  </Label>
  <Input
+ id="mfa-totp-input"
  type="text"
+ inputMode="numeric"
+ autoComplete="one-time-code"
  maxLength={6}
  placeholder="000000"
  value={totpCode}
  onChange={(e) => setTotpCode(e.target.value.replace(/\D/g, ''))}
+ onKeyDown={(e) => {
+ if (e.key === 'Enter' && totpCode.trim().length === 6 && !isUpdatingMfa) {
+ e.preventDefault()
+ handleToggleMFA()
+ }
+ }}
  className="tabular-nums text-center tracking-[0.5em] text-lg bg-card border-border text-foreground focus-visible:ring-primary font-bold"
  />
  </div>
@@ -1196,14 +1193,11 @@ export default function PlatformSecurityPage() {
  Cancel
  </Button>
  <Button
+ variant={mfaActionType === 'enable' ? 'default' : 'destructive'}
  size="sm"
  disabled={isUpdatingMfa || (mfaActionType === 'enable' && totpCode.length !== 6)}
  onClick={handleToggleMFA}
- className={`text-xs font-bold text-foreground h-10 min-h-11 ${
- mfaActionType === 'enable'
- ? 'bg-primary hover:bg-primary/90'
- : 'bg-destructive hover:bg-destructive'
- }`}
+ className="text-xs font-bold h-10 min-h-11"
  >
  {isUpdatingMfa ? (
  <>

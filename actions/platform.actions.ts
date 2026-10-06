@@ -1002,6 +1002,37 @@ export const togglePlatformOwnerMFAAction = withPlatformAction(
       secret
     )
     if (result.success) {
+      if (enable) {
+        try {
+          const { cookies } = await import('next/headers')
+          const { PLATFORM_SESSION_COOKIE } = await import('@/lib/auth/platform-auth')
+          const { verifySessionToken, signSessionToken } = await import('@/lib/security/session-signer')
+          const { getAuthCookieOptions } = await import('@/lib/tenant/tenant-resolution')
+          const cookieStore = await cookies()
+          const sessCookie = cookieStore.get(PLATFORM_SESSION_COOKIE)?.value
+          if (sessCookie) {
+            const parsed = await verifySessionToken<any>(sessCookie)
+            if (parsed) {
+              const updatedToken = await signSessionToken(
+                {
+                  ...parsed,
+                  mfaVerified: true,
+                  mfaVerifiedAt: Date.now(),
+                },
+                '24h'
+              )
+              const cookieOpts = getAuthCookieOptions()
+              cookieStore.set(PLATFORM_SESSION_COOKIE, updatedToken, {
+                ...cookieOpts,
+                httpOnly: true,
+                maxAge: 60 * 60 * 24,
+              })
+            }
+          }
+        } catch (cookieErr) {
+          console.warn('[togglePlatformOwnerMFAAction] Failed to update session cookie mfa flag:', cookieErr)
+        }
+      }
       revalidatePath('/platform/profile')
       revalidatePath('/platform/security')
     }
@@ -1011,10 +1042,32 @@ export const togglePlatformOwnerMFAAction = withPlatformAction(
 
 export const generatePlatformMfaSecretAction = withPlatformAction(
   { permission: 'platform.view' },
-  async (_ctx): Promise<{ success: boolean; secret?: string; error?: string }> => {
-    const { generateTotpSecret } = await import('@/lib/auth/totp')
-    const secret = generateTotpSecret(20)
-    return { success: true, secret }
+  async (ctx): Promise<{
+    success: boolean
+    secret?: string
+    otpauthUri?: string
+    qrCodeDataUrl?: string
+    error?: string
+  }> => {
+    try {
+      const { generateTotpSecret, generateOtpauthUri, generateTotpQrCodeDataUrl } = await import('@/lib/auth/totp')
+      const secret = generateTotpSecret(20)
+      const email = ctx.platformUser.email || 'admin@printflow.bd'
+      const otpauthUri = generateOtpauthUri(email, 'PrintFlow', secret)
+      const qrCodeDataUrl = await generateTotpQrCodeDataUrl(otpauthUri)
+      return {
+        success: true,
+        secret,
+        otpauthUri,
+        qrCodeDataUrl,
+      }
+    } catch (err: any) {
+      console.error('[generatePlatformMfaSecretAction] Error:', err)
+      return {
+        success: false,
+        error: err?.message || 'Failed to generate MFA secret and QR code.',
+      }
+    }
   }
 )
 
