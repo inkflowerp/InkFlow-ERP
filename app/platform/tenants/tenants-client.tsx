@@ -8,8 +8,10 @@ import {
  Search,
  CheckCircle2,
  AlertTriangle,
+ AlertCircle,
  ExternalLink,
  ShieldAlert,
+ ShieldCheck,
  CreditCard,
  Gauge,
  UserCheck,
@@ -208,6 +210,9 @@ export default function PlatformTenantsPage() {
  const [purgeReason, setPurgeReason] = useState('')
  const [purgeConfirmText, setPurgeConfirmText] = useState('')
  const [isPurgingAll, setIsPurgingAll] = useState(false)
+ const [purgeMfaCode, setPurgeMfaCode] = useState('')
+ const [purgeError, setPurgeError] = useState<string | null>(null)
+ const [requireMfaPurge, setRequireMfaPurge] = useState(false)
 
  // Notifications
  const [notification, setNotification] = useState<string | null>(null)
@@ -483,16 +488,34 @@ export default function PlatformTenantsPage() {
  // Handle Purge All Tenants
  const handlePurgeAllCompanies = async () => {
  if (purgeConfirmText !== 'PURGE') return
+ if (!purgeReason.trim() || purgeReason.trim().length < 3) {
+ setPurgeError(tBilingual('Please provide an operational reason of at least 3 characters.', 'অনুগ্রহ করে অন্তত ৩ অক্ষরের বিশদ কারণ উল্লেখ করুন।'))
+ return
+ }
+ if (requireMfaPurge && (!purgeMfaCode.trim() || purgeMfaCode.trim().length !== 6)) {
+ setPurgeError(tBilingual('Please enter the 6-digit MFA code from your authenticator app.', 'অনুগ্রহ করে অথেনটিকেটর অ্যাপ থেকে ৬ ডিজিটের এমএফএ কোড লিখুন।'))
+ return
+ }
+
  setIsPurgingAll(true)
- const res = await deleteAllBusinessesAction(purgeReason || 'All tenants purged by platform administrator')
+ setPurgeError(null)
+ const res = await deleteAllBusinessesAction(purgeReason.trim(), purgeMfaCode.trim() || undefined)
  if (res.success) {
- showNotification('All tenants and associated workspace data have been completely purged.')
+ showNotification(tBilingual('All tenants and associated workspace data have been completely purged.', 'সকল প্রতিষ্ঠান ও সম্পর্কিত ডাটা সফলভাবে মুছে ফেলা হয়েছে।'))
  setShowPurgeAllModal(false)
  setPurgeReason('')
  setPurgeConfirmText('')
+ setPurgeMfaCode('')
+ setPurgeError(null)
+ setRequireMfaPurge(false)
  loadData()
  } else {
- showNotification(res.error || 'Failed to purge tenants.')
+ const errMsg = res.error || 'Failed to purge tenants.'
+ setPurgeError(errMsg)
+ if (res.code === 'MFA_RECENT_REQUIRED') {
+ setRequireMfaPurge(true)
+ }
+ showNotification(errMsg)
  }
  setIsPurgingAll(false)
  }
@@ -2333,7 +2356,7 @@ export default function PlatformTenantsPage() {
  {/* 5. PURGE ALL TENANTS MODAL */}
  {showPurgeAllModal && (
  <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm animate-in fade-in-0 duration-200">
- <Card className="w-full max-w-lg bg-card border-destructive/30 text-foreground shadow-xs shadow-red-950/60">
+ <Card className="w-full max-w-lg bg-card border-destructive/30 text-foreground shadow-xs">
  <CardHeader className="border-b border-border pb-3">
  <CardTitle className="text-base font-bold text-destructive flex items-center gap-2">
  <ShieldAlert className="h-5 w-5 text-destructive" />
@@ -2357,16 +2380,46 @@ export default function PlatformTenantsPage() {
  </p>
  </div>
 
+ {purgeError && (
+ <div className="p-3 rounded-xl bg-destructive/10 border border-destructive/30 text-destructive text-xs flex items-center gap-2">
+ <AlertCircle className="h-4 w-4 shrink-0 text-destructive" />
+ <span className="leading-relaxed">{purgeError}</span>
+ </div>
+ )}
+
  <div className="space-y-1">
  <label className="font-semibold text-muted-foreground">{tBilingual('Reason *', 'কারণ *')}</label>
  <Input
  required
  placeholder="e.g. System reset, Pre-production data cleanup..."
  value={purgeReason}
- onChange={(e) => setPurgeReason(e.target.value)}
+ onChange={(e) => {
+   setPurgeReason(e.target.value)
+   if (purgeError) setPurgeError(null)
+ }}
  className="bg-card border-border text-foreground text-xs h-9"
  />
  </div>
+
+ {requireMfaPurge && (
+ <div className="space-y-1">
+ <label className="font-semibold text-foreground flex items-center gap-1.5">
+ <ShieldCheck className="h-4 w-4 text-primary" />
+ {tBilingual('MFA Code (Authenticator App) *', 'এমএফএ কোড (অথেনটিকেটর অ্যাপ) *')}
+ </label>
+ <Input
+ required
+ placeholder="6-digit code (e.g. 123456)"
+ maxLength={6}
+ value={purgeMfaCode}
+ onChange={(e) => {
+   setPurgeMfaCode(e.target.value.replace(/\D/g, '').slice(0, 6))
+   if (purgeError) setPurgeError(null)
+ }}
+ className="bg-card border-primary/40 text-foreground font-mono tracking-widest text-center text-sm h-9"
+ />
+ </div>
+ )}
 
  <div className="space-y-1">
  <label className="font-semibold text-muted-foreground">
@@ -2376,7 +2429,10 @@ export default function PlatformTenantsPage() {
  required
  placeholder="PURGE"
  value={purgeConfirmText}
- onChange={(e) => setPurgeConfirmText(e.target.value)}
+ onChange={(e) => {
+   setPurgeConfirmText(e.target.value)
+   if (purgeError) setPurgeError(null)
+ }}
  className="bg-card border-destructive/30 text-destructive tabular-nums font-bold text-xs h-9 placeholder:text-muted-foreground"
  />
  </div>
@@ -2390,13 +2446,16 @@ export default function PlatformTenantsPage() {
  setShowPurgeAllModal(false)
  setPurgeReason('')
  setPurgeConfirmText('')
+ setPurgeMfaCode('')
+ setPurgeError(null)
+ setRequireMfaPurge(false)
  }}
  className="text-xs border-border bg-card text-muted-foreground"
  >
  Cancel
  </Button>
  <Button
- disabled={isPurgingAll || purgeConfirmText !== 'PURGE'}
+ disabled={isPurgingAll || purgeConfirmText !== 'PURGE' || purgeReason.trim().length < 3 || (requireMfaPurge && purgeMfaCode.length !== 6)}
  onClick={handlePurgeAllCompanies}
  size="sm"
  className="bg-destructive hover:bg-destructive disabled:bg-destructive/10 disabled:text-muted-foreground text-destructive-foreground font-bold text-xs"

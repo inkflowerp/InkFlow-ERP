@@ -2251,17 +2251,36 @@ export class PlatformService {
       } catch {}
 
       const storeCompanies = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.PLATFORM_COMPANIES) || []
-      const allCompanyIds = Array.from(
-        new Set([
-          ...companies.map((c: any) => c.id),
-          ...companies.map((c: any) => c.slug),
-          ...storeCompanies.map((c: any) => c.id),
-          ...storeCompanies.map((c: any) => c.slug),
-        ].filter(Boolean))
-      )
 
-      for (const cId of allCompanyIds) {
-        await this.deleteCompany(cId, reason || 'All companies purged by platform administrator')
+      // Deduplicate targets: prioritize distinct company UUIDs first, then any remaining unique slugs
+      const distinctTargets: string[] = []
+      const seen = new Set<string>()
+
+      for (const c of companies) {
+        if (c.id && !seen.has(c.id)) {
+          seen.add(c.id)
+          if (c.slug) seen.add(c.slug)
+          distinctTargets.push(c.id)
+        }
+      }
+      for (const sc of storeCompanies) {
+        const targetId = sc.id || sc.slug
+        if (targetId && !seen.has(targetId)) {
+          seen.add(targetId)
+          distinctTargets.push(targetId)
+        }
+      }
+
+      let deletedCount = 0
+      const errors: string[] = []
+
+      for (const cId of distinctTargets) {
+        const delRes = await this.deleteCompany(cId, reason || 'All companies purged by platform administrator')
+        if (delRes.success) {
+          deletedCount++
+        } else if (delRes.error) {
+          errors.push(delRes.error)
+        }
       }
 
       // Purge all storage files across all buckets
@@ -2281,13 +2300,18 @@ export class PlatformService {
         undefined,
         undefined,
         {
-          deleted_count: allCompanyIds.length,
+          deleted_count: deletedCount,
+          targets_count: distinctTargets.length,
           reason: reason || 'All companies purged by platform administrator',
           timestamp: new Date().toISOString(),
         }
       )
 
-      return { success: true, data: { count: allCompanyIds.length } }
+      if (errors.length > 0 && deletedCount === 0) {
+        return { success: false, error: errors.join('; ') || 'Failed to delete companies' }
+      }
+
+      return { success: true, data: { count: deletedCount } }
     } catch (err: any) {
       return { success: false, error: err.message || 'Failed to delete all companies' }
     }

@@ -227,6 +227,21 @@ export function sanitizeError(err: unknown, locale: 'en' | 'bn' = 'en'): AppErro
     }
   }
 
+  // 6. Safe operational error messages (do not leak stack traces or internal SQL schemas)
+  const isInternalLeak =
+    /(?:syntax error|relation\s+["']|column\s+["']|table\s+["']|pg_|violates\s+|constraint\s+|foreign\s+key|duplicate\s+key|23[0-9]{3}|PGRST|econnrefused|etimedout|TypeError:|ReferenceError:|Cannot read properties|is not a function|at\s+[\w\.\/]+:\d+)/i.test(
+      rawMsg
+    )
+
+  if (!isInternalLeak && rawMsg.trim().length > 0 && rawMsg.length < 300) {
+    return {
+      code: 'VALIDATION',
+      message: rawMsg.trim(),
+      messageBn: rawMsg.trim(),
+      statusCode: 400,
+    }
+  }
+
   // Fallback to internal error without leaking stack or raw SQL
   return {
     code: 'INTERNAL',

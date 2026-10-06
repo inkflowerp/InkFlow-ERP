@@ -79,18 +79,28 @@ export async function deleteTenantPermanentlyAction(
 }
 
 
+import { AppError } from '@/lib/errors/app-error'
+
 export const deleteAllBusinessesAction = withPlatformAction(
   {
     destruct: true,
     actionName: 'company.purge_all',
     entityType: 'company',
   },
-  async (ctx, reason?: string) => {
+  async (ctx, reason?: string, _mfaCode?: string) => {
     if (process.env.ALLOW_PLATFORM_PURGE_ALL !== 'true') {
-      throw new Error('Emergency purge is disabled in production environment.')
+      throw new AppError({
+        code: 'FORBIDDEN',
+        message: 'Emergency purge is disabled in this environment. Set ALLOW_PLATFORM_PURGE_ALL=true in system configuration to enable.',
+        messageBn: 'জরুরি পার্জ সিস্টেম কনফিগারেশনে নিষ্ক্রিয় রয়েছে। সক্রিয় করতে ALLOW_PLATFORM_PURGE_ALL=true সেট করুন।',
+      })
     }
-    if (!reason || !reason.trim()) {
-      throw new Error('Reason for complete tenant purge (Audit Trail) is mandatory.')
+    if (!reason || reason.trim().length < 3) {
+      throw new AppError({
+        code: 'VALIDATION',
+        message: 'A detailed operational reason (at least 3 characters) is required for audit trail.',
+        messageBn: 'অডিট ট্রেইলের জন্য অন্তত ৩ অক্ষরের বিশদ কারণ উল্লেখ করা আবশ্যক।',
+      })
     }
 
     const result = await PlatformService.deleteAllCompanies(reason.trim())

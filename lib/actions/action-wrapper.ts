@@ -433,7 +433,69 @@ export function withPlatformAction<TArgs extends any[], TReturn>(
         }
 
         // Must have verified MFA within the last 5 minutes
-        const isMfaFresh = checkPlatformMfaRecency(platformUser, 5)
+        let isMfaFresh = checkPlatformMfaRecency(platformUser, 5)
+        if (!isMfaFresh) {
+          // Check if an inline 6-digit MFA code was supplied in arguments for step-up verification
+          let candidateMfaCode: string | undefined
+          for (const arg of args) {
+            if (typeof arg === 'string' && /^\d{6}$/.test(arg.trim())) {
+              candidateMfaCode = arg.trim()
+              break
+            } else if (arg && typeof arg === 'object' && typeof arg.mfaCode === 'string' && /^\d{6}$/.test(arg.mfaCode.trim())) {
+              candidateMfaCode = arg.mfaCode.trim()
+              break
+            }
+          }
+
+          if (candidateMfaCode) {
+            try {
+              const { verifyTotpCode } = await import('../auth/totp.ts')
+              const { createAdminClient } = await import('../supabase/admin.ts')
+              const dbAdmin = createAdminClient()
+              const adminId = platformUser.id || platformUser.adminId || platformUser.userId
+              const { data: dbAdminRow } = await (dbAdmin as any)
+                .from('platform_admins')
+                .select('preferences')
+                .eq('id', adminId)
+                .maybeSingle()
+              const secret = (dbAdminRow?.preferences as any)?.totp_secret || process.env.PLATFORM_MFA_DEFAULT_SECRET
+              if (secret && verifyTotpCode(candidateMfaCode, secret)) {
+                isMfaFresh = true
+                // Refresh session token with latest mfaVerifiedAt
+                try {
+                  const { cookies } = await import('next/headers')
+                  const { PLATFORM_SESSION_COOKIE } = await import('../auth/platform-auth.ts')
+                  const { verifySessionToken, signSessionToken } = await import('../security/session-signer.ts')
+                  const { getAuthCookieOptions } = await import('../tenant/tenant-resolution.ts')
+                  const cookieStore = await cookies()
+                  const sessCookie = cookieStore.get(PLATFORM_SESSION_COOKIE)?.value
+                  if (sessCookie) {
+                    const parsed = await verifySessionToken<any>(sessCookie)
+                    if (parsed) {
+                      const updatedToken = await signSessionToken(
+                        {
+                          ...parsed,
+                          mfaVerified: true,
+                          mfaVerifiedAt: Date.now(),
+                        },
+                        '24h'
+                      )
+                      const cookieOpts = getAuthCookieOptions()
+                      cookieStore.set(PLATFORM_SESSION_COOKIE, updatedToken, {
+                        ...cookieOpts,
+                        httpOnly: true,
+                        maxAge: 60 * 60 * 24,
+                      })
+                    }
+                  }
+                } catch {}
+              }
+            } catch (vErr) {
+              console.warn('[withPlatformAction] Inline MFA step-up verification error:', vErr)
+            }
+          }
+        }
+
         if (!isMfaFresh) {
           return {
             ok: false,
@@ -457,7 +519,37 @@ export function withPlatformAction<TArgs extends any[], TReturn>(
           }
         } catch {}
       } else if (options.mfaRecent) {
-        const isMfaFresh = checkPlatformMfaRecency(platformUser, 5)
+        let isMfaFresh = checkPlatformMfaRecency(platformUser, 5)
+        if (!isMfaFresh) {
+          let candidateMfaCode: string | undefined
+          for (const arg of args) {
+            if (typeof arg === 'string' && /^\d{6}$/.test(arg.trim())) {
+              candidateMfaCode = arg.trim()
+              break
+            } else if (arg && typeof arg === 'object' && typeof arg.mfaCode === 'string' && /^\d{6}$/.test(arg.mfaCode.trim())) {
+              candidateMfaCode = arg.mfaCode.trim()
+              break
+            }
+          }
+
+          if (candidateMfaCode) {
+            try {
+              const { verifyTotpCode } = await import('../auth/totp.ts')
+              const { createAdminClient } = await import('../supabase/admin.ts')
+              const dbAdmin = createAdminClient()
+              const adminId = platformUser.id || platformUser.adminId || platformUser.userId
+              const { data: dbAdminRow } = await (dbAdmin as any)
+                .from('platform_admins')
+                .select('preferences')
+                .eq('id', adminId)
+                .maybeSingle()
+              const secret = (dbAdminRow?.preferences as any)?.totp_secret || process.env.PLATFORM_MFA_DEFAULT_SECRET
+              if (secret && verifyTotpCode(candidateMfaCode, secret)) {
+                isMfaFresh = true
+              }
+            } catch {}
+          }
+        }
         if (!isMfaFresh) {
           return {
             ok: false,
