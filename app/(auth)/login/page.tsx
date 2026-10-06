@@ -41,10 +41,15 @@ const SAVED_EMAIL_STORAGE_KEY = k('remembered_email')
 
 /**
  * Root Domain Workspace Finder Form
- * Invariant: Credentials are NEVER accepted on the root domain (printflow.bd or localhost:3000).
- * Users must first specify their workspace slug/name, which redirects to the tenant subdomain.
+ * Optional helper for users searching for their tenant workspace by name or email.
  */
-function WorkspaceFinderForm({ rootDomain }: { rootDomain: string }) {
+function WorkspaceFinderForm({
+  rootDomain,
+  onBackToLogin,
+}: {
+  rootDomain: string
+  onBackToLogin?: () => void
+}) {
   const { locale } = useI18n()
   const [workspaceInput, setWorkspaceInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -254,6 +259,19 @@ function WorkspaceFinderForm({ rootDomain }: { rootDomain: string }) {
       </CardContent>
 
       <CardFooter className="flex flex-col space-y-2 pt-3 pb-5 px-6 text-center text-xs text-muted-foreground border-t border-border">
+        {onBackToLogin && (
+          <div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={onBackToLogin}
+              className="w-full text-xs font-semibold cursor-pointer h-8"
+            >
+              {locale === 'bn' ? '← সরাসরি লগইন পোর্টালে ফিরুন' : '← Back to direct sign-in'}
+            </Button>
+          </div>
+        )}
         <div>
           {locale === 'bn' ? 'নতুন প্রতিষ্ঠান নিবন্ধন করবেন?' : "Don't have a workspace yet?"}{' '}
           <Link
@@ -277,16 +295,18 @@ function WorkspaceFinderForm({ rootDomain }: { rootDomain: string }) {
 }
 
 /**
- * Tenant Subdomain Login Form
- * Renders on tenant subdomains ([tenantSlug].printflow.bd or [tenantSlug].localhost:3000).
- * Posts credentials exclusively to the tenant origin.
+ * Tenant Subdomain & Root Domain Credential Login Form
+ * Renders on tenant subdomains ([tenantSlug].printflow.bd) and root domain (printflow.bd/login).
+ * Authenticates tenant owners and employees, automatically redirecting to their tenant subdomain.
  */
 function TenantLoginForm({
   tenantSlug,
   rootDomain,
+  onShowWorkspaceFinder,
 }: {
   tenantSlug: string | null
   rootDomain: string
+  onShowWorkspaceFinder?: () => void
 }) {
   const [error, setError] = useState<string | null>(null)
   const [isPlatformAdminError, setIsPlatformAdminError] = useState(false)
@@ -422,7 +442,8 @@ function TenantLoginForm({
     }
 
     try {
-      const res = await signInAction(normalizedEmail, pass)
+      const paramRedirect = searchParams.get('redirectTo') || undefined
+      const res = await signInAction(normalizedEmail, pass, paramRedirect)
 
       if (res.success && res.data) {
         if (res.data.requiresOnboarding || !res.data.session.companySlug) {
@@ -431,9 +452,8 @@ function TenantLoginForm({
         }
 
         const targetSlug = res.data.session.companySlug
-        const paramRedirect = searchParams.get('redirectTo')
 
-        // Clean relative redirect on matching host
+        // Clean relative redirect on matching host (e.g. logging in directly on vision.printflow.bd)
         if (tenantSlug && tenantSlug.toLowerCase() === targetSlug.toLowerCase()) {
           let clean = '/dashboard'
           if (paramRedirect && paramRedirect.startsWith('/') && !paramRedirect.startsWith('/login')) {
@@ -445,6 +465,12 @@ function TenantLoginForm({
             }
           }
           window.location.href = clean
+          return
+        }
+
+        // Cross-host or root-to-subdomain: use server-provided destinationUrl (with handoff token) or getTenantLink
+        if ((res as any).destinationUrl) {
+          window.location.href = (res as any).destinationUrl
           return
         }
 
@@ -787,6 +813,29 @@ function TenantLoginForm({
               {t('auth.sign_up')}
             </Link>
           </div>
+          {onShowWorkspaceFinder && (
+            <div>
+              <button
+                type="button"
+                onClick={onShowWorkspaceFinder}
+                className="text-xs text-muted-foreground hover:text-foreground hover:underline cursor-pointer py-1"
+              >
+                {locale === 'bn'
+                  ? 'ওয়ার্কস্পেসের নাম বা কোড দিয়ে খুঁজবেন? এখানে চাপুন'
+                  : 'Looking for your workspace URL? Find workspace'}
+              </button>
+            </div>
+          )}
+          {!tenantSlug && (
+            <div>
+              <Link
+                href="/platform/login"
+                className="text-muted-foreground hover:text-foreground hover:underline py-1"
+              >
+                {locale === 'bn' ? 'প্ল্যাটফর্ম অ্যাডমিন পোর্টাল' : 'Platform Control Center'}
+              </Link>
+            </div>
+          )}
         </CardFooter>
       </form>
     </Card>
@@ -799,6 +848,7 @@ function LoginForm() {
     tenantSlug: string | null
     rootDomain: string
   } | null>(null)
+  const [viewMode, setViewMode] = useState<'login' | 'finder'>('login')
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -822,16 +872,31 @@ function LoginForm() {
     )
   }
 
-  // Root domain: Render workspace finder (credentials are never accepted on root)
-  if (hostResolution.hostType === 'root') {
-    return <WorkspaceFinderForm rootDomain={hostResolution.rootDomain || BRAND.rootDomain} />
+  // Tenant subdomain: Render host-isolated credential login
+  if (hostResolution.hostType === 'tenant') {
+    return (
+      <TenantLoginForm
+        tenantSlug={hostResolution.tenantSlug}
+        rootDomain={hostResolution.rootDomain || BRAND.rootDomain}
+      />
+    )
   }
 
-  // Tenant subdomain: Render host-isolated credential login
+  // Root domain: Default to direct credential login for tenant owners & employees
+  if (viewMode === 'finder') {
+    return (
+      <WorkspaceFinderForm
+        rootDomain={hostResolution.rootDomain || BRAND.rootDomain}
+        onBackToLogin={() => setViewMode('login')}
+      />
+    )
+  }
+
   return (
     <TenantLoginForm
-      tenantSlug={hostResolution.tenantSlug}
+      tenantSlug={null}
       rootDomain={hostResolution.rootDomain || BRAND.rootDomain}
+      onShowWorkspaceFinder={() => setViewMode('finder')}
     />
   )
 }

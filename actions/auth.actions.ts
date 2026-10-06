@@ -10,7 +10,8 @@ import { TENANT_SESSION_COOKIE } from '@/lib/auth/types'
 import { getCurrentTenant } from '@/lib/auth/tenant-auth'
 import { resolveRequestOrigin } from '@/lib/security/runtime-env'
 import { getAuthCookieOptions, resolveHostname, resolveTenant, isReservedSlug } from '@/lib/tenant/tenant-resolution'
-import { getTenantLink } from '@/lib/tenant/tenant-url'
+import { getTenantLink, getTenantBaseUrl } from '@/lib/tenant/tenant-url'
+import { createSubdomainHandoffToken } from '@/lib/auth/subdomain-handoff'
 import { TenantRepository } from '@/lib/repositories/tenant.repository'
 
 async function getRequestBaseUrl(): Promise<string> {
@@ -100,10 +101,8 @@ export async function loginAction(formData: FormData) {
       if (hostRes.hostType === 'tenant' && hostRes.tenantSlug) {
         targetCompanySlug = hostRes.tenantSlug
       } else if (hostRes.hostType === 'root') {
-        return {
-          success: false,
-          error: 'Direct credential submission on the root domain is not allowed. Please enter your workspace name first.',
-        }
+        // Direct root domain login allowed: targetCompanySlug will be resolved from user membership
+        targetCompanySlug = undefined
       }
     }
   } catch {}
@@ -165,11 +164,23 @@ export async function loginAction(formData: FormData) {
     redirect(`/${session.companySlug}${cleanDestination}`)
   }
 
-  const targetSubdomainUrl = getTenantLink(session.companySlug, targetPath)
-  redirect(targetSubdomainUrl)
+  let destinationUrl = getTenantLink(session.companySlug, targetPath)
+  try {
+    const handoffToken = await createSubdomainHandoffToken({
+      userId: session.userId,
+      email: session.userEmail,
+      slug: session.companySlug,
+      sessionData: session,
+    })
+    destinationUrl = `${getTenantBaseUrl(session.companySlug)}/api/auth/handoff?token=${handoffToken}&next=${encodeURIComponent(targetPath)}`
+  } catch (handoffErr) {
+    console.warn('[loginAction] Failed to create subdomain handoff token, falling back to direct link:', handoffErr)
+  }
+
+  redirect(destinationUrl)
 }
 
-export async function signInAction(email: string, pass: string) {
+export async function signInAction(email: string, pass: string, redirectTo?: string) {
   if (!email || !pass) {
     return { success: false, error: 'Email and password are required' }
   }
@@ -183,28 +194,28 @@ export async function signInAction(email: string, pass: string) {
   }
 
   let targetCompanySlug: string | undefined
+  let isRootHost = false
+  let requestHost = ''
   try {
     const headerStore = await headers()
+    requestHost = headerStore.get('x-forwarded-host') || headerStore.get('host') || ''
     const headerSlug = headerStore.get('x-tenant-slug')
     if (headerSlug && !isReservedSlug(headerSlug)) {
       targetCompanySlug = headerSlug
     } else {
-      const host = headerStore.get('x-forwarded-host') || headerStore.get('host')
       const referer = headerStore.get('referer') || ''
       let pathFromReferer = ''
       try {
         if (referer) pathFromReferer = new URL(referer).pathname
       } catch {}
-      const tenantRes = resolveTenant(host, pathFromReferer)
+      const tenantRes = resolveTenant(requestHost, pathFromReferer)
       if (tenantRes.type === 'tenant' && tenantRes.slug) {
         targetCompanySlug = tenantRes.slug
       } else {
-        const hostRes = resolveHostname(host)
+        const hostRes = resolveHostname(requestHost)
         if (hostRes.hostType === 'root') {
-          return {
-            success: false,
-            error: 'Direct credential submission on the root domain is not allowed. Please enter your workspace name first.',
-          }
+          isRootHost = true
+          targetCompanySlug = undefined
         }
       }
     }
@@ -228,7 +239,58 @@ export async function signInAction(email: string, pass: string) {
     }
   }
 
-  return result
+  // Calculate destination URL for client redirect
+  let destinationUrl = '/dashboard'
+  if (result.data.requiresOnboarding || !session.companySlug) {
+    destinationUrl = '/onboarding'
+  } else {
+    const targetPath = redirectTo && redirectTo.startsWith('/') && !redirectTo.startsWith('/login')
+      ? redirectTo
+      : '/dashboard'
+
+    let isPslOrLocalRequest = false
+    const hostLower = requestHost.toLowerCase().split(':')[0]
+    if (
+      hostLower.includes('localhost') ||
+      hostLower.includes('127.0.0.1') ||
+      hostLower.endsWith('.vercel.app') ||
+      hostLower.endsWith('.pages.dev') ||
+      hostLower.endsWith('.netlify.app')
+    ) {
+      isPslOrLocalRequest = true
+    }
+
+    if (isPslOrLocalRequest) {
+      let clean = targetPath
+      if (clean.startsWith(`/${session.companySlug}/`)) {
+        clean = clean.slice(`/${session.companySlug}`.length)
+      } else if (clean === `/${session.companySlug}`) {
+        clean = '/dashboard'
+      }
+      const cleanDestination = clean.startsWith('/') ? clean : `/${clean}`
+      destinationUrl = `/${session.companySlug}${cleanDestination}`
+    } else {
+      destinationUrl = getTenantLink(session.companySlug, targetPath)
+      if (isRootHost) {
+        try {
+          const handoffToken = await createSubdomainHandoffToken({
+            userId: session.userId,
+            email: session.userEmail,
+            slug: session.companySlug,
+            sessionData: session,
+          })
+          destinationUrl = `${getTenantBaseUrl(session.companySlug)}/api/auth/handoff?token=${handoffToken}&next=${encodeURIComponent(targetPath)}`
+        } catch (handoffErr) {
+          console.warn('[signInAction] Subdomain handoff generation failed, using direct tenant link:', handoffErr)
+        }
+      }
+    }
+  }
+
+  return {
+    ...result,
+    destinationUrl,
+  }
 }
 
 export async function signUpAction(data: {
