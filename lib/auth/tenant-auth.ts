@@ -168,6 +168,46 @@ export const getCurrentTenant = cache(async function getCurrentTenant(
     } catch {}
 
     if (!user?.id) {
+      // Check for cryptographically verified tenant session token
+      try {
+        const sessionCookie = cookieStore.get(TENANT_SESSION_COOKIE)?.value
+        if (sessionCookie) {
+          const verified = await verifySessionToken<TenantSessionData>(sessionCookie)
+          const candidateUserId = verified?.userId || verified?.sub
+          if (
+            verified &&
+            candidateUserId &&
+            verified.companySlug &&
+            (!targetSlugOrId ||
+              targetSlugOrId === 'c-01' ||
+              targetSlugOrId === 'default' ||
+              targetSlugOrId === 'all' ||
+              verified.companySlug.toLowerCase() === targetSlugOrId.toLowerCase() ||
+              verified.companyId?.toLowerCase() === targetSlugOrId.toLowerCase())
+          ) {
+            // Authoritative DB verification: Ensure valid active membership before accepting session
+            const adminMembership = await TenantRepository.resolveUserMembership(
+              candidateUserId,
+              targetSlugOrId || verified.companySlug
+            )
+            if (adminMembership && adminMembership.company && adminMembership.companyUser) {
+              user = {
+                id: candidateUserId,
+                email: verified.userEmail || adminMembership.companyUser.profile?.email || '',
+                app_metadata: {},
+                user_metadata: {},
+                aud: 'authenticated',
+                created_at: new Date().toISOString(),
+              } as User
+            }
+          }
+        }
+      } catch {
+        // Fail closed
+      }
+    }
+
+    if (!user?.id) {
       return null // FAIL CLOSED: Authenticated Supabase session required
     }
 

@@ -12,6 +12,7 @@ import { resolveRequestOrigin } from '@/lib/security/runtime-env'
 import { getAuthCookieOptions, resolveHostname, resolveTenant, isReservedSlug } from '@/lib/tenant/tenant-resolution'
 import { getTenantLink, getTenantBaseUrl } from '@/lib/tenant/tenant-url'
 import { createSubdomainHandoffToken } from '@/lib/auth/subdomain-handoff'
+import { signSessionToken } from '@/lib/security/session-signer'
 import { TenantRepository } from '@/lib/repositories/tenant.repository'
 
 async function getRequestBaseUrl(): Promise<string> {
@@ -115,9 +116,10 @@ export async function loginAction(formData: FormData) {
 
   const session = result.data.session
 
-  // Store server-side tenant session cookie across subdomains
+  // Store cryptographically signed tenant session cookie
   const cookieStore = await cookies()
-  cookieStore.set(TENANT_SESSION_COOKIE, encodeURIComponent(JSON.stringify(session)), await getCookieOptions())
+  const signedSession = await signSessionToken(session, '7d')
+  cookieStore.set(TENANT_SESSION_COOKIE, signedSession, await getCookieOptions())
 
   // Audit track successful login with the verified user ID and company
   if (session.companyId) {
@@ -168,6 +170,7 @@ export async function loginAction(formData: FormData) {
       email: session.userEmail,
       slug: session.companySlug,
       sessionData: session,
+      authTokens: result.data.authTokens,
     })
     destinationUrl = `${getTenantBaseUrl(session.companySlug)}/api/auth/handoff?token=${handoffToken}&next=${encodeURIComponent(targetPath)}`
   } catch (handoffErr) {
@@ -226,7 +229,8 @@ export async function signInAction(email: string, pass: string, redirectTo?: str
 
   const session = result.data.session
   const cookieStore = await cookies()
-  cookieStore.set(TENANT_SESSION_COOKIE, encodeURIComponent(JSON.stringify(session)), await getCookieOptions())
+  const signedSession = await signSessionToken(session, '7d')
+  cookieStore.set(TENANT_SESSION_COOKIE, signedSession, await getCookieOptions())
 
   if (session.companyId) {
     try {
@@ -272,6 +276,7 @@ export async function signInAction(email: string, pass: string, redirectTo?: str
             email: session.userEmail,
             slug: session.companySlug,
             sessionData: session,
+            authTokens: result.data.authTokens,
           })
           destinationUrl = `${getTenantBaseUrl(session.companySlug)}/api/auth/handoff?token=${handoffToken}&next=${encodeURIComponent(targetPath)}`
         } catch (handoffErr) {
@@ -368,7 +373,8 @@ export async function verifyRegistrationOtpAction(email: string, otp: string) {
   const session = result.data.session
   const cookieOpts = await getCookieOptions()
   const cookieStore = await cookies()
-  cookieStore.set(TENANT_SESSION_COOKIE, encodeURIComponent(JSON.stringify(session)), cookieOpts)
+  const signedSession = await signSessionToken(session, '7d')
+  cookieStore.set(TENANT_SESSION_COOKIE, signedSession, cookieOpts)
 
   // Establish Supabase SSR auth token cookies on server
   await AuthService.establishServerSession(email, cookieOpts.domain)
@@ -390,7 +396,8 @@ export async function verifyRegistrationTokenAction(token: string, email?: strin
   const session = result.data.session
   const cookieOpts = await getCookieOptions()
   const cookieStore = await cookies()
-  cookieStore.set(TENANT_SESSION_COOKIE, encodeURIComponent(JSON.stringify(session)), cookieOpts)
+  const signedSession = await signSessionToken(session, '7d')
+  cookieStore.set(TENANT_SESSION_COOKIE, signedSession, cookieOpts)
 
   // Establish Supabase SSR auth token cookies on server
   if (session.userEmail) {
@@ -411,7 +418,8 @@ export async function checkEmailVerificationStatusAction(email: string) {
     const session = result.data.session
     const cookieOpts = await getCookieOptions()
     const cookieStore = await cookies()
-    cookieStore.set(TENANT_SESSION_COOKIE, encodeURIComponent(JSON.stringify(session)), cookieOpts)
+    const signedSession = await signSessionToken(session, '7d')
+    cookieStore.set(TENANT_SESSION_COOKIE, signedSession, cookieOpts)
 
     // Establish Supabase SSR auth token cookies on server
     await AuthService.establishServerSession(email, cookieOpts.domain)

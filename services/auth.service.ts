@@ -28,6 +28,10 @@ export interface SignInResultData {
   userId: string
   session: TenantSessionData
   requiresOnboarding?: boolean
+  authTokens?: {
+    accessToken: string
+    refreshToken: string
+  }
 }
 
 export interface IdentifierUniquenessCheckParams {
@@ -697,6 +701,10 @@ export class AuthService {
             userId: user.id,
             session: sessionData,
             requiresOnboarding: true,
+            authTokens: authData?.session ? {
+              accessToken: authData.session.access_token,
+              refreshToken: authData.session.refresh_token,
+            } : undefined,
           },
           message: 'Please complete company onboarding to activate your workspace.',
         }
@@ -753,6 +761,10 @@ export class AuthService {
           userId: user.id,
           session: sessionData,
           requiresOnboarding: false,
+          authTokens: authData?.session ? {
+            accessToken: authData.session.access_token,
+            refreshToken: authData.session.refresh_token,
+          } : undefined,
         },
       }
     } catch (err: unknown) {

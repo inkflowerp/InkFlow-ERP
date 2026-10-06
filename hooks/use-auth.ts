@@ -7,6 +7,28 @@ import { AuthUser } from '@/types/auth.types'
 import { TENANT_SESSION_COOKIE, TenantSessionData } from '@/lib/auth/types'
 import { signOutAction } from '@/actions/auth.actions'
 
+function parseCookiePayload(raw: string): any {
+  try {
+    if (raw.includes('.')) {
+      const parts = raw.split('.')
+      if (parts.length === 3) {
+        const base64Url = parts[1]
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
+        const jsonPayload = decodeURIComponent(
+          atob(base64)
+            .split('')
+            .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+            .join('')
+        )
+        return JSON.parse(jsonPayload)
+      }
+    }
+    return JSON.parse(decodeURIComponent(raw))
+  } catch {
+    return null
+  }
+}
+
 function getSessionFromCookie(): TenantSessionData | null {
   if (typeof document === 'undefined') return null
   const match = document.cookie
@@ -16,7 +38,7 @@ function getSessionFromCookie(): TenantSessionData | null {
   if (!match) return null
   try {
     const raw = match.split('=')[1]
-    return JSON.parse(decodeURIComponent(raw))
+    return parseCookiePayload(raw)
   } catch {
     return null
   }

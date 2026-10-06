@@ -1,11 +1,24 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
+import { createRequire } from 'node:module'
 import pg from 'pg'
 import fs from 'fs'
 import path from 'path'
 import { resolveTenant, getAuthCookieOptions } from '../../lib/tenant/tenant-resolution.ts'
 import { TenantRepository } from '../../lib/repositories/tenant.repository.ts'
 import { AuthService } from '../../services/auth.service.ts'
+
+// Mock server-only in require.cache for standalone test environment
+const req = createRequire(import.meta.url)
+try {
+  const serverOnlyPath = req.resolve('server-only')
+  req.cache[serverOnlyPath] = {
+    id: serverOnlyPath,
+    filename: serverOnlyPath,
+    loaded: true,
+    exports: {},
+  } as any
+} catch {}
 
 const { Client } = pg
 

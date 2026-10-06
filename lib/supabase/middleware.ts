@@ -375,9 +375,16 @@ export async function updateSession(request: NextRequest) {
       }
     }
 
-    // Authoritative Tenant Authentication: Strictly requires authenticated user session.
-    // Invariant: Cookie presence alone NEVER grants authentication!
-    const isTenantAuthenticated = Boolean(user)
+    // Authoritative Tenant Authentication: Validated via Supabase user session or cryptographically verified tenant token bound to this slug.
+    const isTenantCookieBoundToSlug = Boolean(
+      hasValidTenantCookie &&
+      tenantSessionData &&
+      hostType === 'tenant' &&
+      tenantSlug &&
+      tenantSessionData.companySlug?.toLowerCase() === tenantSlug.toLowerCase()
+    )
+
+    const isTenantAuthenticated = Boolean(user || isTenantCookieBoundToSlug)
 
     // --------------------------------------------------------------------------
     // A. PLATFORM PORTAL GUARDS
@@ -488,11 +495,10 @@ export async function updateSession(request: NextRequest) {
           const hasAuthError = request.nextUrl.searchParams.has('error') || request.nextUrl.searchParams.has('logged_out')
           // If actively authenticated in THIS tenant, redirect to dashboard
           if (
-            user &&
-            hasValidTenantCookie &&
             !hasAuthError &&
+            isTenantAuthenticated &&
             tenantSessionData?.companySlug?.toLowerCase() === tenantSlug.toLowerCase() &&
-            (tenantSessionData.userId === user.id || tenantSessionData.sub === user.id)
+            (!user || tenantSessionData.userId === user.id || tenantSessionData.sub === user.id)
           ) {
             const redirectTo = request.nextUrl.searchParams.get('redirectTo')
             const targetPath = redirectTo && redirectTo.startsWith('/') && !redirectTo.startsWith('/login')
@@ -513,7 +519,7 @@ export async function updateSession(request: NextRequest) {
             headers: requestHeaders,
           },
         })
-        if (!user && hasValidTenantCookie) {
+        if (!user && !isTenantAuthenticated && hasValidTenantCookie) {
           res.cookies.delete(TENANT_SESSION_COOKIE)
         }
         responseCookies.forEach(({ name, value, options }) => res.cookies.set(name, value, options))
@@ -538,9 +544,8 @@ export async function updateSession(request: NextRequest) {
       if (
         hasValidTenantCookie &&
         tenantSessionData &&
-        user &&
-        (tenantSessionData.userId === user.id || tenantSessionData.sub === user.id) &&
-        tenantSessionData.companySlug?.toLowerCase() === tenantSlug.toLowerCase()
+        tenantSessionData.companySlug?.toLowerCase() === tenantSlug.toLowerCase() &&
+        (!user || tenantSessionData.userId === user.id || tenantSessionData.sub === user.id)
       ) {
         isMemberOfTargetTenant = true
       } else if (supabase && user) {

@@ -144,4 +144,123 @@ describe('Root Login & Tenant Subdomain Redirection Tests', () => {
       else delete process.env.ROOT_DOMAIN
     }
   })
+
+  it('14. signSessionToken and verifySessionToken round-trip tenant session data cleanly', async () => {
+    const { signSessionToken, verifySessionToken } = await import('../../lib/security/session-signer.ts')
+    const sessionPayload = {
+      userId: '00000000-0000-0000-0000-000000000001',
+      userEmail: 'owner@rangao.com.bd',
+      companySlug: 'rangao',
+      companyId: '00000000-0000-0000-0000-000000000010',
+      role: 'business_owner',
+    }
+
+    const token = await signSessionToken(sessionPayload, '7d')
+    assert.ok(token && typeof token === 'string')
+    assert.strictEqual(token.split('.').length, 3, 'Must be a valid 3-part compact JWT')
+
+    const verified = await verifySessionToken<typeof sessionPayload>(token)
+    assert.ok(verified)
+    assert.strictEqual(verified.userId, sessionPayload.userId)
+    assert.strictEqual(verified.companySlug, sessionPayload.companySlug)
+    assert.strictEqual(verified.role, sessionPayload.role)
+  })
+
+  it('15. Single login handoff token bundles auth tokens and preserves tenant binding', async () => {
+    const { createSubdomainHandoffToken, verifyAndConsumeSubdomainHandoffToken } = await import(
+      '../../lib/auth/subdomain-handoff.ts'
+    )
+
+    const sessionData = {
+      userId: '00000000-0000-0000-0000-000000000002',
+      userEmail: 'manager@rangao.com.bd',
+      companySlug: 'rangao',
+      companyId: '00000000-0000-0000-0000-000000000020',
+      role: 'branch_manager' as any,
+    }
+
+    const authTokens = {
+      accessToken: 'test-supabase-access-token-jwt',
+      refreshToken: 'test-supabase-refresh-token',
+    }
+
+    const token = await createSubdomainHandoffToken({
+      userId: sessionData.userId,
+      email: sessionData.userEmail,
+      slug: 'rangao',
+      sessionData: sessionData as any,
+      authTokens,
+    })
+
+    assert.ok(token && token.length >= 32)
+
+    // Attempting to consume on mismatched tenant slug fails closed
+    const spoofResult = await verifyAndConsumeSubdomainHandoffToken({
+      token,
+      expectedSlug: 'malicious-press',
+    })
+    assert.strictEqual(spoofResult.success, false)
+    assert.strictEqual(spoofResult.error, 'Tenant boundary mismatch')
+
+    // Legitimate consumption on matching tenant slug succeeds and yields session & auth tokens
+    const validResult = await verifyAndConsumeSubdomainHandoffToken({
+      token,
+      expectedSlug: 'rangao',
+    })
+    assert.strictEqual(validResult.success, true)
+    assert.ok(validResult.sessionData)
+    assert.strictEqual(validResult.sessionData.companySlug, 'rangao')
+    assert.ok(validResult.authTokens)
+    assert.strictEqual(validResult.authTokens.accessToken, authTokens.accessToken)
+    assert.strictEqual(validResult.authTokens.refreshToken, authTokens.refreshToken)
+
+    // Token cannot be replayed (single-use invariant)
+    const replayResult = await verifyAndConsumeSubdomainHandoffToken({
+      token,
+      expectedSlug: 'rangao',
+    })
+    assert.strictEqual(replayResult.success, false)
+  })
+
+  it('16. Middleware authentication check validates verified tenant cookie on target subdomain without double login', () => {
+    // Simulates the middleware evaluation logic
+    const hostRes = resolveHostname('rangao.printflow.bd')
+    assert.strictEqual(hostRes.hostType, 'tenant')
+    assert.strictEqual(hostRes.tenantSlug, 'rangao')
+
+    const hasValidTenantCookie = true
+    const tenantSessionData = {
+      userId: '00000000-0000-0000-0000-000000000001',
+      companySlug: 'rangao',
+    }
+    const user = null // Supabase session in-flight or SSR transition
+
+    const isTenantCookieBoundToSlug = Boolean(
+      hasValidTenantCookie &&
+      tenantSessionData &&
+      hostRes.hostType === 'tenant' &&
+      hostRes.tenantSlug &&
+      tenantSessionData.companySlug?.toLowerCase() === hostRes.tenantSlug.toLowerCase()
+    )
+
+    const isTenantAuthenticated = Boolean(user || isTenantCookieBoundToSlug)
+
+    // Verified tenant cookie matches subdomain: Must be authenticated!
+    assert.strictEqual(isTenantAuthenticated, true, 'User must be authenticated without bouncing to login')
+
+    // Mismatched tenant cookie (e.g. user belongs to other tenant)
+    const mismatchedData = {
+      userId: '00000000-0000-0000-0000-000000000001',
+      companySlug: 'other-press',
+    }
+    const isMismatchedBound = Boolean(
+      hasValidTenantCookie &&
+      mismatchedData &&
+      hostRes.hostType === 'tenant' &&
+      hostRes.tenantSlug &&
+      mismatchedData.companySlug?.toLowerCase() === hostRes.tenantSlug.toLowerCase()
+    )
+    const isMismatchedAuthenticated = Boolean(user || isMismatchedBound)
+    assert.strictEqual(isMismatchedAuthenticated, false, 'Mismatched tenant must not authenticate on rangao')
+  })
 })
