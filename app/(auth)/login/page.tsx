@@ -661,7 +661,7 @@ function TenantLoginForm({
               autoCorrect="off"
               spellCheck={false}
               icon={<Mail className="h-4 w-4" />}
-              placeholder="user@company.com or username / mobile"
+              placeholder={locale === 'bn' ? 'user@company.com অথবা ইউজারনেম / মোবাইল' : 'user@company.com or username / mobile'}
               {...register('email')}
               error={errors.email?.message}
             />
