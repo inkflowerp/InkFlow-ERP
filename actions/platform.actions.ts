@@ -88,39 +88,12 @@ export const deleteAllBusinessesAction = withPlatformAction(
     entityType: 'company',
   },
   async (ctx, reason?: string, _mfaCode?: string) => {
-    let isPurgeAllowed = process.env.ALLOW_PLATFORM_PURGE_ALL === 'true'
-    if (!isPurgeAllowed && process.env.ALLOW_PLATFORM_PURGE_ALL !== 'false') {
-      // In development environment, allow purge by default unless explicitly disabled
-      if (process.env.NODE_ENV !== 'production') {
-        isPurgeAllowed = true
-      } else {
-        // In production, dynamically check .env / .env.local file on disk if server wasn't restarted
-        try {
-          const fs = await import('node:fs')
-          const path = await import('node:path')
-          const envLocalPath = path.resolve(process.cwd(), '.env.local')
-          const envPath = path.resolve(process.cwd(), '.env')
-          if (fs.existsSync(envLocalPath)) {
-            const content = fs.readFileSync(envLocalPath, 'utf8')
-            if (/ALLOW_PLATFORM_PURGE_ALL\s*=\s*['"]?true['"]?/i.test(content)) {
-              isPurgeAllowed = true
-            }
-          }
-          if (!isPurgeAllowed && fs.existsSync(envPath)) {
-            const content = fs.readFileSync(envPath, 'utf8')
-            if (/ALLOW_PLATFORM_PURGE_ALL\s*=\s*['"]?true['"]?/i.test(content)) {
-              isPurgeAllowed = true
-            }
-          }
-        } catch {}
-      }
-    }
-
-    if (!isPurgeAllowed) {
+    // Platform Safeguard: check if explicitly locked by environment policy
+    if (process.env.ALLOW_PLATFORM_PURGE_ALL === 'false') {
       throw new AppError({
         code: 'FORBIDDEN',
-        message: 'Emergency purge is disabled in this environment. Set ALLOW_PLATFORM_PURGE_ALL=true in system configuration to enable.',
-        messageBn: 'জরুরি পার্জ সিস্টেম কনফিগারেশনে নিষ্ক্রিয় রয়েছে। সক্রিয় করতে ALLOW_PLATFORM_PURGE_ALL=true সেট করুন।',
+        message: 'Emergency purge has been explicitly locked by platform policy (ALLOW_PLATFORM_PURGE_ALL=false).',
+        messageBn: 'জরুরি পার্জ প্ল্যাটফর্ম নীতি দ্বারা সুস্পষ্টভাবে লক করা হয়েছে (ALLOW_PLATFORM_PURGE_ALL=false)।',
       })
     }
     if (!reason || reason.trim().length < 3) {

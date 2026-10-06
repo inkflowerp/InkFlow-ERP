@@ -2401,25 +2401,23 @@ export default function PlatformTenantsPage() {
  />
  </div>
 
- {requireMfaPurge && (
  <div className="space-y-1">
- <label className="font-semibold text-foreground flex items-center gap-1.5">
+ <label className="font-semibold text-muted-foreground flex items-center gap-1.5">
  <ShieldCheck className="h-4 w-4 text-primary" />
- {tBilingual('MFA Code (Authenticator App) *', 'এমএফএ কোড (অথেনটিকেটর অ্যাপ) *')}
+ {tBilingual('MFA Code (Authenticator App)', 'এমএফএ কোড (অথেনটিকেটর অ্যাপ)')}
+ {requireMfaPurge && <span className="text-destructive font-bold">*</span>}
  </label>
  <Input
- required
- placeholder="6-digit code (e.g. 123456)"
+ placeholder={requireMfaPurge ? tBilingual('Enter 6-digit code from authenticator app *', 'অথেনটিকেটর অ্যাপের ৬ সংখ্যার কোড *') : tBilingual('6-digit code (optional if verified in last 5 min)', '৬ সংখ্যার কোড (গত ৫ মিনিটে যাচাই হলে ঐচ্ছিক)')}
  maxLength={6}
  value={purgeMfaCode}
  onChange={(e) => {
    setPurgeMfaCode(e.target.value.replace(/\D/g, '').slice(0, 6))
    if (purgeError) setPurgeError(null)
  }}
- className="bg-card border-primary/40 text-foreground font-mono tracking-widest text-center text-sm h-9"
+ className="bg-card border-border text-foreground font-mono tracking-widest text-center text-sm h-9"
  />
  </div>
- )}
 
  <div className="space-y-1">
  <label className="font-semibold text-muted-foreground">
