@@ -66,6 +66,12 @@ export async function updateSession(request: NextRequest) {
     const pathname = request.nextUrl.pathname
     const search = request.nextUrl.search
 
+    // Forwarded request headers with canonical request path for Server Components (e.g. layout.tsx)
+    const requestHeaders = new Headers(request.headers)
+    requestHeaders.set('x-current-path', pathname)
+    requestHeaders.set('x-pathname', pathname)
+    requestHeaders.set('x-url', request.url)
+
     // Legacy host 308 redirects to printflow.bd:
     // Skips canonical printflow.bd, non-production deployment URLs (*-<hash>-*.vercel.app) and localhost.
     const _l1 = String.fromCharCode(105, 110, 107, 102, 108, 111, 119)
@@ -126,7 +132,6 @@ export async function updateSession(request: NextRequest) {
         } else if (!pathname.startsWith(`/${tenantSlug}/`) && pathname !== `/${tenantSlug}`) {
           rewriteUrl.pathname = `/${tenantSlug}${pathname}`
         }
-        const requestHeaders = new Headers(request.headers)
         requestHeaders.set('x-tenant-slug', tenantSlug)
         requestHeaders.set('x-tenant-hostname', rawHost)
         requestHeaders.set('x-forwarded-tenant-path', pathname)
@@ -136,7 +141,7 @@ export async function updateSession(request: NextRequest) {
           },
         })
       }
-      return NextResponse.next({ request })
+      return NextResponse.next({ request: { headers: requestHeaders } })
     }
 
     const responseCookies: { name: string; value: string; options?: Parameters<NextResponse['cookies']['set']>[2] }[] = []
@@ -363,7 +368,10 @@ export async function updateSession(request: NextRequest) {
       if (user && hasValidPlatformCookie && (platformSessionData?.userId === user.id || platformSessionData?.sub === user.id)) {
         const redirectTo = request.nextUrl.searchParams.get('redirectTo') || '/platform'
         const url = request.nextUrl.clone()
-        url.pathname = redirectTo.startsWith('/platform') ? redirectTo : '/platform'
+        const targetRedirect = redirectTo && !redirectTo.startsWith('/platform/login') && redirectTo.startsWith('/platform')
+          ? redirectTo
+          : '/platform'
+        url.pathname = targetRedirect
         url.searchParams.delete('redirectTo')
         return applyNoCacheHeaders(NextResponse.redirect(url))
       }
@@ -397,7 +405,7 @@ export async function updateSession(request: NextRequest) {
 
       // 1. Static and system paths pass through
       if (isPublicStaticOrSystem) {
-        const res = NextResponse.next({ request })
+        const res = NextResponse.next({ request: { headers: requestHeaders } })
         responseCookies.forEach(({ name, value, options }) => res.cookies.set(name, value, options))
         return res
       }
@@ -445,7 +453,6 @@ export async function updateSession(request: NextRequest) {
 
         // Forward tenant context to auth page
         const rewriteUrl = request.nextUrl.clone()
-        const requestHeaders = new Headers(request.headers)
         requestHeaders.set('x-tenant-slug', tenantSlug)
         requestHeaders.set('x-tenant-hostname', rawHost)
 
@@ -520,7 +527,6 @@ export async function updateSession(request: NextRequest) {
 
       rewriteUrl.pathname = internalPath
 
-      const requestHeaders = new Headers(request.headers)
       requestHeaders.set('x-tenant-slug', tenantSlug)
       requestHeaders.set('x-tenant-hostname', rawHost)
       requestHeaders.set('x-forwarded-tenant-path', pathname)
@@ -593,7 +599,7 @@ export async function updateSession(request: NextRequest) {
           const tenantUrl = getTenantLink(targetSlug, `/dashboard`, rootDomain)
           return applyNoCacheHeaders(NextResponse.redirect(new URL(tenantUrl), 307))
         } else if (hasAuthError && hasValidTenantCookie) {
-          const res = NextResponse.next({ request })
+          const res = NextResponse.next({ request: { headers: requestHeaders } })
           res.cookies.delete(TENANT_SESSION_COOKIE)
           responseCookies.forEach(({ name, value, options }) => res.cookies.set(name, value, options))
           return res
@@ -678,7 +684,6 @@ export async function updateSession(request: NextRequest) {
             }
           }
 
-          const requestHeaders = new Headers(request.headers)
           requestHeaders.set('x-tenant-slug', potentialSlug)
           requestHeaders.set('x-tenant-hostname', rawHost)
           const res = NextResponse.next({
@@ -698,14 +703,12 @@ export async function updateSession(request: NextRequest) {
         return applyNoCacheHeaders(NextResponse.redirect(new URL(tenantUrl), 307))
       }
 
-      const res = NextResponse.next({ request })
+      const res = NextResponse.next({ request: { headers: requestHeaders } })
       responseCookies.forEach(({ name, value, options }) => res.cookies.set(name, value, options))
       return res
     }
 
     // Default pass-through with forwarded request path
-    const requestHeaders = new Headers(request.headers)
-    requestHeaders.set('x-current-path', pathname)
     const res = NextResponse.next({ request: { headers: requestHeaders } })
     responseCookies.forEach(({ name, value, options }) => res.cookies.set(name, value, options))
     return res
@@ -727,6 +730,9 @@ export async function updateSession(request: NextRequest) {
       request.nextUrl.pathname.startsWith('/verify') ||
       request.nextUrl.pathname.startsWith('/forgot-password') ||
       request.nextUrl.pathname.startsWith('/reset-password') ||
+      request.nextUrl.pathname.startsWith('/platform/login') ||
+      request.nextUrl.pathname.startsWith('/platform/forgot-password') ||
+      request.nextUrl.pathname.startsWith('/platform/reset-password') ||
       request.nextUrl.pathname.startsWith('/onboarding') ||
       request.nextUrl.pathname.startsWith('/features') ||
       request.nextUrl.pathname.startsWith('/solutions') ||
@@ -742,12 +748,17 @@ export async function updateSession(request: NextRequest) {
       request.nextUrl.pathname.startsWith('/tenant-suspended')
 
     if (isPublic) {
-      const res = NextResponse.next({ request })
+      const errHeaders = new Headers(request.headers)
+      errHeaders.set('x-current-path', request.nextUrl.pathname)
+      errHeaders.set('x-pathname', request.nextUrl.pathname)
+      errHeaders.set('x-url', request.url)
+      const res = NextResponse.next({ request: { headers: errHeaders } })
       res.headers.set('X-Request-Id', requestId)
       return res
     }
 
-    const loginUrl = new URL('/login', request.url)
+    const targetLogin = request.nextUrl.pathname.startsWith('/platform') ? '/platform/login' : '/login'
+    const loginUrl = new URL(targetLogin, request.url)
     loginUrl.searchParams.set('error', 'gateway_error')
     loginUrl.searchParams.set('requestId', requestId)
     const res = NextResponse.redirect(loginUrl)

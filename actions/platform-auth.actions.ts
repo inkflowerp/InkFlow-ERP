@@ -240,7 +240,7 @@ export async function platformLoginAction(formData: FormData): Promise<PlatformL
 
     return {
       success: true,
-      redirectUrl: redirectTo.startsWith('/platform') ? redirectTo : '/platform',
+      redirectUrl: (redirectTo.startsWith('/platform') && !redirectTo.startsWith('/platform/login')) ? redirectTo : '/platform',
       user: {
         id: adminRecord.id,
         email: adminRecord.email,

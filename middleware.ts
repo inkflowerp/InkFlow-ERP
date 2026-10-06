@@ -26,6 +26,9 @@ export async function middleware(request: NextRequest) {
       pathname === '/verify' ||
       pathname === '/forgot-password' ||
       pathname === '/reset-password' ||
+      pathname.startsWith('/platform/login') ||
+      pathname.startsWith('/platform/forgot-password') ||
+      pathname.startsWith('/platform/reset-password') ||
       pathname.startsWith('/onboarding') ||
       pathname.startsWith('/features') ||
       pathname.startsWith('/solutions') ||
@@ -42,13 +45,18 @@ export async function middleware(request: NextRequest) {
       pathname.startsWith('/tenant-suspended')
 
     if (isPublic) {
-      const res = NextResponse.next({ request })
+      const requestHeaders = new Headers(request.headers)
+      requestHeaders.set('x-current-path', pathname)
+      requestHeaders.set('x-pathname', pathname)
+      requestHeaders.set('x-url', request.url)
+      const res = NextResponse.next({ request: { headers: requestHeaders } })
       res.headers.set('X-Request-Id', requestId)
       return res
     }
 
-    // Protected paths: fail-closed redirect to /login
-    const loginUrl = new URL('/login', request.url)
+    // Protected paths: fail-closed redirect to /login or /platform/login
+    const targetLogin = pathname.startsWith('/platform') ? '/platform/login' : '/login'
+    const loginUrl = new URL(targetLogin, request.url)
     loginUrl.searchParams.set('error', 'gateway_error')
     loginUrl.searchParams.set('requestId', requestId)
     const res = NextResponse.redirect(loginUrl)

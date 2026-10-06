@@ -465,12 +465,52 @@ export async function requirePlatformUser(): Promise<PlatformUserRecord> {
   const context = await getAuthenticatedPlatformContext()
 
   if (!context || !context.isActive) {
+    // Loop prevention: Never redirect to /platform/login if already executing within an auth page
+    try {
+      const { headers } = await import('next/headers')
+      const headerStore = await headers()
+      const raw =
+        headerStore.get('x-current-path') ||
+        headerStore.get('x-pathname') ||
+        headerStore.get('next-url') ||
+        ''
+      const current = raw.split('?')[0].toLowerCase().trim()
+      if (
+        current === '/platform/login' ||
+        current.startsWith('/platform/login/') ||
+        current === '/platform/forgot-password' ||
+        current.startsWith('/platform/forgot-password/') ||
+        current === '/platform/reset-password' ||
+        current.startsWith('/platform/reset-password/')
+      ) {
+        throw new Error('Unauthorized')
+      }
+    } catch (e: unknown) {
+      if ((e as Error)?.message === 'Unauthorized') throw e
+    }
+
     await performRedirect('/platform/login?error=unauthorized')
     throw new Error('Unauthorized')
   }
 
   // Strict MFA Enforcement: If admin has MFA configured, they must have verified MFA!
   if (context.mfaEnabled && !context.isMfaVerified) {
+    try {
+      const { headers } = await import('next/headers')
+      const headerStore = await headers()
+      const raw =
+        headerStore.get('x-current-path') ||
+        headerStore.get('x-pathname') ||
+        headerStore.get('next-url') ||
+        ''
+      const current = raw.split('?')[0].toLowerCase().trim()
+      if (current === '/platform/login' || current.startsWith('/platform/login/')) {
+        throw new Error('MFA Verification Required')
+      }
+    } catch (e: unknown) {
+      if ((e as Error)?.message === 'MFA Verification Required') throw e
+    }
+
     await performRedirect('/platform/login?error=mfa_required')
     throw new Error('MFA Verification Required')
   }
