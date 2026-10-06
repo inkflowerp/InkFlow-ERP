@@ -25,14 +25,14 @@
          |                                |                               |
          v                                v                               v
 +------------------+            +-------------------+           +-------------------+
-|   ROOT DOMAIN    |            |  PLATFORM ADMIN   |           |  TENANT SUBDOMAIN |
-|   printflow.bd   |            | admin.printflow.bd|           |[slug].printflow.bd|
+|   ROOT DOMAIN    |            |  PLATFORM CONSOLE |           |  TENANT SUBDOMAIN |
+|   printflow.bd   |            |printflow.bd/plat..|           |[slug].printflow.bd|
 +------------------+            +-------------------+           +-------------------+
          |                                |                               |
-         | Rewrites                       | Rewrites                      | Rewrites
+         | Rewrites                       | Direct Path                   | Rewrites
          v                                v                               v
 +------------------+            +-------------------+           +-------------------+
-|  app/(marketing) |            |   app/(platform)  |           |    app/(tenant)   |
+|  app/(marketing) |            |   app/platform    |           |    app/(tenant)   |
 |  - Landing       |            |   - Tenants       |           |   - Login/Staff   |
 |  - Registration  |            |   - Subscriptions |           |   - Invoices/POS  |
 |  - Find-Workspace|            |   - Support/Audit |           |   - Production    |
@@ -44,7 +44,7 @@
 | Host Type | Domain Pattern | Target Experience | Cookie Scope |
 | :--- | :--- | :--- | :--- |
 | **Marketing / Root** | `ROOT_DOMAIN` (`printflow.bd`, `localhost:3000`) | Landing page, workspace discovery, tenant registration, legal pages | Host-only (`printflow.bd`) |
-| **Platform Owner** | `admin.ROOT_DOMAIN` (`admin.printflow.bd`, `admin.localhost`) | Platform administration, subscriptions, tenant audit, metrics | Host-only (`admin.printflow.bd`) |
+| **Platform Owner** | `ROOT_DOMAIN/platform` (`printflow.bd/platform`, `localhost:3000/platform`) | Platform administration, subscriptions, tenant audit, metrics (subdomains `admin.*` and `platform.*` 308 redirect here) | Host-only (`printflow.bd`) |
 | **Tenant Portal** | `[tenantSlug].ROOT_DOMAIN` (`vision.printflow.bd`) | Tenant business operations, billing, inventory, POS, employee login | Host-only (`vision.printflow.bd`) |
 | **Custom Domain** | `erp.customerdomain.com` (verified in `tenant_domains`) | Same as tenant portal, branded for customer | Host-only (`erp.customerdomain.com`) |
 | **PSL / Dev Fallback**| `printflow.bd/t/[slug]/*` or `/[slug]/*` | Path-based fallback when wildcard DNS is unavailable | Host-only on fallback host |

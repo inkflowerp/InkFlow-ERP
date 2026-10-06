@@ -180,4 +180,43 @@ export function getTenantNavHref(
   return cleanHref
 }
 
+/**
+ * Returns the fully qualified canonical base URL for the platform administration console.
+ * Strictly formatted as: https://[ROOT_DOMAIN]/platform (or http://localhost:3000/platform)
+ */
+export function getPlatformBaseUrl(customRootDomain?: string): string {
+  const rawRootDomain = customRootDomain || getRootDomain()
+  const rootDomain = rawRootDomain.replace(/^https?:\/\//i, '').split('/')[0].replace(/^www\./i, '')
+  const isLocalhost = rootDomain.includes('localhost') || rootDomain.includes('127.0.0.1')
+  const isProd = (process.env.NODE_ENV === 'production' || rootDomain.includes('.')) && !isLocalhost
+  const protocol = isProd ? 'https' : 'http'
+  return `${protocol}://${rootDomain}/platform`
+}
+
+/**
+ * Generates a canonical platform admin link for a given relative resource path.
+ * Eliminates duplicate URLs and redundant /platform prefixes.
+ * Examples:
+ * getPlatformLink('/tenants', 'printflow.bd') -> https://printflow.bd/platform/tenants
+ * getPlatformLink('login', 'printflow.bd') -> https://printflow.bd/platform/login
+ * getPlatformLink('', 'printflow.bd') -> https://printflow.bd/platform
+ */
+export function getPlatformLink(path: string = '', customRootDomain?: string): string {
+  let cleanPath = (path || '').trim()
+  if (!cleanPath.startsWith('/') && cleanPath.length > 0) {
+    cleanPath = `/${cleanPath}`
+  }
+
+  // Strip redundant /platform prefixes if provided to prevent /platform/platform duplicates
+  if (cleanPath === '/platform' || cleanPath === '/') {
+    cleanPath = ''
+  } else if (cleanPath.startsWith('/platform/')) {
+    cleanPath = cleanPath.slice('/platform'.length)
+  }
+
+  const baseUrl = getPlatformBaseUrl(customRootDomain)
+  return `${baseUrl}${cleanPath}`
+}
+
+
 

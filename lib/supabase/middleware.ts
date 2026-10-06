@@ -95,6 +95,7 @@ export async function updateSession(request: NextRequest) {
 
     if (matchedLegacyDomain) {
       let targetDomain: string = BRAND.rootDomain
+      let targetPath: string = pathname
       if (
         hostWithoutPort === matchedLegacyDomain ||
         hostWithoutPort === `www.${matchedLegacyDomain}`
@@ -103,12 +104,21 @@ export async function updateSession(request: NextRequest) {
       } else {
         const sub = hostWithoutPort.slice(0, -(matchedLegacyDomain.length + 1))
         if (sub === 'admin' || sub === 'platform') {
-          targetDomain = `admin.${BRAND.rootDomain}`
+          targetDomain = BRAND.rootDomain
+          if (pathname === '/' || pathname === '') {
+            targetPath = '/platform'
+          } else if (pathname === '/login') {
+            targetPath = '/platform/login'
+          } else if (pathname.startsWith('/platform')) {
+            targetPath = pathname
+          } else {
+            targetPath = `/platform${pathname}`
+          }
         } else if (isValidSlugFormat(sub) && !isReservedSlug(sub)) {
           targetDomain = `${sub}.${BRAND.rootDomain}`
         }
       }
-      const redirectUrl = new URL(`https://${targetDomain}${pathname}${search}`)
+      const redirectUrl = new URL(`https://${targetDomain}${targetPath}${search}`)
       return NextResponse.redirect(redirectUrl, 308)
     }
 
@@ -175,17 +185,45 @@ export async function updateSession(request: NextRequest) {
       return NextResponse.rewrite(url)
     }
 
-    // 0b. Handle Reserved System Subdomains (e.g. admin.printflow.bd -> redirect to root/platform)
+    // 0b. Handle Reserved System Subdomains (e.g. admin.printflow.bd, platform.printflow.bd -> 308 redirect to root/platform)
     if (hostType === 'reserved') {
+      const targetProtocol = isDevelopment ? 'http' : 'https'
+      const port = (isDevelopment || isLocalhost) && rawHost.includes(':') ? `:${rawHost.split(':')[1]}` : ''
+      const targetHost = rootDomain.includes(':') ? rootDomain : `${rootDomain}${port}`
       if (tenantSlug === 'platform' || tenantSlug === 'platform-admin' || tenantSlug === 'admin') {
-        const url = request.nextUrl.clone()
-        url.pathname = pathname.startsWith('/platform') ? pathname : `/platform${pathname}`
-        return NextResponse.rewrite(url)
+        let targetPath = pathname
+        if (pathname === '/' || pathname === '') {
+          targetPath = '/platform'
+        } else if (pathname === '/login') {
+          targetPath = '/platform/login'
+        } else if (pathname.startsWith('/platform')) {
+          targetPath = pathname
+        } else {
+          targetPath = `/platform${pathname}`
+        }
+        const canonicalUrl = new URL(`${targetProtocol}://${targetHost}${targetPath}${search}`)
+        return applyNoCacheHeaders(NextResponse.redirect(canonicalUrl, 308))
       }
       // Redirect other reserved subdomains (e.g. mail, api, status) to root domain
-      const targetProtocol = isDevelopment ? 'http' : 'https'
-      const rootUrl = new URL(`${targetProtocol}://${rootDomain}${pathname}${search}`)
-      return NextResponse.redirect(rootUrl)
+      const rootUrl = new URL(`${targetProtocol}://${targetHost}${pathname}${search}`)
+      return applyNoCacheHeaders(NextResponse.redirect(rootUrl, 308))
+    }
+
+    // 0c. Eliminate Duplicate URL Paths on /platform (normalize duplicate /platform segments)
+    if (pathname.startsWith('/platform/platform')) {
+      const cleanPath = pathname.replace(/^\/platform\/platform(\/|$)/, '/platform$1') || '/platform'
+      const cleanUrl = new URL(`${cleanPath}${search}`, request.url)
+      return applyNoCacheHeaders(NextResponse.redirect(cleanUrl, 308))
+    }
+    if (pathname === '/platform-admin' || pathname.startsWith('/platform-admin/')) {
+      const cleanPath = pathname.replace(/^\/platform-admin(\/|$)/, '/platform$1') || '/platform'
+      const cleanUrl = new URL(`${cleanPath}${search}`, request.url)
+      return applyNoCacheHeaders(NextResponse.redirect(cleanUrl, 308))
+    }
+    if (pathname === '/platform/tenant' || pathname.startsWith('/platform/tenant/')) {
+      const cleanPath = pathname.replace(/^\/platform\/tenant(\/|$)/, '/platform/tenants$1')
+      const cleanUrl = new URL(`${cleanPath}${search}`, request.url)
+      return applyNoCacheHeaders(NextResponse.redirect(cleanUrl, 308))
     }
 
     // 1. Platform Domain Paths
@@ -234,24 +272,27 @@ export async function updateSession(request: NextRequest) {
       pathname.startsWith('/privacy') ||
       pathname === '/logout'
 
-    // 3b. Platform Admin Host Routing (admin.printflow.bd / platform.printflow.bd / admin.localhost)
+    // 3b. Platform Admin Host Routing:
+    // Consolidate admin.printflow.bd and platform.printflow.bd onto canonical printflow.bd/platform.
+    // Eliminate duplicate platform URLs across subdomains by 308 redirecting across hosts to root domain.
     if (hostType === 'platform') {
+      const targetProtocol = isDevelopment ? 'http' : 'https'
+      const port = (isDevelopment || isLocalhost) && rawHost.includes(':') ? `:${rawHost.split(':')[1]}` : ''
+      const targetHost = rootDomain.includes(':') ? rootDomain : `${rootDomain}${port}`
+      let targetPath = pathname
       if (pathname === '/' || pathname === '') {
-        const url = request.nextUrl.clone()
-        url.pathname = '/platform'
-        return applyNoCacheHeaders(NextResponse.redirect(url, 307))
+        targetPath = '/platform'
+      } else if (pathname === '/login') {
+        targetPath = '/platform/login'
+      } else if (pathname.startsWith('/platform/platform')) {
+        targetPath = pathname.replace(/^\/platform\/platform(\/|$)/, '/platform$1') || '/platform'
+      } else if (pathname.startsWith('/platform')) {
+        targetPath = pathname
+      } else if (!isPublicStaticOrSystem) {
+        targetPath = `/platform${pathname}`
       }
-      if (pathname === '/login') {
-        const url = request.nextUrl.clone()
-        url.pathname = '/platform/login'
-        return applyNoCacheHeaders(NextResponse.redirect(url, 307))
-      }
-      if (!pathname.startsWith('/platform') && !isPublicStaticOrSystem) {
-        // Any tenant routes attempted on admin host redirect to /platform
-        const url = request.nextUrl.clone()
-        url.pathname = '/platform'
-        return applyNoCacheHeaders(NextResponse.redirect(url, 307))
-      }
+      const canonicalUrl = new URL(`${targetProtocol}://${targetHost}${targetPath}${search}`)
+      return applyNoCacheHeaders(NextResponse.redirect(canonicalUrl, 308))
     }
 
     // Cryptographically verify Platform Session Cookie with HMAC-SHA256
