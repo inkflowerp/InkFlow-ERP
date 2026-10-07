@@ -696,7 +696,7 @@ function TenantLoginForm({
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="p-2 text-muted-foreground hover:text-foreground transition-colors focus:outline-none min-h-[44px] min-w-[44px] flex items-center justify-center cursor-pointer"
+                  className="p-1 text-muted-foreground hover:text-foreground transition-colors focus:outline-none cursor-pointer flex items-center justify-center"
                   aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
                   {showPassword ? (

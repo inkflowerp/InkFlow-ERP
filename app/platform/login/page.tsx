@@ -352,8 +352,8 @@ function PlatformLoginForm() {
                     >
                       {tBilingual('Password', 'পাসওয়ার্ড')}
                     </Label>
-                    <div className="relative flex items-center">
-                      <div className="absolute left-3 pointer-events-none text-muted-foreground">
+                    <div className="relative flex items-center w-full">
+                      <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-muted-foreground">
                         <Lock className="h-4 w-4" />
                       </div>
                       <input
@@ -369,14 +369,16 @@ function PlatformLoginForm() {
                         placeholder={tBilingual('Enter your password', 'পাসওয়ার্ড লিখুন')}
                         className="w-full bg-background border border-border hover:border-input focus:border-primary/40 focus:ring-2 focus:ring-primary/20 rounded-xl pl-9 pr-9 h-10 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground transition-all outline-none"
                       />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-2.5 p-1 text-muted-foreground hover:text-foreground transition-colors focus:outline-none cursor-pointer"
-                        aria-label={showPassword ? 'Hide password' : 'Show password'}
-                      >
-                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </button>
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-2.5">
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="p-1 text-muted-foreground hover:text-foreground transition-colors focus:outline-none cursor-pointer flex items-center justify-center"
+                          aria-label={showPassword ? 'Hide password' : 'Show password'}
+                        >
+                          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </button>
+                      </div>
                     </div>
                   </div>
 

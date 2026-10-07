@@ -973,24 +973,24 @@ function OnboardingWizard() {
                       <Label htmlFor="owner_password" required>
                         {tBilingual('Password', 'পাসওয়ার্ড')}
                       </Label>
-                      <div className="relative flex items-center">
-                        <Input
-                          id="owner_password"
-                          type={showOwnerPassword ? 'text' : 'password'}
-                          placeholder="••••••••"
-                          {...register('owner_password')}
-                          error={errors.owner_password?.message}
-                          className="pr-10"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowOwnerPassword(!showOwnerPassword)}
-                          className="absolute right-2.5 p-1 text-muted-foreground hover:text-foreground transition-colors focus:outline-hidden cursor-pointer"
-                          aria-label={showOwnerPassword ? 'Hide password' : 'Show password'}
-                        >
-                          {showOwnerPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                        </button>
-                      </div>
+                      <Input
+                        id="owner_password"
+                        type={showOwnerPassword ? 'text' : 'password'}
+                        icon={<Lock className="h-4 w-4" />}
+                        placeholder="••••••••"
+                        {...register('owner_password')}
+                        error={errors.owner_password?.message}
+                        rightElement={
+                          <button
+                            type="button"
+                            onClick={() => setShowOwnerPassword(!showOwnerPassword)}
+                            className="p-1 text-muted-foreground hover:text-foreground transition-colors focus:outline-hidden cursor-pointer flex items-center justify-center"
+                            aria-label={showOwnerPassword ? 'Hide password' : 'Show password'}
+                          >
+                            {showOwnerPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                          </button>
+                        }
+                      />
                       <span className="text-xs text-muted-foreground">
                         {tBilingual('Minimum 6 characters.', 'কমপক্ষে ৬ অক্ষর বা সংখ্যা।')}
                       </span>

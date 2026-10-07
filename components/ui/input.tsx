@@ -42,18 +42,20 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
     }
 
     return (
-      <div className={cn('relative w-full', containerClassName)}>
-        {icon && (
-          <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">
-            {icon}
-          </div>
-        )}
-        {inputElement}
-        {rightElement && (
-          <div className="absolute inset-y-0 right-0 flex items-center pr-1.5 z-10">
-            {rightElement}
-          </div>
-        )}
+      <div className={cn('w-full', containerClassName)}>
+        <div className="relative flex items-center w-full">
+          {icon && (
+            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">
+              {icon}
+            </div>
+          )}
+          {inputElement}
+          {rightElement && (
+            <div className="absolute inset-y-0 right-0 flex items-center pr-2.5 z-10">
+              {rightElement}
+            </div>
+          )}
+        </div>
         {error && (
           <p id={errorId} className="mt-1 text-xs text-destructive font-medium" role="alert">
             {error}
