@@ -266,8 +266,10 @@ export function EmployeeTable({
             </p>
             {employees.length === 0 ? (
               <Button
- onClick={onAddEmployee}
- size="sm"className="h-9 px-4 text-xs font-semibold bg-primary hover:bg-primary/90 text-primary-foreground min-h-[36px]">
+                onClick={onAddEmployee}
+                size="sm"
+                className="h-9 px-4 text-xs font-semibold bg-primary hover:bg-primary/90 text-primary-foreground min-h-9"
+              >
                 <UserPlus className="w-4 h-4 mr-1.5"/>
                 <span>{tBilingual('Add Employee', 'কর্মী যোগ করুন')}</span>
               </Button>
@@ -314,8 +316,12 @@ export function EmployeeTable({
                       {/* Employee Info */}
                       <td className="py-3 px-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-muted border border-border flex items-center justify-center font-bold text-xs text-foreground shrink-0">
-                            {emp.name.slice(0, 2).toUpperCase()}
+                          <div className="w-8 h-8 rounded-full bg-muted border border-border flex items-center justify-center font-bold text-xs text-foreground shrink-0 overflow-hidden">
+                            {emp.profile_picture_url ? (
+                              <img src={emp.profile_picture_url} alt={emp.name} className="w-full h-full object-cover" />
+                            ) : (
+                              emp.name.slice(0, 2).toUpperCase()
+                            )}
                           </div>
                           <div>
                             <div className="font-semibold text-foreground group-hover:text-primary transition-colors">
@@ -467,8 +473,12 @@ export function EmployeeTable({
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-muted border border-border flex items-center justify-center font-bold text-xs text-foreground shrink-0">
-                      {emp.name.slice(0, 2).toUpperCase()}
+                    <div className="w-10 h-10 rounded-full bg-muted border border-border flex items-center justify-center font-bold text-xs text-foreground shrink-0 overflow-hidden">
+                      {emp.profile_picture_url ? (
+                        <img src={emp.profile_picture_url} alt={emp.name} className="w-full h-full object-cover" />
+                      ) : (
+                        emp.name.slice(0, 2).toUpperCase()
+                      )}
                     </div>
                     <div>
                       <div className="font-semibold text-foreground text-sm">{emp.name}</div>
@@ -483,7 +493,11 @@ export function EmployeeTable({
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button
- variant="ghost"size="sm"className="h-9 w-9 p-0 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg min-h-[36px] min-w-[36px]">
+                          variant="ghost"
+                          size="sm"
+                          aria-label="Actions"
+                          className="h-9 w-9 p-0 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg min-h-9 min-w-9"
+                        >
                           <MoreVertical className="w-4 h-4"/>
                         </Button>
                       </DropdownMenuTrigger>

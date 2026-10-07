@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useId } from 'react'
+import React, { useState, useId, useRef } from 'react'
 import { useI18n } from '@/i18n/context'
 import {
   User,
@@ -28,9 +28,18 @@ import {
   HeartPulse,
   UserCheck,
   Eye,
+  EyeOff,
+  Copy,
   FileCheck2,
   FileText,
   BadgeCheck,
+  Camera,
+  Upload,
+  Trash2,
+  Plus,
+  X,
+  ExternalLink,
+  File,
 } from 'lucide-react'
 import {
   Dialog,
@@ -48,6 +57,8 @@ import type {
   EmploymentType,
   SalaryBasis,
   PaymentMethod,
+  DocumentAttachment,
+  PortalCredentials,
 } from '@/types/workforce.types'
 
 export interface EmployeeFormWizardProps {
@@ -67,14 +78,86 @@ interface StepMeta {
 }
 
 const STEPS: StepMeta[] = [
-  { id: 1, label: 'Basic Info', labelBn: 'মৌলিক তথ্য', icon: User, description: 'Personal identity, mobile & addresses' },
+  { id: 1, label: 'Basic Info', labelBn: 'মৌলিক তথ্য', icon: User, description: 'Personal identity, photo, mobile & addresses' },
   { id: 2, label: 'Employment', labelBn: 'নিয়োগ তথ্য', icon: Briefcase, description: 'Role, department, branch & designation' },
   { id: 3, label: 'Compensation', labelBn: 'বেতন কাঠামো', icon: Wallet, description: 'Salary basis, rate breakdown & OT' },
   { id: 4, label: 'Duty & Rules', labelBn: 'ডিউটি ও নিয়ম', icon: Clock, description: 'Shift timings, grace period & weekly off' },
   { id: 5, label: 'Payment', labelBn: 'পেমেন্ট পদ্ধতি', icon: CreditCard, description: 'Cash, MFS wallet or bank transfer' },
-  { id: 6, label: 'Portal Access', labelBn: 'পোর্টাল লগইন', icon: Key, description: 'User account & mobile permissions' },
-  { id: 7, label: 'Review & Save', labelBn: 'যাচাই ও অনুমোদন', icon: BadgeCheck, description: '360° Profile verification & registration' },
+  { id: 6, label: 'Portal Access', labelBn: 'পোর্টাল লগইন', icon: Key, description: 'Credentials, security password & role scope' },
+  { id: 7, label: 'Documents & Save', labelBn: 'নথি ও অনুমোদন', icon: BadgeCheck, description: 'Attach NID/contract & 360° profile review' },
 ]
+
+const DOCUMENT_TYPES = [
+  { id: 'nid_front', label: 'NID Front', labelBn: 'এনআইডি সম্মুখ' },
+  { id: 'nid_back', label: 'NID Back', labelBn: 'এনআইডি বিপরীত' },
+  { id: 'appointment_letter', label: 'Appointment / Contract', labelBn: 'নিয়োগপত্র / চুক্তি' },
+  { id: 'resume', label: 'CV / Resume', labelBn: 'জীবনবৃত্তান্ত' },
+  { id: 'certificate', label: 'Certificate', labelBn: 'সনদপত্র' },
+  { id: 'other', label: 'Other Document', labelBn: 'অন্যান্য নথি' },
+]
+
+const ROLE_PERMISSION_DETAILS: Record<string, { title: string; badge: string; scopes: string[] }> = {
+  operator: {
+    title: 'Production Machine Operator (মেশিন অপারেটর)',
+    badge: 'Operator Level',
+    scopes: [
+      'View assigned job orders & queue',
+      'Start/Stop press run timers',
+      'Log waste & scrap consumption',
+      'Personal attendance & shift check-in',
+    ],
+  },
+  designer: {
+    title: 'Graphic Designer & Pre-press (ডিজাইনার)',
+    badge: 'Design Studio',
+    scopes: [
+      'Customer design asset library',
+      'Proof generation & approval flow',
+      'Pre-press prep & color separation',
+      'Design stage progress tracking',
+    ],
+  },
+  manager: {
+    title: 'Floor Manager / Supervisor (সুপারভাইজার)',
+    badge: 'Supervisory',
+    scopes: [
+      'Full production scheduling & routing',
+      'Attendance & OT approval',
+      'Machine maintenance scheduling',
+      'Staff task delegation',
+    ],
+  },
+  sales_rep: {
+    title: 'Sales & Counter Executive (কাউন্টার সেলস)',
+    badge: 'Front Desk',
+    scopes: [
+      'Order creation & estimation',
+      'Customer directory & balance checks',
+      'Invoice printing & payment receipt',
+      'Counter POS terminal',
+    ],
+  },
+  field_staff: {
+    title: 'Field Fitting & Delivery Staff (মাঠকর্মী)',
+    badge: 'Field Ops',
+    scopes: [
+      'Site delivery confirmation',
+      'Signage installation sign-off',
+      'Geo-tagged mobile check-in',
+      'Field expense submission',
+    ],
+  },
+  accounts: {
+    title: 'Accounts & Billing Executive (হিসাবরক্ষণ)',
+    badge: 'Finance Desk',
+    scopes: [
+      'Payment vouchers & money receipt',
+      'Expense entry & cash drawer balance',
+      'Advance salary deduction review',
+      'Payroll sheet verification',
+    ],
+  },
+}
 
 const BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-']
 
@@ -154,6 +237,13 @@ export function EmployeeFormWizard({
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const [sameAsPresentAddress, setSameAsPresentAddress] = useState(false)
 
+  // Photo & Documents refs and states
+  const photoInputRef = useRef<HTMLInputElement>(null)
+  const docInputRef = useRef<HTMLInputElement>(null)
+  const [selectedDocType, setSelectedDocType] = useState<string>('nid_front')
+  const [showPassword, setShowPassword] = useState(false)
+  const [copiedPassword, setCopiedPassword] = useState(false)
+
   // Form State
   const [formData, setFormData] = useState<Partial<EmployeeRecord>>(() => {
     if (initialData) return { ...initialData }
@@ -165,6 +255,8 @@ export function EmployeeFormWizard({
       email: '',
       address: '',
       permanent_address: '',
+      profile_picture_url: null,
+      document_attachments: [],
       employee_id_number: generateEmployeeCode(),
       department: 'printing',
       role: '',
@@ -203,6 +295,7 @@ export function EmployeeFormWizard({
         create_login: false,
         username: '',
         email: '',
+        password: '',
         role: 'operator',
         send_invitation: true,
       },
@@ -280,6 +373,92 @@ export function EmployeeFormWizard({
         [field]: value,
       },
     }))
+  }
+
+  // Photo handlers
+  const handlePhotoFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (!file.type.startsWith('image/')) {
+      setErrorMsg('Please select a valid image file (JPG, PNG, or WebP).')
+      return
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setErrorMsg('Photo file size must be less than 5 MB.')
+      return
+    }
+    const reader = new FileReader()
+    reader.onload = (event) => {
+      const dataUrl = event.target?.result as string
+      updateField('profile_picture_url', dataUrl)
+    }
+    reader.readAsDataURL(file)
+    e.target.value = ''
+  }
+
+  const handleRemovePhoto = () => {
+    updateField('profile_picture_url', null)
+    if (photoInputRef.current) {
+      photoInputRef.current.value = ''
+    }
+  }
+
+  // Document handlers
+  const handleDocFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (file.size > 10 * 1024 * 1024) {
+      setErrorMsg('Document file size must be less than 10 MB.')
+      return
+    }
+    const formatSize = (bytes: number): string => {
+      if (bytes < 1024) return `${bytes} B`
+      if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`
+      return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+    }
+
+    const reader = new FileReader()
+    reader.onload = (event) => {
+      const dataUrl = event.target?.result as string
+      const newDoc: DocumentAttachment = {
+        id: `doc-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+        name: file.name,
+        type: selectedDocType,
+        size: formatSize(file.size),
+        url: dataUrl,
+        uploaded_at: new Date().toISOString(),
+      }
+      const existing = formData.document_attachments || []
+      updateField('document_attachments', [...existing, newDoc])
+    }
+    reader.readAsDataURL(file)
+    e.target.value = ''
+  }
+
+  const handleRemoveDoc = (id: string) => {
+    const existing = formData.document_attachments || []
+    updateField(
+      'document_attachments',
+      existing.filter((d) => d.id !== id)
+    )
+  }
+
+  // Password Generator & Clipboard copy
+  const generateRandomPassword = () => {
+    const specialChars = ['!', '@', '#', '$', '%']
+    const char = specialChars[Math.floor(Math.random() * specialChars.length)]
+    const num = Math.floor(1000 + Math.random() * 9000)
+    const newPass = `PrintFlow${char}${num}`
+    updatePortal('password', newPass)
+  }
+
+  const handleCopyPassword = () => {
+    const pass = formData.portal_credentials?.password
+    if (pass) {
+      navigator.clipboard?.writeText(pass)
+      setCopiedPassword(true)
+      setTimeout(() => setCopiedPassword(false), 2000)
+    }
   }
 
   // Auto calculate daily, hourly and OT rates when base salary changes
@@ -483,6 +662,88 @@ export function EmployeeFormWizard({
           {/* ==================================================================== */}
           {currentStep === 1 && (
             <div className="space-y-4 text-xs">
+              {/* Employee Photo / Avatar Upload Card */}
+              <div className="p-4 rounded-xl border border-border bg-card flex flex-col sm:flex-row items-center sm:items-start gap-4">
+                <div className="relative group shrink-0">
+                  <div className="w-24 h-24 rounded-2xl border-2 border-dashed border-border bg-muted flex items-center justify-center overflow-hidden">
+                    {formData.profile_picture_url ? (
+                      <img
+                        src={formData.profile_picture_url}
+                        alt={formData.name || 'Employee Photo'}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="flex flex-col items-center justify-center text-muted-foreground p-2 text-center">
+                        <Camera className="w-8 h-8 text-muted-foreground/70 mb-1" />
+                        <span className="text-[12px] font-medium leading-tight">No Photo</span>
+                      </div>
+                    )}
+                  </div>
+                  {formData.profile_picture_url && (
+                    <button
+                      type="button"
+                      onClick={handleRemovePhoto}
+                      title="Remove Photo"
+                      aria-label="Remove Photo"
+                      className="absolute -top-1.5 -right-1.5 w-6 h-6 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center shadow-xs hover:opacity-90 transition-opacity"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+
+                <div className="space-y-2 flex-1 text-center sm:text-left">
+                  <div>
+                    <h4 className="text-xs font-bold text-foreground flex items-center justify-center sm:justify-start gap-1.5">
+                      <Camera className="w-3.5 h-3.5 text-primary" />
+                      <span>{tBilingual('Employee Photograph', 'কর্মীর পাসপোর্ট ছবি')}</span>
+                    </h4>
+                    <p className="text-[12px] text-muted-foreground mt-0.5">
+                      {tBilingual(
+                        'Upload a clear portrait for digital ID card, kiosk attendance and profile directory.',
+                        'ডিজিটাল আইডি কার্ড, কিয়স্ক হাজিরা ও কর্মী তালিকার জন্য স্পষ্ট ছবি যুক্ত করুন।'
+                      )}
+                    </p>
+                  </div>
+
+                  <input
+                    ref={photoInputRef}
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp"
+                    onChange={handlePhotoFileChange}
+                    className="hidden"
+                    id="employee-photo-upload"
+                  />
+
+                  <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 pt-1">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => photoInputRef.current?.click()}
+                      className="h-8 px-3 text-xs border-border bg-background hover:bg-muted"
+                    >
+                      <Upload className="w-3.5 h-3.5 mr-1.5 text-primary" />
+                      <span>{formData.profile_picture_url ? tBilingual('Change Photo', 'ছবি পরিবর্তন') : tBilingual('Upload Photo', 'ছবি আপলোড করুন')}</span>
+                    </Button>
+
+                    {formData.profile_picture_url && (
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        onClick={handleRemovePhoto}
+                        className="h-8 px-2.5 text-xs text-destructive hover:bg-destructive/10 hover:text-destructive"
+                      >
+                        <Trash2 className="w-3.5 h-3.5 mr-1" />
+                        <span>{tBilingual('Remove', 'মুছে ফেলুন')}</span>
+                      </Button>
+                    )}
+                    <span className="text-[12px] text-muted-foreground">JPG, PNG or WebP (max 5MB)</span>
+                  </div>
+                </div>
+              </div>
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <Label className="text-xs font-semibold text-foreground">
@@ -1312,53 +1573,219 @@ export function EmployeeFormWizard({
                   <input
                     type="checkbox"
                     checked={formData.portal_credentials?.create_login || false}
-                    onChange={(e) => updatePortal('create_login', e.target.checked)}
+                    onChange={(e) => {
+                      const checked = e.target.checked
+                      updatePortal('create_login', checked)
+                      if (checked) {
+                        if (!formData.portal_credentials?.username) {
+                          updatePortal('username', formData.mobile || '')
+                        }
+                        if (!formData.portal_credentials?.email) {
+                          updatePortal('email', formData.email || '')
+                        }
+                        if (!formData.portal_credentials?.password) {
+                          generateRandomPassword()
+                        }
+                      }
+                    }}
                     className="rounded border-input text-primary focus:ring-ring w-4 h-4 mt-0.5"
                   />
-                  <div>
-                    <span className="font-bold text-foreground text-xs block">
-                      {tBilingual('Provision System & Mobile App Access', 'প্রিন্টফ্লো সিস্টেম ও মোবাইল অ্যাপ লগইন সক্রিয় করুন')}
-                    </span>
-                    <span className="text-[12px] text-muted-foreground">
-                      Allows employee to view tasks, log machine runtime, check attendance & submit advance requests.
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-foreground text-xs block">
+                        {tBilingual('Provision PrintFlow ERP & Mobile Portal Account', 'প্রিন্টফ্লো সিস্টেম ও মোবাইল পোর্টাল লগইন সক্রিয় করুন')}
+                      </span>
+                      <Badge variant="outline" className="text-[12px] px-1.5 py-0 border-border bg-muted">
+                        {formData.portal_credentials?.create_login ? 'Active' : 'Disabled'}
+                      </Badge>
+                    </div>
+                    <span className="text-[12px] text-muted-foreground block mt-0.5">
+                      {tBilingual(
+                        'Allows employee to log in to view assigned job orders, start press run timers, check attendance history, inspect payslips, and submit advance/leave requests.',
+                        'কর্মী নিজে অ্যাপে লগইন করে কাজ দেখা, প্রেসে সময় রেকর্ড করা, হাজিরা ইতিহাস, পে-স্লিপ ও অগ্রিম বেতন আবেদন করতে পারবেন।'
+                      )}
                     </span>
                   </div>
                 </label>
 
                 {formData.portal_credentials?.create_login && (
-                  <div className="space-y-3.5 pt-3 border-t border-border">
+                  <div className="space-y-4 pt-3 border-t border-border">
+                    {/* Username & Portal Email */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                       <div>
-                        <Label className="text-xs font-semibold text-foreground">
-                          {tBilingual('Login Username / Mobile', 'লগইন ইউজারনেম / মোবাইল')}
-                        </Label>
+                        <div className="flex items-center justify-between">
+                          <Label className="text-xs font-semibold text-foreground">
+                            {tBilingual('Login Username / Mobile *', 'লগইন ইউজারনেম / মোবাইল নম্বর *')}
+                          </Label>
+                          {formData.mobile && formData.portal_credentials?.username !== formData.mobile && (
+                            <button
+                              type="button"
+                              onClick={() => updatePortal('username', formData.mobile)}
+                              className="text-[12px] text-primary hover:underline font-medium"
+                            >
+                              Sync Mobile
+                            </button>
+                          )}
+                        </div>
                         <Input
                           placeholder="e.g. 01700000000"
-                          value={formData.portal_credentials?.username || formData.mobile || ''}
+                          value={formData.portal_credentials?.username || ''}
                           onChange={(e) => updatePortal('username', e.target.value)}
                           className="h-9 text-xs mt-1 font-mono bg-background"
                         />
+                        <p className="text-[12px] text-muted-foreground mt-0.5">Employee uses this username or phone number to sign in.</p>
                       </div>
+
                       <div>
-                        <Label className="text-xs font-semibold text-foreground">
-                          {tBilingual('System Role & Access Scope', 'সিস্টেম অ্যাক্সেস রোল')}
-                        </Label>
-                        <select
-                          value={formData.portal_credentials?.role || 'operator'}
-                          onChange={(e) => updatePortal('role', e.target.value)}
-                          className="h-9 w-full rounded-md border border-input bg-background px-3 text-xs text-foreground mt-1 capitalize"
-                        >
-                          <option value="operator">Production Machine Operator (মেশিন অপারেটর)</option>
-                          <option value="designer">Graphic Designer & Pre-press (ডিজাইনার)</option>
-                          <option value="manager">Shop Floor Manager / Supervisor (সুপারভাইজার)</option>
-                          <option value="sales_rep">Counter Sales Representative (কাউন্টার সেলস)</option>
-                          <option value="field_staff">Field Installation Staff (মাঠকর্মী)</option>
-                        </select>
+                        <div className="flex items-center justify-between">
+                          <Label className="text-xs font-semibold text-foreground">
+                            {tBilingual('Official Portal Email', 'অফিসিয়াল পোর্টাল ইমেইল')}
+                          </Label>
+                          {formData.email && formData.portal_credentials?.email !== formData.email && (
+                            <button
+                              type="button"
+                              onClick={() => updatePortal('email', formData.email)}
+                              className="text-[12px] text-primary hover:underline font-medium"
+                            >
+                              Sync Email
+                            </button>
+                          )}
+                        </div>
+                        <Input
+                          type="email"
+                          placeholder="employee@printpress.bd"
+                          value={formData.portal_credentials?.email || ''}
+                          onChange={(e) => updatePortal('email', e.target.value)}
+                          className="h-9 text-xs mt-1 bg-background"
+                        />
+                        <p className="text-[12px] text-muted-foreground mt-0.5">For password recovery & system notifications.</p>
                       </div>
                     </div>
 
-                    <div className="p-3 rounded-lg bg-muted/60 border border-border text-muted-foreground text-[12px]">
-                      A secure welcome invitation link will be queued for this employee. They can set their initial password on first sign-in.
+                    {/* Password & Generator */}
+                    <div className="p-3.5 rounded-xl border border-border bg-muted/40 space-y-2.5">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                          <Key className="w-3.5 h-3.5 text-primary" />
+                          <span>{tBilingual('Temporary Login Password *', 'সাময়িক লগইন পাসওয়ার্ড *')}</span>
+                        </Label>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={generateRandomPassword}
+                          className="h-6 px-2 text-[12px] text-primary hover:bg-primary/10"
+                        >
+                          <Sparkles className="w-3 h-3 mr-1" />
+                          <span>{tBilingual('Generate Strong Password', 'নতুন পাসওয়ার্ড তৈরি')}</span>
+                        </Button>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <div className="relative flex-1">
+                          <Input
+                            type={showPassword ? 'text' : 'password'}
+                            placeholder="Set or generate a password"
+                            value={formData.portal_credentials?.password || ''}
+                            onChange={(e) => updatePortal('password', e.target.value)}
+                            className="h-9 text-xs font-mono pr-9 bg-background"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            aria-label={showPassword ? 'Hide password' : 'Show password'}
+                            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                          >
+                            {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                          </button>
+                        </div>
+
+                        {formData.portal_credentials?.password && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={handleCopyPassword}
+                            className="h-9 px-3 text-xs border-border bg-card shrink-0"
+                          >
+                            {copiedPassword ? (
+                              <>
+                                <Check className="w-3.5 h-3.5 mr-1 text-success" />
+                                <span className="text-success">{tBilingual('Copied', 'কপি হয়েছে')}</span>
+                              </>
+                            ) : (
+                              <>
+                                <Copy className="w-3.5 h-3.5 mr-1" />
+                                <span>{tBilingual('Copy', 'কপি')}</span>
+                              </>
+                            )}
+                          </Button>
+                        )}
+                      </div>
+                      <p className="text-[12px] text-muted-foreground">
+                        Provide this temporary password to the employee. They will be prompted to change it upon first login.
+                      </p>
+                    </div>
+
+                    {/* Role & Access Scope */}
+                    <div>
+                      <Label className="text-xs font-semibold text-foreground">
+                        {tBilingual('System Role & Permission Level *', 'সিস্টেম রোল ও অনুমতির পরিধি *')}
+                      </Label>
+                      <select
+                        value={formData.portal_credentials?.role || 'operator'}
+                        onChange={(e) => updatePortal('role', e.target.value)}
+                        className="h-9 w-full rounded-md border border-input bg-background px-3 text-xs text-foreground mt-1 capitalize"
+                      >
+                        <option value="operator">Production Machine Operator (মেশিন অপারেটর)</option>
+                        <option value="designer">Graphic Designer & Pre-press (ডিজাইনার)</option>
+                        <option value="manager">Shop Floor Manager / Supervisor (সুপারভাইজার)</option>
+                        <option value="sales_rep">Counter Sales Representative (কাউন্টার সেলস)</option>
+                        <option value="field_staff">Field Installation Staff (মাঠকর্মী)</option>
+                        <option value="accounts">Accounts & Billing Executive (হিসাবরক্ষণ)</option>
+                      </select>
+                    </div>
+
+                    {/* Role Capabilities Preview Card */}
+                    {ROLE_PERMISSION_DETAILS[formData.portal_credentials?.role || 'operator'] && (
+                      <div className="p-3.5 rounded-xl border border-border bg-card space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="font-semibold text-foreground text-xs flex items-center gap-1.5">
+                            <Shield className="w-3.5 h-3.5 text-primary" />
+                            <span>{ROLE_PERMISSION_DETAILS[formData.portal_credentials?.role || 'operator'].title}</span>
+                          </span>
+                          <Badge variant="secondary" className="text-[12px]">
+                            {ROLE_PERMISSION_DETAILS[formData.portal_credentials?.role || 'operator'].badge}
+                          </Badge>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 pt-1">
+                          {ROLE_PERMISSION_DETAILS[formData.portal_credentials?.role || 'operator'].scopes.map((scope, idx) => (
+                            <div key={idx} className="flex items-center gap-1.5 text-muted-foreground text-[12px]">
+                              <CheckCircle2 className="w-3.5 h-3.5 text-success shrink-0" />
+                              <span>{scope}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Send Invitation Toggle */}
+                    <div className="p-3.5 rounded-xl border border-border bg-muted/40 flex items-start gap-3">
+                      <input
+                        type="checkbox"
+                        id="send-invite-checkbox"
+                        checked={formData.portal_credentials?.send_invitation ?? true}
+                        onChange={(e) => updatePortal('send_invitation', e.target.checked)}
+                        className="rounded border-input text-primary focus:ring-ring w-4 h-4 mt-0.5"
+                      />
+                      <label htmlFor="send-invite-checkbox" className="cursor-pointer">
+                        <span className="font-semibold text-foreground text-xs block">
+                          {tBilingual('Send Welcome Invitation SMS / WhatsApp Notification', 'স্বাগতম এসএমএস / হোয়াটসঅ্যাপ আমন্ত্রণ পাঠান')}
+                        </span>
+                        <span className="text-[12px] text-muted-foreground block mt-0.5">
+                          Automatically dispatches portal URL, username and temporary password to the employee&apos;s phone.
+                        </span>
+                      </label>
                     </div>
                   </div>
                 )}
@@ -1367,15 +1794,178 @@ export function EmployeeFormWizard({
           )}
 
           {/* ==================================================================== */}
-          {/* STEP 7: 360° Profile Verification & Final Summary */}
+          {/* STEP 7: Documents Attachments & 360° Profile Verification */}
           {/* ==================================================================== */}
           {currentStep === 7 && (
             <div className="space-y-4 text-xs">
+              {/* 1. Document Attachments Hub */}
+              <div className="p-4 rounded-xl border border-border bg-card space-y-3.5">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2.5 border-b border-border">
+                  <div>
+                    <h4 className="font-bold text-foreground text-xs flex items-center gap-1.5">
+                      <FileText className="w-4 h-4 text-primary" />
+                      <span>{tBilingual('Employee Documents & Attachments', 'কর্মীর নথিপত্র ও সংযুক্তি')}</span>
+                    </h4>
+                    <p className="text-[12px] text-muted-foreground mt-0.5">
+                      {tBilingual(
+                        'Attach NID card front/back, appointment letter, resume or certificates for HR compliance.',
+                        'এইচআর রেকর্ড সংরক্ষণের জন্য জাতীয় পরিচয়পত্র, নিয়োগপত্র বা জীবনবৃত্তান্ত সংযুক্ত করুন।'
+                      )}
+                    </p>
+                  </div>
+                  <Badge variant="outline" className="text-xs font-mono self-start sm:self-auto bg-background border-border">
+                    {formData.document_attachments?.length || 0} Attached
+                  </Badge>
+                </div>
+
+                {/* Preset Document Category Selector */}
+                <div className="space-y-2">
+                  <Label className="text-xs font-semibold text-foreground">
+                    {tBilingual('Select Document Category to Attach', 'সংযুক্তির ধরন নির্বাচন করুন')}
+                  </Label>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {DOCUMENT_TYPES.map((dtype) => {
+                      const isSelected = selectedDocType === dtype.id
+                      const countForType = (formData.document_attachments || []).filter((d) => d.type === dtype.id).length
+                      return (
+                        <button
+                          key={dtype.id}
+                          type="button"
+                          onClick={() => setSelectedDocType(dtype.id)}
+                          className={`p-2 rounded-lg border text-left transition-all flex items-center justify-between gap-1.5 ${
+                            isSelected
+                              ? 'border-primary bg-primary/10 text-primary font-semibold shadow-xs'
+                              : 'border-border bg-card text-muted-foreground hover:bg-muted font-medium'
+                          }`}
+                        >
+                          <div className="truncate">
+                            <span className="block text-xs truncate">{dtype.label}</span>
+                            <span className="text-[12px] opacity-80 truncate">{dtype.labelBn}</span>
+                          </div>
+                          {countForType > 0 && (
+                            <Badge variant="secondary" className="text-[12px] px-1.5 py-0 shrink-0">
+                              {countForType}
+                            </Badge>
+                          )}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+
+                {/* Hidden File Input & Upload Action */}
+                <input
+                  ref={docInputRef}
+                  type="file"
+                  accept="application/pdf,image/png,image/jpeg,image/webp"
+                  onChange={handleDocFileChange}
+                  className="hidden"
+                  id="employee-doc-upload"
+                />
+
+                <div className="p-4 rounded-xl border border-dashed border-border bg-muted/40 text-center space-y-2">
+                  <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center mx-auto">
+                    <Upload className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <span className="text-xs font-semibold text-foreground block">
+                      {tBilingual(
+                        `Upload ${DOCUMENT_TYPES.find((d) => d.id === selectedDocType)?.label || 'Document'} File`,
+                        `${DOCUMENT_TYPES.find((d) => d.id === selectedDocType)?.labelBn || 'নথি'} ফাইল আপলোড করুন`
+                      )}
+                    </span>
+                    <span className="text-[12px] text-muted-foreground block mt-0.5">
+                      Supported formats: PDF, PNG, JPG, WebP (Max size 10MB)
+                    </span>
+                  </div>
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={() => docInputRef.current?.click()}
+                    className="h-8 px-4 text-xs font-semibold bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs"
+                  >
+                    <Plus className="w-3.5 h-3.5 mr-1.5" />
+                    <span>{tBilingual('Browse & Attach File', 'ফাইল বেছে নিন')}</span>
+                  </Button>
+                </div>
+
+                {/* List of Attached Documents */}
+                {formData.document_attachments && formData.document_attachments.length > 0 && (
+                  <div className="space-y-2 pt-1">
+                    <span className="text-xs font-semibold text-foreground block">
+                      {tBilingual('Attached Documents List', 'সংযুক্ত নথিপত্রের তালিকা')} ({formData.document_attachments.length})
+                    </span>
+                    <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+                      {formData.document_attachments.map((doc) => {
+                        const category = DOCUMENT_TYPES.find((d) => d.id === doc.type)
+                        const isPdf = doc.name.toLowerCase().endsWith('.pdf')
+                        return (
+                          <div
+                            key={doc.id}
+                            className="p-2.5 rounded-lg border border-border bg-background flex items-center justify-between gap-3 text-xs"
+                          >
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                                {isPdf ? <FileText className="w-4 h-4" /> : <Camera className="w-4 h-4" />}
+                              </div>
+                              <div className="min-w-0 truncate">
+                                <div className="flex items-center gap-2">
+                                  <span className="font-semibold text-foreground truncate">{doc.name}</span>
+                                  <Badge variant="outline" className="text-[12px] px-1.5 py-0 border-border bg-muted shrink-0">
+                                    {category?.label || doc.type}
+                                  </Badge>
+                                </div>
+                                <span className="text-[12px] text-muted-foreground block">
+                                  {doc.size || 'Unknown size'} • Uploaded {new Date(doc.uploaded_at || Date.now()).toLocaleDateString()}
+                                </span>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              {doc.url && (
+                                <a
+                                  href={doc.url}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="p-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+                                  title="View / Download Document"
+                                  aria-label="View document"
+                                >
+                                  <ExternalLink className="w-3.5 h-3.5" />
+                                </a>
+                              )}
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveDoc(doc.id)}
+                                className="p-1.5 rounded-md hover:bg-destructive/10 text-destructive transition-colors"
+                                title="Delete Document"
+                                aria-label="Delete document"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* 2. 360° Profile Verification Card */}
               <div className="p-4 rounded-xl border border-border bg-card space-y-3">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border">
                   <div className="flex items-center gap-3">
-                    <div className="w-11 h-11 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm shrink-0">
-                      {formData.name?.slice(0, 2).toUpperCase() || 'EM'}
+                    <div className="w-12 h-12 rounded-xl border border-border overflow-hidden bg-primary/10 text-primary flex items-center justify-center font-bold text-sm shrink-0">
+                      {formData.profile_picture_url ? (
+                        <img
+                          src={formData.profile_picture_url}
+                          alt={formData.name || 'Employee Photo'}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        formData.name?.slice(0, 2).toUpperCase() || 'EM'
+                      )}
                     </div>
                     <div>
                       <h3 className="font-bold text-sm text-foreground">{formData.name || 'Unnamed Employee'}</h3>
@@ -1438,8 +2028,10 @@ export function EmployeeFormWizard({
                     </span>
                   </div>
                   <div>
-                    <span className="text-[12px] text-muted-foreground block">Joining Date</span>
-                    <span className="font-medium text-foreground">{formData.joining_date || 'Today'}</span>
+                    <span className="text-[12px] text-muted-foreground block">Attached Docs</span>
+                    <span className="font-semibold text-foreground">
+                      {formData.document_attachments?.length ? `${formData.document_attachments.length} Files` : 'None'}
+                    </span>
                   </div>
                 </div>
               </div>

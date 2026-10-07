@@ -80,8 +80,16 @@ export function EmployeeProfileDialog({
         {/* Header Profile Bar */}
         <div className="bg-muted border-b border-border p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-xl bg-primary text-white font-bold text-lg flex items-center justify-center shadow-sm shrink-0">
-              {employee.name.slice(0, 2).toUpperCase()}
+            <div className="w-14 h-14 rounded-xl bg-primary text-primary-foreground font-bold text-lg flex items-center justify-center shadow-xs shrink-0 overflow-hidden">
+              {employee.profile_picture_url ? (
+                <img
+                  src={employee.profile_picture_url}
+                  alt={employee.name}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                employee.name.slice(0, 2).toUpperCase()
+              )}
             </div>
             <div>
               <div className="flex items-center gap-2 flex-wrap">
@@ -126,12 +134,15 @@ export function EmployeeProfileDialog({
           <div className="flex items-center gap-2 self-end sm:self-center">
             {onEdit && (
               <Button
- variant="outline"size="sm"onClick={() => {
- onOpenChange(false)
- onEdit(employee)
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  onOpenChange(false)
+                  onEdit(employee)
                 }}
- className="h-8 text-xs border-border hover:bg-muted min-h-[32px]">
- Edit Profile
+                className="h-8 text-xs border-border hover:bg-muted min-h-8"
+              >
+                Edit Profile
               </Button>
             )}
           </div>
@@ -142,24 +153,40 @@ export function EmployeeProfileDialog({
           <div className="border-b border-border px-6 bg-card">
             <TabsList className="bg-transparent h-10 p-0 space-x-6 justify-start">
               <TabsTrigger
- value="overview"className="data-[state=active]:border-b-2 data-[state=active]:border-border data-[state=active]:text-primary rounded-none bg-transparent px-1 pb-2 pt-2 text-xs font-medium text-muted-foreground shadow-none">
- Overview
+                value="overview"
+                className="data-[state=active]:border-b-2 data-[state=active]:border-border data-[state=active]:text-primary rounded-none bg-transparent px-1 pb-2 pt-2 text-xs font-medium text-muted-foreground shadow-none"
+              >
+                Overview
               </TabsTrigger>
               <TabsTrigger
- value="compensation"className="data-[state=active]:border-b-2 data-[state=active]:border-border data-[state=active]:text-primary rounded-none bg-transparent px-1 pb-2 pt-2 text-xs font-medium text-muted-foreground shadow-none">
- Compensation
+                value="compensation"
+                className="data-[state=active]:border-b-2 data-[state=active]:border-border data-[state=active]:text-primary rounded-none bg-transparent px-1 pb-2 pt-2 text-xs font-medium text-muted-foreground shadow-none"
+              >
+                Compensation
               </TabsTrigger>
               <TabsTrigger
- value="duty"className="data-[state=active]:border-b-2 data-[state=active]:border-border data-[state=active]:text-primary rounded-none bg-transparent px-1 pb-2 pt-2 text-xs font-medium text-muted-foreground shadow-none">
- Duty & Shifts
+                value="duty"
+                className="data-[state=active]:border-b-2 data-[state=active]:border-border data-[state=active]:text-primary rounded-none bg-transparent px-1 pb-2 pt-2 text-xs font-medium text-muted-foreground shadow-none"
+              >
+                Duty & Shifts
               </TabsTrigger>
               <TabsTrigger
- value="advances"className="data-[state=active]:border-b-2 data-[state=active]:border-border data-[state=active]:text-primary rounded-none bg-transparent px-1 pb-2 pt-2 text-xs font-medium text-muted-foreground shadow-none">
- Advances
+                value="advances"
+                className="data-[state=active]:border-b-2 data-[state=active]:border-border data-[state=active]:text-primary rounded-none bg-transparent px-1 pb-2 pt-2 text-xs font-medium text-muted-foreground shadow-none"
+              >
+                Advances
               </TabsTrigger>
               <TabsTrigger
- value="access"className="data-[state=active]:border-b-2 data-[state=active]:border-border data-[state=active]:text-primary rounded-none bg-transparent px-1 pb-2 pt-2 text-xs font-medium text-muted-foreground shadow-none">
- Login Access
+                value="access"
+                className="data-[state=active]:border-b-2 data-[state=active]:border-border data-[state=active]:text-primary rounded-none bg-transparent px-1 pb-2 pt-2 text-xs font-medium text-muted-foreground shadow-none"
+              >
+                Login Access
+              </TabsTrigger>
+              <TabsTrigger
+                value="documents"
+                className="data-[state=active]:border-b-2 data-[state=active]:border-border data-[state=active]:text-primary rounded-none bg-transparent px-1 pb-2 pt-2 text-xs font-medium text-muted-foreground shadow-none"
+              >
+                Documents ({employee.document_attachments?.length || 0})
               </TabsTrigger>
             </TabsList>
           </div>
@@ -335,24 +362,24 @@ export function EmployeeProfileDialog({
                     ৳ {(employee.current_advance_balance || 0).toLocaleString('en-IN')}
                   </span>
                 </div>
-                <Button asChild size="sm"className="h-8 text-xs bg-primary text-white hover:bg-primary">
+                <Button asChild size="sm" className="h-8 text-xs bg-primary text-primary-foreground hover:bg-primary/90">
                   <Link href={`/${tenantSlug}/hr/advances?employee=${employee.id}`}>
                     <span>Manage Advances</span>
-                    <ExternalLink className="w-3.5 h-3.5 ml-1.5"/>
+                    <ExternalLink className="w-3.5 h-3.5 ml-1.5" />
                   </Link>
                 </Button>
               </div>
             </TabsContent>
 
             {/* 5. Access Tab */}
-            <TabsContent value="access"className="m-0 space-y-4 text-xs">
+            <TabsContent value="access" className="m-0 space-y-4 text-xs">
               <div className="p-4 rounded-xl border border-border bg-card space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="font-semibold text-foreground flex items-center gap-1.5">
-                    <Key className="w-3.5 h-3.5 text-primary"/>
+                    <Key className="w-3.5 h-3.5 text-primary" />
                     <span>Portal Credentials & Access</span>
                   </div>
-                  <Badge variant="outline"className="bg-muted text-foreground text-xs">
+                  <Badge variant="outline" className="bg-muted text-foreground text-xs">
                     {employee.portal_credentials?.create_login ? 'Portal Active' : 'No Login'}
                   </Badge>
                 </div>
@@ -379,24 +406,88 @@ export function EmployeeProfileDialog({
                 {onSendInvitation && (
                   <div className="pt-3 border-t border-border flex items-center justify-between">
                     <span className="text-xs text-muted-foreground">
- Send login instructions via SMS / WhatsApp
+                      Send login instructions via SMS / WhatsApp
                     </span>
                     <Button
- size="sm"variant="outline"onClick={handleInvite}
- disabled={isSendingInvite || inviteSent}
- className="h-8 text-xs border-border hover:bg-muted min-h-[32px]">
+                      size="sm"
+                      variant="outline"
+                      onClick={handleInvite}
+                      disabled={isSendingInvite || inviteSent}
+                      className="h-8 text-xs border-border hover:bg-muted min-h-8"
+                    >
                       {inviteSent ? (
                         <>
-                          <CheckCircle2 className="w-3.5 h-3.5 mr-1 text-success"/>
+                          <CheckCircle2 className="w-3.5 h-3.5 mr-1 text-success" />
                           <span>Invitation Sent</span>
                         </>
                       ) : (
                         <>
-                          <Send className="w-3.5 h-3.5 mr-1 text-primary"/>
+                          <Send className="w-3.5 h-3.5 mr-1 text-primary" />
                           <span>{isSendingInvite ? 'Sending...' : 'Send Invitation'}</span>
                         </>
                       )}
                     </Button>
+                  </div>
+                )}
+              </div>
+            </TabsContent>
+
+            {/* 6. Documents Tab */}
+            <TabsContent value="documents" className="m-0 space-y-4 text-xs">
+              <div className="p-4 rounded-xl border border-border bg-card space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="font-semibold text-foreground flex items-center gap-1.5">
+                    <FileText className="w-3.5 h-3.5 text-primary" />
+                    <span>Attached Documents & Certificates</span>
+                  </div>
+                  <Badge variant="outline" className="bg-muted text-foreground text-xs font-mono">
+                    {employee.document_attachments?.length || 0} Files
+                  </Badge>
+                </div>
+
+                {employee.document_attachments && employee.document_attachments.length > 0 ? (
+                  <div className="space-y-2">
+                    {employee.document_attachments.map((doc) => (
+                      <div
+                        key={doc.id}
+                        className="p-2.5 rounded-lg border border-border bg-muted/40 flex items-center justify-between gap-3 text-xs"
+                      >
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                            <FileText className="w-4 h-4" />
+                          </div>
+                          <div className="min-w-0 truncate">
+                            <div className="flex items-center gap-2">
+                              <span className="font-semibold text-foreground truncate">{doc.name}</span>
+                              <Badge variant="outline" className="text-[12px] px-1.5 py-0 border-border bg-background shrink-0 capitalize">
+                                {doc.type.replace('_', ' ')}
+                              </Badge>
+                            </div>
+                            <span className="text-[12px] text-muted-foreground block">
+                              {doc.size || 'Attachment'} • Uploaded {new Date(doc.uploaded_at || Date.now()).toLocaleDateString()}
+                            </span>
+                          </div>
+                        </div>
+
+                        {doc.url && (
+                          <a
+                            href={doc.url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="p-1.5 rounded-md hover:bg-muted text-primary hover:text-primary transition-colors flex items-center gap-1"
+                            title="View Document"
+                            aria-label="View document"
+                          >
+                            <ExternalLink className="w-3.5 h-3.5" />
+                          </a>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-6 text-muted-foreground">
+                    <FileText className="w-8 h-8 mx-auto text-muted-foreground/50 mb-1.5" />
+                    <p className="text-xs">No documents attached for this employee.</p>
                   </div>
                 )}
               </div>
