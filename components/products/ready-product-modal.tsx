@@ -679,9 +679,38 @@ export function ReadyProductModal({
  pcs_per_carton: pcsPerCarton !== '' ? Number(pcsPerCarton) : undefined,
  carton_dimensions: cartonDimensions.trim() || undefined,
  carton_weight_kg: cartonWeightKg !== '' ? Number(cartonWeightKg) : undefined,
- opening_stock: openingStock !== '' ? Number(openingStock) : undefined,
- current_stock: openingStock !== '' ? Number(openingStock) : undefined,
- stock: openingStock !== '' ? Number(openingStock) : undefined,
+ opening_stock: (() => {
+   if (openingStock !== '') return Number(openingStock)
+   return initialData ? Number((initialData as any)?.opening_stock ?? (initialData?.pricing_formula as any)?.opening_stock ?? 0) : undefined
+ })(),
+ current_stock: (() => {
+   if (!initialData) return openingStock !== '' ? Number(openingStock) : undefined
+   const prevOpening = Number((initialData as any)?.opening_stock ?? (initialData?.pricing_formula as any)?.opening_stock ?? 0)
+   const newOpening = openingStock !== '' ? Number(openingStock) : prevOpening
+   const delta = newOpening - prevOpening
+   const prevCurrent = Number(
+     (initialData as any)?.current_stock ??
+     (initialData as any)?.stock ??
+     (initialData?.pricing_formula as any)?.current_stock ??
+     (initialData?.pricing_formula as any)?.stock ??
+     prevOpening
+   )
+   return Math.max(0, prevCurrent + delta)
+ })(),
+ stock: (() => {
+   if (!initialData) return openingStock !== '' ? Number(openingStock) : undefined
+   const prevOpening = Number((initialData as any)?.opening_stock ?? (initialData?.pricing_formula as any)?.opening_stock ?? 0)
+   const newOpening = openingStock !== '' ? Number(openingStock) : prevOpening
+   const delta = newOpening - prevOpening
+   const prevCurrent = Number(
+     (initialData as any)?.current_stock ??
+     (initialData as any)?.stock ??
+     (initialData?.pricing_formula as any)?.current_stock ??
+     (initialData?.pricing_formula as any)?.stock ??
+     prevOpening
+   )
+   return Math.max(0, prevCurrent + delta)
+ })(),
  reorder_level: reorderLevel !== '' ? Number(reorderLevel) : undefined,
  min_stock_level: reorderLevel !== '' ? Number(reorderLevel) : undefined,
  max_stock: maxStock !== '' ? Number(maxStock) : undefined,
@@ -691,9 +720,38 @@ export function ReadyProductModal({
  lead_time_days: leadTimeDays !== '' ? Number(leadTimeDays) : undefined,
  pricing_formula: {
           ...(typeof initialData?.pricing_formula === 'object' && initialData?.pricing_formula !== null ? initialData.pricing_formula : {}),
- opening_stock: openingStock !== '' ? Number(openingStock) : undefined,
- current_stock: openingStock !== '' ? Number(openingStock) : undefined,
- stock: openingStock !== '' ? Number(openingStock) : undefined,
+ opening_stock: (() => {
+   if (openingStock !== '') return Number(openingStock)
+   return initialData ? Number((initialData as any)?.opening_stock ?? (initialData?.pricing_formula as any)?.opening_stock ?? 0) : undefined
+ })(),
+ current_stock: (() => {
+   if (!initialData) return openingStock !== '' ? Number(openingStock) : undefined
+   const prevOpening = Number((initialData as any)?.opening_stock ?? (initialData?.pricing_formula as any)?.opening_stock ?? 0)
+   const newOpening = openingStock !== '' ? Number(openingStock) : prevOpening
+   const delta = newOpening - prevOpening
+   const prevCurrent = Number(
+     (initialData as any)?.current_stock ??
+     (initialData as any)?.stock ??
+     (initialData?.pricing_formula as any)?.current_stock ??
+     (initialData?.pricing_formula as any)?.stock ??
+     prevOpening
+   )
+   return Math.max(0, prevCurrent + delta)
+ })(),
+ stock: (() => {
+   if (!initialData) return openingStock !== '' ? Number(openingStock) : undefined
+   const prevOpening = Number((initialData as any)?.opening_stock ?? (initialData?.pricing_formula as any)?.opening_stock ?? 0)
+   const newOpening = openingStock !== '' ? Number(openingStock) : prevOpening
+   const delta = newOpening - prevOpening
+   const prevCurrent = Number(
+     (initialData as any)?.current_stock ??
+     (initialData as any)?.stock ??
+     (initialData?.pricing_formula as any)?.current_stock ??
+     (initialData?.pricing_formula as any)?.stock ??
+     prevOpening
+   )
+   return Math.max(0, prevCurrent + delta)
+ })(),
  reorder_level: reorderLevel !== '' ? Number(reorderLevel) : undefined,
  min_stock_level: reorderLevel !== '' ? Number(reorderLevel) : undefined,
  max_stock: maxStock !== '' ? Number(maxStock) : undefined,

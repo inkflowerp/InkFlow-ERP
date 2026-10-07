@@ -46,7 +46,7 @@ export function InventoryKpiBar({
   }, 0)
 
   const computedProductsValue = readyProducts.reduce((sum, p) => {
-    const stock = Number((p as any).current_stock || (p as any).stock || (p as any).opening_stock || 0)
+    const stock = Number((p as any).current_stock || (p as any).stock || (p as any).opening_stock || (p as any).pricing_formula?.current_stock || (p as any).pricing_formula?.stock || (p as any).pricing_formula?.opening_stock || 0)
     const cost = Number(p.base_cost || p.purchase_price || (p as any).cost_per_unit || 0)
     return sum + (stock > 0 ? stock * cost : 0)
   }, 0)

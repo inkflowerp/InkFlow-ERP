@@ -395,7 +395,15 @@ export function IssueMasterRollModal({
  name_bn: p.name_bn || null,
  category: p.category || 'raw_material',
  unit: p.unit || p.selling_unit || 'pcs',
- current_stock: Number(p.current_stock ?? p.stock ?? p.opening_stock ?? 0),
+              current_stock: Number(
+                p.current_stock ??
+                p.stock ??
+                (p.pricing_formula as any)?.current_stock ??
+                (p.pricing_formula as any)?.stock ??
+                (p.pricing_formula as any)?.opening_stock ??
+                p.opening_stock ??
+                0
+              ),
  average_cost: Number(p.cost_per_unit ?? p.base_cost ?? p.purchase_price ?? 0),
  last_purchase_price: Number(p.purchase_price ?? p.cost_per_unit ?? p.base_cost ?? 0),
  is_roll: Boolean(

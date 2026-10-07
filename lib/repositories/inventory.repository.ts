@@ -42,6 +42,18 @@ async function getDbClient() {
   }
 }
 
+export function normalizeStockLedgerTransactionType(type: string): string {
+  const t = String(type || '').toLowerCase()
+  if (t === 'receipt' || t === 'purchase' || t === 'purchase_receipt') return 'purchase'
+  if (t === 'consumption' || t === 'issue') return 'consumption'
+  if (t === 'return') return 'return'
+  if (t === 'wastage' || t === 'scrap' || t === 'remnant') return 'wastage'
+  if (t === 'transfer' || t === 'transfer_in' || t === 'transfer_out') return 'transfer'
+  if (t === 'opening_stock' || t === 'opening_balance') return 'opening_stock'
+  if (t === 'adjustment' || t === 'adjustment_in' || t === 'adjustment_out') return 'adjustment'
+  return 'adjustment'
+}
+
 export function mergeRollSizesUnion(sourceA?: any[] | null, sourceB?: any[] | null): any[] {
   const makeCanonicalKey = (s: any) => {
     if (!s) return ''
@@ -584,7 +596,15 @@ export class InventoryRepository {
       mat.roll_sizes = rollSizes
     }
 
-    let rootStock = Number(mat.current_stock ?? mat.stock ?? (mat as any).opening_stock ?? 0)
+    let rootStock = Number(
+      mat.current_stock ??
+      mat.stock ??
+      (mat as any).opening_stock ??
+      (mat.pricing_formula as any)?.current_stock ??
+      (mat.pricing_formula as any)?.stock ??
+      (mat.pricing_formula as any)?.opening_stock ??
+      0
+    )
 
     // 2. If roll sizes exist and rootStock <= 0, compute total SFT from roll sizes with explicit quantities
     if (rootStock <= 0 && rollSizes.length > 0) {
@@ -647,7 +667,12 @@ export class InventoryRepository {
 
     // 5. Check pricing_formula stock if available and rootStock <= 0
     if (rootStock <= 0) {
-      const pfStock = Number((mat.pricing_formula as any)?.current_stock ?? (mat.pricing_formula as any)?.opening_stock ?? 0)
+      const pfStock = Number(
+        (mat.pricing_formula as any)?.current_stock ??
+        (mat.pricing_formula as any)?.stock ??
+        (mat.pricing_formula as any)?.opening_stock ??
+        0
+      )
       if (pfStock > 0) {
         rootStock = pfStock
       }
@@ -858,7 +883,16 @@ export class InventoryRepository {
           unit: (prodData.selling_unit || prodData.unit || 'pcs') as MaterialUnit,
           purchase_unit: computedPurchaseUnit,
           master_purchase_unit: computedPurchaseUnit,
-          current_stock: Number(prodData.current_stock ?? prodData.stock ?? 0),
+          current_stock: Number(
+            (prodData.pricing_formula as any)?.current_stock ??
+            (prodData.pricing_formula as any)?.stock ??
+            (prodData.pricing_formula as any)?.opening_stock ??
+            prodData.current_stock ??
+            prodData.stock ??
+            prodData.opening_stock ??
+            0
+          ),
+          pricing_formula: prodData.pricing_formula || null,
           average_cost: Number(prodData.purchase_price ?? prodData.base_cost ?? 0),
           last_purchase_price: Number(prodData.purchase_price ?? prodData.base_cost ?? 0),
           cost_per_unit: Number(prodData.purchase_price ?? prodData.base_cost ?? 0),
@@ -936,7 +970,15 @@ export class InventoryRepository {
         unit: (foundProd.selling_unit || foundProd.unit || 'pcs') as MaterialUnit,
         purchase_unit: computedPurchaseUnit,
         master_purchase_unit: computedPurchaseUnit,
-        current_stock: Number(foundProd.current_stock ?? foundProd.stock ?? 0),
+        current_stock: Number(
+          (foundProd.pricing_formula as any)?.current_stock ??
+          (foundProd.pricing_formula as any)?.stock ??
+          (foundProd.pricing_formula as any)?.opening_stock ??
+          foundProd.current_stock ??
+          foundProd.stock ??
+          foundProd.opening_stock ??
+          0
+        ),
         average_cost: Number(foundProd.purchase_price ?? foundProd.base_cost ?? foundProd.cost_price ?? 0),
         last_purchase_price: Number(foundProd.purchase_price ?? foundProd.base_cost ?? foundProd.cost_price ?? 0),
         cost_per_unit: Number(foundProd.purchase_price ?? foundProd.base_cost ?? foundProd.cost_price ?? 0),
@@ -958,6 +1000,9 @@ export class InventoryRepository {
       // Sync into materials collection for fast subsequent lookups
       try {
         PrintFlowDataStore.addItem(STORAGE_KEYS.MATERIALS, bridged)
+        if (companyId) {
+          PrintFlowDataStore.addItem(STORAGE_KEYS.MATERIALS, bridged, companyId)
+        }
       } catch {}
 
       return this.reconcileMaterialStock(bridged)
@@ -1315,6 +1360,7 @@ export class InventoryRepository {
             (prod as any).current_stock ??
             (prod as any).stock ??
             (prod.pricing_formula as any)?.current_stock ??
+            (prod.pricing_formula as any)?.stock ??
             (prod.pricing_formula as any)?.opening_stock ??
             0
           )
@@ -1356,7 +1402,18 @@ export class InventoryRepository {
       throw conflictErr
     }
 
-    const currentStock = Number(material.current_stock ?? (material as any).stock ?? 0) || 0
+    let currentStock = Number(material.current_stock ?? (material as any).stock ?? 0) || 0
+    if (currentStock === 0) {
+      const pfStock = Number(
+        (material.pricing_formula as any)?.current_stock ??
+        (material.pricing_formula as any)?.stock ??
+        (material.pricing_formula as any)?.opening_stock ??
+        0
+      )
+      if (pfStock > 0) {
+        currentStock = pfStock
+      }
+    }
     const newStock = Math.round((currentStock + params.quantity_change) * 100) / 100
 
     // 2. Strict non-negative stock verification
@@ -1483,7 +1540,7 @@ export class InventoryRepository {
           sku: material.sku,
           name: material.name,
           name_bn: material.name_bn || null,
-          category: material.category || 'general',
+          category: material.category || (material as any).commercial_type || 'ready_product',
           unit: material.unit || 'pcs',
           current_stock: newStock,
           average_cost: unitCost > 0 ? unitCost : material.average_cost,
@@ -1517,7 +1574,7 @@ export class InventoryRepository {
           branch_id: params.branch_id || null,
           material_id: material.id,
           location_id: params.location_id || null,
-          transaction_type: params.transaction_type,
+          transaction_type: normalizeStockLedgerTransactionType(params.transaction_type),
           quantity_change: params.quantity_change,
           unit: material.unit,
           balance_after: newStock,
@@ -1632,6 +1689,9 @@ export class InventoryRepository {
           } as any, params.company_id)
         } catch {}
       }
+      const existingProductInStore = PrintFlowDataStore.getAll<any>(STORAGE_KEYS.PRODUCTS, params.company_id).find((p) => p && (p.id === material.id || (!!material.sku && p.sku === material.sku))) ||
+        PrintFlowDataStore.getAll<any>(STORAGE_KEYS.PRODUCTS).find((p) => p && (p.id === material.id || (!!material.sku && p.sku === material.sku)))
+      const existingFormula = (material as any).pricing_formula || existingProductInStore?.pricing_formula || {}
       const prodUpdatePayload = {
         current_stock: newStock,
         stock: newStock,
@@ -1641,6 +1701,7 @@ export class InventoryRepository {
         sheet_sizes: existingMatSheetSizes || undefined,
         variants: existingMatVariants || undefined,
         pricing_formula: {
+          ...existingFormula,
           current_stock: newStock,
           stock: newStock,
           ...(existingMatRollSizes ? { roll_sizes: existingMatRollSizes } : {}),
@@ -1703,6 +1764,10 @@ export class InventoryRepository {
       } catch {}
     }
 
+    const fallbackProductInStore = PrintFlowDataStore.getAll<any>(STORAGE_KEYS.PRODUCTS, params.company_id).find((p) => p && (p.id === material.id || (!!material.sku && p.sku === material.sku))) ||
+      PrintFlowDataStore.getAll<any>(STORAGE_KEYS.PRODUCTS).find((p) => p && (p.id === material.id || (!!material.sku && p.sku === material.sku)))
+    const fallbackFormula = (material as any).pricing_formula || fallbackProductInStore?.pricing_formula || {}
+
     const prodUpdatePayload = {
       current_stock: newStock,
       stock: newStock,
@@ -1712,6 +1777,7 @@ export class InventoryRepository {
       sheet_sizes: existingMatSheetSizes || undefined,
       variants: existingMatVariants || undefined,
       pricing_formula: {
+        ...fallbackFormula,
         current_stock: newStock,
         stock: newStock,
         ...(existingMatRollSizes ? { roll_sizes: existingMatRollSizes } : {}),

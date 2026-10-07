@@ -700,7 +700,12 @@ export class PurchaseService {
               (product.pricing_formula as any)?.opening_stock ??
               0
             )
-            const nextPStock = totalRollSft !== null ? totalRollSft : Number(adjResult?.material?.current_stock ?? (curPStock + accepted))
+            const nextPStock = totalRollSft !== null
+              ? totalRollSft
+              : Math.max(
+                  Number(adjResult?.material?.current_stock ?? 0),
+                  curPStock + accepted
+                )
             const prevFormula = (typeof product.pricing_formula === 'object' && product.pricing_formula !== null ? product.pricing_formula : {}) as any
             const updatedFormula = {
               ...prevFormula,

@@ -1279,22 +1279,30 @@ export class ProductRepository {
         formulaUpdates.purchase_price_per_sft = updates.material_config.purchase_price_per_sft
       }
       if (updates.opening_stock !== undefined || updates.current_stock !== undefined || updates.stock !== undefined) {
-        const stockVal = Number(
-          updates.current_stock !== undefined && updates.current_stock !== null
-            ? updates.current_stock
-            : updates.stock !== undefined && updates.stock !== null
-            ? updates.stock
-            : updates.opening_stock !== undefined && updates.opening_stock !== null
-            ? updates.opening_stock
-            : 0
-        )
-        payload.current_stock = stockVal
-        payload.stock = stockVal
-        formulaUpdates.current_stock = stockVal
-        formulaUpdates.stock = stockVal
+        if (updates.current_stock !== undefined || updates.stock !== undefined) {
+          const stockVal = Number(
+            updates.current_stock !== undefined && updates.current_stock !== null
+              ? updates.current_stock
+              : updates.stock !== undefined && updates.stock !== null
+              ? updates.stock
+              : 0
+          )
+          payload.current_stock = stockVal
+          payload.stock = stockVal
+          formulaUpdates.current_stock = stockVal
+          formulaUpdates.stock = stockVal
+        }
         if (updates.opening_stock !== undefined) {
-          payload.opening_stock = Number(updates.opening_stock)
-          formulaUpdates.opening_stock = Number(updates.opening_stock)
+          const openingVal = Number(updates.opening_stock)
+          payload.opening_stock = openingVal
+          formulaUpdates.opening_stock = openingVal
+          if (updates.current_stock === undefined && updates.stock === undefined) {
+            // If current_stock was not explicitly passed, only initialize if not already set in existing updates
+            if (formulaUpdates.current_stock === undefined) {
+              payload.opening_stock = openingVal
+              formulaUpdates.opening_stock = openingVal
+            }
+          }
         }
       }
       if (updates.reorder_level !== undefined || updates.min_stock_level !== undefined) {
@@ -1384,6 +1392,12 @@ export class ProductRepository {
           const prods = PrintFlowDataStore.get<ProductRecord[]>(STORAGE_KEYS.PRODUCTS, companyId) || []
           const existing = prods.find((p) => p.id === id)
           if (!existing) throw new Error(`Product ${id} not found in tenant catalog.`)
+          if (existing.pricing_formula && payload.pricing_formula) {
+            payload.pricing_formula = {
+              ...(typeof existing.pricing_formula === 'object' ? existing.pricing_formula : {}),
+              ...payload.pricing_formula,
+            }
+          }
           const updated = PrintFlowDataStore.updateItem<ProductRecord>(STORAGE_KEYS.PRODUCTS, id, payload, companyId)
           if (!updated) throw new Error(`Product ${id} not found in test store`)
           return enrichProductRecord(updated)
@@ -1522,6 +1536,12 @@ export class ProductRepository {
           const prods = PrintFlowDataStore.get<ProductRecord[]>(STORAGE_KEYS.PRODUCTS, companyId) || []
           const existing = prods.find((p) => p.id === id)
           if (!existing) throw new Error(`Product ${id} not found in tenant catalog.`)
+          if (existing.pricing_formula && payload.pricing_formula) {
+            payload.pricing_formula = {
+              ...(typeof existing.pricing_formula === 'object' ? existing.pricing_formula : {}),
+              ...payload.pricing_formula,
+            }
+          }
           const updated = PrintFlowDataStore.updateItem<ProductRecord>(STORAGE_KEYS.PRODUCTS, id, payload, companyId)
           if (updated) {
             const enrichedTest = enrichProductRecord(updated)

@@ -196,6 +196,7 @@ export class InventoryService {
             (product as any).current_stock ??
             (product as any).stock ??
             (product.pricing_formula as any)?.current_stock ??
+            (product.pricing_formula as any)?.stock ??
             (product.pricing_formula as any)?.opening_stock ??
             0
           )
@@ -381,7 +382,7 @@ export class InventoryService {
       }
     }
 
-    const transactionType = params.is_opening_balance ? 'opening_stock' : 'RECEIPT'
+    const transactionType = params.is_opening_balance ? 'opening_stock' : 'purchase'
     const result = await InventoryRepository.recordStockAdjustment({
       company_id: params.company_id,
       branch_id: params.branch_id || null,
@@ -953,18 +954,11 @@ export class InventoryService {
     try {
       const prod = await ProductRepository.getProductById(params.material_id, params.company_id)
       if (prod) {
-        const curPStock = Number(
-          (prod as any).current_stock ??
-          (prod as any).stock ??
-          (prod.pricing_formula as any)?.current_stock ??
-          (prod.pricing_formula as any)?.stock ??
-          (prod.pricing_formula as any)?.opening_stock ??
-          0
-        )
-        const nextPStock = Number(result?.material?.current_stock ?? (curPStock + Math.abs(stockChangeQty)))
+        const nextPStock = Number(result?.material?.current_stock ?? 0)
         const prevFormula = (typeof prod.pricing_formula === 'object' && prod.pricing_formula !== null ? prod.pricing_formula : {}) as any
         const updatedFormula = {
           ...prevFormula,
+          ...(prevFormula.opening_stock === undefined && (prod as any).opening_stock !== undefined ? { opening_stock: Number((prod as any).opening_stock) } : {}),
           current_stock: nextPStock,
           stock: nextPStock,
         }
