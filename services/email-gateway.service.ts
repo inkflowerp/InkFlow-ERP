@@ -27,6 +27,7 @@ import {
   wrapHtmlEmail,
   htmlToPlainText,
   DEFAULT_EMAIL_TEMPLATES,
+  isTransactionalEventType,
 } from './email-template.service.ts'
 
 export class EmailDataStore {
@@ -588,11 +589,22 @@ export class EmailGatewayService {
         gateway.provider === 'smtp' &&
         gateway.smtp_username &&
         gateway.smtp_username.includes('@') &&
-        (!effectiveSenderEmail || effectiveSenderEmail === 'printflow.bd@gmail.com' || effectiveSenderEmail === 'printflowbd@gmail.com' || effectiveSenderEmail === 'notifications@printflow.bd')
+        (!effectiveSenderEmail ||
+          effectiveSenderEmail === 'printflow.bd@gmail.com' ||
+          effectiveSenderEmail === 'printflowbd@gmail.com' ||
+          effectiveSenderEmail === 'notifications@printflow.bd' ||
+          (effectiveSenderEmail.endsWith('@gmail.com') && !gateway.smtp_host?.includes('gmail.com')))
       ) {
         effectiveSenderEmail = gateway.smtp_username
+      } else if (
+        gateway.provider === 'smtp' &&
+        effectiveSenderEmail &&
+        effectiveSenderEmail.endsWith('@gmail.com') &&
+        !gateway.smtp_host?.includes('gmail.com')
+      ) {
+        effectiveSenderEmail = process.env.PLATFORM_SMTP_USER || process.env.SMTP_USER || 'notifications@printflow.bd'
       } else if (!effectiveSenderEmail) {
-        effectiveSenderEmail = process.env.PLATFORM_SENDER_EMAIL || 'printflowbd@gmail.com'
+        effectiveSenderEmail = process.env.PLATFORM_SENDER_EMAIL || 'notifications@printflow.bd'
       }
 
       effectiveSenderEmail = sanitizeLegacyEmail(effectiveSenderEmail)
@@ -606,6 +618,14 @@ export class EmailGatewayService {
         address: effectiveSenderEmail,
       }
 
+      // Check if message is transactional (e.g. employee invitation, OTP verification, password reset)
+      const isTransactional =
+        isTransactionalEventType(eventType) ||
+        (options as any)?.isTransactional === true ||
+        (options as any)?.headers?.['X-Message-Type']?.toLowerCase() === 'transactional'
+
+      const customPassedHeaders = ((options as any).headers || {})
+
       const sendResult = await provider.sendEmail({
         from: fromAddress,
         to: recipient,
@@ -615,12 +635,25 @@ export class EmailGatewayService {
         text: finalText,
         attachments,
         headers: {
-          'Auto-Submitted': 'auto-generated',
+          'Auto-Submitted': isTransactional ? 'no' : 'auto-generated',
           'X-Auto-Response-Suppress': 'All',
           'X-Mailer': 'PrintFlow Engine',
-          ...((options as any).headers || {}),
+          ...(isTransactional
+            ? {
+                'X-Priority': '3',
+                Importance: 'Normal',
+                Priority: 'Normal',
+                'X-Message-Type': 'transactional',
+              }
+            : {}),
+          ...customPassedHeaders,
         },
-        metadata,
+        metadata: {
+          ...metadata,
+          eventType,
+          isTransactional,
+        },
+        isTransactional,
       })
 
       // 6. Record Transmission Log

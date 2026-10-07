@@ -74,14 +74,38 @@ export class SmtpProviderAdapter implements IEmailProvider {
         ? this.config.smtp_username.split('@')[1]
         : 'printflow.bd'
 
-      // Enterprise deliverability headers to prevent spam classification
+      const isTransactional =
+        payload.isTransactional === true ||
+        payload.headers?.['Auto-Submitted'] === 'no' ||
+        payload.headers?.['X-Message-Type']?.toLowerCase() === 'transactional' ||
+        payload.metadata?.isTransactional === true ||
+        payload.metadata?.eventType === 'user_invitation' ||
+        payload.metadata?.eventType === 'password_reset' ||
+        payload.metadata?.eventType === 'email_verification' ||
+        payload.metadata?.eventType === 'security_alert'
+
+      // Deliverability headers: Transactional emails (e.g. invites) MUST NOT have List-Unsubscribe or auto-generated headers
       const deliverabilityHeaders: Record<string, string> = {
-        'Auto-Submitted': 'auto-generated',
+        'Auto-Submitted': isTransactional ? 'no' : 'auto-generated',
         'X-Auto-Response-Suppress': 'All',
         'X-Mailer': 'PrintFlow Engine',
-        'List-Unsubscribe': `<mailto:notifications@${senderDomain}?subject=unsubscribe>`,
-        'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+        ...(isTransactional
+          ? {
+              'X-Priority': '3',
+              Importance: 'Normal',
+              Priority: 'Normal',
+            }
+          : {
+              'List-Unsubscribe': `<mailto:notifications@${senderDomain}?subject=unsubscribe>`,
+              'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+            }),
         ...payload.headers,
+      }
+
+      // Ensure List-Unsubscribe is never attached to transactional invitations or security emails
+      if (isTransactional && !payload.headers?.['List-Unsubscribe']) {
+        delete deliverabilityHeaders['List-Unsubscribe']
+        delete deliverabilityHeaders['List-Unsubscribe-Post']
       }
 
       const mailOptions: SendMailOptions = {

@@ -29,6 +29,7 @@ export interface OutgoingEmailPayload {
   attachments?: EmailAttachment[]
   headers?: Record<string, string>
   metadata?: Record<string, any>
+  isTransactional?: boolean
 }
 
 export interface ProviderSendResult {

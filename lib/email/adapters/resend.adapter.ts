@@ -47,13 +47,36 @@ export class ResendProviderAdapter implements IEmailProvider {
       const senderDomainMatch = senderRaw.match(/@([a-zA-Z0-9.-]+)/)
       const senderDomain = senderDomainMatch ? senderDomainMatch[1] : 'printflow.bd'
 
+      const isTransactional =
+        payload.isTransactional === true ||
+        payload.headers?.['Auto-Submitted'] === 'no' ||
+        payload.headers?.['X-Message-Type']?.toLowerCase() === 'transactional' ||
+        payload.metadata?.isTransactional === true ||
+        payload.metadata?.eventType === 'user_invitation' ||
+        payload.metadata?.eventType === 'password_reset' ||
+        payload.metadata?.eventType === 'email_verification' ||
+        payload.metadata?.eventType === 'security_alert'
+
       const deliverabilityHeaders: Record<string, string> = {
-        'Auto-Submitted': 'auto-generated',
+        'Auto-Submitted': isTransactional ? 'no' : 'auto-generated',
         'X-Auto-Response-Suppress': 'All',
         'X-Mailer': 'PrintFlow Engine',
-        'List-Unsubscribe': `<mailto:notifications@${senderDomain}?subject=unsubscribe>`,
-        'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+        ...(isTransactional
+          ? {
+              'X-Priority': '3',
+              Importance: 'Normal',
+              Priority: 'Normal',
+            }
+          : {
+              'List-Unsubscribe': `<mailto:notifications@${senderDomain}?subject=unsubscribe>`,
+              'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+            }),
         ...payload.headers,
+      }
+
+      if (isTransactional && !payload.headers?.['List-Unsubscribe']) {
+        delete deliverabilityHeaders['List-Unsubscribe']
+        delete deliverabilityHeaders['List-Unsubscribe-Post']
       }
 
       const body: Record<string, any> = {

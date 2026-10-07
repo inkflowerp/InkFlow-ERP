@@ -152,6 +152,16 @@ export class GmailProviderAdapter implements IEmailProvider {
 
     const cleanSubject = sanitizeLegacyBrand(payload.subject || '', 'PrintFlow Notification')
 
+    const isTransactional =
+      payload.isTransactional === true ||
+      payload.headers?.['Auto-Submitted'] === 'no' ||
+      payload.headers?.['X-Message-Type']?.toLowerCase() === 'transactional' ||
+      payload.metadata?.isTransactional === true ||
+      payload.metadata?.eventType === 'user_invitation' ||
+      payload.metadata?.eventType === 'password_reset' ||
+      payload.metadata?.eventType === 'email_verification' ||
+      payload.metadata?.eventType === 'security_alert'
+
     const headers: string[] = [
       `From: ${fromAddress}`,
       `To: ${toAddresses}`,
@@ -159,10 +169,16 @@ export class GmailProviderAdapter implements IEmailProvider {
       `Date: ${new Date().toUTCString()}`,
       `Message-ID: <${Date.now()}.${Math.random().toString(36).substring(2, 8)}@${senderDomain}>`,
       'MIME-Version: 1.0',
-      'Auto-Submitted: auto-generated',
+      isTransactional ? 'Auto-Submitted: no' : 'Auto-Submitted: auto-generated',
       'X-Auto-Response-Suppress: All',
       'X-Mailer: PrintFlow Engine',
     ]
+
+    if (isTransactional) {
+      headers.push('X-Priority: 3')
+      headers.push('Importance: Normal')
+      headers.push('Priority: Normal')
+    }
 
     if (ccAddresses) headers.push(`Cc: ${ccAddresses}`)
     if (bccAddresses) headers.push(`Bcc: ${bccAddresses}`)
@@ -173,6 +189,9 @@ export class GmailProviderAdapter implements IEmailProvider {
     if (payload.headers) {
       for (const [key, value] of Object.entries(payload.headers)) {
         if (key.toLowerCase() === 'list-unsubscribe') hasListUnsubscribe = true
+        if (isTransactional && key.toLowerCase() === 'auto-submitted' && value === 'auto-generated') {
+          continue
+        }
         // Prevent header injection
         const cleanKey = key.replace(/[\r\n]/g, '')
         const cleanVal = String(value).replace(/[\r\n]/g, '')
@@ -180,7 +199,7 @@ export class GmailProviderAdapter implements IEmailProvider {
       }
     }
 
-    if (!hasListUnsubscribe) {
+    if (!isTransactional && !hasListUnsubscribe) {
       headers.push(`List-Unsubscribe: <mailto:${effectiveSenderEmail}?subject=unsubscribe>`)
       headers.push('List-Unsubscribe-Post: List-Unsubscribe=One-Click')
     }

@@ -916,12 +916,14 @@ export class AuthEmailService {
         email,
         company_name: companyName,
         role_name: roleName,
-        invited_by: invitedByName || 'Your Administrator',
+        invited_by: invitedByName || companyName,
         invite_link: inviteUrl,
         accept_link: inviteUrl,
         timestamp: new Date().toLocaleString(),
       },
-      customSubject: `Invitation to join ${companyName} on PrintFlow`,
+      customSubject: invitedByName
+        ? `${invitedByName} invited you to join ${companyName} on PrintFlow`
+        : `${companyName} staff invitation on PrintFlow`,
       idempotencyKey: `invite:${tenantId}:${email}:${Date.now()}`,
     })
   }

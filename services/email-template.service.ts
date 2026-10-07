@@ -213,9 +213,12 @@ export function wrapHtmlEmail(
   </style>
 </head>
 <body>
-  <!-- Hidden preheader text to prevent CSS preview leakage in Gmail/Apple Mail -->
-  <div style="display:none;font-size:1px;color:#ffffff;line-height:1px;max-height:0px;max-width:0px;opacity:0;overflow:hidden;mso-hide:all;">
+  <!-- Hidden preheader text to prevent preview leakage (clean zero-spam layout) -->
+  <div style="display:none;max-height:0px;overflow:hidden;mso-hide:all;">
     ${preheaderText}
+  </div>
+  <div style="display:none;max-height:0px;overflow:hidden;mso-hide:all;">
+    &zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;
   </div>
 
   <div class="wrapper" role="presentation">
@@ -596,24 +599,49 @@ export const DEFAULT_EMAIL_TEMPLATES: EmailTemplateRecord[] = [
     event_type: 'user_invitation',
     name: 'Team Member Invitation ',
     name_bn: 'টিম আমন্ত্রণ',
-    subject_template: 'You have been invited to join {{company_name}} on PrintFlow SaaS',
-    subject_template_bn: '{{company_name}} এর PrintFlow টিমে যোগদানের আমন্ত্রণ',
+    subject_template: '{{invited_by}} invited you to join {{company_name}} on PrintFlow',
+    subject_template_bn: '{{invited_by}} আপনাকে {{company_name}} এর PrintFlow টিমে আমন্ত্রণ জানিয়েছেন',
     body_template: `
       <p>Hello <strong>{{user_name}}</strong>,</p>
-      <p>You have been invited by <strong>{{invited_by}}</strong> to join the team at <strong>{{company_name}}</strong> on PrintFlow SaaS.</p>
+      <p><strong>{{invited_by}}</strong> has invited you to join <strong>{{company_name}}</strong> as a team member on PrintFlow.</p>
       <div class="info-card">
         <table>
-          <tr><td class="label">Organization:</td><td class="value">{{company_name}}</td></tr>
+          <tr><td class="label">Organization:</td><td class="value"><strong>{{company_name}}</strong></td></tr>
           <tr><td class="label">Assigned Role:</td><td class="value">{{role_name}}</td></tr>
           <tr><td class="label">Login Email:</td><td class="value">{{email}}</td></tr>
         </table>
       </div>
-      <p><a href="{{accept_link}}" class="btn">Accept Invitation & Set Password</a></p>
+      <p style="text-align: center; margin: 24px 0;">
+        <a href="{{accept_link}}" class="btn" style="display: inline-block; background: #2563eb; color: #ffffff !important; padding: 12px 28px; text-decoration: none; border-radius: 6px; font-weight: 600;">Accept Invitation & Get Started</a>
+      </p>
+      <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 14px; margin-top: 20px; font-size: 12px; color: #64748b; line-height: 1.5;">
+        <p style="margin: 0 0 8px 0; font-weight: 600; color: #334155;">Security & Link Expiration:</p>
+        <p style="margin: 0 0 8px 0;">This invitation was sent directly to <strong>{{email}}</strong> and is valid for <strong>7 days</strong>. If you do not accept within 7 days, please contact {{invited_by}} to request a new invitation.</p>
+        <p style="margin: 0 0 4px 0;">If the button above does not open, copy and paste this authentic link directly into your browser:</p>
+        <p style="margin: 0; word-break: break-all;"><a href="{{accept_link}}" style="color: #2563eb; text-decoration: underline;">{{accept_link}}</a></p>
+      </div>
+      <p style="font-size: 11px; color: #94a3b8; margin-top: 16px;">If you did not expect an invitation from {{company_name}}, you can safely disregard this message.</p>
     `,
     body_template_bn: `
       <p>প্রিয় <strong>{{user_name}}</strong>,</p>
-      <p>আপনাকে <strong>{{company_name}}</strong> এর PrintFlow সফটওয়্যারে টিম মেম্বার হিসেবে যুক্ত হওয়ার আমন্ত্রণ জানানো হয়েছে।</p>
-      <p><a href="{{accept_link}}" class="btn">আমন্ত্রণ গ্রহণ করুন</a></p>
+      <p><strong>{{invited_by}}</strong> আপনাকে <strong>{{company_name}}</strong> এর প্রিন্টফ্লো টিমে যোগদানের আমন্ত্রণ জানিয়েছেন।</p>
+      <div class="info-card">
+        <table>
+          <tr><td class="label">প্রতিষ্ঠান:</td><td class="value"><strong>{{company_name}}</strong></td></tr>
+          <tr><td class="label">পদবী:</td><td class="value">{{role_name}}</td></tr>
+          <tr><td class="label">লগইন ইমেইল:</td><td class="value">{{email}}</td></tr>
+        </table>
+      </div>
+      <p style="text-align: center; margin: 24px 0;">
+        <a href="{{accept_link}}" class="btn" style="display: inline-block; background: #2563eb; color: #ffffff !important; padding: 12px 28px; text-decoration: none; border-radius: 6px; font-weight: 600;">আমন্ত্রণ গ্রহণ করুন</a>
+      </p>
+      <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 14px; margin-top: 20px; font-size: 12px; color: #64748b; line-height: 1.5;">
+        <p style="margin: 0 0 8px 0; font-weight: 600; color: #334155;">নিরাপত্তা ও লিংক মেয়াদ:</p>
+        <p style="margin: 0 0 8px 0;">এই আমন্ত্রণটি সরাসরি <strong>{{email}}</strong> ঠিকানায় পাঠানো হয়েছে এবং এটি <strong>৭ দিন</strong> কার্যকর থাকবে।</p>
+        <p style="margin: 0 0 4px 0;">বাটন কাজ না করলে নিচের লিংকটি সরাসরি ব্রাউজারে পেস্ট করুন:</p>
+        <p style="margin: 0; word-break: break-all;"><a href="{{accept_link}}" style="color: #2563eb; text-decoration: underline;">{{accept_link}}</a></p>
+      </div>
+      <p style="font-size: 11px; color: #94a3b8; margin-top: 16px;">আপনি যদি {{company_name}} থেকে এই আমন্ত্রণ আশা না করে থাকেন, তবে এই ইমেইলটি উপেক্ষা করতে পারেন।</p>
     `,
     variables: ['user_name', 'invited_by', 'company_name', 'role_name', 'email', 'accept_link'],
     status: 'active',
@@ -767,3 +795,22 @@ export const DEFAULT_EMAIL_TEMPLATES: EmailTemplateRecord[] = [
     updated_at: new Date().toISOString(),
   },
 ]
+
+/**
+ * Determines whether an email event type is strictly transactional.
+ * Transactional emails (invites, passwords, verifications, alerts) MUST NOT have List-Unsubscribe headers
+ * and should not use Auto-Submitted: auto-generated to prevent spam classification.
+ */
+export function isTransactionalEventType(eventType?: string | null): boolean {
+  if (!eventType) return false
+  const set = new Set([
+    'user_invitation',
+    'password_reset',
+    'email_verification',
+    'security_alert',
+    'two_factor_auth',
+    'otp',
+    'account_recovery',
+  ])
+  return set.has(eventType.toLowerCase())
+}
