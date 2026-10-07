@@ -102,9 +102,30 @@ export function resolveTenantRole(
   responsibilities?: string[] | null,
   isOwner?: boolean
 ): TenantRole {
-  if (isOwner) return 'business_owner'
-
   const raw = (primaryRole || responsibilities?.[0] || '').toLowerCase().trim()
+  const isExplicitStaff = [
+    'operator',
+    'machine_operator',
+    'technician',
+    'designer',
+    'graphic_designer',
+    'sales',
+    'sales_manager',
+    'sales_executive',
+    'production',
+    'production_manager',
+    'accountant',
+    'accounts',
+    'billing',
+    'delivery',
+    'delivery_coordinator',
+    'installer',
+    'general_staff',
+    'staff',
+  ].includes(raw)
+
+  if (isOwner && !isExplicitStaff) return 'business_owner'
+
   if (raw === 'business_owner' || raw === 'platform_owner' || raw === 'owner') {
     return 'business_owner'
   }
@@ -156,35 +177,23 @@ export function resolveTenantRole(
  * Maps a TenantSessionData or raw role string to a client UI TenantRole ('owner', 'branch_manager', 'manager', 'designer', 'operator', 'accountant', 'installer').
  */
 export function mapSessionToTenantRole(sessionOrRole: TenantSessionData | string | null): TenantRole {
-  if (!sessionOrRole) return 'owner'
+  if (!sessionOrRole) return 'general_staff'
   const sessionObj = typeof sessionOrRole === 'object' && sessionOrRole !== null ? (sessionOrRole as unknown as Record<string, unknown>) : null
+  
+  // Check explicit assigned responsibilities and primary role first
+  const explicitResp = (
+    typeof sessionOrRole === 'object' && sessionOrRole !== null && Array.isArray(sessionOrRole.responsibilities) && sessionOrRole.responsibilities.length > 0
+      ? sessionOrRole.responsibilities[0]
+      : ''
+  ).toLowerCase().trim()
+
   const rawRole = (
     typeof sessionOrRole === 'string'
       ? sessionOrRole
-      : (sessionObj?.role as string) || sessionOrRole.primaryRole || sessionOrRole.responsibilities?.[0] || ''
+      : (sessionObj?.role as string) || sessionOrRole.primaryRole || explicitResp || ''
   ).toLowerCase().trim()
 
-  if (rawRole === 'business_owner' || rawRole === 'owner' || rawRole === 'platform_owner' || rawRole.includes('owner') || rawRole.includes('admin')) return 'owner'
-  if (
-    rawRole === 'branch_manager' ||
-    rawRole.includes('branch') ||
-    rawRole.includes('outlet') ||
-    rawRole.includes('showroom')
-  ) {
-    return 'branch_manager'
-  }
-  if (
-    rawRole === 'graphic_designer' ||
-    rawRole === 'designer' ||
-    rawRole.includes('design') ||
-    rawRole.includes('graphic') ||
-    rawRole.includes('prepress') ||
-    rawRole.includes('pre-press') ||
-    rawRole.includes('artwork')
-  ) {
-    return 'designer'
-  }
-  if (rawRole === 'sales_manager' || rawRole === 'sales' || rawRole === 'sales_executive' || rawRole === 'manager' || rawRole.includes('sale')) return 'manager'
+  // Assigned Staff Roles take absolute precedence over accidental owner fallback
   if (
     rawRole === 'machine_operator' ||
     rawRole === 'operator' ||
@@ -196,13 +205,79 @@ export function mapSessionToTenantRole(sessionOrRole: TenantSessionData | string
     rawRole.includes('finisher') ||
     rawRole.includes('machinist') ||
     rawRole.includes('die-cut') ||
-    rawRole.includes('fabricat')
+    rawRole.includes('fabricat') ||
+    explicitResp === 'operator' ||
+    explicitResp === 'machine_operator'
   ) return 'operator'
-  if (rawRole === 'production_manager' || rawRole === 'production' || rawRole.includes('production')) return 'manager'
-  if (rawRole === 'accountant' || rawRole === 'accounts' || rawRole === 'billing' || rawRole.includes('account')) return 'accountant'
-  if (rawRole === 'delivery_coordinator' || rawRole === 'delivery' || rawRole === 'installer' || rawRole.includes('deliver')) return 'installer'
-  if (rawRole === 'general_staff' || rawRole === 'staff') return 'operator'
-  return (rawRole as TenantRole) || 'operator'
+
+  if (
+    rawRole === 'graphic_designer' ||
+    rawRole === 'designer' ||
+    rawRole.includes('design') ||
+    rawRole.includes('graphic') ||
+    rawRole.includes('prepress') ||
+    rawRole.includes('pre-press') ||
+    rawRole.includes('artwork') ||
+    explicitResp === 'designer' ||
+    explicitResp === 'graphic_designer'
+  ) {
+    return 'designer'
+  }
+
+  if (
+    rawRole === 'branch_manager' ||
+    rawRole.includes('branch') ||
+    rawRole.includes('outlet') ||
+    rawRole.includes('showroom') ||
+    explicitResp === 'branch_manager'
+  ) {
+    return 'branch_manager'
+  }
+
+  if (
+    rawRole === 'sales_manager' ||
+    rawRole === 'sales' ||
+    rawRole === 'sales_executive' ||
+    rawRole.includes('sale') ||
+    explicitResp === 'sales_manager' ||
+    explicitResp === 'sales'
+  ) return 'manager'
+
+  if (
+    rawRole === 'production_manager' ||
+    rawRole === 'production' ||
+    rawRole.includes('production') ||
+    explicitResp === 'production_manager'
+  ) return 'manager'
+
+  if (
+    rawRole === 'accountant' ||
+    rawRole === 'accounts' ||
+    rawRole === 'billing' ||
+    rawRole.includes('account') ||
+    explicitResp === 'accountant'
+  ) return 'accountant'
+
+  if (
+    rawRole === 'delivery_coordinator' ||
+    rawRole === 'delivery' ||
+    rawRole === 'installer' ||
+    rawRole.includes('deliver') ||
+    explicitResp === 'delivery_coordinator' ||
+    explicitResp === 'installer'
+  ) return 'installer'
+
+  if (
+    rawRole === 'business_owner' ||
+    rawRole === 'owner' ||
+    rawRole === 'platform_owner' ||
+    (rawRole.includes('owner') && !rawRole.includes('operat') && !rawRole.includes('design'))
+  ) {
+    return 'owner'
+  }
+
+  if (rawRole === 'general_staff' || rawRole === 'staff') return 'general_staff'
+  return (rawRole as TenantRole) || 'general_staff'
 }
 
 import type { CompanyRow } from '../../types/tenant.types.ts'

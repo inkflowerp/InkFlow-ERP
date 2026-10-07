@@ -720,7 +720,9 @@ export class AuthService {
         }
       }
 
-      const isOwner = (company as any)?.owner_id === user.id || primaryRole === 'business_owner'
+      const isStaff = primaryRole !== 'business_owner' && primaryRole !== 'platform_owner'
+      const isCompanyOwner = Boolean(user.id && (company as any)?.owner_id && (company as any).owner_id === user.id)
+      const isOwner = isCompanyOwner && !isStaff
       const tenantRole: TenantRole = resolveTenantRole(primaryRole, companyUser.responsibilities, isOwner)
 
       const sessionData: TenantSessionData = {
@@ -989,7 +991,9 @@ export class AuthService {
           const membership = await TenantRepository.resolveUserMembership(profile.id)
           if (membership && membership.company) {
             const { company, companyUser, effectivePermissions, primaryRole } = membership
-            const isOwner = (company as any)?.owner_id === profile.id || primaryRole === 'business_owner'
+            const isStaff = primaryRole !== 'business_owner' && primaryRole !== 'platform_owner'
+            const isCompanyOwner = Boolean(profile.id && (company as any)?.owner_id && (company as any).owner_id === profile.id)
+            const isOwner = isCompanyOwner && !isStaff
             const tenantRole: TenantRole = resolveTenantRole(primaryRole, companyUser.responsibilities, isOwner)
 
             const sessionData: TenantSessionData = {
@@ -1315,7 +1319,9 @@ export class AuthService {
       const membership = await TenantRepository.resolveUserMembership(userId)
       if (membership && membership.company) {
         const { company, companyUser, effectivePermissions, primaryRole } = membership
-        const isOwner = (company as any)?.owner_id === userId || primaryRole === 'business_owner'
+        const isStaff = primaryRole !== 'business_owner' && primaryRole !== 'platform_owner'
+        const isCompanyOwner = Boolean(userId && (company as any)?.owner_id && (company as any).owner_id === userId)
+        const isOwner = isCompanyOwner && !isStaff
         const tenantRole: TenantRole = resolveTenantRole(primaryRole, companyUser.responsibilities, isOwner)
 
         const sessionData: TenantSessionData = {

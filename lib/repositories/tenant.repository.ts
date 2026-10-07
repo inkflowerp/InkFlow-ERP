@@ -1318,7 +1318,7 @@ export class TenantRepository {
         user_roles(role:roles(*))
       `)
       .eq('user_id', userId)
-      .eq('status', 'active')
+      .in('status', ['active', 'invited'])
 
     if (targetCompanyId) {
       query = query.eq('company_id', targetCompanyId)
@@ -1326,12 +1326,143 @@ export class TenantRepository {
 
     let { data: records, error } = await query
 
+    // If not found by user_id, search by email/phone across company_users and employees to auto-recover invited employees
+    if (!records || records.length === 0) {
+      try {
+        let lookupEmail: string | null = null
+        let lookupPhone: string | null = null
+
+        const { data: prof } = await (admin as any)
+          .from('user_profiles')
+          .select('email, phone')
+          .eq('id', userId)
+          .maybeSingle()
+        if (prof) {
+          lookupEmail = prof.email || null
+          lookupPhone = prof.phone || null
+        }
+
+        if (!lookupEmail) {
+          try {
+            const { data: authUser } = await admin.auth.admin.getUserById(userId)
+            if (authUser?.user) {
+              lookupEmail = authUser.user.email || null
+              lookupPhone = authUser.user.phone || null
+            }
+          } catch {}
+        }
+
+        const normalizedEmail = lookupEmail?.trim().toLowerCase()
+
+        if (normalizedEmail || lookupPhone) {
+          // 1. Try to find matching company_user by invited_email
+          let cuMatchQuery = admin
+            .from('company_users')
+            .select(`
+              *,
+              company:companies!inner(*),
+              branch:branches(*),
+              user_roles(role:roles(*))
+            `)
+            .in('status', ['active', 'invited'])
+
+          if (targetCompanyId) {
+            cuMatchQuery = cuMatchQuery.eq('company_id', targetCompanyId)
+          }
+
+          if (normalizedEmail) {
+            cuMatchQuery = cuMatchQuery.ilike('invited_email', normalizedEmail)
+          }
+
+          const { data: matchedCUs } = await cuMatchQuery
+
+          if (matchedCUs && matchedCUs.length > 0) {
+            records = matchedCUs
+            await (admin as any)
+              .from('company_users')
+              .update({ user_id: userId, status: 'active', updated_at: new Date().toISOString() })
+              .eq('id', matchedCUs[0].id)
+          }
+        }
+
+        // 2. If still not found, check employees table by email or phone
+        if ((!records || records.length === 0) && (normalizedEmail || lookupPhone)) {
+          let empQuery = (admin as any).from('employees').select('*')
+          if (targetCompanyId) {
+            empQuery = empQuery.eq('company_id', targetCompanyId)
+          }
+          if (normalizedEmail) {
+            empQuery = empQuery.ilike('email', normalizedEmail)
+          }
+          const { data: matchedEmps } = await empQuery.limit(1)
+          const matchedEmp = matchedEmps?.[0]
+
+          if (matchedEmp) {
+            await (admin as any)
+              .from('employees')
+              .update({ user_id: userId, updated_at: new Date().toISOString() })
+              .eq('id', matchedEmp.id)
+
+            const company = await TenantRepository.getCompanyById(matchedEmp.company_id)
+            if (company) {
+              const assignedRoleSlug = (
+                matchedEmp.portal_credentials?.role ||
+                matchedEmp.role ||
+                'operator'
+              ).toLowerCase().trim()
+
+              const empResps = Array.isArray(matchedEmp.portal_credentials?.responsibilities) && matchedEmp.portal_credentials.responsibilities.length > 0
+                ? matchedEmp.portal_credentials.responsibilities
+                : [assignedRoleSlug]
+
+              const { data: newCU } = await (admin as any)
+                .from('company_users')
+                .insert({
+                  company_id: matchedEmp.company_id,
+                  user_id: userId,
+                  branch_id: matchedEmp.branch_id || null,
+                  invited_email: normalizedEmail || matchedEmp.email,
+                  status: 'active',
+                  responsibilities: empResps,
+                  created_at: new Date().toISOString(),
+                  updated_at: new Date().toISOString(),
+                })
+                .select(`
+                  *,
+                  company:companies!inner(*),
+                  branch:branches(*),
+                  user_roles(role:roles(*))
+                `)
+                .single()
+
+              if (newCU) {
+                records = [newCU]
+              }
+            }
+          }
+        }
+      } catch (recoveryErr) {
+        console.warn('[TenantRepository] Membership fallback recovery error:', recoveryErr)
+      }
+    }
+
     if (error || !records || records.length === 0) {
       TenantRepository.membershipCache.set(cacheKey, { data: null, expiresAt: Date.now() + 5000 })
       return null
     }
 
     const cu: any = records[0]
+    // If user was previously invited, activate membership automatically upon authenticated resolution
+    if (cu.status === 'invited') {
+      try {
+        await (admin as any)
+          .from('company_users')
+          .update({ status: 'active', user_id: userId, updated_at: new Date().toISOString() })
+          .eq('id', cu.id)
+        cu.status = 'active'
+      } catch {}
+    }
+
     const company = cu.company as CompanyRow
     if (!company.is_active) {
       TenantRepository.membershipCache.set(cacheKey, { data: null, expiresAt: Date.now() + 5000 })
@@ -1371,7 +1502,7 @@ export class TenantRepository {
       if (!emp) {
         // Fallback: match by user's phone or email within this company
         const userPhone = cu.profile?.phone
-        const userEmail = cu.profile?.email
+        const userEmail = cu.profile?.email || cu.invited_email
 
         let matchedEmp: any = null
 
@@ -1456,11 +1587,43 @@ export class TenantRepository {
       }
     } catch {}
 
-    const isCompanyOwner = (company as any)?.owner_id === userId
+    const isCompanyOwner = Boolean(
+      userId &&
+      company &&
+      (company as any).owner_id &&
+      (company as any).owner_id === userId
+    )
+
+    const isStaffMember = Boolean(
+      employeeRole ||
+      employeeRecord ||
+      responsibilities.some((r: string) => [
+        'operator',
+        'machine_operator',
+        'technician',
+        'designer',
+        'graphic_designer',
+        'sales',
+        'sales_manager',
+        'sales_executive',
+        'production',
+        'production_manager',
+        'accountant',
+        'accounts',
+        'billing',
+        'delivery',
+        'delivery_coordinator',
+        'installer',
+        'store_manager',
+        'general_staff',
+        'staff',
+      ].includes(r))
+    )
+
     const isOwner =
       isCompanyOwner ||
-      isTenantMembershipOwner ||
-      (!employeeRole && (
+      (!isStaffMember && (
+        isTenantMembershipOwner ||
         responsibilities.includes('owner') ||
         responsibilities.includes('business_owner') ||
         roles.some((r) => r.slug === 'owner' || r.slug === 'business_owner' || r.slug === 'platform_owner')
