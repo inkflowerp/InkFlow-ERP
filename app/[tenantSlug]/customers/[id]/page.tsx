@@ -360,7 +360,7 @@ function deriveCustomerRates(
  productId: prod.id,
  productName: prod.name,
  productNameBn: prod.name_bn || null,
- sku: prod.sku || prod.code || 'PRD',
+ sku: prod.sku || prod.code || '',
  unit: prod.unit || 'pcs',
  category: prod.category || prod.product_category || 'general',
  customerRate: customRate,

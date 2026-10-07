@@ -378,7 +378,7 @@ export class DashboardService {
       .map((m) => ({
         id: m.id,
         name: m.name,
-        sku: m.sku || m.id.slice(0, 6).toUpperCase(),
+        sku: m.sku || '',
         category: (m as any).category || 'Raw Material',
         currentStock: Number(m.current_stock) || 0,
         minStockLevel: Number(m.min_stock_level) || 10,

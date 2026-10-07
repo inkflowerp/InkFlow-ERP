@@ -34,7 +34,7 @@ export class ProductService {
     return ProductRepository.createProduct({
       ...data,
       name: data.name || 'Product',
-      sku: data.sku || `PRD-${Date.now().toString().slice(-4)}`,
+      sku: data.sku || '',
       unit: (data.unit as any) || 'sft',
       selling_price: data.selling_price || 0,
     })

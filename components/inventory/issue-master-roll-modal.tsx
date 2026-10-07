@@ -390,7 +390,7 @@ export function IssueMasterRollModal({
  all.push({
  id: p.id,
  company_id: p.company_id || companyId || '',
- sku: p.sku || 'PROD',
+ sku: p.sku || '',
  name: p.name,
  name_bn: p.name_bn || null,
  category: p.category || 'raw_material',

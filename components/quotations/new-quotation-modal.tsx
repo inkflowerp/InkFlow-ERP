@@ -678,7 +678,7 @@ export function NewQuotationModal({
  setIsSavingQuickProduct(true)
  setQuickProductError(null)
  try {
- const sku = `PRD-${Date.now().toString().slice(-4)}`
+ const sku = ''
  const res = await createProductAction(
         {
  name: quickAddName.trim(),

@@ -636,7 +636,7 @@ export function ReceiveStockModal({
  list.push({
  id: rawId,
  parent_id: rawId,
- sku: sku || (isMat ? 'MAT' : 'PRD'),
+ sku: sku || '',
  name: name,
  item_type: isMat ? 'material' : 'product',
  category: cat,
@@ -857,7 +857,7 @@ export function ReceiveStockModal({
  const target: UnifiedStockItem = (itemId ? unifiedCatalog.find((x) => x.id === itemId || x.parent_id === itemId) : unifiedCatalog[0]) || {
  id: catalogMaterials[0]?.id || 'item-1',
  parent_id: catalogMaterials[0]?.id || 'item-1',
- sku: catalogMaterials[0]?.sku || 'MAT',
+ sku: catalogMaterials[0]?.sku || '',
  name: catalogMaterials[0]?.name || 'Select Item',
  item_type: 'material' as const,
  category: catalogMaterials[0]?.category || 'General',

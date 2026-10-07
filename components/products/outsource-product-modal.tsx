@@ -319,7 +319,7 @@ export function OutsourceProductModal({
     } else {
  setName('')
  setNameBn('')
- setSku(`OUT-${Date.now().toString().slice(-5)}`)
+ setSku('')
  setCategory('offset_printing')
  setUnit('piece')
  setPurchaseUnit('piece')
@@ -502,7 +502,7 @@ export function OutsourceProductModal({
  await onSave({
  name: name.trim(),
  name_bn: nameBn.trim() || undefined,
- sku: sku.trim() || `OUT-${Date.now().toString().slice(-5)}`,
+ sku: sku.trim() || '',
  category: category || 'offset_printing',
  outsource_category: category || 'offset_printing',
  product_type: 'outsource',

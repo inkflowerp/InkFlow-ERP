@@ -1384,7 +1384,7 @@ export function MaterialConfigModal({
  await onSave({
  name: name.trim(),
  name_bn: nameBn.trim() || undefined,
- sku: sku.trim() || `MAT-${Date.now().toString().slice(-5)}`,
+ sku: sku.trim() || '',
  category: category || 'materials',
  product_type: 'material',
  entity_type: 'material',

@@ -131,7 +131,7 @@ export function DashboardModals({
  const newMat: MaterialRecord = {
  id: `mat-${Date.now()}`,
  company_id: companyId || '',
- sku: `MAT-${Date.now().toString().slice(-4)}`,
+ sku: '',
  name: materialName.trim(),
  name_bn: materialName.trim(),
  category: 'rigid_sheet',

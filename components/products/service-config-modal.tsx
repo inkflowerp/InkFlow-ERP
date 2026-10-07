@@ -2180,7 +2180,7 @@ export function ServiceConfigModal({
     } else {
  setName('')
  setNameBn('')
- setSku(`SRV-${Date.now().toString().slice(-5)}`)
+ setSku('')
  setCategory('wide_format_printing')
  setSubCategory('')
  setPrintTechnology('Eco-Solvent')
@@ -3282,7 +3282,7 @@ export function ServiceConfigModal({
  identity: {
  name_en: name.trim(),
  name_bn: nameBn.trim() || undefined,
- code: sku.trim() || `SRV-${Date.now().toString().slice(-5)}`,
+ code: sku.trim() || '',
  description: description.trim() || undefined,
  active: isActive,
         },
@@ -3461,7 +3461,7 @@ export function ServiceConfigModal({
  await onSave({
  name: name.trim(),
  name_bn: nameBn.trim() || undefined,
- sku: sku.trim() || `SRV-${Date.now().toString().slice(-5)}`,
+ sku: sku.trim() || '',
  category: category || (serviceType === 'finishing' ? 'finishing_service' : (serviceType === 'production' ? 'production_service' : 'printing_service')),
  sub_category: subCategory.trim() || undefined,
  product_type: serviceType === 'finishing' ? 'finishing' : (serviceType === 'production' ? 'fabrication' : 'print_service'),

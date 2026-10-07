@@ -180,7 +180,7 @@ function UnifiedInventoryContent() {
  combined.push({
  id: p.id,
  company_id: p.company_id || 'default',
- sku: p.sku || 'MAT',
+ sku: p.sku || '',
  name: p.name,
  name_bn: p.name_bn || null,
  category: (p.category as any) || 'raw_materials',
@@ -911,7 +911,7 @@ function UnifiedInventoryContent() {
 
  if (!map.has(k)) {
  map.set(k, {
- sku: mat.sku || 'MAT',
+ sku: mat.sku || '',
  name: mat.name,
  name_bn: mat.name_bn,
  attrs: canonicalAttrs,
@@ -998,7 +998,7 @@ function UnifiedInventoryContent() {
 
  list.push({
  key: k,
- sku: mat.sku || 'MAT',
+ sku: mat.sku || '',
  material_id: mat.id,
  material_name: mat.name,
  material_name_bn: mat.name_bn || null,
@@ -1037,7 +1037,7 @@ function UnifiedInventoryContent() {
       }>()
 
  for (const r of remainingRolls) {
- const sku = r.material?.sku || 'MAT'
+ const sku = r.material?.sku || ''
  const name = r.material?.name || 'Roll Media'
  const name_bn = r.material?.name_bn || null
  const matId = r.material_id

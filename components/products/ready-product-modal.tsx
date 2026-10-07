@@ -474,7 +474,7 @@ export function ReadyProductModal({
     } else {
  setName('')
  setNameBn('')
- setSku(`RP-${Date.now().toString().slice(-5)}`)
+ setSku('')
  setBarcode('')
  setBrand('')
  setCategory('display_stands')
@@ -644,7 +644,7 @@ export function ReadyProductModal({
  await onSave({
  name: name.trim(),
  name_bn: nameBn.trim() || undefined,
- sku: sku.trim() || `RP-${Date.now().toString().slice(-5)}`,
+ sku: sku.trim() || '',
  barcode: barcode.trim() || undefined,
  brand: brand.trim() || undefined,
  category: category || 'display_stands',

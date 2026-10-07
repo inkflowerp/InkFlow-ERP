@@ -839,7 +839,7 @@ export class PriceIntelligenceEngine {
     return {
       material_id: material?.id || '',
       material_name: material?.name || 'Substrate',
-      material_sku: material?.sku || 'MAT',
+      material_sku: material?.sku || '',
       physical_form: form,
       size_label: size_label || 'Standard Size',
       purchase_unit: pUnit,

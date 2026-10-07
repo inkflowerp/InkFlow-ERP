@@ -944,7 +944,7 @@ export default function ProductsCatalogPage() {
  setFormData({
  name: '',
  name_bn: '',
- sku: `PRD-${Date.now().toString().slice(-4)}`,
+ sku: '',
  category: 'flex_banner',
  product_type: 'print_service',
  commercial_type: 'production_product',

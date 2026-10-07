@@ -629,8 +629,8 @@ export class ProductRepository {
    * Checks if SKU is unique within tenant
    */
   static async checkSkuUnique(companyId: string, sku: string, excludeProductId?: string): Promise<boolean> {
-    const normalizedSku = sku.trim().toUpperCase()
-    if (!normalizedSku) return false
+    const normalizedSku = (sku || '').trim().toUpperCase()
+    if (!normalizedSku) return true
 
     if (!isSupabaseConfigured()) {
       if (isTestMode()) {
@@ -689,10 +689,12 @@ export class ProductRepository {
     selling_price: number
   }): Promise<ProductRecord> {
     return measureAsync(`ProductRepository.createProduct(${product.name})`, async () => {
-      const normalizedSku = product.sku.trim().toUpperCase()
-      const isUnique = await this.checkSkuUnique(product.company_id, normalizedSku)
-      if (!isUnique) {
-        throw new Error(`Product with SKU '${normalizedSku}' already exists in your company catalog.`)
+      const normalizedSku = product.sku ? product.sku.trim().toUpperCase() : ''
+      if (normalizedSku) {
+        const isUnique = await this.checkSkuUnique(product.company_id, normalizedSku)
+        if (!isUnique) {
+          throw new Error(`Product with SKU '${normalizedSku}' already exists in your company catalog.`)
+        }
       }
 
       const purchasePrice = Math.max(0, Number(product.purchase_price) || 0)
