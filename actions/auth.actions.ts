@@ -3,14 +3,14 @@
 import { AuthService } from '../services/auth.service.ts'
 import { AuditService } from '../services/audit.service.ts'
 import { checkRateLimitAsync } from '../lib/security/rate-limiter.ts'
-import { TENANT_SESSION_COOKIE, PLATFORM_SESSION_COOKIE } from '../lib/auth/types.ts'
+import { TENANT_SESSION_COOKIE, PLATFORM_SESSION_COOKIE, type TenantSessionData } from '../lib/auth/types.ts'
 import { getCurrentTenant, invalidateTenantAuthCache } from '../lib/auth/tenant-auth.ts'
 import { createClient } from '../lib/supabase/server.ts'
 import { resolveRequestOrigin } from '../lib/security/runtime-env.ts'
 import { getAuthCookieOptions, resolveHostname, resolveTenant, isReservedSlug } from '../lib/tenant/tenant-resolution.ts'
 import { getTenantLink, getTenantBaseUrl } from '../lib/tenant/tenant-url.ts'
 import { createSubdomainHandoffToken } from '../lib/auth/subdomain-handoff.ts'
-import { signSessionToken } from '../lib/security/session-signer.ts'
+import { signSessionToken, verifySessionToken } from '../lib/security/session-signer.ts'
 import { TenantRepository } from '../lib/repositories/tenant.repository.ts'
 
 async function getCookieStore(customCookieStore?: any) {
@@ -512,6 +512,28 @@ export async function checkEmailVerificationStatusAction(email: string) {
   }
 
   return result
+}
+
+/**
+ * Checks whether the current request session or user has verified email status.
+ */
+export async function checkEmailVerifiedAction(): Promise<boolean> {
+  try {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (user && (user.email_confirmed_at || (user as any).confirmed_at)) {
+      return true
+    }
+    const cookieStore = await getCookieStore()
+    const sessionCookie = cookieStore.get(TENANT_SESSION_COOKIE)?.value
+    if (sessionCookie) {
+      const verified = await verifySessionToken<TenantSessionData>(sessionCookie)
+      if (verified?.userId) return true
+    }
+    return false
+  } catch {
+    return false
+  }
 }
 
 export async function resendVerificationOtpAction(

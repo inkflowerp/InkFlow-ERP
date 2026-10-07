@@ -866,7 +866,7 @@ export function MaterialConfigModal({
     } else if (!initialData && isOpen) {
  setName('')
  setNameBn('')
- setSku(`MAT-${Date.now().toString().slice(-5)}`)
+ setSku('')
  setCategory('flex_banner')
  setMaterialType('roll')
  setIsActive(true)

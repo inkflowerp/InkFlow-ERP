@@ -14,7 +14,12 @@ export const registerSchema = z.object({
     .string()
     .min(11, 'Please enter a valid Bangladeshi mobile number (01XXXXXXXXX)')
     .regex(/^(?:\+8801|01)[3-9]\d{8}$/, 'Invalid Bangladeshi mobile number format'),
- password: z.string().min(6, 'Password must be at least 6 characters'),
+  password: z
+    .string()
+    .min(8, 'Password must be at least 8 characters')
+    .regex(/[a-z]/, 'Password must contain at least one small letter')
+    .regex(/[A-Z]/, 'Password must contain at least one capital letter')
+    .regex(/[0-9]|[^A-Za-z0-9]/, 'Password must contain at least one number or symbol'),
 })
 
 export type RegisterFormData = z.infer<typeof registerSchema>

@@ -8,6 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { User, Mail, Phone, Lock, ArrowRight, AlertCircle, Eye, EyeOff } from 'lucide-react'
 import { registerSchema, RegisterFormData } from '@/features/auth/auth.schemas'
 import { signUpAction, signInWithGoogleAction } from '@/actions/auth.actions'
+import { PasswordRequirements } from '@/components/auth/password-requirements'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
@@ -27,6 +28,7 @@ function RegisterForm() {
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors },
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
@@ -37,6 +39,8 @@ function RegisterForm() {
       password: '',
     },
   })
+
+  const passwordValue = watch('password') || ''
 
   const onSubmit = async (data: RegisterFormData) => {
     setIsLoading(true)
@@ -161,24 +165,26 @@ function RegisterForm() {
 
           <div className="space-y-1.5">
             <Label required>{t('auth.password')}</Label>
-            <div className="relative">
-              <Input
-                type={showPassword ? 'text' : 'password'}
-                icon={<Lock className="h-4 w-4" />}
-                placeholder="••••••••"
-                {...register('password')}
-                error={errors.password?.message}
-                className="pr-10"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer transition-colors p-1"
-                aria-label={showPassword ? 'Hide password' : 'Show password'}
-              >
-                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </button>
-            </div>
+            <Input
+              type={showPassword ? 'text' : 'password'}
+              icon={<Lock className="h-4 w-4" />}
+              placeholder="••••••••"
+              {...register('password')}
+              error={errors.password?.message}
+              rightElement={
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="p-1 text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              }
+            />
+
+            {/* Password strength & requirements checklist */}
+            <PasswordRequirements password={passwordValue} locale={locale} />
           </div>
         </CardContent>
 
