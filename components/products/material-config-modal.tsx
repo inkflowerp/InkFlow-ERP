@@ -35,6 +35,7 @@ import {
  Coins,
  ChevronRight,
  ChevronLeft,
+ ArrowLeft,
  Sliders,
  RotateCcw,
  CheckCircle2,
@@ -63,6 +64,7 @@ interface MaterialConfigModalProps {
  categories?: ProductCategoryRecord[]
  suppliers?: Array<{ id: string; name: string; contact_person?: string; phone?: string }>
  printingMethods?: Array<{ id: string; name: string; name_bn?: string | null }>
+ onBack?: () => void
 }
 
 export type MaterialPhysicalType = 'roll' | 'sheet' | 'liquid' | 'rigid' | 'accessory' | 'electrical'
@@ -335,6 +337,7 @@ export function MaterialConfigModal({
  categories = [],
  suppliers = [],
  printingMethods = [],
+ onBack,
 }: MaterialConfigModalProps) {
  const { locale, tBilingual } = useI18n()
   const isBn = locale === 'bn'
@@ -1437,6 +1440,19 @@ export function MaterialConfigModal({
  size="5xl"onSubmit={handleSubmit}
  title={
         <div className="flex items-center gap-3">
+          {onBack && !initialData && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={onBack}
+              className="h-9 px-2.5 rounded-lg border-border text-foreground hover:bg-muted gap-1.5 shrink-0 cursor-pointer"
+              title={tBilingual('Back to selection', 'তালিকায় ফিরে যান')}
+            >
+              <ArrowLeft className="h-4 w-4" />
+              <span className="text-xs font-semibold">{tBilingual('Back', 'ফিরে যান')}</span>
+            </Button>
+          )}
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-warning/10 text-warning bg-warning/20 text-warning font-bold shrink-0 ring-1 focus:ring-ring/20">
             <Boxes className="h-5 w-5"/>
           </div>
@@ -1466,7 +1482,7 @@ export function MaterialConfigModal({
  footer={
         <div className="flex items-center justify-between gap-3 w-full">
           <div>
-            {activeTab !== 'basic' && (
+            {activeTab !== 'basic' ? (
               <Button
  type="button"variant="outline"onClick={() => {
  if (activeTab === 'geometry') setActiveTab('basic')
@@ -1478,7 +1494,14 @@ export function MaterialConfigModal({
                 <ChevronLeft className="w-4 h-4"/>
                 <span>{tBilingual('Back', 'পূর্ববর্তী ধাপ')}</span>
               </Button>
-            )}
+            ) : onBack && !initialData ? (
+              <Button
+ type="button"variant="outline"onClick={onBack}
+ className="h-10 px-4 rounded-xl font-bold border-input text-foreground hover:bg-muted gap-1.5 cursor-pointer">
+                <ArrowLeft className="w-4 h-4"/>
+                <span>{tBilingual('Back to Selection', 'তালিকায় ফিরে যান')}</span>
+              </Button>
+            ) : null}
           </div>
 
           <div className="flex items-center gap-2">

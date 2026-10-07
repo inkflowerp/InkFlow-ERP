@@ -16,6 +16,7 @@ import {
  Check,
  ChevronRight,
  ChevronLeft,
+ ArrowLeft,
  Sparkles,
  ShieldCheck,
  Tag,
@@ -51,6 +52,7 @@ interface ReadyProductModalProps {
  initialData?: ProductRecord | null
  categories?: ProductCategoryRecord[]
  suppliers?: Array<{ id: string; name: string; contact_person?: string; phone?: string }>
+ onBack?: () => void
 }
 
 export const READY_PRODUCT_UNITS: { value: UnitOfMeasure; label: string; labelBn: string }[] = [
@@ -319,6 +321,7 @@ export function ReadyProductModal({
  initialData,
  categories = [],
  suppliers = [],
+ onBack,
 }: ReadyProductModalProps) {
   const { locale, tBilingual } = useI18n()
   const isBn = locale === 'bn'
@@ -741,6 +744,19 @@ export function ReadyProductModal({
  size="5xl"onSubmit={handleSubmit}
  title={
         <div className="flex items-center gap-3">
+          {onBack && !initialData && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={onBack}
+              className="h-9 px-2.5 rounded-lg border-border text-foreground hover:bg-muted gap-1.5 shrink-0 cursor-pointer"
+              title={tBilingual('Back to selection', 'তালিকায় ফিরে যান')}
+            >
+              <ArrowLeft className="h-4 w-4" />
+              <span className="text-xs font-semibold">{tBilingual('Back', 'ফিরে যান')}</span>
+            </Button>
+          )}
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary font-bold shrink-0 ring-1 focus:ring-ring/20">
             <Package className="h-5 w-5"/>
           </div>
@@ -767,14 +783,21 @@ export function ReadyProductModal({
  footer={
         <div className="flex items-center justify-between gap-3 w-full">
           <div>
-            {currentTabIndex > 0 && (
+            {currentTabIndex > 0 ? (
               <Button
  type="button"variant="outline"onClick={() => setActiveTab(TABS_CONFIG[currentTabIndex - 1].id)}
  className="h-10 px-4 rounded-xl font-bold border-input text-foreground hover:bg-muted gap-1.5 cursor-pointer">
                 <ChevronLeft className="w-4 h-4"/>
                 <span>{tBilingual('Back', 'পূর্ববর্তী ধাপ')}</span>
               </Button>
-            )}
+            ) : onBack && !initialData ? (
+              <Button
+ type="button"variant="outline"onClick={onBack}
+ className="h-10 px-4 rounded-xl font-bold border-input text-foreground hover:bg-muted gap-1.5 cursor-pointer">
+                <ArrowLeft className="w-4 h-4"/>
+                <span>{tBilingual('Back to Selection', 'তালিকায় ফিরে যান')}</span>
+              </Button>
+            ) : null}
           </div>
 
           <div className="flex items-center gap-2">

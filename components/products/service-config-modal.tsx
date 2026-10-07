@@ -19,6 +19,7 @@ import {
  Check,
  ChevronRight,
  ChevronLeft,
+ ArrowLeft,
  Palette,
  RefreshCw,
  TrendingUp,
@@ -82,6 +83,7 @@ interface ServiceConfigModalProps {
  finishingMasterOptions?: Array<{ id: string; name: string; pricing_method: string; selling_price: number; cost: number }>
  additionalMasterOptions?: Array<{ id: string; name: string; pricing_method: string; selling_price: number; cost: number }>
  installationMasterOptions?: Array<{ id: string; name: string; pricing_method: string; selling_price: number; cost: number }>
+ onBack?: () => void
 }
 
 export const COMMON_SELLING_UNITS: { value: string; label: string; label_bn: string; defaultMethod: PricingMethod }[] = [
@@ -1055,6 +1057,7 @@ export function ServiceConfigModal({
  finishingMasterOptions = [],
  additionalMasterOptions = [],
  installationMasterOptions = [],
+ onBack,
 }: ServiceConfigModalProps) {
   const { locale, tBilingual } = useI18n()
   const isBn = locale === 'bn'
@@ -3582,6 +3585,19 @@ export function ServiceConfigModal({
  size="5xl"onSubmit={handleSubmit}
  title={
         <div className="flex items-center gap-3">
+          {onBack && !initialData && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={onBack}
+              className="h-9 px-2.5 rounded-lg border-border text-foreground hover:bg-muted gap-1.5 shrink-0 cursor-pointer"
+              title={tBilingual('Back to selection', 'তালিকায় ফিরে যান')}
+            >
+              <ArrowLeft className="h-4 w-4" />
+              <span className="text-xs font-semibold">{tBilingual('Back', 'ফিরে যান')}</span>
+            </Button>
+          )}
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary bg-primary/20 text-primary font-bold shrink-0 ring-1 focus:ring-ring/20">
             <Printer className="h-5 w-5"/>
           </div>
@@ -3608,7 +3624,7 @@ export function ServiceConfigModal({
  footer={
         <div className="flex items-center justify-between gap-3 w-full">
           <div>
-            {activeTab !== 'basic' && (
+            {activeTab !== 'basic' ? (
               <Button
  type="button"variant="outline"onClick={() => {
  if (activeTab === 'materials') setActiveTab('basic')
@@ -3620,7 +3636,14 @@ export function ServiceConfigModal({
                 <ChevronLeft className="w-4 h-4"/>
                 <span>{tBilingual('Back', 'পূর্ববর্তী ধাপ')}</span>
               </Button>
-            )}
+            ) : onBack && !initialData ? (
+              <Button
+ type="button"variant="outline"onClick={onBack}
+ className="h-10 px-4 rounded-xl font-bold border-input text-foreground hover:bg-muted gap-1.5 cursor-pointer">
+                <ArrowLeft className="w-4 h-4"/>
+                <span>{tBilingual('Back to Selection', 'তালিকায় ফিরে যান')}</span>
+              </Button>
+            ) : null}
           </div>
 
           <div className="flex items-center gap-2">

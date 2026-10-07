@@ -560,29 +560,38 @@ export default function ProductsCatalogPage() {
     }
   }
 
- const handleSelectEntityType = (type: 'product' | 'service' | 'material' | 'outsource' | 'finishing' | 'additional' | 'installation' | 'printing_method') => {
- setEditingProduct(null)
- if (type === 'product') {
- setIsReadyProductModalOpen(true)
+  const handleSelectEntityType = (type: 'product' | 'service' | 'material' | 'outsource' | 'finishing' | 'additional' | 'installation' | 'printing_method') => {
+    setEditingProduct(null)
+    if (type === 'product') {
+      setIsReadyProductModalOpen(true)
     } else if (type === 'service') {
- setIsServiceModalOpen(true)
+      setIsServiceModalOpen(true)
     } else if (type === 'material') {
- setIsMaterialModalOpen(true)
+      setIsMaterialModalOpen(true)
     } else if (type === 'outsource') {
- setIsOutsourceModalOpen(true)
+      setIsOutsourceModalOpen(true)
     } else if (type === 'printing_method') {
- setEditingPrintingMethod(null)
- setIsPrintingMethodModalOpen(true)
+      setEditingPrintingMethod(null)
+      setIsPrintingMethodModalOpen(true)
     } else if (type === 'finishing') {
- setEditingFinishing(null)
- setIsFinishingModalOpen(true)
+      setEditingFinishing(null)
+      setIsFinishingModalOpen(true)
     } else if (type === 'additional') {
- setEditingAdditional(null)
- setIsAdditionalModalOpen(true)
+      setEditingAdditional(null)
+      setIsAdditionalModalOpen(true)
     } else if (type === 'installation') {
- setEditingInstallation(null)
- setIsInstallationModalOpen(true)
+      setEditingInstallation(null)
+      setIsInstallationModalOpen(true)
     }
+  }
+
+  const handleBackToTypeSelector = () => {
+    setIsReadyProductModalOpen(false)
+    setIsServiceModalOpen(false)
+    setIsMaterialModalOpen(false)
+    setIsOutsourceModalOpen(false)
+    setEditingProduct(null)
+    setIsTypeSelectorOpen(true)
   }
 
   // Computed live commercial numbers for create/edit modal
@@ -4878,54 +4887,58 @@ export default function ProductsCatalogPage() {
       />
 
       <ReadyProductModal
- isOpen={isReadyProductModalOpen}
- onClose={() => {
- setIsReadyProductModalOpen(false)
- setEditingProduct(null)
+        isOpen={isReadyProductModalOpen}
+        onClose={() => {
+          setIsReadyProductModalOpen(false)
+          setEditingProduct(null)
         }}
- onSave={handleSaveRebuiltProduct}
- initialData={editingProduct}
- categories={categories}
+        onSave={handleSaveRebuiltProduct}
+        initialData={editingProduct}
+        categories={categories}
+        onBack={handleBackToTypeSelector}
       />
 
       <ServiceConfigModal
- isOpen={isServiceModalOpen}
- onClose={() => {
- setIsServiceModalOpen(false)
- setEditingProduct(null)
+        isOpen={isServiceModalOpen}
+        onClose={() => {
+          setIsServiceModalOpen(false)
+          setEditingProduct(null)
         }}
- onSave={handleSaveRebuiltProduct}
- initialData={editingProduct}
- categories={categories}
- availableMaterials={products.filter((p) => p.entity_type === 'material' || p.product_type === 'material') as any}
- machineries={machineries}
- printingMethods={printingMethods}
- finishingMasterOptions={finishingOptions}
- additionalMasterOptions={additionalOptions}
- installationMasterOptions={installationOptions}
+        onSave={handleSaveRebuiltProduct}
+        initialData={editingProduct}
+        categories={categories}
+        availableMaterials={products.filter((p) => p.entity_type === 'material' || p.product_type === 'material') as any}
+        machineries={machineries}
+        printingMethods={printingMethods}
+        finishingMasterOptions={finishingOptions}
+        additionalMasterOptions={additionalOptions}
+        installationMasterOptions={installationOptions}
+        onBack={handleBackToTypeSelector}
       />
 
       <MaterialConfigModal
- isOpen={isMaterialModalOpen}
- onClose={() => {
- setIsMaterialModalOpen(false)
- setEditingProduct(null)
+        isOpen={isMaterialModalOpen}
+        onClose={() => {
+          setIsMaterialModalOpen(false)
+          setEditingProduct(null)
         }}
- onSave={handleSaveRebuiltProduct}
- initialData={editingProduct}
- categories={categories}
- printingMethods={printingMethods}
+        onSave={handleSaveRebuiltProduct}
+        initialData={editingProduct}
+        categories={categories}
+        printingMethods={printingMethods}
+        onBack={handleBackToTypeSelector}
       />
 
       <OutsourceProductModal
- isOpen={isOutsourceModalOpen}
- onClose={() => {
- setIsOutsourceModalOpen(false)
- setEditingProduct(null)
+        isOpen={isOutsourceModalOpen}
+        onClose={() => {
+          setIsOutsourceModalOpen(false)
+          setEditingProduct(null)
         }}
- onSave={handleSaveRebuiltProduct}
- initialData={editingProduct}
- categories={categories}
+        onSave={handleSaveRebuiltProduct}
+        initialData={editingProduct}
+        categories={categories}
+        onBack={handleBackToTypeSelector}
       />
 
       {/* Standalone Configuration Master Modals */}
