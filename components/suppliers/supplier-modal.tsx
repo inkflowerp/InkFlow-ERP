@@ -56,7 +56,8 @@ export function SupplierModal({
  onSave,
 }: SupplierModalProps) {
  const { company } = useTenant()
- const { tBilingual } = useI18n()
+ const { locale, tBilingual } = useI18n()
+  const isBn = locale === 'bn'
 
  const isEditing = Boolean(supplierToEdit)
 
@@ -316,9 +317,11 @@ export function SupplierModal({
 
  return (
     <ModalDialog
- open={open}
- onOpenChange={onOpenChange}
- size="4xl"title={
+      open={open}
+      onOpenChange={onOpenChange}
+      size="4xl"
+      hideFooter
+      title={
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-success/10 text-success bg-success/20 text-success font-bold shrink-0">
             <Truck className="h-5 w-5"/>
@@ -413,7 +416,7 @@ export function SupplierModal({
                       {tBilingual('Supplier / Shop Name (English)', 'সাপ্লায়ার / দোকানের নাম (ইংরেজি)')} <span className="text-destructive">*</span>
                     </Label>
                     <Input
- placeholder="e.g. Nayabazar Paper House & Media"value={formData.supplier_name}
+ placeholder={tBilingual('e.g. Nayabazar Paper House & Media', 'যেমন: নয়াবাজার পেপার হাউস ও মিডিয়া')}value={formData.supplier_name}
  onChange={(e) => {
  setFormData({ ...formData, supplier_name: e.target.value })
  if (fieldErrors.supplier_name) setFieldErrors((prev) => ({ ...prev, supplier_name: '' }))
@@ -457,7 +460,7 @@ export function SupplierModal({
                       {tBilingual('Trading House / Parent Company', 'ট্রেডিং প্রতিষ্ঠান / মূল কোম্পানি')}
                     </Label>
                     <Input
- placeholder="e.g. Bengal Import & Trade Syndicate"value={formData.company}
+ placeholder={tBilingual('e.g. Bengal Import & Trade Syndicate', 'যেমন: বেঙ্গল ইমপোর্ট অ্যান্ড ট্রেড সিন্ডিকেট')}value={formData.company}
  onChange={(e) => setFormData({ ...formData, company: e.target.value })}
  className="text-xs h-9"/>
                   </div>
@@ -473,7 +476,7 @@ export function SupplierModal({
                       {tBilingual('Primary Supply Category', 'প্রধান উপাদানের ক্যাটাগরি')} <span className="text-destructive">*</span>
                     </Label>
                   </div>
-                  <span className="text-xs text-muted-foreground">Used for fast purchase PO filtering</span>
+                  <span className="text-xs text-muted-foreground">{tBilingual('Used for fast purchase PO filtering', 'দ্রুত পিও ফিল্টারিংয়ের জন্য ব্যবহৃত')}</span>
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -497,9 +500,9 @@ export function SupplierModal({
                         </div>
                         <div className="min-w-0">
                           <div className="text-xs font-bold text-foreground truncate">
-                            {cat.labelEn.split(' ')[0]}
+                            {isBn ? cat.labelBn.split(' ')[0].replace(/[()]/g, '') : cat.labelEn.split(' ')[0]}
                           </div>
-                          <div className="text-xs text-muted-foreground truncate">{cat.labelBn}</div>
+                          <div className="text-xs text-muted-foreground truncate">{isBn ? cat.labelBn : cat.labelEn}</div>
                         </div>
                       </button>
                     )
@@ -912,7 +915,15 @@ export function SupplierModal({
 
         {/* Action Footer */}
         <div className="pt-3 flex items-center justify-between gap-3 border-t border-border">
-          <div>
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              className="w-full sm:w-auto min-h-10 text-xs font-semibold cursor-pointer"
+            >
+              {tBilingual('Cancel', 'বাতিল')}
+            </Button>
             {activeTab !== 'identity' && (
               <Button
  type="button"variant="outline"onClick={() => {
@@ -920,7 +931,7 @@ export function SupplierModal({
  const prevIdx = tabs.indexOf(activeTab) - 1
  if (prevIdx >= 0) setActiveTab(tabs[prevIdx])
                 }}
- className="w-full sm:w-auto min-h-[40px] text-xs font-semibold">
+ className="w-full sm:w-auto min-h-10 text-xs font-semibold">
                 <ChevronLeft className="h-3.5 w-3.5 mr-1"/> {tBilingual('Back', 'পূর্ববর্তী')}
               </Button>
             )}
@@ -963,7 +974,7 @@ export function SupplierModal({
  const nextIdx = tabs.indexOf(activeTab) + 1
  if (nextIdx < tabs.length) setActiveTab(tabs[nextIdx])
                 }}
- className="w-full sm:w-auto min-h-[40px] text-xs font-semibold text-success text-success">
+ className="w-full sm:w-auto min-h-10 text-xs font-semibold text-success text-success">
                 {tBilingual('Next Section', 'পরবর্তী ধাপ')} <ChevronRight className="h-3.5 w-3.5 ml-1"/>
               </Button>
             )}
@@ -971,7 +982,7 @@ export function SupplierModal({
             {activeTab === 'banking' && (
               <Button
  type="submit"disabled={loading}
- className="w-full sm:w-auto min-h-[40px] text-xs bg-success hover:bg-success text-white font-bold shadow-sm px-6">
+ className="w-full sm:w-auto min-h-10 text-xs bg-success hover:bg-success text-white font-bold shadow-sm px-6">
                 {loading
                   ? tBilingual('Saving...', 'সংরক্ষণ হচ্ছে...')
                   : isEditing

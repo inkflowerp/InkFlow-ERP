@@ -53,17 +53,17 @@ interface ReadyProductModalProps {
  suppliers?: Array<{ id: string; name: string; contact_person?: string; phone?: string }>
 }
 
-export const READY_PRODUCT_UNITS: { value: UnitOfMeasure; label: string }[] = [
-  { value: 'piece', label: 'Piece (pcs / পিস)' },
-  { value: 'set', label: 'Set (সেট)' },
-  { value: 'pack', label: 'Pack (প্যাক)' },
-  { value: 'box', label: 'Box / Carton (বক্স)' },
-  { value: 'item', label: 'Item (আইটেম)' },
-  { value: 'pair', label: 'Pair (জোড়া)' },
-  { value: 'roll', label: 'Roll (রোল)' },
-  { value: 'liter', label: 'Liter (লিটার)' },
-  { value: 'kg', label: 'KG (কেজি)' },
-  { value: 'meter', label: 'Meter (মিটার)' },
+export const READY_PRODUCT_UNITS: { value: UnitOfMeasure; label: string; labelBn: string }[] = [
+  { value: 'piece', label: 'Piece (pcs)', labelBn: 'পিস (pcs)' },
+  { value: 'set', label: 'Set', labelBn: 'সেট' },
+  { value: 'pack', label: 'Pack', labelBn: 'প্যাক' },
+  { value: 'box', label: 'Box / Carton', labelBn: 'বক্স / কার্টন' },
+  { value: 'item', label: 'Item', labelBn: 'আইটেম' },
+  { value: 'pair', label: 'Pair', labelBn: 'জোড়া' },
+  { value: 'roll', label: 'Roll', labelBn: 'রোল' },
+  { value: 'liter', label: 'Liter', labelBn: 'লিটার' },
+  { value: 'kg', label: 'KG', labelBn: 'কেজি' },
+  { value: 'meter', label: 'Meter', labelBn: 'মিটার' },
 ]
 
 export const READY_PRODUCT_CATEGORIES = [
@@ -961,11 +961,7 @@ export function ReadyProductModal({
  value={unit}
  onChange={(e) => setUnit(e.target.value as UnitOfMeasure)}
  className="w-full h-9 text-xs rounded-md border border-input bg-card px-2 font-medium">
-                      {READY_PRODUCT_UNITS.map((u) => (
-                        <option key={u.value} value={u.value}>
-                          {u.label}
-                        </option>
-                      ))}
+                      {READY_PRODUCT_UNITS.map((u) => (<option key={u.value} value={u.value}>{locale === 'bn' ? u.labelBn : u.label}</option>))}
                     </select>
                   </div>
                 </div>
@@ -1065,11 +1061,7 @@ export function ReadyProductModal({
  value={purchaseUnit}
  onChange={(e) => setPurchaseUnit(e.target.value)}
  className="w-full h-9 text-xs rounded-md border border-input bg-card px-2 font-medium">
-                    {READY_PRODUCT_UNITS.map((u) => (
-                      <option key={u.value} value={u.value}>
-                        {u.label}
-                      </option>
-                    ))}
+                    {READY_PRODUCT_UNITS.map((u) => (<option key={u.value} value={u.value}>{locale === 'bn' ? u.labelBn : u.label}</option>))}
                   </select>
                 </div>
               </div>
@@ -1105,7 +1097,7 @@ export function ReadyProductModal({
  type="checkbox"checked={isMountable}
  onChange={(e) => setIsMountable(e.target.checked)}
  className="w-4 h-4 rounded text-primary focus:ring-ring"/>
-                  <span>Wall / Table Mount</span>
+                  <span className={cn(isBn && "font-bangla")}>{tBilingual('Wall / Table Mount', 'দেয়াল / টেবিল মাউন্ট')}</span>
                 </label>
               </div>
             </div>
@@ -1116,16 +1108,12 @@ export function ReadyProductModal({
                 <div className="h-6 w-6 rounded-lg bg-warning-surface text-warning flex items-center justify-center font-bold text-xs">
                   <Boxes className="w-3.5 h-3.5"/>
                 </div>
-                <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
- Master Carton Packing & Order Quantities
-                </h3>
+                <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">{tBilingual('Master Carton Packing & Order Quantities', 'মাস্টার কার্টন প্যাকিং ও অর্ডারের পরিমাণ')}</h3>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                  <Label className="text-xs font-semibold mb-1 block">
- Pieces Per Master Carton
-                  </Label>
+                  <Label className="text-xs font-semibold mb-1 block">{tBilingual('Pieces Per Master Carton', 'প্রতি কার্টনে পিস')}</Label>
                   <Input
  type="number"min="1"placeholder="e.g. 50"value={pcsPerCarton}
  onChange={(e) => setPcsPerCarton(e.target.value === '' ? '' : parseInt(e.target.value))}
@@ -1133,9 +1121,7 @@ export function ReadyProductModal({
                 </div>
 
                 <div>
-                  <Label className="text-xs font-semibold mb-1 block">
- Min Order Quantity (MOQ)
-                  </Label>
+                  <Label className="text-xs font-semibold mb-1 block">{tBilingual('Min Order Quantity (MOQ)', 'সর্বনিম্ন অর্ডার পরিমাণ (MOQ)')}</Label>
                   <Input
  type="number"min="1"value={minOrderQty}
  onChange={(e) => setMinOrderQty(parseInt(e.target.value) || 1)}
@@ -1143,9 +1129,7 @@ export function ReadyProductModal({
                 </div>
 
                 <div>
-                  <Label className="text-xs font-semibold mb-1 block">
- Min Billable Quantity
-                  </Label>
+                  <Label className="text-xs font-semibold mb-1 block">{tBilingual('Min Billable Quantity', 'সর্বনিম্ন বিলযোগ্য পরিমাণ')}</Label>
                   <Input
  type="number"min="1"value={minBillableQty}
  onChange={(e) => setMinBillableQty(parseInt(e.target.value) || 1)}
@@ -1155,19 +1139,15 @@ export function ReadyProductModal({
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
                 <div>
-                  <Label className="text-xs font-semibold mb-1 block">
- Carton Dimensions (L × W × H cm)
-                  </Label>
+                  <Label className="text-xs font-semibold mb-1 block">{tBilingual('Carton Dimensions (L × W × H cm)', 'কার্টনের আকার (দৈর্ঘ্য × প্রস্থ × উচ্চতা সেমি)')}</Label>
                   <Input
- placeholder="e.g. 105 × 40 × 30 cm"value={cartonDimensions}
+ placeholder={tBilingual('e.g. 105 × 40 × 30 cm', 'যেমন: ১০৫ × ৪০ × ৩০ সেমি')}value={cartonDimensions}
  onChange={(e) => setCartonDimensions(e.target.value)}
  className="h-9 text-xs"/>
                 </div>
 
                 <div>
-                  <Label className="text-xs font-semibold mb-1 block">
- Carton Gross Weight (kg)
-                  </Label>
+                  <Label className="text-xs font-semibold mb-1 block">{tBilingual('Carton Gross Weight (kg)', 'কার্টনের মোট ওজন (কেজি)')}</Label>
                   <Input
  type="number"step="0.1"placeholder="e.g. 24.5"value={cartonWeightKg}
  onChange={(e) => setCartonWeightKg(e.target.value === '' ? '' : parseFloat(e.target.value))}
@@ -1189,16 +1169,12 @@ export function ReadyProductModal({
                 <div className="h-6 w-6 rounded-lg bg-success-surface text-success flex items-center justify-center font-bold text-xs">
                   <DollarSign className="w-3.5 h-3.5"/>
                 </div>
-                <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
- Commercial Selling Price & Landed Cost Structure
-                </h3>
+                <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">{tBilingual('Commercial Selling Price & Landed Cost Structure', 'বাণিজ্যিক বিক্রয় মূল্য ও ল্যান্ডেড খরচ কাঠামো')}</h3>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
                 <div>
-                  <Label className="text-xs font-semibold mb-1 block text-foreground">
- Base Selling Price (৳ / {unit}) <span className="text-destructive">*</span>
-                  </Label>
+                  <Label className="text-xs font-semibold mb-1 block text-foreground">{tBilingual(`Base Selling Price (৳ / ${unit})`, `মূল বিক্রয় মূল্য (৳ / ${unit})`)} <span className="text-destructive">*</span></Label>
                   <div className="relative">
                     <span className="absolute left-3 top-2.5 text-muted-foreground font-bold text-xs">৳</span>
                     <Input
@@ -1224,9 +1200,7 @@ export function ReadyProductModal({
                 </div>
 
                 <div>
-                  <Label className="text-xs font-semibold mb-1 block text-foreground">
- Factory Purchase Price (৳)
-                  </Label>
+                  <Label className="text-xs font-semibold mb-1 block text-foreground">{tBilingual('Factory Purchase Price (৳)', 'কারখানা ক্রয় মূল্য (৳)')}</Label>
                   <div className="relative">
                     <span className="absolute left-3 top-2.5 text-muted-foreground font-bold text-xs">৳</span>
                     <Input
@@ -1241,9 +1215,7 @@ export function ReadyProductModal({
                 </div>
 
                 <div>
-                  <Label className="text-xs font-semibold mb-1 block text-foreground">
- Freight / Landed Add (৳)
-                  </Label>
+                  <Label className="text-xs font-semibold mb-1 block text-foreground">{tBilingual('Freight / Landed Add (৳)', 'ভাড়া / ল্যান্ডেড খরচ (৳)')}</Label>
                   <div className="relative">
                     <span className="absolute left-3 top-2.5 text-muted-foreground font-bold text-xs">৳</span>
                     <Input
@@ -1254,13 +1226,11 @@ export function ReadyProductModal({
                 </div>
 
                 <div>
-                  <Label className="text-xs font-semibold mb-1 block text-foreground">
- Floor Protect Price (৳)
-                  </Label>
+                  <Label className="text-xs font-semibold mb-1 block text-foreground">{tBilingual('Floor Protect Price (৳)', 'ফ্লোর প্রটেক্ট মূল্য (৳)')}</Label>
                   <div className="relative">
                     <span className="absolute left-3 top-2.5 text-muted-foreground font-bold text-xs">৳</span>
                     <Input
- type="number"step="any"min="0"placeholder="Floor rate"value={minPrice}
+ type="number"step="any"min="0"placeholder={tBilingual('Floor rate', 'ফ্লোর রেট')}value={minPrice}
  onChange={(e) => setMinPrice(e.target.value === '' ? '' : parseFloat(e.target.value))}
  className="pl-7 h-9 text-xs tabular-nums"/>
                   </div>
@@ -1272,7 +1242,7 @@ export function ReadyProductModal({
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-1.5 text-xs font-bold text-foreground">
                     <TrendingUp className="w-4 h-4 text-success"/>
-                    <span>Live Yield & Margin Analysis (Landed Cost: ৳{totalLandedCost.toFixed(2)})</span>
+                    <span>{tBilingual('Live Yield & Margin Analysis', 'লাইভ মার্জিন ও লাভ বিশ্লেষণ')} ({tBilingual('Landed Cost:', 'ল্যান্ডেড খরচ:')} ৳{totalLandedCost.toFixed(2)})</span>
                   </div>
                   <Badge
  variant="outline"className={cn(
@@ -1289,23 +1259,23 @@ export function ReadyProductModal({
                         <Check className="w-3 h-3"/> Healthy Margin
                       </span>
                     ) : marginMetrics.grossMarginPercent >= minAllowedMargin ? (
-                      'Acceptable Margin'
+                      tBilingual('Acceptable Margin', 'গ্রহণযোগ্য মার্জিন')
                     ) : (
-                      'Below Floor Margin'
+                      tBilingual('Below Floor Margin', 'ফ্লোর মার্জিনের নিচে')
                     )}
                   </Badge>
                 </div>
 
                 <div className="grid grid-cols-3 gap-2 text-center">
                   <div className="p-2 rounded-lg bg-card border border-border /60 shadow-2xs">
-                    <span className="text-xs text-muted-foreground uppercase tracking-wider block">Profit / Unit</span>
+                    <span className="text-xs text-muted-foreground uppercase tracking-wider block">{tBilingual('Profit / Unit', 'লাভ / ইউনিট')}</span>
                     <span className="text-sm font-black tabular-nums text-success text-success">
                       {formatBDT(marginMetrics.grossProfit)}
                     </span>
                   </div>
 
                   <div className="p-2 rounded-lg bg-card border border-border /60 shadow-2xs">
-                    <span className="text-xs text-muted-foreground uppercase tracking-wider block">Gross Margin</span>
+                    <span className="text-xs text-muted-foreground uppercase tracking-wider block">{tBilingual('Gross Margin', 'গ্রস মার্জিন')}</span>
                     <span
  className={cn(
                         'text-sm font-black tabular-nums',
@@ -1319,7 +1289,7 @@ export function ReadyProductModal({
                   </div>
 
                   <div className="p-2 rounded-lg bg-card border border-border /60 shadow-2xs">
-                    <span className="text-xs text-muted-foreground uppercase tracking-wider block">Markup</span>
+                    <span className="text-xs text-muted-foreground uppercase tracking-wider block">{tBilingual('Markup', 'মার্কআপ')}</span>
                     <span className="text-sm font-black tabular-nums text-primary text-primary">
                       {marginMetrics.markupPercent}%
                     </span>
@@ -1328,18 +1298,14 @@ export function ReadyProductModal({
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-border">
                   <div>
-                    <Label className="text-xs font-semibold mb-1 block text-muted-foreground">
- Target Gross Margin (%)
-                    </Label>
+                    <Label className="text-xs font-semibold mb-1 block text-muted-foreground">{tBilingual('Target Gross Margin (%)', 'টার্গেট গ্রস মার্জিন (%)')}</Label>
                     <Input
  type="number"value={targetMargin}
  onChange={(e) => setTargetMargin(parseFloat(e.target.value) || 35)}
  className="h-8 text-xs tabular-nums font-bold text-success"/>
                   </div>
                   <div>
-                    <Label className="text-xs font-semibold mb-1 block text-muted-foreground">
- Minimum Allowed Margin (%) (Floor)
-                    </Label>
+                    <Label className="text-xs font-semibold mb-1 block text-muted-foreground">{tBilingual('Minimum Allowed Margin (%) (Floor)', 'সর্বনিম্ন অনুমোদিত মার্জিন (%) (ফ্লোর)')}</Label>
                     <Input
  type="number"value={minAllowedMargin}
  onChange={(e) => setMinAllowedMargin(parseFloat(e.target.value) || 15)}
@@ -1357,12 +1323,8 @@ export function ReadyProductModal({
                     <Tag className="w-3.5 h-3.5"/>
                   </div>
                   <div>
-                    <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
- Customer Tier Segment Rates
-                    </h3>
-                    <p className="text-xs text-muted-foreground">
- Auto-applied when preparing quotations & sales for specific customer types.
-                    </p>
+                    <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">{tBilingual('Customer Tier Segment Rates', 'গ্রাহক স্তর অনুযায়ী রেট')}</h3>
+                    <p className="text-xs text-muted-foreground">{tBilingual('Auto-applied when preparing quotations & sales for specific customer types.', 'নির্দিষ্ট ধরনের গ্রাহকদের কোটেশন ও বিক্রয়ের সময় স্বয়ংক্রিয়ভাবে প্রযোজ্য হয়।')}</p>
                   </div>
                 </div>
 
@@ -1490,16 +1452,12 @@ export function ReadyProductModal({
                 <div className="h-6 w-6 rounded-lg bg-success-surface text-success flex items-center justify-center font-bold text-xs">
                   <Warehouse className="w-3.5 h-3.5"/>
                 </div>
-                <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
- Warehouse Stock & Reorder Thresholds
-                </h3>
+                <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">{tBilingual('Warehouse Stock & Reorder Thresholds', 'গুদাম স্টক ও রি-অর্ডার সীমা')}</h3>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                  <Label className="text-xs font-semibold mb-1 block">
- Initial / Opening Stock ({unit})
-                  </Label>
+                  <Label className="text-xs font-semibold mb-1 block">{tBilingual(`Initial / Opening Stock (${unit})`, `প্রারম্ভিক / ওপেনিং স্টক (${unit})`)}</Label>
                   <Input
  type="number"min="0"placeholder="e.g. 50"value={openingStock}
  onChange={(e) => setOpeningStock(e.target.value === '' ? '' : parseInt(e.target.value))}
@@ -1507,9 +1465,7 @@ export function ReadyProductModal({
                 </div>
 
                 <div>
-                  <Label className="text-xs font-semibold mb-1 block">
- Reorder Alert Level ({unit})
-                  </Label>
+                  <Label className="text-xs font-semibold mb-1 block">{tBilingual(`Reorder Alert Level (${unit})`, `রি-অর্ডার সতর্কতা সীমা (${unit})`)}</Label>
                   <Input
  type="number"min="0"placeholder="e.g. 10"value={reorderLevel}
  onChange={(e) => setReorderLevel(e.target.value === '' ? '' : parseInt(e.target.value))}
@@ -1517,9 +1473,7 @@ export function ReadyProductModal({
                 </div>
 
                 <div>
-                  <Label className="text-xs font-semibold mb-1 block">
- Max Stock Storage Cap
-                  </Label>
+                  <Label className="text-xs font-semibold mb-1 block">{tBilingual('Max Stock Storage Cap', 'সর্বোচ্চ স্টক ধারণ ক্ষমতা')}</Label>
                   <Input
  type="number"min="0"placeholder="e.g. 200"value={maxStock}
  onChange={(e) => setMaxStock(e.target.value === '' ? '' : parseInt(e.target.value))}
@@ -1529,22 +1483,18 @@ export function ReadyProductModal({
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
                 <div>
-                  <Label className="text-xs font-semibold mb-1 block">
- Warehouse Bin / Shelf Location
-                  </Label>
+                  <Label className="text-xs font-semibold mb-1 block">{tBilingual('Warehouse Bin / Shelf Location', 'গুদাম বিন / শেলফ অবস্থান')}</Label>
                   <div className="relative">
                     <MapPin className="absolute left-2.5 top-2.5 w-4 h-4 text-muted-foreground"/>
                     <Input
- placeholder="e.g. Main Warehouse - Shelf B-04"value={warehouseLocation}
+ placeholder={tBilingual('e.g. Main Warehouse - Shelf B-04', 'যেমন: প্রধান গুদাম - শেলফ B-04')}value={warehouseLocation}
  onChange={(e) => setWarehouseLocation(e.target.value)}
  className="pl-8 h-9 text-xs"/>
                   </div>
                 </div>
 
                 <div>
-                  <Label className="text-xs font-semibold mb-1 block">
- Procurement Lead Time (Days)
-                  </Label>
+                  <Label className="text-xs font-semibold mb-1 block">{tBilingual('Procurement Lead Time (Days)', 'সংগ্রহের লিড টাইম (দিন)')}</Label>
                   <div className="relative">
                     <Clock className="absolute left-2.5 top-2.5 w-4 h-4 text-muted-foreground"/>
                     <Input
@@ -1558,14 +1508,12 @@ export function ReadyProductModal({
               {suppliers.length > 0 && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
                   <div>
-                    <Label className="text-xs font-semibold mb-1 block">
- Preferred Supplier
-                    </Label>
+                    <Label className="text-xs font-semibold mb-1 block">{tBilingual('Preferred Supplier', 'পছন্দের সরবরাহকারী')}</Label>
                     <select
  value={preferredSupplierId}
  onChange={(e) => setPreferredSupplierId(e.target.value)}
  className="w-full h-9 text-xs rounded-md border border-input bg-card px-2 font-medium">
-                      <option value="">Select Preferred Supplier...</option>
+                      <option value="">{tBilingual('Select Preferred Supplier...', 'সরবরাহকারী নির্বাচন করুন...')}</option>
                       {suppliers.map((s) => (
                         <option key={s.id} value={s.id}>
                           {s.name} {s.phone ? `(${s.phone})` : ''}
@@ -1575,9 +1523,7 @@ export function ReadyProductModal({
                   </div>
 
                   <div>
-                    <Label className="text-xs font-semibold mb-1 block">
- Supplier Catalog / Item Code
-                    </Label>
+                    <Label className="text-xs font-semibold mb-1 block">{tBilingual('Supplier Catalog / Item Code', 'সাপ্লায়ার ক্যাটালগ / আইটেম কোড')}</Label>
                     <Input
  placeholder="e.g. SUP-XS-001"value={supplierItemCode}
  onChange={(e) => setSupplierItemCode(e.target.value)}
@@ -1593,9 +1539,7 @@ export function ReadyProductModal({
                 <div className="h-6 w-6 rounded-lg bg-muted text-foreground flex items-center justify-center font-bold text-xs">
                   <Percent className="w-3.5 h-3.5"/>
                 </div>
-                <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
- Tax & Sales Staff Governance
-                </h3>
+                <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">{tBilingual('Tax & Sales Staff Governance', 'ট্যাক্স ও সেলস স্টাফ নীতিমালা')}</h3>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
@@ -1605,14 +1549,12 @@ export function ReadyProductModal({
  type="checkbox"checked={vatApplicable}
  onChange={(e) => setVatApplicable(e.target.checked)}
  className="w-4 h-4 rounded text-primary focus:ring-ring"/>
-                    <span>VAT / Tax Applicable</span>
+                    <span className={cn(isBn && "font-bangla")}>{tBilingual('VAT / Tax Applicable', 'ভ্যাট / ট্যাক্স প্রযোজ্য')}</span>
                   </label>
 
                   {vatApplicable && (
                     <div className="pl-6 pt-1">
-                      <Label className="text-xs font-semibold mb-1 block">
- Tax Rate (%)
-                      </Label>
+                      <Label className="text-xs font-semibold mb-1 block">{tBilingual('Tax Rate (%)', 'ট্যাক্স হার (%)')}</Label>
                       <Input
  type="number"step="0.1"min="0"value={taxRate}
  onChange={(e) => setTaxRate(parseFloat(e.target.value) || 0)}
@@ -1627,7 +1569,7 @@ export function ReadyProductModal({
  type="checkbox"checked={isTaxInclusive}
  onChange={(e) => setIsTaxInclusive(e.target.checked)}
  className="w-4 h-4 rounded text-primary focus:ring-ring"/>
-                    <span>Selling Price is Tax-Inclusive</span>
+                    <span className={cn(isBn && "font-bangla")}>{tBilingual('Selling Price is Tax-Inclusive', 'বিক্রয় মূল্য ট্যাক্স অন্তর্ভুক্ত')}</span>
                   </label>
 
                   <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-foreground">
@@ -1635,7 +1577,7 @@ export function ReadyProductModal({
  type="checkbox"checked={allowManualOverride}
  onChange={(e) => setAllowManualOverride(e.target.checked)}
  className="w-4 h-4 rounded text-primary focus:ring-ring"/>
-                    <span>Allow Sales Staff Rate Override on Quotations</span>
+                    <span className={cn(isBn && "font-bangla")}>{tBilingual('Allow Sales Staff Rate Override on Quotations', 'কোটেশনে সেলস স্টাফদের রেট পরিবর্তনের অনুমতি দিন')}</span>
                   </label>
                 </div>
               </div>

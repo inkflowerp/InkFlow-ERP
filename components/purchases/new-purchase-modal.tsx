@@ -1034,10 +1034,7 @@ export function NewPurchaseModal({
               <h2 className="text-base font-black text-foreground">
                 {tBilingual('Issue Purchase Order', 'নতুন ক্রয় আদেশ তৈরি করুন')}
               </h2>
-              <Badge
- variant="outline"className="text-xs uppercase tabular-nums py-0.5 px-2 bg-warning-surface bg-warning-surface/60 text-warning text-warning border-warning-border border-warning-border">
- Procurement
-              </Badge>
+              <Badge variant="outline" className="text-xs uppercase tabular-nums py-0.5 px-2 bg-warning-surface text-warning border-warning-border">{tBilingual('Procurement', 'প্রকিউরমেন্ট')}</Badge>
             </div>
             <p className="text-xs text-muted-foreground">
               {tBilingual(
@@ -1054,14 +1051,14 @@ export function NewPurchaseModal({
             {activeStep > 1 && (
               <Button
  type="button"variant="outline"onClick={handlePrevStep}
- className="w-full sm:w-auto min-h-[40px] text-xs font-semibold cursor-pointer">
+ className="w-full sm:w-auto min-h-10 text-xs font-semibold cursor-pointer">
                 <ArrowLeft className="h-4 w-4 mr-1.5"/>
                 {tBilingual('Previous Step', 'পূর্ববর্তী ধাপ')}
               </Button>
             )}
             <Button
  type="button"variant="ghost"onClick={() => onOpenChange(false)}
- className="w-full sm:w-auto min-h-[40px] text-xs font-medium text-muted-foreground hover:text-foreground cursor-pointer">
+ className="w-full sm:w-auto min-h-10 text-xs font-medium text-muted-foreground hover:text-foreground cursor-pointer">
               {tBilingual('Cancel', 'বাতিল')}
             </Button>
           </div>
@@ -1070,14 +1067,14 @@ export function NewPurchaseModal({
             {activeStep < 3 ? (
               <Button
  type="button"onClick={handleNextStep}
- className="w-full sm:w-auto min-h-[40px] text-xs bg-warning hover:bg-warning/90 text-white font-bold px-6 shadow-sm cursor-pointer">
+ className="w-full sm:w-auto min-h-10 text-xs bg-warning hover:bg-warning/90 text-white font-bold px-6 shadow-sm cursor-pointer">
                 <span>{tBilingual('Continue to Next Step', 'পরবর্তী ধাপ')}</span>
                 <ArrowRight className="h-4 w-4 ml-1.5"/>
               </Button>
             ) : (
               <Button
  type="submit"disabled={isSubmitting}
- className="w-full sm:w-auto min-h-[40px] text-xs bg-success hover:bg-success text-white font-bold px-7 shadow-xs cursor-pointer">
+ className="w-full sm:w-auto min-h-10 text-xs bg-success hover:bg-success text-white font-bold px-7 shadow-xs cursor-pointer">
                 {isSubmitting ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-1.5 animate-spin"/>
@@ -1267,11 +1264,9 @@ export function NewPurchaseModal({
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <Label className="text-xs font-semibold mb-1 block">
- Supplier / Company Name <span className="text-destructive">*</span>
-                    </Label>
+                    <Label className="text-xs font-semibold mb-1 block">{tBilingual('Supplier / Company Name', 'সাপ্লায়ার / কোম্পানির নাম')} <span className="text-destructive">*</span></Label>
                     <Input
- placeholder="e.g. Bengal Paper & Board Mills Ltd."value={customSupplierName}
+ placeholder={tBilingual('e.g. Bengal Paper & Board Mills Ltd.', 'যেমন: বেঙ্গল পেপার অ্যান্ড বোর্ড মিলস লি.')}value={customSupplierName}
  onChange={(e) => {
  setCustomSupplierName(e.target.value)
  if (fieldErrors.customSupplierName) setFieldErrors((prev) => ({ ...prev, customSupplierName: '' }))
@@ -1288,9 +1283,7 @@ export function NewPurchaseModal({
                     )}
                   </div>
                   <div>
-                    <Label className="text-xs font-semibold mb-1 block">
- Mobile Phone Number <span className="text-destructive">*</span>
-                    </Label>
+                    <Label className="text-xs font-semibold mb-1 block">{tBilingual('Mobile Phone Number', 'মোবাইল নম্বর')} <span className="text-destructive">*</span></Label>
                     <Input
  placeholder="+8801700000000"value={supplierPhone}
  onChange={(e) => {
@@ -1309,23 +1302,23 @@ export function NewPurchaseModal({
                     )}
                   </div>
                   <div>
-                    <Label className="text-xs font-semibold mb-1 block">Contact Person</Label>
+                    <Label className="text-xs font-semibold mb-1 block">{tBilingual('Contact Person', 'যোগাযোগের ব্যক্তি')}</Label>
                     <Input
- placeholder="e.g. Tariqul Islam"value={supplierContactPerson}
+ placeholder={tBilingual('e.g. Tariqul Islam', 'যেমন: তরিকুল ইসলাম')}value={supplierContactPerson}
  onChange={(e) => setSupplierContactPerson(e.target.value)}
  className="text-xs h-9"/>
                   </div>
                   <div>
-                    <Label className="text-xs font-semibold mb-1 block">Email Address (Optional)</Label>
+                    <Label className="text-xs font-semibold mb-1 block">{tBilingual('Email Address (Optional)', 'ইমেইল ঠিকানা (ঐচ্ছিক)')}</Label>
                     <Input
  type="email"placeholder="sales@supplier.com"value={supplierEmail}
  onChange={(e) => setSupplierEmail(e.target.value)}
  className="text-xs h-9"/>
                   </div>
                   <div className="sm:col-span-2">
-                    <Label className="text-xs font-semibold mb-1 block">Supplier Address</Label>
+                    <Label className="text-xs font-semibold mb-1 block">{tBilingual('Supplier Address', 'সরবরাহকারীর ঠিকানা')}</Label>
                     <Input
- placeholder="e.g. Naya Bazar Paper Market, Dhaka-1100"value={supplierAddress}
+ placeholder={tBilingual('e.g. Naya Bazar Paper Market, Dhaka-1100', 'যেমন: নয়াবাজার পেপার মার্কেট, ঢাকা-১১০০')}value={supplierAddress}
  onChange={(e) => setSupplierAddress(e.target.value)}
  className="text-xs h-9"/>
                   </div>
