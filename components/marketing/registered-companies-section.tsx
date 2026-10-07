@@ -30,19 +30,19 @@ export function RegisteredCompaniesSection({
   const [isPaused, setIsPaused] = useState(false)
 
   const eyebrowEn = config?.eyebrowEn || 'Verified Print Network'
-  const eyebrowBn = config?.eyebrowBn || 'বিশ্বস্ত প্রিন্ট নেটওয়ার্ক'
+  const eyebrowBn = config?.eyebrowBn || 'বিশ্বস্ত নেটওয়ার্ক'
 
   const headlineEn =
-    config?.headlineEn || 'Trusted by Leading Print & Signage Businesses Across Bangladesh'
+    config?.headlineEn || 'Trusted by Leading Print & Signage Shops Across Bangladesh'
   const headlineBn =
-    config?.headlineBn || 'সারা বাংলাদেশের শীর্ষস্থানীয় প্রিন্ট ও সাইনেজ ব্যবসার বিশ্বস্ত পছন্দ'
+    config?.headlineBn || 'সারা দেশের শীর্ষ প্রিন্ট ও সাইনেজ শপের বিশ্বস্ত পছন্দ'
 
   const descEn =
     config?.descriptionEn ||
-    'Powering high-volume commercial offset presses, digital banner houses, and acrylic signage workshops from Dhaka to Chattogram.'
+    'Powering high-volume commercial offset presses, digital banner shops, and signage fabricators.'
   const descBn =
     config?.descriptionBn ||
-    'ঢাকা, চট্টগ্রাম, বগুড়া থেকে সিলেট — বাণিজ্যিক প্রেস, ডিজিটাল শপ ও সাইন ফ্যাব্রিকেটরদের এক সংযুক্ত প্ল্যাটফর্ম।'
+    'বাণিজ্যিক অফসেট প্রেস, ডিজিটাল ব্যানার শপ ও সাইনেজ কারখানা।'
 
   // Filter approved public active companies from database/settings
   const activeDbCompanies = companies.filter(
@@ -89,7 +89,7 @@ export function RegisteredCompaniesSection({
   }
 
   return (
-    <section id="companies" className="py-14 sm:py-20 bg-card border-t border-border overflow-hidden">
+    <section id="companies" className="py-14 sm:py-20 bg-muted/30 border-t border-border overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 sm:space-y-10">
         {/* Section Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 max-w-6xl mx-auto">
@@ -148,7 +148,7 @@ export function RegisteredCompaniesSection({
               return (
                 <div
                   key={`${comp.id}-${idx}`}
-                  className="shrink-0 w-56 sm:w-64 p-3.5 rounded-xl border border-border bg-card hover:border-primary/40 shadow-2xs transition-all hover:shadow-xs flex items-center gap-3"
+                  className="shrink-0 w-56 sm:w-64 p-3.5 rounded-xl border border-border bg-card hover:border-primary/50 shadow-xs transition-all flex items-center gap-3"
                 >
                   {/* Company Logo Image or Styled Monogram Badge */}
                   <div className="h-11 w-11 rounded-lg border border-border bg-muted/40 p-1 flex items-center justify-center shrink-0 overflow-hidden">
@@ -186,9 +186,9 @@ export function RegisteredCompaniesSection({
 
         {/* Footnote */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between text-xs text-muted-foreground pt-1 max-w-6xl mx-auto border-t border-border/60 gap-1">
-          <span>* Verified commercial printing presses, digital workshops, and signage fabricators.</span>
-          <span className="font-medium text-foreground">
-            {tBilingual('200+ active shops across all 8 divisions', '৮টি বিভাগের ২০০+ সক্রিয় প্রতিষ্ঠান')}
+          <span>* Verified commercial printing presses and signage fabricators.</span>
+          <span className="font-semibold text-foreground">
+            {tBilingual('200+ active shops across all 8 divisions', '৮ বিভাগে ২০০+ সক্রিয় প্রতিষ্ঠান')}
           </span>
         </div>
       </div>

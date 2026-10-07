@@ -23,7 +23,7 @@ export function FAQSection({ items }: FAQSectionProps) {
   }
 
   return (
-    <section id="faq" className="py-14 sm:py-20 bg-muted/40 border-t border-border">
+    <section id="faq" className="py-14 sm:py-20 bg-background border-t border-border">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 sm:space-y-10">
         {/* Section Header */}
         <div className="text-center max-w-xl mx-auto space-y-2">

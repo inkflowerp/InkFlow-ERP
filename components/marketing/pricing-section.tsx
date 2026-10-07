@@ -32,7 +32,7 @@ export function PricingSection({ config }: PricingSectionProps) {
   const plans = paidPlans || []
 
   return (
-    <section id="pricing" className="py-14 sm:py-20 bg-card border-t border-border">
+    <section id="pricing" className="py-14 sm:py-20 bg-muted/30 border-t border-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10 sm:space-y-12">
         {/* Section Header */}
         <div className="text-center max-w-xl mx-auto space-y-2">

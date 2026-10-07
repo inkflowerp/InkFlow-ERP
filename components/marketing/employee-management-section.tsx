@@ -69,20 +69,20 @@ export function EmployeeManagementSection() {
     {
       roleEn: 'Press Operators',
       roleBn: 'মেশিন অপারেটর',
-      accessEn: 'Only see assigned print queues, media roll allocations, and SFT counters. Owner financial profit margins and customer contact details remain completely hidden.',
-      accessBn: 'শুধুমাত্র মেশিনের কাজের লাইন, রোল মেটেরিয়াল এবং স্কয়ারফিট কাউন্টার দেখতে পান। মালিকের নিট লাভ এবং কাস্টমারের ফোন নম্বর তাদের কাছ থেকে সুরক্ষিত থাকে।',
+      accessEn: 'Assigned print queues and SFT counters only. Profit margins and client phones hidden.',
+      accessBn: 'মেশিনের কিউ ও SFT কাউন্টার দেখতে পান। লাভ ও ক্লায়েন্টের ফোন গোপন থাকে।',
     },
     {
       roleEn: 'Prepress Designers',
       roleBn: 'ডিজাইনার ও প্রুফার',
-      accessEn: 'Access client artwork, proof approvals, RIP settings, and color profiles without touching counter cash books or supplier invoices.',
-      accessBn: 'শুধুমাত্র আর্টওয়ার্ক প্রুফিং, ক্লায়েন্ট সাইন-অফ ও কালার প্রোফাইল নিয়ে কাজ করেন। ক্যাশ বুক বা সাপ্লায়ারের বিলে তাদের কোনো অ্যাক্সেস থাকে না।',
+      accessEn: 'Artwork proofs and color profiles only. Cash book and supplier rates hidden.',
+      accessBn: 'শুধুমাত্র প্রুফ ও আর্টওয়ার্ক। ক্যাশ বুক বা সাপ্লায়ার দর সম্পূর্ণ গোপন।',
     },
     {
       roleEn: 'Shop Owner & Accounts',
       roleBn: 'মালিক ও একাউন্টস',
-      accessEn: 'Full visibility over general ledgers, bKash balances, supplier payables, net profit margins, employee salaries, and system audit logs.',
-      accessBn: 'ক্যাশ বুক, ব্যাংক ও বিকাশ ব্যালেন্স, সাপ্লায়ার বাকি খাতা, নিট মুনাফা এবং কর্মীদের বেতন ও অডিট ট্রেইলের পূর্ণ নিয়ন্ত্রণ মালিকের হাতে।',
+      accessEn: 'Full ledger, bKash balances, supplier payables, net profit, and audit logs.',
+      accessBn: 'ক্যাশ, ব্যাংক, বিকাশ, সাপ্লায়ার বাকি ও নিট লাভের পূর্ণ নিয়ন্ত্রণ।',
     },
   ]
 
@@ -93,20 +93,20 @@ export function EmployeeManagementSection() {
         <div className="text-center max-w-2xl mx-auto space-y-2.5">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
             <QrCode className="h-3.5 w-3.5" />
-            <span>{tBilingual('Workforce, Roster & QR Attendance', 'কর্মী ব্যবস্থাপনা ও স্মার্ট কিউআর হাজিরা')}</span>
+            <span>{tBilingual('QR Attendance & Staff', 'কিউআর হাজিরা ও কর্মী')}</span>
           </div>
 
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-foreground tracking-tight">
             {tBilingual(
-              'Smart QR Attendance & Role-Based Workstations.',
-              'স্মার্ট কিউআর হাজিরা এবং ভূমিকাভিত্তিক নিরাপদ পারমিশন।'
+              'Smart QR Attendance & Role Permissions.',
+              'স্মার্ট কিউআর হাজিরা ও নিরাপদ পারমিশন।'
             )}
           </h2>
 
           <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
             {tBilingual(
-              'No paper registers, no ghost attendance. Staff scan their personal QR badge on floor tablets or mobile phones, while strict role permissions keep your financial margins private.',
-              'কাগজের খাতা আর প্রক্সি হাজিরার অবসান। ট্যাবলেট বা মোবাইলে কিউআর স্ক্যান করে মুহূর্তেই ডিজিটাল হাজিরা এবং মালিকের আর্থিক লাভ সুরক্ষিত রাখার নিখুঁত ব্যবস্থা।'
+              'Staff scan personal QR badges on phones or tablets. Strict permissions keep your margins private.',
+              'মোবাইল বা ট্যাবলেটে দ্রুত কিউআর হাজিরা। কঠোর পারমিশনে মালিকের লাভ থাকে সম্পূর্ণ গোপন।'
             )}
           </p>
         </div>

@@ -27,21 +27,21 @@ export function HeroSection({ config }: HeroSectionProps) {
   const { openDemo } = useDemoModal()
 
   const eyebrowEn =
-    config?.eyebrowEn || 'The Operating System for Bangladesh Print & Signage'
+    config?.eyebrowEn || 'Cloud ERP for Bangladesh Print & Signage'
   const eyebrowBn =
-    config?.eyebrowBn || 'বাংলাদেশের প্রিন্ট ও সাইনেজ ব্যবসার অল-ইন-ওয়ান ক্লাউড প্ল্যাটফর্ম'
+    config?.eyebrowBn || 'বাংলাদেশের প্রিন্ট ও সাইনেজ ব্যবসার আধুনিক ইআরপি'
 
   const headlineEn =
-    config?.headlineEn || 'Stop Running Your Print Business on Paper Slips & Guesswork.'
+    config?.headlineEn || 'Stop Running Your Print Shop on Paper Slips.'
   const headlineBn =
-    config?.headlineBn || 'কাগজের চিরকুট আর অনুমানের হিসাব ভুলে প্রেস পরিচালনা করুন ক্লাউডে।'
+    config?.headlineBn || 'কাগজের চিরকুট ভুলে পুরো প্রেস চালান ক্লাউডে।'
 
   const descEn =
     config?.descriptionEn ||
-    'From SFT quotations and roll media inventory to live machine queues, staff QR attendance, and bKash challans — run your entire print shop in one connected workspace.'
+    'SFT billing, roll media stock, live machine queues, and bKash dues — all in one simple screen.'
   const descBn =
     config?.descriptionBn ||
-    'স্কয়ারফিট কোটেশন ও রোল স্টক থেকে শুরু করে মেশিনের লাইভ কিউ, কর্মীদের কিউআর হাজিরা এবং চালান — আপনার পুরো প্রিন্টিং ও সাইনেজ ব্যবসা চালান এক সংযুক্ত সিস্টেমে।'
+    'স্কয়ারফিট বিলিং, রোল স্টক, মেশিনের লাইভ কিউ ও বকেয়া আদায় — সব এক সহজ স্ক্রিনে।'
 
   const primaryCtaEn = config?.primaryCtaEn || 'Start 14-Day Free Trial'
   const primaryCtaBn = config?.primaryCtaBn || '১৪ দিনের ফ্রি ট্রায়াল শুরু করুন'
@@ -95,15 +95,15 @@ export function HeroSection({ config }: HeroSectionProps) {
           <div className="flex flex-wrap items-center justify-center gap-4 text-xs text-muted-foreground pt-1">
             <div className="flex items-center gap-1.5">
               <CheckCircle2 className="h-3.5 w-3.5 text-success" />
-              <span>{tBilingual('No Credit Card Required', 'কোনো কার্ডের প্রয়োজন নেই')}</span>
+              <span>{tBilingual('No Card Required', 'কার্ড ছাড়াই শুরু')}</span>
             </div>
             <div className="flex items-center gap-1.5">
               <Zap className="h-3.5 w-3.5 text-primary" />
-              <span>{tBilingual('Instant Setup in 60 Seconds', '৬০ সেকেন্ডে ইনস্ট্যান্ট অ্যাকাউন্ট')}</span>
+              <span>{tBilingual('1-Minute Setup', '১ মিনিটে চালু')}</span>
             </div>
             <div className="flex items-center gap-1.5">
               <ShieldCheck className="h-3.5 w-3.5 text-success" />
-              <span>{tBilingual('100% Isolated Tenant Database', 'শতভাগ সুরক্ষিত ডাটাবেজ')}</span>
+              <span>{tBilingual('100% Private Data', 'শতভাগ সুরক্ষিত ডাটা')}</span>
             </div>
           </div>
         </div>
@@ -123,7 +123,7 @@ export function HeroSection({ config }: HeroSectionProps) {
               </span>
             </div>
             <p className="text-xs text-muted-foreground">
-              {tBilingual('Track Width × Length SFT with remnant salvage.', 'প্রস্থ ও দৈর্ঘ্য স্কয়ারফিট ও অপচয় রোধ।')}
+              {tBilingual('Width × Length SFT with scrap reuse.', 'প্রস্থ ও দৈর্ঘ্য স্কয়ারফিট ও অপচয় রোধ।')}
             </p>
           </div>
 
@@ -135,7 +135,7 @@ export function HeroSection({ config }: HeroSectionProps) {
               </span>
             </div>
             <p className="text-xs text-muted-foreground">
-              {tBilingual('Flora, Konica & CNC floor job ticketing.', 'ফ্লোরা, কনিকা ও সিএনসি ফ্লোর টিকিট।')}
+              {tBilingual('Flora, Konica & CNC floor tickets.', 'ফ্লোরা, কনিকা ও সিএনসি ফ্লোর টিকিট।')}
             </p>
           </div>
 
@@ -147,7 +147,7 @@ export function HeroSection({ config }: HeroSectionProps) {
               </span>
             </div>
             <p className="text-xs text-muted-foreground">
-              {tBilingual('Instant mobile/tablet scan & live shop roster.', 'মোবাইল/ট্যাবলেট স্ক্যান ও লাইভ হাজিরা।')}
+              {tBilingual('Phone/tablet scan & live floor roster.', 'মোবাইল/ট্যাবলেট স্ক্যান ও লাইভ হাজিরা।')}
             </p>
           </div>
 
@@ -155,11 +155,11 @@ export function HeroSection({ config }: HeroSectionProps) {
             <div className="flex items-center gap-2">
               <ShieldCheck className="h-4 w-4 text-success" />
               <span className="text-xs font-bold text-foreground">
-                {tBilingual('Secure Cloud System', 'সুরক্ষিত ক্লাউড সিস্টেম')}
+                {tBilingual('Challans & bKash', 'চালান ও বিকাশ আদায়')}
               </span>
             </div>
             <p className="text-xs text-muted-foreground">
-              {tBilingual('Postgres RLS, daily backup & audit logs.', 'পোস্টগ্রেস আরএলএস ও অটো ব্যাকআপ।')}
+              {tBilingual('Instant delivery challans & due alerts.', 'মুহূর্তে চালান ও বিকাশ রিমাইন্ডার।')}
             </p>
           </div>
         </div>

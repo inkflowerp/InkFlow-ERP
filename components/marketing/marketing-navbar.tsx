@@ -128,6 +128,7 @@ export function MarketingNavbar({ onOpenDemo }: MarketingNavbarProps = {}) {
               type="button"
               onClick={toggleLanguage}
               className="inline-flex items-center justify-center p-2 rounded-lg border border-border text-xs font-bold text-foreground h-8 px-2"
+              title="Toggle language"
               aria-label="Toggle language"
             >
               <span>{locale === 'en' ? 'বাং' : 'EN'}</span>
@@ -137,6 +138,7 @@ export function MarketingNavbar({ onOpenDemo }: MarketingNavbarProps = {}) {
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="p-1.5 rounded-lg text-foreground hover:bg-muted transition-colors cursor-pointer h-8 w-8 flex items-center justify-center"
+              title={mobileMenuOpen ? 'Close Menu' : 'Open Menu'}
               aria-label={mobileMenuOpen ? 'Close Menu' : 'Open Menu'}
               aria-expanded={mobileMenuOpen}
             >

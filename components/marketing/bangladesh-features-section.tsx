@@ -24,48 +24,48 @@ export function BangladeshFeaturesSection() {
     {
       titleEn: '4-Tier Customer Pricing Engine',
       titleBn: '৪-স্তরের স্বয়ংক্রিয় কাস্টমার দর',
-      descEn: 'Set separate automatic SFT rates for walk-in Retail clients, Sub-contract Resellers, Corporate Accounts, and Advertising Agencies.',
-      descBn: 'খুচরা গ্রাহক, সাব-কন্ট্রাক্ট রিসেলার, কর্পোরেট ক্লায়েন্ট এবং বিজ্ঞাপন এজেন্সির জন্য আলাদা আলাদা স্বয়ংক্রিয় স্কয়ারফিট দর নির্ধারণ।',
+      descEn: 'Retail, Reseller, Corporate, and Agency SFT rate cards.',
+      descBn: 'খুচরা, রিসেলার, কর্পোরেট ও এজেন্সির আলাদা রেট।',
       icon: Banknote,
       tag: 'Tier Pricing',
     },
     {
       titleEn: 'bKash, Nagad & Bank Challans',
       titleBn: 'বিকাশ, নগদ ও ব্যাংক চালান',
-      descEn: 'Record merchant TrxID numbers, split advance deposits, and generate Challans with embedded bKash payment QR codes.',
-      descBn: 'পেমেন্ট ট্রানজেকশন আইডি (TrxID) সংরক্ষণ, আংশিক অগ্রিম জমা এবং বিকাশ পেমেন্ট কিউআর কোডসহ প্রাতিষ্ঠানিক চালান প্রিন্ট।',
+      descEn: 'TrxID records, partial advances, and payment QR challans.',
+      descBn: 'TrxID ট্র্যাকিং, অগ্রিম জমা ও বিকাশ কিউআর চালান।',
       icon: CreditCard,
       tag: 'MFS Ready',
     },
     {
       titleEn: 'NBR Mushak 6.3 & VAT Compliant',
       titleBn: 'এনবিআর মূসক ৬.৩ ও ভ্যাট চালান',
-      descEn: 'Built-in 13-digit BIN validation, Trade License records, and standard NBR-compliant tax invoice and delivery challan formats.',
-      descBn: '১৩ সংখ্যার বিআইএন ভ্যালিডেশন, ট্রেড লাইসেন্স নম্বর সংরক্ষণ এবং এনবিআর স্বীকৃত মূসক চালান প্রস্তুতের পূর্ণাঙ্গ ব্যবস্থা।',
+      descEn: '13-digit BIN, Trade License, and standard tax delivery challans.',
+      descBn: '১৩ সংখ্যার BIN, ট্রেড লাইসেন্স ও মূসক ডেলিভারি চালান।',
       icon: Receipt,
       tag: 'Tax Compliant',
     },
     {
       titleEn: '100% Native বাংলা ও English UI',
       titleBn: 'শতভাগ খাঁটি বাংলা ও ইংরেজি',
-      descEn: 'Seamlessly toggle between pure Bengali with crisp typography and standard English. Delivery challans print in clean Bangla.',
-      descBn: 'মুহূর্তেই শতভাগ বাংলা অথবা শতভাগ ইংরেজিতে কাজ করার সুবিধা। চালান ও মানি রিসিট ঝকঝকে দেশীয় হরফে প্রিন্ট হয়।',
+      descEn: '1-click toggle between pure Bangla and English. Bangla challans.',
+      descBn: 'এক ক্লিকে বাংলা বা ইংরেজি। ঝকঝকে বাংলায় চালান প্রিন্ট।',
       icon: Languages,
       tag: 'Bilingual',
     },
     {
       titleEn: '64 Districts & Printing Hub Clusters',
       titleBn: '৬৪ জেলা ও প্রিন্টিং ক্লাস্টার',
-      descEn: 'Pre-populated database of all 64 districts and famous printing hubs like Arambagh, Fakirapool, Banglamotor, Anderkilla, etc.',
-      descBn: 'বাংলাদেশের ৮ বিভাগ, ৬৪ জেলা এবং আরামবাগ, ফকিরাপুল, আন্দরকিল্লাসহ প্রধান প্রিন্টিং ক্লাস্টার সম্বলিত রেডিমেড ঠিকানা ড্রপডাউন।',
+      descEn: 'Pre-filled Fakirapool, Arambagh, Nilkhet, Anderkilla addresses.',
+      descBn: 'ফকিরাপুল, আরামবাগ, নীলক্ষেত ও আন্দরকিল্লা রেডি ক্লাস্টার।',
       icon: MapPin,
       tag: 'Local Hubs',
     },
     {
       titleEn: 'Budget Android Floor Reliability',
       titleBn: 'সাধারণ স্মার্টফোনে সহজ ব্যবহার',
-      descEn: 'Runs smoothly on budget Android phones and tablets in 3G/4G network conditions. Zero heavy apps or complex installations.',
-      descBn: 'কোনো ভারী অ্যাপ ডাউনলোড ছাড়াই সাধারণ অ্যান্ড্রয়েড ফোন বা ট্যাবলেটে ফ্লোর অপারেটরদের ব্যবহারের উপযোগী হালকা ডিজাইন।',
+      descEn: 'Zero app install needed. Runs fast on any mobile or tablet.',
+      descBn: 'কোনো অ্যাপ ইনস্টল ছাড়া যেকোনো মোবাইল বা ট্যাবলেটে চলে।',
       icon: Smartphone,
       tag: 'Mobile Floor',
     },
@@ -78,20 +78,20 @@ export function BangladeshFeaturesSection() {
         <div className="text-center max-w-2xl mx-auto space-y-2.5">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-success-surface text-success border border-success-border">
             <CheckCircle2 className="h-3.5 w-3.5" />
-            <span>{tBilingual('Built for Bangladesh Print Shops', 'বাংলাদেশের প্রেসের প্রেক্ষাপটে তৈরি')}</span>
+            <span>{tBilingual('Built for Bangladesh Press', 'দেশীয় প্রেসের জন্য')}</span>
           </div>
 
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-foreground tracking-tight">
             {tBilingual(
               'Engineered for Local Business Reality.',
-              'দেশীয় প্রিন্টিং ব্যবসার বাস্তব প্রয়োজনের শতভাগ সমাধান।'
+              'দেশীয় প্রেসের বাস্তবতায় শতভাগ উপযোগী।'
             )}
           </h2>
 
           <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
             {tBilingual(
-              'Not a generic foreign tool. PrintFlow is purpose-built with Taka formatting, tier-based pricing, bKash challans, and Bengali printing conventions.',
-              'কোনো বিদেশি সফটওয়্যার নয়। বাংলাদেশি প্রেসের কাজের ধরন, বাকি খাতা, বিকাশ ট্রানজেকশন ও ভ্যাট নিয়মের সাথে শতভাগ সামঞ্জস্যপূর্ণ।'
+              'Taka formatting, tier-based SFT rates, bKash challans, and Bengali conventions.',
+              'টাকার ফরম্যাট, টায়ার রেট, বিকাশ চালান ও দেশীয় হিসাবের সাথে শতভাগ সামঞ্জস্যপূর্ণ।'
             )}
           </p>
         </div>

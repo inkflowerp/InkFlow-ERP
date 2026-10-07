@@ -181,26 +181,26 @@ export function CoreWorkflowSection() {
   const ActiveIcon = activeStep.icon
 
   return (
-    <section id="workflow" className="py-14 sm:py-20 bg-card border-t border-border">
+    <section id="workflow" className="py-14 sm:py-20 bg-background border-t border-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 sm:space-y-10">
         {/* Section Header */}
         <div className="text-center max-w-2xl mx-auto space-y-2.5">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
             <Sparkles className="h-3.5 w-3.5" />
-            <span>{tBilingual('End-to-End Production Workflow', 'অর্ডার থেকে পেমেন্ট পর্যন্ত পূর্ণাঙ্গ ধাপ')}</span>
+            <span>{tBilingual('Production Workflow', 'কাজের পূর্ণাঙ্গ ধাপ')}</span>
           </div>
 
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-foreground tracking-tight">
             {tBilingual(
-              'How Modern Print Shops Operate on PrintFlow.',
-              'প্রিন্টফ্লোতে আধুনিক প্রেস কীভাবে পরিচালিত হয়।'
+              'How Work Flows in PrintFlow.',
+              'প্রিন্টফ্লোতে কাজের স্বাভাবিক গতি।'
             )}
           </h2>
 
           <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
             {tBilingual(
-              '8 fully connected operational stages. Click any step below to see how data flows automatically without phone calls or paper slips.',
-              '৮টি সংযুক্ত অপারেশনাল ধাপ। যেকোনো ধাপে ক্লিক করে দেখুন কীভাবে কোনো ফোন কল বা কাগজের চিরকুট ছাড়াই কাজ সম্পন্ন হয়।'
+              'From inquiry to delivery challan and bKash dues — 8 connected steps with zero paper slips.',
+              'অর্ডার থেকে ডেলিভারি চালান ও বিকাশ আদায় — কাগজের চিরকুট ছাড়া ৮টি সংযুক্ত ধাপ।'
             )}
           </p>
         </div>
@@ -218,7 +218,7 @@ export function CoreWorkflowSection() {
                 className={`p-3 rounded-xl border flex flex-col justify-between text-left transition-all cursor-pointer ${
                   isSelected
                     ? 'border-primary bg-primary/10 text-primary shadow-xs ring-1 ring-primary/20'
-                    : 'border-border bg-muted/30 text-foreground hover:border-primary/40'
+                    : 'border-border bg-card text-foreground hover:border-primary/40'
                 }`}
               >
                 <div className="flex items-center justify-between mb-2">
@@ -246,7 +246,7 @@ export function CoreWorkflowSection() {
         </div>
 
         {/* Detailed Interactive Preview Card for Selected Step */}
-        <div className="rounded-xl border border-border bg-muted/20 p-5 sm:p-7 space-y-5 animate-in fade-in duration-200">
+        <div className="rounded-xl border border-border bg-card p-5 sm:p-7 space-y-5 shadow-xs animate-in fade-in duration-200">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-border">
             <div className="flex items-center gap-3">
               <div className="h-11 w-11 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shrink-0 shadow-xs">
@@ -289,7 +289,7 @@ export function CoreWorkflowSection() {
 
           {/* 3 Live Metric Tiles for the Active Stage */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1 text-xs">
-            <div className="p-3.5 rounded-lg bg-card border border-border shadow-2xs">
+            <div className="p-3.5 rounded-lg bg-muted/40 border border-border">
               <span className="text-xs text-muted-foreground block uppercase font-medium">
                 {activeStep.mockData.metric1Label}
               </span>
@@ -298,7 +298,7 @@ export function CoreWorkflowSection() {
               </span>
             </div>
 
-            <div className="p-3.5 rounded-lg bg-card border border-border shadow-2xs">
+            <div className="p-3.5 rounded-lg bg-muted/40 border border-border">
               <span className="text-xs text-muted-foreground block uppercase font-medium">
                 {activeStep.mockData.metric2Label}
               </span>
@@ -307,7 +307,7 @@ export function CoreWorkflowSection() {
               </span>
             </div>
 
-            <div className="p-3.5 rounded-lg bg-card border border-border shadow-2xs">
+            <div className="p-3.5 rounded-lg bg-muted/40 border border-border">
               <span className="text-xs text-muted-foreground block uppercase font-medium">
                 {activeStep.mockData.metric3Label}
               </span>

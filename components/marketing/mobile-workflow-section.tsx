@@ -24,29 +24,29 @@ export function MobileWorkflowSection() {
     {
       titleEn: 'Zero App Installation Needed',
       titleBn: 'অ্যাপ ইনস্টলের ঝামেলামুক্ত',
-      descEn: 'Runs instantly in Google Chrome, Safari, or Samsung Internet. No Play Store downloads, APK updates, or heavy device storage needed.',
-      descBn: 'যেকোনো মোবাইল ব্রাউজারে নিমিষেই চালু হয়। গুগল প্লে স্টোর থেকে ভারী অ্যাপ নামানোর কোনো প্রয়োজন নেই।',
+      descEn: 'Runs in any phone browser. No Play Store downloads or updates.',
+      descBn: 'যেকোনো মোবাইল ব্রাউজারে চলে। অ্যাপ ডাউনলোডের ঝামেলা নেই।',
       icon: Smartphone,
     },
     {
       titleEn: 'Floor Machine Operators',
-      titleBn: 'কারখানা ফ্লোর অপারেটর টার্মিনাল',
-      descEn: 'Operators with ink-stained hands can view job tickets, check roll allocations, and mark print completion with one big mobile tap.',
-      descBn: 'অপারেটররা মেশিনের পাশে দাঁড়িয়ে সহজেই জব টিকিট দেখে এক ট্যাপে কাজ সম্পন্ন বা রোল পরিবর্তন রেকর্ড করতে পারেন।',
+      titleBn: 'কারখানা ফ্লোর টার্মিনাল',
+      descEn: 'View tickets and mark print completion with one big mobile tap.',
+      descBn: 'এক ট্যাপে জব টিকিট দেখা ও কাজ সমাপ্তি রেকর্ড করা যায়।',
       icon: Printer,
     },
     {
       titleEn: 'Mobile QR Clock-In',
       titleBn: 'স্মার্টফোনে কিউআর হাজিরা',
-      descEn: 'Workers clock in using their phone camera or a mounted shop tablet. Anti-proxy geofencing verifies shop presence.',
-      descBn: 'ফোনের ক্যামেরা দিয়ে কিউআর স্ক্যান করে দ্রুত উপস্থিতি নিশ্চিত। প্রক্সি হাজিরা প্রতিরোধের নিখুঁত ব্যবস্থা।',
+      descEn: 'Phone camera or shop tablet QR scan with anti-proxy geofencing.',
+      descBn: 'মোবাইল বা ট্যাবলেটের ক্যামেরায় কিউআর স্ক্যান করে দ্রুত হাজিরা।',
       icon: QrCode,
     },
     {
-      titleEn: 'Delivery Drivers & Field Fitters',
-      titleBn: 'ডেলিভারি ও সাইট ফিটিং টিম',
-      descEn: 'Drivers access destination maps, call client contact persons, and collect on-screen digital signatures upon delivery.',
-      descBn: 'চালান নিয়ে গিয়ে কাস্টমারের ফোনে ডিজিটাল স্বাক্ষর নেওয়া এবং সাইট ইনস্টলেশনের ছবি সাথে সাথে আপলোড।',
+      titleEn: 'Delivery Drivers & Fitters',
+      titleBn: 'ডেলিভারি ও সাইট ফিটিং',
+      descEn: 'Delivery challans, site map routes, and client digital signatures.',
+      descBn: 'চালান দেখা, গ্রাহকের ডিজিটাল সাইন ও সাইট ফিটিং ছবি আপলোড।',
       icon: Truck,
     },
   ]
@@ -58,20 +58,20 @@ export function MobileWorkflowSection() {
         <div className="text-center max-w-2xl mx-auto space-y-2.5">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
             <Smartphone className="h-3.5 w-3.5" />
-            <span>{tBilingual('Mobile Web for Floor Staff', 'স্মার্টফোনে ফ্লোর অপারেটর টার্মিনাল')}</span>
+            <span>{tBilingual('Mobile Floor Terminal', 'মোবাইল টার্মিনাল')}</span>
           </div>
 
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-foreground tracking-tight">
             {tBilingual(
-              'Your Entire Print Shop in the Palm of Your Hand.',
-              'আপনার পুরো প্রিন্টিং ব্যবসা আপনার হাতের মুঠোয়।'
+              'Manage Your Entire Shop From Mobile.',
+              'স্মার্টফোনেই পুরো প্রেস পরিচালনা করুন।'
             )}
           </h2>
 
           <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
             {tBilingual(
-              'Staff on the press floor don’t sit in front of desktop computers. PrintFlow is engineered for mobile phones, budget tablets, and field delivery vans.',
-              'কারখানার ফ্লোরে বা সাইট ফিটিংয়ে কম্পিউটার থাকে না। প্রিন্টফ্লো সাধারণ স্মার্টফোনে সহজে ব্যবহারের জন্য বিশেষভাবে তৈরি।'
+              'Machine operators, delivery drivers, and fitters work from any phone or tablet.',
+              'অপারেটর, ডেলিভারি ভ্যান ও সাইট ফিটাররা যেকোনো সাধারণ ফোন থেকেই কাজ করেন।'
             )}
           </p>
         </div>

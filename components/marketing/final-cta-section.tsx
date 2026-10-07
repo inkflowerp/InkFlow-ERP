@@ -23,7 +23,7 @@ export function FinalCTASection({ config, onOpenDemo }: FinalCTASectionProps) {
   const handleOpenDemo = onOpenDemo || openDemo
 
   return (
-    <section className="py-16 sm:py-24 bg-card border-t border-border">
+    <section className="py-16 sm:py-24 bg-muted/30 border-t border-border">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
         <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
           <Zap className="h-3.5 w-3.5" />
@@ -32,17 +32,17 @@ export function FinalCTASection({ config, onOpenDemo }: FinalCTASectionProps) {
 
         <h2 className="text-2xl sm:text-4xl md:text-5xl font-black text-foreground tracking-tight max-w-2xl mx-auto leading-tight">
           {tBilingual(
-            c.headlineEn || 'Ready to Eliminate Chaos and Take Total Control of Your Print Shop?',
-            c.headlineBn || 'কাগজের বিশৃঙ্খলা ভুলে আপনার পুরো প্রেসের নিয়ন্ত্রণ নিতে প্রস্তুত?'
+            c.headlineEn || 'Ready to Take Total Control of Your Print Shop?',
+            c.headlineBn || 'আপনার পুরো প্রেসের সম্পূর্ণ নিয়ন্ত্রণ নিতে প্রস্তুত?'
           )}
         </h2>
 
         <p className="text-xs sm:text-base text-muted-foreground max-w-xl mx-auto leading-relaxed">
           {tBilingual(
             c.descriptionEn ||
-              'Join over 200 print and signage companies across Bangladesh managing quotes, roll media stock, floor machines, and staff QR attendance in one place.',
+              'Quotes, roll media stock, floor machines, and staff QR attendance in one connected system.',
             c.descriptionBn ||
-              'বাংলাদেশের ২০০+ আধুনিক প্রেস ও সাইনেজ প্রতিষ্ঠানের সাথে যোগ দিন। কোটেশন, রোল স্টক, মেশিন কিউ এবং কিউআর হাজিরা পরিচালনা করুন এক ছাদের নিচে।'
+              'কোটেশন, রোল স্টক, মেশিন কিউ এবং কিউআর হাজিরা — সব এক সিস্টেমে।'
           )}
         </p>
 
@@ -70,15 +70,15 @@ export function FinalCTASection({ config, onOpenDemo }: FinalCTASectionProps) {
         <div className="flex flex-wrap items-center justify-center gap-5 text-xs text-muted-foreground pt-3">
           <div className="flex items-center gap-1.5">
             <CheckCircle2 className="h-3.5 w-3.5 text-success" />
-            <span>{tBilingual('No Credit Card Required', 'কোনো কার্ড লাগবে না')}</span>
+            <span>{tBilingual('No Card Required', 'কার্ড ছাড়াই শুরু')}</span>
           </div>
           <div className="flex items-center gap-1.5">
             <Zap className="h-3.5 w-3.5 text-primary" />
-            <span>{tBilingual('Instant Account Setup in 60s', '৬০ সেকেন্ডে অ্যাকাউন্ট রেডি')}</span>
+            <span>{tBilingual('1-Minute Setup', '১ মিনিটে চালু')}</span>
           </div>
           <div className="flex items-center gap-1.5">
             <ShieldCheck className="h-3.5 w-3.5 text-success" />
-            <span>{tBilingual('100% Isolated Tenant Database', 'শতভাগ সুরক্ষিত ডাটাবেজ')}</span>
+            <span>{tBilingual('100% Private Data', 'শতভাগ সুরক্ষিত ডাটা')}</span>
           </div>
         </div>
       </div>

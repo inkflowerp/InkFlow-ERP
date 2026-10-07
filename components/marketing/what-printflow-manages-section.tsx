@@ -31,64 +31,64 @@ export function WhatPrintFlowManagesSection() {
     {
       labelEn: 'Sales & SFT Quotations',
       labelBn: 'সেলস ও স্কয়ারফিট কোটেশন',
-      descEn: 'Instant SFT estimations, 4 customer tiers (Retail, Reseller, Corporate, Agency), and branded PDF invoices.',
-      descBn: 'মুহূর্তে স্কয়ারফিট কোটেশন, ৪টি কাস্টমার টায়ার রেট এবং ব্র্যান্ডেড পিডিএফ ইনভয়েস প্রস্তুত।',
+      descEn: 'Instant SFT quotes, 4 rate tiers (Retail/Reseller), and PDF invoices.',
+      descBn: 'মুহূর্তে স্কয়ারফিট কোটেশন, ৪টি রেট টায়ার ও পিডিএফ ইনভয়েস।',
       icon: DollarSign,
     },
     {
       labelEn: 'Prepress & Artwork Proofs',
       labelBn: 'প্রি-প্রেস ও আর্টওয়ার্ক প্রুফ',
-      descEn: 'Digital client sign-off, color profile validation, and revision histories before touching machine beds.',
-      descBn: 'মেশিনে মেটেরিয়াল লোডের আগে ক্লায়েন্টের ডিজিটাল সাইন-অফ, কালার প্রুফ ও ফাইল লক।',
+      descEn: 'Client WhatsApp sign-off, color profiles, and locked files before print.',
+      descBn: 'ক্লায়েন্টের ডিজিটাল অনুমোদন, কালার প্রুফ ও প্রিন্টের আগে ফাইল লক।',
       icon: Palette,
     },
     {
       labelEn: 'Machine Production Queue',
       labelBn: 'কারখানা মেশিন কিউ',
-      descEn: 'Live job tickets across Flora Polaris, Konica Minolta, CNC routers, and laser cutting lines.',
-      descBn: 'ফ্লোরা, কনিকা, ইকো-সলভেন্ট ও সিএনসি ফ্যাব্রিকেশনের ডিজিটাল জব টিকিট মনিটরিং।',
+      descEn: 'Flora, Konica, Eco-Solvent, and CNC digital floor ticketing.',
+      descBn: 'ফ্লোরা, কনিকা, ইকো-সলভেন্ট ও সিএনসি ডিজিটাল জব টিকিট।',
       icon: Printer,
     },
     {
       labelEn: 'Roll Stock & Scrap Salvage',
       labelBn: 'রোল স্টক ও কাটিং স্ক্র্যাপ',
-      descEn: 'Width × length SFT calculation, automated print deductions, and remnant scrap salvage.',
-      descBn: 'প্রস্থ × দৈর্ঘ্য অনুযায়ী স্কয়ারফিট স্টক হিসাব, প্রিন্ট সমন্বয় ও কাটিং অপচয় সংরক্ষণ।',
+      descEn: 'Width × length SFT tracking, auto-deduction, and remnant scrap salvage.',
+      descBn: 'প্রস্থ × দৈর্ঘ্য স্কয়ারফিট হিসাব ও কাটিং স্ক্র্যাপ সংরক্ষণ।',
       icon: Boxes,
     },
     {
       labelEn: 'Suppliers & Purchases',
       labelBn: 'সাপ্লায়ার ও কাঁচামাল ক্রয়',
-      descEn: 'Purchase orders, media receipts, ink tracking, and supplier credit balance ledgers.',
-      descBn: 'পারচেজ অর্ডার, মেটেরিয়াল রিসিট, কালি কেনা এবং সাপ্লায়ার বাকি খাতা ট্র্যাকিং।',
+      descEn: 'Media purchase orders, ink receipts, and supplier dues ledger.',
+      descBn: 'মেটেরিয়াল ও কালি ক্রয়, রিসিট এবং সাপ্লায়ার বাকি খাতা।',
       icon: ShoppingCart,
     },
     {
       labelEn: 'Staff, Shifts & QR Attendance',
       labelBn: 'কর্মী, শিফট ও কিউআর হাজিরা',
-      descEn: 'Camera QR check-in, operator floor assignments, advances, and automated overtime payroll.',
-      descBn: 'ক্যামেরা কিউআর হাজিরা, অপারেটর জব এসাইনমেন্ট, অগ্রিম বেতন ও ওভারটাইম হিসাব।',
+      descEn: 'Camera QR scan, operator stations, salary advances, and overtime.',
+      descBn: 'ক্যামেরা কিউআর হাজিরা, অপারেটর এসাইনমেন্ট ও ওভারটাইম।',
       icon: Users,
     },
     {
       labelEn: 'Cash Book & MFS Challans',
       labelBn: 'ক্যাশ বুক ও বিকাশ চালান',
-      descEn: 'Counter cash, bKash / Nagad TrxIDs, bank accounts, daily press expenses, and true net profit.',
-      descBn: 'কাউন্টার ক্যাশ, বিকাশ ও নগদ TrxID, ব্যাংক হিসাব, দৈনিক কারখানা খরচ ও নিট লাভ।',
+      descEn: 'Counter cash, bKash TrxIDs, daily press expenses, and true net profit.',
+      descBn: 'কাউন্টার ক্যাশ, বিকাশ TrxID, দৈনিক কারখানা খরচ ও নিট লাভ।',
       icon: Wallet,
     },
     {
       labelEn: 'Delivery & Site Fitting',
       labelBn: 'চালান ডেলিভারি ও সাইট ফিটিং',
-      descEn: 'Official NBR Mushak 6.3 challans, van dispatch, and on-site sign installation sign-offs.',
-      descBn: 'এনবিআর স্বীকৃত ডেলিভারি চালান প্রিন্ট, ভ্যান প্রেরণ এবং সাইট ফিটিং সম্পন্নকরণ।',
+      descEn: 'NBR Mushak 6.3 challans, van delivery, and on-site fitting sign-offs.',
+      descBn: 'মূসক ৬.৩ ডেলিভারি চালান, ভ্যান ট্র্যাকিং ও সাইট ফিটিং।',
       icon: Truck,
     },
     {
       labelEn: 'Enterprise Cloud Security',
       labelBn: 'ক্লাউড নিরাপত্তা ও অডিট লগ',
-      descEn: 'Postgres RLS tenant isolation, role-based margin protection, daily backups, and audit logs.',
-      descBn: 'পোস্টগ্রেস আরএলএস দিয়ে শতভাগ সুরক্ষিত ডাটা, মালিকের লাভ গোপন রাখা ও অটো ব্যাকআপ।',
+      descEn: 'Postgres RLS tenant isolation, owner margin privacy, and auto-backups.',
+      descBn: 'পোস্টগ্রেস আরএলএস ডাটা নিরাপত্তা, মালিকের লাভ গোপন ও অটো ব্যাকআপ।',
       icon: ShieldCheck,
     },
   ]
@@ -100,20 +100,20 @@ export function WhatPrintFlowManagesSection() {
         <div className="text-center max-w-2xl mx-auto space-y-2.5">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
             <Sparkles className="h-3.5 w-3.5" />
-            <span>{tBilingual('Complete PrintFlow Platform', 'প্রিন্ট ব্যবসার পূর্ণাঙ্গ প্ল্যাটফর্ম')}</span>
+            <span>{tBilingual('Complete Platform', 'পূর্ণাঙ্গ প্ল্যাটফর্ম')}</span>
           </div>
 
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-foreground tracking-tight">
             {tBilingual(
-              'Everything Required to Run a High-Volume Print Business.',
-              'একটি বড় প্রিন্টিং ও সাইনেজ ব্যবসা পরিচালনার সম্পূর্ণ সমাধান।'
+              'Everything to Run a High-Volume Print Shop.',
+              'প্রিন্টিং ও সাইনেজ কারখানা পরিচালনার পূর্ণাঙ্গ সমাধান।'
             )}
           </h2>
 
           <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
             {tBilingual(
-              '9 unified operational pillars built around how print shops actually function in Bangladesh. No complex configurations or unnecessary fluff.',
-              'বাংলাদেশের প্রেস ও সাইনেজ শপের বাস্তব কাজের ধারার সাথে মিলিয়ে প্রস্তুত ৯টি নির্ভরযোগ্য মডিউল।'
+              '9 connected modules built for how print shops actually work in Bangladesh.',
+              'বাংলাদেশের প্রেসের বাস্তব কাজের সাথে মিলিয়ে তৈরি ৯টি নির্ভরযোগ্য মডিউল।'
             )}
           </p>
         </div>
