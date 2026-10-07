@@ -18,6 +18,7 @@ import type {
 import { PurchaseRepository } from '../lib/repositories/purchase.repository.ts'
 import { SupplierRepository } from '../lib/repositories/supplier.repository.ts'
 import { InventoryRepository } from '../lib/repositories/inventory.repository.ts'
+import { ProductRepository } from '../lib/repositories/product.repository.ts'
 import { AuditService } from './audit.service.ts'
 import { PrintFlowDataStore, STORAGE_KEYS } from '../lib/db/data-store.ts'
 
@@ -199,6 +200,8 @@ export class PurchaseService {
       supplier_name: string
       supplier_phone: string
       items: PurchaseOrderItemRecord[]
+      receive_immediately?: boolean
+      target_location_id?: string | null
     },
     actorId?: string,
     actorEmail?: string
@@ -220,6 +223,39 @@ export class PurchaseService {
       { po_number: created.po_number, grand_total: created.grand_total, supplier_name: created.supplier_name },
       `Created purchase order ${created.po_number} for ${created.supplier_name} (৳${created.grand_total})`
     )
+
+    if (data.receive_immediately) {
+      try {
+        const receivedResult = await this.receiveGoods({
+          company_id: data.company_id,
+          branch_id: data.branch_id || created.branch_id || null,
+          purchase_order_id: created.id,
+          receiving_location_id: data.target_location_id || null,
+          received_date: created.po_date || new Date().toISOString().split('T')[0],
+          received_by_name: data.created_by_name || 'Procurement Officer',
+          actor_id: actorId || null,
+          actor_email: actorEmail,
+          notes: `Direct intake upon issuing purchase order ${created.po_number}`,
+          items_received: created.items.map((it) => ({
+            po_item_id: it.id,
+            material_id: it.material_id,
+            material_name: it.material_name,
+            current_received: it.quantity_ordered,
+            accepted_quantity: it.quantity_ordered,
+            rejected_quantity: 0,
+            damaged_quantity: 0,
+            unit: it.unit,
+            unit_cost: it.unit_cost,
+            notes: it.notes,
+            roll_width_ft: (it as any).roll_width_ft ?? null,
+            roll_length_ft: (it as any).roll_length_ft ?? null,
+          })),
+        })
+        return receivedResult.updatedPO
+      } catch (recErr: any) {
+        console.error(`[PurchaseService] Error auto-receiving goods for PO ${created.po_number}:`, recErr)
+      }
+    }
 
     return created
   }
@@ -456,6 +492,11 @@ export class PurchaseService {
           material = await InventoryRepository.getMaterialById(item.material_id, params.company_id)
         } catch {}
 
+        let product: any = null
+        try {
+          product = await ProductRepository.getProductById(item.material_id, params.company_id)
+        } catch {}
+
         const itemUnit = (item.unit || material?.purchase_unit || material?.unit || 'pcs').toLowerCase()
         const matUnit = (material?.unit || '').toLowerCase()
         const isRoll =
@@ -468,6 +509,10 @@ export class PurchaseService {
           ? material.roll_sizes
           : Array.isArray((material?.material_config as any)?.roll_sizes) && (material.material_config as any).roll_sizes.length > 0
           ? (material.material_config as any).roll_sizes
+          : Array.isArray((product?.material_config as any)?.roll_sizes) && (product.material_config as any).roll_sizes.length > 0
+          ? (product.material_config as any).roll_sizes
+          : Array.isArray((product?.pricing_formula as any)?.roll_sizes) && (product.pricing_formula as any).roll_sizes.length > 0
+          ? (product.pricing_formula as any).roll_sizes
           : []
 
         const poItem = (po.items || []).find((p: any) => p.id === item.po_item_id || p.material_id === item.material_id)
@@ -477,14 +522,28 @@ export class PurchaseService {
           (poItem as any)?.roll_width_ft ||
           0
         )
+        // Check regex on item/poItem name, sku, notes BEFORE any generic catalog fallback!
         if (!rollWidth) {
-          const matchW = `${item.material_name || ''} ${(poItem as any)?.material_name || ''} ${(poItem as any)?.supplier_sku || ''} ${(poItem as any)?.notes || ''}`.match(/(\d+(?:\.\d+)?)\s*(?:ft|'|foot)/i)
+          const combinedText = `${item.material_name || ''} ${(poItem as any)?.material_name || ''} ${(poItem as any)?.supplier_sku || ''} ${(poItem as any)?.notes || ''} ${item.notes || ''}`
+          const matchW = combinedText.match(/(\d+(?:\.\d+)?)\s*(?:ft|'|foot)/i)
           if (matchW) rollWidth = Number(matchW[1])
+        }
+        // If still no rollWidth and we have rawRollSizes, try to match by name or notes against existing roll sizes
+        if (!rollWidth && rawRollSizes.length > 0) {
+          const combinedText = `${item.material_name || ''} ${(poItem as any)?.material_name || ''} ${item.notes || ''}`.toLowerCase()
+          for (const sz of rawRollSizes) {
+            const szW = Number(sz.width_ft || sz.nominal_width_ft || sz.width || 0)
+            if (szW > 0 && (combinedText.includes(`${szW}ft`) || combinedText.includes(`${szW} ft`))) {
+              rollWidth = szW
+              break
+            }
+          }
         }
         if (!rollWidth) {
           rollWidth = Number(
             material?.roll_width_ft ||
-            (rawRollSizes.length > 0 ? (rawRollSizes[0].width || rawRollSizes[0].width_ft || rawRollSizes[0].size) : 0) ||
+            product?.roll_width_ft ||
+            (rawRollSizes.length > 0 ? (rawRollSizes[0].width_ft || rawRollSizes[0].width || rawRollSizes[0].size) : 0) ||
             material?.width ||
             4
           )
@@ -496,14 +555,17 @@ export class PurchaseService {
           0
         )
         if (!rollLength) {
-          const matchL = `${item.material_name || ''} ${(poItem as any)?.material_name || ''} ${(poItem as any)?.notes || ''}`.match(/[x×]\s*(\d+(?:\.\d+)?)\s*(?:ft|')/i)
+          const combinedText = `${item.material_name || ''} ${(poItem as any)?.material_name || ''} ${(poItem as any)?.notes || ''} ${item.notes || ''}`
+          const matchL = combinedText.match(/[x×]\s*(\d+(?:\.\d+)?)\s*(?:ft|')/i)
           if (matchL) rollLength = Number(matchL[1])
         }
         if (!rollLength) {
           rollLength = Number(
             material?.roll_length_ft ||
-            material?.length ||
+            product?.roll_length_ft ||
             material?.standard_roll_length_ft ||
+            (product?.material_config as any)?.standard_roll_length_ft ||
+            (rawRollSizes.length > 0 ? (rawRollSizes[0].length_ft || rawRollSizes[0].length) : 0) ||
             164
           )
         }
@@ -519,8 +581,93 @@ export class PurchaseService {
           }
         }
 
+        let updatedRollSizes: any[] | null = null
+        if (isRoll && rawRollSizes.length > 0) {
+          let rollMatched = false
+          updatedRollSizes = rawRollSizes.map((sz: any) => {
+            const szBaseW = Number(sz.nominal_width_ft || sz.width || sz.width_ft || sz.size || 0)
+            const szAllowance = sz.extra_allowance !== undefined
+              ? Number(sz.extra_allowance)
+              : sz.allowance !== undefined
+              ? Number(sz.allowance)
+              : sz.allowance_ft !== undefined
+              ? Number(sz.allowance_ft)
+              : 0
+            const szW = sz.width_ft !== undefined && Number(sz.width_ft) > 0
+              ? Number(sz.width_ft)
+              : ((szAllowance > 0 && Math.floor(szBaseW) === szBaseW) ? Math.round((szBaseW + szAllowance) * 100) / 100 : szBaseW)
+            const szL = Number(sz.length || sz.length_ft || 0)
+
+            const matchesWidth = (rollWidth > 0 && (Math.abs(szW - rollWidth) < 0.05 || Math.abs(szBaseW - rollWidth) < 0.05))
+            const matchesLength = (!rollLength || !szL || Math.abs(szL - rollLength) <= 5)
+
+            if (!rollMatched && matchesWidth && matchesLength) {
+              rollMatched = true
+              const curQty = Number(sz.quantity ?? sz.stock_qty ?? sz.stock ?? sz.roll_count ?? 0)
+              const newQty = curQty + accepted
+              const effW = szW || rollWidth
+              const effL = szL || rollLength || 164
+              return {
+                ...sz,
+                width: szBaseW || rollWidth,
+                nominal_width_ft: szBaseW || rollWidth,
+                width_ft: effW,
+                allowance_ft: szAllowance,
+                extra_allowance: szAllowance,
+                length: effL,
+                length_ft: effL,
+                quantity: newQty,
+                roll_count: newQty,
+                stock_qty: newQty,
+                stock: newQty,
+                total_sft: Math.round(newQty * effW * effL * 100) / 100,
+                ...(item.unit_cost && item.unit_cost > 0 ? {
+                  unit_cost: item.unit_cost,
+                  price: item.unit_cost,
+                  purchase_price: item.unit_cost,
+                } : {}),
+              }
+            }
+            const curQty = Number(sz.quantity ?? sz.stock_qty ?? sz.stock ?? sz.roll_count ?? 0)
+            const effW = szW || szBaseW || 4
+            const effL = szL || 164
+            return {
+              ...sz,
+              quantity: curQty,
+              roll_count: curQty,
+              stock_qty: curQty,
+              stock: curQty,
+              total_sft: Math.round(curQty * effW * effL * 100) / 100,
+            }
+          })
+
+          if (!rollMatched && rollWidth > 0) {
+            const effW = rollWidth
+            const effL = rollLength || 164
+            updatedRollSizes.push({
+              name: item.material_name || material?.name || 'Roll',
+              width: rollWidth,
+              nominal_width_ft: rollWidth,
+              width_ft: effW,
+              length: effL,
+              length_ft: effL,
+              allowance_ft: 0,
+              extra_allowance: 0,
+              quantity: accepted,
+              roll_count: accepted,
+              stock_qty: accepted,
+              stock: accepted,
+              total_sft: Math.round(accepted * effW * effL * 100) / 100,
+              price: item.unit_cost || 0,
+              unit_cost: item.unit_cost || 0,
+              purchase_price: item.unit_cost || 0,
+            })
+          }
+        }
+
+        let adjResult: any = null
         try {
-          await InventoryRepository.recordStockAdjustment({
+          adjResult = await InventoryRepository.recordStockAdjustment({
             company_id: params.company_id,
             branch_id: params.branch_id || po.branch_id || null,
             material_id: item.material_id,
@@ -533,9 +680,77 @@ export class PurchaseService {
             notes: `GRN ${grn.grn_number} for PO ${po.po_number}. Challan: ${params.challan_number || 'N/A'}`,
             performed_by_id: params.actor_id || null,
             performed_by_name: params.received_by_name,
+            roll_sizes: updatedRollSizes,
           })
         } catch (err: any) {
           console.error(`[PurchaseService] V3 Stock mutation error for material ${item.material_id}:`, err)
+        }
+
+        // If this is a ready product in products catalog, synchronize product stock and formula
+        if (product) {
+          try {
+            const totalRollSft = updatedRollSizes
+              ? updatedRollSizes.reduce((sum, sz) => sum + (Number(sz.total_sft) || (Number(sz.stock || 0) * Number(sz.width_ft || sz.width || 4) * Number(sz.length_ft || sz.length || 164))), 0)
+              : null
+            const curPStock = Number(
+              product.current_stock ??
+              product.stock ??
+              (product.pricing_formula as any)?.current_stock ??
+              (product.pricing_formula as any)?.stock ??
+              (product.pricing_formula as any)?.opening_stock ??
+              0
+            )
+            const nextPStock = totalRollSft !== null ? totalRollSft : Number(adjResult?.material?.current_stock ?? (curPStock + accepted))
+            const prevFormula = (typeof product.pricing_formula === 'object' && product.pricing_formula !== null ? product.pricing_formula : {}) as any
+            const updatedFormula = {
+              ...prevFormula,
+              current_stock: nextPStock,
+              stock: nextPStock,
+              ...(updatedRollSizes ? { roll_sizes: updatedRollSizes } : {}),
+            }
+            const updatedConfig = {
+              ...(product.material_config || {}),
+              ...(updatedRollSizes ? { roll_sizes: updatedRollSizes } : {}),
+            }
+
+            await ProductRepository.updateProduct(product.id, {
+              pricing_formula: updatedFormula,
+              material_config: updatedConfig,
+              purchase_price: item.unit_cost && item.unit_cost > 0 ? item.unit_cost : undefined,
+              base_cost: item.unit_cost && item.unit_cost > 0 ? item.unit_cost : undefined,
+            }, params.company_id)
+
+            PrintFlowDataStore.updateItem<any>(STORAGE_KEYS.PRODUCTS, product.id, {
+              current_stock: nextPStock,
+              stock: nextPStock,
+              pricing_formula: updatedFormula,
+              material_config: updatedConfig,
+              purchase_price: item.unit_cost && item.unit_cost > 0 ? item.unit_cost : undefined,
+              base_cost: item.unit_cost && item.unit_cost > 0 ? item.unit_cost : undefined,
+            }, params.company_id)
+          } catch (pErr: any) {
+            console.error(`[PurchaseService] Product stock sync error for ${product.id}:`, pErr)
+          }
+        }
+
+        // Also synchronize material in DataStore if updatedRollSizes exists
+        if (material && updatedRollSizes) {
+          try {
+            const updatedMatConfig = {
+              ...(material.material_config || {}),
+              roll_sizes: updatedRollSizes,
+            }
+            const totalRollSft = updatedRollSizes.reduce((sum, sz) => sum + (Number(sz.total_sft) || (Number(sz.stock || 0) * Number(sz.width_ft || sz.width || 4) * Number(sz.length_ft || sz.length || 164))), 0)
+            const nextMatStock = (matUnit === 'sft' || matUnit === 'sqft') ? totalRollSft : Number(material.current_stock ?? 0) + accepted
+
+            PrintFlowDataStore.updateItem<any>(STORAGE_KEYS.MATERIALS, material.id, {
+              current_stock: nextMatStock,
+              roll_sizes: updatedRollSizes,
+              material_config: updatedMatConfig,
+            }, params.company_id)
+          } catch (mErr: any) {
+            console.error(`[PurchaseService] Material roll_sizes sync error for ${material.id}:`, mErr)
+          }
         }
 
         // Spawn Individual Physical Rolls if this is a roll material or purchased in rolls
@@ -631,6 +846,13 @@ export class PurchaseService {
       { po_status: newPOStatus, grn_number: grn.grn_number, accepted_total: grn.accepted_total },
       `Received goods under GRN ${grn.grn_number} for PO ${po.po_number} by ${params.received_by_name}`
     )
+
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('printflow_table_synced:products'))
+      window.dispatchEvent(new CustomEvent('printflow_table_synced:materials'))
+      window.dispatchEvent(new CustomEvent('printflow_table_synced:stock_ledger'))
+      window.dispatchEvent(new CustomEvent('printflow_table_synced:inventory_stock_balances'))
+    }
 
     return { grn, updatedPO: updatedPO! }
   }

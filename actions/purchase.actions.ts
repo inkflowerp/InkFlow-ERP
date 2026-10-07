@@ -261,6 +261,8 @@ export const createPurchaseOrderAction = withTenantAction(
     supplier_name: string
     supplier_phone: string
     items: PurchaseOrderItemRecord[]
+    receive_immediately?: boolean
+    target_location_id?: string | null
   },
   requestedCompanyId?: string) : Promise<ServerActionResult<PurchaseOrderRecord>> => {
   try {

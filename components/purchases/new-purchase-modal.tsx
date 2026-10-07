@@ -166,6 +166,7 @@ export function NewPurchaseModal({
   })
  const [priority, setPriority] = useState<'normal' | 'high' | 'urgent'>('normal')
  const [deliveryMethod, setDeliveryMethod] = useState<string>('supplier_delivery')
+ const [autoReceiveStock, setAutoReceiveStock] = useState<boolean>(true)
 
   // STEP 2: Items Catalog State
  const [items, setItems] = useState<PurchaseItemFormState[]>([
@@ -842,6 +843,7 @@ export function NewPurchaseModal({
  setSupplierReference('')
  setPriority('normal')
  setDeliveryMethod('supplier_delivery')
+ setAutoReceiveStock(true)
  setVatType('none')
  setCustomVatAmount(0)
  setDiscountType('fixed')
@@ -942,10 +944,14 @@ export function NewPurchaseModal({
  supplier_name: string
  supplier_phone: string
  items: PurchaseOrderItemRecord[]
+ receive_immediately?: boolean
+ target_location_id?: string | null
       } = {
  company_id: company?.id || 'c-01',
  branch_id: currentBranch?.id || null,
  po_number: poNum,
+ receive_immediately: autoReceiveStock,
+ target_location_id: targetLocationId,
  supplier_id: supplierMode === 'existing' ? selectedSupplierId : `sup-spot-${Date.now()}`,
  supplier_name: supName,
  supplier_phone: supPhone,
@@ -998,6 +1004,60 @@ export function NewPurchaseModal({
  title: 'Purchase Order Issued',
  message: `Purchase Order ${savedPO.po_number} issued successfully!`,
       })
+
+ if (autoReceiveStock) {
+   // Optimistically mutate DataStore and dispatch events for immediate reactivity
+   for (const it of items) {
+     const addedQty = Number(it.quantity) || 0
+     if (addedQty > 0 && it.material_id) {
+       // Check Product DataStore
+       const prods = PrintFlowDataStore.getAll<any>(STORAGE_KEYS.PRODUCTS, company?.id) || []
+       const prod = prods.find((p: any) => p && (p.id === it.material_id || (p.sku && p.sku === it.material_id)))
+       if (prod) {
+         const curStock = Number(prod.current_stock ?? prod.stock ?? (prod.pricing_formula as any)?.current_stock ?? 0)
+         const nextStock = curStock + addedQty
+         const nextCost = Number(it.unit_cost) || Number(prod.purchase_price ?? prod.base_cost ?? 0)
+         const updatePayload = {
+           current_stock: nextStock,
+           stock: nextStock,
+           purchase_price: nextCost > 0 ? nextCost : undefined,
+           base_cost: nextCost > 0 ? nextCost : undefined,
+           pricing_formula: {
+             ...(typeof prod.pricing_formula === 'object' && prod.pricing_formula !== null ? prod.pricing_formula : {}),
+             current_stock: nextStock,
+             stock: nextStock,
+           },
+         }
+         PrintFlowDataStore.updateItem<any>(STORAGE_KEYS.PRODUCTS, prod.id, updatePayload, company?.id)
+       }
+
+       // Check Material DataStore
+       const mats = PrintFlowDataStore.getAll<any>(STORAGE_KEYS.MATERIALS, company?.id) || []
+       const mat = mats.find((m: any) => m && (m.id === it.material_id || (m.sku && m.sku === it.material_id)))
+       if (mat) {
+         const curStock = Number(mat.current_stock ?? mat.stock ?? 0)
+         const nextStock = curStock + addedQty
+         const nextCost = Number(it.unit_cost) || Number(mat.average_cost ?? mat.last_purchase_price ?? 0)
+         PrintFlowDataStore.updateItem<any>(STORAGE_KEYS.MATERIALS, mat.id, {
+           current_stock: nextStock,
+           last_purchase_price: nextCost > 0 ? nextCost : undefined,
+         }, company?.id)
+       }
+     }
+   }
+
+   if (typeof window !== 'undefined') {
+     window.dispatchEvent(new CustomEvent('printflow_table_synced', { detail: { table: 'products' } }))
+     window.dispatchEvent(new CustomEvent('printflow_table_synced:products'))
+     window.dispatchEvent(new CustomEvent('printflow_table_synced', { detail: { table: 'materials' } }))
+     window.dispatchEvent(new CustomEvent('printflow_table_synced:materials'))
+     window.dispatchEvent(new CustomEvent('printflow_table_synced:stock_ledger'))
+     window.dispatchEvent(new CustomEvent('printflow_table_synced:inventory_stock_balances'))
+     window.dispatchEvent(new CustomEvent('products_updated'))
+     window.dispatchEvent(new CustomEvent('materials_updated'))
+   }
+ }
+
  refreshUsage()
  onPurchaseCreated?.(savedPO)
 
@@ -1433,6 +1493,29 @@ export function NewPurchaseModal({
  onChange={(e) => setSupplierReference(e.target.value)}
  className="text-xs h-9 tabular-nums"/>
                 </div>
+
+                <div className="sm:col-span-3 pt-1">
+                  <div className="flex items-start gap-3 p-3 rounded-lg border border-border bg-card shadow-xs">
+                    <input
+                      type="checkbox"
+                      id="autoReceiveStock"
+                      checked={autoReceiveStock}
+                      onChange={(e) => setAutoReceiveStock(e.target.checked)}
+                      className="mt-0.5 h-4 w-4 rounded border-border text-primary focus:ring-ring cursor-pointer"
+                    />
+                    <label htmlFor="autoReceiveStock" className="text-xs cursor-pointer select-none">
+                      <span className="font-semibold text-foreground block">
+                        {tBilingual('Direct Stock Intake (Receive into Store Immediately)', 'সরাসরি গোডাউনে স্টক জমা করুন (তাৎক্ষণিক রিসিভ)')}
+                      </span>
+                      <span className="text-muted-foreground block text-xs mt-0.5">
+                        {tBilingual(
+                          'Automatically updates physical stock on hand and logs ledger entries for all purchased materials and ready products without needing a separate GRN note.',
+                          'আলাদা জিআরএন নোট ছাড়াও তাৎক্ষণিকভাবে গোডাউনের ফিজিক্যাল স্টক বৃদ্ধি পাবে এবং স্টক লেজারে জমা হবে।'
+                        )}
+                      </span>
+                    </label>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -1504,17 +1587,25 @@ export function NewPurchaseModal({
  Item / Substrate / Hardware <span className="text-destructive">*</span>
                       </Label>
                       <select
- value={
- item.selection_key ||
+                        value={
+                          item.selection_key ||
                           (item.item_type === 'custom'
                             ? 'custom_new'
                             : item.item_type === 'ready_product'
                             ? `prod:${item.material_id}`
-                            : item.roll_width_ft && item.roll_length_ft
-                            ? `mat_size:${item.material_id}:roll-size-${item.roll_width_ft}x${item.roll_length_ft}`
-                            : `mat:${item.material_id}`)
+                            : (() => {
+                                if (item.material_id && item.roll_width_ft) {
+                                  const found = purchasableOptions.find((o) =>
+                                    o.material_id === item.material_id &&
+                                    Math.abs((o.roll_width_ft ?? 0) - (item.roll_width_ft ?? 0)) < 0.05 &&
+                                    (!item.roll_length_ft || Math.abs((o.roll_length_ft ?? 0) - (item.roll_length_ft ?? 0)) <= 5)
+                                  )
+                                  if (found) return found.key
+                                }
+                                return item.material_id ? `mat:${item.material_id}` : ''
+                              })())
                         }
- onChange={(e) => handleItemSelect(idx, e.target.value)}
+                        onChange={(e) => handleItemSelect(idx, e.target.value)}
  className="w-full h-8.5 rounded-lg border border-input bg-card px-2 text-xs font-medium"required
                       >
                         <option value="">-- Choose Item from Catalog --</option>

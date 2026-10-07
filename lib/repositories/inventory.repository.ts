@@ -26,6 +26,7 @@ import { PrintFlowDataStore, STORAGE_KEYS } from '../db/data-store.ts'
 import { measureAsync } from '../performance/logger.ts'
 import { MachineryRepository } from './machinery.repository.ts'
 import type { ProductRecord } from '../../types/product.types.ts'
+import { ProductRepository } from './product.repository.ts'
 import { isMaterialProduct, getMaterialWarehouseStockBreakdown } from '../units.ts'
 import { PriceIntelligenceEngine } from '../domain/price-intelligence-engine.ts'
 
@@ -948,6 +949,7 @@ export class InventoryRepository {
         available_sheet_sizes: foundProd.available_sheet_sizes || (foundProd.material_config as any)?.available_sheet_sizes,
         roll_sizes: foundProd.roll_sizes || (foundProd.material_config as any)?.roll_sizes || (foundProd.pricing_formula as any)?.roll_sizes,
         material_config: foundProd.material_config || (foundProd.pricing_formula as any)?.material_config || null,
+        pricing_formula: foundProd.pricing_formula || null,
         purchase_price_per_sft: (foundProd.material_config as any)?.purchase_price_per_sft || (foundProd.pricing_formula as any)?.purchase_price_per_sft || null,
         production_width_allowance: foundProd.production_width_allowance || (foundProd.material_config as any)?.extra_width_allowance_ft || (foundProd.pricing_formula as any)?.production_width_allowance || 0,
         is_active: foundProd.is_active !== false,
@@ -960,6 +962,54 @@ export class InventoryRepository {
 
       return this.reconcileMaterialStock(bridged)
     }
+
+    // 5. Fallback: Query live product by ID/SKU if not in materials or local cache
+    try {
+      const liveProd = await ProductRepository.getProductById(cleanId, companyId)
+      if (liveProd) {
+        const isRoll = Boolean(liveProd.roll_width_ft || (liveProd as any).is_roll || (liveProd.category && String(liveProd.category).includes('roll')) || (liveProd.material_config as any)?.material_type === 'roll' || liveProd.purchase_unit === 'roll')
+        const rawPurchaseUnit = liveProd.purchase_unit || (liveProd.material_config as any)?.purchase_unit || (liveProd.pricing_formula as any)?.material_config?.purchase_unit
+        const computedPurchaseUnit = isRoll
+          ? (rawPurchaseUnit && !['sft', 'sqft'].includes(rawPurchaseUnit.toLowerCase()) ? rawPurchaseUnit : 'roll')
+          : rawPurchaseUnit || liveProd.unit
+
+        const bridgedLive: MaterialRecord = {
+          id: liveProd.id,
+          company_id: liveProd.company_id || companyId,
+          sku: liveProd.sku || '',
+          name: liveProd.name,
+          name_bn: liveProd.name_bn || null,
+          category: liveProd.category || 'ready_product',
+          unit: (liveProd.selling_unit || liveProd.unit || 'pcs') as MaterialUnit,
+          purchase_unit: computedPurchaseUnit,
+          master_purchase_unit: computedPurchaseUnit,
+          current_stock: Number(liveProd.current_stock ?? liveProd.stock ?? (liveProd.pricing_formula as any)?.current_stock ?? (liveProd.pricing_formula as any)?.opening_stock ?? liveProd.opening_stock ?? 0),
+          average_cost: Number(liveProd.purchase_price ?? liveProd.base_cost ?? (liveProd as any).cost_price ?? 0),
+          last_purchase_price: Number(liveProd.purchase_price ?? liveProd.base_cost ?? (liveProd as any).cost_price ?? 0),
+          cost_per_unit: Number(liveProd.purchase_price ?? liveProd.base_cost ?? (liveProd as any).cost_price ?? 0),
+          selling_price: Number(liveProd.selling_price) || 0,
+          is_roll: isRoll,
+          roll_width_ft: liveProd.roll_width_ft ? Number(liveProd.roll_width_ft) : null,
+          roll_length_ft: liveProd.roll_length_ft ? Number(liveProd.roll_length_ft) : null,
+          available_widths_ft: liveProd.available_widths_ft || (liveProd.material_config as any)?.available_widths_ft || (liveProd.roll_width_ft ? [Number(liveProd.roll_width_ft)] : undefined),
+          standard_roll_length_ft: liveProd.standard_roll_length_ft ? Number(liveProd.standard_roll_length_ft) : ((liveProd.material_config as any)?.standard_roll_length_ft ? Number((liveProd.material_config as any).standard_roll_length_ft) : undefined),
+          available_sheet_sizes: liveProd.available_sheet_sizes || (liveProd.material_config as any)?.available_sheet_sizes,
+          roll_sizes: liveProd.roll_sizes || (liveProd.material_config as any)?.roll_sizes || (liveProd.pricing_formula as any)?.roll_sizes,
+          material_config: liveProd.material_config || (liveProd.pricing_formula as any)?.material_config || null,
+          pricing_formula: liveProd.pricing_formula || null,
+          purchase_price_per_sft: (liveProd.material_config as any)?.purchase_price_per_sft || (liveProd.pricing_formula as any)?.purchase_price_per_sft || null,
+          production_width_allowance: liveProd.production_width_allowance || (liveProd.material_config as any)?.extra_width_allowance_ft || (liveProd.pricing_formula as any)?.production_width_allowance || 0,
+          variants: liveProd.variants || [],
+          is_active: liveProd.is_active !== false,
+        } as unknown as MaterialRecord
+
+        try {
+          PrintFlowDataStore.addItem(STORAGE_KEYS.MATERIALS, bridgedLive)
+        } catch {}
+
+        return this.reconcileMaterialStock(bridgedLive)
+      }
+    } catch {}
 
     return null
   }
@@ -1256,7 +1306,45 @@ export class InventoryRepository {
     expected_version?: number
   }): Promise<{ material: MaterialRecord; ledgerEntry: StockLedgerRecord }> {
     // 1. Fetch live material under tenant isolation
-    const material = await this.getMaterialById(params.material_id, params.company_id)
+    let material = await this.getMaterialById(params.material_id, params.company_id)
+    if (!material) {
+      try {
+        const prod = await ProductRepository.getProductById(params.material_id, params.company_id)
+        if (prod) {
+          const pStock = Number(
+            (prod as any).current_stock ??
+            (prod as any).stock ??
+            (prod.pricing_formula as any)?.current_stock ??
+            (prod.pricing_formula as any)?.opening_stock ??
+            0
+          )
+          const pCost = Number((prod as any).purchase_price ?? (prod as any).base_cost ?? (prod as any).cost_price ?? 0)
+          material = {
+            id: prod.id,
+            company_id: prod.company_id || params.company_id,
+            branch_id: prod.branch_id || params.branch_id || null,
+            sku: prod.sku || '',
+            name: prod.name,
+            name_bn: prod.name_bn || null,
+            category: prod.category || 'ready_products',
+            unit: (prod.selling_unit || prod.unit || 'pcs') as MaterialUnit,
+            purchase_unit: (prod.selling_unit || prod.unit || 'pcs') as MaterialUnit,
+            master_purchase_unit: (prod.selling_unit || prod.unit || 'pcs') as MaterialUnit,
+            current_stock: pStock,
+            min_stock_level: Number((prod as any).min_stock_level ?? (prod as any).reorder_level ?? 0),
+            average_cost: pCost,
+            last_purchase_price: pCost,
+            cost_per_unit: pCost,
+            is_roll: false,
+            variants: (prod as any).variants || null,
+            pricing_formula: prod.pricing_formula || null,
+            is_active: prod.is_active !== false,
+            created_at: prod.created_at || new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          } as MaterialRecord
+        }
+      } catch {}
+    }
     if (!material) {
       throw new Error(`Material with ID ${params.material_id} not found.`)
     }
@@ -1320,6 +1408,63 @@ export class InventoryRepository {
       })
 
       if (!rpcError && rpcResult) {
+        if (existingMatRollSizes || existingMatSheetSizes || existingMatVariants) {
+          try {
+            await (supabase as any).from('materials').update({
+              roll_sizes: existingMatRollSizes,
+              sheet_sizes: existingMatSheetSizes,
+              variants: existingMatVariants,
+              material_config: {
+                ...(material.material_config || {}),
+                ...(existingMatRollSizes ? { roll_sizes: existingMatRollSizes } : {}),
+                ...(existingMatSheetSizes ? { sheet_sizes: existingMatSheetSizes, available_sheet_sizes: existingMatSheetSizes } : {}),
+                ...(existingMatVariants ? { variants: existingMatVariants } : {}),
+              },
+              updated_at: new Date().toISOString(),
+            }).eq('id', material.id)
+          } catch {}
+
+          try {
+            const { data: existingProd } = await (supabase as any)
+              .from('products')
+              .select('pricing_formula, material_config')
+              .or(`id.eq.${material.id},sku.eq.${material.sku}`)
+              .maybeSingle()
+
+            if (existingProd) {
+              const formula = (typeof existingProd.pricing_formula === 'object' && existingProd.pricing_formula !== null ? existingProd.pricing_formula : {}) as any
+              await (supabase as any)
+                .from('products')
+                .update({
+                  updated_at: new Date().toISOString(),
+                  pricing_formula: {
+                    ...formula,
+                    ...(existingMatRollSizes ? { roll_sizes: existingMatRollSizes } : {}),
+                    ...(existingMatSheetSizes ? { sheet_sizes: existingMatSheetSizes, available_sheet_sizes: existingMatSheetSizes } : {}),
+                    ...(existingMatVariants ? { variants: existingMatVariants } : {}),
+                  },
+                  ...(existingProd.material_config && typeof existingProd.material_config === 'object' ? {
+                    material_config: {
+                      ...existingProd.material_config,
+                      ...(existingMatRollSizes ? { roll_sizes: existingMatRollSizes } : {}),
+                      ...(existingMatSheetSizes ? { sheet_sizes: existingMatSheetSizes, available_sheet_sizes: existingMatSheetSizes } : {}),
+                      ...(existingMatVariants ? { variants: existingMatVariants } : {}),
+                    }
+                  } : {}),
+                })
+                .or(`id.eq.${material.id},sku.eq.${material.sku}`)
+            }
+          } catch {}
+
+          PrintFlowDataStore.updateItem<any>(STORAGE_KEYS.MATERIALS, material.id, {
+            roll_sizes: existingMatRollSizes,
+            material_config: {
+              ...(material.material_config || {}),
+              roll_sizes: existingMatRollSizes,
+            },
+          }, params.company_id)
+        }
+
         const mat = await this.getMaterialById(params.material_id, params.company_id)
         return {
           material: mat!,
@@ -1448,7 +1593,9 @@ export class InventoryRepository {
             .maybeSingle()
 
           const prevLocQty = Number(existingBal?.available_quantity ?? existingBal?.quantity ?? 0)
-          const newLocQty = Math.max(0, prevLocQty + params.quantity_change)
+          const newLocQty = existingBal
+            ? Math.max(0, prevLocQty + params.quantity_change)
+            : Math.max(0, currentStock + params.quantity_change)
 
           await (supabase as any).from('inventory_stock_balances').upsert({
             id: existingBal?.id || crypto.randomUUID(),
@@ -1600,7 +1747,7 @@ export class InventoryRepository {
             branch_id: params.branch_id || null,
             material_id: material.id,
             location_id: params.location_id,
-            quantity: Math.max(0, params.quantity_change),
+            quantity: Math.max(0, currentStock + params.quantity_change),
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
           })

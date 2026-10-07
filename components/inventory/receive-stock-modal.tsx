@@ -971,15 +971,34 @@ export function ReceiveStockModal({
  rem = qtyOrdered
       }
 
- let resolvedWidth = Number((item as any).roll_width_ft || (match as any)?.roll_width_ft || 0)
- if (!resolvedWidth) {
- const matchW = `${item.material_name || ''} ${(item as any).supplier_sku || ''} ${(item as any).description || ''} ${(item as any).notes || ''}`.match(/(\d+(?:\.\d+)?)\s*(?:ft|')/i)
- if (matchW) resolvedWidth = Number(matchW[1])
+      let resolvedWidth = Number((item as any).roll_width_ft || 0)
+      if (!resolvedWidth) {
+        const matchW = `${item.material_name || ''} ${(item as any).supplier_sku || ''} ${(item as any).description || ''} ${(item as any).notes || ''}`.match(/(\d+(?:\.\d+)?)\s*(?:ft|')/i)
+        if (matchW) resolvedWidth = Number(matchW[1])
       }
- let resolvedLength = Number((item as any).roll_length_ft || (match as any)?.roll_length_ft || (match as any)?.standard_roll_length_ft || 0)
- if (!resolvedLength) {
- const matchL = `${item.material_name || ''} ${(item as any).description || ''} ${(item as any).notes || ''}`.match(/[x×]\s*(\d+(?:\.\d+)?)\s*(?:ft|')/i)
- if (matchL) resolvedLength = Number(matchL[1])
+      if (!resolvedWidth) {
+        resolvedWidth = Number((match as any)?.roll_width_ft || 0)
+      }
+
+      let resolvedLength = Number((item as any).roll_length_ft || 0)
+      if (!resolvedLength) {
+        const matchL = `${item.material_name || ''} ${(item as any).description || ''} ${(item as any).notes || ''}`.match(/[x×]\s*(\d+(?:\.\d+)?)\s*(?:ft|')/i)
+        if (matchL) resolvedLength = Number(matchL[1])
+      }
+      if (!resolvedLength) {
+        resolvedLength = Number((match as any)?.roll_length_ft || (match as any)?.standard_roll_length_ft || 0)
+      }
+
+      if (match && resolvedWidth > 0) {
+        const configuredSizes = PriceIntelligenceEngine.getMaterialActiveSizes(match)
+        const matchedSize = configuredSizes.find((s) =>
+          (s.width_ft !== undefined && Math.abs(s.width_ft - resolvedWidth) < 0.05) ||
+          (s.nominal_width_ft !== undefined && Math.abs(s.nominal_width_ft - resolvedWidth) < 0.05)
+        )
+        if (matchedSize?.width_ft) {
+          resolvedWidth = matchedSize.width_ft
+          if (matchedSize.length_ft) resolvedLength = matchedSize.length_ft
+        }
       }
 
  return {

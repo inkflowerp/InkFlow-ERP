@@ -5,6 +5,7 @@
 
 import type {
   MaterialRecord,
+  MaterialUnit,
   InventoryLocationRecord,
   InventoryStockBalanceRecord,
   TaskMaterialRequirementRecord,
@@ -186,7 +187,50 @@ export class InventoryService {
       throw new Error('Stock receiving rejected: Quantity must be greater than zero.')
     }
 
-    const material = await InventoryRepository.getMaterialById(params.material_id, params.company_id)
+    let material = await InventoryRepository.getMaterialById(params.material_id, params.company_id)
+    if (!material) {
+      try {
+        const product = await ProductRepository.getProductById(params.material_id, params.company_id)
+        if (product) {
+          const prodStock = Number(
+            (product as any).current_stock ??
+            (product as any).stock ??
+            (product.pricing_formula as any)?.current_stock ??
+            (product.pricing_formula as any)?.opening_stock ??
+            0
+          )
+          const prodCost = Number(
+            (product as any).cost_price ??
+            (product as any).base_cost ??
+            (product as any).purchase_price ??
+            0
+          )
+          material = {
+            id: product.id,
+            company_id: product.company_id || params.company_id,
+            branch_id: product.branch_id || params.branch_id || null,
+            sku: product.sku || '',
+            name: product.name,
+            name_bn: product.name_bn || null,
+            category: product.category || 'ready_products',
+            unit: (product.selling_unit || product.unit || 'pcs') as MaterialUnit,
+            purchase_unit: (product.selling_unit || product.unit || 'pcs') as MaterialUnit,
+            master_purchase_unit: (product.selling_unit || product.unit || 'pcs') as MaterialUnit,
+            current_stock: prodStock,
+            min_stock_level: Number((product as any).min_stock_level ?? (product as any).reorder_level ?? 0),
+            average_cost: prodCost,
+            last_purchase_price: prodCost,
+            cost_per_unit: prodCost,
+            is_roll: false,
+            variants: (product as any).variants || null,
+            pricing_formula: product.pricing_formula || null,
+            is_active: product.is_active !== false,
+            created_at: product.created_at || new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          } as MaterialRecord
+        }
+      } catch {}
+    }
     if (!material) {
       throw new Error(`Material with ID ${params.material_id} not found.`)
     }
@@ -496,18 +540,16 @@ export class InventoryService {
           })
           const szKey = createInventoryGroupingKey(szCanonicalAttrs)
 
-          // Strict 7-attribute canonical comparison or exact matching spec match
+          // Strict 7-attribute canonical comparison or physical dimension spec match
           const incomingNominalW = incomingCanonicalAttrs.width_ft - incomingCanonicalAttrs.allowance_ft
           const isFullCanonicalMatch = szKey === incomingGroupKey
-          const isPriceCompatible = szPrice === 0 || incomingCanonicalAttrs.purchase_price === 0 || Math.abs(szPrice - incomingCanonicalAttrs.purchase_price) < 1
-          const isCompatibleSpecMatch = !matched &&
-            isPriceCompatible &&
+          const isDimensionMatch = !matched &&
             (Math.abs(szW - incomingCanonicalAttrs.width_ft) < 0.05 || (szBaseW > 0 && Math.abs(szBaseW - incomingNominalW) < 0.05 && Math.abs(szAllowance - incomingCanonicalAttrs.allowance_ft) < 0.05)) &&
             (!szL || !incomingCanonicalAttrs.length_ft || Math.abs(szL - incomingCanonicalAttrs.length_ft) <= 5) &&
             (szGsm === 0 || szGsm === incomingCanonicalAttrs.gsm || !incomingCanonicalAttrs.gsm) &&
             (szFin === 'none' || szFin === incomingCanonicalAttrs.finishing || !incomingCanonicalAttrs.finishing || incomingCanonicalAttrs.finishing === 'none')
 
-          if ((isFullCanonicalMatch || isCompatibleSpecMatch) && !matched) {
+          if ((isFullCanonicalMatch || isDimensionMatch) && !matched) {
             matched = true
             const curQty = Number(sz.quantity ?? sz.stock_qty ?? sz.stock ?? sz.roll_count ?? 0)
             const newQty = curQty + params.quantity
@@ -906,6 +948,48 @@ export class InventoryService {
       },
       description: `${params.is_opening_balance ? 'Recorded opening stock' : 'Received stock'} for ${result.material.name} (${result.material.sku}): +${params.quantity} ${pUnit} (${stockChangeQty} ${result.material.unit})`,
     })
+
+    // Synchronize commercial product catalog if receiving stock for a product
+    try {
+      const prod = await ProductRepository.getProductById(params.material_id, params.company_id)
+      if (prod) {
+        const curPStock = Number(
+          (prod as any).current_stock ??
+          (prod as any).stock ??
+          (prod.pricing_formula as any)?.current_stock ??
+          (prod.pricing_formula as any)?.stock ??
+          (prod.pricing_formula as any)?.opening_stock ??
+          0
+        )
+        const nextPStock = Number(result?.material?.current_stock ?? (curPStock + Math.abs(stockChangeQty)))
+        const prevFormula = (typeof prod.pricing_formula === 'object' && prod.pricing_formula !== null ? prod.pricing_formula : {}) as any
+        const updatedFormula = {
+          ...prevFormula,
+          current_stock: nextPStock,
+          stock: nextPStock,
+        }
+        await ProductRepository.updateProduct(prod.id, {
+          pricing_formula: updatedFormula,
+          purchase_price: effectiveUnitCost && effectiveUnitCost > 0 ? effectiveUnitCost : undefined,
+          base_cost: effectiveUnitCost && effectiveUnitCost > 0 ? effectiveUnitCost : undefined,
+        }, params.company_id)
+
+        PrintFlowDataStore.updateItem<any>(STORAGE_KEYS.PRODUCTS, prod.id, {
+          current_stock: nextPStock,
+          stock: nextPStock,
+          pricing_formula: updatedFormula,
+          purchase_price: effectiveUnitCost && effectiveUnitCost > 0 ? effectiveUnitCost : undefined,
+          base_cost: effectiveUnitCost && effectiveUnitCost > 0 ? effectiveUnitCost : undefined,
+        }, params.company_id)
+      }
+    } catch {}
+
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('printflow_table_synced:products'))
+      window.dispatchEvent(new CustomEvent('printflow_table_synced:materials'))
+      window.dispatchEvent(new CustomEvent('printflow_table_synced:stock_ledger'))
+      window.dispatchEvent(new CustomEvent('printflow_table_synced:inventory_stock_balances'))
+    }
 
     return { ...result, rollsCreated }
   }

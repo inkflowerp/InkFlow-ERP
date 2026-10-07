@@ -2028,14 +2028,20 @@ function UnifiedInventoryContent() {
  Number(matchingMat?.current_stock),
                         ]
  const positiveDirectStock = candidateStocks.find((v) => !isNaN(v) && v > 0)
-
- const stockQty = totalBalanceQty > 0
-                          ? totalBalanceQty
-                          : ledgerStock !== null && ledgerStock > 0
-                          ? ledgerStock
-                          : positiveDirectStock !== undefined
-                          ? positiveDirectStock
-                          : (ledgerStock !== null ? ledgerStock : (Number(p.current_stock) || Number(formula.current_stock) || Number(p.opening_stock) || Number(formula.opening_stock) || 0))
+ const directStockValue = Number(p.current_stock ?? p.stock ?? formula.current_stock ?? formula.stock ?? p.opening_stock ?? formula.opening_stock ?? 0)
+ const maxSignalStock = Math.max(
+   totalBalanceQty,
+   ledgerStock !== null ? ledgerStock : 0,
+   positiveDirectStock !== undefined ? positiveDirectStock : 0,
+   directStockValue
+ )
+ const stockQty = maxSignalStock > 0
+   ? maxSignalStock
+   : (totalBalanceQty > 0
+     ? totalBalanceQty
+     : ledgerStock !== null
+     ? ledgerStock
+     : directStockValue)
 
  const cost = Number(
  p.base_cost ||
