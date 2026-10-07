@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useId, useRef } from 'react'
+import React, { useState, useId, useRef, useEffect } from 'react'
 import { useI18n } from '@/i18n/context'
 import {
   User,
@@ -80,11 +80,11 @@ interface StepMeta {
 const STEPS: StepMeta[] = [
   { id: 1, label: 'Basic Info', labelBn: 'মৌলিক তথ্য', icon: User, description: 'Personal identity, photo, mobile & addresses' },
   { id: 2, label: 'Employment', labelBn: 'নিয়োগ তথ্য', icon: Briefcase, description: 'Role, department, branch & designation' },
-  { id: 3, label: 'Compensation', labelBn: 'বেতন কাঠামো', icon: Wallet, description: 'Salary basis, rate breakdown & OT' },
-  { id: 4, label: 'Duty & Rules', labelBn: 'ডিউটি ও নিয়ম', icon: Clock, description: 'Shift timings, grace period & weekly off' },
+  { id: 3, label: 'Salary', labelBn: 'বেতন কাঠামো', icon: Wallet, description: 'Salary basis, rate breakdown & OT' },
+  { id: 4, label: 'Duty & Shift', labelBn: 'ডিউটি ও নিয়ম', icon: Clock, description: 'Shift timings, grace period & weekly off' },
   { id: 5, label: 'Payment', labelBn: 'পেমেন্ট পদ্ধতি', icon: CreditCard, description: 'Cash, MFS wallet or bank transfer' },
   { id: 6, label: 'Portal Access', labelBn: 'পোর্টাল লগইন', icon: Key, description: 'Credentials, security password & role scope' },
-  { id: 7, label: 'Documents & Save', labelBn: 'নথি ও অনুমোদন', icon: BadgeCheck, description: 'Attach NID/contract & 360° profile review' },
+  { id: 7, label: 'Docs & Review', labelBn: 'নথি ও অনুমোদন', icon: BadgeCheck, description: 'Attach NID/contract & 360° profile review' },
 ]
 
 const DOCUMENT_TYPES = [
@@ -243,6 +243,17 @@ export function EmployeeFormWizard({
   const [selectedDocType, setSelectedDocType] = useState<string>('nid_front')
   const [showPassword, setShowPassword] = useState(false)
   const [copiedPassword, setCopiedPassword] = useState(false)
+  const stepNavRefs = useRef<Record<number, HTMLButtonElement | null>>({})
+
+  useEffect(() => {
+    if (open && stepNavRefs.current[currentStep]) {
+      stepNavRefs.current[currentStep]?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+        inline: 'nearest',
+      })
+    }
+  }, [currentStep, open])
 
   // Form State
   const [formData, setFormData] = useState<Partial<EmployeeRecord>>(() => {
@@ -573,7 +584,7 @@ export function EmployeeFormWizard({
   const currentStepMeta = STEPS[currentStep - 1]
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange} maxWidth="max-w-4xl">
+    <Dialog open={open} onOpenChange={onOpenChange} maxWidth="max-w-5xl">
       <DialogContent className="p-0 overflow-hidden bg-card border border-border shadow-xs rounded-xl flex flex-col max-h-[90vh]">
         {/* Header with Title & Stepper Progress */}
         <DialogHeader className="p-4 sm:p-5 border-b border-border bg-muted shrink-0 space-y-3">
@@ -607,7 +618,7 @@ export function EmployeeFormWizard({
           </div>
 
           {/* Stepper Navigation Pills */}
-          <div className="flex items-center gap-1.5 pt-1 overflow-x-auto pb-1 scrollbar-none">
+          <div className="flex items-center gap-1 sm:gap-1.5 pt-1 overflow-x-auto pb-1 scrollbar-none">
             {STEPS.map((s) => {
               const Icon = s.icon
               const isDone = s.id < currentStep
@@ -615,9 +626,13 @@ export function EmployeeFormWizard({
               return (
                 <button
                   key={s.id}
+                  ref={(el) => {
+                    stepNavRefs.current[s.id] = el
+                  }}
                   onClick={() => setCurrentStep(s.id)}
                   type="button"
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all shrink-0 border ${
+                  title={s.label}
+                  className={`flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 sm:px-2 py-1.5 rounded-lg text-xs font-medium transition-all shrink-0 sm:shrink sm:flex-1 sm:min-w-0 border ${
                     isCurrent
                       ? 'bg-primary text-primary-foreground border-primary shadow-xs'
                       : isDone
@@ -626,11 +641,11 @@ export function EmployeeFormWizard({
                   }`}
                 >
                   {isDone ? (
-                    <Check className="w-3.5 h-3.5 text-success stroke-[2.5]" />
+                    <Check className="w-3.5 h-3.5 text-success stroke-[2.5] shrink-0" />
                   ) : (
                     <Icon className="w-3.5 h-3.5 shrink-0" />
                   )}
-                  <span className="whitespace-nowrap">{s.label}</span>
+                  <span className="truncate">{s.label}</span>
                 </button>
               )
             })}
@@ -859,10 +874,12 @@ export function EmployeeFormWizard({
               {/* Present & Permanent Address */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                    <MapPin className="w-3.5 h-3.5 text-primary" />
-                    <span>{tBilingual('Present Address', 'বর্তমান ঠিকানা')}</span>
-                  </Label>
+                  <div className="h-6 flex items-center justify-between">
+                    <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                      <MapPin className="w-3.5 h-3.5 text-primary" />
+                      <span>{tBilingual('Present Address', 'বর্তমান ঠিকানা')}</span>
+                    </Label>
+                  </div>
                   <Input
                     placeholder="House, Road, Area, Thana, District..."
                     value={formData.address || ''}
@@ -877,7 +894,7 @@ export function EmployeeFormWizard({
                 </div>
 
                 <div>
-                  <div className="flex items-center justify-between">
+                  <div className="h-6 flex items-center justify-between">
                     <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
                       <MapPin className="w-3.5 h-3.5 text-muted-foreground" />
                       <span>{tBilingual('Permanent Address', 'স্থায়ী ঠিকানা')}</span>
@@ -955,7 +972,7 @@ export function EmployeeFormWizard({
             <div className="space-y-4 text-xs">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <div className="flex items-center justify-between">
+                  <div className="h-6 flex items-center justify-between">
                     <Label className="text-xs font-semibold text-foreground">
                       {tBilingual('Employee ID Number *', 'কর্মী আইডি নম্বর *')}
                     </Label>
@@ -979,9 +996,11 @@ export function EmployeeFormWizard({
                 </div>
 
                 <div>
-                  <Label className="text-xs font-semibold text-foreground">
-                    {tBilingual('Department *', 'কারখানা বিভাগ *')}
-                  </Label>
+                  <div className="h-6 flex items-center justify-between">
+                    <Label className="text-xs font-semibold text-foreground">
+                      {tBilingual('Department *', 'কারখানা বিভাগ *')}
+                    </Label>
+                  </div>
                   <select
                     value={formData.department || 'printing'}
                     onChange={(e) => {
@@ -1613,7 +1632,7 @@ export function EmployeeFormWizard({
                     {/* Username & Portal Email */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                       <div>
-                        <div className="flex items-center justify-between">
+                        <div className="h-6 flex items-center justify-between">
                           <Label className="text-xs font-semibold text-foreground">
                             {tBilingual('Login Username / Mobile *', 'লগইন ইউজারনেম / মোবাইল নম্বর *')}
                           </Label>
@@ -1637,7 +1656,7 @@ export function EmployeeFormWizard({
                       </div>
 
                       <div>
-                        <div className="flex items-center justify-between">
+                        <div className="h-6 flex items-center justify-between">
                           <Label className="text-xs font-semibold text-foreground">
                             {tBilingual('Official Portal Email', 'অফিসিয়াল পোর্টাল ইমেইল')}
                           </Label>
