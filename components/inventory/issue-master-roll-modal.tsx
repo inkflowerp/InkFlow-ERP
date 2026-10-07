@@ -36,7 +36,7 @@ import {
  issueMasterRollsBatchAction,
  issueMultipleMaterialsBatchAction,
 } from '@/actions/inventory.actions'
-import { getMaterialWarehouseStockBreakdown } from '@/lib/units'
+import { getMaterialWarehouseStockBreakdown, isUserSku } from '@/lib/units'
 import { PrintFlowDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 
 export interface IssueMasterRollModalProps {
@@ -981,7 +981,7 @@ export function IssueMasterRollModal({
  const bd = getMaterialWarehouseStockBreakdown(m, effectiveRolls)
  return (
                             <option key={m.id} value={m.id}>
-                              {m.name} ({m.sku || 'No SKU'}) • {tBilingual('Stock:', 'স্টক:')} {bd.purchase_unit_display}
+                              {m.name}{isUserSku(m.sku) ? ` (${m.sku})` : ''} • {tBilingual('Stock:', 'স্টক:')} {bd.purchase_unit_display}
                             </option>
                           )
                         })}

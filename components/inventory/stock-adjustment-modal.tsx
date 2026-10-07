@@ -28,6 +28,7 @@ import {
  Loader2,
 } from 'lucide-react'
 import { formatBDT } from '@/lib/formatters'
+import { isUserSku } from '@/lib/units'
 import { useI18n } from '@/i18n/context'
 import { cn } from '@/lib/utils'
 import { getMaterialWarehouseStockBreakdown } from '@/lib/units'
@@ -390,7 +391,7 @@ export function StockAdjustmentModal({
                 <option value="">-- Choose Material to Reconcile --</option>
                 {materials.map((m) => (
                   <option key={m.id} value={m.id}>
-                    {m.name} ({m.sku}) — System: {m.current_stock} {m.unit}
+                    {m.name}{isUserSku(m.sku) ? ` (${m.sku})` : ''} — System: {m.current_stock} {m.unit}
                   </option>
                 ))}
               </select>

@@ -530,8 +530,8 @@ function QuotationDetailContent() {
                     </Link>
                   )}
                   {quote.converted_invoice_id && (
-                    <Badge variant="outline"className="bg-success/80 text-success border-success-border/60 text-xs tabular-nums font-bold">
- Invoice Converted
+                    <Badge variant="outline" className="bg-success-surface text-success border-success-border text-xs tabular-nums font-bold">
+                      Invoice Converted
                     </Badge>
                   )}
                 </div>

@@ -85,7 +85,7 @@ import type { ProductRecord } from '@/types/product.types'
 import type { MachineryRecord } from '@/types/machinery.types'
 import { formatBDT } from '@/lib/formatters'
 import { cn } from '@/lib/utils'
-import { isMaterialProduct, isReadyProduct, getMaterialWarehouseStockBreakdown, formatFloorPieceDisplay, normalizeInventoryGroupAttributes, createInventoryGroupingKey } from '@/lib/units'
+import { isMaterialProduct, isReadyProduct, getMaterialWarehouseStockBreakdown, formatFloorPieceDisplay, normalizeInventoryGroupAttributes, createInventoryGroupingKey, isUserSku } from '@/lib/units'
 import { PrintFlowDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import {
  approveMaterialRequestAction,
@@ -1482,7 +1482,9 @@ function UnifiedInventoryContent() {
                         >
                           {isOut ? (isBn ? 'স্টক শূন্য' : 'Out of Stock') : (isBn ? 'রি-অর্ডার সতর্কতা' : 'Below Reorder')}
                         </Badge>
-                        <span className="text-xs text-muted-foreground font-mono">{m.sku}</span>
+                        {isUserSku(m.sku) && (
+                          <span className="text-xs text-muted-foreground font-mono">{m.sku}</span>
+                        )}
                       </div>
                       <h3 className="text-xs font-bold text-foreground mt-1 line-clamp-1">{isBn && m.name_bn ? m.name_bn : m.name}</h3>
                       <p className="text-xs text-muted-foreground">
@@ -1757,7 +1759,9 @@ function UnifiedInventoryContent() {
                               </Link>
                               {row.name_bn && <div className="text-xs text-muted-foreground font-bengali mt-0.5">{row.name_bn}</div>}
                               <div className="flex flex-wrap items-center gap-1.5 mt-1">
-                                <span className="text-xs text-muted-foreground tabular-nums font-medium">SKU: {row.sku}</span>
+                                {isUserSku(row.sku) && (
+                                  <span className="text-xs text-muted-foreground tabular-nums font-medium">SKU: {row.sku}</span>
+                                )}
                                 {row.width_ft > 0 && row.length_ft > 0 && (
                                   <span className="inline-flex items-center px-1.5 py-0.2 rounded text-xs font-bold tabular-nums bg-primary/10 text-primary bg-primary/10 text-primary border border-primary/20 border-border">
                                     {row.width_ft}ft × {row.length_ft}ft
@@ -2065,7 +2069,9 @@ function UnifiedInventoryContent() {
                             <td className="py-3.5 px-4 font-bold text-foreground">
                               <div className="font-bold text-foreground">{p.name}</div>
                               {p.name_bn && <div className="text-xs text-muted-foreground font-bengali font-normal mt-0.5">{p.name_bn}</div>}
-                              <div className="text-xs text-muted-foreground tabular-nums mt-0.5 font-medium">SKU: {p.sku}</div>
+                              {isUserSku(p.sku) && (
+                                <div className="text-xs text-muted-foreground tabular-nums mt-0.5 font-medium">SKU: {p.sku}</div>
+                              )}
                             </td>
                             <td className="py-3.5 px-4">
                               <div className="text-xs text-foreground font-medium">
@@ -2311,7 +2317,9 @@ function UnifiedInventoryContent() {
                                         <div className="text-xs text-muted-foreground font-normal">{group.material_name_bn}</div>
                                       )}
                                       <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
-                                        <span className="text-xs text-muted-foreground tabular-nums font-medium">SKU: {group.sku}</span>
+                                        {isUserSku(group.sku) && (
+                                          <span className="text-xs text-muted-foreground tabular-nums font-medium">SKU: {group.sku}</span>
+                                        )}
                                         {group.gsm > 0 && (
                                           <span className="inline-flex items-center px-1.5 py-0.2 rounded text-xs font-bold bg-warning-surface bg-warning-surface text-warning text-warning border border-warning-border border-warning-border">
                                             {group.gsm} GSM
@@ -2539,7 +2547,7 @@ function UnifiedInventoryContent() {
                               </td>
                               <td className="py-3.5 px-4 font-medium text-foreground">
                                 <div>{isBn && roll.material?.name_bn ? roll.material.name_bn : (roll.material?.name || 'Roll Media')}</div>
-                                {roll.material?.sku && <div className="text-xs text-muted-foreground tabular-nums font-normal">{roll.material.sku}</div>}
+                                {isUserSku(roll.material?.sku) && <div className="text-xs text-muted-foreground tabular-nums font-normal">{roll.material?.sku}</div>}
                               </td>
                               <td className="py-3.5 px-4 text-right tabular-nums font-bold text-foreground whitespace-nowrap">
                                 {roll.width_ft} ft

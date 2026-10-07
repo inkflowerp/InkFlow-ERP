@@ -49,7 +49,7 @@ import { evaluateStockAvailability, type StockAvailabilityResult } from '@/lib/d
 import type { CreateInvoiceItemInput } from '@/types/billing.types'
 import { PrintFlowDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import type { MaterialRecord, InventoryRollRecord, InventoryStockBalanceRecord, InventoryRemnantRecord } from '@/types/inventory.types'
-import { isServiceProduct, isReadyProduct, isMaterialProduct } from '@/lib/units'
+import { isServiceProduct, isReadyProduct, isMaterialProduct, isUserSku } from '@/lib/units'
 
 export interface NewInvoiceModalProps {
  open: boolean
@@ -373,7 +373,7 @@ function CatalogItemCombobox({
                     <div>
                       <div className="font-semibold text-foreground">{p.name}</div>
                       <div className="text-xs text-muted-foreground flex items-center gap-1.5 mt-0.5">
-                        {p.sku && <span className="tabular-nums bg-muted px-1 rounded">{p.sku}</span>}
+                        {isUserSku(p.sku) && <span className="tabular-nums bg-muted px-1 rounded">{p.sku}</span>}
                         <span>Unit: {p.unit || 'sft'}</span>
                       </div>
                     </div>
@@ -415,7 +415,7 @@ function CatalogItemCombobox({
                     <div>
                       <div className="font-semibold text-foreground">{p.name}</div>
                       <div className="text-xs text-muted-foreground flex items-center gap-1.5 mt-0.5">
-                        {p.sku && <span className="tabular-nums bg-muted px-1 rounded">{p.sku}</span>}
+                        {isUserSku(p.sku) && <span className="tabular-nums bg-muted px-1 rounded">{p.sku}</span>}
                         <span>Unit: {p.unit || 'pcs'}</span>
                       </div>
                     </div>
@@ -457,7 +457,7 @@ function CatalogItemCombobox({
                     <div>
                       <div className="font-semibold text-foreground">{p.name}</div>
                       <div className="text-xs text-muted-foreground flex items-center gap-1.5 mt-0.5">
-                        {p.sku && <span className="tabular-nums bg-muted px-1 rounded">{p.sku}</span>}
+                        {isUserSku(p.sku) && <span className="tabular-nums bg-muted px-1 rounded">{p.sku}</span>}
                         <span>Unit: {p.unit || 'roll'}</span>
                       </div>
                     </div>

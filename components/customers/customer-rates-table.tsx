@@ -17,6 +17,7 @@ import {
 } from 'lucide-react'
 import { ResolvedProductRate } from '@/types/crm.types'
 import { formatBDT } from '@/lib/formatters'
+import { isUserSku } from '@/lib/units'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -241,9 +242,11 @@ export function CustomerRatesTable({
                             {r.productNameBn}
                           </div>
                         )}
-                        <div className="text-xs text-muted-foreground tabular-nums mt-0.5">
-                          {r.sku}
-                        </div>
+                        {isUserSku(r.sku) && (
+                          <div className="text-xs text-muted-foreground tabular-nums mt-0.5">
+                            {r.sku}
+                          </div>
+                        )}
                       </td>
 
                       {/* Unit */}
@@ -428,7 +431,7 @@ export function CustomerRatesTable({
                       <div className="text-xs text-muted-foreground">{r.productNameBn}</div>
                     )}
                     <div className="text-xs text-muted-foreground tabular-nums mt-0.5">
-                      {r.sku} • {r.unit.toUpperCase()}
+                      {isUserSku(r.sku) ? `${r.sku} • ` : ''}{r.unit.toUpperCase()}
                     </div>
                   </div>
 

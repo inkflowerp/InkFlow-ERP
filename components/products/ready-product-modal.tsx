@@ -43,7 +43,7 @@ import { useI18n } from '@/i18n/context'
 import type { ProductRecord, UnitOfMeasure, ProductPriceTiers } from '@/types/product.types'
 import type { ProductCategoryRecord } from '@/types/category.types'
 import { formatBDT } from '@/lib/formatters'
-import { calculateGrossMargin } from '@/lib/units'
+import { calculateGrossMargin, isUserSku } from '@/lib/units'
 
 interface ReadyProductModalProps {
  isOpen: boolean
@@ -399,7 +399,7 @@ export function ReadyProductModal({
  if (initialData) {
  setName(initialData.name || '')
  setNameBn(initialData.name_bn || '')
- setSku(initialData.sku || '')
+ setSku(isUserSku(initialData.sku) ? initialData.sku : '')
  setBarcode((initialData as any).barcode || '')
  setBrand((initialData as any).brand || '')
  setCategory(initialData.category || 'display_stands')

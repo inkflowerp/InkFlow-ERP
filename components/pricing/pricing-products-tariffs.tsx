@@ -19,6 +19,7 @@ import { Badge } from '@/components/ui/badge'
 import { useI18n } from '@/i18n/context'
 import type { ProductRecord } from '@/types/product.types'
 import { formatBDT } from '@/lib/formatters'
+import { isUserSku } from '@/lib/units'
 
 interface PricingProductsTariffsProps {
  products: ProductRecord[]
@@ -114,7 +115,7 @@ export function PricingProductsTariffs({
                         {p.name_bn}
                       </div>
                     )}
-                    {p.sku && (
+                    {isUserSku(p.sku) && (
                       <div className="text-xs text-muted-foreground tabular-nums mt-0.5">SKU: {p.sku}</div>
                     )}
                   </div>

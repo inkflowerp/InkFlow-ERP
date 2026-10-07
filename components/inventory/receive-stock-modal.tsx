@@ -14,7 +14,7 @@ import { receiveStockAction, getMaterialsAction, getPriceIntelligenceAction } fr
 import { receiveGoodsAction } from '@/actions/purchase.actions'
 import { updateProductPriceAction, getProductsAction } from '@/actions/product.actions'
 import { PrintFlowDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
-import { isMaterialProduct, isReadyProduct, isServiceProduct, isOutsourceProduct } from '@/lib/units'
+import { isMaterialProduct, isReadyProduct, isServiceProduct, isOutsourceProduct, isUserSku } from '@/lib/units'
 import { PriceIntelligenceEngine } from '@/lib/domain/price-intelligence-engine'
 import { PriceIntelligenceCard } from '@/components/inventory/price-intelligence-card'
 import type { ConfiguredMaterialSize, PriceIntelligenceSummary, PriceIntelligenceRecord } from '@/types/price-intelligence.types'
@@ -2356,7 +2356,7 @@ export function ReceiveStockModal({
                                 }
  return (
                                   <option key={m.id} value={m.id}>
-                                    {m.name} [SKU: {m.sku}] — Prev: {formatBDT(m.previous_cost)}/{m.master_purchase_unit || m.unit}{subRate}
+                                    {m.name}{isUserSku(m.sku) ? ` [SKU: ${m.sku}]` : ''} — Prev: {formatBDT(m.previous_cost)}/{m.master_purchase_unit || m.unit}{subRate}
                                   </option>
                                 )
                               })}

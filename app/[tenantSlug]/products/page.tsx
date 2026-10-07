@@ -149,6 +149,7 @@ import {
  getProductEntityKind,
  getProductEntityKindLabel,
  getProductConversionRatio,
+ isUserSku,
 } from '@/lib/units'
 import { cn } from '@/lib/utils'
 
@@ -2767,7 +2768,7 @@ export default function ProductsCatalogPage() {
                               <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 text-primary transition-opacity"/>
                             </Link>
                             <div className="text-xs tabular-nums text-muted-foreground mt-0.5">
-                              {item.sku} • {item.category || 'printing'}
+                              {isUserSku(item.sku) ? `${item.sku} • ` : ''}{item.category || 'printing'}
                             </div>
                           </td>
                           <td className="py-3.5 px-3 whitespace-nowrap">
@@ -2936,7 +2937,7 @@ export default function ProductsCatalogPage() {
                               <div className="text-xs text-muted-foreground font-medium font-bengali">{item.name_bn}</div>
                             )}
                             <div className="text-xs tabular-nums text-muted-foreground mt-0.5">
-                              {item.sku} • {item.category || 'hardware'}
+                              {isUserSku(item.sku) ? `${item.sku} • ` : ''}{item.category || 'hardware'}
                             </div>
                           </td>
                           <td className="py-3.5 px-3 whitespace-nowrap">
@@ -3092,7 +3093,7 @@ export default function ProductsCatalogPage() {
                               <div className="text-xs text-muted-foreground font-medium font-bengali">{item.name_bn}</div>
                             )}
                             <div className="text-xs tabular-nums text-muted-foreground mt-0.5">
-                              {item.sku} • {item.material_spec || 'Standard Grade'}
+                              {isUserSku(item.sku) ? `${item.sku} • ` : ''}{item.material_spec || 'Standard Grade'}
                             </div>
                           </td>
                           <td className="py-3.5 px-3 whitespace-nowrap">
@@ -3251,7 +3252,7 @@ export default function ProductsCatalogPage() {
                               <div className="text-xs text-muted-foreground font-medium font-bengali">{item.name_bn}</div>
                             )}
                             <div className="text-xs tabular-nums text-muted-foreground mt-0.5">
-                              {item.sku} • {item.category || 'outsource'}
+                              {isUserSku(item.sku) ? `${item.sku} • ` : ''}{item.category || 'outsource'}
                             </div>
                           </td>
                           <td className="py-3.5 px-3 whitespace-nowrap">
@@ -3429,7 +3430,7 @@ export default function ProductsCatalogPage() {
                               <div className="text-xs text-muted-foreground font-medium font-bengali">{item.name_bn}</div>
                             )}
                             <div className="text-xs tabular-nums text-muted-foreground mt-0.5">
-                              {item.sku} {item.material_spec ? `• ${item.material_spec}` : ''}
+                              {isUserSku(item.sku) ? `${item.sku}${item.material_spec ? ` • ${item.material_spec}` : ''}` : (item.material_spec || item.category || '')}
                             </div>
                           </td>
 
@@ -3551,7 +3552,7 @@ export default function ProductsCatalogPage() {
                           {locale === 'bn' ? (item.name_bn || item.name) : item.name}
                         </Link>
                           <div className="text-xs tabular-nums text-muted-foreground mt-0.5">
-                            {item.sku} • {item.material_spec || 'Standard Spec'}
+                            {isUserSku(item.sku) ? `${item.sku} • ` : ''}{item.material_spec || 'Standard Spec'}
                           </div>
                         </div>
                         <span
@@ -3663,7 +3664,7 @@ export default function ProductsCatalogPage() {
                 </Badge>
               </div>
               <p className="text-xs text-muted-foreground">
-                {fastQuoteProduct?.name} ({fastQuoteProduct?.sku})
+                {fastQuoteProduct?.name}{isUserSku(fastQuoteProduct?.sku) ? ` (${fastQuoteProduct?.sku})` : ''}
               </p>
             </div>
           </div>
@@ -4738,7 +4739,7 @@ export default function ProductsCatalogPage() {
                 </Badge>
               </div>
               <p className="text-xs text-muted-foreground">
-                {pricingProduct?.name} ({pricingProduct?.sku})
+                {pricingProduct?.name}{isUserSku(pricingProduct?.sku) ? ` (${pricingProduct?.sku})` : ''}
               </p>
             </div>
           </div>
@@ -4830,7 +4831,7 @@ export default function ProductsCatalogPage() {
       >
         <div className="space-y-4 pt-1 text-xs">
           <p className="text-foreground">
- Are you sure you want to remove <strong>{deletingProduct?.name}</strong> ({deletingProduct?.sku})?
+ Are you sure you want to remove <strong>{deletingProduct?.name}</strong>{isUserSku(deletingProduct?.sku) ? ` (${deletingProduct?.sku})` : ''}?
           </p>
 
           {deletionSafety && !deletionSafety.isSafe && (

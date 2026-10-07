@@ -48,7 +48,7 @@ import { useI18n } from '@/i18n/context'
 import { cn } from '@/lib/utils'
 import { returnFloorStockToStoreAction } from '@/actions/inventory.actions'
 import { IssueMasterRollModal } from '@/components/inventory/issue-master-roll-modal'
-import { formatFloorPieceDisplay } from '@/lib/units'
+import { formatFloorPieceDisplay, isUserSku } from '@/lib/units'
 
 export interface PrintFloorConsumptionUnitProps {
  floorConsumptions: FloorConsumptionRecord[]
@@ -569,7 +569,7 @@ export function PrintFloorConsumptionUnit({
                           {rec.material_name}
                         </div>
                         <div className="flex items-center gap-1.5 mt-0.5">
-                          {rec.sku && (
+                          {isUserSku(rec.sku) && (
                             <Badge variant="outline"className="text-xs tabular-nums py-0 px-1">
                               {rec.sku}
                             </Badge>
@@ -768,7 +768,7 @@ export function PrintFloorConsumptionUnit({
 
             <div className="p-3 bg-muted rounded-lg border space-y-1 text-xs">
               <div>
- Item: <strong>{returnItem.material_name}</strong> ({returnItem.sku})
+ Item: <strong>{returnItem.material_name}</strong>{isUserSku(returnItem.sku) ? ` (${returnItem.sku})` : ''}
               </div>
               <div>
  Available on Floor: <strong className="text-primary">{returnItem.remaining_floor_balance} {returnItem.unit}</strong>

@@ -66,7 +66,7 @@ import type { ProductCategoryRecord } from '@/types/category.types'
 import type { MaterialRecord } from '@/types/inventory.types'
 import type { MachineryRecord } from '@/types/machinery.types'
 import { formatBDT } from '@/lib/formatters'
-import { calculateGrossMargin } from '@/lib/units'
+import { calculateGrossMargin, isUserSku } from '@/lib/units'
 import { cn } from '@/lib/utils'
 import { useI18n } from '@/i18n/context'
 import { dispatchToast } from '@/components/shared/toast-feedback'
@@ -2015,7 +2015,7 @@ export function ServiceConfigModal({
  if (initialData) {
  setName(initialData.name || '')
  setNameBn(initialData.name_bn || '')
- setSku(initialData.sku || '')
+ setSku(isUserSku(initialData.sku) ? initialData.sku : '')
  const initialCat = initialData.category === 'large_format_printing' ? 'wide_format_printing' : (initialData.category || 'wide_format_printing')
  setCategory(initialCat)
  const loadedSrvType = (initialData as any).service_type || (initialData.product_type === 'finishing' || (initialData as any).entity_type === 'finishing' ? 'finishing' : 'printing')
@@ -4060,9 +4060,11 @@ export function ServiceConfigModal({
                   {selectedMaterialRecord && (
                     <div className="p-3 bg-card rounded-lg border border-success-border border-success-border grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs">
                       <div>
-                        <span className="text-xs text-muted-foreground uppercase block font-medium">Material / SKU</span>
+                        <span className="text-xs text-muted-foreground uppercase block font-medium">Material{isUserSku(selectedMaterialRecord.sku) ? ' / SKU' : ''}</span>
                         <span className="font-bold text-foreground truncate block">{selectedMaterialRecord.name}</span>
-                        <span className="text-xs tabular-nums text-muted-foreground">{selectedMaterialRecord.sku}</span>
+                        {isUserSku(selectedMaterialRecord.sku) && (
+                          <span className="text-xs tabular-nums text-muted-foreground">{selectedMaterialRecord.sku}</span>
+                        )}
                       </div>
                       <div>
                         <span className="text-xs text-muted-foreground uppercase block font-medium">Purchase / Stock Unit</span>
@@ -5250,7 +5252,7 @@ export function ServiceConfigModal({
                                 <span className="font-bold text-foreground">
                                   {item.material_name}
                                 </span>
-                                {item.sku && (
+                                {isUserSku(item.sku) && (
                                   <span className="text-xs text-muted-foreground tabular-nums">
                                     [{item.sku}]
                                   </span>
@@ -5443,7 +5445,7 @@ export function ServiceConfigModal({
                           )}
 
                           <span className="text-xs text-muted-foreground tabular-nums block mt-0.5">
-                            {mat.sku} • {stockSubtitle}
+                            {isUserSku(mat.sku) ? `${mat.sku} • ` : ''}{stockSubtitle}
                           </span>
                         </div>
 
@@ -5621,7 +5623,7 @@ export function ServiceConfigModal({
                               </Badge>
                             </div>
                             <span className="text-xs text-muted-foreground tabular-nums block mt-0.5">
-                              {mat.sku} • {stockSubtitle}{sellVal > 0 ? ` • Sell: ৳${sellVal}/${consumeUnit}` : ''}
+                              {isUserSku(mat.sku) ? `${mat.sku} • ` : ''}{stockSubtitle}{sellVal > 0 ? ` • Sell: ৳${sellVal}/${consumeUnit}` : ''}
                             </span>
                           </div>
 
@@ -5857,7 +5859,7 @@ export function ServiceConfigModal({
                           <option value="">-- Optional: Link Raw Material --</option>
                           {safeAvailableMaterials.map((m) => (
                             <option key={m.id} value={m.id}>
-                              {m.name} ({m.sku})
+                              {m.name}{isUserSku(m.sku) ? ` (${m.sku})` : ''}
                             </option>
                           ))}
                         </select>

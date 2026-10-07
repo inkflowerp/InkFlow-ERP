@@ -51,7 +51,7 @@ import type {
 } from '@/types/product.types'
 import type { ProductCategoryRecord } from '@/types/category.types'
 import { formatBDT } from '@/lib/formatters'
-import { calculateGrossMargin, calculateSuggestedSellingPrice } from '@/lib/units'
+import { calculateGrossMargin, calculateSuggestedSellingPrice, isUserSku } from '@/lib/units'
 import { cn } from '@/lib/utils'
 import { dispatchToast } from '@/components/shared/toast-feedback'
 import { useI18n } from '@/i18n/client'
@@ -658,7 +658,7 @@ export function MaterialConfigModal({
  if (initialData && isOpen) {
  setName(initialData.name || '')
  setNameBn(initialData.name_bn || '')
- setSku(initialData.sku || '')
+ setSku(isUserSku(initialData.sku) ? initialData.sku : '')
  setCategory(initialData.category || 'materials')
  setIsActive(initialData.is_active !== false)
  setDescription(initialData.description || initialData.material_spec || '')

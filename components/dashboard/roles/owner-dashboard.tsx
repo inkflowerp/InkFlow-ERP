@@ -61,6 +61,7 @@ const NewPurchaseModal = dynamic(
   { ssr: false }
 )
 import { formatBDT, toBengaliNumerals } from '@/lib/formatters'
+import { isUserSku } from '@/lib/units'
 import { getBangladeshGreeting, formatBangladeshDate, getBangladeshTodayDateString } from '@/lib/utils/business-date'
 import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import { PrintFlowDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
@@ -1010,9 +1011,9 @@ export function OwnerDashboard({
  className="p-2.5 bg-card rounded-xl border border-danger-border border-danger-border flex items-center justify-between gap-2 text-xs">
                 <div className="min-w-0 flex-1">
                   <div className="font-bold text-foreground truncate">{mat.name}</div>
-                  <div className="text-xs text-muted-foreground tabular-nums">
- SKU: {mat.sku} • Min: {mat.minStockLevel} {mat.unit}
-                  </div>
+                    <div className="text-xs text-muted-foreground tabular-nums">
+                      {isUserSku(mat.sku) ? `SKU: ${mat.sku} • ` : ''}Min: {mat.minStockLevel} {mat.unit}
+                    </div>
                 </div>
                 <div className="text-right shrink-0">
                   <Badge className="bg-danger-surface text-destructive bg-destructive text-destructive tabular-nums text-xs py-0.5">

@@ -13,7 +13,7 @@ import {
  logFloorConsumptionAction,
  consumeRollWithBleedAndWastageAction,
 } from '@/actions/inventory.actions'
-import { formatFloorPieceDisplay } from '@/lib/units'
+import { formatFloorPieceDisplay, isUserSku } from '@/lib/units'
 import { Badge } from '@/components/ui/badge'
 
 interface LogConsumptionModalProps {
@@ -435,7 +435,7 @@ export function LogConsumptionModal({
                 <option value="">-- Choose Material --</option>
                 {materials.map((m) => (
                   <option key={m.id} value={m.id}>
-                    {m.name} [SKU: {m.sku}]
+                    {m.name}{isUserSku(m.sku) ? ` [SKU: ${m.sku}]` : ''}
                   </option>
                 ))}
               </select>

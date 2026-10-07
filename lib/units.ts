@@ -23,6 +23,21 @@ export interface CommercialProductTypeDefinition {
   description: string
 }
 
+/**
+ * Determines whether an SKU string is an explicitly added user SKU.
+ * Returns false if the SKU is empty, missing, or an internally auto-generated fallback code
+ * (e.g. PRD-58939, MAT-43991, SRV-12345, OUT-12345, AUTO-XXXX, RM-XXXX, RP-XXXX).
+ */
+export function isUserSku(sku?: string | null): boolean {
+  if (!sku) return false
+  const trimmed = sku.trim()
+  if (!trimmed) return false
+  if (trimmed.toLowerCase() === 'undefined' || trimmed.toLowerCase() === 'null') return false
+  if (/^AUTO-/i.test(trimmed)) return false
+  if (/^(PRD|MAT|SRV|OUT|RM|RP)-\d{4,6}$/i.test(trimmed)) return false
+  return true
+}
+
 export const PRICING_METHODS = [
   'fixed',
   'per_piece',

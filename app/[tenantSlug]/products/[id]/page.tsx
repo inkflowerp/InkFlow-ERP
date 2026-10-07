@@ -89,6 +89,7 @@ import {
  getProductEntityKind,
  getProductEntityKindLabel,
  getProductConversionRatio,
+ isUserSku,
 } from '@/lib/units'
 import { cn } from '@/lib/utils'
 
@@ -572,8 +573,12 @@ export default function ProductDetailPage() {
             
 
             <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground pt-1">
-              <span className="tabular-nums font-bold text-foreground">{product.sku}</span>
-              <span>•</span>
+              {isUserSku(product.sku) && (
+                <>
+                  <span className="tabular-nums font-bold text-foreground">{product.sku}</span>
+                  <span>•</span>
+                </>
+              )}
               <span className="capitalize">{product.category?.replace('_', ' ')}</span>
               <span>•</span>
               <span className="uppercase tabular-nums font-semibold text-primary">
@@ -1622,7 +1627,7 @@ export default function ProductDetailPage() {
       >
         <div className="space-y-4 pt-1 text-xs">
           <p className="text-foreground">
- Are you sure you want to remove <strong>{product.name}</strong> ({product.sku})?
+ Are you sure you want to remove <strong>{product.name}</strong>{isUserSku(product.sku) ? ` (${product.sku})` : ''}?
           </p>
 
           {deletionSafety && !deletionSafety.isSafe && (

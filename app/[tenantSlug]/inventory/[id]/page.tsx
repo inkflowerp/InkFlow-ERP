@@ -38,7 +38,7 @@ import {
 import { getMaterialDetailsAction } from '@/actions/inventory.actions'
 import { ReceiveStockModal } from '@/components/inventory/receive-stock-modal'
 import { StockAdjustmentModal } from '@/components/inventory/stock-adjustment-modal'
-import { getMaterialWarehouseStockBreakdown } from '@/lib/units'
+import { getMaterialWarehouseStockBreakdown, isUserSku } from '@/lib/units'
 import { cn } from '@/lib/utils'
 
 export default function MaterialDetailPage() {
@@ -138,7 +138,9 @@ export default function MaterialDetailPage() {
               <h1 className="text-xl font-black text-foreground">{material.name}</h1>
               {material.name_bn && <p className="text-xs text-muted-foreground font-normal">{material.name_bn}</p>}
               <div className="flex items-center gap-2 mt-1">
-                <span className="tabular-nums text-xs text-muted-foreground font-medium">SKU: {material.sku}</span>
+                {isUserSku(material.sku) && (
+                  <span className="tabular-nums text-xs text-muted-foreground font-medium">SKU: {material.sku}</span>
+                )}
                 <Badge variant="outline"className="capitalize text-xs">
                   {material.category.replace('_', ' ')}
                 </Badge>

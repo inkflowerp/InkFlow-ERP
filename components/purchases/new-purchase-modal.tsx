@@ -49,7 +49,7 @@ import { SupplierRecord } from '@/types/crm.types'
 import { MaterialRecord, InventoryLocationRecord } from '@/types/inventory.types'
 import { PurchaseOrderRecord, PurchaseOrderItemRecord } from '@/types/purchase.types'
 import { ProductRecord, MaterialPurchaseConfig } from '@/types/product.types'
-import { isMaterialProduct, isServiceProduct, isOutsourceProduct } from '@/lib/units'
+import { isMaterialProduct, isServiceProduct, isOutsourceProduct, isUserSku } from '@/lib/units'
 import { PriceIntelligenceEngine } from '@/lib/domain/price-intelligence-engine'
 import { formatBDT } from '@/lib/formatters'
 import { cn } from '@/lib/utils'
@@ -368,7 +368,7 @@ export function NewPurchaseModal({
         // Master item option
  addOption({
  key: `mat:${mat.id}`,
- label: `${mat.name} (${mat.sku || 'MAT'}) — Master Roll (Stock: ${stock} ${mat.unit || 'roll'})`,
+ label: `${mat.name}${isUserSku(mat.sku) ? ` (${mat.sku})` : ''} — Master Roll (Stock: ${stock} ${mat.unit || 'roll'})`,
  group: 'roll_media',
  item_type: 'material',
  material_id: mat.id,
@@ -411,7 +411,7 @@ export function NewPurchaseModal({
         // Master sheet option
  addOption({
  key: `mat:${mat.id}`,
- label: `${mat.name} (${mat.sku || 'MAT'}) — Master Sheet (Stock: ${stock} ${mat.unit || 'sheet'})`,
+ label: `${mat.name}${isUserSku(mat.sku) ? ` (${mat.sku})` : ''} — Master Sheet (Stock: ${stock} ${mat.unit || 'sheet'})`,
  group: 'rigid_sheet',
  item_type: 'material',
  material_id: mat.id,
@@ -426,7 +426,7 @@ export function NewPurchaseModal({
       } else if (form === 'liquid') {
  addOption({
  key: `mat:${mat.id}`,
- label: `${mat.name} (${mat.sku || 'INK'}) — Stock: ${stock} ${mat.unit || 'liter'}${baseCost > 0 ? ` (@ ৳${baseCost.toLocaleString()})` : ''}`,
+ label: `${mat.name}${isUserSku(mat.sku) ? ` (${mat.sku})` : ''} — Stock: ${stock} ${mat.unit || 'liter'}${baseCost > 0 ? ` (@ ৳${baseCost.toLocaleString()})` : ''}`,
  group: 'ink_chemistry',
  item_type: 'material',
  material_id: mat.id,
@@ -440,7 +440,7 @@ export function NewPurchaseModal({
       } else {
  addOption({
  key: `mat:${mat.id}`,
- label: `${mat.name} (${mat.sku || 'RM'}) — Stock: ${stock} ${mat.unit || 'pcs'}${baseCost > 0 ? ` (@ ৳${baseCost.toLocaleString()})` : ''}`,
+ label: `${mat.name}${isUserSku(mat.sku) ? ` (${mat.sku})` : ''} — Stock: ${stock} ${mat.unit || 'pcs'}${baseCost > 0 ? ` (@ ৳${baseCost.toLocaleString()})` : ''}`,
  group: 'raw_material',
  item_type: 'material',
  material_id: mat.id,
@@ -543,7 +543,7 @@ export function NewPurchaseModal({
  const group = form === 'roll' ? 'roll_media' : form === 'sheet' ? 'rigid_sheet' : form === 'liquid' ? 'ink_chemistry' : 'raw_material'
  addOption({
  key: `mat:${prod.id}`,
- label: `${prod.name} (${prod.sku || 'MAT'}) — Stock: ${stock} ${prod.unit || 'pcs'}`,
+ label: `${prod.name}${isUserSku(prod.sku) ? ` (${prod.sku})` : ''} — Stock: ${stock} ${prod.unit || 'pcs'}`,
  group: group,
  item_type: 'material',
  material_id: prod.id,
@@ -565,13 +565,13 @@ export function NewPurchaseModal({
  const stock = Number((prod as any).current_stock || prod.usage_stats?.jobCount || 0)
  addOption({
  key: `prod:${prod.id}`,
- label: `${prod.name} (${prod.sku || 'PRD'}) — MOQ: ${prod.min_order_quantity || 1} (Stock: ${stock} ${prod.selling_unit || prod.unit || 'pcs'})`,
+ label: `${prod.name}${isUserSku(prod.sku) ? ` (${prod.sku})` : ''} — MOQ: ${prod.min_order_quantity || 1} (Stock: ${stock} ${prod.selling_unit || prod.unit || 'pcs'})`,
  group: 'ready_product',
  item_type: 'ready_product',
  material_id: prod.id,
  material_name: prod.name,
  category: prod.category || 'Ready Display Products & Merchandise',
- config_description: prod.sku ? `SKU: ${prod.sku} | ${prod.dimensions_spec || 'Hardware'}` : 'Ready Product',
+ config_description: isUserSku(prod.sku) ? `SKU: ${prod.sku} | ${prod.dimensions_spec || 'Hardware'}` : (prod.dimensions_spec || 'Ready Product'),
  current_stock_hint: stock,
  reorder_level_hint: prod.min_order_quantity || 5,
  unit: prod.selling_unit || (prod as any).sell_unit || prod.unit || 'pcs',

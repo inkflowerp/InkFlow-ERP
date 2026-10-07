@@ -48,6 +48,7 @@ import {
 import { ProductRecord } from '@/types/product.types'
 import { cn } from '@/lib/utils'
 import { dispatchToast } from '@/components/shared/toast-feedback'
+import { isUserSku } from '@/lib/units'
 import { formatCustomerIdNo } from '@/lib/formatters'
 
 export interface NewCustomerModalProps {
@@ -843,7 +844,7 @@ export function NewCustomerModal({
                           {prod.name}
                         </div>
                         <div className="text-xs text-muted-foreground">
-                          {prod.sku} • Default: ৳{prod.selling_price}/{prod.unit}
+                          {isUserSku(prod.sku) ? `${prod.sku} • ` : ''}Default: ৳{prod.selling_price}/{prod.unit}
                         </div>
                       </div>
 

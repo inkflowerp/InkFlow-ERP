@@ -10,6 +10,7 @@ import { MaterialRecord, InventoryLocationRecord, MaterialRequestPriority } from
 import { ProductionTaskRecord } from '@/types/production.types'
 import { useI18n } from '@/i18n/context'
 import { createMaterialRequestAction } from '@/actions/inventory.actions'
+import { isUserSku } from '@/lib/units'
 
 interface MaterialRequestModalProps {
  open: boolean
@@ -188,7 +189,7 @@ export function MaterialRequestModal({
  className="w-full h-9 px-2 rounded border border-input bg-card text-xs">
                         {materials.map((m) => (
                           <option key={m.id} value={m.id}>
-                            {m.name} [SKU: {m.sku}] ({m.current_stock} {m.unit} {tBilingual('on hand', 'মজুদ')})
+                            {m.name}{isUserSku(m.sku) ? ` [SKU: ${m.sku}]` : ''} ({m.current_stock} {m.unit} {tBilingual('on hand', 'মজুদ')})
                           </option>
                         ))}
                       </select>

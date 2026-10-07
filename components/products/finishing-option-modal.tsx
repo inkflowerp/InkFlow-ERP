@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { Sparkles, AlertCircle, RefreshCw, Scissors, TrendingUp, Layers, CheckCircle2, Zap, Cpu } from 'lucide-react'
 import type { FinishingOptionRecord, ProductRecord } from '@/types/product.types'
 import type { MachineryRecord } from '@/types/machinery.types'
-import { calculateGrossMargin } from '@/lib/units'
+import { calculateGrossMargin, isUserSku } from '@/lib/units'
 import { getMaterialUnitDetails } from './service-config-modal'
 import { cn } from '@/lib/utils'
 
@@ -312,7 +312,7 @@ export function FinishingOptionModal({
                 <option value="">-- Standalone Operation (No Raw Material Link) --</option>
                 {materials.map((m) => (
                   <option key={m.id} value={m.id}>
-                    {m.name} ({m.sku || 'No SKU'}) — Unit Cost: ৳{m.effective_unit_cost || m.base_cost || 0} / {m.selling_unit || 'unit'}
+                    {m.name}{isUserSku(m.sku) ? ` (${m.sku})` : ''} — Unit Cost: ৳{m.effective_unit_cost || m.base_cost || 0} / {m.selling_unit || 'unit'}
                   </option>
                 ))}
               </select>

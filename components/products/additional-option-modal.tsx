@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { PlusCircle, AlertCircle, RefreshCw, TrendingUp, Sparkles, Layers, Box, Zap } from 'lucide-react'
 import type { AdditionalOptionRecord, ProductRecord } from '@/types/product.types'
-import { calculateGrossMargin } from '@/lib/units'
+import { calculateGrossMargin, isUserSku } from '@/lib/units'
 import { cn } from '@/lib/utils'
 
 interface AdditionalOptionModalProps {
@@ -226,7 +226,7 @@ export function AdditionalOptionModal({
                   <optgroup label="📦 Consumable Substrates & Raw Materials (Sheets, Boards, Pipes)">
                     {consumableMaterials.map((p) => (
                       <option key={p.id} value={p.id}>
-                        {p.name} ({p.sku || 'No SKU'}) — Cost: ৳{p.effective_unit_cost || p.base_cost || 0} / {p.selling_unit || 'unit'}
+                        {p.name}{isUserSku(p.sku) ? ` (${p.sku})` : ''} — Cost: ৳{p.effective_unit_cost || p.base_cost || 0} / {p.selling_unit || 'unit'}
                       </option>
                     ))}
                   </optgroup>
@@ -235,7 +235,7 @@ export function AdditionalOptionModal({
                   <optgroup label="🏷️ Reusable Display Hardware & Finished Products (Stands, Frames)">
                     {readyHardware.map((p) => (
                       <option key={p.id} value={p.id}>
-                        {p.name} ({p.sku || 'No SKU'}) — Sell: ৳{p.selling_price} | Cost: ৳{p.base_cost || 0}
+                        {p.name}{isUserSku(p.sku) ? ` (${p.sku})` : ''} — Sell: ৳{p.selling_price} | Cost: ৳{p.base_cost || 0}
                       </option>
                     ))}
                   </optgroup>

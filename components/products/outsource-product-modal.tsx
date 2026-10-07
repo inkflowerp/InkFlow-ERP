@@ -48,7 +48,7 @@ import { useI18n } from '@/i18n/context'
 import type { ProductRecord, UnitOfMeasure, ProductPriceTiers, OutsourceConfiguration } from '@/types/product.types'
 import type { ProductCategoryRecord } from '@/types/category.types'
 import { formatBDT } from '@/lib/formatters'
-import { calculateGrossMargin, calculateSuggestedSellingPrice } from '@/lib/units'
+import { calculateGrossMargin, calculateSuggestedSellingPrice, isUserSku } from '@/lib/units'
 
 interface OutsourceProductModalProps {
  isOpen: boolean
@@ -275,7 +275,7 @@ export function OutsourceProductModal({
  if (initialData) {
  setName(initialData.name || '')
  setNameBn(initialData.name_bn || '')
- setSku(initialData.sku || '')
+ setSku(isUserSku(initialData.sku) ? initialData.sku : '')
  setCategory(initialData.category || initialData.outsource_category || 'offset_printing')
  setUnit(initialData.selling_unit || initialData.unit || 'piece')
  setPurchaseUnit(initialData.purchase_unit || initialData.unit || 'piece')

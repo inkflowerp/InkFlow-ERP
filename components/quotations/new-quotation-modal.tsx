@@ -66,7 +66,7 @@ import { ProductRecord } from '@/types/product.types'
 import { normalizeBdPhone, formatBDT } from '@/lib/formatters'
 import { cn } from '@/lib/utils'
 import { PrintFlowDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
-import { calculateCommercialPricing, isServiceProduct, isReadyProduct, isMaterialProduct } from '@/lib/units'
+import { calculateCommercialPricing, isServiceProduct, isReadyProduct, isMaterialProduct, isUserSku } from '@/lib/units'
 import {
  STANDARD_FINISHING_OPTIONS,
  STANDARD_ADD_ON_OPTIONS,
@@ -277,7 +277,7 @@ function CatalogItemCombobox({
                     <div>
                       <div className="font-semibold text-foreground">{p.name}</div>
                       <div className="text-xs text-muted-foreground flex items-center gap-1.5 mt-0.5">
-                        {p.sku && <span className="tabular-nums bg-muted px-1 rounded">{p.sku}</span>}
+                        {isUserSku(p.sku) && <span className="tabular-nums bg-muted px-1 rounded">{p.sku}</span>}
                         <span>Unit: {p.unit || 'sft'}</span>
                         {p.printable_material_name && <span className="text-primary">• {p.printable_material_name}</span>}
                       </div>
@@ -312,7 +312,7 @@ function CatalogItemCombobox({
                     <div>
                       <div className="font-semibold text-foreground">{p.name}</div>
                       <div className="text-xs text-muted-foreground flex items-center gap-1.5 mt-0.5">
-                        {p.sku && <span className="tabular-nums bg-muted px-1 rounded">{p.sku}</span>}
+                        {isUserSku(p.sku) && <span className="tabular-nums bg-muted px-1 rounded">{p.sku}</span>}
                         <span>Unit: {p.unit || 'sft'}</span>
                       </div>
                     </div>
@@ -346,7 +346,7 @@ function CatalogItemCombobox({
                     <div>
                       <div className="font-semibold text-foreground">{p.name}</div>
                       <div className="text-xs text-muted-foreground flex items-center gap-1.5 mt-0.5">
-                        {p.sku && <span className="tabular-nums bg-muted px-1 rounded">{p.sku}</span>}
+                        {isUserSku(p.sku) && <span className="tabular-nums bg-muted px-1 rounded">{p.sku}</span>}
                         <span>Unit: {p.unit || 'pcs'}</span>
                       </div>
                     </div>
@@ -380,7 +380,7 @@ function CatalogItemCombobox({
                     <div>
                       <div className="font-semibold text-foreground">{p.name}</div>
                       <div className="text-xs text-muted-foreground flex items-center gap-1.5 mt-0.5">
-                        {p.sku && <span className="tabular-nums bg-muted px-1 rounded">{p.sku}</span>}
+                        {isUserSku(p.sku) && <span className="tabular-nums bg-muted px-1 rounded">{p.sku}</span>}
                         <span>Unit: {p.unit || 'roll'}</span>
                       </div>
                     </div>
