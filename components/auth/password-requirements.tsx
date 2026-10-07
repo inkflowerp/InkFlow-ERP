@@ -49,42 +49,32 @@ export function PasswordRequirements({
 
   // Color classes conforming strictly to AGENTS.md design tokens
   let barColorClass = 'bg-destructive'
-  let textColorClass = 'text-muted-foreground'
 
-  if (strengthPercent === 0) {
+  if (strengthPercent <= 25) {
     barColorClass = 'bg-destructive'
-    textColorClass = 'text-muted-foreground'
-  } else if (strengthPercent <= 25) {
-    barColorClass = 'bg-destructive'
-    textColorClass = 'text-destructive font-medium'
-  } else if (strengthPercent <= 50) {
-    barColorClass = 'bg-warning'
-    textColorClass = 'text-warning font-medium'
   } else if (strengthPercent <= 75) {
     barColorClass = 'bg-warning'
-    textColorClass = 'text-warning font-medium'
   } else {
     barColorClass = 'bg-success'
-    textColorClass = 'text-success font-semibold'
   }
 
   const formattedPercent = locale === 'bn' ? toBengaliNumerals(strengthPercent) : strengthPercent
 
   return (
-    <div className={cn('pt-1.5 space-y-2 select-none', className)}>
+    <div className={cn('pt-1 space-y-2 select-none', className)}>
       {/* Password Strength Label & Progress Meter */}
       <div className="space-y-1">
-        <div className="flex items-center justify-between text-xs">
-          <span className={cn('transition-colors duration-200', textColorClass)}>
+        <div className="text-xs text-muted-foreground">
+          <span>
             {locale === 'bn'
               ? `পাসওয়ার্ডের শক্তি: ${formattedPercent}%`
               : `Password strength: ${formattedPercent}%`}
           </span>
         </div>
-        <div className="h-1 w-full bg-muted rounded-full overflow-hidden">
+        <div className="h-0.5 w-full bg-muted rounded-full overflow-hidden">
           <div
             className={cn('h-full rounded-full transition-all duration-300', barColorClass)}
-            style={{ width: strengthPercent === 0 ? '2.5%' : `${strengthPercent}%` }}
+            style={{ width: strengthPercent === 0 ? '1.5%' : `${strengthPercent}%` }}
           />
         </div>
       </div>
@@ -96,15 +86,15 @@ export function PasswordRequirements({
             key={rule.id}
             className={cn(
               'flex items-center gap-2 text-xs transition-colors duration-150',
-              rule.met ? 'text-foreground font-medium' : 'text-muted-foreground'
+              rule.met ? 'text-success font-medium' : 'text-foreground'
             )}
           >
             <Check
               className={cn(
                 'h-3.5 w-3.5 shrink-0 transition-colors duration-150',
                 rule.met
-                  ? 'text-success stroke-[2.5]'
-                  : 'text-muted-foreground/40 stroke-[2]'
+                  ? 'text-success stroke-[3]'
+                  : 'text-foreground stroke-[2.5]'
               )}
             />
             <span>{rule.label}</span>

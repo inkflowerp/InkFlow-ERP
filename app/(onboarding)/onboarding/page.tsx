@@ -39,6 +39,7 @@ import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { BangladeshAddressPicker } from '@/components/shared/bangladesh-address-picker'
+import { PasswordRequirements } from '@/components/auth/password-requirements'
 import { LanguageSwitcher } from '@/components/shell/language-switcher'
 import { useI18n } from '@/i18n/context'
 import { cn } from '@/lib/utils'
@@ -909,8 +910,8 @@ function OnboardingWizard() {
                           <CheckCircle2 className="h-4 w-4 shrink-0 text-primary" />
                           <span>
                             {tBilingual(
-                              'Pre-filled with your registration credentials. You can keep or edit them.',
-                              'আপনার রেজিস্ট্রেশন তথ্য থেকে স্বয়ংক্রিয়ভাবে যুক্ত করা হয়েছে। আপনি চাইলে পরিবর্তন করতে পারেন।'
+                              'Pre-filled with your registration credentials. Owner email is fixed to your account.',
+                              'আপনার রেজিস্ট্রেশন তথ্য থেকে স্বয়ংক্রিয়ভাবে যুক্ত করা হয়েছে। মালিকের ইমেইল পরিবর্তনযোগ্য নয়।'
                             )}
                           </span>
                         </div>
@@ -944,13 +945,21 @@ function OnboardingWizard() {
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div className="space-y-1.5">
-                        <Label htmlFor="owner_email" required>
-                          {tBilingual('Owner Email (Login)', 'মালিকের ইমেইল (লগইন)')}
-                        </Label>
+                        <div className="flex items-center justify-between">
+                          <Label htmlFor="owner_email" required>
+                            {tBilingual('Owner Email (Login)', 'মালিকের ইমেইল (লগইন)')}
+                          </Label>
+                          <span className="text-xs text-muted-foreground flex items-center gap-1 font-medium">
+                            <Lock className="h-3 w-3" />
+                            {tBilingual('Non-changeable', 'অপরিবর্তনযোগ্য')}
+                          </span>
+                        </div>
                         <Input
                           id="owner_email"
                           type="email"
                           placeholder="owner@yourcompany.com.bd"
+                          readOnly
+                          className="bg-muted text-muted-foreground cursor-not-allowed select-none border-input"
                           {...register('owner_email')}
                           error={errors.owner_email?.message}
                         />
@@ -991,9 +1000,7 @@ function OnboardingWizard() {
                           </button>
                         }
                       />
-                      <span className="text-xs text-muted-foreground">
-                        {tBilingual('Minimum 6 characters.', 'কমপক্ষে ৬ অক্ষর বা সংখ্যা।')}
-                      </span>
+                      <PasswordRequirements password={watch('owner_password') || ''} locale={locale} />
                     </div>
 
                     {/* Setup Review Card */}
