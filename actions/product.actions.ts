@@ -123,12 +123,13 @@ export const createProductAction = withTenantAction(
       return { success: false, error: 'Unauthorized: You do not have permission to create catalog items.' }
     }
 
-    if (!data.name?.trim() || !data.sku?.trim()) {
-      return { success: false, error: 'Product name and SKU code are required.' }
+    if (!data.name?.trim()) {
+      return { success: false, error: 'Product name is required.' }
     }
 
     const created = await ProductService.createProduct({
       ...data,
+      sku: (data.sku || '').trim().toUpperCase(),
       company_id: companyId,
       created_by: tenant.userId,
     })
@@ -175,7 +176,12 @@ export const updateProductAction = withTenantAction(
       return { success: false, error: 'Unauthorized: You do not have permission to edit products.' }
     }
 
-    const updated = await ProductService.updateProduct(id, data, companyId)
+    const sanitizedData = { ...data }
+    if (sanitizedData.sku !== undefined && !sanitizedData.sku.trim()) {
+      delete sanitizedData.sku
+    }
+
+    const updated = await ProductService.updateProduct(id, sanitizedData, companyId)
     if (!updated) return { success: false, error: 'Product not found.' }
 
     try {

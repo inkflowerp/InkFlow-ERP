@@ -689,12 +689,47 @@ export class ProductRepository {
     selling_price: number
   }): Promise<ProductRecord> {
     return measureAsync(`ProductRepository.createProduct(${product.name})`, async () => {
-      const normalizedSku = product.sku ? product.sku.trim().toUpperCase() : ''
+      let normalizedSku = product.sku ? product.sku.trim().toUpperCase() : ''
       if (normalizedSku) {
         const isUnique = await this.checkSkuUnique(product.company_id, normalizedSku)
         if (!isUnique) {
           throw new Error(`Product with SKU '${normalizedSku}' already exists in your company catalog.`)
         }
+      } else {
+        let prefix = 'PRD'
+        if (
+          product.entity_type === 'outsource' ||
+          product.commercial_type === 'outsource' ||
+          product.product_type === 'outsource' ||
+          product.is_outsource ||
+          (product as any).is_non_inventory
+        ) {
+          prefix = 'OUT'
+        } else if (
+          product.entity_type === 'material' ||
+          product.commercial_type === 'material' ||
+          product.product_type === 'material'
+        ) {
+          prefix = 'MAT'
+        } else if (
+          product.entity_type === 'service' ||
+          product.commercial_type === 'service' ||
+          product.product_type === 'print_service' ||
+          product.product_type === 'service' ||
+          product.product_type === 'finishing' ||
+          product.product_type === 'fabrication' ||
+          product.is_service
+        ) {
+          prefix = 'SRV'
+        }
+
+        let candidate = ''
+        let attempts = 0
+        do {
+          attempts++
+          candidate = `${prefix}-${Math.floor(10000 + Math.random() * 90000)}`
+        } while (attempts < 10 && !(await this.checkSkuUnique(product.company_id, candidate)))
+        normalizedSku = candidate
       }
 
       const purchasePrice = Math.max(0, Number(product.purchase_price) || 0)
@@ -1112,13 +1147,18 @@ export class ProductRepository {
    */
   static async updateProduct(id: string, updates: Partial<ProductRecord>, companyId: string): Promise<ProductRecord> {
     return measureAsync(`ProductRepository.updateProduct(${id})`, async () => {
-      if (updates.sku) {
-        const normalizedSku = updates.sku.trim().toUpperCase()
-        const isUnique = await this.checkSkuUnique(companyId, normalizedSku, id)
-        if (!isUnique) {
-          throw new Error(`SKU '${normalizedSku}' is already assigned to another product in your catalog.`)
+      if (updates.sku !== undefined) {
+        const trimmed = updates.sku.trim()
+        if (!trimmed) {
+          delete updates.sku
+        } else {
+          const normalizedSku = trimmed.toUpperCase()
+          const isUnique = await this.checkSkuUnique(companyId, normalizedSku, id)
+          if (!isUnique) {
+            throw new Error(`SKU '${normalizedSku}' is already assigned to another product in your catalog.`)
+          }
+          updates.sku = normalizedSku
         }
-        updates.sku = normalizedSku
       }
 
       if (updates.components && Array.isArray(updates.components)) {

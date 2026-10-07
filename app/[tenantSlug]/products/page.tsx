@@ -1097,8 +1097,8 @@ export default function ProductsCatalogPage() {
   // Handle Save Product (Create or Update)
  const handleSaveProduct = async (e: React.FormEvent) => {
  e.preventDefault()
- if (!formData.name.trim() || !formData.sku.trim()) {
- showNotification('Product Name and SKU are required.', 'error')
+ if (!formData.name.trim()) {
+ showNotification('Product Name is required.', 'error')
  return
     }
 
@@ -1107,7 +1107,7 @@ export default function ProductsCatalogPage() {
  const payload: any = {
  name: formData.name.trim(),
  name_bn: formData.name_bn.trim() || null,
- sku: formData.sku.trim().toUpperCase(),
+ sku: formData.sku.trim() ? formData.sku.trim().toUpperCase() : '',
  category: formData.category,
  product_type: formData.product_type,
  commercial_type: formData.commercial_type,
@@ -1903,8 +1903,8 @@ export default function ProductsCatalogPage() {
  className={cn(
             'p-3.5 rounded-xl text-xs font-semibold flex items-center gap-2.5 border shadow-xs transition-all animate-in fade-in-0',
  notification.type === 'success'
-              ? 'bg-success-surface text-success border-success-border bg-success-surface text-success border-success-border'
-              : 'bg-danger-surface text-destructive border-danger-border bg-danger-surface text-destructive border-danger-border'
+              ? 'bg-success-surface text-success border-success-border'
+              : 'bg-danger-surface text-destructive border-danger-border'
           )}
         >
           {notification.type === 'success' ? (

@@ -98,24 +98,24 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
           }
 
  const styleMap = {
- success: 'bg-surface-inset border-success-border/40 text-success shadow-emerald-950/30',
- error: 'bg-surface-inset border-danger-border/40 text-destructive shadow-rose-950/30',
- warning: 'bg-surface-inset border-warning-border/40 text-warning shadow-amber-950/30',
- info: 'bg-surface-inset border-primary/20/40 text-primary shadow-indigo-950/30',
+            success: 'bg-card border-success-border/60 text-foreground shadow-lg',
+            error: 'bg-card border-danger-border/60 text-foreground shadow-lg',
+            warning: 'bg-card border-warning-border/60 text-foreground shadow-lg',
+            info: 'bg-card border-border text-foreground shadow-lg',
           }
 
  return (
             <div
  key={toast.id}
  role="alert"className={cn(
-                'pointer-events-auto p-3.5 rounded-xl border shadow-lg backdrop-blur-xl flex items-start justify-between gap-3 text-xs animate-in slide-in- fade-in-0 transition-all',
+                'pointer-events-auto p-3.5 rounded-xl border shadow-lg backdrop-blur-xl flex items-start justify-between gap-3 text-xs animate-in slide-in-from-bottom-2 fade-in-0 transition-all',
  styleMap[toast.type]
               )}
             >
               <div className="flex items-start gap-2.5 min-w-0">
                 {iconMap[toast.type]}
                 <div className="space-y-0.5 min-w-0">
-                  <div className="font-bold text-white bangla-text truncate">{displayTitle}</div>
+                  <div className="font-bold text-foreground bangla-text truncate">{displayTitle}</div>
                   {displayMessage && (
                     <div className="text-xs text-muted-foreground bangla-text leading-relaxed">
                       {displayMessage}
@@ -126,7 +126,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
 
               <button
  onClick={() => removeToast(toast.id)}
- className="text-muted-foreground hover:text-foreground p-2 shrink-0 rounded-lg hover:bg-card-elevated/80 cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center -mr-1.5 -mt-1 transition-colors"aria-label="Dismiss notification">
+ className="text-muted-foreground hover:text-foreground p-1 shrink-0 rounded-lg hover:bg-muted cursor-pointer min-h-9 min-w-9 flex items-center justify-center -mr-1 -mt-1 transition-colors" aria-label="Dismiss notification">
                 <X className="h-4 w-4"/>
               </button>
             </div>
