@@ -2,10 +2,20 @@
 
 import React from 'react'
 import Link from 'next/link'
-import { ArrowRight, PlayCircle } from 'lucide-react'
+import {
+  ArrowRight,
+  PlayCircle,
+  ShieldCheck,
+  Zap,
+  Boxes,
+  QrCode,
+  CheckCircle2,
+  Calendar,
+} from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useI18n } from '@/i18n/context'
 import { HeroVisual } from '@/components/marketing/hero-visual'
+import { useDemoModal } from '@/components/marketing/demo-modal-context'
 import type { LandingHeroConfig } from '@/types/landing-page.types'
 
 interface HeroSectionProps {
@@ -14,35 +24,40 @@ interface HeroSectionProps {
 
 export function HeroSection({ config }: HeroSectionProps) {
   const { tBilingual } = useI18n()
+  const { openDemo } = useDemoModal()
 
-  const eyebrowEn = config?.eyebrowEn || 'Print & Signage Management Software'
-  const eyebrowBn = config?.eyebrowBn || 'প্রিন্ট ও সাইনেজ ম্যানেজমেন্ট সফটওয়্যার'
+  const eyebrowEn =
+    config?.eyebrowEn || 'The Operating System for Bangladesh Print & Signage'
+  const eyebrowBn =
+    config?.eyebrowBn || 'বাংলাদেশের প্রিন্ট ও সাইনেজ ব্যবসার অল-ইন-ওয়ান ক্লাউড প্ল্যাটফর্ম'
 
-  const headlineEn = config?.headlineEn || 'Run Your Print & Signage Business Without the Chaos.'
-  const headlineBn = config?.headlineBn || 'আপনার প্রিন্ট ব্যবসার সব কাজ এক জায়গায় পরিচালনা করুন।'
+  const headlineEn =
+    config?.headlineEn || 'Stop Running Your Print Business on Paper Slips & Guesswork.'
+  const headlineBn =
+    config?.headlineBn || 'কাগজের চিরকুট আর অনুমানের হিসাব ভুলে প্রেস পরিচালনা করুন ক্লাউডে।'
 
   const descEn =
     config?.descriptionEn ||
-    'Sales, design, production, inventory, employees, delivery and payments — connected in one place.'
+    'From SFT quotations and roll media inventory to live machine queues, staff QR attendance, and bKash challans — run your entire print shop in one connected workspace.'
   const descBn =
     config?.descriptionBn ||
-    'সেলস, ডিজাইন, প্রোডাকশন, ইনভেন্টরি, কর্মচারী, ডেলিভারি ও পেমেন্ট — সব এক সাথে সংযুক্ত।'
+    'স্কয়ারফিট কোটেশন ও রোল স্টক থেকে শুরু করে মেশিনের লাইভ কিউ, কর্মীদের কিউআর হাজিরা এবং চালান — আপনার পুরো প্রিন্টিং ও সাইনেজ ব্যবসা চালান এক সংযুক্ত সিস্টেমে।'
 
-  const primaryCtaEn = config?.primaryCtaEn || 'Start Free Trial'
-  const primaryCtaBn = config?.primaryCtaBn || 'ফ্রি ট্রায়াল শুরু করুন'
+  const primaryCtaEn = config?.primaryCtaEn || 'Start 14-Day Free Trial'
+  const primaryCtaBn = config?.primaryCtaBn || '১৪ দিনের ফ্রি ট্রায়াল শুরু করুন'
   const primaryCtaLink = config?.primaryCtaLink || '/register'
 
-  const secondaryCtaEn = config?.secondaryCtaEn || 'See How It Works'
-  const secondaryCtaBn = config?.secondaryCtaBn || 'কাজের ধাপ দেখুন'
-  const secondaryCtaLink = config?.secondaryCtaLink || '#workflow'
+  const secondaryCtaEn = config?.secondaryCtaEn || 'Book a Live Demo'
+  const secondaryCtaBn = config?.secondaryCtaBn || 'লাইভ ডেমো দেখুন'
 
   return (
-    <section className="relative pt-24 pb-14 sm:pt-32 sm:pb-18 md:pt-36 md:pb-20 bg-background overflow-hidden">
+    <section className="relative pt-24 pb-12 sm:pt-32 sm:pb-16 md:pt-36 md:pb-20 bg-background overflow-hidden border-b border-border/40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 sm:space-y-12">
-        {/* Hero Text */}
-        <div className="text-center max-w-4xl mx-auto space-y-4 sm:space-y-5">
-          {/* Eyebrow */}
-          <div className="inline-flex items-center px-3.5 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20 tracking-wider">
+        {/* Hero Header */}
+        <div className="text-center max-w-4xl mx-auto space-y-4 sm:space-y-6">
+          {/* Eyebrow Pill */}
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20 tracking-wide">
+            <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
             <span>{tBilingual(eyebrowEn, eyebrowBn)}</span>
           </div>
 
@@ -51,13 +66,13 @@ export function HeroSection({ config }: HeroSectionProps) {
             {tBilingual(headlineEn, headlineBn)}
           </h1>
 
-          {/* Supporting Text */}
+          {/* Supporting Copy */}
           <p className="text-sm sm:text-lg text-muted-foreground max-w-2xl mx-auto font-normal leading-relaxed">
             {tBilingual(descEn, descBn)}
           </p>
 
           {/* Action CTAs */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2 max-w-md sm:max-w-none mx-auto">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-1 max-w-md sm:max-w-none mx-auto">
             <Link href={primaryCtaLink} className="w-full sm:w-auto">
               <Button className="w-full sm:w-auto h-11 px-7 text-sm sm:text-base font-bold bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs cursor-pointer">
                 <span>{tBilingual(primaryCtaEn, primaryCtaBn)}</span>
@@ -65,21 +80,88 @@ export function HeroSection({ config }: HeroSectionProps) {
               </Button>
             </Link>
 
-            <a href={secondaryCtaLink} className="w-full sm:w-auto">
-              <Button
-                variant="outline"
-                className="w-full sm:w-auto h-11 px-6 text-sm sm:text-base font-semibold border-input bg-card text-foreground hover:bg-muted cursor-pointer"
-              >
-                <PlayCircle className="mr-2 h-4 w-4 text-primary" />
-                <span>{tBilingual(secondaryCtaEn, secondaryCtaBn)}</span>
-              </Button>
-            </a>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={openDemo}
+              className="w-full sm:w-auto h-11 px-6 text-sm sm:text-base font-semibold border-input bg-card text-foreground hover:bg-muted cursor-pointer"
+            >
+              <Calendar className="mr-2 h-4 w-4 text-primary" />
+              <span>{tBilingual(secondaryCtaEn, secondaryCtaBn)}</span>
+            </Button>
+          </div>
+
+          {/* Trust Guarantees */}
+          <div className="flex flex-wrap items-center justify-center gap-4 text-xs text-muted-foreground pt-1">
+            <div className="flex items-center gap-1.5">
+              <CheckCircle2 className="h-3.5 w-3.5 text-success" />
+              <span>{tBilingual('No Credit Card Required', 'কোনো কার্ডের প্রয়োজন নেই')}</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Zap className="h-3.5 w-3.5 text-primary" />
+              <span>{tBilingual('Instant Setup in 60 Seconds', '৬০ সেকেন্ডে ইনস্ট্যান্ট অ্যাকাউন্ট')}</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <ShieldCheck className="h-3.5 w-3.5 text-success" />
+              <span>{tBilingual('100% Isolated Tenant Database', 'শতভাগ সুরক্ষিত ডাটাবেজ')}</span>
+            </div>
           </div>
         </div>
 
-        {/* Hero Visual */}
+        {/* Hero Visual Mockup Simulation */}
         <div className="pt-2">
           <HeroVisual />
+        </div>
+
+        {/* 4 Key Pillars Strip */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 max-w-5xl mx-auto pt-2">
+          <div className="p-3.5 rounded-xl border border-border bg-card shadow-2xs space-y-1">
+            <div className="flex items-center gap-2">
+              <Boxes className="h-4 w-4 text-primary" />
+              <span className="text-xs font-bold text-foreground">
+                {tBilingual('Roll Stock & Scrap', 'রোল স্টক ও অপচয়')}
+              </span>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {tBilingual('Track Width × Length SFT with remnant salvage.', 'প্রস্থ ও দৈর্ঘ্য স্কয়ারফিট ও অপচয় রোধ।')}
+            </p>
+          </div>
+
+          <div className="p-3.5 rounded-xl border border-border bg-card shadow-2xs space-y-1">
+            <div className="flex items-center gap-2">
+              <Zap className="h-4 w-4 text-primary" />
+              <span className="text-xs font-bold text-foreground">
+                {tBilingual('Live Machine Queue', 'লাইভ মেশিন কিউ')}
+              </span>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {tBilingual('Flora, Konica & CNC floor job ticketing.', 'ফ্লোরা, কনিকা ও সিএনসি ফ্লোর টিকিট।')}
+            </p>
+          </div>
+
+          <div className="p-3.5 rounded-xl border border-border bg-card shadow-2xs space-y-1">
+            <div className="flex items-center gap-2">
+              <QrCode className="h-4 w-4 text-primary" />
+              <span className="text-xs font-bold text-foreground">
+                {tBilingual('QR Staff Attendance', 'কিউআর কর্মী হাজিরা')}
+              </span>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {tBilingual('Instant mobile/tablet scan & live shop roster.', 'মোবাইল/ট্যাবলেট স্ক্যান ও লাইভ হাজিরা।')}
+            </p>
+          </div>
+
+          <div className="p-3.5 rounded-xl border border-border bg-card shadow-2xs space-y-1">
+            <div className="flex items-center gap-2">
+              <ShieldCheck className="h-4 w-4 text-success" />
+              <span className="text-xs font-bold text-foreground">
+                {tBilingual('Secure Cloud System', 'সুরক্ষিত ক্লাউড সিস্টেম')}
+              </span>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {tBilingual('Postgres RLS, daily backup & audit logs.', 'পোস্টগ্রেস আরএলএস ও অটো ব্যাকআপ।')}
+            </p>
+          </div>
         </div>
       </div>
     </section>

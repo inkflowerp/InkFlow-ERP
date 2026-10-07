@@ -196,18 +196,24 @@ export function PricingSection({ config }: PricingSectionProps) {
                         </div>
                         <div className="flex items-center gap-2 text-foreground">
                           <Check className="h-3.5 w-3.5 text-success shrink-0" />
-                          <span>Job Orders &amp; Invoices</span>
+                          <span>Job Orders &amp; Prepress Proofs</span>
                         </div>
                         <div className="flex items-center gap-2 text-foreground">
                           <Check className="h-3.5 w-3.5 text-success shrink-0" />
-                          <span>Customer Dues &amp; Ledger</span>
+                          <span>Customer Dues &amp; WhatsApp Challans</span>
                         </div>
-                        {p.code !== 'starter' && (
-                          <div className="flex items-center gap-2 text-foreground">
-                            <Check className="h-3.5 w-3.5 text-success shrink-0" />
-                            <span>Media Roll &amp; Inventory Scrap</span>
-                          </div>
-                        )}
+                        <div className="flex items-center gap-2 text-foreground">
+                          <Check className="h-3.5 w-3.5 text-success shrink-0" />
+                          <span>Media Roll Stock &amp; Scrap Salvage</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-foreground">
+                          <Check className="h-3.5 w-3.5 text-success shrink-0" />
+                          <span>Staff Roster &amp; QR Attendance</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-foreground">
+                          <Check className="h-3.5 w-3.5 text-success shrink-0" />
+                          <span>Multi-Tenant DB &amp; Daily Cloud Backup</span>
+                        </div>
                       </div>
                     </div>
                   </div>

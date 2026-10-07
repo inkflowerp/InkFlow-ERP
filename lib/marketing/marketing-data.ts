@@ -35,8 +35,9 @@ export interface NavItem {
 }
 
 export const MARKETING_NAV_ITEMS: NavItem[] = [
-  { labelEn: 'Product', labelBn: 'প্রোডাক্ট', href: '#what-we-manage' },
-  { labelEn: 'How It Works', labelBn: 'কাজের ধাপ', href: '#workflow' },
+  { labelEn: 'Features', labelBn: 'ফিচারসমূহ', href: '#what-we-manage' },
+  { labelEn: 'Workflow', labelBn: 'কাজের ধাপ', href: '#workflow' },
+  { labelEn: 'QR Attendance', labelBn: 'কিউআর হাজিরা', href: '#employees' },
   { labelEn: 'Industries', labelBn: 'ইন্ডাস্ট্রি', href: '#industries' },
   { labelEn: 'Pricing', labelBn: 'মূল্যতালিকা', href: '#pricing' },
 ]
