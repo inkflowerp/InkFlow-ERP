@@ -60,12 +60,31 @@ function mergeWithDefaultConfig(config?: Partial<LandingPageConfig> | null): Lan
       ...DEFAULT_LANDING_CONFIG.hero,
       ...(config.hero || {}),
     },
-    companies: Array.isArray(config.companies) ? config.companies : [],
+    comparison: {
+      ...DEFAULT_LANDING_CONFIG.comparison,
+      ...(config.comparison || {}),
+      items:
+        Array.isArray(config.comparison?.items) && config.comparison.items.length > 0
+          ? config.comparison.items
+          : DEFAULT_LANDING_CONFIG.comparison?.items || [],
+    },
+    companies:
+      Array.isArray(config.companies) && config.companies.length > 0
+        ? config.companies
+        : DEFAULT_LANDING_CONFIG.companies,
+    companiesSection: {
+      ...DEFAULT_LANDING_CONFIG.companiesSection,
+      ...(config.companiesSection || {}),
+    },
     pricing: {
       ...DEFAULT_LANDING_CONFIG.pricing,
       ...(config.pricing || {}),
     },
     faq: Array.isArray(config.faq) && config.faq.length > 0 ? config.faq : DEFAULT_LANDING_FAQ,
+    finalCta: {
+      ...DEFAULT_LANDING_CONFIG.finalCta,
+      ...(config.finalCta || {}),
+    },
     seo: {
       ...DEFAULT_LANDING_CONFIG.seo,
       ...(config.seo || {}),

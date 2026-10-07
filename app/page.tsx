@@ -128,9 +128,23 @@ export default async function MarketingHomePage({ searchParams }: PageProps) {
                 case 'hero':
                   return <HeroSection key="hero" config={landingConfig.hero} />
                 case 'without_printflow':
-                  return <WithoutPrintFlowSection key="without_printflow" />
+                  return (
+                    <WithoutPrintFlowSection
+                      key="without_printflow"
+                      config={landingConfig.comparison}
+                    />
+                  )
                 case 'with_printflow':
-                  return <WithPrintFlowSection key="with_printflow" />
+                  // Side-by-side comparison is already rendered if without_printflow is enabled
+                  if (activeSections.some((s) => s.key === 'without_printflow')) {
+                    return null
+                  }
+                  return (
+                    <WithPrintFlowSection
+                      key="with_printflow"
+                      config={landingConfig.comparison}
+                    />
+                  )
                 case 'workflow':
                   return <CoreWorkflowSection key="workflow" />
                 case 'employees':
@@ -144,6 +158,7 @@ export default async function MarketingHomePage({ searchParams }: PageProps) {
                     <RegisteredCompaniesSection
                       key="companies"
                       companies={landingConfig.companies}
+                      config={landingConfig.companiesSection}
                     />
                   )
                 case 'bangladesh':
@@ -157,7 +172,7 @@ export default async function MarketingHomePage({ searchParams }: PageProps) {
                 case 'faq':
                   return <FAQSection key="faq" items={landingConfig.faq} />
                 case 'final_cta':
-                  return <FinalCTASection key="final_cta" />
+                  return <FinalCTASection key="final_cta" config={landingConfig.finalCta} />
                 default:
                   return null
               }

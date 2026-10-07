@@ -7,14 +7,19 @@ import { Button } from '@/components/ui/button'
 import { useI18n } from '@/i18n/context'
 import { useDemoModal } from '@/components/marketing/demo-modal-context'
 
+import type { LandingFinalCtaConfig } from '@/types/landing-page.types'
+import { DEFAULT_FINAL_CTA_CONFIG } from '@/lib/marketing/landing-defaults'
+
 interface FinalCTASectionProps {
+  config?: LandingFinalCtaConfig
   onOpenDemo?: () => void
 }
 
-export function FinalCTASection({ onOpenDemo }: FinalCTASectionProps) {
+export function FinalCTASection({ config, onOpenDemo }: FinalCTASectionProps) {
   const { tBilingual } = useI18n()
   const { openDemo } = useDemoModal()
 
+  const c = { ...DEFAULT_FINAL_CTA_CONFIG, ...(config || {}) }
   const handleOpenDemo = onOpenDemo || openDemo
 
   return (
@@ -22,28 +27,30 @@ export function FinalCTASection({ onOpenDemo }: FinalCTASectionProps) {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
         <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
           <Zap className="h-3.5 w-3.5" />
-          <span>{tBilingual('Instant Cloud Onboarding', 'ইনস্ট্যান্ট ক্লাউড অনবোর্ডিং')}</span>
+          <span>{tBilingual(c.eyebrowEn || 'Instant Cloud Onboarding', c.eyebrowBn || 'ইনস্ট্যান্ট ক্লাউড অনবোর্ডিং')}</span>
         </div>
 
         <h2 className="text-2xl sm:text-4xl md:text-5xl font-black text-foreground tracking-tight max-w-2xl mx-auto leading-tight">
           {tBilingual(
-            'Ready to Eliminate Chaos and Take Total Control of Your Print Shop?',
-            'কাগজের বিশৃঙ্খলা ভুলে আপনার পুরো প্রেসের নিয়ন্ত্রণ নিতে প্রস্তুত?'
+            c.headlineEn || 'Ready to Eliminate Chaos and Take Total Control of Your Print Shop?',
+            c.headlineBn || 'কাগজের বিশৃঙ্খলা ভুলে আপনার পুরো প্রেসের নিয়ন্ত্রণ নিতে প্রস্তুত?'
           )}
         </h2>
 
         <p className="text-xs sm:text-base text-muted-foreground max-w-xl mx-auto leading-relaxed">
           {tBilingual(
-            'Join over 200 print and signage companies across Bangladesh managing quotes, roll media stock, floor machines, and staff QR attendance in one place.',
-            'বাংলাদেশের ২০০+ আধুনিক প্রেস ও সাইনেজ প্রতিষ্ঠানের সাথে যোগ দিন। কোটেশন, রোল স্টক, মেশিন কিউ এবং কিউআর হাজিরা পরিচালনা করুন এক ছাদের নিচে।'
+            c.descriptionEn ||
+              'Join over 200 print and signage companies across Bangladesh managing quotes, roll media stock, floor machines, and staff QR attendance in one place.',
+            c.descriptionBn ||
+              'বাংলাদেশের ২০০+ আধুনিক প্রেস ও সাইনেজ প্রতিষ্ঠানের সাথে যোগ দিন। কোটেশন, রোল স্টক, মেশিন কিউ এবং কিউআর হাজিরা পরিচালনা করুন এক ছাদের নিচে।'
           )}
         </p>
 
         {/* CTA Buttons */}
         <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3 max-w-sm sm:max-w-none mx-auto">
-          <Link href="/register" className="w-full sm:w-auto">
+          <Link href={c.primaryCtaLink || '/register'} className="w-full sm:w-auto">
             <Button className="w-full sm:w-auto h-11 px-7 text-sm sm:text-base font-bold bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs cursor-pointer">
-              <span>{tBilingual('Start 14-Day Free Trial', '১৪ দিনের ফ্রি ট্রায়াল শুরু করুন')}</span>
+              <span>{tBilingual(c.primaryCtaEn || 'Start 14-Day Free Trial', c.primaryCtaBn || '১৪ দিনের ফ্রি ট্রায়াল শুরু করুন')}</span>
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </Link>
@@ -55,7 +62,7 @@ export function FinalCTASection({ onOpenDemo }: FinalCTASectionProps) {
             className="w-full sm:w-auto h-11 px-6 text-sm sm:text-base font-semibold border-input bg-card text-foreground hover:bg-muted cursor-pointer"
           >
             <Calendar className="mr-2 h-4 w-4 text-primary" />
-            <span>{tBilingual('Book a Live Demo', 'লাইভ ডেমো বুক করুন')}</span>
+            <span>{tBilingual(c.secondaryCtaEn || 'Book a Live Demo', c.secondaryCtaBn || 'লাইভ ডেমো দেখুন')}</span>
           </Button>
         </div>
 

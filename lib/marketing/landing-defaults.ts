@@ -3,7 +3,13 @@
 // Strictly aligned with Master Implementation Prompt copy and structure rules
 // ==============================================================================
 
-import type { LandingPageConfig } from '@/types/landing-page.types'
+import type {
+  LandingPageConfig,
+  LandingCompanyConfig,
+  LandingComparisonConfig,
+  LandingCompaniesSectionConfig,
+  LandingFinalCtaConfig,
+} from '@/types/landing-page.types'
 
 export const DEFAULT_LANDING_SECTIONS = [
   {
@@ -178,6 +184,213 @@ export const DEFAULT_LANDING_FAQ = [
   },
 ]
 
+export const DEFAULT_LANDING_COMPANIES: LandingCompanyConfig[] = [
+  {
+    id: 'comp-1',
+    name: 'Meghna Digital Press',
+    logoUrl: '/logo.png',
+    city: 'Arambagh, Dhaka',
+    isPublic: true,
+    status: 'active',
+    displayMode: 'logo_name',
+    order: 1,
+  },
+  {
+    id: 'comp-2',
+    name: 'Apex Media & Signage',
+    logoUrl: '/printflow-logo.png',
+    city: 'Anderkilla, Chattogram',
+    isPublic: true,
+    status: 'active',
+    displayMode: 'logo_name',
+    order: 2,
+  },
+  {
+    id: 'comp-3',
+    name: 'Padma Flex & Signage',
+    logoUrl: '/icon-192.png',
+    city: 'Station Road, Bogura',
+    isPublic: true,
+    status: 'active',
+    displayMode: 'logo_name',
+    order: 3,
+  },
+  {
+    id: 'comp-4',
+    name: 'Surma Offset & Packaging',
+    logoUrl: '/logo.png',
+    city: 'Zindabazar, Sylhet',
+    isPublic: true,
+    status: 'active',
+    displayMode: 'logo_name',
+    order: 4,
+  },
+  {
+    id: 'comp-5',
+    name: 'Jamuna Backlit Studio',
+    logoUrl: '/printflow-logo.png',
+    city: 'Chowrasta, Gazipur',
+    isPublic: true,
+    status: 'active',
+    displayMode: 'logo_name',
+    order: 5,
+  },
+  {
+    id: 'comp-6',
+    name: 'Dhaka Color Lab & Print',
+    logoUrl: '/icon-192.png',
+    city: 'Motijheel, Dhaka',
+    isPublic: true,
+    status: 'active',
+    displayMode: 'logo_name',
+    order: 6,
+  },
+  {
+    id: 'comp-7',
+    name: 'Prime Sign & Fabrication',
+    logoUrl: '/logo.png',
+    city: 'Fakirapool, Dhaka',
+    isPublic: true,
+    status: 'active',
+    displayMode: 'logo_name',
+    order: 7,
+  },
+  {
+    id: 'comp-8',
+    name: 'National Digital Banner',
+    logoUrl: '/printflow-logo.png',
+    city: 'Banglamotor, Dhaka',
+    isPublic: true,
+    status: 'active',
+    displayMode: 'logo_name',
+    order: 8,
+  },
+]
+
+export const DEFAULT_COMPARISON_CONFIG: LandingComparisonConfig = {
+  eyebrowEn: 'Side-by-Side Operational Comparison',
+  eyebrowBn: 'পাশাপাশি কাজের পার্থক্য',
+  headlineEn: 'Without PrintFlow vs With PrintFlow',
+  headlineBn: 'প্রিন্টফ্লো ছাড়া অবস্থা বনাম প্রিন্টফ্লো সহ আধুনিক রূপান্তর',
+  descriptionEn:
+    'See why over 200 print and signage businesses across Bangladesh switched from paper slips to PrintFlow.',
+  descriptionBn:
+    'দেখুন কেন সারা বাংলাদেশের ২০০+ প্রিন্ট ও সাইনেজ প্রতিষ্ঠান কাগজের বিশৃঙ্খলা ছেড়ে প্রিন্টফ্লো বেছে নিয়েছে।',
+  withoutTitleEn: 'Without PrintFlow (Traditional Press Chaos)',
+  withoutTitleBn: 'প্রিন্টফ্লো ছাড়া অবস্থা (প্রচলিত প্রেসের যন্ত্রণা)',
+  withTitleEn: 'With PrintFlow (Connected Cloud Operating System)',
+  withTitleBn: 'প্রিন্টফ্লো সহ (সংযুক্ত ক্লাউড অপারেটিং সিস্টেম)',
+  items: [
+    {
+      id: 'cmp-1',
+      categoryEn: 'Job Tickets & Instructions',
+      categoryBn: 'কাজের নির্দেশনা ও স্লিপ',
+      beforeEn: 'Handwritten slips on torn paper get stained by solvent ink, lost, or misread on the shop floor.',
+      beforeBn: 'ছেঁড়া কাগজে হাতে লেখা স্লিপ কালিতে নষ্ট হয়ে যায় বা কারখানার ফ্লোরে হারিয়ে যায়। ভুল প্রিন্ট হলে পুরো লোকসান।',
+      afterEn: 'Centralized barcoded digital job tickets with dimensions, roll code, finishing notes, and preview.',
+      afterBn: 'নিখুঁত মাপ, রোল কোড, ফিনিশিং ও আর্টওয়ার্ক প্রাকদর্শন সম্বলিত কেন্দ্রীয় ডিজিটাল বারকোড জব টিকিট।',
+      beforeTagEn: 'Costly Misprints',
+      beforeTagBn: 'ভুল প্রিন্ট ও লোকসান',
+      afterTagEn: '100% Accurate Jobs',
+      afterTagBn: '১০০% সঠিক প্রিন্ট',
+    },
+    {
+      id: 'cmp-2',
+      categoryEn: 'Roll Media Inventory',
+      categoryBn: 'রোল স্টক ও কাঁচামাল',
+      beforeEn: 'Flex rolls and inks run out unexpectedly at 10 PM mid-order. Guesswork leads to emergency runs.',
+      beforeBn: 'রাত ১০টায় জরুরি প্রিন্টের মাঝপথে হঠাৎ রোল শেষ। অনুমানের হিসাবে মেটেরিয়াল সংকট তৈরি হয়।',
+      afterEn: 'Master rolls tracked by width and length (SFT). Exact square footage auto-deducted upon print.',
+      afterBn: 'রোলের প্রস্থ ও দৈর্ঘ্য অনুযায়ী অবশিষ্ট স্কয়ারফিট লাইভ কমে যায় এবং স্টক কমলে অ্যালার্ট আসে।',
+      beforeTagEn: 'Mid-Job Outages',
+      beforeTagBn: 'মাঝপথে কাজ বন্ধ',
+      afterTagEn: 'Real-Time Roll SFT',
+      afterTagBn: 'লাইভ স্কয়ারফিট স্টক',
+    },
+    {
+      id: 'cmp-3',
+      categoryEn: 'Remnant Offcut Scrap',
+      categoryBn: 'কাটিং স্ক্র্যাপ ও অপচয়',
+      beforeEn: 'Leftover 3ft to 5ft roll cutoffs treated as garbage and thrown away, losing thousands every week.',
+      beforeBn: 'অর্ডারের পর বেঁচে যাওয়া ৩ থেকে ৫ ফুটের কাটিং টুকরো আবর্জনা হিসেবে ফেলে হাজার টাকার ক্ষতি হয়।',
+      afterEn: 'Scrap Salvage Engine catalogs remnant offcuts so operators reuse them for stickers and standees.',
+      afterBn: 'কাটিং স্ক্র্যাপ ইঞ্জিন ব্যবহার উপযোগী টুকরো স্টকে সংরক্ষণ করে ছোট কাজে ব্যবহার করে লাভ বাড়ায়।',
+      beforeTagEn: 'Hidden Material Loss',
+      beforeTagBn: 'মাসে হাজার টাকার ক্ষতি',
+      afterTagEn: 'Zero Scrap Wasted',
+      afterTagBn: 'অপচয় রোধ ও বাড়তি লাভ',
+    },
+    {
+      id: 'cmp-4',
+      categoryEn: 'Floor Progress Chasing',
+      categoryBn: 'কারখানা ফলো-আপ ও ফোন',
+      beforeEn: 'Front desk calls press operators every 20 minutes to ask if the job is printed or finishing ready.',
+      beforeBn: 'কোন কাজ কোন মেশিনে চলছে তা জানতে সেলস ডেস্ক ও অপারেটরদের মধ্যে সারাদিন অবিরাম ফোন কল।',
+      afterEn: 'Live machine queue shows real-time bed progress (Flora, Konica, CNC) with zero phone calls.',
+      afterBn: 'লাইভ ফ্লোর স্ক্রিনে কোন মেশিনে কাজ চলছে, কোনটা লাইনে আছে এবং কোনটা রেডি তা এক নজরে দৃশ্যমান।',
+      beforeTagEn: 'Constant Phone Calls',
+      beforeTagBn: 'অবিরাম ফোন কলের ক্লান্তি',
+      afterTagEn: 'Live Machine Screen',
+      afterTagBn: 'এক স্ক্রিনে লাইভ স্ট্যাটাস',
+    },
+    {
+      id: 'cmp-5',
+      categoryEn: 'Customer Credit & Dues',
+      categoryBn: 'গ্রাহকের বকেয়া খাতা',
+      beforeEn: 'Customer credit forgotten in paper khatas. Overdue balances accumulate for months with zero reminders.',
+      beforeBn: 'খাতায় লিখে রাখা বাকি টাকা আদায় করতে ভুলে যাওয়া; মাসের পর মাস লাখ লাখ টাকা বকেয়া পড়ে থাকা।',
+      afterEn: 'Automated due ledger with 1-click WhatsApp payment reminders with bKash Merchant QR codes.',
+      afterBn: 'গ্রাহকভিত্তিক বকেয়া হিসাব এবং মাত্র ১ ক্লিকে হোয়াটসঅ্যাপে বিকাশ কিউআরসহ স্বয়ংক্রিয় পেমেন্ট রিমাইন্ডার।',
+      beforeTagEn: 'Uncollected Cash',
+      beforeTagBn: 'বকেয়া টাকা আটকে থাকা',
+      afterTagEn: 'Fast Recovery via WhatsApp',
+      afterTagBn: 'দ্রুত বকেয়া আদায়',
+    },
+    {
+      id: 'cmp-6',
+      categoryEn: 'Employee Attendance & Payroll',
+      categoryBn: 'হাজিরা খাতা ও ওভারটাইম',
+      beforeEn: 'Paper sign-in registers enable buddy punching, late arrival disputes, and overtime confusion.',
+      beforeBn: 'কাগজে সই করার খাতায় প্রক্সি হাজিরা, দেরিতে আসা নিয়ে তর্ক এবং মাসের শেষে ওভারটাইম বেতনে ঝামেলা।',
+      afterEn: 'Anti-proxy mobile/tablet QR attendance terminal with shop geofencing and automated payroll.',
+      afterBn: 'মোবাইল বা ট্যাবলেটে কিউআর কোড স্ক্যান করে মুহূর্তেই হাজিরা, প্রক্সি মুক্ত ও নিখুঁত বেতন হিসাব।',
+      beforeTagEn: 'Attendance Disputes',
+      beforeTagBn: 'প্রক্সি হাজিরা ও ঝামেলা',
+      afterTagEn: 'Smart QR Terminal',
+      afterTagBn: 'স্মার্ট কিউআর হাজিরা',
+    },
+  ],
+}
+
+export const DEFAULT_COMPANIES_SECTION_CONFIG: LandingCompaniesSectionConfig = {
+  eyebrowEn: 'Verified Print Network',
+  eyebrowBn: 'বিশ্বাস ও নির্ভরযোগ্যতা',
+  headlineEn: 'Trusted by Print & Signage Businesses Across Bangladesh',
+  headlineBn: 'সারা বাংলাদেশের শীর্ষস্থানীয় প্রিন্ট ও সাইনেজ ব্যবসার বিশ্বস্ত সমাধান',
+  descriptionEn:
+    'Powering high-volume commercial offset presses, digital flex houses, and acrylic signage fabricators from Dhaka to Chattogram.',
+  descriptionBn:
+    'ঢাকা, চট্টগ্রাম, বগুড়া থেকে সিলেট — বাণিজ্যিক প্রেস, ডিজিটাল শপ ও সাইন ফ্যাব্রিকেটরদের এক সংযুক্ত প্ল্যাটফর্ম।',
+  autoScroll: true,
+  scrollSpeed: 'medium',
+}
+
+export const DEFAULT_FINAL_CTA_CONFIG: LandingFinalCtaConfig = {
+  eyebrowEn: 'Instant Cloud Onboarding',
+  eyebrowBn: 'ইনস্ট্যান্ট ক্লাউড অনবোর্ডিং',
+  headlineEn: 'Ready to Eliminate Chaos and Take Total Control of Your Print Shop?',
+  headlineBn: 'কাগজের বিশৃঙ্খলা ভুলে আপনার পুরো প্রেসের নিয়ন্ত্রণ নিতে প্রস্তুত?',
+  descriptionEn:
+    'Join over 200 print and signage companies across Bangladesh managing quotes, roll media stock, floor machines, and staff QR attendance in one place.',
+  descriptionBn:
+    'বাংলাদেশের ২০০+ আধুনিক প্রেস ও সাইনেজ প্রতিষ্ঠানের সাথে যোগ দিন। কোটেশন, রোল স্টক, মেশিন কিউ এবং কিউআর হাজিরা পরিচালনা করুন এক ছাদের নিচে।',
+  primaryCtaEn: 'Start 14-Day Free Trial',
+  primaryCtaBn: '১৪ দিনের ফ্রি ট্রায়াল শুরু করুন',
+  primaryCtaLink: '/register',
+  secondaryCtaEn: 'Book a Live Demo',
+  secondaryCtaBn: 'লাইভ ডেমো দেখুন',
+}
+
 export const DEFAULT_LANDING_CONFIG: LandingPageConfig = {
   general: {
     enabled: true,
@@ -186,22 +399,24 @@ export const DEFAULT_LANDING_CONFIG: LandingPageConfig = {
   },
   sections: DEFAULT_LANDING_SECTIONS,
   hero: {
-    eyebrowEn: 'Print & Signage Management Software',
-    eyebrowBn: 'প্রিন্ট ও সাইনেজ ম্যানেজমেন্ট সফটওয়্যার',
-    headlineEn: 'Run Your Print & Signage Business Without the Chaos.',
-    headlineBn: 'আপনার প্রিন্ট ব্যবসার সব কাজ এক জায়গায় পরিচালনা করুন।',
+    eyebrowEn: 'The Operating System for Bangladesh Print & Signage',
+    eyebrowBn: 'বাংলাদেশের প্রিন্ট ও সাইনেজ ব্যবসার অল-ইন-ওয়ান ক্লাউড প্ল্যাটফর্ম',
+    headlineEn: 'Stop Running Your Print Business on Paper Slips & Guesswork.',
+    headlineBn: 'কাগজের চিরকুট আর অনুমানের হিসাব ভুলে প্রেস পরিচালনা করুন ক্লাউডে।',
     descriptionEn:
-      'Sales, design, production, inventory, employees, delivery and payments — connected in one place.',
+      'From SFT quotations and roll media inventory to live machine queues, staff QR attendance, and bKash challans — run your entire print shop in one connected workspace.',
     descriptionBn:
-      'সেলস, ডিজাইন, প্রোডাকশন, ইনভেন্টরি, কর্মচারী, ডেলিভারি ও পেমেন্ট — সব এক সাথে সংযুক্ত।',
-    primaryCtaEn: 'Start Free Trial',
-    primaryCtaBn: 'ফ্রি ট্রায়াল শুরু করুন',
+      'স্কয়ারফিট কোটেশন ও রোল স্টক থেকে শুরু করে মেশিনের লাইভ কিউ, কর্মীদের কিউআর হাজিরা এবং চালান — আপনার পুরো প্রিন্টিং ও সাইনেজ ব্যবসা চালান এক সংযুক্ত সিস্টেমে।',
+    primaryCtaEn: 'Start 14-Day Free Trial',
+    primaryCtaBn: '১৪ দিনের ফ্রি ট্রায়াল শুরু করুন',
     primaryCtaLink: '/register',
-    secondaryCtaEn: 'See How It Works',
-    secondaryCtaBn: 'কাজের ধাপ দেখুন',
+    secondaryCtaEn: 'Book a Live Demo',
+    secondaryCtaBn: 'লাইভ ডেমো দেখুন',
     secondaryCtaLink: '#workflow',
   },
-  companies: [],
+  comparison: DEFAULT_COMPARISON_CONFIG,
+  companies: DEFAULT_LANDING_COMPANIES,
+  companiesSection: DEFAULT_COMPANIES_SECTION_CONFIG,
   pricing: {
     showPricing: true,
     showMonthly: true,
@@ -213,6 +428,7 @@ export const DEFAULT_LANDING_CONFIG: LandingPageConfig = {
     descriptionBn: 'আপনার ব্যবসার জন্য উপযুক্ত প্ল্যান বেছে নিন এবং প্রয়োজন অনুযায়ী আপগ্রেড করুন।',
   },
   faq: DEFAULT_LANDING_FAQ,
+  finalCta: DEFAULT_FINAL_CTA_CONFIG,
   seo: {
     metaTitle: 'PrintFlow — Print & Signage Business Management Software',
     metaDescription:

@@ -34,6 +34,8 @@ export interface LandingCompanyConfig {
   id: string
   name: string
   logoUrl: string
+  city?: string
+  websiteUrl?: string
   isPublic: boolean
   status: 'active' | 'archived'
   displayMode: 'logo_name' | 'logo_only'
@@ -74,13 +76,99 @@ export interface LandingGeneralConfig {
   theme: LandingTheme
 }
 
+export interface ComparisonItemConfig {
+  id: string
+  categoryEn: string
+  categoryBn: string
+  beforeEn: string
+  beforeBn: string
+  afterEn: string
+  afterBn: string
+  beforeTagEn?: string
+  beforeTagBn?: string
+  afterTagEn?: string
+  afterTagBn?: string
+}
+
+export interface LandingComparisonConfig {
+  eyebrowEn?: string
+  eyebrowBn?: string
+  headlineEn?: string
+  headlineBn?: string
+  descriptionEn?: string
+  descriptionBn?: string
+  withoutTitleEn?: string
+  withoutTitleBn?: string
+  withTitleEn?: string
+  withTitleBn?: string
+  items?: ComparisonItemConfig[]
+}
+
+export interface LandingCompaniesSectionConfig {
+  eyebrowEn?: string
+  eyebrowBn?: string
+  headlineEn?: string
+  headlineBn?: string
+  descriptionEn?: string
+  descriptionBn?: string
+  autoScroll?: boolean
+  scrollSpeed?: 'slow' | 'medium' | 'fast'
+}
+
+export interface LandingFinalCtaConfig {
+  eyebrowEn?: string
+  eyebrowBn?: string
+  headlineEn?: string
+  headlineBn?: string
+  descriptionEn?: string
+  descriptionBn?: string
+  primaryCtaEn?: string
+  primaryCtaBn?: string
+  primaryCtaLink?: string
+  secondaryCtaEn?: string
+  secondaryCtaBn?: string
+}
+
+export interface LandingWorkflowSectionConfig {
+  eyebrowEn?: string
+  eyebrowBn?: string
+  headlineEn?: string
+  headlineBn?: string
+  descriptionEn?: string
+  descriptionBn?: string
+}
+
+export interface LandingEmployeesSectionConfig {
+  eyebrowEn?: string
+  eyebrowBn?: string
+  headlineEn?: string
+  headlineBn?: string
+  descriptionEn?: string
+  descriptionBn?: string
+}
+
+export interface LandingFeaturesSectionConfig {
+  eyebrowEn?: string
+  eyebrowBn?: string
+  headlineEn?: string
+  headlineBn?: string
+  descriptionEn?: string
+  descriptionBn?: string
+}
+
 export interface LandingPageConfig {
   general: LandingGeneralConfig
   sections: LandingSectionConfig[]
   hero: LandingHeroConfig
+  comparison?: LandingComparisonConfig
   companies: LandingCompanyConfig[]
+  companiesSection?: LandingCompaniesSectionConfig
   pricing: LandingPricingConfig
   faq: LandingFaqItem[]
+  finalCta?: LandingFinalCtaConfig
+  workflow?: LandingWorkflowSectionConfig
+  employees?: LandingEmployeesSectionConfig
+  whatWeManage?: LandingFeaturesSectionConfig
   seo: LandingSeoConfig
 }
 

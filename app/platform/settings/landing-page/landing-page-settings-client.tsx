@@ -25,6 +25,8 @@ import {
   DollarSign,
   X,
   ExternalLink,
+  ArrowLeftRight,
+  Megaphone,
 } from 'lucide-react'
 import { PlatformSettingsNav } from '@/components/platform/platform-settings-nav'
 import { Button } from '@/components/ui/button'
@@ -44,7 +46,14 @@ import type {
   LandingSectionConfig,
   LandingLanguage,
   LandingTheme,
+  ComparisonItemConfig,
 } from '@/types/landing-page.types'
+import {
+  DEFAULT_COMPARISON_CONFIG,
+  DEFAULT_COMPANIES_SECTION_CONFIG,
+  DEFAULT_FINAL_CTA_CONFIG,
+  DEFAULT_LANDING_COMPANIES,
+} from '@/lib/marketing/landing-defaults'
 import { cn } from '@/lib/utils'
 
 interface SettingsClientProps {
@@ -57,10 +66,25 @@ interface SettingsClientProps {
   }
 }
 
-type TabKey = 'general' | 'sections' | 'hero' | 'companies' | 'pricing' | 'faq' | 'seo'
+type TabKey =
+  | 'general'
+  | 'sections'
+  | 'hero'
+  | 'comparison'
+  | 'companies'
+  | 'pricing'
+  | 'faq'
+  | 'final_cta'
+  | 'seo'
 
 export default function LandingPageSettingsClient({ initialData }: SettingsClientProps) {
-  const [draft, setDraft] = useState<LandingPageConfig>(initialData.draft)
+  const [draft, setDraft] = useState<LandingPageConfig>(() => ({
+    ...initialData.draft,
+    comparison: initialData.draft.comparison || DEFAULT_COMPARISON_CONFIG,
+    companiesSection: initialData.draft.companiesSection || DEFAULT_COMPANIES_SECTION_CONFIG,
+    finalCta: initialData.draft.finalCta || DEFAULT_FINAL_CTA_CONFIG,
+    companies: initialData.draft.companies?.length ? initialData.draft.companies : DEFAULT_LANDING_COMPANIES,
+  }))
   const [activeTab, setActiveTab] = useState<TabKey>('general')
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState<boolean>(false)
   const [statusMessage, setStatusMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null)
@@ -71,6 +95,10 @@ export default function LandingPageSettingsClient({ initialData }: SettingsClien
   // Edit/Add Company Modal state
   const [companyModalOpen, setCompanyModalOpen] = useState<boolean>(false)
   const [editingCompany, setEditingCompany] = useState<LandingCompanyConfig | null>(null)
+
+  // Edit/Add Comparison Item Modal state
+  const [comparisonModalOpen, setComparisonModalOpen] = useState<boolean>(false)
+  const [editingComparison, setEditingComparison] = useState<ComparisonItemConfig | null>(null)
 
   // Edit/Add FAQ Modal state
   const [faqModalOpen, setFaqModalOpen] = useState<boolean>(false)
@@ -226,6 +254,70 @@ export default function LandingPageSettingsClient({ initialData }: SettingsClien
     })
   }
 
+  // --- Comparison Management ---
+  const handleSaveComparisonItem = (itemData: ComparisonItemConfig) => {
+    handleUpdate((prev) => {
+      const comparison = prev.comparison ? { ...prev.comparison } : { ...DEFAULT_COMPARISON_CONFIG }
+      const items = [...(comparison.items || [])]
+      const existingIdx = items.findIndex((i) => i.id === itemData.id)
+      if (existingIdx >= 0) {
+        items[existingIdx] = itemData
+      } else {
+        items.push(itemData)
+      }
+      return { ...prev, comparison: { ...comparison, items } }
+    })
+    setComparisonModalOpen(false)
+    setEditingComparison(null)
+  }
+
+  const handleDeleteComparisonItem = (id: string) => {
+    handleUpdate((prev) => {
+      const comparison = prev.comparison ? { ...prev.comparison } : { ...DEFAULT_COMPARISON_CONFIG }
+      return {
+        ...prev,
+        comparison: {
+          ...comparison,
+          items: (comparison.items || []).filter((i: ComparisonItemConfig) => i.id !== id),
+        },
+      }
+    })
+  }
+
+  const handleMoveComparisonItem = (index: number, direction: 'up' | 'down') => {
+    handleUpdate((prev) => {
+      const comparison = prev.comparison ? { ...prev.comparison } : { ...DEFAULT_COMPARISON_CONFIG }
+      const items = [...(comparison.items || [])]
+      const targetIndex = direction === 'up' ? index - 1 : index + 1
+      if (targetIndex < 0 || targetIndex >= items.length) return prev
+
+      const temp = items[index]
+      items[index] = items[targetIndex]
+      items[targetIndex] = temp
+
+      return { ...prev, comparison: { ...comparison, items } }
+    })
+  }
+
+  const handleResetComparisonToDefaults = () => {
+    if (!confirm('Reset all comparison points to system default standards?')) return
+    handleUpdate((prev) => ({
+      ...prev,
+      comparison: DEFAULT_COMPARISON_CONFIG,
+    }))
+    showToast('Reset comparison points to defaults.')
+  }
+
+  const handleResetCompaniesToDefaults = () => {
+    if (!confirm('Load recommended Bangladeshi print business logos (Padma, Surma, Jamuna, etc.)?')) return
+    handleUpdate((prev) => ({
+      ...prev,
+      companies: DEFAULT_LANDING_COMPANIES,
+      companiesSection: DEFAULT_COMPANIES_SECTION_CONFIG,
+    }))
+    showToast('Loaded recommended Bangladeshi print shop presets.')
+  }
+
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
       {/* Platform Settings Top Navigation Tabs */}
@@ -338,9 +430,11 @@ export default function LandingPageSettingsClient({ initialData }: SettingsClien
           { key: 'general', label: 'General', icon: Sliders },
           { key: 'sections', label: 'Sections', icon: Layers },
           { key: 'hero', label: 'Hero', icon: Sparkles },
-          { key: 'companies', label: 'Registered Companies', icon: Building2 },
+          { key: 'comparison', label: 'Comparison (Side-by-Side)', icon: ArrowLeftRight },
+          { key: 'companies', label: 'Registered Businesses', icon: Building2 },
           { key: 'pricing', label: 'Pricing', icon: DollarSign },
           { key: 'faq', label: 'FAQ', icon: HelpCircle },
+          { key: 'final_cta', label: 'Final CTA', icon: Megaphone },
           { key: 'seo', label: 'SEO', icon: Search },
         ].map((tab) => {
           const Icon = tab.icon
@@ -707,38 +801,503 @@ export default function LandingPageSettingsClient({ initialData }: SettingsClien
           </div>
         )}
 
+        {/* COMPARISON TAB */}
+        {activeTab === 'comparison' && (
+          <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <h2 className="text-base font-bold text-foreground">
+                  Side-by-Side Comparison Settings
+                </h2>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Configure direct operational contrasts showing traditional print press chaos vs PrintFlow connected cloud system.
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleResetComparisonToDefaults}
+                  className="h-9 px-3 gap-1.5 text-xs text-muted-foreground hover:text-foreground"
+                  title="Reset to default comparison points"
+                  aria-label="Reset to default comparison points"
+                >
+                  <RotateCcw className="h-3.5 w-3.5" />
+                  <span>Reset to Standards</span>
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={() => {
+                    setEditingComparison({
+                      id: `cmp-${Date.now()}`,
+                      categoryEn: '',
+                      categoryBn: '',
+                      beforeEn: '',
+                      beforeBn: '',
+                      afterEn: '',
+                      afterBn: '',
+                      beforeTagEn: '',
+                      beforeTagBn: '',
+                      afterTagEn: '',
+                      afterTagBn: '',
+                    })
+                    setComparisonModalOpen(true)
+                  }}
+                  className="h-9 px-3 gap-1.5 text-xs font-semibold"
+                  title="Add new comparison point"
+                  aria-label="Add new comparison point"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  <span>Add Comparison Point</span>
+                </Button>
+              </div>
+            </div>
+
+            {/* Section Header Controls */}
+            <div className="p-4 rounded-lg border border-border bg-muted/20 space-y-4">
+              <h3 className="text-xs sm:text-sm font-semibold text-foreground">
+                Section Headlines &amp; Column Headers
+              </h3>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-foreground">Eyebrow (English)</Label>
+                  <Input
+                    value={draft.comparison?.eyebrowEn ?? ''}
+                    onChange={(e) =>
+                      handleUpdate((prev) => ({
+                        ...prev,
+                        comparison: { ...prev.comparison, eyebrowEn: e.target.value },
+                      }))
+                    }
+                    className="h-9 text-xs"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-foreground">Eyebrow (বাংলা)</Label>
+                  <Input
+                    value={draft.comparison?.eyebrowBn ?? ''}
+                    onChange={(e) =>
+                      handleUpdate((prev) => ({
+                        ...prev,
+                        comparison: { ...prev.comparison, eyebrowBn: e.target.value },
+                      }))
+                    }
+                    className="h-9 text-xs font-bangla"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-foreground">Headline (English)</Label>
+                  <Input
+                    value={draft.comparison?.headlineEn ?? ''}
+                    onChange={(e) =>
+                      handleUpdate((prev) => ({
+                        ...prev,
+                        comparison: { ...prev.comparison, headlineEn: e.target.value },
+                      }))
+                    }
+                    className="h-9 text-xs"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-foreground">Headline (বাংলা)</Label>
+                  <Input
+                    value={draft.comparison?.headlineBn ?? ''}
+                    onChange={(e) =>
+                      handleUpdate((prev) => ({
+                        ...prev,
+                        comparison: { ...prev.comparison, headlineBn: e.target.value },
+                      }))
+                    }
+                    className="h-9 text-xs font-bangla"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-foreground">Subtitle (English)</Label>
+                  <Input
+                    value={draft.comparison?.descriptionEn ?? ''}
+                    onChange={(e) =>
+                      handleUpdate((prev) => ({
+                        ...prev,
+                        comparison: { ...prev.comparison, descriptionEn: e.target.value },
+                      }))
+                    }
+                    className="h-9 text-xs"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-foreground">Subtitle (বাংলা)</Label>
+                  <Input
+                    value={draft.comparison?.descriptionBn ?? ''}
+                    onChange={(e) =>
+                      handleUpdate((prev) => ({
+                        ...prev,
+                        comparison: { ...prev.comparison, descriptionBn: e.target.value },
+                      }))
+                    }
+                    className="h-9 text-xs font-bangla"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-border">
+                <div className="space-y-2 p-3 rounded-md border border-destructive/20 bg-destructive/5">
+                  <span className="text-xs font-bold text-destructive">Left Column (Without PrintFlow)</span>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs text-foreground">Column Title (EN)</Label>
+                    <Input
+                      value={draft.comparison?.withoutTitleEn ?? ''}
+                      onChange={(e) =>
+                        handleUpdate((prev) => ({
+                          ...prev,
+                          comparison: { ...prev.comparison, withoutTitleEn: e.target.value },
+                        }))
+                      }
+                      className="h-8 text-xs"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs text-foreground">Column Title (বাংলা)</Label>
+                    <Input
+                      value={draft.comparison?.withoutTitleBn ?? ''}
+                      onChange={(e) =>
+                        handleUpdate((prev) => ({
+                          ...prev,
+                          comparison: { ...prev.comparison, withoutTitleBn: e.target.value },
+                        }))
+                      }
+                      className="h-8 text-xs font-bangla"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2 p-3 rounded-md border border-success-surface bg-success-surface/10">
+                  <span className="text-xs font-bold text-success">Right Column (With PrintFlow)</span>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs text-foreground">Column Title (EN)</Label>
+                    <Input
+                      value={draft.comparison?.withTitleEn ?? ''}
+                      onChange={(e) =>
+                        handleUpdate((prev) => ({
+                          ...prev,
+                          comparison: { ...prev.comparison, withTitleEn: e.target.value },
+                        }))
+                      }
+                      className="h-8 text-xs"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs text-foreground">Column Title (বাংলা)</Label>
+                    <Input
+                      value={draft.comparison?.withTitleBn ?? ''}
+                      onChange={(e) =>
+                        handleUpdate((prev) => ({
+                          ...prev,
+                          comparison: { ...prev.comparison, withTitleBn: e.target.value },
+                        }))
+                      }
+                      className="h-8 text-xs font-bangla"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Comparison Items List */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xs sm:text-sm font-semibold text-foreground">
+                  Comparison Points ({draft.comparison?.items?.length || 0})
+                </h3>
+              </div>
+
+              {(draft.comparison?.items || []).length === 0 ? (
+                <div className="text-center py-8 px-4 border border-dashed border-border rounded-xl">
+                  <ArrowLeftRight className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                  <h4 className="text-xs font-semibold text-foreground">No comparison items configured</h4>
+                  <p className="text-xs text-muted-foreground max-w-sm mx-auto mt-1">
+                    Click &quot;Reset to Standards&quot; to restore the 6 recommended print industry operational comparison points.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-2.5">
+                  {(draft.comparison?.items || []).map((item, idx) => (
+                    <div
+                      key={item.id}
+                      className="p-3.5 rounded-lg border border-border bg-muted/20 hover:bg-muted/30 transition-colors flex flex-col md:flex-row md:items-center justify-between gap-3"
+                    >
+                      <div className="space-y-2 flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-bold text-muted-foreground tabular-nums">
+                            #{idx + 1}
+                          </span>
+                          <span className="text-xs sm:text-sm font-bold text-foreground">
+                            {item.categoryEn}
+                          </span>
+                          <span className="text-xs text-muted-foreground font-bangla">
+                            ({item.categoryBn})
+                          </span>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                          <div className="p-2.5 rounded-md border border-destructive/20 bg-destructive/5 space-y-1">
+                            <div className="flex items-center gap-1.5 text-destructive font-semibold">
+                              <AlertCircle className="h-3 w-3 shrink-0" />
+                              <span>{item.beforeTagEn || 'Without PrintFlow'}</span>
+                            </div>
+                            <p className="text-muted-foreground line-clamp-2">{item.beforeEn}</p>
+                          </div>
+
+                          <div className="p-2.5 rounded-md border border-success-surface bg-success-surface/10 space-y-1">
+                            <div className="flex items-center gap-1.5 text-success font-semibold">
+                              <CheckCircle2 className="h-3 w-3 shrink-0" />
+                              <span>{item.afterTagEn || 'With PrintFlow'}</span>
+                            </div>
+                            <p className="text-muted-foreground line-clamp-2">{item.afterEn}</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 shrink-0 self-end md:self-center">
+                        <button
+                          type="button"
+                          disabled={idx === 0}
+                          onClick={() => handleMoveComparisonItem(idx, 'up')}
+                          className="p-1.5 rounded border border-border hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                          title="Move up"
+                          aria-label={`Move ${item.categoryEn} up`}
+                        >
+                          <ArrowUp className="h-3.5 w-3.5 text-foreground" />
+                        </button>
+                        <button
+                          type="button"
+                          disabled={idx === (draft.comparison?.items?.length || 0) - 1}
+                          onClick={() => handleMoveComparisonItem(idx, 'down')}
+                          className="p-1.5 rounded border border-border hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                          title="Move down"
+                          aria-label={`Move ${item.categoryEn} down`}
+                        >
+                          <ArrowDown className="h-3.5 w-3.5 text-foreground" />
+                        </button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setEditingComparison(item)
+                            setComparisonModalOpen(true)
+                          }}
+                          className="h-8 px-2.5 text-xs"
+                        >
+                          Edit
+                        </Button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteComparisonItem(item.id)}
+                          className="p-1.5 rounded text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
+                          title="Delete comparison point"
+                          aria-label={`Delete ${item.categoryEn}`}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* 4. REGISTERED COMPANIES TAB */}
         {activeTab === 'companies' && (
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
-                <h2 className="text-base font-bold text-foreground">Registered Company Showcase</h2>
+                <h2 className="text-base font-bold text-foreground">Registered Company Showcase &amp; Carousel</h2>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  Minimal trust logos only. Only approved companies with active logos are displayed.
+                  Display verified Bangladesh print and signage shop logos with continuous smooth auto-scrolling motion.
                 </p>
               </div>
-              <Button
-                type="button"
-                size="sm"
-                onClick={() => {
-                  setEditingCompany({
-                    id: `comp-${Date.now()}`,
-                    name: '',
-                    logoUrl: '',
-                    isPublic: true,
-                    status: 'active',
-                    displayMode: 'logo_name',
-                    order: draft.companies.length + 1,
-                  })
-                  setCompanyModalOpen(true)
-                }}
-                className="h-9 px-3 gap-1.5 text-xs font-semibold"
-                title="Add registered company logo"
-                aria-label="Add registered company logo"
-              >
-                <Plus className="h-3.5 w-3.5" />
-                <span>Add Company</span>
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleResetCompaniesToDefaults}
+                  className="h-9 px-3 gap-1.5 text-xs text-muted-foreground hover:text-foreground"
+                  title="Load recommended Bangladeshi print business logos"
+                  aria-label="Load recommended Bangladeshi print business logos"
+                >
+                  <RotateCcw className="h-3.5 w-3.5" />
+                  <span>Load BD Presets</span>
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={() => {
+                    setEditingCompany({
+                      id: `comp-${Date.now()}`,
+                      name: '',
+                      logoUrl: '',
+                      city: '',
+                      isPublic: true,
+                      status: 'active',
+                      displayMode: 'logo_name',
+                      order: draft.companies.length + 1,
+                    })
+                    setCompanyModalOpen(true)
+                  }}
+                  className="h-9 px-3 gap-1.5 text-xs font-semibold"
+                  title="Add registered company logo"
+                  aria-label="Add registered company logo"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  <span>Add Company</span>
+                </Button>
+              </div>
+            </div>
+
+            {/* Companies Section Configuration Header */}
+            <div className="p-4 rounded-lg border border-border bg-muted/20 space-y-4">
+              <h3 className="text-xs sm:text-sm font-semibold text-foreground">
+                Section Header &amp; Carousel Motion Behavior
+              </h3>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-foreground">Section Eyebrow (EN)</Label>
+                  <Input
+                    value={draft.companiesSection?.eyebrowEn ?? ''}
+                    onChange={(e) =>
+                      handleUpdate((prev) => ({
+                        ...prev,
+                        companiesSection: { ...prev.companiesSection, eyebrowEn: e.target.value },
+                      }))
+                    }
+                    className="h-9 text-xs"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-foreground">Section Eyebrow (বাংলা)</Label>
+                  <Input
+                    value={draft.companiesSection?.eyebrowBn ?? ''}
+                    onChange={(e) =>
+                      handleUpdate((prev) => ({
+                        ...prev,
+                        companiesSection: { ...prev.companiesSection, eyebrowBn: e.target.value },
+                      }))
+                    }
+                    className="h-9 text-xs font-bangla"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-foreground">Headline (EN)</Label>
+                  <Input
+                    value={draft.companiesSection?.headlineEn ?? ''}
+                    onChange={(e) =>
+                      handleUpdate((prev) => ({
+                        ...prev,
+                        companiesSection: { ...prev.companiesSection, headlineEn: e.target.value },
+                      }))
+                    }
+                    className="h-9 text-xs"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-foreground">Headline (বাংলা)</Label>
+                  <Input
+                    value={draft.companiesSection?.headlineBn ?? ''}
+                    onChange={(e) =>
+                      handleUpdate((prev) => ({
+                        ...prev,
+                        companiesSection: { ...prev.companiesSection, headlineBn: e.target.value },
+                      }))
+                    }
+                    className="h-9 text-xs font-bangla"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-foreground">Subtitle (EN)</Label>
+                  <Input
+                    value={draft.companiesSection?.descriptionEn ?? ''}
+                    onChange={(e) =>
+                      handleUpdate((prev) => ({
+                        ...prev,
+                        companiesSection: { ...prev.companiesSection, descriptionEn: e.target.value },
+                      }))
+                    }
+                    className="h-9 text-xs"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-foreground">Subtitle (বাংলা)</Label>
+                  <Input
+                    value={draft.companiesSection?.descriptionBn ?? ''}
+                    onChange={(e) =>
+                      handleUpdate((prev) => ({
+                        ...prev,
+                        companiesSection: { ...prev.companiesSection, descriptionBn: e.target.value },
+                      }))
+                    }
+                    className="h-9 text-xs font-bangla"
+                  />
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center justify-between gap-4 pt-2 border-t border-border">
+                <div className="flex items-center gap-3">
+                  <Switch
+                    checked={draft.companiesSection?.autoScroll ?? true}
+                    onCheckedChange={(checked: boolean) =>
+                      handleUpdate((prev) => ({
+                        ...prev,
+                        companiesSection: { ...prev.companiesSection, autoScroll: checked },
+                      }))
+                    }
+                    id="autoScroll-toggle"
+                    aria-label="Toggle logo auto-scroll"
+                  />
+                  <Label htmlFor="autoScroll-toggle" className="text-xs font-semibold text-foreground cursor-pointer">
+                    Auto-Scroll Carousel Motion
+                  </Label>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <Label className="text-xs text-muted-foreground">Scroll Speed:</Label>
+                  <select
+                    value={draft.companiesSection?.scrollSpeed ?? 'medium'}
+                    onChange={(e) =>
+                      handleUpdate((prev) => ({
+                        ...prev,
+                        companiesSection: {
+                          ...prev.companiesSection,
+                          scrollSpeed: e.target.value as 'slow' | 'medium' | 'fast',
+                        },
+                      }))
+                    }
+                    className="h-8 rounded-md border border-input bg-card px-2 text-xs text-foreground focus:outline-hidden"
+                  >
+                    <option value="slow">Slow (Subtle &amp; Gentle)</option>
+                    <option value="medium">Medium (Standard)</option>
+                    <option value="fast">Fast (Dynamic)</option>
+                  </select>
+                </div>
+              </div>
             </div>
 
             {draft.companies.length === 0 ? (
@@ -746,8 +1305,7 @@ export default function LandingPageSettingsClient({ initialData }: SettingsClien
                 <Building2 className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
                 <h3 className="text-sm font-semibold text-foreground">No Registered Companies Added</h3>
                 <p className="text-xs text-muted-foreground max-w-md mx-auto mt-1">
-                  The landing page will gracefully display the neutral trust statement:
-                  &quot;Built for Print &amp; Signage Businesses Across Bangladesh.&quot;
+                  Click &quot;Load BD Presets&quot; to seed verified print business partner logos (Padma, Surma, Jamuna, Dhaka Color Lab, Prime Sign, etc.).
                 </p>
               </div>
             ) : (
@@ -774,9 +1332,14 @@ export default function LandingPageSettingsClient({ initialData }: SettingsClien
                           <span className="text-xs sm:text-sm font-semibold text-foreground">
                             {comp.name}
                           </span>
-                          <span className="text-xs px-2 py-0.2 rounded font-medium border border-border bg-muted">
+                          <span className="text-xs px-2 py-0.5 rounded font-medium border border-border bg-muted">
                             {comp.displayMode === 'logo_name' ? 'Logo + Name' : 'Logo Only'}
                           </span>
+                          {comp.city && (
+                            <span className="text-xs px-1.5 py-0.5 rounded text-muted-foreground border border-border bg-muted/50">
+                              {comp.city}
+                            </span>
+                          )}
                         </div>
                         <span className="text-xs text-muted-foreground">Order: {comp.order}</span>
                       </div>
@@ -1048,6 +1611,180 @@ export default function LandingPageSettingsClient({ initialData }: SettingsClien
           </div>
         )}
 
+        {/* FINAL CTA TAB */}
+        {activeTab === 'final_cta' && (
+          <div className="space-y-6 max-w-3xl">
+            <div>
+              <h2 className="text-base font-bold text-foreground">Final Call to Action (Bilingual)</h2>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Customize bottom conversion banner copy, free trial button, and live demo booking prompts.
+              </p>
+            </div>
+
+            <div className="space-y-4 pt-1">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-foreground">Eyebrow (English)</Label>
+                  <Input
+                    value={draft.finalCta?.eyebrowEn ?? ''}
+                    onChange={(e) =>
+                      handleUpdate((prev) => ({
+                        ...prev,
+                        finalCta: { ...prev.finalCta, eyebrowEn: e.target.value },
+                      }))
+                    }
+                    className="h-9 text-xs"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-foreground">Eyebrow (বাংলা)</Label>
+                  <Input
+                    value={draft.finalCta?.eyebrowBn ?? ''}
+                    onChange={(e) =>
+                      handleUpdate((prev) => ({
+                        ...prev,
+                        finalCta: { ...prev.finalCta, eyebrowBn: e.target.value },
+                      }))
+                    }
+                    className="h-9 text-xs font-bangla"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-foreground">Headline (English)</Label>
+                  <Input
+                    value={draft.finalCta?.headlineEn ?? ''}
+                    onChange={(e) =>
+                      handleUpdate((prev) => ({
+                        ...prev,
+                        finalCta: { ...prev.finalCta, headlineEn: e.target.value },
+                      }))
+                    }
+                    className="h-9 text-xs font-semibold"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-foreground">Headline (বাংলা)</Label>
+                  <Input
+                    value={draft.finalCta?.headlineBn ?? ''}
+                    onChange={(e) =>
+                      handleUpdate((prev) => ({
+                        ...prev,
+                        finalCta: { ...prev.finalCta, headlineBn: e.target.value },
+                      }))
+                    }
+                    className="h-9 text-xs font-semibold font-bangla"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-foreground">Supporting Description (English)</Label>
+                  <Textarea
+                    rows={3}
+                    value={draft.finalCta?.descriptionEn ?? ''}
+                    onChange={(e) =>
+                      handleUpdate((prev) => ({
+                        ...prev,
+                        finalCta: { ...prev.finalCta, descriptionEn: e.target.value },
+                      }))
+                    }
+                    className="text-xs"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-foreground">Supporting Description (বাংলা)</Label>
+                  <Textarea
+                    rows={3}
+                    value={draft.finalCta?.descriptionBn ?? ''}
+                    onChange={(e) =>
+                      handleUpdate((prev) => ({
+                        ...prev,
+                        finalCta: { ...prev.finalCta, descriptionBn: e.target.value },
+                      }))
+                    }
+                    className="text-xs font-bangla"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-border">
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-foreground">Primary CTA (EN)</Label>
+                  <Input
+                    value={draft.finalCta?.primaryCtaEn ?? ''}
+                    onChange={(e) =>
+                      handleUpdate((prev) => ({
+                        ...prev,
+                        finalCta: { ...prev.finalCta, primaryCtaEn: e.target.value },
+                      }))
+                    }
+                    className="h-9 text-xs"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-foreground">Primary CTA (বাংলা)</Label>
+                  <Input
+                    value={draft.finalCta?.primaryCtaBn ?? ''}
+                    onChange={(e) =>
+                      handleUpdate((prev) => ({
+                        ...prev,
+                        finalCta: { ...prev.finalCta, primaryCtaBn: e.target.value },
+                      }))
+                    }
+                    className="h-9 text-xs font-bangla"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-foreground">Primary Link</Label>
+                  <Input
+                    value={draft.finalCta?.primaryCtaLink ?? ''}
+                    onChange={(e) =>
+                      handleUpdate((prev) => ({
+                        ...prev,
+                        finalCta: { ...prev.finalCta, primaryCtaLink: e.target.value },
+                      }))
+                    }
+                    className="h-9 text-xs font-mono"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-foreground">Secondary CTA (EN)</Label>
+                  <Input
+                    value={draft.finalCta?.secondaryCtaEn ?? ''}
+                    onChange={(e) =>
+                      handleUpdate((prev) => ({
+                        ...prev,
+                        finalCta: { ...prev.finalCta, secondaryCtaEn: e.target.value },
+                      }))
+                    }
+                    className="h-9 text-xs"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-foreground">Secondary CTA (বাংলা)</Label>
+                  <Input
+                    value={draft.finalCta?.secondaryCtaBn ?? ''}
+                    onChange={(e) =>
+                      handleUpdate((prev) => ({
+                        ...prev,
+                        finalCta: { ...prev.finalCta, secondaryCtaBn: e.target.value },
+                      }))
+                    }
+                    className="h-9 text-xs font-bangla"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* 7. SEO TAB */}
         {activeTab === 'seo' && (
           <div className="space-y-6 max-w-2xl">
@@ -1168,6 +1905,31 @@ export default function LandingPageSettingsClient({ initialData }: SettingsClien
                   placeholder="https://... or /logo.png"
                   className="h-9 text-xs font-mono"
                 />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold text-foreground">City / Region</Label>
+                  <Input
+                    value={editingCompany.city || ''}
+                    onChange={(e) =>
+                      setEditingCompany({ ...editingCompany, city: e.target.value })
+                    }
+                    placeholder="e.g. Fakirapool, Dhaka"
+                    className="h-9 text-xs"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold text-foreground">Website (Optional)</Label>
+                  <Input
+                    value={editingCompany.websiteUrl || ''}
+                    onChange={(e) =>
+                      setEditingCompany({ ...editingCompany, websiteUrl: e.target.value })
+                    }
+                    placeholder="https://..."
+                    className="h-9 text-xs font-mono"
+                  />
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
@@ -1326,6 +2088,198 @@ export default function LandingPageSettingsClient({ initialData }: SettingsClien
                 className="h-9 text-xs font-semibold"
               >
                 Save FAQ
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: ADD / EDIT COMPARISON POINT */}
+      {comparisonModalOpen && editingComparison && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-card border border-border rounded-xl shadow-lg w-full max-w-2xl p-5 space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-2 border-b border-border">
+              <h3 className="text-sm font-bold text-foreground">
+                {(draft.comparison?.items || []).some((c) => c.id === editingComparison.id)
+                  ? 'Edit Comparison Point'
+                  : 'Add Comparison Point'}
+              </h3>
+              <button
+                type="button"
+                onClick={() => setComparisonModalOpen(false)}
+                className="text-muted-foreground hover:text-foreground cursor-pointer"
+                title="Close dialog"
+                aria-label="Close dialog"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              {/* Category / Operation Area */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold text-foreground">Operational Area (English)</Label>
+                  <Input
+                    value={editingComparison.categoryEn}
+                    onChange={(e) =>
+                      setEditingComparison({ ...editingComparison, categoryEn: e.target.value })
+                    }
+                    placeholder="e.g. Roll Media Inventory"
+                    className="h-9 text-xs"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold text-foreground">Operational Area (বাংলা)</Label>
+                  <Input
+                    value={editingComparison.categoryBn}
+                    onChange={(e) =>
+                      setEditingComparison({ ...editingComparison, categoryBn: e.target.value })
+                    }
+                    placeholder="যেমন: রোল স্টক ও কাঁচামাল"
+                    className="h-9 text-xs font-bangla"
+                  />
+                </div>
+              </div>
+
+              {/* Without PrintFlow (Before) Box */}
+              <div className="p-3.5 rounded-lg border border-destructive/20 bg-destructive/5 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-destructive flex items-center gap-1.5">
+                    <AlertCircle className="h-3.5 w-3.5" />
+                    Without PrintFlow (Traditional Pain Point)
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <Label className="text-xs font-semibold text-foreground">Pain Tag (English)</Label>
+                    <Input
+                      value={editingComparison.beforeTagEn || ''}
+                      onChange={(e) =>
+                        setEditingComparison({ ...editingComparison, beforeTagEn: e.target.value })
+                      }
+                      placeholder="e.g. Mid-Job Outages"
+                      className="h-8 text-xs"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs font-semibold text-foreground">Pain Tag (বাংলা)</Label>
+                    <Input
+                      value={editingComparison.beforeTagBn || ''}
+                      onChange={(e) =>
+                        setEditingComparison({ ...editingComparison, beforeTagBn: e.target.value })
+                      }
+                      placeholder="যেমন: মাঝপথে কাজ বন্ধ"
+                      className="h-8 text-xs font-bangla"
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <Label className="text-xs font-semibold text-foreground">Problem Description (English)</Label>
+                    <Textarea
+                      rows={2}
+                      value={editingComparison.beforeEn}
+                      onChange={(e) =>
+                        setEditingComparison({ ...editingComparison, beforeEn: e.target.value })
+                      }
+                      placeholder="Detailed scenario of what happens without PrintFlow..."
+                      className="text-xs"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs font-semibold text-foreground">Problem Description (বাংলা)</Label>
+                    <Textarea
+                      rows={2}
+                      value={editingComparison.beforeBn}
+                      onChange={(e) =>
+                        setEditingComparison({ ...editingComparison, beforeBn: e.target.value })
+                      }
+                      placeholder="সফটওয়্যার ছাড়া কী অসুবিধা হয়..."
+                      className="text-xs font-bangla"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* With PrintFlow (After) Box */}
+              <div className="p-3.5 rounded-lg border border-success-surface bg-success-surface/10 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-success flex items-center gap-1.5">
+                    <CheckCircle2 className="h-3.5 w-3.5" />
+                    With PrintFlow (Cloud Solution &amp; Benefit)
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <Label className="text-xs font-semibold text-foreground">Benefit Tag (English)</Label>
+                    <Input
+                      value={editingComparison.afterTagEn || ''}
+                      onChange={(e) =>
+                        setEditingComparison({ ...editingComparison, afterTagEn: e.target.value })
+                      }
+                      placeholder="e.g. Real-Time Roll SFT"
+                      className="h-8 text-xs"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs font-semibold text-foreground">Benefit Tag (বাংলা)</Label>
+                    <Input
+                      value={editingComparison.afterTagBn || ''}
+                      onChange={(e) =>
+                        setEditingComparison({ ...editingComparison, afterTagBn: e.target.value })
+                      }
+                      placeholder="যেমন: লাইভ স্কয়ারফিট স্টক"
+                      className="h-8 text-xs font-bangla"
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <Label className="text-xs font-semibold text-foreground">Solution Description (English)</Label>
+                    <Textarea
+                      rows={2}
+                      value={editingComparison.afterEn}
+                      onChange={(e) =>
+                        setEditingComparison({ ...editingComparison, afterEn: e.target.value })
+                      }
+                      placeholder="How PrintFlow solves this seamlessly..."
+                      className="text-xs"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs font-semibold text-foreground">Solution Description (বাংলা)</Label>
+                    <Textarea
+                      rows={2}
+                      value={editingComparison.afterBn}
+                      onChange={(e) =>
+                        setEditingComparison({ ...editingComparison, afterBn: e.target.value })
+                      }
+                      placeholder="প্রিন্টফ্লো কীভাবে এটি সহজ ও ডিজিটাল করে..."
+                      className="text-xs font-bangla"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-border">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setComparisonModalOpen(false)}
+                className="h-9 text-xs"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                onClick={() => handleSaveComparisonItem(editingComparison)}
+                className="h-9 text-xs font-semibold"
+              >
+                Save Comparison Point
               </Button>
             </div>
           </div>
