@@ -603,10 +603,11 @@ export async function updateSession(request: NextRequest) {
         try {
           const { data: member } = await supabase
             .from('company_users')
-            .select('id, company_id, companies!inner(slug, is_active)')
+            .select('id, company_id, status, companies!inner(slug, is_active)')
             .eq('user_id', user.id)
             .eq('companies.slug', tenantSlug)
-            .eq('is_active', true)
+            .in('status', ['active', 'invited'])
+            .eq('companies.is_active', true)
             .maybeSingle()
           if (member) {
             isMemberOfTargetTenant = true
@@ -672,7 +673,8 @@ export async function updateSession(request: NextRequest) {
                 .from('company_users')
                 .select('companies!inner(slug, is_active)')
                 .eq('user_id', user.id)
-                .eq('is_active', true)
+                .in('status', ['active', 'invited'])
+                .eq('companies.is_active', true)
                 .limit(1)
                 .maybeSingle()
               const comp = Array.isArray(member?.companies) ? member.companies[0] : member?.companies
@@ -774,10 +776,11 @@ export async function updateSession(request: NextRequest) {
               try {
                 const { data: member } = await supabase
                   .from('company_users')
-                  .select('id, company_id, companies!inner(slug, is_active)')
+                  .select('id, company_id, status, companies!inner(slug, is_active)')
                   .eq('user_id', user.id)
                   .eq('companies.slug', potentialSlug)
-                  .eq('is_active', true)
+                  .in('status', ['active', 'invited'])
+                  .eq('companies.is_active', true)
                   .maybeSingle()
                 if (member) isMember = true
               } catch {}

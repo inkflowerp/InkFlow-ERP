@@ -1000,7 +1000,27 @@ export class AuthService {
       if (profile && profile.is_active) {
         // Check if user already has an established company membership
         try {
-          const membership = await TenantRepository.resolveUserMembership(profile.id)
+          let membership = await TenantRepository.resolveUserMembership(profile.id)
+
+          // Fallback: Check if there is an invited company_user or employee record matching email
+          if (!membership && normalizedEmail) {
+            const { data: matchedCU } = await (admin as any)
+              .from('company_users')
+              .select('id, company_id')
+              .ilike('invited_email', normalizedEmail)
+              .limit(1)
+              .maybeSingle()
+
+            if (matchedCU) {
+              await (admin as any)
+                .from('company_users')
+                .update({ user_id: profile.id, status: 'active', updated_at: new Date().toISOString() })
+                .eq('id', matchedCU.id)
+              TenantRepository.invalidateMembershipCache(profile.id)
+              membership = await TenantRepository.resolveUserMembership(profile.id)
+            }
+          }
+
           if (membership && membership.company) {
             const { company, companyUser, effectivePermissions, primaryRole } = membership
             const isStaff = primaryRole !== 'business_owner' && primaryRole !== 'platform_owner'
@@ -1255,6 +1275,31 @@ export class AuthService {
       const verifyRes = await AuthEmailService.verifyToken(token, email, 'registration')
 
       if (!verifyRes.success) {
+        // Auto-recovery: If token was already consumed (e.g. double click, link preview prefetch, page refresh),
+        // check if user/email is verified and has an active tenant membership.
+        const candidateEmail = (verifyRes.email || email || '').trim().toLowerCase()
+        if (
+          verifyRes.error?.includes('already been used') &&
+          candidateEmail
+        ) {
+          const statusRes = await this.checkRegistrationVerificationStatus(candidateEmail)
+          if (statusRes.success && statusRes.data?.isVerified && statusRes.data.session) {
+            return {
+              success: true,
+              data: {
+                userId: statusRes.data.session.userId,
+                session: statusRes.data.session,
+                requiresOnboarding: Boolean(statusRes.data.requiresOnboarding),
+              },
+              message: 'Account verified and active.',
+            }
+          }
+          const finalRes = await this.finalizeRegistrationVerification(candidateEmail, verifyRes.userId)
+          if (finalRes.success && finalRes.data && !finalRes.data.requiresOnboarding) {
+            return finalRes
+          }
+        }
+
         return { success: false, error: verifyRes.error || 'This verification link has expired or is invalid.' }
       }
 
@@ -1328,7 +1373,57 @@ export class AuthService {
 
     // 3. Check if user already has an active company membership (already completed onboarding)
     try {
-      const membership = await TenantRepository.resolveUserMembership(userId)
+      let membership = await TenantRepository.resolveUserMembership(userId)
+
+      // Fallback: Check if there is an invited company_user or employee record matching email
+      if (!membership && email) {
+        const { data: matchedCU } = await (admin as any)
+          .from('company_users')
+          .select('id, company_id')
+          .ilike('invited_email', email)
+          .limit(1)
+          .maybeSingle()
+
+        if (matchedCU) {
+          await (admin as any)
+            .from('company_users')
+            .update({ user_id: userId, status: 'active', updated_at: new Date().toISOString() })
+            .eq('id', matchedCU.id)
+          TenantRepository.invalidateMembershipCache(userId)
+          membership = await TenantRepository.resolveUserMembership(userId)
+        }
+      }
+
+      if (!membership && email) {
+        const { data: matchedEmp } = await (admin as any)
+          .from('employees')
+          .select('id, company_id, role, portal_credentials, branch_id')
+          .or(`email.ilike.${email},portal_credentials->>email.ilike.${email}`)
+          .limit(1)
+          .maybeSingle()
+
+        if (matchedEmp) {
+          await (admin as any)
+            .from('employees')
+            .update({ user_id: userId, updated_at: new Date().toISOString() })
+            .eq('id', matchedEmp.id)
+
+          const roleSlug = (matchedEmp.portal_credentials?.role || matchedEmp.role || 'operator').toLowerCase()
+          const resps = matchedEmp.portal_credentials?.responsibilities || [roleSlug]
+          await (admin as any).from('company_users').upsert({
+            company_id: matchedEmp.company_id,
+            user_id: userId,
+            branch_id: matchedEmp.branch_id || null,
+            invited_email: email,
+            status: 'active',
+            responsibilities: resps,
+            updated_at: new Date().toISOString(),
+          }, { onConflict: 'company_id,user_id' })
+          TenantRepository.invalidateMembershipCache(userId)
+          membership = await TenantRepository.resolveUserMembership(userId)
+        }
+      }
+
       if (membership && membership.company) {
         const { company, companyUser, effectivePermissions, primaryRole } = membership
         const isStaff = primaryRole !== 'business_owner' && primaryRole !== 'platform_owner'

@@ -540,7 +540,13 @@ export class AuthEmailService {
       }
 
       if (matchedRecord.isUsed) {
-        return { success: false, error: 'This verification link has already been used.' }
+        return {
+          success: false,
+          error: 'This verification link has already been used.',
+          userId: matchedRecord.userId || undefined,
+          email: matchedRecord.email,
+          purpose: matchedRecord.purpose,
+        }
       }
 
       if (now > matchedRecord.expiresAt) {
@@ -558,7 +564,6 @@ export class AuthEmailService {
       if (matchedRecord.purpose === 'registration') {
         this.testVerifiedEmails.add(matchedRecord.email.toLowerCase())
       }
-      this.testStore.delete(matchedKey)
 
       let resetToken: string | undefined = undefined
       if (matchedRecord.purpose === 'password_reset') {
@@ -613,7 +618,13 @@ export class AuthEmailService {
       }
 
       if (record.is_used) {
-        return { success: false, error: 'This verification link has already been used.' }
+        return {
+          success: false,
+          error: 'This verification link has already been used.',
+          userId: record.user_id || undefined,
+          email: record.email || normalizedEmail || undefined,
+          purpose: record.purpose,
+        }
       }
 
       if (new Date(record.expires_at).getTime() < now) {
@@ -637,7 +648,13 @@ export class AuthEmailService {
         .select('id')
 
       if (updateErr || !updatedRecords || updatedRecords.length === 0) {
-        return { success: false, error: 'This verification link has already been used.' }
+        return {
+          success: false,
+          error: 'This verification link has already been used.',
+          userId: record.user_id || undefined,
+          email: record.email || normalizedEmail || undefined,
+          purpose: record.purpose,
+        }
       }
 
       let resetToken: string | undefined = undefined

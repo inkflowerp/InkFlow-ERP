@@ -473,6 +473,13 @@ export async function verifyRegistrationTokenAction(token: string, email?: strin
     return { success: false, error: 'Verification token is required' }
   }
 
+  // 1. Session Isolation: Purge any active owner/stale session cookies before verifying invited user
+  await clearAllAuthCookies()
+  try {
+    const supabase = await createClient()
+    await supabase.auth.signOut()
+  } catch {}
+
   const result = await AuthService.verifyRegistrationToken(token, email)
   if (!result.success || !result.data) {
     return result
@@ -503,6 +510,18 @@ export async function checkEmailVerificationStatusAction(email: string) {
     const session = result.data.session
     const cookieOpts = await getCookieOptions()
     const cookieStore = await getCookieStore()
+
+    // Ensure stale session from another account is purged
+    const existingCookie = cookieStore.get(TENANT_SESSION_COOKIE)?.value
+    if (existingCookie) {
+      try {
+        const existingSession = await verifySessionToken<TenantSessionData>(existingCookie)
+        if (existingSession && existingSession.userEmail?.toLowerCase() !== email.toLowerCase()) {
+          await clearAllAuthCookies()
+        }
+      } catch {}
+    }
+
     const signedSession = await signSessionToken(session, '7d')
     cookieStore.set(TENANT_SESSION_COOKIE, signedSession, cookieOpts)
 

@@ -134,6 +134,16 @@ function VerifyEmailForm() {
               : undefined
             handleVerifiedSuccess(true, dest)
           } else {
+            if (email) {
+              try {
+                const checkRes = await checkEmailVerificationStatusAction(email)
+                if (checkRes.success && checkRes.data?.isVerified) {
+                  const dest = checkRes.data.destinationUrl || ((checkRes.data as any)?.session?.companySlug ? getTenantLink((checkRes.data as any).session.companySlug, '/dashboard') : undefined)
+                  handleVerifiedSuccess(true, dest)
+                  return
+                }
+              } catch {}
+            }
             setError(res.error || 'Failed to verify verification link.')
           }
         } catch (e: any) {

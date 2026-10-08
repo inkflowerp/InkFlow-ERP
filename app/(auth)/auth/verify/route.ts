@@ -23,6 +23,33 @@ export async function GET(request: Request) {
     const verifyRes = await AuthEmailService.verifyToken(token, email)
 
     if (!verifyRes.success) {
+      const candidateEmail = (verifyRes.email || email || '').trim().toLowerCase()
+      if (verifyRes.error?.includes('already been used') && candidateEmail) {
+        // Auto-recover already used registration token into active session
+        const statusRes = await AuthService.checkRegistrationVerificationStatus(candidateEmail)
+        if (statusRes.success && statusRes.data?.isVerified && statusRes.data.session) {
+          const session = statusRes.data.session
+          const destination =
+            session.companySlug && !statusRes.data.requiresOnboarding
+              ? getTenantLink(session.companySlug, '/dashboard')
+              : `${origin}/onboarding`
+
+          const requestHost = request.headers.get('x-forwarded-host') || request.headers.get('host') || undefined
+          const cookieOpts = getAuthCookieOptions(requestHost)
+          const redirectResponse = NextResponse.redirect(destination)
+          redirectResponse.cookies.set(TENANT_SESSION_COOKIE, encodeURIComponent(JSON.stringify(session)), {
+            path: cookieOpts.path,
+            maxAge: cookieOpts.maxAge,
+            sameSite: cookieOpts.sameSite,
+            secure: cookieOpts.secure,
+            domain: cookieOpts.domain,
+            httpOnly: cookieOpts.httpOnly ?? false,
+          })
+          await establishResponseSession(redirectResponse, candidateEmail, requestHost)
+          return redirectResponse
+        }
+      }
+
       const errorMsg = encodeURIComponent(verifyRes.error || 'This verification link has expired or is invalid.')
       if (email) {
         return NextResponse.redirect(`${origin}/verify?email=${encodeURIComponent(email)}&error=${errorMsg}`)

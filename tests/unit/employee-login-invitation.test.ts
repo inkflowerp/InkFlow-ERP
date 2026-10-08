@@ -16,6 +16,7 @@ import {
   generateSafeEmployeeUsername,
 } from '../../lib/auth/identifier-helper.ts'
 import { AuthService } from '../../services/auth.service.ts'
+import { TenantRepository } from '../../lib/repositories/tenant.repository.ts'
 import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 
 describe('Employee Login & Invitation Lifecycle Unit Tests', () => {
@@ -370,6 +371,63 @@ describe('Employee Login & Invitation Lifecycle Unit Tests', () => {
     it('resolves employee ID badge to registered auth email', async () => {
       const email = await AuthService.resolveLoginEmail('EMP-999')
       assert.strictEqual(email, 'tariq@printworks.com')
+    })
+  })
+
+  describe('7. Invitation Token Verification & Auto-Recovery', () => {
+    it('verifies employee invitation token and auto-recovers if already consumed', async () => {
+      const email = 'designer.invited@printflow.test'
+      const origResolve = (TenantRepository as any).resolveUserMembership
+
+      try {
+        (TenantRepository as any).resolveUserMembership = async (userId: string) => {
+          return {
+            company: {
+              id: 'comp-invite-123',
+              name: 'Design Studio Pro',
+              slug: 'design-studio',
+              is_active: true,
+            },
+            companyUser: {
+              id: 'cu-invite-123',
+              user_id: userId,
+              company_id: 'comp-invite-123',
+              status: 'active',
+              responsibilities: ['designer'],
+              profile: {
+                full_name: 'Invited Designer',
+              },
+            },
+            effectivePermissions: ['design.view', 'design.edit'],
+            primaryRole: 'designer',
+          }
+        }
+
+        // 1. Create invitation token
+        const record = await AuthEmailService.createVerificationRecord({
+          email,
+          purpose: 'registration',
+          ttlSeconds: 86400 * 7,
+        })
+        assert.ok('token' in record)
+        const token = (record as any).token
+
+        // 2. First verification succeeds
+        const firstRes = await AuthService.verifyRegistrationToken(token, email)
+        assert.strictEqual(firstRes.success, true)
+        assert.strictEqual(firstRes.data?.requiresOnboarding, false)
+        assert.strictEqual(firstRes.data?.session?.companySlug, 'design-studio')
+        assert.strictEqual(firstRes.data?.session?.role, 'graphic_designer')
+
+        // 3. Second verification (already consumed token) auto-recovers into active session
+        const secondRes = await AuthService.verifyRegistrationToken(token, email)
+        assert.strictEqual(secondRes.success, true)
+        assert.strictEqual(secondRes.data?.requiresOnboarding, false)
+        assert.strictEqual(secondRes.data?.session?.companySlug, 'design-studio')
+        assert.strictEqual(secondRes.data?.session?.role, 'graphic_designer')
+      } finally {
+        (TenantRepository as any).resolveUserMembership = origResolve
+      }
     })
   })
 })
