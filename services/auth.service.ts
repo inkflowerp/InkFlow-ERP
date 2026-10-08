@@ -305,6 +305,100 @@ export class AuthService {
   }
 
   /**
+   * Checks whether a user profile is an abandoned orphan (0 company user memberships, 0 active employee records, 0 platform admin accounts).
+   */
+  static async isOrphanUserProfile(userId: string): Promise<boolean> {
+    try {
+      const admin = createAdminClient()
+      const { data: cuList } = await (admin as any)
+        .from('company_users')
+        .select('id')
+        .eq('user_id', userId)
+        .limit(1)
+      if (cuList && cuList.length > 0) return false
+
+      const { data: empList } = await (admin as any)
+        .from('employees')
+        .select('id')
+        .eq('user_id', userId)
+        .neq('status', 'terminated')
+        .limit(1)
+      if (empList && empList.length > 0) return false
+
+      const { data: platUser } = await (admin as any)
+        .from('platform_users')
+        .select('id')
+        .eq('id', userId)
+        .limit(1)
+        .maybeSingle()
+      if (platUser) return false
+
+      return true
+    } catch {
+      return false
+    }
+  }
+
+  /**
+   * Permanently purges an orphaned user profile and releases its email, phone, and username from auth.
+   */
+  static async purgeOrphanUserProfile(userId: string): Promise<void> {
+    try {
+      const admin = createAdminClient()
+      try {
+        await (admin as any).from('audit_logs').update({ user_id: null }).eq('user_id', userId)
+      } catch {}
+
+      try {
+        const { data: cus } = await (admin as any).from('company_users').select('id').eq('user_id', userId)
+        if (cus && cus.length > 0) {
+          for (const cu of cus) {
+            await (admin as any).from('user_roles').delete().eq('company_user_id', cu.id)
+          }
+          await (admin as any).from('company_users').delete().eq('user_id', userId)
+        }
+      } catch {}
+
+      try {
+        await (admin as any).from('user_profiles').delete().eq('id', userId)
+      } catch {}
+      try {
+        await (admin as any).from('profiles').delete().eq('id', userId)
+      } catch {}
+
+      try {
+        const { error: delErr } = await admin.auth.admin.deleteUser(userId)
+        if (delErr) {
+          await admin.auth.admin.updateUserById(userId, {
+            email: `deleted_${Date.now()}_${Math.random().toString(36).slice(2, 6)}@deleted.printflow.local`,
+            phone: '',
+            user_metadata: { is_deleted: true, deleted_at: new Date().toISOString() },
+          })
+        }
+      } catch {
+        try {
+          await admin.auth.admin.updateUserById(userId, {
+            email: `deleted_${Date.now()}_${Math.random().toString(36).slice(2, 6)}@deleted.printflow.local`,
+            phone: '',
+            user_metadata: { is_deleted: true, deleted_at: new Date().toISOString() },
+          })
+        } catch {}
+      }
+
+      try {
+        const { PrintFlowDataStore, STORAGE_KEYS } = await import('../lib/db/data-store.ts')
+        const users = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.REGISTERED_USERS) || []
+        PrintFlowDataStore.set(
+          STORAGE_KEYS.REGISTERED_USERS,
+          users.filter((u) => u.id !== userId)
+        )
+      } catch {}
+    } catch (e) {
+      console.warn('[AuthService.purgeOrphanUserProfile] Warning during orphan purge:', e)
+    }
+  }
+
+  /**
    * Authoritative duplicate check across user accounts, employee profiles, and credentials.
    * Ensures no duplicate email, username, or phone number exists anywhere in the application.
    */
@@ -328,11 +422,16 @@ export class AuthService {
         }
         const { data: prof } = await q.limit(1).maybeSingle()
         if (prof) {
-          return {
-            available: false,
-            conflictField: 'email',
-            error: `Email address '${email}' is already registered to another user account.`,
-            errorBn: `ইমেইল '${email}' ইতিমধ্যে অন্য ব্যবহারকারী অ্যাকাউন্টে নিবন্ধিত আছে।`,
+          const isOrphan = await AuthService.isOrphanUserProfile(prof.id)
+          if (isOrphan) {
+            await AuthService.purgeOrphanUserProfile(prof.id)
+          } else {
+            return {
+              available: false,
+              conflictField: 'email',
+              error: `Email address '${email}' is already registered to another user account.`,
+              errorBn: `ইমেইল '${email}' ইতিমধ্যে অন্য ব্যবহারকারী অ্যাকাউন্টে নিবন্ধিত আছে।`,
+            }
           }
         }
       } catch {}
@@ -341,13 +440,13 @@ export class AuthService {
       try {
         let q = (admin as any)
           .from('employees')
-          .select('id, email, portal_credentials')
+          .select('id, email, portal_credentials, status')
           .or(`email.ilike.${email},portal_credentials->>email.ilike.${email}`)
         if (params.excludeEmployeeId) {
           q = q.neq('id', params.excludeEmployeeId)
         }
         const { data: emp } = await q.limit(1).maybeSingle()
-        if (emp) {
+        if (emp && emp.status !== 'terminated') {
           return {
             available: false,
             conflictField: 'email',
@@ -364,6 +463,7 @@ export class AuthService {
         const empConflict = emps.find(
           (e) =>
             e.id !== params.excludeEmployeeId &&
+            e.status !== 'terminated' &&
             (e.email?.toLowerCase() === email || e.portal_credentials?.email?.toLowerCase() === email)
         )
         if (empConflict) {
@@ -417,11 +517,16 @@ export class AuthService {
             (params.phone && prof.phone === params.phone) ||
             (params.email && prof.email && prof.email.toLowerCase() === params.email.toLowerCase())
           if (!isSameUser) {
-            return {
-              available: false,
-              conflictField: 'username',
-              error: `Username '${username}' is already taken. Please choose another username.`,
-              errorBn: `ইউজারনেম '${username}' ইতিমধ্যে ব্যবহৃত হচ্ছে। অন্য একটি ইউজারনেম নির্বাচন করুন।`,
+            const isOrphan = await AuthService.isOrphanUserProfile(prof.id)
+            if (isOrphan) {
+              await AuthService.purgeOrphanUserProfile(prof.id)
+            } else {
+              return {
+                available: false,
+                conflictField: 'username',
+                error: `Username '${username}' is already taken. Please choose another username.`,
+                errorBn: `ইউজারনেম '${username}' ইতিমধ্যে ব্যবহৃত হচ্ছে। অন্য একটি ইউজারনেম নির্বাচন করুন।`,
+              }
             }
           }
         }
@@ -431,13 +536,13 @@ export class AuthService {
       try {
         let q = (admin as any)
           .from('employees')
-          .select('id, portal_credentials')
+          .select('id, portal_credentials, status')
           .filter('portal_credentials->>username', 'ilike', username)
         if (params.excludeEmployeeId) {
           q = q.neq('id', params.excludeEmployeeId)
         }
         const { data: emp } = await q.limit(1).maybeSingle()
-        if (emp) {
+        if (emp && emp.status !== 'terminated') {
           return {
             available: false,
             conflictField: 'username',
@@ -454,6 +559,7 @@ export class AuthService {
         const empConflict = emps.find(
           (e) =>
             e.id !== params.excludeEmployeeId &&
+            e.status !== 'terminated' &&
             e.portal_credentials?.username?.toLowerCase() === username
         )
         if (empConflict) {
@@ -501,11 +607,16 @@ export class AuthService {
           }
           const { data: prof } = await q.limit(1).maybeSingle()
           if (prof) {
-            return {
-              available: false,
-              conflictField: 'phone',
-              error: `Phone number '${params.phone}' is already associated with an existing user account.`,
-              errorBn: `মোবাইল নম্বর '${params.phone}' ইতিমধ্যে অন্য একটি ব্যবহারকারী অ্যাকাউন্টে যুক্ত আছে।`,
+            const isOrphan = await AuthService.isOrphanUserProfile(prof.id)
+            if (isOrphan) {
+              await AuthService.purgeOrphanUserProfile(prof.id)
+            } else {
+              return {
+                available: false,
+                conflictField: 'phone',
+                error: `Phone number '${params.phone}' is already associated with an existing user account.`,
+                errorBn: `মোবাইল নম্বর '${params.phone}' ইতিমধ্যে অন্য একটি ব্যবহারকারী অ্যাকাউন্টে যুক্ত আছে।`,
+              }
             }
           }
         } catch {}
@@ -514,13 +625,13 @@ export class AuthService {
         try {
           let q = (admin as any)
             .from('employees')
-            .select('id, mobile')
+            .select('id, mobile, status')
             .in('mobile', candidates)
           if (params.excludeEmployeeId) {
             q = q.neq('id', params.excludeEmployeeId)
           }
           const { data: emp } = await q.limit(1).maybeSingle()
-          if (emp) {
+          if (emp && emp.status !== 'terminated') {
             return {
               available: false,
               conflictField: 'phone',

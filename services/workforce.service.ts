@@ -949,22 +949,245 @@ export class WorkforceService {
 
   static async deleteEmployee(id: string, companyId: string, actorId?: string, actorName = 'Admin') {
     const existing = await WorkforceRepository.getEmployeeById(id, companyId)
+    const admin = createAdminClient()
 
-    // Clean up associated company_users login if present
-    const targetUserId = existing?.user_id
-    if (targetUserId) {
+    // 1. Determine user ID associated with this employee
+    let targetUserId = existing?.user_id || existing?.portal_credentials?.user_id || null
+
+    const candidateEmails = Array.from(
+      new Set(
+        [existing?.email, existing?.portal_credentials?.email]
+          .filter((em): em is string => Boolean(em && em.includes('@') && !em.endsWith('.local') && !em.endsWith('.printflow.bd')))
+          .map((em) => em.trim().toLowerCase())
+      )
+    )
+    const candidatePhone = existing?.mobile?.trim() || null
+
+    // If no explicit user_id on record, search user_profiles by email or phone
+    if (!targetUserId) {
       try {
-        const admin = createAdminClient()
+        if (candidateEmails.length > 0) {
+          const { data: profByEmail } = await (admin as any)
+            .from('user_profiles')
+            .select('id')
+            .in('email', candidateEmails)
+            .limit(1)
+            .maybeSingle()
+          if (profByEmail?.id) {
+            targetUserId = profByEmail.id
+          }
+        }
+        if (!targetUserId && candidatePhone) {
+          const { data: profByPhone } = await (admin as any)
+            .from('user_profiles')
+            .select('id')
+            .eq('phone', candidatePhone)
+            .limit(1)
+            .maybeSingle()
+          if (profByPhone?.id) {
+            targetUserId = profByPhone.id
+          }
+        }
+      } catch (e) {
+        console.warn('[WorkforceService.deleteEmployee] User lookup warning:', e)
+      }
+    }
+
+    // 2. Clean up company user roles & company_users membership for this company
+    const userIdsToClean = new Set<string>()
+    if (targetUserId) userIdsToClean.add(targetUserId)
+
+    // Also look up any company_users for this company that matched the employee's email
+    try {
+      if (candidateEmails.length > 0) {
+        const { data: cusByEmail } = await (admin as any)
+          .from('company_users')
+          .select('id, user_id')
+          .eq('company_id', companyId)
+          .in('invited_email', candidateEmails)
+        if (cusByEmail && cusByEmail.length > 0) {
+          for (const cu of cusByEmail) {
+            if (cu.user_id) userIdsToClean.add(cu.user_id)
+            await (admin as any).from('user_roles').delete().eq('company_user_id', cu.id)
+            await (admin as any).from('company_users').delete().eq('id', cu.id)
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('[WorkforceService.deleteEmployee] company_users email search warning:', e)
+    }
+
+    for (const uid of Array.from(userIdsToClean)) {
+      try {
+        // Delete user roles linked to company_users in this company
+        const { data: cus } = await (admin as any)
+          .from('company_users')
+          .select('id')
+          .eq('company_id', companyId)
+          .eq('user_id', uid)
+        if (cus && cus.length > 0) {
+          for (const cu of cus) {
+            await (admin as any).from('user_roles').delete().eq('company_user_id', cu.id)
+          }
+        }
+
+        // Delete company_users for this company
         await (admin as any)
           .from('company_users')
           .delete()
           .eq('company_id', companyId)
-          .eq('user_id', targetUserId)
+          .eq('user_id', uid)
+
+        // Check if user belongs to ANY other companies, is platform user, or linked to another active employee
+        const { data: otherComps } = await (admin as any)
+          .from('company_users')
+          .select('id')
+          .eq('user_id', uid)
+        const { data: otherEmps } = await (admin as any)
+          .from('employees')
+          .select('id')
+          .eq('user_id', uid)
+          .neq('id', existing?.id || id)
+          .neq('status', 'terminated')
+        const { data: platUser } = await (admin as any)
+          .from('platform_users')
+          .select('id')
+          .eq('id', uid)
+          .maybeSingle()
+
+        const isOnlyThisEmployee =
+          (!otherComps || otherComps.length === 0) &&
+          (!otherEmps || otherEmps.length === 0) &&
+          !platUser
+
+        if (isOnlyThisEmployee) {
+          // Release / nullify audit_logs.user_id so FK doesn't prevent auth deletion
+          try {
+            await (admin as any).from('audit_logs').update({ user_id: null }).eq('user_id', uid)
+          } catch {}
+
+          // Delete from user_profiles & profiles
+          try {
+            await (admin as any).from('user_profiles').delete().eq('id', uid)
+          } catch {}
+          try {
+            await (admin as any).from('profiles').delete().eq('id', uid)
+          } catch {}
+
+          // Delete or scramble in Supabase Auth to completely liberate email and phone
+          try {
+            const { error: delAuthErr } = await admin.auth.admin.deleteUser(uid)
+            if (delAuthErr) {
+              console.warn('[WorkforceService.deleteEmployee] deleteUser fallback:', delAuthErr.message)
+              await admin.auth.admin.updateUserById(uid, {
+                email: `deleted_${Date.now()}_${Math.random().toString(36).slice(2, 7)}@deleted.printflow.local`,
+                phone: '',
+                user_metadata: { is_deleted: true, deleted_at: new Date().toISOString() },
+              })
+            }
+          } catch (authErr) {
+            console.warn('[WorkforceService.deleteEmployee] Auth purge fallback:', authErr)
+            try {
+              await admin.auth.admin.updateUserById(uid, {
+                email: `deleted_${Date.now()}_${Math.random().toString(36).slice(2, 7)}@deleted.printflow.local`,
+                phone: '',
+                user_metadata: { is_deleted: true, deleted_at: new Date().toISOString() },
+              })
+            } catch {}
+          }
+        }
       } catch (cuErr) {
-        console.warn('[WorkforceService.deleteEmployee] company_users cleanup warning:', cuErr)
+        console.warn('[WorkforceService.deleteEmployee] company_users / auth cleanup warning:', cuErr)
       }
     }
 
+    // 3. Purge any orphan user_profiles matching candidateEmails or candidatePhone
+    for (const em of candidateEmails) {
+      try {
+        const { data: profs } = await (admin as any)
+          .from('user_profiles')
+          .select('id')
+          .ilike('email', em)
+        if (profs && profs.length > 0) {
+          for (const p of profs) {
+            const { data: remainingCus } = await (admin as any).from('company_users').select('id').eq('user_id', p.id)
+            const { data: remainingEmps } = await (admin as any).from('employees').select('id').eq('user_id', p.id).neq('id', existing?.id || id).neq('status', 'terminated')
+            const { data: platCheck } = await (admin as any).from('platform_users').select('id').eq('id', p.id).maybeSingle()
+            if ((!remainingCus || remainingCus.length === 0) && (!remainingEmps || remainingEmps.length === 0) && !platCheck) {
+              await (admin as any).from('audit_logs').update({ user_id: null }).eq('user_id', p.id)
+              await (admin as any).from('user_profiles').delete().eq('id', p.id)
+              await (admin as any).from('profiles').delete().eq('id', p.id)
+              try {
+                await admin.auth.admin.deleteUser(p.id)
+              } catch {
+                try {
+                  await admin.auth.admin.updateUserById(p.id, {
+                    email: `deleted_${Date.now()}@deleted.printflow.local`,
+                    phone: '',
+                  })
+                } catch {}
+              }
+            }
+          }
+        }
+      } catch (e) {
+        console.warn('[WorkforceService.deleteEmployee] Email orphan purge warning:', e)
+      }
+    }
+
+    if (candidatePhone) {
+      try {
+        const { data: profsPhone } = await (admin as any)
+          .from('user_profiles')
+          .select('id')
+          .eq('phone', candidatePhone)
+        if (profsPhone && profsPhone.length > 0) {
+          for (const p of profsPhone) {
+            const { data: remainingCus } = await (admin as any).from('company_users').select('id').eq('user_id', p.id)
+            const { data: remainingEmps } = await (admin as any).from('employees').select('id').eq('user_id', p.id).neq('id', existing?.id || id).neq('status', 'terminated')
+            const { data: platCheck } = await (admin as any).from('platform_users').select('id').eq('id', p.id).maybeSingle()
+            if ((!remainingCus || remainingCus.length === 0) && (!remainingEmps || remainingEmps.length === 0) && !platCheck) {
+              await (admin as any).from('audit_logs').update({ user_id: null }).eq('user_id', p.id)
+              await (admin as any).from('user_profiles').delete().eq('id', p.id)
+              await (admin as any).from('profiles').delete().eq('id', p.id)
+              try {
+                await admin.auth.admin.deleteUser(p.id)
+              } catch {
+                try {
+                  await admin.auth.admin.updateUserById(p.id, { phone: '' })
+                } catch {}
+              }
+            }
+          }
+        }
+      } catch (e) {
+        console.warn('[WorkforceService.deleteEmployee] Phone orphan purge warning:', e)
+      }
+    }
+
+    // 4. Purge from PrintFlowDataStore memory/offline cache
+    try {
+      const regUsers = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.REGISTERED_USERS) || []
+      const filteredRegUsers = regUsers.filter((u) => {
+        if (targetUserId && u.id === targetUserId) return false
+        if (u.id && userIdsToClean.has(u.id)) return false
+        if (candidateEmails.some((em) => u.email?.toLowerCase() === em)) return false
+        if (candidatePhone && u.phone === candidatePhone) return false
+        return true
+      })
+      PrintFlowDataStore.set(STORAGE_KEYS.REGISTERED_USERS, filteredRegUsers)
+
+      const compUsers = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.COMPANY_USERS) || []
+      const filteredCompUsers = compUsers.filter((cu) => {
+        if (cu.company_id === companyId && ((targetUserId && cu.user_id === targetUserId) || userIdsToClean.has(cu.user_id))) return false
+        return true
+      })
+      PrintFlowDataStore.set(STORAGE_KEYS.COMPANY_USERS, filteredCompUsers)
+    } catch (storeErr) {
+      console.warn('[WorkforceService.deleteEmployee] PrintFlowDataStore purge warning:', storeErr)
+    }
+
+    // 5. Delete employee record from repository / database
     const deleted = await WorkforceRepository.deleteEmployee(id, companyId)
 
     if (existing) {
@@ -977,7 +1200,7 @@ export class WorkforceService {
         entity_type: 'employee',
         entity_id: id,
         before_state: existing as any,
-        reason: `Permanently deleted employee ${existing.name} (${existing.employee_id_number})`,
+        reason: `Permanently deleted employee ${existing.name} (${existing.employee_id_number}) and purged auth credentials`,
         created_at: new Date().toISOString(),
       })
     }
