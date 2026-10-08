@@ -430,12 +430,22 @@ export function getNavigationConfig(_tenantSlug?: string): NavSection[] {
               permission: { action: 'manage', resource: 'settings' },
             },
             {
-              key: 'settings_templates',
-              title: 'Print Formats',
-              titleBn: 'প্রিন্ট ফরম্যাট',
-              href: '/settings/documents',
+              key: 'settings_documents',
+              title: 'Documents',
+              titleBn: 'ডকুমেন্টস',
+              href: '/settings/document-templates',
               icon: 'FileText',
               permission: { action: 'view', resource: 'settings' },
+              children: [
+                {
+                  key: 'settings_document_templates',
+                  title: 'Document Templates',
+                  titleBn: 'ডকুমেন্ট টেমপ্লেট',
+                  href: '/settings/document-templates',
+                  icon: 'Layers',
+                  permission: { action: 'view', resource: 'settings' },
+                },
+              ],
             },
             {
               key: 'settings_automations',

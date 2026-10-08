@@ -72,11 +72,12 @@ export const SETTINGS_11_GROUPS: SettingsGroupItem[] = [
   },
   {
     id: 'documents',
-    href: '/settings/documents',
-    titleEn: 'Print & Documents',
-    titleBn: 'প্রিন্ট ও ডকুমেন্ট লেআউট',
-    descEn: 'Delivery challan format, work orders & print terms',
-    descBn: 'ডেলিভারি চালান, ওয়ার্ক অর্ডার ফরম্যাট ও প্রিন্ট নীতিমালা',
+    href: '/settings/document-templates',
+    aliases: ['/settings/documents'],
+    titleEn: 'Document Templates',
+    titleBn: 'ডকুমেন্ট টেমপ্লেট',
+    descEn: 'A4 letterhead, safe area padding, quotation & invoice layout',
+    descBn: 'এ৪ লেটারহেড, প্যাডিং সেফ এরিয়া, কোটেশন ও ইনভয়েস লেআউট',
   },
   {
     id: 'document-numbering',

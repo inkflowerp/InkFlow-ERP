@@ -284,6 +284,35 @@ export default function DocumentDesignerPage() {
           }
         />
 
+        {/* Link Banner to New Document Template Designer */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3.5 rounded-xl bg-primary/10 border border-primary/20 text-xs">
+          <div className="flex items-center gap-2.5 text-foreground font-medium min-w-0">
+            <div className="p-1.5 rounded-lg bg-primary/20 text-primary shrink-0">
+              <Layers className="h-4 w-4" />
+            </div>
+            <div>
+              <p className="font-bold text-foreground">
+                {tBilingual(
+                  'A4 Document Template & Letterhead Designer',
+                  'এ৪ ডকুমেন্ট টেমপ্লেট ও লেটারহেড ডিজাইনার'
+                )}
+              </p>
+              <p className="text-muted-foreground text-xs">
+                {tBilingual(
+                  'Customize A4 margins, safe area padding, company letterhead & live preview.',
+                  'এ৪ প্যাডিং, সেফ এরিয়া, লেটারহেড আপলোড ও লাইভ প্রিভিউ সাজান।'
+                )}
+              </p>
+            </div>
+          </div>
+          <Link
+            href={getTenantNavHref('/settings/document-templates', pathname, slug)}
+            className="px-3.5 py-1.5 rounded-lg bg-primary text-primary-foreground font-bold text-xs hover:bg-primary-hover shrink-0 transition-colors shadow-xs"
+          >
+            {tBilingual('Open Designer →', 'ডিজাইনার খুলুন →')}
+          </Link>
+        </div>
+
         {/* Notification */}
         {notification && (
           <div className="p-3 bg-success-surface text-success rounded-lg text-xs font-semibold flex items-center gap-2 border border-success-border bg-success-surface text-success border-success-border animate-in fade-in-0">
