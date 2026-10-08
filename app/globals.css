@@ -680,10 +680,18 @@ pre,
     border: 2px solid #cbd5e1 !important;
     border-radius: 16px !important;
     box-shadow: none !important;
+    font-size: 10.5pt !important;
     page-break-inside: avoid !important;
     break-inside: avoid !important;
     page-break-after: avoid !important;
     break-after: avoid !important;
+  }
+
+  [data-qr-poster-canvas="true"] p,
+  [data-qr-poster-canvas="true"] span,
+  [data-qr-poster-canvas="true"] li,
+  [data-qr-poster-canvas="true"] div {
+    font-size: max(10pt, inherit);
   }
 
   /* 3. Document Canvas Full-Width Unwrapping */

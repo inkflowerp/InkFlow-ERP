@@ -225,25 +225,27 @@ export function PrintableQrPoster({
         data-qr-poster-canvas="true"
         className="bg-card text-foreground print:bg-white print:text-black p-6 sm:p-10 rounded-2xl border border-border shadow-xs max-w-xl mx-auto print:max-w-none print:w-full print:h-[275mm] print:max-h-[275mm] print:p-7 print:border-2 print:border-border print:rounded-2xl print:shadow-none print:flex print:flex-col print:justify-between print:space-y-0 space-y-5"
       >
-        {/* Poster Header with Organization Logo & Identity */}
-        <div className="text-center space-y-3 print:space-y-2 border-b-2 border-border pb-5 print:pb-4">
-          {logoUrl ? (
-            <div className="flex justify-center">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
+        {/* Poster Header: Logo/Icon in Left, Company Name in Right */}
+        <div className="flex items-center justify-between gap-4 border-b-2 border-border pb-5 print:pb-4">
+          {/* Left: Organization Logo / Icon */}
+          <div className="shrink-0 flex items-center">
+            {logoUrl ? (
+              /* eslint-disable-next-line @next/next/no-img-element */
               <img
                 src={logoUrl}
                 alt={companyName}
-                className="h-12 sm:h-14 print:h-14 w-auto object-contain max-w-[240px]"
+                className="h-14 sm:h-16 print:h-16 w-auto object-contain max-w-[180px] sm:max-w-[220px]"
               />
-            </div>
-          ) : (
-            <div className="inline-flex items-center justify-center h-12 w-12 print:h-14 print:w-14 rounded-xl bg-primary/10 text-primary border border-primary/20 mx-auto">
-              <Building2 className="h-6 w-6 print:h-7 print:w-7" />
-            </div>
-          )}
+            ) : (
+              <div className="inline-flex items-center justify-center h-14 w-14 sm:h-16 sm:w-16 print:h-16 print:w-16 rounded-2xl bg-primary/10 text-primary border border-primary/20">
+                <Building2 className="h-7 w-7 sm:h-8 sm:w-8 print:h-8 print:w-8" />
+              </div>
+            )}
+          </div>
 
-          <div className="space-y-1">
-            <h1 className="text-2xl sm:text-3xl print:text-3xl font-black text-foreground print:text-black tracking-tight uppercase">
+          {/* Right: Company Name & Smart Attendance Terminal Badge */}
+          <div className="flex flex-col items-end text-right space-y-1 flex-1 min-w-0">
+            <h1 className="text-2xl sm:text-3xl print:text-3xl font-black text-foreground print:text-black tracking-tight uppercase leading-tight">
               {companyNameBn || companyName}
             </h1>
             {companyNameBn && companyName && (
@@ -251,29 +253,28 @@ export function PrintableQrPoster({
                 {companyName}
               </p>
             )}
-          </div>
-
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-primary/10 text-primary border border-primary/20 text-xs font-bold tracking-wider uppercase">
-            <ShieldCheck className="h-4 w-4 shrink-0" />
-            <span>PrintFlow • Smart Attendance Terminal</span>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary border border-primary/20 text-xs print:text-sm font-bold tracking-wider uppercase mt-0.5">
+              <ShieldCheck className="h-3.5 w-3.5 shrink-0" />
+              <span>PrintFlow • Smart Attendance Terminal</span>
+            </div>
           </div>
         </div>
 
         {/* Location Badge */}
         <div className="text-center space-y-1.5 print:space-y-1 py-1 print:py-2">
-          <span className="text-xs font-bold text-primary uppercase tracking-widest block">
+          <span className="text-xs print:text-sm font-bold text-primary uppercase tracking-widest block">
             Official Attendance Terminal (অফিসিয়াল হাজিরা পয়েন্ট)
           </span>
           <h2 className="text-xl sm:text-2xl print:text-3xl font-black text-foreground print:text-black tracking-tight">
             {location.name}
           </h2>
           {location.branch_name && (
-            <p className="text-xs sm:text-sm font-semibold text-foreground print:text-black">
+            <p className="text-xs sm:text-sm print:text-sm font-semibold text-foreground print:text-black">
               Branch: {location.branch_name}
             </p>
           )}
           {location.address && (
-            <p className="text-xs sm:text-sm text-muted-foreground print:text-black/70 flex items-center justify-center gap-1.5 max-w-md mx-auto">
+            <p className="text-xs sm:text-sm print:text-sm text-muted-foreground print:text-black/70 flex items-center justify-center gap-1.5 max-w-md mx-auto">
               <MapPin className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
               <span>{location.address}</span>
             </p>
@@ -303,7 +304,7 @@ export function PrintableQrPoster({
             <div className="inline-block px-3.5 py-1 bg-muted rounded-lg text-xs print:text-sm tabular-nums font-bold text-foreground print:text-black border border-border">
               Terminal Code: {terminalCode}
             </div>
-            <p className="text-xs print:text-xs text-muted-foreground print:text-black/70 font-medium">
+            <p className="text-xs print:text-sm text-muted-foreground print:text-black/70 font-medium">
               Geofence Radius: <strong className="text-foreground print:text-black">{location.radius_meters}m</strong>
               {location.latitude !== 0 && location.longitude !== 0 && (
                 <span> • GPS: {location.latitude.toFixed(4)}, {location.longitude.toFixed(4)}</span>
@@ -314,10 +315,10 @@ export function PrintableQrPoster({
 
         {/* Step-by-Step Instructions */}
         <div className="p-4 print:p-4 rounded-xl bg-muted/60 border border-border text-center space-y-2.5 print:space-y-2">
-          <h3 className="text-sm print:text-sm font-bold text-foreground print:text-black">
+          <h3 className="text-sm print:text-base font-bold text-foreground print:text-black">
             কিভাবে হাজিরা দিবেন? / How to Punch Attendance?
           </h3>
-          <ol className="text-xs print:text-xs text-muted-foreground print:text-black/80 space-y-1.5 print:space-y-1 text-left list-decimal list-inside font-medium max-w-md mx-auto">
+          <ol className="text-xs sm:text-sm print:text-sm text-muted-foreground print:text-black/80 space-y-1.5 print:space-y-1 text-left list-decimal list-inside font-medium max-w-md mx-auto">
             <li>স্মার্টফোনে <strong>PrintFlow</strong> অ্যাপ বা ব্রাউজারে লগইন করুন।</li>
             <li>মেনু থেকে <strong>&ldquo;Attendance&rdquo;</strong> অপশন সিলেক্ট করুন।</li>
             <li><strong>&ldquo;Scan QR&rdquo;</strong> বাটনে ট্যাপ করে ক্যামেরা দিয়ে এই কিউআর কোড স্ক্যান করুন।</li>
@@ -326,19 +327,19 @@ export function PrintableQrPoster({
         </div>
 
         {/* Security & Anti-Fraud Disclaimer */}
-        <div className="p-2.5 print:p-2 rounded-lg border border-border/80 bg-background text-center text-xs print:text-xs text-muted-foreground print:text-black/70">
+        <div className="p-2.5 print:p-2.5 rounded-lg border border-border/80 bg-background text-center text-xs sm:text-sm print:text-sm text-muted-foreground print:text-black/70">
           <p className="font-medium">
             নোটিশ: শুধুমাত্র অনুমোদিত কর্মস্থলের নির্ধারিত সীমানার মধ্যে এই কিউআর কার্যকর। অননুমোদিত ছবি তোলা বা প্রক্সি হাজিরা সম্পূর্ণ নিষিদ্ধ।
           </p>
         </div>
 
         {/* Footer Meta */}
-        <div className="pt-3 print:pt-3 border-t border-border flex items-center justify-between text-xs print:text-xs text-muted-foreground print:text-black/70 tabular-nums">
+        <div className="pt-3 print:pt-3 border-t border-border flex items-center justify-between text-xs sm:text-sm print:text-sm text-muted-foreground print:text-black/70 tabular-nums">
           <div>
             <span>Generated: {generatedDate}</span>
           </div>
           <div className="flex items-center gap-1.5 text-success font-bold">
-            <ShieldCheck className="h-3.5 w-3.5" />
+            <ShieldCheck className="h-4 w-4" />
             <span>Server Verified • Geofenced</span>
           </div>
         </div>
