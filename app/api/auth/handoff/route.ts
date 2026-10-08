@@ -63,6 +63,8 @@ export async function GET(request: NextRequest) {
       httpOnly: cookieOpts.httpOnly,
     }
   );
+  redirectResponse.cookies.delete('printflow_support_tenant');
+  redirectResponse.cookies.delete('printflow_handoff_token');
 
   // 5. Establish Supabase Auth session on the tenant host (host-only Supabase auth cookies)
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || '';

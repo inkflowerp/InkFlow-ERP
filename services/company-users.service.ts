@@ -1060,9 +1060,23 @@ export class CompanyUsersService {
       // Step 8: Dispatch Invitation via AuthEmailService (Best-effort non-blocking)
       try {
         const { data: comp } = await (admin as any).from('companies').select('name').eq('id', params.companyId).maybeSingle()
+        const resolvedBaseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+        let inviteUrl = `${resolvedBaseUrl}/login`
+        try {
+          const rec = await AuthEmailService.createVerificationRecord({
+            email: normalizedEmail,
+            purpose: 'registration',
+            userId,
+            ttlSeconds: 86400 * 7,
+          })
+          if (!('error' in rec)) {
+            inviteUrl = `${resolvedBaseUrl}/verify?token=${rec.token}&email=${encodeURIComponent(normalizedEmail)}&purpose=registration`
+          }
+        } catch {}
+
         await AuthEmailService.sendUserInvitationEmail({
           email: normalizedEmail,
-          inviteUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/login`,
+          inviteUrl,
           companyName: comp?.name || 'PrintFlow',
           roleName: 'Team User',
           invitedByName: params.actorName || 'Administrator',

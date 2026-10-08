@@ -468,6 +468,37 @@ export async function verifyRegistrationOtpAction(email: string, otp: string) {
   return result
 }
 
+async function resolveVerificationDestinationUrl(session: TenantSessionData, requiresOnboarding?: boolean): Promise<string> {
+  if (requiresOnboarding || !session.companySlug) {
+    return '/onboarding'
+  }
+
+  const targetPath = '/dashboard'
+  const headerStore = await getHeaderStore()
+  const requestHost = headerStore.get('x-forwarded-host') || headerStore.get('host') || undefined
+  const { hostType, isLocalhost } = resolveHostname(requestHost)
+  const isLocalRequest = isLocalhost || (requestHost && (requestHost.includes('localhost') || requestHost.includes('127.0.0.1')))
+
+  if (isLocalRequest || hostType === 'tenant') {
+    return `/${session.companySlug}${targetPath}`
+  }
+
+  let destinationUrl = getTenantLink(session.companySlug, targetPath)
+  try {
+    const handoffToken = await createSubdomainHandoffToken({
+      userId: session.userId,
+      email: session.userEmail,
+      slug: session.companySlug,
+      sessionData: session,
+    })
+    destinationUrl = `${getTenantBaseUrl(session.companySlug)}/api/auth/handoff?token=${handoffToken}&next=${encodeURIComponent(targetPath)}`
+  } catch (handoffErr) {
+    console.warn('[resolveVerificationDestinationUrl] Failed to create subdomain handoff token:', handoffErr)
+  }
+
+  return destinationUrl
+}
+
 export async function verifyRegistrationTokenAction(token: string, email?: string | null) {
   if (!token) {
     return { success: false, error: 'Verification token is required' }
@@ -496,8 +527,16 @@ export async function verifyRegistrationTokenAction(token: string, email?: strin
     await AuthService.establishServerSession(session.userEmail, cookieOpts.domain)
   }
 
+  const destinationUrl = await resolveVerificationDestinationUrl(session, result.data.requiresOnboarding)
+
   await safeRevalidatePath('/', 'layout')
-  return result
+  return {
+    ...result,
+    data: {
+      ...result.data,
+      destinationUrl,
+    },
+  }
 }
 
 export async function checkEmailVerificationStatusAction(email: string) {
@@ -528,6 +567,16 @@ export async function checkEmailVerificationStatusAction(email: string) {
     // Establish Supabase SSR auth token cookies on server
     await AuthService.establishServerSession(email, cookieOpts.domain)
     await safeRevalidatePath('/', 'layout')
+
+    const destinationUrl = await resolveVerificationDestinationUrl(session, result.data.requiresOnboarding)
+
+    return {
+      ...result,
+      data: {
+        ...result.data,
+        destinationUrl,
+      },
+    }
   }
 
   return result

@@ -195,12 +195,13 @@ export class WorkforceService {
     let finalEmployee = created
     if (input.portal_credentials?.create_login) {
       try {
+        const comp = await TenantRepository.getCompanyById(created.company_id)
         const synced = await this.syncEmployeePortalLogin(
           created,
           input.portal_credentials,
           actorName,
-          undefined,
-          undefined,
+          comp?.name,
+          comp?.slug,
           undefined,
           Boolean(input.portal_credentials.send_invitation)
         )
@@ -317,12 +318,13 @@ export class WorkforceService {
 
     if (updates.portal_credentials && updated) {
       try {
+        const comp = await TenantRepository.getCompanyById(companyId)
         const synced = await this.syncEmployeePortalLogin(
           updated,
           updates.portal_credentials,
           actorName,
-          undefined,
-          undefined,
+          comp?.name,
+          comp?.slug,
           undefined,
           Boolean(updates.portal_credentials.send_invitation)
         )
@@ -467,6 +469,18 @@ export class WorkforceService {
     appUrl?: string,
     sendInvite = false
   ): Promise<{ employee: EmployeeRecord; inviteUrl?: string }> {
+    let resolvedCompanyName = companyName
+    let resolvedCompanySlug = companySlug
+    if ((!resolvedCompanyName || !resolvedCompanySlug) && employee.company_id) {
+      try {
+        const comp = await TenantRepository.getCompanyById(employee.company_id)
+        if (comp) {
+          resolvedCompanyName = resolvedCompanyName || comp.name
+          resolvedCompanySlug = resolvedCompanySlug || comp.slug
+        }
+      } catch {}
+    }
+
     if (!portalCreds || !portalCreds.create_login) {
       if (employee.user_id) {
         try {
@@ -500,7 +514,7 @@ export class WorkforceService {
       if (employee.email && employee.email.includes('@')) {
         email = employee.email.trim().toLowerCase()
       } else {
-        const cleanSlug = (companySlug || employee.company_id).replace(/^comp-/, '').replace(/^co-/, '').replace(/[^a-z0-9-]/g, '')
+        const cleanSlug = (resolvedCompanySlug || companySlug || employee.company_id).replace(/^comp-/, '').replace(/^co-/, '').replace(/[^a-z0-9-]/g, '')
         email = `${cleanUsername}@${cleanSlug || 'workspace'}.printflow.bd`
       }
     }
@@ -771,7 +785,7 @@ export class WorkforceService {
           await AuthEmailService.sendUserInvitationEmail({
             email,
             inviteUrl,
-            companyName: companyName || 'PrintFlow Commercial Press',
+            companyName: resolvedCompanyName || companyName || 'PrintFlow',
             roleName: roleDisplayName,
             invitedByName: actorName,
             tenantId: employee.company_id,

@@ -84,6 +84,7 @@ function VerifyEmailForm() {
             'printflow_last_verified_email',
             JSON.stringify({ email, destinationUrl: customDestination, timestamp: Date.now() })
           )
+          localStorage.removeItem('printflow_active_workspace')
         } catch {}
       }
 
@@ -92,8 +93,8 @@ function VerifyEmailForm() {
         if (!targetUrl) {
           try {
             const statusRes = await checkEmailVerificationStatusAction(email)
-            if (statusRes.success && statusRes.data?.destinationUrl) {
-              targetUrl = statusRes.data.destinationUrl
+            if (statusRes.success && (statusRes.data as any)?.destinationUrl) {
+              targetUrl = (statusRes.data as any).destinationUrl
             }
           } catch {}
         }
@@ -113,7 +114,14 @@ function VerifyEmailForm() {
       try {
         const res = await checkEmailVerificationStatusAction(email)
         if (res.success && res.data?.isVerified) {
-          handleVerifiedSuccess(true, res.data.destinationUrl)
+          const dest = (res.data as any)?.destinationUrl || (
+            (res.data as any)?.session?.companySlug && !(res.data as any)?.requiresOnboarding
+              ? (window.location.hostname.includes('localhost')
+                  ? `/${(res.data as any).session.companySlug}/dashboard`
+                  : getTenantLink((res.data as any).session.companySlug, '/dashboard'))
+              : undefined
+          )
+          handleVerifiedSuccess(true, dest)
         }
       } catch {}
     }
@@ -129,16 +137,26 @@ function VerifyEmailForm() {
         try {
           const res = await verifyRegistrationTokenAction(tokenParam, email)
           if (res.success) {
-            const dest = (res.data as any)?.session?.companySlug && !(res.data as any)?.requiresOnboarding
-              ? getTenantLink((res.data as any).session.companySlug, '/dashboard')
-              : undefined
+            const dest = (res.data as any)?.destinationUrl || (
+              (res.data as any)?.session?.companySlug && !(res.data as any)?.requiresOnboarding
+                ? (window.location.hostname.includes('localhost')
+                    ? `/${(res.data as any).session.companySlug}/dashboard`
+                    : getTenantLink((res.data as any).session.companySlug, '/dashboard'))
+                : undefined
+            )
             handleVerifiedSuccess(true, dest)
           } else {
             if (email) {
               try {
                 const checkRes = await checkEmailVerificationStatusAction(email)
                 if (checkRes.success && checkRes.data?.isVerified) {
-                  const dest = checkRes.data.destinationUrl || ((checkRes.data as any)?.session?.companySlug ? getTenantLink((checkRes.data as any).session.companySlug, '/dashboard') : undefined)
+                  const dest = (checkRes.data as any)?.destinationUrl || (
+                    (checkRes.data as any)?.session?.companySlug && !(checkRes.data as any)?.requiresOnboarding
+                      ? (window.location.hostname.includes('localhost')
+                          ? `/${(checkRes.data as any).session.companySlug}/dashboard`
+                          : getTenantLink((checkRes.data as any).session.companySlug, '/dashboard'))
+                      : undefined
+                  )
                   handleVerifiedSuccess(true, dest)
                   return
                 }

@@ -21,7 +21,8 @@ export function getTenantBaseUrl(slug: string, customRootDomain?: string): strin
 
   const isLocalhost =
     rootDomain.includes('localhost') ||
-    rootDomain.includes('127.0.0.1')
+    rootDomain.includes('127.0.0.1') ||
+    (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'))
 
   const effectiveRoot = (customRootDomain && !customRootDomain.includes('vercel.app'))
     ? rootDomain
@@ -29,7 +30,9 @@ export function getTenantBaseUrl(slug: string, customRootDomain?: string): strin
 
   if (!cleanSlug) {
     if (isLocalhost) {
-      const port = rootDomain.includes(':') ? `:${rootDomain.split(':')[1]}` : ':3000'
+      const port = (typeof window !== 'undefined' && window.location.port)
+        ? `:${window.location.port}`
+        : (rootDomain.includes(':') ? `:${rootDomain.split(':')[1]}` : ':3000')
       return `http://localhost${port}`
     }
     return `https://${effectiveRoot}`
@@ -37,7 +40,9 @@ export function getTenantBaseUrl(slug: string, customRootDomain?: string): strin
 
   // Handle localhost development: http://${cleanSlug}.localhost:3000
   if (isLocalhost) {
-    const port = rootDomain.includes(':') ? `:${rootDomain.split(':')[1]}` : ':3000'
+    const port = (typeof window !== 'undefined' && window.location.port)
+      ? `:${window.location.port}`
+      : (rootDomain.includes(':') ? `:${rootDomain.split(':')[1]}` : ':3000')
     return `http://${cleanSlug}.localhost${port}`
   }
 
