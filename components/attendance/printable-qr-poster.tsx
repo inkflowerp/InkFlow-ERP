@@ -1,7 +1,19 @@
 'use client'
 
-import React, { useRef } from 'react'
-import { Printer, Download, ShieldCheck, MapPin, QrCode } from 'lucide-react'
+import React, { useRef, useState } from 'react'
+import {
+  Printer,
+  Download,
+  ShieldCheck,
+  MapPin,
+  QrCode,
+  Copy,
+  Check,
+  AlertTriangle,
+  Building2,
+  FileImage,
+} from 'lucide-react'
+import QRCode from 'qrcode'
 import { Button } from '@/components/ui/button'
 import { QRCodeSVG } from './qr-code-svg'
 import { AttendanceLocationRecord } from '@/types/attendance.types'
@@ -9,163 +21,324 @@ import { useI18n } from '@/i18n/context'
 import { formatDate } from '@/lib/formatters'
 
 interface PrintableQrPosterProps {
- location: AttendanceLocationRecord
- companyName: string
- companyNameBn?: string | null
- logoUrl?: string | null
- onClose?: () => void
+  location: AttendanceLocationRecord
+  companyName: string
+  companyNameBn?: string | null
+  logoUrl?: string | null
+  onClose?: () => void
 }
 
 export function PrintableQrPoster({
- location,
- companyName,
- companyNameBn,
- logoUrl,
- onClose,
+  location,
+  companyName,
+  companyNameBn,
+  logoUrl,
+  onClose,
 }: PrintableQrPosterProps) {
- const { tBilingual } = useI18n()
- const posterRef = useRef<HTMLDivElement>(null)
+  const { tBilingual } = useI18n()
+  const posterRef = useRef<HTMLDivElement>(null)
+  const [copied, setCopied] = useState(false)
+  const [isDownloading, setIsDownloading] = useState(false)
 
- const activeToken = location.active_qr_token
- const qrValue = activeToken?.raw_token
-    ? `PRINTFLOW:ATT:v1:${activeToken.raw_token}`
-    : `PRINTFLOW:ATT:LOC:${location.id}`
+  const activeToken = location.active_qr_token
+  const isTokenActive = Boolean(activeToken && activeToken.is_active)
 
- const generatedDate = formatDate(
- activeToken?.created_at || new Date(),
+  const qrValue =
+    activeToken?.qr_payload_url ||
+    (activeToken?.raw_token ? `PRINTFLOW:ATT:v1:${activeToken.raw_token}` : null) ||
+    `PRINTFLOW:ATT:LOC:${location.id}`
+
+  const terminalCode =
+    activeToken?.token_prefix || `LOC-${location.id.slice(0, 8).toUpperCase()}`
+
+  const generatedDate = formatDate(
+    activeToken?.created_at || new Date(),
     'en',
     { day: '2-digit', month: 'short', year: 'numeric' }
   )
 
- const handlePrint = () => {
- window.print()
+  const handlePrint = () => {
+    window.print()
   }
 
- const handleDownloadSvg = () => {
- const svgElement = posterRef.current?.querySelector('svg')
- if (!svgElement) return
-
- const svgData = new XMLSerializer().serializeToString(svgElement)
- const blob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' })
- const url = URL.createObjectURL(blob)
- const link = document.createElement('a')
- link.href = url
- link.download = `${location.name.toLowerCase().replace(/[^a-z0-9]/g, '-')}-qr.svg`
- document.body.appendChild(link)
- link.click()
- document.body.removeChild(link)
- URL.revokeObjectURL(url)
+  const handleCopyCode = async () => {
+    try {
+      await navigator.clipboard.writeText(terminalCode)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch (err) {
+      console.warn('Copy failed', err)
+    }
   }
 
- return (
+  const handleDownloadSvg = async () => {
+    try {
+      setIsDownloading(true)
+      // Generate clean standalone SVG with proper XML declarations and error correction
+      const svgString = await QRCode.toString(qrValue, {
+        type: 'svg',
+        margin: 2,
+        errorCorrectionLevel: 'H',
+        color: {
+          dark: '#0F172A',
+          light: '#FFFFFF',
+        },
+      })
+
+      const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' })
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `${location.name.toLowerCase().replace(/[^a-z0-9]/g, '-')}-qr.svg`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(url)
+    } catch (err) {
+      console.error('Failed to export vector SVG:', err)
+    } finally {
+      setIsDownloading(false)
+    }
+  }
+
+  const handleDownloadPng = async () => {
+    try {
+      setIsDownloading(true)
+      // Generate high-resolution 1024x1024 PNG for print production
+      const dataUrl = await QRCode.toDataURL(qrValue, {
+        width: 1024,
+        margin: 2,
+        errorCorrectionLevel: 'H',
+        color: {
+          dark: '#0F172A',
+          light: '#FFFFFF',
+        },
+      })
+
+      const link = document.createElement('a')
+      link.href = dataUrl
+      link.download = `${location.name.toLowerCase().replace(/[^a-z0-9]/g, '-')}-qr-1024px.png`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+    } catch (err) {
+      console.error('Failed to export PNG:', err)
+    } finally {
+      setIsDownloading(false)
+    }
+  }
+
+  return (
     <div className="space-y-4">
-      {/* Top Action Bar (hidden when printing) */}
-      <div className="flex flex-wrap items-center justify-between gap-2 p-3 bg-surface-inset border border-border rounded-xl print:hidden">
-        <div className="flex items-center gap-2 text-muted-foreground text-xs">
-          <QrCode className="h-4 w-4 text-primary"/>
-          <span>{tBilingual('Printable QR Poster for Location Entrance', 'লোকেশন প্রবেশদ্বারের জন্য প্রিন্ট উপযোগী পোস্টার')}</span>
+      {/* Top Action Toolbar (hidden when printing) */}
+      <div className="flex flex-wrap items-center justify-between gap-2 p-3 bg-muted border border-border rounded-xl print:hidden">
+        <div className="flex items-center gap-2 text-muted-foreground text-xs font-medium">
+          <QrCode className="h-4 w-4 text-primary shrink-0" />
+          <span>
+            {tBilingual(
+              'Printable QR Poster for Location Entrance',
+              'লোকেশন প্রবেশদ্বারের জন্য প্রিন্ট উপযোগী পোস্টার'
+            )}
+          </span>
         </div>
-        <div className="flex items-center gap-2">
+
+        <div className="flex flex-wrap items-center gap-2">
           {onClose && (
-            <Button type="button"variant="outline"size="sm"onClick={onClose} className="h-8 text-xs border-border">
- Close
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={onClose}
+              className="h-8 text-xs border-border cursor-pointer"
+            >
+              {tBilingual('Close', 'বন্ধ করুন')}
             </Button>
           )}
+
           <Button
- type="button"variant="outline"onClick={handleDownloadSvg}
- className="h-8 text-xs border-primary/40 bg-card-elevated hover:bg-card-elevated text-primary font-bold flex items-center gap-1.5 cursor-pointer">
-            <Download className="h-3.5 w-3.5"/>
-            <span>Download SVG</span>
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={handleCopyCode}
+            className="h-8 text-xs border-border bg-card hover:bg-muted text-foreground flex items-center gap-1.5 cursor-pointer"
+          >
+            {copied ? (
+              <Check className="h-3.5 w-3.5 text-success" />
+            ) : (
+              <Copy className="h-3.5 w-3.5 text-muted-foreground" />
+            )}
+            <span>{copied ? 'Copied' : terminalCode}</span>
           </Button>
+
           <Button
- type="button"onClick={handlePrint}
- className="h-8 text-xs bg-primary hover:bg-primary/90 text-primary-foreground font-bold flex items-center gap-1.5 cursor-pointer shadow-xs">
-            <Printer className="h-3.5 w-3.5"/>
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={handleDownloadSvg}
+            disabled={isDownloading}
+            className="h-8 text-xs border-primary/40 bg-card hover:bg-muted text-primary font-bold flex items-center gap-1.5 cursor-pointer"
+          >
+            <Download className="h-3.5 w-3.5" />
+            <span>SVG (ভেক্টর)</span>
+          </Button>
+
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={handleDownloadPng}
+            disabled={isDownloading}
+            className="h-8 text-xs border-border bg-card hover:bg-muted text-foreground font-semibold flex items-center gap-1.5 cursor-pointer"
+          >
+            <FileImage className="h-3.5 w-3.5 text-muted-foreground" />
+            <span>PNG (হাই-রেজ)</span>
+          </Button>
+
+          <Button
+            type="button"
+            size="sm"
+            onClick={handlePrint}
+            className="h-8 text-xs bg-primary hover:bg-primary/90 text-primary-foreground font-bold flex items-center gap-1.5 cursor-pointer shadow-xs"
+          >
+            <Printer className="h-3.5 w-3.5" />
             <span>Print Poster (প্রিন্ট করুন)</span>
           </Button>
         </div>
       </div>
 
-      {/* Printable Poster Sheet (A4 format) */}
+      {!isTokenActive && (
+        <div className="p-3 bg-warning-surface border border-warning-border rounded-xl flex items-center gap-2 text-xs text-warning print:hidden">
+          <AlertTriangle className="h-4 w-4 shrink-0 text-warning" />
+          <span>
+            {tBilingual(
+              'Notice: No active rotating token detected for this location. Scan verification will fall back to location binding.',
+              'সতর্কতা: এই লোকেশনে সক্রিয় রোটেটিং টোকেন নেই। উপস্থিতি লোকেশন বাইন্ডিং দ্বারা যাচাই হবে।'
+            )}
+          </span>
+        </div>
+      )}
+
+      {/* Printable Poster Sheet (A4 format with isolation attribute) */}
       <div
- ref={posterRef}
- className="bg-card text-foreground print:bg-background print:text-foreground p-8 sm:p-12 rounded-xl border border-input shadow-lg max-w-lg mx-auto print:max-w-none print:w-full print:p-8 print:shadow-none print:border-none print:rounded-none">
-        {/* Poster Header */}
-        <div className="text-center space-y-2 border-b-2 border-border pb-6">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary border border-primary/20 text-xs font-bold tracking-wider uppercase">
-            <ShieldCheck className="h-4 w-4"/>
-            <span>PrintFlow • Smart Attendance</span>
+        ref={posterRef}
+        data-print-isolate="true"
+        data-qr-poster-canvas="true"
+        className="bg-card text-foreground print:bg-white print:text-black p-8 sm:p-12 rounded-xl border border-border shadow-xs max-w-xl mx-auto print:max-w-none print:w-full print:p-8 print:shadow-none print:border-none print:rounded-none space-y-6"
+      >
+        {/* Poster Header with Organization Logo & Identity */}
+        <div className="text-center space-y-3 border-b-2 border-border pb-6">
+          {logoUrl ? (
+            <div className="flex justify-center">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={logoUrl}
+                alt={companyName}
+                className="h-12 sm:h-14 w-auto object-contain max-w-[220px]"
+              />
+            </div>
+          ) : (
+            <div className="inline-flex items-center justify-center h-12 w-12 rounded-xl bg-primary/10 text-primary border border-primary/20 mx-auto">
+              <Building2 className="h-6 w-6" />
+            </div>
+          )}
+
+          <div className="space-y-1">
+            <h1 className="text-2xl sm:text-3xl font-black text-foreground print:text-black tracking-tight uppercase">
+              {companyNameBn || companyName}
+            </h1>
+            {companyNameBn && companyName && (
+              <p className="text-xs sm:text-sm text-muted-foreground print:text-black/80 font-bold tracking-wider uppercase">
+                {companyName}
+              </p>
+            )}
           </div>
 
-          <h1 className="text-2xl sm:text-3xl font-black text-foreground tracking-tight uppercase">
-            {companyNameBn || companyName}
-          </h1>
-          {companyNameBn && companyName && (
-            <p className="text-xs text-muted-foreground font-semibold tracking-wide uppercase">{companyName}</p>
-          )}
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary border border-primary/20 text-xs font-bold tracking-wider uppercase">
+            <ShieldCheck className="h-4 w-4 shrink-0" />
+            <span>PrintFlow • Smart Attendance Terminal</span>
+          </div>
         </div>
 
         {/* Location Badge */}
-        <div className="my-6 text-center space-y-1">
+        <div className="text-center space-y-1.5 py-1">
           <span className="text-xs font-bold text-primary uppercase tracking-widest block">
- Official Attendance Terminal (হাজিরা পয়েন্ট)
+            Official Attendance Terminal (অফিসিয়াল হাজিরা পয়েন্ট)
           </span>
-          <h2 className="text-xl sm:text-2xl font-black text-foreground tracking-tight">
+          <h2 className="text-xl sm:text-2xl font-black text-foreground print:text-black tracking-tight">
             {location.name}
           </h2>
+          {location.branch_name && (
+            <p className="text-xs font-semibold text-foreground print:text-black">
+              Branch: {location.branch_name}
+            </p>
+          )}
           {location.address && (
-            <p className="text-xs text-muted-foreground flex items-center justify-center gap-1 max-w-xs mx-auto">
-              <MapPin className="h-3.5 w-3.5 text-muted-foreground shrink-0"/>
+            <p className="text-xs text-muted-foreground print:text-black/70 flex items-center justify-center gap-1 max-w-sm mx-auto">
+              <MapPin className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
               <span>{location.address}</span>
             </p>
           )}
         </div>
 
-        {/* QR Code Container */}
-        <div className="my-8 flex flex-col items-center justify-center">
+        {/* High-Resolution QR Code Container */}
+        <div className="flex flex-col items-center justify-center my-4">
           <div className="p-4 bg-card border-4 border-border rounded-3xl shadow-xs relative">
             <QRCodeSVG
- value={qrValue}
- size={220}
- bgColor="#FFFFFF"fgColor="#0F172A"includeMargin={false}
- className="rounded-xl"/>
+              value={qrValue}
+              size={260}
+              bgColor="#FFFFFF"
+              fgColor="#0F172A"
+              level="H"
+              includeMargin={false}
+              className="rounded-xl"
+            />
             {/* Corner Target Markers */}
-            <div className="absolute -top-2 -left-2 w-6 h-6 border-t-4 border-l-4 border-primary"/>
-            <div className="absolute -top-2 -right-2 w-6 h-6 border-t-4 border-r-4 border-primary"/>
-            <div className="absolute -bottom-2 -left-2 w-6 h-6 border-b-4 border-l-4 border-primary"/>
-            <div className="absolute -bottom-2 -right-2 w-6 h-6 border-b-4 border-r-4 border-primary"/>
+            <div className="absolute -top-2 -left-2 w-6 h-6 border-t-4 border-l-4 border-primary" />
+            <div className="absolute -top-2 -right-2 w-6 h-6 border-t-4 border-r-4 border-primary" />
+            <div className="absolute -bottom-2 -left-2 w-6 h-6 border-b-4 border-l-4 border-primary" />
+            <div className="absolute -bottom-2 -right-2 w-6 h-6 border-b-4 border-r-4 border-primary" />
           </div>
 
           <div className="mt-4 text-center space-y-1">
-            <div className="inline-block px-3 py-1 bg-muted rounded-lg text-xs tabular-nums font-bold text-foreground">
- Terminal Code: {activeToken?.token_prefix || `LOC-${location.id.slice(0, 8)}`}
+            <div className="inline-block px-3 py-1 bg-muted rounded-lg text-xs tabular-nums font-bold text-foreground print:text-black border border-border">
+              Terminal Code: {terminalCode}
             </div>
-            <p className="text-xs text-muted-foreground font-medium">
- Geofence Radius: <strong className="text-foreground">{location.radius_meters}m</strong>
+            <p className="text-xs text-muted-foreground print:text-black/70 font-medium">
+              Geofence Radius: <strong className="text-foreground print:text-black">{location.radius_meters}m</strong>
+              {location.latitude !== 0 && location.longitude !== 0 && (
+                <span> • GPS: {location.latitude.toFixed(4)}, {location.longitude.toFixed(4)}</span>
+              )}
             </p>
           </div>
         </div>
 
-        {/* Instructions */}
-        <div className="p-4 rounded-xl bg-muted border border-border text-center space-y-2">
-          <h3 className="text-sm font-bold text-foreground">
-            কিভাবে হাজিরা দিবেন? / How to Punch?
+        {/* Step-by-Step Instructions */}
+        <div className="p-4 rounded-xl bg-muted border border-border text-center space-y-3">
+          <h3 className="text-sm font-bold text-foreground print:text-black">
+            কিভাবে হাজিরা দিবেন? / How to Punch Attendance?
           </h3>
-          <ol className="text-xs text-muted-foreground space-y-1 text-left list-decimal list-inside font-medium max-w-xs mx-auto">
-            <li>PrintFlow অ্যাপ বা ব্রাউজারে লগইন করুন।</li>
-            <li><strong className="text-foreground">Attendance</strong> অপশন সিলেক্ট করুন।</li>
-            <li>ক্যামেরা দিয়ে এই কিউআর কোড স্ক্যান করুন।</li>
-            <li>ডিভাইস লোকেশন সক্রিয় করে হাজিরা নিশ্চিত করুন।</li>
+          <ol className="text-xs text-muted-foreground print:text-black/80 space-y-1.5 text-left list-decimal list-inside font-medium max-w-sm mx-auto">
+            <li>স্মার্টফোনে <strong>PrintFlow</strong> অ্যাপ বা ব্রাউজারে লগইন করুন।</li>
+            <li>মেনু থেকে <strong>&ldquo;Attendance&rdquo;</strong> অপশন সিলেক্ট করুন।</li>
+            <li><strong>&ldquo;Scan QR&rdquo;</strong> বাটনে ট্যাপ করে ক্যামেরা দিয়ে এই কিউআর কোড স্ক্যান করুন।</li>
+            <li>ডিভাইস লোকেশন (GPS) সক্রিয় রেখে উপস্থিতি নিশ্চিত করুন।</li>
           </ol>
         </div>
 
+        {/* Security & Anti-Fraud Disclaimer */}
+        <div className="p-2.5 rounded-lg border border-border/80 bg-background text-center text-xs text-muted-foreground print:text-black/70">
+          <p className="font-medium">
+            নোটিশ: শুধুমাত্র অনুমোদিত কর্মস্থলের নির্ধারিত সীমানার মধ্যে এই কিউআর কার্যকর। অননুমোদিত ছবি তোলা বা প্রক্সি হাজিরা সম্পূর্ণ নিষিদ্ধ।
+          </p>
+        </div>
+
         {/* Footer Meta */}
-        <div className="mt-8 pt-4 border-t border-border flex items-center justify-between text-xs text-muted-foreground tabular-nums">
+        <div className="pt-4 border-t border-border flex items-center justify-between text-xs text-muted-foreground print:text-black/70 tabular-nums">
           <div>
             <span>Generated: {generatedDate}</span>
           </div>
           <div className="flex items-center gap-1 text-success font-bold">
-            <ShieldCheck className="h-3.5 w-3.5"/>
+            <ShieldCheck className="h-3.5 w-3.5" />
             <span>Server Verified • Geofenced</span>
           </div>
         </div>

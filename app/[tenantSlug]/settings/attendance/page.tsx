@@ -348,31 +348,33 @@ export default function AttendanceSettingsPage() {
   }
 
   // Direct Download QR as SVG
- const handleDownloadQrSvg = (loc: AttendanceLocationRecord) => {
- try {
- const svgElement =
- document.querySelector(`[data-qr-loc-id="${loc.id}"] svg`) ||
- document.getElementById(`qr-container-${loc.id}`)?.querySelector('svg') ||
- document.querySelector('svg')
+ const handleDownloadQrSvg = async (loc: AttendanceLocationRecord) => {
+    try {
+      const activeToken = loc.active_qr_token
+      const qrPayload =
+        activeToken?.qr_payload_url ||
+        (activeToken?.raw_token ? `PRINTFLOW:ATT:v1:${activeToken.raw_token}` : null) ||
+        `PRINTFLOW:ATT:LOC:${loc.id}`
 
- if (!svgElement) {
- showNotification('error', 'Unable to locate QR vector for download.')
- return
-      }
+      const QRCode = (await import('qrcode')).default
+      const svgString = await QRCode.toString(qrPayload, {
+        type: 'svg',
+        margin: 2,
+        errorCorrectionLevel: 'H',
+      })
 
- const svgData = new XMLSerializer().serializeToString(svgElement)
- const blob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' })
- const url = URL.createObjectURL(blob)
- const link = document.createElement('a')
- link.href = url
- link.download = `${loc.name.toLowerCase().replace(/[^a-z0-9]/g, '-')}-qr.svg`
- document.body.appendChild(link)
- link.click()
- document.body.removeChild(link)
- URL.revokeObjectURL(url)
- showNotification('success', `Vector QR downloaded: ${link.download}`)
+      const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' })
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `${loc.name.toLowerCase().replace(/[^a-z0-9]/g, '-')}-qr.svg`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(url)
+      showNotification('success', `Vector QR downloaded: ${link.download}`)
     } catch (e: any) {
- showNotification('error', 'Download failed: ' + e?.message)
+      showNotification('error', 'Download failed: ' + e?.message)
     }
   }
 
@@ -482,7 +484,7 @@ export default function AttendanceSettingsPage() {
       {/* Page Header */}
       <PageHeader
  titleEn="Attendance Setup"titleBn="কর্মস্থল লোকেশন ও কিউআর ব্যবস্থাপনা"descriptionEn="Configure physical workplace GPS boundaries, generate rotatable cryptographic QR tokens, and print on-site entrance posters."descriptionBn="কর্মস্থলের জিপিএস সীমানা নির্ধারণ করুন, কিউআর কোড তৈরি ও রোটেট করুন এবং অন-সাইট পোস্টার প্রিন্ট করুন।"icon={QrCode}
- iconColor="text-primary text-primary"actions={
+ iconColor="text-primary"actions={
           <div className="flex items-center gap-2">
             <Button
  type="button"variant="outline"size="sm"onClick={loadAllData}
@@ -934,7 +936,7 @@ export default function AttendanceSettingsPage() {
  setSelectedLocation(loc)
  setIsPrintPosterOpen(true)
                         }}
- className="bg-primary hover:bg-primary text-white text-xs h-8 rounded-lg font-bold">
+ className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs h-8 rounded-lg font-bold">
                         <Printer className="h-3.5 w-3.5 mr-1"/>
                         <span>Poster</span>
                       </Button>
@@ -1467,7 +1469,7 @@ export default function AttendanceSettingsPage() {
  setIsQrDetailOpen(false)
  setIsPrintPosterOpen(true)
                 }}
- className="bg-primary hover:bg-primary text-white text-xs font-bold rounded-xl">
+ className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold rounded-xl">
                 <Printer className="h-3.5 w-3.5 mr-1"/>
                 <span>Print Poster</span>
               </Button>
@@ -1574,7 +1576,7 @@ export default function AttendanceSettingsPage() {
             <Button
  type="button"size="sm"disabled={isSubmitting}
  onClick={handleRevokeQr}
- className="bg-destructive hover:bg-destructive text-white font-bold text-xs rounded-xl shadow-sm">
+ className="bg-destructive hover:bg-destructive text-destructive-foreground font-bold text-xs rounded-xl shadow-sm">
               {isSubmitting ? 'Revoking...' : 'Confirm Revocation'}
             </Button>
           </div>
@@ -1628,9 +1630,13 @@ export default function AttendanceSettingsPage() {
       {/* PRINT POSTER MODAL */}
       {selectedLocation && (
         <ModalDialog
- open={isPrintPosterOpen}
- onOpenChange={(v) => !v && setIsPrintPosterOpen(false)}
- title="Printable QR Code Poster"description="High-resolution poster for on-site attendance entrance">
+          open={isPrintPosterOpen}
+          onOpenChange={(v) => !v && setIsPrintPosterOpen(false)}
+          size="3xl"
+          hideFooter
+          title="Printable QR Code Poster"
+          description="High-resolution poster for on-site attendance entrance"
+        >
           <PrintableQrPoster
  location={selectedLocation}
  companyName={company?.name || `${BRAND.name} Press`}

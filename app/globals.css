@@ -579,10 +579,10 @@ pre,
 
   /* 2. Hide Non-Printable UI Chrome, Navigation, Floating Bars & Modals */
   body:has([data-print-isolate="true"]) > *:not(:has([data-print-isolate="true"])),
-  body:has([data-print-isolate="true"]) [data-slot="dialog-content"],
+  body:has([data-print-isolate="true"]) [data-slot="dialog-content"]:not(:has([data-print-isolate="true"])),
   body:has([data-print-isolate="true"]) [data-slot="dialog-overlay"],
   body:has([data-print-isolate="true"]) .bg-surface-inset,
-  body:has([data-print-isolate="true"]) [role="dialog"],
+  body:has([data-print-isolate="true"]) [role="dialog"]:not(:has([data-print-isolate="true"])),
   header:not(.print-header),
   aside:not(.print-aside),
   nav:not(.print-nav),
@@ -602,17 +602,44 @@ pre,
     visibility: hidden !important;
   }
 
+  /* Unclip dialog wrapper when printable document is inside a modal */
+  body:has([data-print-isolate="true"]) div:has(> [role="dialog"]:has([data-print-isolate="true"])),
+  body:has([data-print-isolate="true"]) [role="dialog"]:has([data-print-isolate="true"]),
+  body:has([data-print-isolate="true"]) [data-slot="dialog-content"]:has([data-print-isolate="true"]) {
+    display: block !important;
+    position: static !important;
+    inset: auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    transform: none !important;
+    animation: none !important;
+  }
+
+  /* Hide modal header, footer, close button when printing isolated document from modal */
+  body:has([data-print-isolate="true"]) [role="dialog"]:has([data-print-isolate="true"]) > button,
+  body:has([data-print-isolate="true"]) [role="dialog"]:has([data-print-isolate="true"]) [data-slot="dialog-header"],
+  body:has([data-print-isolate="true"]) [role="dialog"]:has([data-print-isolate="true"]) [data-slot="dialog-footer"] {
+    display: none !important;
+  }
+
   /* Isolate printable document when present */
   [data-print-isolate="true"] {
-    position: fixed !important;
-    inset: 0 !important;
+    position: static !important;
     width: 100% !important;
+    max-width: 100% !important;
     height: auto !important;
     margin: 0 !important;
-    padding: 1.5rem !important;
+    padding: 0 !important;
     background: #ffffff !important;
     color: #0f172a !important;
-    z-index: 999999 !important;
     border: none !important;
     box-shadow: none !important;
   }
