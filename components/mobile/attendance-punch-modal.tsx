@@ -148,15 +148,15 @@ export function AttendancePunchModal({
  return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent onClose={onClose} className="max-w-md p-5 bg-card border-border text-foreground rounded-3xl shadow-lg max-h-[90vh] overflow-y-auto">
-        <DialogHeader className="p-0 border-none bg-transparent pr-8 mb-3 shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-primary/10 text-primary border border-primary/20 shrink-0">
+        <DialogHeader className="p-0 border-none bg-transparent pr-8 mb-2.5 shrink-0">
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            <div className="p-2 sm:p-2.5 rounded-xl bg-primary/10 text-primary border border-primary/20 shrink-0">
               <QrCode className="h-5 w-5"/>
             </div>
-            <div className="min-w-0 flex-1 overflow-hidden">
+            <div className="min-w-0 flex-1">
               <DialogTitle
-                style={{ whiteSpace: 'nowrap', textWrap: 'nowrap', wordBreak: 'keep-all' }}
-                className="text-foreground text-sm sm:text-base font-bold whitespace-nowrap text-nowrap truncate"
+                style={{ fontSize: '0.875rem', lineHeight: '1.25rem', whiteSpace: 'nowrap', textWrap: 'nowrap', wordBreak: 'keep-all' }}
+                className="text-foreground text-sm sm:text-sm font-bold whitespace-nowrap text-nowrap tracking-tight"
               >
                 {tBilingual('Attendance & Shift Punch', 'উপস্থিতি ও শিফট পাঞ্চ')}
               </DialogTitle>
