@@ -226,34 +226,40 @@ export function PrintableQrPoster({
         className="bg-card text-foreground print:bg-white print:text-black p-6 sm:p-10 rounded-2xl border border-border shadow-xs max-w-xl mx-auto print:max-w-none print:w-full print:h-[275mm] print:max-h-[275mm] print:p-7 print:border-2 print:border-border print:rounded-2xl print:shadow-none print:flex print:flex-col print:justify-between print:space-y-0 space-y-5"
       >
         {/* Poster Header: Logo/Icon in Left, Company Name in Right */}
-        <div className="flex items-center justify-between gap-4 border-b-2 border-border pb-5 print:pb-4">
-          {/* Left: Organization Logo / Icon */}
-          <div className="shrink-0 flex items-center">
-            {logoUrl ? (
-              /* eslint-disable-next-line @next/next/no-img-element */
-              <img
-                src={logoUrl}
-                alt={companyName}
-                className="h-14 sm:h-16 print:h-16 w-auto object-contain max-w-[180px] sm:max-w-[220px]"
-              />
-            ) : (
-              <div className="inline-flex items-center justify-center h-14 w-14 sm:h-16 sm:w-16 print:h-16 print:w-16 rounded-2xl bg-primary/10 text-primary border border-primary/20">
-                <Building2 className="h-7 w-7 sm:h-8 sm:w-8 print:h-8 print:w-8" />
-              </div>
-            )}
+        <div className="border-b-2 border-border pb-5 print:pb-4 space-y-3.5 print:space-y-2.5">
+          <div className="flex items-center justify-between gap-4">
+            {/* Left: Organization Logo / Icon */}
+            <div className="shrink-0 flex items-center">
+              {logoUrl ? (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img
+                  src={logoUrl}
+                  alt={companyName}
+                  className="h-14 sm:h-16 print:h-16 w-auto object-contain max-w-[180px] sm:max-w-[220px]"
+                />
+              ) : (
+                <div className="inline-flex items-center justify-center h-14 w-14 sm:h-16 sm:w-16 print:h-16 print:w-16 rounded-2xl bg-primary/10 text-primary border border-primary/20">
+                  <Building2 className="h-7 w-7 sm:h-8 sm:w-8 print:h-8 print:w-8" />
+                </div>
+              )}
+            </div>
+
+            {/* Right: Company Name */}
+            <div className="flex flex-col items-end text-right justify-center space-y-0.5 flex-1 min-w-0">
+              <h1 className="text-2xl sm:text-3xl print:text-3xl font-black text-foreground print:text-black tracking-tight uppercase leading-tight bangla-text">
+                {companyNameBn || companyName}
+              </h1>
+              {companyNameBn && companyName && (
+                <p className="text-xs sm:text-sm print:text-sm text-muted-foreground print:text-black/80 font-bold tracking-wider uppercase">
+                  {companyName}
+                </p>
+              )}
+            </div>
           </div>
 
-          {/* Right: Company Name & Smart Attendance Terminal Badge */}
-          <div className="flex flex-col items-end text-right space-y-1 flex-1 min-w-0">
-            <h1 className="text-2xl sm:text-3xl print:text-3xl font-black text-foreground print:text-black tracking-tight uppercase leading-tight">
-              {companyNameBn || companyName}
-            </h1>
-            {companyNameBn && companyName && (
-              <p className="text-xs sm:text-sm print:text-sm text-muted-foreground print:text-black/80 font-bold tracking-wider uppercase">
-                {companyName}
-              </p>
-            )}
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary border border-primary/20 text-xs print:text-sm font-bold tracking-wider uppercase mt-0.5">
+          {/* Centered Smart Attendance Terminal Verification Badge */}
+          <div className="flex justify-center print:justify-center pt-0.5">
+            <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-primary/10 text-primary border border-primary/20 text-xs print:text-sm font-bold tracking-wider uppercase">
               <ShieldCheck className="h-3.5 w-3.5 shrink-0" />
               <span>PrintFlow • Smart Attendance Terminal</span>
             </div>
